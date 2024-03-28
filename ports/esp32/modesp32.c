@@ -192,6 +192,39 @@ static mp_obj_t esp32_idf_heap_info(const mp_obj_t cap_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_idf_heap_info_obj, esp32_idf_heap_info);
 
+#if CONFIG_FREERTOS_USE_TRACE_FACILITY
+static mp_obj_t esp32_idf_task_stats(void) {
+    const size_t task_count_max = uxTaskGetNumberOfTasks();
+    TaskStatus_t *task_array = m_new(TaskStatus_t, task_count_max);
+    uint32_t total_time;
+    const size_t task_count = uxTaskGetSystemState(task_array, task_count_max, &total_time);
+
+    mp_obj_t task_list = mp_obj_new_list(0, 0);
+    for (size_t i = 0; i < task_count; i++) {
+        mp_obj_t task_data[] = {
+            mp_obj_new_str(task_array[i].pcTaskName, strlen(task_array[i].pcTaskName)),
+            mp_obj_new_int_from_uint(task_array[i].xTaskNumber),
+            MP_OBJ_NEW_SMALL_INT(task_array[i].eCurrentState),
+            MP_OBJ_NEW_SMALL_INT(task_array[i].uxCurrentPriority),
+            mp_obj_new_int_from_uint(task_array[i].ulRunTimeCounter),
+            mp_obj_new_int_from_uint(task_array[i].usStackHighWaterMark),
+            #if CONFIG_FREERTOS_VTASKLIST_INCLUDE_COREID
+            MP_OBJ_NEW_SMALL_INT(task_array[i].xCoreID),
+            #else
+            mp_const_none,
+            #endif
+        };
+        mp_obj_t task = mp_obj_new_tuple(7, task_data);
+        mp_obj_list_append(task_list, task);
+    }
+
+    m_del(TaskStatus_t, task_array, task_count_max);
+    mp_obj_t task_stats[] = { MP_OBJ_NEW_SMALL_INT(total_time), task_list };
+    return mp_obj_new_tuple(2, task_stats);
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(esp32_idf_task_stats_obj, esp32_idf_task_stats);
+#endif
+
 static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
@@ -204,6 +237,9 @@ static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_idf_heap_info), MP_ROM_PTR(&esp32_idf_heap_info_obj) },
+    #if CONFIG_FREERTOS_USE_TRACE_FACILITY
+    { MP_ROM_QSTR(MP_QSTR_idf_task_stats), MP_ROM_PTR(&esp32_idf_task_stats_obj) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_NVS), MP_ROM_PTR(&esp32_nvs_type) },
     { MP_ROM_QSTR(MP_QSTR_Partition), MP_ROM_PTR(&esp32_partition_type) },
