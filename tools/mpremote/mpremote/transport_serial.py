@@ -982,7 +982,7 @@ class PyboardCommand:
         if n == 0:
             return ""
         else:
-            return str(self.fin.read(n), "utf8")
+            return str(self.fin.read(n), "utf8", errors="replace")
 
     def wr_s8(self, i):
         self.fout.write(struct.pack("<b", i))
