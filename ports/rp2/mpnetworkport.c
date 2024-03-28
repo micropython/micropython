@@ -66,7 +66,7 @@ static void gpio_irq_handler(void) {
 void cyw43_irq_init(void) {
     gpio_add_raw_irq_handler_with_order_priority(CYW43_PIN_WL_HOST_WAKE, gpio_irq_handler, CYW43_SHARED_IRQ_HANDLER_PRIORITY);
     irq_set_enabled(IO_IRQ_BANK0, true);
-    NVIC_SetPriority(PendSV_IRQn, PICO_LOWEST_IRQ_PRIORITY);
+    NVIC_SetPriority(PendSV_IRQn, IRQ_PRI_PENDSV);
 }
 
 void cyw43_post_poll_hook(void) {

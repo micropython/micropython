@@ -154,6 +154,10 @@
 #define MICROPY_SSL_MBEDTLS                     (1)
 #define MICROPY_PY_LWIP_SOCK_RAW                (MICROPY_PY_LWIP)
 
+// Hardware timer alarm index. Available range 0-3.
+// Number 3 is currently used by pico-sdk (PICO_TIME_DEFAULT_ALARM_POOL_HARDWARE_ALARM_NUM)
+#define MICROPY_HW_SOFT_TIMER_ALARM_NUM         (2)
+
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN                (1)
 #define MICROPY_FATFS_LFN_CODE_PAGE             437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
@@ -265,6 +269,7 @@ typedef intptr_t mp_off_t;
 #define BINARY_INFO_TAG_MICROPYTHON BINARY_INFO_MAKE_TAG('M', 'P')
 #define BINARY_INFO_ID_MP_FROZEN 0x4a99d719
 #define MICROPY_FROZEN_LIST_ITEM(name, file) bi_decl(bi_string(BINARY_INFO_TAG_MICROPYTHON, BINARY_INFO_ID_MP_FROZEN, name))
+
 
 extern uint32_t rosc_random_u32(void);
 extern void lwip_lock_acquire(void);

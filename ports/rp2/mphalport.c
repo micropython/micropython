@@ -35,6 +35,7 @@
 #include "pendsv.h"
 #include "tusb.h"
 #include "uart.h"
+#include "hardware/irq.h"
 #include "hardware/rtc.h"
 #include "pico/unique_id.h"
 
@@ -45,8 +46,6 @@
 // This needs to be added to the result of time_us_64() to get the number of
 // microseconds since the Epoch.
 static uint64_t time_us_64_offset_from_epoch;
-
-static alarm_id_t soft_timer_alarm_id = 0;
 
 #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
 
@@ -199,17 +198,31 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     return did_write ? ret : 0;
 }
 
+void mp_hal_delay_us(mp_uint_t us) {
+    // Avoid calling sleep_us() and invoking the alarm pool by splitting long
+    // sleeps into an optional longer sleep and a shorter busy-wait
+    uint64_t end = time_us_64() + us;
+    if (us > 1000) {
+        mp_hal_delay_ms(us / 1000);
+    }
+    while (time_us_64() < end) {
+        // Tight loop busy-wait for accurate timing
+    }
+}
+
 void mp_hal_delay_ms(mp_uint_t ms) {
-    absolute_time_t t = make_timeout_time_ms(ms);
+    mp_uint_t start = mp_hal_ticks_ms();
+    mp_uint_t elapsed = 0;
     do {
-        mp_event_handle_nowait();
-    } while (!best_effort_wfe_or_timeout(t));
+        mp_event_wait_ms(ms - elapsed);
+        elapsed = mp_hal_ticks_ms() - start;
+    } while (elapsed < ms);
 }
 
 void mp_hal_time_ns_set_from_rtc(void) {
-    // Delay at least one RTC clock cycle so it's registers have updated with the most
-    // recent time settings.
-    sleep_us(23);
+    // Outstanding RTC register writes need at least two RTC clock cycles to
+    // update. (See RP2040 datasheet section 4.8.4 "Reference clock").
+    mp_hal_delay_us(44);
 
     // Sample RTC and time_us_64() as close together as possible, so the offset
     // calculated for the latter can be as accurate as possible.
@@ -273,21 +286,40 @@ uint32_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
     panic_unsupported();
 }
 
-static int64_t soft_timer_callback(alarm_id_t id, void *user_data) {
-    soft_timer_alarm_id = 0;
-    pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
-    return 0; // don't reschedule this alarm
-}
-
 uint32_t soft_timer_get_ms(void) {
     return mp_hal_ticks_ms();
 }
 
 void soft_timer_schedule_at_ms(uint32_t ticks_ms) {
-    if (soft_timer_alarm_id != 0) {
-        cancel_alarm(soft_timer_alarm_id);
-    }
     int32_t ms = soft_timer_ticks_diff(ticks_ms, mp_hal_ticks_ms());
     ms = MAX(0, ms);
-    soft_timer_alarm_id = add_alarm_in_ms(ms, soft_timer_callback, NULL, true);
+    if (hardware_alarm_set_target(MICROPY_HW_SOFT_TIMER_ALARM_NUM, delayed_by_ms(get_absolute_time(), ms))) {
+        // "missed" hardware alarm target
+        hardware_alarm_force_irq(MICROPY_HW_SOFT_TIMER_ALARM_NUM);
+    }
+}
+
+static void soft_timer_hardware_callback(unsigned int alarm_num) {
+    // The timer alarm ISR needs to call here and trigger PendSV dispatch via
+    // a second ISR, as PendSV may be currently suspended by the other CPU.
+    pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
+}
+
+void soft_timer_init(void) {
+    hardware_alarm_claim(MICROPY_HW_SOFT_TIMER_ALARM_NUM);
+    hardware_alarm_set_callback(MICROPY_HW_SOFT_TIMER_ALARM_NUM, soft_timer_hardware_callback);
+}
+
+void mp_wfe_or_timeout(uint32_t timeout_ms) {
+    soft_timer_entry_t timer;
+
+    // Note the timer doesn't have an associated callback, it just exists to create a
+    // hardware interrupt to wake the CPU
+    soft_timer_static_init(&timer, SOFT_TIMER_MODE_ONE_SHOT, 0, NULL);
+    soft_timer_insert(&timer, timeout_ms);
+
+    __wfe();
+
+    // Clean up the timer node if it's not already
+    soft_timer_remove(&timer);
 }
