@@ -83,6 +83,10 @@ extern int mp_mod_network_prefer_dns_use_ip_version;
 #endif
 #elif defined(MICROPY_PORT_NETWORK_INTERFACES)
 
+#if MICROPY_PY_NETWORK_NINAW10
+mp_obj_t network_ninaw10_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+#endif
+
 struct _mod_network_socket_obj_t;
 
 typedef struct _mod_network_nic_protocol_t {

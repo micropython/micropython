@@ -144,12 +144,15 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_hostname_obj, 0, 1, mod_n
 #if LWIP_VERSION_MAJOR >= 2
 MP_DEFINE_CONST_FUN_OBJ_KW(mod_network_ipconfig_obj, 0, mod_network_ipconfig);
 #endif
+#if MICROPY_PY_NETWORK_NINAW10
+MP_DEFINE_CONST_FUN_OBJ_KW(mod_network_ipconfig_obj, 0, network_ninaw10_ipconfig);
+#endif
 
 static const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
     { MP_ROM_QSTR(MP_QSTR_country), MP_ROM_PTR(&mod_network_country_obj) },
     { MP_ROM_QSTR(MP_QSTR_hostname), MP_ROM_PTR(&mod_network_hostname_obj) },
-    #if LWIP_VERSION_MAJOR >= 2
+    #if LWIP_VERSION_MAJOR >= 2 || MICROPY_PY_NETWORK_NINAW10
     { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&mod_network_ipconfig_obj) },
     #endif
 
