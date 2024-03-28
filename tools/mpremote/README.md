@@ -80,3 +80,4 @@ Examples:
     mpremote cp -r dir/ :
     mpremote mip install aioble
     mpremote mip install github:org/repo@branch
+    mpremote mip install gitlab:org/repo@branch
