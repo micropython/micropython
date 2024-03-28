@@ -47,7 +47,7 @@
 //|         spi_bus: busio.SPI,
 //|         *,
 //|         command: Optional[microcontroller.Pin],
-//|         chip_select: microcontroller.Pin,
+//|         chip_select: Optional[microcontroller.Pin],
 //|         reset: Optional[microcontroller.Pin] = None,
 //|         baudrate: int = 24000000,
 //|         polarity: int = 0,
@@ -79,7 +79,7 @@ STATIC mp_obj_t fourwire_fourwire_make_new(const mp_obj_type_t *type, size_t n_a
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_command, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
-        { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
+        { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
         { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
         { MP_QSTR_baudrate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 24000000} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -89,7 +89,7 @@ STATIC mp_obj_t fourwire_fourwire_make_new(const mp_obj_type_t *type, size_t n_a
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mcu_pin_obj_t *command = validate_obj_is_free_pin_or_none(args[ARG_command].u_obj, MP_QSTR_command);
-    const mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj, MP_QSTR_chip_select);
+    const mcu_pin_obj_t *chip_select = validate_obj_is_free_pin_or_none(args[ARG_chip_select].u_obj, MP_QSTR_chip_select);
     const mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj, MP_QSTR_reset);
 
     mp_obj_t spi = mp_arg_validate_type(args[ARG_spi_bus].u_obj, &busio_spi_type, MP_QSTR_spi_bus);
