@@ -195,10 +195,11 @@ static void re_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t 
 }
 
 static mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
-    (void)n_args;
     mp_obj_re_t *self;
+    bool was_compiled = false;
     if (mp_obj_is_type(args[0], (mp_obj_type_t *)&re_type)) {
         self = MP_OBJ_TO_PTR(args[0]);
+        was_compiled = true;
     } else {
         self = MP_OBJ_TO_PTR(mod_re_compile(1, args));
     }
@@ -206,6 +207,30 @@ static mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     size_t len;
     subj.begin_line = subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
+
+    if (was_compiled && n_args > 2) {
+        // Arg #2 is starting-pos
+        mp_int_t startpos = mp_obj_get_int(args[2]);
+        if (startpos > (mp_int_t) len) {
+            startpos = len;
+        }
+        else if (startpos < 0) {
+            startpos = 0;
+        }
+        subj.begin += startpos;
+        if (n_args > 3) {
+            // Arg #3 is ending-pos
+            mp_int_t endpos = mp_obj_get_int(args[3]);
+            if (endpos > (mp_int_t) len) {
+                endpos = len;
+            }
+            else if (endpos < startpos) {
+                endpos = startpos;
+            }
+            subj.end = subj.begin_line + endpos;
+        }
+    }
+
     int caps_num = (self->re.sub + 1) * 2;
     mp_obj_match_t *match = m_new_obj_var(mp_obj_match_t, caps, char *, caps_num);
     // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
@@ -400,11 +425,75 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_sub_obj, 3, 5, re_sub_helper);
 
 #endif
 
+#if MICROPY_PY_RE_FINDITER
+
+typedef struct _mp_re_finditer_it_t {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+    mp_obj_t pattern;
+    mp_obj_t str;
+    mp_obj_t start;
+    mp_obj_t end;
+} mp_re_finditer_it_t;
+
+
+static mp_obj_t mp_re_finditer_it_iternext(mp_obj_t self_in) {
+    mp_re_finditer_it_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_obj_t args[4] = {
+        self->pattern,
+        self->str,
+        self->start,
+        self->end
+    };
+    int n_args = (self->end == mp_const_none) ? 3 : 4;
+
+    mp_obj_t obj_match = re_exec(false, n_args, args);
+    if (obj_match == mp_const_none) {
+        return MP_OBJ_STOP_ITERATION;
+    }
+
+    mp_obj_match_t *match = MP_OBJ_TO_PTR(obj_match);
+    const char *begin = mp_obj_str_get_str(self->str);
+    self->start = MP_OBJ_NEW_SMALL_INT(match->caps[1] - begin);
+    return obj_match;
+}
+
+static mp_obj_t re_finditer(size_t n_args, const mp_obj_t *args) {
+    mp_re_finditer_it_t *iter = mp_obj_malloc(mp_re_finditer_it_t, &mp_type_polymorph_iter);
+    iter->iternext = mp_re_finditer_it_iternext;
+    iter->str = args[1];
+    iter->start = MP_OBJ_NEW_SMALL_INT(0);
+    iter->end = mp_const_none;
+
+    if (mp_obj_is_type(args[0], (mp_obj_type_t *)&re_type)) {
+        iter->pattern = args[0];
+        if (n_args > 2) {
+            iter->start = args[2];
+            if (n_args > 3) {
+                iter->end = args[3];
+            }
+        }
+    }
+    else {
+        iter->pattern = mod_re_compile(1, args);
+    }
+
+    return MP_OBJ_FROM_PTR(iter);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_finditer_obj, 2, 4, re_finditer);
+
+#endif // MICROPY_PY_RE_FINDITER
+
 #if !MICROPY_ENABLE_DYNRUNTIME
 static const mp_rom_map_elem_t re_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj) },
     { MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&re_split_obj) },
+    #if MICROPY_PY_RE_FINDITER
+    { MP_ROM_QSTR(MP_QSTR_finditer), MP_ROM_PTR(&re_finditer_obj) },
+    #endif
     #if MICROPY_PY_RE_SUB
     { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&re_sub_obj) },
     #endif
@@ -455,6 +544,9 @@ static const mp_rom_map_elem_t mp_module_re_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_compile), MP_ROM_PTR(&mod_re_compile_obj) },
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj) },
+    #if MICROPY_PY_RE_FINDITER
+    { MP_ROM_QSTR(MP_QSTR_finditer), MP_ROM_PTR(&re_finditer_obj) },
+    #endif
     #if MICROPY_PY_RE_SUB
     { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&re_sub_obj) },
     #endif
