@@ -57,13 +57,6 @@
 #define METAL_MAX_DEVICE_REGIONS 1
 #endif
 
-// generic/log.h
-#if METAL_LOG_HANDLER_ENABLE
-#include "py/mphal.h"
-#undef metal_log
-#define metal_log(level, ...) mp_printf(&mp_plat_print, __VA_ARGS__)
-#endif
-
 static inline void *__metal_allocate_memory(unsigned int size) {
     return m_tracked_calloc(1, size);
 }

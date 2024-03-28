@@ -46,8 +46,6 @@
 #include "modopenamp.h"
 #include "modopenamp_remoteproc.h"
 
-#define DEBUG_printf(...)   // mp_printf(&mp_plat_print, __VA_ARGS__)
-
 #if !MICROPY_PY_OPENAMP
 #error "MICROPY_PY_OPENAMP_REMOTEPROC requires MICROPY_PY_OPENAMP"
 #endif

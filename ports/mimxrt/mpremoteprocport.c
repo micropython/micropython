@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2023-2024 Arduino SA
+ * Copyright (c) 2024 Arduino SA
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * modremoteproc stm32 port.
+ * modremoteproc mimxrt port.
  */
-
-#include <stdio.h>
-#include <stdint.h>
 
 #include "py/obj.h"
 #include "py/runtime.h"
+
+#include "fsl_common.h"
+#include "fsl_mu.h"
 
 #include "metal/alloc.h"
 #include "metal/errno.h"
@@ -68,11 +68,14 @@ void *mp_openamp_remoteproc_mmap(struct remoteproc *rproc, metal_phys_addr_t *pa
         lpa = lda;
     }
 
-    // Currently this port doesn't support loading firmware to flash,
-    // only SD/SRAM images are supported. Check of load address is in
-    // the flash region, and if so return NULL.
-    if (lda >= FLASH_BASE && lda < FLASH_END) {
-        return NULL;
+    if (lpa >= 0x1FFE0000 && lpa < 0x1FFFFFFF) {
+        // Map CM4 ITCM to CM7 address space.
+        lpa = 0x20200000 | (((uint32_t)lpa) & 0x1FFFF);
+        metal_log(METAL_LOG_DEBUG, "rproc_mmap(): remap 0x%p -> 0x%p\n", lda, lpa);
+    } else if (lpa >= 0x20000000 && lpa < 0x20020000) {
+        // Map CM4 DTCM to CM7 address space.
+        lpa = 0x20220000 | (((uint32_t)lpa) & 0x1FFFF);
+        metal_log(METAL_LOG_DEBUG, "rproc_mmap(): remap 0x%p -> 0x%p\n", lda, lpa);
     }
 
     mem = metal_allocate_memory(sizeof(*mem));
@@ -88,7 +91,7 @@ void *mp_openamp_remoteproc_mmap(struct remoteproc *rproc, metal_phys_addr_t *pa
 
     remoteproc_init_mem(mem, NULL, lpa, lda, size, *io);
 
-    metal_io_init(*io, (void *)mem->da, &mem->pa, size,
+    metal_io_init(*io, (void *)lpa, &mem->pa, size,
         sizeof(metal_phys_addr_t) << 3, attribute, NULL);
 
     remoteproc_add_mem(rproc, mem);
@@ -99,9 +102,8 @@ void *mp_openamp_remoteproc_mmap(struct remoteproc *rproc, metal_phys_addr_t *pa
 
 int mp_openamp_remoteproc_start(struct remoteproc *rproc) {
     metal_log(METAL_LOG_DEBUG, "rproc_start()\n");
-    if ((RCC->GCR & RCC_GCR_BOOT_C2) || (FLASH->OPTSR_CUR & FLASH_OPTSR_BCM4)) {
-        // The CM4 core has already been started manually, or auto-boot is enabled
-        // via the option bytes, in either case the core can't be restarted.
+    if (SRC->SCR & SRC_SCR_BT_RELEASE_M4_MASK) {
+        // The CM4 core is already running.
         metal_log(METAL_LOG_DEBUG, "rproc_start(): CM4 core is already booted.\n");
         return -1;
     }
@@ -111,19 +113,29 @@ int mp_openamp_remoteproc_start(struct remoteproc *rproc) {
     metal_list_for_each(&rproc->mems, node) {
         struct remoteproc_mem *mem;
         mem = metal_container_of(node, struct remoteproc_mem, node);
+        metal_log(METAL_LOG_DEBUG, "rproc_start() clean: pa 0x%p size %u\n", (uint32_t *)mem->pa, mem->size);
         SCB_CleanDCache_by_Addr((uint32_t *)mem->pa, mem->size);
     }
 
-    HAL_SYSCFG_CM4BootAddConfig(SYSCFG_BOOT_ADDR0, (uint32_t)rproc->bootaddr);
-    HAL_RCCEx_EnableBootCore(RCC_BOOT_C2);
+    unsigned long offset = 0;
+    struct metal_io_region *io = remoteproc_get_io_with_da(rproc, rproc->bootaddr, &offset);
+    if (!io) {
+        return -1;
+    }
+
+    IOMUXC_LPSR_GPR->GPR0 = IOMUXC_LPSR_GPR_GPR0_CM4_INIT_VTOR_LOW(((uint32_t)io->virt) >> 3);
+    (void)IOMUXC_LPSR_GPR->GPR0;
+    IOMUXC_LPSR_GPR->GPR1 = IOMUXC_LPSR_GPR_GPR1_CM4_INIT_VTOR_HIGH(((uint32_t)io->virt) >> 16);
+    (void)IOMUXC_LPSR_GPR->GPR1;
+
+    SRC->CTRL_M4CORE = SRC_CTRL_M4CORE_SW_RESET_MASK;
+    SRC->SCR |= SRC_SCR_BT_RELEASE_M4_MASK;
     return 0;
 }
 
 int mp_openamp_remoteproc_stop(struct remoteproc *rproc) {
     metal_log(METAL_LOG_DEBUG, "rproc_stop()\n");
     if (rproc->state == RPROC_RUNNING) {
-        // There's no straightforward way to reset or shut down
-        // the remote processor, so a full system reset is needed.
         NVIC_SystemReset();
     }
     return 0;
@@ -143,8 +155,6 @@ void mp_openamp_remoteproc_remove(struct remoteproc *rproc) {
 int mp_openamp_remoteproc_shutdown(struct remoteproc *rproc) {
     metal_log(METAL_LOG_DEBUG, "rproc_shutdown()\n");
     if (rproc->state == RPROC_RUNNING) {
-        // There's no straightforward way to reset or shut down
-        // the remote processor, so a full system reset is needed.
         NVIC_SystemReset();
     }
     return 0;
