@@ -908,7 +908,7 @@ mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd) {
 
 void mp_lexer_free(mp_lexer_t *lex) {
     if (lex) {
-        lex->reader.close(lex->reader.data);
+        lex->reader.ioctl(lex->reader.data, MP_READER_CLOSE, 0);
         vstr_clear(&lex->vstr);
         #if MICROPY_PY_FSTRINGS
         vstr_clear(&lex->fstring_args);

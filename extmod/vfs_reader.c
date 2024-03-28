@@ -49,7 +49,7 @@ typedef struct _mp_reader_vfs_t {
     byte buf[];
 } mp_reader_vfs_t;
 
-static mp_uint_t mp_reader_vfs_readbyte(void *data) {
+static uintptr_t mp_reader_vfs_readbyte(void *data) {
     mp_reader_vfs_t *reader = (mp_reader_vfs_t *)data;
     if (reader->bufpos >= reader->buflen) {
         if (reader->buflen < reader->bufsize) {
@@ -70,13 +70,39 @@ static mp_uint_t mp_reader_vfs_readbyte(void *data) {
     return reader->buf[reader->bufpos++];
 }
 
-static void mp_reader_vfs_close(void *data) {
+static intptr_t mp_reader_vfs_ioctl(void *data, uintptr_t request, uintptr_t arg) {
     mp_reader_vfs_t *reader = (mp_reader_vfs_t *)data;
-    mp_stream_close(reader->file);
-    m_del_obj(mp_reader_vfs_t, reader);
+
+    if (request == MP_READER_CLOSE) {
+        mp_stream_close(reader->file);
+        m_del_obj(mp_reader_vfs_t, reader);
+        return 0;
+    }
+
+    return -MP_EINVAL;
 }
 
 void mp_reader_new_file(mp_reader_t *reader, qstr filename) {
+    #if MICROPY_VFS_MAP
+    const char *path_out;
+    mp_vfs_mount_t *vfs = mp_vfs_lookup_path(qstr_str(filename), &path_out);
+    if (!(vfs == MP_VFS_NONE || vfs == MP_VFS_ROOT)) {
+        // If the mounted object has the VFS protocol, call its memmap helper.
+        const mp_obj_type_t *type = mp_obj_get_type(vfs->obj);
+        if (MP_OBJ_TYPE_HAS_SLOT(type, protocol)) {
+            const mp_vfs_proto_t *proto = MP_OBJ_TYPE_GET_SLOT(type, protocol);
+            if (proto->memmap != NULL) {
+                const void *data;
+                size_t size = proto->memmap(MP_OBJ_TO_PTR(vfs->obj), path_out, &data);
+                if (data != NULL) {
+                    mp_reader_new_mem(reader, data, size, (size_t)-1);
+                    return;
+                }
+            }
+        }
+    }
+    #endif
+
     mp_obj_t args[2] = {
         MP_OBJ_NEW_QSTR(filename),
         MP_OBJ_NEW_QSTR(MP_QSTR_rb),
@@ -85,6 +111,15 @@ void mp_reader_new_file(mp_reader_t *reader, qstr filename) {
 
     const mp_stream_p_t *stream_p = mp_get_stream(file);
     int errcode = 0;
+
+    #if 0 && MICROPY_VFS_MAP
+    // Check if the stream can initialising a reader itself.
+    mp_uint_t reader_ret = stream_p->ioctl(file, MP_STREAM_INIT_READER, (uintptr_t)reader, &errcode);
+    if (reader_ret == 0) {
+        return;
+    }
+    #endif
+
     mp_uint_t bufsize = stream_p->ioctl(file, MP_STREAM_GET_BUFFER_SIZE, 0, &errcode);
     if (bufsize == MP_STREAM_ERROR || bufsize == 0) {
         // bufsize == 0 is included here to support mpremote v1.21 and older where mount file ioctl
@@ -98,13 +133,14 @@ void mp_reader_new_file(mp_reader_t *reader, qstr filename) {
     rf->file = file;
     rf->bufsize = bufsize;
     rf->buflen = mp_stream_rw(rf->file, rf->buf, rf->bufsize, &errcode, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
+
     if (errcode != 0) {
         mp_raise_OSError(errcode);
     }
     rf->bufpos = 0;
     reader->data = rf;
     reader->readbyte = mp_reader_vfs_readbyte;
-    reader->close = mp_reader_vfs_close;
+    reader->ioctl = mp_reader_vfs_ioctl;
 }
 
 #endif // MICROPY_READER_VFS

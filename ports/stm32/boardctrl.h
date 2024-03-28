@@ -61,6 +61,10 @@
 #define MICROPY_BOARD_TOP_SOFT_RESET_LOOP boardctrl_top_soft_reset_loop
 #endif
 
+#ifndef MICROPY_BOARD_FROZEN_BOOT_FILE
+#define MICROPY_BOARD_FROZEN_BOOT_FILE "_boot.py"
+#endif
+
 #ifndef MICROPY_BOARD_RUN_BOOT_PY
 #define MICROPY_BOARD_RUN_BOOT_PY boardctrl_run_boot_py
 #endif
