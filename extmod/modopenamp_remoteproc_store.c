@@ -47,8 +47,6 @@
 
 #if MICROPY_PY_OPENAMP_REMOTEPROC_STORE_ENABLE
 
-#define DEBUG_printf(...)   // mp_printf(&mp_plat_print, __VA_ARGS__)
-
 // Note the initial file buffer size needs to be at least 512 to read
 // enough of the elf headers on the first call to store_open(), and on
 // subsequent calls to store functions, it gets reallocated if needed.
@@ -70,7 +68,7 @@ void *mp_openamp_remoteproc_store_alloc(void) {
 }
 
 static int openamp_remoteproc_store_open(void *store, const char *path, const void **image_data) {
-    DEBUG_printf("store_open(): %s\n", path);
+    metal_log(METAL_LOG_DEBUG, "store_open(): %s\n", path);
     mp_obj_t args[2] = {
         mp_obj_new_str(path, strlen(path)),
         MP_OBJ_NEW_QSTR(MP_QSTR_rb),
@@ -89,7 +87,7 @@ static int openamp_remoteproc_store_open(void *store, const char *path, const vo
 }
 
 static void openamp_remoteproc_store_close(void *store) {
-    DEBUG_printf("store_close()\n");
+    metal_log(METAL_LOG_DEBUG, "store_close()\n");
     openamp_remoteproc_filestore_t *fstore = store;
     mp_stream_close(fstore->file);
     metal_free_memory(fstore->buf);
@@ -113,17 +111,17 @@ static int openamp_remoteproc_store_load(void *store, size_t offset, size_t size
             // Note tracked allocs don't support realloc.
             fstore->len = size;
             fstore->buf = metal_allocate_memory(size);
-            DEBUG_printf("store_load() realloc to %lu\n", fstore->len);
+            metal_log(METAL_LOG_DEBUG, "store_load() realloc to %lu\n", fstore->len);
         }
         *data = fstore->buf;
-        DEBUG_printf("store_load(): pa 0x%lx offset %u size %u \n", (uint32_t)pa, offset, size);
+        metal_log(METAL_LOG_DEBUG, "store_load(): pa 0x%lx offset %u size %u \n", (uint32_t)pa, offset, size);
     } else {
         void *va = metal_io_phys_to_virt(io, pa);
         if (va == NULL) {
             return -EINVAL;
         }
         *data = va;
-        DEBUG_printf("store_load(): pa 0x%lx va 0x%p offset %u size %u \n", (uint32_t)pa, va, offset, size);
+        metal_log(METAL_LOG_DEBUG, "store_load(): pa 0x%lx va 0x%p offset %u size %u \n", (uint32_t)pa, va, offset, size);
     }
 
     mp_uint_t bytes = mp_stream_read_exactly(fstore->file, (void *)*data, size, &error);
