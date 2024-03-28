@@ -41,6 +41,7 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 #include "py/mperrno.h"
+#include "py/parsenum.h"
 #include "shared/netutils/netutils.h"
 #include "shared/runtime/softtimer.h"
 #include "extmod/modnetwork.h"
@@ -75,6 +76,8 @@ typedef struct _nina_obj_t {
 #define SO_NO_CHECK             (0x100a)
 #define NINAW10_POLL_INTERVAL   (100)
 
+#define IPADDR_STRLEN_MAX       46
+
 #define is_nonblocking_error(errno) ((errno) == MP_EAGAIN || (errno) == MP_EWOULDBLOCK || (errno) == MP_EINPROGRESS)
 
 #define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__)
@@ -86,6 +89,8 @@ static nina_obj_t network_nina_wl_ap = {{(mp_obj_type_t *)&mod_network_nic_type_
 static mp_sched_node_t mp_wifi_poll_node;
 static soft_timer_entry_t mp_wifi_poll_timer;
 static void network_ninaw10_deinit(void);
+
+static bool network_ninaw10_dhcp_active = false;
 
 static bool network_ninaw10_poll_list_is_empty(void) {
     return MP_STATE_PORT(mp_wifi_poll_list) == NULL ||
@@ -199,6 +204,7 @@ static mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
                 mp_raise_msg_varg(&mp_type_OSError,
                     MP_ERROR_TEXT("failed to initialize Nina-W10 module, error: %d"), error);
             }
+            network_ninaw10_dhcp_active = true;
             // check firmware version
             uint8_t semver[NINA_FW_VER_LEN];
             if (nina_fw_version(semver) != 0) {
@@ -367,10 +373,154 @@ static mp_obj_t network_ninaw10_ifconfig(size_t n_args, const mp_obj_t *args) {
         netutils_parse_ipv4_addr(items[2], ifconfig.gateway_addr, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[3], ifconfig.dns_addr, NETUTILS_BIG);
         nina_ifconfig(&ifconfig, true);
+        network_ninaw10_dhcp_active = false;
         return mp_const_none;
     }
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ninaw10_ifconfig_obj, 1, 2, network_ninaw10_ifconfig);
+
+mp_obj_t network_ninaw10_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    nina_ifconfig_t ifconfig;
+    // get ifconfig info
+    nina_ifconfig(&ifconfig, false);
+
+    if (kwargs->used == 0) {
+        // Get config value
+        if (n_args != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+        switch (mp_obj_str_get_qstr(args[0])) {
+            case MP_QSTR_dns: {
+                return netutils_format_ipv4_addr(ifconfig.dns_addr, NETUTILS_BIG);
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+    } else {
+        // Set config value(s)
+        if (n_args != 0) {
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
+        }
+
+        for (size_t i = 0; i < kwargs->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                mp_map_elem_t *e = &kwargs->table[i];
+                switch (mp_obj_str_get_qstr(e->key)) {
+                    case MP_QSTR_dns: {
+                        netutils_parse_ipv4_addr(e->value, ifconfig.dns_addr, NETUTILS_BIG);
+                        nina_ifconfig(&ifconfig, true);
+                        break;
+                    }
+                    default: {
+                        mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return mp_const_none;
+}
+
+static mp_obj_t network_ninaw10_nic_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    nina_ifconfig_t ifconfig;
+    // get ifconfig info
+    nina_ifconfig(&ifconfig, false);
+
+    if (kwargs->used == 0) {
+        // Get config value
+        if (n_args != 2) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+
+        switch (mp_obj_str_get_qstr(args[1])) {
+            case MP_QSTR_dhcp4: {
+                return mp_obj_new_bool(network_ninaw10_dhcp_active);
+            }
+            case MP_QSTR_has_dhcp4: {
+                uint16_t ip_sum =
+                    ifconfig.ip_addr[0] + ifconfig.ip_addr[1] + ifconfig.ip_addr[2] + ifconfig.ip_addr[3];
+                if (network_ninaw10_dhcp_active) {
+                    return mp_obj_new_bool(ip_sum != 0);
+                } else {
+                    return mp_const_false;
+                }
+            }
+            case MP_QSTR_addr4: {
+                mp_obj_t tuple[2] = {
+                    netutils_format_ipv4_addr(ifconfig.ip_addr, NETUTILS_BIG),
+                    netutils_format_ipv4_addr(ifconfig.subnet_addr, NETUTILS_BIG),
+                };
+                return mp_obj_new_tuple(2, tuple);
+            }
+            case MP_QSTR_gw4: {
+                return netutils_format_ipv4_addr(ifconfig.gateway_addr, NETUTILS_BIG);
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+        return mp_const_none;
+    } else {
+        // Set config value(s)
+        if (n_args != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
+        }
+
+        for (size_t i = 0; i < kwargs->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                mp_map_elem_t *e = &kwargs->table[i];
+                switch (mp_obj_str_get_qstr(e->key)) {
+                    case MP_QSTR_dhcp4: {
+                        mp_raise_ValueError(MP_ERROR_TEXT("DHCP control unsupported"));
+                        break;
+                    }
+                    case MP_QSTR_addr4: {
+                        int prefix_bits = 32;
+                        if (e->value != mp_const_none && mp_obj_is_str(e->value)) {
+                            size_t addr_len;
+                            const char *input_str = mp_obj_str_get_data(e->value, &addr_len);
+                            char *split = strchr(input_str, '/');
+                            if (split) {
+                                mp_obj_t prefix_obj = mp_parse_num_integer(split + 1, strlen(split + 1), 10, NULL);
+                                prefix_bits = mp_obj_get_int(prefix_obj);
+                                uint32_t mask = -(1u << (32 - prefix_bits));
+                                ifconfig.subnet_addr[0] = (mask >> 24) & 0xFF;
+                                ifconfig.subnet_addr[1] = (mask >> 16) & 0xFF;
+                                ifconfig.subnet_addr[2] = (mask >> 8) & 0xFF;
+                                ifconfig.subnet_addr[3] = mask & 0xFF;
+                            }
+                            netutils_parse_ipv4_addr(e->value, ifconfig.ip_addr, NETUTILS_BIG);
+                        } else if (e->value != mp_const_none) {
+                            mp_obj_t *items;
+                            mp_obj_get_array_fixed_n(e->value, 2, &items);
+                            netutils_parse_ipv4_addr(items[0], ifconfig.ip_addr, NETUTILS_BIG);
+                            netutils_parse_ipv4_addr(items[1], ifconfig.subnet_addr, NETUTILS_BIG);
+                        }
+                        nina_ifconfig(&ifconfig, true);
+                        network_ninaw10_dhcp_active = false;
+                        break;
+                    }
+                    case MP_QSTR_gw4: {
+                        netutils_parse_ipv4_addr(e->value, ifconfig.gateway_addr, NETUTILS_BIG);
+                        nina_ifconfig(&ifconfig, true);
+                        network_ninaw10_dhcp_active = false;
+                        break;
+                    }
+                    default: {
+                        mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_ninaw10_nic_ipconfig_obj, 1, network_ninaw10_nic_ipconfig);
 
 static mp_obj_t network_ninaw10_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     nina_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -856,6 +1006,7 @@ static const mp_rom_map_elem_t nina_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disconnect),          MP_ROM_PTR(&network_ninaw10_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected),         MP_ROM_PTR(&network_ninaw10_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig),            MP_ROM_PTR(&network_ninaw10_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipconfig),            MP_ROM_PTR(&network_ninaw10_nic_ipconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_config),              MP_ROM_PTR(&network_ninaw10_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_status),              MP_ROM_PTR(&network_ninaw10_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl),               MP_ROM_PTR(&network_ninaw10_ioctl_obj) },
