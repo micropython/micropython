@@ -57,9 +57,52 @@ def reraise_filesystem_error(e, info):
             raise FileNotFoundError(info)
     raise
 
+class WebsockSerial:
+    def __init__(self, device, sslopt = None):
+        import websocket, urllib.parse
+        url_tup = urllib.parse.urlsplit(device)
+        port = url_tup.port
+        if port is None:
+            port = 8266
+        hostname = url_tup.hostname
+        if ":" in hostname:
+            hostname = "[" + hostname + "]"
+        self.websock = websocket.create_connection(url_tup.scheme + "://" + hostname + ":" + str(port) + "/", sslopt=sslopt)
+        self.buf = b""
+        if url_tup.password is not None:
+            self.write(url_tup.password.encode("utf8") + b"\r")
+
+    @property
+    def fd(self):
+        return self.websock.sock.fileno()
+
+    def close(self):
+        self.websock.close()
+
+    def inWaiting(self):
+        while True:
+            import array, fcntl
+            buf = array.array('h', [0])
+            FIONREAD = 0x541B
+            fcntl.ioctl(self.fd, FIONREAD, buf)
+            if buf[0] == 0:
+                break
+            self.buf += self.websock.recv()
+        return len(self.buf)
+
+    def read(self, n):
+        while len(self.buf) < n:
+            self.buf += self.websock.recv()
+        out = self.buf[:n]
+        self.buf = self.buf[n:]
+        return out
+
+    def write(self, buf):
+        self.websock.send(buf)
+
 
 class SerialTransport(Transport):
-    def __init__(self, device, baudrate=115200, wait=0, exclusive=True):
+    def __init__(self, device, baudrate=115200, wait=0, exclusive=True, sslopt={}):
         self.in_raw_repl = False
         self.use_raw_paste = True
         self.device_name = device
@@ -78,6 +121,8 @@ class SerialTransport(Transport):
             try:
                 if device.startswith("rfc2217://"):
                     self.serial = serial.serial_for_url(device, **serial_kwargs)
+                elif device.startswith("ws://") or device.startswith("wss://"):
+                    self.serial = WebsockSerial(device, sslopt=sslopt)
                 elif os.name == "nt":
                     self.serial = serial.Serial(**serial_kwargs)
                     self.serial.port = device
@@ -93,6 +138,8 @@ class SerialTransport(Transport):
                     self.serial = serial.Serial(device, **serial_kwargs)
                 break
             except OSError:
+                import traceback
+                traceback.print_exc()
                 if wait == 0:
                     continue
                 if attempt == 0:
@@ -816,6 +863,8 @@ class RemoteFile(io.IOBase):
         c = self.cmd
         c.begin(CMD_WRITE)
         c.wr_s8(self.fd)
+        if self.is_text:
+            buf = bytes(buf, 'utf8')
         c.wr_bytes(buf)
         n = c.rd_s32()
         c.end()
@@ -1204,7 +1253,8 @@ class SerialIntercept:
         self.orig_serial.close()
 
     def inWaiting(self):
-        self._check_input(False)
+        while self.orig_serial.inWaiting() > 0:
+            self._check_input(False)
         return len(self.buf)
 
     def read(self, n):
