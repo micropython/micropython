@@ -107,7 +107,7 @@ The full list of supported commands are:
   **Note:** Instead of using the ``connect`` command, there are several
   :ref:`pre-defined shortcuts <mpremote_shortcuts>` for common device paths. For
   example the ``a0`` shortcut command is equivalent to
-  ``connect /dev/ttyACM0`` (Linux), or ``c0`` for ``COM0`` (Windows).
+  ``connect /dev/ttyACM0`` (Linux), or ``c1`` for ``COM1`` (Windows).
 
   **Note:** The ``auto`` option will only detect USB serial ports, i.e. a serial
   port that has an associated USB VID/PID (i.e. CDC/ACM or FTDI-style
@@ -429,9 +429,14 @@ Shortcuts can be defined using the macro system.  Built-in shortcuts are:
 
 - ``cat``, ``edit``, ``ls``, ``cp``, ``rm``, ``mkdir``, ``rmdir``, ``touch``: Aliases for ``fs <sub-command>``
 
-Additional shortcuts can be defined by in user-configuration files, which is
-located at ``.config/mpremote/config.py``. This file should define a
-dictionary named ``commands``. The keys of this dictionary are the shortcuts
+Additional shortcuts can be defined by in the user configuration file ``mpremote/config.py``, located in:
+  # ``$XDG_CONFIG_HOME/mpremote/config.py``
+  # ``$HOME/.config/mpremote/config.py``
+  # ``%APPDATA%/mpremote/config.py``
+  # ``%USERPROFILE%/mpremote/config.py``
+  searched in that order on all platforms.
+
+This file should define a dictionary named ``commands``. The keys of this dictionary are the shortcuts
 and the values are either a string or a list-of-strings:
 
 .. code-block:: python3
