@@ -150,7 +150,7 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
         timing = &dvi_timing_640x480p_60hz;
     } else if ((width == 800 && height == 480) ||
                (width == 400 && height == 240) ||
-               (width == 800 && height == 240) ||
+               (width == 800 && height == 240)
                ) {
         timing = &dvi_timing_800x480p_60hz;
     } else {
