@@ -135,10 +135,11 @@ function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
         Module.stringToUTF8(js_obj, buf, len + 1);
         Module.setValue(out + 4, len, "i32");
         Module.setValue(out + 8, buf, "i32");
-    } else if (js_obj instanceof PyProxy) {
-        kind = PROXY_KIND_JS_PYPROXY;
-        Module.setValue(out + 4, js_obj._ref, "i32");
-    } else if (js_obj instanceof PyProxyThenable) {
+    } else if (
+        js_obj instanceof PyProxy ||
+        (typeof js_obj === "function" && "_ref" in js_obj) ||
+        js_obj instanceof PyProxyThenable
+    ) {
         kind = PROXY_KIND_JS_PYPROXY;
         Module.setValue(out + 4, js_obj._ref, "i32");
     } else {
@@ -151,7 +152,11 @@ function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
 }
 
 function proxy_convert_js_to_mp_obj_jsside_force_double_proxy(js_obj, out) {
-    if (js_obj instanceof PyProxy) {
+    if (
+        js_obj instanceof PyProxy ||
+        (typeof js_obj === "function" && "_ref" in js_obj) ||
+        js_obj instanceof PyProxyThenable
+    ) {
         const kind = PROXY_KIND_JS_OBJECT;
         const id = proxy_js_ref.length;
         proxy_js_ref[id] = js_obj;
@@ -212,6 +217,7 @@ function proxy_convert_mp_to_js_obj_jsside(value) {
             obj = (...args) => {
                 return proxy_call_python(id, args);
             };
+            obj._ref = id;
         } else if (kind === PROXY_KIND_MP_GENERATOR) {
             obj = new PyProxyThenable(id);
         } else {

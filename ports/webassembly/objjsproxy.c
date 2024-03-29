@@ -48,9 +48,17 @@ EM_JS(bool, lookup_attr, (int jsref, const char *str, uint32_t * out), {
     const attr = UTF8ToString(str);
     if (attr in base) {
         let value = base[attr];
-        if (typeof value == "function") {
+        if (typeof value === "function") {
             if (base !== globalThis) {
-                value = value.bind(base);
+                if ("_ref" in value) {
+                    // This is a proxy of a Python function, it doesn't need
+                    // binding.  And not binding it means if it's passed back
+                    // to Python then it can be extracted from the proxy as a
+                    // true Python function.
+                } else {
+                    // A function that is not a Python function.  Bind it.
+                    value = value.bind(base);
+                }
             }
         }
         proxy_convert_js_to_mp_obj_jsside(value, out);
