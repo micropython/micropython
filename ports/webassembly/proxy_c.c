@@ -289,10 +289,11 @@ void proxy_c_to_js_get_dict(uint32_t c_ref, uint32_t *out) {
 
 static const mp_obj_fun_builtin_var_t resume_obj;
 
-EM_JS(void, js_then_resolve, (uint32_t * resolve, uint32_t * reject), {
+EM_JS(void, js_then_resolve, (uint32_t * ret_value, uint32_t * resolve, uint32_t * reject), {
+    const ret_value_js = proxy_convert_mp_to_js_obj_jsside(ret_value);
     const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
     const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
-    resolve_js(null);
+    resolve_js(ret_value_js);
 });
 
 EM_JS(void, js_then_reject, (uint32_t * resolve, uint32_t * reject), {
@@ -321,7 +322,9 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t value, mp_obj_t 
     proxy_convert_mp_to_js_obj_cside(reject, out_reject);
 
     if (ret_kind == MP_VM_RETURN_NORMAL) {
-        js_then_resolve(out_resolve, out_reject);
+        uint32_t out_ret_value[PVN];
+        proxy_convert_mp_to_js_obj_cside(ret_value, out_ret_value);
+        js_then_resolve(out_ret_value, out_resolve, out_reject);
         return mp_const_none;
     } else if (ret_kind == MP_VM_RETURN_YIELD) {
         // ret_value should be a JS thenable
