@@ -111,6 +111,7 @@ void set_cpu_freq(uint32_t cpu_freq_arg) {
     SysTick_Config(cpu_freq / 1000);
 }
 
+#if !MICROPY_HW_XOSC32K || MICROPY_HW_DFLL_USB_SYNC
 static void sync_dfll48_with_xosc32kulp(void) {
     SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_ENABLE;
     while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {
@@ -131,6 +132,7 @@ static void sync_dfll48_with_xosc32kulp(void) {
     while (!SYSCTRL->PCLKSR.bit.DFLLLCKF) {
     }
 }
+#endif
 
 void check_usb_clock_recovery_mode(void) {
     #if MICROPY_HW_DFLL_USB_SYNC
