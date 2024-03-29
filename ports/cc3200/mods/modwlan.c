@@ -32,6 +32,7 @@
 #include "py/mpconfig.h"
 #include "py/obj.h"
 #include "py/objstr.h"
+#include "py/parsenum.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
@@ -1057,6 +1058,116 @@ static mp_obj_t wlan_ifconfig(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(wlan_ifconfig_obj, 1, wlan_ifconfig);
 
+static mp_obj_t wlan_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    unsigned char len = sizeof(SlNetCfgIpV4Args_t);
+    unsigned char dhcpIsOn;
+    SlNetCfgIpV4Args_t ipV4;
+    sl_NetCfgGet(SL_IPV4_STA_P2P_CL_GET_INFO, &dhcpIsOn, &len, (uint8_t *)&ipV4);
+
+    if (kwargs->used == 0) {
+        // Get config value
+        if (n_args != 2) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+
+        switch (mp_obj_str_get_qstr(args[1])) {
+            case MP_QSTR_dhcp4: {
+                return mp_obj_new_bool(dhcpIsOn);
+            }
+            case MP_QSTR_has_dhcp4: {
+                return mp_obj_new_bool(dhcpIsOn && ipV4.ipV4 != 0);
+            }
+            case MP_QSTR_addr4: {
+                mp_obj_t tuple[2] = {
+                    netutils_format_ipv4_addr((uint8_t *)&ipV4.ipV4, NETUTILS_LITTLE),
+                    netutils_format_ipv4_addr((uint8_t *)&ipV4.ipV4Mask, NETUTILS_LITTLE),
+                };
+                return mp_obj_new_tuple(2, tuple);
+            }
+            case MP_QSTR_gw4: {
+                return netutils_format_ipv4_addr((uint8_t *)&ipV4.ipV4Gateway, NETUTILS_LITTLE);
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+        return mp_const_none;
+    } else {
+        // Set config value(s)
+        if (n_args != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
+        }
+
+        for (size_t i = 0; i < kwargs->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                mp_map_elem_t *e = &kwargs->table[i];
+                switch (mp_obj_str_get_qstr(e->key)) {
+                    case MP_QSTR_dhcp4: {
+                        if (wlan_obj.mode == ROLE_AP) {
+                            if (mp_obj_is_true(e->value)) {
+                                sl_NetCfgSet(SL_IPV4_AP_P2P_GO_STATIC_ENABLE, IPCONFIG_MODE_ENABLE_IPV4,
+                                    sizeof(SlNetCfgIpV4Args_t), (_u8 *)&ipV4);
+                                SlNetAppDhcpServerBasicOpt_t dhcpParams;
+                                dhcpParams.lease_time      =  4096;                             // lease time (in seconds) of the IP Address
+                                dhcpParams.ipv4_addr_start =  ipV4.ipV4 + 1;                    // first IP Address for allocation.
+                                dhcpParams.ipv4_addr_last  =  (ipV4.ipV4 & 0xFFFFFF00) + 254;   // last IP Address for allocation.
+                                sl_NetAppStop(SL_NET_APP_DHCP_SERVER_ID);      // stop DHCP server before settings
+                                sl_NetAppSet(SL_NET_APP_DHCP_SERVER_ID, NETAPP_SET_DHCP_SRV_BASIC_OPT,
+                                    sizeof(SlNetAppDhcpServerBasicOpt_t), (_u8* )&dhcpParams);  // set parameters
+                                sl_NetAppStart(SL_NET_APP_DHCP_SERVER_ID);     // start DHCP server with new settings
+                            } else {
+                                sl_NetAppStop(SL_NET_APP_DHCP_SERVER_ID);      // stop DHCP server before settings
+                            }
+                        } else {
+                            _u8 val = 1;
+                            if (mp_obj_is_true(e->value)) {
+                                sl_NetCfgSet(SL_IPV4_STA_P2P_CL_DHCP_ENABLE, IPCONFIG_MODE_ENABLE_IPV4, 1, &val);
+                            } else {
+                                sl_NetCfgSet(SL_IPV4_STA_P2P_CL_STATIC_ENABLE, IPCONFIG_MODE_ENABLE_IPV4,
+                                    sizeof(SlNetCfgIpV4Args_t), (_u8 *)&ipV4);
+                            }
+                        }
+                        break;
+                    }
+                    case MP_QSTR_addr4: {
+                        int prefix_bits = 32;
+                        if (e->value != mp_const_none && mp_obj_is_str(e->value)) {
+                            size_t addr_len;
+                            const char *input_str = mp_obj_str_get_data(e->value, &addr_len);
+                            char *split = strchr(input_str, '/');
+                            if (split) {
+                                mp_obj_t prefix_obj = mp_parse_num_integer(split + 1, strlen(split + 1), 10, NULL);
+                                prefix_bits = mp_obj_get_int(prefix_obj);
+                                ipV4.ipV4Mask = -(1u << (32 - prefix_bits));
+                            }
+                            netutils_parse_ipv4_addr(e->value, (uint8_t *)&ipV4.ipV4, NETUTILS_LITTLE);
+                        } else if (e->value != mp_const_none) {
+                            mp_obj_t *items;
+                            mp_obj_get_array_fixed_n(e->value, 2, &items);
+                            netutils_parse_ipv4_addr(items[0], (uint8_t *)&ipV4.ipV4, NETUTILS_LITTLE);
+                            netutils_parse_ipv4_addr(items[1], (uint8_t *)&ipV4.ipV4Mask, NETUTILS_LITTLE);
+                        }
+                        ASSERT_ON_ERROR(sl_NetCfgSet(SL_IPV4_STA_P2P_CL_STATIC_ENABLE, IPCONFIG_MODE_ENABLE_IPV4, sizeof(SlNetCfgIpV4Args_t), (_u8 *)&ipV4));
+                        break;
+                    }
+                    case MP_QSTR_gw4: {
+                        netutils_parse_ipv4_addr(e->value, (uint8_t *)&ipV4.ipV4Gateway, NETUTILS_LITTLE);
+                        sl_NetCfgSet(SL_IPV4_STA_P2P_CL_STATIC_ENABLE, IPCONFIG_MODE_ENABLE_IPV4, sizeof(SlNetCfgIpV4Args_t), (_u8 *)&ipV4);
+                        break;
+                    }
+                    default: {
+                        mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(wlan_ipconfig_obj, 1, wlan_ipconfig);
+
 static mp_obj_t wlan_mode(size_t n_args, const mp_obj_t *args) {
     wlan_obj_t *self = args[0];
     if (n_args == 1) {
@@ -1260,6 +1371,7 @@ static const mp_rom_map_elem_t wlan_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disconnect),          MP_ROM_PTR(&wlan_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected),         MP_ROM_PTR(&wlan_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig),            MP_ROM_PTR(&wlan_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipconfig),            MP_ROM_PTR(&wlan_ipconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_mode),                MP_ROM_PTR(&wlan_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_ssid),                MP_ROM_PTR(&wlan_ssid_obj) },
     { MP_ROM_QSTR(MP_QSTR_auth),                MP_ROM_PTR(&wlan_auth_obj) },

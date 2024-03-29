@@ -28,6 +28,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "shared/netutils/netutils.h"
 #include "modnetwork.h"
 #include "serverstask.h"
 #include "simplelink.h"
@@ -52,6 +53,53 @@ static const mp_obj_type_t network_server_type;
 
 void mod_network_init0(void) {
 }
+
+static mp_obj_t mod_network_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    unsigned char len = sizeof(SlNetCfgIpV4Args_t);
+    unsigned char dhcpIsOn;
+    SlNetCfgIpV4Args_t ipV4;
+    sl_NetCfgGet(SL_IPV4_STA_P2P_CL_GET_INFO, &dhcpIsOn, &len, (uint8_t *)&ipV4);
+
+    if (kwargs->used == 0) {
+        // Get config value
+        if (n_args != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+        switch (mp_obj_str_get_qstr(args[0])) {
+            case MP_QSTR_dns: {
+                return netutils_format_ipv4_addr((uint8_t *)&ipV4.ipV4DnsServer, NETUTILS_LITTLE);
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+    } else {
+        // Set config value(s)
+        if (n_args != 0) {
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
+        }
+
+        for (size_t i = 0; i < kwargs->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                mp_map_elem_t *e = &kwargs->table[i];
+                switch (mp_obj_str_get_qstr(e->key)) {
+                    case MP_QSTR_dns: {
+                        netutils_parse_ipv4_addr(e->value, (uint8_t *)&ipV4.ipV4DnsServer, NETUTILS_LITTLE);
+                        sl_NetCfgSet(SL_IPV4_STA_P2P_CL_STATIC_ENABLE, IPCONFIG_MODE_ENABLE_IPV4, sizeof(SlNetCfgIpV4Args_t), (_u8 *)&ipV4);
+                        break;
+                    }
+                    default: {
+                        mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(mod_network_ipconfig_obj, 0, mod_network_ipconfig);
 
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
 static mp_obj_t network_server_init_helper(mp_obj_t self, const mp_arg_val_t *args) {
@@ -145,6 +193,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(network_server_deinit_obj, network_server_deini
 
 static const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_network) },
+    { MP_ROM_QSTR(MP_QSTR_ipconfig),            MP_ROM_PTR(&mod_network_ipconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_WLAN),                MP_ROM_PTR(&mod_network_nic_type_wlan) },
 
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
