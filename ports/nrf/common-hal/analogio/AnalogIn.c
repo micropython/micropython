@@ -76,7 +76,13 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     // Something else might have used the ADC in a different way,
     // so we completely re-initialize it.
 
-    nrf_saadc_value_t value = -1;
+    // Adding the "asm volatile" memory fence here or many places after this declaration
+    // fixes an issue with gcc13 which causes `value` to always be zero.
+    // Compiling with gcc10 or gcc12 is fine.
+    // It can also be fixed by declaring `value` to be static.
+    // I think I'd like to declare this as volatile, but that causes type errors.
+    nrf_saadc_value_t value = 0;
+    asm volatile ("" : : : "memory");
 
     const nrf_saadc_channel_config_t config = {
         .resistor_p = NRF_SAADC_RESISTOR_DISABLED,
@@ -119,10 +125,6 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     nrf_saadc_event_clear(NRF_SAADC, NRF_SAADC_EVENT_STOPPED);
 
     nrf_saadc_disable(NRF_SAADC);
-
-    if (value < 0) {
-        value = 0;
-    }
 
     // Stretch 14-bit ADC reading to 16-bit range
     return (value << 2) | (value >> 12);
