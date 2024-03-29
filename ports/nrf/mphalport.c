@@ -82,6 +82,14 @@ void mp_nrf_start_lfclk(void) {
         #endif
         nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
     }
+    // When synthesizing LFCLK from HFCLK, start HFXO if it hasn't been started yet, otherwise we
+    // would be synthesizing from HFINT, which is pointless as it's even less accurate than LFRC.
+    // Must come after starting LFCLK, otherwise the LFCLK source reverts to RC.
+    #if BLUETOOTH_LFCLK_SYNTH
+    if (!nrf_clock_hf_start_task_status_get(NRF_CLOCK)) {
+        nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_HFCLKSTART);
+    }
+    #endif
 }
 
 #if MICROPY_PY_TIME_TICKS
