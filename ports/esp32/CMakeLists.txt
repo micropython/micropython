@@ -66,4 +66,4 @@ else()
 endif()
 
 # Define the project.
-project(micropython)
+project(micropython_${MICROPY_BOARD})
