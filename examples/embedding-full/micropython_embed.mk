@@ -14,6 +14,11 @@ EMBED_EXTRA += \
 	shared/timeutils/timeutils.h \
 	shared/timeutils/modtime_mphal.h
 
+# Include source for mphal-backed stdio in the output.
+# Disable when using POSIX-backed stdio (MICROPY_VFS_POSIX).
+EMBED_EXTRA += \
+	shared/runtime/sys_stdio_mphal.c
+
 # Freeze Python modules.
 FROZEN_MANIFEST ?= manifest.py
 

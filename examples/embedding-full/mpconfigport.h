@@ -40,7 +40,7 @@
 
 // Can be enabled once either shared/runtime/sys_stdio_mphal.c or
 // extmod/vfs_posix_file.c is included in the build.
-#define MICROPY_PY_SYS_STDFILES                 (0)
+//#define MICROPY_PY_SYS_STDFILES                 (0)
 
 // Can be enabled if you provide an implementation of
 // mp_hal_set_interrupt_char() in mphal.c or include

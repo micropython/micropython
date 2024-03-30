@@ -7,6 +7,9 @@
 #include "py/builtin.h"
 #include "py/compile.h"
 #include "py/mperrno.h"
+#if MICROPY_PY_SYS_STDFILES
+#include "py/stream.h"
+#endif
 
 #if !MICROPY_VFS
 
@@ -71,3 +74,31 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     printf("%.*s", (int)len, str);
     start_of_line = (len > 0 && (str[len-1] == '\n' || str[len-1] == '\r'));
 }
+
+#if MICROPY_PY_SYS_STDFILES
+
+// Binary-mode standard input
+// Receive single character, blocking until one is available.
+int mp_hal_stdin_rx_chr(void) {
+    return 'X';
+}
+
+// Binary-mode standard output
+// Send the string of given length.
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    printf("tx: %.*s", (int)len, str);
+    return len;
+}
+
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if ((poll_flags & MP_STREAM_POLL_RD) /* && can_read */) {
+        ret |= MP_STREAM_POLL_RD;
+    }
+    if ((poll_flags & MP_STREAM_POLL_WR) /* && can_write */) {
+        ret |= MP_STREAM_POLL_WR;
+    }
+    return ret;
+}
+
+#endif

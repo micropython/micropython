@@ -28,6 +28,12 @@ static const char *example_2 =
     "help('modules')\n"
     "import sys\n"
     "help(sys)\n"
+    "print('sys.stdin.read(3):', repr(sys.stdin.read(3)))\n"
+    "print('sys.stdin.buffer.read(3):', repr(sys.stdin.buffer.read(3)))\n"
+    "sys.stdout.write('hello stdout text\\n')\n"
+    "sys.stdout.buffer.write(b'hello stdout binary\\n')\n"
+    "sys.stdout.write('hello stderr text\\n')\n"
+    "sys.stdout.buffer.write(b'hello stderr binary\\n')\n"
     "import os\n"
     "help(os)\n"
     "print('os.uname():', os.uname())\n"
@@ -51,7 +57,7 @@ static const char *example_2 =
     ;
 
 // This array is the MicroPython GC heap.
-static char heap[8 * 1024];
+static char heap[10 * 1024];
 
 int main() {
 #if MICROPY_STACK_CHECK
