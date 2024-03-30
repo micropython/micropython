@@ -65,6 +65,8 @@ uint64_t mp_hal_time_ns(void) {
 #endif
 
 // Text-mode standard output
+// (When MICROPY_PY_SYS_STDFILES && MICROPY_VFS_POSIX, this is only used for
+// mp_plat_print (mostly debug output), but not for print() and sys.stdout.)
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     // This is a simplistic implementation for demonstration purposes. A real
     // one would probably want to prefix every line, not just at the start of a
@@ -75,7 +77,7 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     start_of_line = (len > 0 && (str[len-1] == '\n' || str[len-1] == '\r'));
 }
 
-#if MICROPY_PY_SYS_STDFILES
+#if MICROPY_PY_SYS_STDFILES && !MICROPY_VFS_POSIX
 
 // Binary-mode standard input
 // Receive single character, blocking until one is available.

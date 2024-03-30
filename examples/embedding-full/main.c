@@ -28,8 +28,15 @@ static const char *example_2 =
     "help('modules')\n"
     "import sys\n"
     "help(sys)\n"
+    // Skip testing stdin when using the POSIX implementation, i.e. it is
+    // connected to actual stdin, because that makes the program wait for input,
+    // which can be inconvenient or confusing (giving the appearance of being
+    // stuck). There is no harm enabling it if you remember to provide some
+    // input.
+#if !MICROPY_VFS_POSIX
     "print('sys.stdin.read(3):', repr(sys.stdin.read(3)))\n"
     "print('sys.stdin.buffer.read(3):', repr(sys.stdin.buffer.read(3)))\n"
+#endif
     "sys.stdout.write('hello stdout text\\n')\n"
     "sys.stdout.buffer.write(b'hello stdout binary\\n')\n"
     "sys.stdout.write('hello stderr text\\n')\n"
@@ -61,12 +68,23 @@ static const char *example_2 =
     "import lfshello\n"
     "help(lfshello)\n"
     "print('lfshello.hello():', lfshello.hello())\n"
+    "vfs.mount(vfs.VfsPosix('.'), '/posix')\n"
+    "print('os.listdir(\\'/posix\\'):', os.listdir('/posix'))\n"
+    "with open('/posix/posixhello.py', 'wb') as f:\n"
+    "    f.write(b'def hello():\\n    return \"Hello from a POSIX file!\"\\n')\n"
+    "with open('/posix/posixhello.py', 'rb') as f:\n"
+    "    print('posixhello.py:', f.read())\n"
+    "sys.path.append('/posix')\n"
+    "import posixhello\n"
+    "help(posixhello)\n"
+    "print('posixhello.hello():', posixhello.hello())\n"
+    "os.unlink('/posix/posixhello.py')"
     "\n"
     "print('finish')\n"
     ;
 
 // This array is the MicroPython GC heap.
-static char heap[12 * 1024];
+static char heap[16 * 1024];
 
 int main() {
 #if MICROPY_STACK_CHECK

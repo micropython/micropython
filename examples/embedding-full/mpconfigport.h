@@ -19,9 +19,11 @@
 #define MICROPY_HW_BOARD_NAME                   "embedded"
 #define MICROPY_HW_MCU_NAME                     "C"
 
-// Enable the VFS subsystem, littlefs, importing from VFS, and the vfs module.
+// Enable the VFS subsystem, littlefs and POSIX VFS, importing from VFS, and
+// the vfs module.
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_LFS2                        (1)
+#define MICROPY_VFS_POSIX                       (1)
 #define MICROPY_READER_VFS                      (1)
 #define MICROPY_PY_VFS                          (1)
 

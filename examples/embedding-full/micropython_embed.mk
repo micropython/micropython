@@ -16,8 +16,8 @@ EMBED_EXTRA += \
 
 # Include source for mphal-backed stdio in the output.
 # Disable when using POSIX-backed stdio (MICROPY_VFS_POSIX).
-EMBED_EXTRA += \
-	shared/runtime/sys_stdio_mphal.c
+#EMBED_EXTRA += \
+#	shared/runtime/sys_stdio_mphal.c
 
 # Include library sources for littlefs 2 in the output.
 EMBED_EXTRA += littlefs2
