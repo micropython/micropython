@@ -113,7 +113,7 @@ mp_obj_t mod_network_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwa
             case MP_QSTR_dns: {
                 char addr_str[IPADDR_STRLEN_MAX];
                 ipaddr_ntoa_r(dns_getserver(0), addr_str, sizeof(addr_str));
-                return mp_obj_new_str(addr_str, strlen(addr_str));
+                return mp_obj_new_str_from_cstr(addr_str);
             }
             case MP_QSTR_prefer: {
                 return MP_OBJ_NEW_SMALL_INT(mp_mod_network_prefer_dns_use_ip_version);
@@ -219,7 +219,7 @@ mp_obj_t mod_network_nic_ipconfig(struct netif *netif, size_t n_args, const mp_o
                         char addr_str[IPADDR_STRLEN_MAX];
                         ipaddr_ntoa_r(netif_ip_addr6(netif, i), addr_str, sizeof(addr_str));
                         mp_obj_t tuple[4] = {
-                            mp_obj_new_str(addr_str, strlen(addr_str)),
+                            mp_obj_new_str_from_cstr(addr_str),
                             MP_OBJ_NEW_SMALL_INT(netif_ip6_addr_state(netif, i)),
                             MP_OBJ_NEW_SMALL_INT(netif_ip6_addr_pref_life(netif, i)), // preferred
                             MP_OBJ_NEW_SMALL_INT(netif_ip6_addr_valid_life(netif, i))

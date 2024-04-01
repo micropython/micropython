@@ -536,7 +536,7 @@ static mp_obj_t network_ninaw10_config(size_t n_args, const mp_obj_t *args, mp_m
             case MP_QSTR_ssid: {
                 nina_netinfo_t netinfo;
                 nina_netinfo(&netinfo);
-                return mp_obj_new_str(netinfo.ssid, strlen(netinfo.ssid));
+                return mp_obj_new_str_from_cstr(netinfo.ssid);
             }
             case MP_QSTR_security: {
                 nina_netinfo_t netinfo;

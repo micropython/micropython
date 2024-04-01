@@ -344,7 +344,7 @@ static mp_obj_t ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                 char ifname[NETIF_NAMESIZE + 1] = {0};
                 netif_index_to_name(netif_get_index(pppif), ifname);
                 if (ifname[0] != 0) {
-                    val = mp_obj_new_str((char *)ifname, strlen(ifname));
+                    val = mp_obj_new_str_from_cstr((char *)ifname);
                 }
             }
             break;

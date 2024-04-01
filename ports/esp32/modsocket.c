@@ -951,7 +951,7 @@ static mp_obj_t esp_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
             mp_obj_new_int(resi->ai_family),
             mp_obj_new_int(resi->ai_socktype),
             mp_obj_new_int(resi->ai_protocol),
-            mp_obj_new_str(resi->ai_canonname, strlen(resi->ai_canonname)),
+            mp_obj_new_str_from_cstr(resi->ai_canonname),
             mp_const_none
         };
 
@@ -962,7 +962,7 @@ static mp_obj_t esp_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
             char buf[16];
             ip4addr_ntoa_r(&ip4_addr, buf, sizeof(buf));
             mp_obj_t inaddr_objs[2] = {
-                mp_obj_new_str(buf, strlen(buf)),
+                mp_obj_new_str_from_cstr(buf),
                 mp_obj_new_int(ntohs(addr->sin_port))
             };
             addrinfo_objs[4] = mp_obj_new_tuple(2, inaddr_objs);

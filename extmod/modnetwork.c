@@ -127,7 +127,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_country_obj, 0, 1, network_count
 
 mp_obj_t mod_network_hostname(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
-        return mp_obj_new_str(mod_network_hostname_data, strlen(mod_network_hostname_data));
+        return mp_obj_new_str_from_cstr(mod_network_hostname_data);
     } else {
         size_t len;
         const char *str = mp_obj_str_get_data(args[0], &len);
