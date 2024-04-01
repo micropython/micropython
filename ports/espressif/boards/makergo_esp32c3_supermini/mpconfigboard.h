@@ -26,7 +26,7 @@
 
 // Board setup
 
-#define MICROPY_HW_BOARD_NAME       "makergo-esp32c3-supermini"
+#define MICROPY_HW_BOARD_NAME       "Maker Go ESP32C3 Supermini"
 #define MICROPY_HW_MCU_NAME         "ESP32-C3"
 
 // Status LED
