@@ -538,14 +538,14 @@ static bool i2s_init(machine_i2s_obj_t *self) {
         EDMA_PrepareTransfer(&transferConfig,
             self->dma_buffer_dcache_aligned, bytes_per_sample,
             (void *)destAddr, bytes_per_sample,
-            (FSL_FEATURE_SAI_FIFO_COUNT - saiConfig.fifo.fifoWatermark) * bytes_per_sample,
+            (FSL_FEATURE_SAI_FIFO_COUNTn(self->i2s_inst) - saiConfig.fifo.fifoWatermark) * bytes_per_sample,
             SIZEOF_DMA_BUFFER_IN_BYTES, kEDMA_MemoryToPeripheral);
     } else { // RX
         uint32_t srcAddr = SAI_RxGetDataRegisterAddress(self->i2s_inst, SAI_CHANNEL_0);
         EDMA_PrepareTransfer(&transferConfig,
             (void *)srcAddr, bytes_per_sample,
             self->dma_buffer_dcache_aligned, bytes_per_sample,
-            (FSL_FEATURE_SAI_FIFO_COUNT - saiConfig.fifo.fifoWatermark) * bytes_per_sample,
+            (FSL_FEATURE_SAI_FIFO_COUNTn(self->i2s_inst) - saiConfig.fifo.fifoWatermark) * bytes_per_sample,
             SIZEOF_DMA_BUFFER_IN_BYTES, kEDMA_PeripheralToMemory);
     }
 

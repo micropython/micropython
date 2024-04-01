@@ -55,7 +55,7 @@ function ci_code_size_setup {
 function ci_code_size_build {
     # check the following ports for the change in their code size
     PORTS_TO_CHECK=bmusxpd
-    SUBMODULES="lib/asf4 lib/berkeley-db-1.xx lib/mbedtls lib/micropython-lib lib/nxp_driver lib/pico-sdk lib/stm32lib lib/tinyusb"
+    SUBMODULES="lib/asf4 lib/berkeley-db-1.xx lib/mbedtls lib/micropython-lib lib/mcux-sdk lib/pico-sdk lib/stm32lib lib/tinyusb"
 
     # starts off at either the ref/pull/N/merge FETCH_HEAD, or the current branch HEAD
     git checkout -b pull_request # save the current location
@@ -206,6 +206,12 @@ function ci_mimxrt_build {
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK
     make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40 submodules
     make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1050_EVK submodules
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1050_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1060_EVK submodules
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1060_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1170_EVK submodules
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1170_EVK
 }
 
 ########################################################################################
