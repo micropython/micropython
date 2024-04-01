@@ -70,7 +70,7 @@ void *mp_openamp_remoteproc_store_alloc(void) {
 static int openamp_remoteproc_store_open(void *store, const char *path, const void **image_data) {
     metal_log(METAL_LOG_DEBUG, "store_open(): %s\n", path);
     mp_obj_t args[2] = {
-        mp_obj_new_str(path, strlen(path)),
+        mp_obj_new_str_from_cstr(path),
         MP_OBJ_NEW_QSTR(MP_QSTR_rb),
     };
 

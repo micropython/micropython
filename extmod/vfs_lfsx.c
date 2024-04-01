@@ -192,7 +192,7 @@ static mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
     // make 4-tuple with info about this entry
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(4, NULL));
     if (self->is_str) {
-        t->items[0] = mp_obj_new_str(info.name, strlen(info.name));
+        t->items[0] = mp_obj_new_str_from_cstr(info.name);
     } else {
         t->items[0] = mp_obj_new_bytes((const byte *)info.name, strlen(info.name));
     }

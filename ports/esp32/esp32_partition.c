@@ -156,7 +156,7 @@ static mp_obj_t esp32_partition_info(mp_obj_t self_in) {
         MP_OBJ_NEW_SMALL_INT(self->part->subtype),
         mp_obj_new_int_from_uint(self->part->address),
         mp_obj_new_int_from_uint(self->part->size),
-        mp_obj_new_str(&self->part->label[0], strlen(&self->part->label[0])),
+        mp_obj_new_str_from_cstr(&self->part->label[0]),
         mp_obj_new_bool(self->part->encrypted),
     };
     return mp_obj_new_tuple(6, tuple);

@@ -328,7 +328,7 @@ mp_obj_t esp_ifname(esp_netif_t *netif) {
     char ifname[NETIF_NAMESIZE + 1] = {0};
     mp_obj_t ret = mp_const_none;
     if (esp_netif_get_netif_impl_name(netif, ifname) == ESP_OK && ifname[0] != 0) {
-        ret = mp_obj_new_str((char *)ifname, strlen(ifname));
+        ret = mp_obj_new_str_from_cstr((char *)ifname);
     }
     return ret;
 }

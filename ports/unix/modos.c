@@ -40,7 +40,7 @@ static mp_obj_t mp_os_getenv(size_t n_args, const mp_obj_t *args) {
         }
         return mp_const_none;
     }
-    return mp_obj_new_str(s, strlen(s));
+    return mp_obj_new_str_from_cstr(s);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_os_getenv_obj, 1, 2, mp_os_getenv);
 

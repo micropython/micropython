@@ -307,7 +307,7 @@ static mp_obj_t ssl_context_get_ciphers(mp_obj_t self_in) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
     for (const int *cipher_list = mbedtls_ssl_list_ciphersuites(); *cipher_list; ++cipher_list) {
         const char *cipher_name = mbedtls_ssl_get_ciphersuite_name(*cipher_list);
-        mp_obj_list_append(list, MP_OBJ_FROM_PTR(mp_obj_new_str(cipher_name, strlen(cipher_name))));
+        mp_obj_list_append(list, MP_OBJ_FROM_PTR(mp_obj_new_str_from_cstr(cipher_name)));
     }
     return list;
 }
@@ -572,8 +572,8 @@ static mp_obj_t mod_ssl_cipher(mp_obj_t o_in) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
     const char *cipher_suite = mbedtls_ssl_get_ciphersuite(&o->ssl);
     const char *tls_version = mbedtls_ssl_get_version(&o->ssl);
-    mp_obj_t tuple[2] = {mp_obj_new_str(cipher_suite, strlen(cipher_suite)),
-                         mp_obj_new_str(tls_version, strlen(tls_version))};
+    mp_obj_t tuple[2] = {mp_obj_new_str_from_cstr(cipher_suite),
+                         mp_obj_new_str_from_cstr(tls_version)};
 
     return mp_obj_new_tuple(2, tuple);
 }

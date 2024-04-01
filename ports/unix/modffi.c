@@ -174,7 +174,7 @@ static mp_obj_t return_ffi_value(ffi_union_t *val, char type) {
             if (!s) {
                 return mp_const_none;
             }
-            return mp_obj_new_str(s, strlen(s));
+            return mp_obj_new_str_from_cstr(s);
         }
         case 'v':
             return mp_const_none;

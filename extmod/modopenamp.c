@@ -263,7 +263,7 @@ static void openamp_ns_callback(struct rpmsg_device *rdev, const char *name, uin
     // the Name Service (NS) announcement containing the name of the channel.
     virtio_dev_obj_t *virtio_device = metal_container_of(rdev, virtio_dev_obj_t, rvdev);
     if (virtio_device->ns_callback != mp_const_none) {
-        mp_call_function_2(virtio_device->ns_callback, mp_obj_new_int(dest), mp_obj_new_str(name, strlen(name)));
+        mp_call_function_2(virtio_device->ns_callback, mp_obj_new_int(dest), mp_obj_new_str_from_cstr(name));
     }
 }
 

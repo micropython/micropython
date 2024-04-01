@@ -103,7 +103,7 @@ static void vfs_init(void) {
     int ret = 0;
 
     #ifdef CONFIG_DISK_DRIVER_SDMMC
-    mp_obj_t args[] = { mp_obj_new_str(CONFIG_SDMMC_VOLUME_NAME, strlen(CONFIG_SDMMC_VOLUME_NAME)) };
+    mp_obj_t args[] = { mp_obj_new_str_from_cstr(CONFIG_SDMMC_VOLUME_NAME) };
     bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_disk_access_type, make_new)(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/sd";
     #elif defined(CONFIG_FLASH_MAP) && FLASH_AREA_LABEL_EXISTS(storage)
@@ -113,7 +113,7 @@ static void vfs_init(void) {
     #endif
 
     if ((bdev != NULL)) {
-        mount_point = mp_obj_new_str(mount_point_str, strlen(mount_point_str));
+        mount_point = mp_obj_new_str_from_cstr(mount_point_str);
         ret = mp_vfs_mount_and_chdir_protected(bdev, mount_point);
         // TODO: if this failed, make a new file system and try to mount again
     }
