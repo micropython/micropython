@@ -42,11 +42,18 @@ typedef struct _machine_spi_obj_t {
 
 machine_spi_obj_t *spi_obj[MAX_SPI] = { NULL };
 
-static inline machine_spi_obj_t *spi_obj_alloc() {
+static inline machine_spi_obj_t *spi_obj_alloc(bool is_slave) {
     for (uint8_t i = 0; i < MAX_SPI; i++)
     {
         if (spi_obj[i] == NULL) {
-            spi_obj[i] = mp_obj_malloc(machine_spi_obj_t, &machine_spi_type);
+
+            const mp_obj_type_t *obj_type;
+            if (is_slave) {
+                obj_type = &machine_spi_slave_type;
+            } else {
+                obj_type = &machine_spi_type;
+            }
+            spi_obj[i] = mp_obj_malloc(machine_spi_obj_t, obj_type);
             return spi_obj[i];
         }
     }
@@ -152,7 +159,7 @@ static void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         self->sck->addr, self->mosi->addr, self->miso->addr);
 }
 
-mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+mp_obj_t machine_spi_master_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -175,11 +182,11 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     int spi_id = mp_obj_get_int(args[ARG_id].u_obj);
 
     if (spi_id != 0) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI should be configured in master mode!"));
     }
 
     // Get static peripheral object.
-    machine_spi_obj_t *self = spi_obj_alloc();
+    machine_spi_obj_t *self = spi_obj_alloc(false);
 
     // set baudrate if provided
     if (args[ARG_baudrate].u_int != -1) {
@@ -231,6 +238,92 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         cyhal_spi_set_frequency(&self->spi_obj, self->baudrate);
         // Initialise the SPI peripheral if any arguments given, or it was not initialised previously.
         cy_rslt_t result = cyhal_spi_init(&self->spi_obj, self->mosi->addr, self->miso->addr, self->sck->addr, NC, NULL, self->bits, mode, false);
+        if (result != CY_RSLT_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI initialisation failed with return code %lx !"), result);
+        }
+    }
+    return MP_OBJ_FROM_PTR(self);
+}
+
+mp_obj_t machine_spi_slave_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
+        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_POLARITY} },
+        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
+        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_BITS} },
+        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
+        { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    };
+
+    // Parse the arguments.
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // Get the SPI bus id.
+    // There are no separate spi blocks. Now id is used to identify the master mode
+    int spi_id = mp_obj_get_int(args[ARG_id].u_obj);
+
+    if (spi_id != 1) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI should be configured in slave mode!"));
+    }
+
+    // Get static peripheral object.
+    machine_spi_obj_t *self = spi_obj_alloc(true);
+
+    // set baudrate if provided
+    if (args[ARG_baudrate].u_int != -1) {
+        self->baudrate = args[ARG_baudrate].u_int;
+    }
+
+    // set polarity(CPOL) if provided
+    if (args[ARG_polarity].u_int != -1) {
+        self->polarity = args[ARG_polarity].u_int;
+    }
+
+    // set phase(CPHA) if provided
+    if (args[ARG_phase].u_int != -1) {
+        self->phase = args[ARG_phase].u_int;
+    }
+
+    // set bits if provided
+    if (args[ARG_bits].u_int != -1) {
+        self->bits = args[ARG_bits].u_int;
+    }
+
+    // set firstbit if provided(LSB or MSB first)
+    if (args[ARG_firstbit].u_int != -1) {
+        self->firstbit = args[ARG_firstbit].u_int;
+    }
+
+    // Set SCK/MOSI/MISO pins if configured.
+    if (args[ARG_sck].u_obj != mp_const_none) {
+        spi_sck_alloc(self, args[ARG_sck].u_obj);
+    } else {
+        mp_raise_TypeError(MP_ERROR_TEXT("SCK pin must be provided"));
+    }
+
+    if (args[ARG_mosi].u_obj != mp_const_none) {
+        spi_mosi_alloc(self, args[ARG_mosi].u_obj);
+    } else {
+        mp_raise_TypeError(MP_ERROR_TEXT("MOSI pin must be provided"));
+    }
+
+    if (args[ARG_miso].u_obj != mp_const_none) {
+        spi_miso_alloc(self, args[ARG_miso].u_obj);
+    } else {
+        mp_raise_TypeError(MP_ERROR_TEXT("MISO pin must be provided"));
+    }
+
+    if (n_args > 1 || n_kw > 0) {
+        cyhal_spi_mode_t mode = mode_select(self->firstbit, self->polarity, self->phase);
+        // set the baudrate
+        cyhal_spi_set_frequency(&self->spi_obj, self->baudrate);
+        // Initialise the SPI peripheral if any arguments given, or it was not initialised previously.
+        cy_rslt_t result = cyhal_spi_init(&self->spi_obj, self->mosi->addr, self->miso->addr, self->sck->addr, NC, NULL, self->bits, mode, true);
         if (result != CY_RSLT_SUCCESS) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI initialisation failed with return code %lx !"), result);
         }
@@ -334,11 +427,65 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_spi_type,
     MP_QSTR_SPI,
     MP_TYPE_FLAG_NONE,
-    make_new, machine_spi_make_new,
+    make_new, machine_spi_master_make_new,
     print, machine_spi_print,
     protocol, &machine_spi_p,
     locals_dict, &mp_machine_spi_locals_dict
     );
+
+#if MICROPY_PY_MACHINE_SPI_SLAVE
+
+static mp_obj_t machine_spi_slave_deinit(mp_obj_t self_in) {
+    mp_obj_base_t *self = MP_OBJ_TO_PTR(self_in);
+    machine_spi_deinit(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_slave_deinit_obj, machine_spi_slave_deinit);
+
+static mp_obj_t machine_spi_slave_configure_receive_buffer(mp_obj_t self_in, mp_obj_t buf_in) {
+    /*machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+
+    cy_rslt_t result = cyhal_spi_slave_config_write_buffer(&self->i2c_obj, bufinfo.buf, bufinfo.len);
+    i2c_assert_raise_val("I2C Slave configure receive buffer failed with return code %lx !", result);*/
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_spi_slave_conf_rx_buffer_obj, machine_spi_slave_configure_receive_buffer);
+
+static mp_obj_t machine_spi_slave_configure_transmit_buffer(mp_obj_t self_in, mp_obj_t buf_in) {
+    /*machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+
+    cy_rslt_t result = cyhal_spi_slave_config_read_buffer(&self->i2c_obj, bufinfo.buf, bufinfo.len);
+    i2c_assert_raise_val("I2C Slave configure receive buffer failed with return code %lx !", result);
+    */
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_spi_slave_conf_tx_buffer_obj, machine_spi_slave_configure_transmit_buffer);
+
+
+static const mp_rom_map_elem_t machine_spi_slave_locals_dict_table[] = {
+    // Functions
+    { MP_ROM_QSTR(MP_QSTR_conf_receive_buffer),         MP_ROM_PTR(&machine_spi_slave_conf_rx_buffer_obj) },
+    { MP_ROM_QSTR(MP_QSTR_conf_transmit_buffer),        MP_ROM_PTR(&machine_spi_slave_conf_tx_buffer_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),                      MP_ROM_PTR(&machine_spi_slave_deinit_obj) },
+};
+static MP_DEFINE_CONST_DICT(machine_spi_slave_locals_dict, machine_spi_slave_locals_dict_table);
+
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_spi_slave_type,
+    MP_QSTR_SPISlave,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_spi_slave_make_new,
+    print, machine_spi_print,
+    locals_dict, &machine_spi_slave_locals_dict
+    );
+
+#endif
 
 void mod_spi_deinit() {
     for (uint8_t i = 0; i < MAX_SPI; i++) {
