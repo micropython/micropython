@@ -2308,6 +2308,10 @@ mp_obj_t mp_obj_new_str(const char *data, size_t len) {
     }
 }
 
+mp_obj_t mp_obj_new_str_from_cstr(const char *str) {
+    return mp_obj_new_str(str, strlen(str));
+}
+
 mp_obj_t mp_obj_str_intern(mp_obj_t str) {
     GET_STR_DATA_LEN(str, data, len);
     return mp_obj_new_str_via_qstr((const char *)data, len);
