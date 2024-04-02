@@ -297,7 +297,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(epaperdisplay_epaperdisplay_refresh_obj, epaperdisplay
 //|     """Time, in fractional seconds, until the ePaper display can be refreshed."""
 STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_get_time_to_refresh(mp_obj_t self_in) {
     epaperdisplay_epaperdisplay_obj_t *self = native_display(self_in);
-    return mp_obj_new_float(common_hal_epaperdisplay_epaperdisplay_get_time_to_refresh(self) / 1000.0);
+    // band aid fix for <https://github.com/adafruit/circuitpython/issues/9129>
+    // sleeping for display.time_to_refresh might not be long enough due to rounding error (?)
+    uint32_t refresh_ms = common_hal_epaperdisplay_epaperdisplay_get_time_to_refresh(self);
+    return mp_obj_new_float((refresh_ms + 100) / 1000.0);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(epaperdisplay_epaperdisplay_get_time_to_refresh_obj, epaperdisplay_epaperdisplay_obj_get_time_to_refresh);
 
