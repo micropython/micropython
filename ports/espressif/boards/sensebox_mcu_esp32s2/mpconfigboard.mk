@@ -11,6 +11,7 @@ CIRCUITPY_ESP_FLASH_FREQ = 80m
 
 CIRCUITPY_ESPCAMERA = 0
 
+CIRCUITPY_REQUIRE_I2C_PULLUPS = 0
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
