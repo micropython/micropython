@@ -56,7 +56,14 @@ MP_WEAK const mcu_pin_obj_t *common_hal_analogio_analogin_validate_pin(mp_obj_t 
 //|         """Use the AnalogIn on the given pin. The reference voltage varies by
 //|         platform so use ``reference_voltage`` to read the configured setting.
 //|
-//|         :param ~microcontroller.Pin pin: the pin to read from"""
+//|         :param ~microcontroller.Pin pin: the pin to read from
+//|
+//|         **Limitations:** On Espressif ESP32, `AnalogIn` is not available when WiFi is in use:
+//|         the hardware makes use of the ADC. Attempts to use `AnalogIn` will raise `espidf.IDFError`.
+//|         On other Espressif chips, the ADC is available, but is shared with WiFi.
+//|         WiFi use takes precedence and may temporarily cause `espidf.IDFError` to be raise.
+//|         when you read a value. You can retry the read.
+//|         """
 //|         ...
 STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
     mp_uint_t n_args, size_t n_kw, const mp_obj_t *args) {
