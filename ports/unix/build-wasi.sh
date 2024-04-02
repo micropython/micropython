@@ -2,24 +2,30 @@
 
 # prerequisites
 #
-# https://github.com/WebAssembly/wasi-libc/pull/467
-# https://github.com/WebAssembly/wasi-libc/pull/473
-# https://github.com/WebAssembly/binaryen/pull/6294
-# https://github.com/WebAssembly/binaryen/pull/6259
+# https://github.com/WebAssembly/wasi-libc/pull/483 (wasi-sdk 22.0?)
+# https://github.com/WebAssembly/wasi-libc/pull/473 (wasi-sdk 22.0?)
+# https://github.com/WebAssembly/binaryen/pull/6294 (version_117)
+# https://github.com/WebAssembly/binaryen/pull/6259 (version_117)
+# https://github.com/llvm/llvm-project/pull/84137 (LLVM 19?)
 #
 # WASI_SDK: wasi-sdk 21.0
 # WASM_OPT: binaryen wasm-opt built with the above patches
 # WASI_SYSROOT: wasi-libc built with the above patches
+# CLANG: clang built with the above patches
 
 WASI_SDK=${WASI_SDK:-/opt/wasi-sdk-21.0}
 WASI_SYSROOT=${WASI_SYSROOT:-${HOME}/git/wasi-libc/sysroot}
 BINARYEN_BIN=${BINARYEN_BIN:-${HOME}/git/wasm/binaryen/b/bin}
 WASM_OPT=${WASM_OPT:-${BINARYEN_BIN}/wasm-opt}
+RESOURCE_DIR=$(${WASI_SDK}/bin/clang --print-resource-dir)
+LLVM_BUILD_DIR=${LLVM_BUILD_DIR:-/Volumes/PortableSSD/llvm/build}
+CLANG=${CLANG:-${LLVM_BUILD_DIR}/bin/clang}
+CC="${CLANG} --sysroot ${WASI_SYSROOT} -resource-dir ${RESOURCE_DIR}"
 
 CFLAGS="-D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_MMAN -mllvm -wasm-enable-sjlj" \
-LDFLAGS="-lwasi-emulated-process-clocks -lwasi-emulated-signal -lwasi-emulated-mman" \
+LDFLAGS="-lwasi-emulated-process-clocks -lwasi-emulated-signal -lwasi-emulated-mman -lsetjmp" \
 make \
-CC="${WASI_SDK}/bin/clang --sysroot=${WASI_SYSROOT}" \
+CC="${CC}" \
 LD="${WASI_SDK}/bin/wasm-ld" \
 STRIP="${WASI_SDK}/bin/strip" \
 SIZE="${WASI_SDK}/bin/size" \
