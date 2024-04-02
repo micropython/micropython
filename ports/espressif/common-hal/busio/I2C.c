@@ -40,9 +40,15 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     // support I2C on these pins.
     //
     // 46 is also input-only so it'll never work.
+    #if CIRCUITPY_I2C_ALLOW_STRAPPING_PINS
+    if (scl->number == 46 || sda->number == 46) {
+        raise_ValueError_invalid_pins();
+    }
+    #else
     if (scl->number == 45 || scl->number == 46 || sda->number == 45 || sda->number == 46) {
         raise_ValueError_invalid_pins();
     }
+    #endif
 
     #if CIRCUITPY_REQUIRE_I2C_PULLUPS
     // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
