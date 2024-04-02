@@ -37,7 +37,7 @@ You can also build the standard CMake way.  The final firmware is found in
 the top-level of the CMake build directory (`build` by default) and is
 called `firmware.uf2`.
 
-If you are using a different board other than a Rasoberry Pi Pico, then you should
+If you are using a board other than a Raspberry Pi Pico, you should
 pass the board name to the build; e.g. for Raspberry Pi Pico W:
 
     $ make BOARD=RPI_PICO_W submodules
