@@ -36,11 +36,22 @@ CONFIG_ESP_MAIN_TASK_STACK_SIZE=16384
 # CONFIG_ESP_DEBUG_OCDAWARE is not set
 # end of ESP System Settings
 
+
 #
 # Wi-Fi
 #
 # CONFIG_ESP_WIFI_NVS_ENABLED is not set
 # end of Wi-Fi
+
+#
+# FreeRTOS
+#
+
+#
+# Kernel
+#
+CONFIG_FREERTOS_HZ=1000
+# end of Kernel
 
 #
 # LWIP
