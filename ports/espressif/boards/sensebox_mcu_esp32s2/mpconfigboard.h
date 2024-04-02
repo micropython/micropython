@@ -31,9 +31,7 @@
 
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO1)
 
-
 #define CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP 1
-#define CIRCUITPY_I2C_ALLOW_STRAPPING_PINS 1
 
 #define CIRCUITPY_BOARD_I2C         (2)
 #define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO40, .sda = &pin_GPIO39}, \
