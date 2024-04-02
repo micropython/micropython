@@ -175,10 +175,10 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         sideset_pin = bit_clock;
 
         if (left_justified) {
-            program_len = sizeof(i2s_program_left_justified) / sizeof(i2s_program_left_justified[0]);
+            program_len = MP_ARRAY_SIZE(i2s_program_left_justified);
             program = i2s_program_left_justified;
         } else {
-            program_len = sizeof(i2s_program) / sizeof(i2s_program[0]);
+            program_len = MP_ARRAY_SIZE(i2s_program);
             program = i2s_program;
         }
 
@@ -186,10 +186,10 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         sideset_pin = word_select;
 
         if (left_justified) {
-            program_len = sizeof(i2s_program_left_justified_swap) / sizeof(i2s_program_left_justified_swap[0]);
+            program_len = MP_ARRAY_SIZE(i2s_program_left_justified_swap);
             program = i2s_program_left_justified_swap;
         } else {
-            program_len = sizeof(i2s_program_swap) / sizeof(i2s_program_swap[0]);
+            program_len = MP_ARRAY_SIZE(i2s_program_swap);
             program = i2s_program_swap;
         }
 
