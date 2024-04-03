@@ -110,7 +110,7 @@ void board_init(void) {
         false,  // color_bits_inverted
         0x000000,  // highlight_color
         refresh_sequence, sizeof(refresh_sequence),
-        2.0,  // refresh_time
+        28.0,  // refresh_time
         NULL,  // busy_pin
         false,  // busy_state
         40.0, // seconds_per_frame
