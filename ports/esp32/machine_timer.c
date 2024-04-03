@@ -54,7 +54,7 @@ typedef struct _machine_timer_obj_t {
     mp_uint_t index;
 
     mp_uint_t repeat;
-    // ESP32 timers are 64-bit
+    // ESP32 timers are 64 or 54-bit
     uint64_t period;
 
     mp_obj_t callback;
@@ -84,13 +84,22 @@ static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
     machine_timer_obj_t *self = self_in;
     qstr mode = self->repeat ? MP_QSTR_PERIODIC : MP_QSTR_ONE_SHOT;
     uint64_t period = self->period / (TIMER_SCALE / 1000); // convert to ms
+    #if CONFIG_IDF_TARGET_ESP32C3
+    mp_printf(print, "Timer(%u, mode=%q, period=%lu)", self->group, mode, period);
+    #else
     mp_printf(print, "Timer(%u, mode=%q, period=%lu)", (self->group << 1) | self->index, mode, period);
+    #endif
 }
 
 static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+    #if CONFIG_IDF_TARGET_ESP32C3
+    mp_uint_t group = mp_obj_get_int(args[0]) & 1;
+    mp_uint_t index = 0;
+    #else
     mp_uint_t group = (mp_obj_get_int(args[0]) >> 1) & 1;
     mp_uint_t index = mp_obj_get_int(args[0]) & 1;
+    #endif
 
     machine_timer_obj_t *self = NULL;
 
