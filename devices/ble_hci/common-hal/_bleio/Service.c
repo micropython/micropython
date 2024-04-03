@@ -53,7 +53,7 @@ uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uu
 void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary) {
     if (_common_hal_bleio_service_construct(self, uuid, is_secondary,
         mp_obj_new_list(0, NULL)) != 0) {
-        mp_raise_RuntimeError(translate("Failed to add service"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Failed to add service"));
     }
 }
 
@@ -89,7 +89,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
 
     if (self->handle != common_hal_bleio_adapter_obj.last_added_service_handle) {
         mp_raise_bleio_BluetoothError(
-            translate("Characteristic can only be added to most recently added service"));
+            MP_ERROR_TEXT("Characteristic can only be added to most recently added service"));
     }
     characteristic->decl_handle = bleio_adapter_add_attribute(
         &common_hal_bleio_adapter_obj, MP_OBJ_TO_PTR(characteristic));

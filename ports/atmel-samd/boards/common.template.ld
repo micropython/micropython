@@ -95,13 +95,5 @@ SECTIONS
         _ebss = .;
     } >RAM
 
-    /* this just checks there is enough RAM for the requested stack. */
-    .stack (NOLOAD) :
-    {
-        . = ALIGN(4);
-        . = . + ${CIRCUITPY_DEFAULT_STACK_SIZE};
-        . = ALIGN(4);
-    } >RAM
-
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }

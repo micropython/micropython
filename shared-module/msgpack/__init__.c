@@ -71,7 +71,7 @@ STATIC void read(msgpack_stream_t *s, void *buf, mp_uint_t size) {
         mp_raise_msg(&mp_type_EOFError, NULL);
     }
     if (ret < size) {
-        mp_raise_ValueError(translate("short read"));
+        mp_raise_ValueError(MP_ERROR_TEXT("short read"));
     }
 }
 
@@ -336,7 +336,7 @@ STATIC void pack(mp_obj_t obj, msgpack_stream_t *s, mp_obj_t default_handler) {
             // this also precludes some valid outputs
             pack(mp_call_function_1(default_handler, obj), s, mp_const_none);
         } else {
-            mp_raise_ValueError(translate("no default packer"));
+            mp_raise_ValueError(MP_ERROR_TEXT("no default packer"));
         }
     }
 }
@@ -509,7 +509,7 @@ STATIC mp_obj_t unpack(msgpack_stream_t *s, mp_obj_t ext_hook, bool use_list) {
             return unpack_ext(s, read_size(s, code - 0xc7), ext_hook);
         case 0xc1:      // never used
         default:
-            mp_raise_ValueError(translate("Invalid format"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Invalid format"));
     }
 }
 

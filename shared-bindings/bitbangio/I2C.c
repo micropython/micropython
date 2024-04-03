@@ -118,7 +118,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_i2c_obj___exit___obj, 4, 4,
 
 static void check_lock(bitbangio_i2c_obj_t *self) {
     if (!shared_module_bitbangio_i2c_has_lock(self)) {
-        mp_raise_RuntimeError(translate("Function requires lock"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Function requires lock"));
     }
 }
 

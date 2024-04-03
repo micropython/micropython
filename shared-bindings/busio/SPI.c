@@ -121,7 +121,7 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj, MP_QSTR_miso);
 
     if (!miso && !mosi) {
-        mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Must provide MISO or MOSI pin"));
     }
 
     common_hal_busio_spi_construct(self, clock, mosi, miso, args[ARG_half_duplex].u_bool);
@@ -161,7 +161,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_spi_obj___exit___obj, 4, 4, bus
 STATIC void check_lock(busio_spi_obj_t *self) {
     asm ("");
     if (!common_hal_busio_spi_has_lock(self)) {
-        mp_raise_RuntimeError(translate("Function requires lock"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Function requires lock"));
     }
 }
 
@@ -436,7 +436,7 @@ STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args
     in_length *= in_stride_in_bytes;
 
     if (out_length != in_length) {
-        mp_raise_ValueError(translate("buffer slices must be of equal length"));
+        mp_raise_ValueError(MP_ERROR_TEXT("buffer slices must be of equal length"));
     }
 
     if (out_length == 0) {
@@ -492,7 +492,7 @@ STATIC MP_DEFINE_CONST_DICT(busio_spi_locals_dict, busio_spi_locals_dict_table);
 MP_DEFINE_CONST_OBJ_TYPE(
     busio_spi_type,
     MP_QSTR_SPI,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, busio_spi_make_new,
     locals_dict, &busio_spi_locals_dict
     );

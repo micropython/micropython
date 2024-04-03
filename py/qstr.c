@@ -33,6 +33,8 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 
+// CIRCUITPY-CHANGE: changes for TRANSLATION
+
 // NOTE: we are using linear arrays to store and search for qstr's (unique strings, interned strings)
 // ultimately we will replace this with a static hash table of some kind
 
@@ -119,6 +121,7 @@ extern const qstr_pool_t MICROPY_QSTR_EXTRA_POOL;
 #define CONST_POOL mp_qstr_const_pool
 #endif
 
+// CIRCUITPY-CHANGE
 void qstr_reset(void) {
     MP_STATE_VM(last_pool) = (qstr_pool_t *)&CONST_POOL; // we won't modify the const_pool since it has no allocated room left
     MP_STATE_VM(qstr_last_chunk) = NULL;
@@ -367,7 +370,7 @@ STATIC const byte *find_uncompressed_string(uint8_t n) {
 
 // Given a compressed string in src, decompresses it into dst.
 // dst must be large enough (use MP_MAX_UNCOMPRESSED_TEXT_LEN+1).
-void mp_decompress_rom_string(byte *dst, const mp_rom_error_text_t src_chr) {
+void mp_decompress_rom_string(byte *dst, mp_rom_error_text_t src_chr) {
     // Skip past the 0xff marker.
     const byte *src = (byte *)src_chr + 1;
     // Need to add spaces around compressed words, except for the first (i.e. transition from 1<->2).

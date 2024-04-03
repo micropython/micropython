@@ -80,6 +80,7 @@ static inline int fp_isless1(float x) {
 
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 #define FPTYPE double
 #define FPCONST(x) x
 #define FPROUND_TO_ONE 0.999999999995
@@ -230,7 +231,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         }
     } else {
         // Build positive exponent.
-        // We don't modify f at this point to avoid innaccuracies from
+        // We don't modify f at this point to avoid inaccuracies from
         // scaling it.  Instead, we find the product of powers of 10
         // that is not greater than it, and use that to start the
         // mantissa.

@@ -72,7 +72,7 @@ STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_get_buffer_raise(args[ARG_input].u_obj, &input_bufinfo, MP_BUFFER_READ);
     int inlen = input_bufinfo.len;
     if (inlen % width != 0) {
-        mp_raise_ValueError_varg(translate("Input buffer length (%d) must be a multiple of the strand count (%d)"), inlen, width);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Input buffer length (%d) must be a multiple of the strand count (%d)"), inlen, width);
     }
 
     mp_buffer_info_t output_bufinfo;

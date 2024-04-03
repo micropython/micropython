@@ -152,7 +152,7 @@ STATIC MP_DEFINE_CONST_DICT(analogio_analogin_locals_dict, analogio_analogin_loc
 MP_DEFINE_CONST_OBJ_TYPE(
     analogio_analogin_type,
     MP_QSTR_AnalogIn,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, analogio_analogin_make_new,
     locals_dict, &analogio_analogin_locals_dict
     );

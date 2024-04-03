@@ -103,7 +103,7 @@ mp_int_t common_hal_bleio_connection_get_max_packet_length(
 
     sl_status_t sc = sl_bt_gatt_server_get_mtu(self->conn_handle, &self->mtu);
     if (sc != SL_STATUS_OK) {
-        mp_raise_bleio_BluetoothError(translate("gatt_server_get_mtu fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("gatt_server_get_mtu fail."));
     }
 
     return self->mtu;
@@ -142,7 +142,7 @@ mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(
     bleio_connection_ensure_connected(self);
     if (NULL == self->connection->remote_service_list) {
         mp_raise_bleio_BluetoothError(
-            translate("Create new remote service list fail."));
+            MP_ERROR_TEXT("Create new remote service list fail."));
         return mp_const_none;
     }
     vTaskDelay(500 / portTICK_PERIOD_MS);
@@ -151,7 +151,7 @@ mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(
 
         sc = sl_bt_gatt_discover_primary_services(self->connection->conn_handle);
         if (SL_STATUS_OK != sc) {
-            mp_raise_bleio_BluetoothError(translate("Discover uuid fail."));
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Discover uuid fail."));
             return mp_const_none;
         }
 
@@ -181,7 +181,7 @@ mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(
         while ((uuid_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (!mp_obj_is_type(uuid_obj, &bleio_uuid_type)) {
                 mp_raise_TypeError(
-                    translate("non-UUID found in service_uuids_whitelist"));
+                    MP_ERROR_TEXT("non-UUID found in service_uuids_whitelist"));
             }
             uuid = MP_OBJ_TO_PTR(uuid_obj);
 
@@ -199,7 +199,7 @@ mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(
             }
 
             if (SL_STATUS_OK != sc) {
-                mp_raise_bleio_BluetoothError(translate("Discover fail."));
+                mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Discover fail."));
                 return mp_const_none;
             }
 
@@ -230,7 +230,7 @@ mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(
         self->connection->remote_service_list->items);
 
     if (NULL == services_tuple) {
-        mp_raise_ValueError(translate("Create new service tuple fail."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Create new service tuple fail."));
         return mp_const_none;
     }
     return services_tuple;

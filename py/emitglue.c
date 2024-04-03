@@ -43,6 +43,7 @@
 #define DEBUG_printf DEBUG_printf
 #define DEBUG_OP_printf(...) DEBUG_printf(__VA_ARGS__)
 #else // don't print debugging info
+#define DEBUG_PRINT (0)
 #define DEBUG_printf(...) (void)0
 #define DEBUG_OP_printf(...) (void)0
 #endif
@@ -87,7 +88,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     mp_prof_extract_prelude(code, prelude);
     #endif
 
-    #ifdef DEBUG_PRINT
+    #if defined(DEBUG_PRINT) && DEBUG_PRINT
     #if !(MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS)
     const size_t len = 0;
     #endif
@@ -149,7 +150,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     rc->n_pos_args = n_pos_args;
     rc->type_sig = type_sig;
 
-    #ifdef DEBUG_PRINT
+    #if DEBUG_PRINT
     DEBUG_printf("assign native: kind=%d fun=%p len=" UINT_FMT " n_pos_args=" UINT_FMT " flags=%x\n", kind, fun_data, fun_len, n_pos_args, (uint)scope_flags);
     for (mp_uint_t i = 0; i < fun_len; i++) {
         if (i > 0 && i % 16 == 0) {

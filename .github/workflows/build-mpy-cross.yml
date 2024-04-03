@@ -28,12 +28,13 @@ jobs:
       OS_static-raspbian: linux-raspbian
     steps:
     - name: Set up repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: false
+        show-progress: false
         fetch-depth: 1
     - name: Set up python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
     - name: Set up submodules
@@ -53,7 +54,7 @@ jobs:
         sudo apt-get install -y mingw-w64
 
     - name: Build mpy-cross.${{ matrix.mpy-cross }}
-      run: make -C mpy-cross -j2 -f Makefile.${{ matrix.mpy-cross }}
+      run: make -C mpy-cross -j4 -f Makefile.${{ matrix.mpy-cross }}
 
     - name: Set output
       run: |
@@ -61,7 +62,7 @@ jobs:
         echo >> $GITHUB_ENV "OS=${{ env[format('OS_{0}', matrix.mpy-cross)] }}"
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: mpy-cross.${{ env.EX }}
         path: mpy-cross/build-${{ matrix.mpy-cross }}/mpy-cross.${{ env.EX }}

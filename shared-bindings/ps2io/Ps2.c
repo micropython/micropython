@@ -28,7 +28,6 @@
 #include <stdint.h>
 
 #include "shared/runtime/context_manager_helpers.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/runtime0.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -127,7 +126,7 @@ STATIC mp_obj_t ps2io_ps2_obj_popleft(mp_obj_t self_in) {
 
     int b = common_hal_ps2io_ps2_popleft(self);
     if (b < 0) {
-        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_Ps2_space_buffer);
+        mp_raise_IndexError_varg(MP_ERROR_TEXT("pop from empty %q"), MP_QSTR_Ps2_space_buffer);
     }
     return MP_OBJ_NEW_SMALL_INT(b);
 }
@@ -151,7 +150,7 @@ STATIC mp_obj_t ps2io_ps2_obj_sendcmd(mp_obj_t self_in, mp_obj_t ob) {
     mp_int_t cmd = mp_obj_get_int(ob) & 0xff;
     int resp = common_hal_ps2io_ps2_sendcmd(self, cmd);
     if (resp < 0) {
-        mp_raise_RuntimeError(translate("Failed sending command."));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Failed sending command."));
     }
     return MP_OBJ_NEW_SMALL_INT(resp);
 }

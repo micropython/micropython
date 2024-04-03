@@ -144,7 +144,7 @@ STATIC MP_DEFINE_CONST_DICT(vectorio_polygon_locals_dict, vectorio_polygon_local
 MP_DEFINE_CONST_OBJ_TYPE(
     vectorio_polygon_type,
     MP_QSTR_Polygon,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, vectorio_polygon_make_new,
     locals_dict, &vectorio_polygon_locals_dict,
     protocol, &polygon_draw_protocol

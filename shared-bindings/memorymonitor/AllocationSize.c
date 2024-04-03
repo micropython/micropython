@@ -135,19 +135,19 @@ STATIC mp_obj_t memorymonitor_allocationsize_unary_op(mp_unary_op_t op, mp_obj_t
 STATIC mp_obj_t memorymonitor_allocationsize_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
     if (value == mp_const_none) {
         // delete item
-        mp_raise_AttributeError(translate("Cannot delete values"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Cannot delete values"));
     } else {
         memorymonitor_allocationsize_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
         if (mp_obj_is_type(index_obj, &mp_type_slice)) {
-            mp_raise_NotImplementedError(translate("Slices not supported"));
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("Slices not supported"));
         } else {
             size_t index = mp_get_index(&memorymonitor_allocationsize_type, common_hal_memorymonitor_allocationsize_get_len(self), index_obj, false);
             if (value == MP_OBJ_SENTINEL) {
                 // load
                 return MP_OBJ_NEW_SMALL_INT(common_hal_memorymonitor_allocationsize_get_item(self, index));
             } else {
-                mp_raise_AttributeError(translate("Read-only"));
+                mp_raise_AttributeError(MP_ERROR_TEXT("Read-only"));
             }
         }
     }
@@ -167,7 +167,7 @@ STATIC MP_DEFINE_CONST_DICT(memorymonitor_allocationsize_locals_dict, memorymoni
 MP_DEFINE_CONST_OBJ_TYPE(
     memorymonitor_allocationsize_type,
     MP_QSTR_AllocationSize,
-    MP_TYPE_FLAG_ITER_IS_GETITER,
+    MP_TYPE_FLAG_ITER_IS_GETITER | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, memorymonitor_allocationsize_make_new,
     subscr, memorymonitor_allocationsize_subscr,
     unary_op, memorymonitor_allocationsize_unary_op,

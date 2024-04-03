@@ -27,6 +27,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "shared-bindings/supervisor/__init__.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
@@ -53,6 +54,11 @@
 
 #if CIRCUITPY_USB_MIDI
 #include "shared-module/usb_midi/__init__.h"
+#endif
+
+
+#if CIRCUITPY_USB_VIDEO
+#include "shared-module/usb_video/__init__.h"
 #endif
 
 #include "tusb.h"
@@ -85,7 +91,27 @@ MP_WEAK void post_usb_init(void) {
 }
 
 void usb_init(void) {
+
+    usb_identification_t defaults;
+    usb_identification_t *identification;
+    if (custom_usb_identification != NULL) {
+        identification = custom_usb_identification;
+    } else {
+        // This compiles to less code than using a struct initializer.
+        defaults.vid = USB_VID;
+        defaults.pid = USB_PID;
+        strcpy(defaults.manufacturer_name, USB_MANUFACTURER);
+        strcpy(defaults.product_name, USB_PRODUCT);
+        identification = &defaults;
+        // This memory only needs to be live through the end of usb_build_descriptors.
+    }
+    if (!usb_build_descriptors(identification)) {
+        return;
+    }
     init_usb_hardware();
+    #if CIRCUITPY_USB_HID
+    usb_hid_build_report_descriptor();
+    #endif
 
     // Only init device. Host gets inited by the `usb_host` module common-hal.
     tud_init(TUD_OPT_RHPORT);
@@ -123,66 +149,6 @@ void usb_set_defaults(void) {
     #endif
 };
 
-#if CIRCUITPY_USB_IDENTIFICATION
-supervisor_allocation *usb_identification_allocation = NULL;
-#endif
-
-// Some dynamic USB data must be saved after boot.py. How much is needed?
-size_t usb_boot_py_data_size(void) {
-    size_t size = sizeof(usb_identification_t);
-
-    #if CIRCUITPY_USB_HID
-    size += usb_hid_report_descriptor_length();
-    #endif
-
-    return size;
-}
-
-// Fill in the data to save.
-void usb_get_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size) {
-    #if CIRCUITPY_USB_IDENTIFICATION
-    if (usb_identification_allocation) {
-        memcpy(temp_storage, usb_identification_allocation->ptr, sizeof(usb_identification_t));
-        free_memory(usb_identification_allocation);
-    }
-    #else
-    if (false) {
-    }
-    #endif
-    else {
-        usb_identification_t defaults;
-        // This compiles to less code than using a struct initializer.
-        defaults.vid = USB_VID;
-        defaults.pid = USB_PID;
-        strcpy(defaults.manufacturer_name, USB_MANUFACTURER);
-        strcpy(defaults.product_name, USB_PRODUCT);
-        memcpy(temp_storage, &defaults, sizeof(defaults));
-    }
-
-    temp_storage += sizeof(usb_identification_t);
-    temp_storage_size -= sizeof(usb_identification_t);
-
-    #if CIRCUITPY_USB_HID
-    usb_hid_build_report_descriptor(temp_storage, temp_storage_size);
-    #endif
-}
-
-// After VM is gone, save data into non-heap storage (storage_allocations).
-void usb_return_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size) {
-    usb_identification_t identification;
-    memcpy(&identification, temp_storage, sizeof(usb_identification_t));
-
-    temp_storage += sizeof(usb_identification_t);
-    temp_storage_size -= sizeof(usb_identification_t);
-
-    #if CIRCUITPY_USB_HID
-    usb_hid_save_report_descriptor(temp_storage, temp_storage_size);
-    #endif
-
-    // Now we can also build the rest of the descriptors and place them in storage_allocations.
-    usb_build_descriptors(&identification);
-}
-
 // Call this when ready to run code.py or a REPL, and a VM has been started.
 void usb_setup_with_vm(void) {
     #if CIRCUITPY_USB_HID
@@ -205,6 +171,10 @@ void usb_background(void) {
         #if CIRCUITPY_USB_HOST
         tuh_task();
         #endif
+        #elif CFG_TUSB_OS == OPT_OS_FREERTOS
+        // Yield to FreeRTOS in case TinyUSB runs in a separate task. Don't use
+        // port_yield() because it has a longer delay.
+        vTaskDelay(0);
         #endif
         // No need to flush if there's no REPL.
         #if CIRCUITPY_USB_CDC
@@ -212,6 +182,9 @@ void usb_background(void) {
             // Console will always be itf 0.
             tud_cdc_write_flush();
         }
+        #endif
+        #if CIRCUITPY_USB_VIDEO
+        usb_video_task();
         #endif
     }
 }
@@ -348,13 +321,20 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
 
 #if MICROPY_KBD_EXCEPTION && CIRCUITPY_USB_CDC
 
+// The CDC RX buffer impacts monitoring for ctrl-c. TinyUSB will only ask for
+// more from CDC if the free space in the buffer is greater than the endpoint
+// size. Setting CFG_TUD_CDC_RX_BUFSIZE to the endpoint size and then sending
+// any character will prevent ctrl-c from working. Require at least a 64
+// character buffer.
+#if CFG_TUD_CDC_RX_BUFSIZE < CFG_TUD_CDC_EP_BUFSIZE + 64
+#error "CFG_TUD_CDC_RX_BUFSIZE must be 64 bytes bigger than endpoint size."
+#endif
+
 /**
  * Callback invoked when received an "wanted" char.
  * @param itf           Interface index (for multiple cdc interfaces)
  * @param wanted_char   The wanted char (set previously)
  */
-
-// Only called when console is enabled.
 void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     // Workaround for using shared/runtime/interrupt_char.c
     // Compare mp_interrupt_char with wanted_char and ignore if not matched

@@ -65,7 +65,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
     }
 
     if (self->id == NUM_INPUTS + 1) {
-        mp_raise_ValueError(translate("ADC busy pin"));
+        mp_raise_ValueError(MP_ERROR_TEXT("ADC busy pin"));
     }
 
     // Declare init structs

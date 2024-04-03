@@ -49,7 +49,7 @@ void common_hal_bleio_descriptor_construct(
 
     if (max_length < 0 || max_length > max_length_max) {
         mp_raise_ValueError_varg(
-            translate("max_length must be 0-%d when fixed_length is %s"),
+            MP_ERROR_TEXT("max_length must be 0-%d when fixed_length is %s"),
             max_length_max, fixed_length ? "True" : "False");
     }
     self->max_length = max_length;
@@ -104,10 +104,10 @@ void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self,
             // Validate data length for local descriptors only.
             if (self->fixed_length && bufinfo->len != self->max_length) {
                 mp_raise_ValueError(
-                    translate("Value length != required fixed length"));
+                    MP_ERROR_TEXT("Value length != required fixed length"));
             }
             if (bufinfo->len > self->max_length) {
-                mp_raise_ValueError(translate("Value length > max_length"));
+                mp_raise_ValueError(MP_ERROR_TEXT("Value length > max_length"));
             }
         }
     }

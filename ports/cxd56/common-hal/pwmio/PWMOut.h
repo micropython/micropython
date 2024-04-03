@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_PWMIO_PWMOUT_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_PWMIO_PWMOUT_H
+#pragma once
 
 #include <nuttx/timers/pwm.h>
 
@@ -41,8 +40,5 @@ typedef struct {
     int8_t number;
 } pwmio_pwmout_obj_t;
 
-void pwmout_reset(void);
 void pwmout_start(uint8_t pwm_num);
 void pwmout_stop(uint8_t pwm_num);
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_PWMIO_PWMOUT_H

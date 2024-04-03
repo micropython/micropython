@@ -92,6 +92,6 @@ STATIC MP_DEFINE_CONST_DICT(hashlib_hash_locals_dict, hashlib_hash_locals_dict_t
 MP_DEFINE_CONST_OBJ_TYPE(
     hashlib_hash_type,
     MP_QSTR_Hash,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &hashlib_hash_locals_dict
     );

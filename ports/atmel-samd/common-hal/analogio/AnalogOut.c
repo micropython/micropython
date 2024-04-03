@@ -51,7 +51,7 @@
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     const mcu_pin_obj_t *pin) {
     #if !HAVE_ANALOGOUT
-    mp_raise_NotImplementedError(translate("No DAC on chip"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("No DAC on chip"));
     #else
 
     uint8_t channel;

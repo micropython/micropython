@@ -268,12 +268,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_f
 //|         between 0 and 255.  When in PWM (DotStar) mode, the 4th tuple value is a float of the pixel
 //|         intensity from 0-1.0."""
 //|         ...
+//|
 //|     @overload
 //|     def __getitem__(self, index: int) -> PixelReturnType:
 //|         """Returns the pixel value at the given index as a tuple of (Red, Green, Blue[, White]) values
 //|         between 0 and 255.  When in PWM (DotStar) mode, the 4th tuple value is a float of the pixel
 //|         intensity from 0-1.0."""
 //|         ...
+//|
 //|     @overload
 //|     def __setitem__(self, index: slice, value: PixelSequence) -> None: ...
 //|     @overload
@@ -333,7 +335,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             size_t num_items = mp_obj_get_int(mp_obj_len(value));
 
             if (num_items != slice_len && num_items != (slice_len * common_hal_adafruit_pixelbuf_pixelbuf_get_bpp(self_in))) {
-                mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d, got %d)."), slice_len, num_items);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Unmatched number of items on RHS (expected %d, got %d)."), slice_len, num_items);
             }
             common_hal_adafruit_pixelbuf_pixelbuf_set_pixels(self_in, slice.start, slice.step, slice_len, value,
                 num_items != slice_len ? &flat_item_tuple : mp_const_none);
@@ -371,7 +373,7 @@ STATIC MP_DEFINE_CONST_DICT(pixelbuf_pixelbuf_locals_dict, pixelbuf_pixelbuf_loc
 MP_DEFINE_CONST_OBJ_TYPE(
     pixelbuf_pixelbuf_type,
     MP_QSTR_PixelBuf,
-    MP_TYPE_FLAG_ITER_IS_GETITER,
+    MP_TYPE_FLAG_ITER_IS_GETITER | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &pixelbuf_pixelbuf_locals_dict,
     make_new, pixelbuf_pixelbuf_make_new,
     subscr, pixelbuf_pixelbuf_subscr,

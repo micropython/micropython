@@ -92,7 +92,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
 
     for (int i = 1; i < data_count; i++) {
         if (data_pins[i] - data_pins[0] != i) {
-            mp_raise_RuntimeError(translate("Pins must be sequential"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Pins must be sequential"));
         }
     }
 

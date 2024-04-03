@@ -78,12 +78,12 @@ STATIC mp_obj_t pixelmap_pixelmap_make_new(const mp_obj_type_t *type, size_t n_a
             for (size_t j = 0; j < len1; j++) {
                 mp_obj_t item1 = items1[j];
                 if (!mp_obj_is_small_int(item1)) {
-                    mp_raise_TypeError(translate("nested index must be int"));
+                    mp_raise_TypeError(MP_ERROR_TEXT("nested index must be int"));
                 }
                 mp_arg_validate_index_range(MP_OBJ_SMALL_INT_VALUE(item1), 0, buflen - 1, MP_QSTR_index);
             }
         } else {
-            mp_raise_TypeError(translate("index must be tuple or int"));
+            mp_raise_TypeError(MP_ERROR_TEXT("index must be tuple or int"));
         }
     }
 
@@ -160,10 +160,12 @@ MP_DEFINE_CONST_FUN_OBJ_2(pixelmap_pixelmap_indices_obj, pixelmap_pixelmap_indic
 //|     def __getitem__(self, index: slice) -> PixelReturnSequence:
 //|         """Retrieve the value of the underlying pixels."""
 //|         ...
+//|
 //|     @overload
 //|     def __getitem__(self, index: int) -> PixelReturnType:
 //|         """Retrieve the value of one of the underlying pixels at 'index'."""
 //|         ...
+//|
 //|     @overload
 //|     def __setitem__(self, index: slice, value: PixelSequence) -> None: ...
 //|     @overload
@@ -258,7 +260,7 @@ STATIC MP_DEFINE_CONST_DICT(pixelmap_pixelmap_locals_dict, pixelmap_pixelmap_loc
 MP_DEFINE_CONST_OBJ_TYPE(
     pixelmap_pixelmap_type,
     MP_QSTR_PixelMap,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &pixelmap_pixelmap_locals_dict,
     make_new, pixelmap_pixelmap_make_new,
     subscr, pixelmap_pixelmap_subscr,

@@ -47,6 +47,10 @@
 #include "py/stream.h"
 #include "py/gc.h"
 
+#if CIRCUITPY_WARNINGS
+#include "shared-module/warnings/__init__.h"
+#endif
+
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
@@ -71,11 +75,10 @@ void mp_init(void) {
     // no pending exceptions to start with
     MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
     #if MICROPY_ENABLE_SCHEDULER
+    // no pending callbacks to start with
+    MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
     #if MICROPY_SCHEDULER_STATIC_NODES
-    if (MP_STATE_VM(sched_head) == NULL) {
-        // no pending callbacks to start with
-        MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
-    } else {
+    if (MP_STATE_VM(sched_head) != NULL) {
         // pending callbacks are on the list, eg from before a soft reset
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
     }
@@ -90,7 +93,7 @@ void mp_init(void) {
 
     #if MICROPY_KBD_EXCEPTION
     // initialise the exception object for raising KeyboardInterrupt
-    // CIRCUITPY chained exception support
+    // CIRCUITPY-CHANGE: chained exception support
     mp_obj_exception_initialize0(&MP_STATE_VM(mp_kbd_exception), &mp_type_KeyboardInterrupt);
     #endif
 
@@ -129,19 +132,13 @@ void mp_init(void) {
     MP_STATE_VM(track_reloc_code_list) = MP_OBJ_NULL;
     #endif
 
-    #ifdef MICROPY_FSUSERMOUNT
-    // zero out the pointers to the user-mounted devices
-    memset(MP_STATE_VM(fs_user_mount) + MICROPY_FATFS_NUM_PERSISTENT, 0,
-        sizeof(MP_STATE_VM(fs_user_mount)) - MICROPY_FATFS_NUM_PERSISTENT);
-    #endif
-
     #if MICROPY_PY_OS_DUPTERM
     for (size_t i = 0; i < MICROPY_PY_OS_DUPTERM; ++i) {
         MP_STATE_VM(dupterm_objs[i]) = MP_OBJ_NULL;
     }
     #endif
 
-    // CIRCUITPY: do not unmount /
+    // CIRCUITPY-CHANGE: do not unmount /
     #if MICROPY_VFS && 0
     // initialise the VFS sub-system
     MP_STATE_VM(vfs_cur) = NULL;
@@ -149,13 +146,17 @@ void mp_init(void) {
     #endif
 
     #if MICROPY_PY_SYS_PATH_ARGV_DEFAULTS
-    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
+    #if MICROPY_PY_SYS_PATH
+    mp_sys_path = mp_obj_new_list(0, NULL);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     #if MICROPY_MODULE_FROZEN
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen));
     #endif
+    #endif
+    #if MICROPY_PY_SYS_ARGV
     mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
     #endif
+    #endif // MICROPY_PY_SYS_PATH_ARGV_DEFAULTS
 
     #if MICROPY_PY_SYS_ATEXIT
     MP_STATE_VM(sys_exitfunc) = mp_const_none;
@@ -201,6 +202,17 @@ void mp_deinit(void) {
     #endif
 }
 
+void mp_globals_locals_set_from_nlr_jump_callback(void *ctx_in) {
+    nlr_jump_callback_node_globals_locals_t *ctx = ctx_in;
+    mp_globals_set(ctx->globals);
+    mp_locals_set(ctx->locals);
+}
+
+void mp_call_function_1_from_nlr_jump_callback(void *ctx_in) {
+    nlr_jump_callback_node_call_function_1_t *ctx = ctx_in;
+    ctx->func(ctx->arg);
+}
+
 mp_obj_t MICROPY_WRAP_MP_LOAD_NAME(mp_load_name)(qstr qst) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qst));
@@ -240,6 +252,8 @@ mp_obj_t MICROPY_WRAP_MP_LOAD_GLOBAL(mp_load_global)(qstr qst) {
     return elem->value;
 }
 
+// CIRCUITPY-CHANGE: noinline
+// https://github.com/adafruit/circuitpython/pull/8071
 mp_obj_t __attribute__((noinline)) mp_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
     #if MICROPY_CAN_OVERRIDE_BUILTINS
@@ -290,7 +304,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
             case MP_UNARY_OP_HASH:
                 return arg;
             case MP_UNARY_OP_POSITIVE:
-            case MP_UNARY_OP_INT:
+            case MP_UNARY_OP_INT_MAYBE:
                 return arg;
             case MP_UNARY_OP_NEGATIVE:
                 // check for overflow
@@ -327,6 +341,9 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
             if (result != MP_OBJ_NULL) {
                 return result;
             }
+        } else if (op == MP_UNARY_OP_HASH) {
+            // Type doesn't have unary_op so use hash of object instance.
+            return MP_OBJ_NEW_SMALL_INT((mp_uint_t)arg);
         }
         if (op == MP_UNARY_OP_BOOL) {
             // Type doesn't have unary_op (or didn't handle MP_UNARY_OP_BOOL),
@@ -334,30 +351,23 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
             // if arg==mp_const_none.
             return mp_const_true;
         }
-        #if MICROPY_PY_BUILTINS_FLOAT
-        if (op == MP_UNARY_OP_FLOAT_MAYBE
+        if (op == MP_UNARY_OP_INT_MAYBE
+            #if MICROPY_PY_BUILTINS_FLOAT
+            || op == MP_UNARY_OP_FLOAT_MAYBE
             #if MICROPY_PY_BUILTINS_COMPLEX
             || op == MP_UNARY_OP_COMPLEX_MAYBE
             #endif
+            #endif
             ) {
+            // These operators may return MP_OBJ_NULL if they are not supported by the type.
             return MP_OBJ_NULL;
         }
-        #endif
-        // With MP_UNARY_OP_INT, mp_unary_op() becomes a fallback for mp_obj_get_int().
-        // In this case provide a more focused error message to not confuse, e.g. chr(1.0)
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
-        if (op == MP_UNARY_OP_INT) {
-            mp_raise_TypeError(MP_ERROR_TEXT("can't convert to int"));
-        } else {
-            mp_raise_TypeError(MP_ERROR_TEXT("unsupported type for operator"));
-        }
+        mp_raise_TypeError(MP_ERROR_TEXT("unsupported type for operator"));
         #else
-        if (op == MP_UNARY_OP_INT) {
-            mp_raise_TypeError_varg(MP_ERROR_TEXT("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_int);
-        } else {
-            mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported type for %q: '%q'"),
-                mp_unary_op_method_name[op], mp_obj_get_type_qstr(arg));
-        }
+        mp_raise_msg_varg(&mp_type_TypeError,
+            MP_ERROR_TEXT("unsupported type for %q: '%s'"),
+            mp_unary_op_method_name[op], mp_obj_get_type_str(arg));
         #endif
     }
 }
@@ -631,6 +641,15 @@ generic_binary_op:
         if (result != MP_OBJ_NULL) {
             return result;
         }
+    }
+
+    // If this was an inplace method, fallback to the corresponding normal method.
+    // https://docs.python.org/3/reference/datamodel.html#object.__iadd__ :
+    // "If a specific method is not defined, the augmented assignment falls back
+    // to the normal methods."
+    if (op >= MP_BINARY_OP_INPLACE_OR && op <= MP_BINARY_OP_INPLACE_POWER) {
+        op += MP_BINARY_OP_OR - MP_BINARY_OP_INPLACE_OR;
+        goto generic_binary_op;
     }
 
     #if MICROPY_PY_REVERSE_SPECIAL_METHODS
@@ -935,6 +954,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_ob
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
+// CIRCUITPY-CHANGE: noline
 void __attribute__((noinline, )) mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
     size_t seq_len;
     if (mp_obj_is_type(seq_in, &mp_type_tuple) || mp_obj_is_type(seq_in, &mp_type_list)) {
@@ -982,6 +1002,7 @@ too_long:
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
+// CIRCUITPY-CHANGE: noinline
 void __attribute__((noinline)) mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
     size_t num_left = num_in & 0xff;
     size_t num_right = (num_in >> 8) & 0xff;
@@ -1074,12 +1095,7 @@ STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     if (n_args > 0) {
         const mp_obj_type_t *arg0_type = mp_obj_get_type(args[0]);
         if (arg0_type != self->type) {
-            if (MICROPY_ERROR_REPORTING != MICROPY_ERROR_REPORTING_DETAILED) {
-                mp_raise_TypeError(MP_ERROR_TEXT("argument has wrong type"));
-            } else {
-                mp_raise_TypeError_varg(MP_ERROR_TEXT("argument should be a '%q' not a '%q'"),
-                    self->type->name, arg0_type->name);
-            }
+            mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_self, self->type->name, arg0_type->name);
         }
     }
     return mp_call_function_n_kw(self->fun, n_args, n_kw, args);
@@ -1147,6 +1163,8 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
             }
             dest[0] = ((mp_obj_static_class_method_t *)MP_OBJ_TO_PTR(member))->fun;
             dest[1] = MP_OBJ_FROM_PTR(type);
+            // CIRCUITPY-CHANGE
+            // https://github.com/adafruit/circuitpython/commit/8fae7d2e3024de6336affc4b2a8fa992c946e017
             #if MICROPY_PY_BUILTINS_PROPERTY
             // If self is MP_OBJ_NULL, we looking at the class itself, not an instance.
         } else if (mp_obj_is_type(member, &mp_type_property) && mp_obj_is_native_type(type) && self != MP_OBJ_NULL) {
@@ -1222,6 +1240,16 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
         mp_map_t *locals_map = &MP_OBJ_TYPE_GET_SLOT(type, locals_dict)->map;
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
+            // CIRCUITPY-CHANGE: Validate flag
+            #if MICROPY_PY_BUILTINS_PROPERTY
+            // Validate that the type has the correct flag for properties. It is manually
+            // managed for native types. If the flag is missing, then act like the
+            // attribute doesn't exist.
+            if (mp_obj_is_type(elem->value, &mp_type_property) && (type->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS) == 0) {
+                dest[1] = MP_OBJ_NULL;
+                return;
+            }
+            #endif
             mp_convert_member_lookup(obj, type, elem->value, dest);
         }
         return;
@@ -1278,6 +1306,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
             // success
             return;
         }
+        // CIRCUITPY-CHANGE: https://github.com/adafruit/circuitpython/pull/50
     #if MICROPY_PY_BUILTINS_PROPERTY
     } else if (MP_OBJ_TYPE_HAS_SLOT(type, locals_dict)) {
         // generic method lookup
@@ -1314,6 +1343,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     mp_raise_AttributeError(MP_ERROR_TEXT("no such attribute"));
     #else
     mp_raise_msg_varg(&mp_type_AttributeError,
+        // CIRCUITPY-CHANGE: better error message
         MP_ERROR_TEXT("can't set attribute '%q'"),
         attr);
     #endif
@@ -1372,6 +1402,8 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
 
 STATIC mp_fun_1_t type_get_iternext(const mp_obj_type_t *type) {
     if ((type->flags & MP_TYPE_FLAG_ITER_IS_STREAM) == MP_TYPE_FLAG_ITER_IS_STREAM) {
+        // CIRCUITPY-CHANGE: unneeded declaration
+        // mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
         return mp_stream_unbuffered_iter;
     } else if (type->flags & MP_TYPE_FLAG_ITER_IS_ITERNEXT) {
         return (mp_fun_1_t)MP_OBJ_TYPE_GET_SLOT(type, iter);
@@ -1448,7 +1480,7 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
     assert((send_value != MP_OBJ_NULL) ^ (throw_value != MP_OBJ_NULL));
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
 
-    // CIRCUITPY distinguishes generators and coroutines.
+    // CIRCUITPY-CHANGE: distinguishes generators and coroutines.
     if (type == &mp_type_gen_instance
         #if MICROPY_PY_ASYNC_AWAIT
         || type == &mp_type_coro_instance
@@ -1574,6 +1606,7 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     return mp_builtin___import__(5, args);
 }
 
+// CIRCUITPY-CHANGE: noinline
 mp_obj_t __attribute__((noinline, )) mp_import_from(mp_obj_t module, qstr name) {
     DEBUG_printf("import from %p %s\n", module, qstr_str(name));
 
@@ -1594,7 +1627,8 @@ mp_obj_t __attribute__((noinline, )) mp_import_from(mp_obj_t module, qstr name) 
     #if MICROPY_ENABLE_EXTERNAL_IMPORT
 
     // See if it's a package, then can try FS import
-    if (!mp_obj_is_package(module)) {
+    mp_load_method_maybe(module, MP_QSTR___path__, dest);
+    if (dest[0] == MP_OBJ_NULL) {
         goto import_error;
     }
 
@@ -1624,6 +1658,25 @@ mp_obj_t __attribute__((noinline, )) mp_import_from(mp_obj_t module, qstr name) 
 void mp_import_all(mp_obj_t module) {
     DEBUG_printf("import all %p\n", module);
 
+    #if CIRCUITPY_DISPLAYIO && CIRCUITPY_WARNINGS
+    if (module == &displayio_module) {
+        #if CIRCUITPY_BUSDISPLAY
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_Display, MP_QSTR_displayio, MP_QSTR_busdisplay);
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q renamed %q"), MP_QSTR_Display, MP_QSTR_BusDisplay);
+        #endif
+        #if CIRCUITPY_EPAPERDISPLAY
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_EPaperDisplay, MP_QSTR_displayio, MP_QSTR_epaperdisplay);
+        #endif
+        #if CIRCUITPY_FOURWIRE
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_FourWire, MP_QSTR_displayio, MP_QSTR_fourwire);
+        #endif
+        #if CIRCUITPY_I2CDISPLAYBUS
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_I2CDisplay, MP_QSTR_displayio, MP_QSTR_i2cdisplaybus);
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q renamed %q"), MP_QSTR_I2CDisplay, MP_QSTR_I2CDisplayBus);
+        #endif
+    }
+    #endif
+
     // TODO: Support __all__
     mp_map_t *map = &mp_obj_module_get_globals(module)->map;
     for (size_t i = 0; i < map->alloc; i++) {
@@ -1644,43 +1697,40 @@ void mp_import_all(mp_obj_t module) {
 
 mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_input_kind, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
     // save context
-    mp_obj_dict_t *volatile old_globals = mp_globals_get();
-    mp_obj_dict_t *volatile old_locals = mp_locals_get();
+    nlr_jump_callback_node_globals_locals_t ctx;
+    ctx.globals = mp_globals_get();
+    ctx.locals = mp_locals_get();
 
     // set new context
     mp_globals_set(globals);
     mp_locals_set(locals);
 
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        qstr source_name = lex->source_name;
-        mp_parse_tree_t parse_tree = mp_parse(lex, parse_input_kind);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, parse_input_kind == MP_PARSE_SINGLE_INPUT);
+    // set exception handler to restore context if an exception is raised
+    nlr_push_jump_callback(&ctx.callback, mp_globals_locals_set_from_nlr_jump_callback);
 
-        mp_obj_t ret;
-        if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {
-            // for compile only, return value is the module function
-            ret = module_fun;
-        } else {
-            // execute module function and get return value
-            ret = mp_call_function_0(module_fun);
-        }
+    qstr source_name = lex->source_name;
+    mp_parse_tree_t parse_tree = mp_parse(lex, parse_input_kind);
+    mp_obj_t module_fun = mp_compile(&parse_tree, source_name, parse_input_kind == MP_PARSE_SINGLE_INPUT);
 
-        // finish nlr block, restore context and return value
-        nlr_pop();
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        return ret;
+    mp_obj_t ret;
+    if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {
+        // for compile only, return value is the module function
+        ret = module_fun;
     } else {
-        // exception; restore context and re-raise same exception
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        nlr_jump(nlr.ret_val);
+        // execute module function and get return value
+        ret = mp_call_function_0(module_fun);
     }
+
+    // deregister exception handler and restore context
+    nlr_pop_jump_callback(true);
+
+    // return value
+    return ret;
 }
 
 #endif // MICROPY_ENABLE_COMPILER
 
+// CIRCUITPY-CHANGE: MP_COLD are CIRCUITPY
 NORETURN MP_COLD void m_malloc_fail(size_t num_bytes) {
     DEBUG_printf("memory allocation failed, allocating %u bytes\n", (uint)num_bytes);
     #if MICROPY_ENABLE_GC
@@ -1712,7 +1762,7 @@ NORETURN MP_COLD void mp_raise_NotImplementedError_no_msg(void) {
 
 #else
 
-NORETURN MP_COLD void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg) {
     if (msg == NULL) {
         nlr_raise(mp_obj_new_exception(exc_type));
     } else {
@@ -1720,12 +1770,12 @@ NORETURN MP_COLD void mp_raise_msg(const mp_obj_type_t *exc_type, const compress
     }
 }
 
-NORETURN MP_COLD void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list argptr) {
+NORETURN MP_COLD void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, va_list argptr) {
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(exc_type, fmt, argptr);
     nlr_raise(exception);
 }
 
-NORETURN MP_COLD void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
     mp_raise_msg_vlist(exc_type, fmt, argptr);
@@ -1740,59 +1790,59 @@ NORETURN MP_COLD void mp_raise_msg_str(const mp_obj_type_t *exc_type, const char
     }
 }
 
-NORETURN MP_COLD void mp_raise_AttributeError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_AttributeError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_AttributeError, msg);
 }
 
-NORETURN MP_COLD void mp_raise_RuntimeError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_RuntimeError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_RuntimeError, msg);
 }
 
-NORETURN MP_COLD void mp_raise_RuntimeError_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_RuntimeError_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_RuntimeError, fmt, argptr);
     va_end(argptr);
 }
 
-NORETURN MP_COLD void mp_raise_ImportError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_ImportError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_ImportError, msg);
 }
 
-NORETURN MP_COLD void mp_raise_IndexError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_IndexError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_IndexError, msg);
 }
 
-NORETURN MP_COLD void mp_raise_IndexError_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_IndexError_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_IndexError, fmt, argptr);
     va_end(argptr);
 }
 
-NORETURN MP_COLD void mp_raise_ValueError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_ValueError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_ValueError, msg);
 }
 
-NORETURN MP_COLD void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_ValueError_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_ValueError, fmt, argptr);
     va_end(argptr);
 }
 
-NORETURN MP_COLD void mp_raise_TypeError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_TypeError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_TypeError, msg);
 }
 
-NORETURN MP_COLD void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_TypeError_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_TypeError, fmt, argptr);
     va_end(argptr);
 }
 
-NORETURN MP_COLD void mp_raise_OSError_msg(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_OSError_msg(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_OSError, msg);
 }
 
@@ -1804,14 +1854,14 @@ NORETURN MP_COLD void mp_raise_OSError_errno_str(int errno_, mp_obj_t str) {
     nlr_raise(mp_obj_new_exception_args(&mp_type_OSError, 2, args));
 }
 
-NORETURN MP_COLD void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_OSError_msg_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_OSError, fmt, argptr);
     va_end(argptr);
 }
 
-NORETURN MP_COLD void mp_raise_ConnectionError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_ConnectionError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_ConnectionError, msg);
 }
 
@@ -1819,11 +1869,11 @@ NORETURN MP_COLD void mp_raise_BrokenPipeError(void) {
     mp_raise_type_arg(&mp_type_BrokenPipeError, MP_OBJ_NEW_SMALL_INT(MP_EPIPE));
 }
 
-NORETURN MP_COLD void mp_raise_NotImplementedError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_NotImplementedError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_NotImplementedError, msg);
 }
 
-NORETURN MP_COLD void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_NotImplementedError_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_NotImplementedError, fmt, argptr);
@@ -1831,7 +1881,7 @@ NORETURN MP_COLD void mp_raise_NotImplementedError_varg(const compressed_string_
 }
 
 
-NORETURN MP_COLD void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_OverflowError_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_OverflowError, fmt, argptr);
@@ -1849,6 +1899,16 @@ NORETURN void mp_raise_StopIteration(mp_obj_t arg) {
     } else {
         mp_raise_type_arg(&mp_type_StopIteration, arg);
     }
+}
+
+NORETURN void mp_raise_TypeError_int_conversion(mp_const_obj_t arg) {
+    #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+    (void)arg;
+    mp_raise_TypeError(MP_ERROR_TEXT("can't convert to int"));
+    #else
+    mp_raise_msg_varg(&mp_type_TypeError,
+        MP_ERROR_TEXT("can't convert %s to int"), mp_obj_get_type_str(arg));
+    #endif
 }
 
 NORETURN MP_COLD void mp_raise_OSError(int errno_) {

@@ -79,28 +79,40 @@ MP_DEFINE_EXCEPTION(gaierror, OSError)
 //|     SOCK_RAW: int
 //|     EAI_NONAME: int
 //|
+//|     SOL_SOCKET: int
+//|
+//|     SO_REUSEADDR: int
+//|
 //|     TCP_NODELAY: int
 //|
-//|     IPPROTO_TCP: int
 //|     IPPROTO_IP: int
+//|     IPPROTO_ICMP: int
+//|     IPPROTO_TCP: int
+//|     IPPROTO_UDP: int
+//|     IPPROTO_IPV6: int
+//|     IPPROTO_RAW: int
 //|
 //|     IP_MULTICAST_TTL: int
 //|
-//|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM) -> socketpool.Socket:
+//|     def socket(
+//|         self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = IPPROTO_IP
+//|     ) -> socketpool.Socket:
 //|         """Create a new socket
 //|
 //|         :param ~int family: AF_INET or AF_INET6
 //|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW
+//|         :param ~int proto: IPPROTO_IP, IPPROTO_ICMP, IPPROTO_TCP, IPPROTO_UDP, IPPROTO_IPV6or IPPROTO_RAW. Only works with SOCK_RAW
 //|
-//|         The ``proto`` (protocol) and ``fileno`` arguments available in ``socket.socket()``
-//|         in CPython are not supported.
+//|         The ``fileno`` argument available in ``socket.socket()``
+//|         in CPython is not supported.
 //|         """
 //|         ...
 STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_family, ARG_type };
+    enum { ARG_family, ARG_type, ARG_proto };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_family, MP_ARG_INT, {.u_int = SOCKETPOOL_AF_INET} },
         { MP_QSTR_type, MP_ARG_INT, {.u_int = SOCKETPOOL_SOCK_STREAM} },
+        { MP_QSTR_proto, MP_ARG_INT, {.u_int = SOCKETPOOL_IPPROTO_IP} },
     };
     socketpool_socketpool_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -109,8 +121,13 @@ STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_
 
     socketpool_socketpool_addressfamily_t family = args[ARG_family].u_int;
     socketpool_socketpool_sock_t type = args[ARG_type].u_int;
+    socketpool_socketpool_ipproto_t proto = args[ARG_proto].u_int;
 
-    return common_hal_socketpool_socket(self, family, type);
+    if (proto < 0) {
+        proto = 0;
+    }
+
+    return common_hal_socketpool_socket(self, family, type, proto);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_socket_obj, 1, socketpool_socketpool_socket);
 
@@ -183,10 +200,18 @@ STATIC const mp_rom_map_elem_t socketpool_socketpool_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SOCK_DGRAM), MP_ROM_INT(SOCKETPOOL_SOCK_DGRAM) },
     { MP_ROM_QSTR(MP_QSTR_SOCK_RAW), MP_ROM_INT(SOCKETPOOL_SOCK_RAW) },
 
+    { MP_ROM_QSTR(MP_QSTR_SOL_SOCKET), MP_ROM_INT(SOCKETPOOL_SOL_SOCKET) },
+
+    { MP_ROM_QSTR(MP_QSTR_SO_REUSEADDR), MP_ROM_INT(SOCKETPOOL_SO_REUSEADDR) },
+
     { MP_ROM_QSTR(MP_QSTR_TCP_NODELAY), MP_ROM_INT(SOCKETPOOL_TCP_NODELAY) },
 
-    { MP_ROM_QSTR(MP_QSTR_IPPROTO_TCP), MP_ROM_INT(SOCKETPOOL_IPPROTO_TCP) },
     { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(SOCKETPOOL_IPPROTO_IP) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_ICMP), MP_ROM_INT(SOCKETPOOL_IPPROTO_ICMP) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_TCP), MP_ROM_INT(SOCKETPOOL_IPPROTO_TCP) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_UDP), MP_ROM_INT(SOCKETPOOL_IPPROTO_UDP) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_IPV6), MP_ROM_INT(SOCKETPOOL_IPPROTO_IPV6) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_RAW), MP_ROM_INT(SOCKETPOOL_IPPROTO_RAW) },
     { MP_ROM_QSTR(MP_QSTR_IP_MULTICAST_TTL), MP_ROM_INT(SOCKETPOOL_IP_MULTICAST_TTL) },
 
     { MP_ROM_QSTR(MP_QSTR_EAI_NONAME), MP_ROM_INT(SOCKETPOOL_EAI_NONAME) },
@@ -216,7 +241,7 @@ void common_hal_socketpool_socketpool_raise_gaierror_noname(void) {
     vstr_t vstr;
     mp_print_t print;
     vstr_init_print(&vstr, 64, &print);
-    mp_printf(&print, "%S", translate("Name or service not known"));
+    mp_printf(&print, "%S", MP_ERROR_TEXT("Name or service not known"));
 
     mp_obj_t exc_args[] = {
         MP_OBJ_NEW_SMALL_INT(SOCKETPOOL_EAI_NONAME),

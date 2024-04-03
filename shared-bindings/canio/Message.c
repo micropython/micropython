@@ -139,7 +139,7 @@ STATIC MP_DEFINE_CONST_DICT(canio_message_locals_dict, canio_message_locals_dict
 MP_DEFINE_CONST_OBJ_TYPE(
     canio_message_type,
     MP_QSTR_Message,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, canio_message_make_new,
     locals_dict, &canio_message_locals_dict
     );

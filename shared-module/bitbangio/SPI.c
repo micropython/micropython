@@ -40,7 +40,7 @@ void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
     const mcu_pin_obj_t *miso) {
     digitalinout_result_t result = common_hal_digitalio_digitalinout_construct(&self->clock, clock);
     if (result != DIGITALINOUT_OK) {
-        mp_raise_ValueError_varg(translate("%q init failed"), MP_QSTR_clock);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q init failed"), MP_QSTR_clock);
     }
     common_hal_digitalio_digitalinout_switch_to_output(&self->clock, self->polarity == 1, DRIVE_MODE_PUSH_PULL);
 
@@ -48,7 +48,7 @@ void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
         result = common_hal_digitalio_digitalinout_construct(&self->mosi, mosi);
         if (result != DIGITALINOUT_OK) {
             common_hal_digitalio_digitalinout_deinit(&self->clock);
-            mp_raise_ValueError_varg(translate("%q init failed"), MP_QSTR_mosi);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("%q init failed"), MP_QSTR_mosi);
         }
         self->has_mosi = true;
         common_hal_digitalio_digitalinout_switch_to_output(&self->mosi, false, DRIVE_MODE_PUSH_PULL);
@@ -62,7 +62,7 @@ void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
             if (mosi != NULL) {
                 common_hal_digitalio_digitalinout_deinit(&self->mosi);
             }
-            mp_raise_ValueError_varg(translate("%q init failed"), MP_QSTR_miso);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("%q init failed"), MP_QSTR_miso);
         }
         self->has_miso = true;
     }
@@ -96,7 +96,12 @@ void shared_module_bitbangio_spi_configure(bitbangio_spi_obj_t *self,
         self->delay_half += 1;
     }
 
-    self->polarity = polarity;
+    if (polarity != self->polarity) {
+        // If the polarity has changed, make sure we re-initialize the idle state
+        // of the clock as well.
+        self->polarity = polarity;
+        common_hal_digitalio_digitalinout_switch_to_output(&self->clock, polarity == 1, DRIVE_MODE_PUSH_PULL);
+    }
     self->phase = phase;
 }
 
@@ -122,7 +127,7 @@ void shared_module_bitbangio_spi_unlock(bitbangio_spi_obj_t *self) {
 // Writes out the given data.
 bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const uint8_t *data, size_t len) {
     if (len > 0 && !self->has_mosi) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_mosi);
     }
     uint32_t delay_half = self->delay_half;
 
@@ -177,7 +182,7 @@ bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const uint8_t 
 // Reads in len bytes while outputting zeroes.
 bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, size_t len, uint8_t write_data) {
     if (len > 0 && !self->has_miso) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_miso);
     }
 
     uint32_t delay_half = self->delay_half;
@@ -245,10 +250,10 @@ bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, 
 // transfer
 bool shared_module_bitbangio_spi_transfer(bitbangio_spi_obj_t *self, const uint8_t *dout, uint8_t *din, size_t len) {
     if (!self->has_mosi && dout != NULL) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_mosi);
     }
     if (!self->has_miso && din != NULL) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_miso);
     }
     uint32_t delay_half = self->delay_half;
 

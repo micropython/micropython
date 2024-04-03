@@ -110,7 +110,7 @@ STATIC mp_obj_t validate_note(mp_obj_t note_in) {
     } else {
         const mp_obj_type_t *note_type = mp_obj_get_type(note_in);
         if (note_type != &synthio_note_type) {
-            mp_raise_TypeError_varg(translate("%q must be of type %q or %q, not %q"), MP_QSTR_note, MP_QSTR_int, MP_QSTR_Note, note_type->name);
+            mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"), MP_QSTR_note, MP_QSTR_int, MP_QSTR_Note, note_type->name);
         }
     }
     return note_in;

@@ -183,7 +183,7 @@ STATIC MP_DEFINE_CONST_DICT(rotaryio_incrementalencoder_locals_dict, rotaryio_in
 MP_DEFINE_CONST_OBJ_TYPE(
     rotaryio_incrementalencoder_type,
     MP_QSTR_IncrementalEncoder,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, rotaryio_incrementalencoder_make_new,
     locals_dict, &rotaryio_incrementalencoder_locals_dict
     );

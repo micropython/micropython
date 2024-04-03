@@ -149,11 +149,11 @@ static void camera_start_preview() {
 void common_hal_camera_construct(camera_obj_t *self) {
     if (camera_dev.fd < 0) {
         if (video_initialize(camera_dev.devpath) < 0) {
-            mp_raise_RuntimeError(translate("Camera init"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Camera init"));
         }
         camera_dev.fd = open(camera_dev.devpath, 0);
         if (camera_dev.fd < 0) {
-            mp_raise_RuntimeError(translate("Camera init"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Camera init"));
         }
     }
 
@@ -181,13 +181,13 @@ bool common_hal_camera_deinited(camera_obj_t *self) {
 
 size_t common_hal_camera_take_picture(camera_obj_t *self, uint8_t *buffer, size_t len, uint16_t width, uint16_t height, camera_imageformat_t format) {
     if (!camera_check_width_and_height(width, height)) {
-        mp_raise_ValueError(translate("Size not supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Size not supported"));
     }
     if (!camera_check_buffer_length(width, height, format, len)) {
-        mp_raise_ValueError(translate("Buffer too small"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer too small"));
     }
     if (!camera_check_format(format)) {
-        mp_raise_ValueError(translate("Format not supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Format not supported"));
     }
 
     camera_set_format(V4L2_BUF_TYPE_STILL_CAPTURE, V4L2_PIX_FMT_JPEG, width, height);

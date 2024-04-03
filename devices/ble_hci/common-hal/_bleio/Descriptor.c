@@ -43,7 +43,7 @@ void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_c
 
     const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
     if (max_length < 0 || max_length > max_length_max) {
-        mp_raise_ValueError_varg(translate("max_length must be 0-%d when fixed_length is %s"),
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("max_length must be 0-%d when fixed_length is %s"),
             max_length_max, fixed_length ? "True" : "False");
     }
     self->max_length = max_length;
@@ -85,10 +85,10 @@ size_t common_hal_bleio_descriptor_get_value(bleio_descriptor_obj_t *self, uint8
 
 void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self, mp_buffer_info_t *bufinfo) {
     if (self->fixed_length && bufinfo->len != self->max_length) {
-        mp_raise_ValueError(translate("Value length != required fixed length"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Value length != required fixed length"));
     }
     if (bufinfo->len > self->max_length) {
-        mp_raise_ValueError(translate("Value length > max_length"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Value length > max_length"));
     }
 
     self->value = mp_obj_new_bytes(bufinfo->buf, bufinfo->len);

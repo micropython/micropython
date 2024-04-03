@@ -107,14 +107,14 @@ void raise_cyw_error(int err) {
             mp_errno = MP_ETIMEDOUT;
             break;
         default:
-            mp_raise_OSError_msg_varg(translate("Unknown error code %d"), err);
+            mp_raise_OSError_msg_varg(MP_ERROR_TEXT("Unknown error code %d"), err);
     }
     mp_raise_OSError(mp_errno);
 }
 
 void ipaddress_ipaddress_to_lwip(mp_obj_t ip_address, ip_addr_t *lwip_ip_address) {
     if (!mp_obj_is_type(ip_address, &ipaddress_ipv4address_type)) {
-        mp_raise_ValueError(translate("Only IPv4 addresses supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Only IPv4 addresses supported"));
     }
     mp_obj_t packed = common_hal_ipaddress_ipv4address_get_packed(ip_address);
     size_t len;

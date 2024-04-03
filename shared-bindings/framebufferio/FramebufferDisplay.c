@@ -75,7 +75,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
-        mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Display rotation must be in 90 degree increments"));
     }
 
     primary_display_t *disp = allocate_display_or_raise();
@@ -97,6 +97,13 @@ static framebufferio_framebufferdisplay_obj_t *native_display(mp_obj_t display_o
     mp_obj_assert_native_inited(native_display);
     return MP_OBJ_TO_PTR(native_display);
 }
+
+// Undocumented show() implementation with a friendly error message.
+STATIC mp_obj_t framebufferio_framebufferdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
+    mp_raise_AttributeError(MP_ERROR_TEXT(".show(x) removed. Use .root_group = x"));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_show_obj, framebufferio_framebufferdisplay_obj_show);
 
 //|     def refresh(
 //|         self,
@@ -178,7 +185,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_brightness(mp_obj_t sel
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     mp_float_t brightness = common_hal_framebufferio_framebufferdisplay_get_brightness(self);
     if (brightness < 0) {
-        mp_raise_RuntimeError(translate("Brightness not adjustable"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Brightness not adjustable"));
     }
     return mp_obj_new_float(brightness);
 }
@@ -188,11 +195,11 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_brightness(mp_obj_t sel
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     mp_float_t brightness = mp_obj_get_float(brightness_obj);
     if (brightness < 0.0f || brightness > 1.0f) {
-        mp_raise_ValueError_varg(translate("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
     }
     bool ok = common_hal_framebufferio_framebufferdisplay_set_brightness(self, brightness);
     if (!ok) {
-        mp_raise_RuntimeError(translate("Brightness not adjustable"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Brightness not adjustable"));
     }
     return mp_const_none;
 }
@@ -278,10 +285,10 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, con
     mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
 
     if (bufinfo.typecode != BYTEARRAY_TYPECODE) {
-        mp_raise_ValueError(translate("Buffer is not a bytearray."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer is not a bytearray."));
     }
     if (self->core.colorspace.depth != 16) {
-        mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Display must have a 16 bit colorspace."));
     }
 
     displayio_area_t area = {
@@ -311,7 +318,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, con
         displayio_display_core_fill_area(&self->core, &area, mask, result_buffer);
         return result;
     } else {
-        mp_raise_ValueError(translate("Buffer too small"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer too small"));
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_fill_row_obj, 1, framebufferio_framebufferdisplay_obj_fill_row);
@@ -337,7 +344,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_root_group(mp_obj_t sel
 
     bool ok = common_hal_framebufferio_framebufferdisplay_set_root_group(self, group);
     if (!ok) {
-        mp_raise_ValueError(translate("Group already used"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Group already used"));
     }
     return mp_const_none;
 }
@@ -348,6 +355,7 @@ MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_root_group_obj,
     (mp_obj_t)&framebufferio_framebufferdisplay_set_root_group_obj);
 
 STATIC const mp_rom_map_elem_t framebufferio_framebufferdisplay_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&framebufferio_framebufferdisplay_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&framebufferio_framebufferdisplay_refresh_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_row), MP_ROM_PTR(&framebufferio_framebufferdisplay_fill_row_obj) },
 
@@ -366,7 +374,7 @@ STATIC MP_DEFINE_CONST_DICT(framebufferio_framebufferdisplay_locals_dict, frameb
 MP_DEFINE_CONST_OBJ_TYPE(
     framebufferio_framebufferdisplay_type,
     MP_QSTR_FramebufferDisplay,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, framebufferio_framebufferdisplay_make_new,
     locals_dict, &framebufferio_framebufferdisplay_locals_dict
     );

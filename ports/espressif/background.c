@@ -32,20 +32,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#if CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
-#endif
-
-#if CIRCUITPY_PULSEIO
-#include "common-hal/pulseio/PulseIn.h"
-#endif
-
 void port_background_tick(void) {
     // Zero delay in case FreeRTOS wants to switch to something else.
     vTaskDelay(0);
-    #if CIRCUITPY_PULSEIO
-    pulsein_background();
-    #endif
 }
 
 void port_background_task(void) {

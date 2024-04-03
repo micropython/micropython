@@ -40,7 +40,7 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(BASEOPTS)
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(BASEOPTS)
 
-TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/espressif ports/mimxrt10xx ports/nrf ports/raspberrypi ports/stm py shared-bindings shared-module supervisor
+TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/espressif ports/mimxrt10xx ports/nordic ports/raspberrypi ports/stm py shared-bindings shared-module supervisor
 # Paths to exclude from TRANSLATE_SOURCES
 # Each must be preceded by "-path"; if any wildcards, enclose in quotes.
 # Separate by "-o" (Find's "or" operand)
@@ -226,8 +226,11 @@ pseudoxml:
 .PHONY: all-source
 all-source:
 
+TRANSLATE_CHECK_SUBMODULES=if ! [ -f extmod/ulab/README.md ]; then python tools/ci_fetch_deps.py translate; fi
+TRANSLATE_COMMAND=find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -x locale/synthetic.pot -f- -L C -s --add-location=file --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d'
 locale/circuitpython.pot: all-source
-	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d' > $@
+	$(TRANSLATE_CHECK_SUBMODULES)
+	$(TRANSLATE_COMMAND) > $@
 
 # Historically, `make translate` updated the .pot file and ran msgmerge.
 # However, this was a frequent source of merge conflicts.  Weblate can perform
@@ -252,7 +255,8 @@ merge-translate:
 
 .PHONY: check-translate
 check-translate:
-	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate --keyword=MP_ERROR_TEXT -o circuitpython.pot.tmp -p locale
+	$(TRANSLATE_CHECK_SUBMODULES)
+	$(TRANSLATE_COMMAND) > locale/circuitpython.pot.tmp
 	$(PYTHON) tools/check_translations.py locale/circuitpython.pot.tmp locale/circuitpython.pot; status=$$?; rm -f locale/circuitpython.pot.tmp; exit $$status
 
 .PHONY: stubs
@@ -267,6 +271,8 @@ stubs:
 	@cp setup.py-stubs circuitpython-stubs/setup.py
 	@cp README.rst-stubs circuitpython-stubs/README.rst
 	@cp MANIFEST.in-stubs circuitpython-stubs/MANIFEST.in
+	@$(PYTHON) tools/board_stubs/build_board_specific_stubs/board_stub_builder.py
+	@cp -r tools/board_stubs/circuitpython_setboard circuitpython-stubs/circuitpython_setboard
 	@$(PYTHON) -m build circuitpython-stubs
 
 .PHONY: check-stubs
@@ -278,7 +284,7 @@ update-frozen-libraries:
 	@echo "Updating all frozen libraries to latest tagged version."
 	cd frozen; for library in *; do cd $$library; ../../tools/git-checkout-latest-tag.sh; cd ..; done
 
-one-of-each: samd21 litex mimxrt10xx nrf stm
+one-of-each: samd21 litex mimxrt10xx nordic stm
 
 samd21:
 	$(MAKE) -C ports/atmel-samd BOARD=trinket_m0
@@ -295,13 +301,13 @@ litex:
 mimxrt10xx:
 	$(MAKE) -C ports/mimxrt10xx BOARD=feather_mimxrt1011
 
-nrf:
-	$(MAKE) -C ports/nrf BOARD=feather_nrf52840_express
+nordic:
+	$(MAKE) -C ports/nordic BOARD=feather_nrf52840_express
 
 stm:
 	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express
 
-clean-one-of-each: clean-samd21 clean-samd51 clean-espressif clean-litex clean-mimxrt10xx clean-nrf clean-stm
+clean-one-of-each: clean-samd21 clean-samd51 clean-espressif clean-litex clean-mimxrt10xx clean-nordic clean-stm
 
 clean-samd21:
 	$(MAKE) -C ports/atmel-samd BOARD=trinket_m0 clean
@@ -318,16 +324,21 @@ clean-litex:
 clean-mimxrt10xx:
 	$(MAKE) -C ports/mimxrt10xx BOARD=feather_mimxrt1011 clean
 
-clean-nrf:
-	$(MAKE) -C ports/nrf BOARD=feather_nrf52840_express clean
+clean-nordic:
+	$(MAKE) -C ports/nordic BOARD=feather_nrf52840_express clean
 
 clean-stm:
 	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express clean
 
+extmod/ulab/README.md: fetch-translate-submodules
+
+.PHONY: fetch-translate-submodules
+fetch-translate-submodules:
+	$(PYTHON) tools/ci_fetch_deps.py translate
 
 .PHONY: fetch-all-submodules
 fetch-all-submodules:
-	tools/fetch-submodules.sh
+	$(PYTHON) tools/ci_fetch_deps.py all
 
 .PHONY: remove-all-submodules
 remove-all-submodules:

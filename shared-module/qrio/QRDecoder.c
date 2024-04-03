@@ -98,21 +98,21 @@ STATIC mp_obj_t data_type(int type) {
     return mp_obj_new_int(type);
 }
 
-mp_obj_t shared_module_qrio_qrdecoder_decode(qrdecoder_qrdecoder_obj_t *self, const mp_buffer_info_t *bufinfo, qrio_pixel_policy_t policy) {
+STATIC void quirc_fill_buffer(qrdecoder_qrdecoder_obj_t *self, void *buf, qrio_pixel_policy_t policy) {
     int width, height;
     uint8_t *framebuffer = quirc_begin(self->quirc, &width, &height);
-    uint8_t *src = bufinfo->buf;
+    uint8_t *src = buf;
 
     switch (policy) {
         case QRIO_RGB565: {
-            uint16_t *src16 = bufinfo->buf;
+            uint16_t *src16 = buf;
             for (int i = 0; i < width * height; i++) {
                 framebuffer[i] = (src16[i] >> 3) & 0xfc;
             }
             break;
         }
         case QRIO_RGB565_SWAPPED: {
-            uint16_t *src16 = bufinfo->buf;
+            uint16_t *src16 = buf;
             for (int i = 0; i < width * height; i++) {
                 framebuffer[i] = (__builtin_bswap16(src16[i]) >> 3) & 0xfc;
             }
@@ -133,11 +133,16 @@ mp_obj_t shared_module_qrio_qrdecoder_decode(qrdecoder_qrdecoder_obj_t *self, co
             break;
     }
     quirc_end(self->quirc);
+}
 
+
+mp_obj_t shared_module_qrio_qrdecoder_decode(qrdecoder_qrdecoder_obj_t *self, const mp_buffer_info_t *bufinfo, qrio_pixel_policy_t policy) {
+    quirc_fill_buffer(self, bufinfo->buf, policy);
     int count = quirc_count(self->quirc);
     mp_obj_t result = mp_obj_new_list(0, NULL);
     for (int i = 0; i < count; i++) {
         quirc_extract(self->quirc, i, &self->code);
+        mp_obj_t code_obj;
         if (quirc_decode(&self->code, &self->data) != QUIRC_SUCCESS) {
             continue;
         }
@@ -145,7 +150,32 @@ mp_obj_t shared_module_qrio_qrdecoder_decode(qrdecoder_qrdecoder_obj_t *self, co
             mp_obj_new_bytes(self->data.payload, self->data.payload_len),
             data_type(self->data.data_type),
         };
-        mp_obj_t code_obj = namedtuple_make_new((const mp_obj_type_t *)&qrio_qrinfo_type_obj, 2, 0, elems);
+        code_obj = namedtuple_make_new((const mp_obj_type_t *)&qrio_qrinfo_type_obj, 2, 0, elems);
+        mp_obj_list_append(result, code_obj);
+    }
+    return result;
+}
+
+
+mp_obj_t shared_module_qrio_qrdecoder_find(qrdecoder_qrdecoder_obj_t *self, const mp_buffer_info_t *bufinfo, qrio_pixel_policy_t policy) {
+    quirc_fill_buffer(self, bufinfo->buf, policy);
+    int count = quirc_count(self->quirc);
+    mp_obj_t result = mp_obj_new_list(0, NULL);
+    for (int i = 0; i < count; i++) {
+        quirc_extract(self->quirc, i, &self->code);
+        mp_obj_t code_obj;
+        mp_obj_t elems[9] = {
+            mp_obj_new_int(self->code.corners[0].x),
+            mp_obj_new_int(self->code.corners[0].y),
+            mp_obj_new_int(self->code.corners[1].x),
+            mp_obj_new_int(self->code.corners[1].y),
+            mp_obj_new_int(self->code.corners[2].x),
+            mp_obj_new_int(self->code.corners[2].y),
+            mp_obj_new_int(self->code.corners[3].x),
+            mp_obj_new_int(self->code.corners[3].y),
+            mp_obj_new_int(self->code.size),
+        };
+        code_obj = namedtuple_make_new((const mp_obj_type_t *)&qrio_qrposition_type_obj, 9, 0, elems);
         mp_obj_list_append(result, code_obj);
     }
     return result;

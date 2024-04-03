@@ -37,9 +37,11 @@ class Cud():
     def __floordiv__(self, other):
         print("__floordiv__ called")
 
+    # CIRCUITPY-CHANGE
     def __index__(self, other):
         print("__index__ called")
 
+    # CIRCUITPY-CHANGE
     def __inv__(self):
         print("__inv__ called")
 

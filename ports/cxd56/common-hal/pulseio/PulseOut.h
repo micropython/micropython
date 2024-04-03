@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PULSEOUT_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PULSEOUT_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -36,7 +35,3 @@ typedef struct {
     uint8_t pwm_num;
     pwmio_pwmout_obj_t pwmout;
 } pulseio_pulseout_obj_t;
-
-void pulseout_reset(void);
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PULSEOUT_H

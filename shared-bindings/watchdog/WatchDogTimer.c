@@ -85,7 +85,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_deinit_obj, watchdog_wat
 
 //|     timeout: float
 //|     """The maximum number of seconds that can elapse between calls
-//|     to `feed()`"""
+//|     to `feed()`. Setting the timeout will also feed the watchdog."""
 STATIC mp_obj_t watchdog_watchdogtimer_obj_get_timeout(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_watchdog_get_timeout(self));
@@ -151,6 +151,6 @@ STATIC MP_DEFINE_CONST_DICT(watchdog_watchdogtimer_locals_dict, watchdog_watchdo
 MP_DEFINE_CONST_OBJ_TYPE(
     watchdog_watchdogtimer_type,
     MP_QSTR_WatchDogTimer,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &watchdog_watchdogtimer_locals_dict
     );

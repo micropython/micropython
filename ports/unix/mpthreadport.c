@@ -191,6 +191,10 @@ void mp_thread_set_state(mp_state_thread_t *state) {
     pthread_setspecific(tls_key, state);
 }
 
+mp_uint_t mp_thread_get_id(void) {
+    return (mp_uint_t)pthread_self();
+}
+
 void mp_thread_start(void) {
     // enable realtime priority if `-X realtime` command line parameter was set
     #if defined(__APPLE__)
@@ -210,7 +214,7 @@ void mp_thread_start(void) {
     mp_thread_unix_end_atomic_section();
 }
 
-void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
+mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     // default stack size is 8k machine-words
     if (*stack_size == 0) {
         *stack_size = 8192 * sizeof(void *);
@@ -265,7 +269,8 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
 
     mp_thread_unix_end_atomic_section();
 
-    return;
+    MP_STATIC_ASSERT(sizeof(mp_uint_t) >= sizeof(pthread_t));
+    return (mp_uint_t)id;
 
 er:
     mp_raise_OSError(ret);

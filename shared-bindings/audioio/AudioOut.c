@@ -207,7 +207,7 @@ STATIC mp_obj_t audioio_audioout_obj_pause(mp_obj_t self_in) {
     check_for_deinit(self);
 
     if (!common_hal_audioio_audioout_get_playing(self)) {
-        mp_raise_RuntimeError(translate("Not playing"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Not playing"));
     }
     common_hal_audioio_audioout_pause(self);
     return mp_const_none;
@@ -261,7 +261,7 @@ STATIC MP_DEFINE_CONST_DICT(audioio_audioout_locals_dict, audioio_audioout_local
 MP_DEFINE_CONST_OBJ_TYPE(
     audioio_audioout_type,
     MP_QSTR_AudioOut,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, audioio_audioout_make_new,
     locals_dict, &audioio_audioout_locals_dict
     );

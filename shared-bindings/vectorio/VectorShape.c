@@ -24,7 +24,7 @@
 mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pixel_shader, int32_t x, int32_t y) {
     if (!mp_obj_is_type(pixel_shader, &displayio_colorconverter_type) &&
         !mp_obj_is_type(pixel_shader, &displayio_palette_type)) {
-        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported %q type"), MP_QSTR_pixel_shader);
     }
 
     vectorio_ishape_t ishape;
@@ -42,7 +42,7 @@ mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pix
         ishape.get_area = &common_hal_vectorio_circle_get_area;
         ishape.get_pixel = &common_hal_vectorio_circle_get_pixel;
     } else {
-        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_shape);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported %q type"), MP_QSTR_shape);
     }
 
     vectorio_vector_shape_t *self = mp_obj_malloc(vectorio_vector_shape_t, &vectorio_vector_shape_type);
@@ -63,7 +63,7 @@ mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pix
     } else if (mp_obj_is_type(shape, &vectorio_circle_type)) {
         common_hal_vectorio_circle_set_on_dirty(self->ishape.shape, on_dirty);
     } else {
-        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_shape);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported %q type"), MP_QSTR_shape);
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -223,7 +223,7 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_pixel_shader(mp_obj_t wrapper_shap
     vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
 
     if (!mp_obj_is_type(pixel_shader, &displayio_palette_type) && !mp_obj_is_type(pixel_shader, &displayio_colorconverter_type)) {
-        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported %q type"), MP_QSTR_pixel_shader);
     }
 
     common_hal_vectorio_vector_shape_set_pixel_shader(self, pixel_shader);
@@ -244,6 +244,6 @@ STATIC MP_DEFINE_CONST_DICT(vectorio_vector_shape_locals_dict, vectorio_vector_s
 MP_DEFINE_CONST_OBJ_TYPE(
     vectorio_vector_shape_type,
     MP_QSTR_VectorShape,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &vectorio_vector_shape_locals_dict
     );

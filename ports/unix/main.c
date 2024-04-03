@@ -48,11 +48,39 @@
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "extmod/misc.h"
-#include "extmod/moduplatform.h"
+#include "extmod/modplatform.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
 #include "input.h"
+
+#if defined(MICROPY_UNIX_COVERAGE) // CIRCUITPY-CHANGE
+#include "py/objstr.h"
+typedef int os_getenv_err_t;
+mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_);
+os_getenv_err_t common_hal_os_getenv_str(const char *key, char *value, size_t value_len);
+os_getenv_err_t common_hal_os_getenv_int(const char *key, mp_int_t *value);
+
+STATIC mp_obj_t mod_os_getenv_int(mp_obj_t var_in) {
+    mp_int_t value;
+    os_getenv_err_t result = common_hal_os_getenv_int(mp_obj_str_get_str(var_in), &value);
+    if (result == 0) {
+        return mp_obj_new_int(value);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_int_obj, mod_os_getenv_int);
+
+STATIC mp_obj_t mod_os_getenv_str(mp_obj_t var_in) {
+    char buf[4096];
+    os_getenv_err_t result = common_hal_os_getenv_str(mp_obj_str_get_str(var_in), buf, sizeof(buf));
+    if (result == 0) {
+        return mp_obj_new_str_copy(&mp_type_str, (byte *)buf, strlen(buf));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_str_obj, mod_os_getenv_str);
+#endif
 
 // Command line options, with their defaults
 STATIC bool compile_only = false;
@@ -69,12 +97,20 @@ long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 #define MICROPY_GC_SPLIT_HEAP_N_HEAPS (1)
 #endif
 
+#if !MICROPY_PY_SYS_PATH
+#error "The unix port requires MICROPY_PY_SYS_PATH=1"
+#endif
+
+#if !MICROPY_PY_SYS_ARGV
+#error "The unix port requires MICROPY_PY_SYS_ARGV=1"
+#endif
+
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDERR_FILENO, str, len), {});
     #if MICROPY_PY_OS_DUPTERM
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_os_dupterm_tx_strn(str, len);
     #endif
 }
 
@@ -540,44 +576,40 @@ MP_NOINLINE int main_(int argc, char **argv) {
     }
     #endif
 
-    char *home = getenv("HOME");
-    char *path = getenv("MICROPYPATH");
-    if (path == NULL) {
-        path = MICROPY_PY_SYS_PATH_DEFAULT;
-    }
-    size_t path_num = 1; // [0] is for current dir (or base dir of the script)
-    if (*path == PATHLIST_SEP_CHAR) {
-        path_num++;
-    }
-    for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
-        path_num++;
-        if (p != NULL) {
-            p++;
-        }
-    }
-    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), path_num);
-    mp_obj_t *path_items;
-    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
-    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     {
-        char *p = path;
-        for (mp_uint_t i = 1; i < path_num; i++) {
-            char *p1 = strchr(p, PATHLIST_SEP_CHAR);
-            if (p1 == NULL) {
-                p1 = p + strlen(p);
+        // sys.path starts as [""]
+        mp_sys_path = mp_obj_new_list(0, NULL);
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
+
+        // Add colon-separated entries from MICROPYPATH.
+        char *home = getenv("HOME");
+        char *path = getenv("MICROPYPATH");
+        if (path == NULL) {
+            path = MICROPY_PY_SYS_PATH_DEFAULT;
+        }
+        if (*path == PATHLIST_SEP_CHAR) {
+            // First entry is empty. We've already added an empty entry to sys.path, so skip it.
+            ++path;
+        }
+        bool path_remaining = *path;
+        while (path_remaining) {
+            char *path_entry_end = strchr(path, PATHLIST_SEP_CHAR);
+            if (path_entry_end == NULL) {
+                path_entry_end = path + strlen(path);
+                path_remaining = false;
             }
-            if (p[0] == '~' && p[1] == '/' && home != NULL) {
+            if (path[0] == '~' && path[1] == '/' && home != NULL) {
                 // Expand standalone ~ to $HOME
                 int home_l = strlen(home);
                 vstr_t vstr;
-                vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
+                vstr_init(&vstr, home_l + (path_entry_end - path - 1) + 1);
                 vstr_add_strn(&vstr, home, home_l);
-                vstr_add_strn(&vstr, p + 1, p1 - p - 1);
-                path_items[i] = mp_obj_new_str_from_vstr(&vstr);
+                vstr_add_strn(&vstr, path + 1, path_entry_end - path - 1);
+                mp_obj_list_append(mp_sys_path, mp_obj_new_str_from_vstr(&vstr));
             } else {
-                path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
+                mp_obj_list_append(mp_sys_path, mp_obj_new_str_via_qstr(path, path_entry_end - path));
             }
-            p = p1 + 1;
+            path = path_entry_end + 1;
         }
     }
 
@@ -589,6 +621,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
         MP_DECLARE_CONST_FUN_OBJ_0(extra_cpp_coverage_obj);
         mp_store_global(MP_QSTR_extra_coverage, MP_OBJ_FROM_PTR(&extra_coverage_obj));
         mp_store_global(MP_QSTR_extra_cpp_coverage, MP_OBJ_FROM_PTR(&extra_cpp_coverage_obj));
+        // CIRCUITPY-CHANGE: test native base classes work as needed by CircuitPython libraries.
+        extern const mp_obj_type_t native_base_class_type;
+        mp_store_global(MP_QSTR_NativeBaseClass, MP_OBJ_FROM_PTR(&native_base_class_type));
+        mp_store_global(MP_QSTR_getenv_int, MP_OBJ_FROM_PTR(&mod_os_getenv_int_obj));
+        mp_store_global(MP_QSTR_getenv_str, MP_OBJ_FROM_PTR(&mod_os_getenv_str_obj));
     }
     #endif
 
@@ -666,7 +703,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     return handle_uncaught_exception(nlr.ret_val) & 0xff;
                 }
 
-                if (mp_obj_is_package(mod) && !subpkg_tried) {
+                // If this module is a package, see if it has a `__main__.py`.
+                mp_obj_t dest[2];
+                mp_load_method_protected(mod, MP_QSTR___path__, dest, true);
+                if (dest[0] != MP_OBJ_NULL && !subpkg_tried) {
                     subpkg_tried = true;
                     vstr_t vstr;
                     int len = strlen(argv[a + 1]);
@@ -709,7 +749,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
             // Set base dir of the script as first entry in sys.path.
             char *p = strrchr(basedir, '/');
-            path_items[0] = mp_obj_new_str_via_qstr(basedir, p - basedir);
+            mp_obj_list_store(mp_sys_path, MP_OBJ_NEW_SMALL_INT(0), mp_obj_new_str_via_qstr(basedir, p - basedir));
             free(pathbuf);
 
             set_sys_argv(argv, argc, a);

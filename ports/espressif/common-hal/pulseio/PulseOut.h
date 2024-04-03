@@ -24,17 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PULSEIO_PULSEOUT_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PULSEIO_PULSEOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
-#include "peripherals/rmt.h"
+#include "driver/rmt_types.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    rmt_channel_t channel;
+    rmt_channel_handle_t channel;
+    rmt_encoder_handle_t encoder;
 } pulseio_pulseout_obj_t;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PULSEIO_PULSEOUT_H

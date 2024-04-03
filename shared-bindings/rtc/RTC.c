@@ -93,7 +93,7 @@ MP_PROPERTY_GETSET(rtc_rtc_datetime_obj,
 //|
 //|     A positive value speeds up the clock and a negative value slows it down.
 //|
-//|     **Limitations:** Calibration not supported on SAMD, nRF, RP240, Spresense, and STM.
+//|     **Limitations:** Calibration not supported on SAMD, Nordic, RP240, Spresense, and STM.
 //|
 //|     Range and value is hardware specific, but one step is often approximately 1 ppm::
 //|
@@ -128,7 +128,7 @@ STATIC MP_DEFINE_CONST_DICT(rtc_rtc_locals_dict, rtc_rtc_locals_dict_table);
 MP_DEFINE_CONST_OBJ_TYPE(
     rtc_rtc_type,
     MP_QSTR_RTC,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, rtc_rtc_make_new,
     locals_dict, &rtc_rtc_locals_dict
     );

@@ -79,7 +79,7 @@ STATIC mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_obj_t dest[2];
     mp_load_method_maybe(vfs_obj, MP_QSTR_mount, dest);
     if (dest[0] == MP_OBJ_NULL) {
-        mp_raise_ValueError(translate("filesystem must provide mount method"));
+        mp_raise_ValueError(MP_ERROR_TEXT("filesystem must provide mount method"));
     }
 
     common_hal_storage_mount(vfs_obj, mnt_str, args[ARG_readonly].u_bool);
@@ -187,7 +187,7 @@ STATIC mp_obj_t storage_erase_filesystem(size_t n_args, const mp_obj_t *pos_args
     common_hal_storage_erase_filesystem(extended);
     #else
     if (mp_obj_is_true(args[ARG_extended].u_obj)) {
-        mp_raise_NotImplementedError_varg(translate("%q=%q"), MP_QSTR_extended, MP_QSTR_True);
+        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q=%q"), MP_QSTR_extended, MP_QSTR_True);
     }
     common_hal_storage_erase_filesystem(false);
     #endif
@@ -208,7 +208,7 @@ STATIC mp_obj_t storage_disable_usb_drive(void) {
     #else
     if (true) {
         #endif
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
     return mp_const_none;
 }
@@ -233,7 +233,7 @@ STATIC mp_obj_t storage_enable_usb_drive(void) {
     #else
     if (true) {
         #endif
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
     return mp_const_none;
 }
@@ -275,30 +275,38 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|         larger filesystems, but you will need to format the filesystem on another device.
 //|         """
 //|         ...
+//|
 //|     def open(self, path: str, mode: str) -> None:
 //|         """Like builtin ``open()``"""
 //|         ...
+//|
 //|     def ilistdir(
 //|         self, path: str
 //|     ) -> Iterator[Union[Tuple[AnyStr, int, int, int], Tuple[AnyStr, int, int]]]:
 //|         """Return an iterator whose values describe files and folders within
 //|         ``path``"""
 //|         ...
+//|
 //|     def mkdir(self, path: str) -> None:
 //|         """Like `os.mkdir`"""
 //|         ...
+//|
 //|     def rmdir(self, path: str) -> None:
 //|         """Like `os.rmdir`"""
 //|         ...
+//|
 //|     def stat(self, path: str) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|         """Like `os.stat`"""
 //|         ...
+//|
 //|     def statvfs(self, path: int) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|         """Like `os.statvfs`"""
 //|         ...
+//|
 //|     def mount(self, readonly: bool, mkfs: VfsFat) -> None:
 //|         """Don't call this directly, call `storage.mount`."""
 //|         ...
+//|
 //|     def umount(self) -> None:
 //|         """Don't call this directly, call `storage.umount`."""
 //|         ...

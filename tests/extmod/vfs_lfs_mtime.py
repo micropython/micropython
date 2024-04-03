@@ -107,4 +107,4 @@ except MemoryError:
     print("SKIP")
     raise SystemExit
 
-test(bdev, uos.VfsLfs2)
+test(bdev, os.VfsLfs2)

@@ -32,7 +32,6 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 
 //| class Palette:
@@ -52,7 +51,7 @@
 STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_color_count, ARG_dither };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_color_count, MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_color_count, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0 } },
         { MP_QSTR_dither, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -105,6 +104,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|     def __getitem__(self, index: int) -> Optional[int]:
 //|         r"""Return the pixel color at the given index as an integer."""
 //|         ...
+//|
 //|     def __setitem__(
 //|         self, index: int, value: Union[int, ReadableBuffer, Tuple[int, int, int]]
 //|     ) -> None:
@@ -149,21 +149,21 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
     mp_buffer_info_t bufinfo;
     if (mp_get_buffer(value, &bufinfo, MP_BUFFER_READ)) {
         if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-            mp_raise_ValueError(translate("color buffer must be a bytearray or array of type 'b' or 'B'"));
+            mp_raise_ValueError(MP_ERROR_TEXT("color buffer must be a bytearray or array of type 'b' or 'B'"));
         }
         uint8_t *buf = bufinfo.buf;
         if (bufinfo.len == 3 || bufinfo.len == 4) {
             color = buf[0] << 16 | buf[1] << 8 | buf[2];
         } else {
-            mp_raise_ValueError(translate("color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"));
+            mp_raise_ValueError(MP_ERROR_TEXT("color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"));
         }
     } else if (mp_obj_get_int_maybe(value, &int_value)) {
         if (int_value < 0 || int_value > 0xffffff) {
-            mp_raise_TypeError(translate("color must be between 0x000000 and 0xffffff"));
+            mp_raise_TypeError(MP_ERROR_TEXT("color must be between 0x000000 and 0xffffff"));
         }
         color = int_value;
     } else {
-        mp_raise_TypeError(translate("color buffer must be a buffer, tuple, list, or int"));
+        mp_raise_TypeError(MP_ERROR_TEXT("color buffer must be a buffer, tuple, list, or int"));
     }
     common_hal_displayio_palette_set_color(self, index, color);
     return mp_const_none;
@@ -218,7 +218,7 @@ STATIC MP_DEFINE_CONST_DICT(displayio_palette_locals_dict, displayio_palette_loc
 MP_DEFINE_CONST_OBJ_TYPE(
     displayio_palette_type,
     MP_QSTR_Palette,
-    MP_TYPE_FLAG_ITER_IS_GETITER,
+    MP_TYPE_FLAG_ITER_IS_GETITER | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, displayio_palette_make_new,
     locals_dict, &displayio_palette_locals_dict,
     subscr, palette_subscr,

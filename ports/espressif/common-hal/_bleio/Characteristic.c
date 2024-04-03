@@ -50,7 +50,25 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     self->props = props;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
-    common_hal_bleio_characteristic_set_value(self, initial_value_bufinfo);
+
+    if (initial_value_bufinfo != NULL) {
+        // Copy the initial value if it's on the heap. Otherwise it's internal and we may not be able
+        // to allocate.
+        self->current_value_len = initial_value_bufinfo->len;
+        if (gc_alloc_possible()) {
+            if (gc_nbytes(initial_value_bufinfo->buf) > 0) {
+                uint8_t *initial_value = m_malloc(self->current_value_len);
+                self->current_value_alloc = self->current_value_len;
+                memcpy(initial_value, initial_value_bufinfo->buf, self->current_value_len);
+                self->current_value = initial_value;
+            } else {
+                self->current_value_alloc = 0;
+                self->current_value = initial_value_bufinfo->buf;
+            }
+        } else {
+            self->current_value = initial_value_bufinfo->buf;
+        }
+    }
 
     if (gc_alloc_possible()) {
         self->descriptor_list = mp_obj_new_list(0, NULL);
@@ -165,10 +183,10 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
         // Validate data length for local characteristics only.
         // TODO: Test this once we can get servers going.
         if (self->fixed_length && bufinfo->len != self->max_length) {
-            mp_raise_ValueError(translate("Value length != required fixed length"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Value length != required fixed length"));
         }
         if (bufinfo->len > self->max_length) {
-            mp_raise_ValueError(translate("Value length > max_length"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Value length > max_length"));
         }
 
         if (bufinfo == NULL) {
@@ -216,11 +234,11 @@ void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *
 
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {
     if (self->cccd_handle == BLEIO_HANDLE_INVALID) {
-        mp_raise_bleio_BluetoothError(translate("No CCCD for this Characteristic"));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("No CCCD for this Characteristic"));
     }
 
     if (!common_hal_bleio_service_get_is_remote(self->service)) {
-        mp_raise_bleio_RoleError(translate("Can't set CCCD on local Characteristic"));
+        mp_raise_bleio_RoleError(MP_ERROR_TEXT("Can't set CCCD on local Characteristic"));
     }
 
     const uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);

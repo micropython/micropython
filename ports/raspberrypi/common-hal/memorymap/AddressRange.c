@@ -71,7 +71,7 @@ void common_hal_memorymap_addressrange_construct(memorymap_addressrange_obj_t *s
         }
     }
 
-    mp_raise_ValueError(translate("Address range not allowed"));
+    mp_raise_ValueError(MP_ERROR_TEXT("Address range not allowed"));
 }
 
 size_t common_hal_memorymap_addressrange_get_length(const memorymap_addressrange_obj_t *self) {
@@ -90,7 +90,7 @@ void common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_ob
         case IO:
             if ((size_t)dest_addr & 0x03 || len & 0x03) {
                 // Unaligned access or unaligned length not supported by RP2 for IO registers
-                mp_raise_RuntimeError(translate("Unable to access unaligned IO register"));
+                mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to access unaligned IO register"));
             } else {
                 // Aligned access and length, use 32-bit writes
                 uint32_t *dest_addr32 = (uint32_t *)dest_addr;
@@ -103,7 +103,7 @@ void common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_ob
         case XIP:
         case ROM:
             // XIP and ROM are read-only
-            mp_raise_RuntimeError(translate("Unable to write to read-only memory"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to write to read-only memory"));
             break;
     }
 }
@@ -122,7 +122,7 @@ void common_hal_memorymap_addressrange_get_bytes(const memorymap_addressrange_ob
         case IO:
             if ((size_t)src_addr & 0x03 || len & 0x03) {
                 // Unaligned access or unaligned length not supported by RP2 for IO registers
-                mp_raise_RuntimeError(translate("Unable to access unaligned IO register"));
+                mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to access unaligned IO register"));
             } else {
                 // Aligned access and length, use 32-bit reads
                 uint32_t *src_addr32 = (uint32_t *)src_addr;

@@ -43,7 +43,7 @@
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO0)
 
 // Explanation of how a user got into safe mode
-// #define BOARD_USER_SAFE_MODE_ACTION translate("You pressed the BUT button at start up.")
+// #define BOARD_USER_SAFE_MODE_ACTION MP_ERROR_TEXT("You pressed the BUT button at start up.")
 
 // UART pins attached to the USB-serial converter chip
 #define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)

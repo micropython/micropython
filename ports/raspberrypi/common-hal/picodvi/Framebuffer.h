@@ -28,13 +28,10 @@
 
 #include "py/obj.h"
 
-#include "supervisor/memory.h"
-
 #include "lib/PicoDVI/software/libdvi/dvi.h"
 
 typedef struct {
     mp_obj_base_t base;
-    supervisor_allocation *allocation;
     uint32_t *framebuffer;
     size_t framebuffer_len; // in words
     size_t tmdsbuf_size; // in words

@@ -105,6 +105,8 @@ mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
             return mp_obj_new_int(val);
         case MP_NATIVE_TYPE_UINT:
             return mp_obj_new_int_from_uint(val);
+        case MP_NATIVE_TYPE_QSTR:
+            return MP_OBJ_NEW_QSTR(val);
         default: // a pointer
             // we return just the value of the pointer as an integer
             return mp_obj_new_int_from_uint(val);
@@ -318,7 +320,7 @@ const mp_fun_table_t mp_fun_table = {
     gc_realloc,
     mp_printf,
     mp_vprintf,
-    mp_raise_msg_str, // CIRCUITPY
+    mp_raise_msg_str, // CIRCUITPY-CHANGE
     mp_obj_get_type,
     mp_obj_new_str,
     mp_obj_new_bytes,

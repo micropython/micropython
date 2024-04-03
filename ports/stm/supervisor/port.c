@@ -33,20 +33,10 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
-#ifdef CIRCUITPY_AUDIOPWMIO
-#include "common-hal/audiopwmio/PWMAudioOut.h"
-#endif
 #if CIRCUITPY_BUSIO
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
-#endif
-#if CIRCUITPY_PULSEIO
-#include "common-hal/pulseio/PulseOut.h"
-#include "common-hal/pulseio/PulseIn.h"
-#endif
-#if CIRCUITPY_PWMIO
-#include "common-hal/pwmio/PWMOut.h"
 #endif
 #if CIRCUITPY_PULSEIO || CIRCUITPY_PWMIO
 #include "peripherals/timers.h"
@@ -248,9 +238,6 @@ void reset_port(void) {
     rtc_reset();
     #endif
 
-    #if CIRCUITPY_AUDIOPWMIO
-    audiopwmout_reset();
-    #endif
     #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
@@ -259,17 +246,7 @@ void reset_port(void) {
     #if CIRCUITPY_SDIOIO
     sdioio_reset();
     #endif
-    #if CIRCUITPY_PULSEIO || CIRCUITPY_PWMIO
-    timers_reset();
-    #endif
-    #if CIRCUITPY_PULSEIO
-    pulseout_reset();
-    pulsein_reset();
-    #endif
-    #if CIRCUITPY_PWMIO
-    pwmout_reset();
-    #endif
-    #if CIRCUITPY_PULSEIO || CIRCUITPY_ALARM
+    #if CIRCUITPY_ALARM
     exti_reset();
     #endif
 }
@@ -330,15 +307,15 @@ uint32_t *port_heap_get_bottom(void) {
 }
 
 uint32_t *port_heap_get_top(void) {
-    return &_ld_heap_end;
-}
-
-bool port_has_fixed_stack(void) {
-    return false;
+    return port_stack_get_limit();
 }
 
 uint32_t *port_stack_get_limit(void) {
-    return &_ld_stack_bottom;
+    #pragma GCC diagnostic push
+
+    #pragma GCC diagnostic ignored "-Warray-bounds"
+    return port_stack_get_top() - (CIRCUITPY_DEFAULT_STACK_SIZE + CIRCUITPY_EXCEPTION_STACK_SIZE) / sizeof(uint32_t);
+    #pragma GCC diagnostic pop
 }
 
 uint32_t *port_stack_get_top(void) {

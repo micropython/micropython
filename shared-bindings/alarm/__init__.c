@@ -87,7 +87,7 @@ STATIC void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
             mp_obj_is_type(objs[i], &alarm_touch_touchalarm_type)) {
             continue;
         }
-        mp_raise_TypeError_varg(translate("Expected a kind of %q"), MP_QSTR_Alarm);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("Expected a kind of %q"), MP_QSTR_Alarm);
     }
 }
 

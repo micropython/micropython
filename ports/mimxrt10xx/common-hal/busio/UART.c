@@ -83,24 +83,6 @@ static void config_periph_pin(const mcu_periph_obj_t *periph) {
         | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
 
-STATIC void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t status, void *user_data) {
-    busio_uart_obj_t *self = (busio_uart_obj_t *)user_data;
-
-    if (status == kStatus_LPUART_RxIdle) {
-        self->rx_ongoing = false;
-    }
-}
-
-void uart_reset(void) {
-    for (uint i = 0; i < MP_ARRAY_SIZE(mcu_uart_banks); i++) {
-        if (never_reset_uart[i]) {
-            continue;
-        }
-        reserved_uart[i] = false;
-        LPUART_Deinit(mcu_uart_banks[i]);
-    }
-}
-
 void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
     never_reset_uart[self->index] = true;
     common_hal_never_reset_pin(self->tx);
@@ -197,11 +179,11 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     if (uart_taken) {
-        mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Hardware in use, try alternative pins"));
     }
 
     if (is_onedirection && ((rts != NULL) || (cts != NULL))) {
-        mp_raise_ValueError(translate("Both RX and TX required for flow control"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Both RX and TX required for flow control"));
     }
 
     // Filter for sane settings for RS485
@@ -210,13 +192,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             rs485_dir->gpio, rs485_dir->number, rs485_dir->mux_idx, rs485_dir->mux_reg, rs485_dir->cfg_reg,
             rs485_dir->mux_reset, rs485_dir->pad_reset);
         if ((rts != NULL) || (cts != NULL)) {
-            mp_raise_ValueError(translate("Cannot specify RTS or CTS in RS485 mode"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Cannot specify RTS or CTS in RS485 mode"));
         }
         // For IMXRT the RTS pin is used for RS485 direction ???? - Can be will try
         // it if this is an rts pin.
     } else {
         if (rs485_invert) {
-            mp_raise_ValueError(translate("RS485 inversion specified when not in RS485 mode"));
+            mp_raise_ValueError(MP_ERROR_TEXT("RS485 inversion specified when not in RS485 mode"));
         }
     }
 
@@ -348,6 +330,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if (self->rx != NULL) {
         if (receiver_buffer == NULL) {
+            // One byte is used internally so add one to make sure we have enough space.
+            receiver_buffer_size += 1;
             self->ringbuf = gc_alloc(receiver_buffer_size, false);
         } else {
             self->ringbuf = receiver_buffer;
@@ -359,7 +343,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             m_malloc_fail(receiver_buffer_size);
         }
 
-        LPUART_TransferCreateHandle(self->uart, &self->handle, LPUART_UserCallback, self);
+        // Use the internal ring buffer implementation.
+        LPUART_TransferCreateHandle(self->uart, &self->handle, NULL, NULL);
         // Pass actual allocated size; the LPUART routines are cognizant that
         // the capacity is one less than the size.
         LPUART_TransferStartRingBuffer(self->uart, &self->handle, self->ringbuf, receiver_buffer_size);
@@ -378,11 +363,12 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         return;
     }
 
-    reserved_uart[self->index] = false;
-    never_reset_uart[self->index] = false;
-
+    LPUART_TransferStopRingBuffer(self->uart, &self->handle);
     LPUART_Deinit(self->uart);
     gc_free(self->ringbuf);
+
+    reserved_uart[self->index] = false;
+    never_reset_uart[self->index] = false;
 
     common_hal_reset_pin(self->rx);
     common_hal_reset_pin(self->tx);
@@ -395,13 +381,12 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     self->cts = NULL;
     self->rts = NULL;
     self->rs485_dir = NULL;
-
 }
 
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (self->rx == NULL) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_rx);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_rx);
     }
 
     if (len == 0) {
@@ -409,18 +394,24 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         return 0;
     }
 
-    lpuart_transfer_t xfer = {
-        .data = data,
-        .dataSize = len,
-    };
-
-    self->rx_ongoing = true;
-    LPUART_TransferReceiveNonBlocking(self->uart, &self->handle, &xfer, NULL);
-
+    size_t received = 0;
     uint64_t start_ticks = supervisor_ticks_ms64();
-
     // Wait for all bytes received or timeout
-    while (self->rx_ongoing && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms)) {
+    while (received < len && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms)) {
+        lpuart_transfer_t xfer = {
+            .data = data + received
+        };
+        size_t remaining = len - received;
+        xfer.dataSize = MIN(remaining, LPUART_TransferGetRxRingBufferLength(self->uart, &self->handle));
+        // Only request as much as has already been received. Otherwise, we need to deal with
+        // callbacks.
+        size_t additional_read = 0;
+        LPUART_TransferReceiveNonBlocking(self->uart, &self->handle, &xfer, &additional_read);
+        received += additional_read;
+        // Break early when we're done to skip background tasks.
+        if (received == len) {
+            break;
+        }
         RUN_BACKGROUND_TASKS;
 
         // Allow user to break out of a timeout with a KeyboardInterrupt.
@@ -429,36 +420,18 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         }
     }
 
-    // if we timed out, stop the transfer
-    if (self->rx_ongoing) {
-        uint32_t recvd = 0;
-        LPUART_TransferGetReceiveCount(self->uart, &self->handle, &recvd);
-        LPUART_TransferAbortReceive(self->uart, &self->handle);
-        if (recvd == 0) {
-            *errcode = EAGAIN;
-            return MP_STREAM_ERROR;
-        }
-        return recvd;
+    if (received == 0) {
+        *errcode = EAGAIN;
+        return MP_STREAM_ERROR;
     }
 
-    // No data left, we got it all
-    if (self->handle.rxData == NULL) {
-        return len;
-    }
-
-    // The only place we can reliably tell how many bytes have been received is from the current
-    // wp in the handle (because the abort nukes rxDataSize, and reading it before abort is a race.)
-    if (self->handle.rxData > data) {
-        return self->handle.rxData - data;
-    } else {
-        return len;
-    }
+    return received;
 }
 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (self->tx == NULL) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_tx);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_tx);
     }
     if (self->rs485_dir && len) {
         GPIO_PinWrite(self->rs485_dir->gpio, self->rs485_dir->number, !self->rs485_invert);

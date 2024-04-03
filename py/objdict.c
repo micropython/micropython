@@ -49,6 +49,22 @@ const mp_obj_dict_t mp_const_empty_dict_obj = {
     }
 };
 
+// CIRCUITPY-CHANGE: Native methods are passed the subclass instance so they can
+// refer to subclass members. Dict only cares about the native struct so this
+// function gets it.
+STATIC mp_obj_dict_t *native_dict(mp_obj_t self_in) {
+    // Check for OrderedDict first because it is marked as a subclass of dict. However, it doesn't
+    // store its state in subobj like python types to native types do.
+    mp_obj_t native_instance = MP_OBJ_NULL;
+    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    native_instance = mp_obj_cast_to_native_base(self_in, MP_OBJ_FROM_PTR(&mp_type_ordereddict));
+    #endif
+    if (native_instance == MP_OBJ_NULL) {
+        native_instance = mp_obj_cast_to_native_base(self_in, MP_OBJ_FROM_PTR(&mp_type_dict));
+    }
+    return MP_OBJ_TO_PTR(native_instance);
+}
+
 STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
 // This is a helper function to iterate through a dictionary.  The state of
@@ -71,14 +87,14 @@ STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
 }
 
 STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_dict_t *self = native_dict(self_in);
     bool first = true;
     const char *item_separator = ", ";
     const char *key_separator = ": ";
-    if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
+    if (!(MICROPY_PY_JSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
     } else {
-        #if MICROPY_PY_UJSON_SEPARATORS
+        #if MICROPY_PY_JSON_SEPARATORS
         item_separator = MP_PRINT_GET_EXT(print)->item_separator;
         key_separator = MP_PRINT_GET_EXT(print)->key_separator;
         #endif
@@ -94,7 +110,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
             mp_print_str(print, item_separator);
         }
         first = false;
-        bool add_quote = MICROPY_PY_UJSON && kind == PRINT_JSON && !mp_obj_is_str_or_bytes(next->key);
+        bool add_quote = MICROPY_PY_JSON && kind == PRINT_JSON && !mp_obj_is_str_or_bytes(next->key);
         if (add_quote) {
             mp_print_str(print, "\"");
         }
@@ -144,7 +160,7 @@ mp_obj_t mp_obj_dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 }
 
 STATIC mp_obj_t dict_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_dict_t *self = native_dict(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL:
             return mp_obj_new_bool(self->map.used != 0);
@@ -162,7 +178,7 @@ STATIC mp_obj_t dict_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t dict_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    mp_obj_dict_t *o = MP_OBJ_TO_PTR(lhs_in);
+    mp_obj_dict_t *o = native_dict(lhs_in);
     switch (op) {
         case MP_BINARY_OP_CONTAINS: {
             mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
@@ -223,7 +239,7 @@ STATIC mp_obj_t dict_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_
 
 // Note: Make sure this is inlined in load part of dict_subscr() below.
 mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index) {
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_dict_t *self = native_dict(self_in);
     mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
     if (elem == NULL) {
         mp_raise_type_arg(&mp_type_KeyError, index);
@@ -239,7 +255,7 @@ STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         return mp_const_none;
     } else if (value == MP_OBJ_SENTINEL) {
         // load
-        mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+        mp_obj_dict_t *self = native_dict(self_in);
         mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
         if (elem == NULL) {
             mp_raise_type_arg(&mp_type_KeyError, index);
@@ -264,7 +280,7 @@ STATIC void PLACE_IN_ITCM(mp_ensure_not_fixed)(const mp_obj_dict_t * dict) {
 
 STATIC mp_obj_t dict_clear(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_dict_t *self = native_dict(self_in);
     mp_ensure_not_fixed(self);
 
     mp_map_clear(&self->map);
@@ -275,9 +291,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_clear_obj, dict_clear);
 
 mp_obj_t mp_obj_dict_copy(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_dict_t *self = native_dict(self_in);
     mp_obj_t other_out = mp_obj_new_dict(self->map.alloc);
-    mp_obj_dict_t *other = MP_OBJ_TO_PTR(other_out);
+    mp_obj_dict_t *other = native_dict(other_out);
     other->base.type = self->base.type;
     other->map.used = self->map.used;
     other->map.all_keys_are_qstrs = self->map.all_keys_are_qstrs;
@@ -305,6 +321,7 @@ STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
     mp_obj_t len = mp_obj_len_maybe(args[1]);
     if (len == MP_OBJ_NULL) {
         /* object's type doesn't have a __len__ slot */
+        // CIRCUITPY-CHANGE: uses dict_new_typed() here.
         self_out = dict_new_typed(type, 0);
     } else {
         self_out = dict_new_typed(type, MP_OBJ_SMALL_INT_VALUE(len));
@@ -323,7 +340,7 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(dict_fromkeys_obj, MP_ROM_PTR(&dict_fromk
 
 STATIC mp_obj_t dict_get_helper(size_t n_args, const mp_obj_t *args, mp_map_lookup_kind_t lookup_kind) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(args[0]));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_dict_t *self = native_dict(args[0]);
     if (lookup_kind != MP_MAP_LOOKUP) {
         mp_ensure_not_fixed(self);
     }
@@ -368,7 +385,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_setdefault_obj, 2, 3, dict_setde
 
 STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_dict_t *self = native_dict(self_in);
     mp_ensure_not_fixed(self);
     if (self->map.used == 0) {
         mp_raise_msg_varg(&mp_type_KeyError, MP_ERROR_TEXT("pop from empty %q"), MP_QSTR_dict);
@@ -393,7 +410,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_popitem_obj, dict_popitem);
 
 STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(args[0]));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_dict_t *self = native_dict(args[0]);
     mp_ensure_not_fixed(self);
 
     mp_arg_check_num(n_args, kwargs->used, 1, 2, true);
@@ -441,6 +458,7 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dict_update_obj, 1, dict_update);
 
+// CIRCUITPY-CHANGE
 #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
 STATIC mp_obj_t dict_move_to_end(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -518,7 +536,7 @@ typedef struct _mp_obj_dict_view_t {
 STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_dict_view_it));
     mp_obj_dict_view_it_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_map_elem_t *next = dict_iter_next(MP_OBJ_TO_PTR(self->dict), &self->cur);
+    mp_map_elem_t *next = dict_iter_next(native_dict(self->dict), &self->cur);
 
     if (next == NULL) {
         return MP_OBJ_STOP_ITERATION;
@@ -576,6 +594,16 @@ STATIC void dict_view_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     mp_print_str(print, "])");
 }
 
+// CIRCUITPY-CHANGE
+STATIC mp_obj_t dict_view_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
+    mp_obj_dict_view_t *o = MP_OBJ_TO_PTR(o_in);
+    // only dict.values() supports __hash__.
+    if (op == MP_UNARY_OP_HASH && o->kind == MP_DICT_VIEW_VALUES) {
+        return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
+    }
+    return MP_OBJ_NULL;
+}
+
 STATIC mp_obj_t dict_view_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // only supported for the 'keys' kind until sets and dicts are refactored
     mp_obj_dict_view_t *o = MP_OBJ_TO_PTR(lhs_in);
@@ -593,6 +621,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_dict_view,
     MP_TYPE_FLAG_ITER_IS_GETITER,
     print, dict_view_print,
+    unary_op, dict_view_unary_op,
     binary_op, dict_view_binary_op,
     iter, dict_view_getiter
     );
@@ -650,6 +679,7 @@ STATIC const mp_rom_map_elem_t dict_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&dict_get_obj) },
     { MP_ROM_QSTR(MP_QSTR_items), MP_ROM_PTR(&dict_items_obj) },
     { MP_ROM_QSTR(MP_QSTR_keys), MP_ROM_PTR(&dict_keys_obj) },
+    // CIRCUITPY-CHANGE
     #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
     { MP_ROM_QSTR(MP_QSTR_move_to_end), MP_ROM_PTR(&dict_move_to_end_obj) },
     #endif
@@ -712,7 +742,7 @@ size_t mp_obj_dict_len(mp_obj_t self_in) {
 
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_dict_t *self = native_dict(self_in);
     mp_ensure_not_fixed(self);
     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     return self_in;

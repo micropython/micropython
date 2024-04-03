@@ -123,12 +123,6 @@ mp_obj_t MP_VFS_LFSx(file_open)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mod
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t MP_VFS_LFSx(file___exit__)(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
-    return mp_stream_close(args[0]);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(MP_VFS_LFSx(file___exit___obj), 4, 4, MP_VFS_LFSx(file___exit__));
-
 STATIC mp_uint_t MP_VFS_LFSx(file_read)(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     MP_OBJ_VFS_LFSx_FILE *self = MP_OBJ_TO_PTR(self_in);
     MP_VFS_LFSx(check_open)(self);
@@ -213,7 +207,7 @@ STATIC const mp_rom_map_elem_t MP_VFS_LFSx(file_locals_dict_table)[] = {
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&MP_VFS_LFSx(file___exit___obj)) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&mp_stream___exit___obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(MP_VFS_LFSx(file_locals_dict), MP_VFS_LFSx(file_locals_dict_table));
 

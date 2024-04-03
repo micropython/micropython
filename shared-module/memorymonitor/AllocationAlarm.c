@@ -54,7 +54,7 @@ void common_hal_memorymonitor_allocationalarm_pause(memorymonitor_allocationalar
 
 void common_hal_memorymonitor_allocationalarm_resume(memorymonitor_allocationalarm_obj_t *self) {
     if (self->previous != NULL) {
-        mp_raise_RuntimeError(translate("Already running"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Already running"));
     }
     self->next = MP_STATE_VM(active_allocationalarms);
     self->previous = (memorymonitor_allocationalarm_obj_t **)&MP_STATE_VM(active_allocationalarms);
@@ -85,7 +85,7 @@ void memorymonitor_allocationalarms_allocation(size_t block_count) {
         alarm = next;
     }
     if (alert_count > 0) {
-        mp_raise_memorymonitor_AllocationError(translate("Attempt to allocate %d blocks"), block_count);
+        mp_raise_memorymonitor_AllocationError(MP_ERROR_TEXT("Attempt to allocate %d blocks"), block_count);
     }
 }
 

@@ -29,7 +29,6 @@
 #include "py/obj.h"
 
 #include "common-hal/socketpool/SocketPool.h"
-#include "common-hal/ssl/SSLContext.h"
 
 #include "components/esp-tls/esp_tls.h"
 #include "components/lwip/lwip/src/include/lwip/sockets.h"

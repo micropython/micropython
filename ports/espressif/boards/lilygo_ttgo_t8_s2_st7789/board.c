@@ -41,7 +41,7 @@ uint8_t display_init_sequence[] = {
     // normal display mode on
     0x13, 0,
     // display and color format settings
-    0x36, 1, 0x08,
+    0x36, 1, 0x68,
     0xB6, 2, 0x0A, 0x82,
     0x3A, 1 | DELAY,  0x55, 10,
     // ST7789V frame rate setting
@@ -65,7 +65,7 @@ uint8_t display_init_sequence[] = {
 };
 
 static void display_init(void) {
-    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
 
     common_hal_busio_spi_construct(
@@ -77,9 +77,9 @@ static void display_init(void) {
 
     common_hal_busio_spi_never_reset(spi);
 
-    bus->base.type = &displayio_fourwire_type;
+    bus->base.type = &fourwire_fourwire_type;
 
-    common_hal_displayio_fourwire_construct(
+    common_hal_fourwire_fourwire_construct(
         bus,
         spi,
         &pin_GPIO37,    // DC
@@ -90,17 +90,17 @@ static void display_init(void) {
         0               // phase
         );
 
-    displayio_display_obj_t *display = &allocate_display()->display;
-    display->base.type = &displayio_display_type;
+    busdisplay_busdisplay_obj_t *display = &allocate_display()->display;
+    display->base.type = &busdisplay_busdisplay_type;
 
-    common_hal_displayio_display_construct(
+    common_hal_busdisplay_busdisplay_construct(
         display,
         bus,
         240,            // width (after rotation)
         135,            // height (after rotation)
-        52,             // column start
-        40,             // row start
-        90,             // rotation
+        40,             // column start
+        53,             // row start
+        0,              // rotation
         16,             // color depth
         false,          // grayscale
         false,          // pixels in a byte share a row. Only valid for depths < 8

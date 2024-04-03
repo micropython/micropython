@@ -69,7 +69,7 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
         // We run the PTC at 8mhz so divide the 48mhz clock by 6.
         uint8_t gclk = find_free_gclk(6);
         if (gclk > GCLK_GEN_NUM) {
-            mp_raise_RuntimeError(translate("No free GCLKs"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("No free GCLKs"));
         }
         enable_clock_generator(gclk, CLOCK_48MHZ, 6);
 

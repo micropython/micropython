@@ -57,7 +57,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     bool mono,
     uint8_t oversample) {
     if (!(bit_depth == 16 || bit_depth == 8) || !mono || oversample != OVERSAMPLING) {
-        mp_raise_NotImplementedError(translate("Only 8 or 16 bit mono with " MP_STRINGIFY(OVERSAMPLING) "x oversampling is supported."));
+        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("Only 8 or 16 bit mono with %dx oversampling supported."), OVERSAMPLING);
     }
 
     // Use the state machine to manage pins.
@@ -83,7 +83,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
         PIO_ANY_OFFSET);
     uint32_t actual_frequency = common_hal_rp2pio_statemachine_get_frequency(&self->state_machine);
     if (actual_frequency < MIN_MIC_CLOCK) {
-        mp_raise_ValueError(translate("sampling rate out of range"));
+        mp_raise_ValueError(MP_ERROR_TEXT("sampling rate out of range"));
     }
 
     self->sample_rate = actual_frequency / oversample;

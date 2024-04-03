@@ -34,7 +34,7 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 const char nibble_to_hex_upper[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                                       'A', 'B', 'C', 'D', 'E', 'F'};
 
@@ -116,7 +116,7 @@ void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, size_t s
     mp_printf(print, "%c", quote_char);
 }
 
-#if MICROPY_PY_UJSON
+#if MICROPY_PY_JSON
 void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str_len) {
     // for JSON spec, see http://www.ietf.org/rfc/rfc4627.txt
     // if we are given a valid utf8-encoded string, we will print it in a JSON-conforming way
@@ -144,7 +144,7 @@ void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str
 
 STATIC void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
-    #if MICROPY_PY_UJSON
+    #if MICROPY_PY_JSON
     if (kind == PRINT_JSON) {
         mp_str_print_json(print, str_data, str_len);
         return;
@@ -272,7 +272,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         return mp_obj_new_bytes_from_vstr(&vstr);
     }
 
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     // check if __bytes__ exists, and if so delegate to it
     mp_obj_t dest[2];
     mp_load_method_maybe(args[0], MP_QSTR___bytes__, dest);
@@ -381,7 +381,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 return mp_const_empty_bytes;
             }
         }
-        // CIRCUITPY: more careful checking of length
+        // CIRCUITPY-CHANGE: more careful checking of length
         size_t new_len = mp_seq_multiply_len(lhs_len, n);
         vstr_t vstr;
         vstr_init_len(&vstr, new_len);
@@ -420,7 +420,16 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     } else {
         // LHS is str and RHS has an incompatible type
         // (except if operation is EQUAL, but that's handled by mp_obj_equal)
-        bad_implicit_conversion(rhs_in);
+
+        // CONTAINS must fail with a bad-implicit-conversion exception, because
+        // otherwise mp_binary_op() will fallback to `list(lhs).__contains__(rhs)`.
+        if (op == MP_BINARY_OP_CONTAINS) {
+            bad_implicit_conversion(rhs_in);
+        }
+
+        // All other operations are not supported, and may be handled by another
+        // type, eg for reverse operations.
+        return MP_OBJ_NULL;
     }
 
     switch (op) {
@@ -1015,6 +1024,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             terse_str_format_value_error();
             #else
+            // CIRCUITPY-CHANGE: better error message
             mp_raise_ValueError_varg(MP_ERROR_TEXT("unmatched '%c' in format"), '}');
             #endif
         }
@@ -1653,7 +1663,9 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
         }
     }
 
-    if (arg_i != n_args) {
+    if (dict == MP_OBJ_NULL && arg_i != n_args) {
+        // NOTE: if `dict` exists, then `n_args` is 1 and the dict is always consumed; either
+        // positionally, or as a map of named args, even if none were actually referenced.
         mp_raise_TypeError(MP_ERROR_TEXT("not all arguments converted during string formatting"));
     }
 
@@ -2167,7 +2179,7 @@ MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_array_locals_dict,
     TABLE_ENTRIES_ARRAY);
 #endif
 
-// CIRCUITPY: hex() but no cast()
+// CIRCUITPY-CHANGE: hex() but no cast()
 #if MICROPY_PY_BUILTINS_MEMORYVIEW && MICROPY_PY_BUILTINS_BYTES_HEX && !MICROPY_CPYTHON_COMPAT
 MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_memoryview_locals_dict,
     array_bytearray_str_bytes_locals_table + TABLE_ENTRIES_ARRAY,
@@ -2330,7 +2342,7 @@ mp_obj_t mp_obj_new_bytes(const byte *data, size_t len) {
     return mp_obj_new_str_copy(&mp_type_bytes, data, len);
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 mp_obj_t mp_obj_new_bytes_of_zeros(size_t len) {
     vstr_t vstr;
     vstr_init_len(&vstr, len);

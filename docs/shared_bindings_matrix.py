@@ -38,7 +38,7 @@ SUPPORTED_PORTS = [
     "espressif",
     "litex",
     "mimxrt10xx",
-    "nrf",
+    "nordic",
     "raspberrypi",
     "silabs",
     "stm",
@@ -63,7 +63,7 @@ ALIASES_BRAND_NAMES = {
 }
 
 ADDITIONAL_MODULES = {
-    "_asyncio": "MICROPY_PY_UASYNCIO",
+    "_asyncio": "MICROPY_PY_ASYNCIO",
     "adafruit_bus_device": "CIRCUITPY_BUSDEVICE",
     "adafruit_pixelbuf": "CIRCUITPY_PIXELBUF",
     "array": "CIRCUITPY_ARRAY",
@@ -78,8 +78,9 @@ ADDITIONAL_MODULES = {
     "keypad.KeyMatrix": "CIRCUITPY_KEYPAD_KEYMATRIX",
     "keypad.Keys": "CIRCUITPY_KEYPAD_KEYS",
     "keypad.ShiftRegisterKeys": "CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS",
+    "keypad_demux.DemuxKeyMatrix": "CIRCUITPY_KEYPAD_DEMUX",
     "os.getenv": "CIRCUITPY_OS_GETENV",
-    "select": "MICROPY_PY_USELECT_SELECT",
+    "select": "MICROPY_PY_SELECT_SELECT",
     "sys": "CIRCUITPY_SYS",
     "terminalio": "CIRCUITPY_DISPLAYIO",
     "usb": "CIRCUITPY_USB_HOST",
@@ -173,6 +174,11 @@ def get_settings_from_makefile(port_dir, board_name):
 
     This list must explicitly include any setting queried by tools/ci_set_matrix.py.
     """
+    if os.getenv('NO_BINDINGS_MATRIX'):
+        return {
+                'CIRCUITPY_BUILD_EXTENSIONS': '.bin'
+                }
+
     contents = subprocess.run(
         ["make", "-C", port_dir, "-f", "Makefile", f"BOARD={board_name}", "print-CFLAGS", "print-CIRCUITPY_BUILD_EXTENSIONS", "print-FROZEN_MPY_DIRS", "print-SRC_PATTERNS", "print-SRC_SUPERVISOR"],
         encoding="utf-8",
@@ -191,7 +197,7 @@ def get_settings_from_makefile(port_dir, board_name):
     settings = {}
     for line in contents.stdout.split("\n"):
         if line.startswith('CFLAGS ='):
-            for m in re.findall('-D([A-Z][A-Z0-9_]*)=(\d+)', line):
+            for m in re.findall(r'-D([A-Z][A-Z0-9_]*)=(\d+)', line):
                 settings[m[0]] = m[1]
         elif m := re.match(r"^([A-Z][A-Z0-9_]*) = (.*)$", line):
             settings[m.group(1)] = m.group(2)
@@ -215,12 +221,12 @@ def get_repository_url(directory):
         with open(readme, "r") as fp:
             for line in fp.readlines():
                 if m := re.match(
-                    "\s+:target:\s+(http\S+(docs.circuitpython|readthedocs)\S+)\s*",
+                    r"\s+:target:\s+(http\S+(docs.circuitpython|readthedocs)\S+)\s*",
                     line,
                 ):
                     path = m.group(1)
                     break
-                if m := re.search("<(http[^>]+)>", line):
+                if m := re.search(r"<(http[^>]+)>", line):
                     path = m.group(1)
                     break
     if path is None:

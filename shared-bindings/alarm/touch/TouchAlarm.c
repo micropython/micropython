@@ -40,7 +40,7 @@
 //|         :param microcontroller.Pin pin: The pin to monitor. On some ports, the choice of pin
 //|           may be limited due to hardware restrictions, particularly for deep-sleep alarms.
 //|
-//|         **Limitations:** Not available on SAMD, nRF, or RP2040.
+//|         **Limitations:** Not available on SAMD, Nordic, or RP2040.
 //|         """
 //|         ...
 STATIC mp_obj_t alarm_touch_touchalarm_make_new(const mp_obj_type_t *type,
@@ -82,7 +82,7 @@ STATIC MP_DEFINE_CONST_DICT(alarm_touch_touchalarm_locals_dict, alarm_touch_touc
 MP_DEFINE_CONST_OBJ_TYPE(
     alarm_touch_touchalarm_type,
     MP_QSTR_TouchAlarm,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, alarm_touch_touchalarm_make_new,
     locals_dict, &alarm_touch_touchalarm_locals_dict
     );

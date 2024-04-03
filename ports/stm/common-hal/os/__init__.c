@@ -70,7 +70,7 @@ bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
     RNG_HandleTypeDef handle;
     handle.Instance = RNG;
     if (HAL_RNG_Init(&handle) != HAL_OK) {
-        mp_raise_ValueError(translate("RNG Init Error"));
+        mp_raise_ValueError(MP_ERROR_TEXT("RNG Init Error"));
     }
 
     // Assign bytes
@@ -83,7 +83,7 @@ bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
             ;
         }
         if (HAL_RNG_GenerateRandomNumber(&handle, &new_random) != HAL_OK) {
-            mp_raise_ValueError(translate("Random number generation error"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Random number generation error"));
         }
         for (int j = 0; j < 4 && i < length; j++) {
             buffer[i] = new_random & 0xff;
@@ -94,7 +94,7 @@ bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
 
     // shut down the peripheral
     if (HAL_RNG_DeInit(&handle) != HAL_OK) {
-        mp_raise_ValueError(translate("RNG DeInit Error"));
+        mp_raise_ValueError(MP_ERROR_TEXT("RNG DeInit Error"));
     }
     __HAL_RCC_RNG_CLK_DISABLE();
 

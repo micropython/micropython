@@ -22,7 +22,9 @@ def print_stacktrace(frame, level=0):
             frame.f_code.co_name,
             # Keep just the filename.
             "sys_settrace_" + frame.f_code.co_filename.split("sys_settrace_")[-1],
-            frame.f_lineno,
+            max(
+                1, frame.f_lineno
+            ),  # CPython 3.11 emits `0` where CPython 3.6 emits `1` for the "call" event corresponding to import.
         )
     )
 
@@ -64,6 +66,11 @@ def trace_tick_handler(frame, event, arg):
     frame_name = frame.f_globals["__name__"]
     if any(name in frame_name for name in to_ignore):
         return
+
+    # Lines 4,5,7 create the `const` lambda, and line `15` is a `_X = const()` which
+    # MicroPython will not see as it's optimised out.
+    if "sys_settrace_importme" in frame.f_code.co_filename and frame.f_lineno in (4, 5, 7, 15):
+        return trace_tick_handler
 
     print("### trace_handler::main event:", event)
     __prof__.trace_tick(frame, event, arg)

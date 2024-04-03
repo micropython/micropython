@@ -210,20 +210,20 @@ exclude_patterns = ["**/build*",
                     "ports/minimal",
                     "ports/mimxrt10xx/peripherals",
                     "ports/mimxrt10xx/sdk",
-                    "ports/nrf/device",
-                    "ports/nrf/bluetooth",
-                    "ports/nrf/modules",
-                    "ports/nrf/nrfx",
-                    "ports/nrf/peripherals",
-                    "ports/nrf/usb",
+                    "ports/nordic/device",
+                    "ports/nordic/bluetooth",
+                    "ports/nordic/modules",
+                    "ports/nordic/nrfx",
+                    "ports/nordic/peripherals",
+                    "ports/nordic/usb",
                     "ports/raspberrypi/sdk",
                     "ports/raspberrypi/lib",
-                    "ports/silabs",
+                    "ports/silabs/gecko_sdk",
+                    "ports/silabs/tools",
                     "ports/stm/st_driver",
                     "ports/stm/packages",
                     "ports/stm/peripherals",
                     "ports/stm/ref",
-                    "ports/unix",
                     "py",
                     "shared/*",
                     "shared-bindings/util.*",
@@ -362,15 +362,23 @@ latex_elements = {
 # Additional stuff for the LaTeX preamble.
 #'preamble': '',
 # Include 3 levels of headers in PDF ToC
-'preamble': '\setcounter{tocdepth}{2}',
+'preamble': r'''
+\setcounter{tocdepth}{2}
+\hbadness=99999
+\hfuzz=20pt
+\usepackage{pdflscape}
+''',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'CircuitPython.tex', 'CircuitPython Documentation',
+  ("docs/pdf", 'CircuitPython.tex', 'CircuitPython Documentation',
    'CircuitPython Contributors', 'manual'),
+  # Uncomment this if you want to build a PDF of the board -> module support matrix.
+  # ("shared-bindings/support_matrix", 'SupportMatrix.tex', 'Board Support Matrix',
+  # 'CircuitPython Contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

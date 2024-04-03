@@ -36,7 +36,8 @@ typedef struct {
     mp_buffer_info_t bufinfo;
     Protomatter_core protomatter;
     void *timer;
-    uint16_t bufsize, width;
+    uint32_t bufsize;
+    uint16_t width;
     uint8_t rgb_pins[30];
     uint8_t addr_pins[10];
     uint8_t clock_pin, latch_pin, oe_pin;

@@ -3,7 +3,13 @@ This is a helper script for merging in new versions of MicroPython. You *must*
 evaluate its correctness and adapt it for each MP version. This is committed
 in the repo more for reference than "fire and forget" use.
 
-Updated for v1.20.0 merge - dhalbert
+I have found I have to run each piece separately, because there are some errors.
+For instance, there are file renames in the porcelain output that are not handled.
+I add a sys.exit(0) after a section, and once a section runs, I delete it temporarily
+and move on to the next section. -- dhalbert
+
+Updated for v1.21.0 merge - dhalbert
+
 """
 
 from io import StringIO
@@ -21,6 +27,7 @@ ports_to_delete = [
     "esp8266",
     "mimxrt",
     "minimal",
+    "nordic",
     "pic16bit",
     "powerpc",
     "qemu-arm",
@@ -52,31 +59,6 @@ while line:
     elif state == "UA":
         git.rm(path)
     line = out_buf.readline()
-
-# MicroPython added their nrf code in ports/nrf too. So, we always take our version.
-out_buf = StringIO()
-git.status("--porcelain=1", "ports/nrf", _out=out_buf)
-out_buf.seek(0)
-line = out_buf.readline()
-while line:
-    state, path = line.split()
-    if state == "UU":
-        git.checkout("--ours", path)
-        git.add(path)
-    elif state == "UA":
-        git.rm(path)
-    elif state == "AA":
-        git.rm("-f", path)
-    elif state == "A":
-        git.rm("-f", path)
-    elif state == "DU":
-        git.rm(path)
-    elif state == "DD":
-        git.rm(path)
-    else:
-        print(state, path)
-    line = out_buf.readline()
-
 
 # MicroPython has their own CI settings. Let's not use them now.
 out_buf = StringIO()
@@ -145,6 +127,7 @@ for d in docs_to_delete:
 tests_to_delete = [
     "esp32",
     "multi_bluetooth",
+    "multi_espnow",
     "multi_net",
     "net_hosted",
     "net_inet",
@@ -163,13 +146,12 @@ libs_to_delete = [
     "btstack",
     "libhydrogen",
     "lwip",
-    "mbedtls",
-    "mbedtls_errors",
     "micropython-lib",
     "mynewt-nimble",
     "nrfx",
     "nxp_driver",
     "pico-sdk",
+    "protobuf-c",
     "stm32lib",
     "wiznet5k",
 ]
@@ -191,10 +173,10 @@ extmod_to_delete = [
     "modnetwork.*",
     "modonewire.*",
     "moducryptolib.*",
-    "modusocket.*",
-    "modussl_*.*",
-    "modutimeq.*",
-    "moduwebsocket.*",
+    "modsocket.*",
+    "modssl_*.*",
+    "modtimeq.*",
+    "modwebsocket.*",
     "modwebrepl.*",
     "mpbthci.*",
     "network_*.*",

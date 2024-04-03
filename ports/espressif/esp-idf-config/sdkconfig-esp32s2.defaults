@@ -10,14 +10,8 @@
 #
 # PCNT Configuration
 #
-CONFIG_PCNT_SUPPRESS_DEPRECATE_WARN=y
+CONFIG_PCNT_CTRL_FUNC_IN_IRAM=y
 # end of PCNT Configuration
-
-#
-# RMT Configuration
-#
-CONFIG_RMT_SUPPRESS_DEPRECATE_WARN=y
-# end of RMT Configuration
 
 # end of Driver Configurations
 
@@ -44,8 +38,8 @@ CONFIG_ESP32S2_RTCDATA_IN_FAST_MEM=y
 # Wi-Fi
 #
 CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=4
-CONFIG_ESP_WIFI_CACHE_TX_BUFFER_NUM=16
 CONFIG_ESP_WIFI_RX_BA_WIN=4
+# CONFIG_ESP_WIFI_RX_IRAM_OPT is not set
 # end of Wi-Fi
 
 #

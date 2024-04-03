@@ -128,7 +128,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_obj___exit___obj, 4, 4,
 
 static void check_lock(bitbangio_spi_obj_t *self) {
     if (!shared_module_bitbangio_spi_has_lock(self)) {
-        mp_raise_RuntimeError(translate("Function requires lock"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Function requires lock"));
     }
 }
 
@@ -377,7 +377,7 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_
     in_length *= in_stride_in_bytes;
 
     if (out_length != in_length) {
-        mp_raise_ValueError(translate("buffer slices must be of equal length"));
+        mp_raise_ValueError(MP_ERROR_TEXT("buffer slices must be of equal length"));
     }
 
     if (out_length == 0) {

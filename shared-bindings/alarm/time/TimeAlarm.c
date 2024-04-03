@@ -35,7 +35,7 @@
 
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
-    mp_raise_RuntimeError(translate("RTC is not supported on this board"));
+    mp_raise_RuntimeError(MP_ERROR_TEXT("RTC is not supported on this board"));
 }
 #endif
 
@@ -74,7 +74,7 @@ STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
     bool have_epoch = args[ARG_epoch_time].u_obj != mp_const_none;
 
     if (!(have_monotonic ^ have_epoch)) {
-        mp_raise_ValueError(translate("Supply one of monotonic_time or epoch_time"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Supply one of monotonic_time or epoch_time"));
     }
 
     mp_float_t monotonic_time = 0;   // To avoid compiler warning.
@@ -86,7 +86,7 @@ STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
 
     if (have_epoch) {
         #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
-        mp_raise_ValueError(translate("epoch_time not supported on this board"));
+        mp_raise_ValueError(MP_ERROR_TEXT("epoch_time not supported on this board"));
         #else
         mp_uint_t epoch_time_secs = mp_obj_int_get_checked(args[ARG_epoch_time].u_obj);
 
@@ -102,7 +102,7 @@ STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
     }
 
     if (monotonic_time < monotonic_time_now) {
-        mp_raise_ValueError(translate("Time is in the past."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Time is in the past."));
     }
 
     common_hal_alarm_time_timealarm_construct(self, monotonic_time);
@@ -134,7 +134,7 @@ STATIC MP_DEFINE_CONST_DICT(alarm_time_timealarm_locals_dict, alarm_time_timeala
 MP_DEFINE_CONST_OBJ_TYPE(
     alarm_time_timealarm_type,
     MP_QSTR_TimeAlarm,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, alarm_time_timealarm_make_new,
     locals_dict, &alarm_time_timealarm_locals_dict
     );

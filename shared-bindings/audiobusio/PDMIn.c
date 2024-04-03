@@ -93,17 +93,17 @@
 //|     ...
 STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if !CIRCUITPY_AUDIOBUSIO_PDMIN
-    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_PDMIn);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_PDMIn);
     #else
     enum { ARG_clock_pin, ARG_data_pin, ARG_sample_rate, ARG_bit_depth, ARG_mono, ARG_oversample, ARG_startup_delay };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock_pin,     MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_data_pin,      MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_sample_rate,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 16000} },
-        { MP_QSTR_bit_depth,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
+        { MP_QSTR_sample_rate,   MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 16000} },
+        { MP_QSTR_bit_depth,     MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 8} },
         { MP_QSTR_mono,          MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
-        { MP_QSTR_oversample,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
-        { MP_QSTR_startup_delay, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_oversample,    MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 64} },
+        { MP_QSTR_startup_delay, MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
     };
     // Default microphone startup delay is 110msecs. Have seen mics that need 100 msecs plus a bit.
     static const float STARTUP_DELAY_DEFAULT = 0.110F;
@@ -120,20 +120,18 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     uint32_t sample_rate = args[ARG_sample_rate].u_int;
     uint8_t bit_depth = args[ARG_bit_depth].u_int;
     if (bit_depth % 8 != 0) {
-        mp_raise_ValueError(translate("Bit depth must be multiple of 8."));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be multiple of 8."), MP_QSTR_bit_depth);
     }
     uint8_t oversample = args[ARG_oversample].u_int;
     if (oversample % 8 != 0) {
-        mp_raise_ValueError(translate("Oversample must be multiple of 8."));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be multiple of 8."), MP_QSTR_oversample);
     }
     bool mono = args[ARG_mono].u_bool;
 
     mp_float_t startup_delay = (args[ARG_startup_delay].u_obj == MP_OBJ_NULL)
         ? (mp_float_t)STARTUP_DELAY_DEFAULT
         : mp_obj_get_float(args[ARG_startup_delay].u_obj);
-    if (startup_delay < 0.0 || startup_delay > 1.0) {
-        mp_raise_ValueError(translate("Microphone startup delay must be in range 0.0 to 1.0"));
-    }
+    mp_arg_validate_float_range(startup_delay, 0.0f, 1.0f, MP_QSTR_startup_delay);
 
     common_hal_audiobusio_pdmin_construct(self, clock_pin, data_pin, sample_rate,
         bit_depth, mono, oversample);
@@ -196,16 +194,16 @@ STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destinat
 
     mp_buffer_info_t bufinfo;
     if (mp_obj_is_type(destination, &mp_type_fileio)) {
-        mp_raise_NotImplementedError(translate("Cannot record to a file"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Cannot record to a file"));
     } else if (mp_get_buffer(destination, &bufinfo, MP_BUFFER_WRITE)) {
         if (bufinfo.len / mp_binary_get_size('@', bufinfo.typecode, NULL) < length) {
-            mp_raise_ValueError(translate("Destination capacity is smaller than destination_length."));
+            mp_raise_ValueError(MP_ERROR_TEXT("Destination capacity is smaller than destination_length."));
         }
         uint8_t bit_depth = common_hal_audiobusio_pdmin_get_bit_depth(self);
         if (bufinfo.typecode != 'H' && bit_depth == 16) {
-            mp_raise_ValueError(translate("destination buffer must be an array of type 'H' for bit_depth = 16"));
+            mp_raise_ValueError(MP_ERROR_TEXT("destination buffer must be an array of type 'H' for bit_depth = 16"));
         } else if (bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE && bit_depth == 8) {
-            mp_raise_ValueError(translate("destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"));
+            mp_raise_ValueError(MP_ERROR_TEXT("destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"));
         }
         // length is the buffer length in slots, not bytes.
         uint32_t length_written =
@@ -244,7 +242,7 @@ STATIC MP_DEFINE_CONST_DICT(audiobusio_pdmin_locals_dict, audiobusio_pdmin_local
 MP_DEFINE_CONST_OBJ_TYPE(
     audiobusio_pdmin_type,
     MP_QSTR_PDMIn,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, audiobusio_pdmin_make_new
     #if CIRCUITPY_AUDIOBUSIO_PDMIN
     , locals_dict, &audiobusio_pdmin_locals_dict

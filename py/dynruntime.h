@@ -79,7 +79,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 /******************************************************************************/
 // Types and objects
 
-#define MP_OBJ_NEW_QSTR(x) MP_OBJ_NEW_QSTR_##x
+#define MP_OBJ_NEW_QSTR(x)                  (mp_fun_table.native_to_obj(x, MP_NATIVE_TYPE_QSTR))
 
 #define mp_type_type                        (*mp_fun_table.type_type)
 #define mp_type_NoneType                    (*mp_obj_get_type(mp_const_none))

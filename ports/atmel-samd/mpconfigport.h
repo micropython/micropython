@@ -48,7 +48,7 @@
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (0)
 #define MICROPY_PY_COLLECTIONS_DEQUE                (0)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
-#define MICROPY_PY_UERRNO_LIST \
+#define MICROPY_PY_ERRNO_LIST \
     X(EPERM) \
     X(ENOENT) \
     X(EIO) \
@@ -85,7 +85,7 @@
 #define SPI_FLASH_MAX_BAUDRATE 24000000
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
 #define MICROPY_PY_FUNCTION_ATTRS                   (1)
-//      MICROPY_PY_UERRNO_LIST - Use the default
+//      MICROPY_PY_ERRNO_LIST - Use the default
 
 #endif // SAM_D5X_E5X
 

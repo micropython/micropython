@@ -29,7 +29,11 @@
 
 #include "py/obj.h"
 
+#if CIRCUITPY_HASHLIB_MBEDTLS
+#include "shared-module/hashlib/Hash.h"
+#else
 #include "common-hal/hashlib/Hash.h"
+#endif
 
 extern const mp_obj_type_t hashlib_hash_type;
 

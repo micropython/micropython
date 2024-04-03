@@ -63,7 +63,7 @@
 
 void bleio_connection_ensure_connected(bleio_connection_obj_t *self) {
     if (!common_hal_bleio_connection_get_connected(self)) {
-        mp_raise_ConnectionError(translate("Connection has been disconnected and can no longer be used. Create a new connection."));
+        mp_raise_ConnectionError(MP_ERROR_TEXT("Connection has been disconnected and can no longer be used. Create a new connection."));
     }
 }
 
@@ -72,6 +72,7 @@ void bleio_connection_ensure_connected(bleio_connection_obj_t *self) {
 //|         Connections may also be made when another device initiates a connection. To use a Connection
 //|         created by a peer, read the `Adapter.connections` property."""
 //|         ...
+//|
 //|     def disconnect(self) -> None:
 //|         """Disconnects from the remote peripheral. Does nothing if already disconnected."""
 //|         ...
@@ -247,7 +248,6 @@ STATIC MP_DEFINE_CONST_DICT(bleio_connection_locals_dict, bleio_connection_local
 MP_DEFINE_CONST_OBJ_TYPE(
     bleio_connection_type,
     MP_QSTR_Connection,
-    MP_TYPE_FLAG_NONE,
-    locals_dict, &bleio_connection_locals_dict,
-    unary_op, mp_generic_unary_op
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    locals_dict, &bleio_connection_locals_dict
     );

@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="TJpgDec" href="../00index.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>TJpgDec - Input Function</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>Input Function</h2>
+<p>User defined input function to read data from input stream.</p>
+<pre>
+size_t in_func (
+  JDEC* <em>jdec</em>,       <span class="c">/* Pointer to the decompression object */</span>
+  uint8_t* <em>buff</em>,    <span class="c">/* Pointer to buffer to store the read data */</span>
+  size_t <em>ndata</em>      <span class="c">/* Number of bytes to read/remove */</span>
+);
+
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>jdec</dt>
+<dd>Decompression object of this session.</dd>
+<dt>buff</dt>
+<dd>Points the read buffer to store the data read form the input stream. A null pointer specifies to remove the data from the input stream.</dd>
+<dt>ndata</dt>
+<dd>Number of bytes to read/remove from the input stream.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>Returns number of bytes read/removed. If any value not expected is returned, the <tt>jd_prepare</tt> and <tt>jd_decomp</tt> function aborts with JDR_INP.</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>This function is the data input interface of the TJpgDec module. The corresponding decompression session can be identified by the session identifier <tt>jdec->device</tt> passed to the 5th argument of <tt>jd_prepare</tt> function.</p>
+</div>
+
+
+<p class="foot"><a href="../00index.html">Return</a></p>
+</body>
+</html>

@@ -56,10 +56,6 @@ Specifically useful documentation when starting out:
 - `CircuitPython Essentials <https://learn.adafruit.com/circuitpython-essentials>`__
 - `Example Code <https://github.com/adafruit/Adafruit_Learning_System_Guides/tree/master/CircuitPython_Essentials>`__
 
-Code Search
-------------
-GitHub doesn't currently support code search on forks. Therefore, CircuitPython doesn't have code search through GitHub because it is a fork of MicroPython. Luckily, `SourceGraph <https://sourcegraph.com/github.com/adafruit/circuitpython>`_ has free code search for public repos like CircuitPython. So, visit `sourcegraph.com/github.com/adafruit/circuitpython <https://sourcegraph.com/github.com/adafruit/circuitpython>`_ to search the CircuitPython codebase online.
-
 Contributing
 ------------
 
@@ -235,7 +231,7 @@ cxd56             stable
 espressif         ``ESP32`` beta | ``ESP32-C3`` beta | ``ESP32-S2`` stable | ``ESP32-S3`` beta
 litex             alpha
 mimxrt10xx        alpha
-nrf               stable
+nordic            stable
 raspberrypi       stable
 silabs (efr32)    alpha
 stm               ``F4`` stable | ``others`` beta

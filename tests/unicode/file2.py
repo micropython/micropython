@@ -6,7 +6,7 @@ def do(mode):
         enc = None
     else:
         enc = "utf-8"
-    f = open("unicode/data/utf-8_2.txt", mode=mode, encoding=enc)
+    f = open("data/utf-8_2.txt", mode=mode, encoding=enc)
     print(f.read(1))
     print(f.read(1))
     print(f.read(2))

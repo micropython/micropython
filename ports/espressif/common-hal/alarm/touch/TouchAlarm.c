@@ -98,7 +98,7 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
     for (size_t i = 0; i < n_alarms; i++) {
         if (mp_obj_is_type(alarms[i], &alarm_touch_touchalarm_type)) {
             if (deep_sleep && touch_alarm_set) {
-                mp_raise_ValueError_varg(translate("Only one %q can be set in deep sleep."), MP_QSTR_TouchAlarm);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Only one %q can be set in deep sleep."), MP_QSTR_TouchAlarm);
             }
             touch_alarm = MP_OBJ_TO_PTR(alarms[i]);
             touch_channel_mask |= 1 << touch_alarm->pin->number;

@@ -55,7 +55,7 @@ STATIC mp_obj_t canio_remote_transmission_request_make_new(const mp_obj_type_t *
 
     int length = args[ARG_length].u_int;
     if (length < 0 || length > 8) {
-        mp_raise_ValueError(translate("RemoteTransmissionRequests limited to 8 bytes"));
+        mp_raise_ValueError(MP_ERROR_TEXT("RemoteTransmissionRequests limited to 8 bytes"));
     }
 
     canio_remote_transmission_request_obj_t *self =
@@ -117,7 +117,7 @@ STATIC mp_obj_t canio_remote_transmission_request_length_set(const mp_obj_t self
     canio_remote_transmission_request_obj_t *self = self_in;
     int length = mp_obj_get_int(length_in);
     if (length < 0 || length > 8) {
-        mp_raise_ValueError(translate("RemoteTransmissionRequests limited to 8 bytes"));
+        mp_raise_ValueError(MP_ERROR_TEXT("RemoteTransmissionRequests limited to 8 bytes"));
     }
     common_hal_canio_remote_transmission_request_set_length(self, length);
     return mp_const_none;
@@ -139,7 +139,7 @@ STATIC MP_DEFINE_CONST_DICT(canio_remote_transmission_request_locals_dict, canio
 MP_DEFINE_CONST_OBJ_TYPE(
     canio_remote_transmission_request_type,
     MP_QSTR_RemoteTransmissionRequest,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, canio_remote_transmission_request_make_new,
     locals_dict, &canio_remote_transmission_request_locals_dict
     );

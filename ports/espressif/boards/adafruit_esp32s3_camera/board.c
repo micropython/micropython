@@ -28,7 +28,7 @@
 #include "mpconfigboard.h"
 
 #include "shared-bindings/busio/SPI.h"
-#include "shared-bindings/displayio/FourWire.h"
+#include "shared-bindings/fourwire/FourWire.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
@@ -38,7 +38,7 @@
 #include "esp_err.h"
 #include "driver/i2c.h"
 
-displayio_fourwire_obj_t board_display_obj;
+fourwire_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
 
@@ -52,73 +52,12 @@ uint8_t display_init_sequence[] = {
     0x29, 0 | DELAY, 5,                // _DISPON
 };
 
-#define I2C_MASTER_SCL_IO           34
-#define I2C_MASTER_SDA_IO           33
-#define I2C_MASTER_NUM              0
-#define I2C_MASTER_FREQ_HZ          400000
-#define I2C_MASTER_TX_BUF_DISABLE   0
-#define I2C_MASTER_RX_BUF_DISABLE   0
-#define I2C_MASTER_TIMEOUT_MS       1000
-#define I2C_WAIT                    40      // Timing (in microseconds) for I2C
-
-#define AW9523_ADDR (0x5B)
-#define AW9523_REG_SOFTRESET (0x7f)
-#define AW9523_REG_OUTPUT0 (0x02)
-#define AW9523_REG_CONFIG0 (0x04)
-#define AW9523_DEFAULT_OUTPUT (0)
-#define AW9523_DEFAULT_CONFIG (0x2)
-
-
-static void io_expander_backlight_init(void) {
-    int i2c_num = I2C_MASTER_NUM;
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = I2C_MASTER_SDA_IO,
-        .scl_io_num = I2C_MASTER_SCL_IO,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = I2C_MASTER_FREQ_HZ,
-    };
-    i2c_param_config(i2c_num, &conf);
-    i2c_driver_install(i2c_num, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, AW9523_ADDR << 1 | I2C_MASTER_WRITE, true);
-    i2c_master_write_byte(cmd, AW9523_REG_SOFTRESET, true);
-    i2c_master_write_byte(cmd, 0, true);
-    i2c_master_stop(cmd);
-    i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
-
-    cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, AW9523_ADDR << 1 | I2C_MASTER_WRITE, true);
-    i2c_master_write_byte(cmd, AW9523_REG_CONFIG0, true);
-    i2c_master_write_byte(cmd, AW9523_DEFAULT_CONFIG >> 8, true);
-    i2c_master_write_byte(cmd, AW9523_DEFAULT_CONFIG & 0xff, true);
-    i2c_master_stop(cmd);
-    i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
-
-    cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, AW9523_ADDR << 1 | I2C_MASTER_WRITE, true);
-    i2c_master_write_byte(cmd, AW9523_REG_OUTPUT0, true);
-    i2c_master_write_byte(cmd, AW9523_DEFAULT_OUTPUT >> 8, true);
-    i2c_master_write_byte(cmd, AW9523_DEFAULT_OUTPUT & 0xff, true);
-    i2c_master_stop(cmd);
-    i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
-
-    i2c_driver_delete(i2c_num);
-}
 
 void board_init(void) {
-    io_expander_backlight_init();
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
-    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
-    bus->base.type = &displayio_fourwire_type;
-    common_hal_displayio_fourwire_construct(bus,
+    fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    bus->base.type = &fourwire_fourwire_type;
+    common_hal_fourwire_fourwire_construct(bus,
         spi,
         &pin_GPIO40, // TFT_DC Command or data
         &pin_GPIO39, // TFT_CS Chip select
@@ -127,9 +66,9 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_display_obj_t *display = &allocate_display()->display;
-    display->base.type = &displayio_display_type;
-    common_hal_displayio_display_construct(
+    busdisplay_busdisplay_obj_t *display = &allocate_display()->display;
+    display->base.type = &busdisplay_busdisplay_type;
+    common_hal_busdisplay_busdisplay_construct(
         display,
         bus,
         240, // Width (after rotation)
@@ -148,7 +87,7 @@ void board_init(void) {
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
         display_init_sequence,
         sizeof(display_init_sequence),
-        NULL,  // backlight pin
+        &pin_GPIO45,  // backlight pin
         NO_BRIGHTNESS_COMMAND,
         1.0f, // brightness
         false, // single_byte_bounds

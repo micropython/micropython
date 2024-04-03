@@ -24,32 +24,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PULSEIO_PULSEIN_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PULSEIO_PULSEIN_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/obj.h"
-#include "peripherals/rmt.h"
+#include "driver/rmt_types.h"
 
 typedef struct {
     mp_obj_base_t base;
 
     const mcu_pin_obj_t *pin;
-    rmt_channel_t channel;
-    bool idle_state;
-    bool paused;
-
-    RingbufHandle_t buf_handle;
+    rmt_channel_handle_t channel;
 
     uint16_t *buffer;
-    uint16_t maxlen;
+    size_t maxlen;
+
+    rmt_symbol_word_t *raw_symbols;
+    size_t raw_symbols_size;
 
     volatile uint16_t start;
     volatile uint16_t len;
+
+    bool idle_state;
+    bool paused;
+    bool find_first;
 } pulseio_pulsein_obj_t;
-
-void pulsein_reset(void);
-void pulsein_background(void);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PULSEIO_PULSEIN_H

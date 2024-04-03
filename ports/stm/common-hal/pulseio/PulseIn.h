@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEIN_H
-#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEIN_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -47,7 +46,3 @@ typedef struct {
     volatile uint32_t last_overflow;
     volatile uint16_t last_count;
 } pulseio_pulsein_obj_t;
-
-void pulsein_reset(void);
-
-#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEIN_H

@@ -48,6 +48,14 @@ mp_uint_t mp_verbose_flag = 0;
 // Make it larger on a 64 bit machine, because pointers are larger.
 long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 
+STATIC void stdout_print_strn(void *env, const char *str, size_t len) {
+    (void)env;
+    ssize_t dummy = write(STDOUT_FILENO, str, len);
+    (void)dummy;
+}
+
+STATIC const mp_print_t mp_stdout_print = {NULL, stdout_print_strn};
+
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t dummy = write(STDERR_FILENO, str, len);
@@ -59,7 +67,12 @@ STATIC const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 STATIC int compile_and_save(const char *file, const char *output_file, const char *source_file) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        mp_lexer_t *lex = mp_lexer_new_from_file(file);
+        mp_lexer_t *lex;
+        if (strcmp(file, "-") == 0) {
+            lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, STDIN_FILENO, false);
+        } else {
+            lex = mp_lexer_new_from_file(file);
+        }
 
         qstr source_name;
         if (source_file == NULL) {
@@ -77,17 +90,23 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         cm.context = m_new_obj(mp_module_context_t);
         mp_compile_to_raw_code(&parse_tree, source_name, false, &cm);
 
-        vstr_t vstr;
-        vstr_init(&vstr, 16);
-        if (output_file == NULL) {
-            vstr_add_str(&vstr, file);
-            vstr_cut_tail_bytes(&vstr, 2);
-            vstr_add_str(&vstr, "mpy");
+        if ((output_file != NULL && strcmp(output_file, "-") == 0) ||
+            (output_file == NULL && strcmp(file, "-") == 0)) {
+            mp_raw_code_save(&cm, (mp_print_t *)&mp_stdout_print);
         } else {
-            vstr_add_str(&vstr, output_file);
+            vstr_t vstr;
+            vstr_init(&vstr, 16);
+            if (output_file == NULL) {
+                vstr_add_str(&vstr, file);
+                vstr_cut_tail_bytes(&vstr, 2);
+                vstr_add_str(&vstr, "mpy");
+            } else {
+                vstr_add_str(&vstr, output_file);
+            }
+
+            mp_raw_code_save_file(&cm, vstr_null_terminated_str(&vstr));
+            vstr_clear(&vstr);
         }
-        mp_raw_code_save_file(&cm, vstr_null_terminated_str(&vstr));
-        vstr_clear(&vstr);
 
         nlr_pop();
         return 0;
@@ -100,10 +119,10 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
 
 STATIC int usage(char **argv) {
     printf(
-        "usage: %s [<opts>] [-X <implopt>] <input filename>\n"
+        "usage: %s [<opts>] [-X <implopt>] [--] <input filename>\n"
         "Options:\n"
         "--version : show version information\n"
-        "-o : output file for compiled bytecode (defaults to input with .mpy extension)\n"
+        "-o : output file for compiled bytecode (defaults to input filename with .mpy extension, or stdout if input is stdin)\n"
         "-s : source filename to embed in the compiled bytecode (defaults to input file)\n"
         "-v : verbose (trace various operations); can be multiple\n"
         "-O[N] : apply bytecode optimizations of level N\n"
@@ -220,10 +239,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
     const char *input_file = NULL;
     const char *output_file = NULL;
     const char *source_file = NULL;
+    bool option_parsing_active = true;
 
     // parse main options
     for (int a = 1; a < argc; a++) {
-        if (argv[a][0] == '-') {
+        if (option_parsing_active && argv[a][0] == '-' && argv[a][1] != '\0') {
             if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
             } else if (strcmp(argv[a], "--version") == 0) {
@@ -309,6 +329,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else {
                     return usage(argv);
                 }
+            } else if (strcmp(argv[a], "--") == 0) {
+                option_parsing_active = false;
             } else {
                 return usage(argv);
             }

@@ -38,7 +38,7 @@
 //| class AnalogOut:
 //|     """Output analog values (a specific voltage).
 //|
-//|     **Limitations:** Not available on nRF, RP2040, Spresense, as there is no on-chip DAC.
+//|     **Limitations:** Not available on Nordic, RP2040, Spresense, as there is no on-chip DAC.
 //|     On Espressif, available only on ESP32 and ESP32-S2; other chips do not have a DAC.
 //|
 //|     Example usage::
@@ -133,7 +133,7 @@ STATIC MP_DEFINE_CONST_DICT(analogio_analogout_locals_dict, analogio_analogout_l
 MP_DEFINE_CONST_OBJ_TYPE(
     analogio_analogout_type,
     MP_QSTR_AnalogOut,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, analogio_analogout_make_new,
     locals_dict, &analogio_analogout_locals_dict
     );

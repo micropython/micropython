@@ -36,7 +36,7 @@
 #include "py/stackctrl.h"
 
 // Instance of GeneratorExit exception - needed by generator.close()
-// CIRCUITPY: https://github.com/adafruit/circuitpython/pull/7069 fix
+// CIRCUITPY-CHANGE: https://github.com/adafruit/circuitpython/pull/7069 fix
 #if MICROPY_CONST_GENERATOREXIT_OBJ
 const
 mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
@@ -94,8 +94,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_generator,
     MP_TYPE_FLAG_BINDS_SELF,
     GEN_WRAP_TYPE_ATTR
-    call, gen_wrap_call,
-    unary_op, mp_generic_unary_op
+    call, gen_wrap_call
     );
 
 #if MICROPY_PY_ASYNC_AWAIT
@@ -104,8 +103,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_coroutine,
     MP_TYPE_FLAG_BINDS_SELF,
     GEN_WRAP_TYPE_ATTR
-    call, gen_wrap_call,
-    unary_op, mp_generic_unary_op
+    call, gen_wrap_call
     );
 #endif
 
@@ -172,7 +170,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
 }
 
 #if MICROPY_PY_FUNCTION_ATTRS
-#define NATIVE_GEN_WRAP_TYPE_ATTR attr, mp_obj_fun_bc_attr,
+#define NATIVE_GEN_WRAP_TYPE_ATTR , attr, mp_obj_fun_bc_attr
 #else
 #define NATIVE_GEN_WRAP_TYPE_ATTR
 #endif
@@ -181,9 +179,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_native_gen_wrap,
     MP_QSTR_generator,
     MP_TYPE_FLAG_BINDS_SELF,
-    call, native_gen_wrap_call,
+    call, native_gen_wrap_call
     NATIVE_GEN_WRAP_TYPE_ATTR
-    unary_op, mp_generic_unary_op
     );
 
 
@@ -193,8 +190,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_coroutine,
     MP_TYPE_FLAG_BINDS_SELF,
     GEN_WRAP_TYPE_ATTR
-    call, native_gen_wrap_call,
-    unary_op, mp_generic_unary_op
+    call, native_gen_wrap_call
     );
 #endif
 
@@ -209,7 +205,7 @@ STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
     mp_printf(print, "<generator object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 #if MICROPY_PY_ASYNC_AWAIT
 STATIC void coro_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
@@ -220,7 +216,7 @@ STATIC void coro_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
     MP_STACK_CHECK();
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     // note that self may have as its type either gen or coro,
     // both of which are stored as an mp_obj_gen_instance_t .
     mp_check_self(
@@ -452,13 +448,12 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_generator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     print, gen_instance_print,
-    unary_op, mp_generic_unary_op,
     iter, gen_instance_iternext,
     locals_dict, &gen_instance_locals_dict
     );
 
 #if MICROPY_PY_ASYNC_AWAIT
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // coroutine instance locals dict and type
 // same as generator, but with addition of __await()__.
 STATIC const mp_rom_map_elem_t coro_instance_locals_dict_table[] = {
@@ -478,7 +473,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_coroutine,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     print, coro_instance_print,
-    unary_op, mp_generic_unary_op,
     iter, gen_instance_iternext,
     locals_dict, &coro_instance_locals_dict
     );

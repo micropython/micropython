@@ -85,26 +85,26 @@ void check_nimble_error(int rc, const char *file, size_t line) {
     }
     switch (rc) {
         case BLE_HS_ENOMEM:
-            mp_raise_msg(&mp_type_MemoryError, translate("Nimble out of memory"));
+            mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("Nimble out of memory"));
             return;
         case BLE_HS_ETIMEOUT:
             mp_raise_msg(&mp_type_TimeoutError, NULL);
             return;
         case BLE_HS_EINVAL:
-            mp_raise_ValueError(translate("Invalid BLE parameter"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Invalid BLE parameter"));
             return;
         case BLE_HS_ENOTCONN:
-            mp_raise_ConnectionError(translate("Not connected"));
+            mp_raise_ConnectionError(MP_ERROR_TEXT("Not connected"));
             return;
         default:
             #if CIRCUITPY_VERBOSE_BLE
             if (file) {
-                mp_raise_bleio_BluetoothError(translate("Unknown system firmware error at %s:%d: %d"), file, line, rc);
+                mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown system firmware error at %s:%d: %d"), file, line, rc);
             }
             #else
             (void)file;
             (void)line;
-            mp_raise_bleio_BluetoothError(translate("Unknown system firmware error: %d"), rc);
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown system firmware error: %d"), rc);
             #endif
 
             break;
@@ -112,19 +112,20 @@ void check_nimble_error(int rc, const char *file, size_t line) {
 }
 
 void check_ble_error(int error_code, const char *file, size_t line) {
-    if (error_code == BLE_ERR_SUCCESS) {
+    // 0 means success. For BLE_HS_* codes, there is no defined "SUCCESS" value.
+    if (error_code == 0) {
         return;
     }
     switch (error_code) {
         default:
             #if CIRCUITPY_VERBOSE_BLE
             if (file) {
-                mp_raise_bleio_BluetoothError(translate("Unknown BLE error at %s:%d: %d"), file, line, error_code);
+                mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown BLE error at %s:%d: %d"), file, line, error_code);
             }
             #else
             (void)file;
             (void)line;
-            mp_raise_bleio_BluetoothError(translate("Unknown BLE error: %d"), error_code);
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown BLE error: %d"), error_code);
             #endif
 
             break;
@@ -140,6 +141,6 @@ void check_notify(BaseType_t result) {
 
 void common_hal_bleio_check_connected(uint16_t conn_handle) {
     if (conn_handle == BLEIO_HANDLE_INVALID) {
-        mp_raise_ConnectionError(translate("Not connected"));
+        mp_raise_ConnectionError(MP_ERROR_TEXT("Not connected"));
     }
 }

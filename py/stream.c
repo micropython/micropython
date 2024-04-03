@@ -83,14 +83,13 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
 }
 
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
-    const mp_obj_type_t *type = mp_obj_get_type(self_in);
-    if (MP_OBJ_TYPE_HAS_SLOT(type, protocol)) {
-        const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(type, protocol);
-        if (!((flags & MP_STREAM_OP_READ) && stream_p->read == NULL)
-            && !((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)
-            && !((flags & MP_STREAM_OP_IOCTL) && stream_p->ioctl == NULL)) {
-            return stream_p;
-        }
+    // CIRCUITPY-CHANGE: using type-safe protocol accessor
+    const mp_stream_p_t *stream_p = mp_get_stream(self_in);
+    if (stream_p
+        && !((flags & MP_STREAM_OP_READ) && stream_p->read == NULL)
+        && !((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)
+        && !((flags & MP_STREAM_OP_IOCTL) && stream_p->ioctl == NULL)) {
+        return stream_p;
     }
     // CPython: io.UnsupportedOperation, OSError subclass
     mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("stream operation not supported"));
@@ -437,6 +436,12 @@ mp_obj_t mp_stream_close(mp_obj_t stream) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_close_obj, mp_stream_close);
+
+STATIC mp_obj_t mp_stream___exit__(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    return mp_stream_close(args[0]);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream___exit___obj, 4, 4, mp_stream___exit__);
 
 STATIC mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
     struct mp_stream_seek_t seek_s;

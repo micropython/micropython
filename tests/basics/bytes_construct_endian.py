@@ -1,13 +1,10 @@
 # test construction of bytes from different objects
 
 try:
-    from uarray import array
+    from array import array
 except ImportError:
-    try:
-        from array import array
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 # arrays
 print(bytes(array('h', [1, 2])))

@@ -1,4 +1,4 @@
-# Circuitpython as Client
+# Circuitpython as Server
 
 This example demonstrates the use of Socket as a server, accessed by a client program on a host development machine. This Circuitpython sketch uses the Bind, Listen, Accept, and recvfrom_into calls.
 

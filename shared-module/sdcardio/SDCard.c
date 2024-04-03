@@ -26,6 +26,8 @@
 
 // This implementation largely follows the structure of adafruit_sdcard.py
 
+#include "extmod/vfs.h"
+
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/sdcardio/SDCard.h"
@@ -199,16 +201,16 @@ STATIC int block_cmd(sdcardio_sdcard_obj_t *self, int cmd_, int block, void *res
     return cmd(self, cmd_, block * self->cdv, response_buf, response_len, true, true);
 }
 
-STATIC const compressed_string_t *init_card_v1(sdcardio_sdcard_obj_t *self) {
+STATIC mp_rom_error_text_t init_card_v1(sdcardio_sdcard_obj_t *self) {
     for (int i = 0; i < CMD_TIMEOUT; i++) {
         if (cmd(self, 41, 0, NULL, 0, true, true) == 0) {
             return NULL;
         }
     }
-    return translate("timeout waiting for v1 card");
+    return MP_ERROR_TEXT("timeout waiting for v1 card");
 }
 
-STATIC const compressed_string_t *init_card_v2(sdcardio_sdcard_obj_t *self) {
+STATIC mp_rom_error_text_t init_card_v2(sdcardio_sdcard_obj_t *self) {
     for (int i = 0; i < CMD_TIMEOUT; i++) {
         uint8_t ocr[4];
         common_hal_time_delay_ms(50);
@@ -222,10 +224,10 @@ STATIC const compressed_string_t *init_card_v2(sdcardio_sdcard_obj_t *self) {
             return NULL;
         }
     }
-    return translate("timeout waiting for v2 card");
+    return MP_ERROR_TEXT("timeout waiting for v2 card");
 }
 
-STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
+STATIC mp_rom_error_text_t init_card(sdcardio_sdcard_obj_t *self) {
     clock_card(self, 10);
 
     common_hal_digitalio_digitalinout_set_value(&self->cs, false);
@@ -247,7 +249,7 @@ STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
             }
         }
         if (!reached_idle_state) {
-            return translate("no SD card");
+            return MP_ERROR_TEXT("no SD card");
         }
     }
 
@@ -256,18 +258,18 @@ STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
         uint8_t rb7[4];
         int response = cmd(self, 8, 0x1AA, rb7, sizeof(rb7), false, true);
         if (response == R1_IDLE_STATE) {
-            const compressed_string_t *result = init_card_v2(self);
+            mp_rom_error_text_t result = init_card_v2(self);
             if (result != NULL) {
                 return result;
             }
         } else if (response == (R1_IDLE_STATE | R1_ILLEGAL_COMMAND)) {
-            const compressed_string_t *result = init_card_v1(self);
+            mp_rom_error_text_t result = init_card_v1(self);
             if (result != NULL) {
                 return result;
             }
         } else {
             DEBUG_PRINT("Reading card version, response=0x%02x\n", response);
-            return translate("couldn't determine SD card version");
+            return MP_ERROR_TEXT("couldn't determine SD card version");
         }
     }
 
@@ -276,11 +278,11 @@ STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
         uint8_t csd[16];
         int response = cmd(self, 9, 0, csd, sizeof(csd), true, true);
         if (response != 0) {
-            return translate("no response from SD card");
+            return MP_ERROR_TEXT("no response from SD card");
         }
         int csd_version = (csd[0] & 0xC0) >> 6;
         if (csd_version >= 2) {
-            return translate("SD card CSD format not supported");
+            return MP_ERROR_TEXT("SD card CSD format not supported");
         }
 
         if (csd_version == 1) {
@@ -297,7 +299,7 @@ STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
     {
         int response = cmd(self, 16, 512, NULL, 0, true, true);
         if (response != 0) {
-            return translate("can't set 512 block size");
+            return MP_ERROR_TEXT("can't set 512 block size");
         }
     }
 
@@ -314,7 +316,7 @@ void common_hal_sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio_spi
     self->baudrate = 250000;
 
     lock_bus_or_throw(self);
-    const compressed_string_t *result = init_card(self);
+    mp_rom_error_text_t result = init_card(self);
     extraclock_and_unlock_bus(self);
 
     if (result != NULL) {
@@ -358,23 +360,24 @@ STATIC int readinto(sdcardio_sdcard_obj_t *self, void *buf, size_t size) {
     return 0;
 }
 
-STATIC int readblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf) {
-    uint32_t nblocks = buf->len / 512;
+mp_uint_t sdcardio_sdcard_readblocks(mp_obj_t self_in, uint8_t *buf, uint32_t start_block, uint32_t nblocks) {
+    sdcardio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (!lock_and_configure_bus(self)) {
+        return MP_EAGAIN;
+    }
+    int r = 0;
+    size_t buflen = 512 * nblocks;
     if (nblocks == 1) {
         //  Use CMD17 to read a single block
-        return block_cmd(self, 17, start_block, buf->buf, buf->len, true, true);
+        r = block_cmd(self, 17, start_block, buf, buflen, true, true);
     } else {
         //  Use CMD18 to read multiple blocks
-        int r = block_cmd(self, 18, start_block, NULL, 0, true, true);
-        if (r < 0) {
-            return r;
-        }
-
-        uint8_t *ptr = buf->buf;
-        while (nblocks--) {
+        r = block_cmd(self, 18, start_block, NULL, 0, true, true);
+        uint8_t *ptr = buf;
+        while (nblocks-- && r >= 0) {
             r = readinto(self, ptr, 512);
-            if (r < 0) {
-                return r;
+            if (r != 0) {
+                break;
             }
             ptr += 512;
         }
@@ -387,24 +390,22 @@ STATIC int readblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buff
             uint8_t single_byte;
             common_hal_busio_spi_read(self->bus, &single_byte, 1, 0xff);
             if (single_byte & 0x80) {
-                return r;
+                break;
             }
             r = single_byte;
         }
     }
-    return 0;
+    extraclock_and_unlock_bus(self);
+    return r;
 }
 
 int common_hal_sdcardio_sdcard_readblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf) {
     common_hal_sdcardio_check_for_deinit(self);
     if (buf->len % 512 != 0) {
-        mp_raise_ValueError(translate("Buffer length must be a multiple of 512"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer length must be a multiple of 512"));
     }
 
-    lock_and_configure_bus(self);
-    int r = readblocks(self, start_block, buf);
-    extraclock_and_unlock_bus(self);
-    return r;
+    return sdcardio_sdcard_readblocks(MP_OBJ_FROM_PTR(self), buf->buf, start_block, buf->len / 512);
 }
 
 STATIC int _write(sdcardio_sdcard_obj_t *self, uint8_t token, void *buf, size_t size) {
@@ -452,17 +453,20 @@ STATIC int _write(sdcardio_sdcard_obj_t *self, uint8_t token, void *buf, size_t 
     return 0;
 }
 
-STATIC int writeblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf) {
+mp_uint_t sdcardio_sdcard_writeblocks(mp_obj_t self_in, uint8_t *buf, uint32_t start_block, uint32_t nblocks) {
+    sdcardio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_sdcardio_check_for_deinit(self);
-    uint32_t nblocks = buf->len / 512;
 
-    DEBUG_PRINT("cmd25? %d next_block %d start_block %d\n", self->in_cmd25, self->next_block, start_block);
+    if (!lock_and_configure_bus(self)) {
+        return MP_EAGAIN;
+    }
 
     if (!self->in_cmd25 || start_block != self->next_block) {
         DEBUG_PRINT("entering CMD25 at %d\n", (int)start_block);
         //  Use CMD25 to write multiple block
         int r = block_cmd(self, 25, start_block, NULL, 0, true, true);
         if (r < 0) {
+            extraclock_and_unlock_bus(self);
             return r;
         }
         self->in_cmd25 = true;
@@ -470,17 +474,19 @@ STATIC int writeblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buf
 
     self->next_block = start_block;
 
-    uint8_t *ptr = buf->buf;
+    uint8_t *ptr = buf;
     while (nblocks--) {
         int r = _write(self, TOKEN_CMD25, ptr, 512);
         if (r < 0) {
             self->in_cmd25 = false;
+            extraclock_and_unlock_bus(self);
             return r;
         }
         self->next_block++;
         ptr += 512;
     }
 
+    extraclock_and_unlock_bus(self);
     return 0;
 }
 
@@ -495,10 +501,32 @@ int common_hal_sdcardio_sdcard_sync(sdcardio_sdcard_obj_t *self) {
 int common_hal_sdcardio_sdcard_writeblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf) {
     common_hal_sdcardio_check_for_deinit(self);
     if (buf->len % 512 != 0) {
-        mp_raise_ValueError(translate("Buffer length must be a multiple of 512"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer length must be a multiple of 512"));
     }
     lock_and_configure_bus(self);
-    int r = writeblocks(self, start_block, buf);
+    int r = sdcardio_sdcard_writeblocks(MP_OBJ_FROM_PTR(self), buf->buf, start_block, buf->len / 512);
     extraclock_and_unlock_bus(self);
     return r;
+}
+
+bool sdcardio_sdcard_ioctl(mp_obj_t self_in, size_t cmd, size_t arg, mp_int_t *out_value) {
+    sdcardio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    *out_value = 0;
+    switch (cmd) {
+        case MP_BLOCKDEV_IOCTL_DEINIT:
+            common_hal_sdcardio_sdcard_sync(self);
+            break; // TODO properly
+        case MP_BLOCKDEV_IOCTL_SYNC:
+            common_hal_sdcardio_sdcard_sync(self);
+            break;
+        case MP_BLOCKDEV_IOCTL_BLOCK_COUNT:
+            *out_value = common_hal_sdcardio_sdcard_get_blockcount(self);
+            break;
+        case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
+            *out_value = 512;
+            break;
+        default:
+            return false;
+    }
+    return true;
 }

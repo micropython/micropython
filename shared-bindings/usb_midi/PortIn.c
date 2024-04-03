@@ -55,6 +55,7 @@
 //|         :return: Data read
 //|         :rtype: bytes or None"""
 //|         ...
+//|
 //|     def readinto(self, buf: WriteableBuffer, nbytes: Optional[int] = None) -> Optional[bytes]:
 //|         """Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
 //|         that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
@@ -101,7 +102,6 @@ STATIC const mp_rom_map_elem_t usb_midi_portin_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(usb_midi_portin_locals_dict, usb_midi_portin_locals_dict_table);
 
 STATIC const mp_stream_p_t usb_midi_portin_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = usb_midi_portin_read,
     .write = NULL,
     .ioctl = usb_midi_portin_ioctl,

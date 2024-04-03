@@ -29,6 +29,8 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
+#include "sdk/drivers/igpio/fsl_gpio.h"
+
 #include "py/gc.h"
 
 STATIC bool claimed_pins[PAD_COUNT];
@@ -91,6 +93,11 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
     never_reset_pins[pin->mux_idx] = false;
     claimed_pins[pin->mux_idx] = false;
 
+    // Make sure this pin's GPIO is set to input. Otherwise, output values could interfere
+    // with the ADC.
+    const gpio_pin_config_t config = { kGPIO_DigitalInput, 0, kGPIO_NoIntmode };
+    GPIO_PinInit(pin->gpio, pin->number, &config);
+
     // This should never be true, but protect against it anyway.
     if (pin->mux_reg == 0) {
         return;
@@ -139,5 +146,5 @@ const mcu_periph_obj_t *find_pin_function_sz(const mcu_periph_obj_t *list, size_
             return &list[i];
         }
     }
-    mp_raise_ValueError_varg(translate("Invalid %q pin"), name);
+    mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q pin"), name);
 }

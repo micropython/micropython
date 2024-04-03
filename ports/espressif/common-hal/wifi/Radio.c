@@ -44,7 +44,7 @@
 #include "components/lwip/include/apps/ping/ping_sock.h"
 
 #if CIRCUITPY_MDNS
-#include "mdns.h"
+#include "common-hal/mdns/Server.h"
 #endif
 
 #define MAC_ADDRESS_LENGTH 6
@@ -97,7 +97,7 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
             common_hal_wifi_radio_stop_scanning_networks(self);
         }
         #if CIRCUITPY_MDNS
-        mdns_free();
+        mdns_server_deinit_singleton();
         #endif
         ESP_ERROR_CHECK(esp_wifi_stop());
         self->started = false;
@@ -132,10 +132,10 @@ mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_set_mac_address(wifi_radio_obj_t *self, const uint8_t *mac) {
     if (!self->sta_mode) {
-        mp_raise_RuntimeError(translate("Interface must be started"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Interface must be started"));
     }
     if ((mac[0] & 0b1) == 0b1) {
-        mp_raise_RuntimeError(translate("Invalid multicast MAC address"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Invalid multicast MAC address"));
     }
     esp_wifi_set_mac(ESP_IF_WIFI_STA, mac);
 }
@@ -158,20 +158,20 @@ mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_set_mac_address_ap(wifi_radio_obj_t *self, const uint8_t *mac) {
     if (!self->ap_mode) {
-        mp_raise_RuntimeError(translate("Interface must be started"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Interface must be started"));
     }
     if ((mac[0] & 0b1) == 0b1) {
-        mp_raise_RuntimeError(translate("Invalid multicast MAC address"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Invalid multicast MAC address"));
     }
     esp_wifi_set_mac(ESP_IF_WIFI_AP, mac);
 }
 
 mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self, uint8_t start_channel, uint8_t stop_channel) {
     if (self->current_scan != NULL) {
-        mp_raise_RuntimeError(translate("Already scanning for wifi networks"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Already scanning for wifi networks"));
     }
     if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("wifi is not enabled"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("wifi is not enabled"));
     }
     set_mode_station(self, true);
 
@@ -250,9 +250,47 @@ void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
     set_mode_ap(self, false);
 }
 
+mp_obj_t common_hal_wifi_radio_get_stations_ap(wifi_radio_obj_t *self) {
+    wifi_sta_list_t esp_sta_list;
+    esp_err_t result;
+
+    result = esp_wifi_ap_get_sta_list(&esp_sta_list);
+    if (result != ESP_OK) {
+        return mp_const_none;
+    }
+
+    esp_netif_pair_mac_ip_t mac_ip_pair[esp_sta_list.num];
+    for (int i = 0; i < esp_sta_list.num; i++) {
+        memcpy(mac_ip_pair[i].mac, esp_sta_list.sta[i].mac, MAC_ADDRESS_LENGTH);
+        mac_ip_pair[i].ip.addr = 0;
+    }
+
+    result = esp_netif_dhcps_get_clients_by_mac(self->ap_netif, esp_sta_list.num, mac_ip_pair);
+    if (result != ESP_OK) {
+        return mp_const_none;
+    }
+
+    mp_obj_t mp_sta_list = mp_obj_new_list(0, NULL);
+    for (int i = 0; i < esp_sta_list.num; i++) {
+        mp_obj_t elems[3] = {
+            mp_obj_new_bytes(esp_sta_list.sta[i].mac, MAC_ADDRESS_LENGTH),
+            MP_OBJ_NEW_SMALL_INT(esp_sta_list.sta[i].rssi),
+            mp_const_none
+        };
+
+        if (mac_ip_pair[i].ip.addr) {
+            elems[2] = common_hal_ipaddress_new_ipv4address(mac_ip_pair[i].ip.addr);
+        }
+
+        mp_obj_list_append(mp_sta_list, namedtuple_make_new((const mp_obj_type_t *)&wifi_radio_station_type, 3, 0, elems));
+    }
+
+    return mp_sta_list;
+}
+
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("wifi is not enabled"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("wifi is not enabled"));
     }
     wifi_config_t *config = &self->sta_config;
 
@@ -338,7 +376,12 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     } while ((bits & (WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT)) == 0 && !mp_hal_is_interrupted());
 
     if ((bits & WIFI_DISCONNECTED_BIT) != 0) {
-        if (self->last_disconnect_reason == WIFI_REASON_AUTH_FAIL) {
+        if (
+            (self->last_disconnect_reason == WIFI_REASON_AUTH_FAIL) ||
+            (self->last_disconnect_reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT) ||
+            (self->last_disconnect_reason == WIFI_REASON_NO_AP_FOUND_W_COMPATIBLE_SECURITY) ||
+            (self->last_disconnect_reason == WIFI_REASON_NO_AP_FOUND_IN_AUTHMODE_THRESHOLD)
+            ) {
             return WIFI_RADIO_ERROR_AUTH_FAIL;
         } else if (self->last_disconnect_reason == WIFI_REASON_NO_AP_FOUND) {
             return WIFI_RADIO_ERROR_NO_AP_FOUND;

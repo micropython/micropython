@@ -94,7 +94,7 @@ STATIC mp_obj_t i2ctarget_i2c_target_make_new(const mp_obj_type_t *type, size_t 
         addresses[i++] = value;
     }
     if (i == 0) {
-        mp_raise_ValueError(translate("addresses is empty"));
+        mp_raise_ValueError(MP_ERROR_TEXT("addresses is empty"));
     }
 
     common_hal_i2ctarget_i2c_target_construct(self, scl, sda, addresses, i, args[ARG_smbus].u_bool);
@@ -420,7 +420,7 @@ STATIC MP_DEFINE_CONST_DICT(i2ctarget_i2c_target_request_locals_dict, i2ctarget_
 MP_DEFINE_CONST_OBJ_TYPE(
     i2ctarget_i2c_target_request_type,
     MP_QSTR_I2CTargetRequest,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, i2ctarget_i2c_target_request_make_new,
     locals_dict, &i2ctarget_i2c_target_request_locals_dict
     );

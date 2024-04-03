@@ -135,7 +135,7 @@ STATIC MP_DEFINE_CONST_DICT(vectorio_circle_locals_dict, vectorio_circle_locals_
 MP_DEFINE_CONST_OBJ_TYPE(
     vectorio_circle_type,
     MP_QSTR_Circle,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, vectorio_circle_make_new,
     locals_dict, &vectorio_circle_locals_dict,
     protocol, &circle_draw_protocol

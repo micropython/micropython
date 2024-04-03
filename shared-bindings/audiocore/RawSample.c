@@ -87,7 +87,7 @@ STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
     if (bufinfo.typecode == 'h' || bufinfo.typecode == 'H') {
         bytes_per_sample = 2;
     } else if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-        mp_raise_ValueError_varg(translate("%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"), MP_QSTR_buffer);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"), MP_QSTR_buffer);
     }
     common_hal_audioio_rawsample_construct(self, ((uint8_t *)bufinfo.buf), bufinfo.len,
         bytes_per_sample, signed_samples, args[ARG_channel_count].u_int,
@@ -177,7 +177,7 @@ STATIC const audiosample_p_t audioio_rawsample_proto = {
 MP_DEFINE_CONST_OBJ_TYPE(
     audioio_rawsample_type,
     MP_QSTR_RawSample,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, audioio_rawsample_make_new,
     locals_dict, &audioio_rawsample_locals_dict,
     protocol, &audioio_rawsample_proto

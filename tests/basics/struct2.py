@@ -1,4 +1,4 @@
-# test ustruct with a count specified before the type
+# test struct with a count specified before the type
 
 try:
     import struct

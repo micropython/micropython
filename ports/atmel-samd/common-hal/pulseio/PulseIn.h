@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEIN_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEIN_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -46,14 +45,5 @@ typedef struct {
     volatile bool errored_too_fast;
 } pulseio_pulsein_obj_t;
 
-void pulsein_reset(void);
-
 void pulsein_interrupt_handler(uint8_t channel);
 void pulsein_timer_interrupt_handler(uint8_t index);
-#ifdef SAMD21
-void rtc_start_pulse(void);
-void rtc_end_pulse(void);
-#endif
-
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEIN_H

@@ -34,6 +34,11 @@
 #include "shared-bindings/vectorio/VectorShape.h"
 #endif
 
+static void check_readonly(displayio_group_t *self) {
+    if (self->readonly) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Read-only"));
+    }
+}
 
 void common_hal_displayio_group_construct(displayio_group_t *self, uint32_t scale, mp_int_t x, mp_int_t y) {
     mp_obj_list_t *members = mp_obj_new_list(0, NULL);
@@ -48,6 +53,7 @@ void common_hal_displayio_group_set_hidden(displayio_group_t *self, bool hidden)
     if (self->hidden == hidden) {
         return;
     }
+    check_readonly(self);
     self->hidden = hidden;
     if (self->hidden_by_parent) {
         return;
@@ -81,6 +87,7 @@ void displayio_group_set_hidden_by_parent(displayio_group_t *self, bool hidden) 
     if (self->hidden_by_parent == hidden) {
         return;
     }
+    check_readonly(self);
     self->hidden_by_parent = hidden;
     // If we're already hidden, then we're done.
     if (self->hidden) {
@@ -209,6 +216,7 @@ void common_hal_displayio_group_set_scale(displayio_group_t *self, uint32_t scal
     if (self->scale == scale) {
         return;
     }
+    check_readonly(self);
     uint8_t parent_scale = self->absolute_transform.scale / self->scale;
     self->absolute_transform.dx = self->absolute_transform.dx / self->scale * scale;
     self->absolute_transform.dy = self->absolute_transform.dy / self->scale * scale;
@@ -225,6 +233,7 @@ void common_hal_displayio_group_set_x(displayio_group_t *self, mp_int_t x) {
     if (self->x == x) {
         return;
     }
+    check_readonly(self);
     if (self->absolute_transform.transpose_xy) {
         int16_t dy = self->absolute_transform.dy / self->scale;
         self->absolute_transform.y += dy * (x - self->x);
@@ -245,6 +254,7 @@ void common_hal_displayio_group_set_y(displayio_group_t *self, mp_int_t y) {
     if (self->y == y) {
         return;
     }
+    check_readonly(self);
     if (self->absolute_transform.transpose_xy) {
         int8_t dx = self->absolute_transform.dx / self->scale;
         self->absolute_transform.x += dx * (y - self->y);
@@ -257,6 +267,7 @@ void common_hal_displayio_group_set_y(displayio_group_t *self, mp_int_t y) {
 }
 
 static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
+    check_readonly(self);
     #if CIRCUITPY_VECTORIO
     const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, layer);
     if (draw_protocol != NULL) {
@@ -268,7 +279,7 @@ static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
     if (native_layer != MP_OBJ_NULL) {
         displayio_tilegrid_t *tilegrid = native_layer;
         if (tilegrid->in_group) {
-            mp_raise_ValueError(translate("Layer already in a group"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Layer already in a group"));
         } else {
             tilegrid->in_group = true;
         }
@@ -281,7 +292,7 @@ static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
     if (native_layer != MP_OBJ_NULL) {
         displayio_group_t *group = native_layer;
         if (group->in_group) {
-            mp_raise_ValueError(translate("Layer already in a group"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Layer already in a group"));
         } else {
             group->in_group = true;
         }
@@ -290,10 +301,11 @@ static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
             group, self->hidden || self->hidden_by_parent);
         return;
     }
-    mp_raise_ValueError(translate("Layer must be a Group or TileGrid subclass"));
+    mp_raise_ValueError(MP_ERROR_TEXT("Layer must be a Group or TileGrid subclass"));
 }
 
 static void _remove_layer(displayio_group_t *self, size_t index) {
+    check_readonly(self);
     mp_obj_t layer;
     displayio_area_t layer_area;
     bool rendered_last_frame = false;
@@ -371,6 +383,7 @@ void displayio_group_construct(displayio_group_t *self, mp_obj_list_t *members, 
     self->item_removed = false;
     self->scale = scale;
     self->in_group = false;
+    self->readonly = false;
 }
 
 bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorspace_t *colorspace, const displayio_area_t *area, uint32_t *mask, uint32_t *buffer) {

@@ -61,6 +61,11 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
     uint32_t compression = read_word(bmp_header, 15);
     uint32_t number_of_colors = read_word(bmp_header, 23);
 
+    // 0 is uncompressed; 3 is bitfield compressed. 1 and 2 are RLE compression.
+    if (compression != 0 && compression != 3) {
+        mp_raise_ValueError(MP_ERROR_TEXT("RLE-compressed BMP not supported"));
+    }
+
     bool indexed = bits_per_pixel <= 8;
     self->bitfield_compressed = (compression == 3);
     self->bits_per_pixel = bits_per_pixel;
@@ -105,7 +110,7 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
                 mp_raise_OSError(MP_EIO);
             }
             if (palette_bytes_read != palette_size) {
-                mp_raise_ValueError(translate("Unable to read color palette data"));
+                mp_raise_ValueError(MP_ERROR_TEXT("Unable to read color palette data"));
             }
             for (uint16_t i = 0; i < number_of_colors; i++) {
                 common_hal_displayio_palette_set_color(palette, i, palette_data[i]);
@@ -118,11 +123,11 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
         self->palette = palette;
 
     } else if (!(header_size == 12 || header_size == 40 || header_size == 108 || header_size == 124)) {
-        mp_raise_ValueError_varg(translate("Only Windows format, uncompressed BMP supported: given header size is %d"), header_size);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Only Windows format, uncompressed BMP supported: given header size is %d"), header_size);
     }
 
     if (bits_per_pixel == 8 && number_of_colors == 0) {
-        mp_raise_ValueError_varg(translate("Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: %d bpp given"), bits_per_pixel);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: %d bpp given"), bits_per_pixel);
     }
 
     uint8_t bytes_per_pixel = (self->bits_per_pixel / 8)  ? (self->bits_per_pixel / 8) : 1;

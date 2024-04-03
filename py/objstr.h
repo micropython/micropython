@@ -29,7 +29,7 @@
 #include "py/obj.h"
 #include "py/objarray.h"
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 extern const char nibble_to_hex_upper[16];
 extern const char nibble_to_hex_lower[16];
 
@@ -121,7 +121,7 @@ extern const mp_obj_dict_t mp_obj_bytearray_locals_dict;
 extern const mp_obj_dict_t mp_obj_array_locals_dict;
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_obj_bytes_hex_as_str_obj);
 

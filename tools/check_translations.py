@@ -13,8 +13,10 @@ import polib
 template_filename = sys.argv[1]
 po_filenames = sys.argv[2:]
 
+synthetic = polib.pofile("locale/synthetic.pot")
+synthetic_ids = set([x.msgid for x in synthetic])
 template = polib.pofile(template_filename)
-all_ids = set([x.msgid for x in template])
+all_ids = set([x.msgid for x in template]) - synthetic_ids
 for po_filename in po_filenames:
     print("Checking", po_filename)
     po_file = polib.pofile(po_filename)

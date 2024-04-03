@@ -263,12 +263,12 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
 
     mp_arg_validate_length_range(bufinfo.len, 2, 64, MP_QSTR_program);
     if (bufinfo.len % 2 != 0) {
-        mp_raise_ValueError(translate("Program size invalid"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Program size invalid"));
     }
 
     mp_arg_validate_length_range(init_bufinfo.len, 0, 64, MP_QSTR_init);
     if (init_bufinfo.len % 2 != 0) {
-        mp_raise_ValueError(translate("Init program size invalid"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Init program size invalid"));
     }
 
     int wrap = args[ARG_wrap].u_int;
@@ -357,7 +357,7 @@ STATIC mp_obj_t rp2pio_statemachine_run(mp_obj_t self_obj, mp_obj_t instruction_
     mp_get_buffer_raise(instruction_obj, &bufinfo, MP_BUFFER_READ);
 
     if (bufinfo.len % 2 != 0) {
-        mp_raise_ValueError(translate("Program size invalid"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Program size invalid"));
     }
     common_hal_rp2pio_statemachine_run(self, bufinfo.buf, (size_t)bufinfo.len / 2);
     return mp_const_none;
@@ -415,7 +415,7 @@ STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_arg
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     if (stride_in_bytes > 4) {
-        mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer elements must be 4 bytes long or less"));
     }
     int32_t start = args[ARG_start].u_int;
     size_t length = bufinfo.len / stride_in_bytes;
@@ -491,10 +491,10 @@ STATIC void fill_buf_info(sm_buf_info *info, mp_obj_t obj, size_t *stride_in_byt
         mp_get_buffer_raise(obj, &info->info, MP_BUFFER_READ);
         size_t stride = mp_binary_get_size('@', info->info.typecode, NULL);
         if (stride > 4) {
-            mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Buffer elements must be 4 bytes long or less"));
         }
         if (*stride_in_bytes && stride != *stride_in_bytes) {
-            mp_raise_ValueError(translate("Mismatched data size"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Mismatched data size"));
         }
         *stride_in_bytes = stride;
     } else {
@@ -627,7 +627,7 @@ STATIC mp_obj_t rp2pio_statemachine_readinto(size_t n_args, const mp_obj_t *pos_
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     if (stride_in_bytes > 4) {
-        mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer elements must be 4 bytes long or less"));
     }
     int32_t start = args[ARG_start].u_int;
     size_t length = bufinfo.len / stride_in_bytes;
@@ -701,7 +701,7 @@ STATIC mp_obj_t rp2pio_statemachine_write_readinto(size_t n_args, const mp_obj_t
     mp_get_buffer_raise(args[ARG_buffer_out].u_obj, &buf_out_info, MP_BUFFER_READ);
     int out_stride_in_bytes = mp_binary_get_size('@', buf_out_info.typecode, NULL);
     if (out_stride_in_bytes > 4) {
-        mp_raise_ValueError(translate("Out-buffer elements must be <= 4 bytes long"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Out-buffer elements must be <= 4 bytes long"));
     }
     int32_t out_start = args[ARG_out_start].u_int;
     size_t out_length = buf_out_info.len / out_stride_in_bytes;
@@ -711,7 +711,7 @@ STATIC mp_obj_t rp2pio_statemachine_write_readinto(size_t n_args, const mp_obj_t
     mp_get_buffer_raise(args[ARG_buffer_in].u_obj, &buf_in_info, MP_BUFFER_WRITE);
     int in_stride_in_bytes = mp_binary_get_size('@', buf_in_info.typecode, NULL);
     if (in_stride_in_bytes > 4) {
-        mp_raise_ValueError(translate("In-buffer elements must be <= 4 bytes long"));
+        mp_raise_ValueError(MP_ERROR_TEXT("In-buffer elements must be <= 4 bytes long"));
     }
     int32_t in_start = args[ARG_in_start].u_int;
     size_t in_length = buf_in_info.len / in_stride_in_bytes;
@@ -862,7 +862,7 @@ STATIC MP_DEFINE_CONST_DICT(rp2pio_statemachine_locals_dict, rp2pio_statemachine
 MP_DEFINE_CONST_OBJ_TYPE(
     rp2pio_statemachine_type,
     MP_QSTR_StateMachine,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, rp2pio_statemachine_make_new,
     locals_dict, &rp2pio_statemachine_locals_dict
     );

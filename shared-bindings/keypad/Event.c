@@ -183,7 +183,7 @@ STATIC MP_DEFINE_CONST_DICT(keypad_event_locals_dict, keypad_event_locals_dict_t
 MP_DEFINE_CONST_OBJ_TYPE(
     keypad_event_type,
     MP_QSTR_Event,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, keypad_event_make_new,
     print, keypad_event_print,
     locals_dict, &keypad_event_locals_dict,

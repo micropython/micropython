@@ -57,11 +57,11 @@ STATIC mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, s
     int mask = args[ARG_mask].u_obj == mp_const_none ?  id_bits : mp_obj_get_int(args[ARG_mask].u_obj);
 
     if (id & ~id_bits) {
-        mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_id);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q out of range"), MP_QSTR_id);
     }
 
     if (mask & ~id_bits) {
-        mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_mask);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q out of range"), MP_QSTR_mask);
     }
 
     canio_match_obj_t *self = mp_obj_malloc(canio_match_obj_t, &canio_match_type);
@@ -116,7 +116,7 @@ STATIC MP_DEFINE_CONST_DICT(canio_match_locals_dict, canio_match_locals_dict_tab
 MP_DEFINE_CONST_OBJ_TYPE(
     canio_match_type,
     MP_QSTR_Match,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, canio_match_make_new,
     locals_dict, &canio_match_locals_dict
     );

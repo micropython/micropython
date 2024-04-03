@@ -49,26 +49,16 @@
 #include "common-hal/busio/UART.h"
 #include "common-hal/dualbank/__init__.h"
 #include "common-hal/ps2io/Ps2.h"
-#include "common-hal/pulseio/PulseIn.h"
-#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/watchdog/WatchDogTimer.h"
 #include "common-hal/socketpool/Socket.h"
 #include "common-hal/wifi/__init__.h"
 #include "supervisor/background_callback.h"
-#include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/RunMode.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/socketpool/__init__.h"
 #include "shared-module/os/__init__.h"
-
-#include "peripherals/rmt.h"
-#include "peripherals/timer.h"
-
-#if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
-#include "peripherals/pcnt.h"
-#endif
 
 #if CIRCUITPY_TOUCHIO_USE_NATIVE
 #include "peripherals/touch.h"
@@ -105,11 +95,12 @@
 #include "esp32/rom/efuse.h"
 #endif
 
+#if CIRCUITPY_SSL
+#include "shared-module/ssl/__init__.h"
+#endif
+
 #include "esp_log.h"
 #define TAG "port"
-
-uint32_t *heap;
-uint32_t heap_size;
 
 STATIC esp_timer_handle_t _tick_timer;
 STATIC esp_timer_handle_t _sleep_timer;
@@ -256,9 +247,6 @@ safe_mode_t port_init(void) {
     esp_rom_install_uart_printf();
     #endif
 
-    heap = NULL;
-    heap_size = 0;
-
     #define pin_GPIOn(n) pin_GPIO##n
     #define pin_GPIOn_EXPAND(x) pin_GPIOn(x)
 
@@ -282,7 +270,7 @@ safe_mode_t port_init(void) {
     #endif
 
     #ifndef ENABLE_JTAG
-    #define ENABLE_JTAG (defined(DEBUG) && DEBUG)
+    #define ENABLE_JTAG (0)
     #endif
 
     #if ENABLE_JTAG
@@ -321,61 +309,48 @@ safe_mode_t port_init(void) {
     return SAFE_MODE_NONE;
 }
 
-safe_mode_t port_heap_init(safe_mode_t sm) {
-    mp_int_t reserved = 0;
-    if (filesystem_present() && common_hal_os_getenv_int("CIRCUITPY_RESERVED_PSRAM", &reserved) == GETENV_OK) {
-        common_hal_espidf_set_reserved_psram(reserved);
+void port_heap_init(void) {
+    // The IDF sets up the heap, so we don't need to.
+}
+
+void *port_malloc(size_t size, bool dma_capable) {
+    size_t caps = MALLOC_CAP_8BIT;
+    if (dma_capable) {
+        caps |= MALLOC_CAP_DMA;
     }
 
-    #if defined(CONFIG_SPIRAM_USE_MEMMAP)
-    {
-        intptr_t heap_start = common_hal_espidf_get_psram_start();
-        intptr_t heap_end = common_hal_espidf_get_psram_end();
-        size_t spiram_size = heap_end - heap_start;
-        if (spiram_size > 0) {
-            heap = (uint32_t *)heap_start;
-            heap_size = (heap_end - heap_start) / sizeof(uint32_t);
-            common_hal_espidf_reserve_psram();
-        } else {
-            ESP_LOGE(TAG, "CONFIG_SPIRAM_USE_MMAP enabled but no spiram heap available");
-        }
-    }
-    #elif defined(CONFIG_SPIRAM_USE_CAPS_ALLOC)
-    {
-        intptr_t psram_start = common_hal_espidf_get_psram_start();
-        intptr_t psram_end = common_hal_espidf_get_psram_end();
-        size_t psram_amount = psram_end - psram_start;
-        size_t biggest_block = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
-        size_t try_alloc = MIN(biggest_block, psram_amount - common_hal_espidf_get_reserved_psram());
-        heap = heap_caps_malloc(try_alloc, MALLOC_CAP_SPIRAM);
-
-        if (heap) {
-            heap_size = try_alloc;
-        } else {
-            ESP_LOGE(TAG, "CONFIG_SPIRAM_USE_CAPS_ALLOC but no spiram heap available");
-        }
-    }
+    void *ptr = NULL;
+    // Try SPIRAM first when available.
+    #ifdef CONFIG_SPIRAM
+    ptr = heap_caps_malloc(size, caps | MALLOC_CAP_SPIRAM);
     #endif
-
-    if (heap == NULL) {
-        size_t heap_total = heap_caps_get_total_size(MALLOC_CAP_8BIT);
-        heap_size = MIN(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT), heap_total / 2);
-        heap = malloc(heap_size);
-        heap_size = heap_size / sizeof(uint32_t);
+    if (ptr == NULL) {
+        ptr = heap_caps_malloc(size, caps);
     }
-    if (heap == NULL) {
-        heap_size = 0;
-        return SAFE_MODE_NO_HEAP;
-    }
+    return ptr;
+}
 
-    return sm;
+void port_free(void *ptr) {
+    heap_caps_free(ptr);
+}
 
+void *port_realloc(void *ptr, size_t size) {
+    return heap_caps_realloc(ptr, size, MALLOC_CAP_8BIT);
+}
+
+size_t port_heap_get_largest_free_size(void) {
+    size_t free_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+    return free_size;
 }
 
 void reset_port(void) {
     // TODO deinit for esp32-camera
     #if CIRCUITPY_ESPCAMERA
     esp_camera_deinit();
+    #endif
+
+    #if CIRCUITPY_SSL
+    ssl_reset();
     #endif
 
     reset_all_pins();
@@ -390,10 +365,6 @@ void reset_port(void) {
     uart_reset();
     #endif
 
-    #if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
-    peripherals_pcnt_reset();
-    #endif
-
     #if CIRCUITPY_DUALBANK
     dualbank_reset();
     #endif
@@ -406,21 +377,8 @@ void reset_port(void) {
     espulp_reset();
     #endif
 
-    #if CIRCUITPY_FREQUENCYIO
-    peripherals_timer_reset();
-    #endif
-
     #if CIRCUITPY_PS2IO
     ps2_reset();
-    #endif
-
-    #if CIRCUITPY_PULSEIO
-    peripherals_rmt_reset();
-    pulsein_reset();
-    #endif
-
-    #if CIRCUITPY_PWMIO
-    pwmout_reset();
     #endif
 
     #if CIRCUITPY_RTC
@@ -449,18 +407,10 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
-    #ifndef CONFIG_IDF_TARGET_ARCH_RISCV
+    #if CIRCUITPY_DEBUG
     esp_backtrace_print(100);
     #endif
     esp_restart();
-}
-
-uint32_t *port_heap_get_bottom(void) {
-    return heap;
-}
-
-uint32_t *port_heap_get_top(void) {
-    return heap + heap_size;
 }
 
 uint32_t *port_stack_get_limit(void) {
@@ -483,10 +433,6 @@ uint32_t *port_stack_get_top(void) {
     // pyexec_friendly_repl, could lie inside the "extra" area and be invisible
     // to the garbage collector.
     return port_stack_get_limit() + ESP_TASK_MAIN_STACK / (sizeof(uint32_t) / sizeof(StackType_t));
-}
-
-bool port_has_fixed_stack(void) {
-    return true;
 }
 
 void port_set_saved_word(uint32_t value) {

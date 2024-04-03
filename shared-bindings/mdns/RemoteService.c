@@ -138,6 +138,6 @@ STATIC MP_DEFINE_CONST_DICT(mdns_remoteservice_locals_dict, mdns_remoteservice_l
 MP_DEFINE_CONST_OBJ_TYPE(
     mdns_remoteservice_type,
     MP_QSTR_RemoteService,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &mdns_remoteservice_locals_dict
     );

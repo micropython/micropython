@@ -80,6 +80,9 @@ void shared_modules_random_seed(mp_uint_t seed) {
 }
 
 mp_uint_t shared_modules_random_getrandbits(uint8_t n) {
+    if (n == 0) {
+        return 0;
+    }
     uint32_t mask = ~0;
     // Beware of C undefined behavior when shifting by >= than bit size
     mask >>= (32 - n);

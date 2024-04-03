@@ -1,6 +1,6 @@
 # Test performance of importing an .mpy file many times.
 
-import usys, io, os
+import sys, io, os
 
 if not (hasattr(io, "IOBase") and hasattr(os, "mount")):
     print("SKIP")
@@ -47,7 +47,7 @@ class FS:
         pass
 
     def stat(self, path):
-        if path == "__injected.mpy":
+        if path == "/__injected.mpy":
             return tuple(0 for _ in range(10))
         else:
             raise OSError(-2)  # ENOENT
@@ -58,13 +58,13 @@ class FS:
 
 def mount():
     os.mount(FS(), "/__remote")
-    os.chdir("/__remote")
+    sys.path.insert(0, "/__remote")
 
 
 def test(r):
     global result
     for _ in r:
-        usys.modules.clear()
+        sys.modules.clear()
         module = __import__("__injected")
     result = module.result
 

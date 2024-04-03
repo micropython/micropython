@@ -59,7 +59,7 @@ void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self,
     self->bits_per_value = bits_per_value;
 
     if (bits_per_value > 8 && bits_per_value != 16 && bits_per_value != 32) {
-        mp_raise_NotImplementedError(translate("Invalid bits per value"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Invalid bits per value"));
     }
 
     // Division and modulus can be slow because it has to handle any integer. We know bits_per_value
@@ -130,7 +130,7 @@ uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t
 
 void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, const displayio_area_t *dirty_area) {
     if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Read-only"));
     }
 
     displayio_area_t area = *dirty_area;
@@ -142,7 +142,7 @@ void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, const displayio_a
 
 void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
     if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Read-only"));
     }
     // Writes the color index value into a pixel position
     // Must update the dirty area separately
@@ -176,7 +176,7 @@ void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y
 
 void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
     if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Read-only"));
     }
     // update the dirty region
     displayio_area_t a = {x, y, x + 1, y + 1, NULL};
@@ -205,7 +205,7 @@ void displayio_bitmap_finish_refresh(displayio_bitmap_t *self) {
 
 void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) {
     if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Read-only"));
     }
     displayio_area_t a = {0, 0, self->width, self->height, NULL};
     displayio_bitmap_set_dirty_area(self, &a);

@@ -48,22 +48,22 @@ STATIC mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args,
         case 0:
             return MP_OBJ_NEW_SMALL_INT(0);
 
-        case 1:
-            if (mp_obj_is_int(args[0])) {
-                // already an int (small or long), just return it
-                return args[0];
-            } else if (mp_obj_is_str_or_bytes(args[0])) {
-                // a string, parse it
-                size_t l;
-                const char *s = mp_obj_str_get_data(args[0], &l);
-                return mp_parse_num_integer(s, l, 0, NULL);
+        case 1: {
+            mp_buffer_info_t bufinfo;
+            mp_obj_t o = mp_unary_op(MP_UNARY_OP_INT_MAYBE, args[0]);
+            if (o != MP_OBJ_NULL) {
+                return o;
+            } else if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
+                // a textual representation, parse it
+                return mp_parse_num_integer(bufinfo.buf, bufinfo.len, 0, NULL);
             #if MICROPY_PY_BUILTINS_FLOAT
             } else if (mp_obj_is_float(args[0])) {
                 return mp_obj_new_int_from_float(mp_obj_float_get(args[0]));
             #endif
             } else {
-                return mp_unary_op(MP_UNARY_OP_INT, args[0]);
+                mp_raise_TypeError_int_conversion(args[0]);
             }
+        }
 
         case 2:
         default: {
@@ -140,9 +140,9 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
     if (u.p.exp == ((1 << MP_FLOAT_EXP_BITS) - 1)) {
         // ...then number is Inf (positive or negative) if fraction is 0, else NaN.
         if (u.p.frc == 0) {
-            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert inf to int"));
+            mp_raise_msg_varg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert %s to int"), "inf");
         } else {
-            mp_raise_ValueError(MP_ERROR_TEXT("can't convert NaN to int"));
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("can't convert %s to int"), "NaN");
         }
     } else {
         mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
@@ -300,6 +300,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
     return b;
 }
 
+// CIRCUITPY-CHANGE
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 
 void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_signed) {
@@ -394,6 +395,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
+    // CIRCUITPY-CHANGE: different error message
     mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("No long integer support"));
     return mp_const_none;
 }
@@ -456,6 +458,7 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_binary_op_t op, mp_obj_t lhs_in, mp
     return MP_OBJ_NULL; // op not supported
 }
 
+// CIRCUITPY-CHANGE
 #if MICROPY_CPYTHON_COMPAT
 STATIC mp_obj_t int_bit_length(mp_obj_t self_in) {
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
@@ -477,6 +480,7 @@ STATIC mp_obj_t int_bit_length(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(int_bit_length_obj, int_bit_length);
 #endif
 
+// CIRCUITPY-CHANGE: more functionality
 // this is a classmethod
 STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // TODO: Support signed param (assumes signed=False at the moment)
@@ -571,6 +575,7 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(int_to_bytes_obj, 3, int_to_bytes);
 
 STATIC const mp_rom_map_elem_t int_locals_dict_table[] = {
+    // CIRCUITPY-CHANGE
     #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_bit_length), MP_ROM_PTR(&int_bit_length_obj) },
     #endif

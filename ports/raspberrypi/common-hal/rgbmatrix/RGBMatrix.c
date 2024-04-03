@@ -43,7 +43,6 @@ void *common_hal_rgbmatrix_timer_allocate(rgbmatrix_rgbmatrix_obj_t *self) {
     if (result == PWMOUT_OK) {
         // return value must be nonzero (but slice and channel can both be
         // zero), so set bit 16...
-        pwmout_never_reset(slice, channel);
         return (void *)(intptr_t)(slice | (channel << 8) | 0x10000);
     }
     return NULL;

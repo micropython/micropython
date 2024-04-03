@@ -178,7 +178,12 @@ if(MICROPY_FROZEN_MANIFEST)
         set(MICROPY_LIB_DIR ${MICROPY_DIR}/lib/micropython-lib)
     endif()
 
-    if(NOT (${ECHO_SUBMODULES}) AND NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
+    if(ECHO_SUBMODULES)
+        # No-op, we're just doing submodule/variant discovery.
+        # Note: All the following rules are safe to run in discovery mode even
+        # though the submodule might not be available as they do not directly depend
+        # on anything from the submodule.
+    elseif(NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
         message(FATAL_ERROR " micropython-lib not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
     endif()
 
@@ -216,11 +221,5 @@ if(ECHO_SUBMODULES)
     # Note: the GIT_SUBMODULES is done via echo rather than message, as message splits
     # the output onto multiple lines
     execute_process(COMMAND ${CMAKE_COMMAND} -E echo "GIT_SUBMODULES=${GIT_SUBMODULES}")
-    message(FATAL_ERROR "Done")
-endif()
-
-# Display BOARD_VARIANTS
-if(ECHO_BOARD_VARIANTS)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E echo "BOARD_VARIANTS=${BOARD_VARIANTS}")
     message(FATAL_ERROR "Done")
 endif()

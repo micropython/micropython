@@ -53,4 +53,13 @@ const mcu_pin_obj_t *mimxrt10xx_reset_forbidden_pins[] = {
     NULL,                       // Must end in NULL.
 };
 
+bool mimxrt10xx_board_reset_pin_number(const mcu_pin_obj_t *pin) {
+    #if CIRCUITPY_USB_HOST
+    if (pin == &pin_GPIO_EMC_40) {
+        // Don't reset the USB_HOST_POWER pin, because it will need to be enabled in boot.py.
+        return true;
+    }
+    #endif
+    return false;
+}
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

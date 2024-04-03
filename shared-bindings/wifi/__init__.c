@@ -59,6 +59,7 @@ STATIC const mp_rom_map_elem_t wifi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Network),     MP_ROM_PTR(&wifi_network_type) },
     { MP_ROM_QSTR(MP_QSTR_Packet),      MP_ROM_PTR(&wifi_packet_type) },
     { MP_ROM_QSTR(MP_QSTR_Radio),       MP_ROM_PTR(&wifi_radio_type) },
+    { MP_ROM_QSTR(MP_QSTR_Station),     MP_ROM_PTR(&wifi_radio_station_type) },
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_radio),       MP_ROM_PTR(&common_hal_wifi_radio_obj) },

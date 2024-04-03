@@ -27,8 +27,8 @@ FROZEN_MANIFEST ?= variants/manifest.py
 PROG ?= micropython
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-QSTR_GLOBAL_DEPENDENCIES = $(VARIANT_DIR)/mpconfigvariant.h
+QSTR_DEFS += qstrdefsport.h
+QSTR_GLOBAL_DEPENDENCIES += $(VARIANT_DIR)/mpconfigvariant.h
 
 # OS name, for simple autoconfig
 UNAME_S := $(shell uname -s)
@@ -59,8 +59,8 @@ endif
 # Remove unused sections.
 COPT += -fdata-sections -ffunction-sections
 
-# Always enable symbols -- They're occasionally useful, and don't make it into the
-# final .bin/.hex/.dfu so the extra size doesn't matter.
+# Note: Symbols and debug information will still be stripped from the final binary
+# unless "DEBUG=1" or "STRIP=" is passed to make, see README.md for details.
 CFLAGS += -g
 
 ifndef DEBUG
@@ -138,7 +138,7 @@ CFLAGS += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS += $(LIBPTHREAD)
 endif
 
-ifeq ($(MICROPY_PY_USSL),1)
+ifeq ($(MICROPY_PY_SSL),1)
 ifeq ($(MICROPY_SSL_AXTLS),1)
 
 endif
@@ -200,8 +200,6 @@ SRC_C += \
 	unix_mphal.c \
 	mpthreadport.c \
 	input.c \
-	modtime.c \
-	moduselect.c \
 	alloc.c \
 	fatfs_port.c \
 	supervisor/stub/filesystem.c \
@@ -210,6 +208,10 @@ SRC_C += \
 	supervisor/shared/translate/translate.c \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
+
+# CIRCUITPY-CHANGE
+# CircuitPython doesn't use extmod/modtime.c, but ports/unix/extmod.c depends on it.
+SRC_EXTMOD_C += extmod/modtime.c
 
 $(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compressed_translations.generated.h
 
@@ -262,13 +264,13 @@ include $(TOP)/py/mkrules.mk
 
 .PHONY: test test_full
 
-# CIRCUITPY: these two targets are ours
+# CIRCUITPY-CHANGE: these two targets are for CircuitPython builds
 .PHONY: print-failures clean-failures
 print-failures clean-failures:
 	../../tests/run-tests.py --$@
 
 
-# CIRCUITPY: support for passing args to run-tests, like `make test TEST_ARGS="basics/*.py"`
+# CIRCUITPY-CHANGE: support for passing args to run-tests, like `make test TEST_ARGS="basics/*.py"`
 TEST_ARGS ?=
 test: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))

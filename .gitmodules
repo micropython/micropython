@@ -63,8 +63,8 @@
 [submodule "frozen/Adafruit_CircuitPython_Crickit"]
 	path = frozen/Adafruit_CircuitPython_Crickit
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Crickit
-[submodule "ports/nrf/nrfx"]
-	path = ports/nrf/nrfx
+[submodule "ports/nordic/nrfx"]
+	path = ports/nordic/nrfx
 	url = https://github.com/adafruit/nrfx.git
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
@@ -143,7 +143,7 @@
 [submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
 	url = https://github.com/adafruit/esp-idf.git
-	branch = circuitpython-v5.1
+	branch = circuitpython-v5.1.3
 [submodule "ports/espressif/esp-protocols"]
 	path = ports/espressif/esp-protocols
 	url = https://github.com/espressif/esp-protocols.git
@@ -306,7 +306,8 @@
 	url = https://github.com/elecfreaks/circuitpython_picoed.git
 [submodule "ports/raspberrypi/lib/cyw43-driver"]
 	path = ports/raspberrypi/lib/cyw43-driver
-	url = https://github.com/georgerobotics/cyw43-driver.git
+	url = https://github.com/georgerobotics/cyw43-driver
+	branch = main
 [submodule "ports/raspberrypi/lib/lwip"]
 	path = ports/raspberrypi/lib/lwip
 	url = https://github.com/adafruit/lwip.git
@@ -351,3 +352,34 @@
 [submodule "lib/certificates"]
 	path = lib/certificates
 	url = https://github.com/adafruit/certificates
+[submodule "lib/tlsf"]
+	path = lib/tlsf
+	url = https://github.com/adafruit/tlsf.git
+	branch = circuitpython
+[submodule "frozen/CircuitPython_AXP313A"]
+	path = frozen/CircuitPython_AXP313A
+	url = https://github.com/bill88t/CircuitPython_AXP313A
+[submodule "frozen/Adafruit_CircuitPython_framebuf"]
+	path = frozen/Adafruit_CircuitPython_framebuf
+	url = https://github.com/adafruit/Adafruit_CircuitPython_framebuf
+[submodule "frozen/Adafruit_CircuitPython_SSD1306"]
+	path = frozen/Adafruit_CircuitPython_SSD1306
+	url = https://github.com/adafruit/Adafruit_CircuitPython_SSD1306
+[submodule "frozen/Adafruit_CircuitPython_DisplayIO_SSD1306"]
+	path = frozen/Adafruit_CircuitPython_DisplayIO_SSD1306
+	url = https://github.com/adafruit/Adafruit_CircuitPython_DisplayIO_SSD1306
+[submodule "frozen/Adafruit_CircuitPython_ImageLoad"]
+	path = frozen/Adafruit_CircuitPython_ImageLoad
+	url = https://github.com/adafruit/Adafruit_CircuitPython_ImageLoad
+[submodule "frozen/Adafruit_CircuitPython_AHTx0"]
+	path = frozen/Adafruit_CircuitPython_AHTx0
+	url = https://github.com/adafruit/Adafruit_CircuitPython_AHTx0
+[submodule "frozen/Adafruit_CircuitPython_HTTPServer"]
+	path = frozen/Adafruit_CircuitPython_HTTPServer
+	url = https://github.com/adafruit/Adafruit_CircuitPython_HTTPServer
+[submodule "frozen/Adafruit_CircuitPython_ConnectionManager"]
+	path = frozen/Adafruit_CircuitPython_ConnectionManager
+	url = https://github.com/adafruit/Adafruit_CircuitPython_ConnectionManager.git
+[submodule "frozen/Adafruit_CircuitPython_SHT4x"]
+	path = frozen/Adafruit_CircuitPython_SHT4x
+	url = https://github.com/adafruit/Adafruit_CircuitPython_SHT4x

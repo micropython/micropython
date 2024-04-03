@@ -37,6 +37,7 @@
 #include <math.h>
 #include "py/formatfloat.h"
 
+// CIRCUITPY-CHANGE: avoid compiler warning
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 
@@ -346,7 +347,7 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
     return mp_obj_new_float(lhs_val);
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // Convert a uint64_t to a 32-bit float without invoking the double-precision math routines,
 // which are large.
 mp_float_t uint64_to_float(uint64_t ui64) {
@@ -354,7 +355,7 @@ mp_float_t uint64_to_float(uint64_t ui64) {
     return (mp_float_t)((uint32_t)(ui64 >> 32) * 4294967296.0f + (uint32_t)(ui64 & 0xffffffff));
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // Convert a uint64_t to a 32-bit float to a uint64_t without invoking extra math routines.
 // which are large.
 // Assume f >= 0.

@@ -52,7 +52,7 @@
 //|
 STATIC mp_obj_t usb_midi_disable(void) {
     if (!common_hal_usb_midi_disable()) {
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
     return mp_const_none;
 }
@@ -72,7 +72,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_midi_disable_obj, usb_midi_disable);
 //|
 STATIC mp_obj_t usb_midi_enable(void) {
     if (!common_hal_usb_midi_enable()) {
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
     return mp_const_none;
 }

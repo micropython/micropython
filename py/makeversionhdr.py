@@ -13,7 +13,7 @@ import pathlib
 import datetime
 import subprocess
 
-# CIRCUITPY: use external script that can override git describe output with an
+# CIRCUITPY-CHANGE: use external script that can override git describe output with an
 # environment variable.
 tools_describe = str(pathlib.Path(__file__).resolve().parent.parent / "tools/describe")
 
@@ -72,7 +72,7 @@ def get_version_info_from_git(repo_path):
     except OSError:
         return None
 
-    # CIRCUITPY
+    # CIRCUITPY-CHANGE
     # Try to extract MicroPython version from git tag
     ver = git_tag.split("-")[0].split(".")
 
@@ -119,7 +119,7 @@ def make_version_header(repo_path, filename):
 #define MICROPY_VERSION_STRING "%s"
 // Combined version as a 32-bit number for convenience
 #define MICROPY_VERSION (MICROPY_VERSION_MAJOR << 16 | MICROPY_VERSION_MINOR << 8 | MICROPY_VERSION_MICRO)
-#define MICROPY_FULL_VERSION_INFO "Adafruit CircuitPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME
+#define MICROPY_FULL_VERSION_INFO "Adafruit CircuitPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_BANNER_MACHINE
 """ % (
         git_tag,
         git_hash,

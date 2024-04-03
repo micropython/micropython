@@ -69,7 +69,7 @@ STATIC mp_obj_t mod_msgpack_exttype_set_code(mp_obj_t self_in, mp_obj_t code_in)
     mod_msgpack_extype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int code = mp_obj_get_int(code_in);
     if (code < 0 || code > 127) {
-        mp_raise_AttributeError(translate("code outside range 0~127"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("code outside range 0~127"));
     }
     self->code = code;
     return mp_const_none;
@@ -111,7 +111,7 @@ STATIC MP_DEFINE_CONST_DICT(mod_msgpack_exttype_locals_dict, mod_msgpack_exttype
 MP_DEFINE_CONST_OBJ_TYPE(
     mod_msgpack_exttype_type,
     MP_QSTR_ExtType,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, mod_msgpack_exttype_make_new,
     locals_dict, &mod_msgpack_exttype_locals_dict
     );

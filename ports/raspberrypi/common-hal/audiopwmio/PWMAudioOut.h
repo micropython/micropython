@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H
+#pragma once
 
 #include "common-hal/pwmio/PWMOut.h"
 
@@ -39,10 +38,7 @@ typedef struct {
     uint16_t quiescent_value;
     uint8_t pacing_timer;
     bool stereo;     // if false, only using left_pwm.
+    bool swap_channel;
 } audiopwmio_pwmaudioout_obj_t;
 
-void audiopwmout_reset(void);
-
 void audiopwmout_background(void);
-
-#endif  // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H

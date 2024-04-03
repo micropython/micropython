@@ -98,7 +98,7 @@
 //|         ...
 STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if !CIRCUITPY_AUDIOBUSIO_I2SOUT
-    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_I2SOut);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_I2SOut);
     return NULL;                // Not reachable.
     #else
     enum { ARG_bit_clock, ARG_word_select, ARG_data, ARG_main_clock, ARG_left_justified };
@@ -217,7 +217,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_pause(mp_obj_t self_in) {
     check_for_deinit(self);
 
     if (!common_hal_audiobusio_i2sout_get_playing(self)) {
-        mp_raise_RuntimeError(translate("Not playing"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Not playing"));
     }
     common_hal_audiobusio_i2sout_pause(self);
     return mp_const_none;
@@ -275,7 +275,7 @@ STATIC MP_DEFINE_CONST_DICT(audiobusio_i2sout_locals_dict, audiobusio_i2sout_loc
 MP_DEFINE_CONST_OBJ_TYPE(
     audiobusio_i2sout_type,
     MP_QSTR_I2SOut,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, audiobusio_i2sout_make_new,
     locals_dict, &audiobusio_i2sout_locals_dict
     );
