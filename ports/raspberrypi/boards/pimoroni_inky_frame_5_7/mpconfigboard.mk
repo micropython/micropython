@@ -24,4 +24,6 @@ CFLAGS += -DCYW43_PIN_WL_HOST_WAKE=24 -DCYW43_PIN_WL_REG_ON=23 -DCYW43_WL_GPIO_C
 # Must be accompanied by a linker script change
 CFLAGS += -DCIRCUITPY_FIRMWARE_SIZE='(1536 * 1024)'
 
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
+FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-pcf85063a
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Register
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_SD
