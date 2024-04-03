@@ -612,12 +612,12 @@ struct _mp_obj_type_t {
     // A type is an object so must start with this entry, which points to mp_type_type.
     mp_obj_base_t base;
 
-    // Flags associated with this type.
-    uint16_t flags;
-
     // The name of this type, a qstr.
     uint16_t name;
 
+    // Flags associated with this type.
+    uint16_t flags;
+    
     // Slots: For the rest of the fields, the slot index points to the
     // relevant function in the variable-length "slots" field. Ideally these
     // would be only 4 bits, but the extra overhead of accessing them adds
