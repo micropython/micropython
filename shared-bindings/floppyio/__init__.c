@@ -117,14 +117,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(floppyio_flux_readinto_obj, 0, floppyio_flux_readinto
 //|     The following code can convert a number in nanoseconds to a number of samples
 //|     for a given sample rate:
 //|
-//|     . code-block:: py
+//|     .. code-block:: py
 //|
 //|         def ns_to_count(ns, samplerate):
 //|             return round(ns * samplerate * 1e-9)
 //|
 //|      This means the following typical values are a good starting place for a 1.44MB floppy:
 //|
-//|     . code-block:: py
+//|     .. code-block:: py
 //|
 //|         t2_max = ns_to_count(2500, samplerate) # Mid way between T2 and T3 length
 //|         t3_max = ns_to_count(3500, samplerate) # Mid way between T2 and T3 length
