@@ -444,9 +444,11 @@ if [ ${bitstream} -eq 1 ]; then
   echo "  running bitstream tests ... "
   echo
 
-  chmod 777 ./psoc6/test_scripts/bit.py
+  ../tools/mpremote/mpremote.py connect ${device1} run --no-follow psoc6/bitstream/bitstream_tx.py
 
-  python3 ./psoc6/test_scripts/bit.py ${device1} 0
+  # chmod 777 ./psoc6/test_scripts/bit.py
+
+  # python3 ./psoc6/test_scripts/bit.py ${device1} 0
 
   echo " running bitstream listen.."
 

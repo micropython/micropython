@@ -9,7 +9,7 @@ from machine import bitstream
 machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
     gpio_pin = "P12_1"
-    input_pin = "P13_6"
+    input_pin = "P13_7"
 elif "CY8CPROTO-063-BLE" in machine:
     gpio_pin = "P5_2"
     input_pin = "P12_7"
@@ -23,3 +23,8 @@ while input_pin.value() == 1:
     pass
 for i in range(2):
     bitstream(p0, 0, timing, buf)
+
+
+# Wait for listener
+
+# Send bitstream

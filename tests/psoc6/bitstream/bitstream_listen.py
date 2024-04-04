@@ -6,7 +6,7 @@ from machine import bitstream
 # Allocate pin based on board
 machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
-    pin_in = "12_0"
+    pin_in = "P12_1"
     pin_out = "P13_7"
 
 elif "CY8CPROTO-063-BLE" in machine:
@@ -54,3 +54,10 @@ for i in range(len(periods) - 1):
         print("true")
     else:
         print("false")
+
+
+# Notify readiness to sender
+
+# Measure
+
+# Validate
