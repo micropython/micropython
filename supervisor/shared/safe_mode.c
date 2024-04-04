@@ -35,8 +35,8 @@
 #include "shared-bindings/microcontroller/ResetReason.h"
 
 #include "supervisor/linker.h"
-#include "supervisor/serial.h"
 #include "supervisor/shared/rgb_led_colors.h"
+#include "supervisor/shared/serial.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"

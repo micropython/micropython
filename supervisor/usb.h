@@ -88,7 +88,7 @@ bool usb_msc_ejected(void);
 
 #if CIRCUITPY_USB_KEYBOARD_WORKFLOW
 void usb_keyboard_init(void);
-bool usb_keyboard_chars_available(void);
+uint32_t usb_keyboard_chars_available(void);
 char usb_keyboard_read_char(void);
 
 bool usb_keyboard_in_use(uint8_t dev_addr, uint8_t interface);

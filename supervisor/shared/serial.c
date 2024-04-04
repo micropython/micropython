@@ -33,7 +33,7 @@
 #include "supervisor/shared/cpu.h"
 #include "supervisor/shared/display.h"
 #include "shared-bindings/terminalio/Terminal.h"
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 #include "supervisor/usb.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/usb_cdc/__init__.h"
@@ -121,8 +121,8 @@ MP_WEAK char port_serial_read(void) {
     return -1;
 }
 
-MP_WEAK bool port_serial_bytes_available(void) {
-    return false;
+MP_WEAK uint32_t port_serial_bytes_available(void) {
+    return 0;
 }
 
 MP_WEAK void port_serial_write_substring(const char *text, uint32_t length) {
@@ -260,52 +260,71 @@ char serial_read(void) {
     return -1;
 }
 
-bool serial_bytes_available(void) {
+uint32_t serial_bytes_available(void) {
     #if CIRCUITPY_USB_VENDOR
-    if (tud_vendor_connected() && tud_vendor_available() > 0) {
-        return true;
+    if (tud_vendor_connected()) {
+        uint32_t count = tud_vendor_available();
+        if (count > 0) {
+            return count;
+        }
     }
     #endif
 
     #if CIRCUITPY_CONSOLE_UART
-    if (common_hal_busio_uart_rx_characters_available(&console_uart)) {
-        return true;
+    {
+        uint32_t count = common_hal_busio_uart_rx_characters_available(&console_uart);
+        if (count > 0) {
+            return count;
+        }
     }
     #endif
 
     #if CIRCUITPY_SERIAL_BLE
-    if (ble_serial_available()) {
-        return true;
+    {
+        uint32_t count = ble_serial_available();
+        if (count > 0) {
+            return count;
+        }
     }
     #endif
 
     #if CIRCUITPY_WEB_WORKFLOW
-    if (websocket_available()) {
-        return true;
+    {
+        uint32_t count = websocket_available();
+        if (count > 0) {
+            return count;
+        }
     }
     #endif
 
     #if CIRCUITPY_USB_KEYBOARD_WORKFLOW
-    if (usb_keyboard_chars_available() > 0) {
-        return true;
+    {
+        uint32_t count = usb_keyboard_chars_available();
+        if (count > 0) {
+            return count;
+        }
     }
     #endif
 
     #if CIRCUITPY_USB_CDC
-    if (usb_cdc_console_enabled() && tud_cdc_available() > 0) {
-        return true;
-    }
-    #endif
-    #if CIRCUITPY_USB
-    if (tud_cdc_available() > 0) {
-        return true;
+    if (usb_cdc_console_enabled()) {
+        uint32_t count = tud_cdc_available();
+        if (count > 0) {
+            return count;
+        }
     }
     #endif
 
-    if (port_serial_bytes_available() > 0) {
-        return true;
+    #if CIRCUITPY_USB
+    {
+        uint32_t count = tud_cdc_available();
+        if (count > 0) {
+            return count;
+        }
     }
-    return false;
+    #endif
+
+    return port_serial_bytes_available();
 }
 
 void serial_write_substring(const char *text, uint32_t length) {

@@ -30,7 +30,7 @@
 #include "shared-bindings/supervisor/__init__.h"
 #include "shared-bindings/supervisor/StatusBar.h"
 #include "supervisor/background_callback.h"
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 #include "supervisor/shared/status_bar.h"
 
 #if CIRCUITPY_TERMINALIO

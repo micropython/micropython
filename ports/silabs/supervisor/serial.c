@@ -27,7 +27,7 @@
 #include "py/mphal.h"
 #include "py/ringbuf.h"
 #include "supervisor/port.h"
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/interrupt_char.h"
 #include "shared-bindings/microcontroller/Pin.h"

@@ -121,8 +121,8 @@ char usb_serial_jtag_read_char(void) {
     return c;
 }
 
-bool usb_serial_jtag_bytes_available(void) {
-    return ringbuf_num_filled(&ringbuf) > 0 || usb_serial_jtag_ll_rxfifo_data_available();
+uint32_t usb_serial_jtag_bytes_available(void) {
+    return ringbuf_num_filled(&ringbuf) || usb_serial_jtag_ll_rxfifo_data_available();
 }
 
 void usb_serial_jtag_write(const char *text, uint32_t length) {

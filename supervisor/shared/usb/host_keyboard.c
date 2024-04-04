@@ -368,8 +368,8 @@ void usb_keyboard_init(void) {
     ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf));
 }
 
-bool usb_keyboard_chars_available(void) {
-    return ringbuf_num_filled(&_incoming_ringbuf) > 0;
+uint32_t usb_keyboard_chars_available(void) {
+    return ringbuf_num_filled(&_incoming_ringbuf);
 }
 
 char usb_keyboard_read_char(void) {
