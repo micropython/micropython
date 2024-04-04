@@ -478,6 +478,7 @@ SRC_COMMON_HAL_ALL = \
 	dotclockframebuffer/DotClockFramebuffer.c \
 	dotclockframebuffer/__init__.c \
 	dualbank/__init__.c \
+	floppyio/__init__.c \
 	frequencyio/FrequencyIn.c \
 	frequencyio/__init__.c \
 	imagecapture/ParallelImageCapture.c \
