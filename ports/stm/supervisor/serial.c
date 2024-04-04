@@ -27,7 +27,7 @@
 
 #include "py/mphal.h"
 #include <string.h>
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 #if CPY_STM32F4
 #include "stm32f4xx_hal.h"
 #include "stm32f4/gpio.h"

@@ -35,6 +35,7 @@
 #include "shared-bindings/supervisor/SafeModeReason.h"
 
 #include "supervisor/shared/reload.h"
+#include "supervisor/shared/serial.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/bluetooth/bluetooth.h"
@@ -79,19 +80,24 @@ MP_PROPERTY_GETTER(supervisor_runtime_usb_connected_obj,
 //|     serial_connected: bool
 //|     """Returns the USB serial communication status (read-only)."""
 STATIC mp_obj_t supervisor_runtime_get_serial_connected(mp_obj_t self) {
-    return mp_obj_new_bool(common_hal_supervisor_runtime_get_serial_connected());
+    return mp_obj_new_bool(serial_connected());
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_connected_obj, supervisor_runtime_get_serial_connected);
 
 MP_PROPERTY_GETTER(supervisor_runtime_serial_connected_obj,
     (mp_obj_t)&supervisor_runtime_get_serial_connected_obj);
 
-//|     serial_bytes_available: bool
-//|     """Returns whether any bytes are available to read
+//|     serial_bytes_available: int
+//|     """Returns the number of bytes are available to read
 //|     on the USB serial input.  Allows for polling to see whether
-//|     to call the built-in input() or wait. (read-only)"""
+//|     to call the built-in input() or wait. (read-only)
+//|
+//|     Changed in version 9.1.0: Previously returned only ``True`` or ``False``.
+//|     Since ``0`` acts as ``False``, ``if supervisor.runtime.serial_byes_available:``
+//|     will still work.
+//|     """
 STATIC mp_obj_t supervisor_runtime_get_serial_bytes_available(mp_obj_t self) {
-    return mp_obj_new_bool(common_hal_supervisor_runtime_get_serial_bytes_available());
+    return MP_OBJ_NEW_SMALL_INT(serial_bytes_available());
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_bytes_available_obj, supervisor_runtime_get_serial_bytes_available);
 

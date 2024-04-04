@@ -39,7 +39,7 @@
 
 #include "common-hal/_bleio/__init__.h"
 
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/shared/translate/translate.h"

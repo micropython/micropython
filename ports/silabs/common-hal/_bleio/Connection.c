@@ -41,8 +41,8 @@
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-module/_bleio/Characteristic.h"
 #include "shared/runtime/interrupt_char.h"
+#include "supervisor/shared/serial.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/serial.h"
 
 // Give 10 seconds for discovery
 #define DISCOVERY_TIMEOUT_MS 10000

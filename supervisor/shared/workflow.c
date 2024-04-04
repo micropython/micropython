@@ -32,7 +32,7 @@
 #include "supervisor/fatfs.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/workflow.h"
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 #include "supervisor/shared/workflow.h"
 
 #if CIRCUITPY_BLEIO
