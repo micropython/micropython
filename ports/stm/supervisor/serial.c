@@ -66,11 +66,12 @@ char port_serial_read(void) {
     #endif
 }
 
-bool port_serial_bytes_available(void) {
+// There is no easy way to find the number of pending characters, so just say there's 1.
+uint32_t port_serial_bytes_available(void) {
     #if CPY_STM32F4
-    return __HAL_UART_GET_FLAG(&huart2, UART_FLAG_RXNE);
+    return __HAL_UART_GET_FLAG(&huart2, UART_FLAG_RXNE) ? 1 : 0;
     #else
-    return false;
+    return 0;
     #endif
 }
 

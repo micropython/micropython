@@ -261,70 +261,45 @@ char serial_read(void) {
 }
 
 uint32_t serial_bytes_available(void) {
+    // There may be multiple serial input channels, so sum the count from all.
+    uint32_t count = 0;
+
     #if CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected()) {
-        uint32_t count = tud_vendor_available();
-        if (count > 0) {
-            return count;
-        }
+        count += tud_vendor_available();
     }
     #endif
 
     #if CIRCUITPY_CONSOLE_UART
-    {
-        uint32_t count = common_hal_busio_uart_rx_characters_available(&console_uart);
-        if (count > 0) {
-            return count;
-        }
-    }
+    count += common_hal_busio_uart_rx_characters_available(&console_uart);
     #endif
 
     #if CIRCUITPY_SERIAL_BLE
-    {
-        uint32_t count = ble_serial_available();
-        if (count > 0) {
-            return count;
-        }
-    }
+    count += ble_serial_available();
     #endif
 
     #if CIRCUITPY_WEB_WORKFLOW
-    {
-        uint32_t count = websocket_available();
-        if (count > 0) {
-            return count;
-        }
-    }
+    count += websocket_available();
     #endif
 
     #if CIRCUITPY_USB_KEYBOARD_WORKFLOW
-    {
-        uint32_t count = usb_keyboard_chars_available();
-        if (count > 0) {
-            return count;
-        }
-    }
+    count += usb_keyboard_chars_available();
     #endif
 
     #if CIRCUITPY_USB_CDC
     if (usb_cdc_console_enabled()) {
-        uint32_t count = tud_cdc_available();
-        if (count > 0) {
-            return count;
-        }
+        count += tud_cdc_available();
     }
     #endif
 
     #if CIRCUITPY_USB
-    {
-        uint32_t count = tud_cdc_available();
-        if (count > 0) {
-            return count;
-        }
-    }
+    count += tud_cdc_available();
     #endif
 
-    return port_serial_bytes_available();
+    // Port-specific serial input.
+    count += port_serial_bytes_available();
+
+    return count;
 }
 
 void serial_write_substring(const char *text, uint32_t length) {
