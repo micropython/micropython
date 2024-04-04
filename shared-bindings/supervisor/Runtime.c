@@ -88,9 +88,14 @@ MP_PROPERTY_GETTER(supervisor_runtime_serial_connected_obj,
     (mp_obj_t)&supervisor_runtime_get_serial_connected_obj);
 
 //|     serial_bytes_available: int
-//|     """Returns the number of bytes are available to read
-//|     on the USB serial input.  Allows for polling to see whether
-//|     to call the built-in input() or wait. (read-only)
+//|     """Returns the number of bytes are available to read on the console serial input.
+//|     Multiple console serial inputs may be in use at once, including
+//|     USB, web workflow, BLE workflow, and/or UART.
+//|
+//|     Allows for polling to see whether to call the built-in input() or wait. (read-only)
+//|
+//|     **Limitations**: On STM, UART (not USB) console input can only determine that at least one character
+//|     is available, and so if only the UART console is in use, only ``1`` or ``0`` will be returned.
 //|
 //|     Changed in version 9.1.0: Previously returned only ``True`` or ``False``.
 //|     Since ``0`` acts as ``False``, ``if supervisor.runtime.serial_byes_available:``
