@@ -118,11 +118,7 @@ static inline uint32_t mpu_config_start(void) {
     return disable_irq();
 }
 
-static inline void mpu_config_region(uint32_t region, uint32_t base_addr, uint32_t attr_size) {
-    MPU->RNR = region;
-    MPU->RBAR = base_addr;
-    MPU->RASR = attr_size;
-}
+MP_NOINLINE void mpu_config_region(uint32_t region, uint32_t base_addr, uint32_t attr_size);
 
 static inline void mpu_config_end(uint32_t irq_state) {
     __ISB();
@@ -172,44 +168,15 @@ static inline uint32_t mpu_config_start(void) {
     return disable_irq();
 }
 
-static inline void mpu_config_region(uint32_t region, uint32_t base_addr, uint32_t size) {
-    if (region == MPU_REGION_ETH) {
-        // Configure region 1 to make DMA memory non-cacheable.
+MP_NOINLINE void mpu_config_region(uint32_t region, uint32_t base_addr, uint32_t attr_size);
+if (region == MPU_REGION_ETH) {
 
+    static inline void mpu_config_end(uint32_t irq_state) {
+        __ISB();
+        __DSB();
         __DMB();
-        // Configure attribute 1, inner-outer non-cacheable (=0x44).
-        MPU->MAIR0 = (MPU->MAIR0 & ~MPU_MAIR0_Attr1_Msk)
-            | 0x44 << MPU_MAIR0_Attr1_Pos;
-        __DMB();
-
-        // RBAR
-        //  BASE          Bits [31:5] of base address
-        //  SH[4:3]  00 = Non-shareable
-        //  AP[2:1]  01 = Read/write by any privilege level
-        //  XN[0]:    1 = No execution
-
-        // RLAR
-        //  LIMIT         Limit address. Contains bits[31:5] of the upper inclusive limit of the selected MPU memory region
-        //  AT[3:1] 001 = Attribute 1
-        //  EN[0]     1 = Enabled
-        MPU->RNR = region;
-        MPU->RBAR = (base_addr & MPU_RBAR_BASE_Msk)
-            | MPU_ACCESS_NOT_SHAREABLE << MPU_RBAR_SH_Pos
-            | MPU_REGION_ALL_RW << MPU_RBAR_AP_Pos
-            | MPU_INSTRUCTION_ACCESS_DISABLE << MPU_RBAR_XN_Pos;
-        MPU->RLAR = ((base_addr + size - 1) & MPU_RLAR_LIMIT_Msk)
-            | MPU_ATTRIBUTES_NUMBER1 << MPU_RLAR_AttrIndx_Pos
-            | MPU_REGION_ENABLE << MPU_RLAR_EN_Pos;
+        enable_irq(irq_state);
     }
-    __DMB();
-}
-
-static inline void mpu_config_end(uint32_t irq_state) {
-    __ISB();
-    __DSB();
-    __DMB();
-    enable_irq(irq_state);
-}
 
 #else
 
