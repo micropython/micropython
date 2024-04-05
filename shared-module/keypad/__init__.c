@@ -116,7 +116,7 @@ void keypad_construct_common(keypad_scanner_obj_t *self, mp_float_t interval, si
     self->events = events;
 
     self->debounce_threshold = debounce_threshold;
-    
+
     self->never_reset = false;
 
     // Add self to the list of active keypad scanners.

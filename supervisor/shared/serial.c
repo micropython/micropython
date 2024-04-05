@@ -231,7 +231,7 @@ bool serial_connected(void) {
     if (port_serial_connected()) {
         return true;
     }
-    
+
     return false;
 }
 

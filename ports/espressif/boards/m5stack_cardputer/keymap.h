@@ -88,14 +88,14 @@
 #define KEY_ESC (49 | FN_MOD)
 
 int keymap[56] = {
-      0, // KEY_OPT
+    0,   // KEY_OPT
     'z', // KEY_Z
     'c', // KEY_C
     'b', // KEY_B
     'm', // KEY_M
     '.', // KEY_DOT
     ' ', // KEY_SPACE
-      0, // KEY_SHIFT
+    0,   // KEY_SHIFT
     's', // KEY_S
     'f', // KEY_F
     'h', // KEY_H
@@ -116,14 +116,14 @@ int keymap[56] = {
     '9', // KEY_9
     '_', // KEY_UNDERSCORE
     '\b',// KEY_BACKSPACE
-      0, // KEY_CTRL
-      0, // KEY_ALT
+    0,   // KEY_CTRL
+    0,   // KEY_ALT
     'x', // KEY_X
     'v', // KEY_V
     'n', // KEY_N
     ',', // KEY_COMMA
     '/', // KEY_SLASH
-      0, // KEY_FN
+    0,   // KEY_FN
     'a', // KEY_A
     'd', // KEY_D
     'g', // KEY_G
@@ -147,14 +147,14 @@ int keymap[56] = {
 };
 
 int keymap_shifted[56] = {
-      0, // KEY_OPT
+    0,   // KEY_OPT
     'Z', // KEY_Z
     'C', // KEY_C
     'B', // KEY_B
     'M', // KEY_M
     '>', // KEY_DOT -> '>'
     ' ', // KEY_SPACE
-      0, // KEY_SHIFT
+    0,   // KEY_SHIFT
     'S', // KEY_S
     'F', // KEY_F
     'H', // KEY_H
@@ -175,14 +175,14 @@ int keymap_shifted[56] = {
     '(', // KEY_9 -> '('
     '_', // KEY_UNDERSCORE -> '-'
     '\x7F',// KEY_BACKSPACE
-      0, // KEY_CTRL
-      0, // KEY_ALT
+    0,   // KEY_CTRL
+    0,   // KEY_ALT
     'X', // KEY_X
     'V', // KEY_V
     'N', // KEY_N
     '<', // KEY_COMMA -> '<'
     '?', // KEY_SLASH -> '?'
-      0, // KEY_FN
+    0,   // KEY_FN
     'A', // KEY_A
     'D', // KEY_D
     'G', // KEY_G
