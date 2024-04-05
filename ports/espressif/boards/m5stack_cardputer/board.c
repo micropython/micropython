@@ -24,7 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include "keymap.h"
 #include "supervisor/board.h"
+#include "supervisor/serial.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/fourwire/FourWire.h"
@@ -32,8 +34,41 @@
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/board/__init__.h"
+#include "shared-bindings/keypad_demux/DemuxKeyMatrix.h"
+#include "shared-bindings/keypad/EventQueue.h"
+#include "shared-bindings/keypad/Event.h"
+#include "supervisor/shared/reload.h"
+#include "py/runtime.h"
 
 fourwire_fourwire_obj_t board_display_obj;
+keypad_demux_demuxkeymatrix_obj_t board_keyboard;
+
+void update_keyboard(void);
+void queue_key(char c);
+void queue_seq(const char *seq);
+
+const mcu_pin_obj_t *row_addr_pins[] = {
+    &pin_GPIO8,
+    &pin_GPIO9,
+    &pin_GPIO11,
+};
+
+const mcu_pin_obj_t *column_pins[] = {
+    &pin_GPIO13,
+    &pin_GPIO15,
+    &pin_GPIO3,
+    &pin_GPIO4,
+    &pin_GPIO5,
+    &pin_GPIO6,
+    &pin_GPIO7
+};
+
+keypad_event_obj_t event;
+
+char keystate[56];
+char keyqueue[16];
+int keyqueue_head = 0;
+int keyqueue_tail = 0;
 
 #define DELAY 0x80
 
@@ -106,8 +141,132 @@ void board_init(void) {
         false,          // SH1107_addressing
         350             // backlight pwm frequency
         );
+//void common_hal_keypad_demux_demuxkeymatrix_construct(
+//  keypad_demux_demuxkeymatrix_obj_t *self,
+//	mp_uint_t num_row_addr_pins,
+//	const mcu_pin_obj_t *row_addr_pins[],
+//	mp_uint_t num_column_pins,
+//	const mcu_pin_obj_t *column_pins[],
+//	mp_float_t interval,
+//	size_t max_events,
+//	uint8_t debounce_threshold) {
 }
 
+void board_serial_init() {
+    common_hal_keypad_demux_demuxkeymatrix_construct(
+            &board_keyboard, // self
+            3, // num_row_addr_pins
+            row_addr_pins, // row_addr_pins
+            7, // num_column_pins
+            column_pins, // column_pins
+            0.01f, // interval
+            20, // max_events
+            2 // debounce_threshold
+            );
+    demuxkeymatrix_never_reset(&board_keyboard);
+}
+
+bool board_serial_connected() {
+    return true;
+}
+
+bool board_serial_bytes_available() {
+    update_keyboard();
+    if (keyqueue_head != keyqueue_tail) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void queue_key(char c) {
+    if ((keyqueue_head + 1) % 16 != keyqueue_tail) {
+        keyqueue[keyqueue_head] = c;
+        keyqueue_head = (keyqueue_head + 1) % 16;
+    }
+}
+
+void queue_seq(const char *seq) {
+    while (*seq) {
+        queue_key(*seq++);
+    }
+}
+
+void update_keyboard() {
+    char ascii = 0;
+
+    if (common_hal_keypad_eventqueue_get_length(board_keyboard.events) == 0) {
+        return;
+    }
+
+    //mp_printf(&mp_plat_print, "NextScan:%d\n", board_keyboard.next_scan_ticks);
+    while (common_hal_keypad_eventqueue_get_into(board_keyboard.events, &event)) {
+        //mp_printf(&mp_plat_print, "Got Event: %d %d\n", event.key_number, event.pressed);
+        if (event.pressed) {
+            keystate[event.key_number] = 1;
+
+            if (keystate[KEY_CTRL]) {
+                if (keystate[KEY_ALT] && keystate[KEY_BACKSPACE]) {
+                    reload_initiate(RUN_REASON_REPL_RELOAD);
+                }
+                ascii = keymap[event.key_number];
+                if (ascii >= 'a' && ascii <= 'z') {
+                    ascii -= 'a' - 1;
+                }
+                //if (ascii == 3) {
+                //    // Ctrl-C
+                //    mp_sched_keyboard_interrupt();
+                //}
+            } else if (keystate[KEY_SHIFT]) {
+                ascii = keymap_shifted[event.key_number];
+            } else if (keystate[KEY_FN] && event.key_number != KEY_FN) {
+                switch (event.key_number | FN_MOD) {
+                    case KEY_DOWN:
+                        queue_seq("\e[B");
+                        break;
+                    case KEY_UP:
+                        queue_seq("\e[A");
+                        break;
+                    case KEY_DELETE:
+                        queue_seq("\e[3~");
+                        break;
+                    case KEY_LEFT:
+                        queue_seq("\e[D");
+                        break;
+                    case KEY_RIGHT:
+                        queue_seq("\e[C");
+                        break;
+                    case KEY_ESC:
+                        queue_key('\e');
+                        break;
+                }
+            } else {
+                ascii = keymap[event.key_number];
+            }
+
+            if (ascii > 0) {
+                if (keystate[KEY_ALT]) {
+                    queue_key('\e');
+                }
+                queue_key(ascii);
+            }
+
+        } else {
+            keystate[event.key_number] = 0;
+        }
+    }
+}
+
+char board_serial_read() {
+    update_keyboard();
+    if (keyqueue_head != keyqueue_tail) {
+        char c = keyqueue[keyqueue_tail];
+        keyqueue_tail = (keyqueue_tail + 1) % 16;
+        return c;
+    } else {
+        return -1;
+    }
+}
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
 
