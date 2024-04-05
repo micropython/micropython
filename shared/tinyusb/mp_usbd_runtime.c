@@ -295,6 +295,7 @@ static bool runtime_dev_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_cont
     mp_obj_usb_device_t *usbd = MP_OBJ_TO_PTR(MP_STATE_VM(usbd));
     tusb_dir_t dir = request->bmRequestType_bit.direction;
     mp_buffer_info_t buf_info;
+    bool result;
 
     if (!usbd) {
         return false;
@@ -319,7 +320,7 @@ static bool runtime_dev_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_cont
 
     // Check if callback returned any data to submit
     if (mp_get_buffer(cb_res, &buf_info, dir == TUSB_DIR_IN ? MP_BUFFER_READ : MP_BUFFER_RW)) {
-        bool result = tud_control_xfer(USBD_RHPORT,
+        result = tud_control_xfer(USBD_RHPORT,
             request,
             buf_info.buf,
             buf_info.len);
@@ -328,17 +329,21 @@ static bool runtime_dev_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_cont
             // Keep buffer object alive until the transfer completes
             usbd->xfer_data[0][dir] = cb_res;
         }
-
-        return result;
     } else {
         // Expect True or False to stall or continue
+        result = mp_obj_is_true(cb_res);
 
-        if (stage == CONTROL_STAGE_ACK) {
+        if (stage == CONTROL_STAGE_SETUP && result) {
+            // If no additional data but callback says to continue transfer then
+            // queue a status response.
+            tud_control_status(rhport, request);
+        } else if (stage == CONTROL_STAGE_ACK) {
             // Allow data to be GCed once it's no longer in use
             usbd->xfer_data[0][dir] = mp_const_none;
         }
-        return mp_obj_is_true(cb_res);
     }
+
+    return result;
 }
 
 static bool runtime_dev_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t xferred_bytes) {

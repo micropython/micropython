@@ -130,15 +130,25 @@ Methods
 
       Second argument is a memoryview to read the USB control request
       data for this stage. The memoryview is only valid until the
-      callback function returns.
+      callback function returns. Data in this memoryview will be the same
+      across each of the three stages of a single transfer.
+
+      A successful transfer consists of this callback being called in sequence
+      for the three stages. Generally speaking, if a device wants to do
+      something in response to a control request then it's best to wait until
+      the ACK stage to confirm the host controller completed the transfer as
+      expected.
 
       The callback should return one of the following values:
 
-      - ``False`` to stall the endpoint and reject the transfer.
+      - ``False`` to stall the endpoint and reject the transfer. It won't
+        proceed to any remaining stages.
       - ``True`` to continue the transfer to the next stage.
-      - A buffer object to provide data for this stage of the transfer.
-        This should be a writable buffer for an ``OUT`` direction transfer, or a
-        readable buffer with data for an ``IN`` direction transfer.
+      - A buffer object can be returned at the SETUP stage when the transfer
+        will send or receive additional data. Typically this is the case when
+        the ``wLength`` field in the request has a non-zero value. This should
+        be a writable buffer for an ``OUT`` direction transfer, or a readable
+        buffer with data for an ``IN`` direction transfer.
 
     - ``xfer_cb`` - This callback is called whenever a non-control
       transfer submitted by calling :func:`USBDevice.submit_xfer` completes.
