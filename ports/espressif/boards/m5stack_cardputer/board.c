@@ -141,28 +141,19 @@ void board_init(void) {
         false,          // SH1107_addressing
         350             // backlight pwm frequency
         );
-//void common_hal_keypad_demux_demuxkeymatrix_construct(
-//  keypad_demux_demuxkeymatrix_obj_t *self,
-//	mp_uint_t num_row_addr_pins,
-//	const mcu_pin_obj_t *row_addr_pins[],
-//	mp_uint_t num_column_pins,
-//	const mcu_pin_obj_t *column_pins[],
-//	mp_float_t interval,
-//	size_t max_events,
-//	uint8_t debounce_threshold) {
 }
 
 void board_serial_init() {
     common_hal_keypad_demux_demuxkeymatrix_construct(
-            &board_keyboard, // self
-            3, // num_row_addr_pins
-            row_addr_pins, // row_addr_pins
-            7, // num_column_pins
-            column_pins, // column_pins
-            0.01f, // interval
-            20, // max_events
-            2 // debounce_threshold
-            );
+        &board_keyboard,     // self
+        3,     // num_row_addr_pins
+        row_addr_pins,     // row_addr_pins
+        7,     // num_column_pins
+        column_pins,     // column_pins
+        0.01f,     // interval
+        20,     // max_events
+        2     // debounce_threshold
+        );
     demuxkeymatrix_never_reset(&board_keyboard);
 }
 
@@ -199,9 +190,7 @@ void update_keyboard() {
         return;
     }
 
-    //mp_printf(&mp_plat_print, "NextScan:%d\n", board_keyboard.next_scan_ticks);
     while (common_hal_keypad_eventqueue_get_into(board_keyboard.events, &event)) {
-        //mp_printf(&mp_plat_print, "Got Event: %d %d\n", event.key_number, event.pressed);
         if (event.pressed) {
             keystate[event.key_number] = 1;
 
@@ -213,10 +202,6 @@ void update_keyboard() {
                 if (ascii >= 'a' && ascii <= 'z') {
                     ascii -= 'a' - 1;
                 }
-                //if (ascii == 3) {
-                //    // Ctrl-C
-                //    mp_sched_keyboard_interrupt();
-                //}
             } else if (keystate[KEY_SHIFT]) {
                 ascii = keymap_shifted[event.key_number];
             } else if (keystate[KEY_FN] && event.key_number != KEY_FN) {
