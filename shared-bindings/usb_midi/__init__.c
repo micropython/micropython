@@ -78,13 +78,76 @@ STATIC mp_obj_t usb_midi_enable(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(usb_midi_enable_obj, usb_midi_enable);
 
+STATIC void set_name(mp_obj_t *arg_obj, qstr arg_name, char **custom_name) {
+    if (*arg_obj == mp_const_none) {
+        return;
+    }
+
+    mp_buffer_info_t name;
+    mp_get_buffer_raise(*arg_obj, &name, MP_BUFFER_READ);
+    mp_arg_validate_length_range(name.len, 1, 126, arg_name);
+
+    if (*custom_name == NULL) {
+        *custom_name = port_malloc(sizeof(char) * 128, false);
+    }
+
+    memcpy(*custom_name, name.buf, name.len);
+    *custom_name[name.len] = 0;
+}
+
+//| def set_names(
+//|     self,
+//|     *,
+//|     streaming_interface_name: Optional[str] = None,
+//|     audio_control_interface_name: Optional[str] = None,
+//|     in_jack_name: Optional[str] = None,
+//|     out_jack_name: Optional[str] = None
+//| ) -> None:
+//|     """Override the MIDI interface names in the USB Interface Descriptor.
+//|
+//|     ``streaming_interface_name`` must be an ASCII string (or buffer) of at most 126 characters.
+//|     ``audio_control_interface_name`` must be an ASCII string (or buffer) of at most 126 characters.
+//|     ``in_jack_name`` must be an ASCII string (or buffer) of at most 126 characters.
+//|     ``out_jack_name`` must be an ASCII string (or buffer) of at most 126 characters.
+//|
+//|     This method must be called in boot.py to have any effect.
+//|
+//|     Not available on boards without native USB support.
+//|     """
+//|     ...
+//|
+STATIC mp_obj_t usb_midi_set_names(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_streaming_interface_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_audio_control_interface_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_in_jack_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_out_jack_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+    };
+    struct {
+        mp_arg_val_t streaming_interface_name;
+        mp_arg_val_t audio_control_interface_name;
+        mp_arg_val_t in_jack_name;
+        mp_arg_val_t out_jack_name;
+    } args;
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
+
+    set_name(&(args.streaming_interface_name.u_obj), MP_QSTR_streaming_interface_name, &custom_usb_midi_streaming_interface_name);
+    set_name(&(args.audio_control_interface_name.u_obj), MP_QSTR_audio_control_interface_name, &custom_usb_midi_audio_control_interface_name);
+    set_name(&(args.in_jack_name.u_obj), MP_QSTR_in_jack_name, &custom_usb_midi_in_jack_name);
+    set_name(&(args.out_jack_name.u_obj), MP_QSTR_out_jack_name, &custom_usb_midi_out_jack_name);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(usb_midi_set_names_obj, 0, usb_midi_set_names);
+
 mp_map_elem_t usb_midi_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usb_midi) },
-    { MP_ROM_QSTR(MP_QSTR_disable),  MP_OBJ_FROM_PTR(&usb_midi_disable_obj) },
-    { MP_ROM_QSTR(MP_QSTR_enable),   MP_OBJ_FROM_PTR(&usb_midi_enable_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ports),    mp_const_empty_tuple },
-    { MP_ROM_QSTR(MP_QSTR_PortIn),   MP_OBJ_FROM_PTR(&usb_midi_portin_type) },
-    { MP_ROM_QSTR(MP_QSTR_PortOut),  MP_OBJ_FROM_PTR(&usb_midi_portout_type) },
+    { MP_ROM_QSTR(MP_QSTR___name__),  MP_ROM_QSTR(MP_QSTR_usb_midi) },
+    { MP_ROM_QSTR(MP_QSTR_disable),   MP_OBJ_FROM_PTR(&usb_midi_disable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable),    MP_OBJ_FROM_PTR(&usb_midi_enable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_names), MP_OBJ_FROM_PTR(&usb_midi_set_names_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ports),     mp_const_empty_tuple },
+    { MP_ROM_QSTR(MP_QSTR_PortIn),    MP_OBJ_FROM_PTR(&usb_midi_portin_type) },
+    { MP_ROM_QSTR(MP_QSTR_PortOut),   MP_OBJ_FROM_PTR(&usb_midi_portout_type) },
 };
 
 // This isn't const so we can set ports dynamically.
