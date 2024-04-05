@@ -32,7 +32,7 @@
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/reload.h"
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 #include "py/mpprint.h"
 #include "py/runtime.h"
 

@@ -27,7 +27,7 @@
 #include "py/mphal.h"
 #include "py/ringbuf.h"
 #include "supervisor/port.h"
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/interrupt_char.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -141,9 +141,8 @@ char port_serial_read(void) {
     return (char)data;
 }
 
-// Checking ring buffer haves bytes available or not
-bool port_serial_bytes_available(void) {
-    return ringbuf_num_filled(&con_uart_rx_ringbuf) > 0 ? true : false;
+uint32_t port_serial_bytes_available(void) {
+    return ringbuf_num_filled(&con_uart_rx_ringbuf);
 }
 
 // Send n bytes data to serial by EUSART0

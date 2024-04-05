@@ -41,8 +41,8 @@
 #include "shared-bindings/time/__init__.h"
 
 #include "supervisor/port.h"
-#include "supervisor/serial.h"  // serial_connected()
 #include "supervisor/qspi_flash.h"
+#include "supervisor/shared/serial.h"  // serial_connected()
 
 #include "nrf.h"
 #include "nrf_power.h"

@@ -30,7 +30,7 @@
 // #include "py/mpconfig.h"
 #include "py/obj.h"
 
-#include "common-hal/supervisor/Runtime.h"
+#include "shared-module/supervisor/Runtime.h"
 #include "shared-module/supervisor/StatusBar.h"
 #include "supervisor/usb.h"
 

@@ -73,7 +73,7 @@
 #include "pico/bootrom.h"
 #include "hardware/watchdog.h"
 
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 
 #include "tusb.h"
 #include <cmsis_compiler.h>
