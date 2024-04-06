@@ -26,7 +26,7 @@
 
 #include "keymap.h"
 #include "supervisor/board.h"
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/fourwire/FourWire.h"
@@ -39,13 +39,14 @@
 #include "shared-bindings/keypad/Event.h"
 #include "supervisor/shared/reload.h"
 #include "py/runtime.h"
+#include "py/ringbuf.h"
+#include "shared/runtime/interrupt_char.h"
 
 fourwire_fourwire_obj_t board_display_obj;
 keypad_demux_demuxkeymatrix_obj_t board_keyboard;
 
-void update_keyboard(void);
-void queue_key(char c);
-void queue_seq(const char *seq);
+void update_keyboard(keypad_eventqueue_obj_t *queue);
+void keyboard_seq(const char *seq);
 
 const mcu_pin_obj_t *row_addr_pins[] = {
     &pin_GPIO8,
@@ -66,9 +67,8 @@ const mcu_pin_obj_t *column_pins[] = {
 keypad_event_obj_t event;
 
 char keystate[56];
-char keyqueue[16];
-int keyqueue_head = 0;
-int keyqueue_tail = 0;
+ringbuf_t keyqueue;
+char keybuf[32];
 
 #define DELAY 0x80
 
@@ -144,6 +144,7 @@ void board_init(void) {
 }
 
 void board_serial_init() {
+    ringbuf_init(&keyqueue, (uint8_t *)keybuf, sizeof(keybuf));
     common_hal_keypad_demux_demuxkeymatrix_construct(
         &board_keyboard,     // self
         3,     // num_row_addr_pins
@@ -155,42 +156,32 @@ void board_serial_init() {
         2     // debounce_threshold
         );
     demuxkeymatrix_never_reset(&board_keyboard);
+    common_hal_keypad_eventqueue_set_event_handler(board_keyboard.events, update_keyboard);
+
 }
 
 bool board_serial_connected() {
     return true;
 }
 
-bool board_serial_bytes_available() {
-    update_keyboard();
-    if (keyqueue_head != keyqueue_tail) {
-        return true;
-    } else {
-        return false;
-    }
+uint32_t board_serial_bytes_available() {
+    return ringbuf_num_filled(&keyqueue);
 }
 
-void queue_key(char c) {
-    if ((keyqueue_head + 1) % 16 != keyqueue_tail) {
-        keyqueue[keyqueue_head] = c;
-        keyqueue_head = (keyqueue_head + 1) % 16;
-    }
-}
-
-void queue_seq(const char *seq) {
+void keyboard_seq(const char *seq) {
     while (*seq) {
-        queue_key(*seq++);
+        ringbuf_put(&keyqueue, *seq++);
     }
 }
 
-void update_keyboard() {
-    char ascii = 0;
+void update_keyboard(keypad_eventqueue_obj_t *queue) {
+    uint8_t ascii = 0;
 
-    if (common_hal_keypad_eventqueue_get_length(board_keyboard.events) == 0) {
+    if (common_hal_keypad_eventqueue_get_length(queue) == 0) {
         return;
     }
 
-    while (common_hal_keypad_eventqueue_get_into(board_keyboard.events, &event)) {
+    while (common_hal_keypad_eventqueue_get_into(queue, &event)) {
         if (event.pressed) {
             keystate[event.key_number] = 1;
 
@@ -202,27 +193,31 @@ void update_keyboard() {
                 if (ascii >= 'a' && ascii <= 'z') {
                     ascii -= 'a' - 1;
                 }
+
+                if (ascii == mp_interrupt_char) {
+                    mp_sched_keyboard_interrupt();
+                }
             } else if (keystate[KEY_SHIFT]) {
                 ascii = keymap_shifted[event.key_number];
             } else if (keystate[KEY_FN] && event.key_number != KEY_FN) {
                 switch (event.key_number | FN_MOD) {
                     case KEY_DOWN:
-                        queue_seq("\e[B");
+                        keyboard_seq("\e[B");
                         break;
                     case KEY_UP:
-                        queue_seq("\e[A");
+                        keyboard_seq("\e[A");
                         break;
                     case KEY_DELETE:
-                        queue_seq("\e[3~");
+                        keyboard_seq("\e[3~");
                         break;
                     case KEY_LEFT:
-                        queue_seq("\e[D");
+                        keyboard_seq("\e[D");
                         break;
                     case KEY_RIGHT:
-                        queue_seq("\e[C");
+                        keyboard_seq("\e[C");
                         break;
                     case KEY_ESC:
-                        queue_key('\e');
+                        ringbuf_put(&keyqueue, '\e');
                         break;
                 }
             } else {
@@ -231,9 +226,9 @@ void update_keyboard() {
 
             if (ascii > 0) {
                 if (keystate[KEY_ALT]) {
-                    queue_key('\e');
+                    ringbuf_put(&keyqueue, '\e');
                 }
-                queue_key(ascii);
+                ringbuf_put(&keyqueue, ascii);
             }
 
         } else {
@@ -243,14 +238,7 @@ void update_keyboard() {
 }
 
 char board_serial_read() {
-    update_keyboard();
-    if (keyqueue_head != keyqueue_tail) {
-        char c = keyqueue[keyqueue_tail];
-        keyqueue_tail = (keyqueue_tail + 1) % 16;
-        return c;
-    } else {
-        return -1;
-    }
+    return ringbuf_get(&keyqueue);
 }
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

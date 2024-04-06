@@ -121,7 +121,7 @@ MP_WEAK char board_serial_read(void) {
     return -1;
 }
 
-MP_WEAK bool board_serial_bytes_available(void) {
+MP_WEAK uint32_t board_serial_bytes_available(void) {
     return false;
 }
 
@@ -329,6 +329,9 @@ uint32_t serial_bytes_available(void) {
     #if CIRCUITPY_USB
     count += tud_cdc_available();
     #endif
+
+    // Board-specific serial input.
+    count += board_serial_bytes_available();
 
     // Port-specific serial input.
     count += port_serial_bytes_available();

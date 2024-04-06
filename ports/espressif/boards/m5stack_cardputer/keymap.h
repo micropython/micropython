@@ -173,8 +173,8 @@ int keymap_shifted[56] = {
     '%', // KEY_5 -> '%'
     '&', // KEY_7 -> '&'
     '(', // KEY_9 -> '('
-    '_', // KEY_UNDERSCORE -> '-'
-    '\x7F',// KEY_BACKSPACE
+    '-', // KEY_UNDERSCORE -> '-'
+    '\b',// KEY_BACKSPACE
     0,   // KEY_CTRL
     0,   // KEY_ALT
     'X', // KEY_X
