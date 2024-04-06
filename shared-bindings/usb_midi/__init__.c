@@ -78,22 +78,22 @@ STATIC mp_obj_t usb_midi_enable(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(usb_midi_enable_obj, usb_midi_enable);
 
-STATIC void set_name(mp_obj_t *arg_obj, qstr arg_name, char **custom_name) {
-    if (*arg_obj == mp_const_none) {
-        return;
+
+static void set_name(mp_obj_t name_obj, qstr arg_name_qstr, char **custom_name_p) {
+    if (name_obj != mp_const_none) {
+        mp_buffer_info_t name;
+        mp_get_buffer_raise(name_obj, &name, MP_BUFFER_READ);
+        mp_arg_validate_length_range(name.len, 1, 126, arg_name_qstr);
+
+        if (*custom_name_p == NULL) {
+            *custom_name_p = port_malloc(sizeof(char) * 128, false);
+        }
+
+        memcpy(*custom_name_p, name.buf, name.len);
+        (*custom_name_p)[name.len] = 0;
     }
-
-    mp_buffer_info_t name;
-    mp_get_buffer_raise(*arg_obj, &name, MP_BUFFER_READ);
-    mp_arg_validate_length_range(name.len, 1, 126, arg_name);
-
-    if (*custom_name == NULL) {
-        *custom_name = port_malloc(sizeof(char) * 128, false);
-    }
-
-    memcpy(*custom_name, name.buf, name.len);
-    *custom_name[name.len] = 0;
 }
+
 
 //| def set_names(
 //|     self,
@@ -117,24 +117,27 @@ STATIC void set_name(mp_obj_t *arg_obj, qstr arg_name, char **custom_name) {
 //|     ...
 //|
 STATIC mp_obj_t usb_midi_set_names(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_streaming_interface_name, ARG_audio_control_interface_name, ARG_in_jack_name, ARG_out_jack_name };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_streaming_interface_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_streaming_interface_name,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_audio_control_interface_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
-        { MP_QSTR_in_jack_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
-        { MP_QSTR_out_jack_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_in_jack_name,                 MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_out_jack_name,                MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
     };
-    struct {
-        mp_arg_val_t streaming_interface_name;
-        mp_arg_val_t audio_control_interface_name;
-        mp_arg_val_t in_jack_name;
-        mp_arg_val_t out_jack_name;
-    } args;
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
 
-    set_name(&(args.streaming_interface_name.u_obj), MP_QSTR_streaming_interface_name, &custom_usb_midi_streaming_interface_name);
-    set_name(&(args.audio_control_interface_name.u_obj), MP_QSTR_audio_control_interface_name, &custom_usb_midi_audio_control_interface_name);
-    set_name(&(args.in_jack_name.u_obj), MP_QSTR_in_jack_name, &custom_usb_midi_in_jack_name);
-    set_name(&(args.out_jack_name.u_obj), MP_QSTR_out_jack_name, &custom_usb_midi_out_jack_name);
+    mp_obj_t streaming_interface_name_obj = args[ARG_streaming_interface_name].u_obj;
+    set_name(streaming_interface_name_obj, MP_QSTR_streaming_interface_name, &custom_usb_midi_streaming_interface_name);
+
+    mp_obj_t audio_control_interface_name_obj = args[ARG_audio_control_interface_name].u_obj;
+    set_name(audio_control_interface_name_obj, MP_QSTR_audio_control_interface_name, &custom_usb_midi_audio_control_interface_name);
+
+    mp_obj_t in_jack_name_obj = args[ARG_in_jack_name].u_obj;
+    set_name(in_jack_name_obj, MP_QSTR_in_jack_name, &custom_usb_midi_in_jack_name);
+
+    mp_obj_t out_jack_name_obj = args[ARG_out_jack_name].u_obj;
+    set_name(out_jack_name_obj, MP_QSTR_out_jack_name, &custom_usb_midi_out_jack_name);
 
     return mp_const_none;
 }

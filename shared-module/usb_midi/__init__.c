@@ -177,10 +177,10 @@ size_t usb_midi_descriptor_length(void) {
     return sizeof(usb_midi_descriptor_template);
 }
 
-char *custom_usb_midi_streaming_interface_name;
-char *custom_usb_midi_audio_control_interface_name;
-char *custom_usb_midi_in_jack_name;
-char *custom_usb_midi_out_jack_name;
+char *custom_usb_midi_streaming_interface_name = NULL;
+char *custom_usb_midi_audio_control_interface_name = NULL;
+char *custom_usb_midi_in_jack_name = NULL;
+char *custom_usb_midi_out_jack_name = NULL;
 
 size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string) {
     const char *midi_streaming_interface_name;
