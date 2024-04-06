@@ -122,7 +122,7 @@ MP_WEAK char board_serial_read(void) {
 }
 
 MP_WEAK uint32_t board_serial_bytes_available(void) {
-    return false;
+    return 0;
 }
 
 MP_WEAK void board_serial_write_substring(const char *text, uint32_t length) {
