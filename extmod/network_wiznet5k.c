@@ -102,9 +102,9 @@ typedef struct _wiznet5k_obj_t {
     void (*spi_transfer)(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest);
     mp_hal_pin_obj_t cs;
     mp_hal_pin_obj_t rst;
-    #if WIZNET5K_WITH_LWIP_STACK
     mp_hal_pin_obj_t pin_intn;
     bool use_interrupt;
+    #if WIZNET5K_WITH_LWIP_STACK
     uint8_t eth_frame[1514];
     uint32_t trace_flags;
     struct netif netif;
@@ -180,11 +180,7 @@ static void wiznet5k_get_mac_address(wiznet5k_obj_t *self, uint8_t mac[6]) {
     getSHAR(mac);
 }
 
-#if WIZNET5K_WITH_LWIP_STACK
-
 void wiznet5k_try_poll(void);
-static void wiznet5k_lwip_init(wiznet5k_obj_t *self);
-
 static mp_obj_t mpy_wiznet_read_int(mp_obj_t none_in) {
     (void)none_in;
     // Handle incoming data, unless the SPI bus is busy
@@ -206,6 +202,9 @@ static void wiznet5k_config_interrupt(bool enabled) {
         true
         );
 }
+
+#if WIZNET5K_WITH_LWIP_STACK
+static void wiznet5k_lwip_init(wiznet5k_obj_t *self);
 
 void wiznet5k_deinit(void) {
     for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
@@ -364,6 +363,14 @@ void wiznet5k_poll(void) {
 
 #if WIZNET5K_PROVIDED_STACK
 
+void wiznet5k_try_poll(void) {
+    // There's really nothing to do here. The interrupt that triggered this will
+    // release a WFE() wait and will trigger a poll() loop which will
+    // wiznet5k_socket_ioctl will detect the readable or writeable state of the
+    // respective socket.
+    (void)0;
+}
+
 static void wiz_dhcp_assign(void) {
     getIPfromDHCP(wiznet5k_obj.netinfo.ip);
     getGWfromDHCP(wiznet5k_obj.netinfo.gw);
@@ -401,6 +408,17 @@ static void wiznet5k_init(void) {
         .dhcp = NETINFO_STATIC,
     };
     wiznet5k_obj.netinfo = netinfo;
+
+    if (wiznet5k_obj.use_interrupt) {
+        mp_hal_pin_input(wiznet5k_obj.pin_intn);
+        wiznet5k_config_interrupt(true);
+        wizchip_setinterruptmask(IK_SOCK_ALL);
+
+        #if _WIZCHIP_ == W5100S
+        // Enable interrupt pin
+        setMR2(getMR2() | MR2_G_IEN);
+        #endif
+    }
 
     // register with network module
     mod_network_register_nic(&wiznet5k_obj);
@@ -460,6 +478,11 @@ static int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno)
         }
 
         socket->_private = NULL;
+
+        // Enable data receive interrupt
+        if (wiznet5k_obj.use_interrupt) {
+            setSn_IMR(socket->fileno, (Sn_IR_RECV | Sn_IR_CON | Sn_IR_DISCON));
+        }
     }
 
     // WIZNET does not have a concept of pure "open socket".  You need to know
@@ -477,7 +500,14 @@ static void wiznet5k_socket_close(mod_network_socket_obj_t *socket) {
     if (sn < _WIZCHIP_SOCK_NUM_) {
         wiznet5k_obj.socket_used &= ~(1 << sn);
         WIZCHIP_EXPORT(close)(sn);
+
+        // Disable receive interrupts
+        if (wiznet5k_obj.use_interrupt) {
+            setSn_IMR(sn, 0);
+        }
     }
+
+    socket->_private = NULL;
 }
 
 static int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
@@ -758,14 +788,35 @@ static int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_
 }
 
 static int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
+    uint8_t sn = (uint8_t)socket->fileno;
+
     if (request == MP_STREAM_POLL) {
         int ret = 0;
-        if (arg & MP_STREAM_POLL_RD && getSn_RX_RSR(socket->fileno) != 0) {
-            ret |= MP_STREAM_POLL_RD;
+        if (sn < _WIZCHIP_SOCK_NUM_) {
+            if (arg & MP_STREAM_POLL_RD && getSn_RX_RSR(sn) != 0) {
+                ret |= MP_STREAM_POLL_RD;
+            }
+            if (arg & MP_STREAM_POLL_WR && getSn_TX_FSR(sn) != 0) {
+                ret |= MP_STREAM_POLL_WR;
+            }
+
+            uint8_t status = getSn_SR(sn);
+            if (status == SOCK_CLOSE_WAIT || getSn_IR(sn) & Sn_IR_DISCON) {
+                // Peer-closed socket is both readable and writable: read will
+                // return EOF, write - error. Without this poll will hang on a
+                // socket which was closed by peer.
+                ret |= arg & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR);
+            } else if (status == SOCK_CLOSED) {
+                ret |= MP_STREAM_POLL_ERR;
+            }
+        } else {
+            ret |= MP_STREAM_POLL_NVAL;
         }
-        if (arg & MP_STREAM_POLL_WR && getSn_TX_FSR(socket->fileno) != 0) {
-            ret |= MP_STREAM_POLL_WR;
+
+        if (wiznet5k_obj.use_interrupt) {
+            setSn_IR(sn, (Sn_IR_RECV | Sn_IR_CON | Sn_IR_DISCON));
         }
+
         return ret;
     } else {
         *_errno = MP_EINVAL;
@@ -802,6 +853,8 @@ static void wiznet5k_dhcp_init(wiznet5k_obj_t *self) {
     if (ret == DHCP_IP_LEASED) {
         ctlnetwork(CN_GET_NETINFO, &self->netinfo);
     }
+
+    wizchip_clrinterrupt(IK_SOCK_1);
 }
 
 #endif // WIZNET5K_PROVIDED_STACK
@@ -815,11 +868,10 @@ static mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_obj_base_t *spi;
     mp_hal_pin_obj_t cs;
     mp_hal_pin_obj_t rst;
-
-    #if WIZNET5K_WITH_LWIP_STACK
     mp_hal_pin_obj_t pin_intn = (mp_hal_pin_obj_t)NULL;
     bool use_interrupt = false;
 
+    #if WIZNET5K_WITH_LWIP_STACK
     // Bring down interface while configuring
     wiznet5k_obj.netif.flags = 0;
     #endif
@@ -842,7 +894,7 @@ static mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
 
         cs = mp_hal_get_pin_obj(mp_pin_make_new(NULL, 1, 0, (mp_obj_t[]) {MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_PIN_CS)}));
         rst = mp_hal_get_pin_obj(mp_pin_make_new(NULL, 1, 0, (mp_obj_t[]) {MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_PIN_RST)}));
-        #if WIZNET5K_WITH_LWIP_STACK && defined(MICROPY_HW_WIZNET_PIN_INTN)
+        #ifdef MICROPY_HW_WIZNET_PIN_INTN
         pin_intn = mp_hal_get_pin_obj(mp_pin_make_new(NULL, 1, 0, (mp_obj_t[]) {MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_PIN_INTN)}));
         use_interrupt = true;
         #endif
@@ -851,20 +903,14 @@ static mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     #endif
     {
         // If passing in args, must supply spi, pin_cs, pin_rst and optionally pin_intn
-        #if WIZNET5K_WITH_LWIP_STACK
         mp_arg_check_num(n_args, n_kw, 3, 4, false);
-        #else
-        mp_arg_check_num(n_args, n_kw, 3, 3, false);
-        #endif
         spi = mp_hal_get_spi_obj(args[0]);
         cs = mp_hal_get_pin_obj(args[1]);
         rst = mp_hal_get_pin_obj(args[2]);
-        #if WIZNET5K_WITH_LWIP_STACK
         if (n_args > 3) {
             pin_intn = mp_hal_get_pin_obj(args[3]);
             use_interrupt = true;
         }
-        #endif
     }
 
     mp_hal_pin_output(cs);
@@ -877,9 +923,9 @@ static mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     wiznet5k_obj.spi_transfer = ((mp_machine_spi_p_t *)MP_OBJ_TYPE_GET_SLOT(spi->type, protocol))->transfer;
     wiznet5k_obj.cs = cs;
     wiznet5k_obj.rst = rst;
-    #if WIZNET5K_WITH_LWIP_STACK
     wiznet5k_obj.pin_intn = pin_intn;
     wiznet5k_obj.use_interrupt = use_interrupt;
+    #if WIZNET5K_WITH_LWIP_STACK
     wiznet5k_obj.trace_flags = 0;
     #else // WIZNET5K_PROVIDED_STACK
     wiznet5k_obj.active = false;
