@@ -329,7 +329,7 @@ uint32_t serial_bytes_available(void) {
     #if CIRCUITPY_USB
     count += tud_cdc_available();
     #endif
-
+  
     // Board-specific serial input.
     count += board_serial_bytes_available();
 

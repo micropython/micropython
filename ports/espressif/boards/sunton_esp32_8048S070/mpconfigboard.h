@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef SHARED_MODULE_USB_MIDI___INIT___H
-#define SHARED_MODULE_USB_MIDI___INIT___H
+// Micropython setup
 
-#include "supervisor/usb.h"
+#define MICROPY_HW_BOARD_NAME       "Sunton-ESP32-8048S070"
+#define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-bool usb_midi_enabled(void);
-void usb_midi_set_defaults(void);
-void usb_midi_setup_ports(void);
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO19)
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO20)
 
-size_t usb_midi_descriptor_length(void);
-size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string);
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO11)
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO12)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO13)
 
-extern char *custom_usb_midi_streaming_interface_name;
-extern char *custom_usb_midi_audio_control_interface_name;
-extern char *custom_usb_midi_in_jack_name;
-extern char *custom_usb_midi_out_jack_name;
-
-#endif /* SHARED_MODULE_USB_MIDI___INIT___H */
+// UART pins attached to the USB-serial converter chip
+#define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO43)
+#define CIRCUITPY_CONSOLE_UART_RX (&pin_GPIO44)
