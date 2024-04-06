@@ -105,10 +105,10 @@ static void set_name(mp_obj_t name_obj, qstr arg_name_qstr, char **custom_name_p
 //| ) -> None:
 //|     """Override the MIDI interface names in the USB Interface Descriptor.
 //|
-//|     ``streaming_interface_name`` must be an ASCII string (or buffer) of at most 126 characters.
-//|     ``audio_control_interface_name`` must be an ASCII string (or buffer) of at most 126 characters.
-//|     ``in_jack_name`` must be an ASCII string (or buffer) of at most 126 characters.
-//|     ``out_jack_name`` must be an ASCII string (or buffer) of at most 126 characters.
+//|     :param Optional[str] streaming_interface_name: an ASCII string (or buffer) of at most 126 characters, or ``None`` to use the default name.
+//|     :param Optional[str] audio_control_interface_name: an ASCII string (or buffer) of at most 126 characters, or ``None`` to use the default name.
+//|     :param Optional[str] in_jack_name: an ASCII string (or buffer) of at most 126 characters, or ``None`` to use the default name.
+//|     :param Optional[str] out_jack_name: an ASCII string (or buffer) of at most 126 characters, or ``None`` to use the default name.
 //|
 //|     This method must be called in boot.py to have any effect.
 //|
