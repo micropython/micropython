@@ -383,3 +383,12 @@
 [submodule "frozen/Adafruit_CircuitPython_SHT4x"]
 	path = frozen/Adafruit_CircuitPython_SHT4x
 	url = https://github.com/adafruit/Adafruit_CircuitPython_SHT4x
+[submodule "frozen/Adafruit_CircuitPython_NTP"]
+	path = frozen/Adafruit_CircuitPython_NTP
+	url = https://github.com/adafruit/Adafruit_CircuitPython_NTP.git
+[submodule "frozen/Adafruit_CircuitPython_PCF8563"]
+	path = frozen/Adafruit_CircuitPython_PCF8563
+	url = https://github.com/adafruit/Adafruit_CircuitPython_PCF8563.git
+[submodule "frozen/CircuitPython_BMA423"]
+	path = frozen/CircuitPython_BMA423
+	url = https://github.com/jposada202020/CircuitPython_BMA423.git
