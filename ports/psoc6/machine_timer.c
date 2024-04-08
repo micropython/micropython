@@ -50,12 +50,11 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     self->mode = args[ARG_mode].u_int;
 
     if (args[ARG_freq].u_obj != mp_const_none) {
-            self->freq = args[ARG_freq].u_int;
-            period = 1.0f/(float)(args[ARG_freq].u_int);
-    }
-    else {
-            self->period = args[ARG_period].u_int;
-            period = (float)args[ARG_period].u_int/1000.0f ;
+        self->freq = args[ARG_freq].u_int;
+        period = 1.0f / (float)(args[ARG_freq].u_int);
+    } else {
+        self->period = args[ARG_period].u_int;
+        period = (float)args[ARG_period].u_int / 1000.0f;
     }
 
     if (args[ARG_callback].u_obj != mp_const_none) {
@@ -71,7 +70,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     while (period_hal > 4294967296) {
         fz_hal = fz_hal / 10;  // Reduce the fz_hal value by 10%
         period_hal = (uint32_t)(period * fz_hal) - 1;  // Recalculate period_hal
-}
+    }
 
     // Timer initialisation of port
     cy_rslt_t rslt;
@@ -96,7 +95,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     rslt = cyhal_timer_configure(&self->timer_obj, &timer_cfg);
 
     /* Set the frequency of timer to Defined frequency */
-    rslt = cyhal_timer_set_frequency(&self->timer_obj,fz_hal);
+    rslt = cyhal_timer_set_frequency(&self->timer_obj, fz_hal);
 
     /* Assign the ISR to execute on timer interrupt */
     cyhal_timer_register_callback(&self->timer_obj, isr_timer, self);
