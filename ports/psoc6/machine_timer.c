@@ -40,19 +40,38 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIMER_MODE_ONE_SHOT} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 9999u} },
-        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 10000u} },
+        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_rom_obj = MP_ROM_NONE} },
     };
     // Parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    float period;
     self->mode = args[ARG_mode].u_int;
-    self->freq = args[ARG_freq].u_int;
-    self->period = args[ARG_period].u_int;
+
+    if (args[ARG_freq].u_obj != mp_const_none) {
+            self->freq = args[ARG_freq].u_int;
+            period = 1.0f/(float)(args[ARG_freq].u_int);
+    }
+    else {
+            self->period = args[ARG_period].u_int;
+            period = (float)args[ARG_period].u_int/1000.0f ;
+    }
 
     if (args[ARG_callback].u_obj != mp_const_none) {
         self->callback = args[ARG_callback].u_obj;
     }
+
+
+    uint32_t period_hal;
+    uint32_t fz_hal = 1000000;
+    period_hal = (uint32_t)(period * fz_hal) - 1;
+
+// Adjust fz_hal if necessary
+    while (period_hal > 4294967296) {
+        fz_hal = fz_hal / 10;  // Reduce the fz_hal value by 10%
+        period_hal = (uint32_t)(period * fz_hal) - 1;  // Recalculate period_hal
+}
 
     // Timer initialisation of port
     cy_rslt_t rslt;
@@ -60,7 +79,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     const cyhal_timer_cfg_t timer_cfg =
     {
         .compare_value = 0,                 /* Timer compare value, not used */
-        .period = self->period,             /* Defines the timer period */
+        .period = period_hal,              /* Defines the timer period */
         .direction = CYHAL_TIMER_DIR_UP,    /* Timer counts up */
         .is_compare = false,                /* Don't use compare mode */
         .is_continuous = self->mode,              /* Run the timer */
@@ -77,7 +96,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     rslt = cyhal_timer_configure(&self->timer_obj, &timer_cfg);
 
     /* Set the frequency of timer to Defined frequency */
-    rslt = cyhal_timer_set_frequency(&self->timer_obj, self->freq);
+    rslt = cyhal_timer_set_frequency(&self->timer_obj,fz_hal);
 
     /* Assign the ISR to execute on timer interrupt */
     cyhal_timer_register_callback(&self->timer_obj, isr_timer, self);

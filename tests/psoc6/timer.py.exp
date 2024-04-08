@@ -1,10 +1,8 @@
-Oneshot Timer
-Periodic Timer
-Periodic Timer
-Periodic Timer
-Periodic Timer
-Periodic Timer
-Periodic Timer
-Periodic Timer
-Periodic Timer
-Periodic Timer
+Timer Test
+Oneshot Timer Execution
+Interrupt triggered
+Periodic Timer Execution
+Interrupt triggered
+Interrupt triggered
+Interrupt triggered
+Interrupt triggered
