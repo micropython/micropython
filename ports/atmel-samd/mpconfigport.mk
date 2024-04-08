@@ -103,6 +103,8 @@ endif
 
 
 CIRCUITPY_ALARM ?= 1
+# Not enough room for both bitmaptools and bitmapfilter on most boards.
+CIRCUITPY_BITMAPFILTER ?= 0
 CIRCUITPY_FLOPPYIO ?= $(CIRCUITPY_FULL_BUILD)
 CIRCUITPY_FRAMEBUFFERIO ?= $(CIRCUITPY_FULL_BUILD)
 CIRCUITPY_PS2IO ?= 1

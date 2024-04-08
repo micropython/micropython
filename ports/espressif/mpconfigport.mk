@@ -125,7 +125,6 @@ CIRCUITPY_ESP_USB_SERIAL_JTAG ?= 0
 
 else ifeq ($(IDF_TARGET),esp32s3)
 # Modules
-CIRCUITPY_BITMAPFILTER ?= $(CIRCUITPY_ESPCAMERA)
 CIRCUITPY_ESP_USB_SERIAL_JTAG ?= 0
 
 # No room for _bleio on boards with 4MB flash
