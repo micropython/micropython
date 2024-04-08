@@ -227,6 +227,8 @@ void update_keyboard(keypad_eventqueue_obj_t *queue) {
             if (ascii > 0) {
                 if (keystate[KEY_ALT]) {
                     ringbuf_put(&keyqueue, '\e');
+                } else if (keystate[KEY_OPT]) {
+                    ringbuf_put(&keyqueue, '\x10');
                 }
                 ringbuf_put(&keyqueue, ascii);
             }
