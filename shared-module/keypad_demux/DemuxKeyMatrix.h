@@ -41,5 +41,6 @@ typedef struct {
 } keypad_demux_demuxkeymatrix_obj_t;
 
 void keypad_demux_demuxkeymatrix_scan(keypad_demux_demuxkeymatrix_obj_t *self);
+void demuxkeymatrix_never_reset(keypad_demux_demuxkeymatrix_obj_t *self);
 
 #endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_DEMUX_DEMUXKEYMATRIX_H

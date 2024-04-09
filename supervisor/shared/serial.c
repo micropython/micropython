@@ -107,6 +107,29 @@ int console_uart_printf(const char *fmt, ...) {
     #endif
 }
 
+MP_WEAK void board_serial_early_init(void) {
+}
+
+MP_WEAK void board_serial_init(void) {
+}
+
+MP_WEAK bool board_serial_connected(void) {
+    return false;
+}
+
+MP_WEAK char board_serial_read(void) {
+    return -1;
+}
+
+MP_WEAK uint32_t board_serial_bytes_available(void) {
+    return 0;
+}
+
+MP_WEAK void board_serial_write_substring(const char *text, uint32_t length) {
+    (void)text;
+    (void)length;
+}
+
 MP_WEAK void port_serial_early_init(void) {
 }
 
@@ -148,6 +171,7 @@ void serial_early_init(void) {
     console_uart_printf("Serial console setup\r\n");
     #endif
 
+    board_serial_early_init();
     port_serial_early_init();
 }
 
@@ -156,6 +180,7 @@ void serial_init(void) {
     _first_write_done = false;
     #endif
 
+    board_serial_init();
     port_serial_init();
 }
 
@@ -199,9 +224,14 @@ bool serial_connected(void) {
     #endif
 
 
+    if (board_serial_connected()) {
+        return true;
+    }
+
     if (port_serial_connected()) {
         return true;
     }
+
     return false;
 }
 
@@ -243,6 +273,10 @@ char serial_read(void) {
         return usb_keyboard_read_char();
     }
     #endif
+
+    if (board_serial_bytes_available() > 0) {
+        return board_serial_read();
+    }
 
     if (port_serial_bytes_available() > 0) {
         return port_serial_read();
@@ -295,6 +329,9 @@ uint32_t serial_bytes_available(void) {
     #if CIRCUITPY_USB
     count += tud_cdc_available();
     #endif
+
+    // Board-specific serial input.
+    count += board_serial_bytes_available();
 
     // Port-specific serial input.
     count += port_serial_bytes_available();
@@ -366,6 +403,7 @@ void serial_write_substring(const char *text, uint32_t length) {
     }
     #endif
 
+    board_serial_write_substring(text, length);
     port_serial_write_substring(text, length);
 }
 
