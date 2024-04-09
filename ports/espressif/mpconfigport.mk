@@ -121,8 +121,6 @@ else ifeq ($(IDF_TARGET),esp32s2)
 # No BLE in hw
 CIRCUITPY_BLEIO = 0
 
-# bitmapfilter does not fit on most ESP32-S2 boards.
-CIRCUITPY_BITMAPFILTER ?= $(CIRCUITPY_ESPCAMERA)
 CIRCUITPY_ESP_USB_SERIAL_JTAG ?= 0
 
 else ifeq ($(IDF_TARGET),esp32s3)
@@ -138,8 +136,14 @@ endif
 
 endif
 
+# bitmapfilter does not fit on 4MB boards unless they are set up as camera boards
+ifeq ($(CIRCUITPY_ESP_FLASH_SIZE),4MB)
+CIRCUITPY_BITMAPFILTER ?= 0
+endif
+
 # No room for dualbank on boards with 2MB flash
 ifeq ($(CIRCUITPY_ESP_FLASH_SIZE),2MB)
+CIRCUITPY_BITMAPFILTER ?= 0
 CIRCUITPY_DUALBANK = 0
 endif
 
