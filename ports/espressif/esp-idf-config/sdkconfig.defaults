@@ -36,11 +36,22 @@ CONFIG_ESP_MAIN_TASK_STACK_SIZE=16384
 # CONFIG_ESP_DEBUG_OCDAWARE is not set
 # end of ESP System Settings
 
+
 #
 # Wi-Fi
 #
 # CONFIG_ESP_WIFI_NVS_ENABLED is not set
 # end of Wi-Fi
+
+#
+# FreeRTOS
+#
+
+#
+# Kernel
+#
+CONFIG_FREERTOS_HZ=1000
+# end of Kernel
 
 #
 # LWIP
@@ -108,6 +119,7 @@ CONFIG_MBEDTLS_ECP_NIST_OPTIM=y
 #
 # CONFIG_SPI_FLASH_YIELD_DURING_ERASE is not set
 CONFIG_SPI_FLASH_WRITE_CHUNK_SIZE=4096
+# CONFIG_SPI_FLASH_ENABLE_ENCRYPTED_READ_WRITE is not set
 # end of SPI Flash driver
 
 #

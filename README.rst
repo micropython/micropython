@@ -231,7 +231,7 @@ cxd56             stable
 espressif         ``ESP32`` beta | ``ESP32-C3`` beta | ``ESP32-S2`` stable | ``ESP32-S3`` beta
 litex             alpha
 mimxrt10xx        alpha
-nrf               stable
+nordic            stable
 raspberrypi       stable
 silabs (efr32)    alpha
 stm               ``F4`` stable | ``others`` beta

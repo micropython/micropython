@@ -1184,15 +1184,35 @@ void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint
 }
 
 int common_hal_socketpool_socket_setsockopt(socketpool_socket_obj_t *self, int level, int optname, const void *value, size_t optlen) {
-    if (level == SOCKETPOOL_IPPROTO_TCP && optname == SOCKETPOOL_TCP_NODELAY) {
-        int one = 1;
-        bool enable = optlen == sizeof(&one) && memcmp(value, &one, optlen);
-        if (enable) {
-            tcp_set_flags(self->pcb.tcp, TF_NODELAY);
-        } else {
-            tcp_clear_flags(self->pcb.tcp, TF_NODELAY);
-        }
-        return 0;
+    int zero = 0;
+    bool enable = optlen == sizeof(&zero) && memcmp(value, &zero, optlen);
+
+    switch (level) {
+        case SOCKETPOOL_IPPROTO_TCP:
+            switch (optname) {
+                case SOCKETPOOL_TCP_NODELAY:
+                    if (enable) {
+                        tcp_set_flags(self->pcb.tcp, TF_NODELAY);
+                    } else {
+                        tcp_clear_flags(self->pcb.tcp, TF_NODELAY);
+                    }
+                    return 0;
+                    break;
+            }
+            break;
+
+        case SOCKETPOOL_SOL_SOCKET:
+            switch (optname) {
+                case SOCKETPOOL_SO_REUSEADDR:
+                    if (enable) {
+                        ip_set_option(self->pcb.ip, SOF_REUSEADDR);
+                    } else {
+                        ip_reset_option(self->pcb.ip, SOF_REUSEADDR);
+                    }
+                    return 0;
+                    break;
+            }
+            break;
     }
     return -MP_EOPNOTSUPP;
 }

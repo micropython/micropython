@@ -33,8 +33,8 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared/runtime/interrupt_char.h"
+#include "supervisor/shared/serial.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/serial.h"
 
 EventGroupHandle_t xcharacteristic_event;
 

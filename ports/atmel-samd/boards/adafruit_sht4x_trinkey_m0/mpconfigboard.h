@@ -52,5 +52,5 @@
 #define IGNORE_PIN_PB30     1
 #define IGNORE_PIN_PB31     1
 
-#define DEFAULT_I2C_BUS_SCL (&pin_PA04)
-#define DEFAULT_I2C_BUS_SDA (&pin_PA05)
+#define DEFAULT_I2C_BUS_SCL (&pin_PA05)
+#define DEFAULT_I2C_BUS_SDA (&pin_PA04)

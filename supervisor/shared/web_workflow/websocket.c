@@ -180,12 +180,12 @@ static bool _read_next_payload_byte(uint8_t *c) {
     return false;
 }
 
-bool websocket_available(void) {
+uint32_t websocket_available(void) {
     if (!websocket_connected()) {
-        return false;
+        return 0;
     }
     websocket_background();
-    return ringbuf_num_filled(&_incoming_ringbuf) > 0;
+    return ringbuf_num_filled(&_incoming_ringbuf);
 }
 
 char websocket_read_char(void) {

@@ -144,10 +144,14 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     bool color_framebuffer = color_depth >= 8;
     const struct dvi_timing *timing = NULL;
     if ((width == 640 && height == 480) ||
-        (width == 320 && height == 240)) {
+        (width == 320 && height == 240) ||
+        (width == 640 && height == 240)
+        ) {
         timing = &dvi_timing_640x480p_60hz;
     } else if ((width == 800 && height == 480) ||
-               (width == 400 && height == 240)) {
+               (width == 400 && height == 240) ||
+               (width == 800 && height == 240)
+               ) {
         timing = &dvi_timing_800x480p_60hz;
     } else {
         if (height != 480 && height != 240) {
@@ -223,16 +227,15 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     size_t tmds_bufs_per_scanline;
     size_t scanline_width = width;
     if (color_framebuffer) {
-        dvi_vertical_repeat = 2;
         dvi_monochrome_tmds = false;
         tmds_bufs_per_scanline = 3;
         scanline_width *= 2;
     } else {
-        dvi_vertical_repeat = 1;
         dvi_monochrome_tmds = true;
         // One tmds buffer is used for all three color outputs.
         tmds_bufs_per_scanline = 1;
     }
+    dvi_vertical_repeat = timing->v_active_lines / self->height;
     self->pitch = (self->width * color_depth) / 8;
     // Align each row to words.
     if (self->pitch % sizeof(uint32_t) != 0) {

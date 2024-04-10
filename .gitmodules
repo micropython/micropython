@@ -63,8 +63,8 @@
 [submodule "frozen/Adafruit_CircuitPython_Crickit"]
 	path = frozen/Adafruit_CircuitPython_Crickit
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Crickit
-[submodule "ports/nrf/nrfx"]
-	path = ports/nrf/nrfx
+[submodule "ports/nordic/nrfx"]
+	path = ports/nordic/nrfx
 	url = https://github.com/adafruit/nrfx.git
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
@@ -306,8 +306,8 @@
 	url = https://github.com/elecfreaks/circuitpython_picoed.git
 [submodule "ports/raspberrypi/lib/cyw43-driver"]
 	path = ports/raspberrypi/lib/cyw43-driver
-	url = https://github.com/adafruit/cyw43-driver
-	branch = circuitpython9
+	url = https://github.com/georgerobotics/cyw43-driver
+	branch = main
 [submodule "ports/raspberrypi/lib/lwip"]
 	path = ports/raspberrypi/lib/lwip
 	url = https://github.com/adafruit/lwip.git

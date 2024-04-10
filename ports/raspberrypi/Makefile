@@ -249,10 +249,6 @@ SRC_C += \
 	background.c \
 	peripherals/pins.c \
 	lib/crypto-algorithms/sha256.c \
-	lib/PicoDVI/software/libdvi/dvi.c \
-	lib/PicoDVI/software/libdvi/dvi_serialiser.c \
-	lib/PicoDVI/software/libdvi/dvi_timing.c \
-	lib/PicoDVI/software/libdvi/tmds_encode.c \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/dcd_rp2040.c \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c \
 	mphalport.c \
@@ -273,6 +269,10 @@ endif
 
 ifeq ($(CIRCUITPY_PICODVI),1)
 SRC_C += \
+	lib/PicoDVI/software/libdvi/dvi.c \
+	lib/PicoDVI/software/libdvi/dvi_serialiser.c \
+	lib/PicoDVI/software/libdvi/dvi_timing.c \
+	lib/PicoDVI/software/libdvi/tmds_encode.c \
   bindings/picodvi/__init__.c \
   bindings/picodvi/Framebuffer.c \
   common-hal/picodvi/Framebuffer.c \
@@ -367,6 +367,7 @@ else
 OBJ_MBEDTLS :=
 endif
 
+
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
                           $(addprefix common-hal/, $(SRC_COMMON_HAL))
@@ -393,7 +394,11 @@ SRC_S_UPPER = sdk/src/rp2_common/hardware_divider/divider.S \
               sdk/src/rp2_common/pico_int64_ops/pico_int64_ops_aeabi.S \
               sdk/src/rp2_common/pico_mem_ops/mem_ops_aeabi.S \
               sdk/src/rp2_common/pico_standard_link/crt0.S \
-              lib/PicoDVI/software/libdvi/tmds_encode_asm.S \
+
+ifeq ($(CIRCUITPY_PICODVI),1)
+SRC_S_UPPER += lib/PicoDVI/software/libdvi/tmds_encode_asm.S \
+
+endif
 
 OBJ = $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SDK:.c=.o))

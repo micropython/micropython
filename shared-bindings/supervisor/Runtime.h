@@ -24,10 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_RUNTIME_STATUS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_RUNTIME_STATUS_H
+#pragma once
 
-#include <stdbool.h>
 #include "py/obj.h"
 
 #include "shared-bindings/supervisor/RunReason.h"
@@ -43,10 +41,8 @@ void supervisor_set_safe_mode(safe_mode_t safe_mode);
 
 bool common_hal_supervisor_runtime_get_serial_connected(void);
 
-bool common_hal_supervisor_runtime_get_serial_bytes_available(void);
+uint32_t common_hal_supervisor_runtime_get_serial_bytes_available(void);
 
 // TODO: placeholders for future functions
 // bool common_hal_get_supervisor_runtime_repl_active(void);
 // bool common_hal_get_supervisor_runtime_usb_enumerated(void);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR_RUNTIME_H
