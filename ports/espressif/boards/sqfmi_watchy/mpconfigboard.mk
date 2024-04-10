@@ -10,8 +10,3 @@ CIRCUITPY_ESP_FLASH_SIZE=4MB
 
 IDF_TARGET = esp32
 
-#FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_PCF8563
-#FROZEN_MPY_DIRS += $(TOP)/frozen/CircuitPython_BMA423
-#FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
-#FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Register
-#FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NTP
