@@ -127,6 +127,14 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     // I think I'd like to declare `value` as volatile, but that causes type errors.
     asm volatile ("" : : : "memory");
 
+    // Disconnect ADC from pin.
+    nrf_saadc_channel_input_set(NRF_SAADC, CHANNEL_NO, NRF_SAADC_INPUT_DISABLED, NRF_SAADC_INPUT_DISABLED);
+
+    // value is signed and might be (slightly) < 0, even on single-ended conversions, so force to 0.
+    if (value < 0) {
+        value = 0;
+    }
+
     // Stretch 14-bit ADC reading to 16-bit range
     return (value << 2) | (value >> 12);
 }
