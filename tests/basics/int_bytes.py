@@ -60,36 +60,25 @@ except OverflowError:
 
 # negative representations
 
-# MicroPython int.to_bytes() behaves as if signed=True for negative numbers
-if "micropython" in repr(sys.implementation):
-
-    def to_bytes_compat(i, l, e):
-        return i.to_bytes(l, e)
-else:
-    # Implement MicroPython compatible behaviour for CPython
-    def to_bytes_compat(i, l, e):
-        return i.to_bytes(l, e, signed=i < 0)
-
-
-print(to_bytes_compat(-1, 1, "little"))
-print(to_bytes_compat(-1, 3, "little"))
-print(to_bytes_compat(-1, 1, "big"))
-print(to_bytes_compat(-1, 3, "big"))
-print(to_bytes_compat(-128, 1, "big"))
-print(to_bytes_compat(-32768, 2, "big"))
-print(to_bytes_compat(-(1 << 23), 3, "big"))
+print((-1).to_bytes(1, "little", signed=True))
+print((-1).to_bytes(3, "little", signed=True))
+print((-1).to_bytes(1, "big", signed=True))
+print((-1).to_bytes(3, "big", signed=True))
+print((-128).to_bytes(1, "big", signed=True))
+print((-32768).to_bytes(2, "big", signed=True))
+print((-(1 << 23)).to_bytes(3, "big", signed=True))
 
 try:
-    print(to_bytes_compat(-129, 1, "big"))
+    print((-129).to_bytes(1, "big", signed=True))
 except OverflowError:
     print("OverflowError")
 
 try:
-    print(to_bytes_compat(-32769, 2, "big"))
+    print((-32769).to_bytes(2, "big", signed=True))
 except OverflowError:
     print("OverflowError")
 
 try:
-    print(to_bytes_compat(-(1 << 23) - 1, 2, "big"))
+    print(((-1 << 23) - 1).to_bytes(2, "big", signed=True))
 except OverflowError:
     print("OverflowError")
