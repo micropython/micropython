@@ -453,8 +453,8 @@ void reset_port(void) {
 
     #if CIRCUITPY_AUDIOIO
     audio_dma_reset();
-    audioout_reset();
     #endif
+
     #if CIRCUITPY_AUDIOBUSIO
     i2s_reset();
     #endif

@@ -47,8 +47,6 @@ typedef struct {
     uint16_t quiescent_value;
 } audioio_audioout_obj_t;
 
-void audioout_reset(void);
-
 void audioout_background(void);
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOIO_AUDIOOUT_H
