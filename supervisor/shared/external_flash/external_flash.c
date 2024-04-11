@@ -211,7 +211,7 @@ void supervisor_flash_init(void) {
     // Delay to give the SPI Flash time to get going.
     // TODO(tannewt): Only do this when we know power was applied vs a reset.
     uint16_t max_start_up_delay_us = 0;
-    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
+    for (size_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
         if (possible_devices[i].start_up_time_us > max_start_up_delay_us) {
             max_start_up_delay_us = possible_devices[i].start_up_time_us;
         }
@@ -223,7 +223,7 @@ void supervisor_flash_init(void) {
     #ifdef EXTERNAL_FLASH_NO_JEDEC
     // For NVM that don't have JEDEC response
     spi_flash_command(CMD_WAKE);
-    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
+    for (size_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
         const external_flash_device *possible_device = &possible_devices[i];
         flash_device = possible_device;
         break;
@@ -238,7 +238,7 @@ void supervisor_flash_init(void) {
     while ((count-- > 0) && (jedec_id_response[0] == 0xff || jedec_id_response[2] == 0x00)) {
         spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 3);
     }
-    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
+    for (size_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
         const external_flash_device *possible_device = &possible_devices[i];
         if (jedec_id_response[0] == possible_device->manufacturer_id &&
             jedec_id_response[1] == possible_device->memory_type &&
@@ -327,7 +327,7 @@ static bool flush_scratch_flash(void) {
     // cached.
     bool copy_to_scratch_ok = true;
     uint32_t scratch_sector = flash_device->total_size - SPI_FLASH_ERASE_SIZE;
-    for (uint8_t i = 0; i < BLOCKS_PER_SECTOR; i++) {
+    for (size_t i = 0; i < BLOCKS_PER_SECTOR; i++) {
         if ((dirty_mask & (1 << i)) == 0) {
             copy_to_scratch_ok = copy_to_scratch_ok &&
                 copy_block(current_sector + i * FILESYSTEM_BLOCK_SIZE,
@@ -342,7 +342,7 @@ static bool flush_scratch_flash(void) {
     // Second, erase the current sector.
     erase_sector(current_sector);
     // Finally, copy the new version into it.
-    for (uint8_t i = 0; i < BLOCKS_PER_SECTOR; i++) {
+    for (size_t i = 0; i < BLOCKS_PER_SECTOR; i++) {
         copy_block(scratch_sector + i * FILESYSTEM_BLOCK_SIZE,
             current_sector + i * FILESYSTEM_BLOCK_SIZE);
     }
@@ -416,9 +416,9 @@ static bool flush_ram_cache(bool keep_cache) {
     // we've cached. If we don't do this we'll erase the data during the sector
     // erase below.
     bool copy_to_ram_ok = true;
-    for (uint8_t i = 0; i < BLOCKS_PER_SECTOR; i++) {
+    for (size_t i = 0; i < BLOCKS_PER_SECTOR; i++) {
         if ((dirty_mask & (1 << i)) == 0) {
-            for (uint8_t j = 0; j < PAGES_PER_BLOCK; j++) {
+            for (size_t j = 0; j < PAGES_PER_BLOCK; j++) {
                 copy_to_ram_ok = read_flash(
                     current_sector + (i * PAGES_PER_BLOCK + j) * SPI_FLASH_PAGE_SIZE,
                     flash_cache_table[i * PAGES_PER_BLOCK + j],
@@ -439,8 +439,8 @@ static bool flush_ram_cache(bool keep_cache) {
     // Second, erase the current sector.
     erase_sector(current_sector);
     // Lastly, write all the data in ram that we've cached.
-    for (uint8_t i = 0; i < BLOCKS_PER_SECTOR; i++) {
-        for (uint8_t j = 0; j < PAGES_PER_BLOCK; j++) {
+    for (size_t i = 0; i < BLOCKS_PER_SECTOR; i++) {
+        for (size_t j = 0; j < PAGES_PER_BLOCK; j++) {
             write_flash(current_sector + (i * PAGES_PER_BLOCK + j) * SPI_FLASH_PAGE_SIZE,
                 flash_cache_table[i * PAGES_PER_BLOCK + j],
                 SPI_FLASH_PAGE_SIZE);
@@ -497,8 +497,8 @@ static bool external_flash_read_block(uint8_t *dest, uint32_t block) {
 
     // Mask out the lower bits that designate the address within the sector.
     uint32_t this_sector = address & (~(SPI_FLASH_ERASE_SIZE - 1));
-    uint8_t block_index = (address / FILESYSTEM_BLOCK_SIZE) % BLOCKS_PER_SECTOR;
-    uint8_t mask = 1 << (block_index);
+    size_t block_index = (address / FILESYSTEM_BLOCK_SIZE) % BLOCKS_PER_SECTOR;
+    uint32_t mask = 1 << (block_index);
     // We're reading from the currently cached sector.
     if (current_sector == this_sector && (mask & dirty_mask) > 0) {
         if (flash_cache_table != NULL) {
@@ -527,8 +527,8 @@ static bool external_flash_write_block(const uint8_t *data, uint32_t block) {
     wait_for_flash_ready();
     // Mask out the lower bits that designate the address within the sector.
     uint32_t this_sector = address & (~(SPI_FLASH_ERASE_SIZE - 1));
-    uint8_t block_index = (address / FILESYSTEM_BLOCK_SIZE) % BLOCKS_PER_SECTOR;
-    uint8_t mask = 1 << (block_index);
+    size_t block_index = (address / FILESYSTEM_BLOCK_SIZE) % BLOCKS_PER_SECTOR;
+    uint32_t mask = 1 << (block_index);
     // Flush the cache if we're moving onto a sector or we're writing the
     // same block again.
     if (current_sector != this_sector || (mask & dirty_mask) > 0) {
