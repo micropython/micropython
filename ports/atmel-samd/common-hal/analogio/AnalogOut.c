@@ -155,11 +155,7 @@ void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
 }
 
 void analogout_reset(void) {
-    // audioout_reset also resets the DAC, and does a smooth ramp down to avoid clicks
-    // if it was enabled, so do that instead if AudioOut is enabled.
-    #if CIRCUITPY_AUDIOIO
-    audioout_reset();
-    #elif HAVE_ANALOGOUT
+    #if HAVE_ANALOGOUT
     #ifdef SAMD21
     while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {
     }
