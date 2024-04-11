@@ -178,7 +178,7 @@ CFLAGS += $(INC) -Wall -Werror -std=gnu11 -fshort-enums $(BASE_CFLAGS) $(CFLAGS_
 CFLAGS += \
 	-march=armv6-m \
 	-mthumb \
-	-mabi=aapcs-linux \
+	-mabi=aapcs \
 	-mcpu=cortex-m0plus \
 	-msoft-float \
 	-mfloat-abi=soft

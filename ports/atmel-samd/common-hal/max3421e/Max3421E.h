@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2024 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #pragma once
 
-#define EIC_HANDLER_NO_INTERRUPT 0x0
-#define EIC_HANDLER_PULSEIN 0x1
-#define EIC_HANDLER_INCREMENTAL_ENCODER 0x2
-#define EIC_HANDLER_PS2 0x3
-#define EIC_HANDLER_COUNTER 0x04
-#define EIC_HANDLER_ALARM 0x05
-#define EIC_HANDLER_MAX3421E 0x06
+#include <stdint.h>
 
-void set_eic_handler(uint8_t channel, uint8_t eic_handler);
-void shared_eic_handler(uint8_t channel);
+void samd_max3421e_interrupt_handler(uint8_t channel);

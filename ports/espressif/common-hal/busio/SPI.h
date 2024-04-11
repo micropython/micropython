@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_SPI_H
+#pragma once
 
 #include "driver/spi_master.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -44,9 +43,7 @@ typedef struct {
     uint8_t polarity;
     uint32_t baudrate;
 
-    bool has_lock;
+    SemaphoreHandle_t mutex;
 } busio_spi_obj_t;
 
 void spi_reset(void);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_SPI_H

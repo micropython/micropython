@@ -176,12 +176,24 @@ ifeq ($(CIRCUITPY_USB),1)
 
   endif
 
-  ifeq ($(CIRCUITPY_USB_HOST), 1)
+  # This is a string comparison!
+  ifneq ($(CIRCUITPY_USB_HOST)$(CIRCUITPY_MAX3421E), 00)
     SRC_SUPERVISOR += \
-      lib/tinyusb/src/class/hid/hid_host.c \
       lib/tinyusb/src/host/hub.c \
       lib/tinyusb/src/host/usbh.c \
+
+  endif
+
+  ifeq ($(CIRCUITPY_USB_KEYBOARD_WORKFLOW), 1)
+    SRC_SUPERVISOR += \
+      lib/tinyusb/src/class/hid/hid_host.c \
       supervisor/shared/usb/host_keyboard.c \
+
+  endif
+
+  ifeq ($(CIRCUITPY_MAX3421E), 1)
+    SRC_SUPERVISOR += \
+      lib/tinyusb/src/portable/analog/max3421/hcd_max3421.c \
 
   endif
 endif

@@ -329,6 +329,9 @@ void usb_keyboard_detach(uint8_t dev_addr, uint8_t interface) {
     if (!usb_keyboard_in_use(dev_addr, interface)) {
         return;
     }
+    // No more key repeats
+    old_buf = NULL;
+
     tuh_hid_receive_abort(dev_addr, interface);
     _dev_addr = 0;
     _interface = 0;
