@@ -9,7 +9,7 @@ def demo(np):
             np[j] = (0, 0, 0)
         np[i % n] = (255, 255, 255)
         np.write()
-        time.sleep_ms(25)
+        time.sleep_ms(2)
 
     # bounce
     for i in range(4 * n):
@@ -20,7 +20,7 @@ def demo(np):
         else:
             np[n - 1 - (i % n)] = (0, 0, 0)
         np.write()
-        time.sleep_ms(60)
+        time.sleep_ms(6)
 
     # fade in/out
     for i in range(0, 4 * 256, 8):

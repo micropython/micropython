@@ -50,6 +50,8 @@ class BLESimplePeripheral(Observer):
         self._ble.config(mtu=500)
         # self._ble.config(rxbuf=512)
         self._ble.irq(self._irq)
+        self.ao = self.analog_observer(self)
+        self.vo = self.vesc_observer(self)
     
         ((self._handle_tx, self._handle_rx,), (self._handle_i, self._handle_o, self._handle_np, self._handle_iic), ) = self._ble.gatts_register_services((_UART_SERVICE, _VOLTAGE_IO_SERVICE, ))
         self._connections = set()
@@ -107,13 +109,36 @@ class BLESimplePeripheral(Observer):
 
     def update(self, subject: Subject) -> None:
         # (f"ble Observer: My value for pin {subject._pins[idx]} has just changed to: {value}")
+        data = struct.pack("<ll", subject._values[0], subject._values[1])
         for conn_handle in self._connections:
-            data = struct.pack("<ll", subject._values[0], subject._values[1])
             try:
                 self._ble.gatts_notify(conn_handle, self._handle_i, data)
             except OSError:
                 Log(1, "failed to update with gatts_notify")
-              
+
+    class analog_observer(Observer):
+
+        def __init__(self, parent):
+            self.parent = parent
+        
+        def update(self, subject: Subject) -> None:
+            data = struct.pack("<ll", subject._values[0], subject._values[1])
+
+            for conn_handle in self.parent._connections:               
+                try:
+                    self.parent._ble.gatts_notify(conn_handle, self.parent._handle_i, data)
+                except OSError:
+                    Log(1, "failed to update with gatts_notify")
+
+    class vesc_observer(Observer):
+
+        def __init__(self, parent):
+            self.parent = parent
+            
+        def update(self, subject: Subject) -> None:
+            buffer = subject._buffer
+            self.parent.send_uart(buffer)
+               
 
 def ble_main(hwuart, sa=0, np=0, iic=0):
     ble = bluetooth.BLE()
