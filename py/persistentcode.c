@@ -40,6 +40,11 @@
 
 #include "py/smallint.h"
 
+// makeqstrdata.py has a fixed list of qstrs at the start that we can assume
+// are available with know indices on all MicroPython implementations, and
+// avoid needing to duplicate the string data in the .mpy file. This is the
+// last one in that list (anything with a qstr less than or equal to this is
+// assumed to be in the list).
 #define QSTR_LAST_STATIC MP_QSTR_zip
 
 #if MICROPY_DYNAMIC_COMPILER
@@ -64,8 +69,8 @@ typedef struct _bytecode_prelude_t {
 
 #include "py/parsenum.h"
 
-STATIC int read_byte(mp_reader_t *reader);
-STATIC size_t read_uint(mp_reader_t *reader);
+static int read_byte(mp_reader_t *reader);
+static size_t read_uint(mp_reader_t *reader);
 
 #if MICROPY_EMIT_MACHINE_CODE
 
@@ -133,17 +138,17 @@ void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
 
 #endif
 
-STATIC int read_byte(mp_reader_t *reader) {
+static int read_byte(mp_reader_t *reader) {
     return reader->readbyte(reader->data);
 }
 
-STATIC void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
+static void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
     while (len-- > 0) {
         *buf++ = reader->readbyte(reader->data);
     }
 }
 
-STATIC size_t read_uint(mp_reader_t *reader) {
+static size_t read_uint(mp_reader_t *reader) {
     size_t unum = 0;
     for (;;) {
         byte b = reader->readbyte(reader->data);
@@ -155,7 +160,7 @@ STATIC size_t read_uint(mp_reader_t *reader) {
     return unum;
 }
 
-STATIC qstr load_qstr(mp_reader_t *reader) {
+static qstr load_qstr(mp_reader_t *reader) {
     size_t len = read_uint(reader);
     if (len & 1) {
         // static qstr
@@ -170,7 +175,7 @@ STATIC qstr load_qstr(mp_reader_t *reader) {
     return qst;
 }
 
-STATIC mp_obj_t load_obj(mp_reader_t *reader) {
+static mp_obj_t load_obj(mp_reader_t *reader) {
     byte obj_type = read_byte(reader);
     #if MICROPY_EMIT_MACHINE_CODE
     if (obj_type == MP_PERSISTENT_OBJ_FUN_TABLE) {
@@ -216,7 +221,7 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
     }
 }
 
-STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *context) {
+static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *context) {
     // Load function kind and data length
     size_t kind_len = read_uint(reader);
     int kind = (kind_len & 3) + MP_CODE_BYTECODE;
@@ -319,11 +324,9 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
         MP_BC_PRELUDE_SIG_DECODE(ip);
         // Assign bytecode to raw code object
         mp_emit_glue_assign_bytecode(rc, fun_data,
-            #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
-            fun_data_len,
-            #endif
             children,
             #if MICROPY_PERSISTENT_CODE_SAVE
+            fun_data_len,
             n_children,
             #endif
             scope_flags);
@@ -451,7 +454,7 @@ void mp_raw_code_load_mem(const byte *buf, size_t len, mp_compiled_module_t *con
 
 #if MICROPY_HAS_FILE_READER
 
-void mp_raw_code_load_file(const char *filename, mp_compiled_module_t *context) {
+void mp_raw_code_load_file(qstr filename, mp_compiled_module_t *context) {
     mp_reader_t reader;
     mp_reader_new_file(&reader, filename);
     mp_raw_code_load(&reader, context);
@@ -465,12 +468,12 @@ void mp_raw_code_load_file(const char *filename, mp_compiled_module_t *context) 
 
 #include "py/objstr.h"
 
-STATIC void mp_print_bytes(mp_print_t *print, const byte *data, size_t len) {
+static void mp_print_bytes(mp_print_t *print, const byte *data, size_t len) {
     print->print_strn(print->data, (const char *)data, len);
 }
 
 #define BYTES_FOR_INT ((MP_BYTES_PER_OBJ_WORD * 8 + 6) / 7)
-STATIC void mp_print_uint(mp_print_t *print, size_t n) {
+static void mp_print_uint(mp_print_t *print, size_t n) {
     byte buf[BYTES_FOR_INT];
     byte *p = buf + sizeof(buf);
     *--p = n & 0x7f;
@@ -481,7 +484,7 @@ STATIC void mp_print_uint(mp_print_t *print, size_t n) {
     print->print_strn(print->data, (char *)p, buf + sizeof(buf) - p);
 }
 
-STATIC void save_qstr(mp_print_t *print, qstr qst) {
+static void save_qstr(mp_print_t *print, qstr qst) {
     if (qst <= QSTR_LAST_STATIC) {
         // encode static qstr
         mp_print_uint(print, qst << 1 | 1);
@@ -493,7 +496,7 @@ STATIC void save_qstr(mp_print_t *print, qstr qst) {
     mp_print_bytes(print, str, len + 1); // +1 to store null terminator
 }
 
-STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
+static void save_obj(mp_print_t *print, mp_obj_t o) {
     #if MICROPY_EMIT_MACHINE_CODE
     if (o == MP_OBJ_FROM_PTR(&mp_fun_table)) {
         byte obj_type = MP_PERSISTENT_OBJ_FUN_TABLE;
@@ -559,7 +562,7 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
     }
 }
 
-STATIC void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
+static void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
     // Save function kind and data length
     mp_print_uint(print, (rc->fun_data_len << 3) | ((rc->n_children != 0) << 2) | (rc->kind - MP_CODE_BYTECODE));
 
@@ -572,11 +575,15 @@ STATIC void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
         mp_print_uint(print, rc->prelude_offset);
     } else if (rc->kind == MP_CODE_NATIVE_VIPER || rc->kind == MP_CODE_NATIVE_ASM) {
         // Save basic scope info for viper and asm
-        mp_print_uint(print, rc->scope_flags & MP_SCOPE_FLAG_ALL_SIG);
+        // Viper/asm functions don't support generator, variable args, or default keyword args
+        // so (scope_flags & MP_SCOPE_FLAG_ALL_SIG) for these functions is always 0.
+        mp_print_uint(print, 0);
+        #if MICROPY_EMIT_INLINE_ASM
         if (rc->kind == MP_CODE_NATIVE_ASM) {
-            mp_print_uint(print, rc->n_pos_args);
-            mp_print_uint(print, rc->type_sig);
+            mp_print_uint(print, rc->asm_n_pos_args);
+            mp_print_uint(print, rc->asm_type_sig);
         }
+        #endif
     }
     #endif
 
@@ -630,7 +637,7 @@ void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
 #include <sys/stat.h>
 #include <fcntl.h>
 
-STATIC void fd_print_strn(void *env, const char *str, size_t len) {
+static void fd_print_strn(void *env, const char *str, size_t len) {
     int fd = (intptr_t)env;
     MP_THREAD_GIL_EXIT();
     ssize_t ret = write(fd, str, len);
@@ -638,12 +645,12 @@ STATIC void fd_print_strn(void *env, const char *str, size_t len) {
     (void)ret;
 }
 
-void mp_raw_code_save_file(mp_compiled_module_t *cm, const char *filename) {
+void mp_raw_code_save_file(mp_compiled_module_t *cm, qstr filename) {
     MP_THREAD_GIL_EXIT();
-    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    int fd = open(qstr_str(filename), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     MP_THREAD_GIL_ENTER();
     if (fd < 0) {
-        mp_raise_OSError_with_filename(errno, filename);
+        mp_raise_OSError_with_filename(errno, qstr_str(filename));
     }
     mp_print_t fd_print = {(void *)(intptr_t)fd, fd_print_strn};
     mp_raw_code_save(cm, &fd_print);

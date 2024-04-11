@@ -13,7 +13,7 @@ facilities for network sockets, both client-side and server-side.
 Functions
 ---------
 
-.. function:: ssl.wrap_socket(sock, server_side=False, keyfile=None, certfile=None, cert_reqs=CERT_NONE, cadata=None, server_hostname=None, do_handshake=True)
+.. function:: ssl.wrap_socket(sock, server_side=False, key=None, cert=None, cert_reqs=CERT_NONE, cadata=None, server_hostname=None, do_handshake=True)
 
     Wrap the given *sock* and return a new wrapped-socket object.  The implementation
     of this function is to first create an `SSLContext` and then call the `SSLContext.wrap_socket`
@@ -38,6 +38,33 @@ class SSLContext
 
     Create a new SSLContext instance.  The *protocol* argument must be one of the ``PROTOCOL_*``
     constants.
+
+.. method:: SSLContext.load_cert_chain(certfile, keyfile)
+
+   Load a private key and the corresponding certificate.  The *certfile* is a string
+   with the file path of the certificate.  The *keyfile* is a string with the file path
+   of the private key.
+
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      MicroPython extension: *certfile* and *keyfile* can be bytes objects instead of
+      strings, in which case they are interpreted as the actual certificate/key data.
+
+.. method:: SSLContext.load_verify_locations(cafile=None, cadata=None)
+
+   Load the CA certificate chain that will validate the peer's certificate.
+   *cafile* is the file path of the CA certificates.  *cadata* is a bytes object
+   containing the CA certificates.  Only one of these arguments should be provided.
+
+.. method:: SSLContext.get_ciphers()
+
+   Get a list of enabled ciphers, returned as a list of strings.
+
+.. method:: SSLContext.set_ciphers(ciphers)
+
+   Set the available ciphers for sockets created with this context.  *ciphers* should be
+   a list of strings in the `IANA cipher suite format <https://wiki.mozilla.org/Security/Cipher_Suites>`_ .
 
 .. method:: SSLContext.wrap_socket(sock, *, server_side=False, do_handshake_on_connect=True, server_hostname=None)
 
@@ -76,6 +103,12 @@ class SSLContext
 
     Set or get the behaviour for verification of peer certificates.  Must be one of the
     ``CERT_*`` constants.
+
+.. note::
+
+   ``ssl.CERT_REQUIRED`` requires the device's date/time to be properly set, e.g. using
+   `mpremote rtc --set <mpremote_command_rtc>` or ``ntptime``, and ``server_hostname``
+   must be specified when on the client side.
 
 Exceptions
 ----------

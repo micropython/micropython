@@ -44,13 +44,9 @@ static bool ejected = false;
 // Invoked when received SCSI_CMD_INQUIRY
 // Application fill vendor id, product id and revision with string up to 8, 16, 4 characters respectively
 void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) {
-    const char vid[] = "Micropy";
-    const char pid[] = "Mass Storage";
-    const char rev[] = "1.0";
-
-    strncpy((char *)vendor_id,   vid, 8);
-    strncpy((char *)product_id,  pid, 16);
-    strncpy((char *)product_rev, rev, 4);
+    memcpy(vendor_id, MICROPY_HW_USB_MSC_INQUIRY_VENDOR_STRING, MIN(strlen(MICROPY_HW_USB_MSC_INQUIRY_VENDOR_STRING), 8));
+    memcpy(product_id, MICROPY_HW_USB_MSC_INQUIRY_PRODUCT_STRING, MIN(strlen(MICROPY_HW_USB_MSC_INQUIRY_PRODUCT_STRING), 16));
+    memcpy(product_rev, MICROPY_HW_USB_MSC_INQUIRY_REVISION_STRING, MIN(strlen(MICROPY_HW_USB_MSC_INQUIRY_REVISION_STRING), 4));
 }
 
 // Invoked when received Test Unit Ready command.

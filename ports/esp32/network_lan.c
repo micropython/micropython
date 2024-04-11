@@ -44,12 +44,14 @@
 #endif
 
 #include "modnetwork.h"
+#include "extmod/modnetwork.h"
 
 typedef struct _lan_if_obj_t {
     base_if_obj_t base;
     bool initialized;
     int8_t mdc_pin;
     int8_t mdio_pin;
+    int8_t phy_reset_pin;
     int8_t phy_power_pin;
     int8_t phy_cs_pin;
     int8_t phy_int_pin;
@@ -60,8 +62,8 @@ typedef struct _lan_if_obj_t {
 } lan_if_obj_t;
 
 const mp_obj_type_t lan_if_type;
-STATIC lan_if_obj_t lan_obj = {{{&lan_if_type}, ESP_IF_ETH, NULL}, false, false};
-STATIC uint8_t eth_status = 0;
+static lan_if_obj_t lan_obj = {{{&lan_if_type}, ESP_IF_ETH, NULL}, false, false};
+static uint8_t eth_status = 0;
 
 static void eth_event_handler(void *arg, esp_event_base_t event_base,
     int32_t event_id, void *event_data) {
@@ -91,19 +93,20 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
     }
 }
 
-STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     lan_if_obj_t *self = &lan_obj;
 
     if (self->initialized) {
         return MP_OBJ_FROM_PTR(&lan_obj);
     }
 
-    enum { ARG_id, ARG_mdc, ARG_mdio, ARG_power, ARG_phy_addr, ARG_phy_type,
+    enum { ARG_id, ARG_mdc, ARG_mdio, ARG_reset, ARG_power, ARG_phy_addr, ARG_phy_type,
            ARG_spi, ARG_cs, ARG_int, ARG_ref_clk_mode, ARG_ref_clk };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,           MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_mdc,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_mdio,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_reset,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_power,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_phy_addr,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_phy_type,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
@@ -127,6 +130,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     self->mdc_pin = GET_PIN(ARG_mdc);
     self->mdio_pin = GET_PIN(ARG_mdio);
+    self->phy_reset_pin = GET_PIN(ARG_reset);
     self->phy_power_pin = GET_PIN(ARG_power);
     self->phy_cs_pin = GET_PIN(ARG_cs);
     self->phy_int_pin = GET_PIN(ARG_int);
@@ -178,39 +182,24 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
     phy_config.phy_addr = self->phy_addr;
-    phy_config.reset_gpio_num = self->phy_power_pin;
+    phy_config.reset_gpio_num = self->phy_reset_pin;
     self->phy = NULL;
-
-    #if CONFIG_ETH_USE_SPI_ETHERNET
-    spi_device_handle_t spi_handle = NULL;
-    if (IS_SPI_PHY(args[ARG_phy_type].u_int)) {
-        spi_device_interface_config_t devcfg = {
-            .mode = 0,
-            .clock_speed_hz = MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ * 1000 * 1000,
-            .queue_size = 20,
-            .spics_io_num = self->phy_cs_pin,
-        };
-        switch (args[ARG_phy_type].u_int) {
-            #if CONFIG_ETH_SPI_ETHERNET_DM9051
-            case PHY_DM9051: {
-                devcfg.command_bits = 1;
-                devcfg.address_bits = 7;
-                break;
-            }
-            #endif
-            #if CONFIG_ETH_SPI_ETHERNET_W5500
-            case PHY_W5500: {
-                devcfg.command_bits = 16;
-                devcfg.address_bits = 8;
-                break;
-            }
-            #endif
-        }
-        spi_host_device_t host = machine_hw_spi_get_host(args[ARG_spi].u_obj);
-        if (spi_bus_add_device(host, &devcfg, &spi_handle) != ESP_OK) {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("spi_bus_add_device failed"));
-        }
+    // Switch on the power before PHY is reset
+    if (self->phy_power_pin >= 0) {
+        mp_hal_pin_output(self->phy_power_pin);
+        mp_hal_pin_write(self->phy_power_pin, 1);
+        // let the power settle
+        mp_hal_delay_ms(100);
     }
+    #if CONFIG_ETH_USE_SPI_ETHERNET
+    spi_device_interface_config_t devcfg = {
+        .mode = 0,
+        .clock_speed_hz = MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ * 1000 * 1000,
+        .queue_size = 20,
+        .spics_io_num = self->phy_cs_pin,
+        .command_bits = 0, // Can both be set to 0, as the respective
+        .address_bits = 0, // driver fills in proper default values.
+    };
     #endif
 
     switch (args[ARG_phy_type].u_int) {
@@ -236,7 +225,8 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #if CONFIG_ETH_USE_SPI_ETHERNET
         #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
         case PHY_KSZ8851SNL: {
-            eth_ksz8851snl_config_t chip_config = ETH_KSZ8851SNL_DEFAULT_CONFIG(spi_handle);
+            spi_host_device_t host = machine_hw_spi_get_host(args[ARG_spi].u_obj);
+            eth_ksz8851snl_config_t chip_config = ETH_KSZ8851SNL_DEFAULT_CONFIG(host, &devcfg);
             chip_config.int_gpio_num = self->phy_int_pin;
             mac = esp_eth_mac_new_ksz8851snl(&chip_config, &mac_config);
             self->phy = esp_eth_phy_new_ksz8851snl(&phy_config);
@@ -245,7 +235,8 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #endif
         #if CONFIG_ETH_SPI_ETHERNET_DM9051
         case PHY_DM9051: {
-            eth_dm9051_config_t chip_config = ETH_DM9051_DEFAULT_CONFIG(spi_handle);
+            spi_host_device_t host = machine_hw_spi_get_host(args[ARG_spi].u_obj);
+            eth_dm9051_config_t chip_config = ETH_DM9051_DEFAULT_CONFIG(host, &devcfg);
             chip_config.int_gpio_num = self->phy_int_pin;
             mac = esp_eth_mac_new_dm9051(&chip_config, &mac_config);
             self->phy = esp_eth_phy_new_dm9051(&phy_config);
@@ -254,7 +245,8 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #endif
         #if CONFIG_ETH_SPI_ETHERNET_W5500
         case PHY_W5500: {
-            eth_w5500_config_t chip_config = ETH_W5500_DEFAULT_CONFIG(spi_handle);
+            spi_host_device_t host = machine_hw_spi_get_host(args[ARG_spi].u_obj);
+            eth_w5500_config_t chip_config = ETH_W5500_DEFAULT_CONFIG(host, &devcfg);
             chip_config.int_gpio_num = self->phy_int_pin;
             mac = esp_eth_mac_new_w5500(&chip_config, &mac_config);
             self->phy = esp_eth_phy_new_w5500(&phy_config);
@@ -316,11 +308,12 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(esp_network_get_lan_obj, 0, get_lan);
 
-STATIC mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
     lan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (n_args > 1) {
         if (mp_obj_is_true(args[1])) {
+            esp_netif_set_hostname(self->base.netif, mod_network_hostname_data);
             self->base.active = (esp_eth_start(self->eth_handle) == ESP_OK);
             if (!self->base.active) {
                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet enable failed"));
@@ -335,20 +328,20 @@ STATIC mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
 
     return mp_obj_new_bool(self->base.active);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lan_active_obj, 1, 2, lan_active);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lan_active_obj, 1, 2, lan_active);
 
-STATIC mp_obj_t lan_status(mp_obj_t self_in) {
+static mp_obj_t lan_status(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(eth_status);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(lan_status_obj, lan_status);
+static MP_DEFINE_CONST_FUN_OBJ_1(lan_status_obj, lan_status);
 
-STATIC mp_obj_t lan_isconnected(mp_obj_t self_in) {
+static mp_obj_t lan_isconnected(mp_obj_t self_in) {
     lan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return self->base.active ? mp_obj_new_bool(self->phy->get_link(self->phy) == ETH_LINK_UP) : mp_const_false;
+    return mp_obj_new_bool(self->base.active && (eth_status == ETH_GOT_IP));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(lan_isconnected_obj, lan_isconnected);
+static MP_DEFINE_CONST_FUN_OBJ_1(lan_isconnected_obj, lan_isconnected);
 
-STATIC mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+static mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
         mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
     }
@@ -403,9 +396,9 @@ STATIC mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 
     return val;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(lan_config_obj, 1, lan_config);
+static MP_DEFINE_CONST_FUN_OBJ_KW(lan_config_obj, 1, lan_config);
 
-STATIC const mp_rom_map_elem_t lan_if_locals_dict_table[] = {
+static const mp_rom_map_elem_t lan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&lan_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&lan_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&lan_status_obj) },
@@ -413,7 +406,7 @@ STATIC const mp_rom_map_elem_t lan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_network_ifconfig_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(lan_if_locals_dict, lan_if_locals_dict_table);
+static MP_DEFINE_CONST_DICT(lan_if_locals_dict, lan_if_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     lan_if_type,

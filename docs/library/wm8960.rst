@@ -251,7 +251,7 @@ controlling its operation:
 
 .. method:: WM8960.expand_3d(level)
 
-    Enable Stereo 3D exansion.  *level* is a number between 0 and 15.
+    Enable Stereo 3D expansion.  *level* is a number between 0 and 15.
     A value of 0 disables the expansion.
 
 .. method:: WM8960.mono(active)

@@ -1,9 +1,13 @@
 // Options to control how MicroPython is built for this port,
 // overriding defaults in py/mpconfig.h.
 
+// This needs to be defined before any ESP SDK headers are included.
+#define USE_US_TIMER 1
+
 // Board-specific definitions
 #include "mpconfigboard.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 
 // Set the rom feature level.
@@ -61,16 +65,27 @@
 #define MICROPY_PY_LWIP             (1)
 #define MICROPY_PY_LWIP_SOCK_RAW    (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/esp8266/modmachine.c"
+#define MICROPY_PY_MACHINE_RESET    (1)
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
+#define MICROPY_PY_MACHINE_ADC      (1)
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/esp8266/machine_adc.c"
+#define MICROPY_PY_MACHINE_ADC_READ (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM (1)
+#define MICROPY_PY_MACHINE_DHT_READINTO (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PWM      (1)
 #define MICROPY_PY_MACHINE_PWM_DUTY (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/esp8266/machine_pwm.c"
-#define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_SOFTI2C  (1)
 #define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_MACHINE_SOFTSPI  (1)
+#define MICROPY_PY_MACHINE_UART     (1)
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/esp8266/machine_uart.c"
+#define MICROPY_PY_MACHINE_WDT      (1)
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE "ports/esp8266/machine_wdt.c"
 #define MICROPY_PY_NETWORK (1)
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp8266"
@@ -103,20 +118,29 @@
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_ESP8266_APA102         (1)
 
-#define MICROPY_EVENT_POLL_HOOK {ets_event_poll();}
+// No blocking wait-for-event on ESP8266, only non-blocking pump of the "OS" event
+// loop
+//
+// TODO: When TIMEOUT_MS==-1, it may be possible to have MICROPY_INTERNAL_WFE() call the "waiti" instruction.
+// See mp_machine_idle() and mp_machine_lightsleep() in esp8266/modmachine.c
+//
+// Note: We have to scope the declaration of ets_loop_iter() here as there are multiple incompatible
+// definitions at compile time between the SDK and axTLS!
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS)
+#define MICROPY_INTERNAL_EVENT_HOOK \
+    do { \
+        extern bool ets_loop_iter(void); \
+        ets_loop_iter(); \
+    } while (0)
+
 #define MICROPY_VM_HOOK_COUNT (10)
 #define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
 #define MICROPY_VM_HOOK_POLL if (--vm_hook_divisor == 0) { \
         vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
-        extern void ets_loop_iter(void); \
-        ets_loop_iter(); \
+        MICROPY_INTERNAL_EVENT_HOOK; \
 }
 #define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
 #define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
-
-#include "xtirq.h"
-#define MICROPY_BEGIN_ATOMIC_SECTION() disable_irq()
-#define MICROPY_END_ATOMIC_SECTION(state) enable_irq(state)
 
 // type definitions for the specific machine
 

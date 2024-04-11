@@ -49,6 +49,11 @@
 #endif
 #define USBD_DEBUG_LEVEL                      0
 
+// Whether the core USBD driver passes through vendor device requests to the class implementation.
+#ifndef USBD_ENABLE_VENDOR_DEVICE_REQUESTS
+#define USBD_ENABLE_VENDOR_DEVICE_REQUESTS    (0)
+#endif
+
 // For MCUs with a device-only USB peripheral
 #define USBD_PMA_RESERVE                      (64)
 #define USBD_PMA_NUM_FIFO                     (16) // Maximum 8 endpoints, 2 FIFOs each

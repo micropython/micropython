@@ -27,6 +27,17 @@
 #include "sleep.h"
 #include "ports/unix/mphalport.h"
 
+// Don't use the unix version of this macro.
+#undef MICROPY_INTERNAL_WFE
+
+#if MICROPY_ENABLE_SCHEDULER
+// Use minimum 1mSec sleep to make sure there is effectively a wait period:
+// something like usleep(500) truncates and ends up calling Sleep(0).
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) msec_sleep(MAX(1.0, (double)(TIMEOUT_MS)))
+#else
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) /* No-op */
+#endif
+
 #define MICROPY_HAL_HAS_VT100 (0)
 
 void mp_hal_move_cursor_back(unsigned int pos);

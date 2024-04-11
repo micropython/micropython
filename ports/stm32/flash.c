@@ -29,7 +29,17 @@
 #include "py/mphal.h"
 #include "flash.h"
 
-#if defined(STM32G0)
+#if defined(STM32F0)
+
+#define FLASH_FLAG_ALL_ERRORS (FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGERR)
+
+#elif defined(STM32F4)
+
+#define FLASH_FLAG_ALL_ERRORS (FLASH_FLAG_EOP | FLASH_FLAG_OPERR \
+    | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR)
+
+#elif defined(STM32G0)
+
 // These are not defined on the CMSIS header
 #define FLASH_FLAG_SR_ERRORS      (FLASH_FLAG_OPERR | FLASH_FLAG_PROGERR | FLASH_FLAG_WRPERR | \
     FLASH_FLAG_PGAERR | FLASH_FLAG_SIZERR | FLASH_FLAG_PGSERR | \
@@ -41,6 +51,15 @@
 #define FLASH_FLAG_ECCR_ERRORS    (FLASH_FLAG_ECCC | FLASH_FLAG_ECCD)
 #endif
 #define FLASH_FLAG_ALL_ERRORS     (FLASH_FLAG_SR_ERRORS | FLASH_FLAG_ECCR_ERRORS)
+
+#elif defined(STM32H7)
+
+#define FLASH_FLAG_ALL_ERRORS (FLASH_FLAG_ALL_ERRORS_BANK1 | FLASH_FLAG_ALL_ERRORS_BANK2)
+
+#elif defined(STM32L0) || defined(STM32L1)
+
+#define FLASH_FLAG_ALL_ERRORS (FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR)
+
 #endif
 
 #if MICROPY_HW_STM32WB_FLASH_SYNCRONISATION
@@ -66,11 +85,14 @@ typedef struct {
 
 #if defined(STM32F0)
 
-static const flash_layout_t flash_layout[] = {
-    { FLASH_BASE, FLASH_PAGE_SIZE, (FLASH_BANK1_END + 1 - FLASH_BASE) / FLASH_PAGE_SIZE },
-};
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (1)
+#define FLASH_LAYOUT_START_ADDR     (FLASH_BASE)
+#define FLASH_LAYOUT_SECTOR_SIZE    (FLASH_PAGE_SIZE)
+#define FLASH_LAYOUT_NUM_SECTORS    ((FLASH_BANK1_END + 1 - FLASH_BASE) / FLASH_PAGE_SIZE)
 
 #elif defined(STM32F4)
+
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (0)
 
 static const flash_layout_t flash_layout[] = {
     { 0x08000000, 0x04000, 4 },
@@ -88,9 +110,7 @@ static const flash_layout_t flash_layout[] = {
 
 #elif defined(STM32F7)
 
-// FLASH_FLAG_PGSERR (Programming Sequence Error) was renamed to
-// FLASH_FLAG_ERSERR (Erasing Sequence Error) in STM32F7
-#define FLASH_FLAG_PGSERR FLASH_FLAG_ERSERR
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (0)
 
 #if defined(STM32F722xx) || defined(STM32F723xx) || defined(STM32F732xx) || defined(STM32F733xx)
 static const flash_layout_t flash_layout[] = {
@@ -113,37 +133,46 @@ static const flash_layout_t flash_layout[] = {
 
 #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 
-static const flash_layout_t flash_layout[] = {
-    { (uint32_t)FLASH_BASE, (uint32_t)FLASH_PAGE_SIZE, 512 },
-};
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (1)
+#define FLASH_LAYOUT_START_ADDR     (FLASH_BASE)
+#define FLASH_LAYOUT_SECTOR_SIZE    (FLASH_PAGE_SIZE)
+#define FLASH_LAYOUT_NUM_SECTORS    (512)
 
 #elif defined(STM32L1)
 
-static const flash_layout_t flash_layout[] = {
-    { (uint32_t)FLASH_BASE, 0x200, 1024 },
-};
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (1)
+#define FLASH_LAYOUT_START_ADDR     (FLASH_BASE)
+#define FLASH_LAYOUT_SECTOR_SIZE    (0x200)
+#define FLASH_LAYOUT_NUM_SECTORS    (1024)
 
 #elif defined(STM32H5)
 
-static const flash_layout_t flash_layout[] = {
-    { 0x08000000, 8192, 256 },
-};
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (1)
+#define FLASH_LAYOUT_START_ADDR     (FLASH_BASE_NS)
+#define FLASH_LAYOUT_SECTOR_SIZE    (0x2000)
+#define FLASH_LAYOUT_NUM_SECTORS    (256)
 
 #elif defined(STM32H7)
 
-static const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x20000, 16 },
-};
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (1)
+#define FLASH_LAYOUT_START_ADDR     (FLASH_BASE)
+#define FLASH_LAYOUT_SECTOR_SIZE    (0x20000)
+#define FLASH_LAYOUT_NUM_SECTORS    (16)
 
 #else
 #error Unsupported processor
 #endif
 
-#if defined(STM32H723xx) || defined(STM32H750xx)
+#if defined(STM32H7) && !defined(DUAL_BANK)
 
 // get the bank of a given flash address
 static uint32_t get_bank(uint32_t addr) {
     return FLASH_BANK_1;
+}
+
+// get the page of a given flash address
+static uint32_t get_page(uint32_t addr) {
+    return (addr - FLASH_LAYOUT_START_ADDR) / FLASH_LAYOUT_SECTOR_SIZE;
 }
 
 #elif (defined(STM32L4) && defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32H5) || defined(STM32H7)
@@ -156,14 +185,14 @@ static uint32_t get_bank(uint32_t addr) {
     if (READ_BIT(SYSCFG->MEMRMP, SYSCFG_MEMRMP_FB_MODE) == 0) {
         #endif
         // no bank swap
-        if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+        if (addr < (FLASH_LAYOUT_START_ADDR + FLASH_BANK_SIZE)) {
             return FLASH_BANK_1;
         } else {
             return FLASH_BANK_2;
         }
     } else {
         // bank swap
-        if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+        if (addr < (FLASH_LAYOUT_START_ADDR + FLASH_BANK_SIZE)) {
             return FLASH_BANK_2;
         } else {
             return FLASH_BANK_1;
@@ -171,34 +200,32 @@ static uint32_t get_bank(uint32_t addr) {
     }
 }
 
-#if (defined(STM32L4) && defined(SYSCFG_MEMRMP_FB_MODE))
 // get the page of a given flash address
 static uint32_t get_page(uint32_t addr) {
-    if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+    if (addr < (FLASH_LAYOUT_START_ADDR + FLASH_BANK_SIZE)) {
         // bank 1
-        return (addr - FLASH_BASE) / FLASH_PAGE_SIZE;
+        return (addr - FLASH_LAYOUT_START_ADDR) / FLASH_LAYOUT_SECTOR_SIZE;
     } else {
         // bank 2
-        return (addr - (FLASH_BASE + FLASH_BANK_SIZE)) / FLASH_PAGE_SIZE;
+        return (addr - (FLASH_LAYOUT_START_ADDR + FLASH_BANK_SIZE)) / FLASH_LAYOUT_SECTOR_SIZE;
     }
 }
-#endif
 
 #elif (defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32WB) || defined(STM32WL)
 
 static uint32_t get_page(uint32_t addr) {
-    return (addr - FLASH_BASE) / FLASH_PAGE_SIZE;
+    return (addr - FLASH_LAYOUT_START_ADDR) / FLASH_LAYOUT_SECTOR_SIZE;
 }
 
 #elif defined(STM32G0) || defined(STM32G4)
 
 static uint32_t get_page(uint32_t addr) {
-    return (addr - FLASH_BASE) / FLASH_PAGE_SIZE;
+    return (addr - FLASH_LAYOUT_START_ADDR) / FLASH_LAYOUT_SECTOR_SIZE;
 }
 
 static uint32_t get_bank(uint32_t addr) {
     // no bank swap
-    if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+    if (addr < (FLASH_LAYOUT_START_ADDR + FLASH_BANK_SIZE)) {
         return FLASH_BANK_1;
     } else {
         #if defined(FLASH_OPTR_DBANK)
@@ -212,13 +239,33 @@ static uint32_t get_bank(uint32_t addr) {
 #endif
 
 bool flash_is_valid_addr(uint32_t addr) {
+    #if FLASH_LAYOUT_IS_HOMOGENEOUS
+    uint32_t base = FLASH_LAYOUT_START_ADDR;
+    uint32_t end_of_flash = FLASH_LAYOUT_START_ADDR + FLASH_LAYOUT_NUM_SECTORS * FLASH_LAYOUT_SECTOR_SIZE;
+    #else
+    uint32_t base = flash_layout[0].base_address;
     uint8_t last = MP_ARRAY_SIZE(flash_layout) - 1;
     uint32_t end_of_flash = flash_layout[last].base_address +
         flash_layout[last].sector_count * flash_layout[last].sector_size;
-    return flash_layout[0].base_address <= addr && addr < end_of_flash;
+    #endif
+    return base <= addr && addr < end_of_flash;
 }
 
 int32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
+    #if FLASH_LAYOUT_IS_HOMOGENEOUS
+    if (addr >= FLASH_LAYOUT_START_ADDR) {
+        uint32_t sector_index = (addr - FLASH_LAYOUT_START_ADDR) / FLASH_LAYOUT_SECTOR_SIZE;
+        if (sector_index < FLASH_LAYOUT_NUM_SECTORS) {
+            if (start_addr != NULL) {
+                *start_addr = FLASH_LAYOUT_START_ADDR + sector_index * FLASH_LAYOUT_SECTOR_SIZE;
+            }
+            if (size != NULL) {
+                *size = FLASH_LAYOUT_SECTOR_SIZE;
+            }
+            return sector_index;
+        }
+    }
+    #else
     if (addr >= flash_layout[0].base_address) {
         uint32_t sector_index = 0;
         for (int i = 0; i < MP_ARRAY_SIZE(flash_layout); ++i) {
@@ -239,14 +286,14 @@ int32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *siz
             }
         }
     }
+    #endif
     return -1;
 }
 
-int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
-    // check there is something to write
-    if (num_word32 == 0) {
-        return 0;
-    }
+// Erase a single flash page which starts at the given address.
+// The address will be converted to a bank and sector number.
+int flash_erase(uint32_t flash_dest) {
+    const unsigned int num_sectors = 1;
 
     #if MICROPY_HW_STM32WB_FLASH_SYNCRONISATION
     // Acquire lock on the flash peripheral.
@@ -269,66 +316,48 @@ int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     }
     #endif
 
-    // Clear pending flags (if any) and set up EraseInitStruct.
+    // Clear pending flags (if any).
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
 
+    // Set up EraseInitStruct...
     FLASH_EraseInitTypeDef EraseInitStruct;
-    #if defined(STM32F0)
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGERR);
-    EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
-    EraseInitStruct.PageAddress = flash_dest;
-    EraseInitStruct.NbPages = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
-    #elif defined(STM32G0) || defined(STM32G4)
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
-    EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
-    EraseInitStruct.Page = get_page(flash_dest);
-    EraseInitStruct.Banks = get_bank(flash_dest);
-    EraseInitStruct.NbPages = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
-    #elif defined(STM32L0) || defined(STM32L1)
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR);
-    EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
-    EraseInitStruct.PageAddress = flash_dest;
-    EraseInitStruct.NbPages = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
-    #elif (defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32WB) || defined(STM32WL)
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
-    EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
-    EraseInitStruct.Page = get_page(flash_dest);
-    EraseInitStruct.NbPages = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
-    #elif defined(STM32L4)
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
-    // The sector returned by flash_get_sector_info can not be used
-    // as the flash has on each bank 0/1 pages 0..255
-    EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
-    EraseInitStruct.Banks = get_bank(flash_dest);
-    EraseInitStruct.Page = get_page(flash_dest);
-    EraseInitStruct.NbPages = get_page(flash_dest + 4 * num_word32 - 1) - EraseInitStruct.Page + 1;
-    #else
 
-    #if defined(STM32H5)
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
-    #elif defined(STM32H7)
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS_BANK1 | FLASH_FLAG_ALL_ERRORS_BANK2);
-    #elif defined(STM32L1)
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR);
-    #else
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
-        FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
-    #endif
+    // ... the erase type and number of pages/sectors,
+    #if defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32L0) \
+    || defined(STM32L1) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+
+    EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
+    EraseInitStruct.NbPages = num_sectors;
+
+    #elif defined(STM32F4) || defined(STM32F7) || defined(STM32H5) || defined(STM32H7)
 
     EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
+    EraseInitStruct.NbSectors = num_sectors;
     #if defined(FLASH_CR_PSIZE)
     EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
     #elif !defined(STM32H5)
     EraseInitStruct.VoltageRange = 0; // unused parameter on STM32H7A3/B3
     #endif
-    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7)
-    EraseInitStruct.Banks = get_bank(flash_dest);
-    #endif
-    EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
-    EraseInitStruct.NbSectors = flash_get_sector_info(flash_dest + 4 * num_word32 - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
-    #if defined(STM32H5)
-    EraseInitStruct.Sector &= 0x7f; // second bank should start counting at 0
+
+    #else
+    #error Unsupported processor
     #endif
 
+    // ... and the flash bank and page/sector.
+    #if defined(STM32F0) || defined(STM32L0) || defined(STM32L1)
+    EraseInitStruct.PageAddress = flash_dest;
+    #elif defined(STM32G0) || defined(STM32G4) || (defined(STM32L4) && defined(SYSCFG_MEMRMP_FB_MODE))
+    EraseInitStruct.Page = get_page(flash_dest);
+    EraseInitStruct.Banks = get_bank(flash_dest);
+    #elif (defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32WB) || defined(STM32WL)
+    EraseInitStruct.Page = get_page(flash_dest);
+    #elif defined(STM32F4) || defined(STM32F7)
+    EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
+    #elif defined(STM32H5) || defined(STM32H7)
+    EraseInitStruct.Banks = get_bank(flash_dest);
+    EraseInitStruct.Sector = get_page(flash_dest);
+    #else
+    #error Unsupported processor
     #endif
 
     // Erase the sectors.
@@ -354,35 +383,6 @@ int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
 
     return mp_hal_status_to_neg_errno(status);
 }
-
-/*
-// erase the sector using an interrupt
-void flash_erase_it(uint32_t flash_dest, uint32_t num_word32) {
-    // check there is something to write
-    if (num_word32 == 0) {
-        return;
-    }
-
-    // unlock
-    HAL_FLASH_Unlock();
-
-    // Clear pending flags (if any)
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
-                           FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR);
-
-    // erase the sector(s)
-    FLASH_EraseInitTypeDef EraseInitStruct;
-    EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
-    EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
-    EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
-    EraseInitStruct.NbSectors = flash_get_sector_info(flash_dest + 4 * num_word32 - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
-    if (HAL_FLASHEx_Erase_IT(&EraseInitStruct) != HAL_OK) {
-        // error occurred during sector erase
-        HAL_FLASH_Lock(); // lock the flash
-        return;
-    }
-}
-*/
 
 int flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
     #if MICROPY_HW_STM32WB_FLASH_SYNCRONISATION
@@ -498,47 +498,3 @@ int flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
 
     return mp_hal_status_to_neg_errno(status);
 }
-
-/*
- use erase, then write
-void flash_erase_and_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
-    // check there is something to write
-    if (num_word32 == 0) {
-        return;
-    }
-
-    // unlock
-    HAL_FLASH_Unlock();
-
-    // Clear pending flags (if any)
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
-                           FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR);
-
-    // erase the sector(s)
-    FLASH_EraseInitTypeDef EraseInitStruct;
-    EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
-    EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
-    EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
-    EraseInitStruct.NbSectors = flash_get_sector_info(flash_dest + 4 * num_word32 - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
-    uint32_t SectorError = 0;
-    if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
-        // error occurred during sector erase
-        HAL_FLASH_Lock(); // lock the flash
-        return;
-    }
-
-    // program the flash word by word
-    for (int i = 0; i < num_word32; i++) {
-        if (HAL_FLASH_Program(TYPEPROGRAM_WORD, flash_dest, *src) != HAL_OK) {
-            // error occurred during flash write
-            HAL_FLASH_Lock(); // lock the flash
-            return;
-        }
-        flash_dest += 4;
-        src += 1;
-    }
-
-    // lock the flash
-    HAL_FLASH_Lock();
-}
-*/

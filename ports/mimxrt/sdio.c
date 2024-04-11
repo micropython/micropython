@@ -38,8 +38,14 @@
 #if MICROPY_HW_SDIO_SDMMC == 1
 #define SDMMC                       USDHC1
 #define SDMMC_IRQn                  USDHC1_IRQn
+#ifdef MIMXRT117x_SERIES
+#define SDMMC_CLOCK_MUX             kCLOCK_USDHC1_ClockRoot_MuxSysPll2Pfd2
+#define SDMMC_CLOCK_ROOT            kCLOCK_Root_Usdhc1
+#else
 #define SDMMC_CLOCK_DIV             kCLOCK_Usdhc1Div
 #define SDMMC_CLOCK_MUX             kCLOCK_Usdhc1Mux
+#define SDMMC_CLOCK_ROOT            kCLOCK_Usdhc1ClkRoot
+#endif
 #ifndef MICROPY_HW_SDIO_CLK_ALT
 #define MICROPY_HW_SDIO_CMD_ALT     (0)
 #define MICROPY_HW_SDIO_CLK_ALT     (0)
@@ -51,8 +57,14 @@
 #else
 #define SDMMC                       USDHC2
 #define SDMMC_IRQn                  USDHC2_IRQn
+#ifdef MIMXRT117x_SERIES
+#define SDMMC_CLOCK_MUX             kCLOCK_USDHC2_ClockRoot_MuxSysPll2Pfd2
+#define SDMMC_CLOCK_ROOT            kCLOCK_Root_Usdhc2
+#else
 #define SDMMC_CLOCK_DIV             kCLOCK_Usdhc2Div
 #define SDMMC_CLOCK_MUX             kCLOCK_Usdhc2Mux
+#define SDMMC_CLOCK_ROOT            kCLOCK_Usdhc2ClkRoot
+#endif
 #ifndef MICROPY_HW_SDIO_CLK_ALT
 #define MICROPY_HW_SDIO_CMD_ALT     (6)
 #define MICROPY_HW_SDIO_CLK_ALT     (6)
@@ -95,7 +107,11 @@ typedef enum {
 } sdio_xfer_flags_t;
 
 static uint32_t sdio_base_clk(void) {
-    return CLOCK_GetSysPfdFreq(kCLOCK_Pfd0) / (CLOCK_GetDiv(kCLOCK_Usdhc1Div) + 1U);
+    #ifdef MIMXRT117x_SERIES
+    return CLOCK_GetRootClockFreq(SDMMC_CLOCK_ROOT);
+    #else
+    return CLOCK_GetClockRootFreq(SDMMC_CLOCK_ROOT);
+    #endif
 }
 
 static uint32_t sdio_response_type(uint32_t cmd) {
@@ -144,19 +160,30 @@ void sdio_init(uint32_t irq_pri) {
     machine_pin_config(MICROPY_HW_SDIO_D2, PIN_MODE_ALT, PIN_PULL_UP_100K, PIN_DRIVE_6, 0, MICROPY_HW_SDIO_D2_ALT);
     machine_pin_config(MICROPY_HW_SDIO_D3, PIN_MODE_ALT, PIN_PULL_UP_100K, PIN_DRIVE_6, 0, MICROPY_HW_SDIO_D3_ALT);
 
+    #ifdef MIMXRT117x_SERIES
+    CLOCK_InitPfd(kCLOCK_PllSys2, kCLOCK_Pfd2, 24);
+
+    clock_root_config_t rootCfg = { 0 };
+    rootCfg.mux = SDMMC_CLOCK_MUX;
+    rootCfg.div = 2;
+    CLOCK_SetRootClock(SDMMC_CLOCK_ROOT, &rootCfg);
+    #else
     // Configure PFD0 of PLL2 (system PLL) fractional divider to 24 resulting in:
     //  with PFD0_clk = PLL2_clk * 18 / N
     //       PFD0_clk = 528MHz   * 18 / 24 = 396MHz
     CLOCK_InitSysPfd(kCLOCK_Pfd0, 24U);
     CLOCK_SetDiv(SDMMC_CLOCK_DIV, 1U);  // USDHC_input_clk = PFD0_clk / 2
     CLOCK_SetMux(SDMMC_CLOCK_MUX, 1U);  // Select PFD0 as clock input for USDHC
+    #endif
 
     // Initialize USDHC
     const usdhc_config_t config = {
         .endianMode = kUSDHC_EndianModeLittle,
         .dataTimeout = 0xFU,
+        #ifndef MIMXRT117x_SERIES
         .readBurstLen = 0,
         .writeBurstLen = 0,
+        #endif
         .readWatermarkLevel = 128U,
         .writeWatermarkLevel = 128U,
     };

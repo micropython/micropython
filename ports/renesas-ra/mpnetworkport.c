@@ -67,8 +67,8 @@ void mod_network_lwip_init(void) {
         timer_started = false;
     }
     // Start poll timer.
-    soft_timer_static_init(&network_timer, SOFT_TIMER_MODE_PERIODIC, 128, network_timer_callback);
-    soft_timer_reinsert(&network_timer, 128);
+    soft_timer_static_init(&network_timer, SOFT_TIMER_MODE_PERIODIC, 50, network_timer_callback);
+    soft_timer_reinsert(&network_timer, 50);
     timer_started = true;
 }
 #endif // MICROPY_PY_LWIP

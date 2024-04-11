@@ -86,7 +86,7 @@ void USBD_SetVIDPIDRelease(usbd_cdc_msc_hid_state_t *usbd, uint16_t vid, uint16_
   * @param  length: Pointer to data length variable
   * @retval Pointer to descriptor buffer
   */
-STATIC uint8_t *USBD_DeviceDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
+static uint8_t *USBD_DeviceDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
     uint8_t *dev_desc = ((usbd_cdc_msc_hid_state_t *)pdev->pClassData)->usbd_device_desc;
     *length = USB_LEN_DEV_DESC;
     return dev_desc;
@@ -98,7 +98,7 @@ STATIC uint8_t *USBD_DeviceDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length
   * @param  length: Pointer to data length variable
   * @retval Pointer to descriptor buffer, or NULL if idx is invalid
   */
-STATIC uint8_t *USBD_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, uint16_t *length) {
+static uint8_t *USBD_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, uint16_t *length) {
     char str_buf[16];
     const char *str = NULL;
 

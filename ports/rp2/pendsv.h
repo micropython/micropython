@@ -29,9 +29,7 @@
 #include <stddef.h>
 
 enum {
-    #if MICROPY_PY_LWIP
-    PENDSV_DISPATCH_LWIP,
-    #endif
+    PENDSV_DISPATCH_SOFT_TIMER,
     #if MICROPY_PY_NETWORK_CYW43
     PENDSV_DISPATCH_CYW43,
     #endif

@@ -38,10 +38,10 @@ mp_obj_full_type_t re_type;
 #include "extmod/modre.c"
 
 mp_map_elem_t match_locals_dict_table[5];
-STATIC MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);
+static MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);
 
 mp_map_elem_t re_locals_dict_table[3];
-STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
+static MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
 
 mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
     MP_DYNRUNTIME_INIT_ENTRY

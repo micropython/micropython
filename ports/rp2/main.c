@@ -37,7 +37,8 @@
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
-#include "tusb.h"
+#include "shared/runtime/softtimer.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "uart.h"
 #include "modmachine.h"
 #include "modrp2.h"
@@ -72,6 +73,9 @@ bi_decl(bi_program_feature_group_with_flags(BINARY_INFO_TAG_MICROPYTHON,
     BI_NAMED_GROUP_SEPARATE_COMMAS | BI_NAMED_GROUP_SORT_ALPHA));
 
 int main(int argc, char **argv) {
+    // This is a tickless port, interrupts should always trigger SEV.
+    SCB->SCR |= SCB_SCR_SEVONPEND_Msk;
+
     #if MICROPY_HW_ENABLE_UART_REPL
     bi_decl(bi_program_feature("UART REPL"))
     setup_default_uart();
@@ -82,11 +86,8 @@ int main(int argc, char **argv) {
     #endif
     #endif
 
-    #if MICROPY_HW_ENABLE_USBDEV
-    #if MICROPY_HW_USB_CDC
+    #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
     bi_decl(bi_program_feature("USB REPL"))
-    #endif
-    tusb_init();
     #endif
 
     #if MICROPY_PY_THREAD
@@ -106,6 +107,7 @@ int main(int argc, char **argv) {
     };
     rtc_init();
     rtc_set_datetime(&t);
+    mp_hal_time_ns_set_from_rtc();
 
     // Initialise stack extents and GC heap.
     mp_stack_set_top(&__StackTop);
@@ -154,6 +156,7 @@ int main(int argc, char **argv) {
         readline_init0();
         machine_pin_init();
         rp2_pio_init();
+        rp2_dma_init();
         machine_i2s_init0();
 
         #if MICROPY_PY_BLUETOOTH
@@ -175,10 +178,15 @@ int main(int argc, char **argv) {
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");
+
+        #if MICROPY_HW_ENABLE_USBDEV
+        mp_usbd_init();
+        #endif
+
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
             ret = pyexec_file_if_exists("main.py");
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;
@@ -202,6 +210,7 @@ int main(int argc, char **argv) {
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
         #endif
+        rp2_dma_deinit();
         rp2_pio_deinit();
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_deinit();
@@ -211,6 +220,11 @@ int main(int argc, char **argv) {
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
         #endif
+        soft_timer_deinit();
+        #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+        mp_usbd_deinit();
+        #endif
+
         gc_sweep_all();
         mp_deinit();
     }

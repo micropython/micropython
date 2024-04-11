@@ -39,6 +39,10 @@ void abort_(void) {
     nlr_raise(mp_obj_new_exception(mp_load_global(MP_QSTR_RuntimeError)));
 }
 
+int puts(const char *s) {
+    return mp_printf(&mp_plat_print, "%s\n", s);
+}
+
 int native_errno;
 #if defined(__linux__)
 int *__errno_location (void)
@@ -100,9 +104,9 @@ mp_getiter_iternext_custom_t btree_getiter_iternext;
 #include "extmod/modbtree.c"
 
 mp_map_elem_t btree_locals_dict_table[8];
-STATIC MP_DEFINE_CONST_DICT(btree_locals_dict, btree_locals_dict_table);
+static MP_DEFINE_CONST_DICT(btree_locals_dict, btree_locals_dict_table);
 
-STATIC mp_obj_t btree_open(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t btree_open(size_t n_args, const mp_obj_t *args) {
     // Make sure we got a stream object
     mp_get_stream_raise(args[0], MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
 
@@ -118,7 +122,7 @@ STATIC mp_obj_t btree_open(size_t n_args, const mp_obj_t *args) {
 
     return MP_OBJ_FROM_PTR(btree_new(db, args[0]));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_open_obj, 5, 5, btree_open);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_open_obj, 5, 5, btree_open);
 
 mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
     MP_DYNRUNTIME_INIT_ENTRY

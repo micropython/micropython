@@ -24,16 +24,26 @@ def th(base, n):
 
 
 lock = _thread.allocate_lock()
-n_thread = 4
+n_thread = 0
+n_thread_max = 4
 n_finished = 0
 n_qstr_per_thread = 100  # make 1000 for a more stressful test (uses more heap)
 
 # spawn threads
-for i in range(n_thread):
-    _thread.start_new_thread(th, (i * n_qstr_per_thread, n_qstr_per_thread))
+for _ in range(n_thread_max):
+    try:
+        _thread.start_new_thread(th, (n_thread * n_qstr_per_thread, n_qstr_per_thread))
+        n_thread += 1
+    except OSError:
+        # System cannot create a new thead, so stop trying to create them.
+        break
+
+# also run the function on this main thread
+th(n_thread * n_qstr_per_thread, n_qstr_per_thread)
+n_thread += 1
 
 # wait for threads to finish
 while n_finished < n_thread:
-    time.sleep(1)
+    time.sleep(0)
 
 print("pass")

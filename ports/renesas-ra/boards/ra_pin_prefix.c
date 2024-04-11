@@ -4,21 +4,22 @@
 
 #include "py/obj.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "pin.h"
 
-#define PIN_AD(p_name, p_pin, ad_bit, ad_channel) \
+#define PIN_ADC(p_name, p_pin, adc_bits, adc_channel) \
     { \
         { &machine_pin_type }, \
         .name = MP_QSTR_##p_name, \
         .pin = p_pin, \
-        .bit = ad_bit, \
-        .channel = ad_channel \
+        .bit = adc_bits, \
+        .channel = adc_channel \
     }
 
-#define PIN(p_name, p_pin, p_ad) \
+#define PIN(p_name, p_pin, p_adc) \
     { \
         { &machine_pin_type }, \
         .name = MP_QSTR_##p_name, \
         .pin = p_pin, \
-        .ad = p_ad, \
+        .ad = p_adc, \
     }

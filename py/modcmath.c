@@ -31,15 +31,15 @@
 #include <math.h>
 
 // phase(z): returns the phase of the number z in the range (-pi, +pi]
-STATIC mp_obj_t mp_cmath_phase(mp_obj_t z_obj) {
+static mp_obj_t mp_cmath_phase(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
     return mp_obj_new_float(MICROPY_FLOAT_C_FUN(atan2)(imag, real));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_phase_obj, mp_cmath_phase);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_phase_obj, mp_cmath_phase);
 
 // polar(z): returns the polar form of z as a tuple
-STATIC mp_obj_t mp_cmath_polar(mp_obj_t z_obj) {
+static mp_obj_t mp_cmath_polar(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
     mp_obj_t tuple[2] = {
@@ -48,71 +48,71 @@ STATIC mp_obj_t mp_cmath_polar(mp_obj_t z_obj) {
     };
     return mp_obj_new_tuple(2, tuple);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_polar_obj, mp_cmath_polar);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_polar_obj, mp_cmath_polar);
 
 // rect(r, phi): returns the complex number with modulus r and phase phi
-STATIC mp_obj_t mp_cmath_rect(mp_obj_t r_obj, mp_obj_t phi_obj) {
+static mp_obj_t mp_cmath_rect(mp_obj_t r_obj, mp_obj_t phi_obj) {
     mp_float_t r = mp_obj_get_float(r_obj);
     mp_float_t phi = mp_obj_get_float(phi_obj);
     return mp_obj_new_complex(r * MICROPY_FLOAT_C_FUN(cos)(phi), r * MICROPY_FLOAT_C_FUN(sin)(phi));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_cmath_rect_obj, mp_cmath_rect);
+static MP_DEFINE_CONST_FUN_OBJ_2(mp_cmath_rect_obj, mp_cmath_rect);
 
 // exp(z): return the exponential of z
-STATIC mp_obj_t mp_cmath_exp(mp_obj_t z_obj) {
+static mp_obj_t mp_cmath_exp(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
     mp_float_t exp_real = MICROPY_FLOAT_C_FUN(exp)(real);
     return mp_obj_new_complex(exp_real * MICROPY_FLOAT_C_FUN(cos)(imag), exp_real * MICROPY_FLOAT_C_FUN(sin)(imag));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_exp_obj, mp_cmath_exp);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_exp_obj, mp_cmath_exp);
 
 // log(z): return the natural logarithm of z, with branch cut along the negative real axis
 // TODO can take second argument, being the base
-STATIC mp_obj_t mp_cmath_log(mp_obj_t z_obj) {
+static mp_obj_t mp_cmath_log(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
     return mp_obj_new_complex(MICROPY_FLOAT_CONST(0.5) * MICROPY_FLOAT_C_FUN(log)(real * real + imag * imag), MICROPY_FLOAT_C_FUN(atan2)(imag, real));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_log_obj, mp_cmath_log);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_log_obj, mp_cmath_log);
 
 #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 // log10(z): return the base-10 logarithm of z, with branch cut along the negative real axis
-STATIC mp_obj_t mp_cmath_log10(mp_obj_t z_obj) {
+static mp_obj_t mp_cmath_log10(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
     return mp_obj_new_complex(MICROPY_FLOAT_CONST(0.5) * MICROPY_FLOAT_C_FUN(log10)(real * real + imag * imag), MICROPY_FLOAT_CONST(0.4342944819032518) * MICROPY_FLOAT_C_FUN(atan2)(imag, real));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_log10_obj, mp_cmath_log10);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_log10_obj, mp_cmath_log10);
 #endif
 
 // sqrt(z): return the square-root of z
-STATIC mp_obj_t mp_cmath_sqrt(mp_obj_t z_obj) {
+static mp_obj_t mp_cmath_sqrt(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
     mp_float_t sqrt_abs = MICROPY_FLOAT_C_FUN(pow)(real * real + imag * imag, MICROPY_FLOAT_CONST(0.25));
     mp_float_t theta = MICROPY_FLOAT_CONST(0.5) * MICROPY_FLOAT_C_FUN(atan2)(imag, real);
     return mp_obj_new_complex(sqrt_abs * MICROPY_FLOAT_C_FUN(cos)(theta), sqrt_abs * MICROPY_FLOAT_C_FUN(sin)(theta));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_sqrt_obj, mp_cmath_sqrt);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_sqrt_obj, mp_cmath_sqrt);
 
 // cos(z): return the cosine of z
-STATIC mp_obj_t mp_cmath_cos(mp_obj_t z_obj) {
+static mp_obj_t mp_cmath_cos(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
     return mp_obj_new_complex(MICROPY_FLOAT_C_FUN(cos)(real) * MICROPY_FLOAT_C_FUN(cosh)(imag), -MICROPY_FLOAT_C_FUN(sin)(real) * MICROPY_FLOAT_C_FUN(sinh)(imag));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_cos_obj, mp_cmath_cos);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_cos_obj, mp_cmath_cos);
 
 // sin(z): return the sine of z
-STATIC mp_obj_t mp_cmath_sin(mp_obj_t z_obj) {
+static mp_obj_t mp_cmath_sin(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
     return mp_obj_new_complex(MICROPY_FLOAT_C_FUN(sin)(real) * MICROPY_FLOAT_C_FUN(cosh)(imag), MICROPY_FLOAT_C_FUN(cos)(real) * MICROPY_FLOAT_C_FUN(sinh)(imag));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_sin_obj, mp_cmath_sin);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_sin_obj, mp_cmath_sin);
 
-STATIC const mp_rom_map_elem_t mp_module_cmath_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_cmath_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cmath) },
     { MP_ROM_QSTR(MP_QSTR_e), mp_const_float_e },
     { MP_ROM_QSTR(MP_QSTR_pi), mp_const_float_pi },
@@ -142,7 +142,7 @@ STATIC const mp_rom_map_elem_t mp_module_cmath_globals_table[] = {
     // { MP_ROM_QSTR(MP_QSTR_isnan), MP_ROM_PTR(&mp_cmath_isnan_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_cmath_globals, mp_module_cmath_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_cmath_globals, mp_module_cmath_globals_table);
 
 const mp_obj_module_t mp_module_cmath = {
     .base = { &mp_type_module },

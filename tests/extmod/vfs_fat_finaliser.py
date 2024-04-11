@@ -1,9 +1,9 @@
 # Test VfsFat class and its finaliser
 
 try:
-    import errno, os
+    import errno, os, vfs
 
-    os.VfsFat
+    vfs.VfsFat
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -39,8 +39,8 @@ except MemoryError:
     raise SystemExit
 
 # Format block device and create VFS object
-os.VfsFat.mkfs(bdev)
-vfs = os.VfsFat(bdev)
+vfs.VfsFat.mkfs(bdev)
+fs = vfs.VfsFat(bdev)
 
 # Here we test that opening a file with the heap locked fails correctly.  This
 # is a special case because file objects use a finaliser and allocating with a
@@ -52,7 +52,7 @@ micropython.heap_lock()
 try:
     import errno, os
 
-    vfs.open("x", "r")
+    fs.open("x", "r")
 except MemoryError:
     print("MemoryError")
 micropython.heap_unlock()
@@ -64,7 +64,7 @@ import gc
 # in turn allocate new qstrs and/or a new qstr pool).
 f = None
 n = None
-names = ["x%d" % i for i in range(4)]
+names = ["x%d" % i for i in range(5)]
 
 # Do a large number of single-block allocations to move the GC head forwards,
 # ensuring that the files are allocated from never-before-used blocks and
@@ -74,12 +74,13 @@ for i in range(1024):
     []
 
 # Run the test: create files without closing them, run GC, then read back files.
+# Only read back N-1 files because the last one may not be finalised due to
+# references to it being left on the C stack.
 for n in names:
-    f = vfs.open(n, "w")
+    f = fs.open(n, "w")
     f.write(n)
     f = None  # release f without closing
-    sorted([0, 1, 2, 3], key=lambda x: x)  # use up Python and C stack so f is really gone
-gc.collect()  # should finalise all N files by closing them
-for n in names:
-    with vfs.open(n, "r") as f:
+gc.collect()  # should finalise at least the first N-1 files by closing them
+for n in names[:-1]:
+    with fs.open(n, "r") as f:
         print(f.read())

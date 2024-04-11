@@ -45,7 +45,7 @@
 #endif
 
 static struct flash_descriptor flash_desc;
-STATIC mp_int_t BLOCK_SIZE = VFS_BLOCK_SIZE_BYTES; // Board specific: mpconfigboard.h
+static mp_int_t BLOCK_SIZE = VFS_BLOCK_SIZE_BYTES; // Board specific: mpconfigboard.h
 extern const mp_obj_type_t samd_flash_type;
 
 typedef struct _samd_flash_obj_t {
@@ -57,7 +57,7 @@ typedef struct _samd_flash_obj_t {
 extern uint8_t _oflash_fs, _sflash_fs;
 
 // Build a Flash storage at top.
-STATIC samd_flash_obj_t samd_flash_obj = {
+static samd_flash_obj_t samd_flash_obj = {
     .base = { &samd_flash_type },
     .flash_base = (uint32_t)&_oflash_fs, // Get from MCU-Specific loader script.
     .flash_size = (uint32_t)&_sflash_fs, // Get from MCU-Specific loader script.
@@ -65,7 +65,7 @@ STATIC samd_flash_obj_t samd_flash_obj = {
 
 // Flash init (from cctpy)
 // Method is needed for when MP starts up in _boot.py
-STATIC void samd_flash_init(void) {
+static void samd_flash_init(void) {
     #ifdef SAMD51
     hri_mclk_set_AHBMASK_NVMCTRL_bit(MCLK);
     #endif
@@ -76,7 +76,7 @@ STATIC void samd_flash_init(void) {
     flash_init(&flash_desc, NVMCTRL);
 }
 
-STATIC mp_obj_t samd_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t samd_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // No args required. bdev=Flash(). Start Addr & Size defined in samd_flash_obj.
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -87,7 +87,7 @@ STATIC mp_obj_t samd_flash_make_new(const mp_obj_type_t *type, size_t n_args, si
 }
 
 // Function for ioctl.
-STATIC mp_obj_t eraseblock(uint32_t sector_in) {
+static mp_obj_t eraseblock(uint32_t sector_in) {
     // Destination address aligned with page start to be erased.
     uint32_t DEST_ADDR = sector_in; // Number of pages to be erased.
     mp_int_t PAGE_SIZE = flash_get_page_size(&flash_desc); // adf4 API call
@@ -97,12 +97,12 @@ STATIC mp_obj_t eraseblock(uint32_t sector_in) {
     return mp_const_none;
 }
 
-STATIC mp_obj_t samd_flash_version(void) {
+static mp_obj_t samd_flash_version(void) {
     return MP_OBJ_NEW_SMALL_INT(flash_get_version());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(samd_flash_version_obj, samd_flash_version);
+static MP_DEFINE_CONST_FUN_OBJ_0(samd_flash_version_obj, samd_flash_version);
 
-STATIC mp_obj_t samd_flash_readblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t samd_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     uint32_t offset = (mp_obj_get_int(args[1]) * BLOCK_SIZE) + samd_flash_obj.flash_base;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
@@ -115,9 +115,9 @@ STATIC mp_obj_t samd_flash_readblocks(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_flash_readblocks_obj, 3, 4, samd_flash_readblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_flash_readblocks_obj, 3, 4, samd_flash_readblocks);
 
-STATIC mp_obj_t samd_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t samd_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     uint32_t offset = (mp_obj_get_int(args[1]) * BLOCK_SIZE) + samd_flash_obj.flash_base;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
@@ -132,9 +132,9 @@ STATIC mp_obj_t samd_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     // TODO check return value
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_flash_writeblocks_obj, 3, 4, samd_flash_writeblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_flash_writeblocks_obj, 3, 4, samd_flash_writeblocks);
 
-STATIC mp_obj_t samd_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
+static mp_obj_t samd_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     samd_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
 
@@ -159,15 +159,15 @@ STATIC mp_obj_t samd_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg
             return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(samd_flash_ioctl_obj, samd_flash_ioctl);
+static MP_DEFINE_CONST_FUN_OBJ_3(samd_flash_ioctl_obj, samd_flash_ioctl);
 
-STATIC const mp_rom_map_elem_t samd_flash_locals_dict_table[] = {
+static const mp_rom_map_elem_t samd_flash_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_flash_version), MP_ROM_PTR(&samd_flash_version_obj) },
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&samd_flash_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&samd_flash_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&samd_flash_ioctl_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(samd_flash_locals_dict, samd_flash_locals_dict_table);
+static MP_DEFINE_CONST_DICT(samd_flash_locals_dict, samd_flash_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     samd_flash_type,

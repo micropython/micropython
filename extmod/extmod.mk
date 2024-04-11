@@ -2,8 +2,11 @@
 # and provides rules to build 3rd-party components for extmod modules.
 
 SRC_EXTMOD_C += \
+	extmod/machine_adc.c \
+	extmod/machine_adc_block.c \
 	extmod/machine_bitstream.c \
 	extmod/machine_i2c.c \
+	extmod/machine_i2s.c \
 	extmod/machine_mem.c \
 	extmod/machine_pinbase.c \
 	extmod/machine_pulse.c \
@@ -11,6 +14,9 @@ SRC_EXTMOD_C += \
 	extmod/machine_signal.c \
 	extmod/machine_spi.c \
 	extmod/machine_timer.c \
+	extmod/machine_uart.c \
+	extmod/machine_usb_device.c \
+	extmod/machine_wdt.c \
 	extmod/modasyncio.c \
 	extmod/modbinascii.c \
 	extmod/modbluetooth.c \
@@ -22,18 +28,23 @@ SRC_EXTMOD_C += \
 	extmod/modheapq.c \
 	extmod/modjson.c \
 	extmod/modlwip.c \
+	extmod/modmachine.c \
 	extmod/modnetwork.c \
 	extmod/modonewire.c \
+	extmod/modopenamp.c \
+	extmod/modopenamp_remoteproc.c \
+	extmod/modopenamp_remoteproc_store.c \
 	extmod/modos.c \
 	extmod/modplatform.c\
 	extmod/modrandom.c \
 	extmod/modre.c \
 	extmod/modselect.c \
 	extmod/modsocket.c \
-	extmod/modssl_axtls.c \
-	extmod/modssl_mbedtls.c \
+	extmod/modtls_axtls.c \
+	extmod/modtls_mbedtls.c \
 	extmod/modtime.c \
 	extmod/moductypes.c \
+	extmod/modvfs.c \
 	extmod/modwebrepl.c \
 	extmod/modwebsocket.c \
 	extmod/network_cyw43.c \
@@ -63,6 +74,99 @@ SRC_QSTR += $(SRC_EXTMOD_C)
 
 CFLAGS += $(CFLAGS_EXTMOD) $(CFLAGS_THIRDPARTY)
 LDFLAGS += $(LDFLAGS_EXTMOD) $(LDFLAGS_THIRDPARTY)
+
+################################################################################
+# libm/libm_dbl math library
+
+# Single-precision math library.
+SRC_LIB_LIBM_C += $(addprefix lib/libm/,\
+	acoshf.c \
+	asinfacosf.c \
+	asinhf.c \
+	atan2f.c \
+	atanf.c \
+	atanhf.c \
+	ef_rem_pio2.c \
+	erf_lgamma.c \
+	fmodf.c \
+	kf_cos.c \
+	kf_rem_pio2.c \
+	kf_sin.c \
+	kf_tan.c \
+	log1pf.c \
+	math.c \
+	nearbyintf.c \
+	roundf.c \
+	sf_cos.c \
+	sf_erf.c \
+	sf_frexp.c \
+	sf_ldexp.c \
+	sf_modf.c \
+	sf_sin.c \
+	sf_tan.c \
+	wf_lgamma.c \
+	wf_tgamma.c \
+	)
+
+# Choose only one of these sqrt implementations, software or hardware.
+SRC_LIB_LIBM_SQRT_SW_C += lib/libm/ef_sqrt.c
+SRC_LIB_LIBM_SQRT_HW_C += lib/libm/thumb_vfp_sqrtf.c
+
+# Disable warnings in libm.
+$(BUILD)/lib/libm/kf_rem_pio2.o: CFLAGS += -Wno-maybe-uninitialized
+
+# Double-precision math library.
+SRC_LIB_LIBM_DBL_C += $(addprefix lib/libm_dbl/,\
+	__cos.c \
+	__expo2.c \
+	__fpclassify.c \
+	__rem_pio2.c \
+	__rem_pio2_large.c \
+	__signbit.c \
+	__sin.c \
+	__tan.c \
+	acos.c \
+	acosh.c \
+	asin.c \
+	asinh.c \
+	atan.c \
+	atan2.c \
+	atanh.c \
+	ceil.c \
+	cos.c \
+	cosh.c \
+	copysign.c \
+	erf.c \
+	exp.c \
+	expm1.c \
+	floor.c \
+	fmod.c \
+	frexp.c \
+	ldexp.c \
+	lgamma.c \
+	log.c \
+	log10.c \
+	log1p.c \
+	modf.c \
+	nearbyint.c \
+	pow.c \
+	rint.c \
+	round.c \
+	scalbn.c \
+	sin.c \
+	sinh.c \
+	tan.c \
+	tanh.c \
+	tgamma.c \
+	trunc.c \
+	)
+
+# Choose only one of these sqrt implementations, software or hardware.
+SRC_LIB_LIBM_DBL_SQRT_SW_C += lib/libm_dbl/sqrt.c
+SRC_LIB_LIBM_DBL_SQRT_HW_C += lib/libm_dbl/thumb_vfp_sqrt.c
+
+# Too many warnings in libm_dbl, disable for now.
+$(BUILD)/lib/libm_dbl/%.o: CFLAGS += -Wno-double-promotion -Wno-float-conversion
 
 ################################################################################
 # VFS FAT FS
@@ -102,7 +206,7 @@ SRC_THIRDPARTY_C += $(addprefix $(LITTLEFS_DIR)/,\
 	lfs2_util.c \
 	)
 
-$(BUILD)/$(LITTLEFS_DIR)/lfs2.o: CFLAGS += -Wno-missing-field-initializers
+$(BUILD)/$(LITTLEFS_DIR)/lfs2.o: CFLAGS += -Wno-shadow
 endif
 
 ################################################################################
@@ -132,7 +236,7 @@ SRC_THIRDPARTY_C += $(addprefix $(AXTLS_DIR)/,\
 	)
 else ifeq ($(MICROPY_SSL_MBEDTLS),1)
 MBEDTLS_DIR = lib/mbedtls
-MBEDTLS_CONFIG_FILE ?= \"mbedtls/mbedtls_config.h\"
+MBEDTLS_CONFIG_FILE ?= \"mbedtls/mbedtls_config_port.h\"
 GIT_SUBMODULES += $(MBEDTLS_DIR)
 CFLAGS_EXTMOD += -DMBEDTLS_CONFIG_FILE=$(MBEDTLS_CONFIG_FILE)
 CFLAGS_EXTMOD += -DMICROPY_SSL_MBEDTLS=1 -I$(TOP)/$(MBEDTLS_DIR)/include
@@ -140,20 +244,25 @@ SRC_THIRDPARTY_C += lib/mbedtls_errors/mp_mbedtls_errors.c
 SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	aes.c \
 	aesni.c \
-	arc4.c \
 	asn1parse.c \
 	asn1write.c \
 	base64.c \
+	bignum_core.c \
+	bignum_mod.c \
+	bignum_mod_raw.c \
 	bignum.c \
-	blowfish.c \
 	camellia.c \
 	ccm.c \
-	certs.c \
 	chacha20.c \
 	chachapoly.c \
 	cipher.c \
 	cipher_wrap.c \
+	nist_kw.c \
+	aria.c \
 	cmac.c \
+	constant_time.c \
+	mps_reader.c \
+	mps_trace.c \
 	ctr_drbg.c \
 	debug.c \
 	des.c \
@@ -166,17 +275,13 @@ SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	entropy.c \
 	entropy_poll.c \
 	gcm.c \
-	havege.c \
 	hmac_drbg.c \
-	md2.c \
-	md4.c \
 	md5.c \
 	md.c \
 	oid.c \
 	padlock.c \
 	pem.c \
 	pk.c \
-	pkcs11.c \
 	pkcs12.c \
 	pkcs5.c \
 	pkparse.c \
@@ -187,20 +292,21 @@ SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	poly1305.c \
 	ripemd160.c \
 	rsa.c \
-	rsa_internal.c \
+	rsa_alt_helpers.c \
 	sha1.c \
 	sha256.c \
 	sha512.c \
 	ssl_cache.c \
 	ssl_ciphersuites.c \
-	ssl_cli.c \
+	ssl_client.c \
 	ssl_cookie.c \
-	ssl_srv.c \
+	ssl_debug_helpers_generated.c \
 	ssl_msg.c \
 	ssl_ticket.c \
 	ssl_tls.c \
+	ssl_tls12_client.c \
+	ssl_tls12_server.c \
 	timing.c \
-	constant_time.c \
 	x509.c \
 	x509_create.c \
 	x509_crl.c \
@@ -208,7 +314,6 @@ SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	x509_csr.c \
 	x509write_crt.c \
 	x509write_csr.c \
-	xtea.c \
 	)
 endif
 endif
@@ -262,6 +367,9 @@ SRC_THIRDPARTY_C += $(addprefix $(LWIP_DIR)/,\
 	core/ipv6/nd6.c \
 	netif/ethernet.c \
 	)
+ifeq ($(MICROPY_PY_LWIP_LOOPBACK),1)
+CFLAGS_EXTMOD += -DLWIP_NETIF_LOOPBACK=1
+endif
 ifeq ($(MICROPY_PY_LWIP_SLIP),1)
 CFLAGS_EXTMOD += -DMICROPY_PY_LWIP_SLIP=1
 SRC_THIRDPARTY_C += $(LWIP_DIR)/netif/slipif.c
@@ -273,8 +381,10 @@ endif
 
 ifeq ($(MICROPY_PY_BTREE),1)
 BTREE_DIR = lib/berkeley-db-1.xx
-BTREE_DEFS = -D__DBINTERFACE_PRIVATE=1 -Dmpool_error=printf -Dabort=abort_ "-Dvirt_fd_t=void*" $(BTREE_DEFS_EXTRA)
-INC += -I$(TOP)/$(BTREE_DIR)/PORT/include
+BERKELEY_DB_CONFIG_FILE ?= \"extmod/berkeley-db/berkeley_db_config_port.h\"
+CFLAGS_EXTMOD += -DBERKELEY_DB_CONFIG_FILE=$(BERKELEY_DB_CONFIG_FILE)
+CFLAGS_EXTMOD += $(BTREE_DEFS_EXTRA)
+INC += -I$(TOP)/$(BTREE_DIR)/include
 SRC_THIRDPARTY_C += $(addprefix $(BTREE_DIR)/,\
 	btree/bt_close.c \
 	btree/bt_conv.c \
@@ -293,9 +403,7 @@ SRC_THIRDPARTY_C += $(addprefix $(BTREE_DIR)/,\
 	)
 CFLAGS_EXTMOD += -DMICROPY_PY_BTREE=1
 # we need to suppress certain warnings to get berkeley-db to compile cleanly
-# and we have separate BTREE_DEFS so the definitions don't interfere with other source code
-$(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter -Wno-deprecated-non-prototype -Wno-unknown-warning-option $(BTREE_DEFS)
-$(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
+$(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter -Wno-deprecated-non-prototype -Wno-unknown-warning-option
 endif
 
 ################################################################################
@@ -410,3 +518,58 @@ include $(TOP)/extmod/btstack/btstack.mk
 endif
 
 endif
+
+################################################################################
+# openamp
+
+ifeq ($(MICROPY_PY_OPENAMP),1)
+OPENAMP_DIR = lib/open-amp
+LIBMETAL_DIR = lib/libmetal
+GIT_SUBMODULES += $(LIBMETAL_DIR) $(OPENAMP_DIR)
+include $(TOP)/extmod/libmetal/libmetal.mk
+
+INC += -I$(TOP)/$(OPENAMP_DIR)
+CFLAGS += -DMICROPY_PY_OPENAMP=1
+
+ifeq ($(MICROPY_PY_OPENAMP_REMOTEPROC),1)
+CFLAGS += -DMICROPY_PY_OPENAMP_REMOTEPROC=1
+endif
+
+CFLAGS_THIRDPARTY += \
+    -I$(BUILD)/openamp \
+    -I$(TOP)/$(OPENAMP_DIR) \
+    -I$(TOP)/$(OPENAMP_DIR)/lib/include/ \
+    -DMETAL_INTERNAL \
+    -DVIRTIO_DRIVER_ONLY \
+    -DNO_ATOMIC_64_SUPPORT \
+    -DRPMSG_BUFFER_SIZE=512 \
+
+# OpenAMP's source files.
+SRC_OPENAMP_C += $(addprefix $(OPENAMP_DIR)/lib/,\
+	rpmsg/rpmsg.c \
+	rpmsg/rpmsg_virtio.c \
+	virtio/virtio.c \
+	virtio/virtqueue.c \
+	virtio_mmio/virtio_mmio_drv.c \
+	)
+
+# OpenAMP's remoteproc source files.
+ifeq ($(MICROPY_PY_OPENAMP_REMOTEPROC),1)
+SRC_OPENAMP_C += $(addprefix $(OPENAMP_DIR)/lib/remoteproc/,\
+	elf_loader.c \
+	remoteproc.c \
+	remoteproc_virtio.c \
+	rsc_table_parser.c \
+	)
+endif # MICROPY_PY_OPENAMP_REMOTEPROC
+
+# Disable compiler warnings in OpenAMP (variables used only for assert).
+$(BUILD)/$(OPENAMP_DIR)/lib/rpmsg/rpmsg_virtio.o: CFLAGS += -Wno-unused-but-set-variable
+$(BUILD)/$(OPENAMP_DIR)/lib/virtio_mmio/virtio_mmio_drv.o: CFLAGS += -Wno-unused-but-set-variable
+
+# We need to have generated libmetal before compiling OpenAMP.
+$(addprefix $(BUILD)/, $(SRC_OPENAMP_C:.c=.o)): $(BUILD)/openamp/metal/config.h
+
+SRC_THIRDPARTY_C += $(SRC_LIBMETAL_C) $(SRC_OPENAMP_C)
+
+endif # MICROPY_PY_OPENAMP

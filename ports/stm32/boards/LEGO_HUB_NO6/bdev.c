@@ -32,7 +32,7 @@
 
 // Mboot doesn't support hardware SPI, so use software SPI instead.
 
-STATIC const mp_soft_spi_obj_t soft_spi_bus = {
+static const mp_soft_spi_obj_t soft_spi_bus = {
     .delay_half = MICROPY_HW_SOFTSPI_MIN_DELAY,
     .polarity = 0,
     .phase = 0,
@@ -52,7 +52,7 @@ mp_spiflash_t board_mboot_spiflash;
 
 #else
 
-STATIC const spi_proto_cfg_t spi_bus = {
+static const spi_proto_cfg_t spi_bus = {
     .spi = &spi_obj[1], // SPI2 hardware peripheral
     .baudrate = 25000000,
     .polarity = 0,
@@ -61,7 +61,7 @@ STATIC const spi_proto_cfg_t spi_bus = {
     .firstbit = SPI_FIRSTBIT_MSB,
 };
 
-STATIC mp_spiflash_cache_t spi_bdev_cache;
+static mp_spiflash_cache_t spi_bdev_cache;
 
 const mp_spiflash_config_t spiflash_config = {
     .bus_kind = MP_SPIFLASH_BUS_SPI,

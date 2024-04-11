@@ -11,7 +11,7 @@ extern "C" {
 #define SCI_UART_CFG_RS485_SUPPORT (0)
 
 /*
- * Disable r_sci_uart.c's interrupt handlers by defining followings
+ * Disable r_sci_uart.c's interrupt handlers by defining following
  * because the renesas-ra has own interrupt handlers for SCI and
  * symbol conflict happens.
  */

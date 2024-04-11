@@ -63,7 +63,7 @@ passed as the argument to `BOARD=`; for example `RA4M1_CLICKER`, `EK_RA4M1`,
 The above command should produce binary images `firmware.hex` in the
 build-EK_RA6M2/` subdirectory (or the equivalent directory for the board specified).
 
-## Supported/Unsupprted funtions
+## Supported/Unsupported functions
 Please refer to the `renesas-ra` quick reference.
 
 ## Known issues

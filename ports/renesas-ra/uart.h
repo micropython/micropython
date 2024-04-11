@@ -89,7 +89,6 @@ typedef struct _machine_uart_obj_t {
     mp_irq_obj_t *mp_irq_obj;           // user IRQ object
 } machine_uart_obj_t;
 
-extern const mp_obj_type_t machine_uart_type;
 extern const mp_irq_methods_t uart_irq_methods;
 
 void uart_init0(void);

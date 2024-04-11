@@ -135,7 +135,7 @@ bool microbit_display_active_animation(void) {
     return async_mode == ASYNC_MODE_ANIMATION;
 }
 
-STATIC void async_stop(void) {
+static void async_stop(void) {
     async_iterator = NULL;
     async_mode = ASYNC_MODE_STOPPED;
     async_tick = 0;
@@ -146,7 +146,7 @@ STATIC void async_stop(void) {
     wakeup_event = true;
 }
 
-STATIC void wait_for_event(void) {
+static void wait_for_event(void) {
     while (!wakeup_event) {
         // allow CTRL-C to stop the animation
         if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
@@ -508,7 +508,7 @@ void microbit_display_set_pixel(microbit_display_obj_t *display, mp_int_t x, mp_
     display->brightnesses |= (1 << bright);
 }
 
-STATIC mp_obj_t microbit_display_set_pixel_func(mp_uint_t n_args, const mp_obj_t *args) {
+static mp_obj_t microbit_display_set_pixel_func(mp_uint_t n_args, const mp_obj_t *args) {
     (void)n_args;
     microbit_display_obj_t *self = (microbit_display_obj_t*)args[0];
     microbit_display_set_pixel(self, mp_obj_get_int(args[1]), mp_obj_get_int(args[2]), mp_obj_get_int(args[3]));
@@ -523,13 +523,13 @@ mp_int_t microbit_display_get_pixel(microbit_display_obj_t *display, mp_int_t x,
     return display->image_buffer[x][y];
 }
 
-STATIC mp_obj_t microbit_display_get_pixel_func(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
+static mp_obj_t microbit_display_get_pixel_func(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
     microbit_display_obj_t *self = (microbit_display_obj_t*)self_in;
     return MP_OBJ_NEW_SMALL_INT(microbit_display_get_pixel(self, mp_obj_get_int(x_in), mp_obj_get_int(y_in)));
 }
 MP_DEFINE_CONST_FUN_OBJ_3(microbit_display_get_pixel_obj, microbit_display_get_pixel_func);
 
-STATIC const mp_rom_map_elem_t microbit_display_locals_dict_table[] = {
+static const mp_rom_map_elem_t microbit_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_pixel),  MP_ROM_PTR(&microbit_display_get_pixel_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_pixel),  MP_ROM_PTR(&microbit_display_set_pixel_obj) },
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&microbit_display_show_obj) },
@@ -540,7 +540,7 @@ STATIC const mp_rom_map_elem_t microbit_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_is_on),  MP_ROM_PTR(&microbit_display_is_on_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(microbit_display_locals_dict, microbit_display_locals_dict_table);
+static MP_DEFINE_CONST_DICT(microbit_display_locals_dict, microbit_display_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     microbit_display_type,

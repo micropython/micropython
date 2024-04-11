@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <sys/time.h>
+#include <time.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -49,24 +51,25 @@
 #include "py/mphal.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/timeutils/timeutils.h"
+#include "mbedtls/platform_time.h"
+
 #include "uart.h"
 #include "usb.h"
 #include "usb_serial_jtag.h"
 #include "modmachine.h"
 #include "modnetwork.h"
-#include "mpthreadport.h"
 
 #if MICROPY_BLUETOOTH_NIMBLE
 #include "extmod/modbluetooth.h"
 #endif
 
-#if MICROPY_ESPNOW
+#if MICROPY_PY_ESPNOW
 #include "modespnow.h"
 #endif
 
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
-#define MP_TASK_STACK_SIZE      (16 * 1024)
 
 // Set the margin for detecting stack overflow, depending on the CPU architecture.
 #if CONFIG_IDF_TARGET_ESP32C3
@@ -75,19 +78,24 @@
 #define MP_TASK_STACK_LIMIT_MARGIN (1024)
 #endif
 
-// Initial Python heap size. This starts small but adds new heap areas on
-// demand due to settings MICROPY_GC_SPLIT_HEAP & MICROPY_GC_SPLIT_HEAP_AUTO
-#define MP_TASK_HEAP_SIZE (64 * 1024)
-
 int vprintf_null(const char *format, va_list ap) {
     // do nothing: this is used as a log target during raw repl mode
     return 0;
 }
 
+time_t platform_mbedtls_time(time_t *timer) {
+    // mbedtls_time requires time in seconds from EPOCH 1970
+
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    return tv.tv_sec + TIMEUTILS_SECONDS_1970_TO_2000;
+}
+
 void mp_task(void *pvParameter) {
     volatile uint32_t sp = (uint32_t)esp_cpu_get_sp();
     #if MICROPY_PY_THREAD
-    mp_thread_init(pxTaskGetStackStart(NULL), MP_TASK_STACK_SIZE / sizeof(uintptr_t));
+    mp_thread_init(pxTaskGetStackStart(NULL), MICROPY_TASK_STACK_SIZE / sizeof(uintptr_t));
     #endif
     #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
     usb_serial_jtag_init();
@@ -99,18 +107,21 @@ void mp_task(void *pvParameter) {
     #endif
     machine_init();
 
+    // Configure time function, for mbedtls certificate time validation.
+    mbedtls_platform_set_time(platform_mbedtls_time);
+
     esp_err_t err = esp_event_loop_create_default();
     if (err != ESP_OK) {
         ESP_LOGE("esp_init", "can't create event loop: 0x%x\n", err);
     }
 
-    void *mp_task_heap = MP_PLAT_ALLOC_HEAP(MP_TASK_HEAP_SIZE);
+    void *mp_task_heap = MP_PLAT_ALLOC_HEAP(MICROPY_GC_INITIAL_HEAP_SIZE);
 
 soft_reset:
     // initialise the stack pointer for the main thread
     mp_stack_set_top((void *)sp);
-    mp_stack_set_limit(MP_TASK_STACK_SIZE - MP_TASK_STACK_LIMIT_MARGIN);
-    gc_init(mp_task_heap, mp_task_heap + MP_TASK_HEAP_SIZE);
+    mp_stack_set_limit(MICROPY_TASK_STACK_SIZE - MP_TASK_STACK_LIMIT_MARGIN);
+    gc_init(mp_task_heap, mp_task_heap + MICROPY_GC_INITIAL_HEAP_SIZE);
     mp_init();
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     readline_init0();
@@ -125,8 +136,11 @@ soft_reset:
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py", false);
-    pyexec_file_if_exists("boot.py");
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+    int ret = pyexec_file_if_exists("boot.py");
+    if (ret & PYEXEC_FORCED_EXIT) {
+        goto soft_reset_exit;
+    }
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
         int ret = pyexec_file_if_exists("main.py");
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
@@ -153,7 +167,7 @@ soft_reset_exit:
     mp_bluetooth_deinit();
     #endif
 
-    #if MICROPY_ESPNOW
+    #if MICROPY_PY_ESPNOW
     espnow_deinit(mp_const_none);
     MP_STATE_PORT(espnow_singleton) = NULL;
     #endif
@@ -206,7 +220,7 @@ void app_main(void) {
     MICROPY_BOARD_STARTUP();
 
     // Create and transfer control to the MicroPython task.
-    xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
+    xTaskCreatePinnedToCore(mp_task, "mp_task", MICROPY_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 
 void nlr_jump_fail(void *val) {

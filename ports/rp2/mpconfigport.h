@@ -52,6 +52,10 @@
 #ifndef MICROPY_HW_USB_MSC
 #define MICROPY_HW_USB_MSC (0)
 #endif
+
+#ifndef MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+#define MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE    (1) // Support machine.USBDevice
+#endif
 #endif
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
@@ -89,15 +93,18 @@
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_BUILTINS_HELP_TEXT           rp2_help_text
 #define MICROPY_PY_SYS_PLATFORM                 "rp2"
+#ifndef MICROPY_PY_THREAD
 #define MICROPY_PY_THREAD                       (1)
 #define MICROPY_PY_THREAD_GIL                   (0)
 #define MICROPY_THREAD_YIELD()                  mp_handle_pending(true)
+#endif
 
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
 #define MICROPY_PY_OS_INCLUDEFILE               "ports/rp2/modos.c"
 #ifndef MICROPY_PY_OS_DUPTERM
 #define MICROPY_PY_OS_DUPTERM                   (1)
+#define MICROPY_PY_OS_DUPTERM_NOTIFY            (1)
 #endif
 #define MICROPY_PY_OS_SYNC                      (1)
 #define MICROPY_PY_OS_UNAME                     (1)
@@ -111,17 +118,35 @@
 #define MICROPY_PY_TIME_INCLUDEFILE             "ports/rp2/modtime.c"
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC        (rosc_random_u32())
 #define MICROPY_PY_MACHINE                      (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/rp2/modmachine.c"
+#define MICROPY_PY_MACHINE_RESET                (1)
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS     (1)
+#define MICROPY_PY_MACHINE_BOOTLOADER           (1)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
+#define MICROPY_PY_MACHINE_ADC                  (1)
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE      "ports/rp2/machine_adc.c"
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM            (1)
+#define MICROPY_PY_MACHINE_DHT_READINTO         (1)
 #define MICROPY_PY_MACHINE_PULSE                (1)
 #define MICROPY_PY_MACHINE_PWM                  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/rp2/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
+#define MICROPY_PY_MACHINE_I2S                  (1)
+#define MICROPY_PY_MACHINE_I2S_INCLUDEFILE      "ports/rp2/machine_i2s.c"
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_RX      (RX)
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_TX      (TX)
+#define MICROPY_PY_MACHINE_I2S_RING_BUF         (1)
 #define MICROPY_PY_MACHINE_SPI                  (1)
 #define MICROPY_PY_MACHINE_SPI_MSB              (SPI_MSB_FIRST)
 #define MICROPY_PY_MACHINE_SPI_LSB              (SPI_LSB_FIRST)
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)
+#define MICROPY_PY_MACHINE_UART                 (1)
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE     "ports/rp2/machine_uart.c"
+#define MICROPY_PY_MACHINE_UART_SENDBREAK       (1)
+#define MICROPY_PY_MACHINE_WDT                  (1)
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE      "ports/rp2/machine_wdt.c"
 #define MICROPY_PY_ONEWIRE                      (1)
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_LFS2                        (1)
@@ -226,44 +251,6 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #ifndef MICROPY_HW_BOOTSEL_DELAY_US
 #define MICROPY_HW_BOOTSEL_DELAY_US 8
 #endif
-
-// Entering a critical section.
-extern uint32_t mp_thread_begin_atomic_section(void);
-extern void mp_thread_end_atomic_section(uint32_t);
-#define MICROPY_BEGIN_ATOMIC_SECTION()     mp_thread_begin_atomic_section()
-#define MICROPY_END_ATOMIC_SECTION(state)  mp_thread_end_atomic_section(state)
-
-// Prevent the "lwIP task" from running when unsafe to do so.
-#define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
-#define MICROPY_PY_LWIP_REENTER lwip_lock_acquire();
-#define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
-
-#if MICROPY_HW_ENABLE_USBDEV
-#define MICROPY_HW_USBDEV_TASK_HOOK extern void usbd_task(void); usbd_task();
-#define MICROPY_VM_HOOK_COUNT (10)
-#define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
-#define MICROPY_VM_HOOK_POLL if (get_core_num() == 0 && --vm_hook_divisor == 0) { \
-        vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
-        MICROPY_HW_USBDEV_TASK_HOOK \
-}
-#define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
-#define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
-#else
-#define MICROPY_HW_USBDEV_TASK_HOOK
-#endif
-
-#define MICROPY_EVENT_POLL_HOOK_FAST \
-    do { \
-        if (get_core_num() == 0) { MICROPY_HW_USBDEV_TASK_HOOK } \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-    } while (0)
-
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        MICROPY_EVENT_POLL_HOOK_FAST; \
-        best_effort_wfe_or_timeout(make_timeout_time_ms(1)); \
-    } while (0);
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 

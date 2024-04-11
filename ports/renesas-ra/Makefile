@@ -27,12 +27,11 @@ USE_FSP_LPM ?= 1
 USE_FSP_QSPI ?= 0
 FSP_BOARD_NAME ?= $(shell echo $(BOARD) | tr '[:upper:]' '[:lower:]')
 
-# Files that are generated and needed before the QSTR build.
-#QSTR_GENERATED_HEADERS = $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
-QSTR_GENERATED_HEADERS = $(BUILD)/pins_qstr.h
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS += qstrdefsport.h $(QSTR_GENERATED_HEADERS)
-QSTR_GLOBAL_DEPENDENCIES += mpconfigboard_common.h $(BOARD_DIR)/mpconfigboard.h $(QSTR_GENERATED_HEADERS)
+QSTR_DEFS += qstrdefsport.h
+
+# Files that are generated and needed before the QSTR build.
+QSTR_GLOBAL_DEPENDENCIES += mpconfigboard_common.h $(BOARD_DIR)/mpconfigboard.h
 
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
@@ -94,12 +93,12 @@ CFLAGS_CORTEX_M = -mthumb
 SUPPORTS_HARDWARE_FP_SINGLE = 0
 SUPPORTS_HARDWARE_FP_DOUBLE = 0
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),m4))
-CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard 
+CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 SUPPORTS_HARDWARE_FP_SINGLE = 1
 endif
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),m33))
-CFLAGS_CORTEX_M += -mfpu=fpv5-sp-d16 -mfloat-abi=hard 
+CFLAGS_CORTEX_M += -mfpu=fpv5-sp-d16 -mfloat-abi=hard
 SUPPORTS_HARDWARE_FP_SINGLE = 1
 endif
 
@@ -199,96 +198,19 @@ TINYUSB_SRC_C += $(addprefix lib/tinyusb/,\
 	)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
-LIBM_SRC_C += $(addprefix lib/libm_dbl/,\
-	__cos.c \
-	__expo2.c \
-	__fpclassify.c \
-	__rem_pio2.c \
-	__rem_pio2_large.c \
-	__signbit.c \
-	__sin.c \
-	__tan.c \
-	acos.c \
-	acosh.c \
-	asin.c \
-	asinh.c \
-	atan.c \
-	atan2.c \
-	atanh.c \
-	ceil.c \
-	cos.c \
-	cosh.c \
-	copysign.c \
-	erf.c \
-	exp.c \
-	expm1.c \
-	floor.c \
-	fmod.c \
-	frexp.c \
-	ldexp.c \
-	lgamma.c \
-	log.c \
-	log10.c \
-	log1p.c \
-	modf.c \
-	nearbyint.c \
-	pow.c \
-	rint.c \
-	round.c \
-	scalbn.c \
-	sin.c \
-	sinh.c \
-	tan.c \
-	tanh.c \
-	tgamma.c \
-	trunc.c \
-	)
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_DOUBLE),1)
-LIBM_SRC_C += lib/libm_dbl/thumb_vfp_sqrt.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_HW_C)
 else
-LIBM_SRC_C += lib/libm_dbl/sqrt.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_SW_C)
 endif
 else
-LIBM_SRC_C += $(addprefix lib/libm/,\
-	math.c \
-	acoshf.c \
-	asinfacosf.c \
-	asinhf.c \
-	atan2f.c \
-	atanf.c \
-	atanhf.c \
-	ef_rem_pio2.c \
-	erf_lgamma.c \
-	fmodf.c \
-	kf_cos.c \
-	kf_rem_pio2.c \
-	kf_sin.c \
-	kf_tan.c \
-	log1pf.c \
-	nearbyintf.c \
-	roundf.c \
-	sf_cos.c \
-	sf_erf.c \
-	sf_frexp.c \
-	sf_ldexp.c \
-	sf_modf.c \
-	sf_sin.c \
-	sf_tan.c \
-	wf_lgamma.c \
-	wf_tgamma.c \
-	)
+LIBM_SRC_C += $(SRC_LIB_LIBM_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_SINGLE),1)
-LIBM_SRC_C += lib/libm/thumb_vfp_sqrtf.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_HW_C)
 else
-LIBM_SRC_C += lib/libm/ef_sqrt.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 endif
-endif
-
-LIBM_O = $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
-
-# Too many warnings in libm_dbl, disable for now.
-ifeq ($(MICROPY_FLOAT_IMPL),double)
-$(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
 endif
 
 DRIVERS_SRC_C += $(addprefix drivers/,\
@@ -319,15 +241,12 @@ SRC_C += \
 	uart.c \
 	gccollect.c \
 	help.c \
-	machine_adc.c \
 	machine_dac.c \
 	machine_i2c.c \
 	machine_spi.c \
-	machine_uart.c \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_sdcard.c \
-	modmachine.c \
 	extint.c \
 	usrsw.c \
 	flash.c \
@@ -474,7 +393,7 @@ endif
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-OBJ += $(LIBM_O)
+OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(HAL_SRC_C:.c=.o))
@@ -559,18 +478,13 @@ AF_FILE = boards/ra6m5_af.csv
 endif
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-GEN_PINS_AD_CONST = $(HEADER_BUILD)/pins_ad_const.h
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-#GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 FILE2H = $(TOP)/tools/file2h.py
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 
-# Making OBJ use an order-only depenedency on the generated pins.h file
+# Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
@@ -584,12 +498,10 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
 .PRECIOUS: $(GEN_PINS_SRC)
-$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(HEADER_BUILD)/%_af_defs.h $(BUILD)/%_qstr.h: $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h: $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --ad-const $(GEN_PINS_AD_CONST) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
-
-#$(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
-#	$(call compile_c)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv $(AF_FILE) --prefix $(PREFIX_FILE) \
+	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR)
 
 CMSIS_MCU_HDR = $(CMSIS_DIR)/$(CMSIS_MCU_LOWER).h
 

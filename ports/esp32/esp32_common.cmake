@@ -42,7 +42,7 @@ list(APPEND MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
     ${MICROPY_DIR}/lib/littlefs/lfs2.c
     ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
-    #${MICROPY_DIR}/lib/mbedtls_errors/esp32_mbedtls_errors.c
+    ${MICROPY_DIR}/lib/mbedtls_errors/esp32_mbedtls_errors.c
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
 )
@@ -53,6 +53,7 @@ list(APPEND MICROPY_SOURCE_DRIVERS
 )
 
 list(APPEND MICROPY_SOURCE_PORT
+    adc.c
     main.c
     ppp_set_auth.c
     uart.c
@@ -66,13 +67,8 @@ list(APPEND MICROPY_SOURCE_PORT
     machine_timer.c
     machine_pin.c
     machine_touchpad.c
-    machine_adc.c
-    machine_adcblock.c
     machine_dac.c
     machine_i2c.c
-    machine_i2s.c
-    machine_uart.c
-    modmachine.c
     network_common.c
     network_lan.c
     network_ppp.c
@@ -86,7 +82,6 @@ list(APPEND MICROPY_SOURCE_PORT
     esp32_ulp.c
     modesp32.c
     machine_hw_spi.c
-    machine_wdt.c
     mpthreadport.c
     machine_rtc.c
     machine_sdcard.c
@@ -138,7 +133,6 @@ list(APPEND IDF_COMPONENTS
     spi_flash
     ulp
     vfs
-    xtensa
 )
 
 # Register the main IDF component.
@@ -157,6 +151,8 @@ idf_component_register(
         ${MICROPY_PORT_DIR}
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
+    LDFRAGMENTS
+        linker.lf
     REQUIRES
         ${IDF_COMPONENTS}
 )
@@ -165,7 +161,9 @@ idf_component_register(
 set(MICROPY_TARGET ${COMPONENT_TARGET})
 
 # Define mpy-cross flags, for use with frozen code.
+if(NOT IDF_TARGET STREQUAL "esp32c3")
 set(MICROPY_CROSS_FLAGS -march=xtensawin)
+endif()
 
 # Set compile options for this port.
 target_compile_definitions(${MICROPY_TARGET} PUBLIC

@@ -4,6 +4,13 @@ THIS_MAKEFILE = $(lastword $(MAKEFILE_LIST))
 include $(dir $(THIS_MAKEFILE))mkenv.mk
 endif
 
+# Enable in-progress/breaking changes that are slated for MicroPython 2.x.
+MICROPY_PREVIEW_VERSION_2 ?= 0
+
+ifeq ($(MICROPY_PREVIEW_VERSION_2),1)
+CFLAGS += -DMICROPY_PREVIEW_VERSION_2=1
+endif
+
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 HELP_MPY_LIB_SUBMODULE ?= "\033[1;31mError: micropython-lib submodule is not initialized.\033[0m Run 'make submodules'"
 
@@ -22,7 +29,7 @@ endif
 
 # QSTR generation uses the same CFLAGS, with these modifications.
 QSTR_GEN_FLAGS = -DNO_QSTR
-# Note: := to force evalulation immediately.
+# Note: := to force evaluation immediately.
 QSTR_GEN_CFLAGS := $(CFLAGS)
 QSTR_GEN_CFLAGS += $(QSTR_GEN_FLAGS)
 QSTR_GEN_CXXFLAGS := $(CXXFLAGS)
@@ -56,7 +63,7 @@ $(BUILD)/%.o: %.s
 
 define compile_c
 $(ECHO) "CC $<"
-$(Q)$(CC) $(CFLAGS) -c -MD -o $@ $< || (echo -e $(HELP_BUILD_ERROR); false)
+$(Q)$(CC) $(CFLAGS) -c -MD -MF $(@:.o=.d) -o $@ $< || (echo -e $(HELP_BUILD_ERROR); false)
 @# The following fixes the dependency file.
 @# See http://make.paulandlesley.org/autodep.html for details.
 @# Regex adjusted from the above to play better with Windows paths, etc.
@@ -68,7 +75,7 @@ endef
 
 define compile_cxx
 $(ECHO) "CXX $<"
-$(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $< || (echo -e $(HELP_BUILD_ERROR); false)
+$(Q)$(CXX) $(CXXFLAGS) -c -MD -MF $(@:.o=.d) -o $@ $< || (echo -e $(HELP_BUILD_ERROR); false)
 @# The following fixes the dependency file.
 @# See http://make.paulandlesley.org/autodep.html for details.
 @# Regex adjusted from the above to play better with Windows paths, etc.
@@ -89,6 +96,10 @@ $(BUILD)/%.o: %.cpp
 $(BUILD)/%.pp: %.c
 	$(ECHO) "PreProcess $<"
 	$(Q)$(CPP) $(CFLAGS) -Wp,-C,-dD,-dI -o $@ $<
+
+# Special case for compiling auto-generated source files.
+$(BUILD)/%.o: $(BUILD)/%.c
+	$(call compile_c)
 
 # The following rule uses | to create an order only prerequisite. Order only
 # prerequisites only get built if they don't exist. They don't cause timestamp
@@ -165,7 +176,7 @@ $(HEADER_BUILD):
 ifneq ($(MICROPY_MPYCROSS_DEPENDENCY),)
 # to automatically build mpy-cross, if needed
 $(MICROPY_MPYCROSS_DEPENDENCY):
-	$(MAKE) -C $(abspath $(dir $@)..)
+	$(MAKE) -C "$(abspath $(dir $@)..)"
 endif
 
 ifneq ($(FROZEN_DIR),)
@@ -188,10 +199,21 @@ CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 
+# Set default path variables to be passed to makemanifest.py. These will be
+# available in path substitutions. Additional variables can be set per-board
+# in mpconfigboard.mk or on the make command line.
+MICROPY_MANIFEST_MPY_LIB_DIR = $(MPY_LIB_DIR)
+MICROPY_MANIFEST_PORT_DIR = $(shell pwd)
+MICROPY_MANIFEST_BOARD_DIR = $(BOARD_DIR)
+MICROPY_MANIFEST_MPY_DIR = $(TOP)
+
+# Find all MICROPY_MANIFEST_* variables and turn them into command line arguments.
+MANIFEST_VARIABLES = $(foreach var,$(filter MICROPY_MANIFEST_%, $(.VARIABLES)),-v "$(subst MICROPY_MANIFEST_,,$(var))=$($(var))")
+
 # to build frozen_content.c from a manifest
 $(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h $(BUILD)/genhdr/root_pointers.h | $(MICROPY_MPYCROSS_DEPENDENCY)
 	$(Q)test -e "$(MPY_LIB_DIR)/README.md" || (echo -e $(HELP_MPY_LIB_SUBMODULE); false)
-	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
+	$(Q)$(MAKE_MANIFEST) -o $@ $(MANIFEST_VARIABLES) -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
 endif
 
 ifneq ($(PROG),)
@@ -212,7 +234,9 @@ $(BUILD)/$(PROG): $(OBJ)
 # we may want to compile using Thumb, but link with non-Thumb libc.
 	$(Q)$(CC) -o $@ $^ $(LIB) $(LDFLAGS)
 ifndef DEBUG
+ifdef STRIP
 	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $@
+endif
 endif
 	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $@
 

@@ -83,7 +83,7 @@ The basic MicroPython firmware is implemented in the main port file, e.g ``main.
    }
 
    // There is no filesystem so opening a file raises an exception.
-   mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+   mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
        mp_raise_OSError(MP_ENOENT);
    }
 
@@ -262,17 +262,17 @@ To add a custom module like ``myport``, first add the module definition in a fil
 
    #include "py/runtime.h"
 
-   STATIC mp_obj_t myport_info(void) {
+   static mp_obj_t myport_info(void) {
        mp_printf(&mp_plat_print, "info about my port\n");
        return mp_const_none;
    }
-   STATIC MP_DEFINE_CONST_FUN_OBJ_0(myport_info_obj, myport_info);
+   static MP_DEFINE_CONST_FUN_OBJ_0(myport_info_obj, myport_info);
 
-   STATIC const mp_rom_map_elem_t myport_module_globals_table[] = {
+   static const mp_rom_map_elem_t myport_module_globals_table[] = {
        { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_myport) },
        { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&myport_info_obj) },
    };
-   STATIC MP_DEFINE_CONST_DICT(myport_module_globals, myport_module_globals_table);
+   static MP_DEFINE_CONST_DICT(myport_module_globals, myport_module_globals_table);
 
    const mp_obj_module_t myport_module = {
        .base = { &mp_type_module },

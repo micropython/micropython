@@ -57,14 +57,22 @@ MP_WEAK int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-MP_WEAK void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+MP_WEAK mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    mp_uint_t ret = len;
+    bool did_write = false;
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
+        did_write = true;
     }
     #if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     lcd_print_strn(str, len);
     #endif
-    mp_os_dupterm_tx_strn(str, len);
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res >= 0) {
+        did_write = true;
+        ret = MIN((mp_uint_t)dupterm_res, ret);
+    }
+    return did_write ? ret : 0;
 }
 
 #if __CORTEX_M >= 0x03
@@ -182,4 +190,4 @@ void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
     }
 }
 
-MP_REGISTER_ROOT_POINTER(struct _pyb_uart_obj_t *pyb_stdio_uart);
+MP_REGISTER_ROOT_POINTER(struct _machine_uart_obj_t *pyb_stdio_uart);

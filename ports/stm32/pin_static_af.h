@@ -26,6 +26,9 @@
 #ifndef MICROPY_INCLUDED_STM32_PIN_STATIC_AF_H
 #define MICROPY_INCLUDED_STM32_PIN_STATIC_AF_H
 
+// For debug builds some of the macros expand to use strcmp.
+#include <string.h>
+
 #include "py/mphal.h"
 #include "genhdr/pins.h"
 #include "genhdr/pins_af_defs.h"

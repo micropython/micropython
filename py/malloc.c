@@ -69,7 +69,7 @@
 #error MICROPY_ENABLE_FINALISER requires MICROPY_ENABLE_GC
 #endif
 
-STATIC void *realloc_ext(void *ptr, size_t n_bytes, bool allow_move) {
+static void *realloc_ext(void *ptr, size_t n_bytes, bool allow_move) {
     if (allow_move) {
         return realloc(ptr, n_bytes);
     } else {
@@ -221,7 +221,7 @@ typedef struct _m_tracked_node_t {
 } m_tracked_node_t;
 
 #if MICROPY_DEBUG_VERBOSE
-STATIC size_t m_tracked_count_links(size_t *nb) {
+static size_t m_tracked_count_links(size_t *nb) {
     m_tracked_node_t *node = MP_STATE_VM(m_tracked_head);
     size_t n = 0;
     *nb = 0;

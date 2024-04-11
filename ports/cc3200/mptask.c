@@ -70,7 +70,6 @@
 #include "cryptohash.h"
 #include "mpirq.h"
 #include "updater.h"
-#include "modos.h"
 #include "antenna.h"
 #include "task.h"
 
@@ -81,10 +80,10 @@
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC void mptask_pre_init(void);
-STATIC void mptask_init_sflash_filesystem(void);
-STATIC void mptask_enter_ap_mode(void);
-STATIC void mptask_create_main_py(void);
+static void mptask_pre_init(void);
+static void mptask_init_sflash_filesystem(void);
+static void mptask_enter_ap_mode(void);
+static void mptask_create_main_py(void);
 
 /******************************************************************************
  DECLARE PUBLIC DATA
@@ -247,9 +246,6 @@ soft_reset_exit:
     // clean-up the user socket space
     modusocket_close_all_user_sockets();
 
-    // unmount all user file systems
-    osmount_unmount_all();
-
     // wait for pending transactions to complete
     mp_hal_delay_ms(20);
 
@@ -260,7 +256,7 @@ soft_reset_exit:
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
 __attribute__ ((section(".boot")))
-STATIC void mptask_pre_init(void) {
+static void mptask_pre_init(void) {
     // this one only makes sense after a poweron reset
     pyb_rtc_pre_init();
 
@@ -292,7 +288,7 @@ STATIC void mptask_pre_init(void) {
     ASSERT(svTaskHandle != NULL);
 }
 
-STATIC void mptask_init_sflash_filesystem(void) {
+static void mptask_init_sflash_filesystem(void) {
     FILINFO fno;
 
     // Initialise the local flash filesystem.
@@ -375,7 +371,7 @@ STATIC void mptask_init_sflash_filesystem(void) {
     }
 }
 
-STATIC void mptask_enter_ap_mode(void) {
+static void mptask_enter_ap_mode(void) {
     // append the mac only if it's not the first boot
     bool add_mac = !PRCMGetSpecialBit(PRCM_FIRST_BOOT_BIT);
     // enable simplelink in ap mode (use the MAC address to make the ssid unique)
@@ -384,7 +380,7 @@ STATIC void mptask_enter_ap_mode(void) {
         MICROPY_PORT_WLAN_AP_CHANNEL, ANTENNA_TYPE_INTERNAL, add_mac);
 }
 
-STATIC void mptask_create_main_py(void) {
+static void mptask_create_main_py(void) {
     // create empty main.py
     FIL fp;
     f_open(&sflash_vfs_fat->fatfs, &fp, "/main.py", FA_WRITE | FA_CREATE_ALWAYS);

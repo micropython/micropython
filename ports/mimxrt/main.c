@@ -34,8 +34,8 @@
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/runtime/softtimer.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "ticks.h"
-#include "tusb.h"
 #include "led.h"
 #include "pendsv.h"
 #include "modmachine.h"
@@ -63,7 +63,6 @@ void board_init(void);
 int main(void) {
     board_init();
     ticks_init();
-    tusb_init();
     pendsv_init();
 
     #if MICROPY_PY_LWIP
@@ -93,7 +92,7 @@ int main(void) {
     #endif
 
     for (;;) {
-        #if defined(MICROPY_HW_LED1)
+        #if defined(MICROPY_HW_LED1_PIN)
         led_init();
         #endif
 
@@ -115,6 +114,11 @@ int main(void) {
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");
+
+        #if MICROPY_HW_ENABLE_USBDEV
+        mp_usbd_init();
+        #endif
+
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
@@ -141,6 +145,7 @@ int main(void) {
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
         machine_pin_irq_deinit();
+        machine_rtc_irq_deinit();
         #if MICROPY_PY_MACHINE_I2S
         machine_i2s_deinit_all();
         #endif

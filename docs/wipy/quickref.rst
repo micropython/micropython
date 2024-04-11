@@ -171,13 +171,13 @@ SD card
 See :ref:`machine.SD <machine.SD>`. ::
 
     from machine import SD
-    import os
+    import vfs
 
     # clock pin, cmd pin, data0 pin
     sd = SD(pins=('GP10', 'GP11', 'GP15'))
     # or use default ones for the expansion board
     sd = SD()
-    os.mount(sd, '/sd')
+    vfs.mount(sd, '/sd')
 
 WLAN (WiFi)
 -----------

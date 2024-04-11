@@ -152,9 +152,9 @@ def verify_update(args):
             with open(tag_file_path) as tag_file:
                 for line in tag_file:
                     bline = bytes(line, "ascii")
-                    if b"MICROPY_GIT_HASH" in bline:
+                    if b"MICROPY_GIT_TAG" in bline:
                         bline = (
-                            bline.lstrip(b"#define MICROPY_GIT_HASH ")
+                            bline.lstrip(b"#define MICROPY_GIT_TAG ")
                             .replace(b'"', b"")
                             .replace(b"\r", b"")
                             .replace(b"\n", b"")

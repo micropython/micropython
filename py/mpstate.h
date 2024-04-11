@@ -249,8 +249,10 @@ typedef struct _mp_state_vm_t {
     #endif
 } mp_state_vm_t;
 
-// This structure holds state that is specific to a given thread.
-// Everything in this structure is scanned for root pointers.
+// This structure holds state that is specific to a given thread. Everything
+// in this structure is scanned for root pointers.  Anything added to this
+// structure must have corresponding initialisation added to thread_entry (in
+// py/modthread.c).
 typedef struct _mp_state_thread_t {
     // Stack top at the start of program
     char *stack_top;
@@ -308,7 +310,6 @@ extern mp_state_ctx_t mp_state_ctx;
 #define MP_STATE_MAIN_THREAD(x) (mp_state_ctx.thread.x)
 
 #if MICROPY_PY_THREAD
-extern mp_state_thread_t *mp_thread_get_state(void);
 #define MP_STATE_THREAD(x) (mp_thread_get_state()->x)
 #define mp_thread_is_main_thread() (mp_thread_get_state() == &mp_state_ctx.thread)
 #else

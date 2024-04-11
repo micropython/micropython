@@ -85,7 +85,7 @@ typedef struct {
     #endif
 } mp_obj_deflateio_t;
 
-STATIC int deflateio_read_stream(void *data) {
+static int deflateio_read_stream(void *data) {
     mp_obj_deflateio_t *self = data;
     const mp_stream_p_t *stream = mp_get_stream(self->stream);
     int err;
@@ -100,7 +100,7 @@ STATIC int deflateio_read_stream(void *data) {
     return c;
 }
 
-STATIC bool deflateio_init_read(mp_obj_deflateio_t *self) {
+static bool deflateio_init_read(mp_obj_deflateio_t *self) {
     if (self->read) {
         return true;
     }
@@ -151,7 +151,7 @@ STATIC bool deflateio_init_read(mp_obj_deflateio_t *self) {
 }
 
 #if MICROPY_PY_DEFLATE_COMPRESS
-STATIC void deflateio_out_byte(void *data, uint8_t b) {
+static void deflateio_out_byte(void *data, uint8_t b) {
     mp_obj_deflateio_t *self = data;
     const mp_stream_p_t *stream = mp_get_stream(self->stream);
     int err;
@@ -161,7 +161,7 @@ STATIC void deflateio_out_byte(void *data, uint8_t b) {
     }
 }
 
-STATIC bool deflateio_init_write(mp_obj_deflateio_t *self) {
+static bool deflateio_init_write(mp_obj_deflateio_t *self) {
     if (self->write) {
         return true;
     }
@@ -214,7 +214,7 @@ STATIC bool deflateio_init_write(mp_obj_deflateio_t *self) {
 }
 #endif
 
-STATIC mp_obj_t deflateio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args_in) {
+static mp_obj_t deflateio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args_in) {
     // args: stream, format=NONE, wbits=0, close=False
     mp_arg_check_num(n_args, n_kw, 1, 4, false);
 
@@ -241,7 +241,7 @@ STATIC mp_obj_t deflateio_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_uint_t deflateio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t deflateio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_deflateio_t *self = MP_OBJ_TO_PTR(o_in);
 
     if (self->stream == MP_OBJ_NULL || !deflateio_init_read(self)) {
@@ -268,7 +268,7 @@ STATIC mp_uint_t deflateio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *e
 }
 
 #if MICROPY_PY_DEFLATE_COMPRESS
-STATIC mp_uint_t deflateio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t deflateio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_deflateio_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->stream == MP_OBJ_NULL || !deflateio_init_write(self)) {
@@ -302,7 +302,7 @@ static inline void put_be32(char *buf, uint32_t value) {
 }
 #endif
 
-STATIC mp_uint_t deflateio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t deflateio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     if (request == MP_STREAM_CLOSE) {
         mp_obj_deflateio_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -351,7 +351,7 @@ STATIC mp_uint_t deflateio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t 
     }
 }
 
-STATIC const mp_stream_p_t deflateio_stream_p = {
+static const mp_stream_p_t deflateio_stream_p = {
     .read = deflateio_read,
     #if MICROPY_PY_DEFLATE_COMPRESS
     .write = deflateio_write,
@@ -360,7 +360,7 @@ STATIC const mp_stream_p_t deflateio_stream_p = {
 };
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_rom_map_elem_t deflateio_locals_dict_table[] = {
+static const mp_rom_map_elem_t deflateio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
@@ -371,9 +371,9 @@ STATIC const mp_rom_map_elem_t deflateio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&mp_stream___exit___obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(deflateio_locals_dict, deflateio_locals_dict_table);
+static MP_DEFINE_CONST_DICT(deflateio_locals_dict, deflateio_locals_dict_table);
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     deflateio_type,
     MP_QSTR_DeflateIO,
     MP_TYPE_FLAG_NONE,
@@ -382,7 +382,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &deflateio_locals_dict
     );
 
-STATIC const mp_rom_map_elem_t mp_module_deflate_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_deflate_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_deflate) },
     { MP_ROM_QSTR(MP_QSTR_DeflateIO), MP_ROM_PTR(&deflateio_type) },
     { MP_ROM_QSTR(MP_QSTR_AUTO), MP_ROM_INT(DEFLATEIO_FORMAT_AUTO) },
@@ -390,7 +390,7 @@ STATIC const mp_rom_map_elem_t mp_module_deflate_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ZLIB), MP_ROM_INT(DEFLATEIO_FORMAT_ZLIB) },
     { MP_ROM_QSTR(MP_QSTR_GZIP), MP_ROM_INT(DEFLATEIO_FORMAT_GZIP) },
 };
-STATIC MP_DEFINE_CONST_DICT(mp_module_deflate_globals, mp_module_deflate_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_deflate_globals, mp_module_deflate_globals_table);
 
 const mp_obj_module_t mp_module_deflate = {
     .base = { &mp_type_module },

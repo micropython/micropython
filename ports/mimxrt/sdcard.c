@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
+
 #if MICROPY_PY_MACHINE_SDCARD
 
 #include "sdcard.h"

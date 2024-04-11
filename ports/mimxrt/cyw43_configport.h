@@ -24,8 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_CYW43_CONFIGPORT_H
-#define MICROPY_INCLUDED_STM32_CYW43_CONFIGPORT_H
+#ifndef MICROPY_INCLUDED_MIMXRT_CYW43_CONFIGPORT_H
+#define MICROPY_INCLUDED_MIMXRT_CYW43_CONFIGPORT_H
 
 // The board-level config will be included here, so it can set some CYW43 values.
 #include "py/mpconfig.h"
@@ -61,7 +61,7 @@
 #define CYW43_THREAD_EXIT               MICROPY_PY_LWIP_EXIT
 #define CYW43_THREAD_LOCK_CHECK
 
-#define CYW43_HOST_NAME                 mod_network_hostname
+#define CYW43_HOST_NAME                 mod_network_hostname_data
 
 #define CYW43_SDPCM_SEND_COMMON_WAIT    __WFI();
 #define CYW43_DO_IOCTL_WAIT             __WFI();
@@ -152,4 +152,4 @@ static inline int cyw43_sdio_transfer_cmd53(bool write, uint32_t block_size, uin
 
 #define CYW43_EVENT_POLL_HOOK MICROPY_EVENT_POLL_HOOK
 
-#endif // MICROPY_INCLUDED_STM32_CYW43_CONFIGPORT_H
+#endif // MICROPY_INCLUDED_MIMXRT_CYW43_CONFIGPORT_H

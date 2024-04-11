@@ -585,17 +585,25 @@ typedef struct _mp_getiter_iternext_custom_t {
 } mp_getiter_iternext_custom_t;
 
 // Buffer protocol
+
 typedef struct _mp_buffer_info_t {
     void *buf;      // can be NULL if len == 0
     size_t len;     // in bytes
     int typecode;   // as per binary.h
 } mp_buffer_info_t;
+
 #define MP_BUFFER_READ  (1)
 #define MP_BUFFER_WRITE (2)
 #define MP_BUFFER_RW (MP_BUFFER_READ | MP_BUFFER_WRITE)
+#define MP_BUFFER_RAISE_IF_UNSUPPORTED (4)
+
 typedef mp_int_t (*mp_buffer_fun_t)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
-void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+
+static inline void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    mp_get_buffer(obj, bufinfo, flags | MP_BUFFER_RAISE_IF_UNSUPPORTED);
+}
 
 // This struct will be updated to become a variable sized struct. In order to
 // use this as a member, or allocate dynamically, use the mp_obj_empty_type_t
@@ -825,9 +833,13 @@ extern const mp_obj_type_t mp_type_fun_builtin_2;
 extern const mp_obj_type_t mp_type_fun_builtin_3;
 extern const mp_obj_type_t mp_type_fun_builtin_var;
 extern const mp_obj_type_t mp_type_fun_bc;
+extern const mp_obj_type_t mp_type_fun_native;
+extern const mp_obj_type_t mp_type_fun_viper;
+extern const mp_obj_type_t mp_type_fun_asm;
 extern const mp_obj_type_t mp_type_module;
 extern const mp_obj_type_t mp_type_staticmethod;
 extern const mp_obj_type_t mp_type_classmethod;
+extern const mp_obj_type_t mp_type_bound_meth;
 extern const mp_obj_type_t mp_type_property;
 extern const mp_obj_type_t mp_type_stringio;
 extern const mp_obj_type_t mp_type_bytesio;
@@ -904,8 +916,18 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 // Helper versions of m_new_obj when you need to immediately set base.type.
 // Implementing this as a call rather than inline saves 8 bytes per usage.
 #define mp_obj_malloc(struct_type, obj_type) ((struct_type *)mp_obj_malloc_helper(sizeof(struct_type), obj_type))
-#define mp_obj_malloc_var(struct_type, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_helper(sizeof(struct_type) + sizeof(var_type) * (var_num), obj_type))
+#define mp_obj_malloc_var(struct_type, var_field, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_helper(offsetof(struct_type, var_field) + sizeof(var_type) * (var_num), obj_type))
 void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
+
+// Object allocation macros for allocating objects that have a finaliser.
+#if MICROPY_ENABLE_FINALISER
+#define mp_obj_malloc_with_finaliser(struct_type, obj_type) ((struct_type *)mp_obj_malloc_with_finaliser_helper(sizeof(struct_type), obj_type))
+#define mp_obj_malloc_var_with_finaliser(struct_type, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_with_finaliser_helper(sizeof(struct_type) + sizeof(var_type) * (var_num), obj_type))
+void *mp_obj_malloc_with_finaliser_helper(size_t num_bytes, const mp_obj_type_t *type);
+#else
+#define mp_obj_malloc_with_finaliser(struct_type, obj_type) mp_obj_malloc(struct_type, obj_type)
+#define mp_obj_malloc_var_with_finaliser(struct_type, var_type, var_num, obj_type) mp_obj_malloc_var(struct_type, var_type, var_num, obj_type)
+#endif
 
 // These macros are derived from more primitive ones and are used to
 // check for more specific object types.
@@ -919,10 +941,10 @@ void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
 // optimizations (other tricks like using ({ expr; exper; }) or (exp, expr, expr) in mp_obj_is_type() result
 // in missed optimizations)
 #define mp_type_assert_not_bool_int_str_nonetype(t) (                                     \
-    MP_STATIC_ASSERT_NOT_MSC((t) != &mp_type_bool), assert((t) != &mp_type_bool),         \
-    MP_STATIC_ASSERT_NOT_MSC((t) != &mp_type_int), assert((t) != &mp_type_int),           \
-    MP_STATIC_ASSERT_NOT_MSC((t) != &mp_type_str), assert((t) != &mp_type_str),           \
-    MP_STATIC_ASSERT_NOT_MSC((t) != &mp_type_NoneType), assert((t) != &mp_type_NoneType), \
+    MP_STATIC_ASSERT_NONCONSTEXPR((t) != &mp_type_bool), assert((t) != &mp_type_bool),         \
+    MP_STATIC_ASSERT_NONCONSTEXPR((t) != &mp_type_int), assert((t) != &mp_type_int),           \
+    MP_STATIC_ASSERT_NONCONSTEXPR((t) != &mp_type_str), assert((t) != &mp_type_str),           \
+    MP_STATIC_ASSERT_NONCONSTEXPR((t) != &mp_type_NoneType), assert((t) != &mp_type_NoneType), \
     1)
 
 #define mp_obj_is_type(o, t) (mp_type_assert_not_bool_int_str_nonetype(t) && mp_obj_is_exact_type(o, t))

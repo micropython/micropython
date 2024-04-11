@@ -44,7 +44,7 @@ Example usage of SD card reader:
     tf = mount_tf()
     os.listdir()
 """
-import os
+import vfs
 import time
 import framebuf
 
@@ -54,7 +54,7 @@ from sdcard import SDCard
 
 def mount_tf(self, mount_point="/"):
     sd = SDCard(SPI(0), Pin("P15", mode=Pin.OUT))
-    os.mount(sd, mount_point)
+    vfs.mount(sd, mount_point)
 
 
 class ILI9341:

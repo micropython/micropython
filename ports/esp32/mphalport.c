@@ -49,11 +49,16 @@
 
 TaskHandle_t mp_main_task_handle;
 
-STATIC uint8_t stdin_ringbuf_array[260];
+static uint8_t stdin_ringbuf_array[260];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
-void check_esp_err(esp_err_t code) {
+#if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_NORMAL
+void check_esp_err_(esp_err_t code)
+#else
+void check_esp_err_(esp_err_t code, const char *func, const int line, const char *file)
+#endif
+{
     if (code != ESP_OK) {
         // map esp-idf error code to posix error code
         uint32_t pcode = -code;
@@ -75,7 +80,16 @@ void check_esp_err(esp_err_t code) {
             return;
         }
         o_str->base.type = &mp_type_str;
+        #if MICROPY_ERROR_REPORTING > MICROPY_ERROR_REPORTING_NORMAL
+        char err_msg[64];
+        esp_err_to_name_r(code, err_msg, sizeof(err_msg));
+        vstr_t vstr;
+        vstr_init(&vstr, 80);
+        vstr_printf(&vstr, "0x%04X %s in function '%s' at line %d in file '%s'", code, err_msg, func, line, file);
+        o_str->data = (const byte *)vstr_null_terminated_str(&vstr);
+        #else
         o_str->data = (const byte *)esp_err_to_name(code); // esp_err_to_name ret's ptr to const str
+        #endif
         o_str->len = strlen((char *)o_str->data);
         o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
         // raise
@@ -86,6 +100,9 @@ void check_esp_err(esp_err_t code) {
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
+    #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    usb_serial_jtag_poll_rx();
+    #endif
     if ((poll_flags & MP_STREAM_POLL_RD) && stdin_ringbuf.iget != stdin_ringbuf.iput) {
         ret |= MP_STREAM_POLL_RD;
     }
@@ -97,6 +114,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
+        #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+        usb_serial_jtag_poll_rx();
+        #endif
         int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
@@ -105,24 +125,34 @@ int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     // Only release the GIL if many characters are being sent
+    mp_uint_t ret = len;
+    bool did_write = false;
     bool release_gil = len > 20;
     if (release_gil) {
         MP_THREAD_GIL_EXIT();
     }
     #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
     usb_serial_jtag_tx_strn(str, len);
+    did_write = true;
     #elif CONFIG_USB_OTG_SUPPORTED
     usb_tx_strn(str, len);
+    did_write = true;
     #endif
     #if MICROPY_HW_ENABLE_UART_REPL
     uart_stdout_tx_strn(str, len);
+    did_write = true;
     #endif
     if (release_gil) {
         MP_THREAD_GIL_ENTER();
     }
-    mp_os_dupterm_tx_strn(str, len);
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res >= 0) {
+        did_write = true;
+        ret = MIN((mp_uint_t)dupterm_res, ret);
+    }
+    return did_write ? ret : 0;
 }
 
 uint32_t mp_hal_ticks_ms(void) {
@@ -194,7 +224,12 @@ uint64_t mp_hal_time_ns(void) {
     return ns;
 }
 
-// Wake up the main task if it is sleeping
+// Wake up the main task if it is sleeping.
+void mp_hal_wake_main_task(void) {
+    xTaskNotifyGive(mp_main_task_handle);
+}
+
+// Wake up the main task if it is sleeping, to be called from an ISR.
 void mp_hal_wake_main_task_from_isr(void) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     vTaskNotifyGiveFromISR(mp_main_task_handle, &xHigherPriorityTaskWoken);
