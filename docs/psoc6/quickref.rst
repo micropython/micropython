@@ -589,28 +589,74 @@ SPI object is created with default settings or settings of previous initializati
 ::
     
     from machine import SPI
-    spi = SPI(0, sck='P11_2', mosi='P11_0', miso='P11_1') # Default assignment: id=0, SCK=P11_2  ,MOSI=P11_0, MISO=P11_1
-    spi.init()
-
-Management of a CS signal should happen in user code (via machine.Pin class).
-
-::
-    
-    from machine import Pin
-    cs = Pin('P9_3', mode=Pin.OUT, value=1)      # Create chip-select on pin P9_3
-    cs(0)                                        # select the peripheral
-
-Here, ``id=0`` should be passed mandatorily which selects the ``master`` mode operation.
-If the constructor is called with any additional parameters then SPI object is created & initialised.
-
-::    
-    
-    spi = SPI(0, sck='P11_2', mosi='P11_0', miso='P11_1', baudrate=2000000) #object is created & initialised with baudrate=2000000 & default parameters
-    spi = SPI(0, baudrate=1500000, polarity=1, phase=1, bits=8, firstbit=SPI.LSB, sck='P11_2', mosi='P11_0', miso='P11_1')
+    spi = SPI(baudrate=1000000, polarity=0,phase=0,bits=8,firstbit=SPI.MSB,ssel="P6_3",sck='P6_2', mosi='P6_0', miso='P6_1')
 
 Methods
 ^^^^^^^
 All the methods(functions) given in :ref:`machine.SPI <machine.SPI>` class have been implemented in this port.
+
+Hardware SPI bus slave
+----------------------
+
+The PSoC6™ port offers an additional class to implement an SPI slave device. The SPI master node connected to the slave can exchange data over SPI.
+
+.. warning:: 
+    This is not part of the core MicroPython libraries. Therefore, not mapping any existing machine class API and neither supported by other ports.
+
+The constructor
+^^^^^^^^^^^^^^^
+
+.. class:: SPISlave(baudrate,polarity,phase,bits,firstbit,ssel,sck, mosi, miso)
+
+    Constructs and returns a new SPI slave object using the following parameters.
+   
+    Required arguments: 
+      - *ssel* should be pin name supporting SSEL functionality. 
+      - *sck* should be a pin name supporting the SCK functionality.
+      - *mosi* should be a pin name supporting the MOSI functionality.
+      - *miso* should be a pin name supporting the MISO functionality.
+
+    Optional arguments:
+      - *baudrate* should be an integer which sets the clock rate. If not passed, by default is set to 1000000 Hz.
+      - *polarity* can be 0 or 1. Default is set to 0.
+      - *phase* can be 0 or 1. Default set to 0.
+      - *bits* is width in bits for each transfer. Only 8 is supported.
+      - *firstbit* can be SPI.MSB or SPI.LSB. Default is SPI.MSB.
+
+    Example:
+        ::
+            
+            from machine import SPISlave
+            
+            spi_slave = spi = SPI(baudrate=1000000, polarity=0,phase=0,bits=8,firstbit=SPI.MSB,ssel="P6_3",sck='P6_2', mosi='P6_0', miso='P6_1')
+
+Methods
+^^^^^^^
+
+.. method:: SPISlave.deinit()
+
+    Deinitialises the SPI slave.
+
+
+.. method:: SPISlave.write(buf)
+
+    Write the bytes contained in ``buf``.
+
+    Required arguments: 
+      - *buf* should be a buffer with bytes of data to be written.
+    
+    Returns ``None``.
+
+
+.. method:: SPISlave.read(buf)
+
+    Reads the data in SPI bus to ``buf``.
+
+    Required arguments: 
+      - *buf* should be a buffer where data from bus needs to be stored.
+    
+    Returns ``None``.
+
 
 Timers
 ------
