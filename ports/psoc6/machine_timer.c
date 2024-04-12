@@ -51,10 +51,10 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
 
     if (args[ARG_freq].u_obj != mp_const_none) {
         self->freq = args[ARG_freq].u_int;
-        period = 1.0f / (float)(args[ARG_freq].u_int);
+        period = 1.0f / (float)(args[ARG_freq].u_int);   // Frequency to period conversion
     } else {
         self->period = args[ARG_period].u_int;
-        period = (float)args[ARG_period].u_int / 1000.0f;
+        period = (float)args[ARG_period].u_int / 1000.0f;   // ms to s conversion
     }
 
     if (args[ARG_callback].u_obj != mp_const_none) {
@@ -62,14 +62,14 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     }
 
 
-    uint32_t period_hal;
-    uint32_t fz_hal = 1000000;
-    period_hal = (uint32_t)(period * fz_hal) - 1;
+    uint32_t period_hal;        // Period/count input for the PSoC6 HAL timer configuration
+    uint32_t fz_hal = 1000000;  // Frequency for the PSoC timer clock is fixed as 1 MHz
+    period_hal = (uint32_t)(period * fz_hal) - 1; // Overflow Period = (Period + 1)/ frequency ;period = (overflow period * frequency)-1
 
-// Adjust fz_hal if necessary
+    // Adjust the frequency & recalculate the period if period/count is  greater than the maximum overflow value for a 32 bit timer ie; 2^32
     while (period_hal > 4294967296) {
         fz_hal = fz_hal / 10;  // Reduce the fz_hal value by 10%
-        period_hal = (uint32_t)(period * fz_hal) - 1;  // Recalculate period_hal
+        period_hal = (uint32_t)(period * fz_hal) - 1;  // Recalculate Period input for the PSoC6 HAL timer configuration
     }
 
     // Timer initialisation of port
@@ -78,10 +78,10 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     const cyhal_timer_cfg_t timer_cfg =
     {
         .compare_value = 0,                 /* Timer compare value, not used */
-        .period = period_hal,              /* Defines the timer period */
+        .period = period_hal,               /* Defines the timer period */
         .direction = CYHAL_TIMER_DIR_UP,    /* Timer counts up */
         .is_compare = false,                /* Don't use compare mode */
-        .is_continuous = self->mode,              /* Run the timer */
+        .is_continuous = self->mode,        /* Run the timer */
         .value = 0                          /* Initial value of counter */
     };
 
