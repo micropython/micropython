@@ -223,7 +223,11 @@ MP_WEAK void SystemClock_Config(void) {
     HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
     #elif defined(STM32L4)
     // Configure LSE Drive Capability
+    #ifdef MICROPY_HW_RTC_LSEDRIVE
+    __HAL_RCC_LSEDRIVE_CONFIG(MICROPY_HW_RTC_LSEDRIVE);
+    #else
     __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
+    #endif
     #endif
 
     #if defined(STM32H7)
