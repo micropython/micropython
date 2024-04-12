@@ -16,7 +16,7 @@ def call_periodic(timer):
 
 
 def test_oneshot():
-    # Periodic timer
+    # Oneshot timer
     global oneshot_triggered
     tim_oneshot = Timer(0, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot)
 
@@ -28,13 +28,13 @@ def test_oneshot():
                 print("Oneshot timer triggered")
                 oneshot_triggered = False
     finally:
-        tim_oneshot.deinit()  # Deinitialize the periodic timer
+        tim_oneshot.deinit()  # Deinitialize the Oneshot timer
 
 
 def test_periodic():
     # Periodic timer
     global periodic_triggered
-    tim_periodic = Timer(0, period=1, mode=Timer.PERIODIC, callback=call_periodic)
+    tim_periodic = Timer(0, period=1000, mode=Timer.PERIODIC, callback=call_periodic)
 
     try:
         # Wait for 15 seconds
