@@ -86,15 +86,8 @@ static bool system_enable_global_irq(uint8_t state) {
 
 // API to return clock freq; Fast CLK (CM4) is the main sys clk
 static uint32_t system_get_cpu_freq(void) {
-//    return Cy_SysClk_ClkPathMuxGetFrequency(Cy_SysClk_ClkPathGetSource(0UL));
     return Cy_SysClk_ClkFastGetFrequency();
 }
-
-// TODO: unused. Required ?
-// API to return clock freq divider for Fast CLK (CM4)
-// static uint8_t system_get_cpu_freq_div(void) {
-//     return Cy_SysClk_ClkFastGetDivider();
-// }
 
 void machine_init(void) {
     mplogger_print("machine init\n");
@@ -198,11 +191,41 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
 }
 
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("Not implemented!!!\n"));
+    cy_rslt_t result;
+    if (n_args != 0) {
+        uint32_t expiry = mp_obj_get_int(args[0]);
+        cyhal_lptimer_t obj;
+        uint32_t actual_ms;
+        result = cyhal_syspm_tickless_sleep(&obj, expiry, &actual_ms);
+        if (result != CY_RSLT_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Light sleeep failed %lx !"), result);
+        }
+    } else {
+        result = cyhal_syspm_sleep();
+        if (result != CY_RSLT_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Light sleeep failed %lx !"), result);
+        }
+    }
 }
 
 NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("Not implemented!!!\n"));
+    cy_rslt_t result;
+    if (n_args != 0) {
+        uint32_t expiry = mp_obj_get_int(args[0]);
+        cyhal_lptimer_t obj;
+        uint32_t actual_ms;
+        result = cyhal_syspm_tickless_deepsleep(&obj, expiry, &actual_ms);
+        if (result != CY_RSLT_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Deep sleeep failed %lx !"), result);
+        }
+    } else {
+        cy_rslt_t result = cyhal_syspm_deepsleep();
+        if (result != CY_RSLT_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Deep sleeep failed %lx !"), result);
+        }
+    }
+    for (;;) {
+    }
 }
 
 // machine.unique_id()
@@ -280,6 +303,9 @@ static void mp_machine_idle(void) {
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },  \
+    \
+    { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
     \
     /* class constants */ \
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(MACHINE_PWRON_RESET) },  \
