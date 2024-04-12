@@ -567,16 +567,6 @@ Software SPI (using bit-banging) works on all pins, and is accessed via the
 
 Hardware SPI bus
 ----------------
-Hardware SPI works on the following listed pair of SPI pins. 
-
-=====  ===========  ============  ============
-\      Default  
-=====  ===========  ============  ============
-MOSI    P9_0           P6_0         P10_0
-MISO    P9_1           P6_1         P10_1
-SCK     P9_2           P6_2         P10_2
-=====  ===========  ============  ============
-
 .. 
     TODO: This is only applicable to the CY8CPROTO-062-4343W. This does not belong here. 
     TODO: Define approach on how the user gets to know the pinout diagram, alternate function of each board
@@ -585,7 +575,7 @@ SCK     P9_2           P6_2         P10_2
     - To create a pinout diagram? 
 
 Refer `PSoC 6 MCU: CY8C62x8, CY8C62xA Datasheet <https://www.infineon.com/dgdl/Infineon-PSOC_6_MCU_CY8C62X8_CY8C62XA-DataSheet-v18_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ee7d03a70b1>`_
-for additional details regarding all the SPI capable pins. The pins ``sck``, ``mosi`` and ``miso`` *must* be specified when
+for details regarding all the SPI capable pins. The pins ``sck``, ``mosi`` and ``miso`` *must* be specified when
 initialising Software SPI.
 
 The driver is accessed via :ref:`machine.SPI <machine.SPI>`

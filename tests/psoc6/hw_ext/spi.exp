@@ -1,0 +1,27 @@
+SPI Hardware Test
+
+Init failed as all required arguments not passed!
+Init failed as all required arguments not passed!
+must specify all of sck/mosi/miso
+must specify all of sck/mosi/miso
+
+ SPI(baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=0, ssel=51, sck=50, mosi=48, miso=49)
+SPISlave(baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=0, ssel=107, sck=106, mosi=104, miso=105)
+
+Writing 4-bytes data from master to slave
+transffered data:  b'\x88\x88\x11\x11'
+received data:  bytearray(b'\x88\x88\x11\x11')
+data transfer is successful:  True
+
+Writing 8-bytes data from slave to master
+transffered data:  b'\x11\x11\x88\x88\x11\x11\x88\x88'
+received data by master:  b'\x11\x11\x88\x88\x11\x11\x88\x88'
+data transfer is successful:  True
+
+ SPI(baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=0, ssel=51, sck=50, mosi=48, miso=49)
+SPISlave(baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=1, ssel=107, sck=106, mosi=104, miso=105)
+
+Writing data from master to slave with firstbit as MSB (master) and LSB(slave)
+transffered data:  b'\x11\x11\x88\x88\x11\x11\x88\x88'
+received data:  bytearray(b'\x88\x88\x11\x11\x88\x88\x11\x11')
+data transfer is successful:  True
