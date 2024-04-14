@@ -299,7 +299,7 @@ STATIC bool maybe_run_list(const char *const *filenames, size_t n_filenames) {
     if (_current_executing_filename == NULL) {
         return false;
     }
-    mp_hal_stdout_tx_str(line_clear);
+    serial_write(line_clear);
     mp_hal_stdout_tx_str(_current_executing_filename);
     serial_write_compressed(MP_ERROR_TEXT(" output:\n"));
 
