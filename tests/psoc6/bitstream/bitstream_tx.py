@@ -14,16 +14,29 @@ an input, which is used for synchronization with the receiver.
 machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
     bitstream_pin_name = "P12_1"
-    wait_signal_pin_name = "P13_7"
+    wait_signal_pin_name = "P13_5"
 elif "CY8CPROTO-063-BLE" in machine:
     bitstream_pin_name = "P5_2"
-    wait_signal_pin_name = "P12_7"
+    wait_signal_pin_name = "P6_2"
+
+signal_received = False
+
+
+def signal_irq(arg):
+    global signal_received
+    signal_received = True
 
 
 def wait_for_rx_ready():
+    global signal_received
     wait_signal_pin = Pin(wait_signal_pin_name, Pin.IN)
-    while wait_signal_pin.value() == 1:
+    wait_signal_pin.irq(handler=signal_irq, trigger=Pin.IRQ_RISING)
+    while not signal_received:
         pass
+
+    signal_received = False
+    wait_signal_pin.deinit()
+    # print("rx ready")
 
 
 def send_bitstream():
@@ -33,7 +46,9 @@ def send_bitstream():
     for i in range(2):
         bitstream(bitstream_pin, 0, timing, buf)
 
+    bitstream_pin.deinit()
 
-print("bitstream tx")
+
+# print("bitstream tx")
 wait_for_rx_ready()
 send_bitstream()

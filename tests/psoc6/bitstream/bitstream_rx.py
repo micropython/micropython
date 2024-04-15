@@ -13,11 +13,11 @@ another is configured as an input, which is used for receiving the bitstream sig
 machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
     bitstream_in_pin_name = "P12_1"
-    rx_ready_signal_pin_name = "P13_7"
+    rx_ready_signal_pin_name = "P13_5"
 
 elif "CY8CPROTO-063-BLE" in machine:
-    bitstream_in_pin_name = "P5_3"
-    rx_ready_signal_pin_name = "P12_6"
+    bitstream_in_pin_name = "P5_2"
+    rx_ready_signal_pin_name = "P6_2"
 
 expected_values = [
     8000,
@@ -25,13 +25,13 @@ expected_values = [
     8000,
     5000,
     8000,
-    50000,
+    5000,
     8000,
     5000,
     3000,
     1000,
     3000,
-    10000,
+    1000,
     3000,
     1000,
     3000,
@@ -40,16 +40,26 @@ expected_values = [
 tolerance = 100
 
 
+def notify_readiness_to_tx():
+    rx_ready_signal_pin = Pin(
+        rx_ready_signal_pin_name, Pin.OUT, value=0
+    )  # signal to inform the transmitter that receiver is read
+    rx_ready_signal_pin.low()
+    # delay
+    for i in range(1000):
+        pass
+    rx_ready_signal_pin.high()
+    rx_ready_signal_pin.deinit()
+
+
 def bitstream_rx_measure():
     global periods
     periods = []
     last_value = 0
     bitstream_in_pin = Pin(bitstream_in_pin_name, Pin.IN)
-    rx_ready_signal_pin = Pin(
-        rx_ready_signal_pin_name, Pin.OUT, value=0
-    )  # signal to inform the transmitter that receiver is ready
     start_time = time.ticks_us()
     current_value = 0
+
     for i in range(17):
         while current_value == last_value:
             current_value = bitstream_in_pin.value()
@@ -59,15 +69,27 @@ def bitstream_rx_measure():
         start_time = current_time
         periods.append(time_period)
 
+    bitstream_in_pin.deinit()
+
 
 def validate_bitstream():
     for i in range(len(periods) - 1):
-        if abs((periods[i + 1] - expected_values[i]) <= tolerance):
+        diff = abs(periods[i + 1] - expected_values[i])
+        if diff <= tolerance:
             print("true")
         else:
             print("false")
+            print(
+                "expected :"
+                + str(expected_values[i])
+                + " period: "
+                + str(periods[i + 1])
+                + " diff: "
+                + str(diff)
+            )
 
 
-print("Bitstream capture")
+print("bitstream rx")
+notify_readiness_to_tx()
 bitstream_rx_measure()
 validate_bitstream()
