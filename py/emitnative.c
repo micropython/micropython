@@ -129,6 +129,7 @@
 
 // Whether a slot is needed to store LOCAL_IDX_EXC_HANDLER_UNWIND
 #define NEED_EXC_HANDLER_UNWIND(emit) ((emit)->scope->exc_stack_size > 0)
+#define NEED_THROW_VAL(emit) ((emit)->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR)
 
 // Whether registers can be used to store locals (only true if there are no
 // exception handlers, because otherwise an nlr_jump will restore registers to
@@ -139,6 +140,7 @@
 #define LOCAL_IDX_EXC_VAL(emit) (NLR_BUF_IDX_RET_VAL)
 #define LOCAL_IDX_EXC_HANDLER_PC(emit) (NLR_BUF_IDX_LOCAL_1)
 #define LOCAL_IDX_EXC_HANDLER_UNWIND(emit) (SIZEOF_NLR_BUF + 1) // this needs a dedicated variable outside nlr_buf_t
+#define LOCAL_IDX_THROW_VAL(emit) (SIZEOF_NLR_BUF + 2) // needs a dedicated variable outside nlr_buf_t, following inject_exc in py/vm.c
 #define LOCAL_IDX_RET_VAL(emit) (SIZEOF_NLR_BUF) // needed when NEED_GLOBAL_EXC_HANDLER is true
 #define LOCAL_IDX_FUN_OBJ(emit) ((emit)->code_state_start + OFFSETOF_CODE_STATE_FUN_BC)
 #define LOCAL_IDX_OLD_GLOBALS(emit) ((emit)->code_state_start + OFFSETOF_CODE_STATE_IP)
@@ -426,7 +428,9 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     if (NEED_GLOBAL_EXC_HANDLER(emit)) {
         emit->code_state_start = SIZEOF_NLR_BUF; // for nlr_buf_t
         emit->code_state_start += 1;  // for return_value
-        if (NEED_EXC_HANDLER_UNWIND(emit)) {
+        if (NEED_THROW_VAL(emit)) {
+            emit->code_state_start += 2;
+        } else if (NEED_EXC_HANDLER_UNWIND(emit)) {
             emit->code_state_start += 1;
         }
     }
@@ -545,11 +549,11 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             ASM_MOV_REG_REG(emit->as, REG_GENERATOR_STATE, REG_PARENT_ARG_1);
             #endif
 
-            // Put throw value into LOCAL_IDX_EXC_VAL slot, for yield/yield-from
+            // Put throw value into LOCAL_IDX_THROW_VAL slot, for yield/yield-from
             #if N_X86
             asm_x86_mov_arg_to_r32(emit->as, 1, REG_PARENT_ARG_2);
             #endif
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_PARENT_ARG_2);
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_PARENT_ARG_2);
 
             // Load REG_FUN_TABLE with a pointer to mp_fun_table, found in the const_table
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_GENERATOR_STATE, LOCAL_IDX_FUN_OBJ(emit));
@@ -1252,8 +1256,10 @@ static void emit_native_global_exc_entry(emit_t *emit) {
 
             // This is the first entry of the generator
 
-            // Check LOCAL_IDX_EXC_VAL for any injected value
-            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
+            // Check LOCAL_IDX_THROW_VAL for any injected value
+            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_THROW_VAL(emit));
+            ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL);
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
             emit_call(emit, MP_F_NATIVE_RAISE);
         }
     }
@@ -2988,18 +2994,22 @@ static void emit_native_yield(emit_t *emit, int kind) {
     emit_native_adjust_stack_size(emit, 1); // send_value
 
     if (kind == MP_EMIT_YIELD_VALUE) {
-        // Check LOCAL_IDX_EXC_VAL for any injected value
-        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
+        // Check LOCAL_IDX_THROW_VAL for any injected value
+        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_THROW_VAL(emit));
+        ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL);
+        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
         emit_call(emit, MP_F_NATIVE_RAISE);
     } else {
         // Label loop entry
         emit_native_label_assign(emit, *emit->label_slot + 2);
 
         // Get the next item from the delegate generator
+        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_3, LOCAL_IDX_THROW_VAL(emit)); // throw_value
+        ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL);
+        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
         vtype_kind_t vtype;
         emit_pre_pop_reg(emit, &vtype, REG_ARG_2); // send_value
         emit_access_stack(emit, 1, &vtype, REG_ARG_1); // generator
-        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_3, LOCAL_IDX_EXC_VAL(emit)); // throw_value
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_ARG_3);
         emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, 1); // ret_value
         emit_call(emit, MP_F_NATIVE_YIELD_FROM);
