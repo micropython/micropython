@@ -38,7 +38,7 @@ jobs:
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Save firmware bin
         if: success() && github.repository_owner == 'infineon'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with: 
           name: mpy-psoc6_${{ matrix.board }}_${{ steps.commit_sha.outputs.sha_short }}
           path: ports/psoc6/build/firmware.hex
@@ -57,7 +57,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Download binaries
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
     - name: Container setup
       run: |
         echo ${{ secrets.SELF_HOSTED_PASSWORD }} | sudo -S chmod 666 /var/run/docker.sock
@@ -83,13 +83,13 @@ jobs:
         ./psoc6/run_psoc6_tests.sh -c --psoc6 --dev0 ${devs[0]} 
     - name: Run psoc6 hardware extended tests
       run: | 
-        devs=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml --hw-ext 0.1.0))
+        devs=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml --hw-ext 0.2.0.a))
         cd tests
         ./psoc6/run_psoc6_tests.sh -c --psoc6-hwext --dev0 ${devs[0]} 
     - name: Run psoc6 bitstream tests
       run: | 
-        devs0=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml --hw-ext 0.1.0))
-        devs1=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml --hw-ext 0.2.0))
+        devs0=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml --hw-ext 0.2.0.a))
+        devs1=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml --hw-ext 0.2.0.b))
         cd tests
         ./psoc6/run_psoc6_tests.sh -c -b --dev0 ${devs0[0]} --dev1 ${devs1[0]}
     # TODO: Enable when HIL is upgraded 
