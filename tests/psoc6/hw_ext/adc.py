@@ -20,16 +20,11 @@ if "CY8CPROTO-062-4343W" in machine:
     adc_pin_mid = "P10_3"
     adc_pin_max = "P10_0"
     adc_wrong_pin_name = "P13_7"
-    # Enable after DUT setup
-    # print("SKIP")
-    # raise SystemExit
 elif "CY8CPROTO-063-BLE" in machine:
     adc_pin_gnd = "P10_2"
     adc_pin_mid = "P10_3"
     adc_pin_max = "P10_4"
     adc_wrong_pin_name = "P13_7"
-    # print("SKIP")
-    # raise SystemExit
 
 # 0.35V
 tolerance_uv = 350000
@@ -62,17 +57,6 @@ try:
     adc = ADC(adc_wrong_pin_name)
 except:
     print("Invalid ADC Pin\n")
-
-try:
-    adcBlock = ADCBlock(1)
-except:
-    print("TypeError: Specified ADC id not supported. Currently only block 0 is configured!")
-
-try:
-    adcBlock = ADCBlock(0, bits=10)
-except:
-    print("TypeError: Invalid bits. Current ADC configuration supports only 12 bits resolution!")
-
 
 block = ADCBlock(0, bits=12)
 # ADCBlock.connect(channel)

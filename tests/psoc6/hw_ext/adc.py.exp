@@ -1,6 +1,4 @@
 Invalid ADC Pin
-TypeError: Specified ADC id not supported. Currently only block 0 is configured!
-TypeError: Invalid bits. Current ADC configuration supports only 12 bits resolution!
 
 Expected voltage -  0 (uV) is approx same as obtained voltage(uV):  True
 Expected voltage -  0 (raw) is approx same as obtained voltage(raw):  True
