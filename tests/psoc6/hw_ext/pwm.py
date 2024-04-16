@@ -11,12 +11,10 @@ machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
     pwm_pin = "P13_7"
     pin_in = "P13_6"
-    duty_tolerance = 10.0  # Different per board to accommodate HIL limitations
-
 elif "CY8CPROTO-063-BLE" in machine:
     pwm_pin = "P12_6"
     pin_in = "P12_7"
-    duty_tolerance = 50.0
+
 
 input_pin = Pin(pin_in, Pin.IN)
 
@@ -24,6 +22,7 @@ start_time = 0
 low_signal_start_time = 0
 high_signal_start_time = 0
 tolerance = 3.0
+duty_tolerance = 5.0
 debug = False
 
 
@@ -125,7 +124,7 @@ validate_signal(exp_freq=1, exp_duty_u16=0, exp_duty_ns=250000000, exp_dutycycle
 # T = 1sec (50% dc)
 pwm.duty_ns(500000000)
 # Let the first pulse pass
-time.sleep(1)
+time.sleep(2)
 print(
     "\nTest Case 2: \n freq(Hz): ",
     pwm.freq(),
