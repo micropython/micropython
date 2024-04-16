@@ -35,23 +35,7 @@
 
 #include "py/mpstate.h"
 #include "py/asmthumb.h"
-
-#ifdef _MSC_VER
-#include <intrin.h>
-
-static uint32_t mp_clz(uint32_t x) {
-    unsigned long lz = 0;
-    return _BitScanReverse(&lz, x) ? (sizeof(x) * 8 - 1) - lz : 0;
-}
-
-static uint32_t mp_ctz(uint32_t x) {
-    unsigned long tz = 0;
-    return _BitScanForward(&tz, x) ? tz : 0;
-}
-#else
-#define mp_clz(x) __builtin_clz(x)
-#define mp_ctz(x) __builtin_ctz(x)
-#endif
+#include "py/misc.h"
 
 #define UNSIGNED_FIT5(x) ((uint32_t)(x) < 32)
 #define UNSIGNED_FIT7(x) ((uint32_t)(x) < 128)

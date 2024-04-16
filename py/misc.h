@@ -334,4 +334,22 @@ typedef const char *mp_rom_error_text_t;
 // For now, forward directly to MP_COMPRESSED_ROM_TEXT.
 #define MP_ERROR_TEXT(x) (mp_rom_error_text_t)MP_COMPRESSED_ROM_TEXT(x)
 
+// Portable implementations of CLZ and CTZ intrinsics
+#ifdef _MSC_VER
+#include <intrin.h>
+
+static uint32_t mp_clz(uint32_t x) {
+    unsigned long lz = 0;
+    return _BitScanReverse(&lz, x) ? (sizeof(x) * 8 - 1) - lz : 0;
+}
+
+static uint32_t mp_ctz(uint32_t x) {
+    unsigned long tz = 0;
+    return _BitScanForward(&tz, x) ? tz : 0;
+}
+#else
+#define mp_clz(x) __builtin_clz(x)
+#define mp_ctz(x) __builtin_ctz(x)
+#endif
+
 #endif // MICROPY_INCLUDED_PY_MISC_H
