@@ -63,6 +63,16 @@ try:
 except:
     print("Invalid ADC Pin\n")
 
+try:
+    adcBlock = ADCBlock(1)
+except:
+    print("TypeError: Specified ADC id not supported. Currently only block 0 is configured!")
+
+try:
+    adcBlock = ADCBlock(0, bits=10)
+except:
+    print("TypeError: Invalid bits. Current ADC configuration supports only 12 bits resolution!")
+
 
 block = ADCBlock(0, bits=12)
 # ADCBlock.connect(channel)
