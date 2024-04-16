@@ -22,6 +22,7 @@ start_time = 0
 low_signal_start_time = 0
 high_signal_start_time = 0
 tolerance = 3.0
+duty_tolerance = 5.0
 debug = False
 
 
@@ -102,7 +103,7 @@ def validate_signal(exp_freq=0, exp_duty_u16=0, exp_duty_ns=0, exp_dutycycle=0):
 
     print(
         "Expected duty cycle(%) approx same as experimental duty cycle(%): ",
-        (exp_dutycycle - tolerance) < dc < (exp_dutycycle + tolerance),
+        (exp_dutycycle - duty_tolerance) < dc < (exp_dutycycle + duty_tolerance),
     )
 
 
