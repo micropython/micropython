@@ -22,7 +22,7 @@ start_time = 0
 low_signal_start_time = 0
 high_signal_start_time = 0
 tolerance = 3.0
-duty_tolerance = 5.0
+duty_tolerance = 10.0
 debug = False
 
 
