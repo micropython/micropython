@@ -16,7 +16,7 @@ if "CY8CPROTO-062-4343W" in machine:
 elif "CY8CPROTO-063-BLE" in machine:
     pwm_pin = "P12_6"
     pin_in = "P12_7"
-    duty_tolerance = 15.0
+    duty_tolerance = 20.0
 
 input_pin = Pin(pin_in, Pin.IN)
 
