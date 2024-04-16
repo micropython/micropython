@@ -31,25 +31,43 @@ def _print_val(params_list, print_list=False):
             print(f"{params[0]} = {params[1]}")
 
 
+# def measure_signal_recursive():
+#     global start_time
+#     if input_pin.value() == 1:
+#         start_time = time.ticks_us()
+#         wait_for_low()
+#         return
+#     measure_signal_recursive()
+
+
+# def wait_for_low():
+#     global low_signal_start_time
+#     while input_pin.value():
+#         pass
+#     low_signal_start_time = time.ticks_us()
+#     wait_for_high()
+
+
+# def wait_for_high():
+#     global high_signal_start_time
+#     while input_pin.value() < 1:
+#         pass
+#     high_signal_start_time = time.ticks_us()
+
+
 def measure_signal():
     global start_time
-    if input_pin.value() == 1:
-        start_time = time.ticks_us()
-        wait_for_low()
-        return
-    measure_signal()
-
-
-def wait_for_low():
     global low_signal_start_time
+    global high_signal_start_time
+
+    while input_pin.value() == 0:
+        pass
+    start_time = time.ticks_us()
+    # wait for low
     while input_pin.value():
         pass
     low_signal_start_time = time.ticks_us()
-    wait_for_high()
-
-
-def wait_for_high():
-    global high_signal_start_time
+    # wait for high
     while input_pin.value() < 1:
         pass
     high_signal_start_time = time.ticks_us()
