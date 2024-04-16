@@ -36,7 +36,7 @@
 #define BLOCK_SIZE_BYTES (FLASH_SECTOR_SIZE)
 
 #ifndef MICROPY_HW_FLASH_STORAGE_BYTES
-#define MICROPY_HW_FLASH_STORAGE_BYTES (1408 * 1024)
+#define MICROPY_HW_FLASH_STORAGE_BYTES (1024 * 1024)
 #endif
 static_assert(MICROPY_HW_FLASH_STORAGE_BYTES % 4096 == 0, "Flash storage size must be a multiple of 4K");
 
