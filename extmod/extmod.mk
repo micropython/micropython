@@ -332,6 +332,8 @@ $(BUILD)/$(LWIP_DIR)/core/ipv4/dhcp.o: CFLAGS += -Wno-address
 SRC_THIRDPARTY_C += shared/netutils/netutils.c
 SRC_THIRDPARTY_C += $(addprefix $(LWIP_DIR)/,\
 	apps/mdns/mdns.c \
+	apps/mdns/mdns_domain.c \
+	apps/mdns/mdns_out.c \
 	core/def.c \
 	core/dns.c \
 	core/inet_chksum.c \
@@ -349,6 +351,7 @@ SRC_THIRDPARTY_C += $(addprefix $(LWIP_DIR)/,\
 	core/tcp_out.c \
 	core/timeouts.c \
 	core/udp.c \
+	core/ipv4/acd.c \
 	core/ipv4/autoip.c \
 	core/ipv4/dhcp.c \
 	core/ipv4/etharp.c \
