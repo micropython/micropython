@@ -90,3 +90,6 @@ pin_in.irq(handler=lambda t: print("interrupt triggered falling"), trigger=Pin.I
 pin_out.low()
 
 blocking_delay_ms(1000)
+
+pin_in.deinit()
+pin_out.deinit()
