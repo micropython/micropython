@@ -275,11 +275,14 @@ if(MICROPY_PY_LWIP)
     target_sources(micropy_lib_lwip INTERFACE
         ${MICROPY_DIR}/shared/netutils/netutils.c
         ${MICROPY_LIB_LWIP_DIR}/apps/mdns/mdns.c
+        ${MICROPY_LIB_LWIP_DIR}/apps/mdns/mdns_domain.c
+        ${MICROPY_LIB_LWIP_DIR}/apps/mdns/mdns_out.c
         ${MICROPY_LIB_LWIP_DIR}/core/def.c
         ${MICROPY_LIB_LWIP_DIR}/core/dns.c
         ${MICROPY_LIB_LWIP_DIR}/core/inet_chksum.c
         ${MICROPY_LIB_LWIP_DIR}/core/init.c
         ${MICROPY_LIB_LWIP_DIR}/core/ip.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/acd.c
         ${MICROPY_LIB_LWIP_DIR}/core/ipv4/autoip.c
         ${MICROPY_LIB_LWIP_DIR}/core/ipv4/dhcp.c
         ${MICROPY_LIB_LWIP_DIR}/core/ipv4/etharp.c
