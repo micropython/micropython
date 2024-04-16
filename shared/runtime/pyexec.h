@@ -40,6 +40,13 @@ extern pyexec_mode_kind_t pyexec_mode_kind;
 // It will reset to 0 at the start of each execution (eg each REPL entry).
 extern int pyexec_system_exit;
 
+#if MICROPY_ENABLE_VM_ABORT
+// Set this to the value (eg PYEXEC_FORCED_EXIT) that will be propagated through
+// the pyexec functions if the VM is aborted for immediate exit.
+// It will reset to 0 at the start of each execution (eg each REPL entry).
+extern int pyexec_abort;
+#endif
+
 #define PYEXEC_FORCED_EXIT (0x100)
 
 int pyexec_raw_repl(void);
