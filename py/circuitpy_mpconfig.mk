@@ -173,13 +173,16 @@ CFLAGS += -DCIRCUITPY_BUILTINS_POW3=$(CIRCUITPY_BUILTINS_POW3)
 CIRCUITPY_BUSIO ?= 1
 CFLAGS += -DCIRCUITPY_BUSIO=$(CIRCUITPY_BUSIO)
 
-# These two flags pretend to implement their class but raise a ValueError due to
-# unsupported pins. This should be used sparingly on boards that don't break out
-# generic IO but need parts of busio.
-CIRCUITPY_BUSIO_SPI ?= 1
+# Allow disabling of individual busio functionality.
+# This should be used sparingly on specialized boards that can only implement parts of busio
+# due to pin restrictions.
+CIRCUITPY_BUSIO_I2C ?= $(CIRCUITPY_BUSIO)
+CFLAGS += -DCIRCUITPY_BUSIO_I2C=$(CIRCUITPY_BUSIO_I2C)
+
+CIRCUITPY_BUSIO_SPI ?= $(CIRCUITPY_BUSIO)
 CFLAGS += -DCIRCUITPY_BUSIO_SPI=$(CIRCUITPY_BUSIO_SPI)
 
-CIRCUITPY_BUSIO_UART ?= 1
+CIRCUITPY_BUSIO_UART ?= $(CIRCUITPY_BUSIO)
 CFLAGS += -DCIRCUITPY_BUSIO_UART=$(CIRCUITPY_BUSIO_UART)
 
 CIRCUITPY_CAMERA ?= 0
@@ -408,6 +411,12 @@ CFLAGS += -DCIRCUITPY_PS2IO=$(CIRCUITPY_PS2IO)
 
 CIRCUITPY_PULSEIO ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DCIRCUITPY_PULSEIO=$(CIRCUITPY_PULSEIO)
+
+# Allow disabling of pulseio.PulseOut
+# This should be used sparingly on specialized boards that need PulseIin but
+# don't have the space for PulseOut.
+CIRCUITPY_PULSEIO_PULSEOUT ?= $(CIRCUITPY_PULSEIO)
+CFLAGS += -DCIRCUITPY_PULSEIO_PULSEOUT=$(CIRCUITPY_PULSEIO_PULSEOUT)
 
 CIRCUITPY_PWMIO ?= 1
 CFLAGS += -DCIRCUITPY_PWMIO=$(CIRCUITPY_PWMIO)
