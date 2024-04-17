@@ -382,6 +382,9 @@ void common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, mp_obj_t addr_in) 
 }
 
 void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
+    if (self->closed) {
+        return;
+    }
     self->closed = true;
     ssl_socket_close(self);
     mbedtls_pk_free(&self->pkey);
