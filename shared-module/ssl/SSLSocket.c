@@ -155,7 +155,16 @@ static void ssl_socket_bind(ssl_sslsocket_obj_t *self, mp_obj_t addr_in) {
 }
 
 static void ssl_socket_close(ssl_sslsocket_obj_t *self) {
-    mp_call_method_n_kw(0, 0, self->close_args);
+    // swallow any exception raised by the underlying close method.
+    // This is not ideal. However, it avoids printing "MemoryError:"
+    // when attempting to close a userspace socket object during gc_sweep_all
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_call_method_n_kw(0, 0, self->close_args);
+        nlr_pop();
+    } else {
+        nlr_pop();
+    }
 }
 
 static void ssl_socket_setsockopt(ssl_sslsocket_obj_t *self, mp_obj_t level_obj, mp_obj_t opt_obj, mp_obj_t optval_obj) {
