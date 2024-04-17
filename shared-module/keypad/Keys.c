@@ -44,7 +44,7 @@ static keypad_scanner_funcs_t keys_funcs = {
     .get_key_count = keys_get_key_count,
 };
 
-void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, const mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull, mp_float_t interval, size_t max_events) {
+void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, const mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull, mp_float_t interval, size_t max_events, uint8_t debounce_threshold) {
     mp_obj_t dios[num_pins];
 
     for (size_t i = 0; i < num_pins; i++) {
@@ -58,12 +58,10 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
     }
 
     self->digitalinouts = mp_obj_new_tuple(num_pins, dios);
-    self->currently_pressed = (bool *)m_malloc(sizeof(bool) * num_pins);
-    self->previously_pressed = (bool *)m_malloc(sizeof(bool) * num_pins);
     self->value_when_pressed = value_when_pressed;
     self->funcs = &keys_funcs;
 
-    keypad_construct_common((keypad_scanner_obj_t *)self, interval, max_events);
+    keypad_construct_common((keypad_scanner_obj_t *)self, interval, max_events, debounce_threshold);
 
 }
 
@@ -93,18 +91,13 @@ static void keypad_keys_scan_now(void *self_in, mp_obj_t timestamp) {
     size_t key_count = keys_get_key_count(self);
 
     for (mp_uint_t key_number = 0; key_number < key_count; key_number++) {
-        // Remember the previous up/down state.
-        const bool previous = self->currently_pressed[key_number];
-        self->previously_pressed[key_number] = previous;
-
         // Get the current state.
         const bool current =
             common_hal_digitalio_digitalinout_get_value(self->digitalinouts->items[key_number]) ==
             self->value_when_pressed;
-        self->currently_pressed[key_number] = current;
 
         // Record any transitions.
-        if (previous != current) {
+        if (keypad_debounce((keypad_scanner_obj_t *)self, key_number, current)) {
             keypad_eventqueue_record(self->events, key_number, current, timestamp);
         }
     }

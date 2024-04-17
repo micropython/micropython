@@ -36,4 +36,9 @@ void usb_midi_setup_ports(void);
 size_t usb_midi_descriptor_length(void);
 size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string);
 
+extern char *custom_usb_midi_streaming_interface_name;
+extern char *custom_usb_midi_audio_control_interface_name;
+extern char *custom_usb_midi_in_jack_name;
+extern char *custom_usb_midi_out_jack_name;
+
 #endif /* SHARED_MODULE_USB_MIDI___INIT___H */

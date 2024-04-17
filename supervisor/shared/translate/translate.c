@@ -37,7 +37,7 @@
 
 #include "py/misc.h"
 #include "py/mpprint.h"
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 
 void serial_write_compressed(mp_rom_error_text_t compressed) {
     mp_printf(MP_PYTHON_PRINTER, "%S", compressed);

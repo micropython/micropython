@@ -32,7 +32,7 @@
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/reload.h"
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 #include "py/mpprint.h"
 #include "py/runtime.h"
 
@@ -407,7 +407,7 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
-    #ifndef CONFIG_IDF_TARGET_ARCH_RISCV
+    #if CIRCUITPY_DEBUG
     esp_backtrace_print(100);
     #endif
     esp_restart();

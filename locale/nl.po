@@ -508,6 +508,7 @@ msgstr ""
 msgid "All event channels in use"
 msgstr "Alle event kanalen zijn in gebruik"
 
+#: ports/raspberrypi/common-hal/floppyio/__init__.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/usb_host/Port.c
@@ -4053,6 +4054,15 @@ msgstr "time-outduur is groter dan de ondersteunde maximale waarde"
 
 #: ports/nordic/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/floppyio/__init__.c
+msgid "timeout waiting for flux"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/floppyio/__init__.c
+#: shared-module/floppyio/__init__.c
+msgid "timeout waiting for index pulse"
 msgstr ""
 
 #: shared-module/sdcardio/SDCard.c

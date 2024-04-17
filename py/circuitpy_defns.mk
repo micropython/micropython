@@ -261,6 +261,9 @@ endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
 endif
+ifeq ($(CIRCUITPY_MAX3421E),1)
+SRC_PATTERNS += max3421e/%
+endif
 ifeq ($(CIRCUITPY_MEMORYMAP),1)
 SRC_PATTERNS += memorymap/%
 endif
@@ -390,6 +393,9 @@ endif
 ifeq ($(CIRCUITPY_UHEAP),1)
 SRC_PATTERNS += uheap/%
 endif
+ifeq ($(CIRCUITPY_PYUSB),1)
+SRC_PATTERNS += usb/%
+endif
 ifeq ($(CIRCUITPY_USB_CDC),1)
 SRC_PATTERNS += usb_cdc/%
 endif
@@ -400,7 +406,7 @@ ifeq ($(CIRCUITPY_USB_VIDEO),1)
 SRC_PATTERNS += usb_video/%
 endif
 ifeq ($(CIRCUITPY_USB_HOST),1)
-SRC_PATTERNS += usb_host/% usb/%
+SRC_PATTERNS += usb_host/%
 endif
 ifeq ($(CIRCUITPY_USB_MIDI),1)
 SRC_PATTERNS += usb_midi/%
@@ -478,6 +484,7 @@ SRC_COMMON_HAL_ALL = \
 	dotclockframebuffer/DotClockFramebuffer.c \
 	dotclockframebuffer/__init__.c \
 	dualbank/__init__.c \
+	floppyio/__init__.c \
 	frequencyio/FrequencyIn.c \
 	frequencyio/__init__.c \
 	imagecapture/ParallelImageCapture.c \
@@ -488,6 +495,7 @@ SRC_COMMON_HAL_ALL = \
 	gnss/SatelliteSystem.c \
 	i2ctarget/I2CTarget.c \
 	i2ctarget/__init__.c \
+	max3421e/Max3421E.c \
 	memorymap/__init__.c \
 	memorymap/AddressRange.c \
 	microcontroller/__init__.c \
@@ -519,8 +527,6 @@ SRC_COMMON_HAL_ALL = \
 	socketpool/__init__.c \
 	socketpool/SocketPool.c \
 	socketpool/Socket.c \
-	supervisor/Runtime.c \
-	supervisor/__init__.c \
 	usb_host/__init__.c \
 	usb_host/Port.c \
 	watchdog/WatchDogMode.c \
@@ -572,6 +578,7 @@ $(filter $(SRC_PATTERNS), \
 	qrio/PixelPolicy.c \
 	qrio/QRInfo.c \
 	supervisor/RunReason.c \
+	supervisor/Runtime.c \
 	supervisor/StatusBar.c \
 	wifi/AuthMode.c \
 	wifi/Packet.c \
@@ -664,6 +671,8 @@ SRC_SHARED_MODULE_ALL = \
 	keypad/KeyMatrix.c \
 	keypad/ShiftRegisterKeys.c \
 	keypad/Keys.c \
+	max3421e/__init__.c \
+	max3421e/Max3421E.c \
 	memorymonitor/__init__.c \
 	memorymonitor/AllocationAlarm.c \
 	memorymonitor/AllocationSize.c \

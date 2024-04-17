@@ -66,7 +66,7 @@ STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *de
 STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
-        #if CIRCUITPY_DISPLAYIO && CIRCUITPY_WARNINGS
+        #if CIRCUITPY_8_9_WARNINGS && CIRCUITPY_DISPLAYIO && CIRCUITPY_WARNINGS
         if (self == &displayio_module) {
             #if CIRCUITPY_BUSDISPLAY
             if (attr == MP_QSTR_Display) {

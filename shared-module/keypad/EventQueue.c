@@ -37,6 +37,7 @@ void common_hal_keypad_eventqueue_construct(keypad_eventqueue_obj_t *self, size_
     // Event queue is 16-bit values.
     ringbuf_alloc(&self->encoded_events, max_events * (sizeof(uint16_t) + sizeof(mp_obj_t)));
     self->overflowed = false;
+    self->event_handler = NULL;
 }
 
 bool common_hal_keypad_eventqueue_get_into(keypad_eventqueue_obj_t *self, keypad_event_obj_t *event) {
@@ -79,6 +80,10 @@ size_t common_hal_keypad_eventqueue_get_length(keypad_eventqueue_obj_t *self) {
     return ringbuf_num_filled(&self->encoded_events);
 }
 
+void common_hal_keypad_eventqueue_set_event_handler(keypad_eventqueue_obj_t *self, void (*event_handler)(keypad_eventqueue_obj_t *)) {
+    self->event_handler = event_handler;
+}
+
 bool keypad_eventqueue_record(keypad_eventqueue_obj_t *self, mp_uint_t key_number, bool pressed, mp_obj_t timestamp) {
     if (ringbuf_num_empty(&self->encoded_events) == 0) {
         // Queue is full. Set the overflow flag. The caller will decide what else to do.
@@ -92,6 +97,10 @@ bool keypad_eventqueue_record(keypad_eventqueue_obj_t *self, mp_uint_t key_numbe
     }
     ringbuf_put16(&self->encoded_events, encoded_event);
     ringbuf_put_n(&self->encoded_events, (uint8_t *)&timestamp, sizeof(mp_obj_t));
+
+    if (self->event_handler) {
+        self->event_handler(self);
+    }
 
     return true;
 }

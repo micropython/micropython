@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2024-03-11 09:56+0000\n"
+"PO-Revision-Date: 2024-04-07 02:02+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -523,6 +523,7 @@ msgstr "Todos os canais dma estão em uso"
 msgid "All event channels in use"
 msgstr "Todos os canais de eventos em uso"
 
+#: ports/raspberrypi/common-hal/floppyio/__init__.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/usb_host/Port.c
@@ -2360,7 +2361,7 @@ msgstr "Você pressionou o botão BOOT na inicialização"
 #: ports/espressif/boards/adafruit_feather_esp32c6_4mbflash_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
 msgid "You pressed the BOOT button at start up."
-msgstr ""
+msgstr "Você pressionou o botão BOOT ao iniciar."
 
 #: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
 msgid "You pressed the GPIO0 button at start up."
@@ -4117,6 +4118,15 @@ msgstr "a duração do tempo limite excedeu o valor máximo suportado"
 #: ports/nordic/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
 msgstr "o tempo limite deve ser < 655.35 seg"
+
+#: ports/raspberrypi/common-hal/floppyio/__init__.c
+msgid "timeout waiting for flux"
+msgstr "tempo limite de espera por fluxo"
+
+#: ports/raspberrypi/common-hal/floppyio/__init__.c
+#: shared-module/floppyio/__init__.c
+msgid "timeout waiting for index pulse"
+msgstr "tempo limite de espera pelo pulso do índice"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"

@@ -229,8 +229,6 @@ void reset_board_buses(void) {
         }
         #endif
         if (spi_obj_created[instance]) {
-            // make sure SPI lock is not held over a soft reset
-            common_hal_busio_spi_unlock(&spi_obj[instance]);
             if (!display_using_spi) {
                 common_hal_busio_spi_deinit(&spi_obj[instance]);
                 spi_obj_created[instance] = false;

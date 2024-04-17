@@ -96,7 +96,12 @@ void shared_module_bitbangio_spi_configure(bitbangio_spi_obj_t *self,
         self->delay_half += 1;
     }
 
-    self->polarity = polarity;
+    if (polarity != self->polarity) {
+        // If the polarity has changed, make sure we re-initialize the idle state
+        // of the clock as well.
+        self->polarity = polarity;
+        common_hal_digitalio_digitalinout_switch_to_output(&self->clock, polarity == 1, DRIVE_MODE_PUSH_PULL);
+    }
     self->phase = phase;
 }
 

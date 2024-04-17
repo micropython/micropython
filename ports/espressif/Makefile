@@ -97,6 +97,7 @@ INC += \
 	-isystem esp-idf/components/esp_adc/include \
 	-isystem esp-idf/components/esp_adc/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/esp_app_format/include \
+	-isystem esp-idf/components/esp_bootloader_format/include \
 	-isystem esp-idf/components/esp_common/include \
 	-isystem esp-idf/components/esp_event/include \
 	-isystem esp-idf/components/esp_hw_support/include \
@@ -110,12 +111,15 @@ INC += \
 	-isystem esp-idf/components/esp_system/include \
 	-isystem esp-idf/components/esp_timer/include \
 	-isystem esp-idf/components/esp_wifi/include \
+	-isystem esp-idf/components/freertos/config/include \
+	-isystem esp-idf/components/freertos/config/include/freertos \
+	-isystem esp-idf/components/freertos/config/$(IDF_TARGET_ARCH)/include \
 	-isystem esp-idf/components/freertos/esp_additions/include \
 	-isystem esp-idf/components/freertos/esp_additions/include/freertos \
-	-isystem esp-idf/components/freertos/esp_additions/arch/$(IDF_TARGET_ARCH)/include \
 	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/include \
 	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/include/freertos \
 	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/portable/$(IDF_TARGET_ARCH)/include \
+	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/portable/$(IDF_TARGET_ARCH)/include/freertos \
 	-isystem esp-idf/components/hal/include \
 	-isystem esp-idf/components/hal/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/hal/platform_port/include \
@@ -134,6 +138,7 @@ INC += \
 	-isystem esp-idf/components/soc/include \
 	-isystem esp-idf/components/soc/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/spi_flash/include \
+	-isystem esp-idf/components/usb/include \
 	-isystem esp-idf/components/ulp/ulp_fsm/include \
 	-isystem esp-idf/components/ulp/ulp_riscv/include \
 	-isystem esp-idf/components/ulp/ulp_common/include \
@@ -498,6 +503,9 @@ endif
 ifneq ($(CIRCUITPY_PARALLELDISPLAYBUS),0)
 	ESP_IDF_COMPONENTS_LINK += esp_lcd
 endif
+ifneq ($(CIRCUITPY_USB),0)
+	ESP_IDF_COMPONENTS_LINK += usb
+endif
 
 ESP_IDF_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
 
@@ -579,7 +587,7 @@ esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 
 $(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp $(IDF_CMAKE_TARGETS)
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--print-memory-usage -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) $(LIBS) -Wl,--end-group -u newlib_include_pthread_impl -u ld_include_highint_hdl -u __cxx_fatal_exception
+	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--print-memory-usage -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) $(LIBS) -Wl,--end-group -u newlib_include_pthread_impl -u ld_include_highint_hdl -u __cxx_fatal_exception -u esp_app_desc
 
 $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf | tools/build_memory_info.py
 	$(STEPECHO) "Create $@"

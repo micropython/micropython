@@ -38,6 +38,12 @@
 // Always 1: defined in circuitpy_mpconfig.mk
 // #define CIRCUITPY (1)
 
+// Can be removed once CircuitPython 10 is released.
+// Print warnings or not about deprecated names. See objmodule.c.
+#ifndef CIRCUITPY_8_9_WARNINGS
+#define CIRCUITPY_8_9_WARNINGS (0)
+#endif
+
 // REPR_C encodes qstrs, 31-bit ints, and 30-bit floats in a single 32-bit word.
 #ifndef MICROPY_OBJ_REPR
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
@@ -259,6 +265,8 @@ typedef long mp_off_t;
 #endif
 #ifndef MICROPY_PY_COLLECTIONS_DEQUE
 #define MICROPY_PY_COLLECTIONS_DEQUE          (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_COLLECTIONS_DEQUE_ITER     (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_COLLECTIONS_DEQUE_SUBSCR   (CIRCUITPY_FULL_BUILD)
 #endif
 #define MICROPY_PY_RE_MATCH_GROUPS           (CIRCUITPY_RE)
 #define MICROPY_PY_RE_MATCH_SPAN_START_END   (CIRCUITPY_RE)

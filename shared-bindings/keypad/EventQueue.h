@@ -42,4 +42,6 @@ bool common_hal_keypad_eventqueue_get_into(keypad_eventqueue_obj_t *self, keypad
 bool common_hal_keypad_eventqueue_get_overflowed(keypad_eventqueue_obj_t *self);
 void common_hal_keypad_eventqueue_set_overflowed(keypad_eventqueue_obj_t *self, bool overflowed);
 
+void common_hal_keypad_eventqueue_set_event_handler(keypad_eventqueue_obj_t *self, void (*event_handler)(keypad_eventqueue_obj_t *));
+
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENTQUEUE_H

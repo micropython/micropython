@@ -283,14 +283,16 @@ uint32_t *port_stack_get_top(void) {
     return &_estack;
 }
 
-// Place the word in the uninitialized section so it won't get overwritten.
-__attribute__((section(".uninitialized"))) uint32_t _saved_word;
+// Place the word in the first 32k of RAM. This is saved by us and the
+// bootloader for the soft device. We only use it before the soft device uses
+// that memory.
+#define SAVED_WORD ((uint32_t *)(0x20008000 - 4))
 void port_set_saved_word(uint32_t value) {
-    _saved_word = value;
+    *SAVED_WORD = value;
 }
 
 uint32_t port_get_saved_word(void) {
-    return _saved_word;
+    return *SAVED_WORD;
 }
 
 uint64_t port_get_raw_ticks(uint8_t *subticks) {

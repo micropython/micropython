@@ -28,6 +28,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/usb_host/Port.h"
+#include "supervisor/shared/serial.h"
 #include "supervisor/usb.h"
 
 #include "src/common/pico_time/include/pico/time.h"
@@ -43,7 +44,6 @@
 #include "lib/Pico-PIO-USB/src/pio_usb.h"
 #include "lib/Pico-PIO-USB/src/pio_usb_configuration.h"
 
-#include "supervisor/serial.h"
 
 usb_host_port_obj_t usb_host_instance;
 

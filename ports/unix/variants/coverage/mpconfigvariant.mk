@@ -40,6 +40,7 @@ SRC_BITMAP := \
 	shared-bindings/displayio/Bitmap.c \
 	shared-bindings/displayio/ColorConverter.c \
 	shared-bindings/displayio/Palette.c \
+	shared-bindings/floppyio/__init__.c \
 	shared-bindings/jpegio/__init__.c \
 	shared-bindings/jpegio/JpegDecoder.c \
 	shared-bindings/locale/__init__.c \
@@ -69,6 +70,7 @@ SRC_BITMAP := \
 	shared-module/displayio/Bitmap.c \
 	shared-module/displayio/ColorConverter.c \
 	shared-module/displayio/Palette.c \
+	shared-module/floppyio/__init__.c \
 	shared-module/jpegio/__init__.c \
 	shared-module/jpegio/JpegDecoder.c \
 	shared-module/os/getenv.c \
@@ -94,6 +96,7 @@ CFLAGS += \
 	-DCIRCUITPY_BITMAPTOOLS=1 \
 	-DCIRCUITPY_CODEOP=1 \
 	-DCIRCUITPY_DISPLAYIO_UNIX=1 \
+	-DCIRCUITPY_FLOPPYIO=1 \
 	-DCIRCUITPY_FUTURE=1 \
 	-DCIRCUITPY_GIFIO=1 \
 	-DCIRCUITPY_JPEGIO=1 \

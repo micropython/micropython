@@ -23,8 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_EIC_HANDLER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_EIC_HANDLER_H
+#pragma once
 
 #define EIC_HANDLER_NO_INTERRUPT 0x0
 #define EIC_HANDLER_PULSEIN 0x1
@@ -32,8 +31,7 @@
 #define EIC_HANDLER_PS2 0x3
 #define EIC_HANDLER_COUNTER 0x04
 #define EIC_HANDLER_ALARM 0x05
+#define EIC_HANDLER_MAX3421E 0x06
 
 void set_eic_handler(uint8_t channel, uint8_t eic_handler);
 void shared_eic_handler(uint8_t channel);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_EIC_HANDLER_H

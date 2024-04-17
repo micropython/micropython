@@ -28,12 +28,13 @@
 #define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_SERIAL_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 void supervisor_start_bluetooth_serial(void);
 void supervisor_stop_bluetooth_serial(void);
 
 bool ble_serial_connected(void);
-bool ble_serial_available(void);
+uint32_t ble_serial_available(void);
 char ble_serial_read_char(void);
 void ble_serial_write(const char *text, size_t len);
 void ble_serial_enable(void);

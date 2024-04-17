@@ -26,7 +26,6 @@
 
 #include <string.h>
 
-#include "supervisor/serial.h"
 #include "lib/oofatfs/ff.h"
 #include "py/mpconfig.h"
 #include "py/mphal.h"
@@ -34,6 +33,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
+#include "supervisor/shared/serial.h"
 #include "supervisor/shared/status_leds.h"
 
 #if CIRCUITPY_WATCHDOG

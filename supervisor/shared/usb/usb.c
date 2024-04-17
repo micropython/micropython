@@ -30,8 +30,8 @@
 #include "shared-bindings/supervisor/__init__.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"
-#include "supervisor/serial.h"
 #include "supervisor/usb.h"
+#include "supervisor/shared/serial.h"
 #include "supervisor/shared/workflow.h"
 #include "shared/runtime/interrupt_char.h"
 #include "shared/readline/readline.h"
@@ -168,7 +168,7 @@ void usb_background(void) {
     if (usb_enabled()) {
         #if CFG_TUSB_OS == OPT_OS_NONE || CFG_TUSB_OS == OPT_OS_PICO
         tud_task();
-        #if CIRCUITPY_USB_HOST
+        #if CIRCUITPY_USB_HOST || CIRCUITPY_MAX3421E
         tuh_task();
         #endif
         #elif CFG_TUSB_OS == OPT_OS_FREERTOS

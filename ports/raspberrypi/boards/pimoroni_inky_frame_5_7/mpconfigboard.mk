@@ -17,9 +17,13 @@ CIRCUITPY_WEB_WORKFLOW = 1
 CIRCUITPY_MDNS = 1
 CIRCUITPY_SOCKETPOOL = 1
 CIRCUITPY_WIFI = 1
+CIRCUITPY_PICODVI = 0
+CIRCUITPY_USB_HOST = 0
 
 CFLAGS += -DCYW43_PIN_WL_HOST_WAKE=24 -DCYW43_PIN_WL_REG_ON=23 -DCYW43_WL_GPIO_COUNT=3 -DCYW43_WL_GPIO_LED_PIN=0
 # Must be accompanied by a linker script change
 CFLAGS += -DCIRCUITPY_FIRMWARE_SIZE='(1536 * 1024)'
 
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
+FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-pcf85063a
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Register
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_SD

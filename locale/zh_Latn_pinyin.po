@@ -523,6 +523,7 @@ msgstr "suǒyǒu Zhíjiē nèicún fǎngwèn dōu zài shǐyòng zhōng"
 msgid "All event channels in use"
 msgstr "suǒyǒu shìjiàn píndào dōu zài shǐyòng zhōng"
 
+#: ports/raspberrypi/common-hal/floppyio/__init__.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/usb_host/Port.c
@@ -4090,6 +4091,15 @@ msgstr "chāoshí shíjiān chāoguò zuìdà zhīchí zhí"
 #: ports/nordic/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
 msgstr "chāo shí bì xū < 655.35 miǎo"
+
+#: ports/raspberrypi/common-hal/floppyio/__init__.c
+msgid "timeout waiting for flux"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/floppyio/__init__.c
+#: shared-module/floppyio/__init__.c
+msgid "timeout waiting for index pulse"
+msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
