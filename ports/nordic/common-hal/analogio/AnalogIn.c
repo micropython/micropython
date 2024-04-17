@@ -76,7 +76,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     // Something else might have used the ADC in a different way,
     // so we completely re-initialize it.
 
-    nrf_saadc_value_t value = -1;
+    nrf_saadc_value_t value = 0;
 
     const nrf_saadc_channel_config_t config = {
         .resistor_p = NRF_SAADC_RESISTOR_DISABLED,
@@ -120,6 +120,17 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
 
     nrf_saadc_disable(NRF_SAADC);
 
+    // Adding the "asm volatile" memory fence here or anywhere after the declaration of `value`
+    // fixes an issue with gcc13 which causes `value` to always be zero.
+    // Compiling with gcc10 or gcc12 is fine.
+    // It can also be fixed by declaring `value` to be static.
+    // I think I'd like to declare `value` as volatile, but that causes type errors.
+    asm volatile ("" : : : "memory");
+
+    // Disconnect ADC from pin.
+    nrf_saadc_channel_input_set(NRF_SAADC, CHANNEL_NO, NRF_SAADC_INPUT_DISABLED, NRF_SAADC_INPUT_DISABLED);
+
+    // value is signed and might be (slightly) < 0, even on single-ended conversions, so force to 0.
     if (value < 0) {
         value = 0;
     }
