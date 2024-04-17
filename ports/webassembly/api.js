@@ -127,23 +127,31 @@ export async function loadMicroPython(options) {
         },
         pyimport: pyimport,
         runPython(code) {
+            const len = Module.lengthBytesUTF8(code);
+            const buf = Module._malloc(len + 1);
+            Module.stringToUTF8(code, buf, len + 1);
             const value = Module._malloc(3 * 4);
             Module.ccall(
                 "mp_js_do_exec",
                 "number",
-                ["string", "pointer"],
-                [code, value],
+                ["pointer", "number", "pointer"],
+                [buf, len, value],
             );
+            Module._free(buf);
             return proxy_convert_mp_to_js_obj_jsside_with_free(value);
         },
         runPythonAsync(code) {
+            const len = Module.lengthBytesUTF8(code);
+            const buf = Module._malloc(len + 1);
+            Module.stringToUTF8(code, buf, len + 1);
             const value = Module._malloc(3 * 4);
             Module.ccall(
                 "mp_js_do_exec_async",
                 "number",
-                ["string", "pointer"],
-                [code, value],
+                ["pointer", "number", "pointer"],
+                [buf, len, value],
             );
+            Module._free(buf);
             return proxy_convert_mp_to_js_obj_jsside_with_free(value);
         },
         replInit() {
