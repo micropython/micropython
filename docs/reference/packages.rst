@@ -120,7 +120,12 @@ A typical ``package.json`` for an example ``mlx90640`` library looks like::
       "deps": [
         ["collections-defaultdict", "latest"],
         ["os-path", "latest"],
-        ["github:org/micropython-additions", "main"]
+        ["github:org/micropython-additions", "main"],
+        [
+          "folder/file.py",
+          "github:other_org/repo/src/some_file.py",
+          "1.7.4"
+        ]
       ],
       "version": "0.2"
     }
@@ -130,7 +135,10 @@ This includes two files, hosted at a GitHub repo named
 the device. It depends on ``collections-defaultdict`` and ``os-path`` which will
 be installed automatically from the :term:`micropython-lib`. The third
 dependency installs the content as defined by the ``package.json`` file of the
-``main`` branch of the GitHub repo ``org/micropython-additions``.
+``main`` branch of the GitHub repo ``org/micropython-additions``. The last
+dependency installs the single file ``some_file.py`` of the GitHub repo
+``other_org/repo`` located in the subfolder ``src`` as ``folder/file.py`` based on
+the ``1.7.4`` tag.
 
 Freezing packages
 -----------------
