@@ -300,7 +300,7 @@ STATIC bool maybe_run_list(const char *const *filenames, size_t n_filenames) {
         return false;
     }
 
-    // This function is used for `boot.py` and is then logged into `boot_out.txt`.
+    // This function is used for `boot.py` and is thus logged to `boot_out.txt`.
     // We do not want the line clear to be logged.
     // The function `serial_write` is the only function that isn't logged into the file.
     serial_write(line_clear);
