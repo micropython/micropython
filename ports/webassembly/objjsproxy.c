@@ -346,6 +346,12 @@ typedef struct _jsproxy_gen_t {
 
 mp_vm_return_kind_t jsproxy_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
     jsproxy_gen_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (throw_value) {
+        *ret_val = throw_value;
+        return MP_VM_RETURN_EXCEPTION;
+    }
+
     switch (self->state) {
         case JSOBJ_GEN_STATE_WAITING:
             self->state = JSOBJ_GEN_STATE_COMPLETED;
