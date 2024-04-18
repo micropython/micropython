@@ -296,10 +296,11 @@ EM_JS(void, js_then_resolve, (uint32_t * ret_value, uint32_t * resolve, uint32_t
     resolve_js(ret_value_js);
 });
 
-EM_JS(void, js_then_reject, (uint32_t * resolve, uint32_t * reject), {
+EM_JS(void, js_then_reject, (uint32_t * ret_value, uint32_t * resolve, uint32_t * reject), {
+    const ret_value_js = proxy_convert_mp_to_js_obj_jsside(ret_value);
     const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
     const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
-    reject_js(null);
+    reject_js(ret_value_js);
 });
 
 // *FORMAT-OFF*
@@ -335,10 +336,12 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t value, mp_obj_t 
         uint32_t out[PVN];
         js_then_continue(ref, out_py_resume, out_resolve, out_reject, out);
         return proxy_convert_js_to_mp_obj_cside(out);
-    } else {
-        // MP_VM_RETURN_EXCEPTION;
-        js_then_reject(out_resolve, out_reject);
-        nlr_raise(ret_value);
+    } else { // ret_kind == MP_VM_RETURN_EXCEPTION;
+        // Pass the exception through as an object to reject the promise (don't raise/throw it).
+        uint32_t out_ret_value[PVN];
+        proxy_convert_mp_to_js_obj_cside(ret_value, out_ret_value);
+        js_then_reject(out_ret_value, out_resolve, out_reject);
+        return mp_const_none;
     }
 }
 
