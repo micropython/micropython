@@ -228,6 +228,16 @@ async function runCLI() {
             }
         });
     } else {
+        // If the script to run ends with a running of the asyncio main loop, then inject
+        // a simple `asyncio.run` hook that starts the main task.  This is primarily to
+        // support running the standard asyncio tests.
+        if (contents.endsWith("asyncio.run(main())\n")) {
+            const asyncio = mp.pyimport("asyncio");
+            asyncio.run = async (task) => {
+                await asyncio.create_task(task);
+            };
+        }
+
         try {
             mp.runPython(contents);
         } catch (error) {
