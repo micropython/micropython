@@ -305,7 +305,7 @@ STATIC bool maybe_run_list(const char *const *filenames, size_t n_filenames) {
     // The function `serial_write` is the only function that isn't logged into the file.
     serial_write(line_clear);
     mp_hal_stdout_tx_str(_current_executing_filename);
-    mp_hal_stdout_tx_str(" output:\n");
+    serial_write_compressed(MP_ERROR_TEXT(" output:\n"));
 
     #if CIRCUITPY_STATUS_BAR
     supervisor_status_bar_update();
