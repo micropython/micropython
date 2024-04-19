@@ -9,7 +9,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_VOLTAGE_MONITOR), MP_ROM_PTR(&pin_PA02) },
 
     // GPIO on 3-pin JST SH
-    { MP_ROM_QSTR(MP_QSTR_D6), MP_ROM_PTR(&pin_PA06) },
+    { MP_ROM_QSTR(MP_QSTR_D4), MP_ROM_PTR(&pin_PA06) },
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PA06) },
 
     { MP_ROM_QSTR(MP_QSTR_DATA), MP_ROM_PTR(&pin_PA04) },
