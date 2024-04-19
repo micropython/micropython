@@ -188,6 +188,11 @@ int readline_process_char(int c) {
             redraw_step_back = rl.cursor_pos - rl.orig_line_len;
             redraw_from_cursor = true;
         #endif
+        } else if (c == CHAR_CTRL_L) {
+            mp_hal_stdout_tx_str("\x1b[2J\x1b[H");
+            mp_hal_stdout_tx_str(rl.prompt);
+            mp_hal_stdout_tx_strn(rl.line->buf + rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
+            redraw_from_cursor = true;
         #if MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
         } else if (c == CHAR_CTRL_W) {
             goto backward_kill_word;
