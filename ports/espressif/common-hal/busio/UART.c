@@ -277,6 +277,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (uart_set_pin(self->uart_num, tx_num, rx_num, rts_num, cts_num) != ESP_OK) {
         raise_ValueError_invalid_pins();
     }
+    if (have_rx) {
+        // On ESP32-C3 and ESP32-S3 (at least),  a junk byte with zero or more consecutive 1's can be
+        // generated, even if the pin is pulled high (normal UART resting state) to begin with.
+        // Wait one byte time, but at least 1 msec, and clear the input buffer to discard it.
+        mp_hal_delay_ms(1 + (1000 * (bits + stop)) / baudrate);
+        common_hal_busio_uart_clear_rx_buffer(self);
+    }
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
