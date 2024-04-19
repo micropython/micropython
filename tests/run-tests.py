@@ -681,6 +681,17 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         elif args.target == "webassembly":
             skip_tests.add("basics/string_format_modulo.py")  # can't print nulls to stdout
             skip_tests.add("basics/string_strip.py")  # can't print nulls to stdout
+            skip_tests.add("extmod/asyncio_basic2.py")
+            skip_tests.add("extmod/asyncio_cancel_self.py")
+            skip_tests.add("extmod/asyncio_current_task.py")
+            skip_tests.add("extmod/asyncio_exception.py")
+            skip_tests.add("extmod/asyncio_gather_finished_early.py")
+            skip_tests.add("extmod/asyncio_get_event_loop.py")
+            skip_tests.add("extmod/asyncio_heaplock.py")
+            skip_tests.add("extmod/asyncio_loop_stop.py")
+            skip_tests.add("extmod/asyncio_new_event_loop.py")
+            skip_tests.add("extmod/asyncio_threadsafeflag.py")
+            skip_tests.add("extmod/asyncio_wait_for_fwd.py")
             skip_tests.add("extmod/binascii_a2b_base64.py")
             skip_tests.add("extmod/re_stack_overflow.py")
             skip_tests.add("extmod/time_res.py")

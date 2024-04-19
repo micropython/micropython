@@ -1,3 +1,5 @@
+include("$(PORT_DIR)/variants/manifest.py")
+
 require("abc")
 require("base64")
 require("collections")
