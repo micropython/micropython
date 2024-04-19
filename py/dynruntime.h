@@ -88,6 +88,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_type_int                         (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_int)))
 #define mp_type_str                         (*mp_fun_table.type_str)
 #define mp_type_bytes                       (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_bytes)))
+#define mp_type_bytearray                   (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_bytearray)))
 #define mp_type_tuple                       (*((mp_obj_base_t *)mp_const_empty_tuple)->type)
 #define mp_type_list                        (*mp_fun_table.type_list)
 #define mp_type_Exception                   (*mp_fun_table.type_Exception)
@@ -194,6 +195,7 @@ static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type
 #define mp_load_global(qst)               (mp_fun_table.load_global((qst)))
 #define mp_load_attr(base, attr)          (mp_fun_table.load_attr((base), (attr)))
 #define mp_load_method(base, attr, dest)  (mp_fun_table.load_method((base), (attr), (dest)))
+#define mp_load_method_maybe(base, attr, dest) (mp_fun_table.load_method_maybe((base), (attr), (dest)))
 #define mp_load_super_method(attr, dest)  (mp_fun_table.load_super_method((attr), (dest)))
 #define mp_store_name(qst, obj)           (mp_fun_table.store_name((qst), (obj)))
 #define mp_store_global(qst, obj)         (mp_fun_table.store_global((qst), (obj)))
@@ -210,6 +212,12 @@ static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type
 
 #define mp_arg_check_num(n_args, n_kw, n_args_min, n_args_max, takes_kw) \
     (mp_fun_table.arg_check_num_sig((n_args), (n_kw), MP_OBJ_FUN_MAKE_SIG((n_args_min), (n_args_max), (takes_kw))))
+
+#define mp_arg_parse_all(n_pos, pos, kws, n_allowed, allowed, out_vals) \
+    (mp_fun_table.arg_parse_all((n_pos), (pos), (kws), (n_allowed), (allowed), (out_vals)))
+
+#define mp_arg_parse_all_kw_array(n_pos, n_kw, args, n_allowed, allowed, out_vals) \
+    (mp_fun_table.arg_parse_all_kw_array((n_pos), (n_kw), (args), (n_allowed), (allowed), (out_vals)))
 
 #define MP_DYNRUNTIME_INIT_ENTRY \
     mp_obj_t old_globals = mp_fun_table.swap_globals(self->context->module.globals); \
