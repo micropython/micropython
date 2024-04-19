@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +24,45 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include "supervisor/internal_flash.h"
 
-// #include "py/mpconfig.h"
-#include "py/obj.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
 
-#include "shared-module/supervisor/Runtime.h"
-#include "shared-module/supervisor/StatusBar.h"
+#include "supervisor/flash.h"
 
-#if CIRCUITPY_USB
-#include "supervisor/usb.h"
-#endif
+#define FLASH_BASE 0x10000000
+#define FLASH_SIZE 0x80000
 
-typedef struct {
-    uint8_t options;
-    char filename[];
-} supervisor_next_code_info_t;
+void supervisor_flash_init(void) {
+}
 
-extern const super_runtime_obj_t common_hal_supervisor_runtime_obj;
-extern supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj;
-extern mp_obj_t supervisor_ticks_ms(void);
+uint32_t supervisor_flash_get_block_size(void) {
+    return FILESYSTEM_BLOCK_SIZE;
+}
 
-extern char *prev_traceback_string;
+uint32_t supervisor_flash_get_block_count(void) {
+    return FLASH_SIZE / FILESYSTEM_BLOCK_SIZE;
+}
 
-extern supervisor_next_code_info_t *next_code_configuration;
+void port_internal_flash_flush(void) {
+}
 
-#if CIRCUITPY_USB
-extern usb_identification_t *custom_usb_identification;
-#endif
+mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
+    memcpy(dest,
+        (void *)(FLASH_BASE + block * FILESYSTEM_BLOCK_SIZE),
+        num_blocks * FILESYSTEM_BLOCK_SIZE);
+    return 0;
+}
+
+mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
+    memcpy((void *)(FLASH_BASE + lba * FILESYSTEM_BLOCK_SIZE),
+        src,
+        num_blocks * FILESYSTEM_BLOCK_SIZE);
+
+    return 0; // success
+}
+
+void supervisor_flash_release_cache(void) {
+}

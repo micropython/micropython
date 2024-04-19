@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +24,22 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include "py/mphal.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
-// #include "py/mpconfig.h"
-#include "py/obj.h"
+#include "mpconfigboard.h"
+#include "mphalport.h"
 
-#include "shared-module/supervisor/Runtime.h"
-#include "shared-module/supervisor/StatusBar.h"
+extern uint32_t common_hal_mcu_processor_get_frequency(void);
 
-#if CIRCUITPY_USB
-#include "supervisor/usb.h"
-#endif
+void mp_hal_delay_us(mp_uint_t delay) {
+    // busy_wait_us_32(delay);
+}
 
-typedef struct {
-    uint8_t options;
-    char filename[];
-} supervisor_next_code_info_t;
+void mp_hal_disable_all_interrupts(void) {
+    common_hal_mcu_disable_interrupts();
+}
 
-extern const super_runtime_obj_t common_hal_supervisor_runtime_obj;
-extern supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj;
-extern mp_obj_t supervisor_ticks_ms(void);
-
-extern char *prev_traceback_string;
-
-extern supervisor_next_code_info_t *next_code_configuration;
-
-#if CIRCUITPY_USB
-extern usb_identification_t *custom_usb_identification;
-#endif
+void mp_hal_enable_all_interrupts(void) {
+    common_hal_mcu_enable_interrupts();
+}

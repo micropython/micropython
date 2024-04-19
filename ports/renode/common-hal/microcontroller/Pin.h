@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,29 +26,29 @@
 
 #pragma once
 
-// #include "py/mpconfig.h"
-#include "py/obj.h"
+#include <assert.h>
+#include <stdint.h>
 
-#include "shared-module/supervisor/Runtime.h"
-#include "shared-module/supervisor/StatusBar.h"
-
-#if CIRCUITPY_USB
-#include "supervisor/usb.h"
-#endif
+#include <py/obj.h>
 
 typedef struct {
-    uint8_t options;
-    char filename[];
-} supervisor_next_code_info_t;
+    mp_obj_base_t base;
+    uint8_t number;
+} mcu_pin_obj_t;
 
-extern const super_runtime_obj_t common_hal_supervisor_runtime_obj;
-extern supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj;
-extern mp_obj_t supervisor_ticks_ms(void);
+extern const mcu_pin_obj_t pin_GPIO0;
+extern const mcu_pin_obj_t pin_GPIO1;
 
-extern char *prev_traceback_string;
+// If a board needs a different reset state for one or more pins, implement
+// board_reset_pin_number so that it sets this state and returns `true` for those
+// pin numbers, `false` for others.
+// A default weak implementation always returns `false`.
+bool board_reset_pin_number(uint8_t pin_number);
 
-extern supervisor_next_code_info_t *next_code_configuration;
-
-#if CIRCUITPY_USB
-extern usb_identification_t *custom_usb_identification;
-#endif
+void reset_all_pins(void);
+// reset_pin_number takes the pin number instead of the pointer so that objects don't
+// need to store a full pointer.
+void reset_pin_number(uint8_t pin_number);
+void never_reset_pin_number(uint8_t pin_number);
+void claim_pin(const mcu_pin_obj_t *pin);
+bool pin_number_is_free(uint8_t pin_number);

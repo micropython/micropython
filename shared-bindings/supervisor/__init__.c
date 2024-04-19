@@ -36,7 +36,7 @@
 #include "supervisor/shared/traceback.h"
 #include "supervisor/shared/workflow.h"
 
-#if CIRCUITPY_USB_IDENTIFICATION
+#if CIRCUITPY_USB && CIRCUITPY_USB_IDENTIFICATION
 #include "supervisor/usb.h"
 #endif
 

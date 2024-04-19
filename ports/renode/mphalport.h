@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,29 +26,10 @@
 
 #pragma once
 
-// #include "py/mpconfig.h"
-#include "py/obj.h"
+// Global millisecond tick count (driven by SysTick interrupt).
+#define mp_hal_ticks_ms()       ((mp_uint_t)supervisor_ticks_ms32())
 
-#include "shared-module/supervisor/Runtime.h"
-#include "shared-module/supervisor/StatusBar.h"
+void mp_hal_set_interrupt_char(int c);
 
-#if CIRCUITPY_USB
-#include "supervisor/usb.h"
-#endif
-
-typedef struct {
-    uint8_t options;
-    char filename[];
-} supervisor_next_code_info_t;
-
-extern const super_runtime_obj_t common_hal_supervisor_runtime_obj;
-extern supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj;
-extern mp_obj_t supervisor_ticks_ms(void);
-
-extern char *prev_traceback_string;
-
-extern supervisor_next_code_info_t *next_code_configuration;
-
-#if CIRCUITPY_USB
-extern usb_identification_t *custom_usb_identification;
-#endif
+void mp_hal_disable_all_interrupts(void);
+void mp_hal_enable_all_interrupts(void);

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +24,56 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include "py/runtime.h"
 
-// #include "py/mpconfig.h"
-#include "py/obj.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#include "shared-module/supervisor/Runtime.h"
-#include "shared-module/supervisor/StatusBar.h"
+void reset_all_pins(void) {
+}
 
-#if CIRCUITPY_USB
-#include "supervisor/usb.h"
-#endif
+void never_reset_pin_number(uint8_t pin_number) {
+}
 
-typedef struct {
-    uint8_t options;
-    char filename[];
-} supervisor_next_code_info_t;
+void reset_pin_number(uint8_t pin_number) {
+}
 
-extern const super_runtime_obj_t common_hal_supervisor_runtime_obj;
-extern supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj;
-extern mp_obj_t supervisor_ticks_ms(void);
+void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
+    never_reset_pin_number(pin->number);
+}
 
-extern char *prev_traceback_string;
+void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
+    reset_pin_number(pin->number);
+}
 
-extern supervisor_next_code_info_t *next_code_configuration;
+void claim_pin(const mcu_pin_obj_t *pin) {
+}
 
-#if CIRCUITPY_USB
-extern usb_identification_t *custom_usb_identification;
-#endif
+bool pin_number_is_free(uint8_t pin_number) {
+    return true;
+}
+
+bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
+    return pin_number_is_free(pin->number);
+}
+
+uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t *pin) {
+    return pin->number;
+}
+
+void common_hal_mcu_pin_claim(const mcu_pin_obj_t *pin) {
+    return claim_pin(pin);
+}
+
+void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
+    reset_pin_number(pin_no);
+}
+
+// This macro is used to simplify pin definition in boards/<board>/pins.c
+#define PIN(p_number) \
+    const mcu_pin_obj_t pin_GPIO##p_number = { \
+        { &mcu_pin_type }, \
+        .number = p_number \
+    }
+
+PIN(0);
+PIN(1);

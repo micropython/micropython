@@ -34,15 +34,15 @@
 #include "supervisor/shared/display.h"
 #include "shared-bindings/terminalio/Terminal.h"
 #include "supervisor/shared/serial.h"
-#include "supervisor/usb.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-module/usb_cdc/__init__.h"
 
 #if CIRCUITPY_SERIAL_BLE
 #include "supervisor/shared/bluetooth/serial.h"
 #endif
 
 #if CIRCUITPY_USB
+#include "supervisor/usb.h"
+#include "shared-module/usb_cdc/__init__.h"
 #include "tusb.h"
 #endif
 
@@ -70,7 +70,7 @@ byte console_uart_rx_buf[64];
 static bool _first_write_done = false;
 #endif
 
-#if CIRCUITPY_USB_VENDOR
+#if CIRCUITPY_USB && CIRCUITPY_USB_VENDOR
 bool tud_vendor_connected(void);
 #endif
 
@@ -185,7 +185,7 @@ void serial_init(void) {
 }
 
 bool serial_connected(void) {
-    #if CIRCUITPY_USB_VENDOR
+    #if CIRCUITPY_USB && CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected()) {
         return true;
     }
@@ -201,7 +201,7 @@ bool serial_connected(void) {
     }
     #endif
 
-    #if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB && CIRCUITPY_USB_CDC
     if (usb_cdc_console_enabled() && tud_cdc_connected()) {
         return true;
     }
@@ -236,7 +236,7 @@ bool serial_connected(void) {
 }
 
 char serial_read(void) {
-    #if CIRCUITPY_USB_VENDOR
+    #if CIRCUITPY_USB && CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected() && tud_vendor_available() > 0) {
         char tiny_buffer;
         tud_vendor_read(&tiny_buffer, 1);
@@ -282,7 +282,7 @@ char serial_read(void) {
         return port_serial_read();
     }
 
-    #if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB && CIRCUITPY_USB_CDC
     if (!usb_cdc_console_enabled()) {
         return -1;
     }
@@ -298,7 +298,7 @@ uint32_t serial_bytes_available(void) {
     // There may be multiple serial input channels, so sum the count from all.
     uint32_t count = 0;
 
-    #if CIRCUITPY_USB_VENDOR
+    #if CIRCUITPY_USB && CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected()) {
         count += tud_vendor_available();
     }
@@ -320,7 +320,7 @@ uint32_t serial_bytes_available(void) {
     count += usb_keyboard_chars_available();
     #endif
 
-    #if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB && CIRCUITPY_USB_CDC
     if (usb_cdc_console_enabled()) {
         count += tud_cdc_available();
     }
@@ -355,7 +355,7 @@ void serial_write_substring(const char *text, uint32_t length) {
         return;
     }
 
-    #if CIRCUITPY_USB_VENDOR
+    #if CIRCUITPY_USB && CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected()) {
         tud_vendor_write(text, length);
     }
@@ -378,7 +378,7 @@ void serial_write_substring(const char *text, uint32_t length) {
     websocket_write(text, length);
     #endif
 
-    #if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB && CIRCUITPY_USB_CDC
     if (!usb_cdc_console_enabled()) {
         return;
     }

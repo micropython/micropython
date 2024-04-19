@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +24,32 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include <math.h>
+#include <string.h>
 
-// #include "py/mpconfig.h"
-#include "py/obj.h"
+#include "common-hal/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/ResetReason.h"
 
-#include "shared-module/supervisor/Runtime.h"
-#include "shared-module/supervisor/StatusBar.h"
+float common_hal_mcu_processor_get_temperature(void) {
+    return NAN;
+}
 
-#if CIRCUITPY_USB
-#include "supervisor/usb.h"
-#endif
+float common_hal_mcu_processor_get_voltage(void) {
+    return NAN;
+}
 
-typedef struct {
-    uint8_t options;
-    char filename[];
-} supervisor_next_code_info_t;
+uint32_t common_hal_mcu_processor_get_frequency(void) {
+    return 100000000;
+}
 
-extern const super_runtime_obj_t common_hal_supervisor_runtime_obj;
-extern supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj;
-extern mp_obj_t supervisor_ticks_ms(void);
+void common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self, uint32_t frequency) {
+}
 
-extern char *prev_traceback_string;
+void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
+    raw_id[0] = 0xaf;
+}
 
-extern supervisor_next_code_info_t *next_code_configuration;
-
-#if CIRCUITPY_USB
-extern usb_identification_t *custom_usb_identification;
-#endif
+mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
+    return RESET_REASON_POWER_ON;
+}
