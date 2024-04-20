@@ -88,10 +88,11 @@ jobs:
         (cd ports/unix && gcov -o build-coverage/py ../../py/*.c || true)
         (cd ports/unix && gcov -o build-coverage/extmod ../../extmod/*.c || true)
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         fail_ci_if_error: true
         verbose: true
+        token: ${{ secrets.CODECOV_TOKEN }}
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
