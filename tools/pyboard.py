@@ -766,12 +766,19 @@ del _injected_buf, _FS
 
 def main():
     import argparse
+    import serial.tools.list_ports
+
+    default_device = "/dev/ttyACM0"
+    available_devices = serial.tools.list_ports.comports()
+    if available_devices:
+        default_device = available_devices[-1].name
+    default_device = os.environ.get("PYBOARD_DEVICE", default_device)
 
     cmd_parser = argparse.ArgumentParser(description="Run scripts on the pyboard.")
     cmd_parser.add_argument(
         "-d",
         "--device",
-        default=os.environ.get("PYBOARD_DEVICE", "/dev/ttyACM0"),
+        default=default_device,
         help="the serial device or the IP address of the pyboard",
     )
     cmd_parser.add_argument(
