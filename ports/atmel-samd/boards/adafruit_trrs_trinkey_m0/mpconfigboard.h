@@ -4,10 +4,11 @@
 #define MICROPY_HW_NEOPIXEL (&pin_PA01)
 #define MICROPY_HW_NEOPIXEL_COUNT (1)
 
+#define DEFAULT_I2C_BUS_SCL (&pin_PA09)
+#define DEFAULT_I2C_BUS_SDA (&pin_PA08)
+
 #define IGNORE_PIN_PA00     1
 
-#define IGNORE_PIN_PA08     1
-#define IGNORE_PIN_PA09     1
 #define IGNORE_PIN_PA10     1
 #define IGNORE_PIN_PA11     1
 // no PA12
