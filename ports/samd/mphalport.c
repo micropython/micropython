@@ -94,10 +94,10 @@ void mp_hal_delay_us(mp_uint_t us) {
 }
 
 uint64_t mp_hal_ticks_us_64(void) {
-    uint32_t us64_upper = ticks_us64_upper;
     uint32_t us64_lower;
     uint8_t intflag;
     __disable_irq();
+    uint32_t us64_upper = ticks_us64_upper;
     #if defined(MCU_SAMD21)
     us64_lower = REG_TC4_COUNT32_COUNT;
     intflag = TC4->COUNT32.INTFLAG.reg;
