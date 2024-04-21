@@ -32,12 +32,11 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseOut.h"
-#include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/util.h"
 
 //| class PulseOut:
-//|     """Pulse PWM "carrier" output on and off. This is commonly used in infrared remotes. The
-//|     pulsed signal consists of timed on and off periods. Unlike PWM, there is no set duration
+//|     """Pulse PWM-modulated "carrier" output on and off. This is commonly used in infrared remotes. The
+//|     pulsed signal consists of timed on and off periods. Unlike `pwmio.PWMOut`, there is no set duration
 //|     for on and off pairs."""
 //|
 //|     def __init__(
@@ -53,7 +52,6 @@
 //|
 //|           import array
 //|           import pulseio
-//|           import pwmio
 //|           import board
 //|
 //|           # 50% duty cycle at 38kHz.
@@ -67,6 +65,7 @@
 //|           pulse.send(pulses)"""
 //|         ...
 STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    #if CIRCUITPY_PULSEIO_PULSEOUT
     enum { ARG_pin, ARG_frequency, ARG_duty_cycle};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -84,8 +83,12 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
     self->base.type = &pulseio_pulseout_type;
     common_hal_pulseio_pulseout_construct(self, pin, frequency, duty_cycle);
     return MP_OBJ_FROM_PTR(self);
+    #else
+    mp_raise_NotImplementedError(NULL);
+    #endif
 }
 
+#if CIRCUITPY_PULSEIO_PULSEOUT
 //|     def deinit(self) -> None:
 //|         """Deinitialises the PulseOut and releases any hardware resources for reuse."""
 //|         ...
@@ -138,14 +141,17 @@ STATIC mp_obj_t pulseio_pulseout_obj_send(mp_obj_t self_in, mp_obj_t pulses) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pulseio_pulseout_send_obj, pulseio_pulseout_obj_send);
+#endif // CIRCUITPY_PULSEIO_PULSEOUT
 
 STATIC const mp_rom_map_elem_t pulseio_pulseout_locals_dict_table[] = {
     // Methods
+    #if CIRCUITPY_PULSEIO_PULSEOUT
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pulseio_pulseout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&pulseio_pulseout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&pulseio_pulseout___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&pulseio_pulseout_send_obj) },
+    #endif // CIRCUITPY_PULSEIO_PULSEOUT
 };
 STATIC MP_DEFINE_CONST_DICT(pulseio_pulseout_locals_dict, pulseio_pulseout_locals_dict_table);
 

@@ -299,7 +299,11 @@ STATIC bool maybe_run_list(const char *const *filenames, size_t n_filenames) {
     if (_current_executing_filename == NULL) {
         return false;
     }
-    mp_hal_stdout_tx_str(line_clear);
+
+    // This function is used for `boot.py` and is thus logged to `boot_out.txt`.
+    // We do not want the line clear to be logged.
+    // The function `serial_write` is the only function that isn't logged into the file.
+    serial_write(line_clear);
     mp_hal_stdout_tx_str(_current_executing_filename);
     serial_write_compressed(MP_ERROR_TEXT(" output:\n"));
 

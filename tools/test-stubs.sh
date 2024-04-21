@@ -5,7 +5,8 @@ python3 -m venv test-stubs
 pip install mypy isort black adafruit-circuitpython-typing wheel build
 rm -rf circuitpython-stubs .mypy_cache
 make stubs
-pip install --force-reinstall circuitpython-stubs/dist/circuitpython-stubs-*.tar.gz
+# Allow either dash or underscore as separator. setuptools v69.3.0 changed from "-" to "_".
+pip install --force-reinstall circuitpython-stubs/dist/circuitpython[-_]stubs-*.tar.gz
 export MYPYPATH=circuitpython-stubs/
 echo "The following test should pass:"
 mypy -c 'import busio; b: busio.I2C; b.writeto(0x30, b"")'

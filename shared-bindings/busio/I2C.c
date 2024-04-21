@@ -67,6 +67,7 @@
 //|         """
 //|         ...
 STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    #if CIRCUITPY_BUSIO_I2C
     busio_i2c_obj_t *self = mp_obj_malloc(busio_i2c_obj_t, &busio_i2c_type);
     enum { ARG_scl, ARG_sda, ARG_frequency, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
@@ -83,8 +84,13 @@ STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     common_hal_busio_i2c_construct(self, scl, sda, args[ARG_frequency].u_int, args[ARG_timeout].u_int);
     return (mp_obj_t)self;
+    #else
+    mp_raise_NotImplementedError(NULL);
+    #endif // CIRCUITPY_BUSIO_I2C
+
 }
 
+#if CIRCUITPY_BUSIO_I2C
 //|     def deinit(self) -> None:
 //|         """Releases control of the underlying hardware so other classes can use it."""
 //|         ...
@@ -371,8 +377,10 @@ STATIC mp_obj_t busio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *p
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_then_readfrom_obj, 1, busio_i2c_writeto_then_readfrom);
+#endif // CIRCUITPY_BUSIO_I2C
 
 STATIC const mp_rom_map_elem_t busio_i2c_locals_dict_table[] = {
+    #if CIRCUITPY_BUSIO_I2C
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&busio_i2c_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&busio_i2c___exit___obj) },
@@ -384,6 +392,7 @@ STATIC const mp_rom_map_elem_t busio_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readfrom_into), MP_ROM_PTR(&busio_i2c_readfrom_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeto), MP_ROM_PTR(&busio_i2c_writeto_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeto_then_readfrom), MP_ROM_PTR(&busio_i2c_writeto_then_readfrom_obj) },
+    #endif // CIRCUITPY_BUSIO_I2C
 };
 
 STATIC MP_DEFINE_CONST_DICT(busio_i2c_locals_dict, busio_i2c_locals_dict_table);
