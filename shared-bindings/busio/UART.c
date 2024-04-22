@@ -384,8 +384,6 @@ STATIC mp_obj_t busio_uart_obj_reset_input_buffer(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_reset_input_buffer_obj, busio_uart_obj_reset_input_buffer);
-#endif  // CIRCUITPY_BUSIO_UART
-
 //| class Parity:
 //|     """Enum-like class to define the parity used to verify correct data transfer."""
 //|
@@ -427,6 +425,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &busio_uart_parity_locals_dict
     );
 
+#endif  // CIRCUITPY_BUSIO_UART
+
 STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
     #if CIRCUITPY_BUSIO_UART
     { MP_ROM_QSTR(MP_QSTR___del__),      MP_ROM_PTR(&busio_uart_deinit_obj) },
@@ -446,10 +446,11 @@ STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_baudrate),     MP_ROM_PTR(&busio_uart_baudrate_obj) },
     { MP_ROM_QSTR(MP_QSTR_in_waiting),   MP_ROM_PTR(&busio_uart_in_waiting_obj) },
     { MP_ROM_QSTR(MP_QSTR_timeout),      MP_ROM_PTR(&busio_uart_timeout_obj) },
-    #endif  // CIRCUITPY_BUSIO_UART
 
     // Nested Enum-like Classes.
     { MP_ROM_QSTR(MP_QSTR_Parity),       MP_ROM_PTR(&busio_uart_parity_type) },
+    #endif  // CIRCUITPY_BUSIO_UART
+
 };
 STATIC MP_DEFINE_CONST_DICT(busio_uart_locals_dict, busio_uart_locals_dict_table);
 
