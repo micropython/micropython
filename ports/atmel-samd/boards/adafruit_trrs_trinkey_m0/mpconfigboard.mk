@@ -23,5 +23,6 @@ CIRCUITPY_ROTARYIO = 0
 CIRCUITPY_RTC = 0
 
 # Include these Python libraries in firmware.
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
+# Currently at least one large translation is too large to include NeoPixel.
+# FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID
