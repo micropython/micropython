@@ -57,7 +57,30 @@ STATIC const uint16_t triangle[] = {0, 32767, 0, -32767};
 //|
 //|     In the current implementation, LFOs are updated every 256 samples. This
 //|     should be considered an implementation detail, though it affects how LFOs
-//|     behave for instance when used to implement an integrator (``l.offset = l``).
+//|     behave for instance when used to implement an integrator (``l.offset = l``).A
+//|
+//|     An LFO's output is not updated in any other way than when its associated
+//|     synthesizer updates it. For instance, if an LFO is created and its "first"
+//|     output is non-zero, its output is 0 until it is updated by its associated synthesizer.
+//|     Similarly, it is not updated when its inputs like ``scale`` and ``offset`` are changed.
+//|
+//|     The interpolation of the waveform is necessarily different depending on the ``once``
+//|     property. Consider a LFO with
+//|     ``waveform=np.array([0, 32767], dtype=np.int16), interpolate=True, once=True, rate=1``.
+//|     Over 1 second this LFO's output will change
+//|     from ``0`` to ``32767``, and will remain at ``32767`` thereafter, creating
+//|     a "bend out" over a duration of 1 second.
+//|
+//|     However, when ``once=False``, this creates a sawtooth waveform with a period of 1 second.
+//|     Over about the first half second the input will increase from ``0`` to ``32767``,
+//|     then during the second half of the second it will decrease back to ``0``.
+//|
+//|     The time of the peak output is different depending on the value of ``once``:
+//|     At 1.0s for ``once=True`` and at 0.5s for ``once=False``.
+//|
+//|     Because of this difference in interpolation, dynamically updating the
+//|     ``once`` flag except when the LFO is at a phase of 0 will cause a step in
+//|     the LFO's output.
 //|     """
 //|
 //|     def __init__(
