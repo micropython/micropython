@@ -72,7 +72,7 @@ mtb_deinit: clean
 	-$(Q) cd $(MTB_LIBS_DIR); rm -rf libs
 	-$(Q) cd $(MTB_LIBS_DIR); rm -rf bsps
 	-$(Q) cd $(MTB_LIBS_DIR); rm -rf ../mtb_shared
-	-$(Q) cd $(MTB_LIBS_DIR); find deps/ -maxdepth 1 -type f -delete 
+	-$(Q) cd $(MTB_LIBS_DIR); find deps/*.mtb -maxdepth 1 -type f -delete 
 
 # Some of the configuration variables are passed to the ModusToolbox 
 # Makefile to include/exclude certain middleware libraries and components
