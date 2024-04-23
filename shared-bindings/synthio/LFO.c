@@ -57,7 +57,7 @@ STATIC const uint16_t triangle[] = {0, 32767, 0, -32767};
 //|
 //|     In the current implementation, LFOs are updated every 256 samples. This
 //|     should be considered an implementation detail, though it affects how LFOs
-//|     behave for instance when used to implement an integrator (``l.offset = l``).A
+//|     behave for instance when used to implement an integrator (``l.offset = l``).
 //|
 //|     An LFO's output is not updated in any other way than when its associated
 //|     synthesizer updates it. For instance, if an LFO is created and its "first"
