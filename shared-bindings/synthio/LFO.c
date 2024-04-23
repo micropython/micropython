@@ -72,7 +72,7 @@ STATIC const uint16_t triangle[] = {0, 32767, 0, -32767};
 //|     LFO's output will change from ``0`` to ``100``, and will remain at
 //|     ``100`` thereafter, creating a "bend out" over a duration of 1 second.
 //|
-//|     However, when ``once=False``, this creates a sawtooth waveform with a
+//|     However, when ``once=False``, this creates a triangle waveform with a
 //|     period of 1 second. Over about the first half second the input will
 //|     increase from ``0`` to ``100``, then during the second half of the second
 //|     it will decrease back to ``0``.
