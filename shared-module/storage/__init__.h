@@ -27,10 +27,9 @@
 #ifndef SHARED_MODULE_STORAGE___INIT___H
 #define SHARED_MODULE_STORAGE___INIT___H
 
-#include "py/mpconfig.h"
+#if CIRCUITPY_USB
 #include "supervisor/usb.h"
 
-#if CIRCUITPY_USB
 bool storage_usb_enabled(void);
 void storage_usb_set_defaults(void);
 size_t storage_usb_descriptor_length(void);

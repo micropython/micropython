@@ -35,24 +35,19 @@
 #include "genhdr/mpversion.h"
 #include "py/mperrno.h"
 #include "py/mpstate.h"
-#include "py/stackctrl.h"
 
 #include "shared-bindings/wifi/Radio.h"
-#include "shared-module/storage/__init__.h"
 #include "shared/timeutils/timeutils.h"
 #include "supervisor/fatfs.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/reload.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
 #include "supervisor/shared/web_workflow/websocket.h"
 #include "supervisor/shared/workflow.h"
-#include "supervisor/usb.h"
 
 #include "shared-bindings/hashlib/__init__.h"
 #include "shared-bindings/hashlib/Hash.h"
-#include "lib/oofatfs/diskio.h"
 
 #if CIRCUITPY_FOURWIRE
 #include "shared-module/displayio/__init__.h"
@@ -64,7 +59,6 @@
 #endif
 
 #include "shared-bindings/microcontroller/Processor.h"
-#include "shared-bindings/socketpool/__init__.h"
 #include "shared-bindings/socketpool/Socket.h"
 #include "shared-bindings/socketpool/SocketPool.h"
 

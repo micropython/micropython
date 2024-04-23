@@ -26,21 +26,15 @@
 
 #include <string.h>
 
-#include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "shared/timeutils/timeutils.h"
 
-#include "shared-bindings/_bleio/__init__.h"
-#include "shared-bindings/_bleio/Adapter.h"
 #include "shared-bindings/_bleio/Characteristic.h"
 #include "shared-bindings/_bleio/PacketBuffer.h"
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
-#include "shared-module/storage/__init__.h"
 
 #include "bluetooth/ble_drv.h"
-
-#include "common-hal/_bleio/__init__.h"
 
 #include "supervisor/fatfs.h"
 #include "supervisor/filesystem.h"
@@ -48,10 +42,6 @@
 #include "supervisor/shared/bluetooth/file_transfer.h"
 #include "supervisor/shared/bluetooth/file_transfer_protocol.h"
 #include "supervisor/shared/workflow.h"
-#include "supervisor/shared/tick.h"
-#include "supervisor/usb.h"
-
-#include "py/mpstate.h"
 
 STATIC bleio_service_obj_t supervisor_ble_service;
 STATIC bleio_uuid_obj_t supervisor_ble_service_uuid;
