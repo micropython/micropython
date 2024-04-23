@@ -47,6 +47,9 @@
 #if defined(CONFIG_IDF_TARGET_ESP32)
 #include "soc/rtc_cntl_reg.h"
 #include "esp32/rom/rtc.h"
+#elif defined(CONFIG_IDF_TARGET_ESP32C2)
+#include "soc/rtc_cntl_reg.h"
+#include "esp32c2/rom/rtc.h"
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #include "soc/rtc_cntl_reg.h"
 #include "esp32c3/rom/rtc.h"

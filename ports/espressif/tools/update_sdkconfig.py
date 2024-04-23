@@ -176,12 +176,9 @@ def update(debug, board, update_all):
         if key == "IDF_TARGET":
             target = value
             if uf2_bootloader is None:
-                uf2_bootloader = target not in ("esp32", "esp32c3", "esp32c6", "esp32h2")
+                uf2_bootloader = target in ("esp32s2", "esp32s3")
             if ble_enabled is None:
-                ble_enabled = target not in (
-                    "esp32",
-                    "esp32s2",
-                )  # ESP32 is disabled by us. S2 doesn't support it.
+                ble_enabled = target not in ("esp32s2",)  # S2 doesn't support it.
         elif key == "CIRCUITPY_ESP_FLASH_SIZE":
             flash_size = value
         elif key == "CIRCUITPY_ESP_FLASH_MODE":

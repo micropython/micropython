@@ -109,6 +109,22 @@ static const uint64_t pin_mask_reset_forbidden =
     // SPI flash and PSRAM pins are protected at runtime in supervisor/port.c.
     #endif // ESP32
 
+    #if defined(CONFIG_IDF_TARGET_ESP32C2)
+    // Never ever reset pins used to communicate with SPI flash.
+    GPIO_SEL_11 |         // VDD_SPI
+    GPIO_SEL_12 |         // SPIHD
+    GPIO_SEL_13 |         // SPIWP
+    GPIO_SEL_14 |         // SPICS0
+    GPIO_SEL_15 |         // SPICLK
+    GPIO_SEL_16 |         // SPID
+    GPIO_SEL_17 |         // SPIQ
+    #if defined(CONFIG_ESP_CONSOLE_UART_DEFAULT) && CONFIG_ESP_CONSOLE_UART_DEFAULT && CONFIG_ESP_CONSOLE_UART_NUM == 0
+    // Never reset debug UART/console pins.
+    GPIO_SEL_19 |
+    GPIO_SEL_20 |
+    #endif
+    #endif // ESP32C2
+
     #if defined(CONFIG_IDF_TARGET_ESP32C3)
     // Never ever reset pins used to communicate with SPI flash.
     GPIO_SEL_11 |         // VDD_SPI

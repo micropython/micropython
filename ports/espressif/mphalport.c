@@ -30,6 +30,8 @@
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
 #include "components/esp_rom/include/esp32/rom/ets_sys.h"
+#elif defined(CONFIG_IDF_TARGET_ESP32C2)
+#include "components/esp_rom/include/esp32c2/rom/ets_sys.h"
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #include "components/esp_rom/include/esp32c3/rom/ets_sys.h"
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)

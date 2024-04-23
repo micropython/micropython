@@ -67,6 +67,8 @@ extern const mp_obj_type_t mcu_pin_type;
 // Choose based on chip
 #if defined(CONFIG_IDF_TARGET_ESP32)
 #include "esp32/pins.h"
+#elif defined(CONFIG_IDF_TARGET_ESP32C2)
+#include "esp32c2/pins.h"
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #include "esp32c3/pins.h"
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)

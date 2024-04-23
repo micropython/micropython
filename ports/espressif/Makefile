@@ -24,7 +24,10 @@
 
 include ../../py/circuitpy_mkenv.mk
 
-ifeq ($(IDF_TARGET),esp32c3)
+ifeq ($(IDF_TARGET),esp32c2)
+IDF_TARGET_ARCH = riscv
+CROSS_COMPILE = riscv32-esp-elf-
+else ifeq ($(IDF_TARGET),esp32c3)
 IDF_TARGET_ARCH = riscv
 CROSS_COMPILE = riscv32-esp-elf-
 else ifeq ($(IDF_TARGET),esp32c6)
@@ -68,7 +71,9 @@ INC += \
 	-isystem esp-idf/components/bt/host/nimble/esp-hci/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/controller/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/services/ans/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/services/gap/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/services/gatt/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/util/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/transport/include \
@@ -223,6 +228,12 @@ LDFLAGS += \
 	-T$(IDF_TARGET).rom.newlib-data.ld \
 	-T$(IDF_TARGET).rom.newlib-funcs.ld \
 	-T$(IDF_TARGET).rom.spiflash.ld
+else ifeq ($(IDF_TARGET),esp32c2)
+LDFLAGS += \
+	-Tesp32c2.rom.heap.ld \
+	-Tesp32c2.rom.newlib.ld \
+	-Tesp32c2.rom.version.ld
+CFLAGS += -DSOC_XTAL_FREQ_MHZ=CONFIG_XTAL_FREQ
 else ifeq ($(IDF_TARGET),esp32c3)
 LDFLAGS += \
 	-Tesp32c3.rom.newlib.ld \
@@ -264,6 +275,8 @@ endif
 # Always add these because we might be doing host.
 ifeq ($(IDF_TARGET),esp32)
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_ESP32
+else ifeq ($(IDF_TARGET),esp32c2)
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_ESP32C2
 else ifeq ($(IDF_TARGET),esp32c3)
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_ESP32C3
 else ifeq ($(IDF_TARGET),esp32c6)
@@ -409,7 +422,11 @@ UF2_BOOTLOADER ?= $(CIRCUITPY_USB_DEVICE)
 ifeq ($(UF2_BOOTLOADER), 1)
 	FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
 else
+ifeq ($(CIRCUITPY_ESP_FLASH_SIZE), 4MB)
+	FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE)-no-ota-no-uf2.defaults
+else
 	FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE)-no-uf2.defaults
+endif
 endif
 endif
 FLASH_MODE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_MODE).defaults
@@ -469,11 +486,15 @@ update-all-sdkconfigs: $(BUILD)/esp-idf/config/sdkconfig.h
 update-board-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
 	python tools/update_sdkconfig.py --board=$(BOARD) --debug=$(DEBUG)
 
-BINARY_WIFI_BLOBS = libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libwapi.a
+BINARY_WIFI_BLOBS = libcore.a libespnow.a libnet80211.a libpp.a libsmartconfig.a
 BINARY_BLOBS = esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a
 ifneq ($(CIRCUITPY_WIFI),0)
 	BINARY_BLOBS += esp-idf/components/esp_coex/lib/$(IDF_TARGET)/libcoexist.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
+	ifneq ($(IDF_TARGET),esp32c2)
+	BINARY_BLOBS += $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, libmesh.a libwapi.a)
+	endif
 endif
+
 ifeq ($(IDF_TARGET),esp32)
 BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/librtc.a
 endif
@@ -493,6 +514,9 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 
 	ESP_IDF_COMPONENTS_LINK += bt
 	ifeq ($(BLE_IMPL),esp32)
+		# BLE will hang the ESP32 and trigger an interrupt watchdog without this undefined symbol at
+		# link because a weak version of the interrupt that BLE uses will be linked incorrectly.
+		LDFLAGS += -u ld_include_hli_vectors_bt
 		BINARY_BLOBS += esp-idf/components/bt/controller/lib_esp32/$(IDF_TARGET)/libbtdm_app.a
 	endif
 
@@ -543,6 +567,8 @@ ifneq ($(VALID_BOARD),)
 ifeq ($(IDF_TARGET),esp32)
 BOOTLOADER_OFFSET = 0x1000
 else ifeq ($(IDF_TARGET),esp32h2)
+BOOTLOADER_OFFSET = 0x0
+else ifeq ($(IDF_TARGET),esp32c2)
 BOOTLOADER_OFFSET = 0x0
 else ifeq ($(IDF_TARGET),esp32c3)
 BOOTLOADER_OFFSET = 0x0

@@ -45,7 +45,7 @@
 
 // Nearly all boards have this because it is used to enter the ROM bootloader.
 #ifndef CIRCUITPY_BOOT_BUTTON
-  #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
+  #if defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
     #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO9)
   #elif !defined(CONFIG_IDF_TARGET_ESP32)
     #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)

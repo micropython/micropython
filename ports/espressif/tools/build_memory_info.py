@@ -116,6 +116,9 @@ with open(sys.argv[1], "rb") as stream:
         offset = section["sh_offset"]
         if not size or not start:
             continue
+        if section.name.endswith("dummy"):
+            # print("Skipping dummy section", section.name)
+            continue
         # This handles sections that span two memory regions, not more than that.
         # print(start, size, offset, section.name)
         region = find_region(start)

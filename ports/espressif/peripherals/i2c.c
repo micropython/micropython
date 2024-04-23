@@ -54,10 +54,12 @@ esp_err_t peripherals_i2c_init(i2c_port_t num, const i2c_config_t *i2c_conf) {
     }
     size_t rx_buf_len = 0;
     size_t tx_buf_len = 0;
+    #ifdef SOC_I2C_SUPPORT_SLAVE
     if (i2c_conf->mode == I2C_MODE_SLAVE) {
         rx_buf_len = 256;
         tx_buf_len = 256;
     }
+    #endif
     return i2c_driver_install(num, i2c_conf->mode, rx_buf_len, tx_buf_len, 0);
 }
 

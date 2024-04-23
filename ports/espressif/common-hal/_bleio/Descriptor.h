@@ -26,8 +26,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_DESCRIPTOR_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_DESCRIPTOR_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -47,9 +46,11 @@ typedef struct _bleio_descriptor_obj {
     uint16_t max_length;
     bool fixed_length;
     uint16_t handle;
-    struct ble_gatt_dsc_def def;
+    struct ble_gatt_dsc_def *dsc_def;
+    uint8_t flags;
     bleio_attribute_security_mode_t read_perm;
     bleio_attribute_security_mode_t write_perm;
 } bleio_descriptor_obj_t;
 
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_DESCRIPTOR_H
+int bleio_descriptor_access_cb(uint16_t conn_handle, uint16_t attr_handle,
+    struct ble_gatt_access_ctxt *ctxt, void *arg);

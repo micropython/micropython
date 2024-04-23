@@ -24,10 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_INIT_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_INIT_H
+#pragma once
 
-#include "FreeRTOS.h"
+#include "freertos/FreeRTOS.h" // IWYU pragma: keep; for BaseType_t
 
 void bleio_background(void);
 
@@ -60,5 +59,3 @@ void check_notify(BaseType_t result);
 #define UNIT_1_MS  (1000)
 #define UNIT_1_25_MS  (1250)
 #define UNIT_10_MS    (10000)
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_INIT_H
