@@ -88,6 +88,7 @@ PORT_DEPS = {
         "lib/tlsf",
         "data/nvm.toml/",
     ],
+    "renode": ["lib/tlsf"],
     "silabs": ["extmod/ulab/", "data/nvm.toml/", "lib/tlsf"],
     "stm": [
         "extmod/ulab/",

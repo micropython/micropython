@@ -37,7 +37,6 @@
 #include "supervisor/shared/bluetooth/bluetooth.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/usb.h"
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"
 #include "shared-bindings/_bleio/Address.h"
@@ -58,6 +57,10 @@
 
 #include "esp_bt.h"
 #include "esp_nimble_hci.h"
+
+#if CIRCUITPY_USB
+#include "supervisor/usb.h"
+#endif
 
 #if CIRCUITPY_OS_GETENV
 #include "shared-module/os/__init__.h"
