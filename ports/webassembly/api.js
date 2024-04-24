@@ -38,7 +38,7 @@ export async function loadMicroPython(options) {
         { heapsize: 1024 * 1024, linebuffer: true },
         options,
     );
-    const Module = {};
+    let Module = {};
     Module.locateFile = (path, scriptDirectory) =>
         url || scriptDirectory + path;
     Module._textDecoder = new TextDecoder();
@@ -83,11 +83,7 @@ export async function loadMicroPython(options) {
             Module.stderr = (c) => stderr(new Uint8Array([c]));
         }
     }
-    const moduleLoaded = new Promise((r) => {
-        Module.postRun = r;
-    });
-    _createMicroPythonModule(Module);
-    await moduleLoaded;
+    Module = await _createMicroPythonModule(Module);
     globalThis.Module = Module;
     proxy_js_init();
     const pyimport = (name) => {
