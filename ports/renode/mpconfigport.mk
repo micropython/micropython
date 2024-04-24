@@ -1,6 +1,10 @@
 LONGINT_IMPL = MPZ
 INTERNAL_LIBM = 1
 
+# We build .elf files to run in the simulator. Generally, this will be a file
+# type supported by the chip family's bootloader.
+CIRCUITPY_BUILD_EXTENSIONS = elf
+
 # The port manages flash itself instead of using SPI flash via busio.SPI.
 INTERNAL_FLASH_FILESYSTEM = 1
 

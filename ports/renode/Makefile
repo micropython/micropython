@@ -36,24 +36,7 @@ INC += \
         -isystem ./../../lib/cmsis/inc \
         -I$(BUILD)
 
-OPTIMIZATION_FLAGS ?= -O3
-# option to override default optimization level, set in boards/$(BOARD)/mpconfigboard.mk
-CFLAGS += $(OPTIMIZATION_FLAGS)
-
-# flags specific to wifi / cyw43
-#Debugging/Optimization
-ifeq ($(DEBUG), 1)
-  CFLAGS += -ggdb3 -O3
-  # No LTO because we may place some functions in RAM instead of flash.
-else
-  CFLAGS += -DNDEBUG
-
-  # No LTO because we may place some functions in RAM instead of flash.
-
-  ifdef CFLAGS_BOARD
-    CFLAGS += $(CFLAGS_BOARD)
-  endif
-endif
+CFLAGS += -ggdb3 -Os
 
 DISABLE_WARNINGS = -Wno-cast-align
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) $(DISABLE_WARNINGS) -Werror=missing-prototypes
@@ -65,7 +48,7 @@ CFLAGS += \
 	-mcpu=cortex-m0plus \
 	-msoft-float \
 	-mfloat-abi=soft \
-  --specs=nano.specs
+	--specs=nano.specs
 
 # Use toolchain libm if we're not using our own.
 ifndef INTERNAL_LIBM
