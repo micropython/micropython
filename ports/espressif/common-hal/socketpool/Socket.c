@@ -31,8 +31,10 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/socketpool/SocketPool.h"
+#if CIRCUITPY_SSL
 #include "shared-bindings/ssl/SSLSocket.h"
 #include "shared-module/ssl/SSLSocket.h"
+#endif
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/workflow.h"
@@ -359,12 +361,14 @@ size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
 }
 
 void socketpool_socket_close(socketpool_socket_obj_t *self) {
+    #if CIRCUITPY_SSL
     if (self->ssl_socket) {
         ssl_sslsocket_obj_t *ssl_socket = self->ssl_socket;
         self->ssl_socket = NULL;
         common_hal_ssl_sslsocket_close(ssl_socket);
         return;
     }
+    #endif
     self->connected = false;
     int fd = self->num;
     // Ignore bogus/closed sockets

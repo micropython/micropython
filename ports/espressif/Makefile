@@ -303,7 +303,9 @@ SRC_C += \
 	peripherals/i2c.c \
 	peripherals/$(IDF_TARGET)/pins.c
 
+ifeq ($(CIRCUITPY_SSL),1)
 SRC_C += lib/mbedtls_config/crt_bundle.c
+endif
 
 SRC_C += $(wildcard common-hal/espidf/*.c)
 
