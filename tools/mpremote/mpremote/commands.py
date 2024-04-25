@@ -20,16 +20,17 @@ def do_connect(state, args=None):
         if dev == "list":
             # List attached devices.
             for p in sorted(serial.tools.list_ports.comports()):
-                print(
-                    "{} {} {:04x}:{:04x} {} {}".format(
-                        p.device,
-                        p.serial_number,
-                        p.vid if isinstance(p.vid, int) else 0,
-                        p.pid if isinstance(p.pid, int) else 0,
-                        p.manufacturer,
-                        p.product,
+                if p.serial_number is not None:
+                    print(
+                        "{} {} {:04x}:{:04x} {} {}".format(
+                            p.device,
+                            p.serial_number,
+                            p.vid if isinstance(p.vid, int) else 0,
+                            p.pid if isinstance(p.pid, int) else 0,
+                            p.manufacturer,
+                            p.product,
+                        )
                     )
-                )
             # Don't do implicit REPL command.
             state.did_action()
         elif dev == "auto":
