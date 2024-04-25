@@ -34,6 +34,7 @@ CIRCUITPY_FRAMEBUFFERIO ?= 1
 CIRCUITPY_FREQUENCYIO ?= 1
 CIRCUITPY_HASHLIB ?= 1
 CIRCUITPY_I2CTARGET ?= 0
+CIRCUITPY_MAX3421E ?= 1
 CIRCUITPY_MEMORYMAP ?= 1
 CIRCUITPY_NVM ?= 1
 CIRCUITPY_PARALLELDISPLAYBUS ?= 1
@@ -139,6 +140,7 @@ endif
 # bitmapfilter does not fit on 4MB boards unless they are set up as camera boards
 ifeq ($(CIRCUITPY_ESP_FLASH_SIZE),4MB)
 CIRCUITPY_BITMAPFILTER ?= 0
+OPTIMIZATION_FLAGS ?= -Os
 endif
 
 # No room for dualbank on boards with 2MB flash
