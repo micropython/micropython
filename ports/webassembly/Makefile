@@ -22,6 +22,9 @@ BUILD ?= build-$(VARIANT)
 include ../../py/mkenv.mk
 include $(VARIANT_DIR)/mpconfigvariant.mk
 
+# Use the default frozen manifest, variants may override this.
+FROZEN_MANIFEST ?= variants/manifest.py
+
 # Qstr definitions (must come before including py.mk).
 QSTR_DEFS = qstrdefsport.h
 
