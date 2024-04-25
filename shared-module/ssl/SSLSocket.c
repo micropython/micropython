@@ -27,18 +27,18 @@
  */
 
 #include "shared-bindings/ssl/SSLSocket.h"
-#include "shared-bindings/socketpool/Socket.h"
 #include "shared-bindings/ssl/SSLContext.h"
-#include "shared-bindings/socketpool/SocketPool.h"
-#include "shared-bindings/socketpool/Socket.h"
 
 #include "shared/runtime/interrupt_char.h"
+#include "shared/netutils/netutils.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "supervisor/shared/tick.h"
+
+#include "shared-bindings/socketpool/enum.h"
 
 #include "mbedtls/version.h"
 
@@ -106,11 +106,92 @@ STATIC NORETURN void mbedtls_raise_error(int err) {
     #endif
 }
 
-STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
-    mp_obj_t sock = *(mp_obj_t *)ctx;
+// Because ssl_socket_send and ssl_socket_recv_into are callbacks from mbedtls code,
+// it is not OK to exit them by raising an exception (nlr_jump'ing through
+// foreign code is not permitted). Instead, preserve the error number of any OSError
+// and turn anything else into -MP_EINVAL.
+STATIC int call_method_errno(size_t n_args, const mp_obj_t *args) {
+    nlr_buf_t nlr;
+    mp_int_t result = -MP_EINVAL;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t obj_result = mp_call_method_n_kw(n_args, 0, args);
+        result = (obj_result == mp_const_none) ? 0 : mp_obj_get_int(obj_result);
+        nlr_pop();
+        return result;
+    } else {
+        mp_obj_t exc = MP_OBJ_FROM_PTR(nlr.ret_val);
+        if (nlr_push(&nlr) == 0) {
+            result = -mp_obj_get_int(mp_load_attr(exc, MP_QSTR_errno));
+            nlr_pop();
+        }
+    }
+    return result;
+}
 
-    // mp_uint_t out_sz = sock_stream->write(sock, buf, len, &err);
-    mp_int_t out_sz = socketpool_socket_send(sock, buf, len);
+static int ssl_socket_send(ssl_sslsocket_obj_t *self, const byte *buf, size_t len) {
+    mp_obj_array_t mv;
+    mp_obj_memoryview_init(&mv, 'B', 0, len, (void *)buf);
+
+    self->send_args[2] = MP_OBJ_FROM_PTR(&mv);
+    return call_method_errno(1, self->send_args);
+}
+
+static int ssl_socket_recv_into(ssl_sslsocket_obj_t *self, byte *buf, size_t len) {
+    mp_obj_array_t mv;
+    mp_obj_memoryview_init(&mv, 'B' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW, 0, len, buf);
+
+    self->recv_into_args[2] = MP_OBJ_FROM_PTR(&mv);
+    return call_method_errno(1, self->recv_into_args);
+}
+
+static void ssl_socket_connect(ssl_sslsocket_obj_t *self, mp_obj_t addr_in) {
+    self->connect_args[2] = addr_in;
+    mp_call_method_n_kw(1, 0, self->connect_args);
+}
+
+static void ssl_socket_bind(ssl_sslsocket_obj_t *self, mp_obj_t addr_in) {
+    self->bind_args[2] = addr_in;
+    mp_call_method_n_kw(1, 0, self->bind_args);
+}
+
+static void ssl_socket_close(ssl_sslsocket_obj_t *self) {
+    // swallow any exception raised by the underlying close method.
+    // This is not ideal. However, it avoids printing "MemoryError:"
+    // when attempting to close a userspace socket object during gc_sweep_all
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_call_method_n_kw(0, 0, self->close_args);
+        nlr_pop();
+    } else {
+        nlr_pop();
+    }
+}
+
+static void ssl_socket_setsockopt(ssl_sslsocket_obj_t *self, mp_obj_t level_obj, mp_obj_t opt_obj, mp_obj_t optval_obj) {
+    self->setsockopt_args[2] = level_obj;
+    self->setsockopt_args[3] = opt_obj;
+    self->setsockopt_args[4] = optval_obj;
+    mp_call_method_n_kw(3, 0, self->setsockopt_args);
+}
+
+static void ssl_socket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj) {
+    self->settimeout_args[2] = timeout_obj;
+    mp_call_method_n_kw(1, 0, self->settimeout_args);
+}
+
+static void ssl_socket_listen(ssl_sslsocket_obj_t *self, mp_int_t backlog) {
+    self->listen_args[2] = MP_OBJ_NEW_SMALL_INT(backlog);
+    mp_call_method_n_kw(1, 0, self->listen_args);
+}
+
+static mp_obj_t ssl_socket_accept(ssl_sslsocket_obj_t *self) {
+    return mp_call_method_n_kw(0, 0, self->accept_args);
+}
+
+STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
+    ssl_sslsocket_obj_t *self = (ssl_sslsocket_obj_t *)ctx;
+
+    mp_int_t out_sz = ssl_socket_send(self, buf, len);
     DEBUG_PRINT("socket_send() -> %d", out_sz);
     if (out_sz < 0) {
         int err = -out_sz;
@@ -118,27 +199,22 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
         if (mp_is_nonblocking_error(err)) {
             return MBEDTLS_ERR_SSL_WANT_WRITE;
         }
-        return -err; // convert an MP_ERRNO to something mbedtls passes through as error
-    } else {
-        return out_sz;
     }
+    return out_sz;
 }
 
-// _mbedtls_ssl_recv is called by mbedtls to receive bytes from the underlying socket
 STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
-    mp_obj_t sock = *(mp_obj_t *)ctx;
+    ssl_sslsocket_obj_t *self = (ssl_sslsocket_obj_t *)ctx;
 
-    mp_int_t out_sz = socketpool_socket_recv_into(sock, buf, len);
+    mp_int_t out_sz = ssl_socket_recv_into(self, buf, len);
     DEBUG_PRINT("socket_recv() -> %d", out_sz);
     if (out_sz < 0) {
         int err = -out_sz;
         if (mp_is_nonblocking_error(err)) {
             return MBEDTLS_ERR_SSL_WANT_READ;
         }
-        return -err;
-    } else {
-        return out_sz;
     }
+    return out_sz;
 }
 
 
@@ -153,16 +229,27 @@ static int urandom_adapter(void *unused, unsigned char *buf, size_t n) {
 #endif
 
 ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t *self,
-    socketpool_socket_obj_t *socket, bool server_side, const char *server_hostname) {
+    mp_obj_t socket, bool server_side, const char *server_hostname) {
 
-    if (socket->type != SOCKETPOOL_SOCK_STREAM) {
+    mp_int_t socket_type = mp_obj_get_int(mp_load_attr(socket, MP_QSTR_type));
+    if (socket_type != SOCKETPOOL_SOCK_STREAM) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Invalid socket for TLS"));
     }
 
     ssl_sslsocket_obj_t *o = m_new_obj_with_finaliser(ssl_sslsocket_obj_t);
     o->base.type = &ssl_sslsocket_type;
     o->ssl_context = self;
-    o->sock = socket;
+    o->sock_obj = socket;
+
+    mp_load_method(socket, MP_QSTR_accept, o->accept_args);
+    mp_load_method(socket, MP_QSTR_bind, o->bind_args);
+    mp_load_method(socket, MP_QSTR_close, o->close_args);
+    mp_load_method(socket, MP_QSTR_connect, o->connect_args);
+    mp_load_method(socket, MP_QSTR_listen, o->listen_args);
+    mp_load_method(socket, MP_QSTR_recv_into, o->recv_into_args);
+    mp_load_method(socket, MP_QSTR_send, o->send_args);
+    mp_load_method(socket, MP_QSTR_settimeout, o->settimeout_args);
+    mp_load_method(socket, MP_QSTR_setsockopt, o->setsockopt_args);
 
     mbedtls_ssl_init(&o->ssl);
     mbedtls_ssl_config_init(&o->conf);
@@ -221,7 +308,7 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
         }
     }
 
-    mbedtls_ssl_set_bio(&o->ssl, &o->sock, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
+    mbedtls_ssl_set_bio(&o->ssl, o, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
 
     if (self->cert_buf.buf != NULL) {
         #if MBEDTLS_VERSION_MAJOR >= 3
@@ -290,13 +377,16 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t
     mbedtls_raise_error(ret);
 }
 
-size_t common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port) {
-    return common_hal_socketpool_socket_bind(self->sock, host, hostlen, port);
+void common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, mp_obj_t addr_in) {
+    ssl_socket_bind(self, addr_in);
 }
 
 void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
+    if (self->closed) {
+        return;
+    }
     self->closed = true;
-    common_hal_socketpool_socket_close(self->sock);
+    ssl_socket_close(self);
     mbedtls_pk_free(&self->pkey);
     mbedtls_x509_crt_free(&self->cert);
     mbedtls_x509_crt_free(&self->cacert);
@@ -342,8 +432,8 @@ cleanup:
     }
 }
 
-void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port) {
-    common_hal_socketpool_socket_connect(self->sock, host, hostlen, port);
+void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self, mp_obj_t addr_in) {
+    ssl_socket_connect(self, addr_in);
     do_handshake(self);
 }
 
@@ -355,17 +445,26 @@ bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t *self) {
     return !self->closed;
 }
 
-bool common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog) {
-    return common_hal_socketpool_socket_listen(self->sock, backlog);
+void common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog) {
+    return ssl_socket_listen(self, backlog);
 }
 
-ssl_sslsocket_obj_t *common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self, uint8_t *ip, uint32_t *port) {
-    socketpool_socket_obj_t *sock = common_hal_socketpool_socket_accept(self->sock, ip, port);
+mp_obj_t common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self) {
+    mp_obj_t accepted = ssl_socket_accept(self);
+    mp_obj_t sock = mp_obj_subscr(accepted, MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_SENTINEL);
     ssl_sslsocket_obj_t *sslsock = common_hal_ssl_sslcontext_wrap_socket(self->ssl_context, sock, true, NULL);
     do_handshake(sslsock);
-    return sslsock;
+    mp_obj_t peer = mp_obj_subscr(accepted, MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_SENTINEL);
+    mp_obj_t tuple_contents[2];
+    tuple_contents[0] = MP_OBJ_FROM_PTR(sslsock);
+    tuple_contents[1] = peer;
+    return mp_obj_new_tuple(2, tuple_contents);
 }
 
-void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, uint32_t timeout_ms) {
-    common_hal_socketpool_socket_settimeout(self->sock, timeout_ms);
+void common_hal_ssl_sslsocket_setsockopt(ssl_sslsocket_obj_t *self, mp_obj_t level_obj, mp_obj_t optname_obj, mp_obj_t optval_obj) {
+    ssl_socket_setsockopt(self, level_obj, optname_obj, optval_obj);
+}
+
+void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj) {
+    ssl_socket_settimeout(self, timeout_obj);
 }

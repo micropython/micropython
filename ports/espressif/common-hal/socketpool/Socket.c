@@ -602,6 +602,10 @@ void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint
     self->timeout_ms = timeout_ms;
 }
 
+mp_int_t common_hal_socketpool_socket_get_type(socketpool_socket_obj_t *self) {
+    return self->type;
+}
+
 
 int common_hal_socketpool_socket_setsockopt(socketpool_socket_obj_t *self, int level, int optname, const void *value, size_t optlen) {
     int err = lwip_setsockopt(self->num, level, optname, value, optlen);

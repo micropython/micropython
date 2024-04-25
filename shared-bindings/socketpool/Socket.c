@@ -32,6 +32,7 @@
 
 #include "py/mperrno.h"
 #include "py/objlist.h"
+#include "py/objproperty.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "py/stream.h"
@@ -383,7 +384,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket_setsockopt_obj, 4, 
 //|         :param ~int value: timeout in seconds.  0 means non-blocking.  None means block indefinitely.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t socketpool_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t timeout_ms;
@@ -401,10 +401,23 @@ STATIC mp_obj_t socketpool_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_settimeout_obj, socketpool_socket_settimeout);
 
+//|     type: int
+//|     """Read-only access to the socket type"""
+//|
+STATIC mp_obj_t socketpool_socket_obj_get_type(mp_obj_t self_in) {
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_socketpool_socket_get_type(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(socketpool_socket_get_type_obj, socketpool_socket_obj_get_type);
+
+MP_PROPERTY_GETTER(socketpool_socket_type_obj,
+    (mp_obj_t)&socketpool_socket_get_type_obj);
+
 STATIC const mp_rom_map_elem_t socketpool_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&socketpool_socket___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&socketpool_socket_close_obj) },
+
 
     { MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&socketpool_socket_accept_obj) },
     { MP_ROM_QSTR(MP_QSTR_bind), MP_ROM_PTR(&socketpool_socket_bind_obj) },
@@ -413,12 +426,13 @@ STATIC const mp_rom_map_elem_t socketpool_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&socketpool_socket_listen_obj) },
     { MP_ROM_QSTR(MP_QSTR_recvfrom_into), MP_ROM_PTR(&socketpool_socket_recvfrom_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_recv_into), MP_ROM_PTR(&socketpool_socket_recv_into_obj) },
-    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socketpool_socket_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendall), MP_ROM_PTR(&socketpool_socket_sendall_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socketpool_socket_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socketpool_socket_sendto_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socketpool_socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socketpool_socket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&socketpool_socket_settimeout_obj) },
+    { MP_ROM_QSTR(MP_QSTR_type), MP_ROM_PTR(&socketpool_socket_type_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(socketpool_socket_locals_dict, socketpool_socket_locals_dict_table);
@@ -472,7 +486,7 @@ STATIC const mp_stream_p_t socket_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     socketpool_socket_type,
     MP_QSTR_Socket,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &socketpool_socket_locals_dict,
     protocol, &socket_stream_p
     );
