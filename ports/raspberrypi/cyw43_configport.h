@@ -37,7 +37,7 @@
 
 #define CYW43_NETUTILS                  (1)
 
-#if CIRCUITPY_USB
+#if CIRCUITPY_USB_DEVICE
 #include "supervisor/usb.h"
 #define CYW43_EVENT_POLL_HOOK usb_background();
 #else
