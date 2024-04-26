@@ -100,6 +100,12 @@ static void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 }
 #endif
 
+#if defined(MBEDTLS_PEM_PARSE_C)
+static int mbedtls_is_pem(const byte *data, size_t len) {
+    return (len >= 10) && (memcmp(data, "-----BEGIN", 10) == 0);
+}
+#endif
+
 static NORETURN void mbedtls_raise_error(int err) {
     // Handle special cases.
     if (err == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
@@ -347,12 +353,19 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_set_ciphers_obj, ssl_context_set_ci
 static void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, mp_obj_t cert_obj) {
     size_t key_len;
     const byte *key = (const byte *)mp_obj_str_get_data(key_obj, &key_len);
-    // len should include terminating null
+
+    #if defined(MBEDTLS_PEM_PARSE_C)
+    // len should include terminating null if the data is PEM encoded
+    if (mbedtls_is_pem(key, key_len)) {
+        key_len += 1;
+    }
+    #endif
+
     int ret;
     #if MBEDTLS_VERSION_NUMBER >= 0x03000000
-    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len + 1, NULL, 0, mbedtls_ctr_drbg_random, &self->ctr_drbg);
+    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0, mbedtls_ctr_drbg_random, &self->ctr_drbg);
     #else
-    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len + 1, NULL, 0);
+    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0);
     #endif
     if (ret != 0) {
         mbedtls_raise_error(MBEDTLS_ERR_PK_BAD_INPUT_DATA); // use general error for all key errors
