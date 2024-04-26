@@ -52,7 +52,7 @@ void reset_all_pins(void) {
     uint32_t pin_mask[PORT_COUNT] = PORT_OUT_IMPLEMENTED;
 
     // Do not full reset USB lines.
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     pin_mask[0] &= ~(PORT_PA24 | PORT_PA25);
     #endif
 

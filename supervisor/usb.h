@@ -80,7 +80,7 @@ void usb_setup_with_vm(void);
 
 
 // Propagate plug/unplug events to the MSC logic.
-#if CIRCUITPY_USB_MSC
+#if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_MSC
 void usb_msc_mount(void);
 void usb_msc_umount(void);
 bool usb_msc_ejected(void);

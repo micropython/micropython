@@ -220,7 +220,7 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t *self, const di
 
         // TODO(tannewt): Make refresh displays faster so we don't starve other
         // background tasks.
-        #if CIRCUITPY_USB
+        #if CIRCUITPY_TINYUSB
         usb_background();
         #endif
     }

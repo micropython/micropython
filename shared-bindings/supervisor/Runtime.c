@@ -40,7 +40,7 @@
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/bluetooth/bluetooth.h"
 
-#if (CIRCUITPY_USB)
+#if CIRCUITPY_TINYUSB
 #include "tusb.h"
 #endif
 
@@ -66,7 +66,7 @@ STATIC supervisor_run_reason_t _run_reason;
 //|     usb_connected: bool
 //|     """Returns the USB enumeration status (read-only)."""
 STATIC mp_obj_t supervisor_runtime_get_usb_connected(mp_obj_t self) {
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     return mp_obj_new_bool(tud_ready());
     #else
     return mp_const_false;

@@ -42,7 +42,7 @@
 #include "supervisor/shared/bluetooth/serial.h"
 #endif
 
-#if CIRCUITPY_USB
+#if CIRCUITPY_TINYUSB
 #include "tusb.h"
 #endif
 
@@ -63,7 +63,7 @@ byte console_uart_rx_buf[64];
 #endif
 #endif
 
-#if CIRCUITPY_USB || CIRCUITPY_CONSOLE_UART
+#if CIRCUITPY_USB_DEVICE || CIRCUITPY_CONSOLE_UART
 // Flag to note whether this is the first write after connection.
 // Delay slightly on the first write to allow time for the host to set up things,
 // including turning off echo mode.
@@ -176,7 +176,7 @@ void serial_early_init(void) {
 }
 
 void serial_init(void) {
-    #if CIRCUITPY_USB || CIRCUITPY_CONSOLE_UART
+    #if CIRCUITPY_USB_DEVICE || CIRCUITPY_CONSOLE_UART
     _first_write_done = false;
     #endif
 
@@ -205,7 +205,7 @@ bool serial_connected(void) {
     if (usb_cdc_console_enabled() && tud_cdc_connected()) {
         return true;
     }
-    #elif CIRCUITPY_USB
+    #elif CIRCUITPY_USB_DEVICE
     if (tud_cdc_connected()) {
         return true;
     }
@@ -287,7 +287,7 @@ char serial_read(void) {
         return -1;
     }
     #endif
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     return (char)tud_cdc_read_char();
     #endif
 
@@ -326,7 +326,7 @@ uint32_t serial_bytes_available(void) {
     }
     #endif
 
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     count += tud_cdc_available();
     #endif
 
@@ -384,7 +384,7 @@ void serial_write_substring(const char *text, uint32_t length) {
     }
     #endif
 
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     // Delay the very first write
     if (tud_cdc_connected() && !_first_write_done) {
         mp_hal_delay_ms(50);
