@@ -44,6 +44,7 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
 }
 
 void common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self, uint32_t frequency) {
+    mp_raise_NotImplementedError(NULL);
 }
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {

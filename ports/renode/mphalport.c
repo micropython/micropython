@@ -33,7 +33,7 @@
 extern uint32_t common_hal_mcu_processor_get_frequency(void);
 
 void mp_hal_delay_us(mp_uint_t delay) {
-    // busy_wait_us_32(delay);
+    // TODO busy_wait_us_32(delay);
 }
 
 void mp_hal_disable_all_interrupts(void) {

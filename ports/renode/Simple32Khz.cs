@@ -5,7 +5,7 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-// This is modified for CircuitPython to tick at 32khz like a slow external
+// This is modified for CircuitPython to tick at 32kHz like a slow external
 // crystal would.
 using System;
 using Antmicro.Renode.Core;
@@ -16,11 +16,11 @@ using System.Threading;
 
 namespace Antmicro.Renode.Peripherals.Timers
 {
-    public class Simple32Khz : IDoubleWordPeripheral, IKnownSize
+    public class Simple32kHz : IDoubleWordPeripheral, IKnownSize
     {
         public long Size { get { return 0x4; } }
 
-        public Simple32Khz(IMachine machine)
+        public Simple32kHz(IMachine machine)
         {
             machine.ClockSource.AddClockEntry(new ClockEntry(1, 32768, OnTick, this, String.Empty));
         }

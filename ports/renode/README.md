@@ -2,7 +2,7 @@
 
 Renode is an emulator targeting microcontroller-class devices. This port is a
 minimal version of CircuitPython that runs under Renode. Renode is designed to
-mimic full microcontrollers but CP uses more registers than what Renode has
+mimic full microcontrollers but CP uses more peripherals than what Renode has
 implemented so far. This port allows us to run on a variety of CPUs without
 worrying about peripherals.
 

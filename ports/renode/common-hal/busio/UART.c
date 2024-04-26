@@ -73,6 +73,7 @@ uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
 }
 
 void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate) {
+    mp_raise_NotImplementedError(NULL);
 }
 
 mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self) {
