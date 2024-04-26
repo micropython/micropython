@@ -1,6 +1,6 @@
 using sysbus
 
-i @Simple32Khz.cs
+include @Simple32kHz.cs
 emulation CreateUartPtyTerminal "term" "/tmp/cp-uart"
 
 $board?="renode_cortex_m0plus"
@@ -20,7 +20,7 @@ sysbus LoadBinary @build-renode_cortex_m0plus/circuitpy.img 0x10000000
 # logLevel -1
 
 # Enable function profiling
-cpu EnableProfiler CollapsedStack $ORIGIN/profile.folded true
+# cpu EnableProfiler CollapsedStack $ORIGIN/profile.folded true
 
 # Enable execution tracing
 # cpu CreateExecutionTracing "tracer_name" $ORIGIN/instruction_trace.txt Disassembly

@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/busio/UART.h"
+#include "py/runtime.h"
 
 #define RXTX ((volatile uint32_t *)0x40000004)
 #define NO_CHAR (0xffffffff)

@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "common-hal/microcontroller/Processor.h"
+#include "py/runtime.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 
