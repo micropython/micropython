@@ -67,8 +67,9 @@ extern "C" {
 // DEVICE CONFIGURATION
 // --------------------------------------------------------------------+
 
+#define CFG_TUD_ENABLED CIRCUITPY_USB_DEVICE
+
 #if CIRCUITPY_USB_DEVICE
-#define CFG_TUD_ENABLED 1
 
 #if CIRCUITPY_USB_DEVICE_INSTANCE == 0
 #if USB_HIGHSPEED
