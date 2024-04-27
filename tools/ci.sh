@@ -735,8 +735,8 @@ function ci_windows_build {
 ########################################################################################
 # ports/zephyr
 
-ZEPHYR_DOCKER_VERSION=v0.26.4
-ZEPHYR_SDK_VERSION=0.16.1
+ZEPHYR_DOCKER_VERSION=v0.26.7
+ZEPHYR_SDK_VERSION=0.16.5
 ZEPHYR_VERSION=v3.5.0
 
 function ci_zephyr_setup {
