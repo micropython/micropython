@@ -315,7 +315,7 @@ STATIC bool _refresh_area(busdisplay_busdisplay_obj_t *self, const displayio_are
 
         // TODO(tannewt): Make refresh displays faster so we don't starve other
         // background tasks.
-        #if CIRCUITPY_USB
+        #if CIRCUITPY_TINYUSB
         usb_background();
         #endif
     }

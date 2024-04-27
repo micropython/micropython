@@ -96,7 +96,8 @@ def check_vid_pid(files, clusterlist):
     """
 
     usb_pattern = re.compile(
-        r"^CIRCUITPY_USB\s*=\s*0$|^IDF_TARGET = (esp32|esp32c3|esp32c6|esp32h2)$", flags=re.M
+        r"^CIRCUITPY_USB_DEVICE\s*=\s*0$|^IDF_TARGET = (esp32|esp32c3|esp32c6|esp32h2)$|^MCU_SERIES = MG24$",
+        flags=re.M,
     )
 
     usb_ids = defaultdict(set)

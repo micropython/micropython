@@ -121,7 +121,7 @@ void SD_EVT_IRQHandler(void) {
     uint32_t evt_id;
     while (sd_evt_get(&evt_id) != NRF_ERROR_NOT_FOUND) {
         switch (evt_id) {
-            #if CIRCUITPY_USB
+            #if CIRCUITPY_USB_DEVICE
             // usb power event
             case NRF_EVT_POWER_USB_DETECTED:
             case NRF_EVT_POWER_USB_POWER_READY:

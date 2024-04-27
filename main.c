@@ -236,7 +236,7 @@ STATIC void stop_mp(void) {
 
     background_callback_reset();
 
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_TINYUSB
     usb_background();
     #endif
 
@@ -466,7 +466,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
         start_mp(safe_mode);
 
-        #if CIRCUITPY_USB
+        #if CIRCUITPY_USB_DEVICE
         usb_setup_with_vm();
         #endif
 
@@ -845,7 +845,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     start_mp(safe_mode);
 
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     // Set up default USB values after boot.py VM starts but before running boot.py.
     usb_set_defaults();
     #endif
@@ -930,7 +930,7 @@ STATIC int run_repl(safe_mode_t safe_mode) {
 
     start_mp(safe_mode);
 
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     usb_setup_with_vm();
     #endif
 
@@ -1078,7 +1078,7 @@ int __attribute__((used)) main(void) {
     // By default our internal flash is readonly to local python code and
     // writable over USB. Set it here so that safemode.py or boot.py can change it.
     filesystem_set_internal_concurrent_write_protection(true);
-    filesystem_set_internal_writable_by_usb(CIRCUITPY_USB == 1);
+    filesystem_set_internal_writable_by_usb(CIRCUITPY_USB_DEVICE == 1);
 
     #if CIRCUITPY_SAFEMODE_PY
     // Run safemode.py if we ARE in safe mode.

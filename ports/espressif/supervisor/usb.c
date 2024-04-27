@@ -53,6 +53,7 @@
 
 #include "tusb.h"
 
+#if CIRCUITPY_USB_DEVICE
 #ifdef CFG_TUSB_DEBUG
   #define USBD_STACK_SIZE     (3 * configMINIMAL_STACK_SIZE)
 #else
@@ -80,26 +81,6 @@ STATIC void usb_device_task(void *param) {
     }
 }
 
-void init_usb_hardware(void) {
-    // Configure USB PHY
-    usb_phy_config_t phy_conf = {
-        .controller = USB_PHY_CTRL_OTG,
-        .otg_mode = USB_OTG_MODE_DEVICE,
-    };
-    usb_new_phy(&phy_conf, &phy_hdl);
-
-    // Pin the USB task to the same core as CircuitPython. This way we leave
-    // the other core for networking.
-    (void)xTaskCreateStaticPinnedToCore(usb_device_task,
-        "usbd",
-        USBD_STACK_SIZE,
-        NULL,
-        5,
-        usb_device_stack,
-        &usb_device_taskdef,
-        xPortGetCoreID());
-}
-
 /**
  * Callback invoked when received an "wanted" char.
  * @param itf           Interface index (for multiple cdc interfaces)
@@ -123,4 +104,27 @@ void tud_cdc_rx_cb(uint8_t itf) {
     // Workaround for "press any key to enter REPL" response being delayed on espressif.
     // Wake main task when any key is pressed.
     port_wake_main_task();
+}
+#endif // CIRCUITPY_USB_DEVICE
+
+void init_usb_hardware(void) {
+    #if CIRCUITPY_USB_DEVICE
+    // Configure USB PHY
+    usb_phy_config_t phy_conf = {
+        .controller = USB_PHY_CTRL_OTG,
+        .otg_mode = USB_OTG_MODE_DEVICE,
+    };
+    usb_new_phy(&phy_conf, &phy_hdl);
+
+    // Pin the USB task to the same core as CircuitPython. This way we leave
+    // the other core for networking.
+    (void)xTaskCreateStaticPinnedToCore(usb_device_task,
+        "usbd",
+        USBD_STACK_SIZE,
+        NULL,
+        5,
+        usb_device_stack,
+        &usb_device_taskdef,
+        xPortGetCoreID());
+    #endif
 }
