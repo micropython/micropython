@@ -198,9 +198,9 @@ void board_mboot_state_change(int state, uint32_t arg) {
         // The FS-load update is about to start.  Program the update key and FS-load elements
         // into the flash so they can be retrieved if there is a power failure during the update.
         mp_spiflash_erase_block(MBOOT_SPIFLASH_SPIFLASH, SPIFLASH_UPDATE_KEY_ADDR);
+        mp_spiflash_write(MBOOT_SPIFLASH_SPIFLASH, SPIFLASH_UPDATE_KEY_ADDR + 4, ELEM_DATA_SIZE, ELEM_DATA_START);
         uint32_t key = SPIFLASH_UPDATE_KEY_VALUE;
         mp_spiflash_write(MBOOT_SPIFLASH_SPIFLASH, SPIFLASH_UPDATE_KEY_ADDR, 4, (const uint8_t *)&key);
-        mp_spiflash_write(MBOOT_SPIFLASH_SPIFLASH, SPIFLASH_UPDATE_KEY_ADDR + 4, ELEM_DATA_SIZE, ELEM_DATA_START);
     } else if (state == MBOOT_STATE_FSLOAD_END) {
         // The FS-load update completed (either with success or failure), so erase the
         // update key and write the result of the FS-load operation into flash.
