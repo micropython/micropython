@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
 #include "py/mpconfig.h"
 #include "py/misc.h"
 #include "py/mphal.h"
@@ -450,28 +451,38 @@ int flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
         #endif
     }
 
-    #elif defined(STM32H5)
+    #elif defined(STM32H5) || defined(STM32H7)
 
-    // program the flash 128 bits (4 words) at a time
-    for (int i = 0; i < num_word32 / 4; i++) {
-        status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_QUADWORD, flash_dest, (uint64_t)(uint32_t)src);
-        if (status != HAL_OK) {
-            break;
+    #if defined(STM32H5)
+    static const unsigned int WORD32_PER_FLASHWORD = 4;
+    static const unsigned int PROGRAM_TYPE = FLASH_TYPEPROGRAM_QUADWORD;
+    #else
+    static const unsigned int WORD32_PER_FLASHWORD = FLASH_NB_32BITWORD_IN_FLASHWORD;
+    static const unsigned int PROGRAM_TYPE = FLASH_TYPEPROGRAM_FLASHWORD;
+    #endif
+
+    if (flash_dest % (WORD32_PER_FLASHWORD * sizeof(uint32_t))) {
+        // The flash_dest address is not aligned correctly.
+        status = HAL_ERROR;
+    } else {
+        // Program the flash WORD32_PER_FLASHWORD words at a time.
+        for (int i = 0; i < num_word32 / WORD32_PER_FLASHWORD; i++) {
+            status = HAL_FLASH_Program(PROGRAM_TYPE, flash_dest, (uint32_t)src);
+            if (status != HAL_OK) {
+                break;
+            }
+            flash_dest += WORD32_PER_FLASHWORD * sizeof(uint32_t);
+            src += WORD32_PER_FLASHWORD;
         }
-        flash_dest += 16;
-        src += 4;
-    }
 
-    #elif defined(STM32H7)
-
-    // program the flash 256 bits at a time
-    for (int i = 0; i < num_word32 / 8; i++) {
-        status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, flash_dest, (uint64_t)(uint32_t)src);
-        if (status != HAL_OK) {
-            break;
+        // Program any remaining words from src.
+        // Additional bytes beyond that are programmed to 0xff.
+        if (num_word32 % WORD32_PER_FLASHWORD) {
+            uint32_t buf[WORD32_PER_FLASHWORD];
+            memset(buf, 0xff, sizeof(buf));
+            memcpy(buf, src, (num_word32 % WORD32_PER_FLASHWORD) * sizeof(uint32_t));
+            status = HAL_FLASH_Program(PROGRAM_TYPE, flash_dest, (uint32_t)buf);
         }
-        flash_dest += 32;
-        src += 8;
     }
 
     #else
