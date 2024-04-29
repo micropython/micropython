@@ -29,6 +29,7 @@ elif "CY8CPROTO-063-BLE" in machine:
 master_to_slave_write = 0
 master_to_slave_write_read = 1
 slave_to_master_write = 2
+slave_to_master_write_multi_args = 3
 
 # Test hardware setup
 ####################################################
@@ -80,7 +81,8 @@ def transfer_data_and_validate(tx_buf, rx_buf, exp_recv_data, data_transfer_dir)
         print("slave writes: ", tx_slave_buf)
         spi_master.write_readinto(tx_buf, rx_buf)
         print("master received: ", rx_buf)
-        # spi_slave.read(rx_slave_buf)
+        spi_master.write_readinto(tx_buf, rx_buf)
+        spi_slave.read(rx_slave_buf)
         print("slave recvd: ", rx_slave_buf)
         print("Validate slave to master data transfer")
         _validate_data(tx_slave_buf, rx_buf)
@@ -92,6 +94,13 @@ def transfer_data_and_validate(tx_buf, rx_buf, exp_recv_data, data_transfer_dir)
         rx_buf = spi_master.read(len(rx_buf))
         print("received data by master: ", rx_buf)
         _validate_data(exp_recv_data, rx_buf)
+
+    elif data_transfer_dir == slave_to_master_write_multi_args:
+        spi_slave.write(tx_buf)
+        rx = bytearray(1)
+        rx_buf = spi_master.read(len(rx_buf), 0x11)
+        spi_slave.read(rx)
+        print("RX: ", rx)
 
     else:
         print("Wrong data transfer direction!")
@@ -129,7 +138,7 @@ print(spi_slave)
 
 # 3. Master to slave 4-bytes data transfer
 ###########################################
-tx_buf = b"\x88\x88\x11\x11"
+"""tx_buf = b"\x88\x88\x11\x11"
 rx_buf = bytearray(4)
 print("\nWriting 4-bytes data from master to slave")
 transfer_data_and_validate(tx_buf, rx_buf, tx_buf, master_to_slave_write)
@@ -139,7 +148,15 @@ transfer_data_and_validate(tx_buf, rx_buf, tx_buf, master_to_slave_write)
 tx_buf = b"\x11\x11\x88\x88\x11\x11\x88\x88"
 rx_buf = bytearray(8)
 print("\nWriting 8-bytes data from slave to master")
-transfer_data_and_validate(tx_buf, rx_buf, tx_buf, slave_to_master_write)
+transfer_data_and_validate(tx_buf, rx_buf, tx_buf, slave_to_master_write)"""
+
+# 7. Write from master to slave and read concurrently
+######################################################
+tx_buf = b"\x11\x11\x88\x88\x11\x11\x88\x88"
+rx_buf = bytearray(8)
+print("\nWriting 8-bytes data from slave to master")
+transfer_data_and_validate(tx_buf, rx_buf, tx_buf, slave_to_master_write_multi_args)
+
 
 # 5. Deinit SPI modules
 ##########################
@@ -148,7 +165,7 @@ spi_slave.deinit()
 
 # 6. Reconfigure firstbit and transfer data from master to slave
 #################################################################
-spi_master = SPI(
+"""spi_master = SPI(
     baudrate=1000000,
     polarity=0,
     phase=0,
@@ -176,14 +193,4 @@ tx_buf = b"\x11\x11\x88\x88\x11\x11\x88\x88"
 rx_buf = bytearray(8)
 tx_exp_buf = b"\x88\x88\x11\x11\x88\x88\x11\x11"
 print("\nWriting data from master to slave with firstbit as MSB (master) and LSB(slave)")
-transfer_data_and_validate(tx_buf, rx_buf, tx_exp_buf, master_to_slave_write)
-
-# 7. Write from master to slave and read concurrently
-######################################################
-
-"""spi_master = SPI(baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=SPI.LSB,ssel=ssel_master_pin, sck=sck_master_pin, mosi=mosi_master_pin, miso=miso_master_pin)
-print(spi_master)
-spi_slave = SPISlave(baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, ssel=ssel_slave_pin, sck=sck_slave_pin, mosi=mosi_slave_pin, miso=miso_slave_pin)
-print(spi_slave)
-transfer_data()
-#validate_data()"""
+transfer_data_and_validate(tx_buf, rx_buf, tx_exp_buf, master_to_slave_write)"""

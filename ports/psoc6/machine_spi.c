@@ -25,6 +25,7 @@
 #define DEFAULT_SPI_BITS        (8)
 #define DEFAULT_SPI_FIRSTBIT    (0) // msb
 
+
 #define spi_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
@@ -276,27 +277,39 @@ static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     mp_raise_NotImplementedError(MP_ERROR_TEXT("Init not supported. Use the constructor to initialize.\n"));
 }
 
-static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *tx, uint8_t *rx) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     cy_rslt_t result;
+    const uint8_t *tx_buf;
+    uint8_t *rx_buf;
+    uint8_t tx_temp_buf[len];
+    uint8_t rx_temp_buf[len];
+    uint8_t write_fill = 0xFF;
 
-    if (dest == NULL) {
-        for (int i = 0; i < len; i++)
-        {
-            result = cyhal_spi_send(&self->spi_obj, src[i]);
-            spi_assert_raise_val("SPI initialisation failed with return code %lx !", result);
-        }
-    } else if (src == NULL) {
-        for (int i = 0; i < len; i++)
-        {
-            result = cyhal_spi_recv(&self->spi_obj, (uint32_t *)(dest + i));
-            spi_assert_raise_val("SPI initialisation failed with return code %lx !", result);
-        }
-    } else {
-        result = cyhal_spi_transfer(&self->spi_obj, src, len, dest, len, 0xFF);
-        spi_assert_raise_val("SPI initialisation failed with return code %lx !", result);
+    // Case 1: rx is NULL - (write operation)
+    if (rx == NULL) {
+        tx_buf = tx;
+        memset(rx_temp_buf, 0x01, len * sizeof(uint8_t));
+        rx_buf = rx_temp_buf;
+        // result = cyhal_spi_transfer(&self->spi_obj, tx, len, rx_temp_buf, len, write_fill);
+        // spi_assert_raise_val("SPI transfer failed with return code %lx !", result);
     }
-
+    // Case 2: tx and rx equal --> read(), readinto() and write_readinto() with tx and rx same buffers
+    else {
+        if (tx == rx || tx == NULL) {
+            memcpy(tx_temp_buf, tx, len * sizeof(uint8_t));
+            tx_buf = tx_temp_buf;
+            rx_buf = rx;
+            write_fill = tx_temp_buf[0];
+            // result = cyhal_spi_transfer(&self->spi_obj, tx, len, rx, len, write_fill);
+            // spi_assert_raise_val("SPI read failed with return code %lx !", result);
+        } else {
+            tx_buf = tx;
+            rx_buf = rx;
+        }
+    }
+    result = cyhal_spi_transfer(&self->spi_obj, tx_buf, len, rx_buf, len, write_fill);
+    spi_assert_raise_val("SPI read failed with return code %lx !", result);
 }
 
 
@@ -337,10 +350,13 @@ MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_slave_deinit_obj, machine_spi_slave_deinit
 static mp_obj_t machine_spi_slave_read(mp_obj_t self_in, mp_obj_t buf_in) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
     uint16_t len = bufinfo.len;
-    cy_rslt_t result = cyhal_spi_slave_read(&self->spi_obj, bufinfo.buf, &len, 0);
+    uint8_t tx_dummy[len];
+    memset(tx_dummy, 0x02, len * sizeof(uint8_t));
+    cy_rslt_t result = cyhal_spi_transfer(&self->spi_obj, tx_dummy, len, bufinfo.buf, len, 0xFF);
     spi_assert_raise_val("SPI slave read failed with return code %lx !", result);
+
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(machine_spi_slave_read_obj, machine_spi_slave_read);
@@ -350,17 +366,36 @@ static mp_obj_t machine_spi_slave_write(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
     uint16_t len = bufinfo.len;
-    cy_rslt_t result = cyhal_spi_slave_write(&self->spi_obj, bufinfo.buf, &len, 0);
+    uint8_t rx_dummy[len];
+    memset(rx_dummy, 0x01, len * sizeof(uint8_t));
+    cy_rslt_t result = cyhal_spi_transfer(&self->spi_obj, bufinfo.buf, len, rx_dummy, len, 0xFF);
     spi_assert_raise_val("SPI slave write failed with return code %lx !", result);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(machine_spi_slave_write_obj, machine_spi_slave_write);
+
+static mp_obj_t machine_spi_slave_write_readinto(mp_obj_t self_in, mp_obj_t tx_buf_in, mp_obj_t rx_buf_in) {
+    machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_buffer_info_t tx_bufinfo;
+    mp_buffer_info_t rx_bufinfo;
+    mp_get_buffer_raise(tx_buf_in, &tx_bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(rx_buf_in, &rx_bufinfo, MP_BUFFER_READ);
+    uint16_t len = tx_bufinfo.len;
+    if (tx_bufinfo.len != rx_bufinfo.len) {
+        mp_raise_ValueError(MP_ERROR_TEXT("buffers must be the same length"));
+    }
+    cy_rslt_t result = cyhal_spi_transfer(&self->spi_obj, tx_bufinfo.buf, len, rx_bufinfo.buf, len, 0xFF);
+    spi_assert_raise_val("SPI slave write failed with return code %lx !", result);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(machine_spi_slave_write_readinto_obj, machine_spi_slave_write_readinto);
 
 
 static const mp_rom_map_elem_t machine_spi_slave_locals_dict_table[] = {
     // Functions
     { MP_ROM_QSTR(MP_QSTR_read),         MP_ROM_PTR(&machine_spi_slave_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_write),        MP_ROM_PTR(&machine_spi_slave_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write_readinto),        MP_ROM_PTR(&machine_spi_slave_write_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),       MP_ROM_PTR(&machine_spi_slave_deinit_obj) },
 };
 static MP_DEFINE_CONST_DICT(machine_spi_slave_locals_dict, machine_spi_slave_locals_dict_table);
