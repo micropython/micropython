@@ -58,7 +58,7 @@
 #include "esp_bt.h"
 #include "esp_nimble_hci.h"
 
-#if CIRCUITPY_USB
+#if CIRCUITPY_TINYUSB
 #include "supervisor/usb.h"
 #endif
 
