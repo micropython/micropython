@@ -41,11 +41,11 @@
 #endif
 
 #if CIRCUITPY_USB_DEVICE
-#include "supervisor/usb.h"
 #include "shared-module/usb_cdc/__init__.h"
 #endif
 
 #if CIRCUITPY_TINYUSB
+#include "supervisor/usb.h"
 #include "tusb.h"
 #endif
 

@@ -44,7 +44,7 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/flash.h"
 
-#if CIRCUITPY_USB
+#if CIRCUITPY_USB_DEVICE
 #include "supervisor/usb.h"
 #endif
 

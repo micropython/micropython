@@ -40,7 +40,6 @@
 
 #if CIRCUITPY_USB_DEVICE
 #include "shared-bindings/supervisor/__init__.h"
-#endif
 
 #if CIRCUITPY_USB_CDC
 #include "shared-module/usb_cdc/__init__.h"
@@ -56,6 +55,8 @@
 
 #if CIRCUITPY_USB_VIDEO
 #include "shared-module/usb_video/__init__.h"
+#endif
+
 #endif
 
 #include "tusb.h"
@@ -100,7 +101,7 @@ void usb_init(void) {
 
     post_usb_init();
 
-    #if MICROPY_KBD_EXCEPTION && CIRCUITPY_USB_CDC
+    #if MICROPY_KBD_EXCEPTION && CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
     // Set Ctrl+C as wanted char, tud_cdc_rx_wanted_cb() usb_callback will be invoked when Ctrl+C is received
     // This usb_callback always got invoked regardless of mp_interrupt_char value since we only set it once here
 
@@ -114,6 +115,7 @@ void usb_init(void) {
 
 // Set up USB defaults before any USB changes are made in boot.py
 void usb_set_defaults(void) {
+    #if CIRCUITPY_USB_DEVICE
     #if CIRCUITPY_STORAGE && CIRCUITPY_USB_MSC
     storage_usb_set_defaults();
     #endif
@@ -129,16 +131,19 @@ void usb_set_defaults(void) {
     #if CIRCUITPY_USB_MIDI
     usb_midi_set_defaults();
     #endif
+    #endif
 };
 
 // Call this when ready to run code.py or a REPL, and a VM has been started.
 void usb_setup_with_vm(void) {
+    #if CIRCUITPY_USB_DEVICE
     #if CIRCUITPY_USB_HID
     usb_hid_setup_devices();
     #endif
 
     #if CIRCUITPY_USB_MIDI
     usb_midi_setup_ports();
+    #endif
     #endif
 }
 
@@ -155,13 +160,13 @@ void usb_background(void) {
         vTaskDelay(0);
         #endif
         // No need to flush if there's no REPL.
-        #if CIRCUITPY_USB_CDC
+        #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
         if (usb_cdc_console_enabled()) {
             // Console will always be itf 0.
             tud_cdc_write_flush();
         }
         #endif
-        #if CIRCUITPY_USB_VIDEO
+        #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VIDEO
         usb_video_task();
         #endif
     }

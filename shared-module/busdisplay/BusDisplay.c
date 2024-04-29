@@ -43,7 +43,7 @@
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/tick.h"
 
-#if CIRCUITPY_USB_DEVICE
+#if CIRCUITPY_TINYUSB
 #include "supervisor/usb.h"
 #endif
 
