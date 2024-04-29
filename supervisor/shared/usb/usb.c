@@ -71,17 +71,21 @@ void usb_init(void) {
     #if CIRCUITPY_USB_DEVICE
     usb_identification_t defaults;
     usb_identification_t *identification;
+    #if CIRCUITPY_USB_IDENTIFICATION
     if (custom_usb_identification != NULL) {
         identification = custom_usb_identification;
     } else {
-        // This compiles to less code than using a struct initializer.
-        defaults.vid = USB_VID;
-        defaults.pid = USB_PID;
-        strcpy(defaults.manufacturer_name, USB_MANUFACTURER);
-        strcpy(defaults.product_name, USB_PRODUCT);
-        identification = &defaults;
-        // This memory only needs to be live through the end of usb_build_descriptors.
-    }
+    #endif
+    // This compiles to less code than using a struct initializer.
+    defaults.vid = USB_VID;
+    defaults.pid = USB_PID;
+    strcpy(defaults.manufacturer_name, USB_MANUFACTURER);
+    strcpy(defaults.product_name, USB_PRODUCT);
+    identification = &defaults;
+    // This memory only needs to be live through the end of usb_build_descriptors.
+    #if CIRCUITPY_USB_IDENTIFICATION
+}
+    #endif
     if (!usb_build_descriptors(identification)) {
         return;
     }
