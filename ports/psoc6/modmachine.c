@@ -14,6 +14,7 @@
 #include "cyhal.h"
 #include "cy_pdl.h"
 
+
 // port-specific includes
 #include "modmachine.h"
 #include "mplogger.h"
@@ -24,24 +25,19 @@
 // enums to hold the MPY constants as given in guidelines
 enum {MACHINE_PWRON_RESET, MACHINE_HARD_RESET, MACHINE_WDT_RESET, MACHINE_DEEPSLEEP_RESET, MACHINE_SOFT_RESET};
 
+
+static bool is_soft_reset = 0;
+
 // function to return 64-bit silicon ID of given PSoC microcontroller
 // A combined 64-bit unique ID. [63:57] - DIE_YEAR [56:56] - DIE_MINOR [55:48] - DIE_SORT [47:40] - DIE_Y [39:32] - DIE_X [31:24] - DIE_WAFER [23:16] - DIE_LOT[2] [15: 8] - DIE_LOT[1] [ 7: 0] - DIE_LOT[0]
 static uint64_t system_get_unique_id(void) {
     return Cy_SysLib_GetUniqueId();
 }
 
-// using watchdog timer to count to minimum value (1ms) to trigger reset
-// thread-safe way as other methods might interfere with pending interrupts, threads etc.
-static void system_reset(void) {
-    cyhal_wdt_t wdt_obj;
-    cyhal_wdt_init(&wdt_obj, 1); // min 1ms count time
-    cyhal_wdt_start(&wdt_obj);
-}
-
 // get reset cause of the last system reset
-// macros defined here: cy_syslib.h
 static uint32_t system_reset_cause(void) {
-    return Cy_SysLib_GetResetReason();
+    // return Cy_SysLib_GetResetReason();
+    return cyhal_system_get_reset_reason();
 }
 
 // helper function to generate random alphanumeric hash
@@ -65,7 +61,6 @@ static uint8_t system_irq_key;
 
 // function to disable global IRQs
 // returns alphanumeric hash to enable IRQs later
-// see: https://docs.zephyrproject.org/apidoc/latest/group__isr__apis.html#ga19fdde73c3b02fcca6cf1d1e67631228
 static uint8_t system_disable_global_irq(void) {
     uint8_t state = system_rand_hash(HASH_CHARS_NUM); // 10 chars long key gen;
     __disable_irq();
@@ -90,6 +85,7 @@ static uint32_t system_get_cpu_freq(void) {
 }
 
 void machine_init(void) {
+    is_soft_reset = 0;
     mplogger_print("machine init\n");
 
     // TODO: put all module init functions here ?
@@ -97,6 +93,7 @@ void machine_init(void) {
 }
 
 void machine_deinit(void) {
+    is_soft_reset = 1;
     mplogger_print("machine deinit\n");
 
     // TODO: put all module deinit functions here ?
@@ -182,8 +179,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 
 
 static mp_obj_t mp_machine_get_freq(void) {
-    mp_printf(&mp_plat_print, "System core freq (CM4): %d Hz\n", system_get_cpu_freq());
-    return mp_const_none;
+    return MP_OBJ_NEW_SMALL_INT(system_get_cpu_freq());
 }
 
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
@@ -219,12 +215,14 @@ NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Deep sleeep failed %lx !"), result);
         }
     } else {
-        cy_rslt_t result = cyhal_syspm_deepsleep();
+        result = cyhal_syspm_deepsleep();
         if (result != CY_RSLT_SUCCESS) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Deep sleeep failed %lx !"), result);
         }
     }
-    for (;;) {
+    for (;;)
+    {
+
     }
 }
 
@@ -232,39 +230,36 @@ NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
 static mp_obj_t mp_machine_unique_id(void) {
     uint64_t id = system_get_unique_id();
     byte *id_addr = (byte *)&id;
-    mplogger_print("ID_formatted:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id_addr[0], id_addr[1], id_addr[2], id_addr[3], id_addr[4], id_addr[5], id_addr[6], id_addr[7]);
+    printf("ID_formatted:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id_addr[0], id_addr[1], id_addr[2], id_addr[3], id_addr[4], id_addr[5], id_addr[6], id_addr[7]);
     mplogger_print("RAW_ID_data:");
     return mp_obj_new_bytes(id_addr, 8);
+
 }
 
 // machine.reset()
 NORETURN static void mp_machine_reset(void) {
-    system_reset();
-    while (true) {
-    }
-    ;
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("Not implemented!!! Use Reset Button in board/ Watchdog reset/soft Reset\n"));
 }
 
 static mp_int_t mp_machine_reset_cause(void) {
     qstr mp_reset_qstr = MP_QSTR_None;
     uint8_t reset_cause_const = -1;
-    uint32_t reset_cause = system_reset_cause();
-
-    if (reset_cause == 0UL) {
-        mp_reset_qstr = MP_QSTR_HARD_RESET;
-        reset_cause_const = MACHINE_HARD_RESET;
-    } else if (reset_cause == CY_SYSLIB_RESET_HWWDT || reset_cause == CY_SYSLIB_RESET_SWWDT0 || reset_cause == CY_SYSLIB_RESET_SWWDT1 || reset_cause == CY_SYSLIB_RESET_SWWDT2 || reset_cause == CY_SYSLIB_RESET_SWWDT3) {
-        mp_reset_qstr = MP_QSTR_WDT_RESET;
-        reset_cause_const = MACHINE_WDT_RESET;
-    } else if (reset_cause == CY_SYSLIB_RESET_DPSLP_FAULT) {
-        mp_reset_qstr = MP_QSTR_DEEPSLEEP_RESET;
-        reset_cause_const = MACHINE_DEEPSLEEP_RESET;
-    } else if (reset_cause == CY_SYSLIB_RESET_SOFT) {
+    if (is_soft_reset) {
         mp_reset_qstr = MP_QSTR_SOFT_RESET;
         reset_cause_const = MACHINE_SOFT_RESET;
+        return reset_cause_const;
     } else {
-        mp_reset_qstr = MP_QSTR_PWRON_RESET;
-        reset_cause_const = MACHINE_PWRON_RESET;
+        uint32_t reset_cause = system_reset_cause();
+        if (reset_cause == 0UL) {
+            mp_reset_qstr = MP_QSTR_HARD_RESET;
+            reset_cause_const = MACHINE_HARD_RESET;
+        } else if (reset_cause == CYHAL_SYSTEM_RESET_WDT) {
+            mp_reset_qstr = MP_QSTR_WDT_RESET;
+            reset_cause_const = MACHINE_WDT_RESET;
+        } else if (reset_cause == CYHAL_SYSTEM_RESET_DEEPSLEEP_FAULT) {
+            mp_reset_qstr = MP_QSTR_DEEPSLEEP_RESET;
+            reset_cause_const = MACHINE_DEEPSLEEP_RESET;
+        }
     }
 
     mplogger_print("Reset cause: %q; ", mp_reset_qstr);
@@ -300,15 +295,36 @@ static void mp_machine_idle(void) {
     __WFI(); // standard ARM instruction
 }
 
+
+// machine.disable_irq()
+static mp_obj_t machine_rng(void) {
+    uint32_t rnd_num;
+    cyhal_trng_t trng_obj;
+    /* Initialize the true random number generator block */
+    cy_rslt_t rslt = cyhal_trng_init(&trng_obj);
+    if (rslt != CY_RSLT_SUCCESS) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Random Number generator failed %lx !"), rslt);
+    }
+    /* Generate a true random number */
+    rnd_num = cyhal_trng_generate(&trng_obj);
+    rnd_num &= 0xFFFFFF;
+    /* Release the true random number generator block
+     * Note: Free only if not required anymore
+     */
+    cyhal_trng_free(&trng_obj);
+    return mp_obj_new_int(rnd_num);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_rng_obj, machine_rng);
+
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },  \
+    { MP_ROM_QSTR(MP_QSTR_rng),                 MP_ROM_PTR(&machine_rng_obj) },  \
     \
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
     \
     /* class constants */ \
-    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(MACHINE_PWRON_RESET) },  \
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(MACHINE_HARD_RESET) },  \
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(MACHINE_WDT_RESET) },  \
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(MACHINE_DEEPSLEEP_RESET) }, \
