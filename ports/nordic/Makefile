@@ -149,7 +149,7 @@ SRC_PERIPHERALS := \
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_PERIPHERALS)): CFLAGS += -Wno-missing-prototypes
 
 SRC_C += $(SRC_PERIPHERALS)
-ifneq ($(CIRCUITPY_USB),0)
+ifneq ($(CIRCUITPY_USB_DEVICE),0)
 # USB source files for nrf52840
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 SRC_DCD = \
@@ -162,7 +162,7 @@ SRC_DCD += \
 endif
 SRC_C += $(SRC_DCD)
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_DCD)): CFLAGS += -Wno-missing-prototypes
-endif # CIRCUITPY_USB
+endif # CIRCUITPY_USB_DEVICE
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \

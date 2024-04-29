@@ -36,7 +36,7 @@
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/tick.h"
 
-#if CIRCUITPY_USB
+#if CIRCUITPY_USB_DEVICE
 #include "supervisor/usb.h"
 #endif
 
@@ -375,7 +375,7 @@ STATIC bool epaperdisplay_epaperdisplay_refresh_area(epaperdisplay_epaperdisplay
 
             // TODO(tannewt): Make refresh displays faster so we don't starve other
             // background tasks.
-            #if CIRCUITPY_USB
+            #if CIRCUITPY_TINYUSB
             usb_background();
             #endif
         }
@@ -406,7 +406,7 @@ STATIC bool _clean_area(epaperdisplay_epaperdisplay_obj_t *self) {
 
         // TODO(tannewt): Make refresh displays faster so we don't starve other
         // background tasks.
-        #if CIRCUITPY_USB
+        #if CIRCUITPY_TINYUSB
         usb_background();
         #endif
     }

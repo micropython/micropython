@@ -126,7 +126,7 @@ bool filesystem_init(bool create_allowed, bool force_create) {
             return false;
         }
 
-        #if CIRCUITPY_USB
+        #if CIRCUITPY_USB_DEVICE
         // inhibit file indexing on MacOS
         res = f_mkdir(&vfs_fat->fatfs, "/.fseventsd");
         if (res != FR_OK) {

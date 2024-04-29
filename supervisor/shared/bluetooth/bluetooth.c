@@ -142,7 +142,7 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
         return;
     }
     bool bonded = common_hal_bleio_adapter_is_bonded_to_central(&common_hal_bleio_adapter_obj);
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     // Don't advertise when we have USB instead of BLE.
     if (!bonded && !boot_in_discovery_mode) {
         return;
@@ -236,7 +236,7 @@ void supervisor_bluetooth_init(void) {
         boot_in_discovery_mode = true;
         reset_state = 0x0;
     }
-    #if !CIRCUITPY_USB
+    #if !CIRCUITPY_USB_DEVICE
     // Boot into discovery if USB isn't available and we aren't bonded already.
     // Checking here allows us to have the status LED solidly on even if no button was
     // pressed.

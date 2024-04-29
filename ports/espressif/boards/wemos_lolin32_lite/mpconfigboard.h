@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2024 Bill Sideris, independently providing these changes.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,17 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+// Micropython setup
 
-#if CIRCUITPY_SSL_MBEDTLS
-#include "shared-module/ssl/SSLSocket.h"
-#else
-#include "common-hal/ssl/SSLSocket.h"
-#endif
+#define MICROPY_HW_BOARD_NAME       "WeMos LOLIN32 Lite"
+#define MICROPY_HW_MCU_NAME         "ESP32"
 
-extern const mp_obj_type_t ssl_sslsocket_type;
+#define MICROPY_HW_LED_STATUS       (&pin_GPIO22)
+#define MICROPY_HW_LED_STATUS_INVERTED (1)
 
-mp_obj_t common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self);
-void common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, mp_obj_t addr);
-void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self);
-void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self, mp_obj_t addr);
-bool common_hal_ssl_sslsocket_get_closed(ssl_sslsocket_obj_t *self);
-bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t *self);
-void common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog);
-mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t *buf, uint32_t len);
-mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len);
-void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj);
-void common_hal_ssl_sslsocket_setsockopt(ssl_sslsocket_obj_t *self, mp_obj_t level, mp_obj_t optname, mp_obj_t optval);
+// For entering safe mode, use SW38 button
+#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO0)
+
+// UART pins attached to the USB-serial converter chip
+#define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)
+#define CIRCUITPY_CONSOLE_UART_RX (&pin_GPIO3)

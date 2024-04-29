@@ -73,15 +73,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket___exit___obj, 4, 4, ssl
 //|         Returns a tuple of (new_socket, remote_address)"""
 STATIC mp_obj_t ssl_sslsocket_accept(mp_obj_t self_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint8_t ip[4];
-    uint32_t port;
-
-    ssl_sslsocket_obj_t *sslsock = common_hal_ssl_sslsocket_accept(self, ip, &port);
-
-    mp_obj_t tuple_contents[2];
-    tuple_contents[0] = MP_OBJ_FROM_PTR(sslsock);
-    tuple_contents[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
-    return mp_obj_new_tuple(2, tuple_contents);
+    return common_hal_ssl_sslsocket_accept(self);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslsocket_accept_obj, ssl_sslsocket_accept);
 
@@ -96,18 +88,7 @@ STATIC mp_obj_t ssl_sslsocket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_t *addr_items;
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
 
-    size_t hostlen;
-    const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
-    mp_int_t port = mp_obj_get_int(addr_items[1]);
-    if (port < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("port must be >= 0"));
-    }
-
-    size_t error = common_hal_ssl_sslsocket_bind(self, host, hostlen, (uint32_t)port);
-    if (error != 0) {
-        mp_raise_OSError(error);
-    }
-
+    common_hal_ssl_sslsocket_bind(self, addr_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_bind_obj, ssl_sslsocket_bind);
@@ -128,18 +109,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslsocket_close_obj, ssl_sslsocket_close);
 //|         ...
 STATIC mp_obj_t ssl_sslsocket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    mp_obj_t *addr_items;
-    mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
-
-    size_t hostlen;
-    const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
-    mp_int_t port = mp_obj_get_int(addr_items[1]);
-    if (port < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("port must be >= 0"));
-    }
-
-    common_hal_ssl_sslsocket_connect(self, host, hostlen, (uint32_t)port);
+    common_hal_ssl_sslsocket_connect(self, addr_in);
 
     return mp_const_none;
 }
@@ -230,13 +200,22 @@ STATIC mp_obj_t ssl_sslsocket_send(mp_obj_t self_in, mp_obj_t buf_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_send_obj, ssl_sslsocket_send);
 
-// //|     def setsockopt(self, level: int, optname: int, value: int) -> None:
+// //|     def setsockopt(self, level: int, optname: int, value: int | ReadableBuffer) -> None:
 // //|         """Sets socket options"""
 // //|         ...
 // //|
-// STATIC mp_obj_t ssl_sslsocket_setsockopt(size_t n_args, const mp_obj_t *args) {
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket_setsockopt_obj, 4, 4, ssl_sslsocket_setsockopt);
+STATIC mp_obj_t ssl_sslsocket_setsockopt(size_t n_args, const mp_obj_t *args) {
+    ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_t level = args[1];
+    mp_obj_t optname = args[2];
+    mp_obj_t optval = args[3];
+
+    // throws on error
+    common_hal_ssl_sslsocket_setsockopt(self, level, optname, optval);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket_setsockopt_obj, 4, 4, ssl_sslsocket_setsockopt);
 
 //|     def settimeout(self, value: int) -> None:
 //|         """Set the timeout value for this socket.
@@ -246,17 +225,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_send_obj, ssl_sslsocket_send);
 //|         ...
 STATIC mp_obj_t ssl_sslsocket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_uint_t timeout_ms;
-    if (timeout_in == mp_const_none) {
-        timeout_ms = -1;
-    } else {
-        #if MICROPY_PY_BUILTINS_FLOAT
-        timeout_ms = 1000 * mp_obj_get_float(timeout_in);
-        #else
-        timeout_ms = 1000 * mp_obj_get_int(timeout_in);
-        #endif
-    }
-    common_hal_ssl_sslsocket_settimeout(self, timeout_ms);
+    common_hal_ssl_sslsocket_settimeout(self, timeout_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_settimeout_obj, ssl_sslsocket_settimeout);
@@ -271,9 +240,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_settimeout_obj, ssl_sslsocket_set
 STATIC mp_obj_t ssl_sslsocket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (mp_obj_is_true(blocking)) {
-        common_hal_ssl_sslsocket_settimeout(self, -1);
+        common_hal_ssl_sslsocket_settimeout(self, mp_const_none);
     } else {
-        common_hal_ssl_sslsocket_settimeout(self, 0);
+        common_hal_ssl_sslsocket_settimeout(self, MP_OBJ_NEW_SMALL_INT(0));
     }
     return mp_const_none;
 }
@@ -292,7 +261,7 @@ STATIC const mp_rom_map_elem_t ssl_sslsocket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_recv_into), MP_ROM_PTR(&ssl_sslsocket_recv_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&ssl_sslsocket_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&ssl_sslsocket_setblocking_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&ssl_sslsocket_setsockopt_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&ssl_sslsocket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&ssl_sslsocket_settimeout_obj) },
 };
 

@@ -1183,6 +1183,10 @@ void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint
     self->timeout = timeout_ms;
 }
 
+mp_int_t common_hal_socketpool_socket_get_type(socketpool_socket_obj_t *self) {
+    return self->type;
+}
+
 int common_hal_socketpool_socket_setsockopt(socketpool_socket_obj_t *self, int level, int optname, const void *value, size_t optlen) {
     int zero = 0;
     bool enable = optlen == sizeof(&zero) && memcmp(value, &zero, optlen);

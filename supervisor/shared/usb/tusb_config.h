@@ -67,6 +67,10 @@ extern "C" {
 // DEVICE CONFIGURATION
 // --------------------------------------------------------------------+
 
+#define CFG_TUD_ENABLED CIRCUITPY_USB_DEVICE
+
+#if CIRCUITPY_USB_DEVICE
+
 #if CIRCUITPY_USB_DEVICE_INSTANCE == 0
 #if USB_HIGHSPEED
 #define CFG_TUSB_RHPORT0_MODE       (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
@@ -107,7 +111,7 @@ extern "C" {
 
 // Product revision string included in Inquiry response, max 4 bytes
 #define CFG_TUD_MSC_PRODUCT_REV     "1.0"
-
+#endif
 
 // --------------------------------------------------------------------+
 // USB RAM PLACEMENT

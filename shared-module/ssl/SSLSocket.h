@@ -30,7 +30,6 @@
 #include "py/obj.h"
 
 #include "shared-module/ssl/SSLContext.h"
-#include "common-hal/socketpool/Socket.h"
 
 #include "mbedtls/platform.h"
 #include "mbedtls/ssl.h"
@@ -41,7 +40,7 @@
 
 typedef struct ssl_sslsocket_obj {
     mp_obj_base_t base;
-    socketpool_socket_obj_t *sock;
+    mp_obj_t sock_obj;
     ssl_sslcontext_obj_t *ssl_context;
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
@@ -51,4 +50,13 @@ typedef struct ssl_sslsocket_obj {
     mbedtls_x509_crt cert;
     mbedtls_pk_context pkey;
     bool closed;
+    mp_obj_t accept_args[2];
+    mp_obj_t bind_args[3];
+    mp_obj_t close_args[2];
+    mp_obj_t connect_args[3];
+    mp_obj_t listen_args[3];
+    mp_obj_t recv_into_args[3];
+    mp_obj_t send_args[3];
+    mp_obj_t setsockopt_args[5];
+    mp_obj_t settimeout_args[3];
 } ssl_sslsocket_obj_t;

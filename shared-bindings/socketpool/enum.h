@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,22 +26,45 @@
 
 #pragma once
 
-#if CIRCUITPY_SSL_MBEDTLS
-#include "shared-module/ssl/SSLSocket.h"
-#else
-#include "common-hal/ssl/SSLSocket.h"
-#endif
+// Note: This file must be designed so it be included by ssl
+// whether or not CIRCUITPY_SOCKETPOOL is set.
+//
+typedef enum {
+    SOCKETPOOL_SOCK_STREAM = 1,
+    SOCKETPOOL_SOCK_DGRAM = 2,
+    SOCKETPOOL_SOCK_RAW = 3
+} socketpool_socketpool_sock_t;
 
-extern const mp_obj_type_t ssl_sslsocket_type;
+typedef enum {
+    SOCKETPOOL_AF_INET = 2,
+    SOCKETPOOL_AF_INET6 = 10
+} socketpool_socketpool_addressfamily_t;
 
-mp_obj_t common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self);
-void common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, mp_obj_t addr);
-void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self);
-void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self, mp_obj_t addr);
-bool common_hal_ssl_sslsocket_get_closed(ssl_sslsocket_obj_t *self);
-bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t *self);
-void common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog);
-mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t *buf, uint32_t len);
-mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len);
-void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj);
-void common_hal_ssl_sslsocket_setsockopt(ssl_sslsocket_obj_t *self, mp_obj_t level, mp_obj_t optname, mp_obj_t optval);
+typedef enum {
+    SOCKETPOOL_IPPROTO_IP = 0,
+    SOCKETPOOL_IPPROTO_ICMP = 1,
+    SOCKETPOOL_IPPROTO_TCP = 6,
+    SOCKETPOOL_IPPROTO_UDP = 17,
+    SOCKETPOOL_IPPROTO_IPV6 = 41,
+    SOCKETPOOL_IPPROTO_RAW = 255,
+} socketpool_socketpool_ipproto_t;
+
+typedef enum {
+    SOCKETPOOL_TCP_NODELAY = 1,
+} socketpool_socketpool_tcpopt_t;
+
+typedef enum {
+    SOCKETPOOL_SOL_SOCKET = 0xfff,
+} socketpool_socketpool_optlevel_t;
+
+typedef enum {
+    SOCKETPOOL_SO_REUSEADDR = 0x0004,
+} socketpool_socketpool_socketopt_t;
+
+typedef enum {
+    SOCKETPOOL_IP_MULTICAST_TTL = 5,
+} socketpool_socketpool_ipopt_t;
+
+typedef enum {
+    SOCKETPOOL_EAI_NONAME  = -2,
+} socketpool_eai_t;

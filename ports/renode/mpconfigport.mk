@@ -17,7 +17,7 @@ CIRCUITPY_FULL_BUILD = 0
 # Most ports will want to enable this early to use the USB workflow in testing
 # module implementation. It depends on TinyUSB supporting the USB peripheral.
 # Renode uses UART instead of USB.
-CIRCUITPY_USB = 0
+CIRCUITPY_USB_DEVICE = 0
 
 # Disable modules included in slim builds directly. Enable these as they are
 # implemented.

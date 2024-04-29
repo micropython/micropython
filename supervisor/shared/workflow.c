@@ -40,7 +40,7 @@
 #include "supervisor/shared/bluetooth/bluetooth.h"
 #endif
 
-#if CIRCUITPY_USB
+#if CIRCUITPY_TINYUSB || CIRCUITPY_USB_KEYBOARD_WORKFLOW
 #include "supervisor/usb.h"
 #include "tusb.h"
 #endif
@@ -81,7 +81,7 @@ void supervisor_workflow_request_background(void) {
 
 // Return true if host has completed connection to us (such as USB enumeration).
 bool supervisor_workflow_active(void) {
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     // Eventually there might be other non-USB workflows, such as BLE.
     // tud_ready() checks for usb mounted and not suspended.
     return tud_ready();
@@ -92,7 +92,7 @@ bool supervisor_workflow_active(void) {
 
 void supervisor_workflow_start(void) {
     // Start USB after giving boot.py a chance to tweak behavior.
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_TINYUSB
     // Setup USB connection after heap is available.
     // It needs the heap to build descriptors.
     usb_init();

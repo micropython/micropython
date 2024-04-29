@@ -383,3 +383,6 @@
 [submodule "frozen/Adafruit_CircuitPython_SHT4x"]
 	path = frozen/Adafruit_CircuitPython_SHT4x
 	url = https://github.com/adafruit/Adafruit_CircuitPython_SHT4x
+[submodule "frozen/Adafruit_CircuitPython_Bitmap_Font"]
+	path = frozen/Adafruit_CircuitPython_Bitmap_Font
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Bitmap_Font

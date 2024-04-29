@@ -32,7 +32,7 @@
 #include "shared-module/supervisor/Runtime.h"
 #include "shared-module/supervisor/StatusBar.h"
 
-#if CIRCUITPY_USB
+#if CIRCUITPY_USB_DEVICE
 #include "supervisor/usb.h"
 #endif
 
@@ -49,6 +49,6 @@ extern char *prev_traceback_string;
 
 extern supervisor_next_code_info_t *next_code_configuration;
 
-#if CIRCUITPY_USB
+#if CIRCUITPY_USB_DEVICE
 extern usb_identification_t *custom_usb_identification;
 #endif

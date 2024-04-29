@@ -24,10 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef SHARED_MODULE_STORAGE___INIT___H
-#define SHARED_MODULE_STORAGE___INIT___H
+#pragma once
 
-#if CIRCUITPY_USB
+#if CIRCUITPY_USB_DEVICE
 #include "supervisor/usb.h"
 
 bool storage_usb_enabled(void);
@@ -35,5 +34,3 @@ void storage_usb_set_defaults(void);
 size_t storage_usb_descriptor_length(void);
 size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string);
 #endif
-
-#endif // SHARED_MODULE_STORAGE___INIT___H

@@ -43,7 +43,8 @@ STATIC const uint16_t triangle[] = {0, 32767, 0, -32767};
 //|
 //|     If `waveform` is None, a triangle waveform is used.
 //|
-//|     `rate`, `phase_offset`, `offset`, `scale`, and `once` can be changed at run-time. `waveform` may be mutated.
+//|     `rate`, `phase_offset`, `offset`, `scale`, and `once` can be changed at
+//|     run-time. `waveform` may be mutated.
 //|
 //|     `waveform` must be a ``ReadableBuffer`` with elements of type ``'h'``
 //|     (16-bit signed integer).  Internally, the elements of `waveform` are scaled
@@ -58,6 +59,30 @@ STATIC const uint16_t triangle[] = {0, 32767, 0, -32767};
 //|     In the current implementation, LFOs are updated every 256 samples. This
 //|     should be considered an implementation detail, though it affects how LFOs
 //|     behave for instance when used to implement an integrator (``l.offset = l``).
+//|
+//|     An LFO's output, which is reflected in its `value` property, is not
+//|     updated in any other way than when its associated synthesizer updates it.
+//|     For instance, if an LFO is created with ``offset=1``, its `value` will still
+//|     be ``0`` until it is updated by its associated synthesizer. Similarly, merely
+//|     updating its properties does not update its value property.
+//|
+//|     The interpolation of the waveform is necessarily different depending on the
+//|     ``once`` property. Consider a LFO with ``waveform=np.array([0, 100],
+//|     dtype=np.int16), interpolate=True, once=True, rate=1``. Over 1 second this
+//|     LFO's output will change from ``0`` to ``100``, and will remain at
+//|     ``100`` thereafter, creating a "bend out" over a duration of 1 second.
+//|
+//|     However, when ``once=False``, this creates a triangle waveform with a
+//|     period of 1 second. Over about the first half second the input will
+//|     increase from ``0`` to ``100``, then during the second half of the second
+//|     it will decrease back to ``0``.
+//|
+//|     The time of the peak output is different depending on the value of ``once``:
+//|     At 1.0s for ``once=True`` and at 0.5s for ``once=False``.
+//|
+//|     Because of this difference in interpolation, dynamically updating the
+//|     ``once`` flag except when the LFO is at a phase of 0 will cause a step in
+//|     the LFO's output.
 //|     """
 //|
 //|     def __init__(
