@@ -226,7 +226,7 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
 }
 
 void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, pyb_file_obj_t *file) {
-    background_callback_begin_critical_section();
+    background_callback_prevent();
 
     self->file = file;
     f_lseek(&self->file->fp, 0);
@@ -244,7 +244,7 @@ void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, pyb_file
     memset(self->buffers[1], 0, MAX_BUFFER_LEN);
     MP3FrameInfo fi;
     bool result = mp3file_get_next_frame_info(self, &fi);
-    background_callback_end_critical_section();
+    background_callback_allow();
     if (!result) {
         mp_raise_msg(&mp_type_RuntimeError,
             MP_ERROR_TEXT("Failed to parse MP3 file"));
@@ -296,7 +296,7 @@ void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t *self,
     }
     // We don't reset the buffer index in case we're looping and we have an odd number of buffer
     // loads
-    background_callback_begin_critical_section();
+    background_callback_prevent();
     f_lseek(&self->file->fp, 0);
     self->inbuf_offset = self->inbuf_length;
     self->eof = 0;
@@ -305,7 +305,7 @@ void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t *self,
     mp3file_update_inbuf_half(self);
     mp3file_skip_id3v2(self);
     mp3file_find_sync_word(self);
-    background_callback_end_critical_section();
+    background_callback_allow();
 }
 
 audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *self,
