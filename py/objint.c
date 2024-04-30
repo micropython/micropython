@@ -424,7 +424,7 @@ static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
     // TODO: Support signed (currently behaves as if signed=(val < 0))
     bool overflow;
 
-    mp_int_t dlen = mp_obj_get_int(args[1]);
+    mp_int_t dlen = n_args < 2 ? 1 : mp_obj_get_int(args[1]);
     if (dlen < 0) {
         mp_raise_ValueError(NULL);
     }
@@ -468,7 +468,7 @@ static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
 
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 2, 4, int_to_bytes);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 1, 4, int_to_bytes);
 
 static const mp_rom_map_elem_t int_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_from_bytes), MP_ROM_PTR(&int_from_bytes_obj) },
