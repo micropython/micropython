@@ -24,7 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOMP3__INIT__H
-#define MICROPY_INCLUDED_SHARED_MODULE_AUDIOMP3__INIT__H
+#pragma once
 
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_AUDIOMP3__INIT__H
+#include <stdlib.h>
+
+extern void *mp3_alloc(size_t sz);
+extern void mp3_free(void *ptr);
