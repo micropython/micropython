@@ -179,4 +179,6 @@ USB_NUM_IN_ENDPOINTS = 5
 # Usually lots of flash space available
 CIRCUITPY_MESSAGE_COMPRESSION_LEVEL ?= 1
 
+# Don't enable mp3 by default but DO allocate it to on-chip RAM if enabled
 CIRCUITPY_AUDIOMP3 ?= 0
+CIRCUITPY_AUDIOMP3_USE_PORT_ALLOCATOR ?= 1
