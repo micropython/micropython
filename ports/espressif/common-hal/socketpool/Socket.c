@@ -56,6 +56,9 @@ StackType_t socket_select_stack[2 * configMINIMAL_STACK_SIZE];
 #define FDSTATE_CLOSING 2
 STATIC uint8_t socket_fd_state[CONFIG_LWIP_MAX_SOCKETS];
 
+// How long to wait between checks for a socket to connect.
+#define SOCKET_CONNECT_POLL_INTERVAL_MS 100
+
 STATIC socketpool_socket_obj_t *user_socket[CONFIG_LWIP_MAX_SOCKETS];
 StaticTask_t socket_select_task_buffer;
 TaskHandle_t socket_select_task_handle;
@@ -412,25 +415,75 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
 
     // Replace above with function call -----
 
-    // Switch to blocking mode for this one call
-    int opts;
-    opts = lwip_fcntl(self->num, F_GETFL, 0);
-    opts = opts & (~O_NONBLOCK);
-    lwip_fcntl(self->num, F_SETFL, opts);
+    // Emulate SO_CONTIMEO, which is not implemented by lwip.
+    // All our sockets are non-blocking, so we check the timeout ourselves.
 
     int result = -1;
     result = lwip_connect(self->num, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr_in));
 
-    // Switch back once complete
-    opts = opts | O_NONBLOCK;
-    lwip_fcntl(self->num, F_SETFL, opts);
-
-    if (result >= 0) {
+    if (result == 0) {
+        // Connected immediately.
         self->connected = true;
         return;
-    } else {
-        mp_raise_OSError(errno);
     }
+
+    if (result < 0 && errno != EINPROGRESS) {
+        // Some error happened; error is in errno.
+        mp_raise_OSError(errno);
+        return;
+    }
+
+    struct timeval timeout = {
+        .tv_sec = 0,
+        .tv_usec = SOCKET_CONNECT_POLL_INTERVAL_MS * 1000,
+    };
+
+    // Keep checking, using select(), until timeout expires, at short intervals.
+    // This allows ctrl-C interrupts to be detected and background tasks to run.
+    mp_uint_t timeout_left = self->timeout_ms;
+
+    while (timeout_left > 0) {
+        RUN_BACKGROUND_TASKS;
+        // Allow ctrl-C interrupt
+        if (mp_hal_is_interrupted()) {
+            return;
+        }
+
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(self->num, &fds);
+
+        result = select(self->num + 1, NULL, &fds, NULL, &timeout);
+        if (result == 0) {
+            // No change to fd's after waiting for timeout, so try again if some time is still left.
+            // Don't wrap below 0, because we're using a uint.
+            if (timeout_left < SOCKET_CONNECT_POLL_INTERVAL_MS) {
+                timeout_left = 0;
+            } else {
+                timeout_left -= SOCKET_CONNECT_POLL_INTERVAL_MS;
+            }
+            continue;
+        }
+
+        if (result < 0) {
+            // Some error happened when doing select(); error is in errno.
+            mp_raise_OSError(errno);
+        }
+
+        // select() indicated the socket is writable. Check if any connection error occurred.
+        int error_code = 0;
+        socklen_t socklen = sizeof(error_code);
+        result = getsockopt(self->num, SOL_SOCKET, SO_ERROR, &error_code, &socklen);
+        if (result < 0 || error_code != 0) {
+            mp_raise_OSError(errno);
+        }
+        self->connected = true;
+        return;
+    }
+
+    // No connection after timeout. The connection attempt is not stopped.
+    // This imitates what happens in Python.
+    mp_raise_OSError(ETIMEDOUT);
 }
 
 bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t *self) {
