@@ -25,6 +25,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "py/mpprint.h"
 #include "esp_heap_caps.h"
 #include "shared-module/audiomp3/__init__.h"
@@ -32,11 +33,12 @@
 
 void *mp3_alloc(size_t sz) {
     void *ptr = heap_caps_malloc(sz, MALLOC_CAP_8BIT);
-    mp_printf(&mp_plat_print, "alloc(%d) -> %ptr\n", (int)sz, ptr);
+    if (ptr) {
+        memset(ptr, 0, sz);
+    }
     return ptr;
 }
 
 void mp3_free(void *ptr) {
-    mp_printf(&mp_plat_print, "free(%p)\n", ptr);
     heap_caps_free(ptr);
 }
