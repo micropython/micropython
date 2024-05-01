@@ -35,9 +35,14 @@
 
 #include "shared-module/audiocore/__init__.h"
 
-#define CIRCUITPY_BUFFER_COUNT 3
-#define CIRCUITPY_BUFFER_SIZE 1023
-#define CIRCUITPY_OUTPUT_SLOTS 2
+// The maximum DMA buffer size (in bytes)
+#define I2S_DMA_BUFFER_MAX_SIZE     4092
+// The number of DMA buffers to allocate
+#define CIRCUITPY_BUFFER_COUNT (3)
+// The maximum DMA buffer size in frames (at stereo 16-bit)
+#define CIRCUITPY_BUFFER_SIZE (I2S_DMA_BUFFER_MAX_SIZE / 4)
+// The number of output channels is fixed at 2
+#define CIRCUITPY_OUTPUT_SLOTS (2)
 
 static void i2s_fill_buffer(i2s_t *self) {
     if (self->next_buffer_size == 0) {
