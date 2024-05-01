@@ -110,6 +110,10 @@ def check_vid_pid(files, clusterlist):
         creation = CREATION_PATTERN.search(src_text)
         non_usb = usb_pattern.search(src_text)
         board_name = board_config.parts[-2]
+        port_name = board_config.parts[-4]
+
+        if port_name == "renode":
+            continue
 
         if usb_vid and usb_pid:
             id_group = f"0x{int(usb_vid.group(1), 16):04X}:0x{int(usb_pid.group(1), 16):04X}"

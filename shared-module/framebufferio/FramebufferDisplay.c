@@ -35,7 +35,10 @@
 #include "shared-module/displayio/display_core.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/tick.h"
+
+#if CIRCUITPY_TINYUSB
 #include "supervisor/usb.h"
+#endif
 
 #include <stdint.h>
 #include <string.h>

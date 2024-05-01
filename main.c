@@ -58,7 +58,6 @@
 #include "supervisor/shared/tick.h"
 #include "supervisor/shared/traceback.h"
 #include "supervisor/shared/workflow.h"
-#include "supervisor/usb.h"
 #include "supervisor/workflow.h"
 #include "supervisor/shared/external_flash/external_flash.h"
 
@@ -115,8 +114,12 @@
 #include "supervisor/shared/status_bar.h"
 #endif
 
-#if CIRCUITPY_USB_HID
+#if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_HID
 #include "shared-module/usb_hid/__init__.h"
+#endif
+
+#if CIRCUITPY_TINYUSB
+#include "supervisor/usb.h"
 #endif
 
 #if CIRCUITPY_WIFI
@@ -429,7 +432,7 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     }
 }
 
-STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
+STATIC bool __attribute__((noinline)) run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
     bool serial_connected_at_start = serial_connected();
     bool printed_safe_mode_message = false;
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
@@ -1160,7 +1163,7 @@ void gc_collect(void) {
     common_hal_bleio_gc_collect();
     #endif
 
-    #if CIRCUITPY_USB_HID
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_HID
     usb_hid_gc_collect();
     #endif
 

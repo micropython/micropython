@@ -38,9 +38,12 @@
 #include "shared-bindings/storage/__init__.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/flash.h"
-#include "supervisor/usb.h"
 
-#if CIRCUITPY_USB_MSC
+#if CIRCUITPY_USB_DEVICE
+#include "supervisor/usb.h"
+#endif
+
+#if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_MSC
 #include "tusb.h"
 
 static const uint8_t usb_msc_descriptor_template[] = {
@@ -262,7 +265,7 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
         mp_raise_OSError(MP_EINVAL);
     }
 
-    #if CIRCUITPY_USB_MSC
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_MSC
     if (!usb_msc_ejected() && storage_usb_is_enabled) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot remount '/' when visible via USB."));
     }

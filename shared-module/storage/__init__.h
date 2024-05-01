@@ -26,10 +26,9 @@
 
 #pragma once
 
-#include "py/mpconfig.h"
+#if CIRCUITPY_USB_DEVICE
 #include "supervisor/usb.h"
 
-#if CIRCUITPY_USB_DEVICE
 bool storage_usb_enabled(void);
 void storage_usb_set_defaults(void);
 size_t storage_usb_descriptor_length(void);

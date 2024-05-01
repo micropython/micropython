@@ -24,15 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H
+#pragma once
 
 // #include "py/mpconfig.h"
 #include "py/obj.h"
 
 #include "shared-module/supervisor/Runtime.h"
 #include "shared-module/supervisor/StatusBar.h"
+
+#if CIRCUITPY_USB_DEVICE
 #include "supervisor/usb.h"
+#endif
 
 typedef struct {
     uint8_t options;
@@ -46,6 +48,7 @@ extern mp_obj_t supervisor_ticks_ms(void);
 extern char *prev_traceback_string;
 
 extern supervisor_next_code_info_t *next_code_configuration;
-extern usb_identification_t *custom_usb_identification;
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H
+#if CIRCUITPY_USB_DEVICE
+extern usb_identification_t *custom_usb_identification;
+#endif

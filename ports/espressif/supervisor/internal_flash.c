@@ -43,7 +43,10 @@
 
 #include "supervisor/filesystem.h"
 #include "supervisor/flash.h"
+
+#if CIRCUITPY_USB_DEVICE
 #include "supervisor/usb.h"
+#endif
 
 #define OP_READ     0
 #define OP_WRITE    1

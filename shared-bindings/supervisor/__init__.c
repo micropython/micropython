@@ -36,7 +36,7 @@
 #include "supervisor/shared/traceback.h"
 #include "supervisor/shared/workflow.h"
 
-#if CIRCUITPY_USB_IDENTIFICATION
+#if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_IDENTIFICATION
 #include "supervisor/usb.h"
 #endif
 
@@ -279,7 +279,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(supervisor_reset_terminal_obj, supervisor_reset_termin
 //|     ...
 //|
 STATIC mp_obj_t supervisor_set_usb_identification(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    #if CIRCUITPY_USB_IDENTIFICATION
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_IDENTIFICATION
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_manufacturer, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_product, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },

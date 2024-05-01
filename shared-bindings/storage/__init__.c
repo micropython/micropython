@@ -203,7 +203,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(storage_erase_filesystem_obj, 0, storage_erase_filesy
 //|     ...
 //|
 STATIC mp_obj_t storage_disable_usb_drive(void) {
-    #if CIRCUITPY_USB_MSC
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_MSC
     if (!common_hal_storage_disable_usb_drive()) {
     #else
     if (true) {
@@ -228,7 +228,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(storage_disable_usb_drive_obj, storage_disable_usb_dri
 //|     ...
 //|
 STATIC mp_obj_t storage_enable_usb_drive(void) {
-    #if CIRCUITPY_USB_MSC
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_MSC
     if (!common_hal_storage_enable_usb_drive()) {
     #else
     if (true) {

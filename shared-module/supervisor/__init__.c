@@ -50,5 +50,7 @@ char *prev_traceback_string = NULL;
 // Custom settings for next code run.
 supervisor_next_code_info_t *next_code_configuration = NULL;
 
+#if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_IDENTIFICATION
 // Custom USB settings.
 usb_identification_t *custom_usb_identification = NULL;
+#endif
