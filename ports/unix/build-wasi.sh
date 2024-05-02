@@ -2,18 +2,18 @@
 
 # prerequisites
 #
-# https://github.com/WebAssembly/wasi-libc/pull/483 (wasi-sdk 22.0?)
-# https://github.com/WebAssembly/wasi-libc/pull/473 (wasi-sdk 22.0?)
+# https://github.com/WebAssembly/wasi-libc/pull/483 (wasi-sdk 22.0)
+# https://github.com/WebAssembly/wasi-libc/pull/473 (wasi-sdk 22.0)
 # https://github.com/WebAssembly/binaryen/pull/6294 (version_117)
 # https://github.com/WebAssembly/binaryen/pull/6259 (version_117)
 # https://github.com/llvm/llvm-project/pull/84137 (LLVM 19?)
 #
-# WASI_SDK: wasi-sdk 21.0
+# WASI_SDK: wasi-sdk 22.0
 # WASM_OPT: binaryen wasm-opt built with the above patches
 # WASI_SYSROOT: wasi-libc built with the above patches
 # CLANG: clang built with the above patches
 
-WASI_SDK=${WASI_SDK:-/opt/wasi-sdk-21.0}
+WASI_SDK=${WASI_SDK:-/opt/wasi-sdk-22.0}
 WASI_SYSROOT=${WASI_SYSROOT:-${HOME}/git/wasi-libc/sysroot}
 BINARYEN_BIN=${BINARYEN_BIN:-${HOME}/git/wasm/binaryen/b/bin}
 WASM_OPT=${WASM_OPT:-${BINARYEN_BIN}/wasm-opt}
