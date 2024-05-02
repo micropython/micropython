@@ -142,6 +142,10 @@ endif
 ifeq ($(CIRCUITPY_ESP_FLASH_SIZE),4MB)
 CIRCUITPY_BITMAPFILTER ?= 0
 OPTIMIZATION_FLAGS ?= -Os
+# Until the 4MB C6 partition table is updated, disable mp3 on the 4MB C6 parts
+ifeq ($(IDF_TARGET),esp32c6)
+CIRCUITPY_AUDIOMP3 ?= 0
+endif
 endif
 
 # No room for dualbank or mp3 on boards with 2MB flash
