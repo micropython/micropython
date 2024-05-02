@@ -135,7 +135,6 @@ CIRCUITPY_BLEIO ?= 0
 else
 CIRCUITPY_BLEIO ?= 1
 endif
-CIRCUITPY_AUDIOMP3 ?= 1
 
 endif
 
@@ -145,10 +144,11 @@ CIRCUITPY_BITMAPFILTER ?= 0
 OPTIMIZATION_FLAGS ?= -Os
 endif
 
-# No room for dualbank on boards with 2MB flash
+# No room for dualbank or mp3 on boards with 2MB flash
 ifeq ($(CIRCUITPY_ESP_FLASH_SIZE),2MB)
 CIRCUITPY_BITMAPFILTER ?= 0
 CIRCUITPY_DUALBANK = 0
+CIRCUITPY_AUDIOMP3 = 0
 endif
 
 # Modules dependent on other modules
@@ -180,5 +180,5 @@ USB_NUM_IN_ENDPOINTS = 5
 CIRCUITPY_MESSAGE_COMPRESSION_LEVEL ?= 1
 
 # Don't enable mp3 by default but DO allocate it to on-chip RAM if enabled
-CIRCUITPY_AUDIOMP3 ?= 0
+CIRCUITPY_AUDIOMP3 ?= 1
 CIRCUITPY_AUDIOMP3_USE_PORT_ALLOCATOR ?= 1
