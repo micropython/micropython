@@ -22,7 +22,6 @@ CIRCUITPY_ANALOGBUFIO ?= 1
 CIRCUITPY_AUDIOBUSIO ?= 1
 CIRCUITPY_AUDIOBUSIO_PDMIN ?= 0
 CIRCUITPY_AUDIOIO ?= 0
-CIRCUITPY_AUDIOMP3 ?= 0
 CIRCUITPY_BLEIO_HCI = 0
 CIRCUITPY_CANIO ?= 1
 CIRCUITPY_COUNTIO ?= 1
@@ -143,12 +142,17 @@ endif
 ifeq ($(CIRCUITPY_ESP_FLASH_SIZE),4MB)
 CIRCUITPY_BITMAPFILTER ?= 0
 OPTIMIZATION_FLAGS ?= -Os
+# Until the 4MB C6 partition table is updated, disable mp3 on the 4MB C6 parts
+ifeq ($(IDF_TARGET),esp32c6)
+CIRCUITPY_AUDIOMP3 ?= 0
+endif
 endif
 
-# No room for dualbank on boards with 2MB flash
+# No room for dualbank or mp3 on boards with 2MB flash
 ifeq ($(CIRCUITPY_ESP_FLASH_SIZE),2MB)
 CIRCUITPY_BITMAPFILTER ?= 0
 CIRCUITPY_DUALBANK = 0
+CIRCUITPY_AUDIOMP3 = 0
 endif
 
 # Modules dependent on other modules
@@ -178,3 +182,6 @@ USB_NUM_IN_ENDPOINTS = 5
 
 # Usually lots of flash space available
 CIRCUITPY_MESSAGE_COMPRESSION_LEVEL ?= 1
+
+CIRCUITPY_AUDIOMP3 ?= 1
+CIRCUITPY_AUDIOMP3_USE_PORT_ALLOCATOR ?= 1

@@ -152,7 +152,8 @@ CFLAGS += \
 	-DESP_PLATFORM=1 \
 	-DMBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\" \
 	-DMBEDTLS_PADLOCK_FILE=\"ports/espressif/esp-idf/components/mbedtls/mbedtls/library/padlock.h\" \
-	-DUNITY_INCLUDE_CONFIG_H -DWITH_POSIX
+	-DUNITY_INCLUDE_CONFIG_H -DWITH_POSIX \
+	-DMP3DEC_GENERIC
 
 # Make our canary value match FreeRTOS's
 # This define is in FreeRTOS as tskSTACK_FILL_BYTE 0xa5U which we expand out to a full word.
@@ -303,7 +304,9 @@ SRC_C += \
 	peripherals/i2c.c \
 	peripherals/$(IDF_TARGET)/pins.c
 
+ifeq ($(CIRCUITPY_SSL),1)
 SRC_C += lib/mbedtls_config/crt_bundle.c
+endif
 
 SRC_C += $(wildcard common-hal/espidf/*.c)
 

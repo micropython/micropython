@@ -522,3 +522,5 @@ extern void app_main(void);
 void app_main(void) {
     main();
 }
+
+portMUX_TYPE background_task_mutex = portMUX_INITIALIZER_UNLOCKED;

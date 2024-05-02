@@ -89,8 +89,8 @@ void background_callback_reset(void);
  * bracket the section of code where this is the case.  These calls nest, and
  * begins must be balanced with ends.
  */
-void background_callback_begin_critical_section(void);
-void background_callback_end_critical_section(void);
+void background_callback_prevent(void);
+void background_callback_allow(void);
 
 /*
  * Background callbacks may stop objects from being collected

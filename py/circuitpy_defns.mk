@@ -782,7 +782,11 @@ SRC_MOD += $(addprefix lib/mp3/src/, \
 	subband.c \
 	trigtabs.c \
 )
-$(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x)' -D'MPDEC_FREE(x)=m_free(x)'
+$(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "shared-module/audiomp3/__init__.h" -D'MPDEC_ALLOCATOR(x)=mp3_alloc(x)' -D'MPDEC_FREE(x)=mp3_free(x)' -fwrapv
+ifeq ($(CIRCUITPY_AUDIOMP3_USE_PORT_ALLOCATOR),1)
+SRC_COMMON_HAL_ALL += \
+	audiomp3/__init__.c
+endif
 endif
 
 ifeq ($(CIRCUITPY_GIFIO),1)
