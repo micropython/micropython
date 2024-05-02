@@ -8,13 +8,13 @@
 # https://github.com/WebAssembly/binaryen/pull/6259 (version_117)
 # https://github.com/llvm/llvm-project/pull/84137 (LLVM 19?)
 #
-# WASI_SDK: wasi-sdk 22.0
-# WASM_OPT: binaryen wasm-opt built with the above patches
-# WASI_SYSROOT: wasi-libc built with the above patches
-# CLANG: clang built with the above patches
+# WASI_SDK: wasi-sdk 22.0 or later
+# WASM_OPT: binaryen wasm-opt version_117 or later
+# WASI_SYSROOT: sysroot from wasi-sdk 22.0 or later
+# CLANG: clang from LLVM 19 or later, which contains the above mentioned PR
 
 WASI_SDK=${WASI_SDK:-/opt/wasi-sdk-22.0}
-WASI_SYSROOT=${WASI_SYSROOT:-${HOME}/git/wasi-libc/sysroot}
+WASI_SYSROOT=${WASI_SYSROOT:-${WASI_SDK}/share/wasi-sysroot}
 BINARYEN_BIN=${BINARYEN_BIN:-${HOME}/git/wasm/binaryen/b/bin}
 WASM_OPT=${WASM_OPT:-${BINARYEN_BIN}/wasm-opt}
 RESOURCE_DIR=$(${WASI_SDK}/bin/clang --print-resource-dir)
