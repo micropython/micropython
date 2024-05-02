@@ -262,7 +262,7 @@ if (
     typeof process.versions === "object" &&
     typeof process.versions.node === "string"
 ) {
-    // Check if this module is ron from the command line.
+    // Check if this module is run from the command line via `node micropython.mjs`.
     //
     // See https://stackoverflow.com/questions/6398196/detect-if-called-through-require-or-directly-by-command-line/66309132#66309132
     //
@@ -270,14 +270,17 @@ if (
     // - `resolve()` is used to handle symlinks
     // - `includes()` is used to handle cases where the file extension was omitted when passed to node
 
-    const path = await import("path");
-    const url = await import("url");
+    if (process.argv.length > 1) {
+        const path = await import("path");
+        const url = await import("url");
 
-    const pathToThisFile = path.resolve(url.fileURLToPath(import.meta.url));
-    const pathPassedToNode = path.resolve(process.argv[1]);
-    const isThisFileBeingRunViaCLI = pathToThisFile.includes(pathPassedToNode);
+        const pathToThisFile = path.resolve(url.fileURLToPath(import.meta.url));
+        const pathPassedToNode = path.resolve(process.argv[1]);
+        const isThisFileBeingRunViaCLI =
+            pathToThisFile.includes(pathPassedToNode);
 
-    if (isThisFileBeingRunViaCLI) {
-        runCLI();
+        if (isThisFileBeingRunViaCLI) {
+            runCLI();
+        }
     }
 }
