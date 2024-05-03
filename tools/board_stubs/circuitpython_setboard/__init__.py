@@ -40,7 +40,12 @@ def set_board():
         usage="Install CircuitPython board-specific stubs",
     )
     parser.add_argument("chosen_board", help="selected board", nargs="?")
-    parser.add_argument("-l", "--list", help="show available boards", action="store_true")
+    parser.add_argument(
+        "-l",
+        "--list",
+        help=f"show available boards. can filter eg: '{__name__} -l feather'",
+        action="store_true",
+    )
 
     args = parser.parse_args()
 
@@ -48,6 +53,13 @@ def set_board():
         port_boards: defaultdict[str, list[str]] = defaultdict(list)
 
         for board in resources.files("board_definitions").iterdir():
+            # if we receive both the list flag and a board name, use it as filter
+            if (
+                args.chosen_board is not None
+                and args.chosen_board.lower() not in board.name.lower()
+            ):
+                continue
+
             # NOTE: For the hand-crafted finding of port in the docstring, its
             #       format is assumed to be:
             #
@@ -64,6 +76,10 @@ def set_board():
             port = lines[2].split("-")[1].split(":")[1].strip()
 
             port_boards[port].append(board.name)
+
+        if not port_boards:
+            sys.stdout.write("Nothing found, check out your filter.\n")
+            sys.exit(0)
 
         sys.stdout.write("Available boards are: \n")
         # sort by port name
