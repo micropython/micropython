@@ -104,5 +104,5 @@ def set_board():
     shutil.copyfile(board_definitions_file, board_stubs_file)
 
     sys.stdout.write(
-        header("Information about the board") + get_doc_or_raise(args.chose_board) + "\n"
+        header("Information about the board") + get_doc_or_raise(args.chosen_board) + "\n"
     )
