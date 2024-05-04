@@ -6,6 +6,7 @@
     "features": [
         "BLE",
         "WiFi",
+        "SD CARD SLOT",
         "SPIRAM",
         "Battery Charging",
         "STEMMA QT/QWIIC",
