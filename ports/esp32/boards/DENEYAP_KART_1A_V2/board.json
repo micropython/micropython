@@ -1,0 +1,22 @@
+{
+  "deploy": ["../deploy_s3.md"],
+  "docs": "",
+  "features": [
+    "Battery Charging",
+    "WiFi",
+    "BLE",
+    "SD CARD SLOT",
+    "RGB LED",
+    "SPIRAM",
+    "USB-C",
+    "STEMMA QT/QWIIC",
+    "Breadboard friendly"
+  ],
+  "id": "dydk1a_mpv20",
+  "images": ["deneyapkart1av2.jpg"],
+  "mcu": "esp32s3",
+  "product": "Deneyap Kart 1A v2",
+  "thumbnail": "",
+  "url": "https://deneyapkart.org/",
+  "vendor": "T3 Foundation"
+}
