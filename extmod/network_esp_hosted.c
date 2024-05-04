@@ -309,6 +309,15 @@ static const mp_rom_map_elem_t network_esp_hosted_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ipconfig),            MP_ROM_PTR(&network_esp_hosted_ipconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_config),              MP_ROM_PTR(&network_esp_hosted_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_status),              MP_ROM_PTR(&network_esp_hosted_status_obj) },
+
+    // Class constants.
+    { MP_ROM_QSTR(MP_QSTR_IF_STA),              MP_ROM_INT(MOD_NETWORK_STA_IF) },
+    { MP_ROM_QSTR(MP_QSTR_IF_AP),               MP_ROM_INT(MOD_NETWORK_AP_IF) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_OPEN),            MP_ROM_INT(ESP_HOSTED_SEC_OPEN) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WEP),             MP_ROM_INT(ESP_HOSTED_SEC_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA_WPA2),        MP_ROM_INT(ESP_HOSTED_SEC_WPA_WPA2_PSK) },
+
+    // For backwards compatibility.
     { MP_ROM_QSTR(MP_QSTR_OPEN),                MP_ROM_INT(ESP_HOSTED_SEC_OPEN) },
     { MP_ROM_QSTR(MP_QSTR_WEP),                 MP_ROM_INT(ESP_HOSTED_SEC_WEP) },
     { MP_ROM_QSTR(MP_QSTR_WPA_PSK),             MP_ROM_INT(ESP_HOSTED_SEC_WPA_WPA2_PSK) },

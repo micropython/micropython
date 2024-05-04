@@ -35,7 +35,7 @@
 // set) must also match MPY_SUB_VERSION. This allows 3 additional updates to
 // the native ABI per bytecode revision.
 #define MPY_VERSION 6
-#define MPY_SUB_VERSION 2
+#define MPY_SUB_VERSION 3
 
 // Macros to encode/decode sub-version to/from the feature byte. This replaces
 // the bits previously used to encode the flags (map caching and unicode)

@@ -54,6 +54,8 @@ void mp_hal_delay_us(mp_uint_t us);
 
 const char *nrfx_error_code_lookup(uint32_t err_code);
 
+void mp_nrf_start_lfclk(void);
+
 #define MP_HAL_PIN_FMT           "%q"
 #define mp_hal_pin_obj_t const pin_obj_t *
 #define mp_hal_get_pin_obj(o)    pin_find(o)

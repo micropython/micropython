@@ -1,0 +1,19 @@
+== JavaScript side ==
+[Function (anonymous)]
+3
+[Function (anonymous)]
+-1
+== Python side ==
+<class 'JsProxy'>
+3
+<class 'JsProxy'>
+-1
+<class 'function'>
+6
+<class 'function'>
+3.0
+== JavaScript side ==
+[Function: obj] { _ref: 4 }
+6
+[Function: obj] { _ref: 3 }
+3

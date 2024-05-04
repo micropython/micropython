@@ -96,6 +96,9 @@ COPT += -Os -DNDEBUG
 LDFLAGS += --gc-sections
 endif
 
+# Flags for optional C++ source code
+CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS))
+
 # Options for mpy-cross
 MPY_CROSS_FLAGS += -march=xtensa
 

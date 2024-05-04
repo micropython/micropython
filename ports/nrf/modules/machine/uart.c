@@ -88,8 +88,8 @@ typedef struct _machine_uart_buf_t {
 #endif
 
 typedef struct _machine_uart_obj_t {
-    mp_obj_base_t       base;
-    const nrfx_uart_t * p_uart;      // Driver instance
+    mp_obj_base_t base;
+    const nrfx_uart_t *p_uart;       // Driver instance
     machine_uart_buf_t buf;
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
@@ -206,19 +206,17 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     nrfx_uart_config_t config;
 
     // flow control
-#if MICROPY_HW_UART1_HWFC
+    #if MICROPY_HW_UART1_HWFC
     config.hal_cfg.hwfc = NRF_UART_HWFC_ENABLED;
-#else
+    #else
     config.hal_cfg.hwfc = NRF_UART_HWFC_DISABLED;
-#endif
+    #endif
 
     config.hal_cfg.parity = NRF_UART_PARITY_EXCLUDED;
 
-#if (BLUETOOTH_SD == 100)
-    config.interrupt_priority = 3;
-#else
-    config.interrupt_priority = 6;
-#endif
+    // Higher priority than pin interrupts, otherwise printing exceptions from
+    // interrupt handlers gets stuck.
+    config.interrupt_priority = NRFX_GPIOTE_DEFAULT_CONFIG_IRQ_PRIORITY - 1;
 
     // These baudrates are not supported, it seems.
     if (args[ARG_baudrate].u_int < 1200 || args[ARG_baudrate].u_int > 1000000) {
@@ -239,10 +237,10 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     config.pseltxd = MICROPY_HW_UART1_TX;
     config.pselrxd = MICROPY_HW_UART1_RX;
 
-#if MICROPY_HW_UART1_HWFC
+    #if MICROPY_HW_UART1_HWFC
     config.pselrts = MICROPY_HW_UART1_RTS;
     config.pselcts = MICROPY_HW_UART1_CTS;
-#endif
+    #endif
     self->timeout = args[ARG_timeout].u_int;
     self->timeout_char = args[ARG_timeout_char].u_int;
 
@@ -259,9 +257,9 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     nrfx_uart_init(self->p_uart, &config, uart_event_handler);
     nrfx_uart_rx(self->p_uart, &self->buf.rx_buf[0], 1);
 
-#if NRFX_UART_ENABLED
+    #if NRFX_UART_ENABLED
     nrfx_uart_rx_enable(self->p_uart);
-#endif
+    #endif
 
     return MP_OBJ_FROM_PTR(self);
 }

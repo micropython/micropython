@@ -33,6 +33,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "py/gc.h"
 #include "pin.h"
 #include "nrf_gpio.h"
 #include "nrfx_gpiote.h"
@@ -234,9 +235,9 @@ static void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
 
     mp_printf(print, "Pin(%d, mode=%s, pull=%s)",
-            self->pin,
-            (nrf_gpio_pin_dir_get(self->pin) == NRF_GPIO_PIN_DIR_OUTPUT) ? "OUT" : "IN",
-            pull);
+        self->pin,
+        (nrf_gpio_pin_dir_get(self->pin) == NRF_GPIO_PIN_DIR_OUTPUT) ? "OUT" : "IN",
+        pull);
 }
 
 static mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
@@ -375,11 +376,11 @@ static mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
 
     if (mode == NRF_GPIO_PIN_DIR_OUTPUT || mode == NRF_GPIO_PIN_DIR_INPUT) {
         nrf_gpio_cfg(self->pin,
-                     mode,
-                     input,
-                     pull,
-                     NRF_GPIO_PIN_S0S1,
-                     NRF_GPIO_PIN_NOSENSE);
+            mode,
+            input,
+            pull,
+            NRF_GPIO_PIN_S0S1,
+            NRF_GPIO_PIN_NOSENSE);
     } else {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin mode: %d"), mode);
     }
@@ -496,9 +497,31 @@ static MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 static void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
     mp_obj_t pin_handler = MP_STATE_PORT(pin_irq_handlers)[pin];
     mp_obj_t pin_number = MP_OBJ_NEW_SMALL_INT(pin);
-    const pin_obj_t *pin_obj  = pin_find(pin_number);
+    const pin_obj_t *pin_obj = pin_find(pin_number);
 
-    mp_call_function_1(pin_handler, (mp_obj_t)pin_obj);
+    if (pin_handler != mp_const_none) {
+        #if MICROPY_ENABLE_SCHEDULER
+        mp_sched_lock();
+        #endif
+        // When executing code within a handler we must lock the GC to prevent
+        // any memory allocations.  We must also catch any exceptions.
+        gc_lock();
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_call_function_1(pin_handler, (mp_obj_t)pin_obj);
+            nlr_pop();
+        } else {
+            // Uncaught exception; disable the callback so it doesn't run again.
+            MP_STATE_PORT(pin_irq_handlers)[pin] = mp_const_none;
+            nrfx_gpiote_in_uninit(pin);
+            mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in interrupt handler for Pin('%q')\n", pin_obj->name);
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+        gc_unlock();
+        #if MICROPY_ENABLE_SCHEDULER
+        mp_sched_unlock();
+        #endif
+    }
 }
 
 static mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -591,7 +614,7 @@ static const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AF_OD),     MP_ROM_INT(GPIO_MODE_AF_OD) },
     { MP_ROM_QSTR(MP_QSTR_PULL_NONE), MP_ROM_INT(GPIO_NOPULL) },
 */
-#include "genhdr/pins_af_const.h"
+    #include "genhdr/pins_af_const.h"
 };
 
 static MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);

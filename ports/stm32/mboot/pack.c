@@ -42,6 +42,17 @@
 #define MBOOT_PACK_GZIP_BUFFER_SIZE (2048)
 #endif
 
+// Configure the minimum number of bytes that can be written at once to the internal flash.
+#if defined(STM32H5)
+#define FLASH_MIN_WRITE_BYTES (16)
+#elif defined(STM32H7)
+#define FLASH_MIN_WRITE_BYTES (4 * FLASH_NB_32BITWORD_IN_FLASHWORD)
+#else
+// This default is 8 bytes due to STM32WB MCUs requiring that a double-word write
+// to flash can only be done once (due to ECC).
+#define FLASH_MIN_WRITE_BYTES (8)
+#endif
+
 // State to manage automatic flash erasure.
 static uint32_t erased_base_addr;
 static uint32_t erased_top_addr;
@@ -57,9 +68,8 @@ static uint8_t decrypted_buf[MBOOT_PACK_DFU_CHUNK_BUF_SIZE] __attribute__((align
 static uint8_t uncompressed_buf[MBOOT_PACK_GZIP_BUFFER_SIZE] __attribute__((aligned(8)));
 
 // Buffer to hold the start of the firmware, which is only written once the
-// entire firmware is validated.  This is 8 bytes due to STM32WB MCUs requiring
-// that a double-word write to flash can only be done once (due to ECC).
-static uint8_t firmware_head[8] __attribute__((aligned(8)));
+// entire firmware is validated.
+static uint8_t firmware_head[FLASH_MIN_WRITE_BYTES] __attribute__((aligned(FLASH_MIN_WRITE_BYTES)));
 
 // Flag to indicate that firmware_head contains valid data.
 static bool firmware_head_valid;
@@ -100,7 +110,7 @@ static int mboot_pack_commit_chunk(uint32_t addr, uint8_t *data, size_t len) {
         return ret;
     }
 
-    if (addr == APPLICATION_ADDR) {
+    if (addr == APPLICATION_ADDR && len >= sizeof(firmware_head)) {
         // Don't write the very start of the firmware, just copy it into a temporary buffer.
         // It will be written only if the full firmware passes the checksum/signature.
         memcpy(firmware_head, data, sizeof(firmware_head));

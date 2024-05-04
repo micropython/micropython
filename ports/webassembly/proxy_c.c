@@ -289,16 +289,18 @@ void proxy_c_to_js_get_dict(uint32_t c_ref, uint32_t *out) {
 
 static const mp_obj_fun_builtin_var_t resume_obj;
 
-EM_JS(void, js_then_resolve, (uint32_t * resolve, uint32_t * reject), {
+EM_JS(void, js_then_resolve, (uint32_t * ret_value, uint32_t * resolve, uint32_t * reject), {
+    const ret_value_js = proxy_convert_mp_to_js_obj_jsside(ret_value);
     const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
     const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
-    resolve_js(null);
+    resolve_js(ret_value_js);
 });
 
-EM_JS(void, js_then_reject, (uint32_t * resolve, uint32_t * reject), {
+EM_JS(void, js_then_reject, (uint32_t * ret_value, uint32_t * resolve, uint32_t * reject), {
+    const ret_value_js = proxy_convert_mp_to_js_obj_jsside(ret_value);
     const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
     const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
-    reject_js(null);
+    reject_js(ret_value_js);
 });
 
 // *FORMAT-OFF*
@@ -306,14 +308,34 @@ EM_JS(void, js_then_continue, (int jsref, uint32_t * py_resume, uint32_t * resol
     const py_resume_js = proxy_convert_mp_to_js_obj_jsside(py_resume);
     const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
     const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
-    const ret = proxy_js_ref[jsref].then((x) => {py_resume_js(x, resolve_js, reject_js);}, reject_js);
+    const ret = proxy_js_ref[jsref].then(
+        (result) => {
+            // The Promise is fulfilled on the JavaScript side.  Take the result and
+            // send it to the encapsulating generator on the Python side, so it
+            // becomes the result of the "yield from" that deferred to this Promise.
+            py_resume_js(result, null, resolve_js, reject_js);
+        },
+        (reason) => {
+            // The Promise is rejected on the JavaScript side.  Take the reason and
+            // throw it into the encapsulating generator on the Python side.
+            py_resume_js(null, reason, resolve_js, reject_js);
+        },
+    );
     proxy_convert_js_to_mp_obj_jsside(ret, out);
 });
 // *FORMAT-ON*
 
-static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t value, mp_obj_t resolve, mp_obj_t reject) {
+static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t resolve, mp_obj_t reject) {
+    if (throw_value != MP_OBJ_NULL && throw_value != mp_const_none) {
+        if (send_value == mp_const_none) {
+            send_value = MP_OBJ_NULL;
+        }
+    } else {
+        throw_value = MP_OBJ_NULL;
+    }
+
     mp_obj_t ret_value;
-    mp_vm_return_kind_t ret_kind = mp_resume(self_in, value, MP_OBJ_NULL, &ret_value);
+    mp_vm_return_kind_t ret_kind = mp_resume(self_in, send_value, throw_value, &ret_value);
 
     uint32_t out_resolve[PVN];
     uint32_t out_reject[PVN];
@@ -321,7 +343,9 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t value, mp_obj_t 
     proxy_convert_mp_to_js_obj_cside(reject, out_reject);
 
     if (ret_kind == MP_VM_RETURN_NORMAL) {
-        js_then_resolve(out_resolve, out_reject);
+        uint32_t out_ret_value[PVN];
+        proxy_convert_mp_to_js_obj_cside(ret_value, out_ret_value);
+        js_then_resolve(out_ret_value, out_resolve, out_reject);
         return mp_const_none;
     } else if (ret_kind == MP_VM_RETURN_YIELD) {
         // ret_value should be a JS thenable
@@ -332,17 +356,19 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t value, mp_obj_t 
         uint32_t out[PVN];
         js_then_continue(ref, out_py_resume, out_resolve, out_reject, out);
         return proxy_convert_js_to_mp_obj_cside(out);
-    } else {
-        // MP_VM_RETURN_EXCEPTION;
-        js_then_reject(out_resolve, out_reject);
-        nlr_raise(ret_value);
+    } else { // ret_kind == MP_VM_RETURN_EXCEPTION;
+        // Pass the exception through as an object to reject the promise (don't raise/throw it).
+        uint32_t out_ret_value[PVN];
+        proxy_convert_mp_to_js_obj_cside(ret_value, out_ret_value);
+        js_then_reject(out_ret_value, out_resolve, out_reject);
+        return mp_const_none;
     }
 }
 
 static mp_obj_t resume_fun(size_t n_args, const mp_obj_t *args) {
-    return proxy_resume_execute(args[0], args[1], args[2], args[3]);
+    return proxy_resume_execute(args[0], args[1], args[2], args[3], args[4]);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(resume_obj, 4, 4, resume_fun);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(resume_obj, 5, 5, resume_fun);
 
 void proxy_c_to_js_resume(uint32_t c_ref, uint32_t *args) {
     nlr_buf_t nlr;
@@ -350,7 +376,7 @@ void proxy_c_to_js_resume(uint32_t c_ref, uint32_t *args) {
         mp_obj_t obj = proxy_c_get_obj(c_ref);
         mp_obj_t resolve = proxy_convert_js_to_mp_obj_cside(args + 1 * 3);
         mp_obj_t reject = proxy_convert_js_to_mp_obj_cside(args + 2 * 3);
-        mp_obj_t ret = proxy_resume_execute(obj, mp_const_none, resolve, reject);
+        mp_obj_t ret = proxy_resume_execute(obj, mp_const_none, mp_const_none, resolve, reject);
         nlr_pop();
         return proxy_convert_mp_to_js_obj_cside(ret, args);
     } else {

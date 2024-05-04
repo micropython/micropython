@@ -221,7 +221,7 @@ static void wiznet5k_init(void) {
         setSn_IMR(0, Sn_IR_RECV);
         #if _WIZCHIP_ == W5100S
         // Enable interrupt pin
-        setMR(MR2_G_IEN);
+        setMR2(getMR2() | MR2_G_IEN);
         #endif
 
         mp_hal_pin_input(wiznet5k_obj.pin_intn);
