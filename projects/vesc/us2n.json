@@ -1,0 +1,26 @@
+
+
+{
+    "name": "Seeed ESP32C2",
+    "verbose": true,
+    "wlan": {
+        "sta": {
+            "essid": "SPARK-SNP8SX",
+            "password": "C9JMGJGHQ2",
+        },
+    },
+    "bridges": [
+        {
+            "tcp": {
+                "bind": ["", 65102],
+            },
+            "uart": {
+                "port": 1,
+                "baudrate": 9600,
+                "bits": 8,
+                "parity": "None",
+                "stop": 1
+            },
+        },
+    ],
+}
