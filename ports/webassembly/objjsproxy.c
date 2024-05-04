@@ -48,9 +48,17 @@ EM_JS(bool, lookup_attr, (int jsref, const char *str, uint32_t * out), {
     const attr = UTF8ToString(str);
     if (attr in base) {
         let value = base[attr];
-        if (typeof value == "function") {
+        if (typeof value === "function") {
             if (base !== globalThis) {
-                value = value.bind(base);
+                if ("_ref" in value) {
+                    // This is a proxy of a Python function, it doesn't need
+                    // binding.  And not binding it means if it's passed back
+                    // to Python then it can be extracted from the proxy as a
+                    // true Python function.
+                } else {
+                    // A function that is not a Python function.  Bind it.
+                    value = value.bind(base);
+                }
             }
         }
         proxy_convert_js_to_mp_obj_jsside(value, out);
@@ -338,6 +346,12 @@ typedef struct _jsproxy_gen_t {
 
 mp_vm_return_kind_t jsproxy_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
     jsproxy_gen_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (throw_value) {
+        *ret_val = throw_value;
+        return MP_VM_RETURN_EXCEPTION;
+    }
+
     switch (self->state) {
         case JSOBJ_GEN_STATE_WAITING:
             self->state = JSOBJ_GEN_STATE_COMPLETED;
@@ -460,9 +474,29 @@ static mp_obj_t jsproxy_new_gen(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
 
 /******************************************************************************/
 
+#if MICROPY_PY_ASYNCIO
+extern mp_obj_t mp_asyncio_context;
+#endif
+
 static mp_obj_t jsproxy_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     mp_obj_jsproxy_t *self = MP_OBJ_TO_PTR(self_in);
     if (has_attr(self->ref, "then")) {
+        #if MICROPY_PY_ASYNCIO
+        // When asyncio is running and the caller here is a task, wrap the JavaScript
+        // thenable in a ThenableEvent, and get the task to wait on that event.  This
+        // decouples the task from the thenable and allows cancelling the task.
+        if (mp_asyncio_context != MP_OBJ_NULL) {
+            mp_obj_t cur_task = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
+            if (cur_task != mp_const_none) {
+                mp_obj_t thenable_event_class = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_ThenableEvent));
+                mp_obj_t thenable_event = mp_call_function_1(thenable_event_class, self_in);
+                mp_obj_t dest[2];
+                mp_load_method(thenable_event, MP_QSTR_wait, dest);
+                mp_obj_t wait_gen = mp_call_method_n_kw(0, 0, dest);
+                return mp_getiter(wait_gen, iter_buf);
+            }
+        }
+        #endif
         return jsproxy_new_gen(self_in, iter_buf);
     } else {
         return jsproxy_new_it(self_in, iter_buf);

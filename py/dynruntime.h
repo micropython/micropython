@@ -29,6 +29,7 @@
 // This header file contains definitions to dynamically implement the static
 // MicroPython runtime API defined in py/obj.h and py/runtime.h.
 
+#include "py/binary.h"
 #include "py/nativeglue.h"
 #include "py/objfun.h"
 #include "py/objstr.h"
@@ -183,6 +184,10 @@ static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type
 
 /******************************************************************************/
 // General runtime functions
+
+#define mp_binary_get_size(struct_type, val_type, palign) (mp_fun_table.binary_get_size((struct_type), (val_type), (palign)))
+#define mp_binary_get_val_array(typecode, p, index) (mp_fun_table.binary_get_val_array((typecode), (p), (index)))
+#define mp_binary_set_val_array(typecode, p, index, val_in) (mp_fun_table.binary_set_val_array((typecode), (p), (index), (val_in)))
 
 #define mp_load_name(qst)                 (mp_fun_table.load_name((qst)))
 #define mp_load_global(qst)               (mp_fun_table.load_global((qst)))

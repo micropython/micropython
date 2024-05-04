@@ -79,7 +79,7 @@ size_t qstr_compute_hash(const byte *data, size_t len) {
 // it is part of the .mpy ABI. See the top of py/persistentcode.c and
 // static_qstr_list in makeqstrdata.py. This pool is unsorted (although in a
 // future .mpy version we could re-order them and make it sorted). It also
-// contains additional qstrs that must have IDs <256, see operator_qstr_list
+// contains additional qstrs that must have IDs <256, see unsorted_qstr_list
 // in makeqstrdata.py.
 #if MICROPY_QSTR_BYTES_IN_HASH
 const qstr_hash_t mp_qstr_const_hashes_static[] = {

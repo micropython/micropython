@@ -28,9 +28,11 @@
 
 #if MICROPY_PY_OPENAMP
 
+#include <stdarg.h>
 #include "py/obj.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/mpprint.h"
 
 #include "metal/sys.h"
 #include "metal/alloc.h"
@@ -74,8 +76,6 @@ static const char openamp_trace_buf[128];
 #define MICROPY_PY_OPENAMP_TRACE_BUF_LEN   sizeof(MICROPY_PY_OPENAMP_TRACE_BUF)
 
 #endif // MICROPY_PY_OPENAMP_RSC_TABLE_ENABLE
-
-#define debug_printf(...)       // mp_printf(&mp_plat_print, __VA_ARGS__)
 
 #if MICROPY_PY_OPENAMP_REMOTEPROC
 extern mp_obj_type_t openamp_remoteproc_type;
@@ -136,7 +136,7 @@ typedef struct _endpoint_obj_t {
 static const mp_obj_type_t endpoint_type;
 
 static int endpoint_recv_callback(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv) {
-    debug_printf("endpoint_recv_callback() message received src: %lu msg len: %d\n", src, len);
+    metal_log(METAL_LOG_DEBUG, "endpoint_recv_callback() message received src: %lu msg len: %d\n", src, len);
     endpoint_obj_t *self = metal_container_of(ept, endpoint_obj_t, ep);
     if (self->callback != mp_const_none) {
         mp_call_function_2(self->callback, mp_obj_new_int(src), mp_obj_new_bytearray_by_ref(len, data));
@@ -174,7 +174,7 @@ static mp_obj_t endpoint_send(uint n_args, const mp_obj_t *pos_args, mp_map_t *k
 
     mp_buffer_info_t rbuf;
     mp_get_buffer_raise(pos_args[1], &rbuf, MP_BUFFER_READ);
-    debug_printf("endpoint_send() msg len: %d\n", rbuf.len);
+    metal_log(METAL_LOG_DEBUG, "endpoint_send() msg len: %d\n", rbuf.len);
 
     int bytes = 0;
     mp_int_t timeout = args[ARG_timeout].u_int;
@@ -258,7 +258,7 @@ void openamp_remoteproc_notified(mp_sched_node_t *node) {
 }
 
 static void openamp_ns_callback(struct rpmsg_device *rdev, const char *name, uint32_t dest) {
-    debug_printf("rpmsg_new_service_callback() new service request name: %s dest %lu\n", name, dest);
+    metal_log(METAL_LOG_DEBUG, "rpmsg_new_service_callback() new service request name: %s dest %lu\n", name, dest);
     // The remote processor advertises its presence to the host by sending
     // the Name Service (NS) announcement containing the name of the channel.
     virtio_dev_obj_t *virtio_device = metal_container_of(rdev, virtio_dev_obj_t, rvdev);
@@ -315,6 +315,13 @@ static mp_obj_t openamp_new_service_callback(mp_obj_t ns_callback) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(openamp_new_service_callback_obj, openamp_new_service_callback);
 
+void openamp_metal_log_handler(enum metal_log_level level, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    mp_vprintf(&mp_plat_print, fmt, args);
+    va_end(args);
+}
+
 void openamp_init(void) {
     if (MP_STATE_PORT(virtio_device) != NULL) {
         // Already initialized.
@@ -322,7 +329,14 @@ void openamp_init(void) {
     }
 
     struct metal_device *device;
-    struct metal_init_params metal_params = METAL_INIT_DEFAULTS;
+    struct metal_init_params metal_params = { 0 };
+
+    #if METAL_LOG_HANDLER_ENABLE
+    // If logging is enabled, set the default log level and handler before
+    // calling metal_init, to allow ports to override them in metal_sys_init.
+    metal_params.log_level = METAL_LOG_DEBUG;
+    metal_params.log_handler = openamp_metal_log_handler;
+    #endif
 
     // Initialize libmetal.
     metal_init(&metal_params);

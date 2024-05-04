@@ -104,7 +104,7 @@ void mp_js_do_import(const char *name, uint32_t *out) {
     }
 }
 
-void mp_js_do_exec(const char *src, uint32_t *out) {
+void mp_js_do_exec(const char *src, size_t len, uint32_t *out) {
     // Collect at the top-level, where there are no root pointers from stack/registers.
     gc_collect_start();
     gc_collect_end();
@@ -112,7 +112,7 @@ void mp_js_do_exec(const char *src, uint32_t *out) {
     mp_parse_input_kind_t input_kind = MP_PARSE_FILE_INPUT;
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        mp_lexer_t *lex = mp_lexer_new_from_str_len_dedent(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len_dedent(MP_QSTR__lt_stdin_gt_, src, len, 0);
         qstr source_name = lex->source_name;
         mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, false);
@@ -125,9 +125,9 @@ void mp_js_do_exec(const char *src, uint32_t *out) {
     }
 }
 
-void mp_js_do_exec_async(const char *src, uint32_t *out) {
+void mp_js_do_exec_async(const char *src, size_t len, uint32_t *out) {
     mp_compile_allow_top_level_await = true;
-    mp_js_do_exec(src, out);
+    mp_js_do_exec(src, len, out);
     mp_compile_allow_top_level_await = false;
 }
 

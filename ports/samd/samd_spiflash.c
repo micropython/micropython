@@ -49,6 +49,9 @@ const uint8_t _COMMANDS_32BIT[] = {0x13, 0x12, 0x21};  // READ, PROGRAM_PAGE, ER
 #define COMMAND_READ_SFDP (0x5A)
 #define PAGE_SIZE (256)
 #define SECTOR_SIZE (4096)
+#ifndef MICROPY_HW_SPIFLASH_BAUDRATE
+#define MICROPY_HW_SPIFLASH_BAUDRATE (24000000)
+#endif
 
 typedef struct _spiflash_obj_t {
     mp_obj_base_t base;
@@ -136,7 +139,7 @@ static mp_obj_t spiflash_make_new(const mp_obj_type_t *type, size_t n_args, size
 
     mp_obj_t spi_args[] = {
         MP_OBJ_NEW_SMALL_INT(MICROPY_HW_SPIFLASH_ID),
-        MP_OBJ_NEW_SMALL_INT(24000000),  // baudrate
+        MP_OBJ_NEW_SMALL_INT(MICROPY_HW_SPIFLASH_BAUDRATE),
         MP_OBJ_NEW_QSTR(MP_QSTR_mosi), MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_MOSI),
         MP_OBJ_NEW_QSTR(MP_QSTR_miso), MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_MISO),
         MP_OBJ_NEW_QSTR(MP_QSTR_sck), MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_SCK),

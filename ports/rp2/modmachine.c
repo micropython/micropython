@@ -127,10 +127,10 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     const uint32_t xosc_hz = XOSC_MHZ * 1000000;
 
-    uint32_t my_interrupts = save_and_disable_interrupts();
+    uint32_t my_interrupts = mp_thread_begin_atomic_section();
     #if MICROPY_PY_NETWORK_CYW43
     if (cyw43_has_pending && cyw43_poll != NULL) {
-        restore_interrupts(my_interrupts);
+        mp_thread_end_atomic_section(my_interrupts);
         return;
     }
     #endif
@@ -165,8 +165,15 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     } else {
         uint32_t sleep_en0 = clocks_hw->sleep_en0;
         uint32_t sleep_en1 = clocks_hw->sleep_en1;
+        bool timer3_enabled = irq_is_enabled(3);
+
         clocks_hw->sleep_en0 = CLOCKS_SLEEP_EN0_CLK_RTC_RTC_BITS;
         if (use_timer_alarm) {
+            // Make sure ALARM3/IRQ3 is enabled on _this_ core
+            timer_hw->inte |= 1 << 3;
+            if (!timer3_enabled) {
+                irq_set_enabled(3, true);
+            }
             // Use timer alarm to wake.
             clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_SYS_TIMER_BITS;
             timer_hw->alarm[3] = timer_hw->timerawl + delay_ms * 1000;
@@ -177,6 +184,9 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         scb_hw->scr |= M0PLUS_SCR_SLEEPDEEP_BITS;
         __wfi();
         scb_hw->scr &= ~M0PLUS_SCR_SLEEPDEEP_BITS;
+        if (!timer3_enabled) {
+            irq_set_enabled(3, false);
+        }
         clocks_hw->sleep_en0 = sleep_en0;
         clocks_hw->sleep_en1 = sleep_en1;
     }
@@ -186,7 +196,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     // Bring back all clocks.
     clocks_init();
-    restore_interrupts(my_interrupts);
+    mp_thread_end_atomic_section(my_interrupts);
 }
 
 NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {

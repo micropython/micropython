@@ -89,7 +89,22 @@ function proxy_call_python(target, argumentsList) {
     if (argumentsList.length > 0) {
         Module._free(args);
     }
-    return proxy_convert_mp_to_js_obj_jsside_with_free(value);
+    const ret = proxy_convert_mp_to_js_obj_jsside_with_free(value);
+    if (ret instanceof PyProxyThenable) {
+        // In Python when an async function is called it creates the
+        // corresponding "generator", which must then be executed at
+        // the top level by an asyncio-like scheduler.  In JavaScript
+        // the semantics for async functions is that they are started
+        // immediately (their non-async prefix code is executed immediately)
+        // and only if they await do they return a Promise to delay the
+        // execution of the remainder of the function.
+        //
+        // Emulate the JavaScript behaviour here by resolving the Python
+        // async function.  We assume that the caller who gets this
+        // return is JavaScript.
+        return Promise.resolve(ret);
+    }
+    return ret;
 }
 
 function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
@@ -120,10 +135,11 @@ function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
         Module.stringToUTF8(js_obj, buf, len + 1);
         Module.setValue(out + 4, len, "i32");
         Module.setValue(out + 8, buf, "i32");
-    } else if (js_obj instanceof PyProxy) {
-        kind = PROXY_KIND_JS_PYPROXY;
-        Module.setValue(out + 4, js_obj._ref, "i32");
-    } else if (js_obj instanceof PyProxyThenable) {
+    } else if (
+        js_obj instanceof PyProxy ||
+        (typeof js_obj === "function" && "_ref" in js_obj) ||
+        js_obj instanceof PyProxyThenable
+    ) {
         kind = PROXY_KIND_JS_PYPROXY;
         Module.setValue(out + 4, js_obj._ref, "i32");
     } else {
@@ -136,7 +152,11 @@ function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
 }
 
 function proxy_convert_js_to_mp_obj_jsside_force_double_proxy(js_obj, out) {
-    if (js_obj instanceof PyProxy) {
+    if (
+        js_obj instanceof PyProxy ||
+        (typeof js_obj === "function" && "_ref" in js_obj) ||
+        js_obj instanceof PyProxyThenable
+    ) {
         const kind = PROXY_KIND_JS_OBJECT;
         const id = proxy_js_ref.length;
         proxy_js_ref[id] = js_obj;
@@ -197,6 +217,7 @@ function proxy_convert_mp_to_js_obj_jsside(value) {
             obj = (...args) => {
                 return proxy_call_python(id, args);
             };
+            obj._ref = id;
         } else if (kind === PROXY_KIND_MP_GENERATOR) {
             obj = new PyProxyThenable(id);
         } else {

@@ -156,7 +156,7 @@ static MP_DEFINE_CONST_OBJ_TYPE(
 // Task class
 
 // This is the core asyncio context with cur_task, _task_queue and CancelledError.
-static mp_obj_t asyncio_context = MP_OBJ_NULL;
+mp_obj_t mp_asyncio_context = MP_OBJ_NULL;
 
 static mp_obj_t task_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
@@ -168,7 +168,7 @@ static mp_obj_t task_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     self->state = TASK_STATE_RUNNING_NOT_WAITED_ON;
     self->ph_key = MP_OBJ_NEW_SMALL_INT(0);
     if (n_args == 2) {
-        asyncio_context = args[1];
+        mp_asyncio_context = args[1];
     }
     return MP_OBJ_FROM_PTR(self);
 }
@@ -186,7 +186,7 @@ static mp_obj_t task_cancel(mp_obj_t self_in) {
         return mp_const_false;
     }
     // Can't cancel self (not supported yet).
-    mp_obj_t cur_task = mp_obj_dict_get(asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
+    mp_obj_t cur_task = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
     if (self_in == cur_task) {
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("can't cancel self"));
     }
@@ -195,7 +195,7 @@ static mp_obj_t task_cancel(mp_obj_t self_in) {
         self = MP_OBJ_TO_PTR(self->data);
     }
 
-    mp_obj_t _task_queue = mp_obj_dict_get(asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR__task_queue));
+    mp_obj_t _task_queue = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR__task_queue));
 
     // Reschedule Task as a cancelled task.
     mp_obj_t dest[3];
@@ -218,7 +218,7 @@ static mp_obj_t task_cancel(mp_obj_t self_in) {
         task_queue_push(2, dest);
     }
 
-    self->data = mp_obj_dict_get(asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_CancelledError));
+    self->data = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_CancelledError));
 
     return mp_const_true;
 }
@@ -278,7 +278,7 @@ static mp_obj_t task_iternext(mp_obj_t self_in) {
         nlr_raise(self->data);
     } else {
         // Put calling task on waiting queue.
-        mp_obj_t cur_task = mp_obj_dict_get(asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
+        mp_obj_t cur_task = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
         mp_obj_t args[2] = { self->state, cur_task };
         task_queue_push(2, args);
         // Set calling task's data to this task that it waits on, to double-link it.
