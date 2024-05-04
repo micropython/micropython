@@ -3,12 +3,12 @@
   "docs": "",
   "features": [
     "Battery Charging",
-    "RGB LED",
-    "SPIRAM",
-    "USB-C",
     "WiFi",
     "BLE",
     "SD CARD SLOT",
+    "RGB LED",
+    "SPIRAM",
+    "USB-C",
     "STEMMA QT/QWIIC",
     "Breadboard friendly"
   ],
