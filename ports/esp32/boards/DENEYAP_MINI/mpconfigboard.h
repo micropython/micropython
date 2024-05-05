@@ -1,0 +1,13 @@
+#define MICROPY_HW_BOARD_NAME "Deneyap Mini"
+#define MICROPY_HW_MCU_NAME "ESP32-S2FH4"
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "DeneyapMini"
+
+#define MICROPY_PY_BLUETOOTH      (0)
+#define MICROPY_HW_ENABLE_SDCARD  (0)
+
+#define MICROPY_HW_I2C0_SCL       (37)
+#define MICROPY_HW_I2C0_SDA       (36)
+
+#define MICROPY_HW_SPI1_MOSI      (40)
+#define MICROPY_HW_SPI1_MISO      (39)
+#define MICROPY_HW_SPI1_SCK       (38)
