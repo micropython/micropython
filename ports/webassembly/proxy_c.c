@@ -65,6 +65,12 @@ void proxy_c_init(void) {
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t proxy_c_ref);
 
+static inline size_t proxy_c_add_obj(mp_obj_t obj) {
+    size_t id = ((mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref)))->len;
+    mp_obj_list_append(MP_STATE_PORT(proxy_c_ref), obj);
+    return id;
+}
+
 static inline mp_obj_t proxy_c_get_obj(uint32_t c_ref) {
     return ((mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref)))->items[c_ref];
 }
@@ -122,9 +128,7 @@ void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out) {
         } else {
             kind = PROXY_KIND_MP_OBJECT;
         }
-        size_t id = ((mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref)))->len;
-        mp_obj_list_append(MP_STATE_PORT(proxy_c_ref), obj);
-        out[1] = id;
+        out[1] = proxy_c_add_obj(obj);
     }
     out[0] = kind;
 }
@@ -282,6 +286,38 @@ void proxy_c_to_js_get_dict(uint32_t c_ref, uint32_t *out) {
     mp_map_t *map = mp_obj_dict_get_map(obj);
     out[0] = map->alloc;
     out[1] = (uintptr_t)map->table;
+}
+
+/******************************************************************************/
+// Bridge Python iterator to JavaScript iterator protocol.
+
+uint32_t proxy_c_to_js_get_iter(uint32_t c_ref) {
+    mp_obj_t obj = proxy_c_get_obj(c_ref);
+    mp_obj_t iter = mp_getiter(obj, NULL);
+    return proxy_c_add_obj(iter);
+}
+
+bool proxy_c_to_js_iternext(uint32_t c_ref, uint32_t *out) {
+    mp_obj_t obj = proxy_c_get_obj(c_ref);
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t iter = mp_iternext_allow_raise(obj);
+        if (iter == MP_OBJ_STOP_ITERATION) {
+            nlr_pop();
+            return false;
+        }
+        nlr_pop();
+        proxy_convert_mp_to_js_obj_cside(iter, out);
+        return true;
+    } else {
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+            return false;
+        } else {
+            // uncaught exception
+            proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
+            return true;
+        }
+    }
 }
 
 /******************************************************************************/
