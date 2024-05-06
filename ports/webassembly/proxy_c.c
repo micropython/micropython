@@ -289,14 +289,13 @@ void proxy_c_to_js_get_dict(uint32_t c_ref, uint32_t *out) {
 
 static const mp_obj_fun_builtin_var_t resume_obj;
 
-EM_JS(void, js_then_resolve, (uint32_t * ret_value, uint32_t * resolve, uint32_t * reject), {
+EM_JS(void, js_then_resolve, (uint32_t * ret_value, uint32_t * resolve), {
     const ret_value_js = proxy_convert_mp_to_js_obj_jsside(ret_value);
     const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
-    const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
     resolve_js(ret_value_js);
 });
 
-EM_JS(void, js_then_reject, (uint32_t * ret_value, uint32_t * resolve, uint32_t * reject), {
+EM_JS(void, js_then_reject, (uint32_t * ret_value, uint32_t * reject), {
     // The ret_value object should be a Python exception.  Convert it to a
     // JavaScript PythonError and pass it as the reason to reject the promise.
     let ret_value_js;
@@ -305,7 +304,6 @@ EM_JS(void, js_then_reject, (uint32_t * ret_value, uint32_t * resolve, uint32_t 
     } catch(error) {
         ret_value_js = error;
     }
-    const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
     const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
     reject_js(ret_value_js);
 });
@@ -344,30 +342,33 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t send_value, mp_o
     mp_obj_t ret_value;
     mp_vm_return_kind_t ret_kind = mp_resume(self_in, send_value, throw_value, &ret_value);
 
-    uint32_t out_resolve[PVN];
-    uint32_t out_reject[PVN];
-    proxy_convert_mp_to_js_obj_cside(resolve, out_resolve);
-    proxy_convert_mp_to_js_obj_cside(reject, out_reject);
-
     if (ret_kind == MP_VM_RETURN_NORMAL) {
         uint32_t out_ret_value[PVN];
+        uint32_t out_resolve[PVN];
         proxy_convert_mp_to_js_obj_cside(ret_value, out_ret_value);
-        js_then_resolve(out_ret_value, out_resolve, out_reject);
+        proxy_convert_mp_to_js_obj_cside(resolve, out_resolve);
+        js_then_resolve(out_ret_value, out_resolve);
         return mp_const_none;
     } else if (ret_kind == MP_VM_RETURN_YIELD) {
         // ret_value should be a JS thenable
         mp_obj_t py_resume = mp_obj_new_bound_meth(MP_OBJ_FROM_PTR(&resume_obj), self_in);
         int ref = mp_obj_jsproxy_get_ref(ret_value);
         uint32_t out_py_resume[PVN];
+        uint32_t out_resolve[PVN];
+        uint32_t out_reject[PVN];
         proxy_convert_mp_to_js_obj_cside(py_resume, out_py_resume);
+        proxy_convert_mp_to_js_obj_cside(resolve, out_resolve);
+        proxy_convert_mp_to_js_obj_cside(reject, out_reject);
         uint32_t out[PVN];
         js_then_continue(ref, out_py_resume, out_resolve, out_reject, out);
         return proxy_convert_js_to_mp_obj_cside(out);
     } else { // ret_kind == MP_VM_RETURN_EXCEPTION;
         // Pass the exception through as an object to reject the promise (don't raise/throw it).
         uint32_t out_ret_value[PVN];
+        uint32_t out_reject[PVN];
         proxy_convert_mp_to_js_exc_cside(ret_value, out_ret_value);
-        js_then_reject(out_ret_value, out_resolve, out_reject);
+        proxy_convert_mp_to_js_obj_cside(reject, out_reject);
+        js_then_reject(out_ret_value, out_reject);
         return mp_const_none;
     }
 }
