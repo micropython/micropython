@@ -60,8 +60,10 @@ EXPORTED_FUNCTIONS_EXTRA += ,\
 	_proxy_c_to_js_dir,\
 	_proxy_c_to_js_get_array,\
 	_proxy_c_to_js_get_dict,\
+	_proxy_c_to_js_get_iter,\
 	_proxy_c_to_js_get_type,\
 	_proxy_c_to_js_has_attr,\
+	_proxy_c_to_js_iternext,\
 	_proxy_c_to_js_lookup_attr,\
 	_proxy_c_to_js_resume,\
 	_proxy_c_to_js_store_attr,\
