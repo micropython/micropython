@@ -147,7 +147,7 @@ EM_JS(void, js_reflect_construct, (int f_ref, uint32_t n_args, uint32_t * args, 
     const f = proxy_js_ref[f_ref];
     const as = [];
     for (let i = 0; i < n_args; ++i) {
-        as.push(proxy_convert_mp_to_js_obj_jsside(args + i * 4));
+        as.push(proxy_convert_mp_to_js_obj_jsside(args + i * 3 * 4));
     }
     const ret = Reflect.construct(f, as);
     proxy_convert_js_to_mp_obj_jsside(ret, out);
@@ -242,7 +242,7 @@ static mp_obj_t jsproxy_reflect_construct(size_t n_args, const mp_obj_t *args) {
     for (unsigned int i = 0; i < n_args; ++i) {
         proxy_convert_mp_to_js_obj_cside(args[i], &args_conv[i * PVN]);
     }
-    uint32_t out[3];
+    uint32_t out[PVN];
     js_reflect_construct(arg0, n_args, args_conv, out);
     return proxy_convert_js_to_mp_obj_cside(out);
 }
