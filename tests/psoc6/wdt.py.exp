@@ -1,0 +1,31 @@
+
+***** Test 1: Wrong WDT id *****
+
+FAIL
+
+***** Test 2: WDT timeout too low *****
+
+FAIL
+
+***** Test 3: WDT timeout too high *****
+
+FAIL
+
+***** Test 4: WDT created successfully 6s *****
+
+<WDT>
+PASS
+
+***** Test 5: WDT feed after 500ms *****
+
+<WDT>
+PASS
+
+***** Test 6: WDT feed after 900ms *****
+
+<WDT>
+PASS
+
+***** Test 7: trying to create WDT 2nd instance *****
+
+FAIL
