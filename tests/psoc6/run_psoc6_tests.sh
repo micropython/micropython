@@ -22,6 +22,7 @@ usage() {
   echo "  --dev0        device to be used"
   echo "  --dev1        second device to be used (for multi test)"
   echo "  --psoc6       run only psoc6 port related tests"
+  echo "  --psoc6-wdt   run only psoc6 port wdt tests"
   echo "  --psoc6-hwext run only psoc6 port hardware extended related tests"
   echo "  --psoc6-multi run only psoc6 port multi tests (requires 2 instances)"
   exit 1;
@@ -34,13 +35,14 @@ for arg in "$@"; do
     '--dev0')         set -- "$@" '-d'   ;;
     '--dev1')         set -- "$@" '-e'   ;;
     '--psoc6')        set -- "$@" '-p'   ;;
+    '--psoc6-wdt')    set -- "$@" '-q'   ;;
     '--psoc6-multi')  set -- "$@" '-m'   ;;
     '--psoc6-hwext')  set -- "$@" '-t'   ;;
     *)                set -- "$@" "$arg" ;;
   esac
 done
 
-while getopts "abcd:e:fhimnptwvx" o; do
+while getopts "abcd:e:fhimnpqtwvx" o; do
   case "${o}" in
     a)
        all=1
@@ -75,6 +77,9 @@ while getopts "abcd:e:fhimnptwvx" o; do
     p)
        psoc6Only=1
        ;;
+    q)
+       psoc6WdtOnly=1
+       ;;
     w)
        wifi=1
        ;;
@@ -93,11 +98,9 @@ while getopts "abcd:e:fhimnptwvx" o; do
   esac
 done
 
-
 if [ -z "${all}" ]; then
   all=0
 fi
-
 
 if [ -z "${cleanResultsDirectoryFirst}" ]; then
   cleanResultsDirectoryFirst=0
@@ -149,6 +152,10 @@ fi
 
 if [ -z "${psoc6Only}" ]; then
   psoc6Only=0
+fi
+
+if [ -z "${psoc6WdtOnly}" ]; then
+  psoc6WdtOnly=0
 fi
 
 if [ -z "${hwext}" ]; then
@@ -386,6 +393,9 @@ if [ ${implemented} -eq 1 ]; then
         -e unicode/file1.py \
         -e unicode/file2.py \
         -e unicode/file_invalid.py \
+        \
+        -e psoc6/wdt.py \
+        -e psoc6/wdt_reset_check.py \
     | tee -a ${resultsFile}
   
   echo
@@ -400,6 +410,29 @@ if [ ${psoc6Only} -eq 1 ]; then
   echo
 
   ./run-tests.py --target psoc6 --device ${device0} -d psoc6 \
+        \
+        -e psoc6/wdt.py \
+        -e psoc6/wdt_reset_check.py \
+    | tee -a ${resultsFile}
+  
+  echo
+  echo "  done."
+  echo
+
+fi
+
+if [ ${psoc6WdtOnly} -eq 1 ]; then
+
+  echo "  running only psoc6 wdt tests ..."
+  echo
+
+  ./run-tests.py --target psoc6 --device ${device0} psoc6/wdt.py \
+    | tee -a ${resultsFile}
+  
+  # A delay is added here for the device to come out of watchdog reset
+  sleep 3
+
+  ./run-tests.py --target psoc6 --device ${device0} psoc6/wdt_reset_check.py \
     | tee -a ${resultsFile}
   
   echo
