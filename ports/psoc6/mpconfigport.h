@@ -123,6 +123,8 @@
 #define MICROPY_PY_MACHINE_I2C_SLAVE            (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
 #define MICROPY_PY_MACHINE_BITSTREAM            (1)
+#define MICROPY_PY_MACHINE_WDT                  (1)
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE      "ports/psoc6/machine_wdt.c"
 
 #define MICROPY_PY_MACHINE_SPI                  (1)
 #define MICROPY_PY_MACHINE_SPI_MSB              (0)
