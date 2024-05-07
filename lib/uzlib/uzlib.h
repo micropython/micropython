@@ -86,6 +86,9 @@ typedef struct _uzlib_uncomp_t {
        source_limit fields, thus allowing for buffered operation. */
     void *source_read_data;
     int (*source_read_cb)(void *);
+    /* Source callback context parameter not used by the library itself.
+       User can use it to pass additional data to source_read_cb. */
+    void *source_read_cb_context;
 
     unsigned int tag;
     unsigned int bitcount;
