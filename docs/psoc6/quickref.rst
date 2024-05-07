@@ -353,6 +353,21 @@ See :ref:`machine.RTC <machine.RTC>` ::
     calculate the right weekday based on the year, date and month passed. However, datetime() will not raise an error 
     for this, but rather re-write the field with last calculated actual value.
 
+Watch dog timer (WDT)
+---------------------
+
+See :ref:`machine.WDT <machine.WDT>` ::
+
+    from machine import WDT
+
+    wdt = WDT()
+    wdt.init(timeout=2000)  # initialize wdt with id = 0 (default),
+                            # timeout in milliseconds
+    wdt.feed() # feed the wdt periodically before the timeout.
+
+.. note::
+    The minimum timeout is 1 millisecond and the maximum timeout is 6000 milliseconds.
+
 Network Module
 --------------
 
