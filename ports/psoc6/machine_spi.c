@@ -24,6 +24,7 @@
 #define DEFAULT_SPI_PHASE       (0)
 #define DEFAULT_SPI_BITS        (8)
 #define DEFAULT_SPI_FIRSTBIT    (0) // msb
+#define DEFAULT_SPI_SSEL_PIN    (NC)
 
 
 #define spi_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
@@ -142,7 +143,9 @@ static inline void spi_miso_alloc(machine_spi_obj_t *spi_obj, mp_obj_t pin_name)
 static inline void spi_sck_free(machine_spi_obj_t *spi_obj) {
     pin_phy_free(spi_obj->sck);
 }
-
+static inline void spi_ssel_free(machine_spi_obj_t *spi_obj) {
+    pin_phy_free(spi_obj->ssel);
+}
 static inline void spi_mosi_free(machine_spi_obj_t *spi_obj) {
     pin_phy_free(spi_obj->mosi);
 }
@@ -184,7 +187,7 @@ mp_obj_t machine_spi_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_BITS} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
-        { MP_QSTR_ssel,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_ssel,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
         { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -286,20 +289,21 @@ static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     uint8_t rx_temp_buf[len];
     uint8_t write_fill = 0xFF;
 
-    // Case 1: rx is NULL - (write operation)
+    // write
     if (rx == NULL) {
         tx_buf = tx;
         memset(rx_temp_buf, 0x01, len * sizeof(uint8_t));
         rx_buf = rx_temp_buf;
-    }
-    // Case 2: tx and rx equal --> read(), readinto() and write_readinto() with tx and rx same buffers
-    else {
+    } else {
+        // read(), readinto() and write_readinto() with tx and rx same buffers
         if (tx == rx || tx == NULL) {
             memcpy(tx_temp_buf, tx, len * sizeof(uint8_t));
             tx_buf = tx_temp_buf;
             rx_buf = rx;
             write_fill = tx_temp_buf[0];
-        } else {
+        }
+        // write_readinto() with tx and rx different buffers
+        else {
             tx_buf = tx;
             rx_buf = rx;
         }
@@ -313,6 +317,7 @@ static void machine_spi_deinit(mp_obj_base_t *self_in) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     cyhal_spi_free(&self->spi_obj);
     spi_sck_free(self);
+    spi_ssel_free(self);
     spi_mosi_free(self);
     spi_miso_free(self);
     spi_obj_free(self);
@@ -391,13 +396,13 @@ static MP_DEFINE_CONST_FUN_OBJ_3(machine_spi_slave_write_readinto_obj, machine_s
 
 static const mp_rom_map_elem_t machine_spi_slave_locals_dict_table[] = {
     // Functions
-    { MP_ROM_QSTR(MP_QSTR_read),         MP_ROM_PTR(&machine_spi_slave_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write),        MP_ROM_PTR(&machine_spi_slave_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write_readinto),        MP_ROM_PTR(&machine_spi_slave_write_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit),       MP_ROM_PTR(&machine_spi_slave_deinit_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_MSB), MP_ROM_INT(MICROPY_PY_MACHINE_SPISLAVE_MSB) },
-    { MP_ROM_QSTR(MP_QSTR_LSB), MP_ROM_INT(MICROPY_PY_MACHINE_SPISLAVE_LSB) },
+    { MP_ROM_QSTR(MP_QSTR_read),           MP_ROM_PTR(&machine_spi_slave_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write),          MP_ROM_PTR(&machine_spi_slave_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&machine_spi_slave_write_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),         MP_ROM_PTR(&machine_spi_slave_deinit_obj) },
+    // constants
+    { MP_ROM_QSTR(MP_QSTR_MSB),            MP_ROM_INT(MICROPY_PY_MACHINE_SPISLAVE_MSB) },
+    { MP_ROM_QSTR(MP_QSTR_LSB),            MP_ROM_INT(MICROPY_PY_MACHINE_SPISLAVE_LSB) },
 };
 static MP_DEFINE_CONST_DICT(machine_spi_slave_locals_dict, machine_spi_slave_locals_dict_table);
 

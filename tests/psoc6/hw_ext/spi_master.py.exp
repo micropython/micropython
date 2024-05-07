@@ -1,0 +1,18 @@
+*** SPI MASTER INSTANCE ***
+
+*** Half duplex communication ***
+
+Test Case 1: master-->write and slave-->read
+Master wrote (tx):       b'\x08\x06\x04\x02\x07\x05\x03\x01'
+Slave returned (rx):     b'\x08\x06\x04\x02\x07\x05\x03\x01'
+Test case successful :   True
+
+Test Case 2: slave-->write and master-->read using readinto()
+Slave wrote (rx):        bytearray(b'\x01\x03\x05\x07\x02\x04\x06\x08')
+Master expects (exp):    b'\x01\x03\x05\x07\x02\x04\x06\x08'
+Test case successful :   True
+
+Test Case 3: slave-->write and master-->read using readinto by sending out a write_byte=5
+Slave wrote (rx):        bytearray(b'\x08\x06\x04\x02\x08\x06\x04\x02')
+Master expects (exp):    b'\x08\x06\x04\x02\x08\x06\x04\x02'
+Test case successful :   True

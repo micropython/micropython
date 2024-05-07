@@ -1,4 +1,5 @@
 from __future__ import print_function
+from itertools import islice
 import argparse
 import sys
 import csv
@@ -50,7 +51,11 @@ def generate_pins_csv(pin_package_filename, pins_csv_filename):
         with open("./" + pins_csv_filename, "w", newline="") as csv_file:
             csv_writer = csv.writer(csv_file)
             csv_writer.writerows(
-                [[value, value] for value in enum_values if value.startswith("P")]
+                [
+                    [value, value]
+                    for value in enum_values
+                    if value.startswith("P") or value.startswith("N")
+                ]
             )
         print("// pins.csv generated successfully")
     else:
@@ -75,11 +80,18 @@ def generate_af_pins_csv(pin_package_filename, pins_af_csv_filename):
 
         # Extract enum values using regex
         pin_name = re.findall(r"\b(?!NC\b)(\w+)\s*=", enum_content)
+        # pin_name = re.findall(r"\b(\w+)\s*=", enum_content)
         pin_def = re.findall(r"=\s*(.*?\))", enum_content)
+        # pin_def.insert(0, "255")
+        # print(pin_def)
+
         # Write enum values to a CSV file
         with open("./" + pins_af_csv_filename, "w", newline="") as csv_file:
+            NC_pin = ["NC", 255, "CYHAL_GET_GPIO(CYHAL_PORT_31, 7)"]  # non-existent port
             csv_writer = csv.writer(csv_file)
+            csv_writer.writerow(NC_pin)
             for pname, pdef in zip(pin_name, pin_def):
+                # for pname, pdef in zip(islice(pin_name, 1, None), pin_def):
                 # if pin_name[pname].startswith('P'):
                 val = get_pin_addr_helper(pdef)
                 csv_writer.writerow([pname, val, pdef.strip('"')])
