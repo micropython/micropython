@@ -472,6 +472,8 @@ static void mp_usbd_disconnect(mp_obj_usb_device_t *usbd) {
     #if MICROPY_HW_USB_CDC
     // Ensure no pending static CDC writes, as these can cause TinyUSB to crash
     tud_cdc_write_clear();
+    // Prevent cdc write flush from initiating any new transfers while disconnecting
+    usbd_edpt_stall(USBD_RHPORT, USBD_CDC_EP_IN);
     #endif
 
     bool was_connected = tud_connected();
