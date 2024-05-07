@@ -152,7 +152,11 @@ export async function loadMicroPython(options) {
                 [buf, len, value],
             );
             Module._free(buf);
-            return proxy_convert_mp_to_js_obj_jsside_with_free(value);
+            const ret = proxy_convert_mp_to_js_obj_jsside_with_free(value);
+            if (ret instanceof PyProxyThenable) {
+                return Promise.resolve(ret);
+            }
+            return ret;
         },
         replInit() {
             Module.ccall("mp_js_repl_init", "null", ["null"]);
