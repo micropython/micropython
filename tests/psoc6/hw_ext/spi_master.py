@@ -18,6 +18,29 @@ if "CY8CPROTO-062-4343W" in machine:
     miso_master_pin = "P6_1"
     ssel_master_pin = "P6_3"
 
+
+print("\n*** SPI MASTER INSTANCE ***\n")
+
+try:
+    spi = SPI(ssel=ssel_master_pin)
+except Exception as e:
+    print(e)
+
+try:
+    spi = SPISlave(sck=sck_master_pin)
+except Exception as e:
+    print(e)
+
+try:
+    spi = SoftSPI(mosi=mosi_master_pin)
+except Exception as e:
+    print(e)
+
+try:
+    spi = SoftSPI(miso=miso_master_pin)
+except Exception as e:
+    print(e)
+
 signal_received = False
 
 
@@ -52,6 +75,20 @@ def spi_master_configure():
         bits=8,
         firstbit=SPI.MSB,
         ssel=ssel_master_pin,
+        sck=sck_master_pin,
+        mosi=mosi_master_pin,
+        miso=miso_master_pin,
+    )
+    return spi_obj
+
+
+def soft_spi_master_configure():
+    spi_obj = SoftSPI(
+        baudrate=1000000,
+        polarity=0,
+        phase=0,
+        bits=8,
+        firstbit=SPI.MSB,
         sck=sck_master_pin,
         mosi=mosi_master_pin,
         miso=miso_master_pin,
@@ -104,8 +141,6 @@ def spi_full_duplex_communication(spi_obj, tx, rx):
     spi_obj.write_readinto(tx, rx)
 
 
-print("\n*** SPI MASTER INSTANCE ***")
-
 spi_obj = spi_master_configure()
 
 # tx_buf = b"\x08"
@@ -116,3 +151,7 @@ spi_half_duplex_communication(spi_obj, tx_buf, rx_buf)
 tx_buf = b"\x08\x06\x04\x02\x07\x05\x03\x01"
 rx_buf = bytearray(8)
 # spi_full_duplex_communication(spi_obj, tx_buf, rx_buf)
+
+spi_obj.deinit()
+spi_obj = soft_spi_master_configure()
+spi_obj.deinit()

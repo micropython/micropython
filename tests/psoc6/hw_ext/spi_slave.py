@@ -104,7 +104,6 @@ def spi_half_duplex_communication(spi_obj, tx, rx):
     spi_obj.write(tx)
     # spi_obj.read(write_byte)
     # print("write_byte: ", write_byte)
-    # _slave_ready_to_write()
 
 
 def spi_full_duplex_communication(spi_obj, tx, rx):
@@ -124,4 +123,6 @@ spi_half_duplex_communication(spi_obj, tx_buf, rx_buf)
 
 tx_buf = b"\x06\x06\x05\x05\x06\x06\x05\x05"
 rx_buf = bytearray(8)
-spi_full_duplex_communication(spi_obj, tx_buf, rx_buf)
+# spi_full_duplex_communication(spi_obj, tx_buf, rx_buf)
+
+spi_obj.deinit()

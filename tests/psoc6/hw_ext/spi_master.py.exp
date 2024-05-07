@@ -1,5 +1,10 @@
 *** SPI MASTER INSTANCE ***
 
+Init failed as all required arguments not passed!
+Init failed as all required arguments not passed!
+must specify all of sck/mosi/miso
+must specify all of sck/mosi/miso
+
 *** Half duplex communication ***
 
 Test Case 1: master-->write and slave-->read
@@ -16,3 +21,5 @@ Test Case 3: slave-->write and master-->read using readinto by sending out a wri
 Slave wrote (rx):        bytearray(b'\x08\x06\x04\x02\x08\x06\x04\x02')
 Master expects (exp):    b'\x08\x06\x04\x02\x08\x06\x04\x02'
 Test case successful :   True
+
+
