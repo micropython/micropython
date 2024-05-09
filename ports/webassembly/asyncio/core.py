@@ -75,7 +75,7 @@ class ThenableEvent:
         self.waiting = None  # Task waiting on completion of this thenable
         thenable.then(self.set)
 
-    def set(self, value):
+    def set(self, value=None):
         # Thenable/Promise is fulfilled, set result and schedule any waiting task.
         self.result = value
         if self.waiting:
