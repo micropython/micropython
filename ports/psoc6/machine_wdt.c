@@ -79,3 +79,7 @@ static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t
 static void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
     cyhal_wdt_kick(&psoc6_wdt);
 }
+
+void mod_wdt_deinit() {
+    cyhal_wdt_free(&psoc6_wdt);
+}

@@ -60,6 +60,7 @@ extern void mod_adc_block_deinit(void);
 extern void mod_i2c_deinit(void);
 extern void mod_pwm_deinit(void);
 extern void mod_spi_deinit(void);
+extern void mod_wdt_deinit(void);
 
 void mpy_task(void *arg);
 
@@ -179,6 +180,7 @@ soft_reset:
 
     // Deinitialize modules
     machine_deinit();
+    mod_wdt_deinit();
     mod_pin_deinit();
     mod_adc_block_deinit();
     mod_i2c_deinit();
