@@ -23,7 +23,7 @@ py 1
 setTimeout resolved
 resolved value: 123
 py 2
-2 null
+2 undefined
 = TEST 4 ==========
 1
 py 1
@@ -35,4 +35,4 @@ py 3
 setTimeout B resolved
 resolved value: 456
 py 4
-2 null
+2 undefined

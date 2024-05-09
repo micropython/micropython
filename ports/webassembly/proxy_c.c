@@ -49,6 +49,7 @@ enum {
 };
 
 enum {
+    PROXY_KIND_JS_UNDEFINED = 0,
     PROXY_KIND_JS_NULL = 1,
     PROXY_KIND_JS_BOOLEAN = 2,
     PROXY_KIND_JS_INTEGER = 3,
@@ -78,7 +79,9 @@ static inline mp_obj_t proxy_c_get_obj(uint32_t c_ref) {
 }
 
 mp_obj_t proxy_convert_js_to_mp_obj_cside(uint32_t *value) {
-    if (value[0] == PROXY_KIND_JS_NULL) {
+    if (value[0] == PROXY_KIND_JS_UNDEFINED) {
+        return mp_const_none;
+    } else if (value[0] == PROXY_KIND_JS_NULL) {
         return mp_const_none;
     } else if (value[0] == PROXY_KIND_JS_BOOLEAN) {
         return mp_obj_new_bool(value[1]);

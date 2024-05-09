@@ -38,6 +38,7 @@ const PROXY_KIND_MP_GENERATOR = 7;
 const PROXY_KIND_MP_OBJECT = 8;
 const PROXY_KIND_MP_JSPROXY = 9;
 
+const PROXY_KIND_JS_UNDEFINED = 0;
 const PROXY_KIND_JS_NULL = 1;
 const PROXY_KIND_JS_BOOLEAN = 2;
 const PROXY_KIND_JS_INTEGER = 3;
@@ -109,7 +110,9 @@ function proxy_call_python(target, argumentsList) {
 
 function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
     let kind;
-    if (js_obj === null) {
+    if (js_obj === undefined) {
+        kind = PROXY_KIND_JS_UNDEFINED;
+    } else if (js_obj === null) {
         kind = PROXY_KIND_JS_NULL;
     } else if (typeof js_obj === "boolean") {
         kind = PROXY_KIND_JS_BOOLEAN;
@@ -185,7 +188,7 @@ function proxy_convert_mp_to_js_obj_jsside(value) {
     }
     if (kind === PROXY_KIND_MP_NONE) {
         // None
-        obj = null;
+        obj = undefined;
     } else if (kind === PROXY_KIND_MP_BOOL) {
         // bool
         obj = Module.getValue(value + 4, "i32") ? true : false;
