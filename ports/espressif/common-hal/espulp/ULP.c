@@ -30,6 +30,8 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "esp_sleep.h"
+
 #if defined(CONFIG_IDF_TARGET_ESP32)
 #include "esp32/ulp.h"
 #define ULP_COPROC_RESERVE_MEM (CONFIG_ESP32_ULP_COPROC_RESERVE_MEM)
@@ -46,12 +48,6 @@
 // To-do idf v5.0: remove following include
 #include "soc/rtc_cntl_reg.h"
 
-#ifndef CONFIG_ULP_COPROC_TYPE_FSM
-#warning "Have no FSM"
-#endif
-// #ifndef CONFIG_ULP_COPROC_TYPE_RISCV
-// #warning "Have no RISCV"
-// #endif
 
 STATIC bool ulp_used = false;
 STATIC uint32_t pins_used = 0;
@@ -100,6 +96,13 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
         }
     }
     pins_used = pin_mask;
+
+    // Main purpose of ULP is to run while main cpu is in deep sleep, so
+    // ensure GPIO Power Domain remains enabled during deep sleep,
+    // if any GPIO were supplied here.
+    if (pins_used > 0){ 
+        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+    }
 
     int _errno;
     switch (self->arch) {
