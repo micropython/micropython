@@ -58,6 +58,8 @@ enum {
     PROXY_KIND_JS_PYPROXY = 7,
 };
 
+MP_DEFINE_EXCEPTION(JsException, Exception)
+
 void proxy_c_init(void) {
     MP_STATE_PORT(proxy_c_ref) = mp_obj_new_list(0, NULL);
     mp_obj_list_append(MP_STATE_PORT(proxy_c_ref), MP_OBJ_NULL);
@@ -120,6 +122,15 @@ void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out) {
     } else if (mp_obj_is_jsproxy(obj)) {
         kind = PROXY_KIND_MP_JSPROXY;
         out[1] = mp_obj_jsproxy_get_ref(obj);
+    } else if (mp_obj_get_type(obj) == &mp_type_JsException) {
+        mp_obj_exception_t *exc = MP_OBJ_TO_PTR(obj);
+        if (exc->args->len > 0 && mp_obj_is_jsproxy(exc->args->items[0])) {
+            kind = PROXY_KIND_MP_JSPROXY;
+            out[1] = mp_obj_jsproxy_get_ref(exc->args->items[0]);
+        } else {
+            kind = PROXY_KIND_MP_OBJECT;
+            out[1] = proxy_c_add_obj(obj);
+        }
     } else {
         if (mp_obj_is_callable(obj)) {
             kind = PROXY_KIND_MP_CALLABLE;
@@ -288,6 +299,24 @@ void proxy_c_to_js_get_dict(uint32_t c_ref, uint32_t *out) {
     out[1] = (uintptr_t)map->table;
 }
 
+EM_JS(void, js_get_error_info, (int jsref, uint32_t * out_name, uint32_t * out_message), {
+    const error = proxy_js_ref[jsref];
+    proxy_convert_js_to_mp_obj_jsside(error.name, out_name);
+    proxy_convert_js_to_mp_obj_jsside(error.message, out_message);
+});
+
+mp_obj_t mp_obj_jsproxy_make_js_exception(mp_obj_t error) {
+    uint32_t out_name[PVN];
+    uint32_t out_message[PVN];
+    js_get_error_info(mp_obj_jsproxy_get_ref(error), out_name, out_message);
+    mp_obj_t args[3] = {
+        error,
+        proxy_convert_js_to_mp_obj_cside(out_name),
+        proxy_convert_js_to_mp_obj_cside(out_message),
+    };
+    return mp_obj_new_exception_args(&mp_type_JsException, MP_ARRAY_SIZE(args), args);
+}
+
 /******************************************************************************/
 // Bridge Python iterator to JavaScript iterator protocol.
 
@@ -370,6 +399,12 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t send_value, mp_o
     if (throw_value != MP_OBJ_NULL && throw_value != mp_const_none) {
         if (send_value == mp_const_none) {
             send_value = MP_OBJ_NULL;
+        }
+        // Ensure that the `throw_value` is a proper Python exception instance.
+        if (mp_obj_is_jsproxy(throw_value)) {
+            throw_value = mp_obj_jsproxy_make_js_exception(throw_value);
+        } else {
+            throw_value = mp_make_raise_obj(throw_value);
         }
     } else {
         throw_value = MP_OBJ_NULL;
