@@ -151,7 +151,7 @@ void proxy_convert_mp_to_js_exc_cside(void *exc, uint32_t *out) {
 void proxy_c_to_js_call(uint32_t c_ref, uint32_t n_args, uint32_t *args_value, uint32_t *out) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        mp_obj_t args[4] = { mp_const_none, mp_const_none, mp_const_none, mp_const_none };
+        mp_obj_t args[n_args];
         for (size_t i = 0; i < n_args; ++i) {
             args[i] = proxy_convert_js_to_mp_obj_cside(args_value + i * 3);
         }
