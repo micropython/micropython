@@ -34,7 +34,7 @@
 #define CIRCUITPY_BOARD_I2C         (2)
 /* OV2640 camera I2C pins are GPIO27 and _GPIO26.  GPIO12 and GPIO13 are unused unless SD card inserted:- */
 #define CIRCUITPY_BOARD_I2C_PIN     { {.scl = &pin_GPIO27, .sda = &pin_GPIO26}, \
-				      {.scl = &pin_GPIO12, .sda = &pin_GPIO13} }
+                                      {.scl = &pin_GPIO12, .sda = &pin_GPIO13} }
 
 // SD_CARD
 #define DEFAULT_SPI_BUS_SCK (&pin_GPIO14)
