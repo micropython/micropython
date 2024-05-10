@@ -2,8 +2,8 @@ import machine
 import time
 import os
 
-machine = os.uname().machine
-if "CY8CPROTO-063-BLE" in machine:
+board = os.uname().machine
+if "CY8CPROTO-063-BLE" in board:
     # TODO: Remove after reviewing reset_cause() for 063-BLE.
     print("SKIP")
     raise SystemExit
