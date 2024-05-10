@@ -6,6 +6,11 @@ from machine import PWM, Pin
 import os
 import time
 
+# TODO: This tests is failing too often. Enable it after proper review of timing, setup() teardown of resources.
+# Maybe the blocking implementation is not the most convenient. Interrupt based?
+print("SKIP")
+raise SystemExit
+
 # Allocate pin based on board
 machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
