@@ -49,11 +49,10 @@
 //|    from i2ctarget import I2CTarget
 //|
 //|    import adafruit_logging as logging
-//|    from logging import NamedStreamHandler
 //|
 //|    logger = logging.getLogger('i2ctarget')
 //|    logger.setLevel(logging.INFO)
-//|    logger.addHandler(NamedStreamHandler())
+//|    logger.addHandler(logging.StreamHandler())
 //|
 //|    logger.info("\\n\\ncode starting...")
 //|
@@ -115,11 +114,10 @@
 //|    from i2ctarget import I2CTarget
 //|
 //|    import adafruit_logging as logging
-//|    from logging import NamedStreamHandler
 //|
 //|    logger = logging.getLogger('i2ctarget')
 //|    logger.setLevel(logging.INFO)
-//|    logger.addHandler(NamedStreamHandler())
+//|    logger.addHandler(logging.StreamHandler())
 //|
 //|    # emulate a target with 16 registers
 //|    regs = [0] * 16
