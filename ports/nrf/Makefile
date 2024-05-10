@@ -185,7 +185,7 @@ SRC_SHARED_C += $(addprefix shared/,\
 	runtime/pyexec.c \
 	runtime/sys_stdio_mphal.c \
 	runtime/interrupt_char.c \
-	tinyusb/mp_cdc_common.c \
+	tinyusb/mp_usbd_cdc.c \
 	timeutils/timeutils.c \
 	)
 
