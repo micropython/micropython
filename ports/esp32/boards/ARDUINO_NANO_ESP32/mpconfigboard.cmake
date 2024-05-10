@@ -18,7 +18,7 @@ set(SDKCONFIG_DEFAULTS
 set(MICROPY_SOURCE_BOARD
     ${MICROPY_BOARD_DIR}/board_init.c
     ${MICROPY_BOARD_DIR}/double_tap.c
-    ${MICROPY_DIR}/shared/tinyusb/mp_cdc_common.c
+    ${MICROPY_DIR}/shared/tinyusb/mp_usbd_cdc.c
 )
 
 set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)

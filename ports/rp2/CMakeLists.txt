@@ -105,8 +105,8 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/shared/runtime/softtimer.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
     ${MICROPY_DIR}/shared/timeutils/timeutils.c
-    ${MICROPY_DIR}/shared/tinyusb/mp_cdc_common.c
     ${MICROPY_DIR}/shared/tinyusb/mp_usbd.c
+    ${MICROPY_DIR}/shared/tinyusb/mp_usbd_cdc.c
     ${MICROPY_DIR}/shared/tinyusb/mp_usbd_descriptor.c
     ${MICROPY_DIR}/shared/tinyusb/mp_usbd_runtime.c
 )
