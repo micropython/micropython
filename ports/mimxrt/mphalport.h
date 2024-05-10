@@ -72,6 +72,7 @@
 #define MP_HAL_PIN_TRIGGER_RISE         kGPIO_IntRisingEdge
 #define MP_HAL_PIN_TRIGGER_RISE_FALL    kGPIO_IntRisingOrFallingEdge
 
+extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
 
 // Define an alias for systick_ms, because the shared softtimer.c uses

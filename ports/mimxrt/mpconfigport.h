@@ -148,6 +148,7 @@ uint32_t trng_random_u32(void);
 #endif
 
 #define MICROPY_HW_ENABLE_USBDEV            (1)
+#define MICROPY_HW_USB_CDC                  (1)
 
 // Hooks to add builtins
 

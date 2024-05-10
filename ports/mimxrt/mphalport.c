@@ -30,6 +30,7 @@
 #include "py/mphal.h"
 #include "shared/timeutils/timeutils.h"
 #include "shared/runtime/interrupt_char.h"
+#include "shared/tinyusb/mp_usbd_cdc.h"
 #include "extmod/misc.h"
 #include "ticks.h"
 #include "tusb.h"
@@ -44,51 +45,9 @@
 static uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
-uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll
-
-void poll_cdc_interfaces(void) {
-    // any CDC interfaces left to poll?
-    if (cdc_itf_pending && ringbuf_free(&stdin_ringbuf)) {
-        for (uint8_t itf = 0; itf < 8; ++itf) {
-            if (cdc_itf_pending & (1 << itf)) {
-                tud_cdc_rx_cb(itf);
-                if (!cdc_itf_pending) {
-                    break;
-                }
-            }
-        }
-    }
-}
-
-
-void tud_cdc_rx_cb(uint8_t itf) {
-    // consume pending USB data immediately to free usb buffer and keep the endpoint from stalling.
-    // in case the ringbuffer is full, mark the CDC interface that need attention later on for polling
-    cdc_itf_pending &= ~(1 << itf);
-    for (uint32_t bytes_avail = tud_cdc_n_available(itf); bytes_avail > 0; --bytes_avail) {
-        if (ringbuf_free(&stdin_ringbuf)) {
-            int data_char = tud_cdc_read_char();
-            if (data_char == mp_interrupt_char) {
-                mp_sched_keyboard_interrupt();
-            } else {
-                ringbuf_put(&stdin_ringbuf, data_char);
-            }
-        } else {
-            cdc_itf_pending |= (1 << itf);
-            return;
-        }
-    }
-}
-
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
-    poll_cdc_interfaces();
-    if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
-        ret |= MP_STREAM_POLL_RD;
-    }
-    if ((poll_flags & MP_STREAM_POLL_WR) && tud_cdc_connected() && tud_cdc_write_available() > 0) {
-        ret |= MP_STREAM_POLL_WR;
-    }
+    ret |= mp_usbd_cdc_poll_interfaces(poll_flags);
     #if MICROPY_PY_OS_DUPTERM
     ret |= mp_os_dupterm_poll(poll_flags);
     #endif
@@ -97,7 +56,7 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        poll_cdc_interfaces();
+        mp_usbd_cdc_poll_interfaces(0);
         int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
@@ -115,29 +74,10 @@ int mp_hal_stdin_rx_chr(void) {
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     mp_uint_t ret = len;
     bool did_write = false;
-    if (tud_cdc_connected()) {
-        size_t i = 0;
-        while (i < len) {
-            uint32_t n = len - i;
-            if (n > CFG_TUD_CDC_EP_BUFSIZE) {
-                n = CFG_TUD_CDC_EP_BUFSIZE;
-            }
-            uint64_t timeout = ticks_us64() + (uint64_t)(MICROPY_HW_USB_CDC_TX_TIMEOUT * 1000);
-            // Wait with a max of USC_CDC_TIMEOUT ms
-            while (n > tud_cdc_write_available() && ticks_us64() < timeout) {
-                MICROPY_EVENT_POLL_HOOK
-            }
-            if (ticks_us64() >= timeout) {
-                ret = i;
-                break;
-            }
-
-            uint32_t n2 = tud_cdc_write(str + i, n);
-            tud_cdc_write_flush();
-            i += n2;
-        }
+    mp_uint_t cdc_res = mp_usbd_cdc_tx_strn(str, len);
+    if (cdc_res > 0) {
         did_write = true;
-        ret = MIN(i, ret);
+        ret = MIN(cdc_res, ret);
     }
     #if MICROPY_PY_OS_DUPTERM
     int dupterm_res = mp_os_dupterm_tx_strn(str, len);
