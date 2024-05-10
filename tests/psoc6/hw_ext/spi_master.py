@@ -17,6 +17,14 @@ if "CY8CPROTO-062-4343W" in machine:
     mosi_master_pin = "P6_0"
     miso_master_pin = "P6_1"
     ssel_master_pin = "P6_3"
+if "CY8CPROTO-063-BLE" in machine:
+    master_write_notify_pin = "P9_4"  # Sends signals when master wants to write data
+    master_read_notify_pin = "P9_5"  # interrupt pin to check if slave is writing data
+    # Allocate pin based on board
+    sck_master_pin = "P9_2"
+    mosi_master_pin = "P9_0"
+    miso_master_pin = "P9_1"
+    ssel_master_pin = "P9_3"
 
 
 print("\n*** SPI MASTER INSTANCE ***\n")

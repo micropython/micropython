@@ -18,6 +18,15 @@ if "CY8CPROTO-062-4343W" in machine:
     miso_slave_pin = "P13_1"
     ssel_slave_pin = "P13_3"
 
+if "CY8CPROTO-063-BLE" in machine:
+    slave_write_notify_pin = "P9_5"  # Sends signals when master wants to write data
+    slave_read_notify_pin = "P9_4"  # interrupt pin to check if slave is writing data
+    # Allocate pin based on board
+    sck_slave_pin = "P9_2"
+    mosi_slave_pin = "P9_0"
+    miso_slave_pin = "P9_1"
+    ssel_slave_pin = "P9_3"
+
 signal_received = False
 
 
@@ -56,17 +65,6 @@ def spi_slave_configure():
         mosi=mosi_slave_pin,
         miso=miso_slave_pin,
     )
-
-    """spi_obj = SPISlave(
-        baudrate=1000000,
-        polarity=0,
-        phase=0,
-        bits=8,
-        firstbit=SPISlave.MSB,
-        sck=sck_slave_pin,
-        mosi=mosi_slave_pin,
-        miso=miso_slave_pin,
-    )"""
     return spi_obj
 
 
@@ -87,7 +85,6 @@ def spi_half_duplex_communication(spi_obj, tx, rx):
     # print("\n1) master-->write and slave-->read")
     _wait_for_master_signal()
     spi_obj.read(rx)
-    print("rx: ", rx)
     # print("slave read successful : ", rx==tx)
     _slave_ready_to_write()
     spi_obj.write(rx)
