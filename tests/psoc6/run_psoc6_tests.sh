@@ -430,7 +430,7 @@ if [ ${psoc6WdtOnly} -eq 1 ]; then
     | tee -a ${resultsFile}
   
   # A delay is added here for the device to come out of watchdog reset
-  sleep 3
+  sleep 5
 
   ./run-tests.py --target psoc6 --device ${device0} psoc6/wdt_reset_check.py \
     | tee -a ${resultsFile}
