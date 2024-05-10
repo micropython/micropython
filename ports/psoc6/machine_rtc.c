@@ -58,11 +58,15 @@
 #define RTC_INIT_SECOND     0
 #define RTC_INIT_DST        0
 #define TM_YEAR_BASE        (1900u)
+
 cyhal_rtc_t psoc6_rtc;
 
 
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
+    uint32_t alarm_ms;
+    mp_obj_t callback;
+    bool repeat;
 } machine_rtc_obj_t;
 
 
@@ -71,11 +75,11 @@ static const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 
 /* This function is run from main.c to init the RTC at boot time. This will set the RTC to PSoC default time: 1st Jan 2000*/
 void rtc_init(void) {
-    cy_rslt_t result = cyhal_rtc_init(&psoc6_rtc);
+    /*cy_rslt_t result = cyhal_rtc_init(&psoc6_rtc);
 
     if (CY_RSLT_SUCCESS != result) {
         mp_raise_ValueError(MP_ERROR_TEXT("cyhal_rtc_init failed !"));
-    }
+    }*/
 }
 
 // Machine RTC methods - port-specific definitions
@@ -177,11 +181,131 @@ static mp_obj_t machine_rtc_now(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
 
+static inline void rtc_get_dtime_struct(const mp_obj_t datetime, struct tm dtime) {
+    // set date and time
+    mp_obj_t *items;
+    size_t len;
+    mp_obj_get_array(datetime, &len, &items);
+
+    dtime.tm_sec = mp_obj_get_int(items[6]);
+    dtime.tm_min = mp_obj_get_int(items[5]);
+    dtime.tm_hour = mp_obj_get_int(items[4]);
+    dtime.tm_mday = mp_obj_get_int(items[2]);
+    dtime.tm_mon = mp_obj_get_int(items[1]) - 1;
+    dtime.tm_year = mp_obj_get_int(items[0]) - TM_YEAR_BASE;
+    dtime.tm_wday = mp_obj_get_int(items[3]);
+    dtime.tm_isdst = 0;
+}
+
+static mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    printf("\nAlarm function \r\n");
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_id,                            MP_ARG_INT,  {.u_int = 0} },
+        { MP_QSTR_time,                          MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+        { MP_QSTR_repeat,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    };
+
+    // parse args
+    machine_rtc_obj_t *self = pos_args[0];
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), allowed_args, args);
+
+    // check the alarm id
+    if (args[0].u_int != 0) {
+        mp_raise_OSError(MP_ENODEV);
+    }
+
+    // cy_rslt_t result;
+    bool repeat = args[2].u_bool;
+    printf("We should be here \r\n");
+    if (mp_obj_is_type(args[1].u_obj, &mp_type_tuple)) { // datetime tuple given
+        // repeat cannot be used with a datetime tuple
+        printf("Or \r\n");
+        if (repeat) {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
+        }
+        struct tm dtime;
+        cyhal_alarm_active_t alarm_active =
+        {
+            .en_sec = 1,
+            .en_min = 1,
+            .en_hour = 1,
+            .en_day = 1,
+            .en_date = 1,
+            .en_month = 1,
+        };
+
+        rtc_get_dtime_struct(args[1].u_obj, dtime);
+        cyhal_rtc_set_alarm(&psoc6_rtc, &dtime, alarm_active);
+    } else { // then it must be an integer
+        printf("Inside here \r\n");
+        // self->alarm_ms = mp_obj_get_int(args[1].u_obj);
+
+        printf("Set alarm value: %ld\r\n", self->alarm_ms);
+        cyhal_rtc_set_alarm_by_seconds(&psoc6_rtc, 1);
+    }
+
+    // store the repepat flag
+    self->repeat = repeat;
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
+
+static void rtc_irq_handler(void *callback_arg, cyhal_rtc_event_t event) {
+    machine_rtc_obj_t *self = callback_arg;
+    mp_sched_schedule(self->callback, mp_obj_new_int(event));
+}
+
+
+void cyhal_rtc_alarm_interrupt_handler(void *arg, cyhal_rtc_event_t event) {
+    (void)arg;
+    if (event == CYHAL_RTC_ALARM) {
+        printf("ALarm fired \r\n");
+    }
+}
+
+#define RTC_CALLBACK_ARG NULL
+static mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    printf("IRQ function\r\n");
+    enum { ARG_trigger, ARG_handler, ARG_wake};
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CYHAL_RTC_ALARM} },
+        { MP_QSTR_handler, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_wake, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} }
+    };
+    printf("CYHAL_RTC_ALARM: %d\r\n", CYHAL_RTC_ALARM);
+
+    // machine_rtc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    // self->callback = args[MP_QSTR_handler].u_obj;
+    cyhal_rtc_init(&psoc6_rtc);
+    printf("setting alarm\r\n");
+    cyhal_rtc_register_callback(&psoc6_rtc,
+        (cyhal_rtc_event_callback_t)rtc_irq_handler,
+        RTC_CALLBACK_ARG);
+    cyhal_rtc_enable_event(&psoc6_rtc, CYHAL_RTC_ALARM, 3u, true);
+    cy_rslt_t result = cyhal_rtc_set_alarm_by_seconds(&psoc6_rtc, 0);
+
+    printf("Reached here and result is: %ld \r\n", result);
+    // cyhal_system_delay_ms(1200);
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
+
+
 static const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_rtc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_rtc_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&machine_rtc_datetime_obj) },
     { MP_ROM_QSTR(MP_QSTR_now), MP_ROM_PTR(&machine_rtc_now_obj) },
+    { MP_ROM_QSTR(MP_QSTR_alarm),           MP_ROM_PTR(&machine_rtc_alarm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq),             MP_ROM_PTR(&machine_rtc_irq_obj) },
+    // class constants
+    { MP_ROM_QSTR(MP_QSTR_ALARM0),          MP_ROM_INT(CYHAL_RTC_ALARM) },
+
 };
 static MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
 
