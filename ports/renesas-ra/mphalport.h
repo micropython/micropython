@@ -42,6 +42,7 @@
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
 
 extern const unsigned char mp_hal_status_to_errno_table[4];
+extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
 
 static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
