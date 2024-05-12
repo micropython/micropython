@@ -166,10 +166,12 @@ bool ble_serial_connected(void) {
     return _tx_packet_buffer.conn_handle != BLE_CONN_HANDLE_INVALID;
 }
 
-bool ble_serial_available(void) {
-    return _enabled &&
-           !common_hal_bleio_characteristic_buffer_deinited(&_rx_buffer) &&
-           common_hal_bleio_characteristic_buffer_rx_characters_available(&_rx_buffer);
+uint32_t ble_serial_available(void) {
+    if (_enabled && !common_hal_bleio_characteristic_buffer_deinited(&_rx_buffer)) {
+        return common_hal_bleio_characteristic_buffer_rx_characters_available(&_rx_buffer);
+    } else {
+        return 0;
+    }
 }
 
 char ble_serial_read_char(void) {

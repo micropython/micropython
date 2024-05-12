@@ -100,7 +100,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
 
     int irq = pulsein_set_config(self, true);
     if (irq < 0) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("EXTINT channel already in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
     } else {
         pulsein_objects[irq - CXD56_IRQ_EXDEVICE_0] = self;
     }

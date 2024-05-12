@@ -200,9 +200,9 @@ STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_ar
         mp_raise_ValueError(MP_ERROR_TEXT("Server side context cannot have hostname"));
     }
 
-    socketpool_socket_obj_t *sock = args[ARG_sock].u_obj;
+    mp_obj_t sock_obj = args[ARG_sock].u_obj;
 
-    return common_hal_ssl_sslcontext_wrap_socket(self, sock, server_side, server_hostname);
+    return common_hal_ssl_sslcontext_wrap_socket(self, sock_obj, server_side, server_hostname);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_wrap_socket_obj, 1, ssl_sslcontext_wrap_socket);
 

@@ -4,7 +4,9 @@
 
 import sys
 import mistune
-import mistune.renderers
+from mistune import BlockState
+
+from typing import Dict, Any
 
 print(sys.argv[1])
 
@@ -20,12 +22,31 @@ print('<p><em>From the <a href="">GitHub release page</a>:</em></p>\n')
 print(html(source))
 
 
-class AdafruitBBCodeRenderer(mistune.renderers.BaseRenderer):
-    def placeholder(self):
+class AdafruitBBCodeRenderer(mistune.BaseRenderer):
+    def render_token(self, token: Dict[str, Any], state: BlockState) -> str:
+        # backward compatible with v2
+        func = self._get_method(token["type"])
+        attrs = token.get("attrs")
+
+        if "raw" in token:
+            text = token["raw"]
+        elif "children" in token:
+            text = self.render_tokens(token["children"], state)
+        else:
+            if attrs:
+                return func(**attrs)
+            else:
+                return func()
+        if attrs:
+            return func(text, **attrs)
+        else:
+            return func(text)
+
+    def blank_line(self):
         return ""
 
     def paragraph(self, text):
-        return text + "\n\n"
+        return f"{text}\n\n"
 
     def block_text(self, text):
         return text
@@ -33,35 +54,38 @@ class AdafruitBBCodeRenderer(mistune.renderers.BaseRenderer):
     def text(self, text):
         return text
 
-    def link(self, link, title, text):
-        return "[url={}]{}[/url]".format(link, title)
+    def block_code(self, text):
+        return f"[code]{text}[/code]"
+
+    def link(self, text, url):
+        return f"[url={url}]{text}[/url]"
 
     def autolink(self, link, is_email):
         if not is_email:
-            return "[url={}]{}[/url]".format(link, link)
+            return f"[url={link}]{link}[/url]"
         return link
 
     def heading(self, text, level):
-        return "[b][size=150]{}[/size][/b]\n".format(text)
+        return f"[b][size={200 - level * 20}]{text}[/size][/b]\n"
 
     def codespan(self, text):
-        return "[color=#E74C3C][size=95]{}[/size][/color]".format(text)
+        return f"[color=#E74C3C][size=95]{text}[/size][/color]"
 
-    def list_item(self, text, level):
-        return "[*]{}[/*]\n".format(text.strip())
-
-    def list(self, text, ordered, level, start=None):
+    def list(self, text, ordered: bool, start=None, depth=None):
         ordered_indicator = "=" if ordered else ""
-        return "[list{}]\n{}[/list]".format(ordered_indicator, text)
+        return f"[list{ordered_indicator}]\n{text}[/list]"
+
+    def list_item(self, text):
+        return f"[*]{text.strip()}[/*]\n"
 
     def double_emphasis(self, text):
-        return "[b]{}[/b]".format(text)
+        return f"[b]{text}[/b]"
 
     def emphasis(self, text):
-        return "[i]{}[/i]".format(text)
+        return f"[i]{text}[/i]"
 
     def strong(self, text):
-        return "[b]{}[/b]".format(text)
+        return f"[b]{text}[/b]"
 
     def finalize(self, data):
         return "".join(data)

@@ -31,8 +31,10 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/socketpool/SocketPool.h"
+#if CIRCUITPY_SSL
 #include "shared-bindings/ssl/SSLSocket.h"
-#include "common-hal/ssl/SSLSocket.h"
+#include "shared-module/ssl/SSLSocket.h"
+#endif
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/workflow.h"
@@ -55,6 +57,9 @@ StackType_t socket_select_stack[2 * configMINIMAL_STACK_SIZE];
 #define FDSTATE_OPEN    1
 #define FDSTATE_CLOSING 2
 STATIC uint8_t socket_fd_state[CONFIG_LWIP_MAX_SOCKETS];
+
+// How long to wait between checks for a socket to connect.
+#define SOCKET_CONNECT_POLL_INTERVAL_MS 100
 
 STATIC socketpool_socket_obj_t *user_socket[CONFIG_LWIP_MAX_SOCKETS];
 StaticTask_t socket_select_task_buffer;
@@ -182,9 +187,11 @@ STATIC void mark_user_socket(int fd, socketpool_socket_obj_t *obj) {
 
 STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
+    int proto,
     socketpool_socket_obj_t *sock) {
     int addr_family;
     int ipproto;
+
     if (family == SOCKETPOOL_AF_INET) {
         addr_family = AF_INET;
         ipproto = IPPROTO_IP;
@@ -202,6 +209,7 @@ STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
         socket_type = SOCK_DGRAM;
     } else { // SOCKETPOOL_SOCK_RAW
         socket_type = SOCK_RAW;
+        ipproto = proto;
     }
     sock->type = socket_type;
     sock->family = addr_family;
@@ -226,9 +234,9 @@ STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
 // special entry for workflow listener (register system socket)
 bool socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
-    socketpool_socket_obj_t *sock) {
+    int proto, socketpool_socket_obj_t *sock) {
 
-    if (!_socketpool_socket(self, family, type, sock)) {
+    if (!_socketpool_socket(self, family, type, proto, sock)) {
         return false;
     }
 
@@ -241,7 +249,7 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 }
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type, int proto) {
     if (family != SOCKETPOOL_AF_INET) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("Only IPv4 sockets supported"));
     }
@@ -249,7 +257,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     sock->base.type = &socketpool_socket_type;
 
-    if (!_socketpool_socket(self, family, type, sock)) {
+    if (!_socketpool_socket(self, family, type, proto, sock)) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Out of sockets"));
     }
     mark_user_socket(sock->num, sock);
@@ -304,6 +312,7 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
         accepted->num = newsoc;
         accepted->pool = self->pool;
         accepted->connected = true;
+        accepted->type = self->type;
     }
 
     return newsoc;
@@ -321,6 +330,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
         sock->num = newsoc;
         sock->pool = self->pool;
         sock->connected = true;
+        sock->type = self->type;
 
         return sock;
     } else {
@@ -329,7 +339,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
     }
 }
 
-bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
+size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
     struct sockaddr_in bind_addr;
     const char *broadcast = "<broadcast>";
@@ -346,22 +356,22 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     bind_addr.sin_family = AF_INET;
     bind_addr.sin_port = htons(port);
 
-    int opt = 1;
-    int err = lwip_setsockopt(self->num, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-    if (err != 0) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot set socket options"));
-    }
     int result = lwip_bind(self->num, (struct sockaddr *)&bind_addr, sizeof(bind_addr));
-    return result == 0;
+    if (result == 0) {
+        return 0;
+    }
+    return errno;
 }
 
 void socketpool_socket_close(socketpool_socket_obj_t *self) {
+    #if CIRCUITPY_SSL
     if (self->ssl_socket) {
         ssl_sslsocket_obj_t *ssl_socket = self->ssl_socket;
         self->ssl_socket = NULL;
         common_hal_ssl_sslsocket_close(ssl_socket);
         return;
     }
+    #endif
     self->connected = false;
     int fd = self->num;
     // Ignore bogus/closed sockets
@@ -409,25 +419,75 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
 
     // Replace above with function call -----
 
-    // Switch to blocking mode for this one call
-    int opts;
-    opts = lwip_fcntl(self->num, F_GETFL, 0);
-    opts = opts & (~O_NONBLOCK);
-    lwip_fcntl(self->num, F_SETFL, opts);
+    // Emulate SO_CONTIMEO, which is not implemented by lwip.
+    // All our sockets are non-blocking, so we check the timeout ourselves.
 
     int result = -1;
     result = lwip_connect(self->num, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr_in));
 
-    // Switch back once complete
-    opts = opts | O_NONBLOCK;
-    lwip_fcntl(self->num, F_SETFL, opts);
-
-    if (result >= 0) {
+    if (result == 0) {
+        // Connected immediately.
         self->connected = true;
         return;
-    } else {
-        mp_raise_OSError(errno);
     }
+
+    if (result < 0 && errno != EINPROGRESS) {
+        // Some error happened; error is in errno.
+        mp_raise_OSError(errno);
+        return;
+    }
+
+    struct timeval timeout = {
+        .tv_sec = 0,
+        .tv_usec = SOCKET_CONNECT_POLL_INTERVAL_MS * 1000,
+    };
+
+    // Keep checking, using select(), until timeout expires, at short intervals.
+    // This allows ctrl-C interrupts to be detected and background tasks to run.
+    mp_uint_t timeout_left = self->timeout_ms;
+
+    while (timeout_left > 0) {
+        RUN_BACKGROUND_TASKS;
+        // Allow ctrl-C interrupt
+        if (mp_hal_is_interrupted()) {
+            return;
+        }
+
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(self->num, &fds);
+
+        result = select(self->num + 1, NULL, &fds, NULL, &timeout);
+        if (result == 0) {
+            // No change to fd's after waiting for timeout, so try again if some time is still left.
+            // Don't wrap below 0, because we're using a uint.
+            if (timeout_left < SOCKET_CONNECT_POLL_INTERVAL_MS) {
+                timeout_left = 0;
+            } else {
+                timeout_left -= SOCKET_CONNECT_POLL_INTERVAL_MS;
+            }
+            continue;
+        }
+
+        if (result < 0) {
+            // Some error happened when doing select(); error is in errno.
+            mp_raise_OSError(errno);
+        }
+
+        // select() indicated the socket is writable. Check if any connection error occurred.
+        int error_code = 0;
+        socklen_t socklen = sizeof(error_code);
+        result = getsockopt(self->num, SOL_SOCKET, SO_ERROR, &error_code, &socklen);
+        if (result < 0 || error_code != 0) {
+            mp_raise_OSError(errno);
+        }
+        self->connected = true;
+        return;
+    }
+
+    // No connection after timeout. The connection attempt is not stopped.
+    // This imitates what happens in Python.
+    mp_raise_OSError(ETIMEDOUT);
 }
 
 bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t *self) {
@@ -597,6 +657,10 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
 
 void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint32_t timeout_ms) {
     self->timeout_ms = timeout_ms;
+}
+
+mp_int_t common_hal_socketpool_socket_get_type(socketpool_socket_obj_t *self) {
+    return self->type;
 }
 
 

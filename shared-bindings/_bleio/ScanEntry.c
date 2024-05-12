@@ -44,6 +44,7 @@
 //|     def __init__(self) -> None:
 //|         """Cannot be instantiated directly. Use `_bleio.Adapter.start_scan`."""
 //|         ...
+//|
 //|     def matches(self, prefixes: ScanEntry, *, match_all: bool = True) -> bool:
 //|         """Returns True if the ScanEntry matches all prefixes when ``match_all`` is True. This is stricter
 //|         than the scan filtering which accepts any advertisements that match any of the prefixes

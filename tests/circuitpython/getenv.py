@@ -58,6 +58,7 @@ content_bad = [
     b'key = """\n',
     b"key =\n",
     b'key="',
+    b'key = strings must be quoted\n',
 ]
 
 

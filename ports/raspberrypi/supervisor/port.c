@@ -33,16 +33,18 @@
 
 #include "bindings/rp2pio/StateMachine.h"
 #include "genhdr/mpversion.h"
-#include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/countio/Counter.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
-#include "shared-bindings/pwmio/PWMOut.h"
+
+#if CIRCUITPY_AUDIOCORE
+#include "audio_dma.h"
+#endif
 
 #if CIRCUITPY_SSL
-#include "common-hal/ssl/__init__.h"
+#include "shared-module/ssl/__init__.h"
 #endif
 
 #if CIRCUITPY_WIFI
@@ -71,7 +73,7 @@
 #include "pico/bootrom.h"
 #include "hardware/watchdog.h"
 
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 
 #include "tusb.h"
 #include <cmsis_compiler.h>
@@ -184,10 +186,6 @@ void reset_port(void) {
     reset_countio();
     #endif
 
-    #if CIRCUITPY_PWMIO
-    pwmout_reset();
-    #endif
-
     #if CIRCUITPY_RP2PIO
     reset_rp2pio_statemachine();
     #endif
@@ -196,9 +194,6 @@ void reset_port(void) {
     rtc_reset();
     #endif
 
-    #if CIRCUITPY_AUDIOPWMIO
-    audiopwmout_reset();
-    #endif
     #if CIRCUITPY_AUDIOCORE
     audio_dma_reset();
     #endif
@@ -309,7 +304,11 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 
 void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
+    #if CIRCUITPY_USB_HOST
     if (!background_callback_pending() && !tud_task_event_ready() && !tuh_task_event_ready() && !_woken_up) {
+    #else
+    if (!background_callback_pending() && !tud_task_event_ready() && !_woken_up) {
+        #endif
         __DSB();
         __WFI();
     }

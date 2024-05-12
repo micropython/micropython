@@ -36,7 +36,7 @@
 #include "supervisor/shared/traceback.h"
 #include "supervisor/shared/workflow.h"
 
-#if CIRCUITPY_USB_IDENTIFICATION
+#if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_IDENTIFICATION
 #include "supervisor/usb.h"
 #endif
 
@@ -130,11 +130,12 @@ STATIC mp_obj_t supervisor_set_next_code_file(size_t n_args, const mp_obj_t *pos
         mp_arg_val_t sticky_on_reload;
     } args;
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
-    if (!mp_obj_is_str_or_bytes(args.filename.u_obj) && args.filename.u_obj != mp_const_none) {
-        mp_raise_TypeError(MP_ERROR_TEXT("argument has wrong type"));
+    mp_obj_t filename_obj = args.filename.u_obj;
+    if (!mp_obj_is_str_or_bytes(filename_obj) && filename_obj != mp_const_none) {
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"), MP_QSTR_filename, MP_QSTR_str, MP_QSTR_None, mp_obj_get_type(filename_obj)->name);
     }
-    if (args.filename.u_obj == mp_const_none) {
-        args.filename.u_obj = mp_const_empty_bytes;
+    if (filename_obj == mp_const_none) {
+        filename_obj = mp_const_empty_bytes;
     }
     uint8_t options = 0;
     if (args.reload_on_success.u_bool) {
@@ -153,7 +154,7 @@ STATIC mp_obj_t supervisor_set_next_code_file(size_t n_args, const mp_obj_t *pos
         options |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
     }
     size_t len;
-    const char *filename = mp_obj_str_get_data(args.filename.u_obj, &len);
+    const char *filename = mp_obj_str_get_data(filename_obj, &len);
     if (next_code_configuration != NULL) {
         port_free(next_code_configuration);
         next_code_configuration = NULL;
@@ -278,7 +279,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(supervisor_reset_terminal_obj, supervisor_reset_termin
 //|     ...
 //|
 STATIC mp_obj_t supervisor_set_usb_identification(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    #if CIRCUITPY_USB_IDENTIFICATION
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_IDENTIFICATION
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_manufacturer, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_product, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },

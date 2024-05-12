@@ -52,7 +52,7 @@ void reset_all_pins(void) {
     uint32_t pin_mask[PORT_COUNT] = PORT_OUT_IMPLEMENTED;
 
     // Do not full reset USB lines.
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     pin_mask[0] &= ~(PORT_PA24 | PORT_PA25);
     #endif
 
@@ -161,12 +161,11 @@ bool pin_number_is_free(uint8_t pin_number) {
             return false;
         }
         if (pin_number == PIN_PA30
-            #ifdef SAM_D5X_E5X
-            ) {
-            #endif
             #ifdef SAMD21
-            || pin_number == PIN_PA31) {
-            #endif) {
+            || pin_number == PIN_PA31
+            #endif
+            )
+            {
             return state->bit.PMUXEN == 1 && ((pmux->reg >> (4 * pin_index % 2)) & 0xf) == SWD_MUX;
         }
     }

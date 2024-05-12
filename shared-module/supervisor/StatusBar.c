@@ -60,7 +60,7 @@ bool shared_module_supervisor_status_bar_get_display(supervisor_status_bar_obj_t
     return self->display;
 }
 
-#if CIRCUITPY_TERMINALIO
+#if CIRCUITPY_STATUS_BAR && CIRCUITPY_TERMINALIO
 void shared_module_supervisor_status_bar_set_display(supervisor_status_bar_obj_t *self, bool enabled) {
     if (self->display == enabled) {
         // Do nothing if not changing the state.

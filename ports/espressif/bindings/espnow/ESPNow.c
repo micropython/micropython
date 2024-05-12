@@ -332,7 +332,6 @@ STATIC mp_uint_t espnow_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintpt
 }
 
 STATIC const mp_stream_p_t espnow_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .ioctl = espnow_stream_ioctl,
 };
 
@@ -341,6 +340,7 @@ STATIC const mp_stream_p_t espnow_stream_p = {
 //|         This is an easy way to check if the buffer is empty.
 //|         """
 //|         ...
+//|
 //|     def __len__(self) -> int:
 //|         """Return the number of `bytes` available to read. Used to implement ``len()``."""
 //|         ...

@@ -31,6 +31,6 @@ runs:
       if: steps.board-to-port.outputs.port == 'litex'
       uses: ./.github/actions/deps/ports/litex
 
-    - name: Set up nrf
-      if: steps.board-to-port.outputs.port == 'nrf'
-      uses: ./.github/actions/deps/ports/nrf
+    - name: Set up nordic
+      if: steps.board-to-port.outputs.port == 'nordic'
+      uses: ./.github/actions/deps/ports/nordic

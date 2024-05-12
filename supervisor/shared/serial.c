@@ -33,16 +33,19 @@
 #include "supervisor/shared/cpu.h"
 #include "supervisor/shared/display.h"
 #include "shared-bindings/terminalio/Terminal.h"
-#include "supervisor/serial.h"
-#include "supervisor/usb.h"
+#include "supervisor/shared/serial.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-module/usb_cdc/__init__.h"
 
 #if CIRCUITPY_SERIAL_BLE
 #include "supervisor/shared/bluetooth/serial.h"
 #endif
 
-#if CIRCUITPY_USB
+#if CIRCUITPY_USB_DEVICE
+#include "shared-module/usb_cdc/__init__.h"
+#endif
+
+#if CIRCUITPY_TINYUSB
+#include "supervisor/usb.h"
 #include "tusb.h"
 #endif
 
@@ -63,14 +66,14 @@ byte console_uart_rx_buf[64];
 #endif
 #endif
 
-#if CIRCUITPY_USB || CIRCUITPY_CONSOLE_UART
+#if CIRCUITPY_USB_DEVICE || CIRCUITPY_CONSOLE_UART
 // Flag to note whether this is the first write after connection.
 // Delay slightly on the first write to allow time for the host to set up things,
 // including turning off echo mode.
 static bool _first_write_done = false;
 #endif
 
-#if CIRCUITPY_USB_VENDOR
+#if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VENDOR
 bool tud_vendor_connected(void);
 #endif
 
@@ -107,6 +110,29 @@ int console_uart_printf(const char *fmt, ...) {
     #endif
 }
 
+MP_WEAK void board_serial_early_init(void) {
+}
+
+MP_WEAK void board_serial_init(void) {
+}
+
+MP_WEAK bool board_serial_connected(void) {
+    return false;
+}
+
+MP_WEAK char board_serial_read(void) {
+    return -1;
+}
+
+MP_WEAK uint32_t board_serial_bytes_available(void) {
+    return 0;
+}
+
+MP_WEAK void board_serial_write_substring(const char *text, uint32_t length) {
+    (void)text;
+    (void)length;
+}
+
 MP_WEAK void port_serial_early_init(void) {
 }
 
@@ -121,8 +147,8 @@ MP_WEAK char port_serial_read(void) {
     return -1;
 }
 
-MP_WEAK bool port_serial_bytes_available(void) {
-    return false;
+MP_WEAK uint32_t port_serial_bytes_available(void) {
+    return 0;
 }
 
 MP_WEAK void port_serial_write_substring(const char *text, uint32_t length) {
@@ -148,19 +174,21 @@ void serial_early_init(void) {
     console_uart_printf("Serial console setup\r\n");
     #endif
 
+    board_serial_early_init();
     port_serial_early_init();
 }
 
 void serial_init(void) {
-    #if CIRCUITPY_USB || CIRCUITPY_CONSOLE_UART
+    #if CIRCUITPY_USB_DEVICE || CIRCUITPY_CONSOLE_UART
     _first_write_done = false;
     #endif
 
+    board_serial_init();
     port_serial_init();
 }
 
 bool serial_connected(void) {
-    #if CIRCUITPY_USB_VENDOR
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected()) {
         return true;
     }
@@ -176,11 +204,11 @@ bool serial_connected(void) {
     }
     #endif
 
-    #if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
     if (usb_cdc_console_enabled() && tud_cdc_connected()) {
         return true;
     }
-    #elif CIRCUITPY_USB
+    #elif CIRCUITPY_USB_DEVICE
     if (tud_cdc_connected()) {
         return true;
     }
@@ -199,14 +227,19 @@ bool serial_connected(void) {
     #endif
 
 
+    if (board_serial_connected()) {
+        return true;
+    }
+
     if (port_serial_connected()) {
         return true;
     }
+
     return false;
 }
 
 char serial_read(void) {
-    #if CIRCUITPY_USB_VENDOR
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected() && tud_vendor_available() > 0) {
         char tiny_buffer;
         tud_vendor_read(&tiny_buffer, 1);
@@ -244,68 +277,69 @@ char serial_read(void) {
     }
     #endif
 
+    if (board_serial_bytes_available() > 0) {
+        return board_serial_read();
+    }
+
     if (port_serial_bytes_available() > 0) {
         return port_serial_read();
     }
 
-    #if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
     if (!usb_cdc_console_enabled()) {
         return -1;
     }
     #endif
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     return (char)tud_cdc_read_char();
     #endif
 
     return -1;
 }
 
-bool serial_bytes_available(void) {
-    #if CIRCUITPY_USB_VENDOR
-    if (tud_vendor_connected() && tud_vendor_available() > 0) {
-        return true;
+uint32_t serial_bytes_available(void) {
+    // There may be multiple serial input channels, so sum the count from all.
+    uint32_t count = 0;
+
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VENDOR
+    if (tud_vendor_connected()) {
+        count += tud_vendor_available();
     }
     #endif
 
     #if CIRCUITPY_CONSOLE_UART
-    if (common_hal_busio_uart_rx_characters_available(&console_uart)) {
-        return true;
-    }
+    count += common_hal_busio_uart_rx_characters_available(&console_uart);
     #endif
 
     #if CIRCUITPY_SERIAL_BLE
-    if (ble_serial_available()) {
-        return true;
-    }
+    count += ble_serial_available();
     #endif
 
     #if CIRCUITPY_WEB_WORKFLOW
-    if (websocket_available()) {
-        return true;
-    }
+    count += websocket_available();
     #endif
 
     #if CIRCUITPY_USB_KEYBOARD_WORKFLOW
-    if (usb_keyboard_chars_available() > 0) {
-        return true;
+    count += usb_keyboard_chars_available();
+    #endif
+
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
+    if (usb_cdc_console_enabled()) {
+        count += tud_cdc_available();
     }
     #endif
 
-    #if CIRCUITPY_USB_CDC
-    if (usb_cdc_console_enabled() && tud_cdc_available() > 0) {
-        return true;
-    }
-    #endif
-    #if CIRCUITPY_USB
-    if (tud_cdc_available() > 0) {
-        return true;
-    }
+    #if CIRCUITPY_USB_DEVICE
+    count += tud_cdc_available();
     #endif
 
-    if (port_serial_bytes_available() > 0) {
-        return true;
-    }
-    return false;
+    // Board-specific serial input.
+    count += board_serial_bytes_available();
+
+    // Port-specific serial input.
+    count += port_serial_bytes_available();
+
+    return count;
 }
 
 void serial_write_substring(const char *text, uint32_t length) {
@@ -324,7 +358,7 @@ void serial_write_substring(const char *text, uint32_t length) {
         return;
     }
 
-    #if CIRCUITPY_USB_VENDOR
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected()) {
         tud_vendor_write(text, length);
     }
@@ -347,13 +381,13 @@ void serial_write_substring(const char *text, uint32_t length) {
     websocket_write(text, length);
     #endif
 
-    #if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
     if (!usb_cdc_console_enabled()) {
         return;
     }
     #endif
 
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     // Delay the very first write
     if (tud_cdc_connected() && !_first_write_done) {
         mp_hal_delay_ms(50);
@@ -372,6 +406,7 @@ void serial_write_substring(const char *text, uint32_t length) {
     }
     #endif
 
+    board_serial_write_substring(text, length);
     port_serial_write_substring(text, length);
 }
 

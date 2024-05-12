@@ -178,7 +178,7 @@ CFLAGS += $(INC) -Wall -Werror -std=gnu11 -fshort-enums $(BASE_CFLAGS) $(CFLAGS_
 CFLAGS += \
 	-march=armv6-m \
 	-mthumb \
-	-mabi=aapcs-linux \
+	-mabi=aapcs \
 	-mcpu=cortex-m0plus \
 	-msoft-float \
 	-mfloat-abi=soft
@@ -249,10 +249,6 @@ SRC_C += \
 	background.c \
 	peripherals/pins.c \
 	lib/crypto-algorithms/sha256.c \
-	lib/PicoDVI/software/libdvi/dvi.c \
-	lib/PicoDVI/software/libdvi/dvi_serialiser.c \
-	lib/PicoDVI/software/libdvi/dvi_timing.c \
-	lib/PicoDVI/software/libdvi/tmds_encode.c \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/dcd_rp2040.c \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c \
 	mphalport.c \
@@ -273,6 +269,10 @@ endif
 
 ifeq ($(CIRCUITPY_PICODVI),1)
 SRC_C += \
+	lib/PicoDVI/software/libdvi/dvi.c \
+	lib/PicoDVI/software/libdvi/dvi_serialiser.c \
+	lib/PicoDVI/software/libdvi/dvi_timing.c \
+	lib/PicoDVI/software/libdvi/tmds_encode.c \
   bindings/picodvi/__init__.c \
   bindings/picodvi/Framebuffer.c \
   common-hal/picodvi/Framebuffer.c \
@@ -354,10 +354,10 @@ SRC_MBEDTLS := $(addprefix lib/mbedtls/library/, \
         x509write_csr.c \
         xtea.c \
 	)
-SRC_C += $(SRC_MBEDTLS) mbedtls/mbedtls_port.c mbedtls/crt_bundle.c
+SRC_C += $(SRC_MBEDTLS) lib/mbedtls_config/mbedtls_port.c lib/mbedtls_config/crt_bundle.c
 CFLAGS += \
 	  -isystem $(TOP)/lib/mbedtls/include \
-	  -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"' \
+	  -DMBEDTLS_CONFIG_FILE='"$(TOP)/lib/mbedtls_config/mbedtls_config.h"' \
 
 $(BUILD)/x509_crt_bundle.S: $(TOP)/lib/certificates/data/roots.pem $(TOP)/tools/gen_crt_bundle.py
 	$(Q)$(PYTHON) $(TOP)/tools/gen_crt_bundle.py -i $< -o $@ --asm
@@ -366,6 +366,7 @@ $(patsubst %.c,$(BUILD)/%.o,$(SRC_MBEDTLS))): CFLAGS += -Wno-suggest-attribute=f
 else
 OBJ_MBEDTLS :=
 endif
+
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
@@ -393,7 +394,11 @@ SRC_S_UPPER = sdk/src/rp2_common/hardware_divider/divider.S \
               sdk/src/rp2_common/pico_int64_ops/pico_int64_ops_aeabi.S \
               sdk/src/rp2_common/pico_mem_ops/mem_ops_aeabi.S \
               sdk/src/rp2_common/pico_standard_link/crt0.S \
-              lib/PicoDVI/software/libdvi/tmds_encode_asm.S \
+
+ifeq ($(CIRCUITPY_PICODVI),1)
+SRC_S_UPPER += lib/PicoDVI/software/libdvi/tmds_encode_asm.S \
+
+endif
 
 OBJ = $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SDK:.c=.o))

@@ -1,0 +1,10 @@
+using "../peripherals.repl"
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m0"
+    nvic: nvic
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    systickFrequency: 100000000
+    IRQ -> cpu@0

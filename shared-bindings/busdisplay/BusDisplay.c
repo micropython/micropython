@@ -87,7 +87,7 @@
 //|         backlight_on_high: bool = True,
 //|         SH1107_addressing: bool = False
 //|     ) -> None:
-//|         r"""Create a Display object on the given display bus (`FourWire`, `ParallelBus` or `I2CDisplayBus`).
+//|         r"""Create a Display object on the given display bus (`FourWire`, `paralleldisplaybus.ParallelBus` or `I2CDisplayBus`).
 //|
 //|         The ``init_sequence`` is bitpacked to minimize the ram impact. Every command begins with a
 //|         command byte followed by a byte to determine the parameter count and delay. When the top bit
@@ -104,7 +104,7 @@
 //|                            b"\x11\x80\x78"# Exit Sleep then delay 0x78 (120ms)
 //|                            b"\x29\x81\xaa\x78"# Display on then delay 0x78 (120ms)
 //|                           )
-//|            display = displayio.Display(display_bus, init_sequence, width=320, height=240)
+//|            display = busdisplay.BusDisplay(display_bus, init_sequence, width=320, height=240)
 //|
 //|         The first command is 0xe1 with 15 (0xf) parameters following. The second is 0x11 with 0
 //|         parameters and a 120ms (0x78) delay. The third command is 0x29 with one parameter 0xaa and a

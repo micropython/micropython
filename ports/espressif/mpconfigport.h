@@ -74,4 +74,11 @@
 #define CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP (0)
 #endif
 
+// Protect the background queue with a lock because both cores may modify it.
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+extern portMUX_TYPE background_task_mutex;
+#define CALLBACK_CRITICAL_BEGIN (taskENTER_CRITICAL(&background_task_mutex))
+#define CALLBACK_CRITICAL_END (taskEXIT_CRITICAL(&background_task_mutex))
+
 #endif  // MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H

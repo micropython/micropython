@@ -28,6 +28,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/usb_host/Port.h"
+#include "supervisor/shared/serial.h"
 #include "supervisor/usb.h"
 
 #include "src/common/pico_time/include/pico/time.h"
@@ -43,7 +44,6 @@
 #include "lib/Pico-PIO-USB/src/pio_usb.h"
 #include "lib/Pico-PIO-USB/src/pio_usb_configuration.h"
 
-#include "supervisor/serial.h"
 
 usb_host_port_obj_t usb_host_instance;
 
@@ -122,10 +122,10 @@ usb_host_port_obj_t *common_hal_usb_host_port_construct(const mcu_pin_obj_t *dp,
     pio_usb_configuration_t pio_cfg = PIO_USB_DEFAULT_CONFIG;
     pio_cfg.skip_alarm_pool = true;
     pio_cfg.pin_dp = dp->number;
-    pio_cfg.pio_tx_num = 0;
-    pio_cfg.pio_rx_num = 1;
-    // PIO with room for 22 instructions
-    // PIO with room for 31 instructions and two free SM.
+    // Allocating the peripherals like this works on Pico W, where the
+    // "preferred PIO" for the cyw43 wifi chip is PIO 1.
+    pio_cfg.pio_tx_num = 1; // uses 22 instructions and 1 SM
+    pio_cfg.pio_rx_num = 0; // uses 31 instructions and 2 SM.
     if (!_has_program_room(pio_cfg.pio_tx_num, 22) || _sm_free_count(pio_cfg.pio_tx_num) < 1 ||
         !_has_program_room(pio_cfg.pio_rx_num, 31) || _sm_free_count(pio_cfg.pio_rx_num) < 2) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("All state machines in use"));
@@ -169,4 +169,11 @@ usb_host_port_obj_t *common_hal_usb_host_port_construct(const mcu_pin_obj_t *dp,
     tuh_init(TUH_OPT_RHPORT);
 
     return self;
+}
+
+// Not used, but we must define to put this hook into SRAM
+void __not_in_flash_func(tuh_event_hook_cb)(uint8_t rhport, uint32_t eventid, bool in_isr) {
+    (void)rhport;
+    (void)eventid;
+    (void)in_isr;
 }

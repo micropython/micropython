@@ -8,5 +8,6 @@ CHIP_FAMILY = MIMXRT1011
 FLASH = W25Q32JV
 
 # Include these Python libraries in the firmware
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_ConnectionManager
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_ESP32SPI
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Requests

@@ -38,7 +38,7 @@
 //| """
 
 STATIC const mp_rom_map_elem_t fourwire_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_busdisplay) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_fourwire) },
 
     { MP_ROM_QSTR(MP_QSTR_FourWire), MP_ROM_PTR(&fourwire_fourwire_type) },
 };

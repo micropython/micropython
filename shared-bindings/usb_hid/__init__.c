@@ -155,6 +155,39 @@ STATIC mp_obj_t usb_hid_get_boot_device(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_get_boot_device_obj, usb_hid_get_boot_device);
 
+
+//| def set_interface_name(interface_name: str) -> None:
+//|     """Override HID interface name in the USB Interface Descriptor.
+//|
+//|     ``interface_name`` must be an ASCII string (or buffer) of at most 126.
+//|
+//|     This method must be called in boot.py to have any effect.
+//|
+//|     Not available on boards without native USB support.
+//|     """
+//|     ...
+//|
+STATIC mp_obj_t usb_hid_set_interface_name(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_interface_name, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = mp_const_none} }
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
+
+    mp_buffer_info_t interface_name;
+    mp_get_buffer_raise(args[0].u_obj, &interface_name, MP_BUFFER_READ);
+    mp_arg_validate_length_range(interface_name.len, 1, 126, MP_QSTR_interface_name);
+
+    if (custom_usb_hid_interface_name == NULL) {
+        custom_usb_hid_interface_name = port_malloc(sizeof(char) * 128, false);
+    }
+    memcpy(custom_usb_hid_interface_name, interface_name.buf, interface_name.len);
+    custom_usb_hid_interface_name[interface_name.len] = 0;
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_set_interface_name_obj, 1, usb_hid_set_interface_name);
+
 // usb_hid.devices is set once the usb devices are determined, after boot.py runs.
 STATIC mp_map_elem_t usb_hid_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid) },
@@ -163,6 +196,7 @@ STATIC mp_map_elem_t usb_hid_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disable),         MP_OBJ_FROM_PTR(&usb_hid_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable),          MP_OBJ_FROM_PTR(&usb_hid_enable_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_boot_device), MP_OBJ_FROM_PTR(&usb_hid_get_boot_device_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_interface_name), MP_OBJ_FROM_PTR(&usb_hid_set_interface_name_obj) },
 };
 
 STATIC MP_DEFINE_MUTABLE_DICT(usb_hid_module_globals, usb_hid_module_globals_table);

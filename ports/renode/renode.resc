@@ -1,0 +1,29 @@
+using sysbus
+
+include @Simple32kHz.cs
+emulation CreateUartPtyTerminal "term" "/tmp/cp-uart"
+
+$board?="renode_cortex_m0plus"
+mach create $board
+
+machine LoadPlatformDescription $ORIGIN/boards/renode_cortex_m0plus/board.repl
+
+# uart RecordToAsciinema $ORIGIN/build-renode_cortex_m0plus/serial.asciinema
+connector Connect sysbus.uart term
+
+sysbus LoadELF @build-renode_cortex_m0plus/firmware.elf
+cpu VectorTableOffset `sysbus GetSymbolAddress "interrupt_table"`
+
+sysbus LoadBinary @build-renode_cortex_m0plus/circuitpy.img 0x10000000
+
+# Enable all debug logging
+# logLevel -1
+
+# Enable function profiling
+# cpu EnableProfiler CollapsedStack $ORIGIN/profile.folded true
+
+# Enable execution tracing
+# cpu CreateExecutionTracing "tracer_name" $ORIGIN/instruction_trace.txt Disassembly
+
+# Enable the gdb server
+# machine StartGdbServer 3333 true

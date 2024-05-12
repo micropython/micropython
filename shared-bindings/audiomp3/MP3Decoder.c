@@ -94,7 +94,9 @@ STATIC mp_obj_t audiomp3_mp3file_make_new(const mp_obj_type_t *type, size_t n_ar
         arg = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), arg, MP_ROM_QSTR(MP_QSTR_rb));
     }
 
-    audiomp3_mp3file_obj_t *self = mp_obj_malloc(audiomp3_mp3file_obj_t, &audiomp3_mp3file_type);
+    audiomp3_mp3file_obj_t *self = m_new_obj_with_finaliser(audiomp3_mp3file_obj_t);
+    self->base.type = &audiomp3_mp3file_type;
+
     if (!mp_obj_is_type(arg, &mp_type_fileio)) {
         mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
@@ -260,6 +262,7 @@ STATIC const mp_rom_map_elem_t audiomp3_mp3file_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&audiomp3_mp3file_open_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audiomp3_mp3file_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&audiomp3_mp3file_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audiomp3_mp3file___exit___obj) },
 

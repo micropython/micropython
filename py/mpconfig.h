@@ -1324,6 +1324,16 @@ typedef double mp_float_t;
 #define MICROPY_PY_COLLECTIONS_DEQUE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether "collections.deque" supports iteration
+#ifndef MICROPY_PY_COLLECTIONS_DEQUE_ITER
+#define MICROPY_PY_COLLECTIONS_DEQUE_ITER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether "collections.deque" supports subscription
+#ifndef MICROPY_PY_COLLECTIONS_DEQUE_SUBSCR
+#define MICROPY_PY_COLLECTIONS_DEQUE_SUBSCR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to provide "collections.OrderedDict" type
 #ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
@@ -1869,7 +1879,7 @@ typedef double mp_float_t;
 
 // String used for the banner, and sys.version additional information
 #ifndef MICROPY_BANNER_NAME_AND_VERSION
-#define MICROPY_BANNER_NAME_AND_VERSION "MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
+#define MICROPY_BANNER_NAME_AND_VERSION "CircuitPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
 #endif
 
 // String used for the second part of the banner, and sys.implementation._machine

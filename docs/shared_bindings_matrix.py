@@ -38,8 +38,9 @@ SUPPORTED_PORTS = [
     "espressif",
     "litex",
     "mimxrt10xx",
-    "nrf",
+    "nordic",
     "raspberrypi",
+    "renode",
     "silabs",
     "stm",
 ]
@@ -78,11 +79,12 @@ ADDITIONAL_MODULES = {
     "keypad.KeyMatrix": "CIRCUITPY_KEYPAD_KEYMATRIX",
     "keypad.Keys": "CIRCUITPY_KEYPAD_KEYS",
     "keypad.ShiftRegisterKeys": "CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS",
+    "keypad_demux.DemuxKeyMatrix": "CIRCUITPY_KEYPAD_DEMUX",
     "os.getenv": "CIRCUITPY_OS_GETENV",
     "select": "MICROPY_PY_SELECT_SELECT",
     "sys": "CIRCUITPY_SYS",
     "terminalio": "CIRCUITPY_DISPLAYIO",
-    "usb": "CIRCUITPY_USB_HOST",
+    "usb": "CIRCUITPY_PYUSB",
 }
 
 MODULES_NOT_IN_BINDINGS = [ "binascii", "errno", "json", "re", "ulab" ]
@@ -173,6 +175,11 @@ def get_settings_from_makefile(port_dir, board_name):
 
     This list must explicitly include any setting queried by tools/ci_set_matrix.py.
     """
+    if os.getenv('NO_BINDINGS_MATRIX'):
+        return {
+                'CIRCUITPY_BUILD_EXTENSIONS': '.bin'
+                }
+
     contents = subprocess.run(
         ["make", "-C", port_dir, "-f", "Makefile", f"BOARD={board_name}", "print-CFLAGS", "print-CIRCUITPY_BUILD_EXTENSIONS", "print-FROZEN_MPY_DIRS", "print-SRC_PATTERNS", "print-SRC_SUPERVISOR"],
         encoding="utf-8",

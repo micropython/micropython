@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEOUT_H
-#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pwmio/PWMOut.h"
@@ -36,7 +35,3 @@ typedef struct {
     mp_obj_base_t base;
     pwmio_pwmout_obj_t pwmout;
 } pulseio_pulseout_obj_t;
-
-void pulseout_reset(void);
-
-#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEOUT_H

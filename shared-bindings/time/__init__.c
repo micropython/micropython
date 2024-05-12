@@ -65,7 +65,7 @@
 //|
 STATIC mp_obj_t time_monotonic(void) {
     uint64_t ticks_ms = common_hal_time_monotonic_ms();
-    return mp_obj_new_float(uint64_to_float(ticks_ms) / 1000.0f);
+    return mp_obj_new_float(uint64_to_float(ticks_ms) / MICROPY_FLOAT_CONST(1000.0));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 
@@ -78,14 +78,12 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     #if MICROPY_PY_BUILTINS_FLOAT
     mp_float_t seconds = mp_obj_get_float(seconds_o);
-    mp_float_t msecs = 1000.0f * seconds + 0.5f;
+    mp_float_t msecs = MICROPY_FLOAT_CONST(1000.0) * seconds + MICROPY_FLOAT_CONST(0.5);
     #else
     mp_int_t seconds = mp_obj_get_int(seconds_o);
     mp_int_t msecs = 1000 * seconds;
     #endif
-    if (seconds < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("sleep length must be non-negative"));
-    }
+    mp_arg_validate_int_min(msecs, 0, MP_QSTR_seconds);
     common_hal_time_delay_ms(msecs);
     return mp_const_none;
 }
@@ -161,13 +159,13 @@ void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
     mp_obj_t *elems;
     size_t len;
 
-    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, (mp_obj_type_t *)&struct_time_type_obj.base)) {
-        mp_raise_TypeError(MP_ERROR_TEXT("Tuple or struct_time argument required"));
+    if (!mp_obj_is_type(t, &mp_type_tuple)) {
+        mp_arg_validate_type(t, (mp_obj_type_t *)&struct_time_type_obj.base, MP_QSTR_value);
     }
 
     mp_obj_tuple_get(t, &len, &elems);
     if (len != 9) {
-        mp_raise_TypeError(MP_ERROR_TEXT("function takes exactly 9 arguments"));
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("function takes %d positional arguments but %d were given"), 9, len);
     }
 
     tm->tm_year = mp_obj_get_int(elems[0]);
@@ -277,8 +275,8 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
     mp_obj_t *elem;
     size_t len;
 
-    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, (mp_obj_type_t *)&struct_time_type_obj.base)) {
-        mp_raise_TypeError(MP_ERROR_TEXT("Tuple or struct_time argument required"));
+    if (!mp_obj_is_type(t, &mp_type_tuple)) {
+        mp_arg_validate_type(t, (mp_obj_type_t *)&struct_time_type_obj.base, MP_QSTR_value);
     }
 
     mp_obj_tuple_get(t, &len, &elem);
@@ -287,7 +285,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
     }
 
     if (mp_obj_get_int(elem[0]) < 2000) {
-        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("timestamp out of range for platform time_t"));
+        mp_raise_msg_varg(&mp_type_OverflowError, MP_ERROR_TEXT("%q out of range"), MP_QSTR_tm_year);
     }
 
     mp_uint_t secs = timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),

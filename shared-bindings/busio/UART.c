@@ -97,7 +97,7 @@
 //|         *New in CircuitPython 4.0:* ``timeout`` has incompatibly changed units from milliseconds to seconds.
 //|         The new upper limit on ``timeout`` is meant to catch mistaken use of milliseconds.
 //|
-//|         **Limitations:** RS485 is not supported on SAMD, nRF, Broadcom, Spresense, or STM.
+//|         **Limitations:** RS485 is not supported on SAMD, Nordic, Broadcom, Spresense, or STM.
 //|         On i.MX and Raspberry Pi RP2040, RS485 support is implemented in software:
 //|         The timing for the ``rs485_dir`` pin signal is done on a best-effort basis, and may not meet
 //|         RS485 specifications intermittently.
@@ -155,6 +155,8 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     uint8_t bits = (uint8_t)mp_arg_validate_int_range(args[ARG_bits].u_int, 5, 9, MP_QSTR_bits);
 
+    uint16_t buffer_size = (uint16_t)mp_arg_validate_int_range(args[ARG_receiver_buffer_size].u_int, 1, 0xffff, MP_QSTR_receiver_buffer_size);
+
     busio_uart_parity_t parity = BUSIO_UART_PARITY_NONE;
     if (args[ARG_parity].u_obj == MP_OBJ_FROM_PTR(&busio_uart_parity_even_obj)) {
         parity = BUSIO_UART_PARITY_EVEN;
@@ -174,7 +176,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,
         args[ARG_baudrate].u_int, bits, parity, stop, timeout,
-        args[ARG_receiver_buffer_size].u_int, NULL, false);
+        buffer_size, NULL, false);
     return (mp_obj_t)self;
     #else
     mp_raise_NotImplementedError(NULL);
@@ -382,8 +384,6 @@ STATIC mp_obj_t busio_uart_obj_reset_input_buffer(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_reset_input_buffer_obj, busio_uart_obj_reset_input_buffer);
-#endif  // CIRCUITPY_BUSIO_UART
-
 //| class Parity:
 //|     """Enum-like class to define the parity used to verify correct data transfer."""
 //|
@@ -425,6 +425,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &busio_uart_parity_locals_dict
     );
 
+#endif  // CIRCUITPY_BUSIO_UART
+
 STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
     #if CIRCUITPY_BUSIO_UART
     { MP_ROM_QSTR(MP_QSTR___del__),      MP_ROM_PTR(&busio_uart_deinit_obj) },
@@ -444,16 +446,16 @@ STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_baudrate),     MP_ROM_PTR(&busio_uart_baudrate_obj) },
     { MP_ROM_QSTR(MP_QSTR_in_waiting),   MP_ROM_PTR(&busio_uart_in_waiting_obj) },
     { MP_ROM_QSTR(MP_QSTR_timeout),      MP_ROM_PTR(&busio_uart_timeout_obj) },
-    #endif  // CIRCUITPY_BUSIO_UART
 
     // Nested Enum-like Classes.
     { MP_ROM_QSTR(MP_QSTR_Parity),       MP_ROM_PTR(&busio_uart_parity_type) },
+    #endif  // CIRCUITPY_BUSIO_UART
+
 };
 STATIC MP_DEFINE_CONST_DICT(busio_uart_locals_dict, busio_uart_locals_dict_table);
 
 #if CIRCUITPY_BUSIO_UART
 STATIC const mp_stream_p_t uart_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = busio_uart_read,
     .write = busio_uart_write,
     .ioctl = busio_uart_ioctl,

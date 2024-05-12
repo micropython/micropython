@@ -100,6 +100,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_eventqueue_clear_obj, keypad_eventqueue_clear);
 //|         This is an easy way to check if the queue is empty.
 //|         """
 //|         ...
+//|
 //|     def __len__(self) -> int:
 //|         """Return the number of events currently in the queue. Used to implement ``len()``."""
 //|         ...
@@ -159,7 +160,6 @@ STATIC mp_uint_t eventqueue_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t
 }
 
 STATIC const mp_stream_p_t eventqueue_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .ioctl = eventqueue_ioctl,
 };
 #endif

@@ -177,12 +177,17 @@ size_t usb_midi_descriptor_length(void) {
     return sizeof(usb_midi_descriptor_template);
 }
 
-static const char midi_streaming_interface_name[] = USB_INTERFACE_NAME " MIDI";
-static const char midi_audio_control_interface_name[] = USB_INTERFACE_NAME " Audio";
-static const char midi_in_jack_name[] = USB_INTERFACE_NAME " usb_midi.ports[0]";
-static const char midi_out_jack_name[] = USB_INTERFACE_NAME " usb_midi.ports[0]";
+char *custom_usb_midi_streaming_interface_name = NULL;
+char *custom_usb_midi_audio_control_interface_name = NULL;
+char *custom_usb_midi_in_jack_name = NULL;
+char *custom_usb_midi_out_jack_name = NULL;
 
 size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string) {
+    const char *midi_streaming_interface_name;
+    const char *midi_audio_control_interface_name;
+    const char *midi_in_jack_name;
+    const char *midi_out_jack_name;
+
     memcpy(descriptor_buf, usb_midi_descriptor_template, sizeof(usb_midi_descriptor_template));
 
     descriptor_buf[MIDI_AUDIO_CONTROL_INTERFACE_NUMBER_INDEX] = descriptor_counts->current_interface;
@@ -200,17 +205,41 @@ size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *des
     descriptor_buf[MIDI_STREAMING_INTERFACE_NUMBER_INDEX_2] = descriptor_counts->current_interface;
     descriptor_counts->current_interface++;
 
+    if (custom_usb_midi_streaming_interface_name == NULL) {
+        midi_streaming_interface_name = USB_INTERFACE_NAME " MIDI";
+    } else {
+        midi_streaming_interface_name = custom_usb_midi_streaming_interface_name;
+    }
+
     usb_add_interface_string(*current_interface_string, midi_streaming_interface_name);
     descriptor_buf[MIDI_STREAMING_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
+
+    if (custom_usb_midi_audio_control_interface_name == NULL) {
+        midi_audio_control_interface_name = USB_INTERFACE_NAME " Audio";
+    } else {
+        midi_audio_control_interface_name = custom_usb_midi_audio_control_interface_name;
+    }
 
     usb_add_interface_string(*current_interface_string, midi_audio_control_interface_name);
     descriptor_buf[MIDI_AUDIO_CONTROL_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 
+    if (custom_usb_midi_in_jack_name == NULL) {
+        midi_in_jack_name = USB_INTERFACE_NAME " usb_midi.ports[0]";
+    } else {
+        midi_in_jack_name = custom_usb_midi_in_jack_name;
+    }
+
     usb_add_interface_string(*current_interface_string, midi_in_jack_name);
     descriptor_buf[MIDI_IN_JACK_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
+
+    if (custom_usb_midi_out_jack_name == NULL) {
+        midi_out_jack_name = USB_INTERFACE_NAME " usb_midi.ports[0]";
+    } else {
+        midi_out_jack_name = custom_usb_midi_out_jack_name;
+    }
 
     usb_add_interface_string(*current_interface_string, midi_out_jack_name);
     descriptor_buf[MIDI_OUT_JACK_STRING_INDEX] = *current_interface_string;

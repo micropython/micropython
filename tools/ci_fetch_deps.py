@@ -68,7 +68,7 @@ PORT_DEPS = {
     ],
     "litex": ["extmod/ulab/", "lib/tinyusb/", "lib/tlsf"],
     "mimxrt10xx": ["extmod/ulab/", "lib/tinyusb/", "lib/tlsf", "data/nvm.toml/"],
-    "nrf": [
+    "nordic": [
         "extmod/ulab/",
         "lib/mp3/",
         "lib/protomatter/",
@@ -88,6 +88,7 @@ PORT_DEPS = {
         "lib/tlsf",
         "data/nvm.toml/",
     ],
+    "renode": ["lib/tlsf"],
     "silabs": ["extmod/ulab/", "data/nvm.toml/", "lib/tlsf"],
     "stm": [
         "extmod/ulab/",
@@ -96,7 +97,7 @@ PORT_DEPS = {
         "lib/tinyusb/",
         "lib/tlsf",
         "data/nvm.toml/",
-    ]
+    ],
     # omit unix which is part of the "test" target below
 }
 
@@ -159,6 +160,8 @@ def main(target):
         submodules = [".", "frozen"]  # explicitly list frozen to get tags
     elif target == "scheduler":
         submodules = ["extmod/ulab", "lib/", "tools/"]
+    elif target == "translate":
+        submodules = ["extmod/ulab"]
     elif target == "tests":
         submodules = [
             "extmod/ulab",
@@ -174,7 +177,7 @@ def main(target):
         submodules = ["tools/"]  # for huffman
     elif target == "windows":
         # This builds one board from a number of ports so fill out a bunch of submodules
-        for port in ("atmel-samd", "nrf", "raspberrypi", "stm"):
+        for port in ("atmel-samd", "nordic", "raspberrypi", "stm"):
             submodules.append(f"ports/{port}")
             submodules.extend(PORT_DEPS[port])
         unique_submodules = set(submodules)

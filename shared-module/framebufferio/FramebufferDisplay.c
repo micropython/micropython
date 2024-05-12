@@ -35,7 +35,10 @@
 #include "shared-module/displayio/display_core.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/tick.h"
+
+#if CIRCUITPY_TINYUSB
 #include "supervisor/usb.h"
+#endif
 
 #include <stdint.h>
 #include <string.h>
@@ -220,7 +223,7 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t *self, const di
 
         // TODO(tannewt): Make refresh displays faster so we don't starve other
         // background tasks.
-        #if CIRCUITPY_USB
+        #if CIRCUITPY_TINYUSB
         usb_background();
         #endif
     }

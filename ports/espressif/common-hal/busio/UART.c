@@ -151,11 +151,11 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         uart_config.flow_ctrl = UART_HW_FLOWCTRL_CTS;
     }
 
-    if (receiver_buffer_size <= UART_FIFO_LEN) {
-        receiver_buffer_size = UART_FIFO_LEN + 8;
+    if (receiver_buffer_size <= UART_HW_FIFO_LEN(self->uart_num)) {
+        receiver_buffer_size = UART_HW_FIFO_LEN(self->uart_num) + 8;
     }
 
-    uart_config.rx_flow_ctrl_thresh = UART_FIFO_LEN - 8;
+    uart_config.rx_flow_ctrl_thresh = UART_HW_FIFO_LEN(self->uart_num) - 8;
     // Install the driver before we change the settings.
     if (uart_driver_install(self->uart_num, receiver_buffer_size, 0, 20, &self->event_queue, 0) != ESP_OK ||
         uart_set_mode(self->uart_num, mode) != ESP_OK) {
@@ -276,6 +276,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
     if (uart_set_pin(self->uart_num, tx_num, rx_num, rts_num, cts_num) != ESP_OK) {
         raise_ValueError_invalid_pins();
+    }
+    if (have_rx) {
+        // On ESP32-C3 and ESP32-S3 (at least),  a junk byte with zero or more consecutive 1's can be
+        // generated, even if the pin is pulled high (normal UART resting state) to begin with.
+        // Wait one byte time, but at least 1 msec, and clear the input buffer to discard it.
+        mp_hal_delay_ms(1 + (1000 * (bits + stop)) / baudrate);
+        common_hal_busio_uart_clear_rx_buffer(self);
     }
 }
 

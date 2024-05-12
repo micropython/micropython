@@ -409,6 +409,7 @@ MP_PROPERTY_GETSET(displayio_tilegrid_bitmap_obj,
 //|
 //|           print(grid[0])"""
 //|         ...
+//|
 //|     def __setitem__(self, index: Union[Tuple[int, int], int], value: int) -> None:
 //|         """Sets the tile index at the given index. The index can either be an x,y tuple or an int equal
 //|         to ``y * width + x``.

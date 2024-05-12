@@ -663,6 +663,7 @@ STATIC void mark_user_socket(socketpool_socket_obj_t *obj) {
 
 bool socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
+    int proto,
     socketpool_socket_obj_t *socket) {
 
     if (!register_open_socket(socket)) {
@@ -692,7 +693,7 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
             break;
         #if MICROPY_PY_LWIP_SOCK_RAW
         case SOCKETPOOL_SOCK_RAW: {
-            socket->pcb.raw = raw_new(0);
+            socket->pcb.raw = raw_new(proto);
             break;
         }
         #endif
@@ -730,7 +731,7 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 }
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type, int proto) {
     if (family != SOCKETPOOL_AF_INET) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("Only IPv4 sockets supported"));
     }
@@ -738,7 +739,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     socketpool_socket_obj_t *socket = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     socket->base.type = &socketpool_socket_type;
 
-    if (!socketpool_socket(self, family, type, socket)) {
+    if (!socketpool_socket(self, family, type, proto, socket)) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Out of sockets"));
     }
     mark_user_socket(socket);
@@ -864,7 +865,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
     return MP_OBJ_FROM_PTR(accepted);
 }
 
-bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
+size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     const char *host, size_t hostlen, uint32_t port) {
 
     // get address
@@ -875,7 +876,6 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     } else {
         bind_addr_ptr = IP_ANY_TYPE;
     }
-    ip_set_option(socket->pcb.ip, SOF_REUSEADDR);
 
     err_t err = ERR_ARG;
     switch (socket->type) {
@@ -890,10 +890,10 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     }
 
     if (err != ERR_OK) {
-        mp_raise_OSError(error_lookup_table[-err]);
+        return error_lookup_table[-err];
     }
 
-    return mp_const_none;
+    return 0;
 }
 
 STATIC err_t _lwip_tcp_close_poll(void *arg, struct tcp_pcb *pcb) {
@@ -1183,16 +1183,40 @@ void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint
     self->timeout = timeout_ms;
 }
 
+mp_int_t common_hal_socketpool_socket_get_type(socketpool_socket_obj_t *self) {
+    return self->type;
+}
+
 int common_hal_socketpool_socket_setsockopt(socketpool_socket_obj_t *self, int level, int optname, const void *value, size_t optlen) {
-    if (level == SOCKETPOOL_IPPROTO_TCP && optname == SOCKETPOOL_TCP_NODELAY) {
-        int one = 1;
-        bool enable = optlen == sizeof(&one) && memcmp(value, &one, optlen);
-        if (enable) {
-            tcp_set_flags(self->pcb.tcp, TF_NODELAY);
-        } else {
-            tcp_clear_flags(self->pcb.tcp, TF_NODELAY);
-        }
-        return 0;
+    int zero = 0;
+    bool enable = optlen == sizeof(&zero) && memcmp(value, &zero, optlen);
+
+    switch (level) {
+        case SOCKETPOOL_IPPROTO_TCP:
+            switch (optname) {
+                case SOCKETPOOL_TCP_NODELAY:
+                    if (enable) {
+                        tcp_set_flags(self->pcb.tcp, TF_NODELAY);
+                    } else {
+                        tcp_clear_flags(self->pcb.tcp, TF_NODELAY);
+                    }
+                    return 0;
+                    break;
+            }
+            break;
+
+        case SOCKETPOOL_SOL_SOCKET:
+            switch (optname) {
+                case SOCKETPOOL_SO_REUSEADDR:
+                    if (enable) {
+                        ip_set_option(self->pcb.ip, SOF_REUSEADDR);
+                    } else {
+                        ip_reset_option(self->pcb.ip, SOF_REUSEADDR);
+                    }
+                    return 0;
+                    break;
+            }
+            break;
     }
     return -MP_EOPNOTSUPP;
 }

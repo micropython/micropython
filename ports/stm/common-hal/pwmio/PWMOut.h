@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_PWMIO_PWMOUT_H
-#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_PWMIO_PWMOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -46,7 +45,3 @@ typedef struct {
     uint8_t channel;
     bool variable_frequency;
 } pwmio_pwmout_obj_t;
-
-void pwmout_reset(void);
-
-#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_PWMIO_PWMOUT_H

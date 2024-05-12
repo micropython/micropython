@@ -70,9 +70,6 @@ int64_t pulseout_interrupt_handler(alarm_id_t id, void *user_data) {
     return 0;
 }
 
-void pulseout_reset() {
-}
-
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     const mcu_pin_obj_t *pin,
     uint32_t frequency,

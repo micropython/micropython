@@ -43,7 +43,10 @@
 
 #include "supervisor/filesystem.h"
 #include "supervisor/flash.h"
+
+#if CIRCUITPY_USB_DEVICE
 #include "supervisor/usb.h"
+#endif
 
 #define OP_READ     0
 #define OP_WRITE    1
@@ -60,7 +63,8 @@ STATIC uint32_t _cache_lba = 0xffffffff;
 #define SECSIZE(fs) ((fs)->ssize)
 #endif // FF_MAX_SS == FF_MIN_SS
 STATIC DWORD fatfs_bytes(void) {
-    FATFS *fatfs = filesystem_circuitpy();
+    fs_user_mount_t *fs_mount = filesystem_circuitpy();
+    FATFS *fatfs = &fs_mount->fatfs;
     return (fatfs->csize * SECSIZE(fatfs)) * (fatfs->n_fatent - 2);
 }
 STATIC bool storage_extended = true;
@@ -150,7 +154,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         uint32_t block_address = lba + block;
         uint32_t sector_offset = block_address / blocks_per_sector * SECTOR_SIZE;
         uint8_t block_offset = block_address % blocks_per_sector;
-        if (_cache_lba != block_address) {
+        if (_cache_lba != sector_offset) {
             supervisor_flash_read_blocks(_cache, sector_offset / FILESYSTEM_BLOCK_SIZE, blocks_per_sector);
             _cache_lba = sector_offset;
         }
@@ -167,7 +171,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         #if CIRCUITPY_STORAGE_EXTEND
         multi_partition_rw(_cache, sector_offset, SECTOR_SIZE, OP_WRITE);
         #else
-        single_partition_rw(_partition[0], _cache, sector_offset, SECTOR_SIZE, OP_READ);
+        single_partition_rw(_partition[0], _cache, sector_offset, SECTOR_SIZE, OP_WRITE);
         #endif
     }
     return 0; // success

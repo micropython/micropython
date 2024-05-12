@@ -29,42 +29,16 @@
 
 #include "common-hal/socketpool/SocketPool.h"
 
+#include "shared-bindings/socketpool/__init__.h"
+#include "shared-bindings/socketpool/enum.h"
 #include "shared-bindings/socketpool/Socket.h"
 
 extern const mp_obj_type_t socketpool_socketpool_type;
 
-typedef enum {
-    SOCKETPOOL_SOCK_STREAM = 1,
-    SOCKETPOOL_SOCK_DGRAM = 2,
-    SOCKETPOOL_SOCK_RAW = 3
-} socketpool_socketpool_sock_t;
-
-typedef enum {
-    SOCKETPOOL_AF_INET = 2,
-    SOCKETPOOL_AF_INET6 = 10
-} socketpool_socketpool_addressfamily_t;
-
-typedef enum {
-    SOCKETPOOL_IPPROTO_IP = 0,
-    SOCKETPOOL_IPPROTO_TCP = 6,
-} socketpool_socketpool_ipproto_t;
-
-typedef enum {
-    SOCKETPOOL_TCP_NODELAY = 1,
-} socketpool_socketpool_tcpopt_t;
-
-typedef enum {
-    SOCKETPOOL_IP_MULTICAST_TTL = 5,
-} socketpool_socketpool_ipopt_t;
-
-typedef enum {
-    SOCKETPOOL_EAI_NONAME  = -2,
-} socketpool_eai_t;
-
 void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *self, mp_obj_t radio);
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type);
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type, int proto);
 
 mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
     const char *host);
@@ -76,7 +50,7 @@ mp_obj_t common_hal_socketpool_socketpool_gethostbyname_raise(socketpool_socketp
 // closed automatically.
 bool socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
-    socketpool_socket_obj_t *sock);
+    int proto, socketpool_socket_obj_t *sock);
 
 NORETURN void common_hal_socketpool_socketpool_raise_gaierror_noname(void);
 

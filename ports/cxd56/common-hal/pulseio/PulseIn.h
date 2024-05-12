@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PULSEIN_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PULSEIN_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -43,5 +42,3 @@ typedef struct {
     bool first_edge;
     bool paused;
 } pulseio_pulsein_obj_t;
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PULSEIN_H

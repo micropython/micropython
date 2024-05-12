@@ -42,7 +42,7 @@ STATIC ringbuf_t ringbuf;
 STATIC uint8_t buf[128];
 STATIC volatile bool connected;
 
-#if CIRCUITPY_ESP_USB_SERIAL_JTAG && !CONFIG_ESP_PHY_ENABLE_USB
+#if CIRCUITPY_ESP_USB_SERIAL_JTAG && defined(SOC_WIFI_PHY_NEEDS_USB_WORKAROUND) && !defined(CONFIG_ESP_PHY_ENABLE_USB)
 #error "CONFIG_ESP_PHY_ENABLE_USB must be enabled in sdkconfig"
 #endif
 
@@ -121,8 +121,8 @@ char usb_serial_jtag_read_char(void) {
     return c;
 }
 
-bool usb_serial_jtag_bytes_available(void) {
-    return ringbuf_num_filled(&ringbuf) > 0 || usb_serial_jtag_ll_rxfifo_data_available();
+uint32_t usb_serial_jtag_bytes_available(void) {
+    return ringbuf_num_filled(&ringbuf) + usb_serial_jtag_ll_rxfifo_data_available();
 }
 
 void usb_serial_jtag_write(const char *text, uint32_t length) {

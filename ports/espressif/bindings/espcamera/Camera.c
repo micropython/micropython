@@ -140,7 +140,8 @@ STATIC mp_obj_t espcamera_camera_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_int_t jpeg_quality = mp_arg_validate_int_range(args[ARG_jpeg_quality].u_int, 2, 55, MP_QSTR_jpeg_quality);
     mp_int_t framebuffer_count = mp_arg_validate_int_range(args[ARG_framebuffer_count].u_int, 1, 2, MP_QSTR_framebuffer_count);
 
-    espcamera_camera_obj_t *self = mp_obj_malloc(espcamera_camera_obj_t, &espcamera_camera_type);
+    espcamera_camera_obj_t *self = m_new_obj_with_finaliser(espcamera_camera_obj_t);
+    self->base.type = &espcamera_camera_type;
     common_hal_espcamera_camera_construct(
         self,
         data_pins,
@@ -958,6 +959,7 @@ STATIC const mp_rom_map_elem_t espcamera_camera_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&espcamera_camera_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_denoise), MP_ROM_PTR(&espcamera_camera_denoise_obj) },
     { MP_ROM_QSTR(MP_QSTR_framebuffer_count), MP_ROM_PTR(&espcamera_camera_framebuffer_count_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&espcamera_camera_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&espcamera_camera___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_exposure_ctrl), MP_ROM_PTR(&espcamera_camera_exposure_ctrl_obj) },

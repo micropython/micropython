@@ -32,7 +32,7 @@
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/reload.h"
-#include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 #include "py/mpprint.h"
 #include "py/runtime.h"
 
@@ -49,8 +49,6 @@
 #include "common-hal/busio/UART.h"
 #include "common-hal/dualbank/__init__.h"
 #include "common-hal/ps2io/Ps2.h"
-#include "common-hal/pulseio/PulseIn.h"
-#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/watchdog/WatchDogTimer.h"
 #include "common-hal/socketpool/Socket.h"
 #include "common-hal/wifi/__init__.h"
@@ -61,13 +59,6 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/socketpool/__init__.h"
 #include "shared-module/os/__init__.h"
-
-#include "peripherals/rmt.h"
-#include "peripherals/timer.h"
-
-#if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
-#include "peripherals/pcnt.h"
-#endif
 
 #if CIRCUITPY_TOUCHIO_USE_NATIVE
 #include "peripherals/touch.h"
@@ -104,11 +95,12 @@
 #include "esp32/rom/efuse.h"
 #endif
 
+#if CIRCUITPY_SSL
+#include "shared-module/ssl/__init__.h"
+#endif
+
 #include "esp_log.h"
 #define TAG "port"
-
-uint32_t *heap;
-uint32_t heap_size;
 
 STATIC esp_timer_handle_t _tick_timer;
 STATIC esp_timer_handle_t _sleep_timer;
@@ -255,9 +247,6 @@ safe_mode_t port_init(void) {
     esp_rom_install_uart_printf();
     #endif
 
-    heap = NULL;
-    heap_size = 0;
-
     #define pin_GPIOn(n) pin_GPIO##n
     #define pin_GPIOn_EXPAND(x) pin_GPIOn(x)
 
@@ -281,7 +270,7 @@ safe_mode_t port_init(void) {
     #endif
 
     #ifndef ENABLE_JTAG
-    #define ENABLE_JTAG (defined(DEBUG) && DEBUG)
+    #define ENABLE_JTAG (0)
     #endif
 
     #if ENABLE_JTAG
@@ -329,19 +318,28 @@ void *port_malloc(size_t size, bool dma_capable) {
     if (dma_capable) {
         caps |= MALLOC_CAP_DMA;
     }
-    return heap_caps_malloc(size, caps);
+
+    void *ptr = NULL;
+    // Try SPIRAM first when available.
+    #ifdef CONFIG_SPIRAM
+    ptr = heap_caps_malloc(size, caps | MALLOC_CAP_SPIRAM);
+    #endif
+    if (ptr == NULL) {
+        ptr = heap_caps_malloc(size, caps);
+    }
+    return ptr;
 }
 
 void port_free(void *ptr) {
     heap_caps_free(ptr);
 }
 
-void port_realloc(void *ptr, size_t size) {
-    heap_caps_realloc(ptr, size, MALLOC_CAP_8BIT);
+void *port_realloc(void *ptr, size_t size) {
+    return heap_caps_realloc(ptr, size, MALLOC_CAP_8BIT);
 }
 
 size_t port_heap_get_largest_free_size(void) {
-    size_t free_size = heap_caps_get_largest_free_block(0);
+    size_t free_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
     return free_size;
 }
 
@@ -349,6 +347,10 @@ void reset_port(void) {
     // TODO deinit for esp32-camera
     #if CIRCUITPY_ESPCAMERA
     esp_camera_deinit();
+    #endif
+
+    #if CIRCUITPY_SSL
+    ssl_reset();
     #endif
 
     reset_all_pins();
@@ -363,10 +365,6 @@ void reset_port(void) {
     uart_reset();
     #endif
 
-    #if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
-    peripherals_pcnt_reset();
-    #endif
-
     #if CIRCUITPY_DUALBANK
     dualbank_reset();
     #endif
@@ -379,21 +377,8 @@ void reset_port(void) {
     espulp_reset();
     #endif
 
-    #if CIRCUITPY_FREQUENCYIO
-    peripherals_timer_reset();
-    #endif
-
     #if CIRCUITPY_PS2IO
     ps2_reset();
-    #endif
-
-    #if CIRCUITPY_PULSEIO
-    peripherals_rmt_reset();
-    pulsein_reset();
-    #endif
-
-    #if CIRCUITPY_PWMIO
-    pwmout_reset();
     #endif
 
     #if CIRCUITPY_RTC
@@ -422,7 +407,7 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
-    #ifndef CONFIG_IDF_TARGET_ARCH_RISCV
+    #if CIRCUITPY_DEBUG
     esp_backtrace_print(100);
     #endif
     esp_restart();
@@ -537,3 +522,5 @@ extern void app_main(void);
 void app_main(void) {
     main();
 }
+
+portMUX_TYPE background_task_mutex = portMUX_INITIALIZER_UNLOCKED;

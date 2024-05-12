@@ -74,7 +74,7 @@ displayio_group_t *native_group(mp_obj_t group_obj) {
 }
 
 //|     hidden: bool
-//|     """True when the Group and all of it's layers are not visible. When False, the Group's layers
+//|     """True when the Group and all of its layers are not visible. When False, the Group's layers
 //|     are visible if they haven't been hidden."""
 STATIC mp_obj_t displayio_group_obj_get_hidden(mp_obj_t self_in) {
     displayio_group_t *self = native_group(self_in);
@@ -281,6 +281,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|
 //|           print(group[0])"""
 //|         ...
+//|
 //|     def __setitem__(
 //|         self,
 //|         index: int,
@@ -292,6 +293,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|
 //|           group[0] = sprite"""
 //|         ...
+//|
 //|     def __delitem__(self, index: int) -> None:
 //|         """Deletes the value at the given index.
 //|

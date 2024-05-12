@@ -76,18 +76,19 @@ inline bool background_callback_pending(void) {
     return callback_head != NULL;
 }
 
-static bool in_background_callback;
+static int background_prevention_count;
+
 void PLACE_IN_ITCM(background_callback_run_all)() {
     port_background_task();
     if (!background_callback_pending()) {
         return;
     }
     CALLBACK_CRITICAL_BEGIN;
-    if (in_background_callback) {
+    if (background_prevention_count) {
         CALLBACK_CRITICAL_END;
         return;
     }
-    in_background_callback = true;
+    ++background_prevention_count;
     background_callback_t *cb = (background_callback_t *)callback_head;
     callback_head = NULL;
     callback_tail = NULL;
@@ -104,15 +105,19 @@ void PLACE_IN_ITCM(background_callback_run_all)() {
         CALLBACK_CRITICAL_BEGIN;
         cb = next;
     }
-    in_background_callback = false;
+    --background_prevention_count;
     CALLBACK_CRITICAL_END;
 }
 
-void background_callback_begin_critical_section() {
+void background_callback_prevent() {
     CALLBACK_CRITICAL_BEGIN;
+    ++background_prevention_count;
+    CALLBACK_CRITICAL_END;
 }
 
-void background_callback_end_critical_section() {
+void background_callback_allow() {
+    CALLBACK_CRITICAL_BEGIN;
+    --background_prevention_count;
     CALLBACK_CRITICAL_END;
 }
 
@@ -126,19 +131,27 @@ void background_callback_reset() {
     background_callback_t *cb = (background_callback_t *)callback_head;
     while (cb) {
         background_callback_t *next = cb->next;
-        if (gc_ptr_on_heap((void *)cb)) {
-            *previous_next = cb;
-            previous_next = &cb->next;
-            cb->next = NULL;
-            new_tail = cb;
+        cb->next = NULL;
+        // Unlink any callbacks that are allocated on the python heap or if they
+        // reference data on the python heap. The python heap will be disappear
+        // soon after this.
+        if (gc_ptr_on_heap((void *)cb) || gc_ptr_on_heap(cb->data)) {
+            cb->prev = NULL; // Used to indicate a callback isn't queued.
         } else {
-            memset(cb, 0, sizeof(*cb));
+            // Set .next of the previous callback.
+            *previous_next = cb;
+            // Set our .next for the next callback.
+            previous_next = &cb->next;
+            // Set our prev to the last callback.
+            cb->prev = new_tail;
+            // Now we're the tail of the list.
+            new_tail = cb;
         }
         cb = next;
     }
     callback_head = new_head;
     callback_tail = new_tail;
-    in_background_callback = false;
+    background_prevention_count = 0;
     CALLBACK_CRITICAL_END;
 }
 

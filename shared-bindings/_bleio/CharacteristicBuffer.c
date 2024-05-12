@@ -99,12 +99,14 @@ STATIC void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
 //|         :return: Data read
 //|         :rtype: bytes or None"""
 //|         ...
+//|
 //|     def readinto(self, buf: WriteableBuffer) -> Optional[int]:
 //|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
 //|         :return: number of bytes read and stored into ``buf``
 //|         :rtype: int or None (on a non-blocking error)"""
 //|         ...
+//|
 //|     def readline(self) -> bytes:
 //|         """Read a line, ending in a newline character.
 //|
@@ -212,7 +214,6 @@ STATIC const mp_rom_map_elem_t bleio_characteristic_buffer_locals_dict_table[] =
 STATIC MP_DEFINE_CONST_DICT(bleio_characteristic_buffer_locals_dict, bleio_characteristic_buffer_locals_dict_table);
 
 STATIC const mp_stream_p_t characteristic_buffer_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = bleio_characteristic_buffer_read,
     .write = bleio_characteristic_buffer_write,
     .ioctl = bleio_characteristic_buffer_ioctl,

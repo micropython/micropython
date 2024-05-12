@@ -25,6 +25,7 @@ runs:
         inputs.port != 'espressif'
       uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
+        # When changing this update what Windows grabs too!
         release: '13.2.Rel1'
 
     # espressif

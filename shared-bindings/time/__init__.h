@@ -30,6 +30,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "py/obj.h"
 #include "shared/timeutils/timeutils.h"
 
 extern mp_obj_t struct_time_from_tm(timeutils_struct_time_t *tm);

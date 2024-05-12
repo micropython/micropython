@@ -225,5 +225,6 @@ displayio_group_t circuitpython_splash = {
     .item_removed = false,
     .in_group = false,
     .hidden = false,
-    .hidden_by_parent = false
+    .hidden_by_parent = false,
+    .readonly = true,
 };

@@ -122,6 +122,14 @@ STATIC size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32
         // Not currently used, but might be in the future.
         mp_raise_RuntimeError(MP_ERROR_TEXT("Audio conversion not implemented"));
     }
+    if (dma->swap_channel) {
+        // Loop for swapping left and right channels
+        for (uint32_t i = 0; i < out_i; i += 2) {
+            uint16_t temp = ((uint16_t *)output)[i];
+            ((uint16_t *)output)[i] = ((uint16_t *)output)[i + 1];
+            ((uint16_t *)output)[i + 1] = temp;
+        }
+    }
     #pragma GCC diagnostic pop
     return output_length_used;
 }
@@ -183,7 +191,8 @@ audio_dma_result audio_dma_setup_playback(
     bool output_signed,
     uint8_t output_resolution,
     uint32_t output_register_address,
-    uint8_t dma_trigger_source) {
+    uint8_t dma_trigger_source,
+    bool swap_channel) {
 
     // Use two DMA channels to play because the DMA can't wrap to itself without the
     // buffer being power of two aligned.
@@ -212,6 +221,7 @@ audio_dma_result audio_dma_setup_playback(
     dma->output_resolution = output_resolution;
     dma->sample_resolution = audiosample_bits_per_sample(sample);
     dma->output_register_address = output_register_address;
+    dma->swap_channel = swap_channel;
 
     audiosample_reset_buffer(sample, single_channel_output, audio_channel);
 

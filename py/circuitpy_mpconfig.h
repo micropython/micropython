@@ -26,7 +26,7 @@
 
 // This file contains settings that are common across CircuitPython ports, to make
 // sure that the same feature set and settings are used, such as in atmel-samd
-// and nrf.
+// and nordic.
 
 #ifndef __INCLUDED_MPCONFIG_CIRCUITPY_H
 #define __INCLUDED_MPCONFIG_CIRCUITPY_H
@@ -37,6 +37,12 @@
 // This is CircuitPython.
 // Always 1: defined in circuitpy_mpconfig.mk
 // #define CIRCUITPY (1)
+
+// Can be removed once CircuitPython 10 is released.
+// Print warnings or not about deprecated names. See objmodule.c.
+#ifndef CIRCUITPY_8_9_WARNINGS
+#define CIRCUITPY_8_9_WARNINGS (0)
+#endif
 
 // REPR_C encodes qstrs, 31-bit ints, and 30-bit floats in a single 32-bit word.
 #ifndef MICROPY_OBJ_REPR
@@ -87,7 +93,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_TRACKED_ALLOC            (CIRCUITPY_SSL_MBEDTLS)
 #define MICROPY_ENABLE_SOURCE_LINE       (1)
 #define MICROPY_EPOCH_IS_1970            (1)
-#define MICROPY_ERROR_REPORTING          (MICROPY_ERROR_REPORTING_NORMAL)
+#define MICROPY_ERROR_REPORTING          (CIRCUITPY_FULL_BUILD ? MICROPY_ERROR_REPORTING_NORMAL : MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH  (0)
 #define MICROPY_FLOAT_IMPL               (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_GC_ALLOC_THRESHOLD       (0)
@@ -132,6 +138,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_BUILTINS_STR_UNICODE  (1)
 
 #define MICROPY_PY_BINASCII             (CIRCUITPY_BINASCII)
+#define MICROPY_PY_BINASCII_CRC32       (CIRCUITPY_BINASCII && CIRCUITPY_ZLIB)
 #define MICROPY_PY_CMATH                 (0)
 #define MICROPY_PY_COLLECTIONS           (CIRCUITPY_COLLECTIONS)
 #define MICROPY_PY_DESCRIPTORS           (1)
@@ -142,6 +149,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_GC                    (1)
 // Supplanted by shared-bindings/math
 #define MICROPY_PY_IO                    (CIRCUITPY_IO)
+#define MICROPY_PY_IO_IOBASE             (CIRCUITPY_IO_IOBASE)
 // In extmod
 #define MICROPY_PY_JSON                 (CIRCUITPY_JSON)
 #define MICROPY_PY_MATH                  (0)
@@ -257,6 +265,8 @@ typedef long mp_off_t;
 #endif
 #ifndef MICROPY_PY_COLLECTIONS_DEQUE
 #define MICROPY_PY_COLLECTIONS_DEQUE          (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_COLLECTIONS_DEQUE_ITER     (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_COLLECTIONS_DEQUE_SUBSCR   (CIRCUITPY_FULL_BUILD)
 #endif
 #define MICROPY_PY_RE_MATCH_GROUPS           (CIRCUITPY_RE)
 #define MICROPY_PY_RE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
@@ -412,9 +422,6 @@ extern const struct _mp_obj_module_t nvm_module;
 #include <alloca.h>
 
 #define MP_STATE_PORT MP_STATE_VM
-
-// From supervisor/memory.c
-struct _supervisor_allocation_node;
 
 void background_callback_run_all(void);
 #define RUN_BACKGROUND_TASKS (background_callback_run_all())

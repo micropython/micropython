@@ -127,7 +127,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         uint32_t sector_offset = block_address / blocks_per_sector * SECTOR_SIZE;
         uint8_t block_offset = block_address % blocks_per_sector;
 
-        if (_cache_lba != block_address) {
+        if (_cache_lba != sector_offset) {
             port_internal_flash_flush();
             memcpy(_cache,
                 (void *)(XIP_BASE + CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + sector_offset),

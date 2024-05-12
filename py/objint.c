@@ -140,9 +140,9 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
     if (u.p.exp == ((1 << MP_FLOAT_EXP_BITS) - 1)) {
         // ...then number is Inf (positive or negative) if fraction is 0, else NaN.
         if (u.p.frc == 0) {
-            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert inf to int"));
+            mp_raise_msg_varg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert %s to int"), "inf");
         } else {
-            mp_raise_ValueError(MP_ERROR_TEXT("can't convert NaN to int"));
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("can't convert %s to int"), "NaN");
         }
     } else {
         mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
