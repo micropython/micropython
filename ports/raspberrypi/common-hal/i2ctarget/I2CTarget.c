@@ -111,7 +111,7 @@ int common_hal_i2ctarget_i2c_target_is_addressed(i2ctarget_i2c_target_obj_t *sel
 
     *address = self->peripheral->hw->sar;
     *is_read = !(self->peripheral->hw->raw_intr_stat & I2C_IC_INTR_STAT_R_RX_FULL_BITS);
-    *is_restart = ((self->peripheral->hw->raw_intr_stat & I2C_IC_RAW_INTR_STAT_RD_REQ_RESET) != 0);
+    *is_restart = ((self->peripheral->hw->raw_intr_stat & I2C_IC_INTR_STAT_R_RESTART_DET_BITS) != 0);
 
     common_hal_i2ctarget_i2c_target_ack(self, true);
     return 1;
