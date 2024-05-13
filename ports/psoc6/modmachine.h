@@ -18,6 +18,7 @@ extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_wdt_type;
 extern const mp_obj_type_t machine_adcblock_type;
 extern const mp_obj_type_t machine_i2s_type;
+extern const mp_obj_type_t machine_uart_type;
 
 // Add all mod machine deinits
 void mod_pin_phy_deinit(void);
