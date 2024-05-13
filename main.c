@@ -473,9 +473,6 @@ STATIC bool __attribute__((noinline)) run_code_py(safe_mode_t safe_mode, bool *s
         usb_setup_with_vm();
         #endif
 
-        // Make sure we are in the root directory before looking at files.
-        common_hal_os_chdir("/");
-
         // Check if a different run file has been allocated
         if (next_code_configuration != NULL) {
             next_code_configuration->options &= ~SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
@@ -1112,6 +1109,10 @@ int __attribute__((used)) main(void) {
                 serial_write_compressed(MP_ERROR_TEXT("soft reboot\n"));
             }
             simulate_reset = false;
+
+            // Always return to root before trying to run files.
+            common_hal_os_chdir("/");
+
             if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
                 // If code.py did a fake deep sleep, pretend that we
                 // are running code.py for the first time after a hard
