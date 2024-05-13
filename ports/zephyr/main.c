@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #ifdef CONFIG_NETWORKING
 #include <zephyr/net/net_context.h>
 #endif
