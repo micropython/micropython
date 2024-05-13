@@ -267,6 +267,9 @@ static volatile bool _woken_up;
 
 uint64_t port_get_raw_ticks(uint8_t *subticks) {
     uint64_t microseconds = time_us_64();
+    if (subticks != NULL) {
+        *subticks = (uint8_t)(((microseconds % 1000000) % 977) / 31);
+    }
     return 1024 * (microseconds / 1000000) + (microseconds % 1000000) / 977;
 }
 
