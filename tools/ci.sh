@@ -707,8 +707,8 @@ function ci_zephyr_install {
 }
 
 function ci_zephyr_build {
-    docker exec zephyr-ci west build -p auto -b qemu_x86 -- -DCONF_FILE=prj_minimal.conf
-    docker exec zephyr-ci west build -p auto -b frdm_k64f
-    docker exec zephyr-ci west build -p auto -b mimxrt1050_evk
-    docker exec zephyr-ci west build -p auto -b nucleo_wb55rg # for bluetooth
+    docker exec zephyr-ci west build -p auto -b qemu_x86 -- -DCONF_FILE=prj_minimal.conf -DCONFIG_COMPILER_WARNINGS_AS_ERRORS:STRING=y
+    docker exec zephyr-ci west build -p auto -b frdm_k64f -- -DCONFIG_COMPILER_WARNINGS_AS_ERRORS:STRING=y
+    docker exec zephyr-ci west build -p auto -b mimxrt1050_evk -- -DCONFIG_COMPILER_WARNINGS_AS_ERRORS:STRING=y
+    docker exec zephyr-ci west build -p auto -b nucleo_wb55rg -- -DCONFIG_COMPILER_WARNINGS_AS_ERRORS:STRING=y # for bluetooth
 }
