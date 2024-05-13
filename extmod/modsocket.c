@@ -470,7 +470,7 @@ static const mp_rom_map_elem_t socket_locals_dict_table[] = {
 
 static MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 
-mp_uint_t socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->nic == MP_OBJ_NULL) {
         return MP_STREAM_ERROR;
@@ -482,7 +482,7 @@ mp_uint_t socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode)
     return ret;
 }
 
-mp_uint_t socket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t socket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->nic == MP_OBJ_NULL) {
         return MP_STREAM_ERROR;
@@ -494,7 +494,7 @@ mp_uint_t socket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *e
     return ret;
 }
 
-mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (request == MP_STREAM_CLOSE) {
         if (self->nic != MP_OBJ_NULL) {
