@@ -59,6 +59,16 @@ enum {
     PROXY_KIND_JS_PYPROXY = 7,
 };
 
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_undefined,
+    MP_QSTR_undefined,
+    MP_TYPE_FLAG_NONE
+    );
+
+static const mp_obj_base_t mp_const_undefined_obj = {&mp_type_undefined};
+
+#define mp_const_undefined (MP_OBJ_FROM_PTR(&mp_const_undefined_obj))
+
 MP_DEFINE_EXCEPTION(JsException, Exception)
 
 void proxy_c_init(void) {
@@ -80,7 +90,7 @@ static inline mp_obj_t proxy_c_get_obj(uint32_t c_ref) {
 
 mp_obj_t proxy_convert_js_to_mp_obj_cside(uint32_t *value) {
     if (value[0] == PROXY_KIND_JS_UNDEFINED) {
-        return mp_const_none;
+        return mp_const_undefined;
     } else if (value[0] == PROXY_KIND_JS_NULL) {
         return mp_const_none;
     } else if (value[0] == PROXY_KIND_JS_BOOLEAN) {
@@ -122,6 +132,9 @@ void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out) {
         const char *str = mp_obj_str_get_data(obj, &len);
         out[1] = len;
         out[2] = (uintptr_t)str;
+    } else if (obj == mp_const_undefined) {
+        kind = PROXY_KIND_MP_JSPROXY;
+        out[1] = 1;
     } else if (mp_obj_is_jsproxy(obj)) {
         kind = PROXY_KIND_MP_JSPROXY;
         out[1] = mp_obj_jsproxy_get_ref(obj);
