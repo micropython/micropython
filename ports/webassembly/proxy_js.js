@@ -56,7 +56,7 @@ class PythonError extends Error {
 }
 
 function proxy_js_init() {
-    globalThis.proxy_js_ref = [globalThis];
+    globalThis.proxy_js_ref = [globalThis, undefined];
 }
 
 function proxy_call_python(target, argumentsList) {
