@@ -434,14 +434,11 @@ if [ ${psoc6WdtOnly} -eq 1 ]; then
   echo "  running only psoc6 wdt tests ..."
   echo
 
-  ./run-tests.py --target psoc6 --device ${device0} psoc6/wdt.py \
-    | tee -a ${resultsFile}
-  
-  # A delay is added here for the device to come out of watchdog reset
-  sleep 5
-
-  ./run-tests.py --target psoc6 --device ${device0} psoc6/wdt_reset_check.py \
-    | tee -a ${resultsFile}
+  python3 ./psoc6/test_scripts/wdt_script.py ${device0} 
+  if [ $? -ne 0 ]; then
+    echo "watchdog test failed"
+    exit 1
+  fi
   
   echo
   echo "  done."
