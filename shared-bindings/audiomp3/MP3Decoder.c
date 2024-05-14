@@ -10,6 +10,7 @@
 #include "shared/runtime/context_manager_helpers.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "shared-bindings/audiomp3/MP3Decoder.h"
 #include "shared-bindings/util.h"
 
@@ -68,16 +69,18 @@
 
 static mp_obj_t audiomp3_mp3file_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
-    mp_obj_t arg = args[0];
+    mp_obj_t stream = args[0];
 
-    if (mp_obj_is_str(arg)) {
-        arg = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), arg, MP_ROM_QSTR(MP_QSTR_rb));
+    if (mp_obj_is_str(stream)) {
+        stream = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), stream, MP_ROM_QSTR(MP_QSTR_rb));
     }
 
     audiomp3_mp3file_obj_t *self = m_new_obj_with_finaliser(audiomp3_mp3file_obj_t);
     self->base.type = &audiomp3_mp3file_type;
 
-    if (!mp_obj_is_type(arg, &mp_type_fileio)) {
+    const mp_stream_p_t *stream_p = mp_get_stream_raise(stream, MP_STREAM_OP_READ);
+
+    if (stream_p->is_text) {
         mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
     uint8_t *buffer = NULL;
@@ -88,8 +91,7 @@ static mp_obj_t audiomp3_mp3file_make_new(const mp_obj_type_t *type, size_t n_ar
         buffer = bufinfo.buf;
         buffer_size = bufinfo.len;
     }
-    common_hal_audiomp3_mp3file_construct(self, MP_OBJ_TO_PTR(arg),
-        buffer, buffer_size);
+    common_hal_audiomp3_mp3file_construct(self, stream, buffer, buffer_size);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -131,7 +133,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiomp3_mp3file___exit___obj, 4, 4, 
 static mp_obj_t audiomp3_mp3file_obj_get_file(mp_obj_t self_in) {
     audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    return self->file;
+    return self->stream;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_file_obj, audiomp3_mp3file_obj_get_file);
 

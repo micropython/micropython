@@ -25,7 +25,7 @@ typedef struct {
     uint32_t frame_buffer_size;
 
     uint32_t sample_rate;
-    pyb_file_obj_t *file;
+    mp_obj_t stream;
 
     uint8_t buffer_index;
     uint8_t channel_count;

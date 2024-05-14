@@ -7,12 +7,15 @@
 
 #include "shared-bindings/audiomp3/MP3Decoder.h"
 
+#include <math.h>
 #include <stdint.h>
 #include <string.h>
-#include <math.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "py/mperrno.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 
 #include "shared-module/audiomp3/MP3Decoder.h"
 #include "supervisor/background_callback.h"
@@ -20,13 +23,69 @@
 
 #define MAX_BUFFER_LEN (MAX_NSAMP * MAX_NGRAN * MAX_NCHAN * sizeof(int16_t))
 
+// (near copy of mp_stream_posix_read, but with changes)
+// (circuitpy doesn't enable posix stream routines anyway)
+STATIC ssize_t stream_read(void *stream, void *buf, size_t len) {
+    int errcode;
+    mp_obj_base_t *o = MP_OBJ_TO_PTR(stream);
+    const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
+    if (!stream_p->read) {
+        return -EINVAL;
+    }
+    mp_uint_t out_sz = stream_p->read(MP_OBJ_FROM_PTR(stream), buf, len, &errcode);
+    if (out_sz == MP_STREAM_ERROR) {
+        return -errcode; // CIRCUITPY-CHANGE: returns negative errcode value
+    } else {
+        return out_sz;
+    }
+}
+
+// (near copy of mp_stream_posix_read, but with changes)
+// (circuitpy doesn't enable posix stream routines anyway)
+STATIC ssize_t stream_read_all(void *stream, void *buf, size_t len) {
+    ssize_t total_read = 0;
+    while (len) {
+        ssize_t r = stream_read(stream, buf, len);
+        if (r <= 0) {
+            if (total_read) {
+                break;
+            }
+            return r;
+        }
+        total_read += r;
+        buf += r;
+        len -= r;
+    }
+    return total_read;
+}
+
+
+// (near copy of mp_stream_posix_lseek, but with changes)
+// (circuitpy doesn't enable posix stream routines anyway)
+STATIC off_t stream_lseek(void *stream, off_t offset, int whence) {
+    int errcode;
+    const mp_obj_base_t *o = stream;
+    const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
+    if (!stream_p->ioctl) {
+        return -EINVAL;
+    }
+    struct mp_stream_seek_t seek_s;
+    seek_s.offset = offset;
+    seek_s.whence = whence;
+    mp_uint_t res = stream_p->ioctl(MP_OBJ_FROM_PTR(stream), MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, &errcode);
+    if (res == MP_STREAM_ERROR) {
+        return -errcode;
+    }
+    return seek_s.offset;
+}
+
 /** Fill the input buffer unconditionally.
  *
  * Returns true if the input buffer contains any useful data,
  * false otherwise.  (The input buffer will be padded to the end with
  * 0 bytes, which do not interfere with MP3 decoding)
  *
- * Raises OSError if f_read fails.
+ * Raises OSError if stream_read fails.
  *
  * Sets self->eof if any read of the file returns 0 bytes
  */
@@ -41,20 +100,20 @@ static bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self) {
             self->inbuf_length - self->inbuf_offset);
         self->inbuf_offset = 0;
 
-        UINT to_read = end_of_buffer - new_end_of_data;
-        UINT bytes_read = 0;
+        ssize_t to_read = end_of_buffer - new_end_of_data;
         memset(new_end_of_data, 0, to_read);
-        if (f_read(&self->file->fp, new_end_of_data, to_read, &bytes_read) != FR_OK) {
+        ssize_t r = stream_read_all(self->stream, new_end_of_data, to_read);
+        if (r < 0) {
             self->eof = true;
-            mp_raise_OSError(MP_EIO);
+            mp_raise_OSError(-r);
         }
 
-        if (bytes_read == 0) {
+        if (r == 0) {
             self->eof = true;
         }
 
-        if (to_read != bytes_read) {
-            new_end_of_data += bytes_read;
+        if (to_read != r) {
+            new_end_of_data += r;
             memset(new_end_of_data, 0, end_of_buffer - new_end_of_data);
         }
 
@@ -119,8 +178,17 @@ static void mp3file_skip_id3v2(audiomp3_mp3file_obj_t *self) {
     size -= to_consume;
 
     // Next, seek in the file after the header
-    f_lseek(&self->file->fp, f_tell(&self->file->fp) + size);
-    return;
+    if (stream_lseek(self->stream, SEEK_CUR, size) == 0) {
+        return;
+    }
+
+    // Couldn't seek (might be a socket), so need to actually read and discard all that data
+    while (size > 0 && !self->eof) {
+        mp3file_update_inbuf_always(self);
+        to_consume = MIN(size, BYTES_LEFT(self));
+        CONSUME(self, to_consume);
+        size -= to_consume;
+    }
 }
 
 /* If a sync word can be found, advance to it and return true.  Otherwise,
@@ -154,7 +222,7 @@ static bool mp3file_get_next_frame_info(audiomp3_mp3file_obj_t *self, MP3FrameIn
 }
 
 void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
-    pyb_file_obj_t *file,
+    mp_obj_t stream,
     uint8_t *buffer,
     size_t buffer_size) {
     // XXX Adafruit_MP3 uses a 2kB input buffer and two 4kB output buffers.
@@ -202,14 +270,17 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
         }
     }
 
-    common_hal_audiomp3_mp3file_set_file(self, file);
+    common_hal_audiomp3_mp3file_set_file(self, stream);
 }
 
-void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, pyb_file_obj_t *file) {
+void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, mp_obj_t stream) {
     background_callback_prevent();
 
-    self->file = file;
-    f_lseek(&self->file->fp, 0);
+    self->stream = stream;
+
+    // Seek the beginning of the stream if possible, but ignore any errors
+    (void)stream_lseek(self->stream, SEEK_SET, 0);
+
     self->inbuf_offset = self->inbuf_length;
     self->eof = 0;
     self->other_channel = -1;
@@ -243,7 +314,7 @@ void common_hal_audiomp3_mp3file_deinit(audiomp3_mp3file_obj_t *self) {
     self->inbuf = NULL;
     self->buffers[0] = NULL;
     self->buffers[1] = NULL;
-    self->file = NULL;
+    self->stream = mp_const_none;
     self->samples_decoded = 0;
 }
 
@@ -277,14 +348,15 @@ void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t *self,
     // We don't reset the buffer index in case we're looping and we have an odd number of buffer
     // loads
     background_callback_prevent();
-    f_lseek(&self->file->fp, 0);
-    self->inbuf_offset = self->inbuf_length;
-    self->eof = 0;
-    self->samples_decoded = 0;
-    self->other_channel = -1;
-    mp3file_update_inbuf_half(self);
-    mp3file_skip_id3v2(self);
-    mp3file_find_sync_word(self);
+    if (stream_lseek(self->stream, SEEK_SET, 0) == 0) {
+        self->inbuf_offset = self->inbuf_length;
+        self->eof = 0;
+        self->samples_decoded = 0;
+        self->other_channel = -1;
+        mp3file_update_inbuf_half(self);
+        mp3file_skip_id3v2(self);
+        mp3file_find_sync_word(self);
+    }
     background_callback_allow();
 }
 
