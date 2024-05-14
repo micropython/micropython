@@ -60,11 +60,12 @@ STATIC const uint16_t triangle[] = {0, 32767, 0, -32767};
 //|     should be considered an implementation detail, though it affects how LFOs
 //|     behave for instance when used to implement an integrator (``l.offset = l``).
 //|
-//|     An LFO's output, which is reflected in its `value` property, is not
-//|     updated in any other way than when its associated synthesizer updates it.
-//|     For instance, if an LFO is created with ``offset=1``, its `value` will still
-//|     be ``0`` until it is updated by its associated synthesizer. Similarly, merely
-//|     updating its properties does not update its value property.
+//|     An LFO's ``value`` property is computed once when it is constructed, and then
+//|     when its associated synthesizer updates it.
+//|
+//|     This means that for instance an LFO **created** with ``offset=1`` has ```value==1``
+//|     immediately, but **updating** the ``offset`` property alone does not
+//|     change ``value``; it only updates through an association with an active synthesizer.
 //|
 //|     The interpolation of the waveform is necessarily different depending on the
 //|     ``once`` property. Consider a LFO with ``waveform=np.array([0, 100],
@@ -120,10 +121,16 @@ STATIC mp_obj_t synthio_lfo_make_new(const mp_obj_type_t *type_in, size_t n_args
         synthio_synth_parse_waveform(&self->waveform_bufinfo, args[ARG_waveform].u_obj);
     }
     self->waveform_obj = args[ARG_waveform].u_obj;
-    self->base.last_tick = synthio_global_tick;
 
     mp_obj_t result = MP_OBJ_FROM_PTR(self);
     properties_construct_helper(result, lfo_properties + 1, args + 1, MP_ARRAY_SIZE(lfo_properties) - 1);
+
+    // Force computation of the LFO's initial output
+    synthio_global_rate_scale = 0;
+    self->base.last_tick = synthio_global_tick - 1;
+    synthio_block_slot_t slot;
+    synthio_block_assign_slot(MP_OBJ_FROM_PTR(result), &slot, MP_QSTR_self);
+    (void)synthio_block_slot_get(&slot);
 
     return result;
 };
