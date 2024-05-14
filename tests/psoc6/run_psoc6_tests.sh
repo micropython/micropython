@@ -19,6 +19,7 @@ usage() {
   echo "  -w            run wifi tests => needs secrets.py key file>"
   echo "  -v            run virtual filesystem related tests. If followed by -x, runs advance tests too."
   echo "  -b            run bitsream script."
+  echo "  -s            run i2s tests."
   echo "  --dev0        device to be used"
   echo "  --dev1        second device to be used (for multi test)"
   echo "  --psoc6       run only psoc6 port related tests"
@@ -42,7 +43,7 @@ for arg in "$@"; do
   esac
 done
 
-while getopts "abcd:e:fhimnpqtwvx" o; do
+while getopts "abcd:e:fhimnpqtwvxs" o; do
   case "${o}" in
     a)
        all=1
@@ -92,6 +93,9 @@ while getopts "abcd:e:fhimnpqtwvx" o; do
     t)
        hwext=1
        ;;
+    s) 
+       i2s=1
+       ;;      
     *)
        usage
        ;;
@@ -160,6 +164,10 @@ fi
 
 if [ -z "${hwext}" ]; then
   hwext=0
+fi
+
+if [ -z "${i2s}" ]; then
+  i2s=0
 fi
 
 
@@ -484,6 +492,24 @@ if [ ${bitstream} -eq 1 ]; then
   ./run-tests.py --target psoc6 --device ${device0} \
       \
       psoc6/bitstream/bitstream_rx.py \
+    |tee -a ${resultsFile}
+
+fi
+
+if [ ${i2s} -eq 1 ]; then
+
+  echo " running i2s tests ... "
+  echo
+
+  echo " running stand-alone i2s tx"
+
+  ../tools/mpremote/mpremote.py connect ${device0} run --no-follow psoc6/hw_ext/multi_blocking/i2s_tx.py
+
+  echo " running i2s receive tests..."
+
+  ./run-tests.py --target psoc6 --device ${device1} \
+      \
+      psoc6/hw_ext/multi_blocking/i2s_rx.py \
     |tee -a ${resultsFile}
 
 fi
