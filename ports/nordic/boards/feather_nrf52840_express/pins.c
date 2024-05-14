@@ -30,6 +30,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_P1_09) },
 
     { MP_ROM_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(&pin_P0_16) },
+    // NEOPIXEL_POWER only works on Rev E and later.
+    { MP_ROM_QSTR(MP_QSTR_NEOPIXEL_POWER), MP_ROM_PTR(&pin_P1_14) },
 
     { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_P0_14) },
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_P0_13) },
