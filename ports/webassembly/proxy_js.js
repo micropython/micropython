@@ -188,7 +188,7 @@ function proxy_convert_mp_to_js_obj_jsside(value) {
     }
     if (kind === PROXY_KIND_MP_NONE) {
         // None
-        obj = undefined;
+        obj = null;
     } else if (kind === PROXY_KIND_MP_BOOL) {
         // bool
         obj = Module.getValue(value + 4, "i32") ? true : false;
