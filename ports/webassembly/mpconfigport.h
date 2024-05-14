@@ -39,6 +39,7 @@
 #endif
 
 #define MICROPY_ALLOC_PATH_MAX      (256)
+#define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_COMP_ALLOW_TOP_LEVEL_AWAIT (1)
 #define MICROPY_READER_VFS          (MICROPY_VFS)
 #define MICROPY_ENABLE_GC           (1)
