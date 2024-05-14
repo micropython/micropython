@@ -1,131 +1,404 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
 
-#include "py/obj.h"
+#include <stdlib.h>
+
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "py/misc.h"
-#include "py/stream.h"
-#include "py/objstr.h"
 
-// MTB includes
-#include "cybsp.h"
-#include "cyhal.h"
-
-// port-specific includes
-#include "extmod/modmachine.h"
-#include "modmachine.h"
-#include "mplogger.h"
-#include <FreeRTOS.h>
-
-#if MICROPY_PY_MACHINE_PSOC6_I2S
-
-/* HFCLK1 Clock Divider */
- #define HFCLK1_CLK_DIVIDER  4u
+#define i2s_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
+}
 
 /* Audio Subsystem Clock. Typical values depends on the desired sample rate:
- * 8KHz / 16 KHz / 32 KHz / 48 KHz    : 98.304 MHz
- * 22.05 KHz / 44.1 KHz               : 90.000 MHz
+ * 8KHz / 16 KHz / 32 KHz / 48 KHz    : 98.304  MHz
+ * 22.05 KHz / 44.1 KHz               : 90.3168 MHz
  */
 
 /* Clock Settings */
-#define AUDIO_SYS_CLOCK_HZ    98000000u   /* in Hz (Ideally 98.304 MHz) */
-#define AUDIO_SYS_CLOCK_HZ_1  90000000u
-
-uint32_t Audio_sys_clock_fz;
-uint8_t clock_set;
-
-void clock_init(void);
+#define AUDIO_SYS_CLOCK_HZ    98304000u   /* in Hz (Ideally 98.304 MHz) */
+#define AUDIO_SYS_CLOCK_HZ_1  90300000u   /* in Hz (Ideally 90.304 MHz) */
 
 cyhal_clock_t audio_clock;
-cyhal_clock_t pll_clock;
-cyhal_clock_t system_clock;
-cyhal_clock_t hf0_clock;
+
+// DMA ping-pong buffer size was empirically determined.  It is a tradeoff between:
+// 1. memory use (smaller buffer size desirable to reduce memory footprint)
+// 2. interrupt frequency (larger buffer size desirable to reduce interrupt frequency)
+#define SIZEOF_DMA_BUFFER (256)
+#define SIZEOF_HALF_DMA_BUFFER (SIZEOF_DMA_BUFFER / 2)
+#define SIZEOF_DMA_BUFFER_IN_BYTES (256 * sizeof(uint32_t))
+#define SIZEOF_HALF_DMA_BUFFER_IN_BYTES (SIZEOF_DMA_BUFFER_IN_BYTES / 2)
+
+// TODO: For non-blocking mode, to avoid underflow/overflow, sample data is written/read to/from the ring buffer at a rate faster
+// than the DMA transfer rate
+#define NON_BLOCKING_RATE_MULTIPLIER (4)
+#define SIZEOF_NON_BLOCKING_COPY_IN_BYTES (SIZEOF_HALF_DMA_BUFFER * NON_BLOCKING_RATE_MULTIPLIER)
 
 typedef enum {
     RX,
     TX
 } i2s_mode_t;
 
-typedef enum {
-    MONO,
-    STEREO
-} format_t;
-
-typedef enum {
-    BLOCKING,
-    NON_BLOCKING,
-    ASYNCIO
-} io_mode_t;
-
+#define MICROPY_HW_MAX_I2S 2 // TODO: Move to per board.
 
 typedef struct _machine_i2s_obj_t {
     mp_obj_base_t base;
-    cyhal_i2s_t i2s_obj;
     uint8_t i2s_id;
-    mp_hal_pin_obj_t sck;
+    cyhal_i2s_t i2s_obj;
+    mp_hal_pin_obj_t sck;   // TODO: These will be pin_phy objects
     mp_hal_pin_obj_t ws;
     mp_hal_pin_obj_t sd;
-    i2s_mode_t mode;
+    uint16_t mode;
     int8_t bits;
+    uint8_t channel_resolution_bits; // TODO: better name?
     format_t format;
     int32_t rate;
     int32_t ibuf;
     mp_obj_t callback_for_non_blocking;
     io_mode_t io_mode;
+    uint32_t dma_buffer[SIZEOF_DMA_BUFFER];
+    uint32_t *dma_active_buf_p;
+    uint32_t *dma_idle_buf_p;
+    ring_buf_t ring_buffer;
+    uint8_t *ring_buffer_storage;
+    non_blocking_descriptor_t non_blocking_descriptor;
 } machine_i2s_obj_t;
 
+static const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
+    { 0,  1, -1, -1, -1, -1, -1, -1 },  // Mono, 16-bits
+    { 0,  1,  2,  3, -1, -1, -1, -1 },  // Mono, 32-bits
+    { 0,  1, -1, -1,  2,  3, -1, -1 },  // Stereo, 16-bits
+    { 0,  1,  2,  3,  4,  5,  6,  7 },  // Stereo, 32-bits
+};
 
-static void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static int8_t get_frame_mapping_index(int8_t bits, format_t format) {
+    // TODO!
+    if (format == MONO) {
+        if (bits == 16) {
+            return 0;
+        } else { // 32 bits
+            return 1;
+        }
+    } else { // STEREO
+        if (bits == 16) {
+            return 2;
+        } else { // 32 bits
+            return 3;
+        }
+    }
+}
 
-    enum {
-        ARG_sck,
-        ARG_ws,
-        ARG_sd,
-        ARG_mode,
-        ARG_bits,
-        ARG_format,
-        ARG_rate,
-        ARG_ibuf,
+void i2s_audio_clock_init(uint32_t audio_clock_freq_hz) {
+    cyhal_clock_t clock_pll;
+    cy_rslt_t result;
+
+    static bool clock_set = false;
+    static uint32_t pll_source_clock_freq_hz = AUDIO_SYS_CLOCK_HZ;
+
+    // TODO: Currently this is not working after initialization.
+    // Once initializing, changing the frequency blocks execution of I2S constructor call.
+    if (audio_clock_freq_hz != pll_source_clock_freq_hz) {
+        clock_set = false;
+        pll_source_clock_freq_hz = audio_clock_freq_hz;
+    }
+
+    if (!clock_set) {
+
+        clock_set = true;
+
+        /* Initialize, take ownership of PLL0/PLL */
+        result = cyhal_clock_reserve(&clock_pll, &CYHAL_CLOCK_PLL[0]);
+        if (CY_RSLT_SUCCESS != result) {
+            mp_printf(&mp_plat_print, "Clock reserve fail");
+        }
+
+        /* Set the PLL0/PLL frequency to AUDIO_SYS_CLOCK_HZ based on AUDIO_IN_SAMPLE_FREQ */
+        result = cyhal_clock_set_frequency(&clock_pll,  pll_source_clock_freq_hz, NULL);
+        if (CY_RSLT_SUCCESS != result) {
+            mp_printf(&mp_plat_print, "set_freq fail");
+        }
+
+        /* If the PLL0/PLL clock is not already enabled, enable it */
+        if (!cyhal_clock_is_enabled(&clock_pll)) {
+            result = cyhal_clock_set_enabled(&clock_pll, true, true);
+            if (CY_RSLT_SUCCESS != result) {
+                mp_printf(&mp_plat_print, "PLL enable fail");
+            }
+        }
+
+        cyhal_clock_free(&clock_pll);
+
+        /* Initialize, take ownership of CLK_HF1 */
+        result = cyhal_clock_reserve(&audio_clock, &CYHAL_CLOCK_HF[1]);
+        if (CY_RSLT_SUCCESS != result) {
+            mp_printf(&mp_plat_print, "Clock Hf1 fail");
+        }
+
+        /* Source the audio subsystem clock (CLK_HF1) from PLL0/PLL */
+        result = cyhal_clock_set_source(&audio_clock, &clock_pll);
+        if (CY_RSLT_SUCCESS != result) {
+            mp_printf(&mp_plat_print, "sourcing HF1 fail");
+        }
+
+        /* Set the divider for audio subsystem clock (CLK_HF1) */
+        result = cyhal_clock_set_divider(&audio_clock, 2);
+        if (CY_RSLT_SUCCESS != result) {
+            mp_printf(&mp_plat_print, "dividing hf1 fail");
+        }
+
+        /* If the audio subsystem clock (CLK_HF1) is not already enabled, enable it */
+        if (!cyhal_clock_is_enabled(&audio_clock)) {
+            result = cyhal_clock_set_enabled(&audio_clock, true, true);
+            if (CY_RSLT_SUCCESS != result) {
+                mp_printf(&mp_plat_print, "enable hf1 fail");
+            }
+        }
+
+        cyhal_clock_free(&audio_clock);
+    }
+
+    cyhal_system_delay_ms(1);
+}
+
+static inline bool i2s_dma_is_tx_complete(cyhal_i2s_event_t event) {
+    return 0u != (event & CYHAL_I2S_ASYNC_TX_COMPLETE);
+}
+
+static inline bool i2s_dma_is_rx_complete(cyhal_i2s_event_t event) {
+    return 0u != (event & CYHAL_I2S_ASYNC_RX_COMPLETE);
+}
+
+uint8_t get_word_byte_size(machine_i2s_obj_t *self) {
+    uint8_t res_bits = self->channel_resolution_bits;
+    if (res_bits <= 8) {
+        return 1;
+    } else if (res_bits > 8 && res_bits <= 16) {
+        return 2;
+    } else if (res_bits > 16 && res_bits <= 24) {
+        return 3;
+    } else {
+        return 4;
+    }
+}
+
+static inline void i2s_dma_rx(machine_i2s_obj_t *self) {
+    uint16_t dma_half_buff_word_size = SIZEOF_HALF_DMA_BUFFER_IN_BYTES / get_word_byte_size(self);
+    cy_rslt_t result = cyhal_i2s_read_async(&self->i2s_obj, self->dma_active_buf_p, dma_half_buff_word_size);
+    i2s_assert_raise_val("I2S DMA read failed with return code %lx !", result);
+}
+
+static inline void i2s_dma_tx(machine_i2s_obj_t *self) {
+    uint16_t dma_half_buff_word_size = SIZEOF_HALF_DMA_BUFFER_IN_BYTES / get_word_byte_size(self);
+    cy_rslt_t result = cyhal_i2s_write_async(&self->i2s_obj, self->dma_active_buf_p, dma_half_buff_word_size);
+    i2s_assert_raise_val("I2S DMA write configure failed with return code %lx !", result);
+}
+
+// static inline void toggle_led() {
+//     static uint32_t a = 0;
+//     if (a++ % sizeof(uint64_t) == 0) {
+//         cyhal_gpio_toggle(CYBSP_USER_LED);
+//     }
+// }
+
+static void i2s_dma_from_dmabuf_to_ringbuf(machine_i2s_obj_t *self) {
+    uint8_t dma_sample_size_in_bytes = (self->bits == 16? 2 : 4) * (self->format == STEREO ? 2: 1);
+    uint8_t *dma_buff_p = (uint8_t *)self->dma_idle_buf_p;
+    uint32_t num_bytes_needed_from_ringbuf = SIZEOF_HALF_DMA_BUFFER_IN_BYTES * (I2S_RX_FRAME_SIZE_IN_BYTES / dma_sample_size_in_bytes);
+    // toggle_led();
+
+    // when space exists, copy samples into ring buffer
+    if (ringbuf_available_space(&self->ring_buffer) >= num_bytes_needed_from_ringbuf) {
+        uint8_t f_index = get_frame_mapping_index(self->bits, self->format);
+        uint32_t i = 0;
+        while (i < SIZEOF_HALF_DMA_BUFFER_IN_BYTES) {
+            for (uint8_t j = 0; j < I2S_RX_FRAME_SIZE_IN_BYTES; j++) {
+                int8_t r_to_a_mapping = i2s_frame_map[f_index][j];
+                if (r_to_a_mapping != -1) {
+                    ringbuf_push(&self->ring_buffer, dma_buff_p[i]);
+                    i++;
+                } else { // r_a_mapping == -1
+                    ringbuf_push(&self->ring_buffer, -1);
+                }
+            }
+        }
+    }
+}
+
+static void i2s_dma_from_ringbuf_to_dmabuf(machine_i2s_obj_t *self) {
+    uint8_t *dma_buffer_p = (uint8_t *)self->dma_idle_buf_p;
+    memset(dma_buffer_p, 0, SIZEOF_HALF_DMA_BUFFER_IN_BYTES);
+    if (ringbuf_available_data(&self->ring_buffer) >= SIZEOF_HALF_DMA_BUFFER_IN_BYTES) {
+        for (uint32_t i = 0; i < SIZEOF_HALF_DMA_BUFFER_IN_BYTES; i++) {
+            ringbuf_pop(&self->ring_buffer, &dma_buffer_p[i]);
+        }
+    }
+}
+
+static inline void i2s_dma_swap_active_dmabuf(machine_i2s_obj_t *self) {
+    uint32_t *temp = self->dma_active_buf_p;
+    self->dma_active_buf_p = self->dma_idle_buf_p;
+    self->dma_idle_buf_p = temp;
+}
+
+static void i2s_dma_tx_event_process(machine_i2s_obj_t *self, cyhal_i2s_event_t event) {
+    if (i2s_dma_is_tx_complete(event)) {
+
+        if ((self->io_mode == NON_BLOCKING) && (self->non_blocking_descriptor.copy_in_progress)) {
+            copy_appbuf_to_ringbuf_non_blocking(self);
+        }
+
+        i2s_dma_swap_active_dmabuf(self);
+        i2s_dma_tx(self);
+        i2s_dma_from_ringbuf_to_dmabuf(self);
+    }
+}
+
+static void i2s_dma_rx_event_process(machine_i2s_obj_t *self, cyhal_i2s_event_t event) {
+    if (i2s_dma_is_rx_complete(event)) {
+
+        i2s_dma_swap_active_dmabuf(self);
+        i2s_dma_rx(self);
+        i2s_dma_from_dmabuf_to_ringbuf(self);
+
+        if ((self->io_mode == NON_BLOCKING) && (self->non_blocking_descriptor.copy_in_progress)) {
+            fill_appbuf_from_ringbuf_non_blocking(self);
+        }
+    }
+}
+
+static void i2s_dma_irq_handler(void *arg, cyhal_i2s_event_t event) {
+    machine_i2s_obj_t *self = (machine_i2s_obj_t *)arg;
+
+    void (*i2s_dma_event_process_func)(machine_i2s_obj_t *, cyhal_i2s_event_t);
+    if (self->mode == TX) {
+        i2s_dma_event_process_func = i2s_dma_tx_event_process;
+    } else if (self->mode == RX) {
+        i2s_dma_event_process_func = i2s_dma_rx_event_process;
+    }
+
+    i2s_dma_event_process_func(self, event);
+}
+
+static void i2s_init(machine_i2s_obj_t *self, cyhal_clock_t *clock) {
+    cyhal_i2s_pins_t pins = { .sck = self->sck, .ws = self->ws, .data = self->sd, .mclk = NC };
+    cyhal_i2s_config_t config =
+    {
+        .is_tx_slave = true,
+        .is_rx_slave = false,
+        .mclk_hz = 0,
+        .channel_length = self->bits,
+        .word_length = self->channel_resolution_bits,
+        .sample_rate_hz = self->rate
     };
 
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_ws,       MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_sd,       MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_mode,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_format,   MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_rate,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_ibuf,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-    };
+    cyhal_i2s_pins_t *tx_pins, *rx_pins;
 
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_pos_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    if (self->mode == TX) {
+        tx_pins = &pins;
+        rx_pins = NULL;
+    } else { // Rx
+        tx_pins = NULL;
+        rx_pins = &pins;
+    }
+
+    cy_rslt_t result = cyhal_i2s_init(&self->i2s_obj, tx_pins, rx_pins, &config, clock);
+    i2s_assert_raise_val("I2S initialisation failed with return code %lx !", result);
+}
+
+static inline void i2s_dma_irq_configure(machine_i2s_obj_t *self) {
+    cyhal_i2s_register_callback(&self->i2s_obj, &i2s_dma_irq_handler, self);
+
+    cyhal_i2s_event_t event;
+    if (self->mode == TX) {
+        event = CYHAL_I2S_ASYNC_TX_COMPLETE;
+    } else {
+        event = CYHAL_I2S_ASYNC_RX_COMPLETE;
+    }
+
+    cyhal_i2s_enable_event(&self->i2s_obj, event, CYHAL_ISR_PRIORITY_DEFAULT, true);
+
+    cy_rslt_t result = cyhal_i2s_set_async_mode(&self->i2s_obj, CYHAL_ASYNC_DMA, CYHAL_DMA_PRIORITY_DEFAULT);
+    i2s_assert_raise_val("I2S set DMA mode failed with return code %lx !", result);
+}
+
+static inline void i2s_dma_init_buff(machine_i2s_obj_t *self) {
+    for (uint32_t i = 0; i < SIZEOF_DMA_BUFFER; i++) {
+        self->dma_buffer[i] = 0;
+    }
+
+    self->dma_active_buf_p = self->dma_buffer;
+    self->dma_idle_buf_p = &self->dma_buffer[SIZEOF_HALF_DMA_BUFFER];
+}
+
+static void i2s_dma_tx_init(machine_i2s_obj_t *self) {
+    i2s_dma_tx(self);
+
+    cy_rslt_t result = cyhal_i2s_start_tx(&self->i2s_obj);
+    i2s_assert_raise_val("I2S tx start failed with return code %lx !", result);
+}
+
+static void i2s_dma_rx_init(machine_i2s_obj_t *self) {
+    i2s_dma_rx(self);
+
+    cy_rslt_t result = cyhal_i2s_start_rx(&self->i2s_obj);
+    i2s_assert_raise_val("I2S rx start failed with return code %lx !", result);
+}
+
+static void i2s_dma_init(machine_i2s_obj_t *self) {
+    i2s_dma_irq_configure(self);
+    i2s_dma_init_buff(self);
+
+    void (*i2s_dma_mode_init_func)(machine_i2s_obj_t *self);
+
+    if (self->mode == TX) {
+        i2s_dma_mode_init_func = i2s_dma_tx_init;
+    } else { // Rx
+        i2s_dma_mode_init_func = i2s_dma_rx_init;
+    }
+
+    i2s_dma_mode_init_func(self);
+}
+
+static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args) {
+
+    // // TODO: with all inputs validated make the objects of the i2s object.
+    // // TODO: then make the i2s object
+    // TODO: validate all arguments before initializing or creating any object
 
     // are Pins valid?
+    // TODO: Check gpio allocation!
+    // i2s_pin_alloc();
+    // Allocate physical pins to prevent that there are used for/by other peripherals
     mp_hal_pin_obj_t sck = args[ARG_sck].u_obj == MP_OBJ_NULL ? -1 : mp_hal_get_pin_obj(args[ARG_sck].u_obj);
     mp_hal_pin_obj_t ws = args[ARG_ws].u_obj == MP_OBJ_NULL ? -1 : mp_hal_get_pin_obj(args[ARG_ws].u_obj);
     mp_hal_pin_obj_t sd = args[ARG_sd].u_obj == MP_OBJ_NULL ? -1 : mp_hal_get_pin_obj(args[ARG_sd].u_obj);
 
-
     // is Mode valid?
+    // We are not distinguishing between master and slave roles, just RX and TX, which only support master in mpy API.
     i2s_mode_t i2s_mode = args[ARG_mode].u_int;
     if ((i2s_mode != RX) &&
         (i2s_mode != TX)) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid mode"));
     }
 
+    // TODO: proper implementation between channel_bits and words_bits. Refactor proper naming.
     // is Bits valid?
-    int8_t i2s_bits = args[ARG_bits].u_int;
-    if ((i2s_bits != 16) &&
-        (i2s_bits != 32)
-        ) {
+    int8_t i2s_bits_resolution = args[ARG_bits].u_int;
+    if (i2s_bits_resolution < 1 || i2s_bits_resolution > 32) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid bits"));
     }
+
+    int8_t i2s_bits;
+    if (i2s_bits_resolution <= 16) {
+        i2s_bits = 16;
+    } else {
+        i2s_bits = 32;
+    }
+
+    // int8_t i2s_bits = args[ARG_bits].u_int;
+    // if ((i2s_bits != 16) &&
+    //     (i2s_bits != 32)
+    //     ) {
+    //     mp_raise_ValueError(MP_ERROR_TEXT("invalid bits"));
+    // }
 
     // is Format valid?
     format_t i2s_format = args[ARG_format].u_int;
@@ -134,71 +407,73 @@ static void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
         mp_raise_ValueError(MP_ERROR_TEXT("invalid format"));
     }
 
+    uint32_t audio_clock_freq_hz;
+    uint32_t rate = args[ARG_rate].u_int;
+    ;
+    if (rate == 8000 ||
+        rate == 16000 ||
+        rate == 32000 ||
+        rate == 48000) {
+        audio_clock_freq_hz = AUDIO_SYS_CLOCK_HZ;
+    } else if (rate == 22050 ||
+               rate == 44100) {
+        audio_clock_freq_hz = AUDIO_SYS_CLOCK_HZ_1;
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("rate not supported"));
+    }
+
+    int32_t ring_buffer_len = args[ARG_ibuf].u_int;
+    if (ring_buffer_len > 0) {
+        self->ring_buffer_storage = m_new(uint8_t, ring_buffer_len);
+        ringbuf_init(&self->ring_buffer, self->ring_buffer_storage, ring_buffer_len);
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid ibuf"));
+    }
 
     self->sck = sck;
     self->ws = ws;
     self->sd = sd;
     self->mode = i2s_mode;
     self->bits = i2s_bits;
+    self->channel_resolution_bits = i2s_bits_resolution;
     self->format = i2s_format;
-    self->rate = args[ARG_rate].u_int;
-    if (self->rate == (8000 || 16000 || 32000 || 48000)) {
-        Audio_sys_clock_fz = AUDIO_SYS_CLOCK_HZ;
-    } else {
-        Audio_sys_clock_fz = AUDIO_SYS_CLOCK_HZ_1;
-    }
-    self->ibuf = args[ARG_ibuf].u_int;
+    self->rate = rate;
+    self->ibuf = ring_buffer_len;
     self->callback_for_non_blocking = MP_OBJ_NULL;
     self->io_mode = BLOCKING;
 
-    if (clock_set == 0) {
-        clock_init();
-        cyhal_system_delay_ms(1);
-    }
 
+    // cyhal_gpio_init(CYBSP_USER_LED, CYHAL_GPIO_DIR_OUTPUT,
+    //     CYHAL_GPIO_DRIVE_STRONG, CYBSP_LED_STATE_OFF);
 
-    if (i2s_mode == TX) {  // TX is a master
-        cyhal_i2s_pins_t tx_pins = { .sck = self->sck, .ws = self->ws, .data = self->sd, .mclk = NC };
-        cyhal_i2s_config_t tx_config =
-        {
-            .is_tx_slave = false,
-            .is_rx_slave = false,
-            .mclk_hz = 0,
-            .channel_length = 32,
-            .word_length = self->bits,
-            .sample_rate_hz = self->rate,
-        };
-        cy_rslt_t result = cyhal_i2s_init(&self->i2s_obj, &tx_pins, NULL, &tx_config, &audio_clock);
-        if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S tx initialisation failed with return code %lx !"), result);
-        }
-    } else { // Rx is slave
-        cyhal_i2s_pins_t rx_pins = { .sck = self->sck, .ws = self->ws, .data = self->sd, .mclk = NC };
-        cyhal_i2s_config_t rx_config =
-        {
-            .is_tx_slave = false,
-            .is_rx_slave = true,
-            .mclk_hz = 0,
-            .channel_length = 32,
-            .word_length = self->bits,
-            .sample_rate_hz = self->rate,
-        };
-        cy_rslt_t result = cyhal_i2s_init(&self->i2s_obj, NULL, &rx_pins, &rx_config, &audio_clock);
-        if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S rx initialisation failed with return code %lx !"), result);
-        }
-    }
-
+    i2s_audio_clock_init(audio_clock_freq_hz);
+    i2s_init(self, &audio_clock);
+    i2s_dma_init(self);
 }
 
-static mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
+static void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     cyhal_i2s_free(&self->i2s_obj);
-    return mp_const_none;
+    // TODO: disable irq?
+    // TODO: free pin_phy.c
+    // TODO: stop i2s? Is that required?
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_deinit_obj, machine_i2s_deinit);
+
+static void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
+    (void)self;
+}
+
+static mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
 
 static machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
+    // TODO: We can skip the id, as this is not a hardware id for i2s,
+    // but just an index in the amount of available instances.
+    // The id from the main API will be kept as imposed by the extmod, but unused
+    // in the psoc6 port.
+    // If not instances are available, it should return with error, not deallocate
+    // an existing instance.
+    if (i2s_id >= MICROPY_HW_MAX_I2S) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
+    }
 
     machine_i2s_obj_t *self;
     if (MP_STATE_PORT(machine_i2s_obj[i2s_id]) == NULL) {
@@ -213,326 +488,4 @@ static machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
     return self;
 }
 
-
-static void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2S(id=%u,\n"
-        "sck="MP_HAL_PIN_FMT ",\n"
-        "ws="MP_HAL_PIN_FMT ",\n"
-        "sd="MP_HAL_PIN_FMT ",\n"
-        "mode=%u,\n"
-        "bits=%u, format=%u,\n"
-        "rate=%d, ibuf=%d)",
-        self->i2s_id,
-        mp_hal_pin_name(self->sck),
-        mp_hal_pin_name(self->ws),
-        mp_hal_pin_name(self->sd),
-        self->mode,
-        self->bits, self->format,
-        self->rate, self->ibuf
-        );
-}
-
-static mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
-
-    mp_int_t i2s_id = mp_obj_get_int(args[0]);
-    if ((i2s_id != 0) && (i2s_id != 1)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
-    }
-    machine_i2s_obj_t *self = mp_machine_i2s_make_new_instance(i2s_id);
-
-    // machine_i2s_obj_t *self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw_args, args + n_pos_args);
-    machine_i2s_init_helper(self, n_pos_args - 1, args + 1, &kw_args);
-
-    return MP_OBJ_FROM_PTR(self);
-}
-
-static mp_obj_t machine_i2s_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    machine_i2s_obj_t *self = pos_args[0];
-    machine_i2s_deinit(self);
-    machine_i2s_init_helper(self, n_pos_args - 1, pos_args + 1, kw_args);
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_init);
-
-// placeholder function not complete
-static mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid callback"));
-    }
-
-    if (handler != mp_const_none) {
-        self->io_mode = NON_BLOCKING;
-        if (self->mode == RX) {
-        }
-
-    } else {
-        self->io_mode = BLOCKING;
-    }
-    self->callback_for_non_blocking = handler;
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_irq_obj, machine_i2s_irq);
-
-static mp_obj_t machine_i2s_stop(mp_obj_t self_in) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->mode == TX) {
-        cyhal_i2s_stop_tx(&self->i2s_obj);
-    } else {
-        cyhal_i2s_stop_rx(&self->i2s_obj);
-    }
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_stop_obj, machine_i2s_stop);
-
-
-// Shift() is typically used as a volume control.
-// shift=1 increases volume by 6dB, shift=-1 decreases volume by 6dB
-static mp_obj_t machine_i2s_shift(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_buf, ARG_bits, ARG_shift};
-    static const mp_arg_t allowed_args[] = {
-        // { MP_QSTR_buf,    MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_bits,   MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_shift, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-    };
-
-    // parse args
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[ARG_buf].u_obj, &bufinfo, MP_BUFFER_RW);
-
-    int16_t *buf_16 = bufinfo.buf;
-    int32_t *buf_32 = bufinfo.buf;
-
-    uint8_t bits = args[ARG_bits].u_int;
-    int8_t shift = args[ARG_shift].u_int;
-
-    uint32_t num_audio_samples;
-    switch (bits) {
-        case 16:
-            num_audio_samples = bufinfo.len / sizeof(uint16_t);
-            break;
-
-        case 32:
-            num_audio_samples = bufinfo.len / sizeof(uint32_t);
-            break;
-
-        default:
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid bits"));
-            break;
-    }
-
-    for (uint32_t i = 0; i < num_audio_samples; i++) {
-        switch (bits) {
-            case 16:
-                if (shift >= 0) {
-                    buf_16[i] = buf_16[i] << shift;
-                } else {
-                    buf_16[i] = buf_16[i] >> abs(shift);
-                }
-                break;
-            case 32:
-                if (shift >= 0) {
-                    buf_32[i] = buf_32[i] << shift;
-                } else {
-                    buf_32[i] = buf_32[i] >> abs(shift);
-                }
-                break;
-        }
-    }
-
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_shift_fun_obj, 0, machine_i2s_shift);
-static MP_DEFINE_CONST_STATICMETHOD_OBJ(machine_i2s_shift_obj, MP_ROM_PTR(&machine_i2s_shift_fun_obj));
-
-void clock_init(void) {
-    cyhal_clock_t clock_pll;
-    cy_rslt_t result;
-
-    clock_set = 1;
-
-    /* Initialize, take ownership of PLL0/PLL */
-    result = cyhal_clock_reserve(&clock_pll, &CYHAL_CLOCK_PLL[0]);
-    if (CY_RSLT_SUCCESS != result) {
-        mp_printf(&mp_plat_print, "Clock reserve fail");
-    }
-
-    /* Set the PLL0/PLL frequency to AUDIO_SYS_CLOCK_HZ based on AUDIO_IN_SAMPLE_FREQ */
-    result = cyhal_clock_set_frequency(&clock_pll,  Audio_sys_clock_fz, NULL);
-    if (CY_RSLT_SUCCESS != result) {
-        mp_printf(&mp_plat_print, "set_freq fail");
-    }
-
-    /* If the PLL0/PLL clock is not already enabled, enable it */
-    if (!cyhal_clock_is_enabled(&clock_pll)) {
-        result = cyhal_clock_set_enabled(&clock_pll, true, true);
-        if (CY_RSLT_SUCCESS != result) {
-            mp_printf(&mp_plat_print, "PLL enable fail");
-        }
-    }
-
-    /* Initialize, take ownership of CLK_HF1 */
-    result = cyhal_clock_reserve(&audio_clock, &CYHAL_CLOCK_HF[1]);
-    if (CY_RSLT_SUCCESS != result) {
-        mp_printf(&mp_plat_print, "Clock Hf1 fail");
-    }
-
-    /* Source the audio subsystem clock (CLK_HF1) from PLL0/PLL */
-    result = cyhal_clock_set_source(&audio_clock, &clock_pll);
-    if (CY_RSLT_SUCCESS != result) {
-        mp_printf(&mp_plat_print, "sourcing HF1 fail");
-    }
-
-    /* Set the divider for audio subsystem clock (CLK_HF1) */
-    result = cyhal_clock_set_divider(&audio_clock, 2);
-    if (CY_RSLT_SUCCESS != result) {
-        mp_printf(&mp_plat_print, "dividing hf1 fail");
-    }
-
-    /* If the audio subsystem clock (CLK_HF1) is not already enabled, enable it */
-    if (!cyhal_clock_is_enabled(&audio_clock)) {
-        result = cyhal_clock_set_enabled(&audio_clock, true, true);
-        if (CY_RSLT_SUCCESS != result) {
-            mp_printf(&mp_plat_print, "enable hf1 fail");
-        }
-    }
-}
-
-
-static const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
-    // Methods
-    { MP_ROM_QSTR(MP_QSTR_init),            MP_ROM_PTR(&machine_i2s_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto),        MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write),           MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&machine_i2s_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_irq),             MP_ROM_PTR(&machine_i2s_irq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop),           MP_ROM_PTR(&machine_i2s_stop_obj) },
-
-    // Static method
-    { MP_ROM_QSTR(MP_QSTR_shift),           MP_ROM_PTR(&machine_i2s_shift_obj) },
-
-    // Constants
-    { MP_ROM_QSTR(MP_QSTR_RX),              MP_ROM_INT(RX) },
-    { MP_ROM_QSTR(MP_QSTR_TX),              MP_ROM_INT(TX) },
-    { MP_ROM_QSTR(MP_QSTR_STEREO),          MP_ROM_INT(STEREO) },
-    { MP_ROM_QSTR(MP_QSTR_MONO),            MP_ROM_INT(MONO) },
-};
-MP_DEFINE_CONST_DICT(machine_i2s_locals_dict, machine_i2s_locals_dict_table);
-
-
-
-static mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    cy_rslt_t result;
-
-    if (self->mode != RX) {
-        *errcode = MP_EPERM;
-        return MP_STREAM_ERROR;
-    }
-
-    if (size == 0) {
-        return 0;
-    }
-
-    mp_buffer_info_t bufinfo;
-    bufinfo.buf = (void *)buf_in;
-    bufinfo.len = size;
-
-    if (self->io_mode == NON_BLOCKING) { // just a placeholder
-        // mp_buffer_info_t bufinfo;
-        // bufinfo.buf = (void *)buf_in;
-        // bufinfo.len = size;
-        // result = cyhal_i2s_clear_rx(&self->i2s_obj);
-        // result = cyhal_i2s_start_rx(&self->i2s_obj);
-        // cyhal_system_delay_ms(100);
-        // result = cyhal_i2s_read_async(&self->i2s_obj, bufinfo.buf, bufinfo.len);
-        // if (result != CY_RSLT_SUCCESS) {
-        //     mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S read failed with return code %lx !"), result);
-        // }
-        return bufinfo.len;
-    } else { // blocking mode
-        result = cyhal_i2s_clear_rx(&self->i2s_obj);
-        if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S rx buffer clear failed with return code %lx !"), result);
-        }
-        result = cyhal_i2s_start_rx(&self->i2s_obj);
-        if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S reception failed with return code %lx !"), result);
-        }
-        cyhal_system_delay_ms(100);
-        result = cyhal_i2s_read(&self->i2s_obj, bufinfo.buf, &bufinfo.len);
-        if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S read failed with return code %lx !"), result);
-        }
-        return bufinfo.len;
-    }
-}
-
-
-static mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    cy_rslt_t result;
-
-    if (self->mode != TX) {
-        *errcode = MP_EPERM;
-        return MP_STREAM_ERROR;
-    }
-
-    if (size == 0) {
-        return 0;
-    }
-
-    mp_buffer_info_t bufinfo;
-    bufinfo.buf = (void *)buf_in;
-    bufinfo.len = size;
-
-    if (self->io_mode == NON_BLOCKING) {  // Just a place holder
-        /* Initiate a transfer */
-        // cy_rslt_t result_write = cyhal_i2s_write_async(&self->i2s_obj, bufinfo.buf, bufinfo.len);
-        // if (result_write != CY_RSLT_SUCCESS) {
-        //     mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S write failed with return code %lx !"), result_write);
-        // }
-        // /* Start the I2S TX */
-        // cyhal_i2s_start_tx(&self->i2s_obj);
-        return bufinfo.len;
-    } else { // blocking mode
-        cy_rslt_t result_write = cyhal_i2s_write(&self->i2s_obj, bufinfo.buf, &bufinfo.len);
-        if (result_write != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S write failed with return code %lx !"), result_write);
-        }
-        result = cyhal_i2s_start_tx(&self->i2s_obj);
-        if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S transmission failed with return code %lx !"), result);
-        }
-        return bufinfo.len;
-    }
-}
-
-
-static const mp_stream_p_t i2s_stream_p = {
-    .read = machine_i2s_stream_read,
-    .write = machine_i2s_stream_write,
-    .ioctl = false,
-    .is_text = false,
-};
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_i2s_type,
-    MP_QSTR_I2S,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
-    make_new, machine_i2s_make_new,
-    print, machine_i2s_print,
-    protocol, &i2s_stream_p,
-    locals_dict, &machine_i2s_locals_dict
-    );
-
-MP_REGISTER_ROOT_POINTER(void *machine_i2s_obj[2]);
-
-#endif // MICROPY_PY_MACHINE_PSOC6_I2S
+MP_REGISTER_ROOT_POINTER(struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_MAX_I2S]);

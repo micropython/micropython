@@ -131,8 +131,14 @@
 #define MICROPY_PY_MACHINE_SPI_LSB              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)
 
-#define MICROPY_PY_MACHINE_PSOC6_I2S            (1)
+#define MICROPY_PY_MACHINE_I2S                  (1)
+#define MICROPY_PY_MACHINE_I2S_MCK              (0)
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_RX      (RX)
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_TX      (TX)
+#define MICROPY_PY_MACHINE_I2S_RING_BUF         (1)
+#define MICROPY_PY_MACHINE_I2S_FINALISER        (1)
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE      "ports/psoc6/machine_i2s.c"
+// #define MICROPY_PY_MACHINE_PSOC6_I2S            (1)
 
 // VFS
 #define MICROPY_VFS                             (1)
