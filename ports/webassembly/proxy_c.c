@@ -241,8 +241,17 @@ void proxy_c_to_js_lookup_attr(uint32_t c_ref, const char *attr_in, uint32_t *ou
         qstr attr = qstr_from_str(attr_in);
         mp_obj_t member;
         if (mp_obj_is_dict_or_ordereddict(obj)) {
-            member = mp_obj_dict_get(obj, MP_OBJ_NEW_QSTR(attr));
+            // Lookup the requested attribute as a key in the target dict, and
+            // return `undefined` if not found (instead of raising `KeyError`).
+            mp_obj_dict_t *self = MP_OBJ_TO_PTR(obj);
+            mp_map_elem_t *elem = mp_map_lookup(&self->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+            if (elem == NULL) {
+                member = mp_const_undefined;
+            } else {
+                member = elem->value;
+            }
         } else {
+            // Lookup the requested attribute as a member/method of the target object.
             member = mp_load_attr(obj, attr);
         }
         nlr_pop();

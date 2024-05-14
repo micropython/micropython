@@ -182,4 +182,6 @@ A Python `dict` instance is proxied such that:
     }
 
 works as expected on the JavaScript side and iterates through the keys of the
-Python `dict`.
+Python `dict`.  Furthermore, when JavaScript accesses a key that does not exist
+in the Python dict, the JavaScript code receives `undefined` instead of a
+`KeyError` exception being raised.
