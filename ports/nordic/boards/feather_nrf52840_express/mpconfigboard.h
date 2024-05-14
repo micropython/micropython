@@ -31,6 +31,9 @@
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
 #define MICROPY_HW_NEOPIXEL         (&pin_P0_16)
+// power control available only on Rev E and later.
+#define CIRCUITPY_STATUS_LED_POWER (&pin_P1_14)
+
 
 #define MICROPY_HW_LED_STATUS       (&pin_P1_15)
 
