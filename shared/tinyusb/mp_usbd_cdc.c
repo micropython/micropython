@@ -35,6 +35,7 @@
 #if MICROPY_HW_USB_CDC && MICROPY_HW_ENABLE_USBDEV && !MICROPY_EXCLUDE_SHARED_TINYUSB_USBD_CDC
 
 static uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll
+static int8_t cdc_connected_flush_delay = 0;
 
 uintptr_t mp_usbd_cdc_poll_interfaces(uintptr_t poll_flags) {
     uintptr_t ret = 0;
@@ -58,7 +59,9 @@ uintptr_t mp_usbd_cdc_poll_interfaces(uintptr_t poll_flags) {
     if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
         ret |= MP_STREAM_POLL_RD;
     }
-    if ((poll_flags & MP_STREAM_POLL_WR) && tud_cdc_connected() && tud_cdc_write_available() > 0) {
+    if ((poll_flags & MP_STREAM_POLL_WR) &&
+        (!tud_cdc_connected() || (tud_cdc_connected() && tud_cdc_write_available() > 0))) {
+        // Always allow write when not connected, fifo will retain latest.
         // When connected operate as blocking, only allow if space is available.
         ret |= MP_STREAM_POLL_WR;
     }
@@ -93,14 +96,14 @@ void tud_cdc_rx_cb(uint8_t itf) {
 
 mp_uint_t mp_usbd_cdc_tx_strn(const char *str, mp_uint_t len) {
     size_t i = 0;
-    if (tud_cdc_connected()) {
-        while (i < len) {
-            uint32_t n = len - i;
-            if (n > CFG_TUD_CDC_EP_BUFSIZE) {
-                n = CFG_TUD_CDC_EP_BUFSIZE;
-            }
+    while (i < len) {
+        uint32_t n = len - i;
+        if (n > CFG_TUD_CDC_EP_BUFSIZE) {
+            n = CFG_TUD_CDC_EP_BUFSIZE;
+        }
+        if (tud_cdc_connected()) {
             int timeout = 0;
-            // Wait with a max of USC_CDC_TIMEOUT ms
+            // If CDC port is connected but the buffer is full, wait for up to USC_CDC_TIMEOUT ms.
             while (n > tud_cdc_write_available() && timeout++ < MICROPY_HW_USB_CDC_TX_TIMEOUT) {
                 mp_event_wait_ms(1);
 
@@ -108,27 +111,40 @@ mp_uint_t mp_usbd_cdc_tx_strn(const char *str, mp_uint_t len) {
                 // are in an interrupt handler), while there is data pending.
                 mp_usbd_task();
             }
-            if (timeout >= MICROPY_HW_USB_CDC_TX_TIMEOUT) {
+            // Limit write to available space in tx buffer when connected.
+            n = MIN(n, tud_cdc_write_available());
+            if (n == 0) {
                 break;
             }
-            uint32_t n2 = tud_cdc_write(str + i, n);
-            tud_cdc_write_flush();
-            i += n2;
         }
+        // When not connected we always write to usb fifo, ensuring it has latest data.
+        uint32_t n2 = tud_cdc_write(str + i, n);
+        tud_cdc_write_flush();
+        i += n2;
     }
     return i;
 }
 
+void tud_sof_cb(uint32_t frame_count) {
+    if (--cdc_connected_flush_delay < 0) {
+        // Finished on-connection delay, disable SOF interrupt again.
+        tud_sof_cb_enable(false);
+        tud_cdc_write_flush();
+    }
+}
+
 #endif
 
-#if MICROPY_HW_USB_CDC_1200BPS_TOUCH && MICROPY_HW_ENABLE_USBDEV
+#if MICROPY_HW_ENABLE_USBDEV && (MICROPY_HW_USB_CDC_1200BPS_TOUCH || MICROPY_HW_USB_CDC)
 
+#if MICROPY_HW_USB_CDC_1200BPS_TOUCH
 static mp_sched_node_t mp_bootloader_sched_node;
 
 static void usbd_cdc_run_bootloader_task(mp_sched_node_t *node) {
     mp_hal_delay_ms(250);
     machine_bootloader(0, NULL);
 }
+#endif
 
 void
 #if MICROPY_HW_USB_EXTERNAL_TINYUSB
@@ -137,6 +153,16 @@ mp_usbd_line_state_cb
 tud_cdc_line_state_cb
 #endif
     (uint8_t itf, bool dtr, bool rts) {
+    #if MICROPY_HW_USB_CDC && !MICROPY_EXCLUDE_SHARED_TINYUSB_USBD_CDC
+    if (dtr) {
+        // A host application has started to open the cdc serial port.
+        // Wait a few ms for host to be ready then send tx buffer.
+        // High speed connection SOF fires at 125us, full speed at 1ms.
+        cdc_connected_flush_delay = (tud_speed_get() == TUSB_SPEED_HIGH) ? 128 : 16;
+        tud_sof_cb_enable(true);
+    }
+    #endif
+    #if MICROPY_HW_USB_CDC_1200BPS_TOUCH
     if (dtr == false && rts == false) {
         // Device is disconnected.
         cdc_line_coding_t line_coding;
@@ -146,6 +172,7 @@ tud_cdc_line_state_cb
             mp_sched_schedule_node(&mp_bootloader_sched_node, usbd_cdc_run_bootloader_task);
         }
     }
+    #endif
 }
 
 #endif
