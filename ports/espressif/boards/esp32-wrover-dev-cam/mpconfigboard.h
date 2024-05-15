@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_HW_BOARD_NAME       "Espressif ESP32-WROVER-DEV-CAM"
+#define MICROPY_HW_BOARD_NAME       "Freenove ESP32-WROVER-DEV-CAM"
 #define MICROPY_HW_MCU_NAME         "ESP32"
 
 #define MICROPY_HW_LED_STATUS       (&pin_GPIO2)
