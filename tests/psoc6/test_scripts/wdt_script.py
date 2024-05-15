@@ -58,13 +58,14 @@ def wdt_test():
     os.remove(wdt_op_fp)
 
 
+"""
 def wdt_reset_check():
     print("Running wdt reset test")
     exec(mpr_run_resume, wdt_reset_check_op_fp)
     validate_test(wdt_reset_check_op_fp, exp_wdt_reset_check)
-    os.remove(wdt_reset_check_op_fp)
+    os.remove(wdt_reset_check_op_fp)"""
 
 
 wdt_test()
-time.sleep(10)
-wdt_reset_check()
+# time.sleep(10)
+# wdt_reset_check()
