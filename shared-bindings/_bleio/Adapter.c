@@ -198,8 +198,8 @@ MP_PROPERTY_GETSET(bleio_adapter_name_obj,
 //|         :param bool anonymous:  If `True` then this device's MAC address is randomized before advertising.
 //|         :param int timeout:  If set, we will only advertise for this many seconds. Zero means no timeout.
 //|         :param float interval:  advertising interval, in seconds
-//|         :param tx_power int: transmitter power while advertising in dBm
-//|         :param directed_to Address: peer to advertise directly to"""
+//|         :param int tx_power: transmitter power while advertising in dBm
+//|         :param Address directed_to: peer to advertise directly to"""
 //|         ...
 STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
