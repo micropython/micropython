@@ -182,7 +182,10 @@ static uint32_t pyb_can_get_source_freq() {
             break;
         }
     }
-    #else // F4 and F7 and assume other MCUs too.
+    #elif defined(STM32G4)
+    // STM32G4 CAN clock from reset is HSE, unchanged by MicroPython
+    can_kern_clk = HSE_VALUE;
+    #else // G0, F4, F7 and assume other MCUs too.
     // CAN1/CAN2/CAN3 on APB1 use GetPCLK1Freq, alternatively use the following:
     // can_kern_clk = ((HSE_VALUE / osc_config.PLL.PLLM ) * osc_config.PLL.PLLN) /
     //  (osc_config.PLL.PLLQ * clk_init.AHBCLKDivider * clk_init.APB1CLKDivider);
