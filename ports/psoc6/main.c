@@ -52,7 +52,6 @@ __attribute__((section(".bss"))) static char gc_heap[MICROPY_GC_HEAP_SIZE];
 
 extern void rtc_init(void);
 extern void time_init(void);
-extern void time_deinit(void);
 extern void os_init(void);
 extern void network_init(void);
 extern void network_deinit(void);
@@ -67,51 +66,12 @@ void mpy_task(void *arg);
 
 TaskHandle_t mpy_task_handle;
 
-cyhal_gpio_callback_data_t gpio_btn_callback_data;
-static void gpio_interrupt_handler(void *handler_arg, cyhal_gpio_event_t event);
-void handle_error(uint32_t status);
-
 int main(int argc, char **argv) {
     // Initialize the device and board peripherals
     cy_rslt_t result = cybsp_init();
     if (result != CY_RSLT_SUCCESS) {
         mp_raise_ValueError(MP_ERROR_TEXT("cybsp_init failed !\n"));
     }
-
-//     __enable_irq();
-
-
-//                 /* Initialize the User LED */
-//    result = cyhal_gpio_init(P13_7, CYHAL_GPIO_DIR_OUTPUT,
-//                              CYHAL_GPIO_DRIVE_STRONG, 1);
-//     /* GPIO initialization failed. Stop program execution */
-//     handle_error(result);
-
-//     /* Initialize the User button */
-//      result = cyhal_gpio_init(P0_4, CYHAL_GPIO_DIR_INPUT,
-//                 CYHAL_GPIO_DRIVE_PULLUP, 1);
-//     /* GPIO initialization failed. Stop program execution */
-//     handle_error(result);
-
-//     /* Configure GPIO interrupt */
-//     gpio_btn_callback_data.callback = gpio_interrupt_handler;
-
-//     /* Configure GPIO interrupt */
-//     cyhal_gpio_register_callback(P0_4, &gpio_btn_callback_data);
-//     cyhal_gpio_enable_event(P0_4, CYHAL_GPIO_IRQ_FALL,3, true);
-
-//     for(;;)
-//     {
-//       cyhal_gpio_write(P13_7, 1);
-//        //cyhal_system_delay_ms(10);
-//        cyhal_gpio_write(P13_7, 0);
-//        //cyhal_system_delay_ms(10);
-//         cy_rslt_t result = cyhal_syspm_deepsleep();
-//         if (result != CY_RSLT_SUCCESS) {
-//           mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Deep sleeep failed %lx !"), result);
-//         }
-//     }
-
 
     // Initialize retarget-io to use the debug UART port
     result = cy_retarget_io_init(CYBSP_DEBUG_UART_TX, CYBSP_DEBUG_UART_RX, CY_RETARGET_IO_BAUDRATE);
@@ -150,7 +110,6 @@ void mpy_task(void *arg) {
     #endif
 
     // Initialize modules. Or to be redone after a reset and therefore to be placed next to machine_init below ?
-    machine_init();
     os_init();
     rtc_init();
     time_init();
@@ -171,7 +130,7 @@ soft_reset:
     mplogger_print("\n...LOGGER DEBUG MODE...\n\n");
 
     readline_init0();
-    // machine_init();
+    machine_init();
     #if MICROPY_PY_NETWORK
     network_init();
     mod_network_init();
@@ -219,7 +178,6 @@ soft_reset:
 
     mp_printf(&mp_plat_print, "MPY: soft reboot\n");
 
-
     // Deinitialize modules
     machine_deinit();
     mod_wdt_deinit();
@@ -249,17 +207,5 @@ void nlr_jump_fail(void *val) {
 
     for (;;) {
         __BKPT(0);
-    }
-}
-
-static void gpio_interrupt_handler(void *handler_arg, cyhal_gpio_event_t event) {
-
-    cyhal_gpio_write(P13_7, 1);
-    cyhal_gpio_write(P13_7, 1);
-}
-
-void handle_error(uint32_t status) {
-    if (status != CY_RSLT_SUCCESS) {
-        CY_ASSERT(0);
     }
 }

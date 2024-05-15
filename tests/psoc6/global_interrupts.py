@@ -27,8 +27,8 @@ def test_oneshot():
 
 
 state = machine.disable_irq()
-print("Interrupts Disabled")
+print("*****Test 1: Interrupts Disabled*****")
 test_oneshot()
 machine.enable_irq(state)
-print("Interrupts Enabled")
+print("*****Test 2: Interrupts Enabled******")
 test_oneshot()

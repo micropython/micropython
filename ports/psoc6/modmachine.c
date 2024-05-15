@@ -25,19 +25,12 @@
 // enums to hold the MPY constants as given in guidelines
 enum {MACHINE_PWRON_RESET, MACHINE_HARD_RESET, MACHINE_WDT_RESET, MACHINE_DEEPSLEEP_RESET, MACHINE_SOFT_RESET};
 
-
-static bool is_soft_reset = 0;
+uint32_t reset_cause;
 
 // function to return 64-bit silicon ID of given PSoC microcontroller
 // A combined 64-bit unique ID. [63:57] - DIE_YEAR [56:56] - DIE_MINOR [55:48] - DIE_SORT [47:40] - DIE_Y [39:32] - DIE_X [31:24] - DIE_WAFER [23:16] - DIE_LOT[2] [15: 8] - DIE_LOT[1] [ 7: 0] - DIE_LOT[0]
 static uint64_t system_get_unique_id(void) {
     return Cy_SysLib_GetUniqueId();
-}
-
-// get reset cause of the last system reset
-static uint32_t system_reset_cause(void) {
-    // return Cy_SysLib_GetResetReason();
-    return cyhal_system_get_reset_reason();
 }
 
 // helper function to generate random alphanumeric hash
@@ -85,7 +78,6 @@ static uint32_t system_get_cpu_freq(void) {
 }
 
 void machine_init(void) {
-    is_soft_reset = 0;
     mplogger_print("machine init\n");
 
     // TODO: put all module init functions here ?
@@ -93,7 +85,8 @@ void machine_init(void) {
 }
 
 void machine_deinit(void) {
-    is_soft_reset = 1;
+    // we are doing a soft-reset so change the reset_cause
+    reset_cause = CYHAL_SYSTEM_RESET_SOFT;
     mplogger_print("machine deinit\n");
 
     // TODO: put all module deinit functions here ?
@@ -186,44 +179,55 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_raise_NotImplementedError(MP_ERROR_TEXT("Not implemented!!!\n"));
 }
 
+// Sleep Modes Not working. Might be because of the REPL always running in background. Need to evaluate
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
-    cy_rslt_t result;
-    if (n_args != 0) {
-        uint32_t expiry = mp_obj_get_int(args[0]);
-        cyhal_lptimer_t obj;
-        uint32_t actual_ms;
-        result = cyhal_syspm_tickless_sleep(&obj, expiry, &actual_ms);
-        if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Light sleeep failed %lx !"), result);
-        }
-    } else {
-        result = cyhal_syspm_sleep();
-        if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Light sleeep failed %lx !"), result);
-        }
-    }
+    // cy_rslt_t result;
+    // if (n_args != 0) {
+    //     uint32_t expiry = mp_obj_get_int(args[0]);
+    //     cyhal_lptimer_t obj;
+    //     uint32_t actual_ms;
+    //     result = cyhal_syspm_tickless_sleep(&obj, expiry, &actual_ms);
+    //     if (result != CY_RSLT_SUCCESS) {
+    //         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Light sleeep failed %lx !"), result);
+    //     }
+    // } else {
+    //     result = cyhal_syspm_sleep();
+    //     if (result != CY_RSLT_SUCCESS) {
+    //         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Light sleeep failed %lx !"), result);
+    //     }
+    // }
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("Not implemented!!!\n"));
 }
 
 NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
-    cy_rslt_t result;
-    if (n_args != 0) {
-        uint32_t expiry = mp_obj_get_int(args[0]);
-        cyhal_lptimer_t obj;
-        uint32_t actual_ms;
-        result = cyhal_syspm_tickless_deepsleep(&obj, expiry, &actual_ms);
-        if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Deep sleeep failed %lx !"), result);
-        }
-    } else {
-        result = cyhal_syspm_deepsleep();
-        if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Deep sleeep failed %lx !"), result);
-        }
-    }
-    for (;;)
-    {
+    // cy_rslt_t result;
+    // if (n_args != 0) {
+    //     uint32_t expiry = mp_obj_get_int(args[0]);
+    //     cyhal_lptimer_t obj;
+    //     uint32_t actual_ms;
+    //     result = cyhal_syspm_tickless_deepsleep(&obj, expiry, &actual_ms);
+    //     if (result != CY_RSLT_SUCCESS) {
+    //         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Deep sleeep failed %lx !"), result);
+    //     }
+    // } else {
+    //     result = cyhal_syspm_deepsleep();
+    //     if (result != CY_RSLT_SUCCESS) {
+    //         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Deep sleeep failed %lx !"), result);
+    //     }
+    // }
+    // for (;;)
+    // {
 
-    }
+    // }
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("Not implemented!!!\n"));
+}
+
+// machine.idle()
+// This executies a wfi machine instruction which reduces power consumption
+// of the MCU until an interrupt occurs, at which point execution continues.
+// see: https://www.infineon.com/dgdl/Infineon-AN219528_PSoC_6_MCU_low-power_modes_and_power_reduction_techniques-ApplicationNotes-v06_00-EN.pdf?fileId=8ac78c8c7cdc391c017d0d31efdc659f  pg.7
+static void mp_machine_idle(void) {
+    __WFI(); // standard ARM instruction
 }
 
 // machine.unique_id()
@@ -237,39 +241,36 @@ static mp_obj_t mp_machine_unique_id(void) {
 }
 
 // machine.reset()
+// using watchdog timer to count to minimum value (1ms) to trigger reset
+// thread-safe way as other methods might interfere with pending interrupts, threads etc.
 NORETURN static void mp_machine_reset(void) {
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("Not implemented!!! Use Reset Button in board/ Watchdog reset/soft Reset\n"));
+    cyhal_wdt_t wdt_obj;
+    cyhal_wdt_init(&wdt_obj, 1); // min 1ms count time
+    cyhal_wdt_start(&wdt_obj);
+    while (true) {
+    }
+    ;
 }
 
 static mp_int_t mp_machine_reset_cause(void) {
-    qstr mp_reset_qstr = MP_QSTR_None;
-    uint8_t reset_cause_const = -1;
-    if (is_soft_reset) {
-        mp_reset_qstr = MP_QSTR_SOFT_RESET;
-        reset_cause_const = MACHINE_SOFT_RESET;
-        return reset_cause_const;
+    if (reset_cause == CYHAL_SYSTEM_RESET_SOFT) {
+        return MACHINE_SOFT_RESET;
     } else {
-        uint32_t reset_cause = system_reset_cause();
+        uint32_t reset_cause = cyhal_system_get_reset_reason();
         if (reset_cause == 0UL) {
-            mp_reset_qstr = MP_QSTR_HARD_RESET;
-            reset_cause_const = MACHINE_HARD_RESET;
+            return MACHINE_HARD_RESET;
         } else if (reset_cause == CYHAL_SYSTEM_RESET_WDT) {
-            mp_reset_qstr = MP_QSTR_WDT_RESET;
-            reset_cause_const = MACHINE_WDT_RESET;
+            return MACHINE_WDT_RESET;
         } else if (reset_cause == CYHAL_SYSTEM_RESET_DEEPSLEEP_FAULT) {
-            mp_reset_qstr = MP_QSTR_DEEPSLEEP_RESET;
-            reset_cause_const = MACHINE_DEEPSLEEP_RESET;
+            return MACHINE_DEEPSLEEP_RESET;
         }
     }
-
-    mplogger_print("Reset cause: %q; ", mp_reset_qstr);
-    return reset_cause_const;
+    return MACHINE_PWRON_RESET;
 }
 
 // machine.disable_irq()
 static mp_obj_t machine_disable_irq(void) {
     uint32_t state = system_disable_global_irq();
-    mplogger_print("IRQ State: ");
     return mp_obj_new_int(state);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
@@ -278,23 +279,12 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
 static mp_obj_t machine_enable_irq(mp_obj_t state_in) {
     uint32_t state = mp_obj_get_int(state_in);
     bool result = system_enable_global_irq(state);
-    if (result) {
-        mplogger_print("Interrupts enabled\n");
-    } else {
-        mplogger_print("Interrupts not enabled; key mismatch!\n");
+    if (!result) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Interrupt enabling failed!"));
     }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
-
-// machine.idle()
-// This executies a wfi machine instruction which reduces power consumption
-// of the MCU until an interrupt occurs, at which point execution continues.
-// see: https://www.infineon.com/dgdl/Infineon-AN219528_PSoC_6_MCU_low-power_modes_and_power_reduction_techniques-ApplicationNotes-v06_00-EN.pdf?fileId=8ac78c8c7cdc391c017d0d31efdc659f  pg.7
-static void mp_machine_idle(void) {
-    __WFI(); // standard ARM instruction
-}
-
 
 // machine.disable_irq()
 static mp_obj_t machine_rng(void) {
@@ -308,9 +298,7 @@ static mp_obj_t machine_rng(void) {
     /* Generate a true random number */
     rnd_num = cyhal_trng_generate(&trng_obj);
     rnd_num &= 0xFFFFFF;
-    /* Release the true random number generator block
-     * Note: Free only if not required anymore
-     */
+    /* Release the true random number generator block */
     cyhal_trng_free(&trng_obj);
     return mp_obj_new_int(rnd_num);
 }
@@ -329,6 +317,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_rng_obj, machine_rng);
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(MACHINE_WDT_RESET) },  \
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(MACHINE_DEEPSLEEP_RESET) }, \
     { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(MACHINE_SOFT_RESET) }, \
+    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(MACHINE_PWRON_RESET) }, \
     \
     /* Modules */ \
     { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) }, \
