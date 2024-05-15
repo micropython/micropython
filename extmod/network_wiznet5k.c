@@ -121,6 +121,7 @@ typedef struct _wiznet5k_obj_t {
     #else // WIZNET5K_PROVIDED_STACK
     wiz_NetInfo netinfo;
     uint8_t socket_used;
+    mod_network_socket_obj_t *sockets[_WIZCHIP_SOCK_NUM_];
     bool active;
     uint8_t *dhcp_buf;
     uint8_t dhcp_state;
@@ -436,6 +437,19 @@ void wiznet5k_try_poll(void) {
     // If using DHCP for the interface, periodically renew/update the address
     wiznet5k_dhcp_poll();
 
+    // If any callbacks are registered, poll for activity and schedule callbacks
+    // to be executed.
+    for (mp_uint_t sn = 0; sn < _WIZCHIP_SOCK_NUM_; sn++) {
+        mod_network_socket_obj_t *socket = wiznet5k_obj.sockets[sn];
+        if (socket != NULL && socket->callback != MP_OBJ_NULL) {
+            uint8_t ir = getSn_IR(sn);
+            if (ir & (Sn_IR_RECV | Sn_IR_CON | Sn_IR_DISCON)) {
+                mp_sched_schedule(socket->callback, MP_OBJ_FROM_PTR(socket));
+                setSn_IR(sn, (Sn_IR_RECV | Sn_IR_CON | Sn_IR_DISCON));
+            }
+        }
+    }
+
     // There's really nothing to do here. The interrupt that triggered this will
     // release a WFE() wait and will trigger a poll() loop which will
     // wiznet5k_socket_ioctl will detect the readable or writeable state of the
@@ -582,6 +596,8 @@ static int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno)
         }
 
         socket->_private = NULL;
+        socket->callback = MP_OBJ_NULL;
+        wiznet5k_obj.sockets[socket->fileno] = socket;
 
         // Enable data receive interrupt
         if (wiznet5k_obj.use_interrupt) {
@@ -861,6 +877,11 @@ static mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte
 
 static int wiznet5k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
     switch (opt) {
+        case 20:
+            // User callback on receive
+            socket->callback = (void *)optval;
+            break;
+
         // level: SOL_SOCKET
         case MOD_NETWORK_SO_REUSEADDR:
         case MOD_NETWORK_SO_BROADCAST:
@@ -1047,6 +1068,7 @@ static mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     #else // WIZNET5K_PROVIDED_STACK
     wiznet5k_obj.active = false;
     wiznet5k_obj.socket_used = 0;
+    memset(wiznet5k_obj.sockets, 0, sizeof(wiznet5k_obj.sockets));
     #endif
 
     // Return wiznet5k object
