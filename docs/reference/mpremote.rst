@@ -684,6 +684,13 @@ device. See :ref:`packages`.
 
 .. code-block:: bash
 
+  mpremote mip install gitlab:org/repo@branch
+
+Install the package from the specified branch at org/repo on GitLab to the
+device. See :ref:`packages`.
+
+.. code-block:: bash
+
   mpremote mip install --target /flash/third-party functools
 
 Install the ``functools`` package from :term:`micropython-lib` to the

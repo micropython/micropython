@@ -7,7 +7,7 @@ Installing packages with ``mip``
 --------------------------------
 
 Network-capable boards include the ``mip`` module, which can install packages
-from :term:`micropython-lib` and from third-party sites (including GitHub).
+from :term:`micropython-lib` and from third-party sites (including GitHub, GitLab).
 
 ``mip`` ("mip installs packages") is similar in concept to Python's ``pip`` tool,
 however it does not use the PyPI index, rather it uses :term:`micropython-lib`
@@ -38,24 +38,28 @@ install third-party libraries. The simplest way is to download a file directly::
 When installing a file directly, the ``target`` argument is still supported to set
 the destination path, but ``mpy`` and ``version`` are ignored.
 
-The URL can also start with ``github:`` as a simple way of pointing to content
-hosted on GitHub::
+The URL can also start with ``github:`` or ``gitlab:`` as a simple way of pointing to content
+hosted on GitHub or GitLab::
 
     >>> mip.install("github:org/repo/path/foo.py")  # Uses default branch
     >>> mip.install("github:org/repo/path/foo.py", version="branch-or-tag")  # Optionally specify the branch or tag
+    >>> mip.install("gitlab:org/repo/path/foo.py")  # Uses default branch
+    >>> mip.install("gitlab:org/repo/path/foo.py", version="branch-or-tag")  # Optionally specify the branch or tag
 
 More sophisticated packages (i.e. with more than one file, or with dependencies)
 can be downloaded by specifying the path to their ``package.json``.
 
     >>> mip.install("http://example.com/x/package.json")
     >>> mip.install("github:org/user/path/package.json")
+    >>> mip.install("gitlab:org/user/path/package.json")
 
 If no json file is specified, then "package.json" is implicitly added::
 
     >>> mip.install("http://example.com/x/")
     >>> mip.install("github:org/repo")  # Uses default branch of that repo
     >>> mip.install("github:org/repo", version="branch-or-tag")
-
+    >>> mip.install("gitlab:org/repo")  # Uses default branch of that repo
+    >>> mip.install("gitlab:org/repo", version="branch-or-tag")
 
 Using ``mip`` on the Unix port
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -83,6 +87,8 @@ can be used from a host PC to install packages to a locally connected device
     $ mpremote mip install http://example.com/x/y/foo.py
     $ mpremote mip install github:org/repo
     $ mpremote mip install github:org/repo@branch-or-tag
+    $ mpremote mip install gitlab:org/repo
+    $ mpremote mip install gitlab:org/repo@branch-or-tag
 
 The ``--target=path``, ``--no-mpy``, and ``--index`` arguments can be set::
 
@@ -120,7 +126,8 @@ A typical ``package.json`` for an example ``mlx90640`` library looks like::
       "deps": [
         ["collections-defaultdict", "latest"],
         ["os-path", "latest"],
-        ["github:org/micropython-additions", "main"]
+        ["github:org/micropython-additions", "main"],
+        ["gitlab:org/micropython-otheradditions", "main"]
       ],
       "version": "0.2"
     }

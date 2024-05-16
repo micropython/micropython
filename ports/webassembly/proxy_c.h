@@ -37,6 +37,7 @@ typedef struct _mp_obj_jsproxy_t {
 } mp_obj_jsproxy_t;
 
 extern const mp_obj_type_t mp_type_jsproxy;
+extern const mp_obj_type_t mp_type_JsException;
 
 void proxy_c_init(void);
 mp_obj_t proxy_convert_js_to_mp_obj_cside(uint32_t *value);

@@ -702,7 +702,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tests.add("micropython/emg_exc.py")
             skip_tests.add("micropython/extreme_exc.py")
             skip_tests.add("micropython/heapalloc_exc_compressed_emg_exc.py")
-            skip_tests.add("micropython/import_mpy_invalid.py")
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":

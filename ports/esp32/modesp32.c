@@ -168,6 +168,26 @@ static mp_obj_t esp32_raw_temperature(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(esp32_raw_temperature_obj, esp32_raw_temperature);
 
+#else
+
+// IDF 5 exposes new internal temperature interface, and the ESP32C3/S2/S3
+// now have calibrated temperature settings in 5 discrete ranges.
+#include "driver/temperature_sensor.h"
+
+static mp_obj_t esp32_mcu_temperature(void) {
+    static temperature_sensor_handle_t temp_sensor = NULL;
+    float tvalue;
+    if (temp_sensor == NULL) {
+        temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
+        ESP_ERROR_CHECK(temperature_sensor_install(&temp_sensor_config, &temp_sensor));
+    }
+    ESP_ERROR_CHECK(temperature_sensor_enable(temp_sensor));
+    ESP_ERROR_CHECK(temperature_sensor_get_celsius(temp_sensor, &tvalue));
+    ESP_ERROR_CHECK(temperature_sensor_disable(temp_sensor));
+    return mp_obj_new_int((int)(tvalue + 0.5));
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(esp32_mcu_temperature_obj, esp32_mcu_temperature);
+
 #endif
 
 static mp_obj_t esp32_idf_heap_info(const mp_obj_t cap_in) {
@@ -202,6 +222,8 @@ static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gpio_deep_sleep_hold), MP_ROM_PTR(&esp32_gpio_deep_sleep_hold_obj) },
     #if CONFIG_IDF_TARGET_ESP32
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
+    #else
+    { MP_ROM_QSTR(MP_QSTR_mcu_temperature), MP_ROM_PTR(&esp32_mcu_temperature_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_idf_heap_info), MP_ROM_PTR(&esp32_idf_heap_info_obj) },
 

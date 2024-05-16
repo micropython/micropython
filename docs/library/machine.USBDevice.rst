@@ -8,13 +8,11 @@ class USBDevice -- USB Device driver
           ports.
 
 USBDevice provides a low-level Python API for implementing USB device functions using
-Python code. This low-level API assumes familiarity with the USB standard. It's
-not recommended to use this API directly, instead install the high-level usbd
-module from micropython-lib.
+Python code.
 
-.. warning:: This functionality is very new and the high-level usbd module is
-             not yet merged into micropython-lib. It can be found `here on
-             GitHub <https://github.com/micropython/micropython-lib/pull/558>`_.
+.. warning:: This low-level API assumes familiarity with the USB standard. There
+   are high-level `usb driver modules in micropython-lib`_ which provide a
+   simpler interface and more built-in functionality.
 
 Terminology
 -----------
@@ -186,7 +184,7 @@ Methods
     necessary if the runtime device configuration has changed, so that
     the host sees the new device.
 
-.. attribute:: USDBD.builtin_driver
+.. attribute:: USBDevice.builtin_driver
 
    This attribute holds the current built-in driver configuration, and must be
    set to one of the ``USBDevice.BUILTIN_`` named constants defined on this object.
@@ -294,3 +292,5 @@ Constants
             descriptor.
           - ``desc_cfg`` - ``bytes`` object containing the complete built-in USB
             configuration descriptor.
+
+.. _usb driver modules in micropython-lib: https://github.com/micropython/micropython-lib/tree/master/micropython/usb#readme
