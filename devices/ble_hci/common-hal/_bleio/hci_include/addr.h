@@ -1,4 +1,6 @@
-// CircuitPython: Adapted from Zephyer include files.
+// This file is part of the CircuitPython project: https://circuitpython.org
+// Adapted from Zephyr include file.
+
 /** @file
  *  @brief Bluetooth device address definitions and utilities.
  */
