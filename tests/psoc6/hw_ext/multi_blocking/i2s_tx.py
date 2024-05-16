@@ -12,9 +12,6 @@ if "CY8CPROTO-062-4343W" in machine:
     ws_tx_pin = "P13_2"
     sd_tx_pin = "P13_3"
     wait_signal_pin_name = "P0_4"
-    # while extmod/refactoring
-    # print("SKIP")
-    # raise SystemExit
 elif "CY8CPROTO-063-BLE" in machine:
     # This would be the right pins for this test, but unfortunately
     # the P5_1 is allocated for the UART serial comm terminal communication.
