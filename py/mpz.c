@@ -1590,6 +1590,11 @@ bool mpz_as_uint_checked(const mpz_t *i, mp_uint_t *value) {
 }
 
 void mpz_as_bytes(const mpz_t *z, bool big_endian, size_t len, byte *buf) {
+    if (len == 0) {
+        // No output is necessary.
+        return;
+    }
+
     byte *b = buf;
     if (big_endian) {
         b += len;
