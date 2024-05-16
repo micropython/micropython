@@ -80,7 +80,7 @@ jobs:
         ./psoc6/run_psoc6_tests.sh -c --psoc6 --dev0 ${devs[0]} 
         echo " >> PSoC6 extended hardware tests"
         ./psoc6/run_psoc6_tests.sh -c --psoc6-hwext --dev0 ${devs0[0]} 
-        echo " >> PSoC6 bitstream tests"
+        echo " >> PSoC6 i2s tests"
         ./psoc6/run_psoc6_tests.sh -c -s --dev0 ${devs0[0]} --dev1 ${devs1[0]}
         echo " >> PSoC6 bitstream tests"
         ./psoc6/run_psoc6_tests.sh -c -b --dev0 ${devs0[0]} --dev1 ${devs1[0]}
