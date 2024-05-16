@@ -3,6 +3,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "machine_pin_phy.h"
 
 #define i2s_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
@@ -43,9 +44,12 @@ typedef struct _machine_i2s_obj_t {
     mp_obj_base_t base;
     uint8_t i2s_id;
     cyhal_i2s_t i2s_obj;
-    mp_hal_pin_obj_t sck;   // TODO: These will be pin_phy objects
-    mp_hal_pin_obj_t ws;
-    mp_hal_pin_obj_t sd;
+    // mp_hal_pin_obj_t sck;   // TODO: These will be pin_phy objects
+    // mp_hal_pin_obj_t ws;
+    // mp_hal_pin_obj_t sd;
+    machine_pin_phy_obj_t *sck;
+    machine_pin_phy_obj_t *ws;
+    machine_pin_phy_obj_t *sd;
     uint16_t mode;
     int8_t bits;
     uint8_t channel_resolution_bits; // TODO: better name?
@@ -172,8 +176,6 @@ uint8_t get_word_byte_size(machine_i2s_obj_t *self) {
         return 1;
     } else if (res_bits > 8 && res_bits <= 16) {
         return 2;
-    } else if (res_bits > 16 && res_bits <= 24) {
-        return 3;
     } else {
         return 4;
     }
@@ -190,13 +192,6 @@ static inline void i2s_dma_tx(machine_i2s_obj_t *self) {
     cy_rslt_t result = cyhal_i2s_write_async(&self->i2s_obj, self->dma_active_buf_p, dma_half_buff_word_size);
     i2s_assert_raise_val("I2S DMA write configure failed with return code %lx !", result);
 }
-
-// static inline void toggle_led() {
-//     static uint32_t a = 0;
-//     if (a++ % sizeof(uint64_t) == 0) {
-//         cyhal_gpio_toggle(CYBSP_USER_LED);
-//     }
-// }
 
 static void i2s_dma_from_dmabuf_to_ringbuf(machine_i2s_obj_t *self) {
     uint8_t dma_sample_size_in_bytes = (self->bits == 16? 2 : 4) * (self->format == STEREO ? 2: 1);
@@ -278,7 +273,7 @@ static void i2s_dma_irq_handler(void *arg, cyhal_i2s_event_t event) {
 }
 
 static void i2s_init(machine_i2s_obj_t *self, cyhal_clock_t *clock) {
-    cyhal_i2s_pins_t pins = { .sck = self->sck, .ws = self->ws, .data = self->sd, .mclk = NC };
+    cyhal_i2s_pins_t pins = { .sck = self->sck->addr, .ws = self->ws->addr, .data = self->sd->addr, .mclk = NC };
     cyhal_i2s_config_t config =
     {
         .is_tx_slave = true,
@@ -359,46 +354,24 @@ static void i2s_dma_init(machine_i2s_obj_t *self) {
 
 static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args) {
 
-    // // TODO: with all inputs validated make the objects of the i2s object.
-    // // TODO: then make the i2s object
-    // TODO: validate all arguments before initializing or creating any object
-
-    // are Pins valid?
-    // TODO: Check gpio allocation!
-    // i2s_pin_alloc();
-    // Allocate physical pins to prevent that there are used for/by other peripherals
-    mp_hal_pin_obj_t sck = args[ARG_sck].u_obj == MP_OBJ_NULL ? -1 : mp_hal_get_pin_obj(args[ARG_sck].u_obj);
-    mp_hal_pin_obj_t ws = args[ARG_ws].u_obj == MP_OBJ_NULL ? -1 : mp_hal_get_pin_obj(args[ARG_ws].u_obj);
-    mp_hal_pin_obj_t sd = args[ARG_sd].u_obj == MP_OBJ_NULL ? -1 : mp_hal_get_pin_obj(args[ARG_sd].u_obj);
-
     // is Mode valid?
-    // We are not distinguishing between master and slave roles, just RX and TX, which only support master in mpy API.
     i2s_mode_t i2s_mode = args[ARG_mode].u_int;
     if ((i2s_mode != RX) &&
         (i2s_mode != TX)) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid mode"));
     }
 
-    // TODO: proper implementation between channel_bits and words_bits. Refactor proper naming.
     // is Bits valid?
     int8_t i2s_bits_resolution = args[ARG_bits].u_int;
     if (i2s_bits_resolution < 1 || i2s_bits_resolution > 32) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid bits"));
     }
-
     int8_t i2s_bits;
     if (i2s_bits_resolution <= 16) {
         i2s_bits = 16;
     } else {
         i2s_bits = 32;
     }
-
-    // int8_t i2s_bits = args[ARG_bits].u_int;
-    // if ((i2s_bits != 16) &&
-    //     (i2s_bits != 32)
-    //     ) {
-    //     mp_raise_ValueError(MP_ERROR_TEXT("invalid bits"));
-    // }
 
     // is Format valid?
     format_t i2s_format = args[ARG_format].u_int;
@@ -407,6 +380,7 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
         mp_raise_ValueError(MP_ERROR_TEXT("invalid format"));
     }
 
+    // is valid clock freq?
     uint32_t audio_clock_freq_hz;
     uint32_t rate = args[ARG_rate].u_int;
     ;
@@ -414,21 +388,46 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
         rate == 16000 ||
         rate == 32000 ||
         rate == 48000) {
-        audio_clock_freq_hz = AUDIO_SYS_CLOCK_HZ;
+        audio_clock_freq_hz = AUDIO_SYS_CLOCK_HZ; // get_sys_clock() and see if it matches
     } else if (rate == 22050 ||
                rate == 44100) {
-        audio_clock_freq_hz = AUDIO_SYS_CLOCK_HZ_1;
+        audio_clock_freq_hz = AUDIO_SYS_CLOCK_HZ_1; // get_sys_clock() and see if it matches
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("rate not supported"));
     }
 
+    // is valid buf size ?
     int32_t ring_buffer_len = args[ARG_ibuf].u_int;
-    if (ring_buffer_len > 0) {
-        self->ring_buffer_storage = m_new(uint8_t, ring_buffer_len);
-        ringbuf_init(&self->ring_buffer, self->ring_buffer_storage, ring_buffer_len);
-    } else {
+    if (ring_buffer_len < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid ibuf"));
     }
+
+    // All these pins must be provided
+//     if (args[ARG_sck].u_obj == MP_OBJ_NULL ||
+//         args[ARG_ws].u_obj == MP_OBJ_NULL  ||
+//         args[ARG_sd].u_obj == MP_OBJ_NULL ) {
+//         mp_raise_ValueError(MP_ERROR_TEXT("SCK, WS and SD pins are required"));
+//    }
+//     // Allocate physical pins to prevent that there are used for/by other peripherals
+//     machine_pin_phy_obj_t * sck = pin_phy_realloc(args[ARG_sck].u_obj, PIN_PHY_FUNC_I2S);
+//     machine_pin_phy_obj_t * ws = pin_phy_realloc(args[ARG_ws].u_obj, PIN_PHY_FUNC_I2S);
+//     machine_pin_phy_obj_t * sd = pin_phy_realloc(args[ARG_sd].u_obj, PIN_PHY_FUNC_I2S);
+
+    machine_pin_phy_obj_t *sck = i2s_pin_alloc("SCK", sargs[ARG_sck].u_obj);
+    machine_pin_phy_obj_t *ws = i2s_pin_alloc("WS", sargs[ARG_ws].u_obj);
+    machine_pin_phy_obj_t *sd = i2s_pin_alloc("SD", sargs[ARG_sd].u_obj);
+    //  {
+    //     if (args[ARG_sck].u_obj == MP_OBJ_NULL) {
+    //         machine_pin_phy_obj_t *sck = pin_phy_realloc(args[ARG_sck].u_obj, PIN_PHY_FUNC_I2S);
+
+    //     if (scl == NULL) {
+    //         size_t slen;
+    //         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SCK pin (%s) not found !"), mp_obj_str_get_data(args[ARG_sck].u_obj, &slen));
+    //     }
+    // } else {
+    //     mp_raise_TypeError(MP_ERROR_TEXT("SCK pin must be provided"));
+    // }
+
 
     self->sck = sck;
     self->ws = ws;
@@ -441,10 +440,9 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
     self->ibuf = ring_buffer_len;
     self->callback_for_non_blocking = MP_OBJ_NULL;
     self->io_mode = BLOCKING;
+    self->ring_buffer_storage = m_new(uint8_t, ring_buffer_len);
 
-
-    // cyhal_gpio_init(CYBSP_USER_LED, CYHAL_GPIO_DIR_OUTPUT,
-    //     CYHAL_GPIO_DRIVE_STRONG, CYBSP_LED_STATE_OFF);
+    ringbuf_init(&self->ring_buffer, self->ring_buffer_storage, ring_buffer_len);
 
     i2s_audio_clock_init(audio_clock_freq_hz);
     i2s_init(self, &audio_clock);
@@ -453,9 +451,9 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
 
 static void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     cyhal_i2s_free(&self->i2s_obj);
-    // TODO: disable irq?
-    // TODO: free pin_phy.c
-    // TODO: stop i2s? Is that required?
+    pin_phy_free(self->sck);
+    pin_phy_free(self->ws);
+    pin_phy_free(self->sd);
 }
 
 static void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
