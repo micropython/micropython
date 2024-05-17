@@ -97,6 +97,12 @@ void check_ble_error(int error_code, const char *file, size_t line) {
         return;
     }
     switch (error_code) {
+        case BLE_HS_ATT_ERR(BLE_ATT_ERR_INSUFFICIENT_AUTHEN):
+            mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Insufficient authentication"));
+            return;
+        case BLE_HS_ATT_ERR(BLE_ATT_ERR_INSUFFICIENT_ENC):
+            mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Insufficient encryption"));
+            return;
         default:
             #if CIRCUITPY_VERBOSE_BLE
             if (file) {
