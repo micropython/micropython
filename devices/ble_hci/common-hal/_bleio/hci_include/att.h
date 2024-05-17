@@ -1,4 +1,4 @@
-// This file is part of the CircuitPython project: https://circuitpython.org\
+// This file is part of the CircuitPython project: https://circuitpython.org
 // Adapted from Zephyr include file.
 
 /** @file
