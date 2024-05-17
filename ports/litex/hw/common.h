@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 #ifndef _HW_COMMON_H_
 #define _HW_COMMON_H_
 #include <stdint.h>

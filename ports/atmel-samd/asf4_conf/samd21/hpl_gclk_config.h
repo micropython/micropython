@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 // CircuitPython SAMD21 clock tree:
 // DFLL48M (with USBCRM on to sync with external USB ref) -> GCLK0, GCLK1
 //   GCLK0 (48MHz) -> peripherals

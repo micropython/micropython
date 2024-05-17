@@ -1,3 +1,10 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Original work copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+// SPDX-FileCopyrightText: Modified work copyright (c) 2019 Kevin Neubauer for Null Byte Labs LLC
+//
+// SPDX-License-Identifier: MIT
+
 #include "shared-bindings/board/__init__.h"
 
 // This mapping only includes functional names because pins broken

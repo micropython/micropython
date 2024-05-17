@@ -1,11 +1,10 @@
-/*
- * Copyright (c) 2013-2021 Ibrahim Abdelkader <iabdalkader@openmv.io>
- * Copyright (c) 2013-2021 Kwabena W. Agyeman <kwagyeman@openmv.io>
- * Copyright (c) 2024 Jeff Epler for Adafruit Industries
- *
- * This work is licensed under the MIT license, see the file LICENSE for details.
- * Adapted from https://github.com/openmv/openmv/blob/master/bitmap/omv/imlib/filter.c#L2083
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2013-2021 Ibrahim Abdelkader <iabdalkader@openmv.io>
+// SPDX-FileCopyrightText: Copyright (c) 2013-2021 Kwabena W. Agyeman <kwagyeman@openmv.io>
+// SPDX-FileCopyrightText: Copyright (c) 2024 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdbool.h>
 #include <math.h>

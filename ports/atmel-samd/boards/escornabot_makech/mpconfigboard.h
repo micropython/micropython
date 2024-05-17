@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Andrés Sabas for Electronic Cats
+//
+// SPDX-License-Identifier: MIT
+
 #define MICROPY_HW_BOARD_NAME "Escornabot Makech"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
