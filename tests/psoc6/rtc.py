@@ -1,16 +1,13 @@
 # import machine
-from machine import RTC
+from machine import RTC, Pin
 import time
 
+pin = Pin("P13_7", Pin.OUT, value=1)
 
-def cback(event):
-    if event == (event & RTC.ALARM0):
-        print("\nEvent triggered\n")
-
+irq_counter = 0
 
 rtc = RTC()
-rtc.alarm(time=500, repeat=True)
-rtc_irq = rtc.irq(trigger=RTC.ALARM0, handler=cback)
+print(rtc)
 
 # Tuple format: Year, Month, Sec, WDay*, Hour, Min, Sec, Subsec=0
 # *Note: User cannot set a wrong week day value here. PSoC always calculates the right weekday using rest of the fields.
@@ -28,7 +25,6 @@ print("\ndatetime is accurate: \t", rtc.now() == exp_dtime)
 def set_and_print(datetime):
     rtc.datetime(datetime)
     current_datetime = rtc.now()
-    # print(current_datetime)
     print(f"current datetime is same as set datetime {datetime} :", current_datetime == datetime)
 
 
@@ -48,8 +44,18 @@ set_and_print((2016, 12, 31, 6, 23, 59, 59, 0))
 set_and_print((2099, 12, 31, 4, 23, 59, 59, 0))
 
 
-# rtc.alarm(time=200, repeat=False)
-# rtc_irq = rtc.irq(trigger=RTC.ALARM0, handler=cback)
+def cback(event):
+    global irq_counter
+    pin.value(0)
+    irq_counter = irq_counter + 1
+
+
+print("\nSetting alarm\n")
+rtc.alarm(time=10, repeat=False)
+rtc_irq = rtc.irq(trigger=RTC.ALARM0, handler=cback)
+print("Alarm left: ", rtc.alarm_left())
+time.sleep_ms(12)
+print("irq_counter: ", irq_counter)
 
 
 def reset_rtc():

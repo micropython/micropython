@@ -1,33 +1,26 @@
 <RTC>
-(2023, 1, 1, 0, 0, 0, 0, 0)
-(2023, 1, 1, 0, 0, 0, 0, 0)
-(2023, 1, 1, 0, 0, 0, 1, 0)
-(2000, 1, 1, 6, 0, 0, 0, 0)
-PASS
-(2000, 1, 31, 1, 0, 0, 0, 0)
-PASS
-(2000, 12, 31, 0, 0, 0, 0, 0)
-PASS
-(2016, 12, 31, 6, 0, 0, 0, 0)
-PASS
-(2016, 12, 31, 6, 0, 0, 0, 0)
-PASS
-(2016, 12, 31, 6, 1, 0, 0, 0)
-PASS
-(2016, 12, 31, 6, 12, 0, 0, 0)
-PASS
-(2016, 12, 31, 6, 13, 0, 0, 0)
-PASS
-(2016, 12, 31, 6, 23, 0, 0, 0)
-PASS
-(2016, 12, 31, 6, 23, 1, 0, 0)
-PASS
-(2016, 12, 31, 6, 23, 59, 0, 0)
-PASS
-(2016, 12, 31, 6, 23, 59, 1, 0)
-PASS
-(2016, 12, 31, 6, 23, 59, 59, 0)
-PASS
-(2099, 12, 31, 4, 23, 59, 59, 0)
-PASS
-RESET SUCCESSFUL
+
+RTC init successful: 	 True
+
+datetime is accurate: 	 True
+current datetime is same as set datetime (2000, 1, 1, 6, 0, 0, 0, 0) : True
+current datetime is same as set datetime (2000, 1, 31, 1, 0, 0, 0, 0) : True
+current datetime is same as set datetime (2000, 12, 31, 0, 0, 0, 0, 0) : True
+current datetime is same as set datetime (2016, 12, 31, 6, 0, 0, 0, 0) : True
+current datetime is same as set datetime (2016, 12, 31, 6, 0, 0, 0, 0) : True
+current datetime is same as set datetime (2016, 12, 31, 6, 1, 0, 0, 0) : True
+current datetime is same as set datetime (2016, 12, 31, 6, 12, 0, 0, 0) : True
+current datetime is same as set datetime (2016, 12, 31, 6, 13, 0, 0, 0) : True
+current datetime is same as set datetime (2016, 12, 31, 6, 23, 0, 0, 0) : True
+current datetime is same as set datetime (2016, 12, 31, 6, 23, 1, 0, 0) : True
+current datetime is same as set datetime (2016, 12, 31, 6, 23, 59, 0, 0) : True
+current datetime is same as set datetime (2016, 12, 31, 6, 23, 59, 1, 0) : True
+current datetime is same as set datetime (2016, 12, 31, 6, 23, 59, 59, 0) : True
+current datetime is same as set datetime (2099, 12, 31, 4, 23, 59, 59, 0) : True
+
+Setting alarm
+
+Alarm left:  10
+irq_counter:  1
+
+RTC reset done:  True
