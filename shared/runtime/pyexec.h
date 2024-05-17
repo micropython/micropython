@@ -35,19 +35,40 @@ typedef enum {
 
 extern pyexec_mode_kind_t pyexec_mode_kind;
 
-// Set this to the value (eg PYEXEC_FORCED_EXIT) that will be propagated through
-// the pyexec functions if a SystemExit exception is raised by the running code.
+// Set this to the value (eg PYEXEC_FORCED_EXIT, or PYEXEC_USE_EXIT_CODE (-1))
+// that will be propagated through the pyexec functions
+// if a SystemExit exception is raised by the running code.
 // It will reset to 0 at the start of each execution (eg each REPL entry).
+//
+// Value of PYEXEC_USE_EXIT_CODE (-1) will use the exception's exit code, consistent with python
+// sys.exit() call - https://docs.python.org/3/library/exceptions.html#SystemExit
 extern int pyexec_system_exit;
 
+// Set this to the value (eg PYEXEC_UNHANDLED_EXCEPTION) that will be propagated through
+// the pyexec functions if the VM is stopped due to an unhandled exception (crash).
+// It will reset to 0 at the start of each execution (eg each REPL entry).
+extern int pyexec_unhandled_exception;
+
+// Set this to the value (eg PYEXEC_KEYBOARD_INTERRUPT) that will be propagated through
+// the pyexec functions if the VM is stopped due to an unhandled KeyboardInterrupt exception.
+// To not differentiate between keyboard interrupt and normal unhandled exception,
+// set this variable to the value of `pyexec_unhandled_exception`.
+// It will reset to 0 at the start of each execution (eg each REPL entry).
+extern int pyexec_keyboard_interrupt;
+
 #if MICROPY_ENABLE_VM_ABORT
-// Set this to the value (eg PYEXEC_FORCED_EXIT) that will be propagated through
+// Set this to the value (eg PYEXEC_ABORT) that will be propagated through
 // the pyexec functions if the VM is aborted for immediate exit.
 // It will reset to 0 at the start of each execution (eg each REPL entry).
 extern int pyexec_abort;
 #endif
 
 #define PYEXEC_FORCED_EXIT (0x100)
+#define PYEXEC_USE_EXIT_CODE (-1)
+#define PYEXEC_UNHANDLED_EXCEPTION (1)
+#define PYEXEC_KEYBOARD_INTERRUPT (128 + 2) // same as SIG INT exit code
+#define PYEXEC_ABORT (128 + 9) // same as SIG KILL exit code
+
 
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);
