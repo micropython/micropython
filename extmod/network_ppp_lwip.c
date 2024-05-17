@@ -100,12 +100,13 @@ static mp_obj_t network_ppp_make_new(const mp_obj_type_t *type, size_t n_args, s
 
 static mp_obj_t network_ppp___del__(mp_obj_t self_in) {
     network_ppp_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->state >= STATE_ERROR) {
-        // Still connnected over the UART stream.
-        // Force the connection to close, with nocarrier=1.
-        self->state = STATE_ACTIVE;
-        ppp_close(self->pcb, 1);
-    } else if (self->state == STATE_ACTIVE) {
+    if (self->state >= STATE_ACTIVE) {
+        if (self->state >= STATE_ERROR) {
+            // Still connnected over the UART stream.
+            // Force the connection to close, with nocarrier=1.
+            self->state = STATE_INACTIVE;
+            ppp_close(self->pcb, 1);
+        }
         // Free PPP PCB and reset state.
         self->state = STATE_INACTIVE;
         ppp_free(self->pcb);
