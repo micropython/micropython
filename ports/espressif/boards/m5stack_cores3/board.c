@@ -114,9 +114,9 @@ static bool axp2101_init(busio_i2c_obj_t *i2c) {
     int rc;
     uint8_t write_buf[2];
 
-    // 0x90 = 0b1011_1001  // LDOS ON/OFF control 0
+    // 0x90 = 0b1011_1111  // LDOS ON/OFF control 0
     write_buf[0] = 0x90;
-    write_buf[1] = 0b10111001;
+    write_buf[1] = 0b10111111;
     rc = common_hal_busio_i2c_write(i2c, AXP2101_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
@@ -146,7 +146,7 @@ static bool axp2101_init(busio_i2c_obj_t *i2c) {
         return false;
     }
 
-    // 0x95, 0x1C // ALDO3 set to 3.3v for TF card slot
+    // 0x95, 0x1C // ALDO4 set to 3.3v for TF card slot
     write_buf[0] = 0x95;
     write_buf[1] = 0x1C;
     rc = common_hal_busio_i2c_write(i2c, AXP2101_I2C_ADDRESS, write_buf, sizeof(write_buf));
