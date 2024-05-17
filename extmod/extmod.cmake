@@ -49,6 +49,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/network_cyw43.c
     ${MICROPY_EXTMOD_DIR}/network_lwip.c
     ${MICROPY_EXTMOD_DIR}/network_ninaw10.c
+    ${MICROPY_EXTMOD_DIR}/network_ppp_lwip.c
     ${MICROPY_EXTMOD_DIR}/network_wiznet5k.c
     ${MICROPY_EXTMOD_DIR}/os_dupterm.c
     ${MICROPY_EXTMOD_DIR}/vfs.c
@@ -313,6 +314,32 @@ if(MICROPY_PY_LWIP)
         ${MICROPY_LIB_LWIP_DIR}/core/timeouts.c
         ${MICROPY_LIB_LWIP_DIR}/core/udp.c
         ${MICROPY_LIB_LWIP_DIR}/netif/ethernet.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/auth.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ccp.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/chap-md5.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/chap_ms.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/chap-new.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/demand.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/eap.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ecp.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/eui64.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/fsm.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ipcp.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ipv6cp.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/lcp.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/magic.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/mppe.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/multilink.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/polarssl/md5.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppapi.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ppp.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppcrypt.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppoe.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppol2tp.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppos.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/upap.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/utils.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/vj.c
     )
 
     list(APPEND MICROPY_INC_CORE
