@@ -767,6 +767,7 @@ def link_objects(env, native_qstr_vals_len):
                 "mp_type_fun_builtin_2",
                 "mp_type_fun_builtin_3",
                 "mp_type_fun_builtin_var",
+                "mp_type_Exception",
                 "mp_stream_read_obj",
                 "mp_stream_readinto_obj",
                 "mp_stream_unbuffered_readline_obj",

@@ -171,6 +171,7 @@ typedef struct _mp_fun_table_t {
     const mp_obj_type_t *type_fun_builtin_2;
     const mp_obj_type_t *type_fun_builtin_3;
     const mp_obj_type_t *type_fun_builtin_var;
+    const mp_obj_type_t *type_Exception;
     const mp_obj_fun_builtin_var_t *stream_read_obj;
     const mp_obj_fun_builtin_var_t *stream_readinto_obj;
     const mp_obj_fun_builtin_var_t *stream_unbuffered_readline_obj;
