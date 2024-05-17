@@ -64,6 +64,16 @@ static void network_ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
             self->state = STATE_CONNECTED;
             break;
         case PPPERR_USER:
+            if (self->state >= STATE_ERROR) {
+                // Disable UART IRQ.
+                mp_obj_t dest[3];
+                mp_load_method(self->stream, MP_QSTR_irq, dest);
+                dest[2] = mp_const_none;
+                mp_call_method_n_kw(1, 0, dest);
+                // Indicate that the IRQ is disabled.
+                self->state = STATE_ACTIVE;
+            }
+            // Clean up the PPP PCB.
             network_ppp___del__(MP_OBJ_FROM_PTR(self));
             break;
         default:
@@ -81,25 +91,25 @@ static mp_obj_t network_ppp_make_new(const mp_obj_type_t *type, size_t n_args, s
     mp_get_stream_raise(stream, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE);
 
     network_ppp_obj_t *self = mp_obj_malloc_with_finaliser(network_ppp_obj_t, type);
-    self->stream = stream;
     self->state = STATE_INACTIVE;
+    self->stream = stream;
+    self->pcb = NULL;
 
     return MP_OBJ_FROM_PTR(self);
 }
 
 static mp_obj_t network_ppp___del__(mp_obj_t self_in) {
     network_ppp_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->pcb != NULL) {
+    if (self->state >= STATE_ERROR) {
+        // Still connnected over the UART stream.
+        // Force the connection to close, with nocarrier=1.
+        self->state = STATE_ACTIVE;
+        ppp_close(self->pcb, 1);
+    } else if (self->state == STATE_ACTIVE) {
         // Free PPP PCB and reset state.
+        self->state = STATE_INACTIVE;
         ppp_free(self->pcb);
         self->pcb = NULL;
-        self->state = STATE_INACTIVE;
-
-        // Disable UART IRQ.
-        mp_obj_t dest[3];
-        mp_load_method(self->stream, MP_QSTR_irq, dest);
-        dest[2] = mp_const_none;
-        mp_call_method_n_kw(1, 0, dest);
     }
     return mp_const_none;
 }
@@ -109,7 +119,7 @@ static mp_obj_t network_ppp_poll(size_t n_args, const mp_obj_t *args) {
     network_ppp_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint8_t buf[256];
 
-    if (self->state == STATE_INACTIVE) {
+    if (self->state <= STATE_ERROR) {
         return MP_OBJ_NEW_SMALL_INT(-MP_EPERM);
     }
 
