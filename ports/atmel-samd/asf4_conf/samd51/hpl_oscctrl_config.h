@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 /* Auto-generated config file hpl_oscctrl_config.h */
 #ifndef HPL_OSCCTRL_CONFIG_H
 #define HPL_OSCCTRL_CONFIG_H

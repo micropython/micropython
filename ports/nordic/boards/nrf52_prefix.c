@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 // nrf52_prefix.c becomes the initial portion of the generated pins file.
 
 #include <stdio.h>

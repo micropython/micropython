@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 by kvc0/WarriorOfWire
+//
+// SPDX-License-Identifier: MIT
+
 #ifndef SHARED_MODULE_VECTORIO__INIT__H
 #define SHARED_MODULE_VECTORIO__INIT__H
 

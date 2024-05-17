@@ -1,4 +1,6 @@
-// CircuitPython: Adapted from Zephyr include file.
+// This file is part of the CircuitPython project: https://circuitpython.org
+// Adapted from Zephyr include file.
+
 /** @file
  *  @brief Attribute Protocol handling.
  */

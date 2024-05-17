@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 by Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
 // To find the offsets where the string and endpoint value are used,
 // build this on your host computer:
 // gcc descriptor.c  -I ../../lib/tinyusb/src -iquote . -DTUP_DCD_ENDPOINT_MAX=0 && ./a.out

@@ -1,3 +1,10 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Uri Shaked
+// SPDX-FileCopyrightText: Copyright (c) 2019 Benjamin Meisels
+//
+// SPDX-License-Identifier: MIT
+
 #include "shared-bindings/board/__init__.h"
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {

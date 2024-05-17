@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2023 Bill Sideris, independently providing these changes.
+//
+// SPDX-License-Identifier: MIT
+
 #include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
 #include "shared-module/displayio/__init__.h"

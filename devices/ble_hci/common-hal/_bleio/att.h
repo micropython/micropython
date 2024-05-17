@@ -1,5 +1,11 @@
-// Derived from ArduinoBLE.
-// Copyright 2020 Dan Halbert for Adafruit Industries
+// This file is part of the CircuitPython project: https://circuitpython.org
+
+// SPDX-FileCopyrightText: Copyright (c) 2020 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Arduino SA. All rights reserved.
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+//  This file is derived from the ArduinoBLE library. Its header is below.
 
 /*
   This file is part of the ArduinoBLE library.

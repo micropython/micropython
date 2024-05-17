@@ -1,3 +1,10 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Uri Shaked
+// SPDX-FileCopyrightText: Copyright (c) 2019 Benjamin Meisels
+//
+// SPDX-License-Identifier: MIT
+
 #include "nrfx/hal/nrf_gpio.h"
 
 #define MICROPY_HW_BOARD_NAME       "ARAMCON Badge 2019"

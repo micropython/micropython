@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 // For CircuitPython, use SERCOM settings as prototypes to set
 // the default settings. This file defines these SERCOMs
 //

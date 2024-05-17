@@ -1,3 +1,10 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2019 Artur Pacholec
+//
+// SPDX-License-Identifier: MIT
+
 #include "shared-bindings/board/__init__.h"
 
 #include "supervisor/board.h"

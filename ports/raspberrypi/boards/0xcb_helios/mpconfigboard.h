@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2023 Conor Burns for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
 #define MICROPY_HW_BOARD_NAME "0xCB Helios"
 #define MICROPY_HW_MCU_NAME "rp2040"
 

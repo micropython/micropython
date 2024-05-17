@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 #include "axp192.h"
 
 bool pmic_common_init(busio_i2c_obj_t *i2c) {

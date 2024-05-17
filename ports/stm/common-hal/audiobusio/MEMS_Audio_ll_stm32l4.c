@@ -1,26 +1,8 @@
-/*
- * The MIT License (MIT)
- *
- * Copyright (c) 2022 Matthew McGowan for Blues Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2022 Matthew McGowan for Blues Inc.
+//
+// SPDX-License-Identifier: MIT
 
 
 #include <stm32l4xx_hal.h>
@@ -31,7 +13,7 @@
  * @brief The implementation is a singleton.
  *
  */
-MemsAudio_STM32L4SAIPDM* volatile audioImpl;
+MemsAudio_STM32L4SAIPDM *volatile audioImpl;
 
 static mems_audio_err_t MX_DMA_Init(void);
 static mems_audio_err_t MX_DMA_Uninit(void);
@@ -40,7 +22,7 @@ static mems_audio_err_t MX_SAI1_Init(void);
 #define CHECK_HAL_ERROR(x, e) \
     {                         \
         if ((x) != HAL_OK)    \
-            return e;         \
+        return e;         \
     }
 
 /**
@@ -58,28 +40,24 @@ static mems_audio_err_t MX_SAI1_Init(void);
 #define CHECK_MEMS_AUDIO_ERROR_LAST()            \
     {                                            \
         if (audioImpl->lastError != MEMS_AUDIO_OK) \
-            return audioImpl->lastError;    \
+        return audioImpl->lastError;    \
     }
 
-static bool default_pdm_data_available(MemsAudio_STM32L4SAIPDM* audio, pdm_sample_t* pdmSamples, size_t count)
-{
+static bool default_pdm_data_available(MemsAudio_STM32L4SAIPDM *audio, pdm_sample_t *pdmSamples, size_t count) {
     return true;
 }
 
-int filter_pdm(MemsAudio_STM32L4SAIPDM* impl, pdm_sample_t* input, pcm_sample_t* output)
-{
-    if (impl->filter.Decimation==64) {
+int filter_pdm(MemsAudio_STM32L4SAIPDM *impl, pdm_sample_t *input, pcm_sample_t *output) {
+    if (impl->filter.Decimation == 64) {
         Open_PDM_Filter_64(input, output, 1, &impl->filter);
-    }
-    else {
+    } else {
         Open_PDM_Filter_128(input, output, 1, &impl->filter);
     }
     return impl->filter.nSamples;
 }
 
-static void mems_audio_init_filter(MemsAudio_STM32L4SAIPDM *impl)
-{
-    TPDMFilter_InitStruct* filter = &impl->filter;
+static void mems_audio_init_filter(MemsAudio_STM32L4SAIPDM *impl) {
+    TPDMFilter_InitStruct *filter = &impl->filter;
     filter->Fs = PCM_OUT_SAMPLING_FREQUENCY;
     filter->nSamples = MEMS_AUDIO_PCM_BUFFER_LENGTH;
     filter->LP_HZ = PCM_OUT_SAMPLING_FREQUENCY / 2; // The Nyquist frequency
@@ -97,20 +75,18 @@ volatile unsigned ignore_dma_count;
  * @param pdmBuffer The buffer holding the PDM samples
  * @param pdmBufferLength   The number of samples available
  */
-void pdm2pcm(uint8_t *pdmBuffer, size_t pdmBufferLength)
-{
+void pdm2pcm(uint8_t *pdmBuffer, size_t pdmBufferLength) {
     MemsAudio_STM32L4SAIPDM *impl = audioImpl;
-    if (impl)
-    {
+    if (impl) {
         bool convert = impl->discard_dma || impl->pdm_data_available(impl, pdmBuffer, pdmBufferLength);
-        if (convert)
-        {
-            MemsAudio* audio = impl->audio;
-            filter_pdm(impl, pdmBuffer, (pcm_sample_t*)audio->pcmOutputBuffer);
-            if (!impl->discard_dma)
-                audio->pcm_data_available(audio, (pcm_sample_t*)audio->pcmOutputBuffer, impl->filter.nSamples);
-            else
+        if (convert) {
+            MemsAudio *audio = impl->audio;
+            filter_pdm(impl, pdmBuffer, (pcm_sample_t *)audio->pcmOutputBuffer);
+            if (!impl->discard_dma) {
+                audio->pcm_data_available(audio, (pcm_sample_t *)audio->pcmOutputBuffer, impl->filter.nSamples);
+            } else {
                 impl->discard_dma--;
+            }
         }
     }
 }
@@ -119,8 +95,7 @@ void pdm2pcm(uint8_t *pdmBuffer, size_t pdmBufferLength)
  *  @brief Initialize the PDM interface ready to begin capture.
  *  @retval
  */
-mems_audio_err_t mems_audio_ll_init(MemsAudio *audio)
-{
+mems_audio_err_t mems_audio_ll_init(MemsAudio *audio) {
     mems_audio_init_filter(audioImpl);
     if (!audioImpl->pdm_data_available) {
         audioImpl->pdm_data_available = &default_pdm_data_available;
@@ -133,7 +108,7 @@ mems_audio_err_t mems_audio_ll_init(MemsAudio *audio)
 
 mems_audio_err_t uninit(void) {
     if (audioImpl) {
-        MemsAudio_STM32L4SAIPDM* impl = audioImpl;
+        MemsAudio_STM32L4SAIPDM *impl = audioImpl;
         audioImpl = NULL;
         mems_audio_ll_stop(impl->audio);
         CHECK_HAL_ERROR(HAL_SAI_DeInit(&impl->hSAI_BlockA1), MEMS_AUDIO_ERROR_SAI_DEINIT);
@@ -145,36 +120,31 @@ mems_audio_err_t uninit(void) {
 /**
  * @brief Uninitialize low level PDM capture
  */
-mems_audio_err_t mems_audio_ll_uninit(MemsAudio *audio)
-{
+mems_audio_err_t mems_audio_ll_uninit(MemsAudio *audio) {
     if (audioImpl->audio == audio) {
         uninit();
     }
     return MEMS_AUDIO_OK;
 }
 
-mems_audio_err_t mems_audio_ll_record(MemsAudio *audio)
-{
-    audioImpl->discard_dma = (100/MEMS_AUDIO_MS_BUFFER)+1;
+mems_audio_err_t mems_audio_ll_record(MemsAudio *audio) {
+    audioImpl->discard_dma = (100 / MEMS_AUDIO_MS_BUFFER) + 1;
     CHECK_HAL_ERROR(HAL_SAI_Receive_DMA(&audioImpl->hSAI_BlockA1, audioImpl->pdmBuffer, audioImpl->pdmBufferLength),
-                    MEMS_AUDIO_ERROR_DMA_START);
+        MEMS_AUDIO_ERROR_DMA_START);
     return MEMS_AUDIO_OK;
 }
 
-mems_audio_err_t mems_audio_ll_stop(MemsAudio *audio)
-{
+mems_audio_err_t mems_audio_ll_stop(MemsAudio *audio) {
     CHECK_HAL_ERROR(HAL_SAI_DMAStop(&audioImpl->hSAI_BlockA1), MEMS_AUDIO_ERROR_DMA_STOP);
     return MEMS_AUDIO_OK;
 }
 
-mems_audio_err_t mems_audio_ll_pause(MemsAudio *audio)
-{
+mems_audio_err_t mems_audio_ll_pause(MemsAudio *audio) {
     CHECK_HAL_ERROR(HAL_SAI_DMAPause(&audioImpl->hSAI_BlockA1), MEMS_AUDIO_ERROR_DMA_PAUSE);
     return MEMS_AUDIO_OK;
 }
 
-mems_audio_err_t mems_audio_ll_resume(MemsAudio *audio)
-{
+mems_audio_err_t mems_audio_ll_resume(MemsAudio *audio) {
     CHECK_HAL_ERROR(HAL_SAI_DMAResume(&audioImpl->hSAI_BlockA1), MEMS_AUDIO_ERROR_DMA_RESUME);
     return MEMS_AUDIO_OK;
 }
@@ -184,13 +154,12 @@ mems_audio_err_t mems_audio_ll_resume(MemsAudio *audio)
  * @param None
  * @retval None
  */
-static mems_audio_err_t MX_SAI1_Init(void)
-{
+static mems_audio_err_t MX_SAI1_Init(void) {
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
 
     SAI_HandleTypeDef hSAI_BlockA1 = {0};
-    MemsAudio_STM32L4SAIPDM* impl = audioImpl;
+    MemsAudio_STM32L4SAIPDM *impl = audioImpl;
     CHECK_MEMS_AUDIO_INITIALIZED(impl);
     hSAI_BlockA1.Instance = SAI1_Block_A;
     hSAI_BlockA1.Init.Protocol = SAI_FREE_PROTOCOL;
@@ -230,80 +199,74 @@ static mems_audio_err_t MX_SAI1_Init(void)
 #define MEMS_AUDIO_DMA_PRIORITY 6
 #define DMA_HANDLER DMA1_Channel6_IRQHandler
 
-void HAL_SAI_MspInit(SAI_HandleTypeDef *hsai)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-  /* SAI1 */
-  MemsAudio_STM32L4SAIPDM* impl = audioImpl;
-  if (hsai->Instance == SAI1_Block_A && impl)
-  {
-      PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_SAI1;
-      PeriphClkInit.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLSAI1;
-      PeriphClkInit.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_MSI;
-      PeriphClkInit.PLLSAI1.PLLSAI1M = MEMS_AUDIO_CLOCK_PLLM;
-      PeriphClkInit.PLLSAI1.PLLSAI1N = MEMS_AUDIO_CLOCK_PLLN;
-      PeriphClkInit.PLLSAI1.PLLSAI1P = MEMS_AUDIO_CLOCK_PLLP;
-      PeriphClkInit.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
-      PeriphClkInit.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
-      PeriphClkInit.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_SAI1CLK;
-      CHECK_HAL_ERROR_VOID(HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit), MEMS_AUDIO_ERROR_SAI_CLOCK);
+void HAL_SAI_MspInit(SAI_HandleTypeDef *hsai) {
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    /* SAI1 */
+    MemsAudio_STM32L4SAIPDM *impl = audioImpl;
+    if (hsai->Instance == SAI1_Block_A && impl) {
+        PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_SAI1;
+        PeriphClkInit.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLSAI1;
+        PeriphClkInit.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_MSI;
+        PeriphClkInit.PLLSAI1.PLLSAI1M = MEMS_AUDIO_CLOCK_PLLM;
+        PeriphClkInit.PLLSAI1.PLLSAI1N = MEMS_AUDIO_CLOCK_PLLN;
+        PeriphClkInit.PLLSAI1.PLLSAI1P = MEMS_AUDIO_CLOCK_PLLP;
+        PeriphClkInit.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
+        PeriphClkInit.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
+        PeriphClkInit.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_SAI1CLK;
+        CHECK_HAL_ERROR_VOID(HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit), MEMS_AUDIO_ERROR_SAI_CLOCK);
 
-      if (impl->SAI1_client == 0)
-      {
-          __HAL_RCC_SAI1_CLK_ENABLE();
-      }
-      impl->SAI1_client++;
+        if (impl->SAI1_client == 0) {
+            __HAL_RCC_SAI1_CLK_ENABLE();
+        }
+        impl->SAI1_client++;
 
-      /**SAI1_A_Block_A GPIO Configuration
-      PC3     ------> SAI1_D1
-      PA3     ------> SAI1_CK1
-      */
-      GPIO_InitStruct.Pin = GPIO_PIN_3;
-      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-      GPIO_InitStruct.Pull = GPIO_NOPULL;
-      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-      GPIO_InitStruct.Alternate = GPIO_AF3_SAI1;
-      HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+        /**SAI1_A_Block_A GPIO Configuration
+        PC3     ------> SAI1_D1
+        PA3     ------> SAI1_CK1
+        */
+        GPIO_InitStruct.Pin = GPIO_PIN_3;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Alternate = GPIO_AF3_SAI1;
+        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-      GPIO_InitStruct.Pin = GPIO_PIN_3;
-      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-      GPIO_InitStruct.Pull = GPIO_NOPULL;
-      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-      GPIO_InitStruct.Alternate = GPIO_AF3_SAI1;
-      HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        GPIO_InitStruct.Pin = GPIO_PIN_3;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Alternate = GPIO_AF3_SAI1;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-      /* Peripheral DMA init*/
-    DMA_HandleTypeDef hdma_sai1_a = {0};
-      hdma_sai1_a.Instance = MEMS_AUDIO_DMA_CHANNEL;
-      hdma_sai1_a.Init.Request = DMA_REQUEST_SAI1_A;
-      hdma_sai1_a.Init.Direction = DMA_PERIPH_TO_MEMORY;
-      hdma_sai1_a.Init.PeriphInc = DMA_PINC_DISABLE;
-      hdma_sai1_a.Init.MemInc = DMA_MINC_ENABLE;
-      hdma_sai1_a.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-      hdma_sai1_a.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-      hdma_sai1_a.Init.Mode = DMA_CIRCULAR;
-      hdma_sai1_a.Init.Priority = DMA_PRIORITY_HIGH;
-      impl->hdma_sai1_a = hdma_sai1_a;
-      CHECK_HAL_ERROR_VOID(HAL_DMA_Init(&impl->hdma_sai1_a), MEMS_AUDIO_ERROR_SAI_DMA_INIT);
+        /* Peripheral DMA init*/
+        DMA_HandleTypeDef hdma_sai1_a = {0};
+        hdma_sai1_a.Instance = MEMS_AUDIO_DMA_CHANNEL;
+        hdma_sai1_a.Init.Request = DMA_REQUEST_SAI1_A;
+        hdma_sai1_a.Init.Direction = DMA_PERIPH_TO_MEMORY;
+        hdma_sai1_a.Init.PeriphInc = DMA_PINC_DISABLE;
+        hdma_sai1_a.Init.MemInc = DMA_MINC_ENABLE;
+        hdma_sai1_a.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+        hdma_sai1_a.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+        hdma_sai1_a.Init.Mode = DMA_CIRCULAR;
+        hdma_sai1_a.Init.Priority = DMA_PRIORITY_HIGH;
+        impl->hdma_sai1_a = hdma_sai1_a;
+        CHECK_HAL_ERROR_VOID(HAL_DMA_Init(&impl->hdma_sai1_a), MEMS_AUDIO_ERROR_SAI_DMA_INIT);
 
-      /* Several peripheral DMA handle pointers point to the same DMA handle.
-       Be aware that there is only one channel to perform all the requested DMAs. */
-      __HAL_LINKDMA(hsai, hdmarx, impl->hdma_sai1_a);
+        /* Several peripheral DMA handle pointers point to the same DMA handle.
+         Be aware that there is only one channel to perform all the requested DMAs. */
+        __HAL_LINKDMA(hsai, hdmarx, impl->hdma_sai1_a);
 
-      __HAL_LINKDMA(hsai, hdmatx, impl->hdma_sai1_a);
-  }
+        __HAL_LINKDMA(hsai, hdmatx, impl->hdma_sai1_a);
+    }
 }
 
-void HAL_SAI_MspDeInit(SAI_HandleTypeDef *hsai)
-{
+void HAL_SAI_MspDeInit(SAI_HandleTypeDef *hsai) {
     /* SAI1 */
-    MemsAudio_STM32L4SAIPDM* impl = audioImpl;
-    if (hsai->Instance == SAI1_Block_A && impl)
-    {
+    MemsAudio_STM32L4SAIPDM *impl = audioImpl;
+    if (hsai->Instance == SAI1_Block_A && impl) {
         impl->SAI1_client--;
-        if (impl->SAI1_client == 0)
-        {
+        if (impl->SAI1_client == 0) {
             /* Peripheral clock disable */
             __HAL_RCC_SAI1_CLK_DISABLE();
         }
@@ -326,8 +289,7 @@ void HAL_SAI_MspDeInit(SAI_HandleTypeDef *hsai)
  * @brief Initialize the DMA peripheral
  *
  */
-static mems_audio_err_t MX_DMA_Init(void)
-{
+static mems_audio_err_t MX_DMA_Init(void) {
 
     /* DMA controller clock enable */
     __HAL_RCC_DMAMUX1_CLK_ENABLE();
@@ -340,8 +302,7 @@ static mems_audio_err_t MX_DMA_Init(void)
     return MEMS_AUDIO_OK;
 }
 
-static mems_audio_err_t MX_DMA_Uninit(void)
-{
+static mems_audio_err_t MX_DMA_Uninit(void) {
     HAL_NVIC_DisableIRQ(MEMS_AUDIO_DMA_IRQn);
     return MEMS_AUDIO_OK;
 }
@@ -350,8 +311,7 @@ static mems_audio_err_t MX_DMA_Uninit(void)
  * @brief Global handler for the DMA interrupt. Forwards to the HAL for further processing.
  *
  */
-void DMA_HANDLER(void)
-{
+void DMA_HANDLER(void) {
     HAL_DMA_IRQHandler(&audioImpl->hdma_sai1_a);
 }
 
@@ -360,10 +320,9 @@ void DMA_HANDLER(void)
  *
  * @param hSai
  */
-void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hSai)
-{
+void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hSai) {
     (void)hSai;
-    pdm2pcm(audioImpl->pdmBuffer, audioImpl->pdmBufferLength>>1);
+    pdm2pcm(audioImpl->pdmBuffer, audioImpl->pdmBufferLength >> 1);
 }
 
 /**
@@ -371,14 +330,12 @@ void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hSai)
  *
  * @param hSai
  */
-void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hSai)
-{
+void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hSai) {
     (void)hSai;
-    pdm2pcm(audioImpl->pdmBuffer+(audioImpl->pdmBufferLength>>1), audioImpl->pdmBufferLength>>1);
+    pdm2pcm(audioImpl->pdmBuffer + (audioImpl->pdmBufferLength >> 1), audioImpl->pdmBufferLength >> 1);
 }
 
-mems_audio_err_t mems_audio_init_stm32l4_sai_pdm(MemsAudio* audio, MemsAudio_STM32L4SAIPDM* impl)
-{
+mems_audio_err_t mems_audio_init_stm32l4_sai_pdm(MemsAudio *audio, MemsAudio_STM32L4SAIPDM *impl) {
     uninit();
     audioImpl = impl;
     impl->audio = audio;

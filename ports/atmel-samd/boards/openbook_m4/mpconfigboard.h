@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Joey Castillo
+//
+// SPDX-License-Identifier: MIT
+
 #define MICROPY_HW_BOARD_NAME "The Open Book Feather"
 #define MICROPY_HW_MCU_NAME "samd51j19"
 
