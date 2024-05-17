@@ -102,7 +102,7 @@ static mp_obj_t network_ppp___del__(mp_obj_t self_in) {
     network_ppp_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->state >= STATE_ACTIVE) {
         if (self->state >= STATE_ERROR) {
-            // Still connnected over the UART stream.
+            // Still connected over the UART stream.
             // Force the connection to close, with nocarrier=1.
             self->state = STATE_INACTIVE;
             ppp_close(self->pcb, 1);
