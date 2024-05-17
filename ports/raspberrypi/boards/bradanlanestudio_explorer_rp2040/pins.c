@@ -30,7 +30,7 @@
 
 uint16_t vid_setting = 123;
 
-//| def foo() -> None:
+//| def VID() -> int:
 //|     """Return a value set in board.c"""
 //|     ...
 //|
