@@ -282,7 +282,6 @@ static mp_obj_t machine_enable_irq(mp_obj_t state_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
 
-// machine.disable_irq()
 static mp_obj_t machine_rng(void) {
     uint32_t rnd_num;
     cyhal_trng_t trng_obj;
