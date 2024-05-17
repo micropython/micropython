@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_PACKETBUFFER_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_PACKETBUFFER_H
+#pragma once
 
 #include "py/ringbuf.h"
 #include "shared-bindings/_bleio/Characteristic.h"
@@ -29,4 +28,4 @@ typedef struct {
     bool packet_queued;
 } bleio_packet_buffer_obj_t;
 
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_PACKETBUFFER_H
+void bleio_packet_buffer_extend(bleio_packet_buffer_obj_t *self, uint16_t conn_handle, const uint8_t *buffer, size_t len);

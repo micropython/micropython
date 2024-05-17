@@ -11,6 +11,7 @@ Support Status:
 
     ESP32, "beta"
     ESP32-H2, "alpha"
+    ESP32-C2, "alpha"
     ESP32-C3, "beta"
     ESP32-C6, "alpha"
     ESP32-S2, "stable"

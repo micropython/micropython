@@ -6,8 +6,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL__BLEIO_BLE_EVENTS_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL__BLEIO_BLE_EVENTS_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -28,5 +27,3 @@ void ble_event_remove_handler(ble_gap_event_fn *func, void *param);
 void ble_event_add_handler_entry(ble_event_handler_entry_t *entry, ble_gap_event_fn *func, void *param);
 
 int ble_event_run_handlers(struct ble_gap_event *event);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL__BLEIO_BLE_EVENTS_H

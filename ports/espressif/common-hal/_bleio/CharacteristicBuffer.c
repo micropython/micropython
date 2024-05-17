@@ -21,43 +21,18 @@
 
 #include "common-hal/_bleio/ble_events.h"
 
-STATIC int characteristic_buffer_on_ble_evt(struct ble_gap_event *event, void *param) {
-    bleio_characteristic_buffer_obj_t *self = (bleio_characteristic_buffer_obj_t *)param;
-    switch (event->type) {
-        case BLE_GAP_EVENT_NOTIFY_RX: {
-            // A remote service wrote to this characteristic.
-
-            // Must be a notification, and event handle must match the handle for my characteristic.
-            if (event->notify_rx.indication == 0 &&
-                event->notify_rx.attr_handle == self->characteristic->handle) {
-                const struct os_mbuf *m = event->notify_rx.om;
-                while (m != NULL) {
-                    const uint8_t *data = m->om_data;
-                    uint16_t len = m->om_len;
-                    if (self->watch_for_interrupt_char) {
-                        for (uint16_t i = 0; i < len; i++) {
-                            if (data[i] == mp_interrupt_char) {
-                                mp_sched_keyboard_interrupt();
-                            } else {
-                                ringbuf_put(&self->ringbuf, data[i]);
-                            }
-                        }
-                    } else {
-                        ringbuf_put_n(&self->ringbuf, data, len);
-                    }
-                    m = SLIST_NEXT(m, om_next);
-                }
+void bleio_characteristic_buffer_extend(bleio_characteristic_buffer_obj_t *self, const uint8_t *data, size_t len) {
+    if (self->watch_for_interrupt_char) {
+        for (uint16_t i = 0; i < len; i++) {
+            if (data[i] == mp_interrupt_char) {
+                mp_sched_keyboard_interrupt();
+            } else {
+                ringbuf_put(&self->ringbuf, data[i]);
             }
-            break;
         }
-        default:
-            #if CIRCUITPY_VERBOSE_BLE
-            mp_printf(&mp_plat_print, "Unhandled gap event %d\n", event->type);
-            #endif
-            return 0;
-            break;
+    } else {
+        ringbuf_put_n(&self->ringbuf, data, len);
     }
-    return 0;
 }
 
 void _common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self,
@@ -70,12 +45,7 @@ void _common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buff
     self->timeout_ms = timeout * 1000;
     self->watch_for_interrupt_char = watch_for_interrupt_char;
     ringbuf_init(&self->ringbuf, buffer, buffer_size);
-
-    if (static_handler_entry != NULL) {
-        ble_event_add_handler_entry((ble_event_handler_entry_t *)static_handler_entry, characteristic_buffer_on_ble_evt, self);
-    } else {
-        ble_event_add_handler(characteristic_buffer_on_ble_evt, self);
-    }
+    bleio_characteristic_set_observer(characteristic, self);
 }
 
 // Assumes that timeout and buffer_size have been validated before call.
@@ -121,11 +91,12 @@ bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer
 }
 
 void common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_obj_t *self) {
-    if (!common_hal_bleio_characteristic_buffer_deinited(self)) {
-        ble_event_remove_handler(characteristic_buffer_on_ble_evt, self);
-        self->characteristic = NULL;
-        ringbuf_deinit(&self->ringbuf);
+    if (common_hal_bleio_characteristic_buffer_deinited(self)) {
+        return;
     }
+    bleio_characteristic_clear_observer(self->characteristic);
+    self->characteristic = NULL;
+    ringbuf_deinit(&self->ringbuf);
 }
 
 bool common_hal_bleio_characteristic_buffer_connected(bleio_characteristic_buffer_obj_t *self) {

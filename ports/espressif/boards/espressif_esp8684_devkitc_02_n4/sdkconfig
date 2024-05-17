@@ -1,0 +1,40 @@
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Serial flasher config
+#
+CONFIG_ESPTOOLPY_MONITOR_BAUD=115200
+# end of Serial flasher config
+
+#
+# Component config
+#
+#
+# Hardware Settings
+#
+#
+# Main XTAL Config
+#
+CONFIG_XTAL_FREQ_26=y
+# CONFIG_XTAL_FREQ_40 is not set
+CONFIG_XTAL_FREQ=26
+# end of Main XTAL Config
+
+# end of Hardware Settings
+
+#
+# ESP System Settings
+#
+CONFIG_ESP_CONSOLE_UART_BAUDRATE=115200
+# end of ESP System Settings
+
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="espressif-esp8684"
+# end of LWIP
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

@@ -8,4 +8,9 @@ CIRCUITPY_ESP_FLASH_MODE=dio
 CIRCUITPY_ESP_FLASH_FREQ=40m
 CIRCUITPY_ESP_FLASH_SIZE=4MB
 
+# Override partition layout to preserve compatibility because the default has changed.
+FLASH_SIZE_SDKCONFIG = esp-idf-config/sdkconfig-flash-4MB-no-uf2.defaults
+CIRCUITPY_DUALBANK = 1
+CIRCUITPY_BLEIO = 0
+
 IDF_TARGET = esp32

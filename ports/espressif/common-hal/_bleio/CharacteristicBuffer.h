@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_CHARACTERISTICBUFFER_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_CHARACTERISTICBUFFER_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -21,4 +20,5 @@ typedef struct {
     bool watch_for_interrupt_char;
 } bleio_characteristic_buffer_obj_t;
 
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_CHARACTERISTICBUFFER_H
+
+void bleio_characteristic_buffer_extend(bleio_characteristic_buffer_obj_t *self, const uint8_t *buffer, size_t len);

@@ -6,6 +6,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+#include "py/obj.h"
 #include "py/runtime.h"
 
 #include "shared-bindings/_bleio/__init__.h"
@@ -73,4 +74,35 @@ void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self, mp_buff
         }
     }
 
+}
+
+int bleio_descriptor_access_cb(uint16_t conn_handle, uint16_t attr_handle,
+    struct ble_gatt_access_ctxt *ctxt, void *arg) {
+    bleio_descriptor_obj_t *self = arg;
+    const ble_uuid_t *uuid;
+    int rc;
+
+    switch (ctxt->op) {
+        case BLE_GATT_ACCESS_OP_READ_DSC:
+            uuid = ctxt->dsc->uuid;
+            if (ble_uuid_cmp(uuid, &self->uuid->nimble_ble_uuid.u) == 0) {
+                mp_buffer_info_t bufinfo;
+                if (!mp_get_buffer(self->initial_value, &bufinfo, MP_BUFFER_READ)) {
+                    return BLE_ATT_ERR_UNLIKELY;
+                }
+                rc = os_mbuf_append(ctxt->om,
+                    bufinfo.buf,
+                    bufinfo.len);
+                return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+            }
+            return BLE_ATT_ERR_UNLIKELY;
+
+        case BLE_GATT_ACCESS_OP_WRITE_DSC:
+            return BLE_ATT_ERR_UNLIKELY;
+
+        default:
+            return BLE_ATT_ERR_UNLIKELY;
+    }
+
+    return BLE_ATT_ERR_UNLIKELY;
 }

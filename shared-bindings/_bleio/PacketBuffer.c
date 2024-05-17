@@ -16,14 +16,6 @@
 #include "shared-bindings/util.h"
 
 //| class PacketBuffer:
-//|     """Accumulates a Characteristic's incoming packets in a FIFO buffer and facilitates packet aware
-//|     outgoing writes. A packet's size is either the characteristic length or the maximum transmission
-//|     unit (MTU) minus overhead, whichever is smaller. The MTU can change so check `incoming_packet_length`
-//|     and `outgoing_packet_length` before creating a buffer to store data.
-//|
-//|     When we're the server, we ignore all connections besides the first to subscribe to
-//|     notifications."""
-//|
 //|     def __init__(
 //|         self,
 //|         characteristic: Characteristic,
@@ -31,11 +23,13 @@
 //|         buffer_size: int,
 //|         max_packet_size: Optional[int] = None
 //|     ) -> None:
-//|         """Monitor the given Characteristic. Each time a new value is written to the Characteristic
-//|         add the newly-written bytes to a FIFO buffer.
+//|         """Accumulates a Characteristic's incoming packets in a FIFO buffer and facilitates packet aware
+//|         outgoing writes. A packet's size is either the characteristic length or the maximum transmission
+//|         unit (MTU) minus overhead, whichever is smaller. The MTU can change so check `incoming_packet_length`
+//|         and `outgoing_packet_length` before creating a buffer to store data.
 //|
-//|         Monitor the given Characteristic. Each time a new value is written to the Characteristic
-//|         add the newly-written packet of bytes to a FIFO buffer.
+//|         When we're the server, we ignore all connections besides the first to subscribe to
+//|         notifications.
 //|
 //|         :param Characteristic characteristic: The Characteristic to monitor.
 //|           It may be a local Characteristic provided by a Peripheral Service, or a remote Characteristic

@@ -6,8 +6,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_UUID_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_UUID_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -25,5 +24,3 @@ typedef struct {
 
 void bleio_uuid_construct_from_nrf_ble_uuid(bleio_uuid_obj_t *self, ble_uuid_t *nrf_uuid);
 void bleio_uuid_convert_to_nrf_ble_uuid(bleio_uuid_obj_t *self, ble_uuid_t *nrf_uuid);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_UUID_H

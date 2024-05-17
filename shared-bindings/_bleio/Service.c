@@ -41,12 +41,23 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
 
     const bool is_secondary = args[ARG_secondary].u_bool;
 
-    bleio_service_obj_t *service = mp_obj_malloc(bleio_service_obj_t, &bleio_service_type);
+    bleio_service_obj_t *service = m_new_obj_with_finaliser(bleio_service_obj_t);
+    service->base.type = &bleio_service_type;
 
     common_hal_bleio_service_construct(service, uuid, is_secondary);
 
     return MP_OBJ_FROM_PTR(service);
 }
+
+//|     def deinit(self) -> None:
+//|         """Disable and deinitialise the Service."""
+//|         ...
+STATIC mp_obj_t bleio_service_deinit(mp_obj_t self_in) {
+    bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_bleio_service_deinit(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_deinit_obj, bleio_service_deinit);
 
 //|     characteristics: Tuple[Characteristic, ...]
 //|     """A tuple of :py:class:`Characteristic` designating the characteristics that are offered by
@@ -102,6 +113,8 @@ MP_PROPERTY_GETTER(bleio_service_uuid_obj,
 
 
 STATIC const mp_rom_map_elem_t bleio_service_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_deinit),            MP_ROM_PTR(&bleio_service_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__),           MP_ROM_PTR(&bleio_service_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_characteristics),   MP_ROM_PTR(&bleio_service_characteristics_obj) },
     { MP_ROM_QSTR(MP_QSTR_secondary),         MP_ROM_PTR(&bleio_service_secondary_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid),              MP_ROM_PTR(&bleio_service_uuid_obj) },

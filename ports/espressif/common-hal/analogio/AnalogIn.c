@@ -26,6 +26,8 @@
 #define ATTENUATION         ADC_ATTEN_DB_11
 #if defined(CONFIG_IDF_TARGET_ESP32)
 #define DATA_WIDTH          ADC_BITWIDTH_12
+#elif defined(CONFIG_IDF_TARGET_ESP32C2)
+#define DATA_WIDTH          ADC_BITWIDTH_12
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #define DATA_WIDTH          ADC_BITWIDTH_12
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
@@ -71,7 +73,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
         .unit_id = self->pin->adc_index,
         .ulp_mode = ADC_ULP_MODE_DISABLE
     };
-    cp_check_esp_error(adc_oneshot_new_unit(&adc_config, &adc_handle));
+    CHECK_ESP_RESULT(adc_oneshot_new_unit(&adc_config, &adc_handle));
 
     adc_oneshot_chan_cfg_t channel_config = {
         .atten = ATTENUATION,
