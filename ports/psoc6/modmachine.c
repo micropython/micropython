@@ -14,11 +14,9 @@
 #include "cyhal.h"
 #include "cy_pdl.h"
 
-
 // port-specific includes
 #include "modmachine.h"
 #include "mplogger.h"
-
 
 #if MICROPY_PY_MACHINE
 
@@ -234,10 +232,8 @@ static void mp_machine_idle(void) {
 static mp_obj_t mp_machine_unique_id(void) {
     uint64_t id = system_get_unique_id();
     byte *id_addr = (byte *)&id;
-    printf("ID_formatted:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id_addr[0], id_addr[1], id_addr[2], id_addr[3], id_addr[4], id_addr[5], id_addr[6], id_addr[7]);
-    mplogger_print("RAW_ID_data:");
+    // printf("ID_formatted:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id_addr[0], id_addr[1], id_addr[2], id_addr[3], id_addr[4], id_addr[5], id_addr[6], id_addr[7]);
     return mp_obj_new_bytes(id_addr, 8);
-
 }
 
 // machine.reset()

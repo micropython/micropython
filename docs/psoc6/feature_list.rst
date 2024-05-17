@@ -98,9 +98,10 @@ Table :ref:`configuration details <table_mpy_configuration>` below lists specifi
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
 | cryptolib       | Options ``MICROPY_PY_UCRYPTOLIB``, ``MICROPY_PY_UCRYPTOLIB_CTR``, ``MICROPY_PY_UCRYPTOLIB_CONSTS`` enabled.          |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
-| machine         | Functions not yet implemented: *lightsleep()*, *deepsleep()*, *wake_reason()*, *time_pulse_us()*, *rng()*.           | 
+| machine         | Functions not yet implemented: *lightsleep()*, *deepsleep()*, *wake_reason()*, *time_pulse_us()* *boot_loader()*,    |   
+|                 | *mem8*, *mem16*, *mem32*.                                                                                            |
 |                 |                                                                                                                      |
-|                 | Constants not yet implemented : *WLAN_WAKE*, *PIN_WAKE*, *RTC_WAKE*, *IDLE*, *SLEEP*, *DEEPSLEEP*.                   |
+|                 | Constants not yet implemented : *WLAN_WAKE*, *PIN_WAKE*, *RTC_WAKE*, *IDLE*, *SLEEP*, *DEEPSLEEP*, *DEEPSLEEP_RESET* |
 |                 |                                                                                                                      |
 |                 | Submodules/classes not yet implemented: *mem*, *Signal*, *SD*, *SDCard*, *SoftSPI*, *SPI*,                           |
 |                 | *Timer*, *UART*, *WDT*.                                                                                              |
