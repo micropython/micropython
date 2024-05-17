@@ -1,5 +1,6 @@
 /*
-  This example extends on features0 but demonstrates how to define a class.
+  This example extends on features0 but demonstrates how to define a class,
+  and a custom exception.
 
   The Factorial class constructor takes an integer, and then the calculate
   method can be called to get the factorial.
@@ -8,6 +9,9 @@
   >>> f = features4.Factorial(4)
   >>> f.calculate()
   24
+
+  If the argument to the Factorial class constructor is less than zero, a
+  FactorialError is raised.
 */
 
 // Include the header file to get access to the MicroPython API
@@ -22,6 +26,8 @@ typedef struct {
     mp_int_t n;
 } mp_obj_factorial_t;
 
+mp_obj_full_type_t mp_type_FactorialError;
+
 // Essentially Factorial.__new__ (but also kind of __init__).
 // Takes a single argument (the number to find the factorial of)
 static mp_obj_t factorial_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args_in) {
@@ -29,6 +35,10 @@ static mp_obj_t factorial_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     mp_obj_factorial_t *o = mp_obj_malloc(mp_obj_factorial_t, type);
     o->n = mp_obj_get_int(args_in[0]);
+
+    if (o->n < 0) {
+        mp_raise_msg((mp_obj_type_t *)&mp_type_FactorialError, "argument must be zero or above");
+    }
 
     return MP_OBJ_FROM_PTR(o);
 }
@@ -67,6 +77,12 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
 
     // Make the Factorial type available on the module.
     mp_store_global(MP_QSTR_Factorial, MP_OBJ_FROM_PTR(&mp_type_factorial));
+
+    // Initialise the exception type.
+    mp_obj_exception_init(&mp_type_FactorialError, MP_QSTR_FactorialError, &mp_type_Exception);
+
+    // Make the FactorialError type available on the module.
+    mp_store_global(MP_QSTR_FactorialError, MP_OBJ_FROM_PTR(&mp_type_FactorialError));
 
     // This must be last, it restores the globals dict
     MP_DYNRUNTIME_INIT_EXIT
