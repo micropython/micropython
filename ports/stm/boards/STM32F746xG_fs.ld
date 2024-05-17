@@ -1,8 +1,10 @@
-// This file is part of the CircuitPython project: https://circuitpython.org
-//
-// SPDX-FileCopyrightText: Copyright (c) 2020 Mark Olsson <mark@markolsson.se>
-//
-// SPDX-License-Identifier: MIT
+/*
+ * This file is part of the CircuitPython project: https://circuitpython.org
+ *
+ * SPDX-FileCopyrightText: Copyright (c) 2020 Mark Olsson <mark@markolsson.se>
+ *
+ * SPDX-License-Identifier: MIT
+ */
 
  /* Entry Point */
 ENTRY(Reset_Handler)
