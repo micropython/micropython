@@ -8,8 +8,8 @@
 
 #include "peripherals/broadcom/gpio.h"
 
-STATIC bool pin_in_use[BCM_PIN_COUNT];
-STATIC bool never_reset_pin[BCM_PIN_COUNT];
+static bool pin_in_use[BCM_PIN_COUNT];
+static bool never_reset_pin[BCM_PIN_COUNT];
 
 void reset_all_pins(void) {
     for (size_t i = 0; i < BCM_PIN_COUNT; i++) {

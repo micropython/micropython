@@ -54,19 +54,19 @@ MAKE_ENUM_MAP(displayio_colorspace) {
     MAKE_ENUM_MAP_ENTRY(displayio_colorspace, BGR555_SWAPPED),
     MAKE_ENUM_MAP_ENTRY(displayio_colorspace, L8),
 };
-STATIC MP_DEFINE_CONST_DICT(displayio_colorspace_locals_dict, displayio_colorspace_locals_table);
+static MP_DEFINE_CONST_DICT(displayio_colorspace_locals_dict, displayio_colorspace_locals_table);
 
 MAKE_PRINTER(displayio, displayio_colorspace);
 MAKE_ENUM_TYPE(displayio, ColorSpace, displayio_colorspace);
 
-STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
+static const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_displayio) },
     { MP_ROM_QSTR(MP_QSTR_Bitmap), MP_ROM_PTR(&displayio_bitmap_type) },
     { MP_ROM_QSTR(MP_QSTR_Colorspace), MP_ROM_PTR(&displayio_colorspace_type) },
     { MP_ROM_QSTR(MP_QSTR_ColorConverter), MP_ROM_PTR(&displayio_colorconverter_type) },
     { MP_ROM_QSTR(MP_QSTR_Palette), MP_ROM_PTR(&displayio_palette_type) },
 };
-STATIC MP_DEFINE_CONST_DICT(displayio_module_globals, displayio_module_globals_table);
+static MP_DEFINE_CONST_DICT(displayio_module_globals, displayio_module_globals_table);
 
 const mp_obj_module_t displayio_module = {
     .base = { &mp_type_module },

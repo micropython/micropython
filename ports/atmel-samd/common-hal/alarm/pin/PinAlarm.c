@@ -18,8 +18,8 @@
 
 // This variable stores whether a PinAlarm woke in light sleep or fake deep sleep
 // It CANNOT detect if the program woke from deep sleep.
-STATIC volatile bool woke_up = false;
-STATIC alarm_pin_pinalarm_obj_t *trig_alarm = NULL;
+static volatile bool woke_up = false;
+static alarm_pin_pinalarm_obj_t *trig_alarm = NULL;
 
 // Tamper Pins for deep sleep: IN0:PB00; IN1:PB02; IN2:PA02; IN3:PC00; IN4:PC01;
 // wakeup from deep sleep seems to be triggered when these pins go from Hi/Lo to Hi-Z state.

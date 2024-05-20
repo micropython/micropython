@@ -20,7 +20,7 @@
 // #include "common-hal/_bleio/bonding.h"
 
 
-STATIC int characteristic_on_ble_gap_evt(struct ble_gap_event *event, void *param);
+static int characteristic_on_ble_gap_evt(struct ble_gap_event *event, void *param);
 
 void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_service_obj_t *service,
     uint16_t handle, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props,
@@ -109,7 +109,7 @@ typedef struct {
     uint16_t len;
 } _read_info_t;
 
-STATIC int _read_cb(uint16_t conn_handle,
+static int _read_cb(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     struct ble_gatt_attr *attr,
     void *arg) {
@@ -164,7 +164,7 @@ size_t common_hal_bleio_characteristic_get_max_length(bleio_characteristic_obj_t
     return self->max_length;
 }
 
-STATIC int _write_cb(uint16_t conn_handle,
+static int _write_cb(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     struct ble_gatt_attr *attr,
     void *arg) {
@@ -223,7 +223,7 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
 }
 
 // Used when we're the client.
-STATIC int characteristic_on_ble_gap_evt(struct ble_gap_event *event, void *param) {
+static int characteristic_on_ble_gap_evt(struct ble_gap_event *event, void *param) {
     bleio_characteristic_obj_t *self = (bleio_characteristic_obj_t *)param;
     switch (event->type) {
         case BLE_GAP_EVENT_NOTIFY_RX: {

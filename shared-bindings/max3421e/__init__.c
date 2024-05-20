@@ -38,12 +38,12 @@
 //|
 //| """
 
-STATIC const mp_rom_map_elem_t max3421e_module_globals_table[] = {
+static const mp_rom_map_elem_t max3421e_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_max3421e) },
 
     { MP_ROM_QSTR(MP_QSTR_Max3421E), MP_ROM_PTR(&max3421e_max3421e_type) },
 };
-STATIC MP_DEFINE_CONST_DICT(max3421e_module_globals, max3421e_module_globals_table);
+static MP_DEFINE_CONST_DICT(max3421e_module_globals, max3421e_module_globals_table);
 
 const mp_obj_module_t max3421e_module = {
     .base = { &mp_type_module },

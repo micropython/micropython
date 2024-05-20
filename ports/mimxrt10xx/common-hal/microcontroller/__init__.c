@@ -87,7 +87,7 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
 
 // This maps MCU pin names to pin objects.
 // NOTE: for all i.MX chips, order MUST match _iomuxc_sw_mux_ctl_pad enum
-STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[PIN_COUNT] = {
+static const mp_rom_map_elem_t mcu_pin_global_dict_table[PIN_COUNT] = {
 
 #define FORMAT_PIN(pin_name) { MP_ROM_QSTR(MP_QSTR_##pin_name), MP_ROM_PTR(&pin_##pin_name) },
     #include "pin_names.h"

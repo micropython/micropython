@@ -219,12 +219,12 @@
 //|    This can be worked around by using the ``i2c-gpio`` bit banging driver.
 //|    Since the RPi firmware uses the hw i2c, it's not possible to emulate a HAT eeprom."""
 
-STATIC const mp_rom_map_elem_t i2ctarget_module_globals_table[] = {
+static const mp_rom_map_elem_t i2ctarget_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_i2ctarget) },
     { MP_ROM_QSTR(MP_QSTR_I2CTarget), MP_ROM_PTR(&i2ctarget_i2c_target_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(i2ctarget_module_globals, i2ctarget_module_globals_table);
+static MP_DEFINE_CONST_DICT(i2ctarget_module_globals, i2ctarget_module_globals_table);
 
 const mp_obj_module_t i2ctarget_module = {
     .base = { &mp_type_module },

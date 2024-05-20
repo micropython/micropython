@@ -24,7 +24,7 @@
 //|     """Return True if the pins have sequential GPIO numbers, False otherwise"""
 //|     ...
 //|
-STATIC mp_obj_t rp2pio_pins_are_sequential(mp_obj_t pins_obj) {
+static mp_obj_t rp2pio_pins_are_sequential(mp_obj_t pins_obj) {
     size_t len;
     mp_obj_t *items;
     mp_obj_get_array(pins_obj, &len, &items);
@@ -37,15 +37,15 @@ STATIC mp_obj_t rp2pio_pins_are_sequential(mp_obj_t pins_obj) {
     return mp_obj_new_bool(common_hal_rp2pio_pins_are_sequential(len, pins));
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_pins_are_sequential_obj, rp2pio_pins_are_sequential);
+static MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_pins_are_sequential_obj, rp2pio_pins_are_sequential);
 
-STATIC const mp_rom_map_elem_t rp2pio_module_globals_table[] = {
+static const mp_rom_map_elem_t rp2pio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_rp2pio) },
     { MP_ROM_QSTR(MP_QSTR_StateMachine),  MP_ROM_PTR(&rp2pio_statemachine_type) },
     { MP_ROM_QSTR(MP_QSTR_pins_are_sequential),  MP_ROM_PTR(&rp2pio_pins_are_sequential_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(rp2pio_module_globals, rp2pio_module_globals_table);
+static MP_DEFINE_CONST_DICT(rp2pio_module_globals, rp2pio_module_globals_table);
 
 const mp_obj_module_t rp2pio_module = {
     .base = { &mp_type_module },

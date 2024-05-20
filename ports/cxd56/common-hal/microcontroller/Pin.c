@@ -65,7 +65,7 @@ const mcu_pin_obj_t pin_LPADC3 = PIN(3, true);
 const mcu_pin_obj_t pin_HPADC0 = PIN(4, true);
 const mcu_pin_obj_t pin_HPADC1 = PIN(5, true);
 
-STATIC pin_status_t pins[] = {
+static pin_status_t pins[] = {
     { &pin_UART2_RXD, true, true },
     { &pin_UART2_TXD, true, true },
     { &pin_HIF_IRQ_OUT, true, true },

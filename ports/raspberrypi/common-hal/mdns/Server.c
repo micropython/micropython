@@ -19,10 +19,10 @@
 
 // Track if we've inited the LWIP MDNS at all. It expects to only init once.
 // Subsequent times, we restart it.
-STATIC bool inited = false;
+static bool inited = false;
 // Track if we are globally inited. This essentially forces one inited MDNS
 // object at a time. (But ignores MDNS objects that are deinited.)
-STATIC bool object_inited = false;
+static bool object_inited = false;
 
 #define NETIF_STA (&cyw43_state.netif[CYW43_ITF_STA])
 #define NETIF_AP (&cyw43_state.netif[CYW43_ITF_AP])
@@ -109,7 +109,7 @@ typedef struct {
     size_t out_len;
 } nonalloc_search_state_t;
 
-STATIC void copy_data_into_remote_service(struct mdns_answer *answer, const char *varpart, int varlen, mdns_remoteservice_obj_t *out) {
+static void copy_data_into_remote_service(struct mdns_answer *answer, const char *varpart, int varlen, mdns_remoteservice_obj_t *out) {
     if (varlen > 0) {
         if (answer->info.type == DNS_RRTYPE_A) {
             char *hostname = out->hostname;
@@ -148,7 +148,7 @@ STATIC void copy_data_into_remote_service(struct mdns_answer *answer, const char
     }
 }
 
-STATIC void search_result_cb(struct mdns_answer *answer, const char *varpart, int varlen, int flags, void *arg) {
+static void search_result_cb(struct mdns_answer *answer, const char *varpart, int varlen, int flags, void *arg) {
     nonalloc_search_state_t *state = arg;
     state->out[state->i].base.type = &mdns_remoteservice_type;
 
@@ -206,7 +206,7 @@ typedef struct {
     size_t count;
 } alloc_search_state_t;
 
-STATIC void alloc_search_result_cb(struct mdns_answer *answer, const char *varpart, int varlen, int flags, void *arg) {
+static void alloc_search_result_cb(struct mdns_answer *answer, const char *varpart, int varlen, int flags, void *arg) {
     alloc_search_state_t *state = arg;
 
     if ((flags & MDNS_SEARCH_RESULT_FIRST) != 0) {
@@ -276,7 +276,7 @@ mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *servic
     return MP_OBJ_FROM_PTR(tuple);
 }
 
-STATIC void srv_txt_cb(struct mdns_service *service, void *ptr) {
+static void srv_txt_cb(struct mdns_service *service, void *ptr) {
     mdns_server_obj_t *self = ptr;
     err_t res;
     for (size_t i = 0; i < self->num_txt_records; i++) {
@@ -288,7 +288,7 @@ STATIC void srv_txt_cb(struct mdns_service *service, void *ptr) {
     }
 }
 
-STATIC void assign_txt_records(mdns_server_obj_t *self, const char *txt_records[], size_t num_txt_records) {
+static void assign_txt_records(mdns_server_obj_t *self, const char *txt_records[], size_t num_txt_records) {
     size_t allowed_num_txt_records = MDNS_MAX_TXT_RECORDS < num_txt_records ? MDNS_MAX_TXT_RECORDS : num_txt_records;
     self->num_txt_records = allowed_num_txt_records;
     for (size_t i = 0; i < allowed_num_txt_records; i++) {

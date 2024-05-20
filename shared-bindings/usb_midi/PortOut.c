@@ -33,14 +33,14 @@
 //|         ...
 //|
 
-STATIC mp_uint_t usb_midi_portout_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t usb_midi_portout_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     usb_midi_portout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const byte *buf = buf_in;
 
     return common_hal_usb_midi_portout_write(self, buf, size, errcode);
 }
 
-STATIC mp_uint_t usb_midi_portout_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+static mp_uint_t usb_midi_portout_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     usb_midi_portout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {
@@ -56,13 +56,13 @@ STATIC mp_uint_t usb_midi_portout_ioctl(mp_obj_t self_in, mp_uint_t request, mp_
     return ret;
 }
 
-STATIC const mp_rom_map_elem_t usb_midi_portout_locals_dict_table[] = {
+static const mp_rom_map_elem_t usb_midi_portout_locals_dict_table[] = {
     // Standard stream methods.
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),    MP_ROM_PTR(&mp_stream_write_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(usb_midi_portout_locals_dict, usb_midi_portout_locals_dict_table);
+static MP_DEFINE_CONST_DICT(usb_midi_portout_locals_dict, usb_midi_portout_locals_dict_table);
 
-STATIC const mp_stream_p_t usb_midi_portout_stream_p = {
+static const mp_stream_p_t usb_midi_portout_stream_p = {
     .read = NULL,
     .write = usb_midi_portout_write,
     .ioctl = usb_midi_portout_ioctl,

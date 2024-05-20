@@ -106,7 +106,7 @@ static inline void poll_sockets(void) {
     #endif
 }
 
-STATIC struct tcp_pcb *volatile *lwip_socket_incoming_array(socketpool_socket_obj_t *socket) {
+static struct tcp_pcb *volatile *lwip_socket_incoming_array(socketpool_socket_obj_t *socket) {
     if (socket->incoming.connection.alloc == 0) {
         return &socket->incoming.connection.tcp.item;
     } else {
@@ -114,7 +114,7 @@ STATIC struct tcp_pcb *volatile *lwip_socket_incoming_array(socketpool_socket_ob
     }
 }
 
-STATIC void lwip_socket_free_incoming(socketpool_socket_obj_t *socket) {
+static void lwip_socket_free_incoming(socketpool_socket_obj_t *socket) {
     bool socket_is_listener =
         socket->type == MOD_NETWORK_SOCK_STREAM
         && socket->pcb.tcp->state == LISTEN;
@@ -154,9 +154,9 @@ static inline void exec_user_callback(socketpool_socket_obj_t *socket) {
 #if MICROPY_PY_LWIP_SOCK_RAW
 // Callback for incoming raw packets.
 #if LWIP_VERSION_MAJOR < 2
-STATIC u8_t _lwip_raw_incoming(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *addr)
+static u8_t _lwip_raw_incoming(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *addr)
 #else
-STATIC u8_t _lwip_raw_incoming(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
+static u8_t _lwip_raw_incoming(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
 #endif
 {
     socketpool_socket_obj_t *socket = (socketpool_socket_obj_t *)arg;
@@ -174,9 +174,9 @@ STATIC u8_t _lwip_raw_incoming(void *arg, struct raw_pcb *pcb, struct pbuf *p, c
 // Callback for incoming UDP packets. We simply stash the packet and the source address,
 // in case we need it for recvfrom.
 #if LWIP_VERSION_MAJOR < 2
-STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u16_t port)
+static void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u16_t port)
 #else
-STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port)
+static void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port)
 #endif
 {
     socketpool_socket_obj_t *socket = (socketpool_socket_obj_t *)arg;
@@ -192,7 +192,7 @@ STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, 
 }
 
 // Callback for general tcp errors.
-STATIC void _lwip_tcp_error(void *arg, err_t err) {
+static void _lwip_tcp_error(void *arg, err_t err) {
     socketpool_socket_obj_t *socket = (socketpool_socket_obj_t *)arg;
 
     // Free any incoming buffers or connections that are stored
@@ -204,7 +204,7 @@ STATIC void _lwip_tcp_error(void *arg, err_t err) {
 }
 
 // Callback for tcp connection requests. Error code err is unused. (See tcp.h)
-STATIC err_t _lwip_tcp_connected(void *arg, struct tcp_pcb *tpcb, err_t err) {
+static err_t _lwip_tcp_connected(void *arg, struct tcp_pcb *tpcb, err_t err) {
     socketpool_socket_obj_t *socket = (socketpool_socket_obj_t *)arg;
 
     socket->state = STATE_CONNECTED;
@@ -213,7 +213,7 @@ STATIC err_t _lwip_tcp_connected(void *arg, struct tcp_pcb *tpcb, err_t err) {
 
 // Handle errors (eg connection aborted) on TCP PCBs that have been put on the
 // accept queue but are not yet actually accepted.
-STATIC void _lwip_tcp_err_unaccepted(void *arg, err_t err) {
+static void _lwip_tcp_err_unaccepted(void *arg, err_t err) {
     struct tcp_pcb *pcb = (struct tcp_pcb *)arg;
 
     // The ->connected entry is repurposed to store the parent socket; this is safe
@@ -253,12 +253,12 @@ STATIC void _lwip_tcp_err_unaccepted(void *arg, err_t err) {
 // so set this handler which requests lwIP to keep pbuf's and deliver
 // them later. We cannot cache pbufs in child socket on Python side,
 // until it is created in accept().
-STATIC err_t _lwip_tcp_recv_unaccepted(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err) {
+static err_t _lwip_tcp_recv_unaccepted(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err) {
     return ERR_BUF;
 }
 
 // Callback for incoming tcp connections.
-STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
+static err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
     // err can be ERR_MEM to notify us that there was no memory for an incoming connection
     if (err != ERR_OK) {
         return ERR_OK;
@@ -295,7 +295,7 @@ STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
 }
 
 // Callback for inbound tcp packets.
-STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err_t err) {
+static err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err_t err) {
     socketpool_socket_obj_t *socket = (socketpool_socket_obj_t *)arg;
 
     if (p == NULL) {
@@ -326,7 +326,7 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
 // these to do the work.
 
 // Helper function for send/sendto to handle raw/UDP packets.
-STATIC mp_uint_t lwip_raw_udp_send(socketpool_socket_obj_t *socket, const byte *buf, mp_uint_t len, ip_addr_t *dest, uint32_t port, int *_errno) {
+static mp_uint_t lwip_raw_udp_send(socketpool_socket_obj_t *socket, const byte *buf, mp_uint_t len, ip_addr_t *dest, uint32_t port, int *_errno) {
     if (len > 0xffff) {
         // Any packet that big is probably going to fail the pbuf_alloc anyway, but may as well try
         len = 0xffff;
@@ -380,7 +380,7 @@ STATIC mp_uint_t lwip_raw_udp_send(socketpool_socket_obj_t *socket, const byte *
 }
 
 // Helper function for recv/recvfrom to handle raw/UDP packets
-STATIC mp_uint_t lwip_raw_udp_receive(socketpool_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, uint32_t *port, int *_errno) {
+static mp_uint_t lwip_raw_udp_receive(socketpool_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, uint32_t *port, int *_errno) {
 
     if (socket->incoming.pbuf == NULL) {
         if (socket->timeout == 0) {
@@ -437,7 +437,7 @@ STATIC mp_uint_t lwip_raw_udp_receive(socketpool_socket_obj_t *socket, byte *buf
 
 
 // Helper function for send/sendto to handle TCP packets
-STATIC mp_uint_t lwip_tcp_send(socketpool_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
+static mp_uint_t lwip_tcp_send(socketpool_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     // Check for any pending errors
     STREAM_ERROR_CHECK(socket);
 
@@ -517,7 +517,7 @@ STATIC mp_uint_t lwip_tcp_send(socketpool_socket_obj_t *socket, const byte *buf,
 }
 
 // Helper function for recv/recvfrom to handle TCP packets
-STATIC mp_uint_t lwip_tcp_receive(socketpool_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
+static mp_uint_t lwip_tcp_receive(socketpool_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
     // Check for any pending errors
     STREAM_ERROR_CHECK(socket);
 
@@ -589,8 +589,8 @@ STATIC mp_uint_t lwip_tcp_receive(socketpool_socket_obj_t *socket, byte *buf, mp
 }
 
 
-STATIC socketpool_socket_obj_t *open_socket_objs[MAX_SOCKETS];
-STATIC bool user_socket[MAX_SOCKETS];
+static socketpool_socket_obj_t *open_socket_objs[MAX_SOCKETS];
+static bool user_socket[MAX_SOCKETS];
 
 void socket_user_reset(void) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_objs); i++) {
@@ -605,7 +605,7 @@ void socket_user_reset(void) {
 // The writes below send an event to the socket select task so that it redoes the
 // select with the new open socket set.
 
-STATIC bool register_open_socket(socketpool_socket_obj_t *obj) {
+static bool register_open_socket(socketpool_socket_obj_t *obj) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_objs); i++) {
         if (!open_socket_objs[i]) {
             open_socket_objs[i] = obj;
@@ -618,7 +618,7 @@ STATIC bool register_open_socket(socketpool_socket_obj_t *obj) {
     return false;
 }
 
-STATIC void unregister_open_socket(socketpool_socket_obj_t *obj) {
+static void unregister_open_socket(socketpool_socket_obj_t *obj) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_objs); i++) {
         if (open_socket_objs[i] == obj) {
             DEBUG_printf("unregister_open_socket(%p) clears %d\n", obj, i);
@@ -630,7 +630,7 @@ STATIC void unregister_open_socket(socketpool_socket_obj_t *obj) {
     DEBUG_printf("unregister_open_socket(%p) fails due to missing entry\n", obj);
 }
 
-STATIC void mark_user_socket(socketpool_socket_obj_t *obj) {
+static void mark_user_socket(socketpool_socket_obj_t *obj) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_objs); i++) {
         if (open_socket_objs[i] == obj) {
             DEBUG_printf("mark_user_socket(%p) -> %d\n", obj, i);
@@ -876,7 +876,7 @@ size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     return 0;
 }
 
-STATIC err_t _lwip_tcp_close_poll(void *arg, struct tcp_pcb *pcb) {
+static err_t _lwip_tcp_close_poll(void *arg, struct tcp_pcb *pcb) {
     // Connection has not been cleanly closed so just abort it to free up memory
     tcp_poll(pcb, NULL, 0);
     tcp_abort(pcb);

@@ -22,7 +22,7 @@
 
 extern Protomatter_core *_PM_protoPtr;
 
-STATIC void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t *self, mp_obj_t framebuffer);
+static void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t *self, mp_obj_t framebuffer);
 
 void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, int width, int bit_depth, uint8_t rgb_count, uint8_t *rgb_pins, uint8_t addr_count, uint8_t *addr_pins, uint8_t clock_pin, uint8_t latch_pin, uint8_t oe_pin, bool doublebuffer, mp_obj_t framebuffer, int8_t tile, bool serpentine, void *timer) {
     self->width = width;
@@ -49,7 +49,7 @@ void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, i
     common_hal_rgbmatrix_rgbmatrix_construct1(self, framebuffer);
 }
 
-STATIC void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t *self, mp_obj_t framebuffer) {
+static void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t *self, mp_obj_t framebuffer) {
     if (framebuffer != mp_const_none) {
         mp_get_buffer_raise(self->framebuffer, &self->bufinfo, MP_BUFFER_READ);
         if (mp_get_buffer(self->framebuffer, &self->bufinfo, MP_BUFFER_RW)) {
@@ -114,21 +114,21 @@ STATIC void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t 
     self->paused = 0;
 }
 
-STATIC void free_pin(uint8_t *pin) {
+static void free_pin(uint8_t *pin) {
     if (*pin != COMMON_HAL_MCU_NO_PIN) {
         common_hal_mcu_pin_reset_number(*pin);
     }
     *pin = COMMON_HAL_MCU_NO_PIN;
 }
 
-STATIC void free_pin_seq(uint8_t *seq, int count) {
+static void free_pin_seq(uint8_t *seq, int count) {
     for (int i = 0; i < count; i++) {
         free_pin(&seq[i]);
     }
 }
 
 extern int pm_row_count;
-STATIC void common_hal_rgbmatrix_rgbmatrix_deinit1(rgbmatrix_rgbmatrix_obj_t *self) {
+static void common_hal_rgbmatrix_rgbmatrix_deinit1(rgbmatrix_rgbmatrix_obj_t *self) {
     common_hal_rgbmatrix_timer_disable(self->timer);
 
     if (_PM_protoPtr == &self->protomatter) {

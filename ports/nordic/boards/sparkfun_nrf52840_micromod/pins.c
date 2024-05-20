@@ -7,7 +7,7 @@
 
 #include "shared-bindings/board/__init__.h"
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
     // The SparkFun MicroMod spec uses a zero-based peripheral numbering scheme.
     // The 0th peripheral is the default and the "0" is omitted from the

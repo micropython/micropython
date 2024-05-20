@@ -13,15 +13,15 @@
 
 #include "py/gc.h"
 
-STATIC bool claimed_pins[PAD_COUNT];
-STATIC bool never_reset_pins[PAD_COUNT];
+static bool claimed_pins[PAD_COUNT];
+static bool never_reset_pins[PAD_COUNT];
 
 // Default is that no pins are forbidden to reset.
 MP_WEAK const mcu_pin_obj_t *mimxrt10xx_reset_forbidden_pins[] = {
     NULL,
 };
 
-STATIC bool _reset_forbidden(const mcu_pin_obj_t *pin) {
+static bool _reset_forbidden(const mcu_pin_obj_t *pin) {
     const mcu_pin_obj_t **forbidden_pin = &mimxrt10xx_reset_forbidden_pins[0];
     while (*forbidden_pin) {
         if (pin == *forbidden_pin) {

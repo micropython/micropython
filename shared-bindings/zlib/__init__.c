@@ -48,7 +48,7 @@
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t zlib_decompress(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t zlib_decompress(size_t n_args, const mp_obj_t *args) {
     mp_int_t wbits = 0;
     if (n_args > 1) {
         wbits = MP_OBJ_SMALL_INT_VALUE(args[1]);
@@ -56,14 +56,14 @@ STATIC mp_obj_t zlib_decompress(size_t n_args, const mp_obj_t *args) {
 
     return common_hal_zlib_decompress(args[0], wbits);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(zlib_decompress_obj, 1, 3, zlib_decompress);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(zlib_decompress_obj, 1, 3, zlib_decompress);
 
-STATIC const mp_rom_map_elem_t zlib_globals_table[] = {
+static const mp_rom_map_elem_t zlib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zlib) },
     { MP_ROM_QSTR(MP_QSTR_decompress), MP_ROM_PTR(&zlib_decompress_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(zlib_globals, zlib_globals_table);
+static MP_DEFINE_CONST_DICT(zlib_globals, zlib_globals_table);
 
 const mp_obj_module_t zlib_module = {
     .base = { &mp_type_module },

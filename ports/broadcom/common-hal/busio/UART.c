@@ -24,10 +24,10 @@
 // UART1 is a different peripheral than the rest so it is hardcoded below.
 #if BCM_VERSION == 2711
 #define NUM_UART (6)
-STATIC ARM_UART_PL011_Type *uart[NUM_UART] = {UART0, NULL, UART2, UART3, UART4, UART5};
+static ARM_UART_PL011_Type *uart[NUM_UART] = {UART0, NULL, UART2, UART3, UART4, UART5};
 #else
 #define NUM_UART (2)
-STATIC ARM_UART_PL011_Type *uart[NUM_UART] = {UART0, NULL};
+static ARM_UART_PL011_Type *uart[NUM_UART] = {UART0, NULL};
 #endif
 
 typedef enum {
@@ -67,7 +67,7 @@ void reset_uart(void) {
     }
 }
 
-STATIC void fetch_all_from_fifo(busio_uart_obj_t *self) {
+static void fetch_all_from_fifo(busio_uart_obj_t *self) {
     if (self->uart_id == 1) {
         while (UART1->STAT_b.DATA_READY && ringbuf_num_empty(&self->ringbuf) > 0) {
             int c = UART1->IO_b.DATA;
@@ -359,13 +359,13 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     return len;
 }
 
-STATIC void disable_interrupt(busio_uart_obj_t *self) {
+static void disable_interrupt(busio_uart_obj_t *self) {
     if (self->uart_id == 1) {
         UART1->IER_b.DATA_READY = false;
     }
 }
 
-STATIC void enable_interrupt(busio_uart_obj_t *self) {
+static void enable_interrupt(busio_uart_obj_t *self) {
     if (self->uart_id == 1) {
         UART1->IER_b.DATA_READY = true;
     }

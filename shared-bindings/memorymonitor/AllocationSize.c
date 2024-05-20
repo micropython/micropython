@@ -40,7 +40,7 @@
 //|
 //|         """
 //|         ...
-STATIC mp_obj_t memorymonitor_allocationsize_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
+static mp_obj_t memorymonitor_allocationsize_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
     memorymonitor_allocationsize_obj_t *self =
         m_new_obj(memorymonitor_allocationsize_obj_t, &memorymonitor_allocationsize_type);
 
@@ -52,7 +52,7 @@ STATIC mp_obj_t memorymonitor_allocationsize_make_new(const mp_obj_type_t *type,
 //|     def __enter__(self) -> AllocationSize:
 //|         """Clears counts and resumes tracking."""
 //|         ...
-STATIC mp_obj_t memorymonitor_allocationsize_obj___enter__(mp_obj_t self_in) {
+static mp_obj_t memorymonitor_allocationsize_obj___enter__(mp_obj_t self_in) {
     common_hal_memorymonitor_allocationsize_clear(self_in);
     common_hal_memorymonitor_allocationsize_resume(self_in);
     return self_in;
@@ -63,16 +63,16 @@ MP_DEFINE_CONST_FUN_OBJ_1(memorymonitor_allocationsize___enter___obj, memorymoni
 //|         """Automatically pauses allocation tracking when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t memorymonitor_allocationsize_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t memorymonitor_allocationsize_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_memorymonitor_allocationsize_pause(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(memorymonitor_allocationsize___exit___obj, 4, 4, memorymonitor_allocationsize_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(memorymonitor_allocationsize___exit___obj, 4, 4, memorymonitor_allocationsize_obj___exit__);
 
 //|     bytes_per_block: int
 //|     """Number of bytes per block"""
-STATIC mp_obj_t memorymonitor_allocationsize_obj_get_bytes_per_block(mp_obj_t self_in) {
+static mp_obj_t memorymonitor_allocationsize_obj_get_bytes_per_block(mp_obj_t self_in) {
     memorymonitor_allocationsize_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     return MP_OBJ_NEW_SMALL_INT(common_hal_memorymonitor_allocationsize_get_bytes_per_block(self));
@@ -90,7 +90,7 @@ MP_PROPERTY_GETTER(memorymonitor_allocationsize_bytes_per_block_obj,
 //|           mm = memorymonitor.AllocationSize()
 //|           print(len(mm))"""
 //|         ...
-STATIC mp_obj_t memorymonitor_allocationsize_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+static mp_obj_t memorymonitor_allocationsize_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     memorymonitor_allocationsize_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint16_t len = common_hal_memorymonitor_allocationsize_get_len(self);
     switch (op) {
@@ -112,7 +112,7 @@ STATIC mp_obj_t memorymonitor_allocationsize_unary_op(mp_unary_op_t op, mp_obj_t
 //|           print(mm[0])"""
 //|         ...
 //|
-STATIC mp_obj_t memorymonitor_allocationsize_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
+static mp_obj_t memorymonitor_allocationsize_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
     if (value == mp_const_none) {
         // delete item
         mp_raise_AttributeError(MP_ERROR_TEXT("Cannot delete values"));
@@ -134,7 +134,7 @@ STATIC mp_obj_t memorymonitor_allocationsize_subscr(mp_obj_t self_in, mp_obj_t i
     return mp_const_none;
 }
 
-STATIC const mp_rom_map_elem_t memorymonitor_allocationsize_locals_dict_table[] = {
+static const mp_rom_map_elem_t memorymonitor_allocationsize_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&memorymonitor_allocationsize___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&memorymonitor_allocationsize___exit___obj) },
@@ -142,7 +142,7 @@ STATIC const mp_rom_map_elem_t memorymonitor_allocationsize_locals_dict_table[] 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_bytes_per_block), MP_ROM_PTR(&memorymonitor_allocationsize_bytes_per_block_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(memorymonitor_allocationsize_locals_dict, memorymonitor_allocationsize_locals_dict_table);
+static MP_DEFINE_CONST_DICT(memorymonitor_allocationsize_locals_dict, memorymonitor_allocationsize_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     memorymonitor_allocationsize_type,

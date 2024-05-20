@@ -56,7 +56,7 @@ void alarm_reset(void) {
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
 
-STATIC esp_sleep_wakeup_cause_t _get_wakeup_cause(bool deep_sleep) {
+static esp_sleep_wakeup_cause_t _get_wakeup_cause(bool deep_sleep) {
     // First check if the modules remember what last woke up
     if (alarm_pin_pinalarm_woke_this_cycle()) {
         return ESP_SLEEP_WAKEUP_GPIO;
@@ -118,7 +118,7 @@ mp_obj_t common_hal_alarm_record_wake_alarm(void) {
 }
 
 // Set up light sleep or deep sleep alarms.
-STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
+static void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
     alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
     alarm_touch_touchalarm_set_alarm(deep_sleep, n_alarms, alarms);

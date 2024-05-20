@@ -36,7 +36,7 @@
 //|
 //|         """
 //|         ...
-STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -51,14 +51,14 @@ STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t
 //|     def deinit(self) -> None:
 //|         """Turn off the AnalogOut and release the pin for other use."""
 //|         ...
-STATIC mp_obj_t analogio_analogout_deinit(mp_obj_t self_in) {
+static mp_obj_t analogio_analogout_deinit(mp_obj_t self_in) {
     analogio_analogout_obj_t *self = self_in;
 
     common_hal_analogio_analogout_deinit(self);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogout_deinit_obj, analogio_analogout_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogout_deinit_obj, analogio_analogout_deinit);
 
 //|     def __enter__(self) -> AnalogOut:
 //|         """No-op used by Context Managers."""
@@ -69,12 +69,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogout_deinit_obj, analogio_analogo
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t analogio_analogout___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t analogio_analogout___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_analogio_analogout_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogout___exit___obj, 4, 4, analogio_analogout___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogout___exit___obj, 4, 4, analogio_analogout___exit__);
 
 //|     value: int
 //|     """The value on the analog pin between 0 and 65535 inclusive (16-bit). (write-only)
@@ -82,7 +82,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogout___exit___obj, 4, 4
 //|     Even if the underlying digital to analog converter (DAC) is lower
 //|     resolution, the value is 16-bit."""
 //|
-STATIC mp_obj_t analogio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t value) {
+static mp_obj_t analogio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t value) {
     analogio_analogout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (common_hal_analogio_analogout_deinited(self)) {
         raise_deinited_error();
@@ -98,7 +98,7 @@ MP_PROPERTY_GETSET(analogio_analogout_value_obj,
     MP_ROM_NONE,
     (mp_obj_t)&analogio_analogout_set_value_obj);
 
-STATIC const mp_rom_map_elem_t analogio_analogout_locals_dict_table[] = {
+static const mp_rom_map_elem_t analogio_analogout_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&analogio_analogout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__),  MP_ROM_PTR(&default___enter___obj) },
@@ -108,7 +108,7 @@ STATIC const mp_rom_map_elem_t analogio_analogout_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_value), (mp_obj_t)&analogio_analogout_value_obj },
 };
 
-STATIC MP_DEFINE_CONST_DICT(analogio_analogout_locals_dict, analogio_analogout_locals_dict_table);
+static MP_DEFINE_CONST_DICT(analogio_analogout_locals_dict, analogio_analogout_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     analogio_analogout_type,

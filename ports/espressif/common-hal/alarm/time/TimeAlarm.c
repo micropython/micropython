@@ -42,10 +42,10 @@ mp_obj_t alarm_time_timealarm_record_wake_alarm(void) {
 }
 
 esp_timer_handle_t pretend_sleep_timer;
-STATIC bool woke_up = false;
+static bool woke_up = false;
 
 // This is run in the timer task. We use it to wake the main CircuitPython task.
-STATIC void timer_callback(void *arg) {
+static void timer_callback(void *arg) {
     (void)arg;
     woke_up = true;
     port_wake_main_task();

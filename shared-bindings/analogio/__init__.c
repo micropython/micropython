@@ -46,13 +46,13 @@
 //| <https://learn.adafruit.com/circuitpython-basics-analog-inputs-and-outputs>`_
 //| """
 
-STATIC const mp_rom_map_elem_t analogio_module_globals_table[] = {
+static const mp_rom_map_elem_t analogio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_analogio) },
     { MP_ROM_QSTR(MP_QSTR_AnalogIn),   MP_ROM_PTR(&analogio_analogin_type) },
     { MP_ROM_QSTR(MP_QSTR_AnalogOut),   MP_ROM_PTR(&analogio_analogout_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(analogio_module_globals, analogio_module_globals_table);
+static MP_DEFINE_CONST_DICT(analogio_module_globals, analogio_module_globals_table);
 
 const mp_obj_module_t analogio_module = {
     .base = { &mp_type_module },

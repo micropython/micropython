@@ -9,7 +9,7 @@
 // This mapping only includes functional names because pins broken
 // out on connectors are labeled with their MCU name available from
 // microcontroller.pin.
-STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+static const mp_rom_map_elem_t board_global_dict_table[] = {
     // Left side header
     // Analog Pins
     { MP_OBJ_NEW_QSTR(MP_QSTR_AREF),  MP_ROM_PTR(&pin_PA03) },

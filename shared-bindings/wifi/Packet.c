@@ -34,7 +34,7 @@ MAKE_ENUM_MAP(wifi_packet) {
     MAKE_ENUM_MAP_ENTRY(packet, RAW),
     MAKE_ENUM_MAP_ENTRY(packet, RSSI),
 };
-STATIC MP_DEFINE_CONST_DICT(wifi_packet_locals_dict, wifi_packet_locals_table);
+static MP_DEFINE_CONST_DICT(wifi_packet_locals_dict, wifi_packet_locals_table);
 
 MAKE_PRINTER(wifi, wifi_packet);
 

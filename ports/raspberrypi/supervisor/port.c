@@ -62,9 +62,9 @@ critical_section_t background_queue_lock;
 
 extern volatile bool mp_msc_enabled;
 
-STATIC void _tick_callback(uint alarm_num);
+static void _tick_callback(uint alarm_num);
 
-STATIC void _binary_info(void) {
+static void _binary_info(void) {
     // Binary info readable with `picotool`.
     bi_decl(bi_program_name("CircuitPython"));
     bi_decl(bi_program_version_string(MICROPY_GIT_TAG));
@@ -253,7 +253,7 @@ uint64_t port_get_raw_ticks(uint8_t *subticks) {
     return 1024 * (microseconds / 1000000) + (microseconds % 1000000) / 977;
 }
 
-STATIC void _tick_callback(uint alarm_num) {
+static void _tick_callback(uint alarm_num) {
     if (ticks_enabled) {
         supervisor_tick();
         hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), 977));

@@ -36,7 +36,7 @@
 //|     ...
 //|
 
-STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_input, ARG_output, ARG_width };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_input, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -65,14 +65,14 @@ STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     common_hal_bitops_bit_transpose(output_bufinfo.buf, input_bufinfo.buf, inlen, width);
     return args[ARG_output].u_obj;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bitops_bit_transpose_obj, 0, bit_transpose);
+static MP_DEFINE_CONST_FUN_OBJ_KW(bitops_bit_transpose_obj, 0, bit_transpose);
 
-STATIC const mp_rom_map_elem_t bitops_module_globals_table[] = {
+static const mp_rom_map_elem_t bitops_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitops) },
     { MP_ROM_QSTR(MP_QSTR_bit_transpose), MP_ROM_PTR(&bitops_bit_transpose_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(bitops_module_globals, bitops_module_globals_table);
+static MP_DEFINE_CONST_DICT(bitops_module_globals, bitops_module_globals_table);
 
 const mp_obj_module_t bitops_module = {
     .base = { &mp_type_module },

@@ -89,7 +89,7 @@ uint32_t common_hal_sdioio_sdcard_get_count(sdioio_sdcard_obj_t *self) {
     return self->count;
 }
 
-STATIC void check_whole_block(mp_buffer_info_t *bufinfo) {
+static void check_whole_block(mp_buffer_info_t *bufinfo) {
     if (bufinfo->len % 512) {
         mp_raise_ValueError(MP_ERROR_TEXT("Buffer length must be a multiple of 512"));
     }

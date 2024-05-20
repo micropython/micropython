@@ -381,7 +381,7 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 }
 
 // service_uuid may be NULL, to discover all services.
-STATIC bool discover_next_services(bleio_connection_internal_t *connection, uint16_t start_handle, ble_uuid_t *service_uuid) {
+static bool discover_next_services(bleio_connection_internal_t *connection, uint16_t start_handle, ble_uuid_t *service_uuid) {
     m_discovery_successful = false;
     m_discovery_in_process = true;
 
@@ -398,7 +398,7 @@ STATIC bool discover_next_services(bleio_connection_internal_t *connection, uint
     return m_discovery_successful;
 }
 
-STATIC bool discover_next_characteristics(bleio_connection_internal_t *connection, bleio_service_obj_t *service, uint16_t start_handle) {
+static bool discover_next_characteristics(bleio_connection_internal_t *connection, bleio_service_obj_t *service, uint16_t start_handle) {
     m_char_discovery_service = service;
 
     ble_gattc_handle_range_t handle_range;
@@ -420,7 +420,7 @@ STATIC bool discover_next_characteristics(bleio_connection_internal_t *connectio
     return m_discovery_successful;
 }
 
-STATIC bool discover_next_descriptors(bleio_connection_internal_t *connection, bleio_characteristic_obj_t *characteristic, uint16_t start_handle, uint16_t end_handle) {
+static bool discover_next_descriptors(bleio_connection_internal_t *connection, bleio_characteristic_obj_t *characteristic, uint16_t start_handle, uint16_t end_handle) {
     m_desc_discovery_characteristic = characteristic;
 
     ble_gattc_handle_range_t handle_range;
@@ -442,7 +442,7 @@ STATIC bool discover_next_descriptors(bleio_connection_internal_t *connection, b
     return m_discovery_successful;
 }
 
-STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *response, bleio_connection_internal_t *connection) {
+static void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *response, bleio_connection_internal_t *connection) {
     for (size_t i = 0; i < response->count; ++i) {
         ble_gattc_service_t *gattc_service = &response->services[i];
 
@@ -478,7 +478,7 @@ STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *res
     m_discovery_in_process = false;
 }
 
-STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio_connection_internal_t *connection) {
+static void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio_connection_internal_t *connection) {
     for (size_t i = 0; i < response->count; ++i) {
         ble_gattc_char_t *gattc_char = &response->chars[i];
 
@@ -523,7 +523,7 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
     m_discovery_in_process = false;
 }
 
-STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, bleio_connection_internal_t *connection) {
+static void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, bleio_connection_internal_t *connection) {
     for (size_t i = 0; i < response->count; ++i) {
         ble_gattc_desc_t *gattc_desc = &response->descs[i];
 
@@ -578,7 +578,7 @@ STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, bleio
     m_discovery_in_process = false;
 }
 
-STATIC bool discovery_on_ble_evt(ble_evt_t *ble_evt, mp_obj_t payload) {
+static bool discovery_on_ble_evt(ble_evt_t *ble_evt, mp_obj_t payload) {
     bleio_connection_internal_t *connection = MP_OBJ_TO_PTR(payload);
     switch (ble_evt->header.evt_id) {
         case BLE_GAP_EVT_DISCONNECTED:
@@ -606,7 +606,7 @@ STATIC bool discovery_on_ble_evt(ble_evt_t *ble_evt, mp_obj_t payload) {
     return true;
 }
 
-STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t service_uuids_whitelist) {
+static void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t service_uuids_whitelist) {
     ble_drv_add_event_handler(discovery_on_ble_evt, self);
 
     // Start over with an empty list.

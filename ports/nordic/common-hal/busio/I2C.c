@@ -23,7 +23,7 @@
 #define I2C_MAX_XFER_LEN         MIN(((1UL << TWIM0_EASYDMA_MAXCNT_SIZE) - 1), 1024)
 #define I2C_TIMEOUT 1000 // 1 second timeout
 
-STATIC twim_peripheral_t twim_peripherals[] = {
+static twim_peripheral_t twim_peripherals[] = {
     #if NRFX_CHECK(NRFX_TWIM0_ENABLED)
     // SPIM0 and TWIM0 share an address.
     { .twim = NRFX_TWIM_INSTANCE(0),
@@ -40,7 +40,7 @@ STATIC twim_peripheral_t twim_peripherals[] = {
     #endif
 };
 
-STATIC bool never_reset[MP_ARRAY_SIZE(twim_peripherals)];
+static bool never_reset[MP_ARRAY_SIZE(twim_peripherals)];
 
 void i2c_reset(void) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(twim_peripherals); i++) {
@@ -234,7 +234,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
     self->has_lock = false;
 }
 
-STATIC nrfx_err_t _twim_xfer_with_timeout(busio_i2c_obj_t *self, nrfx_twim_xfer_desc_t const *p_xfer_desc, uint32_t flags) {
+static nrfx_err_t _twim_xfer_with_timeout(busio_i2c_obj_t *self, nrfx_twim_xfer_desc_t const *p_xfer_desc, uint32_t flags) {
     // does non-blocking transfer and raises and exception if it takes longer than I2C_TIMEOUT ms to complete
     uint64_t deadline = supervisor_ticks_ms64() + I2C_TIMEOUT;
     nrfx_err_t err = NRFX_SUCCESS;
@@ -265,7 +265,7 @@ STATIC nrfx_err_t _twim_xfer_with_timeout(busio_i2c_obj_t *self, nrfx_twim_xfer_
     }
 }
 
-STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const uint8_t *data, size_t len, bool stopBit) {
+static uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const uint8_t *data, size_t len, bool stopBit) {
     if (len == 0) {
         return common_hal_busio_i2c_probe(self, addr) ? 0 : MP_ENODEV;
     }

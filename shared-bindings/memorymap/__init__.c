@@ -17,12 +17,12 @@
 //| address space seen from the processor running CircuitPython. It is usually
 //| the physical address space.
 //| """
-STATIC const mp_rom_map_elem_t memorymap_module_globals_table[] = {
+static const mp_rom_map_elem_t memorymap_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_memorymap) },
     { MP_ROM_QSTR(MP_QSTR_AddressRange),   MP_ROM_PTR(&memorymap_addressrange_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(memorymap_module_globals, memorymap_module_globals_table);
+static MP_DEFINE_CONST_DICT(memorymap_module_globals, memorymap_module_globals_table);
 
 const mp_obj_module_t memorymap_module = {
     .base = { &mp_type_module },

@@ -47,7 +47,7 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
     return CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ * 1000000;
 }
 
-STATIC uint8_t swap_nibbles(uint8_t v) {
+static uint8_t swap_nibbles(uint8_t v) {
     return ((v << 4) | (v >> 4)) & 0xff;
 }
 

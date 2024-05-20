@@ -11,13 +11,13 @@
 
 #include "peripherals/exti.h"
 
-STATIC bool woke_up;
+static bool woke_up;
 
-STATIC uint16_t alarm_pin_triggered;
-STATIC bool deep_wkup_enabled;
-STATIC bool reserved_alarms[STM32_GPIO_PORT_SIZE];
+static uint16_t alarm_pin_triggered;
+static bool deep_wkup_enabled;
+static bool reserved_alarms[STM32_GPIO_PORT_SIZE];
 
-STATIC void pin_alarm_callback(uint8_t num) {
+static void pin_alarm_callback(uint8_t num) {
     alarm_pin_triggered |= (1 << num);
     woke_up = true;
     HAL_GPIO_EXTI_IRQHandler(pin_mask(num));

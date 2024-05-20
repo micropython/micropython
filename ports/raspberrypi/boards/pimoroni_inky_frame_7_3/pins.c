@@ -18,7 +18,7 @@
 // N.B.: labels and bit-numbers in the schematic are reversed, i.e.
 //       BUTTON_A on D0 has bit-number 7
 
-STATIC const qstr board_keycodes_fields[] = {
+static const qstr board_keycodes_fields[] = {
     MP_QSTR_BUTTON_A,
     MP_QSTR_BUTTON_B,
     MP_QSTR_BUTTON_C,
@@ -29,7 +29,7 @@ STATIC const qstr board_keycodes_fields[] = {
     MP_QSTR_INKY_BUS
 };
 
-STATIC MP_DEFINE_ATTRTUPLE(
+static MP_DEFINE_ATTRTUPLE(
     board_keycodes_obj,
     board_keycodes_fields,
     8,
@@ -43,7 +43,7 @@ STATIC MP_DEFINE_ATTRTUPLE(
     MP_ROM_INT(0)
     );
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_GPIO0) },

@@ -10,7 +10,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 
-STATIC const char *get_arg_str(mp_obj_t arg, qstr name) {
+static const char *get_arg_str(mp_obj_t arg, qstr name) {
     return mp_obj_str_get_str(mp_arg_validate_type_string(arg, name));
 }
 
@@ -25,7 +25,7 @@ STATIC const char *get_arg_str(mp_obj_t arg, qstr name) {
 //|     In particular, it's important that the code not end with a newline character
 //|     or it is likely to be treated as a complete command."""
 //|
-STATIC mp_obj_t compile_command(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t compile_command(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_source, ARG_filename, ARG_symbol };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_source, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = mp_const_none } },
@@ -44,12 +44,12 @@ STATIC mp_obj_t compile_command(mp_uint_t n_args, const mp_obj_t *pos_args, mp_m
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(compile_command_obj, 1, compile_command);
 
-STATIC const mp_rom_map_elem_t codeop_module_globals_table[] = {
+static const mp_rom_map_elem_t codeop_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_codeop) },
     { MP_ROM_QSTR(MP_QSTR_compile_command),  MP_ROM_PTR(&compile_command_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(codeop_module_globals, codeop_module_globals_table);
+static MP_DEFINE_CONST_DICT(codeop_module_globals, codeop_module_globals_table);
 
 const mp_obj_module_t codeop_module = {
     .base = { &mp_type_module },

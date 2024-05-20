@@ -48,7 +48,7 @@
 //|
 
 #if CIRCUITPY_STORAGE_EXTEND
-STATIC void raise_error_if_storage_extended(void) {
+static void raise_error_if_storage_extended(void) {
     if (supervisor_flash_get_extended()) {
         mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("%q is %q"), MP_QSTR_storage, MP_QSTR_extended);
     }
@@ -65,7 +65,7 @@ STATIC void raise_error_if_storage_extended(void) {
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t dualbank_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t dualbank_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_offset };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -89,7 +89,7 @@ STATIC mp_obj_t dualbank_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     common_hal_dualbank_flash(bufinfo.buf, bufinfo.len, args[ARG_offset].u_int);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dualbank_flash_obj, 0, dualbank_flash);
+static MP_DEFINE_CONST_FUN_OBJ_KW(dualbank_flash_obj, 0, dualbank_flash);
 
 //| def switch() -> None:
 //|     """Switches to the next-update partition.
@@ -98,23 +98,23 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dualbank_flash_obj, 0, dualbank_flash);
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t dualbank_switch(void) {
+static mp_obj_t dualbank_switch(void) {
     #if CIRCUITPY_STORAGE_EXTEND
     raise_error_if_storage_extended();
     #endif
     common_hal_dualbank_switch();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(dualbank_switch_obj, dualbank_switch);
+static MP_DEFINE_CONST_FUN_OBJ_0(dualbank_switch_obj, dualbank_switch);
 
-STATIC const mp_rom_map_elem_t dualbank_module_globals_table[] = {
+static const mp_rom_map_elem_t dualbank_module_globals_table[] = {
     // module name
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_dualbank) },
     // module functions
     { MP_ROM_QSTR(MP_QSTR_flash), MP_ROM_PTR(&dualbank_flash_obj) },
     { MP_ROM_QSTR(MP_QSTR_switch), MP_ROM_PTR(&dualbank_switch_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(dualbank_module_globals, dualbank_module_globals_table);
+static MP_DEFINE_CONST_DICT(dualbank_module_globals, dualbank_module_globals_table);
 
 const mp_obj_module_t dualbank_module = {
     .base = { &mp_type_module },

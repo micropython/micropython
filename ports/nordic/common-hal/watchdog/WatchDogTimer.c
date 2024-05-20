@@ -26,12 +26,12 @@
 #include "nrfx_wdt.h"
 #include "nrfx_timer.h"
 
-STATIC uint8_t timer_refcount = 0;
-STATIC nrfx_timer_t *timer = NULL;
-STATIC nrfx_wdt_t wdt = NRFX_WDT_INSTANCE(0);
-STATIC nrfx_wdt_channel_id wdt_channel_id;
+static uint8_t timer_refcount = 0;
+static nrfx_timer_t *timer = NULL;
+static nrfx_wdt_t wdt = NRFX_WDT_INSTANCE(0);
+static nrfx_wdt_channel_id wdt_channel_id;
 
-STATIC void watchdogtimer_timer_event_handler(nrf_timer_event_t event_type, void *p_context) {
+static void watchdogtimer_timer_event_handler(nrf_timer_event_t event_type, void *p_context) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(p_context);
     if (event_type != NRF_TIMER_EVENT_COMPARE0) {
         // Spurious event.
@@ -61,7 +61,7 @@ static void timer_free(void) {
 // This function is called if the timer expires. The system will reboot
 // in 1/16384 of a second. Issue a reboot ourselves so we can do any
 // cleanup necessary.
-STATIC void watchdogtimer_watchdog_event_handler(void) {
+static void watchdogtimer_watchdog_event_handler(void) {
     reset_cpu();
 }
 

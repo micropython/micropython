@@ -40,7 +40,7 @@ static fs_user_mount_t *get_vfs(int lun) {
     return current_mount->obj;
 }
 
-STATIC void _usb_msc_uneject(void) {
+static void _usb_msc_uneject(void) {
     for (uint8_t i = 0; i < sizeof(ejected); i++) {
         ejected[i] = false;
         locked[i] = false;

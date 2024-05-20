@@ -9,7 +9,7 @@
 
 CIRCUITPY_BOARD_BUS_SINGLETON(porta_i2c, i2c, 1)
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     // External pins are in silkscreen order, from top to bottom, left side, then right side

@@ -146,7 +146,7 @@ typedef struct {
     volatile bool done;
 } read_info_t;
 
-STATIC bool _on_gattc_read_rsp_evt(ble_evt_t *ble_evt, void *param) {
+static bool _on_gattc_read_rsp_evt(ble_evt_t *ble_evt, void *param) {
     read_info_t *read = param;
     switch (ble_evt->header.evt_id) {
 

@@ -18,7 +18,7 @@ uint16_t vid_setting = 123;
 //|     """Return a value set in board.c"""
 //|     ...
 //|
-STATIC mp_obj_t board_vid(void) {
+static mp_obj_t board_vid(void) {
     return mp_obj_new_int(vid_setting);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(board_vid_obj, board_vid);
@@ -26,14 +26,14 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_vid_obj, board_vid);
 #if 0
 extern int dck01_vid_value; // will hold a computed value to identify any board variations (like different e-paper displays)
 
-STATIC mp_obj_t board_vid(void) {
+static mp_obj_t board_vid(void) {
     return mp_obj_new_int(dck01_vid_value);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_0(board_vid_obj, board_vid);
 #endif
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     { MP_ROM_QSTR(MP_QSTR_GP0), MP_ROM_PTR(&pin_GPIO0) },

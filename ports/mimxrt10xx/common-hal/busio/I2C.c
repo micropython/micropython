@@ -26,8 +26,8 @@
 #define IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_ALT5 5U
 
 // arrays use 0 based numbering: I2C1 is stored at index 0
-STATIC bool reserved_i2c[MP_ARRAY_SIZE(mcu_i2c_banks)];
-STATIC bool never_reset_i2c[MP_ARRAY_SIZE(mcu_i2c_banks)];
+static bool reserved_i2c[MP_ARRAY_SIZE(mcu_i2c_banks)];
+static bool never_reset_i2c[MP_ARRAY_SIZE(mcu_i2c_banks)];
 
 void i2c_reset(void) {
     for (uint i = 0; i < MP_ARRAY_SIZE(mcu_i2c_banks); i++) {
@@ -205,7 +205,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
     self->has_lock = false;
 }
 
-STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
+static uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
     const uint8_t *data, size_t len, bool transmit_stop_bit) {
 
     lpi2c_master_transfer_t xfer = { 0 };

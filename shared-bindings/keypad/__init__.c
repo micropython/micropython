@@ -14,13 +14,13 @@
 #include "shared-bindings/keypad/ShiftRegisterKeys.h"
 #include "shared-bindings/util.h"
 
-STATIC void check_for_deinit(keypad_keymatrix_obj_t *self) {
+static void check_for_deinit(keypad_keymatrix_obj_t *self) {
     if (common_hal_keypad_deinited(self)) {
         raise_deinited_error();
     }
 }
 
-STATIC mp_obj_t keypad_generic_reset(mp_obj_t self_in) {
+static mp_obj_t keypad_generic_reset(mp_obj_t self_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -29,7 +29,7 @@ STATIC mp_obj_t keypad_generic_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_generic_reset_obj, keypad_generic_reset);
 
-STATIC mp_obj_t keypad_generic_get_key_count(mp_obj_t self_in) {
+static mp_obj_t keypad_generic_get_key_count(mp_obj_t self_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -44,7 +44,7 @@ const mp_obj_property_t keypad_generic_key_count_obj = {
               MP_ROM_NONE},
 };
 
-STATIC mp_obj_t keypad_generic_get_events(mp_obj_t self_in) {
+static mp_obj_t keypad_generic_get_events(mp_obj_t self_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -73,7 +73,7 @@ const mp_obj_property_t keypad_generic_events_obj = {
 //| .. jinja
 //| """
 
-STATIC mp_rom_map_elem_t keypad_module_globals_table[] = {
+static mp_rom_map_elem_t keypad_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),          MP_OBJ_NEW_QSTR(MP_QSTR_keypad) },
     { MP_ROM_QSTR(MP_QSTR_Event),             MP_OBJ_FROM_PTR(&keypad_event_type) },
     { MP_ROM_QSTR(MP_QSTR_EventQueue),        MP_OBJ_FROM_PTR(&keypad_eventqueue_type) },
@@ -82,7 +82,7 @@ STATIC mp_rom_map_elem_t keypad_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ShiftRegisterKeys), MP_OBJ_FROM_PTR(&keypad_shiftregisterkeys_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(keypad_module_globals, keypad_module_globals_table);
+static MP_DEFINE_CONST_DICT(keypad_module_globals, keypad_module_globals_table);
 
 const mp_obj_module_t keypad_module = {
     .base = { &mp_type_module },

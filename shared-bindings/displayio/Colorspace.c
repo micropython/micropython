@@ -51,7 +51,7 @@ MAKE_ENUM_MAP(displayio_colorspace) {
     MAKE_ENUM_MAP_ENTRY(displayio_colorspace, BGR555_SWAPPED),
     MAKE_ENUM_MAP_ENTRY(displayio_colorspace, L8),
 };
-STATIC MP_DEFINE_CONST_DICT(displayio_colorspace_locals_dict, displayio_colorspace_locals_table);
+static MP_DEFINE_CONST_DICT(displayio_colorspace_locals_dict, displayio_colorspace_locals_table);
 
 MAKE_PRINTER(displayio, displayio_colorspace);
 MAKE_ENUM_TYPE(displayio, ColorSpace, displayio_colorspace);

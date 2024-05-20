@@ -9,7 +9,7 @@
 
 CIRCUITPY_BOARD_BUS_SINGLETON(sscb_i2c, i2c, 2) // Camera sensor
 
-STATIC const mp_rom_obj_tuple_t camera_data_tuple = {
+static const mp_rom_obj_tuple_t camera_data_tuple = {
     // The order matters. They must be ordered from low to high (Y2, Y3 .. Y9).  Do not include any of the control pins in here.
     {&mp_type_tuple},
     8,
@@ -25,7 +25,7 @@ STATIC const mp_rom_obj_tuple_t camera_data_tuple = {
     }
 };
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     // Red LED on the back of the board

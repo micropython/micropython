@@ -15,7 +15,7 @@
 #include "shared-bindings/_bleio/Adapter.h"
 
 
-STATIC void _indicate_service_change(uint16_t start, uint16_t end) {
+static void _indicate_service_change(uint16_t start, uint16_t end) {
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         bleio_connection_internal_t *connection = &bleio_connections[i];
         uint16_t conn_handle = connection->conn_handle;
@@ -85,7 +85,7 @@ bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self) {
     return self->is_secondary;
 }
 
-STATIC void _expand_range(uint16_t new_value, uint16_t *start, uint16_t *end) {
+static void _expand_range(uint16_t new_value, uint16_t *start, uint16_t *end) {
     if (new_value == 0) {
         return;
     }

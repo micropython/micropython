@@ -11,14 +11,14 @@ typedef struct {
     size_t len;
 } utf16_str;
 
-STATIC uint32_t utf16str_peek_unit(utf16_str *utf) {
+static uint32_t utf16str_peek_unit(utf16_str *utf) {
     if (!utf->len) {
         return 0;
     }
     return *utf->buf;
 }
 
-STATIC uint32_t utf16str_next_unit(utf16_str *utf) {
+static uint32_t utf16str_next_unit(utf16_str *utf) {
     uint32_t result = utf16str_peek_unit(utf);
     if (utf->len) {
         utf->len--;
@@ -26,7 +26,7 @@ STATIC uint32_t utf16str_next_unit(utf16_str *utf) {
     }
     return result;
 }
-STATIC uint32_t utf16str_next_codepoint(utf16_str *utf) {
+static uint32_t utf16str_next_codepoint(utf16_str *utf) {
     uint32_t unichr = utf16str_next_unit(utf);
     if (unichr >= 0xd800 && unichr < 0xdc00) {
         uint32_t low_surrogate = utf16str_peek_unit(utf);
@@ -38,7 +38,7 @@ STATIC uint32_t utf16str_next_codepoint(utf16_str *utf) {
     return unichr;
 }
 
-STATIC void _convert_utf16le_to_utf8(vstr_t *vstr, utf16_str *utf) {
+static void _convert_utf16le_to_utf8(vstr_t *vstr, utf16_str *utf) {
     while (utf->len) {
         vstr_add_char(vstr, utf16str_next_codepoint(utf));
     }

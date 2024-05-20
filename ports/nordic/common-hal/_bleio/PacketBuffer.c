@@ -22,7 +22,7 @@
 
 #include "supervisor/shared/bluetooth/serial.h"
 
-STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uint16_t len) {
+static void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uint16_t len) {
     if (len + sizeof(uint16_t) > ringbuf_size(&self->ringbuf)) {
         // This shouldn't happen but can if our buffer size was much smaller than
         // the writes the client actually makes.
@@ -45,7 +45,7 @@ STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uin
     sd_nvic_critical_region_exit(is_nested_critical_region);
 }
 
-STATIC uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
+static uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
     // Queue up the next outgoing buffer. We use two, one that has been passed to the SD for
     // transmission (when packet_queued is true) and the other is `pending` and can still be
     // modified. By primarily appending to the `pending` buffer we can reduce the protocol overhead
@@ -87,7 +87,7 @@ STATIC uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
     return NRF_SUCCESS;
 }
 
-STATIC bool packet_buffer_on_ble_client_evt(ble_evt_t *ble_evt, void *param) {
+static bool packet_buffer_on_ble_client_evt(ble_evt_t *ble_evt, void *param) {
     const uint16_t evt_id = ble_evt->header.evt_id;
     bleio_packet_buffer_obj_t *self = (bleio_packet_buffer_obj_t *)param;
     if (evt_id == BLE_GAP_EVT_DISCONNECTED && self->conn_handle == ble_evt->evt.gap_evt.conn_handle) {
@@ -128,7 +128,7 @@ STATIC bool packet_buffer_on_ble_client_evt(ble_evt_t *ble_evt, void *param) {
     return true;
 }
 
-STATIC bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
+static bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
     bleio_packet_buffer_obj_t *self = (bleio_packet_buffer_obj_t *)param;
     switch (ble_evt->header.evt_id) {
         case BLE_GATTS_EVT_WRITE: {

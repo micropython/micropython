@@ -19,12 +19,12 @@
 //|
 //|    Protocol definition is here: https://www.analog.com/en/technical-articles/1wire-communication-through-software.html"""
 
-STATIC const mp_rom_map_elem_t onewireio_module_globals_table[] = {
+static const mp_rom_map_elem_t onewireio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_onewireio) },
     { MP_ROM_QSTR(MP_QSTR_OneWire),   MP_ROM_PTR(&onewireio_onewire_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(onewireio_module_globals, onewireio_module_globals_table);
+static MP_DEFINE_CONST_DICT(onewireio_module_globals, onewireio_module_globals_table);
 
 const mp_obj_module_t onewireio_module = {
     .base = { &mp_type_module },

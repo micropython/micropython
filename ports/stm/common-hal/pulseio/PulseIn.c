@@ -19,11 +19,11 @@
 #include STM32_HAL_H
 
 #define STM32_GPIO_PORT_SIZE 16
-STATIC pulseio_pulsein_obj_t *callback_obj_ref[STM32_GPIO_PORT_SIZE];
+static pulseio_pulsein_obj_t *callback_obj_ref[STM32_GPIO_PORT_SIZE];
 
-STATIC TIM_HandleTypeDef tim_handle;
-STATIC uint32_t overflow_count = 0;
-STATIC uint8_t refcount = 0;
+static TIM_HandleTypeDef tim_handle;
+static uint32_t overflow_count = 0;
+static uint8_t refcount = 0;
 
 void pulsein_timer_event_handler(void) {
     // Detect TIM Update event
@@ -35,7 +35,7 @@ void pulsein_timer_event_handler(void) {
     }
 }
 
-STATIC void pulsein_exti_event_handler(uint8_t num) {
+static void pulsein_exti_event_handler(uint8_t num) {
     // Grab the current time first.
     uint32_t current_overflow = overflow_count;
     uint32_t current_count = tim_handle.Instance->CNT;

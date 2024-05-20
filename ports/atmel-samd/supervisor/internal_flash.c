@@ -67,7 +67,7 @@ static int32_t convert_block_to_flash_addr(uint32_t block) {
     return -1;
 }
 
-STATIC bool supervisor_flash_read_block(uint8_t *dest, uint32_t block) {
+static bool supervisor_flash_read_block(uint8_t *dest, uint32_t block) {
     // non-MBR block, get data from flash memory
     int32_t src = convert_block_to_flash_addr(block);
     if (src == -1) {
@@ -78,7 +78,7 @@ STATIC bool supervisor_flash_read_block(uint8_t *dest, uint32_t block) {
     return error_code == ERR_NONE;
 }
 
-STATIC bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
+static bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
     // non-MBR block, copy to cache
     int32_t dest = convert_block_to_flash_addr(block);
     if (dest == -1) {

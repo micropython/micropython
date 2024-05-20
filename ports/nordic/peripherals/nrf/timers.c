@@ -15,7 +15,7 @@
 #include "py/mpconfig.h"
 #include "py/runtime.h"
 
-STATIC nrfx_timer_t nrfx_timers[] = {
+static nrfx_timer_t nrfx_timers[] = {
     #if NRFX_CHECK(NRFX_TIMER0_ENABLED)
     #error NRFX_TIMER0_ENABLED should not be on: TIMER0 is used by the SoftDevice
     NRFX_TIMER_INSTANCE(0),

@@ -266,14 +266,14 @@ void common_hal_bleio_adapter_stop_scan(bleio_adapter_obj_t *self) {
     self->scan_results = NULL;
 }
 
-STATIC void _convert_address(const bleio_address_obj_t *address, ble_addr_t *nimble_address) {
+static void _convert_address(const bleio_address_obj_t *address, ble_addr_t *nimble_address) {
     nimble_address->type = address->type;
     mp_buffer_info_t address_buf_info;
     mp_get_buffer_raise(address->bytes, &address_buf_info, MP_BUFFER_READ);
     memcpy(nimble_address->val, (uint8_t *)address_buf_info.buf, NUM_BLEIO_ADDRESS_BYTES);
 }
 
-STATIC int _mtu_reply(uint16_t conn_handle,
+static int _mtu_reply(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     uint16_t mtu, void *arg) {
     bleio_connection_internal_t *connection = (bleio_connection_internal_t *)arg;
@@ -284,7 +284,7 @@ STATIC int _mtu_reply(uint16_t conn_handle,
     return 0;
 }
 
-STATIC void _new_connection(uint16_t conn_handle) {
+static void _new_connection(uint16_t conn_handle) {
     // Set the tx_power for the connection higher than the advertisement.
     esp_ble_tx_power_set(conn_handle, ESP_PWR_LVL_N0);
 
@@ -411,7 +411,7 @@ typedef struct {
     struct os_mbuf_pkthdr hdr;
 } os_mbuf_t;
 
-STATIC void _wrap_in_mbuf(const uint8_t *data, uint16_t len, os_mbuf_t *buf) {
+static void _wrap_in_mbuf(const uint8_t *data, uint16_t len, os_mbuf_t *buf) {
     struct os_mbuf *mbuf = &buf->mbuf;
     mbuf->om_data = (uint8_t *)data,
     mbuf->om_flags = 0;
@@ -585,7 +585,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
     return rc;
 }
 
-STATIC void check_data_fit(size_t data_len, bool connectable) {
+static void check_data_fit(size_t data_len, bool connectable) {
     if (data_len > MYNEWT_VAL(BLE_EXT_ADV_MAX_SIZE) ||
         (connectable && data_len > MYNEWT_VAL(BLE_EXT_ADV_MAX_SIZE))) {
         mp_raise_ValueError(MP_ERROR_TEXT("Data too large for advertisement packet"));

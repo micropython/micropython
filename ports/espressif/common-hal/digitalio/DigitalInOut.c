@@ -11,7 +11,7 @@
 
 #include "components/hal/include/hal/gpio_hal.h"
 
-STATIC bool _pin_is_input(uint8_t pin_number) {
+static bool _pin_is_input(uint8_t pin_number) {
     const uint32_t iomux = READ_PERI_REG(GPIO_PIN_MUX_REG[pin_number]);
     return (iomux & FUN_IE) != 0;
 }

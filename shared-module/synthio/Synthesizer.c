@@ -80,11 +80,11 @@ void common_hal_synthio_synthesizer_release_all(synthio_synthesizer_obj_t *self)
     }
 }
 
-STATIC bool is_note(mp_obj_t note_in) {
+static bool is_note(mp_obj_t note_in) {
     return mp_obj_is_small_int(note_in) || mp_obj_is_type(note_in, &synthio_note_type);
 }
 
-STATIC mp_obj_t validate_note(mp_obj_t note_in) {
+static mp_obj_t validate_note(mp_obj_t note_in) {
     if (mp_obj_is_small_int(note_in)) {
         mp_arg_validate_int_range(mp_obj_get_int(note_in), 0, 127, MP_QSTR_note);
     } else {

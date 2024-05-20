@@ -27,12 +27,12 @@
 //| call :py:meth:`!deinit` or use a context manager. See
 //| :ref:`lifetime-and-contextmanagers` for more info."""
 
-STATIC const mp_rom_map_elem_t rotaryio_module_globals_table[] = {
+static const mp_rom_map_elem_t rotaryio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_rotaryio) },
     { MP_ROM_QSTR(MP_QSTR_IncrementalEncoder), MP_ROM_PTR(&rotaryio_incrementalencoder_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(rotaryio_module_globals, rotaryio_module_globals_table);
+static MP_DEFINE_CONST_DICT(rotaryio_module_globals, rotaryio_module_globals_table);
 
 const mp_obj_module_t rotaryio_module = {
     .base = { &mp_type_module },

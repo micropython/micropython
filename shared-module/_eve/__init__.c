@@ -10,7 +10,7 @@
 #include "shared-bindings/_eve/__init__.h"
 #include "shared-module/_eve/__init__.h"
 
-STATIC void write(common_hal__eve_t *eve, size_t len, void *buf) {
+static void write(common_hal__eve_t *eve, size_t len, void *buf) {
     eve->dest[2] = mp_obj_new_bytearray_by_ref(len, buf);
     mp_call_method_n_kw(1, 0, eve->dest);
 }

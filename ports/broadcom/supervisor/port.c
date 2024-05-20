@@ -35,7 +35,7 @@
 
 extern volatile bool mp_msc_enabled;
 
-STATIC uint32_t board_revision;
+static uint32_t board_revision;
 
 safe_mode_t port_init(void) {
     board_revision = vcmailbox_get_board_revision();

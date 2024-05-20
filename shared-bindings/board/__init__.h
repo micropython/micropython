@@ -12,7 +12,7 @@
 #include "shared-bindings/microcontroller/Pin.h"  // for the pin definitions
 
 extern const mp_obj_dict_t board_module_globals;
-STATIC const MP_DEFINE_STR_OBJ(board_module_id_obj, CIRCUITPY_BOARD_ID);
+static const MP_DEFINE_STR_OBJ(board_module_id_obj, CIRCUITPY_BOARD_ID);
 
 bool common_hal_board_is_i2c(mp_obj_t obj);
 mp_obj_t common_hal_board_get_i2c(const mp_int_t instance);
@@ -33,7 +33,7 @@ mp_obj_t board_uart(size_t n_args, const mp_obj_t *args);
 MP_DECLARE_CONST_FUN_OBJ_0(board_uart_obj);
 
 #define CIRCUITPY_BOARD_BUS_SINGLETON(name, bus, instance) \
-    STATIC mp_obj_t board_##name(void) { \
+    static mp_obj_t board_##name(void) { \
         return common_hal_board_create_##bus(instance); \
     } \
     MP_DEFINE_CONST_FUN_OBJ_0(board_##name##_obj, board_##name);

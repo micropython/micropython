@@ -20,7 +20,7 @@
 //|         """You cannot create an instance of :py:class:`~_bleio.Attribute`."""
 //|         ...
 
-STATIC const mp_rom_map_elem_t bleio_attribute_locals_dict_table[] = {
+static const mp_rom_map_elem_t bleio_attribute_locals_dict_table[] = {
 
 //|     NO_ACCESS: int
 //|     """security mode: access not allowed"""
@@ -52,7 +52,7 @@ STATIC const mp_rom_map_elem_t bleio_attribute_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SIGNED_WITH_MITM),       MP_ROM_INT(SECURITY_MODE_SIGNED_WITH_MITM) },
 
 };
-STATIC MP_DEFINE_CONST_DICT(bleio_attribute_locals_dict, bleio_attribute_locals_dict_table);
+static MP_DEFINE_CONST_DICT(bleio_attribute_locals_dict, bleio_attribute_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     bleio_attribute_type,

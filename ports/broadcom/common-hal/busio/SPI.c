@@ -22,16 +22,16 @@
 
 #if BCM_VERSION == 2711
 #define NUM_SPI (7)
-STATIC SPI0_Type *spi[NUM_SPI] = {SPI0, NULL, NULL, SPI3, SPI4, SPI5, SPI6};
-STATIC SPI1_Type *aux_spi[NUM_SPI] = {NULL, SPI1, SPI2, NULL, NULL, NULL, NULL};
+static SPI0_Type *spi[NUM_SPI] = {SPI0, NULL, NULL, SPI3, SPI4, SPI5, SPI6};
+static SPI1_Type *aux_spi[NUM_SPI] = {NULL, SPI1, SPI2, NULL, NULL, NULL, NULL};
 #else
 #define NUM_SPI (3)
-STATIC SPI0_Type *spi[NUM_SPI] = {SPI0, NULL, NULL};
-STATIC SPI1_Type *aux_spi[NUM_SPI] = {NULL, SPI1, SPI2};
+static SPI0_Type *spi[NUM_SPI] = {SPI0, NULL, NULL};
+static SPI1_Type *aux_spi[NUM_SPI] = {NULL, SPI1, SPI2};
 #endif
 
-STATIC bool never_reset_spi[NUM_SPI];
-STATIC bool spi_in_use[NUM_SPI];
+static bool never_reset_spi[NUM_SPI];
+static bool spi_in_use[NUM_SPI];
 
 void reset_spi(void) {
     for (size_t i = 0; i < NUM_SPI; i++) {
@@ -216,7 +216,7 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
     self->has_lock = false;
 }
 
-STATIC void _spi_transfer(SPI0_Type *p,
+static void _spi_transfer(SPI0_Type *p,
     const uint8_t *data_out, size_t out_len,
     uint8_t *data_in, size_t in_len) {
     size_t len = MAX(out_len, in_len);
@@ -252,7 +252,7 @@ STATIC void _spi_transfer(SPI0_Type *p,
     COMPLETE_MEMORY_READS;
 }
 
-STATIC void _aux_spi_transfer(SPI1_Type *p,
+static void _aux_spi_transfer(SPI1_Type *p,
     const uint8_t *data_out, size_t out_len,
     uint8_t *data_in, size_t in_len) {
     size_t len = MAX(out_len, in_len);

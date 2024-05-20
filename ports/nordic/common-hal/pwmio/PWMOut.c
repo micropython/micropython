@@ -15,7 +15,7 @@
 
 #define PWM_MAX_FREQ      (16000000)
 
-STATIC NRF_PWM_Type *pwms[] = {
+static NRF_PWM_Type *pwms[] = {
     #if NRFX_CHECK(NRFX_PWM0_ENABLED)
     NRF_PWM0,
     #endif
@@ -32,11 +32,11 @@ STATIC NRF_PWM_Type *pwms[] = {
 
 #define CHANNELS_PER_PWM 4
 
-STATIC uint16_t pwm_seq[MP_ARRAY_SIZE(pwms)][CHANNELS_PER_PWM];
+static uint16_t pwm_seq[MP_ARRAY_SIZE(pwms)][CHANNELS_PER_PWM];
 
 static uint8_t never_reset_pwm[MP_ARRAY_SIZE(pwms)];
 
-STATIC int pwm_idx(NRF_PWM_Type *pwm) {
+static int pwm_idx(NRF_PWM_Type *pwm) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(pwms); i++) {
         if (pwms[i] == pwm) {
             return i;
@@ -51,7 +51,7 @@ void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     common_hal_never_reset_pin(self->pin);
 }
 
-STATIC void reset_single_pwmout(uint8_t i) {
+static void reset_single_pwmout(uint8_t i) {
     NRF_PWM_Type *pwm = pwms[i];
 
     pwm->ENABLE = 0;
@@ -79,7 +79,7 @@ STATIC void reset_single_pwmout(uint8_t i) {
 
 // Find the smallest prescaler value that will allow the divisor to be in range.
 // This allows the most accuracy.
-STATIC bool convert_frequency(uint32_t frequency, uint16_t *countertop, nrf_pwm_clk_t *base_clock) {
+static bool convert_frequency(uint32_t frequency, uint16_t *countertop, nrf_pwm_clk_t *base_clock) {
     uint32_t divisor = 1;
     // Use a 32-bit number so we don't overflow the uint16_t;
     uint32_t tentative_countertop;

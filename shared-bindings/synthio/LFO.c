@@ -13,7 +13,7 @@
 #include "shared-bindings/synthio/LFO.h"
 #include "shared-module/synthio/LFO.h"
 
-STATIC const uint16_t triangle[] = {0, 32767, 0, -32767};
+static const uint16_t triangle[] = {0, 32767, 0, -32767};
 
 //| class LFO:
 //|     """A low-frequency oscillator block
@@ -88,7 +88,7 @@ static const mp_arg_t lfo_properties[] = {
     { MP_QSTR_interpolate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(1) } },
 };
 
-STATIC mp_obj_t synthio_lfo_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t synthio_lfo_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_waveform }; // others never directly referred to by argument number
 
     mp_arg_val_t args[MP_ARRAY_SIZE(lfo_properties)];
@@ -117,7 +117,7 @@ STATIC mp_obj_t synthio_lfo_make_new(const mp_obj_type_t *type_in, size_t n_args
 
 //|     waveform: Optional[ReadableBuffer]
 //|     """The waveform of this lfo. (read-only, but the values in the buffer may be modified dynamically)"""
-STATIC mp_obj_t synthio_lfo_get_waveform(mp_obj_t self_in) {
+static mp_obj_t synthio_lfo_get_waveform(mp_obj_t self_in) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_synthio_lfo_get_waveform_obj(self);
 }
@@ -128,13 +128,13 @@ MP_PROPERTY_GETTER(synthio_lfo_waveform_obj,
 
 //|     rate: BlockInput
 //|     """The rate (in Hz) at which the LFO cycles through its waveform"""
-STATIC mp_obj_t synthio_lfo_get_rate(mp_obj_t self_in) {
+static mp_obj_t synthio_lfo_get_rate(mp_obj_t self_in) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_synthio_lfo_get_rate_obj(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_lfo_get_rate_obj, synthio_lfo_get_rate);
 
-STATIC mp_obj_t synthio_lfo_set_rate(mp_obj_t self_in, mp_obj_t arg) {
+static mp_obj_t synthio_lfo_set_rate(mp_obj_t self_in, mp_obj_t arg) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_synthio_lfo_set_rate_obj(self, arg);
     return mp_const_none;
@@ -147,13 +147,13 @@ MP_PROPERTY_GETSET(synthio_lfo_rate_obj,
 
 //|     offset: BlockInput
 //|     """An additive value applied to the LFO's output"""
-STATIC mp_obj_t synthio_lfo_get_offset(mp_obj_t self_in) {
+static mp_obj_t synthio_lfo_get_offset(mp_obj_t self_in) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_synthio_lfo_get_offset_obj(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_lfo_get_offset_obj, synthio_lfo_get_offset);
 
-STATIC mp_obj_t synthio_lfo_set_offset(mp_obj_t self_in, mp_obj_t arg) {
+static mp_obj_t synthio_lfo_set_offset(mp_obj_t self_in, mp_obj_t arg) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_synthio_lfo_set_offset_obj(self, arg);
     return mp_const_none;
@@ -165,13 +165,13 @@ MP_PROPERTY_GETSET(synthio_lfo_offset_obj,
 
 //|     phase_offset: BlockInput
 //|     """An additive value applied to the LFO's phase"""
-STATIC mp_obj_t synthio_lfo_get_phase_offset(mp_obj_t self_in) {
+static mp_obj_t synthio_lfo_get_phase_offset(mp_obj_t self_in) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_synthio_lfo_get_phase_offset_obj(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_lfo_get_phase_offset_obj, synthio_lfo_get_phase_offset);
 
-STATIC mp_obj_t synthio_lfo_set_phase_offset(mp_obj_t self_in, mp_obj_t arg) {
+static mp_obj_t synthio_lfo_set_phase_offset(mp_obj_t self_in, mp_obj_t arg) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_synthio_lfo_set_phase_offset_obj(self, arg);
     return mp_const_none;
@@ -183,13 +183,13 @@ MP_PROPERTY_GETSET(synthio_lfo_phase_offset_obj,
 
 //|     scale: BlockInput
 //|     """An multiplier value applied to the LFO's output"""
-STATIC mp_obj_t synthio_lfo_get_scale(mp_obj_t self_in) {
+static mp_obj_t synthio_lfo_get_scale(mp_obj_t self_in) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_synthio_lfo_get_scale_obj(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_lfo_get_scale_obj, synthio_lfo_get_scale);
 
-STATIC mp_obj_t synthio_lfo_set_scale(mp_obj_t self_in, mp_obj_t arg) {
+static mp_obj_t synthio_lfo_set_scale(mp_obj_t self_in, mp_obj_t arg) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_synthio_lfo_set_scale_obj(self, arg);
     return mp_const_none;
@@ -204,13 +204,13 @@ MP_PROPERTY_GETSET(synthio_lfo_scale_obj,
 //|     """True if the waveform should stop when it reaches its last output value, false if it should re-start at the beginning of its waveform
 //|
 //|     This applies to the ``phase`` *before* the addition of any ``phase_offset`` """
-STATIC mp_obj_t synthio_lfo_get_once(mp_obj_t self_in) {
+static mp_obj_t synthio_lfo_get_once(mp_obj_t self_in) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_synthio_lfo_get_once(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_lfo_get_once_obj, synthio_lfo_get_once);
 
-STATIC mp_obj_t synthio_lfo_set_once(mp_obj_t self_in, mp_obj_t arg) {
+static mp_obj_t synthio_lfo_set_once(mp_obj_t self_in, mp_obj_t arg) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_synthio_lfo_set_once(self, mp_obj_is_true(arg));
     return mp_const_none;
@@ -224,13 +224,13 @@ MP_PROPERTY_GETSET(synthio_lfo_once_obj,
 //|
 //|     interpolate: bool
 //|     """True if the waveform should perform linear interpolation between values"""
-STATIC mp_obj_t synthio_lfo_get_interpolate(mp_obj_t self_in) {
+static mp_obj_t synthio_lfo_get_interpolate(mp_obj_t self_in) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_synthio_lfo_get_interpolate(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_lfo_get_interpolate_obj, synthio_lfo_get_interpolate);
 
-STATIC mp_obj_t synthio_lfo_set_interpolate(mp_obj_t self_in, mp_obj_t arg) {
+static mp_obj_t synthio_lfo_set_interpolate(mp_obj_t self_in, mp_obj_t arg) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_synthio_lfo_set_interpolate(self, mp_obj_is_true(arg));
     return mp_const_none;
@@ -244,7 +244,7 @@ MP_PROPERTY_GETSET(synthio_lfo_interpolate_obj,
 //|
 //|     phase: float
 //|     """The phase of the oscillator, in the range 0 to 1 (read-only)"""
-STATIC mp_obj_t synthio_lfo_get_phase(mp_obj_t self_in) {
+static mp_obj_t synthio_lfo_get_phase(mp_obj_t self_in) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_synthio_lfo_get_phase(self));
 }
@@ -257,7 +257,7 @@ MP_PROPERTY_GETTER(synthio_lfo_phase_obj,
 //|
 //|     value: float
 //|     """The value of the oscillator (read-only)"""
-STATIC mp_obj_t synthio_lfo_get_value(mp_obj_t self_in) {
+static mp_obj_t synthio_lfo_get_value(mp_obj_t self_in) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_synthio_lfo_get_value(self));
 }
@@ -271,7 +271,7 @@ MP_PROPERTY_GETTER(synthio_lfo_value_obj,
 //|     def retrigger(self):
 //|         """Reset the LFO's internal index to the start of the waveform. Most useful when it its `once` property is `True`."""
 //|
-STATIC mp_obj_t synthio_lfo_retrigger(mp_obj_t self_in) {
+static mp_obj_t synthio_lfo_retrigger(mp_obj_t self_in) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_synthio_lfo_retrigger(self);
     return mp_const_none;
@@ -283,7 +283,7 @@ static void lfo_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     properties_print_helper(print, self_in, lfo_properties, MP_ARRAY_SIZE(lfo_properties));
 }
 
-STATIC const mp_rom_map_elem_t synthio_lfo_locals_dict_table[] = {
+static const mp_rom_map_elem_t synthio_lfo_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_waveform), MP_ROM_PTR(&synthio_lfo_waveform_obj) },
     { MP_ROM_QSTR(MP_QSTR_rate), MP_ROM_PTR(&synthio_lfo_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_scale), MP_ROM_PTR(&synthio_lfo_scale_obj) },
@@ -295,10 +295,10 @@ STATIC const mp_rom_map_elem_t synthio_lfo_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_phase), MP_ROM_PTR(&synthio_lfo_phase_obj) },
     { MP_ROM_QSTR(MP_QSTR_retrigger), MP_ROM_PTR(&synthio_lfo_retrigger_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(synthio_lfo_locals_dict, synthio_lfo_locals_dict_table);
+static MP_DEFINE_CONST_DICT(synthio_lfo_locals_dict, synthio_lfo_locals_dict_table);
 
 
-STATIC const synthio_block_proto_t lfo_proto = {
+static const synthio_block_proto_t lfo_proto = {
     MP_PROTO_IMPLEMENT(MP_QSTR_synthio_block)
     .tick = common_hal_synthio_lfo_tick,
 };

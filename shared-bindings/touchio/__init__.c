@@ -39,12 +39,12 @@
 //| This example will initialize the the device, and print the
 //| :py:data:`~touchio.TouchIn.value`."""
 
-STATIC const mp_rom_map_elem_t touchio_module_globals_table[] = {
+static const mp_rom_map_elem_t touchio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_touchio) },
     { MP_ROM_QSTR(MP_QSTR_TouchIn),   MP_ROM_PTR(&touchio_touchin_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(touchio_module_globals, touchio_module_globals_table);
+static MP_DEFINE_CONST_DICT(touchio_module_globals, touchio_module_globals_table);
 
 const mp_obj_module_t touchio_module = {
     .base = { &mp_type_module },

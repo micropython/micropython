@@ -23,7 +23,7 @@ void serial_write_compressed(mp_rom_error_text_t compressed) {
     mp_printf(MP_PYTHON_PRINTER, "%S", compressed);
 }
 
-STATIC void get_word(int n, const mchar_t **pos, const mchar_t **end) {
+static void get_word(int n, const mchar_t **pos, const mchar_t **end) {
     int len = minlen;
     int i = 0;
     *pos = words;
@@ -37,7 +37,7 @@ STATIC void get_word(int n, const mchar_t **pos, const mchar_t **end) {
     *end = *pos + len;
 }
 
-STATIC void put_utf8(vstr_t *vstr, int u) {
+static void put_utf8(vstr_t *vstr, int u) {
     if (u >= translation_offstart) {
         u += translation_offset;
     }

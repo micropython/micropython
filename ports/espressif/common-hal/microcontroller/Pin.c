@@ -13,10 +13,10 @@
 #include "components/driver/gpio/include/driver/gpio.h"
 #include "components/hal/include/hal/gpio_hal.h"
 
-STATIC uint64_t _never_reset_pin_mask;
-STATIC uint64_t _skip_reset_once_pin_mask;
-STATIC uint64_t _preserved_pin_mask;
-STATIC uint64_t _in_use_pin_mask;
+static uint64_t _never_reset_pin_mask;
+static uint64_t _skip_reset_once_pin_mask;
+static uint64_t _preserved_pin_mask;
+static uint64_t _in_use_pin_mask;
 
 #define GPIO_SEL_0              (BIT(0))                    /*!< Pin 0 selected */
 #define GPIO_SEL_1              (BIT(1))                    /*!< Pin 1 selected */
@@ -237,23 +237,23 @@ MP_WEAK bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     return false;
 }
 
-STATIC bool _reset_forbidden(gpio_num_t pin_number) {
+static bool _reset_forbidden(gpio_num_t pin_number) {
     return pin_mask_reset_forbidden & PIN_BIT(pin_number);
 }
 
-STATIC bool _never_reset(gpio_num_t pin_number) {
+static bool _never_reset(gpio_num_t pin_number) {
     return _never_reset_pin_mask & PIN_BIT(pin_number);
 }
 
-STATIC bool _skip_reset_once(gpio_num_t pin_number) {
+static bool _skip_reset_once(gpio_num_t pin_number) {
     return _skip_reset_once_pin_mask & PIN_BIT(pin_number);
 }
 
-STATIC bool _preserved_pin(gpio_num_t pin_number) {
+static bool _preserved_pin(gpio_num_t pin_number) {
     return _preserved_pin_mask & PIN_BIT(pin_number);
 }
 
-STATIC void _reset_pin(gpio_num_t pin_number) {
+static void _reset_pin(gpio_num_t pin_number) {
     // Never ever reset pins used for flash, RAM, and basic communication.
     if (_reset_forbidden(pin_number)) {
         return;

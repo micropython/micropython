@@ -54,7 +54,7 @@
 //|         :param int phase: the edge of the clock that data is captured. First (0)
 //|             or second (1). Rising or falling depends on clock polarity."""
 //|         ...
-STATIC mp_obj_t fourwire_fourwire_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t fourwire_fourwire_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset, ARG_baudrate, ARG_polarity, ARG_phase };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -89,7 +89,7 @@ STATIC mp_obj_t fourwire_fourwire_make_new(const mp_obj_type_t *type, size_t n_a
 //|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
 //|         is available."""
 //|         ...
-STATIC mp_obj_t fourwire_fourwire_obj_reset(mp_obj_t self_in) {
+static mp_obj_t fourwire_fourwire_obj_reset(mp_obj_t self_in) {
     fourwire_fourwire_obj_t *self = self_in;
 
     if (!common_hal_fourwire_fourwire_reset(self)) {
@@ -106,7 +106,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(fourwire_fourwire_reset_obj, fourwire_fourwire_obj_res
 //|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
 //|         ...
 //|
-STATIC mp_obj_t fourwire_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t fourwire_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_command, ARG_data, ARG_toggle_every_byte };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_command, MP_ARG_INT | MP_ARG_REQUIRED },
@@ -139,11 +139,11 @@ STATIC mp_obj_t fourwire_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(fourwire_fourwire_send_obj, 1, fourwire_fourwire_obj_send);
 
-STATIC const mp_rom_map_elem_t fourwire_fourwire_locals_dict_table[] = {
+static const mp_rom_map_elem_t fourwire_fourwire_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&fourwire_fourwire_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&fourwire_fourwire_send_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(fourwire_fourwire_locals_dict, fourwire_fourwire_locals_dict_table);
+static MP_DEFINE_CONST_DICT(fourwire_fourwire_locals_dict, fourwire_fourwire_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     fourwire_fourwire_type,

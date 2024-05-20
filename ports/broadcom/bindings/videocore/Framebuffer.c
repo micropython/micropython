@@ -27,7 +27,7 @@
 //|         A Framebuffer is often used in conjunction with a
 //|         `framebufferio.FramebufferDisplay`."""
 
-STATIC mp_obj_t videocore_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t videocore_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_width, ARG_height, };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_REQUIRED },
@@ -51,13 +51,13 @@ STATIC mp_obj_t videocore_framebuffer_make_new(const mp_obj_type_t *type, size_t
 //|         rgbmatrix instance.  After deinitialization, no further operations
 //|         may be performed."""
 //|         ...
-STATIC mp_obj_t videocore_framebuffer_deinit(mp_obj_t self_in) {
+static mp_obj_t videocore_framebuffer_deinit(mp_obj_t self_in) {
     videocore_framebuffer_obj_t *self = (videocore_framebuffer_obj_t *)self_in;
     common_hal_videocore_framebuffer_deinit(self);
     return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(videocore_framebuffer_deinit_obj, videocore_framebuffer_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(videocore_framebuffer_deinit_obj, videocore_framebuffer_deinit);
 
 static void check_for_deinit(videocore_framebuffer_obj_t *self) {
     if (common_hal_videocore_framebuffer_deinited(self)) {
@@ -67,7 +67,7 @@ static void check_for_deinit(videocore_framebuffer_obj_t *self) {
 
 //|     width: int
 //|     """The width of the display, in pixels"""
-STATIC mp_obj_t videocore_framebuffer_get_width(mp_obj_t self_in) {
+static mp_obj_t videocore_framebuffer_get_width(mp_obj_t self_in) {
     videocore_framebuffer_obj_t *self = (videocore_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_videocore_framebuffer_get_width(self));
@@ -79,7 +79,7 @@ MP_PROPERTY_GETTER(videocore_framebuffer_width_obj,
 //|     height: int
 //|     """The height of the display, in pixels"""
 //|
-STATIC mp_obj_t videocore_framebuffer_get_height(mp_obj_t self_in) {
+static mp_obj_t videocore_framebuffer_get_height(mp_obj_t self_in) {
     videocore_framebuffer_obj_t *self = (videocore_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_videocore_framebuffer_get_height(self));
@@ -89,54 +89,54 @@ MP_DEFINE_CONST_FUN_OBJ_1(videocore_framebuffer_get_height_obj, videocore_frameb
 MP_PROPERTY_GETTER(videocore_framebuffer_height_obj,
     (mp_obj_t)&videocore_framebuffer_get_height_obj);
 
-STATIC const mp_rom_map_elem_t videocore_framebuffer_locals_dict_table[] = {
+static const mp_rom_map_elem_t videocore_framebuffer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&videocore_framebuffer_deinit_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&videocore_framebuffer_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&videocore_framebuffer_height_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(videocore_framebuffer_locals_dict, videocore_framebuffer_locals_dict_table);
+static MP_DEFINE_CONST_DICT(videocore_framebuffer_locals_dict, videocore_framebuffer_locals_dict_table);
 
-STATIC void videocore_framebuffer_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
+static void videocore_framebuffer_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
     common_hal_videocore_framebuffer_get_buffer(self_in, bufinfo, 0);
 }
 
 // These versions exist so that the prototype matches the protocol,
 // avoiding a type cast that can hide errors
-STATIC void videocore_framebuffer_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
+static void videocore_framebuffer_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
     (void)dirty_row_bitmap;
     common_hal_videocore_framebuffer_refresh(self_in);
 }
 
-STATIC void videocore_framebuffer_deinit_proto(mp_obj_t self_in) {
+static void videocore_framebuffer_deinit_proto(mp_obj_t self_in) {
     common_hal_videocore_framebuffer_deinit(self_in);
 }
 
-STATIC int videocore_framebuffer_get_width_proto(mp_obj_t self_in) {
+static int videocore_framebuffer_get_width_proto(mp_obj_t self_in) {
     return common_hal_videocore_framebuffer_get_width(self_in);
 }
 
-STATIC int videocore_framebuffer_get_height_proto(mp_obj_t self_in) {
+static int videocore_framebuffer_get_height_proto(mp_obj_t self_in) {
     return common_hal_videocore_framebuffer_get_height(self_in);
 }
 
-STATIC int videocore_framebuffer_get_color_depth_proto(mp_obj_t self_in) {
+static int videocore_framebuffer_get_color_depth_proto(mp_obj_t self_in) {
     return 32;
 }
 
-STATIC int videocore_framebuffer_get_bytes_per_cell_proto(mp_obj_t self_in) {
+static int videocore_framebuffer_get_bytes_per_cell_proto(mp_obj_t self_in) {
     return 1;
 }
 
-STATIC int videocore_framebuffer_get_native_frames_per_second_proto(mp_obj_t self_in) {
+static int videocore_framebuffer_get_native_frames_per_second_proto(mp_obj_t self_in) {
     return 30;
 }
 
-STATIC int videocore_framebuffer_get_row_stride_proto(mp_obj_t self_in) {
+static int videocore_framebuffer_get_row_stride_proto(mp_obj_t self_in) {
     return common_hal_videocore_framebuffer_get_row_stride(self_in);
 }
 
-STATIC const framebuffer_p_t videocore_framebuffer_proto = {
+static const framebuffer_p_t videocore_framebuffer_proto = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)
     .get_bufinfo = videocore_framebuffer_get_bufinfo,
     .get_width = videocore_framebuffer_get_width_proto,

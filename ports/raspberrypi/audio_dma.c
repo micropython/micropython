@@ -30,7 +30,7 @@ void audio_dma_reset(void) {
 }
 
 
-STATIC size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32_t input_length, uint8_t *output, uint32_t output_length) {
+static size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32_t input_length, uint8_t *output, uint32_t output_length) {
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
 
@@ -115,7 +115,7 @@ STATIC size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32
 }
 
 // buffer_idx is 0 or 1.
-STATIC void audio_dma_load_next_block(audio_dma_t *dma, size_t buffer_idx) {
+static void audio_dma_load_next_block(audio_dma_t *dma, size_t buffer_idx) {
     size_t dma_channel = dma->channel[buffer_idx];
 
     audioio_get_buffer_result_t get_buffer_result;
@@ -432,7 +432,7 @@ bool audio_dma_get_playing(audio_dma_t *dma) {
 // background tasks such as this and causes a stack overflow.
 // NOTE(dhalbert): I successfully printed from here while debugging.
 // So it's possible, but be careful.
-STATIC void dma_callback_fun(void *arg) {
+static void dma_callback_fun(void *arg) {
     audio_dma_t *dma = arg;
     if (dma == NULL) {
         return;

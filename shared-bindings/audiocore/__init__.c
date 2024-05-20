@@ -19,7 +19,7 @@
 
 #if CIRCUITPY_AUDIOCORE_DEBUG
 // (no docstrings so that the debug functions are not shown on docs.circuitpython.org)
-STATIC mp_obj_t audiocore_get_buffer(mp_obj_t sample_in) {
+static mp_obj_t audiocore_get_buffer(mp_obj_t sample_in) {
     uint8_t *buffer = NULL;
     uint32_t buffer_length = 0;
     audioio_get_buffer_result_t gbr = audiosample_get_buffer(sample_in, false, 0, &buffer, &buffer_length);
@@ -48,9 +48,9 @@ STATIC mp_obj_t audiocore_get_buffer(mp_obj_t sample_in) {
 
     return mp_obj_new_tuple(2, result);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(audiocore_get_buffer_obj, audiocore_get_buffer);
+static MP_DEFINE_CONST_FUN_OBJ_1(audiocore_get_buffer_obj, audiocore_get_buffer);
 
-STATIC mp_obj_t audiocore_get_structure(mp_obj_t sample_in) {
+static mp_obj_t audiocore_get_structure(mp_obj_t sample_in) {
     bool single_buffer, samples_signed;
     uint32_t max_buffer_length;
     uint8_t spacing;
@@ -64,17 +64,17 @@ STATIC mp_obj_t audiocore_get_structure(mp_obj_t sample_in) {
     };
     return mp_obj_new_tuple(4, result);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(audiocore_get_structure_obj, audiocore_get_structure);
+static MP_DEFINE_CONST_FUN_OBJ_1(audiocore_get_structure_obj, audiocore_get_structure);
 
-STATIC mp_obj_t audiocore_reset_buffer(mp_obj_t sample_in) {
+static mp_obj_t audiocore_reset_buffer(mp_obj_t sample_in) {
     audiosample_reset_buffer(sample_in, false, 0);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(audiocore_reset_buffer_obj, audiocore_reset_buffer);
+static MP_DEFINE_CONST_FUN_OBJ_1(audiocore_reset_buffer_obj, audiocore_reset_buffer);
 
 #endif
 
-STATIC const mp_rom_map_elem_t audiocore_module_globals_table[] = {
+static const mp_rom_map_elem_t audiocore_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiocore) },
     { MP_ROM_QSTR(MP_QSTR_RawSample), MP_ROM_PTR(&audioio_rawsample_type) },
     { MP_ROM_QSTR(MP_QSTR_WaveFile), MP_ROM_PTR(&audioio_wavefile_type) },
@@ -85,7 +85,7 @@ STATIC const mp_rom_map_elem_t audiocore_module_globals_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(audiocore_module_globals, audiocore_module_globals_table);
+static MP_DEFINE_CONST_DICT(audiocore_module_globals, audiocore_module_globals_table);
 
 const mp_obj_module_t audiocore_module = {
     .base = { &mp_type_module },

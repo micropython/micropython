@@ -15,7 +15,7 @@
 
 #define MAC_ADDRESS_LENGTH 6
 
-STATIC bool hostname_valid(const char *ptr, size_t len) {
+static bool hostname_valid(const char *ptr, size_t len) {
     #if 0 // validated by mp_arg_validate_length_range
     if (len == 0 || len > 253) {
         // at most 253 characters long
@@ -51,7 +51,7 @@ STATIC bool hostname_valid(const char *ptr, size_t len) {
     return !(partlen > 63);
 }
 
-STATIC void validate_hex_password(const uint8_t *buf, size_t len) {
+static void validate_hex_password(const uint8_t *buf, size_t len) {
     for (size_t i = 0; i < len; i++) {
         if (!unichar_isxdigit(buf[i])) {
             mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid hex password"));
@@ -78,7 +78,7 @@ STATIC void validate_hex_password(const uint8_t *buf, size_t len) {
 //|     """``True`` when the wifi radio is enabled.
 //|     If you set the value to ``False``, any open sockets will be closed.
 //|     """
-STATIC mp_obj_t wifi_radio_get_enabled(mp_obj_t self) {
+static mp_obj_t wifi_radio_get_enabled(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_wifi_radio_get_enabled(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_enabled_obj, wifi_radio_get_enabled);
@@ -90,7 +90,7 @@ static mp_obj_t wifi_radio_set_enabled(mp_obj_t self, mp_obj_t value) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_enabled_obj, wifi_radio_set_enabled);
+static MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_enabled_obj, wifi_radio_set_enabled);
 
 MP_PROPERTY_GETSET(wifi_radio_enabled_obj,
     (mp_obj_t)&wifi_radio_get_enabled_obj,
@@ -99,13 +99,13 @@ MP_PROPERTY_GETSET(wifi_radio_enabled_obj,
 //|     hostname: Union[str | ReadableBuffer]
 //|     """Hostname for wifi interface. When the hostname is altered after interface started/connected
 //|        the changes would only be reflected once the interface restarts/reconnects."""
-STATIC mp_obj_t wifi_radio_get_hostname(mp_obj_t self_in) {
+static mp_obj_t wifi_radio_get_hostname(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_wifi_radio_get_hostname(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_hostname_obj, wifi_radio_get_hostname);
 
-STATIC mp_obj_t wifi_radio_set_hostname(mp_obj_t self_in, mp_obj_t hostname_in) {
+static mp_obj_t wifi_radio_set_hostname(mp_obj_t self_in, mp_obj_t hostname_in) {
     mp_buffer_info_t hostname;
     mp_get_buffer_raise(hostname_in, &hostname, MP_BUFFER_READ);
 
@@ -134,14 +134,14 @@ MP_PROPERTY_GETSET(wifi_radio_hostname_obj,
 //|     """
 
 
-STATIC mp_obj_t _wifi_radio_get_mac_address(mp_obj_t self_in) {
+static mp_obj_t _wifi_radio_get_mac_address(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(common_hal_wifi_radio_get_mac_address(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_obj, _wifi_radio_get_mac_address);
 
 #if CIRCUITPY_WIFI_RADIO_SETTABLE_MAC_ADDRESS
-STATIC mp_obj_t wifi_radio_set_mac_address(mp_obj_t self_in, mp_obj_t mac_address_in) {
+static mp_obj_t wifi_radio_set_mac_address(mp_obj_t self_in, mp_obj_t mac_address_in) {
     mp_buffer_info_t mac_address;
     mp_get_buffer_raise(mac_address_in, &mac_address, MP_BUFFER_READ);
 
@@ -168,13 +168,13 @@ MP_PROPERTY_GETTER(wifi_radio_mac_address_obj,
 
 //|     tx_power: float
 //|     """Wifi transmission power, in dBm."""
-STATIC mp_obj_t wifi_radio_get_tx_power(mp_obj_t self_in) {
+static mp_obj_t wifi_radio_get_tx_power(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_wifi_radio_get_tx_power(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_tx_power_obj, wifi_radio_get_tx_power);
 
-STATIC mp_obj_t wifi_radio_set_tx_power(mp_obj_t self_in, mp_obj_t tx_power_in) {
+static mp_obj_t wifi_radio_set_tx_power(mp_obj_t self_in, mp_obj_t tx_power_in) {
     mp_float_t tx_power = mp_obj_get_float(tx_power_in);
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_wifi_radio_set_tx_power(self, tx_power);
@@ -192,14 +192,14 @@ MP_PROPERTY_GETSET(wifi_radio_tx_power_obj,
 //|
 //|     **Limitations:** Not settable on RP2040 CYW43 boards, such as Pi Pico W.
 //|     """
-STATIC mp_obj_t wifi_radio_get_mac_address_ap(mp_obj_t self_in) {
+static mp_obj_t wifi_radio_get_mac_address_ap(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(common_hal_wifi_radio_get_mac_address_ap(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_ap_obj, wifi_radio_get_mac_address_ap);
 
 #if CIRCUITPY_WIFI_RADIO_SETTABLE_MAC_ADDRESS
-STATIC mp_obj_t wifi_radio_set_mac_address_ap(mp_obj_t self_in, mp_obj_t mac_address_in) {
+static mp_obj_t wifi_radio_set_mac_address_ap(mp_obj_t self_in, mp_obj_t mac_address_in) {
     mp_buffer_info_t mac_address;
     mp_get_buffer_raise(mac_address_in, &mac_address, MP_BUFFER_READ);
 
@@ -234,7 +234,7 @@ MP_PROPERTY_GETTER(wifi_radio_mac_address_ap_obj,
 //|             In the raspberrypi port (RP2040 CYW43), ``start_channel`` and ``stop_channel`` are ignored.
 //|         """
 //|         ...
-STATIC mp_obj_t wifi_radio_start_scanning_networks(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t wifi_radio_start_scanning_networks(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_start_channel, ARG_stop_channel };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_start_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
@@ -258,24 +258,24 @@ STATIC mp_obj_t wifi_radio_start_scanning_networks(size_t n_args, const mp_obj_t
 
     return common_hal_wifi_radio_start_scanning_networks(self, start_channel, stop_channel);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_scanning_networks_obj, 1, wifi_radio_start_scanning_networks);
+static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_scanning_networks_obj, 1, wifi_radio_start_scanning_networks);
 
 //|     def stop_scanning_networks(self) -> None:
 //|         """Stop scanning for Wifi networks and free any resources used to do it."""
 //|         ...
-STATIC mp_obj_t wifi_radio_stop_scanning_networks(mp_obj_t self_in) {
+static mp_obj_t wifi_radio_stop_scanning_networks(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     common_hal_wifi_radio_stop_scanning_networks(self);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_scanning_networks_obj, wifi_radio_stop_scanning_networks);
+static MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_scanning_networks_obj, wifi_radio_stop_scanning_networks);
 
 //|     def start_station(self) -> None:
 //|         """Starts a Station."""
 //|         ...
-STATIC mp_obj_t wifi_radio_start_station(mp_obj_t self) {
+static mp_obj_t wifi_radio_start_station(mp_obj_t self) {
     common_hal_wifi_radio_start_station(self);
     return mp_const_none;
 }
@@ -284,7 +284,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_start_station_obj, wifi_radio_start_station
 //|     def stop_station(self) -> None:
 //|         """Stops the Station."""
 //|         ...
-STATIC mp_obj_t wifi_radio_stop_station(mp_obj_t self) {
+static mp_obj_t wifi_radio_stop_station(mp_obj_t self) {
     common_hal_wifi_radio_stop_station(self);
     return mp_const_none;
 }
@@ -327,7 +327,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|             In the raspberrypi port (RP2040 CYW43), ``max_connections`` is ignored.
 //|         """
 //|         ...
-STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ssid, ARG_password, ARG_channel, ARG_authmode, ARG_max_connections };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -379,12 +379,12 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
     common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len, channel, authmode, args[ARG_max_connections].u_int);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_ap_obj, 1, wifi_radio_start_ap);
+static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_ap_obj, 1, wifi_radio_start_ap);
 
 //|     def stop_ap(self) -> None:
 //|         """Stops the access point."""
 //|         ...
-STATIC mp_obj_t wifi_radio_stop_ap(mp_obj_t self) {
+static mp_obj_t wifi_radio_stop_ap(mp_obj_t self) {
     common_hal_wifi_radio_stop_ap(self);
     return mp_const_none;
 }
@@ -392,7 +392,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_ap_obj, wifi_radio_stop_ap);
 
 //|     ap_active: bool
 //|     """True if running as an access point. (read-only)"""
-STATIC mp_obj_t wifi_radio_get_ap_active(mp_obj_t self) {
+static mp_obj_t wifi_radio_get_ap_active(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_wifi_radio_get_ap_active(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ap_active_obj, wifi_radio_get_ap_active);
@@ -425,7 +425,7 @@ MP_PROPERTY_GETTER(wifi_radio_ap_active_obj,
 //|         If ``bssid`` is given and not None, the scan will start at the first channel or the one given and
 //|         connect to the AP with the given ``bssid`` and ``ssid``."""
 //|         ...
-STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ssid, ARG_password, ARG_channel, ARG_bssid, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -484,11 +484,11 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_connect_obj, 1, wifi_radio_connect);
+static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_connect_obj, 1, wifi_radio_connect);
 
 //|     connected: bool
 //|     """True if connected to an access point (read-only)."""
-STATIC mp_obj_t wifi_radio_get_connected(mp_obj_t self) {
+static mp_obj_t wifi_radio_get_connected(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_wifi_radio_get_connected(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_connected_obj, wifi_radio_get_connected);
@@ -498,7 +498,7 @@ MP_PROPERTY_GETTER(wifi_radio_connected_obj,
 
 //|     ipv4_gateway: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the station gateway when connected to an access point. None otherwise. (read-only)"""
-STATIC mp_obj_t wifi_radio_get_ipv4_gateway(mp_obj_t self) {
+static mp_obj_t wifi_radio_get_ipv4_gateway(mp_obj_t self) {
     return common_hal_wifi_radio_get_ipv4_gateway(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_gateway_obj, wifi_radio_get_ipv4_gateway);
@@ -508,7 +508,7 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_gateway_obj,
 
 //|     ipv4_gateway_ap: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the access point gateway, when enabled. None otherwise. (read-only)"""
-STATIC mp_obj_t wifi_radio_get_ipv4_gateway_ap(mp_obj_t self) {
+static mp_obj_t wifi_radio_get_ipv4_gateway_ap(mp_obj_t self) {
     return common_hal_wifi_radio_get_ipv4_gateway_ap(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_gateway_ap_obj, wifi_radio_get_ipv4_gateway_ap);
@@ -518,7 +518,7 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_gateway_ap_obj,
 
 //|     ipv4_subnet: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the station subnet when connected to an access point. None otherwise. (read-only)"""
-STATIC mp_obj_t wifi_radio_get_ipv4_subnet(mp_obj_t self) {
+static mp_obj_t wifi_radio_get_ipv4_subnet(mp_obj_t self) {
     return common_hal_wifi_radio_get_ipv4_subnet(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_subnet_obj, wifi_radio_get_ipv4_subnet);
@@ -528,7 +528,7 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_subnet_obj,
 
 //|     ipv4_subnet_ap: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the access point subnet, when enabled. None otherwise. (read-only)"""
-STATIC mp_obj_t wifi_radio_get_ipv4_subnet_ap(mp_obj_t self) {
+static mp_obj_t wifi_radio_get_ipv4_subnet_ap(mp_obj_t self) {
     return common_hal_wifi_radio_get_ipv4_subnet_ap(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_subnet_ap_obj, wifi_radio_get_ipv4_subnet_ap);
@@ -552,7 +552,7 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_subnet_ap_obj,
 //|             In the raspberrypi port (RP2040 CYW43), the access point needs to be started before the IP v4 address can be set.
 //|         """
 //|         ...
-STATIC mp_obj_t wifi_radio_set_ipv4_address(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t wifi_radio_set_ipv4_address(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ipv4, ARG_netmask, ARG_gateway, ARG_ipv4_dns };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ipv4, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
@@ -568,7 +568,7 @@ STATIC mp_obj_t wifi_radio_set_ipv4_address(size_t n_args, const mp_obj_t *pos_a
     common_hal_wifi_radio_set_ipv4_address(self, args[ARG_ipv4].u_obj, args[ARG_netmask].u_obj, args[ARG_gateway].u_obj, args[ARG_ipv4_dns].u_obj);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_set_ipv4_address_obj, 1, wifi_radio_set_ipv4_address);
+static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_set_ipv4_address_obj, 1, wifi_radio_set_ipv4_address);
 
 //|     def set_ipv4_address_ap(
 //|         self,
@@ -579,7 +579,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_set_ipv4_address_obj, 1, wifi_radio
 //|     ) -> None:
 //|         """Sets the IP v4 address of the access point. Must include the netmask and gateway."""
 //|         ...
-STATIC mp_obj_t wifi_radio_set_ipv4_address_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t wifi_radio_set_ipv4_address_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ipv4, ARG_netmask, ARG_gateway };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ipv4, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
@@ -594,11 +594,11 @@ STATIC mp_obj_t wifi_radio_set_ipv4_address_ap(size_t n_args, const mp_obj_t *po
     common_hal_wifi_radio_set_ipv4_address_ap(self, args[ARG_ipv4].u_obj, args[ARG_netmask].u_obj, args[ARG_gateway].u_obj);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_set_ipv4_address_ap_obj, 1, wifi_radio_set_ipv4_address_ap);
+static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_set_ipv4_address_ap_obj, 1, wifi_radio_set_ipv4_address_ap);
 
 //|     ipv4_address: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the station when connected to an access point. None otherwise. (read-only)"""
-STATIC mp_obj_t _wifi_radio_get_ipv4_address(mp_obj_t self) {
+static mp_obj_t _wifi_radio_get_ipv4_address(mp_obj_t self) {
     return common_hal_wifi_radio_get_ipv4_address(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_address_obj, _wifi_radio_get_ipv4_address);
@@ -608,7 +608,7 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_address_obj,
 
 //|     ipv4_address_ap: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the access point, when enabled. None otherwise. (read-only)"""
-STATIC mp_obj_t wifi_radio_get_ipv4_address_ap(mp_obj_t self) {
+static mp_obj_t wifi_radio_get_ipv4_address_ap(mp_obj_t self) {
     return common_hal_wifi_radio_get_ipv4_address_ap(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_address_ap_obj, wifi_radio_get_ipv4_address_ap);
@@ -618,12 +618,12 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_address_ap_obj,
 
 //|     ipv4_dns: ipaddress.IPv4Address
 //|     """IP v4 Address of the DNS server to be used."""
-STATIC mp_obj_t wifi_radio_get_ipv4_dns(mp_obj_t self) {
+static mp_obj_t wifi_radio_get_ipv4_dns(mp_obj_t self) {
     return common_hal_wifi_radio_get_ipv4_dns(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_dns_obj, wifi_radio_get_ipv4_dns);
 
-STATIC mp_obj_t wifi_radio_set_ipv4_dns(mp_obj_t self, mp_obj_t ipv4_dns_addr) {
+static mp_obj_t wifi_radio_set_ipv4_dns(mp_obj_t self, mp_obj_t ipv4_dns_addr) {
     common_hal_wifi_radio_set_ipv4_dns(self, ipv4_dns_addr);
 
     return mp_const_none;
@@ -636,7 +636,7 @@ MP_PROPERTY_GETSET(wifi_radio_ipv4_dns_obj,
 
 //|     ap_info: Optional[Network]
 //|     """Network object containing BSSID, SSID, authmode, channel, country and RSSI when connected to an access point. None otherwise."""
-STATIC mp_obj_t wifi_radio_get_ap_info(mp_obj_t self) {
+static mp_obj_t wifi_radio_get_ap_info(mp_obj_t self) {
     return common_hal_wifi_radio_get_ap_info(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ap_info_obj, wifi_radio_get_ap_info);
@@ -646,7 +646,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ap_info_obj, wifi_radio_get_ap_info);
 //|      mac: bytearray (read-only)
 //|      rssi: int (read-only, None on Raspberry Pi Pico W)
 //|      ipv4_address: ipv4_address  (read-only, None if station connected but no address assigned yet or self-assigned address)"""
-STATIC mp_obj_t wifi_radio_get_stations_ap(mp_obj_t self) {
+static mp_obj_t wifi_radio_get_stations_ap(mp_obj_t self) {
     return common_hal_wifi_radio_get_stations_ap(self);
 }
 
@@ -658,7 +658,7 @@ MP_PROPERTY_GETTER(wifi_radio_stations_ap_obj,
 //|     def start_dhcp(self) -> None:
 //|         """Starts the station DHCP client."""
 //|         ...
-STATIC mp_obj_t wifi_radio_start_dhcp_client(mp_obj_t self) {
+static mp_obj_t wifi_radio_start_dhcp_client(mp_obj_t self) {
     common_hal_wifi_radio_start_dhcp_client(self);
     return mp_const_none;
 }
@@ -667,7 +667,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_start_dhcp_client_obj, wifi_radio_start_dhc
 //|     def stop_dhcp(self) -> None:
 //|         """Stops the station DHCP client. Needed to assign a static IP address."""
 //|         ...
-STATIC mp_obj_t wifi_radio_stop_dhcp_client(mp_obj_t self) {
+static mp_obj_t wifi_radio_stop_dhcp_client(mp_obj_t self) {
     common_hal_wifi_radio_stop_dhcp_client(self);
     return mp_const_none;
 }
@@ -676,7 +676,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_dhcp_client_obj, wifi_radio_stop_dhcp_
 //|     def start_dhcp_ap(self) -> None:
 //|         """Starts the access point DHCP server."""
 //|         ...
-STATIC mp_obj_t wifi_radio_start_dhcp_server(mp_obj_t self) {
+static mp_obj_t wifi_radio_start_dhcp_server(mp_obj_t self) {
     common_hal_wifi_radio_start_dhcp_server(self);
     return mp_const_none;
 }
@@ -685,7 +685,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_start_dhcp_server_obj, wifi_radio_start_dhc
 //|     def stop_dhcp_ap(self) -> None:
 //|         """Stops the access point DHCP server. Needed to assign a static IP address."""
 //|         ...
-STATIC mp_obj_t wifi_radio_stop_dhcp_server(mp_obj_t self) {
+static mp_obj_t wifi_radio_stop_dhcp_server(mp_obj_t self) {
     common_hal_wifi_radio_stop_dhcp_server(self);
     return mp_const_none;
 }
@@ -701,7 +701,7 @@ MP_PROPERTY_GETTER(wifi_radio_ap_info_obj,
 //|         Returns None when it times out."""
 //|         ...
 //|
-STATIC mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ip, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ip, MP_ARG_REQUIRED | MP_ARG_OBJ, },
@@ -724,9 +724,9 @@ STATIC mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     return mp_obj_new_float(time_ms / 1000.0);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_ping_obj, 1, wifi_radio_ping);
+static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_ping_obj, 1, wifi_radio_ping);
 
-STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
+static const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enabled), MP_ROM_PTR(&wifi_radio_enabled_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_hostname),    MP_ROM_PTR(&wifi_radio_hostname_obj) },
@@ -770,7 +770,7 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ping), MP_ROM_PTR(&wifi_radio_ping_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(wifi_radio_locals_dict, wifi_radio_locals_dict_table);
+static MP_DEFINE_CONST_DICT(wifi_radio_locals_dict, wifi_radio_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     wifi_radio_type,

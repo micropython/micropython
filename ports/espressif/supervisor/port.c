@@ -82,14 +82,14 @@
 #include "esp_log.h"
 #define TAG "port"
 
-STATIC esp_timer_handle_t _tick_timer;
-STATIC esp_timer_handle_t _sleep_timer;
+static esp_timer_handle_t _tick_timer;
+static esp_timer_handle_t _sleep_timer;
 
 TaskHandle_t circuitpython_task = NULL;
 
 extern void esp_restart(void) NORETURN;
 
-STATIC void tick_on_cp_core(void *arg) {
+static void tick_on_cp_core(void *arg) {
     supervisor_tick();
 
     // CircuitPython's VM is run in a separate FreeRTOS task from timer callbacks. So, we have to
@@ -99,7 +99,7 @@ STATIC void tick_on_cp_core(void *arg) {
 
 // This function may happen on the PRO core when CP is on the APP core. So, make
 // sure we run on the CP core.
-STATIC void tick_timer_cb(void *arg) {
+static void tick_timer_cb(void *arg) {
     #if defined(CONFIG_FREERTOS_UNICORE) && CONFIG_FREERTOS_UNICORE
     tick_on_cp_core(arg);
     #else

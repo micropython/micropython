@@ -314,7 +314,7 @@ bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
     return uart_is_writable(self->uart);
 }
 
-STATIC void pin_never_reset(uint8_t pin) {
+static void pin_never_reset(uint8_t pin) {
     if (pin != NO_PIN) {
         never_reset_pin_number(pin);
     }

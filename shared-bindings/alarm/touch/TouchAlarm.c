@@ -23,7 +23,7 @@
 //|         **Limitations:** Not available on SAMD, Nordic, or RP2040.
 //|         """
 //|         ...
-STATIC mp_obj_t alarm_touch_touchalarm_make_new(const mp_obj_type_t *type,
+static mp_obj_t alarm_touch_touchalarm_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     alarm_touch_touchalarm_obj_t *self = mp_obj_malloc(alarm_touch_touchalarm_obj_t, &alarm_touch_touchalarm_type);
 
@@ -45,7 +45,7 @@ STATIC mp_obj_t alarm_touch_touchalarm_make_new(const mp_obj_type_t *type,
 //|     pin: microcontroller.Pin
 //|     """The trigger pin."""
 //|
-STATIC mp_obj_t alarm_touch_touchalarm_obj_get_pin(mp_obj_t self_in) {
+static mp_obj_t alarm_touch_touchalarm_obj_get_pin(mp_obj_t self_in) {
     alarm_touch_touchalarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(self->pin);
 }
@@ -54,10 +54,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(alarm_touch_touchalarm_get_pin_obj, alarm_touch_toucha
 MP_PROPERTY_GETTER(alarm_touch_touchalarm_pin_obj,
     (mp_obj_t)&alarm_touch_touchalarm_get_pin_obj);
 
-STATIC const mp_rom_map_elem_t alarm_touch_touchalarm_locals_dict_table[] = {
+static const mp_rom_map_elem_t alarm_touch_touchalarm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_pin), MP_ROM_PTR(&alarm_touch_touchalarm_pin_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(alarm_touch_touchalarm_locals_dict, alarm_touch_touchalarm_locals_dict_table);
+static MP_DEFINE_CONST_DICT(alarm_touch_touchalarm_locals_dict, alarm_touch_touchalarm_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     alarm_touch_touchalarm_type,

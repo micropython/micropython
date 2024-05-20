@@ -33,7 +33,7 @@
 DAC_HandleTypeDef handle;
 #endif
 
-STATIC bool dac_on[2];
+static bool dac_on[2];
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     const mcu_pin_obj_t *pin) {

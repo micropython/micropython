@@ -74,13 +74,13 @@ mp_obj_exception_t mp_watchdog_timeout_exception = {
     .traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj,
 };
 
-STATIC const mp_rom_map_elem_t watchdog_module_globals_table[] = {
+static const mp_rom_map_elem_t watchdog_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_watchdog) },
     { MP_ROM_QSTR(MP_QSTR_WatchDogMode),   MP_ROM_PTR(&watchdog_watchdogmode_type) },
     { MP_ROM_QSTR(MP_QSTR_WatchDogTimeout),   MP_ROM_PTR(&mp_type_WatchDogTimeout) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(watchdog_module_globals, watchdog_module_globals_table);
+static MP_DEFINE_CONST_DICT(watchdog_module_globals, watchdog_module_globals_table);
 
 const mp_obj_module_t watchdog_module = {
     .base = { &mp_type_module },

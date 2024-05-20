@@ -39,7 +39,7 @@
 //|         :param int max_packet_size: Maximum size of packets. Overrides value from the characteristic.
 //|           (Remote characteristics may not have the correct length.)"""
 //|         ...
-STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_characteristic, ARG_buffer_size, ARG_max_packet_size };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_characteristic,  MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -66,7 +66,7 @@ STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void check_for_deinit(bleio_packet_buffer_obj_t *self) {
+static void check_for_deinit(bleio_packet_buffer_obj_t *self) {
     if (common_hal_bleio_packet_buffer_deinited(self)) {
         raise_deinited_error();
     }
@@ -79,7 +79,7 @@ STATIC void check_for_deinit(bleio_packet_buffer_obj_t *self) {
 //|         :return: number of bytes read and stored into ``buf``
 //|         :rtype: int"""
 //|         ...
-STATIC mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_obj) {
+static mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_obj) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -93,7 +93,7 @@ STATIC mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_o
 
     return MP_OBJ_NEW_SMALL_INT(size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_packet_buffer_readinto_obj, bleio_packet_buffer_readinto);
+static MP_DEFINE_CONST_FUN_OBJ_2(bleio_packet_buffer_readinto_obj, bleio_packet_buffer_readinto);
 
 //|     def write(self, data: ReadableBuffer, *, header: Optional[bytes] = None) -> int:
 //|         """Writes all bytes from data into the same outgoing packet. The bytes from header are included
@@ -106,7 +106,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_packet_buffer_readinto_obj, bleio_packet_
 //|         ...
 // TODO: Add a kwarg `merge=False` to dictate whether subsequent writes are merged into a pending
 // one.
-STATIC mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_data, ARG_header };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data,  MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -144,21 +144,21 @@ STATIC mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_
     }
     return MP_OBJ_NEW_SMALL_INT(num_bytes_written);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_packet_buffer_write_obj, 1, bleio_packet_buffer_write);
+static MP_DEFINE_CONST_FUN_OBJ_KW(bleio_packet_buffer_write_obj, 1, bleio_packet_buffer_write);
 
 //|     def deinit(self) -> None:
 //|         """Disable permanently."""
 //|         ...
-STATIC mp_obj_t bleio_packet_buffer_deinit(mp_obj_t self_in) {
+static mp_obj_t bleio_packet_buffer_deinit(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_bleio_packet_buffer_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_buffer_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_buffer_deinit);
 
 //|     incoming_packet_length: int
 //|     """Maximum length in bytes of a packet we are reading."""
-STATIC mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in) {
+static mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_int_t size = common_hal_bleio_packet_buffer_get_incoming_packet_length(self);
@@ -167,7 +167,7 @@ STATIC mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in)
     }
     return MP_OBJ_NEW_SMALL_INT(size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_incoming_packet_length_obj, bleio_packet_buffer_get_incoming_packet_length);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_incoming_packet_length_obj, bleio_packet_buffer_get_incoming_packet_length);
 
 MP_PROPERTY_GETTER(bleio_packet_buffer_incoming_packet_length_obj,
     (mp_obj_t)&bleio_packet_buffer_get_incoming_packet_length_obj);
@@ -175,7 +175,7 @@ MP_PROPERTY_GETTER(bleio_packet_buffer_incoming_packet_length_obj,
 //|     outgoing_packet_length: int
 //|     """Maximum length in bytes of a packet we are writing."""
 //|
-STATIC mp_obj_t bleio_packet_buffer_get_outgoing_packet_length(mp_obj_t self_in) {
+static mp_obj_t bleio_packet_buffer_get_outgoing_packet_length(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_int_t size = common_hal_bleio_packet_buffer_get_outgoing_packet_length(self);
@@ -184,12 +184,12 @@ STATIC mp_obj_t bleio_packet_buffer_get_outgoing_packet_length(mp_obj_t self_in)
     }
     return MP_OBJ_NEW_SMALL_INT(size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_outgoing_packet_length_obj, bleio_packet_buffer_get_outgoing_packet_length);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_outgoing_packet_length_obj, bleio_packet_buffer_get_outgoing_packet_length);
 
 MP_PROPERTY_GETTER(bleio_packet_buffer_outgoing_packet_length_obj,
     (mp_obj_t)&bleio_packet_buffer_get_outgoing_packet_length_obj);
 
-STATIC const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {
+static const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),                     MP_ROM_PTR(&bleio_packet_buffer_deinit_obj) },
 
     // Standard stream methods.
@@ -200,7 +200,7 @@ STATIC const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_outgoing_packet_length), MP_ROM_PTR(&bleio_packet_buffer_outgoing_packet_length_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(bleio_packet_buffer_locals_dict, bleio_packet_buffer_locals_dict_table);
+static MP_DEFINE_CONST_DICT(bleio_packet_buffer_locals_dict, bleio_packet_buffer_locals_dict_table);
 
 
 MP_DEFINE_CONST_OBJ_TYPE(

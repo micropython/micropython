@@ -26,9 +26,9 @@
 #define VREFIN_CAL ((uint16_t *)ADC_CAL_ADDRESS)
 
 // correction factor for reference value
-STATIC volatile float adc_refcor = 1.0f;
+static volatile float adc_refcor = 1.0f;
 
-STATIC void set_adc_params(ADC_HandleTypeDef *AdcHandle) {
+static void set_adc_params(ADC_HandleTypeDef *AdcHandle) {
     AdcHandle->Instance = ADC1;
     AdcHandle->Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
     AdcHandle->Init.Resolution = ADC_RESOLUTION_12B;

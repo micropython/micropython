@@ -105,7 +105,7 @@ mp_obj_t common_hal_framebufferio_framebufferdisplay_get_framebuffer(framebuffer
     return self->framebuffer;
 }
 
-STATIC const displayio_area_t *_get_refresh_areas(framebufferio_framebufferdisplay_obj_t *self) {
+static const displayio_area_t *_get_refresh_areas(framebufferio_framebufferdisplay_obj_t *self) {
     if (self->core.full_refresh) {
         self->core.area.next = NULL;
         return &self->core.area;
@@ -116,7 +116,7 @@ STATIC const displayio_area_t *_get_refresh_areas(framebufferio_framebufferdispl
 }
 
 #define MARK_ROW_DIRTY(r) (dirty_row_bitmask[r / 8] |= (1 << (r & 7)))
-STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t *self, const displayio_area_t *area, uint8_t *dirty_row_bitmask) {
+static bool _refresh_area(framebufferio_framebufferdisplay_obj_t *self, const displayio_area_t *area, uint8_t *dirty_row_bitmask) {
     uint16_t buffer_size = CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE / sizeof(uint32_t); // In uint32_ts
 
     displayio_area_t clipped;
@@ -210,7 +210,7 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t *self, const di
     return true;
 }
 
-STATIC void _refresh_display(framebufferio_framebufferdisplay_obj_t *self) {
+static void _refresh_display(framebufferio_framebufferdisplay_obj_t *self) {
     self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
     if (!self->bufinfo.buf) {
         return;
@@ -297,7 +297,7 @@ void common_hal_framebufferio_framebufferdisplay_set_auto_refresh(framebufferio_
     self->auto_refresh = auto_refresh;
 }
 
-STATIC void _update_backlight(framebufferio_framebufferdisplay_obj_t *self) {
+static void _update_backlight(framebufferio_framebufferdisplay_obj_t *self) {
     // TODO(tannewt): Fade the backlight based on it's existing value and a target value. The target
     // should account for ambient light when possible.
 }

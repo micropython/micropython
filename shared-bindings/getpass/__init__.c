@@ -24,7 +24,7 @@
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t getpass_getpass(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t getpass_getpass(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_prompt, ARG_stream };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_prompt, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -49,15 +49,15 @@ STATIC mp_obj_t getpass_getpass(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     return shared_module_getpass_getpass(prompt, ((print.data) ? &print : NULL));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(getpass_getpass_obj, 0, getpass_getpass);
+static MP_DEFINE_CONST_FUN_OBJ_KW(getpass_getpass_obj, 0, getpass_getpass);
 
-STATIC const mp_rom_map_elem_t getpass_module_globals_table[] = {
+static const mp_rom_map_elem_t getpass_module_globals_table[] = {
     // module name
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_getpass) },
     // module functions
     { MP_ROM_QSTR(MP_QSTR_getpass), MP_ROM_PTR(&getpass_getpass_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(getpass_module_globals, getpass_module_globals_table);
+static MP_DEFINE_CONST_DICT(getpass_module_globals, getpass_module_globals_table);
 
 const mp_obj_module_t getpass_module = {
     .base = { &mp_type_module },

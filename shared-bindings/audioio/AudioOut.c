@@ -74,7 +74,7 @@
 //|             pass
 //|           print("stopped")"""
 //|         ...
-STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_left_channel, ARG_right_channel, ARG_quiescent_value };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_left_channel, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -100,14 +100,14 @@ STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_ar
 //|     def deinit(self) -> None:
 //|         """Deinitialises the AudioOut and releases any hardware resources for reuse."""
 //|         ...
-STATIC mp_obj_t audioio_audioout_deinit(mp_obj_t self_in) {
+static mp_obj_t audioio_audioout_deinit(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_audioio_audioout_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_deinit_obj, audioio_audioout_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_deinit_obj, audioio_audioout_deinit);
 
-STATIC void check_for_deinit(audioio_audioout_obj_t *self) {
+static void check_for_deinit(audioio_audioout_obj_t *self) {
     if (common_hal_audioio_audioout_deinited(self)) {
         raise_deinited_error();
     }
@@ -121,12 +121,12 @@ STATIC void check_for_deinit(audioio_audioout_obj_t *self) {
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t audioio_audioout_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t audioio_audioout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_audioio_audioout_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_audioout___exit___obj, 4, 4, audioio_audioout_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_audioout___exit___obj, 4, 4, audioio_audioout_obj___exit__);
 
 
 //|     def play(self, sample: circuitpython_typing.AudioSample, *, loop: bool = False) -> None:
@@ -139,7 +139,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_audioout___exit___obj, 4, 4, 
 //|         resolution will use the highest order bits to output. For example, the SAMD21 has a 10 bit
 //|         DAC that ignores the lowest 6 bits when playing 16 bit samples."""
 //|         ...
-STATIC mp_obj_t audioio_audioout_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t audioio_audioout_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -160,7 +160,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audioio_audioout_play_obj, 1, audioio_audioout_obj_pl
 //|     def stop(self) -> None:
 //|         """Stops playback and resets to the start of the sample."""
 //|         ...
-STATIC mp_obj_t audioio_audioout_obj_stop(mp_obj_t self_in) {
+static mp_obj_t audioio_audioout_obj_stop(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     common_hal_audioio_audioout_stop(self);
@@ -170,7 +170,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_stop_obj, audioio_audioout_obj_stop);
 
 //|     playing: bool
 //|     """True when an audio sample is being output even if `paused`. (read-only)"""
-STATIC mp_obj_t audioio_audioout_obj_get_playing(mp_obj_t self_in) {
+static mp_obj_t audioio_audioout_obj_get_playing(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return mp_obj_new_bool(common_hal_audioio_audioout_get_playing(self));
@@ -183,7 +183,7 @@ MP_PROPERTY_GETTER(audioio_audioout_playing_obj,
 //|     def pause(self) -> None:
 //|         """Stops playback temporarily while remembering the position. Use `resume` to resume playback."""
 //|         ...
-STATIC mp_obj_t audioio_audioout_obj_pause(mp_obj_t self_in) {
+static mp_obj_t audioio_audioout_obj_pause(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -198,7 +198,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_pause_obj, audioio_audioout_obj_pause
 //|     def resume(self) -> None:
 //|         """Resumes sample playback after :py:func:`pause`."""
 //|         ...
-STATIC mp_obj_t audioio_audioout_obj_resume(mp_obj_t self_in) {
+static mp_obj_t audioio_audioout_obj_resume(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -213,7 +213,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_resume_obj, audioio_audioout_obj_resu
 //|     paused: bool
 //|     """True when playback is paused. (read-only)"""
 //|
-STATIC mp_obj_t audioio_audioout_obj_get_paused(mp_obj_t self_in) {
+static mp_obj_t audioio_audioout_obj_get_paused(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return mp_obj_new_bool(common_hal_audioio_audioout_get_paused(self));
@@ -223,7 +223,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_get_paused_obj, audioio_audioout_obj_
 MP_PROPERTY_GETTER(audioio_audioout_paused_obj,
     (mp_obj_t)&audioio_audioout_get_paused_obj);
 
-STATIC const mp_rom_map_elem_t audioio_audioout_locals_dict_table[] = {
+static const mp_rom_map_elem_t audioio_audioout_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&audioio_audioout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audioio_audioout_deinit_obj) },
@@ -238,7 +238,7 @@ STATIC const mp_rom_map_elem_t audioio_audioout_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audioio_audioout_playing_obj) },
     { MP_ROM_QSTR(MP_QSTR_paused), MP_ROM_PTR(&audioio_audioout_paused_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(audioio_audioout_locals_dict, audioio_audioout_locals_dict_table);
+static MP_DEFINE_CONST_DICT(audioio_audioout_locals_dict, audioio_audioout_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     audioio_audioout_type,

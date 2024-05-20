@@ -60,7 +60,7 @@
 //|     This message can be seen in ``boot_out.txt``."""
 //|
 
-STATIC mp_obj_t usb_video_enable_framebuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t usb_video_enable_framebuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_width, ARG_height };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_width, MP_ARG_REQUIRED | MP_ARG_INT, { .u_int = 0 } },
@@ -78,7 +78,7 @@ STATIC mp_obj_t usb_video_enable_framebuffer(size_t n_args, const mp_obj_t *pos_
 
     return mp_const_none;
 };
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(usb_video_enable_framebuffer_obj, 0, usb_video_enable_framebuffer);
+static MP_DEFINE_CONST_FUN_OBJ_KW(usb_video_enable_framebuffer_obj, 0, usb_video_enable_framebuffer);
 
 static const mp_rom_map_elem_t usb_video_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usb_video) },

@@ -18,7 +18,7 @@
 //|     Differences from CPython: No ``LC_*`` argument is permitted.
 //|     """
 //|
-STATIC mp_obj_t getlocale(void) {
+static mp_obj_t getlocale(void) {
 
     mp_rom_error_text_t locale_msg = MP_ERROR_TEXT("en_US");
     size_t len_with_nul = decompress_length(locale_msg);
@@ -34,12 +34,12 @@ STATIC mp_obj_t getlocale(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(getlocale_obj, getlocale);
 
-STATIC const mp_rom_map_elem_t locale_module_globals_table[] = {
+static const mp_rom_map_elem_t locale_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_locale) },
     { MP_ROM_QSTR(MP_QSTR_getlocale), MP_ROM_PTR(&getlocale_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(locale_module_globals, locale_module_globals_table);
+static MP_DEFINE_CONST_DICT(locale_module_globals, locale_module_globals_table);
 
 const mp_obj_module_t locale_module = {
     .base = { &mp_type_module },

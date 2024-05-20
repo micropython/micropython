@@ -49,34 +49,34 @@
 //|     `time.sleep()`."""
 //|     ...
 //|
-STATIC mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
+static mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
     uint32_t delay = mp_obj_get_int(delay_obj);
 
     common_hal_mcu_delay_us(delay);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_delay_us_obj, mcu_delay_us);
+static MP_DEFINE_CONST_FUN_OBJ_1(mcu_delay_us_obj, mcu_delay_us);
 
 //| def disable_interrupts() -> None:
 //|     """Disable all interrupts. Be very careful, this can stall everything."""
 //|     ...
 //|
-STATIC mp_obj_t mcu_disable_interrupts(void) {
+static mp_obj_t mcu_disable_interrupts(void) {
     common_hal_mcu_disable_interrupts();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_disable_interrupts_obj, mcu_disable_interrupts);
+static MP_DEFINE_CONST_FUN_OBJ_0(mcu_disable_interrupts_obj, mcu_disable_interrupts);
 
 //| def enable_interrupts() -> None:
 //|     """Enable the interrupts that were enabled at the last disable."""
 //|     ...
 //|
-STATIC mp_obj_t mcu_enable_interrupts(void) {
+static mp_obj_t mcu_enable_interrupts(void) {
     common_hal_mcu_enable_interrupts();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupts);
+static MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupts);
 
 //| def on_next_reset(run_mode: microcontroller.RunMode) -> None:
 //|     """Configure the run mode used the next time the microcontroller is reset but
@@ -85,7 +85,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupt
 //|     :param ~microcontroller.RunMode run_mode: The next run mode"""
 //|     ...
 //|
-STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
+static mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
     mcu_runmode_t run_mode;
     if (run_mode_obj == MP_OBJ_FROM_PTR(&mcu_runmode_uf2_obj)) {
         run_mode = RUNMODE_UF2;
@@ -101,7 +101,7 @@ STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
     common_hal_mcu_on_next_reset(run_mode);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_on_next_reset_obj, mcu_on_next_reset);
+static MP_DEFINE_CONST_FUN_OBJ_1(mcu_on_next_reset_obj, mcu_on_next_reset);
 
 //| def reset() -> None:
 //|     """Reset the microcontroller. After reset, the microcontroller will enter the
@@ -112,12 +112,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_on_next_reset_obj, mcu_on_next_reset);
 //|       "Safely removed" on Windows or "ejected" on Mac OSX and Linux."""
 //|     ...
 //|
-STATIC mp_obj_t mcu_reset(void) {
+static mp_obj_t mcu_reset(void) {
     common_hal_mcu_reset();
     // We won't actually get here because we're resetting.
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
+static MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 
 //| nvm: Optional[ByteArray]
 //| """Available non-volatile memory.
@@ -134,7 +134,7 @@ const mp_obj_module_t mcu_pin_module = {
     .globals = (mp_obj_dict_t *)&mcu_pin_globals,
 };
 
-STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
+static const mp_rom_map_elem_t mcu_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_microcontroller) },
     { MP_ROM_QSTR(MP_QSTR_cpu),  MP_ROM_PTR(&common_hal_mcu_processor_obj) },
     #if CIRCUITPY_PROCESSOR_COUNT > 1
@@ -163,7 +163,7 @@ STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
 
 };
 
-STATIC MP_DEFINE_CONST_DICT(mcu_module_globals, mcu_module_globals_table);
+static MP_DEFINE_CONST_DICT(mcu_module_globals, mcu_module_globals_table);
 
 const mp_obj_module_t microcontroller_module = {
     .base = { &mp_type_module },

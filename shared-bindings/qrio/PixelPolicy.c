@@ -39,7 +39,7 @@ MAKE_ENUM_MAP(qrio_pixel_policy) {
     MAKE_ENUM_MAP_ENTRY(qrio_pixel_policy, EVEN_BYTES),
     MAKE_ENUM_MAP_ENTRY(qrio_pixel_policy, ODD_BYTES),
 };
-STATIC MP_DEFINE_CONST_DICT(qrio_pixel_policy_locals_dict, qrio_pixel_policy_locals_table);
+static MP_DEFINE_CONST_DICT(qrio_pixel_policy_locals_dict, qrio_pixel_policy_locals_table);
 
 MAKE_PRINTER(qrio, qrio_pixel_policy);
 

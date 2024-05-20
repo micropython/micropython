@@ -42,12 +42,12 @@
 //| Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-pwm>`_.
 //| """
 
-STATIC const mp_rom_map_elem_t pwmio_module_globals_table[] = {
+static const mp_rom_map_elem_t pwmio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pwmio) },
     { MP_ROM_QSTR(MP_QSTR_PWMOut), MP_ROM_PTR(&pwmio_pwmout_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pwmio_module_globals, pwmio_module_globals_table);
+static MP_DEFINE_CONST_DICT(pwmio_module_globals, pwmio_module_globals_table);
 
 const mp_obj_module_t pwmio_module = {
     .base = { &mp_type_module },

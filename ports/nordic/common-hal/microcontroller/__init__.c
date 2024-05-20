@@ -106,7 +106,7 @@ watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj = {
 };
 #endif
 
-STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
+static const mp_rom_map_elem_t mcu_pin_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_P0_00), MP_ROM_PTR(&pin_P0_00) },
     { MP_ROM_QSTR(MP_QSTR_P0_01), MP_ROM_PTR(&pin_P0_01) },
     { MP_ROM_QSTR(MP_QSTR_P0_02), MP_ROM_PTR(&pin_P0_02) },

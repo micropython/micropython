@@ -38,7 +38,7 @@ MAKE_ENUM_MAP(countio_edge) {
     MAKE_ENUM_MAP_ENTRY(edge, RISE_AND_FALL),
 };
 
-STATIC MP_DEFINE_CONST_DICT(countio_edge_locals_dict, countio_edge_locals_table);
+static MP_DEFINE_CONST_DICT(countio_edge_locals_dict, countio_edge_locals_table);
 
 MAKE_PRINTER(countio, countio_edge);
 

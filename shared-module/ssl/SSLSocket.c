@@ -32,7 +32,7 @@
 
 #ifdef MBEDTLS_DEBUG_C
 #include "mbedtls/debug.h"
-STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
+static void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
     (void)ctx;
     (void)level;
     mp_printf(&mp_plat_print, "DBG:%s:%04d: %s\n", file, line, str);
@@ -42,7 +42,7 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 #define DEBUG_PRINT(...) do {} while (0)
 #endif
 
-STATIC NORETURN void mbedtls_raise_error(int err) {
+static NORETURN void mbedtls_raise_error(int err) {
     // _mbedtls_ssl_send and _mbedtls_ssl_recv (below) turn positive error codes from the
     // underlying socket into negative codes to pass them through mbedtls. Here we turn them
     // positive again so they get interpreted as the OSError they really are. The
@@ -90,7 +90,7 @@ STATIC NORETURN void mbedtls_raise_error(int err) {
 // it is not OK to exit them by raising an exception (nlr_jump'ing through
 // foreign code is not permitted). Instead, preserve the error number of any OSError
 // and turn anything else into -MP_EINVAL.
-STATIC int call_method_errno(size_t n_args, const mp_obj_t *args) {
+static int call_method_errno(size_t n_args, const mp_obj_t *args) {
     nlr_buf_t nlr;
     mp_int_t result = -MP_EINVAL;
     if (nlr_push(&nlr) == 0) {
@@ -168,7 +168,7 @@ static mp_obj_t ssl_socket_accept(ssl_sslsocket_obj_t *self) {
     return mp_call_method_n_kw(0, 0, self->accept_args);
 }
 
-STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
+static int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     ssl_sslsocket_obj_t *self = (ssl_sslsocket_obj_t *)ctx;
 
     mp_int_t out_sz = ssl_socket_send(self, buf, len);
@@ -183,7 +183,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     return out_sz;
 }
 
-STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
+static int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     ssl_sslsocket_obj_t *self = (ssl_sslsocket_obj_t *)ctx;
 
     mp_int_t out_sz = ssl_socket_recv_into(self, buf, len);
@@ -376,7 +376,7 @@ void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
     mbedtls_entropy_free(&self->entropy);
 }
 
-STATIC void do_handshake(ssl_sslsocket_obj_t *self) {
+static void do_handshake(ssl_sslsocket_obj_t *self) {
     int ret;
     while ((ret = mbedtls_ssl_handshake(&self->ssl)) != 0) {
         if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {

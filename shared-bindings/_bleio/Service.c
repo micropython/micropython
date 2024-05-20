@@ -27,7 +27,7 @@
 //|
 //|         :return: the new Service"""
 //|         ...
-STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_uuid, ARG_secondary };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -52,45 +52,45 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
 //|     def deinit(self) -> None:
 //|         """Disable and deinitialise the Service."""
 //|         ...
-STATIC mp_obj_t bleio_service_deinit(mp_obj_t self_in) {
+static mp_obj_t bleio_service_deinit(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_bleio_service_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_deinit_obj, bleio_service_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_deinit_obj, bleio_service_deinit);
 
 //|     characteristics: Tuple[Characteristic, ...]
 //|     """A tuple of :py:class:`Characteristic` designating the characteristics that are offered by
 //|     this service. (read-only)"""
-STATIC mp_obj_t bleio_service_get_characteristics(mp_obj_t self_in) {
+static mp_obj_t bleio_service_get_characteristics(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(common_hal_bleio_service_get_characteristics(self));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_characteristics_obj, bleio_service_get_characteristics);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_characteristics_obj, bleio_service_get_characteristics);
 
 MP_PROPERTY_GETTER(bleio_service_characteristics_obj,
     (mp_obj_t)&bleio_service_get_characteristics_obj);
 
 //|     remote: bool
 //|     """True if this is a service provided by a remote device. (read-only)"""
-STATIC mp_obj_t bleio_service_get_remote(mp_obj_t self_in) {
+static mp_obj_t bleio_service_get_remote(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     return mp_obj_new_bool(common_hal_bleio_service_get_is_remote(self));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_remote_obj, bleio_service_get_remote);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_remote_obj, bleio_service_get_remote);
 
 MP_PROPERTY_GETTER(bleio_service_remote_obj,
     (mp_obj_t)&bleio_service_get_remote_obj);
 
 //|     secondary: bool
 //|     """True if this is a secondary service. (read-only)"""
-STATIC mp_obj_t bleio_service_get_secondary(mp_obj_t self_in) {
+static mp_obj_t bleio_service_get_secondary(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     return mp_obj_new_bool(common_hal_bleio_service_get_is_secondary(self));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_secondary_obj, bleio_service_get_secondary);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_secondary_obj, bleio_service_get_secondary);
 
 MP_PROPERTY_GETTER(bleio_service_secondary_obj,
     (mp_obj_t)&bleio_service_get_secondary_obj);
@@ -100,19 +100,19 @@ MP_PROPERTY_GETTER(bleio_service_secondary_obj,
 //|
 //|     Will be ``None`` if the 128-bit UUID for this service is not known."""
 //|
-STATIC mp_obj_t bleio_service_get_uuid(mp_obj_t self_in) {
+static mp_obj_t bleio_service_get_uuid(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     bleio_uuid_obj_t *uuid = common_hal_bleio_service_get_uuid(self);
     return uuid ? MP_OBJ_FROM_PTR(uuid) : mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_uuid_obj, bleio_service_get_uuid);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_uuid_obj, bleio_service_get_uuid);
 
 MP_PROPERTY_GETTER(bleio_service_uuid_obj,
     (mp_obj_t)&bleio_service_get_uuid_obj);
 
 
-STATIC const mp_rom_map_elem_t bleio_service_locals_dict_table[] = {
+static const mp_rom_map_elem_t bleio_service_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),            MP_ROM_PTR(&bleio_service_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__),           MP_ROM_PTR(&bleio_service_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_characteristics),   MP_ROM_PTR(&bleio_service_characteristics_obj) },
@@ -120,9 +120,9 @@ STATIC const mp_rom_map_elem_t bleio_service_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_uuid),              MP_ROM_PTR(&bleio_service_uuid_obj) },
     { MP_ROM_QSTR(MP_QSTR_remote),            MP_ROM_PTR(&bleio_service_remote_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(bleio_service_locals_dict, bleio_service_locals_dict_table);
+static MP_DEFINE_CONST_DICT(bleio_service_locals_dict, bleio_service_locals_dict_table);
 
-STATIC void bleio_service_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void bleio_service_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->uuid) {
         mp_printf(print, "Service(");

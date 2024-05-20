@@ -55,7 +55,7 @@ displayio_buffer_transform_t null_transform = {
 };
 
 #if CIRCUITPY_RGBMATRIX || CIRCUITPY_IS31FL3741 || CIRCUITPY_VIDEOCORE
-STATIC bool any_display_uses_this_framebuffer(mp_obj_base_t *obj) {
+static bool any_display_uses_this_framebuffer(mp_obj_base_t *obj) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].display_base.type == &framebufferio_framebufferdisplay_type) {
             framebufferio_framebufferdisplay_obj_t *display = &displays[i].framebuffer_display;

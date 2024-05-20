@@ -40,7 +40,7 @@
 //|         :param microcontroller.Pin reset: Reset pin. When None only software reset can be used
 //|         """
 //|         ...
-STATIC mp_obj_t i2cdisplaybus_i2cdisplaybus_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t i2cdisplaybus_i2cdisplaybus_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_i2c_bus, ARG_device_address, ARG_reset };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_i2c_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -65,7 +65,7 @@ STATIC mp_obj_t i2cdisplaybus_i2cdisplaybus_make_new(const mp_obj_type_t *type, 
 //|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
 //|         is available."""
 //|         ...
-STATIC mp_obj_t i2cdisplaybus_i2cdisplaybus_obj_reset(mp_obj_t self_in) {
+static mp_obj_t i2cdisplaybus_i2cdisplaybus_obj_reset(mp_obj_t self_in) {
     i2cdisplaybus_i2cdisplaybus_obj_t *self = self_in;
 
     if (!common_hal_i2cdisplaybus_i2cdisplaybus_reset(self)) {
@@ -80,7 +80,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(i2cdisplaybus_i2cdisplaybus_reset_obj, i2cdisplaybus_i
 //|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
 //|         ...
 //|
-STATIC mp_obj_t i2cdisplaybus_i2cdisplaybus_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
+static mp_obj_t i2cdisplaybus_i2cdisplaybus_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
     mp_int_t command_int = mp_obj_get_int(command_obj);
     mp_arg_validate_int_range(command_int, 0, 255, MP_QSTR_command);
 
@@ -102,11 +102,11 @@ STATIC mp_obj_t i2cdisplaybus_i2cdisplaybus_obj_send(mp_obj_t self, mp_obj_t com
 }
 MP_DEFINE_CONST_FUN_OBJ_3(i2cdisplaybus_i2cdisplaybus_send_obj, i2cdisplaybus_i2cdisplaybus_obj_send);
 
-STATIC const mp_rom_map_elem_t i2cdisplaybus_i2cdisplaybus_locals_dict_table[] = {
+static const mp_rom_map_elem_t i2cdisplaybus_i2cdisplaybus_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&i2cdisplaybus_i2cdisplaybus_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&i2cdisplaybus_i2cdisplaybus_send_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(i2cdisplaybus_i2cdisplaybus_locals_dict, i2cdisplaybus_i2cdisplaybus_locals_dict_table);
+static MP_DEFINE_CONST_DICT(i2cdisplaybus_i2cdisplaybus_locals_dict, i2cdisplaybus_i2cdisplaybus_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     i2cdisplaybus_i2cdisplaybus_type,

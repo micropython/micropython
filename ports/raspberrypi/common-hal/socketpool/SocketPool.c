@@ -26,7 +26,7 @@ typedef struct _getaddrinfo_state_t {
     volatile ip_addr_t ipaddr;
 } getaddrinfo_state_t;
 
-STATIC void lwip_getaddrinfo_cb(const char *name, const ip_addr_t *ipaddr, void *arg) {
+static void lwip_getaddrinfo_cb(const char *name, const ip_addr_t *ipaddr, void *arg) {
     getaddrinfo_state_t *state = arg;
     if (ipaddr != NULL) {
         state->status = 1;
@@ -37,7 +37,7 @@ STATIC void lwip_getaddrinfo_cb(const char *name, const ip_addr_t *ipaddr, void 
     }
 }
 
-STATIC int socketpool_resolve_host(socketpool_socketpool_obj_t *self, const char *host, ip_addr_t *addr) {
+static int socketpool_resolve_host(socketpool_socketpool_obj_t *self, const char *host, ip_addr_t *addr) {
 
     getaddrinfo_state_t state;
     state.status = 0;

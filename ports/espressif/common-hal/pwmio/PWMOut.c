@@ -13,11 +13,11 @@
 
 #define INDEX_EMPTY 0xFF
 
-STATIC uint32_t reserved_timer_freq[LEDC_TIMER_MAX];
-STATIC bool varfreq_timers[LEDC_TIMER_MAX];
-STATIC uint8_t reserved_channels[LEDC_CHANNEL_MAX] = { [0 ... LEDC_CHANNEL_MAX - 1] = INDEX_EMPTY};
+static uint32_t reserved_timer_freq[LEDC_TIMER_MAX];
+static bool varfreq_timers[LEDC_TIMER_MAX];
+static uint8_t reserved_channels[LEDC_CHANNEL_MAX] = { [0 ... LEDC_CHANNEL_MAX - 1] = INDEX_EMPTY};
 
-STATIC uint32_t calculate_duty_cycle(uint32_t frequency) {
+static uint32_t calculate_duty_cycle(uint32_t frequency) {
     uint32_t duty_bits = 0;
     uint32_t interval = APB_CLK_FREQ / frequency;
     for (size_t i = 0; i < 32; i++) {

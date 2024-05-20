@@ -25,12 +25,12 @@
 //| Since CircuitPython 5, `Mixer`, `RawSample` and `WaveFile` are moved
 //| to :mod:`audiocore`."""
 
-STATIC const mp_rom_map_elem_t audiopwmio_module_globals_table[] = {
+static const mp_rom_map_elem_t audiopwmio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiopwmio) },
     { MP_ROM_QSTR(MP_QSTR_PWMAudioOut), MP_ROM_PTR(&audiopwmio_pwmaudioout_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(audiopwmio_module_globals, audiopwmio_module_globals_table);
+static MP_DEFINE_CONST_DICT(audiopwmio_module_globals, audiopwmio_module_globals_table);
 
 const mp_obj_module_t audiopwmio_module = {
     .base = { &mp_type_module },

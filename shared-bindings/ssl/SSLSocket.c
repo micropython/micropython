@@ -40,29 +40,29 @@
 //|         """Automatically closes the Socket when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t ssl_sslsocket___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t ssl_sslsocket___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_ssl_sslsocket_close(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket___exit___obj, 4, 4, ssl_sslsocket___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket___exit___obj, 4, 4, ssl_sslsocket___exit__);
 
 //|     def accept(self) -> Tuple[SSLSocket, Tuple[str, int]]:
 //|         """Accept a connection on a listening socket of type SOCK_STREAM,
 //|         creating a new socket of type SOCK_STREAM.
 //|         Returns a tuple of (new_socket, remote_address)"""
-STATIC mp_obj_t ssl_sslsocket_accept(mp_obj_t self_in) {
+static mp_obj_t ssl_sslsocket_accept(mp_obj_t self_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_ssl_sslsocket_accept(self);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslsocket_accept_obj, ssl_sslsocket_accept);
+static MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslsocket_accept_obj, ssl_sslsocket_accept);
 
 //|     def bind(self, address: Tuple[str, int]) -> None:
 //|         """Bind a socket to an address
 //|
 //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
 //|         ...
-STATIC mp_obj_t ssl_sslsocket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
+static mp_obj_t ssl_sslsocket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_obj_t *addr_items;
@@ -71,36 +71,36 @@ STATIC mp_obj_t ssl_sslsocket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     common_hal_ssl_sslsocket_bind(self, addr_in);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_bind_obj, ssl_sslsocket_bind);
+static MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_bind_obj, ssl_sslsocket_bind);
 
 //|     def close(self) -> None:
 //|         """Closes this Socket"""
-STATIC mp_obj_t ssl_sslsocket_close(mp_obj_t self_in) {
+static mp_obj_t ssl_sslsocket_close(mp_obj_t self_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_ssl_sslsocket_close(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslsocket_close_obj, ssl_sslsocket_close);
+static MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslsocket_close_obj, ssl_sslsocket_close);
 
 //|     def connect(self, address: Tuple[str, int]) -> None:
 //|         """Connect a socket to a remote address
 //|
 //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
 //|         ...
-STATIC mp_obj_t ssl_sslsocket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
+static mp_obj_t ssl_sslsocket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_ssl_sslsocket_connect(self, addr_in);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_connect_obj, ssl_sslsocket_connect);
+static MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_connect_obj, ssl_sslsocket_connect);
 
 //|     def listen(self, backlog: int) -> None:
 //|         """Set socket to listen for incoming connections
 //|
 //|         :param ~int backlog: length of backlog queue for waiting connetions"""
 //|         ...
-STATIC mp_obj_t ssl_sslsocket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
+static mp_obj_t ssl_sslsocket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     int backlog = mp_obj_get_int(backlog_in);
@@ -108,7 +108,7 @@ STATIC mp_obj_t ssl_sslsocket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
     common_hal_ssl_sslsocket_listen(self, backlog);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_listen_obj, ssl_sslsocket_listen);
+static MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_listen_obj, ssl_sslsocket_listen);
 
 //|     def recv_into(self, buffer: WriteableBuffer, bufsize: int) -> int:
 //|         """Reads some bytes from the connected remote address, writing
@@ -123,7 +123,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_listen_obj, ssl_sslsocket_listen)
 //|         :param bytearray buffer: buffer to receive into
 //|         :param int bufsize: optionally, a maximum number of bytes to read."""
 //|         ...
-STATIC mp_obj_t ssl_sslsocket_recv_into(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t ssl_sslsocket_recv_into(size_t n_args, const mp_obj_t *args) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (common_hal_ssl_sslsocket_get_closed(self)) {
         // Bad file number.
@@ -153,7 +153,7 @@ STATIC mp_obj_t ssl_sslsocket_recv_into(size_t n_args, const mp_obj_t *args) {
     mp_int_t ret = common_hal_ssl_sslsocket_recv_into(self, (byte *)bufinfo.buf, len);
     return mp_obj_new_int_from_uint(ret);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket_recv_into_obj, 2, 3, ssl_sslsocket_recv_into);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket_recv_into_obj, 2, 3, ssl_sslsocket_recv_into);
 
 //|     def send(self, bytes: ReadableBuffer) -> int:
 //|         """Send some bytes to the connected remote address.
@@ -161,7 +161,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket_recv_into_obj, 2, 3, ss
 //|
 //|         :param ~bytes bytes: some bytes to send"""
 //|         ...
-STATIC mp_obj_t ssl_sslsocket_send(mp_obj_t self_in, mp_obj_t buf_in) {
+static mp_obj_t ssl_sslsocket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (common_hal_ssl_sslsocket_get_closed(self)) {
         // Bad file number.
@@ -178,13 +178,13 @@ STATIC mp_obj_t ssl_sslsocket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     }
     return mp_obj_new_int_from_uint(ret);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_send_obj, ssl_sslsocket_send);
+static MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_send_obj, ssl_sslsocket_send);
 
 // //|     def setsockopt(self, level: int, optname: int, value: int | ReadableBuffer) -> None:
 // //|         """Sets socket options"""
 // //|         ...
 // //|
-STATIC mp_obj_t ssl_sslsocket_setsockopt(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t ssl_sslsocket_setsockopt(size_t n_args, const mp_obj_t *args) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_obj_t level = args[1];
     mp_obj_t optname = args[2];
@@ -195,7 +195,7 @@ STATIC mp_obj_t ssl_sslsocket_setsockopt(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket_setsockopt_obj, 4, 4, ssl_sslsocket_setsockopt);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket_setsockopt_obj, 4, 4, ssl_sslsocket_setsockopt);
 
 //|     def settimeout(self, value: int) -> None:
 //|         """Set the timeout value for this socket.
@@ -203,12 +203,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket_setsockopt_obj, 4, 4, s
 //|         :param ~int value: timeout in seconds.  0 means non-blocking.  None means block indefinitely.
 //|         """
 //|         ...
-STATIC mp_obj_t ssl_sslsocket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
+static mp_obj_t ssl_sslsocket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_ssl_sslsocket_settimeout(self, timeout_in);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_settimeout_obj, ssl_sslsocket_settimeout);
+static MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_settimeout_obj, ssl_sslsocket_settimeout);
 
 //|     def setblocking(self, flag: bool) -> Optional[int]:
 //|         """Set the blocking behaviour of this socket.
@@ -217,7 +217,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_settimeout_obj, ssl_sslsocket_set
 //|         ...
 //|
 // method socket.setblocking(flag)
-STATIC mp_obj_t ssl_sslsocket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
+static mp_obj_t ssl_sslsocket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (mp_obj_is_true(blocking)) {
         common_hal_ssl_sslsocket_settimeout(self, mp_const_none);
@@ -226,9 +226,9 @@ STATIC mp_obj_t ssl_sslsocket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_setblocking_obj, ssl_sslsocket_setblocking);
+static MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_setblocking_obj, ssl_sslsocket_setblocking);
 
-STATIC const mp_rom_map_elem_t ssl_sslsocket_locals_dict_table[] = {
+static const mp_rom_map_elem_t ssl_sslsocket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&ssl_sslsocket___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ssl_sslsocket_close_obj) },
@@ -245,7 +245,7 @@ STATIC const mp_rom_map_elem_t ssl_sslsocket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&ssl_sslsocket_settimeout_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(ssl_sslsocket_locals_dict, ssl_sslsocket_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ssl_sslsocket_locals_dict, ssl_sslsocket_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     ssl_sslsocket_type,

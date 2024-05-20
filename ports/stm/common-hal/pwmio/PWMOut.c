@@ -16,16 +16,16 @@
 #include "timers.h"
 
 // Bitmask of channels taken.
-STATIC uint8_t tim_channels_taken[TIM_BANK_ARRAY_LEN];
+static uint8_t tim_channels_taken[TIM_BANK_ARRAY_LEN];
 // Initial frequency timer is set to.
-STATIC uint32_t tim_frequencies[TIM_BANK_ARRAY_LEN];
+static uint32_t tim_frequencies[TIM_BANK_ARRAY_LEN];
 
-STATIC uint32_t timer_get_internal_duty(uint16_t duty, uint32_t period) {
+static uint32_t timer_get_internal_duty(uint16_t duty, uint32_t period) {
     // duty cycle is duty/0xFFFF fraction x (number of pulses per period)
     return (duty * period) / 0xffff;
 }
 
-STATIC bool timer_get_optimal_divisors(uint32_t *period, uint32_t *prescaler,
+static bool timer_get_optimal_divisors(uint32_t *period, uint32_t *prescaler,
     uint32_t frequency, uint32_t source_freq) {
     // Find the largest possible period supported by this frequency
     *prescaler = 0;

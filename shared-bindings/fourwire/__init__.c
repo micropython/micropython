@@ -17,12 +17,12 @@
 //|
 //| """
 
-STATIC const mp_rom_map_elem_t fourwire_module_globals_table[] = {
+static const mp_rom_map_elem_t fourwire_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_fourwire) },
 
     { MP_ROM_QSTR(MP_QSTR_FourWire), MP_ROM_PTR(&fourwire_fourwire_type) },
 };
-STATIC MP_DEFINE_CONST_DICT(fourwire_module_globals, fourwire_module_globals_table);
+static MP_DEFINE_CONST_DICT(fourwire_module_globals, fourwire_module_globals_table);
 
 const mp_obj_module_t fourwire_module = {
     .base = { &mp_type_module },

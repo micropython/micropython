@@ -65,7 +65,7 @@ mp_obj_t alarm_touch_touchalarm_record_wake_alarm(void) {
 }
 
 // This is used to wake the main CircuitPython task.
-STATIC void touch_interrupt(void *arg) {
+static void touch_interrupt(void *arg) {
     (void)arg;
     woke_up = true;
     port_wake_main_task_from_isr();

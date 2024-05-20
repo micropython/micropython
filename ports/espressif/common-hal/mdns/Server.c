@@ -16,7 +16,7 @@
 // Track whether the underlying IDF mdns has been started so that we only
 // create a single inited MDNS object to CircuitPython. (After deinit, another
 // could be created.)
-STATIC mdns_server_obj_t *_active_object = NULL;
+static mdns_server_obj_t *_active_object = NULL;
 
 void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
     if (_active_object != NULL) {

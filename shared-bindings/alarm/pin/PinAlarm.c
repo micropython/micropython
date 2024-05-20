@@ -40,7 +40,7 @@
 //|           pulls it high.
 //|         """
 //|         ...
-STATIC mp_obj_t alarm_pin_pinalarm_make_new(const mp_obj_type_t *type, mp_uint_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t alarm_pin_pinalarm_make_new(const mp_obj_type_t *type, mp_uint_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     alarm_pin_pinalarm_obj_t *self = mp_obj_malloc(alarm_pin_pinalarm_obj_t, &alarm_pin_pinalarm_type);
     enum { ARG_pin, ARG_value, ARG_edge, ARG_pull };
     static const mp_arg_t allowed_args[] = {
@@ -65,7 +65,7 @@ STATIC mp_obj_t alarm_pin_pinalarm_make_new(const mp_obj_type_t *type, mp_uint_t
 
 //|     pin: microcontroller.Pin
 //|     """The trigger pin."""
-STATIC mp_obj_t alarm_pin_pinalarm_obj_get_pin(mp_obj_t self_in) {
+static mp_obj_t alarm_pin_pinalarm_obj_get_pin(mp_obj_t self_in) {
     alarm_pin_pinalarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const mcu_pin_obj_t *pin = common_hal_alarm_pin_pinalarm_get_pin(self);
     if (pin == NULL) {
@@ -81,7 +81,7 @@ MP_PROPERTY_GETTER(alarm_pin_pinalarm_pin_obj,
 //|     value: bool
 //|     """The value on which to trigger."""
 //|
-STATIC mp_obj_t alarm_pin_pinalarm_obj_get_value(mp_obj_t self_in) {
+static mp_obj_t alarm_pin_pinalarm_obj_get_value(mp_obj_t self_in) {
     alarm_pin_pinalarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_alarm_pin_pinalarm_get_value(self));
 }
@@ -90,12 +90,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(alarm_pin_pinalarm_get_value_obj, alarm_pin_pinalarm_o
 MP_PROPERTY_GETTER(alarm_pin_pinalarm_value_obj,
     (mp_obj_t)&alarm_pin_pinalarm_get_value_obj);
 
-STATIC const mp_rom_map_elem_t alarm_pin_pinalarm_locals_dict_table[] = {
+static const mp_rom_map_elem_t alarm_pin_pinalarm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_pin), MP_ROM_PTR(&alarm_pin_pinalarm_pin_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&alarm_pin_pinalarm_value_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(alarm_pin_pinalarm_locals_dict, alarm_pin_pinalarm_locals_dict_table);
+static MP_DEFINE_CONST_DICT(alarm_pin_pinalarm_locals_dict, alarm_pin_pinalarm_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     alarm_pin_pinalarm_type,

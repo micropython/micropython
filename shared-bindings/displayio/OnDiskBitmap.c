@@ -58,7 +58,7 @@
 //|         of CircuitPython will remove the ability to pass in an opened file.
 //|         """
 //|         ...
-STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     mp_obj_t arg = all_args[0];
 
@@ -77,7 +77,7 @@ STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_
 
 //|     width: int
 //|     """Width of the bitmap. (read only)"""
-STATIC mp_obj_t displayio_ondiskbitmap_obj_get_width(mp_obj_t self_in) {
+static mp_obj_t displayio_ondiskbitmap_obj_get_width(mp_obj_t self_in) {
     displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
 
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskbitmap_get_width(self));
@@ -90,7 +90,7 @@ MP_PROPERTY_GETTER(displayio_ondiskbitmap_width_obj,
 
 //|     height: int
 //|     """Height of the bitmap. (read only)"""
-STATIC mp_obj_t displayio_ondiskbitmap_obj_get_height(mp_obj_t self_in) {
+static mp_obj_t displayio_ondiskbitmap_obj_get_height(mp_obj_t self_in) {
     displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
 
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskbitmap_get_height(self));
@@ -106,7 +106,7 @@ MP_PROPERTY_GETTER(displayio_ondiskbitmap_height_obj,
 //|     bitmap's structure.  The pixel shader can be modified (e.g., to set the
 //|     transparent pixel or, for palette shaded images, to update the palette.)"""
 //|
-STATIC mp_obj_t displayio_ondiskbitmap_obj_get_pixel_shader(mp_obj_t self_in) {
+static mp_obj_t displayio_ondiskbitmap_obj_get_pixel_shader(mp_obj_t self_in) {
     displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_displayio_ondiskbitmap_get_pixel_shader(self);
 }
@@ -121,12 +121,12 @@ const mp_obj_property_t displayio_ondiskbitmap_pixel_shader_obj = {
 };
 
 
-STATIC const mp_rom_map_elem_t displayio_ondiskbitmap_locals_dict_table[] = {
+static const mp_rom_map_elem_t displayio_ondiskbitmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_ondiskbitmap_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&displayio_ondiskbitmap_pixel_shader_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_ondiskbitmap_width_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(displayio_ondiskbitmap_locals_dict, displayio_ondiskbitmap_locals_dict_table);
+static MP_DEFINE_CONST_DICT(displayio_ondiskbitmap_locals_dict, displayio_ondiskbitmap_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     displayio_ondiskbitmap_type,

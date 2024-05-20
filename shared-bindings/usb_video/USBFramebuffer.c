@@ -33,7 +33,7 @@ static void check_for_deinit(usb_video_uvcframebuffer_obj_t *self) {
 //|
 //|     def __new__(self):
 //|         """Returns the singleton framebuffer object, if USB video is enabled"""
-STATIC mp_obj_t usb_video_uvcframebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t usb_video_uvcframebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {};
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -45,7 +45,7 @@ STATIC mp_obj_t usb_video_uvcframebuffer_make_new(const mp_obj_type_t *type, siz
 //|         """Transmits the color data in the buffer to the pixels so that
 //|         they are shown."""
 //|         ...
-STATIC mp_obj_t usb_video_uvcframebuffer_refresh(mp_obj_t self_in) {
+static mp_obj_t usb_video_uvcframebuffer_refresh(mp_obj_t self_in) {
     usb_video_uvcframebuffer_obj_t *self = (usb_video_uvcframebuffer_obj_t *)self_in;
     check_for_deinit(self);
     shared_module_usb_video_uvcframebuffer_refresh(self);
@@ -55,7 +55,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_video_uvcframebuffer_refresh_obj, usb_video_uvcfra
 
 //|     width: int
 //|     """The width of the display, in pixels"""
-STATIC mp_obj_t usb_video_uvcframebuffer_get_width(mp_obj_t self_in) {
+static mp_obj_t usb_video_uvcframebuffer_get_width(mp_obj_t self_in) {
     usb_video_uvcframebuffer_obj_t *self = (usb_video_uvcframebuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(shared_module_usb_video_uvcframebuffer_get_width(self));
@@ -67,7 +67,7 @@ MP_PROPERTY_GETTER(usb_video_uvcframebuffer_width_obj,
 //|     height: int
 //|     """The height of the display, in pixels"""
 //|
-STATIC mp_obj_t usb_video_uvcframebuffer_get_height(mp_obj_t self_in) {
+static mp_obj_t usb_video_uvcframebuffer_get_height(mp_obj_t self_in) {
     usb_video_uvcframebuffer_obj_t *self = (usb_video_uvcframebuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(shared_module_usb_video_uvcframebuffer_get_height(self));
@@ -77,46 +77,46 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_video_uvcframebuffer_get_height_obj, usb_video_uvc
 MP_PROPERTY_GETTER(usb_video_uvcframebuffer_height_obj,
     (mp_obj_t)&usb_video_uvcframebuffer_get_height_obj);
 
-STATIC const mp_rom_map_elem_t usb_video_uvcframebuffer_locals_dict_table[] = {
+static const mp_rom_map_elem_t usb_video_uvcframebuffer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&usb_video_uvcframebuffer_refresh_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&usb_video_uvcframebuffer_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&usb_video_uvcframebuffer_height_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(usb_video_uvcframebuffer_locals_dict, usb_video_uvcframebuffer_locals_dict_table);
+static MP_DEFINE_CONST_DICT(usb_video_uvcframebuffer_locals_dict, usb_video_uvcframebuffer_locals_dict_table);
 
-STATIC void usb_video_uvcframebuffer_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
+static void usb_video_uvcframebuffer_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
     shared_module_usb_video_uvcframebuffer_get_bufinfo(self_in, bufinfo);
 }
 
 // These version exists so that the prototype matches the protocol,
 // avoiding a type cast that can hide errors
-STATIC void usb_video_uvcframebuffer_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
+static void usb_video_uvcframebuffer_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
     (void)dirty_row_bitmap;
     shared_module_usb_video_uvcframebuffer_refresh(self_in);
 }
 
-STATIC void usb_video_uvcframebuffer_deinit_proto(mp_obj_t self_in) {
+static void usb_video_uvcframebuffer_deinit_proto(mp_obj_t self_in) {
     /* NOTHING */
 }
 
-STATIC int usb_video_uvcframebuffer_get_width_proto(mp_obj_t self_in) {
+static int usb_video_uvcframebuffer_get_width_proto(mp_obj_t self_in) {
     return shared_module_usb_video_uvcframebuffer_get_width(self_in);
 }
 
-STATIC int usb_video_uvcframebuffer_get_height_proto(mp_obj_t self_in) {
+static int usb_video_uvcframebuffer_get_height_proto(mp_obj_t self_in) {
     return shared_module_usb_video_uvcframebuffer_get_height(self_in);
 }
 
-STATIC int usb_video_uvcframebuffer_get_native_frames_per_second_proto(mp_obj_t self_in) {
+static int usb_video_uvcframebuffer_get_native_frames_per_second_proto(mp_obj_t self_in) {
     return 10;
 }
 
-STATIC bool usb_video_uvcframebuffer_get_reverse_pixels_in_word_proto(mp_obj_t self_in) {
+static bool usb_video_uvcframebuffer_get_reverse_pixels_in_word_proto(mp_obj_t self_in) {
     return true;
 }
 
 
-STATIC const framebuffer_p_t usb_video_uvcframebuffer_proto = {
+static const framebuffer_p_t usb_video_uvcframebuffer_proto = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)
     .get_bufinfo = usb_video_uvcframebuffer_get_bufinfo,
     .get_width = usb_video_uvcframebuffer_get_width_proto,
@@ -127,7 +127,7 @@ STATIC const framebuffer_p_t usb_video_uvcframebuffer_proto = {
     .get_reverse_pixels_in_word = usb_video_uvcframebuffer_get_reverse_pixels_in_word_proto,
 };
 
-STATIC mp_int_t usb_video_uvcframebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+static mp_int_t usb_video_uvcframebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     shared_module_usb_video_uvcframebuffer_get_bufinfo(self_in, bufinfo);
     bufinfo->typecode = 'H';
     return 0;

@@ -31,7 +31,7 @@
 #endif
 
 // These are in order from highest available frequency to lowest (32MHz first, then 8MHz).
-STATIC const spim_peripheral_t spim_peripherals[] = {
+static const spim_peripheral_t spim_peripherals[] = {
     #if NRFX_CHECK(NRFX_SPIM3_ENABLED)
     // SPIM3 exists only on nRF52840 and supports 32MHz max. All other SPIM's are only 8MHz max.
     // Allocate SPIM3 first.
@@ -59,11 +59,11 @@ STATIC const spim_peripheral_t spim_peripherals[] = {
     #endif
 };
 
-STATIC bool never_reset[MP_ARRAY_SIZE(spim_peripherals)];
+static bool never_reset[MP_ARRAY_SIZE(spim_peripherals)];
 
 // Separate RAM area for SPIM3 transmit buffer to avoid SPIM3 hardware errata.
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Ferrata_nRF52840_Rev2%2FERR%2FnRF52840%2FRev2%2Flatest%2Fanomaly_840_198.html
-STATIC uint8_t *spim3_transmit_buffer = (uint8_t *)SPIM3_BUFFER_RAM_START_ADDR;
+static uint8_t *spim3_transmit_buffer = (uint8_t *)SPIM3_BUFFER_RAM_START_ADDR;
 
 void spi_reset(void) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(spim_peripherals); i++) {

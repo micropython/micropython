@@ -26,8 +26,8 @@
 // To-do idf v5.0: remove following include
 #include "soc/rtc_cntl_reg.h"
 
-STATIC bool ulp_used = false;
-STATIC uint32_t pins_used = 0;
+static bool ulp_used = false;
+static uint32_t pins_used = 0;
 
 void espulp_reset(void) {
     // NOTE: This *doesn't* disable the ULP. It'll keep running even when CircuitPython isn't.

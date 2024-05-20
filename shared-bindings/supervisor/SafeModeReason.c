@@ -131,7 +131,7 @@ MAKE_ENUM_MAP(supervisor_safe_mode_reason) {
     MAKE_ENUM_MAP_ENTRY(safe_mode_reason, WATCHDOG),
 };
 
-STATIC MP_DEFINE_CONST_DICT(supervisor_safe_mode_reason_locals_dict, supervisor_safe_mode_reason_locals_table);
+static MP_DEFINE_CONST_DICT(supervisor_safe_mode_reason_locals_dict, supervisor_safe_mode_reason_locals_table);
 
 MAKE_PRINTER(supervisor, supervisor_safe_mode_reason);
 

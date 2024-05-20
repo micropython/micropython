@@ -22,7 +22,7 @@ typedef struct {
     int fd;
 } analogin_dev_t;
 
-STATIC analogin_dev_t analogin_dev[] = {
+static analogin_dev_t analogin_dev[] = {
     {"/dev/lpadc0", &pin_LPADC0, -1},
     {"/dev/lpadc1", &pin_LPADC1, -1},
     {"/dev/lpadc2", &pin_LPADC2, -1},

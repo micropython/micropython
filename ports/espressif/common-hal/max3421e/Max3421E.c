@@ -29,7 +29,7 @@
 // task is started.
 TaskHandle_t usb_host_task_handle;
 
-STATIC void usb_host_task(void *param) {
+static void usb_host_task(void *param) {
     (void)param;
     // RTOS forever loop
     while (1) {

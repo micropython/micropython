@@ -16,12 +16,12 @@
 // Based on a 32768 kHz clock
 #define SUBTICKS_PER_TICK 32
 
-STATIC RTC_HandleTypeDef hrtc;
+static RTC_HandleTypeDef hrtc;
 
 #if BOARD_HAS_LOW_SPEED_CRYSTAL
-STATIC uint32_t rtc_clock_frequency = LSE_VALUE;
+static uint32_t rtc_clock_frequency = LSE_VALUE;
 #else
-STATIC uint32_t rtc_clock_frequency = LSI_VALUE;
+static uint32_t rtc_clock_frequency = LSI_VALUE;
 #endif
 
 volatile uint32_t seconds_to_date = 0;
@@ -68,7 +68,7 @@ void stm32_peripherals_rtc_init(void) {
 
 // This function is called often for timing so we cache the seconds elapsed computation based on the
 // register value. The STM HAL always does shifts and conversion if we use it directly.
-STATIC uint64_t stm32_peripherals_rtc_raw_ticks(uint8_t *subticks) {
+static uint64_t stm32_peripherals_rtc_raw_ticks(uint8_t *subticks) {
     // Disable IRQs to ensure we read all of the RTC registers as close in time as possible. Read
     // SSR twice to make sure we didn't read across a tick.
     __disable_irq();

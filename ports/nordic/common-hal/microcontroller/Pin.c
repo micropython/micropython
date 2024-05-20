@@ -17,10 +17,10 @@ bool speaker_enable_in_use;
 #endif
 
 // Bit mask of claimed pins on each of up to two ports. nrf52832 has one port; nrf52840 has two.
-STATIC uint32_t claimed_pins[GPIO_COUNT];
-STATIC uint32_t never_reset_pins[GPIO_COUNT];
+static uint32_t claimed_pins[GPIO_COUNT];
+static uint32_t never_reset_pins[GPIO_COUNT];
 
-STATIC void reset_speaker_enable_pin(void) {
+static void reset_speaker_enable_pin(void) {
     #ifdef SPEAKER_ENABLE_PIN
     speaker_enable_in_use = false;
     nrf_gpio_cfg(SPEAKER_ENABLE_PIN->number,

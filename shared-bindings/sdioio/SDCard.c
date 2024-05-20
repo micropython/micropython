@@ -62,7 +62,7 @@
 //|             os.listdir('/sd')"""
 //|         ...
 
-STATIC mp_obj_t sdioio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t sdioio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     sdioio_sdcard_obj_t *self = mp_obj_malloc(sdioio_sdcard_obj_t, &sdioio_SDCard_type);
     enum { ARG_clock, ARG_command, ARG_data, ARG_frequency, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
@@ -86,7 +86,7 @@ STATIC mp_obj_t sdioio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void check_for_deinit(sdioio_sdcard_obj_t *self) {
+static void check_for_deinit(sdioio_sdcard_obj_t *self) {
     if (common_hal_sdioio_sdcard_deinited(self)) {
         raise_deinited_error();
     }
@@ -99,7 +99,7 @@ STATIC void check_for_deinit(sdioio_sdcard_obj_t *self) {
 //|         :param int width: the number of data lines to use.  Must be 1 or 4 and must also not exceed the number of data lines at construction
 //|
 //|         .. note:: Leaving a value unspecified or 0 means the current setting is kept"""
-STATIC mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_frequency, ARG_width, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -130,7 +130,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(sdioio_sdcard_configure_obj, 1, sdioio_sdcard_configu
 //|         Due to technical limitations, this is a function and not a property.
 //|
 //|         :return: The number of 512-byte blocks, as a number"""
-STATIC mp_obj_t sdioio_sdcard_count(mp_obj_t self_in) {
+static mp_obj_t sdioio_sdcard_count(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_sdioio_sdcard_get_count(self));
@@ -144,7 +144,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_count_obj, sdioio_sdcard_count);
 //|         :param ~circuitpython_typing.WriteableBuffer buf: The buffer to write into.  Length must be multiple of 512.
 //|
 //|         :return: None"""
-STATIC mp_obj_t _sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
+static mp_obj_t _sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
@@ -165,7 +165,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, _sdioio_sdcard_readblock
 //|         :param ~circuitpython_typing.ReadableBuffer buf: The buffer to read from.  Length must be multiple of 512.
 //|
 //|         :return: None"""
-STATIC mp_obj_t _sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
+static mp_obj_t _sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
@@ -182,7 +182,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_writeblocks_obj, _sdioio_sdcard_writeblo
 //|     frequency: int
 //|     """The actual SDIO bus frequency. This may not match the frequency
 //|     requested due to internal limitations."""
-STATIC mp_obj_t sdioio_sdcard_obj_get_frequency(mp_obj_t self_in) {
+static mp_obj_t sdioio_sdcard_obj_get_frequency(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_sdioio_sdcard_get_frequency(self));
@@ -194,7 +194,7 @@ MP_PROPERTY_GETTER(sdioio_sdcard_frequency_obj,
 
 //|     width: int
 //|     """The actual SDIO bus width, in bits"""
-STATIC mp_obj_t sdioio_sdcard_obj_get_width(mp_obj_t self_in) {
+static mp_obj_t sdioio_sdcard_obj_get_width(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_sdioio_sdcard_get_width(self));
@@ -208,7 +208,7 @@ MP_PROPERTY_GETTER(sdioio_sdcard_width_obj,
 //|         """Disable permanently.
 //|
 //|         :return: None"""
-STATIC mp_obj_t sdioio_sdcard_obj_deinit(mp_obj_t self_in) {
+static mp_obj_t sdioio_sdcard_obj_deinit(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_sdioio_sdcard_deinit(self);
     return mp_const_none;
@@ -225,14 +225,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_deinit_obj, sdioio_sdcard_obj_deinit);
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
 //|
-STATIC mp_obj_t sdioio_sdcard_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t sdioio_sdcard_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_sdioio_sdcard_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(sdioio_sdcard_obj___exit___obj, 4, 4, sdioio_sdcard_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(sdioio_sdcard_obj___exit___obj, 4, 4, sdioio_sdcard_obj___exit__);
 
-STATIC const mp_rom_map_elem_t sdioio_sdcard_locals_dict_table[] = {
+static const mp_rom_map_elem_t sdioio_sdcard_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&sdioio_sdcard_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&sdioio_sdcard_obj___exit___obj) },
@@ -245,7 +245,7 @@ STATIC const mp_rom_map_elem_t sdioio_sdcard_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&sdioio_sdcard_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&sdioio_sdcard_writeblocks_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(sdioio_sdcard_locals_dict, sdioio_sdcard_locals_dict_table);
+static MP_DEFINE_CONST_DICT(sdioio_sdcard_locals_dict, sdioio_sdcard_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     sdioio_SDCard_type,

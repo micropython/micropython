@@ -13,17 +13,17 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
-STATIC void delay(bitbangio_i2c_obj_t *self) {
+static void delay(bitbangio_i2c_obj_t *self) {
     // We need to use an accurate delay to get acceptable I2C
     // speeds (eg 1us should be not much more than 1us).
     common_hal_mcu_delay_us(self->us_delay);
 }
 
-STATIC void scl_low(bitbangio_i2c_obj_t *self) {
+static void scl_low(bitbangio_i2c_obj_t *self) {
     common_hal_digitalio_digitalinout_set_value(&self->scl, false);
 }
 
-STATIC void scl_release(bitbangio_i2c_obj_t *self) {
+static void scl_release(bitbangio_i2c_obj_t *self) {
     common_hal_digitalio_digitalinout_set_value(&self->scl, true);
     uint32_t count = self->us_timeout;
     delay(self);
@@ -39,22 +39,22 @@ STATIC void scl_release(bitbangio_i2c_obj_t *self) {
     }
 }
 
-STATIC void sda_low(bitbangio_i2c_obj_t *self) {
+static void sda_low(bitbangio_i2c_obj_t *self) {
     common_hal_digitalio_digitalinout_set_value(&self->sda, false);
 }
 
-STATIC void sda_release(bitbangio_i2c_obj_t *self) {
+static void sda_release(bitbangio_i2c_obj_t *self) {
     common_hal_digitalio_digitalinout_set_value(&self->sda, true);
 }
 
-STATIC bool sda_read(bitbangio_i2c_obj_t *self) {
+static bool sda_read(bitbangio_i2c_obj_t *self) {
     common_hal_digitalio_digitalinout_switch_to_input(&self->sda, PULL_UP);
     bool value = common_hal_digitalio_digitalinout_get_value(&self->sda);
     common_hal_digitalio_digitalinout_switch_to_output(&self->sda, true, DRIVE_MODE_OPEN_DRAIN);
     return value;
 }
 
-STATIC void start(bitbangio_i2c_obj_t *self) {
+static void start(bitbangio_i2c_obj_t *self) {
     sda_release(self);
     delay(self);
     scl_release(self);
@@ -62,7 +62,7 @@ STATIC void start(bitbangio_i2c_obj_t *self) {
     delay(self);
 }
 
-STATIC void stop(bitbangio_i2c_obj_t *self) {
+static void stop(bitbangio_i2c_obj_t *self) {
     delay(self);
     sda_low(self);
     delay(self);
@@ -71,7 +71,7 @@ STATIC void stop(bitbangio_i2c_obj_t *self) {
     delay(self);
 }
 
-STATIC int write_byte(bitbangio_i2c_obj_t *self, uint8_t val) {
+static int write_byte(bitbangio_i2c_obj_t *self, uint8_t val) {
     delay(self);
     scl_low(self);
 
@@ -97,7 +97,7 @@ STATIC int write_byte(bitbangio_i2c_obj_t *self, uint8_t val) {
     return !ret;
 }
 
-STATIC bool read_byte(bitbangio_i2c_obj_t *self, uint8_t *val, bool ack) {
+static bool read_byte(bitbangio_i2c_obj_t *self, uint8_t *val, bool ack) {
     delay(self);
     scl_low(self);
     delay(self);

@@ -6,7 +6,7 @@
 
 // This file is #include'd in hci.c when HCI_DEBUG is non-zero.
 
-STATIC const char *att_opcode_name(uint16_t opcode) {
+static const char *att_opcode_name(uint16_t opcode) {
     switch (opcode) {
         case BT_ATT_OP_ERROR_RSP:
             return "ERROR_RSP";
@@ -75,7 +75,7 @@ STATIC const char *att_opcode_name(uint16_t opcode) {
     }
 }
 
-STATIC const char *hci_evt_name(uint8_t evt) {
+static const char *hci_evt_name(uint8_t evt) {
     switch (evt) {
         case BT_HCI_EVT_UNKNOWN:
             return "UNKNOWN";
@@ -146,7 +146,7 @@ STATIC const char *hci_evt_name(uint8_t evt) {
     }
 }
 
-STATIC const char *hci_evt_le_name(uint8_t evt_le) {
+static const char *hci_evt_le_name(uint8_t evt_le) {
     switch (evt_le) {
         case BT_HCI_EVT_LE_CONN_COMPLETE:
             return "LE_CONN_COMPLETE";
@@ -191,7 +191,7 @@ STATIC const char *hci_evt_le_name(uint8_t evt_le) {
     }
 }
 
-STATIC const char *hci_opcode_name(uint16_t opcode) {
+static const char *hci_opcode_name(uint16_t opcode) {
     switch (opcode) {
         case BT_OP_NOP:
             return "NOP";
@@ -455,7 +455,7 @@ STATIC const char *hci_opcode_name(uint16_t opcode) {
 }
 
 
-STATIC void dump_cmd_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
+static void dump_cmd_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
     h4_hci_cmd_pkt_t *pkt = (h4_hci_cmd_pkt_t *)pkt_data;
     mp_printf(&mp_plat_print,
         "%s HCI COMMAND (%x) op:  %s (%04x), len: %d, data: ",
@@ -471,7 +471,7 @@ STATIC void dump_cmd_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
     mp_printf(&mp_plat_print, "\n");
 }
 
-STATIC void dump_acl_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
+static void dump_acl_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
     h4_hci_acl_pkt_t *pkt = (h4_hci_acl_pkt_t *)pkt_data;
     acl_data_t *acl = (acl_data_t *)pkt->data;
 
@@ -509,7 +509,7 @@ STATIC void dump_acl_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
     mp_printf(&mp_plat_print, "\n");
 }
 
-STATIC void dump_evt_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
+static void dump_evt_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
     h4_hci_evt_pkt_t *pkt = (h4_hci_evt_pkt_t *)pkt_data;
     mp_printf(&mp_plat_print,
         "%s HCI EVENT   (%x) evt: %s (%02x),  param_len: %d,  data: ",

@@ -24,7 +24,7 @@
  *  Current pin limitations for ESP32-S2 ParallelBus:
  *   - data0 pin must be byte aligned
  */
-STATIC bool _transfer_done(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx) {
+static bool _transfer_done(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx) {
     paralleldisplaybus_parallelbus_obj_t *self = user_ctx;
     self->transfer_done = true;
     return false;

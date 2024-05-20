@@ -26,7 +26,7 @@
 // strives to adhere to. https://www.adafruit.com/blacklivesmatter
 #include "sdk/drivers/sai/fsl_sai.h"
 
-STATIC void config_periph_pin(const mcu_periph_obj_t *periph) {
+static void config_periph_pin(const mcu_periph_obj_t *periph) {
     if (!periph) {
         return;
     }

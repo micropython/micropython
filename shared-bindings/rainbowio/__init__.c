@@ -17,18 +17,18 @@
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t rainbowio_colorwheel(mp_obj_t n) {
+static mp_obj_t rainbowio_colorwheel(mp_obj_t n) {
     mp_float_t f = mp_obj_get_float(n);
     return MP_OBJ_NEW_SMALL_INT(colorwheel(f));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(rainbowio_colorwheel_obj, rainbowio_colorwheel);
+static MP_DEFINE_CONST_FUN_OBJ_1(rainbowio_colorwheel_obj, rainbowio_colorwheel);
 
-STATIC const mp_rom_map_elem_t rainbowio_module_globals_table[] = {
+static const mp_rom_map_elem_t rainbowio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_rainbowio) },
     { MP_ROM_QSTR(MP_QSTR_colorwheel), MP_ROM_PTR(&rainbowio_colorwheel_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(rainbowio_module_globals, rainbowio_module_globals_table);
+static MP_DEFINE_CONST_DICT(rainbowio_module_globals, rainbowio_module_globals_table);
 
 const mp_obj_module_t rainbowio_module = {
     .base = { &mp_type_module },

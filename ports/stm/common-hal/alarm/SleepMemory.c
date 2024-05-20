@@ -23,9 +23,9 @@
 #endif
 
 
-STATIC bool initialized = false;
+static bool initialized = false;
 
-STATIC void lazy_init(void) {
+static void lazy_init(void) {
     if (!initialized) {
         __HAL_RCC_BKPSRAM_CLK_ENABLE();
         HAL_PWREx_EnableBkUpReg();

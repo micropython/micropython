@@ -22,7 +22,7 @@
 #include "shared-bindings/_bleio/CharacteristicBuffer.h"
 
 // Push all the data onto the ring buffer. When the buffer is full, new bytes will be dropped.
-STATIC void write_to_ringbuf(bleio_characteristic_buffer_obj_t *self, uint8_t *data, uint16_t len) {
+static void write_to_ringbuf(bleio_characteristic_buffer_obj_t *self, uint8_t *data, uint16_t len) {
     uint8_t is_nested_critical_region;
     sd_nvic_critical_region_enter(&is_nested_critical_region);
     if (self->watch_for_interrupt_char) {
@@ -39,7 +39,7 @@ STATIC void write_to_ringbuf(bleio_characteristic_buffer_obj_t *self, uint8_t *d
     sd_nvic_critical_region_exit(is_nested_critical_region);
 }
 
-STATIC bool characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
+static bool characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
     bleio_characteristic_buffer_obj_t *self = (bleio_characteristic_buffer_obj_t *)param;
     switch (ble_evt->header.evt_id) {
         case BLE_GATTS_EVT_WRITE: {

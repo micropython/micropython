@@ -20,14 +20,14 @@
 //| https://docs.python.org/3/library/socket.html
 //| """
 
-STATIC const mp_rom_map_elem_t socketpool_globals_table[] = {
+static const mp_rom_map_elem_t socketpool_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_socketpool) },
 
     { MP_ROM_QSTR(MP_QSTR_SocketPool), MP_ROM_PTR(&socketpool_socketpool_type) },
     { MP_ROM_QSTR(MP_QSTR_Socket), MP_ROM_PTR(&socketpool_socket_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(socketpool_globals, socketpool_globals_table);
+static MP_DEFINE_CONST_DICT(socketpool_globals, socketpool_globals_table);
 
 const mp_obj_module_t socketpool_module = {
     .base = { &mp_type_module },

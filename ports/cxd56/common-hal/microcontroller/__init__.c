@@ -63,7 +63,7 @@ void common_hal_mcu_reset(void) {
     boardctl(BOARDIOC_RESET, 0);
 }
 
-STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
+static const mp_rom_map_elem_t mcu_pin_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_UART2_RXD), MP_ROM_PTR(&pin_UART2_RXD) },
     { MP_ROM_QSTR(MP_QSTR_UART2_TXD), MP_ROM_PTR(&pin_UART2_TXD) },
     { MP_ROM_QSTR(MP_QSTR_HIF_IRQ_OUT), MP_ROM_PTR(&pin_HIF_IRQ_OUT) },

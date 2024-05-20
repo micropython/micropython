@@ -19,7 +19,7 @@
 #include "supervisor/port.h"
 #include "supervisor/workflow.h"
 
-STATIC uint32_t TAMPID = 0;
+static uint32_t TAMPID = 0;
 
 // Singleton instance of SleepMemory.
 const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
@@ -72,7 +72,7 @@ mp_obj_t common_hal_alarm_record_wake_alarm(void) {
 }
 
 // Set up light sleep or deep sleep alarms.
-STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
+static void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
     alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
 }

@@ -25,13 +25,13 @@
 //| are no longer needed. To do so, either call :py:meth:`!deinit` or use a
 //| context manager."""
 
-STATIC const mp_rom_map_elem_t audiobusio_module_globals_table[] = {
+static const mp_rom_map_elem_t audiobusio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiobusio) },
     { MP_ROM_QSTR(MP_QSTR_I2SOut), MP_ROM_PTR(&audiobusio_i2sout_type) },
     { MP_ROM_QSTR(MP_QSTR_PDMIn), MP_ROM_PTR(&audiobusio_pdmin_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(audiobusio_module_globals, audiobusio_module_globals_table);
+static MP_DEFINE_CONST_DICT(audiobusio_module_globals, audiobusio_module_globals_table);
 
 const mp_obj_module_t audiobusio_module = {
     .base = { &mp_type_module },

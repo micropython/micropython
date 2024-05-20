@@ -20,7 +20,7 @@
 //|         If extended is true then only extended ids are matched, otherwise
 //|         only standard ids are matched."""
 
-STATIC mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_mask, ARG_extended, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_INT | MP_ARG_REQUIRED },
@@ -52,7 +52,7 @@ STATIC mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, s
 //|     id: int
 //|     """The id to match"""
 
-STATIC mp_obj_t canio_match_id_get(mp_obj_t self_in) {
+static mp_obj_t canio_match_id_get(mp_obj_t self_in) {
     canio_match_obj_t *self = self_in;
     return MP_OBJ_NEW_SMALL_INT(common_hal_canio_match_get_id(self));
 }
@@ -64,7 +64,7 @@ MP_PROPERTY_GETTER(canio_match_id_obj,
 //|     mask: int
 //|     """The optional mask of ids to match"""
 
-STATIC mp_obj_t canio_match_mask_get(mp_obj_t self_in) {
+static mp_obj_t canio_match_mask_get(mp_obj_t self_in) {
     canio_match_obj_t *self = self_in;
     return MP_OBJ_NEW_SMALL_INT(common_hal_canio_match_get_mask(self));
 }
@@ -77,7 +77,7 @@ MP_PROPERTY_GETTER(canio_match_mask_obj,
 //|     """True to match extended ids, False to match standard ides"""
 //|
 
-STATIC mp_obj_t canio_match_extended_get(mp_obj_t self_in) {
+static mp_obj_t canio_match_extended_get(mp_obj_t self_in) {
     canio_match_obj_t *self = self_in;
     return mp_obj_new_bool(common_hal_canio_match_get_extended(self));
 }
@@ -86,12 +86,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(canio_match_extended_get_obj, canio_match_extended_get
 MP_PROPERTY_GETTER(canio_match_extended_obj,
     (mp_obj_t)&canio_match_extended_get_obj);
 
-STATIC const mp_rom_map_elem_t canio_match_locals_dict_table[] = {
+static const mp_rom_map_elem_t canio_match_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&canio_match_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_mask), MP_ROM_PTR(&canio_match_mask_obj) },
     { MP_ROM_QSTR(MP_QSTR_extended), MP_ROM_PTR(&canio_match_extended_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(canio_match_locals_dict, canio_match_locals_dict_table);
+static MP_DEFINE_CONST_DICT(canio_match_locals_dict, canio_match_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     canio_match_type,

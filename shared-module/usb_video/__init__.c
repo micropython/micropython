@@ -142,7 +142,7 @@ size_t usb_video_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *de
 
 background_callback_t usb_video_cb;
 
-STATIC void usb_video_cb_fun(void *unused) {
+static void usb_video_cb_fun(void *unused) {
     (void)unused;
 
     static unsigned start_ms = 0;

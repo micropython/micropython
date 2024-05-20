@@ -33,7 +33,7 @@
 //|     If set to ``False``, status bar will be cleared and then disabled.
 //|     May be set in ``boot.py`` or later. Persists across soft restarts.
 //|     """
-STATIC mp_obj_t supervisor_status_bar_get_console(mp_obj_t self_in) {
+static mp_obj_t supervisor_status_bar_get_console(mp_obj_t self_in) {
     #if CIRCUITPY_STATUS_BAR
     supervisor_status_bar_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(shared_module_supervisor_status_bar_get_console(self));
@@ -43,7 +43,7 @@ STATIC mp_obj_t supervisor_status_bar_get_console(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_status_bar_get_console_obj, supervisor_status_bar_get_console);
 
-STATIC mp_obj_t supervisor_status_bar_set_console(mp_obj_t self_in, mp_obj_t state_in) {
+static mp_obj_t supervisor_status_bar_set_console(mp_obj_t self_in, mp_obj_t state_in) {
     #if CIRCUITPY_STATUS_BAR
     supervisor_status_bar_obj_t *self = MP_OBJ_TO_PTR(self_in);
     shared_module_supervisor_status_bar_set_console(self, mp_obj_is_true(state_in));
@@ -65,7 +65,7 @@ MP_PROPERTY_GETSET(supervisor_status_bar_console_obj,
 //|     Not available if `terminalio` is not available.
 //|     """
 //|
-STATIC mp_obj_t supervisor_status_bar_get_display(mp_obj_t self_in) {
+static mp_obj_t supervisor_status_bar_get_display(mp_obj_t self_in) {
     #if CIRCUITPY_STATUS_BAR && CIRCUITPY_TERMINALIO
     supervisor_status_bar_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(shared_module_supervisor_status_bar_get_display(self));
@@ -75,7 +75,7 @@ STATIC mp_obj_t supervisor_status_bar_get_display(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_status_bar_get_display_obj, supervisor_status_bar_get_display);
 
-STATIC mp_obj_t supervisor_status_bar_set_display(mp_obj_t self_in, mp_obj_t state_in) {
+static mp_obj_t supervisor_status_bar_set_display(mp_obj_t self_in, mp_obj_t state_in) {
     #if CIRCUITPY_STATUS_BAR && CIRCUITPY_TERMINALIO
     supervisor_status_bar_obj_t *self = MP_OBJ_TO_PTR(self_in);
     shared_module_supervisor_status_bar_set_display(self, mp_obj_is_true(state_in));
@@ -91,12 +91,12 @@ MP_PROPERTY_GETSET(supervisor_status_bar_display_obj,
     (mp_obj_t)&supervisor_status_bar_set_display_obj);
 
 
-STATIC const mp_rom_map_elem_t supervisor_status_bar_locals_dict_table[] = {
+static const mp_rom_map_elem_t supervisor_status_bar_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_console), MP_ROM_PTR(&supervisor_status_bar_console_obj) },
     { MP_ROM_QSTR(MP_QSTR_display), MP_ROM_PTR(&supervisor_status_bar_display_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(supervisor_status_bar_locals_dict, supervisor_status_bar_locals_dict_table);
+static MP_DEFINE_CONST_DICT(supervisor_status_bar_locals_dict, supervisor_status_bar_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     supervisor_status_bar_type,

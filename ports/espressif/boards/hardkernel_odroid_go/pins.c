@@ -10,7 +10,7 @@
 
 // Pin names from: https://wiki.odroid.com/odroid_go/odroid_go
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     // Left side

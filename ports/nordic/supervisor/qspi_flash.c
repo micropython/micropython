@@ -50,7 +50,7 @@ void qspi_disable(void) {
     }
 }
 
-STATIC void qspi_enable(void) {
+static void qspi_enable(void) {
     if (NRF_QSPI->ENABLE) {
         return;
     }

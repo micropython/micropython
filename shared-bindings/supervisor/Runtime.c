@@ -24,7 +24,7 @@
 #include "tusb.h"
 #endif
 
-STATIC supervisor_run_reason_t _run_reason;
+static supervisor_run_reason_t _run_reason;
 
 // TODO: add REPL to description once it is operational
 
@@ -45,7 +45,7 @@ STATIC supervisor_run_reason_t _run_reason;
 
 //|     usb_connected: bool
 //|     """Returns the USB enumeration status (read-only)."""
-STATIC mp_obj_t supervisor_runtime_get_usb_connected(mp_obj_t self) {
+static mp_obj_t supervisor_runtime_get_usb_connected(mp_obj_t self) {
     #if CIRCUITPY_USB_DEVICE
     return mp_obj_new_bool(tud_ready());
     #else
@@ -59,7 +59,7 @@ MP_PROPERTY_GETTER(supervisor_runtime_usb_connected_obj,
 
 //|     serial_connected: bool
 //|     """Returns the USB serial communication status (read-only)."""
-STATIC mp_obj_t supervisor_runtime_get_serial_connected(mp_obj_t self) {
+static mp_obj_t supervisor_runtime_get_serial_connected(mp_obj_t self) {
     return mp_obj_new_bool(serial_connected());
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_connected_obj, supervisor_runtime_get_serial_connected);
@@ -81,7 +81,7 @@ MP_PROPERTY_GETTER(supervisor_runtime_serial_connected_obj,
 //|     Since ``0`` acts as ``False``, ``if supervisor.runtime.serial_byes_available:``
 //|     will still work.
 //|     """
-STATIC mp_obj_t supervisor_runtime_get_serial_bytes_available(mp_obj_t self) {
+static mp_obj_t supervisor_runtime_get_serial_bytes_available(mp_obj_t self) {
     return MP_OBJ_NEW_SMALL_INT(serial_bytes_available());
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_bytes_available_obj, supervisor_runtime_get_serial_bytes_available);
@@ -99,7 +99,7 @@ void supervisor_set_run_reason(supervisor_run_reason_t run_reason) {
 
 //|     run_reason: RunReason
 //|     """Why CircuitPython started running this particular time (read-only)."""
-STATIC mp_obj_t supervisor_runtime_get_run_reason(mp_obj_t self) {
+static mp_obj_t supervisor_runtime_get_run_reason(mp_obj_t self) {
     return cp_enum_find(&supervisor_run_reason_type, _run_reason);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_run_reason_obj, supervisor_runtime_get_run_reason);
@@ -112,7 +112,7 @@ MP_PROPERTY_GETTER(supervisor_runtime_run_reason_obj,
 //|
 //|     **Limitations**: Raises ``NotImplementedError`` on builds that do not implement ``safemode.py``.
 //|     """
-STATIC mp_obj_t supervisor_runtime_get_safe_mode_reason(mp_obj_t self) {
+static mp_obj_t supervisor_runtime_get_safe_mode_reason(mp_obj_t self) {
     #if CIRCUITPY_SAFEMODE_PY
     return cp_enum_find(&supervisor_safe_mode_reason_type, get_safe_mode());
     #else
@@ -127,12 +127,12 @@ MP_PROPERTY_GETTER(supervisor_runtime_safe_mode_reason_obj,
 //|     autoreload: bool
 //|     """Whether CircuitPython may autoreload based on workflow writes to the filesystem."""
 //|
-STATIC mp_obj_t supervisor_runtime_get_autoreload(mp_obj_t self) {
+static mp_obj_t supervisor_runtime_get_autoreload(mp_obj_t self) {
     return mp_obj_new_bool(autoreload_is_enabled());
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_autoreload_obj, supervisor_runtime_get_autoreload);
 
-STATIC mp_obj_t supervisor_runtime_set_autoreload(mp_obj_t self, mp_obj_t state_in) {
+static mp_obj_t supervisor_runtime_set_autoreload(mp_obj_t self, mp_obj_t state_in) {
     if (mp_obj_is_true(state_in)) {
         autoreload_enable();
     } else {
@@ -150,7 +150,7 @@ MP_PROPERTY_GETSET(supervisor_runtime_autoreload_obj,
 //|     """Enable/Disable ble workflow until a reset. This prevents BLE advertising outside of the VM and
 //|     the services used for it."""
 //|
-STATIC mp_obj_t supervisor_runtime_get_ble_workflow(mp_obj_t self) {
+static mp_obj_t supervisor_runtime_get_ble_workflow(mp_obj_t self) {
     #if CIRCUITPY_BLE_FILE_SERVICE && CIRCUITPY_SERIAL_BLE
     return mp_obj_new_bool(supervisor_bluetooth_workflow_is_enabled());
     #else
@@ -159,7 +159,7 @@ STATIC mp_obj_t supervisor_runtime_get_ble_workflow(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_ble_workflow_obj, supervisor_runtime_get_ble_workflow);
 
-STATIC mp_obj_t supervisor_runtime_set_ble_workflow(mp_obj_t self, mp_obj_t state_in) {
+static mp_obj_t supervisor_runtime_set_ble_workflow(mp_obj_t self, mp_obj_t state_in) {
     #if CIRCUITPY_BLE_FILE_SERVICE && CIRCUITPY_SERIAL_BLE
     if (mp_obj_is_true(state_in)) {
         supervisor_bluetooth_enable_workflow();
@@ -182,12 +182,12 @@ MP_PROPERTY_GETSET(supervisor_runtime_ble_workflow_obj,
 //|     after the current code finishes and the status LED is used to show
 //|     the finish state."""
 //|
-STATIC mp_obj_t supervisor_runtime_get_rgb_status_brightness(mp_obj_t self) {
+static mp_obj_t supervisor_runtime_get_rgb_status_brightness(mp_obj_t self) {
     return MP_OBJ_NEW_SMALL_INT(get_status_brightness());
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_rgb_status_brightness_obj, supervisor_runtime_get_rgb_status_brightness);
 
-STATIC mp_obj_t supervisor_runtime_set_rgb_status_brightness(mp_obj_t self, mp_obj_t lvl) {
+static mp_obj_t supervisor_runtime_set_rgb_status_brightness(mp_obj_t self, mp_obj_t lvl) {
     #if CIRCUITPY_STATUS_LED
     // This must be int. If cast to uint8_t first, will never raise a ValueError.
     set_status_brightness((uint8_t)mp_arg_validate_int_range(mp_obj_get_int(lvl), 0, 255, MP_QSTR_brightness));
@@ -202,7 +202,7 @@ MP_PROPERTY_GETSET(supervisor_runtime_rgb_status_brightness_obj,
     (mp_obj_t)&supervisor_runtime_get_rgb_status_brightness_obj,
     (mp_obj_t)&supervisor_runtime_set_rgb_status_brightness_obj);
 
-STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
+static const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_usb_connected), MP_ROM_PTR(&supervisor_runtime_usb_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_serial_connected), MP_ROM_PTR(&supervisor_runtime_serial_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_serial_bytes_available), MP_ROM_PTR(&supervisor_runtime_serial_bytes_available_obj) },
@@ -213,7 +213,7 @@ STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rgb_status_brightness),  MP_ROM_PTR(&supervisor_runtime_rgb_status_brightness_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(supervisor_runtime_locals_dict, supervisor_runtime_locals_dict_table);
+static MP_DEFINE_CONST_DICT(supervisor_runtime_locals_dict, supervisor_runtime_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     supervisor_runtime_type,

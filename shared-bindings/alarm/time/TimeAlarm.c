@@ -37,7 +37,7 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
 //|         due to this time alarm.
 //|         """
 //|         ...
-STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
+static mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     alarm_time_timealarm_obj_t *self = mp_obj_malloc(alarm_time_timealarm_obj_t, &alarm_time_timealarm_type);
 
@@ -96,7 +96,7 @@ STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
 //|        by this property only as a `time.monotonic()` time.
 //|        """
 //|
-STATIC mp_obj_t alarm_time_timealarm_obj_get_monotonic_time(mp_obj_t self_in) {
+static mp_obj_t alarm_time_timealarm_obj_get_monotonic_time(mp_obj_t self_in) {
     alarm_time_timealarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_alarm_time_timealarm_get_monotonic_time(self));
 }
@@ -105,11 +105,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(alarm_time_timealarm_get_monotonic_time_obj, alarm_tim
 MP_PROPERTY_GETTER(alarm_time_timealarm_monotonic_time_obj,
     (mp_obj_t)&alarm_time_timealarm_get_monotonic_time_obj);
 
-STATIC const mp_rom_map_elem_t alarm_time_timealarm_locals_dict_table[] = {
+static const mp_rom_map_elem_t alarm_time_timealarm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_monotonic_time), MP_ROM_PTR(&alarm_time_timealarm_monotonic_time_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(alarm_time_timealarm_locals_dict, alarm_time_timealarm_locals_dict_table);
+static MP_DEFINE_CONST_DICT(alarm_time_timealarm_locals_dict, alarm_time_timealarm_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     alarm_time_timealarm_type,

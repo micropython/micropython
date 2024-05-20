@@ -24,7 +24,7 @@ MAKE_ENUM_MAP(watchdog_watchdogmode) {
     MAKE_ENUM_MAP_ENTRY(watchdogmode, RAISE),
     MAKE_ENUM_MAP_ENTRY(watchdogmode, RESET),
 };
-STATIC MP_DEFINE_CONST_DICT(watchdog_watchdogmode_locals_dict, watchdog_watchdogmode_locals_table);
+static MP_DEFINE_CONST_DICT(watchdog_watchdogmode_locals_dict, watchdog_watchdogmode_locals_table);
 
 MAKE_PRINTER(watchdog, watchdog_watchdogmode);
 

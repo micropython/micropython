@@ -148,23 +148,23 @@ uint8_t common_hal_sdioio_sdcard_get_width(sdioio_sdcard_obj_t *self) {
     return self->num_data; // self->width;
 }
 
-STATIC void check_for_deinit(sdioio_sdcard_obj_t *self) {
+static void check_for_deinit(sdioio_sdcard_obj_t *self) {
 }
 
-STATIC void check_whole_block(mp_buffer_info_t *bufinfo) {
+static void check_whole_block(mp_buffer_info_t *bufinfo) {
     if (bufinfo->len % 512) {
         mp_raise_ValueError(MP_ERROR_TEXT("Buffer length must be a multiple of 512"));
     }
 }
 
-STATIC void wait_write_complete(sdioio_sdcard_obj_t *self) {
+static void wait_write_complete(sdioio_sdcard_obj_t *self) {
     if (self->state_programming) {
         sd_mmc_wait_end_of_write_blocks(0);
         self->state_programming = 0;
     }
 }
 
-STATIC void debug_print_state(sdioio_sdcard_obj_t *self, const char *what, sd_mmc_err_t r) {
+static void debug_print_state(sdioio_sdcard_obj_t *self, const char *what, sd_mmc_err_t r) {
     #if DEBUG_SDIO
     DEBUG_PRINT("%s: %d\n", what, r);
     #endif

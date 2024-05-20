@@ -44,7 +44,7 @@
 //|           pulses[0] = 200
 //|           pulse.send(pulses)"""
 //|         ...
-STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_PULSEIO_PULSEOUT
     enum { ARG_pin, ARG_frequency, ARG_duty_cycle};
     static const mp_arg_t allowed_args[] = {
@@ -72,12 +72,12 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
 //|     def deinit(self) -> None:
 //|         """Deinitialises the PulseOut and releases any hardware resources for reuse."""
 //|         ...
-STATIC mp_obj_t pulseio_pulseout_deinit(mp_obj_t self_in) {
+static mp_obj_t pulseio_pulseout_deinit(mp_obj_t self_in) {
     pulseio_pulseout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_pulseio_pulseout_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulseout_deinit_obj, pulseio_pulseout_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulseout_deinit_obj, pulseio_pulseout_deinit);
 
 //|     def __enter__(self) -> PulseOut:
 //|         """No-op used by Context Managers."""
@@ -88,12 +88,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulseout_deinit_obj, pulseio_pulseout_d
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t pulseio_pulseout_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pulseio_pulseout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_pulseio_pulseout_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pulseout___exit___obj, 4, 4, pulseio_pulseout_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pulseout___exit___obj, 4, 4, pulseio_pulseout_obj___exit__);
 
 //|     def send(self, pulses: ReadableBuffer) -> None:
 //|         """Pulse alternating on and off durations in microseconds starting with on.
@@ -106,7 +106,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pulseout___exit___obj, 4, 4, 
 //|         :param array.array pulses: pulse durations in microseconds"""
 //|         ...
 //|
-STATIC mp_obj_t pulseio_pulseout_obj_send(mp_obj_t self_in, mp_obj_t pulses) {
+static mp_obj_t pulseio_pulseout_obj_send(mp_obj_t self_in, mp_obj_t pulses) {
     pulseio_pulseout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (common_hal_pulseio_pulseout_deinited(self)) {
         raise_deinited_error();
@@ -123,7 +123,7 @@ STATIC mp_obj_t pulseio_pulseout_obj_send(mp_obj_t self_in, mp_obj_t pulses) {
 MP_DEFINE_CONST_FUN_OBJ_2(pulseio_pulseout_send_obj, pulseio_pulseout_obj_send);
 #endif // CIRCUITPY_PULSEIO_PULSEOUT
 
-STATIC const mp_rom_map_elem_t pulseio_pulseout_locals_dict_table[] = {
+static const mp_rom_map_elem_t pulseio_pulseout_locals_dict_table[] = {
     // Methods
     #if CIRCUITPY_PULSEIO_PULSEOUT
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pulseio_pulseout_deinit_obj) },
@@ -133,7 +133,7 @@ STATIC const mp_rom_map_elem_t pulseio_pulseout_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&pulseio_pulseout_send_obj) },
     #endif // CIRCUITPY_PULSEIO_PULSEOUT
 };
-STATIC MP_DEFINE_CONST_DICT(pulseio_pulseout_locals_dict, pulseio_pulseout_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pulseio_pulseout_locals_dict, pulseio_pulseout_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pulseio_pulseout_type,

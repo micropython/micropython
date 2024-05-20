@@ -47,11 +47,11 @@
 //|     ...
 //|
 #if CIRCUITPY_BOARD_I2C
-STATIC mp_obj_t board_i2c_0(void) {
+static mp_obj_t board_i2c_0(void) {
     return common_hal_board_create_i2c(0);
 }
 #else
-STATIC mp_obj_t board_i2c_0(void) {
+static mp_obj_t board_i2c_0(void) {
     mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("No default %q bus"), MP_QSTR_I2C);
     return MP_ROM_NONE;
 }
@@ -65,11 +65,11 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c_0);
 //|     ...
 //|
 #if CIRCUITPY_BOARD_SPI
-STATIC mp_obj_t board_spi_0(void) {
+static mp_obj_t board_spi_0(void) {
     return common_hal_board_create_spi(0);
 }
 #else
-STATIC mp_obj_t board_spi_0(void) {
+static mp_obj_t board_spi_0(void) {
     mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("No default %q bus"), MP_QSTR_SPI);
     return MP_ROM_NONE;
 }
@@ -83,11 +83,11 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi_0);
 //|     ...
 //|
 #if CIRCUITPY_BOARD_UART
-STATIC mp_obj_t board_uart_0(void) {
+static mp_obj_t board_uart_0(void) {
     return common_hal_board_create_uart(0);
 }
 #else
-STATIC mp_obj_t board_uart_0(void) {
+static mp_obj_t board_uart_0(void) {
     mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("No default %q bus"), MP_QSTR_UART);
     return MP_ROM_NONE;
 }

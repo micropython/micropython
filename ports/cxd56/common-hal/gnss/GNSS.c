@@ -18,7 +18,7 @@ typedef struct {
     int fd;
 } gnss_dev_t;
 
-STATIC gnss_dev_t gnss_dev = {"/dev/gps", -1};
+static gnss_dev_t gnss_dev = {"/dev/gps", -1};
 
 static gnss_positionfix_t fix_to_positionfix_type(uint8_t fix) {
     switch (fix) {

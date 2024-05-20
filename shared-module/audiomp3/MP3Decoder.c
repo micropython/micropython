@@ -30,7 +30,7 @@
  *
  * Sets self->eof if any read of the file returns 0 bytes
  */
-STATIC bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self) {
+static bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self) {
     // If we didn't previously reach the end of file, we can try reading now
     if (!self->eof && self->inbuf_offset != 0) {
 
@@ -69,7 +69,7 @@ STATIC bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self) {
  * This variant is introduced so that at the site of the
  * add_background_callback_core call, the prototype matches.
  */
-STATIC void mp3file_update_inbuf_cb(void *self) {
+static void mp3file_update_inbuf_cb(void *self) {
     mp3file_update_inbuf_always(self);
 }
 
@@ -77,7 +77,7 @@ STATIC void mp3file_update_inbuf_cb(void *self) {
  *
  * Returns the same as mp3file_update_inbuf_always.
  */
-STATIC bool mp3file_update_inbuf_half(audiomp3_mp3file_obj_t *self) {
+static bool mp3file_update_inbuf_half(audiomp3_mp3file_obj_t *self) {
     // If buffer is over half full, do nothing
     if (self->inbuf_offset < self->inbuf_length / 2) {
         return true;
@@ -92,7 +92,7 @@ STATIC bool mp3file_update_inbuf_half(audiomp3_mp3file_obj_t *self) {
 
 // http://id3.org/d3v2.3.0
 // http://id3.org/id3v2.3.0
-STATIC void mp3file_skip_id3v2(audiomp3_mp3file_obj_t *self) {
+static void mp3file_skip_id3v2(audiomp3_mp3file_obj_t *self) {
     mp3file_update_inbuf_half(self);
     if (BYTES_LEFT(self) < 10) {
         return;
@@ -126,7 +126,7 @@ STATIC void mp3file_skip_id3v2(audiomp3_mp3file_obj_t *self) {
 /* If a sync word can be found, advance to it and return true.  Otherwise,
  * return false.
  */
-STATIC bool mp3file_find_sync_word(audiomp3_mp3file_obj_t *self) {
+static bool mp3file_find_sync_word(audiomp3_mp3file_obj_t *self) {
     do {
         mp3file_update_inbuf_half(self);
         int offset = MP3FindSyncWord(READ_PTR(self), BYTES_LEFT(self));
@@ -140,7 +140,7 @@ STATIC bool mp3file_find_sync_word(audiomp3_mp3file_obj_t *self) {
     return false;
 }
 
-STATIC bool mp3file_get_next_frame_info(audiomp3_mp3file_obj_t *self, MP3FrameInfo *fi) {
+static bool mp3file_get_next_frame_info(audiomp3_mp3file_obj_t *self, MP3FrameInfo *fi) {
     int err;
     do {
         err = MP3GetNextFrameInfo(self->decoder, fi, READ_PTR(self));

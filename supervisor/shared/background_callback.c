@@ -14,7 +14,7 @@
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
-STATIC volatile background_callback_t *volatile callback_head, *volatile callback_tail;
+static volatile background_callback_t *volatile callback_head, *volatile callback_tail;
 
 #ifndef CALLBACK_CRITICAL_BEGIN
 #define CALLBACK_CRITICAL_BEGIN (common_hal_mcu_disable_interrupts())

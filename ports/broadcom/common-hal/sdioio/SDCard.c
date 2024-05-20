@@ -27,12 +27,12 @@ void osal_task_delay(uint32_t msec) {
 }
 
 /*!< Host function to initialize the driver */
-STATIC sdmmc_err_t _init(void) {
+static sdmmc_err_t _init(void) {
     return SDMMC_OK;
 }
 
 /*!< host function to set bus width */
-STATIC sdmmc_err_t _set_bus_width(int slot, size_t width) {
+static sdmmc_err_t _set_bus_width(int slot, size_t width) {
     if (width == 4) {
         EMMC->CONTROL0_b.HCTL_DWIDTH = true;
     } else if (width == 8) {
@@ -42,12 +42,12 @@ STATIC sdmmc_err_t _set_bus_width(int slot, size_t width) {
 }
 
 /*!< host function to get the maximum bus width of a particular slot */
-STATIC size_t _get_bus_width(int slot) {
+static size_t _get_bus_width(int slot) {
     return 4;
 }
 
 /*!< host function to set card clock frequency */
-STATIC sdmmc_err_t _set_card_clk(int slot, uint32_t freq_khz) {
+static sdmmc_err_t _set_card_clk(int slot, uint32_t freq_khz) {
     uint32_t base_clock = 125000000;
     uint32_t frequency = freq_khz * 1000;
     uint64_t start_ticks = port_get_raw_ticks(NULL);
@@ -85,7 +85,7 @@ STATIC sdmmc_err_t _set_card_clk(int slot, uint32_t freq_khz) {
 }
 
 /*!< host function to do a transaction */
-STATIC sdmmc_err_t _do_transaction(int slot, sdmmc_command_t *cmdinfo) {
+static sdmmc_err_t _do_transaction(int slot, sdmmc_command_t *cmdinfo) {
     if (EMMC->STATUS_b.CMD_INHIBIT) {
         return SDMMC_ERR_BUSY;
     }
@@ -204,7 +204,7 @@ STATIC sdmmc_err_t _do_transaction(int slot, sdmmc_command_t *cmdinfo) {
 }
 
 /*!< host function to deinitialize the driver, called with the `slot` */
-STATIC sdmmc_err_t _deinit(int slot) {
+static sdmmc_err_t _deinit(int slot) {
     return SDMMC_OK;
 }
 
@@ -298,7 +298,7 @@ uint8_t common_hal_sdioio_sdcard_get_width(sdioio_sdcard_obj_t *self) {
     return self->num_data;
 }
 
-STATIC void check_whole_block(mp_buffer_info_t *bufinfo) {
+static void check_whole_block(mp_buffer_info_t *bufinfo) {
     if (bufinfo->len % 512) {
         mp_raise_ValueError(MP_ERROR_TEXT("Buffer length must be a multiple of 512"));
     }

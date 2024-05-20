@@ -47,13 +47,13 @@ mp_obj_t camera_imageformat_type_to_obj(camera_imageformat_t format) {
     }
 }
 
-STATIC const mp_rom_map_elem_t camera_imageformat_locals_dict_table[] = {
+static const mp_rom_map_elem_t camera_imageformat_locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_JPG), MP_ROM_PTR(&camera_imageformat_jpg_obj)},
     {MP_ROM_QSTR(MP_QSTR_RGB565), MP_ROM_PTR(&camera_imageformat_rgb565_obj)},
 };
-STATIC MP_DEFINE_CONST_DICT(camera_imageformat_locals_dict, camera_imageformat_locals_dict_table);
+static MP_DEFINE_CONST_DICT(camera_imageformat_locals_dict, camera_imageformat_locals_dict_table);
 
-STATIC void camera_imageformat_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void camera_imageformat_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     qstr format = MP_QSTR_None;
     if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&camera_imageformat_jpg_obj)) {
         format = MP_QSTR_JPG;

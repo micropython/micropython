@@ -54,7 +54,7 @@
 //|         ...
 
 // TODO(tannewt): Support LSB SPI.
-STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_clock, ARG_MOSI, ARG_MISO, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -76,14 +76,14 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
 //|     def deinit(self) -> None:
 //|         """Turn off the SPI bus."""
 //|         ...
-STATIC mp_obj_t bitbangio_spi_obj_deinit(mp_obj_t self_in) {
+static mp_obj_t bitbangio_spi_obj_deinit(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     shared_module_bitbangio_spi_deinit(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_deinit_obj, bitbangio_spi_obj_deinit);
 
-STATIC void check_for_deinit(bitbangio_spi_obj_t *self) {
+static void check_for_deinit(bitbangio_spi_obj_t *self) {
     if (shared_module_bitbangio_spi_deinited(self)) {
         raise_deinited_error();
     }
@@ -98,12 +98,12 @@ STATIC void check_for_deinit(bitbangio_spi_obj_t *self) {
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t bitbangio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t bitbangio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     shared_module_bitbangio_spi_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_obj___exit___obj, 4, 4, bitbangio_spi_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_obj___exit___obj, 4, 4, bitbangio_spi_obj___exit__);
 
 
 static void check_lock(bitbangio_spi_obj_t *self) {
@@ -123,7 +123,7 @@ static void check_lock(bitbangio_spi_obj_t *self) {
 //|           or second (1). Rising or falling depends on clock polarity.
 //|         :param int bits: the number of bits per word"""
 //|         ...
-STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100000} },
@@ -153,7 +153,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_configure_obj, 1, bitbangio_spi_configu
 //|         :return: True when lock has been grabbed
 //|         :rtype: bool"""
 //|         ...
-STATIC mp_obj_t bitbangio_spi_obj_try_lock(mp_obj_t self_in) {
+static mp_obj_t bitbangio_spi_obj_try_lock(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return mp_obj_new_bool(shared_module_bitbangio_spi_try_lock(self));
@@ -163,7 +163,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_try_lock_obj, bitbangio_spi_obj_try_lock
 //|     def unlock(self) -> None:
 //|         """Releases the SPI lock."""
 //|         ...
-STATIC mp_obj_t bitbangio_spi_obj_unlock(mp_obj_t self_in) {
+static mp_obj_t bitbangio_spi_obj_unlock(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     shared_module_bitbangio_spi_unlock(self);
@@ -185,7 +185,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_unlock_obj, bitbangio_spi_obj_unlock);
 //|         :param int end: end of buffer slice; if not specified, use ``len(buffer)``
 //|         """
 //|         ...
-STATIC mp_obj_t bitbangio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitbangio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -246,7 +246,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_write_obj, 1, bitbangio_spi_write);
 //|         :param int write_value: value to write while reading
 //|         """
 //|         ...
-STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end, ARG_write_value };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -319,7 +319,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_readinto_obj, 1, bitbangio_spi_readinto
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_out_buffer, ARG_in_buffer, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_out_buffer,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -375,7 +375,7 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_write_readinto_obj, 1, bitbangio_spi_write_readinto);
 
-STATIC const mp_rom_map_elem_t bitbangio_spi_locals_dict_table[] = {
+static const mp_rom_map_elem_t bitbangio_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&bitbangio_spi_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&bitbangio_spi_obj___exit___obj) },
@@ -388,7 +388,7 @@ STATIC const mp_rom_map_elem_t bitbangio_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&bitbangio_spi_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&bitbangio_spi_write_readinto_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(bitbangio_spi_locals_dict, bitbangio_spi_locals_dict_table);
+static MP_DEFINE_CONST_DICT(bitbangio_spi_locals_dict, bitbangio_spi_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     bitbangio_spi_type,

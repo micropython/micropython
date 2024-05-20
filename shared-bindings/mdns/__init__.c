@@ -19,13 +19,13 @@
 //| also supports DNS Service Discovery that allows for discovering other hosts
 //| that provide a desired service."""
 
-STATIC const mp_rom_map_elem_t mdns_module_globals_table[] = {
+static const mp_rom_map_elem_t mdns_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),             MP_ROM_QSTR(MP_QSTR_mdns) },
     { MP_ROM_QSTR(MP_QSTR_Server),               MP_ROM_PTR(&mdns_server_type) },
     { MP_ROM_QSTR(MP_QSTR_RemoteService),        MP_ROM_PTR(&mdns_remoteservice_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mdns_module_globals, mdns_module_globals_table);
+static MP_DEFINE_CONST_DICT(mdns_module_globals, mdns_module_globals_table);
 
 const mp_obj_module_t mdns_module = {
     .base = { &mp_type_module },

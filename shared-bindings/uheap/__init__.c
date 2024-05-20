@@ -19,19 +19,19 @@
 //|     estimated size."""
 //|     ...
 //|
-STATIC mp_obj_t uheap_info(mp_obj_t obj) {
+static mp_obj_t uheap_info(mp_obj_t obj) {
     uint32_t size = shared_module_uheap_info(obj);
 
     return MP_OBJ_NEW_SMALL_INT(size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(uheap_info_obj, uheap_info);
+static MP_DEFINE_CONST_FUN_OBJ_1(uheap_info_obj, uheap_info);
 
-STATIC const mp_rom_map_elem_t uheap_module_globals_table[] = {
+static const mp_rom_map_elem_t uheap_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uheap) },
     { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&uheap_info_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(uheap_module_globals, uheap_module_globals_table);
+static MP_DEFINE_CONST_DICT(uheap_module_globals, uheap_module_globals_table);
 
 const mp_obj_module_t uheap_module = {
     .base = { &mp_type_module },

@@ -81,7 +81,7 @@
 //|             pass
 //|           print("stopped")"""
 //|         ...
-STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_left_channel, ARG_right_channel, ARG_quiescent_value };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_left_channel, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -109,14 +109,14 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_
 //|     def deinit(self) -> None:
 //|         """Deinitialises the PWMAudioOut and releases any hardware resources for reuse."""
 //|         ...
-STATIC mp_obj_t audiopwmio_pwmaudioout_deinit(mp_obj_t self_in) {
+static mp_obj_t audiopwmio_pwmaudioout_deinit(mp_obj_t self_in) {
     audiopwmio_pwmaudioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_audiopwmio_pwmaudioout_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_deinit_obj, audiopwmio_pwmaudioout_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_deinit_obj, audiopwmio_pwmaudioout_deinit);
 
-STATIC void check_for_deinit(audiopwmio_pwmaudioout_obj_t *self) {
+static void check_for_deinit(audiopwmio_pwmaudioout_obj_t *self) {
     if (common_hal_audiopwmio_pwmaudioout_deinited(self)) {
         raise_deinited_error();
     }
@@ -130,12 +130,12 @@ STATIC void check_for_deinit(audiopwmio_pwmaudioout_obj_t *self) {
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t audiopwmio_pwmaudioout_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t audiopwmio_pwmaudioout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_audiopwmio_pwmaudioout_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiopwmio_pwmaudioout___exit___obj, 4, 4, audiopwmio_pwmaudioout_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiopwmio_pwmaudioout___exit___obj, 4, 4, audiopwmio_pwmaudioout_obj___exit__);
 
 
 //|     def play(self, sample: circuitpython_typing.AudioSample, *, loop: bool = False) -> None:
@@ -147,7 +147,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiopwmio_pwmaudioout___exit___obj, 
 //|         The sample itself should consist of 16 bit samples. Microcontrollers with a lower output
 //|         resolution will use the highest order bits to output."""
 //|         ...
-STATIC mp_obj_t audiopwmio_pwmaudioout_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t audiopwmio_pwmaudioout_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -168,7 +168,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audiopwmio_pwmaudioout_play_obj, 1, audiopwmio_pwmaud
 //|     def stop(self) -> None:
 //|         """Stops playback and resets to the start of the sample."""
 //|         ...
-STATIC mp_obj_t audiopwmio_pwmaudioout_obj_stop(mp_obj_t self_in) {
+static mp_obj_t audiopwmio_pwmaudioout_obj_stop(mp_obj_t self_in) {
     audiopwmio_pwmaudioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     common_hal_audiopwmio_pwmaudioout_stop(self);
@@ -178,7 +178,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_stop_obj, audiopwmio_pwmaudioou
 
 //|     playing: bool
 //|     """True when an audio sample is being output even if `paused`. (read-only)"""
-STATIC mp_obj_t audiopwmio_pwmaudioout_obj_get_playing(mp_obj_t self_in) {
+static mp_obj_t audiopwmio_pwmaudioout_obj_get_playing(mp_obj_t self_in) {
     audiopwmio_pwmaudioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return mp_obj_new_bool(common_hal_audiopwmio_pwmaudioout_get_playing(self));
@@ -191,7 +191,7 @@ MP_PROPERTY_GETTER(audiopwmio_pwmaudioout_playing_obj,
 //|     def pause(self) -> None:
 //|         """Stops playback temporarily while remembering the position. Use `resume` to resume playback."""
 //|         ...
-STATIC mp_obj_t audiopwmio_pwmaudioout_obj_pause(mp_obj_t self_in) {
+static mp_obj_t audiopwmio_pwmaudioout_obj_pause(mp_obj_t self_in) {
     audiopwmio_pwmaudioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -206,7 +206,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_pause_obj, audiopwmio_pwmaudioo
 //|     def resume(self) -> None:
 //|         """Resumes sample playback after :py:func:`pause`."""
 //|         ...
-STATIC mp_obj_t audiopwmio_pwmaudioout_obj_resume(mp_obj_t self_in) {
+static mp_obj_t audiopwmio_pwmaudioout_obj_resume(mp_obj_t self_in) {
     audiopwmio_pwmaudioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -221,7 +221,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_resume_obj, audiopwmio_pwmaudio
 //|     paused: bool
 //|     """True when playback is paused. (read-only)"""
 //|
-STATIC mp_obj_t audiopwmio_pwmaudioout_obj_get_paused(mp_obj_t self_in) {
+static mp_obj_t audiopwmio_pwmaudioout_obj_get_paused(mp_obj_t self_in) {
     audiopwmio_pwmaudioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return mp_obj_new_bool(common_hal_audiopwmio_pwmaudioout_get_paused(self));
@@ -231,7 +231,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_get_paused_obj, audiopwmio_pwma
 MP_PROPERTY_GETTER(audiopwmio_pwmaudioout_paused_obj,
     (mp_obj_t)&audiopwmio_pwmaudioout_get_paused_obj);
 
-STATIC const mp_rom_map_elem_t audiopwmio_pwmaudioout_locals_dict_table[] = {
+static const mp_rom_map_elem_t audiopwmio_pwmaudioout_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audiopwmio_pwmaudioout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&audiopwmio_pwmaudioout_deinit_obj) },
@@ -246,7 +246,7 @@ STATIC const mp_rom_map_elem_t audiopwmio_pwmaudioout_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audiopwmio_pwmaudioout_playing_obj) },
     { MP_ROM_QSTR(MP_QSTR_paused), MP_ROM_PTR(&audiopwmio_pwmaudioout_paused_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(audiopwmio_pwmaudioout_locals_dict, audiopwmio_pwmaudioout_locals_dict_table);
+static MP_DEFINE_CONST_DICT(audiopwmio_pwmaudioout_locals_dict, audiopwmio_pwmaudioout_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     audiopwmio_pwmaudioout_type,

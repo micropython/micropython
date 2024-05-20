@@ -78,7 +78,7 @@ bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
     return I2C_TRANSFER(self->i2c_dev, &msg, 1) < 0 ? false : true;
 }
 
-STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t address, const uint8_t *data, size_t len, bool stop) {
+static uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t address, const uint8_t *data, size_t len, bool stop) {
     struct i2c_msg_s msg;
 
     msg.frequency = self->frequency;

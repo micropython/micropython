@@ -15,14 +15,14 @@
 #include "hardware/gpio.h"
 #include "hardware/structs/iobank0.h"
 
-STATIC bool woke_up;
-STATIC uint64_t alarm_triggered_pins; // 36 actual pins
-STATIC uint64_t alarm_reserved_pins; // 36 actual pins
-STATIC bool _not_yet_deep_sleeping = false;
+static bool woke_up;
+static uint64_t alarm_triggered_pins; // 36 actual pins
+static uint64_t alarm_reserved_pins; // 36 actual pins
+static bool _not_yet_deep_sleeping = false;
 
 #define GPIO_IRQ_ALL_EVENTS 0x15u
 
-STATIC void gpio_callback(uint gpio, uint32_t events) {
+static void gpio_callback(uint gpio, uint32_t events) {
     alarm_triggered_pins |= (1 << gpio);
     woke_up = true;
 

@@ -358,7 +358,7 @@ bool audio_dma_get_playing(audio_dma_t *dma) {
 
 // WARN(tannewt): DO NOT print from here, or anything it calls. Printing calls
 // background tasks such as this and causes a stack overflow.
-STATIC void dma_callback_fun(void *arg) {
+static void dma_callback_fun(void *arg) {
     audio_dma_t *dma = arg;
     if (dma == NULL) {
         return;

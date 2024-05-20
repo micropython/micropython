@@ -11,12 +11,12 @@
 //| """Support for JPEG image decoding"""
 //|
 
-STATIC const mp_rom_map_elem_t jpegio_module_globals_table[] = {
+static const mp_rom_map_elem_t jpegio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_jpegio) },
     { MP_ROM_QSTR(MP_QSTR_JpegDecoder), MP_ROM_PTR(&jpegio_jpegdecoder_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(jpegio_module_globals, jpegio_module_globals_table);
+static MP_DEFINE_CONST_DICT(jpegio_module_globals, jpegio_module_globals_table);
 
 const mp_obj_module_t jpegio_module = {
     .base = { &mp_type_module },

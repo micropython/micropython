@@ -67,7 +67,7 @@ const uint32_t RP_LIGHTSLEEP_EN0_MASK_HARSH = (
     );
 const uint32_t RP_LIGHTSLEEP_EN1_MASK_HARSH = 0x0;
 
-STATIC void prepare_for_dormant_xosc(void);
+static void prepare_for_dormant_xosc(void);
 
 // Singleton instance of SleepMemory.
 const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
@@ -89,7 +89,7 @@ void alarm_reset(void) {
     watchdog_hw->scratch[RP_WKUP_SCRATCH_REG] = RP_SLEEP_WAKEUP_UNDEF;
 }
 
-STATIC uint8_t _get_wakeup_cause(void) {
+static uint8_t _get_wakeup_cause(void) {
     // First check if the modules remember what last woke up
     if (alarm_pin_pinalarm_woke_this_cycle()) {
         return RP_SLEEP_WAKEUP_GPIO;
@@ -106,7 +106,7 @@ STATIC uint8_t _get_wakeup_cause(void) {
 }
 
 // Set up light sleep or deep sleep alarms.
-STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
+static void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
     alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
 }
@@ -224,7 +224,7 @@ void common_hal_alarm_gc_collect(void) {
     gc_collect_ptr(shared_alarm_get_wake_alarm());
 }
 
-STATIC void prepare_for_dormant_xosc(void) {
+static void prepare_for_dormant_xosc(void) {
     // TODO: add ROSC support with sleep_run_from_dormant_source when it's added to SDK
     uint src_hz = XOSC_MHZ * MHZ;
     uint clk_ref_src = CLOCKS_CLK_REF_CTRL_SRC_VALUE_XOSC_CLKSRC;

@@ -8,7 +8,7 @@
 #include "shared-bindings/board/__init__.h"
 #include "shared-module/displayio/__init__.h"
 
-STATIC const mp_rom_obj_tuple_t camera_data_tuple = {
+static const mp_rom_obj_tuple_t camera_data_tuple = {
     // The order matters.
     // They must be ordered from low to high (Y2, Y3 .. Y9).
 
@@ -28,7 +28,7 @@ STATIC const mp_rom_obj_tuple_t camera_data_tuple = {
 };
 
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     // Left header, module facing down.
