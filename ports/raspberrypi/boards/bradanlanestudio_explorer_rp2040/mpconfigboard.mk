@@ -1,3 +1,9 @@
+# This file is part of the CircuitPython project: https://circuitpython.org
+#
+# SPDX-FileCopyrightText: Copyright (c) 2024 Bradán Lane STUDIO
+#
+# SPDX-License-Identifier: MIT
+
 USB_VID = 0x2E8A
 USB_PID = 0x1073
 USB_PRODUCT = "Explorer Badge"
