@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_PACKET_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_PACKET_H
+#pragma once
 
 #include "py/enum.h"
 
@@ -17,5 +16,3 @@ typedef enum {
 } wifi_packet_t;
 
 extern const mp_obj_type_t wifi_packet_type;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_PACKET_H

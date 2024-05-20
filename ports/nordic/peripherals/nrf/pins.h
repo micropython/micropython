@@ -7,8 +7,7 @@
 // DO NOT include this file directly. Use shared-bindings/microcontroller/Pin.h instead to ensure
 // that all necessary includes are already included.
 
-#ifndef __MICROPY_INCLUDED_NRF_PERIPHERALS_PINS_H__
-#define __MICROPY_INCLUDED_NRF_PERIPHERALS_PINS_H__
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -45,5 +44,3 @@ extern const mp_obj_type_t mcu_pin_type;
 #ifdef NRF52833
 #include "nrf52833/pins.h"
 #endif
-
-#endif // __MICROPY_INCLUDED_NRF_PERIPHERALS_PINS_H__

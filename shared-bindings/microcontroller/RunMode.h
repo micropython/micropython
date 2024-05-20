@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_RUNMODE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_RUNMODE_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -26,5 +25,3 @@ extern const mcu_runmode_obj_t mcu_runmode_uf2_obj;
 extern const mcu_runmode_obj_t mcu_runmode_normal_obj;
 extern const mcu_runmode_obj_t mcu_runmode_safe_mode_obj;
 extern const mcu_runmode_obj_t mcu_runmode_bootloader_obj;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_RUNMODE_H

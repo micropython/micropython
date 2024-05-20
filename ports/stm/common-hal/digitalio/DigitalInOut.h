@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_STM32_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
-#define MICROPY_INCLUDED_STM32_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -14,5 +13,3 @@ typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
 } digitalio_digitalinout_obj_t;
-
-#endif // MICROPY_INCLUDED_STM32_COMMON_HAL_DIGITALIO_DIGITALINOUT_H

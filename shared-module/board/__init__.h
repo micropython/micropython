@@ -4,9 +4,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BOARD__INIT__H
-#define MICROPY_INCLUDED_SHARED_MODULE_BOARD__INIT__H
+#pragma once
 
 void reset_board_buses(void);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_BOARD__INIT__H

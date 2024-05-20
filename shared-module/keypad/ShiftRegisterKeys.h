@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_SHIFTREGISTERKEYS_H
-#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_SHIFTREGISTERKEYS_H
+#pragma once
 
 #include "py/obj.h"
 #include "py/objtuple.h"
@@ -27,5 +26,3 @@ typedef struct {
 } keypad_shiftregisterkeys_obj_t;
 
 void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_SHIFTREGISTERKEYS_H

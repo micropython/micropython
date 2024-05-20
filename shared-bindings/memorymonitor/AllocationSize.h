@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MEMORYMONITOR_ALLOCATIONSIZE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_MEMORYMONITOR_ALLOCATIONSIZE_H
+#pragma once
 
 #include "shared-module/memorymonitor/AllocationSize.h"
 
@@ -18,5 +17,3 @@ extern void common_hal_memorymonitor_allocationsize_clear(memorymonitor_allocati
 extern size_t common_hal_memorymonitor_allocationsize_get_bytes_per_block(memorymonitor_allocationsize_obj_t *self);
 extern uint16_t common_hal_memorymonitor_allocationsize_get_len(memorymonitor_allocationsize_obj_t *self);
 extern uint16_t common_hal_memorymonitor_allocationsize_get_item(memorymonitor_allocationsize_obj_t *self, int16_t index);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_MEMORYMONITOR_ALLOCATIONSIZE_H

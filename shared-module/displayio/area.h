@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_AREA_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_AREA_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -56,5 +55,3 @@ void displayio_area_transform_within(bool mirror_x, bool mirror_y, bool transpos
     const displayio_area_t *original,
     const displayio_area_t *whole,
     displayio_area_t *transformed);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_AREA_H

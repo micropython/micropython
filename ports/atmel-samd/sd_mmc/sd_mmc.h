@@ -40,8 +40,7 @@
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
  */
 
-#ifndef SD_MMC_H_INCLUDED
-#define SD_MMC_H_INCLUDED
+#pragma once
 
 #include "compiler.h"
 #include "conf_sd_mmc.h"
@@ -312,5 +311,3 @@ sd_mmc_err_t sdio_write_extended(uint8_t slot, uint8_t func_num, uint32_t addr, 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* SD_MMC_H_INCLUDED */

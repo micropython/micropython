@@ -4,11 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_FATFS_H
-#define MICROPY_INCLUDED_SUPERVISOR_FATFS_H
+#pragma once
 
 #include "lib/oofatfs/ff.h"
 
 void override_fattime(DWORD time);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_FATFS_H

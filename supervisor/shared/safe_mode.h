@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H
-#define MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H
+#pragma once
 
 #include "py/mpconfig.h"
 
@@ -42,5 +41,3 @@ void safe_mode_on_next_reset(safe_mode_t reason);
 void reset_into_safe_mode(safe_mode_t reason) NORETURN;
 
 void print_safe_mode_message(safe_mode_t reason);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H

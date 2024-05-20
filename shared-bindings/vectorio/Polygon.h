@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_POLYGON_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_POLYGON_H
+#pragma once
 
 #include "shared-module/vectorio/Polygon.h"
 #include "shared-module/displayio/area.h"
@@ -30,6 +29,3 @@ uint16_t common_hal_vectorio_polygon_get_color_index(void *obj);
 void common_hal_vectorio_polygon_set_color_index(void *obj, uint16_t color_index);
 
 mp_obj_t common_hal_vectorio_polygon_get_draw_protocol(void *polygon);
-
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_POLYGON_H

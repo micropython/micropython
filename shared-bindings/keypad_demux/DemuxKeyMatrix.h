@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_DEMUX_DEMUXKEYMATRIX_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_DEMUX_DEMUXKEYMATRIX_H
+#pragma once
 
 #include "py/objlist.h"
 #include "shared-module/keypad_demux/DemuxKeyMatrix.h"
@@ -21,5 +20,3 @@ mp_uint_t common_hal_keypad_demux_demuxkeymatrix_row_column_to_key_number(keypad
 
 size_t common_hal_keypad_demux_demuxkeymatrix_get_column_count(keypad_demux_demuxkeymatrix_obj_t *self);
 size_t common_hal_keypad_demux_demuxkeymatrix_get_row_count(keypad_demux_demuxkeymatrix_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_DEMUX_DEMUXKEYMATRIX_H

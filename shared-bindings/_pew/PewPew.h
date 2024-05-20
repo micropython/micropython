@@ -5,9 +5,6 @@
 // SPDX-License-Identifier: MIT
 
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PEW_PEWPEW_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_PEW_PEWPEW_H
+#pragma once
 
 extern const mp_obj_type_t pewpew_type;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_PEW_PEWPEW_H

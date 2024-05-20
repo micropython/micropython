@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
-#define MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -49,5 +48,3 @@ uint32_t board_serial_bytes_available(void);
 void board_serial_write_substring(const char *text, uint32_t length);
 
 int console_uart_printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SERIAL_H

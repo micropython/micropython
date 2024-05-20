@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_AUTORELOAD_H
-#define MICROPY_INCLUDED_SUPERVISOR_AUTORELOAD_H
+#pragma once
 
 #include "py/obj.h"
 #include "shared-bindings/supervisor/RunReason.h"
@@ -53,5 +52,3 @@ bool autoreload_pending(void);
 void autoreload_suspend(uint32_t suspend_reason_mask);
 // Allow autoreloads again, for the given reason(s).
 void autoreload_resume(uint32_t suspend_reason_mask);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_AUTORELOAD_H

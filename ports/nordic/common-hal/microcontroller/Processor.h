@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+#pragma once
 
 #define COMMON_HAL_MCU_PROCESSOR_UID_LENGTH 8
 
@@ -17,5 +16,3 @@ typedef struct {
 } mcu_processor_obj_t;
 
 extern uint32_t reset_reason_saved;
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H

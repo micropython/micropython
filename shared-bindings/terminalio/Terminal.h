@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_TERMINALIO_TERMINAL_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_TERMINALIO_TERMINAL_H
+#pragma once
 
 #include "shared-module/terminalio/Terminal.h"
 
@@ -21,5 +20,3 @@ extern size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *se
     const uint8_t *data, size_t len, int *errcode);
 
 extern bool common_hal_terminalio_terminal_ready_to_tx(terminalio_terminal_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_TERMINALIO_TERMINAL_H

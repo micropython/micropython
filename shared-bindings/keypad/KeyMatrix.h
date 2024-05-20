@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H
+#pragma once
 
 #include "py/objlist.h"
 #include "shared-module/keypad/KeyMatrix.h"
@@ -21,5 +20,3 @@ mp_uint_t common_hal_keypad_keymatrix_row_column_to_key_number(keypad_keymatrix_
 
 size_t common_hal_keypad_keymatrix_get_column_count(keypad_keymatrix_obj_t *self);
 size_t common_hal_keypad_keymatrix_get_row_count(keypad_keymatrix_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H

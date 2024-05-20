@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_UART_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_UART_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/busio/UART.h"
@@ -49,5 +48,3 @@ extern void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self);
 extern bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self);
 
 extern void common_hal_busio_uart_never_reset(busio_uart_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_UART_H

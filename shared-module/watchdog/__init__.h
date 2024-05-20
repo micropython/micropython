@@ -4,9 +4,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_WATCHDOG___INIT___H
-#define MICROPY_INCLUDED_SHARED_MODULE_WATCHDOG___INIT___H
+#pragma once
 
 extern void watchdog_reset(void);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_WATCHDOG___INIT___H

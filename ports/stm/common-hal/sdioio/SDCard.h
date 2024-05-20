@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_STM32_COMMON_HAL_BUSIO_SDIO_H
-#define MICROPY_INCLUDED_STM32_COMMON_HAL_BUSIO_SDIO_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -26,5 +25,3 @@ typedef struct {
 } sdioio_sdcard_obj_t;
 
 void sdioio_reset(void);
-
-#endif // MICROPY_INCLUDED_STM32_COMMON_HAL_BUSIO_SDIO_H

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PROCESSOR_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PROCESSOR_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -20,5 +19,3 @@ float common_hal_mcu_processor_get_temperature(void);
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]);
 float common_hal_mcu_processor_get_voltage(void);
 void common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self, uint32_t frequency);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PROCESSOR_H

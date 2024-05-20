@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef __IRQ_H
-#define __IRQ_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,5 +71,3 @@ static inline unsigned int irq_pending(void) {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __IRQ_H */

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_PALETTE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_PALETTE_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -63,5 +62,3 @@ void displayio_palette_get_color(displayio_palette_t *palette, const _displayio_
 ;
 bool displayio_palette_needs_refresh(displayio_palette_t *self);
 void displayio_palette_finish_refresh(displayio_palette_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_PALLETE_H

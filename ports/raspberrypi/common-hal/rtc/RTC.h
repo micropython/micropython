@@ -4,9 +4,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_RTC_RTC_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_RTC_RTC_H
+#pragma once
 
 extern void common_hal_rtc_init(void);
-
-#endif  // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_RTC_RTC_H

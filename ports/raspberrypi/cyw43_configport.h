@@ -3,8 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2022 Damien P. George
 //
 // SPDX-License-Identifier: MIT
-#ifndef MICROPY_INCLUDED_RP2_CYW43_CONFIGPORT_H
-#define MICROPY_INCLUDED_RP2_CYW43_CONFIGPORT_H
+#pragma once
 
 // The board-level config will be included here, so it can set some CYW43 values.
 #include "py/mpconfig.h"
@@ -34,5 +33,3 @@ static inline void cyw43_yield(void) {
     }
     restore_interrupts(my_interrupts);
 }
-
-#endif // MICROPY_INCLUDED_RP2_CYW43_CONFIGPORT_H

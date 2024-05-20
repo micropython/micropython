@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_SPI_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_SPI_H
+#pragma once
 
 #include "common-hal/digitalio/DigitalInOut.h"
 
@@ -23,5 +22,3 @@ typedef struct {
     uint8_t phase : 1;
     volatile bool locked : 1;
 } bitbangio_spi_obj_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_SPI_H

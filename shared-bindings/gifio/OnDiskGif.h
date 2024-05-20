@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_ONDISKGIF_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_ONDISKGIF_H
+#pragma once
 
 #include "shared-module/gifio/OnDiskGif.h"
 #include "extmod/vfs_fat.h"
@@ -28,4 +27,3 @@ int32_t common_hal_gifio_ondiskgif_get_min_delay(gifio_ondiskgif_t *self);
 int32_t common_hal_gifio_ondiskgif_get_max_delay(gifio_ondiskgif_t *self);
 void common_hal_gifio_ondiskgif_deinit(gifio_ondiskgif_t *self);
 bool common_hal_gifio_ondiskgif_deinited(gifio_ondiskgif_t *self);
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_ONDISKGIF_H

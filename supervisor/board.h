@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_BOARD_H
-#define MICROPY_INCLUDED_SUPERVISOR_BOARD_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -26,5 +25,3 @@ void reset_board(void);
 // state. It should not prevent the user access method from working (such as
 // disabling USB, BLE or flash) because CircuitPython may continue to run.
 void board_deinit(void);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_BOARD_H

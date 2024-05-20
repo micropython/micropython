@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_DEMUX_DEMUXKEYMATRIX_H
-#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_DEMUX_DEMUXKEYMATRIX_H
+#pragma once
 
 #include "py/obj.h"
 #include "py/objtuple.h"
@@ -22,5 +21,3 @@ typedef struct {
 
 void keypad_demux_demuxkeymatrix_scan(keypad_demux_demuxkeymatrix_obj_t *self);
 void demuxkeymatrix_never_reset(keypad_demux_demuxkeymatrix_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_DEMUX_DEMUXKEYMATRIX_H

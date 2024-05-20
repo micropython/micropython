@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H
-#define MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H
+#pragma once
 
 // Enable for debugging.
 // #define CIRCUITPY_VERBOSE_BLE               (1)
@@ -60,5 +59,3 @@
 extern portMUX_TYPE background_task_mutex;
 #define CALLBACK_CRITICAL_BEGIN (taskENTER_CRITICAL(&background_task_mutex))
 #define CALLBACK_CRITICAL_END (taskEXIT_CRITICAL(&background_task_mutex))
-
-#endif  // MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H

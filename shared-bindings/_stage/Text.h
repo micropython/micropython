@@ -4,11 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED__STAGE_TEXT_H
-#define MICROPY_INCLUDED__STAGE_TEXT_H
+#pragma once
 
 #include "shared-module/_stage/Text.h"
 
 extern const mp_obj_type_t mp_type_text;
-
-#endif  // MICROPY_INCLUDED__STAGE_TEXT

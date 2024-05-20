@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_SPIDEVICE_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_SPIDEVICE_H
+#pragma once
 
 #include "py/obj.h"
 #include "common-hal/busio/SPI.h"
@@ -21,5 +20,3 @@ typedef struct {
     digitalio_digitalinout_obj_t *chip_select;
     bool cs_active_value;
 } adafruit_bus_device_spidevice_obj_t;
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_SPIDEVICE_H

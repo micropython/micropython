@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_AUDIO_DMA_OUT_H
-#define MICROPY_INCLUDED_RASPBERRYPI_AUDIO_DMA_OUT_H
+#pragma once
 
 #include "py/obj.h"
 #include "supervisor/background_callback.h"
@@ -73,5 +72,3 @@ bool audio_dma_get_paused(audio_dma_t *dma);
 
 uint32_t audio_dma_pause_all(void);
 void audio_dma_unpause_mask(uint32_t channel_mask);
-
-#endif  // MICROPY_INCLUDED_RASPBERRYPI_AUDIO_DMA_OUT_H

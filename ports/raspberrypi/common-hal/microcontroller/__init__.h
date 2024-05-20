@@ -4,12 +4,9 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_MICROCONTROLLER___INIT___H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_MICROCONTROLLER___INIT___H
+#pragma once
 
 #include "src/rp2040/hardware_regs/include/hardware/platform_defs.h"
 #include "peripherals/pins.h"
 
 const mcu_pin_obj_t *mcu_get_pin_by_number(int);
-
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_MICROCONTROLLER___INIT___H

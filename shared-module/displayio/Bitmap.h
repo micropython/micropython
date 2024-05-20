@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -32,5 +31,3 @@ void displayio_bitmap_finish_refresh(displayio_bitmap_t *self);
 displayio_area_t *displayio_bitmap_get_refresh_areas(displayio_bitmap_t *self, displayio_area_t *tail);
 void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, const displayio_area_t *area);
 void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H

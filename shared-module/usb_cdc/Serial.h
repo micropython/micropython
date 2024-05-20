@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef SHARED_MODULE_USB_CDC_SERIAL_H
-#define SHARED_MODULE_USB_CDC_SERIAL_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -15,5 +14,3 @@ typedef struct {
     mp_float_t write_timeout; // if negative, wait forever.
     uint8_t idx;              // which CDC device?
 } usb_cdc_serial_obj_t;
-
-#endif // SHARED_MODULE_USB_CDC_SERIAL_H

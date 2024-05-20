@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_HASHLIB_HASH_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_HASHLIB_HASH_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -23,5 +22,3 @@ mp_obj_t hashlib_hash_update(mp_obj_t self_in, mp_obj_t buf_in);
 void common_hal_hashlib_hash_update(hashlib_hash_obj_t *self, const uint8_t *data, size_t datalen);
 void common_hal_hashlib_hash_digest(hashlib_hash_obj_t *self, uint8_t *data, size_t datalen);
 size_t common_hal_hashlib_hash_get_digest_size(hashlib_hash_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_HASHLIB_HASH_H

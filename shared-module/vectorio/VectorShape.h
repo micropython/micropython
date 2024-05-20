@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: MIT
 
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_SHAPE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_SHAPE_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -57,5 +56,3 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
 // false if the vector shape wasn't rendered in the last frame.
 bool vectorio_vector_shape_get_previous_area(vectorio_vector_shape_t *self, displayio_area_t *out_area);
 void vectorio_vector_shape_finish_refresh(vectorio_vector_shape_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_SHAPE_H

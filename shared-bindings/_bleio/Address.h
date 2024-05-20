@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADDRESS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADDRESS_H
+#pragma once
 
 #include "py/objtype.h"
 #include "shared-module/_bleio/Address.h"
@@ -24,5 +23,3 @@ extern const mp_obj_type_t bleio_address_type;
 extern void common_hal_bleio_address_construct(bleio_address_obj_t *self, uint8_t *bytes, uint8_t address_type);
 extern mp_obj_t common_hal_bleio_address_get_address_bytes(bleio_address_obj_t *self);
 extern uint8_t common_hal_bleio_address_get_type(bleio_address_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADDRESS_H

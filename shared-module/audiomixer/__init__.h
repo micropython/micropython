@@ -4,9 +4,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOMIXER__INIT__H
-#define MICROPY_INCLUDED_SHARED_MODULE_AUDIOMIXER__INIT__H
+#pragma once
 
 #include "shared-module/audiocore/__init__.h"
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_AUDIOMIXER__INIT__H

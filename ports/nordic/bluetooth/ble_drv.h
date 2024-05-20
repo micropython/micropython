@@ -6,8 +6,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_DRV_H
-#define MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_DRV_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -53,5 +52,3 @@ void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param);
 
 // Allow for user provided entries to prevent allocations outside the VM.
 void ble_drv_add_event_handler_entry(ble_drv_evt_handler_entry_t *entry, ble_drv_evt_handler_t func, void *param);
-
-#endif // MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_DRV_H

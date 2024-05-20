@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_I2SOUT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_I2SOUT_H
+#pragma once
 
 #include "common-hal/audiobusio/I2SOut.h"
 #include "common-hal/microcontroller/Pin.h"
@@ -29,5 +28,3 @@ void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t *self);
 bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t *self);
 
 #endif // CIRCUITPY_AUDIOBUSIO_I2SOUT
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_I2SOUT_H

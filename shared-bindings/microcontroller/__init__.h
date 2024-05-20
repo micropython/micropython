@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H
+#pragma once
 
 #include "py/obj.h"
 #include "py/mpconfig.h"
@@ -44,5 +43,3 @@ extern const nvm_bytearray_obj_t common_hal_mcu_nvm_obj;
 #include "common-hal/watchdog/WatchDogTimer.h"
 extern watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj;
 #endif
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H

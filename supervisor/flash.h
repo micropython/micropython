@@ -3,8 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
 //
 // SPDX-License-Identifier: MIT
-#ifndef MICROPY_INCLUDED_SUPERVISOR_FLASH_H
-#define MICROPY_INCLUDED_SUPERVISOR_FLASH_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -33,5 +32,3 @@ void supervisor_flash_release_cache(void);
 void supervisor_flash_set_extended(bool extended);
 bool supervisor_flash_get_extended(void);
 void supervisor_flash_update_extended(void);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_FLASH_H

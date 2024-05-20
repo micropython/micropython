@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CONNECTION_H
-#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CONNECTION_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -66,5 +65,3 @@ uint16_t bleio_connection_get_conn_handle(bleio_connection_obj_t *self);
 mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t *connection);
 bleio_connection_internal_t *bleio_conn_handle_to_connection(uint16_t conn_handle);
 void bleio_connection_clear(bleio_connection_internal_t *self);
-
-#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CONNECTION_H

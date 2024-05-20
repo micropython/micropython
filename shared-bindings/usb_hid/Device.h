@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_HID_DEVICE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_HID_DEVICE_H
+#pragma once
 
 #include "py/objarray.h"
 
@@ -19,5 +18,3 @@ mp_obj_t common_hal_usb_hid_device_get_last_received_report(usb_hid_device_obj_t
 uint16_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self);
 uint16_t common_hal_usb_hid_device_get_usage(usb_hid_device_obj_t *self);
 uint8_t common_hal_usb_hid_device_validate_report_id(usb_hid_device_obj_t *self, mp_int_t report_id);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_HID_DEVICE_H

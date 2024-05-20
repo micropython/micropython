@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_PEW_PEWPEW_H
-#define MICROPY_INCLUDED_PEW_PEWPEW_H
+#pragma once
 
 #include <stdint.h>
 #include "shared-bindings/digitalio/DigitalInOut.h"
@@ -25,5 +24,3 @@ void pew_init(void);
 void pewpew_interrupt_handler(uint8_t index);
 void pew_reset(void);
 uint16_t pew_get_ticks(void);
-
-#endif  // MICROPY_INCLUDED_PEW_PEWPEW_H

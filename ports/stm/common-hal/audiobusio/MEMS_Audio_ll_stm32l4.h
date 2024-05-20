@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: MIT
 
 
-#ifndef _MEMS_AUDIO_LL_STM32L4_H_
-#define _MEMS_AUDIO_LL_STM32L4_H_
+#pragma once
 
 #include <stdbool.h>
 #include <assert.h>
@@ -186,6 +185,3 @@ typedef enum mems_audio_err_stm32l4_t {
 #ifdef __cplusplus
 }
 #endif
-
-
-#endif // _MEMS_AUDIO_LL_STM32L4_H_

@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#pragma once
 
 #include <stdint.h>
 
@@ -58,5 +57,3 @@ extern mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, blei
 
 extern void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self);
 extern bool common_hal_bleio_adapter_is_bonded_to_central(bleio_adapter_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H

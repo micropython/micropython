@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -16,5 +15,3 @@ typedef struct {
     uint8_t clock_pin_number, data_pin_number;
     bool mono;
 } audiobusio_pdmin_obj_t;
-
-#endif

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_BITMAP_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_BITMAP_H
+#pragma once
 
 #include "shared-module/displayio/Bitmap.h"
 
@@ -27,5 +26,3 @@ void common_hal_displayio_bitmap_fill(displayio_bitmap_t *bitmap, uint32_t value
 int common_hal_displayio_bitmap_get_buffer(displayio_bitmap_t *self, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 void common_hal_displayio_bitmap_deinit(displayio_bitmap_t *self);
 bool common_hal_displayio_bitmap_deinited(displayio_bitmap_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_BITMAP_H

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_MPHAL_H
-#define MICROPY_INCLUDED_ESPRESSIF_MPHAL_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -17,5 +16,3 @@
 #define mp_hal_ticks_ms()       ((mp_uint_t)supervisor_ticks_ms32())
 
 bool mp_hal_stdin_any(void);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_MPHAL_H

@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MP3FILE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MP3FILE_H
+#pragma once
 
 #include "py/obj.h"
 #include "extmod/vfs_fat.h"
@@ -27,5 +26,3 @@ uint8_t common_hal_audiomp3_mp3file_get_bits_per_sample(audiomp3_mp3file_obj_t *
 uint8_t common_hal_audiomp3_mp3file_get_channel_count(audiomp3_mp3file_obj_t *self);
 float common_hal_audiomp3_mp3file_get_rms_level(audiomp3_mp3file_obj_t *self);
 uint32_t common_hal_audiomp3_mp3file_get_samples_decoded(audiomp3_mp3file_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MP3FILE_H

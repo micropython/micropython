@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef STM32_MPCONFIGPORT_H__
-#define STM32_MPCONFIGPORT_H__
+#pragma once
 
 #include <stdint.h>
 
@@ -39,5 +38,3 @@ extern uint8_t _ld_default_stack_size;
 #define MAX_UART 10
 #define MAX_I2C 4
 #define MAX_SPI 6
-
-#endif  // __INCLUDED_MPCONFIGPORT_H

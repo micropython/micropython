@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PULSEIN_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PULSEIN_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pulseio/PulseIn.h"
@@ -24,5 +23,3 @@ extern uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t *sel
 extern bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t *self);
 extern uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t *self);
 extern uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_t index);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PULSEIN_H

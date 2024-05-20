@@ -7,8 +7,7 @@
 // DO NOT include this file directly. Use shared-bindings/microcontroller/Pin.h instead to ensure
 // that all necessary includes are already included.
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_PERIPHERALS_PINS_H
-#define MICROPY_INCLUDED_RASPBERRYPI_PERIPHERALS_PINS_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -55,5 +54,3 @@ extern const mcu_pin_obj_t pin_CYW0;
 extern const mcu_pin_obj_t pin_CYW1;
 extern const mcu_pin_obj_t pin_CYW2;
 #endif
-
-#endif  // MICROPY_INCLUDED_RASPBERRYPI_PERIPHERALS_PINS_H

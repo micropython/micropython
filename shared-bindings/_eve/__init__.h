@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS__EVE___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS__EVE___INIT___H
+#pragma once
 
 #include "shared-module/_eve/__init__.h"
 
@@ -62,5 +61,3 @@ void common_hal__eve_VertexTranslateX(common_hal__eve_t *eve, mp_float_t x);
 void common_hal__eve_VertexTranslateY(common_hal__eve_t *eve, mp_float_t y);
 void common_hal__eve_VertexFormat(common_hal__eve_t *eve, uint32_t frac);
 void common_hal__eve_Vertex2ii(common_hal__eve_t *eve, uint32_t x, uint32_t y, uint32_t handle, uint32_t cell);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS__EVE___INIT___H

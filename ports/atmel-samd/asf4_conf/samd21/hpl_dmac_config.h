@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: MIT
 
 /* Auto-generated config file hpl_dmac_config.h */
-#ifndef HPL_DMAC_CONFIG_H
-#define HPL_DMAC_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -3059,5 +3058,3 @@
 // </e>
 
 // <<< end of configuration section >>>
-
-#endif // HPL_DMAC_CONFIG_H

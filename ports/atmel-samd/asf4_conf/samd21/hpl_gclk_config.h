@@ -17,8 +17,7 @@
 
 
 /* Auto-generated config file hpl_gclk_config.h */
-#ifndef HPL_GCLK_CONFIG_H
-#define HPL_GCLK_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -711,5 +710,3 @@
 // </e>
 
 // <<< end of configuration section >>>
-
-#endif // HPL_GCLK_CONFIG_H

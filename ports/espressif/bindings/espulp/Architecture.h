@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BINDINGS_ESPULP_ARCHITECTURE_H
-#define MICROPY_INCLUDED_BINDINGS_ESPULP_ARCHITECTURE_H
+#pragma once
 
 #include "py/enum.h"
 
@@ -16,5 +15,3 @@ typedef enum {
 
 extern const mp_obj_type_t espulp_architecture_type;
 extern const cp_enum_obj_t architecture_FSM_obj;
-
-#endif // MICROPY_INCLUDED_BINDINGS_ESPULP_ARCHITECTURE_H

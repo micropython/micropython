@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_INIT_H
-#define MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_INIT_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -15,6 +14,3 @@ typedef struct {
     mp_obj_t obj;
     event_function *event;
 } vectorio_event_t;
-
-
-#endif

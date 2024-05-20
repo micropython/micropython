@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_NETWORK_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_NETWORK_H
+#pragma once
 
 #include <stdint.h>
 
@@ -21,5 +20,3 @@ extern mp_obj_t common_hal_wifi_network_get_rssi(wifi_network_obj_t *self);
 extern mp_obj_t common_hal_wifi_network_get_channel(wifi_network_obj_t *self);
 extern mp_obj_t common_hal_wifi_network_get_country(wifi_network_obj_t *self);
 extern mp_obj_t common_hal_wifi_network_get_authmode(wifi_network_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_NETWORK_H

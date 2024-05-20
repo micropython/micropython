@@ -4,9 +4,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED__STAGE_H
-#define MICROPY_INCLUDED__STAGE_H
+#pragma once
 
 #include "shared-module/_stage/__init__.h"
-
-#endif  // MICROPY_INCLUDED__STAGE

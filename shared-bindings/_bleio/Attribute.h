@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ATTRIBUTE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ATTRIBUTE_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -15,5 +14,3 @@
 extern const mp_obj_type_t bleio_attribute_type;
 
 extern void common_hal_bleio_attribute_security_mode_check_valid(bleio_attribute_security_mode_t security_mode);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ATTRIBUTE_H

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -31,5 +30,3 @@ void common_hal_os_utime(const char *path, mp_obj_t times);
 
 // Returns true if data was correctly sourced from a true random number generator.
 bool common_hal_os_urandom(uint8_t *buffer, mp_uint_t length);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H

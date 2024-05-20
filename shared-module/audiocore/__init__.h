@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOCORE__INIT__H
-#define MICROPY_INCLUDED_SHARED_MODULE_AUDIOCORE__INIT__H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -61,5 +60,3 @@ void audiosample_convert_s8s_s16s(int16_t *buffer_out, const int8_t *buffer_in, 
 void audiosample_convert_u16m_s16s(int16_t *buffer_out, const uint16_t *buffer_in, size_t nframes);
 void audiosample_convert_u16s_s16s(int16_t *buffer_out, const uint16_t *buffer_in, size_t nframes);
 void audiosample_convert_s16m_s16s(int16_t *buffer_out, const int16_t *buffer_in, size_t nframes);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_AUDIOCORE__INIT__H

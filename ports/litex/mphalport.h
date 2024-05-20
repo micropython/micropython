@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef __FOMU_HAL
-#define __FOMU_HAL
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -18,5 +17,3 @@
 // #define mp_hal_delay_us(us)     NRFX_DELAY_US((uint32_t) (us))
 
 bool mp_hal_stdin_any(void);
-
-#endif

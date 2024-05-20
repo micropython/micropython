@@ -44,8 +44,7 @@
  *
  */
 
-#ifndef NRFX_GLUE_H__
-#define NRFX_GLUE_H__
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -242,5 +241,3 @@ void common_hal_mcu_enable_interrupts(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif // NRFX_GLUE_H__

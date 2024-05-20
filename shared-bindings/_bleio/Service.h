@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H
+#pragma once
 
 #include "common-hal/_bleio/Characteristic.h"
 #include "common-hal/_bleio/Connection.h"
@@ -26,5 +25,3 @@ extern mp_obj_tuple_t *common_hal_bleio_service_get_characteristics(bleio_servic
 extern bool common_hal_bleio_service_get_is_remote(bleio_service_obj_t *self);
 extern bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self);
 extern void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *initial_value_bufinfo, const char *user_description);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H

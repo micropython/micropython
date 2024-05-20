@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_SUPERVISOR_RUNTIME_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_SUPERVISOR_RUNTIME_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -13,5 +12,3 @@ typedef struct {
     mp_obj_base_t base;
     // Stores no state currently.
 } super_runtime_obj_t;
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_SUPERVISOR_RUNTIME_H

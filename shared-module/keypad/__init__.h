@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef SHARED_MODULE_KEYPAD_H
-#define SHARED_MODULE_KEYPAD_H
+#pragma once
 
 #include "py/obj.h"
 #include "supervisor/shared/lock.h"
@@ -46,5 +45,3 @@ void keypad_never_reset(keypad_scanner_obj_t *self);
 
 size_t common_hal_keypad_generic_get_key_count(void *scanner);
 void common_hal_keypad_deinit_core(void *scanner);
-
-#endif // SHARED_MODULE_KEYPAD_H

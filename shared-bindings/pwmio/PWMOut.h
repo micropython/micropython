@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PWMIO_PWMOUT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_PWMIO_PWMOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pwmio/PWMOut.h"
@@ -41,5 +40,3 @@ extern void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self);
 extern void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self);
 
 extern void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_PWMIO_PWMOUT_H

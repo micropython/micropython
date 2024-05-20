@@ -11,8 +11,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_ADDR_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_ADDR_H_
+#pragma once
 
 #include <stdbool.h>
 #include <string.h>
@@ -93,5 +92,3 @@ static inline bool bt_addr_le_is_identity(const bt_addr_le_t *addr) {
 /**
  * @}
  */
-
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_ADDR_H_ */

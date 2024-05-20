@@ -4,11 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MSGPACK___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_MSGPACK___INIT___H
+#pragma once
 
 #include "py/obj.h"
 
 // nothing for now
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MSGPACK___INIT___H

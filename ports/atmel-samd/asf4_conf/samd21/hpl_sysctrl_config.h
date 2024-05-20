@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: MIT
 
 /* Auto-generated config file hpl_sysctrl_config.h */
-#ifndef HPL_SYSCTRL_CONFIG_H
-#define HPL_SYSCTRL_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -680,5 +679,3 @@
 #define CONF_DPLL_FILTER SYSCTRL_DPLLCTRLB_FILTER_DEFAULT_Val
 
 // <<< end of configuration section >>>
-
-#endif // HPL_SYSCTRL_CONFIG_H

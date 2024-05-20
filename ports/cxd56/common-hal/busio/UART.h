@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_UART_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -21,5 +20,3 @@ typedef struct {
 } busio_uart_obj_t;
 
 void busio_uart_reset(void);
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_UART_H

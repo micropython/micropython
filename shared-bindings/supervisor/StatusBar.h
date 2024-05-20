@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_STATUS_BAR_STATUS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_STATUS_BAR_STATUS_H
+#pragma once
 
 #include <stdbool.h>
 #include "py/obj.h"
@@ -18,5 +17,3 @@ void shared_module_supervisor_status_bar_set_console(supervisor_status_bar_obj_t
 
 bool shared_module_supervisor_status_bar_get_display(supervisor_status_bar_obj_t *self);
 void shared_module_supervisor_status_bar_set_display(supervisor_status_bar_obj_t *self, bool enabled);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR_STATUS_BAR_H

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BROADCOM_MPHALPORT_H
-#define MICROPY_INCLUDED_BROADCOM_MPHALPORT_H
+#pragma once
 
 #include <stdint.h>
 #include "py/obj.h"
@@ -27,5 +26,3 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len);
 
 void usbkbd_setup();
 #endif
-
-#endif // MICROPY_INCLUDED_BROADCOM_MPHALPORT_H

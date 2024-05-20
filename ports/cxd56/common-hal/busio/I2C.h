@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_I2C_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_I2C_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -19,5 +18,3 @@ typedef struct {
     const mcu_pin_obj_t *scl_pin;
     const mcu_pin_obj_t *sda_pin;
 } busio_i2c_obj_t;
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_I2C_H

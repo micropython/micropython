@@ -21,8 +21,7 @@
 #define PROTOTYPE_SERCOM_USART_ASYNC_CLOCK_FREQUENCY CONF_GCLK_SERCOM2_CORE_FREQUENCY
 
 /* Auto-generated config file hpl_sercom_config.h */
-#ifndef HPL_SERCOM_CONFIG_H
-#define HPL_SERCOM_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -753,5 +752,3 @@
 #endif
 
 // <<< end of configuration section >>>
-
-#endif // HPL_SERCOM_CONFIG_H

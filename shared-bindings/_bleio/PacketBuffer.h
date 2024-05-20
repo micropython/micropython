@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PACKETBUFFER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PACKETBUFFER_H
+#pragma once
 
 #include "common-hal/_bleio/PacketBuffer.h"
 
@@ -27,5 +26,3 @@ mp_int_t common_hal_bleio_packet_buffer_get_outgoing_packet_length(bleio_packet_
 void common_hal_bleio_packet_buffer_flush(bleio_packet_buffer_obj_t *self);
 bool common_hal_bleio_packet_buffer_deinited(bleio_packet_buffer_obj_t *self);
 void common_hal_bleio_packet_buffer_deinit(bleio_packet_buffer_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PACKETBUFFER_H

@@ -6,8 +6,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H
+#pragma once
 
 #include "py/obj.h"
 #include "shared-module/_bleio/ScanEntry.h"
@@ -20,5 +19,3 @@ mp_int_t common_hal_bleio_scanentry_get_rssi(bleio_scanentry_obj_t *self);
 bool common_hal_bleio_scanentry_get_connectable(bleio_scanentry_obj_t *self);
 bool common_hal_bleio_scanentry_get_scan_response(bleio_scanentry_obj_t *self);
 bool common_hal_bleio_scanentry_matches(bleio_scanentry_obj_t *self, const uint8_t *prefixes, size_t prefixes_len, bool match_all);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H

@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_FRAMEBUFFERDISPLAY_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_FRAMEBUFFERDISPLAY_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -40,5 +39,3 @@ mp_obj_t common_hal_framebufferio_framebufferdisplay_framebuffer(framebufferio_f
 
 mp_obj_t common_hal_framebufferio_framebufferdisplay_get_root_group(framebufferio_framebufferdisplay_obj_t *self);
 mp_obj_t common_hal_framebufferio_framebufferdisplay_set_root_group(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_FRAMEBUFFERDISPLAY_H

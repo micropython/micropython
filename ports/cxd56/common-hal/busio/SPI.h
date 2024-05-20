@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_SPI_H
+#pragma once
 
 #include <nuttx/spi/spi.h>
 
@@ -25,5 +24,3 @@ typedef struct {
     const mcu_pin_obj_t *mosi_pin;
     const mcu_pin_obj_t *miso_pin;
 } busio_spi_obj_t;
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_SPI_H

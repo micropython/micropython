@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -21,5 +20,3 @@ void common_hal_storage_erase_filesystem(bool extended);
 
 bool common_hal_storage_disable_usb_drive(void);
 bool common_hal_storage_enable_usb_drive(void);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H

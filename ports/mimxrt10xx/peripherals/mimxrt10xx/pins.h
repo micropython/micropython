@@ -8,8 +8,7 @@
 // DO NOT include this file directly. Use shared-bindings/microcontroller/Pin.h instead to ensure
 // that all necessary includes are already included.
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_PINS_H
-#define MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_PINS_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -71,5 +70,3 @@ void enable_pin_change_interrupt(const mcu_pin_obj_t *pin, gpio_change_interrupt
 #elif defined(MIMXRT1176_cm7_SERIES)
 #include "MIMXRT1176/pins.h"
 #endif
-
-#endif // MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_PINS_H

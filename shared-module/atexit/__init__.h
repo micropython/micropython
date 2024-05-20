@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_ATEXIT___INIT___H
-#define MICROPY_INCLUDED_SHARED_MODULE_ATEXIT___INIT___H
+#pragma once
 
 #include "py/obj.h"
 #include "shared/runtime/pyexec.h"
@@ -22,5 +21,3 @@ extern void shared_module_atexit_register(mp_obj_t *func,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 extern void shared_module_atexit_unregister(const mp_obj_t *func);
 extern void shared_module_atexit_execute(pyexec_result_t *result);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_ATEXIT___INIT___H

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_AUDIO_DMA_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_AUDIO_DMA_H
+#pragma once
 
 #include "extmod/vfs_fat.h"
 #include "py/obj.h"
@@ -82,5 +81,3 @@ void audio_dma_background(void);
 uint8_t find_sync_event_channel_raise(void);
 
 void audio_dma_evsys_handler(void);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_AUDIO_DMA_H

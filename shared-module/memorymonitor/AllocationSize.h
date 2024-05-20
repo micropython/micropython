@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_MEMORYMONITOR_ALLOCATIONSIZE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_MEMORYMONITOR_ALLOCATIONSIZE_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -27,5 +26,3 @@ typedef struct _memorymonitor_allocationsize_obj_t {
 
 void memorymonitor_allocationsizes_track_allocation(size_t block_count);
 void memorymonitor_allocationsizes_reset(void);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_MEMORYMONITOR_ALLOCATIONSIZE_H

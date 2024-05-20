@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -68,5 +67,3 @@ bool displayio_tilegrid_get_previous_area(displayio_tilegrid_t *self, displayio_
 void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self);
 
 bool displayio_tilegrid_get_rendered_hidden(displayio_tilegrid_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H

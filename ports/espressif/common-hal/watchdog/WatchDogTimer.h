@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -19,5 +18,3 @@ struct _watchdog_watchdogtimer_obj_t {
     mp_float_t timeout;
     watchdog_watchdogmode_t mode;
 };
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H

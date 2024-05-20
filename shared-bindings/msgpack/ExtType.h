@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MSGPACK_EXTTYPE___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_MSGPACK_EXTTYPE___INIT___H
+#pragma once
 
 #include "py/obj.h"
 
@@ -16,5 +15,3 @@ typedef struct {
 } mod_msgpack_extype_obj_t;
 
 extern const mp_obj_type_t mod_msgpack_exttype_type;
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MSGPACK_EXTTYPE___INIT___H

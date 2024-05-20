@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM___INIT___H
+#pragma once
 
 #include "py/obj.h"
 
@@ -44,5 +43,3 @@ void shared_alarm_save_wake_alarm(mp_obj_t alarm);
 extern bool common_hal_alarm_woken_from_sleep(void);
 
 extern void common_hal_alarm_gc_collect(void);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM___INIT___H

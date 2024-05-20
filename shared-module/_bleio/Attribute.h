@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ATTRIBUTE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ATTRIBUTE_H
+#pragma once
 
 // BLE security modes: 0x<level><mode>
 typedef enum {
@@ -17,5 +16,3 @@ typedef enum {
     SECURITY_MODE_SIGNED_NO_MITM = 0x12,
     SECURITY_MODE_SIGNED_WITH_MITM = 0x22,
 } bleio_attribute_security_mode_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ATTRIBUTE_H

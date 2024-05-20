@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_CXD56_SDIOIO_SDCARD_H
-#define MICROPY_INCLUDED_CXD56_SDIOIO_SDCARD_H
+#pragma once
 
 #include <nuttx/fs/fs.h>
 
@@ -23,5 +22,3 @@ typedef struct {
     const mcu_pin_obj_t *clock_pin;
     const mcu_pin_obj_t *data_pins[4];
 } sdioio_sdcard_obj_t;
-
-#endif // MICROPY_INCLUDED_CXD56_SDIOIO_SDCARD_H

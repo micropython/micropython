@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ONEWIREIO_ONEWIRE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ONEWIREIO_ONEWIRE_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-module/onewireio/OneWire.h"
@@ -19,5 +18,3 @@ extern bool common_hal_onewireio_onewire_deinited(onewireio_onewire_obj_t *self)
 extern bool common_hal_onewireio_onewire_reset(onewireio_onewire_obj_t *self);
 extern bool common_hal_onewireio_onewire_read_bit(onewireio_onewire_obj_t *self);
 extern void common_hal_onewireio_onewire_write_bit(onewireio_onewire_obj_t *self, bool bit);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_ONEWIREIO_ONEWIRE_H

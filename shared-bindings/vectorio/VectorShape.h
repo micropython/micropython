@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_SHAPE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_SHAPE_H
+#pragma once
 
 #include "py/objproperty.h"
 #include "py/objtuple.h"
@@ -53,5 +52,3 @@ extern const mp_obj_property_getset_t vectorio_vector_shape_hidden_obj;
 extern const mp_obj_property_getset_t vectorio_vector_shape_location_obj;
 extern const mp_obj_property_getset_t vectorio_vector_shape_pixel_shader_obj;
 extern const mp_obj_fun_builtin_fixed_t vectorio_vector_shape_contains_obj;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_SHAPE_H

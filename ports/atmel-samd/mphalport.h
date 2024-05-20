@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -26,5 +25,3 @@ void mp_hal_set_interrupt_char(int c);
 
 void mp_hal_disable_all_interrupts(void);
 void mp_hal_enable_all_interrupts(void);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H

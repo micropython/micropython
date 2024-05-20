@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H
+#pragma once
 
 #include "nrfx_spim.h"
 #include "py/obj.h"
@@ -26,5 +25,3 @@ typedef struct {
 } busio_spi_obj_t;
 
 void spi_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H

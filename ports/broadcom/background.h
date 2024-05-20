@@ -4,9 +4,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BROADCOM_BACKGROUND_H
-#define MICROPY_INCLUDED_BROADCOM_BACKGROUND_H
+#pragma once
 
 #include <stdbool.h>
-
-#endif  // MICROPY_INCLUDED_BROADCOM_BACKGROUND_H

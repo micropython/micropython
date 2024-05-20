@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef NRF5_MPCONFIGPORT_H__
-#define NRF5_MPCONFIGPORT_H__
+#pragma once
 
 #include "ble_drv.h"
 
@@ -183,5 +182,3 @@
 #if SOFTDEVICE_RAM_SIZE + SPIM3_BUFFER_RAM_SIZE + APP_RAM_SIZE < RAM_SIZE
 #error RAM size regions do not use all of RAM
 #endif
-
-#endif  // NRF5_MPCONFIGPORT_H__

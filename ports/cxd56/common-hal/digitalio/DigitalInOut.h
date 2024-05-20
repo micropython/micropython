@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -18,5 +17,3 @@ typedef struct {
     bool open_drain;
     uint8_t pull;
 } digitalio_digitalinout_obj_t;
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_DIGITALIO_DIGITALINOUT_H

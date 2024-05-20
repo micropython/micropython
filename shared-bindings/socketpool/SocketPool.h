@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKETPOOL_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKETPOOL_H
+#pragma once
 
 #include "common-hal/socketpool/SocketPool.h"
 
@@ -33,5 +32,3 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
     int proto, socketpool_socket_obj_t *sock);
 
 NORETURN void common_hal_socketpool_socketpool_raise_gaierror_noname(void);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKETPOOL_H

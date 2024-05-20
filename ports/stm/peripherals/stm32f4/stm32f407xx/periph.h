@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F407XX_PERIPH_H
-#define MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F407XX_PERIPH_H
+#pragma once
 
 // I2C
 #define I2C_BANK_ARRAY_LEN 3
@@ -56,6 +55,3 @@ extern CAN_TypeDef *mcu_can_banks[2];
 
 extern const mcu_periph_obj_t mcu_can_tx_list[6];
 extern const mcu_periph_obj_t mcu_can_rx_list[6];
-
-
-#endif // MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F407XX_PERIPH_H

@@ -4,9 +4,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_BACKGROUND_H
-#define MICROPY_INCLUDED_NRF_BACKGROUND_H
+#pragma once
 
 void board_background_task(void);
-
-#endif  // MICROPY_INCLUDED_NRF_BACKGROUND_H

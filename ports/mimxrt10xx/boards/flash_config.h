@@ -6,8 +6,7 @@
 
 // This file defines board specific functions.
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_BOARDS_FLASH_CONFIG_H
-#define MICROPY_INCLUDED_MIMXRT10XX_BOARDS_FLASH_CONFIG_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -56,5 +55,3 @@ enum
 
 // FlexSPI configuration that stores command info.
 extern const flexspi_nor_config_t qspiflash_config;
-
-#endif  // MICROPY_INCLUDED_MIMXRT10XX_BOARDS_FLASH_CONFIG_H

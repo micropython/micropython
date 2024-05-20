@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DRIVEMODE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DRIVEMODE_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -22,5 +21,3 @@ extern const mp_obj_type_t digitalio_drive_mode_type;
 
 extern const digitalio_drive_mode_obj_t digitalio_drive_mode_push_pull_obj;
 extern const digitalio_drive_mode_obj_t digitalio_drive_mode_open_drain_obj;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DRIVEMODE_H

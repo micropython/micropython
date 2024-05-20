@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_FRAMEBUFFERDISPLAY_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_FRAMEBUFFERDISPLAY_H
+#pragma once
 
 #include "py/obj.h"
 #include "py/proto.h"
@@ -82,5 +81,3 @@ typedef struct _framebuffer_p_t {
     framebuffer_set_brightness_fun set_brightness;
 
 } framebuffer_p_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_FRAMEBUFFERDISPLAY_H

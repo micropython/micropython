@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -25,5 +24,3 @@ typedef struct {
 } camera_imageformat_obj_t;
 extern const camera_imageformat_obj_t camera_imageformat_jpg_obj;
 extern const camera_imageformat_obj_t camera_imageformat_rgb565_obj;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTICBUFFER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTICBUFFER_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -29,5 +28,3 @@ void common_hal_bleio_characteristic_buffer_clear_rx_buffer(bleio_characteristic
 bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer_obj_t *self);
 void common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_obj_t *self);
 bool common_hal_bleio_characteristic_buffer_connected(bleio_characteristic_buffer_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTICBUFFER_H

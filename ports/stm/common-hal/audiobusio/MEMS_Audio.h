@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef _MEMS_AUDIO_H_
-#define _MEMS_AUDIO_H_
+#pragma once
 
 #include <stdint.h>
 #include <stddef.h>
@@ -133,6 +132,3 @@ mems_audio_err_t mems_audio_stop(MemsAudio *audio);
 #ifdef __cplusplus
 }
 #endif
-
-
-#endif  // _MEMS_AUDIO_H_

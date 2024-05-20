@@ -4,12 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_INIT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_INIT_H
+#pragma once
 
 void reset_sercoms(void);
 void allow_reset_sercom(Sercom *sercom);
 void never_reset_sercom(Sercom *sercom);
-
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_INIT_H

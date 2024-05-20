@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -22,5 +21,3 @@ bool supervisor_bluetooth_workflow_is_enabled(void);
 // Title bar status
 bool supervisor_bluetooth_status_dirty(void);
 void supervisor_bluetooth_status(void);
-
-#endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H

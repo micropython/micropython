@@ -6,8 +6,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_UUID_H
-#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_UUID_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -34,5 +33,3 @@ typedef struct {
 } bleio_uuid_obj_t;
 
 uint16_t bleio_uuid_get_uuid16_or_unknown(bleio_uuid_obj_t *uuid);
-
-#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_UUID_H

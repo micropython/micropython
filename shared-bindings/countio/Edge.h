@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_COUNTIO_EDGE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_COUNTIO_EDGE_H
+#pragma once
 
 #include "py/enum.h"
 #include "py/obj.h"
@@ -20,5 +19,3 @@ extern const mp_obj_type_t countio_edge_type;
 extern const cp_enum_obj_t edge_FALL_obj;
 
 countio_edge_t validate_edge(mp_obj_t obj, qstr arg_name);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_COUNTIO_EDGE_H

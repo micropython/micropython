@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_TARGET_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_TARGET_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -36,5 +35,3 @@ extern int common_hal_i2ctarget_i2c_target_read_byte(i2ctarget_i2c_target_obj_t 
 extern int common_hal_i2ctarget_i2c_target_write_byte(i2ctarget_i2c_target_obj_t *self, uint8_t data);
 extern void common_hal_i2ctarget_i2c_target_ack(i2ctarget_i2c_target_obj_t *self, bool ack);
 extern void common_hal_i2ctarget_i2c_target_close(i2ctarget_i2c_target_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_TARGET_H

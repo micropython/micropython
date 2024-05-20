@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PACKETBUFFER_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PACKETBUFFER_H
+#pragma once
 
 #include "nrf_soc.h"
 
@@ -30,5 +29,3 @@ typedef struct {
     bool client;
     bool packet_queued;
 } bleio_packet_buffer_obj_t;
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PACKETBUFFER_H

@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DESCRIPTOR_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DESCRIPTOR_H
+#pragma once
 
 #include "shared-module/_bleio/Attribute.h"
 #include "common-hal/_bleio/Characteristic.h"
@@ -20,5 +19,3 @@ extern bleio_uuid_obj_t *common_hal_bleio_descriptor_get_uuid(bleio_descriptor_o
 extern bleio_characteristic_obj_t *common_hal_bleio_descriptor_get_characteristic(bleio_descriptor_obj_t *self);
 extern size_t common_hal_bleio_descriptor_get_value(bleio_descriptor_obj_t *self, uint8_t *buf, size_t len);
 extern void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self, mp_buffer_info_t *bufinfo);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DESCRIPTOR_H

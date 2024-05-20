@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: MIT
 
 /* Auto-generated config file conf_sd_mmc.h */
-#ifndef CONF_SD_MMC_H
-#define CONF_SD_MMC_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -81,5 +80,3 @@
 #endif
 
 // <<< end of configuration section >>>
-
-#endif // CONF_SD_MMC_H

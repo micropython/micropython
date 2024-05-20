@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGIN_H
-#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGIN_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -24,5 +23,3 @@ static inline uint8_t stm32_adc_units(uint8_t adc_packed) {
 static inline uint8_t stm32_adc_channel(uint8_t adc_packed) {
     return adc_packed & 0x1f;
 }
-
-#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGIN_H

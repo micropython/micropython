@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H
-#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H
+#pragma once
 
 #include "py/obj.h"
 #include "py/objtuple.h"
@@ -21,5 +20,3 @@ typedef struct {
 } keypad_keys_obj_t;
 
 void keypad_keys_scan(keypad_keys_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H

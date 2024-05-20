@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_SHAPE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_SHAPE_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -27,5 +26,3 @@ typedef struct {
 
 void displayio_shape_finish_refresh(displayio_shape_t *self);
 displayio_area_t *displayio_shape_get_refresh_areas(displayio_shape_t *self, displayio_area_t *tail);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_SHAPE_H

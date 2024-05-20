@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BINDINGS_SAMD_CLOCK_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BINDINGS_SAMD_CLOCK_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -53,5 +52,3 @@ typedef struct {
 
 extern const mp_obj_type_t samd_clock_type;
 extern const mp_obj_dict_t samd_clock_globals;
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_BINDINGS_SAMD_CLOCK_H

@@ -4,13 +4,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SOCKETPOOL_SOCKETPOOL_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SOCKETPOOL_SOCKETPOOL_H
+#pragma once
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
 } socketpool_socketpool_obj_t;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SOCKETPOOL_SOCKETPOOL_H

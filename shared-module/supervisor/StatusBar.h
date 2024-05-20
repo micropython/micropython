@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_SUPERVISOR_STATUS_BAR_H
-#define MICROPY_INCLUDED_SHARED_MODULE_SUPERVISOR_STATUS_BAR_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -18,5 +17,3 @@ typedef struct {
 
 extern void shared_module_supervisor_status_bar_init(supervisor_status_bar_obj_t *self);
 extern void shared_module_supervisor_status_bar_updated(supervisor_status_bar_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_SUPERVISOR_STATUS_BAR_H

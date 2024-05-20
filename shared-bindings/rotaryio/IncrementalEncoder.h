@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ROTARYIO_INCREMENTALENCODER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ROTARYIO_INCREMENTALENCODER_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/rotaryio/IncrementalEncoder.h"
@@ -22,5 +21,3 @@ extern void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_increme
 extern mp_int_t common_hal_rotaryio_incrementalencoder_get_divisor(rotaryio_incrementalencoder_obj_t *self);
 extern void common_hal_rotaryio_incrementalencoder_set_divisor(rotaryio_incrementalencoder_obj_t *self,
     mp_int_t new_divisor);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_ROTARYIO_INCREMENTALENCODER_H

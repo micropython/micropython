@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef SHARED_MODULE_USB_CDC___INIT___H
-#define SHARED_MODULE_USB_CDC___INIT___H
+#pragma once
 
 #include "py/mpconfig.h"
 #include "py/objtuple.h"
@@ -27,5 +26,3 @@ size_t usb_vendor_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *d
 size_t vendor_ms_os_20_descriptor_length(void);
 uint8_t const *vendor_ms_os_20_descriptor(void);
 #endif
-
-#endif /* SHARED_MODULE_USB_CDC___INIT___H */

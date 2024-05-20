@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#pragma once
 
 // Definitions for which SAMD chip we're using.
 #include "include/sam.h"
@@ -249,5 +248,3 @@
 // due to limitations of chips is handled in mpconfigboard.mk
 
 #include "peripherals/samd/dma.h"
-
-#endif  // __INCLUDED_MPCONFIGPORT_H

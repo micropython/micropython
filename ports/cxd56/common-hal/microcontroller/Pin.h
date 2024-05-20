@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_MICROCONTROLLER_PIN_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -74,5 +73,3 @@ void never_reset_pin_number(uint8_t pin_number);
 void reset_pin_number(uint8_t pin_number);
 void reset_all_pins(void);
 void claim_pin(const mcu_pin_obj_t *pin);
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_MICROCONTROLLER_PIN_H

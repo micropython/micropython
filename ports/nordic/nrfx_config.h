@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef NRFX_CONFIG_H__
-#define NRFX_CONFIG_H__
+#pragma once
 
 // Power
 #define NRFX_POWER_ENABLED 1
@@ -137,5 +136,3 @@
 // This IRQ indicates the system will reboot shortly, so give
 // it a high priority.
 #define NRFX_WDT_DEFAULT_CONFIG_IRQ_PRIORITY 2
-
-#endif // NRFX_CONFIG_H__

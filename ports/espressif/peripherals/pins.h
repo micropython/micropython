@@ -8,8 +8,7 @@
 // Use shared-bindings/microcontroller/Pin.h instead.
 // This ensures that all necessary includes are already included.
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_PINS_H
-#define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_PINS_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -60,5 +59,3 @@ extern const mp_obj_type_t mcu_pin_type;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
 #include "esp32s3/pins.h"
 #endif
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_PINS_H

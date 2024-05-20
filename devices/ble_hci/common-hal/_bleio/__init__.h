@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
-#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -37,5 +36,3 @@ extern bool vm_used_ble;
 
 // UUID shared by all CCCD's.
 extern bleio_uuid_obj_t cccd_uuid;
-
-#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H

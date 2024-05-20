@@ -4,11 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_DEVICE_BLE_HCI_SUPERVISOR_BLUETOOTH_H
-#define MICROPY_INCLUDED_DEVICE_BLE_HCI_SUPERVISOR_BLUETOOTH_H
+#pragma once
 
 void supervisor_start_bluetooth(void);
 bool supervisor_bluetooth_hook(ble_evt_t *ble_evt);
 void supervisor_bluetooth_background(void);
-
-#endif // MICROPY_INCLUDED_DEVICE_BLE_HCI_SUPERVISOR_BLUETOOTH_H

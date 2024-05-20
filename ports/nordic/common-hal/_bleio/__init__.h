@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H
+#pragma once
 
 void bleio_background(void);
 
@@ -23,5 +22,3 @@ typedef struct {
 void check_nrf_error(uint32_t err_code);
 void check_gatt_status(uint16_t gatt_status);
 void check_sec_status(uint8_t sec_status);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H

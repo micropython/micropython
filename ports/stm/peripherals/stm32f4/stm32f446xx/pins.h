@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F446RE_PINS_H
-#define MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F446RE_PINS_H
+#pragma once
 
 // Pins in datasheet order: DocID026289 Rev 7 page 38. LQFP64 only
 
@@ -66,5 +65,3 @@ extern const mcu_pin_obj_t pin_PB09;
 extern const mcu_pin_obj_t pin_PD02;
 extern const mcu_pin_obj_t pin_PH00;
 extern const mcu_pin_obj_t pin_PH01;
-
-#endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F446RE_PINS_H

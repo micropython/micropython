@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BROADCOM_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_BROADCOM_COMMON_HAL_MICROCONTROLLER_PIN_H
+#pragma once
 
 #include <assert.h>
 #include <stdint.h>
@@ -21,5 +20,3 @@ void reset_pin_number(uint8_t pin_number);
 void never_reset_pin_number(uint8_t pin_number);
 void claim_pin(const mcu_pin_obj_t *pin);
 bool pin_number_is_free(uint8_t pin_number);
-
-#endif // MICROPY_INCLUDED_BROADCOM_COMMON_HAL_MICROCONTROLLER_PIN_H

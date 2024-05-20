@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: MIT
 
 /* Auto-generated config file hpl_systick_config.h */
-#ifndef HPL_SYSTICK_CONFIG_H
-#define HPL_SYSTICK_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -20,5 +19,3 @@
 // </h>
 
 // <<< end of configuration section >>>
-
-#endif // HPL_SYSTICK_CONFIG_H

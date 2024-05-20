@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKBITMAP_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKBITMAP_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -32,5 +31,3 @@ typedef struct {
     bool bitfield_compressed;
     uint8_t bits_per_pixel;
 } displayio_ondiskbitmap_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKBITMAP_H

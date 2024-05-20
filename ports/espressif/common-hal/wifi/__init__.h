@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI___INIT___H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI___INIT___H
+#pragma once
 
 #include "py/obj.h"
 
@@ -16,5 +15,3 @@ void wifi_reset(void);
 
 void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t *esp_ip_address);
 void ipaddress_ipaddress_to_esp_idf_ip4(mp_obj_t ip_address, esp_ip4_addr_t *esp_ip_address);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI___INIT___H

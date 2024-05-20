@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef SHARED_MODULE_USB_MIDI_PORTOUT_H
-#define SHARED_MODULE_USB_MIDI_PORTOUT_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -15,5 +14,3 @@
 typedef struct  {
     mp_obj_base_t base;
 } usb_midi_portout_obj_t;
-
-#endif /* SHARED_MODULE_USB_MIDI_PORTOUT_H */

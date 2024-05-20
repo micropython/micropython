@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MP3FILE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MP3FILE_H
+#pragma once
 
 #include "supervisor/background_callback.h"
 #include "extmod/vfs_fat.h"
@@ -54,5 +53,3 @@ void audiomp3_mp3file_get_buffer_structure(audiomp3_mp3file_obj_t *self, bool si
 float audiomp3_mp3file_get_rms_level(audiomp3_mp3file_obj_t *self);
 
 uint32_t common_hal_audiomp3_mp3file_get_samples_decoded(audiomp3_mp3file_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MP3FILE_H
