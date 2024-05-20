@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_PERIPHERALS_NRF52833_PINS_H
-#define MICROPY_INCLUDED_NRF_PERIPHERALS_NRF52833_PINS_H
+#pragma once
 
 extern const mcu_pin_obj_t pin_P0_00;
 extern const mcu_pin_obj_t pin_P0_01;
@@ -49,5 +48,3 @@ extern const mcu_pin_obj_t pin_P1_06;
 extern const mcu_pin_obj_t pin_P1_07;
 extern const mcu_pin_obj_t pin_P1_08;
 extern const mcu_pin_obj_t pin_P1_09;
-
-#endif // MICROPY_INCLUDED_NRF_PERIPHERALS_NRF52833_PINS_H

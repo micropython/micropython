@@ -5,6 +5,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // https://github.com/Teknikio/TKInventionBuilderFramework
 
 

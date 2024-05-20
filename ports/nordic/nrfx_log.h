@@ -44,8 +44,7 @@
  *
  */
 
-#ifndef NRFX_LOG_H__
-#define NRFX_LOG_H__
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -140,5 +139,3 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-#endif // NRFX_LOG_H__

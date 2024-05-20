@@ -6,8 +6,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_ADAPTER_H
+#pragma once
 
 #include "py/obj.h"
 #include "py/objtuple.h"
@@ -36,5 +35,3 @@ typedef struct {
 
 void bleio_adapter_gc_collect(bleio_adapter_obj_t *adapter);
 void bleio_adapter_reset(bleio_adapter_obj_t *adapter);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_ADAPTER_H

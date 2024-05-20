@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_MICROCONTROLLER_PIN_H
+#pragma once
 
 #include <assert.h>
 #include <stdint.h>
@@ -32,5 +31,3 @@ bool pin_number_is_free(uint8_t pin_number);
 extern bool cyw_ever_init;
 void reset_pin_number_cyw(uint8_t pin_number);
 #endif
-
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_MICROCONTROLLER_PIN_H

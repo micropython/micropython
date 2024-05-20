@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_TIME___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_TIME___INIT___H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -19,5 +18,3 @@ extern void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm);
 extern uint64_t common_hal_time_monotonic_ms(void);
 extern uint64_t common_hal_time_monotonic_ns(void);
 extern void common_hal_time_delay_ms(uint32_t);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_TIME___INIT___H

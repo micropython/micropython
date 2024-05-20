@@ -6,8 +6,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_DESCRIPTOR_H
-#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_DESCRIPTOR_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -29,5 +28,3 @@ typedef struct _bleio_descriptor_obj {
     bleio_attribute_security_mode_t write_perm;
     struct _bleio_descriptor_obj *next;
 } bleio_descriptor_obj_t;
-
-#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_DESCRIPTOR_H

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H
+#pragma once
 
 #include "common-hal/audioio/AudioOut.h"
 #include "common-hal/microcontroller/Pin.h"
@@ -25,5 +24,3 @@ bool common_hal_audioio_audioout_get_playing(audioio_audioout_obj_t *self);
 void common_hal_audioio_audioout_pause(audioio_audioout_obj_t *self);
 void common_hal_audioio_audioout_resume(audioio_audioout_obj_t *self);
 bool common_hal_audioio_audioout_get_paused(audioio_audioout_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H

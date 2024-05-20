@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_TARGET_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_TARGET_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "py/obj.h"
@@ -21,5 +20,3 @@ typedef struct {
     uint8_t sda_pin;
     bool writing;
 } i2ctarget_i2c_target_obj_t;
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_TARGET_H

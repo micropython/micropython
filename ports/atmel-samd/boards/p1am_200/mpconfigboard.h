@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "P1AM-200"
 #define MICROPY_HW_MCU_NAME "samd51p20"
 

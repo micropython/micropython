@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGBUFIO_BUFFEREDIN_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGBUFIO_BUFFEREDIN_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogbufio/BufferedIn.h"
@@ -16,5 +15,3 @@ void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *s
 void common_hal_analogbufio_bufferedin_deinit(analogbufio_bufferedin_obj_t *self);
 bool common_hal_analogbufio_bufferedin_deinited(analogbufio_bufferedin_obj_t *self);
 uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t *self, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample);
-
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGBUFIO_BUFFEREDIN_H__

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef __INCLUDED_SUPERVISOR_TICK_H
-#define __INCLUDED_SUPERVISOR_TICK_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -44,5 +43,3 @@ extern void supervisor_disable_tick(void);
  * intended.
  */
 extern bool supervisor_background_ticks_ok(void);
-
-#endif

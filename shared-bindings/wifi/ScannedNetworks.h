@@ -6,8 +6,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_SCANNEDNETWORKS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_SCANNEDNETWORKS_H
+#pragma once
 
 #include "py/obj.h"
 #include "common-hal/wifi/ScannedNetworks.h"
@@ -15,5 +14,3 @@
 extern const mp_obj_type_t wifi_scannednetworks_type;
 
 mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_SCANNEDNETWORKS_H

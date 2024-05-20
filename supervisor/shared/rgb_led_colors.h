@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define COLOR(r, g, b) (((r) << 16) | ((g) << 8) | (b))
 // For brightness == 255 (full). This will be adjusted downward for various different RGB indicators,
 // which vary in brightness.

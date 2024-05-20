@@ -3,8 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
 //
 // SPDX-License-Identifier: MIT
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_INTERNAL_FLASH_H
-#define MICROPY_INCLUDED_MIMXRT10XX_INTERNAL_FLASH_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -26,6 +25,3 @@ extern void flexspi_nor_init(void);
 extern status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address);
 extern status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src);
 extern status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base);
-
-
-#endif  // MICROPY_INCLUDED_MIMXRT10XX_INTERNAL_FLASH_H

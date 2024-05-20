@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MEMORYMAP_ADDRESSRANGE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_MEMORYMAP_ADDRESSRANGE_H
+#pragma once
 
 #include "common-hal/memorymap/AddressRange.h"
 
@@ -22,5 +21,3 @@ void common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_ob
 // also leverage the compiler to validate uses are expected.
 void common_hal_memorymap_addressrange_get_bytes(const memorymap_addressrange_obj_t *self,
     size_t start_index, size_t len, uint8_t *values);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MEMORYMAP_ADDRESSRANGE_H

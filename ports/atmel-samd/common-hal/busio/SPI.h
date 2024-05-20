@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -21,5 +20,3 @@ typedef struct {
     uint8_t MOSI_pin;
     uint8_t MISO_pin;
 } busio_spi_obj_t;
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H

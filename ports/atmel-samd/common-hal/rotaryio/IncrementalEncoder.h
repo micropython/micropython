@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -25,5 +24,3 @@ typedef struct {
 
 
 void incrementalencoder_interrupt_handler(uint8_t channel);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H

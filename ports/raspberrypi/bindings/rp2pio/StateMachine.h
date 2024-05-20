@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_BINDINGS_RP2PIO_STATEMACHINE_H
-#define MICROPY_INCLUDED_RASPBERRYPI_BINDINGS_RP2PIO_STATEMACHINE_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -68,5 +67,3 @@ void common_hal_rp2pio_statemachine_clear_txstall(rp2pio_statemachine_obj_t *sel
 size_t common_hal_rp2pio_statemachine_get_in_waiting(rp2pio_statemachine_obj_t *self);
 
 void common_hal_rp2pio_statemachine_set_interrupt_handler(rp2pio_statemachine_obj_t *self, void (*handler)(void *), void *arg, int mask);
-
-#endif // MICROPY_INCLUDED_RASPBERRYPI_BINDINGS_RP2PIO_STATEMACHINE_H

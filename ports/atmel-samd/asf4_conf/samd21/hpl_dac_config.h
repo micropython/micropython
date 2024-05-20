@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: MIT
 
 /* Auto-generated config file hpl_dac_config.h */
-#ifndef HPL_DAC_CONFIG_H
-#define HPL_DAC_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -88,5 +87,3 @@
 // </h>
 
 // <<< end of configuration section >>>
-
-#endif // HPL_DAC_CONFIG_H

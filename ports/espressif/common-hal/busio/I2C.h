@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -24,5 +23,3 @@ typedef struct {
     SemaphoreHandle_t xSemaphore;
     bool has_lock;
 } busio_i2c_obj_t;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_H

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BITMAPTOOLS__INIT__H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BITMAPTOOLS__INIT__H
+#pragma once
 
 #include "shared-module/displayio/Bitmap.h"
 #include "shared-bindings/displayio/ColorConverter.h"
@@ -86,4 +85,3 @@ typedef struct {
     {MP_QSTR_y2, if_required2 | MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}}
 
 bitmaptools_rect_t bitmaptools_validate_coord_range_pair(const mp_arg_val_t in[4], int width, int height);
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BITMAPTOOLS__INIT__H

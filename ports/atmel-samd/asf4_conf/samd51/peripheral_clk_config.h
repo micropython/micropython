@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: MIT
 
 /* Auto-generated config file peripheral_clk_config.h */
-#ifndef PERIPHERAL_CLK_CONFIG_H
-#define PERIPHERAL_CLK_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -1172,5 +1171,3 @@
 #endif
 
 // <<< end of configuration section >>>
-
-#endif // PERIPHERAL_CLK_CONFIG_H

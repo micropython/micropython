@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 
 #define MICROPY_HW_BOARD_NAME "Sprite_v2b"
 #define MICROPY_HW_MCU_NAME "samd51G19"

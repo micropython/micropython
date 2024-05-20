@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#pragma once
 
 #include <stdint.h>
 
@@ -34,5 +33,3 @@ extern uint8_t _ld_default_stack_size;
 
 // TODO:
 //    mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT] as an MP_REGISTER_ROOT_POINTER.
-
-#endif  // __INCLUDED_MPCONFIGPORT_H

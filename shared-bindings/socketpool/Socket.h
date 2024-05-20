@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H
+#pragma once
 
 #include "common-hal/socketpool/Socket.h"
 
@@ -44,5 +43,3 @@ void socketpool_socket_move(socketpool_socket_obj_t *self, socketpool_socket_obj
 // Resets the socket object state so it appears closed and disconnected. This only works on
 // uninitialized memory.
 void socketpool_socket_reset(socketpool_socket_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H

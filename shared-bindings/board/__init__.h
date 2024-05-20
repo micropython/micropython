@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BOARD___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BOARD___INIT___H
+#pragma once
 
 #include "py/obj.h"
 #include "py/objstr.h"
@@ -42,5 +41,3 @@ MP_DECLARE_CONST_FUN_OBJ_0(board_uart_obj);
 #define CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS \
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_board) }, \
     { MP_ROM_QSTR(MP_QSTR_board_id), MP_ROM_PTR(&board_module_id_obj) },
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_BOARD___INIT___H

@@ -26,8 +26,7 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_ATT_H
-#define MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_ATT_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -59,5 +58,3 @@ void att_remove_connection(uint16_t conn_handle, uint8_t reason);
 void att_set_max_mtu(uint16_t max_mtu);
 void att_set_timeout(unsigned long timeout);
 void att_write_cmd(uint16_t conn_handle, uint16_t handle, const uint8_t *data, uint8_t data_len);
-
-#endif // MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_ATT_H

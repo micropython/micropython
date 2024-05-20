@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: MIT
 
 /* Auto-generated config file hpl_nvmctrl_config.h */
-#ifndef HPL_NVMCTRL_CONFIG_H
-#define HPL_NVMCTRL_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -38,5 +37,3 @@
 // </h>
 
 // <<< end of configuration section >>>
-
-#endif // HPL_NVMCTRL_CONFIG_H

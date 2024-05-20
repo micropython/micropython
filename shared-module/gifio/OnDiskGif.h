@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKGIF_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKGIF_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -29,5 +28,3 @@ typedef struct {
     int32_t min_delay;
     int32_t max_delay;
 } gifio_ondiskgif_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKGIF_H

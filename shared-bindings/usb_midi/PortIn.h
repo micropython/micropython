@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI_PORTIN_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI_PORTIN_H
+#pragma once
 
 #include "shared-module/usb_midi/PortIn.h"
 
@@ -17,5 +16,3 @@ extern size_t common_hal_usb_midi_portin_read(usb_midi_portin_obj_t *self,
 
 extern uint32_t common_hal_usb_midi_portin_bytes_available(usb_midi_portin_obj_t *self);
 extern void common_hal_usb_midi_portin_clear_buffer(usb_midi_portin_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI_PORTIN_H

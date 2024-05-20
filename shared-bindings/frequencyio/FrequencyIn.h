@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_FREQUENCYIO_FREQUENCYIN_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_FREQUENCYIO_FREQUENCYIN_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/frequencyio/FrequencyIn.h"
@@ -22,5 +21,3 @@ extern void common_hal_frequencyio_frequencyin_clear(frequencyio_frequencyin_obj
 extern uint32_t common_hal_frequencyio_frequencyin_get_item(frequencyio_frequencyin_obj_t *self);
 extern uint16_t common_hal_frequencyio_frequencyin_get_capture_period(frequencyio_frequencyin_obj_t *self);
 extern void common_hal_frequencyio_frequencyin_set_capture_period(frequencyio_frequencyin_obj_t *self, uint16_t capture_period);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_FREQUENCYIO_FREQUENCYIN_H

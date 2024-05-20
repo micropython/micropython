@@ -5,6 +5,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "SparkFun Teensy MicroMod Processor"
 #define MICROPY_HW_MCU_NAME "IMXRT1062DVL6A"
 

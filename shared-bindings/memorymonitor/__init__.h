@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MEMORYMONITOR___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_MEMORYMONITOR___INIT___H
+#pragma once
 
 #include "py/obj.h"
 
@@ -25,5 +24,3 @@ void memorymonitor_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
 extern const mp_obj_type_t mp_type_memorymonitor_AllocationError;
 
 NORETURN void mp_raise_memorymonitor_AllocationError(mp_rom_error_text_t msg, ...);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MEMORYMONITOR___INIT___H

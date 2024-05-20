@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_ANALOGIO_ANALOGOUT_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_ANALOGIO_ANALOGOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -24,5 +23,3 @@ typedef struct {
 } analogio_analogout_obj_t;
 
 void analogout_reset(void);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_ANALOGIO_ANALOGOUT_H

@@ -3,8 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2018 DeanM for Adafruit Industries
 //
 // SPDX-License-Identifier: MIT
-#ifndef SHARED_BINDINGS_AUDIOMIXER_MIXERVOICE_H_
-#define SHARED_BINDINGS_AUDIOMIXER_MIXERVOICE_H_
+#pragma once
 
 #include "shared-module/audiomixer/MixerVoice.h"
 #include "shared-module/audiomixer/Mixer.h"
@@ -20,5 +19,3 @@ mp_float_t common_hal_audiomixer_mixervoice_get_level(audiomixer_mixervoice_obj_
 void common_hal_audiomixer_mixervoice_set_level(audiomixer_mixervoice_obj_t *self, mp_float_t gain);
 
 bool common_hal_audiomixer_mixervoice_get_playing(audiomixer_mixervoice_obj_t *self);
-
-#endif /* SHARED_BINDINGS_AUDIOMIXER_MIXERVOICE_H_ */

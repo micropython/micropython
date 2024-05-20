@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIRECTION_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIRECTION_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -21,5 +20,3 @@ extern const mp_obj_type_t digitalio_direction_type;
 
 extern const digitalio_direction_obj_t digitalio_direction_input_obj;
 extern const digitalio_direction_obj_t digitalio_direction_output_obj;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIRECTION_H

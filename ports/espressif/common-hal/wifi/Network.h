@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_NETWORK_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_NETWORK_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -15,5 +14,3 @@ typedef struct {
     mp_obj_base_t base;
     wifi_ap_record_t record;
 } wifi_network_obj_t;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_NETWORK_H

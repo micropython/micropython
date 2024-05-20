@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "Adafruit Monster M4SK"
 // Board is mislabeled as SAMD51J19.
 #define MICROPY_HW_MCU_NAME "samd51g19"

@@ -4,4 +4,6 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 void nrf_peripherals_power_init(void);

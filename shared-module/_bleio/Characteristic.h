@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
+#pragma once
 
 // These are not the Bluetooth spec values. They are what is used by the Nordic SoftDevice.
 // The bit values are in different positions.
@@ -32,5 +31,3 @@ typedef uint8_t bleio_characteristic_properties_t;
 #define BT_GATT_CHRC_INDICATE                   0x20
 #define BT_GATT_CHRC_AUTH                       0x40
 #define BT_GATT_CHRC_EXT_PROP                   0x80
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H

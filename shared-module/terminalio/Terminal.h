@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef SHARED_MODULE_TERMINALIO_TERMINAL_H
-#define SHARED_MODULE_TERMINALIO_TERMINAL_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -29,5 +28,3 @@ typedef struct  {
 } terminalio_terminal_obj_t;
 
 extern void terminalio_terminal_clear_status_bar(terminalio_terminal_obj_t *self);
-
-#endif /* SHARED_MODULE_TERMINALIO_TERMINAL_H */

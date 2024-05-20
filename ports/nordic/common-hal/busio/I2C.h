@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H
+#pragma once
 
 #include "nrfx_twim.h"
 
@@ -28,5 +27,3 @@ typedef struct {
 } busio_i2c_obj_t;
 
 void i2c_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H

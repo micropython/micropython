@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H
+#pragma once
 
 #include "py/mphal.h"
 
@@ -29,5 +28,3 @@ static inline uint8_t nrf_pin_port(uint8_t absolute_pin) {
 static inline uint8_t nrf_relative_pin_number(uint8_t absolute_pin) {
     return absolute_pin & 0x1f;
 }
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H

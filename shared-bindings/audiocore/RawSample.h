@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
+#pragma once
 
 #include "shared-module/audiocore/RawSample.h"
 
@@ -21,5 +20,3 @@ uint32_t common_hal_audioio_rawsample_get_sample_rate(audioio_rawsample_obj_t *s
 uint8_t common_hal_audioio_rawsample_get_bits_per_sample(audioio_rawsample_obj_t *self);
 uint8_t common_hal_audioio_rawsample_get_channel_count(audioio_rawsample_obj_t *self);
 void common_hal_audioio_rawsample_set_sample_rate(audioio_rawsample_obj_t *self, uint32_t sample_rate);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H

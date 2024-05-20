@@ -3,11 +3,8 @@
 // SPDX-FileCopyrightText: Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
 //
 // SPDX-License-Identifier: MIT
-#ifndef MICROPY_INCLUDED_BROADCOM_INTERNAL_FLASH_H
-#define MICROPY_INCLUDED_BROADCOM_INTERNAL_FLASH_H
+#pragma once
 
 #include <stdbool.h>
 
 #include "mpconfigport.h"
-
-#endif  // MICROPY_INCLUDED_BROADCOM_INTERNAL_FLASH_H

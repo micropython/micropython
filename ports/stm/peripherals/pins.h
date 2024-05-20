@@ -7,8 +7,7 @@
 // DO NOT include this file directly. Use shared-bindings/microcontroller/Pin.h instead to ensure
 // that all necessary includes are already included.
 
-#ifndef __MICROPY_INCLUDED_STM32_PERIPHERALS_PINS_H__
-#define __MICROPY_INCLUDED_STM32_PERIPHERALS_PINS_H__
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -93,5 +92,3 @@ extern const mp_obj_type_t mcu_pin_type;
 #ifdef STM32H743xx
 #include "stm32h7/stm32h743xx/pins.h"
 #endif
-
-#endif // __MICROPY_INCLUDED_STM32_PERIPHERALS_PINS_H__

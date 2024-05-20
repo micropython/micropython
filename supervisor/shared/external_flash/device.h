@@ -3,8 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2018 Scott Shawcroft for Adafruit Industries LLC
 //
 // SPDX-License-Identifier: MIT
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_EXTERNAL_FLASH_DEVICE_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_EXTERNAL_FLASH_DEVICE_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -54,5 +53,3 @@ typedef struct {
     // Device does not have a reset command
     bool no_reset_cmd : 1;
 } external_flash_device;
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SHARED_EXTERNAL_FLASH_DEVICE_H

@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_SERVICE_H
-#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_SERVICE_H
+#pragma once
 
 #include "py/objlist.h"
 #include "common-hal/_bleio/UUID.h"
@@ -30,5 +29,3 @@ typedef struct bleio_service_obj {
 } bleio_service_obj_t;
 
 void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection);
-
-#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_SERVICE_H

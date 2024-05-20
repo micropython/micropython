@@ -6,8 +6,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO___INIT___H
+#pragma once
 
 #include "py/obj.h"
 #include "py/objlist.h"
@@ -58,5 +57,3 @@ size_t common_hal_bleio_gattc_read(uint16_t handle, uint16_t conn_handle, uint8_
 void common_hal_bleio_gattc_write(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo, bool write_no_response);
 
 void common_hal_bleio_gc_collect(void);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO___INIT___H

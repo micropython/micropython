@@ -6,6 +6,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #include "nrfx/hal/nrf_gpio.h"
 
 #define MAKERDIARYPITAYAGO

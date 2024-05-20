@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USTACK___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_USTACK___INIT___H
+#pragma once
 
 #include "py/obj.h"
 
@@ -14,5 +13,3 @@ extern uint32_t shared_module_ustack_max_stack_usage(void);
 #endif
 extern uint32_t shared_module_ustack_stack_size(void);
 extern uint32_t shared_module_ustack_stack_usage(void);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USTACK___INIT___H

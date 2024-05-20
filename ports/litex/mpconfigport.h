@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef FPGA_MPCONFIGPORT_H__
-#define FPGA_MPCONFIGPORT_H__
+#pragma once
 
 #define CIRCUITPY_INTERNAL_NVM_SIZE         (0)
 #define MICROPY_NLR_THUMB                   (0)
@@ -16,6 +15,3 @@
 
 #define MICROPY_NLR_SETJMP                  (1)
 #define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
-
-
-#endif  // __INCLUDED_FPGA_MPCONFIGPORT_H

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F746XX_PINS_H
-#define MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F746XX_PINS_H
+#pragma once
 
 extern const mcu_pin_obj_t pin_PA00;
 extern const mcu_pin_obj_t pin_PA01;
@@ -183,5 +182,3 @@ extern const mcu_pin_obj_t pin_PK12;
 extern const mcu_pin_obj_t pin_PK13;
 extern const mcu_pin_obj_t pin_PK14;
 extern const mcu_pin_obj_t pin_PK15;
-
-#endif // MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F746XX_PINS_H

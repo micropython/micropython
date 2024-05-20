@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_FONTIO_BUILTINFONT_H
-#define MICROPY_INCLUDED_SHARED_MODULE_FONTIO_BUILTINFONT_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -23,5 +22,3 @@ typedef struct {
 } fontio_builtinfont_t;
 
 uint8_t fontio_builtinfont_get_glyph_index(const fontio_builtinfont_t *self, mp_uint_t codepoint);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_FONTIO_BUILTINFONT_H

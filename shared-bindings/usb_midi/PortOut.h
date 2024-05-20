@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI_PORTOUT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI_PORTOUT_H
+#pragma once
 
 #include "shared-module/usb_midi/PortOut.h"
 
@@ -16,5 +15,3 @@ extern size_t common_hal_usb_midi_portout_write(usb_midi_portout_obj_t *self,
     const uint8_t *data, size_t len, int *errcode);
 
 extern bool common_hal_usb_midi_portout_ready_to_tx(usb_midi_portout_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI_PORTOUT_H

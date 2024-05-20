@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "Silicognition LLC M4-Shim"
 #define MICROPY_HW_MCU_NAME "samd51j19"
 

@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_FONTIO___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_FONTIO___INIT___H
 

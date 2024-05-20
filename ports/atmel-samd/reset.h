@@ -3,8 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
 //
 // SPDX-License-Identifier: MIT
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_RESET_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_RESET_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -20,5 +19,3 @@ extern uint32_t _bootloader_dbl_tap;
 void reset_to_bootloader(void) NORETURN;
 void reset(void) NORETURN;
 bool bootloader_available(void);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_RESET_H

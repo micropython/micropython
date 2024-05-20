@@ -3,8 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
 //
 // SPDX-License-Identifier: MIT
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
+#pragma once
 
 #define TC_HANDLER_NO_INTERRUPT 0x0
 #define TC_HANDLER_PULSEOUT 0x1
@@ -15,5 +14,3 @@
 
 void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler);
 void shared_timer_handler(bool is_tc, uint8_t index);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H

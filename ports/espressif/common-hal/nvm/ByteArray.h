@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_NVM_BYTEARRAY_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_NVM_BYTEARRAY_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -14,5 +13,3 @@ typedef struct {
     uint8_t *start_address;
     uint32_t len;
 } nvm_bytearray_obj_t;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_NVM_BYTEARRAY_H

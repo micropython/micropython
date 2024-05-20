@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_MONITOR_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_MONITOR_H
+#pragma once
 
 #include "py/obj.h"
 #include "components/esp_wifi/include/esp_wifi.h"
@@ -17,5 +16,3 @@ typedef struct {
     size_t queue_length;
     QueueHandle_t queue;
 } wifi_monitor_obj_t;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_MONITOR_H

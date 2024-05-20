@@ -4,8 +4,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2019 Artur Pacholec
 //
 // SPDX-License-Identifier: MIT
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_RESET_H
-#define MICROPY_INCLUDED_MIMXRT10XX_RESET_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -20,5 +19,3 @@
 void reset_to_bootloader(void) NORETURN;
 void reset(void) NORETURN;
 bool bootloader_available(void);
-
-#endif  // MICROPY_INCLUDED_MIMXRT10XX_RESET_H

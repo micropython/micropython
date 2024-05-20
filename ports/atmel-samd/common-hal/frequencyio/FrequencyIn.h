@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_FREQUENCYIO_FREQUENCYIN_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_FREQUENCYIO_FREQUENCYIN_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -27,6 +26,3 @@ typedef struct {
 
 void frequencyin_interrupt_handler(uint8_t index);
 void frequencyin_reset(void);
-
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_FREQUENCYIO_FREQUENCYIN_H

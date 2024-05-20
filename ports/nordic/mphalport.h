@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef __NRF52_HAL
-#define __NRF52_HAL
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -21,5 +20,3 @@ extern nrfx_uarte_t serial_instance;
 #define mp_hal_delay_us(us)     NRFX_DELAY_US((uint32_t)(us))
 
 bool mp_hal_stdin_any(void);
-
-#endif

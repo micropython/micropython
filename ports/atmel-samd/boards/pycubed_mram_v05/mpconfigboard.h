@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 
 #define MICROPY_HW_BOARD_NAME "PyCubedv05-MRAM"
 #define MICROPY_HW_MCU_NAME "samd51j19"

@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 extern uint32_t SystemCoreClock;
 
 void clocks_init(void);

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -32,5 +31,3 @@ typedef struct {
 void i2sout_reset(void);
 
 #endif // CIRCUITPY_AUDIOBUSIO_I2SOUT
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_I2SOUT_H

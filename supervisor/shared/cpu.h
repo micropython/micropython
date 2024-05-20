@@ -4,13 +4,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_CPU_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_CPU_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
 
 // True when we're in an interrupt handler.
 bool cpu_interrupt_active(void);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SHARED_CPU_H

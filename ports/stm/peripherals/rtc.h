@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef __MICROPY_INCLUDED_STM32_PERIPHERALS_RTC_H__
-#define __MICROPY_INCLUDED_STM32_PERIPHERALS_RTC_H__
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -34,5 +33,3 @@ typedef struct _timeutils_struct_time_t timeutils_struct_time_t;
 void stm32_peripherals_rtc_get_time(timeutils_struct_time_t *tm);
 void stm32_peripherals_rtc_set_time(timeutils_struct_time_t *tm);
 #endif
-
-#endif // __MICROPY_INCLUDED_STM32_PERIPHERALS_RTC_H__

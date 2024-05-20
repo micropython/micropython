@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_USB_CORE_DEVICE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_USB_CORE_DEVICE_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -17,5 +16,3 @@ typedef struct {
     uint8_t open_endpoints[8];
     uint16_t first_langid;
 } usb_core_device_obj_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_USB_CORE_DEVICE_H

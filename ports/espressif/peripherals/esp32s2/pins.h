@@ -8,8 +8,7 @@
 // Use shared-bindings/microcontroller/Pin.h instead.
 // This ensures that all necessary includes are already included.
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_ESP32S2_PINS_H
-#define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_ESP32S2_PINS_H
+#pragma once
 
 #define GPIO0_EXISTS 1
 extern const mcu_pin_obj_t pin_GPIO0;
@@ -97,5 +96,3 @@ extern const mcu_pin_obj_t pin_GPIO44;
 extern const mcu_pin_obj_t pin_GPIO45;
 #define GPIO46_EXISTS 1
 extern const mcu_pin_obj_t pin_GPIO46;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_ESP32S2_PINS_H

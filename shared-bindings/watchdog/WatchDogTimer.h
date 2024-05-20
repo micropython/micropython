@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGTIMER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGTIMER_H
+#pragma once
 
 #include "py/obj.h"
 #include "shared-bindings/watchdog/WatchDogMode.h"
@@ -24,5 +23,3 @@ extern void common_hal_watchdog_enable(watchdog_watchdogtimer_obj_t *self);
 extern void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self);
 
 extern const mp_obj_type_t watchdog_watchdogtimer_type;
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGTIMER_H

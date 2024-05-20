@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGMODE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGMODE_H
+#pragma once
 
 #include "py/enum.h"
 
@@ -16,5 +15,3 @@ typedef enum {
 } watchdog_watchdogmode_t;
 
 extern const mp_obj_type_t watchdog_watchdogmode_type;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGMODE_H

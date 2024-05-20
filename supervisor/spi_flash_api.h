@@ -3,8 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2018 Scott Shawcroft for Adafruit Industries LLC
 //
 // SPDX-License-Identifier: MIT
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SPI_FLASH_H
-#define MICROPY_INCLUDED_SUPERVISOR_SPI_FLASH_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -25,5 +24,3 @@ bool spi_flash_write_data(uint32_t address, uint8_t *data, uint32_t data_length)
 bool spi_flash_read_data(uint32_t address, uint8_t *data, uint32_t data_length);
 void spi_flash_init(void);
 void spi_flash_init_device(const external_flash_device *device);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SPI_FLASH_H

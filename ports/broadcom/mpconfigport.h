@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#pragma once
 
 // Definitions that control circuitpy_mpconfig.h:
 
@@ -36,5 +35,3 @@
 // Definitions that can be overridden by mpconfigboard.h:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#endif  // __INCLUDED_MPCONFIGPORT_H

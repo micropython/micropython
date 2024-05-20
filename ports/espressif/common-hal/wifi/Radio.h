@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_RADIO_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_RADIO_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -45,5 +44,3 @@ typedef struct {
 } wifi_radio_obj_t;
 
 extern void common_hal_wifi_radio_gc_collect(wifi_radio_obj_t *self);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_RADIO_H

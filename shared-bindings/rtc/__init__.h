@@ -4,12 +4,9 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_RTC___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_RTC___INIT___H
+#pragma once
 
 #include "py/obj.h"
 
 extern void rtc_reset(void);
 extern mp_obj_t rtc_get_time_source_time(void);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_RTC___INIT___H

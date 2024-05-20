@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef USB_DESCRIPTORS_H_
-#define USB_DESCRIPTORS_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -17,5 +16,3 @@ enum
 
 size_t vendor_ms_os_20_descriptor_length(void);
 uint8_t const *vendor_ms_os_20_descriptor(void);
-
-#endif /* USB_DESCRIPTORS_H_ */

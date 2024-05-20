@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_USB_HOST_PORT_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_USB_HOST_PORT_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -14,5 +13,3 @@ typedef struct {
     const mcu_pin_obj_t *dp;
     const mcu_pin_obj_t *dm;
 } usb_host_port_obj_t;
-
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_USB_HOST_PORT_H

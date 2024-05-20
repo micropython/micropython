@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "Raspberry Pi 4B"
 
 #define DEFAULT_I2C_BUS_SCL         (&pin_GPIO3)

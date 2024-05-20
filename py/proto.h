@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_PY_PROTO_H
-#define MICROPY_INCLUDED_PY_PROTO_H
+#pragma once
 
 // CIRCUITPY-CHANGE
 //
@@ -25,6 +24,4 @@ static inline void *mp_proto_get(uint16_t name, mp_const_obj_type_t obj) {
 #define MP_PROTO_IMPLEMENT(n) .name = n,
 const void *mp_proto_get(uint16_t name, mp_const_obj_t obj);
 const void *mp_proto_get_or_throw(uint16_t name, mp_const_obj_t obj);
-#endif
-
 #endif

@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -17,5 +16,3 @@ typedef struct {
 } digitalio_digitalinout_obj_t;
 
 extern void digitalio_digitalinout_preserve_for_deep_sleep(size_t n_dios, digitalio_digitalinout_obj_t *preserve_dios[]);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_DIGITALIO_DIGITALINOUT_H

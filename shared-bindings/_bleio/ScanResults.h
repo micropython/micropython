@@ -6,8 +6,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANRESULTS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANRESULTS_H
+#pragma once
 
 #include "py/obj.h"
 #include "shared-module/_bleio/ScanResults.h"
@@ -15,5 +14,3 @@
 extern const mp_obj_type_t bleio_scanresults_type;
 
 mp_obj_t common_hal_bleio_scanresults_next(bleio_scanresults_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANRESULTS_H

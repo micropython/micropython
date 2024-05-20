@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_NEOPIXEL_WRITE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_NEOPIXEL_WRITE_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -13,5 +12,3 @@
 #include "common-hal/digitalio/DigitalInOut.h"
 
 extern void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *gpio, uint8_t *pixels, uint32_t numBytes);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_NEOPIXEL_WRITE_H

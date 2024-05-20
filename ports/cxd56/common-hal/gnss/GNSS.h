@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_GNSS_GNSS_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_GNSS_GNSS_H
+#pragma once
 
 #include <arch/chip/gnss.h>
 
@@ -21,5 +20,3 @@ typedef struct {
     struct cxd56_gnss_date_s date;
     struct cxd56_gnss_time_s time;
 } gnss_obj_t;
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_GNSS_GNSS_H

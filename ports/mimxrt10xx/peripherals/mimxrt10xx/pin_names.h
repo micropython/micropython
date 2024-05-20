@@ -5,6 +5,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // OK to include more than once because FORMAT_PIN may be different.
 
 #ifdef MIMXRT1011_SERIES

@@ -6,8 +6,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_ADAPTER_H
-#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_ADAPTER_H
+#pragma once
 
 #include "py/obj.h"
 #include "py/objtuple.h"
@@ -75,5 +74,3 @@ uint16_t bleio_adapter_max_attribute_handle(bleio_adapter_obj_t *adapter);
 void bleio_adapter_background(bleio_adapter_obj_t *adapter);
 void bleio_adapter_gc_collect(bleio_adapter_obj_t *adapter);
 void bleio_adapter_reset(bleio_adapter_obj_t *adapter);
-
-#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_ADAPTER_H

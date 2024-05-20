@@ -4,5 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 void nrf_peripherals_disable_and_clear_cache(void);
 void nrf_peripherals_enable_cache(void);

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_UART_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -32,5 +31,3 @@ typedef struct {
 } busio_uart_obj_t;
 
 void uart_reset(void);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_UART_H

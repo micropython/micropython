@@ -4,13 +4,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_LOCK_H
-#define MICROPY_INCLUDED_SUPERVISOR_LOCK_H
+#pragma once
 
 typedef volatile bool supervisor_lock_t;
 
 void supervisor_acquire_lock(supervisor_lock_t *lock);
 bool supervisor_try_lock(supervisor_lock_t *lock);
 void supervisor_release_lock(supervisor_lock_t *lock);
-
-#endif // MICROPY_INCLUDED_SUPERVISOR_LOCK_H

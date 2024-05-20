@@ -11,8 +11,7 @@
 // This file includes externs for all functions a port should implement to
 // support the machine module.
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE_I2CDEVICE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE_I2CDEVICE_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -27,5 +26,3 @@ extern void common_hal_adafruit_bus_device_i2cdevice_construct(adafruit_bus_devi
 extern void common_hal_adafruit_bus_device_i2cdevice_lock(adafruit_bus_device_i2cdevice_obj_t *self);
 extern void common_hal_adafruit_bus_device_i2cdevice_unlock(adafruit_bus_device_i2cdevice_obj_t *self);
 extern void common_hal_adafruit_bus_device_i2cdevice_probe_for_device(adafruit_bus_device_i2cdevice_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE_I2CDEVICE_H

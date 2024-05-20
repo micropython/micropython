@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // select nan-boxing object model
 #define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_D)
 

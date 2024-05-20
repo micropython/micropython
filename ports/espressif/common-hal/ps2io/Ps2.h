@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PS2IO_PS2_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PS2IO_PS2_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -36,5 +35,3 @@ typedef struct {
 } ps2io_ps2_obj_t;
 
 void ps2_reset(void);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PS2IO_PS2_H

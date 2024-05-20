@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_WAVEFILE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_WAVEFILE_H
+#pragma once
 
 #include "extmod/vfs_fat.h"
 #include "py/obj.h"
@@ -47,5 +46,3 @@ audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t *
 void audioio_wavefile_get_buffer_structure(audioio_wavefile_obj_t *self, bool single_channel_output,
     bool *single_buffer, bool *samples_signed,
     uint32_t *max_buffer_length, uint8_t *spacing);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_WAVEFILE_H

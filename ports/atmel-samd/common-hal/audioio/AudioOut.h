@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOIO_AUDIOOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -28,5 +27,3 @@ typedef struct {
 } audioio_audioout_obj_t;
 
 void audioout_background(void);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOIO_AUDIOOUT_H

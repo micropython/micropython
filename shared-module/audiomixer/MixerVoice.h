@@ -3,8 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2018 DeanM for Adafruit Industries
 //
 // SPDX-License-Identifier: MIT
-#ifndef SHARED_MODULE_AUDIOMIXER_MIXERVOICE_H_
-#define SHARED_MODULE_AUDIOMIXER_MIXERVOICE_H_
+#pragma once
 
 #include "py/obj.h"
 
@@ -21,6 +20,3 @@ typedef struct {
     uint32_t buffer_length;
     uint16_t level;
 } audiomixer_mixervoice_obj_t;
-
-
-#endif /* SHARED_MODULE_AUDIOMIXER_MIXERVOICE_H_ */

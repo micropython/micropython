@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef SHARED_MODULE_USB_MIDI___INIT___H
-#define SHARED_MODULE_USB_MIDI___INIT___H
+#pragma once
 
 #include "supervisor/usb.h"
 
@@ -20,5 +19,3 @@ extern char *custom_usb_midi_streaming_interface_name;
 extern char *custom_usb_midi_audio_control_interface_name;
 extern char *custom_usb_midi_in_jack_name;
 extern char *custom_usb_midi_out_jack_name;
-
-#endif /* SHARED_MODULE_USB_MIDI___INIT___H */

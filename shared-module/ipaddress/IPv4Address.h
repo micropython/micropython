@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_IPADDRESS_IPV4ADDRESS_H
-#define MICROPY_INCLUDED_SHARED_MODULE_IPADDRESS_IPV4ADDRESS_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -13,5 +12,3 @@ typedef struct {
     mp_obj_base_t base;
     mp_obj_t ip_bytes;
 } ipaddress_ipv4address_obj_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_IPADDRESS_IPV4ADDRESS_H

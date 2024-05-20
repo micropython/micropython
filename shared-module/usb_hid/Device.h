@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef SHARED_MODULE_USB_HID_DEVICE_H
-#define SHARED_MODULE_USB_HID_DEVICE_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -35,5 +34,3 @@ extern const usb_hid_device_obj_t usb_hid_device_consumer_control_obj;
 void usb_hid_device_create_report_buffers(usb_hid_device_obj_t *self);
 
 extern char *custom_usb_hid_interface_name;
-
-#endif /* SHARED_MODULE_USB_HID_DEVICE_H */

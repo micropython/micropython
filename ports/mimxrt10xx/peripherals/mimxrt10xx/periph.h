@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_PERIPH_H
-#define MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_PERIPH_H
+#pragma once
 
 #include "pins.h"
 
@@ -71,5 +70,3 @@ extern LPUART_Type *const mcu_uart_banks[];
 #elif defined(MIMXRT1176_cm7_SERIES)
 #include "MIMXRT1176/periph.h"
 #endif
-
-#endif // MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_PERIPH_H

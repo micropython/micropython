@@ -4,13 +4,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ANALOGIO_ANALOGOUT_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ANALOGIO_ANALOGOUT_H
+#pragma once
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
 } analogio_analogout_obj_t;
-
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ANALOGIO_ANALOGOUT_H

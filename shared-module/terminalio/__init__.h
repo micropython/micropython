@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #ifndef SHARED_MODULE_TERMINALIO___INIT___H
 #define SHARED_MODULE_TERMINALIO___INIT___H
 

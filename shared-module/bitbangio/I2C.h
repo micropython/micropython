@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_I2C_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_I2C_H
+#pragma once
 
 #include "common-hal/digitalio/DigitalInOut.h"
 
@@ -19,5 +18,3 @@ typedef struct {
     uint32_t us_timeout;
     volatile bool locked;
 } bitbangio_i2c_obj_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_I2C_H

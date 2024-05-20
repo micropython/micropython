@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -39,5 +38,3 @@ typedef struct {
 
 void i2s_reset(void);
 void i2s_background(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H

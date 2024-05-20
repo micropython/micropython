@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_SD_MUTEX_H
-#define MICROPY_INCLUDED_NRF_SD_MUTEX_H
+#pragma once
 
 #include "nrf_soc.h"
 
@@ -22,5 +21,3 @@ void sd_mutex_acquire_wait_no_vm(nrf_mutex_t *p_mutex);
 
 // Release a mutex, and raise exception on error.
 void sd_mutex_release_check(nrf_mutex_t *p_mutex);
-
-#endif // MICROPY_INCLUDED_NRF_SD_MUTEX_H

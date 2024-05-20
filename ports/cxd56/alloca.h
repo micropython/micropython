@@ -4,9 +4,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef _ALLOCA_H
-#define _ALLOCA_H
+#pragma once
 
 #define alloca __builtin_alloca
-
-#endif /* _ALLOCA_H */

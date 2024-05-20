@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_RECTANGLE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_RECTANGLE_H
+#pragma once
 
 #include <stdint.h>
 
@@ -20,5 +19,3 @@ typedef struct {
     vectorio_event_t on_dirty;
     mp_obj_t draw_protocol_instance;
 } vectorio_rectangle_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_RECTANGLE_H

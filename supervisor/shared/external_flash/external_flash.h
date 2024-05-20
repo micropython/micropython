@@ -3,8 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2018 Scott Shawcroft for Adafruit Industries LLC
 //
 // SPDX-License-Identifier: MIT
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_EXTERNAL_FLASH_EXTERNAL_FLASH_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_EXTERNAL_FLASH_EXTERNAL_FLASH_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -31,5 +30,3 @@ void supervisor_external_flash_flush(void);
 // is init'ed. For example, if GPIO needs to be configured to enable the
 // flash chip, as is the case on some boards.
 void external_flash_setup(void);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SHARED_EXTERNAL_FLASH_EXTERNAL_FLASH_H

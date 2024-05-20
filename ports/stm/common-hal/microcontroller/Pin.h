@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_STM32_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_STM32_COMMON_HAL_MICROCONTROLLER_PIN_H
+#pragma once
 
 #include "py/mphal.h"
 
@@ -20,5 +19,3 @@ bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number);
 void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number);
 GPIO_TypeDef *pin_port(uint8_t pin_port);
 uint16_t pin_mask(uint8_t pin_number);
-
-#endif // MICROPY_INCLUDED_STM32_COMMON_HAL_MICROCONTROLLER_PIN_H

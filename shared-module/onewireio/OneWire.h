@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_ONEWIREIO_ONEWIRE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_ONEWIREIO_ONEWIRE_H
+#pragma once
 
 #include "common-hal/digitalio/DigitalInOut.h"
 
@@ -15,5 +14,3 @@ typedef struct {
     mp_obj_base_t base;
     digitalio_digitalinout_obj_t pin;
 } onewireio_onewire_obj_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_ONEWIREIO_ONEWIRE_H

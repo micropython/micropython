@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef SHARED_MODULE_USB_HID___INIT___H
-#define SHARED_MODULE_USB_HID___INIT___H
+#pragma once
 
 #include "shared-module/usb_hid/Device.h"
 #include "supervisor/usb.h"
@@ -27,5 +26,3 @@ void usb_hid_build_report_descriptor(void);
 bool usb_hid_get_device_with_report_id(uint8_t report_id, usb_hid_device_obj_t **device_out, size_t *id_idx_out);
 
 void usb_hid_gc_collect(void);
-
-#endif // SHARED_MODULE_USB_HID___INIT___H

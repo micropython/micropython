@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_CXD56_MPHALPORT_H
-#define MICROPY_INCLUDED_CXD56_MPHALPORT_H
+#pragma once
 
 #include <sys/types.h>
 
@@ -13,5 +12,3 @@
 #include "supervisor/shared/tick.h"
 
 #define mp_hal_ticks_ms()       ((mp_uint_t)supervisor_ticks_ms32())
-
-#endif // MICROPY_INCLUDED_CXD56_MPHALPORT_H

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "py/obj.h"
@@ -16,5 +15,3 @@ typedef struct {
     bool output;
     bool open_drain;
 } digitalio_digitalinout_obj_t;
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DIGITALIO_DIGITALINOUT_H

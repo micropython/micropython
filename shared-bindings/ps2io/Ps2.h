@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PS2IO_PS2_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_PS2IO_PS2_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/ps2io/Ps2.h"
@@ -21,5 +20,3 @@ extern uint16_t common_hal_ps2io_ps2_get_len(ps2io_ps2_obj_t *self);
 extern int16_t common_hal_ps2io_ps2_popleft(ps2io_ps2_obj_t *self);
 extern int16_t common_hal_ps2io_ps2_sendcmd(ps2io_ps2_obj_t *self, uint8_t b);
 extern uint16_t common_hal_ps2io_ps2_clear_errors(ps2io_ps2_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_PS2IO_PS2_H

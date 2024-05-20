@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "bindings/rp2pio/StateMachine.h"
@@ -26,5 +25,3 @@ typedef struct {
 void pdmin_reset(void);
 
 void pdmin_background(void);
-
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H

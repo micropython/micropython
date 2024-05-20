@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+#pragma once
 
 #include "src/rp2_common/pico_unique_id/include/pico/unique_id.h"
 
@@ -17,5 +16,3 @@ typedef struct {
     mp_obj_base_t base;
     // Stores no state currently.
 } mcu_processor_obj_t;
-
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H

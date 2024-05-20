@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #ifndef CP_SHARED_BINDINGS_PIXELBUF_INIT_H
 #define CP_SHARED_BINDINGS_PIXELBUF_INIT_H
 

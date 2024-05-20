@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANRESULTS_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANRESULTS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -40,5 +39,3 @@ void shared_module_bleio_scanresults_append(bleio_scanresults_obj_t *self,
     uint8_t addr_type,
     const uint8_t *data,
     uint16_t len);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANRESULTS_H

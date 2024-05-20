@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef _USB_DESCRIPTORS_H_
-#define _USB_DESCRIPTORS_H_
+#pragma once
 
 #include "class/video/video.h"
 
@@ -243,6 +242,3 @@
     TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING(VIDEO_COLOR_PRIMARIES_BT709, VIDEO_COLOR_XFER_CH_BT709, VIDEO_COLOR_COEF_SMPTE170M), \
     /* EP */ \
     TUD_VIDEO_DESC_EP_BULK(_epin, _epsize, 1)
-
-
-#endif

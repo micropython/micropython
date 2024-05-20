@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_TOUCHIO_TOUCHIN_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_TOUCHIO_TOUCHIN_H
+#pragma once
 
 #include "py/obj.h"
 #include "common-hal/microcontroller/Pin.h"
@@ -15,5 +14,3 @@ typedef struct {
     const mcu_pin_obj_t *pin;
     uint16_t threshold;
 } touchio_touchin_obj_t;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_TOUCHIO_TOUCHIN_H

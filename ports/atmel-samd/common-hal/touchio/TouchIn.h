@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_TOUCHIO_TOUCHIN_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_TOUCHIO_TOUCHIN_H
+#pragma once
 
 // Native touchio only exists for SAMD21
 #ifdef SAMD21
@@ -26,5 +25,3 @@ typedef struct {
 void touchin_reset(void);
 
 #endif // SAMD21
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_TOUCHIO_TOUCHIN_H

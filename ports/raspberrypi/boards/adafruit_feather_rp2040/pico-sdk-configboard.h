@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // Put board-specific pico-sdk definitions here. This file must exist.
 
 // Allow extra time for xosc to start.

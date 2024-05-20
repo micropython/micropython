@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGIN_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGIN_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -19,5 +18,3 @@ typedef struct {
 } analogio_analogin_obj_t;
 
 void analogin_reset(void);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGIN_H

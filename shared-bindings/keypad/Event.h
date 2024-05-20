@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENT__H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENT__H
+#pragma once
 
 #include "py/obj.h"
 #include "shared-module/keypad/Event.h"
@@ -17,5 +16,3 @@ mp_int_t common_hal_keypad_event_get_key_number(keypad_event_obj_t *self);
 bool common_hal_keypad_event_get_pressed(keypad_event_obj_t *self);
 bool common_hal_keypad_event_get_released(keypad_event_obj_t *self);
 mp_obj_t common_hal_keypad_event_get_timestamp(keypad_event_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENT__H

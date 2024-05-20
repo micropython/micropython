@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_RADIO_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_RADIO_H
+#pragma once
 
 #include <stdint.h>
 
@@ -110,5 +109,3 @@ extern void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_ob
 extern void common_hal_wifi_radio_set_ipv4_address_ap(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway);
 
 extern mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_RADIO_H

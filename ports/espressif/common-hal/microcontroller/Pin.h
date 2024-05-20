@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_MICROCONTROLLER_PIN_H
+#pragma once
 
 #include "py/mphal.h"
 
@@ -37,5 +36,3 @@ extern void clear_pin_preservations(void);
 // Return true to indicate that the pin was reset. Returning false will lead to
 // the port-default reset behavior.
 extern bool espressif_board_reset_pin_number(gpio_num_t pin_number);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_MICROCONTROLLER_PIN_H

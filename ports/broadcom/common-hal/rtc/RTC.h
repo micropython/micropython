@@ -5,9 +5,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BROADCOM_COMMON_HAL_RTC_RTC_H
-#define MICROPY_INCLUDED_BROADCOM_COMMON_HAL_RTC_RTC_H
+#pragma once
 
 extern void rtc_reset(void);
-
-#endif  // MICROPY_INCLUDED_BROADCOM_COMMON_HAL_RTC_RTC_H

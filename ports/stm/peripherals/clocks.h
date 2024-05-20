@@ -4,4 +4,6 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 void stm32_peripherals_clocks_init(void);

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE__STAGE_LAYER_H
-#define MICROPY_INCLUDED_SHARED_MODULE__STAGE_LAYER_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -24,5 +23,3 @@ typedef struct {
 } layer_obj_t;
 
 uint16_t get_layer_pixel(layer_obj_t *layer, int16_t x, int16_t y);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE__STAGE_LAYER

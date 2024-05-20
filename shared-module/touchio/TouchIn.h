@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_TOUCHIO_TOUCHIN_H
-#define MICROPY_INCLUDED_SHARED_MODULE_TOUCHIO_TOUCHIN_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
@@ -20,5 +19,3 @@ typedef struct {
 } touchio_touchin_obj_t;
 
 void touchin_reset(void);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_TOUCHIO_TOUCHIN_H

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE__STAGE_TEXT_H
-#define MICROPY_INCLUDED_SHARED_MODULE__STAGE_TEXT_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -22,5 +21,3 @@ typedef struct {
 } text_obj_t;
 
 uint16_t get_text_pixel(text_obj_t *text, int16_t x, int16_t y);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE__STAGE_TEXT

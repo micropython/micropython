@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_I2C_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_I2C_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -41,5 +40,3 @@ extern uint8_t shared_module_bitbangio_i2c_write(bitbangio_i2c_obj_t *self,
 extern uint8_t shared_module_bitbangio_i2c_read(bitbangio_i2c_obj_t *self,
     uint16_t address,
     uint8_t *data, size_t len);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_I2C_H

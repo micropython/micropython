@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CHARACTERISTIC_H
-#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CHARACTERISTIC_H
+#pragma once
 
 #include "shared-bindings/_bleio/Attribute.h"
 #include "common-hal/_bleio/Descriptor.h"
@@ -39,5 +38,3 @@ bool bleio_characteristic_set_local_value(bleio_characteristic_obj_t *self, mp_b
 
 void bleio_characteristic_set_observer(bleio_characteristic_obj_t *self, mp_obj_t observer);
 void bleio_characteristic_clear_observer(bleio_characteristic_obj_t *self);
-
-#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CHARACTERISTIC_H

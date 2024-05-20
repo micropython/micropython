@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 /* Adafruit Feather M0 Express with an 8MB SPI flash instead of the usual 2MB */
 
 #define MICROPY_HW_BOARD_NAME "Hacked Feather M0 Express with 8Mbyte SPI flash"

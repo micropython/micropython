@@ -4,9 +4,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL___INIT___H
+#pragma once
 
 void socketpool_user_reset(void);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL___INIT___H

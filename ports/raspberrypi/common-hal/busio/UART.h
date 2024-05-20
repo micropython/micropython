@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_UART_H
+#pragma once
 
 #include "py/obj.h"
 #include "py/ringbuf.h"
@@ -30,5 +29,3 @@ typedef struct {
 
 extern void reset_uart(void);
 extern void never_reset_uart(uint8_t num);
-
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_UART_H

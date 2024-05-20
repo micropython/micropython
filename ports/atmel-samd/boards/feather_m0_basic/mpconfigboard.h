@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // LEDs
 #define MICROPY_HW_LED_STATUS   (&pin_PA17)
 

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_MONITOR_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_MONITOR_H
+#pragma once
 
 #include "common-hal/wifi/Monitor.h"
 
@@ -26,5 +25,3 @@ mp_obj_t common_hal_wifi_monitor_get_lost(wifi_monitor_obj_t *self);
 mp_obj_t common_hal_wifi_monitor_get_queued(wifi_monitor_obj_t *self);
 
 mp_obj_t common_hal_wifi_monitor_get_packet(wifi_monitor_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_MONITOR_H

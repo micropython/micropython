@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#pragma once
 
 #include "src/rp2040/hardware_regs/include/hardware/platform_defs.h"
 
@@ -54,5 +53,3 @@ enum {
     enum_NUM_DMA_CHANNELS = NUM_DMA_CHANNELS,
     enum_NUM_PWM_SLICES = NUM_PWM_SLICES,
 };
-
-#endif  // __INCLUDED_MPCONFIGPORT_H

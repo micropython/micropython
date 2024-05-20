@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_RTC_RTC_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_RTC_RTC_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -26,5 +25,3 @@ typedef struct _rtc_rtc_obj_t {
 } rtc_rtc_obj_t;
 
 extern const rtc_rtc_obj_t rtc_rtc_obj;
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_RTC_RTC_H

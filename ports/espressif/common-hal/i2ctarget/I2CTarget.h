@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_TARGET_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_TARGET_H
+#pragma once
 
 #include "py/obj.h"
 #include "peripherals/i2c.h"
@@ -19,5 +18,3 @@ typedef struct {
     const mcu_pin_obj_t *scl_pin;
     const mcu_pin_obj_t *sda_pin;
 } i2ctarget_i2c_target_obj_t;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_TARGET_H

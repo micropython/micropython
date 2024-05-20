@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_AUDIOOUT_H
+#pragma once
 
 #include "common-hal/audiobusio/PDMIn.h"
 #include "common-hal/microcontroller/Pin.h"
@@ -25,5 +24,3 @@ uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t *self);
 uint32_t common_hal_audiobusio_pdmin_get_sample_rate(audiobusio_pdmin_obj_t *self);
 // TODO(tannewt): Add record to file
 #endif
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_AUDIOOUT_H

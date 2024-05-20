@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_COLORCONVERTER_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_COLORCONVERTER_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -44,5 +43,3 @@ uint8_t displayio_colorconverter_compute_chroma(uint32_t color_rgb888);
 uint8_t displayio_colorconverter_compute_hue(uint32_t color_rgb888);
 uint8_t displayio_colorconverter_compute_sevencolor(uint32_t color_rgb888);
 void displayio_colorconverter_compute_tricolor(const _displayio_colorspace_t *colorspace, uint8_t pixel_hue, uint32_t *color);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_COLORCONVERTER_H

@@ -5,6 +5,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "iMX RT 1050 EVKB"
 #define MICROPY_HW_MCU_NAME "IMXRT1052DVL6B"
 

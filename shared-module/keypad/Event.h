@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_EVENT_H
-#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_EVENT_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -15,6 +14,3 @@ typedef struct {
     bool pressed;
     mp_obj_t timestamp;
 } keypad_event_obj_t;
-
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_EVENT_H

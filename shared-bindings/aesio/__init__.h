@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AESIO_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_AESIO_H
+#pragma once
 
 #include "shared-module/aesio/__init__.h"
 
@@ -29,5 +28,3 @@ void common_hal_aesio_aes_encrypt(aesio_aes_obj_t *self,
 void common_hal_aesio_aes_decrypt(aesio_aes_obj_t *self,
     uint8_t *buffer,
     size_t len);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AESIO_H

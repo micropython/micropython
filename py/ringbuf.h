@@ -5,8 +5,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2020 Dan Halbert for Adafruit Industries LLC
 //
 // SPDX-License-Identifier: MIT
-#ifndef MICROPY_INCLUDED_PY_RINGBUF_H
-#define MICROPY_INCLUDED_PY_RINGBUF_H
+#pragma once
 
 #include "py/gc.h"
 
@@ -48,5 +47,3 @@ int ringbuf_put16(ringbuf_t *r, uint16_t v);
 
 int ringbuf_get_bytes(ringbuf_t *r, uint8_t *data, size_t data_len);
 int ringbuf_put_bytes(ringbuf_t *r, const uint8_t *data, size_t data_len);
-
-#endif // MICROPY_INCLUDED_PY_RINGBUF_H

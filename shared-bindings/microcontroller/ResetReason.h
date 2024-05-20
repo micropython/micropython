@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MCU_RESET_REASON__H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_MCU_RESET_REASON__H
+#pragma once
 
 #include "py/obj.h"
 #include "py/enum.h"
@@ -22,5 +21,3 @@ typedef enum {
 } mcu_reset_reason_t;
 
 extern const mp_obj_type_t mcu_reset_reason_type;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_MCU_RESET_REASON__H

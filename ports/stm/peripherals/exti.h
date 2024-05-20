@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef __MICROPY_INCLUDED_STM32_PERIPHERALS_EXTI_H__
-#define __MICROPY_INCLUDED_STM32_PERIPHERALS_EXTI_H__
+#pragma once
 
 #include STM32_HAL_H
 
@@ -21,5 +20,3 @@ void stm_peripherals_exti_disable(uint8_t num);
 void stm_peripherals_exti_set_callback(void (*callback)(uint8_t num), uint8_t number);
 void stm_peripherals_exti_free(uint8_t num);
 IRQn_Type stm_peripherals_exti_get_irq(uint8_t num);
-
-#endif // __MICROPY_INCLUDED_STM32_PERIPHERALS_EXTI_H__

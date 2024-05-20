@@ -6,8 +6,7 @@
 // SPDX-License-Identifier: MIT
 
 
-#ifndef MICROPY_AXP192_H
-#define MICROPY_AXP192_H
+#pragma once
 
 #include "shared-bindings/busio/I2C.h"
 
@@ -268,5 +267,3 @@ bool pmic_disable_all_irq(busio_i2c_obj_t *i2c);
 bool pmic_clear_all_irq(busio_i2c_obj_t *i2c);
 bool pmic_enable_power_key_press_irq(busio_i2c_obj_t *i2c);
 bool pmic_enable_low_battery_irq(busio_i2c_obj_t *i2c);
-
-#endif

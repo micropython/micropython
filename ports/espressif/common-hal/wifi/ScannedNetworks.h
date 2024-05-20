@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_SCANNEDNETWORKS_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_SCANNEDNETWORKS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -38,5 +37,3 @@ typedef struct {
 
 void wifi_scannednetworks_scan_next_channel(wifi_scannednetworks_obj_t *self);
 void wifi_scannednetworks_deinit(wifi_scannednetworks_obj_t *self);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_SCANNEDNETWORKS_H

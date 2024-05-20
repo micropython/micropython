@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_CORE_DEVICE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_CORE_DEVICE_H
+#pragma once
 
 #include "py/objarray.h"
 
@@ -30,5 +29,3 @@ mp_int_t common_hal_usb_core_device_ctrl_transfer(usb_core_device_obj_t *self,
 bool common_hal_usb_core_device_is_kernel_driver_active(usb_core_device_obj_t *self, mp_int_t interface);
 void common_hal_usb_core_device_detach_kernel_driver(usb_core_device_obj_t *self, mp_int_t interface);
 void common_hal_usb_core_device_attach_kernel_driver(usb_core_device_obj_t *self, mp_int_t interface);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_CORE_DEVICE_H

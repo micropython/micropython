@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_PACKETBUFFER_H
-#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_PACKETBUFFER_H
+#pragma once
 
 #include "py/ringbuf.h"
 #include "shared-bindings/_bleio/Characteristic.h"
@@ -30,5 +29,3 @@ typedef struct {
 } bleio_packet_buffer_obj_t;
 
 void bleio_packet_buffer_update(bleio_packet_buffer_obj_t *self, mp_buffer_info_t *bufinfo);
-
-#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_PACKETBUFFER_H

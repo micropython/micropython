@@ -5,8 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CONNECTION_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CONNECTION_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -69,5 +68,3 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in);
 uint16_t bleio_connection_get_conn_handle(bleio_connection_obj_t *self);
 mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t *connection);
 bleio_connection_internal_t *bleio_conn_handle_to_connection(uint16_t conn_handle);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CONNECTION_H

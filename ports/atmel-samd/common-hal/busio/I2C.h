@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -23,5 +22,3 @@ typedef struct {
 
 extern Sercom *samd_i2c_get_sercom(const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
     uint8_t *sercom_index, uint32_t *sda_pinmux, uint32_t *scl_pinmux);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_H

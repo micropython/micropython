@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_PIN_PINALARM_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_PIN_PINALARM_H
+#pragma once
 
 #include "py/obj.h"
 #include "py/objtuple.h"
@@ -19,5 +18,3 @@ extern const mcu_pin_obj_t *common_hal_alarm_pin_pinalarm_get_pin(alarm_pin_pina
 extern bool common_hal_alarm_pin_pinalarm_get_value(alarm_pin_pinalarm_obj_t *self);
 extern bool common_hal_alarm_pin_pinalarm_get_edge(alarm_pin_pinalarm_obj_t *self);
 extern bool common_hal_alarm_pin_pinalarm_get_pull(alarm_pin_pinalarm_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_PIN_PINALARM_H

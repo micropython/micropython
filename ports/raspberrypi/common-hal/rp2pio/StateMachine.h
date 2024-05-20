@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_RP2PIO_STATEMACHINE_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_RP2PIO_STATEMACHINE_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -84,5 +83,3 @@ void rp2pio_statemachine_never_reset(PIO pio, int sm);
 uint8_t rp2pio_statemachine_find_pio(int program_size, int sm_count);
 
 extern const mp_obj_type_t rp2pio_statemachine_type;
-
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_RP2PIO_STATEMACHINE_H

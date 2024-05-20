@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_STATUS_LEDS_H
-#define MICROPY_INCLUDED_SUPERVISOR_STATUS_LEDS_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -39,5 +38,3 @@ void init_rxtx_leds(void);
 void deinit_rxtx_leds(void);
 void toggle_rx_led(void);
 void toggle_tx_led(void);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_STATUS_LEDS_H

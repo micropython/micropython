@@ -3,3 +3,5 @@
 // SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
 //
 // SPDX-License-Identifier: MIT
+
+#pragma once

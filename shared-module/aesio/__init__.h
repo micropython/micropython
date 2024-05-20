@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_AESIO__INIT__H
-#define MICROPY_INCLUDED_SHARED_MODULE_AESIO__INIT__H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -35,5 +34,3 @@ typedef struct {
     // Counter for running in CTR mode
     uint32_t counter;
 } aesio_aes_obj_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_AESIO__INIT__H

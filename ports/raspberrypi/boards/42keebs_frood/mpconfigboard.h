@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "42. Keebs Frood"
 #define MICROPY_HW_MCU_NAME "rp2040"
 

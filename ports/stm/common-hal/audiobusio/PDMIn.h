@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_STM_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_STM_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#pragma once
 
 #include <stdint.h>
 #include "py/obj.h"
@@ -29,6 +28,3 @@ typedef struct {
      */
     volatile bool recording_complete;
 } audiobusio_pdmin_obj_t;
-
-
-#endif

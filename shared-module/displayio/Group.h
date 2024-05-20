@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_GROUP_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_GROUP_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -38,5 +37,3 @@ bool displayio_group_fill_area(displayio_group_t *group, const _displayio_colors
 void displayio_group_update_transform(displayio_group_t *group, const displayio_buffer_transform_t *parent_transform);
 void displayio_group_finish_refresh(displayio_group_t *self);
 displayio_area_t *displayio_group_get_refresh_areas(displayio_group_t *self, displayio_area_t *tail);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_GROUP_H

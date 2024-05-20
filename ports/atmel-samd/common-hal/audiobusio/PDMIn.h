@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -29,5 +28,3 @@ void pdmin_reset(void);
 void pdmin_evsys_handler(void);
 
 void pdmin_background(void);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H

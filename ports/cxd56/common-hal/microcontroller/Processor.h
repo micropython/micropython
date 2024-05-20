@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+#pragma once
 
 #define COMMON_HAL_MCU_PROCESSOR_UID_LENGTH CONFIG_BOARDCTL_UNIQUEID_SIZE
 
@@ -16,5 +15,3 @@ typedef struct {
 } mcu_processor_obj_t;
 
 extern const mp_obj_type_t mcu_processor_type;
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H

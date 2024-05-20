@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOMIXER_MIXER_H
-#define MICROPY_INCLUDED_SHARED_MODULE_AUDIOMIXER_MIXER_H
+#pragma once
 
 #include "py/obj.h"
 #include "py/objtuple.h"
@@ -45,5 +44,3 @@ audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t *
 void audiomixer_mixer_get_buffer_structure(audiomixer_mixer_obj_t *self, bool single_channel_output,
     bool *single_buffer, bool *samples_signed,
     uint32_t *max_buffer_length, uint8_t *spacing);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_AUDIOMIXER_MIXER_H

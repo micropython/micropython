@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F411XE_PERIPH_H
-#define MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F411XE_PERIPH_H
+#pragma once
 
 // I2C
 extern I2C_TypeDef *mcu_i2c_banks[3];
@@ -33,5 +32,3 @@ extern const mcu_periph_obj_t mcu_uart_rx_list[7];
 #define TIM_PIN_ARRAY_LEN 44
 extern TIM_TypeDef *mcu_tim_banks[TIM_BANK_ARRAY_LEN];
 extern const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN];
-
-#endif // MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F411XE_PERIPH_H

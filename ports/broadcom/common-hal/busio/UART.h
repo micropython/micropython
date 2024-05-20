@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_BROADCOM_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_BROADCOM_COMMON_HAL_BUSIO_UART_H
+#pragma once
 
 #include "py/obj.h"
 #include "py/ringbuf.h"
@@ -24,5 +23,3 @@ typedef struct {
 } busio_uart_obj_t;
 
 extern void reset_uart(void);
-
-#endif // MICROPY_INCLUDED_BROADCOM_COMMON_HAL_BUSIO_UART_H

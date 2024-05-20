@@ -5,6 +5,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #ifndef MICROPY_INCLUDED_MIMXRT10XX_BACKGROUND_H
 #define MICROPY_INCLUDED_MIMXRT10XX_BACKGROUND_H
 

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_HOST_PORT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_HOST_PORT_H
+#pragma once
 
 #include "py/objarray.h"
 
@@ -20,5 +19,3 @@ extern const mp_obj_type_t usb_host_port_type;
 // method to check the internals of the global object against the given arguments
 // to determine whether to return the singleton or raise an exception.
 usb_host_port_obj_t *common_hal_usb_host_port_construct(const mcu_pin_obj_t *dp, const mcu_pin_obj_t *dm);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_HOST_PORT_H

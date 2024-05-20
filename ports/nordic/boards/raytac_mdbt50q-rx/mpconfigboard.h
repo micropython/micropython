@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME       "MDBT50Q-RX Dongle"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 

@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "SAM32v26"
 #define MICROPY_HW_MCU_NAME "samd51j20"
 #define CIRCUITPY_MCU_FAMILY samd51

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_I2C_HANDLER_H
-#define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_I2C_HANDLER_H
+#pragma once
 
 #include "driver/i2c.h"
 
@@ -14,5 +13,3 @@ extern void never_reset_i2c(i2c_port_t num);
 extern esp_err_t peripherals_i2c_init(i2c_port_t num, const i2c_config_t *i2c_conf);
 extern void peripherals_i2c_deinit(i2c_port_t num);
 extern i2c_port_t peripherals_i2c_get_free_num(void);
-
-#endif  // MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_I2C_HANDLER_H

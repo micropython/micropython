@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#pragma once
 
 #define MICROPY_PY_SYS_PLATFORM                 "CXD56"
 
@@ -24,5 +23,3 @@
 #include "py/circuitpy_mpconfig.h"
 
 #define MICROPY_BYTES_PER_GC_BLOCK              (32)
-
-#endif  // __INCLUDED_MPCONFIGPORT_H

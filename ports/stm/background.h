@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #ifndef MICROPY_INCLUDED_STM32_BACKGROUND_H
 #define MICROPY_INCLUDED_STM32_BACKGROUND_H
 

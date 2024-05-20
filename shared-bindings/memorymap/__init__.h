@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #ifndef SHARED_BINDINGS_MEMORYMAP_H
 #define SHARED_BINDINGS_MEMORYMAP_H
 

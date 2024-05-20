@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/rp2pio/StateMachine.h"
@@ -23,5 +22,3 @@ typedef struct {
 } audiobusio_i2sout_obj_t;
 
 void i2sout_reset(void);
-
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOBUSIO_I2SOUT_H

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI___INIT___H
+#pragma once
 
 #include "shared-bindings/wifi/Radio.h"
 
@@ -15,5 +14,3 @@ void common_hal_wifi_init(bool user_initiated);
 void common_hal_wifi_gc_collect(void);
 
 void wifi_user_reset(void);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI___INIT___H

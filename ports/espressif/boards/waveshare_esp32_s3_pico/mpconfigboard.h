@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "Waveshare ESP32-S3-Pico"

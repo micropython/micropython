@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_SYNTHIO_MIDITRACK_H
-#define MICROPY_INCLUDED_SHARED_MODULE_SYNTHIO_MIDITRACK_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -36,5 +35,3 @@ audioio_get_buffer_result_t synthio_miditrack_get_buffer(synthio_miditrack_obj_t
 void synthio_miditrack_get_buffer_structure(synthio_miditrack_obj_t *self, bool single_channel_output,
     bool *single_buffer, bool *samples_signed,
     uint32_t *max_buffer_length, uint8_t *spacing);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_SYNTHIO_MIDITRACK_H

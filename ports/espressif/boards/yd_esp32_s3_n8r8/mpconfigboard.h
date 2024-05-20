@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME       "VCC-GND YD-ESP32-S3 (N8R8)"
 #define MICROPY_HW_MCU_NAME         "ESP32S3"
 

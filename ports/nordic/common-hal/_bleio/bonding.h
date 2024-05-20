@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_BONDING_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_BONDING_H
+#pragma once
 
 #include <stdint.h>
 #include <stdio.h>
@@ -69,5 +68,3 @@ size_t bonding_peripheral_bond_count(void);
 void bonding_print_block(bonding_block_t *);
 void bonding_print_keys(bonding_keys_t *);
 #endif
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_BONDING_H

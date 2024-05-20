@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CIRCUITPY_INCLUDED_SUPERVISOR_BACKGROUND_CALLBACK_H
-#define CIRCUITPY_INCLUDED_SUPERVISOR_BACKGROUND_CALLBACK_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -76,5 +75,3 @@ void background_callback_allow(void);
  * Background callbacks may stop objects from being collected
  */
 void background_callback_gc_collect(void);
-
-#endif

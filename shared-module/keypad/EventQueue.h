@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_EVENTQUEUE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_EVENTQUEUE_H
+#pragma once
 
 #include "py/obj.h"
 #include "py/ringbuf.h"
@@ -20,5 +19,3 @@ struct _keypad_eventqueue_obj_t {
 };
 
 bool keypad_eventqueue_record(keypad_eventqueue_obj_t *self, mp_uint_t key_number, bool pressed, mp_obj_t timestamp);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_EVENTQUEUE_H

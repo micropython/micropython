@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_UART_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -27,5 +26,3 @@ typedef struct {
     uint32_t buffer_length;
     uint8_t *buffer;
 } busio_uart_obj_t;
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_UART_H
