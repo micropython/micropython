@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#pragma once
+// Do not use #pragma once in this file; it will cause a warning during qstr generation.
 
 // qstrs specific to this port, only needed if they aren't auto-generated
 
