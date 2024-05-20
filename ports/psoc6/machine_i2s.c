@@ -44,15 +44,21 @@ typedef struct _machine_i2s_obj_t {
     mp_obj_base_t base;
     uint8_t i2s_id;
     cyhal_i2s_t i2s_obj;
-    // mp_hal_pin_obj_t sck;   // TODO: These will be pin_phy objects
-    // mp_hal_pin_obj_t ws;
-    // mp_hal_pin_obj_t sd;
-    machine_pin_phy_obj_t *sck;
-    machine_pin_phy_obj_t *ws;
-    machine_pin_phy_obj_t *sd;
+    // HAL pin obj are kept for compatibility
+    // with extmod/machine_i2s print function
+    // Potential refactor together with pin_phy,
+    // mp_hal_pin functions resource acquisition
+    // and release.
+    mp_hal_pin_obj_t sck;
+    mp_hal_pin_obj_t ws;
+    mp_hal_pin_obj_t sd;
+    // ---------------------------------------
+    machine_pin_phy_obj_t *sck_phy;
+    machine_pin_phy_obj_t *ws_phy;
+    machine_pin_phy_obj_t *sd_phy;
     uint16_t mode;
     int8_t bits;
-    uint8_t channel_resolution_bits; // TODO: better name?
+    uint8_t channel_resolution_bits;
     format_t format;
     int32_t rate;
     int32_t ibuf;
@@ -197,7 +203,6 @@ static void i2s_dma_from_dmabuf_to_ringbuf(machine_i2s_obj_t *self) {
     uint8_t dma_sample_size_in_bytes = (self->bits == 16? 2 : 4) * (self->format == STEREO ? 2: 1);
     uint8_t *dma_buff_p = (uint8_t *)self->dma_idle_buf_p;
     uint32_t num_bytes_needed_from_ringbuf = SIZEOF_HALF_DMA_BUFFER_IN_BYTES * (I2S_RX_FRAME_SIZE_IN_BYTES / dma_sample_size_in_bytes);
-    // toggle_led();
 
     // when space exists, copy samples into ring buffer
     if (ringbuf_available_space(&self->ring_buffer) >= num_bytes_needed_from_ringbuf) {
@@ -273,7 +278,7 @@ static void i2s_dma_irq_handler(void *arg, cyhal_i2s_event_t event) {
 }
 
 static void i2s_init(machine_i2s_obj_t *self, cyhal_clock_t *clock) {
-    cyhal_i2s_pins_t pins = { .sck = self->sck->addr, .ws = self->ws->addr, .data = self->sd->addr, .mclk = NC };
+    cyhal_i2s_pins_t pins = { .sck = self->sck_phy->addr, .ws = self->ws_phy->addr, .data = self->sd_phy->addr, .mclk = NC };
     cyhal_i2s_config_t config =
     {
         .is_tx_slave = true,
@@ -402,36 +407,17 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
         mp_raise_ValueError(MP_ERROR_TEXT("invalid ibuf"));
     }
 
-    // All these pins must be provided
-//     if (args[ARG_sck].u_obj == MP_OBJ_NULL ||
-//         args[ARG_ws].u_obj == MP_OBJ_NULL  ||
-//         args[ARG_sd].u_obj == MP_OBJ_NULL ) {
-//         mp_raise_ValueError(MP_ERROR_TEXT("SCK, WS and SD pins are required"));
-//    }
-//     // Allocate physical pins to prevent that there are used for/by other peripherals
-//     machine_pin_phy_obj_t * sck = pin_phy_realloc(args[ARG_sck].u_obj, PIN_PHY_FUNC_I2S);
-//     machine_pin_phy_obj_t * ws = pin_phy_realloc(args[ARG_ws].u_obj, PIN_PHY_FUNC_I2S);
-//     machine_pin_phy_obj_t * sd = pin_phy_realloc(args[ARG_sd].u_obj, PIN_PHY_FUNC_I2S);
+    // All provided pins are realloc from any other machine allocation
+    machine_pin_phy_obj_t *sck_phy = pin_phy_realloc(args[ARG_sck].u_obj, PIN_PHY_FUNC_I2S);
+    machine_pin_phy_obj_t *ws_phy = pin_phy_realloc(args[ARG_ws].u_obj, PIN_PHY_FUNC_I2S);
+    machine_pin_phy_obj_t *sd_phy = pin_phy_realloc(args[ARG_sd].u_obj, PIN_PHY_FUNC_I2S);
 
-    machine_pin_phy_obj_t *sck = i2s_pin_alloc("SCK", sargs[ARG_sck].u_obj);
-    machine_pin_phy_obj_t *ws = i2s_pin_alloc("WS", sargs[ARG_ws].u_obj);
-    machine_pin_phy_obj_t *sd = i2s_pin_alloc("SD", sargs[ARG_sd].u_obj);
-    //  {
-    //     if (args[ARG_sck].u_obj == MP_OBJ_NULL) {
-    //         machine_pin_phy_obj_t *sck = pin_phy_realloc(args[ARG_sck].u_obj, PIN_PHY_FUNC_I2S);
-
-    //     if (scl == NULL) {
-    //         size_t slen;
-    //         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SCK pin (%s) not found !"), mp_obj_str_get_data(args[ARG_sck].u_obj, &slen));
-    //     }
-    // } else {
-    //     mp_raise_TypeError(MP_ERROR_TEXT("SCK pin must be provided"));
-    // }
-
-
-    self->sck = sck;
-    self->ws = ws;
-    self->sd = sd;
+    self->sck_phy = sck_phy;
+    self->ws_phy = ws_phy;
+    self->sd_phy = sd_phy;
+    self->sck = sck_phy->addr;
+    self->ws = ws_phy->addr;
+    self->sd = sd_phy->addr;
     self->mode = i2s_mode;
     self->bits = i2s_bits;
     self->channel_resolution_bits = i2s_bits_resolution;
@@ -451,9 +437,9 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
 
 static void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     cyhal_i2s_free(&self->i2s_obj);
-    pin_phy_free(self->sck);
-    pin_phy_free(self->ws);
-    pin_phy_free(self->sd);
+    pin_phy_free(self->sck_phy);
+    pin_phy_free(self->ws_phy);
+    pin_phy_free(self->sd_phy);
 }
 
 static void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
