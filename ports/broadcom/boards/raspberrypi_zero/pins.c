@@ -8,7 +8,7 @@
 
 #include "shared-module/displayio/__init__.h"
 
-STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+static const mp_rom_map_elem_t board_global_dict_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
     // These match the names used in Blinka
     { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_GPIO0) },

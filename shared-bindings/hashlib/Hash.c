@@ -18,7 +18,7 @@
 
 //|     digest_size: int
 //|     """Digest size in bytes"""
-STATIC mp_obj_t hashlib_hash_digest_size_get(mp_obj_t self_in) {
+static mp_obj_t hashlib_hash_digest_size_get(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &hashlib_hash_type));
     hashlib_hash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_hashlib_hash_get_digest_size(self));
@@ -42,13 +42,13 @@ mp_obj_t hashlib_hash_update(mp_obj_t self_in, mp_obj_t buf_in) {
     common_hal_hashlib_hash_update(self, bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(hashlib_hash_update_obj, hashlib_hash_update);
+static MP_DEFINE_CONST_FUN_OBJ_2(hashlib_hash_update_obj, hashlib_hash_update);
 
 //|     def digest(self) -> bytes:
 //|         """Returns the current digest as bytes() with a length of `hashlib.Hash.digest_size`."""
 //|         ...
 //|
-STATIC mp_obj_t hashlib_hash_digest(mp_obj_t self_in) {
+static mp_obj_t hashlib_hash_digest(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &hashlib_hash_type));
     hashlib_hash_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -59,15 +59,15 @@ STATIC mp_obj_t hashlib_hash_digest(mp_obj_t self_in) {
     common_hal_hashlib_hash_digest(self, (uint8_t *)o->data, size);
     return obj;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(hashlib_hash_digest_obj, hashlib_hash_digest);
+static MP_DEFINE_CONST_FUN_OBJ_1(hashlib_hash_digest_obj, hashlib_hash_digest);
 
-STATIC const mp_rom_map_elem_t hashlib_hash_locals_dict_table[] = {
+static const mp_rom_map_elem_t hashlib_hash_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_digest_size), MP_ROM_PTR(&hashlib_hash_digest_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&hashlib_hash_update_obj) },
     { MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&hashlib_hash_digest_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(hashlib_hash_locals_dict, hashlib_hash_locals_dict_table);
+static MP_DEFINE_CONST_DICT(hashlib_hash_locals_dict, hashlib_hash_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     hashlib_hash_type,

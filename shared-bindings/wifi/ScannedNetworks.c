@@ -16,7 +16,7 @@
 //|     """Iterates over all `wifi.Network` objects found while scanning. This object is always created
 //|     by a `wifi.Radio`: it has no user-visible constructor."""
 //|
-STATIC mp_obj_t scannednetworks_iternext(mp_obj_t self_in) {
+static mp_obj_t scannednetworks_iternext(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &wifi_scannednetworks_type));
     wifi_scannednetworks_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t network = common_hal_wifi_scannednetworks_next(self);

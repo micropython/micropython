@@ -12,12 +12,12 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/sdioio/SDCard.h"
 
-STATIC sdioio_sdcard_obj_t sd;
+static sdioio_sdcard_obj_t sd;
 
-STATIC uint32_t first_lba = 0;
-STATIC uint32_t sector_count = 0;
+static uint32_t first_lba = 0;
+static uint32_t sector_count = 0;
 
-STATIC bool inited = false;
+static bool inited = false;
 
 void supervisor_flash_init(void) {
     if (inited) {

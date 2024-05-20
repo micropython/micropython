@@ -40,7 +40,7 @@
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t floppyio_flux_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t floppyio_flux_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     #if CIRCUITPY_DIGITALIO
     enum { ARG_buffer, ARG_data, ARG_index, ARG_index_wait };
     static const mp_arg_t allowed_args[] = {
@@ -119,7 +119,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(floppyio_flux_readinto_obj, 0, floppyio_flux_readinto
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t floppyio_mfm_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t floppyio_mfm_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_flux, ARG_t2_max, ARG_t3_max, ARG_validity, ARG_clear_validity };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -163,13 +163,13 @@ MP_DEFINE_CONST_FUN_OBJ_KW(floppyio_mfm_readinto_obj, 0, floppyio_mfm_readinto);
 //| samplerate: int
 //| """The approximate sample rate in Hz used by flux_readinto."""
 
-STATIC const mp_rom_map_elem_t floppyio_module_globals_table[] = {
+static const mp_rom_map_elem_t floppyio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_floppyio) },
     { MP_ROM_QSTR(MP_QSTR_flux_readinto), MP_ROM_PTR(&floppyio_flux_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_mfm_readinto), MP_ROM_PTR(&floppyio_mfm_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_samplerate), MP_ROM_INT(FLOPPYIO_SAMPLERATE) },
 };
-STATIC MP_DEFINE_CONST_DICT(floppyio_module_globals, floppyio_module_globals_table);
+static MP_DEFINE_CONST_DICT(floppyio_module_globals, floppyio_module_globals_table);
 
 const mp_obj_module_t floppyio_module = {
     .base = {&mp_type_module },

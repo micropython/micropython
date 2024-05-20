@@ -75,7 +75,7 @@
 // (by computing (a + b/2) / b instead of just a / b) actually didn't help
 // accuracy anyway.
 #ifdef SAMD21
-STATIC float calculate_temperature(uint16_t raw_value) {
+static float calculate_temperature(uint16_t raw_value) {
     uint32_t val1;    /* Temperature Log Row Content first 32 bits */
     uint32_t val2;    /* Temperature Log Row Content another 32 bits */
     int room_temp_val_int; /* Integer part of room temperature in °C */
@@ -143,10 +143,10 @@ STATIC float calculate_temperature(uint16_t raw_value) {
 
 #ifdef SAM_D5X_E5X
 // Decimal to fraction conversion. (adapted from ASF sample).
-STATIC float convert_dec_to_frac(uint8_t val) {
+static float convert_dec_to_frac(uint8_t val) {
     return val / MICROPY_FLOAT_CONST(10.);
 }
-STATIC float calculate_temperature(uint16_t TP, uint16_t TC) {
+static float calculate_temperature(uint16_t TP, uint16_t TC) {
     uint32_t TLI = (*(uint32_t *)FUSES_ROOM_TEMP_VAL_INT_ADDR & FUSES_ROOM_TEMP_VAL_INT_Msk) >> FUSES_ROOM_TEMP_VAL_INT_Pos;
     uint32_t TLD = (*(uint32_t *)FUSES_ROOM_TEMP_VAL_DEC_ADDR & FUSES_ROOM_TEMP_VAL_DEC_Msk) >> FUSES_ROOM_TEMP_VAL_DEC_Pos;
     float TL = TLI + convert_dec_to_frac(TLD);

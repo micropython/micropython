@@ -46,10 +46,10 @@ void bleio_packet_buffer_extend(bleio_packet_buffer_obj_t *self, uint16_t conn_h
     ringbuf_put_n(&self->ringbuf, data, len);
 }
 
-STATIC int packet_buffer_on_ble_client_evt(struct ble_gap_event *event, void *param);
-STATIC int queue_next_write(bleio_packet_buffer_obj_t *self);
+static int packet_buffer_on_ble_client_evt(struct ble_gap_event *event, void *param);
+static int queue_next_write(bleio_packet_buffer_obj_t *self);
 
-STATIC int _write_cb(uint16_t conn_handle,
+static int _write_cb(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     struct ble_gatt_attr *attr,
     void *arg) {
@@ -62,7 +62,7 @@ STATIC int _write_cb(uint16_t conn_handle,
     return 0;
 }
 
-STATIC int queue_next_write(bleio_packet_buffer_obj_t *self) {
+static int queue_next_write(bleio_packet_buffer_obj_t *self) {
     // Queue up the next outgoing buffer. We use two, one that has been passed to the SD for
     // transmission (when packet_queued is true) and the other is `pending` and can still be
     // modified. By primarily appending to the `pending` buffer we can reduce the protocol overhead
@@ -125,7 +125,7 @@ STATIC int queue_next_write(bleio_packet_buffer_obj_t *self) {
 }
 
 // This is called from the nimble task. *Not* CircuitPython's.
-STATIC int packet_buffer_on_ble_client_evt(struct ble_gap_event *event, void *param) {
+static int packet_buffer_on_ble_client_evt(struct ble_gap_event *event, void *param) {
     bleio_packet_buffer_obj_t *self = (bleio_packet_buffer_obj_t *)param;
     if (event->type == BLE_GAP_EVENT_DISCONNECT && self->conn_handle == event->disconnect.conn.conn_handle) {
         self->conn_handle = BLEIO_HANDLE_INVALID;

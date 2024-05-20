@@ -32,13 +32,13 @@ const digitalio_pull_obj_t digitalio_pull_down_obj = {
     { &digitalio_pull_type },
 };
 
-STATIC const mp_rom_map_elem_t digitalio_pull_locals_dict_table[] = {
+static const mp_rom_map_elem_t digitalio_pull_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_UP),    MP_ROM_PTR(&digitalio_pull_up_obj) },
     { MP_ROM_QSTR(MP_QSTR_DOWN),  MP_ROM_PTR(&digitalio_pull_down_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(digitalio_pull_locals_dict, digitalio_pull_locals_dict_table);
+static MP_DEFINE_CONST_DICT(digitalio_pull_locals_dict, digitalio_pull_locals_dict_table);
 
-STATIC void digitalio_pull_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void digitalio_pull_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     qstr pull = MP_QSTR_UP;
     if (self_in == MP_ROM_PTR(&digitalio_pull_down_obj)) {
         pull = MP_QSTR_DOWN;

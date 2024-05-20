@@ -39,7 +39,7 @@
 //|     def __init__(self) -> None:
 //|         """Initialize camera."""
 //|         ...
-STATIC mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     camera_obj_t *self = mp_obj_malloc(camera_obj_t, &camera_type);
     // No arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
@@ -51,14 +51,14 @@ STATIC mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 //|     def deinit(self) -> None:
 //|         """De-initialize camera."""
 //|         ...
-STATIC mp_obj_t camera_obj_deinit(mp_obj_t self_in) {
+static mp_obj_t camera_obj_deinit(mp_obj_t self_in) {
     camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_camera_deinit(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(camera_deinit_obj, camera_obj_deinit);
 
-STATIC void check_for_deinit(camera_obj_t *self) {
+static void check_for_deinit(camera_obj_t *self) {
     if (common_hal_camera_deinited(self)) {
         raise_deinited_error();
     }
@@ -72,7 +72,7 @@ STATIC void check_for_deinit(camera_obj_t *self) {
 //|         :rtype: int"""
 //|         ...
 //|
-STATIC mp_obj_t camera_obj_take_picture(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t camera_obj_take_picture(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_width, ARG_height, ARG_format };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -94,11 +94,11 @@ STATIC mp_obj_t camera_obj_take_picture(size_t n_args, const mp_obj_t *pos_args,
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(camera_take_picture_obj, 1, camera_obj_take_picture);
 
-STATIC const mp_rom_map_elem_t camera_locals_dict_table[] = {
+static const mp_rom_map_elem_t camera_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&camera_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_take_picture), MP_ROM_PTR(&camera_take_picture_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(camera_locals_dict, camera_locals_dict_table);
+static MP_DEFINE_CONST_DICT(camera_locals_dict, camera_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     camera_type,

@@ -47,7 +47,7 @@ static usb_phy_handle_t phy_hdl;
 
 // USB Device Driver task
 // This top level thread process all usb events and invoke callbacks
-STATIC void usb_device_task(void *param) {
+static void usb_device_task(void *param) {
     (void)param;
 
     // RTOS forever loop

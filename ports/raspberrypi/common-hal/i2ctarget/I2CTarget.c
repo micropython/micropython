@@ -16,7 +16,7 @@
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
-STATIC i2c_inst_t *i2c[2] = {i2c0, i2c1};
+static i2c_inst_t *i2c[2] = {i2c0, i2c1};
 
 #define NO_PIN 0xff
 

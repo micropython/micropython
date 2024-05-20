@@ -25,12 +25,12 @@ const mp_obj_module_t samd_clock_module = {
     .globals = (mp_obj_dict_t *)&samd_clock_globals,
 };
 
-STATIC const mp_rom_map_elem_t samd_module_globals_table[] = {
+static const mp_rom_map_elem_t samd_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_samd) },
     { MP_ROM_QSTR(MP_QSTR_clock),  MP_ROM_PTR(&samd_clock_module) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(samd_module_globals, samd_module_globals_table);
+static MP_DEFINE_CONST_DICT(samd_module_globals, samd_module_globals_table);
 
 const mp_obj_module_t samd_module = {
     .base = { &mp_type_module },

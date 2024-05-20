@@ -13,7 +13,7 @@
 #include "bindings/rp2pio/__init__.h"
 #include "bindings/rp2pio/StateMachine.h"
 
-STATIC const uint16_t encoder[] = {
+static const uint16_t encoder[] = {
     //  again:
     //      in pins, 2
     0x4002,
@@ -32,12 +32,12 @@ STATIC const uint16_t encoder[] = {
     0xa041,
 };
 
-STATIC const uint16_t encoder_init[] = {
+static const uint16_t encoder_init[] = {
     //      set y, 31
     0xe05f,
 };
 
-STATIC void incrementalencoder_interrupt_handler(void *self_in);
+static void incrementalencoder_interrupt_handler(void *self_in);
 
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t *self,
     const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b) {
@@ -99,7 +99,7 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     common_hal_rp2pio_statemachine_deinit(&self->state_machine);
 }
 
-STATIC void incrementalencoder_interrupt_handler(void *self_in) {
+static void incrementalencoder_interrupt_handler(void *self_in) {
     rotaryio_incrementalencoder_obj_t *self = self_in;
 
     while (common_hal_rp2pio_statemachine_get_in_waiting(&self->state_machine)) {

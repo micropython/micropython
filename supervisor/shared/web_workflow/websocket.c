@@ -29,10 +29,10 @@ typedef struct {
 
 // Buffer the incoming serial data in the background so that we can look for the
 // interrupt character.
-STATIC ringbuf_t _incoming_ringbuf;
-STATIC uint8_t _buf[16];
+static ringbuf_t _incoming_ringbuf;
+static uint8_t _buf[16];
 // make sure background is not called recursively
-STATIC bool in_web_background = false;
+static bool in_web_background = false;
 
 static _websocket cp_serial;
 

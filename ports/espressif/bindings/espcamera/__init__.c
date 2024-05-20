@@ -45,7 +45,7 @@ MAKE_ENUM_MAP(espcamera_grab_mode) {
     MAKE_ENUM_MAP_ENTRY(grab_mode, LATEST),
 };
 
-STATIC MP_DEFINE_CONST_DICT(espcamera_grab_mode_locals_dict, espcamera_grab_mode_locals_table);
+static MP_DEFINE_CONST_DICT(espcamera_grab_mode_locals_dict, espcamera_grab_mode_locals_table);
 MAKE_PRINTER(espcamera, espcamera_grab_mode);
 MAKE_ENUM_TYPE(espcamera, GrabMode, espcamera_grab_mode);
 
@@ -76,7 +76,7 @@ MAKE_ENUM_MAP(espcamera_pixel_format) {
     MAKE_ENUM_MAP_ENTRY(pixel_format, JPEG),
 };
 
-STATIC MP_DEFINE_CONST_DICT(espcamera_pixel_format_locals_dict, espcamera_pixel_format_locals_table);
+static MP_DEFINE_CONST_DICT(espcamera_pixel_format_locals_dict, espcamera_pixel_format_locals_table);
 MAKE_PRINTER(espcamera, espcamera_pixel_format);
 MAKE_ENUM_TYPE(espcamera, PixelFormat, espcamera_pixel_format);
 
@@ -201,7 +201,7 @@ MAKE_ENUM_MAP(espcamera_frame_size) {
     MAKE_ENUM_MAP_ENTRY(frame_size, QSXGA),
 };
 
-STATIC MP_DEFINE_CONST_DICT(espcamera_frame_size_locals_dict, espcamera_frame_size_locals_table);
+static MP_DEFINE_CONST_DICT(espcamera_frame_size_locals_dict, espcamera_frame_size_locals_table);
 MAKE_PRINTER(espcamera, espcamera_frame_size);
 MAKE_ENUM_TYPE(espcamera, FrameSize, espcamera_frame_size);
 
@@ -241,7 +241,7 @@ MAKE_ENUM_MAP(espcamera_gain_ceiling) {
     MAKE_ENUM_MAP_ENTRY(gain_ceiling, GAIN_128X)
 };
 
-STATIC MP_DEFINE_CONST_DICT(espcamera_gain_ceiling_locals_dict, espcamera_gain_ceiling_locals_table);
+static MP_DEFINE_CONST_DICT(espcamera_gain_ceiling_locals_dict, espcamera_gain_ceiling_locals_table);
 MAKE_PRINTER(espcamera, espcamera_gain_ceiling);
 MAKE_ENUM_TYPE(espcamera, GainCeiling, espcamera_gain_ceiling);
 
@@ -249,7 +249,7 @@ gainceiling_t validate_gain_ceiling(mp_obj_t obj, qstr arg_name) {
     return cp_enum_value(&espcamera_gain_ceiling_type, obj, arg_name);
 }
 
-STATIC const mp_rom_map_elem_t espcamera_module_globals_table[] = {
+static const mp_rom_map_elem_t espcamera_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_espcamera) },
     { MP_ROM_QSTR(MP_QSTR_Camera), MP_ROM_PTR(&espcamera_camera_type), },
     { MP_ROM_QSTR(MP_QSTR_FrameSize), &espcamera_frame_size_type },
@@ -258,7 +258,7 @@ STATIC const mp_rom_map_elem_t espcamera_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PixelFormat), &espcamera_pixel_format_type },
 };
 
-STATIC MP_DEFINE_CONST_DICT(espcamera_module_globals, espcamera_module_globals_table);
+static MP_DEFINE_CONST_DICT(espcamera_module_globals, espcamera_module_globals_table);
 
 const mp_obj_module_t espcamera_module = {
     .base = { &mp_type_module },

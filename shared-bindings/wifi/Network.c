@@ -20,7 +20,7 @@
 
 //|     ssid: str
 //|     """String id of the network"""
-STATIC mp_obj_t wifi_network_get_ssid(mp_obj_t self) {
+static mp_obj_t wifi_network_get_ssid(mp_obj_t self) {
     return common_hal_wifi_network_get_ssid(self);
 
 }
@@ -32,7 +32,7 @@ MP_PROPERTY_GETTER(wifi_network_ssid_obj,
 
 //|     bssid: bytes
 //|     """BSSID of the network (usually the AP's MAC address)"""
-STATIC mp_obj_t wifi_network_get_bssid(mp_obj_t self) {
+static mp_obj_t wifi_network_get_bssid(mp_obj_t self) {
     return common_hal_wifi_network_get_bssid(self);
 
 }
@@ -44,7 +44,7 @@ MP_PROPERTY_GETTER(wifi_network_bssid_obj,
 
 //|     rssi: int
 //|     """Signal strength of the network"""
-STATIC mp_obj_t wifi_network_get_rssi(mp_obj_t self) {
+static mp_obj_t wifi_network_get_rssi(mp_obj_t self) {
     return common_hal_wifi_network_get_rssi(self);
 
 }
@@ -56,7 +56,7 @@ MP_PROPERTY_GETTER(wifi_network_rssi_obj,
 
 //|     channel: int
 //|     """Channel number the network is operating on"""
-STATIC mp_obj_t wifi_network_get_channel(mp_obj_t self) {
+static mp_obj_t wifi_network_get_channel(mp_obj_t self) {
     return common_hal_wifi_network_get_channel(self);
 
 }
@@ -67,7 +67,7 @@ MP_PROPERTY_GETTER(wifi_network_channel_obj,
 
 //|     country: str
 //|     """String id of the country code"""
-STATIC mp_obj_t wifi_network_get_country(mp_obj_t self) {
+static mp_obj_t wifi_network_get_country(mp_obj_t self) {
     return common_hal_wifi_network_get_country(self);
 
 }
@@ -79,7 +79,7 @@ MP_PROPERTY_GETTER(wifi_network_country_obj,
 //|     authmode: str
 //|     """String id of the authmode"""
 //|
-STATIC mp_obj_t wifi_network_get_authmode(mp_obj_t self) {
+static mp_obj_t wifi_network_get_authmode(mp_obj_t self) {
     return common_hal_wifi_network_get_authmode(self);
 
 }
@@ -88,7 +88,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_network_get_authmode_obj, wifi_network_get_authmo
 MP_PROPERTY_GETTER(wifi_network_authmode_obj,
     (mp_obj_t)&wifi_network_get_authmode_obj);
 
-STATIC const mp_rom_map_elem_t wifi_network_locals_dict_table[] = {
+static const mp_rom_map_elem_t wifi_network_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ssid), MP_ROM_PTR(&wifi_network_ssid_obj) },
     { MP_ROM_QSTR(MP_QSTR_bssid), MP_ROM_PTR(&wifi_network_bssid_obj) },
     { MP_ROM_QSTR(MP_QSTR_rssi), MP_ROM_PTR(&wifi_network_rssi_obj) },
@@ -97,7 +97,7 @@ STATIC const mp_rom_map_elem_t wifi_network_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_authmode), MP_ROM_PTR(&wifi_network_authmode_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(wifi_network_locals_dict, wifi_network_locals_dict_table);
+static MP_DEFINE_CONST_DICT(wifi_network_locals_dict, wifi_network_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     wifi_network_type,

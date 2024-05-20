@@ -415,7 +415,7 @@ void tim_clock_disable(uint16_t mask) {
     #endif
 }
 
-STATIC void callback_router(size_t index) {
+static void callback_router(size_t index) {
     if (stm_timer_callback[index - 1]) {
         (*stm_timer_callback[index - 1])();
     }

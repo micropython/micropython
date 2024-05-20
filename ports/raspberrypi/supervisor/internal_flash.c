@@ -34,9 +34,9 @@
 // TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
 #define SECTOR_SIZE 4096
 #define NO_CACHE 0xffffffff
-STATIC uint8_t _cache[SECTOR_SIZE];
-STATIC uint32_t _cache_lba = NO_CACHE;
-STATIC uint32_t _flash_size = 0;
+static uint8_t _cache[SECTOR_SIZE];
+static uint32_t _cache_lba = NO_CACHE;
+static uint32_t _flash_size = 0;
 
 void supervisor_flash_init(void) {
     bi_decl_if_func_used(bi_block_device(

@@ -25,14 +25,14 @@
 #define MAX_SPI_BUSY_RETRIES 100
 
 // arrays use 0 based numbering: SPI1 is stored at index 0
-STATIC bool reserved_spi[MP_ARRAY_SIZE(mcu_spi_banks)];
-STATIC bool never_reset_spi[MP_ARRAY_SIZE(mcu_spi_banks)];
+static bool reserved_spi[MP_ARRAY_SIZE(mcu_spi_banks)];
+static bool never_reset_spi[MP_ARRAY_SIZE(mcu_spi_banks)];
 
 #if IMXRT11XX
-STATIC const clock_ip_name_t s_lpspiClocks[] = LPSPI_CLOCKS;
+static const clock_ip_name_t s_lpspiClocks[] = LPSPI_CLOCKS;
 #endif
 
-STATIC void config_periph_pin(const mcu_periph_obj_t *periph) {
+static void config_periph_pin(const mcu_periph_obj_t *periph) {
     IOMUXC_SetPinMux(
         periph->pin->mux_reg, periph->mux_mode,
         periph->input_reg, periph->input_idx,

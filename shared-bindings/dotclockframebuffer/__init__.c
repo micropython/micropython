@@ -62,7 +62,7 @@
 //|     """
 //|
 
-STATIC mp_obj_t ioexpander_send_init_sequence(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t ioexpander_send_init_sequence(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bus, ARG_init_sequence, ARG_i2c_address, ARG_gpio_address, ARG_gpio_data_len, ARG_gpio_data, ARG_cs_bit, ARG_mosi_bit, ARG_clk_bit, ARG_reset_bit, ARG_i2c_init_sequence, NUM_ARGS };
 
     static const mp_arg_t allowed_args[] = {
@@ -130,15 +130,15 @@ STATIC mp_obj_t ioexpander_send_init_sequence(size_t n_args, const mp_obj_t *pos
     return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ioexpander_send_init_sequence_obj, 0, ioexpander_send_init_sequence);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ioexpander_send_init_sequence_obj, 0, ioexpander_send_init_sequence);
 
-STATIC const mp_rom_map_elem_t dotclockframebuffer_module_globals_table[] = {
+static const mp_rom_map_elem_t dotclockframebuffer_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_dotclockframebuffer) },
     { MP_ROM_QSTR(MP_QSTR_DotClockFramebuffer), MP_ROM_PTR(&dotclockframebuffer_framebuffer_type) },
     { MP_ROM_QSTR(MP_QSTR_ioexpander_send_init_sequence), MP_ROM_PTR(&ioexpander_send_init_sequence_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(dotclockframebuffer_module_globals, dotclockframebuffer_module_globals_table);
+static MP_DEFINE_CONST_DICT(dotclockframebuffer_module_globals, dotclockframebuffer_module_globals_table);
 
 const mp_obj_module_t dotclockframebuffer_module = {
     .base = { &mp_type_module },

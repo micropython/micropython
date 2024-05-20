@@ -14,7 +14,7 @@
 #include "common-hal/_bleio/Adapter.h"
 #include "common-hal/_bleio/bonding.h"
 
-STATIC uint16_t characteristic_get_cccd(uint16_t cccd_handle, uint16_t conn_handle) {
+static uint16_t characteristic_get_cccd(uint16_t cccd_handle, uint16_t conn_handle) {
     uint16_t cccd;
     ble_gatts_value_t value = {
         .p_value = (uint8_t *)&cccd,
@@ -34,7 +34,7 @@ STATIC uint16_t characteristic_get_cccd(uint16_t cccd_handle, uint16_t conn_hand
 }
 
 
-STATIC void characteristic_gatts_notify_indicate(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo, uint16_t hvx_type) {
+static void characteristic_gatts_notify_indicate(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo, uint16_t hvx_type) {
     uint16_t hvx_len = bufinfo->len;
 
     ble_gatts_hvx_params_t hvx_params = {

@@ -20,14 +20,14 @@ typedef struct {
     int fd;
 } camera_dev_t;
 
-STATIC camera_dev_t camera_dev = {"/dev/video", -1};
+static camera_dev_t camera_dev = {"/dev/video", -1};
 
 typedef struct {
     uint16_t width;
     uint16_t height;
 } image_size_t;
 
-STATIC const image_size_t isx012_image_size_table[] = {
+static const image_size_t isx012_image_size_table[] = {
     { VIDEO_HSIZE_QVGA, VIDEO_VSIZE_QVGA },
     { VIDEO_HSIZE_VGA, VIDEO_VSIZE_VGA },
     { VIDEO_HSIZE_HD, VIDEO_VSIZE_HD },
@@ -37,7 +37,7 @@ STATIC const image_size_t isx012_image_size_table[] = {
     { VIDEO_HSIZE_5M, VIDEO_VSIZE_5M },
 };
 
-STATIC const image_size_t isx019_image_size_table[] = {
+static const image_size_t isx019_image_size_table[] = {
     { VIDEO_HSIZE_QVGA, VIDEO_VSIZE_QVGA },
     { VIDEO_HSIZE_VGA, VIDEO_VSIZE_VGA },
     { VIDEO_HSIZE_HD, VIDEO_VSIZE_HD },

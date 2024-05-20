@@ -55,7 +55,7 @@ MAKE_ENUM_MAP(mcu_reset_reason) {
     MAKE_ENUM_MAP_ENTRY(reset_reason, UNKNOWN),
     MAKE_ENUM_MAP_ENTRY(reset_reason, RESCUE_DEBUG),
 };
-STATIC MP_DEFINE_CONST_DICT(mcu_reset_reason_locals_dict, mcu_reset_reason_locals_table);
+static MP_DEFINE_CONST_DICT(mcu_reset_reason_locals_dict, mcu_reset_reason_locals_table);
 
 MAKE_PRINTER(microcontroller, mcu_reset_reason);
 

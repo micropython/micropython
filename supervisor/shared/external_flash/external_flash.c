@@ -25,7 +25,7 @@
 // The currently cached sector in the cache, ram or flash based.
 static uint32_t current_sector;
 
-STATIC const external_flash_device possible_devices[] = {EXTERNAL_FLASH_DEVICES};
+static const external_flash_device possible_devices[] = {EXTERNAL_FLASH_DEVICES};
 #define EXTERNAL_FLASH_DEVICE_COUNT MP_ARRAY_SIZE(possible_devices)
 
 static const external_flash_device *flash_device = NULL;

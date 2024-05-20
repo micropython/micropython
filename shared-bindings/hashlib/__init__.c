@@ -25,7 +25,7 @@
 //|     :rtype: hashlib.Hash"""
 //|     ...
 //|
-STATIC mp_obj_t hashlib_new(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t hashlib_new(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_name, ARG_data };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_name, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -47,9 +47,9 @@ STATIC mp_obj_t hashlib_new(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     }
     return self;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(hashlib_new_obj, 1, hashlib_new);
+static MP_DEFINE_CONST_FUN_OBJ_KW(hashlib_new_obj, 1, hashlib_new);
 
-STATIC const mp_rom_map_elem_t hashlib_module_globals_table[] = {
+static const mp_rom_map_elem_t hashlib_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_hashlib) },
 
     { MP_ROM_QSTR(MP_QSTR_new), MP_ROM_PTR(&hashlib_new_obj) },
@@ -58,7 +58,7 @@ STATIC const mp_rom_map_elem_t hashlib_module_globals_table[] = {
     // object on `hashlib` only the internal `_hashlib`.
 };
 
-STATIC MP_DEFINE_CONST_DICT(hashlib_module_globals, hashlib_module_globals_table);
+static MP_DEFINE_CONST_DICT(hashlib_module_globals, hashlib_module_globals_table);
 
 const mp_obj_module_t hashlib_module = {
     .base = { &mp_type_module },

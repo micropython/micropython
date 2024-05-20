@@ -33,25 +33,25 @@
 //|     `random` will return deterministic results afterwards."""
 //|     ...
 //|
-STATIC mp_obj_t random_seed(mp_obj_t seed_in) {
+static mp_obj_t random_seed(mp_obj_t seed_in) {
     mp_uint_t seed = mp_obj_get_int_truncated(seed_in);
     shared_modules_random_seed(seed);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(random_seed_obj, random_seed);
+static MP_DEFINE_CONST_FUN_OBJ_1(random_seed_obj, random_seed);
 
 //| def getrandbits(k: int) -> int:
 //|     """Returns an integer with *k* random bits."""
 //|     ...
 //|
-STATIC mp_obj_t random_getrandbits(mp_obj_t num_in) {
+static mp_obj_t random_getrandbits(mp_obj_t num_in) {
     mp_int_t n = mp_obj_get_int(num_in);
     if (n > 32 || n < 0) {
         mp_raise_ValueError(NULL);
     }
     return mp_obj_new_int_from_uint(shared_modules_random_getrandbits((uint8_t)n));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(random_getrandbits_obj, random_getrandbits);
+static MP_DEFINE_CONST_FUN_OBJ_1(random_getrandbits_obj, random_getrandbits);
 
 //| @overload
 //| def randrange(stop: int) -> int: ...
@@ -62,7 +62,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(random_getrandbits_obj, random_getrandbits);
 //|     """Returns a randomly selected integer from ``range(start[, stop[, step]])``."""
 //|     ...
 //|
-STATIC mp_obj_t random_randrange(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t random_randrange(size_t n_args, const mp_obj_t *args) {
     mp_int_t start = 0;
     mp_int_t stop = mp_obj_get_int(args[0]);
     mp_int_t step = 1;
@@ -98,14 +98,14 @@ STATIC mp_obj_t random_randrange(size_t n_args, const mp_obj_t *args) {
 
     return mp_obj_new_int(shared_modules_random_randrange(start, stop, step));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(random_randrange_obj, 1, 3, random_randrange);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(random_randrange_obj, 1, 3, random_randrange);
 
 //| def randint(a: int, b: int) -> int:
 //|     """Returns a randomly selected integer between a and b inclusive. Equivalent
 //|     to ``randrange(a, b + 1, 1)``"""
 //|     ...
 //|
-STATIC mp_obj_t random_randint(mp_obj_t a_in, mp_obj_t b_in) {
+static mp_obj_t random_randint(mp_obj_t a_in, mp_obj_t b_in) {
     mp_int_t a = mp_obj_get_int(a_in);
     mp_int_t b = mp_obj_get_int(b_in);
     if (a > b) {
@@ -113,44 +113,44 @@ STATIC mp_obj_t random_randint(mp_obj_t a_in, mp_obj_t b_in) {
     }
     return mp_obj_new_int(shared_modules_random_randrange(a, b + 1, 1));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(random_randint_obj, random_randint);
+static MP_DEFINE_CONST_FUN_OBJ_2(random_randint_obj, random_randint);
 
 //| def choice(seq: Sequence[_T]) -> _T:
 //|     """Returns a randomly selected element from the given sequence. Raises
 //|     IndexError when the sequence is empty."""
 //|     ...
 //|
-STATIC mp_obj_t random_choice(mp_obj_t seq) {
+static mp_obj_t random_choice(mp_obj_t seq) {
     mp_int_t len = mp_obj_get_int(mp_obj_len(seq));
     if (len == 0) {
         mp_raise_IndexError(MP_ERROR_TEXT("empty sequence"));
     }
     return mp_obj_subscr(seq, mp_obj_new_int(shared_modules_random_randrange(0, len, 1)), MP_OBJ_SENTINEL);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(random_choice_obj, random_choice);
+static MP_DEFINE_CONST_FUN_OBJ_1(random_choice_obj, random_choice);
 
 //| def random() -> float:
 //|     """Returns a random float between 0 and 1.0."""
 //|     ...
 //|
-STATIC mp_obj_t random_random(void) {
+static mp_obj_t random_random(void) {
     return mp_obj_new_float(shared_modules_random_random());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(random_random_obj, random_random);
+static MP_DEFINE_CONST_FUN_OBJ_0(random_random_obj, random_random);
 
 //| def uniform(a: float, b: float) -> float:
 //|     """Returns a random float between a and b. It may or may not be inclusive
 //|     depending on float rounding."""
 //|     ...
 //|
-STATIC mp_obj_t random_uniform(mp_obj_t a_in, mp_obj_t b_in) {
+static mp_obj_t random_uniform(mp_obj_t a_in, mp_obj_t b_in) {
     mp_float_t a = mp_obj_get_float(a_in);
     mp_float_t b = mp_obj_get_float(b_in);
     return mp_obj_new_float(shared_modules_random_uniform(a, b));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(random_uniform_obj, random_uniform);
+static MP_DEFINE_CONST_FUN_OBJ_2(random_uniform_obj, random_uniform);
 
-STATIC const mp_rom_map_elem_t mp_module_random_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_random_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_random) },
     { MP_ROM_QSTR(MP_QSTR_seed), MP_ROM_PTR(&random_seed_obj) },
     { MP_ROM_QSTR(MP_QSTR_getrandbits), MP_ROM_PTR(&random_getrandbits_obj) },
@@ -161,7 +161,7 @@ STATIC const mp_rom_map_elem_t mp_module_random_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_uniform), MP_ROM_PTR(&random_uniform_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_random_globals, mp_module_random_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_random_globals, mp_module_random_globals_table);
 
 const mp_obj_module_t random_module = {
     .base = { &mp_type_module },

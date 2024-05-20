@@ -40,7 +40,7 @@
 //|         :param bool jdi_display: When True, work with an 8-color JDI display. Otherwise, a monochrome Sharp display.
 //|         """
 //|         ...
-STATIC mp_obj_t sharpdisplay_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t sharpdisplay_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_spi_bus, ARG_chip_select, ARG_width, ARG_height, ARG_baudrate, ARG_jdi_display, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi_bus, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
@@ -67,7 +67,7 @@ STATIC mp_obj_t sharpdisplay_framebuffer_make_new(const mp_obj_type_t *type, siz
 }
 
 
-STATIC mp_int_t sharpdisplay_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+static mp_int_t sharpdisplay_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     sharpdisplay_framebuffer_obj_t *self = (sharpdisplay_framebuffer_obj_t *)self_in;
     // a readonly framebuffer would be unusual but not impossible
     if ((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
@@ -83,18 +83,18 @@ STATIC mp_int_t sharpdisplay_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_
 //|         may be performed."""
 //|         ...
 //|
-STATIC mp_obj_t sharpdisplay_framebuffer_deinit(mp_obj_t self_in) {
+static mp_obj_t sharpdisplay_framebuffer_deinit(mp_obj_t self_in) {
     sharpdisplay_framebuffer_obj_t *self = (sharpdisplay_framebuffer_obj_t *)self_in;
     common_hal_sharpdisplay_framebuffer_deinit(self);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(sharpdisplay_framebuffer_deinit_obj, sharpdisplay_framebuffer_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(sharpdisplay_framebuffer_deinit_obj, sharpdisplay_framebuffer_deinit);
 
-STATIC const mp_rom_map_elem_t sharpdisplay_framebuffer_locals_dict_table[] = {
+static const mp_rom_map_elem_t sharpdisplay_framebuffer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&sharpdisplay_framebuffer_deinit_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(sharpdisplay_framebuffer_locals_dict, sharpdisplay_framebuffer_locals_dict_table);
+static MP_DEFINE_CONST_DICT(sharpdisplay_framebuffer_locals_dict, sharpdisplay_framebuffer_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     sharpdisplay_framebuffer_type,

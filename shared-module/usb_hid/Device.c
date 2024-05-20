@@ -146,7 +146,7 @@ const usb_hid_device_obj_t usb_hid_device_consumer_control_obj = {
 
 char *custom_usb_hid_interface_name;
 
-STATIC size_t get_report_id_idx(usb_hid_device_obj_t *self, size_t report_id) {
+static size_t get_report_id_idx(usb_hid_device_obj_t *self, size_t report_id) {
     for (size_t i = 0; i < self->num_report_ids; i++) {
         if (report_id == self->report_ids[i]) {
             return i;

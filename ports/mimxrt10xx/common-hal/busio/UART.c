@@ -32,8 +32,8 @@
 
 
 // arrays use 0 based numbering: UART1 is stored at index 0
-STATIC bool reserved_uart[MP_ARRAY_SIZE(mcu_uart_banks)];
-STATIC bool never_reset_uart[MP_ARRAY_SIZE(mcu_uart_banks)];
+static bool reserved_uart[MP_ARRAY_SIZE(mcu_uart_banks)];
+static bool never_reset_uart[MP_ARRAY_SIZE(mcu_uart_banks)];
 
 #if IMXRT11XX
 #define UART_CLOCK_FREQ (24000000)

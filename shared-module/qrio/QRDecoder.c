@@ -42,7 +42,7 @@ void shared_module_qrio_qrdecoder_set_width(qrdecoder_qrdecoder_obj_t *self, int
     }
 }
 
-STATIC mp_obj_t data_type(int type) {
+static mp_obj_t data_type(int type) {
     switch (type) {
         case QUIRC_ECI_ISO_8859_1:
             return MP_OBJ_NEW_QSTR(MP_QSTR_iso_8859_hyphen_1);
@@ -78,7 +78,7 @@ STATIC mp_obj_t data_type(int type) {
     return mp_obj_new_int(type);
 }
 
-STATIC void quirc_fill_buffer(qrdecoder_qrdecoder_obj_t *self, void *buf, qrio_pixel_policy_t policy) {
+static void quirc_fill_buffer(qrdecoder_qrdecoder_obj_t *self, void *buf, qrio_pixel_policy_t policy) {
     int width, height;
     uint8_t *framebuffer = quirc_begin(self->quirc, &width, &height);
     uint8_t *src = buf;

@@ -83,7 +83,7 @@
 //|         """
 //|         ...
 
-STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
     keypad_shiftregisterkeys_obj_t *self =
         mp_obj_malloc(keypad_shiftregisterkeys_obj_t, &keypad_shiftregisterkeys_type);
@@ -170,7 +170,7 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
 //|     def deinit(self) -> None:
 //|         """Stop scanning and release the pins."""
 //|         ...
-STATIC mp_obj_t keypad_shiftregisterkeys_deinit(mp_obj_t self_in) {
+static mp_obj_t keypad_shiftregisterkeys_deinit(mp_obj_t self_in) {
     keypad_shiftregisterkeys_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     common_hal_keypad_shiftregisterkeys_deinit(self);
@@ -187,12 +187,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_shiftregisterkeys_deinit_obj, keypad_shiftregis
 //|         """Automatically deinitializes when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t keypad_shiftregisterkeys___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t keypad_shiftregisterkeys___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_keypad_shiftregisterkeys_deinit(args[0]);
     return MP_ROM_NONE;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_shiftregisterkeys___exit___obj, 4, 4, keypad_shiftregisterkeys___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_shiftregisterkeys___exit___obj, 4, 4, keypad_shiftregisterkeys___exit__);
 
 //|     def reset(self) -> None:
 //|         """Reset the internal state of the scanner to assume that all keys are now released.
@@ -210,7 +210,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_shiftregisterkeys___exit___obj
 //|     """
 //|
 
-STATIC const mp_rom_map_elem_t keypad_shiftregisterkeys_locals_dict_table[] = {
+static const mp_rom_map_elem_t keypad_shiftregisterkeys_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),       MP_ROM_PTR(&keypad_shiftregisterkeys_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__),    MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),     MP_ROM_PTR(&keypad_shiftregisterkeys___exit___obj) },
@@ -220,7 +220,7 @@ STATIC const mp_rom_map_elem_t keypad_shiftregisterkeys_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reset),        MP_ROM_PTR(&keypad_generic_reset_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(keypad_shiftregisterkeys_locals_dict, keypad_shiftregisterkeys_locals_dict_table);
+static MP_DEFINE_CONST_DICT(keypad_shiftregisterkeys_locals_dict, keypad_shiftregisterkeys_locals_dict_table);
 #endif
 
 MP_DEFINE_CONST_OBJ_TYPE(

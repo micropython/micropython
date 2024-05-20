@@ -13,12 +13,12 @@
 
 //| """Low-level routines for interacting with PicoDVI Output"""
 
-STATIC const mp_rom_map_elem_t picodvi_module_globals_table[] = {
+static const mp_rom_map_elem_t picodvi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_picodvi) },
     { MP_ROM_QSTR(MP_QSTR_Framebuffer), MP_ROM_PTR(&picodvi_framebuffer_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(picodvi_module_globals, picodvi_module_globals_table);
+static MP_DEFINE_CONST_DICT(picodvi_module_globals, picodvi_module_globals_table);
 
 const mp_obj_module_t picodvi_module = {
     .base = { &mp_type_module },

@@ -30,13 +30,13 @@ const digitalio_drive_mode_obj_t digitalio_drive_mode_open_drain_obj = {
     { &digitalio_drive_mode_type },
 };
 
-STATIC const mp_rom_map_elem_t digitalio_drive_mode_locals_dict_table[] = {
+static const mp_rom_map_elem_t digitalio_drive_mode_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PUSH_PULL),    MP_ROM_PTR(&digitalio_drive_mode_push_pull_obj) },
     { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN),   MP_ROM_PTR(&digitalio_drive_mode_open_drain_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(digitalio_drive_mode_locals_dict, digitalio_drive_mode_locals_dict_table);
+static MP_DEFINE_CONST_DICT(digitalio_drive_mode_locals_dict, digitalio_drive_mode_locals_dict_table);
 
-STATIC void digitalio_drive_mode_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void digitalio_drive_mode_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     qstr drive_mode = MP_QSTR_PUSH_PULL;
     if (self_in == MP_ROM_PTR(&digitalio_drive_mode_open_drain_obj)) {
         drive_mode = MP_QSTR_OPEN_DRAIN;

@@ -59,7 +59,7 @@
 //|         ``start + length``. An exception will be raised if any of the
 //|         addresses are invalid or protected."""
 //|         ...
-STATIC mp_obj_t memorymap_addressrange_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t memorymap_addressrange_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_start, ARG_length };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_start, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -97,7 +97,7 @@ STATIC mp_obj_t memorymap_addressrange_make_new(const mp_obj_type_t *type, size_
 //|     def __len__(self) -> int:
 //|         """Return the length. This is used by (`len`)"""
 //|         ...
-STATIC mp_obj_t memorymap_addressrange_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+static mp_obj_t memorymap_addressrange_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     memorymap_addressrange_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint16_t len = common_hal_memorymap_addressrange_get_length(self);
     switch (op) {
@@ -110,10 +110,10 @@ STATIC mp_obj_t memorymap_addressrange_unary_op(mp_unary_op_t op, mp_obj_t self_
     }
 }
 
-STATIC const mp_rom_map_elem_t memorymap_addressrange_locals_dict_table[] = {
+static const mp_rom_map_elem_t memorymap_addressrange_locals_dict_table[] = {
 };
 
-STATIC MP_DEFINE_CONST_DICT(memorymap_addressrange_locals_dict, memorymap_addressrange_locals_dict_table);
+static MP_DEFINE_CONST_DICT(memorymap_addressrange_locals_dict, memorymap_addressrange_locals_dict_table);
 
 //|     @overload
 //|     def __getitem__(self, index: slice) -> bytearray: ...
@@ -137,7 +137,7 @@ STATIC MP_DEFINE_CONST_DICT(memorymap_addressrange_locals_dict, memorymap_addres
 //|         All others may use multiple transactions."""
 //|         ...
 //|
-STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+static mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete item
         // slice deletion

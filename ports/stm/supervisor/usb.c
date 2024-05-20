@@ -13,7 +13,7 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-STATIC void init_usb_vbus_sense(void) {
+static void init_usb_vbus_sense(void) {
 
     #if (BOARD_NO_VBUS_SENSE)
     // Disable VBUS sensing

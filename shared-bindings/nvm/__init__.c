@@ -19,12 +19,12 @@
 //| Note that this module can't be imported and used directly. The sole
 //| instance of :class:`ByteArray` is available at
 //| :attr:`microcontroller.nvm`."""
-STATIC const mp_rom_map_elem_t nvm_module_globals_table[] = {
+static const mp_rom_map_elem_t nvm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_nvm) },
     { MP_ROM_QSTR(MP_QSTR_ByteArray),   MP_ROM_PTR(&nvm_bytearray_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(nvm_module_globals, nvm_module_globals_table);
+static MP_DEFINE_CONST_DICT(nvm_module_globals, nvm_module_globals_table);
 
 const mp_obj_module_t nvm_module = {
     .base = { &mp_type_module },

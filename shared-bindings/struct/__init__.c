@@ -33,7 +33,7 @@
 //|     ...
 //|
 
-STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
+static mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
 
     return MP_OBJ_NEW_SMALL_INT(shared_modules_struct_calcsize(fmt_in));
 }
@@ -45,7 +45,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(struct_calcsize_obj, struct_calcsize);
 //|     ...
 //|
 
-STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
     vstr_t vstr;
     vstr_init_len(&vstr, size);
@@ -63,7 +63,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, str
 //|     ...
 //|
 
-STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
     mp_int_t offset = mp_obj_get_int(args[2]);
@@ -90,7 +90,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_into_obj, 3, MP_OBJ_FUN_ARGS_MAX
 //|     ...
 //|
 
-STATIC mp_obj_t struct_unpack(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t struct_unpack(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
     byte *p = bufinfo.buf;
@@ -109,7 +109,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_obj, 2, 3, struct_unpack);
 //|     ...
 //|
 
-STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_format, ARG_buffer, ARG_offset };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_format, MP_ARG_REQUIRED | MP_ARG_OBJ, {} },
@@ -141,7 +141,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(struct_unpack_from_obj, 0, struct_unpack_from);
 
-STATIC const mp_rom_map_elem_t mp_module_struct_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_struct_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_struct) },
     { MP_ROM_QSTR(MP_QSTR_calcsize), MP_ROM_PTR(&struct_calcsize_obj) },
     { MP_ROM_QSTR(MP_QSTR_pack), MP_ROM_PTR(&struct_pack_obj) },
@@ -150,7 +150,7 @@ STATIC const mp_rom_map_elem_t mp_module_struct_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_unpack_from), MP_ROM_PTR(&struct_unpack_from_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_struct_globals, mp_module_struct_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_struct_globals, mp_module_struct_globals_table);
 
 const mp_obj_module_t struct_module = {
     .base = { &mp_type_module },

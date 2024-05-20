@@ -17,14 +17,14 @@
 
 #if BCM_VERSION == 2711
 #define NUM_I2C (8)
-STATIC BSC0_Type *i2c[NUM_I2C] = {BSC0, BSC1, NULL, BSC3, BSC4, BSC5, BSC6, NULL};
+static BSC0_Type *i2c[NUM_I2C] = {BSC0, BSC1, NULL, BSC3, BSC4, BSC5, BSC6, NULL};
 #else
 #define NUM_I2C (3)
-STATIC BSC0_Type *i2c[NUM_I2C] = {BSC0, BSC1, NULL};
+static BSC0_Type *i2c[NUM_I2C] = {BSC0, BSC1, NULL};
 #endif
 
-STATIC bool never_reset_i2c[NUM_I2C];
-STATIC bool i2c_in_use[NUM_I2C];
+static bool never_reset_i2c[NUM_I2C];
+static bool i2c_in_use[NUM_I2C];
 
 void reset_i2c(void) {
     // BSC2 is dedicated to the first HDMI output.
@@ -127,7 +127,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 
 // Discussion of I2C implementation is here: https://github.com/raspberrypi/linux/issues/254
 
-STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
+static uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
     const uint8_t *data, size_t len, bool transmit_stop_bit) {
     COMPLETE_MEMORY_READS;
     self->peripheral->S_b.DONE = true;

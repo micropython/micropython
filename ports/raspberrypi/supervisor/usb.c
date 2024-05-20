@@ -14,7 +14,7 @@
 void init_usb_hardware(void) {
 }
 
-STATIC void _usb_irq_wrapper(void) {
+static void _usb_irq_wrapper(void) {
     usb_irq_handler(0);
 }
 

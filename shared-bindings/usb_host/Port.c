@@ -28,7 +28,7 @@
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t usb_host_port_make_new(const mp_obj_type_t *type,
+static mp_obj_t usb_host_port_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
@@ -44,10 +44,10 @@ STATIC mp_obj_t usb_host_port_make_new(const mp_obj_type_t *type,
     return (mp_obj_t)self;
 }
 
-STATIC const mp_rom_map_elem_t usb_host_port_locals_dict_table[] = {
+static const mp_rom_map_elem_t usb_host_port_locals_dict_table[] = {
 };
 
-STATIC MP_DEFINE_CONST_DICT(usb_host_port_locals_dict, usb_host_port_locals_dict_table);
+static MP_DEFINE_CONST_DICT(usb_host_port_locals_dict, usb_host_port_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     usb_host_port_type,

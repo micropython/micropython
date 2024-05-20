@@ -27,12 +27,12 @@
 //| <https://learn.adafruit.com/circuitpython-advanced-analog-inputs-and-outputs>`_
 //| """
 
-STATIC const mp_rom_map_elem_t analogbufio_module_globals_table[] = {
+static const mp_rom_map_elem_t analogbufio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_analogbufio) },
     { MP_ROM_QSTR(MP_QSTR_BufferedIn),   MP_ROM_PTR(&analogbufio_bufferedin_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(analogbufio_module_globals, analogbufio_module_globals_table);
+static MP_DEFINE_CONST_DICT(analogbufio_module_globals, analogbufio_module_globals_table);
 
 const mp_obj_module_t analogbufio_module = {
     .base = { &mp_type_module },

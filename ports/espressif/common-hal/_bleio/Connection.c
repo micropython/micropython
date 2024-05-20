@@ -134,10 +134,10 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
     // TODO: Implement this.
 }
 
-STATIC volatile int _last_discovery_status;
+static volatile int _last_discovery_status;
 static TaskHandle_t discovery_task = NULL;
 
-STATIC int _discovered_service_cb(uint16_t conn_handle,
+static int _discovered_service_cb(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     const struct ble_gatt_svc *svc,
     void *arg) {
@@ -177,7 +177,7 @@ STATIC int _discovered_service_cb(uint16_t conn_handle,
     return 0;
 }
 
-STATIC int _discovered_characteristic_cb(uint16_t conn_handle,
+static int _discovered_characteristic_cb(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     const struct ble_gatt_chr *chr,
     void *arg) {
@@ -231,7 +231,7 @@ STATIC int _discovered_characteristic_cb(uint16_t conn_handle,
     return 0;
 }
 
-STATIC int _discovered_descriptor_cb(uint16_t conn_handle,
+static int _discovered_descriptor_cb(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     uint16_t chr_val_handle,
     const struct ble_gatt_dsc *dsc,
@@ -286,7 +286,7 @@ STATIC int _discovered_descriptor_cb(uint16_t conn_handle,
     return 0;
 }
 
-STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t service_uuids_whitelist) {
+static void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t service_uuids_whitelist) {
     // Start over with an empty list.
     self->remote_service_list = mp_obj_new_list(0, NULL);
 

@@ -18,9 +18,9 @@
 
 #define USB_SERIAL_JTAG_BUF_SIZE (64)
 
-STATIC ringbuf_t ringbuf;
-STATIC uint8_t buf[128];
-STATIC volatile bool connected;
+static ringbuf_t ringbuf;
+static uint8_t buf[128];
+static volatile bool connected;
 
 #if CIRCUITPY_ESP_USB_SERIAL_JTAG && defined(SOC_WIFI_PHY_NEEDS_USB_WORKAROUND) && !defined(CONFIG_ESP_PHY_ENABLE_USB)
 #error "CONFIG_ESP_PHY_ENABLE_USB must be enabled in sdkconfig"

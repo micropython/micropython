@@ -15,10 +15,10 @@
 #include "hardware/gpio.h"
 #include "hardware/rtc.h"
 
-STATIC bool woke_up = false;
-STATIC bool _timealarm_set = false;
+static bool woke_up = false;
+static bool _timealarm_set = false;
 
-STATIC void timer_callback(void) {
+static void timer_callback(void) {
     woke_up = true;
 }
 

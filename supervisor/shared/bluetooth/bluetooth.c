@@ -65,22 +65,22 @@ const uint8_t private_advertising_data[] = { 0x02, 0x01, 0x06, // 0-2 Flags
 uint8_t circuitpython_scan_response_data[31];
 
 #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
-STATIC bool boot_in_discovery_mode = false;
-STATIC bool advertising = false;
-STATIC bool _private_advertising = false;
-STATIC bool ble_started = false;
+static bool boot_in_discovery_mode = false;
+static bool advertising = false;
+static bool _private_advertising = false;
+static bool ble_started = false;
 
 #define WORKFLOW_UNSET 0
 #define WORKFLOW_ENABLED 1
 #define WORKFLOW_DISABLED 2
 
-STATIC uint8_t workflow_state = WORKFLOW_UNSET;
-STATIC bool was_connected = false;
+static uint8_t workflow_state = WORKFLOW_UNSET;
+static bool was_connected = false;
 
 #if CIRCUITPY_STATUS_BAR
 // To detect when the title bar changes.
-STATIC bool _last_connected = false;
-STATIC bool _last_advertising = false;
+static bool _last_connected = false;
+static bool _last_advertising = false;
 #endif
 
 #if CIRCUITPY_STATUS_BAR
@@ -113,7 +113,7 @@ void supervisor_bluetooth_status(void) {
 }
 #endif
 
-STATIC void supervisor_bluetooth_start_advertising(void) {
+static void supervisor_bluetooth_start_advertising(void) {
     if (workflow_state != WORKFLOW_ENABLED) {
         return;
     }

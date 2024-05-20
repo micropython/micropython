@@ -9,7 +9,7 @@
 
 #include "py/mphal.h"
 
-STATIC uint8_t claimed_pins[1];
+static uint8_t claimed_pins[1];
 
 // Mark pin as free and return it to a quiescent state.
 void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {

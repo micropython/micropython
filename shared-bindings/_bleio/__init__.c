@@ -80,19 +80,19 @@ NORETURN void mp_raise_bleio_SecurityError(mp_rom_error_text_t fmt, ...) {
 }
 
 // Called when _bleio is imported.
-STATIC mp_obj_t bleio___init__(void) {
+static mp_obj_t bleio___init__(void) {
 // HCI cannot be enabled on import, because we need to setup the HCI adapter first.
     #if !CIRCUITPY_BLEIO_HCI
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
     #endif
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(bleio___init___obj, bleio___init__);
+static MP_DEFINE_CONST_FUN_OBJ_0(bleio___init___obj, bleio___init__);
 
 
 // Need a forward reference due to mutual references.
 #if CIRCUITPY_BLEIO_HCI
-STATIC mp_obj_dict_t bleio_module_globals;
+static mp_obj_dict_t bleio_module_globals;
 #endif
 
 //| def set_adapter(adapter: Optional[_bleio.Adapter]) -> None:
@@ -121,10 +121,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_set_adapter_obj, bleio_set_adapter);
 // Make the module dictionary be in RAM, so that _bleio.adapter can be set.
 // Use a local macro to define how table entries should be converted.
 #define OBJ_FROM_PTR MP_OBJ_FROM_PTR
-STATIC mp_map_elem_t bleio_module_globals_table[] = {
+static mp_map_elem_t bleio_module_globals_table[] = {
 #else
 #define OBJ_FROM_PTR MP_ROM_PTR
-STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
+static const mp_rom_map_elem_t bleio_module_globals_table[] = {
     #endif
     // Name must be the first entry so that the exception printing below is correct.
     { MP_ROM_QSTR(MP_QSTR___name__),             MP_ROM_QSTR(MP_QSTR__bleio) },
@@ -163,9 +163,9 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
 
 #if CIRCUITPY_BLEIO_HCI
 // Module dict is mutable to allow setting _bleio.adapter.
-STATIC MP_DEFINE_MUTABLE_DICT(bleio_module_globals, bleio_module_globals_table);
+static MP_DEFINE_MUTABLE_DICT(bleio_module_globals, bleio_module_globals_table);
 #else
-STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);
+static MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);
 #endif
 
 void bleio_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {

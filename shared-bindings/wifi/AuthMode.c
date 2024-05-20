@@ -49,7 +49,7 @@ MAKE_ENUM_MAP(wifi_authmode) {
     MAKE_ENUM_MAP_ENTRY(authmode, PSK),
     MAKE_ENUM_MAP_ENTRY(authmode, ENTERPRISE),
 };
-STATIC MP_DEFINE_CONST_DICT(wifi_authmode_locals_dict, wifi_authmode_locals_table);
+static MP_DEFINE_CONST_DICT(wifi_authmode_locals_dict, wifi_authmode_locals_table);
 
 MAKE_PRINTER(wifi, wifi_authmode);
 

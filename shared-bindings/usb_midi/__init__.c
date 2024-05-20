@@ -30,7 +30,7 @@
 //|     Can be called in ``boot.py``, before USB is connected."""
 //|     ...
 //|
-STATIC mp_obj_t usb_midi_disable(void) {
+static mp_obj_t usb_midi_disable(void) {
     if (!common_hal_usb_midi_disable()) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
@@ -50,7 +50,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_midi_disable_obj, usb_midi_disable);
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t usb_midi_enable(void) {
+static mp_obj_t usb_midi_enable(void) {
     if (!common_hal_usb_midi_enable()) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
@@ -96,7 +96,7 @@ static void set_name(mp_obj_t name_obj, qstr arg_name_qstr, char **custom_name_p
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t usb_midi_set_names(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t usb_midi_set_names(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_streaming_interface_name, ARG_audio_control_interface_name, ARG_in_jack_name, ARG_out_jack_name };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_streaming_interface_name,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },

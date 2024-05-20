@@ -20,7 +20,7 @@
 //|         :param ULP ulp: The ulp instance"""
 //|         ...
 //|
-STATIC mp_obj_t espulp_ulpalarm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t espulp_ulpalarm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_ulp };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ulp, MP_ARG_REQUIRED | MP_ARG_OBJ },

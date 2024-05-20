@@ -26,8 +26,8 @@ GPIO_TypeDef *ports[] = {GPIOA, GPIOB, GPIOC};
 
 #define GPIO_PORT_COUNT (MP_ARRAY_SIZE(ports))
 
-STATIC uint16_t claimed_pins[GPIO_PORT_COUNT];
-STATIC uint16_t __ALIGNED(4) never_reset_pins[GPIO_PORT_COUNT];
+static uint16_t claimed_pins[GPIO_PORT_COUNT];
+static uint16_t __ALIGNED(4) never_reset_pins[GPIO_PORT_COUNT];
 
 void reset_all_pins(void) {
     // Reset claimed pins

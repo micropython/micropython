@@ -31,7 +31,7 @@
 //|         :param microcontroller.Pin irq: Interrupt pin
 //|         :param int baudrate: Maximum baudrate to talk to the Max chip in Hz"""
 //|         ...
-STATIC mp_obj_t max3421e_max3421e_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t max3421e_max3421e_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_spi_bus, ARG_chip_select, ARG_irq, ARG_baudrate };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -58,7 +58,7 @@ STATIC mp_obj_t max3421e_max3421e_make_new(const mp_obj_type_t *type, size_t n_a
 //|         """Shuts down USB host functionality and releases chip_select and irq pins."""
 //|         ...
 //|
-STATIC mp_obj_t max3421e_max3421e_obj_deinit(mp_obj_t self_in) {
+static mp_obj_t max3421e_max3421e_obj_deinit(mp_obj_t self_in) {
     max3421e_max3421e_obj_t *self = self_in;
     if (common_hal_max3421e_max3421e_deinited(self)) {
         return mp_const_none;
@@ -68,11 +68,11 @@ STATIC mp_obj_t max3421e_max3421e_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(max3421e_max3421e_deinit_obj, max3421e_max3421e_obj_deinit);
 
-STATIC const mp_rom_map_elem_t max3421e_max3421e_locals_dict_table[] = {
+static const mp_rom_map_elem_t max3421e_max3421e_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&max3421e_max3421e_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&max3421e_max3421e_deinit_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(max3421e_max3421e_locals_dict, max3421e_max3421e_locals_dict_table);
+static MP_DEFINE_CONST_DICT(max3421e_max3421e_locals_dict, max3421e_max3421e_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     max3421e_max3421e_type,

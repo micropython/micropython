@@ -49,7 +49,7 @@
 //|         :param microcontroller.Pin reset: Reset pin, optional
 //|         :param int frequency: The communication frequency in Hz for the display on the bus"""
 //|         ...
-STATIC mp_obj_t paralleldisplaybus_parallelbus_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t paralleldisplaybus_parallelbus_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_data0, ARG_data_pins, ARG_command, ARG_chip_select, ARG_write, ARG_read, ARG_reset, ARG_frequency };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data0, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
@@ -97,7 +97,7 @@ STATIC mp_obj_t paralleldisplaybus_parallelbus_make_new(const mp_obj_type_t *typ
 //|         is available."""
 //|         ...
 
-STATIC mp_obj_t paralleldisplaybus_parallelbus_obj_reset(mp_obj_t self_in) {
+static mp_obj_t paralleldisplaybus_parallelbus_obj_reset(mp_obj_t self_in) {
     paralleldisplaybus_parallelbus_obj_t *self = self_in;
 
     if (!common_hal_paralleldisplaybus_parallelbus_reset(self)) {
@@ -112,7 +112,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(paralleldisplaybus_parallelbus_reset_obj, paralleldisp
 //|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
 //|         ...
 //|
-STATIC mp_obj_t paralleldisplaybus_parallelbus_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
+static mp_obj_t paralleldisplaybus_parallelbus_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
     mp_int_t command_int = mp_arg_validate_int_range(mp_obj_get_int(command_obj), 0, 255, MP_QSTR_command);
 
     uint8_t command = command_int;
@@ -131,11 +131,11 @@ STATIC mp_obj_t paralleldisplaybus_parallelbus_obj_send(mp_obj_t self, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_3(paralleldisplaybus_parallelbus_send_obj, paralleldisplaybus_parallelbus_obj_send);
 
-STATIC const mp_rom_map_elem_t paralleldisplaybus_parallelbus_locals_dict_table[] = {
+static const mp_rom_map_elem_t paralleldisplaybus_parallelbus_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&paralleldisplaybus_parallelbus_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&paralleldisplaybus_parallelbus_send_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(paralleldisplaybus_parallelbus_locals_dict, paralleldisplaybus_parallelbus_locals_dict_table);
+static MP_DEFINE_CONST_DICT(paralleldisplaybus_parallelbus_locals_dict, paralleldisplaybus_parallelbus_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     paralleldisplaybus_parallelbus_type,

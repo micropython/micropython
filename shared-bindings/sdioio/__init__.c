@@ -14,12 +14,12 @@
 
 //| """Interface to an SD card via the SDIO bus"""
 
-STATIC const mp_rom_map_elem_t sdioio_module_globals_table[] = {
+static const mp_rom_map_elem_t sdioio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sdio) },
     { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&sdioio_SDCard_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(sdioio_module_globals, sdioio_module_globals_table);
+static MP_DEFINE_CONST_DICT(sdioio_module_globals, sdioio_module_globals_table);
 
 const mp_obj_module_t sdioio_module = {
     .base = { &mp_type_module },

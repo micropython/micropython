@@ -60,7 +60,7 @@
 //| <https://learn.adafruit.com/circuitpython-digital-inputs-and-outputs>`_
 //| """
 
-STATIC const mp_rom_map_elem_t digitalio_module_globals_table[] = {
+static const mp_rom_map_elem_t digitalio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_digitalio) },
     { MP_ROM_QSTR(MP_QSTR_DigitalInOut),  MP_ROM_PTR(&digitalio_digitalinout_type) },
 
@@ -70,7 +70,7 @@ STATIC const mp_rom_map_elem_t digitalio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Pull),               MP_ROM_PTR(&digitalio_pull_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(digitalio_module_globals, digitalio_module_globals_table);
+static MP_DEFINE_CONST_DICT(digitalio_module_globals, digitalio_module_globals_table);
 
 const mp_obj_module_t digitalio_module = {
     .base = { &mp_type_module },

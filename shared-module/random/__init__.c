@@ -18,10 +18,10 @@
 // http://www.literatecode.com/yasmarang
 // Public Domain
 
-STATIC uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
-STATIC uint8_t yasmarang_dat = 0;
+static uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
+static uint8_t yasmarang_dat = 0;
 
-STATIC uint32_t yasmarang(void) {
+static uint32_t yasmarang(void) {
     if (yasmarang_pad == 0xeda4baba) {
         if (!common_hal_os_urandom((uint8_t *)&yasmarang_pad, sizeof(uint32_t))) {
             yasmarang_pad = common_hal_time_monotonic_ms() & 0xffffffff;
@@ -40,7 +40,7 @@ STATIC uint32_t yasmarang(void) {
 
 // returns an unsigned integer below the given argument
 // n must not be zero
-STATIC uint32_t yasmarang_randbelow(uint32_t n) {
+static uint32_t yasmarang_randbelow(uint32_t n) {
     uint32_t mask = 1;
     while ((n & mask) < n) {
         mask = (mask << 1) | 1;
@@ -80,7 +80,7 @@ mp_int_t shared_modules_random_randrange(mp_int_t start, mp_int_t stop, mp_int_t
 }
 
 // returns a number in the range [0..1) using Yasmarang to fill in the fraction bits
-STATIC mp_float_t yasmarang_float(void) {
+static mp_float_t yasmarang_float(void) {
     #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
     typedef uint64_t mp_float_int_t;
     #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT

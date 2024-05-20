@@ -36,7 +36,7 @@
 //|     as `usb_cdc` or `storage` to free up endpoints for use by `usb_hid`.
 //|     """
 //|
-STATIC mp_obj_t usb_hid_disable(void) {
+static mp_obj_t usb_hid_disable(void) {
     if (!common_hal_usb_hid_disable()) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
@@ -88,7 +88,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_disable_obj, usb_hid_disable);
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t usb_hid_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t usb_hid_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_devices, ARG_boot_device };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_devices, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -130,7 +130,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_enable_obj, 1, usb_hid_enable);
 //|     :rtype int:
 //|     """
 //|
-STATIC mp_obj_t usb_hid_get_boot_device(void) {
+static mp_obj_t usb_hid_get_boot_device(void) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_get_boot_device());
 }
 MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_get_boot_device_obj, usb_hid_get_boot_device);
@@ -147,7 +147,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_get_boot_device_obj, usb_hid_get_boot_device);
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t usb_hid_set_interface_name(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t usb_hid_set_interface_name(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_interface_name, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = mp_const_none} }
     };
@@ -169,7 +169,7 @@ STATIC mp_obj_t usb_hid_set_interface_name(size_t n_args, const mp_obj_t *pos_ar
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_set_interface_name_obj, 1, usb_hid_set_interface_name);
 
 // usb_hid.devices is set once the usb devices are determined, after boot.py runs.
-STATIC mp_map_elem_t usb_hid_module_globals_table[] = {
+static mp_map_elem_t usb_hid_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid) },
     { MP_ROM_QSTR(MP_QSTR_Device),          MP_OBJ_FROM_PTR(&usb_hid_device_type) },
     { MP_ROM_QSTR(MP_QSTR_devices),         mp_const_none },
@@ -179,7 +179,7 @@ STATIC mp_map_elem_t usb_hid_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_interface_name), MP_OBJ_FROM_PTR(&usb_hid_set_interface_name_obj) },
 };
 
-STATIC MP_DEFINE_MUTABLE_DICT(usb_hid_module_globals, usb_hid_module_globals_table);
+static MP_DEFINE_MUTABLE_DICT(usb_hid_module_globals, usb_hid_module_globals_table);
 
 const mp_obj_module_t usb_hid_module = {
     .base = { &mp_type_module },

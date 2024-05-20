@@ -47,7 +47,7 @@
 //|     Equivalent to ``usb_cdc.enable(console=False, data=False)``."""
 //|     ...
 //|
-STATIC mp_obj_t usb_cdc_disable(void) {
+static mp_obj_t usb_cdc_disable(void) {
     if (!common_hal_usb_cdc_disable()) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
@@ -70,7 +70,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_cdc_disable_obj, usb_cdc_disable);
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t usb_cdc_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t usb_cdc_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_console, ARG_data };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_console, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true } },

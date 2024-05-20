@@ -48,7 +48,7 @@ void alarm_reset(void) {
 }
 
 extern uint32_t reset_reason_saved;
-STATIC nrf_sleep_source_t _get_wakeup_cause(void) {
+static nrf_sleep_source_t _get_wakeup_cause(void) {
     // First check if the modules remember what last woke up
     if (alarm_pin_pinalarm_woke_this_cycle()) {
         return NRF_SLEEP_WAKEUP_GPIO;
@@ -120,7 +120,7 @@ mp_obj_t common_hal_alarm_record_wake_alarm(void) {
 }
 
 // Set up light sleep or deep sleep alarms.
-STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
+static void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_NONE;
     sleepmem_wakeup_pin = WAKEUP_PIN_UNDEF;
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
@@ -131,7 +131,7 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
 // TODO: this handles all possible types of wakeup, which is redundant with main.
 // revise to extract all parts essential to enabling sleep wakeup, but leave the
 // alarm/non-alarm sorting to the existing main loop.
-STATIC void system_on_idle_until_alarm(int64_t timediff_ms, bool wake_from_serial, uint32_t prescaler) {
+static void system_on_idle_until_alarm(int64_t timediff_ms, bool wake_from_serial, uint32_t prescaler) {
     bool have_timeout = false;
     uint64_t start_tick = 0, end_tick = 0;
     int64_t tickdiff;

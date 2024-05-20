@@ -23,7 +23,7 @@ const rtc_rtc_obj_t rtc_rtc_obj = {{&rtc_rtc_type}};
 //|     def __init__(self) -> None:
 //|         """This class represents the onboard Real Time Clock. It is a singleton and will always return the same instance."""
 //|         ...
-STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // No arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -49,14 +49,14 @@ STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_
 //|       current_time = r.datetime
 //|       print(current_time)
 //|       # struct_time(tm_year=2019, tm_month=5, ...)"""
-STATIC mp_obj_t rtc_rtc_obj_get_datetime(mp_obj_t self_in) {
+static mp_obj_t rtc_rtc_obj_get_datetime(mp_obj_t self_in) {
     timeutils_struct_time_t tm;
     common_hal_rtc_get_time(&tm);
     return struct_time_from_tm(&tm);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rtc_rtc_get_datetime_obj, rtc_rtc_obj_get_datetime);
 
-STATIC mp_obj_t rtc_rtc_obj_set_datetime(mp_obj_t self_in, mp_obj_t datetime) {
+static mp_obj_t rtc_rtc_obj_set_datetime(mp_obj_t self_in, mp_obj_t datetime) {
     timeutils_struct_time_t tm;
     struct_time_to_tm(datetime, &tm);
     common_hal_rtc_set_time(&tm);
@@ -83,13 +83,13 @@ MP_PROPERTY_GETSET(rtc_rtc_datetime_obj,
 //|       r = rtc.RTC()
 //|       r.calibration = 1"""
 //|
-STATIC mp_obj_t rtc_rtc_obj_get_calibration(mp_obj_t self_in) {
+static mp_obj_t rtc_rtc_obj_get_calibration(mp_obj_t self_in) {
     int calibration = common_hal_rtc_get_calibration();
     return mp_obj_new_int(calibration);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rtc_rtc_get_calibration_obj, rtc_rtc_obj_get_calibration);
 
-STATIC mp_obj_t rtc_rtc_obj_set_calibration(mp_obj_t self_in, mp_obj_t calibration) {
+static mp_obj_t rtc_rtc_obj_set_calibration(mp_obj_t self_in, mp_obj_t calibration) {
     common_hal_rtc_set_calibration(mp_obj_get_int(calibration));
     return mp_const_none;
 }
@@ -99,11 +99,11 @@ MP_PROPERTY_GETSET(rtc_rtc_calibration_obj,
     (mp_obj_t)&rtc_rtc_get_calibration_obj,
     (mp_obj_t)&rtc_rtc_set_calibration_obj);
 
-STATIC const mp_rom_map_elem_t rtc_rtc_locals_dict_table[] = {
+static const mp_rom_map_elem_t rtc_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&rtc_rtc_datetime_obj) },
     { MP_ROM_QSTR(MP_QSTR_calibration), MP_ROM_PTR(&rtc_rtc_calibration_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(rtc_rtc_locals_dict, rtc_rtc_locals_dict_table);
+static MP_DEFINE_CONST_DICT(rtc_rtc_locals_dict, rtc_rtc_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     rtc_rtc_type,

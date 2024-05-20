@@ -30,12 +30,12 @@
 //| PixelSequence = Union[Tuple[PixelType], List[PixelType]]
 // TODO: Pull in docs from adafruit_pixelbuf.
 
-STATIC const mp_rom_map_elem_t pixelbuf_module_globals_table[] = {
+static const mp_rom_map_elem_t pixelbuf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_adafruit_pixelbuf) },
     { MP_ROM_QSTR(MP_QSTR_PixelBuf), MP_ROM_PTR(&pixelbuf_pixelbuf_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pixelbuf_module_globals, pixelbuf_module_globals_table);
+static MP_DEFINE_CONST_DICT(pixelbuf_module_globals, pixelbuf_module_globals_table);
 
 const mp_obj_module_t pixelbuf_module = {
     .base = { &mp_type_module },

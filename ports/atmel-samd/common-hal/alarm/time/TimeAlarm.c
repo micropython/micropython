@@ -12,8 +12,8 @@
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/port.h"
 
-STATIC volatile bool woke_up = false;
-STATIC mp_float_t wakeup_time;
+static volatile bool woke_up = false;
+static mp_float_t wakeup_time;
 
 void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time) {
     // TODO: when issuing light/seep sleep, throw a ValueError if the

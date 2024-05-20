@@ -18,7 +18,7 @@
 #include "ble_drv.h"
 #include "nrf_sdm.h"
 
-STATIC bool sd_is_enabled(void) {
+static bool sd_is_enabled(void) {
     uint8_t sd_en = 0;
     if (__get_PRIMASK()) {
         return false;
@@ -27,11 +27,11 @@ STATIC bool sd_is_enabled(void) {
     return sd_en;
 }
 
-STATIC void sd_flash_operation_start(void) {
+static void sd_flash_operation_start(void) {
     sd_flash_operation_status = SD_FLASH_OPERATION_IN_PROGRESS;
 }
 
-STATIC sd_flash_operation_status_t sd_flash_operation_wait_until_done(void) {
+static sd_flash_operation_status_t sd_flash_operation_wait_until_done(void) {
     // If the SD is not enabled, no events are generated, so just return immediately.
     if (sd_is_enabled()) {
         while (sd_flash_operation_status == SD_FLASH_OPERATION_IN_PROGRESS) {

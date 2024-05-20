@@ -166,7 +166,7 @@ watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj = {
 #endif
 
 // This maps MCU pin names to pin objects.
-STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
+static const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     #ifdef GPIO0_EXISTS
     { MP_ROM_QSTR(MP_QSTR_GPIO0), MP_ROM_PTR(&pin_GPIO0) },
     #endif

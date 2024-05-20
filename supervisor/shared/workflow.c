@@ -174,7 +174,7 @@ FRESULT supervisor_workflow_mkdir_parents(DWORD fattime, char *path) {
     return result;
 }
 
-STATIC FRESULT supervisor_workflow_delete_directory_contents(FATFS *fs, const TCHAR *path) {
+static FRESULT supervisor_workflow_delete_directory_contents(FATFS *fs, const TCHAR *path) {
     FF_DIR dir;
     FILINFO file_info;
     // Check the stack since we're putting paths on it.

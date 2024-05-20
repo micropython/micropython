@@ -23,7 +23,7 @@
 //|     ...
 //|
 
-STATIC mp_obj_t ssl_create_default_context(void) {
+static mp_obj_t ssl_create_default_context(void) {
     ssl_sslcontext_obj_t *s = mp_obj_malloc(ssl_sslcontext_obj_t, &ssl_sslcontext_type);
 
     common_hal_ssl_create_default_context(s);
@@ -31,7 +31,7 @@ STATIC mp_obj_t ssl_create_default_context(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(ssl_create_default_context_obj, ssl_create_default_context);
 
-STATIC const mp_rom_map_elem_t ssl_globals_table[] = {
+static const mp_rom_map_elem_t ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ssl) },
 
     { MP_ROM_QSTR(MP_QSTR_create_default_context), MP_ROM_PTR(&ssl_create_default_context_obj) },
@@ -39,7 +39,7 @@ STATIC const mp_rom_map_elem_t ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SSLContext), MP_ROM_PTR(&ssl_sslcontext_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(ssl_globals, ssl_globals_table);
+static MP_DEFINE_CONST_DICT(ssl_globals, ssl_globals_table);
 
 const mp_obj_module_t ssl_module = {
     .base = { &mp_type_module },

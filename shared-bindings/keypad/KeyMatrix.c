@@ -70,7 +70,7 @@
 //|         """
 //|         ...
 
-STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_KEYPAD_KEYMATRIX
     keypad_keymatrix_obj_t *self = mp_obj_malloc(keypad_keymatrix_obj_t, &keypad_keymatrix_type);
     enum { ARG_row_pins, ARG_column_pins, ARG_columns_to_anodes, ARG_interval, ARG_max_events, ARG_debounce_threshold };
@@ -126,7 +126,7 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
 //|     def deinit(self) -> None:
 //|         """Stop scanning and release the pins."""
 //|         ...
-STATIC mp_obj_t keypad_keymatrix_deinit(mp_obj_t self_in) {
+static mp_obj_t keypad_keymatrix_deinit(mp_obj_t self_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_keypad_keymatrix_deinit(self);
     return MP_ROM_NONE;
@@ -142,14 +142,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_keymatrix_deinit_obj, keypad_keymatrix_deinit);
 //|         """Automatically deinitializes when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t keypad_keymatrix___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t keypad_keymatrix___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_keypad_keymatrix_deinit(args[0]);
     return MP_ROM_NONE;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_keymatrix___exit___obj, 4, 4, keypad_keymatrix___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_keymatrix___exit___obj, 4, 4, keypad_keymatrix___exit__);
 
-STATIC void check_for_deinit(keypad_keymatrix_obj_t *self) {
+static void check_for_deinit(keypad_keymatrix_obj_t *self) {
     if (common_hal_keypad_deinited(self)) {
         raise_deinited_error();
     }
@@ -175,7 +175,7 @@ STATIC void check_for_deinit(keypad_keymatrix_obj_t *self) {
 //|         :rtype: Tuple[int]
 //|         """
 //|         ...
-STATIC mp_obj_t keypad_keymatrix_key_number_to_row_column(mp_obj_t self_in, mp_obj_t key_number_in) {
+static mp_obj_t keypad_keymatrix_key_number_to_row_column(mp_obj_t self_in, mp_obj_t key_number_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -201,7 +201,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(keypad_keymatrix_key_number_to_row_column_obj, keypad_
 //|         The key number is ``row * len(column_pins) + column``.
 //|         """
 //|         ...
-STATIC mp_obj_t keypad_keymatrix_row_column_to_key_number(mp_obj_t self_in, mp_obj_t row_in, mp_obj_t column_in) {
+static mp_obj_t keypad_keymatrix_row_column_to_key_number(mp_obj_t self_in, mp_obj_t row_in, mp_obj_t column_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -221,7 +221,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(keypad_keymatrix_row_column_to_key_number_obj, keypad_
 //|     """
 //|
 
-STATIC const mp_rom_map_elem_t keypad_keymatrix_locals_dict_table[] = {
+static const mp_rom_map_elem_t keypad_keymatrix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),                   MP_ROM_PTR(&keypad_keymatrix_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__),                MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),                 MP_ROM_PTR(&keypad_keymatrix___exit___obj) },
@@ -233,7 +233,7 @@ STATIC const mp_rom_map_elem_t keypad_keymatrix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_row_column_to_key_number), MP_ROM_PTR(&keypad_keymatrix_row_column_to_key_number_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(keypad_keymatrix_locals_dict, keypad_keymatrix_locals_dict_table);
+static MP_DEFINE_CONST_DICT(keypad_keymatrix_locals_dict, keypad_keymatrix_locals_dict_table);
 
 #endif
 

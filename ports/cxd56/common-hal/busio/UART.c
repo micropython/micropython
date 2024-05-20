@@ -29,7 +29,7 @@ typedef struct {
     int fd;
 } busio_uart_dev_t;
 
-STATIC busio_uart_dev_t busio_uart_dev[] = {
+static busio_uart_dev_t busio_uart_dev[] = {
     {"/dev/ttyS2", &pin_UART2_TXD, &pin_UART2_RXD, -1},
 };
 

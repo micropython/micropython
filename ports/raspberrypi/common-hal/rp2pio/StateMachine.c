@@ -28,27 +28,27 @@
 #define NO_DMA_CHANNEL (-1)
 
 // Count how many state machines are using each pin.
-STATIC uint8_t _pin_reference_count[NUM_BANK0_GPIOS];
-STATIC uint32_t _current_program_id[NUM_PIOS][NUM_PIO_STATE_MACHINES];
-STATIC uint8_t _current_program_offset[NUM_PIOS][NUM_PIO_STATE_MACHINES];
-STATIC uint8_t _current_program_len[NUM_PIOS][NUM_PIO_STATE_MACHINES];
-STATIC bool _never_reset[NUM_PIOS][NUM_PIO_STATE_MACHINES];
+static uint8_t _pin_reference_count[NUM_BANK0_GPIOS];
+static uint32_t _current_program_id[NUM_PIOS][NUM_PIO_STATE_MACHINES];
+static uint8_t _current_program_offset[NUM_PIOS][NUM_PIO_STATE_MACHINES];
+static uint8_t _current_program_len[NUM_PIOS][NUM_PIO_STATE_MACHINES];
+static bool _never_reset[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 
-STATIC uint32_t _current_pins[NUM_PIOS];
-STATIC uint32_t _current_sm_pins[NUM_PIOS][NUM_PIO_STATE_MACHINES];
-STATIC int8_t _sm_dma_plus_one[NUM_PIOS][NUM_PIO_STATE_MACHINES];
+static uint32_t _current_pins[NUM_PIOS];
+static uint32_t _current_sm_pins[NUM_PIOS][NUM_PIO_STATE_MACHINES];
+static int8_t _sm_dma_plus_one[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 
 #define SM_DMA_ALLOCATED(pio_index, sm) (_sm_dma_plus_one[(pio_index)][(sm)] != 0)
 #define SM_DMA_GET_CHANNEL(pio_index, sm) (_sm_dma_plus_one[(pio_index)][(sm)] - 1)
 #define SM_DMA_CLEAR_CHANNEL(pio_index, sm) (_sm_dma_plus_one[(pio_index)][(sm)] = 0)
 #define SM_DMA_SET_CHANNEL(pio_isntance, sm, channel) (_sm_dma_plus_one[(pio_index)][(sm)] = (channel) + 1)
 
-STATIC PIO pio_instances[2] = {pio0, pio1};
+static PIO pio_instances[2] = {pio0, pio1};
 typedef void (*interrupt_handler_type)(void *);
-STATIC interrupt_handler_type _interrupt_handler[NUM_PIOS][NUM_PIO_STATE_MACHINES];
-STATIC void *_interrupt_arg[NUM_PIOS][NUM_PIO_STATE_MACHINES];
+static interrupt_handler_type _interrupt_handler[NUM_PIOS][NUM_PIO_STATE_MACHINES];
+static void *_interrupt_arg[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 
-STATIC void rp2pio_statemachine_interrupt_handler(void);
+static void rp2pio_statemachine_interrupt_handler(void);
 
 static void rp2pio_statemachine_set_pull(uint32_t pull_pin_up, uint32_t pull_pin_down, uint32_t pins_we_use) {
     for (size_t i = 0; i < NUM_BANK0_GPIOS; i++) {
@@ -61,7 +61,7 @@ static void rp2pio_statemachine_set_pull(uint32_t pull_pin_up, uint32_t pull_pin
     }
 }
 
-STATIC void rp2pio_statemachine_clear_dma(int pio_index, int sm) {
+static void rp2pio_statemachine_clear_dma(int pio_index, int sm) {
     if (SM_DMA_ALLOCATED(pio_index, sm)) {
         int channel = SM_DMA_GET_CHANNEL(pio_index, sm);
         uint32_t channel_mask = 1u << channel;
@@ -76,7 +76,7 @@ STATIC void rp2pio_statemachine_clear_dma(int pio_index, int sm) {
     SM_DMA_CLEAR_CHANNEL(pio_index, sm);
 }
 
-STATIC void _reset_statemachine(PIO pio, uint8_t sm, bool leave_pins) {
+static void _reset_statemachine(PIO pio, uint8_t sm, bool leave_pins) {
     uint8_t pio_index = pio_get_index(pio);
     rp2pio_statemachine_clear_dma(pio_index, sm);
     uint32_t program_id = _current_program_id[pio_index][sm];
@@ -136,7 +136,7 @@ void reset_rp2pio_statemachine(void) {
     }
 }
 
-STATIC uint32_t _check_pins_free(const mcu_pin_obj_t *first_pin, uint8_t pin_count, bool exclusive_pin_use) {
+static uint32_t _check_pins_free(const mcu_pin_obj_t *first_pin, uint8_t pin_count, bool exclusive_pin_use) {
     uint32_t pins_we_use = 0;
     if (first_pin != NULL) {
         for (size_t i = 0; i < pin_count; i++) {
@@ -697,7 +697,7 @@ bool common_hal_rp2pio_statemachine_deinited(rp2pio_statemachine_obj_t *self) {
     return self->state_machine == NUM_PIO_STATE_MACHINES;
 }
 
-STATIC enum dma_channel_transfer_size _stride_to_dma_size(uint8_t stride) {
+static enum dma_channel_transfer_size _stride_to_dma_size(uint8_t stride) {
     switch (stride) {
         case 4:
             return DMA_SIZE_32;
@@ -944,7 +944,7 @@ void common_hal_rp2pio_statemachine_set_interrupt_handler(rp2pio_statemachine_ob
     common_hal_mcu_enable_interrupts();
 }
 
-STATIC void rp2pio_statemachine_interrupt_handler(void) {
+static void rp2pio_statemachine_interrupt_handler(void) {
     for (size_t pio_index = 0; pio_index < NUM_PIOS; pio_index++) {
         PIO pio = pio_instances[pio_index];
         for (size_t sm = 0; sm < NUM_PIO_STATE_MACHINES; sm++) {

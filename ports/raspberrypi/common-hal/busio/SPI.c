@@ -19,8 +19,8 @@
 
 #define NO_INSTANCE 0xff
 
-STATIC bool never_reset_spi[2];
-STATIC spi_inst_t *spi[2] = {spi0, spi1};
+static bool never_reset_spi[2];
+static spi_inst_t *spi[2] = {spi0, spi1};
 
 void reset_spi(void) {
     for (size_t i = 0; i < 2; i++) {

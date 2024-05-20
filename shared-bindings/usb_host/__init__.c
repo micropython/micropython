@@ -40,7 +40,7 @@
 //|     This function is a CircuitPython extension not present in PyUSB
 //|     """
 //|
-STATIC mp_obj_t usb_set_user_keymap(mp_obj_t buf_in) {
+static mp_obj_t usb_set_user_keymap(mp_obj_t buf_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
     usb_keymap_set(bufinfo.buf, bufinfo.len);
@@ -49,13 +49,13 @@ STATIC mp_obj_t usb_set_user_keymap(mp_obj_t buf_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(usb_set_user_keymap_obj, usb_set_user_keymap);
 
-STATIC mp_map_elem_t usb_host_module_globals_table[] = {
+static mp_map_elem_t usb_host_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_usb_host) },
     { MP_ROM_QSTR(MP_QSTR_Port),          MP_OBJ_FROM_PTR(&usb_host_port_type) },
     { MP_ROM_QSTR(MP_QSTR_set_user_keymap),          MP_OBJ_FROM_PTR(&usb_set_user_keymap_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(usb_host_module_globals, usb_host_module_globals_table);
+static MP_DEFINE_CONST_DICT(usb_host_module_globals, usb_host_module_globals_table);
 
 const mp_obj_module_t usb_host_module = {
     .base = { &mp_type_module },

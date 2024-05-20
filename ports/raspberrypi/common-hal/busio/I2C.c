@@ -22,8 +22,8 @@
 // One second
 #define BUS_TIMEOUT_US 1000000
 
-STATIC bool never_reset_i2c[2];
-STATIC i2c_inst_t *i2c[2] = {i2c0, i2c1};
+static bool never_reset_i2c[2];
+static i2c_inst_t *i2c[2] = {i2c0, i2c1};
 
 void reset_i2c(void) {
     for (size_t i = 0; i < 2; i++) {
@@ -146,7 +146,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
     self->has_lock = false;
 }
 
-STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
+static uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
     const uint8_t *data, size_t len, bool transmit_stop_bit) {
     if (len == 0) {
         // The RP2040 I2C peripheral will not perform 0 byte writes.

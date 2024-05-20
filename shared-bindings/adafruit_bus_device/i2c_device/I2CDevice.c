@@ -44,7 +44,7 @@
 //|                     device.write(bytes_read)
 //|         """
 //|     ...
-STATIC mp_obj_t adafruit_bus_device_i2cdevice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t adafruit_bus_device_i2cdevice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     adafruit_bus_device_i2cdevice_obj_t *self =
         mp_obj_malloc(adafruit_bus_device_i2cdevice_obj_t, &adafruit_bus_device_i2cdevice_type);
     enum { ARG_i2c, ARG_device_address, ARG_probe };
@@ -69,21 +69,21 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_make_new(const mp_obj_type_t *type
 //|     def __enter__(self) -> I2CDevice:
 //|         """Context manager entry to lock bus."""
 //|         ...
-STATIC mp_obj_t adafruit_bus_device_i2cdevice_obj___enter__(mp_obj_t self_in) {
+static mp_obj_t adafruit_bus_device_i2cdevice_obj___enter__(mp_obj_t self_in) {
     adafruit_bus_device_i2cdevice_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_adafruit_bus_device_i2cdevice_lock(self);
     return self;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(adafruit_bus_device_i2cdevice___enter___obj, adafruit_bus_device_i2cdevice_obj___enter__);
+static MP_DEFINE_CONST_FUN_OBJ_1(adafruit_bus_device_i2cdevice___enter___obj, adafruit_bus_device_i2cdevice_obj___enter__);
 
 //|     def __exit__(self) -> None:
 //|         """Automatically unlocks the bus on exit."""
 //|         ...
-STATIC mp_obj_t adafruit_bus_device_i2cdevice_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t adafruit_bus_device_i2cdevice_obj___exit__(size_t n_args, const mp_obj_t *args) {
     common_hal_adafruit_bus_device_i2cdevice_unlock(MP_OBJ_TO_PTR(args[0]));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adafruit_bus_device_i2cdevice___exit___obj, 4, 4, adafruit_bus_device_i2cdevice_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adafruit_bus_device_i2cdevice___exit___obj, 4, 4, adafruit_bus_device_i2cdevice_obj___exit__);
 
 //|     import sys
 //|     def readinto(
@@ -100,7 +100,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adafruit_bus_device_i2cdevice___exit_
 //|         :param int end: end of buffer slice; if not specified, use ``len(buffer)``
 //|         """
 //|         ...
-STATIC mp_obj_t adafruit_bus_device_i2cdevice_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t adafruit_bus_device_i2cdevice_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -131,7 +131,7 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_readinto(size_t n_args, const mp_o
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_readinto_obj, 1, adafruit_bus_device_i2cdevice_readinto);
+static MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_readinto_obj, 1, adafruit_bus_device_i2cdevice_readinto);
 
 //|     import sys
 //|     def write(self, buffer: ReadableBuffer, *, start: int = 0, end: int = sys.maxsize) -> None:
@@ -146,7 +146,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_readinto_obj, 1,
 //|         :param int end: end of buffer slice; if not specified, use ``len(buffer)``
 //|         """
 //|         ...
-STATIC mp_obj_t adafruit_bus_device_i2cdevice_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t adafruit_bus_device_i2cdevice_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -210,7 +210,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_write_obj, 1, adafruit_
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t adafruit_bus_device_i2cdevice_write_then_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t adafruit_bus_device_i2cdevice_write_then_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_out_buffer, ARG_in_buffer, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_out_buffer,    MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -254,7 +254,7 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_write_then_readinto(size_t n_args,
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_write_then_readinto_obj, 1, adafruit_bus_device_i2cdevice_write_then_readinto);
 
-STATIC const mp_rom_map_elem_t adafruit_bus_device_i2cdevice_locals_dict_table[] = {
+static const mp_rom_map_elem_t adafruit_bus_device_i2cdevice_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&adafruit_bus_device_i2cdevice___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&adafruit_bus_device_i2cdevice___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&adafruit_bus_device_i2cdevice_readinto_obj) },
@@ -262,7 +262,7 @@ STATIC const mp_rom_map_elem_t adafruit_bus_device_i2cdevice_locals_dict_table[]
     { MP_ROM_QSTR(MP_QSTR_write_then_readinto), MP_ROM_PTR(&adafruit_bus_device_i2cdevice_write_then_readinto_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(adafruit_bus_device_i2cdevice_locals_dict, adafruit_bus_device_i2cdevice_locals_dict_table);
+static MP_DEFINE_CONST_DICT(adafruit_bus_device_i2cdevice_locals_dict, adafruit_bus_device_i2cdevice_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     adafruit_bus_device_i2cdevice_type,

@@ -27,7 +27,7 @@
 
 usb_host_port_obj_t usb_host_instance;
 
-STATIC PIO pio_instances[2] = {pio0, pio1};
+static PIO pio_instances[2] = {pio0, pio1};
 volatile bool _core1_ready = false;
 
 static void __not_in_flash_func(core1_main)(void) {
@@ -61,7 +61,7 @@ static void __not_in_flash_func(core1_main)(void) {
     }
 }
 
-STATIC uint8_t _sm_free_count(uint8_t pio_index) {
+static uint8_t _sm_free_count(uint8_t pio_index) {
     PIO pio = pio_instances[pio_index];
     uint8_t free_count = 0;
     for (size_t j = 0; j < NUM_PIO_STATE_MACHINES; j++) {
@@ -72,7 +72,7 @@ STATIC uint8_t _sm_free_count(uint8_t pio_index) {
     return free_count;
 }
 
-STATIC bool _has_program_room(uint8_t pio_index, uint8_t program_size) {
+static bool _has_program_room(uint8_t pio_index, uint8_t program_size) {
     PIO pio = pio_instances[pio_index];
     pio_program_t program_struct = {
         .instructions = NULL,

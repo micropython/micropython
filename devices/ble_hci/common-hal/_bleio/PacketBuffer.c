@@ -16,7 +16,7 @@
 #include "shared-bindings/_bleio/PacketBuffer.h"
 #include "supervisor/shared/tick.h"
 
-STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uint16_t len) {
+static void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uint16_t len) {
     if (len + sizeof(uint16_t) > ringbuf_size(&self->ringbuf)) {
         // This shouldn't happen.
         return;
@@ -35,7 +35,7 @@ STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uin
     ringbuf_put_n(&self->ringbuf, data, len);
 }
 
-STATIC uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
+static uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
     // Queue up the next outgoing buffer. We use two, one that has been passed to the SD for
     // transmission (when packet_queued is true) and the other is `pending` and can still be
     // modified. By primarily appending to the `pending` buffer we can reduce the protocol overhead

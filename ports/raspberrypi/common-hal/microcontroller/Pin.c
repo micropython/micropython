@@ -25,7 +25,7 @@ void reset_pin_number_cyw(uint8_t pin_no) {
 }
 #endif
 
-STATIC uint32_t never_reset_pins;
+static uint32_t never_reset_pins;
 
 void reset_all_pins(void) {
     for (size_t i = 0; i < NUM_BANK0_GPIOS; i++) {

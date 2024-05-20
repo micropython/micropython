@@ -13,8 +13,8 @@
 
 #include STM32_HAL_H
 
-STATIC volatile bool woke_up;
-STATIC uint32_t deep_sleep_ticks;
+static volatile bool woke_up;
+static uint32_t deep_sleep_ticks;
 
 void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time) {
     self->monotonic_time = monotonic_time;
@@ -44,7 +44,7 @@ mp_obj_t alarm_time_timealarm_record_wake_alarm(void) {
 }
 
 // This is run in the timer task. We use it to wake the main CircuitPython task.
-STATIC void timer_callback(void) {
+static void timer_callback(void) {
     woke_up = true;
 }
 

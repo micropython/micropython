@@ -31,7 +31,7 @@ NORETURN void mp_raise_memorymonitor_AllocationError(mp_rom_error_text_t fmt, ..
     nlr_raise(exception);
 }
 
-STATIC const mp_rom_map_elem_t memorymonitor_module_globals_table[] = {
+static const mp_rom_map_elem_t memorymonitor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_memorymonitor) },
     { MP_ROM_QSTR(MP_QSTR_AllocationAlarm), MP_ROM_PTR(&memorymonitor_allocationalarm_type) },
     { MP_ROM_QSTR(MP_QSTR_AllocationSize), MP_ROM_PTR(&memorymonitor_allocationsize_type) },
@@ -40,7 +40,7 @@ STATIC const mp_rom_map_elem_t memorymonitor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AllocationError),      MP_ROM_PTR(&mp_type_memorymonitor_AllocationError) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(memorymonitor_module_globals, memorymonitor_module_globals_table);
+static MP_DEFINE_CONST_DICT(memorymonitor_module_globals, memorymonitor_module_globals_table);
 
 void memorymonitor_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;

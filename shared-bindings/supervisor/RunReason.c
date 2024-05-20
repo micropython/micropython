@@ -35,7 +35,7 @@ MAKE_ENUM_MAP(supervisor_run_reason) {
     MAKE_ENUM_MAP_ENTRY(run_reason, SUPERVISOR_RELOAD),
     MAKE_ENUM_MAP_ENTRY(run_reason, REPL_RELOAD),
 };
-STATIC MP_DEFINE_CONST_DICT(supervisor_run_reason_locals_dict, supervisor_run_reason_locals_table);
+static MP_DEFINE_CONST_DICT(supervisor_run_reason_locals_dict, supervisor_run_reason_locals_table);
 
 MAKE_PRINTER(supervisor, supervisor_run_reason);
 

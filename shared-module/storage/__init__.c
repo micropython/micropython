@@ -131,7 +131,7 @@ bool common_hal_storage_enable_usb_drive(void) {
 }
 #endif // CIRCUITPY_USB_MSC
 
-STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
     if (vfs == MP_VFS_NONE) {
         // mount point not found
         mp_raise_OSError(MP_ENODEV);
@@ -223,7 +223,7 @@ void common_hal_storage_umount_object(mp_obj_t vfs_obj) {
     mp_vfs_proxy_call(vfs, MP_QSTR_umount, 0, NULL);
 }
 
-STATIC mp_obj_t storage_object_from_path(const char *mount_path) {
+static mp_obj_t storage_object_from_path(const char *mount_path) {
     for (mp_vfs_mount_t **vfsp = &MP_STATE_VM(vfs_mount_table); *vfsp != NULL; vfsp = &(*vfsp)->next) {
         if (strcmp(mount_path, (*vfsp)->str) == 0) {
             return (*vfsp)->obj;

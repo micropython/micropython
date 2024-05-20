@@ -49,7 +49,7 @@ static const mp_arg_t biquad_properties[] = {
 //|         https://github.com/WebAudio/Audio-EQ-Cookbook/blob/main/Audio-EQ-Cookbook.txt
 //|         """
 //|
-STATIC mp_obj_t synthio_biquad_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t synthio_biquad_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_val_t args[MP_ARRAY_SIZE(biquad_properties)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(biquad_properties), biquad_properties, args);
 

@@ -18,12 +18,12 @@
 //| <https://learn.adafruit.com/circuitpython-essentials/circuitpython-mp3-audio>`_.
 //| """
 
-STATIC const mp_rom_map_elem_t audiomp3_module_globals_table[] = {
+static const mp_rom_map_elem_t audiomp3_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiomp3) },
     { MP_ROM_QSTR(MP_QSTR_MP3Decoder), MP_ROM_PTR(&audiomp3_mp3file_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(audiomp3_module_globals, audiomp3_module_globals_table);
+static MP_DEFINE_CONST_DICT(audiomp3_module_globals, audiomp3_module_globals_table);
 
 const mp_obj_module_t audiomp3_module = {
     .base = { &mp_type_module },

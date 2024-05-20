@@ -37,7 +37,7 @@ mp_obj_t espulp_ulpalarm_record_wake_alarm(void) {
 }
 
 // This is used to wake the main CircuitPython task.
-STATIC void ulp_interrupt(void *arg) {
+static void ulp_interrupt(void *arg) {
     (void)arg;
     woke_up = true;
     port_wake_main_task_from_isr();

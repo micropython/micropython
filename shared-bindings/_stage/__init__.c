@@ -50,7 +50,7 @@
 //|     This function is intended for internal use in the ``stage`` library
 //|     and all the necessary checks are performed there."""
 //|
-STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     uint16_t x0 = mp_obj_get_int(args[0]);
     uint16_t y0 = mp_obj_get_int(args[1]);
     uint16_t x1 = mp_obj_get_int(args[2]);
@@ -84,14 +84,14 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stage_render_obj, 10, 10, stage_render);
 
 
-STATIC const mp_rom_map_elem_t stage_module_globals_table[] = {
+static const mp_rom_map_elem_t stage_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__stage) },
     { MP_ROM_QSTR(MP_QSTR_Layer), MP_ROM_PTR(&mp_type_layer) },
     { MP_ROM_QSTR(MP_QSTR_Text), MP_ROM_PTR(&mp_type_text) },
     { MP_ROM_QSTR(MP_QSTR_render), MP_ROM_PTR(&stage_render_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(stage_module_globals, stage_module_globals_table);
+static MP_DEFINE_CONST_DICT(stage_module_globals, stage_module_globals_table);
 
 const mp_obj_module_t stage_module = {
     .base = { &mp_type_module },

@@ -16,7 +16,7 @@
 //|         """Constructor
 //|         :param int code: type code in range 0~127.
 //|         :param bytes data: representation."""
-STATIC mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mod_msgpack_extype_obj_t *self = mp_obj_malloc(mod_msgpack_extype_obj_t, &mod_msgpack_exttype_type);
     enum { ARG_code, ARG_data };
     static const mp_arg_t allowed_args[] = {
@@ -39,13 +39,13 @@ STATIC mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n
 //|     code: int
 //|     """The type code, in range 0~127."""
 //|     ...
-STATIC mp_obj_t mod_msgpack_exttype_get_code(mp_obj_t self_in) {
+static mp_obj_t mod_msgpack_exttype_get_code(mp_obj_t self_in) {
     mod_msgpack_extype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(self->code);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_msgpack_exttype_get_code_obj, mod_msgpack_exttype_get_code);
 
-STATIC mp_obj_t mod_msgpack_exttype_set_code(mp_obj_t self_in, mp_obj_t code_in) {
+static mp_obj_t mod_msgpack_exttype_set_code(mp_obj_t self_in, mp_obj_t code_in) {
     mod_msgpack_extype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int code = mp_obj_get_int(code_in);
     if (code < 0 || code > 127) {
@@ -64,13 +64,13 @@ MP_PROPERTY_GETSET(mod_msgpack_exttype_code_obj,
 //|     """Data."""
 //|     ...
 //|
-STATIC mp_obj_t mod_msgpack_exttype_get_data(mp_obj_t self_in) {
+static mp_obj_t mod_msgpack_exttype_get_data(mp_obj_t self_in) {
     mod_msgpack_extype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return self->data;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_msgpack_exttype_get_data_obj, mod_msgpack_exttype_get_data);
 
-STATIC mp_obj_t mod_msgpack_exttype_set_data(mp_obj_t self_in, mp_obj_t data_in) {
+static mp_obj_t mod_msgpack_exttype_set_data(mp_obj_t self_in, mp_obj_t data_in) {
     mod_msgpack_extype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     self->data = data_in;
     return mp_const_none;
@@ -81,12 +81,12 @@ MP_PROPERTY_GETSET(mod_msgpack_exttype_data_obj,
     (mp_obj_t)&mod_msgpack_exttype_get_data_obj,
     (mp_obj_t)&mod_msgpack_exttype_set_data_obj);
 
-STATIC mp_rom_map_elem_t mod_msgpack_exttype_locals_dict_table[] = {
+static mp_rom_map_elem_t mod_msgpack_exttype_locals_dict_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_code), MP_ROM_PTR(&mod_msgpack_exttype_code_obj) },
     { MP_ROM_QSTR(MP_QSTR_data), MP_ROM_PTR(&mod_msgpack_exttype_data_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(mod_msgpack_exttype_locals_dict, mod_msgpack_exttype_locals_dict_table);
+static MP_DEFINE_CONST_DICT(mod_msgpack_exttype_locals_dict, mod_msgpack_exttype_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mod_msgpack_exttype_type,

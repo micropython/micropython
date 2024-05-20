@@ -20,13 +20,13 @@
 //| This object is the sole instance of `wifi.Radio`."""
 
 // Called when wifi is imported.
-STATIC mp_obj_t wifi___init__(void) {
+static mp_obj_t wifi___init__(void) {
     common_hal_wifi_init(true);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(wifi___init___obj, wifi___init__);
+static MP_DEFINE_CONST_FUN_OBJ_0(wifi___init___obj, wifi___init__);
 
-STATIC const mp_rom_map_elem_t wifi_module_globals_table[] = {
+static const mp_rom_map_elem_t wifi_module_globals_table[] = {
     // Name
     { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_wifi) },
 
@@ -44,7 +44,7 @@ STATIC const mp_rom_map_elem_t wifi_module_globals_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_radio),       MP_ROM_PTR(&common_hal_wifi_radio_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(wifi_module_globals, wifi_module_globals_table);
+static MP_DEFINE_CONST_DICT(wifi_module_globals, wifi_module_globals_table);
 
 const mp_obj_module_t wifi_module = {
     .base = { &mp_type_module },

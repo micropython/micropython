@@ -26,7 +26,7 @@ typedef struct {
     { MP_ROM_QSTR(MP_QSTR_##name), MP_ROM_PTR(&prefix##_##name##_obj) }
 
 #define MAKE_PRINTER(module, typename) \
-    STATIC void typename##_##print(const mp_print_t * print, mp_obj_t self_in, mp_print_kind_t kind) { \
+    static void typename##_##print(const mp_print_t * print, mp_obj_t self_in, mp_print_kind_t kind) { \
         cp_enum_obj_print_helper(MP_QSTR_##module, print, self_in, kind); \
     }
 

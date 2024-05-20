@@ -61,7 +61,7 @@ bool ipaddress_parse_ipv4address(const char *str_data, size_t str_len, uint32_t 
 //|     ...
 //|
 
-STATIC mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
+static mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
     uint32_t value;
     if (mp_obj_get_int_maybe(ip_in, (mp_int_t *)&value)) {
         // We're done.
@@ -78,13 +78,13 @@ STATIC mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ipaddress_ip_address_obj, ipaddress_ip_address);
 
-STATIC const mp_rom_map_elem_t ipaddress_module_globals_table[] = {
+static const mp_rom_map_elem_t ipaddress_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),      MP_ROM_QSTR(MP_QSTR_ipaddress) },
     { MP_ROM_QSTR(MP_QSTR_ip_address),    MP_ROM_PTR(&ipaddress_ip_address_obj) },
     { MP_ROM_QSTR(MP_QSTR_IPv4Address),   MP_ROM_PTR(&ipaddress_ipv4address_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(ipaddress_module_globals, ipaddress_module_globals_table);
+static MP_DEFINE_CONST_DICT(ipaddress_module_globals, ipaddress_module_globals_table);
 
 
 const mp_obj_module_t ipaddress_module = {

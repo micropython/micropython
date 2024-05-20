@@ -15,9 +15,9 @@
 #include "shared-bindings/util.h"
 #include "supervisor/port.h"
 
-STATIC bool reserved_can[MP_ARRAY_SIZE(mcu_can_banks)];
+static bool reserved_can[MP_ARRAY_SIZE(mcu_can_banks)];
 
-STATIC const mcu_periph_obj_t *find_pin_function(const mcu_periph_obj_t *table, size_t sz, const mcu_pin_obj_t *pin, int periph_index) {
+static const mcu_periph_obj_t *find_pin_function(const mcu_periph_obj_t *table, size_t sz, const mcu_pin_obj_t *pin, int periph_index) {
     for (size_t i = 0; i < sz; i++, table++) {
         if (periph_index != -1 && periph_index != table->periph_index) {
             continue;

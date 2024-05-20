@@ -19,7 +19,7 @@
 #include "supervisor/shared/tick.h"
 
 // TODO: This should be the same size as PWMOut.c:pwms[], but there's no trivial way to accomplish that
-STATIC audiopwmio_pwmaudioout_obj_t *active_audio[4];
+static audiopwmio_pwmaudioout_obj_t *active_audio[4];
 
 #define F_TARGET (62500)
 #define F_PWM (16000000)
@@ -30,7 +30,7 @@ STATIC audiopwmio_pwmaudioout_obj_t *active_audio[4];
 // 24000: top = 222 refresh = 2 [24024.0]
 // 44100: top = 181 refresh = 1 [44198.8]
 // 48000: top = 167 refresh = 1 [47904.1]
-STATIC uint32_t calculate_pwm_parameters(uint32_t sample_rate, uint32_t *top_out) {
+static uint32_t calculate_pwm_parameters(uint32_t sample_rate, uint32_t *top_out) {
     // the desired frequency is the closest integer multiple of sample_rate not less than F_TARGET
     uint32_t desired_frequency = (F_TARGET + sample_rate - 1) / sample_rate * sample_rate;
     // The top value is the PWM frequency divided by the desired frequency (round to nearest)
@@ -43,7 +43,7 @@ STATIC uint32_t calculate_pwm_parameters(uint32_t sample_rate, uint32_t *top_out
     return multiplier - 1;
 }
 
-STATIC void activate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
+static void activate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(active_audio); i++) {
         if (!active_audio[i]) {
             active_audio[i] = self;
@@ -52,7 +52,7 @@ STATIC void activate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
         }
     }
 }
-STATIC void deactivate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
+static void deactivate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
     // Turn off the interrupts to the CPU.
     self->pwm->INTENCLR = PWM_INTENSET_SEQSTARTED0_Msk | PWM_INTENSET_SEQSTARTED1_Msk;
     for (size_t i = 0; i < MP_ARRAY_SIZE(active_audio); i++) {
@@ -63,7 +63,7 @@ STATIC void deactivate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
     }
 }
 
-STATIC void fill_buffers(audiopwmio_pwmaudioout_obj_t *self, int buf) {
+static void fill_buffers(audiopwmio_pwmaudioout_obj_t *self, int buf) {
     uint16_t *dev_buffer = self->buffers[buf];
     uint8_t *buffer;
     uint32_t buffer_length;
@@ -112,7 +112,7 @@ STATIC void fill_buffers(audiopwmio_pwmaudioout_obj_t *self, int buf) {
     }
 }
 
-STATIC void audiopwmout_background_obj(audiopwmio_pwmaudioout_obj_t *self) {
+static void audiopwmout_background_obj(audiopwmio_pwmaudioout_obj_t *self) {
     if (!common_hal_audiopwmio_pwmaudioout_get_playing(self)) {
         return;
     }

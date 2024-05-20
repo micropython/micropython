@@ -120,7 +120,7 @@ void common_hal_adafruit_pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_f
     }
 }
 
-STATIC uint8_t _pixelbuf_get_as_uint8(mp_obj_t obj) {
+static uint8_t _pixelbuf_get_as_uint8(mp_obj_t obj) {
     if (mp_obj_is_small_int(obj)) {
         return MP_OBJ_SMALL_INT_VALUE(obj);
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
@@ -224,7 +224,7 @@ void common_hal_adafruit_pixelbuf_pixelbuf_set_pixel_color(mp_obj_t self_in, siz
     pixelbuf_set_pixel_color(self, index, r, g, b, w);
 }
 
-STATIC void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t *self, size_t index, mp_obj_t value) {
+static void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t *self, size_t index, mp_obj_t value) {
     uint8_t r;
     uint8_t g;
     uint8_t b;

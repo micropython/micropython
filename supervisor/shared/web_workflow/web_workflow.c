@@ -171,7 +171,7 @@ static bool _base64_in_place(char *buf, size_t in_len, size_t out_len) {
     return true;
 }
 
-STATIC void _update_encoded_ip(void) {
+static void _update_encoded_ip(void) {
     uint32_t ipv4_address = 0;
     if (common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
         ipv4_address = wifi_radio_get_ipv4_address(&common_hal_wifi_radio_obj);
@@ -381,7 +381,7 @@ void web_workflow_send_raw(socketpool_socket_obj_t *socket, bool flush, const ui
     }
 }
 
-STATIC void _print_raw(void *env, const char *str, size_t len) {
+static void _print_raw(void *env, const char *str, size_t len) {
     web_workflow_send_raw((socketpool_socket_obj_t *)env, false, (const uint8_t *)str, (size_t)len);
 }
 
@@ -421,7 +421,7 @@ static void _send_chunk(socketpool_socket_obj_t *socket, const char *chunk) {
     web_workflow_send_raw(socket, strlen(chunk) == 0, (const uint8_t *)"\r\n", 2);
 }
 
-STATIC void _print_chunk(void *env, const char *str, size_t len) {
+static void _print_chunk(void *env, const char *str, size_t len) {
     mp_print_t _socket_print = {env, _print_raw};
     mp_printf(&_socket_print, "%X\r\n", len);
     web_workflow_send_raw((socketpool_socket_obj_t *)env, false, (const uint8_t *)str, len);
@@ -925,7 +925,7 @@ static void _reply_with_diskinfo_json(socketpool_socket_obj_t *socket, _request 
 // FATFS has a two second timestamp resolution but the BLE API allows for nanosecond resolution.
 // This function truncates the time the time to a resolution storable by FATFS and fills in the
 // FATFS encoded version into fattime.
-STATIC uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
+static uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
     timeutils_struct_time_t tm;
     uint64_t seconds_since_epoch = timeutils_seconds_since_epoch_from_nanoseconds_since_1970(input_time);
     timeutils_seconds_since_epoch_to_struct_time(seconds_since_epoch, &tm);
@@ -936,7 +936,7 @@ STATIC uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
     return truncated_time;
 }
 
-STATIC void _discard_incoming(socketpool_socket_obj_t *socket, size_t amount) {
+static void _discard_incoming(socketpool_socket_obj_t *socket, size_t amount) {
     size_t discarded = 0;
     while (discarded < amount) {
         uint8_t bytes[64];

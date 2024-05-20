@@ -24,7 +24,7 @@ MAKE_ENUM_MAP(espulp_architecture) {
     MAKE_ENUM_MAP_ENTRY(architecture, FSM),
     MAKE_ENUM_MAP_ENTRY(architecture, RISCV),
 };
-STATIC MP_DEFINE_CONST_DICT(espulp_architecture_locals_dict, espulp_architecture_locals_table);
+static MP_DEFINE_CONST_DICT(espulp_architecture_locals_dict, espulp_architecture_locals_table);
 
 MAKE_PRINTER(espulp, espulp_architecture);
 

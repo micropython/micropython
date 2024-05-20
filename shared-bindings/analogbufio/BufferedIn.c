@@ -43,7 +43,7 @@
 //|         :param ~microcontroller.Pin pin: the pin to read from
 //|         :param ~int sample_rate: rate: sampling frequency, in samples per second"""
 //|         ...
-STATIC mp_obj_t analogbufio_bufferedin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t analogbufio_bufferedin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin,    MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -68,14 +68,14 @@ STATIC mp_obj_t analogbufio_bufferedin_make_new(const mp_obj_type_t *type, size_
 //|     def deinit(self) -> None:
 //|         """Shut down the `BufferedIn` and release the pin for other use."""
 //|         ...
-STATIC mp_obj_t analogbufio_bufferedin_deinit(mp_obj_t self_in) {
+static mp_obj_t analogbufio_bufferedin_deinit(mp_obj_t self_in) {
     analogbufio_bufferedin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_analogbufio_bufferedin_deinit(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(analogbufio_bufferedin_deinit_obj, analogbufio_bufferedin_deinit);
 
-STATIC void check_for_deinit(analogbufio_bufferedin_obj_t *self) {
+static void check_for_deinit(analogbufio_bufferedin_obj_t *self) {
     if (common_hal_analogbufio_bufferedin_deinited(self)) {
         raise_deinited_error();
     }
@@ -89,12 +89,12 @@ STATIC void check_for_deinit(analogbufio_bufferedin_obj_t *self) {
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t analogbufio_bufferedin___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t analogbufio_bufferedin___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_analogbufio_bufferedin_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogbufio_bufferedin___exit___obj, 4, 4, analogbufio_bufferedin___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogbufio_bufferedin___exit___obj, 4, 4, analogbufio_bufferedin___exit__);
 
 //|     def readinto(self, buffer: WriteableBuffer) -> int:
 //|         """Fills the provided buffer with ADC voltage values.
@@ -108,7 +108,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogbufio_bufferedin___exit___obj, 
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: buffer: A buffer for samples"""
 //|         ...
 //|
-STATIC mp_obj_t analogbufio_bufferedin_obj_readinto(mp_obj_t self_in, mp_obj_t buffer_obj) {
+static mp_obj_t analogbufio_bufferedin_obj_readinto(mp_obj_t self_in, mp_obj_t buffer_obj) {
     analogbufio_bufferedin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -130,7 +130,7 @@ STATIC mp_obj_t analogbufio_bufferedin_obj_readinto(mp_obj_t self_in, mp_obj_t b
 }
 MP_DEFINE_CONST_FUN_OBJ_2(analogbufio_bufferedin_readinto_obj, analogbufio_bufferedin_obj_readinto);
 
-STATIC const mp_rom_map_elem_t analogbufio_bufferedin_locals_dict_table[] = {
+static const mp_rom_map_elem_t analogbufio_bufferedin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___del__),    MP_ROM_PTR(&analogbufio_bufferedin_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),     MP_ROM_PTR(&analogbufio_bufferedin_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__),  MP_ROM_PTR(&default___enter___obj) },
@@ -139,7 +139,7 @@ STATIC const mp_rom_map_elem_t analogbufio_bufferedin_locals_dict_table[] = {
 
 };
 
-STATIC MP_DEFINE_CONST_DICT(analogbufio_bufferedin_locals_dict, analogbufio_bufferedin_locals_dict_table);
+static MP_DEFINE_CONST_DICT(analogbufio_bufferedin_locals_dict, analogbufio_bufferedin_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     analogbufio_bufferedin_type,

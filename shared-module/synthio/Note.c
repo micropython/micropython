@@ -176,9 +176,9 @@ void synthio_note_start(synthio_note_obj_t *self, int32_t sample_rate) {
 #define BEND_SCALE (32768)
 #define BEND_OFFSET (BEND_SCALE)
 
-STATIC uint16_t pitch_bend_table[] = { 0, 1948, 4013, 6200, 8517, 10972, 13573, 16329, 19248, 22341, 25618, 29090, 32768 };
+static uint16_t pitch_bend_table[] = { 0, 1948, 4013, 6200, 8517, 10972, 13573, 16329, 19248, 22341, 25618, 29090, 32768 };
 
-STATIC uint32_t pitch_bend(uint32_t frequency_scaled, int32_t bend_value) {
+static uint32_t pitch_bend(uint32_t frequency_scaled, int32_t bend_value) {
     int octave = bend_value >> 15;
     bend_value &= 0x7fff;
     uint32_t bend_value_semitone = (uint32_t)bend_value * 24; // 65536/semitone

@@ -29,26 +29,26 @@
 #define FILTER16_IDE (1 << 3)
 #define FILTER32_IDE (1 << 2)
 
-STATIC void install_standard_filter(canio_listener_obj_t *self, canio_match_obj_t *match) {
+static void install_standard_filter(canio_listener_obj_t *self, canio_match_obj_t *match) {
     twai_ll_set_acc_filter(&TWAI, match->id << 21, ~(match->mask << 21), true);
     self->extended = false;
     self->standard = true;
 }
 
-STATIC void install_extended_filter(canio_listener_obj_t *self, canio_match_obj_t *match) {
+static void install_extended_filter(canio_listener_obj_t *self, canio_match_obj_t *match) {
     twai_ll_set_acc_filter(&TWAI, match->id << 3, ~(match->mask << 3), true);
     self->extended = true;
     self->standard = false;
 }
 
-STATIC void install_all_match_filter(canio_listener_obj_t *self) {
+static void install_all_match_filter(canio_listener_obj_t *self) {
     twai_ll_set_acc_filter(&TWAI, 0u, ~0u, true);
     self->extended = true;
     self->standard = true;
 }
 
 __attribute__((noinline, optimize("O0")))
-STATIC void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **matches) {
+static void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **matches) {
     twai_ll_enter_reset_mode(&TWAI);
 
     if (!nmatch) {

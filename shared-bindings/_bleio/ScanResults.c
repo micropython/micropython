@@ -16,7 +16,7 @@
 //|     """Iterates over advertising data received while scanning. This object is always created
 //|     by a `_bleio.Adapter`: it has no user-visible constructor."""
 //|
-STATIC mp_obj_t scanresults_iternext(mp_obj_t self_in) {
+static mp_obj_t scanresults_iternext(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &bleio_scanresults_type));
     bleio_scanresults_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t scan_entry = common_hal_bleio_scanresults_next(self);

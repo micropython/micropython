@@ -51,15 +51,15 @@ const mcu_runmode_obj_t mcu_runmode_bootloader_obj = {
     { &mcu_runmode_type },
 };
 
-STATIC const mp_rom_map_elem_t mcu_runmode_locals_dict_table[] = {
+static const mp_rom_map_elem_t mcu_runmode_locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_UF2),        MP_ROM_PTR(&mcu_runmode_uf2_obj)},
     {MP_ROM_QSTR(MP_QSTR_NORMAL),     MP_ROM_PTR(&mcu_runmode_normal_obj)},
     {MP_ROM_QSTR(MP_QSTR_SAFE_MODE),  MP_ROM_PTR(&mcu_runmode_safe_mode_obj)},
     {MP_ROM_QSTR(MP_QSTR_BOOTLOADER), MP_ROM_PTR(&mcu_runmode_bootloader_obj)},
 };
-STATIC MP_DEFINE_CONST_DICT(mcu_runmode_locals_dict, mcu_runmode_locals_dict_table);
+static MP_DEFINE_CONST_DICT(mcu_runmode_locals_dict, mcu_runmode_locals_dict_table);
 
-STATIC void mcu_runmode_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mcu_runmode_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     qstr runmode = MP_QSTR_NORMAL;
     if (self_in == MP_ROM_PTR(&mcu_runmode_uf2_obj)) {
         runmode = MP_QSTR_UF2;

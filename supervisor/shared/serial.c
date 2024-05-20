@@ -64,7 +64,7 @@ static bool _serial_console_write_disabled;
 static bool _serial_display_write_disabled;
 
 #if CIRCUITPY_CONSOLE_UART
-STATIC void console_uart_print_strn(void *env, const char *str, size_t len) {
+static void console_uart_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     int uart_errcode;
     common_hal_busio_uart_write(&console_uart, (const uint8_t *)str, len, &uart_errcode);

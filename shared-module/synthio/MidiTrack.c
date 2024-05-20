@@ -8,12 +8,12 @@
 #include "shared-bindings/synthio/MidiTrack.h"
 
 
-STATIC void record_midi_stream_error(synthio_miditrack_obj_t *self) {
+static void record_midi_stream_error(synthio_miditrack_obj_t *self) {
     self->error_location = self->pos;
     self->pos = self->track.len;
 }
 
-STATIC mp_obj_t parse_note(synthio_miditrack_obj_t *self) {
+static mp_obj_t parse_note(synthio_miditrack_obj_t *self) {
     uint8_t *buffer = self->track.buf;
     size_t len = self->track.len;
     if (self->pos + 1 >= len) {
@@ -84,7 +84,7 @@ static void decode_until_pause(synthio_miditrack_obj_t *self) {
     } while (self->pos < len && self->synth.span.dur == 0);
 }
 
-STATIC void start_parse(synthio_miditrack_obj_t *self) {
+static void start_parse(synthio_miditrack_obj_t *self) {
     self->pos = 0;
     self->error_location = -1;
     self->synth.span.dur = decode_duration(self);

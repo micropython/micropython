@@ -20,19 +20,19 @@
 
 // Buffer the incoming serial data in the background so that we can look for the
 // interrupt character.
-STATIC ringbuf_t _incoming_ringbuf;
-STATIC uint8_t _buf[16];
+static ringbuf_t _incoming_ringbuf;
+static uint8_t _buf[16];
 
-STATIC uint8_t _dev_addr;
-STATIC uint8_t _interface;
+static uint8_t _dev_addr;
+static uint8_t _interface;
 
 #define FLAG_SHIFT (1)
 #define FLAG_NUMLOCK (2)
 #define FLAG_CTRL (4)
 #define FLAG_STRING (8)
 
-STATIC uint8_t user_keymap[384];
-STATIC size_t user_keymap_len = 0;
+static uint8_t user_keymap[384];
+static size_t user_keymap_len = 0;
 
 void usb_keymap_set(const uint8_t *buf, size_t len) {
     user_keymap_len = len = MIN(len, sizeof(user_keymap));
@@ -100,7 +100,7 @@ struct keycode_mapper {
 #define CTRL_F12     "\e[24;5~"
 
 
-STATIC struct keycode_mapper keycode_to_ascii[] = {
+static struct keycode_mapper keycode_to_ascii[] = {
     { HID_KEY_A, HID_KEY_Z, 'a', 0, NULL},
 
     { HID_KEY_1, HID_KEY_9, 0, FLAG_SHIFT, "!@#$%^&*()" },
@@ -126,7 +126,7 @@ STATIC struct keycode_mapper keycode_to_ascii[] = {
 
 };
 
-STATIC bool report_contains(const hid_keyboard_report_t *report, uint8_t key) {
+static bool report_contains(const hid_keyboard_report_t *report, uint8_t key) {
     for (int i = 0; i < 6; i++) {
         if (report->keycode[i] == key) {
             return true;
@@ -135,20 +135,20 @@ STATIC bool report_contains(const hid_keyboard_report_t *report, uint8_t key) {
     return false;
 }
 
-STATIC const char *old_buf = NULL;
-STATIC size_t buf_size = 0;
+static const char *old_buf = NULL;
+static size_t buf_size = 0;
 // this matches Linux default of 500ms to first repeat, 1/20s thereafter
 enum { initial_repeat_time = 500, default_repeat_time = 50 };
-STATIC uint64_t repeat_deadline;
-STATIC void repeat_f(void *unused);
+static uint64_t repeat_deadline;
+static void repeat_f(void *unused);
 background_callback_t repeat_cb = {repeat_f, NULL, NULL, NULL};
 
-STATIC void set_repeat_deadline(uint64_t new_deadline) {
+static void set_repeat_deadline(uint64_t new_deadline) {
     repeat_deadline = new_deadline;
     background_callback_add_core(&repeat_cb);
 }
 
-STATIC void send_bufn_core(const char *buf, size_t n) {
+static void send_bufn_core(const char *buf, size_t n) {
     old_buf = buf;
     buf_size = n;
     // repeat_timeout = millis() + repeat_time;
@@ -166,22 +166,22 @@ STATIC void send_bufn_core(const char *buf, size_t n) {
     }
 }
 
-STATIC void send_bufn(const char *buf, size_t n) {
+static void send_bufn(const char *buf, size_t n) {
     send_bufn_core(buf, n);
     set_repeat_deadline(supervisor_ticks_ms64() + initial_repeat_time);
 }
 
-STATIC void send_bufz(const char *buf) {
+static void send_bufz(const char *buf) {
     send_bufn(buf, strlen(buf));
 }
 
-STATIC void send_byte(uint8_t code) {
+static void send_byte(uint8_t code) {
     static char buf[1];
     buf[0] = code;
     send_bufn(buf, 1);
 }
 
-STATIC void send_repeat(void) {
+static void send_repeat(void) {
     if (old_buf) {
         uint64_t now = supervisor_ticks_ms64();
         if (now >= repeat_deadline) {
@@ -193,20 +193,20 @@ STATIC void send_repeat(void) {
     }
 }
 
-STATIC void repeat_f(void *unused) {
+static void repeat_f(void *unused) {
     send_repeat();
 }
 
 hid_keyboard_report_t old_report;
 
-STATIC const char *skip_nuls(const char *buf, size_t n) {
+static const char *skip_nuls(const char *buf, size_t n) {
     while (n--) {
         buf += strlen(buf) + 1;
     }
     return buf;
 }
 
-STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard_report_t *report) {
+static void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard_report_t *report) {
     bool has_altgr = (user_keymap_len > 256);
     bool altgr = has_altgr && report->modifier & 0x40;
     bool alt = has_altgr ? report->modifier & 0x4 : report->modifier & 0x44;

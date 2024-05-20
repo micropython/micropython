@@ -372,7 +372,7 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
 
 }
 
-STATIC void draw_line(displayio_bitmap_t *destination,
+static void draw_line(displayio_bitmap_t *destination,
     int16_t x0, int16_t y0,
     int16_t x1, int16_t y1,
     uint32_t value) {
@@ -484,7 +484,7 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
     draw_line(destination, x0, y0, x1, y1, value);
 }
 
-STATIC int32_t ith(void *data, size_t i, int element_size) {
+static int32_t ith(void *data, size_t i, int element_size) {
     switch (element_size) {
         default:
         case 1:
@@ -685,7 +685,7 @@ enum {
     SWAP_RB = 1 << 1,
 };
 
-STATIC void fill_row(displayio_bitmap_t *bitmap, int swap, int16_t *luminance_data, int y, int mx) {
+static void fill_row(displayio_bitmap_t *bitmap, int swap, int16_t *luminance_data, int y, int mx) {
     if (y >= bitmap->height) {
         return;
     }
@@ -973,7 +973,7 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
     }
 }
 
-STATIC void draw_circle(displayio_bitmap_t *destination,
+static void draw_circle(displayio_bitmap_t *destination,
     int16_t x, int16_t y,
     int16_t radius, uint32_t value) {
 

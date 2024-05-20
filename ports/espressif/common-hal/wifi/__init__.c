@@ -39,7 +39,7 @@ wifi_radio_obj_t common_hal_wifi_radio_obj;
 
 static const char *TAG = "CP wifi";
 
-STATIC void schedule_background_on_cp_core(void *arg) {
+static void schedule_background_on_cp_core(void *arg) {
     #if CIRCUITPY_STATUS_BAR
     supervisor_status_bar_request_update(false);
     #endif

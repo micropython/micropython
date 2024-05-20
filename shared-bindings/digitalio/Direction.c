@@ -41,13 +41,13 @@ const digitalio_direction_obj_t digitalio_direction_output_obj = {
     { &digitalio_direction_type },
 };
 
-STATIC const mp_rom_map_elem_t digitalio_direction_locals_dict_table[] = {
+static const mp_rom_map_elem_t digitalio_direction_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_INPUT),    MP_ROM_PTR(&digitalio_direction_input_obj) },
     { MP_ROM_QSTR(MP_QSTR_OUTPUT),   MP_ROM_PTR(&digitalio_direction_output_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(digitalio_direction_locals_dict, digitalio_direction_locals_dict_table);
+static MP_DEFINE_CONST_DICT(digitalio_direction_locals_dict, digitalio_direction_locals_dict_table);
 
-STATIC void digitalio_direction_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void digitalio_direction_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     qstr direction = MP_QSTR_INPUT;
     if (self_in == MP_ROM_PTR(&digitalio_direction_output_obj)) {
         direction = MP_QSTR_OUTPUT;

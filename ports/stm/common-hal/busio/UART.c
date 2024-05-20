@@ -19,15 +19,15 @@
 #define ALL_UARTS 0xFFFF
 
 // arrays use 0 based numbering: UART1 is stored at index 0
-STATIC bool reserved_uart[MAX_UART];
-STATIC bool never_reset_uart[MAX_UART];
+static bool reserved_uart[MAX_UART];
+static bool never_reset_uart[MAX_UART];
 int errflag; // Used to restart read halts
 
-STATIC void uart_clock_enable(uint16_t mask);
-STATIC void uart_clock_disable(uint16_t mask);
-STATIC void uart_assign_irq(busio_uart_obj_t *self, USART_TypeDef *USARTx);
+static void uart_clock_enable(uint16_t mask);
+static void uart_clock_disable(uint16_t mask);
+static void uart_assign_irq(busio_uart_obj_t *self, USART_TypeDef *USARTx);
 
-STATIC USART_TypeDef *assign_uart_or_throw(busio_uart_obj_t *self, bool pin_eval,
+static USART_TypeDef *assign_uart_or_throw(busio_uart_obj_t *self, bool pin_eval,
     int periph_index, bool uart_taken) {
     if (pin_eval) {
         // assign a root pointer pointer for IRQ
@@ -418,7 +418,7 @@ bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
     return __HAL_UART_GET_FLAG(&self->handle, UART_FLAG_TXE);
 }
 
-STATIC void call_hal_irq(int uart_num) {
+static void call_hal_irq(int uart_num) {
     // Create casted context pointer
     busio_uart_obj_t *context = (busio_uart_obj_t *)MP_STATE_PORT(cpy_uart_obj_all)[uart_num - 1];
     if (context != NULL) {
@@ -456,7 +456,7 @@ void USART6_IRQHandler(void) {
     call_hal_irq(6);
 }
 
-STATIC void uart_clock_enable(uint16_t mask) {
+static void uart_clock_enable(uint16_t mask) {
     #ifdef USART1
     if (mask & (1 << 0)) {
         __HAL_RCC_USART1_FORCE_RESET();
@@ -529,7 +529,7 @@ STATIC void uart_clock_enable(uint16_t mask) {
     #endif
 }
 
-STATIC void uart_clock_disable(uint16_t mask) {
+static void uart_clock_disable(uint16_t mask) {
     #ifdef USART1
     if (mask & (1 << 0)) {
         __HAL_RCC_USART1_FORCE_RESET();
@@ -602,7 +602,7 @@ STATIC void uart_clock_disable(uint16_t mask) {
     #endif
 }
 
-STATIC void uart_assign_irq(busio_uart_obj_t *self, USART_TypeDef *USARTx) {
+static void uart_assign_irq(busio_uart_obj_t *self, USART_TypeDef *USARTx) {
     #ifdef USART1
     if (USARTx == USART1) {
         self->irq = USART1_IRQn;

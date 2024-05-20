@@ -9,7 +9,7 @@
 #include "board.h"
 
 // extended pins
-STATIC const mp_rom_map_elem_t board_module_carrier_table[] = {
+static const mp_rom_map_elem_t board_module_carrier_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_PD09) },
     { MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_PD08) },
     { MP_ROM_QSTR(MP_QSTR_D2), MP_ROM_PTR(&pin_PF15) },
@@ -89,7 +89,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 
 // Core Feather Pins
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     { MP_ROM_QSTR(MP_QSTR_ext), MP_ROM_PTR(&carrier_type) },

@@ -20,7 +20,7 @@
 // as needed. It does not provide uname.
 
 // Version of mp_vfs_lookup_path that takes and returns uPy string objects.
-STATIC mp_vfs_mount_t *lookup_path(const char *path, mp_obj_t *path_out) {
+static mp_vfs_mount_t *lookup_path(const char *path, mp_obj_t *path_out) {
     const char *p_out;
     *path_out = mp_const_none;
     mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
@@ -32,7 +32,7 @@ STATIC mp_vfs_mount_t *lookup_path(const char *path, mp_obj_t *path_out) {
 }
 
 // Strip off trailing slashes to please underlying libraries
-STATIC mp_vfs_mount_t *lookup_dir_path(const char *path, mp_obj_t *path_out) {
+static mp_vfs_mount_t *lookup_dir_path(const char *path, mp_obj_t *path_out) {
     const char *p_out;
     *path_out = mp_const_none;
     mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
@@ -46,7 +46,7 @@ STATIC mp_vfs_mount_t *lookup_dir_path(const char *path, mp_obj_t *path_out) {
     return vfs;
 }
 
-STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
     if (vfs == MP_VFS_NONE) {
         // mount point not found
         mp_raise_OSError(MP_ENODEV);

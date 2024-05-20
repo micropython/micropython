@@ -47,20 +47,20 @@ mp_obj_t rtc_get_time_source_time(void) {
 //|       rtc.set_time_source(r)"""
 //|     ...
 //|
-STATIC mp_obj_t rtc_set_time_source(mp_obj_t time_source) {
+static mp_obj_t rtc_set_time_source(mp_obj_t time_source) {
     MP_STATE_VM(rtc_time_source) = time_source;
 
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rtc_set_time_source_obj, rtc_set_time_source);
 
-STATIC const mp_rom_map_elem_t rtc_module_globals_table[] = {
+static const mp_rom_map_elem_t rtc_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_rtc) },
     { MP_ROM_QSTR(MP_QSTR_set_time_source), MP_ROM_PTR(&rtc_set_time_source_obj) },
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&rtc_rtc_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(rtc_module_globals, rtc_module_globals_table);
+static MP_DEFINE_CONST_DICT(rtc_module_globals, rtc_module_globals_table);
 
 const mp_obj_module_t rtc_module = {
     .base = { &mp_type_module },

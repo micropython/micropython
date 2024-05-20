@@ -26,7 +26,7 @@ bool speaker_enable_in_use;
 #define SWD_MUX GPIO_PIN_FUNCTION_G
 #endif
 
-STATIC uint32_t never_reset_pins[PORT_COUNT];
+static uint32_t never_reset_pins[PORT_COUNT];
 
 void reset_all_pins(void) {
     uint32_t pin_mask[PORT_COUNT] = PORT_OUT_IMPLEMENTED;

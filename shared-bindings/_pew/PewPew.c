@@ -41,7 +41,7 @@
 //|         buttons are connected to rows of the matrix)."""
 //|         ...
 //|
-STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_buffer, ARG_rows, ARG_cols, ARG_buttons };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -106,9 +106,9 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 }
 
 
-STATIC const mp_rom_map_elem_t pewpew_locals_dict_table[] = {
+static const mp_rom_map_elem_t pewpew_locals_dict_table[] = {
 };
-STATIC MP_DEFINE_CONST_DICT(pewpew_locals_dict, pewpew_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pewpew_locals_dict, pewpew_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pewpew_type,

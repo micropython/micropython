@@ -13,12 +13,12 @@
 
 //| """Support for audio mixing"""
 
-STATIC const mp_rom_map_elem_t audiomixer_module_globals_table[] = {
+static const mp_rom_map_elem_t audiomixer_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiomixer) },
     { MP_ROM_QSTR(MP_QSTR_Mixer), MP_ROM_PTR(&audiomixer_mixer_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(audiomixer_module_globals, audiomixer_module_globals_table);
+static MP_DEFINE_CONST_DICT(audiomixer_module_globals, audiomixer_module_globals_table);
 
 const mp_obj_module_t audiomixer_module = {
     .base = { &mp_type_module },

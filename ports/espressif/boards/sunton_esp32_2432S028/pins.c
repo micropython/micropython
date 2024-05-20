@@ -11,7 +11,7 @@ CIRCUITPY_BOARD_BUS_SINGLETON(sd_spi, spi, 0)
 CIRCUITPY_BOARD_BUS_SINGLETON(touch_spi, spi, 1)
 CIRCUITPY_BOARD_BUS_SINGLETON(lcd_spi, spi, 2)
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     // Boot button

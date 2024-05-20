@@ -54,7 +54,7 @@
 //| ...
 //|
 
-STATIC const mp_rom_map_elem_t espnow_module_globals_table[] = {
+static const mp_rom_map_elem_t espnow_module_globals_table[] = {
     // module name
     { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_espnow) },
 
@@ -64,7 +64,7 @@ STATIC const mp_rom_map_elem_t espnow_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Peer),        MP_ROM_PTR(&espnow_peer_type) },
     { MP_ROM_QSTR(MP_QSTR_Peers),       MP_ROM_PTR(&espnow_peers_type) },
 };
-STATIC MP_DEFINE_CONST_DICT(espnow_module_globals, espnow_module_globals_table);
+static MP_DEFINE_CONST_DICT(espnow_module_globals, espnow_module_globals_table);
 
 const mp_obj_module_t espnow_module = {
     .base = { &mp_type_module },

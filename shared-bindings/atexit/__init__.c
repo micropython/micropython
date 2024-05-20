@@ -38,11 +38,11 @@
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t atexit_register(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t atexit_register(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     shared_module_atexit_register(pos_args[0], (n_args - 1), ((n_args > 1) ? &pos_args[1] : NULL), kw_args);
     return pos_args[0];
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(atexit_register_obj, 1, atexit_register);
+static MP_DEFINE_CONST_FUN_OBJ_KW(atexit_register_obj, 1, atexit_register);
 
 //| def unregister(func: Callable[..., Any]) -> None:
 //|     """Remove func from the list of functions to be run at termination.
@@ -53,20 +53,20 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(atexit_register_obj, 1, atexit_register);
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t atexit_unregister(const mp_obj_t self_in) {
+static mp_obj_t atexit_unregister(const mp_obj_t self_in) {
     shared_module_atexit_unregister(&self_in);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(atexit_unregister_obj, atexit_unregister);
+static MP_DEFINE_CONST_FUN_OBJ_1(atexit_unregister_obj, atexit_unregister);
 
-STATIC const mp_rom_map_elem_t atexit_module_globals_table[] = {
+static const mp_rom_map_elem_t atexit_module_globals_table[] = {
     // module name
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_atexit) },
     // module functions
     { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&atexit_register_obj) },
     { MP_ROM_QSTR(MP_QSTR_unregister), MP_ROM_PTR(&atexit_unregister_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(atexit_module_globals, atexit_module_globals_table);
+static MP_DEFINE_CONST_DICT(atexit_module_globals, atexit_module_globals_table);
 
 const mp_obj_module_t atexit_module = {
     .base = { &mp_type_module },

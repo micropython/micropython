@@ -196,7 +196,7 @@ mp_obj_t common_hal_busdisplay_busdisplay_get_root_group(busdisplay_busdisplay_o
     return self->core.current_group;
 }
 
-STATIC const displayio_area_t *_get_refresh_areas(busdisplay_busdisplay_obj_t *self) {
+static const displayio_area_t *_get_refresh_areas(busdisplay_busdisplay_obj_t *self) {
     if (self->core.full_refresh) {
         self->core.area.next = NULL;
         return &self->core.area;
@@ -206,14 +206,14 @@ STATIC const displayio_area_t *_get_refresh_areas(busdisplay_busdisplay_obj_t *s
     return NULL;
 }
 
-STATIC void _send_pixels(busdisplay_busdisplay_obj_t *self, uint8_t *pixels, uint32_t length) {
+static void _send_pixels(busdisplay_busdisplay_obj_t *self, uint8_t *pixels, uint32_t length) {
     if (!self->bus.data_as_commands) {
         self->bus.send(self->bus.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, &self->write_ram_command, 1);
     }
     self->bus.send(self->bus.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, pixels, length);
 }
 
-STATIC bool _refresh_area(busdisplay_busdisplay_obj_t *self, const displayio_area_t *area) {
+static bool _refresh_area(busdisplay_busdisplay_obj_t *self, const displayio_area_t *area) {
     uint16_t buffer_size = 128; // In uint32_ts
 
     displayio_area_t clipped;
@@ -305,7 +305,7 @@ STATIC bool _refresh_area(busdisplay_busdisplay_obj_t *self, const displayio_are
     return true;
 }
 
-STATIC void _refresh_display(busdisplay_busdisplay_obj_t *self) {
+static void _refresh_display(busdisplay_busdisplay_obj_t *self) {
     if (!displayio_display_bus_is_free(&self->bus)) {
         // A refresh on this bus is already in progress.  Try next display.
         return;
