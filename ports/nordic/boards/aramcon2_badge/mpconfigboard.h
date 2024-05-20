@@ -4,6 +4,9 @@
 // SPDX-FileCopyrightText: Copyright (c) 2021 Benjamin Meisels
 //
 // SPDX-License-Identifier: MIT
+
+#pragma once
+
 #include "nrfx/hal/nrf_gpio.h"
 
 #define MICROPY_HW_BOARD_NAME       "ARAMCON2 Badge"

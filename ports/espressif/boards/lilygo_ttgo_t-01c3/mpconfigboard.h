@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME       "LILYGO TTGO T-01C3"
 #define MICROPY_HW_MCU_NAME         "ESP32-C3"
 

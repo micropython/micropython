@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "splitkb.com Liatris"
 #define MICROPY_HW_MCU_NAME "rp2040"
 

@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_RTC_RTC_H
 #define MICROPY_INCLUDED_CXD56_COMMON_HAL_RTC_RTC_H
 

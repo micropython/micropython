@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "Challenger RP2040 SD/RTC"
 #define MICROPY_HW_MCU_NAME "rp2040"
 

@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "Cedar Grove StringCar M0 Express"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 

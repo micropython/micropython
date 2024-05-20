@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "Adafruit Feather ESP32-C6 4MB Flash No PSRAM"

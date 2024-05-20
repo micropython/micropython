@@ -5,6 +5,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define FLASH_PAGE_SIZE (4096)
 
 #if BLUETOOTH_SD

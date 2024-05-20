@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "ESP32-S3-DevKitC-1-N32R8"

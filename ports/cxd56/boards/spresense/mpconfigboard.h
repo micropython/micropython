@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "SPRESENSE"
 #define MICROPY_HW_MCU_NAME "CXD5602"
 

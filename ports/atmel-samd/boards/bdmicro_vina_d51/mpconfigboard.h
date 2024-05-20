@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // More than one revision of this board is available.
 // This board specifies the most up to date PCB Revision
 

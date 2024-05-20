@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #include "stm32f4xx_hal.h"
 
 // Chip:                STM32F412Cx

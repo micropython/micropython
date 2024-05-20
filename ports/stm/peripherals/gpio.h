@@ -4,4 +4,6 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 void stm32_peripherals_gpio_init(void);

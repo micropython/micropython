@@ -5,6 +5,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "IMXRT1015-EVK"
 #define MICROPY_HW_MCU_NAME "IMXRT1015DAF5A"
 

@@ -3,6 +3,9 @@
 // SPDX-FileCopyrightText: Copyright (c) 2019 Lucian Copeland for Adafruit Industries
 //
 // SPDX-License-Identifier: MIT
+
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME       "THUNDERPACK_v12"
 #define MICROPY_HW_MCU_NAME         "STM32F411CE"
 

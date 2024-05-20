@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "Silicognition LLC RP2040-Shim"
 #define MICROPY_HW_MCU_NAME "rp2040"
 

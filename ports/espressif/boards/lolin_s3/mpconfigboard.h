@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "LOLIN S3 16MB Flash 8MB PSRAM"

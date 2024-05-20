@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "MakerFabs-ESP32-S3-Parallel-TFT-With-Touch-7inch"

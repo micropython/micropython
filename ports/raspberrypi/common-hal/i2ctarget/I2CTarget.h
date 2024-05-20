@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #ifndef MICROPY_INCLUDED_RPI_COMMON_HAL_I2C_TARGET_H
 #define MICROPY_INCLUDED_RPI_COMMON_HAL_I2C_TARGET_H
 

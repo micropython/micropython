@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define SHIFT_MOD 0x40
 #define FN_MOD 0x80
 

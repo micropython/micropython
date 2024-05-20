@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "SAM E54 Xplained Pro"
 #define MICROPY_HW_MCU_NAME "same54p20"
 

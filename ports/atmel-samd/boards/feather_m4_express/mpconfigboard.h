@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "Adafruit Feather M4 Express"
 #define MICROPY_HW_MCU_NAME "samd51j19"
 

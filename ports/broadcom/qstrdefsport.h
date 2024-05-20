@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // qstrs specific to this port, only needed if they aren't auto-generated
 
 // Prevent uncrustify from modifying these lines.

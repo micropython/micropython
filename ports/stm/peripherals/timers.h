@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #include <stdint.h>
 #include "py/mphal.h"
 #include "peripherals/periph.h"

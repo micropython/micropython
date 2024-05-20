@@ -5,6 +5,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // Board setup
 #define MICROPY_HW_BOARD_NAME       "AITHinker ESP32-C3S_Kit_2M"
 #define MICROPY_HW_MCU_NAME         "ESP32-C3"

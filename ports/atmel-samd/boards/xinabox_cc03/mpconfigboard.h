@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "XinaBox CC03"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 

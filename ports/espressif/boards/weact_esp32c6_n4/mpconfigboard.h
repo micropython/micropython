@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // Board setup
 #define MICROPY_HW_BOARD_NAME       "WeAct ESP32-C6 (4MB)"
 #define MICROPY_HW_MCU_NAME         "ESP32-C6N4"

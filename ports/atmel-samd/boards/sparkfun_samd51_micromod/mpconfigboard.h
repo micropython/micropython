@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "SparkFun MicroMod SAMD51 Processor"
 #define MICROPY_HW_MCU_NAME "samd51j20"
 

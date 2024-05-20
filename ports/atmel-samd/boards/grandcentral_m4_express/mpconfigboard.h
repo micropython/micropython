@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "Adafruit Grand Central M4 Express"
 #define MICROPY_HW_MCU_NAME "samd51p20"
 

@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "LoC BeR M4 base board"
 #define MICROPY_HW_MCU_NAME "samd51g19"
 

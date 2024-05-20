@@ -5,6 +5,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #include "nrfx/hal/nrf_gpio.h"
 
 #define MAKERDIARY_NRF52840_MDK_DONGLE

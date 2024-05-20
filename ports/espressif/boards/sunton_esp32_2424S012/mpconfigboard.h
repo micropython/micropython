@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // Board setup
 
 #define MICROPY_HW_BOARD_NAME       "Sunton ESP32-2424S012"

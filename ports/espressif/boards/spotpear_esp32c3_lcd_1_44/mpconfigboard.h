@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // Board setup
 #define MICROPY_HW_BOARD_NAME       "Spotpear ESP32C3 LCD 1.44"
 #define MICROPY_HW_MCU_NAME         "ESP32-C3FH4"

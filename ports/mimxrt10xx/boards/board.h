@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #include "mpconfigboard.h"
 
 #define XIP_BOOT_HEADER_ENABLE (1)

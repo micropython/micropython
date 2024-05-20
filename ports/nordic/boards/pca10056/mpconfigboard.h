@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #include "nrfx/hal/nrf_gpio.h"
 
 #define MICROPY_HW_BOARD_NAME       "PCA10056 nRF52840-DK"

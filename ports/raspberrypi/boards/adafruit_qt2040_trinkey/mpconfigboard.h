@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "Adafruit QT2040 Trinkey"
 #define MICROPY_HW_MCU_NAME "rp2040"
 

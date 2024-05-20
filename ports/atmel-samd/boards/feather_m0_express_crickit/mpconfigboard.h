@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "Adafruit Feather M0 Express with Crickit libraries"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 

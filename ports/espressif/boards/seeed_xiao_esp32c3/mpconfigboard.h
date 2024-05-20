@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "Seeed Studio XIAO ESP32C3"
 #define MICROPY_HW_MCU_NAME "ESP32-C3FN4"
 

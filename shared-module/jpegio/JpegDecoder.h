@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #include "py/obj.h"
 #include "lib/tjpgd/src/tjpgd.h"
 #include "shared-module/displayio/Bitmap.h"

@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // Board setup
 #define MICROPY_HW_BOARD_NAME       "01Space 0.42 OLED ESP32C3"
 #define MICROPY_HW_MCU_NAME         "ESP32-C3FH4"

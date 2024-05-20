@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #include "nrfx.h"
 #include "nrfx_timer.h"
 

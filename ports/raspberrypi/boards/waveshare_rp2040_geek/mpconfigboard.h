@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 // Micropython setup
 #define MICROPY_HW_BOARD_NAME "Waveshare RP2040-GEEK"
 #define MICROPY_HW_MCU_NAME "rp2040"
