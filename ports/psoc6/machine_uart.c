@@ -244,7 +244,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
-    cyhal_uart_free(&(self->uart_obj));
+    cyhal_uart_free(&self->uart_obj);
     uart_tx_free(self);
     uart_rx_free(self);
     uart_cts_free(self);
@@ -253,16 +253,20 @@ static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
 }
 
 static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
-    return 0;
+    return cyhal_uart_readable(&self->uart_obj);
+
 }
 
 static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
-    return 0;
+    return cyhal_uart_is_tx_active(&self->uart_obj);
+
 }
 
 
 static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     // machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    // mp_uint_t timeout = self->timeout;
+    // uint8_t *dest = buf_in;
     return 0;
 }
 
