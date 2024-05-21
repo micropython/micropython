@@ -669,10 +669,12 @@ I2S bus
 
 See :ref:`machine.I2S <machine.I2S>`. 
 
-Supported sample rates are 8KHz, 16KHz, 32KHz, 48KHz, 22.05KHz, 44.1KHz.
+.. note::
+    The only difference with the reference API is the usage of the ``id`` in the constructor ``IS2()``. In the PSoC6 port the ``id`` value is ignored. 
+    Any integer value can be passed as ``id``.
+    New instances of the I2S class will be allocated as long as there are available slots and the chosen I2S pins aren't already allocated by other instance.
 
-..
-    TODO: Once implemented. Mention no need of id, and the clock configuration requirements.
+Supported sample rates are 8KHz, 16KHz, 32KHz, 48KHz, 22.05KHz, 44.1KHz.
 
 ::
 
@@ -684,7 +686,7 @@ Supported sample rates are 8KHz, 16KHz, 32KHz, 48KHz, 22.05KHz, 44.1KHz.
     num_written = audio_out.write(buf) # write buffer of audio samples to I2S device 
     
 
-    audio_in = I2S(1, sck="P5_4", ws="P5_5", sd="P5_6", mode=I2S.RX, bits=16, format=I2S.STEREO, rate=22050, ibuf=20000) # create I2S object
+    audio_in = I2S(0, sck="P5_4", ws="P5_5", sd="P5_6", mode=I2S.RX, bits=16, format=I2S.STEREO, rate=22050, ibuf=20000) # create I2S object
     num_read = audio_in.readinto(buf)# fill buffer with audio samples from I2S device
 
 
