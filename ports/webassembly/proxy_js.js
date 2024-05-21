@@ -61,6 +61,11 @@ class PythonError extends Error {
 function proxy_js_init() {
     globalThis.proxy_js_ref = [globalThis, undefined];
     globalThis.proxy_js_ref_next = PROXY_JS_REF_NUM_STATIC;
+    globalThis.pyProxyFinalizationRegistry = new FinalizationRegistry(
+        (cRef) => {
+            Module.ccall("proxy_c_free_obj", "null", ["number"], [cRef]);
+        },
+    );
 }
 
 // js_obj cannot be undefined
@@ -251,6 +256,7 @@ function proxy_convert_mp_to_js_obj_jsside(value) {
             const target = new PyProxy(id);
             obj = new Proxy(target, py_proxy_handler);
         }
+        globalThis.pyProxyFinalizationRegistry.register(obj, id);
     }
     return obj;
 }
