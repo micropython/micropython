@@ -9,14 +9,8 @@
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
-/* Audio Subsystem Clock. Typical values depends on the desired sample rate:
- * 8KHz / 16 KHz / 32 KHz / 48 KHz    : 98.304  MHz
- * 22.05 KHz / 44.1 KHz               : 90.3168 MHz
- */
-
-/* Clock Settings */
-#define AUDIO_SYS_CLOCK_HZ    98304000u   /* in Hz (Ideally 98.304 MHz) */
-#define AUDIO_SYS_CLOCK_HZ_1  90300000u   /* in Hz (Ideally 90.304 MHz) */
+#define AUDIO_SYS_CLOCK_98_304_000_HZ    98000000u   /* (Ideally 98.304 MHz) For sample rates: 8KHz / 16 KHz / 32 KHz / 48 KHz in Hz  */
+#define AUDIO_SYS_CLOCK_90_300_000_HZ    90000000u   /* (Ideally 90.3168 MHz) For sample rates: 22.05 KHz / 44.1 KHz */
 
 cyhal_clock_t audio_clock;
 
@@ -100,67 +94,42 @@ void i2s_audio_clock_init(uint32_t audio_clock_freq_hz) {
     cy_rslt_t result;
 
     static bool clock_set = false;
-    static uint32_t pll_source_clock_freq_hz = AUDIO_SYS_CLOCK_HZ;
+
+    result = cyhal_clock_reserve(&clock_pll, &CYHAL_CLOCK_PLL[0]);
+    i2s_assert_raise_val("PLL clock reserve failed with error code: %lx", result);
+
+    uint32_t pll_source_clock_freq_hz = cyhal_clock_get_frequency(&clock_pll);
 
     if (audio_clock_freq_hz != pll_source_clock_freq_hz) {
+        mp_printf(&mp_plat_print, "warning: PLL0 freq is changed from %lu to %lu. This will affect all resources clock freq sourced by PLL0.\n", pll_source_clock_freq_hz, audio_clock_freq_hz);
         clock_set = false;
         pll_source_clock_freq_hz = audio_clock_freq_hz;
     }
 
     if (!clock_set) {
-
-        clock_set = true;
-
-        /* Initialize, take ownership of PLL0/PLL */
-        result = cyhal_clock_reserve(&clock_pll, &CYHAL_CLOCK_PLL[0]);
-        if (CY_RSLT_SUCCESS != result) {
-            mp_printf(&mp_plat_print, "Clock reserve fail");
-        }
-
-        /* Set the PLL0/PLL frequency to AUDIO_SYS_CLOCK_HZ based on AUDIO_IN_SAMPLE_FREQ */
         result = cyhal_clock_set_frequency(&clock_pll,  pll_source_clock_freq_hz, NULL);
-        if (CY_RSLT_SUCCESS != result) {
-            mp_printf(&mp_plat_print, "set_freq fail");
-        }
-
-        /* If the PLL0/PLL clock is not already enabled, enable it */
+        i2s_assert_raise_val("Set PLL clock frequency failed with error code: %lx", result);
         if (!cyhal_clock_is_enabled(&clock_pll)) {
             result = cyhal_clock_set_enabled(&clock_pll, true, true);
-            if (CY_RSLT_SUCCESS != result) {
-                mp_printf(&mp_plat_print, "PLL enable fail");
-            }
+            i2s_assert_raise_val("PLL clock enable failed with error code: %lx", result);
         }
 
-        cyhal_clock_free(&clock_pll);
-
-        /* Initialize, take ownership of CLK_HF1 */
         result = cyhal_clock_reserve(&audio_clock, &CYHAL_CLOCK_HF[1]);
-        if (CY_RSLT_SUCCESS != result) {
-            mp_printf(&mp_plat_print, "Clock Hf1 fail");
-        }
-
-        /* Source the audio subsystem clock (CLK_HF1) from PLL0/PLL */
+        i2s_assert_raise_val("HF1 clock reserve failed with error code: %lx", result);
         result = cyhal_clock_set_source(&audio_clock, &clock_pll);
-        if (CY_RSLT_SUCCESS != result) {
-            mp_printf(&mp_plat_print, "sourcing HF1 fail");
-        }
-
-        /* Set the divider for audio subsystem clock (CLK_HF1) */
+        i2s_assert_raise_val("HF1 clock sourcing failed with error code: %lx", result);
         result = cyhal_clock_set_divider(&audio_clock, 2);
-        if (CY_RSLT_SUCCESS != result) {
-            mp_printf(&mp_plat_print, "dividing hf1 fail");
-        }
-
-        /* If the audio subsystem clock (CLK_HF1) is not already enabled, enable it */
+        i2s_assert_raise_val("HF1 clock set divider failed with error code: %lx", result);
         if (!cyhal_clock_is_enabled(&audio_clock)) {
             result = cyhal_clock_set_enabled(&audio_clock, true, true);
-            if (CY_RSLT_SUCCESS != result) {
-                mp_printf(&mp_plat_print, "enable hf1 fail");
-            }
+            i2s_assert_raise_val("HF1 clock enable failed with error code: %lx", result);
         }
-
         cyhal_clock_free(&audio_clock);
+
+        clock_set = true;
     }
+
+    cyhal_clock_free(&clock_pll);
 
     cyhal_system_delay_ms(1);
 }
@@ -389,10 +358,10 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
         rate == 16000 ||
         rate == 32000 ||
         rate == 48000) {
-        audio_clock_freq_hz = AUDIO_SYS_CLOCK_HZ; // get_sys_clock() and see if it matches
+        audio_clock_freq_hz = AUDIO_SYS_CLOCK_98_304_000_HZ;
     } else if (rate == 22050 ||
                rate == 44100) {
-        audio_clock_freq_hz = AUDIO_SYS_CLOCK_HZ_1; // get_sys_clock() and see if it matches
+        audio_clock_freq_hz = AUDIO_SYS_CLOCK_90_300_000_HZ;
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("rate not supported"));
     }
