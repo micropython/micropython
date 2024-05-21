@@ -32,6 +32,9 @@
 #include "py/runtime.h"
 #include "proxy_c.h"
 
+// Number of static entries at the start of proxy_c_ref.
+#define PROXY_C_REF_NUM_STATIC (1)
+
 // These constants should match the constants in proxy_js.js.
 
 enum {
@@ -71,21 +74,48 @@ static const mp_obj_base_t mp_const_undefined_obj = {&mp_type_undefined};
 
 MP_DEFINE_EXCEPTION(JsException, Exception)
 
+// Index to start searching for the next available slot in proxy_c_ref.
+static size_t proxy_c_ref_next;
+
 void proxy_c_init(void) {
     MP_STATE_PORT(proxy_c_ref) = mp_obj_new_list(0, NULL);
     mp_obj_list_append(MP_STATE_PORT(proxy_c_ref), MP_OBJ_NULL);
+    proxy_c_ref_next = PROXY_C_REF_NUM_STATIC;
 }
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t proxy_c_ref);
 
+// obj cannot be MP_OBJ_NULL.
 static inline size_t proxy_c_add_obj(mp_obj_t obj) {
-    size_t id = ((mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref)))->len;
+    // Search for the first free slot in proxy_c_ref.
+    mp_obj_list_t *l = (mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref));
+    while (proxy_c_ref_next < l->len) {
+        if (l->items[proxy_c_ref_next] == MP_OBJ_NULL) {
+            // Free slot found, reuse it.
+            size_t id = proxy_c_ref_next;
+            ++proxy_c_ref_next;
+            l->items[id] = obj;
+            return id;
+        }
+        ++proxy_c_ref_next;
+    }
+
+    // No free slots, so grow proxy_c_ref by one (append at the end of the list).
+    size_t id = l->len;
     mp_obj_list_append(MP_STATE_PORT(proxy_c_ref), obj);
+    proxy_c_ref_next = l->len;
     return id;
 }
 
 static inline mp_obj_t proxy_c_get_obj(uint32_t c_ref) {
     return ((mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref)))->items[c_ref];
+}
+
+void proxy_c_free_obj(uint32_t c_ref) {
+    if (c_ref >= PROXY_C_REF_NUM_STATIC) {
+        ((mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref)))->items[c_ref] = MP_OBJ_NULL;
+        proxy_c_ref_next = MIN(proxy_c_ref_next, c_ref);
+    }
 }
 
 mp_obj_t proxy_convert_js_to_mp_obj_cside(uint32_t *value) {

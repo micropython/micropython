@@ -54,6 +54,7 @@ EXPORTED_FUNCTIONS_EXTRA += ,\
 	_mp_js_do_exec_async,\
 	_mp_js_do_import,\
 	_mp_js_register_js_module,\
+	_proxy_c_free_obj,\
 	_proxy_c_init,\
 	_proxy_c_to_js_call,\
 	_proxy_c_to_js_delete_attr,\
