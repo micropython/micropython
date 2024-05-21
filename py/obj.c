@@ -144,11 +144,13 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
 }
 
 // CIRCUITPY-CHANGE
+#if MICROPY_CPYTHON_EXCEPTION_CHAIN
 static mp_obj_t mp_load_attr_or_none(mp_obj_t base, qstr attr) {
     mp_obj_t dest[2];
     mp_load_method_protected(base, attr, dest, true);
     return dest[0] == MP_OBJ_NULL ? mp_const_none : dest[0];
 }
+#endif
 
 // CIRCUITPY-CHANGE
 static void mp_obj_print_inner_exception(const mp_print_t *print, mp_obj_t self_in, mp_int_t limit) {
