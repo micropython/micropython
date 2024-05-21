@@ -42,7 +42,7 @@ typedef enum {
 
 typedef struct _machine_i2s_obj_t {
     mp_obj_base_t base;
-    uint8_t i2s_id;
+    uint8_t i2s_id;     // Private variable in this port case. ID not associated to any port pin i2s group.
     cyhal_i2s_t i2s_obj;
     // HAL pin obj are kept for compatibility
     // with extmod/machine_i2s print function
@@ -80,7 +80,6 @@ static const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYT
 };
 
 static int8_t get_frame_mapping_index(int8_t bits, format_t format) {
-    // TODO!
     if (format == MONO) {
         if (bits == 16) {
             return 0;
@@ -103,8 +102,6 @@ void i2s_audio_clock_init(uint32_t audio_clock_freq_hz) {
     static bool clock_set = false;
     static uint32_t pll_source_clock_freq_hz = AUDIO_SYS_CLOCK_HZ;
 
-    // TODO: Currently this is not working after initialization.
-    // Once initializing, changing the frequency blocks execution of I2S constructor call.
     if (audio_clock_freq_hz != pll_source_clock_freq_hz) {
         clock_set = false;
         pll_source_clock_freq_hz = audio_clock_freq_hz;
@@ -388,7 +385,6 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
     // is valid clock freq?
     uint32_t audio_clock_freq_hz;
     uint32_t rate = args[ARG_rate].u_int;
-    ;
     if (rate == 8000 ||
         rate == 16000 ||
         rate == 32000 ||
@@ -429,7 +425,6 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
     self->ring_buffer_storage = m_new(uint8_t, ring_buffer_len);
 
     ringbuf_init(&self->ring_buffer, self->ring_buffer_storage, ring_buffer_len);
-
     i2s_audio_clock_init(audio_clock_freq_hz);
     i2s_init(self, &audio_clock);
     i2s_dma_init(self);
@@ -440,33 +435,27 @@ static void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     pin_phy_free(self->sck_phy);
     pin_phy_free(self->ws_phy);
     pin_phy_free(self->sd_phy);
+    MP_STATE_PORT(machine_i2s_obj[self->i2s_id]) = NULL;
 }
 
 static void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
     (void)self;
 }
 
-static mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
-
 static machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
-    // TODO: We can skip the id, as this is not a hardware id for i2s,
-    // but just an index in the amount of available instances.
-    // The id from the main API will be kept as imposed by the extmod, but unused
-    // in the psoc6 port.
-    // If not instances are available, it should return with error, not deallocate
-    // an existing instance.
-    if (i2s_id >= MICROPY_HW_MAX_I2S) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
+    (void)i2s_id;
+    machine_i2s_obj_t *self = NULL;
+    for (uint8_t i = 0; i < MICROPY_HW_MAX_I2S; i++) {
+        if (MP_STATE_PORT(machine_i2s_obj[i]) == NULL) {
+            self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
+            MP_STATE_PORT(machine_i2s_obj[i]) = self;
+            self->i2s_id = i;
+            break;
+        }
     }
 
-    machine_i2s_obj_t *self;
-    if (MP_STATE_PORT(machine_i2s_obj[i2s_id]) == NULL) {
-        self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
-        MP_STATE_PORT(machine_i2s_obj[i2s_id]) = self;
-        self->i2s_id = i2s_id;
-    } else {
-        self = MP_STATE_PORT(machine_i2s_obj[i2s_id]);
-        machine_i2s_deinit(MP_OBJ_FROM_PTR(self));
+    if (self == NULL) {
+        mp_raise_ValueError(MP_ERROR_TEXT("all available i2s instances are allocated"));
     }
 
     return self;
