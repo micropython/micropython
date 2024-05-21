@@ -4,7 +4,6 @@
 // Board-specific definitions
 #include "mpconfigboard.h"
 
-#include <stdint.h>
 #include <alloca.h>
 #include "esp_random.h"
 #include "esp_system.h"
@@ -85,6 +84,9 @@
 #define MICROPY_PY_THREAD                   (1)
 #define MICROPY_PY_THREAD_GIL               (1)
 #define MICROPY_PY_THREAD_GIL_VM_DIVISOR    (32)
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT      (1)
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT_MAX  (portMAX_DELAY - 1)
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT_RESOLUTION_HZ (CONFIG_FREERTOS_HZ)
 
 #define MICROPY_GC_SPLIT_HEAP               (1)
 #define MICROPY_GC_SPLIT_HEAP_AUTO          (1)
