@@ -176,6 +176,7 @@ void proxy_convert_mp_to_js_exc_cside(void *exc, uint32_t *out) {
 }
 
 void proxy_c_to_js_call(uint32_t c_ref, uint32_t n_args, uint32_t *args_value, uint32_t *out) {
+    external_call_depth_inc();
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t args[n_args];
@@ -185,14 +186,17 @@ void proxy_c_to_js_call(uint32_t c_ref, uint32_t n_args, uint32_t *args_value, u
         mp_obj_t obj = proxy_c_get_obj(c_ref);
         mp_obj_t member = mp_call_function_n_kw(obj, n_args, 0, args);
         nlr_pop();
+        external_call_depth_dec();
         proxy_convert_mp_to_js_obj_cside(member, out);
     } else {
         // uncaught exception
+        external_call_depth_dec();
         proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
     }
 }
 
 void proxy_c_to_js_dir(uint32_t c_ref, uint32_t *out) {
+    external_call_depth_inc();
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t obj = proxy_c_get_obj(c_ref);
@@ -210,9 +214,11 @@ void proxy_c_to_js_dir(uint32_t c_ref, uint32_t *out) {
             dir = mp_builtin_dir_obj.fun.var(1, args);
         }
         nlr_pop();
+        external_call_depth_dec();
         proxy_convert_mp_to_js_obj_cside(dir, out);
     } else {
         // uncaught exception
+        external_call_depth_dec();
         proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
     }
 }
@@ -235,6 +241,7 @@ bool proxy_c_to_js_has_attr(uint32_t c_ref, const char *attr_in) {
 }
 
 void proxy_c_to_js_lookup_attr(uint32_t c_ref, const char *attr_in, uint32_t *out) {
+    external_call_depth_inc();
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t obj = proxy_c_get_obj(c_ref);
@@ -255,19 +262,27 @@ void proxy_c_to_js_lookup_attr(uint32_t c_ref, const char *attr_in, uint32_t *ou
             member = mp_load_attr(obj, attr);
         }
         nlr_pop();
+        external_call_depth_dec();
         proxy_convert_mp_to_js_obj_cside(member, out);
     } else {
         // uncaught exception
+        external_call_depth_dec();
         proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
     }
 }
 
-static bool proxy_c_to_js_store_helper(uint32_t c_ref, const char *attr_in, mp_obj_t value) {
-    mp_obj_t obj = proxy_c_get_obj(c_ref);
-    qstr attr = qstr_from_str(attr_in);
-
+static bool proxy_c_to_js_store_helper(uint32_t c_ref, const char *attr_in, uint32_t *value_in) {
+    external_call_depth_inc();
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
+        mp_obj_t obj = proxy_c_get_obj(c_ref);
+        qstr attr = qstr_from_str(attr_in);
+
+        mp_obj_t value = MP_OBJ_NULL;
+        if (value_in != NULL) {
+            value = proxy_convert_js_to_mp_obj_cside(value_in);
+        }
+
         if (mp_obj_is_dict_or_ordereddict(obj)) {
             if (value == MP_OBJ_NULL) {
                 mp_obj_dict_delete(obj, MP_OBJ_NEW_QSTR(attr));
@@ -278,20 +293,21 @@ static bool proxy_c_to_js_store_helper(uint32_t c_ref, const char *attr_in, mp_o
             mp_store_attr(obj, attr, value);
         }
         nlr_pop();
+        external_call_depth_dec();
         return true;
     } else {
         // uncaught exception
+        external_call_depth_dec();
         return false;
     }
 }
 
 bool proxy_c_to_js_store_attr(uint32_t c_ref, const char *attr_in, uint32_t *value_in) {
-    mp_obj_t value = proxy_convert_js_to_mp_obj_cside(value_in);
-    return proxy_c_to_js_store_helper(c_ref, attr_in, value);
+    return proxy_c_to_js_store_helper(c_ref, attr_in, value_in);
 }
 
 bool proxy_c_to_js_delete_attr(uint32_t c_ref, const char *attr_in) {
-    return proxy_c_to_js_store_helper(c_ref, attr_in, MP_OBJ_NULL);
+    return proxy_c_to_js_store_helper(c_ref, attr_in, NULL);
 }
 
 uint32_t proxy_c_to_js_get_type(uint32_t c_ref) {
@@ -352,18 +368,22 @@ uint32_t proxy_c_to_js_get_iter(uint32_t c_ref) {
 }
 
 bool proxy_c_to_js_iternext(uint32_t c_ref, uint32_t *out) {
-    mp_obj_t obj = proxy_c_get_obj(c_ref);
+    external_call_depth_inc();
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
+        mp_obj_t obj = proxy_c_get_obj(c_ref);
         mp_obj_t iter = mp_iternext_allow_raise(obj);
         if (iter == MP_OBJ_STOP_ITERATION) {
+            external_call_depth_dec();
             nlr_pop();
             return false;
         }
         nlr_pop();
+        external_call_depth_dec();
         proxy_convert_mp_to_js_obj_cside(iter, out);
         return true;
     } else {
+        external_call_depth_dec();
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
             return false;
         } else {
@@ -475,6 +495,7 @@ static mp_obj_t resume_fun(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(resume_obj, 5, 5, resume_fun);
 
 void proxy_c_to_js_resume(uint32_t c_ref, uint32_t *args) {
+    external_call_depth_inc();
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t obj = proxy_c_get_obj(c_ref);
@@ -482,9 +503,11 @@ void proxy_c_to_js_resume(uint32_t c_ref, uint32_t *args) {
         mp_obj_t reject = proxy_convert_js_to_mp_obj_cside(args + 2 * 3);
         mp_obj_t ret = proxy_resume_execute(obj, mp_const_none, mp_const_none, resolve, reject);
         nlr_pop();
+        external_call_depth_dec();
         proxy_convert_mp_to_js_obj_cside(ret, args);
     } else {
         // uncaught exception
+        external_call_depth_dec();
         proxy_convert_mp_to_js_exc_cside(nlr.ret_val, args);
     }
 }
