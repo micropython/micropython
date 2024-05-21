@@ -109,7 +109,6 @@ try:
         l = inner
     raise Exception("outer") from l
 except Exception as e:
-    print(e, e.__cause__, e.__context__)
     print_exc_info(e)
 print()
 
