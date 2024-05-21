@@ -300,7 +300,7 @@ void mp_obj_jsproxy_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 typedef struct _jsproxy_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
-    int ref;
+    mp_obj_jsproxy_t *obj;
     uint16_t cur;
     uint16_t len;
 } jsproxy_it_t;
@@ -309,7 +309,7 @@ static mp_obj_t jsproxy_it_iternext(mp_obj_t self_in) {
     jsproxy_it_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->cur < self->len) {
         uint32_t out[3];
-        js_subscr_int(self->ref, self->cur, out);
+        js_subscr_int(self->obj->ref, self->cur, out);
         self->cur += 1;
         return proxy_convert_js_to_mp_obj_cside(out);
     } else {
@@ -323,7 +323,7 @@ static mp_obj_t jsproxy_new_it(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     jsproxy_it_t *o = (jsproxy_it_t *)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = jsproxy_it_iternext;
-    o->ref = self->ref;
+    o->obj = self;
     o->cur = 0;
     o->len = js_get_len(self->ref);
     return MP_OBJ_FROM_PTR(o);
