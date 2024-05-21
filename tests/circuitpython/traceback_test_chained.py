@@ -72,3 +72,60 @@ except Exception as e:
     print_exc_info(e, chain=False)
     print_exc_info(e)
 print()
+
+class SomeException(RuntimeError):
+    pass
+
+try:
+    try:
+        raise Exception("inner")
+    except Exception as inner:
+        raise SomeException("outer") from inner
+except Exception as e:
+    print_exc_info(e)
+
+try:
+    try:
+        raise Exception("inner")
+    except Exception as inner:
+        l = inner
+    raise SomeException("outer") from l
+except Exception as e:
+    print_exc_info(e)
+print()
+
+try:
+    try:
+        raise SomeException("inner")
+    except Exception as inner:
+        raise Exception("outer") from inner
+except Exception as e:
+    print_exc_info(e)
+
+try:
+    try:
+        raise SomeException("inner")
+    except Exception as inner:
+        l = inner
+    raise Exception("outer") from l
+except Exception as e:
+    print_exc_info(e)
+print()
+
+try:
+    try:
+        raise SomeException("inner")
+    except Exception as inner:
+        raise SomeException("outer") from inner
+except Exception as e:
+    print_exc_info(e)
+
+try:
+    try:
+        raise SomeException("inner")
+    except Exception as inner:
+        l = inner
+    raise SomeException("outer") from l
+except Exception as e:
+    print_exc_info(e)
+print()
