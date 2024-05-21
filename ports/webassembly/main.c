@@ -44,6 +44,19 @@
 #include "library.h"
 #include "proxy_c.h"
 
+// This counter tracks the current depth of calls into C code that originated
+// externally, ie from JavaScript.  When the counter is 0 that corresponds to
+// the top-level call into C.
+static size_t external_call_depth = 0;
+
+void external_call_depth_inc(void) {
+    ++external_call_depth;
+}
+
+void external_call_depth_dec(void) {
+    --external_call_depth;
+}
+
 void mp_js_init(int heap_size) {
     #if MICROPY_ENABLE_GC
     char *heap = (char *)malloc(heap_size * sizeof(char));
@@ -79,6 +92,7 @@ void mp_js_register_js_module(const char *name, uint32_t *value) {
 }
 
 void mp_js_do_import(const char *name, uint32_t *out) {
+    external_call_depth_inc();
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t ret = mp_import_name(qstr_from_str(name), mp_const_none, MP_OBJ_NEW_SMALL_INT(0));
@@ -97,9 +111,11 @@ void mp_js_do_import(const char *name, uint32_t *out) {
             }
         }
         nlr_pop();
+        external_call_depth_dec();
         proxy_convert_mp_to_js_obj_cside(ret, out);
     } else {
         // uncaught exception
+        external_call_depth_dec();
         proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
     }
 }
@@ -109,6 +125,7 @@ void mp_js_do_exec(const char *src, size_t len, uint32_t *out) {
     gc_collect_start();
     gc_collect_end();
 
+    external_call_depth_inc();
     mp_parse_input_kind_t input_kind = MP_PARSE_FILE_INPUT;
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -118,9 +135,11 @@ void mp_js_do_exec(const char *src, size_t len, uint32_t *out) {
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, false);
         mp_obj_t ret = mp_call_function_0(module_fun);
         nlr_pop();
+        external_call_depth_dec();
         proxy_convert_mp_to_js_obj_cside(ret, out);
     } else {
         // uncaught exception
+        external_call_depth_dec();
         proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
     }
 }
@@ -136,7 +155,10 @@ void mp_js_repl_init(void) {
 }
 
 int mp_js_repl_process_char(int c) {
-    return pyexec_event_repl_process_char(c);
+    external_call_depth_inc();
+    int ret = pyexec_event_repl_process_char(c);
+    external_call_depth_dec();
+    return ret;
 }
 
 #if MICROPY_GC_SPLIT_HEAP_AUTO
