@@ -234,6 +234,22 @@ static mp_obj_t jsproxy_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     }
 }
 
+EM_JS(void, proxy_js_free_obj, (int js_ref), {
+    if (js_ref >= PROXY_JS_REF_NUM_STATIC) {
+        proxy_js_ref[js_ref] = undefined;
+        if (js_ref < proxy_js_ref_next) {
+            proxy_js_ref_next = js_ref;
+        }
+    }
+});
+
+static mp_obj_t jsproxy___del__(mp_obj_t self_in) {
+    mp_obj_jsproxy_t *self = MP_OBJ_TO_PTR(self_in);
+    proxy_js_free_obj(self->ref);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(jsproxy___del___obj, jsproxy___del__);
+
 static mp_obj_t jsproxy_reflect_construct(size_t n_args, const mp_obj_t *args) {
     int arg0 = mp_obj_jsproxy_get_ref(args[0]);
     n_args -= 1;
@@ -274,7 +290,11 @@ void mp_obj_jsproxy_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // Load attribute.
         uint32_t out[PVN];
-        if (lookup_attr(self->ref, qstr_str(attr), out)) {
+        if (attr == MP_QSTR___del__) {
+            // For finaliser.
+            dest[0] = MP_OBJ_FROM_PTR(&jsproxy___del___obj);
+            dest[1] = self_in;
+        } else if (lookup_attr(self->ref, qstr_str(attr), out)) {
             dest[0] = proxy_convert_js_to_mp_obj_cside(out);
         } else if (attr == MP_QSTR_new) {
             // Special case to handle construction of JS objects.
@@ -515,7 +535,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 mp_obj_t mp_obj_new_jsproxy(int ref) {
-    mp_obj_jsproxy_t *o = mp_obj_malloc(mp_obj_jsproxy_t, &mp_type_jsproxy);
+    mp_obj_jsproxy_t *o = mp_obj_malloc_with_finaliser(mp_obj_jsproxy_t, &mp_type_jsproxy);
     o->ref = ref;
     return MP_OBJ_FROM_PTR(o);
 }
