@@ -49,8 +49,17 @@
 // the top-level call into C.
 static size_t external_call_depth = 0;
 
+#if MICROPY_GC_SPLIT_HEAP_AUTO
+static void gc_collect_top_level(void);
+#endif
+
 void external_call_depth_inc(void) {
     ++external_call_depth;
+    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    if (external_call_depth == 1) {
+        gc_collect_top_level();
+    }
+    #endif
 }
 
 void external_call_depth_dec(void) {
@@ -61,6 +70,14 @@ void mp_js_init(int heap_size) {
     #if MICROPY_ENABLE_GC
     char *heap = (char *)malloc(heap_size * sizeof(char));
     gc_init(heap, heap + heap_size);
+    #endif
+
+    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    // When MICROPY_GC_SPLIT_HEAP_AUTO is enabled, set the GC threshold to a low
+    // value so that a collection is triggered before the heap fills up.  The actual
+    // garbage collection will happen later when control returns to the top-level,
+    // via the `gc_collect_pending` flag and `gc_collect_top_level()`.
+    MP_STATE_MEM(gc_alloc_threshold) = 16 * 1024 / MICROPY_BYTES_PER_GC_BLOCK;
     #endif
 
     #if MICROPY_ENABLE_PYSTACK
@@ -121,10 +138,6 @@ void mp_js_do_import(const char *name, uint32_t *out) {
 }
 
 void mp_js_do_exec(const char *src, size_t len, uint32_t *out) {
-    // Collect at the top-level, where there are no root pointers from stack/registers.
-    gc_collect_start();
-    gc_collect_end();
-
     external_call_depth_inc();
     mp_parse_input_kind_t input_kind = MP_PARSE_FILE_INPUT;
     nlr_buf_t nlr;
@@ -163,6 +176,8 @@ int mp_js_repl_process_char(int c) {
 
 #if MICROPY_GC_SPLIT_HEAP_AUTO
 
+static bool gc_collect_pending = false;
+
 // The largest new region that is available to become Python heap.
 size_t gc_get_max_new_split(void) {
     return 128 * 1024 * 1024;
@@ -170,6 +185,16 @@ size_t gc_get_max_new_split(void) {
 
 // Don't collect anything.  Instead require the heap to grow.
 void gc_collect(void) {
+    gc_collect_pending = true;
+}
+
+// Collect at the top-level, where there are no root pointers from stack/registers.
+static void gc_collect_top_level(void) {
+    if (gc_collect_pending) {
+        gc_collect_pending = false;
+        gc_collect_start();
+        gc_collect_end();
+    }
 }
 
 #else
