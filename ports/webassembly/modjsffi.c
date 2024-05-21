@@ -25,6 +25,7 @@
  */
 
 #include "emscripten.h"
+#include "py/gc.h"
 #include "py/objmodule.h"
 #include "py/runtime.h"
 #include "proxy_c.h"
@@ -75,6 +76,44 @@ static mp_obj_t mp_jsffi_async_timeout_ms(mp_obj_t arg) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(mp_jsffi_async_timeout_ms_obj, mp_jsffi_async_timeout_ms);
 
+// *FORMAT-OFF*
+EM_JS(void, js_get_proxy_js_ref_info, (uint32_t * out), {
+    let used = 0;
+    for (const elem of proxy_js_ref) {
+        if (elem !== undefined) {
+            ++used;
+        }
+    }
+    Module.setValue(out, proxy_js_ref.length, "i32");
+    Module.setValue(out + 4, used, "i32");
+});
+// *FORMAT-ON*
+
+static mp_obj_t mp_jsffi_mem_info(void) {
+    mp_obj_list_t *l = (mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref));
+    mp_int_t used = 0;
+    for (size_t i = 0; i < l->len; ++i) {
+        if (l->items[i] != MP_OBJ_NULL) {
+            ++used;
+        }
+    }
+    uint32_t proxy_js_ref_info[2];
+    js_get_proxy_js_ref_info(proxy_js_ref_info);
+    gc_info_t info;
+    gc_info(&info);
+    mp_obj_t elems[] = {
+        MP_OBJ_NEW_SMALL_INT(info.total), // GC heap total bytes
+        MP_OBJ_NEW_SMALL_INT(info.used), // GC heap used bytes
+        MP_OBJ_NEW_SMALL_INT(info.free), // GC heap free bytes
+        MP_OBJ_NEW_SMALL_INT(l->len), // proxy_c_ref allocated size
+        MP_OBJ_NEW_SMALL_INT(used), // proxy_c_ref used
+        MP_OBJ_NEW_SMALL_INT(proxy_js_ref_info[0]), // proxy_js_ref allocated size
+        MP_OBJ_NEW_SMALL_INT(proxy_js_ref_info[1]), // proxy_js_ref used
+    };
+    return mp_obj_new_tuple(MP_ARRAY_SIZE(elems), elems);
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_jsffi_mem_info_obj, mp_jsffi_mem_info);
+
 static const mp_rom_map_elem_t mp_module_jsffi_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_jsffi) },
 
@@ -83,6 +122,7 @@ static const mp_rom_map_elem_t mp_module_jsffi_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_create_proxy), MP_ROM_PTR(&mp_jsffi_create_proxy_obj) },
     { MP_ROM_QSTR(MP_QSTR_to_js), MP_ROM_PTR(&mp_jsffi_to_js_obj) },
     { MP_ROM_QSTR(MP_QSTR_async_timeout_ms), MP_ROM_PTR(&mp_jsffi_async_timeout_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem_info), MP_ROM_PTR(&mp_jsffi_mem_info_obj) },
 };
 static MP_DEFINE_CONST_DICT(mp_module_jsffi_globals, mp_module_jsffi_globals_table);
 
