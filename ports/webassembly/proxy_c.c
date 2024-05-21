@@ -49,6 +49,7 @@ enum {
 };
 
 enum {
+    PROXY_KIND_JS_UNDEFINED = 0,
     PROXY_KIND_JS_NULL = 1,
     PROXY_KIND_JS_BOOLEAN = 2,
     PROXY_KIND_JS_INTEGER = 3,
@@ -58,6 +59,18 @@ enum {
     PROXY_KIND_JS_PYPROXY = 7,
 };
 
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_undefined,
+    MP_QSTR_undefined,
+    MP_TYPE_FLAG_NONE
+    );
+
+static const mp_obj_base_t mp_const_undefined_obj = {&mp_type_undefined};
+
+#define mp_const_undefined (MP_OBJ_FROM_PTR(&mp_const_undefined_obj))
+
+MP_DEFINE_EXCEPTION(JsException, Exception)
+
 void proxy_c_init(void) {
     MP_STATE_PORT(proxy_c_ref) = mp_obj_new_list(0, NULL);
     mp_obj_list_append(MP_STATE_PORT(proxy_c_ref), MP_OBJ_NULL);
@@ -65,12 +78,20 @@ void proxy_c_init(void) {
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t proxy_c_ref);
 
+static inline size_t proxy_c_add_obj(mp_obj_t obj) {
+    size_t id = ((mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref)))->len;
+    mp_obj_list_append(MP_STATE_PORT(proxy_c_ref), obj);
+    return id;
+}
+
 static inline mp_obj_t proxy_c_get_obj(uint32_t c_ref) {
     return ((mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref)))->items[c_ref];
 }
 
 mp_obj_t proxy_convert_js_to_mp_obj_cside(uint32_t *value) {
-    if (value[0] == PROXY_KIND_JS_NULL) {
+    if (value[0] == PROXY_KIND_JS_UNDEFINED) {
+        return mp_const_undefined;
+    } else if (value[0] == PROXY_KIND_JS_NULL) {
         return mp_const_none;
     } else if (value[0] == PROXY_KIND_JS_BOOLEAN) {
         return mp_obj_new_bool(value[1]);
@@ -111,9 +132,21 @@ void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out) {
         const char *str = mp_obj_str_get_data(obj, &len);
         out[1] = len;
         out[2] = (uintptr_t)str;
+    } else if (obj == mp_const_undefined) {
+        kind = PROXY_KIND_MP_JSPROXY;
+        out[1] = 1;
     } else if (mp_obj_is_jsproxy(obj)) {
         kind = PROXY_KIND_MP_JSPROXY;
         out[1] = mp_obj_jsproxy_get_ref(obj);
+    } else if (mp_obj_get_type(obj) == &mp_type_JsException) {
+        mp_obj_exception_t *exc = MP_OBJ_TO_PTR(obj);
+        if (exc->args->len > 0 && mp_obj_is_jsproxy(exc->args->items[0])) {
+            kind = PROXY_KIND_MP_JSPROXY;
+            out[1] = mp_obj_jsproxy_get_ref(exc->args->items[0]);
+        } else {
+            kind = PROXY_KIND_MP_OBJECT;
+            out[1] = proxy_c_add_obj(obj);
+        }
     } else {
         if (mp_obj_is_callable(obj)) {
             kind = PROXY_KIND_MP_CALLABLE;
@@ -122,9 +155,7 @@ void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out) {
         } else {
             kind = PROXY_KIND_MP_OBJECT;
         }
-        size_t id = ((mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref)))->len;
-        mp_obj_list_append(MP_STATE_PORT(proxy_c_ref), obj);
-        out[1] = id;
+        out[1] = proxy_c_add_obj(obj);
     }
     out[0] = kind;
 }
@@ -147,7 +178,7 @@ void proxy_convert_mp_to_js_exc_cside(void *exc, uint32_t *out) {
 void proxy_c_to_js_call(uint32_t c_ref, uint32_t n_args, uint32_t *args_value, uint32_t *out) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        mp_obj_t args[4] = { mp_const_none, mp_const_none, mp_const_none, mp_const_none };
+        mp_obj_t args[n_args];
         for (size_t i = 0; i < n_args; ++i) {
             args[i] = proxy_convert_js_to_mp_obj_cside(args_value + i * 3);
         }
@@ -210,8 +241,17 @@ void proxy_c_to_js_lookup_attr(uint32_t c_ref, const char *attr_in, uint32_t *ou
         qstr attr = qstr_from_str(attr_in);
         mp_obj_t member;
         if (mp_obj_is_dict_or_ordereddict(obj)) {
-            member = mp_obj_dict_get(obj, MP_OBJ_NEW_QSTR(attr));
+            // Lookup the requested attribute as a key in the target dict, and
+            // return `undefined` if not found (instead of raising `KeyError`).
+            mp_obj_dict_t *self = MP_OBJ_TO_PTR(obj);
+            mp_map_elem_t *elem = mp_map_lookup(&self->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+            if (elem == NULL) {
+                member = mp_const_undefined;
+            } else {
+                member = elem->value;
+            }
         } else {
+            // Lookup the requested attribute as a member/method of the target object.
             member = mp_load_attr(obj, attr);
         }
         nlr_pop();
@@ -284,21 +324,76 @@ void proxy_c_to_js_get_dict(uint32_t c_ref, uint32_t *out) {
     out[1] = (uintptr_t)map->table;
 }
 
+EM_JS(void, js_get_error_info, (int jsref, uint32_t * out_name, uint32_t * out_message), {
+    const error = proxy_js_ref[jsref];
+    proxy_convert_js_to_mp_obj_jsside(error.name, out_name);
+    proxy_convert_js_to_mp_obj_jsside(error.message, out_message);
+});
+
+mp_obj_t mp_obj_jsproxy_make_js_exception(mp_obj_t error) {
+    uint32_t out_name[PVN];
+    uint32_t out_message[PVN];
+    js_get_error_info(mp_obj_jsproxy_get_ref(error), out_name, out_message);
+    mp_obj_t args[3] = {
+        error,
+        proxy_convert_js_to_mp_obj_cside(out_name),
+        proxy_convert_js_to_mp_obj_cside(out_message),
+    };
+    return mp_obj_new_exception_args(&mp_type_JsException, MP_ARRAY_SIZE(args), args);
+}
+
+/******************************************************************************/
+// Bridge Python iterator to JavaScript iterator protocol.
+
+uint32_t proxy_c_to_js_get_iter(uint32_t c_ref) {
+    mp_obj_t obj = proxy_c_get_obj(c_ref);
+    mp_obj_t iter = mp_getiter(obj, NULL);
+    return proxy_c_add_obj(iter);
+}
+
+bool proxy_c_to_js_iternext(uint32_t c_ref, uint32_t *out) {
+    mp_obj_t obj = proxy_c_get_obj(c_ref);
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t iter = mp_iternext_allow_raise(obj);
+        if (iter == MP_OBJ_STOP_ITERATION) {
+            nlr_pop();
+            return false;
+        }
+        nlr_pop();
+        proxy_convert_mp_to_js_obj_cside(iter, out);
+        return true;
+    } else {
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+            return false;
+        } else {
+            // uncaught exception
+            proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
+            return true;
+        }
+    }
+}
+
 /******************************************************************************/
 // Bridge Python generator to JavaScript thenable.
 
 static const mp_obj_fun_builtin_var_t resume_obj;
 
-EM_JS(void, js_then_resolve, (uint32_t * ret_value, uint32_t * resolve, uint32_t * reject), {
+EM_JS(void, js_then_resolve, (uint32_t * ret_value, uint32_t * resolve), {
     const ret_value_js = proxy_convert_mp_to_js_obj_jsside(ret_value);
     const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
-    const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
     resolve_js(ret_value_js);
 });
 
-EM_JS(void, js_then_reject, (uint32_t * ret_value, uint32_t * resolve, uint32_t * reject), {
-    const ret_value_js = proxy_convert_mp_to_js_obj_jsside(ret_value);
-    const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
+EM_JS(void, js_then_reject, (uint32_t * ret_value, uint32_t * reject), {
+    // The ret_value object should be a Python exception.  Convert it to a
+    // JavaScript PythonError and pass it as the reason to reject the promise.
+    let ret_value_js;
+    try {
+        ret_value_js = proxy_convert_mp_to_js_obj_jsside(ret_value);
+    } catch(error) {
+        ret_value_js = error;
+    }
     const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
     reject_js(ret_value_js);
 });
@@ -330,6 +425,12 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t send_value, mp_o
         if (send_value == mp_const_none) {
             send_value = MP_OBJ_NULL;
         }
+        // Ensure that the `throw_value` is a proper Python exception instance.
+        if (mp_obj_is_jsproxy(throw_value)) {
+            throw_value = mp_obj_jsproxy_make_js_exception(throw_value);
+        } else {
+            throw_value = mp_make_raise_obj(throw_value);
+        }
     } else {
         throw_value = MP_OBJ_NULL;
     }
@@ -337,30 +438,33 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t send_value, mp_o
     mp_obj_t ret_value;
     mp_vm_return_kind_t ret_kind = mp_resume(self_in, send_value, throw_value, &ret_value);
 
-    uint32_t out_resolve[PVN];
-    uint32_t out_reject[PVN];
-    proxy_convert_mp_to_js_obj_cside(resolve, out_resolve);
-    proxy_convert_mp_to_js_obj_cside(reject, out_reject);
-
     if (ret_kind == MP_VM_RETURN_NORMAL) {
         uint32_t out_ret_value[PVN];
+        uint32_t out_resolve[PVN];
         proxy_convert_mp_to_js_obj_cside(ret_value, out_ret_value);
-        js_then_resolve(out_ret_value, out_resolve, out_reject);
+        proxy_convert_mp_to_js_obj_cside(resolve, out_resolve);
+        js_then_resolve(out_ret_value, out_resolve);
         return mp_const_none;
     } else if (ret_kind == MP_VM_RETURN_YIELD) {
         // ret_value should be a JS thenable
         mp_obj_t py_resume = mp_obj_new_bound_meth(MP_OBJ_FROM_PTR(&resume_obj), self_in);
         int ref = mp_obj_jsproxy_get_ref(ret_value);
         uint32_t out_py_resume[PVN];
+        uint32_t out_resolve[PVN];
+        uint32_t out_reject[PVN];
         proxy_convert_mp_to_js_obj_cside(py_resume, out_py_resume);
+        proxy_convert_mp_to_js_obj_cside(resolve, out_resolve);
+        proxy_convert_mp_to_js_obj_cside(reject, out_reject);
         uint32_t out[PVN];
         js_then_continue(ref, out_py_resume, out_resolve, out_reject, out);
         return proxy_convert_js_to_mp_obj_cside(out);
     } else { // ret_kind == MP_VM_RETURN_EXCEPTION;
         // Pass the exception through as an object to reject the promise (don't raise/throw it).
         uint32_t out_ret_value[PVN];
-        proxy_convert_mp_to_js_obj_cside(ret_value, out_ret_value);
-        js_then_reject(out_ret_value, out_resolve, out_reject);
+        uint32_t out_reject[PVN];
+        proxy_convert_mp_to_js_exc_cside(ret_value, out_ret_value);
+        proxy_convert_mp_to_js_obj_cside(reject, out_reject);
+        js_then_reject(out_ret_value, out_reject);
         return mp_const_none;
     }
 }

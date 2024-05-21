@@ -160,6 +160,18 @@ context, created and returned by `loadMicroPython()`.
 - `replProcessCharWithAsyncify(chr)`: process an incoming character at the REPL,
   for use when ASYNCIFY is enabled.
 
+Type conversions
+----------------
+
+Read-only objects (booleanns, numbers, strings, etc) are converted when passed between
+Python and JavaScript.  The conversions are:
+
+- JavaScript `null` converts to/from Python `None`.
+- JavaScript `undefined` converts to/from Python `js.undefined`.
+
+The conversion between `null` and `None` matches the behaviour of the Python `json`
+module.
+
 Proxying
 --------
 
@@ -170,4 +182,6 @@ A Python `dict` instance is proxied such that:
     }
 
 works as expected on the JavaScript side and iterates through the keys of the
-Python `dict`.
+Python `dict`.  Furthermore, when JavaScript accesses a key that does not exist
+in the Python dict, the JavaScript code receives `undefined` instead of a
+`KeyError` exception being raised.
