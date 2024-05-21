@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_MPTHREAD_H
 #define MICROPY_INCLUDED_PY_MPTHREAD_H
 
+#include <stdint.h>
 #include "py/mpconfig.h"
 
 #if MICROPY_PY_THREAD
@@ -45,14 +46,14 @@ mp_uint_t mp_thread_get_id(void);
 void mp_thread_start(void);
 void mp_thread_finish(void);
 void mp_thread_mutex_init(mp_thread_mutex_t *mutex);
-int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait);
+int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int64_t timeout);
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex);
 
 #endif // MICROPY_PY_THREAD
 
 #if MICROPY_PY_THREAD && MICROPY_PY_THREAD_GIL
 #include "py/mpstate.h"
-#define MP_THREAD_GIL_ENTER() mp_thread_mutex_lock(&MP_STATE_VM(gil_mutex), 1)
+#define MP_THREAD_GIL_ENTER() mp_thread_mutex_lock(&MP_STATE_VM(gil_mutex), -1)
 #define MP_THREAD_GIL_EXIT() mp_thread_mutex_unlock(&MP_STATE_VM(gil_mutex))
 #else
 #define MP_THREAD_GIL_ENTER()
