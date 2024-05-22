@@ -152,8 +152,8 @@ static inline uint64_t rtc_get_datetime_in_sec(mp_obj_t datetime) {
     }
 
     return timeutils_mktime(mp_obj_get_int(elem[0]),
-        mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]), mp_obj_get_int(elem[4]),
-        mp_obj_get_int(elem[5]), mp_obj_get_int(elem[6]));
+        mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]), mp_obj_get_int(elem[3]),
+        mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5]));
 
 }
 
@@ -187,28 +187,22 @@ void rtc_irq_handler2(void *callback, cyhal_rtc_event_t event) {
     mp_call_function_1((mp_obj_t)self->callback, mp_obj_new_int(event));
 }
 
-static inline void rtc_get_dtime_struct(const mp_obj_t datetime, struct tm dtime) {
+static inline void rtc_get_dtime_struct(const mp_obj_t datetime, struct tm *dtime) {
     // set date and time
     mp_obj_t *items;
     size_t len;
     mp_obj_get_array(datetime, &len, &items);
-    dtime.tm_sec = mp_obj_get_int(items[5]);
-    dtime.tm_min = mp_obj_get_int(items[4]);
-    dtime.tm_hour = mp_obj_get_int(items[3]);
-    dtime.tm_mday = mp_obj_get_int(items[2]);
-    dtime.tm_mon = mp_obj_get_int(items[1]) - 1;
-    dtime.tm_year = mp_obj_get_int(items[0]) - TM_YEAR_BASE;
-    dtime.tm_wday = 0;// mp_obj_get_int(items[3]);
-    dtime.tm_isdst = 0;
 
-    /*dtime.tm_sec = mp_obj_get_int(items[6]);
-    dtime.tm_min = mp_obj_get_int(items[5]);
-    dtime.tm_hour = mp_obj_get_int(items[4]);
-    dtime.tm_mday = mp_obj_get_int(items[2]);
-    dtime.tm_mon = mp_obj_get_int(items[1]) - 1;
-    dtime.tm_year = mp_obj_get_int(items[0]) - TM_YEAR_BASE;
-    dtime.tm_wday = mp_obj_get_int(items[3]);
-    dtime.tm_isdst = 0;*/
+    dtime->tm_sec = mp_obj_get_int(items[5]);
+    dtime->tm_min = mp_obj_get_int(items[4]);
+    dtime->tm_hour = mp_obj_get_int(items[3]);
+    dtime->tm_mday = mp_obj_get_int(items[2]);
+    dtime->tm_mon = mp_obj_get_int(items[1]) - 1;
+    dtime->tm_year = mp_obj_get_int(items[0]) - TM_YEAR_BASE;
+    dtime->tm_wday = 0;// mp_obj_get_int(items[3]);
+    dtime->tm_yday = 0;
+    dtime->tm_isdst = 0;
+
 }
 
 /******************************************************************************/
@@ -297,13 +291,13 @@ static mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
             .en_sec = 1,
             .en_min = 1,
             .en_hour = 1,
-            .en_day = 1,
+            .en_day = 0,
             .en_date = 1,
             .en_month = 1,
         };
         dtime_sec = rtc_get_datetime_in_sec(args[1].u_obj);
         self->alarm_period_s = mp_obj_new_int_from_uint(dtime_sec - alarm_set_time_s);
-        rtc_get_dtime_struct(args[1].u_obj, dtime);
+        rtc_get_dtime_struct(args[1].u_obj, &dtime);
         cyhal_rtc_set_alarm(&psoc6_rtc, &dtime, alarm_active);
     } else { // then it must be an integer
         self->alarm_period_s = mp_obj_new_int_from_uint(mp_obj_get_int(args[1].u_obj) / 1000);
