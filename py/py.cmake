@@ -55,6 +55,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/nlr.c
     ${MICROPY_PY_DIR}/nlrmips.c
     ${MICROPY_PY_DIR}/nlrpowerpc.c
+    ${MICROPY_PY_DIR}/nlrrv32.c
     ${MICROPY_PY_DIR}/nlrsetjmp.c
     ${MICROPY_PY_DIR}/nlrthumb.c
     ${MICROPY_PY_DIR}/nlrx64.c
