@@ -35,7 +35,16 @@
 #include "mpconfigboard.h"
 
 // Board and hardware specific configuration
+#if PICO_RP2040
 #define MICROPY_HW_MCU_NAME                     "RP2040"
+#elif PICO_RP2350 && PICO_ARM
+#define MICROPY_HW_MCU_NAME                     "RP2350"
+#elif PICO_RP2350 && PICO_RISCV
+#define MICROPY_HW_MCU_NAME                     "RP2350-RISCV"
+#else
+#error Unknown MCU
+#endif
+
 #ifndef MICROPY_HW_ENABLE_UART_REPL
 #define MICROPY_HW_ENABLE_UART_REPL             (0) // useful if there is no USB
 #endif
