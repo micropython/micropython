@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "USB"
+    ],
+    "images": [
+        "rp2-pico2.jpg"
+    ],
+    "mcu": "rp2350",
+    "product": "Pico 2",
+    "thumbnail": "",
+    "url": "https://www.raspberrypi.com/products/raspberry-pi-pico-2/",
+    "variants": {
+        "RISCV": "RISC-V CPU mode"
+    },
+    "vendor": "Raspberry Pi"
+}
