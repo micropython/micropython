@@ -669,12 +669,25 @@ I2S bus
 
 See :ref:`machine.I2S <machine.I2S>`. 
 
-.. note::
-    The only difference with the reference API is the usage of the ``id`` in the constructor ``IS2()``. In the PSoC6 port the ``id`` value is ignored. 
-    Any integer value can be passed as ``id``.
-    New instances of the I2S class will be allocated as long as there are available slots and the chosen I2S pins aren't already allocated by other instance.
+The following specialization applies to this port:
 
-Supported sample rates are 8KHz, 16KHz, 32KHz, 48KHz, 22.05KHz, 44.1KHz.
+Constructor
+-----------
+
+.. class:: I2S(id, *, sck, ws, sd, mck=None, mode, bits, format, rate, ibuf)
+
+   Construct an I2S object of the given id:
+
+   - ``id`` takes any integer (This value is ignored for PSoC6 port)
+
+   Keyword-only parameters:
+
+     - ``rate`` specifies audio sampling rate (Hz);
+       this is the frequency of the ``ws`` signal. Supported sample rates are 8KHz, 16KHz, 32KHz, 48KHz, 22.05KHz, 44.1KHz.
+
+     - ``mck`` is not implemented.
+
+   The rest of the parameters match the reference API.
 
 ::
 
