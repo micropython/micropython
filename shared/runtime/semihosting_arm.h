@@ -23,16 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_LIB_UTILS_SEMIHOSTING_H
-#define MICROPY_INCLUDED_LIB_UTILS_SEMIHOSTING_H
+#ifndef MICROPY_INCLUDED_SHARED_RUNTIME_SEMIHOSTING_ARM_H
+#define MICROPY_INCLUDED_SHARED_RUNTIME_SEMIHOSTING_ARM_H
 
 /*
 
 To use semi-hosting for a replacement UART:
-- Add lib/semihosting/semihosting.c to the Makefile sources.
+- Add shared/runtime/semihosting_arm.c to the Makefile sources.
 - Call mp_semihosting_init() in main(), around the time UART is initialized.
 - Replace mp_hal_stdin_rx_chr and similar in mphalport.c with the semihosting equivalent.
-- Include lib/semihosting/semihosting.h in the relevant files.
+- Include shared/runtime/semihosting_arm.h in the relevant files.
 
 Then make sure the debugger is attached and enables semihosting.  In OpenOCD this is
 done with ARM semihosting enable followed by reset.  The terminal will need further
@@ -48,4 +48,4 @@ int mp_semihosting_rx_char();
 uint32_t mp_semihosting_tx_strn(const char *str, size_t len);
 uint32_t mp_semihosting_tx_strn_cooked(const char *str, size_t len);
 
-#endif // MICROPY_INCLUDED_LIB_UTILS_SEMIHOSTING_H
+#endif // MICROPY_INCLUDED_SHARED_RUNTIME_SEMIHOSTING_ARM_H

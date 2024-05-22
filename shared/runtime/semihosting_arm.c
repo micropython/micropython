@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "semihosting.h"
+#include "semihosting_arm.h"
 
 // Resources:
 // http://embed.rs/articles/2016/semi-hosting-rust/
