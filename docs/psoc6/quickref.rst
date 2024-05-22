@@ -672,7 +672,7 @@ See :ref:`machine.I2S <machine.I2S>`.
 The following specialization applies to this port:
 
 Constructor
------------
+^^^^^^^^^^^^
 
 .. class:: I2S(id, *, sck, ws, sd, mck=None, mode, bits, format, rate, ibuf)
 
