@@ -525,7 +525,7 @@ endif()
 #  a linker script modification) until we explicitly add  macro calls around the function
 #  defs to move them into RAM.
 if (PICO_ON_DEVICE AND NOT PICO_NO_FLASH AND NOT PICO_COPY_TO_RAM)
-    pico_set_linker_script(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_mp.ld)
+    pico_set_linker_script(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_${PICO_PLATFORM}.ld)
 endif()
 
 pico_add_extra_outputs(${MICROPY_TARGET})
