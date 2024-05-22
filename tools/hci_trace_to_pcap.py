@@ -66,7 +66,7 @@ reassemble_packet = bytearray()
 with open(sys.argv[1], "r") as f:
     for line in f:
         line = line.strip()
-        m = re.match("([<>]) \\[ *([0-9]+)\\] ([A-Fa-f0-9:]+)", line)
+        m = re.match(r"([<>]) \[ *([0-9]+)\] ([A-Fa-f0-9:]+)", line)
         if not m:
             continue
 
