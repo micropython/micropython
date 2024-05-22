@@ -994,11 +994,17 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *socket,
         }
         case MOD_NETWORK_SOCK_DGRAM: {
             err = udp_connect(socket->pcb.udp, &dest, port);
+            if (err == ERR_OK) {
+                socket->state = STATE_CONNECTED;
+            }
             break;
         }
         #if MICROPY_PY_LWIP_SOCK_RAW
         case MOD_NETWORK_SOCK_RAW: {
             err = raw_connect(socket->pcb.raw, &dest);
+            if (err == ERR_OK) {
+                socket->state = STATE_CONNECTED;
+            }
             break;
         }
         #endif
