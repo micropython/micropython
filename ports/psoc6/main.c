@@ -61,6 +61,8 @@ extern void mod_i2c_deinit(void);
 extern void mod_pwm_deinit(void);
 extern void mod_spi_deinit(void);
 extern void mod_wdt_deinit(void);
+extern void mod_rtc_deinit(void);
+extern bool rtc_memory_write_enabled(void);
 
 void mpy_task(void *arg);
 
@@ -186,6 +188,9 @@ soft_reset:
     mod_i2c_deinit();
     mod_pwm_deinit();
     mod_spi_deinit();
+    if (rtc_memory_write_enabled() == false) {
+        mod_rtc_deinit();
+    }
     mod_pin_phy_deinit();
     #if MICROPY_PY_NETWORK
     mod_network_deinit();
