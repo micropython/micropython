@@ -199,7 +199,7 @@ static inline void rtc_get_dtime_struct(const mp_obj_t datetime, struct tm *dtim
     dtime->tm_mday = mp_obj_get_int(items[2]);
     dtime->tm_mon = mp_obj_get_int(items[1]) - 1;
     dtime->tm_year = mp_obj_get_int(items[0]) - TM_YEAR_BASE;
-    dtime->tm_wday = 0;// mp_obj_get_int(items[3]);
+    dtime->tm_wday = 0;
     dtime->tm_yday = 0;
     dtime->tm_isdst = 0;
 
@@ -262,9 +262,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
 // RTC.alarm()
 static mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,                            MP_ARG_INT,  {.u_int = 0} },
-        { MP_QSTR_time,                          MP_ARG_OBJ,  {.u_obj = mp_const_none} },
-        { MP_QSTR_repeat,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_time, MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+        { MP_QSTR_repeat, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     // parse args
@@ -273,14 +272,10 @@ static mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), allowed_args, args);
 
-    // check the alarm id
-    if (args[0].u_int != 0) {
-        mp_raise_OSError(MP_ENODEV);
-    }
     uint64_t alarm_set_time_s = rtc_get_current_time_in_sec();
 
-    self->repeat = args[2].u_bool;
-    if (mp_obj_is_type(args[1].u_obj, &mp_type_tuple)) { // datetime tuple given
+    self->repeat = args[1].u_bool;
+    if (mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) { // datetime tuple given
         // repeat cannot be used with a datetime tuple
         if (self->repeat) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
@@ -295,13 +290,13 @@ static mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
             .en_date = 1,
             .en_month = 1,
         };
-        dtime_sec = rtc_get_datetime_in_sec(args[1].u_obj);
+        dtime_sec = rtc_get_datetime_in_sec(args[0].u_obj);
         self->alarm_period_s = mp_obj_new_int_from_uint(dtime_sec - alarm_set_time_s);
-        rtc_get_dtime_struct(args[1].u_obj, &dtime);
+        rtc_get_dtime_struct(args[0].u_obj, &dtime);
         cyhal_rtc_set_alarm(&psoc6_rtc, &dtime, alarm_active);
     } else { // then it must be an integer
-        self->alarm_period_s = mp_obj_new_int_from_uint(mp_obj_get_int(args[1].u_obj) / 1000);
-        cyhal_rtc_set_alarm_by_seconds(&psoc6_rtc, mp_obj_get_int(args[1].u_obj) / 1000);
+        self->alarm_period_s = mp_obj_new_int_from_uint(mp_obj_get_int(args[0].u_obj) / 1000);
+        cyhal_rtc_set_alarm_by_seconds(&psoc6_rtc, mp_obj_get_int(args[0].u_obj) / 1000);
     }
     self->alarm_elapse_time_s = mp_obj_new_int_from_uint(alarm_set_time_s + mp_obj_get_int(self->alarm_period_s));
     self->alarmset = true;
@@ -309,7 +304,7 @@ static mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
 
-
+// RTC.alarm_left()
 static mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
     machine_rtc_obj_t *self = args[0];
     // only alarm id 0 is available
@@ -324,7 +319,7 @@ static mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_left_obj, 1, 2, machine_rtc_alarm_left);
 
-
+// RTC.cancel()
 static mp_obj_t machine_rtc_cancel(size_t n_args, const mp_obj_t *args) {
     // only alarm id 0 is available
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
@@ -338,13 +333,14 @@ static mp_obj_t machine_rtc_cancel(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_cancel_obj, 1, 2, machine_rtc_cancel);
 
+// RTC.memory()
 static mp_obj_t machine_rtc_memory(size_t n_args, const mp_obj_t *args) {
     rtc_memory = true;
     return machine_rtc_datetime_helper(NULL, n_args, args);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_memory_obj, 1, 2, machine_rtc_memory);
 
-
+// RTC.irq()
 static mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_trigger, ARG_handler, ARG_wake};
     static const mp_arg_t allowed_args[] = {
@@ -357,15 +353,12 @@ static mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     machine_rtc_obj_t *self = pos_args[0];
     self->callback = args[ARG_handler].u_obj;
-    printf("self->repeat: %d\r\n", self->repeat);
 
     if (self->repeat) {
-        printf("self->repeat: %d\r\n", self->repeat);
         cyhal_rtc_register_callback(&psoc6_rtc, (cyhal_rtc_event_callback_t)rtc_irq_handler2, self);
     } else {
         cyhal_rtc_register_callback(&psoc6_rtc, (cyhal_rtc_event_callback_t)rtc_irq_handler1, self->callback);
     }
-    // cyhal_rtc_register_callback(&psoc6_rtc,(cyhal_rtc_event_callback_t)rtc_irq_handler,args[ARG_handler].u_obj);
 
     cyhal_rtc_enable_event(&psoc6_rtc, args[ARG_trigger].u_int, 3u, true);
     return mp_const_none;

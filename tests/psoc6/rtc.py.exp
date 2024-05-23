@@ -1,26 +1,27 @@
-<RTC>
+*** RTC Tests ***
 
 RTC init successful: 	 True
 
 datetime is accurate: 	 True
-current datetime is same as set datetime (2000, 1, 1, 6, 0, 0, 0, 0) : True
-current datetime is same as set datetime (2000, 1, 31, 1, 0, 0, 0, 0) : True
-current datetime is same as set datetime (2000, 12, 31, 0, 0, 0, 0, 0) : True
-current datetime is same as set datetime (2016, 12, 31, 6, 0, 0, 0, 0) : True
-current datetime is same as set datetime (2016, 12, 31, 6, 0, 0, 0, 0) : True
-current datetime is same as set datetime (2016, 12, 31, 6, 1, 0, 0, 0) : True
-current datetime is same as set datetime (2016, 12, 31, 6, 12, 0, 0, 0) : True
-current datetime is same as set datetime (2016, 12, 31, 6, 13, 0, 0, 0) : True
-current datetime is same as set datetime (2016, 12, 31, 6, 23, 0, 0, 0) : True
-current datetime is same as set datetime (2016, 12, 31, 6, 23, 1, 0, 0) : True
-current datetime is same as set datetime (2016, 12, 31, 6, 23, 59, 0, 0) : True
-current datetime is same as set datetime (2016, 12, 31, 6, 23, 59, 1, 0) : True
-current datetime is same as set datetime (2016, 12, 31, 6, 23, 59, 59, 0) : True
-current datetime is same as set datetime (2099, 12, 31, 4, 23, 59, 59, 0) : True
 
-Setting alarm
+1. Setting periodic short alarm to be triggered repeatedly in few ms in future
+Alarm period set to (ms):  3000
+Alarm expired :  True
+Alarm set again...
+Alarm expired :  True
+Alarm cancelled successfully :  True
 
-Alarm left:  10
-irq_counter:  1
+2. Setting one-shot short alarm to be triggered in few ms in future
+Alarm expired :  True
+Entered Cback : True
+
+3. Setting one-shot alarm to be triggered at specified date-time
+Alarm expired :  True
+Entered Cback : True
+
+4. Setting periodic alarm to be triggered at specified date-time should fail
+invalid argument(s) value
 
 RTC reset done:  True
+
+datetime to be retrieved post soft-reset :  (2023, 1, 1, 0, 0, 0, 0, 0)

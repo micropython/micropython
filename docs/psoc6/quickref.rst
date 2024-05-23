@@ -341,6 +341,13 @@ Real time clock (RTC)
 See :ref:`machine.RTC <machine.RTC>` ::
 
     from machine import RTC
+    import time
+
+    irq_counter = 0
+
+    def cback(event):
+        global irq_counter
+        irq_counter += 1
 
     rtc = RTC()
     rtc.init((2023, 1, 1, 0, 0, 0, 0, 0)) # initialize rtc with specific date and time,
@@ -350,10 +357,31 @@ See :ref:`machine.RTC <machine.RTC>` ::
     rtc.datetime() # get date and time
     rtc.now() # get current date and time
 
+    rtc.irq(trigger=RTC.ALARM0, handler=cback)
+    rtc.alarm(1000, repeat=False) # set one-shot short alarm in ms
+    rtc.alarm_left() # read the time left for alarm to expire
+    time.sleep_ms(1008) # wait sufficient time
+    print(irq_counter) # Check irq counter
+
+    rtc.irq(trigger=RTC.ALARM0, handler=cback)
+    rtc.alarm(3000, repeat=True) # set periodic short alarm in ms
+    rtc.cancel() # cancel the alarm
+
+    rtc.irq(trigger=RTC.ALARM0, handler=cback)
+    rtc.alarm((2023, 1, 1, 0, 0, 1, 0, 0), repeat=False) # set one-shot longer duration alarm
+
+    rtc.memory((2023, 1, 1, 0, 0, 1, 0, 0)) # Retains date time value post reset
+
+
 .. note::
     Setting a random week day in 'wday' field is not valid. The underlying library implements the logic to always
     calculate the right weekday based on the year, date and month passed. However, datetime() will not raise an error 
     for this, but rather re-write the field with last calculated actual value.
+
+.. warning::
+    For setting a short time periodic alarm, the minimum precision possible is 3 secs. Anything less than this may 
+    or may not work accurately. Also the PSoC6 RTC has a precision of sec. Hence for any alarm, the minimum period can be 1sec.
+
 
 Watch dog timer (WDT)
 ---------------------
