@@ -194,6 +194,69 @@
 
 #define MP_STATE_PORT MP_STATE_VM
 
+#ifndef MICROPY_HW_ENABLE_USBDEV
+#define MICROPY_HW_ENABLE_USBDEV            (SOC_USB_OTG_SUPPORTED)
+#endif
+
+#if MICROPY_HW_ENABLE_USBDEV
+#define MICROPY_SCHEDULER_STATIC_NODES      (1)
+
+#ifndef MICROPY_HW_USB_VID
+#define USB_ESPRESSIF_VID 0x303A
+#if CONFIG_TINYUSB_DESC_USE_ESPRESSIF_VID
+#define MICROPY_HW_USB_VID  (USB_ESPRESSIF_VID)
+#else
+#define MICROPY_HW_USB_VID  (CONFIG_TINYUSB_DESC_CUSTOM_VID)
+#endif
+#endif
+
+#ifndef MICROPY_HW_USB_PID
+#if CONFIG_TINYUSB_DESC_USE_DEFAULT_PID
+#define _PID_MAP(itf, n) ((CFG_TUD_##itf) << (n))
+// A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
+// Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
+// Auto ProductID layout's Bitmap:
+//   [MSB]         HID | MSC | CDC          [LSB]
+#define USB_TUSB_PID (0x4000 | _PID_MAP(CDC, 0) | _PID_MAP(MSC, 1) | _PID_MAP(HID, 2) | \
+    _PID_MAP(MIDI, 3))  // | _PID_MAP(AUDIO, 4) | _PID_MAP(VENDOR, 5) )
+#define MICROPY_HW_USB_PID  (USB_TUSB_PID)
+#else
+#define MICROPY_HW_USB_PID  (CONFIG_TINYUSB_DESC_CUSTOM_PID)
+#endif
+#endif
+
+#ifndef MICROPY_HW_USB_MANUFACTURER_STRING
+#ifdef CONFIG_TINYUSB_DESC_MANUFACTURER_STRING
+#define MICROPY_HW_USB_MANUFACTURER_STRING CONFIG_TINYUSB_DESC_MANUFACTURER_STRING
+#else
+#define MICROPY_HW_USB_MANUFACTURER_STRING "MicroPython"
+#endif
+#endif
+
+#ifndef MICROPY_HW_USB_PRODUCT_FS_STRING
+#ifdef CONFIG_TINYUSB_DESC_PRODUCT_STRING
+#define MICROPY_HW_USB_PRODUCT_FS_STRING CONFIG_TINYUSB_DESC_PRODUCT_STRING
+#else
+#define MICROPY_HW_USB_PRODUCT_FS_STRING "Board in FS mode"
+#endif
+#endif
+
+#endif // MICROPY_HW_ENABLE_USBDEV
+
+// Enable stdio over native USB peripheral CDC via TinyUSB
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC                  (MICROPY_HW_ENABLE_USBDEV)
+#endif
+
+// Enable stdio over USB Serial/JTAG peripheral
+#ifndef MICROPY_HW_ESP_USB_SERIAL_JTAG
+#define MICROPY_HW_ESP_USB_SERIAL_JTAG      (SOC_USB_SERIAL_JTAG_SUPPORTED && !MICROPY_HW_USB_CDC)
+#endif
+
+#if MICROPY_HW_USB_CDC && MICROPY_HW_ESP_USB_SERIAL_JTAG
+#error "Invalid build config: Can't enable both native USB and USB Serial/JTAG peripheral"
+#endif
+
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
@@ -252,20 +315,6 @@ typedef long mp_off_t;
 
 // board specifics
 #define MICROPY_PY_SYS_PLATFORM "esp32"
-
-// Enable stdio over native USB peripheral CDC via TinyUSB
-#ifndef MICROPY_HW_USB_CDC
-#define MICROPY_HW_USB_CDC                  (SOC_USB_OTG_SUPPORTED)
-#endif
-
-// Enable stdio over USB Serial/JTAG peripheral
-#ifndef MICROPY_HW_ESP_USB_SERIAL_JTAG
-#define MICROPY_HW_ESP_USB_SERIAL_JTAG      (SOC_USB_SERIAL_JTAG_SUPPORTED && !MICROPY_HW_USB_CDC)
-#endif
-
-#if MICROPY_HW_USB_CDC && MICROPY_HW_ESP_USB_SERIAL_JTAG
-#error "Invalid build config: Can't enable both native USB and USB Serial/JTAG peripheral"
-#endif
 
 // ESP32-S3 extended IO for 47 & 48
 #ifndef MICROPY_HW_ESP32S3_EXTENDED_IO
