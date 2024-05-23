@@ -52,6 +52,45 @@ list(APPEND MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/dht/dht.c
 )
 
+if(MICROPY_PY_TINYUSB)
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/tinyusb)
+
+    if(ECHO_SUBMODULES)
+    # No-op, we're just doing submodule/variant discovery.
+    # Cannot run the add_library/target_include_directories rules (even though
+    # the build won't run) because IDF will attempt verify the files exist.
+    else()
+    
+    set(TINYUSB_SRC "${MICROPY_DIR}/lib/tinyusb/src")
+    string(TOUPPER OPT_MCU_${IDF_TARGET} tusb_mcu)
+
+    list(APPEND MICROPY_DEF_TINYUSB
+        CFG_TUSB_MCU=${tusb_mcu}
+    )
+
+    list(APPEND MICROPY_SOURCE_TINYUSB
+        ${TINYUSB_SRC}/tusb.c
+        ${TINYUSB_SRC}/common/tusb_fifo.c
+        ${TINYUSB_SRC}/device/usbd.c
+        ${TINYUSB_SRC}/device/usbd_control.c
+        ${TINYUSB_SRC}/class/cdc/cdc_device.c
+        ${TINYUSB_SRC}/portable/synopsys/dwc2/dcd_dwc2.c
+        ${MICROPY_DIR}/shared/tinyusb/mp_usbd.c
+        ${MICROPY_DIR}/shared/tinyusb/mp_usbd_cdc.c
+        ${MICROPY_DIR}/shared/tinyusb/mp_usbd_descriptor.c
+    )
+
+    list(APPEND MICROPY_INC_TINYUSB
+        ${TINYUSB_SRC}
+        ${MICROPY_DIR}/shared/tinyusb/
+    )
+    
+    list(APPEND MICROPY_LINK_TINYUSB
+        -Wl,--wrap=dcd_event_handler
+    )
+    endif()
+endif()
+
 list(APPEND MICROPY_SOURCE_PORT
     panichandler.c
     adc.c
@@ -99,6 +138,7 @@ list(APPEND MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_PORT}
     ${MICROPY_SOURCE_BOARD}
+    ${MICROPY_SOURCE_TINYUSB}
 )
 
 list(APPEND IDF_COMPONENTS
@@ -133,6 +173,7 @@ list(APPEND IDF_COMPONENTS
     soc
     spi_flash
     ulp
+    usb
     vfs
 )
 
@@ -146,9 +187,11 @@ idf_component_register(
         ${MICROPY_SOURCE_DRIVERS}
         ${MICROPY_SOURCE_PORT}
         ${MICROPY_SOURCE_BOARD}
+        ${MICROPY_SOURCE_TINYUSB}
     INCLUDE_DIRS
         ${MICROPY_INC_CORE}
         ${MICROPY_INC_USERMOD}
+        ${MICROPY_INC_TINYUSB}
         ${MICROPY_PORT_DIR}
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
@@ -170,6 +213,7 @@ endif()
 target_compile_definitions(${MICROPY_TARGET} PUBLIC
     ${MICROPY_DEF_CORE}
     ${MICROPY_DEF_BOARD}
+    ${MICROPY_DEF_TINYUSB}
     MICROPY_ESP_IDF_4=1
     MICROPY_VFS_FAT=1
     MICROPY_VFS_LFS2=1
@@ -183,6 +227,10 @@ target_compile_options(${MICROPY_TARGET} PUBLIC
     -Wno-clobbered
     -Wno-deprecated-declarations
     -Wno-missing-field-initializers
+)
+
+target_link_options(${MICROPY_TARGET} PUBLIC
+     ${MICROPY_LINK_TINYUSB}
 )
 
 # Additional include directories needed for private NimBLE headers.

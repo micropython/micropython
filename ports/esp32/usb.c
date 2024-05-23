@@ -28,76 +28,65 @@
 #include "py/mphal.h"
 #include "usb.h"
 
-#if CONFIG_USB_OTG_SUPPORTED && !CONFIG_ESP_CONSOLE_USB_CDC && !CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+#if CONFIG_USB_OTG_SUPPORTED && !CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+#include "esp_rom_gpio.h"
+#include "esp_mac.h"
+#include "esp_private/usb_phy.h"
 
-#include "esp_timer.h"
-#ifndef NO_QSTR
-#include "tinyusb.h"
-#include "tusb_cdc_acm.h"
-#endif
+#include "shared/tinyusb/mp_usbd.h"
 
-#define CDC_ITF TINYUSB_CDC_ACM_0
+#define EXTERNAL_PHY 0
+#define SELF_POWERED 0
 
-static uint8_t usb_rx_buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE];
+static usb_phy_handle_t phy_hdl;
 
-// This is called from FreeRTOS task "tusb_tsk" in espressif__esp_tinyusb (not an ISR).
-static void usb_callback_rx(int itf, cdcacm_event_t *event) {
-    // espressif__esp_tinyusb places tinyusb rx data onto freertos ringbuffer which
-    // this function forwards onto our stdin_ringbuf.
-    for (;;) {
-        size_t len = 0;
-        esp_err_t ret = tinyusb_cdcacm_read(itf, usb_rx_buf, sizeof(usb_rx_buf), &len);
-        if (ret != ESP_OK) {
-            break;
-        }
-        if (len == 0) {
-            break;
-        }
-        for (size_t i = 0; i < len; ++i) {
-            if (usb_rx_buf[i] == mp_interrupt_char) {
-                mp_sched_keyboard_interrupt();
-            } else {
-                ringbuf_put(&stdin_ringbuf, usb_rx_buf[i]);
-            }
-        }
-        mp_hal_wake_main_task();
-    }
-}
 
 void usb_init(void) {
-    // Initialise the USB with defaults.
-    tinyusb_config_t tusb_cfg = {0};
-    ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
+    // ref: https://github.com/espressif/esp-usb/blob/4b6a798d0bed444fff48147c8dcdbbd038e92892/device/esp_tinyusb/tinyusb.c
 
-    // Initialise the USB serial interface.
-    tinyusb_config_cdcacm_t acm_cfg = {
-        .usb_dev = TINYUSB_USBDEV_0,
-        .cdc_port = CDC_ITF,
-        .rx_unread_buf_sz = 256,
-        .callback_rx = &usb_callback_rx,
-        #ifdef MICROPY_HW_USB_CUSTOM_RX_WANTED_CHAR_CB
-        .callback_rx_wanted_char = &MICROPY_HW_USB_CUSTOM_RX_WANTED_CHAR_CB,
-        #endif
-        #ifdef MICROPY_HW_USB_CUSTOM_LINE_STATE_CB
-        .callback_line_state_changed = (tusb_cdcacm_callback_t)&MICROPY_HW_USB_CUSTOM_LINE_STATE_CB,
-        #endif
-        #ifdef MICROPY_HW_USB_CUSTOM_LINE_CODING_CB
-        .callback_line_coding_changed = &MICROPY_HW_USB_CUSTOM_LINE_CODING_CB,
-        #endif
+    // Configure USB PHY
+    usb_phy_config_t phy_conf = {
+        .controller = USB_PHY_CTRL_OTG,
+        .otg_mode = USB_OTG_MODE_DEVICE,
     };
-    ESP_ERROR_CHECK(tusb_cdc_acm_init(&acm_cfg));
+
+    #if EXTERNAL_PHY
+    // External PHY IOs config
+    usb_phy_ext_io_conf_t ext_io_conf = {
+        .vp_io_num = USBPHY_VP_NUM,
+        .vm_io_num = USBPHY_VM_NUM,
+        .rcv_io_num = USBPHY_RCV_NUM,
+        .oen_io_num = USBPHY_OEN_NUM,
+        .vpo_io_num = USBPHY_VPO_NUM,
+        .vmo_io_num = USBPHY_VMO_NUM,
+    };
+    phy_conf.target = USB_PHY_TARGET_EXT;
+    phy_conf.ext_io_conf = &ext_io_conf;
+    #else
+    phy_conf.target = USB_PHY_TARGET_INT;
+    #endif
+
+    #if SELF_POWERED
+    // OTG IOs config
+    const usb_phy_otg_io_conf_t otg_io_conf = USB_PHY_SELF_POWERED_DEVICE(config->vbus_monitor_io);
+    if (config->self_powered) {
+        phy_conf.otg_io_conf = &otg_io_conf;
+    }
+    #endif
+    // Init ESP USB Phy
+    usb_new_phy(&phy_conf, &phy_hdl);
+
+    // Init MicroPython / TinyUSB
+    mp_usbd_init();
 
 }
 
-void usb_tx_strn(const char *str, size_t len) {
-    // Write out the data to the CDC interface, but only while the USB host is connected.
-    uint64_t timeout = esp_timer_get_time() + (uint64_t)(MICROPY_HW_USB_CDC_TX_TIMEOUT_MS * 1000);
-    while (tud_cdc_n_connected(CDC_ITF) && len && esp_timer_get_time() < timeout) {
-        size_t l = tinyusb_cdcacm_write_queue(CDC_ITF, (uint8_t *)str, len);
-        str += l;
-        len -= l;
-        tud_cdc_n_write_flush(CDC_ITF);
-    }
+void mp_usbd_port_get_serial_number(char *serial_buf) {
+    // use factory default MAC as serial ID
+    uint8_t mac[8];
+    esp_efuse_mac_get_default(mac);
+    MP_STATIC_ASSERT(sizeof(mac) * 2 <= MICROPY_HW_USB_DESC_STR_MAX);
+    mp_usbd_hex_str(serial_buf, mac, sizeof(mac));
 }
 
 #endif // CONFIG_USB_OTG_SUPPORTED && !CONFIG_ESP_CONSOLE_USB_CDC && !CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
