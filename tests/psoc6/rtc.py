@@ -29,14 +29,14 @@ def reset_rtc():
 
 def set_alarm_ms(rtc, alarm_type, period_ms):
     rtc.datetime(initial_dtime)
-    rtc_irq = rtc.irq(trigger=RTC.ALARM0, handler=cback)
     rtc.alarm(period_ms, repeat=alarm_type)
+    rtc_irq = rtc.irq(trigger=RTC.ALARM0, handler=cback)
 
 
 def set_alarm_datetime(rtc, alarm_type, datetime):
     rtc.datetime(initial_dtime)
-    rtc_irq = rtc.irq(trigger=RTC.ALARM0, handler=cback)
     rtc.alarm(datetime, repeat=alarm_type)
+    rtc_irq = rtc.irq(trigger=RTC.ALARM0, handler=cback)
 
 
 print("*** RTC Tests ***")
