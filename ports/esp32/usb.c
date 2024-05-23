@@ -81,6 +81,18 @@ void usb_init(void) {
 
 }
 
+#if CONFIG_IDF_TARGET_ESP32S3
+void usb_usj_mode(void) {
+    // Switch the USB PHY back to Serial/Jtag mode, disabling OTG support
+    // This should be run before jumping to bootloader.
+    usb_del_phy(phy_hdl);
+    usb_phy_config_t phy_conf = {
+        .controller = USB_PHY_CTRL_SERIAL_JTAG,
+    };
+    usb_new_phy(&phy_conf, &phy_hdl);
+}
+#endif
+
 void mp_usbd_port_get_serial_number(char *serial_buf) {
     // use factory default MAC as serial ID
     uint8_t mac[8];

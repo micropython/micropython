@@ -29,5 +29,6 @@
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT_MS (500)
 
 void usb_init(void);
+void usb_usj_mode(void);
 
 #endif // MICROPY_INCLUDED_ESP32_USB_H
