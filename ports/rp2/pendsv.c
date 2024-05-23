@@ -28,7 +28,14 @@
 #include "py/mpconfig.h"
 #include "mutex_extra.h"
 #include "pendsv.h"
+
+#if PICO_RP2040
 #include "RP2040.h"
+#elif PICO_RP2350
+#include "RP2350.h"
+#else
+#error Unknown chip
+#endif
 
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43_stats.h"

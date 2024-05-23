@@ -43,7 +43,14 @@ static soft_timer_entry_t mp_network_soft_timer;
 #include "lib/cyw43-driver/src/cyw43.h"
 #include "lib/cyw43-driver/src/cyw43_stats.h"
 #include "hardware/irq.h"
+
+#if PICO_RP2040
 #include "RP2040.h" // cmsis, for NVIC_SetPriority and PendSV_IRQn
+#elif PICO_RP2350
+#include "RP2350.h" // cmsis, for NVIC_SetPriority and PendSV_IRQn
+#else
+#error Unknown processor
+#endif
 
 #define CYW43_IRQ_LEVEL GPIO_IRQ_LEVEL_HIGH
 #define CYW43_SHARED_IRQ_HANDLER_PRIORITY PICO_SHARED_IRQ_HANDLER_HIGHEST_ORDER_PRIORITY

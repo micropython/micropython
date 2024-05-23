@@ -191,19 +191,26 @@ set(PICO_SDK_COMPONENTS
     hardware_pll
     hardware_pwm
     hardware_regs
-    hardware_rtc
+    hardware_resets
     hardware_spi
     hardware_structs
     hardware_sync
+    hardware_sync_spin_lock
     hardware_timer
     hardware_uart
     hardware_watchdog
     hardware_xosc
+    pico_aon_timer
     pico_base_headers
     pico_binary_info
     pico_bootrom
     pico_multicore
     pico_platform
+    pico_platform_compiler
+    pico_platform_panic
+    pico_platform_sections
+    pico_runtime
+    pico_runtime_init
     pico_stdio
     pico_stdlib
     pico_sync
@@ -224,13 +231,23 @@ pico_add_library(pico_float_micropython)
 
 # pico_float_micropython: add pico-sdk float and our libm source files.
 target_sources(pico_float_micropython INTERFACE
-    ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_aeabi.S
-    ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_init_rom.c
-    ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_v1_rom_shim.S
     ${MICROPY_SOURCE_LIB_LIBM}
     ${MICROPY_SOURCE_LIB_LIBM_SQRT_SW}
     ${MICROPY_PORT_DIR}/libm_extra.c
 )
+
+if(PICO_RP2040)
+    target_sources(pico_float_micropython INTERFACE
+        ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_aeabi_rp2040.S
+        ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_init_rom_rp2040.c
+        ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_v1_rom_shim_rp2040.S
+    )
+elseif(PICO_RP2350)
+    target_sources(pico_float_micropython INTERFACE
+        ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_aeabi_dcp.S
+        ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_conv_m33.S
+    )
+endif()
 
 # pico_float_micropython: wrap low-level floating-point ops, to call the pico-sdk versions.
 pico_wrap_function(pico_float_micropython __aeabi_fdiv)
@@ -253,7 +270,9 @@ pico_wrap_function(pico_float_micropython __aeabi_ul2f)
 pico_wrap_function(pico_float_micropython __aeabi_f2iz)
 pico_wrap_function(pico_float_micropython __aeabi_f2lz)
 pico_wrap_function(pico_float_micropython __aeabi_f2uiz)
-pico_wrap_function(pico_float_micropython __aeabi_f2ulz)
+if(PICO_RP2040)
+    pico_wrap_function(pico_float_micropython __aeabi_f2ulz)
+endif()
 pico_wrap_function(pico_float_micropython __aeabi_f2d)
 
 if (MICROPY_PY_LWIP)
@@ -507,8 +526,17 @@ target_compile_definitions(${MICROPY_TARGET} PRIVATE
     PICO_NO_PROGRAM_VERSION_STRING=1 # do it ourselves in main.c
     MICROPY_BUILD_TYPE="${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} ${CMAKE_BUILD_TYPE}"
     PICO_NO_BI_STDIO_UART=1 # we call it UART REPL
-    PICO_RP2040_USB_DEVICE_ENUMERATION_FIX=1
 )
+
+if(PICO_RP2040)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        PICO_RP2040_USB_DEVICE_ENUMERATION_FIX=1
+    )
+elseif(PICO_RP2350)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        PICO_EMBED_XIP_SETUP=1 # to put flash into continuous read mode
+    )
+endif()
 
 target_link_libraries(${MICROPY_TARGET}
     ${PICO_SDK_COMPONENTS}
@@ -525,7 +553,11 @@ endif()
 #  a linker script modification) until we explicitly add  macro calls around the function
 #  defs to move them into RAM.
 if (PICO_ON_DEVICE AND NOT PICO_NO_FLASH AND NOT PICO_COPY_TO_RAM)
-    pico_set_linker_script(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_${PICO_PLATFORM}.ld)
+    if(PICO_RP2040)
+        pico_set_linker_script(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2040.ld)
+    elseif(PICO_RP2350)
+        pico_set_linker_script(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2350.ld)
+    endif()
 endif()
 
 pico_add_extra_outputs(${MICROPY_TARGET})
@@ -543,6 +575,9 @@ foreach(comp ${PICO_SDK_COMPONENTS})
     micropy_gather_target_properties(${comp})
     micropy_gather_target_properties(${comp}_headers)
 endforeach()
+
+set(MICROPY_CPP_FLAGS_EXTRA ${PICO_COMMON_LANG_FLAGS})
+separate_arguments(MICROPY_CPP_FLAGS_EXTRA)
 
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)

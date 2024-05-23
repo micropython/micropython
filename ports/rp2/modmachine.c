@@ -41,6 +41,7 @@
 #include "pico/bootrom.h"
 #include "pico/stdlib.h"
 #include "pico/unique_id.h"
+#include "pico/runtime_init.h"
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
