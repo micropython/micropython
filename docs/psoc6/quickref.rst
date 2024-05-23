@@ -50,7 +50,9 @@ The :mod:`machine` module::
     machine.freq()          # get the current frequency of the CPU
 
 ::
+
     from machine import Bitstream
+    
     timing = [1000, 7000, 5000, 2500]          #timing (high_time_0, low_time_0, high_time_1, low_time_1)in ns
     buf = bytearray([0xAB])                    #buffer data 
     bitstream('P13_6', 0, timing, buf)         # bitstrem buffer data with timing through pin P13_6
