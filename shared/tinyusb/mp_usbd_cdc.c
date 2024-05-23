@@ -138,15 +138,25 @@ void tud_sof_cb(uint32_t frame_count) {
 
 #endif
 
-#if MICROPY_HW_ENABLE_USBDEV && (MICROPY_HW_USB_CDC_1200BPS_TOUCH || MICROPY_HW_USB_CDC)
+#if MICROPY_HW_ENABLE_USBDEV && ( \
+    MICROPY_HW_USB_CDC_1200BPS_TOUCH || \
+    MICROPY_HW_USB_CDC || \
+    MICROPY_HW_USB_CDC_DTR_RTS_BOOTLOADER)
 
-#if MICROPY_HW_USB_CDC_1200BPS_TOUCH
+#if MICROPY_HW_USB_CDC_1200BPS_TOUCH || MICROPY_HW_USB_CDC_DTR_RTS_BOOTLOADER
 static mp_sched_node_t mp_bootloader_sched_node;
 
 static void usbd_cdc_run_bootloader_task(mp_sched_node_t *node) {
     mp_hal_delay_ms(250);
     machine_bootloader(0, NULL);
 }
+#endif
+
+#if MICROPY_HW_USB_CDC_DTR_RTS_BOOTLOADER
+static struct {
+    bool dtr : 1;
+    bool rts : 1;
+} prev_line_state = {0};
 #endif
 
 void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
@@ -158,6 +168,15 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
         cdc_connected_flush_delay = (tud_speed_get() == TUSB_SPEED_HIGH) ? 128 : 16;
         tud_sof_cb_enable(true);
     }
+    #endif
+    #if MICROPY_HW_USB_CDC_DTR_RTS_BOOTLOADER
+    if (dtr && !rts) {
+        if (prev_line_state.rts && !prev_line_state.dtr) {
+            mp_sched_schedule_node(&mp_bootloader_sched_node, usbd_cdc_run_bootloader_task);
+        }
+    }
+    prev_line_state.rts = rts;
+    prev_line_state.dtr = dtr;
     #endif
     #if MICROPY_HW_USB_CDC_1200BPS_TOUCH
     if (dtr == false && rts == false) {
