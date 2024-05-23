@@ -149,13 +149,7 @@ static void usbd_cdc_run_bootloader_task(mp_sched_node_t *node) {
 }
 #endif
 
-void
-#if MICROPY_HW_USB_EXTERNAL_TINYUSB
-mp_usbd_line_state_cb
-#else
-tud_cdc_line_state_cb
-#endif
-    (uint8_t itf, bool dtr, bool rts) {
+void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
     #if MICROPY_HW_USB_CDC && !MICROPY_EXCLUDE_SHARED_TINYUSB_USBD_CDC
     if (dtr) {
         // A host application has started to open the cdc serial port.
