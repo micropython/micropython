@@ -50,7 +50,7 @@ extern uint8_t __StackTop, __StackLimit;
 __attribute__((section(".bss"))) static char gc_heap[MICROPY_GC_HEAP_SIZE];
 #endif
 
-extern void rtc_init(void);
+extern void mod_rtc_init(void);
 extern void time_init(void);
 extern void os_init(void);
 extern void network_init(void);
@@ -62,7 +62,6 @@ extern void mod_pwm_deinit(void);
 extern void mod_spi_deinit(void);
 extern void mod_wdt_deinit(void);
 extern void mod_rtc_deinit(void);
-extern bool rtc_memory_write_enabled(void);
 
 void mpy_task(void *arg);
 
@@ -113,12 +112,11 @@ void mpy_task(void *arg) {
 
     // Initialize modules. Or to be redone after a reset and therefore to be placed next to machine_init below ?
     os_init();
-    rtc_init();
     time_init();
-
 
 soft_reset:
 
+    mod_rtc_init();
     mp_init();
 
     // ANSI ESC sequence for clear screen. Refer to  https://stackoverflow.com/questions/517970/how-to-clear-the-interpreter-console
@@ -188,9 +186,7 @@ soft_reset:
     mod_i2c_deinit();
     mod_pwm_deinit();
     mod_spi_deinit();
-    if (rtc_memory_write_enabled() == false) {
-        mod_rtc_deinit();
-    }
+    mod_rtc_deinit();
     mod_pin_phy_deinit();
     #if MICROPY_PY_NETWORK
     mod_network_deinit();

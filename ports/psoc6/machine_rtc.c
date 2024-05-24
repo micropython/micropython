@@ -61,12 +61,13 @@
 #define RTC_INIT_DST        0
 #define TM_YEAR_BASE        (1900u)
 
+#define rtc_assert_raise(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
+        mp_raise_ValueError(MP_ERROR_TEXT(msg)); \
+}
+
 
 cyhal_rtc_t psoc6_rtc;
-bool rtc_memory = false;
-
-static void rtc_irq_handler1(void *callback, cyhal_rtc_event_t event);
-static void rtc_irq_handler2(void *callback, cyhal_rtc_event_t event);
+static bool rtc_memory = false;
 
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
@@ -78,36 +79,30 @@ typedef struct _machine_rtc_obj_t {
 } machine_rtc_obj_t;
 
 // singleton RTC object
-static machine_rtc_obj_t machine_rtc_obj;
+static machine_rtc_obj_t machine_rtc_obj = {.base = {&machine_rtc_type}};
 
 bool rtc_memory_write_enabled() {
     return rtc_memory;
 }
 
 /* This function is run from main.c to init the RTC at boot time. This will set the RTC to PSoC default time: 1st Jan 2000*/
-void rtc_init(void) {
+void mod_rtc_init(void) {
     cy_rslt_t result = cyhal_rtc_init(&psoc6_rtc);
-
-    if (CY_RSLT_SUCCESS != result) {
-        mp_raise_ValueError(MP_ERROR_TEXT("cyhal_rtc_init failed !"));
-    }
+    rtc_assert_raise("cyhal_rtc_init failed !", result);
 }
 
-static inline void rtc_enable() {
-    bool r = cyhal_rtc_is_enabled(&psoc6_rtc);
-    if (!r) {
-        rtc_init();
+void mod_rtc_deinit() {
+    if (rtc_memory_write_enabled() == false) {
+        cyhal_rtc_free(&psoc6_rtc);
     }
 }
 
 // Helper function to set/get datetime
-static mp_obj_t machine_rtc_datetime_helper(mp_obj_t self_in, mp_uint_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *args) {
     struct tm current_date_time;
     if (n_args == 1) {
         cy_rslt_t result = cyhal_rtc_read(&psoc6_rtc, &current_date_time);
-        if (CY_RSLT_SUCCESS != result) {
-            mp_raise_ValueError(MP_ERROR_TEXT("cyhal_rtc_read failed !"));
-        }
+        rtc_assert_raise("cyhal_rtc_read failed !", result);
 
         mp_obj_t tuple[8] = {
             mp_obj_new_int(current_date_time.tm_year + TM_YEAR_BASE),
@@ -133,10 +128,7 @@ static mp_obj_t machine_rtc_datetime_helper(mp_obj_t self_in, mp_uint_t n_args, 
         current_date_time.tm_sec = mp_obj_get_int(items[6]);
 
         cy_rslt_t result = cyhal_rtc_write(&psoc6_rtc, &current_date_time);
-
-        if (CY_RSLT_SUCCESS != result) {
-            mp_raise_ValueError(MP_ERROR_TEXT("cyhal_rtc_write failed ! Check if field values entered are within the specified range."));
-        }
+        rtc_assert_raise("cyhal_rtc_write failed ! Check if field values entered are within the specified range.", result);
     }
     return mp_const_none;
 }
@@ -158,7 +150,7 @@ static inline uint64_t rtc_get_datetime_in_sec(mp_obj_t datetime) {
 }
 
 static inline uint64_t rtc_get_current_time_in_sec() {
-    mp_obj_t datetime = machine_rtc_datetime_helper(NULL, 1, NULL);
+    mp_obj_t datetime = machine_rtc_datetime_helper(1, NULL);
 
     size_t len;
     mp_obj_t *elem;
@@ -175,16 +167,22 @@ static inline uint64_t rtc_get_current_time_in_sec() {
 
 }
 
-void rtc_irq_handler1(void *callback, cyhal_rtc_event_t event) {
-    mp_call_function_1((mp_obj_t)callback, mp_obj_new_int(event));
+static void rtc_irq_handler(void *self, cyhal_rtc_event_t event);
+
+static void rtc_alarm_setup(machine_rtc_obj_t *self) {
+    cyhal_rtc_set_alarm_by_seconds(&psoc6_rtc, mp_obj_get_int(self->alarm_period_s));
+    cyhal_rtc_register_callback(&psoc6_rtc, (cyhal_rtc_event_callback_t)rtc_irq_handler, self);
+    cyhal_rtc_enable_event(&psoc6_rtc, CYHAL_RTC_ALARM, 3, true);
 }
 
-void rtc_irq_handler2(void *callback, cyhal_rtc_event_t event) {
-    machine_rtc_obj_t *self = (machine_rtc_obj_t *)callback;
-    cyhal_rtc_register_callback(&psoc6_rtc, (cyhal_rtc_event_callback_t)rtc_irq_handler2, self);
-    cyhal_rtc_enable_event(&psoc6_rtc, CYHAL_RTC_ALARM, 3, true);
-    cyhal_rtc_set_alarm_by_seconds(&psoc6_rtc, mp_obj_get_int(self->alarm_period_s));
-    mp_call_function_1((mp_obj_t)self->callback, mp_obj_new_int(event));
+void rtc_irq_handler(void *self_in, cyhal_rtc_event_t event) {
+    machine_rtc_obj_t *self = (machine_rtc_obj_t *)self_in;
+    if (self->callback != NULL) {
+        if (self->repeat) {
+            rtc_alarm_setup(self);
+        }
+        mp_call_function_1((mp_obj_t)self->callback, mp_obj_new_int(event));
+    }
 }
 
 static inline void rtc_get_dtime_struct(const mp_obj_t datetime, struct tm *dtime) {
@@ -211,24 +209,27 @@ static inline void rtc_get_dtime_struct(const mp_obj_t datetime, struct tm *dtim
 // RTC constructor
 static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    machine_rtc_obj_t *self = &machine_rtc_obj;
-    self->base.type = &machine_rtc_type;
-    return MP_OBJ_FROM_PTR(self);
+    return (mp_obj_t)&machine_rtc_obj;
 }
 
 // RTC.init(datetime)
 static mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t datetime) {
+    machine_rtc_obj_t *self = (machine_rtc_obj_t *)self_in;
+    self->alarm_elapse_time_s = NULL;
+    self->alarm_period_s = NULL;
+    self->alarmset = false;
+    self->callback = NULL;
+    self->repeat = false;
+
     mp_obj_t args[2] = {self_in, datetime};
-    // Check if RTC is correctly initialized already through main
-    rtc_enable();
-    machine_rtc_datetime_helper(args[0], 2, args);
+    machine_rtc_datetime_helper(2, args);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
 
 // RTC.datetime([datetime])
 static mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *datetime) {
-    return machine_rtc_datetime_helper(NULL, n_args, datetime);
+    return machine_rtc_datetime_helper(n_args, datetime);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
 
@@ -246,16 +247,15 @@ static mp_obj_t machine_rtc_deinit(mp_obj_t self_in) {
         .tm_isdst = RTC_INIT_DST
     };
     cy_rslt_t result = cyhal_rtc_write(&psoc6_rtc, &reset_date_time);
-    if (CY_RSLT_SUCCESS != result) {
-        mp_raise_ValueError(MP_ERROR_TEXT("cyhal_rtc_write failed during RTC deinitialization!"));
-    }
+    rtc_assert_raise("cyhal_rtc_write failed during RTC deinitialization!", result);
+
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_deinit_obj, machine_rtc_deinit);
 
 // RTC.now()
 static mp_obj_t machine_rtc_now(mp_obj_t self_in) {
-    return machine_rtc_datetime_helper(self_in, 1, NULL);
+    return machine_rtc_datetime_helper(1, NULL);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
 
@@ -296,7 +296,7 @@ static mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
         cyhal_rtc_set_alarm(&psoc6_rtc, &dtime, alarm_active);
     } else { // then it must be an integer
         self->alarm_period_s = mp_obj_new_int_from_uint(mp_obj_get_int(args[0].u_obj) / 1000);
-        cyhal_rtc_set_alarm_by_seconds(&psoc6_rtc, mp_obj_get_int(args[0].u_obj) / 1000);
+        rtc_alarm_setup(self);
     }
     self->alarm_elapse_time_s = mp_obj_new_int_from_uint(alarm_set_time_s + mp_obj_get_int(self->alarm_period_s));
     self->alarmset = true;
@@ -308,7 +308,7 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
 static mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
     machine_rtc_obj_t *self = args[0];
     // only alarm id 0 is available
-    if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
+    if (n_args > 1 && mp_obj_get_int(args[1]) != CYHAL_RTC_ALARM) {
         mp_raise_OSError(MP_ENODEV);
     }
     if (self->alarmset) {
@@ -322,7 +322,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_left_obj, 1, 2, mac
 // RTC.cancel()
 static mp_obj_t machine_rtc_cancel(size_t n_args, const mp_obj_t *args) {
     // only alarm id 0 is available
-    if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
+    if (n_args > 1 && mp_obj_get_int(args[1]) != CYHAL_RTC_ALARM) {
         mp_raise_OSError(MP_ENODEV);
     }
     // disable the alarm
@@ -336,7 +336,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_cancel_obj, 1, 2, m
 // RTC.memory()
 static mp_obj_t machine_rtc_memory(size_t n_args, const mp_obj_t *args) {
     rtc_memory = true;
-    return machine_rtc_datetime_helper(NULL, n_args, args);
+    return machine_rtc_datetime_helper(n_args, args);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_memory_obj, 1, 2, machine_rtc_memory);
 
@@ -345,26 +345,30 @@ static mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     enum { ARG_trigger, ARG_handler, ARG_wake};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CYHAL_RTC_ALARM} },
-        { MP_QSTR_handler, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_wake, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} }
+        { MP_QSTR_handler, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_wake, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} }
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     machine_rtc_obj_t *self = pos_args[0];
-    self->callback = args[ARG_handler].u_obj;
 
-    if (self->repeat) {
-        cyhal_rtc_register_callback(&psoc6_rtc, (cyhal_rtc_event_callback_t)rtc_irq_handler2, self);
-    } else {
-        cyhal_rtc_register_callback(&psoc6_rtc, (cyhal_rtc_event_callback_t)rtc_irq_handler1, self->callback);
+    self->callback = args[ARG_handler].u_obj;
+    if (args[ARG_handler].u_obj == mp_const_none) {
+        self->callback = NULL;
     }
 
-    cyhal_rtc_enable_event(&psoc6_rtc, args[ARG_trigger].u_int, 3u, true);
+    if (args[ARG_trigger].u_int != CYHAL_RTC_ALARM) {
+        mp_raise_OSError(MP_ENODEV);
+    }
+
+    if (args[ARG_wake].u_int != -1) {
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("wake not implemented!\n"));
+    }
+
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
-
 
 static const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init),        MP_ROM_PTR(&machine_rtc_init_obj) },
@@ -389,7 +393,3 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, machine_rtc_make_new,
     locals_dict, &machine_rtc_locals_dict
     );
-
-void mod_rtc_deinit() {
-    cyhal_rtc_free(&psoc6_rtc);
-}
