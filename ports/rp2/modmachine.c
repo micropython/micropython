@@ -28,6 +28,7 @@
 // extmod/modmachine.c via MICROPY_PY_MACHINE_INCLUDEFILE.
 
 #include "py/mphal.h"
+#include "mp_usbd.h"
 #include "modmachine.h"
 #include "uart.h"
 #include "hardware/clocks.h"
@@ -134,8 +135,17 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         return;
     }
     #endif
-    // Disable USB and ADC clocks.
-    clock_stop(clk_usb);
+
+    #if MICROPY_HW_ENABLE_USBDEV
+    // Only disable the USB clock if a USB host has not configured the device
+    bool disable_usb = !tud_mounted();
+    #else
+    bool disable_usb = true;
+    #endif
+    if (disable_usb) {
+        clock_stop(clk_usb);
+    }
+
     clock_stop(clk_adc);
 
     // CLK_REF = XOSC
@@ -152,7 +162,9 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     // Disable PLLs.
     pll_deinit(pll_sys);
-    pll_deinit(pll_usb);
+    if (disable_usb) {
+        pll_deinit(pll_usb);
+    }
 
     // Disable ROSC.
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_DISABLE << ROSC_CTRL_ENABLE_LSB;
@@ -181,6 +193,12 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
             // TODO: Use RTC alarm to wake.
             clocks_hw->sleep_en1 = 0;
         }
+
+        if (!disable_usb) {
+            clocks_hw->sleep_en0 |= CLOCKS_SLEEP_EN0_CLK_SYS_PLL_USB_BITS;
+            clocks_hw->sleep_en1 |= CLOCKS_SLEEP_EN1_CLK_USB_USBCTRL_BITS;
+        }
+
         scb_hw->scr |= M0PLUS_SCR_SLEEPDEEP_BITS;
         __wfi();
         scb_hw->scr &= ~M0PLUS_SCR_SLEEPDEEP_BITS;
