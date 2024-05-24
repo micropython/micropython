@@ -203,7 +203,7 @@ static inline mp_float_t mp_obj_float_get(mp_const_obj_t o) {
     union {
         mp_float_t f;
         mp_uint_t u;
-    } num = {.u = ((mp_uint_t)o - 0x80800000) & ~3};
+    } num = {.u = ((mp_uint_t)o - 0x80800000u) & ~3u};
     return num.f;
 }
 static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
@@ -211,7 +211,7 @@ static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
         mp_float_t f;
         mp_uint_t u;
     } num = {.f = f};
-    return (mp_obj_t)(((num.u & ~0x3) | 2) + 0x80800000);
+    return (mp_obj_t)(((num.u & ~0x3u) | 2u) + 0x80800000u);
 }
 #endif
 
