@@ -106,23 +106,39 @@ mp_getiter_iternext_custom_t btree_getiter_iternext;
 mp_map_elem_t btree_locals_dict_table[8];
 static MP_DEFINE_CONST_DICT(btree_locals_dict, btree_locals_dict_table);
 
-static mp_obj_t btree_open(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // The allowed_args array must have its qstr's populated at runtime.
+    enum { ARG_flags, ARG_cachesize, ARG_pagesize, ARG_minkeypage };
+    mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+    };
+    allowed_args[0].qst = MP_QSTR_flags;
+    allowed_args[1].qst = MP_QSTR_cachesize;
+    allowed_args[2].qst = MP_QSTR_pagesize;
+    allowed_args[3].qst = MP_QSTR_minkeypage;
+
     // Make sure we got a stream object
-    mp_get_stream_raise(args[0], MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+    mp_get_stream_raise(pos_args[0], MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     BTREEINFO openinfo = {0};
-    openinfo.flags = mp_obj_get_int(args[1]);
-    openinfo.cachesize = mp_obj_get_int(args[2]);
-    openinfo.psize = mp_obj_get_int(args[3]);
-    openinfo.minkeypage = mp_obj_get_int(args[4]);
-    DB *db = __bt_open(MP_OBJ_TO_PTR(args[0]), &btree_stream_fvtable, &openinfo, 0);
+    openinfo.flags = args[ARG_flags].u_int;
+    openinfo.cachesize = args[ARG_cachesize].u_int;
+    openinfo.psize = args[ARG_pagesize].u_int;
+    openinfo.minkeypage = args[ARG_minkeypage].u_int;
+    DB *db = __bt_open(MP_OBJ_TO_PTR(pos_args[0]), &btree_stream_fvtable, &openinfo, 0);
     if (db == NULL) {
         mp_raise_OSError(native_errno);
     }
 
-    return MP_OBJ_FROM_PTR(btree_new(db, args[0]));
+    return MP_OBJ_FROM_PTR(btree_new(db, pos_args[0]));
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_open_obj, 5, 5, btree_open);
+static MP_DEFINE_CONST_FUN_OBJ_KW(btree_open_obj, 1, btree_open);
 
 mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
     MP_DYNRUNTIME_INIT_ENTRY
@@ -147,7 +163,7 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     btree_locals_dict_table[7] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_items), MP_OBJ_FROM_PTR(&btree_items_obj) };
     MP_OBJ_TYPE_SET_SLOT(&btree_type, locals_dict, (void*)&btree_locals_dict, 4);
 
-    mp_store_global(MP_QSTR__open, MP_OBJ_FROM_PTR(&btree_open_obj));
+    mp_store_global(MP_QSTR_open, MP_OBJ_FROM_PTR(&btree_open_obj));
     mp_store_global(MP_QSTR_INCL, MP_OBJ_NEW_SMALL_INT(FLAG_END_KEY_INCL));
     mp_store_global(MP_QSTR_DESC, MP_OBJ_NEW_SMALL_INT(FLAG_DESC));
 
