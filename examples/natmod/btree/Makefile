@@ -5,7 +5,7 @@ MPY_DIR = ../../..
 MOD = btree_$(ARCH)
 
 # Source files (.c or .py)
-SRC = btree_c.c btree_py.py
+SRC = btree_c.c
 
 # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
 ARCH = x64
