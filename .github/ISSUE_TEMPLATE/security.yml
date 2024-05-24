@@ -9,21 +9,11 @@ body:
 
         1. For issues that are readily exploitable or have high impact, please email contact@micropython.org instead.
         1. If this is a question about security, please ask it in [Discussions](https://github.com/orgs/micropython/discussions/) or [Discord](https://discord.gg/RB8HZSAExQ) instead.
-  - type: checkboxes
-    id: terms
-    attributes:
-      label: Checks
-      description: |
-        Before submitting your bug report, please go over these check points:
-      options:
-      - label: |
-           I agree to follow the MicroPython [Code of Conduct](https://github.com/micropython/micropython/blob/master/CODEOFCONDUCT.md) to ensure a safe and respectful space for everyone.
-        required: true
-      - label: I wish to report a specific security issue that is **not readily exploitable and does not have high impact** for MicroPython developers or users.
-        required: true
-      - label: |
-          I've searched for [existing issues](https://github.com/micropython/micropython/issues) and didn't find any that matched.
-        required: true
+
+        #### Existing issue?
+
+        * Please search for [existing issues](https://github.com/micropython/micropython/issues) before reporting a new one.
+
   - type: input
     id: port-board-hw
     attributes:
@@ -55,5 +45,16 @@ body:
 
         * What does this issue allow an attacker to do?
         * How does the attacker exploit this issue?
+    validations:
+      required: true
+  - type: dropdown
+    id: code-of-conduct
+    attributes:
+      label: Code of Conduct
+      description: |
+        Do you agree to follow the MicroPython [Code of Conduct](https://github.com/micropython/micropython/blob/master/CODEOFCONDUCT.md) to ensure a safe and respectful space for everyone?
+      options:
+        - "Yes, I agree"
+      multiple: true
     validations:
       required: true
