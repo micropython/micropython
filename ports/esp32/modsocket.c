@@ -528,6 +528,16 @@ static mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
         }
             #endif
 
+        // level: IPPROTO_TCP
+        case TCP_NODELAY: {
+            int val = mp_obj_get_int(args[3]);
+            int ret = lwip_setsockopt(self->fd, IPPROTO_TCP, opt, &val, sizeof(int));
+            if (ret != 0) {
+                mp_raise_OSError(errno);
+            }
+            break;
+        }
+
         // level: IPPROTO_IP
         case IP_ADD_MEMBERSHIP: {
             mp_buffer_info_t bufinfo;
@@ -995,6 +1005,7 @@ static const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SO_BROADCAST), MP_ROM_INT(SO_BROADCAST) },
     { MP_ROM_QSTR(MP_QSTR_SO_BINDTODEVICE), MP_ROM_INT(SO_BINDTODEVICE) },
     { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
+    { MP_ROM_QSTR(MP_QSTR_TCP_NODELAY), MP_ROM_INT(TCP_NODELAY) },
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_table);
