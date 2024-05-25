@@ -91,7 +91,9 @@ STATIC mp_obj_t espulp_ulp_obj___exit__(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espulp_ulp___exit___obj, 4, 4, espulp_ulp_obj___exit__);
 
 //|     def set_wakeup_period(self, period_index: int, period_us: int) -> None:
-//|         """Sets the wakeup period for the ULP."""
+//|         """Sets the wakeup period in microseconds for the ULP. 
+//|            Up to 5 different wakeup periods can be stored (`period_index` = 0..4).
+//|            By default, period index 0 is used."""
 //|         ...
 STATIC mp_obj_t espulp_ulp_set_wakeup_period(mp_obj_t self_in, mp_obj_t period_index, mp_obj_t period_us) {
     espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -108,10 +110,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(espulp_ulp_set_wakeup_period_obj, espulp_ulp_se
 //|         self,
 //|         program: ReadableBuffer,
 //|         *,
-//|         entrypoint: int,
+//|         entrypoint: int = 0,
 //|         pins: Sequence[microcontroller.Pin] = ()
 //|     ) -> None:
-//|         """Loads the program into ULP memory and then runs the program, starting at entry_point.
+//|         """Loads the program into ULP memory and then runs the program.
+//|            `entry_point` specifies the offset (in bytes) of the first instruction
+//|            from the start of the program. 
 //|            The given pins are claimed and not reset until `halt()` is called.
 //|
 //|         The program will continue to run even when the running Python is halted."""
