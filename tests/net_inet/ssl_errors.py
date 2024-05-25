@@ -12,7 +12,7 @@ def test(addr, hostname, block=True):
         s.connect(addr)
         print("connected")
     except OSError as e:
-        if e.errno != errno.EINPROGRESS:
+        if e.errno not in (errno.EINPROGRESS, 10035):
             raise
         print("EINPROGRESS")
 

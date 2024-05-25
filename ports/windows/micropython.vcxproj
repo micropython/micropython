@@ -87,6 +87,7 @@
   <ItemGroup>
     <ClCompile Include="@(PyCoreSource)" />
     <ClCompile Include="@(PyExtModSource)" />
+    <ClCompile Include="@(PyThirdPartySource)" />
     <ClCompile Include="$(PyBaseDir)shared\readline\*.c" />
     <ClCompile Include="$(PyBaseDir)shared\runtime\gchelper_generic.c" />
     <ClCompile Include="$(PyBaseDir)ports\windows\*.c" />
@@ -94,6 +95,7 @@
     <ClCompile Include="$(PyBaseDir)ports\unix\gccollect.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\input.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\main.c"/>
+    <ClCompile Include="$(PyBaseDir)ports\unix\modsocket.c" />
     <ClCompile Include="$(PyVariantDir)*.c" />
   </ItemGroup>
   <ItemGroup>
@@ -107,7 +109,7 @@
   </ItemGroup>
   <Import Project="msvc/genhdr.targets" />
   <Import Project="$(CustomPropsFile)" Condition="exists('$(CustomPropsFile)')" />
-  <Target Name="GenerateMicroPythonSources" BeforeTargets="BuildGenerateSources" DependsOnTargets="GenerateHeaders;FreezeModules">
+  <Target Name="GenerateMicroPythonSources" BeforeTargets="BuildGenerateSources" DependsOnTargets="UpdateSubmodulesIfInIDE;GenerateHeaders;FreezeModules">
   </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

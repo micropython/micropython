@@ -9,7 +9,7 @@ def test(peer_addr):
     try:
         s.connect(peer_addr)
     except OSError as er:
-        print(er.errno == errno.EINPROGRESS)
+        print(er.errno in (errno.EINPROGRESS, 10035))
     s.close()
 
 
