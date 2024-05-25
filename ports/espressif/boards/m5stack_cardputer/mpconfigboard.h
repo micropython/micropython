@@ -8,7 +8,7 @@
 
 // Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "M5 Stack Cardputer"
+#define MICROPY_HW_BOARD_NAME       "M5Stack Cardputer"
 #define MICROPY_HW_MCU_NAME         "ESP32S3"
 
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO21)
