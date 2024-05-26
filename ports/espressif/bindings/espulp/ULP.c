@@ -19,7 +19,7 @@
 //|         Raises an exception if another ULP has been instantiated. This
 //|         ensures that is is only used by one piece of code at a time.
 //|
-//|         :param Architecture arch: The ulp arch. Only `FSM` architecture 
+//|         :param Architecture arch: The ulp arch. Only `FSM` architecture
 //|         is currently supported."""
 //|         ...
 static mp_obj_t espulp_ulp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -72,9 +72,9 @@ static mp_obj_t espulp_ulp_obj___exit__(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espulp_ulp___exit___obj, 4, 4, espulp_ulp_obj___exit__);
 
 //|     def set_wakeup_period(self, period_index: int, period_us: int) -> None:
-//|         """Sets the wakeup period in microseconds for the ULP. 
-//|            Up to 5 different wakeup periods can be stored (`period_index` = 0..4).
-//|            By default, period index 0 is used."""
+//|         """Sets the wakeup period in microseconds for the ULP.
+//|         Up to 5 different wakeup periods can be stored (`period_index` = 0..4).
+//|         By default, period index 0 is used."""
 //|         ...
 static mp_obj_t espulp_ulp_set_wakeup_period(mp_obj_t self_in, mp_obj_t period_index, mp_obj_t period_us) {
     espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -96,7 +96,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(espulp_ulp_set_wakeup_period_obj, espulp_ulp_se
 //|     ) -> None:
 //|         """Loads the program into ULP memory and then runs the program.
 //|            `entry_point` specifies the offset (in bytes) of the first instruction
-//|            from the start of the program. 
+//|            from the start of the program.
 //|            The given pins are claimed and not reset until `halt()` is called.
 //|
 //|         The program will continue to run even when the running Python is halted."""
@@ -131,7 +131,7 @@ static mp_obj_t espulp_ulp_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         mp_obj_t pin_obj = mp_obj_subscr(pins_in, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
         // common-hal checks that pin is free (that way a possible "ULP already running" error
         // is triggered before a possible "Pin in use" error, if ulp.run is called twice with the same pins).
-        validate_obj_is_pin(pin_obj, MP_QSTR_pin); 
+        validate_obj_is_pin(pin_obj, MP_QSTR_pin);
         const mcu_pin_obj_t *pin = ((const mcu_pin_obj_t *)pin_obj);
         if (pin->number >= 32) {
             raise_ValueError_invalid_pin();
@@ -146,8 +146,8 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(espulp_ulp_run_obj, 2, espulp_ulp_run);
 
 //|     def halt(self) -> None:
 //|         """Halts the running program and releases the pins given in `run()`.
-//|            Note: for the FSM ULP, a running ULP program is not actually interupted.
-//|            Instead, only the wakeup timer is stopped."""
+//|         Note: for the FSM ULP, a running ULP program is not actually interrupted.
+//|         Instead, only the wakeup timer is stopped."""
 //|         ...
 static mp_obj_t espulp_ulp_halt(mp_obj_t self_in) {
     espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(self_in);

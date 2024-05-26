@@ -79,7 +79,7 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
     // Main purpose of ULP is to run while main cpu is in deep sleep, so
     // ensure GPIO Power Domain remains enabled during deep sleep,
     // if any GPIO were supplied here.
-    if (pins_used > 0){ 
+    if (pins_used > 0) {
         esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
     }
 
