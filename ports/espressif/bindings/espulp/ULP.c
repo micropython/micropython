@@ -19,8 +19,8 @@
 //|         Raises an exception if another ULP has been instantiated. This
 //|         ensures that is is only used by one piece of code at a time.
 //|
-//|         :param Architecture arch: The ulp arch. Only `FSM` architecture
-//|         is currently supported."""
+//|         :param Architecture arch: The ulp arch. Only `FSM` architecture is currently supported.
+//|         """
 //|         ...
 static mp_obj_t espulp_ulp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_arch };
@@ -72,9 +72,12 @@ static mp_obj_t espulp_ulp_obj___exit__(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espulp_ulp___exit___obj, 4, 4, espulp_ulp_obj___exit__);
 
 //|     def set_wakeup_period(self, period_index: int, period_us: int) -> None:
-//|         """Sets the wakeup period in microseconds for the ULP.
-//|         Up to 5 different wakeup periods can be stored (`period_index` = 0..4).
-//|         By default, period index 0 is used."""
+//|         """Sets the wakeup period for the ULP.
+//|
+//|         :param int period_index: = 0..4. Up to 5 different wakeup periods can be stored
+//|             and used by the wakeup timer.
+//|             By default, the value stored in period index 0 is used.
+//|         :param int period_us: The wakeup period given in microseconds."""
 //|         ...
 static mp_obj_t espulp_ulp_set_wakeup_period(mp_obj_t self_in, mp_obj_t period_index, mp_obj_t period_us) {
     espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -95,11 +98,14 @@ static MP_DEFINE_CONST_FUN_OBJ_3(espulp_ulp_set_wakeup_period_obj, espulp_ulp_se
 //|         pins: Sequence[microcontroller.Pin] = ()
 //|     ) -> None:
 //|         """Loads the program into ULP memory and then runs the program.
-//|            `entry_point` specifies the offset (in bytes) of the first instruction
-//|            from the start of the program.
-//|            The given pins are claimed and not reset until `halt()` is called.
 //|
-//|         The program will continue to run even when the running Python is halted."""
+//|         The program will continue to run even Python is halted or in deep-sleep.
+//|
+//|         :param ReadableBuffer program: the ULP binary.
+//|         :param int entrypoint: Specifies the offset (in bytes) of the first instruction
+//|            from the start of the program.
+//|         :param Sequence[microcontroller.Pin] pins: Pins made available to the ULP.
+//|            The pins are claimed and not reset until `halt()` is called."""
 //|         ...
 static mp_obj_t espulp_ulp_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
