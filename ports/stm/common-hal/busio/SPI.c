@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2016 Scott Shawcroft
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2016 Scott Shawcroft
+// SPDX-FileCopyrightText: Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 #include <stdbool.h>
 #include <string.h>
 
@@ -38,14 +18,14 @@
 // arrays use 0 based numbering: SPI1 is stored at index 0
 #define MAX_SPI 6
 
-STATIC bool reserved_spi[MAX_SPI];
-STATIC bool never_reset_spi[MAX_SPI];
+static bool reserved_spi[MAX_SPI];
+static bool never_reset_spi[MAX_SPI];
 
 #define ALL_CLOCKS 0xFF
-STATIC void spi_clock_enable(uint8_t mask);
-STATIC void spi_clock_disable(uint8_t mask);
+static void spi_clock_enable(uint8_t mask);
+static void spi_clock_disable(uint8_t mask);
 
-STATIC uint32_t get_busclock(SPI_TypeDef *instance) {
+static uint32_t get_busclock(SPI_TypeDef *instance) {
     #if (CPY_STM32H7)
     if (instance == SPI1 || instance == SPI2 || instance == SPI3) {
         return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI123);
@@ -70,7 +50,7 @@ STATIC uint32_t get_busclock(SPI_TypeDef *instance) {
     #endif
 }
 
-STATIC uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t *prescaler, uint32_t busclock) {
+static uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t *prescaler, uint32_t busclock) {
     static const uint32_t baud_map[8][2] = {
         {2, SPI_BAUDRATEPRESCALER_2},
         {4, SPI_BAUDRATEPRESCALER_4},
@@ -108,7 +88,7 @@ void spi_reset(void) {
     spi_clock_disable(ALL_CLOCKS & ~(never_reset_mask));
 }
 
-STATIC const mcu_periph_obj_t *find_pin_function(const mcu_periph_obj_t *table, size_t sz, const mcu_pin_obj_t *pin, int periph_index) {
+static const mcu_periph_obj_t *find_pin_function(const mcu_periph_obj_t *table, size_t sz, const mcu_pin_obj_t *pin, int periph_index) {
     for (size_t i = 0; i < sz; i++, table++) {
         if (periph_index == table->periph_index && pin == table->pin) {
             return table;
@@ -118,7 +98,7 @@ STATIC const mcu_periph_obj_t *find_pin_function(const mcu_periph_obj_t *table, 
 }
 
 // match pins to SPI objects
-STATIC int check_pins(busio_spi_obj_t *self,
+static int check_pins(busio_spi_obj_t *self,
     const mcu_pin_obj_t *sck, const mcu_pin_obj_t *mosi,
     const mcu_pin_obj_t *miso) {
     bool spi_taken = false;
@@ -396,7 +376,7 @@ uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t *self) {
     return self->polarity;
 }
 
-STATIC void spi_clock_enable(uint8_t mask) {
+static void spi_clock_enable(uint8_t mask) {
     #ifdef SPI1
     if (mask & (1 << 0)) {
         __HAL_RCC_SPI1_CLK_ENABLE();
@@ -429,7 +409,7 @@ STATIC void spi_clock_enable(uint8_t mask) {
     #endif
 }
 
-STATIC void spi_clock_disable(uint8_t mask) {
+static void spi_clock_disable(uint8_t mask) {
     #ifdef SPI1
     if (mask & (1 << 0)) {
         __HAL_RCC_SPI1_CLK_DISABLE();

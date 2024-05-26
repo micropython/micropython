@@ -1,39 +1,13 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 hathach for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 hathach for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/objstr.h"
-#include "py/runtime.h"
-#include "shared-bindings/microcontroller/Processor.h"
-#include "shared-bindings/supervisor/__init__.h"
 #include "supervisor/background_callback.h"
-#include "supervisor/port.h"
+#include "supervisor/linker.h"
 #include "supervisor/usb.h"
-#include "supervisor/shared/serial.h"
-#include "supervisor/shared/workflow.h"
-#include "shared/runtime/interrupt_char.h"
 #include "shared/readline/readline.h"
 
 #if CIRCUITPY_STATUS_BAR
@@ -43,6 +17,9 @@
 #if CIRCUITPY_STORAGE
 #include "shared-module/storage/__init__.h"
 #endif
+
+#if CIRCUITPY_USB_DEVICE
+#include "shared-bindings/supervisor/__init__.h"
 
 #if CIRCUITPY_USB_CDC
 #include "shared-module/usb_cdc/__init__.h"
@@ -56,32 +33,13 @@
 #include "shared-module/usb_midi/__init__.h"
 #endif
 
-
 #if CIRCUITPY_USB_VIDEO
 #include "shared-module/usb_video/__init__.h"
 #endif
 
-#include "tusb.h"
-
-#if CIRCUITPY_USB_VENDOR
-#include "usb_vendor_descriptors.h"
-
-// The WebUSB support being conditionally added to this file is based on the
-// tinyusb demo examples/device/webusb_serial.
-
-static bool web_serial_connected = false;
-
-#define URL  "www.tinyusb.org/examples/webusb-serial"
-
-const tusb_desc_webusb_url_t desc_webusb_url =
-{
-    .bLength = 3 + sizeof(URL) - 1,
-    .bDescriptorType = 3, // WEBUSB URL type
-    .bScheme = 1,       // 0: http, 1: https
-    .url = URL
-};
-
 #endif
+
+#include "tusb.h"
 
 bool usb_enabled(void) {
     return tusb_inited();
@@ -91,20 +49,24 @@ MP_WEAK void post_usb_init(void) {
 }
 
 void usb_init(void) {
-
+    #if CIRCUITPY_USB_DEVICE
     usb_identification_t defaults;
     usb_identification_t *identification;
+    #if CIRCUITPY_USB_IDENTIFICATION
     if (custom_usb_identification != NULL) {
         identification = custom_usb_identification;
     } else {
-        // This compiles to less code than using a struct initializer.
-        defaults.vid = USB_VID;
-        defaults.pid = USB_PID;
-        strcpy(defaults.manufacturer_name, USB_MANUFACTURER);
-        strcpy(defaults.product_name, USB_PRODUCT);
-        identification = &defaults;
-        // This memory only needs to be live through the end of usb_build_descriptors.
-    }
+    #endif
+    // This compiles to less code than using a struct initializer.
+    defaults.vid = USB_VID;
+    defaults.pid = USB_PID;
+    strcpy(defaults.manufacturer_name, USB_MANUFACTURER);
+    strcpy(defaults.product_name, USB_PRODUCT);
+    identification = &defaults;
+    // This memory only needs to be live through the end of usb_build_descriptors.
+    #if CIRCUITPY_USB_IDENTIFICATION
+}
+    #endif
     if (!usb_build_descriptors(identification)) {
         return;
     }
@@ -115,10 +77,11 @@ void usb_init(void) {
 
     // Only init device. Host gets inited by the `usb_host` module common-hal.
     tud_init(TUD_OPT_RHPORT);
+    #endif
 
     post_usb_init();
 
-    #if MICROPY_KBD_EXCEPTION && CIRCUITPY_USB_CDC
+    #if MICROPY_KBD_EXCEPTION && CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
     // Set Ctrl+C as wanted char, tud_cdc_rx_wanted_cb() usb_callback will be invoked when Ctrl+C is received
     // This usb_callback always got invoked regardless of mp_interrupt_char value since we only set it once here
 
@@ -132,6 +95,7 @@ void usb_init(void) {
 
 // Set up USB defaults before any USB changes are made in boot.py
 void usb_set_defaults(void) {
+    #if CIRCUITPY_USB_DEVICE
     #if CIRCUITPY_STORAGE && CIRCUITPY_USB_MSC
     storage_usb_set_defaults();
     #endif
@@ -147,10 +111,12 @@ void usb_set_defaults(void) {
     #if CIRCUITPY_USB_MIDI
     usb_midi_set_defaults();
     #endif
+    #endif
 };
 
 // Call this when ready to run code.py or a REPL, and a VM has been started.
 void usb_setup_with_vm(void) {
+    #if CIRCUITPY_USB_DEVICE
     #if CIRCUITPY_USB_HID
     usb_hid_setup_devices();
     #endif
@@ -158,17 +124,14 @@ void usb_setup_with_vm(void) {
     #if CIRCUITPY_USB_MIDI
     usb_midi_setup_ports();
     #endif
-}
-
-void usb_disconnect(void) {
-    tud_disconnect();
+    #endif
 }
 
 void usb_background(void) {
     if (usb_enabled()) {
         #if CFG_TUSB_OS == OPT_OS_NONE || CFG_TUSB_OS == OPT_OS_PICO
         tud_task();
-        #if CIRCUITPY_USB_HOST
+        #if CIRCUITPY_USB_HOST || CIRCUITPY_MAX3421E
         tuh_task();
         #endif
         #elif CFG_TUSB_OS == OPT_OS_FREERTOS
@@ -177,13 +140,13 @@ void usb_background(void) {
         vTaskDelay(0);
         #endif
         // No need to flush if there's no REPL.
-        #if CIRCUITPY_USB_CDC
+        #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
         if (usb_cdc_console_enabled()) {
             // Console will always be itf 0.
             tud_cdc_write_flush();
         }
         #endif
-        #if CIRCUITPY_USB_VIDEO
+        #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VIDEO
         usb_video_task();
         #endif
     }
@@ -200,12 +163,14 @@ void PLACE_IN_ITCM(usb_background_schedule)(void) {
 
 void PLACE_IN_ITCM(usb_irq_handler)(int instance) {
     #if CFG_TUSB_MCU != OPT_MCU_RP2040
+    #if CIRCUITPY_USB_DEVICE
     // For rp2040, IRQ handler is already installed and invoked automatically
     if (instance == CIRCUITPY_USB_DEVICE_INSTANCE) {
         tud_int_handler(instance);
     }
+    #endif
     #if CIRCUITPY_USB_HOST
-    else if (instance == CIRCUITPY_USB_HOST_INSTANCE) {
+    if (instance == CIRCUITPY_USB_HOST_INSTANCE) {
         tuh_int_handler(instance);
     }
     #endif
@@ -213,141 +178,3 @@ void PLACE_IN_ITCM(usb_irq_handler)(int instance) {
 
     usb_background_schedule();
 }
-
-// --------------------------------------------------------------------+
-// tinyusb callbacks
-// --------------------------------------------------------------------+
-
-// Invoked when device is mounted
-void tud_mount_cb(void) {
-    #if CIRCUITPY_USB_MSC
-    usb_msc_mount();
-    #endif
-}
-
-// Invoked when device is unmounted
-void tud_umount_cb(void) {
-    #if CIRCUITPY_USB_MSC
-    usb_msc_umount();
-    #endif
-}
-
-// Invoked when usb bus is suspended
-// remote_wakeup_en : if host allows us to perform remote wakeup
-// USB Specs: Within 7ms, device must draw an average current less than 2.5 mA from bus
-void tud_suspend_cb(bool remote_wakeup_en) {
-}
-
-// Invoked when usb bus is resumed
-void tud_resume_cb(void) {
-}
-
-// Invoked when cdc when line state changed e.g connected/disconnected
-// Use to reset to DFU when disconnect with 1200 bps
-void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
-    (void)itf;  // interface ID, not used
-
-    // DTR = false is counted as disconnected
-    if (!dtr) {
-        cdc_line_coding_t coding;
-        // Use whichever CDC is itf 0.
-        tud_cdc_get_line_coding(&coding);
-
-        if (coding.bit_rate == 1200) {
-            reset_to_bootloader();
-        }
-    } else {
-        #if CIRCUITPY_STATUS_BAR
-        // We are connected, let's request a title bar update.
-        supervisor_status_bar_request_update(true);
-        #endif
-    }
-}
-
-#if CIRCUITPY_USB_VENDOR
-// --------------------------------------------------------------------+
-// WebUSB use vendor class
-// --------------------------------------------------------------------+
-
-bool tud_vendor_connected(void) {
-    return web_serial_connected;
-}
-
-// Invoked when a control transfer occurred on an interface of this class
-// Driver response accordingly to the request and the transfer stage (setup/data/ack)
-// return false to stall control endpoint (e.g unsupported request)
-bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const *request) {
-    // nothing to with DATA & ACK stage
-    if (stage != CONTROL_STAGE_SETUP) {
-        return true;
-    }
-
-    switch (request->bRequest)
-    {
-        case VENDOR_REQUEST_WEBUSB:
-            // match vendor request in BOS descriptor
-            // Get landing page url
-            return tud_control_xfer(rhport, request, (void *)&desc_webusb_url, desc_webusb_url.bLength);
-
-        case VENDOR_REQUEST_MICROSOFT:
-            if (request->wIndex == 7) {
-                // Get Microsoft OS 2.0 compatible descriptor
-                // let's just hope the target architecture always has the same endianness
-                uint16_t total_len;
-                memcpy(&total_len, vendor_ms_os_20_descriptor() + 8, 2);
-
-                return tud_control_xfer(rhport, request, (void *)vendor_ms_os_20_descriptor(), total_len);
-            } else {
-                return false;
-            }
-
-        case 0x22:
-            // Webserial simulate the CDC_REQUEST_SET_CONTROL_LINE_STATE (0x22) to
-            // connect and disconnect.
-            web_serial_connected = (request->wValue != 0);
-
-            // response with status OK
-            return tud_control_status(rhport, request);
-
-        default:
-            // stall unknown request
-            return false;
-    }
-
-    return true;
-}
-#endif // CIRCUITPY_USB_VENDOR
-
-
-#if MICROPY_KBD_EXCEPTION && CIRCUITPY_USB_CDC
-
-// The CDC RX buffer impacts monitoring for ctrl-c. TinyUSB will only ask for
-// more from CDC if the free space in the buffer is greater than the endpoint
-// size. Setting CFG_TUD_CDC_RX_BUFSIZE to the endpoint size and then sending
-// any character will prevent ctrl-c from working. Require at least a 64
-// character buffer.
-#if CFG_TUD_CDC_RX_BUFSIZE < CFG_TUD_CDC_EP_BUFSIZE + 64
-#error "CFG_TUD_CDC_RX_BUFSIZE must be 64 bytes bigger than endpoint size."
-#endif
-
-/**
- * Callback invoked when received an "wanted" char.
- * @param itf           Interface index (for multiple cdc interfaces)
- * @param wanted_char   The wanted char (set previously)
- */
-void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
-    // Workaround for using shared/runtime/interrupt_char.c
-    // Compare mp_interrupt_char with wanted_char and ignore if not matched
-    if (mp_interrupt_char == wanted_char) {
-        tud_cdc_n_read_flush(itf);    // flush read fifo
-        mp_sched_keyboard_interrupt();
-    }
-}
-
-void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms) {
-    if (usb_cdc_console_enabled() && mp_interrupt_char != -1 && itf == 0 && duration_ms > 0) {
-        mp_sched_keyboard_interrupt();
-    }
-}
-
-#endif

@@ -1,39 +1,19 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Artyom Skrobov
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Artyom Skrobov
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/runtime.h"
 #include "shared-bindings/synthio/MidiTrack.h"
 
 
-STATIC void record_midi_stream_error(synthio_miditrack_obj_t *self) {
+static void record_midi_stream_error(synthio_miditrack_obj_t *self) {
     self->error_location = self->pos;
     self->pos = self->track.len;
 }
 
-STATIC mp_obj_t parse_note(synthio_miditrack_obj_t *self) {
+static mp_obj_t parse_note(synthio_miditrack_obj_t *self) {
     uint8_t *buffer = self->track.buf;
     size_t len = self->track.len;
     if (self->pos + 1 >= len) {
@@ -104,7 +84,7 @@ static void decode_until_pause(synthio_miditrack_obj_t *self) {
     } while (self->pos < len && self->synth.span.dur == 0);
 }
 
-STATIC void start_parse(synthio_miditrack_obj_t *self) {
+static void start_parse(synthio_miditrack_obj_t *self) {
     self->pos = 0;
     self->error_location = -1;
     self->synth.span.dur = decode_duration(self);

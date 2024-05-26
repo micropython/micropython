@@ -1,32 +1,11 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2015 Glenn Ruben Bakke
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2015 Glenn Ruben Bakke
+// SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H
-#define MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H
+#pragma once
 
 // Enable for debugging.
 // #define CIRCUITPY_VERBOSE_BLE               (1)
@@ -45,7 +24,7 @@
 
 // Nearly all boards have this because it is used to enter the ROM bootloader.
 #ifndef CIRCUITPY_BOOT_BUTTON
-  #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
+  #if defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
     #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO9)
   #elif !defined(CONFIG_IDF_TARGET_ESP32)
     #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
@@ -74,4 +53,9 @@
 #define CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP (0)
 #endif
 
-#endif  // MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H
+// Protect the background queue with a lock because both cores may modify it.
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+extern portMUX_TYPE background_task_mutex;
+#define CALLBACK_CRITICAL_BEGIN (taskENTER_CRITICAL(&background_task_mutex))
+#define CALLBACK_CRITICAL_END (taskEXIT_CRITICAL(&background_task_mutex))

@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2023 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2023 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/dotclockframebuffer/DotClockFramebuffer.h"
 
@@ -113,7 +93,7 @@
 //|         #:param int overscan_right: Allocate additional non-visible columns right of the last display column
 //|         #:param int overscan_bottom: Allocate additional non-visible rows below the last display row
 //|         ...
-STATIC mp_obj_t dotclockframebuffer_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t dotclockframebuffer_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_de, ARG_vsync, ARG_hsync, ARG_dclk, ARG_red, ARG_green, ARG_blue,
            ARG_frequency, ARG_width, ARG_height,
            ARG_hsync_pulse_width, ARG_hsync_back_porch, ARG_hsync_front_porch, ARG_hsync_idle_low,
@@ -196,7 +176,7 @@ static void check_for_deinit(dotclockframebuffer_framebuffer_obj_t *self) {
 //|         If this function is not called, the results are unpredictable; updates may be partially shown.
 //|         """
 //|         ...
-STATIC mp_obj_t dotclockframebuffer_framebuffer_refresh(mp_obj_t self_in) {
+static mp_obj_t dotclockframebuffer_framebuffer_refresh(mp_obj_t self_in) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     common_hal_dotclockframebuffer_framebuffer_refresh(self);
@@ -207,7 +187,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(dotclockframebuffer_framebuffer_refresh_obj, dotclockf
 
 //|     refresh_rate: float
 //|     """The pixel refresh rate of the display, in Hz"""
-STATIC mp_obj_t dotclockframebuffer_framebuffer_get_refresh_rate(mp_obj_t self_in) {
+static mp_obj_t dotclockframebuffer_framebuffer_get_refresh_rate(mp_obj_t self_in) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_dotclockframebuffer_framebuffer_get_refresh_rate(self));
@@ -218,7 +198,7 @@ MP_PROPERTY_GETTER(dotclockframebuffer_framebuffer_refresh_rate_obj,
 
 //|     frequency: int
 //|     """The pixel frequency of the display, in Hz"""
-STATIC mp_obj_t dotclockframebuffer_framebuffer_get_frequency(mp_obj_t self_in) {
+static mp_obj_t dotclockframebuffer_framebuffer_get_frequency(mp_obj_t self_in) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_dotclockframebuffer_framebuffer_get_frequency(self));
@@ -229,7 +209,7 @@ MP_PROPERTY_GETTER(dotclockframebuffer_framebuffer_frequency_obj,
 
 //|     width: int
 //|     """The width of the display, in pixels"""
-STATIC mp_obj_t dotclockframebuffer_framebuffer_get_width(mp_obj_t self_in) {
+static mp_obj_t dotclockframebuffer_framebuffer_get_width(mp_obj_t self_in) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_dotclockframebuffer_framebuffer_get_width(self));
@@ -241,7 +221,7 @@ MP_PROPERTY_GETTER(dotclockframebuffer_framebuffer_width_obj,
 //|     height: int
 //|     """The height of the display, in pixels"""
 //|
-STATIC mp_obj_t dotclockframebuffer_framebuffer_get_height(mp_obj_t self_in) {
+static mp_obj_t dotclockframebuffer_framebuffer_get_height(mp_obj_t self_in) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_dotclockframebuffer_framebuffer_get_height(self));
@@ -259,7 +239,7 @@ MP_PROPERTY_GETTER(dotclockframebuffer_framebuffer_height_obj,
 //|
 //|     On Espressif this value is **guaranteed** to be a multiple of the 2 (i.e., it is a whole number of pixels)"""
 //|
-STATIC mp_obj_t dotclockframebuffer_framebuffer_get_row_stride(mp_obj_t self_in) {
+static mp_obj_t dotclockframebuffer_framebuffer_get_row_stride(mp_obj_t self_in) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_dotclockframebuffer_framebuffer_get_row_stride(self));
@@ -277,7 +257,7 @@ MP_PROPERTY_GETTER(dotclockframebuffer_framebuffer_row_stride_obj,
 //|
 //|     On Espressif this value is **guaranteed** to be a multiple of the 2 (i.e., it is a whole number of pixels)"""
 //|
-STATIC mp_obj_t dotclockframebuffer_framebuffer_get_first_pixel_offset(mp_obj_t self_in) {
+static mp_obj_t dotclockframebuffer_framebuffer_get_first_pixel_offset(mp_obj_t self_in) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_dotclockframebuffer_framebuffer_get_first_pixel_offset(self));
@@ -287,7 +267,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(dotclockframebuffer_framebuffer_get_first_pixel_offset
 MP_PROPERTY_GETTER(dotclockframebuffer_framebuffer_first_pixel_offset_obj,
     (mp_obj_t)&dotclockframebuffer_framebuffer_get_first_pixel_offset_obj);
 
-STATIC mp_int_t dotclockframebuffer_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+static mp_int_t dotclockframebuffer_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     // a readonly framebuffer would be unusual but not impossible
     if ((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
@@ -300,61 +280,61 @@ STATIC mp_int_t dotclockframebuffer_framebuffer_get_buffer(mp_obj_t self_in, mp_
 
 // These version exists so that the prototype matches the protocol,
 // avoiding a type cast that can hide errors
-STATIC void dotclockframebuffer_framebuffer_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
+static void dotclockframebuffer_framebuffer_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
     (void)dirty_row_bitmap;
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     common_hal_dotclockframebuffer_framebuffer_refresh(self);
 }
 
-STATIC void dotclockframebuffer_framebuffer_deinit_proto(mp_obj_t self_in) {
+static void dotclockframebuffer_framebuffer_deinit_proto(mp_obj_t self_in) {
     common_hal_dotclockframebuffer_framebuffer_deinit(self_in);
 }
 
-STATIC float dotclockframebuffer_framebuffer_get_brightness_proto(mp_obj_t self_in) {
+static float dotclockframebuffer_framebuffer_get_brightness_proto(mp_obj_t self_in) {
     return 1.0f;
 }
 
-STATIC bool dotclockframebuffer_framebuffer_set_brightness_proto(mp_obj_t self_in, mp_float_t value) {
+static bool dotclockframebuffer_framebuffer_set_brightness_proto(mp_obj_t self_in, mp_float_t value) {
     return false;
 }
 
-STATIC int dotclockframebuffer_framebuffer_get_width_proto(mp_obj_t self_in) {
+static int dotclockframebuffer_framebuffer_get_width_proto(mp_obj_t self_in) {
     return common_hal_dotclockframebuffer_framebuffer_get_width(self_in);
 }
 
-STATIC int dotclockframebuffer_framebuffer_get_height_proto(mp_obj_t self_in) {
+static int dotclockframebuffer_framebuffer_get_height_proto(mp_obj_t self_in) {
     return common_hal_dotclockframebuffer_framebuffer_get_height(self_in);
 }
 
-STATIC int dotclockframebuffer_framebuffer_get_color_depth_proto(mp_obj_t self_in) {
+static int dotclockframebuffer_framebuffer_get_color_depth_proto(mp_obj_t self_in) {
     return 16;
 }
 
-STATIC int dotclockframebuffer_framebuffer_get_bytes_per_cell_proto(mp_obj_t self_in) {
+static int dotclockframebuffer_framebuffer_get_bytes_per_cell_proto(mp_obj_t self_in) {
     return 1;
 }
 
-STATIC int dotclockframebuffer_framebuffer_get_native_frames_per_second_proto(mp_obj_t self_in) {
+static int dotclockframebuffer_framebuffer_get_native_frames_per_second_proto(mp_obj_t self_in) {
     return common_hal_dotclockframebuffer_framebuffer_get_refresh_rate(self_in);
 }
 
-STATIC void dotclockframebuffer_framebuffer_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
+static void dotclockframebuffer_framebuffer_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
 
     *bufinfo = self->bufinfo;
 }
 
-STATIC int dotclockframebuffer_framebuffer_get_row_stride_proto(mp_obj_t self_in) {
+static int dotclockframebuffer_framebuffer_get_row_stride_proto(mp_obj_t self_in) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     return common_hal_dotclockframebuffer_framebuffer_get_row_stride(self);
 }
 
-STATIC int dotclockframebuffer_framebuffer_get_first_pixel_offset_proto(mp_obj_t self_in) {
+static int dotclockframebuffer_framebuffer_get_first_pixel_offset_proto(mp_obj_t self_in) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     return common_hal_dotclockframebuffer_framebuffer_get_first_pixel_offset(self);
 }
 
-STATIC const framebuffer_p_t dotclockframebuffer_framebuffer_proto = {
+static const framebuffer_p_t dotclockframebuffer_framebuffer_proto = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)
     .get_bufinfo = dotclockframebuffer_framebuffer_get_bufinfo,
     .set_brightness = dotclockframebuffer_framebuffer_set_brightness_proto,
@@ -371,7 +351,7 @@ STATIC const framebuffer_p_t dotclockframebuffer_framebuffer_proto = {
 };
 
 
-STATIC const mp_rom_map_elem_t dotclockframebuffer_framebuffer_locals_dict_table[] = {
+static const mp_rom_map_elem_t dotclockframebuffer_framebuffer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&dotclockframebuffer_framebuffer_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&dotclockframebuffer_framebuffer_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_row_stride), MP_ROM_PTR(&dotclockframebuffer_framebuffer_row_stride_obj) },
@@ -380,7 +360,7 @@ STATIC const mp_rom_map_elem_t dotclockframebuffer_framebuffer_locals_dict_table
     { MP_ROM_QSTR(MP_QSTR_refresh_rate), MP_ROM_PTR(&dotclockframebuffer_framebuffer_refresh_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&dotclockframebuffer_framebuffer_refresh_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(dotclockframebuffer_framebuffer_locals_dict, dotclockframebuffer_framebuffer_locals_dict_table);
+static MP_DEFINE_CONST_DICT(dotclockframebuffer_framebuffer_locals_dict, dotclockframebuffer_framebuffer_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     dotclockframebuffer_framebuffer_type,

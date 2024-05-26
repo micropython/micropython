@@ -1,3 +1,11 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "SAM E54 Xplained Pro"
 #define MICROPY_HW_MCU_NAME "same54p20"
 

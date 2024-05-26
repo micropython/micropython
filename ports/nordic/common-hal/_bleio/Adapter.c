@@ -1,32 +1,11 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
- * Copyright (c) 2016 Glenn Ruben Bakke
- * Copyright (c) 2018 Artur Pacholec
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2016 Glenn Ruben Bakke
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+//
+// SPDX-License-Identifier: MIT
 
-#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -43,14 +22,15 @@
 #include "supervisor/shared/bluetooth/bluetooth.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/usb.h"
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"
 #include "shared-bindings/_bleio/Address.h"
 #include "shared-bindings/nvm/ByteArray.h"
 #include "shared-bindings/_bleio/Connection.h"
-#include "shared-bindings/_bleio/ScanEntry.h"
-#include "shared-bindings/time/__init__.h"
+
+#if CIRCUITPY_USB_DEVICE
+#include "supervisor/usb.h"
+#endif
 
 #if CIRCUITPY_OS_GETENV
 #include "shared-bindings/os/__init__.h"
@@ -90,7 +70,7 @@ const nvm_bytearray_obj_t common_hal_bleio_nvm_obj = {
     .len = CIRCUITPY_BLE_CONFIG_SIZE,
 };
 
-STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
+static void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
     reset_into_safe_mode(SAFE_MODE_SDK_FATAL_ERROR);
 }
 
@@ -98,7 +78,7 @@ bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
 // Linker script provided ram start.
 extern uint32_t _ram_start;
-STATIC uint32_t ble_stack_enable(void) {
+static uint32_t ble_stack_enable(void) {
     nrf_clock_lf_cfg_t clock_config = {
         #if BOARD_HAS_32KHZ_XTAL
         .source = NRF_CLOCK_LF_SRC_XTAL,
@@ -241,7 +221,7 @@ STATIC uint32_t ble_stack_enable(void) {
     return err_code;
 }
 
-STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
+static bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     bleio_adapter_obj_t *self = (bleio_adapter_obj_t *)self_in;
 
     // For debugging.
@@ -327,13 +307,13 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     return true;
 }
 
-STATIC void get_address(bleio_adapter_obj_t *self, ble_gap_addr_t *address) {
+static void get_address(bleio_adapter_obj_t *self, ble_gap_addr_t *address) {
     check_nrf_error(sd_ble_gap_addr_get(address));
 }
 
 char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0, 0};
 
-STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
+static void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
     // setup the default name
     ble_gap_addr_t addr; // local_address
     get_address(self, &addr);
@@ -381,7 +361,7 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         err_code = sd_softdevice_disable();
     }
 
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     // Re-init USB hardware
     init_usb_hardware();
     #endif
@@ -476,7 +456,7 @@ void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char *na
     sd_ble_gap_device_name_set(&sec, (const uint8_t *)name, len);
 }
 
-STATIC uint32_t _update_identities(bool is_central) {
+static uint32_t _update_identities(bool is_central) {
     const ble_gap_id_key_t *keys[BLE_GAP_DEVICE_IDENTITIES_MAX_COUNT];
     // TODO: Make sure we don't store more than BLE_GAP_DEVICE_IDENTITIES_MAX_COUNT identities of
     // each type. Right now, we'll silently ignore those keys.
@@ -492,7 +472,7 @@ STATIC uint32_t _update_identities(bool is_central) {
     return status;
 };
 
-STATIC bool scan_on_ble_evt(ble_evt_t *ble_evt, void *scan_results_in) {
+static bool scan_on_ble_evt(ble_evt_t *ble_evt, void *scan_results_in) {
     bleio_scanresults_obj_t *scan_results = (bleio_scanresults_obj_t *)scan_results_in;
 
     if (ble_evt->header.evt_id == BLE_GAP_EVT_TIMEOUT &&
@@ -606,7 +586,7 @@ typedef struct {
     volatile bool done;
 } connect_info_t;
 
-STATIC bool connect_on_ble_evt(ble_evt_t *ble_evt, void *info_in) {
+static bool connect_on_ble_evt(ble_evt_t *ble_evt, void *info_in) {
     connect_info_t *info = (connect_info_t *)info_in;
 
     switch (ble_evt->header.evt_id) {
@@ -629,7 +609,7 @@ STATIC bool connect_on_ble_evt(ble_evt_t *ble_evt, void *info_in) {
     return true;
 }
 
-STATIC void _convert_address(const bleio_address_obj_t *address, ble_gap_addr_t *sd_address) {
+static void _convert_address(const bleio_address_obj_t *address, ble_gap_addr_t *sd_address) {
     sd_address->addr_type = address->type;
     mp_buffer_info_t address_buf_info;
     mp_get_buffer_raise(address->bytes, &address_buf_info, MP_BUFFER_READ);
@@ -714,7 +694,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
 }
 
 
-STATIC void check_data_fit(size_t data_len, bool connectable) {
+static void check_data_fit(size_t data_len, bool connectable) {
     if (data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED ||
         (connectable && data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_CONNECTABLE_MAX_SUPPORTED)) {
         mp_raise_ValueError(MP_ERROR_TEXT("Data too large for advertisement packet"));
@@ -724,7 +704,7 @@ STATIC void check_data_fit(size_t data_len, bool connectable) {
 // The nRF SD 6.1.0 can only do one concurrent advertisement so share the advertising handle.
 uint8_t adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
-STATIC bool advertising_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
+static bool advertising_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     bleio_adapter_obj_t *self = (bleio_adapter_obj_t *)self_in;
 
     switch (ble_evt->header.evt_id) {

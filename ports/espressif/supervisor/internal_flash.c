@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+// SPDX-FileCopyrightText: Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "supervisor/internal_flash.h"
 
@@ -43,15 +23,18 @@
 
 #include "supervisor/filesystem.h"
 #include "supervisor/flash.h"
+
+#if CIRCUITPY_USB_DEVICE
 #include "supervisor/usb.h"
+#endif
 
 #define OP_READ     0
 #define OP_WRITE    1
 
 // TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
 #define SECTOR_SIZE 4096
-STATIC uint8_t _cache[SECTOR_SIZE];
-STATIC uint32_t _cache_lba = 0xffffffff;
+static uint8_t _cache[SECTOR_SIZE];
+static uint32_t _cache_lba = 0xffffffff;
 
 #if CIRCUITPY_STORAGE_EXTEND
 #if FF_MAX_SS == FF_MIN_SS
@@ -59,15 +42,15 @@ STATIC uint32_t _cache_lba = 0xffffffff;
 #else
 #define SECSIZE(fs) ((fs)->ssize)
 #endif // FF_MAX_SS == FF_MIN_SS
-STATIC DWORD fatfs_bytes(void) {
+static DWORD fatfs_bytes(void) {
     fs_user_mount_t *fs_mount = filesystem_circuitpy();
     FATFS *fatfs = &fs_mount->fatfs;
     return (fatfs->csize * SECSIZE(fatfs)) * (fatfs->n_fatent - 2);
 }
-STATIC bool storage_extended = true;
-STATIC const esp_partition_t *_partition[2];
+static bool storage_extended = true;
+static const esp_partition_t *_partition[2];
 #else
-STATIC const esp_partition_t *_partition[1];
+static const esp_partition_t *_partition[1];
 #endif // CIRCUITPY_STORAGE_EXTEND
 
 void supervisor_flash_init(void) {
@@ -97,7 +80,7 @@ uint32_t supervisor_flash_get_block_count(void) {
 void port_internal_flash_flush(void) {
 }
 
-STATIC void single_partition_rw(const esp_partition_t *partition, uint8_t *data,
+static void single_partition_rw(const esp_partition_t *partition, uint8_t *data,
     const uint32_t offset, const uint32_t size_total, const bool op) {
     if (op == OP_READ) {
         esp_partition_read(partition, offset, data, size_total);
@@ -108,7 +91,7 @@ STATIC void single_partition_rw(const esp_partition_t *partition, uint8_t *data,
 }
 
 #if CIRCUITPY_STORAGE_EXTEND
-STATIC void multi_partition_rw(uint8_t *data,
+static void multi_partition_rw(uint8_t *data,
     const uint32_t offset, const uint32_t size_total, const bool op) {
     if (offset > _partition[0]->size) {
         // only r/w partition 1

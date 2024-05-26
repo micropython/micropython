@@ -144,17 +144,29 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
 }
 
 // CIRCUITPY-CHANGE
+#if MICROPY_CPYTHON_EXCEPTION_CHAIN
+static mp_obj_t mp_load_attr_or_none(mp_obj_t base, qstr attr) {
+    mp_obj_t dest[2];
+    mp_load_method_protected(base, attr, dest, true);
+    return dest[0] == MP_OBJ_NULL ? mp_const_none : dest[0];
+}
+#endif
+
+// CIRCUITPY-CHANGE
 static void mp_obj_print_inner_exception(const mp_print_t *print, mp_obj_t self_in, mp_int_t limit) {
     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
     mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
     mp_rom_error_text_t msg = MP_ERROR_TEXT("During handling of the above exception, another exception occurred:");
-    mp_obj_exception_t *inner = NULL;
-    if (self->cause) {
-        msg = MP_ERROR_TEXT("The above exception was the direct cause of the following exception:");
-        inner = self->cause;
-    } else if (!self->suppress_context) {
-        inner = self->context;
+    mp_obj_t inner_obj = mp_const_none;
+    if (!self->suppress_context) {
+        inner_obj = mp_load_attr_or_none(self_in, MP_QSTR___context__);
     }
+    if (inner_obj == mp_const_none) {
+        msg = MP_ERROR_TEXT("The above exception was the direct cause of the following exception:");
+        inner_obj = mp_load_attr_or_none(self_in, MP_QSTR___cause__);
+    }
+    mp_obj_exception_t *inner = mp_obj_is_exception_instance(inner_obj) ?
+        mp_obj_exception_get_native(inner_obj) : NULL;
     if (inner && !inner->marked) {
         inner->marked = true;
         mp_obj_print_exception_with_limit(print, MP_OBJ_FROM_PTR(inner), limit);

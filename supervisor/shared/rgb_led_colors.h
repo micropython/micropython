@@ -1,3 +1,10 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017-2021 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
+#pragma once
 
 #define COLOR(r, g, b) (((r) << 16) | ((g) << 8) | (b))
 // For brightness == 255 (full). This will be adjusted downward for various different RGB indicators,

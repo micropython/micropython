@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 // Include strchrnul()
 #define _GNU_SOURCE
@@ -35,24 +15,19 @@
 #include "genhdr/mpversion.h"
 #include "py/mperrno.h"
 #include "py/mpstate.h"
-#include "py/stackctrl.h"
 
 #include "shared-bindings/wifi/Radio.h"
-#include "shared-module/storage/__init__.h"
 #include "shared/timeutils/timeutils.h"
 #include "supervisor/fatfs.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/reload.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
 #include "supervisor/shared/web_workflow/websocket.h"
 #include "supervisor/shared/workflow.h"
-#include "supervisor/usb.h"
 
 #include "shared-bindings/hashlib/__init__.h"
 #include "shared-bindings/hashlib/Hash.h"
-#include "lib/oofatfs/diskio.h"
 
 #if CIRCUITPY_FOURWIRE
 #include "shared-module/displayio/__init__.h"
@@ -64,7 +39,6 @@
 #endif
 
 #include "shared-bindings/microcontroller/Processor.h"
-#include "shared-bindings/socketpool/__init__.h"
 #include "shared-bindings/socketpool/Socket.h"
 #include "shared-bindings/socketpool/SocketPool.h"
 
@@ -197,7 +171,7 @@ static bool _base64_in_place(char *buf, size_t in_len, size_t out_len) {
     return true;
 }
 
-STATIC void _update_encoded_ip(void) {
+static void _update_encoded_ip(void) {
     uint32_t ipv4_address = 0;
     if (common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
         ipv4_address = wifi_radio_get_ipv4_address(&common_hal_wifi_radio_obj);
@@ -407,7 +381,7 @@ void web_workflow_send_raw(socketpool_socket_obj_t *socket, bool flush, const ui
     }
 }
 
-STATIC void _print_raw(void *env, const char *str, size_t len) {
+static void _print_raw(void *env, const char *str, size_t len) {
     web_workflow_send_raw((socketpool_socket_obj_t *)env, false, (const uint8_t *)str, (size_t)len);
 }
 
@@ -447,7 +421,7 @@ static void _send_chunk(socketpool_socket_obj_t *socket, const char *chunk) {
     web_workflow_send_raw(socket, strlen(chunk) == 0, (const uint8_t *)"\r\n", 2);
 }
 
-STATIC void _print_chunk(void *env, const char *str, size_t len) {
+static void _print_chunk(void *env, const char *str, size_t len) {
     mp_print_t _socket_print = {env, _print_raw};
     mp_printf(&_socket_print, "%X\r\n", len);
     web_workflow_send_raw((socketpool_socket_obj_t *)env, false, (const uint8_t *)str, len);
@@ -951,7 +925,7 @@ static void _reply_with_diskinfo_json(socketpool_socket_obj_t *socket, _request 
 // FATFS has a two second timestamp resolution but the BLE API allows for nanosecond resolution.
 // This function truncates the time the time to a resolution storable by FATFS and fills in the
 // FATFS encoded version into fattime.
-STATIC uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
+static uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
     timeutils_struct_time_t tm;
     uint64_t seconds_since_epoch = timeutils_seconds_since_epoch_from_nanoseconds_since_1970(input_time);
     timeutils_seconds_since_epoch_to_struct_time(seconds_since_epoch, &tm);
@@ -962,7 +936,7 @@ STATIC uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
     return truncated_time;
 }
 
-STATIC void _discard_incoming(socketpool_socket_obj_t *socket, size_t amount) {
+static void _discard_incoming(socketpool_socket_obj_t *socket, size_t amount) {
     size_t discarded = 0;
     while (discarded < amount) {
         uint8_t bytes[64];

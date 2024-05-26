@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/ipaddress/IPv4Address.h"
 
@@ -44,7 +24,7 @@
 //|
 //|         The value itself can either be bytes or a string formatted address."""
 //|         ...
-STATIC mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_address };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_address, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -86,7 +66,7 @@ STATIC mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t
 
 //|     packed: bytes
 //|     """The bytes that make up the address (read-only)."""
-STATIC mp_obj_t ipaddress_ipv4address_get_packed(mp_obj_t self_in) {
+static mp_obj_t ipaddress_ipv4address_get_packed(mp_obj_t self_in) {
     ipaddress_ipv4address_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     return common_hal_ipaddress_ipv4address_get_packed(self);
@@ -98,7 +78,7 @@ MP_PROPERTY_GETTER(ipaddress_ipv4address_packed_obj,
 
 //|     version: int
 //|     """4 for IPv4, 6 for IPv6"""
-STATIC mp_obj_t ipaddress_ipv4address_get_version(mp_obj_t self_in) {
+static mp_obj_t ipaddress_ipv4address_get_version(mp_obj_t self_in) {
     ipaddress_ipv4address_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t buf_info;
     mp_obj_t address_bytes = common_hal_ipaddress_ipv4address_get_packed(self);
@@ -118,7 +98,7 @@ MP_PROPERTY_GETTER(ipaddress_ipv4address_version_obj,
 //|     def __eq__(self, other: object) -> bool:
 //|         """Two Address objects are equal if their addresses and address types are equal."""
 //|         ...
-STATIC mp_obj_t ipaddress_ipv4address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+static mp_obj_t ipaddress_ipv4address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         // Two Addresses are equal if their address bytes and address_type are equal
         case MP_BINARY_OP_EQUAL:
@@ -142,7 +122,7 @@ STATIC mp_obj_t ipaddress_ipv4address_binary_op(mp_binary_op_t op, mp_obj_t lhs_
 //|         """Returns a hash for the IPv4Address data."""
 //|         ...
 //|
-STATIC mp_obj_t ipaddress_ipv4address_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+static mp_obj_t ipaddress_ipv4address_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     switch (op) {
         // Two Addresses are equal if their address bytes and address_type are equal
         case MP_UNARY_OP_HASH: {
@@ -159,7 +139,7 @@ STATIC mp_obj_t ipaddress_ipv4address_unary_op(mp_unary_op_t op, mp_obj_t self_i
     }
 }
 
-STATIC void ipaddress_ipv4address_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void ipaddress_ipv4address_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     ipaddress_ipv4address_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t buf_info;
     mp_obj_t address_bytes = common_hal_ipaddress_ipv4address_get_packed(self);
@@ -169,11 +149,11 @@ STATIC void ipaddress_ipv4address_print(const mp_print_t *print, mp_obj_t self_i
     mp_printf(print, "%d.%d.%d.%d", buf[0], buf[1], buf[2], buf[3]);
 }
 
-STATIC const mp_rom_map_elem_t ipaddress_ipv4address_locals_dict_table[] = {
+static const mp_rom_map_elem_t ipaddress_ipv4address_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_packed),                 MP_ROM_PTR(&ipaddress_ipv4address_packed_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(ipaddress_ipv4address_locals_dict, ipaddress_ipv4address_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ipaddress_ipv4address_locals_dict, ipaddress_ipv4address_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     ipaddress_ipv4address_type,

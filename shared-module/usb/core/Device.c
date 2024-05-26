@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/usb/core/Device.h"
 
@@ -38,7 +18,7 @@
 
 // Track what device numbers are mounted. We can't use tuh_ready() because it is
 // true before enumeration completes and TinyUSB drivers are started.
-STATIC size_t _mounted_devices = 0;
+static size_t _mounted_devices = 0;
 
 void tuh_mount_cb(uint8_t dev_addr) {
     _mounted_devices |= 1 << dev_addr;
@@ -48,8 +28,8 @@ void tuh_umount_cb(uint8_t dev_addr) {
     _mounted_devices &= ~(1 << dev_addr);
 }
 
-STATIC xfer_result_t _xfer_result;
-STATIC size_t _actual_len;
+static xfer_result_t _xfer_result;
+static size_t _actual_len;
 bool common_hal_usb_core_device_construct(usb_core_device_obj_t *self, uint8_t device_number) {
     if (!tuh_inited()) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("No usb host port initialized"));
@@ -81,7 +61,7 @@ uint16_t common_hal_usb_core_device_get_idProduct(usb_core_device_obj_t *self) {
     return pid;
 }
 
-STATIC void _transfer_done_cb(tuh_xfer_t *xfer) {
+static void _transfer_done_cb(tuh_xfer_t *xfer) {
     // Store the result so we stop waiting for the transfer.
     _xfer_result = xfer->result;
     // The passed in xfer is not the original one we passed in, so we need to
@@ -89,7 +69,7 @@ STATIC void _transfer_done_cb(tuh_xfer_t *xfer) {
     _actual_len = xfer->actual_len;
 }
 
-STATIC bool _wait_for_callback(void) {
+static bool _wait_for_callback(void) {
     while (!mp_hal_is_interrupted() &&
            _xfer_result == 0xff) {
         // The background tasks include TinyUSB which will call the function
@@ -101,7 +81,7 @@ STATIC bool _wait_for_callback(void) {
     return result == XFER_RESULT_SUCCESS;
 }
 
-STATIC mp_obj_t _get_string(const uint16_t *temp_buf) {
+static mp_obj_t _get_string(const uint16_t *temp_buf) {
     size_t utf16_len = ((temp_buf[0] & 0xff) - 2) / sizeof(uint16_t);
     if (utf16_len == 0) {
         return mp_const_none;
@@ -109,7 +89,7 @@ STATIC mp_obj_t _get_string(const uint16_t *temp_buf) {
     return utf16le_to_string(temp_buf + 1, utf16_len);
 }
 
-STATIC void _get_langid(usb_core_device_obj_t *self) {
+static void _get_langid(usb_core_device_obj_t *self) {
     if (self->first_langid != 0) {
         return;
     }
@@ -175,7 +155,7 @@ void common_hal_usb_core_device_set_configuration(usb_core_device_obj_t *self, m
     _wait_for_callback();
 }
 
-STATIC size_t _xfer(tuh_xfer_t *xfer, mp_int_t timeout) {
+static size_t _xfer(tuh_xfer_t *xfer, mp_int_t timeout) {
     _xfer_result = 0xff;
     xfer->complete_cb = _transfer_done_cb;
     if (!tuh_edpt_xfer(xfer)) {
@@ -209,7 +189,7 @@ STATIC size_t _xfer(tuh_xfer_t *xfer, mp_int_t timeout) {
     return 0;
 }
 
-STATIC bool _open_endpoint(usb_core_device_obj_t *self, mp_int_t endpoint) {
+static bool _open_endpoint(usb_core_device_obj_t *self, mp_int_t endpoint) {
     bool endpoint_open = false;
     size_t open_size = sizeof(self->open_endpoints);
     size_t first_free = open_size;

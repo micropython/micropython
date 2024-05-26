@@ -1,12 +1,18 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "samd/pins.h"
 #include "sam.h"
 
-STATIC mp_obj_t _bhb_read_adc(void);
+static mp_obj_t _bhb_read_adc(void);
 
-STATIC mp_obj_t _bhb_init_adc(void) {
+static mp_obj_t _bhb_init_adc(void) {
     claim_pin(&pin_PB08);
     common_hal_never_reset_pin(&pin_PB08);
 
@@ -87,7 +93,7 @@ STATIC mp_obj_t _bhb_init_adc(void) {
     return mp_const_none;
 }
 
-STATIC mp_obj_t _bhb_read_adc(void) {
+static mp_obj_t _bhb_read_adc(void) {
     /* Wait for bus synchronization. */
     while (ADC->STATUS.bit.SYNCBUSY) {
     }
@@ -111,16 +117,16 @@ STATIC mp_obj_t _bhb_read_adc(void) {
 }
 
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(_bhb_init_adc_obj, _bhb_init_adc);
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(_bhb_read_adc_obj, _bhb_read_adc);
+static MP_DEFINE_CONST_FUN_OBJ_0(_bhb_init_adc_obj, _bhb_init_adc);
+static MP_DEFINE_CONST_FUN_OBJ_0(_bhb_read_adc_obj, _bhb_read_adc);
 
-STATIC const mp_rom_map_elem_t _bhb_module_globals_table[] = {
+static const mp_rom_map_elem_t _bhb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__bhb) },
     { MP_ROM_QSTR(MP_QSTR_init_adc), MP_ROM_PTR(&_bhb_init_adc_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_adc), MP_ROM_PTR(&_bhb_read_adc_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(_bhb_module_globals, _bhb_module_globals_table);
+static MP_DEFINE_CONST_DICT(_bhb_module_globals, _bhb_module_globals_table);
 
 const mp_obj_module_t _bhb_user_cmodule = {
     .base = { &mp_type_module },

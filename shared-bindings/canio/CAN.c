@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/enum.h"
 #include "common-hal/canio/CAN.h"
@@ -62,7 +42,7 @@
 //|         :param bool auto_restart: If True, will restart communications after entering bus-off state
 //|         """
 //|         ...
-STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_loopback, ARG_silent, ARG_auto_restart, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_tx, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -94,14 +74,14 @@ STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
 //|     auto_restart: bool
 //|     """If True, will restart communications after entering bus-off state"""
-STATIC mp_obj_t canio_can_auto_restart_get(mp_obj_t self_in) {
+static mp_obj_t canio_can_auto_restart_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     return mp_obj_new_bool(common_hal_canio_can_auto_restart_get(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_auto_restart_get_obj, canio_can_auto_restart_get);
 
-STATIC mp_obj_t canio_can_auto_restart_set(mp_obj_t self_in, mp_obj_t flag_in) {
+static mp_obj_t canio_can_auto_restart_set(mp_obj_t self_in, mp_obj_t flag_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     common_hal_canio_can_auto_restart_set(self, mp_obj_is_true(flag_in));
@@ -116,7 +96,7 @@ MP_PROPERTY_GETSET(canio_can_auto_restart_obj,
 
 //|     baudrate: int
 //|     """The baud rate (read-only)"""
-STATIC mp_obj_t canio_can_baudrate_get(mp_obj_t self_in) {
+static mp_obj_t canio_can_baudrate_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_canio_can_baudrate_get(self));
@@ -128,7 +108,7 @@ MP_PROPERTY_GETTER(canio_can_baudrate_obj,
 
 //|     transmit_error_count: int
 //|     """The number of transmit errors (read-only).  Increased for a detected transmission error, decreased for successful transmission.  Limited to the range from 0 to 255 inclusive.  Also called TEC."""
-STATIC mp_obj_t canio_can_transmit_error_count_get(mp_obj_t self_in) {
+static mp_obj_t canio_can_transmit_error_count_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_canio_can_transmit_error_count_get(self));
@@ -140,7 +120,7 @@ MP_PROPERTY_GETTER(canio_can_transmit_error_count_obj,
 
 //|     receive_error_count: int
 //|     """The number of receive errors (read-only).  Increased for a detected reception error, decreased for successful reception.  Limited to the range from 0 to 255 inclusive.  Also called REC."""
-STATIC mp_obj_t canio_can_receive_error_count_get(mp_obj_t self_in) {
+static mp_obj_t canio_can_receive_error_count_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_canio_can_receive_error_count_get(self));
@@ -152,7 +132,7 @@ MP_PROPERTY_GETTER(canio_can_receive_error_count_obj,
 
 //|     state: BusState
 //|     """The current state of the bus. (read-only)"""
-STATIC mp_obj_t canio_can_state_get(mp_obj_t self_in) {
+static mp_obj_t canio_can_state_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     return cp_enum_find(&canio_bus_state_type, common_hal_canio_can_state_get(self));
@@ -167,13 +147,13 @@ MP_PROPERTY_GETTER(canio_can_state_obj,
 //|     def restart(self) -> None:
 //|         """If the device is in the bus off state, restart it."""
 //|         ...
-STATIC mp_obj_t canio_can_restart(mp_obj_t self_in) {
+static mp_obj_t canio_can_restart(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     common_hal_canio_can_restart(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_restart_obj, canio_can_restart);
+static MP_DEFINE_CONST_FUN_OBJ_1(canio_can_restart_obj, canio_can_restart);
 
 //|     def listen(
 //|         self, matches: Optional[Sequence[Match]] = None, *, timeout: float = 10
@@ -209,7 +189,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_restart_obj, canio_can_restart);
 //|         standard address with mask or an extended address with mask.
 //|         """
 //|         ...
-STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     common_hal_canio_can_check_for_deinit(self);
 
@@ -246,7 +226,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(canio_can_listen_obj, 1, canio_can_listen);
 //|     loopback: bool
 //|     """True if the device was created in loopback mode, False
 //|     otherwise (read-only)"""
-STATIC mp_obj_t canio_can_loopback_get(mp_obj_t self_in) {
+static mp_obj_t canio_can_loopback_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     return mp_obj_new_bool(common_hal_canio_can_loopback_get(self));
@@ -262,7 +242,7 @@ MP_PROPERTY_GETTER(canio_can_loopback_obj,
 //|         If the message could not be sent due to a full fifo or a bus error condition, RuntimeError is raised.
 //|         """
 //|         ...
-STATIC mp_obj_t canio_can_send(mp_obj_t self_in, mp_obj_t message_in) {
+static mp_obj_t canio_can_send(mp_obj_t self_in, mp_obj_t message_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     const mp_obj_type_t *message_type = mp_obj_get_type(message_in);
@@ -279,7 +259,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(canio_can_send_obj, canio_can_send);
 //|     silent: bool
 //|     """True if the device was created in silent mode, False
 //|     otherwise (read-only)"""
-STATIC mp_obj_t canio_can_silent_get(mp_obj_t self_in) {
+static mp_obj_t canio_can_silent_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     return mp_obj_new_bool(common_hal_canio_can_silent_get(self));
@@ -293,22 +273,22 @@ MP_PROPERTY_GETTER(canio_can_silent_obj,
 //|     def deinit(self) -> None:
 //|         """Deinitialize this object, freeing its hardware resources"""
 //|         ...
-STATIC mp_obj_t canio_can_deinit(mp_obj_t self_in) {
+static mp_obj_t canio_can_deinit(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_deinit_obj, canio_can_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(canio_can_deinit_obj, canio_can_deinit);
 
 //|     def __enter__(self) -> CAN:
 //|         """Returns self, to allow the object to be used in a `with` statement for resource control"""
 //|         ...
-STATIC mp_obj_t canio_can_enter(mp_obj_t self_in) {
+static mp_obj_t canio_can_enter(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     return self_in;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_enter_obj, canio_can_enter);
+static MP_DEFINE_CONST_FUN_OBJ_1(canio_can_enter_obj, canio_can_enter);
 
 //|     def __exit__(
 //|         self,
@@ -319,14 +299,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_enter_obj, canio_can_enter);
 //|         """Calls deinit()"""
 //|         ...
 //|
-STATIC mp_obj_t canio_can_exit(size_t num_args, const mp_obj_t args[]) {
+static mp_obj_t canio_can_exit(size_t num_args, const mp_obj_t args[]) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     common_hal_canio_can_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canio_can_exit_obj, 4, 4, canio_can_exit);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canio_can_exit_obj, 4, 4, canio_can_exit);
 
-STATIC const mp_rom_map_elem_t canio_can_locals_dict_table[] = {
+static const mp_rom_map_elem_t canio_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&canio_can_enter_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&canio_can_exit_obj) },
     { MP_ROM_QSTR(MP_QSTR_auto_restart), MP_ROM_PTR(&canio_can_auto_restart_obj) },
@@ -341,7 +321,7 @@ STATIC const mp_rom_map_elem_t canio_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_state), MP_ROM_PTR(&canio_can_state_obj) },
     { MP_ROM_QSTR(MP_QSTR_transmit_error_count), MP_ROM_PTR(&canio_can_transmit_error_count_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(canio_can_locals_dict, canio_can_locals_dict_table);
+static MP_DEFINE_CONST_DICT(canio_can_locals_dict, canio_can_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     canio_can_type,

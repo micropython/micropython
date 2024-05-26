@@ -1,0 +1,10 @@
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+#
+# Component config
+#
+#
+# Hardware Settings
+CONFIG_OV2640_SUPPORT=y

@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2022 Mark Komus, Ken Stillson, im-redactd
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2022 Mark Komus, Ken Stillson, im-redactd
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/i2ctarget/I2CTarget.h"
 
@@ -36,7 +16,7 @@
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
-STATIC i2c_inst_t *i2c[2] = {i2c0, i2c1};
+static i2c_inst_t *i2c[2] = {i2c0, i2c1};
 
 #define NO_PIN 0xff
 
@@ -111,7 +91,7 @@ int common_hal_i2ctarget_i2c_target_is_addressed(i2ctarget_i2c_target_obj_t *sel
 
     *address = self->peripheral->hw->sar;
     *is_read = !(self->peripheral->hw->raw_intr_stat & I2C_IC_INTR_STAT_R_RX_FULL_BITS);
-    *is_restart = ((self->peripheral->hw->raw_intr_stat & I2C_IC_RAW_INTR_STAT_RD_REQ_RESET) != 0);
+    *is_restart = ((self->peripheral->hw->raw_intr_stat & I2C_IC_INTR_STAT_R_RESTART_DET_BITS) != 0);
 
     common_hal_i2ctarget_i2c_target_ack(self, true);
     return 1;

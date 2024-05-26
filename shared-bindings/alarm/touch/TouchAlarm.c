@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 microDev
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 microDev
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/alarm/touch/TouchAlarm.h"
 #include "shared-bindings/board/__init__.h"
@@ -43,7 +23,7 @@
 //|         **Limitations:** Not available on SAMD, Nordic, or RP2040.
 //|         """
 //|         ...
-STATIC mp_obj_t alarm_touch_touchalarm_make_new(const mp_obj_type_t *type,
+static mp_obj_t alarm_touch_touchalarm_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     alarm_touch_touchalarm_obj_t *self = mp_obj_malloc(alarm_touch_touchalarm_obj_t, &alarm_touch_touchalarm_type);
 
@@ -65,7 +45,7 @@ STATIC mp_obj_t alarm_touch_touchalarm_make_new(const mp_obj_type_t *type,
 //|     pin: microcontroller.Pin
 //|     """The trigger pin."""
 //|
-STATIC mp_obj_t alarm_touch_touchalarm_obj_get_pin(mp_obj_t self_in) {
+static mp_obj_t alarm_touch_touchalarm_obj_get_pin(mp_obj_t self_in) {
     alarm_touch_touchalarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(self->pin);
 }
@@ -74,10 +54,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(alarm_touch_touchalarm_get_pin_obj, alarm_touch_toucha
 MP_PROPERTY_GETTER(alarm_touch_touchalarm_pin_obj,
     (mp_obj_t)&alarm_touch_touchalarm_get_pin_obj);
 
-STATIC const mp_rom_map_elem_t alarm_touch_touchalarm_locals_dict_table[] = {
+static const mp_rom_map_elem_t alarm_touch_touchalarm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_pin), MP_ROM_PTR(&alarm_touch_touchalarm_pin_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(alarm_touch_touchalarm_locals_dict, alarm_touch_touchalarm_locals_dict_table);
+static MP_DEFINE_CONST_DICT(alarm_touch_touchalarm_locals_dict, alarm_touch_touchalarm_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     alarm_touch_touchalarm_type,

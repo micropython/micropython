@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdio.h>
 #include <string.h>
@@ -42,7 +22,7 @@
 //|     rather than all of them."""
 //|
 
-STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     ssl_sslcontext_obj_t *s = mp_obj_malloc(ssl_sslcontext_obj_t, &ssl_sslcontext_type);
@@ -61,7 +41,7 @@ STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args
 //|         must point to a file containing the private key.
 //|         """
 
-STATIC void get_file_contents(mp_obj_t name_obj, mp_buffer_info_t *bufinfo) {
+static void get_file_contents(mp_obj_t name_obj, mp_buffer_info_t *bufinfo) {
     mp_obj_t file = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), name_obj, MP_OBJ_NEW_QSTR(MP_QSTR_rb));
     mp_obj_t dest[2];
     mp_load_method(file, MP_QSTR_read, dest);
@@ -69,7 +49,7 @@ STATIC void get_file_contents(mp_obj_t name_obj, mp_buffer_info_t *bufinfo) {
     mp_get_buffer_raise(result, bufinfo, MP_BUFFER_READ);
 }
 
-STATIC mp_obj_t ssl_sslcontext_load_cert_chain(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t ssl_sslcontext_load_cert_chain(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_certfile, ARG_keyfile };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_certfile, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -91,7 +71,7 @@ STATIC mp_obj_t ssl_sslcontext_load_cert_chain(size_t n_args, const mp_obj_t *po
     common_hal_ssl_sslcontext_load_cert_chain(self, &cert_buf, &key_buf);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_load_cert_chain_obj, 1, ssl_sslcontext_load_cert_chain);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_load_cert_chain_obj, 1, ssl_sslcontext_load_cert_chain);
 
 //|     def load_verify_locations(
 //|         self,
@@ -108,7 +88,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_load_cert_chain_obj, 1, ssl_ssl
 //|         :param str cadata: A single CA certificate in PEM format. **Limitation**: CPython allows one
 //|           or more certificates, but this implementation is limited to one.
 //|         """
-STATIC mp_obj_t ssl_sslcontext_load_verify_locations(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t ssl_sslcontext_load_verify_locations(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_cafile, ARG_capath, ARG_cadata };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_cafile, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -133,36 +113,36 @@ STATIC mp_obj_t ssl_sslcontext_load_verify_locations(size_t n_args, const mp_obj
     common_hal_ssl_sslcontext_load_verify_locations(self, cadata);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_load_verify_locations_obj, 1, ssl_sslcontext_load_verify_locations);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_load_verify_locations_obj, 1, ssl_sslcontext_load_verify_locations);
 
 //|     def set_default_verify_paths(self) -> None:
 //|         """Load a set of default certification authority (CA) certificates."""
 
-STATIC mp_obj_t ssl_sslcontext_set_default_verify_paths(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t ssl_sslcontext_set_default_verify_paths(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     common_hal_ssl_sslcontext_set_default_verify_paths(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_set_default_verify_paths_obj, 1, ssl_sslcontext_set_default_verify_paths);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_set_default_verify_paths_obj, 1, ssl_sslcontext_set_default_verify_paths);
 
 //|     check_hostname: bool
 //|     """Whether to match the peer certificate's hostname."""
 
-STATIC mp_obj_t ssl_sslcontext_get_check_hostname(mp_obj_t self_in) {
+static mp_obj_t ssl_sslcontext_get_check_hostname(mp_obj_t self_in) {
     ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     return mp_obj_new_bool(common_hal_ssl_sslcontext_get_check_hostname(self));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslcontext_get_check_hostname_obj, ssl_sslcontext_get_check_hostname);
+static MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslcontext_get_check_hostname_obj, ssl_sslcontext_get_check_hostname);
 
-STATIC mp_obj_t ssl_sslcontext_set_check_hostname(mp_obj_t self_in, mp_obj_t value) {
+static mp_obj_t ssl_sslcontext_set_check_hostname(mp_obj_t self_in, mp_obj_t value) {
     ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     common_hal_ssl_sslcontext_set_check_hostname(self, mp_obj_is_true(value));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslcontext_set_check_hostname_obj, ssl_sslcontext_set_check_hostname);
+static MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslcontext_set_check_hostname_obj, ssl_sslcontext_set_check_hostname);
 
 MP_PROPERTY_GETSET(ssl_sslcontext_check_hostname_obj,
     (mp_obj_t)&ssl_sslcontext_get_check_hostname_obj,
@@ -179,7 +159,7 @@ MP_PROPERTY_GETSET(ssl_sslcontext_check_hostname_obj,
 //|         The socket must be of type SOCK_STREAM."""
 //|
 
-STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sock, ARG_server_side, ARG_server_hostname };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sock, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -200,13 +180,13 @@ STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_ar
         mp_raise_ValueError(MP_ERROR_TEXT("Server side context cannot have hostname"));
     }
 
-    socketpool_socket_obj_t *sock = args[ARG_sock].u_obj;
+    mp_obj_t sock_obj = args[ARG_sock].u_obj;
 
-    return common_hal_ssl_sslcontext_wrap_socket(self, sock, server_side, server_hostname);
+    return common_hal_ssl_sslcontext_wrap_socket(self, sock_obj, server_side, server_hostname);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_wrap_socket_obj, 1, ssl_sslcontext_wrap_socket);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_wrap_socket_obj, 1, ssl_sslcontext_wrap_socket);
 
-STATIC const mp_rom_map_elem_t ssl_sslcontext_locals_dict_table[] = {
+static const mp_rom_map_elem_t ssl_sslcontext_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&ssl_sslcontext_wrap_socket_obj) },
     { MP_ROM_QSTR(MP_QSTR_load_cert_chain), MP_ROM_PTR(&ssl_sslcontext_load_cert_chain_obj) },
     { MP_ROM_QSTR(MP_QSTR_load_verify_locations), MP_ROM_PTR(&ssl_sslcontext_load_verify_locations_obj) },
@@ -214,7 +194,7 @@ STATIC const mp_rom_map_elem_t ssl_sslcontext_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_check_hostname), MP_ROM_PTR(&ssl_sslcontext_check_hostname_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(ssl_sslcontext_locals_dict, ssl_sslcontext_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ssl_sslcontext_locals_dict, ssl_sslcontext_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     ssl_sslcontext_type,

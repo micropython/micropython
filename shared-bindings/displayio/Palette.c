@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/displayio/Palette.h"
 
@@ -48,7 +28,7 @@
 // TODO(tannewt): Add support for other color formats.
 // TODO(tannewt): Add support for 8-bit alpha blending.
 //|
-STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_color_count, ARG_dither };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_color_count, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0 } },
@@ -66,13 +46,13 @@ STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_a
 //|     dither: bool
 //|     """When `True` the Palette dithers the output color by adding random
 //|     noise when truncating to display bitdepth"""
-STATIC mp_obj_t displayio_palette_obj_get_dither(mp_obj_t self_in) {
+static mp_obj_t displayio_palette_obj_get_dither(mp_obj_t self_in) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_displayio_palette_get_dither(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_palette_get_dither_obj, displayio_palette_obj_get_dither);
 
-STATIC mp_obj_t displayio_palette_obj_set_dither(mp_obj_t self_in, mp_obj_t dither) {
+static mp_obj_t displayio_palette_obj_set_dither(mp_obj_t self_in, mp_obj_t dither) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
 
     common_hal_displayio_palette_set_dither(self, mp_obj_is_true(dither));
@@ -89,7 +69,7 @@ MP_PROPERTY_GETSET(displayio_palette_dither_obj,
 //|     def __len__(self) -> int:
 //|         """Returns the number of colors in a Palette"""
 //|         ...
-STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+static mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL:
@@ -122,7 +102,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|           palette[3] = bytearray(b'\x00\x00\xFF')   # set using a bytearay of 3 or 4 bytes
 //|           palette[4] = (10, 20, 30)                 # set using a tuple of 3 integers"""
 //|         ...
-STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+static mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete item
         return MP_OBJ_NULL; // op not supported
@@ -170,7 +150,7 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
 }
 
 //|     def make_transparent(self, palette_index: int) -> None: ...
-STATIC mp_obj_t displayio_palette_obj_make_transparent(mp_obj_t self_in, mp_obj_t palette_index_obj) {
+static mp_obj_t displayio_palette_obj_make_transparent(mp_obj_t self_in, mp_obj_t palette_index_obj) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_int_t palette_index = mp_arg_validate_type_int(palette_index_obj, MP_QSTR_palette_index);
@@ -182,7 +162,7 @@ STATIC mp_obj_t displayio_palette_obj_make_transparent(mp_obj_t self_in, mp_obj_
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_make_transparent_obj, displayio_palette_obj_make_transparent);
 
 //|     def make_opaque(self, palette_index: int) -> None: ...
-STATIC mp_obj_t displayio_palette_obj_make_opaque(mp_obj_t self_in, mp_obj_t palette_index_obj) {
+static mp_obj_t displayio_palette_obj_make_opaque(mp_obj_t self_in, mp_obj_t palette_index_obj) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_int_t palette_index = mp_arg_validate_type_int(palette_index_obj, MP_QSTR_palette_index);
@@ -197,7 +177,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_make_opaque_obj, displayio_palette_o
 //|         """Returns `True` if the palette index is transparent.  Returns `False` if opaque."""
 //|         ...
 //|
-STATIC mp_obj_t displayio_palette_obj_is_transparent(mp_obj_t self_in, mp_obj_t palette_index_obj) {
+static mp_obj_t displayio_palette_obj_is_transparent(mp_obj_t self_in, mp_obj_t palette_index_obj) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_int_t palette_index = mp_arg_validate_type_int(palette_index_obj, MP_QSTR_palette_index);
@@ -207,13 +187,13 @@ STATIC mp_obj_t displayio_palette_obj_is_transparent(mp_obj_t self_in, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_is_transparent_obj, displayio_palette_obj_is_transparent);
 
-STATIC const mp_rom_map_elem_t displayio_palette_locals_dict_table[] = {
+static const mp_rom_map_elem_t displayio_palette_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&displayio_palette_dither_obj) },
     { MP_ROM_QSTR(MP_QSTR_make_transparent), MP_ROM_PTR(&displayio_palette_make_transparent_obj) },
     { MP_ROM_QSTR(MP_QSTR_make_opaque), MP_ROM_PTR(&displayio_palette_make_opaque_obj) },
     { MP_ROM_QSTR(MP_QSTR_is_transparent), MP_ROM_PTR(&displayio_palette_is_transparent_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(displayio_palette_locals_dict, displayio_palette_locals_dict_table);
+static MP_DEFINE_CONST_DICT(displayio_palette_locals_dict, displayio_palette_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     displayio_palette_type,

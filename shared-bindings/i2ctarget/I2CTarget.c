@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Noralf Trønnes
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Noralf Trønnes
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/i2ctarget/I2CTarget.h"
@@ -39,7 +19,7 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
-STATIC mp_obj_t mp_obj_new_i2ctarget_i2c_target_request(i2ctarget_i2c_target_obj_t *target, uint8_t address, bool is_read, bool is_restart) {
+static mp_obj_t mp_obj_new_i2ctarget_i2c_target_request(i2ctarget_i2c_target_obj_t *target, uint8_t address, bool is_read, bool is_restart) {
     i2ctarget_i2c_target_request_obj_t *self =
         mp_obj_malloc(i2ctarget_i2c_target_request_obj_t, &i2ctarget_i2c_target_request_type);
     self->target = target;
@@ -68,7 +48,7 @@ STATIC mp_obj_t mp_obj_new_i2ctarget_i2c_target_request(i2ctarget_i2c_target_obj
 //|         :type addresses: list[int]
 //|         :param bool smbus: Use SMBUS timings if the hardware supports it"""
 //|         ...
-STATIC mp_obj_t i2ctarget_i2c_target_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t i2ctarget_i2c_target_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     i2ctarget_i2c_target_obj_t *self = mp_obj_malloc(i2ctarget_i2c_target_obj_t, &i2ctarget_i2c_target_type);
     enum { ARG_scl, ARG_sda, ARG_addresses, ARG_smbus };
     static const mp_arg_t allowed_args[] = {
@@ -104,7 +84,7 @@ STATIC mp_obj_t i2ctarget_i2c_target_make_new(const mp_obj_type_t *type, size_t 
 //|     def deinit(self) -> None:
 //|         """Releases control of the underlying hardware so other classes can use it."""
 //|         ...
-STATIC mp_obj_t i2ctarget_i2c_target_obj_deinit(mp_obj_t self_in) {
+static mp_obj_t i2ctarget_i2c_target_obj_deinit(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &i2ctarget_i2c_target_type));
     i2ctarget_i2c_target_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_i2ctarget_i2c_target_deinit(self);
@@ -121,13 +101,13 @@ MP_DEFINE_CONST_FUN_OBJ_1(i2ctarget_i2c_target_deinit_obj, i2ctarget_i2c_target_
 //|         """Automatically deinitializes the hardware on context exit. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t i2ctarget_i2c_target_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t i2ctarget_i2c_target_obj___exit__(size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &i2ctarget_i2c_target_type));
     i2ctarget_i2c_target_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     common_hal_i2ctarget_i2c_target_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2ctarget_i2c_target___exit___obj, 4, 4, i2ctarget_i2c_target_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2ctarget_i2c_target___exit___obj, 4, 4, i2ctarget_i2c_target_obj___exit__);
 
 //|     def request(self, *, timeout: float = -1) -> I2CTargetRequest:
 //|         """Wait for an I2C request.
@@ -136,7 +116,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2ctarget_i2c_target___exit___obj, 4,
 //|         :return: I2CTargetRequest or None if timeout=-1 and there's no request
 //|         :rtype: ~i2ctarget.I2CTargetRequest"""
 //|
-STATIC mp_obj_t i2ctarget_i2c_target_request(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t i2ctarget_i2c_target_request(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_check_self(mp_obj_is_type(pos_args[0], &i2ctarget_i2c_target_type));
     i2ctarget_i2c_target_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     if (common_hal_i2ctarget_i2c_target_deinited(self)) {
@@ -202,9 +182,9 @@ STATIC mp_obj_t i2ctarget_i2c_target_request(size_t n_args, const mp_obj_t *pos_
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(i2ctarget_i2c_target_request_obj, 1, i2ctarget_i2c_target_request);
+static MP_DEFINE_CONST_FUN_OBJ_KW(i2ctarget_i2c_target_request_obj, 1, i2ctarget_i2c_target_request);
 
-STATIC const mp_rom_map_elem_t i2ctarget_i2c_target_locals_dict_table[] = {
+static const mp_rom_map_elem_t i2ctarget_i2c_target_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&i2ctarget_i2c_target_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&i2ctarget_i2c_target___exit___obj) },
@@ -212,7 +192,7 @@ STATIC const mp_rom_map_elem_t i2ctarget_i2c_target_locals_dict_table[] = {
 
 };
 
-STATIC MP_DEFINE_CONST_DICT(i2ctarget_i2c_target_locals_dict, i2ctarget_i2c_target_locals_dict_table);
+static MP_DEFINE_CONST_DICT(i2ctarget_i2c_target_locals_dict, i2ctarget_i2c_target_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     i2ctarget_i2c_target_type,
@@ -233,7 +213,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 //|         :param address: I2C address
 //|         :param is_read: True if the main target is requesting data
 //|         :param is_restart: Repeated Start Condition"""
-STATIC mp_obj_t i2ctarget_i2c_target_request_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t i2ctarget_i2c_target_request_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 4, 4, false);
     return mp_obj_new_i2ctarget_i2c_target_request(args[0], mp_obj_get_int(args[1]), mp_obj_is_true(args[2]), mp_obj_is_true(args[3]));
 }
@@ -246,17 +226,17 @@ STATIC mp_obj_t i2ctarget_i2c_target_request_make_new(const mp_obj_type_t *type,
 //|     def __exit__(self) -> None:
 //|         """Close the request."""
 //|         ...
-STATIC mp_obj_t i2ctarget_i2c_target_request_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t i2ctarget_i2c_target_request_obj___exit__(size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     common_hal_i2ctarget_i2c_target_close(self->target);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2ctarget_i2c_target_request___exit___obj, 4, 4, i2ctarget_i2c_target_request_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2ctarget_i2c_target_request___exit___obj, 4, 4, i2ctarget_i2c_target_request_obj___exit__);
 
 //|     address: int
 //|     """The I2C address of the request."""
-STATIC mp_obj_t i2ctarget_i2c_target_request_get_address(mp_obj_t self_in) {
+static mp_obj_t i2ctarget_i2c_target_request_get_address(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(self->address);
@@ -265,7 +245,7 @@ MP_DEFINE_CONST_PROP_GET(i2ctarget_i2c_target_request_address_obj, i2ctarget_i2c
 
 //|     is_read: bool
 //|     """The I2C main controller is reading from this target."""
-STATIC mp_obj_t i2ctarget_i2c_target_request_get_is_read(mp_obj_t self_in) {
+static mp_obj_t i2ctarget_i2c_target_request_get_is_read(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(self->is_read);
@@ -274,7 +254,7 @@ MP_DEFINE_CONST_PROP_GET(i2ctarget_i2c_target_request_is_read_obj, i2ctarget_i2c
 
 //|     is_restart: bool
 //|     """Is Repeated Start Condition."""
-STATIC mp_obj_t i2ctarget_i2c_target_request_get_is_restart(mp_obj_t self_in) {
+static mp_obj_t i2ctarget_i2c_target_request_get_is_restart(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(self->is_restart);
@@ -289,7 +269,7 @@ MP_DEFINE_CONST_PROP_GET(i2ctarget_i2c_target_request_is_restart_obj, i2ctarget_
 //|         :param ack: Whether or not to send an ACK after the n'th byte
 //|         :return: Bytes read"""
 //|         ...
-STATIC mp_obj_t i2ctarget_i2c_target_request_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t i2ctarget_i2c_target_request_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_check_self(mp_obj_is_type(pos_args[0], &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     enum { ARG_n, ARG_ack };
@@ -346,7 +326,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(i2ctarget_i2c_target_request_read_obj, 1, i2ctarget_i
 //|         :param ~circuitpython_typing.ReadableBuffer buffer: Write out the data in this buffer
 //|         :return: Number of bytes written"""
 //|         ...
-STATIC mp_obj_t i2ctarget_i2c_target_request_write(mp_obj_t self_in, mp_obj_t buf_in) {
+static mp_obj_t i2ctarget_i2c_target_request_write(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_check_self(mp_obj_is_type(self_in, &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -371,7 +351,7 @@ STATIC mp_obj_t i2ctarget_i2c_target_request_write(mp_obj_t self_in, mp_obj_t bu
 
     return mp_obj_new_int(bufinfo.len);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(i2ctarget_i2c_target_request_write_obj, i2ctarget_i2c_target_request_write);
+static MP_DEFINE_CONST_FUN_OBJ_2(i2ctarget_i2c_target_request_write_obj, i2ctarget_i2c_target_request_write);
 
 //|     def ack(self, ack: bool = True) -> None:
 //|         """Acknowledge or Not Acknowledge last byte received.
@@ -380,7 +360,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(i2ctarget_i2c_target_request_write_obj, i2ctarg
 //|         :param ack: Whether to send an ACK or NACK"""
 //|         ...
 //|
-STATIC mp_obj_t i2ctarget_i2c_target_request_ack(uint n_args, const mp_obj_t *args) {
+static mp_obj_t i2ctarget_i2c_target_request_ack(uint n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     bool ack = (n_args == 1) ? true : mp_obj_is_true(args[1]);
@@ -394,16 +374,16 @@ STATIC mp_obj_t i2ctarget_i2c_target_request_ack(uint n_args, const mp_obj_t *ar
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2ctarget_i2c_target_request_ack_obj, 1, 2, i2ctarget_i2c_target_request_ack);
 
-STATIC mp_obj_t i2ctarget_i2c_target_request_close(mp_obj_t self_in) {
+static mp_obj_t i2ctarget_i2c_target_request_close(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     common_hal_i2ctarget_i2c_target_close(self->target);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(i2ctarget_i2c_target_request_close_obj, i2ctarget_i2c_target_request_close);
+static MP_DEFINE_CONST_FUN_OBJ_1(i2ctarget_i2c_target_request_close_obj, i2ctarget_i2c_target_request_close);
 
-STATIC const mp_rom_map_elem_t i2ctarget_i2c_target_request_locals_dict_table[] = {
+static const mp_rom_map_elem_t i2ctarget_i2c_target_request_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&i2ctarget_i2c_target_request___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&i2ctarget_i2c_target_request_address_obj) },
@@ -415,7 +395,7 @@ STATIC const mp_rom_map_elem_t i2ctarget_i2c_target_request_locals_dict_table[] 
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&i2ctarget_i2c_target_request_close_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(i2ctarget_i2c_target_request_locals_dict, i2ctarget_i2c_target_request_locals_dict_table);
+static MP_DEFINE_CONST_DICT(i2ctarget_i2c_target_request_locals_dict, i2ctarget_i2c_target_request_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     i2ctarget_i2c_target_request_type,

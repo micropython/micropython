@@ -1,35 +1,18 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+//
+// SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_SERVICE_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_SERVICE_H
+#pragma once
 
 #include "py/objlist.h"
 #include "common-hal/_bleio/UUID.h"
+
+#define MAX_CHARACTERISTIC_COUNT 10
+
+#include "host/ble_gatt.h"
 
 typedef struct bleio_service_obj {
     mp_obj_base_t base;
@@ -46,8 +29,11 @@ typedef struct bleio_service_obj {
     // Range of attribute handles of this remote service.
     uint16_t start_handle;
     uint16_t end_handle;
+    struct ble_gatt_svc_def service_def;
+    // Include a spot for terminating the service def array.
+    uint8_t next_svc_type;
+    struct ble_gatt_chr_def chr_defs[MAX_CHARACTERISTIC_COUNT + 1];
 } bleio_service_obj_t;
 
 void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_SERVICE_H
+void bleio_service_readd(bleio_service_obj_t *self);

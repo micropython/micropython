@@ -1,30 +1,10 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2015 Josef Gajdusek
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+// SPDX-FileCopyrightText: Copyright (c) 2015 Josef Gajdusek
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 
@@ -38,9 +18,12 @@
 #include "shared-bindings/storage/__init__.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/flash.h"
-#include "supervisor/usb.h"
 
-#if CIRCUITPY_USB_MSC
+#if CIRCUITPY_USB_DEVICE
+#include "supervisor/usb.h"
+#endif
+
+#if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_MSC
 #include "tusb.h"
 
 static const uint8_t usb_msc_descriptor_template[] = {
@@ -148,7 +131,7 @@ bool common_hal_storage_enable_usb_drive(void) {
 }
 #endif // CIRCUITPY_USB_MSC
 
-STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
     if (vfs == MP_VFS_NONE) {
         // mount point not found
         mp_raise_OSError(MP_ENODEV);
@@ -240,7 +223,7 @@ void common_hal_storage_umount_object(mp_obj_t vfs_obj) {
     mp_vfs_proxy_call(vfs, MP_QSTR_umount, 0, NULL);
 }
 
-STATIC mp_obj_t storage_object_from_path(const char *mount_path) {
+static mp_obj_t storage_object_from_path(const char *mount_path) {
     for (mp_vfs_mount_t **vfsp = &MP_STATE_VM(vfs_mount_table); *vfsp != NULL; vfsp = &(*vfsp)->next) {
         if (strcmp(mount_path, (*vfsp)->str) == 0) {
             return (*vfsp)->obj;
@@ -262,7 +245,7 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
         mp_raise_OSError(MP_EINVAL);
     }
 
-    #if CIRCUITPY_USB_MSC
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_MSC
     if (!usb_msc_ejected() && storage_usb_is_enabled) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot remount '/' when visible via USB."));
     }
@@ -273,7 +256,7 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
 }
 
 void common_hal_storage_erase_filesystem(bool extended) {
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     usb_disconnect();
     #endif
     mp_hal_delay_ms(1000);

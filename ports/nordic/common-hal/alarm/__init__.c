@@ -1,30 +1,10 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries
- * Copyright (c) 2021 Junji Sakai
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2020 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2021 Junji Sakai
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/gc.h"
 #include "py/obj.h"
@@ -68,7 +48,7 @@ void alarm_reset(void) {
 }
 
 extern uint32_t reset_reason_saved;
-STATIC nrf_sleep_source_t _get_wakeup_cause(void) {
+static nrf_sleep_source_t _get_wakeup_cause(void) {
     // First check if the modules remember what last woke up
     if (alarm_pin_pinalarm_woke_this_cycle()) {
         return NRF_SLEEP_WAKEUP_GPIO;
@@ -140,7 +120,7 @@ mp_obj_t common_hal_alarm_record_wake_alarm(void) {
 }
 
 // Set up light sleep or deep sleep alarms.
-STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
+static void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_NONE;
     sleepmem_wakeup_pin = WAKEUP_PIN_UNDEF;
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
@@ -151,7 +131,7 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
 // TODO: this handles all possible types of wakeup, which is redundant with main.
 // revise to extract all parts essential to enabling sleep wakeup, but leave the
 // alarm/non-alarm sorting to the existing main loop.
-STATIC void system_on_idle_until_alarm(int64_t timediff_ms, bool wake_from_serial, uint32_t prescaler) {
+static void system_on_idle_until_alarm(int64_t timediff_ms, bool wake_from_serial, uint32_t prescaler) {
     bool have_timeout = false;
     uint64_t start_tick = 0, end_tick = 0;
     int64_t tickdiff;

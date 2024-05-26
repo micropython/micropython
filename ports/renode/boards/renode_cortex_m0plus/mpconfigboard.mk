@@ -1,0 +1,1 @@
+CPU = cortex-m0+

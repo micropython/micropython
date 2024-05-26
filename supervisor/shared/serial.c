@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdarg.h>
 #include <string.h>
@@ -34,15 +14,18 @@
 #include "supervisor/shared/display.h"
 #include "shared-bindings/terminalio/Terminal.h"
 #include "supervisor/shared/serial.h"
-#include "supervisor/usb.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-module/usb_cdc/__init__.h"
 
 #if CIRCUITPY_SERIAL_BLE
 #include "supervisor/shared/bluetooth/serial.h"
 #endif
 
-#if CIRCUITPY_USB
+#if CIRCUITPY_USB_DEVICE
+#include "shared-module/usb_cdc/__init__.h"
+#endif
+
+#if CIRCUITPY_TINYUSB
+#include "supervisor/usb.h"
 #include "tusb.h"
 #endif
 
@@ -63,14 +46,14 @@ byte console_uart_rx_buf[64];
 #endif
 #endif
 
-#if CIRCUITPY_USB || CIRCUITPY_CONSOLE_UART
+#if CIRCUITPY_USB_DEVICE || CIRCUITPY_CONSOLE_UART
 // Flag to note whether this is the first write after connection.
 // Delay slightly on the first write to allow time for the host to set up things,
 // including turning off echo mode.
 static bool _first_write_done = false;
 #endif
 
-#if CIRCUITPY_USB_VENDOR
+#if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VENDOR
 bool tud_vendor_connected(void);
 #endif
 
@@ -81,7 +64,7 @@ static bool _serial_console_write_disabled;
 static bool _serial_display_write_disabled;
 
 #if CIRCUITPY_CONSOLE_UART
-STATIC void console_uart_print_strn(void *env, const char *str, size_t len) {
+static void console_uart_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     int uart_errcode;
     common_hal_busio_uart_write(&console_uart, (const uint8_t *)str, len, &uart_errcode);
@@ -176,7 +159,7 @@ void serial_early_init(void) {
 }
 
 void serial_init(void) {
-    #if CIRCUITPY_USB || CIRCUITPY_CONSOLE_UART
+    #if CIRCUITPY_USB_DEVICE || CIRCUITPY_CONSOLE_UART
     _first_write_done = false;
     #endif
 
@@ -185,7 +168,7 @@ void serial_init(void) {
 }
 
 bool serial_connected(void) {
-    #if CIRCUITPY_USB_VENDOR
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected()) {
         return true;
     }
@@ -201,11 +184,11 @@ bool serial_connected(void) {
     }
     #endif
 
-    #if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
     if (usb_cdc_console_enabled() && tud_cdc_connected()) {
         return true;
     }
-    #elif CIRCUITPY_USB
+    #elif CIRCUITPY_USB_DEVICE
     if (tud_cdc_connected()) {
         return true;
     }
@@ -236,7 +219,7 @@ bool serial_connected(void) {
 }
 
 char serial_read(void) {
-    #if CIRCUITPY_USB_VENDOR
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected() && tud_vendor_available() > 0) {
         char tiny_buffer;
         tud_vendor_read(&tiny_buffer, 1);
@@ -282,12 +265,12 @@ char serial_read(void) {
         return port_serial_read();
     }
 
-    #if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
     if (!usb_cdc_console_enabled()) {
         return -1;
     }
     #endif
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     return (char)tud_cdc_read_char();
     #endif
 
@@ -298,7 +281,7 @@ uint32_t serial_bytes_available(void) {
     // There may be multiple serial input channels, so sum the count from all.
     uint32_t count = 0;
 
-    #if CIRCUITPY_USB_VENDOR
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected()) {
         count += tud_vendor_available();
     }
@@ -320,13 +303,13 @@ uint32_t serial_bytes_available(void) {
     count += usb_keyboard_chars_available();
     #endif
 
-    #if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
     if (usb_cdc_console_enabled()) {
         count += tud_cdc_available();
     }
     #endif
 
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     count += tud_cdc_available();
     #endif
 
@@ -355,7 +338,7 @@ void serial_write_substring(const char *text, uint32_t length) {
         return;
     }
 
-    #if CIRCUITPY_USB_VENDOR
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected()) {
         tud_vendor_write(text, length);
     }
@@ -378,13 +361,13 @@ void serial_write_substring(const char *text, uint32_t length) {
     websocket_write(text, length);
     #endif
 
-    #if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
     if (!usb_cdc_console_enabled()) {
         return;
     }
     #endif
 
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     // Delay the very first write
     if (tud_cdc_connected() && !_first_write_done) {
         mp_hal_delay_ms(50);

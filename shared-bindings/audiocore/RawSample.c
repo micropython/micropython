@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdint.h>
 
@@ -69,7 +49,7 @@
 //|           time.sleep(1)
 //|           dac.stop()"""
 //|         ...
-STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_buffer, ARG_channel_count, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL } },
@@ -99,14 +79,14 @@ STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
 //|     def deinit(self) -> None:
 //|         """Deinitialises the RawSample and releases any hardware resources for reuse."""
 //|         ...
-STATIC mp_obj_t audioio_rawsample_deinit(mp_obj_t self_in) {
+static mp_obj_t audioio_rawsample_deinit(mp_obj_t self_in) {
     audioio_rawsample_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_audioio_rawsample_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(audioio_rawsample_deinit_obj, audioio_rawsample_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(audioio_rawsample_deinit_obj, audioio_rawsample_deinit);
 
-STATIC void check_for_deinit(audioio_rawsample_obj_t *self) {
+static void check_for_deinit(audioio_rawsample_obj_t *self) {
     if (common_hal_audioio_rawsample_deinited(self)) {
         raise_deinited_error();
     }
@@ -121,12 +101,12 @@ STATIC void check_for_deinit(audioio_rawsample_obj_t *self) {
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t audioio_rawsample_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t audioio_rawsample_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_audioio_rawsample_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_rawsample___exit___obj, 4, 4, audioio_rawsample_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_rawsample___exit___obj, 4, 4, audioio_rawsample_obj___exit__);
 
 //|     sample_rate: Optional[int]
 //|     """32 bit value that dictates how quickly samples are played in Hertz (cycles per second).
@@ -134,14 +114,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_rawsample___exit___obj, 4, 4,
 //|     sample. This will not change the sample rate of any active playback. Call ``play`` again to
 //|     change it."""
 //|
-STATIC mp_obj_t audioio_rawsample_obj_get_sample_rate(mp_obj_t self_in) {
+static mp_obj_t audioio_rawsample_obj_get_sample_rate(mp_obj_t self_in) {
     audioio_rawsample_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_audioio_rawsample_get_sample_rate(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_rawsample_get_sample_rate_obj, audioio_rawsample_obj_get_sample_rate);
 
-STATIC mp_obj_t audioio_rawsample_obj_set_sample_rate(mp_obj_t self_in, mp_obj_t sample_rate) {
+static mp_obj_t audioio_rawsample_obj_set_sample_rate(mp_obj_t self_in, mp_obj_t sample_rate) {
     audioio_rawsample_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     common_hal_audioio_rawsample_set_sample_rate(self, mp_obj_get_int(sample_rate));
@@ -153,7 +133,7 @@ MP_PROPERTY_GETSET(audioio_rawsample_sample_rate_obj,
     (mp_obj_t)&audioio_rawsample_get_sample_rate_obj,
     (mp_obj_t)&audioio_rawsample_set_sample_rate_obj);
 
-STATIC const mp_rom_map_elem_t audioio_rawsample_locals_dict_table[] = {
+static const mp_rom_map_elem_t audioio_rawsample_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audioio_rawsample_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
@@ -162,9 +142,9 @@ STATIC const mp_rom_map_elem_t audioio_rawsample_locals_dict_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&audioio_rawsample_sample_rate_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(audioio_rawsample_locals_dict, audioio_rawsample_locals_dict_table);
+static MP_DEFINE_CONST_DICT(audioio_rawsample_locals_dict, audioio_rawsample_locals_dict_table);
 
-STATIC const audiosample_p_t audioio_rawsample_proto = {
+static const audiosample_p_t audioio_rawsample_proto = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_audiosample)
     .sample_rate = (audiosample_sample_rate_fun)common_hal_audioio_rawsample_get_sample_rate,
     .bits_per_sample = (audiosample_bits_per_sample_fun)common_hal_audioio_rawsample_get_bits_per_sample,

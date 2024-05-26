@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 /**
  *******************************************************************************
  * @file    OpenPDMFilter.h
@@ -28,8 +34,7 @@
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 
-#ifndef __OPENPDMFILTER_H
-#define __OPENPDMFILTER_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -107,6 +112,5 @@ int Open_PDM_Filter_128(uint8_t *data, int16_t *data_out, uint16_t mic_gain, TPD
 }
 #endif
 
-#endif // __OPENPDMFILTER_H
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -1,30 +1,10 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
- * Copyright (c) 2016 Glenn Ruben Bakke
- * Copyright (c) 2018 Artur Pacholec
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2016 Glenn Ruben Bakke
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+//
+// SPDX-License-Identifier: MIT
 
 #include <math.h>
 #include <stdint.h>
@@ -37,7 +17,6 @@
 #include "supervisor/shared/bluetooth/bluetooth.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/usb.h"
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"
 #include "shared-bindings/_bleio/Address.h"
@@ -52,12 +31,16 @@
 #include "nimble/nimble_port_freertos.h"
 #include "host/ble_gap.h"
 #include "host/util/util.h"
+#include "services/ans/ble_svc_ans.h"
 #include "services/gap/ble_svc_gap.h"
+#include "services/gatt/ble_svc_gatt.h"
 
+#include "bindings/espidf/__init__.h"
 #include "common-hal/_bleio/Connection.h"
 
 #include "esp_bt.h"
 #include "esp_nimble_hci.h"
+#include "nvs_flash.h"
 
 #if CIRCUITPY_OS_GETENV
 #include "shared-module/os/__init__.h"
@@ -95,10 +78,24 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     }
 
     if (enabled) {
-        nimble_port_init();
+        esp_err_t err = nvs_flash_init();
+        if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+            // NVS partition was truncated and needs to be erased
+            // Retry nvs_flash_init
+            ESP_ERROR_CHECK(nvs_flash_erase());
+            err = nvs_flash_init();
+        }
+        ESP_ERROR_CHECK(err);
+
+        CHECK_ESP_RESULT(nimble_port_init());
+
         // ble_hs_cfg.reset_cb = blecent_on_reset;
         ble_hs_cfg.sync_cb = _on_sync;
         // ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
+
+        ble_svc_gap_init();
+        ble_svc_gatt_init();
+        ble_svc_ans_init();
 
         #if CIRCUITPY_OS_GETENV
         char ble_name[1 + MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH];
@@ -124,12 +121,18 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         // Wait for sync.
         ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(200));
     } else {
-        nimble_port_stop();
+        int ret = nimble_port_stop();
+        while (xTaskGetHandle("nimble_host") != NULL) {
+            vTaskDelay(pdMS_TO_TICKS(2));
+        }
+        if (ret == 0) {
+            nimble_port_deinit();
+        }
     }
 }
 
 bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {
-    return xTaskGetHandle("ble") != NULL;
+    return xTaskGetHandle("nimble_host") != NULL;
 }
 
 bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *self) {
@@ -198,6 +201,7 @@ static int _scan_event(struct ble_gap_event *event, void *scan_results_in) {
             disc->data,
             disc->length_data);
     } else {
+        #if MYNEWT_VAL(BLE_EXT_ADV)
         // Extended advertisement
         struct ble_gap_ext_disc_desc *disc = &event->ext_disc;
         shared_module_bleio_scanresults_append(scan_results,
@@ -209,6 +213,7 @@ static int _scan_event(struct ble_gap_event *event, void *scan_results_in) {
             disc->addr.type,
             disc->data,
             disc->length_data);
+        #endif
     }
 
     return 0;
@@ -261,14 +266,14 @@ void common_hal_bleio_adapter_stop_scan(bleio_adapter_obj_t *self) {
     self->scan_results = NULL;
 }
 
-STATIC void _convert_address(const bleio_address_obj_t *address, ble_addr_t *nimble_address) {
+static void _convert_address(const bleio_address_obj_t *address, ble_addr_t *nimble_address) {
     nimble_address->type = address->type;
     mp_buffer_info_t address_buf_info;
     mp_get_buffer_raise(address->bytes, &address_buf_info, MP_BUFFER_READ);
     memcpy(nimble_address->val, (uint8_t *)address_buf_info.buf, NUM_BLEIO_ADDRESS_BYTES);
 }
 
-STATIC int _mtu_reply(uint16_t conn_handle,
+static int _mtu_reply(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     uint16_t mtu, void *arg) {
     bleio_connection_internal_t *connection = (bleio_connection_internal_t *)arg;
@@ -279,7 +284,7 @@ STATIC int _mtu_reply(uint16_t conn_handle,
     return 0;
 }
 
-STATIC void _new_connection(uint16_t conn_handle) {
+static void _new_connection(uint16_t conn_handle) {
     // Set the tx_power for the connection higher than the advertisement.
     esp_ble_tx_power_set(conn_handle, ESP_PWR_LVL_N0);
 
@@ -400,12 +405,13 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     return mp_const_none;
 }
 
+#if MYNEWT_VAL(BLE_EXT_ADV)
 typedef struct {
     struct os_mbuf mbuf;
     struct os_mbuf_pkthdr hdr;
 } os_mbuf_t;
 
-STATIC void _wrap_in_mbuf(const uint8_t *data, uint16_t len, os_mbuf_t *buf) {
+static void _wrap_in_mbuf(const uint8_t *data, uint16_t len, os_mbuf_t *buf) {
     struct os_mbuf *mbuf = &buf->mbuf;
     mbuf->om_data = (uint8_t *)data,
     mbuf->om_flags = 0;
@@ -419,25 +425,35 @@ STATIC void _wrap_in_mbuf(const uint8_t *data, uint16_t len, os_mbuf_t *buf) {
     // is ignored.
     mbuf->om_omp = NULL;
 }
+#endif
 
 static int _advertising_event(struct ble_gap_event *event, void *self_in) {
     bleio_adapter_obj_t *self = (bleio_adapter_obj_t *)self_in;
-
-    #if CIRCUITPY_VERBOSE_BLE
-    mp_printf(&mp_plat_print, "Advertising event: %d\n", event->type);
-    #endif
     switch (event->type) {
         case BLE_GAP_EVENT_CONNECT:
             // Spurious connect events can happen.
+
+            #if !MYNEWT_VAL(BLE_EXT_ADV)
+            if (event->connect.status == NIMBLE_OK) {
+                _new_connection(event->connect.conn_handle);
+                // Set connections objs back to NULL since we have a new
+                // connection and need a new tuple.
+                self->connection_objs = NULL;
+            }
+            common_hal_bleio_adapter_stop_advertising(self);
+            #endif
+
             break;
 
         case BLE_GAP_EVENT_ADV_COMPLETE:
+            #if MYNEWT_VAL(BLE_EXT_ADV)
             if (event->adv_complete.reason == NIMBLE_OK) {
                 _new_connection(event->adv_complete.conn_handle);
                 // Set connections objs back to NULL since we have a new
                 // connection and need a new tuple.
                 self->connection_objs = NULL;
             }
+            #endif
             // Other statuses indicate timeout or preemption.
             common_hal_bleio_adapter_stop_advertising(self);
             break;
@@ -463,8 +479,6 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
     }
 
     uint32_t rc;
-    bool extended = advertising_data_len > BLE_ADV_LEGACY_DATA_MAX_LEN ||
-        scan_response_data_len > BLE_ADV_LEGACY_DATA_MAX_LEN;
 
     ble_addr_t peer;
     if (directed_to != NULL) {
@@ -480,6 +494,10 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
     }
 
     bool high_duty_directed = directed_to != NULL && interval <= 3.5 && timeout <= 1.3;
+
+    #if MYNEWT_VAL(BLE_EXT_ADV)
+    bool extended = advertising_data_len > BLE_ADV_LEGACY_DATA_MAX_LEN ||
+        scan_response_data_len > BLE_ADV_LEGACY_DATA_MAX_LEN;
 
     struct ble_gap_ext_adv_params adv_params = {
         .connectable = connectable,
@@ -531,14 +549,43 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
     }
 
     rc = ble_gap_ext_adv_start(0, timeout / 10, 0);
+    #else
+    uint8_t conn_mode = connectable ? BLE_GAP_CONN_MODE_UND : BLE_GAP_CONN_MODE_NON;
+    if (directed_to != NULL) {
+        conn_mode = BLE_GAP_CONN_MODE_DIR;
+    }
+
+    struct ble_gap_adv_params adv_params = {
+        .conn_mode = conn_mode,
+        .disc_mode = BLE_GAP_DISC_MODE_GEN,
+        .itvl_min = SEC_TO_UNITS(interval, UNIT_0_625_MS) + 0.5f,
+        .itvl_max = SEC_TO_UNITS(interval, UNIT_0_625_MS) + 0.5f,
+        .channel_map = 0,
+        .filter_policy = BLE_HCI_CONN_FILT_NO_WL,
+        .high_duty_cycle = high_duty_directed,
+    };
+
+    rc = ble_gap_adv_set_data(advertising_data, advertising_data_len);
     if (rc != NIMBLE_OK) {
         return rc;
     }
 
-    return NIMBLE_OK;
+    if (scan_response_data_len > 0) {
+        rc = ble_gap_adv_rsp_set_data(scan_response_data, scan_response_data_len);
+        if (rc != NIMBLE_OK) {
+            return rc;
+        }
+    }
+    rc = ble_gap_adv_start(own_addr_type, directed_to != NULL ? &peer: NULL,
+        timeout / 10,
+        &adv_params,
+        _advertising_event, self);
+    #endif
+
+    return rc;
 }
 
-STATIC void check_data_fit(size_t data_len, bool connectable) {
+static void check_data_fit(size_t data_len, bool connectable) {
     if (data_len > MYNEWT_VAL(BLE_EXT_ADV_MAX_SIZE) ||
         (connectable && data_len > MYNEWT_VAL(BLE_EXT_ADV_MAX_SIZE))) {
         mp_raise_ValueError(MP_ERROR_TEXT("Data too large for advertisement packet"));
@@ -592,11 +639,15 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
 }
 
 void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
+    self->user_advertising = false;
     if (!common_hal_bleio_adapter_get_advertising(self)) {
         return;
     }
+    #if MYNEWT_VAL(BLE_EXT_ADV)
     int err_code = ble_gap_ext_adv_stop(0);
-    self->user_advertising = false;
+    #else
+    int err_code = ble_gap_adv_stop();
+    #endif
 
     if ((err_code != NIMBLE_OK) &&
         (err_code != BLE_HS_EALREADY) &&

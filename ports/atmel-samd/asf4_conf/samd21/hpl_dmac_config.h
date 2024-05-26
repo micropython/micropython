@@ -1,6 +1,11 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 /* Auto-generated config file hpl_dmac_config.h */
-#ifndef HPL_DMAC_CONFIG_H
-#define HPL_DMAC_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -3053,5 +3058,3 @@
 // </e>
 
 // <<< end of configuration section >>>
-
-#endif // HPL_DMAC_CONFIG_H

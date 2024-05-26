@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 // This file uses method signatures and comments derived from the PyUSB code
 // that has the below BSD-3 license.
@@ -70,7 +50,7 @@
 
 //|     idVendor: int
 //|     """The USB vendor ID of the device"""
-STATIC mp_obj_t usb_core_device_obj_get_idVendor(mp_obj_t self_in) {
+static mp_obj_t usb_core_device_obj_get_idVendor(mp_obj_t self_in) {
     usb_core_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_usb_core_device_get_idVendor(self));
 }
@@ -81,7 +61,7 @@ MP_PROPERTY_GETTER(usb_core_device_idVendor_obj,
 
 //|     idProduct: int
 //|     """The USB product ID of the device"""
-STATIC mp_obj_t usb_core_device_obj_get_idProduct(mp_obj_t self_in) {
+static mp_obj_t usb_core_device_obj_get_idProduct(mp_obj_t self_in) {
     usb_core_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_usb_core_device_get_idProduct(self));
 }
@@ -92,7 +72,7 @@ MP_PROPERTY_GETTER(usb_core_device_idProduct_obj,
 
 //|     serial_number: str
 //|     """The USB device's serial number string."""
-STATIC mp_obj_t usb_core_device_obj_get_serial_number(mp_obj_t self_in) {
+static mp_obj_t usb_core_device_obj_get_serial_number(mp_obj_t self_in) {
     usb_core_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_usb_core_device_get_serial_number(self);
 }
@@ -103,7 +83,7 @@ MP_PROPERTY_GETTER(usb_core_device_serial_number_obj,
 
 //|     product: str
 //|     """The USB device's product string."""
-STATIC mp_obj_t usb_core_device_obj_get_product(mp_obj_t self_in) {
+static mp_obj_t usb_core_device_obj_get_product(mp_obj_t self_in) {
     usb_core_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_usb_core_device_get_product(self);
 }
@@ -114,7 +94,7 @@ MP_PROPERTY_GETTER(usb_core_device_product_obj,
 
 //|     manufacturer: str
 //|     """The USB device's manufacturer string."""
-STATIC mp_obj_t usb_core_device_obj_get_manufacturer(mp_obj_t self_in) {
+static mp_obj_t usb_core_device_obj_get_manufacturer(mp_obj_t self_in) {
     usb_core_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_usb_core_device_get_manufacturer(self);
 }
@@ -133,7 +113,7 @@ MP_PROPERTY_GETTER(usb_core_device_manufacturer_obj,
 //|         without arguments is enough to get the device ready.
 //|         """
 //|         ...
-STATIC mp_obj_t usb_core_device_set_configuration(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t usb_core_device_set_configuration(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_configuration };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_configuration, MP_ARG_INT, {.u_int = 1} },
@@ -156,7 +136,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_device_set_configuration_obj, 1, usb_core_de
 //|         :returns: the number of bytes written
 //|         """
 //|         ...
-STATIC mp_obj_t usb_core_device_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t usb_core_device_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_endpoint, ARG_data, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_endpoint, MP_ARG_REQUIRED | MP_ARG_INT },
@@ -186,7 +166,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_device_write_obj, 2, usb_core_device_write);
 //|         :returns: the number of bytes read
 //|         """
 //|         ...
-STATIC mp_obj_t usb_core_device_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t usb_core_device_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_endpoint, ARG_size_or_buffer, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_endpoint, MP_ARG_REQUIRED | MP_ARG_INT },
@@ -231,7 +211,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_device_read_obj, 2, usb_core_device_read);
 //|         number of bytes read.
 //|         """
 //|         ...
-STATIC mp_obj_t usb_core_device_ctrl_transfer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t usb_core_device_ctrl_transfer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bmRequestType, ARG_bRequest, ARG_wValue, ARG_wIndex, ARG_data_or_wLength, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bmRequestType, MP_ARG_REQUIRED | MP_ARG_INT },
@@ -272,7 +252,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_device_ctrl_transfer_obj, 2, usb_core_device
 //|         :param int interface: the device interface number to check
 //|         """
 //|         ...
-STATIC mp_obj_t usb_core_device_is_kernel_driver_active(mp_obj_t self_in, mp_obj_t interface_in) {
+static mp_obj_t usb_core_device_is_kernel_driver_active(mp_obj_t self_in, mp_obj_t interface_in) {
     usb_core_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t interface = mp_obj_get_int(interface_in);
     bool active = common_hal_usb_core_device_is_kernel_driver_active(self, interface);
@@ -288,7 +268,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(usb_core_device_is_kernel_driver_active_obj, usb_core_
 //|         :param int interface: the device interface number to stop CircuitPython on
 //|         """
 //|         ...
-STATIC mp_obj_t usb_core_device_detach_kernel_driver(mp_obj_t self_in, mp_obj_t interface_in) {
+static mp_obj_t usb_core_device_detach_kernel_driver(mp_obj_t self_in, mp_obj_t interface_in) {
     usb_core_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t interface = mp_obj_get_int(interface_in);
     common_hal_usb_core_device_detach_kernel_driver(self, interface);
@@ -303,7 +283,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(usb_core_device_detach_kernel_driver_obj, usb_core_dev
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t usb_core_device_attach_kernel_driver(mp_obj_t self_in, mp_obj_t interface_in) {
+static mp_obj_t usb_core_device_attach_kernel_driver(mp_obj_t self_in, mp_obj_t interface_in) {
     usb_core_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t interface = mp_obj_get_int(interface_in);
     common_hal_usb_core_device_attach_kernel_driver(self, interface);
@@ -312,7 +292,7 @@ STATIC mp_obj_t usb_core_device_attach_kernel_driver(mp_obj_t self_in, mp_obj_t 
 MP_DEFINE_CONST_FUN_OBJ_2(usb_core_device_attach_kernel_driver_obj, usb_core_device_attach_kernel_driver);
 
 
-STATIC const mp_rom_map_elem_t usb_core_device_locals_dict_table[] = {
+static const mp_rom_map_elem_t usb_core_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_idVendor),         MP_ROM_PTR(&usb_core_device_idVendor_obj) },
     { MP_ROM_QSTR(MP_QSTR_idProduct),        MP_ROM_PTR(&usb_core_device_idProduct_obj) },
     { MP_ROM_QSTR(MP_QSTR_serial_number),    MP_ROM_PTR(&usb_core_device_serial_number_obj) },
@@ -329,7 +309,7 @@ STATIC const mp_rom_map_elem_t usb_core_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_attach_kernel_driver),    MP_ROM_PTR(&usb_core_device_attach_kernel_driver_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(usb_core_device_locals_dict, usb_core_device_locals_dict_table);
+static MP_DEFINE_CONST_DICT(usb_core_device_locals_dict, usb_core_device_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     usb_core_device_type,

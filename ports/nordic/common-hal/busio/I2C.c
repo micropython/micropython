@@ -1,31 +1,11 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- * Copyright (c) 2017 hathach
- * Copyright (c) 2016 Sandeep Mistry All right reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+// SPDX-FileCopyrightText: Copyright (c) 2017 hathach
+// SPDX-FileCopyrightText: Copyright (c) 2016 Sandeep Mistry All right reserved.
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/microcontroller/__init__.h"
@@ -43,7 +23,7 @@
 #define I2C_MAX_XFER_LEN         MIN(((1UL << TWIM0_EASYDMA_MAXCNT_SIZE) - 1), 1024)
 #define I2C_TIMEOUT 1000 // 1 second timeout
 
-STATIC twim_peripheral_t twim_peripherals[] = {
+static twim_peripheral_t twim_peripherals[] = {
     #if NRFX_CHECK(NRFX_TWIM0_ENABLED)
     // SPIM0 and TWIM0 share an address.
     { .twim = NRFX_TWIM_INSTANCE(0),
@@ -60,7 +40,7 @@ STATIC twim_peripheral_t twim_peripherals[] = {
     #endif
 };
 
-STATIC bool never_reset[MP_ARRAY_SIZE(twim_peripherals)];
+static bool never_reset[MP_ARRAY_SIZE(twim_peripherals)];
 
 void i2c_reset(void) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(twim_peripherals); i++) {
@@ -254,7 +234,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
     self->has_lock = false;
 }
 
-STATIC nrfx_err_t _twim_xfer_with_timeout(busio_i2c_obj_t *self, nrfx_twim_xfer_desc_t const *p_xfer_desc, uint32_t flags) {
+static nrfx_err_t _twim_xfer_with_timeout(busio_i2c_obj_t *self, nrfx_twim_xfer_desc_t const *p_xfer_desc, uint32_t flags) {
     // does non-blocking transfer and raises and exception if it takes longer than I2C_TIMEOUT ms to complete
     uint64_t deadline = supervisor_ticks_ms64() + I2C_TIMEOUT;
     nrfx_err_t err = NRFX_SUCCESS;
@@ -285,7 +265,7 @@ STATIC nrfx_err_t _twim_xfer_with_timeout(busio_i2c_obj_t *self, nrfx_twim_xfer_
     }
 }
 
-STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const uint8_t *data, size_t len, bool stopBit) {
+static uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const uint8_t *data, size_t len, bool stopBit) {
     if (len == 0) {
         return common_hal_busio_i2c_probe(self, addr) ? 0 : MP_ENODEV;
     }

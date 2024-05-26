@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 by kvc0/WarriorOfWire
+//
+// SPDX-License-Identifier: MIT
+
 #include "shared-module/vectorio/__init__.h"
 #include "shared-bindings/vectorio/Rectangle.h"
 #include "shared-module/displayio/area.h"

@@ -13,7 +13,7 @@ IDF_TARGET = esp32s3
 
 # This board doesn't have USB by default, it
 # instead uses a CP2102 USB-to-Serial chip
-CIRCUITPY_USB = 0
+CIRCUITPY_USB_DEVICE = 0
 CIRCUITPY_ESP_USB_SERIAL_JTAG = 0
 
 CIRCUITPY_ESP_FLASH_MODE = qio

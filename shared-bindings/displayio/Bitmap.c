@@ -1,30 +1,8 @@
-
-
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-module/displayio/Bitmap.h"
@@ -61,7 +39,7 @@
 //|         :param int height: The number of values high
 //|         :param int value_count: The number of possible pixel values."""
 //|         ...
-STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
     uint32_t width = mp_arg_validate_int_range(mp_obj_get_int(all_args[0]), 0, 32767, MP_QSTR_width);
     uint32_t height = mp_arg_validate_int_range(mp_obj_get_int(all_args[1]), 0, 32767, MP_QSTR_height);
@@ -82,7 +60,7 @@ STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void check_for_deinit(displayio_bitmap_t *self) {
+static void check_for_deinit(displayio_bitmap_t *self) {
     if (common_hal_displayio_bitmap_deinited(self)) {
         raise_deinited_error();
     }
@@ -90,7 +68,7 @@ STATIC void check_for_deinit(displayio_bitmap_t *self) {
 
 //|     width: int
 //|     """Width of the bitmap. (read only)"""
-STATIC mp_obj_t displayio_bitmap_obj_get_width(mp_obj_t self_in) {
+static mp_obj_t displayio_bitmap_obj_get_width(mp_obj_t self_in) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
 
     check_for_deinit(self);
@@ -104,7 +82,7 @@ MP_PROPERTY_GETTER(displayio_bitmap_width_obj,
 
 //|     height: int
 //|     """Height of the bitmap. (read only)"""
-STATIC mp_obj_t displayio_bitmap_obj_get_height(mp_obj_t self_in) {
+static mp_obj_t displayio_bitmap_obj_get_height(mp_obj_t self_in) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
 
     check_for_deinit(self);
@@ -118,7 +96,7 @@ MP_PROPERTY_GETTER(displayio_bitmap_height_obj,
 
 //|     bits_per_value: int
 //|     """Bits per Pixel of the bitmap. (read only)"""
-STATIC mp_obj_t displayio_bitmap_obj_get_bits_per_value(mp_obj_t self_in) {
+static mp_obj_t displayio_bitmap_obj_get_bits_per_value(mp_obj_t self_in) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
 
     check_for_deinit(self);
@@ -148,7 +126,7 @@ MP_PROPERTY_GETTER(displayio_bitmap_bits_per_value_obj,
 //|
 //|           bitmap[0,1] = 3"""
 //|         ...
-STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value_obj) {
+static mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value_obj) {
     if (value_obj == mp_const_none) {
         // delete item
         mp_raise_AttributeError(MP_ERROR_TEXT("Cannot delete values"));
@@ -205,7 +183,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 //|     def fill(self, value: int) -> None:
 //|         """Fills the bitmap with the supplied palette index value."""
 //|         ...
-STATIC mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) {
+static mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -235,7 +213,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_bitmap_fill_obj, displayio_bitmap_obj_fill);
 //|         notified of the "dirty rectangle" that encloses all modified
 //|         pixels."""
 //|         ...
-STATIC mp_obj_t displayio_bitmap_obj_dirty(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t displayio_bitmap_obj_dirty(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
 
@@ -266,14 +244,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(displayio_bitmap_dirty_obj, 0, displayio_bitmap_obj_d
 //|         """Release resources allocated by Bitmap."""
 //|         ...
 //|
-STATIC mp_obj_t displayio_bitmap_obj_deinit(mp_obj_t self_in) {
+static mp_obj_t displayio_bitmap_obj_deinit(mp_obj_t self_in) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_displayio_bitmap_deinit(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_bitmap_deinit_obj, displayio_bitmap_obj_deinit);
 
-STATIC const mp_rom_map_elem_t displayio_bitmap_locals_dict_table[] = {
+static const mp_rom_map_elem_t displayio_bitmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_bitmap_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_bitmap_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_bits_per_value), MP_ROM_PTR(&displayio_bitmap_bits_per_value_obj) },
@@ -281,10 +259,10 @@ STATIC const mp_rom_map_elem_t displayio_bitmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_dirty), MP_ROM_PTR(&displayio_bitmap_dirty_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&displayio_bitmap_deinit_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(displayio_bitmap_locals_dict, displayio_bitmap_locals_dict_table);
+static MP_DEFINE_CONST_DICT(displayio_bitmap_locals_dict, displayio_bitmap_locals_dict_table);
 
 // (the get_buffer protocol returns 0 for success, 1 for failure)
-STATIC mp_int_t bitmap_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+static mp_int_t bitmap_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_displayio_bitmap_get_buffer(self, bufinfo, flags);
 }

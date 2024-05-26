@@ -1,7 +1,13 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Dan Halbert for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
 #include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
 
-STATIC const mp_rom_obj_tuple_t matrix_addr_tuple = {
+static const mp_rom_obj_tuple_t matrix_addr_tuple = {
     {&mp_type_tuple},
     5,
     {
@@ -13,7 +19,7 @@ STATIC const mp_rom_obj_tuple_t matrix_addr_tuple = {
     }
 };
 
-STATIC const mp_rom_obj_tuple_t matrix_data_tuple = {
+static const mp_rom_obj_tuple_t matrix_data_tuple = {
     {&mp_type_tuple},
     6,
     {
@@ -27,7 +33,7 @@ STATIC const mp_rom_obj_tuple_t matrix_data_tuple = {
     }
 };
 
-STATIC const mp_rom_map_elem_t matrix_common_table[] = {
+static const mp_rom_map_elem_t matrix_common_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_rgb_pins), MP_ROM_PTR(&matrix_data_tuple) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_clock_pin), MP_ROM_PTR(&pin_PB06) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_latch_pin), MP_ROM_PTR(&pin_PB14) },
@@ -36,7 +42,7 @@ STATIC const mp_rom_map_elem_t matrix_common_table[] = {
 MP_DEFINE_CONST_DICT(matrix_common_dict, matrix_common_table);
 
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_PA02) },

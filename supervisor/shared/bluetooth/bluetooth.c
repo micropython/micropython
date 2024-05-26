@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 
@@ -85,22 +65,22 @@ const uint8_t private_advertising_data[] = { 0x02, 0x01, 0x06, // 0-2 Flags
 uint8_t circuitpython_scan_response_data[31];
 
 #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
-STATIC bool boot_in_discovery_mode = false;
-STATIC bool advertising = false;
-STATIC bool _private_advertising = false;
-STATIC bool ble_started = false;
+static bool boot_in_discovery_mode = false;
+static bool advertising = false;
+static bool _private_advertising = false;
+static bool ble_started = false;
 
 #define WORKFLOW_UNSET 0
 #define WORKFLOW_ENABLED 1
 #define WORKFLOW_DISABLED 2
 
-STATIC uint8_t workflow_state = WORKFLOW_UNSET;
-STATIC bool was_connected = false;
+static uint8_t workflow_state = WORKFLOW_UNSET;
+static bool was_connected = false;
 
 #if CIRCUITPY_STATUS_BAR
 // To detect when the title bar changes.
-STATIC bool _last_connected = false;
-STATIC bool _last_advertising = false;
+static bool _last_connected = false;
+static bool _last_advertising = false;
 #endif
 
 #if CIRCUITPY_STATUS_BAR
@@ -133,7 +113,7 @@ void supervisor_bluetooth_status(void) {
 }
 #endif
 
-STATIC void supervisor_bluetooth_start_advertising(void) {
+static void supervisor_bluetooth_start_advertising(void) {
     if (workflow_state != WORKFLOW_ENABLED) {
         return;
     }
@@ -142,7 +122,7 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
         return;
     }
     bool bonded = common_hal_bleio_adapter_is_bonded_to_central(&common_hal_bleio_adapter_obj);
-    #if CIRCUITPY_USB
+    #if CIRCUITPY_USB_DEVICE
     // Don't advertise when we have USB instead of BLE.
     if (!bonded && !boot_in_discovery_mode) {
         return;
@@ -236,7 +216,7 @@ void supervisor_bluetooth_init(void) {
         boot_in_discovery_mode = true;
         reset_state = 0x0;
     }
-    #if !CIRCUITPY_USB
+    #if !CIRCUITPY_USB_DEVICE
     // Boot into discovery if USB isn't available and we aren't bonded already.
     // Checking here allows us to have the status LED solidly on even if no button was
     // pressed.

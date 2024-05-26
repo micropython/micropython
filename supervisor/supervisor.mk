@@ -27,7 +27,7 @@ CFLAGS += -D_DEBUG=0
 NO_USB ?= $(wildcard supervisor/usb.c)
 
 
-ifeq ($(CIRCUITPY_USB),1)
+ifeq ($(CIRCUITPY_USB_DEVICE),1)
 CIRCUITPY_CREATOR_ID ?= $(USB_VID)
 CIRCUITPY_CREATION_ID ?= $(USB_PID)
 endif
@@ -109,16 +109,22 @@ ifeq ($(CIRCUITPY_STATUS_BAR),1)
 
 endif
 
-ifeq ($(CIRCUITPY_USB),1)
+ifeq ($(CIRCUITPY_TINYUSB),1)
   SRC_SUPERVISOR += \
-    lib/tinyusb/src/class/cdc/cdc_device.c \
     lib/tinyusb/src/common/tusb_fifo.c \
-    lib/tinyusb/src/device/usbd.c \
-    lib/tinyusb/src/device/usbd_control.c \
     lib/tinyusb/src/tusb.c \
     supervisor/usb.c \
-    supervisor/shared/usb/usb_desc.c \
     supervisor/shared/usb/usb.c \
+
+  ifeq ($(CIRCUITPY_USB_DEVICE),1)
+  SRC_SUPERVISOR += \
+    lib/tinyusb/src/class/cdc/cdc_device.c \
+    lib/tinyusb/src/device/usbd.c \
+    lib/tinyusb/src/device/usbd_control.c \
+    supervisor/shared/usb/usb_desc.c \
+    supervisor/shared/usb/usb_device.c \
+
+  endif
 
   ifeq ($(CIRCUITPY_USB_CDC), 1)
     SRC_SUPERVISOR += \
@@ -176,12 +182,23 @@ ifeq ($(CIRCUITPY_USB),1)
 
   endif
 
-  ifeq ($(CIRCUITPY_USB_HOST), 1)
+  ifeq ($(CIRCUITPY_TINYUSB_HOST), 1)
     SRC_SUPERVISOR += \
-      lib/tinyusb/src/class/hid/hid_host.c \
       lib/tinyusb/src/host/hub.c \
       lib/tinyusb/src/host/usbh.c \
+
+  endif
+
+  ifeq ($(CIRCUITPY_USB_KEYBOARD_WORKFLOW), 1)
+    SRC_SUPERVISOR += \
+      lib/tinyusb/src/class/hid/hid_host.c \
       supervisor/shared/usb/host_keyboard.c \
+
+  endif
+
+  ifeq ($(CIRCUITPY_MAX3421E), 1)
+    SRC_SUPERVISOR += \
+      lib/tinyusb/src/portable/analog/max3421/hcd_max3421.c \
 
   endif
 endif

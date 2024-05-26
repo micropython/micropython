@@ -20,6 +20,7 @@ Additional testing is limited.
     ../ports/mimxrt10xx/README
     ../ports/nordic/README
     ../ports/raspberrypi/README
+    ../ports/renode/README
     ../ports/silabs/README
     ../ports/stm/README
     ../ports/unix/README

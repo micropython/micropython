@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/busdisplay/BusDisplay.h"
 
@@ -42,7 +22,10 @@
 #include "shared-module/displayio/display_core.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/tick.h"
+
+#if CIRCUITPY_TINYUSB
 #include "supervisor/usb.h"
+#endif
 
 #include <stdint.h>
 #include <string.h>
@@ -213,7 +196,7 @@ mp_obj_t common_hal_busdisplay_busdisplay_get_root_group(busdisplay_busdisplay_o
     return self->core.current_group;
 }
 
-STATIC const displayio_area_t *_get_refresh_areas(busdisplay_busdisplay_obj_t *self) {
+static const displayio_area_t *_get_refresh_areas(busdisplay_busdisplay_obj_t *self) {
     if (self->core.full_refresh) {
         self->core.area.next = NULL;
         return &self->core.area;
@@ -223,14 +206,14 @@ STATIC const displayio_area_t *_get_refresh_areas(busdisplay_busdisplay_obj_t *s
     return NULL;
 }
 
-STATIC void _send_pixels(busdisplay_busdisplay_obj_t *self, uint8_t *pixels, uint32_t length) {
+static void _send_pixels(busdisplay_busdisplay_obj_t *self, uint8_t *pixels, uint32_t length) {
     if (!self->bus.data_as_commands) {
         self->bus.send(self->bus.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, &self->write_ram_command, 1);
     }
     self->bus.send(self->bus.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, pixels, length);
 }
 
-STATIC bool _refresh_area(busdisplay_busdisplay_obj_t *self, const displayio_area_t *area) {
+static bool _refresh_area(busdisplay_busdisplay_obj_t *self, const displayio_area_t *area) {
     uint16_t buffer_size = 128; // In uint32_ts
 
     displayio_area_t clipped;
@@ -315,14 +298,14 @@ STATIC bool _refresh_area(busdisplay_busdisplay_obj_t *self, const displayio_are
 
         // TODO(tannewt): Make refresh displays faster so we don't starve other
         // background tasks.
-        #if CIRCUITPY_USB
+        #if CIRCUITPY_TINYUSB
         usb_background();
         #endif
     }
     return true;
 }
 
-STATIC void _refresh_display(busdisplay_busdisplay_obj_t *self) {
+static void _refresh_display(busdisplay_busdisplay_obj_t *self) {
     if (!displayio_display_bus_is_free(&self->bus)) {
         // A refresh on this bus is already in progress.  Try next display.
         return;

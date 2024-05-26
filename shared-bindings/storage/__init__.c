@@ -1,30 +1,10 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2015 Josef Gajdusek
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+// SPDX-FileCopyrightText: Copyright (c) 2015 Josef Gajdusek
+// SPDX-FileCopyrightText: Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 
@@ -58,7 +38,7 @@
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_filesystem, ARG_mount_path, ARG_readonly };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_filesystem, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -95,7 +75,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(storage_mount_obj, 0, storage_mount);
 //|     This is the CircuitPython analog to the UNIX ``umount`` command."""
 //|     ...
 //|
-STATIC mp_obj_t storage_umount(mp_obj_t mnt_in) {
+static mp_obj_t storage_umount(mp_obj_t mnt_in) {
     if (mp_obj_is_str(mnt_in)) {
         common_hal_storage_umount_path(mp_obj_str_get_str(mnt_in));
     } else {
@@ -122,7 +102,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(storage_umount_obj, storage_umount);
 //|       filesystem will be corrupted."""
 //|     ...
 //|
-STATIC mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mount_path, ARG_readonly, ARG_disable_concurrent_write_protection };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mount_path, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -145,7 +125,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(storage_remount_obj, 0, storage_remount);
 //|     """Retrieves the mount object associated with the mount path"""
 //|     ...
 //|
-STATIC mp_obj_t storage_getmount(const mp_obj_t mnt_in) {
+static mp_obj_t storage_getmount(const mp_obj_t mnt_in) {
     return common_hal_storage_getmount(mp_obj_str_get_str(mnt_in));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(storage_getmount_obj, storage_getmount);
@@ -173,7 +153,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(storage_getmount_obj, storage_getmount);
 //|     ...
 //|
 
-STATIC mp_obj_t storage_erase_filesystem(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t storage_erase_filesystem(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_extended };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_extended, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -202,8 +182,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(storage_erase_filesystem_obj, 0, storage_erase_filesy
 //|     Can be called in ``boot.py``, before USB is connected."""
 //|     ...
 //|
-STATIC mp_obj_t storage_disable_usb_drive(void) {
-    #if CIRCUITPY_USB_MSC
+static mp_obj_t storage_disable_usb_drive(void) {
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_MSC
     if (!common_hal_storage_disable_usb_drive()) {
     #else
     if (true) {
@@ -227,8 +207,8 @@ MP_DEFINE_CONST_FUN_OBJ_0(storage_disable_usb_drive_obj, storage_disable_usb_dri
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t storage_enable_usb_drive(void) {
-    #if CIRCUITPY_USB_MSC
+static mp_obj_t storage_enable_usb_drive(void) {
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_MSC
     if (!common_hal_storage_enable_usb_drive()) {
     #else
     if (true) {
@@ -239,7 +219,7 @@ STATIC mp_obj_t storage_enable_usb_drive(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(storage_enable_usb_drive_obj, storage_enable_usb_drive);
 
-STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
+static const mp_rom_map_elem_t storage_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_storage) },
 
     { MP_ROM_QSTR(MP_QSTR_mount),             MP_ROM_PTR(&storage_mount_obj) },
@@ -314,7 +294,7 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(storage_module_globals, storage_module_globals_table);
+static MP_DEFINE_CONST_DICT(storage_module_globals, storage_module_globals_table);
 
 const mp_obj_module_t storage_module = {
     .base = { &mp_type_module },

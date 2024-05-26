@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <math.h>
 #include <string.h>
@@ -39,14 +19,14 @@
 #include "supervisor/shared/tick.h"
 #include "component/can.h"
 
-STATIC void allow_config_change(canio_can_obj_t *can) {
+static void allow_config_change(canio_can_obj_t *can) {
     can->hw->CCCR.bit.INIT = 1;
     while (!can->hw->CCCR.bit.INIT) {
     }
     can->hw->CCCR.bit.CCE = 1;
 }
 
-STATIC void prevent_config_change(canio_can_obj_t *can) {
+static void prevent_config_change(canio_can_obj_t *can) {
     can->hw->CCCR.bit.CCE = 0;
     can->hw->CCCR.bit.INIT = 0;
     while (can->hw->CCCR.bit.INIT) {
@@ -54,26 +34,26 @@ STATIC void prevent_config_change(canio_can_obj_t *can) {
 }
 
 __attribute__((unused))
-STATIC void static_assertions(void) {
+static void static_assertions(void) {
     MP_STATIC_ASSERT(CAN_GFC_ANFE_RXF0_Val + 1 == CAN_GFC_ANFE_RXF1_Val);
     MP_STATIC_ASSERT(CAN_GFC_ANFS_RXF0_Val + 1 == CAN_GFC_ANFS_RXF1_Val);
     MP_STATIC_ASSERT(CAN_SIDFE_0_SFEC_STF0M_Val + 1 == CAN_SIDFE_0_SFEC_STF1M_Val);
     MP_STATIC_ASSERT(CAN_XIDFE_0_EFEC_STF0M_Val + 1 == CAN_XIDFE_0_EFEC_STF1M_Val);
 }
 
-STATIC bool single_id_filter(canio_match_obj_t *match) {
+static bool single_id_filter(canio_match_obj_t *match) {
     return match->mask == 0 || match->mask == match->id;
 }
 
-STATIC bool standard_filter_in_use(CanMramSidfe *filter) {
+static bool standard_filter_in_use(CanMramSidfe *filter) {
     return filter->SIDFE_0.bit.SFEC != CAN_SIDFE_0_SFEC_DISABLE_Val;
 }
 
-STATIC bool extended_filter_in_use(CanMramXidfe *filter) {
+static bool extended_filter_in_use(CanMramXidfe *filter) {
     return filter->XIDFE_0.bit.EFEC != CAN_XIDFE_0_EFEC_DISABLE_Val;
 }
 
-STATIC size_t num_filters_needed(size_t nmatch, canio_match_obj_t **matches, bool extended) {
+static size_t num_filters_needed(size_t nmatch, canio_match_obj_t **matches, bool extended) {
     size_t num_half_filters_needed = 1;
     for (size_t i = 0; i < nmatch; i++) {
         if (extended != matches[i]->extended) {
@@ -88,7 +68,7 @@ STATIC size_t num_filters_needed(size_t nmatch, canio_match_obj_t **matches, boo
     return num_half_filters_needed / 2;
 }
 
-STATIC size_t num_filters_available(canio_can_obj_t *can, bool extended) {
+static size_t num_filters_available(canio_can_obj_t *can, bool extended) {
     size_t available = 0;
     if (extended) {
         for (size_t i = 0; i < MP_ARRAY_SIZE(can->state->extended_rx_filter); i++) {
@@ -106,7 +86,7 @@ STATIC size_t num_filters_available(canio_can_obj_t *can, bool extended) {
     return available;
 }
 
-STATIC void clear_filters(canio_listener_obj_t *self) {
+static void clear_filters(canio_listener_obj_t *self) {
     canio_can_obj_t *can = self->can;
     int fifo = self->fifo_idx;
 
@@ -135,7 +115,7 @@ STATIC void clear_filters(canio_listener_obj_t *self) {
     }
 }
 
-STATIC CanMramXidfe *next_extended_filter(canio_listener_obj_t *self, CanMramXidfe *start) {
+static CanMramXidfe *next_extended_filter(canio_listener_obj_t *self, CanMramXidfe *start) {
     CanMramXidfe *end = &self->can->state->extended_rx_filter[MP_ARRAY_SIZE(self->can->state->extended_rx_filter)];
     if (start == NULL) {
         start = self->can->state->extended_rx_filter;
@@ -151,7 +131,7 @@ STATIC CanMramXidfe *next_extended_filter(canio_listener_obj_t *self, CanMramXid
     return start;
 }
 
-STATIC CanMramSidfe *next_standard_filter(canio_listener_obj_t *self, CanMramSidfe *start) {
+static CanMramSidfe *next_standard_filter(canio_listener_obj_t *self, CanMramSidfe *start) {
     CanMramSidfe *end = &self->can->state->standard_rx_filter[MP_ARRAY_SIZE(self->can->state->standard_rx_filter)];
     if (start == NULL) {
         start = self->can->state->standard_rx_filter;
@@ -167,7 +147,7 @@ STATIC CanMramSidfe *next_standard_filter(canio_listener_obj_t *self, CanMramSid
     return start;
 }
 
-STATIC void install_standard_filter(CanMramSidfe *standard, int id1, int id2, int sfec, int sft) {
+static void install_standard_filter(CanMramSidfe *standard, int id1, int id2, int sfec, int sft) {
     assert(standard);
     CAN_SIDFE_0_Type val = {
         .bit.SFID1 = id1,
@@ -178,7 +158,7 @@ STATIC void install_standard_filter(CanMramSidfe *standard, int id1, int id2, in
     standard->SIDFE_0 = val;
 }
 
-STATIC void install_extended_filter(CanMramXidfe *extended, int id1, int id2, int efec, int eft) {
+static void install_extended_filter(CanMramXidfe *extended, int id1, int id2, int efec, int eft) {
     assert(extended);
     CAN_XIDFE_0_Type val0 = {
         .bit.EFID1 = id1,
@@ -195,7 +175,7 @@ STATIC void install_extended_filter(CanMramXidfe *extended, int id1, int id2, in
 
 
 #define NO_ID (-1)
-STATIC void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **matches) {
+static void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **matches) {
     int fifo = self->fifo_idx;
 
     if (!nmatch) {

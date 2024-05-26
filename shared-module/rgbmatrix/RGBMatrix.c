@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 
@@ -42,7 +22,7 @@
 
 extern Protomatter_core *_PM_protoPtr;
 
-STATIC void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t *self, mp_obj_t framebuffer);
+static void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t *self, mp_obj_t framebuffer);
 
 void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, int width, int bit_depth, uint8_t rgb_count, uint8_t *rgb_pins, uint8_t addr_count, uint8_t *addr_pins, uint8_t clock_pin, uint8_t latch_pin, uint8_t oe_pin, bool doublebuffer, mp_obj_t framebuffer, int8_t tile, bool serpentine, void *timer) {
     self->width = width;
@@ -69,7 +49,7 @@ void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, i
     common_hal_rgbmatrix_rgbmatrix_construct1(self, framebuffer);
 }
 
-STATIC void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t *self, mp_obj_t framebuffer) {
+static void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t *self, mp_obj_t framebuffer) {
     if (framebuffer != mp_const_none) {
         mp_get_buffer_raise(self->framebuffer, &self->bufinfo, MP_BUFFER_READ);
         if (mp_get_buffer(self->framebuffer, &self->bufinfo, MP_BUFFER_RW)) {
@@ -134,21 +114,21 @@ STATIC void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t 
     self->paused = 0;
 }
 
-STATIC void free_pin(uint8_t *pin) {
+static void free_pin(uint8_t *pin) {
     if (*pin != COMMON_HAL_MCU_NO_PIN) {
         common_hal_mcu_pin_reset_number(*pin);
     }
     *pin = COMMON_HAL_MCU_NO_PIN;
 }
 
-STATIC void free_pin_seq(uint8_t *seq, int count) {
+static void free_pin_seq(uint8_t *seq, int count) {
     for (int i = 0; i < count; i++) {
         free_pin(&seq[i]);
     }
 }
 
 extern int pm_row_count;
-STATIC void common_hal_rgbmatrix_rgbmatrix_deinit1(rgbmatrix_rgbmatrix_obj_t *self) {
+static void common_hal_rgbmatrix_rgbmatrix_deinit1(rgbmatrix_rgbmatrix_obj_t *self) {
     common_hal_rgbmatrix_timer_disable(self->timer);
 
     if (_PM_protoPtr == &self->protomatter) {

@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2024 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <math.h>
 
@@ -101,11 +81,11 @@
 //|
 
 
-STATIC mp_float_t get_m(mp_obj_t mul_obj, int sum) {
+static mp_float_t get_m(mp_obj_t mul_obj, int sum) {
     return mul_obj != mp_const_none ? mp_obj_get_float(mul_obj) : sum ? 1 / (mp_float_t)sum : 1;
 }
 
-STATIC mp_obj_t bitmapfilter_morph(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmapfilter_morph(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_weights, ARG_mul, ARG_add, ARG_threshold, ARG_offset, ARG_invert, ARG_mask };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
@@ -371,7 +351,7 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_offset_type = {
 //|     Only pixels set to a non-zero value in the mask are modified.
 //|     """
 //|
-STATIC mp_obj_t bitmapfilter_mix(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmapfilter_mix(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_weights, ARG_mask };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
@@ -440,7 +420,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_mix_obj, 0, bitmapfilter_mix);
 //|     PIL and ImageMagic both call this "solarize".
 //|     """
 //|
-STATIC mp_obj_t bitmapfilter_solarize(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmapfilter_solarize(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_threshold, ARG_mask };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
@@ -504,13 +484,13 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_solarize_obj, 0, bitmapfilter_solarize);
 //|     """
 //|
 
-STATIC int scaled_lut(int maxval, mp_obj_t func, int i) {
+static int scaled_lut(int maxval, mp_obj_t func, int i) {
     mp_obj_t obj = mp_call_function_1(func, mp_obj_new_float(i / (mp_float_t)maxval));
     mp_float_t val = mp_obj_get_float(obj);
     return (int)MICROPY_FLOAT_C_FUN(round)(val * maxval);
 }
 
-STATIC mp_obj_t bitmapfilter_lookup(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmapfilter_lookup(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_lookup, ARG_mask };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
@@ -582,7 +562,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_lookup_obj, 0, bitmapfilter_lookup);
 //|     Only pixels set to a non-zero value in the mask are modified.
 //|     """
 //|
-STATIC mp_obj_t bitmapfilter_false_color(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmapfilter_false_color(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_palette, ARG_mask };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
@@ -611,7 +591,7 @@ STATIC mp_obj_t bitmapfilter_false_color(size_t n_args, const mp_obj_t *pos_args
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_false_color_obj, 0, bitmapfilter_false_color);
 
 #define BLEND_TABLE_SIZE (4096)
-STATIC uint8_t *get_blend_table(mp_obj_t lookup, int mode) {
+static uint8_t *get_blend_table(mp_obj_t lookup, int mode) {
     mp_buffer_info_t lookup_buf;
     if (!mp_get_buffer(lookup, &lookup_buf, mode) || lookup_buf.len != BLEND_TABLE_SIZE) {
         return NULL;
@@ -644,7 +624,7 @@ STATIC uint8_t *get_blend_table(mp_obj_t lookup, int mode) {
 //|             return a * .33 + b * .67
 //|     """
 //|
-STATIC mp_obj_t blend_precompute(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t blend_precompute(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_lookup, ARG_table };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_lookup, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
@@ -690,7 +670,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_blend_precompute_obj, 0, blend_precomput
 //|     """
 //|
 
-STATIC mp_obj_t bitmapfilter_blend(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmapfilter_blend(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_dest, ARG_src1, ARG_src2, ARG_lookup, ARG_mask };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_dest, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
@@ -733,7 +713,7 @@ STATIC mp_obj_t bitmapfilter_blend(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_blend_obj, 0, bitmapfilter_blend);
 
-STATIC const mp_rom_map_elem_t bitmapfilter_module_globals_table[] = {
+static const mp_rom_map_elem_t bitmapfilter_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmapfilter) },
     { MP_ROM_QSTR(MP_QSTR_morph), MP_ROM_PTR(&bitmapfilter_morph_obj) },
     { MP_ROM_QSTR(MP_QSTR_mix), MP_ROM_PTR(&bitmapfilter_mix_obj) },
@@ -747,7 +727,7 @@ STATIC const mp_rom_map_elem_t bitmapfilter_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_blend), MP_ROM_PTR(&bitmapfilter_blend_obj) },
     { MP_ROM_QSTR(MP_QSTR_blend_precompute), MP_ROM_PTR(&bitmapfilter_blend_precompute_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(bitmapfilter_module_globals, bitmapfilter_module_globals_table);
+static MP_DEFINE_CONST_DICT(bitmapfilter_module_globals, bitmapfilter_module_globals_table);
 
 const mp_obj_module_t bitmapfilter_module = {
     .base = {&mp_type_module },

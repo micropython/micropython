@@ -1,29 +1,9 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2019 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2019 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/audiomp3/MP3Decoder.h"
 
@@ -50,7 +30,7 @@
  *
  * Sets self->eof if any read of the file returns 0 bytes
  */
-STATIC bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self) {
+static bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self) {
     // If we didn't previously reach the end of file, we can try reading now
     if (!self->eof && self->inbuf_offset != 0) {
 
@@ -89,7 +69,7 @@ STATIC bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self) {
  * This variant is introduced so that at the site of the
  * add_background_callback_core call, the prototype matches.
  */
-STATIC void mp3file_update_inbuf_cb(void *self) {
+static void mp3file_update_inbuf_cb(void *self) {
     mp3file_update_inbuf_always(self);
 }
 
@@ -97,7 +77,7 @@ STATIC void mp3file_update_inbuf_cb(void *self) {
  *
  * Returns the same as mp3file_update_inbuf_always.
  */
-STATIC bool mp3file_update_inbuf_half(audiomp3_mp3file_obj_t *self) {
+static bool mp3file_update_inbuf_half(audiomp3_mp3file_obj_t *self) {
     // If buffer is over half full, do nothing
     if (self->inbuf_offset < self->inbuf_length / 2) {
         return true;
@@ -112,7 +92,7 @@ STATIC bool mp3file_update_inbuf_half(audiomp3_mp3file_obj_t *self) {
 
 // http://id3.org/d3v2.3.0
 // http://id3.org/id3v2.3.0
-STATIC void mp3file_skip_id3v2(audiomp3_mp3file_obj_t *self) {
+static void mp3file_skip_id3v2(audiomp3_mp3file_obj_t *self) {
     mp3file_update_inbuf_half(self);
     if (BYTES_LEFT(self) < 10) {
         return;
@@ -146,7 +126,7 @@ STATIC void mp3file_skip_id3v2(audiomp3_mp3file_obj_t *self) {
 /* If a sync word can be found, advance to it and return true.  Otherwise,
  * return false.
  */
-STATIC bool mp3file_find_sync_word(audiomp3_mp3file_obj_t *self) {
+static bool mp3file_find_sync_word(audiomp3_mp3file_obj_t *self) {
     do {
         mp3file_update_inbuf_half(self);
         int offset = MP3FindSyncWord(READ_PTR(self), BYTES_LEFT(self));
@@ -160,7 +140,7 @@ STATIC bool mp3file_find_sync_word(audiomp3_mp3file_obj_t *self) {
     return false;
 }
 
-STATIC bool mp3file_get_next_frame_info(audiomp3_mp3file_obj_t *self, MP3FrameInfo *fi) {
+static bool mp3file_get_next_frame_info(audiomp3_mp3file_obj_t *self, MP3FrameInfo *fi) {
     int err;
     do {
         err = MP3GetNextFrameInfo(self->decoder, fi, READ_PTR(self));
@@ -226,7 +206,7 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
 }
 
 void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, pyb_file_obj_t *file) {
-    background_callback_begin_critical_section();
+    background_callback_prevent();
 
     self->file = file;
     f_lseek(&self->file->fp, 0);
@@ -244,7 +224,7 @@ void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, pyb_file
     memset(self->buffers[1], 0, MAX_BUFFER_LEN);
     MP3FrameInfo fi;
     bool result = mp3file_get_next_frame_info(self, &fi);
-    background_callback_end_critical_section();
+    background_callback_allow();
     if (!result) {
         mp_raise_msg(&mp_type_RuntimeError,
             MP_ERROR_TEXT("Failed to parse MP3 file"));
@@ -296,7 +276,7 @@ void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t *self,
     }
     // We don't reset the buffer index in case we're looping and we have an odd number of buffer
     // loads
-    background_callback_begin_critical_section();
+    background_callback_prevent();
     f_lseek(&self->file->fp, 0);
     self->inbuf_offset = self->inbuf_length;
     self->eof = 0;
@@ -305,7 +285,7 @@ void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t *self,
     mp3file_update_inbuf_half(self);
     mp3file_skip_id3v2(self);
     mp3file_find_sync_word(self);
-    background_callback_end_critical_section();
+    background_callback_allow();
 }
 
 audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *self,

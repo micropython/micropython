@@ -1,31 +1,10 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H
+#pragma once
 
 #include "common-hal/socketpool/Socket.h"
 
@@ -38,6 +17,7 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self, const c
 bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t *self);
 bool common_hal_socketpool_socket_get_connected(socketpool_socket_obj_t *self);
 mp_uint_t common_hal_socketpool_socket_get_timeout(socketpool_socket_obj_t *self);
+mp_int_t common_hal_socketpool_socket_get_type(socketpool_socket_obj_t *self);
 bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t *self, int backlog);
 mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *self,
     uint8_t *buf, uint32_t len, uint8_t *ip, uint32_t *port);
@@ -63,5 +43,3 @@ void socketpool_socket_move(socketpool_socket_obj_t *self, socketpool_socket_obj
 // Resets the socket object state so it appears closed and disconnected. This only works on
 // uninitialized memory.
 void socketpool_socket_reset(socketpool_socket_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H

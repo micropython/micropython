@@ -109,6 +109,9 @@ void common_hal_bleio_service_construct(bleio_service_obj_t *self,
         mp_obj_new_list(0, NULL));
 }
 
+void common_hal_bleio_service_deinit(bleio_service_obj_t *self) {
+}
+
 // Get service from connection
 void bleio_service_from_connection(bleio_service_obj_t *self,
     mp_obj_t connection) {

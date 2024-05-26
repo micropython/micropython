@@ -1,6 +1,11 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 /* Auto-generated config file peripheral_clk_config.h */
-#ifndef PERIPHERAL_CLK_CONFIG_H
-#define PERIPHERAL_CLK_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -1166,5 +1171,3 @@
 #endif
 
 // <<< end of configuration section >>>
-
-#endif // PERIPHERAL_CLK_CONFIG_H

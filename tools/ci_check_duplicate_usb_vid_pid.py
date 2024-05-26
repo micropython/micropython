@@ -96,7 +96,8 @@ def check_vid_pid(files, clusterlist):
     """
 
     usb_pattern = re.compile(
-        r"^CIRCUITPY_USB\s*=\s*0$|^IDF_TARGET = (esp32|esp32c3|esp32c6|esp32h2)$", flags=re.M
+        r"^CIRCUITPY_USB_DEVICE\s*=\s*0$|^IDF_TARGET = (esp32|esp32c2|esp32c3|esp32c6|esp32h2)$|^MCU_SERIES = MG24$",
+        flags=re.M,
     )
 
     usb_ids = defaultdict(set)
@@ -109,6 +110,10 @@ def check_vid_pid(files, clusterlist):
         creation = CREATION_PATTERN.search(src_text)
         non_usb = usb_pattern.search(src_text)
         board_name = board_config.parts[-2]
+        port_name = board_config.parts[-4]
+
+        if port_name == "renode":
+            continue
 
         if usb_vid and usb_pid:
             id_group = f"0x{int(usb_vid.group(1), 16):04X}:0x{int(usb_pid.group(1), 16):04X}"

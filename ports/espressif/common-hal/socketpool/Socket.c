@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/socketpool/Socket.h"
 
@@ -31,8 +11,10 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/socketpool/SocketPool.h"
+#if CIRCUITPY_SSL
 #include "shared-bindings/ssl/SSLSocket.h"
 #include "shared-module/ssl/SSLSocket.h"
+#endif
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/workflow.h"
@@ -54,14 +36,17 @@ StackType_t socket_select_stack[2 * configMINIMAL_STACK_SIZE];
 #define FDSTATE_CLOSED  0
 #define FDSTATE_OPEN    1
 #define FDSTATE_CLOSING 2
-STATIC uint8_t socket_fd_state[CONFIG_LWIP_MAX_SOCKETS];
+static uint8_t socket_fd_state[CONFIG_LWIP_MAX_SOCKETS];
 
-STATIC socketpool_socket_obj_t *user_socket[CONFIG_LWIP_MAX_SOCKETS];
+// How long to wait between checks for a socket to connect.
+#define SOCKET_CONNECT_POLL_INTERVAL_MS 100
+
+static socketpool_socket_obj_t *user_socket[CONFIG_LWIP_MAX_SOCKETS];
 StaticTask_t socket_select_task_buffer;
 TaskHandle_t socket_select_task_handle;
-STATIC int socket_change_fd = -1;
+static int socket_change_fd = -1;
 
-STATIC void socket_select_task(void *arg) {
+static void socket_select_task(void *arg) {
     uint64_t signal;
     fd_set readfds;
     fd_set excptfds;
@@ -161,7 +146,7 @@ void socketpool_socket_poll_resume(void) {
 // The writes below send an event to the socket select task so that it redoes the
 // select with the new open socket set.
 
-STATIC bool register_open_socket(int fd) {
+static bool register_open_socket(int fd) {
     if (fd < FD_SETSIZE) {
         socket_fd_state[fd - LWIP_SOCKET_OFFSET] = FDSTATE_OPEN;
         user_socket[fd - LWIP_SOCKET_OFFSET] = NULL;
@@ -174,13 +159,13 @@ STATIC bool register_open_socket(int fd) {
     return false;
 }
 
-STATIC void mark_user_socket(int fd, socketpool_socket_obj_t *obj) {
+static void mark_user_socket(int fd, socketpool_socket_obj_t *obj) {
     socket_fd_state[fd - LWIP_SOCKET_OFFSET] = FDSTATE_OPEN;
     user_socket[fd - LWIP_SOCKET_OFFSET] = obj;
     // No need to wakeup select task
 }
 
-STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
+static bool _socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
     int proto,
     socketpool_socket_obj_t *sock) {
@@ -359,12 +344,14 @@ size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
 }
 
 void socketpool_socket_close(socketpool_socket_obj_t *self) {
+    #if CIRCUITPY_SSL
     if (self->ssl_socket) {
         ssl_sslsocket_obj_t *ssl_socket = self->ssl_socket;
         self->ssl_socket = NULL;
         common_hal_ssl_sslsocket_close(ssl_socket);
         return;
     }
+    #endif
     self->connected = false;
     int fd = self->num;
     // Ignore bogus/closed sockets
@@ -412,25 +399,75 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
 
     // Replace above with function call -----
 
-    // Switch to blocking mode for this one call
-    int opts;
-    opts = lwip_fcntl(self->num, F_GETFL, 0);
-    opts = opts & (~O_NONBLOCK);
-    lwip_fcntl(self->num, F_SETFL, opts);
+    // Emulate SO_CONTIMEO, which is not implemented by lwip.
+    // All our sockets are non-blocking, so we check the timeout ourselves.
 
     int result = -1;
     result = lwip_connect(self->num, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr_in));
 
-    // Switch back once complete
-    opts = opts | O_NONBLOCK;
-    lwip_fcntl(self->num, F_SETFL, opts);
-
-    if (result >= 0) {
+    if (result == 0) {
+        // Connected immediately.
         self->connected = true;
         return;
-    } else {
-        mp_raise_OSError(errno);
     }
+
+    if (result < 0 && errno != EINPROGRESS) {
+        // Some error happened; error is in errno.
+        mp_raise_OSError(errno);
+        return;
+    }
+
+    struct timeval timeout = {
+        .tv_sec = 0,
+        .tv_usec = SOCKET_CONNECT_POLL_INTERVAL_MS * 1000,
+    };
+
+    // Keep checking, using select(), until timeout expires, at short intervals.
+    // This allows ctrl-C interrupts to be detected and background tasks to run.
+    mp_uint_t timeout_left = self->timeout_ms;
+
+    while (timeout_left > 0) {
+        RUN_BACKGROUND_TASKS;
+        // Allow ctrl-C interrupt
+        if (mp_hal_is_interrupted()) {
+            return;
+        }
+
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(self->num, &fds);
+
+        result = select(self->num + 1, NULL, &fds, NULL, &timeout);
+        if (result == 0) {
+            // No change to fd's after waiting for timeout, so try again if some time is still left.
+            // Don't wrap below 0, because we're using a uint.
+            if (timeout_left < SOCKET_CONNECT_POLL_INTERVAL_MS) {
+                timeout_left = 0;
+            } else {
+                timeout_left -= SOCKET_CONNECT_POLL_INTERVAL_MS;
+            }
+            continue;
+        }
+
+        if (result < 0) {
+            // Some error happened when doing select(); error is in errno.
+            mp_raise_OSError(errno);
+        }
+
+        // select() indicated the socket is writable. Check if any connection error occurred.
+        int error_code = 0;
+        socklen_t socklen = sizeof(error_code);
+        result = getsockopt(self->num, SOL_SOCKET, SO_ERROR, &error_code, &socklen);
+        if (result < 0 || error_code != 0) {
+            mp_raise_OSError(errno);
+        }
+        self->connected = true;
+        return;
+    }
+
+    // No connection after timeout. The connection attempt is not stopped.
+    // This imitates what happens in Python.
+    mp_raise_OSError(ETIMEDOUT);
 }
 
 bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t *self) {
@@ -600,6 +637,10 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
 
 void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint32_t timeout_ms) {
     self->timeout_ms = timeout_ms;
+}
+
+mp_int_t common_hal_socketpool_socket_get_type(socketpool_socket_obj_t *self) {
+    return self->type;
 }
 
 

@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 by Sean Cross
+//
+// SPDX-License-Identifier: MIT
+
 #include <string.h>
 
 #include "py/runtime.h"

@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2020 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/framebufferio/FramebufferDisplay.h"
 
@@ -35,7 +15,10 @@
 #include "shared-module/displayio/display_core.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/tick.h"
+
+#if CIRCUITPY_TINYUSB
 #include "supervisor/usb.h"
+#endif
 
 #include <stdint.h>
 #include <string.h>
@@ -122,7 +105,7 @@ mp_obj_t common_hal_framebufferio_framebufferdisplay_get_framebuffer(framebuffer
     return self->framebuffer;
 }
 
-STATIC const displayio_area_t *_get_refresh_areas(framebufferio_framebufferdisplay_obj_t *self) {
+static const displayio_area_t *_get_refresh_areas(framebufferio_framebufferdisplay_obj_t *self) {
     if (self->core.full_refresh) {
         self->core.area.next = NULL;
         return &self->core.area;
@@ -133,7 +116,7 @@ STATIC const displayio_area_t *_get_refresh_areas(framebufferio_framebufferdispl
 }
 
 #define MARK_ROW_DIRTY(r) (dirty_row_bitmask[r / 8] |= (1 << (r & 7)))
-STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t *self, const displayio_area_t *area, uint8_t *dirty_row_bitmask) {
+static bool _refresh_area(framebufferio_framebufferdisplay_obj_t *self, const displayio_area_t *area, uint8_t *dirty_row_bitmask) {
     uint16_t buffer_size = CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE / sizeof(uint32_t); // In uint32_ts
 
     displayio_area_t clipped;
@@ -220,14 +203,14 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t *self, const di
 
         // TODO(tannewt): Make refresh displays faster so we don't starve other
         // background tasks.
-        #if CIRCUITPY_USB
+        #if CIRCUITPY_TINYUSB
         usb_background();
         #endif
     }
     return true;
 }
 
-STATIC void _refresh_display(framebufferio_framebufferdisplay_obj_t *self) {
+static void _refresh_display(framebufferio_framebufferdisplay_obj_t *self) {
     self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
     if (!self->bufinfo.buf) {
         return;
@@ -314,7 +297,7 @@ void common_hal_framebufferio_framebufferdisplay_set_auto_refresh(framebufferio_
     self->auto_refresh = auto_refresh;
 }
 
-STATIC void _update_backlight(framebufferio_framebufferdisplay_obj_t *self) {
+static void _update_backlight(framebufferio_framebufferdisplay_obj_t *self) {
     // TODO(tannewt): Fade the backlight based on it's existing value and a target value. The target
     // should account for ambient light when possible.
 }

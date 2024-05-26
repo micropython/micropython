@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Kevin Matocha, Jose David Montoya
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Kevin Matocha, Jose David Montoya
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared/runtime/interrupt_char.h"
 #include "shared-bindings/bitmaptools/__init__.h"
@@ -392,7 +372,7 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
 
 }
 
-STATIC void draw_line(displayio_bitmap_t *destination,
+static void draw_line(displayio_bitmap_t *destination,
     int16_t x0, int16_t y0,
     int16_t x1, int16_t y1,
     uint32_t value) {
@@ -504,7 +484,7 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
     draw_line(destination, x0, y0, x1, y1, value);
 }
 
-STATIC int32_t ith(void *data, size_t i, int element_size) {
+static int32_t ith(void *data, size_t i, int element_size) {
     switch (element_size) {
         default:
         case 1:
@@ -705,7 +685,7 @@ enum {
     SWAP_RB = 1 << 1,
 };
 
-STATIC void fill_row(displayio_bitmap_t *bitmap, int swap, int16_t *luminance_data, int y, int mx) {
+static void fill_row(displayio_bitmap_t *bitmap, int swap, int16_t *luminance_data, int y, int mx) {
     if (y >= bitmap->height) {
         return;
     }
@@ -993,7 +973,7 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
     }
 }
 
-STATIC void draw_circle(displayio_bitmap_t *destination,
+static void draw_circle(displayio_bitmap_t *destination,
     int16_t x, int16_t y,
     int16_t radius, uint32_t value) {
 

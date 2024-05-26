@@ -3,7 +3,7 @@ CIRCUITPY_CREATION_ID = 0x00AA0004
 
 # This board doesn't have USB by default, it
 # instead uses a CH340C USB-to-Serial chip
-CIRCUITPY_USB = 0
+CIRCUITPY_USB_DEVICE = 0
 CIRCUITPY_ESP_USB_SERIAL_JTAG = 0
 
 IDF_TARGET = esp32s3

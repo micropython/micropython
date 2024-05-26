@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+//
+// SPDX-License-Identifier: MIT
 
 #include "ble_drv.h"
 #include "ble.h"
@@ -35,7 +15,7 @@
 #include "shared-bindings/_bleio/Adapter.h"
 
 
-STATIC void _indicate_service_change(uint16_t start, uint16_t end) {
+static void _indicate_service_change(uint16_t start, uint16_t end) {
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         bleio_connection_internal_t *connection = &bleio_connections[i];
         uint16_t conn_handle = connection->conn_handle;
@@ -77,6 +57,9 @@ void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_ob
         mp_obj_new_list(0, NULL)));
 }
 
+void common_hal_bleio_service_deinit(bleio_service_obj_t *self) {
+}
+
 void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection) {
     self->handle = 0xFFFF;
     self->uuid = NULL;
@@ -102,7 +85,7 @@ bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self) {
     return self->is_secondary;
 }
 
-STATIC void _expand_range(uint16_t new_value, uint16_t *start, uint16_t *end) {
+static void _expand_range(uint16_t new_value, uint16_t *start, uint16_t *end) {
     if (new_value == 0) {
         return;
     }

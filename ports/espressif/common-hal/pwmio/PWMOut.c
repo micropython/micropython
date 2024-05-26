@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 #include <math.h>
 
 #include "common-hal/pwmio/PWMOut.h"
@@ -33,11 +13,11 @@
 
 #define INDEX_EMPTY 0xFF
 
-STATIC uint32_t reserved_timer_freq[LEDC_TIMER_MAX];
-STATIC bool varfreq_timers[LEDC_TIMER_MAX];
-STATIC uint8_t reserved_channels[LEDC_CHANNEL_MAX] = { [0 ... LEDC_CHANNEL_MAX - 1] = INDEX_EMPTY};
+static uint32_t reserved_timer_freq[LEDC_TIMER_MAX];
+static bool varfreq_timers[LEDC_TIMER_MAX];
+static uint8_t reserved_channels[LEDC_CHANNEL_MAX] = { [0 ... LEDC_CHANNEL_MAX - 1] = INDEX_EMPTY};
 
-STATIC uint32_t calculate_duty_cycle(uint32_t frequency) {
+static uint32_t calculate_duty_cycle(uint32_t frequency) {
     uint32_t duty_bits = 0;
     uint32_t interval = APB_CLK_FREQ / frequency;
     for (size_t i = 0; i < 32; i++) {

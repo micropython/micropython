@@ -1,28 +1,8 @@
-/*
- * This file is part of the CircuitPython project, https://github.com/adafruit/circuitpython
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Jeff Epler
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Jeff Epler
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/qrio/__init__.h"
 #include "shared-bindings/qrio/QRDecoder.h"
@@ -41,7 +21,7 @@
 //|         """
 //|         ...
 
-STATIC mp_obj_t qrio_qrdecoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args_in) {
+static mp_obj_t qrio_qrdecoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args_in) {
     enum { ARG_width, ARG_height };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_REQUIRED, {.u_int = 0} },
@@ -57,7 +37,7 @@ STATIC mp_obj_t qrio_qrdecoder_make_new(const mp_obj_type_t *type, size_t n_args
 }
 
 
-STATIC void verify_buffer_size(qrio_qrdecoder_obj_t *self, mp_obj_t *buffer, size_t len, qrio_pixel_policy_t policy) {
+static void verify_buffer_size(qrio_qrdecoder_obj_t *self, mp_obj_t *buffer, size_t len, qrio_pixel_policy_t policy) {
     int width = shared_module_qrio_qrdecoder_get_width(self);
     int height = shared_module_qrio_qrdecoder_get_height(self);
 
@@ -73,7 +53,7 @@ STATIC void verify_buffer_size(qrio_qrdecoder_obj_t *self, mp_obj_t *buffer, siz
 //|         self, buffer: ReadableBuffer, pixel_policy: PixelPolicy = PixelPolicy.EVERY_BYTE
 //|     ) -> List[QRInfo]:
 //|         """Decode zero or more QR codes from the given image.  The size of the buffer must be at least ``length``×``width`` bytes for `EVERY_BYTE`, and 2×``length``×``width`` bytes for `EVEN_BYTES` or `ODD_BYTES`."""
-STATIC mp_obj_t qrio_qrdecoder_decode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t qrio_qrdecoder_decode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     enum { ARG_buffer, ARG_pixel_policy };
@@ -98,7 +78,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(qrio_qrdecoder_decode_obj, 1, qrio_qrdecoder_decode);
 //|         self, buffer: ReadableBuffer, pixel_policy: PixelPolicy = PixelPolicy.EVERY_BYTE
 //|     ) -> List[QRPosition]:
 //|         """Find all visible QR codes from the given image.  The size of the buffer must be at least ``length``×``width`` bytes for `EVERY_BYTE`, and 2×``length``×``width`` bytes for `EVEN_BYTES` or `ODD_BYTES`."""
-STATIC mp_obj_t qrio_qrdecoder_find(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t qrio_qrdecoder_find(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     enum { ARG_buffer, ARG_pixel_policy };
@@ -121,13 +101,13 @@ MP_DEFINE_CONST_FUN_OBJ_KW(qrio_qrdecoder_find_obj, 1, qrio_qrdecoder_find);
 
 //|     width: int
 //|     """The width of image the decoder expects"""
-STATIC mp_obj_t qrio_qrdecoder_get_width(mp_obj_t self_in) {
+static mp_obj_t qrio_qrdecoder_get_width(mp_obj_t self_in) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(shared_module_qrio_qrdecoder_get_width(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(qrio_qrdecoder_get_width_obj, qrio_qrdecoder_get_width);
 
-STATIC mp_obj_t qrio_qrdecoder_set_width(mp_obj_t self_in, mp_obj_t width_in) {
+static mp_obj_t qrio_qrdecoder_set_width(mp_obj_t self_in, mp_obj_t width_in) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int width = mp_obj_get_int(width_in);
     shared_module_qrio_qrdecoder_set_width(self, width);
@@ -142,13 +122,13 @@ MP_PROPERTY_GETSET(qrio_qrdecoder_width_obj,
 //|     height: int
 //|     """The height of image the decoder expects"""
 //|
-STATIC mp_obj_t qrio_qrdecoder_get_height(mp_obj_t self_in) {
+static mp_obj_t qrio_qrdecoder_get_height(mp_obj_t self_in) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(shared_module_qrio_qrdecoder_get_height(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(qrio_qrdecoder_get_height_obj, qrio_qrdecoder_get_height);
 
-STATIC mp_obj_t qrio_qrdecoder_set_height(mp_obj_t self_in, mp_obj_t height_in) {
+static mp_obj_t qrio_qrdecoder_set_height(mp_obj_t self_in, mp_obj_t height_in) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int height = mp_obj_get_int(height_in);
     shared_module_qrio_qrdecoder_set_height(self, height);
@@ -160,7 +140,7 @@ MP_PROPERTY_GETSET(qrio_qrdecoder_height_obj,
     (mp_obj_t)&qrio_qrdecoder_get_height_obj,
     (mp_obj_t)&qrio_qrdecoder_set_height_obj);
 
-STATIC const mp_rom_map_elem_t qrio_qrdecoder_locals_table[] = {
+static const mp_rom_map_elem_t qrio_qrdecoder_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_QRDecoder) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&qrio_qrdecoder_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&qrio_qrdecoder_height_obj) },
@@ -168,7 +148,7 @@ STATIC const mp_rom_map_elem_t qrio_qrdecoder_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&qrio_qrdecoder_find_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(qrio_qrdecoder_locals, qrio_qrdecoder_locals_table);
+static MP_DEFINE_CONST_DICT(qrio_qrdecoder_locals, qrio_qrdecoder_locals_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     qrio_qrdecoder_type_obj,

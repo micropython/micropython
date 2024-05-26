@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdint.h>
 #include <stdio.h>
@@ -66,7 +46,7 @@ void bonding_print_keys(bonding_keys_t *keys) {
 }
 #endif
 
-STATIC size_t compute_block_size(uint16_t data_length) {
+static size_t compute_block_size(uint16_t data_length) {
     // Round data size up to the nearest 32-bit address.
     return sizeof(bonding_block_t) + ((data_length + 3) & ~0x3);
 }
@@ -89,7 +69,7 @@ void bonding_erase_storage(void) {
 // The last block returned is the unused block at the end.
 // Return NULL if we have run off the end of the bonding space.
 
-STATIC bonding_block_t *next_block(bonding_block_t *block) {
+static bonding_block_t *next_block(bonding_block_t *block) {
     while (1) {
         // Advance to next block.
         if (block == NULL) {
@@ -117,7 +97,7 @@ STATIC bonding_block_t *next_block(bonding_block_t *block) {
 // Find the block with given is_central, type and ediv value.
 // If type == BLOCK_UNUSED, ediv is ignored and the the sole unused block at the end is returned.
 // If not found, return NULL.
-STATIC bonding_block_t *find_existing_block(bool is_central, bonding_block_type_t type, uint16_t ediv) {
+static bonding_block_t *find_existing_block(bool is_central, bonding_block_type_t type, uint16_t ediv) {
     bonding_block_t *block = NULL;
     while (1) {
         block = next_block(block);
@@ -150,7 +130,7 @@ size_t bonding_peripheral_bond_count(void) {
 }
 
 // Get an empty block large enough to store data_length data.
-STATIC bonding_block_t *find_unused_block(uint16_t data_length) {
+static bonding_block_t *find_unused_block(uint16_t data_length) {
     bonding_block_t *unused_block = find_existing_block(true, BLOCK_UNUSED, EDIV_INVALID);
     // If no more room, erase all existing blocks and start over.
     if (!unused_block ||
@@ -163,18 +143,18 @@ STATIC bonding_block_t *find_unused_block(uint16_t data_length) {
 
 // Set the header word to all 0's, to mark the block as invalid.
 // We don't change data_length, so we can still skip over this block.
-STATIC void invalidate_block(bonding_block_t *block) {
+static void invalidate_block(bonding_block_t *block) {
     uint32_t zero = 0;
     sd_flash_write_sync((uint32_t *)block, &zero, 1);
 }
 
 // Write bonding block header.
-STATIC void write_block_header(bonding_block_t *dest_block, bonding_block_t *source_block_header) {
+static void write_block_header(bonding_block_t *dest_block, bonding_block_t *source_block_header) {
     sd_flash_write_sync((uint32_t *)dest_block, (uint32_t *)source_block_header, sizeof(bonding_block_t) / 4);
 }
 
 // Write variable-length data at end of bonding block.
-STATIC void write_block_data(bonding_block_t *dest_block, uint8_t *data, uint16_t data_length) {
+static void write_block_data(bonding_block_t *dest_block, uint8_t *data, uint16_t data_length) {
     // Minimize the number of writes. Datasheet says no more than two writes per word before erasing again.
 
     // Start writing after the current header.
@@ -193,7 +173,7 @@ STATIC void write_block_data(bonding_block_t *dest_block, uint8_t *data, uint16_
     }
 }
 
-STATIC void write_sys_attr_block(bleio_connection_internal_t *connection) {
+static void write_sys_attr_block(bleio_connection_internal_t *connection) {
     uint16_t length = 0;
     // First find out how big a buffer we need, then fetch the data.
     if (sd_ble_gatts_sys_attr_get(connection->conn_handle, NULL, &length, SYS_ATTR_FLAGS) != NRF_SUCCESS) {
@@ -230,7 +210,7 @@ STATIC void write_sys_attr_block(bleio_connection_internal_t *connection) {
     return;
 }
 
-STATIC void write_keys_block(bleio_connection_internal_t *connection) {
+static void write_keys_block(bleio_connection_internal_t *connection) {
     uint16_t const ediv = connection->is_central
         ? connection->bonding_keys.peer_enc.master_id.ediv
         : connection->bonding_keys.own_enc.master_id.ediv;

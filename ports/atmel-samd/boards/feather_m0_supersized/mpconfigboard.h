@@ -1,3 +1,11 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
+#pragma once
+
 /* Adafruit Feather M0 Express with an 8MB SPI flash instead of the usual 2MB */
 
 #define MICROPY_HW_BOARD_NAME "Hacked Feather M0 Express with 8Mbyte SPI flash"

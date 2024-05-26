@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/epaperdisplay/EPaperDisplay.h"
 
@@ -35,7 +15,10 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/tick.h"
+
+#if CIRCUITPY_TINYUSB
 #include "supervisor/usb.h"
+#endif
 
 #include <stdint.h>
 #include <string.h>
@@ -119,7 +102,7 @@ bool common_hal_epaperdisplay_epaperdisplay_set_root_group(epaperdisplay_epaperd
     return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
-STATIC const displayio_area_t *epaperdisplay_epaperdisplay_get_refresh_areas(epaperdisplay_epaperdisplay_obj_t *self) {
+static const displayio_area_t *epaperdisplay_epaperdisplay_get_refresh_areas(epaperdisplay_epaperdisplay_obj_t *self) {
     if (self->core.full_refresh) {
         self->core.area.next = NULL;
         return &self->core.area;
@@ -144,7 +127,7 @@ uint16_t common_hal_epaperdisplay_epaperdisplay_get_height(epaperdisplay_epaperd
     return displayio_display_core_get_height(&self->core);
 }
 
-STATIC void wait_for_busy(epaperdisplay_epaperdisplay_obj_t *self) {
+static void wait_for_busy(epaperdisplay_epaperdisplay_obj_t *self) {
     if (self->busy.base.type == &mp_type_NoneType) {
         return;
     }
@@ -153,7 +136,7 @@ STATIC void wait_for_busy(epaperdisplay_epaperdisplay_obj_t *self) {
     }
 }
 
-STATIC void send_command_sequence(epaperdisplay_epaperdisplay_obj_t *self,
+static void send_command_sequence(epaperdisplay_epaperdisplay_obj_t *self,
     bool should_wait_for_busy, const uint8_t *sequence, uint32_t sequence_len) {
     uint32_t i = 0;
     while (i < sequence_len) {
@@ -196,7 +179,7 @@ void epaperdisplay_epaperdisplay_change_refresh_mode_parameters(epaperdisplay_ep
     self->milliseconds_per_frame = seconds_per_frame * 1000;
 }
 
-STATIC void epaperdisplay_epaperdisplay_start_refresh(epaperdisplay_epaperdisplay_obj_t *self) {
+static void epaperdisplay_epaperdisplay_start_refresh(epaperdisplay_epaperdisplay_obj_t *self) {
     if (!displayio_display_bus_is_free(&self->bus)) {
         // Can't acquire display bus; skip updating this display. Try next display.
         return;
@@ -223,7 +206,7 @@ uint32_t common_hal_epaperdisplay_epaperdisplay_get_time_to_refresh(epaperdispla
     return self->milliseconds_per_frame - elapsed_time;
 }
 
-STATIC void epaperdisplay_epaperdisplay_finish_refresh(epaperdisplay_epaperdisplay_obj_t *self) {
+static void epaperdisplay_epaperdisplay_finish_refresh(epaperdisplay_epaperdisplay_obj_t *self) {
     // Actually refresh the display now that all pixel RAM has been updated.
     send_command_sequence(self, false, self->refresh_sequence, self->refresh_sequence_len);
 
@@ -266,7 +249,7 @@ mp_obj_t common_hal_epaperdisplay_epaperdisplay_get_root_group(epaperdisplay_epa
     return self->core.current_group;
 }
 
-STATIC bool epaperdisplay_epaperdisplay_refresh_area(epaperdisplay_epaperdisplay_obj_t *self, const displayio_area_t *area) {
+static bool epaperdisplay_epaperdisplay_refresh_area(epaperdisplay_epaperdisplay_obj_t *self, const displayio_area_t *area) {
     uint16_t buffer_size = 128; // In uint32_ts
 
     displayio_area_t clipped;
@@ -372,7 +355,7 @@ STATIC bool epaperdisplay_epaperdisplay_refresh_area(epaperdisplay_epaperdisplay
 
             // TODO(tannewt): Make refresh displays faster so we don't starve other
             // background tasks.
-            #if CIRCUITPY_USB
+            #if CIRCUITPY_TINYUSB
             usb_background();
             #endif
         }
@@ -381,7 +364,7 @@ STATIC bool epaperdisplay_epaperdisplay_refresh_area(epaperdisplay_epaperdisplay
     return true;
 }
 
-STATIC bool _clean_area(epaperdisplay_epaperdisplay_obj_t *self) {
+static bool _clean_area(epaperdisplay_epaperdisplay_obj_t *self) {
     uint16_t width = displayio_display_core_get_width(&self->core);
     uint16_t height = displayio_display_core_get_height(&self->core);
 
@@ -403,7 +386,7 @@ STATIC bool _clean_area(epaperdisplay_epaperdisplay_obj_t *self) {
 
         // TODO(tannewt): Make refresh displays faster so we don't starve other
         // background tasks.
-        #if CIRCUITPY_USB
+        #if CIRCUITPY_TINYUSB
         usb_background();
         #endif
     }

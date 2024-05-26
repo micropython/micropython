@@ -1,6 +1,11 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_RASPBERRRYPI_COMMON_HAL_COUNTIO_COUNTER_H
-#define MICROPY_INCLUDED_RASPBERRRYPI_COMMON_HAL_COUNTIO_COUNTER_H
+
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -17,5 +22,3 @@ typedef struct {
 void counter_interrupt_handler(void);
 
 void reset_countio(void);
-
-#endif // MICROPY_INCLUDED_RASPBERRRYPI_COMMON_HAL_COUNTIO_COUNTER_H

@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * SPDX-FileCopyrightText: Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 // These functions are separate from __init__.c so that os.getenv() can be
 // tested in the unix "coverage" build, without bringing in "our" os module
@@ -48,7 +28,7 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 typedef FIL file_arg;
-STATIC bool open_file(const char *name, file_arg *active_file) {
+static bool open_file(const char *name, file_arg *active_file) {
     #if defined(UNIX)
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -71,27 +51,27 @@ STATIC bool open_file(const char *name, file_arg *active_file) {
     return result == FR_OK;
     #endif
 }
-STATIC void close_file(file_arg *active_file) {
+static void close_file(file_arg *active_file) {
     // nothing
 }
-STATIC bool is_eof(file_arg *active_file) {
+static bool is_eof(file_arg *active_file) {
     return f_eof(active_file) || f_error(active_file);
 }
 
 // Return 0 if there is no next character (EOF).
-STATIC uint8_t get_next_byte(FIL *active_file) {
+static uint8_t get_next_byte(FIL *active_file) {
     uint8_t character = 0;
     UINT quantity_read;
     // If there's an error or quantity_read is 0, character will remain 0.
     f_read(active_file, &character, 1, &quantity_read);
     return character;
 }
-STATIC void seek_eof(file_arg *active_file) {
+static void seek_eof(file_arg *active_file) {
     f_lseek(active_file, f_size(active_file));
 }
 
 // For a fixed buffer, record the required size rather than throwing
-STATIC void vstr_add_byte_nonstd(vstr_t *vstr, byte b) {
+static void vstr_add_byte_nonstd(vstr_t *vstr, byte b) {
     if (!vstr->fixed_buf || vstr->alloc > vstr->len) {
         vstr_add_byte(vstr, b);
     } else {
@@ -100,7 +80,7 @@ STATIC void vstr_add_byte_nonstd(vstr_t *vstr, byte b) {
 }
 
 // For a fixed buffer, record the required size rather than throwing
-STATIC void vstr_add_char_nonstd(vstr_t *vstr, unichar c) {
+static void vstr_add_char_nonstd(vstr_t *vstr, unichar c) {
     size_t ulen =
         (c < 0x80) ? 1 :
         (c < 0x800) ? 2 :
@@ -112,7 +92,7 @@ STATIC void vstr_add_char_nonstd(vstr_t *vstr, unichar c) {
     }
 }
 
-STATIC void next_line(file_arg *active_file) {
+static void next_line(file_arg *active_file) {
     uint8_t character;
     do {
         character = get_next_byte(active_file);
@@ -121,7 +101,7 @@ STATIC void next_line(file_arg *active_file) {
 
 // Discard whitespace, except for newlines, returning the next character after the whitespace.
 // Return 0 if there is no next character (EOF).
-STATIC uint8_t consume_whitespace(file_arg *active_file) {
+static uint8_t consume_whitespace(file_arg *active_file) {
     uint8_t character;
     do {
         character = get_next_byte(active_file);
@@ -135,7 +115,7 @@ STATIC uint8_t consume_whitespace(file_arg *active_file) {
 // If result is true, the key matches and file pointer is pointing just after the "=".
 // If the result is false, the key does NOT match and the file pointer is
 // pointing at the start of the next line, if any
-STATIC bool key_matches(file_arg *active_file, const char *key) {
+static bool key_matches(file_arg *active_file, const char *key) {
     uint8_t character;
     character = consume_whitespace(active_file);
     if (character == '[' || character == 0) {
@@ -171,7 +151,7 @@ STATIC bool key_matches(file_arg *active_file, const char *key) {
     return true;
 }
 
-STATIC os_getenv_err_t read_unicode_escape(file_arg *active_file, int sz, vstr_t *buf) {
+static os_getenv_err_t read_unicode_escape(file_arg *active_file, int sz, vstr_t *buf) {
     char hex_buf[sz + 1];
     for (int i = 0; i < sz; i++) {
         hex_buf[i] = get_next_byte(active_file);
@@ -190,7 +170,7 @@ STATIC os_getenv_err_t read_unicode_escape(file_arg *active_file, int sz, vstr_t
 }
 
 // Read a quoted string
-STATIC os_getenv_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
+static os_getenv_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
     while (true) {
         int character = get_next_byte(active_file);
         switch (character) {
@@ -256,7 +236,7 @@ STATIC os_getenv_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
 }
 
 // Read a numeric value (non-quoted value) as a string
-STATIC os_getenv_err_t read_bare_value(file_arg *active_file, vstr_t *buf, int first_character) {
+static os_getenv_err_t read_bare_value(file_arg *active_file, vstr_t *buf, int first_character) {
     int character = first_character;
     while (true) {
         switch (character) {
@@ -273,7 +253,7 @@ STATIC os_getenv_err_t read_bare_value(file_arg *active_file, vstr_t *buf, int f
     }
 }
 
-STATIC mp_int_t read_value(file_arg *active_file, vstr_t *buf, bool *quoted) {
+static mp_int_t read_value(file_arg *active_file, vstr_t *buf, bool *quoted) {
     uint8_t character;
     character = consume_whitespace(active_file);
     *quoted = (character == '"');
@@ -285,7 +265,7 @@ STATIC mp_int_t read_value(file_arg *active_file, vstr_t *buf, bool *quoted) {
     }
 }
 
-STATIC os_getenv_err_t os_getenv_vstr(const char *path, const char *key, vstr_t *buf, bool *quoted) {
+static os_getenv_err_t os_getenv_vstr(const char *path, const char *key, vstr_t *buf, bool *quoted) {
     file_arg active_file;
     if (!open_file(path, &active_file)) {
         return GETENV_ERR_OPEN;
@@ -302,7 +282,7 @@ STATIC os_getenv_err_t os_getenv_vstr(const char *path, const char *key, vstr_t 
     return result;
 }
 
-STATIC os_getenv_err_t os_getenv_buf_terminated(const char *key, char *value, size_t value_len, bool *quoted) {
+static os_getenv_err_t os_getenv_buf_terminated(const char *key, char *value, size_t value_len, bool *quoted) {
     vstr_t buf;
     vstr_init_fixed_buf(&buf, value_len, value);
     os_getenv_err_t result = os_getenv_vstr(GETENV_PATH, key, &buf, quoted);
@@ -317,7 +297,7 @@ STATIC os_getenv_err_t os_getenv_buf_terminated(const char *key, char *value, si
     return result;
 }
 
-STATIC void print_dont_raise(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...) {
+static void print_dont_raise(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
     mp_vcprintf(&mp_plat_print, fmt, argptr);
@@ -325,7 +305,7 @@ STATIC void print_dont_raise(const mp_obj_type_t *exc_type, mp_rom_error_text_t 
     va_end(argptr);
 }
 
-STATIC void handle_getenv_error(os_getenv_err_t error, void (*handle)(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...)) {
+static void handle_getenv_error(os_getenv_err_t error, void (*handle)(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...)) {
     if (error == GETENV_OK) {
         return;
     }
@@ -360,14 +340,14 @@ STATIC void handle_getenv_error(os_getenv_err_t error, void (*handle)(const mp_o
     }
 }
 
-STATIC void common_hal_os_getenv_showerr(const char *key, os_getenv_err_t result) {
+static void common_hal_os_getenv_showerr(const char *key, os_getenv_err_t result) {
     if (result != GETENV_OK && result != GETENV_ERR_OPEN && result != GETENV_ERR_NOT_FOUND) {
         mp_cprintf(&mp_plat_print, MP_ERROR_TEXT("An error occurred while retrieving '%s':\n"), key);
         handle_getenv_error(result, print_dont_raise);
     }
 }
 
-STATIC
+static
 os_getenv_err_t common_hal_os_getenv_str_inner(const char *key, char *value, size_t value_len) {
     bool quoted;
     os_getenv_err_t result = os_getenv_buf_terminated(key, value, value_len, &quoted);
@@ -405,7 +385,7 @@ mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_) {
     return common_hal_os_getenv_path(GETENV_PATH, key, default_);
 }
 
-STATIC os_getenv_err_t common_hal_os_getenv_int_inner(const char *key, mp_int_t *value) {
+static os_getenv_err_t common_hal_os_getenv_int_inner(const char *key, mp_int_t *value) {
     char buf[16];
     bool quoted;
     os_getenv_err_t result = os_getenv_buf_terminated(key, buf, sizeof(buf), &quoted);

@@ -1,8 +1,14 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
 #include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
 #include "shared-module/displayio/__init__.h"
 
-STATIC const mp_rom_obj_tuple_t tft_r_pins = {
+static const mp_rom_obj_tuple_t tft_r_pins = {
     {&mp_type_tuple},
     5,
     {
@@ -14,7 +20,7 @@ STATIC const mp_rom_obj_tuple_t tft_r_pins = {
     }
 };
 
-STATIC const mp_rom_obj_tuple_t tft_g_pins = {
+static const mp_rom_obj_tuple_t tft_g_pins = {
     {&mp_type_tuple},
     6,
     {
@@ -27,7 +33,7 @@ STATIC const mp_rom_obj_tuple_t tft_g_pins = {
     }
 };
 
-STATIC const mp_rom_obj_tuple_t tft_b_pins = {
+static const mp_rom_obj_tuple_t tft_b_pins = {
     {&mp_type_tuple},
     5,
     {
@@ -39,7 +45,7 @@ STATIC const mp_rom_obj_tuple_t tft_b_pins = {
     }
 };
 
-STATIC const mp_rom_map_elem_t tft_pins_table[] = {
+static const mp_rom_map_elem_t tft_pins_table[] = {
     { MP_ROM_QSTR(MP_QSTR_de), MP_ROM_PTR(&pin_GPIO41) },
     { MP_ROM_QSTR(MP_QSTR_vsync), MP_ROM_PTR(&pin_GPIO40) },
     { MP_ROM_QSTR(MP_QSTR_hsync), MP_ROM_PTR(&pin_GPIO39) },
@@ -50,7 +56,7 @@ STATIC const mp_rom_map_elem_t tft_pins_table[] = {
 };
 MP_DEFINE_CONST_DICT(tft_pins_dict, tft_pins_table);
 
-STATIC const mp_rom_map_elem_t timings_table[] = {
+static const mp_rom_map_elem_t timings_table[] = {
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_INT(12500000) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_INT(800) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_INT(480) },
@@ -69,7 +75,7 @@ STATIC const mp_rom_map_elem_t timings_table[] = {
 };
 MP_DEFINE_CONST_DICT(timings_dict, timings_table);
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     // Display constructs

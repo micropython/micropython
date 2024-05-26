@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "common-hal/pulseio/PulseOut.h"
 
@@ -37,21 +17,21 @@
 
 // A single timer is shared amongst all PulseOut objects under the assumption that
 // the code is single threaded.
-STATIC uint8_t refcount = 0;
-STATIC uint16_t *pulse_array = NULL;
-STATIC volatile uint16_t pulse_array_index = 0;
-STATIC uint16_t pulse_array_length;
+static uint8_t refcount = 0;
+static uint16_t *pulse_array = NULL;
+static volatile uint16_t pulse_array_index = 0;
+static uint16_t pulse_array_length;
 // Timer is shared, must be accessible by interrupt
-STATIC TIM_HandleTypeDef tim_handle;
-STATIC pulseio_pulseout_obj_t *curr_pulseout = NULL;
+static TIM_HandleTypeDef tim_handle;
+static pulseio_pulseout_obj_t *curr_pulseout = NULL;
 
 
-STATIC void turn_on(pulseio_pulseout_obj_t *pulseout) {
+static void turn_on(pulseio_pulseout_obj_t *pulseout) {
     // Turn on PWM
     HAL_TIM_PWM_Start(&(pulseout->pwmout.handle), pulseout->pwmout.channel);
 }
 
-STATIC void turn_off(pulseio_pulseout_obj_t *pulseout) {
+static void turn_off(pulseio_pulseout_obj_t *pulseout) {
     // Turn off PWM
     HAL_TIM_PWM_Stop(&(pulseout->pwmout.handle), pulseout->pwmout.channel);
     // Make sure pin is low.
@@ -59,7 +39,7 @@ STATIC void turn_off(pulseio_pulseout_obj_t *pulseout) {
         pin_mask(pulseout->pwmout.tim->pin->number), 0);
 }
 
-STATIC void start_timer(void) {
+static void start_timer(void) {
     // Set the new period
     tim_handle.Init.Period = pulse_array[pulse_array_index] - 1;
     HAL_TIM_Base_Init(&tim_handle);
@@ -71,7 +51,7 @@ STATIC void start_timer(void) {
     __HAL_TIM_ENABLE_IT(&tim_handle, TIM_IT_UPDATE);
 }
 
-STATIC void pulseout_event_handler(void) {
+static void pulseout_event_handler(void) {
     // Detect TIM Update event
     if (__HAL_TIM_GET_FLAG(&tim_handle, TIM_FLAG_UPDATE) != RESET) {
         if (__HAL_TIM_GET_IT_SOURCE(&tim_handle, TIM_IT_UPDATE) != RESET) {

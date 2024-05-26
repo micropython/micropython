@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/_bleio/Connection.h"
 
@@ -154,10 +134,10 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
     // TODO: Implement this.
 }
 
-STATIC volatile int _last_discovery_status;
+static volatile int _last_discovery_status;
 static TaskHandle_t discovery_task = NULL;
 
-STATIC int _discovered_service_cb(uint16_t conn_handle,
+static int _discovered_service_cb(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     const struct ble_gatt_svc *svc,
     void *arg) {
@@ -197,7 +177,7 @@ STATIC int _discovered_service_cb(uint16_t conn_handle,
     return 0;
 }
 
-STATIC int _discovered_characteristic_cb(uint16_t conn_handle,
+static int _discovered_characteristic_cb(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     const struct ble_gatt_chr *chr,
     void *arg) {
@@ -251,7 +231,7 @@ STATIC int _discovered_characteristic_cb(uint16_t conn_handle,
     return 0;
 }
 
-STATIC int _discovered_descriptor_cb(uint16_t conn_handle,
+static int _discovered_descriptor_cb(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     uint16_t chr_val_handle,
     const struct ble_gatt_dsc *dsc,
@@ -306,7 +286,7 @@ STATIC int _discovered_descriptor_cb(uint16_t conn_handle,
     return 0;
 }
 
-STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t service_uuids_whitelist) {
+static void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t service_uuids_whitelist) {
     // Start over with an empty list.
     self->remote_service_list = mp_obj_new_list(0, NULL);
 

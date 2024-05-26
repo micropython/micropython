@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "audio_dma.h"
 
@@ -50,7 +30,7 @@ void audio_dma_reset(void) {
 }
 
 
-STATIC size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32_t input_length, uint8_t *output, uint32_t output_length) {
+static size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32_t input_length, uint8_t *output, uint32_t output_length) {
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
 
@@ -135,7 +115,7 @@ STATIC size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32
 }
 
 // buffer_idx is 0 or 1.
-STATIC void audio_dma_load_next_block(audio_dma_t *dma, size_t buffer_idx) {
+static void audio_dma_load_next_block(audio_dma_t *dma, size_t buffer_idx) {
     size_t dma_channel = dma->channel[buffer_idx];
 
     audioio_get_buffer_result_t get_buffer_result;
@@ -452,7 +432,7 @@ bool audio_dma_get_playing(audio_dma_t *dma) {
 // background tasks such as this and causes a stack overflow.
 // NOTE(dhalbert): I successfully printed from here while debugging.
 // So it's possible, but be careful.
-STATIC void dma_callback_fun(void *arg) {
+static void dma_callback_fun(void *arg) {
     audio_dma_t *dma = arg;
     if (dma == NULL) {
         return;

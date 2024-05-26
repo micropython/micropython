@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/objproperty.h"
 #include "shared-bindings/usb_hid/Device.h"
@@ -92,7 +72,7 @@
 //|     """Consumer Control device supporting sent values from 1-652, with no rollover.
 //|     Uses Report ID 3 for its IN report."""
 
-STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     usb_hid_device_obj_t *self = mp_obj_malloc(usb_hid_device_obj_t, &usb_hid_device_type);
     enum { ARG_report_descriptor, ARG_usage_page, ARG_usage, ARG_report_ids, ARG_in_report_lengths, ARG_out_report_lengths };
     static const mp_arg_t allowed_args[] = {
@@ -181,7 +161,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
 //|         In addition, there may be USB wakeup settings in the host computer BIOS/UEFI.
 //|         """
 //|         ...
-STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     enum { ARG_report, ARG_report_id };
@@ -215,7 +195,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 1, usb_hid_device_sen
 //|         will return `None` until next report is received.
 //|         """
 //|         ...
-STATIC mp_obj_t usb_hid_device_get_last_received_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t usb_hid_device_get_last_received_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     enum { ARG_report_id };
@@ -238,7 +218,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_get_last_received_report_obj, 1, usb_h
 
 //|     usage_page: int
 //|     """The device usage page identifier, which designates a category of device. (read-only)"""
-STATIC mp_obj_t usb_hid_device_obj_get_usage_page(mp_obj_t self_in) {
+static mp_obj_t usb_hid_device_obj_get_usage_page(mp_obj_t self_in) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_usage_page(self));
 }
@@ -253,7 +233,7 @@ MP_PROPERTY_GETTER(usb_hid_device_usage_page_obj,
 //|     For example, Keyboard is 0x06 within the generic desktop usage page 0x01.
 //|     Mouse is 0x02 within the same usage page."""
 //|
-STATIC mp_obj_t usb_hid_device_obj_get_usage(mp_obj_t self_in) {
+static mp_obj_t usb_hid_device_obj_get_usage(mp_obj_t self_in) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_usage(self));
 }
@@ -263,7 +243,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_usage_obj,
 MP_PROPERTY_GETTER(usb_hid_device_usage_obj,
     (mp_obj_t)&usb_hid_device_get_usage_obj);
 
-STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
+static const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_report),              MP_ROM_PTR(&usb_hid_device_send_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_last_received_report), MP_ROM_PTR(&usb_hid_device_get_last_received_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_usage_page),               MP_ROM_PTR(&usb_hid_device_usage_page_obj) },
@@ -274,7 +254,7 @@ STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_CONSUMER_CONTROL),         MP_ROM_PTR(&usb_hid_device_consumer_control_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_dict_table);
+static MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     usb_hid_device_type,

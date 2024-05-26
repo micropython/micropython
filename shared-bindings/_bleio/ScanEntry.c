@@ -1,30 +1,10 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- * Copyright (c) 2017 Glenn Ruben Bakke
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+// SPDX-FileCopyrightText: Copyright (c) 2017 Glenn Ruben Bakke
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 
@@ -50,7 +30,7 @@
 //|         than the scan filtering which accepts any advertisements that match any of the prefixes
 //|         where ``match_all`` is False."""
 //|         ...
-STATIC mp_obj_t bleio_scanentry_matches(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bleio_scanentry_matches(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     enum { ARG_prefixes, ARG_match_all };
@@ -68,48 +48,48 @@ STATIC mp_obj_t bleio_scanentry_matches(mp_uint_t n_args, const mp_obj_t *pos_ar
     mp_get_buffer_raise(args[ARG_prefixes].u_obj, &bufinfo, MP_BUFFER_READ);
     return mp_obj_new_bool(common_hal_bleio_scanentry_matches(self, bufinfo.buf, bufinfo.len, match_all));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_scanentry_matches_obj, 1, bleio_scanentry_matches);
+static MP_DEFINE_CONST_FUN_OBJ_KW(bleio_scanentry_matches_obj, 1, bleio_scanentry_matches);
 
 //|     address: Address
 //|     """The address of the device (read-only), of type `_bleio.Address`."""
-STATIC mp_obj_t bleio_scanentry_get_address(mp_obj_t self_in) {
+static mp_obj_t bleio_scanentry_get_address(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_bleio_scanentry_get_address(self);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_address_obj, bleio_scanentry_get_address);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_address_obj, bleio_scanentry_get_address);
 
 MP_PROPERTY_GETTER(bleio_scanentry_address_obj,
     (mp_obj_t)&bleio_scanentry_get_address_obj);
 
 //|     advertisement_bytes: bytes
 //|     """All the advertisement data present in the packet, returned as a ``bytes`` object. (read-only)"""
-STATIC mp_obj_t scanentry_get_advertisement_bytes(mp_obj_t self_in) {
+static mp_obj_t scanentry_get_advertisement_bytes(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_bleio_scanentry_get_advertisement_bytes(self);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_advertisement_bytes_obj, scanentry_get_advertisement_bytes);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_advertisement_bytes_obj, scanentry_get_advertisement_bytes);
 
 MP_PROPERTY_GETTER(bleio_scanentry_advertisement_bytes_obj,
     (mp_obj_t)&bleio_scanentry_get_advertisement_bytes_obj);
 
 //|     rssi: int
 //|     """The signal strength of the device at the time of the scan, in integer dBm. (read-only)"""
-STATIC mp_obj_t scanentry_get_rssi(mp_obj_t self_in) {
+static mp_obj_t scanentry_get_rssi(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(common_hal_bleio_scanentry_get_rssi(self));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_rssi_obj, scanentry_get_rssi);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_rssi_obj, scanentry_get_rssi);
 
 MP_PROPERTY_GETTER(bleio_scanentry_rssi_obj,
     (mp_obj_t)&bleio_scanentry_get_rssi_obj);
 
 //|     connectable: bool
 //|     """True if the device can be connected to. (read-only)"""
-STATIC mp_obj_t scanentry_get_connectable(mp_obj_t self_in) {
+static mp_obj_t scanentry_get_connectable(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_bleio_scanentry_get_connectable(self));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_connectable_obj, scanentry_get_connectable);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_connectable_obj, scanentry_get_connectable);
 
 MP_PROPERTY_GETTER(bleio_scanentry_connectable_obj,
     (mp_obj_t)&bleio_scanentry_get_connectable_obj);
@@ -117,16 +97,16 @@ MP_PROPERTY_GETTER(bleio_scanentry_connectable_obj,
 //|     scan_response: bool
 //|     """True if the entry was a scan response. (read-only)"""
 //|
-STATIC mp_obj_t scanentry_get_scan_response(mp_obj_t self_in) {
+static mp_obj_t scanentry_get_scan_response(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_bleio_scanentry_get_scan_response(self));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_scan_response_obj, scanentry_get_scan_response);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_scan_response_obj, scanentry_get_scan_response);
 
 MP_PROPERTY_GETTER(bleio_scanentry_scan_response_obj,
     (mp_obj_t)&bleio_scanentry_get_scan_response_obj);
 
-STATIC const mp_rom_map_elem_t bleio_scanentry_locals_dict_table[] = {
+static const mp_rom_map_elem_t bleio_scanentry_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_address),             MP_ROM_PTR(&bleio_scanentry_address_obj) },
     { MP_ROM_QSTR(MP_QSTR_advertisement_bytes), MP_ROM_PTR(&bleio_scanentry_advertisement_bytes_obj) },
     { MP_ROM_QSTR(MP_QSTR_rssi),                MP_ROM_PTR(&bleio_scanentry_rssi_obj) },
@@ -135,7 +115,7 @@ STATIC const mp_rom_map_elem_t bleio_scanentry_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_matches),             MP_ROM_PTR(&bleio_scanentry_matches_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(bleio_scanentry_locals_dict, bleio_scanentry_locals_dict_table);
+static MP_DEFINE_CONST_DICT(bleio_scanentry_locals_dict, bleio_scanentry_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     bleio_scanentry_type,

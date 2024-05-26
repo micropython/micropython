@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdarg.h>
 #include <stdint.h>
@@ -102,14 +82,14 @@
 #include "esp_log.h"
 #define TAG "port"
 
-STATIC esp_timer_handle_t _tick_timer;
-STATIC esp_timer_handle_t _sleep_timer;
+static esp_timer_handle_t _tick_timer;
+static esp_timer_handle_t _sleep_timer;
 
 TaskHandle_t circuitpython_task = NULL;
 
 extern void esp_restart(void) NORETURN;
 
-STATIC void tick_on_cp_core(void *arg) {
+static void tick_on_cp_core(void *arg) {
     supervisor_tick();
 
     // CircuitPython's VM is run in a separate FreeRTOS task from timer callbacks. So, we have to
@@ -119,7 +99,7 @@ STATIC void tick_on_cp_core(void *arg) {
 
 // This function may happen on the PRO core when CP is on the APP core. So, make
 // sure we run on the CP core.
-STATIC void tick_timer_cb(void *arg) {
+static void tick_timer_cb(void *arg) {
     #if defined(CONFIG_FREERTOS_UNICORE) && CONFIG_FREERTOS_UNICORE
     tick_on_cp_core(arg);
     #else
@@ -522,3 +502,5 @@ extern void app_main(void);
 void app_main(void) {
     main();
 }
+
+portMUX_TYPE background_task_mutex = portMUX_INITIALIZER_UNLOCKED;

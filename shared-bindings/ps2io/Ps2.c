@@ -1,29 +1,9 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2019 Elvis Pfutzenreuter <epxx@epxx.co>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2019 Elvis Pfutzenreuter <epxx@epxx.co>
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdint.h>
 
@@ -64,7 +44,7 @@
 //|           print(kbd.sendcmd(0xed))
 //|           print(kbd.sendcmd(0x01))"""
 //|         ...
-STATIC mp_obj_t ps2io_ps2_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t ps2io_ps2_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_data_pin, ARG_clock_pin };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -86,14 +66,14 @@ STATIC mp_obj_t ps2io_ps2_make_new(const mp_obj_type_t *type, size_t n_args, siz
 //|     def deinit(self) -> None:
 //|         """Deinitialises the Ps2 and releases any hardware resources for reuse."""
 //|         ...
-STATIC mp_obj_t ps2io_ps2_deinit(mp_obj_t self_in) {
+static mp_obj_t ps2io_ps2_deinit(mp_obj_t self_in) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_ps2io_ps2_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_deinit_obj, ps2io_ps2_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_deinit_obj, ps2io_ps2_deinit);
 
-STATIC void check_for_deinit(ps2io_ps2_obj_t *self) {
+static void check_for_deinit(ps2io_ps2_obj_t *self) {
     if (common_hal_ps2io_ps2_deinited(self)) {
         raise_deinited_error();
     }
@@ -108,19 +88,19 @@ STATIC void check_for_deinit(ps2io_ps2_obj_t *self) {
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t ps2io_ps2_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t ps2io_ps2_obj___exit__(size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &ps2io_ps2_type));
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     common_hal_ps2io_ps2_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ps2io_ps2___exit___obj, 4, 4, ps2io_ps2_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ps2io_ps2___exit___obj, 4, 4, ps2io_ps2_obj___exit__);
 
 //|     def popleft(self) -> int:
 //|         """Removes and returns the oldest received byte. When buffer
 //|         is empty, raises an IndexError exception."""
 //|         ...
-STATIC mp_obj_t ps2io_ps2_obj_popleft(mp_obj_t self_in) {
+static mp_obj_t ps2io_ps2_obj_popleft(mp_obj_t self_in) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -144,7 +124,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_popleft_obj, ps2io_ps2_obj_popleft);
 //|
 //|         :param int byte: byte value of the command"""
 //|         ...
-STATIC mp_obj_t ps2io_ps2_obj_sendcmd(mp_obj_t self_in, mp_obj_t ob) {
+static mp_obj_t ps2io_ps2_obj_sendcmd(mp_obj_t self_in, mp_obj_t ob) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     mp_int_t cmd = mp_obj_get_int(ob) & 0xff;
@@ -185,7 +165,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(ps2io_ps2_sendcmd_obj, ps2io_ps2_obj_sendcmd);
 //|
 //|         0x2000: device didn't send a response byte in time"""
 //|         ...
-STATIC mp_obj_t ps2io_ps2_obj_clear_errors(mp_obj_t self_in) {
+static mp_obj_t ps2io_ps2_obj_clear_errors(mp_obj_t self_in) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -199,7 +179,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_clear_errors_obj, ps2io_ps2_obj_clear_errors
 //|         to :py:func:`popleft()`."""
 //|         ...
 //|
-STATIC mp_obj_t ps2_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+static mp_obj_t ps2_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     uint16_t len = common_hal_ps2io_ps2_get_len(self);
@@ -213,7 +193,7 @@ STATIC mp_obj_t ps2_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_rom_map_elem_t ps2io_ps2_locals_dict_table[] = {
+static const mp_rom_map_elem_t ps2io_ps2_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&ps2io_ps2_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
@@ -222,7 +202,7 @@ STATIC const mp_rom_map_elem_t ps2io_ps2_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sendcmd), MP_ROM_PTR(&ps2io_ps2_sendcmd_obj) },
     { MP_ROM_QSTR(MP_QSTR_clear_errors), MP_ROM_PTR(&ps2io_ps2_clear_errors_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(ps2io_ps2_locals_dict, ps2io_ps2_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ps2io_ps2_locals_dict, ps2io_ps2_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     ps2io_ps2_type,

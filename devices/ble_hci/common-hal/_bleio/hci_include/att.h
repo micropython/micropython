@@ -1,4 +1,6 @@
-// CircuitPython: Adapted from Zephyr include file.
+// This file is part of the CircuitPython project: https://circuitpython.org
+// Adapted from Zephyr include file.
+
 /** @file
  *  @brief Attribute Protocol handling.
  */
@@ -8,8 +10,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_ATT_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_ATT_H_
+#pragma once
 
 /* Error codes for Error response PDU */
 #define BT_ATT_ERR_INVALID_HANDLE               0x01
@@ -37,5 +38,3 @@
 #define BT_ATT_ERR_CCC_IMPROPER_CONF            0xfd
 #define BT_ATT_ERR_PROCEDURE_IN_PROGRESS        0xfe
 #define BT_ATT_ERR_OUT_OF_RANGE                 0xff
-
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_ATT_H_ */

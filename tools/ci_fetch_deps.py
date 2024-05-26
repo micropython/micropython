@@ -11,7 +11,7 @@ TOP = pathlib.Path(__file__).parent.parent
 
 def _git_version():
     version_str = subprocess.check_output(["git", "--version"], encoding="ascii", errors="replace")
-    version_str = re.search("([0-9]\.*)*[0-9]", version_str).group(0)
+    version_str = re.search(r"([0-9]\.*)*[0-9]", version_str).group(0)
     return tuple(int(part) for part in version_str.split("."))
 
 
@@ -88,6 +88,7 @@ PORT_DEPS = {
         "lib/tlsf",
         "data/nvm.toml/",
     ],
+    "renode": ["lib/tlsf"],
     "silabs": ["extmod/ulab/", "data/nvm.toml/", "lib/tlsf"],
     "stm": [
         "extmod/ulab/",

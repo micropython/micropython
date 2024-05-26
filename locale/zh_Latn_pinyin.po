@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2024-02-19 11:01+0000\n"
+"PO-Revision-Date: 2024-05-05 18:07+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.4\n"
+"X-Generator: Weblate 5.5.3\n"
 
 #: main.c
 msgid ""
@@ -106,7 +106,7 @@ msgstr "%q hé %q bìxū gòngxiǎng yígè shízhōng dānyuán"
 
 #: ports/nordic/common-hal/watchdog/WatchDogTimer.c
 msgid "%q cannot be changed once mode is set to %q"
-msgstr ""
+msgstr "móshì shè zhìwéi %q hòu, wúfǎgènggǎi %q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
@@ -2344,7 +2344,7 @@ msgstr "nín zài qǐ dòng shí àn xià le qǐ dòng àn niǔ"
 #: ports/espressif/boards/adafruit_feather_esp32c6_4mbflash_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
 msgid "You pressed the BOOT button at start up."
-msgstr ""
+msgstr "nínzài qǐdòngshí ànxià le BOOTànniǔ."
 
 #: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
 msgid "You pressed the GPIO0 button at start up."
@@ -4094,12 +4094,12 @@ msgstr "chāo shí bì xū < 655.35 miǎo"
 
 #: ports/raspberrypi/common-hal/floppyio/__init__.c
 msgid "timeout waiting for flux"
-msgstr ""
+msgstr "děngdài zhù hànjì de chāoshí"
 
 #: ports/raspberrypi/common-hal/floppyio/__init__.c
 #: shared-module/floppyio/__init__.c
 msgid "timeout waiting for index pulse"
-msgstr ""
+msgstr "děngdài suǒyǐn màichōng de chāoshí"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"

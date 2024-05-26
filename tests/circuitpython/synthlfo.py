@@ -17,5 +17,7 @@ lfos = [
 lfos[2].rate = lfos[1]
 lfos[2].offset = lfos[0]
 
+print("Initial values", *(l.value for l in lfos))
+
 for i in range(100):
     print(i * 256 / 48000, *list(lfo_tick(*lfos)) + [l.phase for l in lfos])

@@ -1,4 +1,12 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+
+// SPDX-FileCopyrightText: Copyright (c) 2020 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Arduino SA. All rights reserved.
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 //  This file is derived from the ArduinoBLE library. Its header is below.
+
 /*
   This file is part of the ArduinoBLE library.
   Copyright (c) 2018 Arduino SA. All rights reserved.
@@ -93,23 +101,23 @@ typedef struct __attribute__ ((packed)) {
 #define RX_BUFFER_SIZE (3 + 255)
 #define ACL_DATA_BUFFER_SIZE (255)
 
-STATIC uint8_t rx_buffer[RX_BUFFER_SIZE];
-STATIC size_t rx_idx;
+static uint8_t rx_buffer[RX_BUFFER_SIZE];
+static size_t rx_idx;
 
-STATIC uint8_t acl_data_buffer[ACL_DATA_BUFFER_SIZE];
-STATIC size_t acl_data_len;
+static uint8_t acl_data_buffer[ACL_DATA_BUFFER_SIZE];
+static size_t acl_data_len;
 
-STATIC size_t num_command_packets_allowed;
-STATIC volatile size_t pending_pkt;
+static size_t num_command_packets_allowed;
+static volatile size_t pending_pkt;
 
 // Results from parsing a command response packet.
-STATIC bool cmd_response_received;
-STATIC uint16_t cmd_response_opcode;
-STATIC uint8_t cmd_response_status;
-STATIC size_t cmd_response_len;
-STATIC uint8_t *cmd_response_data;
+static bool cmd_response_received;
+static uint16_t cmd_response_opcode;
+static uint8_t cmd_response_status;
+static size_t cmd_response_len;
+static uint8_t *cmd_response_data;
 
-STATIC volatile bool hci_poll_in_progress = false;
+static volatile bool hci_poll_in_progress = false;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -118,7 +126,7 @@ STATIC volatile bool hci_poll_in_progress = false;
 #include "hci_debug.c"
 #endif // HCI_DEBUG
 
-STATIC void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
+static void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
     h4_hci_acl_pkt_t *pkt = (h4_hci_acl_pkt_t *)pkt_data;
 
     if (pkt->pb != ACL_DATA_PB_MIDDLE) {
@@ -159,7 +167,7 @@ STATIC void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
 
 // Process number of completed packets. Reduce number of pending packets by reported
 // number of completed.
-STATIC void process_num_comp_pkts(uint16_t handle, uint16_t num_pkts) {
+static void process_num_comp_pkts(uint16_t handle, uint16_t num_pkts) {
     if (num_pkts && pending_pkt > num_pkts) {
         pending_pkt -= num_pkts;
     } else {
@@ -167,7 +175,7 @@ STATIC void process_num_comp_pkts(uint16_t handle, uint16_t num_pkts) {
     }
 }
 
-STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[]) {
+static void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[]) {
     h4_hci_evt_pkt_t *pkt = (h4_hci_evt_pkt_t *)pkt_data;
 
     switch (pkt->evt) {
@@ -404,7 +412,7 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
 }
 
 
-STATIC hci_result_t write_pkt(uint8_t *buffer, size_t len) {
+static hci_result_t write_pkt(uint8_t *buffer, size_t len) {
     // Wait for CTS to go low before writing to HCI adapter.
     uint64_t start = supervisor_ticks_ms64();
 
@@ -424,7 +432,7 @@ STATIC hci_result_t write_pkt(uint8_t *buffer, size_t len) {
     return HCI_OK;
 }
 
-STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void *params) {
+static hci_result_t send_command(uint16_t opcode, uint8_t params_len, void *params) {
     uint8_t cmd_pkt_len = sizeof(h4_hci_cmd_pkt_t) + params_len;
     uint8_t tx_buffer[cmd_pkt_len];
 

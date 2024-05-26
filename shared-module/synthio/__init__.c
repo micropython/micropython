@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Artyom Skrobov
- * Copyright (c) 2023 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Artyom Skrobov
+// SPDX-FileCopyrightText: Copyright (c) 2023 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-module/synthio/__init__.h"
 #include "shared-bindings/synthio/__init__.h"
@@ -36,13 +16,13 @@
 mp_float_t synthio_global_rate_scale;
 uint8_t synthio_global_tick;
 
-STATIC const int16_t square_wave[] = {-32768, 32767};
+static const int16_t square_wave[] = {-32768, 32767};
 
-STATIC const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
+static const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
                                  12544, 13290, 14080, 14917, 15804}; // 9th octave
 
 
-STATIC int64_t round_float_to_int64(mp_float_t f) {
+static int64_t round_float_to_int64(mp_float_t f) {
     return (int64_t)(f + MICROPY_FLOAT_CONST(0.5));
 }
 
@@ -54,7 +34,7 @@ mp_float_t common_hal_synthio_voct_to_hz_float(mp_float_t octave) {
     return notes[0] * MICROPY_FLOAT_C_FUN(pow)(2., octave - 7);
 }
 
-STATIC int16_t convert_time_to_rate(uint32_t sample_rate, mp_obj_t time_in, int16_t difference) {
+static int16_t convert_time_to_rate(uint32_t sample_rate, mp_obj_t time_in, int16_t difference) {
     mp_float_t time = mp_obj_get_float(time_in);
     int num_samples = (int)MICROPY_FLOAT_C_FUN(round)(time * sample_rate);
     if (num_samples == 0) {
@@ -95,7 +75,7 @@ void synthio_envelope_definition_set(synthio_envelope_definition_t *envelope, mp
             : envelope->attack_level);
 }
 
-STATIC void synthio_envelope_state_step(synthio_envelope_state_t *state, synthio_envelope_definition_t *def, size_t n_steps) {
+static void synthio_envelope_state_step(synthio_envelope_state_t *state, synthio_envelope_definition_t *def, size_t n_steps) {
     state->substep += n_steps;
     while (state->substep >= SYNTHIO_MAX_DUR) {
         // max n_steps should be SYNTHIO_MAX_DUR so this loop executes at most
@@ -122,7 +102,7 @@ STATIC void synthio_envelope_state_step(synthio_envelope_state_t *state, synthio
     }
 }
 
-STATIC void synthio_envelope_state_init(synthio_envelope_state_t *state, synthio_envelope_definition_t *def) {
+static void synthio_envelope_state_init(synthio_envelope_state_t *state, synthio_envelope_definition_t *def) {
     state->level = 0;
     state->substep = 0;
     state->state = SYNTHIO_ENVELOPE_STATE_ATTACK;
@@ -130,11 +110,11 @@ STATIC void synthio_envelope_state_init(synthio_envelope_state_t *state, synthio
     synthio_envelope_state_step(state, def, SYNTHIO_MAX_DUR);
 }
 
-STATIC void synthio_envelope_state_release(synthio_envelope_state_t *state, synthio_envelope_definition_t *def) {
+static void synthio_envelope_state_release(synthio_envelope_state_t *state, synthio_envelope_definition_t *def) {
     state->state = SYNTHIO_ENVELOPE_STATE_RELEASE;
 }
 
-STATIC synthio_envelope_definition_t *synthio_synth_get_note_envelope(synthio_synth_t *synth, mp_obj_t note_obj) {
+static synthio_envelope_definition_t *synthio_synth_get_note_envelope(synthio_synth_t *synth, mp_obj_t note_obj) {
     synthio_envelope_definition_t *def = &synth->global_envelope_definition;
     if (!mp_obj_is_small_int(note_obj)) {
         synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
@@ -162,7 +142,7 @@ STATIC synthio_envelope_definition_t *synthio_synth_get_note_envelope(synthio_sy
 // much additional processing.
 //
 // https://en.wikipedia.org/wiki/Dynamic_range_compression
-STATIC
+static
 int16_t mix_down_sample(int32_t sample) {
     if (sample < RANGE_LOW) {
         sample = (((sample - RANGE_LOW) * RANGE_SCALE) >> RANGE_SHIFT) + RANGE_LOW;
@@ -287,7 +267,7 @@ static bool synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
     return true;
 }
 
-STATIC mp_obj_t synthio_synth_get_note_filter(mp_obj_t note_obj) {
+static mp_obj_t synthio_synth_get_note_filter(mp_obj_t note_obj) {
     if (note_obj == mp_const_none) {
         return mp_const_none;
     }
@@ -298,7 +278,7 @@ STATIC mp_obj_t synthio_synth_get_note_filter(mp_obj_t note_obj) {
     return mp_const_none;
 }
 
-STATIC void sum_with_loudness(int32_t *out_buffer32, int32_t *tmp_buffer32, int16_t loudness[2], size_t dur, int synth_chan) {
+static void sum_with_loudness(int32_t *out_buffer32, int32_t *tmp_buffer32, int16_t loudness[2], size_t dur, int synth_chan) {
     if (synth_chan == 1) {
         for (size_t i = 0; i < dur; i++) {
             *out_buffer32++ += (*tmp_buffer32++ *loudness[0]) >> 16;
@@ -437,7 +417,7 @@ void synthio_synth_get_buffer_structure(synthio_synth_t *synth, bool single_chan
     }
 }
 
-STATIC void parse_common(mp_buffer_info_t *bufinfo, mp_obj_t o, int16_t what, mp_int_t max_len) {
+static void parse_common(mp_buffer_info_t *bufinfo, mp_obj_t o, int16_t what, mp_int_t max_len) {
     if (o != mp_const_none) {
         mp_get_buffer_raise(o, bufinfo, MP_BUFFER_READ);
         if (bufinfo->typecode != 'h') {
@@ -453,7 +433,7 @@ void synthio_synth_parse_waveform(mp_buffer_info_t *bufinfo_waveform, mp_obj_t w
     parse_common(bufinfo_waveform, waveform_obj, MP_QSTR_waveform, SYNTHIO_WAVEFORM_SIZE);
 }
 
-STATIC int find_channel_with_note(synthio_synth_t *synth, mp_obj_t note) {
+static int find_channel_with_note(synthio_synth_t *synth, mp_obj_t note) {
     for (int i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
         if (synth->span.note_obj[i] == note) {
             return i;

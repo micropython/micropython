@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2016 Scott Shawcroft
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2016 Scott Shawcroft
+//
+// SPDX-License-Identifier: MIT
 
 // This file contains all of the Python API definitions for the
 // busio.SPI class.
@@ -103,7 +83,7 @@
 
 
 // TODO(tannewt): Support LSB SPI.
-STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_BUSIO_SPI
     busio_spi_obj_t *self = mp_obj_malloc(busio_spi_obj_t, &busio_spi_type);
     enum { ARG_clock, ARG_MOSI, ARG_MISO, ARG_half_duplex };
@@ -127,7 +107,7 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     common_hal_busio_spi_construct(self, clock, mosi, miso, args[ARG_half_duplex].u_bool);
     return MP_OBJ_FROM_PTR(self);
     #else
-    raise_ValueError_invalid_pins();
+    mp_raise_NotImplementedError(NULL);
     #endif // CIRCUITPY_BUSIO_SPI
 }
 
@@ -135,7 +115,7 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
 //|     def deinit(self) -> None:
 //|         """Turn off the SPI bus."""
 //|         ...
-STATIC mp_obj_t busio_spi_obj_deinit(mp_obj_t self_in) {
+static mp_obj_t busio_spi_obj_deinit(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_busio_spi_deinit(self);
     return mp_const_none;
@@ -151,21 +131,21 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_deinit_obj, busio_spi_obj_deinit);
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t busio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t busio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_busio_spi_deinit(MP_OBJ_TO_PTR(args[0]));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_spi_obj___exit___obj, 4, 4, busio_spi_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_spi_obj___exit___obj, 4, 4, busio_spi_obj___exit__);
 
-STATIC void check_lock(busio_spi_obj_t *self) {
+static void check_lock(busio_spi_obj_t *self) {
     asm ("");
     if (!common_hal_busio_spi_has_lock(self)) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Function requires lock"));
     }
 }
 
-STATIC void check_for_deinit(busio_spi_obj_t *self) {
+static void check_for_deinit(busio_spi_obj_t *self) {
     if (common_hal_busio_spi_deinited(self)) {
         raise_deinited_error();
     }
@@ -196,7 +176,7 @@ STATIC void check_for_deinit(busio_spi_obj_t *self) {
 //|           which allows only one (to allow for an additional I2C object)."""
 //|         ...
 
-STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100000} },
@@ -229,7 +209,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_configure_obj, 1, busio_spi_configure);
 //|         :rtype: bool"""
 //|         ...
 
-STATIC mp_obj_t busio_spi_obj_try_lock(mp_obj_t self_in) {
+static mp_obj_t busio_spi_obj_try_lock(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_busio_spi_try_lock(self));
 }
@@ -239,7 +219,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_try_lock_obj, busio_spi_obj_try_lock);
 //|         """Releases the SPI lock."""
 //|         ...
 
-STATIC mp_obj_t busio_spi_obj_unlock(mp_obj_t self_in) {
+static mp_obj_t busio_spi_obj_unlock(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     common_hal_busio_spi_unlock(self);
@@ -262,7 +242,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_unlock_obj, busio_spi_obj_unlock);
 //|         """
 //|         ...
 
-STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -326,7 +306,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 1, busio_spi_write);
 //|         """
 //|         ...
 
-STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end, ARG_write_value };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -399,7 +379,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_readinto_obj, 1, busio_spi_readinto);
 //|         """
 //|         ...
 
-STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_out_buffer, ARG_in_buffer, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_out_buffer,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -459,7 +439,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_readinto_obj, 1, busio_spi_write_read
 //|     due to internal limitations."""
 //|
 
-STATIC mp_obj_t busio_spi_obj_get_frequency(mp_obj_t self_in) {
+static mp_obj_t busio_spi_obj_get_frequency(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_busio_spi_get_frequency(self));
@@ -471,7 +451,7 @@ MP_PROPERTY_GETTER(busio_spi_frequency_obj,
 #endif // CIRCUITPY_BUSIO_SPI
 
 
-STATIC const mp_rom_map_elem_t busio_spi_locals_dict_table[] = {
+static const mp_rom_map_elem_t busio_spi_locals_dict_table[] = {
     #if CIRCUITPY_BUSIO_SPI
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&busio_spi_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
@@ -487,7 +467,7 @@ STATIC const mp_rom_map_elem_t busio_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&busio_spi_frequency_obj) }
     #endif // CIRCUITPY_BUSIO_SPI
 };
-STATIC MP_DEFINE_CONST_DICT(busio_spi_locals_dict, busio_spi_locals_dict_table);
+static MP_DEFINE_CONST_DICT(busio_spi_locals_dict, busio_spi_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     busio_spi_type,

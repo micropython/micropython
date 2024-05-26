@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: Copyright (c) 2013, hathach (tinyusb.org)
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 /**************************************************************************/
 /*!
     @file     tusb_config.h
@@ -52,6 +56,9 @@ extern "C" {
 #if CIRCUITPY_DEBUG_TINYUSB > 0 && defined(CIRCUITPY_CONSOLE_UART)
 #define CFG_TUSB_DEBUG              CIRCUITPY_DEBUG_TINYUSB
 #define CFG_TUSB_DEBUG_PRINTF       console_uart_printf
+
+// Raise the device log level to 3 so we can debug host-only at level 2.
+#define CFG_TUD_LOG_LEVEL           3
 #endif
 
 /*------------- RTOS -------------*/
@@ -63,6 +70,10 @@ extern "C" {
 // --------------------------------------------------------------------+
 // DEVICE CONFIGURATION
 // --------------------------------------------------------------------+
+
+#define CFG_TUD_ENABLED CIRCUITPY_USB_DEVICE
+
+#if CIRCUITPY_USB_DEVICE
 
 #if CIRCUITPY_USB_DEVICE_INSTANCE == 0
 #if USB_HIGHSPEED
@@ -104,7 +115,7 @@ extern "C" {
 
 // Product revision string included in Inquiry response, max 4 bytes
 #define CFG_TUD_MSC_PRODUCT_REV     "1.0"
-
+#endif
 
 // --------------------------------------------------------------------+
 // USB RAM PLACEMENT
@@ -126,11 +137,15 @@ extern "C" {
 // HOST CONFIGURATION
 // --------------------------------------------------------------------
 
-#if CIRCUITPY_USB_HOST
+#if CIRCUITPY_USB_HOST || CIRCUITPY_MAX3421E
 #define CFG_TUH_ENABLED 1
 
 // Always use PIO to do host on RP2.
+#if !CIRCUITPY_MAX3421E
 #define CFG_TUH_RPI_PIO_USB 1
+#else
+#define CFG_TUH_RPI_PIO_USB 1
+#endif
 
 #if CIRCUITPY_USB_HOST_INSTANCE == 0
 #if USB_HIGHSPEED
@@ -151,7 +166,12 @@ extern "C" {
 #define CFG_TUH_ENUMERATION_BUFSIZE 256
 #endif
 
+#if CIRCUITPY_USB_KEYBOARD_WORKFLOW
 #define CFG_TUH_HID                 2
+#else
+#define CFG_TUH_HID                 0
+#endif
+
 // 2 hubs so we can support "7 port" hubs which have two internal hubs.
 #define CFG_TUH_HUB                 2
 #define CFG_TUH_CDC                 0
@@ -164,6 +184,9 @@ extern "C" {
 
 // Number of endpoints per device
 #define CFG_TUH_ENDPOINT_MAX        8
+
+// Enable MAX3421E support
+#define CFG_TUH_MAX3421 (CIRCUITPY_MAX3421E)
 
 #endif
 

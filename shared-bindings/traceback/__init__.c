@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 microDev
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 microDev
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/stream.h"
 #include "py/runtime.h"
@@ -39,7 +19,7 @@
 //| ...
 //|
 
-STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *print, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void traceback_exception_common(bool is_print_exception, mp_print_t *print, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_exc, ARG_value, ARG_tb, ARG_limit, ARG_file, ARG_chain };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_,      MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
@@ -153,7 +133,7 @@ STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *prin
 //|     :param bool chain: If `True` then chained exceptions will be printed.
 //|     """
 //|
-STATIC mp_obj_t traceback_format_exception(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t traceback_format_exception(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_print_t print;
     vstr_t vstr;
     vstr_init_print(&vstr, 0, &print);
@@ -162,7 +142,7 @@ STATIC mp_obj_t traceback_format_exception(size_t n_args, const mp_obj_t *pos_ar
     return mp_obj_new_list(1, &output);
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_format_exception_obj, 0, traceback_format_exception);
+static MP_DEFINE_CONST_FUN_OBJ_KW(traceback_format_exception_obj, 0, traceback_format_exception);
 
 //| def print_exception(
 //|     exc: BaseException | Type[BaseException],
@@ -197,21 +177,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_format_exception_obj, 0, traceback_f
 //|     ...
 //|
 
-STATIC mp_obj_t traceback_print_exception(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t traceback_print_exception(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_print_t print = mp_plat_print;
     traceback_exception_common(true, &print, n_args, pos_args, kw_args);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_print_exception_obj, 0, traceback_print_exception);
+static MP_DEFINE_CONST_FUN_OBJ_KW(traceback_print_exception_obj, 0, traceback_print_exception);
 
-STATIC const mp_rom_map_elem_t traceback_module_globals_table[] = {
+static const mp_rom_map_elem_t traceback_module_globals_table[] = {
     // module name
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_traceback) },
     // module functions
     { MP_ROM_QSTR(MP_QSTR_format_exception), MP_ROM_PTR(&traceback_format_exception_obj) },
     { MP_ROM_QSTR(MP_QSTR_print_exception), MP_ROM_PTR(&traceback_print_exception_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(traceback_module_globals, traceback_module_globals_table);
+static MP_DEFINE_CONST_DICT(traceback_module_globals, traceback_module_globals_table);
 
 const mp_obj_module_t traceback_module = {
     .base = { &mp_type_module },

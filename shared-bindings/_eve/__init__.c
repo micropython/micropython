@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 James Bowman for Excamera Labs
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 James Bowman for Excamera Labs
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdio.h>
 #include <assert.h>
@@ -48,42 +28,42 @@ typedef struct _mp_obj__EVE_t {
     common_hal__eve_t _eve;
 } mp_obj__EVE_t;
 
-STATIC const mp_obj_type_t _EVE_type;
+static const mp_obj_type_t _EVE_type;
 
 #define EVEHAL(s) \
     (&((mp_obj__EVE_t *)mp_obj_cast_to_native_base((s), &_EVE_type))->_eve)
 
 //|     def register(self, o: object) -> None: ...
-STATIC mp_obj_t _register(mp_obj_t self, mp_obj_t o) {
+static mp_obj_t _register(mp_obj_t self, mp_obj_t o) {
     common_hal__eve_t *eve = EVEHAL(self);
     mp_load_method(o, MP_QSTR_write, eve->dest);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(register_obj, _register);
+static MP_DEFINE_CONST_FUN_OBJ_2(register_obj, _register);
 
 //|     def flush(self) -> None:
 //|         """Send any queued drawing commands directly to the hardware.
 //|
 //|         :param int width: The width of the grid in tiles, or 1 for sprites."""
 //|         ...
-STATIC mp_obj_t _flush(mp_obj_t self) {
+static mp_obj_t _flush(mp_obj_t self) {
     common_hal__eve_flush(EVEHAL(self));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(flush_obj, _flush);
+static MP_DEFINE_CONST_FUN_OBJ_1(flush_obj, _flush);
 
 //|     def cc(self, b: ReadableBuffer) -> None:
 //|         """Append bytes to the command FIFO.
 //|
 //|         :param ~circuitpython_typing.ReadableBuffer b: The bytes to add"""
 //|         ...
-STATIC mp_obj_t _cc(mp_obj_t self, mp_obj_t b) {
+static mp_obj_t _cc(mp_obj_t self, mp_obj_t b) {
     mp_buffer_info_t buffer_info;
     mp_get_buffer_raise(b, &buffer_info, MP_BUFFER_READ);
     common_hal__eve_add(EVEHAL(self), buffer_info.len, buffer_info.buf);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc_obj, _cc);
+static MP_DEFINE_CONST_FUN_OBJ_2(cc_obj, _cc);
 
 // {
 
@@ -97,13 +77,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc_obj, _cc);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _alphafunc(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+static mp_obj_t _alphafunc(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     uint32_t func = mp_obj_get_int_truncated(a0);
     uint32_t ref = mp_obj_get_int_truncated(a1);
     common_hal__eve_AlphaFunc(EVEHAL(self), func, ref);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(alphafunc_obj, _alphafunc);
+static MP_DEFINE_CONST_FUN_OBJ_3(alphafunc_obj, _alphafunc);
 
 //|     def Begin(self, prim: int) -> None:
 //|         """Begin drawing a graphics primitive
@@ -114,12 +94,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(alphafunc_obj, _alphafunc);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _begin(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _begin(mp_obj_t self, mp_obj_t a0) {
     uint32_t prim = mp_obj_get_int_truncated(a0);
     common_hal__eve_Begin(EVEHAL(self), prim);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(begin_obj, _begin);
+static MP_DEFINE_CONST_FUN_OBJ_2(begin_obj, _begin);
 
 //|     def BitmapExtFormat(self, format: int) -> None:
 //|         """Set the bitmap format
@@ -127,12 +107,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(begin_obj, _begin);
 //|         :param int format: bitmap pixel format."""
 //|         ...
 
-STATIC mp_obj_t _bitmapextformat(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _bitmapextformat(mp_obj_t self, mp_obj_t a0) {
     uint32_t fmt = mp_obj_get_int_truncated(a0);
     common_hal__eve_BitmapExtFormat(EVEHAL(self), fmt);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmapextformat_obj, _bitmapextformat);
+static MP_DEFINE_CONST_FUN_OBJ_2(bitmapextformat_obj, _bitmapextformat);
 
 //|     def BitmapHandle(self, handle: int) -> None:
 //|         """Set the bitmap handle
@@ -143,12 +123,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmapextformat_obj, _bitmapextformat);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _bitmaphandle(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _bitmaphandle(mp_obj_t self, mp_obj_t a0) {
     uint32_t handle = mp_obj_get_int_truncated(a0);
     common_hal__eve_BitmapHandle(EVEHAL(self), handle);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaphandle_obj, _bitmaphandle);
+static MP_DEFINE_CONST_FUN_OBJ_2(bitmaphandle_obj, _bitmaphandle);
 
 //|     def BitmapLayoutH(self, linestride: int, height: int) -> None:
 //|         """Set the source bitmap memory format and layout for the current handle. high bits for large bitmaps
@@ -157,13 +137,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaphandle_obj, _bitmaphandle);
 //|         :param int height: high part of bitmap height, in lines. Range 0-3"""
 //|         ...
 
-STATIC mp_obj_t _bitmaplayouth(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+static mp_obj_t _bitmaplayouth(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     uint32_t linestride = mp_obj_get_int_truncated(a0);
     uint32_t height = mp_obj_get_int_truncated(a1);
     common_hal__eve_BitmapLayoutH(EVEHAL(self), linestride, height);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaplayouth_obj, _bitmaplayouth);
+static MP_DEFINE_CONST_FUN_OBJ_3(bitmaplayouth_obj, _bitmaplayouth);
 
 //|     def BitmapLayout(self, format: int, linestride: int, height: int) -> None:
 //|         """Set the source bitmap memory format and layout for the current handle
@@ -173,14 +153,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaplayouth_obj, _bitmaplayouth);
 //|         :param int height: bitmap height, in lines. Range 0-511"""
 //|         ...
 
-STATIC mp_obj_t _bitmaplayout(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t _bitmaplayout(size_t n_args, const mp_obj_t *args) {
     uint32_t format = mp_obj_get_int_truncated(args[1]);
     uint32_t linestride = mp_obj_get_int_truncated(args[2]);
     uint32_t height = mp_obj_get_int_truncated(args[3]);
     common_hal__eve_BitmapLayout(EVEHAL(args[0]), format, linestride, height);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmaplayout_obj, 4, 4, _bitmaplayout);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmaplayout_obj, 4, 4, _bitmaplayout);
 
 //|     def BitmapSizeH(self, width: int, height: int) -> None:
 //|         """Set the screen drawing of bitmaps for the current handle. high bits for large bitmaps
@@ -189,13 +169,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmaplayout_obj, 4, 4, _bitmaplayout
 //|         :param int height: high part of drawn bitmap height, in pixels. Range 0-3"""
 //|         ...
 
-STATIC mp_obj_t _bitmapsizeh(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+static mp_obj_t _bitmapsizeh(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     uint32_t width = mp_obj_get_int_truncated(a0);
     uint32_t height = mp_obj_get_int_truncated(a1);
     common_hal__eve_BitmapSizeH(EVEHAL(self), width, height);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmapsizeh_obj, _bitmapsizeh);
+static MP_DEFINE_CONST_FUN_OBJ_3(bitmapsizeh_obj, _bitmapsizeh);
 
 //|     def BitmapSize(self, filter: int, wrapx: int, wrapy: int, width: int, height: int) -> None:
 //|         """Set the screen drawing of bitmaps for the current handle
@@ -207,7 +187,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmapsizeh_obj, _bitmapsizeh);
 //|         :param int height: drawn bitmap height, in pixels. Range 0-511"""
 //|         ...
 
-STATIC mp_obj_t _bitmapsize(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t _bitmapsize(size_t n_args, const mp_obj_t *args) {
     uint32_t filter = mp_obj_get_int_truncated(args[1]);
     uint32_t wrapx = mp_obj_get_int_truncated(args[2]);
     uint32_t wrapy = mp_obj_get_int_truncated(args[3]);
@@ -216,7 +196,7 @@ STATIC mp_obj_t _bitmapsize(size_t n_args, const mp_obj_t *args) {
     common_hal__eve_BitmapSize(EVEHAL(args[0]), filter, wrapx, wrapy, width, height);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmapsize_obj, 6, 6, _bitmapsize);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmapsize_obj, 6, 6, _bitmapsize);
 
 //|     def BitmapSource(self, addr: int) -> None:
 //|         """Set the source address for bitmap graphics
@@ -225,12 +205,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmapsize_obj, 6, 6, _bitmapsize);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _bitmapsource(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _bitmapsource(mp_obj_t self, mp_obj_t a0) {
     uint32_t addr = mp_obj_get_int_truncated(a0);
     common_hal__eve_BitmapSource(EVEHAL(self), addr);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmapsource_obj, _bitmapsource);
+static MP_DEFINE_CONST_FUN_OBJ_2(bitmapsource_obj, _bitmapsource);
 
 //|     def BitmapSwizzle(self, r: int, g: int, b: int, a: int) -> None:
 //|         """Set the source for the r,g,b and a channels of a bitmap
@@ -241,7 +221,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmapsource_obj, _bitmapsource);
 //|         :param int a: alpha component source channel. Range 0-7"""
 //|         ...
 
-STATIC mp_obj_t _bitmapswizzle(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t _bitmapswizzle(size_t n_args, const mp_obj_t *args) {
     uint32_t r = mp_obj_get_int_truncated(args[1]);
     uint32_t g = mp_obj_get_int_truncated(args[2]);
     uint32_t b = mp_obj_get_int_truncated(args[3]);
@@ -249,7 +229,7 @@ STATIC mp_obj_t _bitmapswizzle(size_t n_args, const mp_obj_t *args) {
     common_hal__eve_BitmapSwizzle(EVEHAL(args[0]), r, g, b, a);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmapswizzle_obj, 5, 5, _bitmapswizzle);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmapswizzle_obj, 5, 5, _bitmapswizzle);
 
 //|     def BitmapTransformA(self, p: int, v: int) -> None:
 //|         """Set the :math:`a` component of the bitmap transform matrix
@@ -263,13 +243,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmapswizzle_obj, 5, 5, _bitmapswizz
 //|         """
 //|         ...
 
-STATIC mp_obj_t _bitmaptransforma(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+static mp_obj_t _bitmaptransforma(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     uint32_t p = mp_obj_get_int_truncated(a0);
     uint32_t v = mp_obj_get_int_truncated(a1);
     common_hal__eve_BitmapTransformA(EVEHAL(self), p, v);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransforma_obj, _bitmaptransforma);
+static MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransforma_obj, _bitmaptransforma);
 
 //|     def BitmapTransformB(self, p: int, v: int) -> None:
 //|         """Set the :math:`b` component of the bitmap transform matrix
@@ -283,13 +263,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransforma_obj, _bitmaptransforma);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _bitmaptransformb(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+static mp_obj_t _bitmaptransformb(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     uint32_t p = mp_obj_get_int_truncated(a0);
     uint32_t v = mp_obj_get_int_truncated(a1);
     common_hal__eve_BitmapTransformB(EVEHAL(self), p, v);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransformb_obj, _bitmaptransformb);
+static MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransformb_obj, _bitmaptransformb);
 
 //|     def BitmapTransformC(self, v: int) -> None:
 //|         """Set the :math:`c` component of the bitmap transform matrix
@@ -300,12 +280,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransformb_obj, _bitmaptransformb);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _bitmaptransformc(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _bitmaptransformc(mp_obj_t self, mp_obj_t a0) {
     uint32_t v = mp_obj_get_int_truncated(a0);
     common_hal__eve_BitmapTransformC(EVEHAL(self), v);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaptransformc_obj, _bitmaptransformc);
+static MP_DEFINE_CONST_FUN_OBJ_2(bitmaptransformc_obj, _bitmaptransformc);
 
 //|     def BitmapTransformD(self, p: int, v: int) -> None:
 //|         """Set the :math:`d` component of the bitmap transform matrix
@@ -319,13 +299,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaptransformc_obj, _bitmaptransformc);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _bitmaptransformd(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+static mp_obj_t _bitmaptransformd(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     uint32_t p = mp_obj_get_int_truncated(a0);
     uint32_t v = mp_obj_get_int_truncated(a1);
     common_hal__eve_BitmapTransformD(EVEHAL(self), p, v);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransformd_obj, _bitmaptransformd);
+static MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransformd_obj, _bitmaptransformd);
 
 //|     def BitmapTransformE(self, p: int, v: int) -> None:
 //|         """Set the :math:`e` component of the bitmap transform matrix
@@ -339,13 +319,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransformd_obj, _bitmaptransformd);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _bitmaptransforme(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+static mp_obj_t _bitmaptransforme(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     uint32_t p = mp_obj_get_int_truncated(a0);
     uint32_t v = mp_obj_get_int_truncated(a1);
     common_hal__eve_BitmapTransformE(EVEHAL(self), p, v);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransforme_obj, _bitmaptransforme);
+static MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransforme_obj, _bitmaptransforme);
 
 //|     def BitmapTransformF(self, v: int) -> None:
 //|         """Set the :math:`f` component of the bitmap transform matrix
@@ -356,12 +336,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransforme_obj, _bitmaptransforme);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _bitmaptransformf(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _bitmaptransformf(mp_obj_t self, mp_obj_t a0) {
     uint32_t v = mp_obj_get_int_truncated(a0);
     common_hal__eve_BitmapTransformF(EVEHAL(self), v);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaptransformf_obj, _bitmaptransformf);
+static MP_DEFINE_CONST_FUN_OBJ_2(bitmaptransformf_obj, _bitmaptransformf);
 
 //|     def BlendFunc(self, src: int, dst: int) -> None:
 //|         """Set pixel arithmetic
@@ -373,13 +353,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaptransformf_obj, _bitmaptransformf);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _blendfunc(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+static mp_obj_t _blendfunc(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     uint32_t src = mp_obj_get_int_truncated(a0);
     uint32_t dst = mp_obj_get_int_truncated(a1);
     common_hal__eve_BlendFunc(EVEHAL(self), src, dst);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(blendfunc_obj, _blendfunc);
+static MP_DEFINE_CONST_FUN_OBJ_3(blendfunc_obj, _blendfunc);
 
 //|     def Call(self, dest: int) -> None:
 //|         """Execute a sequence of commands at another location in the display list
@@ -387,12 +367,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(blendfunc_obj, _blendfunc);
 //|         :param int dest: display list address. Range 0-65535"""
 //|         ...
 
-STATIC mp_obj_t _call(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _call(mp_obj_t self, mp_obj_t a0) {
     uint32_t dest = mp_obj_get_int_truncated(a0);
     common_hal__eve_Call(EVEHAL(self), dest);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(call_obj, _call);
+static MP_DEFINE_CONST_FUN_OBJ_2(call_obj, _call);
 
 //|     def Cell(self, cell: int) -> None:
 //|         """Set the bitmap cell number for the vertex2f command
@@ -403,12 +383,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(call_obj, _call);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _cell(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _cell(mp_obj_t self, mp_obj_t a0) {
     uint32_t cell = mp_obj_get_int_truncated(a0);
     common_hal__eve_Cell(EVEHAL(self), cell);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(cell_obj, _cell);
+static MP_DEFINE_CONST_FUN_OBJ_2(cell_obj, _cell);
 
 //|     def ClearColorA(self, alpha: int) -> None:
 //|         """Set clear value for the alpha channel
@@ -419,12 +399,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cell_obj, _cell);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _clearcolora(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _clearcolora(mp_obj_t self, mp_obj_t a0) {
     uint32_t alpha = mp_obj_get_int_truncated(a0);
     common_hal__eve_ClearColorA(EVEHAL(self), alpha);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(clearcolora_obj, _clearcolora);
+static MP_DEFINE_CONST_FUN_OBJ_2(clearcolora_obj, _clearcolora);
 
 //|     def ClearColorRGB(self, red: int, green: int, blue: int) -> None:
 //|         """Set clear values for red, green and blue channels
@@ -437,14 +417,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(clearcolora_obj, _clearcolora);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _clearcolorrgb(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t _clearcolorrgb(size_t n_args, const mp_obj_t *args) {
     uint32_t red = mp_obj_get_int_truncated(args[1]);
     uint32_t green = mp_obj_get_int_truncated(args[2]);
     uint32_t blue = mp_obj_get_int_truncated(args[3]);
     common_hal__eve_ClearColorRGB(EVEHAL(args[0]), red, green, blue);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(clearcolorrgb_obj, 4, 4, _clearcolorrgb);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(clearcolorrgb_obj, 4, 4, _clearcolorrgb);
 
 //|     def Clear(self, c: int, s: int, t: int) -> None:
 //|         """Clear buffers to preset values
@@ -454,14 +434,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(clearcolorrgb_obj, 4, 4, _clearcolorr
 //|         :param int t: clear tag buffer. Range 0-1"""
 //|         ...
 
-STATIC mp_obj_t _clear(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t _clear(size_t n_args, const mp_obj_t *args) {
     uint32_t c = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : 1;
     uint32_t s = (n_args > 2) ? mp_obj_get_int_truncated(args[2]) : 1;
     uint32_t t = (n_args > 3) ? mp_obj_get_int_truncated(args[3]) : 1;
     common_hal__eve_Clear(EVEHAL(args[0]), c, s, t);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(clear_obj, 1, 4, _clear);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(clear_obj, 1, 4, _clear);
 
 //|     def ClearStencil(self, s: int) -> None:
 //|         """Set clear value for the stencil buffer
@@ -472,12 +452,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(clear_obj, 1, 4, _clear);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _clearstencil(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _clearstencil(mp_obj_t self, mp_obj_t a0) {
     uint32_t s = mp_obj_get_int_truncated(a0);
     common_hal__eve_ClearStencil(EVEHAL(self), s);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(clearstencil_obj, _clearstencil);
+static MP_DEFINE_CONST_FUN_OBJ_2(clearstencil_obj, _clearstencil);
 
 //|     def ClearTag(self, s: int) -> None:
 //|         """Set clear value for the tag buffer
@@ -487,12 +467,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(clearstencil_obj, _clearstencil);
 //|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
 //|         """
 
-STATIC mp_obj_t _cleartag(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _cleartag(mp_obj_t self, mp_obj_t a0) {
     uint32_t s = mp_obj_get_int_truncated(a0);
     common_hal__eve_ClearTag(EVEHAL(self), s);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(cleartag_obj, _cleartag);
+static MP_DEFINE_CONST_FUN_OBJ_2(cleartag_obj, _cleartag);
 
 //|     def ColorA(self, alpha: int) -> None:
 //|         """Set the current color alpha
@@ -503,12 +483,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cleartag_obj, _cleartag);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _colora(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _colora(mp_obj_t self, mp_obj_t a0) {
     uint32_t alpha = mp_obj_get_int_truncated(a0);
     common_hal__eve_ColorA(EVEHAL(self), alpha);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(colora_obj, _colora);
+static MP_DEFINE_CONST_FUN_OBJ_2(colora_obj, _colora);
 
 //|     def ColorMask(self, r: int, g: int, b: int, a: int) -> None:
 //|         """Enable and disable writing of frame buffer color components
@@ -522,7 +502,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(colora_obj, _colora);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _colormask(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t _colormask(size_t n_args, const mp_obj_t *args) {
     uint32_t r = mp_obj_get_int_truncated(args[1]);
     uint32_t g = mp_obj_get_int_truncated(args[2]);
     uint32_t b = mp_obj_get_int_truncated(args[3]);
@@ -530,7 +510,7 @@ STATIC mp_obj_t _colormask(size_t n_args, const mp_obj_t *args) {
     common_hal__eve_ColorMask(EVEHAL(args[0]), r, g, b, a);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(colormask_obj, 5, 5, _colormask);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(colormask_obj, 5, 5, _colormask);
 
 //|     def ColorRGB(self, red: int, green: int, blue: int) -> None:
 //|         """Set the drawing color
@@ -543,25 +523,25 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(colormask_obj, 5, 5, _colormask);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _colorrgb(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t _colorrgb(size_t n_args, const mp_obj_t *args) {
     uint32_t red = mp_obj_get_int_truncated(args[1]);
     uint32_t green = mp_obj_get_int_truncated(args[2]);
     uint32_t blue = mp_obj_get_int_truncated(args[3]);
     common_hal__eve_ColorRGB(EVEHAL(args[0]), red, green, blue);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(colorrgb_obj, 4, 4, _colorrgb);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(colorrgb_obj, 4, 4, _colorrgb);
 
 //|     def Display(self) -> None:
 //|         """End the display list"""
 //|         ...
 
-STATIC mp_obj_t _display(mp_obj_t self) {
+static mp_obj_t _display(mp_obj_t self) {
 
     common_hal__eve_Display(EVEHAL(self));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(display_obj, _display);
+static MP_DEFINE_CONST_FUN_OBJ_1(display_obj, _display);
 
 //|     def End(self) -> None:
 //|         """End drawing a graphics primitive
@@ -570,12 +550,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(display_obj, _display);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _end(mp_obj_t self) {
+static mp_obj_t _end(mp_obj_t self) {
 
     common_hal__eve_End(EVEHAL(self));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(end_obj, _end);
+static MP_DEFINE_CONST_FUN_OBJ_1(end_obj, _end);
 
 //|     def Jump(self, dest: int) -> None:
 //|         """Execute commands at another location in the display list
@@ -583,12 +563,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(end_obj, _end);
 //|         :param int dest: display list address. Range 0-65535"""
 //|         ...
 
-STATIC mp_obj_t _jump(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _jump(mp_obj_t self, mp_obj_t a0) {
     uint32_t dest = mp_obj_get_int_truncated(a0);
     common_hal__eve_Jump(EVEHAL(self), dest);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(jump_obj, _jump);
+static MP_DEFINE_CONST_FUN_OBJ_2(jump_obj, _jump);
 
 //|     def Macro(self, m: int) -> None:
 //|         """Execute a single command from a macro register
@@ -596,23 +576,23 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(jump_obj, _jump);
 //|         :param int m: macro register to read. Range 0-1"""
 //|         ...
 
-STATIC mp_obj_t _macro(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _macro(mp_obj_t self, mp_obj_t a0) {
     uint32_t m = mp_obj_get_int_truncated(a0);
     common_hal__eve_Macro(EVEHAL(self), m);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(macro_obj, _macro);
+static MP_DEFINE_CONST_FUN_OBJ_2(macro_obj, _macro);
 
 //|     def Nop(self) -> None:
 //|         """No operation"""
 //|         ...
 
-STATIC mp_obj_t _nop(mp_obj_t self) {
+static mp_obj_t _nop(mp_obj_t self) {
 
     common_hal__eve_Nop(EVEHAL(self));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(nop_obj, _nop);
+static MP_DEFINE_CONST_FUN_OBJ_1(nop_obj, _nop);
 
 //|     def PaletteSource(self, addr: int) -> None:
 //|         """Set the base address of the palette
@@ -623,45 +603,45 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(nop_obj, _nop);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _palettesource(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _palettesource(mp_obj_t self, mp_obj_t a0) {
     uint32_t addr = mp_obj_get_int_truncated(a0);
     common_hal__eve_PaletteSource(EVEHAL(self), addr);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(palettesource_obj, _palettesource);
+static MP_DEFINE_CONST_FUN_OBJ_2(palettesource_obj, _palettesource);
 
 //|     def RestoreContext(self) -> None:
 //|         """Restore the current graphics context from the context stack"""
 //|         ...
 
-STATIC mp_obj_t _restorecontext(mp_obj_t self) {
+static mp_obj_t _restorecontext(mp_obj_t self) {
 
     common_hal__eve_RestoreContext(EVEHAL(self));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(restorecontext_obj, _restorecontext);
+static MP_DEFINE_CONST_FUN_OBJ_1(restorecontext_obj, _restorecontext);
 
 //|     def Return(self) -> None:
 //|         """Return from a previous call command"""
 //|         ...
 
-STATIC mp_obj_t _return(mp_obj_t self) {
+static mp_obj_t _return(mp_obj_t self) {
 
     common_hal__eve_Return(EVEHAL(self));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(return_obj, _return);
+static MP_DEFINE_CONST_FUN_OBJ_1(return_obj, _return);
 
 //|     def SaveContext(self) -> None:
 //|         """Push the current graphics context on the context stack"""
 //|         ...
 
-STATIC mp_obj_t _savecontext(mp_obj_t self) {
+static mp_obj_t _savecontext(mp_obj_t self) {
 
     common_hal__eve_SaveContext(EVEHAL(self));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(savecontext_obj, _savecontext);
+static MP_DEFINE_CONST_FUN_OBJ_1(savecontext_obj, _savecontext);
 
 //|     def ScissorSize(self, width: int, height: int) -> None:
 //|         """Set the size of the scissor clip rectangle
@@ -673,13 +653,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(savecontext_obj, _savecontext);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _scissorsize(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+static mp_obj_t _scissorsize(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     uint32_t width = mp_obj_get_int_truncated(a0);
     uint32_t height = mp_obj_get_int_truncated(a1);
     common_hal__eve_ScissorSize(EVEHAL(self), width, height);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(scissorsize_obj, _scissorsize);
+static MP_DEFINE_CONST_FUN_OBJ_3(scissorsize_obj, _scissorsize);
 
 //|     def ScissorXY(self, x: int, y: int) -> None:
 //|         """Set the top left corner of the scissor clip rectangle
@@ -691,13 +671,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(scissorsize_obj, _scissorsize);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _scissorxy(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+static mp_obj_t _scissorxy(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     uint32_t x = mp_obj_get_int_truncated(a0);
     uint32_t y = mp_obj_get_int_truncated(a1);
     common_hal__eve_ScissorXY(EVEHAL(self), x, y);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(scissorxy_obj, _scissorxy);
+static MP_DEFINE_CONST_FUN_OBJ_3(scissorxy_obj, _scissorxy);
 
 //|     def StencilFunc(self, func: int, ref: int, mask: int) -> None:
 //|         """Set function and reference value for stencil testing
@@ -710,14 +690,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(scissorxy_obj, _scissorxy);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _stencilfunc(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t _stencilfunc(size_t n_args, const mp_obj_t *args) {
     uint32_t func = mp_obj_get_int_truncated(args[1]);
     uint32_t ref = mp_obj_get_int_truncated(args[2]);
     uint32_t mask = mp_obj_get_int_truncated(args[3]);
     common_hal__eve_StencilFunc(EVEHAL(args[0]), func, ref, mask);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stencilfunc_obj, 4, 4, _stencilfunc);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stencilfunc_obj, 4, 4, _stencilfunc);
 
 //|     def StencilMask(self, mask: int) -> None:
 //|         """Control the writing of individual bits in the stencil planes
@@ -728,12 +708,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stencilfunc_obj, 4, 4, _stencilfunc);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _stencilmask(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _stencilmask(mp_obj_t self, mp_obj_t a0) {
     uint32_t mask = mp_obj_get_int_truncated(a0);
     common_hal__eve_StencilMask(EVEHAL(self), mask);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(stencilmask_obj, _stencilmask);
+static MP_DEFINE_CONST_FUN_OBJ_2(stencilmask_obj, _stencilmask);
 
 //|     def StencilOp(self, sfail: int, spass: int) -> None:
 //|         """Set stencil test actions
@@ -745,13 +725,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(stencilmask_obj, _stencilmask);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _stencilop(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+static mp_obj_t _stencilop(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     uint32_t sfail = mp_obj_get_int_truncated(a0);
     uint32_t spass = mp_obj_get_int_truncated(a1);
     common_hal__eve_StencilOp(EVEHAL(self), sfail, spass);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(stencilop_obj, _stencilop);
+static MP_DEFINE_CONST_FUN_OBJ_3(stencilop_obj, _stencilop);
 
 //|     def TagMask(self, mask: int) -> None:
 //|         """Control the writing of the tag buffer
@@ -762,12 +742,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(stencilop_obj, _stencilop);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _tagmask(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _tagmask(mp_obj_t self, mp_obj_t a0) {
     uint32_t mask = mp_obj_get_int_truncated(a0);
     common_hal__eve_TagMask(EVEHAL(self), mask);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(tagmask_obj, _tagmask);
+static MP_DEFINE_CONST_FUN_OBJ_2(tagmask_obj, _tagmask);
 
 //|     def Tag(self, s: int) -> None:
 //|         """Set the current tag value
@@ -778,19 +758,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(tagmask_obj, _tagmask);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _tag(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _tag(mp_obj_t self, mp_obj_t a0) {
     uint32_t s = mp_obj_get_int_truncated(a0);
     common_hal__eve_Tag(EVEHAL(self), s);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(tag_obj, _tag);
+static MP_DEFINE_CONST_FUN_OBJ_2(tag_obj, _tag);
 
-STATIC mp_obj_t _vertexformat(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _vertexformat(mp_obj_t self, mp_obj_t a0) {
     uint32_t frac = mp_obj_get_int_truncated(a0);
     common_hal__eve_VertexFormat(EVEHAL(self), frac);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertexformat_obj, _vertexformat);
+static MP_DEFINE_CONST_FUN_OBJ_2(vertexformat_obj, _vertexformat);
 
 //|     def Vertex2ii(self, x: int, y: int, handle: int, cell: int) -> None:
 //|         """:param int x: x-coordinate in pixels. Range 0-511
@@ -801,7 +781,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertexformat_obj, _vertexformat);
 //|         This method is an alternative to :meth:`Vertex2f`."""
 //|         ...
 
-STATIC mp_obj_t _vertex2ii(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t _vertex2ii(size_t n_args, const mp_obj_t *args) {
     uint32_t x = mp_obj_get_int_truncated(args[1]);
     uint32_t y = mp_obj_get_int_truncated(args[2]);
     uint32_t handle = (n_args > 3) ? mp_obj_get_int_truncated(args[3]) : 0;
@@ -809,7 +789,7 @@ STATIC mp_obj_t _vertex2ii(size_t n_args, const mp_obj_t *args) {
     common_hal__eve_Vertex2ii(EVEHAL(args[0]), x, y, handle, cell);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(vertex2ii_obj, 3, 5, _vertex2ii);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(vertex2ii_obj, 3, 5, _vertex2ii);
 
 #define ROM_DECLS \
     { MP_ROM_QSTR(MP_QSTR_AlphaFunc), MP_ROM_PTR(&alphafunc_obj) }, \
@@ -872,13 +852,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(vertex2ii_obj, 3, 5, _vertex2ii);
 //|         :param float x: pixel x-coordinate
 //|         :param float y: pixel y-coordinate"""
 //|         ...
-STATIC mp_obj_t _vertex2f(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+static mp_obj_t _vertex2f(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     mp_float_t x = mp_obj_get_float(a0);
     mp_float_t y = mp_obj_get_float(a1);
     common_hal__eve_Vertex2f(EVEHAL(self), x, y);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(vertex2f_obj, _vertex2f);
+static MP_DEFINE_CONST_FUN_OBJ_3(vertex2f_obj, _vertex2f);
 
 //|     def LineWidth(self, width: float) -> None:
 //|         """Set the width of rasterized lines
@@ -889,12 +869,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(vertex2f_obj, _vertex2f);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _linewidth(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _linewidth(mp_obj_t self, mp_obj_t a0) {
     mp_float_t width = mp_obj_get_float(a0);
     common_hal__eve_LineWidth(EVEHAL(self), width);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(linewidth_obj, _linewidth);
+static MP_DEFINE_CONST_FUN_OBJ_2(linewidth_obj, _linewidth);
 
 //|     def PointSize(self, size: float) -> None:
 //|         """Set the diameter of rasterized points
@@ -905,12 +885,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(linewidth_obj, _linewidth);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _pointsize(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _pointsize(mp_obj_t self, mp_obj_t a0) {
     mp_float_t size = mp_obj_get_float(a0);
     common_hal__eve_PointSize(EVEHAL(self), size);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pointsize_obj, _pointsize);
+static MP_DEFINE_CONST_FUN_OBJ_2(pointsize_obj, _pointsize);
 
 //|     def VertexTranslateX(self, x: float) -> None:
 //|         """Set the vertex transformation's x translation component
@@ -921,12 +901,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pointsize_obj, _pointsize);
 //|         """
 //|         ...
 
-STATIC mp_obj_t _vertextranslatex(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _vertextranslatex(mp_obj_t self, mp_obj_t a0) {
     mp_float_t x = mp_obj_get_float(a0);
     common_hal__eve_VertexTranslateX(EVEHAL(self), x);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatex_obj, _vertextranslatex);
+static MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatex_obj, _vertextranslatex);
 
 //|     def VertexTranslateY(self, y: float) -> None:
 //|         """Set the vertex transformation's y translation component
@@ -938,12 +918,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatex_obj, _vertextranslatex);
 //|         ...
 
 
-STATIC mp_obj_t _vertextranslatey(mp_obj_t self, mp_obj_t a0) {
+static mp_obj_t _vertextranslatey(mp_obj_t self, mp_obj_t a0) {
     mp_float_t y = mp_obj_get_float(a0);
     common_hal__eve_VertexTranslateY(EVEHAL(self), y);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatey_obj, _vertextranslatey);
+static MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatey_obj, _vertextranslatey);
 
 //|     def VertexFormat(self, frac: int) -> None:
 //|         """Set the precision of vertex2f coordinates
@@ -969,12 +949,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatey_obj, _vertextranslatey);
 //|         commands to the FIFO."""
 //|         ...
 
-STATIC mp_obj_t _cmd0(mp_obj_t self, mp_obj_t n) {
+static mp_obj_t _cmd0(mp_obj_t self, mp_obj_t n) {
     uint32_t code = 0xffffff00 | mp_obj_get_int_truncated(n);
     ADD_X(self, code);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(cmd0_obj, _cmd0);
+static MP_DEFINE_CONST_FUN_OBJ_2(cmd0_obj, _cmd0);
 
 //|     def cmd(self, n: int, fmt: str, args: Tuple[str, ...]) -> None:
 //|         """Append a command packet to the FIFO.
@@ -990,7 +970,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cmd0_obj, _cmd0);
 //|         commands to the FIFO."""
 //|         ...
 //|
-STATIC mp_obj_t _cmd(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t _cmd(size_t n_args, const mp_obj_t *args) {
     mp_obj_t self = args[0];
     mp_obj_t num = args[1];
     mp_buffer_info_t fmt;
@@ -1043,9 +1023,9 @@ STATIC mp_obj_t _cmd(size_t n_args, const mp_obj_t *args) {
     common_hal__eve_add(EVEHAL(self), sizeof(uint32_t) * (1 + n), buf);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(cmd_obj, 4, 4, _cmd);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(cmd_obj, 4, 4, _cmd);
 
-STATIC const mp_rom_map_elem_t _EVE_locals_dict_table[] = {
+static const mp_rom_map_elem_t _EVE_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&register_obj) },
     { MP_ROM_QSTR(MP_QSTR_cc), MP_ROM_PTR(&cc_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&flush_obj) },
@@ -1054,9 +1034,9 @@ STATIC const mp_rom_map_elem_t _EVE_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_cmd0), MP_ROM_PTR(&cmd0_obj) },
     ROM_DECLS
 };
-STATIC MP_DEFINE_CONST_DICT(_EVE_locals_dict, _EVE_locals_dict_table);
+static MP_DEFINE_CONST_DICT(_EVE_locals_dict, _EVE_locals_dict_table);
 
-STATIC mp_obj_t _EVE_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t _EVE_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // mp_arg_check_num(n_args, kw_args, 1, 1, false);
     mp_obj__EVE_t *o = mp_obj_malloc(mp_obj__EVE_t, &_EVE_type);
     o->_eve.n = 0;
@@ -1064,7 +1044,7 @@ STATIC mp_obj_t _EVE_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     _EVE_type,
     MP_QSTR__EVE,
     MP_TYPE_FLAG_NONE,
@@ -1072,12 +1052,12 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &_EVE_locals_dict
     );
 
-STATIC const mp_rom_map_elem_t mp_module__eve_globals_table[] = {
+static const mp_rom_map_elem_t mp_module__eve_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__eve) },
     { MP_ROM_QSTR(MP_QSTR__EVE), MP_OBJ_FROM_PTR(&_EVE_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module__eve_globals, mp_module__eve_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module__eve_globals, mp_module__eve_globals_table);
 
 const mp_obj_module_t _eve_module = {
     .base = { &mp_type_module },

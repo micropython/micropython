@@ -110,6 +110,12 @@ autoapi_template_dir = 'docs/autoapi/templates'
 autoapi_python_class_content = "both"
 autoapi_python_use_implicit_namespaces = True
 autoapi_root = "shared-bindings"
+
+# Suppress cache warnings to prevent "unpickable" [sic] warning
+# about autoapi_prepare_jinja_env() from sphinx >= 7.3.0.
+# See https://github.com/sphinx-doc/sphinx/issues/12300
+suppress_warnings = ["config.cache"]
+
 def autoapi_prepare_jinja_env(jinja_env):
     jinja_env.globals['support_matrix_reverse'] = modules_support_matrix_reverse
 

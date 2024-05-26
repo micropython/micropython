@@ -1,3 +1,11 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
+#pragma once
+
 // LEDs
 #define MICROPY_HW_LED_STATUS   (&pin_PA17)
 #define MICROPY_HW_LED_TX   &pin_PA27

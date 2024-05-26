@@ -1,7 +1,13 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries, 2020 Radomir
+//
+// SPDX-License-Identifier: MIT
+
 #include "shared-bindings/board/__init__.h"
 #include "shared-module/displayio/__init__.h"
 
-STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+static const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_PA23) },
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PA22) },
     { MP_ROM_QSTR(MP_QSTR_CS), MP_ROM_PTR(&pin_PA17) },

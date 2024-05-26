@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2016-2017 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2016-2017 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 #include <string.h>
 
 #include "py/obj.h"
@@ -36,7 +16,7 @@
 #include "supervisor/shared/traceback.h"
 #include "supervisor/shared/workflow.h"
 
-#if CIRCUITPY_USB_IDENTIFICATION
+#if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_IDENTIFICATION
 #include "supervisor/usb.h"
 #endif
 
@@ -65,7 +45,7 @@
 //|     """Reload the main Python code and run it (equivalent to hitting Ctrl-D at the REPL)."""
 //|     ...
 //|
-STATIC mp_obj_t supervisor_reload(void) {
+static mp_obj_t supervisor_reload(void) {
     reload_initiate(RUN_REASON_SUPERVISOR_RELOAD);
     return mp_const_none;
 }
@@ -112,7 +92,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);
 //|     reset to the standard search sequence."""
 //|     ...
 //|
-STATIC mp_obj_t supervisor_set_next_code_file(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t supervisor_set_next_code_file(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_filename, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_reload_on_success, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
@@ -230,7 +210,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_ticks_ms_obj, supervisor_ticks_ms);
 //|     Only code (main or boot) runs are considered, not REPL runs."""
 //|     ...
 //|
-STATIC mp_obj_t supervisor_get_previous_traceback(void) {
+static mp_obj_t supervisor_get_previous_traceback(void) {
     if (prev_traceback_string) {
         size_t len = strlen(prev_traceback_string);
         if (len > 0) {
@@ -250,7 +230,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_get_previous_traceback_obj, supervisor_get_
 //|     """Reset the CircuitPython serial terminal with new dimensions."""
 //|     ...
 //|
-STATIC mp_obj_t supervisor_reset_terminal(mp_obj_t x_pixels, mp_obj_t y_pixels) {
+static mp_obj_t supervisor_reset_terminal(mp_obj_t x_pixels, mp_obj_t y_pixels) {
     #if CIRCUITPY_DISPLAYIO
     supervisor_stop_terminal();
     supervisor_start_terminal(mp_obj_get_int(x_pixels), mp_obj_get_int(y_pixels));
@@ -278,8 +258,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(supervisor_reset_terminal_obj, supervisor_reset_termin
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t supervisor_set_usb_identification(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    #if CIRCUITPY_USB_IDENTIFICATION
+static mp_obj_t supervisor_set_usb_identification(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_IDENTIFICATION
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_manufacturer, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_product, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
@@ -330,7 +310,7 @@ STATIC mp_obj_t supervisor_set_usb_identification(size_t n_args, const mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(supervisor_set_usb_identification_obj, 0, supervisor_set_usb_identification);
 
-STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
+static const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
     { MP_ROM_QSTR(MP_QSTR_runtime),  MP_ROM_PTR(&common_hal_supervisor_runtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_reload),  MP_ROM_PTR(&supervisor_reload_obj) },
@@ -348,7 +328,7 @@ STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_status_bar),  MP_ROM_PTR(&shared_module_supervisor_status_bar_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(supervisor_module_globals, supervisor_module_globals_table);
+static MP_DEFINE_CONST_DICT(supervisor_module_globals, supervisor_module_globals_table);
 
 const mp_obj_module_t supervisor_module = {
     .base = { &mp_type_module },

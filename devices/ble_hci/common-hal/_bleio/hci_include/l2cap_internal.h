@@ -1,4 +1,5 @@
-// CircuitPython: Adapted from Zephyr include file.
+// This file is part of the CircuitPython project: https://circuitpython.org
+// Adapted from Zephyr include file.
 
 /** @file
  *  @brief Internal APIs for Bluetooth L2CAP handling.
@@ -9,6 +10,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
+#pragma once
 
 #include <stdbool.h>
 // for __packed

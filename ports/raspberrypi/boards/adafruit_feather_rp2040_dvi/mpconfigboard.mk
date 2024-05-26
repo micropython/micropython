@@ -8,4 +8,8 @@ CHIP_FAMILY = rp2
 
 EXTERNAL_FLASH_DEVICES = "GD25Q64C,W25Q64JVxQ"
 
+CIRCUITPY_MAX3421E = 1
 CIRCUITPY_PICODVI = 1
+# Disable native USB host because it won't work alongside DVI anyway. (They both
+# use the second core.)
+CIRCUITPY_USB_HOST = 0

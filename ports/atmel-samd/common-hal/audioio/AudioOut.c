@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdint.h>
 #include <string.h>
@@ -95,26 +75,6 @@ static void ramp_value(uint16_t start, uint16_t end) {
     }
 }
 #endif
-
-void audioout_reset(void) {
-    #if defined(SAMD21) && !defined(PIN_PA02)
-    return;
-    #endif
-    #ifdef SAMD21
-    while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {
-    }
-    #endif
-    #ifdef SAM_D5X_E5X
-    while (DAC->SYNCBUSY.reg & DAC_SYNCBUSY_SWRST) {
-    }
-    #endif
-    if (DAC->CTRLA.bit.ENABLE) {
-        ramp_value(0x8000, 0);
-    }
-    DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
-
-    // TODO(tannewt): Turn off the DAC clocks to save power.
-}
 
 // Caller validates that pins are free.
 void common_hal_audioio_audioout_construct(audioio_audioout_obj_t *self,
@@ -231,22 +191,16 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t *self,
     }
     #endif
 
+
     // Use a timer to coordinate when DAC conversions occur.
-    Tc *t = NULL;
-    uint8_t tc_index = TC_INST_NUM;
-    for (uint8_t i = TC_INST_NUM; i > 0; i--) {
-        if (tc_insts[i - 1]->COUNT16.CTRLA.bit.ENABLE == 0) {
-            t = tc_insts[i - 1];
-            tc_index = i - 1;
-            break;
-        }
-    }
-    if (t == NULL) {
+    uint8_t tc_index = find_free_timer();
+    if (tc_index == 0xFF) {
         common_hal_audioio_audioout_deinit(self);
         mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
         return;
     }
     self->tc_index = tc_index;
+    Tc *t = tc_insts[tc_index];
 
     // Use the 48MHz clocks on both the SAMD21 and 51 because we will be going much slower.
     uint8_t tc_gclk = 0;
@@ -322,10 +276,6 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t *self) {
         common_hal_audioio_audioout_stop(self);
     }
 
-    // Ramp the DAC down.
-    ramp_value(self->quiescent_value, 0);
-
-    DAC->CTRLA.bit.ENABLE = 0;
     #ifdef SAMD21
     while (DAC->STATUS.bit.SYNCBUSY == 1) {
     }
@@ -334,6 +284,15 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t *self) {
     while (DAC->SYNCBUSY.bit.ENABLE == 1) {
     }
     #endif
+
+    // Ramp the DAC down.
+    ramp_value(self->quiescent_value, 0);
+
+    DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
+
+    // TODO(tannewt): Turn off the DAC clocks to save power.
+
+    DAC->CTRLA.bit.ENABLE = 0;
 
     disable_event_channel(self->tc_to_dac_event_channel);
 

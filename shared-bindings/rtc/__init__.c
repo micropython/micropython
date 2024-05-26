@@ -1,29 +1,9 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Noralf Trønnes
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Noralf Trønnes
+// SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -67,20 +47,20 @@ mp_obj_t rtc_get_time_source_time(void) {
 //|       rtc.set_time_source(r)"""
 //|     ...
 //|
-STATIC mp_obj_t rtc_set_time_source(mp_obj_t time_source) {
+static mp_obj_t rtc_set_time_source(mp_obj_t time_source) {
     MP_STATE_VM(rtc_time_source) = time_source;
 
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rtc_set_time_source_obj, rtc_set_time_source);
 
-STATIC const mp_rom_map_elem_t rtc_module_globals_table[] = {
+static const mp_rom_map_elem_t rtc_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_rtc) },
     { MP_ROM_QSTR(MP_QSTR_set_time_source), MP_ROM_PTR(&rtc_set_time_source_obj) },
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&rtc_rtc_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(rtc_module_globals, rtc_module_globals_table);
+static MP_DEFINE_CONST_DICT(rtc_module_globals, rtc_module_globals_table);
 
 const mp_obj_module_t rtc_module = {
     .base = { &mp_type_module },
