@@ -131,13 +131,22 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
 }
 
 void common_hal_espulp_ulp_halt(espulp_ulp_obj_t *self) {
-    #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
-    if (self->arch == RISCV) {
-        ulp_riscv_timer_stop();
-        ulp_riscv_halt();
-    }
-    #endif
-    CLEAR_PERI_REG_MASK(RTC_CNTL_ULP_CP_TIMER_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
+   switch (self->arch) {
+        #ifdef CONFIG_ULP_COPROC_TYPE_FSM
+        case FSM:
+            ulp_timer_stop();
+            break;
+        #endif
+        #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
+        case RISCV:
+            ulp_riscv_timer_stop();
+            ulp_riscv_halt();
+            break;
+        #endif
+        default:
+            mp_raise_NotImplementedError(NULL);
+            break;
+   }
 
     // Release pins we were using.
     for (uint8_t i = 0; i < 32; i++) {

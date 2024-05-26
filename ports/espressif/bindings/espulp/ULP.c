@@ -39,7 +39,8 @@
 //|         Raises an exception if another ULP has been instantiated. This
 //|         ensures that is is only used by one piece of code at a time.
 //|
-//|         :param Architecture arch: The ulp arch"""
+//|         :param Architecture arch: The ulp arch. Only `FSM` architecture 
+//|         is currently supported."""
 //|         ...
 STATIC mp_obj_t espulp_ulp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_arch };
@@ -148,7 +149,9 @@ STATIC mp_obj_t espulp_ulp_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     for (mp_uint_t i = 0; i < num_pins; i++) {
         mp_obj_t pin_obj = mp_obj_subscr(pins_in, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
-        validate_obj_is_free_pin(pin_obj, MP_QSTR_pin);
+        // common-hal checks that pin is free (that way a possible "ULP already running" error
+        // is triggered before a possible "Pin in use" error, if ulp.run is called twice with the same pins).
+        validate_obj_is_pin(pin_obj, MP_QSTR_pin); 
         const mcu_pin_obj_t *pin = ((const mcu_pin_obj_t *)pin_obj);
         if (pin->number >= 32) {
             raise_ValueError_invalid_pin();
@@ -162,7 +165,9 @@ STATIC mp_obj_t espulp_ulp_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espulp_ulp_run_obj, 2, espulp_ulp_run);
 
 //|     def halt(self) -> None:
-//|         """Halts the running program and releases the pins given in `run()`."""
+//|         """Halts the running program and releases the pins given in `run()`.
+//|            Note: for the FSM ULP, a running ULP program is not actually interupted.
+//|            Instead, only the wakeup timer is stopped."""
 //|         ...
 STATIC mp_obj_t espulp_ulp_halt(mp_obj_t self_in) {
     espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(self_in);
