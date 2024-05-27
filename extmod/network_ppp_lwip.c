@@ -80,7 +80,6 @@ static void network_ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
             break;
         case PPPERR_USER:
             if (self->state >= STATE_ERROR) {
-                network_ppp_stream_uart_irq_disable(self);
                 // Indicate that we are no longer connected and thus
                 // only need to free the PPP PCB, not close it.
                 self->state = STATE_ACTIVE;
@@ -121,6 +120,7 @@ static mp_obj_t network_ppp___del__(mp_obj_t self_in) {
             self->state = STATE_INACTIVE;
             ppp_close(self->pcb, 1);
         }
+        network_ppp_stream_uart_irq_disable(self);
         // Free PPP PCB and reset state.
         self->state = STATE_INACTIVE;
         ppp_free(self->pcb);
@@ -295,7 +295,8 @@ static mp_obj_t network_ppp_connect(size_t n_args, const mp_obj_t *args, mp_map_
         ppp_set_auth(self->pcb, parsed_args[ARG_security].u_int, user_str, key_str);
     }
 
-    netif_set_default(self->pcb->netif);
+    ppp_set_default(self->pcb);
+
     ppp_set_usepeerdns(self->pcb, true);
 
     if (ppp_connect(self->pcb, 0) != ERR_OK) {
