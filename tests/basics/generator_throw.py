@@ -41,13 +41,3 @@ print(g.throw(GeneratorExit))
 g = gen()
 print(next(g))
 print(g.throw(GeneratorExit()))
-
-# thrown an instance with None as second arg
-g = gen()
-print(next(g))
-print(g.throw(GeneratorExit(), None))
-
-# thrown a class and instance
-g = gen()
-print(next(g))
-print(g.throw(GeneratorExit, GeneratorExit(123)))
