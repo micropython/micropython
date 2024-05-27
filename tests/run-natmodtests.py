@@ -97,8 +97,9 @@ class TargetPyboard:
 def run_tests(target_truth, target, args, stats):
     for test_file in args.files:
         # Find supported test
+        test_file_basename = os.path.basename(test_file)
         for k, v in TEST_MAPPINGS.items():
-            if test_file.find(k) != -1:
+            if test_file_basename.startswith(k):
                 test_module = k
                 test_mpy = v.replace("$(ARCH)", args.arch)
                 break
