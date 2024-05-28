@@ -1,0 +1,15 @@
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Component config
+#
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="autosportlabs-esp32-can-x2"
+# end of LWIP
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration
