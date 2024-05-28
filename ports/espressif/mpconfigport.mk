@@ -158,9 +158,8 @@ CIRCUITPY_DUALBANK = 0
 CIRCUITPY_AUDIOMP3 = 0
 endif
 
-
-# No room for _eve on boards with 2MB flash
-ifeq ($(CIRCUITPY_ESP_FLASH_SIZE),2MB)
+# No room for _eve on boards with 4MB flash
+ifeq ($(CIRCUITPY_ESP_FLASH_SIZE),4MB)
 CIRCUITPY__EVE = 0
 endif
 
