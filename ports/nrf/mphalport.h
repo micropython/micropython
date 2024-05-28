@@ -28,10 +28,12 @@
 #define __NRF52_HAL
 
 #include "py/mpconfig.h"
+#include "py/ringbuf.h"
 #include <nrfx.h>
 #include "pin.h"
 #include "nrf_gpio.h"
 #include "nrfx_config.h"
+#include "shared/runtime/interrupt_char.h"
 
 typedef enum
 {
@@ -42,6 +44,8 @@ typedef enum
 } HAL_StatusTypeDef;
 
 extern const unsigned char mp_hal_status_to_errno_table[4];
+
+extern ringbuf_t stdin_ringbuf;
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
