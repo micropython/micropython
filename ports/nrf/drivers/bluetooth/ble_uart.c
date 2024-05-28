@@ -97,20 +97,16 @@ static ubluepy_advertise_data_t m_adv_data_uart_service;
 static ubluepy_advertise_data_t m_adv_data_eddystone_url;
 #endif // BLUETOOTH_WEBBLUETOOTH_REPL
 
-int mp_hal_stdin_rx_chr(void) {
-    while (!ble_uart_enabled()) {
-        // wait for connection
+int mp_ble_uart_stdin_rx_chr(void) {
+    if (ble_uart_enabled() && !isBufferEmpty(mp_rx_ring_buffer)) {
+        uint8_t byte = -1;
+        bufferRead(mp_rx_ring_buffer, byte);
+        return (int)byte;
     }
-    while (isBufferEmpty(mp_rx_ring_buffer)) {
-        ;
-    }
-
-    uint8_t byte;
-    bufferRead(mp_rx_ring_buffer, byte);
-    return (int)byte;
+    return -1;
 }
 
-mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
+mp_uint_t mp_ble_uart_stdout_tx_strn(const char *str, size_t len) {
     // Not connected: drop output
     if (!ble_uart_enabled()) return 0;
 
@@ -150,17 +146,8 @@ void ble_uart_tx_char(char c) {
                           (uint8_t *)&c);
 }
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
-    for (const char *top = str + len; str < top; str++) {
-        if (*str == '\n') {
-            ble_uart_tx_char('\r');
-        }
-        ble_uart_tx_char(*str);
-    }
-}
-
 #if MICROPY_PY_SYS_STDFILES
-uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+uintptr_t mp_ble_uart_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
     if ((poll_flags & MP_STREAM_POLL_RD) && ble_uart_enabled()
         && !isBufferEmpty(mp_rx_ring_buffer)) {

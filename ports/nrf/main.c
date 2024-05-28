@@ -73,7 +73,7 @@
 #include "softpwm.h"
 #endif
 
-#if MICROPY_HW_USB_CDC
+#if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
 #include "usb_cdc.h"
 #endif
 
@@ -165,11 +165,11 @@ soft_reset:
     uart_init0();
     #endif
 
-    #if (MICROPY_PY_BLE_NUS == 0) && (MICROPY_HW_USB_CDC == 0)
+    #if MICROPY_HW_ENABLE_UART_REPL
     {
         mp_obj_t args[2] = {
-            MP_OBJ_NEW_SMALL_INT(0),
-            MP_OBJ_NEW_SMALL_INT(115200),
+            MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL),
+            MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL_BAUD),
         };
         MP_STATE_VM(dupterm_objs[0]) = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
@@ -265,7 +265,7 @@ soft_reset:
     ret_code = pyexec_file_if_exists("boot.py");
     #endif
 
-    #if MICROPY_HW_USB_CDC
+    #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
     usb_cdc_init();
     #endif
 

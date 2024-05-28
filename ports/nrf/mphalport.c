@@ -29,11 +29,15 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
+#include "py/ringbuf.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "extmod/misc.h"
 #include "uart.h"
 #include "nrfx_errors.h"
 #include "nrfx_config.h"
+#include "drivers/bluetooth/ble_uart.h"
+#include "shared/tinyusb/mp_usbd_cdc.h"
 
 #if MICROPY_PY_TIME_TICKS
 #include "nrfx_rtc.h"
@@ -49,6 +53,14 @@
 #if USE_WORKAROUND_FOR_ANOMALY_132
 #include "soc/nrfx_coredep.h"
 #endif
+
+#ifndef MICROPY_HW_STDIN_BUFFER_LEN
+#define MICROPY_HW_STDIN_BUFFER_LEN 512
+#endif
+
+static uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
+ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0 };
+
 
 void mp_nrf_start_lfclk(void) {
     if (!nrf_clock_lf_start_task_status_get(NRF_CLOCK)) {
@@ -200,47 +212,73 @@ void mp_hal_set_interrupt_char(int c) {
 }
 #endif
 
-#if !MICROPY_PY_BLE_NUS && !MICROPY_HW_USB_CDC
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
-    if ((poll_flags & MP_STREAM_POLL_RD) && MP_STATE_VM(dupterm_objs[0]) != MP_OBJ_NULL
-        && uart_rx_any(MP_STATE_VM(dupterm_objs[0]))) {
-        ret |= MP_STREAM_POLL_RD;
-    }
-    if ((poll_flags & MP_STREAM_POLL_WR) && MP_STATE_VM(dupterm_objs[0]) != MP_OBJ_NULL) {
-        ret |= MP_STREAM_POLL_WR;
-    }
+    #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
+    ret |= mp_usbd_cdc_poll_interfaces(poll_flags);
+    #endif
+    #if MICROPY_PY_BLE_NUS && MICROPY_PY_SYS_STDFILES
+    ret |= mp_ble_uart_stdio_poll(poll_flags);
+    #endif
+    #if MICROPY_PY_OS_DUPTERM
+    ret |= mp_os_dupterm_poll(poll_flags);
+    #endif
     return ret;
 }
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        if (MP_STATE_VM(dupterm_objs[0]) != MP_OBJ_NULL && uart_rx_any(MP_STATE_VM(dupterm_objs[0]))) {
-            return uart_rx_char(MP_STATE_VM(dupterm_objs[0]));
+        #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
+        mp_usbd_cdc_poll_interfaces(0);
+        #endif
+        int c = ringbuf_get(&stdin_ringbuf);
+        if (c != -1) {
+            return c;
         }
+        #if MICROPY_PY_BLE_NUS
+        c = mp_ble_uart_stdin_rx_chr();
+        if (c != -1) {
+            return c;
+        }
+        #endif
+        #if MICROPY_PY_OS_DUPTERM
+        int dupterm_c = mp_os_dupterm_rx_chr();
+        if (dupterm_c >= 0) {
+            return dupterm_c;
+        }
+        #endif
         MICROPY_EVENT_POLL_HOOK
     }
 
     return 0;
 }
 
+// Send string of given length
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-    if (MP_STATE_VM(dupterm_objs[0]) != MP_OBJ_NULL) {
-        uart_tx_strn(MP_STATE_VM(dupterm_objs[0]), str, len);
-        return len;
+    mp_uint_t ret = len;
+    bool did_write = false;
+    #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
+    mp_uint_t cdc_res = mp_usbd_cdc_tx_strn(str, len);
+    if (cdc_res > 0) {
+        did_write = true;
+        ret = MIN(cdc_res, ret);
     }
-    return 0;
-}
-
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
-    if (MP_STATE_VM(dupterm_objs[0]) != MP_OBJ_NULL) {
-        uart_tx_strn_cooked(MP_STATE_VM(dupterm_objs[0]), str, len);
+    #endif
+    #if MICROPY_PY_BLE_NUS
+    mp_uint_t ble_res = mp_ble_uart_stdout_tx_strn(str, len);
+    if (ble_res > 0) {
+        did_write = true;
+        ret = MIN(ble_res, ret);
     }
-}
-#endif
-
-void mp_hal_stdout_tx_str(const char *str) {
-    mp_hal_stdout_tx_strn(str, strlen(str));
+    #endif
+    #if MICROPY_PY_OS_DUPTERM
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res >= 0) {
+        did_write = true;
+        ret = MIN((mp_uint_t)dupterm_res, ret);
+    }
+    #endif
+    return did_write ? ret : 0;
 }
 
 #if MICROPY_PY_TIME_TICKS
