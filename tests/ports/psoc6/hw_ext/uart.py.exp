@@ -1,0 +1,15 @@
+********UART Tests********
+
+Tx char is received by Rx char:  True
+Tx is received by Rx(readinto(buf)):  True
+Tx is received by Rx(read(nbytes)):  True
+Tx is received by Rx(readline()):  True
+Tx Ongoing:  True
+Tx Done:  True
+
+*******UART Interrupt Tests*******
+
+Tx Done
+Rx Done
+Rx Buffer Full
+Tx Empty

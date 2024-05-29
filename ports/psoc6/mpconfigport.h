@@ -142,6 +142,9 @@
 #define MICROPY_PY_MACHINE_I2S_FINALISER        (1)
 #define MICROPY_PY_MACHINE_UART                 (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE    "ports/psoc6/machine_uart.c"
+#define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (1)
+#define MICROPY_PY_MACHINE_UART_SENDBREAK       (1)
+#define MICROPY_PY_MACHINE_UART_IRQ             (1)
 
 #define MICROPY_PY_MACHINE_PSOC6_I2S            (1)
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE      "ports/psoc6/machine_i2s.c"
