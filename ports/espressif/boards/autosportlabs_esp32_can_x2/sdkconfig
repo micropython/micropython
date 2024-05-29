@@ -7,7 +7,7 @@
 #
 # LWIP
 #
-CONFIG_LWIP_LOCAL_HOSTNAME="m5stack-cardputer"
+CONFIG_LWIP_LOCAL_HOSTNAME="autosportlabs-esp32-can-x2"
 # end of LWIP
 
 # end of Component config
