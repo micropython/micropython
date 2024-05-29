@@ -83,16 +83,16 @@ def spi_half_duplex_communication(spi_obj, tx, rx):
 
     # 1) master-->write and slave-->read
     # print("\n1) master-->write and slave-->read")
-    _wait_for_master_signal()
+    # _wait_for_master_signal()
     spi_obj.read(rx)
     # print("slave read successful : ", rx==tx)
-    _slave_ready_to_write()
+    # _slave_ready_to_write()
     spi_obj.write(rx)
 
     # 2) slave-->write and master-->read"
     # print("\n2) slave-->write and master-->read using readinto()")
     tx_buf = b"\x01\x03\x05\x07\x02\x04\x06\x08"
-    _slave_ready_to_write()
+    # _slave_ready_to_write()
     spi_obj.write(tx_buf)
 
     # 3) slave-->write and master-->read by sending a write_byte=0x12"

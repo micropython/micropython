@@ -115,17 +115,17 @@ def _verify_test(test_case, actual_data, exp_data):
 def spi_half_duplex_communication(spi_obj, tx, rx):
     print("\n*** Half duplex communication ***")
     print("\nTest Case 1: master-->write and slave-->read")
-    _master_ready_to_write()
+    # _master_ready_to_write()
     spi_obj.write(tx)
     print("Master wrote (tx): \t", tx)
-    _wait_for_slave_signal()
+    # _wait_for_slave_signal()
     rx = spi_obj.read(8)
     print("Slave returned (rx): \t", rx)
     print("Test case successful : \t", rx == tx)
 
     print("\nTest Case 2: slave-->write and master-->read using readinto()")
     rx = bytearray(8)
-    _wait_for_slave_signal()
+    # _wait_for_slave_signal()
     spi_obj.readinto(rx)
     exp = b"\x01\x03\x05\x07\x02\x04\x06\x08"
     print("Slave wrote (rx): \t", rx)
@@ -151,10 +151,14 @@ def spi_full_duplex_communication(spi_obj, tx, rx):
 
 spi_obj = spi_master_configure()
 
-# tx_buf = b"\x08"
+print("\n1: master-->write and slave-->read")
 tx_buf = b"\x08\x06\x04\x02\x07\x05\x03\x01"
 rx_buf = bytearray(8)
-spi_half_duplex_communication(spi_obj, tx_buf, rx_buf)
+# spi_half_duplex_communication(spi_obj, tx_buf, rx_buf)
+spi_obj.write(tx)
+# _wait_for_slave_signal()
+rx = spi_obj.read(8)
+
 
 tx_buf = b"\x08\x06\x04\x02\x07\x05\x03\x01"
 rx_buf = bytearray(8)

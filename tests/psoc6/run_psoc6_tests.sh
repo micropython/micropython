@@ -20,6 +20,7 @@ usage() {
   echo "  -v            run virtual filesystem related tests. If followed by -x, runs advance tests too."
   echo "  -b            run bitsream script."
   echo "  -s            run i2s tests."
+  echo "  -r            run spi tests."
   echo "  --dev0        device to be used"
   echo "  --dev1        second device to be used (for multi test)"
   echo "  --psoc6       run only psoc6 port related tests"
@@ -43,7 +44,7 @@ for arg in "$@"; do
   esac
 done
 
-while getopts "abcd:e:fhimnpqtwvxs" o; do
+while getopts "abcd:e:fhimnpqtwvxspr" o; do
   case "${o}" in
     a)
        all=1
@@ -81,6 +82,9 @@ while getopts "abcd:e:fhimnpqtwvxs" o; do
     q)
        psoc6WdtOnly=1
        ;;
+    r)
+      spi=1
+      ;;
     w)
        wifi=1
        ;;
@@ -116,7 +120,7 @@ if [ -z "${device0}" ]; then
 fi
 
 if [ -z "${device1}" ]; then
-  device1="/dev/ttyACM1"
+  device1="/dev/ttyACM2"
 fi
 
 if [ -z "${failing}" ]; then
@@ -168,6 +172,10 @@ fi
 
 if [ -z "${i2s}" ]; then
   i2s=0
+fi
+
+if [ -z "${spi}" ]; then
+  spi=0
 fi
 
 
@@ -489,6 +497,22 @@ if [ ${bitstream} -eq 1 ]; then
   ./run-tests.py --target psoc6 --device ${device0} \
       \
       psoc6/bitstream/bitstream_rx.py \
+    |tee -a ${resultsFile}
+
+fi
+
+if [ ${spi} -eq 1 ]; then
+
+  echo "  running spi tests ... "
+  echo
+
+  ../tools/mpremote/mpremote.py connect ${device1} run --no-follow psoc6/spi/spi_slave.py
+
+  echo " running spi master device..."
+
+  ./run-tests.py --target psoc6 --device ${device0} \
+      \
+      psoc6/spi/spi_master.py \
     |tee -a ${resultsFile}
 
 fi
