@@ -2,9 +2,9 @@
 from machine import RTC
 import time
 
-irq_counter = 0
-one_shot_alarm = 0
-periodic_alarm = 1
+IRQ_COUNTER = 0
+ONE_SHOT_ALARM = 0
+PERIODIC_ALARM = 1
 
 # Tuple format: Year, Month, Sec, WDay*, Hour, Min, Sec, Subsec=0
 # *Note: User cannot set a wrong week day value here. PSoC always calculates the right weekday using rest of the fields.
@@ -12,8 +12,8 @@ initial_dtime = (2023, 1, 1, 0, 0, 0, 0, 0)
 
 
 def cback(event):
-    global irq_counter
-    irq_counter += 1
+    global IRQ_COUNTER
+    IRQ_COUNTER += 1
 
 
 def check_rtc_mem_write():
@@ -40,9 +40,9 @@ def set_alarm_datetime(rtc, alarm_type, datetime):
 
 
 def wait_for_cback(timeout, exp_counter):
-    global irq_counter
+    global IRQ_COUNTER
     start = time.ticks_ms()
-    while irq_counter < exp_counter:
+    while IRQ_COUNTER < exp_counter:
         time.sleep_ms(5)
         if time.ticks_diff(time.ticks_ms(), start) > cback_call_wait_time:
             break
@@ -63,43 +63,43 @@ print("\ndatetime is accurate: \t", rtc.now() == exp_dtime)
 print("\n1. Setting periodic short alarm to be triggered repeatedly in few ms in future")
 timeout = 1000
 cback_call_wait_time = timeout + 200
-set_alarm_ms(rtc, periodic_alarm, timeout)
+set_alarm_ms(rtc, PERIODIC_ALARM, timeout)
 print("Alarm period set to (ms): ", rtc.alarm_left())
 wait_for_cback(cback_call_wait_time, 1)
-print("Alarm expired : ", irq_counter == 1)
+print("Alarm expired : ", IRQ_COUNTER == 1)
 print("Alarm set again...")
 wait_for_cback(cback_call_wait_time, 2)
-print("Alarm expired : ", irq_counter == 2)
+print("Alarm expired : ", IRQ_COUNTER == 2)
 rtc.cancel()
 wait_for_cback(cback_call_wait_time, 2)
-print("Alarm cancelled successfully : ", irq_counter == 2)
-irq_counter = 0
+print("Alarm cancelled successfully : ", IRQ_COUNTER == 2)
+IRQ_COUNTER = 0
 
 print("\n2. Setting one-shot short alarm to be triggered in few ms in future")
 timeout = 1000
 cback_call_wait_time = timeout + 500
-set_alarm_ms(rtc, one_shot_alarm, timeout)
+set_alarm_ms(rtc, ONE_SHOT_ALARM, timeout)
 wait_for_cback(cback_call_wait_time, 1)
 print("Alarm expired : ", 0 == rtc.alarm_left())
-print("Entered Cback :", irq_counter == 1)
-irq_counter = 0
+print("Entered Cback :", IRQ_COUNTER == 1)
+IRQ_COUNTER = 0
 
 print("\n3. Setting one-shot alarm to be triggered at specified date-time")
 timeout = 1
 cback_call_wait_time = timeout * 1000 + 500
-set_alarm_datetime(rtc, one_shot_alarm, (2023, 1, 1, 0, 0, timeout, 0, 0))
+set_alarm_datetime(rtc, ONE_SHOT_ALARM, (2023, 1, 1, 0, 0, timeout, 0, 0))
 wait_for_cback(cback_call_wait_time, 1)
 print("Alarm expired : ", 0 == rtc.alarm_left())
-print("Entered Cback :", irq_counter == 1)
-irq_counter = 0
+print("Entered Cback :", IRQ_COUNTER == 1)
+IRQ_COUNTER = 0
 
 print("\n4. Setting periodic alarm to be triggered at specified date-time should fail")
 try:
-    set_alarm_datetime(rtc, periodic_alarm, (2023, 1, 1, 0, 0, 0, 1, 0))  # Should fail
+    set_alarm_datetime(rtc, PERIODIC_ALARM, (2023, 1, 1, 0, 0, 0, 1, 0))  # Should fail
 except ValueError as e:
     print(e)
 
-irq_counter = 0
+IRQ_COUNTER = 0
 
 rtc1 = RTC()
 print("\n5.RTC constructor return singleton: ", rtc1 == rtc)
