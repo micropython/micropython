@@ -22,6 +22,10 @@
 #
 
 import re
+import sys
+
+sys.path.append("../docs")
+
 from shared_bindings_matrix import support_matrix_by_board
 
 
@@ -34,15 +38,16 @@ def module_incidence_matrix_csvs(support_matrix, rows=1000, present="1", absent=
     row = 0
     for board, info in support_matrix.items():
         if (row % rows) == 0:
-            csv = ["board,branded_name,mcu,flash,port,pins," +
-                   ','.join(all_modules) + '\n']
+            csv = ["board,branded_name,mcu,flash,port,pins," + ",".join(all_modules) + "\n"]
         chip_pin_set = set([chip_pin for _, chip_pin in info["pins"]])
         n_chip_pins = len(chip_pin_set)
-        module_incidence = [present if m in info["modules"]
-                            else absent for m in all_modules]
-        line = f"{board},{info.get('branded_name')},{info.get('mcu')}," + \
-               f"{info.get('flash')},{info.get('port')},{n_chip_pins}," + \
-               ','.join(module_incidence) + '\n'
+        module_incidence = [present if m in info["modules"] else absent for m in all_modules]
+        line = (
+            f"{board},{info.get('branded_name')},{info.get('mcu')},"
+            + f"{info.get('flash')},{info.get('port')},{n_chip_pins},"
+            + ",".join(module_incidence)
+            + "\n"
+        )
         csv.append(line)
         row += 1
         if (row % rows) == 0:
@@ -63,8 +68,7 @@ def frozen_incidence_matrix_csvs(support_matrix, rows=1000, present="1", absent=
     row = 0
     for board, info in support_matrix.items():
         if (row % rows) == 0:
-            csv = ["board,branded_name,mcu,flash,port,pins," +
-                   ",".join(all_frozen) + "\n"]
+            csv = ["board,branded_name,mcu,flash,port,pins," + ",".join(all_frozen) + "\n"]
         # remove urls if present
         frozen = info["frozen_libraries"]
 
@@ -73,9 +77,12 @@ def frozen_incidence_matrix_csvs(support_matrix, rows=1000, present="1", absent=
 
         frozen = [f[0] if type(f) == tuple else f for f in frozen]
         frozen_incidence = [present if f in frozen else absent for f in all_frozen]
-        line = f"{board},{info.get('branded_name')},{info.get('mcu')}," + \
-               f"{info.get('flash')},{info.get('port')},{n_chip_pins}," + \
-               ",".join(frozen_incidence) + '\n'
+        line = (
+            f"{board},{info.get('branded_name')},{info.get('mcu')},"
+            + f"{info.get('flash')},{info.get('port')},{n_chip_pins},"
+            + ",".join(frozen_incidence)
+            + "\n"
+        )
         csv.append(line)
         row += 1
         if (row % rows) == 0:
@@ -91,19 +98,20 @@ def summarize_pins(pins):
     summarizing the names in the list"""
     pin_prefixes = {}
     for p in pins:
-        match = re.match(r'^(.*?)(\d*)$', p)
+        match = re.match(r"^(.*?)(\d*)$", p)
         if match:
             prefix = match.group(1)
             n_str = match.group(2)
         else:
             raise ValueError("Cannot parse pin name")
-        if prefix in pin_prefixes :
+        if prefix in pin_prefixes:
             pin_prefixes[prefix].add(n_str)
         else:
             pin_prefixes[prefix] = {n_str}
 
-    return ', '.join([f"{prefix}{span_string(pin_prefixes[prefix])}"
-                      for prefix in sorted(pin_prefixes.keys())])
+    return ", ".join(
+        [f"{prefix}{span_string(pin_prefixes[prefix])}" for prefix in sorted(pin_prefixes.keys())]
+    )
 
 
 def int_or_zero(s):
@@ -141,14 +149,24 @@ def board_pins_matrix_csvs(support_matrix, rows=1000):
     row = 0
     for board, info in support_matrix.items():
         if (row % rows) == 0:
-            csv = ["board,branded_name,mcu,flash,port,n_board_pins,"
-                   "board_pins,n_chip_pins,chip_pins\n"]
+            csv = [
+                "board,branded_name,mcu,flash,port,n_board_pins,"
+                "board_pins,n_chip_pins,chip_pins\n"
+            ]
         board_pins = [board_pin for board_pin, _ in info["pins"]]
         chip_pins = [chip_pin for _, chip_pin in info["pins"]]
-        line = f"{board},{info.get('branded_name')},{info.get('mcu')}," + \
-               f"{info.get('flash')},{info.get('port')}," + \
-               str(len(set(board_pins))) + ',"' + summarize_pins(board_pins) + '",' + \
-               str(len(set(chip_pins))) + ',"' + summarize_pins(chip_pins) + '"\n'
+        line = (
+            f"{board},{info.get('branded_name')},{info.get('mcu')},"
+            + f"{info.get('flash')},{info.get('port')},"
+            + str(len(set(board_pins)))
+            + ',"'
+            + summarize_pins(board_pins)
+            + '",'
+            + str(len(set(chip_pins)))
+            + ',"'
+            + summarize_pins(chip_pins)
+            + '"\n'
+        )
         csv.append(line)
         row += 1
         if (row % rows) == 0:
@@ -159,19 +177,19 @@ def board_pins_matrix_csvs(support_matrix, rows=1000):
 
 
 def write_csvs(rows=1000, present="1", absent="0"):
-    print('generating csvs...')
-    s = support_matrix_by_board(use_branded_name=False, add_port=True,
-                                add_chips=True, add_pins=True,
-                                add_branded_name=True)
-    csvs = {"modules": module_incidence_matrix_csvs(s, rows=rows,
-                                                    present=present, absent=absent),
-            "frozen": frozen_incidence_matrix_csvs(s, rows=rows,
-                                                   present=present, absent=absent),
-            "pins": board_pins_matrix_csvs(s, rows=rows)}
+    print("generating csvs...")
+    s = support_matrix_by_board(
+        use_branded_name=False, add_port=True, add_chips=True, add_pins=True, add_branded_name=True
+    )
+    csvs = {
+        "modules": module_incidence_matrix_csvs(s, rows=rows, present=present, absent=absent),
+        "frozen": frozen_incidence_matrix_csvs(s, rows=rows, present=present, absent=absent),
+        "pins": board_pins_matrix_csvs(s, rows=rows),
+    }
     for key in csvs:
         for i in range(len(csvs[key])):
             filename = f"{key}_{i}.csv"
-            print(f'writing {filename}')
+            print(f"writing {filename}")
             with open(filename, "w") as f:
                 f.writelines(csvs[key][i])
 
