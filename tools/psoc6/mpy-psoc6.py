@@ -413,7 +413,7 @@ def wait_and_request_board_connect():
 
 def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
     def wait_for_dev_restart():
-        print("Restarting device ", end="", flush=True)
+        print("Waiting for device restart ", end="", flush=True)
         for j in range(3):
             for i in range(3):
                 print(".", end="", flush=True)
@@ -422,6 +422,8 @@ def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
             sys.stdout.write("    ")
             sys.stdout.write("\b\b\b")
             sys.stdout.flush()
+
+        print("Device restarted")
 
     if board is None:
         board = select_board()
