@@ -48,7 +48,7 @@ static bool stream_readable(void *stream) {
 
 // (near copy of mp_stream_posix_read, but with changes)
 // (circuitpy doesn't enable posix stream routines anyway)
-static ssize_t stream_read(void *stream, void *buf, size_t len) {
+static mp_int_t stream_read(void *stream, void *buf, size_t len) {
     int errcode;
     mp_obj_base_t *o = MP_OBJ_TO_PTR(stream);
     const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);

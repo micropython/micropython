@@ -15,9 +15,9 @@
 
 typedef struct {
     uint8_t *buf;
-    ssize_t size;
-    ssize_t read_off;
-    ssize_t write_off;
+    mp_int_t size;
+    mp_int_t read_off;
+    mp_int_t write_off;
 } mp3_input_buffer_t;
 
 typedef struct {
