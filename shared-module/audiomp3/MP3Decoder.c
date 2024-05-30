@@ -29,6 +29,18 @@
 #define background_callback_add(buf, fn, arg) ((fn)((arg)))
 #endif
 
+STATIC bool stream_readable(void *stream) {
+    int errcode = 0;
+    mp_obj_base_t *o = MP_OBJ_TO_PTR(stream);
+    const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
+    if (!stream_p->ioctl) {
+        return true;
+    }
+
+    mp_int_t ret = stream_p->ioctl(stream, MP_STREAM_POLL, MP_STREAM_POLL_RD | MP_STREAM_POLL_ERR | MP_STREAM_POLL_HUP, &errcode);
+    return ret != 0;
+}
+
 // (near copy of mp_stream_posix_read, but with changes)
 // (circuitpy doesn't enable posix stream routines anyway)
 STATIC ssize_t stream_read(void *stream, void *buf, size_t len) {
@@ -45,27 +57,6 @@ STATIC ssize_t stream_read(void *stream, void *buf, size_t len) {
         return out_sz;
     }
 }
-
-// (near copy of mp_stream_posix_read, but with changes)
-// (circuitpy doesn't enable posix stream routines anyway)
-// (and the return value semantic is different)
-STATIC ssize_t stream_read_all(void *stream, uint8_t *buf, size_t len) {
-    ssize_t total_read = 0;
-    while (len) {
-        ssize_t r = stream_read(stream, buf, len);
-        if (r <= 0) {
-            if (total_read) {
-                break;
-            }
-            return r;
-        }
-        total_read += r;
-        buf += r;
-        len -= r;
-    }
-    return total_read;
-}
-
 
 // (near copy of mp_stream_posix_lseek, but with changes)
 // (circuitpy doesn't enable posix stream routines anyway)
@@ -86,6 +77,12 @@ STATIC off_t stream_lseek(void *stream, off_t offset, int whence) {
     return seek_s.offset;
 }
 
+#define INPUT_BUFFER_AVAILABLE(i) ((i).write_off - (i).read_off)
+#define INPUT_BUFFER_SPACE(i) ((i).size - INPUT_BUFFER_AVAILABLE(i))
+#define INPUT_BUFFER_READ_PTR(i) ((i).buf + (i).read_off)
+#define INPUT_BUFFER_CONSUME(i, n) ((i).read_off += (n))
+#define INPUT_BUFFER_CLEAR(i) ((i).read_off = (i).write_off = 0)
+
 /** Fill the input buffer unconditionally.
  *
  * Returns true if the input buffer contains any useful data,
@@ -97,46 +94,61 @@ STATIC off_t stream_lseek(void *stream, off_t offset, int whence) {
  * Sets self->eof if any read of the file returns 0 bytes
  */
 static bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self) {
-    // If we didn't previously reach the end of file, we can try reading now
-    if (!self->eof && self->inbuf_offset != 0) {
+    if (self->eof || INPUT_BUFFER_SPACE(self->inbuf) == 0) {
+        return INPUT_BUFFER_AVAILABLE(self->inbuf) > 0;
+    }
 
-        // Move the unconsumed portion of the buffer to the start
-        uint8_t *end_of_buffer = self->inbuf + self->inbuf_length;
-        uint8_t *new_end_of_data = self->inbuf + self->inbuf_length - self->inbuf_offset;
-        memmove(self->inbuf, self->inbuf + self->inbuf_offset,
-            self->inbuf_length - self->inbuf_offset);
-        self->inbuf_offset = 0;
+    // We didn't previously reach EOF and we have input buffer space available
 
-        ssize_t to_read = end_of_buffer - new_end_of_data;
-        memset(new_end_of_data, 0, to_read);
-        ssize_t r = stream_read_all(self->stream, new_end_of_data, to_read);
-        if (r < 0) {
+    // Move the unconsumed portion of the buffer to the start
+    if (self->inbuf.read_off) {
+        memmove(self->inbuf.buf, INPUT_BUFFER_READ_PTR(self->inbuf), INPUT_BUFFER_AVAILABLE(self->inbuf));
+        self->inbuf.write_off -= self->inbuf.read_off;
+        self->inbuf.read_off = 0;
+    }
+
+    for (size_t to_read; !self->eof && (to_read = INPUT_BUFFER_SPACE(self->inbuf)) > 0;) {
+        uint8_t *write_ptr = self->inbuf.buf + self->inbuf.write_off;
+        ssize_t n_read = stream_read(self->stream, write_ptr, to_read);
+
+        if (n_read < 0) {
+            int errcode = -n_read;
+            if (mp_is_nonblocking_error(errcode) || errcode == MP_ETIMEDOUT) {
+                break;
+            }
             self->eof = true;
-            mp_raise_OSError(-r);
+            mp_raise_OSError(errcode);
         }
 
-        if (r == 0) {
+        if (n_read == 0) {
             self->eof = true;
         }
 
-        if (to_read != r) {
-            new_end_of_data += r;
-            memset(new_end_of_data, 0, end_of_buffer - new_end_of_data);
-        }
-
+        self->inbuf.write_off += n_read;
     }
 
     // Return true iff there are at least some useful bytes in the buffer
-    return self->inbuf_offset < self->inbuf_length;
+    return INPUT_BUFFER_AVAILABLE(self->inbuf) > 0;
 }
 
 /** Update the inbuf from a background callback.
  *
- * This variant is introduced so that at the site of the
- * add_background_callback_core call, the prototype matches.
+ * Re-queue if there's still buffer space available to read stream data
  */
-static void mp3file_update_inbuf_cb(void *self) {
-    mp3file_update_inbuf_always(self);
+static void mp3file_update_inbuf_cb(void *self_in) {
+    audiomp3_mp3file_obj_t *self = self_in;
+    if (!self->eof && stream_readable(self->stream)) {
+        mp3file_update_inbuf_always(self);
+    }
+
+    #if !defined(MICROPY_UNIX_COVERAGE)
+    if (!self->eof && INPUT_BUFFER_SPACE(self->inbuf) > 512) {
+        background_callback_add(
+            &self->inbuf_fill_cb,
+            mp3file_update_inbuf_cb,
+            self);
+    }
+    #endif
 }
 
 /** Fill the input buffer if it is less than half full.
@@ -145,18 +157,17 @@ static void mp3file_update_inbuf_cb(void *self) {
  */
 static bool mp3file_update_inbuf_half(audiomp3_mp3file_obj_t *self) {
     // If buffer is over half full, do nothing
-    if (self->inbuf_offset < self->inbuf_length / 2) {
+    if (INPUT_BUFFER_SPACE(self->inbuf) < self->inbuf.size / 2) {
         return true;
     }
 
     return mp3file_update_inbuf_always(self);
 }
 
-#define READ_PTR(self) (self->inbuf + self->inbuf_offset)
-#define BYTES_LEFT(self) (self->inbuf_length - self->inbuf_offset)
-#define CONSUME(self, n) (self->inbuf_offset += n)
+#define READ_PTR(self) (INPUT_BUFFER_READ_PTR(self->inbuf))
+#define BYTES_LEFT(self) (INPUT_BUFFER_AVAILABLE(self->inbuf))
+#define CONSUME(self, n) (INPUT_BUFFER_CONSUME(self->inbuf, n))
 
-// http://id3.org/d3v2.3.0
 // http://id3.org/id3v2.3.0
 static void mp3file_skip_id3v2(audiomp3_mp3file_obj_t *self) {
     mp3file_update_inbuf_half(self);
@@ -228,53 +239,64 @@ static bool mp3file_get_next_frame_info(audiomp3_mp3file_obj_t *self, MP3FrameIn
     return err == ERR_MP3_NONE;
 }
 
+#define DEFAULT_INPUT_BUFFER_SIZE (2048)
+#define MIN_USER_BUFFER_SIZE (DEFAULT_INPUT_BUFFER_SIZE + 2 * MAX_BUFFER_LEN)
+
 void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
     mp_obj_t stream,
     uint8_t *buffer,
     size_t buffer_size) {
-    // XXX Adafruit_MP3 uses a 2kB input buffer and two 4kB output buffers.
-    // for a whopping total of 10kB buffers (+mp3 decoder state and frame buffer)
+    // XXX Adafruit_MP3 uses a 2kB input buffer and two 4kB output pcm_buffer.
+    // for a whopping total of 10kB pcm_buffer (+mp3 decoder state and frame buffer)
     // At 44kHz, that's 23ms of output audio data.
     //
     // We will choose a slightly different allocation strategy for the output:
-    // Make sure the buffers are sized exactly to match (a multiple of) the
+    // Make sure the pcm_buffer are sized exactly to match (a multiple of) the
     // frame size; this is typically 2304 * 2 bytes, so a little bit bigger
-    // than the two 4kB output buffers, except that the alignment allows to
+    // than the two 4kB output pcm_buffer, except that the alignment allows to
     // never allocate that extra frame buffer.
-
-    self->inbuf_length = 2048;
-    self->inbuf_offset = self->inbuf_length;
-    self->inbuf = m_malloc(self->inbuf_length);
-    if (self->inbuf == NULL) {
-        common_hal_audiomp3_mp3file_deinit(self);
-        m_malloc_fail(self->inbuf_length);
-    }
-    self->decoder = MP3InitDecoder();
-    if (self->decoder == NULL) {
-        common_hal_audiomp3_mp3file_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError,
-            MP_ERROR_TEXT("Couldn't allocate decoder"));
-    }
 
     if ((intptr_t)buffer & 1) {
         buffer += 1;
         buffer_size -= 1;
     }
-    if (buffer_size >= 2 * MAX_BUFFER_LEN) {
-        self->buffers[0] = (int16_t *)(void *)buffer;
-        self->buffers[1] = (int16_t *)(void *)(buffer + MAX_BUFFER_LEN);
+    if (buffer && buffer_size > MIN_USER_BUFFER_SIZE) {
+        self->pcm_buffer[0] = (int16_t *)(void *)buffer;
+        self->pcm_buffer[1] = (int16_t *)(void *)(buffer + MAX_BUFFER_LEN);
+        self->inbuf.buf = buffer + 2 * MAX_BUFFER_LEN;
+        self->inbuf.size = buffer_size - 2 * MAX_BUFFER_LEN;
     } else {
-        self->buffers[0] = m_malloc(MAX_BUFFER_LEN);
-        if (self->buffers[0] == NULL) {
+        self->inbuf.size = DEFAULT_INPUT_BUFFER_SIZE;
+        self->inbuf.buf = m_malloc(DEFAULT_INPUT_BUFFER_SIZE);
+        if (self->inbuf.buf == NULL) {
             common_hal_audiomp3_mp3file_deinit(self);
-            m_malloc_fail(MAX_BUFFER_LEN);
+            m_malloc_fail(DEFAULT_INPUT_BUFFER_SIZE);
         }
 
-        self->buffers[1] = m_malloc(MAX_BUFFER_LEN);
-        if (self->buffers[1] == NULL) {
-            common_hal_audiomp3_mp3file_deinit(self);
-            m_malloc_fail(MAX_BUFFER_LEN);
+        if (buffer_size >= 2 * MAX_BUFFER_LEN) {
+            self->pcm_buffer[0] = (int16_t *)(void *)buffer;
+            self->pcm_buffer[1] = (int16_t *)(void *)(buffer + MAX_BUFFER_LEN);
+        } else {
+            self->pcm_buffer[0] = m_malloc(MAX_BUFFER_LEN);
+            if (self->pcm_buffer[0] == NULL) {
+                common_hal_audiomp3_mp3file_deinit(self);
+                m_malloc_fail(MAX_BUFFER_LEN);
+            }
+
+            self->pcm_buffer[1] = m_malloc(MAX_BUFFER_LEN);
+            if (self->pcm_buffer[1] == NULL) {
+                common_hal_audiomp3_mp3file_deinit(self);
+                m_malloc_fail(MAX_BUFFER_LEN);
+            }
         }
+    }
+    self->inbuf.read_off = self->inbuf.write_off = 0;
+
+    self->decoder = MP3InitDecoder();
+    if (self->decoder == NULL) {
+        common_hal_audiomp3_mp3file_deinit(self);
+        mp_raise_msg(&mp_type_MemoryError,
+            MP_ERROR_TEXT("Couldn't allocate decoder"));
     }
 
     common_hal_audiomp3_mp3file_set_file(self, stream);
@@ -288,7 +310,7 @@ void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, mp_obj_t
     // Seek the beginning of the stream if possible, but ignore any errors
     (void)stream_lseek(self->stream, SEEK_SET, 0);
 
-    self->inbuf_offset = self->inbuf_length;
+    INPUT_BUFFER_CLEAR(self->inbuf);
     self->eof = 0;
     self->other_channel = -1;
     mp3file_update_inbuf_half(self);
@@ -298,8 +320,8 @@ void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, mp_obj_t
     // this is necessary to avoid a glitch at the start of playback of a second
     // track using the same decoder object means there's still a bug in
     // get_buffer() that I didn't understand.
-    memset(self->buffers[0], 0, MAX_BUFFER_LEN);
-    memset(self->buffers[1], 0, MAX_BUFFER_LEN);
+    memset(self->pcm_buffer[0], 0, MAX_BUFFER_LEN);
+    memset(self->pcm_buffer[1], 0, MAX_BUFFER_LEN);
     MP3FrameInfo fi;
     bool result = mp3file_get_next_frame_info(self, &fi);
     background_callback_allow();
@@ -318,15 +340,15 @@ void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, mp_obj_t
 void common_hal_audiomp3_mp3file_deinit(audiomp3_mp3file_obj_t *self) {
     MP3FreeDecoder(self->decoder);
     self->decoder = NULL;
-    self->inbuf = NULL;
-    self->buffers[0] = NULL;
-    self->buffers[1] = NULL;
+    self->inbuf.buf = NULL;
+    self->pcm_buffer[0] = NULL;
+    self->pcm_buffer[1] = NULL;
     self->stream = mp_const_none;
     self->samples_decoded = 0;
 }
 
 bool common_hal_audiomp3_mp3file_deinited(audiomp3_mp3file_obj_t *self) {
-    return self->buffers[0] == NULL;
+    return self->pcm_buffer[0] == NULL;
 }
 
 uint32_t common_hal_audiomp3_mp3file_get_sample_rate(audiomp3_mp3file_obj_t *self) {
@@ -356,11 +378,10 @@ void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t *self,
     // loads
     background_callback_prevent();
     if (stream_lseek(self->stream, SEEK_SET, 0) == 0) {
-        self->inbuf_offset = self->inbuf_length;
+        INPUT_BUFFER_CLEAR(self->inbuf);
         self->eof = 0;
         self->samples_decoded = 0;
         self->other_channel = -1;
-        mp3file_update_inbuf_half(self);
         mp3file_skip_id3v2(self);
         mp3file_find_sync_word(self);
     }
@@ -372,7 +393,7 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
     uint8_t channel,
     uint8_t **bufptr,
     uint32_t *buffer_length) {
-    if (!self->inbuf) {
+    if (!self->inbuf.buf) {
         *buffer_length = 0;
         return GET_BUFFER_ERROR;
     }
@@ -383,7 +404,7 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
     *buffer_length = self->frame_buffer_size;
 
     if (channel == self->other_channel) {
-        *bufptr = (uint8_t *)(self->buffers[self->other_buffer_index] + channel);
+        *bufptr = (uint8_t *)(self->pcm_buffer[self->other_buffer_index] + channel);
         self->other_channel = -1;
         self->samples_decoded += *buffer_length / sizeof(int16_t);
         return GET_BUFFER_MORE_DATA;
@@ -393,7 +414,7 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
     self->buffer_index = !self->buffer_index;
     self->other_channel = 1 - channel;
     self->other_buffer_index = self->buffer_index;
-    int16_t *buffer = (int16_t *)(void *)self->buffers[self->buffer_index];
+    int16_t *buffer = (int16_t *)(void *)self->pcm_buffer[self->buffer_index];
     *bufptr = (uint8_t *)buffer;
 
     mp3file_skip_id3v2(self);
@@ -416,7 +437,7 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
     mp3file_skip_id3v2(self);
     int result = mp3file_find_sync_word(self) ? GET_BUFFER_MORE_DATA : GET_BUFFER_DONE;
 
-    if (self->inbuf_offset >= 512) {
+    if (INPUT_BUFFER_SPACE(self->inbuf) > 512) {
         background_callback_add(
             &self->inbuf_fill_cb,
             mp3file_update_inbuf_cb,
@@ -442,7 +463,7 @@ void audiomp3_mp3file_get_buffer_structure(audiomp3_mp3file_obj_t *self, bool si
 float common_hal_audiomp3_mp3file_get_rms_level(audiomp3_mp3file_obj_t *self) {
     float sumsq = 0.f;
     // Assumes no DC component to the audio.  Is that a safe assumption?
-    int16_t *buffer = (int16_t *)(void *)self->buffers[self->buffer_index];
+    int16_t *buffer = (int16_t *)(void *)self->pcm_buffer[self->buffer_index];
     for (size_t i = 0; i < self->frame_buffer_size / sizeof(int16_t); i++) {
         sumsq += (float)buffer[i] * buffer[i];
     }
