@@ -422,8 +422,8 @@ def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
     if not quiet:
         wait_and_request_board_connect()
 
-    # if not skip_update_dbg_fw:
-    #     fwloader_download_install()
+    if not skip_update_dbg_fw:
+        fwloader_download_install()
     #     fwloader_update_kitprog()
     #     time.sleep(10)  # Wait for the device to restart
 
@@ -462,113 +462,6 @@ def device_erase(board, quiet=False):
         wait_user_termination()
 
 
-# def arduino_lab_download_and_launch():
-#     def is_arduino_lab_already_installed():
-#         if opsys == "linux":
-#             inolab = "arduino-lab-micropython-ide"
-#         elif opsys == "win":
-#             inolab = "Arduino Lab for Micropython.exe"
-
-#         if os.path.exists(os.path.join("arduino-lab-mpy", inolab)):
-#             return True
-
-#         return False
-
-#     def download_arduino_lab():
-#         print("Downloading Arduino Lab for Micropython...")
-
-#         if opsys == "linux":
-#             file_os_suffix = "linux_x64"
-#         elif opsys == "win":
-#             file_os_suffix = "win_x64"
-
-#         url_base = "https://github.com/arduino/lab-micropython-editor/releases/download/0.8.0/"
-#         file_name_extension = ".zip"
-#         file_name = "Arduino.Lab.for.Micropython-" + file_os_suffix + file_name_extension
-#         file_url = url_base + file_name
-
-#         if os.path.exists(file_name):
-#             os.remove(file_name)
-
-#         res = requests.get(file_url)
-#         open(file_name, "wb").write(res.content)
-
-#         os.replace(file_name, "arduino-for-micropython.zip")
-
-#     def extract_arduino_lab():
-#         print("Extracting Arduino Lab for Micropython...")
-#         mpyinolab_dir = "arduino-lab-mpy"
-#         if not os.path.exists(mpyinolab_dir):
-#             os.mkdir(mpyinolab_dir)
-
-#         compress_file = zipfile.ZipFile("arduino-for-micropython.zip")
-#         compress_file.extractall(mpyinolab_dir)
-#         compress_file.close()
-
-#     def launch_arduino_lab():
-#         print("Launching Arduino Lab for Micropython...")
-
-#         mpyinolab_dir = "arduino-lab-mpy"
-
-#         if opsys == "linux":
-#             mpy_ide = ["./arduino-lab-micropython-ide"]
-#             os.chmod(os.path.join(mpyinolab_dir, "arduino-lab-micropython-ide"), 0o755)
-#         elif opsys == "win":
-#             mpy_ide = ["Arduino Lab for Micropython.exe"]
-
-#         parent_dir = os.path.abspath(os.curdir)
-#         os.chdir(mpyinolab_dir)
-
-#         try:
-#             ide_proc = subprocess.Popen(mpy_ide)
-#             ide_proc.wait()
-#         except:
-#             sys.exit(colour_str_error("error: Could not launch Arduino Lab IDE"))
-
-#         os.chdir(parent_dir)
-
-#     if not is_arduino_lab_already_installed():
-#         download_arduino_lab()
-#         extract_arduino_lab()
-#     else:
-#         print("Arduino Lab already available. Installation skipped")
-
-#     launch_arduino_lab()
-
-
-# def arduino_lab_install_package_remove():
-#     if os.path.exists("arduino-for-micropython.zip"):
-#         os.remove("arduino-for-micropython.zip")
-
-
-# def quick_start(board, version):
-#     def print_retro_banner():
-#         print("################################################")
-#         print("                Welcome to the                  ")
-#         print(" __  __ _            ___      _   _             ")
-#         print("|  \\/  (_)__ _ _ ___| _ \\_  _| |_| |_  ___ _ _")
-#         print("| |\\/| | / _| '_/ _ \\  _/ || |  _| ' \\/ _ \\ ' \\")
-#         print("|_|_ |_|_\\__|_| \\___/_|  \\_, |\\__|_||_\\___/_||_|")
-#         print("| _ \\/ __| ___ / __|/ /  |__/")
-#         print("|  _/\\__ \\/ _ \\ (__/ _ \\")
-#         print("|_|  |___/\\___/\\___\\___/")
-#         print("")
-#         print("                 Quick Start                    ")
-#         print("################################################")
-
-#     def print_exit_banner():
-#         print(colour_str_success("################################################"))
-#         print(colour_str_success("   The quick-start is completed. Have fun :)    "))
-#         print(colour_str_success("################################################"))
-
-#     print_retro_banner()
-#     device_setup(board, version, False)
-#     arduino_lab_download_and_launch()
-#     arduino_lab_install_package_remove()
-#     print_exit_banner()
-#     wait_user_termination()
-
-
 def firmware_deploy(board, hex_file):
     openocd_download_install()
     openocd_board_conf_download(board)
@@ -580,15 +473,11 @@ def firmware_deploy(board, hex_file):
 def clean_tool_downloads():
     fwloader_remove()
     openocd_remove()
-    # arduino_lab_install_package_remove()
 
 
 def parser():
     def main_parser_func(args):
         parser.print_help()
-
-    # def parser_quick_start(args):
-    #     quick_start(args.board, args.version)
 
     def parser_device_setup(args):
         device_setup(args.board, args.version, args.skip_fw_update, args.q)
@@ -610,7 +499,6 @@ def parser():
             print("mpy-psoc6 version: " + version)
             parser.exit()
 
-    # quick-start         Setup of MicroPython IDE and PSoC6 device
     main_parser_desc = """
     Micropython PSoC6 utility script
 
@@ -628,21 +516,6 @@ def parser():
     parser.add_argument("-v", "--version", action=ver_action, help="mpy-psoc6 version")
     subparser = parser.add_subparsers()
     parser.set_defaults(func=main_parser_func)
-
-    # # quick start
-    # parser_qs = subparser.add_parser(
-    #     "quick-start",
-    #     description="Setup of MicroPython IDE and PSoC6 device. \
-    #                 Use this command for a guided installation and \
-    #                 quick start using MicroPython PSoC6.",
-    # )
-    # parser_qs.add_argument(
-    #     "-b", "--board", default=None, type=str, help="PSoC6 prototyping kit name"
-    # )
-    # parser_qs.add_argument(
-    #     "-v", "--version", default=None, type=str, help="MicroPython PSoC6 firmware version"
-    # )
-    # parser_qs.set_defaults(func=parser_quick_start)
 
     # device setup
     parser_ds = subparser.add_parser(
