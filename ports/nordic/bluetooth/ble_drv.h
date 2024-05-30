@@ -49,6 +49,7 @@ void ble_drv_reset(void);
 void ble_drv_remove_heap_handlers(void);
 void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param);
 void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param);
+void ble_drv_gc_collect(void);
 
 // Allow for user provided entries to prevent allocations outside the VM.
 void ble_drv_add_event_handler_entry(ble_drv_evt_handler_entry_t *entry, ble_drv_evt_handler_t func, void *param);
