@@ -31,7 +31,7 @@
 #define background_callback_add(buf, fn, arg) ((fn)((arg)))
 #endif
 
-STATIC bool stream_readable(void *stream) {
+static bool stream_readable(void *stream) {
     int errcode = 0;
     mp_obj_base_t *o = MP_OBJ_TO_PTR(stream);
     const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
@@ -48,7 +48,7 @@ STATIC bool stream_readable(void *stream) {
 
 // (near copy of mp_stream_posix_read, but with changes)
 // (circuitpy doesn't enable posix stream routines anyway)
-STATIC ssize_t stream_read(void *stream, void *buf, size_t len) {
+static ssize_t stream_read(void *stream, void *buf, size_t len) {
     int errcode;
     mp_obj_base_t *o = MP_OBJ_TO_PTR(stream);
     const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
@@ -71,7 +71,7 @@ STATIC ssize_t stream_read(void *stream, void *buf, size_t len) {
 
 // (near copy of mp_stream_posix_lseek, but with changes)
 // (circuitpy doesn't enable posix stream routines anyway)
-STATIC off_t stream_lseek(void *stream, off_t offset, int whence) {
+static off_t stream_lseek(void *stream, off_t offset, int whence) {
     int errcode;
     const mp_obj_base_t *o = stream;
     const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
