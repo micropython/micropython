@@ -306,7 +306,7 @@ def openocd_board_conf_download(board):
 
 
 def openocd_program(board, hex_file, serial_adapter_sn=None):
-    if opsys == "linux":
+    if opsys == "linux" or opsys == "mac":
         openocd = "openocd/bin/openocd"
     elif opsys == "win":
         openocd = "openocd.exe"
