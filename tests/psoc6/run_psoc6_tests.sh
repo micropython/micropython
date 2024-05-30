@@ -116,11 +116,11 @@ fi
 
 
 if [ -z "${device0}" ]; then
-  device0="/dev/ttyACM0"
+  device0="/dev/ttyACM7"
 fi
 
 if [ -z "${device1}" ]; then
-  device1="/dev/ttyACM2"
+  device1="/dev/ttyACM6"
 fi
 
 if [ -z "${failing}" ]; then
@@ -506,13 +506,14 @@ if [ ${spi} -eq 1 ]; then
   echo "  running spi tests ... "
   echo
 
-  ../tools/mpremote/mpremote.py connect ${device1} run --no-follow psoc6/spi/spi_slave.py
+  echo " running spi slave device test..."
+  ../tools/mpremote/mpremote.py connect ${device1} run --no-follow psoc6/spi/s_spi_master_write_slave_read.py
 
-  echo " running spi master device..."
+  echo " running spi master device test..."
 
   ./run-tests.py --target psoc6 --device ${device0} \
       \
-      psoc6/spi/spi_master.py \
+      psoc6/spi/m_spi_master_write_slave_read.py \
     |tee -a ${resultsFile}
 
 fi

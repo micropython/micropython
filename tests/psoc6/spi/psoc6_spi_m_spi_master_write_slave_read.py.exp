@@ -1,0 +1,11 @@
+
+*** SPI MASTER INSTANCE ***
+
+Master init failed as all required arguments not passed!
+Slave init failed as all required arguments not passed!
+must specify all of sck/mosi/miso
+must specify all of sck/mosi/miso
+master-->write and slave-->read
+
+tx: b'\x08\x06\x04\x02\x07\x05\x03\x01'
+rx: b'\x02\xff\xff\xff\xff\xff\xff\xff'

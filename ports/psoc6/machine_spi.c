@@ -261,7 +261,7 @@ mp_obj_t machine_spi_master_make_new(const mp_obj_type_t *type, size_t n_args, s
     if (n_kw > 1) {
         machine_spi_init_helper(self, 0, n_args, n_kw, all_args);
     } else {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Init failed as all required arguments not passed!"));
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Master init failed as all required arguments not passed!"));
     }
     return MP_OBJ_FROM_PTR(self);
 }
@@ -271,7 +271,7 @@ mp_obj_t machine_spi_slave_make_new(const mp_obj_type_t *type, size_t n_args, si
     if (n_kw > 1) {
         machine_spi_init_helper(self, 1, n_args, n_kw, all_args);
     } else {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Init failed as all required arguments not passed!"));
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Slave init failed as all required arguments not passed!"));
     }
     return MP_OBJ_FROM_PTR(self);
 }
@@ -288,6 +288,8 @@ static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     uint8_t tx_temp_buf[len];
     uint8_t rx_temp_buf[len];
     uint8_t write_fill = 0xFF;
+
+    cyhal_spi_clear(&self->spi_obj);
 
     // write
     if (rx == NULL) {
@@ -315,6 +317,7 @@ static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 
 static void machine_spi_deinit(mp_obj_base_t *self_in) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
+    cyhal_spi_clear(&self->spi_obj);
     cyhal_spi_free(&self->spi_obj);
     spi_sck_free(self);
     spi_ssel_free(self);
