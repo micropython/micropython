@@ -407,8 +407,8 @@ def wait_and_request_board_connect():
     )
 
 
-def wait_user_termination():
-    input(colour_str_highlight("Press ENTER to continue...\n"))
+# def wait_user_termination():
+#     input(colour_str_highlight("Press ENTER to continue...\n"))
 
 
 def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
@@ -443,8 +443,8 @@ def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
 
     print(colour_str_success("Device setup completed :)"))
 
-    if not quiet:
-        wait_user_termination()
+    # if not quiet:
+    #     wait_user_termination()
 
 
 def device_erase(board, quiet=False):
@@ -463,8 +463,8 @@ def device_erase(board, quiet=False):
 
     print(colour_str_success("Device erase completed :)"))
 
-    if not quiet:
-        wait_user_termination()
+    # if not quiet:
+    #     wait_user_termination()
 
 
 def firmware_deploy(board, hex_file):
