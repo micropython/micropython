@@ -36,7 +36,6 @@ def set_environment():
         os.system("color")  # Enable colouring in cmd and powershell
     elif sys.platform == "darwin":
         opsys = "mac"
-        sys.exit(colour_str_error("OS unsupported"))
 
 
 def mpy_get_fw_hex_file_name(file_name, board):
