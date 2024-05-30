@@ -147,6 +147,7 @@ def fwloader_download_install():
             except:
                 sys.exit(colour_str_error("bash error"))
 
+        if opsys == "linux" or opsys == "mac":
             os.chmod(os.path.join("fw-loader", "bin", "fw-loader"), 0o755)
 
     if not is_fwloader_already_installed():
@@ -159,7 +160,7 @@ def fwloader_download_install():
     else:
         print("fw-loader installation skipped. Already installed")
 
-    # fwloader_setup()
+    fwloader_setup()
 
 
 def fwloader_update_kitprog():
@@ -428,8 +429,8 @@ def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
 
     if not skip_update_dbg_fw:
         fwloader_download_install()
-    #     fwloader_update_kitprog()
-    #     time.sleep(10)  # Wait for the device to restart
+        fwloader_update_kitprog()
+        time.sleep(10)  # Wait for the device to restart
 
     # openocd_download_install()
     # openocd_board_conf_download(board)
