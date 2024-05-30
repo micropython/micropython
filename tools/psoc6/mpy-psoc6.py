@@ -263,6 +263,9 @@ def openocd_download_install():
             except:
                 sys.exit(colour_str_error("bash error"))
 
+        if opsys == "mac":
+            os.chmod(os.path.join("openocd", "bin", "openocd"), 0o755)
+
     if not is_openocd_already_installed():
         print("Downloading openocd...")
         file_url, file_name = get_openocd_file_url_name()
