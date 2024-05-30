@@ -23,6 +23,8 @@
 
 #define MAX_BUFFER_LEN (MAX_NSAMP * MAX_NGRAN * MAX_NCHAN * sizeof(int16_t))
 
+#define DO_DEBUG (0)
+
 #if defined(MICROPY_UNIX_COVERAGE)
 #define background_callback_prevent() ((void)0)
 #define background_callback_allow() ((void)0)
@@ -38,6 +40,9 @@ STATIC bool stream_readable(void *stream) {
     }
 
     mp_int_t ret = stream_p->ioctl(stream, MP_STREAM_POLL, MP_STREAM_POLL_RD | MP_STREAM_POLL_ERR | MP_STREAM_POLL_HUP, &errcode);
+    if (DO_DEBUG) {
+        mp_printf(&mp_plat_print, "stream_readable ioctl() -> %d [errcode=%d]\n", ret, errcode);
+    }
     return ret != 0;
 }
 
@@ -51,7 +56,13 @@ STATIC ssize_t stream_read(void *stream, void *buf, size_t len) {
         return -EINVAL;
     }
     mp_uint_t out_sz = stream_p->read(MP_OBJ_FROM_PTR(stream), buf, len, &errcode);
+    if (DO_DEBUG) {
+        mp_printf(&mp_plat_print, "stream_read(%d) -> %d\n", (int)len, (int)out_sz);
+    }
     if (out_sz == MP_STREAM_ERROR) {
+        if (DO_DEBUG) {
+            mp_printf(&mp_plat_print, "errcode=%d\n", errcode);
+        }
         return -errcode; // CIRCUITPY-CHANGE: returns negative errcode value
     } else {
         return out_sz;
@@ -125,6 +136,10 @@ static bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self) {
         }
 
         self->inbuf.write_off += n_read;
+    }
+
+    if (DO_DEBUG) {
+        mp_printf(&mp_plat_print, "new avail=%d eof=%d\n", (int)INPUT_BUFFER_AVAILABLE(self->inbuf), self->eof);
     }
 
     // Return true iff there are at least some useful bytes in the buffer
@@ -395,18 +410,25 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
     uint32_t *buffer_length) {
     if (!self->inbuf.buf) {
         *buffer_length = 0;
+        if (DO_DEBUG) {
+            mp_printf(&mp_plat_print, "%s:%d\n", __FILE__, __LINE__);
+        }
         return GET_BUFFER_ERROR;
     }
     if (!single_channel_output) {
         channel = 0;
     }
 
-    *buffer_length = self->frame_buffer_size;
+    size_t frame_buffer_size_bytes = self->frame_buffer_size;
+    *buffer_length = frame_buffer_size_bytes;
 
     if (channel == self->other_channel) {
         *bufptr = (uint8_t *)(self->pcm_buffer[self->other_buffer_index] + channel);
         self->other_channel = -1;
         self->samples_decoded += *buffer_length / sizeof(int16_t);
+        if (DO_DEBUG) {
+            mp_printf(&mp_plat_print, "%s:%d\n", __FILE__, __LINE__);
+        }
         return GET_BUFFER_MORE_DATA;
     }
 
@@ -428,15 +450,26 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
     CONSUME(self, BYTES_LEFT(self) - bytes_left);
 
     if (err) {
-        *buffer_length = 0;
-        return GET_BUFFER_DONE;
+        memset(buffer, 0, frame_buffer_size_bytes);
+        if (DO_DEBUG) {
+            mp_printf(&mp_plat_print, "%s:%d err=%d\n", __FILE__, __LINE__, err);
+        }
+        if (err != ERR_MP3_INDATA_UNDERFLOW && err != ERR_MP3_MAINDATA_UNDERFLOW) {
+            memset(buffer, 0, self->frame_buffer_size);
+            *buffer_length = 0;
+            self->eof = true;
+            return GET_BUFFER_ERROR;
+        }
     }
 
-    self->samples_decoded += *buffer_length / sizeof(int16_t);
+    self->samples_decoded += frame_buffer_size_bytes / sizeof(int16_t);
 
     mp3file_skip_id3v2(self);
     int result = mp3file_find_sync_word(self) ? GET_BUFFER_MORE_DATA : GET_BUFFER_DONE;
 
+    if (DO_DEBUG) {
+        mp_printf(&mp_plat_print, "%s:%d result=%d\n", __FILE__, __LINE__, result);
+    }
     if (INPUT_BUFFER_SPACE(self->inbuf) > 512) {
         background_callback_add(
             &self->inbuf_fill_cb,
