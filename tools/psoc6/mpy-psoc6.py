@@ -245,7 +245,7 @@ def openocd_download_install():
             compress_file = tarfile.open(openocd_compressed)
             compress_file.extractall(".")
             compress_file.close()
-        elif opsys == "win":
+        elif opsys == "win" or opsys == "mac":
             compress_file = zipfile.ZipFile(openocd_compressed)
             compress_file.extractall(".")
             compress_file.close()
@@ -345,7 +345,7 @@ def openocd_program(board, hex_file, serial_adapter_sn=None):
 def openocd_remove():
     if opsys == "linux":
         file_extension = ".tar.gz"
-    elif opsys == "win":
+    elif opsys == "win" or opsys == "mac":
         file_extension = ".zip"
 
     openocd_compressed = "openocd" + file_extension
