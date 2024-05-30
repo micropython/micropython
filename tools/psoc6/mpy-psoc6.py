@@ -413,12 +413,15 @@ def wait_and_request_board_connect():
 
 def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
     def wait_for_dev_restart():
-        print("Restarting device ", end="")
+        print("Restarting device ", end="", flush=True)
         for j in range(3):
             for i in range(3):
-                print(".", end="")
-                sys.stdout.write("\b")
+                print(".", end="", flush=True)
                 time.sleep(1)
+            sys.stdout.write("\b\b\b\b")
+            sys.stdout.write("    ")
+            sys.stdout.write("\b\b\b")
+            sys.stdout.flush()
 
     if board is None:
         board = select_board()
@@ -439,7 +442,6 @@ def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
         fwloader_download_install()
         fwloader_update_kitprog()
         wait_for_dev_restart()
-        # time.sleep(10)  # Wait for the device to restart
 
     # openocd_download_install()
     # openocd_board_conf_download(board)
