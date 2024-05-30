@@ -98,6 +98,8 @@ def fwloader_download_install():
             file_os_suffix = "linux"
         elif opsys == "win":
             file_os_suffix = "windows"
+        elif opsys == "mac":
+            file_os_suffix = "macos"
 
         version = "3.5.0.2114"
         package_version = "2.50.0.1383"
@@ -155,7 +157,7 @@ def fwloader_download_install():
     else:
         print("fw-loader installation skipped. Already installed")
 
-    fwloader_setup()
+    # fwloader_setup()
 
 
 def fwloader_update_kitprog():
