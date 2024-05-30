@@ -449,11 +449,11 @@ def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
     openocd_download_install()
     openocd_board_conf_download(board)
 
-    # mpy_firmware_download("hello-world", board, "v0.3.0")
-    # mpy_firmware_download("mpy-psoc6", board, version)
+    mpy_firmware_download("hello-world", board, "v0.3.0")
+    mpy_firmware_download("mpy-psoc6", board, version)
 
-    # mpy_firmware_deploy("hello-world", board)
-    # mpy_firmware_deploy("mpy-psoc6", board)
+    mpy_firmware_deploy("hello-world", board)
+    mpy_firmware_deploy("mpy-psoc6", board)
 
     print(colour_str_success("Device setup completed :)"))
 
