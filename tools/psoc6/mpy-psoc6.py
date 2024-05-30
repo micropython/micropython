@@ -87,7 +87,7 @@ def fwloader_download_install():
             fwloader = "fw-loader"
         elif opsys == "win":
             fwloader = "fw-loader.exe"
-        elif opsys == "macos":
+        elif opsys == "mac":
             fwloader = "fw-loader"
 
         if os.path.exists(os.path.join("fw-loader", "bin", fwloader)):
