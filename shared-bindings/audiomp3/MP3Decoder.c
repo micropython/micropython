@@ -137,13 +137,15 @@ static mp_obj_t audiomp3_mp3file_obj_get_file(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_file_obj, audiomp3_mp3file_obj_get_file);
 
-static mp_obj_t audiomp3_mp3file_obj_set_file(mp_obj_t self_in, mp_obj_t file) {
+static mp_obj_t audiomp3_mp3file_obj_set_file(mp_obj_t self_in, mp_obj_t stream) {
     audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    if (!mp_obj_is_type(file, &mp_type_fileio)) {
+    const mp_stream_p_t *stream_p = mp_get_stream_raise(stream, MP_STREAM_OP_READ);
+
+    if (stream_p->is_text) {
         mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
-    common_hal_audiomp3_mp3file_set_file(self, file);
+    common_hal_audiomp3_mp3file_set_file(self, stream);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(audiomp3_mp3file_set_file_obj, audiomp3_mp3file_obj_set_file);

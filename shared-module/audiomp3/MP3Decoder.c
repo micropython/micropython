@@ -23,6 +23,12 @@
 
 #define MAX_BUFFER_LEN (MAX_NSAMP * MAX_NGRAN * MAX_NCHAN * sizeof(int16_t))
 
+#if defined(MICROPY_UNIX_COVERAGE)
+#define background_callback_prevent() ((void)0)
+#define background_callback_allow() ((void)0)
+#define background_callback_add(buf, fn, arg) ((fn)((arg)))
+#endif
+
 // (near copy of mp_stream_posix_read, but with changes)
 // (circuitpy doesn't enable posix stream routines anyway)
 STATIC ssize_t stream_read(void *stream, void *buf, size_t len) {
@@ -42,7 +48,8 @@ STATIC ssize_t stream_read(void *stream, void *buf, size_t len) {
 
 // (near copy of mp_stream_posix_read, but with changes)
 // (circuitpy doesn't enable posix stream routines anyway)
-STATIC ssize_t stream_read_all(void *stream, void *buf, size_t len) {
+// (and the return value semantic is different)
+STATIC ssize_t stream_read_all(void *stream, uint8_t *buf, size_t len) {
     ssize_t total_read = 0;
     while (len) {
         ssize_t r = stream_read(stream, buf, len);
@@ -170,7 +177,7 @@ static void mp3file_skip_id3v2(audiomp3_mp3file_obj_t *self) {
         (data[9] & 0x80) == 0)) {
         return;
     }
-    uint32_t size = (data[6] << 21) | (data[7] << 14) | (data[8] << 7) | (data[9]);
+    int32_t size = (data[6] << 21) | (data[7] << 14) | (data[8] << 7) | (data[9]);
     size += 10; // size excludes the "header" (but not the "extended header")
     // First, deduct from size whatever is left in buffer
     uint32_t to_consume = MIN(size, BYTES_LEFT(self));

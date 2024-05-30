@@ -18,8 +18,8 @@ typedef struct {
     struct _MP3DecInfo *decoder;
     background_callback_t inbuf_fill_cb;
     uint8_t *inbuf;
-    uint32_t inbuf_length;
-    uint32_t inbuf_offset;
+    int32_t inbuf_length;
+    int32_t inbuf_offset;
     int16_t *buffers[2];
     uint32_t len;
     uint32_t frame_buffer_size;
