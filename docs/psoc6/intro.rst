@@ -24,68 +24,41 @@ Connect the USB cable to your computer and the micro USB to the board debugger. 
 come with a on-board debugger required for flashing/debugging operations during development. Please refer to the
 corresponding board manual of your board.
 
-Install MicroPython
-----------------------
+Install MicroPython on the board
+--------------------------------
 
 In your computer terminal, type the following commands and follow the instructions:
 
-.. tabs::
+Download the mpy-psoc6 utility script:
 
-    .. group-tab:: Python
+.. code-block:: bash
 
-        Download the mpy-psoc6 utility script:
+    curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.py > mpy-psoc6.py
 
-        .. code-block:: bash
+Make sure you have a recent version on `Python3.x <https://www.python.org/downloads/>`_  installed and the `pip <https://pip.pypa.io/en/stable/installation/>`_ package installer.
+Then install the following packages:
 
-            curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.py > mpy-psoc6.py
+.. code-block:: bash                
 
-        Make sure you have a recent version on `Python3.x <https://www.python.org/downloads/>`_  installed and the `pip <https://pip.pypa.io/en/stable/installation/>`_ package installer.
-        Then install the following packages:
+    pip install requests
 
-        .. code-block:: bash                
-        
-            pip install requests
-        
-        Finally run the script:
+Finally run the script:
 
-        .. code-block:: bash                
-           
-            python mpy-psoc6.py quick-start
-
-    .. group-tab:: Linux
-
-        Download the mpy-psoc6 utility script:
-
-        .. code-block:: bash
-
-            curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
-
-        Add execution rights to the script and run the script:       
-        
-        .. code-block:: bash                
-           
-            chmod +x mpy-psoc6.sh 
-            ./mpy-psoc6.sh quick-start
-
-    .. group-tab:: Windows
+.. code-block:: bash                
     
-        Download the mpy-psoc6 utility script:
+    python mpy-psoc6.py setup-device
 
-            .. code-block:: bash
-
-                curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
-        
-        And run the script:
-
-            .. code-block:: bash
-
-                mpy-psoc6.cmd quick-start
-
-These commands will download and run the :ref:`quick-start <psoc6_quick_start>` command of the mpy-psoc6 utility and take
+These commands will download and run the :ref:`quick-start <psoc6_device_setup>` command of the mpy-psoc6 utility and take
 care of all the necessary installation steps.
 
-If everything went fine, your PSoC6™ board is now running MicroPython and Arduino IDE for
-Micropython is now started. If you run into any trouble, please let us know `here <https://github.com/infineon/micropython/issues>`_ :) 
+If everything went fine, your PSoC6™ board is now running MicroPython. If you run into any trouble, please let us know `here <https://github.com/infineon/micropython/issues>`_ :) 
+
+Use a MicroPython IDE
+-------------------------
+
+Different IDEs... we choose Arduino IDE.
+and Arduino IDE for
+Micropython is now started. 
 
 Select your serial port of your PSoC6™ board by clicking on the connect icon on the menu bar:
 

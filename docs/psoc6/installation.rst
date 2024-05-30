@@ -3,145 +3,40 @@
 Installing MicroPython 
 ======================
 
-To support the MicroPython PSoC6™ port installation the ``mpy-psoc6`` utility script is provided for Windows and
-Linux. Additionally, a python script is available also cross-platform for Linux and Windows.
+To support the MicroPython PSoC6™ port installation the ``mpy-psoc6.py`` python script is provided. It is compatible with Windows,
+Linux and MacOS.
 
+You can easily download the script from the terminal with the following command:
 
-.. warning::
+.. code-block:: bash
     
-    The plan is to replace the native bash and cmd line scripts for Linux and Windows by executable programs generated for each OS (including MacOS) from the python script in future releases.
-    New features in the installation utility will be only added to the executable and python script versions, as the native OS scripts will be deprecated in the future.
+    $ curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.py > mpy-psoc6.py
 
+Make sure you have a recent version on `Python3.x <https://www.python.org/downloads/>`_  installed and the `pip <https://pip.pypa.io/en/stable/installation/>`_ package installer.
+Then install the following packages:
 
-You can easily download them terminal with the following command:
+.. code-block:: bash                
 
-.. tabs::
-
-    .. group-tab:: Python
-            
-            Download the mpy-psoc6 utility script:
-
-            .. code-block:: bash
-                
-                curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.py > mpy-psoc6.py
-
-            Make sure you have a recent version on `Python3.x <https://www.python.org/downloads/>`_  installed and the `pip <https://pip.pypa.io/en/stable/installation/>`_ package installer.
-            Then install the following packages:
-
-            .. code-block:: bash                
-           
-                pip install requests
-
-    .. group-tab:: Linux
-
-        Download the mpy-psoc6 utility script:
-
-        .. code-block:: bash
-
-            curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
-
-        Add execution rights to the script:       
-        
-        .. code-block:: bash                
-           
-            chmod +x mpy-psoc6.sh 
-
-    .. group-tab:: Windows
-    
-        Download the mpy-psoc6 utility script:
-
-            .. code-block:: bash
-
-                curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
-
+    $ pip install requests
 
 Find all the available commands and options by running the script with the command help:
 
-.. tabs::
+.. code-block:: bash
+    
+    $ python mpy-psoc6.py --help
 
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py --help
-
-    .. group-tab:: Linux
-
-        .. code-block:: bash
-
-            ./mpy-psoc6.sh help
-
-    .. group-tab:: Windows
-
-            .. code-block:: bash
-            
-                .\mpy-psoc6.cmd help
-
-.. _psoc6_quick_start:
-
-Quick Start
-------------
-
-With the ``mpy-psoc6`` utility script downloaded, the fastest way to get you up and running with
-micropython is to run the ``quick-start`` command of the script:
-
-.. tabs::
-
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py quick-start
-
-    .. group-tab:: Linux
-        
-            .. code-block:: bash
-
-                ./mpy-psoc6.sh quick-start
-
-    .. group-tab:: Windows
-
-            .. code-block:: bash
-                
-                .\mpy-psoc6.cmd quick-start
-
-The command will take care of the following:
-
-* Install all required software to work with MicroPython
-* Deploy the latest version of MicroPython PSoC6 firmware on your board
-* Launch Arduino Lab MicroPython IDE
-
-This command is supporting the getting started tutorial for the first time. Once you get familiar
-with MicroPython and its environment, the ``device-setup`` command will be more appropriate to
-install MicroPython on PSoC6™ boards, and upgrade your device with the latest firmware. 
+.. _psoc6_device_setup:
 
 Device setup
 -------------
 
-In order to setup MicroPython in a PSoC6™ board, the ``device-setup`` command of the ``mpy-psoc6``
-can be executed. Follow the instructions to select the target PSoC6™ board, and deploy the latest
+In order to setup MicroPython in a PSoC6™ board, the ``device-setup`` command of the ``mpy-psoc6.py``
+utility can be executed. Follow the instructions to select the target PSoC6™ board, and deploy the latest
 MicropPython firmware version:
 
-.. tabs::
-
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py device-setup
-
-    .. group-tab:: Linux
-        
-            .. code-block:: bash
-
-                ./mpy-psoc6.sh device-setup
-
-    .. group-tab:: Windows
-
-            .. code-block:: bash
-                
-                .\mpy-psoc6.cmd device-setup
-
+.. code-block:: bash
+    
+    $ python mpy-psoc6.py device-setup
 
 You can run any command any time you want to upgrade to the latest MicroPython firmware version.
 This command will take care of the following steps:
@@ -159,31 +54,15 @@ If you want to setup the device with a previous firmware version, you can check 
 The ``device-setup`` command can as well assist you with this process. In this case the board and the desired
 version need to be passed as arguments.
 
-.. tabs::
-
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py device-setup -b CY8CPROTO-062-4343W -v v0.1.1
-
-    .. group-tab:: Linux
-        
-            .. code-block:: bash
-
-                ./mpy-psoc6.sh device-setup CY8CPROTO-062-4343W v0.1.1
-
-    .. group-tab:: Windows
-
-            .. code-block:: bash
-                
-                .\mpy-psoc6.cmd device-setup CY8CPROTO-062-4343W v0.1.1
+.. code-block:: bash
+    
+    $ python mpy-psoc6.py device-setup -b CY8CPROTO-062-4343W -v v0.1.1
 
 .. warning::
     
     Be sure to provide the board name as shown in the ``device-setup`` command when run in interactive mode.
     Equally, provide a valid tag existing in the release section with the format *v.x.y.z*. 
-    No fail safe mechanisms or error verifications are (yet) implemented on the ``mpy-psoc6`` utility, and the script will fail to retrieve the necessary firmware file.
+    No fail safe mechanisms or error verifications are (yet) implemented on the ``mpy-psoc6.py`` utility, and the script will fail to retrieve the necessary firmware file.
 
 Updating the flasher firmware
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -191,21 +70,12 @@ Updating the flasher firmware
 The evaluation PSoC6™ boards include an integrated hardware programmer tool using `KitProg <https://www.infineon.com/cms/en/design-support/tools/programming-testing/psoc-programming-solutions/#collapse-703c72c0-50f2-11ec-9758-005056945905-3>`_ firmware. 
 Some older boards will come preflashed with KitProg version 2. In MicroPython PSoC6™ port it is required to use KitProg version 3, and the setup process will fail for version 2.
 
-By default, the device setup automatically updates the flasher firmware, ensuring compatibility with the rest of the flashing tools.
+By default, ``device-setup`` automatically updates the flasher firmware, ensuring compatibility with the rest of the flashing tools.
 If you want to skip the KitProg firmware update step, you can use the flag ``-s`` or ``--skip-fw-update`` during the ``device-setup`` process. 
 
-.. tabs::
-
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py device-setup -s
-
-        
-.. warning::
+.. code-block:: bash
     
-    This option is only available in the python script utility.     
+    $ python mpy-psoc6.py device-setup -s
 
 Direct binary flashing
 ----------------------
@@ -213,26 +83,9 @@ Direct binary flashing
 Another alternative to program the board is to directly provide the binary file. The ``firmware-deploy`` command is enabling this option. 
 The board needs to be specified, and the path and name of the ``.hex`` file:
 
-.. tabs::
-
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py firmware-deploy -b CY8CPROTO-062-4343W -f pathtodir/mpy-psoc6_CY8CPROTO-062-4343W.hex
-
-    .. group-tab:: Linux
-        
-            .. code-block:: bash
-
-                ./mpy-psoc6.sh firmware-deploy CY8CPROTO-062-4343W pathtodir/mpy-psoc6_CY8CPROTO-062-4343W.hex
-
-    .. group-tab:: Windows
-
-            .. code-block:: bash
-                
-                .\mpy-psoc6.cmd firmware-deploy CY8CPROTO-062-4343W pathtodir/mpy-psoc6_CY8CPROTO-062-4343W.hex
-
+.. code-block:: bash
+    
+    $ python mpy-psoc6.py firmware-deploy -b CY8CPROTO-062-4343W -f pathtodir/mpy-psoc6_CY8CPROTO-062-4343W.hex
 
 Erasing the device (external) file system
 -----------------------------------------
@@ -241,25 +94,9 @@ Some PSoC6™ boards include an external flash memory which is used by the Micro
 reprogramming or erasing MicroPython firmware via ``device-setup`` or ``firmware-deploy``.
 Use the ``device-erase`` command to erase of the external memory of your PSoC6™ device:
 
-.. tabs::
-
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py device-erase 
-
-    .. group-tab:: Linux
+    .. code-block:: bash
         
-            .. code-block:: bash
-
-                ./mpy-psoc6.sh device-erase
-
-    .. group-tab:: Windows
-
-            .. code-block:: bash
-                
-                .\mpy-psoc6.cmd device-erase
+        $ python mpy-psoc6.py device-erase 
 
 .. warning::
     
