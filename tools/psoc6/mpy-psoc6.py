@@ -407,24 +407,7 @@ def wait_and_request_board_connect():
     )
 
 
-# def wait_user_termination():
-#     input(colour_str_highlight("Press ENTER to continue...\n"))
-
-
 def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
-    def wait_for_dev_restart():
-        print("Waiting for device restart ", end="", flush=True)
-        for j in range(3):
-            for i in range(3):
-                print(".", end="", flush=True)
-                time.sleep(1)
-            sys.stdout.write("\b\b\b\b")
-            sys.stdout.write("    ")
-            sys.stdout.write("\b\b\b")
-            sys.stdout.flush()
-
-        print("Device restarted")
-
     if board is None:
         board = select_board()
     else:
@@ -441,6 +424,20 @@ def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
         wait_and_request_board_connect()
 
     if not skip_update_dbg_fw:
+
+        def wait_for_dev_restart():
+            print("Waiting for device restart ", end="", flush=True)
+            for j in range(3):
+                for i in range(3):
+                    print(".", end="", flush=True)
+                    time.sleep(1)
+                sys.stdout.write("\b\b\b\b")
+                sys.stdout.write("    ")
+                sys.stdout.write("\b\b\b")
+                sys.stdout.flush()
+
+            print("\nDevice restarted")
+
         fwloader_download_install()
         fwloader_update_kitprog()
         wait_for_dev_restart()
@@ -455,9 +452,6 @@ def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
     # mpy_firmware_deploy("mpy-psoc6", board)
 
     print(colour_str_success("Device setup completed :)"))
-
-    # if not quiet:
-    #     wait_user_termination()
 
 
 def device_erase(board, quiet=False):
@@ -475,9 +469,6 @@ def device_erase(board, quiet=False):
     mpy_firmware_deploy("device-erase", board)
 
     print(colour_str_success("Device erase completed :)"))
-
-    # if not quiet:
-    #     wait_user_termination()
 
 
 def firmware_deploy(board, hex_file):
