@@ -209,6 +209,10 @@ def openocd_download_install():
         file_os_suffix = "windows"
         file_extension = ".zip"
         openocd_exe = "openocd.exe"
+    elif opsys == "mac":
+        file_os_suffix = "macos"
+        file_extension = ".zip"
+        openocd_exe = "openocd"
 
     openocd_compressed = "openocd" + file_extension
 
@@ -219,8 +223,8 @@ def openocd_download_install():
         return False
 
     def get_openocd_file_url_name():
-        filename_base = "openocd-4.4.0.2134-"
-        url_base = "https://github.com/Infineon/micropython/releases/download/v0.3.0/"
+        filename_base = "openocd-5.1.0.3099-"
+        url_base = "https://github.com/Infineon/openocd/releases/download/release-v5.1.0/"
 
         file_name = filename_base + file_os_suffix + file_extension
         file_url = url_base + file_name
@@ -442,8 +446,8 @@ def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
         fwloader_update_kitprog()
         wait_for_dev_restart()
 
-    # openocd_download_install()
-    # openocd_board_conf_download(board)
+    openocd_download_install()
+    openocd_board_conf_download(board)
 
     # mpy_firmware_download("hello-world", board, "v0.3.0")
     # mpy_firmware_download("mpy-psoc6", board, version)
