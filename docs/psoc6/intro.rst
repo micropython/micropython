@@ -46,7 +46,7 @@ Finally, run the script:
 
 .. code-block:: bash                
     
-    $ python mpy-psoc6.py setup-device
+    $ python mpy-psoc6.py device-setup
 
 These commands will download and run the :ref:`device-setup <psoc6_device_setup>` command of the mpy-psoc6 utility and take
 care of all the necessary installation steps.
