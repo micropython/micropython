@@ -31,7 +31,7 @@ volatile sd_flash_operation_status_t sd_flash_operation_status;
 __attribute__((aligned(4)))
 static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATTS_VAR_ATTR_LEN_MAX)];
 
-void ble_drv_reset() {
+void ble_drv_reset(void) {
     // Linked list items will be gc'd.
     MP_STATE_VM(ble_drv_evt_handler_entries) = NULL;
     sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
@@ -136,7 +136,7 @@ void SD_EVT_IRQHandler(void) {
         const uint32_t err_code = sd_ble_evt_get(m_ble_evt_buf, &evt_len);
         if (err_code != NRF_SUCCESS) {
             if (err_code == NRF_ERROR_DATA_SIZE) {
-                printf("NRF_ERROR_DATA_SIZE\n");
+                mp_printf(&mp_plat_print, "NRF_ERROR_DATA_SIZE\n");
             }
 
             break;
@@ -175,6 +175,14 @@ void SD_EVT_IRQHandler(void) {
     #if CIRCUITPY_SERIAL_BLE && CIRCUITPY_VERBOSE_BLE
     ble_serial_enable();
     #endif
+}
+
+void ble_drv_gc_collect(void) {
+    ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
+    while (it != NULL) {
+        gc_collect_ptr(it);
+        it = it->next;
+    }
 }
 
 MP_REGISTER_ROOT_POINTER(ble_drv_evt_handler_entry_t * ble_drv_evt_handler_entries);

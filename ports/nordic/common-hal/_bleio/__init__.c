@@ -248,4 +248,5 @@ void bleio_background(void) {
 
 void common_hal_bleio_gc_collect(void) {
     bleio_adapter_gc_collect(&common_hal_bleio_adapter_obj);
+    ble_drv_gc_collect();
 }
