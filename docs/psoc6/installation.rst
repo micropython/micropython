@@ -38,12 +38,12 @@ MicropPython firmware version:
     
     $ python mpy-psoc6.py device-setup
 
-You can run any command any time you want to upgrade to the latest MicroPython firmware version.
+You can run this command any time you want to upgrade to the latest MicroPython firmware version.
 This command will take care of the following steps:
 
 * Download and install fw-loader, which will be used to update the board flasher firmware.
 * Download and install openocd, which is the software required to deploy a firmware file on PSoC6™ controllers
-* Download the latest ``.hex`` file for your select board
+* Download the latest ``.hex`` file for your selected board
 * Deploy the latest version of MicroPython firmware on your board
 
 Install a previous version
@@ -51,7 +51,7 @@ Install a previous version
 
 If you want to setup the device with a previous firmware version, you can check the list of available release in the `GitHub release section <https://github.com/infineon/MicroPython/releases>`_. 
 
-The ``device-setup`` command can as well assist you with this process. In this case the board and the desired
+The ``device-setup`` command can as well assist you with this process. In this case, the board and the desired
 version need to be passed as arguments.
 
 .. code-block:: bash

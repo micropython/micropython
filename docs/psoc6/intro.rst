@@ -14,7 +14,7 @@ Requirements
 
 The only required hardware is:
 
-* PSoC6™ board of the :ref:`Supported boards` list.
+* A PSoC6™ board from the :ref:`Supported boards` list.
 * A microUSB cable.
 
 Power the board
@@ -27,9 +27,9 @@ corresponding board manual of your board.
 Install MicroPython on the board
 --------------------------------
 
-In your computer terminal, type the following commands and follow the instructions:
+In your computer terminal, type the following commands and follow the instructions.
 
-Download the mpy-psoc6 utility script:
+First, download the ``mpy-psoc6.py`` utility script:
 
 .. code-block:: bash
 
@@ -42,13 +42,13 @@ Then install the following packages:
 
     pip install requests
 
-Finally run the script:
+Finally, run the script:
 
 .. code-block:: bash                
     
     python mpy-psoc6.py setup-device
 
-These commands will download and run the :ref:`quick-start <psoc6_device_setup>` command of the mpy-psoc6 utility and take
+These commands will download and run the :ref:`device-setup <psoc6_device_setup>` command of the mpy-psoc6 utility and take
 care of all the necessary installation steps.
 
 If everything went fine, your PSoC6™ board is now running MicroPython. If you run into any trouble, please let us know `here <https://github.com/infineon/micropython/issues>`_ :) 
@@ -56,11 +56,11 @@ If everything went fine, your PSoC6™ board is now running MicroPython. If you 
 Use a MicroPython IDE
 -------------------------
 
-Different IDEs... we choose Arduino IDE.
-and Arduino IDE for
-Micropython is now started. 
+There are multiple ways to interact and program your MicroPython device. You can find more information about it in this :ref:`section <psoc6_mpy_usage>`. 
 
-Select your serial port of your PSoC6™ board by clicking on the connect icon on the menu bar:
+For this getting started guide, we propose to use the minimalist `Arduino Lab For MicropPython <https://labs.arduino.cc/en/labs/micropython>`_. 
+
+Once installed, open the application and select the serial port of your PSoC6™ board by clicking on the connect icon on the menu bar:
 
 .. image:: img/mpy-ide-connect.jpg
     :alt: Arduino IDE connect
@@ -100,10 +100,22 @@ The red LED in the board should be now on :D
 Upload a script to your device
 ------------------------------
 
-*Feature unavailable. Placeholder. To be completed.*
+If you click on the ``Files`` tab, you can transfer files between your computer and the MicroPython device. 
+As any other storage, you can upload any kind of file and format as required by your application, not only *.py* program files. 
+
+For example, if you name a file ``main.py`` and save it in your device, it will be automatically executed during the boot of the MicroPython device.
+
+.. image:: img/mpy-ide-vfs.png
+    :alt: Arduino IDE script
+    :width: 520px
 
 You are all set now to start programming with MicroPython!
 
+.. warning::
+
+    Adding *forever* blocking loops to the ``main.py`` program might block the access to the storage device. It is recommended to use the ``main.py`` script once
+    stable, tested and intended to be deployed and run stand-alone.
+    
 Learn more about MicroPython in the following sections:
 
 * :ref:`MicroPython libraries <micropython_lib>` . 
