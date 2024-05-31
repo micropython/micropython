@@ -19,7 +19,7 @@
 //|         Raises an exception if another ULP has been instantiated. This
 //|         ensures that is is only used by one piece of code at a time.
 //|
-//|         :param Architecture arch: The ulp arch. Only `FSM` architecture is currently supported.
+//|         :param Architecture arch: The ulp arch.
 //|         """
 //|         ...
 static mp_obj_t espulp_ulp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -103,7 +103,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(espulp_ulp_set_wakeup_period_obj, espulp_ulp_se
 //|
 //|         :param ReadableBuffer program: the ULP binary.
 //|         :param int entrypoint: Specifies the offset (in bytes) of the first instruction
-//|            from the start of the program.
+//|            from the start of the program (Only used by FSM ULP).
 //|         :param Sequence[microcontroller.Pin] pins: Pins made available to the ULP.
 //|            The pins are claimed and not reset until `halt()` is called."""
 //|         ...
