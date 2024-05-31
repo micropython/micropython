@@ -33,20 +33,20 @@ First, download the ``mpy-psoc6.py`` utility script:
 
 .. code-block:: bash
 
-    curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.py > mpy-psoc6.py
+    $ curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.py > mpy-psoc6.py
 
 Make sure you have a recent version on `Python3.x <https://www.python.org/downloads/>`_  installed and the `pip <https://pip.pypa.io/en/stable/installation/>`_ package installer.
 Then install the following packages:
 
 .. code-block:: bash                
 
-    pip install requests
+    $ pip install requests
 
 Finally, run the script:
 
 .. code-block:: bash                
     
-    python mpy-psoc6.py setup-device
+    $ python mpy-psoc6.py setup-device
 
 These commands will download and run the :ref:`device-setup <psoc6_device_setup>` command of the mpy-psoc6 utility and take
 care of all the necessary installation steps.
