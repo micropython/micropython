@@ -6,6 +6,7 @@
 
 #include "bindings/espulp/__init__.h"
 #include "bindings/espulp/ULP.h"
+#include "bindings/espidf/__init__.h"
 
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -37,10 +38,7 @@ void espulp_reset(void) {
 }
 
 void common_hal_espulp_ulp_set_wakeup_period(espulp_ulp_obj_t *self, size_t period_index, uint32_t period_us) {
-    int _errno = ulp_set_wakeup_period(period_index, period_us);
-    if (_errno != ESP_OK) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Invalid parameters"));
-    }
+    CHECK_ESP_RESULT(ulp_set_wakeup_period(period_index, period_us));
 }
 
 void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t length, uint32_t entry_point, uint32_t pin_mask) {
@@ -83,24 +81,24 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
         esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
     }
 
-    int _errno;
+    esp_err_t result;
     switch (self->arch) {
         #ifdef CONFIG_ULP_COPROC_TYPE_FSM
         case FSM:
-            _errno = ulp_load_binary(0, (const uint8_t *)program, length / sizeof(uint32_t));
-            if (_errno != ESP_OK) {
-                mp_raise_RuntimeError(MP_ERROR_TEXT("Load binary failed"));
+            result = ulp_load_binary(0, (const uint8_t *)program, length / sizeof(uint32_t));
+            if (result != ESP_OK) {
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_program);
             }
-            _errno = ulp_run(entry_point / sizeof(uint32_t));
-            if (_errno != ESP_OK) {
-                mp_raise_RuntimeError(MP_ERROR_TEXT("Run binary failed"));
-            }
+            CHECK_ESP_RESULT(ulp_run(entry_point / sizeof(uint32_t)));
             break;
         #endif
         #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
         case RISCV:
-            ulp_riscv_load_binary((const uint8_t *)program, length);
-            ulp_riscv_run();
+            result = ulp_riscv_load_binary((const uint8_t *)program, length);
+            if (result != ESP_OK) {
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_program);
+            }
+            CHECK_ESP_RESULT(ulp_riscv_run());
             break;
         #endif
         default:

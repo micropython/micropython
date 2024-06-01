@@ -1173,6 +1173,7 @@ msgstr ""
 msgid "Interrupted by output function"
 msgstr ""
 
+#: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
@@ -1240,10 +1241,6 @@ msgstr ""
 msgid "Invalid multicast MAC address"
 msgstr ""
 
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Invalid parameters"
-msgstr ""
-
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid size"
 msgstr ""
@@ -1282,10 +1279,6 @@ msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass"
-msgstr ""
-
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Load binary failed"
 msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
@@ -1832,10 +1825,6 @@ msgstr ""
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Right format but not supported"
-msgstr ""
-
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Run binary failed"
 msgstr ""
 
 #: main.c
