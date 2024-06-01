@@ -13,7 +13,6 @@
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/board/__init__.h"
 
-fourwire_fourwire_obj_t board_display_obj;
 
 uint8_t display_init_sequence[] = {
     0xFE, 0x00, // Inter Register Enable1 (FEh)

@@ -22,7 +22,6 @@
 #include "py/ringbuf.h"
 #include "shared/runtime/interrupt_char.h"
 
-fourwire_fourwire_obj_t board_display_obj;
 keypad_demux_demuxkeymatrix_obj_t board_keyboard;
 
 void update_keyboard(keypad_eventqueue_obj_t *queue);
