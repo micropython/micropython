@@ -69,6 +69,9 @@ static void _on_sync(void) {
     xTaskNotifyGive(cp_task);
 }
 
+// All examples have this. It'd make sense in a header.
+void ble_store_config_init(void);
+
 void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enabled) {
     const bool is_enabled = common_hal_bleio_adapter_get_enabled(self);
 
@@ -93,6 +96,20 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         ble_hs_cfg.sync_cb = _on_sync;
         // ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
+        ble_hs_cfg.sm_io_cap = BLE_SM_IO_CAP_NO_IO;
+        ble_hs_cfg.sm_bonding = 1;
+        /* Enable the appropriate bit masks to make sure the keys
+         * that are needed are exchanged
+         */
+        ble_hs_cfg.sm_our_key_dist |= BLE_SM_PAIR_KEY_DIST_ENC;
+        ble_hs_cfg.sm_their_key_dist |= BLE_SM_PAIR_KEY_DIST_ENC;
+
+        ble_hs_cfg.sm_mitm = 1;
+        ble_hs_cfg.sm_sc = 1;
+        /* Stores the IRK */
+        ble_hs_cfg.sm_our_key_dist |= BLE_SM_PAIR_KEY_DIST_ID;
+        ble_hs_cfg.sm_their_key_dist |= BLE_SM_PAIR_KEY_DIST_ID;
+
         ble_svc_gap_init();
         ble_svc_gatt_init();
         ble_svc_ans_init();
@@ -114,6 +131,8 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
             // Reset connection.
             connection->conn_handle = BLEIO_HANDLE_INVALID;
         }
+
+        ble_store_config_init();
 
         cp_task = xTaskGetCurrentTaskHandle();
 
@@ -277,10 +296,13 @@ static int _mtu_reply(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     uint16_t mtu, void *arg) {
     bleio_connection_internal_t *connection = (bleio_connection_internal_t *)arg;
-    if (conn_handle != connection->conn_handle || error->status != 0) {
+    if (conn_handle != connection->conn_handle) {
         return 0;
     }
-    connection->mtu = mtu;
+    if (error->status == 0) {
+        connection->mtu = mtu;
+    }
+    xTaskNotify(cp_task, conn_handle, eSetValueWithOverwrite);
     return 0;
 }
 
@@ -324,11 +346,11 @@ static int _connect_event(struct ble_gap_event *event, void *self_in) {
     switch (event->type) {
         case BLE_GAP_EVENT_CONNECT:
             if (event->connect.status == 0) {
+                // This triggers an MTU exchange. Its reply will unblock CP.
                 _new_connection(event->connect.conn_handle);
                 // Set connections objs back to NULL since we have a new
                 // connection and need a new tuple.
                 self->connection_objs = NULL;
-                xTaskNotify(cp_task, event->connect.conn_handle, eSetValueWithOverwrite);
             } else {
                 xTaskNotify(cp_task, -event->connect.status, eSetValueWithOverwrite);
             }
@@ -663,7 +685,7 @@ bool common_hal_bleio_adapter_get_advertising(bleio_adapter_obj_t *self) {
 bool common_hal_bleio_adapter_get_connected(bleio_adapter_obj_t *self) {
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         bleio_connection_internal_t *connection = &bleio_connections[i];
-        if (connection->conn_handle != BLEIO_HANDLE_INVALID) {
+        if (connection->conn_handle != BLEIO_HANDLE_INVALID && connection->mtu != 0) {
             return true;
         }
     }
@@ -678,7 +700,7 @@ mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
     mp_obj_t items[BLEIO_TOTAL_CONNECTION_COUNT];
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         bleio_connection_internal_t *connection = &bleio_connections[i];
-        if (connection->conn_handle != BLEIO_HANDLE_INVALID) {
+        if (connection->conn_handle != BLEIO_HANDLE_INVALID && connection->mtu != 0) {
             if (connection->connection_obj == mp_const_none) {
                 connection->connection_obj = bleio_connection_new_from_internal(connection);
             }
@@ -691,14 +713,13 @@ mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
 }
 
 void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self) {
-    mp_raise_NotImplementedError(NULL);
-    // bonding_erase_storage();
+    ble_store_clear();
 }
 
 bool common_hal_bleio_adapter_is_bonded_to_central(bleio_adapter_obj_t *self) {
-    mp_raise_NotImplementedError(NULL);
-    // return bonding_peripheral_bond_count() > 0;
-    return false;
+    int count;
+    ble_store_util_count(BLE_STORE_OBJ_TYPE_PEER_SEC, &count);
+    return count > 0;
 }
 
 void bleio_adapter_gc_collect(bleio_adapter_obj_t *adapter) {
