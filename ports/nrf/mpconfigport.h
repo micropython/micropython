@@ -335,6 +335,7 @@ long unsigned int rng_generate_random_word(void);
 #if MICROPY_HW_USB_CDC
 #include "device/usbd.h"
 #define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();
+#define MICROPY_EXCLUDE_SHARED_TINYUSB_USBD_CDC (1)
 #else
 #define MICROPY_HW_USBDEV_TASK_HOOK ;
 #endif

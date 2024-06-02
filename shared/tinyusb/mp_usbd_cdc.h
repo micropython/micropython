@@ -35,5 +35,8 @@ uintptr_t mp_usbd_cdc_poll_interfaces(uintptr_t poll_flags);
 void tud_cdc_rx_cb(uint8_t itf);
 mp_uint_t mp_usbd_cdc_tx_strn(const char *str, mp_uint_t len);
 
+#if MICROPY_HW_USB_EXTERNAL_TINYUSB
+void mp_usbd_line_state_cb(uint8_t itf, bool dtr, bool rts);
+#endif
 
 #endif // MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_CDC_H
