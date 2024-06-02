@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x811C
+USB_PID = 0x813A
 USB_PRODUCT = "ThingPulse Pendrive S3"
 USB_MANUFACTURER = "ThingPulse"
 
