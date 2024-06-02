@@ -36,3 +36,6 @@ jsmin
 # for Silicon Labs Configurator (SLC)
 websockets
 colorama
+
+# for silabs builds
+setuptools
