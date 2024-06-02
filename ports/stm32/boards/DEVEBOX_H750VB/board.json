@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "STM32H743VIT6.jpg"
+    ],
+    "mcu": "stm32h7",
+    "product": "H750VB",
+    "thumbnail": "",
+    "url": "http://mcudev.taobao.com/",
+    "vendor": "DevEBox"
+}
