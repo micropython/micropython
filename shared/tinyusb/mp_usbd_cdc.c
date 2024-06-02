@@ -26,16 +26,13 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "py/mpconfig.h"
 #include "py/stream.h"
 #include "extmod/modmachine.h"
 
-#if MICROPY_HW_USB_CDC && MICROPY_HW_ENABLE_USBDEV
-#include "tusb.h"
-#include "device/usbd.h"
-
-#include "mp_usbd_cdc.h"
 #include "mp_usbd.h"
+#include "mp_usbd_cdc.h"
+
+#if MICROPY_HW_USB_CDC && MICROPY_HW_ENABLE_USBDEV && !MICROPY_EXCLUDE_SHARED_TINYUSB_USBD_CDC
 
 static uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll
 
@@ -122,6 +119,8 @@ mp_uint_t mp_usbd_cdc_tx_strn(const char *str, mp_uint_t len) {
     return i;
 }
 
+#endif
+
 #if MICROPY_HW_USB_CDC_1200BPS_TOUCH && MICROPY_HW_ENABLE_USBDEV
 
 static mp_sched_node_t mp_bootloader_sched_node;
@@ -149,5 +148,4 @@ tud_cdc_line_state_cb
     }
 }
 
-#endif
 #endif
