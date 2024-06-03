@@ -50,7 +50,11 @@ jobs:
         git remote add fork https://github.com/${{github.repository}}.git
         git fetch fork --filter=tree:0
     - name: branch compatibility
-      if: inputs.branch != '' && inputs.version == 'latest'
+      if: inputs.branch != 'main' && inputs.version == 'latest' && github.repository_owner == 'adafruit'
+      run: |
+        git checkout ${{inputs.branch}}
+    - name: branch compatibility (fork)
+      if: inputs.branch != '' && inputs.version == 'latest' && github.repository_owner != 'adafruit'
       run: |
         git checkout -b fork-branch fork/${{inputs.branch}}
     - name: Set up identifier
