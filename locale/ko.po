@@ -1227,6 +1227,7 @@ msgstr "인터럽트 오류."
 msgid "Interrupted by output function"
 msgstr "출력 함수로 인해 종료되었다"
 
+#: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c

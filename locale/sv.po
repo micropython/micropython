@@ -1200,6 +1200,7 @@ msgstr "Interrupt-fel."
 msgid "Interrupted by output function"
 msgstr "Avbruten av utgångsfunktion"
 
+#: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
