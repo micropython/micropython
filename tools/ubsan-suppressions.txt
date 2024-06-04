@@ -1,0 +1,5 @@
+# UBSan runtime suppressions, for third party code only
+# See https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html#issue-suppression
+
+# Default lfs2 file_max config is documented to overflow to negative value if seeking too far
+signed-integer-overflow:lfs2.c

@@ -1,6 +1,8 @@
 # Disable optimisations and enable assert() on coverage builds.
 DEBUG ?= 1
 
+UBSAN ?= 1
+
 CFLAGS += \
 	-fprofile-arcs -ftest-coverage \
 	-Wformat -Wmissing-declarations -Wmissing-prototypes \
