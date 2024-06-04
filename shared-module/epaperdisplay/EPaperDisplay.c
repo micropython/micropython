@@ -131,7 +131,8 @@ static void wait_for_busy(epaperdisplay_epaperdisplay_obj_t *self) {
     if (self->busy.base.type == &mp_type_NoneType) {
         return;
     }
-    while (common_hal_digitalio_digitalinout_get_value(&self->busy) == self->busy_state) {
+    while (common_hal_digitalio_digitalinout_get_value(&self->busy) == self->busy_state &&
+           !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
     }
 }
@@ -165,6 +166,9 @@ static void send_command_sequence(epaperdisplay_epaperdisplay_obj_t *self,
         if (should_wait_for_busy) {
             wait_for_busy(self);
         }
+        if (mp_hal_is_interrupted()) {
+            return;
+        }
         i += 2 + data_size;
         if (self->two_byte_sequence_length) {
             i++;
@@ -191,6 +195,9 @@ static void epaperdisplay_epaperdisplay_start_refresh(epaperdisplay_epaperdispla
     common_hal_time_delay_ms(self->start_up_time_ms);
 
     send_command_sequence(self, true, self->start_sequence, self->start_sequence_len);
+    if (mp_hal_is_interrupted()) {
+        return;
+    }
     displayio_display_core_start_refresh(&self->core);
 }
 
