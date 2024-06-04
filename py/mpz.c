@@ -708,7 +708,9 @@ void mpz_set(mpz_t *dest, const mpz_t *src) {
     mpz_need_dig(dest, src->len);
     dest->neg = src->neg;
     dest->len = src->len;
-    memcpy(dest->dig, src->dig, src->len * sizeof(mpz_dig_t));
+    if (src->len) {
+        memcpy(dest->dig, src->dig, src->len * sizeof(mpz_dig_t));
+    }
 }
 
 void mpz_set_from_int(mpz_t *z, mp_int_t val) {
