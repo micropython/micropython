@@ -14,8 +14,6 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 
-#include "bluetooth/ble_drv.h"
-
 #include "supervisor/fatfs.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/reload.h"
@@ -39,9 +37,9 @@ static mp_obj_t characteristic_list_items[2];
 #define PACKET_BUFFER_SIZE (2 * 10 + 512 + 12)
 // uint32_t so its aligned
 static uint32_t _buffer[PACKET_BUFFER_SIZE / 4 + 1];
-static uint32_t _outgoing1[BLE_GATTS_VAR_ATTR_LEN_MAX / 4];
-static uint32_t _outgoing2[BLE_GATTS_VAR_ATTR_LEN_MAX / 4];
-static ble_drv_evt_handler_entry_t static_handler_entry;
+static uint32_t _outgoing1[BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE / 4];
+static uint32_t _outgoing2[BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE / 4];
+static ble_event_handler_t static_handler_entry;
 static bleio_packet_buffer_obj_t _transfer_packet_buffer;
 
 void supervisor_start_bluetooth_file_transfer(void) {
@@ -60,6 +58,7 @@ void supervisor_start_bluetooth_file_transfer(void) {
     // Version number
     supervisor_ble_version_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_version_uuid, 0x0100, file_transfer_base_uuid);
+    supervisor_ble_version_characteristic.base.type = &bleio_characteristic_type;
     common_hal_bleio_characteristic_construct(&supervisor_ble_version_characteristic,
         &supervisor_ble_service,
         0,                                       // handle (for remote only)
@@ -81,6 +80,7 @@ void supervisor_start_bluetooth_file_transfer(void) {
     // Active filename.
     supervisor_ble_transfer_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_transfer_uuid, 0x0200, file_transfer_base_uuid);
+    supervisor_ble_transfer_characteristic.base.type = &bleio_characteristic_type;
     common_hal_bleio_characteristic_construct(&supervisor_ble_transfer_characteristic,
         &supervisor_ble_service,
         0,                                       // handle (for remote only)
@@ -88,15 +88,16 @@ void supervisor_start_bluetooth_file_transfer(void) {
         CHAR_PROP_READ | CHAR_PROP_WRITE_NO_RESPONSE | CHAR_PROP_NOTIFY,
         SECURITY_MODE_ENC_NO_MITM,
         SECURITY_MODE_ENC_NO_MITM,
-        BLE_GATTS_VAR_ATTR_LEN_MAX,                  // max length
+        BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE,                  // max length
         false,                                       // fixed length
-        NULL,                                       // no initial valuen
+        NULL,                                       // no initial value
         NULL);
 
+    _transfer_packet_buffer.base.type = &bleio_packet_buffer_type;
     _common_hal_bleio_packet_buffer_construct(
         &_transfer_packet_buffer, &supervisor_ble_transfer_characteristic,
         _buffer, PACKET_BUFFER_SIZE,
-        _outgoing1, _outgoing2, BLE_GATTS_VAR_ATTR_LEN_MAX,
+        _outgoing1, _outgoing2, BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE,
         &static_handler_entry);
 }
 

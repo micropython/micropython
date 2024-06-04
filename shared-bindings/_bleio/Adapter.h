@@ -35,6 +35,7 @@ uint16_t bleio_adapter_get_name(char *buf, uint16_t len);
 extern mp_obj_str_t *common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self);
 extern void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char *name);
 
+// Returns 0 if ok, otherwise a BLE stack specific error code.
 extern uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
     bool connectable, bool anonymous, uint32_t timeout, float interval,
     const uint8_t *advertising_data, uint16_t advertising_data_len,

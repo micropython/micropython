@@ -91,14 +91,18 @@ int bleio_connection_event_cb(struct ble_gap_event *event, void *connection_in) 
         case BLE_GAP_EVENT_NOTIFY_TX:
             MP_FALLTHROUGH;
         case BLE_GAP_EVENT_SUBSCRIBE:
-            return ble_event_run_handlers(event);
+            int status = ble_event_run_handlers(event);
+            background_callback_add_core(&bleio_background_callback);
+            return status;
 
         default:
             #if CIRCUITPY_VERBOSE_BLE
             mp_printf(&mp_plat_print, "Unhandled connection event: %d\n", event->type);
             #endif
-            return 0;
+            break;
     }
+
+    background_callback_add_core(&bleio_background_callback);
     return 0;
 }
 
