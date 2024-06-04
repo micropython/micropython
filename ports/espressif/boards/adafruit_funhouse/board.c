@@ -15,7 +15,6 @@
 
 #include "esp_log.h"
 
-fourwire_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
 
