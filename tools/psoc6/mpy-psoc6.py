@@ -43,22 +43,31 @@ def mpy_get_fw_hex_file_name(file_name, board):
     return str(file_name) + "_" + str(board) + file_extension
 
 
-def mpy_firmware_deploy(file_name, board, serial_adapter_sn=None):
-    print(f"Deploying firmware {file_name} ...")
+def mpy_firmware_deploy(file_name, board, silent=False, serial_adapter_sn=None):
+    if not silent:
+        print(f"Deploying firmware {file_name} ...")
     hex_file = mpy_get_fw_hex_file_name(file_name, board)
     openocd_program(board, hex_file, serial_adapter_sn)
-    print(colour_str_success(f"Firmware {file_name} deployed successfully"))
+    if not silent:
+        print(colour_str_success(f"Firmware {file_name} deployed successfully"))
 
 
-def mpy_firmware_download(file_name, board, version):
+def mpy_firmware_download(file_name, board, version, silent=False):
     def mpy_firmware_clean(file_name, board):
         file_name_for_board = mpy_get_fw_hex_file_name(file_name, board)
         if os.path.exists(file_name_for_board):
             os.remove(file_name_for_board)
 
-    print(
-        "Downloading " + str(file_name) + " " + str(version) + " for " + str(board) + " board..."
-    )
+    if not silent:
+        print(
+            "Downloading "
+            + str(file_name)
+            + " "
+            + str(version)
+            + " for "
+            + str(board)
+            + " board..."
+        )
 
     if version == "latest":
         sub_url = "latest/download"
@@ -452,10 +461,10 @@ def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
     openocd_download_install()
     openocd_board_conf_download(board)
 
-    mpy_firmware_download("hello-world", board, "v0.3.0")
+    mpy_firmware_download("hello-world", board, "v0.3.0", True)
     mpy_firmware_download("mpy-psoc6", board, version)
 
-    mpy_firmware_deploy("hello-world", board)
+    mpy_firmware_deploy("hello-world", board, True)
     mpy_firmware_deploy("mpy-psoc6", board)
 
     print(colour_str_success("Device setup completed :)"))
