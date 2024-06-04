@@ -46,8 +46,9 @@ static bool stream_readable(void *stream) {
     return ret != 0;
 }
 
-// (near copy of mp_stream_posix_read, but with changes)
-// (circuitpy doesn't enable posix stream routines anyway)
+// This is a near copy of mp_stream_posix_read, but avoiding use of global
+// errno value & with added prints for debugging purposes. (circuitpython doesn't
+// enable mp_stream_posix_read anyway)
 static mp_int_t stream_read(void *stream, void *buf, size_t len) {
     int errcode;
     mp_obj_base_t *o = MP_OBJ_TO_PTR(stream);
@@ -69,8 +70,8 @@ static mp_int_t stream_read(void *stream, void *buf, size_t len) {
     }
 }
 
-// (near copy of mp_stream_posix_lseek, but with changes)
-// (circuitpy doesn't enable posix stream routines anyway)
+// This is a near copy of mp_stream_posix_lseek, but avoiding use of global
+// errno value (circuitpython doesn't enable posix stream routines anyway)
 static off_t stream_lseek(void *stream, off_t offset, int whence) {
     int errcode;
     const mp_obj_base_t *o = stream;
@@ -267,7 +268,7 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
     mp_obj_t stream,
     uint8_t *buffer,
     size_t buffer_size) {
-    // XXX Adafruit_MP3 uses a 2kB input buffer and two 4kB output pcm_buffer.
+    // Note: Adafruit_MP3 uses a 2kB input buffer and two 4kB output pcm_buffer.
     // for a whopping total of 10kB pcm_buffer (+mp3 decoder state and frame buffer)
     // At 44kHz, that's 23ms of output audio data.
     //
