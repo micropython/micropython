@@ -193,7 +193,7 @@ soft_reset:
     network_deinit();
     #endif
 
-    // gc_sweep_all();
+    gc_sweep_all();
     mp_deinit();
 
     goto soft_reset;
