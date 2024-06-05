@@ -447,14 +447,16 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
 
     mp3file_skip_id3v2(self, false);
     if (!mp3file_find_sync_word(self, false)) {
+        memset(buffer, 0, self->frame_buffer_size);
         *buffer_length = 0;
         return self->eof ? GET_BUFFER_DONE : GET_BUFFER_ERROR;
     }
     int bytes_left = BYTES_LEFT(self);
     uint8_t *inbuf = READ_PTR(self);
     int err = MP3Decode(self->decoder, &inbuf, &bytes_left, buffer, 0);
-    CONSUME(self, BYTES_LEFT(self) - bytes_left);
-
+    if (err != ERR_MP3_INDATA_UNDERFLOW) {
+        CONSUME(self, BYTES_LEFT(self) - bytes_left);
+    }
     if (err) {
         memset(buffer, 0, frame_buffer_size_bytes);
         if (DO_DEBUG) {
