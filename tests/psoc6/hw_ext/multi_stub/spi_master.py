@@ -29,35 +29,35 @@ if "CY8CPROTO-063-BLE" in machine:
 
 print("\n*** SPI MASTER INSTANCE ***\n")
 
-try:
-    spi = SPI(ssel=ssel_master_pin)
-except Exception as e:
-    print(e)
+# try:
+#     spi = SPI(ssel=ssel_master_pin)
+# except Exception as e:
+#     print(e)
 
-signal_received = False
-
-
-def signal_irq(arg):
-    global signal_received
-    signal_received = True
+# signal_received = False
 
 
-pin_out = Pin(master_write_notify_pin, pull=Pin.PULL_UP, mode=Pin.OUT, value=True)
-pin_in = Pin(master_read_notify_pin, pull=Pin.PULL_UP, mode=Pin.IN, value=True)
-pin_in.irq(handler=signal_irq, trigger=Pin.IRQ_RISING)
+# def signal_irq(arg):
+#     global signal_received
+#     signal_received = True
 
 
-def _master_ready_to_write():
-    pin_out.value(0)  # high
-    time.sleep_ms(1000)
-    pin_out.value(1)  # low
+# pin_out = Pin(master_write_notify_pin, pull=Pin.PULL_UP, mode=Pin.OUT, value=True)
+# pin_in = Pin(master_read_notify_pin, pull=Pin.PULL_UP, mode=Pin.IN, value=True)
+# pin_in.irq(handler=signal_irq, trigger=Pin.IRQ_RISING)
 
 
-def _wait_for_slave_signal():
-    global signal_received
-    while not signal_received:
-        pass
-    signal_received = False
+# def _master_ready_to_write():
+#     pin_out.value(0)  # high
+#     time.sleep_ms(1000)
+#     pin_out.value(1)  # low
+
+
+# def _wait_for_slave_signal():
+#     global signal_received
+#     while not signal_received:
+#         pass
+#     signal_received = False
 
 
 def spi_master_configure():
@@ -80,16 +80,21 @@ spi_assert = lambda tx, rx: [print(f"\ntx: {tx}\nrx: {rx}")]
 
 spi_obj = spi_master_configure()
 
-print("master-->write and slave-->read")
 tx_buf = b"\x08\x06\x04\x02\x07\x05\x03\x01"
-rx_buf = bytearray(8)
 
-_master_ready_to_write()
+# _master_ready_to_write()
 spi_obj.write(tx_buf)
 
-_wait_for_slave_signal()
+# _wait_for_slave_signal()
+
+# while rx_buf != exp_rcvd:
+time.sleep_ms(500)
+rx_buf = bytearray(8)
 rx_buf = spi_obj.read(8)
 
-spi_assert(tx_buf, rx_buf)
+exp_rcvd = b"\t\x07\x05\x03\x08\x06\x04\x02"
+# print(rx_buf)
+print("master-->write slave-->process (+1) send back: ", exp_rcvd == rx_buf)
+# spi_assert(exp_rcvd, rx_buf)
 
 spi_obj.deinit()

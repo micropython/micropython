@@ -490,13 +490,13 @@ if [ ${bitstream} -eq 1 ]; then
   echo "  running bitstream tests ... "
   echo
 
-  ../tools/mpremote/mpremote.py connect ${device1} run --no-follow psoc6/bitstream/bitstream_tx.py
+  ../tools/mpremote/mpremote.py connect ${device1} run --no-follow psoc6/hw_ext/multi_stub/bitstream_tx.py
 
   echo " running bitstream listen.."
 
   ./run-tests.py --target psoc6 --device ${device0} \
       \
-      psoc6/bitstream/bitstream_rx.py \
+      psoc6/hw_ext/multi_stub/bitstream_rx.py \
     |tee -a ${resultsFile}
 
 fi
@@ -507,13 +507,13 @@ if [ ${spi} -eq 1 ]; then
   echo
 
   echo " running spi slave device test..."
-  ../tools/mpremote/mpremote.py connect ${device1} run --no-follow psoc6/spi/s_spi_master_write_slave_read.py
+  ../tools/mpremote/mpremote.py connect ${device1} run --no-follow psoc6/hw_ext/multi_stub/spi_slave.py
 
   echo " running spi master device test..."
 
   ./run-tests.py --target psoc6 --device ${device0} \
       \
-      psoc6/spi/m_spi_master_write_slave_read.py \
+      psoc6/hw_ext/multi_stub/spi_master.py \
     |tee -a ${resultsFile}
 
 fi
@@ -525,13 +525,13 @@ if [ ${i2s} -eq 1 ]; then
 
   echo " running stand-alone i2s tx"
 
-  ../tools/mpremote/mpremote.py connect ${device0} run --no-follow psoc6/hw_ext/multi_blocking/i2s_tx.py
+  ../tools/mpremote/mpremote.py connect ${device0} run --no-follow psoc6/hw_ext/multi_stub/i2s_tx.py
 
   echo " running i2s receive tests..."
 
   ./run-tests.py --target psoc6 --device ${device1} \
       \
-      psoc6/hw_ext/multi_blocking/i2s_rx.py \
+      psoc6/hw_ext/multi_stub/i2s_rx.py \
     |tee -a ${resultsFile}
 
 fi
