@@ -329,9 +329,6 @@ void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, mp_obj_t
 
     self->stream = stream;
 
-    // Seek the beginning of the stream if possible, but ignore any errors
-    (void)stream_lseek(self->stream, SEEK_SET, 0);
-
     INPUT_BUFFER_CLEAR(self->inbuf);
     self->eof = 0;
     self->other_channel = -1;
@@ -401,7 +398,7 @@ void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t *self,
     // We don't reset the buffer index in case we're looping and we have an odd number of buffer
     // loads
     background_callback_prevent();
-    if (stream_lseek(self->stream, SEEK_SET, 0) == 0) {
+    if (self->eof && stream_lseek(self->stream, SEEK_SET, 0) == 0) {
         INPUT_BUFFER_CLEAR(self->inbuf);
         self->eof = 0;
         self->samples_decoded = 0;

@@ -28,13 +28,13 @@
 //|         """Load a .mp3 file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
 //|         :param Union[str, typing.BinaryIO] file: The name of a mp3 file (preferred) or an already opened mp3 file
-//|         :param ~circuitpython_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two buffers are allocated internally.  The specific buffer size required depends on the mp3 file.
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split and used for buffering the data. The buffer is split into two parts for decoded data and the remainder is used for pre-decoded data. When playing from a socket, a larger buffer can help reduce playback glitches at the expense of increased memory usage.
 //|
 //|         Playback of mp3 audio is CPU intensive, and the
 //|         exact limit depends on many factors such as the particular
-//|         microcontroller, SD card or flash performance, and other
-//|         code in use such as displayio. If playback is garbled,
-//|         skips, or plays as static, first try using a "simpler" mp3:
+//|         microcontroller, SD card or flash performance, network performance, and
+//|         other code in use such as displayio. If playback is garbled, skips, or plays as
+//|         static, first try using a "simpler" mp3:
 //|
 //|           * Use constant bit rate (CBR) not VBR or ABR (variable or average bit rate) when encoding your mp3 file
 //|           * Use a lower sample rate (e.g., 11.025kHz instead of 48kHz)
@@ -64,6 +64,14 @@
 //|           while a.playing:
 //|             pass
 //|           print("stopped")
+//|
+//|         It is possible to seek within a file before playing it::
+//|
+//|             with open("/test.mp3", "rb") as stream:
+//|                 stream.seek(128000 * 30 // 8) # Seek about 30s into a 128kbit/s stream
+//|                 decoder.file = stream
+//|
+//|         If the stream is played with ``loop = True``, the loop will start at the beginning.
 //|         """
 //|         ...
 
