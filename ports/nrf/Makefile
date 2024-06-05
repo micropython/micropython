@@ -129,7 +129,15 @@ CFLAGS_MCU_m4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-s
 
 CFLAGS_MCU_m0 = $(CFLAGS_CORTEX_M) -fshort-enums -mtune=cortex-m0 -mcpu=cortex-m0 -mfloat-abi=soft
 
+# linker wrap does not work with lto on older gcc/binutils: https://sourceware.org/bugzilla/show_bug.cgi?id=24406
+GCC_VERSION = $(shell arm-none-eabi-gcc --version | sed -n -E 's:^arm.*([0-9]+\.[0-9]+\.[0-9]+).*$$:\1:p')
+GCC_MAJOR_VERS = $(word 1,$(subst ., ,$(GCC_VERSION)))
+ifeq ($(shell test $(GCC_MAJOR_VERS) -ge 10; echo $$?),0)
 LTO ?= 1
+else
+LTO ?= 0
+endif
+
 ifeq ($(LTO),1)
 CFLAGS += -flto
 else
