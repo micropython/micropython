@@ -13,7 +13,6 @@
 #include "shared-module/displayio/mipi_constants.h"
 #include "supervisor/shared/board.h"
 
-fourwire_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
 

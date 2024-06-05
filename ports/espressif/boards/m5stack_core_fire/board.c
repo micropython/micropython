@@ -13,7 +13,6 @@
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/board/__init__.h"
 
-fourwire_fourwire_obj_t board_display_obj;
 
 
 // display init sequence according to M5Gfx

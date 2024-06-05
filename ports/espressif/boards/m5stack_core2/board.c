@@ -21,7 +21,6 @@
 
 #include "../../pmic/axp192/axp192.h"
 
-fourwire_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
 #define PMIC_POWER_SOURCE_USB   0
