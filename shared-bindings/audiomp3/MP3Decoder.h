@@ -15,9 +15,9 @@
 extern const mp_obj_type_t audiomp3_mp3file_type;
 
 void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
-    pyb_file_obj_t *file, uint8_t *buffer, size_t buffer_size);
+    mp_obj_t stream, uint8_t *buffer, size_t buffer_size);
 
-void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, pyb_file_obj_t *file);
+void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, mp_obj_t stream);
 void common_hal_audiomp3_mp3file_deinit(audiomp3_mp3file_obj_t *self);
 bool common_hal_audiomp3_mp3file_deinited(audiomp3_mp3file_obj_t *self);
 uint32_t common_hal_audiomp3_mp3file_get_sample_rate(audiomp3_mp3file_obj_t *self);
