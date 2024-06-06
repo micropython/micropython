@@ -46,7 +46,6 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_LONELY_STRING_OPEN,
     #if MICROPY_PY_FSTRINGS
     MP_TOKEN_MALFORMED_FSTRING,
-    MP_TOKEN_FSTRING_RAW,
     #endif
 
     MP_TOKEN_NEWLINE,
