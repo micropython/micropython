@@ -232,7 +232,13 @@ fs_user_mount_t *filesystem_for_path(const char *path_in, const char **path_unde
         fs_mount = filesystem_circuitpy();
     } else {
         fs_mount = MP_OBJ_TO_PTR(vfs->obj);
-        *path_under_mount += strlen(vfs->str);
+        // Check if the vfs name is one character long: it must be "/" in that case.
+        // If so don't remove the mount point name. We must use an absolute path
+        // because otherwise the path will be adjusted by os.getcwd() when it's looked up.
+        if (strlen(vfs->str) != 1) {
+            // Remove the mount point directory name, such as "/sd".
+            path_under_mount += strlen(vfs->str);
+        }
     }
     return fs_mount;
 }
