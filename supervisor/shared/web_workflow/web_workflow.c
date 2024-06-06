@@ -1261,8 +1261,15 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     _reply_missing(socket, request);
                     return false;
                 }
-                path += strlen(vfs->str);
+                // Check if the vfs name is one character long: it must be "/" in that case.
+                // If so don't remove the mount point name. We must use an absolute path
+                // because otherwise the path will be adjusted by os.getcwd() when it's looked up.
+                if (strlen(vfs->str) != 1) {
+                    // Remove the mount point directory name, such as "/sd".
+                    path += strlen(vfs->str);
+                }
                 pathlen = strlen(path);
+
             }
             FATFS *fs = &fs_mount->fatfs;
             if (directory) {
