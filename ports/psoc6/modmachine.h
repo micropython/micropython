@@ -18,6 +18,19 @@ extern const mp_obj_type_t machine_wdt_type;
 extern const mp_obj_type_t machine_adcblock_type;
 extern const mp_obj_type_t machine_i2s_type;
 
+// Add all mod machine deinits
+void mod_pin_phy_deinit(void);
+void mod_pin_deinit(void);
+void mod_adc_deinit(void);// --
+void mod_adc_block_deinit(void);
+void mod_i2c_deinit(void);
+void mod_pwm_deinit(void);
+void mod_rtc_deinit(void);
+void mod_spi_deinit(void);
+void mod_timer_deinit(void);// --
+void mod_wdt_deinit(void);
+void network_deinit(void);
+
 /* Note: the static functions' prototypes in the .c file cannot be declared here
 since they are static. The static type in those functions come from MPY hence
 should stay that way.  */
@@ -26,5 +39,6 @@ should stay that way.  */
 // functions to be called from other .c files. Hence they are not static.
 void machine_init(void);
 void machine_deinit(void);
+// void mod_psoc_deinit(void);
 
 #endif // MICROPY_INCLUDED_PSOC6_MODMACHINE_H

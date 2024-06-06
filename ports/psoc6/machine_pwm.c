@@ -161,6 +161,7 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 }
 
 static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
+    cyhal_pwm_stop(&self->pwm_obj);
     cyhal_pwm_free(&self->pwm_obj);
     pwm_pin_free(self);
     pwm_obj_free(self);
