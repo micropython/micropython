@@ -661,21 +661,19 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 }
                 #if MICROPY_PY_FSTRINGS
                 if (is_char_following(lex, 'f')) {
-                    // raw-f-strings unsupported, immediately return (invalid) token.
-                    lex->tok_kind = MP_TOKEN_FSTRING_RAW;
-                    break;
+                    is_fstring = true;
+                    n_char = 2;
                 }
                 #endif
             }
             #if MICROPY_PY_FSTRINGS
             else if (is_char(lex, 'f')) {
-                if (is_char_following(lex, 'r')) {
-                    // raw-f-strings unsupported, immediately return (invalid) token.
-                    lex->tok_kind = MP_TOKEN_FSTRING_RAW;
-                    break;
-                }
-                n_char = 1;
                 is_fstring = true;
+                n_char = 1;
+                if (is_char_following(lex, 'r')) {
+                    is_raw = true;
+                    n_char = 2;
+                }
             }
             #endif
 

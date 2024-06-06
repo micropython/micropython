@@ -1351,9 +1351,6 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         } else if (lex->tok_kind == MP_TOKEN_MALFORMED_FSTRING) {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                 MP_ERROR_TEXT("malformed f-string"));
-        } else if (lex->tok_kind == MP_TOKEN_FSTRING_RAW) {
-            exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                MP_ERROR_TEXT("raw f-strings are not supported"));
         #endif
         } else {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
