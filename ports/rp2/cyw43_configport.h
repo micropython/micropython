@@ -117,7 +117,12 @@ static inline void cyw43_delay_us(uint32_t us) {
 }
 
 static inline void cyw43_delay_ms(uint32_t ms) {
-    mp_hal_delay_ms(ms);
+    // PendSV may be disabled via CYW43_THREAD_ENTER, so this delay is a busy loop.
+    uint32_t us = ms * 1000;
+    uint32_t start = mp_hal_ticks_us();
+    while (mp_hal_ticks_us() - start < us) {
+        mp_event_handle_nowait();
+    }
 }
 
 #define CYW43_EVENT_POLL_HOOK mp_event_handle_nowait()
