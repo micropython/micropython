@@ -310,6 +310,17 @@ static mp_obj_t machine_i2c_slave_irq_disable(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_slave_irq_disable_obj, machine_i2c_slave_irq_disable);
 
+mp_obj_t mod_i2c_deinit() {
+    for (uint8_t i = 0; i < MAX_I2C; i++) {
+        if (i2c_obj[i] != NULL) {
+            machine_i2c_deinit((mp_obj_base_t *)(i2c_obj[i]));
+        }
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(mod_i2c_deinit_obj, mod_i2c_deinit);
+
+
 static const mp_rom_map_elem_t machine_i2c_slave_locals_dict_table[] = {
     // Functions
     { MP_ROM_QSTR(MP_QSTR_conf_receive_buffer),         MP_ROM_PTR(&machine_i2c_slave_conf_rx_buffer_obj) },
@@ -317,6 +328,7 @@ static const mp_rom_map_elem_t machine_i2c_slave_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_irq),                         MP_ROM_PTR(&machine_i2c_slave_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq_disable),                 MP_ROM_PTR(&machine_i2c_slave_irq_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),                      MP_ROM_PTR(&machine_i2c_slave_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__),                     MP_ROM_PTR(&mod_i2c_deinit_obj) },
 
     // Const
     { MP_ROM_QSTR(MP_QSTR_RD_EVENT),                     MP_ROM_INT(CYHAL_I2C_SLAVE_READ_EVENT) },
@@ -338,11 +350,3 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_i2c_slave_locals_dict
     );
 #endif
-
-void mod_i2c_deinit() {
-    for (uint8_t i = 0; i < MAX_I2C; i++) {
-        if (i2c_obj[i] != NULL) {
-            machine_i2c_deinit((mp_obj_base_t *)(i2c_obj[i]));
-        }
-    }
-}

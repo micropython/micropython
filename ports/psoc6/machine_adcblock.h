@@ -28,5 +28,5 @@ typedef struct
     uint32_t pin;
 }adc_block_channel_pin_map_t;
 
-void mod_adc_block_deinit(void);
+mp_obj_t mod_adcblock_deinit(void);
 #endif // MICROPY_INCLUDED_MACHINE_ADCBLOCK_H

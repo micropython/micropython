@@ -90,7 +90,7 @@ void machine_deinit(void) {
 
     mod_wdt_deinit();
     mod_pin_deinit();
-    mod_adc_block_deinit();
+    mod_adcblock_deinit();
     mod_i2c_deinit();
     mod_pwm_deinit();
     mod_spi_deinit();

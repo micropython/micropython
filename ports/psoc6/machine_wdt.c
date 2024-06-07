@@ -80,7 +80,8 @@ static void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
     cyhal_wdt_kick(&psoc6_wdt);
 }
 
-void mod_wdt_deinit() {
+mp_obj_t mod_wdt_deinit() {
     cyhal_wdt_stop(&psoc6_wdt);
     cyhal_wdt_free(&psoc6_wdt);
+    return mp_const_none;
 }

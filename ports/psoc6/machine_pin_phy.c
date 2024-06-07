@@ -100,8 +100,9 @@ void pin_phy_free(machine_pin_phy_obj_t *pin_phy) {
 }
 
 
-void mod_pin_phy_deinit(void) {
+mp_obj_t mod_pin_phy_deinit(void) {
     for (int i = 0; i < machine_pin_num_of_cpu_pins; i++) {
         pin_phy_free(&machine_pin_phy_obj[i]);
     }
+    return mp_const_none;
 }
