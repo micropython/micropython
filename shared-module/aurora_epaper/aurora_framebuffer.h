@@ -76,9 +76,3 @@ void common_hal_aurora_epaper_framebuffer_draw_frame(aurora_epaper_framebuffer_o
 void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_obj_t *self, uint8_t *buf, int row, uint32_t whiteMap, uint32_t blackMap, uint8_t border);
 
 void common_hal_aurora_epaper_framebuffer_collect_ptrs(aurora_epaper_framebuffer_obj_t *);
-
-/* Notes
-- https://learn.adafruit.com/extending-circuitpython?view=all
-- https://micropython-usermod.readthedocs.io/en/latest/usermods_05.html
-- https://docs.circuitpython.org/en/latest/shared-bindings/framebufferio/index.html
-*/
