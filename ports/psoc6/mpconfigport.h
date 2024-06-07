@@ -188,10 +188,9 @@ typedef intptr_t mp_off_t;
 
 // TODO: helpful to abstract main.c ?
 // #define MICROPY_PORT_INIT_FUNC ??
-extern void mod_psoc_deinit();
-#define MICROPY_PORT_DEINIT_FUNC mod_psoc_deinit()
 
-
+extern void machine_deinit();
+#define MICROPY_PORT_DEINIT_FUNC machine_deinit()
 
 #define MICROPY_EVENT_POLL_HOOK_FAST \
     do { \

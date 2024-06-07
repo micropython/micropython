@@ -39,6 +39,5 @@ should stay that way.  */
 // functions to be called from other .c files. Hence they are not static.
 void machine_init(void);
 void machine_deinit(void);
-// void mod_psoc_deinit(void);
 
 #endif // MICROPY_INCLUDED_PSOC6_MODMACHINE_H

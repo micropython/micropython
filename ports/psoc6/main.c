@@ -54,14 +54,6 @@ extern void mod_rtc_init(void);
 extern void time_init(void);
 extern void os_init(void);
 extern void network_init(void);
-/*extern void network_deinit(void);
-extern void mod_pin_deinit(void);
-extern void mod_adc_block_deinit(void);
-extern void mod_i2c_deinit(void);
-extern void mod_pwm_deinit(void);
-extern void mod_spi_deinit(void);
-extern void mod_wdt_deinit(void);
-extern void mod_rtc_deinit(void);*/
 
 void mpy_task(void *arg);
 
@@ -177,22 +169,6 @@ soft_reset:
     }
 
     mp_printf(&mp_plat_print, "MPY: soft reboot\n");
-
-    // Deinitialize modules
-    /*machine_deinit();
-    mod_wdt_deinit();
-    mod_pin_deinit();
-    mod_adc_block_deinit();
-    mod_i2c_deinit();
-    mod_pwm_deinit();
-    mod_spi_deinit();
-    mod_rtc_deinit();
-    mod_pin_phy_deinit();
-    #if MICROPY_PY_NETWORK
-    mod_network_deinit();
-    network_deinit();
-    #endif*/
-
     gc_sweep_all();
     mp_deinit();
 

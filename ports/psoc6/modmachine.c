@@ -8,6 +8,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared/runtime/pyexec.h"
+#include "extmod/modnetwork.h"
 
 // MTB includes
 #include "cybsp.h"
@@ -81,9 +82,12 @@ void machine_init(void) {
     // TODO: put all module init functions here ?
     // machine_pin_init(); ?
 }
-#include "extmod/modnetwork.h"
-void mod_psoc_deinit(void) {
-    machine_deinit();
+
+void machine_deinit(void) {
+    // we are doing a soft-reset so change the reset_cause
+    reset_cause = CYHAL_SYSTEM_RESET_SOFT;
+    mplogger_print("machine deinit\n");
+
     mod_wdt_deinit();
     mod_pin_deinit();
     mod_adc_block_deinit();
@@ -96,16 +100,7 @@ void mod_psoc_deinit(void) {
     mod_network_deinit();
     network_deinit();
     #endif
-}
 
-void machine_deinit(void) {
-    // we are doing a soft-reset so change the reset_cause
-    reset_cause = CYHAL_SYSTEM_RESET_SOFT;
-    mplogger_print("machine deinit\n");
-
-    mod_psoc_deinit();
-    // TODO: put all module deinit functions here ?
-    // machine_pin_deinit(); ?
 }
 
 // machine.info([dump_alloc_table])
