@@ -448,3 +448,18 @@ void common_hal_ssl_sslsocket_setsockopt(ssl_sslsocket_obj_t *self, mp_obj_t lev
 void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj) {
     ssl_socket_settimeout(self, timeout_obj);
 }
+
+static bool poll_common(ssl_sslsocket_obj_t *self, int mode) {
+    const mp_stream_p_t *stream_p = mp_get_stream_raise(self->sock_obj, MP_STREAM_OP_IOCTL);
+    int errcode;
+    mp_int_t ret = stream_p->ioctl(self->sock_obj, MP_STREAM_POLL, mode, &errcode);
+    return ret != 0;
+}
+
+bool common_hal_ssl_sslsocket_readable(ssl_sslsocket_obj_t *self) {
+    return poll_common(self, MP_STREAM_POLL_RD);
+}
+
+bool common_hal_ssl_sslsocket_writable(ssl_sslsocket_obj_t *self) {
+    return poll_common(self, MP_STREAM_POLL_WR);
+}

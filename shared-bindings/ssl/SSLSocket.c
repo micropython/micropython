@@ -10,10 +10,11 @@
 #include <string.h>
 
 #include "shared/runtime/context_manager_helpers.h"
-#include "py/objtuple.h"
-#include "py/objlist.h"
-#include "py/runtime.h"
 #include "py/mperrno.h"
+#include "py/objlist.h"
+#include "py/objtuple.h"
+#include "py/runtime.h"
+#include "py/stream.h"
 
 #include "shared/netutils/netutils.h"
 
@@ -247,9 +248,58 @@ static const mp_rom_map_elem_t ssl_sslsocket_locals_dict_table[] = {
 
 static MP_DEFINE_CONST_DICT(ssl_sslsocket_locals_dict, ssl_sslsocket_locals_dict_table);
 
+static mp_uint_t sslsocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errorcode) {
+    ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_int_t ret = common_hal_ssl_sslsocket_recv_into(self, buf, size);
+    if (ret < 0) {
+        *errorcode = -ret;
+        return MP_STREAM_ERROR;
+    }
+    return ret;
+}
+
+static mp_uint_t sslsocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errorcode) {
+    ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_int_t ret = common_hal_ssl_sslsocket_send(self, buf, size);
+    if (ret < 0) {
+        *errorcode = -ret;
+        return MP_STREAM_ERROR;
+    }
+    return ret;
+}
+
+static mp_uint_t sslsocket_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+    ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_uint_t ret;
+    if (request == MP_STREAM_POLL) {
+        mp_uint_t flags = arg;
+        ret = 0;
+        if ((flags & MP_STREAM_POLL_RD) && common_hal_ssl_sslsocket_readable(self) > 0) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+        if ((flags & MP_STREAM_POLL_WR) && common_hal_ssl_sslsocket_writable(self)) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+    } else {
+        *errcode = MP_EINVAL;
+        ret = MP_STREAM_ERROR;
+    }
+    return ret;
+}
+
+
+static const mp_stream_p_t sslsocket_stream_p = {
+    .read = sslsocket_read,
+    .write = sslsocket_write,
+    .ioctl = sslsocket_ioctl,
+    .is_text = false,
+};
+
+
 MP_DEFINE_CONST_OBJ_TYPE(
     ssl_sslsocket_type,
     MP_QSTR_SSLSocket,
     MP_TYPE_FLAG_NONE,
-    locals_dict, &ssl_sslsocket_locals_dict
+    locals_dict, &ssl_sslsocket_locals_dict,
+    protocol, &sslsocket_stream_p
     );
