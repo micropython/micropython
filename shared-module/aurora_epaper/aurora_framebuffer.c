@@ -470,7 +470,7 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
         #define DO_MAP(mapping, input) \
                 (((mapping) >> (((input) & 0x3) << 2)) & 0xF)
 
-        uitn32_t pixelMap =
+        uint32_t pixelMap =
             (whiteMap << 2 | whiteMap) << 0 |
                     (whiteMap << 2 | blackMap) << 4 |
                     (blackMap << 2 | whiteMap) << 8 |
@@ -497,7 +497,7 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
 
             common_hal_busio_spi_write(self->bus, &b, 1);
 
-            uint8_t b = (uint8_t)(
+            b = (uint8_t)(
                 (DO_MAP(pixelMap, p >> 2) << 4) |
                 (DO_MAP(pixelMap, p >> 0)) << 0);
 
