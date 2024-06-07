@@ -20,8 +20,8 @@
 
 #define CIRCUITPY_BOARD_SPI         (2)
 #define CIRCUITPY_BOARD_SPI_PIN     { \
-  {.clock = &pin_GPIO14, .mosi = &pin_GPIO13, .miso = &pin_GPIO12}, /*LCD*/ \
-  {.clock = &pin_GPIO18, .mosi = &pin_GPIO23, .miso = &pin_GPIO19}, /*SD*/ \
+        {.clock = &pin_GPIO14, .mosi = &pin_GPIO13, .miso = &pin_GPIO12}, /*LCD*/ \
+        {.clock = &pin_GPIO18, .mosi = &pin_GPIO23, .miso = &pin_GPIO19}, /*SD*/ \
 }
 
 #define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)
