@@ -308,6 +308,7 @@ void common_hal_aurora_epaper_framebuffer_power_finish(aurora_epaper_framebuffer
         common_hal_aurora_epaper_framebuffer_draw_line(self, (uint8_t *)self->bufinfo.buf, i, AURORA_EPAPER_NONE_PIXEL, AURORA_EPAPER_NONE_PIXEL, border);
     }
 
+    // Send special no-scan line
     border = 0xAA;
     common_hal_aurora_epaper_framebuffer_draw_line(self, (uint8_t *)self->bufinfo.buf, -4, AURORA_EPAPER_NONE_PIXEL, AURORA_EPAPER_NONE_PIXEL, border);
 
@@ -346,6 +347,7 @@ void common_hal_aurora_epaper_framebuffer_swapbuffers(aurora_epaper_framebuffer_
         return;
     }
 
+    // Spec states baud rate can be 20kHz, but my testing showed this is optimistic
     common_hal_busio_spi_configure(self->bus, 15000000, 0, 0, 8);
 
     if (!common_hal_aurora_epaper_framebuffer_power_on(self)) {
@@ -361,6 +363,7 @@ void common_hal_aurora_epaper_framebuffer_swapbuffers(aurora_epaper_framebuffer_
         border = 0xFF;
     }
 
+    // Find out how many frames need to be sent to match frametime
     do {
         // Stage 1: Compensate
         common_hal_aurora_epaper_framebuffer_draw_frame(self, (uint8_t *)self->pframe.buf, AURORA_EPAPER_BLACK_PIXEL, AURORA_EPAPER_WHITE_PIXEL, border, 1);
@@ -411,14 +414,15 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
 
     if (self->type == SMALL_1_44 || self->type == MEDIUM_2 || self->type == LARGE_2_7) {
 
+        // 3 bit to 4 bit lookup table
         #define DO_MAP(mapping, input) \
                 (((mapping) >> (((input) & 5) << 2)) & 0xF)
 
         uint32_t evenMap =
             (whiteMap << 2 | whiteMap) << 0 |
-                    (whiteMap << 2 | blackMap) << 4 |
-                    (blackMap << 2 | whiteMap) << 16 |
-                    (blackMap << 2 | blackMap) << 20;
+            (whiteMap << 2 | blackMap) << 4 |
+            (blackMap << 2 | whiteMap) << 16 |
+            (blackMap << 2 | blackMap) << 20;
 
         int stride = common_hal_aurora_epaper_framebuffer_get_row_stride(self);
 
@@ -444,9 +448,9 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
 
         uint32_t oddMap =
             (whiteMap << 2 | whiteMap) << 0 |
-                    (whiteMap << 2 | blackMap) << 16 |
-                    (blackMap << 2 | whiteMap) << 4 |
-                    (blackMap << 2 | blackMap) << 20;
+            (whiteMap << 2 | blackMap) << 16 |
+            (blackMap << 2 | whiteMap) << 4 |
+            (blackMap << 2 | blackMap) << 20;
 
         // Odd bytes
         for (int x = 0; x < stride; x++) {
@@ -467,14 +471,15 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
     // This code is untested
     else if (self->type == SMALL_1_9 || self->type == LARGE_2_6) {
 
+        // 2 bit to 4 bit lookup table
         #define DO_MAP(mapping, input) \
                 (((mapping) >> (((input) & 0x3) << 2)) & 0xF)
 
         uint32_t pixelMap =
             (whiteMap << 2 | whiteMap) << 0 |
-                    (whiteMap << 2 | blackMap) << 4 |
-                    (blackMap << 2 | whiteMap) << 8 |
-                    (blackMap << 2 | blackMap) << 12;
+            (whiteMap << 2 | blackMap) << 4 |
+            (blackMap << 2 | whiteMap) << 8 |
+            (blackMap << 2 | blackMap) << 12;
 
         int stride = common_hal_aurora_epaper_framebuffer_get_row_stride(self);
 
