@@ -1,11 +1,11 @@
-/* 
+/*
  * Hardware driver for Pervasive Displays' e-paper panels
- * 
+ *
  * Copyright (c) Project Nayuki. (MIT License)
  * https://www.nayuki.io/page/pervasive-displays-epaper-panel-hardware-driver
  *
  * Copyright (c) wyrdsec (MIT License)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
@@ -49,24 +49,19 @@ void common_hal_aurora_epaper_framebuffer_construct(
     int width,
     int height,
     bool free_bus) {
-    
+
     // Pervasive Displays only makes Aurora CoG drivers of specific size
     if (width == 128 && height == 96) {
         self->type = SMALL_1_44;
-    }
-    else if (width == 200 && height == 96) {
+    } else if (width == 200 && height == 96) {
         self->type = MEDIUM_2;
-    }
-    else if (width == 264 && height == 176) {
+    } else if (width == 264 && height == 176) {
         self->type = LARGE_2_7;
-    }
-    else if (width == 144 && height == 128) {
+    } else if (width == 144 && height == 128) {
         self->type = SMALL_1_9;
-    }
-    else if (width == 232 && height == 128) {
+    } else if (width == 232 && height == 128) {
         self->type = LARGE_2_6;
-    } 
-    else {
+    } else {
         mp_raise_TypeError(MP_ERROR_TEXT("Unsupported device size."));
     }
 
@@ -95,8 +90,7 @@ void common_hal_aurora_epaper_framebuffer_construct(
         common_hal_digitalio_digitalinout_construct(&self->power, power);
         common_hal_digitalio_digitalinout_switch_to_output(&self->power, true, DRIVE_MODE_PUSH_PULL);
         common_hal_never_reset_pin(power);
-    }
-    else {
+    } else {
         self->power.pin = NULL;
     }
 
@@ -142,29 +136,30 @@ void common_hal_aurora_epaper_framebuffer_set_temperature(aurora_epaper_framebuf
         d = 630;
     }
 
-    if (celsius <= -10)
-        self->frametime = d*17;
-    else if (celsius <= -5)
-        self->frametime = d*12;
-    else if (celsius <= 5)
-        self->frametime = d*8;
-    else if (celsius <= 10)
-        self->frametime = d*4;
-    else if (celsius <= 15)
-        self->frametime = d*3;
-    else if (celsius <= 20)
-        self->frametime = d*2;
-    else if (celsius <= 40)
-        self->frametime = d*1;
-    else
+    if (celsius <= -10) {
+        self->frametime = d * 17;
+    } else if (celsius <= -5) {
+        self->frametime = d * 12;
+    } else if (celsius <= 5) {
+        self->frametime = d * 8;
+    } else if (celsius <= 10) {
+        self->frametime = d * 4;
+    } else if (celsius <= 15) {
+        self->frametime = d * 3;
+    } else if (celsius <= 20) {
+        self->frametime = d * 2;
+    } else if (celsius <= 40) {
+        self->frametime = d * 1;
+    } else {
         self->frametime = d * 0.7;
+    }
 }
 
 void common_hal_aurora_epaper_framebuffer_set_free_bus(aurora_epaper_framebuffer_obj_t *self, bool val) {
     self->free_bus = val;
 }
 
-uint8_t common_hal_aurora_epaper_framebuffer_spi_raw_pair(aurora_epaper_framebuffer_obj_t *self, uint8_t b0, uint8_t b1){
+uint8_t common_hal_aurora_epaper_framebuffer_spi_raw_pair(aurora_epaper_framebuffer_obj_t *self, uint8_t b0, uint8_t b1) {
     uint8_t ret = 0;
 
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
@@ -184,7 +179,7 @@ uint8_t common_hal_aurora_epaper_framebuffer_spi_read(aurora_epaper_framebuffer_
     return common_hal_aurora_epaper_framebuffer_spi_raw_pair(self, 0x73, 0x00);
 }
 
-void common_hal_aurora_epaper_framebuffer_spi_write_command(aurora_epaper_framebuffer_obj_t *self, uint8_t index, uint8_t data){
+void common_hal_aurora_epaper_framebuffer_spi_write_command(aurora_epaper_framebuffer_obj_t *self, uint8_t index, uint8_t data) {
     common_hal_aurora_epaper_framebuffer_spi_raw_pair(self, 0x70, index);
     common_hal_aurora_epaper_framebuffer_spi_raw_pair(self, 0x72, data);
 }
@@ -214,7 +209,7 @@ void common_hal_aurora_epaper_framebuffer_get_bufinfo(aurora_epaper_framebuffer_
 
 
 bool common_hal_aurora_epaper_framebuffer_power_on(aurora_epaper_framebuffer_obj_t *self) {
-    
+
     // Power on display
     if (self->power.pin != NULL) {
         common_hal_digitalio_digitalinout_set_value(&self->power, true);
@@ -231,7 +226,7 @@ bool common_hal_aurora_epaper_framebuffer_power_on(aurora_epaper_framebuffer_obj
     mp_hal_delay_ms(5);
 
     // Initialize Display
-    while (common_hal_digitalio_digitalinout_get_value(&self->busy)){
+    while (common_hal_digitalio_digitalinout_get_value(&self->busy)) {
         mp_hal_delay_ms(1);
     }
 
@@ -247,13 +242,23 @@ bool common_hal_aurora_epaper_framebuffer_power_on(aurora_epaper_framebuffer_obj
     common_hal_aurora_epaper_framebuffer_spi_write_command(self, 0x0B, 0x02); // Power saving mode
 
     uint8_t channel[8] = {0};
-    switch(self->type) {
-        case SMALL_1_44: memcpy(channel, (uint8_t []){0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xFF, 0x00}, 8); break;
-        case SMALL_1_9:  memcpy(channel, (uint8_t []){0x00, 0x00, 0x00, 0x03, 0xFC, 0x00, 0x00, 0xFF}, 8); break;
-        case MEDIUM_2:   memcpy(channel, (uint8_t []){0x00, 0x00, 0x00, 0x00, 0x01, 0xFF, 0xE0, 0x00}, 8); break;
-        case LARGE_2_6:  memcpy(channel, (uint8_t []){0x00, 0x00, 0x1F, 0xE0, 0x00, 0x00, 0x00, 0xFF}, 8); break;
-        case LARGE_2_7:  memcpy(channel, (uint8_t []){0x00, 0x00, 0x00, 0x7F, 0xFF, 0xFE, 0x00, 0x00}, 8); break;
-        default: 
+    switch (self->type) {
+        case SMALL_1_44:
+            memcpy(channel, (uint8_t []) {0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xFF, 0x00}, 8);
+            break;
+        case SMALL_1_9:
+            memcpy(channel, (uint8_t []) {0x00, 0x00, 0x00, 0x03, 0xFC, 0x00, 0x00, 0xFF}, 8);
+            break;
+        case MEDIUM_2:
+            memcpy(channel, (uint8_t []) {0x00, 0x00, 0x00, 0x00, 0x01, 0xFF, 0xE0, 0x00}, 8);
+            break;
+        case LARGE_2_6:
+            memcpy(channel, (uint8_t []) {0x00, 0x00, 0x1F, 0xE0, 0x00, 0x00, 0x00, 0xFF}, 8);
+            break;
+        case LARGE_2_7:
+            memcpy(channel, (uint8_t []) {0x00, 0x00, 0x00, 0x7F, 0xFF, 0xFE, 0x00, 0x00}, 8);
+            break;
+        default:
             common_hal_busio_spi_unlock(self->bus);
             mp_raise_ValueError(MP_ERROR_TEXT("Unknown display type!"));
             return false;
@@ -268,11 +273,11 @@ bool common_hal_aurora_epaper_framebuffer_power_on(aurora_epaper_framebuffer_obj
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
 
     common_hal_aurora_epaper_framebuffer_spi_write_command(self, 0x07, 0xD1);  // High power mode osc setting
-	common_hal_aurora_epaper_framebuffer_spi_write_command(self, 0x08, 0x02);  // Power setting
-	common_hal_aurora_epaper_framebuffer_spi_write_command(self, 0x09, 0xC2);  // Set Vcom level
-	common_hal_aurora_epaper_framebuffer_spi_write_command(self, 0x04, 0x03);  // Power setting
-	common_hal_aurora_epaper_framebuffer_spi_write_command(self, 0x03, 0x01);  // Driver latch on
-	common_hal_aurora_epaper_framebuffer_spi_write_command(self, 0x03, 0x00);  // Driver latch off
+    common_hal_aurora_epaper_framebuffer_spi_write_command(self, 0x08, 0x02);  // Power setting
+    common_hal_aurora_epaper_framebuffer_spi_write_command(self, 0x09, 0xC2);  // Set Vcom level
+    common_hal_aurora_epaper_framebuffer_spi_write_command(self, 0x04, 0x03);  // Power setting
+    common_hal_aurora_epaper_framebuffer_spi_write_command(self, 0x03, 0x01);  // Driver latch on
+    common_hal_aurora_epaper_framebuffer_spi_write_command(self, 0x03, 0x00);  // Driver latch off
 
     mp_hal_delay_ms(5);
 
@@ -289,20 +294,22 @@ bool common_hal_aurora_epaper_framebuffer_power_on(aurora_epaper_framebuffer_obj
             return true; // Success
         }
     }
-    
+
     return false; // Fail
 }
 
 void common_hal_aurora_epaper_framebuffer_power_finish(aurora_epaper_framebuffer_obj_t *self) {
     uint8_t border = 0x00;
-    if (self->type == SMALL_1_9 || self->type == LARGE_2_6 || self->type == LARGE_2_7)
+    if (self->type == SMALL_1_9 || self->type == LARGE_2_6 || self->type == LARGE_2_7) {
         border = 0xAA;
+    }
 
-    for (int i = 0; i < self->height; i++)  // Nothing frame
-		common_hal_aurora_epaper_framebuffer_draw_line(self, (uint8_t *) self->bufinfo.buf, i, AURORA_EPAPER_NONE_PIXEL, AURORA_EPAPER_NONE_PIXEL, border);
-    
+    for (int i = 0; i < self->height; i++) { // Nothing frame
+        common_hal_aurora_epaper_framebuffer_draw_line(self, (uint8_t *)self->bufinfo.buf, i, AURORA_EPAPER_NONE_PIXEL, AURORA_EPAPER_NONE_PIXEL, border);
+    }
+
     border = 0xAA;
-    common_hal_aurora_epaper_framebuffer_draw_line(self, (uint8_t *) self->bufinfo.buf, -4, AURORA_EPAPER_NONE_PIXEL, AURORA_EPAPER_NONE_PIXEL, border);
+    common_hal_aurora_epaper_framebuffer_draw_line(self, (uint8_t *)self->bufinfo.buf, -4, AURORA_EPAPER_NONE_PIXEL, AURORA_EPAPER_NONE_PIXEL, border);
 
     common_hal_aurora_epaper_framebuffer_power_off(self);
 }
@@ -320,7 +327,7 @@ void common_hal_aurora_epaper_framebuffer_power_off(aurora_epaper_framebuffer_ob
     mp_hal_delay_ms(50);
 
     if (self->power.pin != NULL) {
-        common_hal_digitalio_digitalinout_set_value(&self->power, false); 
+        common_hal_digitalio_digitalinout_set_value(&self->power, false);
     }
     mp_hal_delay_ms(10);
     common_hal_digitalio_digitalinout_set_value(&self->reset, false);
@@ -350,28 +357,30 @@ void common_hal_aurora_epaper_framebuffer_swapbuffers(aurora_epaper_framebuffer_
     int iters = 0;
     uint32_t start = (uint32_t)mp_hal_ticks_ms();
     uint8_t border = 0x00;
-    if (self->type == LARGE_2_7)
+    if (self->type == LARGE_2_7) {
         border = 0xFF;
-    
+    }
+
     do {
         // Stage 1: Compensate
-        common_hal_aurora_epaper_framebuffer_draw_frame(self, (uint8_t *) self->pframe.buf, AURORA_EPAPER_BLACK_PIXEL, AURORA_EPAPER_WHITE_PIXEL, border, 1);
+        common_hal_aurora_epaper_framebuffer_draw_frame(self, (uint8_t *)self->pframe.buf, AURORA_EPAPER_BLACK_PIXEL, AURORA_EPAPER_WHITE_PIXEL, border, 1);
         iters++;
-    } while( (uint32_t)mp_hal_ticks_ms() - start < self->frametime);
+    } while ((uint32_t)mp_hal_ticks_ms() - start < self->frametime);
 
     border = 0x00;
 
     // Stage 2: White
-    common_hal_aurora_epaper_framebuffer_draw_frame(self, (uint8_t *) self->pframe.buf, AURORA_EPAPER_WHITE_PIXEL, AURORA_EPAPER_NONE_PIXEL, border, iters);
+    common_hal_aurora_epaper_framebuffer_draw_frame(self, (uint8_t *)self->pframe.buf, AURORA_EPAPER_WHITE_PIXEL, AURORA_EPAPER_NONE_PIXEL, border, iters);
 
     // Stage 3: Inverse
-    common_hal_aurora_epaper_framebuffer_draw_frame(self, (uint8_t *) self->bufinfo.buf, AURORA_EPAPER_BLACK_PIXEL, AURORA_EPAPER_WHITE_PIXEL, border, iters);
+    common_hal_aurora_epaper_framebuffer_draw_frame(self, (uint8_t *)self->bufinfo.buf, AURORA_EPAPER_BLACK_PIXEL, AURORA_EPAPER_WHITE_PIXEL, border, iters);
 
-    if (self->type == SMALL_1_9 || self->type == LARGE_2_6 || self->type == LARGE_2_7)
+    if (self->type == SMALL_1_9 || self->type == LARGE_2_6 || self->type == LARGE_2_7) {
         border = 0xAA;
+    }
 
     // Stage 4: Normal
-    common_hal_aurora_epaper_framebuffer_draw_frame(self, (uint8_t *) self->bufinfo.buf, AURORA_EPAPER_WHITE_PIXEL, AURORA_EPAPER_BLACK_PIXEL, border, iters);
+    common_hal_aurora_epaper_framebuffer_draw_frame(self, (uint8_t *)self->bufinfo.buf, AURORA_EPAPER_WHITE_PIXEL, AURORA_EPAPER_BLACK_PIXEL, border, iters);
 
     memcpy(self->pframe.buf, self->bufinfo.buf, self->bufinfo.len);
 
@@ -383,7 +392,7 @@ void common_hal_aurora_epaper_framebuffer_draw_frame(aurora_epaper_framebuffer_o
     int stride = common_hal_aurora_epaper_framebuffer_get_row_stride(self);
     for (int i = 0; i < iters; i++) {
         for (int row = 0; row < self->height; row++) {
-            common_hal_aurora_epaper_framebuffer_draw_line(self, buf+(row*stride), row, whiteMap, blackMap, border);
+            common_hal_aurora_epaper_framebuffer_draw_line(self, buf + (row * stride), row, whiteMap, blackMap, border);
         }
     }
 }
@@ -403,22 +412,22 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
     if (self->type == SMALL_1_44 || self->type == MEDIUM_2 || self->type == LARGE_2_7) {
 
         #define DO_MAP(mapping, input) \
-		(((mapping) >> (((input) & 5) << 2)) & 0xF)
+                (((mapping) >> (((input) & 5) << 2)) & 0xF)
 
         uint32_t evenMap =
-		    (whiteMap << 2 | whiteMap) <<  0 |
-		    (whiteMap << 2 | blackMap) <<  4 |
-		    (blackMap << 2 | whiteMap) << 16 |
-		    (blackMap << 2 | blackMap) << 20;
+            (whiteMap << 2 | whiteMap) << 0 |
+                    (whiteMap << 2 | blackMap) << 4 |
+                    (blackMap << 2 | whiteMap) << 16 |
+                    (blackMap << 2 | blackMap) << 20;
 
         int stride = common_hal_aurora_epaper_framebuffer_get_row_stride(self);
 
         // Even bytes
-        for (int x = stride-1; x >= 0; x--) {
+        for (int x = stride - 1; x >= 0; x--) {
             uint8_t p = buf[x];
             uint8_t b = (uint8_t)(
-			    (DO_MAP(evenMap, p >> 4) << 4) |
-			    (DO_MAP(evenMap, p >> 0) << 0));
+                (DO_MAP(evenMap, p >> 4) << 4) |
+                (DO_MAP(evenMap, p >> 0) << 0));
 
             common_hal_busio_spi_write(self->bus, &b, 1);
         }
@@ -426,87 +435,89 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
         // Scan bytes
         for (int y = (self->height / 4) - 1; y >= 0; y--) {
             uint8_t b = 0x00;
-            if (y == row / 4)
+            if (y == row / 4) {
                 b = 3 << (row % 4 * 2);
-            
+            }
+
             common_hal_busio_spi_write(self->bus, &b, 1);
         }
 
         uint32_t oddMap =
-		    (whiteMap << 2 | whiteMap) <<  0 |
-		    (whiteMap << 2 | blackMap) << 16 |
-		    (blackMap << 2 | whiteMap) <<  4 |
-		    (blackMap << 2 | blackMap) << 20;
+            (whiteMap << 2 | whiteMap) << 0 |
+                    (whiteMap << 2 | blackMap) << 16 |
+                    (blackMap << 2 | whiteMap) << 4 |
+                    (blackMap << 2 | blackMap) << 20;
 
         // Odd bytes
         for (int x = 0; x < stride; x++) {
             uint8_t p = buf[x];
             uint8_t b = (uint8_t)(
-			    (DO_MAP(oddMap, p >> 5) << 0) |
-			    (DO_MAP(oddMap, p >> 1) << 4));
-            
+                (DO_MAP(oddMap, p >> 5) << 0) |
+                (DO_MAP(oddMap, p >> 1) << 4));
+
             common_hal_busio_spi_write(self->bus, &b, 1);
         }
 
         if (self->type == SMALL_1_44) {
             common_hal_busio_spi_write(self->bus, &border, 1);
         }
-        
+
         #undef DO_MAP
     }
     // This code is untested
     else if (self->type == SMALL_1_9 || self->type == LARGE_2_6) {
 
         #define DO_MAP(mapping, input) \
-        (((mapping) >> (((input) & 0x3) << 2)) & 0xF)
+                (((mapping) >> (((input) & 0x3) << 2)) & 0xF)
 
-        uitn32_t pixelMap = 
-        (whiteMap << 2 | whiteMap) << 0 |
-        (whiteMap << 2 | blackMap) << 4 | 
-        (blackMap << 2 | whiteMap) << 8 |
-        (blackMap << 2 | blackMap) << 12;
+        uitn32_t pixelMap =
+            (whiteMap << 2 | whiteMap) << 0 |
+                    (whiteMap << 2 | blackMap) << 4 |
+                    (blackMap << 2 | whiteMap) << 8 |
+                    (blackMap << 2 | blackMap) << 12;
 
         int stride = common_hal_aurora_epaper_framebuffer_get_row_stride(self);
 
         // Odd scan bytes
-        for(int y = 0; y < (self->height / 8); y++){
+        for (int y = 0; y < (self->height / 8); y++) {
             uint8_t b = 0x00;
-            if (row % 2 != 0 && row / 8 == y)
-                b = 3 << ((row-(y*8))^7)/2;
+            if (row % 2 != 0 && row / 8 == y) {
+                b = 3 << ((row - (y * 8)) ^ 7) / 2;
+            }
 
             common_hal_busio_spi_write(self->bus, &b, 1);
         }
 
         // Send all pixels
-        for (int x = stride-1; x >= 0; x--) {
+        for (int x = stride - 1; x >= 0; x--) {
             uint8_t p = buf[x];
             uint8_t b = (uint8_t)(
-            (DO_MAP(pixelMap, p>>6) << 4) |
-            (DO_MAP(pixelMap, p>>4)) << 0);
+                (DO_MAP(pixelMap, p >> 6) << 4) |
+                (DO_MAP(pixelMap, p >> 4)) << 0);
 
             common_hal_busio_spi_write(self->bus, &b, 1);
 
             uint8_t b = (uint8_t)(
-            (DO_MAP(pixelMap, p>>2) << 4) |
-            (DO_MAP(pixelMap, p>>0)) << 0);
+                (DO_MAP(pixelMap, p >> 2) << 4) |
+                (DO_MAP(pixelMap, p >> 0)) << 0);
 
             common_hal_busio_spi_write(self->bus, &b, 1);
         }
 
         // Send Even scan bytes
-        for(int y = 0; y < (self->height / 8); y++){
+        for (int y = 0; y < (self->height / 8); y++) {
             uint8_t b = 0x00;
-            if (row % 2 == 0 && row / 8 == y)
-                b = 3 << ((row-(y*8))^7)/2;
+            if (row % 2 == 0 && row / 8 == y) {
+                b = 3 << ((row - (y * 8)) ^ 7) / 2;
+            }
 
             common_hal_busio_spi_write(self->bus, &b, 1);
         }
 
         common_hal_busio_spi_write(self->bus, &border, 1);
-        
+
         #undef DO_MAP
-    }
-    else {
+    } else {
         mp_raise_TypeError(MP_ERROR_TEXT("Unknown device size."));
     }
 
@@ -515,7 +526,7 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
 }
 
 void common_hal_aurora_epaper_framebuffer_deinit(aurora_epaper_framebuffer_obj_t *self) {
-    
+
     // Only deinit bus if it is static / or being used by other display
     if (self->free_bus) {
         common_hal_busio_spi_deinit(self->bus);
@@ -537,7 +548,7 @@ void common_hal_aurora_epaper_framebuffer_collect_ptrs(aurora_epaper_framebuffer
     gc_collect_ptr(self->bus);
 }
 
-/* Protocol functions */ 
+/* Protocol functions */
 
 static void aurora_epaper_framebuffer_deinit(mp_obj_t self_in) {
     aurora_epaper_framebuffer_obj_t *self = self_in;

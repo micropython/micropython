@@ -1,6 +1,6 @@
 /*
  * Copyright (c) wyrdsec (MIT License)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
@@ -24,7 +24,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-module/framebufferio/FramebufferDisplay.h"
 
-enum AuroraType{
+enum AuroraType {
     SMALL_1_44 = 0,
     SMALL_1_9,
     MEDIUM_2,
@@ -42,7 +42,7 @@ typedef struct {
     digitalio_digitalinout_obj_t power;
     mp_buffer_info_t bufinfo;
     mp_buffer_info_t pframe;
-    
+
     uint32_t frametime;
     uint16_t width, height;
     enum AuroraType type;
