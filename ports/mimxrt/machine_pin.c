@@ -407,6 +407,7 @@ static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     if (args[ARG_handler].u_obj == mp_const_none) {
         // remove the IRQ from the table, leave it to gc to free it.
         GPIO_PortDisableInterrupts(self->gpio, 1U << self->pin);
+        GPIO_PortClearInterruptFlags(self->gpio, 1U << self->pin);
         MP_STATE_PORT(machine_pin_irq_objects[index]) = NULL;
         return mp_const_none;
     }
@@ -445,6 +446,8 @@ static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
             GPIO_PinSetInterruptConfig(self->gpio, self->pin, irq->trigger);
             // Enable the specific Pin interrupt
             GPIO_PortEnableInterrupts(self->gpio, 1U << self->pin);
+            // Clear previous IRQs
+            GPIO_PortClearInterruptFlags(self->gpio, 1U << self->pin);
             // Enable LEVEL1 interrupt again
             EnableIRQ(irq_num);
         }
