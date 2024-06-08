@@ -406,8 +406,13 @@
 #define MICROPY_EMIT_XTENSAWIN (0)
 #endif
 
+// Whether to emit RISC-V RV32 native code
+#ifndef MICROPY_EMIT_RV32
+#define MICROPY_EMIT_RV32 (0)
+#endif
+
 // Convenience definition for whether any native emitter is enabled
-#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN)
+#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN || MICROPY_EMIT_RV32)
 
 // Some architectures cannot read byte-wise from executable memory.  In this case
 // the prelude for a native function (which usually sits after the machine code)
