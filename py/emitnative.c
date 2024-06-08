@@ -59,7 +59,7 @@
 #endif
 
 // wrapper around everything in this file
-#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN
+#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN || N_RV32
 
 // C stack layout for native functions:
 //  0:                          nlr_buf_t [optional]
@@ -2521,6 +2521,36 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 asm_xtensa_setcc_reg_reg_reg(emit->as, cc, REG_RET, REG_ARG_2, reg_rhs);
             } else {
                 asm_xtensa_setcc_reg_reg_reg(emit->as, cc & ~0x80, REG_RET, reg_rhs, REG_ARG_2);
+            }
+            #elif N_RV32
+            (void)op_idx;
+            switch (op) {
+                case MP_BINARY_OP_LESS:
+                    asm_rv32_meta_comparison_lt(emit->as, REG_ARG_2, reg_rhs, REG_RET, vtype_lhs == VTYPE_UINT);
+                    break;
+
+                case MP_BINARY_OP_MORE:
+                    asm_rv32_meta_comparison_lt(emit->as, reg_rhs, REG_ARG_2, REG_RET, vtype_lhs == VTYPE_UINT);
+                    break;
+
+                case MP_BINARY_OP_EQUAL:
+                    asm_rv32_meta_comparison_eq(emit->as, REG_ARG_2, reg_rhs, REG_RET);
+                    break;
+
+                case MP_BINARY_OP_LESS_EQUAL:
+                    asm_rv32_meta_comparison_le(emit->as, REG_ARG_2, reg_rhs, REG_RET, vtype_lhs == VTYPE_UINT);
+                    break;
+
+                case MP_BINARY_OP_MORE_EQUAL:
+                    asm_rv32_meta_comparison_le(emit->as, reg_rhs, REG_ARG_2, REG_RET, vtype_lhs == VTYPE_UINT);
+                    break;
+
+                case MP_BINARY_OP_NOT_EQUAL:
+                    asm_rv32_meta_comparison_ne(emit->as, reg_rhs, REG_ARG_2, REG_RET);
+                    break;
+
+                default:
+                    break;
             }
             #else
             #error not implemented
