@@ -537,19 +537,24 @@ static mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     nrfx_gpiote_pin_t pin = self->pin;
 
-    nrfx_gpiote_in_config_t config = NRFX_GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
-    if (args[ARG_trigger].u_int == NRF_GPIOTE_POLARITY_LOTOHI) {
-        config.sense = NRF_GPIOTE_POLARITY_LOTOHI;
-    } else if (args[ARG_trigger].u_int == NRF_GPIOTE_POLARITY_HITOLO) {
-        config.sense = NRF_GPIOTE_POLARITY_HITOLO;
-    }
-    config.pull = NRF_GPIO_PIN_PULLUP;
+    if (args[ARG_handler].u_obj != mp_const_none) {
+        nrfx_gpiote_in_config_t config = NRFX_GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
+        if (args[ARG_trigger].u_int == NRF_GPIOTE_POLARITY_LOTOHI) {
+            config.sense = NRF_GPIOTE_POLARITY_LOTOHI;
+        } else if (args[ARG_trigger].u_int == NRF_GPIOTE_POLARITY_HITOLO) {
+            config.sense = NRF_GPIOTE_POLARITY_HITOLO;
+        }
+        config.pull = NRF_GPIO_PIN_PULLUP;
+        config.skip_gpio_setup = true;
 
-    nrfx_err_t err_code = nrfx_gpiote_in_init(pin, &config, pin_common_irq_handler);
-    if (err_code == NRFX_ERROR_INVALID_STATE) {
-        // Re-init if already configured.
+        nrfx_err_t err_code = nrfx_gpiote_in_init(pin, &config, pin_common_irq_handler);
+        if (err_code == NRFX_ERROR_INVALID_STATE) {
+            // Re-init if already configured.
+            nrfx_gpiote_in_uninit(pin);
+            nrfx_gpiote_in_init(pin, &config, pin_common_irq_handler);
+        }
+    } else {
         nrfx_gpiote_in_uninit(pin);
-        nrfx_gpiote_in_init(pin, &config, pin_common_irq_handler);
     }
 
     MP_STATE_PORT(pin_irq_handlers)[pin] = args[ARG_handler].u_obj;
