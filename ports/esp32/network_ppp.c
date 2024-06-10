@@ -45,8 +45,6 @@
 
 #if defined(CONFIG_ESP_NETIF_TCPIP_LWIP) && defined(CONFIG_LWIP_PPP_SUPPORT)
 
-#define PPP_CLOSE_TIMEOUT_MS (4000)
-
 typedef struct _ppp_if_obj_t {
     mp_obj_base_t base;
     bool active;
@@ -144,19 +142,16 @@ static mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
             }
 
             if (self->client_task_handle != NULL) { // is connecting or connected?
-                // Wait for PPPERR_USER, with timeout
-                pppapi_close(self->pcb, 0);
-                uint32_t t0 = mp_hal_ticks_ms();
-                while (!self->clean_close && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
-                    mp_hal_delay_ms(10);
-                }
+                // Stop task
+                vTaskDelete(self->client_task_handle);
+                self->client_task_handle = NULL;
+            }
 
-                // Shutdown task
-                xTaskNotifyGive(self->client_task_handle);
-                t0 = mp_hal_ticks_ms();
-                while (self->client_task_handle != NULL && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
-                    mp_hal_delay_ms(10);
-                }
+            // Close ppp connection
+            pppapi_close(self->pcb, 0);
+            while (!self->clean_close) {
+                // Wait for clean close
+                mp_hal_delay_ms(10);
             }
 
             // Release PPP
