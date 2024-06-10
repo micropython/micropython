@@ -282,7 +282,12 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
     usb_hid_device_obj_t *hid_device = NULL;
     size_t id_idx;
 
-    if (report_id == 0 && report_type == HID_REPORT_TYPE_INVALID) {
+    // As of https://github.com/hathach/tinyusb/pull/2253, HID_REPORT_TYPE_INVALID reports are not
+    // sent to this callback, but are instead sent to tud_hid_report_fail_cb(), which we don't bother
+    // to implement.
+    // So this callback is only going to see HID_REPORT_TYPE_OUTPUT.
+    // HID_REPORT_TYPE_FEATURE is not used yet.
+    if (report_id == 0) {
         // This could be a report with a non-zero report ID in the first byte, or
         // it could be for report ID 0.
         // Heuristic: see if there's a device with report ID 0, and if its report length matches
@@ -299,12 +304,10 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
             buffer++;
             bufsize--;
         }
-    } else if (report_type != HID_REPORT_TYPE_OUTPUT && report_type != HID_REPORT_TYPE_FEATURE) {
-        return;
     }
 
     // report_id might be changed due to parsing above, so test again.
-    if ((report_id == 0 && report_type == HID_REPORT_TYPE_INVALID) ||
+    if ((report_id == 0) ||
         // Fetch the matching device if we don't already have the report_id 0 device.
         (usb_hid_get_device_with_report_id(report_id, &hid_device, &id_idx) &&
          hid_device &&
