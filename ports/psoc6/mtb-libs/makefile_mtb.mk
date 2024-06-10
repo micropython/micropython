@@ -134,12 +134,6 @@ OPENOCD_HOME ?= $(MTB_HOME)/tools_3.0/openocd
 # Selection of openocd cfg files based on board
 OPENOCD_CFG_SEARCH = $(MTB_LIBS_DIR)/bsps/TARGET_APP_$(BOARD)/config/GeneratedSource
 
-ifeq ($(BOARD),CY8CPROTO-062-4343W)
-OPENOCD_TARGET_CFG=psoc6_2m.cfg
-else ifeq ($(BOARD),CY8CPROTO-063-BLE)
-OPENOCD_TARGET_CFG=psoc6.cfg
-endif
-
 program: $(PROG_DEPS)
 	@:
 	$(info )
