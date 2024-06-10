@@ -41,10 +41,10 @@ ${WASM_OPT} \
 --spill-pointers \
 -o ${PROG}.spilled ${PROG}
 
-# LLVM still uses the older version of EH proposal.
-# Convert to the latest version of EH proposal.
+# LLVM still uses the older version of EH proposal. ("phase 3")
+# Convert to the latest version of EH proposal with exnref.
 ${WASM_OPT} \
---translate-to-new-eh --enable-exception-handling \
+--translate-to-exnref --enable-exception-handling \
 -o ${PROG}.spilled.neweh ${PROG}.spilled
 
 # now you can run it with EH-enabled runtimes.
