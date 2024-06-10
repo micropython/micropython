@@ -20,6 +20,7 @@ jobs:
         board: 
           - CY8CPROTO-062-4343W
           - CY8CPROTO-063-BLE
+          - CY8CKIT-062S2-AI
     outputs:
       commit_sha: ${{ steps.commit_sha.outputs.sha_short }}
 
@@ -53,7 +54,8 @@ jobs:
       matrix:
         board:
           - CY8CPROTO-062-4343W
-          - CY8CPROTO-063-BLE     
+          - CY8CPROTO-063-BLE
+          - CY8CKIT-062S2-AI     
     steps:
     - uses: actions/checkout@v4
     - name: Download binaries
@@ -115,6 +117,7 @@ jobs:
         board: 
           - CY8CPROTO-062-4343W
           - CY8CPROTO-063-BLE
+          - CY8CKIT-062S2-AI
     if: startsWith(github.ref, 'refs/tags/v') && github.repository_owner == 'infineon'
     steps:
     - name: Download binaries
