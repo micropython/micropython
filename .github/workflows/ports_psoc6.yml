@@ -55,7 +55,7 @@ jobs:
         board:
           - CY8CPROTO-062-4343W
           - CY8CPROTO-063-BLE
-          - CY8CKIT-062S2-AI     
+          # - CY8CKIT-062S2-AI Not yet added to HIL
     steps:
     - uses: actions/checkout@v4
     - name: Download binaries
