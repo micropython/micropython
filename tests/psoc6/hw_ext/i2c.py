@@ -9,21 +9,29 @@ import time
 import os
 
 # Allocate pin based on board
-machine = os.uname().machine
-if "CY8CPROTO-062-4343W" in machine:
-    scl_master_pin = "P10_0"
-    sda_master_pin = "P10_1"
+board = os.uname().machine
+if "CY8CPROTO-062-4343W" in board:
+    scl_master_pin = "P6_0"
+    sda_master_pin = "P6_1"
     scl_master_soft_pin = "P9_5"
     sda_master_soft_pin = "P9_3"
     scl_slave_pin = "P9_0"
     sda_slave_pin = "P9_1"
-elif "CY8CPROTO-063-BLE" in machine:
+elif "CY8CPROTO-063-BLE" in board:
     scl_master_pin = "P6_4"
     sda_master_pin = "P6_5"
     scl_master_soft_pin = "P7_2"
     sda_master_soft_pin = "P0_5"
     scl_slave_pin = "P10_0"
     sda_slave_pin = "P10_1"
+elif "CY8CKIT-062S2-AI" in board:
+    scl_master_pin = "P0_2"
+    sda_master_pin = "P0_3"
+    scl_master_soft_pin = "P9_5"
+    sda_master_soft_pin = "P9_6"
+    scl_slave_pin = "P9_0"
+    sda_slave_pin = "P9_1"
+
 
 # Test hardware setup
 ##############################################
@@ -72,9 +80,9 @@ def i2c_tests(i2c_master):
 
     # 2. Scan for slaves
     ##############################################
-    addr = i2c_master.scan()
-    print(addr)
-    print("Found slave with address ", slave_addr, " : ", slave_addr == addr[0])
+    addr_list = i2c_master.scan()
+    addr_in_bus = slave_addr in addr_list
+    print("Found slave with address ", slave_addr, " : ", addr_in_bus)
 
     # 3. Master to slave write
     ##############################################
