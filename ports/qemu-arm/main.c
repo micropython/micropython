@@ -24,18 +24,13 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <malloc.h>
 
-#include "py/obj.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/gc.h"
-#include "py/repl.h"
 #include "py/mperrno.h"
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
