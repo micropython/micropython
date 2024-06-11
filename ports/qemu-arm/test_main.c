@@ -24,12 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <malloc.h>
-#include <setjmp.h>
 
 #include "py/compile.h"
 #include "py/runtime.h"

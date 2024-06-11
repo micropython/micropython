@@ -23,6 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_QEMU_ARM_UART_H
+#define MICROPY_INCLUDED_QEMU_ARM_UART_H
+
+#include <stddef.h>
 
 void uart_init(void);
 void uart_tx_strn(const char *buf, size_t len);
+
+#endif // MICROPY_INCLUDED_QEMU_ARM_UART_H
