@@ -140,6 +140,12 @@ soft_reset:
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py", false);
+
+    // Run optional frozen boot code.
+    #ifdef MICROPY_BOARD_FROZEN_BOOT_FILE
+    pyexec_frozen_module(MICROPY_BOARD_FROZEN_BOOT_FILE, false);
+    #endif
+
     int ret = pyexec_file_if_exists("boot.py");
     if (ret & PYEXEC_FORCED_EXIT) {
         goto soft_reset_exit;
