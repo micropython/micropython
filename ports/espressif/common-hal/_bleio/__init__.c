@@ -99,7 +99,7 @@ void check_nimble_error(int rc, const char *file, size_t line) {
             mp_raise_ConnectionError(MP_ERROR_TEXT("Not connected"));
             return;
         default:
-            #if CIRCUITPY_VERBOSE_BLE
+            #if CIRCUITPY_VERBOSE_BLE || CIRCUITPY_DEBUG
             if (file) {
                 mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown system firmware error at %s:%d: %d"), file, line, rc);
             }
@@ -126,7 +126,7 @@ void check_ble_error(int error_code, const char *file, size_t line) {
             mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Insufficient encryption"));
             return;
         default:
-            #if CIRCUITPY_VERBOSE_BLE
+            #if CIRCUITPY_VERBOSE_BLE || CIRCUITPY_DEBUG
             if (file) {
                 mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown BLE error at %s:%d: %d"), file, line, error_code);
             }

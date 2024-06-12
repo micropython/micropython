@@ -408,7 +408,8 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
             _connect_event, self));
 
     int error_code;
-    CHECK_NOTIFY(xTaskNotifyWait(0, 0, (uint32_t *)&error_code, 200));
+    // Wait an extra 50 ms to give the connect method the opportunity to time out.
+    CHECK_NOTIFY(xTaskNotifyWait(0, 0, (uint32_t *)&error_code, pdMS_TO_TICKS(timeout * 1000 + 50)));
     // Negative values are error codes, connection handle otherwise.
     if (error_code < 0) {
         CHECK_BLE_ERROR(-error_code);
