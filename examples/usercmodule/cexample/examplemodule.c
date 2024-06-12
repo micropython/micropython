@@ -3,7 +3,7 @@
 
 // Used to get the time in the Timer class example.
 #include "py/mphal.h"
-
+   
 // This is the function which will be called from Python as cexample.add_ints(a, b).
 static mp_obj_t example_add_ints(mp_obj_t a_obj, mp_obj_t b_obj) {
     // Extract the ints from the micropython input objects.
@@ -22,8 +22,10 @@ typedef struct _example_Timer_obj_t {
     mp_obj_base_t base;
     // Everything below can be thought of as instance attributes, but they
     // cannot be accessed by MicroPython code directly. In this example we
-    // store the time at which the object was created.
+    // store the time at which the object was created and a flag indicating
+    // that the module has been init.
     mp_uint_t start_time;
+    bool init;
 } example_Timer_obj_t;
 
 // This is the Timer.time() method. After creating a Timer object, this
@@ -39,13 +41,32 @@ static mp_obj_t example_Timer_time(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(example_Timer_time_obj, example_Timer_time);
 
+static mp_obj_t example_Timer___del__(mp_obj_t self_in) {
+    // This __del__ function can be used to deinit hardware or
+    // other resources after the class is destroyed / soft-reset.
+    // Note: this will only be run if micropython is built with
+    // MICROPY_ENABLE_FINALISER enabled.
+    example_Timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->init) {
+        self->init = false;
+        mp_printf(MP_PYTHON_PRINTER, "de-init cexample resources\n");
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(example_Timer___del___obj, example_Timer___del__);
+
 // This represents Timer.__new__ and Timer.__init__, which is called when
 // the user instantiates a Timer object.
 static mp_obj_t example_Timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    // Allocates the new object and sets the type.
-    example_Timer_obj_t *self = mp_obj_malloc(example_Timer_obj_t, type);
 
-    // Initializes the time for this Timer instance.
+    // Allocates the new object and sets the type.
+    example_Timer_obj_t *self = mp_obj_malloc_with_finaliser(example_Timer_obj_t, type);
+    
+    // This is just a stand-in for any eg. hardware resources
+    // that your module might need to configure once during init.
+    self->init = true;
+
+   // Initializes the time for this Timer instance.
     self->start_time = mp_hal_ticks_ms();
 
     // The make_new function always returns self.
@@ -56,6 +77,7 @@ static mp_obj_t example_Timer_make_new(const mp_obj_type_t *type, size_t n_args,
 // The table structure is similar to the module table, as detailed below.
 static const mp_rom_map_elem_t example_Timer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&example_Timer_time_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&example_Timer___del___obj) },
 };
 static MP_DEFINE_CONST_DICT(example_Timer_locals_dict, example_Timer_locals_dict_table);
 
