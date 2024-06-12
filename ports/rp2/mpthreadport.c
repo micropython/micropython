@@ -46,13 +46,13 @@ static uint32_t *core1_stack = NULL;
 static size_t core1_stack_num_words = 0;
 
 // Thread mutex.
-static mutex_t atomic_mutex;
+static recursive_mutex_t atomic_mutex;
 
 uint32_t mp_thread_begin_atomic_section(void) {
     if (core1_entry) {
         // When both cores are executing, we also need to provide
         // full mutual exclusion.
-        return mutex_enter_blocking_and_disable_interrupts(&atomic_mutex);
+        return recursive_mutex_enter_blocking_and_disable_interrupts(&atomic_mutex);
     } else {
         return save_and_disable_interrupts();
     }
@@ -60,7 +60,7 @@ uint32_t mp_thread_begin_atomic_section(void) {
 
 void mp_thread_end_atomic_section(uint32_t state) {
     if (atomic_mutex.owner != LOCK_INVALID_OWNER_ID) {
-        mutex_exit_and_restore_interrupts(&atomic_mutex, state);
+        recursive_mutex_exit_and_restore_interrupts(&atomic_mutex, state);
     } else {
         restore_interrupts(state);
     }
@@ -70,7 +70,7 @@ void mp_thread_end_atomic_section(uint32_t state) {
 void mp_thread_init(void) {
     assert(get_core_num() == 0);
 
-    mutex_init(&atomic_mutex);
+    recursive_mutex_init(&atomic_mutex);
 
     // Allow MICROPY_BEGIN_ATOMIC_SECTION to be invoked from core1.
     multicore_lockout_victim_init();
