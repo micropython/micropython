@@ -786,6 +786,32 @@ static qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns
     // compile the function definition
     compile_funcdef_lambdef(comp, fscope, pns->nodes[1], PN_typedargslist);
 
+    #if MICROPY_ENABLE_DOC_STRING
+    // look for the first statement
+    mp_parse_node_t pn = pns->nodes[3]; // the function body/suite
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_suite_block_stmts)) {
+        // a list of statements; get the first one
+        pn = ((mp_parse_node_struct_t *)pn)->nodes[0];
+    }
+
+    // check the first statement for a doc string
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_expr_stmt)) {
+        mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t *)pn;
+        if ((MP_PARSE_NODE_IS_LEAF(pns2->nodes[0])
+             && MP_PARSE_NODE_LEAF_KIND(pns2->nodes[0]) == MP_PARSE_NODE_STRING)
+            || (MP_PARSE_NODE_IS_STRUCT_KIND(pns2->nodes[0], PN_const_object)
+                && mp_obj_is_str(mp_parse_node_extract_const_object((mp_parse_node_struct_t *)pns2->nodes[0])))) {
+            // duplicate the function on the stack
+            EMIT(dup_top);
+            // compile the doc string
+            compile_node(comp, pns2->nodes[0]);
+            // store the doc string into the function
+            EMIT(rot_two);
+            EMIT_ARG(attr, MP_QSTR___doc__, MP_EMIT_ATTR_STORE);
+        }
+    }
+    #endif
+
     // return its name (the 'f' in "def f(...):")
     return fscope->simple_name;
 }
