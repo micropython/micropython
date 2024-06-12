@@ -196,10 +196,7 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     }
 
     // Create a thread to run the polling loop.
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    pthread_create(&hci_poll_thread_id, &attr, &hci_poll_thread, NULL);
+    pthread_create(&hci_poll_thread_id, NULL, &hci_poll_thread, NULL);
 
     return 0;
 }
