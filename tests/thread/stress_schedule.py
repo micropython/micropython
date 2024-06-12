@@ -52,6 +52,8 @@ while n < _NUM_TASKS and time.ticks_diff(time.ticks_ms(), t) < _TIMEOUT_MS:
 thread_run = False
 time.sleep_ms(20)
 
+gc.enable()
+
 if n < _NUM_TASKS:
     # Not all the tasks were scheduled, likely the scheduler stopped working.
     print(n)
