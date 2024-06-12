@@ -57,6 +57,9 @@ typedef struct {
     uint8_t len;
 } bleio_packet_buffer_obj_list_t;
 
+// Unused
+typedef void *ble_event_handler_t;
+
 extern bool packet_buffer_on_ble_evt(uint16_t attribute,
     uint8_t *data,
     uint16_t len);

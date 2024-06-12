@@ -36,6 +36,9 @@ const uint8_t circuitpython_base_uuid[16] = {0x6e, 0x68, 0x74, 0x79, 0x50, 0x74,
 static mp_obj_list_t characteristic_list;
 static mp_obj_t characteristic_list_items[3];
 
+#if BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE % 4 != 0
+#error "BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE must be a multiple of 4"
+#endif
 static uint32_t _outgoing1[BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE / 4];
 static uint32_t _outgoing2[BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE / 4];
 static ble_event_handler_t rx_static_handler_entry;

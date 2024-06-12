@@ -51,6 +51,9 @@ const osMutexAttr_t bluetooth_connection_mutex_attr = {
     .cb_size = osMutexCbSize
 };
 
+void common_hal_bleio_init(void) {
+}
+
 void bleio_user_reset() {
     // Stop any user scanning or advertising.
     common_hal_bleio_adapter_stop_scan(&common_hal_bleio_adapter_obj);

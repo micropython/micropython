@@ -74,6 +74,9 @@ void check_sec_status(uint8_t sec_status) {
     }
 }
 
+void common_hal_bleio_init(void) {
+}
+
 void bleio_user_reset() {
     // Stop any user scanning or advertising.
     common_hal_bleio_adapter_stop_scan(&common_hal_bleio_adapter_obj);
