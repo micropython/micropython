@@ -1675,6 +1675,7 @@ typedef double mp_float_t;
 #define MICROPY_PY_HASHLIB (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+#if MICROPY_PY_HASHLIB
 #ifndef MICROPY_PY_HASHLIB_MD5
 #define MICROPY_PY_HASHLIB_MD5 (0)
 #endif
@@ -1685,6 +1686,7 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_HASHLIB_SHA256
 #define MICROPY_PY_HASHLIB_SHA256 (1)
+#endif
 #endif
 
 #ifndef MICROPY_PY_CRYPTOLIB
