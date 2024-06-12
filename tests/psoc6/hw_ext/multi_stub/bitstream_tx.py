@@ -11,13 +11,16 @@ an input, which is used for synchronization with the receiver.
 """
 
 # Allocate pin based on board
-machine = os.uname().machine
-if "CY8CPROTO-062-4343W" in machine:
+board = os.uname().machine
+if "CY8CPROTO-062-4343W" in board:
     bitstream_pin_name = "P12_1"
     wait_signal_pin_name = "P13_5"
-elif "CY8CPROTO-063-BLE" in machine:
+elif "CY8CPROTO-063-BLE" in board:
     bitstream_pin_name = "P5_2"
     wait_signal_pin_name = "P6_2"
+elif "CY8CKIT-062S2-AI" in board:
+    bitstream_pin_name = "P9_6"
+    wait_signal_pin_name = "P9_7"
 
 signal_received = False
 
