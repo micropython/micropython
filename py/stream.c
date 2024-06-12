@@ -54,10 +54,15 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
         io_func = stream_p->read;
     }
 
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    uint32_t i_residue = 0;
+    #endif
+
     *errcode = 0;
     mp_uint_t done = 0;
     while (size > 0) {
         mp_uint_t out_sz = io_func(stream, buf, size, errcode);
+
         // For read, out_sz == 0 means EOF. For write, it's unspecified
         // what it means, but we don't make any progress, so returning
         // is still the best option.
@@ -74,11 +79,43 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
         if (flags & MP_STREAM_RW_ONCE) {
             return out_sz;
         }
+        #if MICROPY_PY_BUILTINS_STR_UNICODE
+        if (stream_p->is_text && (flags & MP_STREAM_RW_WRITE)) {
+            // On text writes, the returned count is the number of unicode
+            // characters written (vs bytes written)
+            uint32_t i = i_residue;
+            while (i < out_sz) {
+                uint8_t b = *(buf + i);
+                done += 1;
+                if (!UTF8_IS_NONASCII(b)) {
+                    // 1-byte ASCII char
+                    i += 1;
+                } else if ((b & 0xe0) == 0xc0) {
+                    // 2-byte char
+                    i += 2;
+                } else if ((b & 0xf0) == 0xe0) {
+                    // 3-byte char
+                    i += 3;
+                } else if ((b & 0xf8) == 0xf0) {
+                    // 4-byte char
+                    i += 4;
+                } else {
+                    // TODO
+                    i += 5;
+                }
+            }
+            i_residue = i - out_sz;
+        } else {
+            done += out_sz;
+        }
+        #else
+        done += out_sz;
+        #endif // MICROPY_PY_BUILTINS_STR_UNICODE
 
         buf += out_sz;
         size -= out_sz;
-        done += out_sz;
     }
+
     return done;
 }
 
