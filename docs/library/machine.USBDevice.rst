@@ -215,6 +215,13 @@ Methods
      drivers. Placing a different string at any of these indexes overrides that
      string in the built-in driver.
 
+.. method:: USBDevice.remote_wakeup(self)
+
+    Wake up host if we are in suspend mode and the REMOTE_WAKEUP feature
+    is enabled by the host. This has to be enabled in the USB attributes,
+    and on the host. Returns ``True`` if remote wakeup was enabled and
+    active and the host was woken up.
+
 .. method:: USBDevice.submit_xfer(self, ep, buffer /)
 
             Submit a USB transfer on endpoint number ``ep``. ``buffer`` must be
