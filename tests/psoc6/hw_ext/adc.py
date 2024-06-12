@@ -14,19 +14,23 @@ import time
 from machine import ADC, ADCBlock
 
 # Allocate pin based on board
-machine = os.uname().machine
-if "CY8CPROTO-062-4343W" in machine:
-    adc_pin_gnd = "P10_4"
+board = os.uname().machine
+if "CY8CPROTO-062-4343W" in board:
+    adc_pin_gnd = "P10_1"
     adc_pin_mid = "P10_3"
     adc_mid_chan = 3
     adc_pin_max = "P10_2"
     adc_wrong_pin_name = "P13_7"
-elif "CY8CPROTO-063-BLE" in machine:
+elif "CY8CPROTO-063-BLE" in board:
     adc_pin_gnd = "P10_2"
     adc_pin_mid = "P10_3"
     adc_mid_chan = 3
     adc_pin_max = "P10_4"
     adc_wrong_pin_name = "P13_7"
+elif "CY8CKIT-062S2-AI" in board:
+    # P10_x only available in expansion header J17 and only 2 pins
+    print("SKIP")
+    raise SystemExit
 
 # 0.35V
 tolerance_uv = 350000
