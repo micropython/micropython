@@ -398,7 +398,8 @@ static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
 
     const byte *buf = (const byte *)bufinfo.buf;
     int delta = 1;
-    if (args[2] == MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
+    bool big_endian = n_args < 3 || args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
+    if (!big_endian) {
         buf += bufinfo.len - 1;
         delta = -1;
     }
@@ -409,7 +410,7 @@ static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
         #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
         if (value > (MP_SMALL_INT_MAX >> 8)) {
             // Result will overflow a small-int so construct a big-int
-            return mp_obj_int_from_bytes_impl(args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little), bufinfo.len, bufinfo.buf);
+            return mp_obj_int_from_bytes_impl(big_endian, bufinfo.len, bufinfo.buf);
         }
         #endif
         value = (value << 8) | *buf;
@@ -417,18 +418,17 @@ static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     return mp_obj_new_int_from_uint(value);
 }
 
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 3, 4, int_from_bytes);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 2, 4, int_from_bytes);
 static MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_bytes_fun_obj));
 
 static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
     // TODO: Support signed param (assumes signed=False)
-    (void)n_args;
 
-    mp_int_t len = mp_obj_get_int(args[1]);
+    mp_int_t len = n_args < 2 ? 1 : mp_obj_get_int(args[1]);
     if (len < 0) {
         mp_raise_ValueError(NULL);
     }
-    bool big_endian = args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
+    bool big_endian = n_args < 3 || args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
 
     vstr_t vstr;
     vstr_init_len(&vstr, len);
@@ -448,7 +448,7 @@ static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
 
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 3, 4, int_to_bytes);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 1, 4, int_to_bytes);
 
 static const mp_rom_map_elem_t int_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_from_bytes), MP_ROM_PTR(&int_from_bytes_obj) },
