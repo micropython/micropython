@@ -28,7 +28,7 @@
 
 #include "pico/mutex.h"
 
-uint32_t mutex_enter_blocking_and_disable_interrupts(mutex_t *mtx);
-void mutex_exit_and_restore_interrupts(mutex_t *mtx, uint32_t save);
+uint32_t recursive_mutex_enter_blocking_and_disable_interrupts(recursive_mutex_t *mtx);
+void recursive_mutex_exit_and_restore_interrupts(recursive_mutex_t *mtx, uint32_t save);
 
 #endif // MICROPY_INCLUDED_RP2_MUTEX_EXTRA_H
