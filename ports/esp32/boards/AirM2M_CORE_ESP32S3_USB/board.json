@@ -1,0 +1,18 @@
+{
+    "deploy": [
+        "../deploy_s3.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi"
+    ],
+    "images": [
+        "airm2m-core-esp32s3.png"
+    ],
+    "mcu": "esp32s3",
+    "product": "AirM2M Core ESP32S3 with USB(USB-Serial/JTAG)",
+    "thumbnail": "",
+    "url": "https://wiki.luatos.com/chips/esp32s3/index.html",
+    "vendor": "AirM2M"
+}
