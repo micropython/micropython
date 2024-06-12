@@ -52,6 +52,28 @@ Functions
    present in pre-built firmware (due to it affecting performance).  The relevant
    configuration option is *MICROPY_PY_SYS_SETTRACE*.
 
+.. function:: _exc_traceback(exc)
+
+   Retrieves traceback information from an exception object, including
+   the filename, line number, and code block name for every code location
+   on the call stack when the exception was thrown.
+
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      This function is a MicroPython extension intended to provide similar
+      functionality to the ``__traceback__`` attribute of exception
+      objects in CPython.
+
+   .. admonition:: Unstable
+      :class: attention
+
+      This function directly exposes the internal traceback data used by
+      MicroPython.  Future versions might introduce incompatible changes to
+      the format.
+
+
+
 Constants
 ---------
 
