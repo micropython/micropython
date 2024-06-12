@@ -29,12 +29,15 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/stackctrl.h"
+#include "extmod/modnetwork.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/runtime/softtimer.h"
 #include "shared/tinyusb/mp_usbd.h"
 #include "clock_config.h"
+#include "extmod/modbluetooth.h"
+#include "mpbthciport.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
 extern void adc_deinit_all(void);
@@ -50,8 +53,15 @@ void samd_main(void) {
         gc_init(&_sheap, &_eheap);
         mp_init();
 
+        #if MICROPY_PY_BLUETOOTH
+        mp_bluetooth_hci_init();
+        #endif
+
         // Initialise sub-systems.
         readline_init0();
+        #if MICROPY_PY_NETWORK
+        mod_network_init();
+        #endif
 
         // Execute _boot.py to set up the filesystem.
         pyexec_frozen_module("_boot.py", false);
@@ -87,6 +97,12 @@ void samd_main(void) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        #if MICROPY_PY_NETWORK
+        mod_network_deinit();
+        #endif
+        #if MICROPY_PY_BLUETOOTH
+        // mp_bluetooth_deinit();
+        #endif
         #if MICROPY_PY_MACHINE_ADC
         adc_deinit_all();
         #endif

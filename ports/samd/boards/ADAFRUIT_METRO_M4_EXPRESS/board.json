@@ -16,7 +16,7 @@
     ],
     "mcu": "samd51",
     "variants": {
-        "wlan": "WLAN without SSL support"
+        "WLAN_BLE": "WiFi and BLE support using a ESP32 module with NINA firmware"
     },
     "product": "Metro M4 Express Airlift",
     "thumbnail": "",
