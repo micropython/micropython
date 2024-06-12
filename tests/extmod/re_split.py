@@ -38,3 +38,8 @@ print(s)
 r = re.compile("^ab|cab")
 s = r.split("abababcabab")
 print(s)
+
+# bytearray objects
+r = re.compile(b"x")
+s = r.split(bytearray(b"fooxbar"))
+print(s)
