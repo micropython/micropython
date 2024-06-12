@@ -26,15 +26,13 @@
  */
 
 #include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "py/gc.h"
 #include "py/runtime.h"
-
-#if MICROPY_DEBUG_VALGRIND
-#include <valgrind/memcheck.h>
-#endif
 
 #if MICROPY_ENABLE_GC
 
@@ -120,6 +118,8 @@
 #define GC_EXIT()
 #endif
 
+#include "py/gc_valgrind.h"
+
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, P=pool; all in bytes):
@@ -169,6 +169,12 @@ static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     #if MICROPY_GC_SPLIT_HEAP
     area->next = NULL;
     #endif
+
+    // Valgrind: Assume 'area' came to us from malloc, so resize it such that it
+    // doesn't cover the 'pool' area
+    //
+    // This frees up the area between gc_pool_start and gc_pool_end to have its allocations tracked.
+    VALGRIND_RESIZEINPLACE_BLOCK(start, end - start, area->gc_pool_start - (uint8_t *)start, 0);
 
     DEBUG_printf("GC layout:\n");
     DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, "
@@ -404,9 +410,15 @@ static void gc_mark_subtree(size_t block)
         // check that the consecutive blocks didn't overflow past the end of the area
         assert(area->gc_pool_start + (block + n_blocks) * BYTES_PER_BLOCK <= area->gc_pool_end);
 
+        size_t n_bytes = n_blocks * BYTES_PER_BLOCK;
+        #if MICROPY_DEBUG_VALGRIND
+        // Only search the real allocation size so valgrind doesn't complain
+        n_bytes = valgrind_get_alloc_sz((void *)PTR_FROM_BLOCK(area, block), n_blocks);
+        #endif
+
         // check this block's children
         void **ptrs = (void **)PTR_FROM_BLOCK(area, block);
-        for (size_t i = n_blocks * BYTES_PER_BLOCK / sizeof(void *); i > 0; i--, ptrs++) {
+        for (size_t i = n_bytes / sizeof(void *); i > 0; i--, ptrs++) {
             MICROPY_GC_HOOK_LOOP(i);
             void *ptr = *ptrs;
             // If this is a heap pointer that hasn't been marked, mark it and push
@@ -525,6 +537,7 @@ static void gc_sweep(void) {
                     #if MICROPY_PY_GC_COLLECT_RETVAL
                     MP_STATE_MEM(gc_collected)++;
                     #endif
+                    VALGRIND_MP_FREE(PTR_FROM_BLOCK(area, block));
                     // fall through to free the head
                     MP_FALLTHROUGH
 
@@ -592,15 +605,15 @@ void gc_collect_start(void) {
 __attribute__((no_sanitize_address))
 #endif
 static void *gc_get_ptr(void **ptrs, int i) {
-    #if MICROPY_DEBUG_VALGRIND
-    if (!VALGRIND_CHECK_MEM_IS_ADDRESSABLE(&ptrs[i], sizeof(*ptrs))) {
-        return NULL;
-    }
-    #endif
     return ptrs[i];
 }
 
 void gc_collect_root(void **ptrs, size_t len) {
+    #if MICROPY_DEBUG_VALGRIND
+    // ptrs may include undefined words on the stack, tell valgrind this is OK
+    VALGRIND_MAKE_MEM_DEFINED_IF_ADDRESSABLE(ptrs, len * sizeof(*ptrs));
+    #endif
+
     #if !MICROPY_GC_SPLIT_HEAP
     mp_state_mem_area_t *area = &MP_STATE_MEM(area);
     #endif
@@ -636,9 +649,11 @@ void gc_collect_end(void) {
     #if MICROPY_GC_SPLIT_HEAP
     MP_STATE_MEM(gc_last_free_area) = &MP_STATE_MEM(area);
     #endif
+    #if !MICROPY_DEBUG_VALGRIND_MAX_ADDRSPACE
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
         area->gc_last_free_atb_index = 0;
     }
+    #endif
     MP_STATE_THREAD(gc_lock_depth)--;
     GC_EXIT();
 }
@@ -825,6 +840,9 @@ found:
         #endif
         area->gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
     }
+    #if MICROPY_DEBUG_VALGRIND_MAX_ADDRSPACE
+    area->gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
+    #endif
 
     area->gc_last_used_block = MAX(area->gc_last_used_block, end_block);
 
@@ -848,17 +866,28 @@ found:
 
     GC_EXIT();
 
+    // The number of bytes allocated from the heap
+    size_t block_byte_len = (end_block - start_block + 1) * BYTES_PER_BLOCK;
+
+    // Valgrind: Mark the whole block as accessible so that gc can zero bytes if needed,
+    // without registering this as an allocation
+    VALGRIND_MAKE_MEM_UNDEFINED(ret_ptr, block_byte_len);
+
     #if MICROPY_GC_CONSERVATIVE_CLEAR
     // be conservative and zero out all the newly allocated blocks
-    memset((byte *)ret_ptr, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK);
+    memset((byte *)ret_ptr, 0, block_byte_len);
     #else
     // zero out the additional bytes of the newly allocated blocks
     // This is needed because the blocks may have previously held pointers
     // to the heap and will not be set to something else if the caller
     // doesn't actually use the entire block.  As such they will continue
     // to point to the heap and may prevent other blocks from being reclaimed.
-    memset((byte *)ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
+    memset((byte *)ret_ptr + n_bytes, 0, block_byte_len - n_bytes);
     #endif
+
+    // Valgrind: Mark the region as no-access again, then track the real allocation
+    VALGRIND_MAKE_MEM_NOACCESS(ret_ptr, block_byte_len);
+    VALGRIND_MP_MALLOC(ret_ptr, n_bytes);
 
     #if MICROPY_ENABLE_FINALISER
     if (has_finaliser) {
@@ -942,16 +971,20 @@ void gc_free(void *ptr) {
     }
     #endif
 
+    #if !MICROPY_DEBUG_VALGRIND_MAX_ADDRSPACE
     // set the last_free pointer to this block if it's earlier in the heap
     if (block / BLOCKS_PER_ATB < area->gc_last_free_atb_index) {
         area->gc_last_free_atb_index = block / BLOCKS_PER_ATB;
     }
+    #endif
 
     // free head and all of its tail blocks
     do {
         ATB_ANY_TO_FREE(area, block);
         block += 1;
     } while (ATB_GET_KIND(area, block) == AT_TAIL);
+
+    VALGRIND_MP_FREE(ptr);
 
     GC_EXIT();
 
@@ -1084,7 +1117,12 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 
     // return original ptr if it already has the requested number of blocks
     if (new_blocks == n_blocks) {
+        VALGRIND_MP_RESIZE_BLOCK(ptr, n_blocks, n_bytes);
+
         GC_EXIT();
+
+        DEBUG_printf("gc_realloc(%p -> %p, %d bytes -> %d blocks)\n", ptr_in, ptr_in, n_bytes, new_blocks);
+
         return ptr_in;
     }
 
@@ -1102,10 +1140,14 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         }
         #endif
 
+        #if !MICROPY_DEBUG_VALGRIND_MAX_ADDRSPACE
         // set the last_free pointer to end of this block if it's earlier in the heap
         if ((block + new_blocks) / BLOCKS_PER_ATB < area->gc_last_free_atb_index) {
             area->gc_last_free_atb_index = (block + new_blocks) / BLOCKS_PER_ATB;
         }
+        #endif
+
+        VALGRIND_MP_RESIZE_BLOCK(ptr, n_blocks, n_bytes);
 
         GC_EXIT();
 
@@ -1127,6 +1169,9 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 
         area->gc_last_used_block = MAX(area->gc_last_used_block, end_block);
 
+        // Valgrind: grow allocation to full block size, as we're about to zero all blocks
+        VALGRIND_MP_RESIZE_BLOCK(ptr, n_blocks, new_blocks * BYTES_PER_BLOCK);
+
         GC_EXIT();
 
         #if MICROPY_GC_CONSERVATIVE_CLEAR
@@ -1136,6 +1181,9 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
         memset((byte *)ptr_in + n_bytes, 0, new_blocks * BYTES_PER_BLOCK - n_bytes);
         #endif
+
+        // Valgrind: Shrink the allocation back to the real size
+        VALGRIND_MP_RESIZE_BLOCK(ptr, new_blocks, n_bytes);
 
         #if EXTENSIVE_HEAP_PROFILING
         gc_dump_alloc_table(&mp_plat_print);
@@ -1165,7 +1213,11 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         return NULL;
     }
 
-    DEBUG_printf("gc_realloc(%p -> %p)\n", ptr_in, ptr_out);
+    DEBUG_printf("gc_realloc(%p -> %p, %d bytes -> %d blocks)\n", ptr_in, ptr_out, n_bytes, new_blocks);
+
+    // Valgrind: memcpy copies all blocks, so grow the previous allocation to match
+    VALGRIND_MP_RESIZE_BLOCK(ptr_in, n_blocks, n_blocks * BYTES_PER_BLOCK);
+
     memcpy(ptr_out, ptr_in, n_blocks * BYTES_PER_BLOCK);
     gc_free(ptr_in);
     return ptr_out;

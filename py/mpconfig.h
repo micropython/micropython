@@ -540,6 +540,12 @@
 #define MICROPY_DEBUG_VALGRIND (0)
 #endif
 
+// Whether valgrind should always use new memory addresses for allocations,
+// making it easier to find use-after-free bugs.
+#ifndef MICROPY_DEBUG_VALGRIND_MAX_ADDRSPACE
+#define MICROPY_DEBUG_VALGRIND_MAX_ADDRSPACE (MICROPY_DEBUG_VALGRIND)
+#endif
+
 /*****************************************************************************/
 /* Optimisations                                                             */
 
