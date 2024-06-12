@@ -333,7 +333,7 @@ cleanup:
     }
 }
 
-mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t *buf, uint32_t len) {
+mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t *buf, mp_uint_t len) {
     self->poll_mask = 0;
     int ret = mbedtls_ssl_read(&self->ssl, buf, len);
     DEBUG_PRINT("recv_into mbedtls_ssl_read() -> %d\n", ret);
@@ -353,7 +353,7 @@ mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t 
     mbedtls_raise_error(ret);
 }
 
-mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len) {
+mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, mp_uint_t len) {
     self->poll_mask = 0;
     int ret = mbedtls_ssl_write(&self->ssl, buf, len);
     DEBUG_PRINT("send mbedtls_ssl_write() -> %d\n", ret);

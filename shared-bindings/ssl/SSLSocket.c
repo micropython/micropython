@@ -248,9 +248,22 @@ static const mp_rom_map_elem_t ssl_sslsocket_locals_dict_table[] = {
 
 static MP_DEFINE_CONST_DICT(ssl_sslsocket_locals_dict, ssl_sslsocket_locals_dict_table);
 
-static mp_uint_t sslsocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errorcode) {
+typedef mp_uint_t (*readwrite_func)(ssl_sslsocket_obj_t *, const uint8_t *, mp_uint_t);
+
+static mp_int_t readwrite_common(mp_obj_t self_in, readwrite_func fn, const uint8_t *buf, size_t size, int *errorcode) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_int_t ret = common_hal_ssl_sslsocket_recv_into(self, buf, size);
+    mp_int_t ret;
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        ret = fn(self, buf, size);
+        nlr_pop();
+    } else {
+        mp_obj_t exc = MP_OBJ_FROM_PTR(nlr.ret_val);
+        if (nlr_push(&nlr) == 0) {
+            ret = -mp_obj_get_int(mp_load_attr(exc, MP_QSTR_errno));
+            nlr_pop();
+        }
+    }
     if (ret < 0) {
         *errorcode = -ret;
         return MP_STREAM_ERROR;
@@ -258,14 +271,12 @@ static mp_uint_t sslsocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
     return ret;
 }
 
+static mp_uint_t sslsocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errorcode) {
+    return readwrite_common(self_in, (readwrite_func)common_hal_ssl_sslsocket_recv_into, buf, size, errorcode);
+}
+
 static mp_uint_t sslsocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errorcode) {
-    ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_int_t ret = common_hal_ssl_sslsocket_send(self, buf, size);
-    if (ret < 0) {
-        *errorcode = -ret;
-        return MP_STREAM_ERROR;
-    }
-    return ret;
+    return readwrite_common(self_in, common_hal_ssl_sslsocket_send, buf, size, errorcode);
 }
 
 static mp_uint_t sslsocket_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
