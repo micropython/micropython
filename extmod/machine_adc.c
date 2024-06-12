@@ -140,6 +140,24 @@ static mp_obj_t machine_adc_read(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_obj, machine_adc_read);
 #endif
 
+#if MICROPY_PY_MACHINE_ADC_READ_TIMED
+// ADC.atten(value) -- this is a legacy method.
+static mp_obj_t machine_adc_read_timed(mp_obj_t self_in, mp_obj_t values, mp_obj_t freq_in) {
+    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_int_t freq = mp_obj_get_int(freq_in);
+    mp_machine_adc_read_timed(self, values, freq);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(machine_adc_read_timed_obj, machine_adc_read_timed);
+
+// ADC.busy())
+static mp_obj_t machine_adc_busy(mp_obj_t self_in) {
+    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_machine_adc_busy(self);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_busy_obj, machine_adc_busy);
+#endif
+
 static const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
     #if MICROPY_PY_MACHINE_ADC_INIT
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_adc_init_obj) },
@@ -163,6 +181,10 @@ static const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
     #endif
     #if MICROPY_PY_MACHINE_ADC_READ
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&machine_adc_read_obj) },
+    #endif
+    #if MICROPY_PY_MACHINE_ADC_READ_TIMED
+    { MP_ROM_QSTR(MP_QSTR_read_timed), MP_ROM_PTR(&machine_adc_read_timed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_busy), MP_ROM_PTR(&machine_adc_busy_obj) },
     #endif
 
     // A port must add ADC class constants defining the following macro.
