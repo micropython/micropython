@@ -87,7 +87,6 @@ void machine_deinit(void) {
     // we are doing a soft-reset so change the reset_cause
     reset_cause = CYHAL_SYSTEM_RESET_SOFT;
     mplogger_print("machine deinit\n");
-
     mod_wdt_deinit();
     mod_pin_deinit();
     mod_adcblock_deinit();
@@ -96,11 +95,6 @@ void machine_deinit(void) {
     mod_spi_deinit();
     mod_rtc_deinit();
     mod_pin_phy_deinit();
-    #if MICROPY_PY_NETWORK
-    mod_network_deinit();
-    network_deinit();
-    #endif
-
 }
 
 // machine.info([dump_alloc_table])
@@ -341,5 +335,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_rng_obj, machine_rng);
     { MP_ROM_QSTR(MP_QSTR_ADCBlock),            MP_ROM_PTR(&machine_adcblock_type) }, \
     { MP_ROM_QSTR(MP_QSTR_I2S),                 MP_ROM_PTR(&machine_i2s_type) }, \
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&machine_wdt_type) }, \
+
 
 #endif // MICROPY_PY_MACHINE

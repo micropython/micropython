@@ -54,6 +54,7 @@ extern void mod_rtc_init(void);
 extern void time_init(void);
 extern void os_init(void);
 extern void network_init(void);
+extern void network_deinit(void);
 
 void mpy_task(void *arg);
 
@@ -169,6 +170,10 @@ soft_reset:
     }
 
     mp_printf(&mp_plat_print, "MPY: soft reboot\n");
+    #if MICROPY_PY_NETWORK
+    mod_network_deinit();
+    network_deinit();
+    #endif
     gc_sweep_all();
     mp_deinit();
 

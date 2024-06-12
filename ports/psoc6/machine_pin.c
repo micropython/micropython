@@ -388,7 +388,7 @@ mp_obj_t mod_pin_deinit() {
     }
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_0(mod_pin_deinit_obj, mod_pin_deinit);
+// static MP_DEFINE_CONST_FUN_OBJ_0(mod_pin_deinit_obj, mod_pin_deinit);
 
 
 static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
@@ -403,7 +403,7 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_off),                     MP_ROM_PTR(&machine_pin_low_obj) },
     { MP_ROM_QSTR(MP_QSTR_on),                      MP_ROM_PTR(&machine_pin_high_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),                     MP_ROM_PTR(&machine_pin_irq_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__),                 MP_ROM_PTR(&mod_pin_deinit_obj) },
+    // { MP_ROM_QSTR(MP_QSTR___del__),                 MP_ROM_PTR(&mod_pin_deinit_obj) },
 
     // Const
     { MP_ROM_QSTR(MP_QSTR_IN),                      MP_ROM_INT(GPIO_MODE_IN) },

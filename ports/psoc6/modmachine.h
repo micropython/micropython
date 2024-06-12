@@ -29,7 +29,6 @@ mp_obj_t mod_rtc_deinit(void);
 void mod_spi_deinit(void);
 void mod_timer_deinit(void);
 mp_obj_t mod_wdt_deinit(void);
-void network_deinit(void);
 
 /* Note: the static functions' prototypes in the .c file cannot be declared here
 since they are static. The static type in those functions come from MPY hence
@@ -39,5 +38,4 @@ should stay that way.  */
 // functions to be called from other .c files. Hence they are not static.
 void machine_init(void);
 void machine_deinit(void);
-
 #endif // MICROPY_INCLUDED_PSOC6_MODMACHINE_H

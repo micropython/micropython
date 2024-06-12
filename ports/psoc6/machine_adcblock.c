@@ -306,13 +306,13 @@ mp_obj_t mod_adcblock_deinit(void) {
     }
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_0(mod_adcblock_deinit_obj, mod_adcblock_deinit);
+// static MP_DEFINE_CONST_FUN_OBJ_0(mod_adcblock_deinit_obj, mod_adcblock_deinit);
 
 
 static const mp_rom_map_elem_t machine_adcblock_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),  MP_ROM_PTR(&machine_adcblock_deinit_obj)},
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&machine_adcblock_connect_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__),     MP_ROM_PTR(&mod_adcblock_deinit_obj) },
+    // { MP_ROM_QSTR(MP_QSTR___del__),     MP_ROM_PTR(&mod_adcblock_deinit_obj) },
 };
 static MP_DEFINE_CONST_DICT(machine_adcblock_locals_dict, machine_adcblock_locals_dict_table);
 
