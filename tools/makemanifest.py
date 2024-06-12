@@ -143,7 +143,7 @@ def main():
     # Extract variables for substitution.
     for var in args.var:
         name, value = var.split("=", 1)
-        if os.path.exists(value):
+        if name in ("MPY_DIR", "MPY_LIB_DIR", "BOARD_DIR", "PORT_DIR") and os.path.exists(value):
             value = os.path.abspath(value)
         VARS[name] = value
 
