@@ -1,4 +1,4 @@
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include "shared/runtime/interrupt_char.h"
 
 #define MICROPY_BEGIN_ATOMIC_SECTION irq_lock
