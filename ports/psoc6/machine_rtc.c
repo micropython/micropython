@@ -91,14 +91,11 @@ void mod_rtc_init(void) {
     rtc_assert_raise("cyhal_rtc_init failed !", result);
 }
 
-mp_obj_t mod_rtc_deinit() {
+void mod_rtc_deinit() {
     if (rtc_memory_write_enabled() == false) {
         cyhal_rtc_free(&psoc6_rtc);
     }
-
-    return mp_const_none;
 }
-// MP_DEFINE_CONST_FUN_OBJ_1(mod_rtc_deinit_obj, mod_rtc_deinit);
 
 // Helper function to set/get datetime
 static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *args) {
@@ -374,7 +371,7 @@ static mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
 
 static const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
-    // { MP_ROM_QSTR(MP_QSTR___del__),     MP_ROM_PTR(&mod_rtc_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__),     MP_ROM_PTR(&machine_rtc_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_init),        MP_ROM_PTR(&machine_rtc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),      MP_ROM_PTR(&machine_rtc_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_datetime),    MP_ROM_PTR(&machine_rtc_datetime_obj) },

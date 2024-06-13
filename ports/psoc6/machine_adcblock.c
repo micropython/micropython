@@ -298,21 +298,19 @@ static mp_obj_t machine_adcblock_connect(size_t n_pos_args, const mp_obj_t *pos_
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_adcblock_connect_obj, 2, machine_adcblock_connect);
 
-mp_obj_t mod_adcblock_deinit(void) {
+void mod_adcblock_deinit(void) {
     for (uint8_t i = 0; i < MAX_BLOCKS; i++) {
         if (adc_block[i] != NULL) {
             machine_adcblock_deinit(adc_block[i]);
         }
     }
-    return mp_const_none;
 }
-// static MP_DEFINE_CONST_FUN_OBJ_0(mod_adcblock_deinit_obj, mod_adcblock_deinit);
 
 
 static const mp_rom_map_elem_t machine_adcblock_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),  MP_ROM_PTR(&machine_adcblock_deinit_obj)},
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&machine_adcblock_connect_obj) },
-    // { MP_ROM_QSTR(MP_QSTR___del__),     MP_ROM_PTR(&mod_adcblock_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__),     MP_ROM_PTR(&machine_adcblock_deinit_obj) },
 };
 static MP_DEFINE_CONST_DICT(machine_adcblock_locals_dict, machine_adcblock_locals_dict_table);
 

@@ -30,7 +30,7 @@ machine_pin_phy_obj_t *pin_phy_alloc(mp_obj_t pin_name, machine_pin_phy_func_t f
 machine_pin_phy_obj_t *pin_phy_realloc(mp_obj_t pin_name, machine_pin_phy_func_t func);
 void pin_phy_free(machine_pin_phy_obj_t *obj);
 
-mp_obj_t mod_pin_phy_deinit(void);
+void mod_pin_phy_deinit(void);
 
 int pin_fetch_address(mp_obj_t pin); // function to support the bitstream class (obj to pin address)
 
