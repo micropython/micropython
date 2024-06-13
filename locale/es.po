@@ -128,7 +128,7 @@ msgstr "%q en %q debe ser del tipo %q, no %q"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/usb_host/Port.c
 #: shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/microcontroller/Pin.c shared-module/max3421e/Max3421E.c
 msgid "%q in use"
 msgstr "%q está siendo utilizado"
 
@@ -1153,10 +1153,12 @@ msgstr "La entrada está durando mucho tiempo"
 msgid "Input/output error"
 msgstr "error Input/output"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nordic/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
 msgstr "Autenticación insuficiente"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nordic/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
 msgstr "Cifrado insuficiente"
@@ -1193,6 +1195,7 @@ msgstr "Error interno #%d"
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/max3421e/Max3421E.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1323,6 +1326,10 @@ msgstr "El Layer debe ser un grupo o una subclase de TileGrid"
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
 msgstr "La dirección MAC es incorrecta"
+
+#: ports/espressif/common-hal/_bleio/Characteristic.c
+msgid "MITM security not supported"
+msgstr ""
 
 #: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
@@ -2198,6 +2205,7 @@ msgstr "Error BLE desconocido en %s:%d: %d"
 msgid "Unknown BLE error: %d"
 msgstr "Error BLE desconocido: %d"
 
+#: ports/espressif/common-hal/max3421e/Max3421E.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
 msgid "Unknown error code %d"
@@ -3887,7 +3895,7 @@ msgstr "pop de un PulseIn vacío"
 msgid "pop from empty %q"
 msgstr "pop desde %q vacía"
 
-#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+#: shared-bindings/socketpool/Socket.c
 msgid "port must be >= 0"
 msgstr "port debe ser be >= 0"
 
