@@ -19,4 +19,3 @@
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO9)
 
 // Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION MP_ERROR_TEXT("Keep the BOOT button pressed and then connect to the computer via the data cable. Release the BOOT button after connecting to the computer.")
