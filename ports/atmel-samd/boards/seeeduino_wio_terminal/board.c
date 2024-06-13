@@ -13,7 +13,6 @@
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
-fourwire_fourwire_obj_t board_display_obj;
 digitalio_digitalinout_obj_t CTR_5V;
 digitalio_digitalinout_obj_t CTR_3V3;
 digitalio_digitalinout_obj_t USB_HOST_ENABLE;

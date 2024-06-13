@@ -45,6 +45,9 @@ CIRCUITPY_TOUCHIO_USE_NATIVE ?= 1
 CIRCUITPY_WATCHDOG ?= 1
 CIRCUITPY_WIFI ?= 1
 
+# Enable _eve module
+CIRCUITPY__EVE ?= 1
+
 # Conditionally turn off modules/features
 ifeq ($(IDF_TARGET),esp32)
 # Modules
@@ -187,11 +190,19 @@ CIRCUITPY_AUDIOMP3 = 0
 CIRCUITPY_BLEIO = 0
 endif
 
+# No room for _eve on boards with 4MB flash
+ifeq ($(CIRCUITPY_ESP_FLASH_SIZE),4MB)
+CIRCUITPY__EVE = 0
+endif
+
 # Modules dependent on other modules
 CIRCUITPY_ESPNOW ?= $(CIRCUITPY_WIFI)
 CIRCUITPY_GIFIO ?= $(CIRCUITPY_DISPLAYIO)
 CIRCUITPY_JPEGIO ?= $(CIRCUITPY_DISPLAYIO)
 CIRCUITPY_QRIO ?= $(CIRCUITPY_ESPCAMERA)
+
+CIRCUITPY_BLE_FILE_SERVICE ?= $(CIRCUITPY_BLEIO)
+CIRCUITPY_SERIAL_BLE ?= $(CIRCUITPY_BLEIO)
 
 # Features dependent on other features
 ifneq ($(CIRCUITPY_USB_DEVICE),0)

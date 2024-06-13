@@ -8,6 +8,7 @@
 
 #include "py/ringbuf.h"
 #include "shared-bindings/_bleio/Characteristic.h"
+#include "common-hal/_bleio/ble_events.h"
 
 typedef struct {
     mp_obj_base_t base;
@@ -27,5 +28,7 @@ typedef struct {
     bool client;
     bool packet_queued;
 } bleio_packet_buffer_obj_t;
+
+typedef ble_event_handler_entry_t ble_event_handler_t;
 
 void bleio_packet_buffer_extend(bleio_packet_buffer_obj_t *self, uint16_t conn_handle, const uint8_t *buffer, size_t len);

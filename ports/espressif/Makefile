@@ -229,11 +229,13 @@ LDFLAGS += \
 	-Tesp32c6.rom.newlib.ld \
 	-Tesp32c6.rom.coexist.ld \
 	-Tesp32c6.rom.heap.ld \
+	-Tesp32c6.rom.systimer.ld \
 	-Tesp32c6.rom.wdt.ld
 else ifeq ($(IDF_TARGET),esp32h2)
 LDFLAGS += \
 	-Tesp32h2.rom.heap.ld \
 	-Tesp32h2.rom.newlib.ld \
+	-Tesp32h2.rom.systimer.ld \
 	-Tesp32h2.rom.wdt.ld
 else ifeq ($(IDF_TARGET),esp32s2)
 LDFLAGS += \

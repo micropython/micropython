@@ -12,7 +12,6 @@
 #include "shared-module/displayio/mipi_constants.h"
 #include "supervisor/shared/board.h"
 
-fourwire_fourwire_obj_t board_display_obj;
 
 // display init sequence from CircuitPython library https://github.com/adafruit/Adafruit_CircuitPython_ST7735R/blob/dfae353330cf051d1f31db9e4b681c8d70900cc5/adafruit_st7735r.py
 uint8_t display_init_sequence[] = {

@@ -1204,6 +1204,7 @@ msgstr "Interrupt Fehler."
 msgid "Interrupted by output function"
 msgstr "Unterbrochen durch Ausgabefunktion"
 
+#: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c

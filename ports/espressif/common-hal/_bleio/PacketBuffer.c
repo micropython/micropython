@@ -92,6 +92,8 @@ static int queue_next_write(bleio_packet_buffer_obj_t *self) {
             // Allocate an mbuf because the functions below consume it.
             struct os_mbuf *om = ble_hs_mbuf_from_flat(self->outgoing[self->pending_index], self->pending_size);
             if (om == NULL) {
+                // We may not have any more mbufs if BLE busy. It isn't a problem (yet) so we'll
+                // just skip queueing for now.
                 return BLE_HS_ENOMEM;
             }
             size_t pending_size = self->pending_size;
@@ -157,7 +159,7 @@ void _common_hal_bleio_packet_buffer_construct(
     bleio_packet_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic,
     uint32_t *incoming_buffer, size_t incoming_buffer_size,
     uint32_t *outgoing_buffer1, uint32_t *outgoing_buffer2, size_t max_packet_size,
-    void *static_handler_entry) {
+    ble_event_handler_t *static_handler_entry) {
     self->characteristic = characteristic;
     self->client = self->characteristic->service->is_remote;
     self->max_packet_size = max_packet_size;
@@ -331,7 +333,8 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, c
 
     // If no writes are queued then sneak in this data.
     if (!self->packet_queued) {
-        CHECK_NIMBLE_ERROR(queue_next_write(self));
+        // This will queue up the packet even if it can't send immediately.
+        queue_next_write(self);
     }
     return num_bytes_written;
 }

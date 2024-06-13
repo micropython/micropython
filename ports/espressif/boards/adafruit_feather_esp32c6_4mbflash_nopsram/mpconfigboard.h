@@ -11,7 +11,9 @@
 #define MICROPY_HW_BOARD_NAME       "Adafruit Feather ESP32-C6 4MB Flash No PSRAM"
 #define MICROPY_HW_MCU_NAME         "ESP32C6"
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO9)
+// Don't use the neopixel for status because we can't use it at the same time as
+// the boot button.
+// #define MICROPY_HW_NEOPIXEL (&pin_GPIO9)
 
 #define MICROPY_HW_LED_STATUS (&pin_GPIO15)
 

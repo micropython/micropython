@@ -11,6 +11,8 @@
 #include "py/ringbuf.h"
 #include "shared-bindings/_bleio/Characteristic.h"
 
+#include "bluetooth/ble_drv.h"
+
 typedef struct {
     mp_obj_base_t base;
     bleio_characteristic_obj_t *characteristic;
@@ -29,3 +31,5 @@ typedef struct {
     bool client;
     bool packet_queued;
 } bleio_packet_buffer_obj_t;
+
+typedef ble_drv_evt_handler_entry_t ble_event_handler_t;

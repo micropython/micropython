@@ -17,7 +17,6 @@
 
 #include "common-hal/_bleio/Adapter.h"
 #include "common-hal/_bleio/Service.h"
-// #include "common-hal/_bleio/bonding.h"
 
 
 static int characteristic_on_ble_gap_evt(struct ble_gap_event *event, void *param);
@@ -57,6 +56,22 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     if ((props & CHAR_PROP_WRITE_NO_RESPONSE) != 0) {
         self->flags |= BLE_GATT_CHR_F_WRITE_NO_RSP;
     }
+    if (read_perm == SECURITY_MODE_ENC_WITH_MITM || write_perm == SECURITY_MODE_ENC_WITH_MITM ||
+        read_perm == SECURITY_MODE_SIGNED_WITH_MITM || write_perm == SECURITY_MODE_SIGNED_WITH_MITM) {
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("MITM security not supported"));
+    }
+    if (read_perm == SECURITY_MODE_ENC_NO_MITM) {
+        self->flags |= BLE_GATT_CHR_F_READ_ENC;
+    }
+    if (read_perm == SECURITY_MODE_SIGNED_NO_MITM) {
+        self->flags |= BLE_GATT_CHR_F_READ_AUTHEN;
+    }
+    if (write_perm == SECURITY_MODE_ENC_NO_MITM) {
+        self->flags |= BLE_GATT_CHR_F_WRITE_ENC;
+    }
+    if (write_perm == SECURITY_MODE_SIGNED_NO_MITM) {
+        self->flags |= BLE_GATT_CHR_F_WRITE_AUTHEN;
+    }
 
     if (initial_value_bufinfo != NULL) {
         // Copy the initial value if it's on the heap. Otherwise it's internal and we may not be able
@@ -71,6 +86,12 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
         } else {
             self->current_value = initial_value_bufinfo->buf;
             assert(self->current_value_len == max_length);
+        }
+    } else {
+        self->current_value = port_malloc(max_length, false);
+        if (self->current_value != NULL) {
+            self->current_value_alloc = max_length;
+            self->current_value_len = 0;
         }
     }
 
@@ -294,6 +315,7 @@ int bleio_characteristic_access_cb(uint16_t conn_handle, uint16_t attr_handle,
                         bleio_packet_buffer_extend(MP_OBJ_FROM_PTR(self->observer), conn_handle, self->current_value, self->current_value_len);
                     }
                 }
+                background_callback_add_core(&bleio_background_callback);
                 return rc;
             }
             return BLE_ATT_ERR_UNLIKELY;

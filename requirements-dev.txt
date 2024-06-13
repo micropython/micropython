@@ -17,6 +17,7 @@ polib
 black
 pyyaml
 pre-commit
+micropython-uncrustify
 
 # for combining the Nordic SoftDevice with CircuitPython
 intelhex
@@ -35,3 +36,6 @@ jsmin
 # for Silicon Labs Configurator (SLC)
 websockets
 colorama
+
+# for silabs builds
+setuptools

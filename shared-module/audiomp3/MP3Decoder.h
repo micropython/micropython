@@ -14,18 +14,23 @@
 #include "shared-module/audiocore/__init__.h"
 
 typedef struct {
+    uint8_t *buf;
+    mp_int_t size;
+    mp_int_t read_off;
+    mp_int_t write_off;
+} mp3_input_buffer_t;
+
+typedef struct {
     mp_obj_base_t base;
     struct _MP3DecInfo *decoder;
     background_callback_t inbuf_fill_cb;
-    uint8_t *inbuf;
-    uint32_t inbuf_length;
-    uint32_t inbuf_offset;
-    int16_t *buffers[2];
+    mp3_input_buffer_t inbuf;
+    int16_t *pcm_buffer[2];
     uint32_t len;
     uint32_t frame_buffer_size;
 
     uint32_t sample_rate;
-    pyb_file_obj_t *file;
+    mp_obj_t stream;
 
     uint8_t buffer_index;
     uint8_t channel_count;

@@ -1006,10 +1006,6 @@ int __attribute__((used)) main(void) {
     supervisor_status_bar_init();
     #endif
 
-    #if CIRCUITPY_BLEIO
-    // Early init so that a reset press can cause BLE public advertising.
-    supervisor_bluetooth_init();
-    #endif
 
     #if !INTERNAL_FLASH_FILESYSTEM
     // Set up anything that might need to get done before we try to use SPI flash
@@ -1026,6 +1022,12 @@ int __attribute__((used)) main(void) {
     if (!filesystem_init(get_safe_mode() == SAFE_MODE_NONE, false)) {
         set_safe_mode(SAFE_MODE_NO_CIRCUITPY);
     }
+
+    #if CIRCUITPY_BLEIO
+    // Early init so that a reset press can cause BLE public advertising. Need the filesystem to
+    // read settings.toml.
+    supervisor_bluetooth_init();
+    #endif
 
     #if CIRCUITPY_ALARM
     // Record which alarm woke us up, if any.

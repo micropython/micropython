@@ -1208,6 +1208,7 @@ msgstr "Erro de interrupção."
 msgid "Interrupted by output function"
 msgstr "Interrompido pela função de saída"
 
+#: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c

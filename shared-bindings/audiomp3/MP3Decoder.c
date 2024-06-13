@@ -10,6 +10,7 @@
 #include "shared/runtime/context_manager_helpers.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "shared-bindings/audiomp3/MP3Decoder.h"
 #include "shared-bindings/util.h"
 
@@ -27,13 +28,13 @@
 //|         """Load a .mp3 file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
 //|         :param Union[str, typing.BinaryIO] file: The name of a mp3 file (preferred) or an already opened mp3 file
-//|         :param ~circuitpython_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two buffers are allocated internally.  The specific buffer size required depends on the mp3 file.
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split and used for buffering the data. The buffer is split into two parts for decoded data and the remainder is used for pre-decoded data. When playing from a socket, a larger buffer can help reduce playback glitches at the expense of increased memory usage.
 //|
 //|         Playback of mp3 audio is CPU intensive, and the
 //|         exact limit depends on many factors such as the particular
-//|         microcontroller, SD card or flash performance, and other
-//|         code in use such as displayio. If playback is garbled,
-//|         skips, or plays as static, first try using a "simpler" mp3:
+//|         microcontroller, SD card or flash performance, network performance, and
+//|         other code in use such as displayio. If playback is garbled, skips, or plays as
+//|         static, first try using a "simpler" mp3:
 //|
 //|           * Use constant bit rate (CBR) not VBR or ABR (variable or average bit rate) when encoding your mp3 file
 //|           * Use a lower sample rate (e.g., 11.025kHz instead of 48kHz)
@@ -63,21 +64,31 @@
 //|           while a.playing:
 //|             pass
 //|           print("stopped")
+//|
+//|         It is possible to seek within a file before playing it::
+//|
+//|             with open("/test.mp3", "rb") as stream:
+//|                 stream.seek(128000 * 30 // 8) # Seek about 30s into a 128kbit/s stream
+//|                 decoder.file = stream
+//|
+//|         If the stream is played with ``loop = True``, the loop will start at the beginning.
 //|         """
 //|         ...
 
 static mp_obj_t audiomp3_mp3file_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
-    mp_obj_t arg = args[0];
+    mp_obj_t stream = args[0];
 
-    if (mp_obj_is_str(arg)) {
-        arg = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), arg, MP_ROM_QSTR(MP_QSTR_rb));
+    if (mp_obj_is_str(stream)) {
+        stream = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), stream, MP_ROM_QSTR(MP_QSTR_rb));
     }
 
     audiomp3_mp3file_obj_t *self = m_new_obj_with_finaliser(audiomp3_mp3file_obj_t);
     self->base.type = &audiomp3_mp3file_type;
 
-    if (!mp_obj_is_type(arg, &mp_type_fileio)) {
+    const mp_stream_p_t *stream_p = mp_get_stream_raise(stream, MP_STREAM_OP_READ);
+
+    if (stream_p->is_text) {
         mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
     uint8_t *buffer = NULL;
@@ -88,8 +99,7 @@ static mp_obj_t audiomp3_mp3file_make_new(const mp_obj_type_t *type, size_t n_ar
         buffer = bufinfo.buf;
         buffer_size = bufinfo.len;
     }
-    common_hal_audiomp3_mp3file_construct(self, MP_OBJ_TO_PTR(arg),
-        buffer, buffer_size);
+    common_hal_audiomp3_mp3file_construct(self, stream, buffer, buffer_size);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -131,17 +141,19 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiomp3_mp3file___exit___obj, 4, 4, 
 static mp_obj_t audiomp3_mp3file_obj_get_file(mp_obj_t self_in) {
     audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    return self->file;
+    return self->stream;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_file_obj, audiomp3_mp3file_obj_get_file);
 
-static mp_obj_t audiomp3_mp3file_obj_set_file(mp_obj_t self_in, mp_obj_t file) {
+static mp_obj_t audiomp3_mp3file_obj_set_file(mp_obj_t self_in, mp_obj_t stream) {
     audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    if (!mp_obj_is_type(file, &mp_type_fileio)) {
+    const mp_stream_p_t *stream_p = mp_get_stream_raise(stream, MP_STREAM_OP_READ);
+
+    if (stream_p->is_text) {
         mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
-    common_hal_audiomp3_mp3file_set_file(self, file);
+    common_hal_audiomp3_mp3file_set_file(self, stream);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(audiomp3_mp3file_set_file_obj, audiomp3_mp3file_obj_set_file);
