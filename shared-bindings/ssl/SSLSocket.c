@@ -252,7 +252,7 @@ typedef mp_uint_t (*readwrite_func)(ssl_sslsocket_obj_t *, const uint8_t *, mp_u
 
 static mp_int_t readwrite_common(mp_obj_t self_in, readwrite_func fn, const uint8_t *buf, size_t size, int *errorcode) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_int_t ret;
+    mp_int_t ret = -EIO;
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         ret = fn(self, buf, size);
