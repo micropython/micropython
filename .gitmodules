@@ -143,7 +143,7 @@
 [submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
 	url = https://github.com/adafruit/esp-idf.git
-	branch = circuitpython-v5.1.3
+	branch = circuitpython-v5.2.2
 [submodule "ports/espressif/esp-protocols"]
 	path = ports/espressif/esp-protocols
 	url = https://github.com/espressif/esp-protocols.git

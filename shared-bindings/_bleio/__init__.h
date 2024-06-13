@@ -39,6 +39,10 @@ void bleio_user_reset(void);
 // Completely resets the BLE stack including BLE connections.
 void bleio_reset(void);
 
+// Init any state needed before calling any bleio functions including those
+// having to do with bonding. This doesn't enable the BLE adapter though.
+void common_hal_bleio_init(void);
+
 extern mp_obj_t bleio_set_adapter(mp_obj_t adapter_obj);
 
 NORETURN void mp_raise_bleio_BluetoothError(mp_rom_error_text_t msg, ...);

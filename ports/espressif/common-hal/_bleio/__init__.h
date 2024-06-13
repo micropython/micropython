@@ -6,9 +6,13 @@
 
 #pragma once
 
+#include "supervisor/background_callback.h"
+
 #include "freertos/FreeRTOS.h" // IWYU pragma: keep; for BaseType_t
 
-void bleio_background(void);
+void bleio_background(void *data);
+
+extern background_callback_t bleio_background_callback;
 
 // typedef struct {
 //     ble_gap_enc_key_t own_enc;

@@ -37,6 +37,9 @@ bool vm_used_ble;
 //     }
 // }
 
+void common_hal_bleio_init(void) {
+}
+
 void bleio_user_reset() {
     // HCI doesn't support the BLE workflow so just do a full reset.
     bleio_reset();

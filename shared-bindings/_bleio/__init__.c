@@ -82,6 +82,7 @@ NORETURN void mp_raise_bleio_SecurityError(mp_rom_error_text_t fmt, ...) {
 // Called when _bleio is imported.
 static mp_obj_t bleio___init__(void) {
 // HCI cannot be enabled on import, because we need to setup the HCI adapter first.
+    common_hal_bleio_init();
     #if !CIRCUITPY_BLEIO_HCI
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
     #endif
