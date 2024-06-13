@@ -28,18 +28,18 @@ if "CY8CPROTO-063-BLE" in machine:
 #     print(e)
 
 # 0. Construct SPI object
-
 spi_obj = SPI(
     baudrate=1000000,
     polarity=0,
     phase=0,
     bits=8,
     firstbit=SPI.MSB,
-    ssel=ssel_master_pin,
+    ssel="NC",
     sck=sck_master_pin,
     mosi=mosi_master_pin,
     miso=miso_master_pin,
 )
+cs = Pin(ssel_master_pin, Pin.OUT, value=1)
 
 # 1. write() read() validation
 # - Master: write() a data set to the slave.
@@ -49,11 +49,15 @@ spi_obj = SPI(
 
 tx_buf = b"\x08\x06\x04\x02\x07\x05\x03\x01"
 
+cs.low()
 spi_obj.write(tx_buf)
+cs.high()
 
 time.sleep_ms(500)  # ensure slave has replied
 rx_buf = bytearray(8)
+cs.low()
 rx_buf = spi_obj.read(8)
+cs.high()
 
 exp_rx = b"\t\x07\x05\x03\x08\x06\x04\x02"
 print("master write() and read() (tx_buf + 1): ", exp_rx == rx_buf)
@@ -65,7 +69,9 @@ print("master write() and read() (tx_buf + 1): ", exp_rx == rx_buf)
 
 time.sleep_ms(500)  # ensure slave has replied
 rx_buf = bytearray(8)
+cs.low()
 spi_obj.readinto(rx_buf)
+cs.high()
 
 exp_rx = b"\n\x08\x06\x04\t\x07\x05\x03"
 print("master readinto() (tx_buf + 2):", exp_rx == rx_buf)
@@ -77,7 +83,9 @@ print("master readinto() (tx_buf + 2):", exp_rx == rx_buf)
 
 time.sleep_ms(200)
 rx_buf = bytearray(8)
+cs.low()
 spi_obj.write_readinto(tx_buf, rx_buf)
+cs.high()
 
 exp_rx = b"\x0b\t\x07\x05\n\x08\x06\x04"
 print("master write_readinto() (tx_buf + 3): ", exp_rx == rx_buf)
@@ -90,14 +98,19 @@ print("master write_readinto() (tx_buf + 3): ", exp_rx == rx_buf)
 # - Master: waits and read() the modified data set.
 
 tx_buf = b"\x01\x02\x03\x04\x05\x06\x07\x08"
+cs.low()
 spi_obj.write_readinto(tx_buf, rx_buf)
+cs.high()
 
 time.sleep_ms(500)  # ensure slave has replied
 rx_buf = bytearray(8)
+cs.low()
 rx_buf = spi_obj.read(8)
+cs.high()
 
 exp_rx = b"\x00\x01\x02\x03\x04\x05\x06\x07"
 print("master write_readinto() and read() (tx_buf - 1): ", exp_rx == rx_buf)
 
 # 5. SPI object deinit
 spi_obj.deinit()
+cs.deinit
