@@ -392,8 +392,9 @@ static mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     if (self->free == 0) {
         size_t item_sz = mp_binary_get_size('@', self->typecode, NULL);
         // TODO: alloc policy
-        self->free = 8;
-        self->items = m_renew(byte, self->items, item_sz * self->len, item_sz * (self->len + self->free));
+        size_t add_cnt = 8;
+        self->items = m_renew(byte, self->items, item_sz * self->len, item_sz * (self->len + add_cnt));
+        self->free = add_cnt;
         mp_seq_clear(self->items, self->len + 1, self->len + self->free, item_sz);
     }
     mp_binary_set_val_array(self->typecode, self->items, self->len, arg);
