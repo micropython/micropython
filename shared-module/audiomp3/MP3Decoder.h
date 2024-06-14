@@ -35,6 +35,8 @@ typedef struct {
     uint8_t buffer_index;
     uint8_t channel_count;
     bool eof;
+    bool block_ok;
+    mp_obj_t settimeout_args[3];
 
     int8_t other_channel;
     int8_t other_buffer_index;
