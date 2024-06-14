@@ -72,6 +72,12 @@
 //|                 decoder.file = stream
 //|
 //|         If the stream is played with ``loop = True``, the loop will start at the beginning.
+//|
+//|         It is possible to stream an mp3 from a socket, including a secure socket.
+//|         The MP3Decoder may change the timeout and non-blocking status of the socket.
+//|         Using a larger decode buffer with a stream can be helpful to avoid data underruns.
+//|         An ``adafruit_requests`` request must be made with ``headers={"Connection": "close"}`` so
+//|         that the socket closes when the stream ends.
 //|         """
 //|         ...
 

@@ -95,6 +95,18 @@ static off_t stream_lseek(void *stream, off_t offset, int whence) {
 #define INPUT_BUFFER_CONSUME(i, n) ((i).read_off += (n))
 #define INPUT_BUFFER_CLEAR(i) ((i).read_off = (i).write_off = 0)
 
+static void stream_set_blocking(audiomp3_mp3file_obj_t *self, bool block_ok) {
+    if (!self->settimeout_args[0]) {
+        return;
+    }
+    if (block_ok == self->block_ok) {
+        return;
+    }
+    self->block_ok = block_ok;
+    self->settimeout_args[2] = block_ok ? mp_const_none : mp_obj_new_int(0);
+    mp_call_method_n_kw(1, 0, self->settimeout_args);
+}
+
 /** Fill the input buffer unconditionally.
  *
  * Returns true if the input buffer contains any useful data,
@@ -110,6 +122,8 @@ static bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self, bool block
         return INPUT_BUFFER_AVAILABLE(self->inbuf) > 0;
     }
 
+    stream_set_blocking(self, block_ok);
+
     // We didn't previously reach EOF and we have input buffer space available
 
     // Move the unconsumed portion of the buffer to the start
@@ -119,7 +133,7 @@ static bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self, bool block
         self->inbuf.read_off = 0;
     }
 
-    for (size_t to_read; !self->eof && (to_read = INPUT_BUFFER_SPACE(self->inbuf)) > 0 && (block_ok || stream_readable(self->stream));) {
+    for (size_t to_read; !self->eof && (to_read = INPUT_BUFFER_SPACE(self->inbuf)) > 0;) {
         uint8_t *write_ptr = self->inbuf.buf + self->inbuf.write_off;
         ssize_t n_read = stream_read(self->stream, write_ptr, to_read);
 
@@ -328,9 +342,14 @@ void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, mp_obj_t
     background_callback_prevent();
 
     self->stream = stream;
+    mp_load_method_maybe(stream, MP_QSTR_settimeout, self->settimeout_args);
 
     INPUT_BUFFER_CLEAR(self->inbuf);
     self->eof = 0;
+
+    self->block_ok = false;
+    stream_set_blocking(self, true);
+
     self->other_channel = -1;
     mp3file_update_inbuf_half(self, true);
     mp3file_find_sync_word(self, true);
@@ -365,6 +384,7 @@ void common_hal_audiomp3_mp3file_deinit(audiomp3_mp3file_obj_t *self) {
     self->pcm_buffer[0] = NULL;
     self->pcm_buffer[1] = NULL;
     self->stream = mp_const_none;
+    self->settimeout_args[0] = MP_OBJ_NULL;
     self->samples_decoded = 0;
 }
 
