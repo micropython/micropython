@@ -17,5 +17,3 @@
 
 // For entering safe mode, use BOOT button
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO9)
-
-// Explanation of how a user got into safe mode
