@@ -10,6 +10,7 @@ void *memset(void *s, int c, size_t n) {
 #endif
 
 mp_obj_full_type_t mp_type_framebuf;
+mp_obj_full_type_t mp_type_staticbuf;
 
 #include "extmod/modframebuf.c"
 
