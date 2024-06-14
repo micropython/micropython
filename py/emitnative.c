@@ -178,6 +178,12 @@ static const uint8_t reg_local_table[MAX_REGS_FOR_LOCAL_VARS] = {REG_LOCAL_1, RE
         *emit->error_slot = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, __VA_ARGS__); \
 } while (0)
 
+#if N_RV32
+#define FIT_SIGNED(value, bits)                                                                                     \
+    ((((value) & ~((1U << ((bits) - 1)) - 1)) == 0) ||                                      \
+    (((value) & ~((1U << ((bits) - 1)) - 1)) == ~((1U << ((bits) - 1)) - 1)))
+#endif
+
 typedef enum {
     STACK_VALUE,
     STACK_REG,
@@ -1519,6 +1525,11 @@ static void emit_native_load_subscr(emit_t *emit) {
                             asm_thumb_ldrb_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
                             break;
                         }
+                        #elif N_RV32
+                        if (FIT_SIGNED(index_value, 12)) {
+                            asm_rv32_opcode_lbu(emit->as, REG_RET, reg_base, index_value);
+                            break;
+                        }
                         #endif
                         need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
@@ -1537,6 +1548,11 @@ static void emit_native_load_subscr(emit_t *emit) {
                             asm_thumb_ldrh_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
                             break;
                         }
+                        #elif N_RV32
+                        if (FIT_SIGNED(index_value, 11)) {
+                            asm_rv32_opcode_lhu(emit->as, REG_RET, reg_base, index_value << 1);
+                            break;
+                        }
                         #endif
                         need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 1);
@@ -1553,6 +1569,11 @@ static void emit_native_load_subscr(emit_t *emit) {
                         #if N_THUMB
                         if (index_value > 0 && index_value < 32) {
                             asm_thumb_ldr_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
+                            break;
+                        }
+                        #elif N_RV32
+                        if (FIT_SIGNED(index_value, 10)) {
+                            asm_rv32_opcode_lw(emit->as, REG_RET, reg_base, index_value << 2);
                             break;
                         }
                         #endif
@@ -1596,6 +1617,12 @@ static void emit_native_load_subscr(emit_t *emit) {
                 }
                 case VTYPE_PTR32: {
                     // pointer to word-size memory
+                    #if N_RV32
+                    asm_rv32_opcode_slli(emit->as, REG_TEMP2, reg_index, 2);
+                    asm_rv32_opcode_cadd(emit->as, REG_ARG_1, REG_TEMP2);
+                    asm_rv32_opcode_lw(emit->as, REG_RET, REG_ARG_1, 0);
+                    break;
+                    #endif
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
@@ -1751,6 +1778,11 @@ static void emit_native_store_subscr(emit_t *emit) {
                             asm_thumb_strb_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
                             break;
                         }
+                        #elif N_RV32
+                        if (FIT_SIGNED(index_value, 12)) {
+                            asm_rv32_opcode_sb(emit->as, reg_value, reg_base, index_value);
+                            break;
+                        }
                         #endif
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
                         #if N_ARM
@@ -1772,6 +1804,11 @@ static void emit_native_store_subscr(emit_t *emit) {
                             asm_thumb_strh_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
                             break;
                         }
+                        #elif N_RV32
+                        if (FIT_SIGNED(index_value, 11)) {
+                            asm_rv32_opcode_sh(emit->as, reg_value, reg_base, index_value << 1);
+                            break;
+                        }
                         #endif
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 1);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 2*index to base
@@ -1789,8 +1826,12 @@ static void emit_native_store_subscr(emit_t *emit) {
                             asm_thumb_str_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
                             break;
                         }
-                        #endif
-                        #if N_ARM
+                        #elif N_RV32
+                        if (FIT_SIGNED(index_value, 10)) {
+                            asm_rv32_opcode_sw(emit->as, reg_value, reg_base, index_value << 2);
+                            break;
+                        }
+                        #elif N_ARM
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
                         asm_arm_str_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
                         return;
@@ -1854,6 +1895,11 @@ static void emit_native_store_subscr(emit_t *emit) {
                     // pointer to 32-bit memory
                     #if N_ARM
                     asm_arm_str_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
+                    break;
+                    #elif N_RV32
+                    asm_rv32_opcode_slli(emit->as, REG_TEMP2, reg_index, 2);
+                    asm_rv32_opcode_cadd(emit->as, REG_ARG_1, REG_TEMP2);
+                    asm_rv32_opcode_sw(emit->as, reg_value, REG_ARG_1, 0);
                     break;
                     #endif
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
