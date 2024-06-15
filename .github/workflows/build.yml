@@ -102,7 +102,7 @@ jobs:
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
   mpy-cross-mac:
-    runs-on: macos-11
+    runs-on: macos-12
     needs: scheduler
     if: needs.scheduler.outputs.ports != '{}'
     env:
@@ -129,29 +129,29 @@ jobs:
       run: make -C mpy-cross -j4
     - uses: actions/upload-artifact@v4
       with:
-        name: mpy-cross-macos-11-x64
+        name: mpy-cross-macos-x64
         path: mpy-cross/build/mpy-cross
     - name: Build mpy-cross (arm64)
       run: make -C mpy-cross -j4 -f Makefile.m1 V=2
     - uses: actions/upload-artifact@v4
       with:
-        name: mpy-cross-macos-11-arm64
+        name: mpy-cross-macos-arm64
         path: mpy-cross/build-arm64/mpy-cross-arm64
     - name: Make universal binary
       run: lipo -create -output mpy-cross-macos-universal mpy-cross/build/mpy-cross mpy-cross/build-arm64/mpy-cross-arm64
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: mpy-cross-macos-11-universal
+        name: mpy-cross-macos-universal
         path: mpy-cross-macos-universal
     - name: Upload to S3
       if: >-
           (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
           (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
       run: |
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross-macos-universal s3://adafruit-circuit-python/bin/mpy-cross/macos-11/mpy-cross-macos-11-${{ env.CP_VERSION }}-universal --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/build-arm64/mpy-cross-arm64 s3://adafruit-circuit-python/bin/mpy-cross/macos-11/mpy-cross-macos-11-${{ env.CP_VERSION }}-arm64 --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/build/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/macos-11/mpy-cross-macos-11-${{ env.CP_VERSION }}-x64 --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross-macos-universal s3://adafruit-circuit-python/bin/mpy-cross/macos/mpy-cross-macos-${{ env.CP_VERSION }}-universal --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/build-arm64/mpy-cross-arm64 s3://adafruit-circuit-python/bin/mpy-cross/macos/mpy-cross-macos-${{ env.CP_VERSION }}-arm64 --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/build/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/macos/mpy-cross-macos-${{ env.CP_VERSION }}-x64 --no-progress --region us-east-1
       env:
         AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
