@@ -113,6 +113,7 @@ MP_NATIVE_ARCH_ARMV7EMSP = 7
 MP_NATIVE_ARCH_ARMV7EMDP = 8
 MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
+MP_NATIVE_ARCH_RV32IMC = 11
 
 MP_PERSISTENT_OBJ_FUN_TABLE = 0
 MP_PERSISTENT_OBJ_NONE = 1
@@ -1094,8 +1095,10 @@ class RawCodeNative(RawCode):
         ):
             # ARMV6 or Xtensa -- four byte align.
             self.fun_data_attributes += " __attribute__ ((aligned (4)))"
-        elif MP_NATIVE_ARCH_ARMV6M <= config.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP:
-            # ARMVxxM -- two byte align.
+        elif (
+            MP_NATIVE_ARCH_ARMV6M <= config.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP
+        ) or config.native_arch == MP_NATIVE_ARCH_RV32IMC:
+            # ARMVxxM or RV32IMC -- two byte align.
             self.fun_data_attributes += " __attribute__ ((aligned (2)))"
 
     def disassemble(self):
