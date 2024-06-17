@@ -129,7 +129,7 @@ msgstr "%q dans %q doit être de type %q, pas %q"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/usb_host/Port.c
 #: shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/microcontroller/Pin.c shared-module/max3421e/Max3421E.c
 msgid "%q in use"
 msgstr "%q en cours d'utilisation"
 
@@ -1162,10 +1162,12 @@ msgstr "L'entrée prend trop de temps"
 msgid "Input/output error"
 msgstr "Erreur d'entrée/sortie"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nordic/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
 msgstr "Authentification insuffisante"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nordic/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
 msgstr "Chiffrement insuffisant"
@@ -1202,6 +1204,7 @@ msgstr "Erreur interne #%d"
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/max3421e/Max3421E.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1332,6 +1335,10 @@ msgstr "Le calque doit être une sous-classe de Group ou TileGrid"
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
 msgstr "Adresse physique (MAC) invalide"
+
+#: ports/espressif/common-hal/_bleio/Characteristic.c
+msgid "MITM security not supported"
+msgstr ""
 
 #: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
@@ -2215,6 +2222,7 @@ msgstr "Erreur BLE inconnue à %s:%d : %d"
 msgid "Unknown BLE error: %d"
 msgstr "Erreur BLE inconnue : %d"
 
+#: ports/espressif/common-hal/max3421e/Max3421E.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
 msgid "Unknown error code %d"
@@ -3919,7 +3927,7 @@ msgstr "'pop' d'une entrée PulseIn vide"
 msgid "pop from empty %q"
 msgstr "pop sur %q vide"
 
-#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+#: shared-bindings/socketpool/Socket.c
 msgid "port must be >= 0"
 msgstr "port doit être >= 0"
 
