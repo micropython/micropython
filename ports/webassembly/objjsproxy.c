@@ -153,14 +153,21 @@ EM_JS(void, js_reflect_construct, (int f_ref, uint32_t n_args, uint32_t * args, 
     proxy_convert_js_to_mp_obj_jsside(ret, out);
 });
 
-EM_JS(int, js_get_len, (int f_ref), {
-    return proxy_js_ref[f_ref].length;
+EM_JS(void, js_get_iter, (int f_ref, uint32_t * out), {
+    const f = proxy_js_ref[f_ref];
+    const ret = f[Symbol.iterator]();
+    proxy_convert_js_to_mp_obj_jsside(ret, out);
 });
 
-EM_JS(void, js_subscr_int, (int f_ref, int idx, uint32_t * out), {
+EM_JS(bool, js_iter_next, (int f_ref, uint32_t * out), {
     const f = proxy_js_ref[f_ref];
-    const ret = f[idx];
-    proxy_convert_js_to_mp_obj_jsside(ret, out);
+    const ret = f.next();
+    if (ret.done) {
+        return false;
+    } else {
+        proxy_convert_js_to_mp_obj_jsside(ret.value, out);
+        return true;
+    }
 });
 
 EM_JS(void, js_subscr_load, (int f_ref, uint32_t * index_ref, uint32_t * out), {
@@ -320,17 +327,13 @@ void mp_obj_jsproxy_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 typedef struct _jsproxy_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
-    mp_obj_jsproxy_t *obj;
-    uint16_t cur;
-    uint16_t len;
+    mp_obj_jsproxy_t *iter;
 } jsproxy_it_t;
 
 static mp_obj_t jsproxy_it_iternext(mp_obj_t self_in) {
     jsproxy_it_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->cur < self->len) {
-        uint32_t out[3];
-        js_subscr_int(self->obj->ref, self->cur, out);
-        self->cur += 1;
+    uint32_t out[3];
+    if (js_iter_next(self->iter->ref, out)) {
         return proxy_convert_js_to_mp_obj_cside(out);
     } else {
         return MP_OBJ_STOP_ITERATION;
@@ -343,9 +346,9 @@ static mp_obj_t jsproxy_new_it(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     jsproxy_it_t *o = (jsproxy_it_t *)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = jsproxy_it_iternext;
-    o->obj = self;
-    o->cur = 0;
-    o->len = js_get_len(self->ref);
+    uint32_t out[3];
+    js_get_iter(self->ref, out);
+    o->iter = proxy_convert_js_to_mp_obj_cside(out);
     return MP_OBJ_FROM_PTR(o);
 }
 
