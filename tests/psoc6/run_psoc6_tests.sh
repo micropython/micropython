@@ -21,6 +21,7 @@ usage() {
   echo "  -b            run bitsream script."
   echo "  -s            run i2s tests."
   echo "  -r            run spi tests."
+  echo "  -u            run i2c tests."
   echo "  --dev0        device to be used"
   echo "  --dev1        second device to be used (for multi test)"
   echo "  --psoc6       run only psoc6 port related tests"
@@ -44,7 +45,7 @@ for arg in "$@"; do
   esac
 done
 
-while getopts "abcd:e:fhimnpqtwvxspr" o; do
+while getopts "abcd:e:fhimnpqtuwvxspr" o; do
   case "${o}" in
     a)
        all=1
@@ -96,6 +97,9 @@ while getopts "abcd:e:fhimnpqtwvxspr" o; do
        ;;
     t)
        hwext=1
+       ;;
+    u)
+       i2c=1
        ;;
     s) 
        i2s=1
@@ -168,6 +172,10 @@ fi
 
 if [ -z "${hwext}" ]; then
   hwext=0
+fi
+
+if [ -z "${i2c}" ]; then
+  i2c=0
 fi
 
 if [ -z "${i2s}" ]; then
@@ -476,6 +484,22 @@ if [ ${hwext} -eq 1 ]; then
   echo
 
   ./run-tests.py --target psoc6 --device ${device0} -d psoc6/hw_ext \
+        \
+      -e psoc6/hw_ext/i2c.py \
+    | tee -a ${resultsFile}
+  
+  echo
+  echo "  done."
+  echo
+
+fi
+
+if [ ${i2c} -eq 1 ]; then
+
+  echo "  running i2c extended tests ..."
+  echo
+
+  ./run-tests.py --target psoc6 --device ${device0} psoc6/hw_ext/i2c.py \
     | tee -a ${resultsFile}
   
   echo

@@ -16,10 +16,10 @@ from machine import ADC, ADCBlock
 # Allocate pin based on board
 machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
-    adc_pin_gnd = "P10_2"
-    adc_pin_mid = "P10_4"
-    acd_mid_chan = 4
-    adc_pin_max = "P10_3"
+    adc_pin_gnd = "P10_4"
+    adc_pin_mid = "P10_3"
+    acd_mid_chan = 3
+    adc_pin_max = "P10_2"
     adc_wrong_pin_name = "P13_7"
 elif "CY8CPROTO-063-BLE" in machine:
     adc_pin_gnd = "P10_2"
