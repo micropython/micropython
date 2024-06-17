@@ -212,11 +212,11 @@ void supervisor_bluetooth_init(void) {
         boot_in_discovery_mode = true;
         reset_state = 0x0;
     }
+    bool bonded = common_hal_bleio_adapter_is_bonded_to_central(&common_hal_bleio_adapter_obj);
     #if !CIRCUITPY_USB_DEVICE
     // Boot into discovery if USB isn't available and we aren't bonded already.
     // Checking here allows us to have the status LED solidly on even if no button was
     // pressed.
-    bool bonded = common_hal_bleio_adapter_is_bonded_to_central(&common_hal_bleio_adapter_obj);
     bool wifi_workflow_active = false;
     #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_WIFI && CIRCUITPY_OS_GETENV
     char _api_password[64];
@@ -254,6 +254,11 @@ void supervisor_bluetooth_init(void) {
     }
     if (boot_in_discovery_mode) {
         common_hal_bleio_adapter_erase_bonding(&common_hal_bleio_adapter_obj);
+    }
+    if (boot_in_discovery_mode || bonded) {
+        workflow_state = WORKFLOW_ENABLED;
+    } else {
+        workflow_state = WORKFLOW_DISABLED;
     }
     #if CIRCUITPY_STATUS_LED
     new_status_color(BLACK);
@@ -358,7 +363,7 @@ void supervisor_bluetooth_disable_workflow(void) {
 
 bool supervisor_bluetooth_workflow_is_enabled(void) {
     #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
-    if (workflow_state == 1) {
+    if (workflow_state == WORKFLOW_ENABLED) {
         return true;
     }
     #endif
