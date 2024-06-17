@@ -7,8 +7,6 @@ import os
 import sys
 import random
 
-cr10 = 10 ** (1 / 3)
-
 exponents = [
     2,
     2.333,
@@ -27,15 +25,15 @@ exponents = [
     6.667,
     7,
 ]
+
 freqs = [int(10**f) for f in exponents]
 
 top = 65536
 den = 10
 duties = [int(top * num / den) for num in range(1, den)]
 duties = [1, 65534, 1] + duties
-
 freq_duration = 1.0
-duty_duration = 0.00000001
+duty_duration = 0.000000001
 
 print("\n\n")
 board_name = sys.implementation[2]
@@ -45,6 +43,7 @@ pins = {
     "Grand Central": (("D51", "TCC"), ("A15", "TC")),
     "Metro M0": (("A2", "TC"), ("A3", "TCC")),
     "ESP32-S3-DevKit": (("IO6", ""),),  # marked D5 on board for XIAO-ESP32-s3
+    "Feather ESP32-S2": (("D9", ""),),
     "XIAO nRF52840": (("D9", ""),),
 }
 

@@ -249,8 +249,8 @@ extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uin
     // Track it here so that if frequency is changed we can use this value to recalculate the
     // proper duty cycle.
     // See https://github.com/adafruit/circuitpython/issues/2086 for more details
-    self->duty_cycle = duty;
 
+    self->duty_cycle = duty;
     const pin_timer_t *t = self->timer;
     if (t->is_tc) {
         uint16_t adjusted_duty = tc_periods[t->index] * duty / 0xffff;
@@ -271,8 +271,6 @@ extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uin
         }
         uint8_t channel = tcc_channel(t);
         Tcc *tcc = tcc_insts[t->index];
-        // Enable double-buffering
-        tcc->CTRLBCLR.bit.LUPD = 1;
         #ifdef SAMD21
         tcc->CCB[channel].reg = adjusted_duty;
         #endif
