@@ -225,7 +225,7 @@ Ports include the code unique to a microcontroller line.
 
 The following ports are available: ``atmel-samd``, ``cxd56``, ``espressif``, ``litex``, ``mimxrt10xx``, ``nordic``, ``raspberrypi``, ``renode``, ``silabs`` (``efr32``), ``stm``, ``unix``.
 
-However, not all ports are not fully functional. Some have limited limited functionality and known serious bugs.
+However, not all ports are fully functional. Some have limited limited functionality and known serious bugs.
 For details, refer to the **Port status** section in the `latest release <https://github.com/adafruit/circuitpython/releases/latest>`__ notes.
 
 Boards
