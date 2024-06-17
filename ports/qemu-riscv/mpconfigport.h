@@ -30,6 +30,7 @@
 
 #define MICROPY_CONFIG_ROM_LEVEL           (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
+#define MICROPY_EMIT_RV32                  (1)
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS                  (1)
 #define MICROPY_ENABLE_GC                  (1)
