@@ -270,6 +270,7 @@ SRC_C += \
 	storage.c \
 	sdcard.c \
 	sdram.c \
+	sram.c \
 	fatfs_port.c \
 	lcd.c \
 	accel.c \

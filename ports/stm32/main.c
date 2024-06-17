@@ -82,6 +82,7 @@
 #include "storage.h"
 #include "sdcard.h"
 #include "sdram.h"
+#include "sram.h"
 #include "rng.h"
 #include "accel.h"
 #include "servo.h"
@@ -393,7 +394,14 @@ void stm32_main(uint32_t reset_mode) {
     #endif
 
     MICROPY_BOARD_EARLY_INIT();
-
+#if defined(MICROPY_HW_SRAM_SIZE)
+    sram_init();
+    bool sram_valid = true;
+    UNUSED(sram_valid);
+#if MICROPY_HW_SRAM_STARTUP_TEST
+    sram_valid = sram_test(false);
+#endif
+#endif
     // basic sub-system init
     #if defined(STM32H5)
     volatile uint32_t *src = (volatile uint32_t *)UID_BASE;
