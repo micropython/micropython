@@ -109,9 +109,9 @@ mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void) {
     #ifdef SOC_PM_SUPPORT_EXT0_WAKEUP
     if (cause == ESP_SLEEP_WAKEUP_EXT0) {
         pin_number = REG_GET_FIELD(RTC_IO_EXT_WAKEUP0_REG, RTC_IO_EXT_WAKEUP0_SEL);
-    } else
+    } else {
     #endif
-    #ifdef SOC_PM_SUPPORT_EXT0_WAKEUP
+    #ifdef SOC_PM_SUPPORT_EXT1_WAKEUP
     if (cause == ESP_SLEEP_WAKEUP_EXT1) {
         pin_status = esp_sleep_get_ext1_wakeup_status();
     }
@@ -176,7 +176,7 @@ void alarm_pin_pinalarm_reset(void) {
     pin_31_0_status = 0;
 }
 
-#ifdef SOC_PM_SUPPORT_EXT1_WAKEUP
+#if defined(SOC_PM_SUPPORT_EXT1_WAKEUP) && !defined(SOC_PM_SUPPORT_EXT0_WAKEUP)
 static esp_err_t _setup_ext1(size_t low_count, size_t high_count) {
     esp_err_t result;
     if (low_count > 0) {
