@@ -81,7 +81,12 @@ jobs:
         echo " >> PSoC6 extended hardware tests"
         ./psoc6/run_psoc6_tests.sh -c --psoc6-hwext --dev0 ${devs0[0]}
         echo " >> PSoC6 i2c tests"
-        ./psoc6/run_psoc6_tests.sh -c -u --dev0 ${devs1[0]} 
+        if [${{ matrix.board }} == "CY8CPROTO-062-4343W"] then
+          i2c_dev = ${devs1[0]} 
+        elif [${{ matrix.board }} == "CY8CPROTO-063-BLE"] then
+          i2c_dev = ${devs0[0]}
+        fi
+        ./psoc6/run_psoc6_tests.sh -c -u --dev0 ${i2c_dev} 
         echo " >> PSoC6 spi tests"
         ./psoc6/run_psoc6_tests.sh -c -r --dev0 ${devs0[0]} --dev1 ${devs1[0]}
         echo " >> PSoC6 i2s tests"
