@@ -10,7 +10,7 @@ make -C mpy-cross
 cd ports/stm32
 
 # 设置默认的板名称
-BOARD=F407_Core_Board 
+BOARD=Multi_Port_Debug_F407ZE 
 
 
 make BOARD=$BOARD  submodules
