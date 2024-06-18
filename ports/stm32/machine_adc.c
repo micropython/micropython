@@ -547,7 +547,7 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
     mp_obj_t source = all_args[0];
 
     uint32_t channel;
-    uint32_t sample_time = ADC_SAMPLETIME_DEFAULT;
+    uint32_t sample_time = 0;//ADC_SAMPLETIME_DEFAULT;
     ADC_TypeDef *adc;
     if (mp_obj_is_int(source)) {
         channel = mp_obj_get_int(source);
@@ -571,7 +571,7 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
             || channel == MACHINE_ADC_INT_CH_VDDCORE
             #endif
             ) {
-            sample_time = ADC_SAMPLETIME_DEFAULT_INT;
+            sample_time = 0;//ADC_SAMPLETIME_DEFAULT_INT;
         }
     } else {
         const machine_pin_obj_t *pin = pin_find(source);

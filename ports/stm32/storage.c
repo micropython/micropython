@@ -32,6 +32,7 @@
 #include "led.h"
 #include "storage.h"
 #include "irq.h"
+#include "xspi.h"
 
 #if MICROPY_HW_ENABLE_STORAGE
 
@@ -58,10 +59,12 @@ void storage_init(void) {
         MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_INIT, 0);
         #endif
 
+        #if 0
         // Enable the flash IRQ, which is used to also call our storage IRQ handler
         // It must go at the same priority as USB (see comment in irq.h).
         NVIC_SetPriority(FLASH_IRQn, IRQ_PRI_FLASH);
         HAL_NVIC_EnableIRQ(FLASH_IRQn);
+        #endif
     }
 }
 
@@ -79,11 +82,13 @@ uint32_t storage_get_block_count(void) {
 
 static void storage_systick_callback(uint32_t ticks_ms) {
     if (STORAGE_IDLE_TICK(ticks_ms)) {
+        #if 0
         // Trigger a FLASH IRQ to execute at a lower priority
         #if __CORTEX_M == 0
         NVIC_SetPendingIRQ(FLASH_IRQn);
         #else
         NVIC->STIR = FLASH_IRQn;
+        #endif
         #endif
     }
 }
@@ -235,11 +240,11 @@ int storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_bl
 // Board defined an external SPI flash for use with extended block protocol
 #define MICROPY_HW_BDEV_BLOCKSIZE_EXT (MP_SPIFLASH_ERASE_BLOCK_SIZE)
 #define MICROPY_HW_BDEV_READBLOCKS_EXT(dest, bl, off, len) \
-    (spi_bdev_readblocks_raw(MICROPY_HW_BDEV_SPIFLASH_EXTENDED, (dest), (bl), (off), (len)))
+    (spi_bdev_readblocks_raw(MICROPY_HW_BDEV_SPIFLASH_EXTENDED, (dest), MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES / MP_SPIFLASH_ERASE_BLOCK_SIZE + (bl), (off), (len)))
 #define MICROPY_HW_BDEV_WRITEBLOCKS_EXT(src, bl, off, len) \
-    (spi_bdev_writeblocks_raw(MICROPY_HW_BDEV_SPIFLASH_EXTENDED, (src), (bl), (off), (len)))
+    (spi_bdev_writeblocks_raw(MICROPY_HW_BDEV_SPIFLASH_EXTENDED, (src), MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES / MP_SPIFLASH_ERASE_BLOCK_SIZE + (bl), (off), (len)))
 #define MICROPY_HW_BDEV_ERASEBLOCKS_EXT(bl, len) \
-    (spi_bdev_eraseblocks_raw(MICROPY_HW_BDEV_SPIFLASH_EXTENDED, (bl), (len)))
+    (spi_bdev_eraseblocks_raw(MICROPY_HW_BDEV_SPIFLASH_EXTENDED, MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES / MP_SPIFLASH_ERASE_BLOCK_SIZE + (bl), (len)))
 
 #elif (MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2) && MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 // Board uses littlefs and internal flash, so enable extended block protocol on internal flash

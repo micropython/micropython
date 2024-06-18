@@ -306,6 +306,30 @@ static bool init_sdcard_fs(void) {
 }
 #endif
 
+#include "xspi.h"
+void Reset_Handler(void);
+void iram_bootloader_reset(void) {
+    #if 0
+    // LED_GREEN = pa7
+    LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_GPIOA);
+    GPIOA->MODER = 1 << (2 * 7);
+    for (int i = 0; i < 10; ++i) {
+        GPIOA->BSRR = 1 << 7;
+        for (int i = 0; i < 1000000; ++i) __NOP();
+        GPIOA->BSRR = 0x10000 << 7;
+        for (int i = 0; i < 1000000; ++i) __NOP();
+    }
+    #endif
+    xspi_init();
+    Reset_Handler();
+}
+
+// Very simple ARM vector table.
+const uint32_t iram_bootloader_isr_vector[] = {
+    (uint32_t)&_estack,
+    (uint32_t)&iram_bootloader_reset,
+};
+
 void stm32_main(uint32_t reset_mode) {
     // Low-level MCU initialisation.
     stm32_system_init();
@@ -320,13 +344,14 @@ void stm32_main(uint32_t reset_mode) {
     #else
     #if defined(MICROPY_HW_VTOR)
     // Change IRQ vector table if configured differently
+    // N6 sets this via &g_pfnVectors, might be good to just leave it as-is.
+    // unless we use mboot, then it needs to change
     SCB->VTOR = MICROPY_HW_VTOR;
     #endif
     #endif
     #endif
 
-
-    #if __CORTEX_M != 33
+    #if __CORTEX_M != 33 && __CORTEX_M != 55
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
     #endif
@@ -349,7 +374,7 @@ void stm32_main(uint32_t reset_mode) {
     __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
     #endif
 
-    #elif defined(STM32F7) || defined(STM32H7)
+    #elif defined(STM32F7) || defined(STM32H7) || defined(STM32N6)
 
     #if ART_ACCLERATOR_ENABLE
     __HAL_FLASH_ART_ENABLE();
@@ -376,6 +401,27 @@ void stm32_main(uint32_t reset_mode) {
 
     #endif
 
+    #if defined(STM32N6)
+    // SRAM, XSPI needs to remain awake during sleep, eg so DMA from flash works.
+    LL_MEM_EnableClockLowPower(0xffffffff);
+    LL_AHB5_GRP1_EnableClockLowPower(LL_AHB5_GRP1_PERIPH_XSPI2 | LL_AHB5_GRP1_PERIPH_XSPIM);
+    LL_APB4_GRP1_EnableClock(LL_APB4_GRP1_PERIPH_RTC | LL_APB4_GRP1_PERIPH_RTCAPB);
+    LL_APB4_GRP1_EnableClockLowPower(LL_APB4_GRP1_PERIPH_RTC | LL_APB4_GRP1_PERIPH_RTCAPB);
+
+    LL_AHB1_GRP1_EnableClockLowPower(0xffffffff);
+    LL_AHB2_GRP1_EnableClockLowPower(0xffffffff);
+    LL_AHB3_GRP1_EnableClockLowPower(0xffffffff);
+    LL_AHB4_GRP1_EnableClockLowPower(0xffffffff);
+    LL_AHB5_GRP1_EnableClockLowPower(0xffffffff);
+
+    LL_APB1_GRP1_EnableClockLowPower(0xffffffff);
+    LL_APB1_GRP2_EnableClockLowPower(0xffffffff);
+    LL_APB2_GRP1_EnableClockLowPower(0xffffffff);
+    LL_APB4_GRP1_EnableClockLowPower(0xffffffff);
+    LL_APB4_GRP2_EnableClockLowPower(0xffffffff);
+    LL_APB5_GRP1_EnableClockLowPower(0xffffffff);
+    #endif
+
     mpu_init();
 
     #if __CORTEX_M >= 0x03
@@ -386,8 +432,12 @@ void stm32_main(uint32_t reset_mode) {
     // SysTick is needed by HAL_RCC_ClockConfig (called in SystemClock_Config)
     HAL_InitTick(TICK_INT_PRIORITY);
 
+    //#if defined(STM32N6)
+    //SystemCoreClock = HSE_VALUE / MICROPY_HW_CLK_PLLM * MICROPY_HW_CLK_PLLN;
+    //#else
     // set the system clock to be HSE
     SystemClock_Config();
+    //#endif
 
     #if defined(STM32F4) || defined(STM32F7)
     #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
@@ -613,6 +663,7 @@ soft_reset:
         const uint16_t pid = MICROPY_HW_USB_PID_CDC;
         const uint8_t mode = USBD_MODE_CDC;
         #endif
+        mp_hal_delay_ms(10); // TODO work out why this is needed, sometimes crashes without it
         pyb_usb_dev_init(pyb_usb_dev_detect(), MICROPY_HW_USB_VID, pid, mode, 0, NULL, NULL);
     }
     #endif
