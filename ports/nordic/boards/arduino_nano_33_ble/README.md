@@ -7,6 +7,8 @@ a powerful Cortex-M4F. Both include an onboard 9-axis Inertial Measurement Unit 
 The Nano 33 BLE Sense adds an LPS22HB barometric pressure and temperature sensor, an HTS221 humidity sensor,
 an APDS-9960 digital proximity, ambient light, RGB, and gesture sensor,
 and an MP34DT05 digital microphone.
+The [Arduino Nano 33 BLE Sense Rev2](https://store-usa.arduino.cc/products/nano-33-ble-sense-rev2-with-headers)
+replaces the LSM9DS1 with a combination of the BMI270 and BMM150, the HTS221 with the HS3003, and the MP34DT05 with the MP34DT06JTR.
 
 Note: the Arduino Nano 33 BLE and BLE Sense do not include a QSPI external
 flash. Any Python code will need to be stored on the internal flash
@@ -15,11 +17,15 @@ filesystem.
 I2C pins `board.SCL1` and `board.SDA1` are not exposed and are used for onboard peripherals.
 Pin `board.R_PULLUP` must be set to high to enable the `SCL1` and `SDA1` pullups for proper operation.
 
-Pin `board.VDD_ENV` applies power to the LSM9DS1, the LPS22HB, and the HTS221, and must be high for them to be operational.
+Pin `board.VDD_ENV` applies power to the IMU, the pressure sensor and the humidity sensor, and must be high for them to be operational.
 
 Pins `board.MIC_PWR`, `board.PDMDIN`, and `board.PDMCLK` are for the Nano 33 BLE Sense onboard microphone.
 
 Pin `board.INT_APDS` is the interrupt pin from the APDS-9960.
+
+Pin `board.INT_BMI_V2` is the interrupt pin from the BMI270. This pin is only present on the BLE Sense Rev2.
+
+Pin `board.INT_LPS_V2` is the interrupt pin from the LPS22. This pin is only present on the BLE Sense Rev2.
 
 Pins `board.RGB_LED_R`, `board.RGB_LED_G`, and `board.RGB_LED_B`
 are the red, green and blue LEDS in the onboard RGB LED.
