@@ -21,7 +21,10 @@
 // is set. Any memory not allocated by us can be used by the ESP-IDF for heap or other purposes.
 
 // Use half of RTC_SLOW_MEM or RTC_FAST_MEM.
-#ifdef CONFIG_IDF_TARGET_ESP32
+#if defined(CONFIG_IDF_TARGET_ESP32H2)
+// H2 has 4k of low power RAM
+#define SLEEP_MEMORY_LENGTH (2 * 1024)
+#elif defined(CONFIG_IDF_TARGET_ESP32)
 #define SLEEP_MEMORY_LENGTH (3 * 1024)
 #else
 #define SLEEP_MEMORY_LENGTH (4 * 1024)
