@@ -46,7 +46,7 @@
 #if defined(STM32F0) || defined(STM32G4) || defined(STM32L1) || defined(STM32L4) || defined(STM32WL)
 #define EXTI_RTC_TIMESTAMP      (19)
 #define EXTI_RTC_WAKEUP         (20)
-#elif defined(STM32H5)
+#elif defined(STM32H5) || defined(STM32N6)
 #define EXTI_RTC_WAKEUP         (17)
 #define EXTI_RTC_TAMP           (19)
 #elif defined(STM32H7) || defined(STM32WB)
@@ -55,8 +55,6 @@
 #elif defined(STM32G0)
 #define EXTI_RTC_WAKEUP         (19)
 #define EXTI_RTC_TIMESTAMP      (21)
-#elif defined(STM32H5)
-#define EXTI_RTC_WAKEUP         (17)
 #else
 #define EXTI_RTC_TIMESTAMP      (21)
 #define EXTI_RTC_WAKEUP         (22)

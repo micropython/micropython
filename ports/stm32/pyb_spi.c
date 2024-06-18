@@ -29,6 +29,8 @@
 #include "bufhelper.h"
 #include "spi.h"
 
+#if 0
+
 #if MICROPY_PY_PYB
 
 /******************************************************************************/
@@ -366,3 +368,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 #endif // MICROPY_PY_PYB
+
+#endif

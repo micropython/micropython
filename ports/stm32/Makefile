@@ -123,7 +123,12 @@ CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DMBOOT_VTOR=$(MBOOT_TEXT0_ADDR)
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),n6))
+# as doesn't recognise -mcpu=cortex-m55
+AFLAGS += -march=armv8.1-m.main
+else
 AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU_$(MCU_SERIES)))
+endif
 
 # Configure for nan-boxing object model if requested
 ifeq ($(NANBOX),1)
@@ -300,6 +305,7 @@ SRC_C += \
 	adc.c \
 	sdio.c \
 	subghz.c \
+	xspi.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O += \
@@ -316,6 +322,10 @@ CFLAGS += -DUSE_HAL_DRIVER
 SRC_O += \
 	resethandler_m3.o \
 	shared/runtime/gchelper_thumb2.o
+else ifeq ($(MCU_SERIES),n6)
+SRC_O += \
+	resethandler_m3_iram.o \
+	shared/runtime/gchelper_thumb2.o
 else
 SRC_O += \
 	system_stm32.o \
@@ -329,8 +339,6 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_adc_ex.c \
 	hal_cortex.c \
 	hal_dma.c \
-	hal_flash.c \
-	hal_flash_ex.c \
 	hal_gpio.c \
 	hal_i2c.c \
 	hal_pwr.c \
@@ -347,11 +355,25 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	ll_utils.c \
 	)
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7 l0 l1 l4 wb))
+ifneq ($(MCU_SERIES),n6)
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_flash.c \
+	hal_flash_ex.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7 l0 l1 l4 n6 wb))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_pcd.c \
 	hal_pcd_ex.c \
 	ll_usb.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),n6))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_bsec.c \
+	hal_xspi.c \
 	)
 endif
 
@@ -490,6 +512,12 @@ all: $(TOP)/lib/stm32lib/README.md all_main $(BUILD)/firmware.hex
 
 ifeq ($(MBOOT_ENABLE_PACKING),1)
 all_main: $(BUILD)/firmware.pack.dfu
+else ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),n6))
+ifeq ($(USE_MBOOT),1)
+all_main: $(BUILD)/firmware.dfu
+else
+all_main: $(BUILD)/firmware-trusted.bin
+endif
 else
 all_main: $(BUILD)/firmware.dfu
 endif
@@ -568,7 +596,7 @@ TEXT0_ADDR ?= 0x08000000
 ifeq ($(TEXT1_ADDR),)
 # No TEXT1_ADDR given so put all firmware at TEXT0_ADDR location
 
-TEXT0_SECTIONS ?= .isr_vector .isr_extratext .text .data .ARM
+TEXT0_SECTIONS ?= .isr_vector .isr_extratext .text .iram_bootloader .data .ARM
 
 deploy-stlink: $(BUILD)/firmware.bin
 	$(call RUN_STLINK,$^,$(TEXT0_ADDR))
@@ -586,7 +614,7 @@ else
 # TEXT0_ADDR and TEXT1_ADDR are specified so split firmware between these locations
 
 TEXT0_SECTIONS ?= .isr_vector .isr_extratext
-TEXT1_SECTIONS ?= .text .data .ARM
+TEXT1_SECTIONS ?= .text .iram_bootloader .data .ARM
 
 deploy-stlink: $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin
 	$(call RUN_STLINK,$(word 1,$^),$(TEXT0_ADDR))
@@ -613,6 +641,13 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(call GENERATE_ELF,$@,$^)
+
+$(BUILD)/firmware-trusted.bin: $(BUILD)/firmware.bin
+	/bin/rm -f $@
+	$(CUBE_PROG_BASE)/bin/STM32MP_SigningTool_CLI -bin $^ -nk -of 0x80000000 -t fsbl -o $@ -hv $(STM32_N6_HEADER_VERSION)
+
+deploy-n6: $(BUILD)/firmware-trusted.bin
+	$(CUBE_PROG_BASE)/bin/STM32_Programmer.sh -c port=SWD mode=HOTPLUG ap=1 -el $(DKEL) -w $^ 0x70000000 -hardRst
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(GEN_PINS_SRC)
