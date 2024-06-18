@@ -46,7 +46,7 @@ static uint32_t __attribute__((unused)) micropy_hw_hse_value = HSE_VALUE;
 static uint32_t __attribute__((unused)) micropy_hw_clk_pllm = MICROPY_HW_CLK_PLLM;
 #endif
 
-#if defined(STM32H5) || defined(STM32H7)
+#if defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
 #define RCC_SR          RSR
 #if defined(STM32H747xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFT2RSTF
@@ -136,6 +136,12 @@ MP_NORETURN static __attribute__((naked)) void branch_to_bootloader(uint32_t r0,
 }
 
 MP_NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
+    #if defined(STM32N6)
+    LL_PWR_EnableBkUpAccess();
+    TAMP_S->BKP31R = r0;
+    NVIC_SystemReset();
+    #endif
+
     #if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
 
     // Enter the bootloader via a reset, so everything is reset (including WDT).
@@ -168,6 +174,8 @@ void powerctrl_check_enter_bootloader(void) {
     }
     #endif
 }
+
+#if !defined(STM32N6)
 
 #if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32WB) && !defined(STM32WL)
 
@@ -781,10 +789,13 @@ static void powerctrl_low_power_exit_wb55() {
 
 #endif // !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L1) && !defined(STM32L4)
 
+#endif
+
 void powerctrl_enter_stop_mode(void) {
     // Disable IRQs so that the IRQ that wakes the device from stop mode is not
     // executed until after the clocks are reconfigured
     uint32_t irq_state = disable_irq();
+#if 0
 
     #if defined(STM32H7) || \
     defined(STM32F427xx) || defined(STM32F437xx) || \
@@ -1011,6 +1022,7 @@ void powerctrl_enter_stop_mode(void) {
     // Enable SysTick Interrupt
     SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
     #endif
+#endif
 
     // Enable IRQs now that all clocks are reconfigured
     enable_irq(irq_state);
@@ -1039,6 +1051,7 @@ MP_NORETURN void powerctrl_enter_standby_mode(void) {
     mp_bluetooth_deinit();
     #endif
 
+#if 0
     // We need to clear the PWR wake-up-flag before entering standby, since
     // the flag may have been set by a previous wake-up event.  Furthermore,
     // we need to disable the wake-up sources while clearing this flag, so
@@ -1134,6 +1147,7 @@ MP_NORETURN void powerctrl_enter_standby_mode(void) {
     #if defined(STM32WB)
     powerctrl_low_power_prep_wb55();
     #endif
+#endif
 
     // enter standby mode
     HAL_PWR_EnterSTANDBYMode();

@@ -129,6 +129,7 @@ void rtc_init_start(bool force_init) {
 
     if (!force_init) {
         bool rtc_running = false;
+#if 0
         uint32_t bdcr = RCC->BDCR;
         if ((bdcr & (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL | RCC_BDCR_LSEON | RCC_BDCR_LSERDY))
             == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_0 | RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
@@ -157,6 +158,7 @@ void rtc_init_start(bool force_init) {
             // provide some status information
             rtc_info |= 0x80000;
         }
+#endif
 
         if (rtc_running) {
             // Provide information about the registers that indicated the RTC is running.
@@ -167,6 +169,7 @@ void rtc_init_start(bool force_init) {
             rtc_info |= (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
             #endif
 
+#if 0
             // Check that the sync and async prescaler values are correct.  If the RTC
             // gets into a state where they are wrong then it will run slow or fast and
             // never be corrected.  In such a situation, attempt to reconfigure the values
@@ -191,6 +194,7 @@ void rtc_init_start(bool force_init) {
                 // Provide information that the prescaler was changed.
                 rtc_info |= 0x100000;
             }
+#endif
 
             // The RTC is up and running, so return without any further configuration.
             return;
@@ -262,6 +266,7 @@ void rtc_init_finalise() {
     rtc_need_init_finalise = false;
 }
 
+#if 0
 static HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInitStruct) {
     /*------------------------------ LSI Configuration -------------------------*/
     if ((RCC_OscInitStruct->OscillatorType & RCC_OSCILLATORTYPE_LSI) == RCC_OSCILLATORTYPE_LSI) {
@@ -330,6 +335,7 @@ static HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInitStruct
 
     return HAL_OK;
 }
+#endif
 
 static HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
     // Check the RTC peripheral state
@@ -370,6 +376,7 @@ static HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
         hrtc->Instance->PRER = (uint32_t)(hrtc->Init.SynchPrediv);
         hrtc->Instance->PRER |= (uint32_t)(hrtc->Init.AsynchPrediv << 16);
 
+#if 0
         // Exit Initialization mode
         LL_RTC_DisableInitMode(hrtc->Instance);
 
@@ -389,6 +396,7 @@ static HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
         hrtc->Instance->TAFCR |= (uint32_t)(hrtc->Init.OutPutType);
         #endif
 
+#endif
         // Enable the write protection for RTC registers
         __HAL_RTC_WRITEPROTECTION_ENABLE(hrtc);
 
@@ -411,6 +419,7 @@ static void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse, bool
     // RTC clock source uses LSE (external crystal) only if relevant
     // configuration variable is set.  Otherwise it uses LSI (internal osc).
 
+#if 0
     RCC_OscInitTypeDef RCC_OscInitStruct;
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
@@ -428,6 +437,7 @@ static void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse, bool
         RCC_OscInitStruct.LSIState = RCC_LSI_ON;
     }
     PYB_RCC_OscConfig(&RCC_OscInitStruct);
+#endif
 
     // now ramp up osc. in background and flag calendear init needed
     rtc_need_init_finalise = true;
@@ -647,7 +657,7 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
 
-#if defined(STM32F0) || defined(STM32H5) || defined(STM32L0)
+#if defined(STM32F0) || defined(STM32H5) || defined(STM32L0) || defined(STM32N6)
 #define RTC_WKUP_IRQn RTC_IRQn
 #elif defined(STM32G0)
 #define RTC_WKUP_IRQn RTC_TAMP_IRQn
@@ -739,9 +749,11 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
     // clear WUTE
     RTC->CR &= ~RTC_CR_WUTE;
 
+#if 0
     // wait until WUTWF is set
     while (!LL_RTC_IsActiveFlag_WUTW(RTC)) {
     }
+#endif
 
     if (enable) {
         // program WUT
@@ -756,7 +768,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         RTC->WPR = 0xff;
 
         // enable external interrupts on line EXTI_RTC_WAKEUP
-        #if defined(STM32G0) || defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32L4) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
         EXTI->IMR1 |= 1 << EXTI_RTC_WAKEUP;
         EXTI->RTSR1 |= 1 << EXTI_RTC_WAKEUP;
         #elif defined(STM32H5)
@@ -774,7 +786,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         RTC->ICSR &= ~RTC_ICSR_WUTWF;
         #elif defined(STM32H5)
         RTC->SCR = RTC_SCR_CWUTF;
-        #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+        #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ) || defined(STM32N6)
         RTC->SR &= ~RTC_SR_WUTF;
         #else
         RTC->ISR &= ~RTC_ISR_WUTF;
@@ -785,6 +797,8 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         EXTI_D1->PR1 = 1 << EXTI_RTC_WAKEUP;
         #elif defined(STM32G0) || defined(STM32H5)
         // Do nothing
+        #elif defined(STM32N6)
+        // TODO
         #else
         EXTI->PR = 1 << EXTI_RTC_WAKEUP;
         #endif
@@ -799,7 +813,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         RTC->WPR = 0xff;
 
         // disable external interrupts on line EXTI_RTC_WAKEUP
-        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
         EXTI->IMR1 &= ~(1 << EXTI_RTC_WAKEUP);
         #elif defined(STM32H7)
         EXTI_D1->IMR1 |= 1 << EXTI_RTC_WAKEUP;
@@ -818,6 +832,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_wakeup_obj, 2, 4, pyb_rtc_wakeup);
 // and set the calibration value; otherwise return calibration value
 mp_obj_t pyb_rtc_calibration(size_t n_args, const mp_obj_t *args) {
     rtc_init_finalise();
+#if 0
     mp_int_t cal;
     if (n_args == 2) {
         cal = mp_obj_get_int(args[1]);
@@ -859,6 +874,8 @@ mp_obj_t pyb_rtc_calibration(size_t n_args, const mp_obj_t *args) {
         }
         return mp_obj_new_int(cal);
     }
+#endif
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_calibration_obj, 1, 2, pyb_rtc_calibration);
 

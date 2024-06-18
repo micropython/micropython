@@ -58,10 +58,12 @@ void storage_init(void) {
         MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_INIT, 0);
         #endif
 
+        #if 0
         // Enable the flash IRQ, which is used to also call our storage IRQ handler
         // It must go at the same priority as USB (see comment in irq.h).
         NVIC_SetPriority(FLASH_IRQn, IRQ_PRI_FLASH);
         HAL_NVIC_EnableIRQ(FLASH_IRQn);
+        #endif
     }
 }
 
@@ -79,11 +81,13 @@ uint32_t storage_get_block_count(void) {
 
 static void storage_systick_callback(uint32_t ticks_ms) {
     if (STORAGE_IDLE_TICK(ticks_ms)) {
+        #if 0
         // Trigger a FLASH IRQ to execute at a lower priority
         #if __CORTEX_M == 0
         NVIC_SetPendingIRQ(FLASH_IRQn);
         #else
         NVIC->STIR = FLASH_IRQn;
+        #endif
         #endif
     }
 }
