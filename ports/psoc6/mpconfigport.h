@@ -132,7 +132,7 @@
 #define MICROPY_PY_MACHINE_SPI_LSB              (1)
 #define MICROPY_PY_MACHINE_SPISLAVE_MSB         (0)
 #define MICROPY_PY_MACHINE_SPISLAVE_LSB         (1)
-#define MICROPY_PY_MACHINE_SOFTSPI              (1)
+#define MICROPY_PY_MACHINE_SOFTSPI              (0)
 
 #define MICROPY_PY_MACHINE_I2S                  (1)
 #define MICROPY_PY_MACHINE_I2S_MCK              (0)
