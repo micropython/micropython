@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Damien P. George
+ * Copyright (c) 2024-2025 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_POWERCTRL_H
-#define MICROPY_INCLUDED_STM32_POWERCTRL_H
+#ifndef MICROPY_INCLUDED_STM32_XSPI_H
+#define MICROPY_INCLUDED_STM32_XSPI_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "drivers/bus/qspi.h"
 
-#if defined(STM32WB)
-void stm32_system_init(void);
-#else
-static inline void stm32_system_init(void) {
-    SystemInit();
+typedef struct _xspi_flash_t xspi_flash_t;
 
-    #if defined(STM32N6)
-    // The ROM bootloader uses PLL1 to set the CPU to 400MHz, so update
-    // the value of SystemCoreClock to reflect the hardware state.
-    SystemCoreClockUpdate();
-    #endif
-}
-#endif
+extern const mp_qspi_proto_t xspi_proto;
+extern const xspi_flash_t xspi_flash1;
+extern const xspi_flash_t xspi_flash2;
 
-void SystemClock_Config(void);
+void xspi_init(void);
+uint32_t xspi_get_xip_base(const xspi_flash_t *self);
+bool xspi_is_valid_addr(const xspi_flash_t *self, uint32_t addr);
+void xspi_switch_to_spi(void);
+void xspi_switch_to_dtr(void);
 
-MP_NORETURN void powerctrl_mcu_reset(void);
-MP_NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr);
-void powerctrl_check_enter_bootloader(void);
-
-void powerctrl_config_systick(void);
-int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk_mhz, bool need_pllsai);
-int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2);
-void powerctrl_enter_stop_mode(void);
-MP_NORETURN void powerctrl_enter_standby_mode(void);
-
-#endif // MICROPY_INCLUDED_STM32_POWERCTRL_H
+#endif // MICROPY_INCLUDED_STM32_XSPI_H

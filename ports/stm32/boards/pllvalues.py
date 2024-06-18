@@ -293,7 +293,7 @@ def main():
             break
 
     # Relax constraint on PLLQ being 48MHz on MCUs which have separate PLLs for 48MHz
-    relax_pll48 = mcu_series.startswith(("stm32f413", "stm32f7", "stm32h5", "stm32h7"))
+    relax_pll48 = mcu_series.startswith(("stm32f413", "stm32f7", "stm32h5", "stm32h7", "stm32n6"))
 
     hse_valid_plls = compute_pll_table(hse, relax_pll48)
     if hsi is not None:

@@ -122,5 +122,6 @@ int boardctrl_run_boot_py(boardctrl_state_t *state);
 int boardctrl_run_main_py(boardctrl_state_t *state);
 void boardctrl_start_soft_reset(boardctrl_state_t *state);
 void boardctrl_end_soft_reset(boardctrl_state_t *state);
+void boardctrl_enter_standby(void);
 
 #endif // MICROPY_INCLUDED_STM32_BOARDCTRL_H

@@ -26,10 +26,10 @@
 
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "boardctrl.h"
 #include "powerctrl.h"
 #include "rtc.h"
 #include "extmod/modbluetooth.h"
-#include "py/mpconfig.h"
 #ifndef NO_QSTR
 #include "genhdr/pllfreqtable.h"
 #endif
@@ -46,7 +46,7 @@ static uint32_t __attribute__((unused)) micropy_hw_hse_value = HSE_VALUE;
 static uint32_t __attribute__((unused)) micropy_hw_clk_pllm = MICROPY_HW_CLK_PLLM;
 #endif
 
-#if defined(STM32H5) || defined(STM32H7)
+#if defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
 #define RCC_SR          RSR
 #if defined(STM32H747xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFT2RSTF
@@ -63,7 +63,7 @@ static uint32_t __attribute__((unused)) micropy_hw_clk_pllm = MICROPY_HW_CLK_PLL
 #define POWERCTRL_GET_VOLTAGE_SCALING() PWR_REGULATOR_VOLTAGE_SCALE0
 #elif defined(STM32H723xx)
 #define POWERCTRL_GET_VOLTAGE_SCALING() LL_PWR_GetRegulVoltageScaling()
-#elif defined(STM32H5)
+#elif defined(STM32H5) || defined(STM32N6)
 #define POWERCTRL_GET_VOLTAGE_SCALING() LL_PWR_GetRegulVoltageScaling()
 #else
 #define POWERCTRL_GET_VOLTAGE_SCALING()     \
@@ -136,6 +136,12 @@ MP_NORETURN static __attribute__((naked)) void branch_to_bootloader(uint32_t r0,
 }
 
 MP_NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
+    #if defined(STM32N6)
+    LL_PWR_EnableBkUpAccess();
+    TAMP_S->BKP31R = r0;
+    NVIC_SystemReset();
+    #endif
+
     #if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
 
     // Enter the bootloader via a reset, so everything is reset (including WDT).
@@ -168,6 +174,8 @@ void powerctrl_check_enter_bootloader(void) {
     }
     #endif
 }
+
+#if !defined(STM32N6)
 
 #if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32WB) && !defined(STM32WL)
 
@@ -781,6 +789,8 @@ static void powerctrl_low_power_exit_wb55() {
 
 #endif // !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L1) && !defined(STM32L4)
 
+#endif
+
 void powerctrl_enter_stop_mode(void) {
     // Disable IRQs so that the IRQ that wakes the device from stop mode is not
     // executed until after the clocks are reconfigured
@@ -809,7 +819,7 @@ void powerctrl_enter_stop_mode(void) {
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
     #endif
 
-    #if !defined(STM32F0) && !defined(STM32G0) && !defined(STM32G4) && !defined(STM32L0) && !defined(STM32L1) && !defined(STM32L4) && !defined(STM32WB) && !defined(STM32WL)
+    #if !defined(STM32F0) && !defined(STM32G0) && !defined(STM32G4) && !defined(STM32L0) && !defined(STM32L1) && !defined(STM32L4) && !defined(STM32N6) && !defined(STM32WB) && !defined(STM32WL)
     // takes longer to wake but reduces stop current
     HAL_PWREx_EnableFlashPowerDown();
     #endif
@@ -848,6 +858,8 @@ void powerctrl_enter_stop_mode(void) {
 
     #if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
+    #elif defined(STM32N6)
+    HAL_PWR_EnterSTOPMode(PWR_MAINREGULATOR_ON, PWR_STOPENTRY_WFI);
     #else
     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
     #endif
@@ -910,6 +922,19 @@ void powerctrl_enter_stop_mode(void) {
     }
     LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL1);
     while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL1) {
+    }
+
+    #elif defined(STM32N6)
+
+    // Enable PLL1, and switch the CPU and system clock source to use PLL1.
+    LL_RCC_PLL1_Enable();
+    while (!LL_RCC_PLL1_IsReady()) {
+    }
+    LL_RCC_SetCpuClkSource(LL_RCC_CPU_CLKSOURCE_IC1);
+    while (LL_RCC_GetCpuClkSource() != LL_RCC_CPU_CLKSOURCE_STATUS_IC1) {
+    }
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_IC2_IC6_IC11);
+    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_IC2_IC6_IC11) {
     }
 
     #else // defined(STM32H5)
@@ -1016,8 +1041,46 @@ void powerctrl_enter_stop_mode(void) {
     enable_irq(irq_state);
 }
 
+#if defined(STM32N6)
+
+// Upon wake from standby, STM32N6 can resume execution from retained SRAM1.
+// Place a small bootloader there which initialises XSPI in memory-mapped mode
+// and jumps to the main application entry point.
+
+#include "xspi.h"
+
+extern uint32_t _estack;
+
+void Reset_Handler(void);
+
+void iram_bootloader_reset(void) {
+    #if defined(MICROPY_BOARD_LEAVE_STANDBY)
+    MICROPY_BOARD_LEAVE_STANDBY;
+    #endif
+    xspi_init();
+    Reset_Handler();
+}
+
+// Very simple ARM vector table.
+const uint32_t iram_bootloader_isr_vector[] = {
+    (uint32_t)&_estack,
+    (uint32_t)&iram_bootloader_reset,
+};
+
+#endif
+
 MP_NORETURN void powerctrl_enter_standby_mode(void) {
     rtc_init_finalise();
+
+    #if defined(STM32N6)
+    // Upon wake from standby, jump to the code at SRAM1.
+    // A board can reconfigure this in MICROPY_BOARD_ENTER_STANDBY if needed.
+    LL_PWR_EnableTCMSBRetention();
+    LL_PWR_EnableTCMFLXSBRetention();
+    LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_SYSCFG);
+    SCB_CleanDCache();
+    SYSCFG->INITSVTORCR = (uint32_t)&iram_bootloader_isr_vector[0];
+    #endif
 
     #if defined(MICROPY_BOARD_ENTER_STANDBY)
     MICROPY_BOARD_ENTER_STANDBY
@@ -1038,6 +1101,13 @@ MP_NORETURN void powerctrl_enter_standby_mode(void) {
     #if defined(STM32WB) && MICROPY_PY_BLUETOOTH
     mp_bluetooth_deinit();
     #endif
+
+    #if defined(STM32N6)
+
+    // Clear all WKUPx flags.
+    LL_PWR_ClearFlag_WU();
+
+    #else
 
     // We need to clear the PWR wake-up-flag before entering standby, since
     // the flag may have been set by a previous wake-up event.  Furthermore,
@@ -1133,6 +1203,8 @@ MP_NORETURN void powerctrl_enter_standby_mode(void) {
 
     #if defined(STM32WB)
     powerctrl_low_power_prep_wb55();
+    #endif
+
     #endif
 
     // enter standby mode

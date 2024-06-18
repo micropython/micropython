@@ -306,11 +306,30 @@ static bool init_sdcard_fs(void) {
 }
 #endif
 
+#if defined(STM32N6)
+static void risaf_init(void) {
+    RIMC_MasterConfig_t rimc_master = {0};
+
+    __HAL_RCC_RIFSC_CLK_ENABLE();
+    LL_AHB3_GRP1_EnableClockLowPower(LL_AHB3_GRP1_PERIPH_RIFSC | LL_AHB3_GRP1_PERIPH_RISAF);
+
+    rimc_master.MasterCID = RIF_CID_1;
+    rimc_master.SecPriv = RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV;
+
+    HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_SDMMC1, &rimc_master);
+    HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_SDMMC1, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+    HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_SDMMC2, &rimc_master);
+    HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_SDMMC2, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+}
+#endif
+
 void stm32_main(uint32_t reset_mode) {
     // Low-level MCU initialisation.
     stm32_system_init();
 
-    #if !defined(STM32F0)
+    // Set VTOR, the location of the interrupt vector table.
+    // On N6, SystemInit does this, setting VTOR to &g_pfnVectors.
+    #if !defined(STM32F0) && !defined(STM32N6)
     #if MICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM
     // Copy IRQ vector table to RAM and point VTOR there
     extern uint32_t __isr_vector_flash_addr, __isr_vector_ram_start, __isr_vector_ram_end;
@@ -325,8 +344,7 @@ void stm32_main(uint32_t reset_mode) {
     #endif
     #endif
 
-
-    #if __CORTEX_M != 33
+    #if __CORTEX_M != 33 && __CORTEX_M != 55
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
     #endif
@@ -349,7 +367,7 @@ void stm32_main(uint32_t reset_mode) {
     __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
     #endif
 
-    #elif defined(STM32F7) || defined(STM32H7)
+    #elif defined(STM32F7) || defined(STM32H7) || defined(STM32N6)
 
     #if ART_ACCLERATOR_ENABLE
     __HAL_FLASH_ART_ENABLE();
@@ -376,6 +394,23 @@ void stm32_main(uint32_t reset_mode) {
 
     #endif
 
+    #if defined(STM32N6)
+    // SRAM, XSPI needs to remain awake during sleep, eg so DMA from flash works.
+    LL_MEM_EnableClockLowPower(0xffffffff);
+    LL_AHB5_GRP1_EnableClockLowPower(LL_AHB5_GRP1_PERIPH_XSPI2 | LL_AHB5_GRP1_PERIPH_XSPIM);
+    LL_APB4_GRP1_EnableClock(LL_APB4_GRP1_PERIPH_RTC | LL_APB4_GRP1_PERIPH_RTCAPB);
+    LL_APB4_GRP1_EnableClockLowPower(LL_APB4_GRP1_PERIPH_RTC | LL_APB4_GRP1_PERIPH_RTCAPB);
+
+    // Enable some AHB peripherals during sleep.
+    LL_AHB1_GRP1_EnableClockLowPower(0xffffffff); // GPDMA1, ADC12
+    LL_AHB4_GRP1_EnableClockLowPower(0xffffffff); // GPIOA-Q, PWR, CRC
+
+    // Enable some APB peripherals during sleep.
+    LL_APB1_GRP1_EnableClockLowPower(0xffffffff); // I2C, I3C, LPTIM, SPI, TIM, UART, WWDG
+    LL_APB2_GRP1_EnableClockLowPower(0xffffffff); // SAI, SPI, TIM, UART
+    LL_APB4_GRP1_EnableClockLowPower(0xffffffff); // I2C, LPTIM, LPUART, RTC, SPI
+    #endif
+
     mpu_init();
 
     #if __CORTEX_M >= 0x03
@@ -388,6 +423,10 @@ void stm32_main(uint32_t reset_mode) {
 
     // set the system clock to be HSE
     SystemClock_Config();
+
+    #if defined(STM32N6)
+    risaf_init();
+    #endif
 
     #if defined(STM32F4) || defined(STM32F7)
     #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)

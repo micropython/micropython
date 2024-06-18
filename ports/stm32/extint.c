@@ -92,7 +92,7 @@
 #define EXTI_SWIER_BB(line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + offsetof(EXTI_TypeDef, SWIER)) * 32) + ((line) * 4)))
 #endif
 
-#if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+#if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
 // The L4 MCU supports 40 Events/IRQs lines of the type configurable and direct.
 // Here we only support configurable line types.  Details, see page 330 of RM0351, Rev 1.
 // The USB_FS_WAKUP event is a direct type and there is no support for it.
@@ -170,7 +170,7 @@ static const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     ADC1_COMP_IRQn,
     #endif
 
-    #elif defined(STM32H5)
+    #elif defined(STM32N6) || defined(STM32H5)
 
     EXTI0_IRQn,
     EXTI1_IRQn,
@@ -188,6 +188,13 @@ static const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     EXTI13_IRQn,
     EXTI14_IRQn,
     EXTI15_IRQn,
+
+    #if defined(STM32N6)
+    0,
+    RTC_S_IRQn,
+    RTC_IRQn,
+    TAMP_IRQn,
+    #endif
 
     #else
 
@@ -307,7 +314,7 @@ void EXTI15_10_IRQHandler(void) {
     IRQ_EXIT(EXTI15_10_IRQn);
 }
 
-#elif defined(STM32H5)
+#elif defined(STM32H5) || defined(STM32N6)
 
 DEFINE_EXTI_IRQ_HANDLER(0)
 DEFINE_EXTI_IRQ_HANDLER(1)
@@ -440,10 +447,10 @@ void extint_register_pin(const machine_pin_obj_t *pin, uint32_t mode, bool hard_
         #if !defined(STM32H5) && !defined(STM32WB) && !defined(STM32WL)
         __HAL_RCC_SYSCFG_CLK_ENABLE();
         #endif
-        #if defined(STM32G0) || defined(STM32H5)
+        #if defined(STM32G0) || defined(STM32H5) || defined(STM32N6)
         EXTI->EXTICR[line >> 2] =
-            (EXTI->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
-            | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 0x03)));
+            (EXTI->EXTICR[line >> 2] & ~(0xff << (8 * (line & 0x03))))
+            | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (8 * (line & 0x03)));
         #else
         SYSCFG->EXTICR[line >> 2] =
             (SYSCFG->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
@@ -480,13 +487,13 @@ void extint_set(const machine_pin_obj_t *pin, uint32_t mode) {
         pyb_extint_callback_arg[line] = MP_OBJ_FROM_PTR(pin);
 
         // Route the GPIO to EXTI
-        #if !defined(STM32H5) && !defined(STM32WB) && !defined(STM32WL)
+        #if !defined(STM32H5) && !defined(STM32N6) && !defined(STM32WB) && !defined(STM32WL)
         __HAL_RCC_SYSCFG_CLK_ENABLE();
         #endif
-        #if defined(STM32G0) || defined(STM32H5)
+        #if defined(STM32G0) || defined(STM32H5) || defined(STM32N6)
         EXTI->EXTICR[line >> 2] =
-            (EXTI->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
-            | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 0x03)));
+            (EXTI->EXTICR[line >> 2] & ~(0xff << (8 * (line & 0x03))))
+            | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (8 * (line & 0x03)));
         #else
         SYSCFG->EXTICR[line >> 2] =
             (SYSCFG->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
@@ -526,7 +533,7 @@ void extint_enable(uint line) {
     if (pyb_extint_mode[line] == EXTI_Mode_Interrupt) {
         #if defined(STM32H7)
         EXTI_D1->IMR1 |= (1 << line);
-        #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32WB) || defined(STM32WL)
+        #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
         EXTI->IMR1 |= (1 << line);
         #else
         EXTI->IMR |= (1 << line);
@@ -534,7 +541,7 @@ void extint_enable(uint line) {
     } else {
         #if defined(STM32H7)
         EXTI_D1->EMR1 |= (1 << line);
-        #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32WB) || defined(STM32WL)
+        #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
         EXTI->EMR1 |= (1 << line);
         #else
         EXTI->EMR |= (1 << line);
@@ -560,7 +567,7 @@ void extint_disable(uint line) {
     #if defined(STM32H7)
     EXTI_D1->IMR1 &= ~(1 << line);
     EXTI_D1->EMR1 &= ~(1 << line);
-    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32WB) || defined(STM32WL)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
     EXTI->IMR1 &= ~(1 << line);
     EXTI->EMR1 &= ~(1 << line);
     #else
@@ -582,7 +589,7 @@ void extint_swint(uint line) {
         return;
     }
     // we need 0 to 1 transition to trigger the interrupt
-    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
     EXTI->SWIER1 &= ~(1 << line);
     EXTI->SWIER1 |= (1 << line);
     #else
@@ -662,7 +669,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
 static mp_obj_t extint_regs(void) {
     const mp_print_t *print = &mp_plat_print;
 
-    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
     mp_printf(print, "EXTI_IMR1   %08x\n", (unsigned int)EXTI->IMR1);
     mp_printf(print, "EXTI_IMR2   %08x\n", (unsigned int)EXTI->IMR2);
     mp_printf(print, "EXTI_EMR1   %08x\n", (unsigned int)EXTI->EMR1);
@@ -673,7 +680,7 @@ static mp_obj_t extint_regs(void) {
     mp_printf(print, "EXTI_FTSR2  %08x\n", (unsigned int)EXTI->FTSR2);
     mp_printf(print, "EXTI_SWIER1 %08x\n", (unsigned int)EXTI->SWIER1);
     mp_printf(print, "EXTI_SWIER2 %08x\n", (unsigned int)EXTI->SWIER2);
-    #if defined(STM32G0) || defined(STM32H5)
+    #if defined(STM32G0) || defined(STM32N6) || defined(STM32H5)
     mp_printf(print, "EXTI_RPR1    %08x\n", (unsigned int)EXTI->RPR1);
     mp_printf(print, "EXTI_FPR1    %08x\n", (unsigned int)EXTI->FPR1);
     mp_printf(print, "EXTI_RPR2    %08x\n", (unsigned int)EXTI->RPR2);

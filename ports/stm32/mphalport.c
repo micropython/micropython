@@ -105,7 +105,7 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     #elif defined(STM32F4) || defined(STM32F7)
     #define AHBxENR AHB1ENR
     #define AHBxENR_GPIOAEN_Pos RCC_AHB1ENR_GPIOAEN_Pos
-    #elif defined(STM32H7)
+    #elif defined(STM32H7) || defined(STM32N6)
     #define AHBxENR AHB4ENR
     #define AHBxENR_GPIOAEN_Pos RCC_AHB4ENR_GPIOAEN_Pos
     #elif defined(STM32L0)

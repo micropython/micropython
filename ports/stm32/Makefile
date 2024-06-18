@@ -123,7 +123,15 @@ CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DMBOOT_VTOR=$(MBOOT_TEXT0_ADDR)
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
+ifeq ($(MCU_SERIES),n6)
+ifeq ($(USE_MBOOT),1)
+CFLAGS += -DMICROPY_HW_RUNS_FROM_EXT_FLASH=1
+endif
+# as doesn't recognise -mcpu=cortex-m55
+AFLAGS += -march=armv8.1-m.main
+else
 AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU_$(MCU_SERIES)))
+endif
 
 # Configure for nan-boxing object model if requested
 ifeq ($(NANBOX),1)
@@ -300,6 +308,7 @@ SRC_C += \
 	adc.c \
 	sdio.c \
 	subghz.c \
+	xspi.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O += \
@@ -316,6 +325,13 @@ CFLAGS += -DUSE_HAL_DRIVER
 SRC_O += \
 	resethandler_m3.o \
 	shared/runtime/gchelper_thumb2.o
+else ifeq ($(MCU_SERIES),n6)
+SRC_O += shared/runtime/gchelper_thumb2.o
+ifeq ($(USE_MBOOT),1)
+SRC_O += resethandler_iram.o
+else
+SRC_O += resethandler.o
+endif
 else
 SRC_O += \
 	system_stm32.o \
@@ -329,8 +345,6 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_adc_ex.c \
 	hal_cortex.c \
 	hal_dma.c \
-	hal_flash.c \
-	hal_flash_ex.c \
 	hal_gpio.c \
 	hal_i2c.c \
 	hal_pwr.c \
@@ -347,7 +361,14 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	ll_utils.c \
 	)
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7 l0 l1 l4 wb))
+ifneq ($(MCU_SERIES),n6)
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_flash.c \
+	hal_flash_ex.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7 l0 l1 l4 n6 wb))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_pcd.c \
 	hal_pcd_ex.c \
@@ -355,7 +376,15 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	)
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h5 h7 l4))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),n6))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_bsec.c \
+	hal_rif.c \
+	hal_xspi.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h5 h7 l4 n6))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_sd.c \
 	ll_sdmmc.c \
@@ -380,7 +409,7 @@ $(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_hal_mmc.o: CFLAGS += -Wno
 endif
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7 n6))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_dma_ex.c \
 	)
@@ -496,6 +525,12 @@ all: $(TOP)/lib/stm32lib/README.md all_main $(BUILD)/firmware.hex
 
 ifeq ($(MBOOT_ENABLE_PACKING),1)
 all_main: $(BUILD)/firmware.pack.dfu
+else ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),n6))
+ifeq ($(USE_MBOOT),1)
+all_main: $(BUILD)/firmware.dfu
+else
+all_main: $(BUILD)/firmware-trusted.bin
+endif
 else
 all_main: $(BUILD)/firmware.dfu
 endif
@@ -556,7 +591,7 @@ define GENERATE_HEX
 	$(Q)$(OBJCOPY) -O ihex $(2) $(1)
 endef
 
-.PHONY: deploy deploy-stlink deploy-openocd
+.PHONY: deploy deploy-stlink deploy-openocd deploy-trusted
 
 ifeq ($(MBOOT_ENABLE_PACKING),1)
 deploy: $(BUILD)/firmware.pack.dfu
@@ -565,6 +600,9 @@ else
 deploy: $(BUILD)/firmware.dfu
 	$(call RUN_DFU,$^)
 endif
+
+deploy-trusted: $(BUILD)/firmware-trusted.bin
+	$(STM32_CUBE_PROGRAMMER)/bin/STM32_Programmer.sh -c port=SWD mode=HOTPLUG ap=1 -el $(DKEL) -w $^ 0x70000000 -hardRst
 
 # A board should specify TEXT0_ADDR if to use a different location than the
 # default for the firmware memory location.  A board can also optionally define
@@ -619,6 +657,10 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(call GENERATE_ELF,$@,$^)
+
+$(BUILD)/firmware-trusted.bin: $(BUILD)/firmware.bin
+	/bin/rm -f $@
+	$(STM32_CUBE_PROGRAMMER)/bin/STM32_SigningTool_CLI -bin $^ -nk -of 0x80000000 -t fsbl -o $@ -hv $(STM32_N6_HEADER_VERSION)
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(GEN_PINS_SRC)

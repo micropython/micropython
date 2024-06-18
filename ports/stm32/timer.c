@@ -261,6 +261,12 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
         }
     }
 
+    #elif defined(STM32N6)
+
+    // Timers are clocked either by ck_timg1 or ck_timg2.
+    // Both of those have the same frequency: sys_bus_ck / prescaler(TIMPRE)
+    return LL_RCC_GetSystemClockFreq() / (1 << LL_RCC_GetTIMPrescaler());
+
     #else
 
     uint32_t source, clk_div;
@@ -846,7 +852,9 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),
     #endif
     #endif
+
     TIM_ENTRY(2, TIM2_IRQn),
+
     #if defined(TIM3)
     #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
     TIM_ENTRY(3, TIM3_TIM4_IRQn),
@@ -854,6 +862,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(3, TIM3_IRQn),
     #endif
     #endif
+
     #if defined(TIM4)
     #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
     TIM_ENTRY(3, TIM3_TIM4_IRQn),
@@ -861,20 +870,23 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(4, TIM4_IRQn),
     #endif
     #endif
+
     #if defined(TIM5)
     TIM_ENTRY(5, TIM5_IRQn),
     #endif
+
     #if defined(TIM6)
     #if defined(STM32F412Zx) || defined(STM32L1)
     TIM_ENTRY(6, TIM6_IRQn),
     #elif defined(STM32G0)
     TIM_ENTRY(6, TIM6_DAC_LPTIM1_IRQn),
-    #elif defined(STM32H5)
+    #elif defined(STM32H5) || defined(STM32N6)
     TIM_ENTRY(6, TIM6_IRQn),
     #else
     TIM_ENTRY(6, TIM6_DAC_IRQn),
     #endif
     #endif
+
     #if defined(TIM7)
     #if defined(STM32G0)
     TIM_ENTRY(7, TIM7_LPTIM2_IRQn),
@@ -894,7 +906,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
 
     #if defined(TIM9)
-    #if defined(STM32L1)
+    #if defined(STM32L1) || defined(STM32N6)
     TIM_ENTRY(9, TIM9_IRQn),
     #else
     TIM_ENTRY(9, TIM1_BRK_TIM9_IRQn),
@@ -902,7 +914,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
 
     #if defined(TIM10)
-    #if defined(STM32L1)
+    #if defined(STM32L1) || defined(STM32N6)
     TIM_ENTRY(10, TIM10_IRQn),
     #else
     TIM_ENTRY(10, TIM1_UP_TIM10_IRQn),
@@ -910,7 +922,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
 
     #if defined(TIM11)
-    #if defined(STM32L1)
+    #if defined(STM32L1) || defined(STM32N6)
     TIM_ENTRY(11, TIM11_IRQn),
     #else
     TIM_ENTRY(11, TIM1_TRG_COM_TIM11_IRQn),
@@ -918,7 +930,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
 
     #if defined(TIM12)
-    #if defined(STM32H5)
+    #if defined(STM32H5) || defined(STM32N6)
     TIM_ENTRY(12, TIM12_IRQn),
     #else
     TIM_ENTRY(12, TIM8_BRK_TIM12_IRQn),
@@ -926,21 +938,21 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
 
     #if defined(TIM13)
-    #if defined(STM32H5)
+    #if defined(STM32H5) || defined(STM32N6)
     TIM_ENTRY(13, TIM13_IRQn),
     #else
     TIM_ENTRY(13, TIM8_UP_TIM13_IRQn),
     #endif
     #endif
 
-    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H5)
+    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32N6)
     TIM_ENTRY(14, TIM14_IRQn),
     #elif defined(TIM14)
     TIM_ENTRY(14, TIM8_TRG_COM_TIM14_IRQn),
     #endif
 
     #if defined(TIM15)
-    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7)
+    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
     TIM_ENTRY(15, TIM15_IRQn),
     #else
     TIM_ENTRY(15, TIM1_BRK_TIM15_IRQn),
@@ -950,7 +962,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM16)
     #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
     TIM_ENTRY(16, TIM16_FDCAN_IT0_IRQn),
-    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32WL)
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32WL)
     TIM_ENTRY(16, TIM16_IRQn),
     #else
     TIM_ENTRY(16, TIM1_UP_TIM16_IRQn),
@@ -960,7 +972,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM17)
     #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
     TIM_ENTRY(17, TIM17_FDCAN_IT1_IRQn),
-    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32WL)
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32WL)
     TIM_ENTRY(17, TIM17_IRQn),
     #else
     TIM_ENTRY(17, TIM1_TRG_COM_TIM17_IRQn),
