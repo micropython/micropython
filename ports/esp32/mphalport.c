@@ -34,6 +34,7 @@
 #include "freertos/task.h"
 #include "esp_timer.h"
 
+#include "py/mpprint.h"
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/stream.h"
@@ -46,6 +47,8 @@
 #include "usb.h"
 #include "usb_serial_jtag.h"
 #include "uart.h"
+
+#include "py/mpprint.h"
 
 TaskHandle_t mp_main_task_handle;
 
@@ -92,6 +95,9 @@ void check_esp_err_(esp_err_t code, const char *func, const int line, const char
         #endif
         o_str->len = strlen((char *)o_str->data);
         o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+        #if MICROPY_ERROR_REPORTING > MICROPY_ERROR_REPORTING_NORMAL
+        mp_printf(MP_PYTHON_PRINTER, "Exception in function '%s' at line %d in file '%s'\n", func, line, file);
+        #endif
         // raise
         mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(pcode), MP_OBJ_FROM_PTR(o_str)};
         nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));

@@ -63,12 +63,15 @@
 #define MICROPY_ENABLE_GC                   (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL)
+// #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL)
+#define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_DETAILED)
 #define MICROPY_WARNINGS                    (1)
 #define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_STREAMS_POSIX_API           (1)
 #define MICROPY_USE_INTERNAL_ERRNO          (0) // errno.h from xtensa-esp32-elf/sys-include/sys
 #define MICROPY_USE_INTERNAL_PRINTF         (0) // ESP32 SDK requires its own printf
+#define MICROPY_DEBUG_PRINTERS              (1)
+#define MICROPY_DEBUG_VERBOSE               (0)
 #define MICROPY_SCHEDULER_DEPTH             (8)
 #define MICROPY_VFS                         (1)
 
