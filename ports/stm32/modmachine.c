@@ -117,6 +117,7 @@
 static uint32_t reset_cause;
 
 void machine_init(void) {
+#if 0
     #if defined(STM32F4)
     if (PWR->CSR & PWR_CSR_SBF) {
         // came out of standby
@@ -177,6 +178,7 @@ void machine_init(void) {
     }
     // clear RCC reset flags
     RCC->RCC_SR |= RCC_SR_RMVF;
+#endif
 }
 
 void machine_deinit(void) {
@@ -324,18 +326,25 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
 // get or set the MCU frequencies
 static mp_obj_t mp_machine_get_freq(void) {
     mp_obj_t tuple[] = {
+        #if defined(STM32N6)
+        mp_obj_new_int(HAL_RCC_GetCpuClockFreq()),
+        #endif
         mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
         mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
         mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
         #if !defined(STM32F0) && !defined(STM32G0)
         mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
         #endif
+        #if defined(STM32N6)
+        mp_obj_new_int(HAL_RCC_GetPCLK4Freq()),
+        mp_obj_new_int(HAL_RCC_GetPCLK5Freq()),
+        #endif
     };
     return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
 }
 
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
-    #if defined(STM32F0) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32G0)
+    #if defined(STM32F0) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32G0) || defined(STM32N6)
     mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
     #else
     mp_int_t sysclk = mp_obj_get_int(args[0]);
