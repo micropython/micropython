@@ -100,7 +100,6 @@ void supervisor_workflow_start(void) {
 
     #if CIRCUITPY_BLEIO
     bleio_reset();
-    supervisor_bluetooth_enable_workflow();
     supervisor_start_bluetooth();
     #endif
 
