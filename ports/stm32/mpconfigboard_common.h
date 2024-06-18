@@ -465,6 +465,16 @@
 #define MICROPY_HW_MAX_UART (5)
 #define MICROPY_HW_MAX_LPUART (1)
 
+// Configuration for STM32N6 series
+#elif defined(STM32N6)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (42) // TODO
+#define MICROPY_HW_MAX_I2C (4)
+#define MICROPY_HW_MAX_TIMER (18)
+#define MICROPY_HW_MAX_UART (10)
+#define MICROPY_HW_MAX_LPUART (1)
+
 // Configuration for STM32WB series
 #elif defined(STM32WB)
 

@@ -119,8 +119,8 @@
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
 #define MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX (4)
 #define MICROPY_PY_MACHINE_BOOTLOADER (1)
-#define MICROPY_PY_MACHINE_ADC      (1)
-#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/stm32/machine_adc.c"
+//#define MICROPY_PY_MACHINE_ADC      (1)
+//#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/stm32/machine_adc.c"
 #ifndef MICROPY_PY_MACHINE_BITSTREAM
 #define MICROPY_PY_MACHINE_BITSTREAM (1)
 #endif
@@ -133,9 +133,9 @@
 #define MICROPY_PY_MACHINE_I2S_CONSTANT_RX (I2S_MODE_MASTER_RX)
 #define MICROPY_PY_MACHINE_I2S_CONSTANT_TX (I2S_MODE_MASTER_TX)
 #define MICROPY_PY_MACHINE_I2S_RING_BUF (1)
-#define MICROPY_PY_MACHINE_SPI      (1)
-#define MICROPY_PY_MACHINE_SPI_MSB  (SPI_FIRSTBIT_MSB)
-#define MICROPY_PY_MACHINE_SPI_LSB  (SPI_FIRSTBIT_LSB)
+//#define MICROPY_PY_MACHINE_SPI      (1)
+//#define MICROPY_PY_MACHINE_SPI_MSB  (SPI_FIRSTBIT_MSB)
+//#define MICROPY_PY_MACHINE_SPI_LSB  (SPI_FIRSTBIT_LSB)
 #define MICROPY_PY_MACHINE_SOFTSPI  (1)
 #define MICROPY_PY_MACHINE_TIMER    (1)
 #define MICROPY_PY_MACHINE_UART     (1)
@@ -273,7 +273,6 @@ typedef long mp_off_t;
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
-        __WFI(); \
     } while (0);
 
 #define MICROPY_THREAD_YIELD()

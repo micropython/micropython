@@ -139,6 +139,8 @@
 #define ADC_CAL2                (TEMPSENSOR_CAL2_ADDR)
 #define ADC_CAL_BITS            (12)
 
+#elif defined(STM32N6)
+
 #else
 
 #error Unsupported processor
@@ -182,6 +184,7 @@
 #define VBAT_DIV (3)
 #elif defined(STM32L152xE)
 // STM32L152xE does not have vbat.
+#elif defined(STM32N6)
 #else
 #error Unsupported processor
 #endif
@@ -267,6 +270,8 @@ static bool is_adcx_channel(int channel) {
     // The first argument to the IS_ADC_CHANNEL macro is unused.
     return __HAL_ADC_IS_CHANNEL_INTERNAL(channel)
            || IS_ADC_CHANNEL(NULL, __HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel));
+    #elif defined(STM32N6)
+    return 0; // TODO
     #else
     #error Unsupported processor
     #endif
@@ -278,6 +283,9 @@ static void adc_wait_for_eoc_or_timeout(ADC_HandleTypeDef *adcHandle, int32_t ti
     while ((adcHandle->Instance->SR & ADC_FLAG_EOC) != ADC_FLAG_EOC) {
     #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
     while (READ_BIT(adcHandle->Instance->ISR, ADC_FLAG_EOC) != ADC_FLAG_EOC) {
+    #elif defined(STM32N6)
+    while (READ_BIT(adcHandle->Instance->ISR, ADC_FLAG_EOC) != ADC_FLAG_EOC) {
+    //while (0) { // TODO
     #else
     #error Unsupported processor
         #endif
@@ -311,6 +319,8 @@ static void adcx_clock_enable(ADC_HandleTypeDef *adch) {
         __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_SYSCLK);
     }
     __HAL_RCC_ADC_CLK_ENABLE();
+    #elif defined(STM32N6)
+    // TODO
     #else
     #error Unsupported processor
     #endif
@@ -368,6 +378,8 @@ static void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adch->Init.OversamplingMode = DISABLE;
     adch->Init.DataAlign = ADC_DATAALIGN_RIGHT;
     adch->Init.DMAContinuousRequests = DISABLE;
+    #elif defined(STM32N6)
+    // TODO
     #else
     #error Unsupported processor
     #endif
@@ -449,6 +461,8 @@ static void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     sConfig.SingleDiff = ADC_SINGLE_ENDED;
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
     sConfig.Offset = 0;
+    #elif defined(STM32N6)
+    // TODO
     #else
     #error Unsupported processor
     #endif
@@ -669,6 +683,8 @@ static mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
             self->handle.Instance->CR2 |= (uint32_t)ADC_CR2_SWSTART;
             #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
             SET_BIT(self->handle.Instance->CR, ADC_CR_ADSTART);
+            #elif defined(STM32N6)
+            // TODO
             #else
             #error Unsupported processor
             #endif
@@ -779,6 +795,8 @@ static mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
             adc->handle.Instance->CR2 |= (uint32_t)ADC_CR2_SWSTART;
             #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
             SET_BIT(adc->handle.Instance->CR, ADC_CR_ADSTART);
+            #elif defined(STM32N6)
+            // TODO
             #else
             #error Unsupported processor
             #endif
