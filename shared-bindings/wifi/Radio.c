@@ -698,7 +698,12 @@ MP_PROPERTY_GETTER(wifi_radio_ap_info_obj,
 //|         self, ip: ipaddress.IPv4Address, *, timeout: Optional[float] = 0.5
 //|     ) -> Optional[float]:
 //|         """Ping an IP to test connectivity. Returns echo time in seconds.
-//|         Returns None when it times out."""
+//|         Returns None when it times out.
+//|
+//|         **Limitations:** On Espressif, calling `ping()` multiple times rapidly
+//|         exhausts available resources after several calls. Rather than failing at that point, `ping()`
+//|         will wait two seconds for enough resources to be freed up before proceeding.
+//|         """
 //|         ...
 //|
 static mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

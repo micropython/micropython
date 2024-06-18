@@ -554,21 +554,18 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
     // ESP-IDF creates a task to do the ping session. It shuts down when done, but only after a one second delay.
     // Calling common_hal_wifi_radio_ping() too fast will cause resource exhaustion.
     esp_ping_handle_t ping;
-    esp_err_t ret;
-    for (size_t tries = 1; tries <= 5; tries++) {
-        ret = esp_ping_new_session(&ping_config, &ping_callbacks, &ping);
-        if (ret == ESP_OK) {
-            break;
-        }
+    if (esp_ping_new_session(&ping_config, &ping_callbacks, &ping) != ESP_OK) {
         // Wait for old task to go away and then try again.
         // Empirical testing shows we have to wait at least two seconds, despite the task
         // having a one-second timeout.
         common_hal_time_delay_ms(2000);
+        // Return if interrupted now, to show the interruption as KeyboardInterrupt instead of the
+        // IDF error.
         if (mp_hal_is_interrupted()) {
-            return -1;
+            return (uint32_t)(-1);
         }
+        CHECK_ESP_RESULT(esp_ping_new_session(&ping_config, &ping_callbacks, &ping));
     }
-    CHECK_ESP_RESULT(ret);
 
     esp_ping_start(ping);
 
