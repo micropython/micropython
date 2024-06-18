@@ -10,6 +10,10 @@ LONGINT_IMPL = MPZ
 # Default to no-psram
 CIRCUITPY_ESP_PSRAM_SIZE ?= 0
 
+# New 4MB boards will not have OTA support but more room for alarm, ble and other
+# newer features.
+CIRCUITPY_LEGACY_4MB_FLASH_LAYOUT ?= 0
+
 # Enable more features
 CIRCUITPY_FULL_BUILD ?= 1
 
@@ -18,6 +22,7 @@ CIRCUITPY_SSL_MBEDTLS = 1
 
 # These modules are implemented in ports/<port>/common-hal:
 CIRCUITPY_ALARM ?= 1
+CIRCUITPY_ALARM_TOUCH ?= 0
 CIRCUITPY_ANALOGBUFIO ?= 1
 CIRCUITPY_AUDIOBUSIO ?= 1
 CIRCUITPY_AUDIOBUSIO_PDMIN ?= 0
@@ -51,7 +56,9 @@ CIRCUITPY__EVE ?= 1
 # Conditionally turn off modules/features
 ifeq ($(IDF_TARGET),esp32)
 # Modules
+CIRCUITPY_ALARM_TOUCH = 1
 CIRCUITPY_RGBMATRIX = 0
+
 # Features
 CIRCUITPY_USB_DEVICE = 0
 
@@ -60,7 +67,6 @@ else ifeq ($(IDF_TARGET),esp32c2)
 # C2 ROM spits out the UART at 74880 when connected to a 26mhz crystal! Debug
 # prints will default to that too.
 # Modules
-CIRCUITPY_ALARM = 0
 CIRCUITPY_ESPCAMERA = 0
 CIRCUITPY_ESPULP = 0
 CIRCUITPY_MEMORYMAP = 0
@@ -95,7 +101,6 @@ CIRCUITPY_ESP_USB_SERIAL_JTAG = 0
 
 else ifeq ($(IDF_TARGET),esp32c3)
 # Modules
-CIRCUITPY_ALARM = 0
 CIRCUITPY_ESPCAMERA = 0
 CIRCUITPY_ESPULP = 0
 CIRCUITPY_MEMORYMAP = 0
@@ -116,7 +121,6 @@ CIRCUITPY_ESP_USB_SERIAL_JTAG ?= 1
 
 else ifeq ($(IDF_TARGET),esp32c6)
 # Modules
-CIRCUITPY_ALARM = 0
 CIRCUITPY_ESPCAMERA = 0
 CIRCUITPY_ESPULP = 0
 CIRCUITPY_MEMORYMAP = 0
@@ -136,7 +140,6 @@ CIRCUITPY_ESP_USB_SERIAL_JTAG ?= 1
 
 else ifeq ($(IDF_TARGET),esp32h2)
 # Modules
-CIRCUITPY_ALARM = 0
 CIRCUITPY_ESPCAMERA = 0
 CIRCUITPY_ESPULP = 0
 CIRCUITPY_MEMORYMAP = 0
@@ -157,6 +160,7 @@ CIRCUITPY_MAX3421E = 0
 
 else ifeq ($(IDF_TARGET),esp32s2)
 # Modules
+CIRCUITPY_ALARM_TOUCH = 1
 # No BLE in hw
 CIRCUITPY_BLEIO = 0
 
@@ -164,6 +168,7 @@ CIRCUITPY_ESP_USB_SERIAL_JTAG ?= 0
 
 else ifeq ($(IDF_TARGET),esp32s3)
 # Modules
+CIRCUITPY_ALARM_TOUCH = 1
 CIRCUITPY_ESP_USB_SERIAL_JTAG ?= 0
 
 # No room for _bleio on boards with 4MB flash
@@ -180,6 +185,19 @@ OPTIMIZATION_FLAGS ?= -Os
 CIRCUITPY_DUALBANK ?= 0
 else
 CIRCUITPY_DUALBANK ?= 1
+endif
+
+# We used to default to OTA partition layout but are moving away from it so that
+# BLE and alarm can be included. This setting prevents the partition layout from
+# changing.
+ifeq ($(CIRCUITPY_LEGACY_4MB_FLASH_LAYOUT), 1)
+ifeq ($(IDF_TARGET_ARCH), xtensa)
+	CIRCUITPY_ALARM ?= 1
+else
+CIRCUITPY_ALARM = 0
+endif
+CIRCUITPY_DUALBANK = 1
+CIRCUITPY_BLEIO = 0
 endif
 
 # No room for dualbank or mp3 on boards with 2MB flash

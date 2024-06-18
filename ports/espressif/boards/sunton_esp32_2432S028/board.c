@@ -65,7 +65,7 @@ static void display_init(void) {
         240, // Height
         0, // column start
         0, // row start
-        0, // rotation
+        270, // rotation
         16, // Color depth
         false, // Grayscale
         false, // pixels in a byte share a row. Only valid for depths < 8
