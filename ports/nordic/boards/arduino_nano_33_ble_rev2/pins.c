@@ -48,7 +48,7 @@ static const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_RGB_LED_G), MP_ROM_PTR(&pin_P0_16)  },
     { MP_ROM_QSTR(MP_QSTR_RGB_LED_B), MP_ROM_PTR(&pin_P0_06)  },
 
-    // Power line to LSM9DS1, LPS22 and HTS221.
+    // Power line to IMU, pressure, temperature and humidity sensors.
     { MP_ROM_QSTR(MP_QSTR_VDD_ENV), MP_ROM_PTR(&pin_P0_22)  },
 
     // Pullup voltage for SDA1 and SCL1
@@ -59,6 +59,9 @@ static const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PDMDIN), MP_ROM_PTR(&pin_P0_25)  },
 
     { MP_ROM_QSTR(MP_QSTR_INT_APDS), MP_ROM_PTR(&pin_P0_19)  },
+    { MP_ROM_QSTR(MP_QSTR_INT_BMI_1), MP_ROM_PTR(&pin_P0_11)  },
+    { MP_ROM_QSTR(MP_QSTR_INT_BMI_2), MP_ROM_PTR(&pin_P0_20)  },
+    { MP_ROM_QSTR(MP_QSTR_INT_LPS), MP_ROM_PTR(&pin_P0_12)  },
 
     { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_P1_03) },
     { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_P1_10) },
