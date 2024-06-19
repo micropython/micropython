@@ -71,7 +71,6 @@ class TopLevelCoro:
     def set(resolve, reject):
         TopLevelCoro.resolve = resolve
         TopLevelCoro.reject = reject
-        _schedule_run_iter(0)
 
     @staticmethod
     def send(value):
@@ -90,7 +89,6 @@ class ThenableEvent:
         if self.waiting:
             _task_queue.push(self.waiting)
             self.waiting = None
-            _schedule_run_iter(0)
 
     def remove(self, task):
         self.waiting = None
@@ -203,7 +201,6 @@ def create_task(coro):
         raise TypeError("coroutine expected")
     t = Task(coro, globals())
     _task_queue.push(t)
-    _schedule_run_iter(0)
     return t
 
 
@@ -253,7 +250,7 @@ def current_task():
 
 def new_event_loop():
     global _task_queue
-    _task_queue = TaskQueue()  # TaskQueue of Task instances.
+    _task_queue = TaskQueue(_schedule_run_iter)  # TaskQueue of Task instances.
     return Loop
 
 
