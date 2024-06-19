@@ -24,7 +24,8 @@
 #define DEFAULT_SPI_PHASE       (0)
 #define DEFAULT_SPI_BITS        (8)
 #define DEFAULT_SPI_FIRSTBIT    (0) // msb
-#define DEFAULT_SPI_SSEL_PIN    (NC)
+#define MASTER_MODE (0)
+#define SLAVE_MODE  (1)
 
 
 #define spi_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
@@ -180,6 +181,11 @@ static void machine_spi_slave_print(const mp_print_t *print, mp_obj_t self_in, m
 }
 
 mp_obj_t machine_spi_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+
+    if (spi_mode < 0 || spi_mode > 1) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI should be configured in master or slave mode!"));
+    }
+
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_ssel, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
@@ -187,7 +193,7 @@ mp_obj_t machine_spi_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_BITS} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
-        { MP_QSTR_ssel,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+        { MP_QSTR_ssel,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_NC)}},
         { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -195,10 +201,6 @@ mp_obj_t machine_spi_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n
     // Parse the arguments.
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    if (spi_mode < 0 || spi_mode > 1) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI should be configured in master or slave mode!"));
-    }
 
     // set baudrate if provided
     if (args[ARG_baudrate].u_int != -1) {
@@ -226,11 +228,10 @@ mp_obj_t machine_spi_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n
     }
 
     // Set SSEL/SCK/MOSI/MISO pins if configured.
-    if (args[ARG_ssel].u_obj != mp_const_none) {
-        spi_ssel_alloc(self, args[ARG_ssel].u_obj);
-    } else {
-        mp_raise_TypeError(MP_ERROR_TEXT("SSEL pin must be provided"));
+    if ((spi_mode == SLAVE_MODE) & (args[ARG_ssel].u_obj == mp_const_none)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("SSEL pin must be provided in slave mode"));
     }
+    spi_ssel_alloc(self, args[ARG_ssel].u_obj);
 
     if (args[ARG_sck].u_obj != mp_const_none) {
         spi_sck_alloc(self, args[ARG_sck].u_obj);
