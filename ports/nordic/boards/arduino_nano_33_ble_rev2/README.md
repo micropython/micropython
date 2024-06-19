@@ -21,7 +21,7 @@ Pins `board.MIC_PWR`, `board.PDMDIN`, and `board.PDMCLK` are for the Nano 33 BLE
 
 Pin `board.INT_APDS` is the interrupt pin from the APDS-9960.
 
-Pin `board.INT_BMI_1` and `board.INT_BMI_2` are the two interrupt pins from the BMI270.
+Pins `board.INT_BMI_1` and `board.INT_BMI_2` are the two interrupt pins from the BMI270.
 
 Pin `board.INT_LPS` is the interrupt pin from the LPS22.
 
