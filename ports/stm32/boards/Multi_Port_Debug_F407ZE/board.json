@@ -8,8 +8,8 @@
         "STM32F407ZGT6.jpg"
     ],
     "mcu": "stm32f4",
-    "product": "F407ZG",
+    "product": "F407ZE",
     "thumbnail": "",
     "url": "http://vcc-gnd.com/",
-    "vendor": "VCC-GND Studio"
+    "vendor": "Jerry"
 }

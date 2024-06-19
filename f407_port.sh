@@ -12,7 +12,14 @@ cd ports/stm32
 # 设置默认的板名称
 BOARD=Multi_Port_Debug_F407ZE 
 
+rm -rf build-Multi_Port_Debug_F407ZE
+# make BOARD=$BOARD  submodules
 
-make BOARD=$BOARD  submodules
+make BOARD=$BOARD  LTO=1
 
-make BOARD=$BOARD  MICROPY_PY_NETWORK_WIZNET5K=5500
+
+cp build-Multi_Port_Debug_F407ZE/firmware.hex boards/Multi_Port_Debug_F407ZE/
+# cp build-Multi_Port_Debug_F407ZE/firmware0.bin boards/Multi_Port_Debug_F407ZE/
+# cp build-Multi_Port_Debug_F407ZE/firmware1.bin boards/Multi_Port_Debug_F407ZE/
+
+
