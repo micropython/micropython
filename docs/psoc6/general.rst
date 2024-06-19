@@ -29,6 +29,9 @@ Following are the boards supported in this port:
    * - CY8CPROTO-063-BLE
      - BLE
      - user button, compact form-factor
+   * - CY8CKIT-062S2-AI
+     - WiFi, BT
+     - user button, compact form-factor, USB-C, MEMS microphone, radar sensor, pressure sensor, 6-axis IMU, 3-axis magnetometer
 
 For more hardware related details, check the following sections.
 
@@ -65,5 +68,22 @@ Links for product details:
 
 * `CY8CPROTO-063-BLE product page with relevant documents <https://www.infineon.com/cms/en/product/evaluation-boards/cy8cproto-063-ble/#>`_
 * `CY8CPROTO-063-BLE MCU Datasheet <https://infineon.com/dgdl/Infineon-PSoC_6_MCU_CY8C63x6_CY8C63x7_Datasheet_PSoC_63_MCU_with_Bluetooth_LE-DataSheet-v19_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ee4efe46c37>`_
+
+CY8CKIT-062S2-AI
+----------------
+
+Pinout
+******
+
+    .. image:: img/CY8CKIT-062S2-AI-pinout.png
+        :width: 500
+
+
+Technical specifications
+************************
+Links for product details:
+
+* `CY8CKIT-062S2-AI product page with relevant documents <https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-062s2-ai/>`_
+* `CY8CKIT-062S2-AI MCU Datasheet <https://www.infineon.com/dgdl/Infineon-PSOC_6_MCU_CY8C62X8_CY8C62XA-DataSheet-v18_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ee7d03a70b1>`_
 
 
