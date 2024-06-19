@@ -20,5 +20,3 @@
 
 #define MICROPY_HW_NEOPIXEL         (&pin_GPIO24)
 #define MICROPY_HW_NEOPIXEL_COUNT   (64)
-
-#define BOARD_HAS_CRYSTAL 1
