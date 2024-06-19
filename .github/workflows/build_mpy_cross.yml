@@ -1,0 +1,67 @@
+name: Build mpy-cross binaries
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install packages
+      run: source tools/ci.sh && ci_mpy_cross_setup
+    - name: Build
+      run: source tools/ci.sh && ci_mpy_cross_build
+    - name: Archive binaries (Linux x64)
+      uses: actions/upload-artifact@v3
+      with:
+        name: mpy-cross-binaries-linux-x64
+        path: mpy-cross/build-linux-x64/mpy-cross
+    - name: Archive binaries (Linux aarch64)
+      uses: actions/upload-artifact@v3
+      with:
+        name: mpy-cross-binaries-linux-aarch64
+        path: mpy-cross/build-linux-aarch64/mpy-cross
+    - name: Archive binaries (Linux armhf)
+      uses: actions/upload-artifact@v3
+      with:
+        name: mpy-cross-binaries-linux-armhf
+        path: mpy-cross/build-linux-armhf/mpy-cross
+    - name: Archive binaries (Windows x64)
+      uses: actions/upload-artifact@v3
+      with:
+        name: mpy-cross-binaries-windows-x64
+        path: mpy-cross/build-windows-x64/mpy-cross.exe
+
+  build-i686:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install packages
+      run: source tools/ci.sh && ci_mpy_cross_i686_setup
+    - name: Build
+      run: source tools/ci.sh && ci_mpy_cross_i686_build
+    - name: Archive binaries (Linux i686)
+      uses: actions/upload-artifact@v3
+      with:
+        name: mpy-cross-binaries-linux-i686
+        path: mpy-cross/build-linux-i686/mpy-cross
+    - name: Archive binaries (Windows i686)
+      uses: actions/upload-artifact@v3
+      with:
+        name: mpy-cross-binaries-windows-i686
+        path: mpy-cross/build-windows-i686/mpy-cross.exe
+
+  macos:
+    runs-on: macos-11.0
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.8'
+    - name: Build
+      run: source tools/ci.sh && ci_mpy_cross_macos_build
+    - name: Archive binaries (macOS x64)
+      uses: actions/upload-artifact@v3
+      with:
+        name: mpy-cross-binaries-macos-x64
+        path: mpy-cross/build-macos-x64/mpy-cross
