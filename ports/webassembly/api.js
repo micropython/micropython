@@ -25,6 +25,7 @@
  */
 
 // Options:
+// - pystack: size in words of the MicroPython Python stack.
 // - heapsize: size in bytes of the MicroPython GC heap.
 // - url: location to load `micropython.mjs`.
 // - stdin: function to return input characters.
@@ -34,10 +35,11 @@
 // - stderr: same behaviour as stdout but for error output.
 // - linebuffer: whether to buffer line-by-line to stdout/stderr.
 export async function loadMicroPython(options) {
-    const { heapsize, url, stdin, stdout, stderr, linebuffer } = Object.assign(
-        { heapsize: 1024 * 1024, linebuffer: true },
-        options,
-    );
+    const { pystack, heapsize, url, stdin, stdout, stderr, linebuffer } =
+        Object.assign(
+            { pystack: 2 * 1024, heapsize: 1024 * 1024, linebuffer: true },
+            options,
+        );
     let Module = {};
     Module.locateFile = (path, scriptDirectory) =>
         url || scriptDirectory + path;
@@ -96,7 +98,12 @@ export async function loadMicroPython(options) {
         );
         return proxy_convert_mp_to_js_obj_jsside_with_free(value);
     };
-    Module.ccall("mp_js_init", "null", ["number"], [heapsize]);
+    Module.ccall(
+        "mp_js_init",
+        "null",
+        ["number", "number"],
+        [pystack, heapsize],
+    );
     Module.ccall("proxy_c_init", "null", [], []);
     return {
         _module: Module,
