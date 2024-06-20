@@ -31,3 +31,9 @@ These tests can be used to assess how well the PWM API delivers expected behavio
 7.  Changes in frequency may (and will usually) result in a transient glitch in frequency and duty cycle.  PWM hardware is generally not designed for glitch-free frequency transitions.
 
 8.  PWM frequency and duty cycle should be jitter-free.
+
+## Examples of PWM flaws
+
+The plot at the top of this page depicts data PWM gathered from a device with an API that displays all of the expected behavior listed above.  The plots below show how the tools reveal flaws in the behavior of PWM APIs that are not as complete.
+
+<img src="pwm_flaw_explainer.png">
