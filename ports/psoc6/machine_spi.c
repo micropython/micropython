@@ -300,10 +300,12 @@ mp_obj_t machine_spi_slave_init_helper(machine_spi_obj_t *self, int spi_mode, si
     }
 
     // Set SSEL/SCK/MOSI/MISO pins if configured.
-    if ((spi_mode == SLAVE_MODE) & (args[ARG_ssel].u_obj == mp_const_none)) {
+    if ((args[ARG_ssel].u_obj != mp_const_none)) {
+        spi_ssel_alloc(self, args[ARG_ssel].u_obj);
+    } else {
         mp_raise_TypeError(MP_ERROR_TEXT("SSEL pin must be provided in slave mode"));
     }
-    spi_ssel_alloc(self, args[ARG_ssel].u_obj);
+
 
     if (args[ARG_sck].u_obj != mp_const_none) {
         spi_sck_alloc(self, args[ARG_sck].u_obj);

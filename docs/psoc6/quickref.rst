@@ -540,18 +540,14 @@ The :ref:`machine.SoftSPI <machine.SoftSPI>` class is **disabled** in this port.
 
 Hardware SPI bus
 ----------------
-.. 
-    TODO: This is only applicable to the CY8CPROTO-062-4343W. This does not belong here. 
-    TODO: Define approach on how the user gets to know the pinout diagram, alternate function of each board
-    - From board manual? 
-    - From datasheet?
-    - To create a pinout diagram? 
-
 Refer `PSoC 6 MCU: CY8C62x8, CY8C62xA Datasheet <https://www.infineon.com/dgdl/Infineon-PSOC_6_MCU_CY8C62X8_CY8C62XA-DataSheet-v18_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ee7d03a70b1>`_
 for details regarding all the SPI capable pins. The pins ``sck``, ``mosi`` and ``miso`` *must* be specified when
-initialising Software SPI.
+initialising SPI.
 
 The driver is accessed via :ref:`machine.SPI <machine.SPI>`
+
+.. note::
+    Slave selection should be done at application end. An example of how to do so is explained :ref:`here <machine.SPI>`
 
 The constructor
 ^^^^^^^^^^^^^^^
@@ -562,7 +558,7 @@ SPI object is created with default settings or settings of previous initializati
 ::
     
     from machine import SPI
-    spi = SPI(baudrate=1000000, polarity=0,phase=0,bits=8,firstbit=SPI.MSB,ssel="P6_3",sck='P6_2', mosi='P6_0', miso='P6_1')
+    spi = SPI(baudrate=1000000, polarity=0,phase=0,bits=8,firstbit=SPI.MSB,sck='P6_2', mosi='P6_0', miso='P6_1')
 
 Methods
 ^^^^^^^
