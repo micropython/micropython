@@ -90,11 +90,11 @@ static mp_obj_t hashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
 #if MICROPY_PY_DEFLATE
 static mp_obj_t hashlib_adler32(mp_obj_t data, mp_obj_t seed) {
     mp_buffer_info_t bufinfo;
-	uint32_t res;
+    uint32_t res;
 
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);	
-	res = uzlib_adler32(bufinfo.buf, bufinfo.len, mp_obj_get_int(seed));
-	return mp_obj_new_int_from_uint(res);
+    res = uzlib_adler32(bufinfo.buf, bufinfo.len, mp_obj_get_int(seed));
+    return mp_obj_new_int_from_uint(res);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(hashlib_adler32_obj, hashlib_adler32);
 #endif
