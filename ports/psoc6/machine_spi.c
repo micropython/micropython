@@ -160,11 +160,7 @@ static inline void spi_init(machine_spi_obj_t *machine_spi_obj, int spi_mode) {
     // set the baudrate
     cyhal_spi_set_frequency(&machine_spi_obj->spi_obj, machine_spi_obj->baudrate);
     // Initialise the SPI peripheral if any arguments given, or it was not initialised previously.
-    if (spi_mode == MASTER_MODE) {
-        cyhal_spi_init(&machine_spi_obj->spi_obj, machine_spi_obj->mosi->addr, machine_spi_obj->miso->addr, machine_spi_obj->sck->addr,  machine_spi_obj->ssel->addr, NULL, machine_spi_obj->bits, mode, spi_mode);
-    } else {
-        cyhal_spi_init(&machine_spi_obj->spi_obj, machine_spi_obj->mosi->addr, machine_spi_obj->miso->addr, machine_spi_obj->sck->addr, machine_spi_obj->ssel->addr, NULL, machine_spi_obj->bits, mode, spi_mode);
-    }
+    cyhal_spi_init(&machine_spi_obj->spi_obj, machine_spi_obj->mosi->addr, machine_spi_obj->miso->addr, machine_spi_obj->sck->addr, machine_spi_obj->ssel->addr, NULL, machine_spi_obj->bits, mode, spi_mode);
     spi_assert_raise_val("SPI initialisation failed with return code %x !", result);
 }
 
