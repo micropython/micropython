@@ -263,7 +263,7 @@ static MP_DEFINE_CONST_DICT(deque_locals_dict, deque_locals_dict_table);
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_deque,
     MP_QSTR_deque,
-    MP_TYPE_FLAG_ITER_IS_GETITER,
+    DEQUE_TYPE_FLAGS,
     make_new, deque_make_new,
     unary_op, deque_unary_op,
     DEQUE_TYPE_SUBSCR
