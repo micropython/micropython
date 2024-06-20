@@ -247,12 +247,7 @@ mp_obj_t machine_spi_master_init_helper(machine_spi_obj_t *self, size_t n_args, 
     return MP_OBJ_FROM_PTR(self);
 }
 
-mp_obj_t machine_spi_slave_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-
-    if (spi_mode < 0 || spi_mode > 1) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI should be configured in master or slave mode!"));
-    }
-
+mp_obj_t machine_spi_slave_init_helper(machine_spi_obj_t *self, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_ssel, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
@@ -321,7 +316,7 @@ mp_obj_t machine_spi_slave_init_helper(machine_spi_obj_t *self, int spi_mode, si
     }
 
     if (n_args > 1 || n_kw > 0) {
-        spi_init(self, spi_mode);
+        spi_init(self, SLAVE_MODE);
     }
     return MP_OBJ_FROM_PTR(self);
 }
@@ -330,7 +325,6 @@ mp_obj_t machine_spi_master_make_new(const mp_obj_type_t *type, size_t n_args, s
     machine_spi_obj_t *self = spi_obj_alloc(false);
     if (n_kw > 1) {
         machine_spi_master_init_helper(self, n_args, n_kw, all_args);
-        // machine_spi_init_helper(self, 0, n_args, n_kw, all_args);
     } else {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Master init failed as all required arguments not passed!"));
     }
@@ -340,7 +334,7 @@ mp_obj_t machine_spi_master_make_new(const mp_obj_type_t *type, size_t n_args, s
 mp_obj_t machine_spi_slave_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     machine_spi_obj_t *self = spi_obj_alloc(true);
     if (n_kw > 1) {
-        machine_spi_slave_init_helper(self, 1, n_args, n_kw, all_args);
+        machine_spi_slave_init_helper(self, n_args, n_kw, all_args);
     } else {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Slave init failed as all required arguments not passed!"));
     }
