@@ -161,7 +161,7 @@ static inline void spi_init(machine_spi_obj_t *machine_spi_obj, int spi_mode) {
     cyhal_spi_set_frequency(&machine_spi_obj->spi_obj, machine_spi_obj->baudrate);
     // Initialise the SPI peripheral if any arguments given, or it was not initialised previously.
     if (spi_mode == MASTER_MODE) {
-        cyhal_spi_init(&machine_spi_obj->spi_obj, machine_spi_obj->mosi->addr, machine_spi_obj->miso->addr, machine_spi_obj->sck->addr, NC, NULL, machine_spi_obj->bits, mode, spi_mode);
+        cyhal_spi_init(&machine_spi_obj->spi_obj, machine_spi_obj->mosi->addr, machine_spi_obj->miso->addr, machine_spi_obj->sck->addr,  machine_spi_obj->ssel->addr, NULL, machine_spi_obj->bits, mode, spi_mode);
     } else {
         cyhal_spi_init(&machine_spi_obj->spi_obj, machine_spi_obj->mosi->addr, machine_spi_obj->miso->addr, machine_spi_obj->sck->addr, machine_spi_obj->ssel->addr, NULL, machine_spi_obj->bits, mode, spi_mode);
     }
@@ -225,8 +225,9 @@ mp_obj_t machine_spi_master_init_helper(machine_spi_obj_t *self, size_t n_args, 
     if (args[ARG_firstbit].u_int != -1) {
         self->firstbit = args[ARG_firstbit].u_int;
     }
-    // spi_ssel_alloc(self, )
-    self->ssel->addr = MP_QSTR_NC;
+
+    spi_ssel_alloc(self, MP_ROM_QSTR(MP_QSTR_NC));
+
     if (args[ARG_sck].u_obj != mp_const_none) {
         spi_sck_alloc(self, args[ARG_sck].u_obj);
     } else {
@@ -251,7 +252,7 @@ mp_obj_t machine_spi_master_init_helper(machine_spi_obj_t *self, size_t n_args, 
     return MP_OBJ_FROM_PTR(self);
 }
 
-mp_obj_t machine_spi_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+mp_obj_t machine_spi_slave_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
 
     if (spi_mode < 0 || spi_mode > 1) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI should be configured in master or slave mode!"));
@@ -342,7 +343,7 @@ mp_obj_t machine_spi_master_make_new(const mp_obj_type_t *type, size_t n_args, s
 mp_obj_t machine_spi_slave_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     machine_spi_obj_t *self = spi_obj_alloc(true);
     if (n_kw > 1) {
-        machine_spi_init_helper(self, 1, n_args, n_kw, all_args);
+        machine_spi_slave_init_helper(self, 1, n_args, n_kw, all_args);
     } else {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Slave init failed as all required arguments not passed!"));
     }
