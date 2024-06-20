@@ -155,11 +155,16 @@ static inline void spi_miso_free(machine_spi_obj_t *spi_obj) {
 }
 
 static inline void spi_init(machine_spi_obj_t *machine_spi_obj, int spi_mode) {
+    cy_rslt_t result = CY_RSLT_SUCCESS;
     cyhal_spi_mode_t mode = spi_mode_select(machine_spi_obj->firstbit, machine_spi_obj->polarity, machine_spi_obj->phase);
     // set the baudrate
     cyhal_spi_set_frequency(&machine_spi_obj->spi_obj, machine_spi_obj->baudrate);
     // Initialise the SPI peripheral if any arguments given, or it was not initialised previously.
-    cy_rslt_t result = cyhal_spi_init(&machine_spi_obj->spi_obj, machine_spi_obj->mosi->addr, machine_spi_obj->miso->addr, machine_spi_obj->sck->addr, machine_spi_obj->ssel->addr, NULL, machine_spi_obj->bits, mode, spi_mode);
+    if (spi_mode == MASTER_MODE) {
+        cyhal_spi_init(&machine_spi_obj->spi_obj, machine_spi_obj->mosi->addr, machine_spi_obj->miso->addr, machine_spi_obj->sck->addr, NC, NULL, machine_spi_obj->bits, mode, spi_mode);
+    } else {
+        cyhal_spi_init(&machine_spi_obj->spi_obj, machine_spi_obj->mosi->addr, machine_spi_obj->miso->addr, machine_spi_obj->sck->addr, machine_spi_obj->ssel->addr, NULL, machine_spi_obj->bits, mode, spi_mode);
+    }
     spi_assert_raise_val("SPI initialisation failed with return code %x !", result);
 }
 
@@ -178,6 +183,72 @@ static void machine_spi_slave_print(const mp_print_t *print, mp_obj_t self_in, m
         self->baudrate, self->polarity,
         self->phase, self->bits, self->firstbit,
         self->ssel->addr, self->sck->addr, self->mosi->addr, self->miso->addr);
+}
+
+mp_obj_t machine_spi_master_init_helper(machine_spi_obj_t *self, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
+        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_POLARITY} },
+        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
+        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_BITS} },
+        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
+        { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    };
+    // Parse the arguments.
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // set baudrate if provided
+    if (args[ARG_baudrate].u_int != -1) {
+        self->baudrate = args[ARG_baudrate].u_int;
+    }
+
+    // set polarity(CPOL) if provided
+    if (args[ARG_polarity].u_int != -1) {
+        self->polarity = args[ARG_polarity].u_int;
+    }
+
+    // set phase(CPHA) if provided
+    if (args[ARG_phase].u_int != -1) {
+        self->phase = args[ARG_phase].u_int;
+    }
+
+    // set bits if provided
+    if (args[ARG_bits].u_int != -1) {
+        self->bits = args[ARG_bits].u_int;
+    }
+
+    // set firstbit if provided(LSB or MSB first)
+    if (args[ARG_firstbit].u_int != -1) {
+        self->firstbit = args[ARG_firstbit].u_int;
+    }
+    // spi_ssel_alloc(self, )
+    self->ssel->addr = MP_QSTR_NC;
+    if (args[ARG_sck].u_obj != mp_const_none) {
+        spi_sck_alloc(self, args[ARG_sck].u_obj);
+    } else {
+        mp_raise_TypeError(MP_ERROR_TEXT("SCK pin must be provided"));
+    }
+
+    if (args[ARG_mosi].u_obj != mp_const_none) {
+        spi_mosi_alloc(self, args[ARG_mosi].u_obj);
+    } else {
+        mp_raise_TypeError(MP_ERROR_TEXT("MOSI pin must be provided"));
+    }
+
+    if (args[ARG_miso].u_obj != mp_const_none) {
+        spi_miso_alloc(self, args[ARG_miso].u_obj);
+    } else {
+        mp_raise_TypeError(MP_ERROR_TEXT("MISO pin must be provided"));
+    }
+
+    if (n_args > 1 || n_kw > 0) {
+        spi_init(self, MASTER_MODE);
+    }
+    return MP_OBJ_FROM_PTR(self);
 }
 
 mp_obj_t machine_spi_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -260,7 +331,8 @@ mp_obj_t machine_spi_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n
 mp_obj_t machine_spi_master_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     machine_spi_obj_t *self = spi_obj_alloc(false);
     if (n_kw > 1) {
-        machine_spi_init_helper(self, 0, n_args, n_kw, all_args);
+        machine_spi_master_init_helper(self, n_args, n_kw, all_args);
+        // machine_spi_init_helper(self, 0, n_args, n_kw, all_args);
     } else {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Master init failed as all required arguments not passed!"));
     }

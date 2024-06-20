@@ -22,11 +22,6 @@ if "CY8CPROTO-063-BLE" in machine:
     miso_master_pin = "P9_1"
     ssel_master_pin = "P9_3"
 
-# try:
-#     spi = SPI(ssel=ssel_master_pin)
-# except Exception as e:
-#     print(e)
-
 # 0. Construct SPI object
 spi_obj = SPI(
     baudrate=1000000,
@@ -34,7 +29,6 @@ spi_obj = SPI(
     phase=0,
     bits=8,
     firstbit=SPI.MSB,
-    # ssel="NC",
     sck=sck_master_pin,
     mosi=mosi_master_pin,
     miso=miso_master_pin,
