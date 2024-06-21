@@ -558,7 +558,7 @@ SPI object is created with default settings or settings of previous initializati
 ::
     
     from machine import SPI
-    spi = SPI(baudrate=1000000, polarity=0,phase=0,bits=8,firstbit=SPI.MSB,sck='P6_2', mosi='P6_0', miso='P6_1')
+    spi = SPI(baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, sck='P6_2', mosi='P6_0', miso='P6_1')
 
 Methods
 ^^^^^^^
@@ -575,7 +575,7 @@ The PSoC6™ port offers an additional class to implement an SPI slave device. T
 The constructor
 ^^^^^^^^^^^^^^^
 
-.. class:: SPISlave(baudrate,polarity,phase,bits,firstbit,ssel,sck, mosi, miso)
+.. class:: SPISlave(baudrate, polarity, phase, bits, firstbit, ssel, sck, mosi, miso)
 
     Constructs and returns a new SPI slave object using the following parameters.
    
@@ -597,7 +597,7 @@ The constructor
             
             from machine import SPISlave
             
-            spi_slave = spi = SPI(baudrate=1000000, polarity=0,phase=0,bits=8,firstbit=SPI.MSB,ssel="P6_3",sck='P6_2', mosi='P6_0', miso='P6_1')
+            spi_slave = spi = SPI(baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, ssel="P6_3", sck='P6_2', mosi='P6_0', miso='P6_1')
 
 Methods
 ^^^^^^^
