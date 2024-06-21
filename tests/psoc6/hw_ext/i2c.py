@@ -11,8 +11,8 @@ import os
 # Allocate pin based on board
 board = os.uname().machine
 if "CY8CPROTO-062-4343W" in board:
-    scl_master_pin = "P6_0"
-    sda_master_pin = "P6_1"
+    scl_master_pin = "P10_0"
+    sda_master_pin = "P10_1"
     scl_master_soft_pin = "P9_5"
     sda_master_soft_pin = "P9_3"
     scl_slave_pin = "P9_0"
