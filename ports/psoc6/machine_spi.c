@@ -24,6 +24,7 @@
 #define DEFAULT_SPI_PHASE       (0)
 #define DEFAULT_SPI_BITS        (8)
 #define DEFAULT_SPI_FIRSTBIT    (0) // msb
+#define DEFAULT_SPI_SSEL_PIN    (MP_ROM_QSTR(MP_QSTR_NC))
 #define MASTER_MODE (0)
 #define SLAVE_MODE  (1)
 
@@ -247,7 +248,7 @@ mp_obj_t machine_spi_master_init_helper(machine_spi_obj_t *self, size_t n_args, 
     return MP_OBJ_FROM_PTR(self);
 }
 
-mp_obj_t machine_spi_slave_init_helper(machine_spi_obj_t *self, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+mp_obj_t machine_spi_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_ssel, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
@@ -255,7 +256,7 @@ mp_obj_t machine_spi_slave_init_helper(machine_spi_obj_t *self, size_t n_args, s
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_BITS} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
-        { MP_QSTR_ssel,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_NC)}},
+        { MP_QSTR_ssel,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = DEFAULT_SPI_SSEL_PIN}},
         { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -290,12 +291,21 @@ mp_obj_t machine_spi_slave_init_helper(machine_spi_obj_t *self, size_t n_args, s
     }
 
     // Set SSEL/SCK/MOSI/MISO pins if configured.
-    if ((args[ARG_ssel].u_obj != mp_const_none)) {
-        spi_ssel_alloc(self, args[ARG_ssel].u_obj);
+    if (spi_mode == MASTER_MODE) {
+        if (args[ARG_ssel].u_obj != DEFAULT_SPI_SSEL_PIN) {
+            mp_raise_TypeError(MP_ERROR_TEXT("SSEL pin cannot be provided in master constructor!"));
+        } else {
+            spi_ssel_alloc(self, DEFAULT_SPI_SSEL_PIN);
+        }
+    } else if (spi_mode == SLAVE_MODE) {
+        if ((args[ARG_ssel].u_obj != DEFAULT_SPI_SSEL_PIN)) {
+            spi_ssel_alloc(self, args[ARG_ssel].u_obj);
+        } else {
+            mp_raise_TypeError(MP_ERROR_TEXT("SSEL pin must be provided in slave mode"));
+        }
     } else {
-        mp_raise_TypeError(MP_ERROR_TEXT("SSEL pin must be provided in slave mode"));
+        mp_raise_TypeError(MP_ERROR_TEXT("SPI should either be in master or slave mode!"));
     }
-
 
     if (args[ARG_sck].u_obj != mp_const_none) {
         spi_sck_alloc(self, args[ARG_sck].u_obj);
@@ -316,7 +326,7 @@ mp_obj_t machine_spi_slave_init_helper(machine_spi_obj_t *self, size_t n_args, s
     }
 
     if (n_args > 1 || n_kw > 0) {
-        spi_init(self, SLAVE_MODE);
+        spi_init(self, spi_mode);
     }
     return MP_OBJ_FROM_PTR(self);
 }
@@ -324,7 +334,7 @@ mp_obj_t machine_spi_slave_init_helper(machine_spi_obj_t *self, size_t n_args, s
 mp_obj_t machine_spi_master_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     machine_spi_obj_t *self = spi_obj_alloc(false);
     if (n_kw > 1) {
-        machine_spi_master_init_helper(self, n_args, n_kw, all_args);
+        machine_spi_init_helper(self, MASTER_MODE, n_args, n_kw, all_args);
     } else {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Master init failed as all required arguments not passed!"));
     }
@@ -334,7 +344,7 @@ mp_obj_t machine_spi_master_make_new(const mp_obj_type_t *type, size_t n_args, s
 mp_obj_t machine_spi_slave_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     machine_spi_obj_t *self = spi_obj_alloc(true);
     if (n_kw > 1) {
-        machine_spi_slave_init_helper(self, n_args, n_kw, all_args);
+        machine_spi_init_helper(self, SLAVE_MODE, n_args, n_kw, all_args);
     } else {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Slave init failed as all required arguments not passed!"));
     }
