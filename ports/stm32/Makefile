@@ -278,6 +278,7 @@ SRC_C += \
 	adc.c \
 	sdio.c \
 	subghz.c \
+	mpu.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O += \
