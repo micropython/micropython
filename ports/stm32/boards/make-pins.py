@@ -215,7 +215,7 @@ class Stm32Pin(boardgen.Pin):
     def validate_cpu_pin_name(cpu_pin_name):
         boardgen.Pin.validate_cpu_pin_name(cpu_pin_name)
 
-        if not re.match("P[A-K][0-9]+(_C)?$", cpu_pin_name):
+        if not re.match("P[A-O][0-9]+(_C)?$", cpu_pin_name):
             raise boardgen.PinGeneratorError("Invalid cpu pin name '{}'".format(cpu_pin_name))
 
 
