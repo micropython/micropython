@@ -59,3 +59,9 @@
 extern portMUX_TYPE background_task_mutex;
 #define CALLBACK_CRITICAL_BEGIN (taskENTER_CRITICAL(&background_task_mutex))
 #define CALLBACK_CRITICAL_END (taskEXIT_CRITICAL(&background_task_mutex))
+
+// Reduce wifi radio power
+// Only for boards with imperfect radio designs
+#ifndef CIRCUITPY_REDUCE_TX_POWER
+#define CIRCUITPY_REDUCE_TX_POWER (0)
+#endif
