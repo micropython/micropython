@@ -179,9 +179,9 @@ def do_mip(state, args):
             if args.target is None:
                 state.transport.exec("import sys")
                 lib_paths = (
-                    state.transport.eval("'\\n'.join(p for p in sys.path if p.endswith('/lib'))")
+                    state.transport.eval("'|'.join(p for p in sys.path if p.endswith('/lib'))")
                     .decode()
-                    .split("\n")
+                    .split("|")
                 )
                 if lib_paths and lib_paths[0]:
                     args.target = lib_paths[0]
