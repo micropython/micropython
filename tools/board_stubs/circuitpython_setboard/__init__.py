@@ -35,6 +35,10 @@ def header(txt: str) -> str:
 
 
 def set_board():
+    version_info = sys.version_info
+    if version_info.major < 3 or (version_info.major == 3 and version_info.minor < 9):
+        sys.stdout.write("Python 3.9 is the minimum supported version for board specific stubs.\n")
+        sys.exit(0)
     parser = argparse.ArgumentParser(
         prog=__name__,
         usage="Install CircuitPython board-specific stubs",
