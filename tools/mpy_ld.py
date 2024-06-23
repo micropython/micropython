@@ -47,6 +47,7 @@ MP_NATIVE_ARCH_ARMV7EMSP = 7
 MP_NATIVE_ARCH_ARMV7EMDP = 8
 MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
+MP_NATIVE_ARCH_RV32IMC = 11
 MP_PERSISTENT_OBJ_STR = 5
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
@@ -56,6 +57,7 @@ MP_FUN_TABLE_MP_TYPE_TYPE_OFFSET = 73
 
 # ELF constants
 R_386_32 = 1
+R_RISCV_32 = 1
 R_X86_64_64 = 1
 R_XTENSA_32 = 1
 R_386_PC32 = 2
@@ -70,15 +72,57 @@ R_386_GOTOFF = 9
 R_386_GOTPC = 10
 R_ARM_THM_CALL = 10
 R_XTENSA_ASM_EXPAND = 11
+R_RISCV_BRANCH = 16
+R_RISCV_JAL = 17
+R_RISCV_CALL = 18
+R_RISCV_CALL_PLT = 19
 R_XTENSA_DIFF32 = 19
 R_XTENSA_SLOT0_OP = 20
+R_RISCV_GOT_HI20 = 20
+R_RISCV_TLS_GD_HI20 = 22
+R_RISCV_PCREL_HI20 = 23
+R_RISCV_PCREL_LO12_I = 24
+R_RISCV_PCREL_LO12_S = 25
 R_ARM_BASE_PREL = 25  # aka R_ARM_GOTPC
 R_ARM_GOT_BREL = 26  # aka R_ARM_GOT32
 R_ARM_THM_JUMP24 = 30
+R_RISCV_HI20 = 26
+R_RISCV_LO12_I = 27
+R_RISCV_LO12_S = 28
+R_RISCV_TPREL_HI20 = 29
+R_RISCV_TPREL_LO12_I = 30
+R_RISCV_TPREL_LO12_S = 31
+R_RISCV_TPREL_ADD = 32
+R_RISCV_ADD8 = 33
+R_RISCV_ADD16 = 34
+R_RISCV_ADD32 = 35
+R_RISCV_ADD64 = 36
+R_RISCV_SUB8 = 37
+R_RISCV_SUB16 = 38
+R_RISCV_SUB32 = 39
+R_RISCV_SUB64 = 40
+R_RISCV_GOT32_PCREL = 41
 R_X86_64_GOTPCREL = 9
 R_X86_64_REX_GOTPCRELX = 42
 R_386_GOT32X = 43
+R_RISCV_ALIGN = 43
+R_RISCV_RVC_BRANCH = 44
+R_RISCV_RVC_JUMP = 45
+R_RISCV_RELAX = 51
+R_RISCV_SUB6 = 52
+R_RISCV_SET6 = 53
+R_RISCV_SET8 = 54
+R_RISCV_SET16 = 55
+R_RISCV_SET32 = 56
+R_RISCV_32_PCREL = 57
+R_RISCV_PLT32 = 59
 R_XTENSA_PDIFF32 = 59
+R_RISCV_SET_ULEB128 = 60
+R_RISCV_SUB_ULEB128 = 61
+R_RISCV_TLSDESC_HI20 = 62
+R_RISCC_TLSDESC_LOAD_LO12 = 63
+R_RISCV_TLSDESC_ADD_LO12 = 64
+R_RISCV_TLSDESC_CALL = 65
 
 ################################################################################
 # Architecture configuration
@@ -128,6 +172,18 @@ def asm_jump_xtensa(entry):
     jump_offset = entry - 4
     jump_op = jump_offset << 6 | 6
     return struct.pack("<BH", jump_op & 0xFF, jump_op >> 8)
+
+
+def asm_jump_rv32(entry):
+    # This could be 6 bytes shorter, but the code currently cannot
+    # support a trampoline with varying length depending on the offset.
+
+    # auipc t6, HI(entry)
+    # jalr  zero, t6, LO(entry)
+    upper, lower = split_riscv_address(entry)
+    return struct.pack(
+        "<II", (upper | 0x00000F97) & 0xFFFFFFFF, ((lower << 20) | 0x000F8067) & 0xFFFFFFFF
+    )
 
 
 class ArchData:
@@ -199,6 +255,13 @@ ARCH_DATA = {
         asm_jump_xtensa,
         separate_rodata=True,
     ),
+    "rv32imc": ArchData(
+        "EM_RISCV",
+        MP_NATIVE_ARCH_RV32IMC << 2,
+        4,
+        (R_RISCV_32, R_RISCV_GOT_HI20, R_RISCV_GOT32_PCREL),
+        asm_jump_rv32,
+    ),
 }
 
 ################################################################################
@@ -217,6 +280,21 @@ def pack_u24le(data, offset, value):
     data[offset] = value & 0xFF
     data[offset + 1] = value >> 8 & 0xFF
     data[offset + 2] = value >> 16 & 0xFF
+
+
+def split_riscv_address(value):
+    # The address can be represented with just the lowest 12 bits
+    if value < 0 and value > -2048:
+        value = 4096 + value
+        return 0, value
+    # 2s complement
+    if value < 0:
+        value = 0x100000000 + value
+    upper, lower = (value & 0xFFFFF000), (value & 0xFFF)
+    if lower & 0x800 != 0:
+        # Reverse lower part sign extension
+        upper += 0x1000
+    return upper & 0xFFFFFFFF, lower & 0xFFFFFFFF
 
 
 def xxd(text):
@@ -346,7 +424,7 @@ def build_got_generic(env):
         for r in sec.reloc:
             s = r.sym
             if not (
-                s.entry["st_info"]["bind"] == "STB_GLOBAL"
+                s.entry["st_info"]["bind"] in ("STB_GLOBAL", "STB_WEAK")
                 and r["r_info_type"] in env.arch.arch_got
             ):
                 continue
@@ -487,6 +565,8 @@ def do_relocation_text(env, text_addr, r):
     # Default relocation type and name for logging
     reloc_type = "le32"
     log_name = None
+    addr = None
+    value = None
 
     if (
         env.arch.name == "EM_386"
@@ -590,12 +670,46 @@ def do_relocation_text(env, text_addr, r):
             return
         assert 0
 
+    elif env.arch.name == "EM_RISCV" and r_info_type in (
+        R_RISCV_TLS_GD_HI20,
+        R_RISCV_TLSDESC_HI20,
+        R_RISCV_TLSDESC_ADD_LO12,
+        R_RISCV_TLSDESC_CALL,
+    ):
+        # TLS relocations are not supported.
+        raise LinkError("{}: RISC-V TLS relocation: {}".format(s.filename, s.name))
+
+    elif env.arch.name == "EM_RISCV" and r_info_type in (
+        R_RISCV_TPREL_HI20,
+        R_RISCV_TPREL_LO12_I,
+        R_RISCV_TPREL_LO12_S,
+        R_RISCV_TPREL_ADD,
+    ):
+        # ThreadPointer-relative relocations are not supported.
+        raise LinkError("{}: RISC-V TP-relative relocation: {}".format(s.filename, s.name))
+
+    elif env.arch.name == "EM_RISCV" and r_info_type in (R_RISCV_SET_ULEB128, R_RISCV_SUB_ULEB128):
+        # 128-bit value relocations are not supported
+        raise LinkError("{}: RISC-V ULEB128 relocation: {}".format(s.filename, s.name))
+
+    elif env.arch.name == "EM_RISCV" and r_info_type in (R_RISCV_RELAX, R_RISCV_ALIGN):
+        # To keep things simple, no relocations are relaxed and thus no
+        # size optimisation is performed even if there is the chance, along
+        # with no offsets to fix up.
+        return
+
+    elif env.arch.name == "EM_RISCV":
+        (addr, value) = process_riscv32_relocation(env, text_addr, r)
+
     else:
         # Unknown/unsupported relocation
         assert 0, r_info_type
 
     # Write relocation
-    if reloc_type == "le32":
+    if env.arch.name == "EM_RISCV":
+        # This case is already handled by `process_riscv_relocation`.
+        pass
+    elif reloc_type == "le32":
         (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
         struct.pack_into("<I", env.full_text, r_offset, (existing + reloc) & 0xFFFFFFFF)
     elif reloc_type == "thumb_b":
@@ -623,7 +737,10 @@ def do_relocation_text(env, text_addr, r):
             log_name = s.section.name
         else:
             log_name = s.name
-    log(LOG_LEVEL_3, "  {:08x} {} -> {:08x}".format(r_offset, log_name, addr))
+    if addr is not None:
+        log(LOG_LEVEL_3, "  {:08x} {} -> {:08x}".format(r_offset, log_name, addr))
+    else:
+        log(LOG_LEVEL_3, "  {:08x} {} == {:08x}".format(r_offset, log_name, value))
 
 
 def do_relocation_data(env, text_addr, r):
@@ -646,12 +763,16 @@ def do_relocation_data(env, text_addr, r):
         and r_info_type == R_ARM_ABS32
         or env.arch.name == "EM_XTENSA"
         and r_info_type == R_XTENSA_32
+        or env.arch.name == "EM_RISCV"
+        and r_info_type == R_RISCV_32
     ):
         # Relocation in data.rel.ro to internal/external symbol
         if env.arch.word_size == 4:
             struct_type = "<I"
         elif env.arch.word_size == 8:
             struct_type = "<Q"
+        if hasattr(s, "resolved"):
+            s = s.resolved
         sec = s.section
         assert r_offset % env.arch.word_size == 0
         addr = sec.addr + s["st_value"] + r_addend
@@ -682,6 +803,276 @@ def do_relocation_data(env, text_addr, r):
     else:
         # Unknown/unsupported relocation
         assert 0, r_info_type
+
+
+RISCV_RELOCATIONS_TYPE_MAP = {
+    R_RISCV_ADD8: ("riscv_addsub", "B", 8, 1),
+    R_RISCV_ADD16: ("riscv_addsub", "<H", 16, 1),
+    R_RISCV_ADD32: ("riscv_addsub", "<I", 32, 1),
+    R_RISCV_ADD64: ("riscv_addsub", "<Q", 64, 1),
+    R_RISCV_SUB6: ("riscv_addsub", "B", 6, -1),
+    R_RISCV_SUB8: ("riscv_addsub", "B", 8, -1),
+    R_RISCV_SUB16: ("riscv_addsub", "<H", 16, -1),
+    R_RISCV_SUB32: ("riscv_addsub", "<I", 32, -1),
+    R_RISCV_SUB64: ("riscv_addsub", "<Q", 64, -1),
+    R_RISCV_SET6: ("riscv_set6", "B", 6),
+    R_RISCV_SET8: ("riscv_set8", "B", 8),
+    R_RISCV_SET16: ("riscv_set16", "<H", 16),
+    R_RISCV_SET32: ("riscv_set32", "<I", 32),
+    R_RISCV_JAL: "riscv_j",
+    R_RISCV_BRANCH: "riscv_b",
+    R_RISCV_RVC_BRANCH: "riscv_cb",
+    R_RISCV_RVC_JUMP: "riscv_cj",
+    R_RISCV_CALL: "riscv_call",
+    R_RISCV_CALL_PLT: "riscv_call",
+    R_RISCV_PCREL_LO12_I: "riscv_lo12i",
+    R_RISCV_PCREL_LO12_S: "riscv_lo12s",
+    R_RISCV_LO12_I: "riscv_lo12i",
+    R_RISCV_LO12_S: "riscv_lo12s",
+    R_RISCV_32_PCREL: "riscv_32pcrel",
+    R_RISCV_PLT32: "riscv_32pcrel",
+}
+
+
+def process_riscv32_relocation(env, text_addr, r):
+    assert env.arch.name == "EM_RISCV"
+
+    addr = None
+    value = None
+    s = r.sym
+
+    if hasattr(s, "resolved"):
+        s = s.resolved
+
+    r_offset = r["r_offset"] + text_addr
+    r_info_type = r["r_info_type"]
+    try:
+        r_addend = r["r_addend"]
+    except KeyError:
+        r_addend = 0
+
+    if r_info_type == R_RISCV_GOT_HI20:
+        got_entry = env.got_entries[s.name]
+        addr = env.got_section.addr + got_entry.offset
+        reloc = addr + r_addend - r_offset
+        r.computed_reloc = reloc
+        reloc_type = "riscv_hi20"
+
+    elif r_info_type == R_RISCV_GOT32_PCREL:
+        got_entry = env.got_entries[s.name]
+        addr = env.got_section.addr + got_entry.offset
+        value = addr + r_addend - r_offset
+        reloc_type = "riscv_set32"
+
+    elif r_info_type == R_RISCV_PCREL_HI20:
+        addr = s.section.addr + s["st_value"]
+        reloc = addr + r_addend - r_offset
+        r.computed_reloc = reloc
+        reloc_type = "riscv_hi20"
+
+    elif r_info_type == R_RISCV_HI20:
+        addr = s.section.addr + s["st_value"]
+        reloc = addr + r_addend
+        r.computed_reloc = reloc
+        reloc_type = "riscv_hi20"
+
+    elif r_info_type in (
+        R_RISCV_PCREL_LO12_I,
+        R_RISCV_PCREL_LO12_S,
+        R_RISCV_LO12_I,
+        R_RISCV_LO12_S,
+    ):
+        parent = None
+        for potential_parent in s.section.reloc:
+            if potential_parent["r_offset"] != s["st_value"]:
+                continue
+            if potential_parent["r_info_type"] not in (
+                R_RISCV_GOT_HI20,
+                R_RISCV_PCREL_HI20,
+                R_RISCV_HI20,
+            ):
+                continue
+            parent = potential_parent
+            break
+        if parent is None:
+            assert 0, r
+        addr = s.section.addr + s["st_value"]
+        reloc = parent.computed_reloc
+        reloc_type = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
+
+    elif r_info_type in (
+        R_RISCV_JAL,
+        R_RISCV_RVC_BRANCH,
+        R_RISCV_RVC_JUMP,
+        R_RISCV_CALL,
+        R_RISCV_CALL_PLT,
+        R_RISCV_BRANCH,
+        R_RISCV_32_PCREL,
+        R_RISCV_PLT32,
+    ):
+        addr = s.section.addr + s["st_value"]
+        reloc = addr + r_addend - r_offset
+        reloc_type = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
+
+    elif r_info_type in (
+        R_RISCV_ADD8,
+        R_RISCV_ADD16,
+        R_RISCV_ADD32,
+        R_RISCV_ADD64,
+        R_RISCV_SUB6,
+        R_RISCV_SUB8,
+        R_RISCV_SUB16,
+        R_RISCV_SUB32,
+        R_RISCV_SUB64,
+        R_RISCV_SET6,
+        R_RISCV_SET8,
+        R_RISCV_SET16,
+        R_RISCV_SET32,
+    ):
+        value = s.section.addr + s["st_value"] + r_addend
+        reloc_type, *reloc_args = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
+
+    else:
+        # Unknown/unsupported relocation
+        assert 0, r_info_type
+
+    # Write relocation
+    if reloc_type == "riscv_hi20":
+        # Patch the upper 20 bits of the opcode
+        upper, _ = split_riscv_address(reloc)
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset,
+            ((existing & 0xFFF) | upper) & 0xFFFFFFFF,
+        )
+    elif reloc_type == "riscv_lo12i":
+        # Patch the lower 12 bits of an I-opcode immediate.
+        _, lower = split_riscv_address(reloc)
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset,
+            ((existing & 0xFFFFF) | ((lower & 0xFFF) << 20)) & 0xFFFFFFFF,
+        )
+    elif reloc_type == "riscv_lo12s":
+        # Patch the lower 12 bits of an S-opcode immediate.
+        _, lower = split_riscv_address(reloc)
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset,
+            ((existing & 0xFE000F80) | ((lower & 0xFE0) << 20) | ((lower & 0x1F) << 7))
+            & 0xFFFFFFFF,
+        )
+    elif reloc_type == "riscv_cb":
+        # Patch the target of a compressed branch opcode
+        (existing,) = struct.unpack_from("<H", env.full_text, r_offset)
+        struct.pack_into(
+            "<H",
+            env.full_text,
+            r_offset,
+            (
+                (existing & 0xE383)
+                | ((reloc & 0x100) << 4)
+                | ((reloc & 0xC0) >> 1)
+                | ((reloc & 0x20) >> 3)
+                | ((reloc & 0x18) << 7)
+                | ((reloc & 0x06) << 2)
+            )
+            & 0xFFFF,
+        )
+    elif reloc_type == "riscv_cj":
+        # Patch the target of a compressed jump opcode
+        (existing,) = struct.unpack_from("<H", env.full_text, r_offset)
+        struct.pack_into(
+            "<H",
+            env.full_text,
+            r_offset,
+            (
+                (existing & 0xE003)
+                | ((reloc & 0x800) << 1)
+                | ((reloc & 0x400) >> 2)
+                | ((reloc & 0x300) << 1)
+                | ((reloc & 0x80) >> 1)
+                | ((reloc & 0x40) << 1)
+                | ((reloc & 0x20) >> 3)
+                | ((reloc & 0x10) << 7)
+                | ((reloc & 0x0E) << 2)
+            )
+            & 0xFFFF,
+        )
+    elif reloc_type == "riscv_call":
+        # Patch a pair of opcodes forming a call operation
+        upper, lower = split_riscv_address(reloc)
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset,
+            ((existing & 0xFFF) | upper) & 0xFFFFFFFF,
+        )
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset + 4)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset + 4,
+            ((existing & 0xFFFFF) | (lower << 20)) & 0xFFFFFFFF,
+        )
+    elif reloc_type == "riscv_b":
+        # Patch a conditional opcode
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset,
+            (
+                (existing & 0x01FFF07F)
+                | ((reloc & 0x1000) << 19)
+                | ((reloc & 0x800) >> 4)
+                | ((reloc & 0x7E0) << 20)
+                | ((reloc & 0x1E) << 7)
+            )
+            & 0xFFFFFFFF,
+        )
+    elif reloc_type == "riscv_j":
+        # Patch a jump/jump with link opcode
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset,
+            (
+                (existing & 0xFFF)
+                | ((reloc & 0x100000) << 11)
+                | (reloc & 0xFF000)
+                | ((reloc & 0x800) << 9)
+                | ((reloc & 0x7FE) << 20)
+            ),
+        )
+    elif reloc_type == "riscv_addsub":
+        (fmt, bits, multiplier) = reloc_args
+        (existing,) = struct.unpack_from(fmt, env.full_text, r_offset)
+        mask = (1 << bits) - 1
+        value = (existing & mask) + (value * multiplier)
+        if value < 0:
+            value = (1 << bits) + value
+        struct.pack_into(fmt, env.full_text, r_offset, (existing & ~mask) | (value & mask))
+    elif reloc_type == "riscv_set":
+        (fmt, bits) = reloc_args
+        (existing,) = struct.unpack_from(fmt, env.full_text, r_offset)
+        mask = (1 << bits) - 1
+        struct.pack_into(fmt, env.full_text, r_offset, (existing & ~mask) | (value & mask))
+    elif reloc_type == "riscv_32pcrel":
+        # Write the distance from the current PC
+        struct.pack_into("<I", env.full_text, r_offset, reloc & 0xFFFFFFFF)
+    else:
+        assert 0, reloc_type
+
+    return addr, value
 
 
 def load_object_file(env, felf):
@@ -727,7 +1118,7 @@ def load_object_file(env, felf):
             if shndx in sections_shndx:
                 # Symbol with associated section
                 sym.section = sections_shndx[shndx]
-                if sym["st_info"]["bind"] == "STB_GLOBAL":
+                if sym["st_info"]["bind"] in ("STB_GLOBAL", "STB_WEAK"):
                     # Defined global symbol
                     if sym.name in env.known_syms and not sym.name.startswith(
                         "__x86.get_pc_thunk."
