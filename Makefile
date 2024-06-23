@@ -275,6 +275,7 @@ stubs:
 	@cp -r tools/board_stubs/circuitpython_setboard circuitpython-stubs/circuitpython_setboard
 	@$(PYTHON) -m build circuitpython-stubs
 	@touch circuitpython-stubs/board/__init__.py
+	@touch circuitpython-stubs/board_definitions/__init__.py
 
 .PHONY: check-stubs
 check-stubs: stubs
