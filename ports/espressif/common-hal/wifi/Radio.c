@@ -86,6 +86,7 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
     if (!self->started && enabled) {
         ESP_ERROR_CHECK(esp_wifi_start());
         self->started = true;
+        common_hal_wifi_radio_set_tx_power(self, CIRCUITPY_WIFI_DEFAULT_TX_POWER);
         return;
     }
 }
