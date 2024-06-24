@@ -46,8 +46,14 @@ EM_JS(bool, has_attr, (int jsref, const char *str), {
 EM_JS(bool, lookup_attr, (int jsref, const char *str, uint32_t * out), {
     const base = proxy_js_ref[jsref];
     const attr = UTF8ToString(str);
-    if (attr in base) {
-        let value = base[attr];
+
+    // Attempt to lookup the requested attribute from the base object:
+    // - If the value is not `undefined` then the attribute exists with that value.
+    // - Otherwise if the value is `undefined` and the `in` operator returns true, then
+    //   that attribute does exist and is intended to have a value of `undefined`.
+    // - Otherwise, the attribute does not exist.
+    let value = base[attr];
+    if (value !== undefined || attr in base) {
         if (typeof value === "function") {
             if (base !== globalThis) {
                 if ("_ref" in value) {
