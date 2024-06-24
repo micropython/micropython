@@ -4,6 +4,15 @@
 .. module:: cryptolib
    :synopsis: cryptographic ciphers
 
+.. note::
+   The STM32 port requires you to add the following lines to the file 
+   ``micropython/ports/stm32/boards/<board>/mpconfigboard.mk`` before compiling::
+
+      MICROPY_PY_SSL = 1
+      MICROPY_SSL_MBEDTLS = 1
+
+   ``<board>`` should be the same as in ``make BOARD=<board>``.
+
 Classes
 -------
 
@@ -38,3 +47,4 @@ Classes
     .. method:: decrypt(in_buf, [out_buf])
 
         Like `encrypt()`, but for decryption.
+
