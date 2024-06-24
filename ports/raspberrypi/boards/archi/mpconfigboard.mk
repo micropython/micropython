@@ -13,4 +13,4 @@ CIRCUITPY_PICODVI = 1
 
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_MPU6050
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Pixel_Framebuf
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LED_Animation
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
