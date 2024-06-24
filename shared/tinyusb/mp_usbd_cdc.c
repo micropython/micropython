@@ -102,9 +102,9 @@ mp_uint_t mp_usbd_cdc_tx_strn(const char *str, mp_uint_t len) {
             n = CFG_TUD_CDC_EP_BUFSIZE;
         }
         if (tud_cdc_connected()) {
-            int timeout = 0;
             // If CDC port is connected but the buffer is full, wait for up to USC_CDC_TIMEOUT ms.
-            while (n > tud_cdc_write_available() && timeout++ < MICROPY_HW_USB_CDC_TX_TIMEOUT) {
+            mp_uint_t t0 = mp_hal_ticks_ms();
+            while (n > tud_cdc_write_available() && (mp_uint_t)(mp_hal_ticks_ms() - t0) < MICROPY_HW_USB_CDC_TX_TIMEOUT) {
                 mp_event_wait_ms(1);
 
                 // Explicitly run the USB stack as the scheduler may be locked (eg we
