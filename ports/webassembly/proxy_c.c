@@ -79,31 +79,45 @@ static size_t proxy_c_ref_next;
 
 void proxy_c_init(void) {
     MP_STATE_PORT(proxy_c_ref) = mp_obj_new_list(0, NULL);
+    MP_STATE_PORT(proxy_c_dict) = mp_obj_new_dict(0);
     mp_obj_list_append(MP_STATE_PORT(proxy_c_ref), MP_OBJ_NULL);
     proxy_c_ref_next = PROXY_C_REF_NUM_STATIC;
 }
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t proxy_c_ref);
+MP_REGISTER_ROOT_POINTER(mp_obj_t proxy_c_dict);
 
 // obj cannot be MP_OBJ_NULL.
 static inline size_t proxy_c_add_obj(mp_obj_t obj) {
+    mp_obj_t obj_key = mp_obj_new_int_from_uint((uintptr_t)obj);
+    mp_map_elem_t *elem = mp_map_lookup(mp_obj_dict_get_map(MP_STATE_PORT(proxy_c_dict)), obj_key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+    if (elem->value != MP_OBJ_NULL) {
+        // Proxy already exists so refer to it.
+        return mp_obj_int_get_truncated(elem->value);
+    }
+
     // Search for the first free slot in proxy_c_ref.
+    size_t id = 0;
     mp_obj_list_t *l = (mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref));
     while (proxy_c_ref_next < l->len) {
         if (l->items[proxy_c_ref_next] == MP_OBJ_NULL) {
             // Free slot found, reuse it.
-            size_t id = proxy_c_ref_next;
+            id = proxy_c_ref_next;
             ++proxy_c_ref_next;
             l->items[id] = obj;
-            return id;
+            break;
         }
         ++proxy_c_ref_next;
     }
 
-    // No free slots, so grow proxy_c_ref by one (append at the end of the list).
-    size_t id = l->len;
-    mp_obj_list_append(MP_STATE_PORT(proxy_c_ref), obj);
-    proxy_c_ref_next = l->len;
+    if (id == 0) {
+        // No free slots, so grow proxy_c_ref by one (append at the end of the list).
+        id = l->len;
+        mp_obj_list_append(MP_STATE_PORT(proxy_c_ref), obj);
+        proxy_c_ref_next = l->len;
+    }
+
+    elem->value = mp_obj_new_int_from_uint(id);
     return id;
 }
 
@@ -113,6 +127,8 @@ static inline mp_obj_t proxy_c_get_obj(uint32_t c_ref) {
 
 void proxy_c_free_obj(uint32_t c_ref) {
     if (c_ref >= PROXY_C_REF_NUM_STATIC) {
+        mp_obj_t obj_key = mp_obj_new_int_from_uint((uintptr_t)proxy_c_get_obj(c_ref));
+        mp_map_lookup(mp_obj_dict_get_map(MP_STATE_PORT(proxy_c_dict)), obj_key, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
         ((mp_obj_list_t *)MP_OBJ_TO_PTR(MP_STATE_PORT(proxy_c_ref)))->items[c_ref] = MP_OBJ_NULL;
         proxy_c_ref_next = MIN(proxy_c_ref_next, c_ref);
     }
