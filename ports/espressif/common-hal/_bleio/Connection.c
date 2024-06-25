@@ -191,8 +191,8 @@ static void _start_discovery_timeout(void) {
 }
 
 static int _wait_for_discovery_step_done(void) {
-    while ((_last_discovery_status == 0) &&
-           (common_hal_time_monotonic_ms() < _discovery_start_time + DISCOVERY_TIMEOUT_MS)) {
+    const uint64_t timeout_time_ms = _discovery_start_time + DISCOVERY_TIMEOUT_MS;
+    while ((_last_discovery_status == 0) && (common_hal_time_monotonic_ms() < timeout_time_ms)) {
         RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             // Return prematurely. Then the interrupt will be raised.
