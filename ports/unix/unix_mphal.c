@@ -43,7 +43,13 @@
 #endif
 #endif
 
-#ifndef _WIN32
+#if defined(_WIN32) || defined(__wasi__)
+#define HAS_SIGNAL 0
+#else
+#define HAS_SIGNAL 1
+#endif
+
+#if HAS_SIGNAL != 0
 #include <signal.h>
 
 static void sighandler(int signum) {
@@ -75,7 +81,7 @@ static void sighandler(int signum) {
 void mp_hal_set_interrupt_char(char c) {
     // configure terminal settings to (not) let ctrl-C through
     if (c == CHAR_CTRL_C) {
-        #ifndef _WIN32
+        #if HAS_SIGNAL != 0
         // enable signal handler
         struct sigaction sa;
         sa.sa_flags = 0;
@@ -84,7 +90,7 @@ void mp_hal_set_interrupt_char(char c) {
         sigaction(SIGINT, &sa, NULL);
         #endif
     } else {
-        #ifndef _WIN32
+        #if HAS_SIGNAL != 0
         // disable signal handler
         struct sigaction sa;
         sa.sa_flags = 0;
