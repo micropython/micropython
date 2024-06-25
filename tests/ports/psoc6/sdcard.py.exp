@@ -1,0 +1,8 @@
+
+***** Test 1: File transfer to SD Card in LFS2 farmat *****
+
+CY8CPROTO-062-4343W with PSoC62
+write to /sd/test_sd_lfs2_short.txt
+Test successful
+write to /sd/test_sd_lfs2_long.txt
+Test successful
