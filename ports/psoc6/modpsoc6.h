@@ -32,5 +32,6 @@
 
 extern const mp_obj_type_t psoc6_flash_type;
 extern const mp_obj_type_t psoc6_qspi_flash_type;
+extern const mp_obj_type_t machine_sdcard_type;
 
 #endif // MICROPY_INCLUDED_PSOC6_MODPSOC6_H

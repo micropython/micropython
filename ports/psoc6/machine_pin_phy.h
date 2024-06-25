@@ -11,7 +11,8 @@ typedef enum {
     PIN_PHY_FUNC_PWM = 0x08,
     PIN_PHY_FUNC_SPI = 0x10,
     PIN_PHY_FUNC_I2S = 0x20,
-    PIN_PHY_FUNC_UART = 0x40
+    PIN_PHY_FUNC_UART = 0x40,
+    PIN_PHY_FUNC_SDHC = 0x80
 } machine_pin_phy_func_t;
 
 typedef struct _machine_pin_phy_obj_t {

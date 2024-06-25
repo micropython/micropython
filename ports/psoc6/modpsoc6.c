@@ -39,6 +39,9 @@ static const mp_rom_map_elem_t psoc6_module_globals_table[] = {
     #else
     { MP_ROM_QSTR(MP_QSTR_Flash),               MP_ROM_PTR(&psoc6_flash_type) },
     #endif
+    #if MICROPY_ENABLE_SD_CARD
+    { MP_ROM_QSTR(MP_QSTR_SD_CARD),          MP_ROM_PTR(&machine_sdcard_type) },
+    #endif
 };
 static MP_DEFINE_CONST_DICT(psoc6_module_globals, psoc6_module_globals_table);
 

@@ -168,6 +168,11 @@ ifeq ($(MICROPY_PY_EXT_FLASH),1)
 	MOD_SRC_C += psoc6_qspi_flash.c 
 endif
 
+ifeq ($(MICROPY_PY_SD_CARD),1)
+	CFLAGS += -DMICROPY_ENABLE_SD_CARD=1
+	MOD_SRC_C += machine_sdcard.c 
+endif
+
 ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
 CFLAGS += -DMICROPY_PY_NETWORK=1 -DMICROPY_PY_NETWORK_IFX_WCM=1 -Wno-stringop-truncation
 	MOD_SRC_C += network_ifx_wcm.c 
