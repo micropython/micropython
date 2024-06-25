@@ -73,6 +73,21 @@ deplibs`. To actually enable/disable use of dependencies, edit the
 options. For example, to build the SSL module, `MICROPY_PY_SSL` should be
 set to 1.
 
+Build Variants
+--------------
+
+The default `standard` variant is suitable for most uses. Additional build
+variants can be found in the `variants` subdirectory and built by setting
+`VARIANT=name` environment variable (i.e. `make test VARIANT=coverage`).
+
+Note that each variant is built in its own build directory.
+
+Additional variants include:
+
+* `minimal` variant has minimum code size and reduced features.
+* `coverage` variant enables almost all possible features and is suitable for
+  code coverage testing.
+
 Debug Symbols
 -------------
 
@@ -86,3 +101,24 @@ To build a debuggable version of the Unix port, there are two options
 2. Run `make [other arguments] STRIP=`. Note that the value of `STRIP` is
    empty. This will skip the build step that strips symbols and debug
    information, but changes nothing else in the build configuration.
+
+Undefined Behavior Sanitizer
+----------------------------
+
+The Unix port supports being built with the Undefined Behavior Sanitizer (aka
+UBSan) (see [gcc
+docs](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fsanitize_003dundefined),
+the Clang docs linked from that page have more details.)
+
+Only the `coverage` variant is built with UBSan enabled by default. Set the
+environment variable `UBSAN=1` to enable UBSan for a different variant, or set
+`VARIANT=coverage UBSAN=0` to build `coverage` without UBSan.
+
+UBSan will print an error to stderr if Undefined Behaviour is triggered, but
+continues execution. This means any unit test that triggers UB fails due to the
+additional output.
+
+The `make test` target should be used to run tests if possible, because it sets
+the `UBSAN_OPTIONS` environment variable to compensate for UB in some third party
+code. See the `Makefile` in this directory for details.
+

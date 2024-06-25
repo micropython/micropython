@@ -91,6 +91,17 @@ ifndef DEBUG
 CFLAGS += -U _FORTIFY_SOURCE
 endif
 
+# Optional Undefined Behavior Sanitizer
+#
+# Note that if running MicroPython with UBSan outside of the Makefile,
+# the environment variable UBSAN_OPTIONS should be set as shown below.
+UBSAN ?= 0
+ifeq ($(UBSAN),1)
+CFLAGS += -fsanitize=undefined
+LDFLAGS += -lubsan
+export UBSAN_OPTIONS=suppressions=$(TOP)/tools/ubsan-suppressions.txt
+endif
+
 # On OSX, 'gcc' is a symlink to clang unless a real gcc is installed.
 # The unix port of MicroPython on OSX must be compiled with clang,
 # while cross-compile ports require gcc, so we test here for OSX and
