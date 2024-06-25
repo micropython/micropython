@@ -32,15 +32,16 @@ typedef struct {
     esp_netif_ip_info_t ip_info;
     esp_netif_dns_info_t dns_info;
     esp_netif_t *netif;
+    uint32_t ping_elapsed_time;
+    wifi_config_t ap_config;
+    esp_netif_ip_info_t ap_ip_info;
+    esp_netif_t *ap_netif;
     bool started;
     bool ap_mode;
     bool sta_mode;
     uint8_t retries_left;
     uint8_t starting_retries;
     uint8_t last_disconnect_reason;
-    wifi_config_t ap_config;
-    esp_netif_ip_info_t ap_ip_info;
-    esp_netif_t *ap_netif;
 } wifi_radio_obj_t;
 
 extern void common_hal_wifi_radio_gc_collect(wifi_radio_obj_t *self);
