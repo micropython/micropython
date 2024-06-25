@@ -117,6 +117,7 @@ set(MICROPY_SOURCE_DRIVERS
 )
 
 set(MICROPY_SOURCE_PORT
+    clocks_extra.c
     fatfs_port.c
     help.c
     machine_bitstream.c
@@ -453,6 +454,7 @@ target_compile_options(${MICROPY_TARGET} PRIVATE
 target_link_options(${MICROPY_TARGET} PRIVATE
     -Wl,--defsym=__micropy_c_heap_size__=${MICROPY_C_HEAP_SIZE}
     -Wl,--wrap=dcd_event_handler
+    -Wl,--wrap=clocks_init
 )
 
 # Apply optimisations to performance-critical source code.
