@@ -51,6 +51,18 @@ void SysTick_Handler(void) {
     if (soft_timer_next == uw_tick) {
         pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
     }
+
+    #if MICROPY_PY_THREAD
+    if (pyb_thread_enabled) {
+        if (pyb_thread_cur->timeslice == 0) {
+            if (pyb_thread_cur->run_next != pyb_thread_cur) {
+                SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+            }
+        } else {
+            --pyb_thread_cur->timeslice;
+        }
+    }
+    #endif
 }
 
 bool systick_has_passed(uint32_t start_tick, uint32_t delay_ms) {

@@ -56,6 +56,10 @@
 #include "systick.h"
 #include "extmod/modnetwork.h"
 
+#if MICROPY_PY_THREAD
+static pyb_thread_t pyb_thread_main;
+#endif
+
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
 
 void board_init(void);
@@ -64,7 +68,9 @@ int main(void) {
     board_init();
     ticks_init();
     pendsv_init();
-
+    #if MICROPY_PY_THREAD
+    pyb_thread_init(&pyb_thread_main);
+    #endif
     #if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
     // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
@@ -95,6 +101,11 @@ int main(void) {
     for (;;) {
         #if defined(MICROPY_HW_LED1_PIN)
         led_init();
+        #endif
+
+        // Python threading init
+        #if MICROPY_PY_THREAD
+        mp_thread_init();
         #endif
 
         mp_stack_set_top(&_estack);
@@ -164,12 +175,6 @@ int main(void) {
     }
 
     return 0;
-}
-
-void gc_collect(void) {
-    gc_collect_start();
-    gc_helper_collect_regs_and_stack();
-    gc_collect_end();
 }
 
 void nlr_jump_fail(void *val) {

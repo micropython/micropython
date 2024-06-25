@@ -216,6 +216,10 @@ SRC_C += \
 	systick.c \
 	ticks.c \
 	tusb_port.c \
+	mpthreadport.c \
+	pybthread.c\
+	gccollect.c\
+
 
 SHARED_SRC_C += \
 	shared/libc/printf.c \
