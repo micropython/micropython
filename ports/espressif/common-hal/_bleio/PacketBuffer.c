@@ -33,8 +33,9 @@ void bleio_packet_buffer_extend(bleio_packet_buffer_obj_t *self, uint16_t conn_h
         // the writes the client actually makes.
         return;
     }
+
     // Make room for the new value by dropping the oldest packets first.
-    while (ringbuf_size(&self->ringbuf) - ringbuf_num_filled(&self->ringbuf) < len + sizeof(uint16_t)) {
+    while (ringbuf_num_empty(&self->ringbuf) < len + sizeof(uint16_t)) {
         uint16_t packet_length;
         ringbuf_get_n(&self->ringbuf, (uint8_t *)&packet_length, sizeof(uint16_t));
         for (uint16_t i = 0; i < packet_length; i++) {
@@ -54,7 +55,10 @@ static int _write_cb(uint16_t conn_handle,
     struct ble_gatt_attr *attr,
     void *arg) {
     if (error->status != 0) {
+        #if CIRCUITPY_VERBOSE_BLE
+        // For debugging.
         mp_printf(&mp_plat_print, "write failed %d\n", error->status);
+        #endif
     }
     bleio_packet_buffer_obj_t *self = (bleio_packet_buffer_obj_t *)arg;
     queue_next_write(self);

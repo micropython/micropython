@@ -22,7 +22,7 @@ extern background_callback_t bleio_background_callback;
 
 // We assume variable length data.
 // 20 bytes max (23 - 3).
-#define GATT_MAX_DATA_LENGTH (BLE_GATT_ATT_MTU_DEFAULT - 3)
+#define GATT_MAX_DATA_LENGTH (23 - 3)
 
 #define NIMBLE_OK (0)
 

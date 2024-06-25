@@ -2007,6 +2007,10 @@ msgstr ""
 msgid "Too many channels in sample."
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
+msgid "Too many descriptors"
+msgstr ""
+
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr ""
