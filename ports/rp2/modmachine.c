@@ -103,7 +103,7 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
 }
 
 static void mp_machine_idle(void) {
-    __wfe();
+    MICROPY_INTERNAL_WFE(1);
 }
 
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
