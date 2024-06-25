@@ -60,11 +60,13 @@
 static void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
     for (size_t i = 0; i < n_args; i++) {
         if (mp_obj_is_type(objs[i], &alarm_pin_pinalarm_type) ||
-            mp_obj_is_type(objs[i], &alarm_time_timealarm_type) ||
+            #if CIRCUITPY_ALARM_TOUCH
+            mp_obj_is_type(objs[i], &alarm_touch_touchalarm_type) ||
+            #endif
             #if CIRCUITPY_ESPULP
             mp_obj_is_type(objs[i], &espulp_ulpalarm_type) ||
             #endif
-            mp_obj_is_type(objs[i], &alarm_touch_touchalarm_type)) {
+            mp_obj_is_type(objs[i], &alarm_time_timealarm_type)) {
             continue;
         }
         mp_raise_TypeError_varg(MP_ERROR_TEXT("Expected a kind of %q"), MP_QSTR_Alarm);
@@ -227,6 +229,7 @@ static const mp_obj_module_t alarm_time_module = {
     .globals = (mp_obj_dict_t *)&alarm_time_globals,
 };
 
+#if CIRCUITPY_ALARM_TOUCH
 static const mp_map_elem_t alarm_touch_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_touch) },
     { MP_ROM_QSTR(MP_QSTR_TouchAlarm), MP_OBJ_FROM_PTR(&alarm_touch_touchalarm_type) },
@@ -238,6 +241,7 @@ static const mp_obj_module_t alarm_touch_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&alarm_touch_globals,
 };
+#endif
 
 // The module table is mutable because .wake_alarm is a mutable attribute.
 static mp_map_elem_t alarm_module_globals_table[] = {
@@ -252,7 +256,9 @@ static mp_map_elem_t alarm_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_pin), MP_OBJ_FROM_PTR(&alarm_pin_module) },
     { MP_ROM_QSTR(MP_QSTR_time), MP_OBJ_FROM_PTR(&alarm_time_module) },
+    #if CIRCUITPY_ALARM_TOUCH
     { MP_ROM_QSTR(MP_QSTR_touch), MP_OBJ_FROM_PTR(&alarm_touch_module) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_SleepMemory),   MP_OBJ_FROM_PTR(&alarm_sleep_memory_type) },
     { MP_ROM_QSTR(MP_QSTR_sleep_memory),  MP_OBJ_FROM_PTR(&alarm_sleep_memory_obj) },

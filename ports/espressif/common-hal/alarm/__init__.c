@@ -30,7 +30,6 @@
 
 #include "esp_sleep.h"
 
-#include "soc/rtc_cntl_reg.h"
 #include "components/driver/gpio/include/driver/gpio.h"
 #include "components/driver/uart/include/driver/uart.h"
 
@@ -49,7 +48,9 @@ void alarm_reset(void) {
     alarm_sleep_memory_reset();
     alarm_pin_pinalarm_reset();
     alarm_time_timealarm_reset();
+    #if CIRCUITPY_ALARM_TOUCH
     alarm_touch_touchalarm_reset();
+    #endif
     #if CIRCUITPY_ESPULP
     espulp_ulpalarm_reset();
     #endif
@@ -64,9 +65,11 @@ static esp_sleep_wakeup_cause_t _get_wakeup_cause(bool deep_sleep) {
     if (alarm_time_timealarm_woke_this_cycle()) {
         return ESP_SLEEP_WAKEUP_TIMER;
     }
+    #if CIRCUITPY_ALARM_TOUCH
     if (alarm_touch_touchalarm_woke_this_cycle()) {
         return ESP_SLEEP_WAKEUP_TOUCHPAD;
     }
+    #endif
     #if CIRCUITPY_ESPULP
     if (espulp_ulpalarm_woke_this_cycle()) {
         return ESP_SLEEP_WAKEUP_ULP;
@@ -99,9 +102,11 @@ mp_obj_t common_hal_alarm_record_wake_alarm(void) {
             return alarm_pin_pinalarm_record_wake_alarm();
         }
 
+        #if CIRCUITPY_ALARM_TOUCH
         case ESP_SLEEP_WAKEUP_TOUCHPAD: {
             return alarm_touch_touchalarm_record_wake_alarm();
         }
+        #endif
 
         #if CIRCUITPY_ESPULP
         case ESP_SLEEP_WAKEUP_ULP: {
@@ -121,7 +126,9 @@ mp_obj_t common_hal_alarm_record_wake_alarm(void) {
 static void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
     alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
+    #if CIRCUITPY_ALARM_TOUCH
     alarm_touch_touchalarm_set_alarm(deep_sleep, n_alarms, alarms);
+    #endif
     #if CIRCUITPY_ESPULP
     espulp_ulpalarm_set_alarm(deep_sleep, n_alarms, alarms);
     #endif
@@ -147,10 +154,12 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
                     wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
+                #if CIRCUITPY_ALARM_TOUCH
                 case ESP_SLEEP_WAKEUP_TOUCHPAD: {
                     wake_alarm = alarm_touch_touchalarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
+                #endif
                 #if CIRCUITPY_ESPULP
                 case ESP_SLEEP_WAKEUP_ULP: {
                     wake_alarm = espulp_ulpalarm_find_triggered_alarm(n_alarms, alarms);
@@ -182,7 +191,9 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 
 void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
+    #if CIRCUITPY_ALARM_TOUCH
     alarm_touch_touchalarm_prepare_for_deep_sleep();
+    #endif
     #if CIRCUITPY_ESPULP
     espulp_ulpalarm_prepare_for_deep_sleep();
     #endif

@@ -223,24 +223,10 @@ Ports
 
 Ports include the code unique to a microcontroller line.
 
-================  ============================================================
-Supported         Support status
-================  ============================================================
-atmel-samd        ``SAMD21`` stable | ``SAMD51`` stable
-cxd56             stable
-espressif         ``ESP32`` beta | ``ESP32-C3`` beta | ``ESP32-S2`` stable | ``ESP32-S3`` beta
-litex             alpha
-mimxrt10xx        alpha
-nordic            stable
-raspberrypi       stable
-silabs (efr32)    alpha
-stm               ``F4`` stable | ``others`` beta
-unix              alpha
-================  ============================================================
+The following ports are available: ``atmel-samd``, ``cxd56``, ``espressif``, ``litex``, ``mimxrt10xx``, ``nordic``, ``raspberrypi``, ``renode``, ``silabs`` (``efr32``), ``stm``, ``unix``.
 
--  ``stable`` Highly unlikely to have bugs or missing functionality.
--  ``beta``   Being actively improved but may be missing functionality and have bugs.
--  ``alpha``  Will have bugs and missing functionality.
+However, not all ports are fully functional. Some have limited limited functionality and known serious bugs.
+For details, refer to the **Port status** section in the `latest release <https://github.com/adafruit/circuitpython/releases/latest>`__ notes.
 
 Boards
 ~~~~~~
