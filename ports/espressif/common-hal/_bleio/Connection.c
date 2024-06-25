@@ -425,6 +425,11 @@ static void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
                 ? service->end_handle
                 : next_characteristic->handle - 1;
 
+            // Pre-check if there are no descriptors to discover so descriptor discovery doesn't fail
+            if (end_handle <= characteristic->handle) {
+                continue;
+            }
+
             // Reset discovery status before starting callbacks
             _set_discovery_step_status(0);
 

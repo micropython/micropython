@@ -61,7 +61,7 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     self->props = props;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
-    self->observer = NULL;
+    self->observer = mp_const_none;
 
     // Map CP's property values to Nimble's flag values.
     self->flags = 0;
