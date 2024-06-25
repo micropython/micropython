@@ -290,8 +290,19 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
         duration_ms = BLE_HS_FOREVER;
     }
 
-    CHECK_NIMBLE_ERROR(ble_gap_disc(own_addr_type, duration_ms, &disc_params,
-        _scan_event, self->scan_results));
+    int tries = 5;
+    int status;
+    // BLE_HS_EBUSY may occasionally occur, indicating something has not finished. Retry a few times if so.
+    do {
+        status = ble_gap_disc(own_addr_type, duration_ms, &disc_params,
+            _scan_event, self->scan_results);
+        if (status != BLE_HS_EBUSY) {
+            break;
+        }
+        common_hal_time_delay_ms(50);
+        RUN_BACKGROUND_TASKS;
+    } while (tries-- > 0);
+    CHECK_NIMBLE_ERROR(status);
 
     return MP_OBJ_FROM_PTR(self->scan_results);
 }
