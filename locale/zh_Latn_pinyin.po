@@ -2052,6 +2052,10 @@ msgstr "yàngběn zhōng de tōngdào tài duō"
 msgid "Too many channels in sample."
 msgstr "Chōuyàng zhōng de píndào tài duō."
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
+msgid "Too many descriptors"
+msgstr ""
+
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr "Xiǎnshì zǒngxiàn guòduō;wàngjì displayio.release_displays() ?"
@@ -2262,9 +2266,10 @@ msgstr "Bù zhīchí de géshì"
 msgid "Unsupported hash algorithm"
 msgstr "bù zhīchí de hā xī suànfǎ"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Update Failed"
-msgstr "gēng xīn shī bài"
+msgid "Update failed"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
@@ -4395,6 +4400,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Update Failed"
+#~ msgstr "gēng xīn shī bài"
 
 #~ msgid "Error: Failure to bind"
 #~ msgstr "cuò wù: bǎng dìng shī bài"

@@ -2065,6 +2065,10 @@ msgstr "Demasiados canales en la muestra"
 msgid "Too many channels in sample."
 msgstr "Demasiados canales en sample."
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
+msgid "Too many descriptors"
+msgstr ""
+
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr ""
@@ -2276,9 +2280,10 @@ msgstr "Formato no soportado"
 msgid "Unsupported hash algorithm"
 msgstr "Algoritmo hash no soportado"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Update Failed"
-msgstr "La actualización fallo"
+msgid "Update failed"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
@@ -4408,6 +4413,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Update Failed"
+#~ msgstr "La actualización fallo"
 
 #~ msgid "Error: Failure to bind"
 #~ msgstr "Error: fallo al vincular"
