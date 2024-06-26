@@ -2059,6 +2059,10 @@ msgstr "Zu viele Kanäle im Beispiel"
 msgid "Too many channels in sample."
 msgstr "Zu viele Kanäle im sample."
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
+msgid "Too many descriptors"
+msgstr ""
+
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr "Zu viele Display-Busse, displayio.release_displays() vergessen?"
@@ -2271,9 +2275,10 @@ msgstr "Nicht unterstütztes Format"
 msgid "Unsupported hash algorithm"
 msgstr "Hash Algorithmus wird nicht unterstützt"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Update Failed"
-msgstr "Update fehlgeschlagen"
+msgid "Update failed"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
@@ -4422,6 +4427,9 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "Update Failed"
+#~ msgstr "Update fehlgeschlagen"
 
 #~ msgid "You pressed the boot button at start up."
 #~ msgstr "Der Boot-Knopf wurde beim Starten gedrückt."

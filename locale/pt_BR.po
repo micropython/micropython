@@ -2064,6 +2064,10 @@ msgstr "Muitos canais na amostra"
 msgid "Too many channels in sample."
 msgstr "Muitos canais na amostra."
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
+msgid "Too many descriptors"
+msgstr ""
+
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr ""
@@ -2277,9 +2281,10 @@ msgstr "Formato não suportado"
 msgid "Unsupported hash algorithm"
 msgstr "Sem compatibilidade com o algoritmo de hash"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Update Failed"
-msgstr "A atualização falou"
+msgid "Update failed"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
@@ -4421,6 +4426,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Update Failed"
+#~ msgstr "A atualização falou"
 
 #~ msgid "You pressed the boot button at start up."
 #~ msgstr "Você pressionou o botão de inicialização na inicialização."

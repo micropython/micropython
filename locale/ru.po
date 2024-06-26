@@ -2072,6 +2072,10 @@ msgstr "Слишком много каналов в выборке"
 msgid "Too many channels in sample."
 msgstr "Слишком много каналов в выборке."
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
+msgid "Too many descriptors"
+msgstr ""
+
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr "Слишком много шин дисплея; забыл displayio.release_displays()?"
@@ -2284,9 +2288,10 @@ msgstr "Неподдерживаемый формат"
 msgid "Unsupported hash algorithm"
 msgstr "Неподдерживаемый алгоритм хеширования"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Update Failed"
-msgstr "Ошибка обновления"
+msgid "Update failed"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
@@ -4451,6 +4456,9 @@ msgstr "zi должно быть типа float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
+
+#~ msgid "Update Failed"
+#~ msgstr "Ошибка обновления"
 
 #~ msgid "Error: Failure to bind"
 #~ msgstr "Ошибка: Сбой привязки"
