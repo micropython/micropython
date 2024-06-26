@@ -3,10 +3,11 @@ import argparse, os, sys, shlex, shutil, subprocess, time, requests, tarfile, zi
 boards = [
     {"name": "CY8CPROTO-062-4343W", "ocd_cfg_file": "psoc6_2m.cfg"},
     {"name": "CY8CPROTO-063-BLE", "ocd_cfg_file": "psoc6.cfg"},
+    {"name": "CY8CKIT-062S2-AI", "ocd_cfg_file": "psoc6_2m.cfg"},
 ]
 
 opsys = ""
-version = "0.2.0"
+version = "0.3.0"
 
 
 def colour_str_success(msg):
@@ -46,6 +47,7 @@ def mpy_get_fw_hex_file_name(file_name, board):
 def mpy_firmware_deploy(file_name, board, silent=False, serial_adapter_sn=None):
     if not silent:
         print(f"Deploying firmware {file_name} ...")
+
     hex_file = mpy_get_fw_hex_file_name(file_name, board)
     openocd_program(board, hex_file, serial_adapter_sn)
     if not silent:
@@ -55,6 +57,7 @@ def mpy_firmware_deploy(file_name, board, silent=False, serial_adapter_sn=None):
 def mpy_firmware_download(file_name, board, version, silent=False):
     def mpy_firmware_clean(file_name, board):
         file_name_for_board = mpy_get_fw_hex_file_name(file_name, board)
+
         if os.path.exists(file_name_for_board):
             os.remove(file_name_for_board)
 
@@ -299,7 +302,7 @@ def openocd_board_conf_download(board):
     os.chdir("board")
 
     # Download config file
-    if board == "CY8CPROTO-062-4343W":
+    if board == "CY8CPROTO-062-4343W" or board == "CY8CKIT-062S2-AI":
         file_name = "qspi_config_" + str(board) + ".cfg"
         file_url = "https://github.com/infineon/micropython/releases/download/v0.3.0/" + file_name
 
@@ -345,11 +348,10 @@ def openocd_program(board, hex_file, serial_adapter_sn=None):
 
     ocd_proc = subprocess.Popen(openocd_args, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     try:
-        out, err = ocd_proc.communicate(timeout=20)
+        out, err = ocd_proc.communicate(timeout=30)
     except:
         ocd_proc.kill()
         sys.exit(colour_str_error("openocd error"))
-
     if err:
         sys.exit(colour_str_error(err.decode() + "Are you sure the board is connected?"))
 
@@ -403,6 +405,8 @@ def select_board():
     print("|   0     |  CY8CPROTO-062-4343W              |")
     print("+---------+-----------------------------------+")
     print("|   1     |  CY8CPROTO-063-BLE                |")
+    print("+---------+-----------------------------------+")
+    print("|   2     |  CY8CKIT-062S2-AI                 |")
     print("+---------+-----------------------------------+")
     print("")
     print("")
