@@ -1029,25 +1029,9 @@ msgstr ""
 msgid "Format not supported"
 msgstr ""
 
-#: ports/espressif/common-hal/microcontroller/Processor.c
-msgid "Frequency must be 20, 40, 80 or 120MHz"
-msgstr ""
-
-#: ports/espressif/common-hal/microcontroller/Processor.c
-msgid "Frequency must be 20, 40, 80 or 160MHz"
-msgstr ""
-
-#: ports/espressif/common-hal/microcontroller/Processor.c
-msgid "Frequency must be 20, 40, 80, 160 or 240MHz"
-msgstr ""
-
 #: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
 msgid ""
 "Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
-msgstr ""
-
-#: ports/espressif/common-hal/microcontroller/Processor.c
-msgid "Frequency must be 32, 48, 64 or 96MHz"
 msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
