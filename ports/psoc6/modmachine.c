@@ -338,6 +338,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_rng_obj, machine_rng);
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
     { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&machine_adc_type) }, \
     { MP_ROM_QSTR(MP_QSTR_ADCBlock),            MP_ROM_PTR(&machine_adcblock_type) }, \
-    MICROPY_PY_MACHINE_SD_CARD_ENTRY, \
+    MICROPY_PY_MACHINE_SD_CARD_ENTRY \
 
 #endif // MICROPY_PY_MACHINE
