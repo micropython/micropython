@@ -40,6 +40,10 @@ typedef enum {
 
 #define mp_builtin_open_obj mp_vfs_open_obj
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 mp_import_stat_t mp_vfs_import_stat(const char *path);
 mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
@@ -138,5 +142,9 @@ extern const mp_obj_module_t mp_module_uctypes;
 extern const mp_obj_module_t mp_module_machine;
 
 extern const char MICROPY_PY_BUILTINS_HELP_TEXT[];
+
+#ifdef _cplusplus
+}
+#endif
 
 #endif // MICROPY_INCLUDED_PY_BUILTIN_H

@@ -88,6 +88,10 @@ typedef struct _nlr_jump_callback_node_call_function_1_t {
     void *arg;
 } nlr_jump_callback_node_call_function_1_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Tables mapping operator enums to qstrs, defined in objtype.c
 extern const byte mp_unary_op_method_name[];
 extern const byte mp_binary_op_method_name[];
@@ -300,6 +304,10 @@ void mp_warning(const char *category, const char *msg, ...);
 #endif
 #else
 #define mp_warning(...)
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif // MICROPY_INCLUDED_PY_RUNTIME_H
