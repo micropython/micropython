@@ -47,7 +47,7 @@
 //|     """The CPU operating frequency in Hertz.
 //|
 //|     **Limitations:** On most boards, ``frequency`` is read-only. Setting
-//|     the ``frequency`` is possible on RP2040 boards and some i.MX boards.
+//|     the ``frequency`` is possible on RP2040 boards, some ESP32 boards and some i.MX boards.
 //|
 //|     .. warning:: Overclocking likely voids your warranties and may reduce
 //|       the lifetime of the chip.
