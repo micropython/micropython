@@ -11,6 +11,10 @@
 #define MICROPY_PY_HASHLIB_SHA1                 (1)
 #define MICROPY_PY_HASHLIB_SHA256               (1)
 
+#ifndef MICROPY_PY_SD_CARD
+#define MICROPY_PY_SD_CARD                      (1)
+#endif
+
 // Flash type enablement for board
 #define MICROPY_PY_EXT_FLASH (1)
 #if (MICROPY_PY_EXT_FLASH)
