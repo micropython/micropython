@@ -386,3 +386,12 @@
 [submodule "frozen/Adafruit_CircuitPython_Bitmap_Font"]
 	path = frozen/Adafruit_CircuitPython_Bitmap_Font
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Bitmap_Font
+[submodule "frozen/Adafruit_CircuitPython_MPU6050"]
+	path = frozen/Adafruit_CircuitPython_MPU6050
+	url = https://github.com/adafruit/Adafruit_CircuitPython_MPU6050
+[submodule "frozen/Adafruit_CircuitPython_Pixel_Framebuf"]
+	path = frozen/Adafruit_CircuitPython_Pixel_Framebuf
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Pixel_Framebuf
+[submodule "frozen/Adafruit_CircuitPython_LED_Animation"]
+	path = frozen/Adafruit_CircuitPython_LED_Animation
+	url = https://github.com/adafruit/Adafruit_CircuitPython_LED_Animation
