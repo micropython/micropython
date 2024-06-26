@@ -735,8 +735,8 @@ class CompiledModule:
             elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_NONE:
                 raise FreezeError(self, "target does not support long int")
             elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_LONGLONG:
-                # TODO
-                raise FreezeError(self, "freezing int to long-long is not implemented")
+                print("static const mp_obj_int_t %s = {{&mp_type_int}, %d};" % (obj_name, obj))
+                return "MP_ROM_PTR(&%s)" % obj_name
             elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_MPZ:
                 neg = 0
                 if obj < 0:
