@@ -24,6 +24,7 @@
 #include "shared-bindings/_bleio/Connection.h"
 #include "shared-bindings/_bleio/ScanEntry.h"
 #include "shared-bindings/time/__init__.h"
+#include "shared/runtime/interrupt_char.h"
 
 #include "controller/ble_ll_adv.h"
 #include "nimble/hci_common.h"
@@ -47,22 +48,23 @@
 #include "shared-module/os/__init__.h"
 #endif
 
-bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
+// Status variables used while busy-waiting for events.
+static volatile bool _nimble_sync;
+static volatile int _connection_status;
 
-bool ble_active = false;
+bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
 static void nimble_host_task(void *param) {
     nimble_port_run();
     nimble_port_freertos_deinit();
 }
 
-static TaskHandle_t cp_task = NULL;
 
 static void _on_sync(void) {
     int rc = ble_hs_util_ensure_addr(false);
     assert(rc == 0);
 
-    xTaskNotifyGive(cp_task);
+    _nimble_sync = true;
 }
 
 // All examples have this. It'd make sense in a header.
@@ -133,15 +135,26 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
 
         ble_store_config_init();
 
-        cp_task = xTaskGetCurrentTaskHandle();
-
+        _nimble_sync = false;
         nimble_port_freertos_init(nimble_host_task);
-        // Wait for sync.
-        ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(200));
+        // Wait for sync from nimble task.
+        const uint64_t timeout_time_ms = common_hal_time_monotonic_ms() + 200;
+        while (!_nimble_sync && (common_hal_time_monotonic_ms() < timeout_time_ms)) {
+            RUN_BACKGROUND_TASKS;
+            if (mp_hal_is_interrupted()) {
+                // Return prematurely. Then the interrupt will be raised.
+                return;
+            }
+        }
+
+        if (!_nimble_sync) {
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Update failed"));
+        }
     } else {
         int ret = nimble_port_stop();
-        while (xTaskGetHandle("nimble_host") != NULL) {
-            vTaskDelay(pdMS_TO_TICKS(2));
+        while (xTaskGetHandle("nimble_host") != NULL && !mp_hal_is_interrupted()) {
+            RUN_BACKGROUND_TASKS;
+            common_hal_time_delay_ms(2);
         }
         if (ret == 0) {
             nimble_port_deinit();
@@ -277,8 +290,19 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
         duration_ms = BLE_HS_FOREVER;
     }
 
-    CHECK_NIMBLE_ERROR(ble_gap_disc(own_addr_type, duration_ms, &disc_params,
-        _scan_event, self->scan_results));
+    int tries = 5;
+    int status;
+    // BLE_HS_EBUSY may occasionally occur, indicating something has not finished. Retry a few times if so.
+    do {
+        status = ble_gap_disc(own_addr_type, duration_ms, &disc_params,
+            _scan_event, self->scan_results);
+        if (status != BLE_HS_EBUSY) {
+            break;
+        }
+        common_hal_time_delay_ms(50);
+        RUN_BACKGROUND_TASKS;
+    } while (tries-- > 0);
+    CHECK_NIMBLE_ERROR(status);
 
     return MP_OBJ_FROM_PTR(self->scan_results);
 }
@@ -309,14 +333,15 @@ static int _mtu_reply(uint16_t conn_handle,
     if (error->status == 0) {
         connection->mtu = mtu;
     }
-    xTaskNotify(cp_task, conn_handle, eSetValueWithOverwrite);
+    // Set status var to connection handle to report that connection is now established.
+    // Another routine is waiting for this.
+    _connection_status = conn_handle;
     return 0;
 }
 
 static void _new_connection(uint16_t conn_handle) {
     // Set the tx_power for the connection higher than the advertisement.
     esp_ble_tx_power_set(conn_handle, ESP_PWR_LVL_N0);
-
 
     // Find an empty connection. One should always be available because the SD has the same
     // total connection limit.
@@ -353,13 +378,14 @@ static int _connect_event(struct ble_gap_event *event, void *self_in) {
     switch (event->type) {
         case BLE_GAP_EVENT_CONNECT:
             if (event->connect.status == 0) {
-                // This triggers an MTU exchange. Its reply will unblock CP.
+                // This triggers an MTU exchange. Its reply will exit the loop waiting for a connection.
                 _new_connection(event->connect.conn_handle);
                 // Set connections objs back to NULL since we have a new
                 // connection and need a new tuple.
                 self->connection_objs = NULL;
             } else {
-                xTaskNotify(cp_task, -event->connect.status, eSetValueWithOverwrite);
+                // The loop waiting for the connection to be comnpleted will stop when _connection_status changes.
+                _connection_status = -event->connect.status;
             }
             break;
 
@@ -397,24 +423,31 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     ble_addr_t addr;
     _convert_address(address, &addr);
 
-    cp_task = xTaskGetCurrentTaskHandle();
-    // Make sure we don't have a pending notification from a previous time. This
-    // can happen if a previous wait timed out before the notification was given.
-    xTaskNotifyStateClear(cp_task);
+    const int timeout_ms = SEC_TO_UNITS(timeout, UNIT_1_MS) + 0.5f;
     CHECK_NIMBLE_ERROR(
         ble_gap_connect(own_addr_type, &addr,
-            SEC_TO_UNITS(timeout, UNIT_1_MS) + 0.5f,
+            timeout_ms,
             &conn_params,
             _connect_event, self));
 
-    int error_code;
     // Wait an extra 50 ms to give the connect method the opportunity to time out.
-    CHECK_NOTIFY(xTaskNotifyWait(0, 0, (uint32_t *)&error_code, pdMS_TO_TICKS(timeout * 1000 + 50)));
-    // Negative values are error codes, connection handle otherwise.
-    if (error_code < 0) {
-        CHECK_BLE_ERROR(-error_code);
+
+    const uint64_t timeout_time_ms = common_hal_time_monotonic_ms() + timeout_ms;
+    // _connection_status gets set to either a positive connection handle or a negative error code.
+    _connection_status = BLEIO_HANDLE_INVALID;
+    while (_connection_status == BLEIO_HANDLE_INVALID && (common_hal_time_monotonic_ms() < timeout_time_ms)) {
+        RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            // Return prematurely. Then the interrupt exception  will be raised.
+            return mp_const_none;
+        }
     }
-    uint16_t conn_handle = error_code;
+
+    // Negative values are error codes, connection handle otherwise.
+    if (_connection_status < 0) {
+        CHECK_BLE_ERROR(-_connection_status);
+    }
+    const uint16_t conn_handle = _connection_status;
 
     // TODO: If we have keys, then try and encrypt the connection.
 

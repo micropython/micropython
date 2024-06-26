@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "shared/runtime/interrupt_char.h"
 
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Characteristic.h"
@@ -14,12 +15,38 @@
 #include "shared-bindings/_bleio/Descriptor.h"
 #include "shared-bindings/_bleio/PacketBuffer.h"
 #include "shared-bindings/_bleio/Service.h"
+#include "shared-bindings/time/__init__.h"
 
 #include "common-hal/_bleio/Adapter.h"
 #include "common-hal/_bleio/Service.h"
 
-
 static int characteristic_on_ble_gap_evt(struct ble_gap_event *event, void *param);
+
+static volatile int _completion_status;
+static uint64_t _timeout_start_time;
+
+static void _reset_completion_status(void) {
+    _completion_status = 0;
+}
+
+// Wait for a status change, recorded in a callback.
+// Try twice because sometimes we get a BLE_HS_EAGAIN.
+// Maybe we should try more than twice.
+static int _wait_for_completion(uint32_t timeout_msecs) {
+    for (int tries = 1; tries <= 2; tries++) {
+        _timeout_start_time = common_hal_time_monotonic_ms();
+        while ((_completion_status == 0) &&
+               (common_hal_time_monotonic_ms() < _timeout_start_time + timeout_msecs) &&
+               !mp_hal_is_interrupted()) {
+            RUN_BACKGROUND_TASKS;
+        }
+        if (_completion_status != BLE_HS_EAGAIN) {
+            // Quit, because either the status is either zero (OK) or it's an error.
+            break;
+        }
+    }
+    return _completion_status;
+}
 
 void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_service_obj_t *service,
     uint16_t handle, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props,
@@ -34,7 +61,7 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     self->props = props;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
-    self->observer = NULL;
+    self->observer = mp_const_none;
 
     // Map CP's property values to Nimble's flag values.
     self->flags = 0;
@@ -125,7 +152,6 @@ bleio_service_obj_t *common_hal_bleio_characteristic_get_service(bleio_character
 }
 
 typedef struct {
-    TaskHandle_t task;
     uint8_t *buf;
     uint16_t len;
 } _read_info_t;
@@ -148,9 +174,9 @@ static int _read_cb(uint16_t conn_handle,
             // For debugging.
             mp_printf(&mp_plat_print, "Read status: %d\n", error->status);
             #endif
-            xTaskNotify(read_info->task, error->status, eSetValueWithOverwrite);
             break;
     }
+    _completion_status = error->status;
 
     return 0;
 }
@@ -163,14 +189,12 @@ size_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *sel
     uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);
     if (common_hal_bleio_service_get_is_remote(self->service)) {
         _read_info_t read_info = {
-            .task = xTaskGetCurrentTaskHandle(),
             .buf = buf,
             .len = len
         };
+        _reset_completion_status();
         CHECK_NIMBLE_ERROR(ble_gattc_read(conn_handle, self->handle, _read_cb, &read_info));
-        int error_code;
-        xTaskNotifyWait(0, 0, (uint32_t *)&error_code, 200);
-        CHECK_BLE_ERROR(error_code);
+        CHECK_NIMBLE_ERROR(_wait_for_completion(2000));
         return read_info.len;
     } else {
         len = MIN(self->current_value_len, len);
@@ -189,8 +213,7 @@ static int _write_cb(uint16_t conn_handle,
     const struct ble_gatt_error *error,
     struct ble_gatt_attr *attr,
     void *arg) {
-    TaskHandle_t task = (TaskHandle_t)arg;
-    xTaskNotify(task, error->status, eSetValueWithOverwrite);
+    _completion_status = error->status;
 
     return 0;
 }
@@ -201,10 +224,9 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
         if ((self->props & CHAR_PROP_WRITE_NO_RESPONSE) != 0) {
             CHECK_NIMBLE_ERROR(ble_gattc_write_no_rsp_flat(conn_handle, self->handle, bufinfo->buf, bufinfo->len));
         } else {
-            CHECK_NIMBLE_ERROR(ble_gattc_write_flat(conn_handle, self->handle, bufinfo->buf, bufinfo->len, _write_cb, xTaskGetCurrentTaskHandle()));
-            int error_code;
-            xTaskNotifyWait(0, 0, (uint32_t *)&error_code, 200);
-            CHECK_BLE_ERROR(error_code);
+            _reset_completion_status();
+            CHECK_NIMBLE_ERROR(ble_gattc_write_flat(conn_handle, self->handle, bufinfo->buf, bufinfo->len, _write_cb, NULL));
+            CHECK_NIMBLE_ERROR(_wait_for_completion(2000));
         }
     } else {
         // Validate data length for local characteristics only.
@@ -338,6 +360,10 @@ bleio_characteristic_properties_t common_hal_bleio_characteristic_get_properties
 void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *self,
     bleio_descriptor_obj_t *descriptor) {
     size_t i = self->descriptor_list->len;
+    if (i >= MAX_DESCRIPTORS) {
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Too many descriptors"));
+    }
+
     mp_obj_list_append(MP_OBJ_FROM_PTR(self->descriptor_list),
         MP_OBJ_FROM_PTR(descriptor));
 
@@ -368,10 +394,9 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, 
         (notify ? 1 << 0 : 0) |
         (indicate ? 1 << 1: 0);
 
-    CHECK_NIMBLE_ERROR(ble_gattc_write_flat(conn_handle, self->cccd_handle, &cccd_value, 2, _write_cb, xTaskGetCurrentTaskHandle()));
-    int error_code;
-    xTaskNotifyWait(0, 0, (uint32_t *)&error_code, 200);
-    CHECK_BLE_ERROR(error_code);
+    _reset_completion_status();
+    CHECK_NIMBLE_ERROR(ble_gattc_write_flat(conn_handle, self->cccd_handle, &cccd_value, 2, _write_cb, NULL));
+    CHECK_NIMBLE_ERROR(_wait_for_completion(2000));
 }
 
 void bleio_characteristic_set_observer(bleio_characteristic_obj_t *self, mp_obj_t observer) {
