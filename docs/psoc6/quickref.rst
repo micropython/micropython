@@ -196,23 +196,6 @@ accessed via :ref:`machine.SoftI2C <machine.SoftI2C>` ::
 
 Hardware I2C bus
 ----------------
-Hardware I2C works on the following listed pair of I2C pins
-
-=====  ===========  ============
-\      Default  
-=====  ===========  ============
-scl    P6_0           P9_0
-sda    P6_1           P9_1
-=====  ===========  ============
-
-.. 
-    TODO: This is only applicable to the CY8CPROTO-062-4343W. This does not belong here. 
-    TODO: Define approach on how the user gets to know the pinout diagram, alternate function of each board
-    - From board manual? 
-    - From datasheet?
-    - To create a pinout diagram? 
-
-
 The driver is accessed via :ref:`machine.I2C <machine.I2C>`
 
 The constructor
