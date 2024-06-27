@@ -5,6 +5,15 @@ import errno
 SHORT_TEST_STRING = "This is a test string."
 LONG_TEST_STRING = "This is a very long string. And as a long string that it is, it is only getting longer and longer and the string goes. How long shall it be? Well, not really sure, but let´s try it like this."
 
+board = os.uname().machine
+if "CY8CPROTO-063-BLE" in board:
+    print("SKIP")
+    raise SystemExit
+elif "CY8CKIT-062S2-AI" in board:
+    print("SKIP")
+    raise SystemExit
+
+print("\n***** Test 1: File transfer to SD Card in LFS2 farmat *****\n")
 
 def unmount_sd_card(path):
     try:
