@@ -55,7 +55,11 @@
 #endif
 
 #if SOC_I2C_SUPPORT_XTAL
-#define I2C_SCLK_FREQ XTAL_CLK_FREQ
+#if CONFIG_XTAL_FREQ > 0
+#define I2C_SCLK_FREQ (CONFIG_XTAL_FREQ * 1000000)
+#else
+#error "I2C uses XTAL but no configured freq"
+#endif // CONFIG_XTAL_FREQ
 #elif SOC_I2C_SUPPORT_APB
 #define I2C_SCLK_FREQ APB_CLK_FREQ
 #else

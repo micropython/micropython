@@ -30,6 +30,8 @@
 #include "modesp32.h"
 
 #include "esp_task.h"
+
+#if SOC_RMT_SUPPORTED
 #include "driver/rmt.h"
 
 // This exposes the ESP32's RMT module to MicroPython. RMT is provided by the Espressif ESP-IDF:
@@ -105,7 +107,7 @@ esp_err_t rmt_driver_install_core1(uint8_t channel_id) {
     return rmt_driver_install(channel_id, 0, 0);
 }
 
-#endif
+#endif // MP_TASK_COREID==0
 
 static mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
@@ -387,3 +389,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, esp32_rmt_print,
     locals_dict, &esp32_rmt_locals_dict
     );
+
+#endif // SOC_RMT_SUPPORTED
