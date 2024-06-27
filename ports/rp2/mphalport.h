@@ -30,7 +30,6 @@
 #include "pico/time.h"
 #include "hardware/clocks.h"
 #include "hardware/structs/systick.h"
-#include "RP2040.h" // cmsis, for __WFI
 #include "pendsv.h"
 
 #define SYSTICK_MAX (0xffffff)

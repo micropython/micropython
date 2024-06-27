@@ -43,6 +43,7 @@ static soft_timer_entry_t mp_network_soft_timer;
 #include "lib/cyw43-driver/src/cyw43.h"
 #include "lib/cyw43-driver/src/cyw43_stats.h"
 #include "hardware/irq.h"
+#include "RP2040.h" // cmsis, for NVIC_SetPriority and PendSV_IRQn
 
 #define CYW43_IRQ_LEVEL GPIO_IRQ_LEVEL_HIGH
 #define CYW43_SHARED_IRQ_HANDLER_PRIORITY PICO_SHARED_IRQ_HANDLER_HIGHEST_ORDER_PRIORITY
@@ -57,7 +58,7 @@ static void gpio_irq_handler(void) {
         // CYW43_POST_POLL_HOOK which is called at the end of cyw43_poll_func.
         gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, false);
         cyw43_has_pending = 1;
-        __SEV();
+        __sev();
         pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
         CYW43_STAT_INC(IRQ_COUNT);
     }
