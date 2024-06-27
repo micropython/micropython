@@ -6,7 +6,7 @@ machine = os.uname().machine
 # create block device object based on whichever flash is active
 bdev = psoc6.QSPI_Flash() if "QSPI_Flash" in dir(psoc6) else psoc6.Flash()
 # unmount the filesystem in case its already mounted
-os.umount("/")
+os.umount("/flash")
 
 test_string = "This is a test string."
 long_test_string = "This is a very long string. And as a long string that it is, it is only getting longer and longer and the string goes. How long shall it be? Well, not really sure, but let´s try it like this."
