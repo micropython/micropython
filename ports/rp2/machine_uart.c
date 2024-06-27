@@ -369,9 +369,9 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
 
         uart_init(self->uart, self->baudrate);
         uart_set_format(self->uart, self->bits, self->stop, self->parity);
-        __DSB(); // make sure UARTLCR_H register is written to
+        __dsb(); // make sure UARTLCR_H register is written to
         uart_set_fifo_enabled(self->uart, true);
-        __DSB(); // make sure UARTLCR_H register is written to
+        __dsb(); // make sure UARTLCR_H register is written to
         gpio_set_function(self->tx, GPIO_FUNC_UART);
         gpio_set_function(self->rx, GPIO_FUNC_UART);
         if (self->invert & UART_INVERT_RX) {
