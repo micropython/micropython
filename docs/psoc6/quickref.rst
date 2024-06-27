@@ -700,3 +700,63 @@ Constructor
     num_read = audio_in.readinto(buf)# fill buffer with audio samples from I2S device
 
 
+UART
+----
+
+See :ref:`machine.UART <machine.UART>`.
+
+The following specialization applies to this port:
+
+Constructor
+^^^^^^^^^^^^
+
+.. class:: UART(id)
+
+   Construct a UART object of the given id:
+
+   - ``id`` takes any integer (This value is ignored for PSoC6 port)
+
+Methods
+^^^^^^^
+
+.. method:: UART.init(baudrate, bits, parity, stop, tx, rx, rts, cts, timeout,flow)
+
+    Initialize the UART with the given parameters.
+
+    Mandatory parameters:
+    - ``baudrate`` is the baud rate.
+    - ``bits`` supported is 8 or 9.
+    - ``stop`` supported is 1 .
+    - ``tx`` is the pin for transmit.Check reference manual for supported pins.
+    - ``rx`` is the pin for receive.Check reference manual for supported pins.
+
+    optional parameters:
+    - ``parity`` supported is None, 0(even) or 1(odd).By default, it is set to None.
+    - ``rts``
+    - ``cts``
+    - ``timeout`` 
+    - ``flow``
+    - ``rxbuf`` 
+
+.. Note:: 
+    For reinitialising the UART object, the ``init()`` function can be called with the new parameters.Pins can't be reconfigured once the UART object is created.
+
+.. Note::
+
+    - ``txbuf`` is not implemented.
+    - ``timeout_char`` is not implemented.
+    - ``invert`` is not implemented.
+
+.. method:: UART.irq(trigger, handler)
+    
+        Enable the UART interrupt and set the interrupt handler.
+    
+        - ``trigger`` can be UART.RX_DONE, UART.RX_FULL, UART.TX_EMPTY, UART.TX_DONE.
+        - ``handler`` is the optional callback function.
+
+.. Note::
+    - The Handler will be called when the trigger condition is met.
+    - RX_DONE:	All RX data has been received.
+    - RX_FULL:	The SW RX buffer (if used) is full. This has to be provided in the init with rxbuf parameter.
+    - TX_EMPTY:	The HW TX FIFO buffer is empty.
+    - TX_DONE:	All TX data has been transmitted.
