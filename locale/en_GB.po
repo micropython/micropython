@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-06-18 19:09+0000\n"
-"Last-Translator: johnnohj <j.edward.fletcher@gmail.com>\n"
+"PO-Revision-Date: 2024-06-28 22:09+0000\n"
+"Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 #: main.c
 msgid ""
@@ -2037,7 +2037,7 @@ msgstr "Too many channels in sample."
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 msgid "Too many descriptors"
-msgstr ""
+msgstr "Too many descriptors"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
@@ -2252,7 +2252,7 @@ msgstr "Unsupported hash algorithm"
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update failed"
-msgstr ""
+msgstr "Update failed"
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
