@@ -32,6 +32,7 @@
 #include "py/ringbuf.h"
 #include "samd_soc.h"
 #include "pin_af.h"
+#include "shared/runtime/softtimer.h"
 
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_BUFFER_SIZE (256)
@@ -40,13 +41,22 @@
 #define FLOW_CONTROL_RTS (1)
 #define FLOW_CONTROL_CTS (2)
 
-#define MP_UART_ALLOWED_FLAGS (SERCOM_USART_INTFLAG_RXC | SERCOM_USART_INTFLAG_TXC)
-
 #if MICROPY_PY_MACHINE_UART_IRQ
+#define UART_IRQ_RXIDLE (4096)
+#define RXIDLE_TIMER_MIN (1)
+#define MP_UART_ALLOWED_FLAGS (SERCOM_USART_INTFLAG_RXC | SERCOM_USART_INTFLAG_TXC | UART_IRQ_RXIDLE)
+
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_IRQ_RX), MP_ROM_INT(SERCOM_USART_INTFLAG_RXC) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_IRQ_RXIDLE) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_TXIDLE), MP_ROM_INT(SERCOM_USART_INTFLAG_TXC) }, \
 
+enum {
+    RXIDLE_INACTIVE,
+    RXIDLE_STANDBY,
+    RXIDLE_ARMED,
+    RXIDLE_ALERT,
+};
 #else
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS
 #endif
@@ -80,6 +90,9 @@ typedef struct _machine_uart_obj_t {
     uint16_t mp_irq_trigger;   // user IRQ trigger mask
     uint16_t mp_irq_flags;     // user IRQ active IRQ flags
     mp_irq_obj_t *mp_irq_obj;  // user IRQ object
+    soft_timer_entry_t rxidle_timer;
+    uint8_t rxidle_state;
+    uint16_t rxidle_ms;
     #endif
 } machine_uart_obj_t;
 
@@ -115,7 +128,16 @@ void common_uart_irq_handler(int uart_id) {
             uart_drain_rx_fifo(self, uart);
             #if MICROPY_PY_MACHINE_UART_IRQ
             if (ringbuf_avail(&self->read_buffer) > 0) {
-                self->mp_irq_flags = SERCOM_USART_INTFLAG_RXC;
+                if (self->rxidle_state != RXIDLE_INACTIVE) {
+                    if (self->rxidle_state == RXIDLE_STANDBY) {
+                        self->rxidle_timer.mode = SOFT_TIMER_MODE_PERIODIC;
+                        soft_timer_insert(&self->rxidle_timer, self->rxidle_ms);
+                    }
+                    self->rxidle_state = RXIDLE_ALERT;
+                }
+                if (!(self->mp_irq_trigger & UART_IRQ_RXIDLE)) {
+                    self->mp_irq_flags = SERCOM_USART_INTFLAG_RXC;
+                }
             }
             #endif
         }
@@ -138,13 +160,32 @@ void common_uart_irq_handler(int uart_id) {
         uart->USART.INTENCLR.reg = (uint8_t) ~(SERCOM_USART_INTENCLR_DRE | SERCOM_USART_INTENCLR_RXC);
 
         #if MICROPY_PY_MACHINE_UART_IRQ
-        // Check the flags to see if the user handler should be called
+        // Check the flags to see if the uart user handler should be called
+        // The handler for RXIDLE is called in the timer callback
         if (self->mp_irq_trigger & self->mp_irq_flags) {
             mp_irq_handler(self->mp_irq_obj);
         }
         #endif
     }
 }
+
+#if MICROPY_PY_MACHINE_UART_IRQ
+static void uart_soft_timer_callback(soft_timer_entry_t *self) {
+    machine_uart_obj_t *uart = self->context;
+    if (uart->rxidle_state == RXIDLE_ALERT) {
+        // At the first call, just switch the state
+        uart->rxidle_state = RXIDLE_ARMED;
+    } else if (uart->rxidle_state == RXIDLE_ARMED) {
+        // At the second call, run the irq callback and stop the timer
+        // by setting the mode to SOFT_TIMER_MODE_ONE_SHOT.
+        // Calling soft_timer_remove() would fail here.
+        self->mode = SOFT_TIMER_MODE_ONE_SHOT;
+        uart->rxidle_state = RXIDLE_STANDBY;
+        uart->mp_irq_flags = UART_IRQ_RXIDLE;
+        mp_irq_handler(uart->mp_irq_obj);
+    }
+}
+#endif
 
 // Configure the Sercom device
 static void machine_sercom_configure(machine_uart_obj_t *self) {
@@ -425,6 +466,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     #endif
     #if MICROPY_PY_MACHINE_UART_IRQ
     self->mp_irq_obj = NULL;
+    self->rxidle_state = RXIDLE_INACTIVE;
     #endif
     self->new = true;
     MP_STATE_PORT(sercom_table[uart_id]) = self;
@@ -486,8 +528,35 @@ static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
 }
 
 #if MICROPY_PY_MACHINE_UART_IRQ
+
+// Configure the timer used for IRQ_RXIDLE
+static void uart_irq_configure_timer(machine_uart_obj_t *self, mp_uint_t trigger) {
+
+    self->rxidle_state = RXIDLE_INACTIVE;
+
+    if (trigger & UART_IRQ_RXIDLE) {
+        // The RXIDLE event is always a soft IRQ.
+        self->mp_irq_obj->ishard = false;
+        mp_int_t ms = 13000 / self->baudrate + 1;
+        if (ms < RXIDLE_TIMER_MIN) {
+            ms = RXIDLE_TIMER_MIN;
+        }
+        self->rxidle_ms = ms;
+        self->rxidle_timer.context = self;
+        soft_timer_static_init(
+            &self->rxidle_timer,
+            SOFT_TIMER_MODE_PERIODIC,
+            ms,
+            uart_soft_timer_callback
+            );
+        self->rxidle_state = RXIDLE_STANDBY;
+    }
+}
+
 static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    uart_irq_configure_timer(self, new_trigger);
     self->mp_irq_trigger = new_trigger;
     return 0;
 }
@@ -526,10 +595,12 @@ static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args
         if (trigger != 0 && not_supported) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%04x unsupported"), not_supported);
         }
+        uart_irq_configure_timer(self, trigger);
 
         self->mp_irq_obj->handler = handler;
         self->mp_irq_obj->ishard = args[MP_IRQ_ARG_INIT_hard].u_bool;
         self->mp_irq_trigger = trigger;
+
     }
 
     return self->mp_irq_obj;
