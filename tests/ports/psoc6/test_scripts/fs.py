@@ -59,6 +59,7 @@ def validate_test(op, exp_op):
 
     if output != exp_output:
         print("Operation failed!")
+        os.remove(op)
         sys.exit(1)
     else:
         print("Operation successful!")
