@@ -5,8 +5,8 @@ This is a port of MicroPython to the Espressif ESP32 series of
 microcontrollers.  It uses the ESP-IDF framework and MicroPython runs as
 a task under FreeRTOS.
 
-Currently supports ESP32, ESP32-C3, ESP32-C6, ESP32-S2 and ESP32-S3
-(ESP8266 is supported by a separate MicroPython port).
+Currently supports ESP32, ESP32-C2 (aka ESP8684), ESP32-C3, ESP32-C6, ESP32-S2
+and ESP32-S3 (ESP8266 is supported by a separate MicroPython port).
 
 Supported features include:
 - REPL (Python prompt) over UART0.
