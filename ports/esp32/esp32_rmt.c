@@ -47,9 +47,12 @@
 // This current MicroPython implementation lacks some major features, notably receive pulses
 // and carrier output.
 
+#if CONFIG_SOC_RMT_SUPPORTED
 // Last available RMT channel that can transmit.
 #define RMT_LAST_TX_CHANNEL (SOC_RMT_TX_CANDIDATES_PER_GROUP - 1)
-
+#else
+#define RMT_LAST_TX_CHANNEL (-1)
+#endif
 // Forward declaration
 extern const mp_obj_type_t esp32_rmt_type;
 
