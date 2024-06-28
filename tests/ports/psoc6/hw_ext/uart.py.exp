@@ -1,11 +1,14 @@
 ********UART Tests********
 
 Tx char is received by Rx char:  True
-Tx is received by Rx(readinto(buf)):  True
-Tx is received by Rx(read(nbytes)):  True
+Tx is received by Rx(read()):  True
+b'abcd\n'
 Tx is received by Rx(readline()):  True
+b'g\n'
+Tx is received by Rx(read(nbytes)): True
 Tx Ongoing:  True
 Tx Done:  True
+Tx is received by Rx(readinto(buf)):  True
 
 *******UART Interrupt Tests*******
 
