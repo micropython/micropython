@@ -445,13 +445,16 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
     void *dest = buf_in;
     size_t rx_length = size;
     if (self->interrupt == 1) {
-        cy_rslt_t result = cyhal_uart_read_async(&self->uart_obj, dest, rx_length);
-        if (result != CY_RSLT_SUCCESS) {
+        if (cyhal_uart_readable(&self->uart_obj) > 0) {
+            cy_rslt_t result = cyhal_uart_read_async(&self->uart_obj, dest, rx_length);
+            uart_assert_raise_val("UART read failed with return code %lx !", result);
+        } else {
             *errcode = MP_EAGAIN;
             return MP_STREAM_ERROR;
         }
     } else {
-        cyhal_uart_read(&self->uart_obj, dest, &rx_length);
+        cy_rslt_t result = cyhal_uart_read(&self->uart_obj, dest, &rx_length);
+        uart_assert_raise_val("UART read failed with return code %lx !", result);
     }
     if (rx_length <= 0) {
         *errcode = MP_EAGAIN;
@@ -465,9 +468,11 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     size_t tx_length = size;
     if (self->interrupt == 1) {
-        cyhal_uart_write_async(&self->uart_obj, (void *)buf_in, tx_length);
+        cy_rslt_t result = cyhal_uart_write_async(&self->uart_obj, (void *)buf_in, tx_length);
+        uart_assert_raise_val("UART write failed with return code %lx !", result);
     } else {
-        cyhal_uart_write(&self->uart_obj, (void *)buf_in, &tx_length);
+        cy_rslt_t result = cyhal_uart_write(&self->uart_obj, (void *)buf_in, &tx_length);
+        uart_assert_raise_val("UART write failed with return code %lx !", result);
     }
     if (tx_length < 0) {
         *errcode = MP_EAGAIN;
