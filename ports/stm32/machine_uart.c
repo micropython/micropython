@@ -37,10 +37,21 @@
 #include "irq.h"
 #include "pendsv.h"
 
+#if defined(STM32H7)
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) }, \
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_FLAG_IDLE) }, \
+    { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_ADVFEATURE_TXINVERT_INIT) }, \
+    { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_ADVFEATURE_RXINVERT_INIT) }, \
+    
+#else
+#define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) }, \
+    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_FLAG_IDLE) }, \
+
+#endif
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -124,11 +135,26 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         if (self->mp_irq_trigger != 0) {
             mp_printf(print, "; irq=0x%x", self->mp_irq_trigger);
         }
+        #if defined(STM32H7)
+        mp_print_str(print, ", invert=");
+        if ((cr2 & (USART_CR2_TXINV | USART_CR2_RXINV)) == 0) {
+            mp_print_str(print, "0");
+        }
+        else if ((cr2 & (USART_CR2_TXINV | USART_CR2_RXINV)) == (USART_CR2_TXINV | USART_CR2_RXINV)) {
+            mp_print_str(print, "INV_TX|INV_RX");
+        }
+        else if (cr2 & USART_CR2_TXINV) {
+            mp_print_str(print, "INV_TX");
+        }
+        else if (cr2 & USART_CR2_RXINV) {
+            mp_print_str(print, "INV_RX");
+        }
+        #endif
         mp_print_str(print, ")");
     }
 }
 
-/// \method init(baudrate, bits=8, parity=None, stop=1, *, timeout=1000, timeout_char=0, flow=0, read_buf_len=64)
+/// \method init(baudrate, bits=8, parity=None, stop=1, *, timeout=1000, timeout_char=0, flow=0, read_buf_len=64, invert=0)
 ///
 /// Initialise the UART bus with the given parameters:
 ///
@@ -140,6 +166,7 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
 ///   - `timeout_char` is the timeout in milliseconds to wait between characters.
 ///   - `flow` is RTS | CTS where RTS == 256, CTS == 512
 ///   - `read_buf_len` is the character length of the read buffer (0 to disable).
+///   - `invert` specifies which lines to invert. INV_TX | INV_RX (0 to disable). --> Only for STM32H7
 static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600} },
@@ -151,11 +178,18 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_read_buf_len, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} }, // legacy
+        #if defined(STM32H7)        
+        { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        #endif
     };
 
     // parse args
     struct {
+        #if defined(STM32H7) 
+        mp_arg_val_t baudrate, bits, parity, stop, flow, timeout, timeout_char, rxbuf, read_buf_len, invert;
+        #else
         mp_arg_val_t baudrate, bits, parity, stop, flow, timeout, timeout_char, rxbuf, read_buf_len;
+        #endif
     } args;
     mp_arg_parse_all(n_args, pos_args, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
@@ -201,11 +235,20 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     // flow control
     uint32_t flow = args.flow.u_int;
 
+    // inverted
+    #if defined(STM32H7) 
+    uint32_t invert = args.invert.u_int;
+    #endif
+
     // Save attach_to_repl setting because uart_init will disable it.
     bool attach_to_repl = self->attached_to_repl;
 
     // init UART (if it fails, it's because the port doesn't exist)
+    #if defined(STM32H7) 
+    if (!uart_init(self, baudrate, bits, parity, stop, flow, invert)) {
+    #else
     if (!uart_init(self, baudrate, bits, parity, stop, flow)) {
+    #endif
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) doesn't exist"), self->uart_id);
     }
 
