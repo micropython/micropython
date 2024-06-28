@@ -468,8 +468,13 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     size_t tx_length = size;
     if (self->interrupt == 1) {
-        cy_rslt_t result = cyhal_uart_write_async(&self->uart_obj, (void *)buf_in, tx_length);
-        uart_assert_raise_val("UART write failed with return code %lx !", result);
+        if (cyhal_uart_writable(&self->uart_obj) > 0) {
+            cy_rslt_t result = cyhal_uart_write_async(&self->uart_obj, (void *)buf_in, tx_length);
+            uart_assert_raise_val("UART write failed with return code %lx !", result);
+        } else {
+            *errcode = MP_EAGAIN;
+            return MP_STREAM_ERROR;
+        }
     } else {
         cy_rslt_t result = cyhal_uart_write(&self->uart_obj, (void *)buf_in, &tx_length);
         uart_assert_raise_val("UART write failed with return code %lx !", result);
