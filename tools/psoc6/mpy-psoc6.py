@@ -28,6 +28,12 @@ def colour_str_highlight(msg):
     return purple_str_start + msg + str_color_end
 
 
+def colour_str_warn(msg):
+    yellow_str_start = "\x1b[1;33;40m"
+    str_color_end = "\x1b[0m"
+    return yellow_str_start + msg + str_color_end
+
+
 def set_environment():
     global opsys
     if sys.platform == "linux" or sys.platform == "linux2":
@@ -475,7 +481,7 @@ def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
 
 
 def device_erase(board, quiet=False):
-    if board != "CY8CPROTO-062-4343W":
+    if (board != "CY8CPROTO-062-4343W") and (board != "CY8CKIT-062S2-AI"):
         sys.exit(colour_str_error("error: board is not supported"))
 
     if not quiet:
@@ -484,11 +490,16 @@ def device_erase(board, quiet=False):
     openocd_download_install()
     openocd_board_conf_download(board)
 
-    mpy_firmware_download("device-erase", board, "v0.3.0")
+    mpy_firmware_download("device-erase", board, "v0.10.0")
 
     mpy_firmware_deploy("device-erase", board)
 
-    print(colour_str_success("Device erase completed :)"))
+    print(
+        colour_str_warn(
+            "Attention!\nThe on-board user LED will start blinking when the erasing is completed."
+        )
+    )
+    print(colour_str_warn("This can take up to a few minutes if the device memory is very full."))
 
 
 def firmware_deploy(board, hex_file):
