@@ -15,9 +15,9 @@
     "product": "WeAct Studio RP2040",
     "url": "https://github.com/WeActTC/WeActStudio.RP2040CoreBoard",
     "variants": {
-        "FLASH_2MB": "2 MiB Flash",
-        "FLASH_4MB": "4 MiB Flash",
-        "FLASH_8MB": "8 MiB Flash"
+        "FLASH_2M": "2 MiB Flash",
+        "FLASH_4M": "4 MiB Flash",
+        "FLASH_8M": "8 MiB Flash"
     },
     "vendor": "WeAct"
 }
