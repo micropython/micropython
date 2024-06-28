@@ -47,6 +47,7 @@
 #include "genhdr/mpversion.h"
 #include "mp_usbd.h"
 
+#include "RP2040.h" // cmsis, for PendSV_IRQn and SCB/SCB_SCR_SEVONPEND_Msk
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "pico/unique_id.h"
