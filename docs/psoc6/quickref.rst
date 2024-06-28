@@ -760,3 +760,8 @@ Methods
     - RX_FULL:	The SW RX buffer (if used) is full. This has to be provided in the init with rxbuf parameter.
     - TX_EMPTY:	The HW TX FIFO buffer is empty.
     - TX_DONE:	All TX data has been transmitted.
+
+.. method:: UART.sendbreak()
+
+    Send a break condition of 4 bits duration. Before sending break all UART TX interrupt sources are disabled. The state of UART TX interrupt sources is restored before function returns.
+    This Blocks until break is completed. Only call this function when UART TX FIFO and shifter are empty.
