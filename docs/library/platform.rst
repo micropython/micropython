@@ -36,3 +36,9 @@ Functions
    Returns a tuple of strings *(lib, version)*, where *lib* is the name of the
    libc that MicroPython is linked to, and *version* the corresponding version
    of this libc.
+
+.. function:: processor()
+
+   Returns a string with a detailed name of the processor, if one is available.
+   If no name for the processor is known, it will return an empty string
+   instead.
