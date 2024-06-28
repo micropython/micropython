@@ -28,6 +28,11 @@ def uart_tests():
     # 2. Basic tests
     ##############################################
 
+    # sendbreak()
+    uart.sendbreak()
+    time.sleep_ms(100)
+    print("Break Sent is received by Rx: ", uart.read() == b"\xf0")
+
     # write_char()
     # read_char()
     uart.writechar(1)
@@ -46,17 +51,15 @@ def uart_tests():
     uart.write(tx_data)
     time.sleep_ms(100)
     rx_data = uart.readline()
-    print(rx_data)
     print("Tx is received by Rx(readline()): ", rx_data == b"abcd\n")
     uart.read()  # read all data available to clear buffer
 
-    # read()
-    tx_data = "abcd\nefg\n"
+    # read(n bytes)
+    tx_data = "abcdefghijklmn"
     uart.write(tx_data)
-    time.sleep_ms(100)
-    rx_data = uart.read(10)
-    print(rx_data)
-    print("Tx is received by Rx(read(nbytes)):", rx_data == b"efg\nabcd\nefg\n")
+    time.sleep_ms(8)
+    rx_data = uart.read(7)
+    print("Tx is received by Rx(read(nbytes)):", rx_data == b"abcdefg")
 
     # tx_done()
     tx_data = "abcdefg"

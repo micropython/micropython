@@ -1,10 +1,9 @@
 ********UART Tests********
 
+Break Sent is received by Rx:  True
 Tx char is received by Rx char:  True
 Tx is received by Rx(read()):  True
-b'abcd\n'
 Tx is received by Rx(readline()):  True
-b'g\n'
 Tx is received by Rx(read(nbytes)): True
 Tx Ongoing:  True
 Tx Done:  True
