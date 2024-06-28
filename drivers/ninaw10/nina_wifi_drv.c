@@ -95,7 +95,7 @@ typedef enum {
 
     // AP mode commands.
     NINA_CMD_START_AP_OPEN          = 0x18,
-    NINA_CMD_START_AP_WEP           = 0x19,
+    NINA_CMD_START_AP_WPA           = 0x19,
 
     // AP mode scan commands.
     NINA_CMD_AP_START_SCAN          = 0x36,
@@ -395,7 +395,7 @@ int nina_start_ap(const char *ssid, uint8_t security, const char *key, uint16_t 
     uint8_t status = NINA_STATUS_AP_FAILED;
 
     if ((key == NULL && security != NINA_SEC_OPEN) ||
-        (security != NINA_SEC_OPEN && security != NINA_SEC_WEP)) {
+        (security != NINA_SEC_OPEN && security != NINA_SEC_WPA_PSK)) {
         return -1;
     }
 
@@ -406,8 +406,8 @@ int nina_start_ap(const char *ssid, uint8_t security, const char *key, uint16_t 
                 return -1;
             }
             break;
-        case NINA_SEC_WEP:
-            if (nina_send_command_read_ack(NINA_CMD_START_AP_WEP,
+        case NINA_SEC_WPA_PSK:
+            if (nina_send_command_read_ack(NINA_CMD_START_AP_WPA,
                 3, ARG_8BITS, NINA_ARGS(ARG_STR(ssid), ARG_STR(key), ARG_BYTE(channel))) != SPI_ACK) {
                 return -1;
             }
