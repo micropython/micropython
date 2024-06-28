@@ -1,4 +1,4 @@
-### I2C
+### UART
 from machine import UART
 import machine
 import binascii
