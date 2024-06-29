@@ -180,6 +180,9 @@ static void network_wlan_ip_event_handler(void *event_handler_arg, esp_event_bas
             ESP_LOGI("network", "GOT_IP");
             wifi_sta_connected = true;
             wifi_sta_disconn_reason = 0; // Success so clear error. (in case of new error will be replaced anyway)
+            ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
+            esp_netif_create_ip6_linklocal(event->esp_netif);
+
             #if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
             if (!mdns_initialised) {
                 mdns_init();
