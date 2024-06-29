@@ -10,7 +10,10 @@ MICROPY_PY_LWIP = 1
 MICROPY_PY_SSL = 1
 MICROPY_SSL_MBEDTLS = 1
 
-FROZEN_MANIFEST ?= $(BOARD_DIR)/manifest.py
+MICROPY_PY_NETWORK_ESP_HOSTED = 1
+
+MICROPY_PY_BLUETOOTH = 1
+MICROPY_BLUETOOTH_NIMBLE = 1
 
 deploy: $(BUILD)/firmware.hex
 	teensy_loader_cli --mcu=imxrt1062 -v -w $<
