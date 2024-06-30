@@ -387,7 +387,7 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# str\n");
 
         // intern string
-        mp_printf(&mp_plat_print, "%d\n", mp_obj_is_qstr(mp_obj_str_intern(mp_obj_new_str("intern me", 9))));
+        mp_printf(&mp_plat_print, "%d\n", mp_obj_is_qstr(mp_obj_str_intern(mp_obj_new_str_0("intern me"))));
     }
 
     // bytearray
@@ -463,12 +463,12 @@ static mp_obj_t extra_coverage(void) {
         // call mp_call_function_1_protected
         mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_1_protected with invalid args
-        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str("abc", 3));
+        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str_0("abc"));
 
         // call mp_call_function_2_protected
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_2_protected with invalid args
-        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str("abc", 3), mp_obj_new_str("abc", 3));
+        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str_0("abc"), mp_obj_new_str_0("abc"));
 
         // mp_obj_int_get_uint_checked with non-negative small-int
         mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(1)));
@@ -722,7 +722,7 @@ static mp_obj_t extra_coverage(void) {
         // mp_obj_is_integer accepts ints and booleans
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_integer(mp_obj_new_int_from_ll(1)));
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_const_true), mp_obj_is_integer(mp_const_false));
-        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_obj_new_str("1", 1)), mp_obj_is_integer(mp_const_none));
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_obj_new_str_0("1")), mp_obj_is_integer(mp_const_none));
 
         // mp_obj_is_int accepts small int and object ints
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_int(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_int(mp_obj_new_int_from_ll(1)));
