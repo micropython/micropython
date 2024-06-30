@@ -265,7 +265,14 @@ class ProcessPtyToTerminal:
 
 class Pyboard:
     def __init__(
-        self, device, baudrate=115200, user="micro", password="python", wait=0, exclusive=True
+        self,
+        device,
+        baudrate=115200,
+        user="micro",
+        password="python",
+        wait=0,
+        exclusive=True,
+        hard_reset=False,
     ):
         self.in_raw_repl = False
         self.use_raw_paste = True
@@ -300,7 +307,30 @@ class Pyboard:
                             self.serial.rts = False  # RTS False = EN High = MCU enabled
                         self.serial.open()
                     else:
-                        self.serial = serial.Serial(device, **serial_kwargs)
+                        # Must not put device in .Serial(), else RTS line locks up ESP8266/ESP32
+                        self.serial = serial.Serial()
+                        self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
+                        self.serial.rts = False  # RTS False = EN High = MCU enabled
+                        self.serial.port = device
+                        self.serial.baudrate = serial_kwargs["baudrate"]
+                        # Do not use hardware flow control (rts used for MCU reset)
+                        self.serial.rtscts = 0
+                        # Do not use hardware flow control (dtr used for gpio0)
+                        self.serial.dsrdtr = 0
+                        self.serial.inter_byte_timeout = serial_kwargs["interCharTimeout"]
+                        if "exclusive" in serial_kwargs:
+                            self.serial.exclusive = serial_kwargs["exclusive"]
+                        self.serial.open()
+
+                        if hard_reset:
+                            # pause ( the above open() only just pulled the line low )
+                            time.sleep(0.2)
+                            # this is reset (setting this "high" resets MCU boards that use RTS/CTS for flashing)
+                            self.serial.rts = True
+                            time.sleep(0.2)
+                            self.serial.rts = False
+                            # must wait for the reset, otherwise subsequent commands (the ctrl-A) get lost
+                            time.sleep(2.0)
                     break
                 except (OSError, IOError):  # Py2 and Py3 have different errors
                     if wait == 0:
