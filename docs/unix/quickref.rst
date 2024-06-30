@@ -8,7 +8,7 @@ Command line options
 
 Usage::
 
-    micropython [ -h ] [ -i ] [ -O<level> ] [ -v ] [ -X <option> ] [ -c <command> | -m <module> | <script> ] [ <args> ]
+    micropython [ -h ] [ -i ] [ -e ] [ -O<level> ] [ -v ] [ -X <option> ] [ -c <command> | -m <module> | <script> ] [ <args> ]
 
 
 Invocation options:
@@ -16,6 +16,20 @@ Invocation options:
 .. option:: -c <command>
 
    Runs the code in ``<command>``. The code can be one or more Python statements.
+
+.. option:: -e
+
+   Runs MicroPython in "embedded mode":
+
+   * ``boot.py`` and ``main.py`` are executed; boot.py unconditionally,
+     ``main.py`` only if no script argument is used.
+
+   * Instead of the ``readline`` library, MicroPython uses the same REPL as
+     on embedded systems.
+
+   This mode is mainly useful for running MicroPython as a subprocess, e.g.
+   for testing. For interactive use, a ``stty raw; micropython -e …; stty
+   -raw`` wrapper is required.
 
 .. option:: -m <module>
 
