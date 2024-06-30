@@ -312,14 +312,17 @@ static mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
     lan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (n_args > 1) {
+        esp_err_t err = ESP_OK;
         if (mp_obj_is_true(args[1])) {
             esp_netif_set_hostname(self->base.netif, mod_network_hostname_data);
-            self->base.active = (esp_eth_start(self->eth_handle) == ESP_OK);
+            err = esp_eth_start(self->eth_handle);
+            self->base.active = (err == ESP_OK || err == ESP_ERR_INVALID_STATE);
             if (!self->base.active) {
                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet enable failed"));
             }
         } else {
-            self->base.active = !(esp_eth_stop(self->eth_handle) == ESP_OK);
+            err = esp_eth_stop(self->eth_handle);
+            self->base.active = !(err == ESP_OK || err == ESP_ERR_INVALID_STATE);
             if (self->base.active) {
                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet disable failed"));
             }
