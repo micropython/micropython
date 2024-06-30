@@ -214,6 +214,7 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
                     # Need to use a PTY to test command line editing
                     try:
                         import pty
+                        import termios
                     except ImportError:
                         # in case pty module is not available, like on Windows
                         return b"SKIP\n"
@@ -240,6 +241,11 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
                     with open(test_file, "rb") as f:
                         # instead of: output_mupy = subprocess.check_output(args, stdin=f)
                         master, slave = pty.openpty()
+                        # disable auto newline conversion on the pty terminal.
+                        attrs = termios.tcgetattr(slave)
+                        attrs[1] = attrs[1] & (~termios.ONLCR) | termios.ONLRET
+                        termios.tcsetattr(slave, termios.TCSANOW, attrs)
+
                         p = subprocess.Popen(
                             args, stdin=slave, stdout=slave, stderr=subprocess.STDOUT, bufsize=0
                         )
