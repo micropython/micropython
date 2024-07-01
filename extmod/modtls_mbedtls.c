@@ -347,12 +347,17 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_set_ciphers_obj, ssl_context_set_ci
 static void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, mp_obj_t cert_obj) {
     size_t key_len;
     const byte *key = (const byte *)mp_obj_str_get_data(key_obj, &key_len);
-    // len should include terminating null
+
+    // len should include terminating null if the data is PEM encoded
+    if ((key_len >= 10) && (memcmp(key, "-----BEGIN", 10) == 0)) {
+        key_len += 1;
+    }
+
     int ret;
     #if MBEDTLS_VERSION_NUMBER >= 0x03000000
-    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len + 1, NULL, 0, mbedtls_ctr_drbg_random, &self->ctr_drbg);
+    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0, mbedtls_ctr_drbg_random, &self->ctr_drbg);
     #else
-    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len + 1, NULL, 0);
+    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0);
     #endif
     if (ret != 0) {
         mbedtls_raise_error(MBEDTLS_ERR_PK_BAD_INPUT_DATA); // use general error for all key errors
