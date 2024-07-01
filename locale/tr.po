@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Can Kocyigit <cank3698@googlemail.com>\n"
+"PO-Revision-Date: 2024-07-02 03:21+0000\n"
+"Last-Translator: Zoda <ustunsoykerem23@gmail.com>\n"
 "Language-Team: none\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 #: main.c
 msgid ""
@@ -40,6 +40,9 @@ msgid ""
 "Please file an issue with your program at github.com/adafruit/circuitpython/"
 "issues."
 msgstr ""
+"\n"
+"Lütfen programınızla ilgili bir sorunu github.com/adafruit/circuitpython/"
+"issues adresinden bildirin."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -261,7 +264,7 @@ msgstr "%q sıfır olamaz"
 
 #: shared-module/bitbangio/I2C.c
 msgid "%q too long"
-msgstr ""
+msgstr "%q çok uzun"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -407,7 +410,7 @@ msgstr "fonksiyon dışında 'await'"
 
 #: py/compile.c
 msgid "'break'/'continue' outside loop"
-msgstr ""
+msgstr "Döngü dışında 'break'/'continue'"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
