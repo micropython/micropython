@@ -641,26 +641,7 @@ Use the :ref:`machine.ADC <machine.ADC>` class::
 
 The PSoC6 port also supports :ref:`machine.ADCBlock <machine.ADCBlock>` API to have control over the ADC configuration. Currently 
 
-PSoC6 supports only 1 12-bit SAR ADC with the following channel to pin mapping and the defaults are set accordingly:
-
-+---------+-------+
-| Channel |  Pin  |
-+=========+=======+
-|    0    | P10_0 |
-+---------+-------+
-|    1    | P10_1 |
-+---------+-------+
-|    2    | P10_2 |
-+---------+-------+
-|    3    | P10_3 |
-+---------+-------+
-|    4    | P10_4 |
-+---------+-------+
-|    5    | P10_5 |
-+---------+-------+
-
-.. 
-    TODO: This is only applicable to the CY8CPROTO-062-4343W. This does not belong here. 
+PSoC6 supports only 1 12-bit SAR ADC. The channel to pin mapping can be found in respective :ref:`Supported boards <psoc6_general>` section.
 
 .. note::
     Arbitrary connection of ADC channels to GPIO is not supported. Specifying a pin that is not connected to this block, 
