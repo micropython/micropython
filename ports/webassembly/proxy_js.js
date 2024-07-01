@@ -63,9 +63,11 @@ function proxy_js_init() {
     globalThis.proxy_js_ref_next = PROXY_JS_REF_NUM_STATIC;
     globalThis.pyProxyFinalizationRegistry = new FinalizationRegistry(
         (cRef) => {
+            delete globalThis.proxy_js_dict[cRef];
             Module.ccall("proxy_c_free_obj", "null", ["number"], [cRef]);
         },
     );
+    globalThis.proxy_js_dict = {};
 }
 
 // js_obj cannot be undefined
@@ -244,6 +246,10 @@ function proxy_convert_mp_to_js_obj_jsside(value) {
     } else {
         // obj
         const id = Module.getValue(value + 4, "i32");
+        const existing_obj = globalThis.proxy_js_dict[id];
+        if (existing_obj !== undefined) {
+            return existing_obj.deref();
+        }
         if (kind === PROXY_KIND_MP_CALLABLE) {
             obj = (...args) => {
                 return proxy_call_python(id, args);
@@ -257,6 +263,7 @@ function proxy_convert_mp_to_js_obj_jsside(value) {
             obj = new Proxy(target, py_proxy_handler);
         }
         globalThis.pyProxyFinalizationRegistry.register(obj, id);
+        globalThis.proxy_js_dict[id] = new WeakRef(obj);
     }
     return obj;
 }
