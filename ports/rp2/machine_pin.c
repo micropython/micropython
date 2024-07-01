@@ -89,7 +89,7 @@ static const mp_irq_methods_t machine_pin_irq_methods;
 extern const machine_pin_obj_t machine_pin_obj_table[NUM_BANK0_GPIOS];
 
 // Mask with "1" indicating that the corresponding pin is in simulated open-drain mode.
-uint32_t machine_pin_open_drain_mask;
+uint64_t machine_pin_open_drain_mask;
 
 #if MICROPY_HW_PIN_EXT_COUNT
 static inline bool is_ext_pin(__unused const machine_pin_obj_t *self) {

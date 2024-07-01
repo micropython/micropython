@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../tools"))
 import boardgen
 
 # This is NUM_BANK0_GPIOS. Pin indices are 0 to 29 (inclusive).
-NUM_GPIOS = 30
+NUM_GPIOS = 48
 # Up to 32 additional extended pins (e.g. via the wifi chip or io expanders).
 NUM_EXT_GPIOS = 32
 

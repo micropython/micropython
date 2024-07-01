@@ -119,7 +119,7 @@ static inline mp_uint_t mp_hal_get_cpu_freq(void) {
 #define MP_HAL_PIN_PULL_UP              (1)
 #define MP_HAL_PIN_PULL_DOWN            (2)
 
-extern uint32_t machine_pin_open_drain_mask;
+extern uint64_t machine_pin_open_drain_mask;
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
 
