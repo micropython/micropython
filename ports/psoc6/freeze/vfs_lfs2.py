@@ -16,16 +16,16 @@ write_size = 0x200
 
 try:
     vfs = os.VfsLfs2(bdev, progsize=write_size, readsize=read_size)
-    os.mount(vfs, "/flash")
+    os.mount(vfs, "/")
 except:
     os.VfsLfs2.mkfs(bdev, progsize=write_size, readsize=read_size)
     vfs = os.VfsLfs2(bdev, progsize=write_size, readsize=read_size)
-    os.mount(vfs, "/flash")
+    os.mount(vfs, "/")
 
 if "QSPI_Flash" in dir(psoc6):
-    print("\nExternal LFS2 filesystem mounted at /flash\n")
+    print("\nExternal LFS2 filesystem mounted at /\n")
 else:
-    print("\nInternal LFS2 filesystem mounted at /flash\n")
+    print("\nInternal LFS2 filesystem mounted at /\n")
 
 if "SD_CARD" in dir(psoc6):
     bdev2 = machine.SDCARD(

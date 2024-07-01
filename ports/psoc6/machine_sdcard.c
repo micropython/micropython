@@ -43,15 +43,15 @@
 #include "cyhal.h"
 #include "cybsp.h"
 
-#define DEFAULT_BUS_WIDTH                   (4U)
-#define SDHC_BLOCK_SIZE                     (512UL)
+#define SDHC_DEFAULT_BUS_WIDTH                  (4U)
+#define SDHC_BLOCK_SIZE                         (512UL)
+#define SDHC_NUM_OF_SLOTS                       (2)
 
-// flag to indicate if sd card is initialized
-static uint8_t sdcard_state_initialized = 0;
-static cyhal_sdhc_t sdhc_obj;
+static cyhal_sdhc_t sdhc_obj[SDHC_NUM_OF_SLOTS];
 
 typedef struct _machine_sdcard_obj_t {
     mp_obj_base_t base;
+    uint16_t slot_num;
     machine_pin_phy_obj_t *wp;
     machine_pin_phy_obj_t *cmd;
     machine_pin_phy_obj_t *dat0;
@@ -131,7 +131,7 @@ static cy_rslt_t sd_card_init_helper(machine_sdcard_obj_t *self, mp_arg_val_t *a
     sdhc_config.enableLedControl = false;
     sdhc_config.lowVoltageSignaling = false;
     sdhc_config.isEmmc = false;
-    sdhc_config.busWidth = DEFAULT_BUS_WIDTH;
+    sdhc_config.busWidth = SDHC_DEFAULT_BUS_WIDTH;
 
     cy_rslt_t result = CY_RSLT_SUCCESS;
 
@@ -140,7 +140,7 @@ static cy_rslt_t sd_card_init_helper(machine_sdcard_obj_t *self, mp_arg_val_t *a
     cyhal_clock_get(&clock, &rsc);
 
     sd_card_allocate_pin(self, args);
-    result = cyhal_sdhc_init(&sdhc_obj, &sdhc_config, self->cmd->addr, self->clk->addr, self->dat0->addr, self->dat1->addr,
+    result = cyhal_sdhc_init(&sdhc_obj[self->slot_num], &sdhc_config, self->cmd->addr, self->clk->addr, self->dat0->addr, self->dat1->addr,
         self->dat2->addr, self->dat3->addr, NC, NC, NC, NC, self->cd->addr, NC, NC, NC, NC, NC, &clock);
     return result;
 }
@@ -172,15 +172,19 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
 
     machine_sdcard_obj_t *self = mp_obj_malloc_with_finaliser(machine_sdcard_obj_t, &machine_sdcard_type);
 
-    if (!sdcard_state_initialized) {
+    self->slot_num = mp_obj_get_int(args[ARG_slot].u_obj);
 
+    if (self->slot_num >= SDHC_NUM_OF_SLOTS) {
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("psoc6_sdcard_make_new() - SD card slot unavailable !\n"));
+    }
+
+    if (sdhc_obj[self->slot_num].sdxx.base == NULL) {
         cy_rslt_t result = sd_card_init_helper(self, args);
 
         if (CY_RSLT_SUCCESS == result) {
-            cyhal_sdhc_get_block_count(&sdhc_obj, (uint32_t *)&self->block_count);
-            sdcard_state_initialized = 1;
+            cyhal_sdhc_get_block_count(&sdhc_obj[self->slot_num], (uint32_t *)&self->block_count);
         } else {
-            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("psoc6_sdcard_make_new() - SD Card init failed !\n"));
+            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("psoc6_sdcard_make_new() - SD card init failed !\n"));
         }
     }
     return MP_OBJ_FROM_PTR(self);
@@ -188,6 +192,7 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
 
 static mp_obj_t machine_sdcard_readblocks(size_t n_args, const mp_obj_t *args) {
 
+    machine_sdcard_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t block_address = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
@@ -197,7 +202,7 @@ static mp_obj_t machine_sdcard_readblocks(size_t n_args, const mp_obj_t *args) {
     }
 
     size_t length = bufinfo.len / SDHC_BLOCK_SIZE;
-    cy_rslt_t result = cyhal_sdhc_read(&sdhc_obj, block_address, bufinfo.buf, &length);
+    cy_rslt_t result = cyhal_sdhc_read(&sdhc_obj[self->slot_num], block_address, bufinfo.buf, &length);
 
     if (CY_RSLT_SUCCESS != result) {
         mp_raise_ValueError(MP_ERROR_TEXT("machine_sdcard_readblocks() - SD Card Read failed !"));
@@ -208,6 +213,8 @@ static mp_obj_t machine_sdcard_readblocks(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_sdcard_readblocks_obj, 3, 4, machine_sdcard_readblocks);
 
 static mp_obj_t machine_sdcard_writeblocks(size_t n_args, const mp_obj_t *args) {
+
+    machine_sdcard_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t block_address = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
@@ -215,19 +222,16 @@ static mp_obj_t machine_sdcard_writeblocks(size_t n_args, const mp_obj_t *args) 
     size_t length = bufinfo.len / SDHC_BLOCK_SIZE;
 
     if (n_args == 3) {
-        size_t numSectors = bufinfo.len / SDHC_BLOCK_SIZE;
-        for (uint32_t i = 0; i <= numSectors; ++i) {
-            cy_rslt_t result = cyhal_sdhc_erase(&sdhc_obj, block_address + i * SDHC_BLOCK_SIZE, 1, 0);
+        cy_rslt_t result = cyhal_sdhc_erase(&sdhc_obj[self->slot_num], block_address, bufinfo.len, 0);
 
-            if (CY_RSLT_SUCCESS != result) {
-                mp_raise_ValueError(MP_ERROR_TEXT("machine_sdcard_writeblocks() - SD Card Erase failed !"));
-            }
+        if (CY_RSLT_SUCCESS != result) {
+            mp_raise_ValueError(MP_ERROR_TEXT("machine_sdcard_writeblocks() - SD Card Erase failed !"));
         }
     } else {
         block_address += mp_obj_get_int(args[3]);
     }
 
-    cy_rslt_t result = cyhal_sdhc_write(&sdhc_obj, block_address, bufinfo.buf, &length);
+    cy_rslt_t result = cyhal_sdhc_write(&sdhc_obj[self->slot_num], block_address, bufinfo.buf, &length);
     if (CY_RSLT_SUCCESS != result) {
         mp_raise_ValueError(MP_ERROR_TEXT("machine_sdcard_writeblocks() - SD Card Write failed!"));
     }
@@ -254,7 +258,7 @@ static mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
             return MP_OBJ_NEW_SMALL_INT(SDHC_BLOCK_SIZE);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
             uint32_t offset = mp_obj_get_int(arg_in);
-            cy_rslt_t result = cyhal_sdhc_erase(&sdhc_obj, offset, 1, 0);
+            cy_rslt_t result = cyhal_sdhc_erase(&sdhc_obj[self->slot_num], offset, 1, 0);
 
             if (CY_RSLT_SUCCESS != result) {
                 mp_raise_ValueError(MP_ERROR_TEXT("machine_sdcard_ioctl() - SD Card erase failed !"));
@@ -268,9 +272,11 @@ static mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
 static MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_ioctl_obj, machine_sdcard_ioctl);
 
 void mod_sdcard_deinit(void) {
-    if (sdcard_state_initialized) {
-        cyhal_sdhc_free(&sdhc_obj);
-        sdcard_state_initialized = 0;
+    for (int i = 0; i < SDHC_NUM_OF_SLOTS; i++)
+    {
+        if (sdhc_obj[i].sdxx.base != NULL) {
+            cyhal_sdhc_free(&sdhc_obj[i]);
+        }
     }
 }
 
