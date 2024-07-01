@@ -18,7 +18,7 @@ if mem_type == "sd":
     exp_basic_op_fp = "./ports/psoc6/test_scripts/fs_basic_sd.py.exp"
     exp_adv_op_fp = "./ports/psoc6/test_scripts/fs_adv_sd.py.exp"
 else:
-    remote_directory_path = "/flash/"
+    remote_directory_path = "/"
     # out and exp file paths
     basic_test_op_fp = "./ports/psoc6/test_scripts/fs_basic_flash.py.out"
     adv_test_op_fp = "./ports/psoc6/test_scripts/fs_adv_flash.py.out"
