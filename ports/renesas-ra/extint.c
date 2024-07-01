@@ -213,6 +213,8 @@ void extint_register_pin(const machine_pin_obj_t *pin, uint32_t mode, bool hard_
         ra_icu_priority_irq_no((uint8_t)line, (uint32_t)IRQ_PRI_EXTINT);
         extint_irq_no[line] = (uint)line;
         ra_icu_set_callback((uint8_t)line, (ICU_CB)extint_callback, (void *)&extint_irq_no[line]);
+        ra_icu_set_pin(pin->pin, true, true);
+        ra_icu_enable_pin(pin->pin);
 
         // Enable the interrupt
         extint_enable(line);
