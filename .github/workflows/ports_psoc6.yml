@@ -74,8 +74,6 @@ jobs:
         cd tests
         echo " >> Filesystem tests"
         ./psoc6/run_psoc6_tests.sh -c -v --dev0 ${devs[0]}
-        echo " >> Multi network tests"
-        ./psoc6/run_psoc6_tests.sh -c --psoc6-multi --dev0 ${devs[0]} --dev1 ${devs[1]}
         echo " >> PSoC6 single board tests"
         ./psoc6/run_psoc6_tests.sh -c --psoc6 --dev0 ${devs[0]} 
         echo " >> PSoC6 extended hardware tests"
@@ -97,6 +95,13 @@ jobs:
         ./psoc6/run_psoc6_tests.sh -c -b --dev0 ${devs0[0]} --dev1 ${devs1[0]}
         echo " >> PSoC6 watchdog tests"
         ./psoc6/run_psoc6_tests.sh -c --psoc6-wdt --dev0 ${devs[0]}
+    - name: Run wifi tests
+      timeout-minutes: 2
+      run: |
+        devs=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml))
+        cd tests
+        echo " >> Multi network tests"
+        ./psoc6/run_psoc6_tests.sh -c --psoc6-multi --dev0 ${devs[0]} --dev1 ${devs[1]}
     - name: Container teardown 
       if: failure() || success()
       run: |
