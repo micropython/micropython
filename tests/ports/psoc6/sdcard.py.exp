@@ -1,8 +1,18 @@
+SD card mounted at /SDCard
 
-***** Test 1: File transfer to SD Card in LFS2 farmat *****
 
-CY8CPROTO-062-4343W with PSoC62
-write to /sd/test_sd_lfs2_short.txt
-Test successful
-write to /sd/test_sd_lfs2_long.txt
-Test successful
+***** Test 1: Short string file transfer to SD Card in LFS2 format *****
+
+PASS
+
+***** Test 2: Long string file transfer to SD Card in LFS2 format *****
+
+PASS
+
+***** Test 2: reinitialize the same slot more than once *****
+
+PASS
+
+***** Test 3: slot number exceeding the number of available slots *****
+
+FAIL
