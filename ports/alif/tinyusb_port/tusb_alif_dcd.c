@@ -8,6 +8,9 @@
  * contact@alifsemi.com, or visit: https://alifsemi.com/license
  *
  */
+
+//#include "RTE_Components.h"
+
 #include "tusb_option.h"
 
 #if CFG_TUD_ENABLED
@@ -48,6 +51,8 @@ static uint32_t _xfer_trb[8][4] CFG_TUSB_MEM_SECTION __attribute__((aligned(32))
 static uint16_t _xfer_bytes[8];
 static bool     _ctrl_long_data = false;
 static bool     _xfer_cfgd = false;
+// static bool     _addr_req = false;
+static uint32_t _sts_stage = 0;
 
 /// Private Functions ----------------------------------------------------------
 
@@ -95,7 +100,11 @@ void dcd_init(uint8_t rhport)
     sys_busy_loop_us(50000);
 
     ugbl->gsbuscfg0 = 0x00000009;
-    ugbl->gusb2phycfg0 = 0x4000154F; // [TODO] document as bits
+    // ugbl->gusb2phycfg0 = 0x4000154F; // [TODO] document as bits
+    uint32_t reg = ugbl->gusb2phycfg0;
+    reg &= ~((1 << 3) | (1 << 4) | (0xF << 10)); // clear phyif, ulpi_utmi_sel and usbtrdtim
+    reg |= ((1 << 3) | (5 << 10));
+    ugbl->gusb2phycfg0 = reg;
 
     // set device speed (USBHS only)
     udev->dcfg_b.devspd = 0x0; // HS, this will need #if condition [TODO]
@@ -358,8 +367,11 @@ bool dcd_edpt_xfer(uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t t
                 _dcd_start_xfer(0, buffer, total_bytes, TRBCTL_CTL_STAT3);
             } else {
                 // TinyUSB explicitly requests STATUS OUT fetch after DATA IN
-                _xfer_bytes[0] = 0;
-                _dcd_start_xfer(0, _ctrl_buf, 64, TRBCTL_CTL_STAT3);
+                if (2 == ++_sts_stage) {
+                    _sts_stage = 0;
+                    dcd_event_xfer_complete(TUD_OPT_RHPORT, tu_edpt_addr(0, TUSB_DIR_OUT),
+                                            0, XFER_RESULT_SUCCESS, true);
+                }
             }
         } break;
         case 1: { // CONTROL IN
@@ -375,8 +387,14 @@ bool dcd_edpt_xfer(uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t t
             } else {
                 // status events are handled directly from the ISR when USB
                 // controller triggers XferNotReady event for status stage
-                dcd_event_xfer_complete(rhport, tu_edpt_addr(0, TUSB_DIR_IN),
-                                        0, XFER_RESULT_SUCCESS, false);
+
+                if (2 == ++_sts_stage) {
+                    _sts_stage = 0;
+                    dcd_event_xfer_complete(TUD_OPT_RHPORT, tu_edpt_addr(0, TUSB_DIR_IN),
+                                            0, XFER_RESULT_SUCCESS, true);
+                }
+                // dcd_event_xfer_complete(rhport, tu_edpt_addr(0, TUSB_DIR_IN),
+                //                         0, XFER_RESULT_SUCCESS, false);
             }
         } break;
         default: { // DATA EPs (BULK & INTERRUPT only)
@@ -389,8 +407,7 @@ bool dcd_edpt_xfer(uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t t
             }
             uint8_t ret = _dcd_start_xfer(ep, buffer, total_bytes,
                             total_bytes ? TRBCTL_NORMAL : TRBCTL_NORMAL_ZLP);
-            (void) ret;
-            LOG("start xfer sts %u", ret);
+            (void) ret; LOG("start xfer sts %u", ret);
         }
     }
 
@@ -410,6 +427,11 @@ void dcd_edpt_stall(uint8_t rhport, uint8_t ep_addr)
     uint8_t ep = (tu_edpt_number(ep_addr) << 1) | tu_edpt_dir(ep_addr);
 
     _dcd_cmd_wait(ep, CMDTYP_DEPSSTALL, 0);
+
+    if (0 == tu_edpt_number(ep_addr)) {
+        _ctrl_long_data = false;
+        _dcd_start_xfer(TUSB_DIR_OUT, _ctrl_buf, 8, TRBCTL_CTL_SETUP);
+    }
 }
 
 // clear stall, data toggle is also reset to DATA0
@@ -486,8 +508,11 @@ static void _dcd_handle_depevt(uint8_t ep, uint8_t evt, uint8_t sts, uint16_t pa
                                                 _xfer_bytes[0] - (_xfer_trb[0][2] & 0xFFFFFF),
                                                 XFER_RESULT_SUCCESS, true);
                     } else {
-                        dcd_event_xfer_complete(TUD_OPT_RHPORT, tu_edpt_addr(0, TUSB_DIR_OUT),
-                                                0, XFER_RESULT_SUCCESS, true);
+                        if (2 == ++_sts_stage) {
+                            _sts_stage = 0;
+                            dcd_event_xfer_complete(TUD_OPT_RHPORT, tu_edpt_addr(0, TUSB_DIR_OUT),
+                                                    0, XFER_RESULT_SUCCESS, true);
+                        }
                     }
                 } else {
                     // invalid TRBCTL value
@@ -500,6 +525,14 @@ static void _dcd_handle_depevt(uint8_t ep, uint8_t evt, uint8_t sts, uint16_t pa
                     dcd_event_xfer_complete(TUD_OPT_RHPORT, tu_edpt_addr(0, TUSB_DIR_IN),
                                             _xfer_bytes[1] - (_xfer_trb[1][2] & 0xFFFFFF),
                                             XFER_RESULT_SUCCESS, true);
+                } else {
+                    if (2 == ++_sts_stage) {
+                        _sts_stage = 0;
+                        dcd_event_xfer_complete(TUD_OPT_RHPORT, tu_edpt_addr(0, TUSB_DIR_IN),
+                                                0, XFER_RESULT_SUCCESS, true);
+
+                        // *(volatile uint32_t*) 0x4900C000 ^= 8; // [TEMP]
+                    }
                 }
             } else {
                 // [TODO] check if ep is open
@@ -529,9 +562,10 @@ static void _dcd_handle_depevt(uint8_t ep, uint8_t evt, uint8_t sts, uint16_t pa
                 break;
             }
 
-            if (0 == ep) {
-                // with TinyUSB implementing this isn't really necessary
-                // the stack will control the flow EP0 by itself
+            if ((0 == ep) && (0b0010 == (sts & 0b1011))) {
+                _xfer_bytes[0] = 0;
+                _dcd_start_xfer(0, _ctrl_buf, 64, TRBCTL_CTL_STAT3);
+                break;
             }
 
             if ((1 > ep) && (sts & (1 << 3))) {
@@ -552,6 +586,8 @@ static void _dcd_handle_depevt(uint8_t ep, uint8_t evt, uint8_t sts, uint16_t pa
 
                     // issue the block command and pass the status
                     _dcd_cmd_wait(ep, CMDTYP_DEPSTRTXFER, 0);
+
+                    // *(volatile uint32_t*) 0x49007000 ^= 16; // [TEMP]
                 }
             }
         } break;
