@@ -28,6 +28,10 @@
 
 #include "py/mpconfig.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void mp_stack_ctrl_init(void);
 void mp_stack_set_top(void *top);
 mp_uint_t mp_stack_usage(void);
@@ -43,6 +47,10 @@ void mp_stack_check(void);
 #define mp_stack_set_limit(limit) (void)(limit)
 #define MP_STACK_CHECK()
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif // MICROPY_INCLUDED_PY_STACKCTRL_H

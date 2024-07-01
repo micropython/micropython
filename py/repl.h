@@ -30,6 +30,10 @@
 #include "py/misc.h"
 #include "py/mpprint.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if MICROPY_HELPER_REPL
 
 #if MICROPY_PY_SYS_PS1_PS2
@@ -59,6 +63,10 @@ static inline const char *mp_repl_get_ps2(void) {
 bool mp_repl_continue_with_input(const char *input);
 size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print, const char **compl_str);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif // MICROPY_INCLUDED_PY_REPL_H
