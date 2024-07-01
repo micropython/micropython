@@ -64,6 +64,11 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
         if (out_sz == 0) {
             return done;
         }
+        if (out_sz != MP_STREAM_ERROR && out_sz > size) {
+            // This can only happen if the filesystem implementation returned invalid out_sz
+            *errcode = MP_EINVAL;
+            out_sz = MP_STREAM_ERROR;
+        }
         if (out_sz == MP_STREAM_ERROR) {
             // If we read something before getting EAGAIN, don't leak it
             if (mp_is_nonblocking_error(*errcode) && done != 0) {
