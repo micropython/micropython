@@ -85,10 +85,9 @@ Copy the following code in the editor and click on run.
 
 .. code-block:: python
 
-    from machine import Pin
-
-    p1 = Pin("P13_7")   # LED pin for CY8CPROT-062-4343W
-    p1.init(Pin.OUT)
+    from machine import Signal, Pin
+    pin = Pin("P13_7", Pin.OUT)
+    led = Signal(pin, invert=True) # LED pin for CY8CPROT-062-4343W 
     p1.on()
 
 .. image:: img/mpy-ide-script.jpg
