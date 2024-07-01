@@ -86,9 +86,9 @@ Copy the following code in the editor and click on run.
 .. code-block:: python
 
     from machine import Signal, Pin
-    pin = Pin("P13_7", Pin.OUT)
-    led = Signal(pin, invert=True) # LED pin for CY8CPROT-062-4343W 
-    p1.on()
+    pin = Pin("P13_7", Pin.OUT) # LED pin for CY8CPROT-062-4343W 
+    led = Signal(pin, invert=True) 
+    led.on()
 
 .. image:: img/mpy-ide-script.jpg
     :alt: Arduino IDE script
