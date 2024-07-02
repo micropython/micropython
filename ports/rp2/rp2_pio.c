@@ -242,7 +242,7 @@ static rp2_pio_obj_t rp2_pio_obj[] = {
 
 static void rp2_pio_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     rp2_pio_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "PIO(%u)", self->pio == pio0 ? 0 : 1);
+    mp_printf(print, "PIO(%u)", pio_get_index(self->pio));
 }
 
 // constructor(id)
