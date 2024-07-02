@@ -259,6 +259,8 @@ int storage_readblocks_ext(uint8_t *dest, uint32_t block, uint32_t offset, uint3
 }
 #endif
 
+static struct _pyb_mapfs_obj_t pyb_mapfs_obj;
+
 typedef struct _pyb_flash_obj_t {
     mp_obj_base_t base;
     uint32_t start; // in bytes
@@ -289,6 +291,11 @@ static mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_start, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_len,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
+
+    if (n_args == 1 && mp_obj_is_str(all_args[0]) && mp_obj_str_get_qstr(all_args[0]) == MP_QSTR_mapfs) {
+        return MP_OBJ_FROM_PTR(&pyb_mapfs_obj);
+    }
+
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -475,3 +482,103 @@ void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
 }
 
 #endif
+
+/******************************************************************************/
+// mapfs partition
+//
+// TODO: this doesn't properly implement the block device protocol because it
+// has potentially large sectors but pretends they are small.
+// writing to the start of a sector will erase that whole sector first.
+
+#include "flash.h"
+
+#define MICROPY_HW_MAPFS_BASE (uintptr_t)(&_micropy_hw_mapfs_start)
+#define MICROPY_HW_MAPFS_BYTES (uintptr_t)(&_micropy_hw_mapfs_end - &_micropy_hw_mapfs_start)
+#define MAPFS_BLOCK_SIZE_BYTES (256) // can be anything bigger than alignment requirements of hardware writes
+
+typedef struct _pyb_mapfs_obj_t {
+    mp_obj_base_t base;
+    // uint32_t flash_base;
+    // uint32_t flash_size;
+} pyb_mapfs_obj_t;
+
+extern uint8_t _micropy_hw_mapfs_start;
+extern uint8_t _micropy_hw_mapfs_end;
+
+static const mp_obj_type_t pyb_mapfs_type;
+
+static pyb_mapfs_obj_t pyb_mapfs_obj = {
+    .base = { &pyb_mapfs_type },
+    // .flash_base = MICROPY_HW_MAPFS_BASE,
+    // .flash_size = MICROPY_HW_MAPFS_BYTES,
+};
+
+static mp_obj_t pyb_mapfs_readblocks(size_t n_args, const mp_obj_t *args) {
+    // pyb_mapfs_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    uint32_t offset = mp_obj_get_int(args[1]) * MAPFS_BLOCK_SIZE_BYTES;
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
+    memcpy(bufinfo.buf, (void *)(MICROPY_HW_MAPFS_BASE + offset), bufinfo.len);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_mapfs_readblocks_obj, 3, 3, pyb_mapfs_readblocks);
+
+static mp_obj_t pyb_mapfs_writeblocks(size_t n_args, const mp_obj_t *args) {
+    // pyb_mapfs_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    uint32_t offset = mp_obj_get_int(args[1]) * MAPFS_BLOCK_SIZE_BYTES;
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+    uint32_t dest = MICROPY_HW_MAPFS_BASE + offset;
+
+    // Compute start and end address of the sector being written.
+    uint32_t sector_size = 0;
+    uint32_t sector_start = 0;
+    int ret = flash_get_sector_info(dest, &sector_start, &sector_size);
+    if (ret < 0) {
+        return MP_OBJ_NEW_SMALL_INT(ret);
+    }
+
+    // Erase sector if writing to the start of it.
+    if (dest == sector_start) {
+        ret = flash_erase(sector_start);
+        if (ret != 0) {
+            return MP_OBJ_NEW_SMALL_INT(ret);
+        }
+    }
+
+    flash_write(dest, bufinfo.buf, bufinfo.len / 4);
+    // TODO check return value
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_mapfs_writeblocks_obj, 3, 4, pyb_mapfs_writeblocks);
+
+static mp_obj_t pyb_mapfs_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
+    // pyb_mapfs_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_int_t cmd = mp_obj_get_int(cmd_in);
+    switch (cmd) {
+        case MP_BLOCKDEV_IOCTL_BLOCK_COUNT:
+            return MP_OBJ_NEW_SMALL_INT(MICROPY_HW_MAPFS_BYTES / MAPFS_BLOCK_SIZE_BYTES);
+        case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
+            return MP_OBJ_NEW_SMALL_INT(MAPFS_BLOCK_SIZE_BYTES);
+        case 0x100: // mmap
+            return mp_obj_new_int(MICROPY_HW_MAPFS_BASE);
+        default:
+            return mp_const_none;
+    }
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(pyb_mapfs_ioctl_obj, pyb_mapfs_ioctl);
+
+static const mp_rom_map_elem_t pyb_mapfs_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&pyb_mapfs_readblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&pyb_mapfs_writeblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&pyb_mapfs_ioctl_obj) },
+};
+static MP_DEFINE_CONST_DICT(pyb_mapfs_locals_dict, pyb_mapfs_locals_dict_table);
+
+static MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_mapfs_type,
+    MP_QSTR_Flash,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &pyb_mapfs_locals_dict
+    );

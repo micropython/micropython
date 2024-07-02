@@ -101,6 +101,7 @@ qstr qstr_find_strn(const char *str, size_t str_len); // returns MP_QSTRnull if 
 
 qstr qstr_from_str(const char *str);
 qstr qstr_from_strn(const char *str, size_t len);
+qstr qstr_from_strn_static(const char *str, size_t len);
 
 mp_uint_t qstr_hash(qstr q);
 const char *qstr_str(qstr q);

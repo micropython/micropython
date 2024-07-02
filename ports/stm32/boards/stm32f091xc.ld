@@ -5,7 +5,8 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 236K /* sectors 0-117 */
+    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 226K /* sectors 0-112 */
+    FLASH_MAPFS (rx): ORIGIN = 0x08036000, LENGTH = 10K /* sectors 113-117 */
     FLASH_FS (r)    : ORIGIN = 0x0803B000, LENGTH = 20K /* sectors 118-127 */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 32K
 }
@@ -32,3 +33,6 @@ _heap_end = _sstack;
 
 _micropy_hw_internal_flash_storage_start = ORIGIN(FLASH_FS);
 _micropy_hw_internal_flash_storage_end   = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
+
+_micropy_hw_mapfs_start = ORIGIN(FLASH_MAPFS);
+_micropy_hw_mapfs_end = ORIGIN(FLASH_MAPFS) + LENGTH(FLASH_MAPFS);

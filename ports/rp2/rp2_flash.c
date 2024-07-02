@@ -28,6 +28,7 @@
 
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "extmod/vfs.h"
 #include "modrp2.h"
 #include "hardware/flash.h"
@@ -44,6 +45,9 @@ static_assert(MICROPY_HW_FLASH_STORAGE_BYTES % 4096 == 0, "Flash storage size mu
 #define MICROPY_HW_FLASH_STORAGE_BASE (PICO_FLASH_SIZE_BYTES - MICROPY_HW_FLASH_STORAGE_BYTES)
 #endif
 
+#define MICROPY_HW_MAPFS_BASE (512 * 1024) // leave 512k for firmware...
+#define MICROPY_HW_MAPFS_BYTES (MICROPY_HW_FLASH_STORAGE_BASE - MICROPY_HW_MAPFS_BASE)
+
 static_assert(MICROPY_HW_FLASH_STORAGE_BYTES <= PICO_FLASH_SIZE_BYTES, "MICROPY_HW_FLASH_STORAGE_BYTES too big");
 static_assert(MICROPY_HW_FLASH_STORAGE_BASE + MICROPY_HW_FLASH_STORAGE_BYTES <= PICO_FLASH_SIZE_BYTES, "MICROPY_HW_FLASH_STORAGE_BYTES too big");
 
@@ -52,6 +56,12 @@ typedef struct _rp2_flash_obj_t {
     uint32_t flash_base;
     uint32_t flash_size;
 } rp2_flash_obj_t;
+
+static rp2_flash_obj_t rp2_flash_mapfs_obj = {
+    .base = { &rp2_flash_type },
+    .flash_base = MICROPY_HW_MAPFS_BASE,
+    .flash_size = MICROPY_HW_MAPFS_BYTES,
+};
 
 static rp2_flash_obj_t rp2_flash_obj = {
     .base = { &rp2_flash_type },
@@ -87,6 +97,15 @@ static void end_critical_flash_section(uint32_t state) {
 }
 
 static mp_obj_t rp2_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    if (n_args == 1 && n_kw == 0 && mp_obj_is_str(all_args[0])) {
+        if (mp_obj_str_get_qstr(all_args[0]) == MP_QSTR_mapfs) {
+            if (MICROPY_HW_MAPFS_BYTES <= 0) {
+                mp_raise_OSError(MP_ENODEV);
+            }
+            return MP_OBJ_FROM_PTR(&rp2_flash_mapfs_obj);
+        }
+    }
+
     // Parse arguments
     enum { ARG_start, ARG_len };
     static const mp_arg_t allowed_args[] = {
@@ -190,6 +209,8 @@ static mp_obj_t rp2_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
             // TODO check return value
             return MP_OBJ_NEW_SMALL_INT(0);
         }
+        case 0x100: // mmap
+            return mp_obj_new_int(XIP_BASE + self->flash_base);
         default:
             return mp_const_none;
     }

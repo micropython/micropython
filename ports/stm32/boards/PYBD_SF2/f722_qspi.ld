@@ -20,7 +20,8 @@ MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 512K
     FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 32K     /* sectors 0,1 */
-    FLASH_APP (rx)  : ORIGIN = 0x08008000, LENGTH = 480K    /* sectors 2-7 */
+    FLASH_APP (rx)  : ORIGIN = 0x08008000, LENGTH = 352K    /* sectors 2-6 */
+    FLASH_MAPFS (rx): ORIGIN = 0x08060000, LENGTH = 128K    /* sector 7 */
     FLASH_EXT (rx)  : ORIGIN = 0x90000000, LENGTH = 2048K   /* external QSPI */
     RAM (rwx)       : ORIGIN = 0x20000000, LENGTH = 256K    /* DTCM+SRAM1+SRAM2 */
 }
@@ -40,6 +41,9 @@ _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
 
+_micropy_hw_mapfs_start = ORIGIN(FLASH_MAPFS);
+_micropy_hw_mapfs_end = ORIGIN(FLASH_MAPFS) + LENGTH(FLASH_MAPFS);
+
 /* Define output sections */
 SECTIONS
 {
@@ -51,6 +55,10 @@ SECTIONS
         *lib/mynewt-nimble/*(.text* .rodata*)
         *lib/cyw43-driver/*(.rodata.w4343*_combined)
         *drivers/cyw43/*(.rodata.cyw43_btfw_*)
+        *lib/oofatfs/*(.text* .rodata*)
+        *lib/littlefs/*(.text* .rodata*)
+        *lib/lwip/*(.text* .rodata*)
+        *extmod/*(.text* .rodata*)
         . = ALIGN(4);
     } >FLASH_EXT
 }

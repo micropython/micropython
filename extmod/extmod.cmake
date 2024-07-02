@@ -57,6 +57,8 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/vfs_fat_diskio.c
     ${MICROPY_EXTMOD_DIR}/vfs_fat_file.c
     ${MICROPY_EXTMOD_DIR}/vfs_lfs.c
+    ${MICROPY_EXTMOD_DIR}/vfs_map.c
+    ${MICROPY_EXTMOD_DIR}/vfs_map_file.c
     ${MICROPY_EXTMOD_DIR}/vfs_posix.c
     ${MICROPY_EXTMOD_DIR}/vfs_posix_file.c
     ${MICROPY_EXTMOD_DIR}/vfs_reader.c

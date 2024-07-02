@@ -458,11 +458,18 @@ static mp_uint_t microbit_file_write(mp_obj_t obj, const void *buf, mp_uint_t si
     return size;
 }
 
-static void microbit_file_close(file_descriptor_obj *fd) {
-    if (fd->writable) {
-        flash_write_byte((uint32_t)&(file_system_chunks[fd->start_chunk].header.end_offset), fd->seek_offset);
+static intptr_t microbit_file_ioctl(void *fd_in, uintptr_t request, uintptr_t arg) {
+    file_descriptor_obj *fd = fd_in;
+
+    if (request == MP_READER_CLOSE) {
+        if (fd->writable) {
+            flash_write_byte((uint32_t)&(file_system_chunks[fd->start_chunk].header.end_offset), fd->seek_offset);
+        }
+        fd->open = false;
+        return 0;
     }
-    fd->open = false;
+
+    return -MP_EINVAL;
 }
 
 static mp_obj_t microbit_file_list(void) {
@@ -495,7 +502,7 @@ static mp_obj_t microbit_file_size(mp_obj_t filename) {
     return mp_obj_new_int(len);
 }
 
-static mp_uint_t file_read_byte(file_descriptor_obj *fd) {
+static uintptr_t file_read_byte(file_descriptor_obj *fd) {
     if (file_system_chunks[fd->seek_chunk].next_chunk == UNUSED_CHUNK) {
         uint8_t end_offset = file_system_chunks[fd->start_chunk].header.end_offset;
         if (end_offset == UNUSED_CHUNK || fd->seek_offset == end_offset) {
@@ -516,8 +523,8 @@ mp_lexer_t *os_mbfs_new_reader(const char *filename) {
     }
     mp_reader_t reader;
     reader.data = fd;
-    reader.readbyte = (mp_uint_t(*)(void*))file_read_byte;
-    reader.close = (void(*)(void*))microbit_file_close; // no-op
+    reader.readbyte = (uintptr_t(*)(void*))file_read_byte;
+    reader.close = microbit_file_ioctl;
     return mp_lexer_new(qstr_from_str(filename), reader);
 }
 
@@ -538,7 +545,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(os_mbfs_file_name_obj, os_mbfs_file_name);
 
 static mp_obj_t os_mbfs_file_close(mp_obj_t self) {
     file_descriptor_obj *fd = (file_descriptor_obj*)self;
-    microbit_file_close(fd);
+    microbit_file_ioctl(fd, MP_READER_CLOSE, 0);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(os_mbfs_file_close_obj, os_mbfs_file_close);

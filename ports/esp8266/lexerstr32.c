@@ -26,6 +26,7 @@
  */
 
 #include "py/lexer.h"
+#include "py/mperrno.h"
 
 #if MICROPY_ENABLE_COMPILER
 
@@ -35,7 +36,7 @@ typedef struct _mp_lexer_str32_buf_t {
     uint8_t byte_off;
 } mp_lexer_str32_buf_t;
 
-static mp_uint_t str32_buf_next_byte(void *sb_in) {
+static uintptr_t str32_buf_next_byte(void *sb_in) {
     mp_lexer_str32_buf_t *sb = (mp_lexer_str32_buf_t *)sb_in;
     byte c = sb->val & 0xff;
     if (c == 0) {
@@ -52,9 +53,13 @@ static mp_uint_t str32_buf_next_byte(void *sb_in) {
     return c;
 }
 
-static void str32_buf_free(void *sb_in) {
+static intptr_t str32_buf_free(void *sb_in, uintptr_t request, uintptr_t arg) {
     mp_lexer_str32_buf_t *sb = (mp_lexer_str32_buf_t *)sb_in;
-    m_del_obj(mp_lexer_str32_buf_t, sb);
+    if (request == MP_READER_CLOSE) {
+        m_del_obj(mp_lexer_str32_buf_t, sb);
+        return 0;
+    }
+    return -MP_EINVAL;
 }
 
 mp_lexer_t *mp_lexer_new_from_str32(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len) {

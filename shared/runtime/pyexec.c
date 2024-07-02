@@ -34,6 +34,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/frozenmod.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #if MICROPY_HW_ENABLE_USB
 #include "irq.h"
@@ -135,7 +136,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
 
         if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
             const mp_reader_t *reader = source;
-            reader->close(reader->data);
+            reader->ioctl(reader->data, MP_READER_CLOSE, 0);
         }
 
         // print EOF after normal output
@@ -201,7 +202,7 @@ typedef struct _mp_reader_stdin_t {
     uint16_t window_remain;
 } mp_reader_stdin_t;
 
-static mp_uint_t mp_reader_stdin_readbyte(void *data) {
+static uintptr_t mp_reader_stdin_readbyte(void *data) {
     mp_reader_stdin_t *reader = (mp_reader_stdin_t *)data;
 
     if (reader->eof) {
@@ -233,18 +234,24 @@ static mp_uint_t mp_reader_stdin_readbyte(void *data) {
     return c;
 }
 
-static void mp_reader_stdin_close(void *data) {
+static intptr_t mp_reader_stdin_ioctl(void *data, uintptr_t request, uintptr_t arg) {
     mp_reader_stdin_t *reader = (mp_reader_stdin_t *)data;
-    if (!reader->eof) {
-        reader->eof = true;
-        mp_hal_stdout_tx_strn("\x04", 1); // indicate end to host
-        for (;;) {
-            int c = mp_hal_stdin_rx_chr();
-            if (c == CHAR_CTRL_C || c == CHAR_CTRL_D) {
-                break;
+
+    if (request == MP_READER_CLOSE) {
+        if (!reader->eof) {
+            reader->eof = true;
+            mp_hal_stdout_tx_strn("\x04", 1); // indicate end to host
+            for (;;) {
+                int c = mp_hal_stdin_rx_chr();
+                if (c == CHAR_CTRL_C || c == CHAR_CTRL_D) {
+                    break;
+                }
             }
         }
+        return 0;
     }
+
+    return -MP_EINVAL;
 }
 
 static void mp_reader_new_stdin(mp_reader_t *reader, mp_reader_stdin_t *reader_stdin, uint16_t buf_max) {
@@ -260,7 +267,7 @@ static void mp_reader_new_stdin(mp_reader_t *reader, mp_reader_stdin_t *reader_s
     reader_stdin->window_remain = window;
     reader->data = reader_stdin;
     reader->readbyte = mp_reader_stdin_readbyte;
-    reader->close = mp_reader_stdin_close;
+    reader->ioctl = mp_reader_stdin_ioctl;
 }
 
 static int do_reader_stdin(int c) {
