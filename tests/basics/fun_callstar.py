@@ -23,6 +23,10 @@ foo(*range(3))
 # pos then iterator
 foo(1, *range(2, 4))
 
+# star after kw
+foo(1, 2, c=3, *())
+foo(b=2, *(1,), c=3)
+
 # an iterator with many elements
 def foo(*rest):
     print(rest)
