@@ -51,6 +51,7 @@ SRC_EXTMOD_C += \
 	extmod/network_esp_hosted.c \
 	extmod/network_lwip.c \
 	extmod/network_ninaw10.c \
+	extmod/network_ppp_lwip.c \
 	extmod/network_wiznet5k.c \
 	extmod/os_dupterm.c \
 	extmod/vfs.c \
@@ -332,6 +333,8 @@ $(BUILD)/$(LWIP_DIR)/core/ipv4/dhcp.o: CFLAGS += -Wno-address
 SRC_THIRDPARTY_C += shared/netutils/netutils.c
 SRC_THIRDPARTY_C += $(addprefix $(LWIP_DIR)/,\
 	apps/mdns/mdns.c \
+	apps/mdns/mdns_domain.c \
+	apps/mdns/mdns_out.c \
 	core/def.c \
 	core/dns.c \
 	core/inet_chksum.c \
@@ -349,6 +352,7 @@ SRC_THIRDPARTY_C += $(addprefix $(LWIP_DIR)/,\
 	core/tcp_out.c \
 	core/timeouts.c \
 	core/udp.c \
+	core/ipv4/acd.c \
 	core/ipv4/autoip.c \
 	core/ipv4/dhcp.c \
 	core/ipv4/etharp.c \
@@ -367,6 +371,32 @@ SRC_THIRDPARTY_C += $(addprefix $(LWIP_DIR)/,\
 	core/ipv6/mld6.c \
 	core/ipv6/nd6.c \
 	netif/ethernet.c \
+	netif/ppp/auth.c \
+	netif/ppp/ccp.c \
+	netif/ppp/chap-md5.c \
+	netif/ppp/chap_ms.c \
+	netif/ppp/chap-new.c \
+	netif/ppp/demand.c \
+	netif/ppp/eap.c \
+	netif/ppp/ecp.c \
+	netif/ppp/eui64.c \
+	netif/ppp/fsm.c \
+	netif/ppp/ipcp.c \
+	netif/ppp/ipv6cp.c \
+	netif/ppp/lcp.c \
+	netif/ppp/magic.c \
+	netif/ppp/mppe.c \
+	netif/ppp/multilink.c \
+	netif/ppp/polarssl/md5.c \
+	netif/ppp/pppapi.c \
+	netif/ppp/ppp.c \
+	netif/ppp/pppcrypt.c \
+	netif/ppp/pppoe.c \
+	netif/ppp/pppol2tp.c \
+	netif/ppp/pppos.c \
+	netif/ppp/upap.c \
+	netif/ppp/utils.c \
+	netif/ppp/vj.c \
 	)
 ifeq ($(MICROPY_PY_LWIP_LOOPBACK),1)
 CFLAGS_EXTMOD += -DLWIP_NETIF_LOOPBACK=1
