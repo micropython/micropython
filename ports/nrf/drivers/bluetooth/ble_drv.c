@@ -39,7 +39,7 @@
 #include "mphalport.h"
 
 
-#if MICROPY_HW_USB_CDC
+#if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
 #include "usb_cdc.h"
 #endif
 
@@ -941,7 +941,7 @@ static void sd_evt_handler(uint32_t evt_id) {
             // unhandled event!
             break;
     }
-#if MICROPY_HW_USB_CDC
+#if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
     // Forward SOC events to USB CDC driver.
     usb_cdc_sd_event_handler(evt_id);
 #endif

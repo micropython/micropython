@@ -29,6 +29,7 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/machine_uart.c via MICROPY_PY_MACHINE_UART_INCLUDEFILE.
 
+#include <string.h>
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/ringbuf.h"
@@ -319,8 +320,17 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
 
 static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = self_in;
+    uint8_t *buf = (uint8_t *)buf_in;
+    #if !NRFX_UART_ENABLED
+    if (!nrfx_is_in_ram(buf_in)) {
+        // EasyDMA requires that transfer buffers are placed in DataRAM,
+        // NRFX_ERROR_INVALID_ADDR if the are not.
+        buf = alloca(size);
+        memcpy((void *)buf, buf_in, size);
+    }
+    #endif
 
-    nrfx_err_t err = nrfx_uart_tx(self->p_uart, buf_in, size);
+    nrfx_err_t err = nrfx_uart_tx(self->p_uart, buf, size);
     if (err == NRFX_SUCCESS) {
         while (nrfx_uart_tx_in_progress(self->p_uart)) {
             MICROPY_EVENT_POLL_HOOK;

@@ -81,6 +81,7 @@ INC += -I./modules/ble
 INC += -I./modules/board
 INC += -I./modules/nrf
 INC += -I../../shared/readline
+INC += -I../../shared/tinyusb
 INC += -I./drivers/bluetooth
 INC += -I./drivers
 INC += -I../../lib/nrfx/
@@ -128,7 +129,15 @@ CFLAGS_MCU_m4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-s
 
 CFLAGS_MCU_m0 = $(CFLAGS_CORTEX_M) -fshort-enums -mtune=cortex-m0 -mcpu=cortex-m0 -mfloat-abi=soft
 
+# linker wrap does not work with lto on older gcc/binutils: https://sourceware.org/bugzilla/show_bug.cgi?id=24406
+GCC_VERSION = $(shell arm-none-eabi-gcc --version | sed -n -E 's:^arm.*([0-9]+\.[0-9]+\.[0-9]+).*$$:\1:p')
+GCC_MAJOR_VERS = $(word 1,$(subst ., ,$(GCC_VERSION)))
+ifeq ($(shell test $(GCC_MAJOR_VERS) -ge 10; echo $$?),0)
 LTO ?= 1
+else
+LTO ?= 0
+endif
+
 ifeq ($(LTO),1)
 CFLAGS += -flto
 else
@@ -183,9 +192,12 @@ SRC_SHARED_C += $(addprefix shared/,\
 	libc/string0.c \
 	readline/readline.c \
 	runtime/pyexec.c \
+	runtime/stdout_helpers.c \
 	runtime/sys_stdio_mphal.c \
 	runtime/interrupt_char.c \
+	tinyusb/mp_usbd.c \
 	tinyusb/mp_usbd_cdc.c \
+	tinyusb/mp_usbd_descriptor.c \
 	timeutils/timeutils.c \
 	)
 
@@ -238,7 +250,6 @@ ifeq ($(MCU_SUB_VARIANT), nrf52840)
 INC += -I./drivers/usb
 INC += -I../../lib/tinyusb/src
 
-
 # If SoftDevice is selected.
 ifneq ($(SD), )
 # For external tinyusb drivers to enable SoftDevice mode.
@@ -247,7 +258,6 @@ endif
 
 SRC_C += $(addprefix drivers/usb/,\
 	usb_cdc.c \
-	usb_descriptors.c \
 	)
 
 SRC_C += $(addprefix lib/tinyusb/src/,\
@@ -258,6 +268,11 @@ SRC_C += $(addprefix lib/tinyusb/src/,\
 	tusb.c \
 	portable/nordic/nrf5x/dcd_nrf5x.c \
 	)
+
+CFLAGS += \
+	-DCFG_TUSB_MCU=OPT_MCU_NRF5X \
+
+LDFLAGS += -Wl,--wrap=dcd_event_handler
 
 endif
 
@@ -331,9 +346,9 @@ hex: $(BUILD)/$(OUTPUT_FILENAME).hex
 $(BUILD)/$(OUTPUT_FILENAME).hex: $(BUILD)/$(OUTPUT_FILENAME).elf
 	$(OBJCOPY) -O ihex $< $@
 
-FLASHER ?=
+FLASHER ?= jlink
 
-ifeq ($(FLASHER),)
+ifeq ($(FLASHER), jlink)
 
 ifeq ($(MCU_VARIANT), nrf91)
 

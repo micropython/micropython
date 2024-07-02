@@ -27,7 +27,7 @@
 
 #include "py/mphal.h"
 
-#if MICROPY_HW_USB_CDC
+#if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
 
 #include "nrfx.h"
 #include "nrfx_power.h"
@@ -37,6 +37,9 @@
 #include "py/runtime.h"
 #include "shared/runtime/interrupt_char.h"
 #include "shared/tinyusb/mp_usbd.h"
+#include "shared/tinyusb/mp_usbd_cdc.h"
+#include "extmod/misc.h"
+#include <hal/nrf_ficr.h>
 
 #ifdef BLUETOOTH_SD
 #include "nrf_sdm.h"
@@ -45,13 +48,6 @@
 #endif
 
 extern void tusb_hal_nrf_power_event(uint32_t event);
-
-static void cdc_task(bool tx);
-
-static uint8_t rx_ringbuf_array[1024];
-static uint8_t tx_ringbuf_array[1024];
-static volatile ringbuf_t rx_ringbuf;
-static volatile ringbuf_t tx_ringbuf;
 
 static void board_init(void) {
     // Config clock source.
@@ -105,89 +101,27 @@ static void board_init(void) {
 #endif
 }
 
-static bool cdc_rx_any(void) {
-    return rx_ringbuf.iput != rx_ringbuf.iget;
-}
-
-static int cdc_rx_char(void) {
-    return ringbuf_get((ringbuf_t*)&rx_ringbuf);
-}
-
-static bool cdc_tx_any(void) {
-    return tx_ringbuf.iput != tx_ringbuf.iget;
-}
-
-static int cdc_tx_char(void) {
-    return ringbuf_get((ringbuf_t*)&tx_ringbuf);
-}
-
-static void cdc_task(bool tx)
-{
-    if ( tud_cdc_connected() ) {
-        // connected and there are data available
-        while (tud_cdc_available()) {
-            int c = tud_cdc_read_char();
-            if (c == mp_interrupt_char) {
-                rx_ringbuf.iget = 0;
-                rx_ringbuf.iput = 0;
-                mp_sched_keyboard_interrupt();
-            } else {
-                ringbuf_put((ringbuf_t*)&rx_ringbuf, c);
-            }
-        }
-
-        if (tx) {
-            int chars = 0;
-            while (cdc_tx_any()) {
-                if (chars < 64) {
-                    tud_cdc_write_char(cdc_tx_char());
-                    chars++;
-                } else {
-                    chars = 0;
-                    tud_cdc_write_flush();
-                }
-            }
-
-            tud_cdc_write_flush();
-        }
-    }
-}
-
-static void usb_cdc_loop(void) {
-    tud_task();
-    cdc_task(true);
-}
-
-void tud_cdc_rx_cb(uint8_t itf) {
-    cdc_task(false);
+void mp_usbd_port_get_serial_number(char *serial_buf) {
+    uint32_t deviceid[2];
+	deviceid[0] = nrf_ficr_deviceid_get(NRF_FICR, 0);
+	deviceid[1] = nrf_ficr_deviceid_get(NRF_FICR, 1);
+    MP_STATIC_ASSERT(sizeof(deviceid) * 2 <= MICROPY_HW_USB_DESC_STR_MAX);
+    mp_usbd_hex_str(serial_buf, (uint8_t *)deviceid, sizeof(deviceid));
 }
 
 int usb_cdc_init(void)
 {
     static bool initialized = false;
     if (!initialized) {
-
-#if BLUETOOTH_SD
+        #if BLUETOOTH_SD
         // Initialize the clock and BLE stack.
         ble_drv_stack_enable();
-#endif
-
+        #endif
         board_init();
         initialized = true;
     }
 
-    rx_ringbuf.buf = rx_ringbuf_array;
-    rx_ringbuf.size = sizeof(rx_ringbuf_array);
-    rx_ringbuf.iget = 0;
-    rx_ringbuf.iput = 0;
-
-    tx_ringbuf.buf = tx_ringbuf_array;
-    tx_ringbuf.size = sizeof(tx_ringbuf_array);
-    tx_ringbuf.iget = 0;
-    tx_ringbuf.iput = 0;
-
     mp_usbd_init();
-
     return 0;
 }
 
@@ -204,52 +138,6 @@ void usb_cdc_sd_event_handler(uint32_t soc_evt) {
     }
 }
 #endif
-
-uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
-    uintptr_t ret = 0;
-    if (poll_flags & MP_STREAM_POLL_RD) {
-        usb_cdc_loop();
-        if (cdc_rx_any()) {
-            ret |= MP_STREAM_POLL_RD;
-        }
-    }
-    if (poll_flags & MP_STREAM_POLL_WR) {
-        ret |= MP_STREAM_POLL_WR;
-    }
-    return ret;
-}
-
-int mp_hal_stdin_rx_chr(void) {
-    for (;;) {
-        usb_cdc_loop();
-        if (cdc_rx_any()) {
-            return cdc_rx_char();
-        }
-        MICROPY_EVENT_POLL_HOOK
-    }
-
-    return 0;
-}
-
-mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-    for (const char *top = str + len; str < top; str++) {
-        ringbuf_put((ringbuf_t*)&tx_ringbuf, *str);
-        usb_cdc_loop();
-    }
-    return len;
-}
-
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
-
-    for (const char *top = str + len; str < top; str++) {
-        if (*str == '\n') {
-            ringbuf_put((ringbuf_t*)&tx_ringbuf, '\r');
-            usb_cdc_loop();
-        }
-        ringbuf_put((ringbuf_t*)&tx_ringbuf, *str);
-        usb_cdc_loop();
-    }
-}
 
 void USBD_IRQHandler(void) {
     tud_int_handler(0);

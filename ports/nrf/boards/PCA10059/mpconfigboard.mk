@@ -9,9 +9,9 @@ ifeq ($(DFU),1)
 BOOTLOADER=open_bootloader
 BOOTLOADER_VERSION_MAJOR=1
 BOOTLOADER_VERSION_MINOR=2
-FLASHER=nrfutil
+FLASHER ?= nrfutil
 else
-FLASHER=segger
+FLASHER ?= jlink
 endif
 
 LD_FILES += boards/nrf52840_1M_256k.ld
