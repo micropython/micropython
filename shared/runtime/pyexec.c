@@ -45,6 +45,12 @@
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
 int pyexec_system_exit = 0;
+int pyexec_unhandled_exception = 0; // kept at 0 for backward compatibility
+#if MICROPY_ENABLE_VM_ABORT
+int pyexec_abort = 0; // kept at 0 for backward compatibility
+#endif
+int pyexec_keyboard_interrupt = 0; // kept at 0 for backward compatibility
+
 
 #if MICROPY_REPL_INFO
 static bool repl_display_debugging_info = 0;
@@ -75,11 +81,17 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     #endif
 
     // by default a SystemExit exception returns 0
-    pyexec_system_exit = 0;
+    if (pyexec_system_exit != PYEXEC_USE_EXIT_CODE) {
+        pyexec_system_exit = 0;
+    }
 
     nlr_buf_t nlr;
     nlr.ret_val = NULL;
     if (nlr_push(&nlr) == 0) {
+        #if MICROPY_ENABLE_VM_ABORT
+        nlr_set_abort(&nlr);
+        #endif
+
         mp_obj_t module_fun;
         #if MICROPY_MODULE_FROZEN_MPY
         if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
@@ -143,15 +155,41 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_hal_stdout_tx_strn("\x04", 1);
         }
 
-        // check for SystemExit
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
-            // at the moment, the value of SystemExit is unused
-            ret = pyexec_system_exit;
-        } else {
+        #if MICROPY_ENABLE_VM_ABORT
+        if (nlr.ret_val == NULL) { // abort
+            ret = pyexec_abort;
+        } else
+        #endif
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) { // system exit
+            if (pyexec_system_exit == -1) {
+                mp_obj_t val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
+                if (val != mp_const_none) {
+                    if (mp_obj_is_small_int(val)) {
+                        ret = MP_OBJ_SMALL_INT_VALUE(val);
+                    } else {
+                        mp_obj_print(val, PRINT_STR);
+                        mp_print_str(&mp_plat_print, "\n");
+                        ret = 1;
+                    }
+                } else {
+                    ret = 0;
+                }
+            } else {
+                // for backward compatibility
+                // the error exit value was not linked with the SystemExit (was always 0)
+                ret = 0;
+            }
+        } else if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_KeyboardInterrupt))) { // keyboard interrupt
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-            ret = 0;
+            ret = pyexec_keyboard_interrupt;
+        } else { // other exception
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            ret = pyexec_unhandled_exception;
         }
     }
+    #if MICROPY_ENABLE_VM_ABORT
+    nlr_set_abort(NULL);
+    #endif
 
     #if MICROPY_REPL_INFO
     // display debugging info if wanted
