@@ -310,7 +310,7 @@ static mp_obj_t machine_rng(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_rng_obj, machine_rng);
 
 #ifdef MICROPY_PY_SD_CARD
-#define MICROPY_PY_MACHINE_SD_CARD_ENTRY { MP_ROM_QSTR(MP_QSTR_SDCARD),              MP_ROM_PTR(&machine_sdcard_type) }
+#define MICROPY_PY_MACHINE_SD_CARD_ENTRY { MP_ROM_QSTR(MP_QSTR_SDCard),              MP_ROM_PTR(&machine_sdcard_type) }
 #else
 #define MICROPY_PY_MACHINE_SD_CARD_ENTRY
 #endif

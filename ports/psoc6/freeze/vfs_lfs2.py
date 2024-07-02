@@ -28,7 +28,7 @@ else:
     print("\nInternal LFS2 filesystem mounted at /\n")
 
 if "SD_CARD" in dir(psoc6):
-    bdev2 = machine.SDCARD(
+    bdev2 = machine.SDCard(
         slot=1,
         width=4,
         cd="P13_5",

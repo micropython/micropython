@@ -45,7 +45,6 @@
 
 #define SDHC_DEFAULT_BUS_WIDTH                  (4U)
 #define SDHC_BLOCK_SIZE                         (512UL)
-#define SDHC_NUM_OF_SLOTS                       (2)
 
 static cyhal_sdhc_t sdhc_obj[SDHC_NUM_OF_SLOTS];
 
@@ -73,8 +72,7 @@ enum {
     ARG_dat1,
     ARG_dat2,
     ARG_dat3,
-    ARG_clk,
-    ARG_freq,
+    ARG_clk
 };
 
 
@@ -150,8 +148,8 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     mp_arg_check_num(n_args, n_kw, 0, 9, true);
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_slot,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_width,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 4} },
+        { MP_QSTR_slot,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_width,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_cd,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_wp,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_cmd,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
@@ -159,8 +157,7 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         { MP_QSTR_dat1,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_dat2,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_dat3,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
-        { MP_QSTR_clk,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
-        { MP_QSTR_freq,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 20000000} },
+        { MP_QSTR_clk,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} }
     };
 
     // Parse the arguments.
@@ -175,18 +172,23 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     self->slot_num = mp_obj_get_int(args[ARG_slot].u_obj);
 
     if (self->slot_num >= SDHC_NUM_OF_SLOTS) {
-        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("psoc6_sdcard_make_new() - SD card slot unavailable !\n"));
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD card slot unavailable!\n"));
     }
 
-    if (sdhc_obj[self->slot_num].sdxx.base == NULL) {
+    if (sdhc_obj[self->slot_num].sdxx.base == NULL) { // check if sd card already initialized in the given slot
         cy_rslt_t result = sd_card_init_helper(self, args);
 
         if (CY_RSLT_SUCCESS == result) {
             cyhal_sdhc_get_block_count(&sdhc_obj[self->slot_num], (uint32_t *)&self->block_count);
         } else {
-            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("psoc6_sdcard_make_new() - SD card init failed !\n"));
+            if (cyhal_sdhc_is_card_inserted(&sdhc_obj[self->slot_num]) == false) {
+                mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD Card not inserted!\n"));
+            } else {
+                mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD card init failed!\n"));
+            }
         }
     }
+
     return MP_OBJ_FROM_PTR(self);
 }
 
