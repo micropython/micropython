@@ -76,3 +76,9 @@ except ValueError:
     print("Raised ValueError")
 else:
     print("Did not raise ValueError")
+
+try:
+    # Only works on bytes/bytearray.
+    'abc'.index(1)
+except TypeError:
+    print('TypeError')

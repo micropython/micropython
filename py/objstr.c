@@ -743,11 +743,29 @@ static mp_obj_t str_finder(size_t n_args, const mp_obj_t *args, int direction, b
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     check_is_str_or_bytes(args[0]);
 
-    // check argument type
-    str_check_arg_type(self_type, args[1]);
-
     GET_STR_DATA_LEN(args[0], haystack, haystack_len);
-    GET_STR_DATA_LEN(args[1], needle, needle_len);
+
+    mp_int_t val;
+    byte needle_data;
+    const byte *needle;
+    size_t needle_len;
+    if (self_type != &mp_type_str && mp_obj_get_int_maybe(args[1], &val)) {
+        // Allow {bytes/bytearray}.{find,index}(int).
+        #if MICROPY_FULL_CHECKS
+        if (val < 0 || val > 255) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bytes value out of range"));
+        }
+        #endif
+        needle_data = val;
+        needle = &needle_data;
+        needle_len = 1;
+    } else {
+        // check argument type
+        str_check_arg_type(self_type, args[1]);
+        GET_STR_DATA_LEN(args[1], needle_tmp, needle_len_tmp);
+        needle = needle_tmp;
+        needle_len = needle_len_tmp;
+    }
 
     const byte *start = haystack;
     const byte *end = haystack + haystack_len;
