@@ -13,8 +13,6 @@ elif "CY8CKIT-062S2-AI" in board:
     print("SKIP")
     raise SystemExit
 
-print("\n***** Test 1: File transfer to SD Card in LFS2 format *****\n")
-
 
 def unmount_sd_card(path):
     try:

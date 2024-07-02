@@ -46,6 +46,7 @@ def exec(cmd, op_file_path="null"):
             os.remove(op_file_path)
         with open(op_file_path, "a") as file:
             subprocess.check_call(cmd, shell=True, stdout=file)
+            file.close()
 
 
 def validate_test(op, exp_op):
@@ -59,7 +60,6 @@ def validate_test(op, exp_op):
 
     if output != exp_output:
         print("Operation failed!")
-        os.remove(op)
         sys.exit(1)
     else:
         print("Operation successful!")
