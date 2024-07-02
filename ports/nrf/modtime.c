@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2013-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +24,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_NRF5_MODMACHINE_H__
-#define __MICROPY_INCLUDED_NRF5_MODMACHINE_H__
-
 #include "py/obj.h"
+#include "shared/timeutils/timeutils.h"
+#include "ports/nrf/modules/machine/rtc.h"
 
-#if MICROPY_PY_MACHINE_RTC
-extern const mp_obj_type_t machine_rtc_type;
-#endif
+// Return the localtime as an 8-tuple.
+static mp_obj_t mp_time_localtime_get(void) {
+    mp_int_t seconds = ticks_ms_64() / 1000;
+    timeutils_struct_time_t tm;
+    timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
+    mp_obj_t tuple[8] = {
+        tuple[0] = mp_obj_new_int(tm.tm_year),
+        tuple[1] = mp_obj_new_int(tm.tm_mon),
+        tuple[2] = mp_obj_new_int(tm.tm_mday),
+        tuple[3] = mp_obj_new_int(tm.tm_hour),
+        tuple[4] = mp_obj_new_int(tm.tm_min),
+        tuple[5] = mp_obj_new_int(tm.tm_sec),
+        tuple[6] = mp_obj_new_int(tm.tm_wday),
+        tuple[7] = mp_obj_new_int(tm.tm_yday),
+    };
+    return mp_obj_new_tuple(8, tuple);
+}
 
-void machine_init(void);
-
-#endif // __MICROPY_INCLUDED_NRF5_MODMACHINE_H__
+static mp_obj_t mp_time_time_get(void) {
+    return mp_obj_new_int((ticks_ms_64() + rtc_offset[1]) / 1000);
+}
