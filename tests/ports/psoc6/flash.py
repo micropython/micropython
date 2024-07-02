@@ -23,30 +23,30 @@ if "VfsLfs2" in dir(os):
     # create a LFS2 fs and mount it, else format and mount it
     try:
         vfs = os.VfsLfs2(bdev, progsize=write_size, readsize=read_size)
-        os.mount(vfs, "/flash")
+        os.mount(vfs, "/")
     except:
         os.VfsLfs2.mkfs(bdev, progsize=write_size, readsize=read_size)
         vfs = os.VfsLfs2(bdev, progsize=write_size, readsize=read_size)
-        os.mount(vfs, "/flash")
+        os.mount(vfs, "/")
 
     # open a file and do some operation
-    f = open("/flash/test_lfs2.txt", "w")
+    f = open("/test_lfs2.txt", "w")
     f.write(test_string)
     f.close()
 
     # read back the contents
-    f = open("/flash/test_lfs2.txt", "r")
+    f = open("/test_lfs2.txt", "r")
     if f.read() == test_string:
         print("Test successful")
     f.close()
 
     # open a file and do some operation
-    f = open("/flash/test_lfs2_2.txt", "w")
+    f = open("/test_lfs2_2.txt", "w")
     f.write(long_test_string)
     f.close()
 
     # read back the contents
-    f = open("/flash/test_lfs2_2.txt", "r")
+    f = open("/test_lfs2_2.txt", "r")
     if f.read() == long_test_string:
         print("Test successful")
     f.close()
@@ -55,30 +55,30 @@ if "VfsFat" in dir(os):
     # create a FAT fs and mount it, else format and mount it
     try:
         vfs = os.VfsFat(bdev)
-        os.mount(vfs, "/flash")
+        os.mount(vfs, "/")
     except:
         os.VfsFat.mkfs(bdev)
         vfs = os.VfsFat(bdev)
-        os.mount(vfs, "/flash")
+        os.mount(vfs, "/")
 
     # open a file and do some operation
-    f = open("/flash/test_fat.txt", "w")
+    f = open("/test_fat.txt", "w")
     f.write(test_string)
     f.close()
 
     # read back the contents
-    f = open("/flash/test_fat.txt", "r")
+    f = open("/test_fat.txt", "r")
     if f.read() == test_string:
         print("Test successful")
     f.close()
 
     # open a file and do some operation
-    f = open("/flash/test_fat_2.txt", "w")
+    f = open("/test_fat_2.txt", "w")
     f.write(long_test_string)
     f.close()
 
     # read back the contents
-    f = open("/flash/test_fat_2.txt", "r")
+    f = open("/test_fat_2.txt", "r")
     if f.read() == long_test_string:
         print("Test successful")
     f.close()
