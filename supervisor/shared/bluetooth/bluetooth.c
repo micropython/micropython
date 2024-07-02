@@ -132,8 +132,8 @@ static void supervisor_bluetooth_start_advertising(void) {
         return;
     }
     #endif
-    uint32_t timeout = 0;
-    float interval = 0.1f;
+    const uint32_t timeout = 0;  // 0 means advertise forever.
+    const float interval = 0.1f;
     int tx_power = 0;
     const uint8_t *adv = private_advertising_data;
     size_t adv_len = sizeof(private_advertising_data);
