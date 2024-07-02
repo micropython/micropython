@@ -226,7 +226,7 @@ static void asm_pio_init_gpio(PIO pio, uint32_t sm, asm_pio_config_t *config) {
     pio_sm_set_pins_with_mask(pio, sm, config->pinvals << config->base, pinmask);
     pio_sm_set_pindirs_with_mask(pio, sm, config->pindirs << config->base, pinmask);
     for (size_t i = 0; i < config->count; ++i) {
-        gpio_set_function(config->base + i, pio == pio0 ? GPIO_FUNC_PIO0 : GPIO_FUNC_PIO1);
+        gpio_set_function(config->base + i, GPIO_FUNC_PIO0 + pio_get_index(pio));
     }
 }
 
