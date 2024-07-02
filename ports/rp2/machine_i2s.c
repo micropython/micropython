@@ -167,6 +167,9 @@ static mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
 
 void machine_i2s_init0(void) {
     for (uint8_t i = 0; i < MAX_I2S_RP2; i++) {
+        if (MP_STATE_PORT(machine_i2s_obj[i]) != NULL) {
+            mp_machine_i2s_deinit(MP_STATE_PORT(machine_i2s_obj[i]));
+        }
         MP_STATE_PORT(machine_i2s_obj[i]) = NULL;
     }
 }
