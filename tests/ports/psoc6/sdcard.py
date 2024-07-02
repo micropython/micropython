@@ -45,7 +45,7 @@ def test_file_transfer():
         "dat2": "P13_2",
         "dat3": "P13_3",
     }
-    bdev = machine.SDCARD(**sdcard_config)
+    bdev = machine.SDCard(**sdcard_config)
 
     # Define constants
     MOUNT_POINT = "/SDCard"
@@ -90,9 +90,9 @@ def test_reintializing_same_slot():
         "dat2": "P13_2",
         "dat3": "P13_3",
     }
-    bdev1 = machine.SDCARD(**sdcard_config)
-    bdev2 = machine.SDCARD(**sdcard_config)
-    bdev3 = machine.SDCARD(**sdcard_config)
+    bdev1 = machine.SDCard(**sdcard_config)
+    bdev2 = machine.SDCard(**sdcard_config)
+    bdev3 = machine.SDCard(**sdcard_config)
     print("PASS")
 
 
@@ -111,7 +111,7 @@ def test_negative_slot_number():
             "dat2": "P13_2",
             "dat3": "P13_3",
         }
-        bdev = machine.SDCARD(**sdcard_config)
+        bdev = machine.SDCard(**sdcard_config)
     except Exception:
         print("FAIL")
 
