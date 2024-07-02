@@ -43,6 +43,7 @@ INC += -I$(CMSIS_DIR)
 INC += -I$(ALIF_DFP_REL_HERE)/drivers/include/
 INC += -I$(ALIF_DFP_REL_HERE)/se_services/include
 INC += -I$(ALIF_DFP_REL_HERE)/ospi_xip/source/ospi
+INC += -I$(ALIF_DFP_REL_HERE)/Device/common/config/
 INC += -I$(ALIF_DFP_REL_HERE)/Device/common/include/
 INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(MCU_CORE)/config/
 INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(MCU_CORE)/include/
@@ -168,6 +169,7 @@ TINYUSB_SRC_C += \
 	tinyusb_port/tusb_alif_dcd.c \
 
 ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
+	Device/common/source/clk.c \
 	Device/common/source/mpu_M55.c \
 	Device/common/source/system_M55.c \
 	Device/common/source/system_utils.c \

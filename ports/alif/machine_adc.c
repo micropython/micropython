@@ -72,14 +72,13 @@ static void adc_init(uint8_t adc_periph) {
     enable_cmp_periph_clk();
     analog_config_vbat_reg2();
     analog_config_cmp_reg2();
-    adc_set_differential_ctrl(adc_instance, true, false);
+    adc_set_differential_ctrl(adc_instance, false);
     adc_set_comparator_ctrl(adc_instance, true, 2);
 
     if (adc_instance == ADC_INSTANCE_ADC24_0) {
         enable_adc24();
         set_adc24_output_rate(0);
         set_adc24_bias(0);
-        set_adc24_sample_width(0);
     } else {
         adc_set_sample_width(regs, 32);
     }

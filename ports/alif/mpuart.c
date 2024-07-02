@@ -43,6 +43,7 @@
 #define UART_IRQN UART4_IRQ_IRQn
 #define UART_PTR ((UART_Type *)UART4_BASE)
 #define BAUDRATE 115200
+#define SYST_PCLK 100000000
 
 static UART_TRANSFER transfer;
 
