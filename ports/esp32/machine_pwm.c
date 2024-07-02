@@ -241,7 +241,12 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
         // Configure the new resolution and frequency
         timer->duty_resolution = res;
         timer->freq_hz = freq;
+        #if CONFIG_IDF_TARGET_ESP32C6
+        // TODO don't know if this is appropriate, compiler error suggested it
+        timer->clk_cfg = LEDC_USE_XTAL_CLK;
+        #else
         timer->clk_cfg = LEDC_USE_APB_CLK;
+        #endif
         #if SOC_LEDC_SUPPORT_REF_TICK
         if (freq < EMPIRIC_FREQ) {
             timer->clk_cfg = LEDC_USE_REF_TICK;
