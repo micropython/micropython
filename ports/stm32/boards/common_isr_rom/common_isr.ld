@@ -6,4 +6,4 @@
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
-} >FLASH_COMMON
+} >FLASH_ISR
