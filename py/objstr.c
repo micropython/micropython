@@ -2014,27 +2014,23 @@ mp_obj_t mp_obj_bytes_fromhex(mp_obj_t type_in, mp_obj_t data) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
-    if ((bufinfo.len & 1) != 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("odd-length string"));
-    }
     vstr_t vstr;
     vstr_init_len(&vstr, bufinfo.len / 2);
     byte *in = bufinfo.buf, *out = (byte *)vstr.buf;
-    byte hex_byte = 0;
-    for (mp_uint_t i = bufinfo.len; i--;) {
-        byte hex_ch = *in++;
-        if (unichar_isxdigit(hex_ch)) {
-            hex_byte += unichar_xdigit_value(hex_ch);
-        } else {
-            mp_raise_ValueError(MP_ERROR_TEXT("non-hex digit found"));
-        }
-        if (i & 1) {
-            hex_byte <<= 4;
-        } else {
-            *out++ = hex_byte;
-            hex_byte = 0;
+    byte *in_end = in + bufinfo.len;
+    mp_uint_t hex_ch, x1, x2;
+    while (in < in_end) {
+        hex_ch = *in++;
+        if (!unichar_isspace(hex_ch)) {
+            x1 = unichar_xdigit_value(hex_ch);
+            x2 = (in < in_end) ? unichar_xdigit_value(*in++) : 0xff;
+            if ((x1 | x2) & ~0xf) {  // if (x1 > 0xf || x2 > 0xf) {}
+                mp_raise_ValueError(MP_ERROR_TEXT("non-hex or odd number of digits"));
+            }
+            *out++ = (byte)((x1 << 4) | x2);
         }
     }
+    vstr.len = out - (byte *)vstr.buf;  // Length may be shorter due to whitespace chars in input
     return mp_obj_new_str_type_from_vstr(MP_OBJ_TO_PTR(type_in), &vstr);
 }
 

@@ -20,5 +20,7 @@ for x in (
     "08090a0b0c0d0e0f",
     "7f80ff",
     "313233344142434461626364",
+    "ab cd ef",
+    "ab\tcd\n  ef ",
 ):
     print(bytes.fromhex(x))
