@@ -341,10 +341,12 @@ _BUILTIN_COMMAND_EXPANSIONS = {
     "--version": "version",
 }
 
-# Add "a0", "a1", ..., "u0", "u1", ..., "c0", "c1", ... as aliases
+# Add "a0", "a1", ..., "u0", "u1", ..., "c1", "c2", ... as aliases
 # for "connect /dev/ttyACMn" (and /dev/ttyUSBn, COMn) etc.
 for port_num in range(4):
     for prefix, port in [("a", "/dev/ttyACM"), ("u", "/dev/ttyUSB"), ("c", "COM")]:
+        if port_num == 0 and port == "COM":
+            continue  # skip COM0 as it does not exist on Windows
         _BUILTIN_COMMAND_EXPANSIONS["{}{}".format(prefix, port_num)] = {
             "command": "connect {}{}".format(port, port_num),
             "help": 'connect to serial port "{}{}"'.format(port, port_num),
@@ -355,18 +357,22 @@ def load_user_config():
     # Create empty config object.
     config = __build_class__(lambda: None, "Config")()
     config.commands = {}
-
-    # Get config file name.
-    path = os.getenv("XDG_CONFIG_HOME")
-    if path is None:
-        path = os.getenv("HOME")
-        if path is None:
-            return config
-        path = os.path.join(path, ".config")
-    path = os.path.join(path, _PROG)
+    path = None
+    for env_var in ("XDG_CONFIG_HOME", "HOME", "APPDATA", "USERPROFILE"):
+        path = os.getenv(env_var)
+        if not path:
+            continue
+        if env_var == "HOME" and os.path.exists(os.path.join(path, ".config", _PROG, "config.py")):
+            # Unix style
+            path = os.path.join(path, ".config", _PROG)
+            break
+        elif os.path.exists(os.path.join(path, _PROG, "config.py")):
+            # Windows style
+            path = os.path.join(path, _PROG)
+            break
+    if not path:
+        return config
     config_file = os.path.join(path, "config.py")
-
-    # Check if config file exists.
     if not os.path.exists(config_file):
         return config
 
@@ -375,9 +381,11 @@ def load_user_config():
         config_data = f.read()
     prev_cwd = os.getcwd()
     os.chdir(path)
+    # pass in the config path so that the config file can use it
+    config.__dict__["config_path"] = path
+    config.__dict__["__file__"] = config_file
     exec(config_data, config.__dict__)
     os.chdir(prev_cwd)
-
     return config
 
 
