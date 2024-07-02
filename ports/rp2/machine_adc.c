@@ -73,12 +73,9 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
     bool is_ext = false;
     const machine_pin_obj_t *pin = NULL;
 
-    if (mp_obj_is_int(source)) {
-        // Get and validate channel number.
-        channel = mp_obj_get_int(source);
-        if (ADC_IS_VALID_GPIO(channel)) {
-            channel = ADC_CHANNEL_FROM_GPIO(channel);
-        } else if (!(channel >= 0 && channel <= ADC_CHANNEL_TEMPSENSOR)) {
+    if (mp_obj_is_int(source) && (channel = mp_obj_get_int(source)) <= ADC_CHANNEL_TEMPSENSOR) {
+        // Validate channel number.
+        if (channel < 0) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid channel"));
         }
     } else {
