@@ -770,3 +770,67 @@ Methods
     Send a break condition of 4 bits duration. Before sending break all UART TX interrupt sources are disabled. The state of UART TX interrupt sources is restored before function returns.
     This Blocks until break is completed. Only call this function when UART TX FIFO and shifter are empty.
 
+SD Card
+-------
+
+See :ref:`machine.SDCard <machine.SDCard>`. 
+
+The following specialization applies to this port:
+
+.. class:: machine.SDCard(slot, width, cd, wp, cmd, dat0, dat1, dat2, dat3, clk)
+
+   Construct an SD Card object at given slot:
+
+   Keyword-only parameters:
+            
+    - ``slot`` takes an integer value which shall not exceed the total number of SD slots available. This value does not auto map to the pins of SD Card slot.
+
+    - ``width`` selects the bus width for the SD interface.
+
+    - ``cd`` can be used to specify a card detection pin.
+
+    - ``wp`` can be used to specify a write-protect pin.
+
+    - ``cmd`` can be used to specify the command signal pin.
+
+    - ``dat0`` can be used to specify the data0 signal pin.
+
+    - ``dat1`` can be used to specify the data1 signal pin.
+
+    - ``dat2`` can be used to specify the data2 signal pin.
+
+    - ``dat3`` can be used to specify the data3 signal pin.
+
+    - ``clk`` can be used to specify clock pin.
+
+   The SD Card slot to pin mapping can be found in respective :ref:`Supported boards <psoc6_general>` section.
+
+::
+
+    from machine import SDCard
+    import os
+
+    bdev = machine.SDCard(slot=1, width=4, cd="P13_5", cmd="P12_4", clk="P12_5", dat0="P13_0", dat1="P13_1", dat2="P13_2", dat3="P13_3")
+
+    # Define constants
+    TEST_STRING = "This is a test string."
+
+    # Mount or format the SD card with LFS2 filesystem
+    if "VfsLfs2" in dir(os):
+        
+        try:
+            vfs = os.VfsLfs2(bdev, progsize=512, readsize=512)
+            os.mount(vfs, "/SDCard")
+        except OSError:
+            os.VfsLfs2.mkfs(bdev, progsize=512, readsize=512)
+            vfs = os.VfsLfs2(bdev, progsize=512, readsize=512)
+            os.mount(vfs, "/SDCard")
+
+        with open("/SDCard/test_sd_lfs2.txt", "w") as f:
+            f.write(TEST_STRING)
+
+        with open("/SDCard/test_sd_lfs2.txt", "r") as f:
+            read_data = f.read()
+
+        print(read_data)
+            
