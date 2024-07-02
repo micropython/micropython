@@ -742,6 +742,13 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
         common_hal_bleio_adapter_stop_advertising(self);
     }
 
+    // A zero timeout means unlimited. Do the checking here
+    // rather than in common_hal_bleio_adapter_start_advertising(), because
+    // _common_hal_bleio_adapter_start_advertising() is called for BLE workflow with
+    // a zero (unlimited) timeout.
+    if (timeout == 0) {
+        timeout = BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED;
+    }
     uint32_t err_code;
     bool extended = advertising_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX ||
         scan_response_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX;
@@ -871,15 +878,11 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     // Anonymous mode requires a timeout so that we don't continue to broadcast
     // the same data while cycling the MAC address -- otherwise, what's the
     // point of randomizing the MAC address?
-    if (!timeout) {
-        if (anonymous) {
-            // The Nordic macro is in units of 10ms. Convert to seconds.
-            uint32_t adv_timeout_max_secs = UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS);
-            uint32_t rotate_timeout_max_secs = BLE_GAP_DEFAULT_PRIVATE_ADDR_CYCLE_INTERVAL_S;
-            timeout = MIN(adv_timeout_max_secs, rotate_timeout_max_secs);
-        } else {
-            timeout = BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED;
-        }
+    if (anonymous) {
+        // The Nordic macro is in units of 10ms. Convert to seconds.
+        uint32_t adv_timeout_max_secs = UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS);
+        uint32_t rotate_timeout_max_secs = BLE_GAP_DEFAULT_PRIVATE_ADDR_CYCLE_INTERVAL_S;
+        timeout = MIN(adv_timeout_max_secs, rotate_timeout_max_secs);
     } else {
         if (SEC_TO_UNITS(timeout, UNIT_10_MS) > BLE_GAP_ADV_TIMEOUT_LIMITED_MAX) {
             mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Timeout is too long: Maximum timeout length is %d seconds"),
