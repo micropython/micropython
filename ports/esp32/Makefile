@@ -29,8 +29,12 @@ BUILD ?= build-$(BOARD)
 endif
 
 # Device serial settings.
-PORT ?= /dev/ttyUSB0
-BAUD ?= 460800
+ifneq ($(PORT),)
+PORT_ARG := -p $(PORT)
+endif
+ifneq ($(BAUD),)
+BAUD_ARG := -b $(BAUD)
+endif
 
 PYTHON ?= python3
 
@@ -59,7 +63,7 @@ endif
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 
 define RUN_IDF_PY
-	idf.py $(IDFPY_FLAGS) -B $(BUILD) -p $(PORT) -b $(BAUD) $(1)
+	idf.py $(IDFPY_FLAGS) -B $(BUILD) $(PORT_ARG) $(BAUD_ARG) $(1)
 endef
 
 all:

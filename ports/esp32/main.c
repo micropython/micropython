@@ -52,6 +52,7 @@
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/timeutils/timeutils.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "mbedtls/platform_time.h"
 
 #include "uart.h"
@@ -99,7 +100,7 @@ void mp_task(void *pvParameter) {
     #endif
     #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
     usb_serial_jtag_init();
-    #elif CONFIG_USB_OTG_SUPPORTED
+    #elif MICROPY_HW_ENABLE_USBDEV
     usb_init();
     #endif
     #if MICROPY_HW_ENABLE_UART_REPL

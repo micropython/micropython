@@ -52,6 +52,7 @@
 
 extern TaskHandle_t mp_main_task_handle;
 
+extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
 
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.

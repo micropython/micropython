@@ -197,6 +197,71 @@
 
 #define MP_STATE_PORT MP_STATE_VM
 
+#if CONFIG_USB_OTG_SUPPORTED
+#ifndef MICROPY_HW_ENABLE_USBDEV
+#define MICROPY_HW_ENABLE_USBDEV            (1)
+#endif
+#endif
+
+#if MICROPY_HW_ENABLE_USBDEV
+#define MICROPY_SCHEDULER_STATIC_NODES      (1)
+#define MICROPY_HW_ESP_AUTOMATIC_BOOTLOADER (1)
+
+// Enable USB-CDC serial port
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC                  (1)
+#endif
+
+#ifndef MICROPY_HW_USB_DESC_STR_MAX
+#define MICROPY_HW_USB_DESC_STR_MAX         (16)
+#endif
+
+#ifndef MICROPY_HW_USB_VID
+#define USB_ESPRESSIF_VID 0x303A
+#if CONFIG_TINYUSB_DESC_USE_ESPRESSIF_VID
+#define MICROPY_HW_USB_VID  (USB_ESPRESSIF_VID)
+#else
+#define MICROPY_HW_USB_VID  (CONFIG_TINYUSB_DESC_CUSTOM_VID)
+#endif
+#endif
+
+#ifndef MICROPY_HW_USB_PID
+#if CONFIG_TINYUSB_DESC_USE_DEFAULT_PID
+#define _PID_MAP(itf, n) ((CFG_TUD_##itf) << (n))
+// A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
+// Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
+// Auto ProductID layout's Bitmap:
+//   [MSB]         HID | MSC | CDC          [LSB]
+#define USB_TUSB_PID (0x4000 | _PID_MAP(CDC, 0) | _PID_MAP(MSC, 1) | _PID_MAP(HID, 2) | \
+    _PID_MAP(MIDI, 3))  // | _PID_MAP(AUDIO, 4) | _PID_MAP(VENDOR, 5) )
+#define MICROPY_HW_USB_PID  (USB_TUSB_PID)
+#else
+#define MICROPY_HW_USB_PID  (CONFIG_TINYUSB_DESC_CUSTOM_PID)
+#endif
+#endif
+
+#ifndef MICROPY_HW_USB_MANUFACTURER_STRING
+#ifdef CONFIG_TINYUSB_DESC_MANUFACTURER_STRING
+#define MICROPY_HW_USB_MANUFACTURER_STRING CONFIG_TINYUSB_DESC_MANUFACTURER_STRING
+#else
+#define MICROPY_HW_USB_MANUFACTURER_STRING "MicroPython"
+#endif
+#endif
+
+#ifndef MICROPY_HW_USB_PRODUCT_FS_STRING
+#ifdef CONFIG_TINYUSB_DESC_PRODUCT_STRING
+#define MICROPY_HW_USB_PRODUCT_FS_STRING CONFIG_TINYUSB_DESC_PRODUCT_STRING
+#else
+#define MICROPY_HW_USB_PRODUCT_FS_STRING "Board in FS mode"
+#endif
+#endif
+
+#define MICROPY_HW_USBDEV_TASK_HOOK extern void mp_usbd_task(void); mp_usbd_task();
+#else
+#define MICROPY_HW_USBDEV_TASK_HOOK
+#endif
+
+
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
@@ -216,6 +281,7 @@ void *esp_native_code_commit(void *, size_t, void *);
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
         MICROPY_PY_SOCKET_EVENTS_HANDLER \
+        MICROPY_HW_USBDEV_TASK_HOOK \
         MP_THREAD_GIL_EXIT(); \
         ulTaskNotifyTake(pdFALSE, 1); \
         MP_THREAD_GIL_ENTER(); \
@@ -226,6 +292,7 @@ void *esp_native_code_commit(void *, size_t, void *);
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
         MICROPY_PY_SOCKET_EVENTS_HANDLER \
+            MICROPY_HW_USBDEV_TASK_HOOK \
         asm ("waiti 0"); \
     } while (0);
 #endif

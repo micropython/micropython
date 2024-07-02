@@ -52,6 +52,41 @@ list(APPEND MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/dht/dht.c
 )
 
+if(MICROPY_PY_TINYUSB)
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/tinyusb)
+
+    if(ECHO_SUBMODULES)
+    # No-op, we're just doing submodule/variant discovery.
+    # Cannot run the add_library/target_include_directories rules (even though
+    # the build won't run) because IDF will attempt verify the files exist.
+    else()
+    
+    set(TINYUSB_SRC "${MICROPY_DIR}/lib/tinyusb/src")
+    string(TOUPPER OPT_MCU_${IDF_TARGET} tusb_mcu)
+
+    list(APPEND MICROPY_DEF_CORE
+        CFG_TUSB_MCU=${tusb_mcu}
+    )
+
+    list(APPEND MICROPY_SOURCE_LIB
+        ${TINYUSB_SRC}/tusb.c
+        ${TINYUSB_SRC}/common/tusb_fifo.c
+        ${TINYUSB_SRC}/device/usbd.c
+        ${TINYUSB_SRC}/device/usbd_control.c
+        ${TINYUSB_SRC}/class/cdc/cdc_device.c
+        ${TINYUSB_SRC}/portable/synopsys/dwc2/dcd_dwc2.c
+        ${MICROPY_DIR}/shared/tinyusb/mp_usbd.c
+        ${MICROPY_DIR}/shared/tinyusb/mp_usbd_cdc.c
+        ${MICROPY_DIR}/shared/tinyusb/mp_usbd_descriptor.c
+    )
+
+    list(APPEND MICROPY_INC_CORE
+        ${TINYUSB_SRC}
+        ${MICROPY_DIR}/shared/tinyusb/
+    )
+    endif()
+endif()
+
 list(APPEND MICROPY_SOURCE_PORT
     panichandler.c
     adc.c
@@ -101,6 +136,7 @@ list(APPEND MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_BOARD}
 )
 
+
 list(APPEND IDF_COMPONENTS
     app_update
     bootloader_support
@@ -133,6 +169,7 @@ list(APPEND IDF_COMPONENTS
     soc
     spi_flash
     ulp
+    usb
     vfs
 )
 
