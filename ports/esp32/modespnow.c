@@ -239,12 +239,13 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_active_obj, 1, 2, espnow_activ
 //    timeout: Default read timeout (default=300,000 milliseconds)
 static mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     esp_espnow_obj_t *self = _get_singleton();
-    enum { ARG_get, ARG_rxbuf, ARG_timeout_ms, ARG_rate };
+    enum { ARG_get, ARG_rxbuf, ARG_timeout_ms, ARG_rate, ARG_pm };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout_ms, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MIN} },
         { MP_QSTR_rate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_pm, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
@@ -261,6 +262,17 @@ static mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_STA, args[ARG_rate].u_int));
         check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_AP, args[ARG_rate].u_int));
     }
+    if (args[ARG_pm].u_obj != MP_OBJ_NULL) {
+        mp_obj_tuple_t *t = (mp_obj_tuple_t *)MP_OBJ_TO_PTR(args[ARG_pm].u_obj);
+        if (!mp_obj_is_type(t, &mp_type_tuple) || t->len < 1 || t->len > 2) {
+            mp_raise_TypeError(MP_ERROR_TEXT("pm should be set to tuple of length 2"));
+        }
+        check_esp_err(esp_now_set_wake_window(mp_obj_get_int(t->items[0])));
+        if (t->len == 2) {
+            check_esp_err(esp_wifi_connectionless_module_set_wake_interval(mp_obj_get_int(t->items[1])));
+        }
+    }
+
     if (args[ARG_get].u_obj == MP_OBJ_NULL) {
         return mp_const_none;
     }
