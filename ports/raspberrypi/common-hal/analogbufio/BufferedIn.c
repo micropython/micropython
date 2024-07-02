@@ -53,7 +53,9 @@ void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *s
     // sample rate determines divisor, not zero.
 
     // sample_rate is forced to be >= 1 in shared-bindings
-    float clk_div = (float)ADC_CLOCK_INPUT / (float)sample_rate;
+    // Per the datasheet: "Setting DIV.INT to some positive value n will trigger the ADC once per n + 1 cycles."
+    // So subtract 1. See PR #9396.
+    float clk_div = (float)ADC_CLOCK_INPUT / (float)sample_rate - 1;
     adc_set_clkdiv(clk_div);
 
     // Set up the DMA to start transferring data as soon as it appears in FIFO
