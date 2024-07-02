@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 import tempfile
 
@@ -177,7 +178,8 @@ def do_edit(state, args):
             os.close(dest_fd)
             state.transport.fs_touch(src)
             state.transport.fs_get(src, dest, progress_callback=show_progress_bar)
-            if os.system('%s "%s"' % (os.getenv("EDITOR"), dest)) == 0:
+            cmd = f'{os.getenv("EDITOR")} "{dest}"'
+            if subprocess.run(cmd).returncode == 0:
                 state.transport.fs_put(dest, src, progress_callback=show_progress_bar)
         finally:
             os.unlink(dest)
