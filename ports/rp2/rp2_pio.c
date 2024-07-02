@@ -226,7 +226,7 @@ static void asm_pio_init_gpio(PIO pio, uint32_t sm, asm_pio_config_t *config) {
     pio_sm_set_pins_with_mask(pio, sm, config->pinvals << config->base, pinmask);
     pio_sm_set_pindirs_with_mask(pio, sm, config->pindirs << config->base, pinmask);
     for (size_t i = 0; i < config->count; ++i) {
-        gpio_set_function(config->base + i, pio == pio0 ? GPIO_FUNC_PIO0 : GPIO_FUNC_PIO1);
+        gpio_set_function(config->base + i, GPIO_FUNC_PIO0 + pio_get_index(pio));
     }
 }
 
@@ -242,7 +242,7 @@ static rp2_pio_obj_t rp2_pio_obj[] = {
 
 static void rp2_pio_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     rp2_pio_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "PIO(%u)", self->pio == pio0 ? 0 : 1);
+    mp_printf(print, "PIO(%u)", pio_get_index(self->pio));
 }
 
 // constructor(id)
@@ -326,7 +326,7 @@ static mp_obj_t rp2_pio_state_machine(size_t n_args, const mp_obj_t *pos_args, m
     }
 
     // Return the correct StateMachine object.
-    const rp2_state_machine_obj_t *sm = rp2_state_machine_get_object((self->pio == pio0 ? 0 : 4) + sm_id);
+    const rp2_state_machine_obj_t *sm = rp2_state_machine_get_object(pio_get_index(self->pio) * 4 + sm_id);
 
     if (n_args > 2 || kw_args->used > 0) {
         // Configuration arguments given so init this StateMachine.
