@@ -77,14 +77,14 @@
 
 #define I2S_GPIO_MAP \
     { \
-        I2S_GPIO(1, MCK, TX, GPIO_08, IOMUXC_GPIO_08_SAI1_MCLK), /* pin D8 */ \
-        I2S_GPIO(1, SCK, RX, GPIO_01, IOMUXC_GPIO_01_SAI1_RX_BCLK), /* pin D1 */ \
-        I2S_GPIO(1, WS, RX, GPIO_02, IOMUXC_GPIO_02_SAI1_RX_SYNC), /* pin D2 */ \
-        I2S_GPIO(1, SD, RX, GPIO_03, IOMUXC_GPIO_03_SAI1_RX_DATA00), /* pin D3 */ \
-        I2S_GPIO(1, SCK, TX, GPIO_06, IOMUXC_GPIO_06_SAI1_TX_BCLK), /* pin D6 */ \
-        I2S_GPIO(1, WS, TX, GPIO_07, IOMUXC_GPIO_07_SAI1_TX_SYNC), /* pin D7 */ \
-        I2S_GPIO(1, SD, TX, GPIO_04, IOMUXC_GPIO_04_SAI1_TX_DATA00), /* pin D4 */ \
-        I2S_GPIO(3, SCK, TX, GPIO_SD_01, IOMUXC_GPIO_SD_01_SAI3_TX_BCLK), /* pin D10 */ \
-        I2S_GPIO(3, WS, TX, GPIO_SD_00, IOMUXC_GPIO_SD_00_SAI3_TX_SYNC), /* pin D9 */ \
-        I2S_GPIO(3, SD, TX, GPIO_SD_02, IOMUXC_GPIO_SD_02_SAI3_TX_DATA) /* pin D11 */ \
+        I2S_GPIO(1, MCK, TX, GPIO_08, IOMUXC_GPIO_08_SAI1_MCLK),     /* pin D8 */ \
+        I2S_GPIO(1, SCK, RX, GPIO_01, IOMUXC_GPIO_01_SAI1_RX_BCLK),     /* pin D1 */ \
+        I2S_GPIO(1, WS, RX, GPIO_02, IOMUXC_GPIO_02_SAI1_RX_SYNC),     /* pin D2 */ \
+        I2S_GPIO(1, SD, RX, GPIO_03, IOMUXC_GPIO_03_SAI1_RX_DATA00),     /* pin D3 */ \
+        I2S_GPIO(1, SCK, TX, GPIO_06, IOMUXC_GPIO_06_SAI1_TX_BCLK),     /* pin D6 */ \
+        I2S_GPIO(1, WS, TX, GPIO_07, IOMUXC_GPIO_07_SAI1_TX_SYNC),     /* pin D7 */ \
+        I2S_GPIO(1, SD, TX, GPIO_04, IOMUXC_GPIO_04_SAI1_TX_DATA00),     /* pin D4 */ \
+        I2S_GPIO(3, SCK, TX, GPIO_SD_01, IOMUXC_GPIO_SD_01_SAI3_TX_BCLK),     /* pin D10 */ \
+        I2S_GPIO(3, WS, TX, GPIO_SD_00, IOMUXC_GPIO_SD_00_SAI3_TX_SYNC),     /* pin D9 */ \
+        I2S_GPIO(3, SD, TX, GPIO_SD_02, IOMUXC_GPIO_SD_02_SAI3_TX_DATA)     /* pin D11 */ \
     }

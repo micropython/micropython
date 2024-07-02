@@ -70,7 +70,7 @@ typedef struct {
 // Xplained board.
 // Datasheet: https://www.adestotech.com/wp-content/uploads/doc8715.pdf
 #define AT25DF081A { \
-        .total_size = (1 << 20), /* 1 MiB */ \
+        .total_size = (1 << 20),     /* 1 MiB */ \
         .start_up_time_us = 10000, \
         .manufacturer_id = 0x1f, \
         .memory_type = 0x45, \
@@ -88,12 +88,12 @@ typedef struct {
 // Settings for the Gigadevice GD25Q16C 2MiB SPI flash.
 // Datasheet: http://www.gigadevice.com/datasheet/gd25q16c/
 #define GD25Q16C { \
-        .total_size = (1 << 21), /* 2 MiB */ \
+        .total_size = (1 << 21),     /* 2 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xc8, \
         .memory_type = 0x40, \
         .capacity = 0x15, \
-        .max_clock_speed_mhz = 104, /* if we need 120 then we can turn on high performance mode */ \
+        .max_clock_speed_mhz = 104,     /* if we need 120 then we can turn on high performance mode */ \
         .quad_enable_bit_mask = 0x02, \
         .has_sector_protection = false, \
         .supports_fast_read = true, \
@@ -106,12 +106,12 @@ typedef struct {
 // Settings for the Gigadevice GD25Q64C 8MiB SPI flash.
 // Datasheet: http://www.elm-tech.com/en/products/spi-flash-memory/gd25q64/gd25q64.pdf
 #define GD25Q64C { \
-        .total_size = (1 << 23), /* 8 MiB */ \
+        .total_size = (1 << 23),     /* 8 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xc8, \
         .memory_type = 0x40, \
         .capacity = 0x17, \
-        .max_clock_speed_mhz = 104, /* if we need 120 then we can turn on high performance mode */ \
+        .max_clock_speed_mhz = 104,     /* if we need 120 then we can turn on high performance mode */ \
         .quad_enable_bit_mask = 0x02, \
         .has_sector_protection = false, \
         .supports_fast_read = true, \
@@ -124,7 +124,7 @@ typedef struct {
 // Settings for the Cypress (was Spansion) S25FL064L 8MiB SPI flash.
 // Datasheet: http://www.cypress.com/file/316661/download
 #define S25FL064L { \
-        .total_size = (1 << 23), /* 8 MiB */ \
+        .total_size = (1 << 23),     /* 8 MiB */ \
         .start_up_time_us = 300, \
         .manufacturer_id = 0x01, \
         .memory_type = 0x60, \
@@ -142,7 +142,7 @@ typedef struct {
 // Settings for the Cypress (was Spansion) S25FL116K 2MiB SPI flash.
 // Datasheet: http://www.cypress.com/file/196886/download
 #define S25FL116K { \
-        .total_size = (1 << 21), /* 2 MiB */ \
+        .total_size = (1 << 21),     /* 2 MiB */ \
         .start_up_time_us = 10000, \
         .manufacturer_id = 0x01, \
         .memory_type = 0x40, \
@@ -160,7 +160,7 @@ typedef struct {
 // Settings for the Cypress (was Spansion) S25FL216K 2MiB SPI flash.
 // Datasheet: http://www.cypress.com/file/197346/download
 #define S25FL216K { \
-        .total_size = (1 << 21), /* 2 MiB */ \
+        .total_size = (1 << 21),     /* 2 MiB */ \
         .start_up_time_us = 10000, \
         .manufacturer_id = 0x01, \
         .memory_type = 0x40, \
@@ -178,7 +178,7 @@ typedef struct {
 // Settings for the Winbond W25Q16FW 2MiB SPI flash.
 // Datasheet: https://www.winbond.com/resource-files/w25q16fw%20revj%2005182017%20sfdp.pdf
 #define W25Q16FW { \
-        .total_size = (1 << 21), /* 2 MiB */ \
+        .total_size = (1 << 21),     /* 2 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xef, \
         .memory_type = 0x60, \
@@ -196,7 +196,7 @@ typedef struct {
 // Settings for the Winbond W25Q16JV-IQ 2MiB SPI flash. Note that JV-IM has a different .memory_type (0x70)
 // Datasheet: https://www.winbond.com/resource-files/w25q16jv%20spi%20revf%2005092017.pdf
 #define W25Q16JV_IQ { \
-        .total_size = (1 << 21), /* 2 MiB */ \
+        .total_size = (1 << 21),     /* 2 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xef, \
         .memory_type = 0x40, \
@@ -214,7 +214,7 @@ typedef struct {
 // Settings for the Winbond W25Q16JV-IM 2MiB SPI flash. Note that JV-IQ has a different .memory_type (0x40)
 // Datasheet: https://www.winbond.com/resource-files/w25q16jv%20spi%20revf%2005092017.pdf
 #define W25Q16JV_IM { \
-        .total_size = (1 << 21), /* 2 MiB */ \
+        .total_size = (1 << 21),     /* 2 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xef, \
         .memory_type = 0x70, \
@@ -231,7 +231,7 @@ typedef struct {
 // Settings for the Winbond W25Q32BV 4MiB SPI flash.
 // Datasheet: https://www.winbond.com/resource-files/w25q32bv_revi_100413_wo_automotive.pdf
 #define W25Q32BV { \
-        .total_size = (1 << 22), /* 4 MiB */ \
+        .total_size = (1 << 22),     /* 4 MiB */ \
         .start_up_time_us = 10000, \
         .manufacturer_id = 0xef, \
         .memory_type = 0x60, \
@@ -248,7 +248,7 @@ typedef struct {
 // Settings for the Winbond W25Q32JV-IM 4MiB SPI flash.
 // Datasheet: https://www.winbond.com/resource-files/w25q32jv%20revg%2003272018%20plus.pdf
 #define W25Q32JV_IM { \
-        .total_size = (1 << 22), /* 4 MiB */ \
+        .total_size = (1 << 22),     /* 4 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xef, \
         .memory_type = 0x70, \
@@ -265,7 +265,7 @@ typedef struct {
 // Settings for the Winbond W25Q32JV-IM 4MiB SPI flash.
 // Datasheet: https://www.winbond.com/resource-files/w25q32jv%20revg%2003272018%20plus.pdf
 #define W25Q32JV_IQ { \
-        .total_size = (1 << 22), /* 4 MiB */ \
+        .total_size = (1 << 22),     /* 4 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xef, \
         .memory_type = 0x40, \
@@ -282,7 +282,7 @@ typedef struct {
 // Settings for the Winbond W25Q64JV-IM 8MiB SPI flash. Note that JV-IQ has a different .memory_type (0x40)
 // Datasheet: http://www.winbond.com/resource-files/w25q64jv%20revj%2003272018%20plus.pdf
 #define W25Q64JV_IM { \
-        .total_size = (1 << 23), /* 8 MiB */ \
+        .total_size = (1 << 23),     /* 8 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xef, \
         .memory_type = 0x70, \
@@ -300,7 +300,7 @@ typedef struct {
 // Settings for the Winbond W25Q64JV-IQ 8MiB SPI flash. Note that JV-IM has a different .memory_type (0x70)
 // Datasheet: http://www.winbond.com/resource-files/w25q64jv%20revj%2003272018%20plus.pdf
 #define W25Q64JV_IQ { \
-        .total_size = (1 << 23), /* 8 MiB */ \
+        .total_size = (1 << 23),     /* 8 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xef, \
         .memory_type = 0x40, \
@@ -318,7 +318,7 @@ typedef struct {
 // Settings for the Winbond W25Q80DL 1MiB SPI flash.
 // Datasheet: https://www.winbond.com/resource-files/w25q80dv%20dl_revh_10022015.pdf
 #define W25Q80DL { \
-        .total_size = (1 << 20), /* 1 MiB */ \
+        .total_size = (1 << 20),     /* 1 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xef, \
         .memory_type = 0x60, \
@@ -337,7 +337,7 @@ typedef struct {
 // Settings for the Winbond W25Q128JV-SQ 16MiB SPI flash. Note that JV-IM has a different .memory_type (0x70)
 // Datasheet: https://www.winbond.com/resource-files/w25q128jv%20revf%2003272018%20plus.pdf
 #define W25Q128JV_SQ { \
-        .total_size = (1 << 24), /* 16 MiB */ \
+        .total_size = (1 << 24),     /* 16 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xef, \
         .memory_type = 0x40, \
@@ -355,7 +355,7 @@ typedef struct {
 // Settings for the Macronix MX25L1606 2MiB SPI flash.
 // Datasheet:
 #define MX25L1606  { \
-        .total_size = (1 << 21), /* 2 MiB */ \
+        .total_size = (1 << 21),     /* 2 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xc2, \
         .memory_type = 0x20, \
@@ -373,7 +373,7 @@ typedef struct {
 // Settings for the Macronix MX25L3233F 4MiB SPI flash.
 // Datasheet: http://www.macronix.com/Lists/Datasheet/Attachments/7426/MX25L3233F,%203V,%2032Mb,%20v1.6.pdf
 #define MX25L3233F  { \
-        .total_size = (1 << 22), /* 4 MiB */ \
+        .total_size = (1 << 22),     /* 4 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xc2, \
         .memory_type = 0x20, \
@@ -392,7 +392,7 @@ typedef struct {
 // Datasheet: http://www.macronix.com/Lists/Datasheet/Attachments/7428/MX25R6435F,%20Wide%20Range,%2064Mb,%20v1.4.pdf
 // By default its in lower power mode which can only do 8mhz. In high power mode it can do 80mhz.
 #define MX25R6435F  { \
-        .total_size = (1 << 23), /* 8 MiB */ \
+        .total_size = (1 << 23),     /* 8 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xc2, \
         .memory_type = 0x28, \
@@ -410,7 +410,7 @@ typedef struct {
 // Settings for the Winbond W25Q128JV-PM 16MiB SPI flash. Note that JV-IM has a different .memory_type (0x70)
 // Datasheet: https://www.winbond.com/resource-files/w25q128jv%20revf%2003272018%20plus.pdf
 #define W25Q128JV_PM { \
-        .total_size = (1 << 24), /* 16 MiB */ \
+        .total_size = (1 << 24),     /* 16 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xef, \
         .memory_type = 0x70, \
@@ -427,7 +427,7 @@ typedef struct {
 // Settings for the Winbond W25Q32FV 4MiB SPI flash.
 // Datasheet:http://www.winbond.com/resource-files/w25q32fv%20revj%2006032016.pdf?__locale=en
 #define W25Q32FV { \
-        .total_size = (1 << 22), /* 4 MiB */ \
+        .total_size = (1 << 22),     /* 4 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0xef, \
         .memory_type = 0x40, \
@@ -444,7 +444,7 @@ typedef struct {
 
 // Settings for the ISSI devices
 #define IS25LPWP064D { \
-        .total_size = (1 << 23), /* 8 MiB */ \
+        .total_size = (1 << 23),     /* 8 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0x9D, \
         .memory_type = 0x60, \
@@ -461,7 +461,7 @@ typedef struct {
 
 // Settings for a GENERIC device with the most common setting
 #define GENERIC { \
-        .total_size = (1 << 21), /* 2 MiB */ \
+        .total_size = (1 << 21),     /* 2 MiB */ \
         .start_up_time_us = 5000, \
         .manufacturer_id = 0x00, \
         .memory_type = 0x40, \

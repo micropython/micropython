@@ -52,7 +52,7 @@ enum { ESEQ_NONE, ESEQ_ESC, ESEQ_ESC_BRACKET, ESEQ_ESC_BRACKET_DIGIT, ESEQ_ESC_O
 #endif
 
 void readline_init0(void) {
-    memset(MP_STATE_PORT(readline_hist), 0, MICROPY_READLINE_HISTORY_SIZE * sizeof(const char*));
+    memset(MP_STATE_PORT(readline_hist), 0, MICROPY_READLINE_HISTORY_SIZE * sizeof(const char *));
 }
 
 static char *str_dup_maybe(const char *str) {
@@ -293,16 +293,16 @@ int readline_process_char(int c) {
                 break;
             #if MICROPY_REPL_EMACS_WORDS_MOVE
             case 'b':
-#if MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
-backward_word:
-#endif
+                #if MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
+            backward_word:
+                #endif
                 redraw_step_back = cursor_count_word(0);
                 rl.escape_seq = ESEQ_NONE;
                 break;
             case 'f':
-#if MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
-forward_word:
-#endif
+                #if MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
+            forward_word:
+                #endif
                 redraw_step_forward = cursor_count_word(1);
                 rl.escape_seq = ESEQ_NONE;
                 break;
@@ -312,9 +312,9 @@ forward_word:
                 rl.escape_seq = ESEQ_NONE;
                 break;
             case 127:
-#if MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
-backward_kill_word:
-#endif
+                #if MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
+            backward_kill_word:
+                #endif
                 redraw_step_back = cursor_count_word(0);
                 vstr_cut_out_bytes(rl.line, rl.cursor_pos - redraw_step_back, redraw_step_back);
                 redraw_from_cursor = true;
@@ -333,9 +333,9 @@ backward_kill_word:
         } else {
             rl.escape_seq = ESEQ_NONE;
             if (c == 'A') {
-#if MICROPY_REPL_EMACS_KEYS
-up_arrow_key:
-#endif
+                #if MICROPY_REPL_EMACS_KEYS
+            up_arrow_key:
+                #endif
                 // up arrow
                 if (rl.hist_cur + 1 < MICROPY_READLINE_HISTORY_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
                     // increase hist num
@@ -349,9 +349,9 @@ up_arrow_key:
                     redraw_step_forward = rl.line->len - rl.orig_line_len;
                 }
             } else if (c == 'B') {
-#if MICROPY_REPL_EMACS_KEYS
-down_arrow_key:
-#endif
+                #if MICROPY_REPL_EMACS_KEYS
+            down_arrow_key:
+                #endif
                 // down arrow
                 if (rl.hist_cur >= 0) {
                     // decrease hist num
@@ -367,17 +367,17 @@ down_arrow_key:
                     redraw_step_forward = rl.line->len - rl.orig_line_len;
                 }
             } else if (c == 'C') {
-#if MICROPY_REPL_EMACS_KEYS
-right_arrow_key:
-#endif
+                #if MICROPY_REPL_EMACS_KEYS
+            right_arrow_key:
+                #endif
                 // right arrow
                 if (rl.cursor_pos < rl.line->len) {
                     redraw_step_forward = 1;
                 }
             } else if (c == 'D') {
-#if MICROPY_REPL_EMACS_KEYS
-left_arrow_key:
-#endif
+                #if MICROPY_REPL_EMACS_KEYS
+            left_arrow_key:
+                #endif
                 // left arrow
                 if (rl.cursor_pos > rl.orig_line_len) {
                     redraw_step_back = 1;
@@ -395,16 +395,16 @@ left_arrow_key:
     } else if (rl.escape_seq == ESEQ_ESC_BRACKET_DIGIT) {
         if (c == '~') {
             if (rl.escape_seq_buf[0] == '1' || rl.escape_seq_buf[0] == '7') {
-home_key:
+            home_key:
                 redraw_step_back = rl.cursor_pos - rl.orig_line_len;
             } else if (rl.escape_seq_buf[0] == '4' || rl.escape_seq_buf[0] == '8') {
-end_key:
+            end_key:
                 redraw_step_forward = rl.line->len - rl.cursor_pos;
             } else if (rl.escape_seq_buf[0] == '3') {
                 // delete
-#if MICROPY_REPL_EMACS_KEYS
-delete_key:
-#endif
+                #if MICROPY_REPL_EMACS_KEYS
+            delete_key:
+                #endif
                 if (rl.cursor_pos < rl.line->len) {
                     vstr_cut_out_bytes(rl.line, rl.cursor_pos, 1);
                     redraw_from_cursor = true;
@@ -448,9 +448,9 @@ delete_key:
         rl.escape_seq = ESEQ_NONE;
     }
 
-#if MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
+    #if MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
 redraw:
-#endif
+    #endif
 
     // redraw command prompt, efficiently
     if (redraw_step_back > 0) {

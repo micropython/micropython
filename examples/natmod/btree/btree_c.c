@@ -45,16 +45,16 @@ int puts(const char *s) {
 
 int native_errno;
 #if defined(__linux__)
-int *__errno_location (void)
+int *__errno_location(void)
 #else
-int *__errno (void)
+int *__errno(void)
 #endif
 {
     return &native_errno;
 }
 
 ssize_t mp_stream_posix_write(void *stream, const void *buf, size_t len) {
-    mp_obj_base_t* o = stream;
+    mp_obj_base_t *o = stream;
     const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
     mp_uint_t out_sz = stream_p->write(MP_OBJ_FROM_PTR(stream), buf, len, &native_errno);
     if (out_sz == MP_STREAM_ERROR) {
@@ -65,7 +65,7 @@ ssize_t mp_stream_posix_write(void *stream, const void *buf, size_t len) {
 }
 
 ssize_t mp_stream_posix_read(void *stream, void *buf, size_t len) {
-    mp_obj_base_t* o = stream;
+    mp_obj_base_t *o = stream;
     const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
     mp_uint_t out_sz = stream_p->read(MP_OBJ_FROM_PTR(stream), buf, len, &native_errno);
     if (out_sz == MP_STREAM_ERROR) {
@@ -76,7 +76,7 @@ ssize_t mp_stream_posix_read(void *stream, void *buf, size_t len) {
 }
 
 off_t mp_stream_posix_lseek(void *stream, off_t offset, int whence) {
-    const mp_obj_base_t* o = stream;
+    const mp_obj_base_t *o = stream;
     const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
     struct mp_stream_seek_t seek_s;
     seek_s.offset = offset;
@@ -89,7 +89,7 @@ off_t mp_stream_posix_lseek(void *stream, off_t offset, int whence) {
 }
 
 int mp_stream_posix_fsync(void *stream) {
-    mp_obj_base_t* o = stream;
+    mp_obj_base_t *o = stream;
     const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
     mp_uint_t res = stream_p->ioctl(MP_OBJ_FROM_PTR(stream), MP_STREAM_FLUSH, 0, &native_errno);
     if (res == MP_STREAM_ERROR) {
@@ -146,22 +146,22 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     btree_getiter_iternext.getiter = btree_getiter;
     btree_getiter_iternext.iternext = btree_iternext;
 
-    btree_type.base.type = (void*)&mp_fun_table.type_type;
+    btree_type.base.type = (void *)&mp_fun_table.type_type;
     btree_type.flags = MP_TYPE_FLAG_ITER_IS_CUSTOM;
     btree_type.name = MP_QSTR_btree;
     MP_OBJ_TYPE_SET_SLOT(&btree_type, print, btree_print, 0);
     MP_OBJ_TYPE_SET_SLOT(&btree_type, iter, &btree_getiter_iternext, 1);
     MP_OBJ_TYPE_SET_SLOT(&btree_type, binary_op, btree_binary_op, 2);
     MP_OBJ_TYPE_SET_SLOT(&btree_type, subscr, btree_subscr, 3);
-    btree_locals_dict_table[0] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_close), MP_OBJ_FROM_PTR(&btree_close_obj) };
-    btree_locals_dict_table[1] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_flush), MP_OBJ_FROM_PTR(&btree_flush_obj) };
-    btree_locals_dict_table[2] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_get), MP_OBJ_FROM_PTR(&btree_get_obj) };
-    btree_locals_dict_table[3] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_put), MP_OBJ_FROM_PTR(&btree_put_obj) };
-    btree_locals_dict_table[4] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_seq), MP_OBJ_FROM_PTR(&btree_seq_obj) };
-    btree_locals_dict_table[5] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_keys), MP_OBJ_FROM_PTR(&btree_keys_obj) };
-    btree_locals_dict_table[6] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_values), MP_OBJ_FROM_PTR(&btree_values_obj) };
-    btree_locals_dict_table[7] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_items), MP_OBJ_FROM_PTR(&btree_items_obj) };
-    MP_OBJ_TYPE_SET_SLOT(&btree_type, locals_dict, (void*)&btree_locals_dict, 4);
+    btree_locals_dict_table[0] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_close), MP_OBJ_FROM_PTR(&btree_close_obj) };
+    btree_locals_dict_table[1] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_flush), MP_OBJ_FROM_PTR(&btree_flush_obj) };
+    btree_locals_dict_table[2] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_get), MP_OBJ_FROM_PTR(&btree_get_obj) };
+    btree_locals_dict_table[3] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_put), MP_OBJ_FROM_PTR(&btree_put_obj) };
+    btree_locals_dict_table[4] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_seq), MP_OBJ_FROM_PTR(&btree_seq_obj) };
+    btree_locals_dict_table[5] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_keys), MP_OBJ_FROM_PTR(&btree_keys_obj) };
+    btree_locals_dict_table[6] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_values), MP_OBJ_FROM_PTR(&btree_values_obj) };
+    btree_locals_dict_table[7] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_items), MP_OBJ_FROM_PTR(&btree_items_obj) };
+    MP_OBJ_TYPE_SET_SLOT(&btree_type, locals_dict, (void *)&btree_locals_dict, 4);
 
     mp_store_global(MP_QSTR_open, MP_OBJ_FROM_PTR(&btree_open_obj));
     mp_store_global(MP_QSTR_INCL, MP_OBJ_NEW_SMALL_INT(FLAG_END_KEY_INCL));

@@ -114,7 +114,7 @@ static int mp_spiflash_read_cmd(mp_spiflash_t *self, uint8_t cmd, size_t len, ui
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
         mp_hal_pin_write(c->bus.u_spi.cs, 0);
         c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 1, &cmd, NULL);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, (void*)dest, (void*)dest);
+        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, (void *)dest, (void *)dest);
         mp_hal_pin_write(c->bus.u_spi.cs, 1);
         return 0;
     } else {

@@ -100,8 +100,8 @@ static int adc_find(mp_obj_t id) {
 
 // These are ad-hoc legacy methods and need to be removed.
 #define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&mp_machine_adc_value_obj) }, /* instance method */ \
-    { MP_ROM_QSTR(MP_QSTR_battery_level), MP_ROM_PTR(&mp_machine_adc_battery_level_obj) }, /* class method */ \
+    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&mp_machine_adc_value_obj) },     /* instance method */ \
+    { MP_ROM_QSTR(MP_QSTR_battery_level), MP_ROM_PTR(&mp_machine_adc_battery_level_obj) },     /* class method */ \
 
 // Return a string describing the ADC object.
 static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {

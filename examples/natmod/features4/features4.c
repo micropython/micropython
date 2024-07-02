@@ -68,12 +68,12 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     MP_DYNRUNTIME_INIT_ENTRY
 
     // Initialise the type.
-    mp_type_factorial.base.type = (void*)&mp_type_type;
+    mp_type_factorial.base.type = (void *)&mp_type_type;
     mp_type_factorial.flags = MP_TYPE_FLAG_NONE;
     mp_type_factorial.name = MP_QSTR_Factorial;
     MP_OBJ_TYPE_SET_SLOT(&mp_type_factorial, make_new, factorial_make_new, 0);
-    factorial_locals_dict_table[0] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_calculate), MP_OBJ_FROM_PTR(&factorial_calculate_obj) };
-    MP_OBJ_TYPE_SET_SLOT(&mp_type_factorial, locals_dict, (void*)&factorial_locals_dict, 1);
+    factorial_locals_dict_table[0] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_calculate), MP_OBJ_FROM_PTR(&factorial_calculate_obj) };
+    MP_OBJ_TYPE_SET_SLOT(&mp_type_factorial, locals_dict, (void *)&factorial_locals_dict, 1);
 
     // Make the Factorial type available on the module.
     mp_store_global(MP_QSTR_Factorial, MP_OBJ_FROM_PTR(&mp_type_factorial));

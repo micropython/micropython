@@ -12,7 +12,7 @@ uint8_t yasmarang_dat;
 mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
     MP_DYNRUNTIME_INIT_ENTRY
 
-    yasmarang_pad = 0xeda4baba;
+        yasmarang_pad = 0xeda4baba;
     yasmarang_n = 69;
     yasmarang_d = 233;
 
