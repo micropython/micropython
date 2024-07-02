@@ -528,7 +528,6 @@ static int _advertising_event(struct ble_gap_event *event, void *self_in) {
             #endif
             break;
     }
-    background_callback_add_core(&bleio_background_callback);
     return 0;
 }
 
@@ -559,7 +558,13 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
         return rc;
     }
 
-    bool high_duty_directed = directed_to != NULL && interval <= 3.5 && timeout <= 1.3;
+    bool high_duty_directed = directed_to != NULL && interval <= 3.5 && timeout <= 1; // Really 1.3, but it's an int
+
+    uint32_t timeout_ms = timeout * 1000;
+    if (timeout_ms == 0) {
+        timeout_ms = BLE_HS_FOREVER;
+    }
+
 
     #if MYNEWT_VAL(BLE_EXT_ADV)
     bool extended = advertising_data_len > BLE_ADV_LEGACY_DATA_MAX_LEN ||
@@ -621,7 +626,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
         }
     }
 
-    rc = ble_gap_ext_adv_start(0, timeout / 10, 0);
+    rc = ble_gap_ext_adv_start(0, timeout_ms, 0);
     #else
     uint8_t conn_mode = connectable ? BLE_GAP_CONN_MODE_UND : BLE_GAP_CONN_MODE_NON;
     if (directed_to != NULL) {
@@ -650,7 +655,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
         }
     }
     rc = ble_gap_adv_start(own_addr_type, directed_to != NULL ? &peer: NULL,
-        timeout / 10,
+        timeout_ms,
         &adv_params,
         _advertising_event, self);
     #endif
@@ -694,11 +699,9 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
         mp_raise_NotImplementedError(NULL);
     }
 
-    if (!timeout) {
-        timeout = BLE_HS_FOREVER;
-    } else if (timeout > INT32_MAX) {
+    if ((uint64_t)timeout * 1000ll >= BLE_HS_FOREVER) {
         mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Timeout is too long: Maximum timeout length is %d seconds"),
-            INT32_MAX / 1000);
+            BLE_HS_FOREVER / 1000 - 1);
     }
 
     CHECK_NIMBLE_ERROR(_common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, timeout, interval,
