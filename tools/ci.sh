@@ -26,8 +26,11 @@ function ci_gcc_riscv_setup {
 # c code formatting
 
 function ci_c_code_formatting_setup {
-    sudo apt-get install uncrustify
-    uncrustify --version
+  wget https://github.com/uncrustify/uncrustify/archive/refs/tags/uncrustify-0.72.0.tar.gz
+  tar -xf uncrustify-0.72.0.tar.gz
+  cmake -B tools/uncrustify -S uncrustify-uncrustify-0.72.0
+  cmake --build tools/uncrustify -j
+  ./tools/uncrustify/uncrustify --version
 }
 
 function ci_c_code_formatting_run {
