@@ -326,7 +326,7 @@ static mp_obj_t rp2_pio_state_machine(size_t n_args, const mp_obj_t *pos_args, m
     }
 
     // Return the correct StateMachine object.
-    const rp2_state_machine_obj_t *sm = rp2_state_machine_get_object((self->pio == pio0 ? 0 : 4) + sm_id);
+    const rp2_state_machine_obj_t *sm = rp2_state_machine_get_object(pio_get_index(self->pio) * 4 + sm_id);
 
     if (n_args > 2 || kw_args->used > 0) {
         // Configuration arguments given so init this StateMachine.
