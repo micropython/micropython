@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-07-02 03:21+0000\n"
-"Last-Translator: Zoda <ustunsoykerem23@gmail.com>\n"
+"PO-Revision-Date: 2024-07-03 19:09+0000\n"
+"Last-Translator: Hacı <qwehacim3542qwe@gmail.com>\n"
 "Language-Team: none\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
@@ -55,6 +55,8 @@ msgid ""
 "\n"
 "You are in safe mode because:\n"
 msgstr ""
+"\n"
+"Güvenli moddasın çünkü:\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -103,7 +105,7 @@ msgstr ""
 
 #: ports/nordic/common-hal/watchdog/WatchDogTimer.c
 msgid "%q cannot be changed once mode is set to %q"
-msgstr ""
+msgstr "Mod %q olarak ayarlandıktan sonra %q değiştirilemez"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
