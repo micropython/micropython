@@ -2,7 +2,7 @@
 
 This directory contains tools for testing CircuitPython's PWM API.  Running the tests involves three steps:
 
-1.  [CircuitPython PWM test code `code.py`](code.py) is run on the board to be tested.
+1.  [CircuitPython PWM test code `code_ramps.py`](code_ramps.py) is run on the board to be tested.
 2.  As the code runs, the state of the PWM signal is logged by a logic analyzer (I used a Saleae Logic Pro 8).
 3.  Data collected by the logic analyzer is analyzed and plotted into a PNG image by [CPython code `duty.py`](duty.py).
 
@@ -37,3 +37,9 @@ These tests can be used to assess how well the PWM API delivers expected behavio
 The plot at the top of this page depicts data PWM gathered from a device with an API that displays all of the expected behavior listed above.  The plots below show how the tools reveal flaws in the behavior of PWM APIs that are not as complete.
 
 <img src="pwm_flaw_explainer.png">
+
+## Testing always-off and always-on PWM extremes
+
+The procedure described above does not test item 2 above, i.e. the ability of the API to support duty cycles of 0% and 100%.  A different code file, (code_extremes.py) provides for this.  This code cycles through PWM duty cycles of 32767, 65535, 1, 65534, and 0, repeating the sequence at six frequencies from 100 Hz to 10MHz.  When viewed on a logic analyzer, the PWM output should look like the figure below.  100% and 0% PWM result from duty cycle settings of 65535 and 0, (and only from those settings, in accordance with item 3 above.)
+
+<img src="pwm_extremes_explainer.png">

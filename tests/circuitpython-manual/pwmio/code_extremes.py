@@ -9,20 +9,10 @@ import random
 
 exponents = [
     2,
-    2.333,
-    2.667,
     3,
-    3.333,
-    3.667,
     4,
-    4.333,
-    4.667,
     5,
-    5.333,
-    5.667,
     6,
-    6.333,
-    6.667,
     7,
 ]
 
@@ -30,15 +20,15 @@ freqs = [int(10**f) for f in exponents]
 
 top = 65536
 den = 10
-duties = [int(top * num / den) for num in range(1, den)]
-duties = [1, 65534, 1] + duties
-freq_duration = 1.0
-duty_duration = 0.000000001
+duties = [32767, 65535, 1, 65534, 0, 0]
+freq_duration = 1.2
+duty_duration = 0.2
 
 print("\n\n")
 board_name = sys.implementation[2]
 
 pins = {
+    "Feather RP2040": (("D4", ""),),
     "RP2040-Zero": (("GP15", ""),),
     "Grand Central": (("D51", "TCC"), ("A15", "TC")),
     "Metro M0": (("A2", "TC"), ("A3", "TCC")),
@@ -77,19 +67,14 @@ while True:
                 break
             freq_time = t0 + freq_duration
             duty_time = t0 + duty_duration
+            j = 0
             while time.monotonic() < freq_time:
-                j = random.randrange(0, len(duties))
                 duty = duties[j]
-                if j > 1:
-                    duty = duties[j] + offset
-                    if duty > 65533:
-                        duty -= 65533
                 pwm.duty_cycle = duty
-                offset += increment
-                if offset > 65533:
-                    offset = 0
                 while time.monotonic() < duty_time and time.monotonic() < freq_time:
                     pass
+                j += 1
+                j = min(j, len(duties) - 1)
                 duty_time += duty_duration
                 i += 1
                 if time.monotonic() > freq_time:
