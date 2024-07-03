@@ -218,8 +218,8 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t fr
         pwm_set_clkdiv_int_frac(self->slice, div16 / 16, div16 % 16);
         pwm_set_wrap(self->slice, self->top);
     } else {
-        uint32_t top = common_hal_mcu_processor_get_frequency() / frequency;
-        self->actual_frequency = common_hal_mcu_processor_get_frequency() / top;
+        uint32_t top = common_hal_mcu_processor_get_frequency() / frequency - 1;
+        self->actual_frequency = common_hal_mcu_processor_get_frequency() / (top + 1);
         self->top = MIN(MAX_TOP, top);
         pwm_set_clkdiv_int_frac(self->slice, 1, 0);
         // Set TOP register. For 100% duty cycle, CC must be set to TOP+1.
