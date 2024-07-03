@@ -41,6 +41,7 @@
 typedef struct _machine_spi_obj_t {
     mp_obj_base_t base;
     cyhal_spi_t spi_obj;
+    int id;
     uint8_t polarity;
     uint8_t phase;
     uint8_t bits;
@@ -182,8 +183,9 @@ static void machine_spi_slave_print(const mp_print_t *print, mp_obj_t self_in, m
 }
 
 mp_obj_t machine_spi_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_ssel, ARG_sck, ARG_mosi, ARG_miso };
+    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_ssel, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_id,       MP_ARG_INT, {.u_int = -1}},
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_POLARITY} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
@@ -198,6 +200,11 @@ mp_obj_t machine_spi_init_helper(machine_spi_obj_t *self, int spi_mode, size_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    // set id if provided
+    if (args[ARG_id].u_int != -1) {
+        self->id = args[ARG_id].u_int;
+        mp_printf(&mp_plat_print, "ID parameter is not associated to any port pins and is silently ignored!\n");
+    }
     // set baudrate if provided
     if (args[ARG_baudrate].u_int != -1) {
         self->baudrate = args[ARG_baudrate].u_int;

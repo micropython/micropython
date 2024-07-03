@@ -11,7 +11,7 @@ extern void adc_obj_deinit(machine_adc_obj_t *adc);
 
 machine_adcblock_obj_t *adc_block[MAX_BLOCKS] = {NULL};
 
-#if defined(CY8C624ABZI_S2D44)
+/*#if defined(CY8C624ABZI_S2D44)
 const adc_block_channel_pin_map_t adc_block_pin_map[] = {
     {ADCBLOCK0, 0, CYHAL_GET_GPIO(CYHAL_PORT_10, 0)},
     {ADCBLOCK0, 1, CYHAL_GET_GPIO(CYHAL_PORT_10, 1)},
@@ -20,7 +20,7 @@ const adc_block_channel_pin_map_t adc_block_pin_map[] = {
     {ADCBLOCK0, 4, CYHAL_GET_GPIO(CYHAL_PORT_10, 4)},
     {ADCBLOCK0, 5, CYHAL_GET_GPIO(CYHAL_PORT_10, 5)}
 };
-#elif defined(CYBLE_416045_02_device)
+#elif defined(CYBLE_416045_02_device)*/
 const adc_block_channel_pin_map_t adc_block_pin_map[] = {
     {ADCBLOCK0, 0, CYHAL_GET_GPIO(CYHAL_PORT_10, 0)},
     {ADCBLOCK0, 1, CYHAL_GET_GPIO(CYHAL_PORT_10, 1)},
@@ -28,9 +28,10 @@ const adc_block_channel_pin_map_t adc_block_pin_map[] = {
     {ADCBLOCK0, 3, CYHAL_GET_GPIO(CYHAL_PORT_10, 3)},
     {ADCBLOCK0, 4, CYHAL_GET_GPIO(CYHAL_PORT_10, 4)},
     {ADCBLOCK0, 5, CYHAL_GET_GPIO(CYHAL_PORT_10, 5)},
-    {ADCBLOCK0, 6, CYHAL_GET_GPIO(CYHAL_PORT_10, 6)}
+    {ADCBLOCK0, 6, CYHAL_GET_GPIO(CYHAL_PORT_10, 6)},
+    {ADCBLOCK0, 7, CYHAL_GET_GPIO(CYHAL_PORT_10, 7)}
 };
-#endif
+// #endif
 /******************************************************************************/
 // MicroPython bindings for machine.ADC
 

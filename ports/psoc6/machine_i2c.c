@@ -28,6 +28,7 @@
 
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;
+    int id;
     cyhal_i2c_t i2c_obj;
     machine_pin_phy_obj_t *scl;
     machine_pin_phy_obj_t *sda;
@@ -124,11 +125,12 @@ static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 mp_obj_t machine_i2c_master_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    mp_arg_check_num(n_args, n_kw, 0, 3, true);
+    mp_arg_check_num(n_args, n_kw, 0, 4, true);
 
-    enum { ARG_freq, ARG_scl, ARG_sda };
+    enum { ARG_id, ARG_freq, ARG_scl, ARG_sda };
 
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_id,   MP_ARG_INT, {.u_int = -1}},
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} }
@@ -141,6 +143,12 @@ mp_obj_t machine_i2c_master_make_new(const mp_obj_type_t *type, size_t n_args, s
     machine_i2c_obj_t *self = i2c_obj_alloc(false);
     if (self == NULL) {
         return mp_const_none;
+    }
+
+    // set id if provided
+    if (args[ARG_id].u_int != -1) {
+        self->id = args[ARG_id].u_int;
+        mp_printf(&mp_plat_print, "ID parameter is not associated to any port pins and is silently ignored!\n");
     }
 
     // get scl & sda pins & configure them
@@ -156,9 +164,10 @@ mp_obj_t machine_i2c_master_make_new(const mp_obj_type_t *type, size_t n_args, s
 mp_obj_t machine_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, true);
 
-    enum { ARG_freq, ARG_scl, ARG_sda, ARG_addr };
+    enum { ARG_id, ARG_freq, ARG_scl, ARG_sda, ARG_addr };
 
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_id,   MP_ARG_INT, {.u_int = -1}},
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -172,6 +181,12 @@ mp_obj_t machine_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_args, si
     machine_i2c_obj_t *self = i2c_obj_alloc(true);
     if (self == NULL) {
         return mp_const_none;
+    }
+
+    // set id if provided
+    if (args[ARG_id].u_int != -1) {
+        self->id = args[ARG_id].u_int;
+        mp_printf(&mp_plat_print, "ID parameter is not associated to any port pins and is silently ignored!\n");
     }
 
     // get scl & sda pins & configure them
