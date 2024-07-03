@@ -85,9 +85,33 @@ static void uart_rx_cb(uint32_t ch, int d) {
     }
     #endif
 
+    if (self->rxidle_state != RXIDLE_INACTIVE) {
+        if (self->rxidle_state == RXIDLE_STANDBY) {
+            self->rxidle_timer.mode = SOFT_TIMER_MODE_PERIODIC;
+            soft_timer_insert(&self->rxidle_timer, self->rxidle_ms);
+        }
+        self->rxidle_state = RXIDLE_ALERT;
+    }
     // Check the flags to see if the user handler should be called
-    if (self->mp_irq_trigger) {
+    if (self->mp_irq_trigger & UART_IRQ_RX) {
+        self->mp_irq_flags = UART_IRQ_RX;
         mp_irq_handler(self->mp_irq_obj);
+    }
+}
+
+void uart_soft_timer_callback(soft_timer_entry_t *self) {
+    machine_uart_obj_t *uart = self->context;
+    if (uart->rxidle_state == RXIDLE_ALERT) {
+        // At the first call, just switch the state
+        uart->rxidle_state = RXIDLE_ARMED;
+    } else if (uart->rxidle_state == RXIDLE_ARMED) {
+        // At the second call, run the irq callback and stop the timer
+        // by setting the mode to SOFT_TIMER_MODE_ONE_SHOT.
+        // Calling soft_timer_remove() would fail here.
+        self->mode = SOFT_TIMER_MODE_ONE_SHOT;
+        uart->rxidle_state = RXIDLE_STANDBY;
+        uart->mp_irq_flags = UART_IRQ_RXIDLE;
+        mp_irq_handler(uart->mp_irq_obj);
     }
 }
 
@@ -513,6 +537,7 @@ void uart_tx_strn(machine_uart_obj_t *uart_obj, const char *str, uint len) {
 static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uart_irq_config(self, false);
+    uart_irq_configure_timer(self, new_trigger);
     self->mp_irq_trigger = new_trigger;
     uart_irq_config(self, true);
     return 0;
