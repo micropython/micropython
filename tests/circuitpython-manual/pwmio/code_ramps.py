@@ -39,6 +39,7 @@ print("\n\n")
 board_name = sys.implementation[2]
 
 pins = {
+    "Feather RP2040": (("D4", ""),),
     "RP2040-Zero": (("GP15", ""),),
     "Grand Central": (("D51", "TCC"), ("A15", "TC")),
     "Metro M0": (("A2", "TC"), ("A3", "TCC")),
