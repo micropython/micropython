@@ -176,6 +176,10 @@ extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uin
     } else {
         compare_count = ((uint32_t)duty * self->top + MAX_TOP / 2) / MAX_TOP;
     }
+    // do not allow count to be 0 (due to rounding) unless duty 0 was requested
+    if (compare_count == 0 && duty != 0) {
+        compare_count = 1;
+    }
     // compare_count is the CC register value, which should be TOP+1 for 100% duty cycle.
     pwm_set_chan_level(self->slice, self->ab_channel, compare_count);
 }
