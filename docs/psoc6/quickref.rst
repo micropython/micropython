@@ -777,7 +777,7 @@ See :ref:`machine.SDCard <machine.SDCard>`.
 
 The following specialization applies to this port:
 
-.. class:: machine.SDCard(slot, width, cd, wp, cmd, dat0, dat1, dat2, dat3, clk)
+.. class:: SDCard(slot, width, cd, wp, cmd, dat0, dat1, dat2, dat3, clk)
 
    Construct an SD Card object at given slot:
 
