@@ -34,7 +34,7 @@
 #include "modubluepy.h"
 #include "ble_drv.h"
 
-STATIC void ubluepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+static void ubluepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_uuid_obj_t * self = (ubluepy_uuid_obj_t *)o;
     if (self->type == UBLUEPY_UUID_16_BIT) {
         mp_printf(print, "UUID(uuid: 0x" HEX2_FMT HEX2_FMT ")",
@@ -45,7 +45,7 @@ STATIC void ubluepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kin
     }
 }
 
-STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
 
     enum { ARG_NEW_UUID };
 
@@ -140,7 +140,7 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
 /// \method binVal()
 /// Get binary value of the 16 or 128 bit UUID. Returned as bytearray type.
 ///
-STATIC mp_obj_t uuid_bin_val(mp_obj_t self_in) {
+static mp_obj_t uuid_bin_val(mp_obj_t self_in) {
     ubluepy_uuid_obj_t * self = MP_OBJ_TO_PTR(self_in);
 
     // TODO: Extend the uint16 byte value to 16 byte if 128-bit,
@@ -148,9 +148,9 @@ STATIC mp_obj_t uuid_bin_val(mp_obj_t self_in) {
     //       the uint16_t field of the UUID.
     return MP_OBJ_NEW_SMALL_INT(self->value[0] | self->value[1] << 8);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_uuid_bin_val_obj, uuid_bin_val);
+static MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_uuid_bin_val_obj, uuid_bin_val);
 
-STATIC const mp_rom_map_elem_t ubluepy_uuid_locals_dict_table[] = {
+static const mp_rom_map_elem_t ubluepy_uuid_locals_dict_table[] = {
 #if 0
     { MP_ROM_QSTR(MP_QSTR_getCommonName), MP_ROM_PTR(&ubluepy_uuid_get_common_name_obj) },
 #endif
@@ -158,7 +158,7 @@ STATIC const mp_rom_map_elem_t ubluepy_uuid_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_binVal), MP_ROM_PTR(&ubluepy_uuid_bin_val_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(ubluepy_uuid_locals_dict, ubluepy_uuid_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ubluepy_uuid_locals_dict, ubluepy_uuid_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     ubluepy_uuid_type,

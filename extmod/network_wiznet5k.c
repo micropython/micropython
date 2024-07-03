@@ -120,21 +120,21 @@ typedef struct _wiznet5k_obj_t {
 #endif
 
 // Global object holding the Wiznet5k state
-STATIC wiznet5k_obj_t wiznet5k_obj;
+static wiznet5k_obj_t wiznet5k_obj;
 
-STATIC void wiz_cris_enter(void) {
+static void wiz_cris_enter(void) {
     wiznet5k_obj.cris_state = MICROPY_BEGIN_ATOMIC_SECTION();
 }
 
-STATIC void wiz_cris_exit(void) {
+static void wiz_cris_exit(void) {
     MICROPY_END_ATOMIC_SECTION(wiznet5k_obj.cris_state);
 }
 
-STATIC void wiz_cs_select(void) {
+static void wiz_cs_select(void) {
     mp_hal_pin_low(wiznet5k_obj.cs);
 }
 
-STATIC void wiz_cs_deselect(void) {
+static void wiz_cs_deselect(void) {
     mp_hal_pin_high(wiznet5k_obj.cs);
 }
 
@@ -147,25 +147,25 @@ void mpy_wiznet_yield(void) {
     #endif
 }
 
-STATIC void wiz_spi_read(uint8_t *buf, uint16_t len) {
+static void wiz_spi_read(uint8_t *buf, uint16_t len) {
     wiznet5k_obj.spi_transfer(wiznet5k_obj.spi, len, buf, buf);
 }
 
-STATIC void wiz_spi_write(const uint8_t *buf, uint16_t len) {
+static void wiz_spi_write(const uint8_t *buf, uint16_t len) {
     wiznet5k_obj.spi_transfer(wiznet5k_obj.spi, len, buf, NULL);
 }
 
-STATIC uint8_t wiz_spi_readbyte() {
+static uint8_t wiz_spi_readbyte() {
     uint8_t buf = 0;
     wiznet5k_obj.spi_transfer(wiznet5k_obj.spi, 1, &buf, &buf);
     return buf;
 }
 
-STATIC void wiz_spi_writebyte(const uint8_t buf) {
+static void wiz_spi_writebyte(const uint8_t buf) {
     wiznet5k_obj.spi_transfer(wiznet5k_obj.spi, 1, &buf, NULL);
 }
 
-STATIC void wiznet5k_get_mac_address(wiznet5k_obj_t *self, uint8_t mac[6]) {
+static void wiznet5k_get_mac_address(wiznet5k_obj_t *self, uint8_t mac[6]) {
     (void)self;
     getSHAR(mac);
 }
@@ -173,9 +173,9 @@ STATIC void wiznet5k_get_mac_address(wiznet5k_obj_t *self, uint8_t mac[6]) {
 #if WIZNET5K_WITH_LWIP_STACK
 
 void wiznet5k_try_poll(void);
-STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self);
+static void wiznet5k_lwip_init(wiznet5k_obj_t *self);
 
-STATIC mp_obj_t mpy_wiznet_read_int(mp_obj_t none_in) {
+static mp_obj_t mpy_wiznet_read_int(mp_obj_t none_in) {
     (void)none_in;
     // Handle incoming data, unless the SPI bus is busy
     if (mp_hal_pin_read(wiznet5k_obj.cs)) {
@@ -183,9 +183,9 @@ STATIC mp_obj_t mpy_wiznet_read_int(mp_obj_t none_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpy_wiznet_read_int_obj, mpy_wiznet_read_int);
+static MP_DEFINE_CONST_FUN_OBJ_1(mpy_wiznet_read_int_obj, mpy_wiznet_read_int);
 
-STATIC void wiznet5k_config_interrupt(bool enabled) {
+static void wiznet5k_config_interrupt(bool enabled) {
     if (!wiznet5k_obj.use_interrupt) {
         return;
     }
@@ -207,11 +207,15 @@ void wiznet5k_deinit(void) {
     }
 }
 
-STATIC void wiznet5k_init(void) {
+static void wiznet5k_init(void) {
     // Configure wiznet for raw ethernet frame usage.
 
     // Configure 16k buffers for fast MACRAW
+    #if _WIZCHIP_ < W5200
+    uint8_t sn_size[8] = {8, 0, 0, 0, 8, 0, 0, 0};
+    #else
     uint8_t sn_size[16] = {16, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0};
+    #endif
     ctlwizchip(CW_INIT_WIZCHIP, sn_size);
 
     if (wiznet5k_obj.use_interrupt) {
@@ -221,7 +225,7 @@ STATIC void wiznet5k_init(void) {
         setSn_IMR(0, Sn_IR_RECV);
         #if _WIZCHIP_ == W5100S
         // Enable interrupt pin
-        setMR(MR2_G_IEN);
+        setMR2(getMR2() | MR2_G_IEN);
         #endif
 
         mp_hal_pin_input(wiznet5k_obj.pin_intn);
@@ -241,7 +245,7 @@ STATIC void wiznet5k_init(void) {
     mod_network_register_nic(&wiznet5k_obj);
 }
 
-STATIC void wiznet5k_send_ethernet(wiznet5k_obj_t *self, size_t len, const uint8_t *buf) {
+static void wiznet5k_send_ethernet(wiznet5k_obj_t *self, size_t len, const uint8_t *buf) {
     uint8_t ip[4] = {1, 1, 1, 1}; // dummy
     int ret = WIZCHIP_EXPORT(sendto)(0, (byte *)buf, len, ip, 11); // dummy port
     if (ret != len) {
@@ -252,7 +256,7 @@ STATIC void wiznet5k_send_ethernet(wiznet5k_obj_t *self, size_t len, const uint8
 }
 
 // Stores the frame in self->eth_frame and returns number of bytes in the frame, 0 for no frame
-STATIC uint16_t wiznet5k_recv_ethernet(wiznet5k_obj_t *self) {
+static uint16_t wiznet5k_recv_ethernet(wiznet5k_obj_t *self) {
     uint16_t len = getSn_RX_RSR(0);
     if (len == 0) {
         return 0;
@@ -274,7 +278,7 @@ STATIC uint16_t wiznet5k_recv_ethernet(wiznet5k_obj_t *self) {
 /*******************************************************************************/
 // Wiznet5k lwIP interface
 
-STATIC err_t wiznet5k_netif_output(struct netif *netif, struct pbuf *p) {
+static err_t wiznet5k_netif_output(struct netif *netif, struct pbuf *p) {
     wiznet5k_obj_t *self = netif->state;
     pbuf_copy_partial(p, self->eth_frame, p->tot_len, 0);
     if (self->trace_flags & TRACE_ETH_TX) {
@@ -284,7 +288,7 @@ STATIC err_t wiznet5k_netif_output(struct netif *netif, struct pbuf *p) {
     return ERR_OK;
 }
 
-STATIC err_t wiznet5k_netif_init(struct netif *netif) {
+static err_t wiznet5k_netif_init(struct netif *netif) {
     netif->linkoutput = wiznet5k_netif_output;
     netif->output = etharp_output;
     netif->mtu = 1500;
@@ -303,13 +307,13 @@ STATIC err_t wiznet5k_netif_init(struct netif *netif) {
     return ERR_OK;
 }
 
-STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
+static void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
     ip_addr_t ipconfig[4];
-    ipconfig[0].addr = 0;
-    ipconfig[1].addr = 0;
-    ipconfig[2].addr = 0;
-    ipconfig[3].addr = 0;
-    netif_add(&self->netif, &ipconfig[0], &ipconfig[1], &ipconfig[2], self, wiznet5k_netif_init, ethernet_input);
+    IP_ADDR4(&ipconfig[0], 0, 0, 0, 0);
+    IP_ADDR4(&ipconfig[1], 0, 0, 0, 0);
+    IP_ADDR4(&ipconfig[2], 0, 0, 0, 0);
+    IP_ADDR4(&ipconfig[3], 0, 0, 0, 0);
+    netif_add(&self->netif, ip_2_ip4(&ipconfig[0]), ip_2_ip4(&ipconfig[1]), ip_2_ip4(&ipconfig[2]), self, wiznet5k_netif_init, ethernet_input);
     self->netif.name[0] = 'e';
     self->netif.name[1] = '0';
     netif_set_default(&self->netif);
@@ -350,7 +354,7 @@ void wiznet5k_poll(void) {
 
 #if WIZNET5K_PROVIDED_STACK
 
-STATIC void wiz_dhcp_assign(void) {
+static void wiz_dhcp_assign(void) {
     getIPfromDHCP(wiznet5k_obj.netinfo.ip);
     getGWfromDHCP(wiznet5k_obj.netinfo.gw);
     getSNfromDHCP(wiznet5k_obj.netinfo.sn);
@@ -358,16 +362,16 @@ STATIC void wiz_dhcp_assign(void) {
     ctlnetwork(CN_SET_NETINFO, (void *)&wiznet5k_obj.netinfo);
 }
 
-STATIC void wiz_dhcp_update(void) {
+static void wiz_dhcp_update(void) {
     ;
 }
 
 
-STATIC void wiz_dhcp_conflict(void) {
+static void wiz_dhcp_conflict(void) {
     ;
 }
 
-STATIC void wiznet5k_init(void) {
+static void wiznet5k_init(void) {
     // Configure wiznet provided TCP / socket interface
 
     reg_dhcp_cbfunc(wiz_dhcp_assign, wiz_dhcp_update, wiz_dhcp_conflict);
@@ -394,7 +398,7 @@ STATIC void wiznet5k_init(void) {
     wiznet5k_obj.active = true;
 }
 
-STATIC int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
+static int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
     uint8_t dns_ip[MOD_NETWORK_IPADDR_BUF_SIZE] = {8, 8, 8, 8};
     uint8_t *buf = m_new(uint8_t, MAX_DNS_BUF_SIZE);
     DNS_init(2, buf);
@@ -412,7 +416,7 @@ STATIC int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len,
     }
 }
 
-STATIC int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
+static int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
     if (socket->domain != MOD_NETWORK_AF_INET) {
         *_errno = MP_EAFNOSUPPORT;
         return -1;
@@ -456,7 +460,7 @@ STATIC int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno)
     return 0;
 }
 
-STATIC void wiznet5k_socket_close(mod_network_socket_obj_t *socket) {
+static void wiznet5k_socket_close(mod_network_socket_obj_t *socket) {
     uint8_t sn = (uint8_t)socket->fileno;
     if (sn < _WIZCHIP_SOCK_NUM_) {
         wiznet5k_obj.socket_used &= ~(1 << sn);
@@ -464,7 +468,7 @@ STATIC void wiznet5k_socket_close(mod_network_socket_obj_t *socket) {
     }
 }
 
-STATIC int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
+static int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     // open the socket in server mode (if port != 0)
     mp_int_t ret = WIZCHIP_EXPORT(socket)(socket->fileno, socket->type, port, 0);
     if (ret < 0) {
@@ -480,7 +484,7 @@ STATIC int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_u
     return 0;
 }
 
-STATIC int wiznet5k_socket_listen(mod_network_socket_obj_t *socket, mp_int_t backlog, int *_errno) {
+static int wiznet5k_socket_listen(mod_network_socket_obj_t *socket, mp_int_t backlog, int *_errno) {
     mp_int_t ret = WIZCHIP_EXPORT(listen)(socket->fileno);
     if (ret < 0) {
         wiznet5k_socket_close(socket);
@@ -490,7 +494,7 @@ STATIC int wiznet5k_socket_listen(mod_network_socket_obj_t *socket, mp_int_t bac
     return 0;
 }
 
-STATIC int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_socket_obj_t *socket2, byte *ip, mp_uint_t *port, int *_errno) {
+static int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_socket_obj_t *socket2, byte *ip, mp_uint_t *port, int *_errno) {
     for (;;) {
         int sr = getSn_SR((uint8_t)socket->fileno);
         if (sr == SOCK_ESTABLISHED) {
@@ -525,7 +529,7 @@ STATIC int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_
     }
 }
 
-STATIC int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
+static int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     // use "bind" function to open the socket in client mode
     if (wiznet5k_socket_bind(socket, ip, 0, _errno) != 0) {
         return -1;
@@ -546,7 +550,7 @@ STATIC int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
     return 0;
 }
 
-STATIC mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
+static mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     MP_THREAD_GIL_EXIT();
     mp_int_t ret = WIZCHIP_EXPORT(send)(socket->fileno, (byte *)buf, len);
     MP_THREAD_GIL_ENTER();
@@ -560,7 +564,7 @@ STATIC mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const by
     return ret;
 }
 
-STATIC mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
+static mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
     MP_THREAD_GIL_EXIT();
     mp_int_t ret = WIZCHIP_EXPORT(recv)(socket->fileno, buf, len);
     MP_THREAD_GIL_ENTER();
@@ -574,7 +578,7 @@ STATIC mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *bu
     return ret;
 }
 
-STATIC mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno) {
+static mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno) {
     if (socket->domain == 0) {
         // socket not opened; use "bind" function to open the socket in client mode
         if (wiznet5k_socket_bind(socket, ip, 0, _errno) != 0) {
@@ -594,7 +598,7 @@ STATIC mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
     return ret;
 }
 
-STATIC mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
+static mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
     uint16_t port2;
     MP_THREAD_GIL_EXIT();
     mp_int_t ret = WIZCHIP_EXPORT(recvfrom)(socket->fileno, buf, len, ip, &port2);
@@ -608,13 +612,13 @@ STATIC mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte
     return ret;
 }
 
-STATIC int wiznet5k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
+static int wiznet5k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
     // TODO
     *_errno = MP_EINVAL;
     return -1;
 }
 
-STATIC int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno) {
+static int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno) {
     // TODO
     *_errno = MP_EINVAL;
     return -1;
@@ -628,7 +632,7 @@ STATIC int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_
     */
 }
 
-STATIC int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
+static int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
     if (request == MP_STREAM_POLL) {
         int ret = 0;
         if (arg & MP_STREAM_POLL_RD && getSn_RX_RSR(socket->fileno) != 0) {
@@ -644,7 +648,7 @@ STATIC int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t req
     }
 }
 
-STATIC void wiznet5k_dhcp_init(wiznet5k_obj_t *self) {
+static void wiznet5k_dhcp_init(wiznet5k_obj_t *self) {
     uint8_t test_buf[2048];
     uint8_t ret = 0;
     uint8_t dhcp_retry = 0;
@@ -682,7 +686,7 @@ STATIC void wiznet5k_dhcp_init(wiznet5k_obj_t *self) {
 
 // WIZNET5K(spi, pin_cs, pin_rst[, pin_intn])
 // Create and return a WIZNET5K object.
-STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_base_t *spi;
     mp_hal_pin_obj_t cs;
     mp_hal_pin_obj_t rst;
@@ -763,7 +767,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
 
 // regs()
 // Dump WIZNET5K registers.
-STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
+static mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
     (void)self_in;
     printf("Wiz CREG:");
     for (int i = 0; i < 0x50; ++i) {
@@ -794,21 +798,21 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
     printf("\n");
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_regs_obj, wiznet5k_regs);
+static MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_regs_obj, wiznet5k_regs);
 
-STATIC mp_obj_t wiznet5k_isconnected(mp_obj_t self_in) {
+static mp_obj_t wiznet5k_isconnected(mp_obj_t self_in) {
     wiznet5k_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(
         wizphy_getphylink() == PHY_LINK_ON
         && IS_ACTIVE(self)
         #if WIZNET5K_WITH_LWIP_STACK
-        && self->netif.ip_addr.addr != 0
+        && ip_2_ip4(&self->netif.ip_addr)->addr != 0
         #endif
         );
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_isconnected_obj, wiznet5k_isconnected);
+static MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_isconnected_obj, wiznet5k_isconnected);
 
-STATIC mp_obj_t wiznet5k_active(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t wiznet5k_active(size_t n_args, const mp_obj_t *args) {
     wiznet5k_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         return mp_obj_new_bool(IS_ACTIVE(self));
@@ -860,12 +864,12 @@ STATIC mp_obj_t wiznet5k_active(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_active_obj, 1, 2, wiznet5k_active);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_active_obj, 1, 2, wiznet5k_active);
 
 #if WIZNET5K_PROVIDED_STACK
 // ifconfig([(ip, subnet, gateway, dns)])
 // Get/set IP address, subnet mask, gateway and DNS.
-STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
     wiz_NetInfo netinfo;
     wiznet5k_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     ctlnetwork(CN_GET_NETINFO, &netinfo);
@@ -904,29 +908,35 @@ STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ifconfig_obj, 1, 2, wiznet5k_ifconfig);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ifconfig_obj, 1, 2, wiznet5k_ifconfig);
 #endif // WIZNET5K_PROVIDED_STACK
 
 #if WIZNET5K_WITH_LWIP_STACK
 
-STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
     wiznet5k_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     return mod_network_nic_ifconfig(&self->netif, n_args - 1, args + 1);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ifconfig_obj, 1, 2, wiznet5k_ifconfig);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ifconfig_obj, 1, 2, wiznet5k_ifconfig);
 
-STATIC mp_obj_t send_ethernet_wrapper(mp_obj_t self_in, mp_obj_t buf_in) {
+static mp_obj_t network_wiznet5k_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    wiznet5k_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    return mod_network_nic_ipconfig(&self->netif, n_args - 1, args + 1, kwargs);
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(wiznet5k_ipconfig_obj, 1, network_wiznet5k_ipconfig);
+
+static mp_obj_t send_ethernet_wrapper(mp_obj_t self_in, mp_obj_t buf_in) {
     wiznet5k_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t buf;
     mp_get_buffer_raise(buf_in, &buf, MP_BUFFER_READ);
     wiznet5k_send_ethernet(self, buf.len, buf.buf);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(send_ethernet_obj, send_ethernet_wrapper);
+static MP_DEFINE_CONST_FUN_OBJ_2(send_ethernet_obj, send_ethernet_wrapper);
 
 #endif // MICROPY_PY_LWIP
 
-STATIC mp_obj_t wiznet5k_status(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t wiznet5k_status(size_t n_args, const mp_obj_t *args) {
     wiznet5k_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     (void)self;
 
@@ -944,9 +954,9 @@ STATIC mp_obj_t wiznet5k_status(size_t n_args, const mp_obj_t *args) {
     }
     mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_status_obj, 1, 2, wiznet5k_status);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_status_obj, 1, 2, wiznet5k_status);
 
-STATIC mp_obj_t wiznet5k_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+static mp_obj_t wiznet5k_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     wiznet5k_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (kwargs->used == 0) {
@@ -1001,20 +1011,23 @@ STATIC mp_obj_t wiznet5k_config(size_t n_args, const mp_obj_t *args, mp_map_t *k
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wiznet5k_config_obj, 1, wiznet5k_config);
+static MP_DEFINE_CONST_FUN_OBJ_KW(wiznet5k_config_obj, 1, wiznet5k_config);
 
-STATIC const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
+static const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_regs), MP_ROM_PTR(&wiznet5k_regs_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&wiznet5k_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&wiznet5k_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&wiznet5k_ifconfig_obj) },
+    #if WIZNET5K_WITH_LWIP_STACK
+    { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&wiznet5k_ipconfig_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&wiznet5k_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&wiznet5k_config_obj) },
     #if WIZNET5K_WITH_LWIP_STACK
     { MP_ROM_QSTR(MP_QSTR_send_ethernet), MP_ROM_PTR(&send_ethernet_obj) },
     #endif
 };
-STATIC MP_DEFINE_CONST_DICT(wiznet5k_locals_dict, wiznet5k_locals_dict_table);
+static MP_DEFINE_CONST_DICT(wiznet5k_locals_dict, wiznet5k_locals_dict_table);
 
 #if WIZNET5K_WITH_LWIP_STACK
 #define NIC_TYPE_WIZNET_PROTOCOL

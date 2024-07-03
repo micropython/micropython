@@ -33,6 +33,7 @@
 #include "systick.h"
 #include "dma.h"
 #include "irq.h"
+#include "mpu.h"
 
 // When this option is enabled, the DMA will turn off automatically after
 // a period of inactivity.
@@ -1852,3 +1853,55 @@ void dma_external_acquire(uint32_t controller, uint32_t stream) {
 void dma_external_release(uint32_t controller, uint32_t stream) {
     dma_disable_clock(DMA_ID_FROM_CONTROLLER_STREAM(controller, stream));
 }
+
+#if __DCACHE_PRESENT
+
+void dma_protect_rx_region(void *dest, size_t len) {
+    #if __DCACHE_PRESENT
+    uint32_t start_addr = (uint32_t)dest;
+    uint32_t start_aligned = start_addr & ~(__SCB_DCACHE_LINE_SIZE - 1U);
+    uint32_t end_addr = start_addr + len - 1; // Address of last byte in the buffer
+    uint32_t end_aligned = end_addr & ~(__SCB_DCACHE_LINE_SIZE - 1U);
+
+    uint32_t irq_state = mpu_config_start();
+
+    // Clean (write back) any cached memory in this region, so there's no dirty
+    // cache entries that might be written back later after DMA RX is done.
+    MP_HAL_CLEAN_DCACHE(dest, len);
+
+    // The way we protect the whole region is to mark the first and last cache
+    // line as UNCACHED using the MPU. This means any unrelated reads/writes in
+    // these cache lines will bypass the cache, and can coexist with DMA also
+    // writing to parts of these cache lines.
+    //
+    // This is redundant sometimes (because the DMA region fills the entire cache line, or because
+    // the region fits in a single cache line.) However, the implementation is only 3 register writes so
+    // it's more efficient to call it every time.
+    mpu_config_region(MPU_REGION_DMA_UNCACHED_1, start_aligned, MPU_CONFIG_UNCACHED(MPU_REGION_SIZE_32B));
+    mpu_config_region(MPU_REGION_DMA_UNCACHED_2, end_aligned, MPU_CONFIG_UNCACHED(MPU_REGION_SIZE_32B));
+
+    mpu_config_end(irq_state);
+    #endif
+}
+
+void dma_unprotect_rx_region(void *dest, size_t len) {
+    #if __DCACHE_PRESENT
+    uint32_t irq_state = mpu_config_start();
+
+    // Disabling these regions removes them from the MPU
+    mpu_config_region(MPU_REGION_DMA_UNCACHED_1, 0, MPU_CONFIG_DISABLE);
+    mpu_config_region(MPU_REGION_DMA_UNCACHED_2, 0, MPU_CONFIG_DISABLE);
+
+    // Invalidate the whole region in the cache. This may seem redundant, but it
+    // is possible that during the DMA operation the CPU read inside this region
+    // (excluding the first & last cache lines), and cache lines were filled.
+    //
+    // (This can happen in SPI if src==dest, for example, possibly due to speculative
+    // cache line fills.)
+    MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
+
+    mpu_config_end(irq_state);
+    #endif
+}
+
+#endif

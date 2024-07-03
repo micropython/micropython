@@ -73,11 +73,12 @@
 #if MICROPY_PY_OS_SYNC
 // sync()
 // Sync all filesystems.
-STATIC mp_obj_t mp_os_sync(void) {
+static mp_obj_t mp_os_sync(void) {
     #if MICROPY_VFS_FAT
     for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
-        // this assumes that vfs->obj is fs_user_mount_t with block device functions
-        disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
+        if (mp_obj_is_type(vfs->obj, &mp_fat_vfs_type)) {
+            disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
+        }
     }
     #endif
     return mp_const_none;
@@ -93,20 +94,20 @@ MP_DEFINE_CONST_FUN_OBJ_0(mp_os_sync_obj, mp_os_sync);
 #define CONST_RELEASE const
 #endif
 
-STATIC const qstr mp_os_uname_info_fields[] = {
+static const qstr mp_os_uname_info_fields[] = {
     MP_QSTR_sysname,
     MP_QSTR_nodename,
     MP_QSTR_release,
     MP_QSTR_version,
     MP_QSTR_machine
 };
-STATIC const MP_DEFINE_STR_OBJ(mp_os_uname_info_sysname_obj, MICROPY_PY_SYS_PLATFORM);
-STATIC const MP_DEFINE_STR_OBJ(mp_os_uname_info_nodename_obj, MICROPY_PY_SYS_PLATFORM);
-STATIC CONST_RELEASE MP_DEFINE_STR_OBJ(mp_os_uname_info_release_obj, MICROPY_VERSION_STRING);
-STATIC const MP_DEFINE_STR_OBJ(mp_os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE MICROPY_BUILD_TYPE_PAREN);
-STATIC const MP_DEFINE_STR_OBJ(mp_os_uname_info_machine_obj, MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME);
+static const MP_DEFINE_STR_OBJ(mp_os_uname_info_sysname_obj, MICROPY_PY_SYS_PLATFORM);
+static const MP_DEFINE_STR_OBJ(mp_os_uname_info_nodename_obj, MICROPY_PY_SYS_PLATFORM);
+static CONST_RELEASE MP_DEFINE_STR_OBJ(mp_os_uname_info_release_obj, MICROPY_VERSION_STRING);
+static const MP_DEFINE_STR_OBJ(mp_os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE MICROPY_BUILD_TYPE_PAREN);
+static const MP_DEFINE_STR_OBJ(mp_os_uname_info_machine_obj, MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME);
 
-STATIC MP_DEFINE_ATTRTUPLE(
+static MP_DEFINE_ATTRTUPLE(
     mp_os_uname_info_obj,
     mp_os_uname_info_fields,
     5,
@@ -117,7 +118,7 @@ STATIC MP_DEFINE_ATTRTUPLE(
     MP_ROM_PTR(&mp_os_uname_info_machine_obj)
     );
 
-STATIC mp_obj_t mp_os_uname(void) {
+static mp_obj_t mp_os_uname(void) {
     #if MICROPY_PY_OS_UNAME_RELEASE_DYNAMIC
     const char *release = mp_os_uname_release();
     mp_os_uname_info_release_obj.len = strlen(release);
@@ -125,12 +126,12 @@ STATIC mp_obj_t mp_os_uname(void) {
     #endif
     return MP_OBJ_FROM_PTR(&mp_os_uname_info_obj);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_os_uname_obj, mp_os_uname);
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_os_uname_obj, mp_os_uname);
 
 #endif
 
 #if MICROPY_PY_OS_DUPTERM_NOTIFY
-STATIC mp_obj_t mp_os_dupterm_notify(mp_obj_t obj_in) {
+static mp_obj_t mp_os_dupterm_notify(mp_obj_t obj_in) {
     (void)obj_in;
     for (;;) {
         int c = mp_os_dupterm_rx_chr();
@@ -141,10 +142,10 @@ STATIC mp_obj_t mp_os_dupterm_notify(mp_obj_t obj_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_dupterm_notify_obj, mp_os_dupterm_notify);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_os_dupterm_notify_obj, mp_os_dupterm_notify);
 #endif
 
-STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
+static const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_os) },
 
     #if MICROPY_PY_OS_GETENV_PUTENV_UNSETENV
@@ -223,7 +224,7 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&os_mbfs_remove_obj) },
     #endif
 };
-STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
+static MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
 const mp_obj_module_t mp_module_os = {
     .base = { &mp_type_module },

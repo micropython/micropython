@@ -51,7 +51,7 @@ typedef struct _ra_led_obj_t {
     const machine_pin_obj_t *led_pin;
 } ra_led_obj_t;
 
-STATIC const ra_led_obj_t ra_led_obj[] = {
+static const ra_led_obj_t ra_led_obj[] = {
     {{&ra_led_type}, 1, MICROPY_HW_LED1},
     #if defined(MICROPY_HW_LED2)
     {{&ra_led_type}, 2, MICROPY_HW_LED2},
@@ -118,7 +118,7 @@ void led_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
 /// Create an LED object associated with the given LED:
 ///
 ///   - `id` is the LED number, 1-4.
-STATIC mp_obj_t led_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t led_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -158,17 +158,17 @@ mp_obj_t led_obj_toggle(mp_obj_t self_in) {
     return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_on_obj, led_obj_on);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_off_obj, led_obj_off);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_toggle_obj, led_obj_toggle);
+static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_on_obj, led_obj_on);
+static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_off_obj, led_obj_off);
+static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_toggle_obj, led_obj_toggle);
 
-STATIC const mp_rom_map_elem_t led_locals_dict_table[] = {
+static const mp_rom_map_elem_t led_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&led_obj_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&led_obj_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&led_obj_toggle_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(led_locals_dict, led_locals_dict_table);
+static MP_DEFINE_CONST_DICT(led_locals_dict, led_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     ra_led_type,

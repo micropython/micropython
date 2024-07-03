@@ -49,7 +49,7 @@
 #include "../multi_heap_platform.h"
 #include "../heap_private.h"
 
-STATIC mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
+static mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 
     if (machine_rtc_config.ext0_pin != -1) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
@@ -59,9 +59,9 @@ STATIC mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
     machine_rtc_config.wake_on_touch = mp_obj_is_true(wake);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_touch_obj, esp32_wake_on_touch);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_touch_obj, esp32_wake_on_touch);
 
-STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     if (machine_rtc_config.wake_on_touch) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
@@ -91,9 +91,9 @@ STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext0_obj, 0, esp32_wake_on_ext0);
+static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext0_obj, 0, esp32_wake_on_ext0);
 
-STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_pins, ARG_level};
     const mp_arg_t allowed_args[] = {
         { MP_QSTR_pins, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -127,18 +127,18 @@ STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext1_obj, 0, esp32_wake_on_ext1);
+static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext1_obj, 0, esp32_wake_on_ext1);
 
-STATIC mp_obj_t esp32_wake_on_ulp(const mp_obj_t wake) {
+static mp_obj_t esp32_wake_on_ulp(const mp_obj_t wake) {
     if (machine_rtc_config.ext0_pin != -1) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
     machine_rtc_config.wake_on_ulp = mp_obj_is_true(wake);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_ulp_obj, esp32_wake_on_ulp);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_ulp_obj, esp32_wake_on_ulp);
 
-STATIC mp_obj_t esp32_gpio_deep_sleep_hold(const mp_obj_t enable) {
+static mp_obj_t esp32_gpio_deep_sleep_hold(const mp_obj_t enable) {
     if (mp_obj_is_true(enable)) {
         gpio_deep_sleep_hold_en();
     } else {
@@ -146,13 +146,13 @@ STATIC mp_obj_t esp32_gpio_deep_sleep_hold(const mp_obj_t enable) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_gpio_deep_sleep_hold_obj, esp32_gpio_deep_sleep_hold);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp32_gpio_deep_sleep_hold_obj, esp32_gpio_deep_sleep_hold);
 
 #if CONFIG_IDF_TARGET_ESP32
 
 #include "soc/sens_reg.h"
 
-STATIC mp_obj_t esp32_raw_temperature(void) {
+static mp_obj_t esp32_raw_temperature(void) {
     SET_PERI_REG_BITS(SENS_SAR_MEAS_WAIT2_REG, SENS_FORCE_XPD_SAR, 3, SENS_FORCE_XPD_SAR_S);
     SET_PERI_REG_BITS(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_CLK_DIV, 10, SENS_TSENS_CLK_DIV_S);
     CLEAR_PERI_REG_MASK(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_POWER_UP);
@@ -166,11 +166,31 @@ STATIC mp_obj_t esp32_raw_temperature(void) {
 
     return mp_obj_new_int(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_raw_temperature_obj, esp32_raw_temperature);
+static MP_DEFINE_CONST_FUN_OBJ_0(esp32_raw_temperature_obj, esp32_raw_temperature);
+
+#else
+
+// IDF 5 exposes new internal temperature interface, and the ESP32C3/S2/S3
+// now have calibrated temperature settings in 5 discrete ranges.
+#include "driver/temperature_sensor.h"
+
+static mp_obj_t esp32_mcu_temperature(void) {
+    static temperature_sensor_handle_t temp_sensor = NULL;
+    float tvalue;
+    if (temp_sensor == NULL) {
+        temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
+        ESP_ERROR_CHECK(temperature_sensor_install(&temp_sensor_config, &temp_sensor));
+    }
+    ESP_ERROR_CHECK(temperature_sensor_enable(temp_sensor));
+    ESP_ERROR_CHECK(temperature_sensor_get_celsius(temp_sensor, &tvalue));
+    ESP_ERROR_CHECK(temperature_sensor_disable(temp_sensor));
+    return mp_obj_new_int((int)(tvalue + 0.5));
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(esp32_mcu_temperature_obj, esp32_mcu_temperature);
 
 #endif
 
-STATIC mp_obj_t esp32_idf_heap_info(const mp_obj_t cap_in) {
+static mp_obj_t esp32_idf_heap_info(const mp_obj_t cap_in) {
     mp_int_t cap = mp_obj_get_int(cap_in);
     multi_heap_info_t info;
     heap_t *heap;
@@ -190,9 +210,9 @@ STATIC mp_obj_t esp32_idf_heap_info(const mp_obj_t cap_in) {
     }
     return heap_list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_idf_heap_info_obj, esp32_idf_heap_info);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp32_idf_heap_info_obj, esp32_idf_heap_info);
 
-STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
+static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
     { MP_ROM_QSTR(MP_QSTR_wake_on_touch), MP_ROM_PTR(&esp32_wake_on_touch_obj) },
@@ -202,6 +222,8 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gpio_deep_sleep_hold), MP_ROM_PTR(&esp32_gpio_deep_sleep_hold_obj) },
     #if CONFIG_IDF_TARGET_ESP32
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
+    #else
+    { MP_ROM_QSTR(MP_QSTR_mcu_temperature), MP_ROM_PTR(&esp32_mcu_temperature_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_idf_heap_info), MP_ROM_PTR(&esp32_idf_heap_info_obj) },
 
@@ -219,7 +241,7 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_HEAP_EXEC), MP_ROM_INT(MALLOC_CAP_EXEC) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(esp32_module_globals, esp32_module_globals_table);
+static MP_DEFINE_CONST_DICT(esp32_module_globals, esp32_module_globals_table);
 
 const mp_obj_module_t esp32_module = {
     .base = { &mp_type_module },

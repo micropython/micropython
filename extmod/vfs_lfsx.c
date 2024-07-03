@@ -43,7 +43,7 @@
 #error "MICROPY_VFS_LFS requires MICROPY_ENABLE_FINALISER"
 #endif
 
-STATIC int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API (config) * c, int cmd, int arg, bool must_return_int) {
+static int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API (config) * c, int cmd, int arg, bool must_return_int) {
     mp_obj_t ret = mp_vfs_blockdev_ioctl(c->context, cmd, arg);
     int ret_i = 0;
     if (must_return_int || ret != mp_const_none) {
@@ -52,23 +52,23 @@ STATIC int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API (config) * c, int cmd, i
     return ret_i;
 }
 
-STATIC int MP_VFS_LFSx(dev_read)(const struct LFSx_API (config) * c, LFSx_API(block_t) block, LFSx_API(off_t) off, void *buffer, LFSx_API(size_t) size) {
+static int MP_VFS_LFSx(dev_read)(const struct LFSx_API (config) * c, LFSx_API(block_t) block, LFSx_API(off_t) off, void *buffer, LFSx_API(size_t) size) {
     return mp_vfs_blockdev_read_ext(c->context, block, off, size, buffer);
 }
 
-STATIC int MP_VFS_LFSx(dev_prog)(const struct LFSx_API (config) * c, LFSx_API(block_t) block, LFSx_API(off_t) off, const void *buffer, LFSx_API(size_t) size) {
+static int MP_VFS_LFSx(dev_prog)(const struct LFSx_API (config) * c, LFSx_API(block_t) block, LFSx_API(off_t) off, const void *buffer, LFSx_API(size_t) size) {
     return mp_vfs_blockdev_write_ext(c->context, block, off, size, buffer);
 }
 
-STATIC int MP_VFS_LFSx(dev_erase)(const struct LFSx_API (config) * c, LFSx_API(block_t) block) {
+static int MP_VFS_LFSx(dev_erase)(const struct LFSx_API (config) * c, LFSx_API(block_t) block) {
     return MP_VFS_LFSx(dev_ioctl)(c, MP_BLOCKDEV_IOCTL_BLOCK_ERASE, block, true);
 }
 
-STATIC int MP_VFS_LFSx(dev_sync)(const struct LFSx_API (config) * c) {
+static int MP_VFS_LFSx(dev_sync)(const struct LFSx_API (config) * c) {
     return MP_VFS_LFSx(dev_ioctl)(c, MP_BLOCKDEV_IOCTL_SYNC, 0, false);
 }
 
-STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx * self, mp_obj_t bdev, size_t read_size, size_t prog_size, size_t lookahead) {
+static void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx * self, mp_obj_t bdev, size_t read_size, size_t prog_size, size_t lookahead) {
     self->blockdev.flags = MP_BLOCKDEV_FLAG_FREE_OBJ;
     mp_vfs_blockdev_init(&self->blockdev, bdev);
 
@@ -120,7 +120,7 @@ const char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
     return path;
 }
 
-STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t * type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t * type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_val_t args[MP_ARRAY_SIZE(lfs_make_allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(lfs_make_allowed_args), lfs_make_allowed_args, args);
 
@@ -140,7 +140,7 @@ STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t * type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t MP_VFS_LFSx(mkfs)(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t MP_VFS_LFSx(mkfs)(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[MP_ARRAY_SIZE(lfs_make_allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(lfs_make_allowed_args), lfs_make_allowed_args, args);
 
@@ -153,11 +153,11 @@ STATIC mp_obj_t MP_VFS_LFSx(mkfs)(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(MP_VFS_LFSx(mkfs_fun_obj), 0, MP_VFS_LFSx(mkfs));
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(MP_VFS_LFSx(mkfs_obj), MP_ROM_PTR(&MP_VFS_LFSx(mkfs_fun_obj)));
+static MP_DEFINE_CONST_FUN_OBJ_KW(MP_VFS_LFSx(mkfs_fun_obj), 0, MP_VFS_LFSx(mkfs));
+static MP_DEFINE_CONST_STATICMETHOD_OBJ(MP_VFS_LFSx(mkfs_obj), MP_ROM_PTR(&MP_VFS_LFSx(mkfs_fun_obj)));
 
 // Implementation of mp_vfs_lfs_file_open is provided in vfs_lfsx_file.c
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(MP_VFS_LFSx(open_obj), MP_VFS_LFSx(file_open));
+static MP_DEFINE_CONST_FUN_OBJ_3(MP_VFS_LFSx(open_obj), MP_VFS_LFSx(file_open));
 
 typedef struct MP_VFS_LFSx (_ilistdir_it_t) {
     mp_obj_base_t base;
@@ -168,7 +168,7 @@ typedef struct MP_VFS_LFSx (_ilistdir_it_t) {
     LFSx_API(dir_t) dir;
 } MP_VFS_LFSx(ilistdir_it_t);
 
-STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
+static mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
     MP_VFS_LFSx(ilistdir_it_t) * self = MP_OBJ_TO_PTR(self_in);
 
     if (self->vfs == NULL) {
@@ -203,7 +203,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
     return MP_OBJ_FROM_PTR(t);
 }
 
-STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_del)(mp_obj_t self_in) {
+static mp_obj_t MP_VFS_LFSx(ilistdir_it_del)(mp_obj_t self_in) {
     MP_VFS_LFSx(ilistdir_it_t) * self = MP_OBJ_TO_PTR(self_in);
     if (self->vfs != NULL) {
         LFSx_API(dir_close)(&self->vfs->lfs, &self->dir);
@@ -211,7 +211,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_del)(mp_obj_t self_in) {
     return mp_const_none;
 }
 
-STATIC mp_obj_t MP_VFS_LFSx(ilistdir_func)(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t MP_VFS_LFSx(ilistdir_func)(size_t n_args, const mp_obj_t *args) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(args[0]);
     bool is_str_type = true;
     const char *path;
@@ -224,8 +224,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_func)(size_t n_args, const mp_obj_t *args) 
         path = vstr_null_terminated_str(&self->cur_dir);
     }
 
-    MP_VFS_LFSx(ilistdir_it_t) * iter = m_new_obj_with_finaliser(MP_VFS_LFSx(ilistdir_it_t));
-    iter->base.type = &mp_type_polymorph_iter_with_finaliser;
+    MP_VFS_LFSx(ilistdir_it_t) * iter = mp_obj_malloc_with_finaliser(MP_VFS_LFSx(ilistdir_it_t), &mp_type_polymorph_iter_with_finaliser);
 
     iter->iternext = MP_VFS_LFSx(ilistdir_it_iternext);
     iter->finaliser = MP_VFS_LFSx(ilistdir_it_del);
@@ -237,9 +236,9 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_func)(size_t n_args, const mp_obj_t *args) 
     iter->vfs = self;
     return MP_OBJ_FROM_PTR(iter);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(MP_VFS_LFSx(ilistdir_obj), 1, 2, MP_VFS_LFSx(ilistdir_func));
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(MP_VFS_LFSx(ilistdir_obj), 1, 2, MP_VFS_LFSx(ilistdir_func));
 
-STATIC mp_obj_t MP_VFS_LFSx(remove)(mp_obj_t self_in, mp_obj_t path_in) {
+static mp_obj_t MP_VFS_LFSx(remove)(mp_obj_t self_in, mp_obj_t path_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     const char *path = MP_VFS_LFSx(make_path)(self, path_in);
     int ret = LFSx_API(remove)(&self->lfs, path);
@@ -248,9 +247,9 @@ STATIC mp_obj_t MP_VFS_LFSx(remove)(mp_obj_t self_in, mp_obj_t path_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(remove_obj), MP_VFS_LFSx(remove));
+static MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(remove_obj), MP_VFS_LFSx(remove));
 
-STATIC mp_obj_t MP_VFS_LFSx(rmdir)(mp_obj_t self_in, mp_obj_t path_in) {
+static mp_obj_t MP_VFS_LFSx(rmdir)(mp_obj_t self_in, mp_obj_t path_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     const char *path = MP_VFS_LFSx(make_path)(self, path_in);
     int ret = LFSx_API(remove)(&self->lfs, path);
@@ -259,9 +258,9 @@ STATIC mp_obj_t MP_VFS_LFSx(rmdir)(mp_obj_t self_in, mp_obj_t path_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(rmdir_obj), MP_VFS_LFSx(rmdir));
+static MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(rmdir_obj), MP_VFS_LFSx(rmdir));
 
-STATIC mp_obj_t MP_VFS_LFSx(rename)(mp_obj_t self_in, mp_obj_t path_old_in, mp_obj_t path_new_in) {
+static mp_obj_t MP_VFS_LFSx(rename)(mp_obj_t self_in, mp_obj_t path_old_in, mp_obj_t path_new_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     const char *path_old = MP_VFS_LFSx(make_path)(self, path_old_in);
     const char *path = mp_obj_str_get_str(path_new_in);
@@ -278,9 +277,9 @@ STATIC mp_obj_t MP_VFS_LFSx(rename)(mp_obj_t self_in, mp_obj_t path_old_in, mp_o
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(MP_VFS_LFSx(rename_obj), MP_VFS_LFSx(rename));
+static MP_DEFINE_CONST_FUN_OBJ_3(MP_VFS_LFSx(rename_obj), MP_VFS_LFSx(rename));
 
-STATIC mp_obj_t MP_VFS_LFSx(mkdir)(mp_obj_t self_in, mp_obj_t path_o) {
+static mp_obj_t MP_VFS_LFSx(mkdir)(mp_obj_t self_in, mp_obj_t path_o) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     const char *path = MP_VFS_LFSx(make_path)(self, path_o);
     int ret = LFSx_API(mkdir)(&self->lfs, path);
@@ -289,9 +288,9 @@ STATIC mp_obj_t MP_VFS_LFSx(mkdir)(mp_obj_t self_in, mp_obj_t path_o) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(mkdir_obj), MP_VFS_LFSx(mkdir));
+static MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(mkdir_obj), MP_VFS_LFSx(mkdir));
 
-STATIC mp_obj_t MP_VFS_LFSx(chdir)(mp_obj_t self_in, mp_obj_t path_in) {
+static mp_obj_t MP_VFS_LFSx(chdir)(mp_obj_t self_in, mp_obj_t path_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
 
     // Check path exists
@@ -357,9 +356,9 @@ STATIC mp_obj_t MP_VFS_LFSx(chdir)(mp_obj_t self_in, mp_obj_t path_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(chdir_obj), MP_VFS_LFSx(chdir));
+static MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(chdir_obj), MP_VFS_LFSx(chdir));
 
-STATIC mp_obj_t MP_VFS_LFSx(getcwd)(mp_obj_t self_in) {
+static mp_obj_t MP_VFS_LFSx(getcwd)(mp_obj_t self_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     if (vstr_len(&self->cur_dir) == 1) {
         return MP_OBJ_NEW_QSTR(MP_QSTR__slash_);
@@ -368,9 +367,9 @@ STATIC mp_obj_t MP_VFS_LFSx(getcwd)(mp_obj_t self_in) {
         return mp_obj_new_str(self->cur_dir.buf, self->cur_dir.len - 1);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(MP_VFS_LFSx(getcwd_obj), MP_VFS_LFSx(getcwd));
+static MP_DEFINE_CONST_FUN_OBJ_1(MP_VFS_LFSx(getcwd_obj), MP_VFS_LFSx(getcwd));
 
-STATIC mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
+static mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     const char *path = MP_VFS_LFSx(make_path)(self, path_in);
     struct LFSx_API (info) info;
@@ -407,16 +406,16 @@ STATIC mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
 
     return MP_OBJ_FROM_PTR(t);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(stat_obj), MP_VFS_LFSx(stat));
+static MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(stat_obj), MP_VFS_LFSx(stat));
 
-STATIC int LFSx_API(traverse_cb)(void *data, LFSx_API(block_t) bl) {
+static int LFSx_API(traverse_cb)(void *data, LFSx_API(block_t) bl) {
     (void)bl;
     uint32_t *n = (uint32_t *)data;
     *n += 1;
     return LFSx_MACRO(_ERR_OK);
 }
 
-STATIC mp_obj_t MP_VFS_LFSx(statvfs)(mp_obj_t self_in, mp_obj_t path_in) {
+static mp_obj_t MP_VFS_LFSx(statvfs)(mp_obj_t self_in, mp_obj_t path_in) {
     (void)path_in;
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     uint32_t n_used_blocks = 0;
@@ -443,9 +442,9 @@ STATIC mp_obj_t MP_VFS_LFSx(statvfs)(mp_obj_t self_in, mp_obj_t path_in) {
 
     return MP_OBJ_FROM_PTR(t);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(statvfs_obj), MP_VFS_LFSx(statvfs));
+static MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(statvfs_obj), MP_VFS_LFSx(statvfs));
 
-STATIC mp_obj_t MP_VFS_LFSx(mount)(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs) {
+static mp_obj_t MP_VFS_LFSx(mount)(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     (void)mkfs;
 
@@ -458,17 +457,17 @@ STATIC mp_obj_t MP_VFS_LFSx(mount)(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(MP_VFS_LFSx(mount_obj), MP_VFS_LFSx(mount));
+static MP_DEFINE_CONST_FUN_OBJ_3(MP_VFS_LFSx(mount_obj), MP_VFS_LFSx(mount));
 
-STATIC mp_obj_t MP_VFS_LFSx(umount)(mp_obj_t self_in) {
+static mp_obj_t MP_VFS_LFSx(umount)(mp_obj_t self_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     // LFS unmount never fails
     LFSx_API(unmount)(&self->lfs);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(MP_VFS_LFSx(umount_obj), MP_VFS_LFSx(umount));
+static MP_DEFINE_CONST_FUN_OBJ_1(MP_VFS_LFSx(umount_obj), MP_VFS_LFSx(umount));
 
-STATIC const mp_rom_map_elem_t MP_VFS_LFSx(locals_dict_table)[] = {
+static const mp_rom_map_elem_t MP_VFS_LFSx(locals_dict_table)[] = {
     { MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&MP_VFS_LFSx(mkfs_obj)) },
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&MP_VFS_LFSx(open_obj)) },
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&MP_VFS_LFSx(ilistdir_obj)) },
@@ -483,9 +482,9 @@ STATIC const mp_rom_map_elem_t MP_VFS_LFSx(locals_dict_table)[] = {
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&MP_VFS_LFSx(mount_obj)) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&MP_VFS_LFSx(umount_obj)) },
 };
-STATIC MP_DEFINE_CONST_DICT(MP_VFS_LFSx(locals_dict), MP_VFS_LFSx(locals_dict_table));
+static MP_DEFINE_CONST_DICT(MP_VFS_LFSx(locals_dict), MP_VFS_LFSx(locals_dict_table));
 
-STATIC mp_import_stat_t MP_VFS_LFSx(import_stat)(void *self_in, const char *path) {
+static mp_import_stat_t MP_VFS_LFSx(import_stat)(void *self_in, const char *path) {
     MP_OBJ_VFS_LFSx *self = self_in;
     struct LFSx_API (info) info;
     mp_obj_str_t path_obj = { { &mp_type_str }, 0, 0, (const byte *)path };
@@ -501,7 +500,7 @@ STATIC mp_import_stat_t MP_VFS_LFSx(import_stat)(void *self_in, const char *path
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
-STATIC const mp_vfs_proto_t MP_VFS_LFSx(proto) = {
+static const mp_vfs_proto_t MP_VFS_LFSx(proto) = {
     .import_stat = MP_VFS_LFSx(import_stat),
 };
 

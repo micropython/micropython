@@ -81,7 +81,7 @@ typedef struct _machine_pwm_obj_t {
     uint8_t channel;
 } machine_pwm_obj_t;
 
-STATIC const nrfx_pwm_t machine_hard_pwm_instances[] = {
+static const nrfx_pwm_t machine_hard_pwm_instances[] = {
     #if defined(NRF52_SERIES)
     NRFX_PWM_INSTANCE(0),
     NRFX_PWM_INSTANCE(1),
@@ -92,9 +92,9 @@ STATIC const nrfx_pwm_t machine_hard_pwm_instances[] = {
     #endif
 };
 
-STATIC machine_pwm_config_t hard_configs[MP_ARRAY_SIZE(machine_hard_pwm_instances)];
+static machine_pwm_config_t hard_configs[MP_ARRAY_SIZE(machine_hard_pwm_instances)];
 
-STATIC const machine_pwm_obj_t machine_hard_pwm_obj[] = {
+static const machine_pwm_obj_t machine_hard_pwm_obj[] = {
     #if defined(NRF52_SERIES)
     {{&machine_pwm_type}, .p_pwm = &machine_hard_pwm_instances[0], .p_config = &hard_configs[0], 0, 0},
     {{&machine_pwm_type}, .p_pwm = &machine_hard_pwm_instances[0], .p_config = &hard_configs[0], 0, 1},
@@ -127,7 +127,7 @@ void pwm_init0(void) {
 }
 
 // Find a free PWM object
-STATIC int hard_pwm_find() {
+static int hard_pwm_find() {
     // look for a free module.
     for (int j = 0; j < MP_ARRAY_SIZE(hard_configs); j++) {
         if (hard_configs[j].active == FREE) {
@@ -137,7 +137,7 @@ STATIC int hard_pwm_find() {
     mp_raise_ValueError(MP_ERROR_TEXT("all PWM devices in use"));
 }
 
-STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = self_in;
     static char *duty_suffix[] = { "", "", "_u16", "_ns" };
     mp_printf(print, "<PWM: Pin=%u freq=%dHz duty%s=%d invert=%d id=%u channel=%u>",
@@ -149,7 +149,7 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 /******************************************************************************/
 /* MicroPython bindings for machine API                                       */
 
-STATIC void machine_hard_pwm_start(const machine_pwm_obj_t *self);
+static void machine_hard_pwm_start(const machine_pwm_obj_t *self);
 
 static const mp_arg_t allowed_args[] = {
     { MP_QSTR_pin,      MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -162,7 +162,7 @@ static const mp_arg_t allowed_args[] = {
     { MP_QSTR_channel,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
 };
 
-STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_pin, ARG_freq, ARG_duty, ARG_duty_u16, ARG_duty_ns, ARG_invert, ARG_device, ARG_channel };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -190,7 +190,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
 }
 
 
-STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin, ARG_freq, ARG_duty, ARG_duty_u16, ARG_duty_ns, ARG_invert, ARG_device, ARG_channel };
 
     // parse args
@@ -233,6 +233,11 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->p_config->mode[pwm_channel] = MODE_HIGH_LOW;
     self->p_config->defer_start = false;
 
+    // Allocate the device if it was not used before.
+    if (hard_configs[pwm_id].active == FREE) {
+        hard_configs[pwm_id].active = STOPPED;
+    }
+
     // start the PWM running for this channel
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -250,17 +255,17 @@ void pwm_deinit_all(void) {
 }
 
 // Stop the PWM module, but do not release it.
-STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
+static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     self->p_config->active = STOPPED;
     nrfx_pwm_stop(self->p_pwm, true);
     nrfx_pwm_uninit(self->p_pwm);
 }
 
-STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     return MP_OBJ_NEW_SMALL_INT(self->p_config->freq);
 }
 
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
+static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
 
     uint8_t div = 0;
     if (freq > (PWM_MAX_BASE_FREQ / 3) || freq <= (PWM_MIN_BASE_FREQ / PWM_MAX_PERIOD)) {
@@ -276,7 +281,7 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     machine_hard_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
     if (self->p_config->duty_mode[self->channel] == DUTY_PERCENT) {
         return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel]);
     } else if (self->p_config->duty_mode[self->channel] == DUTY_U16) {
@@ -286,13 +291,13 @@ STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
+static void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
     self->p_config->duty[self->channel] = duty;
     self->p_config->duty_mode[self->channel] = DUTY_PERCENT;
     machine_hard_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     if (self->p_config->duty_mode[self->channel] == DUTY_U16) {
         return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel]);
     } else if (self->p_config->duty_mode[self->channel] == DUTY_PERCENT) {
@@ -302,13 +307,13 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty) {
+static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty) {
     self->p_config->duty[self->channel] = duty;
     self->p_config->duty_mode[self->channel] = DUTY_U16;
     machine_hard_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     if (self->p_config->duty_mode[self->channel] == DUTY_NS) {
         return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel]);
     } else {
@@ -316,7 +321,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
+static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
     self->p_config->duty[self->channel] = duty;
     self->p_config->duty_mode[self->channel] = DUTY_NS;
     machine_hard_pwm_start(self);
@@ -324,7 +329,7 @@ STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
 
 /* code for hard implementation ***********************************************/
 
-STATIC void machine_hard_pwm_start(const machine_pwm_obj_t *self) {
+static void machine_hard_pwm_start(const machine_pwm_obj_t *self) {
 
     nrfx_pwm_config_t config;
 

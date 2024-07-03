@@ -18,6 +18,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/machine_signal.c
     ${MICROPY_EXTMOD_DIR}/machine_spi.c
     ${MICROPY_EXTMOD_DIR}/machine_uart.c
+    ${MICROPY_EXTMOD_DIR}/machine_usb_device.c
     ${MICROPY_EXTMOD_DIR}/machine_wdt.c
     ${MICROPY_EXTMOD_DIR}/modbluetooth.c
     ${MICROPY_EXTMOD_DIR}/modframebuf.c
@@ -131,27 +132,27 @@ if(MICROPY_PY_BTREE)
         )
 
         target_include_directories(micropy_extmod_btree PRIVATE
-            ${MICROPY_LIB_BERKELEY_DIR}/PORT/include
+            ${MICROPY_LIB_BERKELEY_DIR}/include
         )
 
+        if(NOT BERKELEY_DB_CONFIG_FILE)
+            set(BERKELEY_DB_CONFIG_FILE "${MICROPY_DIR}/extmod/berkeley-db/berkeley_db_config_port.h")
+        endif()
+
         target_compile_definitions(micropy_extmod_btree PRIVATE
-            __DBINTERFACE_PRIVATE=1
-            mpool_error=printf
-            abort=abort_
-            "virt_fd_t=void*"
+            BERKELEY_DB_CONFIG_FILE="${BERKELEY_DB_CONFIG_FILE}"
         )
 
         # The include directories and compile definitions below are needed to build
         # modbtree.c and should be added to the main MicroPython target.
 
         list(APPEND MICROPY_INC_CORE
-            "${MICROPY_LIB_BERKELEY_DIR}/PORT/include"
+            "${MICROPY_LIB_BERKELEY_DIR}/include"
         )
 
         list(APPEND MICROPY_DEF_CORE
             MICROPY_PY_BTREE=1
-            __DBINTERFACE_PRIVATE=1
-            "virt_fd_t=void*"
+            BERKELEY_DB_CONFIG_FILE="${BERKELEY_DB_CONFIG_FILE}"
         )
 
         list(APPEND MICROPY_SOURCE_EXTMOD

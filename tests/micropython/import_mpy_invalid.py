@@ -3,6 +3,7 @@
 try:
     import sys, io, vfs
 
+    sys.implementation._mpy
     io.IOBase
 except (ImportError, AttributeError):
     print("SKIP")

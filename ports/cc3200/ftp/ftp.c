@@ -201,7 +201,7 @@ static FIFO_t ftp_socketfifo;
 // all calls in an nlr handler.  The wrapper functions below assume that there
 // are only FATFS filesystems mounted.
 
-STATIC FATFS *lookup_path(const TCHAR **path) {
+static FATFS *lookup_path(const TCHAR **path) {
     mp_vfs_mount_t *fs = mp_vfs_lookup_path(*path, path);
     if (fs == MP_VFS_NONE || fs == MP_VFS_ROOT) {
         return NULL;
@@ -210,7 +210,7 @@ STATIC FATFS *lookup_path(const TCHAR **path) {
     return &((fs_user_mount_t*)MP_OBJ_TO_PTR(fs->obj))->fatfs;
 }
 
-STATIC FRESULT f_open_helper(FIL *fp, const TCHAR *path, BYTE mode) {
+static FRESULT f_open_helper(FIL *fp, const TCHAR *path, BYTE mode) {
     FATFS *fs = lookup_path(&path);
     if (fs == NULL) {
         return FR_NO_PATH;
@@ -218,7 +218,7 @@ STATIC FRESULT f_open_helper(FIL *fp, const TCHAR *path, BYTE mode) {
     return f_open(fs, fp, path, mode);
 }
 
-STATIC FRESULT f_opendir_helper(FF_DIR *dp, const TCHAR *path) {
+static FRESULT f_opendir_helper(FF_DIR *dp, const TCHAR *path) {
     FATFS *fs = lookup_path(&path);
     if (fs == NULL) {
         return FR_NO_PATH;
@@ -226,7 +226,7 @@ STATIC FRESULT f_opendir_helper(FF_DIR *dp, const TCHAR *path) {
     return f_opendir(fs, dp, path);
 }
 
-STATIC FRESULT f_stat_helper(const TCHAR *path, FILINFO *fno) {
+static FRESULT f_stat_helper(const TCHAR *path, FILINFO *fno) {
     FATFS *fs = lookup_path(&path);
     if (fs == NULL) {
         return FR_NO_PATH;
@@ -234,7 +234,7 @@ STATIC FRESULT f_stat_helper(const TCHAR *path, FILINFO *fno) {
     return f_stat(fs, path, fno);
 }
 
-STATIC FRESULT f_mkdir_helper(const TCHAR *path) {
+static FRESULT f_mkdir_helper(const TCHAR *path) {
     FATFS *fs = lookup_path(&path);
     if (fs == NULL) {
         return FR_NO_PATH;
@@ -242,7 +242,7 @@ STATIC FRESULT f_mkdir_helper(const TCHAR *path) {
     return f_mkdir(fs, path);
 }
 
-STATIC FRESULT f_unlink_helper(const TCHAR *path) {
+static FRESULT f_unlink_helper(const TCHAR *path) {
     FATFS *fs = lookup_path(&path);
     if (fs == NULL) {
         return FR_NO_PATH;
@@ -250,7 +250,7 @@ STATIC FRESULT f_unlink_helper(const TCHAR *path) {
     return f_unlink(fs, path);
 }
 
-STATIC FRESULT f_rename_helper(const TCHAR *path_old, const TCHAR *path_new) {
+static FRESULT f_rename_helper(const TCHAR *path_old, const TCHAR *path_new) {
     FATFS *fs_old = lookup_path(&path_old);
     if (fs_old == NULL) {
         return FR_NO_PATH;

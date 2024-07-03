@@ -257,7 +257,7 @@ int get_sfdp_table(uint8_t *table, int maxlen) {
     return len;
 }
 
-STATIC mp_obj_t samd_qspiflash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t samd_qspiflash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // The QSPI is a singleton
@@ -337,9 +337,13 @@ STATIC mp_obj_t samd_qspiflash_make_new(const mp_obj_type_t *type, size_t n_args
     // The write in progress bit should be low.
     while (read_status() & 0x01) {
     }
-    // The suspended write/erase bit should be low.
-    while (read_status2() & 0x80) {
+
+    if (!flash_device->single_status_byte) {
+        // The suspended write/erase bit should be low.
+        while (read_status2() & 0x80) {
+        }
     }
+
     run_command(QSPI_CMD_ENABLE_RESET);
     run_command(QSPI_CMD_RESET);
     // Wait 30us for the reset
@@ -374,7 +378,7 @@ STATIC mp_obj_t samd_qspiflash_make_new(const mp_obj_type_t *type, size_t n_args
     return self;
 }
 
-STATIC mp_obj_t samd_qspiflash_read(samd_qspiflash_obj_t *self, uint32_t addr, uint8_t *dest, uint32_t len) {
+static mp_obj_t samd_qspiflash_read(samd_qspiflash_obj_t *self, uint32_t addr, uint8_t *dest, uint32_t len) {
     if (len > 0) {
         wait_for_flash_ready();
         // Command 0x6B 1 line address, 4 line Data
@@ -385,7 +389,7 @@ STATIC mp_obj_t samd_qspiflash_read(samd_qspiflash_obj_t *self, uint32_t addr, u
     return mp_const_none;
 }
 
-STATIC mp_obj_t samd_qspiflash_write(samd_qspiflash_obj_t *self, uint32_t addr, uint8_t *src, uint32_t len) {
+static mp_obj_t samd_qspiflash_write(samd_qspiflash_obj_t *self, uint32_t addr, uint8_t *src, uint32_t len) {
     uint32_t length = len;
     uint32_t pos = 0;
     uint8_t *buf = src;
@@ -405,7 +409,7 @@ STATIC mp_obj_t samd_qspiflash_write(samd_qspiflash_obj_t *self, uint32_t addr, 
     return mp_const_none;
 }
 
-STATIC mp_obj_t samd_qspiflash_erase(uint32_t addr) {
+static mp_obj_t samd_qspiflash_erase(uint32_t addr) {
     wait_for_flash_ready();
     write_enable();
     erase_command(QSPI_CMD_ERASE_SECTOR, addr);
@@ -413,7 +417,7 @@ STATIC mp_obj_t samd_qspiflash_erase(uint32_t addr) {
     return mp_const_none;
 }
 
-STATIC mp_obj_t samd_qspiflash_readblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t samd_qspiflash_readblocks(size_t n_args, const mp_obj_t *args) {
     samd_qspiflash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t offset = (mp_obj_get_int(args[1]) * self->sectorsize);
     mp_buffer_info_t bufinfo;
@@ -427,9 +431,9 @@ STATIC mp_obj_t samd_qspiflash_readblocks(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_qspiflash_readblocks_obj, 3, 4, samd_qspiflash_readblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_qspiflash_readblocks_obj, 3, 4, samd_qspiflash_readblocks);
 
-STATIC mp_obj_t samd_qspiflash_writeblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t samd_qspiflash_writeblocks(size_t n_args, const mp_obj_t *args) {
     samd_qspiflash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t offset = (mp_obj_get_int(args[1]) * self->sectorsize);
     mp_buffer_info_t bufinfo;
@@ -445,9 +449,9 @@ STATIC mp_obj_t samd_qspiflash_writeblocks(size_t n_args, const mp_obj_t *args) 
     // TODO check return value
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_qspiflash_writeblocks_obj, 3, 4, samd_qspiflash_writeblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_qspiflash_writeblocks_obj, 3, 4, samd_qspiflash_writeblocks);
 
-STATIC mp_obj_t samd_qspiflash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
+static mp_obj_t samd_qspiflash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     samd_qspiflash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
 
@@ -471,14 +475,14 @@ STATIC mp_obj_t samd_qspiflash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
             return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(samd_qspiflash_ioctl_obj, samd_qspiflash_ioctl);
+static MP_DEFINE_CONST_FUN_OBJ_3(samd_qspiflash_ioctl_obj, samd_qspiflash_ioctl);
 
-STATIC const mp_rom_map_elem_t samd_qspiflash_locals_dict_table[] = {
+static const mp_rom_map_elem_t samd_qspiflash_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&samd_qspiflash_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&samd_qspiflash_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&samd_qspiflash_ioctl_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(samd_qspiflash_locals_dict, samd_qspiflash_locals_dict_table);
+static MP_DEFINE_CONST_DICT(samd_qspiflash_locals_dict, samd_qspiflash_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     samd_qspiflash_type,

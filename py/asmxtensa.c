@@ -117,7 +117,7 @@ void asm_xtensa_exit_win(asm_xtensa_t *as) {
     asm_xtensa_op_retw_n(as);
 }
 
-STATIC uint32_t get_label_dest(asm_xtensa_t *as, uint label) {
+static uint32_t get_label_dest(asm_xtensa_t *as, uint label) {
     assert(label < as->base.max_num_labels);
     return as->base.label_offsets[label];
 }
@@ -185,7 +185,9 @@ size_t asm_xtensa_mov_reg_i32(asm_xtensa_t *as, uint reg_dest, uint32_t i32) {
 }
 
 void asm_xtensa_mov_reg_i32_optimised(asm_xtensa_t *as, uint reg_dest, uint32_t i32) {
-    if (SIGNED_FIT12(i32)) {
+    if (-32 <= (int)i32 && (int)i32 <= 95) {
+        asm_xtensa_op_movi_n(as, reg_dest, i32);
+    } else if (SIGNED_FIT12(i32)) {
         asm_xtensa_op_movi(as, reg_dest, i32);
     } else {
         asm_xtensa_mov_reg_i32(as, reg_dest, i32);

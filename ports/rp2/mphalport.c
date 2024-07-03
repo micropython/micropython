@@ -44,7 +44,7 @@
 
 // This needs to be added to the result of time_us_64() to get the number of
 // microseconds since the Epoch.
-STATIC uint64_t time_us_64_offset_from_epoch;
+static uint64_t time_us_64_offset_from_epoch;
 
 static alarm_id_t soft_timer_alarm_id = 0;
 
@@ -54,7 +54,7 @@ static alarm_id_t soft_timer_alarm_id = 0;
 #define MICROPY_HW_STDIN_BUFFER_LEN 512
 #endif
 
-STATIC uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
+static uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
 ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array) };
 
 #endif

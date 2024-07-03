@@ -48,7 +48,7 @@
 #define AT_LX (FL_LOWER | FL_ALPHA | FL_PRINT | FL_XDIGIT)
 
 // table of attributes for ascii characters
-STATIC const uint8_t attr[] = {
+static const uint8_t attr[] = {
     0, 0, 0, 0, 0, 0, 0, 0,
     0, AT_SP, AT_SP, AT_SP, AT_SP, AT_SP, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,

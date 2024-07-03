@@ -45,7 +45,7 @@
 #define TIMING_WRITE2 (54)
 #define TIMING_WRITE3 (10)
 
-STATIC int onewire_bus_reset(mp_hal_pin_obj_t pin) {
+static int onewire_bus_reset(mp_hal_pin_obj_t pin) {
     mp_hal_pin_od_low(pin);
     mp_hal_delay_us(TIMING_RESET1);
     uint32_t i = mp_hal_quiet_timing_enter();
@@ -57,7 +57,7 @@ STATIC int onewire_bus_reset(mp_hal_pin_obj_t pin) {
     return status;
 }
 
-STATIC int onewire_bus_readbit(mp_hal_pin_obj_t pin) {
+static int onewire_bus_readbit(mp_hal_pin_obj_t pin) {
     mp_hal_pin_od_high(pin);
     uint32_t i = mp_hal_quiet_timing_enter();
     mp_hal_pin_od_low(pin);
@@ -70,7 +70,7 @@ STATIC int onewire_bus_readbit(mp_hal_pin_obj_t pin) {
     return value;
 }
 
-STATIC void onewire_bus_writebit(mp_hal_pin_obj_t pin, int value) {
+static void onewire_bus_writebit(mp_hal_pin_obj_t pin, int value) {
     uint32_t i = mp_hal_quiet_timing_enter();
     mp_hal_pin_od_low(pin);
     mp_hal_delay_us_fast(TIMING_WRITE1);
@@ -86,17 +86,17 @@ STATIC void onewire_bus_writebit(mp_hal_pin_obj_t pin, int value) {
 /******************************************************************************/
 // MicroPython bindings
 
-STATIC mp_obj_t onewire_reset(mp_obj_t pin_in) {
+static mp_obj_t onewire_reset(mp_obj_t pin_in) {
     return mp_obj_new_bool(onewire_bus_reset(mp_hal_get_pin_obj(pin_in)));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_reset_obj, onewire_reset);
+static MP_DEFINE_CONST_FUN_OBJ_1(onewire_reset_obj, onewire_reset);
 
-STATIC mp_obj_t onewire_readbit(mp_obj_t pin_in) {
+static mp_obj_t onewire_readbit(mp_obj_t pin_in) {
     return MP_OBJ_NEW_SMALL_INT(onewire_bus_readbit(mp_hal_get_pin_obj(pin_in)));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_readbit_obj, onewire_readbit);
+static MP_DEFINE_CONST_FUN_OBJ_1(onewire_readbit_obj, onewire_readbit);
 
-STATIC mp_obj_t onewire_readbyte(mp_obj_t pin_in) {
+static mp_obj_t onewire_readbyte(mp_obj_t pin_in) {
     mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(pin_in);
     uint8_t value = 0;
     for (int i = 0; i < 8; ++i) {
@@ -104,15 +104,15 @@ STATIC mp_obj_t onewire_readbyte(mp_obj_t pin_in) {
     }
     return MP_OBJ_NEW_SMALL_INT(value);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_readbyte_obj, onewire_readbyte);
+static MP_DEFINE_CONST_FUN_OBJ_1(onewire_readbyte_obj, onewire_readbyte);
 
-STATIC mp_obj_t onewire_writebit(mp_obj_t pin_in, mp_obj_t value_in) {
+static mp_obj_t onewire_writebit(mp_obj_t pin_in, mp_obj_t value_in) {
     onewire_bus_writebit(mp_hal_get_pin_obj(pin_in), mp_obj_get_int(value_in));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(onewire_writebit_obj, onewire_writebit);
+static MP_DEFINE_CONST_FUN_OBJ_2(onewire_writebit_obj, onewire_writebit);
 
-STATIC mp_obj_t onewire_writebyte(mp_obj_t pin_in, mp_obj_t value_in) {
+static mp_obj_t onewire_writebyte(mp_obj_t pin_in, mp_obj_t value_in) {
     mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(pin_in);
     int value = mp_obj_get_int(value_in);
     for (int i = 0; i < 8; ++i) {
@@ -121,9 +121,9 @@ STATIC mp_obj_t onewire_writebyte(mp_obj_t pin_in, mp_obj_t value_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(onewire_writebyte_obj, onewire_writebyte);
+static MP_DEFINE_CONST_FUN_OBJ_2(onewire_writebyte_obj, onewire_writebyte);
 
-STATIC mp_obj_t onewire_crc8(mp_obj_t data) {
+static mp_obj_t onewire_crc8(mp_obj_t data) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     uint8_t crc = 0;
@@ -143,9 +143,9 @@ STATIC mp_obj_t onewire_crc8(mp_obj_t data) {
     }
     return MP_OBJ_NEW_SMALL_INT(crc);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_crc8_obj, onewire_crc8);
+static MP_DEFINE_CONST_FUN_OBJ_1(onewire_crc8_obj, onewire_crc8);
 
-STATIC const mp_rom_map_elem_t onewire_module_globals_table[] = {
+static const mp_rom_map_elem_t onewire_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_onewire) },
 
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&onewire_reset_obj) },
@@ -156,7 +156,7 @@ STATIC const mp_rom_map_elem_t onewire_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_crc8), MP_ROM_PTR(&onewire_crc8_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(onewire_module_globals, onewire_module_globals_table);
+static MP_DEFINE_CONST_DICT(onewire_module_globals, onewire_module_globals_table);
 
 const mp_obj_module_t mp_module_onewire = {
     .base = { &mp_type_module },

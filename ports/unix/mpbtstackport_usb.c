@@ -24,14 +24,16 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+
+#if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK && MICROPY_BLUETOOTH_BTSTACK_USB
+
 #include <pthread.h>
 #include <unistd.h>
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-
-#if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK && MICROPY_BLUETOOTH_BTSTACK_USB
 
 #include "lib/btstack/src/btstack.h"
 #include "lib/btstack/src/hci_transport_usb.h"
@@ -47,7 +49,7 @@
 #error Unix btstack requires MICROPY_PY_THREAD
 #endif
 
-STATIC const useconds_t USB_POLL_INTERVAL_US = 1000;
+static const useconds_t USB_POLL_INTERVAL_US = 1000;
 
 void mp_bluetooth_btstack_port_init_usb(void) {
     // MICROPYBTUSB can be a ':'' or '-' separated port list.
@@ -71,7 +73,7 @@ void mp_bluetooth_btstack_port_init_usb(void) {
     hci_init(hci_transport_usb_instance(), NULL);
 }
 
-STATIC pthread_t bstack_thread_id;
+static pthread_t bstack_thread_id;
 
 void mp_bluetooth_btstack_port_deinit(void) {
     hci_power_control(HCI_POWER_OFF);
@@ -84,7 +86,7 @@ void mp_bluetooth_btstack_port_deinit(void) {
 // Provided by mpbstackport_common.c.
 extern bool mp_bluetooth_hci_poll(void);
 
-STATIC void *btstack_thread(void *arg) {
+static void *btstack_thread(void *arg) {
     (void)arg;
     hci_power_control(HCI_POWER_ON);
 

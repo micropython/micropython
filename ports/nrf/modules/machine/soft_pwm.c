@@ -49,7 +49,7 @@ typedef struct _machine_pwm_obj_t {
 #define SOFT_PWM_BASE_FREQ      (1000000)
 #define DUTY_FULL_SCALE         (1024)
 
-STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = self_in;
     static char *duty_suffix[] = { "", "", "_u16", "_ns" };
     mp_printf(print, "<PWM: Pin=%u freq=%dHz duty%s=%d>",
@@ -59,9 +59,9 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 
 // MicroPython bindings for machine API
 
-STATIC void machine_soft_pwm_start(machine_pwm_obj_t *self);
+static void machine_soft_pwm_start(machine_pwm_obj_t *self);
 
-STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_freq, ARG_duty, ARG_duty_u16, ARG_duty_ns };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -91,7 +91,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     machine_soft_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     enum { ARG_pin, ARG_freq, ARG_duty, ARG_duty_u16, ARG_duty_ns, ARG_id };
 
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
@@ -102,7 +102,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
         mp_raise_ValueError(MP_ERROR_TEXT("Pin number >31"));
     }
 
-    machine_pwm_obj_t *self = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);;
+    machine_pwm_obj_t *self = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);
     self->defer_start = false;
     self->pwm_pin = pwm_pin;
     self->duty_mode = DUTY_NOT_SET;
@@ -117,15 +117,15 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
+static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     pwm_release(self->pwm_pin);
 }
 
-STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     return MP_OBJ_NEW_SMALL_INT(self->freq);
 }
 
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
+static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
 
     if (freq > (SOFT_PWM_BASE_FREQ / 256)) {
         mp_raise_ValueError(MP_ERROR_TEXT("frequency out of range"));
@@ -134,7 +134,7 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     machine_soft_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
     if (self->duty_mode) {
         return MP_OBJ_NEW_SMALL_INT(self->duty);
     } else if (self->duty_mode == DUTY_U16) {
@@ -144,13 +144,13 @@ STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
+static void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
     self->duty = duty;
     self->duty_mode = DUTY;
     machine_soft_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     if (self->duty_mode == DUTY_U16) {
         return MP_OBJ_NEW_SMALL_INT(self->duty);
     } else if (self->duty_mode == DUTY) {
@@ -160,13 +160,13 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty) {
+static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty) {
     self->duty = duty;
     self->duty_mode = DUTY_U16;
     machine_soft_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     if (self->duty_mode == DUTY_NS) {
         return MP_OBJ_NEW_SMALL_INT(self->duty);
     } else {
@@ -174,7 +174,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
+static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
     self->duty = duty;
     self->duty_mode = DUTY_NS;
     machine_soft_pwm_start(self);
@@ -182,7 +182,7 @@ STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
 
 /* Interface for the implementation */
 
-STATIC void machine_soft_pwm_start(machine_pwm_obj_t *self) {
+static void machine_soft_pwm_start(machine_pwm_obj_t *self) {
 
     // check if ready to go
     if (self->defer_start == true || self->freq == 0 || self->duty_mode == DUTY_NOT_SET) {
@@ -197,7 +197,7 @@ STATIC void machine_soft_pwm_start(machine_pwm_obj_t *self) {
             duty_width = self->duty * DUTY_FULL_SCALE / 100;
         } else if (self->duty_mode == DUTY_U16) {
             duty_width = self->duty * DUTY_FULL_SCALE / 65536;
-        }if (self->duty_mode == DUTY_NS) {
+        } else if (self->duty_mode == DUTY_NS) {
             duty_width = (uint64_t)self->duty * self->freq * DUTY_FULL_SCALE / 1000000000ULL;
         }
         pwm_set_duty_cycle(self->pwm_pin, duty_width);

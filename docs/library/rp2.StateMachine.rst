@@ -140,3 +140,10 @@ Methods
 
      Optionally configure it.
 
+Buffer protocol
+---------------
+
+The StateMachine class supports the `buffer protocol`, allowing direct access to the transmit
+and receive FIFOs for each state machine. This is primarily in order to allow StateMachine
+objects to be passed directly as the read or write parameters when configuring a `rp2.DMA()`
+channel.

@@ -88,17 +88,17 @@ typedef enum {
     MP_SOFT_RESET
 } reset_reason_t;
 
-STATIC bool is_soft_reset = 0;
+static bool is_soft_reset = 0;
 
 #if CONFIG_IDF_TARGET_ESP32C3
 int esp_clk_cpu_freq(void);
 #endif
 
-STATIC mp_obj_t mp_machine_get_freq(void) {
+static mp_obj_t mp_machine_get_freq(void) {
     return mp_obj_new_int(esp_rom_get_cpu_ticks_per_us() * 1000000);
 }
 
-STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
     if (freq != 20 && freq != 40 && freq != 80 && freq != 160
         #if !CONFIG_IDF_TARGET_ESP32C3
@@ -136,7 +136,7 @@ STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     }
 }
 
-STATIC void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_obj_t *args) {
+static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_obj_t *args) {
     // First, disable any previously set wake-up source
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 
@@ -182,16 +182,16 @@ STATIC void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
     }
 }
 
-STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     machine_sleep_helper(MACHINE_WAKE_SLEEP, n_args, args);
 };
 
-NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     machine_sleep_helper(MACHINE_WAKE_DEEPSLEEP, n_args, args);
     mp_machine_reset();
 };
 
-STATIC mp_int_t mp_machine_reset_cause(void) {
+static mp_int_t mp_machine_reset_cause(void) {
     if (is_soft_reset) {
         return MP_SOFT_RESET;
     }
@@ -220,11 +220,21 @@ STATIC mp_int_t mp_machine_reset_cause(void) {
     }
 }
 
+#if MICROPY_ESP32_USE_BOOTLOADER_RTC
+#include "soc/rtc_cntl_reg.h"
+NORETURN static void machine_bootloader_rtc(void) {
+    REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
+    esp_restart();
+}
+#endif
+
+#ifdef MICROPY_BOARD_ENTER_BOOTLOADER
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
     for (;;) {
     }
 }
+#endif
 
 void machine_init(void) {
     is_soft_reset = 0;
@@ -235,22 +245,22 @@ void machine_deinit(void) {
     is_soft_reset = 1;
 }
 
-STATIC mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return MP_OBJ_NEW_SMALL_INT(esp_sleep_get_wakeup_cause());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_wake_reason_obj, 0,  machine_wake_reason);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_wake_reason_obj, 0,  machine_wake_reason);
 
-NORETURN STATIC void mp_machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     esp_restart();
 }
 
-STATIC mp_obj_t mp_machine_unique_id(void) {
+static mp_obj_t mp_machine_unique_id(void) {
     uint8_t chipid[6];
     esp_efuse_mac_get_default(chipid);
     return mp_obj_new_bytes(chipid, 6);
 }
 
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     MP_THREAD_GIL_EXIT();
     taskYIELD();
     MP_THREAD_GIL_ENTER();

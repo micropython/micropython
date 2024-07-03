@@ -18,6 +18,9 @@ working with this board it may be useful to get an overview of the microcontroll
    general.rst
    tutorial/index.rst
 
+Note that there are several varieties of ESP32 -- ESP32, ESP32C3, ESP32S2, ESP32S3 --
+supported by MicroPython, with some differences in functionality between them.
+
 Installing MicroPython
 ----------------------
 
@@ -58,11 +61,17 @@ The :mod:`esp32` module::
     import esp32
 
     esp32.raw_temperature() # read the internal temperature of the MCU, in Fahrenheit
-    esp32.ULP()             # access to the Ultra-Low-Power Co-processor
+    esp32.ULP()             # access to the Ultra-Low-Power Co-processor, not on ESP32C3
 
 Note that the temperature sensor in the ESP32 will typically read higher than
 ambient due to the IC getting warm while it runs.  This effect can be minimised
 by reading the temperature sensor immediately after waking up from sleep.
+
+ESP32C3, ESP32S2, and ESP32S3 also have an internal temperature sensor available.
+It is implemented a bit differently to the ESP32 and returns the temperature in
+Celsius::
+
+    esp32.mcu_temperature() # read the internal temperature of the MCU, in Celsius
 
 Networking
 ----------
@@ -128,6 +137,7 @@ The keyword arguments for the constructor defining the PHY type and interface ar
 
 - mdc=pin-object    # set the mdc and mdio pins.
 - mdio=pin-object
+- reset=pin-object  # set the reset pin of the PHY device.
 - power=pin-object  # set the pin which switches the power of the PHY device.
 - phy_type=<type>   # Select the PHY device type. Supported devices are PHY_LAN8710,
   PHY_LAN8720, PH_IP101, PHY_RTL8201, PHY_DP83848 and PHY_KSZ8041

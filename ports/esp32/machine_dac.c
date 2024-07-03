@@ -51,7 +51,7 @@ typedef struct _mdac_obj_t {
     #endif
 } mdac_obj_t;
 
-STATIC mdac_obj_t mdac_obj[] = {
+static mdac_obj_t mdac_obj[] = {
     #if CONFIG_IDF_TARGET_ESP32
     {{&machine_dac_type}, GPIO_NUM_25, DAC_CHAN_0},
     {{&machine_dac_type}, GPIO_NUM_26, DAC_CHAN_1},
@@ -61,7 +61,7 @@ STATIC mdac_obj_t mdac_obj[] = {
     #endif
 };
 
-STATIC mp_obj_t mdac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
+static mp_obj_t mdac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     const mp_obj_t *args) {
 
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
@@ -94,12 +94,12 @@ STATIC mp_obj_t mdac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     #endif
 }
 
-STATIC void mdac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mdac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mdac_obj_t *self = self_in;
     mp_printf(print, "DAC(Pin(%u))", self->gpio_id);
 }
 
-STATIC mp_obj_t mdac_write(mp_obj_t self_in, mp_obj_t value_in) {
+static mp_obj_t mdac_write(mp_obj_t self_in, mp_obj_t value_in) {
     mdac_obj_t *self = self_in;
     int value = mp_obj_get_int(value_in);
     if (value < 0 || value > 255) {
@@ -119,11 +119,11 @@ STATIC mp_obj_t mdac_write(mp_obj_t self_in, mp_obj_t value_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mdac_write_obj, mdac_write);
 
-STATIC const mp_rom_map_elem_t mdac_locals_dict_table[] = {
+static const mp_rom_map_elem_t mdac_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mdac_write_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mdac_locals_dict, mdac_locals_dict_table);
+static MP_DEFINE_CONST_DICT(mdac_locals_dict, mdac_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_dac_type,

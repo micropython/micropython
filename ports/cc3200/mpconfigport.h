@@ -127,6 +127,7 @@
 #define MICROPY_PY_VFS                              (1)
 #define MICROPY_PY_MACHINE                          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE              "ports/cc3200/mods/modmachine.c"
+#define MICROPY_PY_MACHINE_RESET                    (1)
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS         (1)
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ   (1)
 #define MICROPY_PY_MACHINE_WDT                      (1)

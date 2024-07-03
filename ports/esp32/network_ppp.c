@@ -43,6 +43,8 @@
 #include "lwip/dns.h"
 #include "netif/ppp/pppapi.h"
 
+#if defined(CONFIG_ESP_NETIF_TCPIP_LWIP) && defined(CONFIG_LWIP_PPP_SUPPORT)
+
 #define PPP_CLOSE_TIMEOUT_MS (4000)
 
 typedef struct _ppp_if_obj_t {
@@ -82,12 +84,10 @@ static void ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
     }
 }
 
-STATIC mp_obj_t ppp_make_new(mp_obj_t stream) {
+static mp_obj_t ppp_make_new(mp_obj_t stream) {
     mp_get_stream_raise(stream, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE);
 
-    ppp_if_obj_t *self = m_new_obj_with_finaliser(ppp_if_obj_t);
-
-    self->base.type = &ppp_if_type;
+    ppp_if_obj_t *self = mp_obj_malloc_with_finaliser(ppp_if_obj_t, &ppp_if_type);
     self->stream = stream;
     self->active = false;
     self->connected = false;
@@ -123,7 +123,7 @@ static void pppos_client_task(void *self_in) {
     }
 }
 
-STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (n_args > 1) {
@@ -169,9 +169,9 @@ STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
     }
     return mp_obj_new_bool(self->active);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ppp_active_obj, 1, 2, ppp_active);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ppp_active_obj, 1, 2, ppp_active);
 
-STATIC mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     enum { ARG_authmode, ARG_username, ARG_password };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PPPAUTHTYPE_NONE} },
@@ -224,7 +224,7 @@ STATIC mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(ppp_connect_obj, 1, ppp_connect_py);
 
-STATIC mp_obj_t ppp_delete(mp_obj_t self_in) {
+static mp_obj_t ppp_delete(mp_obj_t self_in) {
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t args[] = {self, mp_const_false};
     ppp_active(2, args);
@@ -232,7 +232,7 @@ STATIC mp_obj_t ppp_delete(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ppp_delete_obj, ppp_delete);
 
-STATIC mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // get
@@ -266,18 +266,18 @@ STATIC mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ppp_ifconfig_obj, 1, 2, ppp_ifconfig);
 
-STATIC mp_obj_t ppp_status(mp_obj_t self_in) {
+static mp_obj_t ppp_status(mp_obj_t self_in) {
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ppp_status_obj, ppp_status);
+static MP_DEFINE_CONST_FUN_OBJ_1(ppp_status_obj, ppp_status);
 
-STATIC mp_obj_t ppp_isconnected(mp_obj_t self_in) {
+static mp_obj_t ppp_isconnected(mp_obj_t self_in) {
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(self->connected);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ppp_isconnected_obj, ppp_isconnected);
+static MP_DEFINE_CONST_FUN_OBJ_1(ppp_isconnected_obj, ppp_isconnected);
 
-STATIC mp_obj_t ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+static mp_obj_t ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
         mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
     }
@@ -319,9 +319,9 @@ STATIC mp_obj_t ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 
     return val;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ppp_config_obj, 1, ppp_config);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ppp_config_obj, 1, ppp_config);
 
-STATIC const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {
+static const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&ppp_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&ppp_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&ppp_isconnected_obj) },
@@ -333,7 +333,7 @@ STATIC const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AUTH_PAP), MP_ROM_INT(PPPAUTHTYPE_PAP) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_CHAP), MP_ROM_INT(PPPAUTHTYPE_CHAP) },
 };
-STATIC MP_DEFINE_CONST_DICT(ppp_if_locals_dict, ppp_if_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ppp_if_locals_dict, ppp_if_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     ppp_if_type,
@@ -341,3 +341,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     locals_dict, &ppp_if_locals_dict
     );
+
+#endif

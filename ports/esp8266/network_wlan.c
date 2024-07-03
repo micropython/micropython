@@ -48,19 +48,19 @@ typedef struct _wlan_if_obj_t {
 
 void error_check(bool status, const char *msg);
 
-STATIC const wlan_if_obj_t wlan_objs[] = {
+static const wlan_if_obj_t wlan_objs[] = {
     {{&esp_network_wlan_type}, STATION_IF},
     {{&esp_network_wlan_type}, SOFTAP_IF},
 };
 
-STATIC void require_if(mp_obj_t wlan_if, int if_no) {
+static void require_if(mp_obj_t wlan_if, int if_no) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(wlan_if);
     if (self->if_id != if_no) {
         error_check(false, if_no == STATION_IF ? "STA required" : "AP required");
     }
 }
 
-STATIC mp_obj_t esp_wlan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t esp_wlan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     int idx = 0;
     if (n_args > 0) {
@@ -72,7 +72,7 @@ STATIC mp_obj_t esp_wlan_make_new(const mp_obj_type_t *type, size_t n_args, size
     return MP_OBJ_FROM_PTR(&wlan_objs[idx]);
 }
 
-STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t mode = wifi_get_opmode();
     if (n_args > 1) {
@@ -105,9 +105,9 @@ STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_bool(mode & SOFTAP_MODE);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 
-STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ssid, ARG_key, ARG_bssid };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -158,16 +158,16 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_connect_obj, 1, esp_connect);
+static MP_DEFINE_CONST_FUN_OBJ_KW(esp_connect_obj, 1, esp_connect);
 
-STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
+static mp_obj_t esp_disconnect(mp_obj_t self_in) {
     require_if(self_in, STATION_IF);
     error_check(wifi_station_disconnect(), "Cannot disconnect from AP");
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
 
-STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // Get link status
@@ -186,11 +186,11 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_status_obj, 1, 2, esp_status);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_status_obj, 1, 2, esp_status);
 
-STATIC mp_obj_t *esp_scan_list = NULL;
+static mp_obj_t *esp_scan_list = NULL;
 
-STATIC void esp_scan_cb(void *result, STATUS status) {
+static void esp_scan_cb(void *result, STATUS status) {
     if (esp_scan_list == NULL) {
         // called unexpectedly
         return;
@@ -228,7 +228,7 @@ STATIC void esp_scan_cb(void *result, STATUS status) {
     esp_scan_list = NULL;
 }
 
-STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
+static mp_obj_t esp_scan(mp_obj_t self_in) {
     require_if(self_in, STATION_IF);
     if ((wifi_get_opmode() & STATION_MODE) == 0) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("STA must be active"));
@@ -252,12 +252,12 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     }
     return list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
 
 /// \method isconnected()
 /// Return True if connected to an AP and an IP address has been assigned,
 ///     false otherwise.
-STATIC mp_obj_t esp_isconnected(mp_obj_t self_in) {
+static mp_obj_t esp_isconnected(mp_obj_t self_in) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->if_id == STATION_IF) {
         if (wifi_station_get_connect_status() == STATION_GOT_IP) {
@@ -271,9 +271,9 @@ STATIC mp_obj_t esp_isconnected(mp_obj_t self_in) {
     return mp_const_false;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_isconnected_obj, esp_isconnected);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_isconnected_obj, esp_isconnected);
 
-STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     struct ip_info info;
     ip_addr_t dns_addr;
@@ -328,9 +328,9 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig);
 
-STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+static mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
         mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
     }
@@ -503,9 +503,9 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 unknown:
     mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
+static MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
 
-STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
+static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&esp_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&esp_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&esp_disconnect_obj) },
@@ -516,12 +516,21 @@ STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
 
     // Constants
+    { MP_ROM_QSTR(MP_QSTR_IF_STA), MP_ROM_INT(STATION_IF)},
+    { MP_ROM_QSTR(MP_QSTR_IF_AP), MP_ROM_INT(SOFTAP_IF)},
+
+    { MP_ROM_QSTR(MP_QSTR_SEC_OPEN), MP_ROM_INT(AUTH_OPEN) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WEP), MP_ROM_INT(AUTH_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA), MP_ROM_INT(AUTH_WPA_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA2), MP_ROM_INT(AUTH_WPA2_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA_WPA2), MP_ROM_INT(AUTH_WPA_WPA2_PSK) },
+
     { MP_ROM_QSTR(MP_QSTR_PM_NONE), MP_ROM_INT(NONE_SLEEP_T) },
     { MP_ROM_QSTR(MP_QSTR_PM_PERFORMANCE), MP_ROM_INT(MODEM_SLEEP_T) },
     { MP_ROM_QSTR(MP_QSTR_PM_POWERSAVE), MP_ROM_INT(LIGHT_SLEEP_T) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
+static MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     esp_network_wlan_type,
@@ -531,7 +540,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &wlan_if_locals_dict
     );
 
-STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_obj_new_int(wifi_get_phy_mode());
     } else {

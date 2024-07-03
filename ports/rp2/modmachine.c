@@ -55,20 +55,20 @@
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(RP2_RESET_PWRON) }, \
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(RP2_RESET_WDT) }, \
 
-STATIC mp_obj_t mp_machine_unique_id(void) {
+static mp_obj_t mp_machine_unique_id(void) {
     pico_unique_board_id_t id;
     pico_get_unique_board_id(&id);
     return mp_obj_new_bytes(id.id, sizeof(id.id));
 }
 
-NORETURN STATIC void mp_machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     watchdog_reboot(0, SRAM_END, 0);
     for (;;) {
         __wfi();
     }
 }
 
-STATIC mp_int_t mp_machine_reset_cause(void) {
+static mp_int_t mp_machine_reset_cause(void) {
     int reset_cause;
     if (watchdog_caused_reboot()) {
         reset_cause = RP2_RESET_WDT;
@@ -86,11 +86,11 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     }
 }
 
-STATIC mp_obj_t mp_machine_get_freq(void) {
+static mp_obj_t mp_machine_get_freq(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_get_cpu_freq());
 }
 
-STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_int_t freq = mp_obj_get_int(args[0]);
     if (!set_sys_clock_khz(freq / 1000, false)) {
         mp_raise_ValueError(MP_ERROR_TEXT("cannot change frequency"));
@@ -101,11 +101,11 @@ STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     #endif
 }
 
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     __wfe();
 }
 
-STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_int_t delay_ms = 0;
     bool use_timer_alarm = false;
 
@@ -127,10 +127,10 @@ STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     const uint32_t xosc_hz = XOSC_MHZ * 1000000;
 
-    uint32_t my_interrupts = save_and_disable_interrupts();
+    uint32_t my_interrupts = mp_thread_begin_atomic_section();
     #if MICROPY_PY_NETWORK_CYW43
     if (cyw43_has_pending && cyw43_poll != NULL) {
-        restore_interrupts(my_interrupts);
+        mp_thread_end_atomic_section(my_interrupts);
         return;
     }
     #endif
@@ -165,8 +165,15 @@ STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     } else {
         uint32_t sleep_en0 = clocks_hw->sleep_en0;
         uint32_t sleep_en1 = clocks_hw->sleep_en1;
+        bool timer3_enabled = irq_is_enabled(3);
+
         clocks_hw->sleep_en0 = CLOCKS_SLEEP_EN0_CLK_RTC_RTC_BITS;
         if (use_timer_alarm) {
+            // Make sure ALARM3/IRQ3 is enabled on _this_ core
+            timer_hw->inte |= 1 << 3;
+            if (!timer3_enabled) {
+                irq_set_enabled(3, true);
+            }
             // Use timer alarm to wake.
             clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_SYS_TIMER_BITS;
             timer_hw->alarm[3] = timer_hw->timerawl + delay_ms * 1000;
@@ -177,6 +184,9 @@ STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         scb_hw->scr |= M0PLUS_SCR_SLEEPDEEP_BITS;
         __wfi();
         scb_hw->scr &= ~M0PLUS_SCR_SLEEPDEEP_BITS;
+        if (!timer3_enabled) {
+            irq_set_enabled(3, false);
+        }
         clocks_hw->sleep_en0 = sleep_en0;
         clocks_hw->sleep_en1 = sleep_en1;
     }
@@ -186,10 +196,10 @@ STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     // Bring back all clocks.
     clocks_init();
-    restore_interrupts(my_interrupts);
+    mp_thread_end_atomic_section(my_interrupts);
 }
 
-NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_machine_lightsleep(n_args, args);
     mp_machine_reset();
 }

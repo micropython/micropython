@@ -37,7 +37,7 @@
 #error "MICROPY_PY_VFS requires MICROPY_VFS"
 #endif
 
-STATIC const mp_rom_map_elem_t vfs_module_globals_table[] = {
+static const mp_rom_map_elem_t vfs_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_vfs) },
 
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
@@ -55,7 +55,7 @@ STATIC const mp_rom_map_elem_t vfs_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_VfsPosix), MP_ROM_PTR(&mp_type_vfs_posix) },
     #endif
 };
-STATIC MP_DEFINE_CONST_DICT(vfs_module_globals, vfs_module_globals_table);
+static MP_DEFINE_CONST_DICT(vfs_module_globals, vfs_module_globals_table);
 
 const mp_obj_module_t mp_module_vfs = {
     .base = { &mp_type_module },

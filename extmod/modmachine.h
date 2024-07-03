@@ -30,9 +30,9 @@
 #include "py/mphal.h"
 #include "py/obj.h"
 
-#if MICROPY_PY_MACHINE
-
+#if MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI
 #include "drivers/bus/spi.h"
+#endif
 
 // Whether to enable the ADC.init() method.
 // Requires a port to implement mp_machine_adc_init_helper().
@@ -213,6 +213,7 @@ extern const mp_obj_type_t machine_signal_type;
 extern const mp_obj_type_t machine_spi_type;
 extern const mp_obj_type_t machine_timer_type;
 extern const mp_obj_type_t machine_uart_type;
+extern const mp_obj_type_t machine_usbd_type;
 extern const mp_obj_type_t machine_wdt_type;
 
 #if MICROPY_PY_MACHINE_SOFTI2C
@@ -228,6 +229,10 @@ extern const mp_machine_spi_p_t mp_machine_soft_spi_p;
 #endif
 #if MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI
 extern const mp_obj_dict_t mp_machine_spi_locals_dict;
+#endif
+
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+extern const mp_obj_type_t machine_usb_device_type;
 #endif
 
 #if defined(MICROPY_MACHINE_MEM_GET_READ_ADDR)
@@ -263,7 +268,5 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_readinto_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_machine_spi_write_obj);
 MP_DECLARE_CONST_FUN_OBJ_3(mp_machine_spi_write_readinto_obj);
 #endif
-
-#endif // MICROPY_PY_MACHINE
 
 #endif // MICROPY_INCLUDED_EXTMOD_MODMACHINE_H

@@ -18,7 +18,7 @@ l = bytearray(x)
 l[1:3] = bytearray()
 print(l)
 l = bytearray(x)
-#del l[1:3]
+# del l[1:3]
 print(l)
 
 l = bytearray(x)
@@ -28,7 +28,7 @@ l = bytearray(x)
 l[:3] = bytearray()
 print(l)
 l = bytearray(x)
-#del l[:3]
+# del l[:3]
 print(l)
 
 l = bytearray(x)
@@ -38,7 +38,7 @@ l = bytearray(x)
 l[:-3] = bytearray()
 print(l)
 l = bytearray(x)
-#del l[:-3]
+# del l[:-3]
 print(l)
 
 # slice assignment that extends the array
@@ -61,8 +61,14 @@ b[1:1] = b"12345"
 print(b)
 
 # Growth of bytearray via slice extension
-b = bytearray(b'12345678')
-b.append(57) # expand and add a bit of unused space at end of the bytearray
+b = bytearray(b"12345678")
+b.append(57)  # expand and add a bit of unused space at end of the bytearray
 for i in range(400):
-    b[-1:] = b'ab' # grow slowly into the unused space
+    b[-1:] = b"ab"  # grow slowly into the unused space
+print(len(b), b)
+
+# Growth of bytearray via slice extension from itself
+b = bytearray(b"1234567")
+for i in range(3):
+    b[-1:] = b
 print(len(b), b)

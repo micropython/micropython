@@ -1,0 +1,4 @@
+false 1
+true [ 1, 2, 3 ]
+true [ null, true, 1.2 ]
+true { tuple: [ 1, 2, 3 ], one: 1, list: [ null, true, 1.2 ] }

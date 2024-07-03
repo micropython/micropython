@@ -31,40 +31,40 @@
 #include "extmod/modmachine.h"
 
 // The port must provide implementations of these low-level PWM functions.
-STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
-STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
-STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
-STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self);
-STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self);
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
+static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
+static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+static void mp_machine_pwm_deinit(machine_pwm_obj_t *self);
+static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self);
+static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
 #if MICROPY_PY_MACHINE_PWM_DUTY
-STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self);
-STATIC void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty);
+static mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self);
+static void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty);
 #endif
-STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self);
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16);
-STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self);
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns);
+static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self);
+static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16);
+static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self);
+static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns);
 
 // The port provides implementations of the above in this file.
 #include MICROPY_PY_MACHINE_PWM_INCLUDEFILE
 
-STATIC mp_obj_t machine_pwm_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t machine_pwm_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_machine_pwm_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pwm_init_obj, 1, machine_pwm_init);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pwm_init_obj, 1, machine_pwm_init);
 
 // PWM.deinit()
-STATIC mp_obj_t machine_pwm_deinit(mp_obj_t self_in) {
+static mp_obj_t machine_pwm_deinit(mp_obj_t self_in) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_machine_pwm_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pwm_deinit_obj, machine_pwm_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pwm_deinit_obj, machine_pwm_deinit);
 
 // PWM.freq([value])
-STATIC mp_obj_t machine_pwm_freq(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_pwm_freq(size_t n_args, const mp_obj_t *args) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // Get frequency.
@@ -76,11 +76,11 @@ STATIC mp_obj_t machine_pwm_freq(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pwm_freq_obj, 1, 2, machine_pwm_freq);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pwm_freq_obj, 1, 2, machine_pwm_freq);
 
 #if MICROPY_PY_MACHINE_PWM_DUTY
 // PWM.duty([duty])
-STATIC mp_obj_t machine_pwm_duty(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_pwm_duty(size_t n_args, const mp_obj_t *args) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // Get duty cycle.
@@ -92,11 +92,11 @@ STATIC mp_obj_t machine_pwm_duty(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pwm_duty_obj, 1, 2, machine_pwm_duty);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pwm_duty_obj, 1, 2, machine_pwm_duty);
 #endif
 
 // PWM.duty_u16([value])
-STATIC mp_obj_t machine_pwm_duty_u16(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_pwm_duty_u16(size_t n_args, const mp_obj_t *args) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // Get duty cycle.
@@ -108,10 +108,10 @@ STATIC mp_obj_t machine_pwm_duty_u16(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pwm_duty_u16_obj, 1, 2, machine_pwm_duty_u16);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pwm_duty_u16_obj, 1, 2, machine_pwm_duty_u16);
 
 // PWM.duty_ns([value])
-STATIC mp_obj_t machine_pwm_duty_ns(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_pwm_duty_ns(size_t n_args, const mp_obj_t *args) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // Get duty cycle.
@@ -123,9 +123,9 @@ STATIC mp_obj_t machine_pwm_duty_ns(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pwm_duty_ns_obj, 1, 2, machine_pwm_duty_ns);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pwm_duty_ns_obj, 1, 2, machine_pwm_duty_ns);
 
-STATIC const mp_rom_map_elem_t machine_pwm_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_pwm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pwm_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_pwm_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&machine_pwm_freq_obj) },
@@ -135,7 +135,7 @@ STATIC const mp_rom_map_elem_t machine_pwm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_duty_u16), MP_ROM_PTR(&machine_pwm_duty_u16_obj) },
     { MP_ROM_QSTR(MP_QSTR_duty_ns), MP_ROM_PTR(&machine_pwm_duty_ns_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_pwm_locals_dict, machine_pwm_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_pwm_locals_dict, machine_pwm_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_pwm_type,

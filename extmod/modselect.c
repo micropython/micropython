@@ -96,7 +96,7 @@ typedef struct _poll_set_t {
     #endif
 } poll_set_t;
 
-STATIC void poll_set_init(poll_set_t *poll_set, size_t n) {
+static void poll_set_init(poll_set_t *poll_set, size_t n) {
     mp_map_init(&poll_set->map, n);
     #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
     poll_set->alloc = 0;
@@ -107,19 +107,19 @@ STATIC void poll_set_init(poll_set_t *poll_set, size_t n) {
 }
 
 #if MICROPY_PY_SELECT_SELECT
-STATIC void poll_set_deinit(poll_set_t *poll_set) {
+static void poll_set_deinit(poll_set_t *poll_set) {
     mp_map_deinit(&poll_set->map);
 }
 #endif
 
 #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
 
-STATIC mp_uint_t poll_obj_get_events(poll_obj_t *poll_obj) {
+static mp_uint_t poll_obj_get_events(poll_obj_t *poll_obj) {
     assert(poll_obj->pollfd == NULL);
     return poll_obj->nonfd_events;
 }
 
-STATIC void poll_obj_set_events(poll_obj_t *poll_obj, mp_uint_t events) {
+static void poll_obj_set_events(poll_obj_t *poll_obj, mp_uint_t events) {
     if (poll_obj->pollfd != NULL) {
         poll_obj->pollfd->events = events;
     } else {
@@ -127,7 +127,7 @@ STATIC void poll_obj_set_events(poll_obj_t *poll_obj, mp_uint_t events) {
     }
 }
 
-STATIC mp_uint_t poll_obj_get_revents(poll_obj_t *poll_obj) {
+static mp_uint_t poll_obj_get_revents(poll_obj_t *poll_obj) {
     if (poll_obj->pollfd != NULL) {
         return poll_obj->pollfd->revents;
     } else {
@@ -135,7 +135,7 @@ STATIC mp_uint_t poll_obj_get_revents(poll_obj_t *poll_obj) {
     }
 }
 
-STATIC void poll_obj_set_revents(poll_obj_t *poll_obj, mp_uint_t revents) {
+static void poll_obj_set_revents(poll_obj_t *poll_obj, mp_uint_t revents) {
     if (poll_obj->pollfd != NULL) {
         poll_obj->pollfd->revents = revents;
     } else {
@@ -146,7 +146,7 @@ STATIC void poll_obj_set_revents(poll_obj_t *poll_obj, mp_uint_t revents) {
 // How much (in pollfds) to grow the allocation for poll_set->pollfds by.
 #define POLL_SET_ALLOC_INCREMENT (4)
 
-STATIC struct pollfd *poll_set_add_fd(poll_set_t *poll_set, int fd) {
+static struct pollfd *poll_set_add_fd(poll_set_t *poll_set, int fd) {
     struct pollfd *free_slot = NULL;
 
     if (poll_set->used == poll_set->max_used) {
@@ -228,7 +228,7 @@ static inline void poll_obj_set_revents(poll_obj_t *poll_obj, mp_uint_t revents)
 
 #endif
 
-STATIC void poll_set_add_obj(poll_set_t *poll_set, const mp_obj_t *obj, mp_uint_t obj_len, mp_uint_t events, bool or_events) {
+static void poll_set_add_obj(poll_set_t *poll_set, const mp_obj_t *obj, mp_uint_t obj_len, mp_uint_t events, bool or_events) {
     for (mp_uint_t i = 0; i < obj_len; i++) {
         mp_map_elem_t *elem = mp_map_lookup(&poll_set->map, mp_obj_id(obj[i]), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
         if (elem->value == MP_OBJ_NULL) {
@@ -290,7 +290,7 @@ STATIC void poll_set_add_obj(poll_set_t *poll_set, const mp_obj_t *obj, mp_uint_
 }
 
 // For each object in the poll set, poll it once.
-STATIC mp_uint_t poll_set_poll_once(poll_set_t *poll_set, size_t *rwx_num) {
+static mp_uint_t poll_set_poll_once(poll_set_t *poll_set, size_t *rwx_num) {
     mp_uint_t n_ready = 0;
     for (mp_uint_t i = 0; i < poll_set->map.alloc; ++i) {
         if (!mp_map_slot_is_filled(&poll_set->map, i)) {
@@ -338,7 +338,7 @@ STATIC mp_uint_t poll_set_poll_once(poll_set_t *poll_set, size_t *rwx_num) {
     return n_ready;
 }
 
-STATIC mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size_t *rwx_num, mp_uint_t timeout) {
+static mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size_t *rwx_num, mp_uint_t timeout) {
     mp_uint_t start_ticks = mp_hal_ticks_ms();
     bool has_timeout = timeout != (mp_uint_t)-1;
 
@@ -414,7 +414,7 @@ STATIC mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size
 
 #if MICROPY_PY_SELECT_SELECT
 // select(rlist, wlist, xlist[, timeout])
-STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
     // get array data from tuple/list arguments
     size_t rwx_len[3];
     mp_obj_t *r_array, *w_array, *x_array;
@@ -486,7 +486,7 @@ typedef struct _mp_obj_poll_t {
 } mp_obj_poll_t;
 
 // register(obj[, eventmask])
-STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_uint_t events;
     if (n_args == 3) {
@@ -500,7 +500,7 @@ STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
 
 // unregister(obj)
-STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
+static mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_elem_t *elem = mp_map_lookup(&self->poll_set.map, mp_obj_id(obj_in), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
 
@@ -523,7 +523,7 @@ STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
 MP_DEFINE_CONST_FUN_OBJ_2(poll_unregister_obj, poll_unregister);
 
 // modify(obj, eventmask)
-STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmask_in) {
+static mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmask_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_elem_t *elem = mp_map_lookup(&self->poll_set.map, mp_obj_id(obj_in), MP_MAP_LOOKUP);
     if (elem == NULL) {
@@ -534,7 +534,7 @@ STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmas
 }
 MP_DEFINE_CONST_FUN_OBJ_3(poll_modify_obj, poll_modify);
 
-STATIC mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
+static mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
 
     // work out timeout (its given already in ms)
@@ -557,7 +557,7 @@ STATIC mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
     return poll_set_poll_until_ready_or_timeout(&self->poll_set, NULL, timeout);
 }
 
-STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_uint_t n_ready = poll_poll_internal(n_args, args);
 
@@ -578,7 +578,7 @@ STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 2, poll_poll);
 
-STATIC mp_obj_t poll_ipoll(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t poll_ipoll(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (self->ret_tuple == MP_OBJ_NULL) {
@@ -593,7 +593,7 @@ STATIC mp_obj_t poll_ipoll(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_ipoll_obj, 1, 3, poll_ipoll);
 
-STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
+static mp_obj_t poll_iternext(mp_obj_t self_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->iter_cnt == 0) {
@@ -625,16 +625,16 @@ STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
     return MP_OBJ_STOP_ITERATION;
 }
 
-STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
+static const mp_rom_map_elem_t poll_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&poll_register_obj) },
     { MP_ROM_QSTR(MP_QSTR_unregister), MP_ROM_PTR(&poll_unregister_obj) },
     { MP_ROM_QSTR(MP_QSTR_modify), MP_ROM_PTR(&poll_modify_obj) },
     { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&poll_poll_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipoll), MP_ROM_PTR(&poll_ipoll_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
+static MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_poll,
     MP_QSTR_poll,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
@@ -643,7 +643,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 // poll()
-STATIC mp_obj_t select_poll(void) {
+static mp_obj_t select_poll(void) {
     mp_obj_poll_t *poll = mp_obj_malloc(mp_obj_poll_t, &mp_type_poll);
     poll_set_init(&poll->poll_set, 0);
     poll->iter_cnt = 0;
@@ -652,7 +652,7 @@ STATIC mp_obj_t select_poll(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_select_poll_obj, select_poll);
 
-STATIC const mp_rom_map_elem_t mp_module_select_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_select_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_select) },
     #if MICROPY_PY_SELECT_SELECT
     { MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&mp_select_select_obj) },
@@ -664,7 +664,7 @@ STATIC const mp_rom_map_elem_t mp_module_select_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_POLLHUP), MP_ROM_INT(MP_STREAM_POLL_HUP) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_table);
 
 const mp_obj_module_t mp_module_select = {
     .base = { &mp_type_module },

@@ -96,7 +96,7 @@ void init_zephyr(void) {
 }
 
 #if MICROPY_VFS
-STATIC void vfs_init(void) {
+static void vfs_init(void) {
     mp_obj_t bdev = NULL;
     mp_obj_t mount_point;
     const char *mount_point_str = NULL;

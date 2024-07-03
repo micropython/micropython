@@ -90,15 +90,15 @@
 #include "subghz.h"
 
 #if MICROPY_PY_THREAD
-STATIC pyb_thread_t pyb_thread_main;
+static pyb_thread_t pyb_thread_main;
 #endif
 
 #if defined(MICROPY_HW_UART_REPL)
 #ifndef MICROPY_HW_UART_REPL_RXBUF
 #define MICROPY_HW_UART_REPL_RXBUF (260)
 #endif
-STATIC machine_uart_obj_t pyb_uart_repl_obj;
-STATIC uint8_t pyb_uart_repl_rxbuf[MICROPY_HW_UART_REPL_RXBUF];
+static machine_uart_obj_t pyb_uart_repl_obj;
+static uint8_t pyb_uart_repl_rxbuf[MICROPY_HW_UART_REPL_RXBUF];
 #endif
 
 void nlr_jump_fail(void *val) {
@@ -119,7 +119,7 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 }
 #endif
 
-STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_opt, MP_ARG_INT, {.u_int = 0} }
     };
@@ -140,7 +140,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 
 #if MICROPY_HW_FLASH_MOUNT_AT_BOOT
 // avoid inlining to avoid stack usage within main()
-MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
+MP_NOINLINE static bool init_flash_fs(uint reset_mode) {
     if (reset_mode == BOARDCTRL_RESET_MODE_FACTORY_FILESYSTEM) {
         // Asked by user to reset filesystem
         factory_reset_create_filesystem();
@@ -215,7 +215,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 #endif
 
 #if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
-STATIC bool init_sdcard_fs(void) {
+static bool init_sdcard_fs(void) {
     bool first_part = true;
     for (int part_num = 1; part_num <= 5; ++part_num) {
         // create vfs object
@@ -477,6 +477,7 @@ void stm32_main(uint32_t reset_mode) {
         memcpy(&buf[0], "PYBD", 4);
         mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 8, 4, (char *)&buf[4]);
         cyw43_wifi_ap_set_ssid(&cyw43_state, 8, buf);
+        cyw43_wifi_ap_set_auth(&cyw43_state, CYW43_AUTH_WPA2_MIXED_PSK);
         cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t *)"pybd0123");
     }
     #endif

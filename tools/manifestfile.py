@@ -291,7 +291,7 @@ class ManifestFile:
     def _search(self, base_path, package_path, files, exts, kind, opt=None, strict=False):
         base_path = self._resolve_path(base_path)
 
-        if files:
+        if files is not None:
             # Use explicit list of files (relative to package_path).
             for file in files:
                 if package_path:
@@ -603,6 +603,9 @@ def main():
         default=os.path.join(os.path.dirname(__file__), "../lib/micropython-lib"),
         help="path to micropython-lib repo",
     )
+    cmd_parser.add_argument(
+        "--unix-ffi", action="store_true", help="prepend unix-ffi to the library path"
+    )
     cmd_parser.add_argument("--port", default=None, help="path to port dir")
     cmd_parser.add_argument("--board", default=None, help="path to board dir")
     cmd_parser.add_argument(
@@ -632,6 +635,8 @@ def main():
         exit(1)
 
     m = ManifestFile(mode, path_vars)
+    if args.unix_ffi:
+        m.add_library("unix-ffi", os.path.join("$(MPY_LIB_DIR)", "unix-ffi"), prepend=True)
     for manifest_file in args.files:
         try:
             m.execute(manifest_file)

@@ -79,7 +79,7 @@ size_t qstr_compute_hash(const byte *data, size_t len) {
 // it is part of the .mpy ABI. See the top of py/persistentcode.c and
 // static_qstr_list in makeqstrdata.py. This pool is unsorted (although in a
 // future .mpy version we could re-order them and make it sorted). It also
-// contains additional qstrs that must have IDs <256, see operator_qstr_list
+// contains additional qstrs that must have IDs <256, see unsorted_qstr_list
 // in makeqstrdata.py.
 #if MICROPY_QSTR_BYTES_IN_HASH
 const qstr_hash_t mp_qstr_const_hashes_static[] = {
@@ -187,7 +187,7 @@ void qstr_init(void) {
     #endif
 }
 
-STATIC const qstr_pool_t *find_qstr(qstr *q) {
+static const qstr_pool_t *find_qstr(qstr *q) {
     // search pool for this qstr
     // total_prev_len==0 in the final pool, so the loop will always terminate
     const qstr_pool_t *pool = MP_STATE_VM(last_pool);
@@ -200,7 +200,7 @@ STATIC const qstr_pool_t *find_qstr(qstr *q) {
 }
 
 // qstr_mutex must be taken while in this function
-STATIC qstr qstr_add(mp_uint_t len, const char *q_ptr) {
+static qstr qstr_add(mp_uint_t len, const char *q_ptr) {
     #if MICROPY_QSTR_BYTES_IN_HASH
     mp_uint_t hash = qstr_compute_hash((const byte *)q_ptr, len);
     DEBUG_printf("QSTR: add hash=%d len=%d data=%.*s\n", hash, len, len, q_ptr);
@@ -444,7 +444,7 @@ void qstr_dump_data(void) {
 #else
 
 // Emit the compressed_string_data string.
-#define MP_COMPRESSED_DATA(x) STATIC const char *compressed_string_data = x;
+#define MP_COMPRESSED_DATA(x) static const char *compressed_string_data = x;
 #define MP_MATCH_COMPRESSED(a, b)
 #include "genhdr/compressed.data.h"
 #undef MP_COMPRESSED_DATA
@@ -458,7 +458,7 @@ void qstr_dump_data(void) {
 // The compressed string data is delimited by setting high bit in the final char of each word.
 // e.g. aaaa<0x80|a>bbbbbb<0x80|b>....
 // This method finds the n'th string.
-STATIC const byte *find_uncompressed_string(uint8_t n) {
+static const byte *find_uncompressed_string(uint8_t n) {
     const byte *c = (byte *)compressed_string_data;
     while (n > 0) {
         while ((*c & 0x80) == 0) {

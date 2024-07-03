@@ -34,43 +34,43 @@
 #include "py/obj.h"
 
 typedef struct {
-  mp_obj_base_t base;
-  qstr name;
-  uint8_t idx;
-  uint8_t fn;
-  uint8_t unit;
-  uint8_t type;
+    mp_obj_base_t base;
+    qstr name;
+    uint8_t idx;
+    uint8_t fn;
+    uint8_t unit;
+    uint8_t type;
 
-  union {
-    void          *reg;
+    union {
+        void *reg;
 
-    PIN_DEFS_PORT_AF_UNION
-  };
+        PIN_DEFS_PORT_AF_UNION
+    };
 } pin_af_obj_t;
 
 typedef struct {
-  mp_obj_base_t base;
-  qstr name;
-  uint32_t pin : 8;
-  uint32_t num_af : 4;
-  uint32_t adc_channel : 5; // Some ARM processors use 32 bits/PORT
-  uint32_t adc_num  : 3;    // 1 bit per ADC
-  const pin_af_obj_t *af;
-  uint32_t pull;
+    mp_obj_base_t base;
+    qstr name;
+    uint32_t pin : 8;
+    uint32_t num_af : 4;
+    uint32_t adc_channel : 5; // Some ARM processors use 32 bits/PORT
+    uint32_t adc_num  : 3;  // 1 bit per ADC
+    const pin_af_obj_t *af;
+    uint32_t pull;
 } pin_obj_t;
 
 extern const mp_obj_type_t pin_type;
 extern const mp_obj_type_t pin_af_type;
 
 typedef struct {
-  const char *name;
-  const pin_obj_t *pin;
+    const char *name;
+    const pin_obj_t *pin;
 } pin_named_pin_t;
 
 extern const pin_named_pin_t pin_board_pins[];
 extern const pin_named_pin_t pin_cpu_pins[];
 
-//extern pin_map_obj_t pin_map_obj;
+// extern pin_map_obj_t pin_map_obj;
 
 typedef struct {
     mp_obj_base_t base;

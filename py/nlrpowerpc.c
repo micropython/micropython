@@ -114,7 +114,7 @@ NORETURN void nlr_jump(void *val) {
         "blr ;"
         :
         : "r" (&top->regs)
-        :
+        : "memory"
         );
 
     MP_UNREACHABLE;
@@ -203,7 +203,7 @@ NORETURN void nlr_jump(void *val) {
         "blr ;"
         :
         : "r" (&top->regs)
-        :
+        : "memory"
         );
 
     MP_UNREACHABLE;

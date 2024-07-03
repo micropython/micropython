@@ -29,7 +29,7 @@
 #include "rtc.h"
 
 // Return the localtime as an 8-tuple.
-STATIC mp_obj_t mp_time_localtime_get(void) {
+static mp_obj_t mp_time_localtime_get(void) {
     // get current date and time
     rtc_init_finalise();
     ra_rtc_t time;
@@ -48,7 +48,7 @@ STATIC mp_obj_t mp_time_localtime_get(void) {
 }
 
 // Returns the number of seconds, as an integer, since the Epoch.
-STATIC mp_obj_t mp_time_time_get(void) {
+static mp_obj_t mp_time_time_get(void) {
     // get date and time
     rtc_init_finalise();
     ra_rtc_t time;

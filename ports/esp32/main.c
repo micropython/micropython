@@ -59,7 +59,6 @@
 #include "usb_serial_jtag.h"
 #include "modmachine.h"
 #include "modnetwork.h"
-#include "mpthreadport.h"
 
 #if MICROPY_BLUETOOTH_NIMBLE
 #include "extmod/modbluetooth.h"
@@ -117,6 +116,10 @@ void mp_task(void *pvParameter) {
     }
 
     void *mp_task_heap = MP_PLAT_ALLOC_HEAP(MICROPY_GC_INITIAL_HEAP_SIZE);
+    if (mp_task_heap == NULL) {
+        printf("mp_task_heap allocation failed!\n");
+        esp_restart();
+    }
 
 soft_reset:
     // initialise the stack pointer for the main thread

@@ -5,15 +5,16 @@ MPY_DIR = ../../..
 MOD = btree_$(ARCH)
 
 # Source files (.c or .py)
-SRC = btree_c.c btree_py.py
+SRC = btree_c.c
 
 # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
 ARCH = x64
 
 BTREE_DIR = $(MPY_DIR)/lib/berkeley-db-1.xx
-BTREE_DEFS = -D__DBINTERFACE_PRIVATE=1 -Dmpool_error="(void)" -Dabort=abort_ "-Dvirt_fd_t=void*" $(BTREE_DEFS_EXTRA)
-CFLAGS += -I$(BTREE_DIR)/PORT/include
-CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter $(BTREE_DEFS)
+BERKELEY_DB_CONFIG_FILE ?= \"extmod/berkeley-db/berkeley_db_config_port.h\"
+CFLAGS += -I$(BTREE_DIR)/include
+CFLAGS += -DBERKELEY_DB_CONFIG_FILE=$(BERKELEY_DB_CONFIG_FILE)
+CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter
 
 SRC += $(addprefix $(realpath $(BTREE_DIR))/,\
 	btree/bt_close.c \

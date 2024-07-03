@@ -55,8 +55,8 @@
 #include "input.h"
 
 // Command line options, with their defaults
-STATIC bool compile_only = false;
-STATIC uint emit_opt = MP_EMIT_OPT_NONE;
+static bool compile_only = false;
+static uint emit_opt = MP_EMIT_OPT_NONE;
 
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
@@ -77,7 +77,7 @@ long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 #error "The unix port requires MICROPY_PY_SYS_ARGV=1"
 #endif
 
-STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
+static void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDERR_FILENO, str, len), {});
@@ -90,7 +90,7 @@ const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 // If exc is SystemExit, return value where FORCED_EXIT bit set,
 // and lower 8 bits are SystemExit value. For all other exceptions,
 // return 1.
-STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
+static int handle_uncaught_exception(mp_obj_base_t *exc) {
     // check for SystemExit
     if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
         // None is an exit value of 0; an int is its value; anything else is 1
@@ -115,7 +115,7 @@ STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
 // Returns standard error codes: 0 for success, 1 for all other errors,
 // except if FORCED_EXIT bit is set then script raised SystemExit and the
 // value of the exit is in the lower 8 bits of the return value
-STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_input_kind_t input_kind, bool is_repl) {
+static int execute_from_lexer(int source_kind, const void *source, mp_parse_input_kind_t input_kind, bool is_repl) {
     mp_hal_set_interrupt_char(CHAR_CTRL_C);
 
     nlr_buf_t nlr;
@@ -177,7 +177,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 #if MICROPY_USE_READLINE == 1
 #include "shared/readline/readline.h"
 #else
-STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
+static char *strjoin(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
     int l2 = strlen(s2);
     char *s = malloc(l1 + l2 + 2);
@@ -192,7 +192,7 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
 }
 #endif
 
-STATIC int do_repl(void) {
+static int do_repl(void) {
     mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
     mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
     mp_hal_stdout_tx_str("\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
@@ -306,15 +306,15 @@ STATIC int do_repl(void) {
     #endif
 }
 
-STATIC int do_file(const char *file) {
+static int do_file(const char *file) {
     return execute_from_lexer(LEX_SRC_FILENAME, file, MP_PARSE_FILE_INPUT, false);
 }
 
-STATIC int do_str(const char *str) {
+static int do_str(const char *str) {
     return execute_from_lexer(LEX_SRC_STR, str, MP_PARSE_FILE_INPUT, false);
 }
 
-STATIC void print_help(char **argv) {
+static void print_help(char **argv) {
     printf(
         "usage: %s [<opts>] [-X <implopt>] [-c <command> | -m <module> | <filename>]\n"
         "Options:\n"
@@ -353,13 +353,13 @@ STATIC void print_help(char **argv) {
     }
 }
 
-STATIC int invalid_args(void) {
+static int invalid_args(void) {
     fprintf(stderr, "Invalid command line arguments. Use -h option for help.\n");
     return 1;
 }
 
 // Process options which set interpreter init options
-STATIC void pre_process_options(int argc, char **argv) {
+static void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-c") == 0 || strcmp(argv[a], "-m") == 0) {
@@ -439,7 +439,7 @@ STATIC void pre_process_options(int argc, char **argv) {
     }
 }
 
-STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
+static void set_sys_argv(char *argv[], int argc, int start_arg) {
     for (int i = start_arg; i < argc; i++) {
         mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
     }
@@ -447,9 +447,9 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 
 #if MICROPY_PY_SYS_EXECUTABLE
 extern mp_obj_str_t mp_sys_executable_obj;
-STATIC char executable_path[MICROPY_ALLOC_PATH_MAX];
+static char executable_path[MICROPY_ALLOC_PATH_MAX];
 
-STATIC void sys_set_excecutable(char *argv0) {
+static void sys_set_excecutable(char *argv0) {
     if (realpath(argv0, executable_path)) {
         mp_obj_str_set_data(&mp_sys_executable_obj, (byte *)executable_path, strlen(executable_path));
     }

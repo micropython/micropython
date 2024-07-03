@@ -261,14 +261,16 @@ soft_reset:
 
     led_state(1, 0);
 
+    #if MICROPY_VFS || MICROPY_MBFS || MICROPY_MODULE_FROZEN
+    ret_code = pyexec_file_if_exists("boot.py");
+    #endif
+
     #if MICROPY_HW_USB_CDC
     usb_cdc_init();
     #endif
 
     #if MICROPY_VFS || MICROPY_MBFS || MICROPY_MODULE_FROZEN
-    // run boot.py and main.py if they exist.
-    ret = pyexec_file_if_exists("boot.py");
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret_code != 0) {
         pyexec_file_if_exists("main.py");
     }
     #endif

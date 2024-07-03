@@ -65,6 +65,18 @@ def _rewrite_url(url, branch=None):
             + "/"
             + "/".join(url[2:])
         )
+    elif url.startswith("gitlab:"):
+        url = url[7:].split("/")
+        url = (
+            "https://gitlab.com/"
+            + url[0]
+            + "/"
+            + url[1]
+            + "/-/raw/"
+            + branch
+            + "/"
+            + "/".join(url[2:])
+        )
     return url
 
 
@@ -116,6 +128,7 @@ def _install_package(transport, package, index, target, version, mpy):
         package.startswith("http://")
         or package.startswith("https://")
         or package.startswith("github:")
+        or package.startswith("gitlab:")
     ):
         if package.endswith(".py") or package.endswith(".mpy"):
             print(f"Downloading {package} to {target}")

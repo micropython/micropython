@@ -59,21 +59,21 @@ typedef struct _socket_obj_t {
     int8_t state;
 } socket_obj_t;
 
-STATIC const mp_obj_type_t socket_type;
+static const mp_obj_type_t socket_type;
 
 // Helper functions
 
 #define RAISE_ERRNO(x) { int _err = x; if (_err < 0) mp_raise_OSError(-_err); }
 #define RAISE_SOCK_ERRNO(x) { if ((int)(x) == -1) mp_raise_OSError(errno); }
 
-STATIC void socket_check_closed(socket_obj_t *socket) {
+static void socket_check_closed(socket_obj_t *socket) {
     if (socket->ctx == -1) {
         // already closed
         mp_raise_OSError(EBADF);
     }
 }
 
-STATIC void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct sockaddr *sockaddr) {
+static void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct sockaddr *sockaddr) {
     // We employ the fact that port and address offsets are the same for IPv4 & IPv6
     struct sockaddr_in *sockaddr_in = (struct sockaddr_in *)sockaddr;
 
@@ -85,7 +85,7 @@ STATIC void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct socka
     sockaddr_in->sin_port = htons(mp_obj_get_int(addr_items[1]));
 }
 
-STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
+static mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
     // We employ the fact that port and address offsets are the same for IPv4 & IPv6
     struct sockaddr_in6 *sockaddr_in6 = (struct sockaddr_in6 *)addr;
     char buf[40];
@@ -107,15 +107,14 @@ STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
 }
 
 socket_obj_t *socket_new(void) {
-    socket_obj_t *socket = m_new_obj_with_finaliser(socket_obj_t);
-    socket->base.type = (mp_obj_t)&socket_type;
+    socket_obj_t *socket = mp_obj_malloc_with_finaliser(socket_obj_t, &socket_type);
     socket->state = STATE_NEW;
     return socket;
 }
 
 // Methods
 
-STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     socket_obj_t *self = self_in;
     if (self->ctx == -1) {
         mp_printf(print, "<socket NULL>");
@@ -125,7 +124,7 @@ STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     }
 }
 
-STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
     socket_obj_t *socket = socket_new();
@@ -157,7 +156,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     return MP_OBJ_FROM_PTR(socket);
 }
 
-STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
+static mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     socket_obj_t *socket = self_in;
     socket_check_closed(socket);
 
@@ -169,9 +168,9 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
+static MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 
-STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
+static mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     socket_obj_t *socket = self_in;
     socket_check_closed(socket);
 
@@ -183,10 +182,10 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
+static MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
 // method socket.listen([backlog])
-STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
     socket_obj_t *socket = args[0];
     socket_check_closed(socket);
 
@@ -201,9 +200,9 @@ STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_listen_obj, 1, 2, socket_listen);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_listen_obj, 1, 2, socket_listen);
 
-STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
+static mp_obj_t socket_accept(mp_obj_t self_in) {
     socket_obj_t *socket = self_in;
     socket_check_closed(socket);
 
@@ -221,9 +220,9 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
 
     return MP_OBJ_FROM_PTR(client);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_accept_obj, socket_accept);
+static MP_DEFINE_CONST_FUN_OBJ_1(socket_accept_obj, socket_accept);
 
-STATIC mp_uint_t sock_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t sock_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     socket_obj_t *socket = self_in;
     if (socket->ctx == -1) {
         // already closed
@@ -240,7 +239,7 @@ STATIC mp_uint_t sock_write(mp_obj_t self_in, const void *buf, mp_uint_t size, i
     return len;
 }
 
-STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
+static mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
     int err = 0;
@@ -250,9 +249,9 @@ STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     }
     return mp_obj_new_int_from_uint(len);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
+static MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
 
-STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *errcode) {
+static mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *errcode) {
     socket_obj_t *socket = self_in;
     if (socket->ctx == -1) {
         // already closed
@@ -269,7 +268,7 @@ STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *
     return recv_len;
 }
 
-STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
+static mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     mp_int_t max_len = mp_obj_get_int(len_in);
     vstr_t vstr;
     // +1 to accommodate for trailing \0
@@ -291,22 +290,22 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     vstr.len = len;
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
+static MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
-STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     mp_warning(MP_WARN_CAT(RuntimeWarning), "setsockopt() not implemented");
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_setsockopt);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_setsockopt);
 
-STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     return args[0];
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
-STATIC mp_uint_t sock_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t sock_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     socket_obj_t *socket = o_in;
     (void)arg;
     switch (request) {
@@ -328,7 +327,7 @@ STATIC mp_uint_t sock_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int
     }
 }
 
-STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
+static const mp_rom_map_elem_t socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_bind), MP_ROM_PTR(&socket_bind_obj) },
@@ -345,15 +344,15 @@ STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_makefile), MP_ROM_PTR(&socket_makefile_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
+static MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 
-STATIC const mp_stream_p_t socket_stream_p = {
+static const mp_stream_p_t socket_stream_p = {
     .read = sock_read,
     .write = sock_write,
     .ioctl = sock_ioctl,
 };
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     socket_type,
     MP_QSTR_socket,
     MP_TYPE_FLAG_NONE,
@@ -398,7 +397,7 @@ void dns_resolve_cb(enum dns_resolve_status status, struct dns_addrinfo *info, v
     mp_obj_list_append(state->result, MP_OBJ_FROM_PTR(tuple));
 }
 
-STATIC mp_obj_t mod_getaddrinfo(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mod_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     mp_obj_t host_in = args[0], port_in = args[1];
     const char *host = mp_obj_str_get_str(host_in);
     mp_int_t family = 0;
@@ -432,10 +431,10 @@ STATIC mp_obj_t mod_getaddrinfo(size_t n_args, const mp_obj_t *args) {
 
     return state.result;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_getaddrinfo_obj, 2, 3, mod_getaddrinfo);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_getaddrinfo_obj, 2, 3, mod_getaddrinfo);
 
 
-STATIC mp_obj_t pkt_get_info(void) {
+static mp_obj_t pkt_get_info(void) {
     struct k_mem_slab *rx, *tx;
     struct net_buf_pool *rx_data, *tx_data;
     net_pkt_get_info(&rx, &tx, &rx_data, &tx_data);
@@ -446,9 +445,9 @@ STATIC mp_obj_t pkt_get_info(void) {
     t->items[3] = MP_OBJ_NEW_SMALL_INT(tx_data->avail_count);
     return MP_OBJ_FROM_PTR(t);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pkt_get_info_obj, pkt_get_info);
+static MP_DEFINE_CONST_FUN_OBJ_0(pkt_get_info_obj, pkt_get_info);
 
-STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_socket) },
     // objects
     { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&socket_type) },
@@ -466,7 +465,7 @@ STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_pkt_get_info), MP_ROM_PTR(&pkt_get_info_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_table);
 
 const mp_obj_module_t mp_module_socket = {
     .base = { &mp_type_module },

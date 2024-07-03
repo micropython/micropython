@@ -24,12 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
-#if MICROPY_PY_MACHINE
-
 #include <string.h>
-
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_SIGNAL
+
 #include "extmod/modmachine.h"
 #include "extmod/virtpin.h"
 
@@ -41,7 +40,7 @@ typedef struct _machine_signal_t {
     bool invert;
 } machine_signal_t;
 
-STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_t pin;
     bool invert = false;
 
@@ -113,7 +112,7 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_uint_t signal_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t signal_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     machine_signal_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -130,7 +129,7 @@ STATIC mp_uint_t signal_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg
 }
 
 // fast method for getting/setting signal value
-STATIC mp_obj_t signal_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t signal_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     if (n_args == 0) {
         // get pin
@@ -142,32 +141,32 @@ STATIC mp_obj_t signal_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     }
 }
 
-STATIC mp_obj_t signal_value(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t signal_value(size_t n_args, const mp_obj_t *args) {
     return signal_call(args[0], n_args - 1, 0, args + 1);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(signal_value_obj, 1, 2, signal_value);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(signal_value_obj, 1, 2, signal_value);
 
-STATIC mp_obj_t signal_on(mp_obj_t self_in) {
+static mp_obj_t signal_on(mp_obj_t self_in) {
     mp_virtual_pin_write(self_in, 1);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(signal_on_obj, signal_on);
+static MP_DEFINE_CONST_FUN_OBJ_1(signal_on_obj, signal_on);
 
-STATIC mp_obj_t signal_off(mp_obj_t self_in) {
+static mp_obj_t signal_off(mp_obj_t self_in) {
     mp_virtual_pin_write(self_in, 0);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(signal_off_obj, signal_off);
+static MP_DEFINE_CONST_FUN_OBJ_1(signal_off_obj, signal_off);
 
-STATIC const mp_rom_map_elem_t signal_locals_dict_table[] = {
+static const mp_rom_map_elem_t signal_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&signal_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&signal_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&signal_off_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(signal_locals_dict, signal_locals_dict_table);
+static MP_DEFINE_CONST_DICT(signal_locals_dict, signal_locals_dict_table);
 
-STATIC const mp_pin_p_t signal_pin_p = {
+static const mp_pin_p_t signal_pin_p = {
     .ioctl = signal_ioctl,
 };
 
@@ -181,4 +180,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &signal_locals_dict
     );
 
-#endif // MICROPY_PY_MACHINE
+#endif // MICROPY_PY_MACHINE_SIGNAL

@@ -83,7 +83,7 @@
     DECODE_UINT; \
     unum = (mp_uint_t)obj_table[unum]
 
-void mp_bytecode_print(const mp_print_t *print, const mp_raw_code_t *rc, const mp_module_constants_t *cm) {
+void mp_bytecode_print(const mp_print_t *print, const mp_raw_code_t *rc, size_t fun_data_len, const mp_module_constants_t *cm) {
     const byte *ip_start = rc->fun_data;
     const byte *ip = rc->fun_data;
 
@@ -100,13 +100,13 @@ void mp_bytecode_print(const mp_print_t *print, const mp_raw_code_t *rc, const m
     qstr source_file = cm->source_file;
     #endif
     mp_printf(print, "File %s, code block '%s' (descriptor: %p, bytecode @%p %u bytes)\n",
-        qstr_str(source_file), qstr_str(block_name), rc, ip_start, (unsigned)rc->fun_data_len);
+        qstr_str(source_file), qstr_str(block_name), rc, ip_start, (unsigned)fun_data_len);
 
     // raw bytecode dump
     size_t prelude_size = ip - ip_start + n_info + n_cell;
     mp_printf(print, "Raw bytecode (code_info_size=%u, bytecode_size=%u):\n",
-        (unsigned)prelude_size, (unsigned)(rc->fun_data_len - prelude_size));
-    for (size_t i = 0; i < rc->fun_data_len; i++) {
+        (unsigned)prelude_size, (unsigned)(fun_data_len - prelude_size));
+    for (size_t i = 0; i < fun_data_len; i++) {
         if (i > 0 && i % 16 == 0) {
             mp_printf(print, "\n");
         }
@@ -158,7 +158,7 @@ void mp_bytecode_print(const mp_print_t *print, const mp_raw_code_t *rc, const m
             mp_printf(print, "  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         }
     }
-    mp_bytecode_print2(print, ip, rc->fun_data_len - prelude_size, rc->children, cm);
+    mp_bytecode_print2(print, ip, fun_data_len - prelude_size, rc->children, cm);
 }
 
 const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start, const byte *ip, mp_raw_code_t *const *child_table, const mp_module_constants_t *cm) {

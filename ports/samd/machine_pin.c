@@ -69,7 +69,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_pin_board_pins_locals_dict
     );
 
-STATIC const mp_irq_methods_t machine_pin_irq_methods;
+static const mp_irq_methods_t machine_pin_irq_methods;
 
 bool EIC_occured;
 
@@ -78,7 +78,7 @@ uint32_t machine_pin_open_drain_mask[4];
 // Open drain behaviour is simulated.
 #define GPIO_IS_OPEN_DRAIN(id) (machine_pin_open_drain_mask[id / 32] & (1 << (id % 32)))
 
-STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
     char *mode_str;
     char *pull_str[] = {"PULL_OFF", "PULL_UP", "PULL_DOWN"};
@@ -94,14 +94,14 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         pull_str[mp_hal_get_pull_mode(self->pin_id)]);
 }
 
-STATIC void pin_validate_drive(bool strength) {
+static void pin_validate_drive(bool strength) {
     if (strength != GPIO_STRENGTH_2MA && strength != GPIO_STRENGTH_8MA) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
 // Pin.init(mode, pull=None, *, value=None, drive=0). No 'alt' yet.
-STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mode, ARG_pull, ARG_value, ARG_drive, ARG_alt };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
@@ -193,7 +193,7 @@ mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
 }
 
 // Pin.init(mode, pull)
-STATIC mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return machine_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_init_obj, 1, machine_pin_obj_init);
@@ -202,18 +202,18 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_init_obj, 1, machine_pin_obj_init);
 mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
     return machine_pin_call(args[0], n_args - 1, 0, args + 1);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
 
 // Pin.disable(pin)
-STATIC mp_obj_t machine_pin_disable(mp_obj_t self_in) {
+static mp_obj_t machine_pin_disable(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     gpio_set_pin_direction(self->pin_id, GPIO_DIRECTION_OFF); // Disables the pin (low power state)
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_disable_obj, machine_pin_disable);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_disable_obj, machine_pin_disable);
 
 // Pin.low() Totem-pole (push-pull)
-STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
+static mp_obj_t machine_pin_low(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (GPIO_IS_OPEN_DRAIN(self->pin_id)) {
         mp_hal_pin_od_low(self->pin_id);
@@ -225,7 +225,7 @@ STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
 
 // Pin.high() Totem-pole (push-pull)
-STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
+static mp_obj_t machine_pin_high(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (GPIO_IS_OPEN_DRAIN(self->pin_id)) {
         mp_hal_pin_od_high(self->pin_id);
@@ -237,7 +237,7 @@ STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
 
 // Pin.toggle(). Only TOGGLE pins set as OUTPUT.
-STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
+static mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // Determine DIRECTION of PIN.
@@ -259,7 +259,7 @@ STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
 
 // Pin.drive(). Normal (0) is 2mA, High (1) allows 8mA.
-STATIC mp_obj_t machine_pin_drive(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_pin_drive(size_t n_args, const mp_obj_t *args) {
     machine_pin_obj_t *self = args[0]; // Pin
     if (n_args == 1) {
         return mp_const_none;
@@ -274,10 +274,10 @@ STATIC mp_obj_t machine_pin_drive(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_drive_obj, 1, 2, machine_pin_drive);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_drive_obj, 1, 2, machine_pin_drive);
 
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
-STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -375,7 +375,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     }
     return MP_OBJ_FROM_PTR(irq);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
 
 void pin_irq_deinit_all(void) {
 
@@ -412,7 +412,7 @@ void EIC_Handler() {
     }
 }
 
-STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_pin_value_obj) },
@@ -441,9 +441,9 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_IRQ_EDGE_RISE) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_IRQ_EDGE_FALL) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
-STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     machine_pin_obj_t *self = self_in;
 
@@ -459,7 +459,7 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
     return -1;
 }
 
-STATIC const mp_pin_p_t pin_pin_p = {
+static const mp_pin_p_t pin_pin_p = {
     .ioctl = pin_ioctl,
 };
 
@@ -484,7 +484,7 @@ static uint8_t find_eic_id(int pin) {
     return 0xff;
 }
 
-STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t eic_id = find_eic_id(self->pin_id);
     if (eic_id != 0xff) {
@@ -497,7 +497,7 @@ STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger
     return 0;
 }
 
-STATIC mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+static mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t eic_id = find_eic_id(self->pin_id);
     if (eic_id != 0xff) {
@@ -511,7 +511,7 @@ STATIC mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     return 0;
 }
 
-STATIC const mp_irq_methods_t machine_pin_irq_methods = {
+static const mp_irq_methods_t machine_pin_irq_methods = {
     .trigger = machine_pin_irq_trigger,
     .info = machine_pin_irq_info,
 };

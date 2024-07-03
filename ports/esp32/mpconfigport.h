@@ -9,7 +9,7 @@
 #include "esp_random.h"
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
-#include "driver/i2s.h"
+#include "driver/i2s_std.h"
 #include "esp_wifi_types.h"
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
@@ -114,8 +114,8 @@
 #define MICROPY_PY_OS_URANDOM               (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE      "ports/esp32/modmachine.c"
+#define MICROPY_PY_MACHINE_RESET            (1)
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
-#define MICROPY_PY_MACHINE_BOOTLOADER       (1)
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_MACHINE_ADC              (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/esp32/machine_adc.c"
@@ -147,8 +147,8 @@
 #endif
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE  "ports/esp32/machine_i2s.c"
 #define MICROPY_PY_MACHINE_I2S_FINALISER    (1)
-#define MICROPY_PY_MACHINE_I2S_CONSTANT_RX  (I2S_MODE_MASTER | I2S_MODE_RX)
-#define MICROPY_PY_MACHINE_I2S_CONSTANT_TX  (I2S_MODE_MASTER | I2S_MODE_TX)
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_RX  (I2S_DIR_RX)
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_TX  (I2S_DIR_TX)
 #define MICROPY_PY_MACHINE_UART             (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/esp32/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
@@ -270,7 +270,17 @@ typedef long mp_off_t;
 #endif
 
 #ifndef MICROPY_BOARD_ENTER_BOOTLOADER
-#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
+// RTC has a register to trigger bootloader on these targets
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3
+#define MICROPY_ESP32_USE_BOOTLOADER_RTC    (1)
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) machine_bootloader_rtc()
+#endif
+#endif
+
+#ifdef MICROPY_BOARD_ENTER_BOOTLOADER
+#define MICROPY_PY_MACHINE_BOOTLOADER       (1)
+#else
+#define MICROPY_PY_MACHINE_BOOTLOADER       (0)
 #endif
 
 #ifndef MICROPY_BOARD_STARTUP

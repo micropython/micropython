@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2013-2023 Damien P. George
+Copyright (c) 2013-2024 Damien P. George
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -48,12 +48,14 @@ used during the build process and is not part of the compiled source code.
         /cmsis (BSD-3-clause)
         /crypto-algorithms (NONE)
         /libhydrogen (ISC)
+        /libmetal (BSD-3-clause)
         /littlefs (BSD-3-clause)
         /lwip (BSD-3-clause)
         /mynewt-nimble (Apache-2.0)
         /nrfx (BSD-3-clause)
         /nxp_driver (BSD-3-Clause)
         /oofatfs (BSD-1-clause)
+        /open-amp (BSD-3-clause)
         /pico-sdk (BSD-3-clause)
         /re15 (BSD-3-clause)
         /stm32lib (BSD-3-clause)

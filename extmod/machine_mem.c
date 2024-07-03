@@ -27,7 +27,7 @@
 #include "py/runtime.h"
 #include "extmod/modmachine.h"
 
-#if MICROPY_PY_MACHINE
+#if MICROPY_PY_MACHINE_MEMX
 
 // If you wish to override the functions for mapping the machine_mem read/write
 // address, then add a #define for MICROPY_MACHINE_MEM_GET_READ_ADDR and/or
@@ -39,7 +39,7 @@
 // implementations, if the default implementation isn't used.
 
 #if !defined(MICROPY_MACHINE_MEM_GET_READ_ADDR) || !defined(MICROPY_MACHINE_MEM_GET_WRITE_ADDR)
-STATIC uintptr_t machine_mem_get_addr(mp_obj_t addr_o, uint align) {
+static uintptr_t machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_get_int_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("address %08x is not aligned to %d bytes"), addr, align);
@@ -54,13 +54,13 @@ STATIC uintptr_t machine_mem_get_addr(mp_obj_t addr_o, uint align) {
 #endif
 #endif
 
-STATIC void machine_mem_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_mem_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     machine_mem_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<%u-bit memory>", 8 * self->elem_size);
 }
 
-STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+static mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     // TODO support slice index to read/write multiple values at once
     machine_mem_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (value == MP_OBJ_NULL) {
@@ -113,4 +113,4 @@ const machine_mem_obj_t machine_mem8_obj = {{&machine_mem_type}, 1};
 const machine_mem_obj_t machine_mem16_obj = {{&machine_mem_type}, 2};
 const machine_mem_obj_t machine_mem32_obj = {{&machine_mem_type}, 4};
 
-#endif // MICROPY_PY_MACHINE
+#endif // MICROPY_PY_MACHINE_MEMX

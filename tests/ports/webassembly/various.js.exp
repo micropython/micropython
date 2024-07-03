@@ -1,0 +1,8 @@
+<module 'js'>
+13
+main { a: 1 }
+=======
+=======
+OK1
+OK2
+set_timeout_callback

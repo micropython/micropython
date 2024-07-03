@@ -68,10 +68,10 @@
 
 typedef struct _machine_hard_i2c_obj_t {
     mp_obj_base_t base;
-    nrfx_twi_t    p_twi;  // Driver instance
+    nrfx_twi_t p_twi;     // Driver instance
 } machine_hard_i2c_obj_t;
 
-STATIC const machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
+static const machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
     {{&machine_i2c_type}, .p_twi = NRFX_TWI_INSTANCE(0)},
     {{&machine_i2c_type}, .p_twi = NRFX_TWI_INSTANCE(1)},
 };
@@ -79,7 +79,7 @@ STATIC const machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
 void i2c_init0(void) {
 }
 
-STATIC int i2c_find(mp_obj_t id) {
+static int i2c_find(mp_obj_t id) {
     // given an integer id
     int i2c_id = mp_obj_get_int(id);
     if (i2c_id >= 0 && i2c_id < MP_ARRAY_SIZE(machine_hard_i2c_obj)) {
@@ -88,7 +88,7 @@ STATIC int i2c_find(mp_obj_t id) {
     mp_raise_ValueError(MP_ERROR_TEXT("I2C doesn't exist"));
 }
 
-STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_i2c_obj_t *self = self_in;
     mp_printf(print, "I2C(%u)", self->p_twi.drv_inst_idx);
 }
@@ -159,8 +159,7 @@ int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size
     if (err_code != NRFX_SUCCESS) {
         if (err_code == NRFX_ERROR_DRV_TWI_ERR_ANACK) {
             return -MP_ENODEV;
-        }
-        else if (err_code == NRFX_ERROR_DRV_TWI_ERR_DNACK) {
+        } else if (err_code == NRFX_ERROR_DRV_TWI_ERR_DNACK) {
             return -MP_EIO;
         }
         return -MP_ETIMEDOUT;
@@ -171,7 +170,7 @@ int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size
     return transfer_ret;
 }
 
-STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
+static const mp_machine_i2c_p_t machine_hard_i2c_p = {
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_hard_i2c_transfer_single,
 };

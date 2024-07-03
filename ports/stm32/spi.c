@@ -46,22 +46,22 @@
 // SPI6_RX: DMA2_Stream6.CHANNEL_1
 
 #if defined(MICROPY_HW_SPI1_SCK)
-STATIC SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
+static SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI2_SCK)
-STATIC SPI_HandleTypeDef SPIHandle2 = {.Instance = NULL};
+static SPI_HandleTypeDef SPIHandle2 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI3_SCK)
-STATIC SPI_HandleTypeDef SPIHandle3 = {.Instance = NULL};
+static SPI_HandleTypeDef SPIHandle3 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI4_SCK)
-STATIC SPI_HandleTypeDef SPIHandle4 = {.Instance = NULL};
+static SPI_HandleTypeDef SPIHandle4 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI5_SCK)
-STATIC SPI_HandleTypeDef SPIHandle5 = {.Instance = NULL};
+static SPI_HandleTypeDef SPIHandle5 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI6_SCK)
-STATIC SPI_HandleTypeDef SPIHandle6 = {.Instance = NULL};
+static SPI_HandleTypeDef SPIHandle6 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SUBGHZSPI_ID)
 static SPI_HandleTypeDef SPIHandleSubGhz = {.Instance = NULL};
@@ -231,7 +231,7 @@ int spi_find_index(mp_obj_t id) {
     return spi_id;
 }
 
-STATIC uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
+static uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
     #if defined(STM32F0) || defined(STM32G0)
     return HAL_RCC_GetPCLK1Freq();
     #elif defined(STM32H5)
@@ -545,7 +545,7 @@ void spi_deinit(const spi_t *spi_obj) {
     }
 }
 
-STATIC HAL_StatusTypeDef spi_wait_dma_finished(const spi_t *spi, uint32_t t_start, uint32_t timeout) {
+static HAL_StatusTypeDef spi_wait_dma_finished(const spi_t *spi, uint32_t t_start, uint32_t timeout) {
     volatile HAL_SPI_StateTypeDef *state = &spi->spi->State;
     for (;;) {
         // Do an atomic check of the state; WFI will exit even if IRQs are disabled
@@ -571,6 +571,8 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
     // Note: DMA transfers are limited to 65535 bytes at a time.
 
     HAL_StatusTypeDef status;
+    void *odest = dest; // Original values of dest & len
+    size_t olen = len;
 
     if (dest == NULL) {
         // send only
@@ -613,7 +615,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             }
             dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
             self->spi->hdmarx = &rx_dma;
-            MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
+            dma_protect_rx_region(dest, len);
             uint32_t t_start = HAL_GetTick();
             do {
                 uint32_t l = MIN(len, 65535);
@@ -632,6 +634,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
                 dma_deinit(self->tx_dma_descr);
             }
             dma_deinit(self->rx_dma_descr);
+            dma_unprotect_rx_region(odest, olen);
         }
     } else {
         // send and receive
@@ -644,7 +647,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
             self->spi->hdmarx = &rx_dma;
             MP_HAL_CLEAN_DCACHE(src, len);
-            MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
+            dma_protect_rx_region(dest, len);
             uint32_t t_start = HAL_GetTick();
             do {
                 uint32_t l = MIN(len, 65535);
@@ -662,6 +665,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             } while (len);
             dma_deinit(self->tx_dma_descr);
             dma_deinit(self->rx_dma_descr);
+            dma_unprotect_rx_region(odest, olen);
         }
     }
 
@@ -768,7 +772,7 @@ mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t o) {
 /******************************************************************************/
 // Implementation of low-level SPI C protocol
 
-STATIC int spi_proto_ioctl(void *self_in, uint32_t cmd) {
+static int spi_proto_ioctl(void *self_in, uint32_t cmd) {
     spi_proto_cfg_t *self = (spi_proto_cfg_t *)self_in;
 
     switch (cmd) {
@@ -790,7 +794,7 @@ STATIC int spi_proto_ioctl(void *self_in, uint32_t cmd) {
     return 0;
 }
 
-STATIC void spi_proto_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+static void spi_proto_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     spi_proto_cfg_t *self = (spi_proto_cfg_t *)self_in;
     spi_transfer(self->spi, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
 }

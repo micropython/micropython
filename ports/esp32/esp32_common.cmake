@@ -53,6 +53,7 @@ list(APPEND MICROPY_SOURCE_DRIVERS
 )
 
 list(APPEND MICROPY_SOURCE_PORT
+    panichandler.c
     adc.c
     main.c
     ppp_set_auth.c
@@ -151,6 +152,8 @@ idf_component_register(
         ${MICROPY_PORT_DIR}
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
+    LDFRAGMENTS
+        linker.lf
     REQUIRES
         ${IDF_COMPONENTS}
 )

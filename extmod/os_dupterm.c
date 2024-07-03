@@ -45,6 +45,10 @@ void mp_os_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
     if (exc != MP_OBJ_NULL) {
         mp_obj_print_exception(&mp_plat_print, exc);
     }
+    if (term == MP_OBJ_NULL) {
+        // Dupterm was already closed.
+        return;
+    }
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_stream_close(term);
@@ -208,7 +212,7 @@ int mp_os_dupterm_tx_strn(const char *str, size_t len) {
     return did_write ? ret : -1;
 }
 
-STATIC mp_obj_t mp_os_dupterm(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_os_dupterm(size_t n_args, const mp_obj_t *args) {
     mp_int_t idx = 0;
     if (n_args == 2) {
         idx = mp_obj_get_int(args[1]);

@@ -38,13 +38,13 @@ typedef struct _mp_obj_code_t {
     mp_obj_t module_fun;
 } mp_obj_code_t;
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_code,
     MP_QSTR_code,
     MP_TYPE_FLAG_NONE
     );
 
-STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
+static mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
     // save context
     nlr_jump_callback_node_globals_locals_t ctx;
     ctx.globals = mp_globals_get();
@@ -57,9 +57,13 @@ STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj
     // set exception handler to restore context if an exception is raised
     nlr_push_jump_callback(&ctx.callback, mp_globals_locals_set_from_nlr_jump_callback);
 
-    // a bit of a hack: fun_bc will re-set globals, so need to make sure it's
-    // the correct one
-    if (mp_obj_is_type(self->module_fun, &mp_type_fun_bc)) {
+    // The call to mp_parse_compile_execute() in mp_builtin_compile() below passes
+    // NULL for the globals, so repopulate that entry now with the correct globals.
+    if (mp_obj_is_type(self->module_fun, &mp_type_fun_bc)
+        #if MICROPY_EMIT_NATIVE
+        || mp_obj_is_type(self->module_fun, &mp_type_fun_native)
+        #endif
+        ) {
         mp_obj_fun_bc_t *fun_bc = MP_OBJ_TO_PTR(self->module_fun);
         ((mp_module_context_t *)fun_bc->context)->module.globals = globals;
     }
@@ -74,7 +78,7 @@ STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj
     return ret;
 }
 
-STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
     // get the source
@@ -114,7 +118,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_compile_obj, 3, 6, mp_builtin_com
 
 #if MICROPY_PY_BUILTINS_EVAL_EXEC
 
-STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_input_kind_t parse_input_kind) {
+static mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_input_kind_t parse_input_kind) {
     // work out the context
     mp_obj_dict_t *globals = mp_globals_get();
     mp_obj_dict_t *locals = mp_locals_get();
@@ -154,12 +158,12 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     return mp_parse_compile_execute(lex, parse_input_kind, globals, locals);
 }
 
-STATIC mp_obj_t mp_builtin_eval(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_eval(size_t n_args, const mp_obj_t *args) {
     return eval_exec_helper(n_args, args, MP_PARSE_EVAL_INPUT);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_eval_obj, 1, 3, mp_builtin_eval);
 
-STATIC mp_obj_t mp_builtin_exec(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_exec(size_t n_args, const mp_obj_t *args) {
     return eval_exec_helper(n_args, args, MP_PARSE_FILE_INPUT);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_exec_obj, 1, 3, mp_builtin_exec);
@@ -167,7 +171,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_exec_obj, 1, 3, mp_builtin_exec);
 #endif // MICROPY_PY_BUILTINS_EVAL_EXEC
 
 #if MICROPY_PY_BUILTINS_EXECFILE
-STATIC mp_obj_t mp_builtin_execfile(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_execfile(size_t n_args, const mp_obj_t *args) {
     // MP_PARSE_SINGLE_INPUT is used to indicate a file input
     return eval_exec_helper(n_args, args, MP_PARSE_SINGLE_INPUT);
 }

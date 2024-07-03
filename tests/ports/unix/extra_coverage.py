@@ -87,6 +87,9 @@ except ZeroDivisionError:
 # test importing various objects
 import frzmpy3
 
+# test importing other things
+import frzmpy4
+
 # test for MP_QSTR_NULL regression
 from frzqstr import returns_NULL
 

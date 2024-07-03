@@ -88,7 +88,7 @@
 /// how a particular object gets mapped to a pin.
 
 // Pin class variables
-STATIC bool pin_class_debug;
+static bool pin_class_debug;
 
 void pin_init0(void) {
     MP_STATE_PORT(pin_class_mapper) = mp_const_none;
@@ -103,7 +103,11 @@ const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
     const machine_pin_obj_t *pin_obj;
 
     // If a pin was provided, then use it
-    if (mp_obj_is_type(user_obj, &pin_type)) {
+    if (mp_obj_is_type(user_obj, &pin_type)
+        #if MICROPY_HW_ENABLE_ANALOG_ONLY_PINS
+        || mp_obj_is_type(user_obj, &pin_analog_type)
+        #endif
+        ) {
         pin_obj = MP_OBJ_TO_PTR(user_obj);
         if (pin_class_debug) {
             mp_printf(print, "Pin map passed pin ");
@@ -179,7 +183,7 @@ const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
 
 /// \method __str__()
 /// Return a string describing the pin object.
-STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // pin name
@@ -238,7 +242,7 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
 }
 
-STATIC mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *pin, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
+static mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *pin, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 
 /// \classmethod \constructor(id, ...)
 /// Create a new Pin object associated with the id.  If additional arguments are given,
@@ -263,7 +267,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
 }
 
 // fast method for getting/setting pin value
-STATIC mp_obj_t pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (n_args == 0) {
@@ -278,31 +282,31 @@ STATIC mp_obj_t pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_
 
 /// \classmethod mapper([fun])
 /// Get or set the pin mapper function.
-STATIC mp_obj_t pin_mapper(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pin_mapper(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         MP_STATE_PORT(pin_class_mapper) = args[1];
         return mp_const_none;
     }
     return MP_STATE_PORT(pin_class_mapper);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_mapper_fun_obj, 1, 2, pin_mapper);
-STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_mapper_obj, MP_ROM_PTR(&pin_mapper_fun_obj));
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_mapper_fun_obj, 1, 2, pin_mapper);
+static MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_mapper_obj, MP_ROM_PTR(&pin_mapper_fun_obj));
 
 /// \classmethod dict([dict])
 /// Get or set the pin mapper dictionary.
-STATIC mp_obj_t pin_map_dict(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pin_map_dict(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         MP_STATE_PORT(pin_class_map_dict) = args[1];
         return mp_const_none;
     }
     return MP_STATE_PORT(pin_class_map_dict);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_map_dict_fun_obj, 1, 2, pin_map_dict);
-STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_map_dict_obj, MP_ROM_PTR(&pin_map_dict_fun_obj));
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_map_dict_fun_obj, 1, 2, pin_map_dict);
+static MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_map_dict_obj, MP_ROM_PTR(&pin_map_dict_fun_obj));
 
 /// \classmethod af_list()
 /// Returns an array of alternate functions available for this pin.
-STATIC mp_obj_t pin_af_list(mp_obj_t self_in) {
+static mp_obj_t pin_af_list(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t result = mp_obj_new_list(0, NULL);
 
@@ -312,22 +316,22 @@ STATIC mp_obj_t pin_af_list(mp_obj_t self_in) {
     }
     return result;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_list_obj, pin_af_list);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_af_list_obj, pin_af_list);
 
 /// \classmethod debug([state])
 /// Get or set the debugging state (`True` or `False` for on or off).
-STATIC mp_obj_t pin_debug(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pin_debug(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         pin_class_debug = mp_obj_is_true(args[1]);
         return mp_const_none;
     }
     return mp_obj_new_bool(pin_class_debug);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_debug_fun_obj, 1, 2, pin_debug);
-STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, MP_ROM_PTR(&pin_debug_fun_obj));
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_debug_fun_obj, 1, 2, pin_debug);
+static MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, MP_ROM_PTR(&pin_debug_fun_obj));
 
 // init(mode, pull=None, alt=-1, *, value, alt)
-STATIC mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
@@ -384,7 +388,7 @@ STATIC mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args
     return mp_const_none;
 }
 
-STATIC mp_obj_t pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return pin_obj_init_helper(MP_OBJ_TO_PTR(args[0]), n_args - 1, args + 1, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pin_init_obj, 1, pin_obj_init);
@@ -396,27 +400,27 @@ MP_DEFINE_CONST_FUN_OBJ_KW(pin_init_obj, 1, pin_obj_init);
 ///   - With `value` given, set the logic level of the pin.  `value` can be
 ///   anything that converts to a boolean.  If it converts to `True`, the pin
 ///   is set high, otherwise it is set low.
-STATIC mp_obj_t pin_value(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pin_value(size_t n_args, const mp_obj_t *args) {
     return pin_call(args[0], n_args - 1, 0, args + 1);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
 
-STATIC mp_obj_t pin_off(mp_obj_t self_in) {
+static mp_obj_t pin_off(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_hal_pin_low(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_off_obj, pin_off);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_off_obj, pin_off);
 
-STATIC mp_obj_t pin_on(mp_obj_t self_in) {
+static mp_obj_t pin_on(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_hal_pin_high(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_on_obj, pin_on);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_on_obj, pin_on);
 
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
-STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -436,19 +440,19 @@ STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     // TODO should return an IRQ object
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
 
 /// \method name()
 /// Get the pin name.
-STATIC mp_obj_t pin_name(mp_obj_t self_in) {
+static mp_obj_t pin_name(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_QSTR(self->name);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_name_obj, pin_name);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_name_obj, pin_name);
 
 /// \method names()
 /// Returns the cpu and board names for this pin.
-STATIC mp_obj_t pin_names(mp_obj_t self_in) {
+static mp_obj_t pin_names(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t result = mp_obj_new_list(0, NULL);
     mp_obj_list_append(result, MP_OBJ_NEW_QSTR(self->name));
@@ -463,60 +467,60 @@ STATIC mp_obj_t pin_names(mp_obj_t self_in) {
     }
     return result;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_names_obj, pin_names);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_names_obj, pin_names);
 
 /// \method port()
 /// Get the pin port.
-STATIC mp_obj_t pin_port(mp_obj_t self_in) {
+static mp_obj_t pin_port(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(self->port);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_port_obj, pin_port);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_port_obj, pin_port);
 
 /// \method pin()
 /// Get the pin number.
-STATIC mp_obj_t pin_pin(mp_obj_t self_in) {
+static mp_obj_t pin_pin(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(self->pin);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_pin_obj, pin_pin);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_pin_obj, pin_pin);
 
 /// \method gpio()
 /// Returns the base address of the GPIO block associated with this pin.
-STATIC mp_obj_t pin_gpio(mp_obj_t self_in) {
+static mp_obj_t pin_gpio(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT((intptr_t)self->gpio);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_gpio_obj, pin_gpio);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_gpio_obj, pin_gpio);
 
 /// \method mode()
 /// Returns the currently configured mode of the pin. The integer returned
 /// will match one of the allowed constants for the mode argument to the init
 /// function.
-STATIC mp_obj_t pin_mode(mp_obj_t self_in) {
+static mp_obj_t pin_mode(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(pin_get_mode(MP_OBJ_TO_PTR(self_in)));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_mode_obj, pin_mode);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_mode_obj, pin_mode);
 
 /// \method pull()
 /// Returns the currently configured pull of the pin. The integer returned
 /// will match one of the allowed constants for the pull argument to the init
 /// function.
-STATIC mp_obj_t pin_pull(mp_obj_t self_in) {
+static mp_obj_t pin_pull(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(pin_get_pull(MP_OBJ_TO_PTR(self_in)));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_pull_obj, pin_pull);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_pull_obj, pin_pull);
 
 /// \method af()
 /// Returns the currently configured alternate-function of the pin. The
 /// integer returned will match one of the allowed constants for the af
 /// argument to the init function.
-STATIC mp_obj_t pin_af(mp_obj_t self_in) {
+static mp_obj_t pin_af(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(pin_get_af(MP_OBJ_TO_PTR(self_in)));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
-STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
+static const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&pin_value_obj) },
@@ -568,9 +572,9 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     #include "genhdr/pins_af_const.h"
 };
 
-STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
 
-STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -586,7 +590,7 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
     return -1;
 }
 
-STATIC const mp_pin_p_t pin_pin_p = {
+static const mp_pin_p_t pin_pin_p = {
     .ioctl = pin_ioctl,
 };
 
@@ -600,6 +604,44 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &pin_pin_p,
     locals_dict, &pin_locals_dict
     );
+
+/******************************************************************************/
+// Special analog-only pin.
+
+#if MICROPY_HW_ENABLE_ANALOG_ONLY_PINS
+
+// When both normal and _C pins are defined in pins.csv, force the corresponding
+// analog switch to be open.  The macro code below will produce a compiler warning
+// if the board defines the switch as closed.
+#if defined(pin_A0) && defined(pin_A0_C)
+#define MICROPY_HW_ANALOG_SWITCH_PA0 (SYSCFG_SWITCH_PA0_OPEN)
+#endif
+#if defined(pin_A1) && defined(pin_A1_C)
+#define MICROPY_HW_ANALOG_SWITCH_PA1 (SYSCFG_SWITCH_PA1_OPEN)
+#endif
+#if defined(pin_C2) && defined(pin_C2_C)
+#define MICROPY_HW_ANALOG_SWITCH_PC2 (SYSCFG_SWITCH_PC2_OPEN)
+#endif
+#if defined(pin_C3) && defined(pin_C3_C)
+#define MICROPY_HW_ANALOG_SWITCH_PC3 (SYSCFG_SWITCH_PC3_OPEN)
+#endif
+
+static void pin_analog_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "Pin(Pin.cpu.%q, mode=Pin.ANALOG)", self->name);
+}
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_analog_type,
+    MP_QSTR_Pin,
+    MP_TYPE_FLAG_NONE,
+    print, pin_analog_print
+    );
+
+#endif
+
+/******************************************************************************/
+// PinAF class
 
 /// \moduleref pyb
 /// \class PinAF - Pin Alternate Functions
@@ -630,43 +672,43 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 /// \method __str__()
 /// Return a string describing the alternate function.
-STATIC void pin_af_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void pin_af_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_af_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "Pin.%q", self->name);
 }
 
 /// \method index()
 /// Return the alternate function index.
-STATIC mp_obj_t pin_af_index(mp_obj_t self_in) {
+static mp_obj_t pin_af_index(mp_obj_t self_in) {
     pin_af_obj_t *af = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(af->idx);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_index_obj, pin_af_index);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_af_index_obj, pin_af_index);
 
 /// \method name()
 /// Return the name of the alternate function.
-STATIC mp_obj_t pin_af_name(mp_obj_t self_in) {
+static mp_obj_t pin_af_name(mp_obj_t self_in) {
     pin_af_obj_t *af = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_QSTR(af->name);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_name_obj, pin_af_name);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_af_name_obj, pin_af_name);
 
 /// \method reg()
 /// Return the base register associated with the peripheral assigned to this
 /// alternate function. For example, if the alternate function were TIM2_CH3
 /// this would return stm.TIM2
-STATIC mp_obj_t pin_af_reg(mp_obj_t self_in) {
+static mp_obj_t pin_af_reg(mp_obj_t self_in) {
     pin_af_obj_t *af = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT((uintptr_t)af->reg);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_reg_obj, pin_af_reg);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_af_reg_obj, pin_af_reg);
 
-STATIC const mp_rom_map_elem_t pin_af_locals_dict_table[] = {
+static const mp_rom_map_elem_t pin_af_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&pin_af_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_name), MP_ROM_PTR(&pin_af_name_obj) },
     { MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pin_af_reg_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(pin_af_locals_dict, pin_af_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pin_af_locals_dict, pin_af_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pin_af_type,

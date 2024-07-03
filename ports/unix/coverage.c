@@ -31,7 +31,7 @@ typedef struct _mp_obj_streamtest_t {
     int error_code;
 } mp_obj_streamtest_t;
 
-STATIC mp_obj_t stest_set_buf(mp_obj_t o_in, mp_obj_t buf_in) {
+static mp_obj_t stest_set_buf(mp_obj_t o_in, mp_obj_t buf_in) {
     mp_obj_streamtest_t *o = MP_OBJ_TO_PTR(o_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
@@ -41,16 +41,16 @@ STATIC mp_obj_t stest_set_buf(mp_obj_t o_in, mp_obj_t buf_in) {
     o->pos = 0;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(stest_set_buf_obj, stest_set_buf);
+static MP_DEFINE_CONST_FUN_OBJ_2(stest_set_buf_obj, stest_set_buf);
 
-STATIC mp_obj_t stest_set_error(mp_obj_t o_in, mp_obj_t err_in) {
+static mp_obj_t stest_set_error(mp_obj_t o_in, mp_obj_t err_in) {
     mp_obj_streamtest_t *o = MP_OBJ_TO_PTR(o_in);
     o->error_code = mp_obj_get_int(err_in);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(stest_set_error_obj, stest_set_error);
+static MP_DEFINE_CONST_FUN_OBJ_2(stest_set_error_obj, stest_set_error);
 
-STATIC mp_uint_t stest_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t stest_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_streamtest_t *o = MP_OBJ_TO_PTR(o_in);
     if (o->pos < o->len) {
         if (size > o->len - o->pos) {
@@ -67,7 +67,7 @@ STATIC mp_uint_t stest_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errco
     }
 }
 
-STATIC mp_uint_t stest_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t stest_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_streamtest_t *o = MP_OBJ_TO_PTR(o_in);
     (void)buf;
     (void)size;
@@ -75,7 +75,7 @@ STATIC mp_uint_t stest_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int
     return MP_STREAM_ERROR;
 }
 
-STATIC mp_uint_t stest_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t stest_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_streamtest_t *o = MP_OBJ_TO_PTR(o_in);
     (void)arg;
     (void)request;
@@ -87,7 +87,7 @@ STATIC mp_uint_t stest_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, in
     return 0;
 }
 
-STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
+static const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_buf), MP_ROM_PTR(&stest_set_buf_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_error), MP_ROM_PTR(&stest_set_error_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
@@ -99,15 +99,15 @@ STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mp_stream_ioctl_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
+static MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 
-STATIC const mp_stream_p_t fileio_stream_p = {
+static const mp_stream_p_t fileio_stream_p = {
     .read = stest_read,
     .write = stest_write,
     .ioctl = stest_ioctl,
 };
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_stest_fileio,
     MP_QSTR_stest_fileio,
     MP_TYPE_FLAG_NONE,
@@ -116,7 +116,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 // stream read returns non-blocking error
-STATIC mp_uint_t stest_read2(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t stest_read2(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     (void)o_in;
     (void)buf;
     (void)size;
@@ -124,19 +124,19 @@ STATIC mp_uint_t stest_read2(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
     return MP_STREAM_ERROR;
 }
 
-STATIC const mp_rom_map_elem_t rawfile_locals_dict_table2[] = {
+static const mp_rom_map_elem_t rawfile_locals_dict_table2[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict2, rawfile_locals_dict_table2);
+static MP_DEFINE_CONST_DICT(rawfile_locals_dict2, rawfile_locals_dict_table2);
 
-STATIC const mp_stream_p_t textio_stream_p2 = {
+static const mp_stream_p_t textio_stream_p2 = {
     .read = stest_read2,
     .write = NULL,
     .is_text = true,
 };
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_stest_textio2,
     MP_QSTR_stest_textio2,
     MP_TYPE_FLAG_NONE,
@@ -145,15 +145,15 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 // str/bytes objects without a valid hash
-STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte *)"0123456789"};
-STATIC const mp_obj_str_t bytes_no_hash_obj = {{&mp_type_bytes}, 0, 10, (const byte *)"0123456789"};
+static const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte *)"0123456789"};
+static const mp_obj_str_t bytes_no_hash_obj = {{&mp_type_bytes}, 0, 10, (const byte *)"0123456789"};
 
-STATIC int pairheap_lt(mp_pairheap_t *a, mp_pairheap_t *b) {
+static int pairheap_lt(mp_pairheap_t *a, mp_pairheap_t *b) {
     return (uintptr_t)a < (uintptr_t)b;
 }
 
 // ops array contain operations: x>=0 means push(x), x<0 means delete(-x)
-STATIC void pairheap_test(size_t nops, int *ops) {
+static void pairheap_test(size_t nops, int *ops) {
     mp_pairheap_t node[8];
     for (size_t i = 0; i < MP_ARRAY_SIZE(node); ++i) {
         mp_pairheap_init_node(pairheap_lt, &node[i]);
@@ -183,7 +183,7 @@ STATIC void pairheap_test(size_t nops, int *ops) {
 }
 
 // function to run extra tests for things that can't be checked by scripts
-STATIC mp_obj_t extra_coverage(void) {
+static mp_obj_t extra_coverage(void) {
     // mp_printf (used by ports that don't have a native printf)
     {
         mp_printf(&mp_plat_print, "# mp_printf\n");

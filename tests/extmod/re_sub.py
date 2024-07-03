@@ -15,9 +15,9 @@ def multiply(m):
     return str(int(m.group(0)) * 2)
 
 
-print(re.sub("\d+", multiply, "10 20 30 40 50"))
+print(re.sub(r"\d+", multiply, "10 20 30 40 50"))
 
-print(re.sub("\d+", lambda m: str(int(m.group(0)) // 2), "10 20 30 40 50"))
+print(re.sub(r"\d+", lambda m: str(int(m.group(0)) // 2), "10 20 30 40 50"))
 
 
 def A():

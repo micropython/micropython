@@ -50,7 +50,7 @@ typedef struct _mp_obj_gen_instance_t {
     mp_code_state_t code_state;
 } mp_obj_gen_instance_t;
 
-STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // A generating function is just a bytecode function with type mp_type_gen_wrap
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
@@ -59,7 +59,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     MP_BC_PRELUDE_SIG_DECODE(ip);
 
     // allocate the generator object, with room for local stack and exception stack
-    mp_obj_gen_instance_t *o = mp_obj_malloc_var(mp_obj_gen_instance_t, byte,
+    mp_obj_gen_instance_t *o = mp_obj_malloc_var(mp_obj_gen_instance_t, code_state.state, byte,
         n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t),
         &mp_type_gen_instance);
 
@@ -96,40 +96,31 @@ typedef struct _mp_obj_gen_instance_native_t {
     mp_code_state_native_t code_state;
 } mp_obj_gen_instance_native_t;
 
-STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // The state for a native generating function is held in the same struct as a bytecode function
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // Determine start of prelude.
-    uintptr_t prelude_ptr_index = ((uintptr_t *)self_fun->bytecode)[0];
-    const uint8_t *prelude_ptr;
-    if (prelude_ptr_index == 0) {
-        prelude_ptr = (void *)self_fun->child_table;
-    } else {
-        prelude_ptr = (void *)self_fun->child_table[prelude_ptr_index];
-    }
+    const uint8_t *prelude_ptr = mp_obj_fun_native_get_prelude_ptr(self_fun);
 
     // Extract n_state from the prelude.
     const uint8_t *ip = prelude_ptr;
     MP_BC_PRELUDE_SIG_DECODE(ip);
 
     // Allocate the generator object, with room for local stack (exception stack not needed).
-    mp_obj_gen_instance_native_t *o = mp_obj_malloc_var(mp_obj_gen_instance_native_t, byte, n_state * sizeof(mp_obj_t), &mp_type_gen_instance);
+    mp_obj_gen_instance_native_t *o = mp_obj_malloc_var(mp_obj_gen_instance_native_t, code_state.state, byte, n_state * sizeof(mp_obj_t), &mp_type_gen_instance);
 
     // Parse the input arguments and set up the code state
     o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
-    o->code_state.ip = prelude_ptr;
     o->code_state.n_state = n_state;
-    o->code_state.sp = &o->code_state.state[0] - 1;
     mp_setup_code_state_native(&o->code_state, n_args, n_kw, args);
 
     // Indicate we are a native function, which doesn't use this variable
     o->code_state.exc_sp_idx = MP_CODE_STATE_EXC_SP_IDX_SENTINEL;
 
     // Prepare the generator instance for execution
-    uintptr_t start_offset = ((uintptr_t *)self_fun->bytecode)[1];
-    o->code_state.ip = MICROPY_MAKE_POINTER_CALLABLE((void *)(self_fun->bytecode + start_offset));
+    o->code_state.ip = mp_obj_fun_native_get_generator_start(self_fun);
 
     return MP_OBJ_FROM_PTR(o);
 }
@@ -153,7 +144,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 /******************************************************************************/
 /* generator instance                                                         */
 
-STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<generator object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
@@ -208,9 +199,9 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
     #if MICROPY_EMIT_NATIVE
     if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
-        // A native generator, with entry point 2 words into the "bytecode" pointer
+        // A native generator.
         typedef uintptr_t (*mp_fun_native_gen_t)(void *, mp_obj_t);
-        mp_fun_native_gen_t fun = MICROPY_MAKE_POINTER_CALLABLE((const void *)(self->code_state.fun_bc->bytecode + 2 * sizeof(uintptr_t)));
+        mp_fun_native_gen_t fun = mp_obj_fun_native_get_generator_resume(self->code_state.fun_bc);
         ret_kind = fun((void *)&self->code_state, throw_value);
     } else
     #endif
@@ -263,7 +254,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     return ret_kind;
 }
 
-STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, bool raise_stop_iteration) {
+static mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, bool raise_stop_iteration) {
     mp_obj_t ret;
     switch (mp_obj_gen_resume(self_in, send_value, throw_value, &ret)) {
         case MP_VM_RETURN_NORMAL:
@@ -287,16 +278,16 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
     }
 }
 
-STATIC mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
+static mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
     return gen_resume_and_raise(self_in, mp_const_none, MP_OBJ_NULL, false);
 }
 
-STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
+static mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
     return gen_resume_and_raise(self_in, send_value, MP_OBJ_NULL, true);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
+static MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
-STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
     // The signature of this function is: throw(type[, value[, traceback]])
     // CPython will pass all given arguments through the call chain and process them
     // at the point they are used (native generators will handle them differently to
@@ -316,9 +307,9 @@ STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
 
     return gen_resume_and_raise(args[0], mp_const_none, exc, true);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gen_instance_throw_obj, 2, 4, gen_instance_throw);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gen_instance_throw_obj, 2, 4, gen_instance_throw);
 
-STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
+static mp_obj_t gen_instance_close(mp_obj_t self_in) {
     mp_obj_t ret;
     switch (mp_obj_gen_resume(self_in, mp_const_none, MP_OBJ_FROM_PTR(&mp_const_GeneratorExit_obj), &ret)) {
         case MP_VM_RETURN_YIELD:
@@ -337,10 +328,10 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
             return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
+static MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
 
 #if MICROPY_PY_GENERATOR_PEND_THROW
-STATIC mp_obj_t gen_instance_pend_throw(mp_obj_t self_in, mp_obj_t exc_in) {
+static mp_obj_t gen_instance_pend_throw(mp_obj_t self_in, mp_obj_t exc_in) {
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->pend_exc == MP_OBJ_NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("generator already executing"));
@@ -349,10 +340,10 @@ STATIC mp_obj_t gen_instance_pend_throw(mp_obj_t self_in, mp_obj_t exc_in) {
     self->pend_exc = exc_in;
     return prev;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_pend_throw_obj, gen_instance_pend_throw);
+static MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_pend_throw_obj, gen_instance_pend_throw);
 #endif
 
-STATIC const mp_rom_map_elem_t gen_instance_locals_dict_table[] = {
+static const mp_rom_map_elem_t gen_instance_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&gen_instance_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&gen_instance_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_throw), MP_ROM_PTR(&gen_instance_throw_obj) },
@@ -361,7 +352,7 @@ STATIC const mp_rom_map_elem_t gen_instance_locals_dict_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_table);
+static MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_gen_instance,

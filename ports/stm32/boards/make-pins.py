@@ -59,6 +59,12 @@ class Stm32Pin(boardgen.Pin):
     def __init__(self, cpu_pin_name):
         super().__init__(cpu_pin_name)
 
+        # Pins ending in "_C" correspond to the analog-only pad of a pair
+        # of dual (analog) pads found on H7 MCUs (eg PA0 and PA0_C pair).
+        self._analog_only = cpu_pin_name.endswith("_C")
+        if self._analog_only:
+            cpu_pin_name = cpu_pin_name[:-2]
+
         # P<port><num> (already verified by validate_cpu_pin_name).
         self._port = cpu_pin_name[1]
         self._pin = int(cpu_pin_name[2:])
@@ -129,11 +135,6 @@ class Stm32Pin(boardgen.Pin):
         # be the P for one channel, and the N for a different channel.
         # e.g. "ADC123_INP12/ADC123_INN11".
         for adc_name in adc.split("/"):
-            if adc_name.startswith("C_"):
-                # Currently unsupported, H7 dual-pad. The C_ADC entries should
-                # only be available directly from machine.ADC (not via the pin
-                # object).
-                continue
             m = re.match("ADC([1-5]+)_(IN[NP]?)([0-9]+)$", adc_name)
             if not m:
                 raise boardgen.PinGeneratorError(
@@ -167,8 +168,9 @@ class Stm32Pin(boardgen.Pin):
         )
 
         # PIN(p_port, p_pin, p_af, p_adc_num, p_adc_channel)
-        return "PIN({:s}, {:d}, pin_{:s}_af, {:s}, {:d})".format(
-            self._port, self._pin, self.name(), adc_units_bitfield, self._adc_channel
+        pin_macro = "PIN_ANALOG" if self._analog_only else "PIN"
+        return "{:s}({:s}, {:d}, pin_{:s}_af, {:s}, {:d})".format(
+            pin_macro, self._port, self._pin, self.name(), adc_units_bitfield, self._adc_channel
         )
 
     # This will be called at the start of the output (after the prefix). Use
@@ -210,7 +212,7 @@ class Stm32Pin(boardgen.Pin):
     def validate_cpu_pin_name(cpu_pin_name):
         boardgen.Pin.validate_cpu_pin_name(cpu_pin_name)
 
-        if not re.match("P[A-K][0-9]+$", cpu_pin_name):
+        if not re.match("P[A-K][0-9]+(_C)?$", cpu_pin_name):
             raise boardgen.PinGeneratorError("Invalid cpu pin name '{}'".format(cpu_pin_name))
 
 

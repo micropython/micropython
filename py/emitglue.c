@@ -61,24 +61,20 @@ mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
 }
 
 void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
-    size_t len,
-    #endif
     mp_raw_code_t **children,
     #if MICROPY_PERSISTENT_CODE_SAVE
-    size_t n_children,
+    size_t len,
+    uint16_t n_children,
     #endif
-    mp_uint_t scope_flags) {
+    uint16_t scope_flags) {
 
     rc->kind = MP_CODE_BYTECODE;
-    rc->scope_flags = scope_flags;
+    rc->is_generator = (scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0;
     rc->fun_data = code;
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
-    rc->fun_data_len = len;
-    #endif
     rc->children = children;
 
     #if MICROPY_PERSISTENT_CODE_SAVE
+    rc->fun_data_len = len;
     rc->n_children = n_children;
     #endif
 
@@ -88,7 +84,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     #endif
 
     #if DEBUG_PRINT
-    #if !(MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS)
+    #if !MICROPY_PERSISTENT_CODE_SAVE
     const size_t len = 0;
     #endif
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " flags=%x\n", code, len, (uint)scope_flags);
@@ -96,13 +92,14 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
 }
 
 #if MICROPY_EMIT_MACHINE_CODE
-void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len,
+void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, const void *fun_data, mp_uint_t fun_len,
     mp_raw_code_t **children,
     #if MICROPY_PERSISTENT_CODE_SAVE
-    size_t n_children,
+    uint16_t n_children,
     uint16_t prelude_offset,
     #endif
-    mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_t type_sig) {
+    uint16_t scope_flags, uint32_t asm_n_pos_args, uint32_t asm_type_sig
+    ) {
 
     assert(kind == MP_CODE_NATIVE_PY || kind == MP_CODE_NATIVE_VIPER || kind == MP_CODE_NATIVE_ASM);
 
@@ -118,7 +115,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     #endif
     #elif MICROPY_EMIT_ARM
     #if (defined(__linux__) && defined(__GNUC__)) || __ARM_ARCH == 7
-    __builtin___clear_cache(fun_data, (uint8_t *)fun_data + fun_len);
+    __builtin___clear_cache((void *)fun_data, (uint8_t *)fun_data + fun_len);
     #elif defined(__arm__)
     // Flush I-cache and D-cache.
     asm volatile (
@@ -132,10 +129,10 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     #endif
 
     rc->kind = kind;
-    rc->scope_flags = scope_flags;
+    rc->is_generator = (scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0;
     rc->fun_data = fun_data;
 
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
+    #if MICROPY_PERSISTENT_CODE_SAVE
     rc->fun_data_len = fun_len;
     #endif
     rc->children = children;
@@ -145,17 +142,19 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     rc->prelude_offset = prelude_offset;
     #endif
 
+    #if MICROPY_EMIT_INLINE_ASM
     // These two entries are only needed for MP_CODE_NATIVE_ASM.
-    rc->n_pos_args = n_pos_args;
-    rc->type_sig = type_sig;
+    rc->asm_n_pos_args = asm_n_pos_args;
+    rc->asm_type_sig = asm_type_sig;
+    #endif
 
     #if DEBUG_PRINT
-    DEBUG_printf("assign native: kind=%d fun=%p len=" UINT_FMT " n_pos_args=" UINT_FMT " flags=%x\n", kind, fun_data, fun_len, n_pos_args, (uint)scope_flags);
+    DEBUG_printf("assign native: kind=%d fun=%p len=" UINT_FMT " flags=%x\n", kind, fun_data, fun_len, (uint)scope_flags);
     for (mp_uint_t i = 0; i < fun_len; i++) {
         if (i > 0 && i % 16 == 0) {
             DEBUG_printf("\n");
         }
-        DEBUG_printf(" %02x", ((byte *)fun_data)[i]);
+        DEBUG_printf(" %02x", ((const byte *)fun_data)[i]);
     }
     DEBUG_printf("\n");
 
@@ -170,9 +169,9 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
 }
 #endif
 
-mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, const mp_module_context_t *context, const mp_obj_t *def_args) {
-    DEBUG_OP_printf("make_function_from_raw_code %p\n", rc);
-    assert(rc != NULL);
+mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_module_context_t *context, const mp_obj_t *def_args) {
+    DEBUG_OP_printf("make_function_from_proto_fun %p\n", proto_fun);
+    assert(proto_fun != NULL);
 
     // def_args must be MP_OBJ_NULL or a tuple
     assert(def_args == NULL || def_args[0] == MP_OBJ_NULL || mp_obj_is_type(def_args[0], &mp_type_tuple));
@@ -180,22 +179,39 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, const mp_module
     // def_kw_args must be MP_OBJ_NULL or a dict
     assert(def_args == NULL || def_args[1] == MP_OBJ_NULL || mp_obj_is_type(def_args[1], &mp_type_dict));
 
+    #if MICROPY_MODULE_FROZEN_MPY
+    if (mp_proto_fun_is_bytecode(proto_fun)) {
+        const uint8_t *bc = proto_fun;
+        mp_obj_t fun = mp_obj_new_fun_bc(def_args, bc, context, NULL);
+        MP_BC_PRELUDE_SIG_DECODE(bc);
+        if (scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+            ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_gen_wrap;
+        }
+        return fun;
+    }
+    #endif
+
+    // the proto-function is a mp_raw_code_t
+    const mp_raw_code_t *rc = proto_fun;
+
     // make the function, depending on the raw code kind
     mp_obj_t fun;
     switch (rc->kind) {
         #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
-        case MP_CODE_NATIVE_VIPER:
             fun = mp_obj_new_fun_native(def_args, rc->fun_data, context, rc->children);
             // Check for a generator function, and if so change the type of the object
-            if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
+            if (rc->is_generator) {
                 ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_native_gen_wrap;
             }
+            break;
+        case MP_CODE_NATIVE_VIPER:
+            fun = mp_obj_new_fun_viper(rc->fun_data, context, rc->children);
             break;
         #endif
         #if MICROPY_EMIT_INLINE_ASM
         case MP_CODE_NATIVE_ASM:
-            fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->fun_data, rc->type_sig);
+            fun = mp_obj_new_fun_asm(rc->asm_n_pos_args, rc->fun_data, rc->asm_type_sig);
             break;
         #endif
         default:
@@ -203,7 +219,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, const mp_module
             assert(rc->kind == MP_CODE_BYTECODE);
             fun = mp_obj_new_fun_bc(def_args, rc->fun_data, context, rc->children);
             // check for generator functions and if so change the type of the object
-            if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
+            if (rc->is_generator) {
                 ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_gen_wrap;
             }
 
@@ -218,16 +234,16 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, const mp_module
     return fun;
 }
 
-mp_obj_t mp_make_closure_from_raw_code(const mp_raw_code_t *rc, const mp_module_context_t *context, mp_uint_t n_closed_over, const mp_obj_t *args) {
-    DEBUG_OP_printf("make_closure_from_raw_code %p " UINT_FMT " %p\n", rc, n_closed_over, args);
+mp_obj_t mp_make_closure_from_proto_fun(mp_proto_fun_t proto_fun, const mp_module_context_t *context, mp_uint_t n_closed_over, const mp_obj_t *args) {
+    DEBUG_OP_printf("make_closure_from_proto_fun %p " UINT_FMT " %p\n", proto_fun, n_closed_over, args);
     // make function object
     mp_obj_t ffun;
     if (n_closed_over & 0x100) {
         // default positional and keyword args given
-        ffun = mp_make_function_from_raw_code(rc, context, args);
+        ffun = mp_make_function_from_proto_fun(proto_fun, context, args);
     } else {
         // default positional and keyword args not given
-        ffun = mp_make_function_from_raw_code(rc, context, NULL);
+        ffun = mp_make_function_from_proto_fun(proto_fun, context, NULL);
     }
     // wrap function in closure object
     return mp_obj_new_closure(ffun, n_closed_over & 0xff, args + ((n_closed_over >> 7) & 2));

@@ -85,21 +85,21 @@ static nina_obj_t network_nina_wl_sta = {{(mp_obj_type_t *)&mod_network_nic_type
 static nina_obj_t network_nina_wl_ap = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, false, MOD_NETWORK_AP_IF};
 static mp_sched_node_t mp_wifi_poll_node;
 static soft_timer_entry_t mp_wifi_poll_timer;
-STATIC void network_ninaw10_deinit(void);
+static void network_ninaw10_deinit(void);
 
-STATIC bool network_ninaw10_poll_list_is_empty(void) {
+static bool network_ninaw10_poll_list_is_empty(void) {
     return MP_STATE_PORT(mp_wifi_poll_list) == NULL ||
            MP_STATE_PORT(mp_wifi_poll_list)->len == 0;
 }
 
-STATIC void network_ninaw10_poll_list_insert(mp_obj_t socket) {
+static void network_ninaw10_poll_list_insert(mp_obj_t socket) {
     if (MP_STATE_PORT(mp_wifi_poll_list) == NULL) {
         MP_STATE_PORT(mp_wifi_poll_list) = mp_obj_new_list(0, NULL);
     }
     mp_obj_list_append(MP_STATE_PORT(mp_wifi_poll_list), socket);
 }
 
-STATIC void network_ninaw10_poll_list_remove(mp_obj_t socket) {
+static void network_ninaw10_poll_list_remove(mp_obj_t socket) {
     if (MP_STATE_PORT(mp_wifi_poll_list) == NULL) {
         return;
     }
@@ -109,7 +109,7 @@ STATIC void network_ninaw10_poll_list_remove(mp_obj_t socket) {
     }
 }
 
-STATIC void network_ninaw10_poll_sockets(mp_sched_node_t *node) {
+static void network_ninaw10_poll_sockets(mp_sched_node_t *node) {
     (void)node;
     for (mp_uint_t i = 0; MP_STATE_PORT(mp_wifi_poll_list) && i < MP_STATE_PORT(mp_wifi_poll_list)->len;) {
         mod_network_socket_obj_t *socket = MP_STATE_PORT(mp_wifi_poll_list)->items[i];
@@ -134,7 +134,7 @@ STATIC void network_ninaw10_poll_sockets(mp_sched_node_t *node) {
     }
 }
 
-STATIC void network_ninaw10_poll_connect(mp_sched_node_t *node) {
+static void network_ninaw10_poll_connect(mp_sched_node_t *node) {
     nina_obj_t *self = &network_nina_wl_sta;
 
     int status = nina_connection_status();
@@ -153,7 +153,7 @@ STATIC void network_ninaw10_poll_connect(mp_sched_node_t *node) {
             debug_printf("poll_connect() status: %d reason %d\n", status, reason);
             if (nina_connect(self->ssid, self->security, self->key, 0) != 0) {
                 mp_raise_msg_varg(&mp_type_OSError,
-                    MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s\n"),
+                    MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s"),
                     self->ssid, self->security, self->key);
             }
         } else {
@@ -166,7 +166,7 @@ STATIC void network_ninaw10_poll_connect(mp_sched_node_t *node) {
     soft_timer_reinsert(&mp_wifi_poll_timer, NINAW10_POLL_INTERVAL);
 }
 
-STATIC void network_ninaw10_timer_callback(soft_timer_entry_t *self) {
+static void network_ninaw10_timer_callback(soft_timer_entry_t *self) {
     debug_printf("timer_callback() poll status STA: %d AP: %d SOCKETS: %d\n",
         network_nina_wl_sta.poll_enable, network_nina_wl_ap.poll_enable, !network_ninaw10_poll_list_is_empty());
     if (network_nina_wl_sta.poll_enable) {
@@ -176,7 +176,7 @@ STATIC void network_ninaw10_timer_callback(soft_timer_entry_t *self) {
     }
 }
 
-STATIC mp_obj_t network_ninaw10_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t network_ninaw10_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_t nina_obj;
     if (n_args == 0 || mp_obj_get_int(args[0]) == MOD_NETWORK_STA_IF) {
@@ -189,23 +189,22 @@ STATIC mp_obj_t network_ninaw10_make_new(const mp_obj_type_t *type, size_t n_arg
     return nina_obj;
 }
 
-STATIC mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
     nina_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 2) {
         bool active = mp_obj_is_true(args[1]);
-        network_ninaw10_deinit();
-        if (active) {
+        if (active && !self->active) {
             int error = 0;
             if ((error = nina_init()) != 0) {
                 mp_raise_msg_varg(&mp_type_OSError,
-                    MP_ERROR_TEXT("Failed to initialize Nina-W10 module, error: %d\n"), error);
+                    MP_ERROR_TEXT("failed to initialize Nina-W10 module, error: %d"), error);
             }
             // check firmware version
             uint8_t semver[NINA_FW_VER_LEN];
             if (nina_fw_version(semver) != 0) {
                 nina_deinit();
                 mp_raise_msg_varg(&mp_type_OSError,
-                    MP_ERROR_TEXT("Failed to read firmware version, error: %d\n"), error);
+                    MP_ERROR_TEXT("failed to read firmware version, error: %d"), error);
             }
             // Check the minimum supported firmware version.
             uint32_t fwmin = (NINA_FW_VER_MIN_MAJOR * 100) +
@@ -218,12 +217,13 @@ STATIC mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
 
             if (fwver < fwmin) {
                 mp_raise_msg_varg(&mp_type_OSError,
-                    MP_ERROR_TEXT("Firmware version mismatch. Minimum supported firmware is v%d.%d.%d found v%d.%d.%d\n"),
+                    MP_ERROR_TEXT("firmware version mismatch, minimum supported firmware is v%d.%d.%d found v%d.%d.%d"),
                     NINA_FW_VER_MIN_MAJOR, NINA_FW_VER_MIN_MINOR, NINA_FW_VER_MIN_PATCH, semver[NINA_FW_VER_MAJOR_OFFS] - 48,
                     semver[NINA_FW_VER_MINOR_OFFS] - 48, semver[NINA_FW_VER_PATCH_OFFS] - 48);
             }
             soft_timer_static_init(&mp_wifi_poll_timer, SOFT_TIMER_MODE_ONE_SHOT, 0, network_ninaw10_timer_callback);
-        } else {
+        } else if (!active && self->active) {
+            network_ninaw10_deinit();
             nina_deinit();
         }
         self->active = active;
@@ -231,9 +231,9 @@ STATIC mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
     }
     return mp_obj_new_bool(self->active);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ninaw10_active_obj, 1, 2, network_ninaw10_active);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ninaw10_active_obj, 1, 2, network_ninaw10_active);
 
-STATIC int nina_scan_callback(nina_scan_result_t *scan_result, void *arg) {
+static int nina_scan_callback(nina_scan_result_t *scan_result, void *arg) {
     mp_obj_t scan_list = (mp_obj_t)arg;
     mp_obj_t ap[6] = {
         mp_obj_new_bytes((uint8_t *)scan_result->ssid, strlen(scan_result->ssid)),
@@ -247,20 +247,20 @@ STATIC int nina_scan_callback(nina_scan_result_t *scan_result, void *arg) {
     return 0;
 }
 
-STATIC mp_obj_t network_ninaw10_scan(mp_obj_t self_in) {
+static mp_obj_t network_ninaw10_scan(mp_obj_t self_in) {
     mp_obj_t scan_list;
     scan_list = mp_obj_new_list(0, NULL);
     nina_scan(nina_scan_callback, scan_list, 10000);
     return scan_list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ninaw10_scan_obj, network_ninaw10_scan);
+static MP_DEFINE_CONST_FUN_OBJ_1(network_ninaw10_scan_obj, network_ninaw10_scan);
 
-STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ssid, ARG_key, ARG_security, ARG_channel };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_key,      MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NINA_SEC_WPA_PSK} },
+        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_channel,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     };
 
@@ -273,20 +273,31 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
     const char *ssid = mp_obj_str_get_str(args[ARG_ssid].u_obj);
 
     if (strlen(ssid) == 0) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SSID can't be empty!"));
+        mp_raise_ValueError(MP_ERROR_TEXT("SSID can't be empty"));
     }
 
-    // get key and sec
+    // get encryption key
     const char *key = NULL;
-    mp_uint_t security = NINA_SEC_OPEN;
-
     if (args[ARG_key].u_obj != mp_const_none) {
         key = mp_obj_str_get_str(args[ARG_key].u_obj);
-        security = args[ARG_security].u_int;
     }
 
+    // get security mode
+    mp_uint_t security = args[ARG_security].u_int;
+    if (security == -1 && self->itf == MOD_NETWORK_STA_IF) {
+        security = NINA_SEC_WPA_PSK;
+    } else if (security == -1 && self->itf == MOD_NETWORK_AP_IF) {
+        security = NINA_SEC_WEP;
+    }
+
+    // Ensure that the key is not empty if a security mode is used.
     if (security != NINA_SEC_OPEN && strlen(key) == 0) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Key can't be empty!"));
+        mp_raise_ValueError(MP_ERROR_TEXT("key can't be empty"));
+    }
+
+    // Activate the interface if not active.
+    if (!self->active) {
+        network_ninaw10_active(2, (mp_obj_t [2]) { pos_args[0], mp_const_true });
     }
 
     // Disconnect active connections first.
@@ -298,7 +309,7 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
         // Initialize WiFi in Station mode.
         if (nina_connect(ssid, security, key, 0) != 0) {
             mp_raise_msg_varg(&mp_type_OSError,
-                MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s\n"), ssid, security, key);
+                MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s"), ssid, security, key);
         }
 
         // Save connection info to re-connect if needed.
@@ -311,7 +322,7 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
         mp_uint_t channel = args[ARG_channel].u_int;
 
         if (security != NINA_SEC_OPEN && security != NINA_SEC_WEP) {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("AP mode supports WEP security only."));
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("AP mode only supports WEP or OPEN security modes"));
         }
 
         // Initialize WiFi in AP mode.
@@ -322,20 +333,20 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_ninaw10_connect_obj, 1, network_ninaw10_connect);
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_ninaw10_connect_obj, 1, network_ninaw10_connect);
 
-STATIC mp_obj_t network_ninaw10_disconnect(mp_obj_t self_in) {
+static mp_obj_t network_ninaw10_disconnect(mp_obj_t self_in) {
     nina_disconnect();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ninaw10_disconnect_obj, network_ninaw10_disconnect);
+static MP_DEFINE_CONST_FUN_OBJ_1(network_ninaw10_disconnect_obj, network_ninaw10_disconnect);
 
-STATIC mp_obj_t network_ninaw10_isconnected(mp_obj_t self_in) {
+static mp_obj_t network_ninaw10_isconnected(mp_obj_t self_in) {
     return mp_obj_new_bool(nina_isconnected());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ninaw10_isconnected_obj, network_ninaw10_isconnected);
+static MP_DEFINE_CONST_FUN_OBJ_1(network_ninaw10_isconnected_obj, network_ninaw10_isconnected);
 
-STATIC mp_obj_t network_ninaw10_ifconfig(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t network_ninaw10_ifconfig(size_t n_args, const mp_obj_t *args) {
     nina_ifconfig_t ifconfig;
     if (n_args == 1) {
         // get ifconfig info
@@ -359,9 +370,9 @@ STATIC mp_obj_t network_ninaw10_ifconfig(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ninaw10_ifconfig_obj, 1, 2, network_ninaw10_ifconfig);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ninaw10_ifconfig_obj, 1, 2, network_ninaw10_ifconfig);
 
-STATIC mp_obj_t network_ninaw10_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+static mp_obj_t network_ninaw10_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     nina_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     (void)self;
 
@@ -410,9 +421,9 @@ STATIC mp_obj_t network_ninaw10_config(size_t n_args, const mp_obj_t *args, mp_m
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_ninaw10_config_obj, 1, network_ninaw10_config);
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_ninaw10_config_obj, 1, network_ninaw10_config);
 
-STATIC mp_obj_t network_ninaw10_status(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t network_ninaw10_status(size_t n_args, const mp_obj_t *args) {
     nina_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     (void)self;
 
@@ -444,9 +455,9 @@ STATIC mp_obj_t network_ninaw10_status(size_t n_args, const mp_obj_t *args) {
 
     mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ninaw10_status_obj, 1, 2, network_ninaw10_status);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ninaw10_status_obj, 1, 2, network_ninaw10_status);
 
-STATIC mp_obj_t network_ninaw10_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t buf_in) {
+static mp_obj_t network_ninaw10_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t buf_in) {
     debug_printf("ioctl(%d)\n", mp_obj_get_int(cmd_in));
     nina_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t buf;
@@ -458,14 +469,14 @@ STATIC mp_obj_t network_ninaw10_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(network_ninaw10_ioctl_obj, network_ninaw10_ioctl);
+static MP_DEFINE_CONST_FUN_OBJ_3(network_ninaw10_ioctl_obj, network_ninaw10_ioctl);
 
-STATIC int network_ninaw10_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
+static int network_ninaw10_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
     debug_printf("gethostbyname(%s)\n", name);
     return nina_gethostbyname(name, out_ip);
 }
 
-STATIC int network_ninaw10_socket_poll(mod_network_socket_obj_t *socket, uint32_t rwf, int *_errno) {
+static int network_ninaw10_socket_poll(mod_network_socket_obj_t *socket, uint32_t rwf, int *_errno) {
     uint8_t flags = 0;
     debug_printf("socket_polling_rw(%d, %d, %d)\n", socket->fileno, socket->timeout, rwf);
     if (socket->timeout == 0) {
@@ -488,7 +499,7 @@ STATIC int network_ninaw10_socket_poll(mod_network_socket_obj_t *socket, uint32_
     return 0;
 }
 
-STATIC int network_ninaw10_socket_setblocking(mod_network_socket_obj_t *socket, bool blocking, int *_errno) {
+static int network_ninaw10_socket_setblocking(mod_network_socket_obj_t *socket, bool blocking, int *_errno) {
     uint32_t nonblocking = !blocking;
     // set socket in non-blocking mode
     if (nina_socket_ioctl(socket->fileno, SOCKET_IOCTL_FIONBIO, &nonblocking, sizeof(nonblocking)) < 0) {
@@ -499,7 +510,7 @@ STATIC int network_ninaw10_socket_setblocking(mod_network_socket_obj_t *socket, 
     return 0;
 }
 
-STATIC int network_ninaw10_socket_listening(mod_network_socket_obj_t *socket, int *_errno) {
+static int network_ninaw10_socket_listening(mod_network_socket_obj_t *socket, int *_errno) {
     int listening = 0;
     if (nina_socket_getsockopt(socket->fileno, MOD_NETWORK_SOL_SOCKET,
         SO_ACCEPTCONN, &listening, sizeof(listening)) < 0) {
@@ -510,7 +521,7 @@ STATIC int network_ninaw10_socket_listening(mod_network_socket_obj_t *socket, in
     return listening;
 }
 
-STATIC int network_ninaw10_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
+static int network_ninaw10_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
     debug_printf("socket_socket(%d %d %d)\n", socket->domain, socket->type, socket->proto);
 
     uint8_t socket_type;
@@ -553,7 +564,7 @@ STATIC int network_ninaw10_socket_socket(mod_network_socket_obj_t *socket, int *
     return network_ninaw10_socket_setblocking(socket, false, _errno);
 }
 
-STATIC void network_ninaw10_socket_close(mod_network_socket_obj_t *socket) {
+static void network_ninaw10_socket_close(mod_network_socket_obj_t *socket) {
     debug_printf("socket_close(%d)\n", socket->fileno);
     if (socket->callback != MP_OBJ_NULL) {
         socket->callback = MP_OBJ_NULL;
@@ -565,7 +576,7 @@ STATIC void network_ninaw10_socket_close(mod_network_socket_obj_t *socket) {
     }
 }
 
-STATIC int network_ninaw10_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
+static int network_ninaw10_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     debug_printf("socket_bind(%d, %d)\n", socket->fileno, port);
 
     int ret = nina_socket_bind(socket->fileno, ip, port);
@@ -581,7 +592,7 @@ STATIC int network_ninaw10_socket_bind(mod_network_socket_obj_t *socket, byte *i
     return 0;
 }
 
-STATIC int network_ninaw10_socket_listen(mod_network_socket_obj_t *socket, mp_int_t backlog, int *_errno) {
+static int network_ninaw10_socket_listen(mod_network_socket_obj_t *socket, mp_int_t backlog, int *_errno) {
     debug_printf("socket_listen(%d, %d)\n", socket->fileno, backlog);
     int ret = nina_socket_listen(socket->fileno, backlog);
     if (ret < 0) {
@@ -593,7 +604,7 @@ STATIC int network_ninaw10_socket_listen(mod_network_socket_obj_t *socket, mp_in
     return 0;
 }
 
-STATIC int network_ninaw10_socket_accept(mod_network_socket_obj_t *socket,
+static int network_ninaw10_socket_accept(mod_network_socket_obj_t *socket,
     mod_network_socket_obj_t *socket2, byte *ip, mp_uint_t *port, int *_errno) {
     debug_printf("socket_accept(%d)\n", socket->fileno);
 
@@ -622,7 +633,7 @@ STATIC int network_ninaw10_socket_accept(mod_network_socket_obj_t *socket,
     return network_ninaw10_socket_setblocking(socket2, false, _errno);
 }
 
-STATIC int network_ninaw10_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
+static int network_ninaw10_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     debug_printf("socket_connect(%d)\n", socket->fileno);
 
     int ret = nina_socket_connect(socket->fileno, ip, port);
@@ -645,7 +656,7 @@ STATIC int network_ninaw10_socket_connect(mod_network_socket_obj_t *socket, byte
     return 0;
 }
 
-STATIC mp_uint_t network_ninaw10_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
+static mp_uint_t network_ninaw10_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     debug_printf("socket_send(%d, %d)\n", socket->fileno, len);
 
     if (network_ninaw10_socket_poll(socket, SOCKET_POLL_WR, _errno) != 0) {
@@ -665,7 +676,7 @@ STATIC mp_uint_t network_ninaw10_socket_send(mod_network_socket_obj_t *socket, c
     return ret;
 }
 
-STATIC mp_uint_t network_ninaw10_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
+static mp_uint_t network_ninaw10_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
     debug_printf("socket_recv(%d)\n", socket->fileno);
     // check if socket in listening state.
     if (network_ninaw10_socket_listening(socket, _errno) == 1) {
@@ -694,7 +705,7 @@ STATIC mp_uint_t network_ninaw10_socket_recv(mod_network_socket_obj_t *socket, b
     return ret;
 }
 
-STATIC mp_uint_t network_ninaw10_socket_auto_bind(mod_network_socket_obj_t *socket, int *_errno) {
+static mp_uint_t network_ninaw10_socket_auto_bind(mod_network_socket_obj_t *socket, int *_errno) {
     debug_printf("socket_autobind(%d)\n", socket->fileno);
     if (socket->bound == false && socket->type != MOD_NETWORK_SOCK_RAW) {
         if (network_ninaw10_socket_bind(socket, NULL, bind_port, _errno) != 0) {
@@ -708,7 +719,7 @@ STATIC mp_uint_t network_ninaw10_socket_auto_bind(mod_network_socket_obj_t *sock
     return 0;
 }
 
-STATIC mp_uint_t network_ninaw10_socket_sendto(mod_network_socket_obj_t *socket,
+static mp_uint_t network_ninaw10_socket_sendto(mod_network_socket_obj_t *socket,
     const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno) {
     debug_printf("socket_sendto(%d)\n", socket->fileno);
     // Auto-bind the socket first if the socket is unbound.
@@ -732,7 +743,7 @@ STATIC mp_uint_t network_ninaw10_socket_sendto(mod_network_socket_obj_t *socket,
     return ret;
 }
 
-STATIC mp_uint_t network_ninaw10_socket_recvfrom(mod_network_socket_obj_t *socket,
+static mp_uint_t network_ninaw10_socket_recvfrom(mod_network_socket_obj_t *socket,
     byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
     debug_printf("socket_recvfrom(%d)\n", socket->fileno);
     // Auto-bind the socket first if the socket is unbound.
@@ -758,7 +769,7 @@ STATIC mp_uint_t network_ninaw10_socket_recvfrom(mod_network_socket_obj_t *socke
     return ret;
 }
 
-STATIC int network_ninaw10_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t
+static int network_ninaw10_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t
     level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
     debug_printf("socket_setsockopt(%d, %d)\n", socket->fileno, opt);
     if (opt == 20) {
@@ -781,7 +792,7 @@ STATIC int network_ninaw10_socket_setsockopt(mod_network_socket_obj_t *socket, m
     return 0;
 }
 
-STATIC int network_ninaw10_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno) {
+static int network_ninaw10_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno) {
     debug_printf("socket_settimeout(%d, %d)\n", socket->fileno, timeout_ms);
     #if 0
     if (timeout_ms == 0 || timeout_ms == UINT32_MAX) {
@@ -806,7 +817,7 @@ STATIC int network_ninaw10_socket_settimeout(mod_network_socket_obj_t *socket, m
     return 0;
 }
 
-STATIC int network_ninaw10_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
+static int network_ninaw10_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
     mp_uint_t ret = 0;
     debug_printf("socket_ioctl(%d, %d)\n", socket->fileno, request);
     if (request == MP_STREAM_POLL) {
@@ -830,7 +841,7 @@ STATIC int network_ninaw10_socket_ioctl(mod_network_socket_obj_t *socket, mp_uin
     return ret;
 }
 
-STATIC void network_ninaw10_deinit(void) {
+static void network_ninaw10_deinit(void) {
     // On soft-reboot, gc_sweep_all is called and all open sockets are closed
     // and collected. Make sure that the driver is not keeping any references
     // to collected sockets in the poll list.
@@ -838,7 +849,7 @@ STATIC void network_ninaw10_deinit(void) {
     MP_STATE_PORT(mp_wifi_poll_list) = NULL;
 }
 
-STATIC const mp_rom_map_elem_t nina_locals_dict_table[] = {
+static const mp_rom_map_elem_t nina_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active),              MP_ROM_PTR(&network_ninaw10_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_scan),                MP_ROM_PTR(&network_ninaw10_scan_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect),             MP_ROM_PTR(&network_ninaw10_connect_obj) },
@@ -849,17 +860,23 @@ STATIC const mp_rom_map_elem_t nina_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_status),              MP_ROM_PTR(&network_ninaw10_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl),               MP_ROM_PTR(&network_ninaw10_ioctl_obj) },
 
-    // Network is not secured.
+    // Class constants.
+    { MP_ROM_QSTR(MP_QSTR_IF_STA),              MP_ROM_INT(MOD_NETWORK_STA_IF) },
+    { MP_ROM_QSTR(MP_QSTR_IF_AP),               MP_ROM_INT(MOD_NETWORK_AP_IF) },
+
+    { MP_ROM_QSTR(MP_QSTR_SEC_OPEN),            MP_ROM_INT(NINA_SEC_OPEN) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WEP),             MP_ROM_INT(NINA_SEC_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA_WPA2),        MP_ROM_INT(NINA_SEC_WPA_PSK) },
+
+    // For backwards compatibility.
     { MP_ROM_QSTR(MP_QSTR_OPEN),                MP_ROM_INT(NINA_SEC_OPEN) },
-    // Security type WEP (40 or 104).
     { MP_ROM_QSTR(MP_QSTR_WEP),                 MP_ROM_INT(NINA_SEC_WEP) },
-    // Network secured with WPA/WPA2 personal(PSK).
     { MP_ROM_QSTR(MP_QSTR_WPA_PSK),             MP_ROM_INT(NINA_SEC_WPA_PSK) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(nina_locals_dict, nina_locals_dict_table);
+static MP_DEFINE_CONST_DICT(nina_locals_dict, nina_locals_dict_table);
 
-STATIC const mod_network_nic_protocol_t mod_network_nic_protocol_nina = {
+static const mod_network_nic_protocol_t mod_network_nic_protocol_nina = {
     .gethostbyname = network_ninaw10_gethostbyname,
     .deinit = network_ninaw10_deinit,
     .socket = network_ninaw10_socket_socket,

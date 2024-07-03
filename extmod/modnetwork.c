@@ -99,16 +99,16 @@ mp_obj_t mod_network_find_nic(const uint8_t *ip) {
     mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("no available NIC"));
 }
 
-STATIC mp_obj_t network_route(void) {
+static mp_obj_t network_route(void) {
     return MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
+static MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 
 MP_REGISTER_ROOT_POINTER(mp_obj_list_t mod_network_nic_list);
 
 #endif // MICROPY_PORT_NETWORK_INTERFACES
 
-STATIC mp_obj_t network_country(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t network_country(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_obj_new_str(mod_network_country_code, 2);
     } else {
@@ -139,12 +139,19 @@ mp_obj_t mod_network_hostname(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_hostname_obj, 0, 1, mod_network_hostname);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_hostname_obj, 0, 1, mod_network_hostname);
 
-STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
+#if LWIP_VERSION_MAJOR >= 2
+MP_DEFINE_CONST_FUN_OBJ_KW(mod_network_ipconfig_obj, 0, mod_network_ipconfig);
+#endif
+
+static const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
     { MP_ROM_QSTR(MP_QSTR_country), MP_ROM_PTR(&mod_network_country_obj) },
     { MP_ROM_QSTR(MP_QSTR_hostname), MP_ROM_PTR(&mod_network_hostname_obj) },
+    #if LWIP_VERSION_MAJOR >= 2
+    { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&mod_network_ipconfig_obj) },
+    #endif
 
     // Defined per port in mpconfigport.h
     #ifdef MICROPY_PORT_NETWORK_INTERFACES
@@ -162,7 +169,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
 
 const mp_obj_module_t mp_module_network = {
     .base = { &mp_type_module },

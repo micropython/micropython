@@ -54,7 +54,7 @@
 
 uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
-STATIC int uart_fd = -1;
+static int uart_fd = -1;
 
 // Must be provided by the stack bindings (e.g. mpnimbleport.c or mpbtstackport.c).
 extern bool mp_bluetooth_hci_poll(void);
@@ -68,9 +68,9 @@ extern bool mp_bluetooth_hci_poll(void);
 extern bool mp_bluetooth_hci_active(void);
 
 // Prevent double-enqueuing of the scheduled task.
-STATIC volatile bool events_task_is_scheduled = false;
+static volatile bool events_task_is_scheduled = false;
 
-STATIC mp_obj_t run_events_scheduled_task(mp_obj_t none_in) {
+static mp_obj_t run_events_scheduled_task(mp_obj_t none_in) {
     (void)none_in;
     MICROPY_PY_BLUETOOTH_ENTER
         events_task_is_scheduled = false;
@@ -78,14 +78,14 @@ STATIC mp_obj_t run_events_scheduled_task(mp_obj_t none_in) {
     mp_bluetooth_hci_poll();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(run_events_scheduled_task_obj, run_events_scheduled_task);
+static MP_DEFINE_CONST_FUN_OBJ_1(run_events_scheduled_task_obj, run_events_scheduled_task);
 
 #endif // MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 
-STATIC const useconds_t UART_POLL_INTERVAL_US = 1000;
-STATIC pthread_t hci_poll_thread_id;
+static const useconds_t UART_POLL_INTERVAL_US = 1000;
+static pthread_t hci_poll_thread_id;
 
-STATIC void *hci_poll_thread(void *arg) {
+static void *hci_poll_thread(void *arg) {
     (void)arg;
 
     DEBUG_printf("hci_poll_thread: starting\n");
@@ -118,7 +118,7 @@ STATIC void *hci_poll_thread(void *arg) {
     return NULL;
 }
 
-STATIC int configure_uart(void) {
+static int configure_uart(void) {
     struct termios toptions;
 
     // Get existing config.

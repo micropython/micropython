@@ -41,6 +41,12 @@
 #define MP_THREAD_DEFAULT_STACK_SIZE                    (MP_THREAD_MIN_STACK_SIZE + 1024)
 #define MP_THREAD_PRIORITY                              (ESP_TASK_PRIO_MIN + 1)
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0) && !CONFIG_FREERTOS_ENABLE_STATIC_TASK_CLEAN_UP
+#define FREERTOS_TASK_DELETE_HOOK                       vTaskPreDeletionHook
+#else
+#define FREERTOS_TASK_DELETE_HOOK                       vPortCleanUpTCB
+#endif
+
 // this structure forms a linked list, one node per active thread
 typedef struct _mp_thread_t {
     TaskHandle_t id;        // system id of thread
@@ -52,9 +58,9 @@ typedef struct _mp_thread_t {
 } mp_thread_t;
 
 // the mutex controls access to the linked list
-STATIC mp_thread_mutex_t thread_mutex;
-STATIC mp_thread_t thread_entry0;
-STATIC mp_thread_t *thread = NULL; // root pointer, handled by mp_thread_gc_others
+static mp_thread_mutex_t thread_mutex;
+static mp_thread_t thread_entry0;
+static mp_thread_t *thread = NULL; // root pointer, handled by mp_thread_gc_others
 
 void mp_thread_init(void *stack, uint32_t stack_len) {
     mp_thread_set_state(&mp_state_ctx.thread);
@@ -70,7 +76,7 @@ void mp_thread_init(void *stack, uint32_t stack_len) {
     // memory barrier to ensure above data is committed
     __sync_synchronize();
 
-    // vPortCleanUpTCB needs the thread ready after thread_mutex is ready
+    // FREERTOS_TASK_DELETE_HOOK needs the thread ready after thread_mutex is ready
     thread = &thread_entry0;
 }
 
@@ -113,9 +119,9 @@ void mp_thread_start(void) {
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
-STATIC void *(*ext_thread_entry)(void *) = NULL;
+static void *(*ext_thread_entry)(void *) = NULL;
 
-STATIC void freertos_entry(void *arg) {
+static void freertos_entry(void *arg) {
     if (ext_thread_entry) {
         ext_thread_entry(arg);
     }
@@ -179,7 +185,7 @@ void mp_thread_finish(void) {
 
 // This is called from the FreeRTOS idle task and is not within Python context,
 // so MP_STATE_THREAD is not valid and it does not have the GIL.
-void vPortCleanUpTCB(void *tcb) {
+void FREERTOS_TASK_DELETE_HOOK(void *tcb) {
     if (thread == NULL) {
         // threading not yet initialised
         return;
@@ -235,7 +241,7 @@ void mp_thread_deinit(void) {
             // No tasks left to delete
             break;
         } else {
-            // Call FreeRTOS to delete the task (it will call vPortCleanUpTCB)
+            // Call FreeRTOS to delete the task (it will call FREERTOS_TASK_DELETE_HOOK)
             vTaskDelete(id);
         }
     }
@@ -243,7 +249,7 @@ void mp_thread_deinit(void) {
 
 #else
 
-void vPortCleanUpTCB(void *tcb) {
+void FREERTOS_TASK_DELETE_HOOK(void *tcb) {
 }
 
 #endif // MICROPY_PY_THREAD

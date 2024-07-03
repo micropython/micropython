@@ -35,11 +35,11 @@ typedef struct _machine_wdt_obj_t {
     esp_task_wdt_user_handle_t twdt_user_handle;
 } machine_wdt_obj_t;
 
-STATIC machine_wdt_obj_t wdt_default = {
+static machine_wdt_obj_t wdt_default = {
     {&machine_wdt_type}, 0
 };
 
-STATIC machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
+static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
     if (id != 0) {
         mp_raise_ValueError(NULL);
     }
@@ -68,7 +68,7 @@ STATIC machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t
     return &wdt_default;
 }
 
-STATIC void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
+static void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
     (void)self;
     mp_int_t rs_code = esp_task_wdt_reset_user(wdt_default.twdt_user_handle);
     if (rs_code != ESP_OK) {

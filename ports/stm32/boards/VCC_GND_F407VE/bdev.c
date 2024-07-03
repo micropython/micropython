@@ -4,7 +4,7 @@
 
 // External SPI flash uses standard SPI interface
 
-STATIC const mp_soft_spi_obj_t soft_spi_bus = {
+static const mp_soft_spi_obj_t soft_spi_bus = {
     .delay_half = MICROPY_HW_SOFTSPI_MIN_DELAY,
     .polarity = 0,
     .phase = 0,
@@ -13,7 +13,7 @@ STATIC const mp_soft_spi_obj_t soft_spi_bus = {
     .miso = MICROPY_HW_SPIFLASH_MISO,
 };
 
-STATIC mp_spiflash_cache_t spi_bdev_cache;
+static mp_spiflash_cache_t spi_bdev_cache;
 
 const mp_spiflash_config_t spiflash_config = {
     .bus_kind = MP_SPIFLASH_BUS_SPI,

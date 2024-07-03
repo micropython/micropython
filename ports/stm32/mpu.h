@@ -36,8 +36,18 @@
 #define MPU_REGION_QSPI3    (MPU_REGION_NUMBER3)
 #define MPU_REGION_SDRAM1   (MPU_REGION_NUMBER4)
 #define MPU_REGION_SDRAM2   (MPU_REGION_NUMBER5)
+#define MPU_REGION_OPENAMP  (MPU_REGION_NUMBER15)
 
-#define MPU_CONFIG_DISABLE(srd, size) ( \
+// Only relevant on CPUs with D-Cache, must be higher priority than SDRAM
+#define MPU_REGION_DMA_UNCACHED_1 (MPU_REGION_NUMBER6)
+#define MPU_REGION_DMA_UNCACHED_2 (MPU_REGION_NUMBER7)
+
+// Attribute value to disable a region entirely, remove it from the MPU
+// (i.e. the MPU_REGION_ENABLE bit is unset.)
+#define MPU_CONFIG_DISABLE 0
+
+// Configure a region with all access disabled. Can also set a Subregion Disable mask.
+#define MPU_CONFIG_NOACCESS(srd, size) ( \
     MPU_INSTRUCTION_ACCESS_DISABLE << MPU_RASR_XN_Pos \
         | MPU_REGION_NO_ACCESS << MPU_RASR_AP_Pos \
         | MPU_TEX_LEVEL0 << MPU_RASR_TEX_Pos \
@@ -68,6 +78,30 @@
         | MPU_ACCESS_NOT_SHAREABLE << MPU_RASR_S_Pos \
         | MPU_ACCESS_CACHEABLE << MPU_RASR_C_Pos \
         | MPU_ACCESS_BUFFERABLE << MPU_RASR_B_Pos \
+        | 0x00 << MPU_RASR_SRD_Pos \
+        | (size) << MPU_RASR_SIZE_Pos \
+        | MPU_REGION_ENABLE << MPU_RASR_ENABLE_Pos \
+    )
+
+#define MPU_CONFIG_UNCACHED(size) ( \
+    MPU_INSTRUCTION_ACCESS_DISABLE << MPU_RASR_XN_Pos \
+        | MPU_REGION_FULL_ACCESS << MPU_RASR_AP_Pos \
+        | MPU_TEX_LEVEL1 << MPU_RASR_TEX_Pos \
+        | MPU_ACCESS_NOT_SHAREABLE << MPU_RASR_S_Pos \
+        | MPU_ACCESS_NOT_CACHEABLE << MPU_RASR_C_Pos \
+        | MPU_ACCESS_NOT_BUFFERABLE << MPU_RASR_B_Pos \
+        | 0x00 << MPU_RASR_SRD_Pos \
+        | (size) << MPU_RASR_SIZE_Pos \
+        | MPU_REGION_ENABLE << MPU_RASR_ENABLE_Pos \
+    )
+
+#define MPU_CONFIG_SHARED_UNCACHED(size) ( \
+    MPU_INSTRUCTION_ACCESS_DISABLE << MPU_RASR_XN_Pos \
+        | MPU_REGION_FULL_ACCESS << MPU_RASR_AP_Pos \
+        | MPU_TEX_LEVEL1 << MPU_RASR_TEX_Pos \
+        | MPU_ACCESS_SHAREABLE << MPU_RASR_S_Pos \
+        | MPU_ACCESS_NOT_CACHEABLE << MPU_RASR_C_Pos \
+        | MPU_ACCESS_NOT_BUFFERABLE << MPU_RASR_B_Pos \
         | 0x00 << MPU_RASR_SRD_Pos \
         | (size) << MPU_RASR_SIZE_Pos \
         | MPU_REGION_ENABLE << MPU_RASR_ENABLE_Pos \

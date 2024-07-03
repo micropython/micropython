@@ -57,8 +57,8 @@
 #undef CIRCLEQ_INSERT_TAIL
 #undef CIRCLEQ_REMOVE
 
-#include <db.h>
-#include <../../btree/btree.h>
+#include "berkeley-db/db.h"
+#include "berkeley-db/btree.h"
 
 typedef struct _mp_obj_btree_t {
     mp_obj_base_t base;
@@ -77,7 +77,7 @@ typedef struct _mp_obj_btree_t {
 } mp_obj_btree_t;
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_obj_type_t btree_type;
+static const mp_obj_type_t btree_type;
 #endif
 
 #define CHECK_ERROR(res) \
@@ -89,7 +89,7 @@ void __dbpanic(DB *db) {
     mp_printf(&mp_plat_print, "__dbpanic(%p)\n", db);
 }
 
-STATIC mp_obj_btree_t *btree_new(DB *db, mp_obj_t stream) {
+static mp_obj_btree_t *btree_new(DB *db, mp_obj_t stream) {
     mp_obj_btree_t *o = mp_obj_malloc(mp_obj_btree_t, (mp_obj_type_t *)&btree_type);
     o->stream = stream;
     o->db = db;
@@ -99,32 +99,32 @@ STATIC mp_obj_btree_t *btree_new(DB *db, mp_obj_t stream) {
     return o;
 }
 
-STATIC void buf_to_dbt(mp_obj_t obj, DBT *dbt) {
+static void buf_to_dbt(mp_obj_t obj, DBT *dbt) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(obj, &bufinfo, MP_BUFFER_READ);
     dbt->data = bufinfo.buf;
     dbt->size = bufinfo.len;
 }
 
-STATIC void btree_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void btree_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<btree %p>", self->db);
 }
 
-STATIC mp_obj_t btree_flush(mp_obj_t self_in) {
+static mp_obj_t btree_flush(mp_obj_t self_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(__bt_sync(self->db, 0));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(btree_flush_obj, btree_flush);
+static MP_DEFINE_CONST_FUN_OBJ_1(btree_flush_obj, btree_flush);
 
-STATIC mp_obj_t btree_close(mp_obj_t self_in) {
+static mp_obj_t btree_close(mp_obj_t self_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(__bt_close(self->db));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(btree_close_obj, btree_close);
+static MP_DEFINE_CONST_FUN_OBJ_1(btree_close_obj, btree_close);
 
-STATIC mp_obj_t btree_put(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t btree_put(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
     DBT key, val;
@@ -132,9 +132,9 @@ STATIC mp_obj_t btree_put(size_t n_args, const mp_obj_t *args) {
     buf_to_dbt(args[2], &val);
     return MP_OBJ_NEW_SMALL_INT(__bt_put(self->db, &key, &val, 0));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_put_obj, 3, 4, btree_put);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_put_obj, 3, 4, btree_put);
 
-STATIC mp_obj_t btree_get(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t btree_get(size_t n_args, const mp_obj_t *args) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
     DBT key, val;
     buf_to_dbt(args[1], &key);
@@ -149,9 +149,9 @@ STATIC mp_obj_t btree_get(size_t n_args, const mp_obj_t *args) {
     CHECK_ERROR(res);
     return mp_obj_new_bytes(val.data, val.size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_get_obj, 2, 3, btree_get);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_get_obj, 2, 3, btree_get);
 
-STATIC mp_obj_t btree_seq(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t btree_seq(size_t n_args, const mp_obj_t *args) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
     int flags = MP_OBJ_SMALL_INT_VALUE(args[1]);
     DBT key, val;
@@ -171,9 +171,9 @@ STATIC mp_obj_t btree_seq(size_t n_args, const mp_obj_t *args) {
     pair->items[1] = mp_obj_new_bytes(val.data, val.size);
     return pair_o;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_seq_obj, 2, 4, btree_seq);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_seq_obj, 2, 4, btree_seq);
 
-STATIC mp_obj_t btree_init_iter(size_t n_args, const mp_obj_t *args, byte type) {
+static mp_obj_t btree_init_iter(size_t n_args, const mp_obj_t *args, byte type) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
     self->next_flags = type;
     self->start_key = mp_const_none;
@@ -190,22 +190,22 @@ STATIC mp_obj_t btree_init_iter(size_t n_args, const mp_obj_t *args, byte type) 
     return args[0];
 }
 
-STATIC mp_obj_t btree_keys(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t btree_keys(size_t n_args, const mp_obj_t *args) {
     return btree_init_iter(n_args, args, FLAG_ITER_KEYS);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_keys_obj, 1, 4, btree_keys);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_keys_obj, 1, 4, btree_keys);
 
-STATIC mp_obj_t btree_values(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t btree_values(size_t n_args, const mp_obj_t *args) {
     return btree_init_iter(n_args, args, FLAG_ITER_VALUES);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_values_obj, 1, 4, btree_values);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_values_obj, 1, 4, btree_values);
 
-STATIC mp_obj_t btree_items(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t btree_items(size_t n_args, const mp_obj_t *args) {
     return btree_init_iter(n_args, args, FLAG_ITER_ITEMS);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_items_obj, 1, 4, btree_items);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_items_obj, 1, 4, btree_items);
 
-STATIC mp_obj_t btree_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
+static mp_obj_t btree_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     (void)iter_buf;
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->next_flags != 0) {
@@ -223,7 +223,7 @@ STATIC mp_obj_t btree_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     return self_in;
 }
 
-STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
+static mp_obj_t btree_iternext(mp_obj_t self_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     DBT key, val;
     int res;
@@ -279,7 +279,7 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+static mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     if (value == MP_OBJ_NULL) {
         // delete
@@ -312,7 +312,7 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
 }
 
-STATIC mp_obj_t btree_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+static mp_obj_t btree_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(lhs_in);
     switch (op) {
         case MP_BINARY_OP_CONTAINS: {
@@ -329,7 +329,7 @@ STATIC mp_obj_t btree_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
 }
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_rom_map_elem_t btree_locals_dict_table[] = {
+static const mp_rom_map_elem_t btree_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&btree_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&btree_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&btree_get_obj) },
@@ -340,14 +340,14 @@ STATIC const mp_rom_map_elem_t btree_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_items), MP_ROM_PTR(&btree_items_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(btree_locals_dict, btree_locals_dict_table);
+static MP_DEFINE_CONST_DICT(btree_locals_dict, btree_locals_dict_table);
 
-STATIC const mp_getiter_iternext_custom_t btree_getiter_iternext = {
+static const mp_getiter_iternext_custom_t btree_getiter_iternext = {
     .getiter = btree_getiter,
     .iternext = btree_iternext,
 };
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     btree_type,
     MP_QSTR_btree,
     MP_TYPE_FLAG_ITER_IS_CUSTOM,
@@ -360,7 +360,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 #endif
 
-STATIC const FILEVTABLE btree_stream_fvtable = {
+static const FILEVTABLE btree_stream_fvtable = {
     mp_stream_posix_read,
     mp_stream_posix_write,
     mp_stream_posix_lseek,
@@ -368,7 +368,7 @@ STATIC const FILEVTABLE btree_stream_fvtable = {
 };
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_flags, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_cachesize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -399,16 +399,16 @@ STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     }
     return MP_OBJ_FROM_PTR(btree_new(db, pos_args[0]));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_btree_open_obj, 1, mod_btree_open);
+static MP_DEFINE_CONST_FUN_OBJ_KW(mod_btree_open_obj, 1, mod_btree_open);
 
-STATIC const mp_rom_map_elem_t mp_module_btree_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_btree_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_btree) },
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mod_btree_open_obj) },
     { MP_ROM_QSTR(MP_QSTR_INCL), MP_ROM_INT(FLAG_END_KEY_INCL) },
     { MP_ROM_QSTR(MP_QSTR_DESC), MP_ROM_INT(FLAG_DESC) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_btree_globals, mp_module_btree_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_btree_globals, mp_module_btree_globals_table);
 
 const mp_obj_module_t mp_module_btree = {
     .base = { &mp_type_module },

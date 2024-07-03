@@ -31,7 +31,9 @@
 #if MICROPY_ENABLE_COMPILER
 
 // These low numbered qstrs should fit in 8 bits.  See assertions below.
-STATIC const uint8_t scope_simple_name_table[] = {
+// The (unescaped) names appear in `unsorted_str_list` in the QSTR
+// generator script py/makeqstrdata.py to ensure they are assigned low numbers.
+static const uint8_t scope_simple_name_table[] = {
     [SCOPE_MODULE] = MP_QSTR__lt_module_gt_,
     [SCOPE_LAMBDA] = MP_QSTR__lt_lambda_gt_,
     [SCOPE_LIST_COMP] = MP_QSTR__lt_listcomp_gt_,
@@ -111,7 +113,7 @@ id_info_t *scope_find_global(scope_t *scope, qstr qst) {
     return scope_find(scope, qst);
 }
 
-STATIC void scope_close_over_in_parents(scope_t *scope, qstr qst) {
+static void scope_close_over_in_parents(scope_t *scope, qstr qst) {
     assert(scope->parent != NULL); // we should have at least 1 parent
     for (scope_t *s = scope->parent;; s = s->parent) {
         assert(s->parent != NULL); // we should not get to the outer scope
