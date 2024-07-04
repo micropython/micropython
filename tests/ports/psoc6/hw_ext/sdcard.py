@@ -6,7 +6,19 @@ SHORT_TEST_STRING = "This is a test string."
 LONG_TEST_STRING = "This is a very long string. And as a long string that it is, it is only getting longer and longer and the string goes. How long shall it be? Well, not really sure, but let´s try it like this."
 
 board = os.uname().machine
-if "CY8CPROTO-063-BLE" in board:
+if "CY8CPROTO-062-4343W" in board:
+    sdcard_config = {
+        "slot": 1,
+        "width": 4,
+        "cd": "P13_5",
+        "cmd": "P12_4",
+        "clk": "P12_5",
+        "dat0": "P13_0",
+        "dat1": "P13_1",
+        "dat2": "P13_2",
+        "dat3": "P13_3",
+    }
+elif "CY8CPROTO-063-BLE" in board:
     print("SKIP")
     raise SystemExit
 elif "CY8CKIT-062S2-AI" in board:
@@ -42,17 +54,6 @@ def read_write_test(file_path, test_data):
 
 def test_file_transfer():
     # Define the SD card configuration
-    sdcard_config = {
-        "slot": 1,
-        "width": 4,
-        "cd": "P13_5",
-        "cmd": "P12_4",
-        "clk": "P12_5",
-        "dat0": "P13_0",
-        "dat1": "P13_1",
-        "dat2": "P13_2",
-        "dat3": "P13_3",
-    }
     bdev = machine.SDCard(**sdcard_config)
 
     # Define constants
@@ -86,18 +87,6 @@ def test_file_transfer():
 
 def test_reintializing_same_slot():
     print("\n***** Test 2: reinitialize the same slot more than once *****\n")
-
-    sdcard_config = {
-        "slot": 1,
-        "width": 4,
-        "cd": "P13_5",
-        "cmd": "P12_4",
-        "clk": "P12_5",
-        "dat0": "P13_0",
-        "dat1": "P13_1",
-        "dat2": "P13_2",
-        "dat3": "P13_3",
-    }
     bdev1 = machine.SDCard(**sdcard_config)
     bdev2 = machine.SDCard(**sdcard_config)
     bdev3 = machine.SDCard(**sdcard_config)
@@ -106,19 +95,8 @@ def test_reintializing_same_slot():
 
 def test_negative_slot_number():
     print("\n***** Test 3: slot number exceeding the number of available slots *****\n")
-
     try:
-        sdcard_config = {
-            "slot": 2,
-            "width": 4,
-            "cd": "P13_5",
-            "cmd": "P12_4",
-            "clk": "P12_5",
-            "dat0": "P13_0",
-            "dat1": "P13_1",
-            "dat2": "P13_2",
-            "dat3": "P13_3",
-        }
+        sdcard_config["slot"] = 2
         bdev = machine.SDCard(**sdcard_config)
     except Exception:
         print("FAIL")
