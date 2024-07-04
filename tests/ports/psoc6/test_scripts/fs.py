@@ -17,21 +17,33 @@ if mem_type == "sd":
     adv_test_op_fp = "./ports/psoc6/test_scripts/fs_adv_sd.py.out"
     exp_basic_op_fp = "./ports/psoc6/test_scripts/fs_basic_sd.py.exp"
     exp_adv_op_fp = "./ports/psoc6/test_scripts/fs_adv_sd.py.exp"
+
+    mount_sd_script = "./ports/psoc6/test_scripts/fs_mount_sd.py"
+    mpr_run_script = f"run {mount_sd_script}"
 else:
     remote_directory_path = "/"
     # out and exp file paths
-    basic_test_op_fp = "./ports/psoc6/test_scripts/fs_basic_flash.py.out"
-    adv_test_op_fp = "./ports/psoc6/test_scripts/fs_adv_flash.py.out"
-    exp_basic_op_fp = "./ports/psoc6/test_scripts/fs_basic_flash.py.exp"
-    exp_adv_op_fp = "./ports/psoc6/test_scripts/fs_adv_flash.py.exp"
+    basic_test_op_fp = "./ports/psoc6/test_scripts/fs_basic.py.out"
+    adv_test_op_fp = "./ports/psoc6/test_scripts/fs_adv.py.out"
+    exp_basic_op_fp = "./ports/psoc6/test_scripts/fs_basic.py.exp"
+    exp_adv_op_fp = "./ports/psoc6/test_scripts/fs_adv.py.exp"
+
+    mpr_run_script = ""
 
 # List of mpremote commands
 mpr_connect = f"../tools/mpremote/mpremote.py connect {device}"
-mpr_small_file_cp = f"{mpr_connect} cp {local_small_file_path} :{remote_directory_path}"
-mpr_medium_file_cp = f"{mpr_connect} cp {local_medium_file_path} :{remote_directory_path}"
-mpr_large_file_cp = f"{mpr_connect} cp {local_large_file_path} :{remote_directory_path}"
-mpr_ls = f"{mpr_connect} fs ls /"
-mpr_rm = f"{mpr_connect} fs rm "
+
+mpr_small_file_cp = (
+    f"{mpr_connect} {mpr_run_script} cp {local_small_file_path} :{remote_directory_path}"
+)
+mpr_medium_file_cp = (
+    f"{mpr_connect} {mpr_run_script} cp {local_medium_file_path} :{remote_directory_path}"
+)
+mpr_large_file_cp = (
+    f"{mpr_connect} {mpr_run_script} cp {local_large_file_path} :{remote_directory_path}"
+)
+mpr_ls = f"{mpr_connect} {mpr_run_script} fs ls /"
+mpr_rm = f"{mpr_connect} {mpr_run_script} fs rm "
 
 
 def exec(cmd, op_file_path="null"):
