@@ -39,6 +39,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "uart.h"
+#include "machine_timer.h"
 
 #if SOC_UART_SUPPORT_XTAL_CLK
 // Works independently of APB frequency, on ESP32C3, ESP32S3.
@@ -54,8 +55,17 @@
 
 #define UART_INV_MASK (UART_INV_TX | UART_INV_RX | UART_INV_RTS | UART_INV_CTS)
 #define UART_IRQ_RX (1 << UART_DATA)
+#define UART_IRQ_RXIDLE (0x1000)
 #define UART_IRQ_BREAK (1 << UART_BREAK)
-#define MP_UART_ALLOWED_FLAGS (UART_IRQ_RX | UART_IRQ_BREAK)
+#define MP_UART_ALLOWED_FLAGS (UART_IRQ_RX | UART_IRQ_RXIDLE | UART_IRQ_BREAK)
+#define RXIDLE_TIMER_MIN (5000)  // 500 us
+
+enum {
+    RXIDLE_INACTIVE,
+    RXIDLE_STANDBY,
+    RXIDLE_ARMED,
+    RXIDLE_ALERT,
+};
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
@@ -78,6 +88,9 @@ typedef struct _machine_uart_obj_t {
     uint16_t mp_irq_trigger;   // user IRQ trigger mask
     uint16_t mp_irq_flags;     // user IRQ active IRQ flags
     mp_irq_obj_t *mp_irq_obj;  // user IRQ object
+    machine_timer_obj_t *rxidle_timer;
+    uint8_t rxidle_state;
+    uint16_t rxidle_period;
 } machine_uart_obj_t;
 
 static const char *_parity_name[] = {"None", "1", "0"};
@@ -93,7 +106,35 @@ static const char *_parity_name[] = {"None", "1", "0"};
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HW_FLOWCTRL_RTS) }, \
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HW_FLOWCTRL_CTS) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_RX), MP_ROM_INT(UART_IRQ_RX) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_IRQ_RXIDLE) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_BREAK), MP_ROM_INT(UART_IRQ_BREAK) }, \
+
+static void uart_timer_callback(void *self_in) {
+    machine_timer_obj_t *self = self_in;
+
+    uint32_t intr_status = timer_ll_get_intr_status(self->hal_context.dev);
+
+    if (intr_status & TIMER_LL_EVENT_ALARM(self->index)) {
+        timer_ll_clear_intr_status(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index));
+        if (self->repeat) {
+            timer_ll_enable_alarm(self->hal_context.dev, self->index, true);
+        }
+    }
+
+    // The UART object is referred here by the callback field.
+    machine_uart_obj_t *uart = (machine_uart_obj_t *)self->callback;
+    if (uart->rxidle_state == RXIDLE_ALERT) {
+        // At the first call, just switch the state
+        uart->rxidle_state = RXIDLE_ARMED;
+    } else if (uart->rxidle_state == RXIDLE_ARMED) {
+        // At the second call, run the irq callback and stop the timer
+        uart->rxidle_state = RXIDLE_STANDBY;
+        uart->mp_irq_flags = UART_IRQ_RXIDLE;
+        mp_irq_handler(uart->mp_irq_obj);
+        mp_hal_wake_main_task_from_isr();
+        machine_timer_disable(uart->rxidle_timer);
+    }
+}
 
 static void uart_event_task(void *self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -105,6 +146,14 @@ static void uart_event_task(void *self_in) {
             switch (event.type) {
                 // Event of UART receiving data
                 case UART_DATA:
+                    if (self->rxidle_state != RXIDLE_INACTIVE) {
+                        if (self->rxidle_state == RXIDLE_STANDBY) {
+                            self->rxidle_timer->repeat = true;
+                            self->rxidle_timer->handle = NULL;
+                            machine_timer_enable(self->rxidle_timer, uart_timer_callback);
+                        }
+                        self->rxidle_state = RXIDLE_ALERT;
+                    }
                     self->mp_irq_flags |= UART_IRQ_RX;
                     break;
                 case UART_BREAK:
@@ -121,6 +170,7 @@ static void uart_event_task(void *self_in) {
         }
     }
 }
+
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -390,6 +440,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     self->invert = 0;
     self->flowcontrol = 0;
     self->uart_event_task = 0;
+    self->rxidle_state = RXIDLE_INACTIVE;
 
     switch (uart_num) {
         case UART_NUM_0:
@@ -464,8 +515,35 @@ static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     check_esp_err(uart_set_baudrate(self->uart_num, baudrate));
 }
 
+// Configure the timer used for IRQ_RXIDLE
+static void uart_irq_configure_timer(machine_uart_obj_t *self, mp_uint_t trigger) {
+
+    self->rxidle_state = RXIDLE_INACTIVE;
+
+    if (trigger & UART_IRQ_RXIDLE) {
+        // The RXIDLE event is always a soft IRQ.
+        self->mp_irq_obj->ishard = false;
+        uint32_t baudrate;
+        uart_get_baudrate(self->uart_num, &baudrate);
+        mp_int_t period = TIMER_SCALE * 20 / baudrate + 1;
+        if (period < RXIDLE_TIMER_MIN) {
+            period = RXIDLE_TIMER_MIN;
+        }
+        self->rxidle_period = period;
+        self->rxidle_timer->period = period;
+        // The Python callback is not used. So use this
+        // data field to hold a reference to the UART object.
+        self->rxidle_timer->callback = self;
+        self->rxidle_timer->repeat = true;
+        self->rxidle_timer->handle = NULL;
+        self->rxidle_state = RXIDLE_STANDBY;
+    }
+}
+
 static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    uart_irq_configure_timer(self, new_trigger);
     self->mp_irq_trigger = new_trigger;
     return 0;
 }
@@ -511,6 +589,9 @@ static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args
         }
         self->mp_irq_obj->ishard = false;
         self->mp_irq_trigger = trigger;
+        self->rxidle_timer = machine_timer_create(0);
+        uart_irq_configure_timer(self, trigger);
+
         // Start a task for handling events
         if (handler != mp_const_none && self->uart_event_task == NULL) {
             xTaskCreatePinnedToCore(uart_event_task, "uart_event_task", 2048, self,
