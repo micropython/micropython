@@ -20,16 +20,14 @@ working with this port it may be useful to get an overview of the microcontrolle
    intro.rst
    installation.rst
    mpy-usage.rst
-   feature_list.rst
 
 .. warning::
 
-    The PSoC6™ port is still in an early stage of development. It is expected any MicroPython built-in
-    library to be supported, but not all libraries, modules and features have been implemented yet.
+    The PSoC6™ port is now a mature port and is expected any MicroPython built-in
+    library to be supported, but not all libraries, modules and features may have been implemented yet.
     For those modules relying on platform and hardware dependencies, only the listed and documented in this
     quick reference are certainyly supported.
-    Check :ref:`here <psoc6_feature_list>` for a complete list of currently enabled or implemented modules as well as not yet implemented functionality.
-    
+        
     Please, consider opening an `issue <https://github.com/infineon/micropython/issues>`_ or
     `discussion <https://github.com/infineon/micropython/discussionsh>`_ on GitHub for any clarification
     required on available features or requests for missing ones. 
@@ -641,7 +639,7 @@ Use the :ref:`machine.ADC <machine.ADC>` class::
 
 The PSoC6 port also supports :ref:`machine.ADCBlock <machine.ADCBlock>` API to have control over the ADC configuration. Currently 
 
-PSoC6 supports only 1 12-bit SAR ADC. The channel to pin mapping can be found in respective :ref:`Supported boards <psoc6_general>` section.
+PSoC6 supports only 1 SAR ADC with the channel to pin mapping available in respective pinout diagrams.
 
 .. note::
     Arbitrary connection of ADC channels to GPIO is not supported. Specifying a pin that is not connected to this block, 

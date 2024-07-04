@@ -66,7 +66,7 @@ On-target file system mode
 When the board provides a file system and data storage, you will have the possibility to store your
 scripts in the device. 
 
-You can split your program in different files, and use import to make use of the provided features
+You can split your program in different files, and use import to make use of the provided s
 in other scripts. 
 To run a script in the device at boot, there are two scripts that need to be present in the file
 system: ``boot.py`` and ``main.py``. The scripts are executed in the sequence, first ``boot.py`` followed by ``main.py``. 
