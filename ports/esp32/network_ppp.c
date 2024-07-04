@@ -266,6 +266,42 @@ static mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ppp_ifconfig_obj, 1, 2, ppp_ifconfig);
 
+static mp_obj_t ppp_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    if (kwargs->used == 0) {
+        ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+        if (self->pcb == NULL) {
+            mp_raise_ValueError(MP_ERROR_TEXT("PPP not active"));
+        }
+        struct netif *netif = ppp_netif(self->pcb);
+        // Get config value
+        if (n_args != 2) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+
+        switch (mp_obj_str_get_qstr(args[1])) {
+            case MP_QSTR_addr4: {
+                mp_obj_t tuple[2] = {
+                    netutils_format_ipv4_addr((uint8_t *)&netif->ip_addr, NETUTILS_BIG),
+                    netutils_format_ipv4_addr((uint8_t *)&netif->netmask, NETUTILS_BIG),
+                };
+                return mp_obj_new_tuple(2, tuple);
+            }
+            case MP_QSTR_gw4: {
+                return netutils_format_ipv4_addr((uint8_t *)&netif->gw, NETUTILS_BIG);
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+        return mp_const_none;
+    } else {
+        mp_raise_TypeError(MP_ERROR_TEXT("setting properties not supported"));
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(ppp_ipconfig_obj, 1, ppp_ipconfig);
+
 static mp_obj_t ppp_status(mp_obj_t self_in) {
     return mp_const_none;
 }
@@ -328,6 +364,7 @@ static const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&ppp_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&ppp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&ppp_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&ppp_ipconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ppp_delete_obj) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_NONE), MP_ROM_INT(PPPAUTHTYPE_NONE) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_PAP), MP_ROM_INT(PPPAUTHTYPE_PAP) },

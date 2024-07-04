@@ -10,7 +10,7 @@ def read_all(fn):
 
 
 def fwupdate(fn, erase_all=False, safe_check=True, verbose=True):
-    import esp
+    import os, esp
 
     # get number of blocks
     fw_size = rem_fs = os.stat(fn)[6]

@@ -1,3 +1,8 @@
+/* This file is part of the MicroPython project, http://micropython.org/
+ * The MIT License (MIT)
+ * Copyright (c) 2021 Damien P. George
+ */
+
 /* Vector table is at 0x00000000, entry point is 0x10000000. */
 
 MEMORY

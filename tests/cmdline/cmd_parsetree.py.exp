@@ -1,6 +1,6 @@
 ----------------
 [   1] file_input_2(1) (n=10)
-         tok(6)
+         tok(5)
 [   4]   \(rule\|for_stmt\)(22) (n=4)
            id(i)
 [   4]     \(rule\|atom_paren\)(45) (n=1)
@@ -9,7 +9,7 @@
            NULL
 [   6]   \(rule\|expr_stmt\)(5) (n=2)
            id(a)
-           tok(16)
+           tok(15)
 [   7]   \(rule\|expr_stmt\)(5) (n=2)
            id(b)
            str(str)

@@ -50,9 +50,6 @@ class SingletonGenerator:
 # Pause task execution for the given time (integer in milliseconds, uPy extension)
 # Use a SingletonGenerator to do it without allocating on the heap
 def sleep_ms(t, sgen=SingletonGenerator()):
-    if cur_task is None:
-        # Support top-level asyncio.sleep, via a JavaScript Promise.
-        return jsffi.async_timeout_ms(t)
     assert sgen.state is None
     sgen.state = ticks_add(ticks(), max(0, t))
     return sgen
@@ -69,6 +66,17 @@ def sleep(t):
 asyncio_timer = None
 
 
+class TopLevelCoro:
+    @staticmethod
+    def set(resolve, reject):
+        TopLevelCoro.resolve = resolve
+        TopLevelCoro.reject = reject
+
+    @staticmethod
+    def send(value):
+        TopLevelCoro.resolve()
+
+
 class ThenableEvent:
     def __init__(self, thenable):
         self.result = None  # Result of the thenable
@@ -81,7 +89,6 @@ class ThenableEvent:
         if self.waiting:
             _task_queue.push(self.waiting)
             self.waiting = None
-            _schedule_run_iter(0)
 
     def remove(self, task):
         self.waiting = None
@@ -122,12 +129,12 @@ def _run_iter():
             dt = max(0, ticks_diff(t.ph_key, ticks()))
         else:
             # No tasks can be woken so finished running
-            cur_task = None
+            cur_task = _top_level_task
             return
 
         if dt > 0:
             # schedule to call again later
-            cur_task = None
+            cur_task = _top_level_task
             _schedule_run_iter(dt)
             return
 
@@ -194,15 +201,17 @@ def create_task(coro):
         raise TypeError("coroutine expected")
     t = Task(coro, globals())
     _task_queue.push(t)
-    _schedule_run_iter(0)
     return t
 
+
+# Task used to suspend and resume top-level await.
+_top_level_task = Task(TopLevelCoro, globals())
 
 ################################################################################
 # Event loop wrapper
 
 
-cur_task = None
+cur_task = _top_level_task
 
 
 class Loop:
@@ -241,7 +250,7 @@ def current_task():
 
 def new_event_loop():
     global _task_queue
-    _task_queue = TaskQueue()  # TaskQueue of Task instances.
+    _task_queue = TaskQueue(_schedule_run_iter)  # TaskQueue of Task instances.
     return Loop
 
 

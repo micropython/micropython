@@ -11,19 +11,10 @@ body:
 
         * If you have a question \"How Do I ...?\", please post it on [GitHub Discussions](https://github.com/orgs/micropython/discussions/) or [Discord](https://discord.gg/RB8HZSAExQ) instead of here.
         * For missing or incorrect documentation, or feature requests, then please [choose a different issue type](https://github.com/micropython/micropython/issues/new/choose).
-  - type: checkboxes
-    id: terms
-    attributes:
-      label: Checks
-      description: |
-        Before submitting your bug report, please go over these check points:
-      options:
-      - label: |
-           I agree to follow the MicroPython [Code of Conduct](https://github.com/micropython/micropython/blob/master/CODEOFCONDUCT.md) to ensure a safe and respectful space for everyone.
-        required: true
-      - label: |
-          I've searched for [existing issues](https://github.com/micropython/micropython/issues) matching this bug, and didn't find any.
-        required: true
+
+        #### Existing issue?
+
+        * Please search for [existing issues](https://github.com/micropython/micropython/issues) matching this bug before reporting.
   - type: input
     id: port-board-hw
     attributes:
@@ -33,7 +24,7 @@ body:
       placeholder: |
         esp32 port, ESP32-Fantastic board.
     validations:
-       required: true
+      required: true
   - type: textarea
     id: version
     attributes:
@@ -101,6 +92,17 @@ body:
       description: |
         Is there anything else that might help to resolve this issue?
       value: No, I've provided everything above.
+  - type: dropdown
+    id: code-of-conduct
+    attributes:
+      label: Code of Conduct
+      description: |
+        Do you agree to follow the MicroPython [Code of Conduct](https://github.com/micropython/micropython/blob/master/CODEOFCONDUCT.md) to ensure a safe and respectful space for everyone?
+      options:
+        - "Yes, I agree"
+      multiple: true
+    validations:
+      required: true
   - type: markdown
     attributes:
       value: |

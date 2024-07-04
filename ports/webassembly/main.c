@@ -66,7 +66,12 @@ void external_call_depth_dec(void) {
     --external_call_depth;
 }
 
-void mp_js_init(int heap_size) {
+void mp_js_init(int pystack_size, int heap_size) {
+    #if MICROPY_ENABLE_PYSTACK
+    mp_obj_t *pystack = (mp_obj_t *)malloc(pystack_size * sizeof(mp_obj_t));
+    mp_pystack_init(pystack, pystack + pystack_size);
+    #endif
+
     #if MICROPY_ENABLE_GC
     char *heap = (char *)malloc(heap_size * sizeof(char));
     gc_init(heap, heap + heap_size);
@@ -78,11 +83,6 @@ void mp_js_init(int heap_size) {
     // garbage collection will happen later when control returns to the top-level,
     // via the `gc_collect_pending` flag and `gc_collect_top_level()`.
     MP_STATE_MEM(gc_alloc_threshold) = 16 * 1024 / MICROPY_BYTES_PER_GC_BLOCK;
-    #endif
-
-    #if MICROPY_ENABLE_PYSTACK
-    static mp_obj_t pystack[1024];
-    mp_pystack_init(pystack, &pystack[MP_ARRAY_SIZE(pystack)]);
     #endif
 
     mp_init();

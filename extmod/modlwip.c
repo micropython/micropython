@@ -326,6 +326,10 @@ typedef struct _lwip_socket_obj_t {
     int8_t state;
 } lwip_socket_obj_t;
 
+static inline bool socket_is_timedout(lwip_socket_obj_t *socket, mp_uint_t ticks_start) {
+    return socket->timeout != -1 && (mp_uint_t)(mp_hal_ticks_ms() - ticks_start) >= socket->timeout;
+}
+
 static inline void poll_sockets(void) {
     mp_event_wait_ms(1);
 }
@@ -1036,26 +1040,22 @@ static mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     // accept incoming connection
     struct tcp_pcb *volatile *incoming_connection = &lwip_socket_incoming_array(socket)[socket->incoming.connection.iget];
     if (*incoming_connection == NULL) {
-        if (socket->timeout == 0) {
+        mp_uint_t ticks_start = mp_hal_ticks_ms();
+        for (;;) {
             MICROPY_PY_LWIP_EXIT
-            m_del_obj(lwip_socket_obj_t, socket2);
-            mp_raise_OSError(MP_EAGAIN);
-        } else if (socket->timeout != -1) {
-            mp_uint_t retries = socket->timeout / 100;
-            while (*incoming_connection == NULL) {
+            poll_sockets();
+            MICROPY_PY_LWIP_REENTER
+            if (*incoming_connection != NULL) {
+                break;
+            }
+            if (socket_is_timedout(socket, ticks_start)) {
                 MICROPY_PY_LWIP_EXIT
-                if (retries-- == 0) {
-                    m_del_obj(lwip_socket_obj_t, socket2);
+                m_del_obj(lwip_socket_obj_t, socket2);
+                if (socket->timeout == 0) {
+                    mp_raise_OSError(MP_EAGAIN);
+                } else {
                     mp_raise_OSError(MP_ETIMEDOUT);
                 }
-                mp_hal_delay_ms(100);
-                MICROPY_PY_LWIP_REENTER
-            }
-        } else {
-            while (*incoming_connection == NULL) {
-                MICROPY_PY_LWIP_EXIT
-                poll_sockets();
-                MICROPY_PY_LWIP_REENTER
             }
         }
     }
@@ -1130,21 +1130,21 @@ static mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
             MICROPY_PY_LWIP_EXIT
 
             // And now we wait...
-            if (socket->timeout != -1) {
-                for (mp_uint_t retries = socket->timeout / 100; retries--;) {
-                    mp_hal_delay_ms(100);
-                    if (socket->state != STATE_CONNECTING) {
-                        break;
+            mp_uint_t ticks_start = mp_hal_ticks_ms();
+            for (;;) {
+                poll_sockets();
+                if (socket->state != STATE_CONNECTING) {
+                    break;
+                }
+                if (socket_is_timedout(socket, ticks_start)) {
+                    if (socket->timeout == 0) {
+                        mp_raise_OSError(MP_EINPROGRESS);
+                    } else {
+                        mp_raise_OSError(MP_ETIMEDOUT);
                     }
                 }
-                if (socket->state == STATE_CONNECTING) {
-                    mp_raise_OSError(MP_EINPROGRESS);
-                }
-            } else {
-                while (socket->state == STATE_CONNECTING) {
-                    poll_sockets();
-                }
             }
+
             if (socket->state == STATE_CONNECTED) {
                 err = ERR_OK;
             } else {

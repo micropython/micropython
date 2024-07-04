@@ -65,3 +65,17 @@ print(f"{a!s:8s}")
 # Still allow ! in expressions.
 print(f"{'1' if a != '456' else '0'!r:8s}")
 print(f"{'1' if a != '456' else '0'!s:8s}")
+
+# Concatenation of adjacent f-strings.
+print(f"" f"")
+print(f"a" f"b")
+print(f"{x}" f"{y}")
+print(
+    f"a{x}b---------------------------------"
+    f"cd---------------------------------"
+    f"e{y}f---------------------------------"
+)
+
+# Raw f-strings.
+print(rf"\r\a\w {'f'} \s\t\r\i\n\g")
+print(fr"\r{x}")

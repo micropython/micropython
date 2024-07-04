@@ -1,5 +1,6 @@
 { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&esp_network_wlan_type) },
 { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_network_phy_mode_obj) },
+{ MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&esp_network_ipconfig_obj) },
 
 { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(STATION_IF)},
 { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(SOFTAP_IF)},

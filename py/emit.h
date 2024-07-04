@@ -144,6 +144,9 @@ typedef struct _emit_method_table_t {
     void (*unwind_jump)(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
     void (*setup_block)(emit_t *emit, mp_uint_t label, int kind);
     void (*with_cleanup)(emit_t *emit, mp_uint_t label);
+    #if MICROPY_PY_ASYNC_AWAIT
+    void (*async_with_setup_finally)(emit_t *emit, mp_uint_t label_aexit_no_exc, mp_uint_t label_finally_block, mp_uint_t label_ret_unwind_jump);
+    #endif
     void (*end_finally)(emit_t *emit);
     void (*get_iter)(emit_t *emit, bool use_stack);
     void (*for_iter)(emit_t *emit, mp_uint_t label);
@@ -201,6 +204,8 @@ extern const emit_method_table_t emit_native_thumb_method_table;
 extern const emit_method_table_t emit_native_arm_method_table;
 extern const emit_method_table_t emit_native_xtensa_method_table;
 extern const emit_method_table_t emit_native_xtensawin_method_table;
+extern const emit_method_table_t emit_native_rv32_method_table;
+extern const emit_method_table_t emit_native_debug_method_table;
 
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_load_id_ops;
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_store_id_ops;
@@ -213,6 +218,8 @@ emit_t *emit_native_thumb_new(mp_emit_common_t *emit_common, mp_obj_t *error_slo
 emit_t *emit_native_arm_new(mp_emit_common_t *emit_common, mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 emit_t *emit_native_xtensa_new(mp_emit_common_t *emit_common, mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 emit_t *emit_native_xtensawin_new(mp_emit_common_t *emit_common, mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_rv32_new(mp_emit_common_t *emit_common, mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_debug_new(mp_emit_common_t *emit_common, mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 
 void emit_bc_set_max_num_labels(emit_t *emit, mp_uint_t max_num_labels);
 
@@ -223,6 +230,8 @@ void emit_native_thumb_free(emit_t *emit);
 void emit_native_arm_free(emit_t *emit);
 void emit_native_xtensa_free(emit_t *emit);
 void emit_native_xtensawin_free(emit_t *emit);
+void emit_native_rv32_free(emit_t *emit);
+void emit_native_debug_free(emit_t *emit);
 
 void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope);
 bool mp_emit_bc_end_pass(emit_t *emit);
@@ -258,6 +267,9 @@ void mp_emit_bc_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label);
 void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
 void mp_emit_bc_setup_block(emit_t *emit, mp_uint_t label, int kind);
 void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label);
+#if MICROPY_PY_ASYNC_AWAIT
+void mp_emit_bc_async_with_setup_finally(emit_t *emit, mp_uint_t label_aexit_no_exc, mp_uint_t label_finally_block, mp_uint_t label_ret_unwind_jump);
+#endif
 void mp_emit_bc_end_finally(emit_t *emit);
 void mp_emit_bc_get_iter(emit_t *emit, bool use_stack);
 void mp_emit_bc_for_iter(emit_t *emit, mp_uint_t label);

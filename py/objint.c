@@ -421,29 +421,50 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 3, 4, int_fro
 static MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_bytes_fun_obj));
 
 static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
-    // TODO: Support signed param (assumes signed=False)
+    // TODO: Support signed (currently behaves as if signed=(val < 0))
     (void)n_args;
+    bool overflow;
 
-    mp_int_t len = mp_obj_get_int(args[1]);
-    if (len < 0) {
+    mp_int_t dlen = mp_obj_get_int(args[1]);
+    if (dlen < 0) {
         mp_raise_ValueError(NULL);
     }
     bool big_endian = args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
 
     vstr_t vstr;
-    vstr_init_len(&vstr, len);
+    vstr_init_len(&vstr, dlen);
     byte *data = (byte *)vstr.buf;
-    memset(data, 0, len);
 
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     if (!mp_obj_is_small_int(args[0])) {
-        mp_obj_int_to_bytes_impl(args[0], big_endian, len, data);
+        overflow = !mp_obj_int_to_bytes_impl(args[0], big_endian, dlen, data);
     } else
     #endif
     {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(args[0]);
-        size_t l = MIN((size_t)len, sizeof(val));
-        mp_binary_set_int(l, big_endian, data + (big_endian ? (len - l) : 0), val);
+        int slen = 0;  // Number of bytes to represent val
+
+        // This logic has a twin in objint_longlong.c
+        if (val > 0) {
+            slen = (sizeof(mp_int_t) * 8 - mp_clz_mpi(val) + 7) / 8;
+        } else if (val < -1) {
+            slen = (sizeof(mp_int_t) * 8 - mp_clz_mpi(~val) + 8) / 8;
+        } else {
+            // clz of 0 is defined, so 0 and -1 map to 0 and 1
+            slen = -val;
+        }
+
+        if (slen <= dlen) {
+            memset(data, val < 0 ? 0xFF : 0x00, dlen);
+            mp_binary_set_int(slen, big_endian, data + (big_endian ? (dlen - slen) : 0), val);
+            overflow = false;
+        } else {
+            overflow = true;
+        }
+    }
+
+    if (overflow) {
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("buffer too small"));
     }
 
     return mp_obj_new_bytes_from_vstr(&vstr);
