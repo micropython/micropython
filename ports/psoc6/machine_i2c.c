@@ -148,7 +148,7 @@ mp_obj_t machine_i2c_master_make_new(const mp_obj_type_t *type, size_t n_args, s
     // set id if provided
     if (args[ARG_id].u_int != -1) {
         self->id = args[ARG_id].u_int;
-        mp_printf(&mp_plat_print, "ID parameter is not associated to any port pins and is silently ignored!\n");
+        mp_printf(&mp_plat_print, "ID parameter is ignored in this port!\n");
     }
 
     // get scl & sda pins & configure them
