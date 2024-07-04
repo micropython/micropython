@@ -273,11 +273,29 @@ static mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_ioctl_obj, machine_sdcard_ioctl);
 
+static void sd_card_deallocate_pins(machine_sdcard_obj_t *self) {
+    pin_phy_free(self->cmd);
+    pin_phy_free(self->dat0);
+    pin_phy_free(self->dat1);
+    pin_phy_free(self->dat2);
+    pin_phy_free(self->dat3);
+    pin_phy_free(self->clk);
+    pin_phy_free(self->cd);
+    pin_phy_free(self->wp);
+}
+static mp_obj_t machine_sdcard_deinit(mp_obj_t self_in) {
+    machine_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    cyhal_sdhc_free(&sdhc_obj[self->slot_num]);
+    sd_card_deallocate_pins(self);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_sdcard_deinit_obj, machine_sdcard_deinit);
+
 void mod_sdcard_deinit(void) {
     for (int i = 0; i < SDHC_NUM_OF_SLOTS; i++)
     {
         if (sdhc_obj[i].sdxx.base != NULL) {
-            cyhal_sdhc_free(&sdhc_obj[i]);
+            machine_sdcard_deinit(MP_OBJ_FROM_PTR(&sdhc_obj[i]));
         }
     }
 }
@@ -287,6 +305,7 @@ static const mp_rom_map_elem_t machine_sdcard_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks),  MP_ROM_PTR(&machine_sdcard_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&machine_sdcard_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl),       MP_ROM_PTR(&machine_sdcard_ioctl_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),      MP_ROM_PTR(&machine_sdcard_deinit_obj) },
 };
 static MP_DEFINE_CONST_DICT(machine_sdcard_locals_dict, machine_sdcard_locals_dict_table);
 
