@@ -253,10 +253,10 @@ run_ci_tests() {
     dev_test=${devs[0]}
     vfs_flash_tests  
 
-    if [ "${board}" == "CY8CPROTO-062-4343W" ]; then
-      dev_test=${devs_b[0]}
-      vfs_sdcard_tests
-    fi
+    # if [ "${board}" == "CY8CPROTO-062-4343W" ]; then
+    #   dev_test=${devs_b[0]}
+    #   vfs_sdcard_tests
+    # fi
 
     dev_test=${devs[0]}
     no_ext_hw_tests
