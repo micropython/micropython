@@ -1,8 +1,0 @@
-Invalid ADC Pin
-
-Expected voltage -  0 (uV) is approx same as obtained voltage(uV):  True
-Expected voltage -  0 (raw) is approx same as obtained voltage(raw):  True
-Expected voltage -  1650000 (uV) is approx same as obtained voltage(uV):  True
-Expected voltage -  16385 (raw) is approx same as obtained voltage(raw):  True
-Expected voltage -  3300000 (uV) is approx same as obtained voltage(uV):  True
-Expected voltage -  32767 (raw) is approx same as obtained voltage(raw):  True

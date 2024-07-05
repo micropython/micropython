@@ -1,3 +1,0 @@
-*** RTC memory write test ***
-
-datetime retrieved post soft-reset is same as previously set :  True

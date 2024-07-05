@@ -1,4 +1,0 @@
-master write() and read() (tx_buf + 1):  True
-master readinto() (tx_buf + 2): True
-master write_readinto() (tx_buf + 3):  True
-master write_readinto() and read() (tx_buf - 1):  True
