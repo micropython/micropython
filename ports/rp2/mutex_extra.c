@@ -33,3 +33,22 @@ void __time_critical_func(recursive_mutex_exit_and_restore_interrupts)(recursive
     }
     lock_internal_spin_unlock_with_notify(&mtx->core, save);
 }
+
+void __time_critical_func(recursive_mutex_nowait_enter_blocking)(recursive_mutex_nowait_t * mtx) {
+    while (!recursive_mutex_try_enter(&mtx->mutex, NULL)) {
+        tight_loop_contents();
+    }
+}
+
+void __time_critical_func(recursive_mutex_nowait_exit)(recursive_mutex_nowait_t * wrapper) {
+    recursive_mutex_t *mtx = &wrapper->mutex;
+    // Rest of this function is a copy of recursive_mutex_exit(), with
+    // lock_internal_spin_unlock_with_notify() removed.
+    uint32_t save = spin_lock_blocking(mtx->core.spin_lock);
+    assert(lock_is_owner_id_valid(mtx->owner));
+    assert(mtx->enter_count);
+    if (!--mtx->enter_count) {
+        mtx->owner = LOCK_INVALID_OWNER_ID;
+    }
+    spin_unlock(mtx->core.spin_lock, save);
+}

@@ -31,4 +31,28 @@
 uint32_t recursive_mutex_enter_blocking_and_disable_interrupts(recursive_mutex_t *mtx);
 void recursive_mutex_exit_and_restore_interrupts(recursive_mutex_t *mtx, uint32_t save);
 
+// Alternative version of recursive_mutex_t that doesn't issue WFE and SEV
+// instructions. This means it will use more power (busy-waits), but exiting
+// this mutex doesn't disrupt the calling CPU's event state in the same way a
+// recursive mutex does (because recurse_mutex_exit() executes SEV each time the
+// mutex is released.)
+//
+// Implement as a wrapper type because no longer compatible with the normal
+// recursive_mutex functions.
+
+typedef struct {
+    recursive_mutex_t mutex;
+} recursive_mutex_nowait_t;
+
+inline static void recursive_mutex_nowait_init(recursive_mutex_nowait_t *mtx) {
+    recursive_mutex_init(&mtx->mutex);
+}
+
+inline static bool recursive_mutex_nowait_try_enter(recursive_mutex_nowait_t *mtx, uint32_t *owner_out) {
+    return recursive_mutex_try_enter(&mtx->mutex, owner_out);
+}
+
+void recursive_mutex_nowait_enter_blocking(recursive_mutex_nowait_t *mtx);
+void recursive_mutex_nowait_exit(recursive_mutex_nowait_t *mtx);
+
 #endif // MICROPY_INCLUDED_RP2_MUTEX_EXTRA_H
