@@ -1,0 +1,28 @@
+
+Test Case 1: 
+ freq(Hz):  1 , duty_on(ns):  2.5e+08 , dutycycle(%): 25%
+
+Expected freq(Hz) approx same as set freq(Hz) and experimentally calculated freq(Hz):  True
+Dutycycle(ns) value is same as set value:  True
+Expected duty cycle(%) approx same as experimental duty cycle(%):  True
+
+Test Case 2: 
+ freq(Hz):  1 , duty_on(ns):  5e+08 , dutycycle(%): 50%
+
+Expected freq(Hz) approx same as set freq(Hz) and experimentally calculated freq(Hz):  True
+Dutycycle(ns) value is same as set value:  True
+Expected duty cycle(%) approx same as experimental duty cycle(%):  True
+
+Test Case 3: 
+ freq(Hz):  1 , duty_u16(raw):  49151.0 , dutycycle(%): 75%
+
+Expected freq(Hz) approx same as set freq(Hz) and experimentally calculated freq(Hz):  True
+Dutycycle(raw) value is same as set value:  True
+Expected duty cycle(%) approx same as experimental duty cycle(%):  True
+
+Test Case 4: 
+ freq(Hz):  2 , duty_u16(raw):  32767.0 , dutycycle(%): 50%
+
+Expected freq(Hz) approx same as set freq(Hz) and experimentally calculated freq(Hz):  True
+Dutycycle(raw) value is same as set value:  True
+Expected duty cycle(%) approx same as experimental duty cycle(%):  True

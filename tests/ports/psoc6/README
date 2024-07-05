@@ -1,0 +1,383 @@
+
+Micropython is based on a certain version of Python (currently 3.4), so certain Python features may not be present at all, depending on the version used as reference. 
+Other features may simply yield different results as compared to CPython, depending on the version CPyton is based on. And then there are certain features that are simply 
+implemented differently in order to gain speed or smaller memory footprint. Please refer to :
+
+        https://docs.micropython.org/en/latest/genrst/index.html
+
+
+
+A description of limitations and differences of builtin features wrt CPython can be found here :
+
+        https://docs.micropython.org/en/latest/genrst/builtin_types.html
+
+
+###########################################################################
+### the following test directories and files are currently available
+
+# generic tests for all tools
+basics
+cmdline        : Only works with command line Python, e.g. Unix
+cpydiff        : tests with known discrepancies to CPython, therefore to be omitted
+extmod
+feature_check
+float
+frozen
+import         : many tests require files on the board filesystem, but these are not copied by default. All those tests have been manually tested and verified to work as expected
+inlineasm
+internal_bench : run by run-internalbench.py; some need “ticks” function or will fail; also require module bench.py which must be on the local flash
+io             : need files in local flash (io/data/*), but those are not copied by default
+jni            : tests to be run in environment with JAVA available, ie Unix, Windows, ...
+micropython
+misc
+multi_bluetooth: used with run-multitests.py
+multi_net      : used with run-multitests.py
+net_hosted
+net_inet
+perf_bench     : used with run-perfbench.py for benchmarking
+stress
+thread
+unicode
+unix           : exclude mod_os.py, but use time.py for psoc6; in general to be run only on Unix platform !
+
+
+###########################################################################
+# tool specific tests
+esp32
+psoc6
+pyb
+qemu-arm
+renesas-ra
+unix
+wipy
+
+
+###########################################################################
+### tests excluded in psoc6 test suite because they must fail with the current run-tests.py functionality
+# tests with known discrepancies to CPython, therefore to be omitted
+cpydiff
+
+
+###########################################################################
+# Many tests require files on the board filesystem, but these are not copied by default. Also, the sys.path must be adapted to reflect the mount point of the board FS.
+# All these excluded tests have been manually tested and verified to work as expected
+- import :
+        - builtin_ext.py
+        - gen_context.py
+        - import1a.py
+        - import2a.py
+        - import3a.py
+        - import_broken.py
+        - import_circular.py
+        - import_file.py
+        - import_long_dyn.py
+        - import_override.py
+        - import_pkg1.py
+        - import_pkg2.py
+        - import_pkg3.py
+        - import_pkg4.py
+        - import_pkg5.py
+        - import_pkg6.py
+        - import_pkg7.py
+        - import_pkg8.py
+        - import_pkg9.py
+        - module_dict.py
+        - try_module.py
+
+
+###########################################################################
+# Many tests require files on the board filesystem, but these are not copied by default. Also, the sys.path must be adapted to reflect the mount point of the board FS.
+# All these excluded tests have been manually tested and verified to work as expected
+-io :
+        - file_readinto.py
+        - file_readline.py
+        - file_iter.py
+        - file_long_read.py
+        - file_long_read2.py
+        - file_long_read3.py
+        - file_readinto.py
+        - file_readinto_len.py
+        - file_seek.py
+        - file_with.py
+        - open_append.py
+        - open_plus.py
+
+        # The following io tests do fail : 
+        - argv.py        : no command line parameters passed at board level, therefore argv is empty, but not so in python
+        - file1.py       : !!!! writes to a file opened in read mode, therefore file is changed and all further tests based on this file will fail !!!!
+        - file_stdio.py  : attribute fileno not available, therefore tests fail
+
+
+###########################################################################
+# tests to be run in environment with JAVA available, ie Unix, Windows, ...
+jni
+
+
+###########################################################################
+# test which cannot be compared to Python because MPY specific features are used
+- perf_bench :
+        - core_import_mpy_multi.py
+        - core_import_mpy_single.py
+        - viper_call*.py
+
+
+###########################################################################
+# Many tests require files on the board filesystem, but these are not copied by default. Also, the sys.path must be adapted to reflect the mount point of the board FS.
+# All these excluded tests have been manually tested and verified to work as expected
+- unicode :
+        - file1.py
+        - file2.py
+        - file_invalid.py
+
+
+###########################################################################
+### TODO: clarify how to solve these
+# strange error in time module (only sometimes)
+- extmod :
+        - re_stack_overflow.py
+
+        # this test fails at times as 1 check is not timing safe
+        - vfs_lfs_mtime.py
+
+
+# only differ in standard output message by MPY, code is MPY code and seems to work fine
+- feature_check :
+        - async_check.py
+        - bytearray.py
+        - byteorder.py
+        - complex.py
+        - const.py
+        - coverage.py
+        - io_module.py
+        - native_check.py
+
+
+# emacs features not enabled in port config
+- feature_check :
+        - repl_emacs_check.py
+        - repl_words_move_check.py
+        - set_check.py
+        - slice.py
+        
+
+# tests that require double precision (64 bits), ie double, to be set in mpconfigport.h for macro "MICROPY_FLOAT_IMPL"
+# clashes with misc/rge_sm.py
+- feature_check :
+        - float.py
+
+
+# 
+- float
+        - math_domain_special.py
+
+
+# strange error in output of message not consistent with text in source code => wrong mapping of internal qstrings ?
+- micropython :
+        - import_mpy_invalid.py
+        - import_mpy_native.py
+        - viper_error.py
+
+
+# tests that require single precision (32 bits), ie float, to be set in mpconfigport.h for macro "MICROPY_FLOAT_IMPL"
+# clashes with feature_check/float.py
+misc/rge_sm.py
+
+# Socket tests related which are failing
+- net_hosted : 
+        - accept_nonblock.py -> 
+                When run as tests - timeout waiting for first EOF reception
+                When run as script in device - True ;Assertion "invalid  socket state for err callback" 
+                failed at line 2064 in libs/lwip/src/core/tcp.c
+        - accept_timeout. -> 
+                When run as tests - timeout waiting for first EOF reception
+                When run as script in device - True ;Assertion "invalid  socket state for err callback" 
+                failed at line 2064 in libs/lwip/src/core/tcp.c
+        - ssl_getpeercert.py -> 
+                Script: TypeError: object of type 'NoneType' has no len() -->type(cert) is returned as NoneType
+        - uasyncio_start_server.py -> 
+                 Assertion "invalid socket state for err callback" failed at line 2064 in libs/lwip/src/core/tcp.c
+- net_inet:
+        - ssl_cert.py -> 
+                OSError: (-9984, 'X509 - Certificate verification failed, e.g. CRL, CA or signature check failed') 
+                CRASH
+
+
+# in order to enable code tracing the following switches must be set. All tests are run to completion, but output differs. Instead of file names <stdin> is printed.
+# other features (uasyncio*) need MICROPY_STACKLESS=0 in order to be testable !
+#define MICROPY_PY_SYS_SETTRACE      (1)
+#define MICROPY_PERSISTENT_CODE_SAVE (1)
+#define MICROPY_COMP_CONST           (0)
+
+# to be set in order to increase recursion depth
+#define MICROPY_STACKLESS (1)
+//#define MICROPY_STACKLESS_STRICT (1)
+
+
+###########################################################################
+### directory filled with test results for failing tests
+results
+
+
+###########################################################################
+# test executables and other files
+README.md
+
+run-internalbench.py : run internal benchmarks 
+
+run-multitests.py    : run tests between 2 MCU instances
+
+run-natmodtests.py
+
+run-perfbench.py     : run tests in perfbench
+./run-perfbench.py --pyboard 100 256
+
+run-tests-exp.py     : run tests in MCU session
+
+run-tests-exp.sh
+
+run-tests.py         : run tests from host platform
+
+
+###########################################################################
+### Test results
+# new
+840 tests performed (23874 individual testcases)
+840 tests passed
+59 tests skipped: btree1 btree_error btree_gc builtin_next_arg2 builtin_range_binop bytecode_limit cexample_class cexample_module class_inplace_op2 exception_chain float2int_doubleprec_intbig float_divmod float_format_ints_doubleprec float_parse_doubleprec heap_locked heapalloc_bytesio2 io_buffered_writer machine1 machine_i2s_rate machine_pinbase machine_pulse machine_signal machine_timer meminfo memoryview_itemsize memstats namedtuple_asdict nanbox_smallint subclass_native_call sys_atexit sys_getsizeof sys_path sys_settrace_features sys_settrace_generator sys_settrace_loop sys_tracebacklimit tls_num_errors urandom_seed_default ussl_poll utimeq1 utimeq_stable vfs_blockdev vfs_fat_fileio1 vfs_fat_fileio2 vfs_fat_finaliser vfs_fat_ilistdir_del vfs_fat_more vfs_fat_mtime vfs_fat_oldproto vfs_fat_ramdisk vfs_fat_ramdisklarge vfs_lfs vfs_lfs_corrupt vfs_lfs_error vfs_lfs_file vfs_lfs_mount vfs_posix vfs_posix_ilistdir_del vfs_posix_ilistdir_filter
+0   tests failed
+
+
+# before
+840 tests performed (23903 individual testcases)
+837 tests passed
+59  tests skipped
+3   tests failed
+
+
+###########################################################################
+### failing tests now excluded from test set
+# unclear why
+FAIL  extmod/ussl_basic.py
+FAIL  extmod/ussl_keycert.py
+FAIL  extmod/utime_res.py
+FAIL  net_inet/ssl_cert.py
+FAIL  net_inet/tls_text_errors.py
+FAIL  net_hosted/accept_nonblock.py
+FAIL  net_hosted/accept_timeout.py
+FAIL  net_hosted/ssl_getpeercert.py
+FAIL  net_hosted/uasyncio_start_server.py
+
+# fails because different server addresses are returned per call => cannot be compared to CPYTHON ! Script itself works !
+FAIL net_inet/test_tls_nonblock.py 
+
+
+# fails probably because CPYTHON and Micropython handle things differently in one case
+FAIL net_hosted/connect_nonblock_xfer.py
+ 
+### tests that fail sometimes
+extmod/uasyncio_lock.py     => crash
+psoc6/time.py               => test_ticks_ms due to latencies greater than tested range
+stress/bytecode_limit.py    => currently skipped
+extmod/ure_split_notimpl.py => hangup
+
+###########################################################################
+### skipped tests
+### tests skipped by run-tests.py and potentially to be enabled in "mpconfigport.h"
+# unclear why skipped
+skip  basics/builtin_next_arg2.py ---> Deferred
+skip  basics/builtin_range_binop.py ---> Deferred
+
+# excluded in run-tests.py because known to differ from Python
+skip  basics/class_inplace_op2.py
+skip  basics/exception_chain.py
+
+# unclear why skipped
+skip  basics/io_buffered_writer.py ---> Enabled
+skip  basics/memoryview_itemsize.py ---> Enabled
+skip  basics/namedtuple_asdict.py ---> To be evaluated
+skip  basics/nanbox_smallint.py ---> Deferred
+
+# excluded in run-tests.py because known to differ from Python
+skip  basics/subclass_native_call.py
+
+# not enabled
+skip  basics/sys_getsizeof.py
+
+# not enabled
+skip  basics/sys_path.py
+skip  basics/sys_tracebacklimit.py
+
+# not enabled
+skip  extmod/btree1.py  ---> Won't Enable
+skip  extmod/btree_error.py ---> Won't Enable
+skip  extmod/btree_gc.py ---> Won't Enable
+skip  extmod/machine1.py
+skip  extmod/machine_i2s_rate.py
+skip  extmod/machine_pinbase.py
+skip  extmod/machine_pulse.py
+skip  extmod/machine_signal.py
+skip  extmod/machine_timer.py
+skip  extmod/urandom_seed_default.py
+
+
+# enabled, but skipped, unclear why
+skip  extmod/ussl_poll.py ---> To be evaluated
+
+# not enabled
+skip  extmod/utimeq1.py
+skip  extmod/utimeq_stable.py
+
+# FAT not enabled
+skip  extmod/vfs_blockdev.py
+skip  extmod/vfs_fat_fileio1.py
+skip  extmod/vfs_fat_fileio2.py
+skip  extmod/vfs_fat_finaliser.py
+skip  extmod/vfs_fat_ilistdir_del.py
+skip  extmod/vfs_fat_more.py
+skip  extmod/vfs_fat_mtime.py
+skip  extmod/vfs_fat_oldproto.py
+skip  extmod/vfs_fat_ramdisk.py
+skip  extmod/vfs_fat_ramdisklarge.py
+
+# skipped because lfs1 not enabled
+skip  extmod/vfs_lfs.py
+skip  extmod/vfs_lfs_corrupt.py
+skip  extmod/vfs_lfs_error.py
+skip  extmod/vfs_lfs_file.py
+skip  extmod/vfs_lfs_mount.py
+
+# not enabled
+skip  extmod/vfs_posix.py
+skip  extmod/vfs_posix_ilistdir_del.py
+skip  extmod/vfs_posix_ilistdir_filter.py
+
+# not enabled
+skip  extmod/websocket_basic.py
+
+# skipped, see run-tests.py
+skip  float/float2int_doubleprec_intbig.py
+skip  float/float_divmod.py
+skip  float/float_format_ints_doubleprec.py
+skip  float/float_parse_doubleprec.py
+ 
+# not enabled
+skip  micropython/heap_locked.py
+
+# unclear why skipped
+skip  micropython/heapalloc_bytesio2.py ---> Enabled
+skip  micropython/meminfo.py ---> To be evaluated
+
+# not enabled
+skip  micropython/memstats.py
+
+# not enabled
+skip  misc/cexample_class.py
+skip  misc/cexample_module.py
+skip  misc/sys_atexit.py
+skip  misc/sys_settrace_features.py
+skip  misc/sys_settrace_generator.py
+skip  misc/sys_settrace_loop.py
+
+# unclear why skipped
+skip  net_inet/tls_num_errors.py
+skip  stress/bytecode_limit.py

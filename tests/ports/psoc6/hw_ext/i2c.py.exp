@@ -1,0 +1,38 @@
+'scl' argument required
+'sda' argument required
+'scl' argument required
+'sda' argument required
+'addr' argument required
+
+I2C Hardware
+
+[69]
+Found slave with address  69  :  True
+master writeto() and received by slave:  True
+master writeto_mem() and received by slave:  True
+master writevto() and received by slave:  True
+master readfrom_into() and transmitted from slave:  True
+master readfrom() and transmitted from slave:  True
+master readfrom_mem_into() and transmitted from slave:  True
+master readfrom_mem() and transmitted from slave:  True
+master writeto(stop=false) and received by slave:  True
+master readfrom() and transmitted from slave :  True
+
+I2C Software
+
+[69]
+Found slave with address  69  :  True
+master writeto() and received by slave:  True
+master writeto_mem() and received by slave:  True
+master writevto() and received by slave:  True
+master readfrom_into() and transmitted from slave:  True
+master readfrom() and transmitted from slave:  True
+master readfrom_mem_into() and transmitted from slave:  True
+master readfrom_mem() and transmitted from slave:  True
+master writeto(stop=false) and received by slave:  True
+master readfrom() and transmitted from slave :  True
+
+I2C Primitives
+
+master soft write based on primitives:  True
+master readinto() and transmitted from slave:  True
