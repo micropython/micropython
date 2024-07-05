@@ -46,10 +46,9 @@
 #define SDHC_DEFAULT_BUS_WIDTH                  (4U)
 #define SDHC_BLOCK_SIZE                         (512UL)
 
-static cyhal_sdhc_t sdhc_obj[SDHC_NUM_OF_SLOTS];
-
 typedef struct _machine_sdcard_obj_t {
     mp_obj_base_t base;
+    cyhal_sdhc_t sdhc_obj;
     uint16_t slot_num;
     machine_pin_phy_obj_t *wp;
     machine_pin_phy_obj_t *cmd;
@@ -61,6 +60,8 @@ typedef struct _machine_sdcard_obj_t {
     machine_pin_phy_obj_t *cd;
     uint32_t block_count;
 } machine_sdcard_obj_t;
+
+machine_sdcard_obj_t *sdhc_obj[MAX_SDHC_SLOT] = { NULL };
 
 enum {
     ARG_slot,
@@ -75,6 +76,25 @@ enum {
     ARG_clk
 };
 
+static inline machine_sdcard_obj_t *sd_card_obj_alloc(bool is_slave) {
+    for (uint8_t i = 0; i < MAX_SDHC_SLOT; i++)
+    {
+        if (sdhc_obj[i] == NULL) {
+            sdhc_obj[i] = mp_obj_malloc(machine_sdcard_obj_t, &machine_sdcard_type);
+            return sdhc_obj[i];
+        }
+    }
+    return NULL;
+}
+
+static inline void sd_card_obj_free(machine_sdcard_obj_t *sdhc_obj_ptr) {
+    for (uint8_t i = 0; i < MAX_SDHC_SLOT; i++)
+    {
+        if (sdhc_obj[i] == sdhc_obj_ptr) {
+            sdhc_obj[i] = NULL;
+        }
+    }
+}
 
 static void sd_card_allocate_pin(machine_sdcard_obj_t *self, mp_arg_val_t *args) {
     if (args[ARG_cmd].u_obj != mp_const_none) {
@@ -138,7 +158,7 @@ static cy_rslt_t sd_card_init_helper(machine_sdcard_obj_t *self, mp_arg_val_t *a
     cyhal_clock_get(&clock, &rsc);
 
     sd_card_allocate_pin(self, args);
-    result = cyhal_sdhc_init(&sdhc_obj[self->slot_num], &sdhc_config, self->cmd->addr, self->clk->addr, self->dat0->addr, self->dat1->addr,
+    result = cyhal_sdhc_init(&self->sdhc_obj, &sdhc_config, self->cmd->addr, self->clk->addr, self->dat0->addr, self->dat1->addr,
         self->dat2->addr, self->dat3->addr, NC, NC, NC, NC, self->cd->addr, NC, NC, NC, NC, NC, &clock);
     return result;
 }
@@ -167,26 +187,22 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    machine_sdcard_obj_t *self = mp_obj_malloc_with_finaliser(machine_sdcard_obj_t, &machine_sdcard_type);
-
-    self->slot_num = mp_obj_get_int(args[ARG_slot].u_obj);
-
-    if (self->slot_num >= SDHC_NUM_OF_SLOTS) {
-        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD card slot unavailable!\n"));
+    machine_sdcard_obj_t *self = sd_card_obj_alloc(false);
+    if (self == NULL) {
+        return mp_const_none;
     }
 
-    if (sdhc_obj[self->slot_num].sdxx.base == NULL) { // check if sd card already initialized in the given slot
-        cy_rslt_t result = sd_card_init_helper(self, args);
+    cy_rslt_t result = sd_card_init_helper(self, args);
 
-        if (CY_RSLT_SUCCESS == result) {
-            cyhal_sdhc_get_block_count(&sdhc_obj[self->slot_num], (uint32_t *)&self->block_count);
+    if (CY_RSLT_SUCCESS == result) {
+        cyhal_sdhc_get_block_count(&self->sdhc_obj, (uint32_t *)&self->block_count);
+    } else {
+        if (cyhal_sdhc_is_card_inserted(&self->sdhc_obj) == false) {
+            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD Card not inserted!\n"));
         } else {
-            if (cyhal_sdhc_is_card_inserted(&sdhc_obj[self->slot_num]) == false) {
-                mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD Card not inserted!\n"));
-            } else {
-                mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD card init failed!\n"));
-            }
+            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD card init failed!\n"));
         }
+        // machine_sdcard_deinit(self)
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -204,7 +220,7 @@ static mp_obj_t machine_sdcard_readblocks(size_t n_args, const mp_obj_t *args) {
     }
 
     size_t length = bufinfo.len / SDHC_BLOCK_SIZE;
-    cy_rslt_t result = cyhal_sdhc_read(&sdhc_obj[self->slot_num], block_address, bufinfo.buf, &length);
+    cy_rslt_t result = cyhal_sdhc_read(&self->sdhc_obj, block_address, bufinfo.buf, &length);
 
     if (CY_RSLT_SUCCESS != result) {
         mp_raise_ValueError(MP_ERROR_TEXT("machine_sdcard_readblocks() - SD Card Read failed !"));
@@ -224,7 +240,7 @@ static mp_obj_t machine_sdcard_writeblocks(size_t n_args, const mp_obj_t *args) 
     size_t length = bufinfo.len / SDHC_BLOCK_SIZE;
 
     if (n_args == 3) {
-        cy_rslt_t result = cyhal_sdhc_erase(&sdhc_obj[self->slot_num], block_address, bufinfo.len, 0);
+        cy_rslt_t result = cyhal_sdhc_erase(&self->sdhc_obj, block_address, bufinfo.len, 0);
 
         if (CY_RSLT_SUCCESS != result) {
             mp_raise_ValueError(MP_ERROR_TEXT("machine_sdcard_writeblocks() - SD Card Erase failed !"));
@@ -233,7 +249,7 @@ static mp_obj_t machine_sdcard_writeblocks(size_t n_args, const mp_obj_t *args) 
         block_address += mp_obj_get_int(args[3]);
     }
 
-    cy_rslt_t result = cyhal_sdhc_write(&sdhc_obj[self->slot_num], block_address, bufinfo.buf, &length);
+    cy_rslt_t result = cyhal_sdhc_write(&self->sdhc_obj, block_address, bufinfo.buf, &length);
     if (CY_RSLT_SUCCESS != result) {
         mp_raise_ValueError(MP_ERROR_TEXT("machine_sdcard_writeblocks() - SD Card Write failed!"));
     }
@@ -260,7 +276,7 @@ static mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
             return MP_OBJ_NEW_SMALL_INT(SDHC_BLOCK_SIZE);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
             uint32_t offset = mp_obj_get_int(arg_in);
-            cy_rslt_t result = cyhal_sdhc_erase(&sdhc_obj[self->slot_num], offset, 1, 0);
+            cy_rslt_t result = cyhal_sdhc_erase(&self->sdhc_obj, offset, 1, 0);
 
             if (CY_RSLT_SUCCESS != result) {
                 mp_raise_ValueError(MP_ERROR_TEXT("machine_sdcard_ioctl() - SD Card erase failed !"));
@@ -274,27 +290,28 @@ static mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
 static MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_ioctl_obj, machine_sdcard_ioctl);
 
 static void sd_card_deallocate_pins(machine_sdcard_obj_t *self) {
-    pin_phy_free(self->cmd);
-    pin_phy_free(self->dat0);
-    pin_phy_free(self->dat1);
-    pin_phy_free(self->dat2);
-    pin_phy_free(self->dat3);
-    pin_phy_free(self->clk);
-    pin_phy_free(self->cd);
-    pin_phy_free(self->wp);
+    cyhal_gpio_free(self->cd->addr);
+    cyhal_gpio_free(self->cmd->addr);
+    cyhal_gpio_free(self->clk->addr);
+    cyhal_gpio_free(self->wp->addr);
+    cyhal_gpio_free(self->dat0->addr);
+    cyhal_gpio_free(self->dat1->addr);
+    cyhal_gpio_free(self->dat2->addr);
+    cyhal_gpio_free(self->dat3->addr);
 }
 static mp_obj_t machine_sdcard_deinit(mp_obj_t self_in) {
     machine_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    cyhal_sdhc_free(&sdhc_obj[self->slot_num]);
+    cyhal_sdhc_free(&self->sdhc_obj);
     sd_card_deallocate_pins(self);
+    sd_card_obj_free(self);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_sdcard_deinit_obj, machine_sdcard_deinit);
 
-void mod_sdcard_deinit(void) {
-    for (int i = 0; i < SDHC_NUM_OF_SLOTS; i++)
-    {
-        if (sdhc_obj[i].sdxx.base != NULL) {
+
+void mod_sdcard_deinit() {
+    for (uint8_t i = 0; i < MAX_SDHC_SLOT; i++) {
+        if (sdhc_obj[i] != NULL) {
             machine_sdcard_deinit(MP_OBJ_FROM_PTR(&sdhc_obj[i]));
         }
     }

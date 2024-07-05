@@ -13,7 +13,7 @@
 
 #define MICROPY_PY_SD_CARD (1)
 #if (MICROPY_PY_SD_CARD)
-#define SDHC_NUM_OF_SLOTS                       (2)
+#define MAX_SDHC_SLOT                           (2)
 #endif
 
 // Flash type enablement for board
