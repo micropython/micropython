@@ -166,7 +166,7 @@ static mp_obj_t esp_network_ipconfig(size_t n_args, const mp_obj_t *args, mp_map
             case MP_QSTR_dns: {
                 char addr_str[IPADDR_STRLEN_MAX];
                 ipaddr_ntoa_r(dns_getserver(0), addr_str, sizeof(addr_str));
-                return mp_obj_new_str(addr_str, strlen(addr_str));
+                return mp_obj_new_str_from_cstr(addr_str);
             }
             default: {
                 mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
