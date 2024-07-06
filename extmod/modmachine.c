@@ -109,7 +109,7 @@ static mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX, machine_freq);
 
 static mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_machine_lightsleep(n_args, args);

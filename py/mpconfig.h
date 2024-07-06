@@ -1736,6 +1736,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE_RESET (0)
 #endif
 
+// Maximum number of arguments for machine.freq()
+#ifndef MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX
+#define MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX (1)
+#endif
+
 // Whether to include: bitstream
 #ifndef MICROPY_PY_MACHINE_BITSTREAM
 #define MICROPY_PY_MACHINE_BITSTREAM (0)
