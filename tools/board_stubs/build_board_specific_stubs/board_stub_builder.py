@@ -20,7 +20,7 @@ def get_board_pins(pin_filename):
             # (\s*) means any amount of whitespaces (no whitespaces allowed too)
             # related issue: https://github.com/adafruit/circuitpython/issues/9407
 
-            search = re.search(r"MP_ROM_QSTR\(MP_QSTR_(.*?)\),(\s*)MP_ROM_PTR", line)
+            search = re.search(r"MP_ROM_QSTR\(MP_QSTR_(.*?)\),\s*MP_ROM_PTR", line)
             if search is None:
                 search = re.search(r"MP_OBJ_NEW_QSTR\(MP_QSTR_(.*?)\),\s*MP_ROM_PTR", line)
             if search is None:
