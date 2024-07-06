@@ -17,7 +17,7 @@ def get_board_pins(pin_filename):
             if line.strip()[0:2] == "//":
                 continue
 
-            # (\s*) means any amount of whitespaces (no whitespaces allowed too)
+            # \s* means any amount of whitespaces (no whitespaces allowed too)
             # related issue: https://github.com/adafruit/circuitpython/issues/9407
 
             search = re.search(r"MP_ROM_QSTR\(MP_QSTR_(.*?)\),\s*MP_ROM_PTR", line)
