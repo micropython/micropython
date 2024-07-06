@@ -39,7 +39,10 @@ static void _copy_out_of_fifo(void) {
         req_len = USB_SERIAL_JTAG_BUF_SIZE;
     }
     uint8_t rx_buf[USB_SERIAL_JTAG_BUF_SIZE];
+
+    // Read up to req_len bytes. Does not block.
     size_t len = usb_serial_jtag_ll_read_rxfifo(rx_buf, req_len);
+
     for (size_t i = 0; i < len; ++i) {
         if (rx_buf[i] == mp_interrupt_char) {
             mp_sched_keyboard_interrupt();
@@ -62,7 +65,9 @@ static void usb_serial_jtag_isr_handler(void *arg) {
     }
 
     if (flags & USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT) {
+        // New bytes are in the FIFO. Read them and check for keyboard interrupt.
         usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+        // This is executed at interrupt level, so we don't explicitly need to make it atomic.
         _copy_out_of_fifo();
         port_wake_main_task_from_isr();
     }
@@ -81,28 +86,41 @@ bool usb_serial_jtag_connected(void) {
 }
 
 char usb_serial_jtag_read_char(void) {
-    if (ringbuf_num_filled(&ringbuf) == 0 && !usb_serial_jtag_ll_rxfifo_data_available()) {
+    uint32_t num_filled = ringbuf_num_filled(&ringbuf);
+
+    if (num_filled == 0 && !usb_serial_jtag_ll_rxfifo_data_available()) {
         return -1;
     }
     char c = -1;
-    if (ringbuf_num_filled(&ringbuf) > 0) {
+
+    if (num_filled > 0) {
+        common_hal_mcu_disable_interrupts();
         c = ringbuf_get(&ringbuf);
+        common_hal_mcu_enable_interrupts();
+
+        num_filled--;
     }
+
     // Maybe re-enable the recv interrupt if we've emptied the ringbuf.
-    if (ringbuf_num_filled(&ringbuf) == 0) {
+    if (num_filled == 0) {
         usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
         _copy_out_of_fifo();
-        usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+
         // May have only been ctrl-c.
         if (c == -1 && ringbuf_num_filled(&ringbuf) > 0) {
             c = ringbuf_get(&ringbuf);
         }
+        usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
     }
     return c;
 }
 
 uint32_t usb_serial_jtag_bytes_available(void) {
-    return ringbuf_num_filled(&ringbuf) + usb_serial_jtag_ll_rxfifo_data_available();
+    // Atomically get the number of bytes in the ringbuf plus what is not yet in the ringbuf.
+    common_hal_mcu_disable_interrupts();
+    const uint32_t count = ringbuf_num_filled(&ringbuf) + usb_serial_jtag_ll_rxfifo_data_available();
+    common_hal_mcu_enable_interrupts();
+    return count;
 }
 
 void usb_serial_jtag_write(const char *text, uint32_t length) {
