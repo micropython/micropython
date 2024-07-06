@@ -1800,6 +1800,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE_TIMER (0)
 #endif
 
+// Number of arguments for machine.freq()
+#ifndef MICROPY_PY_MACHINE_FREQ_ARGS
+#define MICROPY_PY_MACHINE_FREQ_ARGS  (1)
+#endif
+
 // The default backlog value for socket.listen(backlog)
 #ifndef MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT
 #define MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT (2)
