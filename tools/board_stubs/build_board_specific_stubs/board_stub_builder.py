@@ -22,7 +22,7 @@ def get_board_pins(pin_filename):
 
             search = re.search(r"MP_ROM_QSTR\(MP_QSTR_(.*?)\),(\s*)MP_ROM_PTR", line)
             if search is None:
-                search = re.search(r"MP_OBJ_NEW_QSTR\(MP_QSTR_(.*?)\),(\s*)MP_ROM_PTR", line)
+                search = re.search(r"MP_OBJ_NEW_QSTR\(MP_QSTR_(.*?)\),\s*MP_ROM_PTR", line)
             if search is None:
                 continue
 
