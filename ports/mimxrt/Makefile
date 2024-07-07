@@ -159,7 +159,11 @@ endif
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1015 MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064 MIMXRT1176))
 SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_qtmr.c \
+	$(MCU_DIR)/drivers/fsl_enc.c \
+	$(MCU_DIR)/drivers/fsl_xbara.c \
 	$(MCU_DIR)/drivers/fsl_romapi.c
+
+CFLAGS += -DMICROPY_PY_MACHINE_QECNT=1
 endif
 
 ifeq ($(MCU_SERIES), MIMXRT1176)
@@ -198,6 +202,7 @@ SRC_C += \
 	machine_i2c.c \
 	machine_led.c \
 	machine_pin.c \
+	machine_encoder.c \
 	machine_rtc.c \
 	machine_sdcard.c \
 	machine_spi.c \

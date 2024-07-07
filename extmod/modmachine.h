@@ -215,6 +215,10 @@ extern const mp_obj_type_t machine_timer_type;
 extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_usbd_type;
 extern const mp_obj_type_t machine_wdt_type;
+#if MICROPY_PY_MACHINE_QECNT
+extern const mp_obj_type_t machine_encoder_type;
+extern const mp_obj_type_t machine_counter_type;
+#endif
 
 #if MICROPY_PY_MACHINE_SOFTI2C
 extern const mp_obj_type_t mp_machine_soft_i2c_type;

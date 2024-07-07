@@ -540,6 +540,62 @@ port and LAN(1) for the 1G port.
 
 For details of the network interface refer to the class :ref:`network.LAN <network.LAN>`.
 
+class Encoder -- Quadrature Encoder for i.MXRT MCUs
+---------------------------------------------------
+
+This class provides the Quadrature Encoder Service.
+
+Example usage::
+
+    # Samples for Teensy
+    #
+
+    from machine import Pin, Encoder
+
+    qe = Encoder(0, Pin("D0"), Pin("D1")) # create Quadrature Encoder object
+    qe.value()                      # get current counter values
+    qe.value(0)                     # set value and cycles to 0
+    qe.init(cpc=128)                # specify 128 counts/cycle
+    qe.init(index=Pin(3))           # specify Pin 3 as Index pulse input
+    qe.deinit()                     # turn off the Quadrature Encoder
+    qe.init(match=64)               # set a match event at count 64
+    qe.irq(qe.IRQ_MATCH, value=100, handler=handler)
+                                    # call the function handler at a match event
+
+    qe                              # show the Encoder object properties
+
+The Quadrature Encoder is hardware based. It is available at all MIMXRT devices except the ones
+based on the i.MX RT 1010 MCU. For details about using the Encoder with a MIMXRT board
+see :ref:`machine.Encoder <mimxrt_machine.Encoder>`:
+
+
+class Counter-- Signal counter for i.MXRT MCUs
+----------------------------------------------
+
+This class provides a Counter service using the Quadrature Encoder module
+
+Example usage::
+
+    # Samples for Teensy
+    #
+
+    from machine import Pin, Counter
+
+    counter = Counter(0, Pin("D0"))          # create Counter object
+    counter.value()                       # get current counter value
+    counter.value(0)                      # set the counter to 0
+    counter.init(cpc=128)                 # specify 128 counts/cycle
+    counter.deinit()                      # turn off the Counter
+    counter.init(match=1000)              # create a match event at count 1000
+    counter.irq(Counter.IRQ_MATCH, handler) # call the function handler at a counter match
+
+    counter                               # show the Counter object properties
+
+The Counter is hardware based. It is available at all MIMXRT devices except the ones
+based on the i.MX RT 1010 MCU. For details about using the Counter with a MIMXRT board
+see :ref:`machine.Counter <mimxrt_machine.Counter>`:
+
+
 Transferring files
 ------------------
 
