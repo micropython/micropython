@@ -254,30 +254,39 @@ an external ADC.
 ADC Constructor
 ```````````````
 
-.. class:: ADC(dest, *, average=16, vref=n)
+.. class:: ADC(dest, *, average=16, bits=12, vref=3, callback=None)
   :noindex:
 
-Construct and return a new ADC object using the following parameters:
+On the SAMD21/SAMD51 ADC functionality is available on Pins labelled 'Ann'.
 
-  - *dest* is the Pin object on which the ADC is output.
+Use the :ref:`machine.ADC <machine.ADC>` class::
 
-Keyword arguments:
+    from machine import ADC
 
-  - *average* is used to reduce the noise. With a value of 16 the LSB noise is about 1 digit.
-  - *vref* sets the reference voltage for the ADC.
+    adc0 = ADC(Pin("A0"))            # create ADC object on ADC pin, average=16
+    adc0.read_u16()                  # read value, 0-65536 across voltage range 0.0v - 3.3v
+    adc1 = ADC(Pin("A1"), average=1) # create ADC object on ADC pin, average=1
 
-    The default setting is for 3.3V. Other values are:
+The resolution of the ADC is set by the bits keyword option. The default is 12.
+Suitable values are 8, 10 and 12. If you need a higher resolution or better
+accuracy, use an external ADC. The default value of average is 16.
+Averaging is used to reduce the noise. With a value of 16 the LSB noise is
+about 1 digit. The vref=n option sets the reference voltage for the ADC.
+The default setting is for 3.3V. Other values are:
 
-    ==== ==============================  ===============================
-    vref SAMD21                          SAMD51
-    ==== ==============================  ===============================
-    0    1.0V voltage reference          internal bandgap reference (1V)
-    1    1/1.48 Analogue voltage supply  Analogue voltage supply
-    2    1/2 Analogue voltage supply     1/2 Analogue voltage supply
-    3    External reference A            External reference A
-    4    External reference B            External reference B
-    5    -                               External reference C
-    ==== ==============================  ===============================
+==== ==============================  ===============================
+vref SAMD21                          SAMD51
+==== ==============================  ===============================
+0    1.0V voltage reference          internal bandgap reference (1V)
+1    1/1.48 Analogue voltage supply  Analogue voltage supply
+2    1/2 Analogue voltage supply     1/2 Analogue voltage supply
+3    External reference A            External reference A
+4    External reference B            External reference B
+5    -                               External reference C
+==== ==============================  ===============================
+
+The callback keyword option is used for timed ADC sampling. The callback is executed
+when all data has been sampled.
 
 ADC Methods
 ```````````
@@ -287,27 +296,66 @@ ADC Methods
 Read a single ADC value as unsigned 16 bit quantity. The voltage range is defined
 by the vref option of the constructor, the resolutions by the bits option.
 
-DAC (digital to analog conversion)
-----------------------------------
+.. method:: read_timed(data, freq)
 
-The DAC class provides a fast digital to analog conversion. Usage example::
+Read adc values into the data buffer at a supplied frequency. The buffer
+must be preallocated. Values are stored as 16 bit quantities in the binary
+range given by the bits option. If bits=12, the value range is 0-4095.
+The voltage range is defined by the vref option.
+The sampling frequency range depends on the bits and average setting. At bits=8
+and average=1, the largest rate is >1 MHz for SAMD21 and 350kHz for SAMD21.
+the lowest sampling rate is 1 Hz. The call to the method returns immediately,
+The data transfer is done by DMA in the background, controlled by a hardware timer.
+If in the constructor a callback was defined, it will be called after all data has been
+read. Alternatively, the method busy() can be used to tell, if the capture has finished.
 
-    from machine import DAC
+Example for a call to adc.read_timed() and a callback::
 
-    dac0 = DAC(0)                    # create DAC object on DAC pin A0
-    dac0.write(1023)                 # write value, 0-4095 across voltage range 0.0v - 3.3v
-    dac1 = DAC(1)                    # create DAC object on DAC pin A1
-    dac1.write(2000)                 # write value, 0-4095 across voltage range 0.0v - 3.3v
+    from machine import ADC
+    from array import array
 
-The resolution of the DAC is 12 bit for SAMD51 and 10 bit for SAMD21. SAMD21 devices
-have 1 DAC channel at GPIO PA02, SAMD51 devices have 2 DAC channels at GPIO PA02 and PA05.
+    def finished(adc_o):
+        print("Sampling finished on ADC", adc_o)
+
+    # create ADC object on ADC pin A0, average=1
+    adc = ADC(Pin("A0"), average=1, callback=finished)
+    buffer = array("H", bytearray(512))  # create an array for 256 ADC values
+    adc.read_timed(buffer, 10000)        # read 256 12 bit values at a frequency of
+                                         # 10 kHz and call finished() when done.
+
+.. method:: busy()
+
+busy() returns `True` while the data acquisition using read_timed() is ongoing, `False`
+otherwise.
+
+.. method deinit()
+
+Deinitialize as ADC object and release the resources used by it, especially the ADC
+channel and the timer used for read_timed().
+
+
+DAC (digital to analogue conversion)
+------------------------------------
 
 DAC Constructor
 ```````````````
 
-.. class:: DAC(id, *, vref=3)
+.. class:: DAC(id, *, vref=3, callback=None)
   :noindex:
 
+
+The DAC class provides a fast digital to analogue conversion. Usage example::
+
+    from machine import DAC
+
+    dac0 = DAC(0)            # create DAC object on DAC pin A0
+    dac0.write(1023)         # write value, 0-4095 across voltage range 0.0V - 3.3V
+    dac1 = DAC(1)            # create DAC object on DAC pin A1
+    dac1.write(2000)         # write value, 0-4095 across voltage range 0.0V - 3.3V
+
+The resolution of the DAC is 12 bit for SAMD51 and 10 bit for SAMD21. SAMD21 devices
+have 1 DAC channel at GPIO PA02, accepting only 0 as id. SAMD51 devices have
+2 DAC channels at GPIO PA02 and PA05 with values 0 and 1 for the id.
 The vref arguments defines the output voltage range, the callback option is used for
 dac_timed(). Suitable values for vref are:
 
@@ -320,6 +368,7 @@ vref SAMD21                        SAMD51
 3    -                             Buffered external reference
 ==== ============================  ================================
 
+
 DAC Methods
 ```````````
 
@@ -327,6 +376,52 @@ DAC Methods
 
 Write a single value to the selected DAC output. The value range is 0-1023 for
 SAMD21 and 0-4095 for SAMD51. The voltage range depends on the vref setting.
+
+.. method:: write_timed(data, freq [, count=1])
+
+The call to dac_timed() allows to output a series of analogue values at a given rate.
+data must be a buffer with 16 bit values in the range of the DAC (10 bit of 12 bit).
+freq may have a range of 1Hz to ~200kHz for SAMD21 and 1 Hz to ~500kHz for SAMD51.
+The optional argument count specifies, how often data output will be repeated. The
+range is 1 - 2**32. If count == 0, the data output will be repeated until stopped
+by a call to deinit(). If the data has been output count times, a callback will
+be called, if given.
+
+Example::
+
+    from machine import DAC
+    from array import array
+
+    data = array("H", [i for i in range(0, 4096, 256)]) # create a step sequence
+
+    def done(dac_o):
+        print("Sequence done at", dac_o)
+
+    dac = DAC(0, callback=done)
+    dac.write_timed(data, 1000, 10) # output data 10 times at a rate of 1000 values/s
+                                    # and call done() when finished.
+
+The data transfer is done by DMA and not affected by python code execution.
+It is possible to restart dac.write_timed() in the callback function with changed
+parameters.
+
+
+.. method:: busy()
+   :noindex:
+
+Tell, whether a write_timed() activity is ongoing. It returns `True` if yes, `False`
+otherwise.
+
+
+.. method:: deinit()
+
+Deinitialize the DAC and release all resources used by it, especially the DMA channels
+and the Timers. On most SAMD21 boards, there is just one timer available for
+dac.write_timed() and adc.read_timed_into(). So they cannot run both at the same time,
+and releasing the timer may be important. The DAC driver consumes a substantial amount
+of current. deinit() will reduce that as well. After calling deinit(), the
+DAC objects cannot be used any more and must be recreated.
+
 
 Software SPI bus
 ----------------
