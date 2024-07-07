@@ -44,6 +44,7 @@ typedef struct _mp_obj_framebuf_t {
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 static const mp_obj_type_t mp_type_framebuf;
+static const mp_obj_type_t mp_type_staticbuf;
 #endif
 
 typedef void (*setpixel_t)(const mp_obj_framebuf_t *, unsigned int, unsigned int, uint32_t);
@@ -231,6 +232,18 @@ static void gs8_fill_rect(const mp_obj_framebuf_t *fb, unsigned int x, unsigned 
     }
 }
 
+static mp_obj_t get_framebuf_or_staticbuf(mp_obj_t buf_in) {
+    mp_obj_t buf_out;
+    buf_out = mp_obj_cast_to_native_base(buf_in, MP_OBJ_FROM_PTR(&mp_type_framebuf));
+    if (buf_out == MP_OBJ_NULL) {
+        buf_out = mp_obj_cast_to_native_base(buf_in, MP_OBJ_FROM_PTR(&mp_type_staticbuf));
+    }
+    if (buf_out == MP_OBJ_NULL) {
+        mp_raise_TypeError(NULL);
+    }
+    return buf_out;
+}
+
 static mp_framebuf_p_t formats[] = {
     [FRAMEBUF_MVLSB] = {mvlsb_setpixel, mvlsb_getpixel, mvlsb_fill_rect},
     [FRAMEBUF_RGB565] = {rgb565_setpixel, rgb565_getpixel, rgb565_fill_rect},
@@ -312,7 +325,13 @@ static mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
     }
 
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args_in[0], &bufinfo, MP_BUFFER_WRITE);
+    bool status = mp_get_buffer(args_in[0], &bufinfo, MP_BUFFER_WRITE);
+    if (!status) {
+        mp_get_buffer_raise(args_in[0], &bufinfo, MP_BUFFER_READ);
+        if (type != (mp_obj_type_t *)&mp_type_staticbuf) {
+            mp_raise_ValueError(MP_ERROR_TEXT("buffer must be writable"));
+        }
+    }
 
     if (height_required * stride * bpp / 8 > bufinfo.len) {
         mp_raise_ValueError(NULL);
@@ -699,10 +718,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_poly_obj, 5, 6, framebuf_pol
 
 static mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
-    mp_obj_t source_in = mp_obj_cast_to_native_base(args_in[1], MP_OBJ_FROM_PTR(&mp_type_framebuf));
-    if (source_in == MP_OBJ_NULL) {
-        mp_raise_TypeError(NULL);
-    }
+    mp_obj_t source_in = get_framebuf_or_staticbuf(args_in[1]);
     mp_obj_framebuf_t *source = MP_OBJ_TO_PTR(source_in);
 
     mp_int_t x = mp_obj_get_int(args_in[2]);
@@ -713,7 +729,8 @@ static mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args_in) {
     }
     mp_obj_framebuf_t *palette = NULL;
     if (n_args > 5 && args_in[5] != mp_const_none) {
-        palette = MP_OBJ_TO_PTR(mp_obj_cast_to_native_base(args_in[5], MP_OBJ_FROM_PTR(&mp_type_framebuf)));
+        mp_obj_t palette_in = get_framebuf_or_staticbuf(args_in[5]);
+        palette = MP_OBJ_TO_PTR(palette_in);
     }
 
     if (
@@ -861,6 +878,14 @@ static MP_DEFINE_CONST_OBJ_TYPE(
     buffer, framebuf_get_buffer,
     locals_dict, &framebuf_locals_dict
     );
+
+static MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_staticbuf,
+    MP_QSTR_StaticBuffer,
+    MP_TYPE_FLAG_NONE,
+    make_new, framebuf_make_new,
+    buffer, framebuf_get_buffer
+    );
 #endif
 
 #if !MICROPY_ENABLE_DYNRUNTIME
@@ -876,6 +901,7 @@ static const mp_rom_map_elem_t framebuf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_framebuf) },
     { MP_ROM_QSTR(MP_QSTR_FrameBuffer), MP_ROM_PTR(&mp_type_framebuf) },
     { MP_ROM_QSTR(MP_QSTR_FrameBuffer1), MP_ROM_PTR(&legacy_framebuffer1_obj) },
+    { MP_ROM_QSTR(MP_QSTR_StaticBuffer), MP_ROM_PTR(&mp_type_staticbuf) },
     { MP_ROM_QSTR(MP_QSTR_MVLSB), MP_ROM_INT(FRAMEBUF_MVLSB) },
     { MP_ROM_QSTR(MP_QSTR_MONO_VLSB), MP_ROM_INT(FRAMEBUF_MVLSB) },
     { MP_ROM_QSTR(MP_QSTR_RGB565), MP_ROM_INT(FRAMEBUF_RGB565) },
