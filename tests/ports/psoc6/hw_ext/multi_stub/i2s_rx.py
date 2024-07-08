@@ -6,13 +6,13 @@ import array
 import struct
 
 # Allocate pin based on board
-machine = os.uname().machine
-if "CY8CPROTO-062-4343W" in machine:
+board = os.uname().machine
+if "CY8CPROTO-062-4343W" in board:
     sck_rx_pin = "P5_4"
     ws_rx_pin = "P5_5"
     sd_rx_pin = "P5_6"
     rx_ready_signal_pin_name = "P13_4"
-elif "CY8CPROTO-063-BLE" in machine:
+elif "CY8CPROTO-063-BLE" in board:
     # These would be the right pins for this test, but unfortunately
     # the P5_1 is allocated for the UART serial comm terminal communication.
     # Thus this tests is not currently possible for this board.
@@ -21,6 +21,11 @@ elif "CY8CPROTO-063-BLE" in machine:
     # sd_rx_pin = "P5_6"
     print("SKIP")
     raise SystemExit
+elif "CY8CKIT-062S2-AI" in board:
+    sck_rx_pin = "P9_4"
+    ws_rx_pin = "P9_5"
+    sd_rx_pin = "P9_6"
+    rx_ready_signal_pin_name = "P9_7"
 
 rx_ready_signal_pin = None
 

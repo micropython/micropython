@@ -6,13 +6,13 @@ import array
 import struct
 
 # Allocate pin based on board
-machine = os.uname().machine
-if "CY8CPROTO-062-4343W" in machine:
+board = os.uname().machine
+if "CY8CPROTO-062-4343W" in board:
     sck_tx_pin = "P13_1"
     ws_tx_pin = "P13_2"
     sd_tx_pin = "P13_3"
     wait_signal_pin_name = "P0_4"
-elif "CY8CPROTO-063-BLE" in machine:
+elif "CY8CPROTO-063-BLE" in board:
     # This would be the right pins for this test, but unfortunately
     # the P5_1 is allocated for the UART serial comm terminal communication.
     # So this tests is not currently possible for this board.
@@ -21,6 +21,12 @@ elif "CY8CPROTO-063-BLE" in machine:
     # sd_tx_pin = "P5_3"
     print("SKIP")
     raise SystemExit
+elif "CY8CKIT-062S2-AI" in board:
+    # TODO: check this against another AI Kit when HIL installation.
+    sck_tx_pin = "P9_1"
+    ws_tx_pin = "P9_2"
+    sd_tx_pin = "P9_3"
+    wait_signal_pin_name = "P9_7"
 
 signal_received = False
 rising_edge_count = 0

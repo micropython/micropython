@@ -12,14 +12,16 @@ print("SKIP")
 raise SystemExit
 
 # Allocate pin based on board
-machine = os.uname().machine
-if "CY8CPROTO-062-4343W" in machine:
+board = os.uname().machine
+if "CY8CPROTO-062-4343W" in board:
     pwm_pin = "P13_7"
     pin_in = "P13_6"
-elif "CY8CPROTO-063-BLE" in machine:
+elif "CY8CPROTO-063-BLE" in board:
     pwm_pin = "P12_6"
     pin_in = "P12_7"
-
+elif "CY8CKIT-062S2-AI" in board:
+    pwm_pin = "P9_0"
+    pin_in = "P9_1"
 
 input_pin = Pin(pin_in, Pin.IN)
 

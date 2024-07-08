@@ -8,14 +8,14 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-machine = os.uname().machine
-if "CY8CPROTO-062-4343W" in machine:
+board = os.uname().machine
+if "CY8CPROTO-062-4343W" in board:
     # Allocate pin based on board
     sck_master_pin = "P6_2"
     mosi_master_pin = "P6_0"
     miso_master_pin = "P6_1"
     ssel_master_pin = "P6_3"
-if "CY8CPROTO-063-BLE" in machine:
+if "CY8CPROTO-063-BLE" in board:
     # Allocate pin based on board
     sck_master_pin = "P9_2"
     mosi_master_pin = "P9_0"

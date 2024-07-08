@@ -9,14 +9,14 @@ except ImportError:
     raise SystemExit
 
     # Allocate pin based on board
-machine = os.uname().machine
-if "CY8CPROTO-062-4343W" in machine:
+board = os.uname().machine
+if "CY8CPROTO-062-4343W" in board:
     sck_slave_pin = "P6_2"
     mosi_slave_pin = "P6_0"
     miso_slave_pin = "P6_1"
     ssel_slave_pin = "P6_3"
 
-if "CY8CPROTO-063-BLE" in machine:
+if "CY8CPROTO-063-BLE" in board:
     # Allocate pin based on board
     sck_slave_pin = "P9_2"
     mosi_slave_pin = "P9_0"

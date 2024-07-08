@@ -6,7 +6,6 @@
 
 I2C Hardware
 
-[69]
 Found slave with address  69  :  True
 master writeto() and received by slave:  True
 master writeto_mem() and received by slave:  True
@@ -20,7 +19,6 @@ master readfrom() and transmitted from slave :  True
 
 I2C Software
 
-[69]
 Found slave with address  69  :  True
 master writeto() and received by slave:  True
 master writeto_mem() and received by slave:  True

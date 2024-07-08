@@ -4,13 +4,16 @@ import machine
 import time
 
 # Allocate pin based on board
-machine = os.uname().machine
-if "CY8CPROTO-062-4343W" in machine:
+board = os.uname().machine
+if "CY8CPROTO-062-4343W" in board:
     pin1_name = "P13_7"
     pin2_name = "P13_6"
-elif "CY8CPROTO-063-BLE" in machine:
+elif "CY8CPROTO-063-BLE" in board:
     pin1_name = "P12_6"
     pin2_name = "P12_7"
+elif "CY8CKIT-062S2-AI" in board:
+    pin1_name = "P9_0"
+    pin2_name = "P9_1"
 
 # Pin out and pin in must be connected
 # together in the board
