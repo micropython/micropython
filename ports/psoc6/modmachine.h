@@ -18,7 +18,7 @@ extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_wdt_type;
 extern const mp_obj_type_t machine_adcblock_type;
 extern const mp_obj_type_t machine_i2s_type;
-extern const mp_obj_type_t machine_uart_type;
+// extern const mp_obj_type_t machine_uart_type;
 
 // Add all mod machine deinits
 void mod_pin_phy_deinit(void);
@@ -31,6 +31,7 @@ void mod_rtc_deinit(void);
 void mod_spi_deinit(void);
 void mod_timer_deinit(void);
 void mod_wdt_deinit(void);
+void mod_uart_deinit(void);
 
 /* Note: the static functions' prototypes in the .c file cannot be declared here
 since they are static. The static type in those functions come from MPY hence

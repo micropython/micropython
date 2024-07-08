@@ -18,7 +18,8 @@
 #define UART_HWCONTROL_RTS  (1)
 #define UART_HWCONTROL_CTS  (2)
 #define MAX_UART             10 // TODO: Change as per bsp?
-#define DEFAULT_UART_PIN    (MP_ROM_QSTR(MP_QSTR_NC))
+#define DEFAULT_CTS_PIN    (MP_ROM_QSTR(MP_QSTR_NC))
+#define DEFAULT_RTS_PIN    (MP_ROM_QSTR(MP_QSTR_NC))
 
 // OR-ed IRQ flags which are allowed to be used by the user
 #define MP_UART_ALLOWED_FLAGS (CYHAL_UART_IRQ_TX_EMPTY | CYHAL_UART_IRQ_TX_DONE | CYHAL_UART_IRQ_RX_FULL | CYHAL_UART_IRQ_RX_DONE)
@@ -31,6 +32,7 @@
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     cyhal_uart_t uart_obj;
+    uint8_t id;
     uint32_t init_flag;    // Flag to support reinitialisation of uart parameters
     uint32_t bits;
     uint32_t stop;
@@ -63,12 +65,12 @@ machine_uart_obj_t *uart_obj[MAX_UART] = { NULL };
 static const char *_parity_name[] = {"None", "0", "1"};
 
 
-void uart_event_handler(void *handler_arg, cyhal_uart_event_t event) {
+static void uart_event_handler(void *handler_arg, cyhal_uart_event_t event) {
     machine_uart_obj_t *self = handler_arg;
     mp_irq_handler(self->mp_irq_obj);
 }
 
-void uart_irq_config(machine_uart_obj_t *self, bool enable) {
+static void uart_irq_config(machine_uart_obj_t *self, bool enable) {
     if (self->mp_irq_trigger) {
         cyhal_uart_register_callback(&self->uart_obj, uart_event_handler, self);
         cyhal_uart_enable_event(&self->uart_obj, self->mp_irq_trigger, 7, enable);
@@ -240,8 +242,8 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = DEFAULT_UART_PIN} },
-        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = DEFAULT_UART_PIN} },
+        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = DEFAULT_RTS_PIN} },
+        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = DEFAULT_CTS_PIN} },
     };
 
     // Parse args.
@@ -351,20 +353,18 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
 }
 
 static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-
-    // Get UART bus.
-    int uart_id = mp_obj_get_int(args[0]);
-    if (uart_id < 0 || uart_id > MAX_UART) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) doesn't exist"), uart_id);
-    }
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     // Get Peripheralobject
     machine_uart_obj_t *self = uart_obj_alloc();
+    if (n_args > 0) {
+        // set id if provided
+        if (mp_obj_get_int(args[0]) != -1) {
+            self->id = mp_obj_get_int(args[0]);
+            mp_printf(&mp_plat_print, "UART object is created. But ID parameter is ignored in this port!\n");
+        }
+    }
     self->init_flag = 0;
-    // Initialise the UART peripheral.
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -506,4 +506,12 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
         ret = MP_STREAM_ERROR;
     }
     return ret;
+}
+
+void mod_uart_deinit() {
+    for (uint8_t i = 0; i < MAX_UART; i++) {
+        if (uart_obj[i] != NULL) {
+            mp_machine_uart_deinit(uart_obj[i]);
+        }
+    }
 }
