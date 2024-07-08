@@ -163,6 +163,26 @@ static cy_rslt_t sd_card_init_helper(machine_sdcard_obj_t *self, mp_arg_val_t *a
     return result;
 }
 
+static void sd_card_deallocate_pins(machine_sdcard_obj_t *self) {
+    cyhal_gpio_free(self->cd->addr);
+    cyhal_gpio_free(self->cmd->addr);
+    cyhal_gpio_free(self->clk->addr);
+    cyhal_gpio_free(self->wp->addr);
+    cyhal_gpio_free(self->dat0->addr);
+    cyhal_gpio_free(self->dat1->addr);
+    cyhal_gpio_free(self->dat2->addr);
+    cyhal_gpio_free(self->dat3->addr);
+}
+
+static mp_obj_t machine_sdcard_deinit(mp_obj_t self_in) {
+    machine_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    cyhal_sdhc_free(&self->sdhc_obj);
+    sd_card_deallocate_pins(self);
+    sd_card_obj_free(self);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_sdcard_deinit_obj, machine_sdcard_deinit);
+
 static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
 
     mp_arg_check_num(n_args, n_kw, 0, 9, true);
@@ -198,11 +218,12 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         cyhal_sdhc_get_block_count(&self->sdhc_obj, (uint32_t *)&self->block_count);
     } else {
         if (cyhal_sdhc_is_card_inserted(&self->sdhc_obj) == false) {
+            machine_sdcard_deinit(self);
             mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD Card not inserted!\n"));
         } else {
+            machine_sdcard_deinit(self);
             mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD card init failed!\n"));
         }
-        // machine_sdcard_deinit(self)
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -288,25 +309,6 @@ static mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
     }
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_ioctl_obj, machine_sdcard_ioctl);
-
-static void sd_card_deallocate_pins(machine_sdcard_obj_t *self) {
-    cyhal_gpio_free(self->cd->addr);
-    cyhal_gpio_free(self->cmd->addr);
-    cyhal_gpio_free(self->clk->addr);
-    cyhal_gpio_free(self->wp->addr);
-    cyhal_gpio_free(self->dat0->addr);
-    cyhal_gpio_free(self->dat1->addr);
-    cyhal_gpio_free(self->dat2->addr);
-    cyhal_gpio_free(self->dat3->addr);
-}
-static mp_obj_t machine_sdcard_deinit(mp_obj_t self_in) {
-    machine_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    cyhal_sdhc_free(&self->sdhc_obj);
-    sd_card_deallocate_pins(self);
-    sd_card_obj_free(self);
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(machine_sdcard_deinit_obj, machine_sdcard_deinit);
 
 
 void mod_sdcard_deinit() {
