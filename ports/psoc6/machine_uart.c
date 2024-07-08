@@ -17,7 +17,6 @@
 
 #define UART_HWCONTROL_RTS  (1)
 #define UART_HWCONTROL_CTS  (2)
-#define MAX_UART             10 // TODO: Change as per bsp?
 #define DEFAULT_CTS_PIN    (MP_ROM_QSTR(MP_QSTR_NC))
 #define DEFAULT_RTS_PIN    (MP_ROM_QSTR(MP_QSTR_NC))
 

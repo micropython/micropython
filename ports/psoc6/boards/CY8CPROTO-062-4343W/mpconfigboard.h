@@ -21,4 +21,5 @@
 #define EXT_FLASH_PAGE_SIZE                         (0x200)         /** 512 bytes*/
 #endif
 
+#define MAX_UART             10 // TODO: Change as per bsp?
 
