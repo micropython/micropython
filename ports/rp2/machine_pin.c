@@ -86,6 +86,7 @@ typedef struct _machine_pin_irq_obj_t {
 } machine_pin_irq_obj_t;
 
 static const mp_irq_methods_t machine_pin_irq_methods;
+static const int num_intr_regs = sizeof(iobank0_hw->intr) / sizeof(iobank0_hw->intr[0]);
 
 // Mask with "1" indicating that the corresponding pin is in simulated open-drain mode.
 uint64_t machine_pin_open_drain_mask;
@@ -99,7 +100,7 @@ static inline bool is_ext_pin(__unused const machine_pin_obj_t *self) {
 #endif
 
 static void gpio_irq(void) {
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < num_intr_regs; ++i) {
         uint32_t intr = iobank0_hw->intr[i];
         if (intr) {
             for (int j = 0; j < 8; ++j) {
