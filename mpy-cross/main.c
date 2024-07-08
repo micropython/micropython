@@ -54,7 +54,7 @@ static void stdout_print_strn(void *env, const char *str, size_t len) {
     (void)dummy;
 }
 
-static const mp_print_t mp_stdout_print = {NULL, stdout_print_strn};
+const mp_print_t mp_stdout_print = {NULL, stdout_print_strn};
 
 static void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
@@ -129,7 +129,8 @@ static int usage(char **argv) {
         "\n"
         "Target specific options:\n"
         "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
-        "-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin\n"
+        "-march=<arch> : set architecture for native emitter;\n"
+        "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin, rv32imc, debug\n"
         "\n"
         "Implementation specific options:\n", argv[0]
         );
@@ -312,6 +313,12 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "xtensawin") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSAWIN;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSAWIN;
+                } else if (strcmp(arch, "rv32imc") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_RV32IMC;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_RV32I;
+                } else if (strcmp(arch, "debug") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_DEBUG;
+                    mp_dynamic_compiler.nlr_buf_num_regs = 0;
                 } else if (strcmp(arch, "host") == 0) {
                     #if defined(__i386__) || defined(_M_IX86)
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;

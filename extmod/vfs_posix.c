@@ -194,7 +194,7 @@ static mp_obj_t vfs_posix_getcwd(mp_obj_t self_in) {
         }
         #endif
     }
-    return mp_obj_new_str(ret, strlen(ret));
+    return mp_obj_new_str_from_cstr(ret);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(vfs_posix_getcwd_obj, vfs_posix_getcwd);
 
@@ -234,7 +234,7 @@ static mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
 
         if (self->is_str) {
-            t->items[0] = mp_obj_new_str(fn, strlen(fn));
+            t->items[0] = mp_obj_new_str_from_cstr(fn);
         } else {
             t->items[0] = mp_obj_new_bytes((const byte *)fn, strlen(fn));
         }

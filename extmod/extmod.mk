@@ -167,6 +167,7 @@ SRC_LIB_LIBM_DBL_SQRT_HW_C += lib/libm_dbl/thumb_vfp_sqrt.c
 
 # Too many warnings in libm_dbl, disable for now.
 $(BUILD)/lib/libm_dbl/%.o: CFLAGS += -Wno-double-promotion -Wno-float-conversion
+$(BUILD)/lib/libm_dbl/__rem_pio2_large.o: CFLAGS += -Wno-maybe-uninitialized
 
 ################################################################################
 # VFS FAT FS

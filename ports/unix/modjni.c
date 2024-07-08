@@ -337,7 +337,7 @@ static mp_obj_t new_jobject(jobject jo) {
         return mp_const_none;
     } else if (JJ(IsInstanceOf, jo, String_class)) {
         const char *s = JJ(GetStringUTFChars, jo, NULL);
-        mp_obj_t ret = mp_obj_new_str(s, strlen(s));
+        mp_obj_t ret = mp_obj_new_str_from_cstr(s);
         JJ(ReleaseStringUTFChars, jo, s);
         return ret;
     } else if (JJ(IsInstanceOf, jo, Class_class)) {

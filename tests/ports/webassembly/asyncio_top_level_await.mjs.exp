@@ -1,0 +1,19 @@
+= TEST 1 ==========
+top-level wait event
+callback set event
+top-level end
+finished
+= TEST 2 ==========
+top-level wait task
+task start
+callback cancel task
+top-level task CancelledError True
+finished
+= TEST 3 ==========
+top-level wait event
+task set event
+task sleep
+top-level wait task
+task end
+top-level end
+finished

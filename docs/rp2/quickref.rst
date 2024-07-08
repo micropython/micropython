@@ -187,6 +187,14 @@ Use the :ref:`machine.ADC <machine.ADC>` class::
     adc = ADC(Pin(26))     # create ADC object on ADC pin
     adc.read_u16()         # read value, 0-65535 across voltage range 0.0v - 3.3v
 
+The argument of the constructor ADC specifies either a Pin by number, name of as
+Pin object, or a channel number in the range 0 - 3 or ADC.CORE_TEMP for the
+internal temperature sensor. If a pin is specified,
+the pin is initialized in high-Z mode. If a channel number is used, the pin
+is not initialized and configuring is left to the user code. After hard reset,
+RP2040 pins operate in current sink mode at about 60µA. If the pin is not
+otherwise configured, that may lead to wrong ADC readings.
+
 Software SPI bus
 ----------------
 

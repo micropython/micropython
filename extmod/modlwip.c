@@ -373,7 +373,7 @@ mp_obj_t lwip_format_inet_addr(const ip_addr_t *ip, mp_uint_t port) {
     char ipstr[IPADDR_STRLEN_MAX];
     ipaddr_ntoa_r(ip, ipstr, sizeof(ipstr));
     mp_obj_t tuple[2] = {
-        tuple[0] = mp_obj_new_str(ipstr, strlen(ipstr)),
+        tuple[0] = mp_obj_new_str_from_cstr(ipstr),
         tuple[1] = mp_obj_new_int(port),
     };
     return mp_obj_new_tuple(2, tuple);

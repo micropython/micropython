@@ -640,7 +640,7 @@ static mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
         case MP_QSTR_essid:
             switch (self->if_id) {
                 case ESP_IF_WIFI_STA:
-                    val = mp_obj_new_str((char *)cfg.sta.ssid, strlen((char *)cfg.sta.ssid));
+                    val = mp_obj_new_str_from_cstr((char *)cfg.sta.ssid);
                     break;
                 case ESP_IF_WIFI_AP:
                     val = mp_obj_new_str((char *)cfg.ap.ssid, cfg.ap.ssid_len);

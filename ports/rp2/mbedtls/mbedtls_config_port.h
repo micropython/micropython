@@ -28,10 +28,6 @@
 
 // Set mbedtls configuration
 #define MBEDTLS_ECP_NIST_OPTIM
-#define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
-
-// Enable mbedtls modules
-#define MBEDTLS_GCM_C
 
 // Time hook
 #include <time.h>

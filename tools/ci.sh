@@ -17,6 +17,11 @@ function ci_gcc_arm_setup {
     arm-none-eabi-gcc --version
 }
 
+function ci_gcc_riscv_setup {
+    sudo apt-get install gcc-riscv64-unknown-elf picolibc-riscv64-unknown-elf
+    riscv64-unknown-elf-gcc --version
+}
+
 ########################################################################################
 # c code formatting
 
@@ -260,6 +265,25 @@ function ci_qemu_arm_build {
 }
 
 ########################################################################################
+# ports/qemu-riscv
+
+function ci_qemu_riscv_setup {
+    ci_gcc_riscv_setup
+    sudo apt-get update
+    sudo apt-get install qemu-system
+    qemu-system-riscv32 --version
+}
+
+function ci_qemu_riscv_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/qemu-riscv submodules
+    make ${MAKEOPTS} -C ports/qemu-riscv
+    make ${MAKEOPTS} -C ports/qemu-riscv clean
+    make ${MAKEOPTS} -C ports/qemu-riscv -f Makefile.test submodules
+    make ${MAKEOPTS} -C ports/qemu-riscv -f Makefile.test test
+}
+
+########################################################################################
 # ports/renesas-ra
 
 function ci_renesas_ra_setup {
@@ -331,7 +355,7 @@ function ci_stm32_pyb_build {
     git submodule update --init lib/mynewt-nimble
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_NETWORK_WIZNET5K=5200 USER_C_MODULES=../../examples/usercmodule
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
-    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF6 NANBOX=1 MICROPY_BLUETOOTH_NIMBLE=0 MICROPY_BLUETOOTH_BTSTACK=1
+    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF6 COPT=-O2 NANBOX=1 MICROPY_BLUETOOTH_NIMBLE=0 MICROPY_BLUETOOTH_BTSTACK=1
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBV10 CFLAGS_EXTRA='-DMBOOT_FSLOAD=1 -DMBOOT_VFS_LFS2=1'
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=STM32F769DISC CFLAGS_EXTRA='-DMBOOT_ADDRESS_SPACE_64BIT=1 -DMBOOT_SDCARD_ADDR=0x100000000ULL -DMBOOT_SDCARD_BYTE_SIZE=0x400000000ULL -DMBOOT_FSLOAD=1 -DMBOOT_VFS_FAT=1'

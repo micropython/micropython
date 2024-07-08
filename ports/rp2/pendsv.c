@@ -84,7 +84,7 @@ void PendSV_Handler(void) {
         return;
     }
     // Core 0 should not already have locked pendsv_mutex
-    assert(pensv_mutex.enter_count == 1);
+    assert(pendsv_mutex.enter_count == 1);
 
     #if MICROPY_PY_NETWORK_CYW43
     CYW43_STAT_INC(PENDSV_RUN_COUNT);

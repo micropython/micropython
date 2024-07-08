@@ -74,14 +74,14 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
     const machine_pin_obj_t *pin = NULL;
 
     if (mp_obj_is_int(source)) {
-        // Get and validate channel number.
         channel = mp_obj_get_int(source);
-        if (ADC_IS_VALID_GPIO(channel)) {
-            channel = ADC_CHANNEL_FROM_GPIO(channel);
-        } else if (!(channel >= 0 && channel <= ADC_CHANNEL_TEMPSENSOR)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid channel"));
+        if (!(channel >= 0 && channel <= ADC_CHANNEL_TEMPSENSOR)) {
+            // Not a valid ADC channel, fallback to searching for a pin.
+            channel = -1;
         }
-    } else {
+    }
+
+    if (channel == -1) {
         // Get GPIO and check it has ADC capabilities.
         pin = machine_pin_find(source);
         bool valid_adc_pin = false;

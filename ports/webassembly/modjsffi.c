@@ -63,20 +63,6 @@ static mp_obj_t mp_jsffi_to_js(mp_obj_t arg) {
 static MP_DEFINE_CONST_FUN_OBJ_1(mp_jsffi_to_js_obj, mp_jsffi_to_js);
 
 // *FORMAT-OFF*
-EM_JS(void, promise_with_timeout_ms, (double ms, uint32_t * out), {
-    const ret = new Promise((resolve) => setTimeout(resolve, ms));
-    proxy_convert_js_to_mp_obj_jsside(ret, out);
-});
-// *FORMAT-ON*
-
-static mp_obj_t mp_jsffi_async_timeout_ms(mp_obj_t arg) {
-    uint32_t out[PVN];
-    promise_with_timeout_ms(mp_obj_get_float_to_d(arg), out);
-    return proxy_convert_js_to_mp_obj_cside(out);
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(mp_jsffi_async_timeout_ms_obj, mp_jsffi_async_timeout_ms);
-
-// *FORMAT-OFF*
 EM_JS(void, js_get_proxy_js_ref_info, (uint32_t * out), {
     let used = 0;
     for (const elem of proxy_js_ref) {
@@ -121,7 +107,6 @@ static const mp_rom_map_elem_t mp_module_jsffi_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_JsException), MP_ROM_PTR(&mp_type_JsException) },
     { MP_ROM_QSTR(MP_QSTR_create_proxy), MP_ROM_PTR(&mp_jsffi_create_proxy_obj) },
     { MP_ROM_QSTR(MP_QSTR_to_js), MP_ROM_PTR(&mp_jsffi_to_js_obj) },
-    { MP_ROM_QSTR(MP_QSTR_async_timeout_ms), MP_ROM_PTR(&mp_jsffi_async_timeout_ms_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem_info), MP_ROM_PTR(&mp_jsffi_mem_info_obj) },
 };
 static MP_DEFINE_CONST_DICT(mp_module_jsffi_globals, mp_module_jsffi_globals_table);

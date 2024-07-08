@@ -139,7 +139,7 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
     }
 
     // delegate to vfs.stat() method
-    mp_obj_t path_o = mp_obj_new_str(path_out, strlen(path_out));
+    mp_obj_t path_o = mp_obj_new_str_from_cstr(path_out);
     mp_obj_t stat;
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {

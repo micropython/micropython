@@ -639,7 +639,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     return invalid_args();
                 }
                 mp_obj_t import_args[4];
-                import_args[0] = mp_obj_new_str(argv[a + 1], strlen(argv[a + 1]));
+                import_args[0] = mp_obj_new_str_from_cstr(argv[a + 1]);
                 import_args[1] = import_args[2] = mp_const_none;
                 // Ask __import__ to handle imported module specially - set its __name__
                 // to __main__, and also return this leaf module, not top-level package

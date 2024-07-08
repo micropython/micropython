@@ -528,7 +528,7 @@ Ethernet.  Example usage::
     lan.active(True)
 
 If there is a DHCP server in the LAN, the IP address is supplied by that server.
-Otherwise, the IP address can be set with lan.ifconfig().  The default address
+Otherwise, the IP address can be set with lan.ipconfig(addr4="...").  The default address
 is 192.168.0.1.
 
 Teensy 4.1 does not have an Ethernet jack on the board, but PJRC offers an

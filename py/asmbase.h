@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_PY_ASMBASE_H
 
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 #define MP_ASM_PASS_COMPUTE (1)

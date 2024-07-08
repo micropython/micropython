@@ -470,6 +470,12 @@ EM_JS(void, js_then_continue, (int jsref, uint32_t * py_resume, uint32_t * resol
 });
 // *FORMAT-ON*
 
+EM_JS(void, create_promise, (uint32_t * out_set, uint32_t * out_promise), {
+    const out_set_js = proxy_convert_mp_to_js_obj_jsside(out_set);
+    const promise = new Promise(out_set_js);
+    proxy_convert_js_to_mp_obj_jsside(promise, out_promise);
+});
+
 static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t resolve, mp_obj_t reject) {
     if (throw_value != MP_OBJ_NULL && throw_value != mp_const_none) {
         if (send_value == mp_const_none) {
@@ -483,6 +489,9 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t send_value, mp_o
         }
     } else {
         throw_value = MP_OBJ_NULL;
+        if (send_value == mp_const_undefined) {
+            send_value = mp_const_none;
+        }
     }
 
     mp_obj_t ret_value;
@@ -496,7 +505,29 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t send_value, mp_o
         js_then_resolve(out_ret_value, out_resolve);
         return mp_const_none;
     } else if (ret_kind == MP_VM_RETURN_YIELD) {
-        // ret_value should be a JS thenable
+        // If ret_value is None then there has been a top-level await of an asyncio primitive.
+        // Otherwise, ret_value should be a JS thenable.
+
+        if (ret_value == mp_const_none) {
+            // Waiting on an asyncio primitive to complete, eg a Task or Event.
+            //
+            // Completion of this primitive will occur when the asyncio.core._top_level_task
+            // Task is made runable and its coroutine's send() method is called.  Need to
+            // construct a Promise that resolves when that send() method is called, because
+            // that will resume the top-level await from the JavaScript side.
+            //
+            // This is accomplished via the asyncio.core.TopLevelCoro class and its methods.
+            mp_obj_t asyncio = mp_import_name(MP_QSTR_asyncio_dot_core, mp_const_none, MP_OBJ_NEW_SMALL_INT(0));
+            mp_obj_t asyncio_core = mp_load_attr(asyncio, MP_QSTR_core);
+            mp_obj_t top_level_coro = mp_load_attr(asyncio_core, MP_QSTR_TopLevelCoro);
+            mp_obj_t top_level_coro_set = mp_load_attr(top_level_coro, MP_QSTR_set);
+            uint32_t out_set[PVN];
+            proxy_convert_mp_to_js_obj_cside(top_level_coro_set, out_set);
+            uint32_t out_promise[PVN];
+            create_promise(out_set, out_promise);
+            ret_value = proxy_convert_js_to_mp_obj_cside(out_promise);
+        }
+
         mp_obj_t py_resume = mp_obj_new_bound_meth(MP_OBJ_FROM_PTR(&resume_obj), self_in);
         int ref = mp_obj_jsproxy_get_ref(ret_value);
         uint32_t out_py_resume[PVN];

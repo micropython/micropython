@@ -31,7 +31,7 @@
 #include "mp_usbd.h"
 #include "modmachine.h"
 #include "uart.h"
-#include "hardware/clocks.h"
+#include "clocks_extra.h"
 #include "hardware/pll.h"
 #include "hardware/structs/rosc.h"
 #include "hardware/structs/scb.h"
@@ -138,7 +138,8 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     #if MICROPY_HW_ENABLE_USBDEV
     // Only disable the USB clock if a USB host has not configured the device
-    bool disable_usb = !tud_mounted();
+    // or if going to DORMANT mode.
+    bool disable_usb = !(tud_mounted() && n_args > 0);
     #else
     bool disable_usb = true;
     #endif
@@ -213,7 +214,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB;
 
     // Bring back all clocks.
-    clocks_init();
+    clocks_init_optional_usb(disable_usb);
     MICROPY_END_ATOMIC_SECTION(my_interrupts);
 }
 

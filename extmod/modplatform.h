@@ -83,6 +83,9 @@
 #elif defined(__NEWLIB__)
 #define MICROPY_PLATFORM_LIBC_LIB       "newlib"
 #define MICROPY_PLATFORM_LIBC_VER       _NEWLIB_VERSION
+#elif defined(_PICOLIBC__)
+#define MICROPY_PLATFORM_LIBC_LIB       "picolibc"
+#define MICROPY_PLATFORM_LIBC_VER       _PICOLIBC_VERSION
 #else
 #define MICROPY_PLATFORM_LIBC_LIB       ""
 #define MICROPY_PLATFORM_LIBC_VER       ""

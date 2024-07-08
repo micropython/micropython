@@ -1185,7 +1185,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_mode_obj, 1, 2, wlan_mode);
 static mp_obj_t wlan_ssid(size_t n_args, const mp_obj_t *args) {
     wlan_obj_t *self = args[0];
     if (n_args == 1) {
-        return mp_obj_new_str((const char *)self->ssid, strlen((const char *)self->ssid));
+        return mp_obj_new_str_from_cstr((const char *)self->ssid);
     } else {
         size_t len;
         const char *ssid = mp_obj_str_get_data(args[1], &len);
@@ -1205,7 +1205,7 @@ static mp_obj_t wlan_auth(size_t n_args, const mp_obj_t *args) {
         } else {
             mp_obj_t security[2];
             security[0] = mp_obj_new_int(self->auth);
-            security[1] = mp_obj_new_str((const char *)self->key, strlen((const char *)self->key));
+            security[1] = mp_obj_new_str_from_cstr((const char *)self->key);
             return mp_obj_new_tuple(2, security);
         }
     } else {
@@ -1309,7 +1309,7 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(wlan_irq_obj, 1, wlan_irq);
 //    mp_obj_t connections = mp_obj_new_list(0, NULL);
 //
 //    if (wlan_is_connected()) {
-//        device[0] = mp_obj_new_str((const char *)wlan_obj.ssid_o, strlen((const char *)wlan_obj.ssid_o));
+//        device[0] = mp_obj_new_str_from_cstr((const char *)wlan_obj.ssid_o);
 //        device[1] = mp_obj_new_bytes((const byte *)wlan_obj.bssid, SL_BSSID_LENGTH);
 //        // add the device to the list
 //        mp_obj_list_append(connections, mp_obj_new_tuple(MP_ARRAY_SIZE(device), device));

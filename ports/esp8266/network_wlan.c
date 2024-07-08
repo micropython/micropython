@@ -345,7 +345,7 @@ static mp_obj_t esp_network_ipconfig(size_t n_args, const mp_obj_t *args, mp_map
                 char addr_str[IPADDR_STRLEN_MAX];
                 ip_addr_t dns_addr = dns_getserver(0);
                 ipaddr_ntoa_r(&dns_addr, addr_str, sizeof(addr_str));
-                return mp_obj_new_str(addr_str, strlen(addr_str));
+                return mp_obj_new_str_from_cstr(addr_str);
             }
             default: {
                 mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
@@ -626,7 +626,7 @@ static mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         case MP_QSTR_ssid:
         case MP_QSTR_essid:
             if (self->if_id == STATION_IF) {
-                val = mp_obj_new_str((char *)cfg.sta.ssid, strlen((char *)cfg.sta.ssid));
+                val = mp_obj_new_str_from_cstr((char *)cfg.sta.ssid);
             } else {
                 val = mp_obj_new_str((char *)cfg.ap.ssid, cfg.ap.ssid_len);
             }
