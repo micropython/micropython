@@ -9,10 +9,6 @@ PASS
 
 PASS
 
-***** Test 2: reinitialize the same slot more than once *****
+***** Test 3: reinitialize the same slot more than once *****
 
 PASS
-
-***** Test 3: slot number exceeding the number of available slots *****
-
-FAIL

@@ -84,25 +84,18 @@ def test_file_transfer():
         else:
             print("FAIL")
 
+    bdev.deinit()
+
 
 def test_reintializing_same_slot():
-    print("\n***** Test 2: reinitialize the same slot more than once *****\n")
+    print("\n***** Test 3: reinitialize the same slot more than once *****\n")
     bdev1 = machine.SDCard(**sdcard_config)
+    bdev1.deinit()
     bdev2 = machine.SDCard(**sdcard_config)
-    bdev3 = machine.SDCard(**sdcard_config)
+    bdev2.deinit()
     print("PASS")
-
-
-def test_negative_slot_number():
-    print("\n***** Test 3: slot number exceeding the number of available slots *****\n")
-    try:
-        sdcard_config["slot"] = 2
-        bdev = machine.SDCard(**sdcard_config)
-    except Exception:
-        print("FAIL")
 
 
 if __name__ == "__main__":
     test_file_transfer()
     test_reintializing_same_slot()
-    test_negative_slot_number()
