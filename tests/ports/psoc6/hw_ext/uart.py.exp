@@ -1,3 +1,4 @@
+UART object is created. But ID parameter is ignored in this port!
 ********UART Tests********
 
 Break Sent is received by Rx:  True

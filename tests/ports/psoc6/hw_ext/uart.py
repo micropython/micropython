@@ -8,19 +8,19 @@ import os
 # Allocate pin based on board
 machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
-    uart_rx_pin = "P6_0"
-    uart_tx_pin = "P6_1"
-    uart_rts_pin = "P6_2"
-    uart_cts_pin = "P6_3"
+    uart_rx_pin = "P9_0"
+    uart_tx_pin = "P9_1"
+    uart_rts_pin = "P9_2"
+    uart_cts_pin = "P9_3"
 elif "CY8CPROTO-063-BLE" in machine:
-    uart_rx_pin = "P6_0"
-    uart_tx_pin = "P6_1"
-    uart_rts_pin = "P6_2"
-    uart_cts_pin = "P6_3"
+    uart_rx_pin = "P5_0"
+    uart_tx_pin = "P5_1"
+    uart_rts_pin = "P5_2"
+    uart_cts_pin = "P5_3"
 
 # 1. Construct instance
 ##############################################
-uart = UART(1)
+uart = UART(0)
 uart.init(9600, bits=8, parity=None, stop=1, tx=uart_tx_pin, rx=uart_rx_pin, rxbuf=8)
 
 
