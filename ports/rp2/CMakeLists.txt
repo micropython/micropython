@@ -588,6 +588,14 @@ set(GEN_PINS_MKPINS "${MICROPY_PORT_DIR}/boards/make-pins.py")
 set(GEN_PINS_SRC "${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c")
 set(GEN_PINS_HDR "${MICROPY_GENHDR_DIR}/pins.h")
 
+if(NOT PICO_NUM_GPIOS)
+    set(PICO_NUM_GPIOS 30)
+endif()
+
+if(NOT PICO_NUM_EXT_GPIOS)
+    set(PICO_NUM_EXT_GPIOS 10)
+endif()
+
 if(EXISTS "${MICROPY_BOARD_DIR}/pins.csv")
     set(GEN_PINS_BOARD_CSV "${MICROPY_BOARD_DIR}/pins.csv")
     set(GEN_PINS_CSV_ARG --board-csv "${GEN_PINS_BOARD_CSV}")
@@ -600,7 +608,7 @@ target_sources(${MICROPY_TARGET} PRIVATE
 # Generate pins
 add_custom_command(
     OUTPUT ${GEN_PINS_HDR} ${GEN_PINS_SRC}
-    COMMAND ${Python3_EXECUTABLE} ${GEN_PINS_MKPINS} ${GEN_PINS_CSV_ARG} --af-csv ${GEN_PINS_AF_CSV} --prefix ${GEN_PINS_PREFIX} --output-source ${GEN_PINS_SRC} --output-header ${GEN_PINS_HDR}
+    COMMAND ${Python3_EXECUTABLE} ${GEN_PINS_MKPINS} ${GEN_PINS_CSV_ARG} --af-csv ${GEN_PINS_AF_CSV} --prefix ${GEN_PINS_PREFIX} --output-source ${GEN_PINS_SRC} --num-gpios ${PICO_NUM_GPIOS} --num-ext-gpios ${PICO_NUM_EXT_GPIOS} --output-header ${GEN_PINS_HDR}
     DEPENDS
         ${GEN_PINS_AF_CSV}
         ${GEN_PINS_BOARD_CSV}
