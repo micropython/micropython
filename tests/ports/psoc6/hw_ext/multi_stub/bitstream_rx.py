@@ -13,7 +13,7 @@ another is configured as an input, which is used for receiving the bitstream sig
 board = os.uname().machine
 if "CY8CPROTO-062-4343W" in board:
     bitstream_in_pin_name = "P12_1"
-    rx_ready_signal_pin_name = "P13_5"
+    rx_ready_signal_pin_name = "P0_4"
 elif "CY8CPROTO-063-BLE" in board:
     bitstream_in_pin_name = "P5_2"
     rx_ready_signal_pin_name = "P6_2"
