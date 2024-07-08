@@ -14,6 +14,7 @@
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
     cyhal_timer_t timer_obj;
+    uint8_t timer_id;
     uint32_t mode;
     uint32_t period;
     uint32_t freq;

@@ -21,4 +21,8 @@
 #define EXT_FLASH_PAGE_SIZE                         (0x200)         /** 512 bytes*/
 #endif
 
+// Board specific configurations
 #define MAX_UART             2 // TODO: Change as per bsp?
+#define MAX_TIMER (32)
+
+
