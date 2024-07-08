@@ -20,8 +20,8 @@ elif "CY8CPROTO-063-BLE" in machine:
 
 # 1. Construct instance
 ##############################################
-uart = UART(0)
-uart.init(9600, bits=8, parity=None, stop=1, tx=uart_tx_pin, rx=uart_rx_pin, rxbuf=8)
+uart = UART(1)
+uart.init(9600, bits=8, parity=None, stop=1, tx=uart_tx_pin, rx=uart_rx_pin)
 
 
 def uart_tests():
@@ -91,14 +91,16 @@ def uart_interrupt_tests():
     uart.irq(trigger=UART.RX_DONE, handler=rx_complete)
     uart_rx_buf = bytearray(8)
     uart.readinto(uart_rx_buf)
+    print("Tx is received by Rx(readinto(buf)): ", uart_rx_buf == b"Hi this ")
     while not rx_done:
         pass
     print("Rx Done")
 
+    uart.init(rxbuf=8)
     uart.irq(trigger=UART.RX_FULL, handler=rx_full)
     tx_data = b"\x44\x17\x88\x98\x11\x34\xff\x12\x57\x76\x44\x17\x88\x98\x11\x34\xff\x12\x57\x76\x44\x17\x88\x98\x11\x34\xff\x12\x57\x76\x44\x17\x88\x98\x11\x34\xff\x12\x57\x76"
     uart.write(tx_data)
-    uart.read()
+    uart.read(16)
     while not rx_full:
         pass
     print("Rx Buffer Full")

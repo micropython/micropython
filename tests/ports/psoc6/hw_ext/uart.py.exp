@@ -13,6 +13,7 @@ Tx is received by Rx(readinto(buf)):  True
 *******UART Interrupt Tests*******
 
 Tx Done
+Tx is received by Rx(readinto(buf)):  True
 Rx Done
 Rx Buffer Full
 Tx Empty
