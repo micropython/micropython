@@ -149,7 +149,7 @@ void rp2_pio_init(void) {
 
 void rp2_pio_deinit(void) {
     // Disable and clear interrupts.
-    irq_set_mask_enabled((1u << PIO0_IRQ_0) | (1u << PIO0_IRQ_1), false);
+    irq_set_mask_enabled((1u << PIO0_IRQ_0) | (1u << PIO1_IRQ_0), false);
     irq_remove_handler(PIO0_IRQ_0, pio0_irq0);
     irq_remove_handler(PIO1_IRQ_0, pio1_irq0);
 
