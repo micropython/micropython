@@ -719,7 +719,7 @@ Constructor
 Methods
 ^^^^^^^
 
-.. method:: UART.init(baudrate, bits, parity, stop, tx, rx, rts, cts, timeout,flow)
+.. method:: UART.init(baudrate=9600, bits=8, parity=None, stop=1, *, ...)
 
     Initialize the UART with the given parameters.
 
@@ -732,11 +732,11 @@ Methods
 
     optional parameters:
     - ``parity`` supported is None, 0(even) or 1(odd).By default, it is set to None.
-    - ``rts``
-    - ``cts``
-    - ``timeout`` 
+    - ``rts``    By default this is defined as Not connected(NC).
+    - ``cts``     By default this is defined as Not connected(NC).
+    - ``timeout`` This is used only in case of uart.readchar() function. By default, it is set to NULL ie, not using any timeout.
     - ``flow``
-    - ``rxbuf`` 
+    - ``rxbuf`` This is the size of the software buffer that is used by the uart in case it's defined. By default, it is set to NULL ie, not using any software buffer.
 
 .. Note:: 
     For reinitialising the UART object, the ``init()`` function can be called with the new parameters.Pins can't be reconfigured once the UART object is created.
@@ -765,3 +765,4 @@ Methods
 
     Send a break condition of 4 bits duration. Before sending break all UART TX interrupt sources are disabled. The state of UART TX interrupt sources is restored before function returns.
     This Blocks until break is completed. Only call this function when UART TX FIFO and shifter are empty.
+
