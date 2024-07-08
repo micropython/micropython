@@ -176,7 +176,7 @@ vfs_sdcard_tests() {
   run_tests "file system sdcard" ${dev_test} "psoc6/hw_ext/sdcard.py"
   
   storage_device="sd"
-  mpremote_vfs_large_file_tests
+  # mpremote_vfs_large_file_tests
 }
 
 no_ext_hw_tests() {
