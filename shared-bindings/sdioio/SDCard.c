@@ -55,7 +55,7 @@
 //|             sd = sdioio.SDCard(
 //|                 clock=board.SDIO_CLOCK,
 //|                 command=board.SDIO_COMMAND,
-//|                 data=board.SDIO_DATA,
+//|                 data=[board.SDIO_DATA],
 //|                 frequency=25000000)
 //|             vfs = storage.VfsFat(sd)
 //|             storage.mount(vfs, '/sd')
