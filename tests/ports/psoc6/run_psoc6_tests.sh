@@ -27,8 +27,8 @@ usage() {
   echo
   echo "  vfs-flash         run virtual filesystem related tests on flash.
                             If followed by -x, runs advance tests too."
-  # echo "  vfs-sdcard        run virtual filesystem related tests on sd card.
-  #                           If followed by -x, runs advance tests too."
+  echo "  vfs-sdcard        run virtual filesystem related tests on sd card.
+                            If followed by -x, runs advance tests too."
   echo "  no-hw-ext         run machine modules tests not requiring extended hardware"
   echo "  hw-ext            run machine modules tests requiring extended hardware"
   echo "  i2c               run i2c tests"
@@ -180,12 +180,12 @@ vfs_flash_tests() {
   mpremote_vfs_large_file_tests
 }
 
-# vfs_sdcard_tests() {
-#   run_tests "file system sdcard" ${dev_test} "${tests_psoc6_dir}/hw_ext/sdcard.py"
+vfs_sdcard_tests() {
+  run_tests "file system sdcard" ${dev_test} "${tests_psoc6_dir}/hw_ext/sdcard.py"
   
-#   storage_device="sd"
-#   mpremote_vfs_large_file_tests
-# }
+  storage_device="sd"
+  # mpremote_vfs_large_file_tests
+}
 
 no_ext_hw_tests() {
   run_tests "no extended hardware" ${dev_test} "${tests_psoc6_dir}" \
@@ -258,10 +258,10 @@ run_ci_tests() {
     dev_test=${devs[0]}
     vfs_flash_tests  
 
-    # if [ "${board}" == "CY8CPROTO-062-4343W" ]; then
-    #   dev_test=${devs_b[0]}
-    #   vfs_sdcard_tests
-    # fi
+    if [ "${board}" == "CY8CPROTO-062-4343W" ]; then
+      dev_test=${devs_b[0]}
+      vfs_sdcard_tests
+    fi
 
     dev_test=${devs[0]}
     no_ext_hw_tests
@@ -319,9 +319,9 @@ case ${test_suite} in
     "vfs-flash")
         vfs_flash_tests
         ;;
-  #  "vfs-sdcard")
-  #       vfs_sdcard_tests
-  #       ;;
+   "vfs-sdcard")
+        vfs_sdcard_tests
+        ;;
     "no-hw-ext")
         no_ext_hw_tests
         ;;

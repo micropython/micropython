@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 cp ./ports/psoc6/test_inputs/test_fs_small_file.txt :/
+=======
+cp ./psoc6/test_inputs/test_fs_small_file.txt :/
+>>>>>>> 72e626c77 (tests/ports/psoc6: Moved psoc6 tests to ports folder.)
