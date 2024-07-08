@@ -28,7 +28,7 @@
 
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;
-    int id;
+    int id; // This parameter is unused and added for compliance with reference API.
     cyhal_i2c_t i2c_obj;
     machine_pin_phy_obj_t *scl;
     machine_pin_phy_obj_t *sda;

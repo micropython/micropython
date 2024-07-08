@@ -41,7 +41,7 @@
 typedef struct _machine_spi_obj_t {
     mp_obj_base_t base;
     cyhal_spi_t spi_obj;
-    int id;
+    int id; // This parameter is unused and added for compliance with reference API
     uint8_t polarity;
     uint8_t phase;
     uint8_t bits;
