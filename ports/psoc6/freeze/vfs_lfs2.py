@@ -22,9 +22,6 @@ except:
     vfs = os.VfsLfs2(bdev, progsize=write_size, readsize=read_size)
     os.mount(vfs, "/")
 
-if "QSPI_Flash" in dir(psoc6):
-    print("\nExternal LFS2 filesystem mounted at /\n")
-else:
-    print("\nInternal LFS2 filesystem mounted at /\n")
+print("Internal LFS2 filesystem mounted at /\n")
 
 del machine, os, psoc6, bdev, vfs, read_size, write_size

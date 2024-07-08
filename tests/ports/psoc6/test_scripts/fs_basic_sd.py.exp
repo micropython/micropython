@@ -2,5 +2,9 @@
 cp ./ports/psoc6/test_inputs/test_fs_small_file.txt :/sd/
 =======
 SD card mounted at /sd
+<<<<<<< HEAD
 cp ./psoc6/test_inputs/test_fs_small_file.txt :/sd/
 >>>>>>> 72e626c77 (tests/ports/psoc6: Moved psoc6 tests to ports folder.)
+=======
+cp ./ports/psoc6/test_inputs/test_fs_small_file.txt :/sd/
+>>>>>>> 5262182aa (tests/ports/psoc6: Moved psoc6 tests and required changes.)

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 cp ./ports/psoc6/test_inputs/test_fs_small_file.txt :/
 cp ./ports/psoc6/test_inputs/test_fs_medium_file.txt :/
 cp ./ports/psoc6/test_inputs/test_fs_large_file.txt :/
@@ -7,3 +8,8 @@ cp ./psoc6/test_inputs/test_fs_small_file.txt :/
 cp ./psoc6/test_inputs/test_fs_medium_file.txt :/
 cp ./psoc6/test_inputs/test_fs_large_file.txt :/
 >>>>>>> 72e626c77 (tests/ports/psoc6: Moved psoc6 tests to ports folder.)
+=======
+cp ./ports/psoc6/test_inputs/test_fs_small_file.txt :/
+cp ./ports/psoc6/test_inputs/test_fs_medium_file.txt :/
+cp ./ports/psoc6/test_inputs/test_fs_large_file.txt :/
+>>>>>>> 5262182aa (tests/ports/psoc6: Moved psoc6 tests and required changes.)

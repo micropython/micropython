@@ -1,3 +1,5 @@
+
+SD card mounted at /sd
 cp ./ports/psoc6/test_inputs/test_fs_small_file.txt :/sd/
 cp ./ports/psoc6/test_inputs/test_fs_medium_file.txt :/sd/
 cp ./ports/psoc6/test_inputs/test_fs_large_file.txt :/sd/
