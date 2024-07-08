@@ -10,12 +10,14 @@
 
 #include "py/runtime.h"
 
+#include "bindings/espidf/__init__.h"
 #include "common-hal/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 
 #include "esp_sleep.h"
 #include "esp_system.h"
+#include "esp_pm.h"
 
 #include "soc/efuse_reg.h"
 
@@ -44,8 +46,66 @@ float common_hal_mcu_processor_get_voltage(void) {
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
+    #if CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY
+    esp_pm_config_t pm;
+    CHECK_ESP_RESULT(esp_pm_get_configuration(&pm));
+    return pm.min_freq_mhz * 1000000;
+    #else
     return CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ * 1000000;
+    #endif
 }
+
+#if CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY // Don't need a NotImplementedError here if this is false, as that is handled in shared-bindings
+// If the requested frequency is not supported by the hardware, return the next lower supported frequency
+static uint32_t get_valid_cpu_frequency(uint32_t requested_freq_mhz) {
+
+    #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
+    uint32_t valid_cpu_frequencies[] = {20, 40, 80, 160};
+    #elif defined(CONFIG_IDF_TARGET_ESP32C2)
+    uint32_t valid_cpu_frequencies[] = {20, 40, 80, 120};
+    #elif defined(CONFIG_IDF_TARGET_ESP32H2)
+    uint32_t valid_cpu_frequencies[] = {32, 48, 64, 96};
+    #else
+    uint32_t valid_cpu_frequencies[] = {20, 40, 80, 160, 240};
+    #endif
+
+    if (requested_freq_mhz < valid_cpu_frequencies[0]) {
+        // Don't round to the lowest valid frequency automatically here because the lowest valid frequency
+        // can break UART/USB connection on some boards and it's very easy to trigger this case accidentally
+        // (e.g. accidentally setting the frequency to 16000000 instead of 160000000,
+        // or setting the frequency to 160 instead of 160000000). So trigger an exception instead.
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_frequency);
+    }
+
+    const size_t num_valid_frequencies = MP_ARRAY_SIZE(valid_cpu_frequencies);
+
+    for (size_t i = 1; i < num_valid_frequencies; i++) {
+        if (requested_freq_mhz < valid_cpu_frequencies[i]) {
+            return valid_cpu_frequencies[i - 1];
+        }
+    }
+
+    return valid_cpu_frequencies[num_valid_frequencies - 1];
+}
+
+void common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self, uint32_t frequency) {
+    // Without this check, everything would compile without errors, but silently fail at runtime if
+    // CONFIG_PM_ENABLE is ever accidentally disabled
+    #if !defined(CONFIG_PM_ENABLE)
+    #error "common_hal_mcu_processor_set_frequency needs CONFIG_PM_ENABLE to be defined."
+    #endif
+
+    frequency /= 1000000;
+
+    frequency = get_valid_cpu_frequency(frequency);
+
+    esp_pm_config_t pm;
+    pm.max_freq_mhz = frequency;
+    pm.min_freq_mhz = frequency;
+    pm.light_sleep_enable = false;
+    CHECK_ESP_RESULT(esp_pm_configure(&pm));
+}
+#endif
 
 static uint8_t swap_nibbles(uint8_t v) {
     return ((v << 4) | (v >> 4)) & 0xff;
