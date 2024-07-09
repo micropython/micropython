@@ -32,9 +32,9 @@ usage() {
   echo "  no-hw-ext         run machine modules tests not requiring extended hardware"
   echo "  hw-ext            run machine modules tests requiring extended hardware"
   echo "  i2c               run i2c tests"
+  echo "  uart              run uart tests"
   echo "  spi               run spi tests"
   echo "  i2s               run i2s tests"
-  echo "  uart              run uart tests"
   echo "  bitstream         run bitstream tests"
   echo "  watchdog          run watchdog tests"
   echo "  multi-instance    run multiple board instances tests"
@@ -201,6 +201,10 @@ i2c_tests() {
   run_tests "i2c" ${dev_test} "${tests_psoc6_dir}/hw_ext/i2c.py"
 }
 
+uart_tests() {
+  run_tests "uart" ${dev_test} "${tests_psoc6_dir}/hw_ext/uart.py"
+}
+
 bitstream_tests() {
   run_tests "bitstream" ${dev_test} "${tests_psoc6_dir}/hw_ext/multi_stub/bitstream_rx.py" \
    "" "bitstream_tx" ${dev_stub} "${tests_psoc6_dir}/hw_ext/multi_stub/bitstream_tx.py"
@@ -214,10 +218,6 @@ spi_tests() {
 i2s_tests() {
   run_tests "i2s" ${dev_test} "${tests_psoc6_dir}/hw_ext/multi_stub/i2s_rx.py" \
   "" "i2s_tx" ${dev_stub} "${tests_psoc6_dir}/hw_ext/multi_stub/i2s_tx.py"
-}
-
-uart_tests() {
-  run_tests "uart" ${dev_test} "${tests_psoc6_dir}/hw_ext/uart.py"
 }
 
 wtd_tests() {
@@ -278,15 +278,7 @@ run_ci_tests() {
     fi
     dev_test=${i2c_dev} 
     i2c_tests
-
-    dev_test=${devs_a[0]}
-    dev_stub=${devs_b[0]}
-    spi_tests
-
-    dev_test=${devs_b[0]}
-    dev_stub=${devs_a[0]}
-    i2s_tests
-
+  
     if [ "${board}" == "CY8CPROTO-062-4343W" ]; then
       uart_dev=${devs_a[0]} 
     else
@@ -296,6 +288,14 @@ run_ci_tests() {
     fi
     dev_test=${uart_dev} 
     uart_tests
+
+    dev_test=${devs_a[0]}
+    dev_stub=${devs_b[0]}
+    spi_tests
+
+    dev_test=${devs_b[0]}
+    dev_stub=${devs_a[0]}
+    i2s_tests
 
     dev_test=${devs_a[0]}
     dev_stub=${devs_b[0]}
