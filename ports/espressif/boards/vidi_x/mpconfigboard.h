@@ -34,6 +34,9 @@
 #define CIRCUITPY_BOARD_SPI         (1)
 #define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO18, .mosi = &pin_GPIO23, .miso = &pin_GPIO19}}
 
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO32, .sda = &pin_GPIO33}}
+
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO0)
 
 // Explanation of how a user got into safe mode
