@@ -52,7 +52,7 @@ def test_multiple_timers():
     global periodic_triggered
     # Multiple timers
     tim_oneshot = Timer(0, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot)
-    tim_periodic = Timer(1, period=3000, mode=Timer.PERIODIC, callback=call_periodic)
+    tim_periodic = Timer(1, period=3500, mode=Timer.PERIODIC, callback=call_periodic)
 
     try:
         # Wait for 15 seconds
