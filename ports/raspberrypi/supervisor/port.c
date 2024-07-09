@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 #include <stdlib.h>
@@ -82,9 +62,9 @@ critical_section_t background_queue_lock;
 
 extern volatile bool mp_msc_enabled;
 
-STATIC void _tick_callback(uint alarm_num);
+static void _tick_callback(uint alarm_num);
 
-STATIC void _binary_info(void) {
+static void _binary_info(void) {
     // Binary info readable with `picotool`.
     bi_decl(bi_program_name("CircuitPython"));
     bi_decl(bi_program_version_string(MICROPY_GIT_TAG));
@@ -267,10 +247,13 @@ static volatile bool _woken_up;
 
 uint64_t port_get_raw_ticks(uint8_t *subticks) {
     uint64_t microseconds = time_us_64();
+    if (subticks != NULL) {
+        *subticks = (uint8_t)(((microseconds % 1000000) % 977) / 31);
+    }
     return 1024 * (microseconds / 1000000) + (microseconds % 1000000) / 977;
 }
 
-STATIC void _tick_callback(uint alarm_num) {
+static void _tick_callback(uint alarm_num) {
     if (ticks_enabled) {
         supervisor_tick();
         hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), 977));

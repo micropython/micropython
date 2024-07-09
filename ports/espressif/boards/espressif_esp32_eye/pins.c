@@ -1,7 +1,13 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
 #include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
 
-STATIC const mp_rom_obj_tuple_t camera_data_tuple = {
+static const mp_rom_obj_tuple_t camera_data_tuple = {
     {&mp_type_tuple},
     8,
     {
@@ -16,7 +22,7 @@ STATIC const mp_rom_obj_tuple_t camera_data_tuple = {
     }
 };
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     { MP_ROM_QSTR(MP_QSTR_I2S_SCK), MP_ROM_PTR(&pin_GPIO26) },

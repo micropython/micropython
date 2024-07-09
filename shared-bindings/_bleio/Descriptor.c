@@ -1,30 +1,10 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- * Copyright (c) 2017 Glenn Ruben Bakke
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+// SPDX-FileCopyrightText: Copyright (c) 2017 Glenn Ruben Bakke
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -75,7 +55,7 @@
 //|
 //|         :return: the new Descriptor."""
 //|         ...
-STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // class is arg[0], which we can ignore.
 
     enum { ARG_characteristic, ARG_uuid, ARG_read_perm, ARG_write_perm,
@@ -136,12 +116,12 @@ STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_o
 
     return MP_OBJ_FROM_PTR(descriptor);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_descriptor_add_to_characteristic_fun_obj, 1, bleio_descriptor_add_to_characteristic);
-STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_descriptor_add_to_characteristic_obj, MP_ROM_PTR(&bleio_descriptor_add_to_characteristic_fun_obj));
+static MP_DEFINE_CONST_FUN_OBJ_KW(bleio_descriptor_add_to_characteristic_fun_obj, 1, bleio_descriptor_add_to_characteristic);
+static MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_descriptor_add_to_characteristic_obj, MP_ROM_PTR(&bleio_descriptor_add_to_characteristic_fun_obj));
 
 //|     uuid: UUID
 //|     """The descriptor uuid. (read-only)"""
-STATIC mp_obj_t bleio_descriptor_get_uuid(mp_obj_t self_in) {
+static mp_obj_t bleio_descriptor_get_uuid(mp_obj_t self_in) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     bleio_uuid_obj_t *uuid = common_hal_bleio_descriptor_get_uuid(self);
@@ -154,12 +134,12 @@ MP_PROPERTY_GETTER(bleio_descriptor_uuid_obj,
 
 //|     characteristic: Characteristic
 //|     """The Characteristic this Descriptor is a part of."""
-STATIC mp_obj_t bleio_descriptor_get_characteristic(mp_obj_t self_in) {
+static mp_obj_t bleio_descriptor_get_characteristic(mp_obj_t self_in) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     return common_hal_bleio_descriptor_get_characteristic(self);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_characteristic_obj, bleio_descriptor_get_characteristic);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_characteristic_obj, bleio_descriptor_get_characteristic);
 
 MP_PROPERTY_GETTER(bleio_descriptor_characteristic_obj,
     (mp_obj_t)&bleio_descriptor_get_characteristic_obj);
@@ -167,16 +147,16 @@ MP_PROPERTY_GETTER(bleio_descriptor_characteristic_obj,
 //|     value: bytearray
 //|     """The value of this descriptor."""
 //|
-STATIC mp_obj_t bleio_descriptor_get_value(mp_obj_t self_in) {
+static mp_obj_t bleio_descriptor_get_value(mp_obj_t self_in) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     uint8_t temp[512];
     size_t actual_len = common_hal_bleio_descriptor_get_value(self, temp, sizeof(temp));
     return mp_obj_new_bytearray(actual_len, temp);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_value_obj, bleio_descriptor_get_value);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_value_obj, bleio_descriptor_get_value);
 
-STATIC mp_obj_t bleio_descriptor_set_value(mp_obj_t self_in, mp_obj_t value_in) {
+static mp_obj_t bleio_descriptor_set_value(mp_obj_t self_in, mp_obj_t value_in) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_buffer_info_t bufinfo;
@@ -186,22 +166,22 @@ STATIC mp_obj_t bleio_descriptor_set_value(mp_obj_t self_in, mp_obj_t value_in) 
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_descriptor_set_value_obj, bleio_descriptor_set_value);
+static MP_DEFINE_CONST_FUN_OBJ_2(bleio_descriptor_set_value_obj, bleio_descriptor_set_value);
 
 MP_PROPERTY_GETSET(bleio_descriptor_value_obj,
     (mp_obj_t)&bleio_descriptor_get_value_obj,
     (mp_obj_t)&bleio_descriptor_set_value_obj);
 
-STATIC const mp_rom_map_elem_t bleio_descriptor_locals_dict_table[] = {
+static const mp_rom_map_elem_t bleio_descriptor_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_add_to_characteristic), MP_ROM_PTR(&bleio_descriptor_add_to_characteristic_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid), MP_ROM_PTR(&bleio_descriptor_uuid_obj) },
     { MP_ROM_QSTR(MP_QSTR_characteristic), MP_ROM_PTR(&bleio_descriptor_characteristic_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&bleio_descriptor_value_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(bleio_descriptor_locals_dict, bleio_descriptor_locals_dict_table);
+static MP_DEFINE_CONST_DICT(bleio_descriptor_locals_dict, bleio_descriptor_locals_dict_table);
 
-STATIC void bleio_descriptor_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void bleio_descriptor_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->uuid) {
         mp_printf(print, "Descriptor(");

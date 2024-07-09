@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Dan Halbert for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -77,14 +57,16 @@
 
 // wake_alarm is implemented as a dictionary entry, so there's no code here.
 
-STATIC void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
+static void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
     for (size_t i = 0; i < n_args; i++) {
         if (mp_obj_is_type(objs[i], &alarm_pin_pinalarm_type) ||
-            mp_obj_is_type(objs[i], &alarm_time_timealarm_type) ||
+            #if CIRCUITPY_ALARM_TOUCH
+            mp_obj_is_type(objs[i], &alarm_touch_touchalarm_type) ||
+            #endif
             #if CIRCUITPY_ESPULP
             mp_obj_is_type(objs[i], &espulp_ulpalarm_type) ||
             #endif
-            mp_obj_is_type(objs[i], &alarm_touch_touchalarm_type)) {
+            mp_obj_is_type(objs[i], &alarm_time_timealarm_type)) {
             continue;
         }
         mp_raise_TypeError_varg(MP_ERROR_TEXT("Expected a kind of %q"), MP_QSTR_Alarm);
@@ -108,7 +90,7 @@ STATIC void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t alarm_light_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t alarm_light_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_const_none;
     }
@@ -190,7 +172,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OB
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_preserve_dios };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_preserve_dios, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_empty_tuple} },
@@ -221,46 +203,48 @@ STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_o
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(alarm_exit_and_deep_sleep_until_alarms_obj, 0, alarm_exit_and_deep_sleep_until_alarms);
 
-STATIC const mp_map_elem_t alarm_pin_globals_table[] = {
+static const mp_map_elem_t alarm_pin_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pin) },
 
     { MP_ROM_QSTR(MP_QSTR_PinAlarm), MP_OBJ_FROM_PTR(&alarm_pin_pinalarm_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(alarm_pin_globals, alarm_pin_globals_table);
+static MP_DEFINE_CONST_DICT(alarm_pin_globals, alarm_pin_globals_table);
 
-STATIC const mp_obj_module_t alarm_pin_module = {
+static const mp_obj_module_t alarm_pin_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&alarm_pin_globals,
 };
 
-STATIC const mp_map_elem_t alarm_time_globals_table[] = {
+static const mp_map_elem_t alarm_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_time) },
 
     { MP_ROM_QSTR(MP_QSTR_TimeAlarm), MP_OBJ_FROM_PTR(&alarm_time_timealarm_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(alarm_time_globals, alarm_time_globals_table);
+static MP_DEFINE_CONST_DICT(alarm_time_globals, alarm_time_globals_table);
 
-STATIC const mp_obj_module_t alarm_time_module = {
+static const mp_obj_module_t alarm_time_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&alarm_time_globals,
 };
 
-STATIC const mp_map_elem_t alarm_touch_globals_table[] = {
+#if CIRCUITPY_ALARM_TOUCH
+static const mp_map_elem_t alarm_touch_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_touch) },
     { MP_ROM_QSTR(MP_QSTR_TouchAlarm), MP_OBJ_FROM_PTR(&alarm_touch_touchalarm_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(alarm_touch_globals, alarm_touch_globals_table);
+static MP_DEFINE_CONST_DICT(alarm_touch_globals, alarm_touch_globals_table);
 
-STATIC const mp_obj_module_t alarm_touch_module = {
+static const mp_obj_module_t alarm_touch_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&alarm_touch_globals,
 };
+#endif
 
 // The module table is mutable because .wake_alarm is a mutable attribute.
-STATIC mp_map_elem_t alarm_module_globals_table[] = {
+static mp_map_elem_t alarm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_alarm) },
 
     // wake_alarm is a mutable attribute.
@@ -272,12 +256,14 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_pin), MP_OBJ_FROM_PTR(&alarm_pin_module) },
     { MP_ROM_QSTR(MP_QSTR_time), MP_OBJ_FROM_PTR(&alarm_time_module) },
+    #if CIRCUITPY_ALARM_TOUCH
     { MP_ROM_QSTR(MP_QSTR_touch), MP_OBJ_FROM_PTR(&alarm_touch_module) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_SleepMemory),   MP_OBJ_FROM_PTR(&alarm_sleep_memory_type) },
     { MP_ROM_QSTR(MP_QSTR_sleep_memory),  MP_OBJ_FROM_PTR(&alarm_sleep_memory_obj) },
 };
-STATIC MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
+static MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
 
 // Fetch value from module dict.
 mp_obj_t shared_alarm_get_wake_alarm(void) {

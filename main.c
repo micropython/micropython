@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2016-2017 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2016-2017 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdint.h>
 #include <string.h>
@@ -141,13 +121,13 @@ static void reset_devices(void) {
     #endif
 }
 
-STATIC uint8_t *_heap;
-STATIC uint8_t *_pystack;
+static uint8_t *_heap;
+static uint8_t *_pystack;
 
-STATIC const char line_clear[] = "\x1b[2K\x1b[0G";
+static const char line_clear[] = "\x1b[2K\x1b[0G";
 
 #if MICROPY_ENABLE_PYSTACK || MICROPY_ENABLE_GC
-STATIC uint8_t *_allocate_memory(safe_mode_t safe_mode, const char *env_key, size_t default_size, size_t *final_size) {
+static uint8_t *_allocate_memory(safe_mode_t safe_mode, const char *env_key, size_t default_size, size_t *final_size) {
     *final_size = default_size;
     #if CIRCUITPY_OS_GETENV
     if (safe_mode == SAFE_MODE_NONE) {
@@ -172,7 +152,7 @@ STATIC uint8_t *_allocate_memory(safe_mode_t safe_mode, const char *env_key, siz
 }
 #endif
 
-STATIC void start_mp(safe_mode_t safe_mode) {
+static void start_mp(safe_mode_t safe_mode) {
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -225,7 +205,7 @@ STATIC void start_mp(safe_mode_t safe_mode) {
     mp_obj_list_init((mp_obj_list_t *)mp_sys_argv, 0);
 }
 
-STATIC void stop_mp(void) {
+static void stop_mp(void) {
     #if MICROPY_VFS
     mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table);
 
@@ -257,9 +237,9 @@ STATIC void stop_mp(void) {
     #endif
 }
 
-STATIC const char *_current_executing_filename = NULL;
+static const char *_current_executing_filename = NULL;
 
-STATIC pyexec_result_t _exec_result = {0, MP_OBJ_NULL, 0};
+static pyexec_result_t _exec_result = {0, MP_OBJ_NULL, 0};
 
 #if CIRCUITPY_STATUS_BAR
 void supervisor_execution_status(void) {
@@ -284,7 +264,7 @@ pyexec_result_t *pyexec_result(void) {
 
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
 // Return its index. If no file found, return -1.
-STATIC const char *first_existing_file_in_list(const char *const *filenames, size_t n_filenames) {
+static const char *first_existing_file_in_list(const char *const *filenames, size_t n_filenames) {
     for (size_t i = 0; i < n_filenames; i++) {
         mp_import_stat_t stat = mp_import_stat(filenames[i]);
         if (stat == MP_IMPORT_STAT_FILE) {
@@ -294,7 +274,7 @@ STATIC const char *first_existing_file_in_list(const char *const *filenames, siz
     return NULL;
 }
 
-STATIC bool maybe_run_list(const char *const *filenames, size_t n_filenames) {
+static bool maybe_run_list(const char *const *filenames, size_t n_filenames) {
     _exec_result.return_code = 0;
     _exec_result.exception = MP_OBJ_NULL;
     _exec_result.exception_line = 0;
@@ -329,11 +309,11 @@ STATIC bool maybe_run_list(const char *const *filenames, size_t n_filenames) {
     return true;
 }
 
-STATIC void count_strn(void *data, const char *str, size_t len) {
+static void count_strn(void *data, const char *str, size_t len) {
     *(size_t *)data += len;
 }
 
-STATIC void cleanup_after_vm(mp_obj_t exception) {
+static void cleanup_after_vm(mp_obj_t exception) {
     // Get the traceback of any exception from this run off the heap.
     // MP_OBJ_SENTINEL means "this run does not contribute to traceback storage, don't touch it"
     // MP_OBJ_NULL (=0) means "this run completed successfully, clear any stored traceback"
@@ -419,7 +399,7 @@ STATIC void cleanup_after_vm(mp_obj_t exception) {
     supervisor_workflow_reset();
 }
 
-STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
+static void print_code_py_status_message(safe_mode_t safe_mode) {
     mp_hal_stdout_tx_str(line_clear);
     if (autoreload_is_enabled()) {
         serial_write_compressed(
@@ -432,7 +412,7 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     }
 }
 
-STATIC bool __attribute__((noinline)) run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
+static bool __attribute__((noinline)) run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
     bool serial_connected_at_start = serial_connected();
     bool printed_safe_mode_message = false;
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
@@ -472,9 +452,6 @@ STATIC bool __attribute__((noinline)) run_code_py(safe_mode_t safe_mode, bool *s
         #if CIRCUITPY_USB_DEVICE
         usb_setup_with_vm();
         #endif
-
-        // Make sure we are in the root directory before looking at files.
-        common_hal_os_chdir("/");
 
         // Check if a different run file has been allocated
         if (next_code_configuration != NULL) {
@@ -806,7 +783,7 @@ STATIC bool __attribute__((noinline)) run_code_py(safe_mode_t safe_mode, bool *s
 vstr_t *boot_output;
 
 #if CIRCUITPY_SAFEMODE_PY
-STATIC void __attribute__ ((noinline)) run_safemode_py(safe_mode_t safe_mode) {
+static void __attribute__ ((noinline)) run_safemode_py(safe_mode_t safe_mode) {
     // Don't run if we aren't in safe mode or we won't be able to find safemode.py.
     // Also don't run if it's a user-initiated safemode (pressing button(s) during boot),
     // since that's deliberate.
@@ -830,7 +807,7 @@ STATIC void __attribute__ ((noinline)) run_safemode_py(safe_mode_t safe_mode) {
 }
 #endif
 
-STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
+static void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     if (safe_mode == SAFE_MODE_NO_HEAP) {
         return;
     }
@@ -927,7 +904,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     port_post_boot_py(false);
 }
 
-STATIC int run_repl(safe_mode_t safe_mode) {
+static int run_repl(safe_mode_t safe_mode) {
     int exit_code = PYEXEC_FORCED_EXIT;
     filesystem_flush();
 
@@ -1029,10 +1006,6 @@ int __attribute__((used)) main(void) {
     supervisor_status_bar_init();
     #endif
 
-    #if CIRCUITPY_BLEIO
-    // Early init so that a reset press can cause BLE public advertising.
-    supervisor_bluetooth_init();
-    #endif
 
     #if !INTERNAL_FLASH_FILESYSTEM
     // Set up anything that might need to get done before we try to use SPI flash
@@ -1049,6 +1022,12 @@ int __attribute__((used)) main(void) {
     if (!filesystem_init(get_safe_mode() == SAFE_MODE_NONE, false)) {
         set_safe_mode(SAFE_MODE_NO_CIRCUITPY);
     }
+
+    #if CIRCUITPY_BLEIO
+    // Early init so that a reset press can cause BLE public advertising. Need the filesystem to
+    // read settings.toml.
+    supervisor_bluetooth_init();
+    #endif
 
     #if CIRCUITPY_ALARM
     // Record which alarm woke us up, if any.
@@ -1112,6 +1091,10 @@ int __attribute__((used)) main(void) {
                 serial_write_compressed(MP_ERROR_TEXT("soft reboot\n"));
             }
             simulate_reset = false;
+
+            // Always return to root before trying to run files.
+            common_hal_os_chdir("/");
+
             if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
                 // If code.py did a fake deep sleep, pretend that we
                 // are running code.py for the first time after a hard

@@ -1,3 +1,11 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2022 Pontus Oldberg, Invector Labs
+//
+// SPDX-License-Identifier: MIT
+
+#pragma once
+
 #define MICROPY_HW_BOARD_NAME "Challenger RP2040 SD/RTC"
 #define MICROPY_HW_MCU_NAME "rp2040"
 

@@ -1,30 +1,10 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- * Copyright (c) 2016 Glenn Ruben Bakke
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+// SPDX-FileCopyrightText: Copyright (c) 2016 Glenn Ruben Bakke
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -51,7 +31,7 @@ volatile sd_flash_operation_status_t sd_flash_operation_status;
 __attribute__((aligned(4)))
 static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATTS_VAR_ATTR_LEN_MAX)];
 
-void ble_drv_reset() {
+void ble_drv_reset(void) {
     // Linked list items will be gc'd.
     MP_STATE_VM(ble_drv_evt_handler_entries) = NULL;
     sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
@@ -156,7 +136,7 @@ void SD_EVT_IRQHandler(void) {
         const uint32_t err_code = sd_ble_evt_get(m_ble_evt_buf, &evt_len);
         if (err_code != NRF_SUCCESS) {
             if (err_code == NRF_ERROR_DATA_SIZE) {
-                printf("NRF_ERROR_DATA_SIZE\n");
+                mp_printf(&mp_plat_print, "NRF_ERROR_DATA_SIZE\n");
             }
 
             break;
@@ -195,6 +175,14 @@ void SD_EVT_IRQHandler(void) {
     #if CIRCUITPY_SERIAL_BLE && CIRCUITPY_VERBOSE_BLE
     ble_serial_enable();
     #endif
+}
+
+void ble_drv_gc_collect(void) {
+    ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
+    while (it != NULL) {
+        gc_collect_ptr(it);
+        it = it->next;
+    }
 }
 
 MP_REGISTER_ROOT_POINTER(ble_drv_evt_handler_entry_t * ble_drv_evt_handler_entries);

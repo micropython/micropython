@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Artyom Skrobov
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Artyom Skrobov
+//
+// SPDX-License-Identifier: MIT
 #include <string.h>
 
 #include "py/runtime.h"
@@ -32,20 +12,20 @@
 #include "timers.h"
 
 // TODO: support multiple concurrently active outputs.
-STATIC TIM_HandleTypeDef tim_handle;
-STATIC audiopwmio_pwmaudioout_obj_t *active_audio = NULL;
+static TIM_HandleTypeDef tim_handle;
+static audiopwmio_pwmaudioout_obj_t *active_audio = NULL;
 
-STATIC void set_pin(uint8_t channel, GPIO_PinState state) {
+static void set_pin(uint8_t channel, GPIO_PinState state) {
     HAL_GPIO_WritePin(pin_port(active_audio->pin[channel]->port),
         pin_mask(active_audio->pin[channel]->number), state);
 }
 
-STATIC void toggle_pin(uint8_t channel) {
+static void toggle_pin(uint8_t channel) {
     HAL_GPIO_TogglePin(pin_port(active_audio->pin[channel]->port),
         pin_mask(active_audio->pin[channel]->number));
 }
 
-STATIC void set_drive_mode(const mcu_pin_obj_t *pin, uint32_t mode) {
+static void set_drive_mode(const mcu_pin_obj_t *pin, uint32_t mode) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = pin_mask(pin->number);
     GPIO_InitStruct.Mode = mode;
@@ -54,7 +34,7 @@ STATIC void set_drive_mode(const mcu_pin_obj_t *pin, uint32_t mode) {
     HAL_GPIO_Init(pin_port(pin->port), &GPIO_InitStruct);
 }
 
-STATIC void start_timer(audiopwmio_pwmaudioout_obj_t *self) {
+static void start_timer(audiopwmio_pwmaudioout_obj_t *self) {
     if (self->buffer_ptr[0] >= self->buffer_length[0]) { // no more pulses
         return;
     }
@@ -75,7 +55,7 @@ STATIC void start_timer(audiopwmio_pwmaudioout_obj_t *self) {
     __HAL_TIM_ENABLE_IT(&tim_handle, TIM_IT_UPDATE);
 }
 
-STATIC bool fill_buffers(audiopwmio_pwmaudioout_obj_t *self) {
+static bool fill_buffers(audiopwmio_pwmaudioout_obj_t *self) {
     // Naive PCM-to-PWM conversion
     int16_t threshold = 0x666; // 0.05; TODO: make configurable
     uint8_t *buffer;
@@ -151,7 +131,7 @@ STATIC bool fill_buffers(audiopwmio_pwmaudioout_obj_t *self) {
     return true;
 }
 
-STATIC void move_to_beginning(uint16_t *buffer, uint16_t *buffer_length, uint16_t *buffer_ptr) {
+static void move_to_beginning(uint16_t *buffer, uint16_t *buffer_length, uint16_t *buffer_ptr) {
     if (*buffer_ptr < *buffer_length) {
         memmove(buffer, buffer + *buffer_ptr, *buffer_length - *buffer_ptr);
         *buffer_length -= *buffer_ptr;
@@ -161,7 +141,7 @@ STATIC void move_to_beginning(uint16_t *buffer, uint16_t *buffer_length, uint16_
     *buffer_ptr = 0;
 }
 
-STATIC void pwmaudioout_event_handler(void) {
+static void pwmaudioout_event_handler(void) {
     // Detect TIM Update event
     if (__HAL_TIM_GET_FLAG(&tim_handle, TIM_FLAG_UPDATE) != RESET) {
         if (__HAL_TIM_GET_IT_SOURCE(&tim_handle, TIM_IT_UPDATE) != RESET) {
@@ -233,7 +213,7 @@ bool common_hal_audiopwmio_pwmaudioout_deinited(audiopwmio_pwmaudioout_obj_t *se
     return !self->pin[0];
 }
 
-STATIC void free_buffers(audiopwmio_pwmaudioout_obj_t *self) {
+static void free_buffers(audiopwmio_pwmaudioout_obj_t *self) {
     m_free(self->buffer[0]);
     self->buffer[0] = NULL;
     m_free(self->buffer[1]);

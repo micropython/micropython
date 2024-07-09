@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Copyright (c) 2017 - 2018, Nordic Semiconductor ASA
  *
@@ -38,8 +44,7 @@
  *
  */
 
-#ifndef NRFX_GLUE_H__
-#define NRFX_GLUE_H__
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -236,5 +241,3 @@ void common_hal_mcu_enable_interrupts(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif // NRFX_GLUE_H__

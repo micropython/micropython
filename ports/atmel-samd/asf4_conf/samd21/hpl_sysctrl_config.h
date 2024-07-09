@@ -1,6 +1,11 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 /* Auto-generated config file hpl_sysctrl_config.h */
-#ifndef HPL_SYSCTRL_CONFIG_H
-#define HPL_SYSCTRL_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -674,5 +679,3 @@
 #define CONF_DPLL_FILTER SYSCTRL_DPLLCTRLB_FILTER_DEFAULT_Val
 
 // <<< end of configuration section >>>
-
-#endif // HPL_SYSCTRL_CONFIG_H

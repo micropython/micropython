@@ -1,0 +1,7 @@
+# Name,             Type,   SubType,    Offset,     Size
+# bootloader,       app,    boot,       0x1000/0x0, 28/32K
+# partition_table,  data,   table,      0x8000,     4K
+nvs,                data,   nvs,        0x9000,     20K
+otadata,            data,   ota,        0xe000,     8K
+ota_0,              app,    ota_0,      0x10000,    2048K
+user_fs,            data,   fat,        0x210000,   1984K

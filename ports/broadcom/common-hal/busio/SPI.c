@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/busio/SPI.h"
 
@@ -42,16 +22,16 @@
 
 #if BCM_VERSION == 2711
 #define NUM_SPI (7)
-STATIC SPI0_Type *spi[NUM_SPI] = {SPI0, NULL, NULL, SPI3, SPI4, SPI5, SPI6};
-STATIC SPI1_Type *aux_spi[NUM_SPI] = {NULL, SPI1, SPI2, NULL, NULL, NULL, NULL};
+static SPI0_Type *spi[NUM_SPI] = {SPI0, NULL, NULL, SPI3, SPI4, SPI5, SPI6};
+static SPI1_Type *aux_spi[NUM_SPI] = {NULL, SPI1, SPI2, NULL, NULL, NULL, NULL};
 #else
 #define NUM_SPI (3)
-STATIC SPI0_Type *spi[NUM_SPI] = {SPI0, NULL, NULL};
-STATIC SPI1_Type *aux_spi[NUM_SPI] = {NULL, SPI1, SPI2};
+static SPI0_Type *spi[NUM_SPI] = {SPI0, NULL, NULL};
+static SPI1_Type *aux_spi[NUM_SPI] = {NULL, SPI1, SPI2};
 #endif
 
-STATIC bool never_reset_spi[NUM_SPI];
-STATIC bool spi_in_use[NUM_SPI];
+static bool never_reset_spi[NUM_SPI];
+static bool spi_in_use[NUM_SPI];
 
 void reset_spi(void) {
     for (size_t i = 0; i < NUM_SPI; i++) {
@@ -236,7 +216,7 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
     self->has_lock = false;
 }
 
-STATIC void _spi_transfer(SPI0_Type *p,
+static void _spi_transfer(SPI0_Type *p,
     const uint8_t *data_out, size_t out_len,
     uint8_t *data_in, size_t in_len) {
     size_t len = MAX(out_len, in_len);
@@ -272,7 +252,7 @@ STATIC void _spi_transfer(SPI0_Type *p,
     COMPLETE_MEMORY_READS;
 }
 
-STATIC void _aux_spi_transfer(SPI1_Type *p,
+static void _aux_spi_transfer(SPI1_Type *p,
     const uint8_t *data_out, size_t out_len,
     uint8_t *data_in, size_t in_len) {
     size_t len = MAX(out_len, in_len);

@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/runtime.h"
 #include "common-hal/_bleio/__init__.h"
@@ -41,13 +21,28 @@ uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uu
     self->is_remote = false;
     self->connection = NULL;
     self->is_secondary = is_secondary;
+
+    self->service_def.type = is_secondary? BLE_GATT_SVC_TYPE_SECONDARY : BLE_GATT_SVC_TYPE_PRIMARY;
+    self->service_def.uuid = &uuid->nimble_ble_uuid.u;
+    self->service_def.includes = NULL;
+    self->service_def.characteristics = self->chr_defs;
+    self->next_svc_type = 0;
+
+    // Don't add the service yet because we don't have any characteristics.
     return 0;
 }
 
 void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary) {
-    mp_raise_NotImplementedError(NULL);
     _common_hal_bleio_service_construct(self, uuid, is_secondary,
         mp_obj_new_list(0, NULL));
+}
+
+void common_hal_bleio_service_deinit(bleio_service_obj_t *self) {
+    // Delete the old version of the service.
+    if (self->characteristic_list->len > 1) {
+        ble_gatts_delete_svc(&self->uuid->nimble_ble_uuid.u);
+    }
+    self->service_def.type = 0;
 }
 
 void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection) {
@@ -75,14 +70,37 @@ bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self) {
     return self->is_secondary;
 }
 
+// Used by characteristics to update their descriptors.
+void bleio_service_readd(bleio_service_obj_t *self) {
+    // Delete the old version of the service.
+    if (self->characteristic_list->len > 1) {
+        ble_gatts_delete_svc(&self->uuid->nimble_ble_uuid.u);
+    }
+    CHECK_NIMBLE_ERROR(ble_gatts_add_dynamic_svcs(&self->service_def));
+}
+
+
 void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
     bleio_characteristic_obj_t *characteristic,
     mp_buffer_info_t *initial_value_bufinfo,
     const char *user_description) {
-
-    #if CIRCUITPY_VERBOSE_BLE
-    mp_printf(&mp_plat_print, "Char handle %x user %x cccd %x sccd %x\n", characteristic->handle, characteristic->user_desc_handle, characteristic->cccd_handle, characteristic->sccd_handle);
-    #endif
-
     mp_obj_list_append(self->characteristic_list, MP_OBJ_FROM_PTR(characteristic));
+
+    // Delete the old version of the service.
+    if (self->characteristic_list->len > 1) {
+        ble_gatts_delete_svc(&self->uuid->nimble_ble_uuid.u);
+    }
+    size_t i = self->characteristic_list->len - 1;
+    self->chr_defs[i].uuid = &characteristic->uuid->nimble_ble_uuid.u;
+    self->chr_defs[i].access_cb = bleio_characteristic_access_cb;
+    self->chr_defs[i].arg = characteristic;
+    self->chr_defs[i].descriptors = characteristic->dsc_defs;
+    self->chr_defs[i].flags = characteristic->flags;
+    self->chr_defs[i].min_key_size = 16;
+    self->chr_defs[i].val_handle = &characteristic->handle;
+    self->chr_defs[i].cpfd = NULL;
+    self->chr_defs[i + 1].uuid = NULL;
+    characteristic->chr_def = &self->chr_defs[i];
+
+    CHECK_NIMBLE_ERROR(ble_gatts_add_dynamic_svcs(&self->service_def));
 }

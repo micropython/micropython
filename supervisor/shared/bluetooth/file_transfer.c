@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019-2021 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019-2021 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 
@@ -34,8 +14,6 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 
-#include "bluetooth/ble_drv.h"
-
 #include "supervisor/fatfs.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/reload.h"
@@ -43,26 +21,26 @@
 #include "supervisor/shared/bluetooth/file_transfer_protocol.h"
 #include "supervisor/shared/workflow.h"
 
-STATIC bleio_service_obj_t supervisor_ble_service;
-STATIC bleio_uuid_obj_t supervisor_ble_service_uuid;
-STATIC bleio_characteristic_obj_t supervisor_ble_version_characteristic;
-STATIC bleio_uuid_obj_t supervisor_ble_version_uuid;
-STATIC bleio_characteristic_obj_t supervisor_ble_transfer_characteristic;
-STATIC bleio_uuid_obj_t supervisor_ble_transfer_uuid;
+static bleio_service_obj_t supervisor_ble_service;
+static bleio_uuid_obj_t supervisor_ble_service_uuid;
+static bleio_characteristic_obj_t supervisor_ble_version_characteristic;
+static bleio_uuid_obj_t supervisor_ble_version_uuid;
+static bleio_characteristic_obj_t supervisor_ble_transfer_characteristic;
+static bleio_uuid_obj_t supervisor_ble_transfer_uuid;
 
 // This is the base UUID for the file transfer service.
 const uint8_t file_transfer_base_uuid[16] = {0x72, 0x65, 0x66, 0x73, 0x6e, 0x61, 0x72, 0x54, 0x65, 0x6c, 0x69, 0x46, 0x00, 0x00, 0xaf, 0xad };
 
-STATIC mp_obj_list_t characteristic_list;
-STATIC mp_obj_t characteristic_list_items[2];
+static mp_obj_list_t characteristic_list;
+static mp_obj_t characteristic_list_items[2];
 // 2 * 10 ringbuf packets, 512 for a disk sector and 12 for the file transfer write header.
 #define PACKET_BUFFER_SIZE (2 * 10 + 512 + 12)
 // uint32_t so its aligned
-STATIC uint32_t _buffer[PACKET_BUFFER_SIZE / 4 + 1];
-STATIC uint32_t _outgoing1[BLE_GATTS_VAR_ATTR_LEN_MAX / 4];
-STATIC uint32_t _outgoing2[BLE_GATTS_VAR_ATTR_LEN_MAX / 4];
-STATIC ble_drv_evt_handler_entry_t static_handler_entry;
-STATIC bleio_packet_buffer_obj_t _transfer_packet_buffer;
+static uint32_t _buffer[PACKET_BUFFER_SIZE / 4 + 1];
+static uint32_t _outgoing1[BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE / 4];
+static uint32_t _outgoing2[BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE / 4];
+static ble_event_handler_t static_handler_entry;
+static bleio_packet_buffer_obj_t _transfer_packet_buffer;
 
 void supervisor_start_bluetooth_file_transfer(void) {
     supervisor_ble_service_uuid.base.type = &bleio_uuid_type;
@@ -80,6 +58,7 @@ void supervisor_start_bluetooth_file_transfer(void) {
     // Version number
     supervisor_ble_version_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_version_uuid, 0x0100, file_transfer_base_uuid);
+    supervisor_ble_version_characteristic.base.type = &bleio_characteristic_type;
     common_hal_bleio_characteristic_construct(&supervisor_ble_version_characteristic,
         &supervisor_ble_service,
         0,                                       // handle (for remote only)
@@ -101,6 +80,7 @@ void supervisor_start_bluetooth_file_transfer(void) {
     // Active filename.
     supervisor_ble_transfer_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_transfer_uuid, 0x0200, file_transfer_base_uuid);
+    supervisor_ble_transfer_characteristic.base.type = &bleio_characteristic_type;
     common_hal_bleio_characteristic_construct(&supervisor_ble_transfer_characteristic,
         &supervisor_ble_service,
         0,                                       // handle (for remote only)
@@ -108,15 +88,16 @@ void supervisor_start_bluetooth_file_transfer(void) {
         CHAR_PROP_READ | CHAR_PROP_WRITE_NO_RESPONSE | CHAR_PROP_NOTIFY,
         SECURITY_MODE_ENC_NO_MITM,
         SECURITY_MODE_ENC_NO_MITM,
-        BLE_GATTS_VAR_ATTR_LEN_MAX,                  // max length
+        BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE,                  // max length
         false,                                       // fixed length
-        NULL,                                       // no initial valuen
+        NULL,                                       // no initial value
         NULL);
 
+    _transfer_packet_buffer.base.type = &bleio_packet_buffer_type;
     _common_hal_bleio_packet_buffer_construct(
         &_transfer_packet_buffer, &supervisor_ble_transfer_characteristic,
         _buffer, PACKET_BUFFER_SIZE,
-        _outgoing1, _outgoing2, BLE_GATTS_VAR_ATTR_LEN_MAX,
+        _outgoing1, _outgoing2, BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE,
         &static_handler_entry);
 }
 
@@ -128,7 +109,7 @@ void supervisor_start_bluetooth_file_transfer(void) {
 // FATFS has a two second timestamp resolution but the BLE API allows for nanosecond resolution.
 // This function truncates the time the time to a resolution storable by FATFS and fills in the
 // FATFS encoded version into fattime.
-STATIC uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
+static uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
     timeutils_struct_time_t tm;
     uint64_t seconds_since_epoch = timeutils_seconds_since_epoch_from_nanoseconds_since_1970(input_time);
     timeutils_seconds_since_epoch_to_struct_time(seconds_since_epoch, &tm);
@@ -140,9 +121,9 @@ STATIC uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
 }
 
 // Used by read and write.
-STATIC FIL active_file;
-STATIC fs_user_mount_t *active_mount;
-STATIC uint8_t _process_read(const uint8_t *raw_buf, size_t command_len) {
+static FIL active_file;
+static fs_user_mount_t *active_mount;
+static uint8_t _process_read(const uint8_t *raw_buf, size_t command_len) {
     struct read_command *command = (struct read_command *)raw_buf;
     size_t header_size = sizeof(struct read_command);
     size_t response_size = sizeof(struct read_data);
@@ -207,7 +188,7 @@ STATIC uint8_t _process_read(const uint8_t *raw_buf, size_t command_len) {
     return READ_PACING;
 }
 
-STATIC uint8_t _process_read_pacing(const uint8_t *raw_buf, size_t command_len) {
+static uint8_t _process_read_pacing(const uint8_t *raw_buf, size_t command_len) {
     struct read_pacing *command = (struct read_pacing *)raw_buf;
     struct read_data response;
     response.command = READ_DATA;
@@ -246,10 +227,10 @@ STATIC uint8_t _process_read_pacing(const uint8_t *raw_buf, size_t command_len) 
 }
 
 // Used by write and write data to know when the write is complete.
-STATIC size_t total_write_length;
-STATIC uint64_t _truncated_time;
+static size_t total_write_length;
+static uint64_t _truncated_time;
 
-STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
+static uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     struct write_command *command = (struct write_command *)raw_buf;
     size_t header_size = sizeof(struct write_command);
     struct write_pacing response;
@@ -321,7 +302,7 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     return WRITE_DATA;
 }
 
-STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
+static uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
     struct write_data *command = (struct write_data *)raw_buf;
     size_t header_size = sizeof(struct write_data);
     struct write_pacing response;
@@ -370,7 +351,7 @@ STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
     return WRITE_DATA;
 }
 
-STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
+static uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     const struct delete_command *command = (struct delete_command *)raw_buf;
     size_t header_size = sizeof(struct delete_command);
     struct delete_status response;
@@ -408,7 +389,7 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
 
 // NULL-terminate the path and remove any trailing /. Older versions of the
 // protocol require it but newer ones do not.
-STATIC void _terminate_path(char *path, size_t path_length) {
+static void _terminate_path(char *path, size_t path_length) {
     // -1 because fatfs doesn't want a trailing /
     if (path[path_length - 1] == '/') {
         path[path_length - 1] = '\0';
@@ -417,7 +398,7 @@ STATIC void _terminate_path(char *path, size_t path_length) {
     }
 }
 
-STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
+static uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
     const struct mkdir_command *command = (struct mkdir_command *)raw_buf;
     size_t header_size = sizeof(struct mkdir_command);
     struct mkdir_status response;
@@ -450,7 +431,7 @@ STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
     return ANY_COMMAND;
 }
 
-STATIC void send_listdir_entry_header(const struct listdir_entry *entry, mp_int_t max_packet_size) {
+static void send_listdir_entry_header(const struct listdir_entry *entry, mp_int_t max_packet_size) {
     mp_int_t response_size = sizeof(struct listdir_entry);
     if (max_packet_size >= response_size) {
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)entry, response_size, NULL, 0);
@@ -461,7 +442,7 @@ STATIC void send_listdir_entry_header(const struct listdir_entry *entry, mp_int_
     common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, ((const uint8_t *)entry) + 16, response_size - 16, NULL, 0);
 }
 
-STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
+static uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
     const struct listdir_command *command = (struct listdir_command *)raw_buf;
     struct listdir_entry *entry = (struct listdir_entry *)raw_buf;
     size_t header_size = sizeof(struct listdir_command);
@@ -560,7 +541,7 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
     return ANY_COMMAND;
 }
 
-STATIC uint8_t _process_move(const uint8_t *raw_buf, size_t command_len) {
+static uint8_t _process_move(const uint8_t *raw_buf, size_t command_len) {
     const struct move_command *command = (struct move_command *)raw_buf;
     size_t header_size = sizeof(struct move_command);
     struct move_status response;
@@ -601,10 +582,10 @@ STATIC uint8_t _process_move(const uint8_t *raw_buf, size_t command_len) {
 
 // Background state that must live across background calls. After the _process
 // helpers to force them to not use them.
-STATIC uint8_t current_command[COMMAND_SIZE] __attribute__ ((aligned(4)));
-STATIC volatile size_t current_offset;
-STATIC uint8_t next_command;
-STATIC bool running = false;
+static uint8_t current_command[COMMAND_SIZE] __attribute__ ((aligned(4)));
+static volatile size_t current_offset;
+static uint8_t next_command;
+static bool running = false;
 void supervisor_bluetooth_file_transfer_background(void) {
     if (running) {
         return;

@@ -1,5 +1,10 @@
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_INIT_H
-#define MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_INIT_H
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 by kvc0/WarriorOfWire
+//
+// SPDX-License-Identifier: MIT
+
+#pragma once
 
 #include "py/obj.h"
 
@@ -9,6 +14,3 @@ typedef struct {
     mp_obj_t obj;
     event_function *event;
 } vectorio_event_t;
-
-
-#endif

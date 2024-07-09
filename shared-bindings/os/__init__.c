@@ -1,30 +1,10 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2015 Josef Gajdusek
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+// SPDX-FileCopyrightText: Copyright (c) 2015 Josef Gajdusek
+// SPDX-FileCopyrightText: Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 
@@ -61,16 +41,16 @@
 //|     version: str
 //|     machine: str
 //|
-STATIC mp_obj_t os_uname(void) {
+static mp_obj_t os_uname(void) {
     return common_hal_os_uname();
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
+static MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 
 //| def chdir(path: str) -> None:
 //|     """Change current directory."""
 //|     ...
 //|
-STATIC mp_obj_t os_chdir(mp_obj_t path_in) {
+static mp_obj_t os_chdir(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_chdir(path);
     return mp_const_none;
@@ -81,7 +61,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_chdir_obj, os_chdir);
 //|     """Get the current directory."""
 //|     ...
 //|
-STATIC mp_obj_t os_getcwd(void) {
+static mp_obj_t os_getcwd(void) {
     return common_hal_os_getcwd();
 }
 MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
@@ -109,7 +89,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t os_getenv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t os_getenv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     #if CIRCUITPY_OS_GETENV
     enum { ARG_key, ARG_default };
     static const mp_arg_t allowed_args[] = {
@@ -124,13 +104,13 @@ STATIC mp_obj_t os_getenv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     mp_raise_NotImplementedError(NULL);
     #endif
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(os_getenv_obj, 1, os_getenv);
+static MP_DEFINE_CONST_FUN_OBJ_KW(os_getenv_obj, 1, os_getenv);
 
 //| def listdir(dir: str) -> str:
 //|     """With no argument, list the current directory.  Otherwise list the given directory."""
 //|     ...
 //|
-STATIC mp_obj_t os_listdir(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t os_listdir(size_t n_args, const mp_obj_t *args) {
     const char *path;
     if (n_args == 1) {
         path = mp_obj_str_get_str(args[0]);
@@ -145,7 +125,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_listdir_obj, 0, 1, os_listdir);
 //|     """Create a new directory."""
 //|     ...
 //|
-STATIC mp_obj_t os_mkdir(mp_obj_t path_in) {
+static mp_obj_t os_mkdir(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_mkdir(path);
     return mp_const_none;
@@ -156,7 +136,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
 //|     """Remove a file."""
 //|     ...
 //|
-STATIC mp_obj_t os_remove(mp_obj_t path_in) {
+static mp_obj_t os_remove(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_remove(path);
     return mp_const_none;
@@ -167,7 +147,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
 //|     """Remove a directory."""
 //|     ...
 //|
-STATIC mp_obj_t os_rename(mp_obj_t old_path_in, mp_obj_t new_path_in) {
+static mp_obj_t os_rename(mp_obj_t old_path_in, mp_obj_t new_path_in) {
     const char *old_path = mp_obj_str_get_str(old_path_in);
     const char *new_path = mp_obj_str_get_str(new_path_in);
     common_hal_os_rename(old_path, new_path);
@@ -179,7 +159,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(os_rename_obj, os_rename);
 //|     """Rename a file."""
 //|     ...
 //|
-STATIC mp_obj_t os_rmdir(mp_obj_t path_in) {
+static mp_obj_t os_rmdir(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_rmdir(path);
     return mp_const_none;
@@ -209,7 +189,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 //|        which is the number of seconds corresponding to 1999-12-31."""
 //|     ...
 //|
-STATIC mp_obj_t os_stat(mp_obj_t path_in) {
+static mp_obj_t os_stat(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     return common_hal_os_stat(path);
 }
@@ -236,7 +216,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 //|     in a port-specific implementation."""
 //|     ...
 //|
-STATIC mp_obj_t os_statvfs(mp_obj_t path_in) {
+static mp_obj_t os_statvfs(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     return common_hal_os_statvfs(path);
 }
@@ -246,7 +226,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_statvfs_obj, os_statvfs);
 //|     """Sync all filesystems."""
 //|     ...
 //|
-STATIC mp_obj_t os_sync(void) {
+static mp_obj_t os_sync(void) {
     for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
         // this assumes that vfs->obj is fs_user_mount_t with block device functions
         disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
@@ -263,7 +243,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t os_urandom(mp_obj_t size_in) {
+static mp_obj_t os_urandom(mp_obj_t size_in) {
     mp_int_t size = mp_obj_get_int(size_in);
     mp_obj_str_t *result = MP_OBJ_TO_PTR(mp_obj_new_bytes_of_zeros(size));
     if (!common_hal_os_urandom((uint8_t *)result->data, size)) {
@@ -277,14 +257,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 //|     """Change the timestamp of a file."""
 //|     ...
 //|
-STATIC mp_obj_t os_utime(mp_obj_t path_in, mp_obj_t times_in) {
+static mp_obj_t os_utime(mp_obj_t path_in, mp_obj_t times_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_utime(path, times_in);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(os_utime_obj, os_utime);
 
-STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
+static const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_os) },
 
     { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
@@ -311,7 +291,7 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
+static MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
 const mp_obj_module_t os_module = {
     .base = { &mp_type_module },

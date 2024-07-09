@@ -28,7 +28,7 @@ args = parser.parse_args()
 defines = {}
 
 #
-REMOVE_UL_RE = re.compile("([0-9]+)UL")
+REMOVE_UL_RE = re.compile(r"([0-9]+)UL")
 
 
 def remove_UL(s):

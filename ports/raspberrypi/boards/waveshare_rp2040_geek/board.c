@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 #include "supervisor/board.h"
 
 
@@ -8,7 +14,6 @@
 
 #define DELAY 0x80
 
-fourwire_fourwire_obj_t board_display_obj;
 
 // display init sequence according to https://github.com/adafruit/Adafruit_CircuitPython_ST7789
 uint8_t display_init_sequence[] = {

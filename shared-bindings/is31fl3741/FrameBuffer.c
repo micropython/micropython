@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Mark Komus
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Mark Komus
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/obj.h"
 #include "py/objproperty.h"
@@ -71,7 +51,7 @@
 //|         :param bool scale: if True display is scaled down by 3 when displayed
 //|         :param bool gamma: if True apply gamma correction to all LEDs"""
 //|         ...
-STATIC mp_obj_t is31fl3741_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t is31fl3741_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_is31, ARG_width, ARG_height, ARG_mapping, ARG_framebuffer, ARG_scale, ARG_gamma };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_is31, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -131,12 +111,12 @@ STATIC mp_obj_t is31fl3741_framebuffer_make_new(const mp_obj_type_t *type, size_
 //|         IS31FL3741 instance.  After deinitialization, no further operations
 //|         may be performed."""
 //|         ...
-STATIC mp_obj_t is31fl3741_framebuffer_deinit(mp_obj_t self_in) {
+static mp_obj_t is31fl3741_framebuffer_deinit(mp_obj_t self_in) {
     is31fl3741_framebuffer_obj_t *self = (is31fl3741_framebuffer_obj_t *)self_in;
     common_hal_is31fl3741_framebuffer_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_framebuffer_deinit_obj, is31fl3741_framebuffer_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_framebuffer_deinit_obj, is31fl3741_framebuffer_deinit);
 
 static void check_for_deinit(is31fl3741_framebuffer_obj_t *self) {
     if (self->framebuffer == NULL) {
@@ -147,7 +127,7 @@ static void check_for_deinit(is31fl3741_framebuffer_obj_t *self) {
 //|     brightness: float
 //|     """In the current implementation, 0.0 turns the display off entirely
 //|     and any other value up to 1.0 turns the display on fully."""
-STATIC mp_obj_t is31fl3741_framebuffer_get_brightness(mp_obj_t self_in) {
+static mp_obj_t is31fl3741_framebuffer_get_brightness(mp_obj_t self_in) {
     is31fl3741_framebuffer_obj_t *self = (is31fl3741_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     uint8_t current = common_hal_is31fl3741_get_current(self->is31fl3741);
@@ -157,7 +137,7 @@ STATIC mp_obj_t is31fl3741_framebuffer_get_brightness(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_framebuffer_get_brightness_obj, is31fl3741_framebuffer_get_brightness);
 
-STATIC mp_obj_t is31fl3741_framebuffer_set_brightness(mp_obj_t self_in, mp_obj_t value_in) {
+static mp_obj_t is31fl3741_framebuffer_set_brightness(mp_obj_t self_in, mp_obj_t value_in) {
     is31fl3741_framebuffer_obj_t *self = (is31fl3741_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     mp_float_t brightness = mp_obj_get_float(value_in);
@@ -180,7 +160,7 @@ MP_PROPERTY_GETSET(is31fl3741_framebuffer_brightness_obj,
 //|         """Transmits the color data in the buffer to the pixels so that
 //|         they are shown."""
 //|         ...
-STATIC mp_obj_t is31fl3741_framebuffer_refresh(mp_obj_t self_in) {
+static mp_obj_t is31fl3741_framebuffer_refresh(mp_obj_t self_in) {
     is31fl3741_framebuffer_obj_t *self = (is31fl3741_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     common_hal_is31fl3741_framebuffer_refresh(self, 0);
@@ -190,7 +170,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_framebuffer_refresh_obj, is31fl3741_framebu
 
 //|     width: int
 //|     """The width of the display, in pixels"""
-STATIC mp_obj_t is31fl3741_framebuffer_get_width(mp_obj_t self_in) {
+static mp_obj_t is31fl3741_framebuffer_get_width(mp_obj_t self_in) {
     is31fl3741_framebuffer_obj_t *self = (is31fl3741_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_is31fl3741_framebuffer_get_width(self));
@@ -202,7 +182,7 @@ MP_PROPERTY_GETTER(is31fl3741_framebuffer_width_obj,
 //|     height: int
 //|     """The height of the display, in pixels"""
 //|
-STATIC mp_obj_t is31fl3741_framebuffer_get_height(mp_obj_t self_in) {
+static mp_obj_t is31fl3741_framebuffer_get_height(mp_obj_t self_in) {
     is31fl3741_framebuffer_obj_t *self = (is31fl3741_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_is31fl3741_framebuffer_get_height(self));
@@ -211,63 +191,63 @@ MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_framebuffer_get_height_obj, is31fl3741_fram
 MP_PROPERTY_GETTER(is31fl3741_framebuffer_height_obj,
     (mp_obj_t)&is31fl3741_framebuffer_get_height_obj);
 
-STATIC const mp_rom_map_elem_t is31fl3741_framebuffer_locals_dict_table[] = {
+static const mp_rom_map_elem_t is31fl3741_framebuffer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&is31fl3741_framebuffer_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&is31fl3741_framebuffer_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&is31fl3741_framebuffer_refresh_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&is31fl3741_framebuffer_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&is31fl3741_framebuffer_height_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(is31fl3741_framebuffer_locals_dict, is31fl3741_framebuffer_locals_dict_table);
+static MP_DEFINE_CONST_DICT(is31fl3741_framebuffer_locals_dict, is31fl3741_framebuffer_locals_dict_table);
 
-STATIC void is31fl3741_framebuffer_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
+static void is31fl3741_framebuffer_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
     is31fl3741_framebuffer_obj_t *self = (is31fl3741_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
 
     *bufinfo = self->bufinfo;
 }
 
-STATIC void is31fl3741_framebuffer_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
+static void is31fl3741_framebuffer_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
     common_hal_is31fl3741_framebuffer_refresh(self_in, dirty_row_bitmap);
 }
 
-STATIC void is31fl3741_framebuffer_deinit_proto(mp_obj_t self_in) {
+static void is31fl3741_framebuffer_deinit_proto(mp_obj_t self_in) {
     common_hal_is31fl3741_framebuffer_deinit(self_in);
 }
 
-STATIC float is31fl3741_framebuffer_get_brightness_proto(mp_obj_t self_in) {
+static float is31fl3741_framebuffer_get_brightness_proto(mp_obj_t self_in) {
     return common_hal_is31fl3741_framebuffer_get_paused(self_in) ? 0.0f : 1.0f;
 }
 
-STATIC bool is31fl3741_framebuffer_set_brightness_proto(mp_obj_t self_in, mp_float_t value) {
+static bool is31fl3741_framebuffer_set_brightness_proto(mp_obj_t self_in, mp_float_t value) {
     common_hal_is31fl3741_framebuffer_set_paused(self_in, value <= 0);
     return true;
 }
 
-STATIC int is31fl3741_framebuffer_get_width_proto(mp_obj_t self_in) {
+static int is31fl3741_framebuffer_get_width_proto(mp_obj_t self_in) {
     return common_hal_is31fl3741_framebuffer_get_width(self_in);
 }
 
-STATIC int is31fl3741_framebuffer_get_height_proto(mp_obj_t self_in) {
+static int is31fl3741_framebuffer_get_height_proto(mp_obj_t self_in) {
     return common_hal_is31fl3741_framebuffer_get_height(self_in);
 }
 
-STATIC int is31fl3741_framebuffer_get_color_depth_proto(mp_obj_t self_in) {
+static int is31fl3741_framebuffer_get_color_depth_proto(mp_obj_t self_in) {
     // The way displayio works depth is used to calculate bytes
     // We use an uint32_t for color already so setting to 24 causes
     // more changes required
     return 32;
 }
 
-STATIC int is31fl3741_framebuffer_get_bytes_per_cell_proto(mp_obj_t self_in) {
+static int is31fl3741_framebuffer_get_bytes_per_cell_proto(mp_obj_t self_in) {
     return 1;
 }
 
-STATIC int is31fl3741_framebuffer_get_native_frames_per_second_proto(mp_obj_t self_in) {
+static int is31fl3741_framebuffer_get_native_frames_per_second_proto(mp_obj_t self_in) {
     return 60; // This was just chosen may vary based on LEDs used?
 }
 
-STATIC const framebuffer_p_t is31fl3741_framebuffer_proto = {
+static const framebuffer_p_t is31fl3741_framebuffer_proto = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)
     .get_bufinfo = is31fl3741_framebuffer_get_bufinfo,
     .set_brightness = is31fl3741_framebuffer_set_brightness_proto,
@@ -281,7 +261,7 @@ STATIC const framebuffer_p_t is31fl3741_framebuffer_proto = {
     .deinit = is31fl3741_framebuffer_deinit_proto,
 };
 
-STATIC mp_int_t is31fl3741_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+static mp_int_t is31fl3741_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     is31fl3741_framebuffer_obj_t *self = (is31fl3741_framebuffer_obj_t *)self_in;
     // a readonly framebuffer would be unusual but not impossible
     if ((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {

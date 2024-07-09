@@ -1,29 +1,9 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Artyom Skrobov
- * Copyright (c) 2023 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Artyom Skrobov
+// SPDX-FileCopyrightText: Copyright (c) 2023 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdint.h>
 
@@ -67,7 +47,7 @@
 //|         :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit)
 //|         :param Optional[Envelope] envelope: An object that defines the loudness of a note over time. The default envelope, `None` provides no ramping, voices turn instantly on and off.
 //|         """
-STATIC mp_obj_t synthio_synthesizer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t synthio_synthesizer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_sample_rate, ARG_channel_count, ARG_waveform, ARG_envelope };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 11025} },
@@ -89,7 +69,7 @@ STATIC mp_obj_t synthio_synthesizer_make_new(const mp_obj_type_t *type, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void check_for_deinit(synthio_synthesizer_obj_t *self) {
+static void check_for_deinit(synthio_synthesizer_obj_t *self) {
     if (common_hal_synthio_synthesizer_deinited(self)) {
         raise_deinited_error();
     }
@@ -101,26 +81,26 @@ STATIC void check_for_deinit(synthio_synthesizer_obj_t *self) {
 //|         Pressing a note that was already pressed has no effect.
 //|
 //|         :param NoteOrNoteSequence press: Any sequence of notes."""
-STATIC mp_obj_t synthio_synthesizer_press(mp_obj_t self_in, mp_obj_t press) {
+static mp_obj_t synthio_synthesizer_press(mp_obj_t self_in, mp_obj_t press) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     common_hal_synthio_synthesizer_press(self, press);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_press_obj, synthio_synthesizer_press);
+static MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_press_obj, synthio_synthesizer_press);
 //|     def release(self, /, release: NoteOrNoteSequence = ()) -> None:
 //|         """Turn some notes off.
 //|
 //|         Releasing a note that was already released has no effect.
 //|
 //|         :param NoteOrNoteSequence release: Any sequence of notes."""
-STATIC mp_obj_t synthio_synthesizer_release(mp_obj_t self_in, mp_obj_t release) {
+static mp_obj_t synthio_synthesizer_release(mp_obj_t self_in, mp_obj_t release) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     common_hal_synthio_synthesizer_release(self, release);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_release_obj, synthio_synthesizer_release);
+static MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_release_obj, synthio_synthesizer_release);
 
 //|     def change(
 //|         self,
@@ -147,7 +127,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_release_obj, synthio_synthe
 //|
 //|         Note: for compatibility, ``release_then_press`` may be used as an alias
 //|         for this function. This compatibility name will be removed in 9.0."""
-STATIC mp_obj_t synthio_synthesizer_change(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t synthio_synthesizer_change(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_release, ARG_press, ARG_retrigger };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_release, MP_ARG_OBJ, {.u_obj = mp_const_empty_tuple } },
@@ -165,7 +145,7 @@ STATIC mp_obj_t synthio_synthesizer_change(mp_uint_t n_args, const mp_obj_t *pos
     common_hal_synthio_synthesizer_retrigger(self, args[ARG_retrigger].u_obj);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_change_obj, 1, synthio_synthesizer_change);
+static MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_change_obj, 1, synthio_synthesizer_change);
 
 //
 //|     def release_all_then_press(self, /, press: NoteOrNoteSequence) -> None:
@@ -175,35 +155,35 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_change_obj, 1, synthio_syn
 //|         attack phase with an initial amplitude of 0.
 //|
 //|         :param NoteOrNoteSequence press: Any sequence of notes."""
-STATIC mp_obj_t synthio_synthesizer_release_all_then_press(mp_obj_t self_in, mp_obj_t press) {
+static mp_obj_t synthio_synthesizer_release_all_then_press(mp_obj_t self_in, mp_obj_t press) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     common_hal_synthio_synthesizer_release_all(self);
     common_hal_synthio_synthesizer_press(self, press);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_release_all_then_press_obj, synthio_synthesizer_release_all_then_press);
+static MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_release_all_then_press_obj, synthio_synthesizer_release_all_then_press);
 
 //
 //|     def release_all(self) -> None:
 //|         """Turn any currently-playing notes off"""
-STATIC mp_obj_t synthio_synthesizer_release_all(mp_obj_t self_in) {
+static mp_obj_t synthio_synthesizer_release_all(mp_obj_t self_in) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     common_hal_synthio_synthesizer_release_all(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_release_all_obj, synthio_synthesizer_release_all);
+static MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_release_all_obj, synthio_synthesizer_release_all);
 
 //|     def deinit(self) -> None:
 //|         """Deinitialises the object and releases any memory resources for reuse."""
 //|         ...
-STATIC mp_obj_t synthio_synthesizer_deinit(mp_obj_t self_in) {
+static mp_obj_t synthio_synthesizer_deinit(mp_obj_t self_in) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_synthio_synthesizer_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_deinit_obj, synthio_synthesizer_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_deinit_obj, synthio_synthesizer_deinit);
 
 //|     def __enter__(self) -> Synthesizer:
 //|         """No-op used by Context Managers."""
@@ -214,23 +194,23 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_deinit_obj, synthio_synthes
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t synthio_synthesizer_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t synthio_synthesizer_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_synthio_synthesizer_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(synthio_synthesizer___exit___obj, 4, 4, synthio_synthesizer_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(synthio_synthesizer___exit___obj, 4, 4, synthio_synthesizer_obj___exit__);
 
 //|     envelope: Optional[Envelope]
 //|     """The envelope to apply to all notes. `None`, the default envelope, instantly turns notes on and off. The envelope may be changed dynamically, but it affects all notes (even currently playing notes)"""
-STATIC mp_obj_t synthio_synthesizer_obj_get_envelope(mp_obj_t self_in) {
+static mp_obj_t synthio_synthesizer_obj_get_envelope(mp_obj_t self_in) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return synthio_synth_envelope_get(&self->synth);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_get_envelope_obj, synthio_synthesizer_obj_get_envelope);
 
-STATIC mp_obj_t synthio_synthesizer_obj_set_envelope(mp_obj_t self_in, mp_obj_t envelope) {
+static mp_obj_t synthio_synthesizer_obj_set_envelope(mp_obj_t self_in, mp_obj_t envelope) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     synthio_synth_envelope_set(&self->synth, envelope);
@@ -244,7 +224,7 @@ MP_PROPERTY_GETSET(synthio_synthesizer_envelope_obj,
 
 //|     sample_rate: int
 //|     """32 bit value that tells how quickly samples are played in Hertz (cycles per second)."""
-STATIC mp_obj_t synthio_synthesizer_obj_get_sample_rate(mp_obj_t self_in) {
+static mp_obj_t synthio_synthesizer_obj_get_sample_rate(mp_obj_t self_in) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_synthio_synthesizer_get_sample_rate(self));
@@ -259,7 +239,7 @@ MP_PROPERTY_GETTER(synthio_synthesizer_sample_rate_obj,
 //|
 //|     This does not include notes in the release phase of the envelope."""
 //|
-STATIC mp_obj_t synthio_synthesizer_obj_get_pressed(mp_obj_t self_in) {
+static mp_obj_t synthio_synthesizer_obj_get_pressed(mp_obj_t self_in) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return common_hal_synthio_synthesizer_get_pressed_notes(self);
@@ -275,7 +255,7 @@ MP_PROPERTY_GETTER(synthio_synthesizer_pressed_obj,
 //|         If the note is currently playing (including in the release phase), the returned value gives the current envelope state and the current envelope value.
 //|
 //|         If the note is not playing on this synthesizer, returns the tuple ``(None, 0.0)``."""
-STATIC mp_obj_t synthio_synthesizer_obj_note_info(mp_obj_t self_in, mp_obj_t note) {
+static mp_obj_t synthio_synthesizer_obj_note_info(mp_obj_t self_in, mp_obj_t note) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     mp_float_t vol = MICROPY_FLOAT_CONST(0.0);
@@ -293,7 +273,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_note_info_obj, synthio_synthesizer
 //|
 //|     This property is read-only but its contents may be modified by e.g., calling ``synth.blocks.append()`` or ``synth.blocks.remove()``. It is initially an empty list."""
 //|
-STATIC mp_obj_t synthio_synthesizer_obj_get_blocks(mp_obj_t self_in) {
+static mp_obj_t synthio_synthesizer_obj_get_blocks(mp_obj_t self_in) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return common_hal_synthio_synthesizer_get_blocks(self);
@@ -327,7 +307,7 @@ static const mp_arg_t passfilter_properties[] = {
     { MP_QSTR_Q, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL } },
 };
 
-STATIC mp_obj_t synthio_synthesizer_lpf(size_t n_pos, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t synthio_synthesizer_lpf(size_t n_pos, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[MP_ARRAY_SIZE(passfilter_properties)];
 
     mp_obj_t self_in = pos_args[0];
@@ -359,7 +339,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_lpf_fun_obj, 1, synthio_synthesiz
 //|         ``q_factor``, called ``Q`` in the cookbook.  Controls how peaked the response will be at the cutoff frequency. A large value makes the response more peaked.
 //|         """
 
-STATIC mp_obj_t synthio_synthesizer_hpf(size_t n_pos, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t synthio_synthesizer_hpf(size_t n_pos, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[MP_ARRAY_SIZE(passfilter_properties)];
 
     mp_obj_t self_in = pos_args[0];
@@ -394,7 +374,7 @@ STATIC mp_obj_t synthio_synthesizer_hpf(size_t n_pos, const mp_obj_t *pos_args, 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_hpf_fun_obj, 1, synthio_synthesizer_hpf);
 
-STATIC mp_obj_t synthio_synthesizer_bpf(size_t n_pos, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t synthio_synthesizer_bpf(size_t n_pos, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[MP_ARRAY_SIZE(passfilter_properties)];
 
     mp_obj_t self_in = pos_args[0];
@@ -415,7 +395,7 @@ STATIC mp_obj_t synthio_synthesizer_bpf(size_t n_pos, const mp_obj_t *pos_args, 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_bpf_fun_obj, 1, synthio_synthesizer_bpf);
 
-STATIC const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
+static const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_press), MP_ROM_PTR(&synthio_synthesizer_press_obj) },
     { MP_ROM_QSTR(MP_QSTR_release), MP_ROM_PTR(&synthio_synthesizer_release_obj) },
@@ -438,9 +418,9 @@ STATIC const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_note_info), MP_ROM_PTR(&synthio_synthesizer_note_info_obj) },
     { MP_ROM_QSTR(MP_QSTR_blocks), MP_ROM_PTR(&synthio_synthesizer_blocks_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(synthio_synthesizer_locals_dict, synthio_synthesizer_locals_dict_table);
+static MP_DEFINE_CONST_DICT(synthio_synthesizer_locals_dict, synthio_synthesizer_locals_dict_table);
 
-STATIC const audiosample_p_t synthio_synthesizer_proto = {
+static const audiosample_p_t synthio_synthesizer_proto = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_audiosample)
     .sample_rate = (audiosample_sample_rate_fun)common_hal_synthio_synthesizer_get_sample_rate,
     .bits_per_sample = (audiosample_bits_per_sample_fun)common_hal_synthio_synthesizer_get_bits_per_sample,

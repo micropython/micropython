@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
 #include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
 
@@ -8,9 +14,9 @@ static const char i2c_bus_init_sequence[] = {
     2, 2, 0, // disable all output inversion
     0, // trailing NUL for python bytes() representation
 };
-STATIC MP_DEFINE_BYTES_OBJ(i2c_init_byte_obj, i2c_bus_init_sequence);
+static MP_DEFINE_BYTES_OBJ(i2c_init_byte_obj, i2c_bus_init_sequence);
 
-STATIC const mp_rom_map_elem_t tft_io_expander_table[] = {
+static const mp_rom_map_elem_t tft_io_expander_table[] = {
     { MP_ROM_QSTR(MP_QSTR_i2c_address), MP_ROM_INT(0x3f)},
     { MP_ROM_QSTR(MP_QSTR_gpio_address), MP_ROM_INT(1)},
     { MP_ROM_QSTR(MP_QSTR_gpio_data_len), MP_ROM_INT(1)},
@@ -23,7 +29,7 @@ STATIC const mp_rom_map_elem_t tft_io_expander_table[] = {
 };
 MP_DEFINE_CONST_DICT(tft_io_expander_dict, tft_io_expander_table);
 
-STATIC const mp_rom_obj_tuple_t tft_r_pins = {
+static const mp_rom_obj_tuple_t tft_r_pins = {
     {&mp_type_tuple},
     5,
     {
@@ -35,7 +41,7 @@ STATIC const mp_rom_obj_tuple_t tft_r_pins = {
     }
 };
 
-STATIC const mp_rom_obj_tuple_t tft_g_pins = {
+static const mp_rom_obj_tuple_t tft_g_pins = {
     {&mp_type_tuple},
     6,
     {
@@ -48,7 +54,7 @@ STATIC const mp_rom_obj_tuple_t tft_g_pins = {
     }
 };
 
-STATIC const mp_rom_obj_tuple_t tft_b_pins = {
+static const mp_rom_obj_tuple_t tft_b_pins = {
     {&mp_type_tuple},
     5,
     {
@@ -60,7 +66,7 @@ STATIC const mp_rom_obj_tuple_t tft_b_pins = {
     }
 };
 
-STATIC const mp_rom_map_elem_t tft_table[] = {
+static const mp_rom_map_elem_t tft_table[] = {
     { MP_ROM_QSTR(MP_QSTR_de), MP_ROM_PTR(&pin_GPIO2) },
     { MP_ROM_QSTR(MP_QSTR_vsync), MP_ROM_PTR(&pin_GPIO42) },
     { MP_ROM_QSTR(MP_QSTR_hsync), MP_ROM_PTR(&pin_GPIO41) },
@@ -71,7 +77,7 @@ STATIC const mp_rom_map_elem_t tft_table[] = {
 };
 MP_DEFINE_CONST_DICT(tft_dict, tft_table);
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     { MP_ROM_QSTR(MP_QSTR_TFT_PINS), MP_ROM_PTR(&tft_dict) },

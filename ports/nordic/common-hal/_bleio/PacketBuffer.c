@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019-2020 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019-2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 #include <stdio.h>
@@ -42,7 +22,7 @@
 
 #include "supervisor/shared/bluetooth/serial.h"
 
-STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uint16_t len) {
+static void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uint16_t len) {
     if (len + sizeof(uint16_t) > ringbuf_size(&self->ringbuf)) {
         // This shouldn't happen but can if our buffer size was much smaller than
         // the writes the client actually makes.
@@ -65,7 +45,7 @@ STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uin
     sd_nvic_critical_region_exit(is_nested_critical_region);
 }
 
-STATIC uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
+static uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
     // Queue up the next outgoing buffer. We use two, one that has been passed to the SD for
     // transmission (when packet_queued is true) and the other is `pending` and can still be
     // modified. By primarily appending to the `pending` buffer we can reduce the protocol overhead
@@ -107,7 +87,7 @@ STATIC uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
     return NRF_SUCCESS;
 }
 
-STATIC bool packet_buffer_on_ble_client_evt(ble_evt_t *ble_evt, void *param) {
+static bool packet_buffer_on_ble_client_evt(ble_evt_t *ble_evt, void *param) {
     const uint16_t evt_id = ble_evt->header.evt_id;
     bleio_packet_buffer_obj_t *self = (bleio_packet_buffer_obj_t *)param;
     if (evt_id == BLE_GAP_EVT_DISCONNECTED && self->conn_handle == ble_evt->evt.gap_evt.conn_handle) {
@@ -148,7 +128,7 @@ STATIC bool packet_buffer_on_ble_client_evt(ble_evt_t *ble_evt, void *param) {
     return true;
 }
 
-STATIC bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
+static bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
     bleio_packet_buffer_obj_t *self = (bleio_packet_buffer_obj_t *)param;
     switch (ble_evt->header.evt_id) {
         case BLE_GATTS_EVT_WRITE: {
@@ -214,7 +194,7 @@ void _common_hal_bleio_packet_buffer_construct(
     bleio_packet_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic,
     uint32_t *incoming_buffer, size_t incoming_buffer_size,
     uint32_t *outgoing_buffer1, uint32_t *outgoing_buffer2, size_t max_packet_size,
-    void *static_handler_entry) {
+    ble_event_handler_t *static_handler_entry) {
 
     self->characteristic = characteristic;
     self->client = self->characteristic->service->is_remote;

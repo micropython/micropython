@@ -1,28 +1,8 @@
-/*
- * This file is part of the CircuitPython project, https://github.com/adafruit/circuitpython
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Rose Hooper
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Rose Hooper
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/obj.h"
 #include "py/objarray.h"
@@ -81,7 +61,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //|         :param ~circuitpython_typing.ReadableBuffer trailer: Sequence of bytes to always send after pixel values.
 //|         """
 //|         ...
-STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_size, ARG_byteorder, ARG_brightness, ARG_auto_write, ARG_header, ARG_trailer };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_size, MP_ARG_REQUIRED | MP_ARG_INT },
@@ -165,7 +145,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 
 //|     bpp: int
 //|     """The number of bytes per pixel in the buffer (read-only)"""
-STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_bpp(mp_obj_t self_in) {
+static mp_obj_t pixelbuf_pixelbuf_obj_get_bpp(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_adafruit_pixelbuf_pixelbuf_get_bpp(self_in));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_bpp_obj, pixelbuf_pixelbuf_obj_get_bpp);
@@ -179,13 +159,13 @@ MP_PROPERTY_GETTER(pixelbuf_pixelbuf_bpp_obj,
 //|
 //|     When brightness is less than 1.0, a second buffer will be used to store the color values
 //|     before they are adjusted for brightness."""
-STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_brightness(mp_obj_t self_in) {
+static mp_obj_t pixelbuf_pixelbuf_obj_get_brightness(mp_obj_t self_in) {
     return mp_obj_new_float(common_hal_adafruit_pixelbuf_pixelbuf_get_brightness(self_in));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_brightness_obj, pixelbuf_pixelbuf_obj_get_brightness);
 
 
-STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_brightness(mp_obj_t self_in, mp_obj_t value) {
+static mp_obj_t pixelbuf_pixelbuf_obj_set_brightness(mp_obj_t self_in, mp_obj_t value) {
     mp_float_t brightness = mp_obj_get_float(value);
     if (brightness > 1) {
         brightness = 1;
@@ -203,13 +183,13 @@ MP_PROPERTY_GETSET(pixelbuf_pixelbuf_brightness_obj,
 
 //|     auto_write: bool
 //|     """Whether to automatically write the pixels after each update."""
-STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_auto_write(mp_obj_t self_in) {
+static mp_obj_t pixelbuf_pixelbuf_obj_get_auto_write(mp_obj_t self_in) {
     return mp_obj_new_bool(common_hal_adafruit_pixelbuf_pixelbuf_get_auto_write(self_in));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_auto_write_obj, pixelbuf_pixelbuf_obj_get_auto_write);
 
 
-STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_auto_write(mp_obj_t self_in, mp_obj_t value) {
+static mp_obj_t pixelbuf_pixelbuf_obj_set_auto_write(mp_obj_t self_in, mp_obj_t value) {
     common_hal_adafruit_pixelbuf_pixelbuf_set_auto_write(self_in, mp_obj_is_true(value));
     return mp_const_none;
 }
@@ -221,7 +201,7 @@ MP_PROPERTY_GETSET(pixelbuf_pixelbuf_auto_write_obj,
 
 //|     byteorder: str
 //|     """byteorder string for the buffer (read-only)"""
-STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_byteorder(mp_obj_t self_in) {
+static mp_obj_t pixelbuf_pixelbuf_obj_get_byteorder(mp_obj_t self_in) {
     return common_hal_adafruit_pixelbuf_pixelbuf_get_byteorder_string(self_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_byteorder_str, pixelbuf_pixelbuf_obj_get_byteorder);
@@ -229,7 +209,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_byteorder_str, pixelbuf_pixelbuf
 MP_PROPERTY_GETTER(pixelbuf_pixelbuf_byteorder_str,
     (mp_obj_t)&pixelbuf_pixelbuf_get_byteorder_str);
 
-STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+static mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL:
             return mp_const_true;
@@ -245,22 +225,22 @@ STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|         when `auto_write` is True."""
 //|         ...
 
-STATIC mp_obj_t pixelbuf_pixelbuf_show(mp_obj_t self_in) {
+static mp_obj_t pixelbuf_pixelbuf_show(mp_obj_t self_in) {
     common_hal_adafruit_pixelbuf_pixelbuf_show(self_in);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_show);
+static MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_show);
 
 //|     def fill(self, color: PixelType) -> None:
 //|         """Fills the given pixelbuf with the given color."""
 //|         ...
 
-STATIC mp_obj_t pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t value) {
+static mp_obj_t pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t value) {
     common_hal_adafruit_pixelbuf_pixelbuf_fill(self_in, value);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_fill);
+static MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_fill);
 
 //|     @overload
 //|     def __getitem__(self, index: slice) -> PixelReturnSequence:
@@ -287,7 +267,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_f
 //|         is used instead when the red, green, and blue values are the same."""
 //|         ...
 //|
-STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+static mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete item
         // slice deletion
@@ -358,7 +338,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
     }
 }
 
-STATIC const mp_rom_map_elem_t pixelbuf_pixelbuf_locals_dict_table[] = {
+static const mp_rom_map_elem_t pixelbuf_pixelbuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_auto_write), MP_ROM_PTR(&pixelbuf_pixelbuf_auto_write_obj)},
     { MP_ROM_QSTR(MP_QSTR_bpp), MP_ROM_PTR(&pixelbuf_pixelbuf_bpp_obj)},
     { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&pixelbuf_pixelbuf_brightness_obj)},
@@ -367,7 +347,7 @@ STATIC const mp_rom_map_elem_t pixelbuf_pixelbuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&pixelbuf_pixelbuf_fill_obj)},
 };
 
-STATIC MP_DEFINE_CONST_DICT(pixelbuf_pixelbuf_locals_dict, pixelbuf_pixelbuf_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pixelbuf_pixelbuf_locals_dict, pixelbuf_pixelbuf_locals_dict_table);
 
 
 MP_DEFINE_CONST_OBJ_TYPE(

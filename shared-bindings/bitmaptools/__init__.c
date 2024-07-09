@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Kevin Matocha
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Kevin Matocha
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/Palette.h"
@@ -44,7 +24,7 @@
 #endif
 
 // This assigns to [0] and [2] because the order is x1, y1, x2, y2
-STATIC void bitmaptools_validate_coord_range(int16_t out[3], const mp_arg_val_t in[3], int lim, const qstr what[2]) {
+static void bitmaptools_validate_coord_range(int16_t out[3], const mp_arg_val_t in[3], int lim, const qstr what[2]) {
     out[0] = mp_arg_validate_int_range(mp_arg_validate_type_int(in[0].u_obj, what[0]), 0, lim, what[0]);
     if (in[2].u_obj == mp_const_none) {
         out[2] = lim;
@@ -73,7 +53,7 @@ bitmaptools_rect_t bitmaptools_validate_coord_range_pair(const mp_arg_val_t in[4
 //| """
 //|
 
-STATIC int16_t validate_point(mp_obj_t point, int16_t default_value) {
+static int16_t validate_point(mp_obj_t point, int16_t default_value) {
     // Checks if point is None and returns default_value, otherwise decodes integer value
     if (point == mp_const_none) {
         return default_value;
@@ -81,7 +61,7 @@ STATIC int16_t validate_point(mp_obj_t point, int16_t default_value) {
     return mp_obj_get_int(point);
 }
 
-STATIC void extract_tuple(mp_obj_t xy_tuple, int16_t *x, int16_t *y, int16_t x_default, int16_t y_default) {
+static void extract_tuple(mp_obj_t xy_tuple, int16_t *x, int16_t *y, int16_t x_default, int16_t y_default) {
     // Helper function for rotozoom
     // Extract x,y values from a tuple or default if None
     if (xy_tuple == mp_const_none) {
@@ -97,7 +77,7 @@ STATIC void extract_tuple(mp_obj_t xy_tuple, int16_t *x, int16_t *y, int16_t x_d
     }
 }
 
-STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tuple, int16_t *clip0_x, int16_t *clip0_y,
+static void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tuple, int16_t *clip0_x, int16_t *clip0_y,
     mp_obj_t clip1_tuple, int16_t *clip1_x, int16_t *clip1_y) {
     // Helper function for rotozoom
     // 1. Extract the clip x,y points from the two clip tuples
@@ -196,7 +176,7 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 //|            set to None to copy all pixels"""
 //|     ...
 //|
-STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_source_bitmap,
           ARG_ox, ARG_oy, ARG_dest_clip0, ARG_dest_clip1,
           ARG_px, ARG_py, ARG_source_clip0, ARG_source_clip1,
@@ -311,7 +291,7 @@ MAKE_ENUM_MAP(bitmaptools_blendmode) {
     MAKE_ENUM_MAP_ENTRY(bitmaptools_blendmode, Normal),
     MAKE_ENUM_MAP_ENTRY(bitmaptools_blendmode, Screen),
 };
-STATIC MP_DEFINE_CONST_DICT(bitmaptools_blendmode_locals_dict, bitmaptools_blendmode_locals_table);
+static MP_DEFINE_CONST_DICT(bitmaptools_blendmode_locals_dict, bitmaptools_blendmode_locals_table);
 
 MAKE_PRINTER(bitmaptools, bitmaptools_blendmode);
 MAKE_ENUM_TYPE(bitmaptools, BlendMode, bitmaptools_blendmode);
@@ -348,7 +328,7 @@ MAKE_ENUM_TYPE(bitmaptools, BlendMode, bitmaptools_blendmode);
 //|     For the RGB colorspaces, they must have a bits-per-value of 16."""
 //|
 
-STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_source_bitmap_1, ARG_source_bitmap_2, ARG_colorspace, ARG_factor_1, ARG_factor_2, ARG_blendmode, ARG_skip_source1_index, ARG_skip_source2_index};
 
     static const mp_arg_t allowed_args[] = {
@@ -449,7 +429,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_alphablend_obj, 0, bitmaptools_alphablend
 //|            fill region in the destination bitmap"""
 //|     ...
 //|
-STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARGS_X1_Y1_X2_Y2, ARG_value};
 
     static const mp_arg_t allowed_args[] = {
@@ -497,7 +477,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_fill_region_obj, 0, bitmaptools_obj_fill_
 //|            value color in the enclosed area in the destination bitmap"""
 //|     ...
 //|
-STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_fill_color_value, ARG_replaced_color_value};
 
     static const mp_arg_t allowed_args[] = {
@@ -557,7 +537,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_boundary_fill_obj, 0, bitmaptools_obj_bou
 //|            line in the destination bitmap"""
 //|     ...
 //|
-STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
 
     static const mp_arg_t allowed_args[] = {
@@ -643,7 +623,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_li
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t bitmaptools_obj_draw_polygon(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmaptools_obj_draw_polygon(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_xs, ARG_ys, ARG_value, ARG_close};
 
     static const mp_arg_t allowed_args[] = {
@@ -725,7 +705,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_polygon_obj, 0, bitmaptools_obj_draw
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_data, ARGS_X1_Y1_X2_Y2, ARG_skip_index };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -789,7 +769,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_arrayblit_obj, 0, bitmaptools_arrayblit);
 //|     ...
 //|
 
-STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_file, ARG_bits_per_pixel, ARG_element_size, ARG_reverse_pixels_in_element, ARG_swap_bytes_in_element, ARG_reverse_rows };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -857,7 +837,7 @@ MAKE_ENUM_MAP(bitmaptools_dither_algorithm) {
     MAKE_ENUM_MAP_ENTRY(dither_algorithm, Atkinson),
     MAKE_ENUM_MAP_ENTRY(dither_algorithm, FloydStenberg),
 };
-STATIC MP_DEFINE_CONST_DICT(bitmaptools_dither_algorithm_locals_dict, bitmaptools_dither_algorithm_locals_table);
+static MP_DEFINE_CONST_DICT(bitmaptools_dither_algorithm_locals_dict, bitmaptools_dither_algorithm_locals_table);
 
 MAKE_PRINTER(bitmaptools, bitmaptools_dither_algorithm);
 
@@ -878,7 +858,7 @@ MAKE_ENUM_TYPE(bitmaptools, DitherAlgorithm, bitmaptools_dither_algorithm);
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t bitmaptools_dither(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmaptools_dither(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_dest_bitmap, ARG_source_bitmap, ARG_source_colorspace, ARG_algorithm };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -971,7 +951,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_dither_obj, 0, bitmaptools_dither);
 //|
 //|     ...
 //|
-STATIC mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_radius, ARG_value};
 
     static const mp_arg_t allowed_args[] = {
@@ -1041,7 +1021,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_circle_obj, 0, bitmaptools_obj_draw_
 //|                             by the pixels from the source"""
 //|     ...
 //|
-STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_destination, ARG_source, ARG_x, ARG_y, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_skip_source_index, ARG_skip_dest_index};
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -1103,7 +1083,7 @@ STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_blit_obj, 1, bitmaptools_obj_blit);
 
 
-STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
+static const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmaptools) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&bitmaptools_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_rotozoom), MP_ROM_PTR(&bitmaptools_rotozoom_obj) },
@@ -1119,7 +1099,7 @@ STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_BlendMode), MP_ROM_PTR(&bitmaptools_blendmode_type) },
     { MP_ROM_QSTR(MP_QSTR_DitherAlgorithm), MP_ROM_PTR(&bitmaptools_dither_algorithm_type) },
 };
-STATIC MP_DEFINE_CONST_DICT(bitmaptools_module_globals, bitmaptools_module_globals_table);
+static MP_DEFINE_CONST_DICT(bitmaptools_module_globals, bitmaptools_module_globals_table);
 
 const mp_obj_module_t bitmaptools_module = {
     .base = {&mp_type_module },

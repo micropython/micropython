@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/epaperdisplay/EPaperDisplay.h"
 
@@ -127,7 +107,7 @@
 //|         :param bool address_little_endian: Send the least significant byte (not bit) of multi-byte addresses first. Ignored when ram is addressed with one byte
 //|         """
 //|         ...
-STATIC mp_obj_t epaperdisplay_epaperdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t epaperdisplay_epaperdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_display_bus, ARG_start_sequence, ARG_stop_sequence, ARG_width, ARG_height,
            ARG_ram_width, ARG_ram_height, ARG_colstart, ARG_rowstart, ARG_rotation,
            ARG_set_column_window_command, ARG_set_row_window_command, ARG_set_current_column_command,
@@ -247,7 +227,7 @@ static epaperdisplay_epaperdisplay_obj_t *native_display(mp_obj_t display_obj) {
 }
 
 // Undocumented show() implementation with a friendly error message.
-STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
+static mp_obj_t epaperdisplay_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     mp_raise_AttributeError(MP_ERROR_TEXT(".show(x) removed. Use .root_group = x"));
     return mp_const_none;
 }
@@ -258,7 +238,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(epaperdisplay_epaperdisplay_show_obj, epaperdisplay_ep
 //|     ) -> None:
 //|         """Updates the ``start_sequence`` and ``seconds_per_frame`` parameters to enable
 //|         varying the refresh mode of the display."""
-STATIC mp_obj_t epaperdisplay_epaperdisplay_update_refresh_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t epaperdisplay_epaperdisplay_update_refresh_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_start_sequence, ARG_seconds_per_frame };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_start_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -283,7 +263,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(epaperdisplay_epaperdisplay_update_refresh_mode_obj, 
 //|         """Refreshes the display immediately or raises an exception if too soon. Use
 //|         ``time.sleep(display.time_to_refresh)`` to sleep until a refresh can occur."""
 //|         ...
-STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_refresh(mp_obj_t self_in) {
+static mp_obj_t epaperdisplay_epaperdisplay_obj_refresh(mp_obj_t self_in) {
     epaperdisplay_epaperdisplay_obj_t *self = native_display(self_in);
     bool ok = common_hal_epaperdisplay_epaperdisplay_refresh(self);
     if (!ok) {
@@ -295,11 +275,13 @@ MP_DEFINE_CONST_FUN_OBJ_1(epaperdisplay_epaperdisplay_refresh_obj, epaperdisplay
 
 //|     time_to_refresh: float
 //|     """Time, in fractional seconds, until the ePaper display can be refreshed."""
-STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_get_time_to_refresh(mp_obj_t self_in) {
+static mp_obj_t epaperdisplay_epaperdisplay_obj_get_time_to_refresh(mp_obj_t self_in) {
     epaperdisplay_epaperdisplay_obj_t *self = native_display(self_in);
-    // band aid fix for <https://github.com/adafruit/circuitpython/issues/9129>
-    // sleeping for display.time_to_refresh might not be long enough due to rounding error (?)
     uint32_t refresh_ms = common_hal_epaperdisplay_epaperdisplay_get_time_to_refresh(self);
+    if (refresh_ms == 0) {
+        return mp_obj_new_float(0.0);
+    }
+    // Make sure non-zero values are always more than zero (the float conversion may round down.)
     return mp_obj_new_float((refresh_ms + 100) / 1000.0);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(epaperdisplay_epaperdisplay_get_time_to_refresh_obj, epaperdisplay_epaperdisplay_obj_get_time_to_refresh);
@@ -310,7 +292,7 @@ MP_PROPERTY_GETTER(epaperdisplay_epaperdisplay_time_to_refresh_obj,
 //|     busy: bool
 //|     """True when the display is refreshing. This uses the ``busy_pin`` when available or the
 //|        ``refresh_time`` otherwise."""
-STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_get_busy(mp_obj_t self_in) {
+static mp_obj_t epaperdisplay_epaperdisplay_obj_get_busy(mp_obj_t self_in) {
     epaperdisplay_epaperdisplay_obj_t *self = native_display(self_in);
     return mp_obj_new_bool(common_hal_epaperdisplay_epaperdisplay_get_busy(self));
 }
@@ -321,7 +303,7 @@ MP_PROPERTY_GETTER(epaperdisplay_epaperdisplay_busy_obj,
 
 //|     width: int
 //|     """Gets the width of the display in pixels"""
-STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_get_width(mp_obj_t self_in) {
+static mp_obj_t epaperdisplay_epaperdisplay_obj_get_width(mp_obj_t self_in) {
     epaperdisplay_epaperdisplay_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_epaperdisplay_epaperdisplay_get_width(self));
 }
@@ -332,7 +314,7 @@ MP_PROPERTY_GETTER(epaperdisplay_epaperdisplay_width_obj,
 
 //|     height: int
 //|     """Gets the height of the display in pixels"""
-STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_get_height(mp_obj_t self_in) {
+static mp_obj_t epaperdisplay_epaperdisplay_obj_get_height(mp_obj_t self_in) {
     epaperdisplay_epaperdisplay_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_epaperdisplay_epaperdisplay_get_height(self));
 }
@@ -343,12 +325,12 @@ MP_PROPERTY_GETTER(epaperdisplay_epaperdisplay_height_obj,
 
 //|     rotation: int
 //|     """The rotation of the display as an int in degrees."""
-STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_get_rotation(mp_obj_t self_in) {
+static mp_obj_t epaperdisplay_epaperdisplay_obj_get_rotation(mp_obj_t self_in) {
     epaperdisplay_epaperdisplay_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_epaperdisplay_epaperdisplay_get_rotation(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(epaperdisplay_epaperdisplay_get_rotation_obj, epaperdisplay_epaperdisplay_obj_get_rotation);
-STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_set_rotation(mp_obj_t self_in, mp_obj_t value) {
+static mp_obj_t epaperdisplay_epaperdisplay_obj_set_rotation(mp_obj_t self_in, mp_obj_t value) {
     epaperdisplay_epaperdisplay_obj_t *self = native_display(self_in);
     common_hal_epaperdisplay_epaperdisplay_set_rotation(self, mp_obj_get_int(value));
     return mp_const_none;
@@ -363,7 +345,7 @@ MP_PROPERTY_GETSET(epaperdisplay_epaperdisplay_rotation_obj,
 //|     bus: _DisplayBus
 //|     """The bus being used by the display"""
 //|
-STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_get_bus(mp_obj_t self_in) {
+static mp_obj_t epaperdisplay_epaperdisplay_obj_get_bus(mp_obj_t self_in) {
     epaperdisplay_epaperdisplay_obj_t *self = native_display(self_in);
     return common_hal_epaperdisplay_epaperdisplay_get_bus(self);
 }
@@ -378,13 +360,13 @@ MP_PROPERTY_GETTER(epaperdisplay_epaperdisplay_bus_obj,
 //|     If the root group is set to ``None``, no output will be shown.
 //|     """
 //|
-STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_get_root_group(mp_obj_t self_in) {
+static mp_obj_t epaperdisplay_epaperdisplay_obj_get_root_group(mp_obj_t self_in) {
     epaperdisplay_epaperdisplay_obj_t *self = native_display(self_in);
     return common_hal_epaperdisplay_epaperdisplay_get_root_group(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(epaperdisplay_epaperdisplay_get_root_group_obj, epaperdisplay_epaperdisplay_obj_get_root_group);
 
-STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_set_root_group(mp_obj_t self_in, mp_obj_t group_in) {
+static mp_obj_t epaperdisplay_epaperdisplay_obj_set_root_group(mp_obj_t self_in, mp_obj_t group_in) {
     epaperdisplay_epaperdisplay_obj_t *self = native_display(self_in);
     displayio_group_t *group = NULL;
     if (group_in != mp_const_none) {
@@ -400,7 +382,7 @@ MP_PROPERTY_GETSET(epaperdisplay_epaperdisplay_root_group_obj,
     (mp_obj_t)&epaperdisplay_epaperdisplay_get_root_group_obj,
     (mp_obj_t)&epaperdisplay_epaperdisplay_set_root_group_obj);
 
-STATIC const mp_rom_map_elem_t epaperdisplay_epaperdisplay_locals_dict_table[] = {
+static const mp_rom_map_elem_t epaperdisplay_epaperdisplay_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&epaperdisplay_epaperdisplay_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_update_refresh_mode), MP_ROM_PTR(&epaperdisplay_epaperdisplay_update_refresh_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&epaperdisplay_epaperdisplay_refresh_obj) },
@@ -413,7 +395,7 @@ STATIC const mp_rom_map_elem_t epaperdisplay_epaperdisplay_locals_dict_table[] =
     { MP_ROM_QSTR(MP_QSTR_time_to_refresh), MP_ROM_PTR(&epaperdisplay_epaperdisplay_time_to_refresh_obj) },
     { MP_ROM_QSTR(MP_QSTR_root_group), MP_ROM_PTR(&epaperdisplay_epaperdisplay_root_group_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(epaperdisplay_epaperdisplay_locals_dict, epaperdisplay_epaperdisplay_locals_dict_table);
+static MP_DEFINE_CONST_DICT(epaperdisplay_epaperdisplay_locals_dict, epaperdisplay_epaperdisplay_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     epaperdisplay_epaperdisplay_type,

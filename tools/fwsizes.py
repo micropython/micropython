@@ -7,7 +7,7 @@ import os, re
 
 for fn in os.listdir():
     if os.path.isfile(fn) and ("build-arm " in fn or "build-riscv " in fn):
-        board = re.split("[()]", fn)[1]
+        board = re.split(r"[()]", fn)[1]
         if board in (
             "spresense",
             "teensy40",

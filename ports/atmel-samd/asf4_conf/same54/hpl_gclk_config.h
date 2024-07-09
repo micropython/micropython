@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 // CircuitPython SAMD51 clock tree:
 // DFLL48M (with USBCRM on to sync with external USB ref) -> GCLK1, GCLK5, GCLK6
 //   GCLK1 (48MHz) -> 48 MHz peripherals
@@ -15,8 +21,7 @@
 #define CIRCUITPY_GCLK_INIT_1ST 0xffff
 
 /* Auto-generated config file hpl_gclk_config.h */
-#ifndef HPL_GCLK_CONFIG_H
-#define HPL_GCLK_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -920,5 +925,3 @@
 // </e>
 
 // <<< end of configuration section >>>
-
-#endif // HPL_GCLK_CONFIG_H

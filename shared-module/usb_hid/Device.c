@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 hathach for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 hathach for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdbool.h>
 #include <string.h>
@@ -166,7 +146,7 @@ const usb_hid_device_obj_t usb_hid_device_consumer_control_obj = {
 
 char *custom_usb_hid_interface_name;
 
-STATIC size_t get_report_id_idx(usb_hid_device_obj_t *self, size_t report_id) {
+static size_t get_report_id_idx(usb_hid_device_obj_t *self, size_t report_id) {
     for (size_t i = 0; i < self->num_report_ids; i++) {
         if (report_id == self->report_ids[i]) {
             return i;
@@ -302,7 +282,12 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
     usb_hid_device_obj_t *hid_device = NULL;
     size_t id_idx;
 
-    if (report_id == 0 && report_type == HID_REPORT_TYPE_INVALID) {
+    // As of https://github.com/hathach/tinyusb/pull/2253, HID_REPORT_TYPE_INVALID reports are not
+    // sent to this callback, but are instead sent to tud_hid_report_fail_cb(), which we don't bother
+    // to implement.
+    // So this callback is only going to see HID_REPORT_TYPE_OUTPUT.
+    // HID_REPORT_TYPE_FEATURE is not used yet.
+    if (report_id == 0) {
         // This could be a report with a non-zero report ID in the first byte, or
         // it could be for report ID 0.
         // Heuristic: see if there's a device with report ID 0, and if its report length matches
@@ -319,12 +304,10 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
             buffer++;
             bufsize--;
         }
-    } else if (report_type != HID_REPORT_TYPE_OUTPUT && report_type != HID_REPORT_TYPE_FEATURE) {
-        return;
     }
 
     // report_id might be changed due to parsing above, so test again.
-    if ((report_id == 0 && report_type == HID_REPORT_TYPE_INVALID) ||
+    if ((report_id == 0) ||
         // Fetch the matching device if we don't already have the report_id 0 device.
         (usb_hid_get_device_with_report_id(report_id, &hid_device, &id_idx) &&
          hid_device &&

@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019  Bernhard Boser
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019  Bernhard Boser
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/runtime.h"
 #include "py/smallint.h"
@@ -36,7 +16,7 @@
 //|         """Constructor
 //|         :param int code: type code in range 0~127.
 //|         :param bytes data: representation."""
-STATIC mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mod_msgpack_extype_obj_t *self = mp_obj_malloc(mod_msgpack_extype_obj_t, &mod_msgpack_exttype_type);
     enum { ARG_code, ARG_data };
     static const mp_arg_t allowed_args[] = {
@@ -59,13 +39,13 @@ STATIC mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n
 //|     code: int
 //|     """The type code, in range 0~127."""
 //|     ...
-STATIC mp_obj_t mod_msgpack_exttype_get_code(mp_obj_t self_in) {
+static mp_obj_t mod_msgpack_exttype_get_code(mp_obj_t self_in) {
     mod_msgpack_extype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(self->code);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_msgpack_exttype_get_code_obj, mod_msgpack_exttype_get_code);
 
-STATIC mp_obj_t mod_msgpack_exttype_set_code(mp_obj_t self_in, mp_obj_t code_in) {
+static mp_obj_t mod_msgpack_exttype_set_code(mp_obj_t self_in, mp_obj_t code_in) {
     mod_msgpack_extype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int code = mp_obj_get_int(code_in);
     if (code < 0 || code > 127) {
@@ -84,13 +64,13 @@ MP_PROPERTY_GETSET(mod_msgpack_exttype_code_obj,
 //|     """Data."""
 //|     ...
 //|
-STATIC mp_obj_t mod_msgpack_exttype_get_data(mp_obj_t self_in) {
+static mp_obj_t mod_msgpack_exttype_get_data(mp_obj_t self_in) {
     mod_msgpack_extype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return self->data;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_msgpack_exttype_get_data_obj, mod_msgpack_exttype_get_data);
 
-STATIC mp_obj_t mod_msgpack_exttype_set_data(mp_obj_t self_in, mp_obj_t data_in) {
+static mp_obj_t mod_msgpack_exttype_set_data(mp_obj_t self_in, mp_obj_t data_in) {
     mod_msgpack_extype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     self->data = data_in;
     return mp_const_none;
@@ -101,12 +81,12 @@ MP_PROPERTY_GETSET(mod_msgpack_exttype_data_obj,
     (mp_obj_t)&mod_msgpack_exttype_get_data_obj,
     (mp_obj_t)&mod_msgpack_exttype_set_data_obj);
 
-STATIC mp_rom_map_elem_t mod_msgpack_exttype_locals_dict_table[] = {
+static mp_rom_map_elem_t mod_msgpack_exttype_locals_dict_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_code), MP_ROM_PTR(&mod_msgpack_exttype_code_obj) },
     { MP_ROM_QSTR(MP_QSTR_data), MP_ROM_PTR(&mod_msgpack_exttype_data_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(mod_msgpack_exttype_locals_dict, mod_msgpack_exttype_locals_dict_table);
+static MP_DEFINE_CONST_DICT(mod_msgpack_exttype_locals_dict, mod_msgpack_exttype_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mod_msgpack_exttype_type,

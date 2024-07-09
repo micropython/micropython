@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 by kvc0/WarriorOfWire
+//
+// SPDX-License-Identifier: MIT
+
 #include "shared-bindings/vectorio/__init__.h"
 #include "shared-bindings/vectorio/Circle.h"
 #include "shared-bindings/vectorio/VectorShape.h"
@@ -54,7 +60,7 @@ static mp_obj_t vectorio_circle_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC const vectorio_draw_protocol_t circle_draw_protocol = {
+static const vectorio_draw_protocol_t circle_draw_protocol = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_draw)
     .draw_get_protocol_self = (draw_get_protocol_self_fun)common_hal_vectorio_circle_get_draw_protocol,
     .draw_protocol_impl = &vectorio_vector_shape_draw_protocol_impl
@@ -63,13 +69,13 @@ STATIC const vectorio_draw_protocol_t circle_draw_protocol = {
 
 //|     radius: int
 //|     """The radius of the circle in pixels."""
-STATIC mp_obj_t vectorio_circle_obj_get_radius(mp_obj_t self_in) {
+static mp_obj_t vectorio_circle_obj_get_radius(mp_obj_t self_in) {
     vectorio_circle_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(common_hal_vectorio_circle_get_radius(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(vectorio_circle_get_radius_obj, vectorio_circle_obj_get_radius);
 
-STATIC mp_obj_t vectorio_circle_obj_set_radius(mp_obj_t self_in, mp_obj_t radius) {
+static mp_obj_t vectorio_circle_obj_set_radius(mp_obj_t self_in, mp_obj_t radius) {
     vectorio_circle_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_vectorio_circle_set_radius(self, mp_obj_get_int(radius));
     return mp_const_none;
@@ -82,13 +88,13 @@ MP_PROPERTY_GETSET(vectorio_circle_radius_obj,
 
 //|     color_index: int
 //|     """The color_index of the circle as 0 based index of the palette."""
-STATIC mp_obj_t vectorio_circle_obj_get_color_index(mp_obj_t self_in) {
+static mp_obj_t vectorio_circle_obj_get_color_index(mp_obj_t self_in) {
     vectorio_circle_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(common_hal_vectorio_circle_get_color_index(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(vectorio_circle_get_color_index_obj, vectorio_circle_obj_get_color_index);
 
-STATIC mp_obj_t vectorio_circle_obj_set_color_index(mp_obj_t self_in, mp_obj_t color_index) {
+static mp_obj_t vectorio_circle_obj_set_color_index(mp_obj_t self_in, mp_obj_t color_index) {
     vectorio_circle_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_vectorio_circle_set_color_index(self, mp_obj_get_int(color_index));
     return mp_const_none;
@@ -118,7 +124,7 @@ MP_PROPERTY_GETSET(vectorio_circle_color_index_obj,
 //|     """The pixel shader of the circle."""
 //|
 
-STATIC const mp_rom_map_elem_t vectorio_circle_locals_dict_table[] = {
+static const mp_rom_map_elem_t vectorio_circle_locals_dict_table[] = {
     // Functions
     { MP_ROM_QSTR(MP_QSTR_contains), MP_ROM_PTR(&vectorio_vector_shape_contains_obj) },
     // Properties
@@ -130,7 +136,7 @@ STATIC const mp_rom_map_elem_t vectorio_circle_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_location), MP_ROM_PTR(&vectorio_vector_shape_location_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&vectorio_vector_shape_pixel_shader_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(vectorio_circle_locals_dict, vectorio_circle_locals_dict_table);
+static MP_DEFINE_CONST_DICT(vectorio_circle_locals_dict, vectorio_circle_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     vectorio_circle_type,

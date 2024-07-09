@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -46,7 +26,7 @@
 //|     ...
 //|
 
-STATIC mp_obj_t espidf_heap_caps_get_total_size(void) {
+static mp_obj_t espidf_heap_caps_get_total_size(void) {
     return MP_OBJ_NEW_SMALL_INT(heap_caps_get_total_size(MALLOC_CAP_8BIT));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_total_size_obj, espidf_heap_caps_get_total_size);
@@ -56,7 +36,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_total_size_obj, espidf_heap_caps_
 //|     ...
 //|
 
-STATIC mp_obj_t espidf_heap_caps_get_free_size(void) {
+static mp_obj_t espidf_heap_caps_get_free_size(void) {
     return MP_OBJ_NEW_SMALL_INT(heap_caps_get_free_size(MALLOC_CAP_8BIT));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_free_size_obj, espidf_heap_caps_get_free_size);
@@ -66,7 +46,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_free_size_obj, espidf_heap_caps_g
 //|     ...
 //|
 
-STATIC mp_obj_t espidf_heap_caps_get_largest_free_block(void) {
+static mp_obj_t espidf_heap_caps_get_largest_free_block(void) {
     return MP_OBJ_NEW_SMALL_INT(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_largest_free_block_obj, espidf_heap_caps_get_largest_free_block);
@@ -78,7 +58,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_largest_free_block_obj, espidf_he
 //|     layout of data in nvs has changed. The old data will be lost when you perform this operation.
 //|     """
 //|
-STATIC mp_obj_t espidf_erase_nvs(void) {
+static mp_obj_t espidf_erase_nvs(void) {
     ESP_ERROR_CHECK(nvs_flash_deinit());
     ESP_ERROR_CHECK(nvs_flash_erase());
     ESP_ERROR_CHECK(nvs_flash_init());
@@ -87,7 +67,7 @@ STATIC mp_obj_t espidf_erase_nvs(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(espidf_erase_nvs_obj, espidf_erase_nvs);
 
 
-STATIC void espidf_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+static void espidf_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
     bool is_subclass = kind & PRINT_EXC_SUBCLASS;
     if (!is_subclass && (k == PRINT_EXC)) {
@@ -136,12 +116,12 @@ MP_DEFINE_CONST_OBJ_TYPE(
 //| def get_total_psram() -> int:
 //|     """Returns the number of bytes of psram detected, or 0 if psram is not present or not configured"""
 //|
-STATIC mp_obj_t espidf_get_total_psram(void) {
+static mp_obj_t espidf_get_total_psram(void) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_espidf_get_total_psram());
 }
 MP_DEFINE_CONST_FUN_OBJ_0(espidf_get_total_psram_obj, espidf_get_total_psram);
 
-STATIC const mp_rom_map_elem_t espidf_module_globals_table[] = {
+static const mp_rom_map_elem_t espidf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_espidf) },
 
     { MP_ROM_QSTR(MP_QSTR_heap_caps_get_total_size), MP_ROM_PTR(&espidf_heap_caps_get_total_size_obj)},
@@ -155,7 +135,7 @@ STATIC const mp_rom_map_elem_t espidf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MemoryError),      MP_ROM_PTR(&mp_type_espidf_MemoryError) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(espidf_module_globals, espidf_module_globals_table);
+static MP_DEFINE_CONST_DICT(espidf_module_globals, espidf_module_globals_table);
 
 const mp_obj_module_t espidf_module = {
     .base = { &mp_type_module },

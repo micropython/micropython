@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "supervisor/shared/translate/translate.h"
 #include "py/qstr.h"
@@ -43,7 +23,7 @@ void serial_write_compressed(mp_rom_error_text_t compressed) {
     mp_printf(MP_PYTHON_PRINTER, "%S", compressed);
 }
 
-STATIC void get_word(int n, const mchar_t **pos, const mchar_t **end) {
+static void get_word(int n, const mchar_t **pos, const mchar_t **end) {
     int len = minlen;
     int i = 0;
     *pos = words;
@@ -57,7 +37,7 @@ STATIC void get_word(int n, const mchar_t **pos, const mchar_t **end) {
     *end = *pos + len;
 }
 
-STATIC void put_utf8(vstr_t *vstr, int u) {
+static void put_utf8(vstr_t *vstr, int u) {
     if (u >= translation_offstart) {
         u += translation_offset;
     }

@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdint.h>
 
@@ -151,7 +131,7 @@ void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
 //|
 //|         """
 //|         ...
-STATIC mp_obj_t pwmio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t pwmio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     enum { ARG_pin, ARG_duty_cycle, ARG_frequency, ARG_variable_frequency };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin, MP_ARG_REQUIRED | MP_ARG_OBJ, },
@@ -180,14 +160,14 @@ STATIC mp_obj_t pwmio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, 
 //|     def deinit(self) -> None:
 //|         """Deinitialises the PWMOut and releases any hardware resources for reuse."""
 //|         ...
-STATIC mp_obj_t pwmio_pwmout_deinit(mp_obj_t self_in) {
+static mp_obj_t pwmio_pwmout_deinit(mp_obj_t self_in) {
     pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_pwmio_pwmout_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pwmio_pwmout_deinit_obj, pwmio_pwmout_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(pwmio_pwmout_deinit_obj, pwmio_pwmout_deinit);
 
-STATIC void check_for_deinit(pwmio_pwmout_obj_t *self) {
+static void check_for_deinit(pwmio_pwmout_obj_t *self) {
     if (common_hal_pwmio_pwmout_deinited(self)) {
         raise_deinited_error();
     }
@@ -202,12 +182,12 @@ STATIC void check_for_deinit(pwmio_pwmout_obj_t *self) {
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t pwmio_pwmout_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pwmio_pwmout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_pwmio_pwmout_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pwmio_pwmout___exit___obj, 4, 4, pwmio_pwmout_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pwmio_pwmout___exit___obj, 4, 4, pwmio_pwmout_obj___exit__);
 
 //|     duty_cycle: int
 //|     """16 bit value that dictates how much of one cycle is high (1) versus low
@@ -218,14 +198,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pwmio_pwmout___exit___obj, 4, 4, pwmi
 //|     representation for duty cycle might have less than 16 bits of resolution.
 //|     Reading this property will return the value from the internal representation,
 //|     so it may differ from the value set."""
-STATIC mp_obj_t pwmio_pwmout_obj_get_duty_cycle(mp_obj_t self_in) {
+static mp_obj_t pwmio_pwmout_obj_get_duty_cycle(mp_obj_t self_in) {
     pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_pwmio_pwmout_get_duty_cycle(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pwmio_pwmout_get_duty_cycle_obj, pwmio_pwmout_obj_get_duty_cycle);
 
-STATIC mp_obj_t pwmio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t duty_cycle) {
+static mp_obj_t pwmio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t duty_cycle) {
     pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     mp_int_t duty = mp_obj_get_int(duty_cycle);
@@ -252,14 +232,14 @@ MP_PROPERTY_GETSET(pwmio_pwmout_duty_cycle_obj,
 //|     to manually re-set the duty cycle. However, an output glitch may occur during the adjustment.
 //|     """
 //|
-STATIC mp_obj_t pwmio_pwmout_obj_get_frequency(mp_obj_t self_in) {
+static mp_obj_t pwmio_pwmout_obj_get_frequency(mp_obj_t self_in) {
     pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_pwmio_pwmout_get_frequency(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pwmio_pwmout_get_frequency_obj, pwmio_pwmout_obj_get_frequency);
 
-STATIC mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t frequency) {
+static mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t frequency) {
     pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     if (!common_hal_pwmio_pwmout_get_variable_frequency(self)) {
@@ -278,7 +258,7 @@ MP_PROPERTY_GETSET(pwmio_pwmout_frequency_obj,
     (mp_obj_t)&pwmio_pwmout_get_frequency_obj,
     (mp_obj_t)&pwmio_pwmout_set_frequency_obj);
 
-STATIC const mp_rom_map_elem_t pwmio_pwmout_locals_dict_table[] = {
+static const mp_rom_map_elem_t pwmio_pwmout_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pwmio_pwmout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&pwmio_pwmout_deinit_obj) },
@@ -291,7 +271,7 @@ STATIC const mp_rom_map_elem_t pwmio_pwmout_locals_dict_table[] = {
     // TODO(tannewt): Add enabled to determine whether the signal is output
     // without giving up the resources. Useful for IR output.
 };
-STATIC MP_DEFINE_CONST_DICT(pwmio_pwmout_locals_dict, pwmio_pwmout_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pwmio_pwmout_locals_dict, pwmio_pwmout_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pwmio_pwmout_type,

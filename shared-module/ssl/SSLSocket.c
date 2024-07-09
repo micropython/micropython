@@ -1,30 +1,10 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2016 Linaro Ltd.
- * Copyright (c) 2019 Paul Sokolovsky
- * Copyright (c) 2022 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2016 Linaro Ltd.
+// SPDX-FileCopyrightText: Copyright (c) 2019 Paul Sokolovsky
+// SPDX-FileCopyrightText: Copyright (c) 2022 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/ssl/SSLSocket.h"
 #include "shared-bindings/ssl/SSLContext.h"
@@ -42,6 +22,8 @@
 
 #include "mbedtls/version.h"
 
+#define MP_STREAM_POLL_RDWR (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)
+
 #if defined(MBEDTLS_ERROR_C)
 #include "../../lib/mbedtls_errors/mp_mbedtls_errors.c"
 #endif
@@ -52,7 +34,7 @@
 
 #ifdef MBEDTLS_DEBUG_C
 #include "mbedtls/debug.h"
-STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
+static void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
     (void)ctx;
     (void)level;
     mp_printf(&mp_plat_print, "DBG:%s:%04d: %s\n", file, line, str);
@@ -62,7 +44,7 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 #define DEBUG_PRINT(...) do {} while (0)
 #endif
 
-STATIC NORETURN void mbedtls_raise_error(int err) {
+static NORETURN void mbedtls_raise_error(int err) {
     // _mbedtls_ssl_send and _mbedtls_ssl_recv (below) turn positive error codes from the
     // underlying socket into negative codes to pass them through mbedtls. Here we turn them
     // positive again so they get interpreted as the OSError they really are. The
@@ -110,7 +92,7 @@ STATIC NORETURN void mbedtls_raise_error(int err) {
 // it is not OK to exit them by raising an exception (nlr_jump'ing through
 // foreign code is not permitted). Instead, preserve the error number of any OSError
 // and turn anything else into -MP_EINVAL.
-STATIC int call_method_errno(size_t n_args, const mp_obj_t *args) {
+static int call_method_errno(size_t n_args, const mp_obj_t *args) {
     nlr_buf_t nlr;
     mp_int_t result = -MP_EINVAL;
     if (nlr_push(&nlr) == 0) {
@@ -188,7 +170,7 @@ static mp_obj_t ssl_socket_accept(ssl_sslsocket_obj_t *self) {
     return mp_call_method_n_kw(0, 0, self->accept_args);
 }
 
-STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
+static int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     ssl_sslsocket_obj_t *self = (ssl_sslsocket_obj_t *)ctx;
 
     mp_int_t out_sz = ssl_socket_send(self, buf, len);
@@ -203,7 +185,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     return out_sz;
 }
 
-STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
+static int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     ssl_sslsocket_obj_t *self = (ssl_sslsocket_obj_t *)ctx;
 
     mp_int_t out_sz = ssl_socket_recv_into(self, buf, len);
@@ -240,6 +222,7 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     o->base.type = &ssl_sslsocket_type;
     o->ssl_context = self;
     o->sock_obj = socket;
+    o->poll_mask = 0;
 
     mp_load_method(socket, MP_QSTR_accept, o->accept_args);
     mp_load_method(socket, MP_QSTR_bind, o->bind_args);
@@ -350,7 +333,8 @@ cleanup:
     }
 }
 
-mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t *buf, uint32_t len) {
+mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t *buf, mp_uint_t len) {
+    self->poll_mask = 0;
     int ret = mbedtls_ssl_read(&self->ssl, buf, len);
     DEBUG_PRINT("recv_into mbedtls_ssl_read() -> %d\n", ret);
     if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
@@ -362,16 +346,23 @@ mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t 
         DEBUG_PRINT("returning %d\n", ret);
         return ret;
     }
+    if (ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+        self->poll_mask = MP_STREAM_POLL_WR;
+    }
     DEBUG_PRINT("raising errno [error case] %d\n", ret);
     mbedtls_raise_error(ret);
 }
 
-mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len) {
+mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, mp_uint_t len) {
+    self->poll_mask = 0;
     int ret = mbedtls_ssl_write(&self->ssl, buf, len);
     DEBUG_PRINT("send mbedtls_ssl_write() -> %d\n", ret);
     if (ret >= 0) {
         DEBUG_PRINT("returning %d\n", ret);
         return ret;
+    }
+    if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
+        self->poll_mask = MP_STREAM_POLL_RD;
     }
     DEBUG_PRINT("raising errno [error case] %d\n", ret);
     mbedtls_raise_error(ret);
@@ -396,7 +387,7 @@ void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
     mbedtls_entropy_free(&self->entropy);
 }
 
-STATIC void do_handshake(ssl_sslsocket_obj_t *self) {
+static void do_handshake(ssl_sslsocket_obj_t *self) {
     int ret;
     while ((ret = mbedtls_ssl_handshake(&self->ssl)) != 0) {
         if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
@@ -467,4 +458,38 @@ void common_hal_ssl_sslsocket_setsockopt(ssl_sslsocket_obj_t *self, mp_obj_t lev
 
 void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj) {
     ssl_socket_settimeout(self, timeout_obj);
+}
+
+static bool poll_common(ssl_sslsocket_obj_t *self, uintptr_t arg) {
+    // Take into account that the library might have buffered data already
+    int has_pending = 0;
+    if (arg & MP_STREAM_POLL_RD) {
+        has_pending = mbedtls_ssl_check_pending(&self->ssl);
+        if (has_pending) {
+            // Shortcut if we only need to read and we have buffered data, no need to go to the underlying socket
+            return true;
+        }
+    }
+
+    // If the library signaled us that it needs reading or writing, only
+    // check that direction
+    if (self->poll_mask && (arg & MP_STREAM_POLL_RDWR)) {
+        arg = (arg & ~MP_STREAM_POLL_RDWR) | self->poll_mask;
+    }
+
+    // If direction the library needed is available, return a fake
+    // result to the caller so that it reenters a read or a write to
+    // allow the handshake to progress
+    const mp_stream_p_t *stream_p = mp_get_stream_raise(self->sock_obj, MP_STREAM_OP_IOCTL);
+    int errcode;
+    mp_int_t ret = stream_p->ioctl(self->sock_obj, MP_STREAM_POLL, arg, &errcode);
+    return ret != 0;
+}
+
+bool common_hal_ssl_sslsocket_readable(ssl_sslsocket_obj_t *self) {
+    return poll_common(self, MP_STREAM_POLL_RD);
+}
+
+bool common_hal_ssl_sslsocket_writable(ssl_sslsocket_obj_t *self) {
+    return poll_common(self, MP_STREAM_POLL_WR);
 }

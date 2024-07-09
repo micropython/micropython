@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2024 CDarius
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 CDarius
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared/runtime/context_manager_helpers.h"
 #include "py/binary.h"
@@ -85,7 +65,7 @@
 //|         """
 //|         ...
 
-STATIC mp_obj_t keypad_demux_demuxkeymatrix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t keypad_demux_demuxkeymatrix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     keypad_demux_demuxkeymatrix_obj_t *self = mp_obj_malloc(keypad_demux_demuxkeymatrix_obj_t, &keypad_demux_demuxkeymatrix_type);
     enum { ARG_row_addr_pins, ARG_column_pins, ARG_interval, ARG_max_events, ARG_debounce_threshold };
     static const mp_arg_t allowed_args[] = {
@@ -134,7 +114,7 @@ STATIC mp_obj_t keypad_demux_demuxkeymatrix_make_new(const mp_obj_type_t *type, 
 //|     def deinit(self) -> None:
 //|         """Stop scanning and release the pins."""
 //|         ...
-STATIC mp_obj_t keypad_demux_demuxkeymatrix_deinit(mp_obj_t self_in) {
+static mp_obj_t keypad_demux_demuxkeymatrix_deinit(mp_obj_t self_in) {
     keypad_demux_demuxkeymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_keypad_demux_demuxkeymatrix_deinit(self);
     return MP_ROM_NONE;
@@ -150,14 +130,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_demux_demuxkeymatrix_deinit_obj, keypad_demux_d
 //|         """Automatically deinitializes when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t keypad_demux_demuxkeymatrix___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t keypad_demux_demuxkeymatrix___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_keypad_demux_demuxkeymatrix_deinit(args[0]);
     return MP_ROM_NONE;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_demux_demuxkeymatrix___exit___obj, 4, 4, keypad_demux_demuxkeymatrix___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_demux_demuxkeymatrix___exit___obj, 4, 4, keypad_demux_demuxkeymatrix___exit__);
 
-STATIC void check_for_deinit(keypad_demux_demuxkeymatrix_obj_t *self) {
+static void check_for_deinit(keypad_demux_demuxkeymatrix_obj_t *self) {
     if (common_hal_keypad_deinited(self)) {
         raise_deinited_error();
     }
@@ -183,7 +163,7 @@ STATIC void check_for_deinit(keypad_demux_demuxkeymatrix_obj_t *self) {
 //|         :rtype: Tuple[int]
 //|         """
 //|         ...
-STATIC mp_obj_t keypad_demux_demuxkeymatrix_key_number_to_row_column(mp_obj_t self_in, mp_obj_t key_number_in) {
+static mp_obj_t keypad_demux_demuxkeymatrix_key_number_to_row_column(mp_obj_t self_in, mp_obj_t key_number_in) {
     keypad_demux_demuxkeymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -209,7 +189,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(keypad_demux_demuxkeymatrix_key_number_to_row_column_o
 //|         The key number is ``row * len(column_pins) + column``.
 //|         """
 //|         ...
-STATIC mp_obj_t keypad_demux_demuxkeymatrix_row_column_to_key_number(mp_obj_t self_in, mp_obj_t row_in, mp_obj_t column_in) {
+static mp_obj_t keypad_demux_demuxkeymatrix_row_column_to_key_number(mp_obj_t self_in, mp_obj_t row_in, mp_obj_t column_in) {
     keypad_demux_demuxkeymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -229,7 +209,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(keypad_demux_demuxkeymatrix_row_column_to_key_number_o
 //|     """
 //|
 
-STATIC const mp_rom_map_elem_t keypad_demux_demuxkeymatrix_locals_dict_table[] = {
+static const mp_rom_map_elem_t keypad_demux_demuxkeymatrix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),                   MP_ROM_PTR(&keypad_demux_demuxkeymatrix_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__),                MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),                 MP_ROM_PTR(&keypad_demux_demuxkeymatrix___exit___obj) },
@@ -241,7 +221,7 @@ STATIC const mp_rom_map_elem_t keypad_demux_demuxkeymatrix_locals_dict_table[] =
     { MP_ROM_QSTR(MP_QSTR_row_column_to_key_number), MP_ROM_PTR(&keypad_demux_demuxkeymatrix_row_column_to_key_number_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(keypad_demux_demuxkeymatrix_locals_dict, keypad_demux_demuxkeymatrix_locals_dict_table);
+static MP_DEFINE_CONST_DICT(keypad_demux_demuxkeymatrix_locals_dict, keypad_demux_demuxkeymatrix_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     keypad_demux_demuxkeymatrix_type,

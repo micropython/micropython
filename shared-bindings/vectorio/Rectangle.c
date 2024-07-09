@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 by kvc0/WarriorOfWire
+//
+// SPDX-License-Identifier: MIT
+
 #include "shared-bindings/vectorio/__init__.h"
 #include "shared-bindings/vectorio/Rectangle.h"
 #include "shared-module/vectorio/VectorShape.h"
@@ -58,7 +64,7 @@ static mp_obj_t vectorio_rectangle_make_new(const mp_obj_type_t *type, size_t n_
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC const vectorio_draw_protocol_t rectangle_draw_protocol = {
+static const vectorio_draw_protocol_t rectangle_draw_protocol = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_draw)
     .draw_get_protocol_self = (draw_get_protocol_self_fun)common_hal_vectorio_rectangle_get_draw_protocol,
     .draw_protocol_impl = &vectorio_vector_shape_draw_protocol_impl
@@ -66,13 +72,13 @@ STATIC const vectorio_draw_protocol_t rectangle_draw_protocol = {
 
 //|     width: int
 //|     """The width of the rectangle in pixels."""
-STATIC mp_obj_t vectorio_rectangle_obj_get_width(mp_obj_t self_in) {
+static mp_obj_t vectorio_rectangle_obj_get_width(mp_obj_t self_in) {
     vectorio_rectangle_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(common_hal_vectorio_rectangle_get_width(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(vectorio_rectangle_get_width_obj, vectorio_rectangle_obj_get_width);
 
-STATIC mp_obj_t vectorio_rectangle_obj_set_width(mp_obj_t self_in, mp_obj_t width) {
+static mp_obj_t vectorio_rectangle_obj_set_width(mp_obj_t self_in, mp_obj_t width) {
     vectorio_rectangle_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_vectorio_rectangle_set_width(self, mp_obj_get_int(width));
     return mp_const_none;
@@ -88,13 +94,13 @@ const mp_obj_property_t vectorio_rectangle_width_obj = {
 
 //|     height: int
 //|     """The height of the rectangle in pixels."""
-STATIC mp_obj_t vectorio_rectangle_obj_get_height(mp_obj_t self_in) {
+static mp_obj_t vectorio_rectangle_obj_get_height(mp_obj_t self_in) {
     vectorio_rectangle_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(common_hal_vectorio_rectangle_get_height(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(vectorio_rectangle_get_height_obj, vectorio_rectangle_obj_get_height);
 
-STATIC mp_obj_t vectorio_rectangle_obj_set_height(mp_obj_t self_in, mp_obj_t height) {
+static mp_obj_t vectorio_rectangle_obj_set_height(mp_obj_t self_in, mp_obj_t height) {
     vectorio_rectangle_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_vectorio_rectangle_set_height(self, mp_obj_get_int(height));
     return mp_const_none;
@@ -110,13 +116,13 @@ const mp_obj_property_t vectorio_rectangle_height_obj = {
 
 //|     color_index: int
 //|     """The color_index of the rectangle in 1 based index of the palette."""
-STATIC mp_obj_t vectorio_rectangle_obj_get_color_index(mp_obj_t self_in) {
+static mp_obj_t vectorio_rectangle_obj_get_color_index(mp_obj_t self_in) {
     vectorio_rectangle_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(common_hal_vectorio_rectangle_get_color_index(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(vectorio_rectangle_get_color_index_obj, vectorio_rectangle_obj_get_color_index);
 
-STATIC mp_obj_t vectorio_rectangle_obj_set_color_index(mp_obj_t self_in, mp_obj_t color_index) {
+static mp_obj_t vectorio_rectangle_obj_set_color_index(mp_obj_t self_in, mp_obj_t color_index) {
     vectorio_rectangle_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_vectorio_rectangle_set_color_index(self, mp_obj_get_int(color_index));
     return mp_const_none;
@@ -148,7 +154,7 @@ const mp_obj_property_t vectorio_rectangle_color_index_obj = {
 //|     """The pixel shader of the rectangle."""
 //|
 
-STATIC const mp_rom_map_elem_t vectorio_rectangle_locals_dict_table[] = {
+static const mp_rom_map_elem_t vectorio_rectangle_locals_dict_table[] = {
     // Functions
     { MP_ROM_QSTR(MP_QSTR_contains), MP_ROM_PTR(&vectorio_vector_shape_contains_obj) },
     // Properties
@@ -161,7 +167,7 @@ STATIC const mp_rom_map_elem_t vectorio_rectangle_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_location), MP_ROM_PTR(&vectorio_vector_shape_location_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&vectorio_vector_shape_pixel_shader_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(vectorio_rectangle_locals_dict, vectorio_rectangle_locals_dict_table);
+static MP_DEFINE_CONST_DICT(vectorio_rectangle_locals_dict, vectorio_rectangle_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     vectorio_rectangle_type,

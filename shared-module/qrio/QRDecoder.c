@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 
@@ -62,7 +42,7 @@ void shared_module_qrio_qrdecoder_set_width(qrdecoder_qrdecoder_obj_t *self, int
     }
 }
 
-STATIC mp_obj_t data_type(int type) {
+static mp_obj_t data_type(int type) {
     switch (type) {
         case QUIRC_ECI_ISO_8859_1:
             return MP_OBJ_NEW_QSTR(MP_QSTR_iso_8859_hyphen_1);
@@ -98,7 +78,7 @@ STATIC mp_obj_t data_type(int type) {
     return mp_obj_new_int(type);
 }
 
-STATIC void quirc_fill_buffer(qrdecoder_qrdecoder_obj_t *self, void *buf, qrio_pixel_policy_t policy) {
+static void quirc_fill_buffer(qrdecoder_qrdecoder_obj_t *self, void *buf, qrio_pixel_policy_t policy) {
     int width, height;
     uint8_t *framebuffer = quirc_begin(self->quirc, &width, &height);
     uint8_t *src = buf;

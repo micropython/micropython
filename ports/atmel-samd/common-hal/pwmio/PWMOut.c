@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdint.h>
 
@@ -69,7 +49,7 @@ static uint8_t tcc_channel(const pin_timer_t *t) {
     return t->wave_output % tcc_cc_num[t->index];
 }
 
-STATIC bool channel_ok(const pin_timer_t *t) {
+static bool channel_ok(const pin_timer_t *t) {
     uint8_t channel_bit = 1 << tcc_channel(t);
     return (!t->is_tc && ((tcc_channels[t->index] & channel_bit) == 0)) ||
            t->is_tc;
@@ -269,41 +249,34 @@ extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uin
     // Track it here so that if frequency is changed we can use this value to recalculate the
     // proper duty cycle.
     // See https://github.com/adafruit/circuitpython/issues/2086 for more details
-    self->duty_cycle = duty;
 
+    self->duty_cycle = duty;
     const pin_timer_t *t = self->timer;
     if (t->is_tc) {
         uint16_t adjusted_duty = tc_periods[t->index] * duty / 0xffff;
+        if (adjusted_duty == 0 && duty != 0) {
+            adjusted_duty = 1; // prevent rounding down to 0
+        }
         #ifdef SAMD21
         tc_insts[t->index]->COUNT16.CC[t->wave_output].reg = adjusted_duty;
         #endif
         #ifdef SAM_D5X_E5X
         Tc *tc = tc_insts[t->index];
-        while (tc->COUNT16.SYNCBUSY.bit.CC1 != 0) {
-        }
         tc->COUNT16.CCBUF[1].reg = adjusted_duty;
         #endif
     } else {
         uint32_t adjusted_duty = ((uint64_t)tcc_periods[t->index]) * duty / 0xffff;
+        if (adjusted_duty == 0 && duty != 0) {
+            adjusted_duty = 1; // prevent rounding down to 0
+        }
         uint8_t channel = tcc_channel(t);
         Tcc *tcc = tcc_insts[t->index];
-
-        // Write into the CC buffer register, which will be transferred to the
-        // CC register on an UPDATE (when period is finished).
-        // Do clock domain syncing as necessary.
-
-        while (tcc->SYNCBUSY.reg != 0) {
-        }
-
-        // Lock out double-buffering while updating the CCB value.
-        tcc->CTRLBSET.bit.LUPD = 1;
         #ifdef SAMD21
         tcc->CCB[channel].reg = adjusted_duty;
         #endif
         #ifdef SAM_D5X_E5X
         tcc->CCBUF[channel].reg = adjusted_duty;
         #endif
-        tcc->CTRLBCLR.bit.LUPD = 1;
     }
 }
 

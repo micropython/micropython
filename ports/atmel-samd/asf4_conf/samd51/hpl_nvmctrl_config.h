@@ -1,6 +1,11 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 /* Auto-generated config file hpl_nvmctrl_config.h */
-#ifndef HPL_NVMCTRL_CONFIG_H
-#define HPL_NVMCTRL_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -32,5 +37,3 @@
 // </h>
 
 // <<< end of configuration section >>>
-
-#endif // HPL_NVMCTRL_CONFIG_H

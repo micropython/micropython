@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/wifi/Radio.h"
 #include "shared-bindings/wifi/Network.h"
@@ -106,6 +86,7 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
     if (!self->started && enabled) {
         ESP_ERROR_CHECK(esp_wifi_start());
         self->started = true;
+        common_hal_wifi_radio_set_tx_power(self, CIRCUITPY_WIFI_DEFAULT_TX_POWER);
         return;
     }
 }
@@ -552,32 +533,56 @@ void common_hal_wifi_radio_set_ipv4_address_ap(wifi_radio_obj_t *self, mp_obj_t 
     common_hal_wifi_radio_start_dhcp_server(self); // restart access point DHCP
 }
 
+static void ping_success_cb(esp_ping_handle_t hdl, void *args) {
+    wifi_radio_obj_t *self = (wifi_radio_obj_t *)args;
+    esp_ping_get_profile(hdl, ESP_PING_PROF_TIMEGAP, &self->ping_elapsed_time, sizeof(self->ping_elapsed_time));
+}
+
 mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout) {
     esp_ping_config_t ping_config = ESP_PING_DEFAULT_CONFIG();
     ipaddress_ipaddress_to_esp_idf(ip_address, &ping_config.target_addr);
     ping_config.count = 1;
 
+    // We must fetch ping information using the callback mechanism, because the session storage is freed when
+    // the ping session is done, even before esp_ping_delete_session().
+    esp_ping_callbacks_t ping_callbacks = {
+        .on_ping_success = ping_success_cb,
+        .cb_args = (void *)self,
+    };
+
     size_t timeout_ms = timeout * 1000;
 
+    // ESP-IDF creates a task to do the ping session. It shuts down when done, but only after a one second delay.
+    // Calling common_hal_wifi_radio_ping() too fast will cause resource exhaustion.
     esp_ping_handle_t ping;
-    CHECK_ESP_RESULT(esp_ping_new_session(&ping_config, NULL, &ping));
+    if (esp_ping_new_session(&ping_config, &ping_callbacks, &ping) != ESP_OK) {
+        // Wait for old task to go away and then try again.
+        // Empirical testing shows we have to wait at least two seconds, despite the task
+        // having a one-second timeout.
+        common_hal_time_delay_ms(2000);
+        // Return if interrupted now, to show the interruption as KeyboardInterrupt instead of the
+        // IDF error.
+        if (mp_hal_is_interrupted()) {
+            return (uint32_t)(-1);
+        }
+        CHECK_ESP_RESULT(esp_ping_new_session(&ping_config, &ping_callbacks, &ping));
+    }
+
     esp_ping_start(ping);
 
-    uint32_t received = 0;
-    uint32_t total_time_ms = 0;
+    // Use all ones as a flag that the elapsed time was not set (ping failed or timed out).
+    self->ping_elapsed_time = (uint32_t)(-1);
+
     uint32_t start_time = common_hal_time_monotonic_ms();
-    while (received == 0 && (common_hal_time_monotonic_ms() - start_time < timeout_ms) && !mp_hal_is_interrupted()) {
+    while ((self->ping_elapsed_time == (uint32_t)(-1)) &&
+           (common_hal_time_monotonic_ms() - start_time < timeout_ms) &&
+           !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
-        esp_ping_get_profile(ping, ESP_PING_PROF_DURATION, &total_time_ms, sizeof(total_time_ms));
-        esp_ping_get_profile(ping, ESP_PING_PROF_REPLY, &received, sizeof(received));
     }
-    uint32_t elapsed_time = 0xffffffff;
-    if (received > 0) {
-        esp_ping_get_profile(ping, ESP_PING_PROF_TIMEGAP, &elapsed_time, sizeof(elapsed_time));
-    }
+    esp_ping_stop(ping);
     esp_ping_delete_session(ping);
 
-    return elapsed_time;
+    return (mp_int_t)self->ping_elapsed_time;
 }
 
 void common_hal_wifi_radio_gc_collect(wifi_radio_obj_t *self) {

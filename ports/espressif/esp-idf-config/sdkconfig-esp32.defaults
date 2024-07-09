@@ -5,6 +5,24 @@
 # Component config
 #
 #
+# Bluetooth
+#
+#
+# NimBLE Options
+#
+CONFIG_BT_NIMBLE_PINNED_TO_CORE_1=y
+# end of NimBLE Options
+
+#
+# Controller Options
+#
+CONFIG_BTDM_CTRL_PINNED_TO_CORE_1=y
+# CONFIG_BTDM_BLE_SCAN_DUPL is not set
+# end of Controller Options
+
+# end of Bluetooth
+
+#
 # Driver Configurations
 #
 #
@@ -40,7 +58,7 @@ CONFIG_ESP_IPC_TASK_STACK_SIZE=1536
 #
 # Wi-Fi
 #
-# CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE is not set
+# CONFIG_ESP_WIFI_IRAM_OPT is not set
 # end of Wi-Fi
 
 #
@@ -65,6 +83,7 @@ CONFIG_SPI_FLASH_SUPPORT_TH_CHIP=y
 # Ultra Low Power (ULP) Co-processor
 #
 CONFIG_ULP_COPROC_ENABLED=y
+CONFIG_ULP_COPROC_TYPE_FSM=y
 CONFIG_ULP_COPROC_RESERVE_MEM=4080
 # end of Ultra Low Power (ULP) Co-processor
 

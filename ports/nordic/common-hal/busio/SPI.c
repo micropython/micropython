@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 
@@ -51,7 +31,7 @@
 #endif
 
 // These are in order from highest available frequency to lowest (32MHz first, then 8MHz).
-STATIC const spim_peripheral_t spim_peripherals[] = {
+static const spim_peripheral_t spim_peripherals[] = {
     #if NRFX_CHECK(NRFX_SPIM3_ENABLED)
     // SPIM3 exists only on nRF52840 and supports 32MHz max. All other SPIM's are only 8MHz max.
     // Allocate SPIM3 first.
@@ -79,11 +59,11 @@ STATIC const spim_peripheral_t spim_peripherals[] = {
     #endif
 };
 
-STATIC bool never_reset[MP_ARRAY_SIZE(spim_peripherals)];
+static bool never_reset[MP_ARRAY_SIZE(spim_peripherals)];
 
 // Separate RAM area for SPIM3 transmit buffer to avoid SPIM3 hardware errata.
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Ferrata_nRF52840_Rev2%2FERR%2FnRF52840%2FRev2%2Flatest%2Fanomaly_840_198.html
-STATIC uint8_t *spim3_transmit_buffer = (uint8_t *)SPIM3_BUFFER_RAM_START_ADDR;
+static uint8_t *spim3_transmit_buffer = (uint8_t *)SPIM3_BUFFER_RAM_START_ADDR;
 
 void spi_reset(void) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(spim_peripherals); i++) {

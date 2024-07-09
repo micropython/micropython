@@ -1,6 +1,11 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_COUNTIO_COUNTER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_COUNTIO_COUNTER_H
+
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -15,5 +20,3 @@ typedef struct {
 
 
 void counter_interrupt_handler(uint8_t channel);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_COUNTIO_COUNT_H

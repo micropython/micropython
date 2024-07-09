@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2023 Mark Komus
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2023 Mark Komus
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/gifio/OnDiskGif.h"
 
@@ -121,7 +101,7 @@
 //|         is not limited but images that are too large will cause a memory exception.
 //|         """
 //|         ...
-STATIC mp_obj_t gifio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t gifio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_filename, ARG_use_palette, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_filename, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -146,7 +126,7 @@ STATIC mp_obj_t gifio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void check_for_deinit(gifio_ondiskgif_t *self) {
+static void check_for_deinit(gifio_ondiskgif_t *self) {
     if (common_hal_gifio_ondiskgif_deinited(self)) {
         raise_deinited_error();
     }
@@ -161,16 +141,16 @@ STATIC void check_for_deinit(gifio_ondiskgif_t *self) {
 //|         """Automatically deinitializes the GIF when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t gifio_ondiskgif_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t gifio_ondiskgif_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_gifio_ondiskgif_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gifio_ondiskgif___exit___obj, 4, 4, gifio_ondiskgif_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gifio_ondiskgif___exit___obj, 4, 4, gifio_ondiskgif_obj___exit__);
 
 //|     width: int
 //|     """Width of the gif. (read only)"""
-STATIC mp_obj_t gifio_ondiskgif_obj_get_width(mp_obj_t self_in) {
+static mp_obj_t gifio_ondiskgif_obj_get_width(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
     check_for_deinit(self);
@@ -184,7 +164,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_width_obj,
 
 //|     height: int
 //|     """Height of the gif. (read only)"""
-STATIC mp_obj_t gifio_ondiskgif_obj_get_height(mp_obj_t self_in) {
+static mp_obj_t gifio_ondiskgif_obj_get_height(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
     check_for_deinit(self);
@@ -198,7 +178,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_height_obj,
 
 //|     bitmap: displayio.Bitmap
 //|     """The bitmap used to hold the current frame."""
-STATIC mp_obj_t gifio_ondiskgif_obj_get_bitmap(mp_obj_t self_in) {
+static mp_obj_t gifio_ondiskgif_obj_get_bitmap(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
     check_for_deinit(self);
@@ -212,7 +192,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_bitmap_obj,
 
 //|     palette: Optional[displayio.Palette]
 //|     """The palette for the current frame if it exists."""
-STATIC mp_obj_t gifio_ondiskgif_obj_get_palette(mp_obj_t self_in) {
+static mp_obj_t gifio_ondiskgif_obj_get_palette(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
     check_for_deinit(self);
@@ -226,7 +206,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_palette_obj,
 
 //|     def next_frame(self) -> float:
 //|         """Loads the next frame. Returns expected delay before the next frame in seconds."""
-STATIC mp_obj_t gifio_ondiskgif_obj_next_frame(mp_obj_t self_in) {
+static mp_obj_t gifio_ondiskgif_obj_next_frame(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
     check_for_deinit(self);
@@ -238,7 +218,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_next_frame_obj, gifio_ondiskgif_obj_ne
 
 //|     duration: float
 //|     """Returns the total duration of the GIF in seconds. (read only)"""
-STATIC mp_obj_t gifio_ondiskgif_obj_get_duration(mp_obj_t self_in) {
+static mp_obj_t gifio_ondiskgif_obj_get_duration(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
     check_for_deinit(self);
@@ -252,7 +232,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_duration_obj,
 
 //|     frame_count: int
 //|     """Returns the number of frames in the GIF. (read only)"""
-STATIC mp_obj_t gifio_ondiskgif_obj_get_frame_count(mp_obj_t self_in) {
+static mp_obj_t gifio_ondiskgif_obj_get_frame_count(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
     check_for_deinit(self);
@@ -266,7 +246,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_frame_count_obj,
 
 //|     min_delay: float
 //|     """The minimum delay found between frames. (read only)"""
-STATIC mp_obj_t gifio_ondiskgif_obj_get_min_delay(mp_obj_t self_in) {
+static mp_obj_t gifio_ondiskgif_obj_get_min_delay(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
     check_for_deinit(self);
@@ -281,7 +261,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_min_delay_obj,
 //|     max_delay: float
 //|     """The maximum delay found between frames. (read only)"""
 //|
-STATIC mp_obj_t gifio_ondiskgif_obj_get_max_delay(mp_obj_t self_in) {
+static mp_obj_t gifio_ondiskgif_obj_get_max_delay(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
     check_for_deinit(self);
@@ -297,14 +277,14 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_max_delay_obj,
 //|         """Release resources allocated by OnDiskGif."""
 //|         ...
 //|
-STATIC mp_obj_t gifio_ondiskgif_obj_deinit(mp_obj_t self_in) {
+static mp_obj_t gifio_ondiskgif_obj_deinit(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_gifio_ondiskgif_deinit(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_deinit_obj, gifio_ondiskgif_obj_deinit);
 
-STATIC const mp_rom_map_elem_t gifio_ondiskgif_locals_dict_table[] = {
+static const mp_rom_map_elem_t gifio_ondiskgif_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&gifio_ondiskgif_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&gifio_ondiskgif___exit___obj) },
@@ -318,7 +298,7 @@ STATIC const mp_rom_map_elem_t gifio_ondiskgif_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_min_delay), MP_ROM_PTR(&gifio_ondiskgif_min_delay_obj) },
     { MP_ROM_QSTR(MP_QSTR_max_delay), MP_ROM_PTR(&gifio_ondiskgif_max_delay_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(gifio_ondiskgif_locals_dict, gifio_ondiskgif_locals_dict_table);
+static MP_DEFINE_CONST_DICT(gifio_ondiskgif_locals_dict, gifio_ondiskgif_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     gifio_ondiskgif_type,

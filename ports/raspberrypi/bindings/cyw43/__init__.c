@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2022 Jeff Epler for Adafruit Industries
- * Copyright (c) 2016 Scott Shawcroft
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2022 Jeff Epler for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2016 Scott Shawcroft
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/runtime.h"
 
@@ -100,21 +80,21 @@ MP_DEFINE_CONST_OBJ_TYPE(
 //|     usage.
 //|     """
 //|
-STATIC mp_obj_t cyw43_set_power_management(const mp_obj_t value_in) {
+static mp_obj_t cyw43_set_power_management(const mp_obj_t value_in) {
     mp_int_t value = mp_obj_get_int(value_in);
     power_management_value = value;
     bindings_cyw43_wifi_enforce_pm();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(cyw43_set_power_management_obj, cyw43_set_power_management);
+static MP_DEFINE_CONST_FUN_OBJ_1(cyw43_set_power_management_obj, cyw43_set_power_management);
 
 //| def get_power_management() -> int:
 //|     """Retrieve the power management register"""
 //|
-STATIC mp_obj_t cyw43_get_power_management() {
+static mp_obj_t cyw43_get_power_management() {
     return mp_obj_new_int(power_management_value);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(cyw43_get_power_management_obj, cyw43_get_power_management);
+static MP_DEFINE_CONST_FUN_OBJ_0(cyw43_get_power_management_obj, cyw43_get_power_management);
 
 const mcu_pin_obj_t *validate_obj_is_pin_including_cyw43(mp_obj_t obj, qstr arg_name) {
     if (!mp_obj_is_type(obj, &mcu_pin_type) && !mp_obj_is_type(obj, &cyw43_pin_type)) {
@@ -137,7 +117,7 @@ const mcu_pin_obj_t *validate_obj_is_free_pin_including_cyw43(mp_obj_t obj, qstr
     return pin;
 }
 
-STATIC const mp_rom_map_elem_t cyw43_module_globals_table[] = {
+static const mp_rom_map_elem_t cyw43_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cyw43) },
     { MP_ROM_QSTR(MP_QSTR_CywPin), MP_ROM_PTR(&cyw43_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_set_power_management), &cyw43_set_power_management_obj },
@@ -148,7 +128,7 @@ STATIC const mp_rom_map_elem_t cyw43_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PM_DISABLED), MP_ROM_INT(PM_DISABLED) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(cyw43_module_globals, cyw43_module_globals_table);
+static MP_DEFINE_CONST_DICT(cyw43_module_globals, cyw43_module_globals_table);
 
 const mp_obj_module_t cyw43_module = {
     .base = { &mp_type_module },

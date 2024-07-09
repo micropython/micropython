@@ -1,5 +1,10 @@
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_RECTANGLE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_RECTANGLE_H
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 by kvc0/WarriorOfWire
+//
+// SPDX-License-Identifier: MIT
+
+#pragma once
 
 #include "shared-module/vectorio/Rectangle.h"
 #include "shared-module/displayio/area.h"
@@ -24,5 +29,3 @@ void common_hal_vectorio_rectangle_set_color_index(void *obj, uint16_t color_ind
 
 int16_t common_hal_vectorio_rectangle_get_height(void *obj);
 void common_hal_vectorio_rectangle_set_height(void *obj, int16_t height);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_RECTANGLE_H

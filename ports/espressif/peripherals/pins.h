@@ -1,35 +1,14 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 // DO NOT include this file directly.
 // Use shared-bindings/microcontroller/Pin.h instead.
 // This ensures that all necessary includes are already included.
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_PINS_H
-#define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_PINS_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -67,6 +46,8 @@ extern const mp_obj_type_t mcu_pin_type;
 // Choose based on chip
 #if defined(CONFIG_IDF_TARGET_ESP32)
 #include "esp32/pins.h"
+#elif defined(CONFIG_IDF_TARGET_ESP32C2)
+#include "esp32c2/pins.h"
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #include "esp32c3/pins.h"
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
@@ -78,5 +59,3 @@ extern const mp_obj_type_t mcu_pin_type;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
 #include "esp32s3/pins.h"
 #endif
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_PINS_H

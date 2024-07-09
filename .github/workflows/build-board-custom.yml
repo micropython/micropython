@@ -1,4 +1,4 @@
-name: Custom board build
+name: Build board (custom)
 
 on:
   workflow_dispatch:
@@ -21,6 +21,11 @@ on:
         description: 'Flags: Build flags (e.g. CIRCUITPY_WIFI=1)'
         required: false
         type: string
+      branch:
+        description: 'Branch (only if Version="latest")'
+        required: false
+        default: 'main'
+        type: string
       debug:
         description: 'Make a debug build'
         required: false
@@ -36,7 +41,22 @@ jobs:
     - name: Set up repository
       run: |
         git clone --filter=tree:0 https://github.com/adafruit/circuitpython.git $GITHUB_WORKSPACE
+    - name: Checkout head / tag
+      run: |
         git checkout ${{ inputs.version == 'latest' && 'HEAD' || inputs.version }}
+    - name: fork compatibility
+      if: github.repository_owner != 'adafruit'
+      run: |
+        git remote add fork https://github.com/${{github.repository}}.git
+        git fetch fork --filter=tree:0
+    - name: branch compatibility
+      if: inputs.branch != 'main' && inputs.version == 'latest' && github.repository_owner == 'adafruit'
+      run: |
+        git checkout ${{inputs.branch}}
+    - name: branch compatibility (fork)
+      if: inputs.branch != '' && inputs.version == 'latest' && github.repository_owner != 'adafruit'
+      run: |
+        git checkout -b fork-branch fork/${{inputs.branch}}
     - name: Set up identifier
       if: inputs.debug || inputs.flags != ''
       run: |

@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2022 microDev
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2022 microDev
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/util.h"
 
@@ -62,7 +42,7 @@
 //|     ...
 //|
 
-STATIC mp_obj_t espulp_get_rtc_gpio_number(mp_obj_t pin_obj) {
+static mp_obj_t espulp_get_rtc_gpio_number(mp_obj_t pin_obj) {
     const mcu_pin_obj_t *pin = validate_obj_is_pin(pin_obj, MP_QSTR_pin);
     mp_int_t number = common_hal_espulp_get_rtc_gpio_number(pin);
     if (number < 0) {
@@ -72,7 +52,7 @@ STATIC mp_obj_t espulp_get_rtc_gpio_number(mp_obj_t pin_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(espulp_get_rtc_gpio_number_obj, espulp_get_rtc_gpio_number);
 
-STATIC const mp_rom_map_elem_t espulp_module_globals_table[] = {
+static const mp_rom_map_elem_t espulp_module_globals_table[] = {
     // module name
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_espulp) },
 
@@ -84,7 +64,7 @@ STATIC const mp_rom_map_elem_t espulp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ULPAlarm), MP_OBJ_FROM_PTR(&espulp_ulpalarm_type) },
     { MP_ROM_QSTR(MP_QSTR_Architecture), MP_ROM_PTR(&espulp_architecture_type) },
 };
-STATIC MP_DEFINE_CONST_DICT(espulp_module_globals, espulp_module_globals_table);
+static MP_DEFINE_CONST_DICT(espulp_module_globals, espulp_module_globals_table);
 
 const mp_obj_module_t espulp_module = {
     .base = { &mp_type_module },

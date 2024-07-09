@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdint.h>
 
@@ -196,6 +176,10 @@ extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uin
     } else {
         compare_count = ((uint32_t)duty * self->top + MAX_TOP / 2) / MAX_TOP;
     }
+    // do not allow count to be 0 (due to rounding) unless duty 0 was requested
+    if (compare_count == 0 && duty != 0) {
+        compare_count = 1;
+    }
     // compare_count is the CC register value, which should be TOP+1 for 100% duty cycle.
     pwm_set_chan_level(self->slice, self->ab_channel, compare_count);
 }
@@ -238,8 +222,8 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t fr
         pwm_set_clkdiv_int_frac(self->slice, div16 / 16, div16 % 16);
         pwm_set_wrap(self->slice, self->top);
     } else {
-        uint32_t top = common_hal_mcu_processor_get_frequency() / frequency;
-        self->actual_frequency = common_hal_mcu_processor_get_frequency() / top;
+        uint32_t top = common_hal_mcu_processor_get_frequency() / frequency - 1;
+        self->actual_frequency = common_hal_mcu_processor_get_frequency() / (top + 1);
         self->top = MIN(MAX_TOP, top);
         pwm_set_clkdiv_int_frac(self->slice, 1, 0);
         // Set TOP register. For 100% duty cycle, CC must be set to TOP+1.

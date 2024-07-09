@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
@@ -34,7 +14,6 @@
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/board/__init__.h"
 
-fourwire_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
 #define AXP2101_I2C_ADDRESS 0x34
@@ -114,9 +93,9 @@ static bool axp2101_init(busio_i2c_obj_t *i2c) {
     int rc;
     uint8_t write_buf[2];
 
-    // 0x90 = 0b1011_1001  // LDOS ON/OFF control 0
+    // 0x90 = 0b1011_1111  // LDOS ON/OFF control 0
     write_buf[0] = 0x90;
-    write_buf[1] = 0b10111001;
+    write_buf[1] = 0b10111111;
     rc = common_hal_busio_i2c_write(i2c, AXP2101_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
@@ -146,7 +125,7 @@ static bool axp2101_init(busio_i2c_obj_t *i2c) {
         return false;
     }
 
-    // 0x95, 0x1C // ALDO3 set to 3.3v for TF card slot
+    // 0x95, 0x1C // ALDO4 set to 3.3v for TF card slot
     write_buf[0] = 0x95;
     write_buf[1] = 0x1C;
     rc = common_hal_busio_i2c_write(i2c, AXP2101_I2C_ADDRESS, write_buf, sizeof(write_buf));

@@ -1,3 +1,12 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+
+// SPDX-FileCopyrightText: Copyright (c) 2020 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Arduino SA. All rights reserved.
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+//  This file is derived from the ArduinoBLE library. Its header is below.
+
 /*
   This file is part of the ArduinoBLE library.
   Copyright (c) 2018 Arduino SA. All rights reserved.
@@ -17,8 +26,7 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_H
-#define MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_H
+#pragma once
 
 #include <stdint.h>
 
@@ -77,5 +85,3 @@ hci_result_t hci_reset(void);
 
 hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint16_t data_len, uint8_t *data);
 hci_result_t hci_set_event_mask(uint64_t event_mask);
-
-#endif // MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_H

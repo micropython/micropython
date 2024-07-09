@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Unlicense
+// From https://github.com/kokke/tiny-AES-c
 /*
 
 This is an implementation of the AES algorithm, specifically ECB, CTR and CBC mode.

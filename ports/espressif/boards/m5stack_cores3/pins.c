@@ -1,8 +1,14 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
 #include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
 #include "shared-module/displayio/__init__.h"
 
-STATIC const mp_rom_obj_tuple_t camera_data_tuple = {
+static const mp_rom_obj_tuple_t camera_data_tuple = {
     {&mp_type_tuple},
     8,
     {
@@ -19,7 +25,7 @@ STATIC const mp_rom_obj_tuple_t camera_data_tuple = {
 
 CIRCUITPY_BOARD_BUS_SINGLETON(porta_i2c, i2c, 1)
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     // M5 Bus (except I2S & PORT B)

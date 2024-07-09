@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Dan Halbert for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/mperrno.h"
 #include "py/stream.h"
@@ -35,7 +15,7 @@
 #include "shared-bindings/_bleio/UUID.h"
 #include "shared-bindings/util.h"
 
-STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self) {
+static void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self) {
     if (!common_hal_bleio_characteristic_buffer_connected(self)) {
         mp_raise_ConnectionError(MP_ERROR_TEXT("Not connected"));
     }
@@ -57,7 +37,7 @@ STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self
 //|         :param int buffer_size: Size of ring buffer that stores incoming data coming from client.
 //|           Must be >= 1."""
 //|         ...
-STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_characteristic, ARG_timeout, ARG_buffer_size, };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_characteristic,  MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -82,7 +62,7 @@ STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, 
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
+static void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
     if (common_hal_bleio_characteristic_buffer_deinited(self)) {
         raise_deinited_error();
     }
@@ -115,7 +95,7 @@ STATIC void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
 //|         ...
 
 // These three methods are used by the shared stream methods.
-STATIC mp_uint_t bleio_characteristic_buffer_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t bleio_characteristic_buffer_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     raise_error_if_not_connected(self);
@@ -129,12 +109,12 @@ STATIC mp_uint_t bleio_characteristic_buffer_read(mp_obj_t self_in, void *buf_in
     return common_hal_bleio_characteristic_buffer_read(self, buf, size, errcode);
 }
 
-STATIC mp_uint_t bleio_characteristic_buffer_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t bleio_characteristic_buffer_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     mp_raise_NotImplementedError(MP_ERROR_TEXT("CharacteristicBuffer writing not provided"));
     return 0;
 }
 
-STATIC mp_uint_t bleio_characteristic_buffer_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+static mp_uint_t bleio_characteristic_buffer_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     raise_error_if_not_connected(self);
@@ -158,7 +138,7 @@ STATIC mp_uint_t bleio_characteristic_buffer_ioctl(mp_obj_t self_in, mp_uint_t r
 
 //|     in_waiting: int
 //|     """The number of bytes in the input buffer, available to be read"""
-STATIC mp_obj_t bleio_characteristic_buffer_obj_get_in_waiting(mp_obj_t self_in) {
+static mp_obj_t bleio_characteristic_buffer_obj_get_in_waiting(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     uint32_t available = common_hal_bleio_characteristic_buffer_rx_characters_available(self);
@@ -176,26 +156,26 @@ MP_PROPERTY_GETTER(bleio_characteristic_buffer_in_waiting_obj,
 //|     def reset_input_buffer(self) -> None:
 //|         """Discard any unread characters in the input buffer."""
 //|         ...
-STATIC mp_obj_t bleio_characteristic_buffer_obj_reset_input_buffer(mp_obj_t self_in) {
+static mp_obj_t bleio_characteristic_buffer_obj_reset_input_buffer(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     common_hal_bleio_characteristic_buffer_clear_rx_buffer(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_reset_input_buffer_obj, bleio_characteristic_buffer_obj_reset_input_buffer);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_reset_input_buffer_obj, bleio_characteristic_buffer_obj_reset_input_buffer);
 
 //|     def deinit(self) -> None:
 //|         """Disable permanently."""
 //|         ...
 //|
-STATIC mp_obj_t bleio_characteristic_buffer_deinit(mp_obj_t self_in) {
+static mp_obj_t bleio_characteristic_buffer_deinit(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_bleio_characteristic_buffer_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_deinit_obj, bleio_characteristic_buffer_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_deinit_obj, bleio_characteristic_buffer_deinit);
 
-STATIC const mp_rom_map_elem_t bleio_characteristic_buffer_locals_dict_table[] = {
+static const mp_rom_map_elem_t bleio_characteristic_buffer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),        MP_ROM_PTR(&bleio_characteristic_buffer_deinit_obj) },
 
     // Standard stream methods.
@@ -211,9 +191,9 @@ STATIC const mp_rom_map_elem_t bleio_characteristic_buffer_locals_dict_table[] =
 
 };
 
-STATIC MP_DEFINE_CONST_DICT(bleio_characteristic_buffer_locals_dict, bleio_characteristic_buffer_locals_dict_table);
+static MP_DEFINE_CONST_DICT(bleio_characteristic_buffer_locals_dict, bleio_characteristic_buffer_locals_dict_table);
 
-STATIC const mp_stream_p_t characteristic_buffer_stream_p = {
+static const mp_stream_p_t characteristic_buffer_stream_p = {
     .read = bleio_characteristic_buffer_read,
     .write = bleio_characteristic_buffer_write,
     .ioctl = bleio_characteristic_buffer_ioctl,

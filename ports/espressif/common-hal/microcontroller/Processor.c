@@ -1,41 +1,23 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2017 Dan Halbert for Adafruit Industries
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2017 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <math.h>
 #include <string.h>
 
 #include "py/runtime.h"
 
+#include "bindings/espidf/__init__.h"
 #include "common-hal/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 
 #include "esp_sleep.h"
 #include "esp_system.h"
+#include "esp_pm.h"
 
 #include "soc/efuse_reg.h"
 
@@ -64,10 +46,68 @@ float common_hal_mcu_processor_get_voltage(void) {
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
+    #if CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY
+    esp_pm_config_t pm;
+    CHECK_ESP_RESULT(esp_pm_get_configuration(&pm));
+    return pm.min_freq_mhz * 1000000;
+    #else
     return CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ * 1000000;
+    #endif
 }
 
-STATIC uint8_t swap_nibbles(uint8_t v) {
+#if CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY // Don't need a NotImplementedError here if this is false, as that is handled in shared-bindings
+// If the requested frequency is not supported by the hardware, return the next lower supported frequency
+static uint32_t get_valid_cpu_frequency(uint32_t requested_freq_mhz) {
+
+    #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
+    uint32_t valid_cpu_frequencies[] = {20, 40, 80, 160};
+    #elif defined(CONFIG_IDF_TARGET_ESP32C2)
+    uint32_t valid_cpu_frequencies[] = {20, 40, 80, 120};
+    #elif defined(CONFIG_IDF_TARGET_ESP32H2)
+    uint32_t valid_cpu_frequencies[] = {32, 48, 64, 96};
+    #else
+    uint32_t valid_cpu_frequencies[] = {20, 40, 80, 160, 240};
+    #endif
+
+    if (requested_freq_mhz < valid_cpu_frequencies[0]) {
+        // Don't round to the lowest valid frequency automatically here because the lowest valid frequency
+        // can break UART/USB connection on some boards and it's very easy to trigger this case accidentally
+        // (e.g. accidentally setting the frequency to 16000000 instead of 160000000,
+        // or setting the frequency to 160 instead of 160000000). So trigger an exception instead.
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_frequency);
+    }
+
+    const size_t num_valid_frequencies = MP_ARRAY_SIZE(valid_cpu_frequencies);
+
+    for (size_t i = 1; i < num_valid_frequencies; i++) {
+        if (requested_freq_mhz < valid_cpu_frequencies[i]) {
+            return valid_cpu_frequencies[i - 1];
+        }
+    }
+
+    return valid_cpu_frequencies[num_valid_frequencies - 1];
+}
+
+void common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self, uint32_t frequency) {
+    // Without this check, everything would compile without errors, but silently fail at runtime if
+    // CONFIG_PM_ENABLE is ever accidentally disabled
+    #if !defined(CONFIG_PM_ENABLE)
+    #error "common_hal_mcu_processor_set_frequency needs CONFIG_PM_ENABLE to be defined."
+    #endif
+
+    frequency /= 1000000;
+
+    frequency = get_valid_cpu_frequency(frequency);
+
+    esp_pm_config_t pm;
+    pm.max_freq_mhz = frequency;
+    pm.min_freq_mhz = frequency;
+    pm.light_sleep_enable = false;
+    CHECK_ESP_RESULT(esp_pm_configure(&pm));
+}
+#endif
+
+static uint8_t swap_nibbles(uint8_t v) {
     return ((v << 4) | (v >> 4)) & 0xff;
 }
 
@@ -81,6 +121,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     uint32_t mac_address_part = REG_READ(EFUSE_BLK0_RDATA1_REG);
     #elif defined(CONFIG_IDF_TARGET_ESP32H2)
     uint32_t mac_address_part = REG_READ(EFUSE_RD_MAC_SYS_0_REG);
+    #elif defined(CONFIG_IDF_TARGET_ESP32C2)
+    uint32_t mac_address_part = REG_READ(EFUSE_RD_BLK2_DATA0_REG);
     #else
     uint32_t mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_0_REG);
     #endif
@@ -98,6 +140,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     mac_address_part = REG_READ(EFUSE_BLK0_RDATA2_REG);
     #elif defined(CONFIG_IDF_TARGET_ESP32H2)
     mac_address_part = REG_READ(EFUSE_RD_MAC_SYS_1_REG);
+    #elif defined(CONFIG_IDF_TARGET_ESP32C2)
+    mac_address_part = REG_READ(EFUSE_RD_BLK2_DATA1_REG);
     #else
     mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_1_REG);
     #endif

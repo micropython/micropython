@@ -1,5 +1,10 @@
-#ifndef SHARED_MODULE_VECTORIO__INIT__H
-#define SHARED_MODULE_VECTORIO__INIT__H
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 by kvc0/WarriorOfWire
+//
+// SPDX-License-Identifier: MIT
+
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -39,5 +44,3 @@ typedef struct _vectorio_draw_protocol_t {
     // Implementation functions for the draw protocol
     vectorio_draw_protocol_impl_t *draw_protocol_impl;
 } vectorio_draw_protocol_t;
-
-#endif

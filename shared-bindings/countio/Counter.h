@@ -1,5 +1,10 @@
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_COUNTIO_COUNTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_COUNTIO_COUNTER_H
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 by Daniel Pollard
+//
+// SPDX-License-Identifier: MIT
+
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/countio/Counter.h"
@@ -15,5 +20,3 @@ extern bool common_hal_countio_counter_deinited(countio_counter_obj_t *self);
 extern mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t *self);
 extern void common_hal_countio_counter_set_count(countio_counter_obj_t *self,
     mp_int_t new_count);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_COUNTIO_COUNTER_H

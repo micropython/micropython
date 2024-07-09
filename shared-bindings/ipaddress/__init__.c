@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/objexcept.h"
 #include "py/objstr.h"
@@ -81,7 +61,7 @@ bool ipaddress_parse_ipv4address(const char *str_data, size_t str_len, uint32_t 
 //|     ...
 //|
 
-STATIC mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
+static mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
     uint32_t value;
     if (mp_obj_get_int_maybe(ip_in, (mp_int_t *)&value)) {
         // We're done.
@@ -98,13 +78,13 @@ STATIC mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ipaddress_ip_address_obj, ipaddress_ip_address);
 
-STATIC const mp_rom_map_elem_t ipaddress_module_globals_table[] = {
+static const mp_rom_map_elem_t ipaddress_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),      MP_ROM_QSTR(MP_QSTR_ipaddress) },
     { MP_ROM_QSTR(MP_QSTR_ip_address),    MP_ROM_PTR(&ipaddress_ip_address_obj) },
     { MP_ROM_QSTR(MP_QSTR_IPv4Address),   MP_ROM_PTR(&ipaddress_ipv4address_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(ipaddress_module_globals, ipaddress_module_globals_table);
+static MP_DEFINE_CONST_DICT(ipaddress_module_globals, ipaddress_module_globals_table);
 
 
 const mp_obj_module_t ipaddress_module = {

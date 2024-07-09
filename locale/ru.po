@@ -128,7 +128,7 @@ msgstr "%q в %q должно быть типа %q, а не %q"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/usb_host/Port.c
 #: shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/microcontroller/Pin.c shared-module/max3421e/Max3421E.c
 msgid "%q in use"
 msgstr "%q используется"
 
@@ -1160,10 +1160,12 @@ msgstr "Ввод занимает слишком много времени"
 msgid "Input/output error"
 msgstr "Ошибка ввода/вывода"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nordic/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
 msgstr "Неполная аутентификация"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nordic/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
 msgstr "Недостаточное шифрование"
@@ -1200,6 +1202,7 @@ msgstr "Внутренняя ошибка #%d"
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/max3421e/Max3421E.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1219,6 +1222,7 @@ msgstr "Прерванная ошибка."
 msgid "Interrupted by output function"
 msgstr ""
 
+#: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
@@ -1329,6 +1333,10 @@ msgstr "Слой должен быть группой (Group) или субкл�
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
 msgstr "MAC адрес был недействительным"
+
+#: ports/espressif/common-hal/_bleio/Characteristic.c
+msgid "MITM security not supported"
+msgstr ""
 
 #: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
@@ -2064,6 +2072,10 @@ msgstr "Слишком много каналов в выборке"
 msgid "Too many channels in sample."
 msgstr "Слишком много каналов в выборке."
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
+msgid "Too many descriptors"
+msgstr ""
+
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr "Слишком много шин дисплея; забыл displayio.release_displays()?"
@@ -2204,6 +2216,7 @@ msgstr "Неизвестная ошибка BLE в %s:%d: %d"
 msgid "Unknown BLE error: %d"
 msgstr "Неизвестная ошибка BLE: %d"
 
+#: ports/espressif/common-hal/max3421e/Max3421E.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
 msgid "Unknown error code %d"
@@ -2275,9 +2288,10 @@ msgstr "Неподдерживаемый формат"
 msgid "Unsupported hash algorithm"
 msgstr "Неподдерживаемый алгоритм хеширования"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Update Failed"
-msgstr "Ошибка обновления"
+msgid "Update failed"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
@@ -3922,7 +3936,7 @@ msgstr "вытолкнуть из пустого импульсного вход
 msgid "pop from empty %q"
 msgstr "Всплывающее окно из пустого %q"
 
-#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+#: shared-bindings/socketpool/Socket.c
 msgid "port must be >= 0"
 msgstr "порт должен быть >= 0"
 
@@ -4442,6 +4456,9 @@ msgstr "zi должно быть типа float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
+
+#~ msgid "Update Failed"
+#~ msgstr "Ошибка обновления"
 
 #~ msgid "Error: Failure to bind"
 #~ msgstr "Ошибка: Сбой привязки"

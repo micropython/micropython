@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 by Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
 #include "py/runtime.h"
 #include <stdint.h>
 #include "class/video/video_device.h"
@@ -136,7 +142,7 @@ size_t usb_video_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *de
 
 background_callback_t usb_video_cb;
 
-STATIC void usb_video_cb_fun(void *unused) {
+static void usb_video_cb_fun(void *unused) {
     (void)unused;
 
     static unsigned start_ms = 0;

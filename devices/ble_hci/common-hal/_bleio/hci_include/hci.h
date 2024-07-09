@@ -1,4 +1,5 @@
-// CircuitPython: Adapted from Zephyr include file.
+// This file is part of the CircuitPython project: https://circuitpython.org
+// Adapted from Zephyr include file.
 
 /* hci.h - Bluetooth Host Control Interface definitions */
 
@@ -8,8 +9,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_HCI_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_HCI_H_
+#pragma once
 
 #include <stdbool.h>
 // for __packed
@@ -1768,5 +1768,3 @@ struct bt_hci_evt_le_chan_sel_algo {
 #define BT_EVT_MASK_LE_CHAN_SEL_ALGO             BT_EVT_BIT(19)
 
 //
-
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_HCI_H_ */

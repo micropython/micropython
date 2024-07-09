@@ -7,7 +7,7 @@
 #
 # LWIP
 #
-CONFIG_LWIP_LOCAL_HOSTNAME="espressif-esp32s3"
+CONFIG_LWIP_LOCAL_HOSTNAME="m5stack-cardputer"
 # end of LWIP
 
 # end of Component config

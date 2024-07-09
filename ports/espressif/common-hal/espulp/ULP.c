@@ -1,34 +1,17 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2022 microDev
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2022 microDev
+//
+// SPDX-License-Identifier: MIT
 
 #include "bindings/espulp/__init__.h"
 #include "bindings/espulp/ULP.h"
+#include "bindings/espidf/__init__.h"
 
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
+
+#include "esp_sleep.h"
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
 #include "esp32/ulp.h"
@@ -46,15 +29,19 @@
 // To-do idf v5.0: remove following include
 #include "soc/rtc_cntl_reg.h"
 
-STATIC bool ulp_used = false;
-STATIC uint32_t pins_used = 0;
+static bool ulp_used = false;
+static uint32_t pins_used = 0;
 
 void espulp_reset(void) {
     // NOTE: This *doesn't* disable the ULP. It'll keep running even when CircuitPython isn't.
     ulp_used = false;
 }
 
-void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t length, uint32_t pin_mask) {
+void common_hal_espulp_ulp_set_wakeup_period(espulp_ulp_obj_t *self, size_t period_index, uint32_t period_us) {
+    CHECK_ESP_RESULT(ulp_set_wakeup_period(period_index, period_us));
+}
+
+void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t length, uint32_t entry_point, uint32_t pin_mask) {
     if (length > CONFIG_ULP_COPROC_RESERVE_MEM) {
         mp_raise_ValueError(MP_ERROR_TEXT("Program too long"));
     }
@@ -87,19 +74,31 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
     }
     pins_used = pin_mask;
 
-    ulp_set_wakeup_period(0, 20000);
+    // Main purpose of ULP is to run while main cpu is in deep sleep, so
+    // ensure GPIO Power Domain remains enabled during deep sleep,
+    // if any GPIO were supplied here.
+    if (pins_used > 0) {
+        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+    }
 
+    esp_err_t result;
     switch (self->arch) {
         #ifdef CONFIG_ULP_COPROC_TYPE_FSM
         case FSM:
-            ulp_load_binary(0, (const uint8_t *)program, length);
-            ulp_run(0);
+            result = ulp_load_binary(0, (const uint8_t *)program, length / sizeof(uint32_t));
+            if (result != ESP_OK) {
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_program);
+            }
+            CHECK_ESP_RESULT(ulp_run(entry_point / sizeof(uint32_t)));
             break;
         #endif
         #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
         case RISCV:
-            ulp_riscv_load_binary((const uint8_t *)program, length);
-            ulp_riscv_run();
+            result = ulp_riscv_load_binary((const uint8_t *)program, length);
+            if (result != ESP_OK) {
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_program);
+            }
+            CHECK_ESP_RESULT(ulp_riscv_run());
             break;
         #endif
         default:
@@ -110,12 +109,11 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
 
 void common_hal_espulp_ulp_halt(espulp_ulp_obj_t *self) {
     switch (self->arch) {
-        /*
         #ifdef CONFIG_ULP_COPROC_TYPE_FSM
         case FSM:
+            ulp_timer_stop();
             break;
         #endif
-        */
         #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
         case RISCV:
             ulp_riscv_timer_stop();

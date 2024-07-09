@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/socketpool/Socket.h"
 
@@ -56,17 +36,17 @@ StackType_t socket_select_stack[2 * configMINIMAL_STACK_SIZE];
 #define FDSTATE_CLOSED  0
 #define FDSTATE_OPEN    1
 #define FDSTATE_CLOSING 2
-STATIC uint8_t socket_fd_state[CONFIG_LWIP_MAX_SOCKETS];
+static uint8_t socket_fd_state[CONFIG_LWIP_MAX_SOCKETS];
 
 // How long to wait between checks for a socket to connect.
 #define SOCKET_CONNECT_POLL_INTERVAL_MS 100
 
-STATIC socketpool_socket_obj_t *user_socket[CONFIG_LWIP_MAX_SOCKETS];
+static socketpool_socket_obj_t *user_socket[CONFIG_LWIP_MAX_SOCKETS];
 StaticTask_t socket_select_task_buffer;
 TaskHandle_t socket_select_task_handle;
-STATIC int socket_change_fd = -1;
+static int socket_change_fd = -1;
 
-STATIC void socket_select_task(void *arg) {
+static void socket_select_task(void *arg) {
     uint64_t signal;
     fd_set readfds;
     fd_set excptfds;
@@ -166,7 +146,7 @@ void socketpool_socket_poll_resume(void) {
 // The writes below send an event to the socket select task so that it redoes the
 // select with the new open socket set.
 
-STATIC bool register_open_socket(int fd) {
+static bool register_open_socket(int fd) {
     if (fd < FD_SETSIZE) {
         socket_fd_state[fd - LWIP_SOCKET_OFFSET] = FDSTATE_OPEN;
         user_socket[fd - LWIP_SOCKET_OFFSET] = NULL;
@@ -179,13 +159,13 @@ STATIC bool register_open_socket(int fd) {
     return false;
 }
 
-STATIC void mark_user_socket(int fd, socketpool_socket_obj_t *obj) {
+static void mark_user_socket(int fd, socketpool_socket_obj_t *obj) {
     socket_fd_state[fd - LWIP_SOCKET_OFFSET] = FDSTATE_OPEN;
     user_socket[fd - LWIP_SOCKET_OFFSET] = obj;
     // No need to wakeup select task
 }
 
-STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
+static bool _socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
     int proto,
     socketpool_socket_obj_t *sock) {

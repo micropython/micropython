@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 #include "shared-bindings/neopixel_write/__init__.h"
 
 #include "py/obj.h"
@@ -67,7 +47,7 @@
 // But the ports vary based on implementation considerations; the proof is in the testing.
 // https://adafru.it/5225 is more sensitive to timing and should be included in testing.
 
-STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
+static void check_for_deinit(digitalio_digitalinout_obj_t *self) {
     if (common_hal_digitalio_digitalinout_deinited(self)) {
         raise_deinited_error();
     }
@@ -112,7 +92,7 @@ STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t neopixel_write_neopixel_write_(mp_obj_t digitalinout_obj, mp_obj_t buf) {
+static mp_obj_t neopixel_write_neopixel_write_(mp_obj_t digitalinout_obj, mp_obj_t buf) {
     const digitalio_digitalinout_obj_t *digitalinout =
         mp_arg_validate_type(digitalinout_obj, &digitalio_digitalinout_type, MP_QSTR_digitalinout);
 
@@ -125,14 +105,14 @@ STATIC mp_obj_t neopixel_write_neopixel_write_(mp_obj_t digitalinout_obj, mp_obj
     common_hal_neopixel_write(digitalinout, (uint8_t *)bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(neopixel_write_neopixel_write_obj, neopixel_write_neopixel_write_);
+static MP_DEFINE_CONST_FUN_OBJ_2(neopixel_write_neopixel_write_obj, neopixel_write_neopixel_write_);
 
-STATIC const mp_rom_map_elem_t neopixel_write_module_globals_table[] = {
+static const mp_rom_map_elem_t neopixel_write_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write), (mp_obj_t)&neopixel_write_neopixel_write_obj },
 };
 
-STATIC MP_DEFINE_CONST_DICT(neopixel_write_module_globals, neopixel_write_module_globals_table);
+static MP_DEFINE_CONST_DICT(neopixel_write_module_globals, neopixel_write_module_globals_table);
 
 const mp_obj_module_t neopixel_write_module = {
     .base = { &mp_type_module },

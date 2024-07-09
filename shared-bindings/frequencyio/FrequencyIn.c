@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Michael Schroeder
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Michael Schroeder
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdint.h>
 
@@ -69,7 +49,7 @@
 //|               # as the value.
 //|               frequency.clear()"""
 //|         ...
-STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
 
     enum { ARG_pin, ARG_capture_period };
@@ -94,14 +74,14 @@ STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size
 //|     def deinit(self) -> None:
 //|         """Deinitialises the FrequencyIn and releases any hardware resources for reuse."""
 //|         ...
-STATIC mp_obj_t frequencyio_frequencyin_deinit(mp_obj_t self_in) {
+static mp_obj_t frequencyio_frequencyin_deinit(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_frequencyio_frequencyin_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_deinit_obj, frequencyio_frequencyin_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_deinit_obj, frequencyio_frequencyin_deinit);
 
-STATIC void check_for_deinit(frequencyio_frequencyin_obj_t *self) {
+static void check_for_deinit(frequencyio_frequencyin_obj_t *self) {
     if (common_hal_frequencyio_frequencyin_deinited(self)) {
         raise_deinited_error();
     }
@@ -116,17 +96,17 @@ STATIC void check_for_deinit(frequencyio_frequencyin_obj_t *self) {
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t frequencyio_frequencyin_obj___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t frequencyio_frequencyin_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_frequencyio_frequencyin_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(frequencyio_frequencyin___exit___obj, 4, 4, frequencyio_frequencyin_obj___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(frequencyio_frequencyin___exit___obj, 4, 4, frequencyio_frequencyin_obj___exit__);
 
 //|     def pause(self) -> None:
 //|         """Pause frequency capture."""
 //|         ...
-STATIC mp_obj_t frequencyio_frequencyin_obj_pause(mp_obj_t self_in) {
+static mp_obj_t frequencyio_frequencyin_obj_pause(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -138,7 +118,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_pause_obj, frequencyio_frequen
 //|     def resume(self) -> None:
 //|         """Resumes frequency capture."""
 //|         ...
-STATIC mp_obj_t frequencyio_frequencyin_obj_resume(mp_obj_t self_in) {
+static mp_obj_t frequencyio_frequencyin_obj_resume(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -151,7 +131,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_resume_obj, frequencyio_freque
 //|         """Clears the last detected frequency capture value."""
 //|         ...
 
-STATIC mp_obj_t frequencyio_frequencyin_obj_clear(mp_obj_t self_in) {
+static mp_obj_t frequencyio_frequencyin_obj_clear(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -167,7 +147,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_clear_obj, frequencyio_frequen
 //|
 //|     .. note:: When setting a new ``capture_period``, all previous capture information is
 //|               cleared with a call to ``clear()``."""
-STATIC mp_obj_t frequencyio_frequencyin_obj_get_capture_period(mp_obj_t self_in) {
+static mp_obj_t frequencyio_frequencyin_obj_get_capture_period(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -175,7 +155,7 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_get_capture_period(mp_obj_t self_in)
 }
 MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequency_get_capture_period_obj, frequencyio_frequencyin_obj_get_capture_period);
 
-STATIC mp_obj_t frequencyio_frequencyin_obj_set_capture_period(mp_obj_t self_in, mp_obj_t capture_period) {
+static mp_obj_t frequencyio_frequencyin_obj_set_capture_period(mp_obj_t self_in, mp_obj_t capture_period) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -192,7 +172,7 @@ MP_PROPERTY_GETSET(frequencyio_frequencyin_capture_period_obj,
 //|         """Returns the value of the last frequency captured."""
 //|         ...
 //|
-STATIC mp_obj_t frequencyio_frequencyin_obj_get_value(mp_obj_t self_in) {
+static mp_obj_t frequencyio_frequencyin_obj_get_value(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -204,7 +184,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_get_value_obj, frequencyio_fre
 MP_PROPERTY_GETTER(frequencyio_frequencyin_value_obj,
     (mp_obj_t)&frequencyio_frequencyin_get_value_obj);
 
-STATIC const mp_rom_map_elem_t frequencyio_frequencyin_locals_dict_table[] = {
+static const mp_rom_map_elem_t frequencyio_frequencyin_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&frequencyio_frequencyin_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&frequencyio_frequencyin_deinit_obj) },
@@ -216,7 +196,7 @@ STATIC const mp_rom_map_elem_t frequencyio_frequencyin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&frequencyio_frequencyin_clear_obj) },
     { MP_ROM_QSTR(MP_QSTR_capture_period), MP_ROM_PTR(&frequencyio_frequencyin_capture_period_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(frequencyio_frequencyin_locals_dict, frequencyio_frequencyin_locals_dict_table);
+static MP_DEFINE_CONST_DICT(frequencyio_frequencyin_locals_dict, frequencyio_frequencyin_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     frequencyio_frequencyin_type,

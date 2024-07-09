@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * \file
  *
@@ -34,8 +40,7 @@
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
  */
 
-#ifndef SD_MMC_PROTOCOL_H_INCLUDED
-#define SD_MMC_PROTOCOL_H_INCLUDED
+#pragma once
 
 #include "compiler.h"
 
@@ -996,5 +1001,3 @@ static inline uint32_t SDMMC_UNSTUFF_BITS(uint8_t *reg, uint16_t reg_size, uint1
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* SD_MMC_PROTOCOL_H_INCLUDED */

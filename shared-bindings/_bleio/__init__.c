@@ -1,30 +1,10 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- * Copyright (c) 2016 Glenn Ruben Bakke
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+// SPDX-FileCopyrightText: Copyright (c) 2018 Artur Pacholec
+// SPDX-FileCopyrightText: Copyright (c) 2016 Glenn Ruben Bakke
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdarg.h>
 
@@ -100,19 +80,20 @@ NORETURN void mp_raise_bleio_SecurityError(mp_rom_error_text_t fmt, ...) {
 }
 
 // Called when _bleio is imported.
-STATIC mp_obj_t bleio___init__(void) {
+static mp_obj_t bleio___init__(void) {
 // HCI cannot be enabled on import, because we need to setup the HCI adapter first.
+    common_hal_bleio_init();
     #if !CIRCUITPY_BLEIO_HCI
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
     #endif
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(bleio___init___obj, bleio___init__);
+static MP_DEFINE_CONST_FUN_OBJ_0(bleio___init___obj, bleio___init__);
 
 
 // Need a forward reference due to mutual references.
 #if CIRCUITPY_BLEIO_HCI
-STATIC mp_obj_dict_t bleio_module_globals;
+static mp_obj_dict_t bleio_module_globals;
 #endif
 
 //| def set_adapter(adapter: Optional[_bleio.Adapter]) -> None:
@@ -141,10 +122,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_set_adapter_obj, bleio_set_adapter);
 // Make the module dictionary be in RAM, so that _bleio.adapter can be set.
 // Use a local macro to define how table entries should be converted.
 #define OBJ_FROM_PTR MP_OBJ_FROM_PTR
-STATIC mp_map_elem_t bleio_module_globals_table[] = {
+static mp_map_elem_t bleio_module_globals_table[] = {
 #else
 #define OBJ_FROM_PTR MP_ROM_PTR
-STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
+static const mp_rom_map_elem_t bleio_module_globals_table[] = {
     #endif
     // Name must be the first entry so that the exception printing below is correct.
     { MP_ROM_QSTR(MP_QSTR___name__),             MP_ROM_QSTR(MP_QSTR__bleio) },
@@ -183,9 +164,9 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
 
 #if CIRCUITPY_BLEIO_HCI
 // Module dict is mutable to allow setting _bleio.adapter.
-STATIC MP_DEFINE_MUTABLE_DICT(bleio_module_globals, bleio_module_globals_table);
+static MP_DEFINE_MUTABLE_DICT(bleio_module_globals, bleio_module_globals_table);
 #else
-STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);
+static MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);
 #endif
 
 void bleio_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {

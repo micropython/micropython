@@ -1,29 +1,9 @@
-/*
- * This file is part of the CircuitPython project, https://github.com/adafruit/circuitpython
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Rose Hooper
- * Copyright (c) 2022 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Rose Hooper
+// SPDX-FileCopyrightText: Copyright (c) 2022 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/objproperty.h"
 #include "py/objtype.h"
@@ -39,7 +19,7 @@
 //|     def __init__(self, pixelbuf: PixelBuf, indices: Tuple[Union[int, Tuple[int]]]) -> None:
 //|         """Construct a PixelMap object that uses the given indices of the underlying pixelbuf"""
 
-STATIC mp_obj_t pixelmap_pixelmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t pixelmap_pixelmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pixelbuf, ARG_indices };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pixelbuf, MP_ARG_REQUIRED },
@@ -95,13 +75,13 @@ STATIC mp_obj_t pixelmap_pixelmap_make_new(const mp_obj_type_t *type, size_t n_a
 
 //|     auto_write: bool
 //|     """True if updates should be automatically written"""
-STATIC mp_obj_t pixelmap_pixelmap_auto_write_get(const mp_obj_t self_in) {
+static mp_obj_t pixelmap_pixelmap_auto_write_get(const mp_obj_t self_in) {
     pixelmap_pixelmap_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(shared_module_pixelmap_pixelmap_auto_write_get(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelmap_pixelmap_auto_write_get_obj, pixelmap_pixelmap_auto_write_get);
 
-STATIC mp_obj_t pixelmap_pixelmap_auto_write_set(const mp_obj_t self_in, const mp_obj_t arg) {
+static mp_obj_t pixelmap_pixelmap_auto_write_set(const mp_obj_t self_in, const mp_obj_t arg) {
     pixelmap_pixelmap_obj_t *self = MP_OBJ_TO_PTR(self_in);
     shared_module_pixelmap_pixelmap_auto_write_set(self, mp_obj_is_true(arg));
     return mp_const_none;
@@ -114,7 +94,7 @@ MP_PROPERTY_GETSET(pixelmap_pixelmap_auto_write_obj,
 
 //|     bpp: int
 //|     """The number of bytes per pixel in the buffer (read-only)"""
-STATIC mp_obj_t pixelmap_pixelmap_obj_get_bpp(mp_obj_t self_in) {
+static mp_obj_t pixelmap_pixelmap_obj_get_bpp(mp_obj_t self_in) {
     pixelmap_pixelmap_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_adafruit_pixelbuf_pixelbuf_get_bpp(self->pixelbuf));
 }
@@ -125,7 +105,7 @@ MP_PROPERTY_GETTER(pixelmap_pixelmap_bpp_obj,
 
 //|     byteorder: str
 //|     """byteorder string for the buffer (read-only)"""
-STATIC mp_obj_t pixelmap_pixelmap_obj_get_byteorder(mp_obj_t self_in) {
+static mp_obj_t pixelmap_pixelmap_obj_get_byteorder(mp_obj_t self_in) {
     pixelmap_pixelmap_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_adafruit_pixelbuf_pixelbuf_get_byteorder_string(self->pixelbuf);
 }
@@ -136,7 +116,7 @@ MP_PROPERTY_GETTER(pixelmap_pixelmap_byteorder_obj,
 //|
 //|     def fill(self, color: PixelType) -> None:
 //|         """Fill all the pixels in the map with the given color"""
-STATIC mp_obj_t pixelmap_pixelmap_fill(const mp_obj_t self_in, const mp_obj_t color) {
+static mp_obj_t pixelmap_pixelmap_fill(const mp_obj_t self_in, const mp_obj_t color) {
     pixelmap_pixelmap_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     shared_module_pixelmap_pixelmap_fill(self, color);
@@ -147,7 +127,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(pixelmap_pixelmap_fill_obj, pixelmap_pixelmap_fill);
 //|
 //|     def indices(self, index: int) -> Tuple[int]:
 //|         """Return the PixelBuf indices for a PixelMap index"""
-STATIC mp_obj_t pixelmap_pixelmap_indices(const mp_obj_t self_in, const mp_obj_t index) {
+static mp_obj_t pixelmap_pixelmap_indices(const mp_obj_t self_in, const mp_obj_t index) {
     pixelmap_pixelmap_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     return shared_module_pixelmap_pixelmap_indices(self, mp_obj_get_int(index));
@@ -176,7 +156,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(pixelmap_pixelmap_indices_obj, pixelmap_pixelmap_indic
 //|         For RGBW byteorders, if given only RGB values either as an int or as a tuple, the white value
 //|         is used instead when the red, green, and blue values are the same."""
 //|         ...
-STATIC mp_obj_t pixelmap_pixelmap_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+static mp_obj_t pixelmap_pixelmap_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     pixelmap_pixelmap_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (value == MP_OBJ_NULL) {
         // delete
@@ -220,7 +200,7 @@ STATIC mp_obj_t pixelmap_pixelmap_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
 
 //|     def __len__(self) -> int:
 //|         """Length of the map"""
-STATIC mp_obj_t pixelmap_pixelmap_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+static mp_obj_t pixelmap_pixelmap_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     pixelmap_pixelmap_obj_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL:
@@ -238,14 +218,14 @@ STATIC mp_obj_t pixelmap_pixelmap_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|         ...
 //|
 
-STATIC mp_obj_t pixelmap_pixelmap_show(mp_obj_t self_in) {
+static mp_obj_t pixelmap_pixelmap_show(mp_obj_t self_in) {
     pixelmap_pixelmap_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_adafruit_pixelbuf_pixelbuf_show(self->pixelbuf);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelmap_pixelmap_show_obj, pixelmap_pixelmap_show);
+static MP_DEFINE_CONST_FUN_OBJ_1(pixelmap_pixelmap_show_obj, pixelmap_pixelmap_show);
 
-STATIC const mp_rom_map_elem_t pixelmap_pixelmap_locals_dict_table[] = {
+static const mp_rom_map_elem_t pixelmap_pixelmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_auto_write), MP_ROM_PTR(&pixelmap_pixelmap_auto_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_bpp), MP_ROM_PTR(&pixelmap_pixelmap_bpp_obj) },
     { MP_ROM_QSTR(MP_QSTR_byteorder), MP_ROM_PTR(&pixelmap_pixelmap_byteorder_obj) },
@@ -254,7 +234,7 @@ STATIC const mp_rom_map_elem_t pixelmap_pixelmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&pixelmap_pixelmap_show_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pixelmap_pixelmap_locals_dict, pixelmap_pixelmap_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pixelmap_pixelmap_locals_dict, pixelmap_pixelmap_locals_dict_table);
 
 
 MP_DEFINE_CONST_OBJ_TYPE(

@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 Noralf Trønnes
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2018 Noralf Trønnes
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdint.h>
 
@@ -36,67 +16,215 @@
 
 //| """Two wire serial protocol target
 //|
-//| The `i2ctarget` module contains classes to support an I2C target.
+//| In many cases, i2c is used by a controller to retrieve (or send) to a peripheral (target). It is also possible
+//| for a device to act as a target for another controller.  However, a device can only be a controller or a target on
+//| an I2C bus (although many devices now support multiple I2C busses).
 //|
-//| Example emulating a target with 2 addresses (read and write)::
+//| .. note::
+//|    `I2CTarget` takes a list of addresses, but not all devices support this feature
 //|
-//|   import board
-//|   from i2ctarget import I2CTarget
+//| Example of emulating a simple device that can only handle single writes and reads::
 //|
-//|   regs = [0] * 16
-//|   index = 0
+//|    import board
+//|    from i2ctarget import I2CTarget
 //|
-//|   with I2CTarget(board.SCL, board.SDA, (0x40, 0x41)) as device:
-//|       while True:
-//|           r = device.request()
-//|           if not r:
-//|               # Maybe do some housekeeping
-//|               continue
-//|           with r:  # Closes the transfer if necessary by sending a NACK or feeding dummy bytes
-//|               if r.address == 0x40:
-//|                   if not r.is_read:  # Main write which is Selected read
-//|                       b = r.read(1)
-//|                       if not b or b[0] > 15:
-//|                           break
-//|                       index = b[0]
-//|                       b = r.read(1)
-//|                       if b:
-//|                           regs[index] = b[0]
-//|                   elif r.is_restart:  # Combined transfer: This is the Main read message
-//|                       n = r.write(bytes([regs[index]]))
-//|                   #else:
-//|                       # A read transfer is not supported in this example
-//|                       # If the microcontroller tries, it will get 0xff byte(s) by the ctx manager (r.close())
-//|               elif r.address == 0x41:
-//|                   if not r.is_read:
-//|                       b = r.read(1)
-//|                       if b and b[0] == 0xde:
-//|                           # do something
-//|                           pass
+//|    import adafruit_logging as logging
 //|
-//| This example sets up an I2C device that can be accessed from Linux like this::
+//|    logger = logging.getLogger('i2ctarget')
+//|    logger.setLevel(logging.INFO)
+//|    logger.addHandler(logging.StreamHandler())
 //|
-//|   $ i2cget -y 1 0x40 0x01
-//|   0x00
-//|   $ i2cset -y 1 0x40 0x01 0xaa
-//|   $ i2cget -y 1 0x40 0x01
-//|   0xaa
+//|    logger.info("\\n\\ncode starting...")
+//|
+//|    # initialize an I2C target with a device address of 0x40
+//|    with I2CTarget(board.SCL, board.SDA, (0x40,)) as device:
+//|
+//|        while True:
+//|            # check if there's a pending device request
+//|            i2c_target_request = device.request()
+//|
+//|            if not i2c_target_request:
+//|                # no request is pending
+//|                continue
+//|
+//|            # `with` invokes I2CTargetRequest's functions to handle the necessary opening and closing of a request
+//|            with i2c_target_request:
+//|
+//|                # the address associated with the request
+//|                address = i2c_target_request.address
+//|
+//|                if i2c_target_request.is_read:
+//|                    logger.info(f"read request to address '0x{address:02x}'")
+//|
+//|                    # for our emulated device, return a fixed value for the request
+//|                    buffer = bytes([0xaa])
+//|                    i2c_target_request.write(buffer)
+//|                else:
+//|                    # transaction is a write request
+//|                    data = i2c_target_request.read(1)
+//|                    logger.info(f"write request to address 0x{address:02x}: {data}")
+//|                    # for our emulated device, writes have no effect
+//|
+//| This example creates an I2C target device that can be accessed via another device as an I2C controller::
+//|
+//|        import busio
+//|        import board
+//|        i2c = busio.I2C(board.SCL, board.SDA)
+//|
+//|        # perform a single read
+//|        while not i2c.try_lock():
+//|            pass
+//|        buffer = bytearray(1)
+//|        i2c.readfrom_into(0x40, buffer)
+//|        print(f"device responded with {buffer}")
+//|        i2c.unlock()
+//|
+//|        # perform a single write
+//|        while not i2c.try_lock():
+//|            pass
+//|        buffer = bytearray(1)
+//|        buffer[0] = 0x12
+//|        i2c.writeto(0x40, buffer)
+//|        print(f"wrote {buffer} to device")
+//|        i2c.unlock()
+//|
+//| Typically, i2c devices support writes and reads to/from multiple register indices as in this example    ::
+//|
+//|    import board
+//|    from i2ctarget import I2CTarget
+//|
+//|    import adafruit_logging as logging
+//|
+//|    logger = logging.getLogger('i2ctarget')
+//|    logger.setLevel(logging.INFO)
+//|    logger.addHandler(logging.StreamHandler())
+//|
+//|    # emulate a target with 16 registers
+//|    regs = [0] * 16
+//|    register_index = None
+//|
+//|    logger.info("\\n\\ncode starting...")
+//|
+//|    # initialize an I2C target with a device address of 0x40
+//|    with I2CTarget(board.SCL, board.SDA, (0x40,)) as device:
+//|
+//|        while True:
+//|            # check if there's a pending device request
+//|            i2c_target_request = device.request()
+//|
+//|            if not i2c_target_request:
+//|                # no request is pending
+//|                continue
+//|
+//|            # work with the i2c request
+//|            with i2c_target_request:
+//|
+//|                if not i2c_target_request.is_read:
+//|                    # a write request
+//|
+//|                    # bytearray contains the request's first byte, the register's index
+//|                    index = i2c_target_request.read(1)[0]
+//|
+//|                    # bytearray containing the request's second byte, the data
+//|                    data = i2c_target_request.read(1)
+//|
+//|                    # if the request doesn't have a second byte, this is read transaction
+//|                    if not data:
+//|
+//|                        # since we're only emulating 16 registers, read from a larger address is an error
+//|                        if index > 15:
+//|                            logger.error(f"write portion of read transaction has invalid index {index}")
+//|                            continue
+//|
+//|                        logger.info(f"write portion of read transaction, set index to {index}'")
+//|                        register_index = index
+//|                        continue
+//|
+//|                    # since we're only emulating 16 registers, writing to a larger address is an error
+//|                    if index > 15:
+//|                        logger.error(f"write request to incorrect index {index}")
+//|                        continue
+//|
+//|                    logger.info(f"write request to index {index}: {data}")
+//|                    regs[index] = data[0]
+//|                else:
+//|                    # our emulated device requires a read to be part of a full write-then-read transaction
+//|                    if not i2c_target_request.is_restart:
+//|                        logger.warning(f"read request without first writing is not supported")
+//|                        # still need to respond, but result data is not defined
+//|                        i2c_target_request.write(bytes([0xff]))
+//|                        register_index = None
+//|                        continue
+//|
+//|                    # the single read transaction case is covered above, so we should always have a valid index
+//|                    assert(register_index is not None)
+//|
+//|                    # the write-then-read to an invalid address is covered above,
+//|                    #   but if this is a restarted read, index might be out of bounds so need to check
+//|                    if register_index > 16:
+//|                        logger.error(f"restarted read yielded an unsupported index")
+//|                        i2c_target_request.write(bytes([0xff]))
+//|                        register_index = None
+//|                        continue
+//|
+//|                    # retrieve the data from our register file and respond
+//|                    data = regs[register_index]
+//|                    logger.info(f"read request from index {register_index}: {data}")
+//|                    i2c_target_request.write(bytes([data]))
+//|
+//|                    # in our emulated device, a single read transaction is covered above
+//|                    #   so any subsequent restarted read gets the value at the next index
+//|                    assert(i2c_target_request.is_restart is True)
+//|                    register_index += 1
+//|
+//| This second example creates I2C target device that can be accessed via another device as an I2C controller::
+//|
+//|    import busio
+//|    import board
+//|    i2c = busio.I2C(board.SCL, board.SDA)
+//|
+//|    # perform a write transaction
+//|    while not i2c.try_lock():
+//|        pass
+//|    buffer = bytearray(2)
+//|    buffer[0] = 0x0b  # the register index
+//|    buffer[1] = 0xa1  # the value
+//|    i2c.writeto(0x40, buffer)
+//|    print(f"wrote {buffer} to device")
+//|    i2c.unlock()
+//|
+//|    # perform a full read transaction (write-then-read)
+//|    while not i2c.try_lock():
+//|        pass
+//|    index_buffer = bytearray(1)
+//|    index_buffer[0] = 0x0b
+//|    read_buffer = bytearray(1)
+//|    i2c.writeto_then_readfrom(0x40, index_buffer, read_buffer)
+//|    print(f"read from device index {index_buffer}: {read_buffer}")
+//|    i2c.unlock()
+//|
+//| Or accessed from Linux like this::
+//|
+//|    $ i2cget -y 1 0x40 0x0b
+//|    0xff
+//|    $ i2cset -y 1 0x40 0x0b 0xa1
+//|    $ i2cget -y 1 0x40 0x01
+//|    0xa1
 //|
 //| .. warning::
-//|    I2CTarget makes use of clock stretching in order to slow down
-//|    the host.
+//|    I2CTarget makes use of clock stretching in order to slow down the host.
 //|    Make sure the I2C host supports this.
 //|
-//|    Raspberry Pi in particular does not support this with its I2C hw block.
+//|    Raspberry Pi 3 and below, in particular, do not support this with its I2C hw block.
 //|    This can be worked around by using the ``i2c-gpio`` bit banging driver.
 //|    Since the RPi firmware uses the hw i2c, it's not possible to emulate a HAT eeprom."""
 
-STATIC const mp_rom_map_elem_t i2ctarget_module_globals_table[] = {
+static const mp_rom_map_elem_t i2ctarget_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_i2ctarget) },
     { MP_ROM_QSTR(MP_QSTR_I2CTarget), MP_ROM_PTR(&i2ctarget_i2c_target_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(i2ctarget_module_globals, i2ctarget_module_globals_table);
+static MP_DEFINE_CONST_DICT(i2ctarget_module_globals, i2ctarget_module_globals_table);
 
 const mp_obj_module_t i2ctarget_module = {
     .base = { &mp_type_module },

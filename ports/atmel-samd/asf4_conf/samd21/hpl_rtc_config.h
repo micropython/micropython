@@ -1,6 +1,11 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2024 Adafruit Industries LLC
+//
+// SPDX-License-Identifier: MIT
+
 /* Auto-generated config file hpl_rtc_config.h */
-#ifndef HPL_RTC_CONFIG_H
-#define HPL_RTC_CONFIG_H
+#pragma once
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
@@ -121,5 +126,3 @@
 // </h>
 
 // <<< end of configuration section >>>
-
-#endif // HPL_RTC_CONFIG_H

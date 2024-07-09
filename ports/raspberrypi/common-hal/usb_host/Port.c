@@ -1,28 +1,8 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include "bindings/rp2pio/StateMachine.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -47,7 +27,7 @@
 
 usb_host_port_obj_t usb_host_instance;
 
-STATIC PIO pio_instances[2] = {pio0, pio1};
+static PIO pio_instances[2] = {pio0, pio1};
 volatile bool _core1_ready = false;
 
 static void __not_in_flash_func(core1_main)(void) {
@@ -81,7 +61,7 @@ static void __not_in_flash_func(core1_main)(void) {
     }
 }
 
-STATIC uint8_t _sm_free_count(uint8_t pio_index) {
+static uint8_t _sm_free_count(uint8_t pio_index) {
     PIO pio = pio_instances[pio_index];
     uint8_t free_count = 0;
     for (size_t j = 0; j < NUM_PIO_STATE_MACHINES; j++) {
@@ -92,7 +72,7 @@ STATIC uint8_t _sm_free_count(uint8_t pio_index) {
     return free_count;
 }
 
-STATIC bool _has_program_room(uint8_t pio_index, uint8_t program_size) {
+static bool _has_program_room(uint8_t pio_index, uint8_t program_size) {
     PIO pio = pio_instances[pio_index];
     pio_program_t program_struct = {
         .instructions = NULL,

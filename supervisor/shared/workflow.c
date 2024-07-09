@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdbool.h>
 #include "py/mpconfig.h"
@@ -38,6 +18,9 @@
 #if CIRCUITPY_BLEIO
 #include "shared-bindings/_bleio/__init__.h"
 #include "supervisor/shared/bluetooth/bluetooth.h"
+#if CIRCUITPY_SERIAL_BLE
+#include "supervisor/shared/bluetooth/serial.h"
+#endif
 #endif
 
 #if CIRCUITPY_TINYUSB || CIRCUITPY_USB_KEYBOARD_WORKFLOW
@@ -47,6 +30,7 @@
 
 #if CIRCUITPY_WEB_WORKFLOW
 #include "supervisor/shared/web_workflow/web_workflow.h"
+#include "supervisor/shared/web_workflow/websocket.h"
 static background_callback_t workflow_background_cb = {NULL, NULL};
 #endif
 
@@ -80,14 +64,27 @@ void supervisor_workflow_request_background(void) {
 }
 
 // Return true if host has completed connection to us (such as USB enumeration).
+// This is used to determine when to pretend to deep sleep.
 bool supervisor_workflow_active(void) {
     #if CIRCUITPY_USB_DEVICE
     // Eventually there might be other non-USB workflows, such as BLE.
     // tud_ready() checks for usb mounted and not suspended.
-    return tud_ready();
-    #else
-    return false;
+    if (tud_ready()) {
+        return true;
+    }
     #endif
+    #if CIRCUITPY_WEB_WORKFLOW
+    if (websocket_connected()) {
+        return true;
+    }
+    #endif
+    #if CIRCUITPY_SERIAL_BLE
+    if (ble_serial_connected()) {
+        return true;
+    }
+    #endif
+
+    return false;
 }
 
 void supervisor_workflow_start(void) {
@@ -103,7 +100,6 @@ void supervisor_workflow_start(void) {
 
     #if CIRCUITPY_BLEIO
     bleio_reset();
-    supervisor_bluetooth_enable_workflow();
     supervisor_start_bluetooth();
     #endif
 
@@ -194,7 +190,7 @@ FRESULT supervisor_workflow_mkdir_parents(DWORD fattime, char *path) {
     return result;
 }
 
-STATIC FRESULT supervisor_workflow_delete_directory_contents(FATFS *fs, const TCHAR *path) {
+static FRESULT supervisor_workflow_delete_directory_contents(FATFS *fs, const TCHAR *path) {
     FF_DIR dir;
     FILINFO file_info;
     // Check the stack since we're putting paths on it.

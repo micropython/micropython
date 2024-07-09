@@ -1,3 +1,9 @@
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 by kvc0/WarriorOfWire
+//
+// SPDX-License-Identifier: MIT
+
 #include <stdint.h>
 
 #include "py/obj.h"
@@ -31,14 +37,14 @@
 //|
 //| """
 
-STATIC const mp_rom_map_elem_t vectorio_module_globals_table[] = {
+static const mp_rom_map_elem_t vectorio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_vectorio) },
     { MP_ROM_QSTR(MP_QSTR_Circle), MP_ROM_PTR(&vectorio_circle_type) },
     { MP_ROM_QSTR(MP_QSTR_Polygon), MP_ROM_PTR(&vectorio_polygon_type) },
     { MP_ROM_QSTR(MP_QSTR_Rectangle), MP_ROM_PTR(&vectorio_rectangle_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(vectorio_module_globals, vectorio_module_globals_table);
+static MP_DEFINE_CONST_DICT(vectorio_module_globals, vectorio_module_globals_table);
 
 const mp_obj_module_t vectorio_module = {
     .base = { &mp_type_module },

@@ -1,33 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * SPDX-FileCopyrightText: Copyright (c) 2022 Lee Atkinson, MeanStride Technology, Inc.
- *
- * SPDX-License-Identifier: BSD-3-Clause
- *
- * Copyright (c) 2021 Raspberry Pi (Trading) Ltd.
- * https://github.com/raspberrypi/pico-examples/blob/master/adc/dma_capture/dma_capture.c
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2022 Lee Atkinson, MeanStride Technology, Inc.
+// SPDX-FileCopyrightText: Copyright (c) 2021 Raspberry Pi (Trading) Ltd.
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdio.h>
 #include "common-hal/analogbufio/BufferedIn.h"
@@ -77,7 +53,9 @@ void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *s
     // sample rate determines divisor, not zero.
 
     // sample_rate is forced to be >= 1 in shared-bindings
-    float clk_div = (float)ADC_CLOCK_INPUT / (float)sample_rate;
+    // Per the datasheet: "Setting DIV.INT to some positive value n will trigger the ADC once per n + 1 cycles."
+    // So subtract 1. See PR #9396.
+    float clk_div = (float)ADC_CLOCK_INPUT / (float)sample_rate - 1;
     adc_set_clkdiv(clk_div);
 
     // Set up the DMA to start transferring data as soon as it appears in FIFO

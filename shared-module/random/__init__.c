@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2016 Paul Sokolovsky
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2016 Paul Sokolovsky
+// SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <assert.h>
 #include <string.h>
@@ -38,10 +18,10 @@
 // http://www.literatecode.com/yasmarang
 // Public Domain
 
-STATIC uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
-STATIC uint8_t yasmarang_dat = 0;
+static uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
+static uint8_t yasmarang_dat = 0;
 
-STATIC uint32_t yasmarang(void) {
+static uint32_t yasmarang(void) {
     if (yasmarang_pad == 0xeda4baba) {
         if (!common_hal_os_urandom((uint8_t *)&yasmarang_pad, sizeof(uint32_t))) {
             yasmarang_pad = common_hal_time_monotonic_ms() & 0xffffffff;
@@ -60,7 +40,7 @@ STATIC uint32_t yasmarang(void) {
 
 // returns an unsigned integer below the given argument
 // n must not be zero
-STATIC uint32_t yasmarang_randbelow(uint32_t n) {
+static uint32_t yasmarang_randbelow(uint32_t n) {
     uint32_t mask = 1;
     while ((n & mask) < n) {
         mask = (mask << 1) | 1;
@@ -100,7 +80,7 @@ mp_int_t shared_modules_random_randrange(mp_int_t start, mp_int_t stop, mp_int_t
 }
 
 // returns a number in the range [0..1) using Yasmarang to fill in the fraction bits
-STATIC mp_float_t yasmarang_float(void) {
+static mp_float_t yasmarang_float(void) {
     #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
     typedef uint64_t mp_float_int_t;
     #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT

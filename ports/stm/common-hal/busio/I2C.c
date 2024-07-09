@@ -1,29 +1,9 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2016 Scott Shawcroft
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2016 Scott Shawcroft
+// SPDX-FileCopyrightText: Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 #include <stdbool.h>
 
 #include "shared-bindings/busio/I2C.h"
@@ -60,13 +40,13 @@
 // Arrays use 0 based numbering: I2C1 is stored at index 0
 #define MAX_I2C 4
 
-STATIC bool reserved_i2c[MAX_I2C];
-STATIC bool never_reset_i2c[MAX_I2C];
+static bool reserved_i2c[MAX_I2C];
+static bool never_reset_i2c[MAX_I2C];
 
 #define ALL_CLOCKS 0xFF
-STATIC void i2c_clock_enable(uint8_t mask);
-STATIC void i2c_clock_disable(uint8_t mask);
-STATIC void i2c_assign_irq(busio_i2c_obj_t *self, I2C_TypeDef *I2Cx);
+static void i2c_clock_enable(uint8_t mask);
+static void i2c_clock_disable(uint8_t mask);
+static void i2c_assign_irq(busio_i2c_obj_t *self, I2C_TypeDef *I2Cx);
 
 void i2c_reset(void) {
     uint16_t never_reset_mask = 0x00;
@@ -244,7 +224,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
     self->has_lock = false;
 }
 
-STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
+static uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
     const uint8_t *data, size_t len, bool transmit_stop_bit) {
     HAL_StatusTypeDef result;
     if (!transmit_stop_bit) {
@@ -301,7 +281,7 @@ uint8_t common_hal_busio_i2c_write_read(busio_i2c_obj_t *self, uint16_t addr,
     return common_hal_busio_i2c_read(self, addr, in_data, in_len);
 }
 
-STATIC void i2c_clock_enable(uint8_t mask) {
+static void i2c_clock_enable(uint8_t mask) {
     // Note: hard reset required due to soft reboot issue.
     #ifdef I2C1
     if (mask & (1 << 0)) {
@@ -333,7 +313,7 @@ STATIC void i2c_clock_enable(uint8_t mask) {
     #endif
 }
 
-STATIC void i2c_clock_disable(uint8_t mask) {
+static void i2c_clock_disable(uint8_t mask) {
     #ifdef I2C1
     if (mask & (1 << 0)) {
         __HAL_RCC_I2C1_CLK_DISABLE();
@@ -356,7 +336,7 @@ STATIC void i2c_clock_disable(uint8_t mask) {
     #endif
 }
 
-STATIC void i2c_assign_irq(busio_i2c_obj_t *self, I2C_TypeDef *I2Cx) {
+static void i2c_assign_irq(busio_i2c_obj_t *self, I2C_TypeDef *I2Cx) {
     #ifdef I2C1
     if (I2Cx == I2C1) {
         self->irq = I2C1_EV_IRQn;
@@ -379,7 +359,7 @@ STATIC void i2c_assign_irq(busio_i2c_obj_t *self, I2C_TypeDef *I2Cx) {
     #endif
 }
 
-STATIC void call_hal_irq(int i2c_num) {
+static void call_hal_irq(int i2c_num) {
     // Create casted context pointer
     busio_i2c_obj_t *context = (busio_i2c_obj_t *)MP_STATE_PORT(cpy_i2c_obj_all)[i2c_num - 1];
     if (context != NULL) {

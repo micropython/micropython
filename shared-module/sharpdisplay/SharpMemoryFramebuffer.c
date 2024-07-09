@@ -1,28 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// This file is part of the CircuitPython project: https://circuitpython.org
+//
+// SPDX-FileCopyrightText: Copyright (c) 2020 Jeff Epler for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 
@@ -38,7 +18,7 @@
 #define JDI_BIT_WRITECMD_LSB      (0x90)
 #define SHARPMEM_BIT_VCOM_LSB (0x40)
 
-STATIC uint8_t bitrev(uint8_t n) {
+static uint8_t bitrev(uint8_t n) {
     uint8_t r = 0;
     for (int i = 0; i < 8; i++) {r |= ((n >> i) & 1) << (7 - i);
     }
@@ -53,7 +33,7 @@ int common_hal_sharpdisplay_framebuffer_get_height(sharpdisplay_framebuffer_obj_
     return self->height;
 }
 
-STATIC int common_hal_sharpdisplay_framebuffer_get_row_stride(sharpdisplay_framebuffer_obj_t *self) {
+static int common_hal_sharpdisplay_framebuffer_get_row_stride(sharpdisplay_framebuffer_obj_t *self) {
     if (self->jdi_display) {
         return (self->width + 1) / 2 + 2;
     } else {
@@ -61,15 +41,15 @@ STATIC int common_hal_sharpdisplay_framebuffer_get_row_stride(sharpdisplay_frame
     }
 }
 
-STATIC int common_hal_sharpdisplay_framebuffer_get_first_pixel_offset(sharpdisplay_framebuffer_obj_t *self) {
+static int common_hal_sharpdisplay_framebuffer_get_first_pixel_offset(sharpdisplay_framebuffer_obj_t *self) {
     return 2;
 }
 
-STATIC bool common_hal_sharpdisplay_framebuffer_get_reverse_pixels_in_byte(sharpdisplay_framebuffer_obj_t *self) {
+static bool common_hal_sharpdisplay_framebuffer_get_reverse_pixels_in_byte(sharpdisplay_framebuffer_obj_t *self) {
     return true;
 }
 
-STATIC bool common_hal_sharpdisplay_framebuffer_get_pixels_in_byte_share_row(sharpdisplay_framebuffer_obj_t *self) {
+static bool common_hal_sharpdisplay_framebuffer_get_pixels_in_byte_share_row(sharpdisplay_framebuffer_obj_t *self) {
     return true;
 }
 
@@ -159,7 +139,7 @@ void common_hal_sharpdisplay_framebuffer_construct(
     common_hal_sharpdisplay_framebuffer_get_bufinfo(self, NULL);
 }
 
-STATIC void common_hal_sharpdisplay_framebuffer_swapbuffers(sharpdisplay_framebuffer_obj_t *self, uint8_t *dirty_row_bitmask) {
+static void common_hal_sharpdisplay_framebuffer_swapbuffers(sharpdisplay_framebuffer_obj_t *self, uint8_t *dirty_row_bitmask) {
     // claim SPI bus
     if (!common_hal_busio_spi_try_lock(self->bus)) {
         return;
@@ -197,57 +177,57 @@ STATIC void common_hal_sharpdisplay_framebuffer_swapbuffers(sharpdisplay_framebu
     self->full_refresh = false;
 }
 
-STATIC void sharpdisplay_framebuffer_deinit(mp_obj_t self_in) {
+static void sharpdisplay_framebuffer_deinit(mp_obj_t self_in) {
     sharpdisplay_framebuffer_obj_t *self = self_in;
     common_hal_sharpdisplay_framebuffer_deinit(self);
 }
 
-STATIC void sharpdisplay_framebuffer_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
+static void sharpdisplay_framebuffer_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
     sharpdisplay_framebuffer_obj_t *self = self_in;
     common_hal_sharpdisplay_framebuffer_get_bufinfo(self, bufinfo);
 }
 
-STATIC int sharpdisplay_framebuffer_get_color_depth(mp_obj_t self_in) {
+static int sharpdisplay_framebuffer_get_color_depth(mp_obj_t self_in) {
     sharpdisplay_framebuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return self->jdi_display ? 4 : 1;
 }
 
-STATIC bool sharpdisplay_framebuffer_get_grayscale(mp_obj_t self_in) {
+static bool sharpdisplay_framebuffer_get_grayscale(mp_obj_t self_in) {
     sharpdisplay_framebuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return !self->jdi_display;
 }
 
-STATIC int sharpdisplay_framebuffer_get_height(mp_obj_t self_in) {
+static int sharpdisplay_framebuffer_get_height(mp_obj_t self_in) {
     sharpdisplay_framebuffer_obj_t *self = self_in;
     return common_hal_sharpdisplay_framebuffer_get_height(self);
 }
 
-STATIC int sharpdisplay_framebuffer_get_width(mp_obj_t self_in) {
+static int sharpdisplay_framebuffer_get_width(mp_obj_t self_in) {
     sharpdisplay_framebuffer_obj_t *self = self_in;
     return common_hal_sharpdisplay_framebuffer_get_width(self);
 }
 
-STATIC int sharpdisplay_framebuffer_get_first_pixel_offset(mp_obj_t self_in) {
+static int sharpdisplay_framebuffer_get_first_pixel_offset(mp_obj_t self_in) {
     sharpdisplay_framebuffer_obj_t *self = self_in;
     return common_hal_sharpdisplay_framebuffer_get_first_pixel_offset(self);
 }
 
-STATIC bool sharpdisplay_framebuffer_get_pixels_in_byte_share_row(mp_obj_t self_in) {
+static bool sharpdisplay_framebuffer_get_pixels_in_byte_share_row(mp_obj_t self_in) {
     sharpdisplay_framebuffer_obj_t *self = self_in;
     return common_hal_sharpdisplay_framebuffer_get_pixels_in_byte_share_row(self);
 }
 
-STATIC bool sharpdisplay_framebuffer_get_reverse_pixels_in_byte(mp_obj_t self_in) {
+static bool sharpdisplay_framebuffer_get_reverse_pixels_in_byte(mp_obj_t self_in) {
     sharpdisplay_framebuffer_obj_t *self = self_in;
     return common_hal_sharpdisplay_framebuffer_get_reverse_pixels_in_byte(self);
 }
 
-STATIC int sharpdisplay_framebuffer_get_row_stride(mp_obj_t self_in) {
+static int sharpdisplay_framebuffer_get_row_stride(mp_obj_t self_in) {
     sharpdisplay_framebuffer_obj_t *self = self_in;
     return common_hal_sharpdisplay_framebuffer_get_row_stride(self);
 }
 
-STATIC void sharpdisplay_framebuffer_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmask) {
+static void sharpdisplay_framebuffer_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmask) {
     sharpdisplay_framebuffer_obj_t *self = self_in;
     common_hal_sharpdisplay_framebuffer_swapbuffers(self, dirty_row_bitmask);
 }

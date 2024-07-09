@@ -16,9 +16,16 @@ while True:
     addresses = input("? ")
     if addresses.startswith("Backtrace:"):
         addresses = addresses[len("Backtrace:") :]
+    if addresses.startswith("Stack memory:"):
+        addresses = addresses[len("Stack memory:") :]
     addresses = addresses.strip().split()
     addresses = [address.split(":")[0] for address in addresses]
-    subprocess.run(
-        ["xtensa-esp32s2-elf-addr2line", "-aipfe", "build-{}/firmware.elf".format(board)]
-        + addresses
-    )
+    for address in addresses:
+        result = subprocess.run(
+            ["xtensa-esp32s2-elf-addr2line", "-aipfe", "build-{}/firmware.elf".format(board)]
+            + [address],
+            capture_output=True,
+        )
+        stdout = result.stdout.decode("utf-8")
+        if "?? ??" not in stdout:
+            print(stdout.strip())
