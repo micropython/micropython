@@ -15,6 +15,9 @@
 #include "machine_pin_phy.h"
 #include "mplogger.h"
 
+// std includes
+#include <stdlib.h>
+
 #define UART_HWCONTROL_RTS  (1)
 #define UART_HWCONTROL_CTS  (2)
 #define DEFAULT_CTS_PIN    (MP_ROM_QSTR(MP_QSTR_NC))
@@ -45,6 +48,7 @@ typedef struct _machine_uart_obj_t {
     uint16_t timeout; // only used by cyhal_uart_getc() ie, readchar()
     uint8_t flow;
     uint32_t rxbuf;
+    uint8_t *rxbuf_data;
     bool interrupt;
     uint16_t mp_irq_trigger;            // user IRQ trigger mask
     uint16_t mp_irq_flags;              // user IRQ active IRQ flags
@@ -335,11 +339,13 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         // Configure UART RX software buffer, which will extend the hardware RX FIFO buffer only for SW async mode.
         if (args[ARG_rxbuf].u_int > 0) {
             self->rxbuf = args[ARG_rxbuf].u_int;
-            uint8_t rx_buf[self->rxbuf];
-            cy_rslt_t result = cyhal_uart_config_software_buffer(&self->uart_obj, rx_buf, self->rxbuf);
+            self->rxbuf_data = malloc(self->rxbuf);
+            if (self->rxbuf_data == NULL) {
+                uart_assert_raise_val("Memory allocation for UART RX buffer failed!", 0);
+            }
+            cy_rslt_t result = cyhal_uart_config_software_buffer(&self->uart_obj, self->rxbuf_data, self->rxbuf);
             uart_assert_raise_val("Configuring the UART RX software buffer failed with return code %lx !", result);
         }
-
         if (self->flow & UART_HWCONTROL_CTS) {
             enable_rts = 1;
         }
@@ -356,6 +362,9 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
 
     // Get Peripheralobject
     machine_uart_obj_t *self = uart_obj_alloc();
+    if (self == NULL) {
+        mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("UART object allocation failed because max allowed UART objects are created!"));
+    }
     if (n_args > 0) {
         // set id if provided
         if (mp_obj_get_int(args[0]) != -1) {
@@ -461,6 +470,7 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
     }
     return rx_length;
 }
+
 
 
 static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
