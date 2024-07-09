@@ -32,7 +32,15 @@
 #define TOKEN_STOP_TRAN (0xFD)
 #define TOKEN_DATA (0xFE)
 
+static void common_hal_sdcardio_check_for_deinit(sdcardio_sdcard_obj_t *self) {
+    if (!self->bus) {
+        raise_deinited_error();
+    }
+}
+
 static bool lock_and_configure_bus(sdcardio_sdcard_obj_t *self) {
+    common_hal_sdcardio_check_for_deinit(self);
+
     if (!common_hal_busio_spi_try_lock(self->bus)) {
         return false;
     }
@@ -316,12 +324,6 @@ void common_hal_sdcardio_sdcard_deinit(sdcardio_sdcard_obj_t *self) {
     common_hal_digitalio_digitalinout_deinit(&self->cs);
 }
 
-static void common_hal_sdcardio_check_for_deinit(sdcardio_sdcard_obj_t *self) {
-    if (!self->bus) {
-        raise_deinited_error();
-    }
-}
-
 int common_hal_sdcardio_sdcard_get_blockcount(sdcardio_sdcard_obj_t *self) {
     common_hal_sdcardio_check_for_deinit(self);
     return self->sectors;
@@ -341,6 +343,7 @@ static int readinto(sdcardio_sdcard_obj_t *self, void *buf, size_t size) {
 }
 
 mp_uint_t sdcardio_sdcard_readblocks(mp_obj_t self_in, uint8_t *buf, uint32_t start_block, uint32_t nblocks) {
+    // deinit check is in lock_and_configure_bus()
     sdcardio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (!lock_and_configure_bus(self)) {
         return MP_EAGAIN;
@@ -380,7 +383,6 @@ mp_uint_t sdcardio_sdcard_readblocks(mp_obj_t self_in, uint8_t *buf, uint32_t st
 }
 
 int common_hal_sdcardio_sdcard_readblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf) {
-    common_hal_sdcardio_check_for_deinit(self);
     if (buf->len % 512 != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("Buffer length must be a multiple of 512"));
     }
@@ -434,9 +436,8 @@ static int _write(sdcardio_sdcard_obj_t *self, uint8_t token, void *buf, size_t 
 }
 
 mp_uint_t sdcardio_sdcard_writeblocks(mp_obj_t self_in, uint8_t *buf, uint32_t start_block, uint32_t nblocks) {
+    // deinit check is in lock_and_configure_bus()
     sdcardio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_sdcardio_check_for_deinit(self);
-
     if (!lock_and_configure_bus(self)) {
         return MP_EAGAIN;
     }
@@ -471,7 +472,7 @@ mp_uint_t sdcardio_sdcard_writeblocks(mp_obj_t self_in, uint8_t *buf, uint32_t s
 }
 
 int common_hal_sdcardio_sdcard_sync(sdcardio_sdcard_obj_t *self) {
-    common_hal_sdcardio_check_for_deinit(self);
+    // deinit check is in lock_and_configure_bus()
     lock_and_configure_bus(self);
     int r = exit_cmd25(self);
     extraclock_and_unlock_bus(self);
@@ -479,7 +480,7 @@ int common_hal_sdcardio_sdcard_sync(sdcardio_sdcard_obj_t *self) {
 }
 
 int common_hal_sdcardio_sdcard_writeblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf) {
-    common_hal_sdcardio_check_for_deinit(self);
+    // deinit check is in lock_and_configure_bus()
     if (buf->len % 512 != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("Buffer length must be a multiple of 512"));
     }
