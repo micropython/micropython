@@ -94,6 +94,7 @@ void machine_deinit(void) {
     mod_pwm_deinit();
     mod_spi_deinit();
     mod_rtc_deinit();
+    mod_timer_deinit();
     mod_pin_phy_deinit();
 }
 

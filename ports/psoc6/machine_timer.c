@@ -30,12 +30,14 @@ static void isr_timer(void *callback_arg, cyhal_timer_event_t event) {
     mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
 }
 
-static inline machine_timer_obj_t *timer_obj_alloc(int id) {
-    if (timer_obj[id] == NULL) {
-        timer_obj[id] = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
-        return timer_obj[id];
-    } else {
-        mp_raise_ValueError(MP_ERROR_TEXT("Timer already in use"));
+// Allocate timer
+static inline machine_timer_obj_t *timer_obj_alloc() {
+    for (uint8_t i = 0; i < MAX_TIMER; i++)
+    {
+        if (timer_obj[i] == NULL) {
+            timer_obj[i] = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
+            return timer_obj[i];
+        }
     }
     return NULL;
 }
@@ -48,6 +50,17 @@ static inline void timer_obj_free(machine_timer_obj_t *timer_obj_ptr) {
             timer_obj[i] = NULL;
         }
     }
+}
+
+// Write a function to check if a timer is already in use using id as input and compare to the timer_id of the timer_obj
+static inline bool timer_in_use(int id) {
+    for (uint8_t i = 0; i < MAX_TIMER; i++)
+    {
+        if (timer_obj[i] != NULL && timer_obj[i]->timer_id == id) {
+            return true;
+        }
+    }
+    return false;
 }
 
 static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -148,11 +161,20 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     }
 
     if (id >= MAX_TIMER) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Invalid timer id"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Invalid timer id!"));
     }
 
-    machine_timer_obj_t *self = timer_obj_alloc(id);
+    if (timer_in_use(id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Timer already in use!"));
+    }
+
+    machine_timer_obj_t *self = timer_obj_alloc();
+    if (self == NULL) {
+        mp_raise_ValueError(MP_ERROR_TEXT("All timers are already initialized. Deinit some timers to create new ones!"));
+    }
+
     self->timer_id = id;
+
     if (n_args > 0 || n_kw > 0) {
         // Start the timer
         mp_map_t kw_args;
@@ -196,3 +218,12 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, machine_timer_print,
     locals_dict, &machine_timer_locals_dict
     );
+
+
+void mod_timer_deinit() {
+    for (uint8_t i = 0; i < MAX_TIMER; i++) {
+        if (timer_obj[i] != NULL) {
+            machine_timer_deinit((mp_obj_base_t *)(timer_obj[i]));
+        }
+    }
+}
