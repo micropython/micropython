@@ -18,6 +18,8 @@ typedef struct {
     bool samples_signed;
     uint8_t channel_count;
     uint32_t sample_rate;
+    bool single_buffer;
+    uint8_t buffer_index;
 } audioio_rawsample_obj_t;
 
 
