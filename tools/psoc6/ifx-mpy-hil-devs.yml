@@ -1,12 +1,12 @@
 - board_type: CY8CPROTO-062-4343W
   board_list:
     - sn: 072002F302098400
-      hw_ext: 0.4.0.a
+      hw_ext: 0.5.0.a
     - sn: 1C14031D03201400
-      hw_ext: 0.4.0.b
+      hw_ext: 0.5.0.b
 - board_type: CY8CPROTO-063-BLE
   board_list:
     - sn: 100D0F1400052400
-      hw_ext: 0.4.0.b
+      hw_ext: 0.5.0.b
     - sn: 03180F1400052400
-      hw_ext: 0.4.0.a
+      hw_ext: 0.5.0.a
