@@ -23,5 +23,5 @@
 
 #define MAX_UART             10 // TODO: Change as per bsp?
 
-// Board specific configurations // TODO: Move other machine module configs
+// Board specific configurations
 #define MAX_TIMER (32)
