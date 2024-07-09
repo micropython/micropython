@@ -13,10 +13,10 @@ if "CY8CPROTO-062-4343W" in machine:
     uart_rts_pin = "P9_2"
     uart_cts_pin = "P9_3"
 elif "CY8CPROTO-063-BLE" in machine:
-    uart_rx_pin = "P5_0"
-    uart_tx_pin = "P5_1"
-    uart_rts_pin = "P5_2"
-    uart_cts_pin = "P5_3"
+    uart_rx_pin = "P10_0"
+    uart_tx_pin = "P10_1"
+    uart_rts_pin = "P10_2"
+    uart_cts_pin = "P10_3"
 
 # 1. Construct instance
 ##############################################

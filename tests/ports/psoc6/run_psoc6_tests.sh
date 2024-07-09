@@ -34,6 +34,7 @@ usage() {
   echo "  i2c               run i2c tests"
   echo "  spi               run spi tests"
   echo "  i2s               run i2s tests"
+  echo "  uart              run uart tests"
   echo "  bitstream         run bitstream tests"
   echo "  watchdog          run watchdog tests"
   echo "  multi-instance    run multiple board instances tests"
@@ -193,7 +194,7 @@ no_ext_hw_tests() {
 
 hw_ext_tests() {
   run_tests "hardware extended" ${dev_test} "${tests_psoc6_dir}/hw_ext" \
-  "-e ${tests_psoc6_dir}/hw_ext/i2c.py -e ${tests_psoc6_dir}/hw_ext/sdcard.py"
+  "-e ${tests_psoc6_dir}/hw_ext/i2c.py -e ${tests_psoc6_dir}/hw_ext/sdcard.py -e ${tests_psoc6_dir}/hw_ext/uart.py"
 }
 
 i2c_tests() {
@@ -213,6 +214,10 @@ spi_tests() {
 i2s_tests() {
   run_tests "i2s" ${dev_test} "${tests_psoc6_dir}/hw_ext/multi_stub/i2s_rx.py" \
   "" "i2s_tx" ${dev_stub} "${tests_psoc6_dir}/hw_ext/multi_stub/i2s_tx.py"
+}
+
+uart_tests() {
+  run_tests "uart" ${dev_test} "${tests_psoc6_dir}/hw_ext/uart.py"
 }
 
 wtd_tests() {
@@ -282,6 +287,16 @@ run_ci_tests() {
     dev_stub=${devs_a[0]}
     i2s_tests
 
+    if [ "${board}" == "CY8CPROTO-062-4343W" ]; then
+      uart_dev=${devs_a[0]} 
+    else
+      if [ "${board}" == "CY8CPROTO-063-BLE" ]; then
+        uart_dev=${devs_b[0]}
+      fi
+    fi
+    dev_test=${uart_dev} 
+    uart_tests
+
     dev_test=${devs_a[0]}
     dev_stub=${devs_b[0]}
     bitstream_tests
@@ -321,6 +336,9 @@ case ${test_suite} in
         ;;
     "i2s")
         i2s_tests
+        ;;
+    "uart")
+        uart_tests
         ;;
     "bitstream")
         bitstream_tests
