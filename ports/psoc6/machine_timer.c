@@ -14,7 +14,7 @@
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
     cyhal_timer_t timer_obj;
-    uint8_t timer_id;
+    int timer_id;
     uint32_t mode;
     uint32_t period;
     uint32_t freq;
@@ -23,20 +23,41 @@ typedef struct _machine_timer_obj_t {
 
 const mp_obj_type_t machine_timer_type;
 
+machine_timer_obj_t *timer_obj[MAX_TIMER] = { NULL };
+
 static void isr_timer(void *callback_arg, cyhal_timer_event_t event) {
     machine_timer_obj_t *self = callback_arg;
     mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
 }
 
+static inline machine_timer_obj_t *timer_obj_alloc(int id) {
+    if (timer_obj[id] == NULL) {
+        timer_obj[id] = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
+        return timer_obj[id];
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("Timer already in use"));
+    }
+    return NULL;
+}
+
+// Free timer
+static inline void timer_obj_free(machine_timer_obj_t *timer_obj_ptr) {
+    for (uint8_t i = 0; i < MAX_TIMER; i++)
+    {
+        if (timer_obj[i] == timer_obj_ptr) {
+            timer_obj[i] = NULL;
+        }
+    }
+}
 
 static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     qstr mode = self->mode == TIMER_MODE_ONE_SHOT ? MP_QSTR_ONE_SHOT : MP_QSTR_PERIODIC;
-    mp_printf(print, "Timer(mode=%q, period=%u, tick_hz=%u)", mode, self->period, self->freq);
+    mp_printf(print, "Timer(id=%d, mode=%q, period=%u, tick_hz=%u)", self->timer_id, mode, self->period, self->freq);
 }
 
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_callback, ARG_period, ARG_freq, };
+    enum {ARG_mode, ARG_callback, ARG_period, ARG_freq};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIMER_MODE_ONE_SHOT} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -114,9 +135,6 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
 
 static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-    machine_timer_obj_t *self = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
-
-    self->base.type = &machine_timer_type;
 
     mp_int_t id = 0;
     if (n_args > 0) {
@@ -125,10 +143,16 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
         ++args;
     }
     // Get timer id
-    if (id != 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Specified Timer doesn't exist. Currently only id 0 is configured"));
+    if (id == -1) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Virtual timers are not supported yet!"));
     }
 
+    if (id >= MAX_TIMER) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Invalid timer id"));
+    }
+
+    machine_timer_obj_t *self = timer_obj_alloc(id);
+    self->timer_id = id;
     if (n_args > 0 || n_kw > 0) {
         // Start the timer
         mp_map_t kw_args;
@@ -140,14 +164,14 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
 }
 
 static mp_obj_t machine_timer_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    machine_timer_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    return machine_timer_init_helper(self, n_args - 1, args + 1, kw_args);
+    mp_raise_NotImplementedError("Init is not supported in this port. Please use constructor to initialize the parameters!\n");
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_timer_init_obj, 1, machine_timer_init);
 
 static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
     machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cyhal_timer_free(&self->timer_obj);
+    timer_obj_free(self);
     return mp_const_none;
 }
 

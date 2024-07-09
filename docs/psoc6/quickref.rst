@@ -611,17 +611,21 @@ Methods
 Timers
 ------
 
-Hardware timer is supported.
+This port supports hardware timers, which can be used for timing related applications.
 
 Use the :mod:`machine.Timer` class::
 
     from machine import Timer
     import time
-    tim = Timer(0) #Default assignment: period=9999, frequency=10000
-    tim.init(period=2000, mode=Timer.ONE_SHOT, callback=lambda t:print(2)) #mode=Timer.PERIODIC in case of periodic timer
+    tim0 = Timer(0, period=1000, mode=Timer.ONE_SHOT, callback=lambda t:print("One shot timer triggered")) #Default assignment: period=9999, frequency=10000
+    tim1 = Timer(1, period=3000, mode=Timer.PERIODIC, callback=lambda t:print("Periodic timer triggered"))
 
+    tim0.deinit() # Deinitialize the timer
+    tim1.deinit() # Deinitialize the timer
 
-Here id=0 should be passed mandatorily.
+Here, id can take values between 0 and 31 as maximum of 32 hardware timers are supported.
+
+Note that virtual timers are not supported in this port.
 
 ADC (analog to digital conversion)
 ----------------------------------

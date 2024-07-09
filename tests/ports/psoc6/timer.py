@@ -47,8 +47,32 @@ def test_periodic():
         tim_periodic.deinit()  # Deinitialize the periodic timer
 
 
+def test_multiple_timers():
+    global oneshot_triggered
+    global periodic_triggered
+    # Multiple timers
+    tim_oneshot = Timer(0, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot)
+    tim_periodic = Timer(1, period=3000, mode=Timer.PERIODIC, callback=call_periodic)
+
+    try:
+        # Wait for 15 seconds
+        for i in range(15):
+            time.sleep(1)
+            if oneshot_triggered:
+                print("Oneshot timer triggered")
+                oneshot_triggered = False
+            if periodic_triggered:
+                print("Periodic timer triggered")
+                periodic_triggered = False
+    finally:
+        tim_oneshot.deinit()  # Deinitialize the Oneshot timer
+        tim_periodic.deinit()  # Deinitialize the periodic timer
+
+
 if __name__ == "__main__":
     print("*****Oneshot Timer Execution*****")
     test_oneshot()
     print("*****Periodic Timer Execution*****")
     test_periodic()
+    print("*****Multiple Timers Execution*****")
+    test_multiple_timers()

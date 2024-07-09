@@ -6,4 +6,6 @@
 
 #define MICROPY_GC_HEAP_SIZE                    (64 * 1024) // 64 KB
 
+// Board specific configurations
 #define MAX_UART             10 // TODO: Change as per bsp?
+#define MAX_TIMER (32)
