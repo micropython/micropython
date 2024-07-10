@@ -142,6 +142,16 @@ static mp_obj_t socketpool_socketpool_getaddrinfo(size_t n_args, const mp_obj_t 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    #if CIRCUITPY_SOCKETPOOL_IPV6
+    return common_hal_socketpool_getaddrinfo_raise(
+        self,
+        mp_obj_str_get_str(args[ARG_host].u_obj),
+        args[ARG_port].u_int,
+        args[ARG_family].u_int,
+        args[ARG_type].u_int,
+        args[ARG_proto].u_int,
+        args[ARG_flags].u_int);
+    #else
     const char *host = mp_obj_str_get_str(args[ARG_host].u_obj);
     mp_int_t port = args[ARG_port].u_int;
     mp_obj_t ip_str = mp_const_none;
@@ -164,6 +174,7 @@ static mp_obj_t socketpool_socketpool_getaddrinfo(size_t n_args, const mp_obj_t 
     sockaddr->items[1] = MP_OBJ_NEW_SMALL_INT(port);
     tuple->items[4] = MP_OBJ_FROM_PTR(sockaddr);
     return mp_obj_new_list(1, (mp_obj_t *)&tuple);
+    #endif
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_getaddrinfo_obj, 1, socketpool_socketpool_getaddrinfo);
 
