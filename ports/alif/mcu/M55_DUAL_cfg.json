@@ -13,5 +13,14 @@
     "cpu_id": "M55_HP",
     "flags": ["boot"],
     "signed": false
+  },
+  "HE_APP": {
+    "disabled" : false,
+    "binary": "firmware_M55_HE.bin",
+    "mramAddress": "0x80420000",
+    "version": "1.0.0",
+    "cpu_id": "M55_HE",
+    "flags": ["deferred"],
+    "signed": false
   }
 }
