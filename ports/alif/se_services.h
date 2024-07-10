@@ -37,4 +37,8 @@ uint32_t se_services_enable_clock(clock_enable_t clock, bool enable);
 uint32_t se_services_get_run_profile(run_profile_t *profile);
 uint32_t se_services_set_run_profile(run_profile_t *profile);
 
+uint32_t se_services_boot_process_toc_entry(const uint8_t *image_id);
+uint32_t se_services_boot_cpu(uint32_t cpu_id, uint32_t address);
+uint32_t se_services_boot_reset_cpu(uint32_t cpu_id);
+uint32_t se_services_boot_release_cpu(uint32_t cpu_id);
 #endif // MICROPY_INCLUDED_ALIF_SE_SERVICES_H

@@ -34,6 +34,8 @@
 #include "services_lib_bare_metal.h"
 #include "services_lib_protocol.h"
 
+#include "py/mphal.h"
+
 // MHU indices.
 #define MHU_M55_SE_MHU0 0
 #define MAX_MHU         1
@@ -41,6 +43,17 @@
 // The following timeout is implemented in se_services_handle.c as a
 // simple loop busy polling on a variable set from an IRQ.
 #define TIMEOUT         10000000
+
+typedef struct {
+    volatile unsigned int RST_CTRL; // 0x1A010318
+    volatile unsigned int RST_STAT; // 0x1A01031C
+} CPU_Type;
+
+// HE CPU register flags
+#define RST_CTRL_CPUWAIT_MASK   (1 << 0)
+#define RST_CTRL_RST_REQ_MASK   (1 << 1)
+#define RST_STAT_RST_ACK_MASK   (3 << 1)
+#define HE_CPU                  ((CPU_Type *)0x1A010318)
 
 static const uint32_t mhu_sender_base_address_list[MAX_MHU] = {
     MHU_SESS_S_TX_BASE,
@@ -167,5 +180,47 @@ uint32_t se_services_get_run_profile(run_profile_t *profile) {
 uint32_t se_services_set_run_profile(run_profile_t *profile) {
     uint32_t error_code;
     SERVICES_set_run_cfg(se_services_handle, profile, &error_code);
+    return error_code;
+}
+
+uint32_t se_services_boot_process_toc_entry(const uint8_t *image_id) {
+    uint32_t error_code;
+    SERVICES_boot_process_toc_entry(se_services_handle, image_id, &error_code);
+    return error_code;
+}
+
+uint32_t se_services_boot_cpu(uint32_t cpu_id, uint32_t address) {
+    uint32_t error_code;
+    SERVICES_boot_cpu(se_services_handle, cpu_id, address, &error_code);
+    return error_code;
+}
+
+uint32_t se_services_boot_reset_cpu(uint32_t cpu_id) {
+    uint32_t error_code;
+    if (HE_CPU->RST_CTRL & RST_CTRL_CPUWAIT_MASK) {
+        // CPU held in reset
+        return SERVICES_REQ_SUCCESS;
+    }
+
+    for (mp_uint_t start = mp_hal_ticks_ms(); ; mp_hal_delay_ms(1)) {
+        uint32_t ret = SERVICES_boot_reset_cpu(se_services_handle, cpu_id, &error_code);
+        if (ret != SERVICES_REQ_SUCCESS) {
+            return error_code;
+        }
+
+        if ((HE_CPU->RST_STAT & RST_STAT_RST_ACK_MASK) == 0x4) {
+            return SERVICES_REQ_SUCCESS;
+        }
+
+        if ((mp_hal_ticks_ms() - start) >= 100) {
+            return SERVICES_REQ_TIMEOUT;
+        }
+    }
+    return error_code;
+}
+
+uint32_t se_services_boot_release_cpu(uint32_t cpu_id) {
+    uint32_t error_code;
+    SERVICES_boot_release_cpu(se_services_handle, cpu_id, &error_code);
     return error_code;
 }
