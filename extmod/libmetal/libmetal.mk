@@ -33,7 +33,6 @@ SRC_LIBMETAL_C := $(addprefix $(BUILD)/openamp/metal/,\
 	shmem.c \
 	softirq.c \
 	version.c \
-	device.c \
 	system/micropython/condition.c \
 	system/micropython/device.c \
 	system/micropython/io.c \
