@@ -377,8 +377,8 @@ void common_hal_socketpool_socket_close(socketpool_socket_obj_t *self) {
 void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
     const struct addrinfo hints = {
-        .ai_family = AF_INET,
-        .ai_socktype = SOCK_STREAM,
+        .ai_family = self->family,
+        .ai_socktype = self->type,
     };
     struct addrinfo *result_i;
     int error = lwip_getaddrinfo(host, NULL, &hints, &result_i);
@@ -607,8 +607,8 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
 
     // Set parameters
     const struct addrinfo hints = {
-        .ai_family = AF_INET,
-        .ai_socktype = SOCK_STREAM,
+        .ai_family = self->family,
+        .ai_socktype = self->type,
     };
     struct addrinfo *result_i;
     int error = lwip_getaddrinfo(host, NULL, &hints, &result_i);
