@@ -5,12 +5,12 @@
     "version" : "0.5.00",
     "signed": false
   },
-  "HP_APP": {
+  "HE_APP": {
     "disabled" : false,
-    "binary": "M55_HP/firmware.bin",
-    "mramAddress": "0x80020000",
+    "binary": "M55_HE/firmware.bin",
+    "mramAddress": "0x80320000",
     "version": "1.0.0",
-    "cpu_id": "M55_HP",
+    "cpu_id": "M55_HE",
     "flags": ["boot"],
     "signed": false
   }
