@@ -230,8 +230,14 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type, int proto) {
-    if (family != SOCKETPOOL_AF_INET) {
-        mp_raise_NotImplementedError(MP_ERROR_TEXT("Only IPv4 sockets supported"));
+    switch (family) {
+        #if CIRCUITPY_SOCKETPOOL_IPV6
+        case SOCKETPOOL_AF_INET6:
+        #endif
+        case SOCKETPOOL_AF_INET:
+            break;
+        default:
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("Unsupported socket type"));
     }
 
     socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
