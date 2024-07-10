@@ -259,7 +259,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB;
 
     // Bring back all clocks.
-    clocks_init_optional_usb(disable_usb);
+    runtime_init_clocks_optional_usb(disable_usb);
     MICROPY_END_ATOMIC_SECTION(my_interrupts);
 }
 
