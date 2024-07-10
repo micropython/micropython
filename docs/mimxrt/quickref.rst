@@ -438,6 +438,10 @@ The i.MXRT MCU supports battery backup of the RTC.  By connecting a battery of
 current drawn from the battery is ~20µA, which is rather high.  A CR2032 coin
 cell will last for about one year.
 
+Note: In v1.23.0 the support for subseconds was removed. When reading the RTC, 0 will
+be returned as value for subsecond, When setting the RTC time, the subsecond
+field is ignored. The RTC itself does not provide a microsecond value.
+
 SD card
 -------
 
