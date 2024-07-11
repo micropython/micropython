@@ -2,17 +2,20 @@ import os
 import machine, psoc6
 
 if "SD_CARD" in dir(psoc6):
-    bdev2 = machine.SDCard(
-        slot=1,
-        width=4,
-        cd="P13_5",
-        cmd="P12_4",
-        clk="P12_5",
-        dat0="P13_0",
-        dat1="P13_1",
-        dat2="P13_2",
-        dat3="P13_3",
-    )
+    try:
+        bdev2 = machine.SDCard(
+            slot=1,
+            width=4,
+            cd="P13_5",
+            cmd="P12_4",
+            clk="P12_5",
+            dat0="P13_0",
+            dat1="P13_1",
+            dat2="P13_2",
+            dat3="P13_3",
+        )
+    except Exception as e:
+        print(e)
 
     # sector size 512 B
     read_size = 512
@@ -30,4 +33,4 @@ if "SD_CARD" in dir(psoc6):
 
     print("SD card mounted at /sd")
 
-    del bdev2, vfs2
+    del bdev2, vfs2, os, machine, psoc6, read_size, write_size

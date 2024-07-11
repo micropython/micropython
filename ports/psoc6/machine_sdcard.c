@@ -76,7 +76,7 @@ enum {
     ARG_clk
 };
 
-static inline machine_sdcard_obj_t *sd_card_obj_alloc(bool is_slave) {
+static inline machine_sdcard_obj_t *sd_card_obj_alloc() {
     for (uint8_t i = 0; i < MAX_SDHC_SLOT; i++)
     {
         if (sdhc_obj[i] == NULL) {
@@ -207,8 +207,9 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    machine_sdcard_obj_t *self = sd_card_obj_alloc(false);
+    machine_sdcard_obj_t *self = sd_card_obj_alloc();
     if (self == NULL) {
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("No available slots!"));
         return mp_const_none;
     }
 
@@ -218,10 +219,8 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         cyhal_sdhc_get_block_count(&self->sdhc_obj, (uint32_t *)&self->block_count);
     } else {
         if (cyhal_sdhc_is_card_inserted(&self->sdhc_obj) == false) {
-            machine_sdcard_deinit(self);
             mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD Card not inserted!\n"));
         } else {
-            machine_sdcard_deinit(self);
             mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD card init failed!\n"));
         }
     }
@@ -287,7 +286,7 @@ static mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
         case MP_BLOCKDEV_IOCTL_INIT:
             return MP_OBJ_NEW_SMALL_INT(0);
         case MP_BLOCKDEV_IOCTL_DEINIT:
-            mod_sdcard_deinit();
+            machine_sdcard_deinit(self_in);
             return MP_OBJ_NEW_SMALL_INT(0);
         case MP_BLOCKDEV_IOCTL_SYNC:
             return MP_OBJ_NEW_SMALL_INT(0);
@@ -314,7 +313,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_ioctl_obj, machine_sdcard_ioctl)
 void mod_sdcard_deinit() {
     for (uint8_t i = 0; i < MAX_SDHC_SLOT; i++) {
         if (sdhc_obj[i] != NULL) {
-            machine_sdcard_deinit(MP_OBJ_FROM_PTR(&sdhc_obj[i]));
+            machine_sdcard_deinit(MP_OBJ_FROM_PTR(sdhc_obj[i]));
         }
     }
 }

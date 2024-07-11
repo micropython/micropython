@@ -6,27 +6,30 @@ device = sys.argv[1]
 test_type = sys.argv[2]
 mem_type = sys.argv[3]
 
+test_input_dir = "./ports/psoc6/test_inputs"
+test_script_dir = "./ports/psoc6/test_scripts"
+
 # local and remote(MPY device) paths
-local_small_file_path = "./ports/psoc6/test_inputs/test_fs_small_file.txt"
-local_medium_file_path = "./ports/psoc6/test_inputs/test_fs_medium_file.txt"
-local_large_file_path = "./ports/psoc6/test_inputs/test_fs_large_file.txt"
+local_small_file_path = f"{test_input_dir}/test_fs_small_file.txt"
+local_medium_file_path = f"{test_input_dir}/test_fs_medium_file.txt"
+local_large_file_path = f"{test_input_dir}/test_fs_large_file.txt"
 
 if mem_type == "sd":
     remote_directory_path = "/sd/"
-    basic_test_op_fp = "./ports/psoc6/test_scripts/fs_basic_sd.py.out"
-    adv_test_op_fp = "./ports/psoc6/test_scripts/fs_adv_sd.py.out"
-    exp_basic_op_fp = "./ports/psoc6/test_scripts/fs_basic_sd.py.exp"
-    exp_adv_op_fp = "./ports/psoc6/test_scripts/fs_adv_sd.py.exp"
+    basic_test_op_fp = f"{test_script_dir}/fs_basic_sd.py.out"
+    adv_test_op_fp = f"{test_script_dir}/fs_adv_sd.py.out"
+    exp_basic_op_fp = f"{test_script_dir}/fs_basic_sd.py.exp"
+    exp_adv_op_fp = f"{test_script_dir}/fs_adv_sd.py.exp"
 
-    mount_sd_script = "./ports/psoc6/test_scripts/fs_mount_sd.py"
+    mount_sd_script = f"{test_script_dir}/fs_mount_sd.py"
     mpr_run_script = f"run {mount_sd_script}"
 else:
     remote_directory_path = "/"
     # out and exp file paths
-    basic_test_op_fp = "./ports/psoc6/test_scripts/fs_basic.py.out"
-    adv_test_op_fp = "./ports/psoc6/test_scripts/fs_adv.py.out"
-    exp_basic_op_fp = "./ports/psoc6/test_scripts/fs_basic.py.exp"
-    exp_adv_op_fp = "./ports/psoc6/test_scripts/fs_adv.py.exp"
+    basic_test_op_fp = f"{test_script_dir}/fs_basic.py.out"
+    adv_test_op_fp = f"{test_script_dir}/fs_adv.py.out"
+    exp_basic_op_fp = f"{test_script_dir}/fs_basic.py.exp"
+    exp_adv_op_fp = f"{test_script_dir}/fs_adv.py.exp"
 
     mpr_run_script = ""
 
@@ -103,5 +106,6 @@ def fs_adv_test():
 
 if test_type == "0":
     fs_basic_test()
+
 if test_type == "1":
     fs_adv_test()

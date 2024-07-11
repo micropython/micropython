@@ -152,20 +152,17 @@ mpremote_vfs_large_file_tests() {
   echo
   chmod 777 ${tests_psoc6_dir}/test_scripts/fs.py
 
-  python3 ${tests_psoc6_dir}/test_scripts/fs.py ${dev_test} 0 ${storage_device}
+  # On device file saving tests for medium and large size takes considerable 
+  # amount of time. Hence only when needed, this should be triggered.
+  enable_adv_tests=0
+  if [ ${afs} -eq 1 ]; then
+    enable_adv_tests=1
+  fi
+
+  python3 ${tests_psoc6_dir}/test_scripts/fs.py ${dev_test} ${enable_adv_tests} ${storage_device}
   if [ $? -ne 0 ]; then
     echo "FS test failed"
     exit 1
-  fi
-
-  # On device file saving tests for medium and large size takes considerable 
-  # amount of time. Hence only when needed, this should be triggered.
-  if [ ${afs} -eq 1 ]; then
-    python3 ${tests_psoc6_dir}/test_scripts/fs.py ${dev_test} 1 ${storage_device}
-    if [ $? -ne 0 ]; then
-      echo "FS test failed"
-      exit 1
-    fi  
   fi
 }
 
@@ -176,7 +173,6 @@ vfs_flash_tests() {
    extmod/vfs_userfs.py"
 
   storage_device="flash"
-
   mpremote_vfs_large_file_tests
 }
 
@@ -184,7 +180,7 @@ vfs_sdcard_tests() {
   run_tests "file system sdcard" ${dev_test} "${tests_psoc6_dir}/hw_ext/sdcard.py"
   
   storage_device="sd"
-  # mpremote_vfs_large_file_tests
+  mpremote_vfs_large_file_tests
 }
 
 no_ext_hw_tests() {
