@@ -26,7 +26,7 @@
  * OpenAMP's remoteproc store.
  */
 
-#if MICROPY_PY_OPENAMP_REMOTEPROC
+#if MICROPY_PY_OPENAMP_HOST && MICROPY_PY_OPENAMP_REMOTEPROC
 
 #include "py/obj.h"
 #include "py/nlr.h"
@@ -141,4 +141,4 @@ const struct image_store_ops openamp_remoteproc_store_ops = {
 
 #endif // MICROPY_PY_OPENAMP_REMOTEPROC_STORE_ENABLE
 
-#endif // MICROPY_PY_OPENAMP_REMOTEPROC
+#endif // MICROPY_PY_OPENAMP_HOST && MICROPY_PY_OPENAMP_REMOTEPROC
