@@ -26,7 +26,7 @@
  * OpenAMP's remoteproc class.
  */
 
-#if MICROPY_PY_OPENAMP_REMOTEPROC
+#if MICROPY_PY_OPENAMP_HOST && MICROPY_PY_OPENAMP_REMOTEPROC
 
 #include "py/obj.h"
 #include "py/nlr.h"
@@ -170,4 +170,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &openamp_remoteproc_dict
     );
 
-#endif // MICROPY_PY_OPENAMP_REMOTEPROC
+#endif // MICROPY_PY_OPENAMP_HOST && MICROPY_PY_OPENAMP_REMOTEPROC
