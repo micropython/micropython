@@ -216,6 +216,7 @@ SRC_C += \
 SHARED_SRC_C += $(addprefix shared/,\
 	runtime/gchelper_generic.c \
 	timeutils/timeutils.c \
+	runtime/pyexec.c \
 	$(SHARED_SRC_C_EXTRA) \
 	)
 
