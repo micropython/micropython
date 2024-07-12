@@ -43,6 +43,9 @@ void never_reset_uart(uint8_t num) {
 }
 
 static void pin_check(const uint8_t uart, const mcu_pin_obj_t *pin, const uint8_t pin_type) {
+    if (pin == NULL) {
+        return;
+    }
     if (!(((pin->number % 4) == pin_type) && ((((pin->number + 4) / 8) % NUM_UARTS) == uart))) {
         raise_ValueError_invalid_pins();
     }
