@@ -99,6 +99,7 @@
 #define MICROPY_PY_OS_SYNC                      (1)
 #define MICROPY_PY_OS_UNAME                     (1)
 #define MICROPY_PY_OS_URANDOM                   (1)
+#define MICROPY_PY_OS_DUPTERM                   (1)
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC        (se_services_rand64())
 #define MICROPY_PY_TIME                         (1)
 #define MICROPY_PY_MACHINE                      (1)
