@@ -194,7 +194,7 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   macos:
-    runs-on: macos-11.0
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
