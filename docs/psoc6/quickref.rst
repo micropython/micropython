@@ -779,11 +779,11 @@ The following specialization applies to this port:
 
 .. class:: SDCard(slot, width, cd, wp, cmd, dat0, dat1, dat2, dat3, clk)
 
-   Construct an SD Card object at given slot:
+   Construct an SD Card object:
 
    Keyword-only parameters:
             
-    - ``slot`` takes an integer value which shall not exceed the total number of SD slots available. This value does not auto map to the pins of SD Card slot.
+    - ``slot`` takes any integer (This value is ignored for PSoC6 port)
 
     - ``width`` selects the bus width for the SD interface.
 
@@ -803,9 +803,16 @@ The following specialization applies to this port:
 
     - ``clk`` can be used to specify clock pin.
 
-   The SD Card slot to pin mapping can be found in respective :ref:`Supported boards <psoc6_general>` section.
+   The SD Card pin mapping can be found in respective :ref:`Supported boards <psoc6_general>` section.
 
-   Note that SD Cards upto speed class c10 is tested.
+   Note that SD Card upto speed class c10 is tested.
+
+Methods
+^^^^^^^
+
+.. method:: SDCard.deinit()
+
+    Deinitialises the SD Card.
 
 ::
 
@@ -835,4 +842,6 @@ The following specialization applies to this port:
             read_data = f.read()
 
         print(read_data)
+
+    bdev.deinit()
             
