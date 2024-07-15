@@ -219,8 +219,10 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         cyhal_sdhc_get_block_count(&self->sdhc_obj, (uint32_t *)&self->block_count);
     } else {
         if (cyhal_sdhc_is_card_inserted(&self->sdhc_obj) == false) {
+            machine_sdcard_deinit(self);
             mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD Card not inserted!\n"));
         } else {
+            machine_sdcard_deinit(self);
             mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("SD card init failed!\n"));
         }
     }
