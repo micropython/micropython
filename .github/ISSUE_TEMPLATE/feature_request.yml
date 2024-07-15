@@ -15,19 +15,10 @@ body:
 
         * If you have a question \"How Do I ...?\", please post it on GitHub Discussions or Discord instead of here.
         * Could this feature be implemented as a pure Python library? If so, please open the request on the [micropython-lib repository](https://github.com/micropython/micropython-lib/issues) instead.
-  - type: checkboxes
-    id: terms
-    attributes:
-      label: Checks
-      description: |
-        Before submitting your feature request, please go over these check points:
-      options:
-      - label: |
-           I agree to follow the MicroPython [Code of Conduct](https://github.com/micropython/micropython/blob/master/CODEOFCONDUCT.md) to ensure a safe and respectful space for everyone.
-        required: true
-      - label: |
-          I've searched for [existing issues](https://github.com/micropython/micropython/issues) regarding this feature, and didn't find any.
-        required: true
+
+        #### Existing issue?
+
+        * Please search for [existing issues](https://github.com/micropython/micropython/issues) before opening a new one.
   - type: textarea
     id: feature
     attributes:
@@ -51,14 +42,32 @@ body:
          MicroPython aims to strike a balance between functionality and code size. Can this feature be optionally enabled?
 
          If you believe the usefulness of this feature would outweigh the additional code size, please explain. (It's OK to say you're unsure here, we're happy to discuss this with you.)
-  - type: checkboxes
+  - type: dropdown
     id: implementation
     attributes:
       label: Implementation
+      description: |
+        What is your suggestion for implementing this feature?
+
+        (See also: [How to sponsor](https://github.com/sponsors/micropython#sponsors), [How to submit a Pull Request](https://github.com/micropython/micropython/wiki/ContributorGuidelines).)
       options:
-      - label: I intend to implement this feature and would submit a Pull Request if desirable.
-      - label: I hope the MicroPython maintainers or community will implement this feature.
-      - label: I would like to [Sponsor](https://github.com/sponsors/micropython#sponsors) development of this feature.
+        - I hope the MicroPython maintainers or community will implement this feature
+        - I intend to implement this feature and would submit a Pull Request if desirable
+        - I would like to sponsor development of this feature
+      multiple: true
+    validations:
+      required: true
+  - type: dropdown
+    id: code-of-conduct
+    attributes:
+      label: Code of Conduct
+      description: |
+        Do you agree to follow the MicroPython [Code of Conduct](https://github.com/micropython/micropython/blob/master/CODEOFCONDUCT.md) to ensure a safe and respectful space for everyone?
+      options:
+        - "Yes, I agree"
+      multiple: true
+    validations:
+      required: true
   - type: markdown
     attributes:
       value: |

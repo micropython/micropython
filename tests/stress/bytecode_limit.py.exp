@@ -1,5 +1,4 @@
-RuntimeError
-RuntimeError
 cond false
 cond false
+[(433, 'RuntimeError'), (432, 'RuntimeError'), (431, 'ok'), (430, 'ok')]
 [123]

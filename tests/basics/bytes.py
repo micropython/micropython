@@ -2,7 +2,6 @@
 print(b'123')
 print(br'123')
 print(rb'123')
-print(b'\u1234')
 
 # construction
 print(bytes())

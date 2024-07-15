@@ -334,4 +334,55 @@ typedef const char *mp_rom_error_text_t;
 // For now, forward directly to MP_COMPRESSED_ROM_TEXT.
 #define MP_ERROR_TEXT(x) (mp_rom_error_text_t)MP_COMPRESSED_ROM_TEXT(x)
 
+// Portable implementations of CLZ and CTZ intrinsics
+#ifdef _MSC_VER
+#include <intrin.h>
+
+static uint32_t mp_clz(uint32_t x) {
+    unsigned long lz = 0;
+    return _BitScanReverse(&lz, x) ? (sizeof(x) * 8 - 1) - lz : 0;
+}
+
+static uint32_t mp_clzl(unsigned long x) {
+    unsigned long lz = 0;
+    return _BitScanReverse(&lz, x) ? (sizeof(x) * 8 - 1) - lz : 0;
+}
+
+#ifdef _WIN64
+static uint32_t mp_clzll(unsigned long long x) {
+    unsigned long lz = 0;
+    return _BitScanReverse64(&lz, x) ? (sizeof(x) * 8 - 1) - lz : 0;
+}
+#else
+// Microsoft don't ship _BitScanReverse64 on Win32, so emulate it
+static uint32_t mp_clzll(unsigned long long x) {
+    unsigned long h = x >> 32;
+    return h ? mp_clzl(h) : (mp_clzl(x) + 32);
+}
+#endif
+
+static uint32_t mp_ctz(uint32_t x) {
+    unsigned long tz = 0;
+    return _BitScanForward(&tz, x) ? tz : 0;
+}
+#else
+#define mp_clz(x) __builtin_clz(x)
+#define mp_clzl(x) __builtin_clzl(x)
+#define mp_clzll(x) __builtin_clzll(x)
+#define mp_ctz(x) __builtin_ctz(x)
+#endif
+
+// mp_int_t can be larger than long, i.e. Windows 64-bit, nan-box variants
+static inline uint32_t mp_clz_mpi(mp_int_t x) {
+    MP_STATIC_ASSERT(sizeof(mp_int_t) == sizeof(long long)
+        || sizeof(mp_int_t) == sizeof(long));
+
+    // ugly, but should compile to single intrinsic unless O0 is set
+    if (sizeof(mp_int_t) == sizeof(long)) {
+        return mp_clzl(x);
+    } else {
+        return mp_clzll(x);
+    }
+}
+
 #endif // MICROPY_INCLUDED_PY_MISC_H

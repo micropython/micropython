@@ -46,8 +46,14 @@ EM_JS(bool, has_attr, (int jsref, const char *str), {
 EM_JS(bool, lookup_attr, (int jsref, const char *str, uint32_t * out), {
     const base = proxy_js_ref[jsref];
     const attr = UTF8ToString(str);
-    if (attr in base) {
-        let value = base[attr];
+
+    // Attempt to lookup the requested attribute from the base object:
+    // - If the value is not `undefined` then the attribute exists with that value.
+    // - Otherwise if the value is `undefined` and the `in` operator returns true, then
+    //   that attribute does exist and is intended to have a value of `undefined`.
+    // - Otherwise, the attribute does not exist.
+    let value = base[attr];
+    if (value !== undefined || attr in base) {
         if (typeof value === "function") {
             if (base !== globalThis) {
                 if ("_ref" in value) {
@@ -153,14 +159,21 @@ EM_JS(void, js_reflect_construct, (int f_ref, uint32_t n_args, uint32_t * args, 
     proxy_convert_js_to_mp_obj_jsside(ret, out);
 });
 
-EM_JS(int, js_get_len, (int f_ref), {
-    return proxy_js_ref[f_ref].length;
+EM_JS(void, js_get_iter, (int f_ref, uint32_t * out), {
+    const f = proxy_js_ref[f_ref];
+    const ret = f[Symbol.iterator]();
+    proxy_convert_js_to_mp_obj_jsside(ret, out);
 });
 
-EM_JS(void, js_subscr_int, (int f_ref, int idx, uint32_t * out), {
+EM_JS(bool, js_iter_next, (int f_ref, uint32_t * out), {
     const f = proxy_js_ref[f_ref];
-    const ret = f[idx];
-    proxy_convert_js_to_mp_obj_jsside(ret, out);
+    const ret = f.next();
+    if (ret.done) {
+        return false;
+    } else {
+        proxy_convert_js_to_mp_obj_jsside(ret.value, out);
+        return true;
+    }
 });
 
 EM_JS(void, js_subscr_load, (int f_ref, uint32_t * index_ref, uint32_t * out), {
@@ -234,6 +247,22 @@ static mp_obj_t jsproxy_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     }
 }
 
+EM_JS(void, proxy_js_free_obj, (int js_ref), {
+    if (js_ref >= PROXY_JS_REF_NUM_STATIC) {
+        proxy_js_ref[js_ref] = undefined;
+        if (js_ref < proxy_js_ref_next) {
+            proxy_js_ref_next = js_ref;
+        }
+    }
+});
+
+static mp_obj_t jsproxy___del__(mp_obj_t self_in) {
+    mp_obj_jsproxy_t *self = MP_OBJ_TO_PTR(self_in);
+    proxy_js_free_obj(self->ref);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(jsproxy___del___obj, jsproxy___del__);
+
 static mp_obj_t jsproxy_reflect_construct(size_t n_args, const mp_obj_t *args) {
     int arg0 = mp_obj_jsproxy_get_ref(args[0]);
     n_args -= 1;
@@ -274,7 +303,11 @@ void mp_obj_jsproxy_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // Load attribute.
         uint32_t out[PVN];
-        if (lookup_attr(self->ref, qstr_str(attr), out)) {
+        if (attr == MP_QSTR___del__) {
+            // For finaliser.
+            dest[0] = MP_OBJ_FROM_PTR(&jsproxy___del___obj);
+            dest[1] = self_in;
+        } else if (lookup_attr(self->ref, qstr_str(attr), out)) {
             dest[0] = proxy_convert_js_to_mp_obj_cside(out);
         } else if (attr == MP_QSTR_new) {
             // Special case to handle construction of JS objects.
@@ -300,17 +333,13 @@ void mp_obj_jsproxy_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 typedef struct _jsproxy_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
-    int ref;
-    uint16_t cur;
-    uint16_t len;
+    mp_obj_jsproxy_t *iter;
 } jsproxy_it_t;
 
 static mp_obj_t jsproxy_it_iternext(mp_obj_t self_in) {
     jsproxy_it_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->cur < self->len) {
-        uint32_t out[3];
-        js_subscr_int(self->ref, self->cur, out);
-        self->cur += 1;
+    uint32_t out[3];
+    if (js_iter_next(self->iter->ref, out)) {
         return proxy_convert_js_to_mp_obj_cside(out);
     } else {
         return MP_OBJ_STOP_ITERATION;
@@ -323,9 +352,9 @@ static mp_obj_t jsproxy_new_it(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     jsproxy_it_t *o = (jsproxy_it_t *)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = jsproxy_it_iternext;
-    o->ref = self->ref;
-    o->cur = 0;
-    o->len = js_get_len(self->ref);
+    uint32_t out[3];
+    js_get_iter(self->ref, out);
+    o->iter = proxy_convert_js_to_mp_obj_cside(out);
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -515,7 +544,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 mp_obj_t mp_obj_new_jsproxy(int ref) {
-    mp_obj_jsproxy_t *o = mp_obj_malloc(mp_obj_jsproxy_t, &mp_type_jsproxy);
+    mp_obj_jsproxy_t *o = mp_obj_malloc_with_finaliser(mp_obj_jsproxy_t, &mp_type_jsproxy);
     o->ref = ref;
     return MP_OBJ_FROM_PTR(o);
 }

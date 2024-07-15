@@ -30,7 +30,7 @@
 // as well as a fallback to generate MICROPY_GIT_TAG if the git repo or tags
 // are unavailable.
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 23
+#define MICROPY_VERSION_MINOR 24
 #define MICROPY_VERSION_MICRO 0
 #define MICROPY_VERSION_PRERELEASE 1
 
@@ -406,8 +406,13 @@
 #define MICROPY_EMIT_XTENSAWIN (0)
 #endif
 
+// Whether to emit RISC-V RV32 native code
+#ifndef MICROPY_EMIT_RV32
+#define MICROPY_EMIT_RV32 (0)
+#endif
+
 // Convenience definition for whether any native emitter is enabled
-#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN)
+#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN || MICROPY_EMIT_RV32 || MICROPY_EMIT_NATIVE_DEBUG)
 
 // Some architectures cannot read byte-wise from executable memory.  In this case
 // the prelude for a native function (which usually sits after the machine code)
@@ -1610,6 +1615,10 @@ typedef double mp_float_t;
 #define MICROPY_PY_ASYNCIO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+#ifndef MICROPY_PY_ASYNCIO_TASK_QUEUE_PUSH_CALLBACK
+#define MICROPY_PY_ASYNCIO_TASK_QUEUE_PUSH_CALLBACK (0)
+#endif
+
 #ifndef MICROPY_PY_UCTYPES
 #define MICROPY_PY_UCTYPES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
@@ -1727,6 +1736,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE_RESET (0)
 #endif
 
+// Maximum number of arguments for machine.freq()
+#ifndef MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX
+#define MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX (1)
+#endif
+
 // Whether to include: bitstream
 #ifndef MICROPY_PY_MACHINE_BITSTREAM
 #define MICROPY_PY_MACHINE_BITSTREAM (0)
@@ -1768,6 +1782,12 @@ typedef double mp_float_t;
 // Whether to provide the "machine.SoftSPI" class
 #ifndef MICROPY_PY_MACHINE_SOFTSPI
 #define MICROPY_PY_MACHINE_SOFTSPI (0)
+#endif
+
+// Values of SPI.MSB and SPI.LSB constants
+#ifndef MICROPY_PY_MACHINE_SPI_MSB
+#define MICROPY_PY_MACHINE_SPI_MSB (0)
+#define MICROPY_PY_MACHINE_SPI_LSB (1)
 #endif
 
 // Whether to provide the "machine.Timer" class

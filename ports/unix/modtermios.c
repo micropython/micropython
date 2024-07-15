@@ -141,6 +141,27 @@ static const mp_rom_map_elem_t mp_module_termios_globals_table[] = {
     #ifdef B115200
     C(B115200),
     #endif
+    #ifdef B230400
+    C(B230400),
+    #endif
+    #ifdef B460800
+    C(B460800),
+    #endif
+    #ifdef B500000
+    C(B500000),
+    #endif
+    #ifdef B576000
+    C(B576000),
+    #endif
+    #ifdef B921600
+    C(B921600),
+    #endif
+    #ifdef B1000000
+    C(B1000000),
+    #endif
+    #ifdef B1152000
+    C(B1152000)
+    #endif
 #undef C
 };
 

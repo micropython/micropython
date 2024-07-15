@@ -41,6 +41,8 @@ typedef uintptr_t gc_helper_regs_t[4];
 typedef uintptr_t gc_helper_regs_t[10];
 #elif defined(__aarch64__)
 typedef uintptr_t gc_helper_regs_t[11]; // x19-x29
+#elif defined(__riscv) && defined(__riscv_xlen) && (__riscv_xlen == 32)
+typedef uintptr_t gc_helper_regs_t[12]; // S0-S11
 #endif
 
 #endif

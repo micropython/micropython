@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Ayke van Laethem
+ * Copyright (c) 2016-2018 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_LIB_UTILS_SEMIHOSTING_H
-#define MICROPY_INCLUDED_LIB_UTILS_SEMIHOSTING_H
-
-/*
-
-To use semi-hosting for a replacement UART:
-- Add lib/semihosting/semihosting.c to the Makefile sources.
-- Call mp_semihosting_init() in main(), around the time UART is initialized.
-- Replace mp_hal_stdin_rx_chr and similar in mphalport.c with the semihosting equivalent.
-- Include lib/semihosting/semihosting.h in the relevant files.
-
-Then make sure the debugger is attached and enables semihosting.  In OpenOCD this is
-done with ARM semihosting enable followed by reset.  The terminal will need further
-configuration to work with MicroPython (bash: stty raw -echo).
-
-*/
 
 #include <stddef.h>
-#include <stdint.h>
 
-void mp_semihosting_init();
-int mp_semihosting_rx_char();
-uint32_t mp_semihosting_tx_strn(const char *str, size_t len);
-uint32_t mp_semihosting_tx_strn_cooked(const char *str, size_t len);
+#include "uart.h"
 
-#endif // MICROPY_INCLUDED_LIB_UTILS_SEMIHOSTING_H
+#define mp_hal_stdin_rx_chr() (0)
+#define mp_hal_stdout_tx_strn_cooked(s, l) uart_tx_strn((s), (l))

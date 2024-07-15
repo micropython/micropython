@@ -59,7 +59,7 @@ The :mod:`network` module::
     wlan.isconnected()      # check if the station is connected to an AP
     wlan.connect('ssid', 'key') # connect to an AP
     wlan.config('mac')      # get the interface's MAC address
-    wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
+    wlan.ipconfig('addr4')  # get the interface's IPv4 addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
     ap.active(True)         # activate the interface
@@ -76,7 +76,7 @@ A useful function for connecting to your local WiFi network is::
             wlan.connect('ssid', 'key')
             while not wlan.isconnected():
                 pass
-        print('network config:', wlan.ifconfig())
+        print('network config:', wlan.ipconfig('addr4'))
 
 Once the network is established the :mod:`socket <socket>` module can be used
 to create and use TCP/UDP sockets as usual.

@@ -4,6 +4,7 @@
 
 #include "py/obj.h"
 #include "py/objfun.h"
+#include "py/objint.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -387,7 +388,7 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# str\n");
 
         // intern string
-        mp_printf(&mp_plat_print, "%d\n", mp_obj_is_qstr(mp_obj_str_intern(mp_obj_new_str("intern me", 9))));
+        mp_printf(&mp_plat_print, "%d\n", mp_obj_is_qstr(mp_obj_str_intern(mp_obj_new_str_from_cstr("intern me"))));
     }
 
     // bytearray
@@ -454,6 +455,13 @@ static mp_obj_t extra_coverage(void) {
         mpz_mul_inpl(&mpz, &mpz2, &mpz);
         mpz_as_uint_checked(&mpz, &value);
         mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_not_inpl with argument==0, testing ~0
+        mpz_set_from_int(&mpz, 0);
+        mpz_not_inpl(&mpz, &mpz);
+        mp_int_t value_signed;
+        mpz_as_int_checked(&mpz, &value_signed);
+        mp_printf(&mp_plat_print, "%d\n", (int)value_signed);
     }
 
     // runtime utils
@@ -463,12 +471,15 @@ static mp_obj_t extra_coverage(void) {
         // call mp_call_function_1_protected
         mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_1_protected with invalid args
-        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str("abc", 3));
+        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str_from_cstr("abc"));
 
         // call mp_call_function_2_protected
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_2_protected with invalid args
-        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str("abc", 3), mp_obj_new_str("abc", 3));
+        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str_from_cstr("abc"), mp_obj_new_str_from_cstr("abc"));
+
+        // mp_obj_int_get_checked with mp_obj_int_t that has a value that is a small integer
+        mp_printf(&mp_plat_print, "%d\n", mp_obj_int_get_checked(mp_obj_int_new_mpz()));
 
         // mp_obj_int_get_uint_checked with non-negative small-int
         mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(1)));
@@ -722,7 +733,7 @@ static mp_obj_t extra_coverage(void) {
         // mp_obj_is_integer accepts ints and booleans
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_integer(mp_obj_new_int_from_ll(1)));
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_const_true), mp_obj_is_integer(mp_const_false));
-        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_obj_new_str("1", 1)), mp_obj_is_integer(mp_const_none));
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_obj_new_str_from_cstr("1")), mp_obj_is_integer(mp_const_none));
 
         // mp_obj_is_int accepts small int and object ints
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_int(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_int(mp_obj_new_int_from_ll(1)));

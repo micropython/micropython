@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Ibrahim Abdelkader <iabdalkader@openmv.io>
+ * Copyright (c) 2022 Blake W. Felt & Angus Gratton
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,37 +24,19 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "py/mphal.h"
-#include "extmod/modmachine.h"
+#ifndef MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_CDC_H
+#define MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_CDC_H
 
-#if MICROPY_HW_USB_CDC_1200BPS_TOUCH && MICROPY_HW_ENABLE_USBDEV
+#ifndef MICROPY_HW_USB_CDC_TX_TIMEOUT
+#define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
+#endif
 
-#include "tusb.h"
+uintptr_t mp_usbd_cdc_poll_interfaces(uintptr_t poll_flags);
+void tud_cdc_rx_cb(uint8_t itf);
+mp_uint_t mp_usbd_cdc_tx_strn(const char *str, mp_uint_t len);
 
-static mp_sched_node_t mp_bootloader_sched_node;
-
-static void usbd_cdc_run_bootloader_task(mp_sched_node_t *node) {
-    mp_hal_delay_ms(250);
-    machine_bootloader(0, NULL);
-}
-
-void
 #if MICROPY_HW_USB_EXTERNAL_TINYUSB
-mp_usbd_line_state_cb
-#else
-tud_cdc_line_state_cb
+void mp_usbd_line_state_cb(uint8_t itf, bool dtr, bool rts);
 #endif
-    (uint8_t itf, bool dtr, bool rts) {
-    if (dtr == false && rts == false) {
-        // Device is disconnected.
-        cdc_line_coding_t line_coding;
-        tud_cdc_n_get_line_coding(itf, &line_coding);
-        if (line_coding.bit_rate == 1200) {
-            // Delay bootloader jump to allow the USB stack to service endpoints.
-            mp_sched_schedule_node(&mp_bootloader_sched_node, usbd_cdc_run_bootloader_task);
-        }
-    }
-}
 
-#endif
+#endif // MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_CDC_H

@@ -57,10 +57,27 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
     return mp_obj_new_int_from_ll(value);
 }
 
-void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
+bool mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
     assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;
     long long val = self->val;
+    size_t slen; // Number of bytes to represent val
+
+    // This logic has a twin in objint.c
+    if (val > 0) {
+        slen = (sizeof(long long) * 8 - mp_clzll(val) + 7) / 8;
+    } else if (val < -1) {
+        slen = (sizeof(long long) * 8 - mp_clzll(~val) + 8) / 8;
+    } else {
+        // clz of 0 is defined, so 0 and -1 map to 0 and 1
+        slen = -val;
+    }
+
+    if (slen > len) {
+        return false; // Would overflow
+        // TODO: Determine whether to copy and truncate, as some callers probably expect this...?
+    }
+
     if (big_endian) {
         byte *b = buf + len;
         while (b > buf) {
@@ -73,6 +90,7 @@ void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byt
             val >>= 8;
         }
     }
+    return true;
 }
 
 int mp_obj_int_sign(mp_obj_t self_in) {
@@ -229,25 +247,21 @@ zero_division:
 }
 
 mp_obj_t mp_obj_new_int(mp_int_t value) {
-    if (MP_SMALL_INT_FITS(value)) {
-        return MP_OBJ_NEW_SMALL_INT(value);
-    }
     return mp_obj_new_int_from_ll(value);
 }
 
 mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
-    // SMALL_INT accepts only signed numbers, so make sure the input
-    // value fits completely in the small-int positive range.
-    if ((value & ~MP_SMALL_INT_POSITIVE_MASK) == 0) {
-        return MP_OBJ_NEW_SMALL_INT(value);
-    }
     return mp_obj_new_int_from_ll(value);
 }
 
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
+    if ((long long)(mp_int_t)val == val && MP_SMALL_INT_FITS(val)) {
+        return MP_OBJ_NEW_SMALL_INT(val);
+    }
+
     mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     o->val = val;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
@@ -255,19 +269,16 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     if (val >> (sizeof(unsigned long long) * 8 - 1) != 0) {
         mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("ulonglong too large"));
     }
-    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
-    o->val = val;
-    return o;
+    return mp_obj_new_int_from_ll(val);
 }
 
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
     // TODO this does not honor the given length of the string, but it all cases it should anyway be null terminated
     // TODO check overflow
-    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     char *endptr;
-    o->val = strtoll(*str, &endptr, base);
+    mp_obj_t result = mp_obj_new_int_from_ll(strtoll(*str, &endptr, base));
     *str = endptr;
-    return o;
+    return result;
 }
 
 mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in) {

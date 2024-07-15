@@ -194,7 +194,8 @@ static void re_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t 
     mp_printf(print, "<re %p>", self);
 }
 
-static mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
+// Note: this function can't be named re_exec because it may clash with system headers, eg on FreeBSD
+static mp_obj_t re_exec_helper(bool is_anchored, uint n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_re_t *self;
     if (mp_obj_is_type(args[0], (mp_obj_type_t *)&re_type)) {
@@ -223,12 +224,12 @@ static mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
 }
 
 static mp_obj_t re_match(size_t n_args, const mp_obj_t *args) {
-    return re_exec(true, n_args, args);
+    return re_exec_helper(true, n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_match_obj, 2, 4, re_match);
 
 static mp_obj_t re_search(size_t n_args, const mp_obj_t *args) {
-    return re_exec(false, n_args, args);
+    return re_exec_helper(false, n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_search_obj, 2, 4, re_search);
 

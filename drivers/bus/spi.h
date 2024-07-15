@@ -42,6 +42,7 @@ typedef struct _mp_soft_spi_obj_t {
     uint32_t delay_half; // microsecond delay for half SCK period
     uint8_t polarity;
     uint8_t phase;
+    uint8_t firstbit;
     mp_hal_pin_obj_t sck;
     mp_hal_pin_obj_t mosi;
     mp_hal_pin_obj_t miso;

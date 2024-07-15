@@ -19,7 +19,7 @@ Python 3.5 and some select features from later versions). The following core
 datatypes are provided: `str`(including basic Unicode support), `bytes`,
 `bytearray`, `tuple`, `list`, `dict`, `set`, `frozenset`, `array.array`,
 `collections.namedtuple`, classes and instances. Builtin modules include
-`os`, `sys`, `time`, `re`, and `struct`, etc. Select ports have support for
+`os`, `sys`, `time`, `re`, and `struct`, etc. Some ports have support for
 `_thread` module (multithreading), `socket` and `ssl` for networking, and
 `asyncio`. Note that only a subset of Python 3 functionality is implemented
 for the data types and modules.
@@ -35,8 +35,8 @@ DAC, PWM, SPI, I2C, CAN, Bluetooth, and USB.
 Getting started
 ---------------
 
-See the [online documentation](https://docs.micropython.org/) for API
-references and information about using MicroPython and information about how
+See the [online documentation](https://docs.micropython.org/) for the API
+reference and information about using MicroPython and information about how
 it is implemented.
 
 We use [GitHub Discussions](https://github.com/micropython/micropython/discussions)
@@ -114,7 +114,8 @@ In addition, the following ports are provided in this repository:
  - [nrf](ports/nrf) -- Nordic Semiconductor nRF51 and nRF52.
  - [pic16bit](ports/pic16bit) -- Microchip PIC 16-bit.
  - [powerpc](ports/powerpc) -- IBM PowerPC (including Microwatt)
- - [qemu-arm](ports/qemu-arm) -- QEMU-based emulated target, for testing)
+ - [qemu-arm](ports/qemu-arm) -- QEMU-based Arm emulated target (for testing)
+ - [qemu-riscv](ports/qemu-riscv) -- QEMU-based RISC-V emulated target (for testing)
  - [renesas-ra](ports/renesas-ra) -- Renesas RA family.
  - [rp2](ports/rp2) -- Raspberry Pi RP2040 (including Pico and Pico W).
  - [samd](ports/samd) -- Microchip (formerly Atmel) SAMD21 and SAMD51.

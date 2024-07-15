@@ -69,12 +69,20 @@
 #define IP_ADD_MEMBERSHIP 0x400
 #define IP_DROP_MEMBERSHIP 0x401
 
+#define TCP_NODELAY TF_NODELAY
+
 // For compatibilily with older lwIP versions.
 #ifndef ip_set_option
 #define ip_set_option(pcb, opt)   ((pcb)->so_options |= (opt))
 #endif
 #ifndef ip_reset_option
 #define ip_reset_option(pcb, opt) ((pcb)->so_options &= ~(opt))
+#endif
+#ifndef tcp_set_flags
+#define tcp_set_flags(pcb, set_flags) do { (pcb)->flags |= (set_flags); } while (0)
+#endif
+#ifndef tcp_clear_flags
+#define tcp_clear_flags(pcb, clear_flags) do { (pcb)->flags &= ~(clear_flags); } while (0)
 #endif
 
 // A port can define these hooks to provide concurrency protection
@@ -318,6 +326,10 @@ typedef struct _lwip_socket_obj_t {
     int8_t state;
 } lwip_socket_obj_t;
 
+static inline bool socket_is_timedout(lwip_socket_obj_t *socket, mp_uint_t ticks_start) {
+    return socket->timeout != -1 && (mp_uint_t)(mp_hal_ticks_ms() - ticks_start) >= socket->timeout;
+}
+
 static inline void poll_sockets(void) {
     mp_event_wait_ms(1);
 }
@@ -361,7 +373,7 @@ mp_obj_t lwip_format_inet_addr(const ip_addr_t *ip, mp_uint_t port) {
     char ipstr[IPADDR_STRLEN_MAX];
     ipaddr_ntoa_r(ip, ipstr, sizeof(ipstr));
     mp_obj_t tuple[2] = {
-        tuple[0] = mp_obj_new_str(ipstr, strlen(ipstr)),
+        tuple[0] = mp_obj_new_str_from_cstr(ipstr),
         tuple[1] = mp_obj_new_int(port),
     };
     return mp_obj_new_tuple(2, tuple);
@@ -742,9 +754,10 @@ static mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
         MICROPY_PY_LWIP_REENTER
     }
 
-    // If the output buffer is getting full then send the data to the lower layers
-    if (err == ERR_OK && tcp_sndbuf(socket->pcb.tcp) < TCP_SND_BUF / 4) {
-        err = tcp_output(socket->pcb.tcp);
+    // Use nagle algorithm to determine when to send segment buffer (can be
+    // disabled with TCP_NODELAY socket option)
+    if (err == ERR_OK) {
+        err = tcp_output_nagle(socket->pcb.tcp);
     }
 
     MICROPY_PY_LWIP_EXIT
@@ -1027,26 +1040,22 @@ static mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     // accept incoming connection
     struct tcp_pcb *volatile *incoming_connection = &lwip_socket_incoming_array(socket)[socket->incoming.connection.iget];
     if (*incoming_connection == NULL) {
-        if (socket->timeout == 0) {
+        mp_uint_t ticks_start = mp_hal_ticks_ms();
+        for (;;) {
             MICROPY_PY_LWIP_EXIT
-            m_del_obj(lwip_socket_obj_t, socket2);
-            mp_raise_OSError(MP_EAGAIN);
-        } else if (socket->timeout != -1) {
-            mp_uint_t retries = socket->timeout / 100;
-            while (*incoming_connection == NULL) {
+            poll_sockets();
+            MICROPY_PY_LWIP_REENTER
+            if (*incoming_connection != NULL) {
+                break;
+            }
+            if (socket_is_timedout(socket, ticks_start)) {
                 MICROPY_PY_LWIP_EXIT
-                if (retries-- == 0) {
-                    m_del_obj(lwip_socket_obj_t, socket2);
+                m_del_obj(lwip_socket_obj_t, socket2);
+                if (socket->timeout == 0) {
+                    mp_raise_OSError(MP_EAGAIN);
+                } else {
                     mp_raise_OSError(MP_ETIMEDOUT);
                 }
-                mp_hal_delay_ms(100);
-                MICROPY_PY_LWIP_REENTER
-            }
-        } else {
-            while (*incoming_connection == NULL) {
-                MICROPY_PY_LWIP_EXIT
-                poll_sockets();
-                MICROPY_PY_LWIP_REENTER
             }
         }
     }
@@ -1121,21 +1130,21 @@ static mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
             MICROPY_PY_LWIP_EXIT
 
             // And now we wait...
-            if (socket->timeout != -1) {
-                for (mp_uint_t retries = socket->timeout / 100; retries--;) {
-                    mp_hal_delay_ms(100);
-                    if (socket->state != STATE_CONNECTING) {
-                        break;
+            mp_uint_t ticks_start = mp_hal_ticks_ms();
+            for (;;) {
+                poll_sockets();
+                if (socket->state != STATE_CONNECTING) {
+                    break;
+                }
+                if (socket_is_timedout(socket, ticks_start)) {
+                    if (socket->timeout == 0) {
+                        mp_raise_OSError(MP_EINPROGRESS);
+                    } else {
+                        mp_raise_OSError(MP_ETIMEDOUT);
                     }
                 }
-                if (socket->state == STATE_CONNECTING) {
-                    mp_raise_OSError(MP_EINPROGRESS);
-                }
-            } else {
-                while (socket->state == STATE_CONNECTING) {
-                    poll_sockets();
-                }
             }
+
             if (socket->state == STATE_CONNECTED) {
                 err = ERR_OK;
             } else {
@@ -1436,6 +1445,17 @@ static mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
             }
             if (err != ERR_OK) {
                 mp_raise_OSError(error_lookup_table[-err]);
+            }
+            break;
+        }
+
+        // level: IPPROTO_TCP
+        case TCP_NODELAY: {
+            mp_int_t val = mp_obj_get_int(args[3]);
+            if (val) {
+                tcp_set_flags(socket->pcb.tcp, opt);
+            } else {
+                tcp_clear_flags(socket->pcb.tcp, opt);
             }
             break;
         }
@@ -1829,6 +1849,9 @@ static const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(0) },
     { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
     { MP_ROM_QSTR(MP_QSTR_IP_DROP_MEMBERSHIP), MP_ROM_INT(IP_DROP_MEMBERSHIP) },
+
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_TCP), MP_ROM_INT(IP_PROTO_TCP) },
+    { MP_ROM_QSTR(MP_QSTR_TCP_NODELAY), MP_ROM_INT(TCP_NODELAY) },
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_lwip_globals, mp_module_lwip_globals_table);

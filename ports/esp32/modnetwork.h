@@ -54,6 +54,8 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_get_wlan_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_get_lan_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(esp_network_ppp_make_new_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_ifconfig_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_ipconfig_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(esp_nic_ipconfig_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_config_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj);
 

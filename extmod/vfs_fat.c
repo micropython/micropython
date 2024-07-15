@@ -144,7 +144,7 @@ static mp_obj_t mp_vfs_fat_ilistdir_it_iternext(mp_obj_t self_in) {
         // make 4-tuple with info about this entry
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(4, NULL));
         if (self->is_str) {
-            t->items[0] = mp_obj_new_str(fn, strlen(fn));
+            t->items[0] = mp_obj_new_str_from_cstr(fn);
         } else {
             t->items[0] = mp_obj_new_bytes((const byte *)fn, strlen(fn));
         }
@@ -291,7 +291,7 @@ static mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
-    return mp_obj_new_str(buf, strlen(buf));
+    return mp_obj_new_str_from_cstr(buf);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getcwd_obj, fat_vfs_getcwd);
 

@@ -79,7 +79,7 @@ void usb_init(void) {
         .callback_rx_wanted_char = &MICROPY_HW_USB_CUSTOM_RX_WANTED_CHAR_CB,
         #endif
         #ifdef MICROPY_HW_USB_CUSTOM_LINE_STATE_CB
-        .callback_line_state_changed = &MICROPY_HW_USB_CUSTOM_LINE_STATE_CB,
+        .callback_line_state_changed = (tusb_cdcacm_callback_t)&MICROPY_HW_USB_CUSTOM_LINE_STATE_CB,
         #endif
         #ifdef MICROPY_HW_USB_CUSTOM_LINE_CODING_CB
         .callback_line_coding_changed = &MICROPY_HW_USB_CUSTOM_LINE_CODING_CB,

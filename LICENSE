@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2013-2023 Damien P. George
+Copyright (c) 2013-2024 Damien P. George
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -73,6 +73,7 @@ used during the build process and is not part of the compiled source code.
             /ppp_set_auth.* (Apache-2.0)
         /rp2
             /mutex_extra.c (BSD-3-clause)
+            /clocks_extra.c (BSD-3-clause)
         /stm32
             /usbd*.c (MCD-ST Liberty SW License Agreement V2)
             /stm32_it.* (MIT + BSD-3-clause)

@@ -1,0 +1,3 @@
+# Port-specific tests exclusion list.
+
+exclude_tests = exclude_tests.union(())

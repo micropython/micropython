@@ -528,6 +528,16 @@ static mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
         }
             #endif
 
+        // level: IPPROTO_TCP
+        case TCP_NODELAY: {
+            int val = mp_obj_get_int(args[3]);
+            int ret = lwip_setsockopt(self->fd, IPPROTO_TCP, opt, &val, sizeof(int));
+            if (ret != 0) {
+                mp_raise_OSError(errno);
+            }
+            break;
+        }
+
         // level: IPPROTO_IP
         case IP_ADD_MEMBERSHIP: {
             mp_buffer_info_t bufinfo;
@@ -941,7 +951,7 @@ static mp_obj_t esp_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
             mp_obj_new_int(resi->ai_family),
             mp_obj_new_int(resi->ai_socktype),
             mp_obj_new_int(resi->ai_protocol),
-            mp_obj_new_str(resi->ai_canonname, strlen(resi->ai_canonname)),
+            mp_obj_new_str_from_cstr(resi->ai_canonname),
             mp_const_none
         };
 
@@ -952,7 +962,7 @@ static mp_obj_t esp_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
             char buf[16];
             ip4addr_ntoa_r(&ip4_addr, buf, sizeof(buf));
             mp_obj_t inaddr_objs[2] = {
-                mp_obj_new_str(buf, strlen(buf)),
+                mp_obj_new_str_from_cstr(buf),
                 mp_obj_new_int(ntohs(addr->sin_port))
             };
             addrinfo_objs[4] = mp_obj_new_tuple(2, inaddr_objs);
@@ -995,6 +1005,7 @@ static const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SO_BROADCAST), MP_ROM_INT(SO_BROADCAST) },
     { MP_ROM_QSTR(MP_QSTR_SO_BINDTODEVICE), MP_ROM_INT(SO_BINDTODEVICE) },
     { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
+    { MP_ROM_QSTR(MP_QSTR_TCP_NODELAY), MP_ROM_INT(TCP_NODELAY) },
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_table);

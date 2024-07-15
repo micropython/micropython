@@ -109,6 +109,7 @@ zephyr_library_compile_definitions(
 )
 
 zephyr_library_sources(${MICROPY_SOURCE_QSTR})
+zephyr_library_link_libraries(kernel)
 
 add_dependencies(${MICROPY_TARGET} zephyr_generated_headers)
 

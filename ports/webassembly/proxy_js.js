@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+// Number of static entries at the start of proxy_js_ref.
+const PROXY_JS_REF_NUM_STATIC = 2;
+
 // These constants should match the constants in proxy_c.c.
 
 const PROXY_KIND_MP_EXCEPTION = -1;
@@ -57,6 +60,33 @@ class PythonError extends Error {
 
 function proxy_js_init() {
     globalThis.proxy_js_ref = [globalThis, undefined];
+    globalThis.proxy_js_ref_next = PROXY_JS_REF_NUM_STATIC;
+    globalThis.pyProxyFinalizationRegistry = new FinalizationRegistry(
+        (cRef) => {
+            Module.ccall("proxy_c_free_obj", "null", ["number"], [cRef]);
+        },
+    );
+}
+
+// js_obj cannot be undefined
+function proxy_js_add_obj(js_obj) {
+    // Search for the first free slot in proxy_js_ref.
+    while (proxy_js_ref_next < proxy_js_ref.length) {
+        if (proxy_js_ref[proxy_js_ref_next] === undefined) {
+            // Free slot found, reuse it.
+            const id = proxy_js_ref_next;
+            ++proxy_js_ref_next;
+            proxy_js_ref[id] = js_obj;
+            return id;
+        }
+        ++proxy_js_ref_next;
+    }
+
+    // No free slots, so grow proxy_js_ref by one (append at the end of the array).
+    const id = proxy_js_ref.length;
+    proxy_js_ref[id] = js_obj;
+    proxy_js_ref_next = proxy_js_ref.length;
+    return id;
 }
 
 function proxy_call_python(target, argumentsList) {
@@ -147,8 +177,7 @@ function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
         Module.setValue(out + 4, js_obj._ref, "i32");
     } else {
         kind = PROXY_KIND_JS_OBJECT;
-        const id = proxy_js_ref.length;
-        proxy_js_ref[id] = js_obj;
+        const id = proxy_js_add_obj(js_obj);
         Module.setValue(out + 4, id, "i32");
     }
     Module.setValue(out + 0, kind, "i32");
@@ -161,8 +190,7 @@ function proxy_convert_js_to_mp_obj_jsside_force_double_proxy(js_obj, out) {
         js_obj instanceof PyProxyThenable
     ) {
         const kind = PROXY_KIND_JS_OBJECT;
-        const id = proxy_js_ref.length;
-        proxy_js_ref[id] = js_obj;
+        const id = proxy_js_add_obj(js_obj);
         Module.setValue(out + 4, id, "i32");
         Module.setValue(out + 0, kind, "i32");
     } else {
@@ -228,6 +256,7 @@ function proxy_convert_mp_to_js_obj_jsside(value) {
             const target = new PyProxy(id);
             obj = new Proxy(target, py_proxy_handler);
         }
+        globalThis.pyProxyFinalizationRegistry.register(obj, id);
     }
     return obj;
 }
