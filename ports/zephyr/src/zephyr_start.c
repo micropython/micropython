@@ -24,14 +24,14 @@
  * THE SOFTWARE.
  */
 #include <zephyr/zephyr.h>
-#include <zephyr/console/console.h>
 #include "zephyr_getchar.h"
 
 int real_main(void);
+int mp_console_init(void);
 
 void main(void) {
     #ifdef CONFIG_CONSOLE_SUBSYS
-    console_init();
+    mp_console_init();
     #else
     zephyr_getchar_init();
     #endif

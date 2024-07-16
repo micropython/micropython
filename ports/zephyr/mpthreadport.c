@@ -269,6 +269,7 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
     k_sem_give(&mutex->handle);
+    k_yield();
 }
 
 void mp_thread_deinit(void) {
