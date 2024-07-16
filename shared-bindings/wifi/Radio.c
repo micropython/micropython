@@ -596,6 +596,22 @@ static mp_obj_t wifi_radio_set_ipv4_address_ap(size_t n_args, const mp_obj_t *po
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_set_ipv4_address_ap_obj, 1, wifi_radio_set_ipv4_address_ap);
 
+//|     ipv6_addresses: Sequence[str]
+//|     """IPv6 address(es) of the station when connected to an access point. None otherwise. (read-only)"""
+static mp_obj_t _wifi_radio_get_ipv6_addresses(mp_obj_t self) {
+    return common_hal_wifi_radio_get_ipv6_addresses(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv6_addresses_obj, _wifi_radio_get_ipv6_addresses);
+
+MP_PROPERTY_GETTER(wifi_radio_ipv6_addresses_obj,
+    (mp_obj_t)&wifi_radio_get_ipv6_addresses_obj);
+
+#if 0
+MP_WEAK mp_obj_t common_hal_wifi_radio_get_ipv6_addresses(wifi_radio_obj_t *self) {
+    return mp_const_none;
+}
+#endif
+
 //|     ipv4_address: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the station when connected to an access point. None otherwise. (read-only)"""
 static mp_obj_t _wifi_radio_get_ipv4_address(mp_obj_t self) {
@@ -768,6 +784,7 @@ static const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ipv4_subnet_ap),    MP_ROM_PTR(&wifi_radio_ipv4_subnet_ap_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipv4_address),    MP_ROM_PTR(&wifi_radio_ipv4_address_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipv4_address_ap),    MP_ROM_PTR(&wifi_radio_ipv4_address_ap_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipv6_addresses),    MP_ROM_PTR(&wifi_radio_ipv6_addresses_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_set_ipv4_address),    MP_ROM_PTR(&wifi_radio_set_ipv4_address_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_ipv4_address_ap),    MP_ROM_PTR(&wifi_radio_set_ipv4_address_ap_obj) },

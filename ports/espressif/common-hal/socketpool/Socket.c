@@ -11,6 +11,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/socketpool/SocketPool.h"
+#include "common-hal/socketpool/__init__.h"
 #if CIRCUITPY_SSL
 #include "shared-bindings/ssl/SSLSocket.h"
 #include "shared-module/ssl/SSLSocket.h"
@@ -24,6 +25,20 @@
 #include "components/lwip/lwip/src/include/lwip/sys.h"
 #include "components/lwip/lwip/src/include/lwip/netdb.h"
 #include "components/vfs/include/esp_vfs_eventfd.h"
+
+static void resolve_host_or_throw(socketpool_socket_obj_t *self, const char *hostname, struct sockaddr_storage *addr, int port) {
+    struct addrinfo *result_i;
+    const struct addrinfo hints = {
+        .ai_family = self->family,
+        .ai_socktype = self->type,
+    };
+    int error = socketpool_getaddrinfo_common(hostname, port, &hints, &result_i);
+    if (error != 0 || result_i == NULL) {
+        common_hal_socketpool_socketpool_raise_gaierror_noname();
+    }
+    memcpy(addr, result_i->ai_addr, sizeof(struct sockaddr_storage));
+    lwip_freeaddrinfo(result_i);
+}
 
 StackType_t socket_select_stack[2 * configMINIMAL_STACK_SIZE];
 
@@ -339,7 +354,7 @@ size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
         ip = inet_addr(host);
     }
     bind_addr.sin_addr.s_addr = ip;
-    bind_addr.sin_family = AF_INET;
+    bind_addr.sin_family = self->family;
     bind_addr.sin_port = htons(port);
 
     int result = lwip_bind(self->num, (struct sockaddr *)&bind_addr, sizeof(bind_addr));
@@ -382,26 +397,8 @@ void common_hal_socketpool_socket_close(socketpool_socket_obj_t *self) {
 
 void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
-    const struct addrinfo hints = {
-        .ai_family = self->family,
-        .ai_socktype = self->type,
-    };
-    struct addrinfo *result_i;
-    int error = lwip_getaddrinfo(host, NULL, &hints, &result_i);
-    if (error != 0 || result_i == NULL) {
-        common_hal_socketpool_socketpool_raise_gaierror_noname();
-    }
-
-    // Set parameters
-    struct sockaddr_in dest_addr;
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wcast-align"
-    dest_addr.sin_addr.s_addr = ((struct sockaddr_in *)result_i->ai_addr)->sin_addr.s_addr;
-    #pragma GCC diagnostic pop
-    lwip_freeaddrinfo(result_i);
-
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = htons(port);
+    struct sockaddr_storage addr;
+    resolve_host_or_throw(self, host, &addr, port);
 
     // Replace above with function call -----
 
@@ -409,7 +406,7 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
     // All our sockets are non-blocking, so we check the timeout ourselves.
 
     int result = -1;
-    result = lwip_connect(self->num, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr_in));
+    result = lwip_connect(self->num, (struct sockaddr *)&addr, addr.s2_len);
 
     if (result == 0) {
         // Connected immediately.
@@ -611,29 +608,10 @@ mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t *self, const
 mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port, const uint8_t *buf, uint32_t len) {
 
-    // Set parameters
-    const struct addrinfo hints = {
-        .ai_family = self->family,
-        .ai_socktype = self->type,
-    };
-    struct addrinfo *result_i;
-    int error = lwip_getaddrinfo(host, NULL, &hints, &result_i);
-    if (error != 0 || result_i == NULL) {
-        common_hal_socketpool_socketpool_raise_gaierror_noname();
-    }
+    struct sockaddr_storage addr;
+    resolve_host_or_throw(self, host, &addr, port);
 
-    // Set parameters
-    struct sockaddr_in dest_addr;
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wcast-align"
-    dest_addr.sin_addr.s_addr = ((struct sockaddr_in *)result_i->ai_addr)->sin_addr.s_addr;
-    #pragma GCC diagnostic pop
-    lwip_freeaddrinfo(result_i);
-
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = htons(port);
-
-    int bytes_sent = lwip_sendto(self->num, buf, len, 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+    int bytes_sent = lwip_sendto(self->num, buf, len, 0, (struct sockaddr *)&addr, addr.s2_len);
     if (bytes_sent < 0) {
         mp_raise_BrokenPipeError();
         return 0;

@@ -13,6 +13,7 @@
 #include "common-hal/wifi/__init__.h"
 #include "shared/runtime/interrupt_char.h"
 #include "py/gc.h"
+#include "py/obj.h"
 #include "py/runtime.h"
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
@@ -20,8 +21,14 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/ipaddress/__init__.h"
 
+#include "components/esp_netif/include/esp_netif_net_stack.h"
 #include "components/esp_wifi/include/esp_wifi.h"
 #include "components/lwip/include/apps/ping/ping_sock.h"
+#include "lwip/sockets.h"
+
+#if LWIP_IPV6_DHCP6
+#include "lwip/dhcp6.h"
+#endif
 
 #if CIRCUITPY_MDNS
 #include "common-hal/mdns/Server.h"
@@ -445,6 +452,24 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self) {
     return common_hal_ipaddress_new_ipv4address(self->ap_ip_info.netmask.addr);
 }
 
+mp_obj_t common_hal_wifi_radio_get_ipv6_addresses(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+    esp_ip6_addr_t addresses[LWIP_IPV6_NUM_ADDRESSES];
+    int n_addresses = esp_netif_get_all_ip6(self->netif, &addresses[0]);
+    if (!n_addresses) {
+        return mp_const_none;
+    }
+    mp_obj_tuple_t *result = MP_OBJ_TO_PTR(mp_obj_new_tuple(n_addresses, NULL));
+    for (int i = 0; i < n_addresses; i++) {
+        char buf[IP6ADDR_STRLEN_MAX];
+        inet_ntop(AF_INET6, &addresses[i], buf, sizeof(buf));
+        result->items[i] = mp_obj_new_str(buf, strlen(buf));
+    }
+    return MP_OBJ_FROM_PTR(result);
+}
+
 uint32_t wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return 0;
@@ -491,10 +516,17 @@ void common_hal_wifi_radio_set_ipv4_dns(wifi_radio_obj_t *self, mp_obj_t ipv4_dn
 
 void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self) {
     esp_netif_dhcpc_start(self->netif);
+    #if LWIP_IPV6_DHCP6
+    esp_netif_create_ip6_linklocal(self->netif);
+    dhcp6_enable_stateless(esp_netif_get_netif_impl(self->netif));
+    #endif
 }
 
 void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self) {
     esp_netif_dhcpc_stop(self->netif);
+    #if LWIP_IPV6_DHCP6
+    dhcp6_disable(esp_netif_get_netif_impl(self->netif));
+    #endif
 }
 
 void common_hal_wifi_radio_start_dhcp_server(wifi_radio_obj_t *self) {

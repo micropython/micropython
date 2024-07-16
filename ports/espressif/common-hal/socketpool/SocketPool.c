@@ -9,6 +9,7 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/wifi/__init__.h"
+#include "common-hal/socketpool/__init__.h"
 
 #include "components/lwip/lwip/src/include/lwip/netdb.h"
 
@@ -22,7 +23,7 @@ void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *sel
 
 // common_hal_socketpool_socket is in socketpool/Socket.c to centralize open socket tracking.
 
-static int getaddrinfo_common(const char *host, int service, const struct addrinfo *hints, struct addrinfo **res) {
+int socketpool_getaddrinfo_common(const char *host, int service, const struct addrinfo *hints, struct addrinfo **res) {
     // As of 2022, the version of lwip in esp-idf does not handle the
     // trailing-dot syntax of domain names, so emulate it.
     // Remove this once https://github.com/espressif/esp-idf/issues/10013 has
@@ -67,7 +68,7 @@ mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_ob
         .ai_socktype = SOCK_STREAM,
     };
     struct addrinfo *res = NULL;
-    int err = getaddrinfo_common(host, 0, &hints, &res);
+    int err = socketpool_getaddrinfo_common(host, 0, &hints, &res);
     if (err != 0 || res == NULL) {
         return mp_const_none;
     }
@@ -121,7 +122,7 @@ mp_obj_t common_hal_socketpool_getaddrinfo_raise(socketpool_socketpool_obj_t *se
     };
 
     struct addrinfo *res = NULL;
-    int err = getaddrinfo_common(host, port, &hints, &res);
+    int err = socketpool_getaddrinfo_common(host, port, &hints, &res);
     if (err != 0 || res == NULL) {
         common_hal_socketpool_socketpool_raise_gaierror_noname();
     }
