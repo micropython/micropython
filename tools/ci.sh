@@ -133,6 +133,10 @@ function ci_esp32_idf44_setup {
     ci_esp32_setup_helper v4.4
 }
 
+function ci_esp32_idf522_setup {
+    ci_esp32_setup_helper v5.2.2
+}
+
 function ci_esp32_build {
     source esp-idf/export.sh
     make ${MAKEOPTS} -C mpy-cross
