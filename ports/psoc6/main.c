@@ -132,10 +132,11 @@ soft_reset:
     #if MICROPY_VFS
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
-    #if MICROPY_VFS_FAT
-    pyexec_frozen_module("vfs_fat.py", false);
-    #elif MICROPY_VFS_LFS2
+
+    #if MICROPY_VFS_LFS2
     pyexec_frozen_module("vfs_lfs2.py", false);
+    #elif MICROPY_VFS_FAT
+    pyexec_frozen_module("vfs_fat.py", false);
     #endif
 
     #endif
