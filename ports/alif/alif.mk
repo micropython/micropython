@@ -203,6 +203,17 @@ $(BUILD)/tinyusb_port/tusb_alif_dcd.o: CFLAGS += -Wno-unused-variable -DTUSB_ALI
 $(BUILD)/$(ALIF_DFP_REL_TOP)/se_services/source/services_host_boot.o: CFLAGS += -Wno-stringop-truncation
 $(BUILD)/$(ALIF_DFP_REL_TOP)/se_services/source/services_host_system.o: CFLAGS += -Wno-maybe-uninitialized
 
+# Add Alif-specific implementation of libmetal (and optionally OpenAMP's rproc).
+# Note: libmetal code is generated via a pre-processor so ensure that runs first.
+ifeq ($(MICROPY_PY_OPENAMP),1)
+SRC_C += mpmetalport.c
+$(BUILD)/mpmetalport.o: $(BUILD)/openamp/metal/config.h
+ifeq ($(MICROPY_PY_OPENAMP_REMOTEPROC),1)
+SRC_C += mpremoteprocport.c
+$(BUILD)/mpremoteprocport.o: $(BUILD)/openamp/metal/config.h
+endif
+endif
+
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 
