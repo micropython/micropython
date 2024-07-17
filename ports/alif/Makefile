@@ -56,11 +56,11 @@ $(BUILD):
 	$(MKDIR) -p $@
 
 $(BUILD)/M55_HP/firmware.bin:
-	make -f alif.mk MCU_CORE=M55_HP
+	make -f alif.mk MCU_CORE=M55_HP MICROPY_PY_OPENAMP_MODE=0
 	$(Q)cp $(BUILD)/M55_HP/firmware.bin $(ALIF_TOOLS)/build/images/firmware_M55_HP.bin
 
 $(BUILD)/M55_HE/firmware.bin:
-	make -f alif.mk MCU_CORE=M55_HE
+	make -f alif.mk MCU_CORE=M55_HE MICROPY_PY_OPENAMP_MODE=1
 	$(Q)cp $(BUILD)/M55_HE/firmware.bin $(ALIF_TOOLS)/build/images/firmware_M55_HE.bin
 
 $(BUILD)/firmware.toc.bin: $(ALIF_TOC_APPS)

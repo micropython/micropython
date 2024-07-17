@@ -45,6 +45,7 @@
 #define IRQ_PRI_UART_REPL       NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 1, 0)
 #define IRQ_PRI_ADC             NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 3, 0)
 #define IRQ_PRI_USB             NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 5, 0)
+#define IRQ_PRI_HWSEM           NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 8, 0)
 #define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 127, 0)
 
 // these states correspond to values from query_irq, enable_irq and disable_irq
