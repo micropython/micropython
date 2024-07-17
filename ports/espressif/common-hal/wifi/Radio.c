@@ -20,6 +20,7 @@
 #include "shared-bindings/wifi/AuthMode.h"
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/ipaddress/__init__.h"
+#include "common-hal/socketpool/__init__.h"
 
 #include "components/esp_netif/include/esp_netif_net_stack.h"
 #include "components/esp_wifi/include/esp_wifi.h"
@@ -452,22 +453,36 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self) {
     return common_hal_ipaddress_new_ipv4address(self->ap_ip_info.netmask.addr);
 }
 
-mp_obj_t common_hal_wifi_radio_get_ipv6_addresses(wifi_radio_obj_t *self) {
-    if (!esp_netif_is_netif_up(self->netif)) {
-        return mp_const_none;
+static mp_obj_t common_hal_wifi_radio_get_addresses_netif(wifi_radio_obj_t *self, esp_netif_t *netif) {
+    if (!esp_netif_is_netif_up(netif)) {
+        return mp_const_empty_tuple;
     }
+    esp_netif_ip_info_t ip_info;
+    esp_netif_get_ip_info(netif, &ip_info);
+    int n_addresses4 = ip_info.ip.addr != INADDR_NONE;
+
     esp_ip6_addr_t addresses[LWIP_IPV6_NUM_ADDRESSES];
-    int n_addresses = esp_netif_get_all_ip6(self->netif, &addresses[0]);
-    if (!n_addresses) {
-        return mp_const_none;
-    }
+    int n_addresses6 = esp_netif_get_all_ip6(netif, &addresses[0]);
+    int n_addresses = n_addresses4 + n_addresses6;
+
     mp_obj_tuple_t *result = MP_OBJ_TO_PTR(mp_obj_new_tuple(n_addresses, NULL));
-    for (int i = 0; i < n_addresses; i++) {
-        char buf[IP6ADDR_STRLEN_MAX];
-        inet_ntop(AF_INET6, &addresses[i], buf, sizeof(buf));
-        result->items[i] = mp_obj_new_str(buf, strlen(buf));
+    for (int i = 0; i < n_addresses6; i++) {
+        result->items[i] = espaddr6_to_str(&addresses[i]);
     }
+
+    if (n_addresses4) {
+        result->items[n_addresses6] = espaddr4_to_str(&ip_info.ip);
+    }
+
     return MP_OBJ_FROM_PTR(result);
+}
+
+mp_obj_t common_hal_wifi_radio_get_addresses(wifi_radio_obj_t *self) {
+    return common_hal_wifi_radio_get_addresses_netif(self, self->netif);
+}
+
+mp_obj_t common_hal_wifi_radio_get_addresses_ap(wifi_radio_obj_t *self) {
+    return common_hal_wifi_radio_get_addresses_netif(self, self->ap_netif);
 }
 
 uint32_t wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
@@ -501,6 +516,9 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self) {
 
     esp_netif_get_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &self->dns_info);
 
+    if (self->dns_info.ip.type != ESP_IPADDR_TYPE_V4) {
+        return mp_const_none;
+    }
     // dns_info is of type esp_netif_dns_info_t, which is just ever so slightly
     // different than esp_netif_ip_info_t used for
     // common_hal_wifi_radio_get_ipv4_address (includes both ipv4 and 6),
@@ -620,4 +638,22 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
 void common_hal_wifi_radio_gc_collect(wifi_radio_obj_t *self) {
     // Only bother to scan the actual object references.
     gc_collect_ptr(self->current_scan);
+}
+
+mp_obj_t common_hal_wifi_radio_get_dns(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+
+    esp_netif_get_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &self->dns_info);
+
+    return espaddr_to_str(&self->dns_info.ip);
+}
+
+void common_hal_wifi_radio_set_dns(wifi_radio_obj_t *self, mp_obj_t dns_addr_obj) {
+    struct sockaddr_storage addr_storage;
+    socketpool_resolve_host_or_throw(AF_UNSPEC, SOCK_STREAM, mp_obj_str_get_str(dns_addr_obj), &addr_storage, 1);
+    esp_netif_dns_info_t dns_info;
+    sockaddr_to_espaddr(&addr_storage, &dns_info.ip);
+    esp_netif_set_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &dns_info);
 }

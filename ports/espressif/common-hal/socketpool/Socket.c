@@ -26,11 +26,11 @@
 #include "components/lwip/lwip/src/include/lwip/netdb.h"
 #include "components/vfs/include/esp_vfs_eventfd.h"
 
-static void resolve_host_or_throw(socketpool_socket_obj_t *self, const char *hostname, struct sockaddr_storage *addr, int port) {
+void socketpool_resolve_host_or_throw(int family, int type, const char *hostname, struct sockaddr_storage *addr, int port) {
     struct addrinfo *result_i;
     const struct addrinfo hints = {
-        .ai_family = self->family,
-        .ai_socktype = self->type,
+        .ai_family = family,
+        .ai_socktype = type,
     };
     int error = socketpool_getaddrinfo_common(hostname, port, &hints, &result_i);
     if (error != 0 || result_i == NULL) {
@@ -38,6 +38,10 @@ static void resolve_host_or_throw(socketpool_socket_obj_t *self, const char *hos
     }
     memcpy(addr, result_i->ai_addr, sizeof(struct sockaddr_storage));
     lwip_freeaddrinfo(result_i);
+}
+
+static void resolve_host_or_throw(socketpool_socket_obj_t *self, const char *hostname, struct sockaddr_storage *addr, int port) {
+    socketpool_resolve_host_or_throw(self->family, self->type, hostname, addr, port);
 }
 
 StackType_t socket_select_stack[2 * configMINIMAL_STACK_SIZE];
