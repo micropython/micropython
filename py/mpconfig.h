@@ -342,6 +342,11 @@
 #define MICROPY_PERSISTENT_CODE_SAVE_FILE (0)
 #endif
 
+// Whether to support converting functions to persistent code (bytes)
+#ifndef MICROPY_PERSISTENT_CODE_SAVE_FUN
+#define MICROPY_PERSISTENT_CODE_SAVE_FUN (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#endif
+
 // Whether generated code can persist independently of the VM/runtime instance
 // This is enabled automatically when needed by other features
 #ifndef MICROPY_PERSISTENT_CODE
