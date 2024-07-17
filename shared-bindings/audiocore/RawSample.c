@@ -32,12 +32,11 @@
 //|         :param ~circuitpython_typing.ReadableBuffer buffer: A buffer with samples
 //|         :param int channel_count: The number of channels in the buffer
 //|         :param int sample_rate: The desired playback sample rate
-//|         :param bool single_buffer: Selects single buffered or double buffered transfer mode.  This affects sample looping
-//|                                    and what happens if the sample buffer is changed while the sample is playing.
-//|                                    In single buffered transfers, samples will play once unless the play method is invoked with
-//|                                    loop=True.  A change in buffer contents will not affect active playback.
-//|                                    In double buffered transfers, samples are always looped, and changed buffer contents will
-//|                                    be played back as soon as transfer reaches the next half-buffer point.
+//|         :param bool single_buffer: Selects single buffered or double buffered transfer mode.  This affects
+//|                                    what happens if the sample buffer is changed while the sample is playing.
+//|                                    In single buffered transfers, a change in buffer contents will not affect active playback.
+//|                                    In double buffered transfers, changed buffer contents will
+//|                                    be played back when the transfer reaches the next half-buffer point.
 //|
 //|         Playing 8ksps 440 Hz and 880 Hz sine waves::
 //|
@@ -69,7 +68,7 @@
 //|
 //|           # Play double-buffered
 //|           sample = audiocore.RawSample(sine_wave, single_buffer=False)
-//|           pwm.play(sample)
+//|           pwm.play(sample, loop=True)
 //|           time.sleep(3)
 //|           # changing the wave takes effect almost immediately
 //|           for i in range(length):
