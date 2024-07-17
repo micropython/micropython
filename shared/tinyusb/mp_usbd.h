@@ -125,7 +125,6 @@ inline static bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd
 
 static inline void mp_usbd_init(void) {
     // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
-    extern bool tusb_init(void);
     tusb_init();
 }
 

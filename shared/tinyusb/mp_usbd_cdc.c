@@ -95,6 +95,9 @@ void tud_cdc_rx_cb(uint8_t itf) {
 }
 
 mp_uint_t mp_usbd_cdc_tx_strn(const char *str, mp_uint_t len) {
+    if (!tusb_inited()) {
+        return 0;
+    }
     size_t i = 0;
     while (i < len) {
         uint32_t n = len - i;
