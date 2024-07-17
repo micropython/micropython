@@ -114,6 +114,14 @@ SECTIONS
     * (.bss.sram0*)
   } > SRAM0
 
+  /* Open-AMP Shared Memory Region */
+  .openamp_memory (NOLOAD) : ALIGN(32)
+  {
+      _openamp_shm_region_start = .;
+      . = . + 64K;
+      _openamp_shm_region_end = .;
+  } >SRAM6_A
+
   .bss : ALIGN(4)
   {
     __bss_start__ = .;
