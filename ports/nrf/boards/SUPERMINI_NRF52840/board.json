@@ -1,0 +1,17 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "Battery Charging",
+        "USB-C"
+    ],
+    "images": [],
+    "mcu": "nrf52",
+    "product": "SuperMini / Nice!Nano  nRF52840",
+    "thumbnail": "",
+    "url": "https://wiki.icbbuy.com/doku.php?id=developmentboard:nrf52840",
+    "vendor": ""
+}
