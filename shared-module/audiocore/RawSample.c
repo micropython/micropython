@@ -55,8 +55,6 @@ uint8_t common_hal_audioio_rawsample_get_channel_count(audioio_rawsample_obj_t *
 void audioio_rawsample_reset_buffer(audioio_rawsample_obj_t *self,
     bool single_channel_output,
     uint8_t channel) {
-
-    // self->buffer_index = 0;
 }
 
 audioio_get_buffer_result_t audioio_rawsample_get_buffer(audioio_rawsample_obj_t *self,
@@ -82,7 +80,6 @@ audioio_get_buffer_result_t audioio_rawsample_get_buffer(audioio_rawsample_obj_t
             *buffer = self->buffer + self->len / 2 * self->buffer_index;
         }
         self->buffer_index = 1 - self->buffer_index;
-        // return GET_BUFFER_MORE_DATA;
         return GET_BUFFER_DONE;
     }
 }
