@@ -348,20 +348,32 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
 // TODO: ipv6
 size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
-    struct sockaddr_in bind_addr;
+    struct sockaddr_storage bind_addr;
     const char *broadcast = "<broadcast>";
-    uint32_t ip;
-    if (hostlen == 0) {
-        ip = IPADDR_ANY;
-    } else if (hostlen == strlen(broadcast) &&
-               memcmp(host, broadcast, strlen(broadcast)) == 0) {
-        ip = IPADDR_BROADCAST;
+
+    bind_addr.ss_family = self->family;
+
+    if (self->family == AF_INET6) {
+        struct sockaddr_in6 *addr6 = (void *)&bind_addr;
+        addr6->sin6_port = htons(port);
+        // no ipv6 broadcast
+        if (hostlen == 0) {
+            memset(&addr6->sin6_addr, 0, sizeof(addr6->sin6_addr));
+        } else {
+            socketpool_resolve_host_or_throw(self->family, self->type, host, &bind_addr, port);
+        }
     } else {
-        ip = inet_addr(host);
+        struct sockaddr_in *addr4 = (void *)&bind_addr;
+        addr4->sin_port = htons(port);
+        if (hostlen == 0) {
+            addr4->sin_addr.s_addr = IPADDR_ANY;
+        } else if (hostlen == strlen(broadcast) &&
+                   memcmp(host, broadcast, strlen(broadcast)) == 0) {
+            addr4->sin_addr.s_addr = IPADDR_BROADCAST;
+        } else {
+            socketpool_resolve_host_or_throw(self->family, self->type, host, &bind_addr, port);
+        }
     }
-    bind_addr.sin_addr.s_addr = ip;
-    bind_addr.sin_family = self->family;
-    bind_addr.sin_port = htons(port);
 
     int result = lwip_bind(self->num, (struct sockaddr *)&bind_addr, sizeof(bind_addr));
     if (result == 0) {
