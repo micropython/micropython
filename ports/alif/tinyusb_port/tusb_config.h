@@ -44,7 +44,7 @@
 #define CFG_TUSB_DEBUG        0
 
 // Enable Device stack
-#define CFG_TUD_ENABLED       1
+#define CFG_TUD_ENABLED       (CORE_M55_HP)
 
 // Default is max speed that hardware controller could support with on-chip PHY
 #define CFG_TUD_MAX_SPEED OPT_MODE_HIGH_SPEED

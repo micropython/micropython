@@ -48,10 +48,6 @@
 static uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
 ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array) };
 
-#endif
-
-#if MICROPY_HW_USB_CDC
-
 uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll
 
 void poll_cdc_interfaces(void) {
@@ -126,11 +122,12 @@ int mp_hal_stdin_rx_chr(void) {
         #if MICROPY_HW_USB_CDC
         poll_cdc_interfaces();
         #endif
-
+        #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
         int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
         }
+        #endif
         #if MICROPY_PY_OS_DUPTERM
         int dupterm_c = mp_os_dupterm_rx_chr();
         if (dupterm_c >= 0) {
@@ -143,8 +140,10 @@ int mp_hal_stdin_rx_chr(void) {
 
 // Send string of given length
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC || MICROPY_PY_OS_DUPTERM
     mp_uint_t ret = len;
     bool did_write = false;
+    #endif
 
     #if MICROPY_HW_ENABLE_UART_REPL
     mp_uart_write_strn(str, len);

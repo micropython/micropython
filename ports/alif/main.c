@@ -65,9 +65,9 @@ void _start(void) {
     #if MICROPY_HW_ENABLE_UART_REPL
     mp_uart_init();
     #endif
-
+    #if MICROPY_HW_ENABLE_OSPI
     ospi_flash_init();
-
+    #endif
     #if MICROPY_HW_ENABLE_USBDEV
     // Takes about 200ms.
     NVIC_ClearPendingIRQ(USB_IRQ_IRQn);

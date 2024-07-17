@@ -30,6 +30,7 @@
 #include "modalif.h"
 #include "ospi_flash.h"
 
+#if MICROPY_HW_ENABLE_OSPI
 typedef struct _alif_flash_obj_t {
     mp_obj_base_t base;
     uint32_t flash_base_addr;
@@ -158,3 +159,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, alif_flash_make_new,
     locals_dict, &alif_flash_locals_dict
     );
+#endif // MICROPY_HW_ENABLE_OSPI
