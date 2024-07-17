@@ -1592,12 +1592,10 @@ void supervisor_web_workflow_background(void *data) {
         if ((!common_hal_socketpool_socket_get_connected(&active) ||
              (!active_request.in_progress && !active_request.new_socket)) &&
             !common_hal_socketpool_socket_get_closed(&listening)) {
-            uint32_t ip;
-            uint32_t port;
             if (!common_hal_socketpool_socket_get_closed(&active)) {
                 common_hal_socketpool_socket_close(&active);
             }
-            int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port, &active);
+            int newsoc = socketpool_socket_accept(&listening, NULL, &active);
             if (newsoc == -EBADF) {
                 common_hal_socketpool_socket_close(&listening);
                 break;

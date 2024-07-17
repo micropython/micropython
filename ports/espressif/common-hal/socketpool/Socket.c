@@ -12,6 +12,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/socketpool/SocketPool.h"
 #include "common-hal/socketpool/__init__.h"
+#include "common-hal/wifi/__init__.h"
 #if CIRCUITPY_SSL
 #include "shared-bindings/ssl/SSLSocket.h"
 #include "shared-module/ssl/SSLSocket.h"
@@ -269,9 +270,9 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     return sock;
 }
 
-int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port, socketpool_socket_obj_t *accepted) {
-    struct sockaddr_in accept_addr;
-    socklen_t socklen = sizeof(accept_addr);
+int socketpool_socket_accept(socketpool_socket_obj_t *self, mp_obj_t *peer_out, socketpool_socket_obj_t *accepted) {
+    struct sockaddr_storage peer_addr;
+    socklen_t socklen = sizeof(peer_addr);
     int newsoc = -1;
     bool timed_out = false;
     uint64_t start_ticks = supervisor_ticks_ms64();
@@ -282,20 +283,17 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
             timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
         }
         RUN_BACKGROUND_TASKS;
-        newsoc = lwip_accept(self->num, (struct sockaddr *)&accept_addr, &socklen);
+        newsoc = lwip_accept(self->num, (struct sockaddr *)&peer_addr, &socklen);
         // In non-blocking mode, fail instead of timing out
         if (newsoc == -1 && (self->timeout_ms == 0 || mp_hal_is_interrupted())) {
             return -MP_EAGAIN;
         }
     }
 
-    if (!timed_out) {
-        // harmless on failure but avoiding memcpy is faster
-        memcpy((void *)ip, (void *)&accept_addr.sin_addr.s_addr, sizeof(accept_addr.sin_addr.s_addr));
-        *port = accept_addr.sin_port;
-    } else {
+    if (timed_out) {
         return -ETIMEDOUT;
     }
+
     if (newsoc < 0) {
         return -MP_EBADF;
     }
@@ -320,13 +318,16 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
         accepted->type = self->type;
     }
 
+    if (peer_out) {
+        *peer_out = sockaddr_to_tuple(&peer_addr);
+    }
+
     return newsoc;
 }
 
-socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *self,
-    uint8_t *ip, uint32_t *port) {
+socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *self, mp_obj_t *peer_out) {
     socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
-    int newsoc = socketpool_socket_accept(self, ip, port, NULL);
+    int newsoc = socketpool_socket_accept(self, peer_out, NULL);
 
     if (newsoc > 0) {
         // Create the socket
@@ -344,6 +345,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
     }
 }
 
+// TODO: ipv6
 size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
     struct sockaddr_in bind_addr;
@@ -490,9 +492,9 @@ bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t *self, int back
 }
 
 mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *self,
-    uint8_t *buf, uint32_t len, uint8_t *ip, uint32_t *port) {
+    uint8_t *buf, uint32_t len, mp_obj_t *source_out) {
 
-    struct sockaddr_in source_addr;
+    struct sockaddr_storage source_addr;
     socklen_t socklen = sizeof(source_addr);
 
     // LWIP Socket
@@ -514,16 +516,17 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *se
         }
     }
 
-    if (!timed_out) {
-        memcpy((void *)ip, (void *)&source_addr.sin_addr.s_addr, sizeof(source_addr.sin_addr.s_addr));
-        *port = htons(source_addr.sin_port);
-    } else {
+    if (timed_out) {
         mp_raise_OSError(ETIMEDOUT);
     }
 
     if (received < 0) {
         mp_raise_BrokenPipeError();
         return 0;
+    }
+
+    if (source_out) {
+        *source_out = sockaddr_to_tuple(&source_addr);
     }
 
     return received;
