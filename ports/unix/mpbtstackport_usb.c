@@ -110,10 +110,7 @@ static void *btstack_thread(void *arg) {
 
 void mp_bluetooth_btstack_port_start(void) {
     // Create a thread to run the btstack loop.
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    pthread_create(&bstack_thread_id, &attr, &btstack_thread, NULL);
+    pthread_create(&bstack_thread_id, NULL, &btstack_thread, NULL);
 }
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK && MICROPY_BLUETOOTH_BTSTACK_USB
