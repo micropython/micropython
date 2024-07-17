@@ -618,10 +618,10 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
         CHECK_ESP_RESULT(esp_ping_new_session(&ping_config, &ping_callbacks, &ping));
     }
 
-    esp_ping_start(ping);
-
     // Use all ones as a flag that the elapsed time was not set (ping failed or timed out).
     self->ping_elapsed_time = (uint32_t)(-1);
+
+    esp_ping_start(ping);
 
     uint32_t start_time = common_hal_time_monotonic_ms();
     while ((self->ping_elapsed_time == (uint32_t)(-1)) &&

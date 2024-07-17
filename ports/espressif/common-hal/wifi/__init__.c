@@ -11,6 +11,7 @@
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/Monitor.h"
 #include "shared-bindings/wifi/Radio.h"
+#include "common-hal/socketpool/__init__.h"
 
 #include "py/gc.h"
 #include "py/mpstate.h"
@@ -234,14 +235,14 @@ void wifi_reset(void) {
 }
 
 void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t *esp_ip_address) {
-    if (!mp_obj_is_type(ip_address, &ipaddress_ipv4address_type)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Only IPv4 addresses supported"));
+    if (mp_obj_is_type(ip_address, &ipaddress_ipv4address_type)) {
+        ipaddress_ipaddress_to_esp_idf_ip4(ip_address, (esp_ip4_addr_t *)esp_ip_address);
+        esp_ip_address->type = IPADDR_TYPE_V4;
+    } else {
+        struct sockaddr_storage addr_storage;
+        socketpool_resolve_host_or_throw(AF_UNSPEC, SOCK_STREAM, mp_obj_str_get_str(ip_address), &addr_storage, 1);
+        sockaddr_to_espaddr(&addr_storage, (esp_ip_addr_t *)esp_ip_address);
     }
-    mp_obj_t packed = common_hal_ipaddress_ipv4address_get_packed(ip_address);
-    size_t len;
-    const char *bytes = mp_obj_str_get_data(packed, &len);
-
-    IP_ADDR4(esp_ip_address, bytes[0], bytes[1], bytes[2], bytes[3]);
 }
 
 void ipaddress_ipaddress_to_esp_idf_ip4(mp_obj_t ip_address, esp_ip4_addr_t *esp_ip_address) {
@@ -288,7 +289,13 @@ mp_obj_t sockaddr_to_str(const struct sockaddr_storage *sockaddr) {
     return mp_obj_new_str(buf, strlen(buf));
 }
 
+
 void sockaddr_to_espaddr(const struct sockaddr_storage *sockaddr, esp_ip_addr_t *espaddr) {
+    MP_STATIC_ASSERT(IPADDR_TYPE_V4 == ESP_IPADDR_TYPE_V4);
+    MP_STATIC_ASSERT(IPADDR_TYPE_V6 == ESP_IPADDR_TYPE_V6);
+    MP_STATIC_ASSERT(sizeof(ip_addr_t) == sizeof(esp_ip_addr_t));
+    MP_STATIC_ASSERT(offsetof(ip_addr_t, u_addr) == offsetof(esp_ip_addr_t, u_addr));
+    MP_STATIC_ASSERT(offsetof(ip_addr_t, type) == offsetof(esp_ip_addr_t, type));
     if (sockaddr->ss_family == AF_INET6) {
         const struct sockaddr_in6 *addr6 = (const void *)sockaddr;
         MP_STATIC_ASSERT(sizeof(espaddr->u_addr.ip6.addr) == sizeof(addr6->sin6_addr));
@@ -306,12 +313,10 @@ void sockaddr_to_espaddr(const struct sockaddr_storage *sockaddr, esp_ip_addr_t 
 void espaddr_to_sockaddr(const esp_ip_addr_t *espaddr, struct sockaddr_storage *sockaddr, int port) {
     if (espaddr->type == ESP_IPADDR_TYPE_V6) {
         struct sockaddr_in6 *addr6 = (void *)sockaddr;
-        MP_STATIC_ASSERT(sizeof(espaddr->u_addr.ip6.addr) == sizeof(addr6->sin6_addr));
         memcpy(&addr6->sin6_addr, &espaddr->u_addr.ip6.addr, sizeof(espaddr->u_addr.ip6.addr));
         addr6->sin6_scope_id = espaddr->u_addr.ip6.zone;
     } else {
         struct sockaddr_in *addr = (void *)sockaddr;
-        MP_STATIC_ASSERT(sizeof(espaddr->u_addr.ip4.addr) == sizeof(addr->sin_addr));
         memcpy(&addr->sin_addr, &espaddr->u_addr.ip4.addr, sizeof(espaddr->u_addr.ip4.addr));
     }
 }
