@@ -1,4 +1,4 @@
-freeze("$(PORT_DIR)/modules")
+freeze("$(PORT_DIR)/modules/$(MCU_CORE)")
 include("$(MPY_DIR)/extmod/asyncio")
 require("dht")
 require("neopixel")

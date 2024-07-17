@@ -36,13 +36,18 @@
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
 #endif
 
-#define MICROPY_HW_ENABLE_UART_REPL             (1) // useful if there is no USB
-#define MICROPY_HW_ENABLE_USBDEV                (1)
-
+#ifndef MICROPY_HW_ENABLE_OSPI
+#define MICROPY_HW_ENABLE_OSPI                  (CORE_M55_HP)
+#endif
+#ifndef MICROPY_HW_ENABLE_USBDEV
+#define MICROPY_HW_ENABLE_USBDEV                (CORE_M55_HP)
+#endif
 #ifndef MICROPY_HW_USB_PRODUCT_FS_STRING
 #define MICROPY_HW_USB_PRODUCT_FS_STRING        "Board in HS mode"
 #endif
-#define MICROPY_HW_USB_CDC                      (1)
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC                      (CORE_M55_HP)
+#endif
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT           (500)
 #ifndef MICROPY_HW_USB_MSC
 #define MICROPY_HW_USB_MSC                      (0)
@@ -53,7 +58,9 @@
 #ifndef MICROPY_HW_USB_PID
 #define MICROPY_HW_USB_PID                      (0x9802) // interface has CDC only
 #endif
-
+#ifndef MICROPY_HW_ENABLE_UART_REPL
+#define MICROPY_HW_ENABLE_UART_REPL             (CORE_M55_HP) // useful if there is no USB
+#endif
 #define MICROPY_HW_FLASH_BLOCK_SIZE_BYTES       (4096)
 
 // Memory allocation policies
@@ -78,6 +85,9 @@
 #define MICROPY_ENABLE_GC                       (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 #define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
+#ifndef MICROPY_FLOAT_IMPL
+#define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
+#endif
 #define MICROPY_SCHEDULER_DEPTH                 (8)
 #define MICROPY_SCHEDULER_STATIC_NODES          (1)
 #define MICROPY_USE_INTERNAL_ERRNO              (1)

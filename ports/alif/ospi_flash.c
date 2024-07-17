@@ -26,8 +26,9 @@
 
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "ospi_flash.h"
 
+#if MICROPY_HW_ENABLE_OSPI
+#include "ospi_flash.h"
 #include "ospi_drv.h"
 #include "pinconf.h"
 
@@ -263,3 +264,4 @@ int ospi_flash_write(uint32_t addr, uint32_t len, const uint8_t *src) {
     }
     return ret;
 }
+#endif // MICROPY_HW_ENABLE_OSPI
