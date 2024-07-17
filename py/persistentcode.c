@@ -526,7 +526,7 @@ void mp_raw_code_load_file(qstr filename, mp_compiled_module_t *context) {
 
 #endif // MICROPY_PERSISTENT_CODE_LOAD
 
-#if MICROPY_PERSISTENT_CODE_SAVE
+#if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_PERSISTENT_CODE_SAVE_FUN
 
 #include "py/objstr.h"
 
@@ -624,6 +624,10 @@ static void save_obj(mp_print_t *print, mp_obj_t o) {
     }
 }
 
+#endif // MICROPY_PERSISTENT_CODE_SAVE || MICROPY_PERSISTENT_CODE_SAVE_FUN
+
+#if MICROPY_PERSISTENT_CODE_SAVE
+
 static void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
     // Save function kind and data length
     mp_print_uint(print, (rc->fun_data_len << 3) | ((rc->n_children != 0) << 2) | (rc->kind - MP_CODE_BYTECODE));
@@ -693,6 +697,8 @@ void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
     save_raw_code(print, cm->rc);
 }
 
+#endif // MICROPY_PERSISTENT_CODE_SAVE
+
 #if MICROPY_PERSISTENT_CODE_SAVE_FILE
 
 #include <unistd.h>
@@ -723,4 +729,184 @@ void mp_raw_code_save_file(mp_compiled_module_t *cm, qstr filename) {
 
 #endif // MICROPY_PERSISTENT_CODE_SAVE_FILE
 
-#endif // MICROPY_PERSISTENT_CODE_SAVE
+#if MICROPY_PERSISTENT_CODE_SAVE_FUN
+
+#include "py/bc0.h"
+#include "py/objfun.h"
+#include "py/smallint.h"
+#include "py/gc.h"
+
+#define MP_BC_OPCODE_HAS_SIGNED_OFFSET(opcode) (MP_BC_UNWIND_JUMP <= (opcode) && (opcode) <= MP_BC_POP_JUMP_IF_FALSE)
+
+typedef struct _bit_vector_t {
+    size_t max_bit_set;
+    size_t alloc;
+    uintptr_t *bits;
+} bit_vector_t;
+
+static void bit_vector_init(bit_vector_t *self) {
+    self->max_bit_set = 0;
+    self->alloc = 1;
+    self->bits = m_new(uintptr_t, self->alloc);
+}
+
+static void bit_vector_clear(bit_vector_t *self) {
+    m_del(uintptr_t, self->bits, self->alloc);
+}
+
+static bool bit_vector_is_set(bit_vector_t *self, size_t index) {
+    const size_t bits_size = sizeof(*self->bits) * MP_BITS_PER_BYTE;
+    return index / bits_size < self->alloc
+           && (self->bits[index / bits_size] & (1 << (index % bits_size))) != 0;
+}
+
+static void bit_vector_set(bit_vector_t *self, size_t index) {
+    const size_t bits_size = sizeof(*self->bits) * MP_BITS_PER_BYTE;
+    self->max_bit_set = MAX(self->max_bit_set, index);
+    if (index / bits_size >= self->alloc) {
+        size_t new_alloc = self->alloc * 2;
+        self->bits = m_renew(uintptr_t, self->bits, self->alloc, new_alloc);
+        self->alloc = new_alloc;
+    }
+    self->bits[index / bits_size] |= 1 << (index % bits_size);
+}
+
+typedef struct _mp_opcode_t {
+    uint8_t opcode;
+    uint8_t format;
+    uint8_t size;
+    mp_int_t arg;
+    uint8_t extra_arg;
+} mp_opcode_t;
+
+static mp_opcode_t mp_opcode_decode(const uint8_t *ip) {
+    const uint8_t *ip_start = ip;
+    uint8_t opcode = *ip++;
+    uint8_t opcode_format = MP_BC_FORMAT(opcode);
+    mp_uint_t arg = 0;
+    uint8_t extra_arg = 0;
+    if (opcode_format == MP_BC_FORMAT_QSTR || opcode_format == MP_BC_FORMAT_VAR_UINT) {
+        arg = *ip & 0x7f;
+        if (opcode == MP_BC_LOAD_CONST_SMALL_INT && (arg & 0x40) != 0) {
+            arg |= (mp_uint_t)(-1) << 7;
+        }
+        while ((*ip & 0x80) != 0) {
+            arg = (arg << 7) | (*++ip & 0x7f);
+        }
+        ++ip;
+    } else if (opcode_format == MP_BC_FORMAT_OFFSET) {
+        if ((*ip & 0x80) == 0) {
+            arg = *ip++;
+            if (MP_BC_OPCODE_HAS_SIGNED_OFFSET(opcode)) {
+                arg -= 0x40;
+            }
+        } else {
+            arg = (ip[0] & 0x7f) | (ip[1] << 7);
+            ip += 2;
+            if (MP_BC_OPCODE_HAS_SIGNED_OFFSET(opcode)) {
+                arg -= 0x4000;
+            }
+        }
+    }
+    if ((opcode & MP_BC_MASK_EXTRA_BYTE) == 0) {
+        extra_arg = *ip++;
+    }
+
+    mp_opcode_t op = { opcode, opcode_format, ip - ip_start, arg, extra_arg };
+    return op;
+}
+
+mp_obj_t mp_raw_code_save_fun_to_bytes(const mp_module_constants_t *consts, const uint8_t *bytecode) {
+    const uint8_t *fun_data = bytecode;
+    const uint8_t *fun_data_top = fun_data + gc_nbytes(fun_data);
+
+    // Extract function information.
+    const byte *ip = fun_data;
+    MP_BC_PRELUDE_SIG_DECODE(ip);
+    MP_BC_PRELUDE_SIZE_DECODE(ip);
+
+    // Track the qstrs used by the function.
+    bit_vector_t qstr_table_used;
+    bit_vector_init(&qstr_table_used);
+
+    // Track the objects used by the function.
+    bit_vector_t obj_table_used;
+    bit_vector_init(&obj_table_used);
+
+    const byte *ip_names = ip;
+    mp_uint_t simple_name = mp_decode_uint(&ip_names);
+    bit_vector_set(&qstr_table_used, simple_name);
+    for (size_t i = 0; i < n_pos_args + n_kwonly_args; ++i) {
+        mp_uint_t arg_name = mp_decode_uint(&ip_names);
+        bit_vector_set(&qstr_table_used, arg_name);
+    }
+
+    // Skip pass source code info and cell info.
+    // Then ip points to the start of the opcodes.
+    ip += n_info + n_cell;
+
+    // Decode bytecode.
+    while (ip < fun_data_top) {
+        mp_opcode_t op = mp_opcode_decode(ip);
+        if (op.opcode == MP_BC_BASE_RESERVED) {
+            // End of opcodes.
+            fun_data_top = ip;
+        } else if (op.opcode == MP_BC_LOAD_CONST_OBJ) {
+            bit_vector_set(&obj_table_used, op.arg);
+        } else if (op.format == MP_BC_FORMAT_QSTR) {
+            bit_vector_set(&qstr_table_used, op.arg);
+        }
+        ip += op.size;
+    }
+
+    mp_uint_t fun_data_len = fun_data_top - fun_data;
+
+    mp_print_t print;
+    vstr_t vstr;
+    vstr_init_print(&vstr, 64, &print);
+
+    // Start with .mpy header.
+    const uint8_t header[4] = { 'M', MPY_VERSION, 0, MP_SMALL_INT_BITS };
+    mp_print_bytes(&print, header, sizeof(header));
+
+    // Number of entries in constant table.
+    mp_print_uint(&print, qstr_table_used.max_bit_set + 1);
+    mp_print_uint(&print, obj_table_used.max_bit_set + 1);
+
+    // Save qstrs.
+    for (size_t i = 0; i <= qstr_table_used.max_bit_set; ++i) {
+        if (bit_vector_is_set(&qstr_table_used, i)) {
+            save_qstr(&print, consts->qstr_table[i]);
+        } else {
+            save_qstr(&print, MP_QSTR_);
+        }
+    }
+
+    // Save constant objects.
+    for (size_t i = 0; i <= obj_table_used.max_bit_set; ++i) {
+        if (bit_vector_is_set(&obj_table_used, i)) {
+            save_obj(&print, consts->obj_table[i]);
+        } else {
+            save_obj(&print, mp_const_none);
+        }
+    }
+
+    bit_vector_clear(&qstr_table_used);
+    bit_vector_clear(&obj_table_used);
+
+    // Save function kind and data length.
+    mp_print_uint(&print, fun_data_len << 3);
+
+    // Save function code.
+    mp_print_bytes(&print, fun_data, fun_data_len);
+
+    // Create and return bytes representing the .mpy data.
+    return mp_obj_new_bytes_from_vstr(&vstr);
+}
+
+#endif // MICROPY_PERSISTENT_CODE_SAVE_FUN
+
+#if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
+// An mp_obj_list_t that tracks relocated native code to prevent the GC from reclaiming them.
+MP_REGISTER_ROOT_POINTER(mp_obj_t track_reloc_code_list);
+#endif
