@@ -68,11 +68,11 @@ void _start(void) {
     #if MICROPY_HW_ENABLE_UART_REPL
     mp_uart_init();
     #endif
-
+    #if MICROPY_HW_ENABLE_OSPI
     if (ospi_flash_init() != 0) {
         MICROPY_BOARD_FATAL_ERROR("ospi_init failed");
     }
-
+    #endif
     #if MICROPY_HW_ENABLE_USBDEV
     NVIC_ClearPendingIRQ(USB_IRQ_IRQn);
     NVIC_SetPriority(USB_IRQ_IRQn, IRQ_PRI_USB);

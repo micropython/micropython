@@ -85,8 +85,10 @@ int mp_hal_stdin_rx_chr(void) {
 
 // Send string of given length
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC || MICROPY_PY_OS_DUPTERM
     mp_uint_t ret = len;
     bool did_write = false;
+    #endif
 
     #if MICROPY_HW_ENABLE_UART_REPL
     mp_uart_write_strn(str, len);
