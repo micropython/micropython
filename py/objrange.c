@@ -33,7 +33,6 @@
 
 typedef struct _mp_obj_range_it_t {
     mp_obj_base_t base;
-    // TODO make these values generic objects or something
     mp_int_t cur;
     mp_int_t stop;
     mp_int_t step;
@@ -72,7 +71,6 @@ static mp_obj_t mp_obj_new_range_iterator(mp_int_t cur, mp_int_t stop, mp_int_t 
 
 typedef struct _mp_obj_range_t {
     mp_obj_base_t base;
-    // TODO make these values generic objects or something
     mp_int_t start;
     mp_int_t stop;
     mp_int_t step;
