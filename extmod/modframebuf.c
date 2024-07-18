@@ -836,6 +836,10 @@ static mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args_in) {
     if (n_args >= 5) {
         col = mp_obj_get_int(args_in[4]);
     }
+    mp_int_t size = 8;
+    if (n_args >= 6) {
+        size = mp_obj_get_int(args_in[5]);
+    }
 
     // loop over chars
     for (; *str; ++str) {
@@ -847,13 +851,16 @@ static mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args_in) {
         // get char data
         const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
         // loop over char data
-        for (int j = 0; j < 8; j++, x0++) {
+        for (int j = 0; j < size; j++, x0++) {
             if (0 <= x0 && x0 < self->width) { // clip x
-                uint vline_data = chr_data[j]; // each byte is a column of 8 pixels, LSB at top
-                for (int y = y0; vline_data; vline_data >>= 1, y++) { // scan over vertical column
-                    if (vline_data & 1) { // only draw if pixel set
+                uint vline_data = chr_data[j * 8 / size]; // each byte is a column of 8 pixels, LSB at top
+                if (vline_data) { // skip empty columns
+                    for (int i = 0, y = y0; i < size; i++, y++) {
                         if (0 <= y && y < self->height) { // clip y
-                            setpixel(self, x0, y, col);
+                            // scan over vertical column
+                            if (vline_data & (1 << (i * 8 / size))) { // only draw if pixel set
+                                setpixel(self, x0, y, col);
+                            }
                         }
                     }
                 }
@@ -862,7 +869,7 @@ static mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args_in) {
     }
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_text_obj, 4, 5, framebuf_text);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_text_obj, 4, 6, framebuf_text);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 static const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
