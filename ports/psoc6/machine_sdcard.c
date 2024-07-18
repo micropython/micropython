@@ -45,7 +45,8 @@
 
 #define SDHC_DEFAULT_BUS_WIDTH                  (4U)
 #define SDHC_BLOCK_SIZE                         (512UL)
-
+#define SDHC_CLOCK_RESOURCE_BLOCK_NUMBER        (18U)
+#define SDHC_CLOCK_RESOURCE_CHANNEL_NUMBER      (2U)
 typedef struct _machine_sdcard_obj_t {
     mp_obj_base_t base;
     cyhal_sdhc_t sdhc_obj;
@@ -152,14 +153,20 @@ static cy_rslt_t sd_card_init_helper(machine_sdcard_obj_t *self, mp_arg_val_t *a
     sdhc_config.busWidth = SDHC_DEFAULT_BUS_WIDTH;
 
     cy_rslt_t result = CY_RSLT_SUCCESS;
+    cyhal_clock_t *clock_source = NULL;
 
+// If external flash is running, then HF2 clock resource is already initialized by QSPI and it has to be reused by SDHC peripheral.
+    #if MICROPY_ENABLE_EXT_QSPI_FLASH
     cyhal_clock_t clock;
-    cyhal_resource_inst_t rsc = {CYHAL_RSC_CLOCK, 18, 2};
+    cyhal_resource_inst_t rsc = {CYHAL_RSC_CLOCK, SDHC_CLOCK_RESOURCE_BLOCK_NUMBER, SDHC_CLOCK_RESOURCE_CHANNEL_NUMBER};
     cyhal_clock_get(&clock, &rsc);
+    clock_source = &clock;
+    #endif
+
 
     sd_card_allocate_pin(self, args);
     result = cyhal_sdhc_init(&self->sdhc_obj, &sdhc_config, self->cmd->addr, self->clk->addr, self->dat0->addr, self->dat1->addr,
-        self->dat2->addr, self->dat3->addr, NC, NC, NC, NC, self->cd->addr, NC, NC, NC, NC, NC, &clock);
+        self->dat2->addr, self->dat3->addr, NC, NC, NC, NC, self->cd->addr, NC, NC, NC, NC, NC, clock_source);
     return result;
 }
 
@@ -261,16 +268,6 @@ static mp_obj_t machine_sdcard_writeblocks(size_t n_args, const mp_obj_t *args) 
 
     size_t length = bufinfo.len / SDHC_BLOCK_SIZE;
 
-    if (n_args == 3) {
-        cy_rslt_t result = cyhal_sdhc_erase(&self->sdhc_obj, block_address, bufinfo.len, 0);
-
-        if (CY_RSLT_SUCCESS != result) {
-            mp_raise_ValueError(MP_ERROR_TEXT("machine_sdcard_writeblocks() - SD Card Erase failed !"));
-        }
-    } else {
-        block_address += mp_obj_get_int(args[3]);
-    }
-
     cy_rslt_t result = cyhal_sdhc_write(&self->sdhc_obj, block_address, bufinfo.buf, &length);
     if (CY_RSLT_SUCCESS != result) {
         mp_raise_ValueError(MP_ERROR_TEXT("machine_sdcard_writeblocks() - SD Card Write failed!"));
@@ -325,6 +322,7 @@ static const mp_rom_map_elem_t machine_sdcard_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks),  MP_ROM_PTR(&machine_sdcard_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&machine_sdcard_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl),       MP_ROM_PTR(&machine_sdcard_ioctl_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__),     MP_ROM_PTR(&machine_sdcard_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),      MP_ROM_PTR(&machine_sdcard_deinit_obj) },
 };
 static MP_DEFINE_CONST_DICT(machine_sdcard_locals_dict, machine_sdcard_locals_dict_table);
