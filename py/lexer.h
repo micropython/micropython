@@ -152,6 +152,8 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_SEMICOLON,
     MP_TOKEN_DEL_EQUAL,
     MP_TOKEN_DEL_MINUS_MORE,
+
+    MP_TOKEN_NUMBER_OF,
 } mp_token_kind_t;
 
 // this data structure is exposed for efficiency
