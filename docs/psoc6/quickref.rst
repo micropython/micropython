@@ -819,7 +819,7 @@ Methods
     from machine import SDCard
     import os
 
-    bdev = machine.SDCard(slot=1, width=4, cd="P13_5", cmd="P12_4", clk="P12_5", dat0="P13_0", dat1="P13_1", dat2="P13_2", dat3="P13_3")
+    bdev = machine.SDCard(slot=0, width=4, cd="P13_5", cmd="P12_4", clk="P12_5", dat0="P13_0", dat1="P13_1", dat2="P13_2", dat3="P13_3")
 
     # Define constants
     TEST_STRING = "This is a test string."
@@ -839,6 +839,27 @@ Methods
             f.write(TEST_STRING)
 
         with open("/SDCard/test_sd_lfs2.txt", "r") as f:
+            read_data = f.read()
+
+        print(read_data)
+
+    bdev.deinit()
+
+    # Mount or format the SD card with FAT filesystem
+    if "VfsFat" in dir(os):
+        
+        try:
+            vfs = os.VfsFat(bdev, progsize=512, readsize=512)
+            os.mount(vfs, "/SDCard")
+        except OSError:
+            os.VfsFat.mkfs(bdev, progsize=512, readsize=512)
+            vfs = os.VfsFat(bdev, progsize=512, readsize=512)
+            os.mount(vfs, "/SDCard")
+
+        with open("/SDCard/test_sd_fat.txt", "w") as f:
+            f.write(TEST_STRING)
+
+        with open("/SDCard/test_sd_fat.txt", "r") as f:
             read_data = f.read()
 
         print(read_data)
