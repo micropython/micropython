@@ -228,7 +228,6 @@ static const char *const tok_enc =
     "=e="         // = ==
     "!.";         // start of special cases: != . ...
 
-// TODO static assert that number of tokens is less than 256 so we can safely make this table with byte sized entries
 static const uint8_t tok_enc_kind[] = {
     MP_TOKEN_DEL_PAREN_OPEN, MP_TOKEN_DEL_PAREN_CLOSE,
     MP_TOKEN_DEL_BRACKET_OPEN, MP_TOKEN_DEL_BRACKET_CLOSE,
@@ -773,6 +772,9 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
 
     } else {
         // search for encoded delimiter or operator
+
+        // assert that the token enum value fits in a byte, so they all fit in tok_enc_kind
+        MP_STATIC_ASSERT(MP_TOKEN_NUMBER_OF <= 256);
 
         const char *t = tok_enc;
         size_t tok_enc_index = 0;
