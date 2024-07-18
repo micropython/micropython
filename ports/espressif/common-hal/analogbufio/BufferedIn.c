@@ -215,7 +215,7 @@ static bool check_valid_data(const adc_digi_output_data_t *data, const mcu_pin_o
     return true;
 }
 
-uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t *self, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample) {
+uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t *self, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool loop) {
     uint8_t result[NUM_SAMPLES_PER_INTERRUPT * SOC_ADC_DIGI_DATA_BYTES_PER_CONV] __attribute__ ((aligned(4))) = {0};
     uint32_t captured_samples = 0;
     uint32_t captured_bytes = 0;
