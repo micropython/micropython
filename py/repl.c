@@ -225,7 +225,6 @@ static void print_completions(const mp_print_t *print,
                     gap += WORD_SLOT_LEN;
                 }
                 if (line_len + gap + d_len <= MAX_LINE_LEN) {
-                    // TODO optimise printing of gap?
                     for (int j = 0; j < gap; ++j) {
                         mp_print_str(print, " ");
                     }

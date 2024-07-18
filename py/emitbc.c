@@ -794,10 +794,10 @@ static void emit_bc_call_function_method_helper(emit_t *emit, int stack_adj, mp_
         // each positional arg is one object, each kwarg is two objects, the key
         // and the value and one extra object for the star args bitmap.
         stack_adj -= (int)n_positional + 2 * (int)n_keyword + 1;
-        emit_write_bytecode_byte_uint(emit, stack_adj, bytecode_base + 1, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints?
+        emit_write_bytecode_byte_uint(emit, stack_adj, bytecode_base + 1, (n_keyword << 8) | n_positional);
     } else {
         stack_adj -= (int)n_positional + 2 * (int)n_keyword;
-        emit_write_bytecode_byte_uint(emit, stack_adj, bytecode_base, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints?
+        emit_write_bytecode_byte_uint(emit, stack_adj, bytecode_base, (n_keyword << 8) | n_positional);
     }
 }
 
