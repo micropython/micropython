@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/builtin.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_MACHINE
@@ -33,6 +34,10 @@
 
 #if MICROPY_PY_MACHINE_DHT_READINTO
 #include "drivers/dht/dht.h"
+#endif
+
+#if !MICROPY_PY_SYS_EXIT
+#error MICROPY_PY_MACHINE requires MICROPY_PY_SYS_EXIT
 #endif
 
 // The port must provide implementations of these low-level machine functions.
@@ -60,11 +65,6 @@ NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args);
 #ifdef MICROPY_PY_MACHINE_INCLUDEFILE
 #include MICROPY_PY_MACHINE_INCLUDEFILE
 #endif
-
-static mp_obj_t machine_soft_reset(void) {
-    mp_raise_type(&mp_type_SystemExit);
-}
-static MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 #if MICROPY_PY_MACHINE_BOOTLOADER
 NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
@@ -156,7 +156,7 @@ static const mp_rom_map_elem_t machine_module_globals_table[] = {
     #endif
 
     // Reset related functions.
-    { MP_ROM_QSTR(MP_QSTR_soft_reset), MP_ROM_PTR(&machine_soft_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_soft_reset), MP_ROM_PTR(&mp_sys_exit_obj) },
     #if MICROPY_PY_MACHINE_BOOTLOADER
     { MP_ROM_QSTR(MP_QSTR_bootloader), MP_ROM_PTR(&machine_bootloader_obj) },
     #endif
