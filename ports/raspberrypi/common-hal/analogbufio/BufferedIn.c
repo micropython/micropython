@@ -58,19 +58,36 @@ void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *s
     float clk_div = (float)ADC_CLOCK_INPUT / (float)sample_rate - 1;
     adc_set_clkdiv(clk_div);
 
+    self->dma_chan[0] = dma_claim_unused_channel(true);
+    self->dma_chan[1] = dma_claim_unused_channel(true);
+
     // Set up the DMA to start transferring data as soon as it appears in FIFO
-    uint dma_chan = dma_claim_unused_channel(true);
-    self->dma_chan = dma_chan;
 
-    // Set Config
-    self->cfg = dma_channel_get_default_config(dma_chan);
-
+    // Channel 0 reads from ADC data register and writes to buffer
+    self->cfg[0] = dma_channel_get_default_config(self->dma_chan[0]);
     // Reading from constant address, writing to incrementing byte addresses
-    channel_config_set_read_increment(&(self->cfg), false);
-    channel_config_set_write_increment(&(self->cfg), true);
-
+    channel_config_set_read_increment(&(self->cfg[0]), false);
+    channel_config_set_write_increment(&(self->cfg[0]), true);
     // Pace transfers based on availability of ADC samples
-    channel_config_set_dreq(&(self->cfg), DREQ_ADC);
+    channel_config_set_dreq(&(self->cfg[0]), DREQ_ADC);
+    channel_config_set_chain_to(&(self->cfg[0]), self->dma_chan[0]);
+
+    // If we want to loop, later we'll set channel 0 to chain to channel 1 instead.
+    // Channel 1 resets channel 0's write address and restarts it
+
+    self->cfg[1] = dma_channel_get_default_config(self->dma_chan[1]);
+    // Read from incrementing address
+    channel_config_set_read_increment(&(self->cfg[1]), true);
+    // Write to constant address (data dma write address register)
+    channel_config_set_write_increment(&(self->cfg[1]), false);
+    // Writing to 32-bit register
+    channel_config_set_transfer_data_size(&(self->cfg[1]), DMA_SIZE_32);
+    // Run as fast as possible
+    channel_config_set_dreq(&(self->cfg[1]), 0x3F);
+    // set ring to read one 32-bit value (the starting write address) over and over
+    channel_config_set_ring(&(self->cfg[1]), false, 2); // ring is 1<<2 = 4 bytes
+    // Chain to adc channel
+    channel_config_set_chain_to(&(self->cfg[1]), self->dma_chan[0]);
 
     // clear any previous activity
     adc_fifo_drain();
@@ -86,15 +103,22 @@ void common_hal_analogbufio_bufferedin_deinit(analogbufio_bufferedin_obj_t *self
         return;
     }
 
+    // stop DMA
+    dma_channel_abort(self->dma_chan[0]);
+    dma_channel_abort(self->dma_chan[1]);
+
     // Release ADC Pin
     reset_pin_number(self->pin->number);
     self->pin = NULL;
 
     // Release DMA Channel
-    dma_channel_unclaim(self->dma_chan);
+    dma_channel_unclaim(self->dma_chan[0]);
+    dma_channel_unclaim(self->dma_chan[1]);
 }
 
-uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t *self, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample) {
+uint8_t *active_buffer;
+
+uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t *self, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool loop) {
     // RP2040 Implementation Detail
     // Fills the supplied buffer with ADC values using DMA transfer.
     // If the buffer is 8-bit, then values are 8-bit shifted and error bit is off.
@@ -120,48 +144,77 @@ uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t
 
     uint32_t sample_count = len / bytes_per_sample;
 
-    channel_config_set_transfer_data_size(&(self->cfg), dma_size);
+    channel_config_set_transfer_data_size(&(self->cfg[0]), dma_size);
 
-    dma_channel_configure(self->dma_chan, &(self->cfg),
-        buffer,   // dst
-        &adc_hw->fifo,  // src
-        sample_count,   // transfer count
-        true            // start immediately
-        );
+    if (!loop) { // Set DMA to stop after one one set of transfers
+        channel_config_set_chain_to(&(self->cfg[0]), self->dma_chan[0]);
+        dma_channel_configure(self->dma_chan[0], &(self->cfg[0]),
+            buffer,   // dst
+            &adc_hw->fifo,  // src
+            sample_count,   // transfer count
+            true            // start immediately
+            );
 
-    // Start the ADC
-    adc_run(true);
+        // Start the ADC
+        adc_run(true);
 
-    // Once DMA finishes, stop any new conversions from starting, and clean up
-    // the FIFO in case the ADC was still mid-conversion.
-    uint32_t remaining_transfers = sample_count;
-    while (dma_channel_is_busy(self->dma_chan) &&
-           !mp_hal_is_interrupted()) {
-        RUN_BACKGROUND_TASKS;
-    }
-    remaining_transfers = dma_channel_hw_addr(self->dma_chan)->transfer_count;
-
-    //  Clean up
-    adc_run(false);
-    // Stopping early so abort.
-    if (dma_channel_is_busy(self->dma_chan)) {
-        dma_channel_abort(self->dma_chan);
-    }
-    adc_fifo_drain();
-
-    size_t captured_count = sample_count - remaining_transfers;
-    if (dma_size == DMA_SIZE_16) {
-        uint16_t *buf16 = (uint16_t *)buffer;
-        for (size_t i = 0; i < captured_count; i++) {
-            uint16_t value = buf16[i];
-            // Check the error bit and "truncate" the buffer if there is an error.
-            if ((value & ADC_FIFO_ERR_BITS) != 0) {
-                captured_count = i;
-                break;
-            }
-            // Scale the values to the standard 16 bit range.
-            buf16[i] = (value << 4) | (value >> 8);
+        // Wait for DMA to finish, then stop any new conversions from starting,
+        // and clean up the FIFO in case the ADC was still mid-conversion.
+        uint32_t remaining_transfers = sample_count;
+        while (dma_channel_is_busy(self->dma_chan[0]) &&
+               !mp_hal_is_interrupted()) {
+            RUN_BACKGROUND_TASKS;
         }
+        remaining_transfers = dma_channel_hw_addr(self->dma_chan[0])->transfer_count;
+
+        //  Clean up
+        adc_run(false);
+
+        // If we stopped early, stop DMA
+        if (dma_channel_is_busy(self->dma_chan[0])) {
+            dma_channel_abort(self->dma_chan[0]);
+        }
+        adc_fifo_drain();
+
+        // Scale the values to the standard 16 bit range.
+        size_t captured_count = sample_count - remaining_transfers;
+        if (dma_size == DMA_SIZE_16) {
+            uint16_t *buf16 = (uint16_t *)buffer;
+            for (size_t i = 0; i < captured_count; i++) {
+                uint16_t value = buf16[i];
+                // Check the error bit and "truncate" the buffer if there is an error.
+                if ((value & ADC_FIFO_ERR_BITS) != 0) {
+                    captured_count = i;
+                    break;
+                }
+                buf16[i] = (value << 4) | (value >> 8);
+            }
+        }
+        return captured_count;
+    } else { // Set DMA to repeat transfers indefinitely
+        dma_channel_configure(self->dma_chan[1], &(self->cfg[1]),
+            &dma_hw->ch[self->dma_chan[0]].al2_write_addr_trig,      // write address
+            &active_buffer,                                          // read address
+            1,                                                       // transfer count
+            false                                                    // don't start yet
+            );
+
+        // put the buffer start address into a global so that it can be read by DMA
+        // and written into channel 0's write address
+        active_buffer = buffer;
+
+        channel_config_set_chain_to(&(self->cfg[0]), self->dma_chan[1]);
+        dma_channel_configure(self->dma_chan[0], &(self->cfg[0]),
+            buffer,                                                  // write address
+            &adc_hw->fifo,                                           // read address
+            sample_count,                                            // transfer count
+            true                                                     // start immediately
+            );
+
+        // Start the ADC
+        adc_run(true);
+
+        return 0;
+
     }
-    return captured_count;
 }
