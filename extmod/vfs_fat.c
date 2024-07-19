@@ -114,6 +114,11 @@ static mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
+    // set the filesystem label if it's configured
+    #ifdef MICROPY_HW_FLASH_FS_LABEL
+    f_setlabel(&vfs->fatfs, MICROPY_HW_FLASH_FS_LABEL);
+    #endif
+
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_mkfs_fun_obj, fat_vfs_mkfs);
