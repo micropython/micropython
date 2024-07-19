@@ -36,9 +36,6 @@
 #define MICROPY_PAGE_MASK (MICROPY_PAGE_SIZE - 1)
 #endif
 
-// This variable is needed for machine.soft_reset(), but the variable is otherwise unused.
-int pyexec_system_exit = 0;
-
 uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_get_int_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {

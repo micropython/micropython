@@ -53,6 +53,7 @@
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
 #include "input.h"
+#include "shared/runtime/pyexec.h"
 
 // Command line options, with their defaults
 static bool compile_only = false;
@@ -193,91 +194,27 @@ static char *strjoin(const char *s1, int sep_char, const char *s2) {
 #endif
 
 static int do_repl(void) {
+    int ret = 0;
+    #if MICROPY_USE_READLINE == 1
+    // use MicroPython supplied readline based repl
+    mp_hal_stdio_mode_raw();
+    for (;;) {
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if ((ret = pyexec_raw_repl()) != 0) {
+                break;
+            }
+        } else {
+            if ((ret = pyexec_friendly_repl()) != 0) {
+                break;
+            }
+        }
+    }
+    mp_hal_stdio_mode_orig();
+    #else
+    // use simple readline
     mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
     mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
     mp_hal_stdout_tx_str("\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
-
-    #if MICROPY_USE_READLINE == 1
-
-    // use MicroPython supplied readline
-
-    vstr_t line;
-    vstr_init(&line, 16);
-    for (;;) {
-        mp_hal_stdio_mode_raw();
-
-    input_restart:
-        vstr_reset(&line);
-        int ret = readline(&line, mp_repl_get_ps1());
-        mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
-
-        if (ret == CHAR_CTRL_C) {
-            // cancel input
-            mp_hal_stdout_tx_str("\r\n");
-            goto input_restart;
-        } else if (ret == CHAR_CTRL_D) {
-            // EOF
-            printf("\n");
-            mp_hal_stdio_mode_orig();
-            vstr_clear(&line);
-            return 0;
-        } else if (ret == CHAR_CTRL_E) {
-            // paste mode
-            mp_hal_stdout_tx_str("\npaste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== ");
-            vstr_reset(&line);
-            for (;;) {
-                char c = mp_hal_stdin_rx_chr();
-                if (c == CHAR_CTRL_C) {
-                    // cancel everything
-                    mp_hal_stdout_tx_str("\n");
-                    goto input_restart;
-                } else if (c == CHAR_CTRL_D) {
-                    // end of input
-                    mp_hal_stdout_tx_str("\n");
-                    break;
-                } else {
-                    // add char to buffer and echo
-                    vstr_add_byte(&line, c);
-                    if (c == '\r') {
-                        mp_hal_stdout_tx_str("\n=== ");
-                    } else {
-                        mp_hal_stdout_tx_strn(&c, 1);
-                    }
-                }
-            }
-            parse_input_kind = MP_PARSE_FILE_INPUT;
-        } else if (line.len == 0) {
-            if (ret != 0) {
-                printf("\n");
-            }
-            goto input_restart;
-        } else {
-            // got a line with non-zero length, see if it needs continuing
-            while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
-                vstr_add_byte(&line, '\n');
-                ret = readline(&line, mp_repl_get_ps2());
-                if (ret == CHAR_CTRL_C) {
-                    // cancel everything
-                    printf("\n");
-                    goto input_restart;
-                } else if (ret == CHAR_CTRL_D) {
-                    // stop entering compound statement
-                    break;
-                }
-            }
-        }
-
-        mp_hal_stdio_mode_orig();
-
-        ret = execute_from_lexer(LEX_SRC_VSTR, &line, parse_input_kind, true);
-        if (ret & FORCED_EXIT) {
-            return ret;
-        }
-    }
-
-    #else
-
-    // use simple readline
 
     for (;;) {
         char *line = prompt((char *)mp_repl_get_ps1());
@@ -296,15 +233,13 @@ static int do_repl(void) {
             line = line3;
         }
 
-        int ret = execute_from_lexer(LEX_SRC_STR, line, MP_PARSE_SINGLE_INPUT, true);
+        ret = execute_from_lexer(LEX_SRC_STR, line, MP_PARSE_SINGLE_INPUT, true);
         free(line);
-        if (ret & FORCED_EXIT) {
-            return ret;
-        }
     }
-
     #endif
+    return ret;
 }
+
 
 static int do_file(const char *file) {
     return execute_from_lexer(LEX_SRC_FILENAME, file, MP_PARSE_FILE_INPUT, false);

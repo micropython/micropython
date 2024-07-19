@@ -62,7 +62,6 @@ NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args);
 #endif
 
 static mp_obj_t machine_soft_reset(void) {
-    pyexec_system_exit = PYEXEC_FORCED_EXIT;
     mp_raise_type(&mp_type_SystemExit);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);

@@ -41,10 +41,10 @@
 #endif
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
+#include "extmod/modplatform.h"
 #include "genhdr/mpversion.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
-int pyexec_system_exit = 0;
 
 #if MICROPY_REPL_INFO
 static bool repl_display_debugging_info = 0;
@@ -65,7 +65,7 @@ static bool repl_display_debugging_info = 0;
 // EXEC_FLAG_ALLOW_DEBUGGING allows debugging info to be printed after executing the code
 // EXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
 static int parse_compile_execute(const void *source, mp_parse_input_kind_t input_kind, mp_uint_t exec_flags) {
-    int ret = 0;
+    mp_int_t ret = 0;
     #if MICROPY_REPL_INFO
     uint32_t start = 0;
     #endif
@@ -73,9 +73,6 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     #ifdef MICROPY_BOARD_BEFORE_PYTHON_EXEC
     MICROPY_BOARD_BEFORE_PYTHON_EXEC(input_kind, exec_flags);
     #endif
-
-    // by default a SystemExit exception returns 0
-    pyexec_system_exit = 0;
 
     nlr_buf_t nlr;
     nlr.ret_val = NULL;
@@ -144,9 +141,11 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         }
 
         // check for SystemExit
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
-            // at the moment, the value of SystemExit is unused
-            ret = pyexec_system_exit;
+        mp_obj_base_t *exc = nlr.ret_val;
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
+            mp_obj_t v = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(exc));
+            mp_obj_get_int_maybe(v, &ret); // get errno value
+            ret |= PYEXEC_FORCED_EXIT;
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
             ret = 0;
