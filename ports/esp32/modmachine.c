@@ -51,6 +51,7 @@
 #define MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY
 #endif
 
+#if CONFIG_IDF_TARGET_ESP32C3
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
     \
@@ -76,9 +77,45 @@
     { MP_ROM_QSTR(MP_QSTR_PIN_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_EXT0) }, \
     { MP_ROM_QSTR(MP_QSTR_EXT0_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_EXT0) }, \
     { MP_ROM_QSTR(MP_QSTR_EXT1_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_EXT1) }, \
+    { MP_ROM_QSTR(MP_QSTR_GPIO_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_GPIO) }, \
     { MP_ROM_QSTR(MP_QSTR_TIMER_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TIMER) }, \
     { MP_ROM_QSTR(MP_QSTR_TOUCHPAD_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TOUCHPAD) }, \
     { MP_ROM_QSTR(MP_QSTR_ULP_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_ULP) }, \
+    { MP_ROM_QSTR(MP_QSTR_wake_gpio_pins), MP_ROM_PTR(&machine_wake_gpio_pins_obj) }, \
+
+#else
+#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
+    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
+    \
+    { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) }, \
+    MICROPY_PY_MACHINE_SDCARD_ENTRY \
+    { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
+    MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY \
+    { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&machine_rtc_type) }, \
+    \
+    /* wake abilities */ \
+    { MP_ROM_QSTR(MP_QSTR_SLEEP), MP_ROM_INT(MACHINE_WAKE_SLEEP) }, \
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP), MP_ROM_INT(MACHINE_WAKE_DEEPSLEEP) }, \
+    \
+    /* Reset reasons */ \
+    { MP_ROM_QSTR(MP_QSTR_HARD_RESET), MP_ROM_INT(MP_HARD_RESET) }, \
+    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET), MP_ROM_INT(MP_PWRON_RESET) }, \
+    { MP_ROM_QSTR(MP_QSTR_WDT_RESET), MP_ROM_INT(MP_WDT_RESET) }, \
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET), MP_ROM_INT(MP_DEEPSLEEP_RESET) }, \
+    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET), MP_ROM_INT(MP_SOFT_RESET) }, \
+    \
+    /* Wake reasons */ \
+    { MP_ROM_QSTR(MP_QSTR_wake_reason), MP_ROM_PTR(&machine_wake_reason_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_PIN_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_EXT0) }, \
+    { MP_ROM_QSTR(MP_QSTR_EXT0_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_EXT0) }, \
+    { MP_ROM_QSTR(MP_QSTR_EXT1_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_EXT1) }, \
+    { MP_ROM_QSTR(MP_QSTR_GPIO_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_GPIO) }, \
+    { MP_ROM_QSTR(MP_QSTR_TIMER_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TIMER) }, \
+    { MP_ROM_QSTR(MP_QSTR_TOUCHPAD_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TOUCHPAD) }, \
+    { MP_ROM_QSTR(MP_QSTR_ULP_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_ULP) }, \
+    { MP_ROM_QSTR(MP_QSTR_wake_ext1_pins), MP_ROM_PTR(&machine_wake_ext1_pins_obj) }, \
+
+#endif
 
 typedef enum {
     MP_PWRON_RESET = 1,
@@ -146,7 +183,36 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
         esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
     }
 
-    #if !CONFIG_IDF_TARGET_ESP32C3
+    #if CONFIG_IDF_TARGET_ESP32C3
+
+    if (machine_rtc_config.ext1_pins != 0) {
+        gpio_int_type_t intr_type = machine_rtc_config.ext1_level ? GPIO_INTR_HIGH_LEVEL : GPIO_INTR_LOW_LEVEL;
+
+        for (int i = 0; i < GPIO_NUM_MAX; ++i) {
+            gpio_num_t gpio = (gpio_num_t)i;
+            uint64_t bm = 1ULL << i;
+
+            if (machine_rtc_config.ext1_pins & bm) {
+                gpio_sleep_set_direction(gpio, GPIO_MODE_INPUT);
+
+                if (MACHINE_WAKE_SLEEP == wake_type) {
+                    gpio_wakeup_enable(gpio, intr_type);
+                }
+            }
+        }
+
+        if (MACHINE_WAKE_DEEPSLEEP == wake_type) {
+            if (ESP_OK != esp_deep_sleep_enable_gpio_wakeup(
+                machine_rtc_config.ext1_pins,
+                machine_rtc_config.ext1_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW)) {
+                mp_raise_ValueError(MP_ERROR_TEXT("wake-up pin not supported"));
+            }
+        } else {
+            esp_sleep_enable_gpio_wakeup();
+        }
+    }
+
+    #else
 
     if (machine_rtc_config.ext0_pin != -1 && (machine_rtc_config.ext0_wake_types & wake_type)) {
         esp_sleep_enable_ext0_wakeup(machine_rtc_config.ext0_pin, machine_rtc_config.ext0_level ? 1 : 0);
@@ -249,6 +315,58 @@ static mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_
     return MP_OBJ_NEW_SMALL_INT(esp_sleep_get_wakeup_cause());
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_wake_reason_obj, 0,  machine_wake_reason);
+
+#if CONFIG_IDF_TARGET_ESP32C3
+static mp_obj_t machine_wake_gpio_pins(void) {
+    uint64_t status = esp_sleep_get_gpio_wakeup_status();
+    int len, index;
+    mp_obj_t *tuple = NULL;
+            
+    // Only a few (~8) GPIOs might cause EXT1 wakeup.
+    // Therefore, we don't allocate 64*4 = 256 bytes on the stack and calculate the
+    // required space in a first pass.
+    for (index = 0, len = 0; index < 64; index++) {
+        len += (status & ((uint64_t)1 << index)) ? 1 : 0;
+    }       
+    if (len) {
+        tuple = alloca(len * sizeof(*tuple));
+            
+        for (index = 0, len = 0; index < 64; index++) {
+            if (status & ((uint64_t)1 << index)) {
+                tuple[len++] = MP_OBJ_NEW_SMALL_INT(index);
+            }
+        }
+    }
+    return mp_obj_new_tuple(len, tuple);
+}
+
+static MP_DEFINE_CONST_FUN_OBJ_0(machine_wake_gpio_pins_obj, machine_wake_gpio_pins);
+#else
+static mp_obj_t machine_wake_ext1_pins(void) {
+    uint64_t status = esp_sleep_get_ext1_wakeup_status();
+    int len, index;
+    mp_obj_t *tuple = NULL;
+
+    // Only a few (~8) GPIOs might cause EXT1 wakeup.
+    // Therefore, we don't allocate 64*4 = 256 bytes on the stack and calculate the
+    // required space in a first pass.
+    for (index = 0, len = 0; index < 64; index++) {
+        len += (status & ((uint64_t)1 << index)) ? 1 : 0;
+    }
+    if (len) {
+        tuple = alloca(len * sizeof(*tuple));
+
+        for (index = 0, len = 0; index < 64; index++) {
+            if (status & ((uint64_t)1 << index)) {
+                tuple[len++] = MP_OBJ_NEW_SMALL_INT(index);
+            }
+        }
+    }
+    return mp_obj_new_tuple(len, tuple);
+}
+
+static MP_DEFINE_CONST_FUN_OBJ_0(machine_wake_ext1_pins_obj, machine_wake_ext1_pins);
+#endif
 
 NORETURN static void mp_machine_reset(void) {
     esp_restart();
