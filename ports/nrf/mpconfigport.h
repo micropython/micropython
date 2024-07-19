@@ -151,7 +151,6 @@
 #define MICROPY_PY_OS_INCLUDEFILE   "ports/nrf/modules/os/modos.c"
 #define MICROPY_PY_OS_DUPTERM       (1)
 #define MICROPY_PY_OS_DUPTERM_STREAM_DETACHED_ATTACHED (1)
-#define MICROPY_PY_OS_SEP           (1)
 #define MICROPY_PY_OS_SYNC          (MICROPY_VFS)
 #define MICROPY_PY_OS_UNAME         (1)
 #define MICROPY_PY_OS_URANDOM       (MICROPY_HW_ENABLE_RNG)
