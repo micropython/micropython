@@ -153,9 +153,6 @@ static const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_putenv), MP_ROM_PTR(&mp_os_putenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_unsetenv), MP_ROM_PTR(&mp_os_unsetenv_obj) },
     #endif
-    #if MICROPY_PY_OS_SEP
-    { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
-    #endif
     #if MICROPY_PY_OS_SYNC
     { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&mp_os_sync_obj) },
     #endif
@@ -170,6 +167,7 @@ static const mp_rom_map_elem_t os_module_globals_table[] = {
     #endif
 
     #if MICROPY_VFS
+    { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
     { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&mp_vfs_chdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&mp_vfs_getcwd_obj) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&mp_vfs_listdir_obj) },
