@@ -95,7 +95,7 @@ static mp_obj_t analogbufio_bufferedin___exit__(size_t n_args, const mp_obj_t *a
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogbufio_bufferedin___exit___obj, 4, 4, analogbufio_bufferedin___exit__);
 
-//|     def readinto(self, buffer: WriteableBuffer, loop: bool) -> int:
+//|     def readinto(self, buffer: WriteableBuffer, loop: bool = False) -> int:
 //|         """Fills the provided buffer with ADC voltage values.
 //|
 //|         ADC values will be read into the given buffer at the supplied sample_rate.
