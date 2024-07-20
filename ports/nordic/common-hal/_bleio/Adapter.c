@@ -668,15 +668,20 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
         }
     }
 
-    // Negotiate for better PHY, larger MTU and data lengths since we are the central. These are
-    // nice-to-haves so ignore any errors.
+    // Negotiate for better PHY, larger MTU and data lengths since we are the central.
+    // The peer may decline, which is its prerogative.
     ble_gap_phys_t const phys = {
         .rx_phys = BLE_GAP_PHY_AUTO,
         .tx_phys = BLE_GAP_PHY_AUTO,
     };
     sd_ble_gap_phy_update(conn_handle, &phys);
-    sd_ble_gattc_exchange_mtu_request(conn_handle, BLE_GATTS_VAR_ATTR_LEN_MAX);
-    sd_ble_gap_data_length_update(conn_handle, NULL, NULL);
+    // The MTU size passed here has to match the value passed in the BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST
+    // event handler in Connection.c, per the SD doc:
+    //     "The value must be equal to Server RX MTU size given in
+    //     sd_ble_gatts_exchange_mtu_reply if an ATT_MTU exchange has
+    //     already been performed in the other direction."
+    check_nrf_error(sd_ble_gattc_exchange_mtu_request(conn_handle, BLE_GATTS_VAR_ATTR_LEN_MAX));
+    check_nrf_error(sd_ble_gap_data_length_update(conn_handle, NULL, NULL));
 
     // Make the connection object and return it.
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {

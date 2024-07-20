@@ -18,9 +18,110 @@
 #include "py/gc.h"
 #include "py/misc.h"
 #include "py/mpstate.h"
+#include "mpconfigport.h"
 
 #if CIRCUITPY_SERIAL_BLE && CIRCUITPY_VERBOSE_BLE
 #include "supervisor/shared/bluetooth/serial.h"
+#endif
+
+#if CIRCUITPY_VERBOSE_BLE
+const char *ble_drv_evt_name(uint32_t evt) {
+    switch (evt) {
+        case BLE_GAP_EVT_CONNECTED:
+            return "BLE_GAP_EVT_CONNECTED";
+        case BLE_GAP_EVT_DISCONNECTED:
+            return "BLE_GAP_EVT_DISCONNECTED";
+        case BLE_GAP_EVT_CONN_PARAM_UPDATE:
+            return "BLE_GAP_EVT_CONN_PARAM_UPDATE";
+        case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+            return "BLE_GAP_EVT_SEC_PARAMS_REQUEST";
+        case BLE_GAP_EVT_SEC_INFO_REQUEST:
+            return "BLE_GAP_EVT_SEC_INFO_REQUEST";
+        case BLE_GAP_EVT_PASSKEY_DISPLAY:
+            return "BLE_GAP_EVT_PASSKEY_DISPLAY";
+        case BLE_GAP_EVT_KEY_PRESSED:
+            return "BLE_GAP_EVT_KEY_PRESSED";
+        case BLE_GAP_EVT_AUTH_KEY_REQUEST:
+            return "BLE_GAP_EVT_AUTH_KEY_REQUEST";
+        case BLE_GAP_EVT_LESC_DHKEY_REQUEST:
+            return "BLE_GAP_EVT_LESC_DHKEY_REQUEST";
+        case BLE_GAP_EVT_AUTH_STATUS:
+            return "BLE_GAP_EVT_AUTH_STATUS";
+        case BLE_GAP_EVT_CONN_SEC_UPDATE:
+            return "BLE_GAP_EVT_CONN_SEC_UPDATE";
+        case BLE_GAP_EVT_TIMEOUT:
+            return "BLE_GAP_EVT_TIMEOUT";
+        case BLE_GAP_EVT_RSSI_CHANGED:
+            return "BLE_GAP_EVT_RSSI_CHANGED";
+        case BLE_GAP_EVT_ADV_REPORT:
+            return "BLE_GAP_EVT_ADV_REPORT";
+        case BLE_GAP_EVT_SEC_REQUEST:
+            return "BLE_GAP_EVT_SEC_REQUEST";
+        case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:
+            return "BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST";
+        case BLE_GAP_EVT_SCAN_REQ_REPORT:
+            return "BLE_GAP_EVT_SCAN_REQ_REPORT";
+        case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
+            return "BLE_GAP_EVT_PHY_UPDATE_REQUEST";
+        case BLE_GAP_EVT_PHY_UPDATE:
+            return "BLE_GAP_EVT_PHY_UPDATE";
+        case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
+            return "BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST";
+        case BLE_GAP_EVT_DATA_LENGTH_UPDATE:
+            return "BLE_GAP_EVT_DATA_LENGTH_UPDATE";
+        case BLE_GAP_EVT_QOS_CHANNEL_SURVEY_REPORT:
+            return "BLE_GAP_EVT_QOS_CHANNEL_SURVEY_REPORT";
+        case BLE_GAP_EVT_ADV_SET_TERMINATED:
+            return "BLE_GAP_EVT_ADV_SET_TERMINATED";
+
+        case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
+            return "BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP";
+        case BLE_GATTC_EVT_REL_DISC_RSP:
+            return "BLE_GATTC_EVT_REL_DISC_RSP";
+        case BLE_GATTC_EVT_CHAR_DISC_RSP:
+            return "BLE_GATTC_EVT_CHAR_DISC_RSP";
+        case BLE_GATTC_EVT_DESC_DISC_RSP:
+            return "BLE_GATTC_EVT_DESC_DISC_RSP";
+        case BLE_GATTC_EVT_ATTR_INFO_DISC_RSP:
+            return "BLE_GATTC_EVT_ATTR_INFO_DISC_RSP";
+        case BLE_GATTC_EVT_CHAR_VAL_BY_UUID_READ_RSP:
+            return "BLE_GATTC_EVT_CHAR_VAL_BY_UUID_READ_RSP";
+        case BLE_GATTC_EVT_READ_RSP:
+            return "BLE_GATTC_EVT_READ_RSP";
+        case BLE_GATTC_EVT_CHAR_VALS_READ_RSP:
+            return "BLE_GATTC_EVT_CHAR_VALS_READ_RSP";
+        case BLE_GATTC_EVT_WRITE_RSP:
+            return "BLE_GATTC_EVT_WRITE_RSP";
+        case BLE_GATTC_EVT_HVX:
+            return "BLE_GATTC_EVT_HVX";
+        case BLE_GATTC_EVT_EXCHANGE_MTU_RSP:
+            return "BLE_GATTC_EVT_EXCHANGE_MTU_RSP";
+        case BLE_GATTC_EVT_TIMEOUT:
+            return "BLE_GATTC_EVT_TIMEOUT";
+        case BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE:
+            return "BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE";
+
+        case BLE_GATTS_EVT_WRITE:
+            return "BLE_GATTS_EVT_WRITE";
+        case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
+            return "BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST";
+        case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+            return "BLE_GATTS_EVT_SYS_ATTR_MISSING";
+        case BLE_GATTS_EVT_HVC:
+            return "BLE_GATTS_EVT_HVC";
+        case BLE_GATTS_EVT_SC_CONFIRM:
+            return "BLE_GATTS_EVT_SC_CONFIRM";
+        case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
+            return "BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST";
+        case BLE_GATTS_EVT_TIMEOUT:
+            return "BLE_GATTS_EVT_TIMEOUT";
+        case BLE_GATTS_EVT_HVN_TX_COMPLETE:
+            return "BLE_GATTS_EVT_HVN_TX_COMPLETE";
+
+        default:
+            return "unknown EVT";
+    }
+};
 #endif
 
 nrf_nvic_state_t nrf_nvic_state = { 0 };
@@ -143,14 +244,11 @@ void SD_EVT_IRQHandler(void) {
         }
 
         ble_evt_t *event = (ble_evt_t *)m_ble_evt_buf;
+
         #if CIRCUITPY_VERBOSE_BLE
         size_t eid = event->header.evt_id;
-        if (eid != 0x1d) {
-            if (BLE_GAP_EVT_BASE <= eid && eid <= BLE_GAP_EVT_LAST) {
-                mp_printf(&mp_plat_print, "BLE GAP event: %d\n", eid - BLE_GAP_EVT_BASE);
-            } else {
-                mp_printf(&mp_plat_print, "BLE event: 0x%04x\n", event->header.evt_id);
-            }
+        if (eid != BLE_GAP_EVT_ADV_REPORT) {
+            mp_printf(&mp_plat_print, "BLE event: %s (0x%04x)\n", ble_drv_evt_name(eid), eid);
         }
         #endif
 
