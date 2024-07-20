@@ -1031,7 +1031,7 @@ typedef double mp_float_t;
 #define MICROPY_PY_FUNCTION_ATTRS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Whether to support the descriptors __get__, __set__, __delete__
+// Whether to support the descriptors __get__, __set__, __delete__, __set_name__
 // This costs some code size and makes load/store/delete of instance
 // attributes slower for the classes that use this feature
 #ifndef MICROPY_PY_DESCRIPTORS
