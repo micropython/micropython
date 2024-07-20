@@ -1038,6 +1038,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_DESCRIPTORS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to support metaclass functionality (currently just __init_subclass__)
+// This costs some code size and makes class creation slower
+#ifndef MICROPY_PY_METACLASSES
+#define MICROPY_PY_METACLASSES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to support class __delattr__ and __setattr__ methods
 // This costs some code size and makes store/delete of instance
 // attributes slower for the classes that use this feature
