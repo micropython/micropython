@@ -145,7 +145,15 @@
 
 #include "py/obj.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 qstr mp_errno_to_str(mp_obj_t errno_val);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
