@@ -18,5 +18,8 @@
     "product": "Adafruit Metro M7",
     "thumbnail": "",
     "url": "https://www.adafruit.com/product/4950",
+    "variants": {
+        "SD": "Metro M7 board without the airlift module"
+    },
     "vendor": "Adafruit"
 }

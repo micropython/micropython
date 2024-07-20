@@ -57,7 +57,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_ENABLE_GC                   (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
+#define MICROPY_SCHEDULER                   (1)
 #define MICROPY_SCHEDULER_DEPTH             (8)
+#define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_STATIC_NODES      (1)
 #define MICROPY_VFS                         (1)
 
@@ -128,12 +130,23 @@ uint32_t trng_random_u32(void);
 #ifndef MICROPY_PY_SOCKET
 #define MICROPY_PY_SOCKET                   (1)
 #endif
-#define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP)
-#define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP)
+
+#ifndef MICROPY_PY_SSL
+#define MICROPY_PY_SSL                      (0)
+#endif
+#define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP || MICROPY_PY_NETWORK_NINAW10)
+#define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP || MICROPY_PY_NETWORK_NINAW10)
 #define MICROPY_PY_LWIP_SOCK_RAW            (MICROPY_PY_LWIP)
+#define MICROPY_PY_SSL_FINALISER            (MICROPY_PY_SSL)
 #define MICROPY_PY_HASHLIB_MD5              (MICROPY_PY_SSL)
 #define MICROPY_PY_HASHLIB_SHA1             (MICROPY_PY_SSL)
 #define MICROPY_PY_CRYPTOLIB                (MICROPY_PY_SSL)
+
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
+#endif
+
+#if MICROPY_PY_BLUETOOTH
 
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
@@ -143,8 +156,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
 #endif
 
-#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
-#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
+// Bluetooth code only runs in the scheduler, no locking/mutex required.
+#define MICROPY_PY_BLUETOOTH_ENTER uint32_t atomic_state = 0;
+#define MICROPY_PY_BLUETOOTH_EXIT (void)atomic_state;
 #endif
 
 #define MICROPY_HW_ENABLE_USBDEV            (1)
@@ -159,6 +173,20 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH
 #endif
 
+#if MICROPY_PY_NETWORK_NINAW10
+// This Network interface requires the extended socket state.
+#ifndef MICROPY_PY_SOCKET_EXTENDED_STATE
+#define MICROPY_PY_SOCKET_EXTENDED_STATE    (1)
+#endif
+extern const struct _mp_obj_type_t mod_network_nic_type_nina;
+#define MICROPY_HW_NIC_NINAW10              { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_nina) },
+
+#else
+
+#define MICROPY_HW_NIC_NINAW10
+
+#endif // MICROPY_PY_NETWORK_NINAW10
+
 #if MICROPY_PY_NETWORK_CYW43
 extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #define MICROPY_HW_NIC_CYW43                { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) },
@@ -166,14 +194,23 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #define MICROPY_HW_NIC_CYW43
 #endif
 
+#if MICROPY_PY_NETWORK_ESP_HOSTED
+extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
+#define MICROPY_HW_NIC_ESP_HOSTED   { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
+#else
+#define MICROPY_HW_NIC_ESP_HOSTED
+#endif
+
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_ESP_HOSTED \
     MICROPY_HW_NIC_ETH  \
     MICROPY_HW_NIC_CYW43 \
-    MICROPY_BOARD_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_NINAW10 \
+    MICROPY_BOARD_NETWORK_INTERFACES
 
 #ifndef MICROPY_BOARD_ROOT_POINTERS
 #define MICROPY_BOARD_ROOT_POINTERS

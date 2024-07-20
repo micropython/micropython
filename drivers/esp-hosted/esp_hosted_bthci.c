@@ -122,9 +122,10 @@ int mp_bluetooth_hci_controller_init(void) {
 
     mp_uint_t start = mp_hal_ticks_ms();
     // Skip bootloader messages.
-    while ((mp_hal_ticks_ms() - start) < 2500) {
+    while ((mp_hal_ticks_ms() - start) < 500) {
         if (mp_bluetooth_hci_uart_any()) {
             mp_bluetooth_hci_uart_readchar();
+            start = mp_hal_ticks_ms();
         }
         MICROPY_EVENT_POLL_HOOK
     }

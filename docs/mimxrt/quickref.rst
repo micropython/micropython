@@ -18,6 +18,7 @@ working with this board it may be useful to get an overview of the microcontroll
    general.rst
    tutorial/intro.rst
    pinout.rst
+   wlan_pinout.rst
 
 
 Installing MicroPython
@@ -519,8 +520,8 @@ DHT modules may already have one.
 Ethernet driver
 ---------------
 
-All MIMXRT boards except the MIMXRT1011 based boards and Teensy 4.0 support
-Ethernet.  Example usage::
+All MIMXRT boards except the MIMXRT101x based boards and Teensy 4.0 support
+Ethernet. Example usage::
 
     import network
 
@@ -539,6 +540,62 @@ equipped with two Ethernet ports, which are addressed as LAN(0) for the 100M
 port and LAN(1) for the 1G port.
 
 For details of the network interface refer to the class :ref:`network.LAN <network.LAN>`.
+
+WLAN
+----
+
+In addition to Ethernet, some boards can be combined with an ESP32 based
+WLAN module to support WLAN connectivity. WLAN is then another class
+of the the :mod:`network` module::
+
+    import network
+
+    wlan = network.WLAN(network.STA_IF) # create station interface
+    wlan.active(True)       # activate the interface
+    wlan.scan()             # scan for access points
+    wlan.isconnected()      # check if the station is connected to an AP
+    wlan.connect('ssid', 'key') # connect to an AP
+    wlan.config('mac')      # get the interface's MAC address
+    wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
+
+    ap = network.WLAN(network.AP_IF) # create access-point interface
+    ap.active(True)         # activate the interface
+    ap.config(ssid='ESP-AP') # set the SSID of the access point
+
+A useful function for connecting to your local WiFi network is::
+
+    def do_connect():
+        import network
+        wlan = network.WLAN(network.STA_IF)
+        wlan.active(True)
+        if not wlan.isconnected():
+            print('connecting to network...')
+            wlan.connect('ssid', 'key')
+            while not wlan.isconnected():
+                pass
+        print('network config:', wlan.ifconfig())
+
+Once the network is established the :mod:`socket <socket>` module can be used
+to create and use TCP/UDP sockets as usual, and the ``requests`` module for
+convenient HTTP requests.
+
+Supported boards are:
+
+- ADAFRUIT_METRO_M7_AIRLIFT: WLAN adapter built-in
+- MIMXRT1010_EVK with e.g. the Adafruit Airlift Uno board
+- MIMXRT1015_EVK with e.g. the Adafruit Airlift Uno board
+- OLIMEX RT1010py
+- MIMXRT1020_EVK with e.g. the Adafruit Airlift Uno board
+- MIMXRT1050_EVK with e.g. the Adafruit Airlift Uno board
+- Seeed Arch Mix
+- Teensy 4.0 with e.g. Adafruit Feather Airlift + Teensy/Feather adapter
+- Teensy 4.1 with e.g. Adafruit Feather Airlift + Teensy/Feather adapter
+
+More boards may support it, but could not be tested yet. As external
+WLAN module, any ESP32 based breakout can be used. It has to be loaded
+with the proper firmware and wired up accordingly. For the wiring
+scheme, see the :ref:`WLAN connection scheme <mimxrt_wlan_pinout>`.
+
 
 Transferring files
 ------------------
