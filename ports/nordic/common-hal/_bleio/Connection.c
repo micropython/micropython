@@ -113,12 +113,14 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             if (self->mtu > 0) {
                 new_mtu = self->mtu;
             }
-
             self->mtu = new_mtu;
-            sd_ble_gatts_exchange_mtu_reply(self->conn_handle, new_mtu);
+            // The MTU size passed here has to match the value passed in Adapter.c, per the SD doc:
+            //     "The value must be equal to Client RX MTU size given in
+            //     sd_ble_gattc_exchange_mtu_request if an ATT_MTU exchange has
+            //     already been performed in the other direction."
+            check_nrf_error(sd_ble_gatts_exchange_mtu_reply(self->conn_handle, BLE_GATTS_VAR_ATTR_LEN_MAX));
             break;
         }
-
 
         case BLE_GATTC_EVT_EXCHANGE_MTU_RSP: {
             ble_gattc_evt_exchange_mtu_rsp_t *response =
