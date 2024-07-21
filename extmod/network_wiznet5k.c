@@ -633,6 +633,10 @@ static int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_u
         flag |= SOCK_IO_NONBLOCK;
     }
 
+    if (getSn_MR(socket->fileno) & Sn_MR_ND) {
+        flag |= SF_TCP_NODELAY;
+    }
+
     // open the socket in server mode (if port != 0)
     mp_int_t ret = WIZCHIP_EXPORT(socket)(socket->fileno, socket->type, port, flag);
 
@@ -887,6 +891,19 @@ static int wiznet5k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_
         case MOD_NETWORK_SO_BROADCAST:
             // Implied/not-required in Wiznet sockets
             break;
+
+        // level: IPPROTO_IP
+
+        // level: IPPROTO_TCP
+        case MOD_NETWORK_TCP_NODELAY: {
+            mp_int_t val = (mp_int_t)optval;
+            if (val) {
+                setSn_MR(socket->fileno, getSn_MR(socket->fileno) | Sn_MR_ND);
+            } else {
+                setSn_MR(socket->fileno, getSn_MR(socket->fileno) & ~Sn_MR_ND);
+            }
+            break;
+        }
 
         default:
             *_errno = MP_EINVAL;
