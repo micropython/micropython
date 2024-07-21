@@ -633,6 +633,16 @@ static int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_u
         flag |= SOCK_IO_NONBLOCK;
     }
 
+    if (getSn_MR(socket->fileno) & Sn_MR_MULTI) {
+        // Keep the multicast flags enabled. Use IGMPv2 so that the chip will
+        // send a packet to leave the group when the socket is closed.
+        flag |= SF_MULTI_ENABLE | SF_IGMP_VER2;
+    }
+
+    if (getSn_MR(socket->fileno) & Sn_MR_ND) {
+        flag |= SF_TCP_NODELAY;
+    }
+
     // open the socket in server mode (if port != 0)
     mp_int_t ret = WIZCHIP_EXPORT(socket)(socket->fileno, socket->type, port, flag);
 
@@ -887,6 +897,30 @@ static int wiznet5k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_
         case MOD_NETWORK_SO_BROADCAST:
             // Implied/not-required in Wiznet sockets
             break;
+
+        // level: IPPROTO_IP
+        case MOD_NETWORK_IP_ADD_MEMBERSHIP: {
+            if (optlen != 8) {
+                *_errno = MP_EINVAL;
+            } else {
+                uint8_t *mcast_ip = (uint8_t *)optval;
+                uint8_t mcast_mac[6] = {0x01, 0x00, 0x5e, mcast_ip[1] & 0x7f, mcast_ip[2], mcast_ip[3]};
+                setSn_DHAR(socket->fileno, mcast_mac);
+                setSn_MR(socket->fileno, getSn_MR(socket->fileno) | Sn_MR_MULTI);
+                break;
+            }
+        }
+
+        // level: IPPROTO_TCP
+        case MOD_NETWORK_TCP_NODELAY: {
+            mp_int_t val = (mp_int_t)optval;
+            if (val) {
+                setSn_MR(socket->fileno, getSn_MR(socket->fileno) | Sn_MR_ND);
+            } else {
+                setSn_MR(socket->fileno, getSn_MR(socket->fileno) & ~Sn_MR_ND);
+            }
+            break;
+        }
 
         default:
             *_errno = MP_EINVAL;
