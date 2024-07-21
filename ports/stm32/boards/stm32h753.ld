@@ -1,5 +1,5 @@
 /*
-    GNU linker script for STM32H753
+    GNU linker script for STM32H753 
 */
 
 /* Specify the memory areas */
