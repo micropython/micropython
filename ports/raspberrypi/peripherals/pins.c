@@ -61,6 +61,27 @@ PIN(26);
 PIN(27);
 PIN(28);
 PIN(29);
+#if NUM_BANK0_GPIOS == 48
+PIN(30);
+PIN(31);
+PIN(32);
+PIN(33);
+PIN(34);
+PIN(35);
+PIN(36);
+PIN(37);
+PIN(38);
+PIN(39);
+PIN(40);
+PIN(41);
+PIN(42);
+PIN(43);
+PIN(44);
+PIN(45);
+PIN(46);
+PIN(47);
+#endif
+
 #if CIRCUITPY_CYW43
 CYW_PIN(0);
 CYW_PIN(1);

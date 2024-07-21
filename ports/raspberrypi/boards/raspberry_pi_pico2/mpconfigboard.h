@@ -1,5 +1,5 @@
 #define MICROPY_HW_BOARD_NAME "Raspberry Pi Pico 2"
-#define MICROPY_HW_MCU_NAME "rp2350"
+#define MICROPY_HW_MCU_NAME "rp2350a"
 
 #define MICROPY_HW_LED_STATUS (&pin_GPIO25)
 

@@ -11,7 +11,7 @@
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
-static uint32_t gpio_bank0_pin_claimed;
+static uint64_t gpio_bank0_pin_claimed;
 
 #if CIRCUITPY_CYW43
 #include "bindings/cyw43/__init__.h"
@@ -25,7 +25,7 @@ void reset_pin_number_cyw(uint8_t pin_no) {
 }
 #endif
 
-static uint32_t never_reset_pins;
+static uint64_t never_reset_pins;
 
 void reset_all_pins(void) {
     for (size_t i = 0; i < NUM_BANK0_GPIOS; i++) {

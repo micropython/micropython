@@ -221,6 +221,9 @@ CFLAGS += \
 	-msoft-float \
 	-mfloat-abi=soft
 
+CFLAGS += \
+	-DPICO_RP2040
+
 SRC_SDK_CHIP_VARIANT := \
 	src/rp2_common/hardware_rtc/rtc.c \
 	src/rp2_common/pico_double/double_init_rom_rp2040.c \

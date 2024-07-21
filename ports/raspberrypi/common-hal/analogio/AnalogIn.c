@@ -12,8 +12,13 @@
 
 #include "src/rp2_common/hardware_adc/include/hardware/adc.h"
 
+#define ADC_PIN_COUNT (NUM_ADC_CHANNELS - 1)
+
+#if ADC_PIN_COUNT == 4
 #define ADC_FIRST_PIN_NUMBER 26
-#define ADC_PIN_COUNT 4
+#else
+#define ADC_FIRST_PIN_NUMBER 40
+#endif
 
 // Voltage monitor is special on Pico W, because this pin is shared between the
 // voltage monitor function and the wifi function. Special handling is required

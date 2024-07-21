@@ -48,6 +48,26 @@ extern const mcu_pin_obj_t pin_GPIO26;
 extern const mcu_pin_obj_t pin_GPIO27;
 extern const mcu_pin_obj_t pin_GPIO28;
 extern const mcu_pin_obj_t pin_GPIO29;
+#if NUM_BANK0_GPIOS == 48
+extern const mcu_pin_obj_t pin_GPIO30;
+extern const mcu_pin_obj_t pin_GPIO31;
+extern const mcu_pin_obj_t pin_GPIO32;
+extern const mcu_pin_obj_t pin_GPIO33;
+extern const mcu_pin_obj_t pin_GPIO34;
+extern const mcu_pin_obj_t pin_GPIO35;
+extern const mcu_pin_obj_t pin_GPIO36;
+extern const mcu_pin_obj_t pin_GPIO37;
+extern const mcu_pin_obj_t pin_GPIO38;
+extern const mcu_pin_obj_t pin_GPIO39;
+extern const mcu_pin_obj_t pin_GPIO40;
+extern const mcu_pin_obj_t pin_GPIO41;
+extern const mcu_pin_obj_t pin_GPIO42;
+extern const mcu_pin_obj_t pin_GPIO43;
+extern const mcu_pin_obj_t pin_GPIO44;
+extern const mcu_pin_obj_t pin_GPIO45;
+extern const mcu_pin_obj_t pin_GPIO46;
+extern const mcu_pin_obj_t pin_GPIO47;
+#endif
 
 #if CIRCUITPY_CYW43
 extern const mcu_pin_obj_t pin_CYW0;
