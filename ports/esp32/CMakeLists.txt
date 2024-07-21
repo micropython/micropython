@@ -69,10 +69,16 @@ set(SDKCONFIG_DEFAULTS ${CMAKE_BINARY_DIR}/sdkconfig.combined)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 # Set the location of the main component for the project (one per target).
-list(APPEND EXTRA_COMPONENT_DIRS main_${IDF_TARGET})
+if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/${MICROPY_BOARD}_main_${IDF_TARGET})
+    message("Including main Dir: ${MICROPY_BOARD}_main_${IDF_TARGET}")
+    list(APPEND EXTRA_COMPONENT_DIRS ${MICROPY_BOARD}_main_${IDF_TARGET})
+else()
+    message("Including main Dir: main_${IDF_TARGET}")
+    list(APPEND EXTRA_COMPONENT_DIRS main_${IDF_TARGET})
+endif()
 
 # Enable the panic handler wrapper
 idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=esp_panic_handler" APPEND)
 
 # Define the project.
-project(micropython)
+project(micropython_${MICROPY_BOARD})
