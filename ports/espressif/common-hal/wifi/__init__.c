@@ -136,6 +136,8 @@ void common_hal_wifi_init(bool user_initiated) {
     if (wifi_inited) {
         if (user_initiated && !wifi_user_initiated) {
             common_hal_wifi_radio_set_enabled(self, true);
+            // explicitly start dhcp
+            common_hal_wifi_radio_start_dhcp_client(self, true, true);
         }
         return;
     }
@@ -201,6 +203,8 @@ void common_hal_wifi_init(bool user_initiated) {
     common_hal_wifi_radio_start_station(self);
     // start wifi
     common_hal_wifi_radio_set_enabled(self, true);
+    // explicitly start dhcp
+    common_hal_wifi_radio_start_dhcp_client(self, true, true);
 }
 
 void wifi_user_reset(void) {

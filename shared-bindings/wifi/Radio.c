@@ -700,14 +700,27 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_stations_ap_obj, wifi_radio_get_station
 MP_PROPERTY_GETTER(wifi_radio_stations_ap_obj,
     (mp_obj_t)&wifi_radio_get_stations_ap_obj);
 
-//|     def start_dhcp(self) -> None:
-//|         """Starts the station DHCP client."""
+//|     def start_dhcp(self, *, ipv4: bool = supports_ipv4, ipv6: bool = supports_ipv6) -> None:
+//|         """Starts the station DHCP client.
+//|
+//|         If specified
+//|         """
 //|         ...
-static mp_obj_t wifi_radio_start_dhcp_client(mp_obj_t self) {
-    common_hal_wifi_radio_start_dhcp_client(self);
+static mp_obj_t wifi_radio_start_dhcp_client(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_ipv4, ARG_ipv6 };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_ipv4, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = MP_ROM_TRUE } },
+        { MP_QSTR_ipv6, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = CIRCUITPY_SOCKETPOOL_IPV6 ? MP_ROM_TRUE : MP_ROM_FALSE } },
+    };
+
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    common_hal_wifi_radio_start_dhcp_client(self, args[ARG_ipv4].u_bool, args[ARG_ipv6].u_bool);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_start_dhcp_client_obj, wifi_radio_start_dhcp_client);
+static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_dhcp_client_obj, 1, wifi_radio_start_dhcp_client);
 
 //|     def stop_dhcp(self) -> None:
 //|         """Stops the station DHCP client. Needed to assign a static IP address."""

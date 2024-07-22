@@ -86,7 +86,7 @@ extern void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self);
 extern bool common_hal_wifi_radio_get_ap_active(wifi_radio_obj_t *self);
 extern mp_obj_t common_hal_wifi_radio_get_stations_ap(wifi_radio_obj_t *self);
 
-extern void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self);
+extern void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self, bool ipv4, bool ipv6);
 extern void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_start_dhcp_server(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_stop_dhcp_server(wifi_radio_obj_t *self);

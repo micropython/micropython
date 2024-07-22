@@ -532,11 +532,19 @@ void common_hal_wifi_radio_set_ipv4_dns(wifi_radio_obj_t *self, mp_obj_t ipv4_dn
     esp_netif_set_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &dns_addr);
 }
 
-void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self) {
-    esp_netif_dhcpc_start(self->netif);
+void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self, bool ipv4, bool ipv6) {
+    if (ipv4) {
+        esp_netif_dhcpc_start(self->netif);
+    } else {
+        esp_netif_dhcpc_stop(self->netif);
+    }
     #if LWIP_IPV6_DHCP6
-    esp_netif_create_ip6_linklocal(self->netif);
-    dhcp6_enable_stateless(esp_netif_get_netif_impl(self->netif));
+    if (ipv6) {
+        esp_netif_create_ip6_linklocal(self->netif);
+        dhcp6_enable_stateless(esp_netif_get_netif_impl(self->netif));
+    } else {
+        dhcp6_disable(esp_netif_get_netif_impl(self->netif));
+    }
     #endif
 }
 

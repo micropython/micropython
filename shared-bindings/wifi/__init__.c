@@ -13,8 +13,32 @@
 
 //| """
 //| The `wifi` module provides necessary low-level functionality for managing
-//| wifi connections. Use `socketpool` for communicating over the network."""
+//| wifi connections. Use `socketpool` for communicating over the network.
 //|
+//| .. jinja
+//| """
+
+//| supports_ipv6: bool
+//| """``True`` when ipv6 is supported.  Read-only
+//|
+//| .. raw:: html
+//|
+//|     <p>
+//|     <details>
+//|     <summary>True on these boards</summary>
+//|     <ul>
+//|     {% for board in support_matrix_reverse["wifi.supports_ipv6"] %}
+//|     <li> {{ board }}
+//|     {% endfor %}
+//|     </ul>
+//|     </details>
+//|     </p>
+//|
+//| """
+
+//| supports_ipv4: bool
+//| """``True`` when ipv4 is supported.  Read-only"""
+
 //| radio: Radio
 //| """Wifi radio used to manage both station and AP modes.
 //| This object is the sole instance of `wifi.Radio`."""
@@ -43,6 +67,9 @@ static const mp_rom_map_elem_t wifi_module_globals_table[] = {
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_radio),       MP_ROM_PTR(&common_hal_wifi_radio_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_supports_ipv6), MP_ROM_PTR(CIRCUITPY_SOCKETPOOL_IPV6 ? MP_ROM_TRUE : MP_ROM_FALSE) },
+    { MP_ROM_QSTR(MP_QSTR_supports_ipv4), MP_ROM_TRUE },
 };
 static MP_DEFINE_CONST_DICT(wifi_module_globals, wifi_module_globals_table);
 
