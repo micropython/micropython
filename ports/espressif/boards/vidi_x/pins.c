@@ -31,7 +31,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_LCD_CS), MP_ROM_PTR(&pin_GPIO5) },
     { MP_ROM_QSTR(MP_QSTR_GPIO5), MP_ROM_PTR(&pin_GPIO5) },
 
-    // 6-11 not connected?
+    // GPIOs 6-11 are connected to the module's integrated SPI flash and PSRAM
 
     { MP_ROM_QSTR(MP_QSTR_TOUCH_IRQ), MP_ROM_PTR(&pin_GPIO12) },
     { MP_ROM_QSTR(MP_QSTR_EXP20), MP_ROM_PTR(&pin_GPIO12) },
@@ -49,7 +49,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_EXP7), MP_ROM_PTR(&pin_GPIO15) },
     { MP_ROM_QSTR(MP_QSTR_GPIO15), MP_ROM_PTR(&pin_GPIO15) },
 
-    // 16-17 not connected?
+    //  GPIOs 16 and 17 are connected to the module’s integrated PSRAM
 
     { MP_ROM_QSTR(MP_QSTR_VSPI_SCK), MP_ROM_PTR(&pin_GPIO18) },
     { MP_ROM_QSTR(MP_QSTR_EXP12), MP_ROM_PTR(&pin_GPIO18) },
@@ -65,7 +65,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SD_MISO), MP_ROM_PTR(&pin_GPIO19) },
     { MP_ROM_QSTR(MP_QSTR_GPIO19), MP_ROM_PTR(&pin_GPIO19) },
 
-    // 20 not connected?
+    // GPIO 20 is only available on ESP32-PICO-V3 chip package
 
     { MP_ROM_QSTR(MP_QSTR_LCD_DC), MP_ROM_PTR(&pin_GPIO21) },
     { MP_ROM_QSTR(MP_QSTR_EXP15), MP_ROM_PTR(&pin_GPIO21) },
@@ -85,7 +85,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SD_MOSI), MP_ROM_PTR(&pin_GPIO19) },
     { MP_ROM_QSTR(MP_QSTR_GPIO19), MP_ROM_PTR(&pin_GPIO19) },
 
-    // 24 not connected?
+    // 24 not connected
 
     { MP_ROM_QSTR(MP_QSTR_IRRX), MP_ROM_PTR(&pin_GPIO25) },
     { MP_ROM_QSTR(MP_QSTR_SPEAKER_IN), MP_ROM_PTR(&pin_GPIO25) },
@@ -99,7 +99,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_EXP22), MP_ROM_PTR(&pin_GPIO27) },
     { MP_ROM_QSTR(MP_QSTR_GPIO27), MP_ROM_PTR(&pin_GPIO27) },
 
-    // 28-31 not connected?
+    // 28-31 not connected
 
     { MP_ROM_QSTR(MP_QSTR_BTN_A), MP_ROM_PTR(&pin_GPIO32) },
     { MP_ROM_QSTR(MP_QSTR_EXP23), MP_ROM_PTR(&pin_GPIO32) },
@@ -121,7 +121,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_EXP27), MP_ROM_PTR(&pin_GPIO36) },
     { MP_ROM_QSTR(MP_QSTR_GPIO36), MP_ROM_PTR(&pin_GPIO36) },
 
-    // 37-38 not connected?
+    // 37-38 not connected
 
     { MP_ROM_QSTR(MP_QSTR_START), MP_ROM_PTR(&pin_GPIO39) },
     { MP_ROM_QSTR(MP_QSTR_EXP26), MP_ROM_PTR(&pin_GPIO39) },
