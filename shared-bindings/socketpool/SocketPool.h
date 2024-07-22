@@ -19,12 +19,6 @@ void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *sel
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type, int proto);
 
-mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
-    const char *host);
-// raises an exception instead of returning mp_const_none in the case of error
-mp_obj_t common_hal_socketpool_socketpool_gethostbyname_raise(socketpool_socketpool_obj_t *self,
-    const char *host);
-
 // Non-allocating version for internal use. These sockets are not registered and, therefore, not
 // closed automatically.
 bool socketpool_socket(socketpool_socketpool_obj_t *self,
@@ -33,6 +27,4 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 
 NORETURN void common_hal_socketpool_socketpool_raise_gaierror_noname(void);
 
-#if CIRCUITPY_SOCKETPOOL_IPV6
 mp_obj_t common_hal_socketpool_getaddrinfo_raise(socketpool_socketpool_obj_t *self, const char *host, int port, int family, int type, int proto, int flags);
-#endif

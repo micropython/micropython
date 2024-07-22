@@ -60,48 +60,30 @@ static mp_obj_t format_address(const struct sockaddr *addr, int family) {
     return mp_obj_new_str(ip_str, strlen(ip_str));
 }
 
-mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
-    const char *host) {
-
-    const struct addrinfo hints = {
-        .ai_family = AF_INET,
-        .ai_socktype = SOCK_STREAM,
-    };
-    struct addrinfo *res = NULL;
-    int err = socketpool_getaddrinfo_common(host, 0, &hints, &res);
-    if (err != 0 || res == NULL) {
-        return mp_const_none;
-    }
-
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_obj_t result = format_address(res->ai_addr, res->ai_family);
-        nlr_pop();
-        lwip_freeaddrinfo(res);
-        return result;
-    } else {
-        lwip_freeaddrinfo(res);
-        nlr_raise(MP_OBJ_FROM_PTR(nlr.ret_val));
-    };
-}
-
-#if CIRCUITPY_SOCKETPOOL_IPV6
 static mp_obj_t convert_sockaddr(const struct addrinfo *ai, int port) {
+    #if CIRCUITPY_SOCKETPOOL_IPV6
     mp_int_t n_tuple = ai->ai_family == AF_INET6 ? 4 : 2;
+    #else
+    mp_int_t n_tuple = 2;
+    #endif
     mp_obj_tuple_t *result = MP_OBJ_TO_PTR(mp_obj_new_tuple(n_tuple, NULL));
     result->items[0] = format_address(ai->ai_addr, ai->ai_family);
     result->items[1] = MP_OBJ_NEW_SMALL_INT(port);
+    #if CIRCUITPY_SOCKETPOOL_IPV6
     if (ai->ai_family == AF_INET6) {
         const struct sockaddr_in6 *ai6 = (void *)ai->ai_addr;
         result->items[2] = MP_OBJ_NEW_SMALL_INT(ai6->sin6_flowinfo);
         result->items[3] = MP_OBJ_NEW_SMALL_INT(ai6->sin6_scope_id);
     }
+    #endif
     return result;
 }
 
 static mp_obj_t convert_addrinfo(const struct addrinfo *ai, int port) {
     MP_STATIC_ASSERT(AF_INET == SOCKETPOOL_AF_INET);
+    #if CIRCUITPY_SOCKETPOOL_IPV6
     MP_STATIC_ASSERT(AF_INET6 == SOCKETPOOL_AF_INET6);
+    #endif
     // MP_STATIC_ASSERT(AF_UNSPEC == SOCKETPOOL_AF_UNSPEC);
     mp_obj_tuple_t *result = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));
     result->items[0] = MP_OBJ_NEW_SMALL_INT(ai->ai_family);
@@ -113,7 +95,6 @@ static mp_obj_t convert_addrinfo(const struct addrinfo *ai, int port) {
 }
 
 mp_obj_t common_hal_socketpool_getaddrinfo_raise(socketpool_socketpool_obj_t *self, const char *host, int port, int family, int type, int proto, int flags) {
-    MP_STATIC_ASSERT(LWIP_IPV6);
     const struct addrinfo hints = {
         .ai_flags = flags,
         .ai_family = family,
@@ -141,4 +122,3 @@ mp_obj_t common_hal_socketpool_getaddrinfo_raise(socketpool_socketpool_obj_t *se
         nlr_raise(MP_OBJ_FROM_PTR(nlr.ret_val));
     }
 }
-#endif
