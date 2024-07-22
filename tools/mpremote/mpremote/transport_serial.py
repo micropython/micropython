@@ -84,10 +84,12 @@ class SerialTransport(Transport):
                     portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
                     if portinfo and portinfo[0].manufacturer != "Microsoft":
                         # ESP8266/ESP32 boards use RTS/CTS for flashing and boot mode selection.
-                        # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
-                        # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
-                        self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
-                        self.serial.rts = False  # RTS False = EN High = MCU enabled
+                        # When both lines are the same, no operation is performed on the esp.
+                        # Note: Both of these lines are "active low", so True here results on 0 on the line.
+                        # When DTR=True, RTS=False | DTR:0 / RTS:1 | IO0 is 0 (bootloader mode)
+                        # When DTR=False, RTS=True | DTR:1 / RTS:0 | EN is 0 (reset chip)
+                        self.serial.dtr = True
+                        self.serial.rts = True
                     self.serial.open()
                 else:
                     self.serial = serial.Serial(device, **serial_kwargs)
