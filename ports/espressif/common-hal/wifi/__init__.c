@@ -241,7 +241,9 @@ void wifi_reset(void) {
 void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t *esp_ip_address) {
     if (mp_obj_is_type(ip_address, &ipaddress_ipv4address_type)) {
         ipaddress_ipaddress_to_esp_idf_ip4(ip_address, (esp_ip4_addr_t *)esp_ip_address);
+        #if LWIP_IPV6
         esp_ip_address->type = IPADDR_TYPE_V4;
+        #endif
     } else {
         struct sockaddr_storage addr_storage;
         socketpool_resolve_host_or_throw(AF_UNSPEC, SOCK_STREAM, mp_obj_str_get_str(ip_address), &addr_storage, 1);
@@ -283,10 +285,13 @@ mp_obj_t espaddr6_to_str(const esp_ip6_addr_t *espaddr) {
 
 mp_obj_t sockaddr_to_str(const struct sockaddr_storage *sockaddr) {
     char buf[IPADDR_STRLEN_MAX];
+    #if CIRCUITPY_SOCKETPOOL_IPV6
     if (sockaddr->ss_family == AF_INET6) {
         const struct sockaddr_in6 *addr6 = (const void *)sockaddr;
         inet_ntop(AF_INET6, &addr6->sin6_addr, buf, sizeof(buf));
-    } else {
+    } else
+    #endif
+    {
         const struct sockaddr_in *addr = (const void *)sockaddr;
         inet_ntop(AF_INET, &addr->sin_addr, buf, sizeof(buf));
     }
@@ -298,13 +303,16 @@ mp_obj_t sockaddr_to_tuple(const struct sockaddr_storage *sockaddr) {
         sockaddr_to_str(sockaddr),
     };
     int n = 2;
+    #if CIRCUITPY_SOCKETPOOL_IPV6
     if (sockaddr->ss_family == AF_INET6) {
         const struct sockaddr_in6 *addr6 = (const void *)sockaddr;
         args[1] = MP_OBJ_NEW_SMALL_INT(htons(addr6->sin6_port));
         args[2] = MP_OBJ_NEW_SMALL_INT(addr6->sin6_flowinfo);
         args[3] = MP_OBJ_NEW_SMALL_INT(addr6->sin6_scope_id);
         n = 4;
-    } else {
+    } else
+    #endif
+    {
         const struct sockaddr_in *addr = (const void *)sockaddr;
         args[1] = MP_OBJ_NEW_SMALL_INT(htons(addr->sin_port));
     }
@@ -312,6 +320,7 @@ mp_obj_t sockaddr_to_tuple(const struct sockaddr_storage *sockaddr) {
 }
 
 void sockaddr_to_espaddr(const struct sockaddr_storage *sockaddr, esp_ip_addr_t *espaddr) {
+    #if CIRCUITPY_SOCKETPOOL_IPV6
     MP_STATIC_ASSERT(IPADDR_TYPE_V4 == ESP_IPADDR_TYPE_V4);
     MP_STATIC_ASSERT(IPADDR_TYPE_V6 == ESP_IPADDR_TYPE_V6);
     MP_STATIC_ASSERT(sizeof(ip_addr_t) == sizeof(esp_ip_addr_t));
@@ -323,7 +332,9 @@ void sockaddr_to_espaddr(const struct sockaddr_storage *sockaddr, esp_ip_addr_t 
         memcpy(&espaddr->u_addr.ip6.addr, &addr6->sin6_addr, sizeof(espaddr->u_addr.ip6.addr));
         espaddr->u_addr.ip6.zone = addr6->sin6_scope_id;
         espaddr->type = ESP_IPADDR_TYPE_V6;
-    } else {
+    } else
+    #endif
+    {
         const struct sockaddr_in *addr = (const void *)sockaddr;
         MP_STATIC_ASSERT(sizeof(espaddr->u_addr.ip4.addr) == sizeof(addr->sin_addr));
         memcpy(&espaddr->u_addr.ip4.addr, &addr->sin_addr, sizeof(espaddr->u_addr.ip4.addr));
@@ -332,11 +343,14 @@ void sockaddr_to_espaddr(const struct sockaddr_storage *sockaddr, esp_ip_addr_t 
 }
 
 void espaddr_to_sockaddr(const esp_ip_addr_t *espaddr, struct sockaddr_storage *sockaddr, int port) {
+    #if CIRCUITPY_SOCKETPOOL_IPV6
     if (espaddr->type == ESP_IPADDR_TYPE_V6) {
         struct sockaddr_in6 *addr6 = (void *)sockaddr;
         memcpy(&addr6->sin6_addr, &espaddr->u_addr.ip6.addr, sizeof(espaddr->u_addr.ip6.addr));
         addr6->sin6_scope_id = espaddr->u_addr.ip6.zone;
-    } else {
+    } else
+    #endif
+    {
         struct sockaddr_in *addr = (void *)sockaddr;
         memcpy(&addr->sin_addr, &espaddr->u_addr.ip4.addr, sizeof(espaddr->u_addr.ip4.addr));
     }

@@ -616,13 +616,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_addresses_ap_obj, _wifi_radio_get_addre
 MP_PROPERTY_GETTER(wifi_radio_addresses_ap_obj,
     (mp_obj_t)&wifi_radio_get_addresses_ap_obj);
 
-
-#if 0
-MP_WEAK mp_obj_t common_hal_wifi_radio_get_addresses(wifi_radio_obj_t *self) {
-    return mp_const_none;
-}
-#endif
-
 //|     ipv4_address: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the station when connected to an access point. None otherwise. (read-only)"""
 static mp_obj_t _wifi_radio_get_ipv4_address(mp_obj_t self) {

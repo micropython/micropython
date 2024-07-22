@@ -461,14 +461,20 @@ static mp_obj_t common_hal_wifi_radio_get_addresses_netif(wifi_radio_obj_t *self
     esp_netif_get_ip_info(netif, &ip_info);
     int n_addresses4 = ip_info.ip.addr != INADDR_NONE;
 
+    #if CIRCUITPY_SOCKETPOOL_IPV6
     esp_ip6_addr_t addresses[LWIP_IPV6_NUM_ADDRESSES];
     int n_addresses6 = esp_netif_get_all_ip6(netif, &addresses[0]);
+    #else
+    int n_addresses6 = 0;
+    #endif
     int n_addresses = n_addresses4 + n_addresses6;
-
     mp_obj_tuple_t *result = MP_OBJ_TO_PTR(mp_obj_new_tuple(n_addresses, NULL));
+
+    #if CIRCUITPY_SOCKETPOOL_IPV6
     for (int i = 0; i < n_addresses6; i++) {
         result->items[i] = espaddr6_to_str(&addresses[i]);
     }
+    #endif
 
     if (n_addresses4) {
         result->items[n_addresses6] = espaddr4_to_str(&ip_info.ip);

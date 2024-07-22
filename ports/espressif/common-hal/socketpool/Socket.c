@@ -195,7 +195,7 @@ static bool _socketpool_socket(socketpool_socketpool_obj_t *self,
     if (family == SOCKETPOOL_AF_INET) {
         addr_family = AF_INET;
         ipproto = IPPROTO_IP;
-    #if LWIP_IPV6
+    #if CIRCUITPY_SOCKETPOOL_IPV6
     } else { // INET6
         addr_family = AF_INET6;
         ipproto = IPPROTO_IPV6;
@@ -345,7 +345,6 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
     }
 }
 
-// TODO: ipv6
 size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
     struct sockaddr_storage bind_addr;
@@ -353,6 +352,7 @@ size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
 
     bind_addr.ss_family = self->family;
 
+    #if CIRCUITPY_SOCKETPOOL_IPV6
     if (self->family == AF_INET6) {
         struct sockaddr_in6 *addr6 = (void *)&bind_addr;
         addr6->sin6_port = htons(port);
@@ -362,7 +362,9 @@ size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
         } else {
             socketpool_resolve_host_or_throw(self->family, self->type, host, &bind_addr, port);
         }
-    } else {
+    } else
+    #endif
+    {
         struct sockaddr_in *addr4 = (void *)&bind_addr;
         addr4->sin_port = htons(port);
         if (hostlen == 0) {
