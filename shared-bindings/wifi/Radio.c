@@ -661,7 +661,7 @@ MP_PROPERTY_GETSET(wifi_radio_ipv4_dns_obj,
     (mp_obj_t)&wifi_radio_get_ipv4_dns_obj,
     (mp_obj_t)&wifi_radio_set_ipv4_dns_obj);
 
-//|     dns: str
+//|     dns: Sequence[str]
 //|     """Address of the DNS server to be used."""
 static mp_obj_t wifi_radio_get_dns(mp_obj_t self) {
     return common_hal_wifi_radio_get_dns(self);

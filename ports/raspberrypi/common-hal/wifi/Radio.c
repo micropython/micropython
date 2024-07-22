@@ -555,8 +555,15 @@ mp_obj_t common_hal_wifi_radio_get_dns(wifi_radio_obj_t *self) {
     return mp_obj_new_tuple(MP_ARRAY_SIZE(args), args);
 }
 
-void common_hal_wifi_radio_set_dns(wifi_radio_obj_t *self, mp_obj_t dns_addr) {
+void common_hal_wifi_radio_set_dns(wifi_radio_obj_t *self, mp_obj_t dns_addrs_obj) {
+    mp_int_t len = mp_obj_get_int(mp_obj_len(dns_addrs_obj));
+    mp_arg_validate_length_max(len, 1, MP_QSTR_dns);
     ip_addr_t addr;
-    socketpool_resolve_host_raise(dns_addr, &addr);
+    if (len == 0) {
+        addr.addr = IPADDR_NONE;
+    } else {
+        mp_obj_t dns_addr_obj = mp_obj_subscr(dns_addrs_obj, MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_SENTINEL);
+        socketpool_resolve_host_raise(dns_addr_obj, &addr);
+    }
     dns_setserver(0, &addr);
 }

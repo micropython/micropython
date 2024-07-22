@@ -642,18 +642,35 @@ void common_hal_wifi_radio_gc_collect(wifi_radio_obj_t *self) {
 
 mp_obj_t common_hal_wifi_radio_get_dns(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
-        return mp_const_none;
+        return mp_const_empty_tuple;
     }
 
     esp_netif_get_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &self->dns_info);
 
-    return espaddr_to_str(&self->dns_info.ip);
+    if (self->dns_info.ip.type == ESP_IPADDR_TYPE_V4 && self->dns_info.ip.u_addr.ip4.addr == INADDR_NONE) {
+        return mp_const_empty_tuple;
+    }
+
+    mp_obj_t args[] = {
+        espaddr_to_str(&self->dns_info.ip),
+    };
+
+    return mp_obj_new_tuple(1, args);
 }
 
-void common_hal_wifi_radio_set_dns(wifi_radio_obj_t *self, mp_obj_t dns_addr_obj) {
-    struct sockaddr_storage addr_storage;
-    socketpool_resolve_host_or_throw(AF_UNSPEC, SOCK_STREAM, mp_obj_str_get_str(dns_addr_obj), &addr_storage, 1);
+void common_hal_wifi_radio_set_dns(wifi_radio_obj_t *self, mp_obj_t dns_addrs_obj) {
+    mp_int_t len = mp_obj_get_int(mp_obj_len(dns_addrs_obj));
+    mp_arg_validate_length_max(len, 1, MP_QSTR_dns);
     esp_netif_dns_info_t dns_info;
-    sockaddr_to_espaddr(&addr_storage, &dns_info.ip);
+    if (len == 0) {
+        // clear DNS server
+        dns_info.ip.type = ESP_IPADDR_TYPE_V4;
+        dns_info.ip.u_addr.ip4.addr = INADDR_NONE;
+    } else {
+        mp_obj_t dns_addr_obj = mp_obj_subscr(dns_addrs_obj, MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_SENTINEL);
+        struct sockaddr_storage addr_storage;
+        socketpool_resolve_host_or_throw(AF_UNSPEC, SOCK_STREAM, mp_obj_str_get_str(dns_addr_obj), &addr_storage, 1);
+        sockaddr_to_espaddr(&addr_storage, &dns_info.ip);
+    }
     esp_netif_set_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &dns_info);
 }
