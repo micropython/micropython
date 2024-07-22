@@ -1210,6 +1210,7 @@ msgid "Interrupted by output function"
 msgstr "bèi shūchū gōngnéng zhōngduàn"
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/espressif/common-hal/microcontroller/Processor.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
@@ -1316,6 +1317,10 @@ msgstr "tú céng yǐ zài zǔ zhōng"
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr "tú céng bìxū shì zǔ huò píng pū wǎng gé zi lèi"
+
+#: shared-bindings/audiocore/RawSample.c
+msgid "Length of %q must be an even multiple of channel_count * type_size"
+msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
