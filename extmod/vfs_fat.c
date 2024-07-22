@@ -100,7 +100,7 @@ static mp_obj_t fat_vfs_del(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_del_obj, fat_vfs_del);
 #endif
 
-static mp_obj_t fat_vfs_mkfs(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
     mp_obj_t bdev_in = args[0];
 
     // create new object
@@ -116,20 +116,13 @@ static mp_obj_t fat_vfs_mkfs(size_t n_args, const mp_obj_t *args) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
-    // Set the volume label if provided
-    if (n_args > 1 && mp_obj_is_str(args[1])) {
-        const char *label = mp_obj_str_get_str(args[1]);
-        if (strlen(label) <= MICROPY_VFS_FAT_MAX_LABEL_LENGTH) {
-            f_setlabel(&vfs->fatfs, label);
-        } else {
-            mp_raise_OSError(fresult_to_errno_table[FR_INVALID_PARAMETER]);
-        }
-    }
+    // Set the volume
+    f_setlabel(&vfs->fatfs, MICROPY_VFS_FAT_MAX_LABEL_LENGTH);
 
     return mp_const_none;
 }
 
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fat_vfs_mkfs_fun_obj, 1, 2, fat_vfs_mkfs);
+static MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_mkfs_fun_obj, fat_vfs_mkfs);
 static MP_DEFINE_CONST_STATICMETHOD_OBJ(fat_vfs_mkfs_obj, MP_ROM_PTR(&fat_vfs_mkfs_fun_obj));
 
 typedef struct _mp_vfs_fat_ilistdir_it_t {
