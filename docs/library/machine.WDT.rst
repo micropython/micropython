@@ -5,15 +5,17 @@ class WDT -- watchdog timer
 ===========================
 
 The WDT is used to restart the system when the application crashes and ends
-up into a non recoverable state. Once started it cannot be stopped or
-reconfigured in any way. After enabling, the application must "feed" the
+up into a non recoverable state. Once started it cannot be stopped
+in any way. After enabling, the application must "feed" the
 watchdog periodically to prevent it from expiring and resetting the system.
 
 Example usage::
 
     from machine import WDT
     wdt = WDT(timeout=2000)  # enable it with a timeout of 2s
-    wdt.feed()
+    while True:
+        # do something useful in less than 2 seconds
+        wdt.feed()
 
 Availability of this class: pyboard, WiPy, esp8266, esp32, rp2040, mimxrt.
 
