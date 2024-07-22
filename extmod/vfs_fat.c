@@ -117,7 +117,7 @@ static mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
     }
 
     // Set the volume
-    f_setlabel(&vfs->fatfs, MICROPY_VFS_FAT_MAX_LABEL_LENGTH);
+    f_setlabel(&vfs->fatfs, MICROPY_HW_FLASH_FS_LABEL);
 
     return mp_const_none;
 }
