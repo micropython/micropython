@@ -30,10 +30,6 @@
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
 
-#ifndef MICROPY_VFS_FAT_MAX_LABEL_LENGTH
-#define MICROPY_VFS_FAT_MAX_LABEL_LENGTH (8)
-#endif
-
 typedef struct _fs_user_mount_t {
     mp_obj_base_t base;
     mp_vfs_blockdev_t blockdev;
