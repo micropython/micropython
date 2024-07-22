@@ -382,6 +382,12 @@ static mp_int_t wiznet5k_allocate_socket(bool enable_irq) {
     // get first unused socket number
     for (mp_uint_t sn = 0; sn < _WIZCHIP_SOCK_NUM_; sn++) {
         if ((wiznet5k_obj.socket_used & (1 << sn)) == 0) {
+            if (getSn_SR(sn) != SOCK_CLOSED) {
+                // It's marked as unused but has not completed the state
+                // transition back to close. It's safe to issue the close and
+                // reuse it immediately.
+                WIZCHIP_EXPORT(close)(sn);
+            }
             wiznet5k_obj.socket_used |= (1 << sn);
             if (enable_irq && wiznet5k_obj.use_interrupt) {
                 setSn_IMR(sn, (Sn_IR_RECV));
@@ -615,11 +621,20 @@ static int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno)
 static void wiznet5k_socket_close(mod_network_socket_obj_t *socket) {
     uint8_t sn = (uint8_t)socket->fileno;
     if (sn < _WIZCHIP_SOCK_NUM_) {
-        WIZCHIP_EXPORT(close)(sn);
+        uint8_t status = getSn_SR((uint8_t)socket->fileno);
+        if (status == SOCK_ESTABLISHED || status == SOCK_CLOSE_WAIT) {
+            // Send a FIN packet to the remote
+            MP_THREAD_GIL_EXIT();
+            WIZCHIP_EXPORT(disconnect)(sn);
+            MP_THREAD_GIL_ENTER();
+        } else {
+            WIZCHIP_EXPORT(close)(sn);
+        }
         wiznet5k_release_socket(sn);
         wiznet5k_obj.sockets[sn] = NULL;
     }
 
+    socket->fileno = -1;
     if (socket->_private != NULL) {
         m_del(wiznet5k_socket_extra_t, socket->_private, 1);
         socket->_private = NULL;
@@ -783,7 +798,14 @@ static mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const by
     return ret;
 }
 
+static mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno);
 static mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
+    if (socket->type == Sn_MR_UDP) {
+        byte remote_ip[4];
+        mp_uint_t remote_port;
+        return wiznet5k_socket_recvfrom(socket, buf, len, remote_ip, &remote_port, _errno);
+    }
+
     if (socket->timeout > 0) {
         mp_uint_t start = mp_hal_ticks_ms();
         while (getSn_SR(socket->fileno) == SOCK_ESTABLISHED && getSn_RX_RSR(socket->fileno) == 0) {
