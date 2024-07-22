@@ -696,7 +696,9 @@ MP_PROPERTY_GETTER(wifi_radio_stations_ap_obj,
 //|     def start_dhcp(self, *, ipv4: bool = supports_ipv4, ipv6: bool = supports_ipv6) -> None:
 //|         """Starts the station DHCP client.
 //|
-//|         If specified
+//|         By default, calling this function starts all supported types of DHCP.
+//|         If the ``ipv4`` and ``ipv6`` arguments are specified as `False` then
+//|         the corresponding DHCP client is stopped if it was active.
 //|         """
 //|         ...
 static mp_obj_t wifi_radio_start_dhcp_client(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
