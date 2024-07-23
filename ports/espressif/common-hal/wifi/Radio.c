@@ -13,15 +13,23 @@
 #include "common-hal/wifi/__init__.h"
 #include "shared/runtime/interrupt_char.h"
 #include "py/gc.h"
+#include "py/obj.h"
 #include "py/runtime.h"
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
 #include "shared-bindings/wifi/AuthMode.h"
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/ipaddress/__init__.h"
+#include "common-hal/socketpool/__init__.h"
 
+#include "components/esp_netif/include/esp_netif_net_stack.h"
 #include "components/esp_wifi/include/esp_wifi.h"
 #include "components/lwip/include/apps/ping/ping_sock.h"
+#include "lwip/sockets.h"
+
+#if LWIP_IPV6_DHCP6
+#include "lwip/dhcp6.h"
+#endif
 
 #if CIRCUITPY_MDNS
 #include "common-hal/mdns/Server.h"
@@ -445,6 +453,44 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self) {
     return common_hal_ipaddress_new_ipv4address(self->ap_ip_info.netmask.addr);
 }
 
+static mp_obj_t common_hal_wifi_radio_get_addresses_netif(wifi_radio_obj_t *self, esp_netif_t *netif) {
+    if (!esp_netif_is_netif_up(netif)) {
+        return mp_const_empty_tuple;
+    }
+    esp_netif_ip_info_t ip_info;
+    esp_netif_get_ip_info(netif, &ip_info);
+    int n_addresses4 = ip_info.ip.addr != INADDR_NONE;
+
+    #if CIRCUITPY_SOCKETPOOL_IPV6
+    esp_ip6_addr_t addresses[LWIP_IPV6_NUM_ADDRESSES];
+    int n_addresses6 = esp_netif_get_all_ip6(netif, &addresses[0]);
+    #else
+    int n_addresses6 = 0;
+    #endif
+    int n_addresses = n_addresses4 + n_addresses6;
+    mp_obj_tuple_t *result = MP_OBJ_TO_PTR(mp_obj_new_tuple(n_addresses, NULL));
+
+    #if CIRCUITPY_SOCKETPOOL_IPV6
+    for (int i = 0; i < n_addresses6; i++) {
+        result->items[i] = espaddr6_to_str(&addresses[i]);
+    }
+    #endif
+
+    if (n_addresses4) {
+        result->items[n_addresses6] = espaddr4_to_str(&ip_info.ip);
+    }
+
+    return MP_OBJ_FROM_PTR(result);
+}
+
+mp_obj_t common_hal_wifi_radio_get_addresses(wifi_radio_obj_t *self) {
+    return common_hal_wifi_radio_get_addresses_netif(self, self->netif);
+}
+
+mp_obj_t common_hal_wifi_radio_get_addresses_ap(wifi_radio_obj_t *self) {
+    return common_hal_wifi_radio_get_addresses_netif(self, self->ap_netif);
+}
+
 uint32_t wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return 0;
@@ -476,6 +522,9 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self) {
 
     esp_netif_get_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &self->dns_info);
 
+    if (self->dns_info.ip.type != ESP_IPADDR_TYPE_V4) {
+        return mp_const_none;
+    }
     // dns_info is of type esp_netif_dns_info_t, which is just ever so slightly
     // different than esp_netif_ip_info_t used for
     // common_hal_wifi_radio_get_ipv4_address (includes both ipv4 and 6),
@@ -489,12 +538,31 @@ void common_hal_wifi_radio_set_ipv4_dns(wifi_radio_obj_t *self, mp_obj_t ipv4_dn
     esp_netif_set_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &dns_addr);
 }
 
-void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self) {
-    esp_netif_dhcpc_start(self->netif);
+void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self, bool ipv4, bool ipv6) {
+    if (ipv4) {
+        esp_netif_dhcpc_start(self->netif);
+    } else {
+        esp_netif_dhcpc_stop(self->netif);
+    }
+    #if LWIP_IPV6_DHCP6
+    if (ipv6) {
+        esp_netif_create_ip6_linklocal(self->netif);
+        dhcp6_enable_stateless(esp_netif_get_netif_impl(self->netif));
+    } else {
+        dhcp6_disable(esp_netif_get_netif_impl(self->netif));
+    }
+    #else
+    if (ipv6) {
+        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_ipv6);
+    }
+    #endif
 }
 
 void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self) {
     esp_netif_dhcpc_stop(self->netif);
+    #if LWIP_IPV6_DHCP6
+    dhcp6_disable(esp_netif_get_netif_impl(self->netif));
+    #endif
 }
 
 void common_hal_wifi_radio_start_dhcp_server(wifi_radio_obj_t *self) {
@@ -568,10 +636,10 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
         CHECK_ESP_RESULT(esp_ping_new_session(&ping_config, &ping_callbacks, &ping));
     }
 
-    esp_ping_start(ping);
-
     // Use all ones as a flag that the elapsed time was not set (ping failed or timed out).
     self->ping_elapsed_time = (uint32_t)(-1);
+
+    esp_ping_start(ping);
 
     uint32_t start_time = common_hal_time_monotonic_ms();
     while ((self->ping_elapsed_time == (uint32_t)(-1)) &&
@@ -588,4 +656,39 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
 void common_hal_wifi_radio_gc_collect(wifi_radio_obj_t *self) {
     // Only bother to scan the actual object references.
     gc_collect_ptr(self->current_scan);
+}
+
+mp_obj_t common_hal_wifi_radio_get_dns(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_empty_tuple;
+    }
+
+    esp_netif_get_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &self->dns_info);
+
+    if (self->dns_info.ip.type == ESP_IPADDR_TYPE_V4 && self->dns_info.ip.u_addr.ip4.addr == INADDR_NONE) {
+        return mp_const_empty_tuple;
+    }
+
+    mp_obj_t args[] = {
+        espaddr_to_str(&self->dns_info.ip),
+    };
+
+    return mp_obj_new_tuple(1, args);
+}
+
+void common_hal_wifi_radio_set_dns(wifi_radio_obj_t *self, mp_obj_t dns_addrs_obj) {
+    mp_int_t len = mp_obj_get_int(mp_obj_len(dns_addrs_obj));
+    mp_arg_validate_length_max(len, 1, MP_QSTR_dns);
+    esp_netif_dns_info_t dns_info;
+    if (len == 0) {
+        // clear DNS server
+        dns_info.ip.type = ESP_IPADDR_TYPE_V4;
+        dns_info.ip.u_addr.ip4.addr = INADDR_NONE;
+    } else {
+        mp_obj_t dns_addr_obj = mp_obj_subscr(dns_addrs_obj, MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_SENTINEL);
+        struct sockaddr_storage addr_storage;
+        socketpool_resolve_host_or_throw(AF_UNSPEC, SOCK_STREAM, mp_obj_str_get_str(dns_addr_obj), &addr_storage, 1);
+        sockaddr_to_espaddr(&addr_storage, &dns_info.ip);
+    }
+    esp_netif_set_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &dns_info);
 }

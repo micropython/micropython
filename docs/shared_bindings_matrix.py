@@ -85,6 +85,7 @@ ADDITIONAL_MODULES = {
     "sys": "CIRCUITPY_SYS",
     "terminalio": "CIRCUITPY_DISPLAYIO",
     "usb": "CIRCUITPY_PYUSB",
+    "socketpool.socketpool.AF_INET6": "CIRCUITPY_SOCKETPOOL_IPV6",
 }
 
 MODULES_NOT_IN_BINDINGS = ["binascii", "errno", "json", "re", "ulab"]

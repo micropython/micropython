@@ -11,6 +11,8 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/socketpool/SocketPool.h"
+#include "common-hal/socketpool/__init__.h"
+#include "common-hal/wifi/__init__.h"
 #if CIRCUITPY_SSL
 #include "shared-bindings/ssl/SSLSocket.h"
 #include "shared-module/ssl/SSLSocket.h"
@@ -24,6 +26,24 @@
 #include "components/lwip/lwip/src/include/lwip/sys.h"
 #include "components/lwip/lwip/src/include/lwip/netdb.h"
 #include "components/vfs/include/esp_vfs_eventfd.h"
+
+void socketpool_resolve_host_or_throw(int family, int type, const char *hostname, struct sockaddr_storage *addr, int port) {
+    struct addrinfo *result_i;
+    const struct addrinfo hints = {
+        .ai_family = family,
+        .ai_socktype = type,
+    };
+    int error = socketpool_getaddrinfo_common(hostname, port, &hints, &result_i);
+    if (error != 0 || result_i == NULL) {
+        common_hal_socketpool_socketpool_raise_gaierror_noname();
+    }
+    memcpy(addr, result_i->ai_addr, sizeof(struct sockaddr_storage));
+    lwip_freeaddrinfo(result_i);
+}
+
+static void resolve_host_or_throw(socketpool_socket_obj_t *self, const char *hostname, struct sockaddr_storage *addr, int port) {
+    socketpool_resolve_host_or_throw(self->family, self->type, hostname, addr, port);
+}
 
 StackType_t socket_select_stack[2 * configMINIMAL_STACK_SIZE];
 
@@ -175,7 +195,7 @@ static bool _socketpool_socket(socketpool_socketpool_obj_t *self,
     if (family == SOCKETPOOL_AF_INET) {
         addr_family = AF_INET;
         ipproto = IPPROTO_IP;
-    #if LWIP_IPV6
+    #if CIRCUITPY_SOCKETPOOL_IPV6
     } else { // INET6
         addr_family = AF_INET6;
         ipproto = IPPROTO_IPV6;
@@ -230,8 +250,14 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type, int proto) {
-    if (family != SOCKETPOOL_AF_INET) {
-        mp_raise_NotImplementedError(MP_ERROR_TEXT("Only IPv4 sockets supported"));
+    switch (family) {
+        #if CIRCUITPY_SOCKETPOOL_IPV6
+        case SOCKETPOOL_AF_INET6:
+        #endif
+        case SOCKETPOOL_AF_INET:
+            break;
+        default:
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("Unsupported socket type"));
     }
 
     socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
@@ -244,9 +270,9 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     return sock;
 }
 
-int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port, socketpool_socket_obj_t *accepted) {
-    struct sockaddr_in accept_addr;
-    socklen_t socklen = sizeof(accept_addr);
+int socketpool_socket_accept(socketpool_socket_obj_t *self, mp_obj_t *peer_out, socketpool_socket_obj_t *accepted) {
+    struct sockaddr_storage peer_addr;
+    socklen_t socklen = sizeof(peer_addr);
     int newsoc = -1;
     bool timed_out = false;
     uint64_t start_ticks = supervisor_ticks_ms64();
@@ -257,20 +283,17 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
             timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
         }
         RUN_BACKGROUND_TASKS;
-        newsoc = lwip_accept(self->num, (struct sockaddr *)&accept_addr, &socklen);
+        newsoc = lwip_accept(self->num, (struct sockaddr *)&peer_addr, &socklen);
         // In non-blocking mode, fail instead of timing out
         if (newsoc == -1 && (self->timeout_ms == 0 || mp_hal_is_interrupted())) {
             return -MP_EAGAIN;
         }
     }
 
-    if (!timed_out) {
-        // harmless on failure but avoiding memcpy is faster
-        memcpy((void *)ip, (void *)&accept_addr.sin_addr.s_addr, sizeof(accept_addr.sin_addr.s_addr));
-        *port = accept_addr.sin_port;
-    } else {
+    if (timed_out) {
         return -ETIMEDOUT;
     }
+
     if (newsoc < 0) {
         return -MP_EBADF;
     }
@@ -295,13 +318,16 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
         accepted->type = self->type;
     }
 
+    if (peer_out) {
+        *peer_out = sockaddr_to_tuple(&peer_addr);
+    }
+
     return newsoc;
 }
 
-socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *self,
-    uint8_t *ip, uint32_t *port) {
+socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *self, mp_obj_t *peer_out) {
     socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
-    int newsoc = socketpool_socket_accept(self, ip, port, NULL);
+    int newsoc = socketpool_socket_accept(self, peer_out, NULL);
 
     if (newsoc > 0) {
         // Create the socket
@@ -321,20 +347,35 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
 
 size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
-    struct sockaddr_in bind_addr;
+    struct sockaddr_storage bind_addr;
     const char *broadcast = "<broadcast>";
-    uint32_t ip;
-    if (hostlen == 0) {
-        ip = IPADDR_ANY;
-    } else if (hostlen == strlen(broadcast) &&
-               memcmp(host, broadcast, strlen(broadcast)) == 0) {
-        ip = IPADDR_BROADCAST;
-    } else {
-        ip = inet_addr(host);
+
+    bind_addr.ss_family = self->family;
+
+    #if CIRCUITPY_SOCKETPOOL_IPV6
+    if (self->family == AF_INET6) {
+        struct sockaddr_in6 *addr6 = (void *)&bind_addr;
+        addr6->sin6_port = htons(port);
+        // no ipv6 broadcast
+        if (hostlen == 0) {
+            memset(&addr6->sin6_addr, 0, sizeof(addr6->sin6_addr));
+        } else {
+            socketpool_resolve_host_or_throw(self->family, self->type, host, &bind_addr, port);
+        }
+    } else
+    #endif
+    {
+        struct sockaddr_in *addr4 = (void *)&bind_addr;
+        addr4->sin_port = htons(port);
+        if (hostlen == 0) {
+            addr4->sin_addr.s_addr = IPADDR_ANY;
+        } else if (hostlen == strlen(broadcast) &&
+                   memcmp(host, broadcast, strlen(broadcast)) == 0) {
+            addr4->sin_addr.s_addr = IPADDR_BROADCAST;
+        } else {
+            socketpool_resolve_host_or_throw(self->family, self->type, host, &bind_addr, port);
+        }
     }
-    bind_addr.sin_addr.s_addr = ip;
-    bind_addr.sin_family = AF_INET;
-    bind_addr.sin_port = htons(port);
 
     int result = lwip_bind(self->num, (struct sockaddr *)&bind_addr, sizeof(bind_addr));
     if (result == 0) {
@@ -376,26 +417,8 @@ void common_hal_socketpool_socket_close(socketpool_socket_obj_t *self) {
 
 void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
-    const struct addrinfo hints = {
-        .ai_family = AF_INET,
-        .ai_socktype = SOCK_STREAM,
-    };
-    struct addrinfo *result_i;
-    int error = lwip_getaddrinfo(host, NULL, &hints, &result_i);
-    if (error != 0 || result_i == NULL) {
-        common_hal_socketpool_socketpool_raise_gaierror_noname();
-    }
-
-    // Set parameters
-    struct sockaddr_in dest_addr;
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wcast-align"
-    dest_addr.sin_addr.s_addr = ((struct sockaddr_in *)result_i->ai_addr)->sin_addr.s_addr;
-    #pragma GCC diagnostic pop
-    lwip_freeaddrinfo(result_i);
-
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = htons(port);
+    struct sockaddr_storage addr;
+    resolve_host_or_throw(self, host, &addr, port);
 
     // Replace above with function call -----
 
@@ -403,7 +426,7 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
     // All our sockets are non-blocking, so we check the timeout ourselves.
 
     int result = -1;
-    result = lwip_connect(self->num, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr_in));
+    result = lwip_connect(self->num, (struct sockaddr *)&addr, addr.s2_len);
 
     if (result == 0) {
         // Connected immediately.
@@ -483,9 +506,9 @@ bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t *self, int back
 }
 
 mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *self,
-    uint8_t *buf, uint32_t len, uint8_t *ip, uint32_t *port) {
+    uint8_t *buf, uint32_t len, mp_obj_t *source_out) {
 
-    struct sockaddr_in source_addr;
+    struct sockaddr_storage source_addr;
     socklen_t socklen = sizeof(source_addr);
 
     // LWIP Socket
@@ -507,16 +530,17 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *se
         }
     }
 
-    if (!timed_out) {
-        memcpy((void *)ip, (void *)&source_addr.sin_addr.s_addr, sizeof(source_addr.sin_addr.s_addr));
-        *port = htons(source_addr.sin_port);
-    } else {
+    if (timed_out) {
         mp_raise_OSError(ETIMEDOUT);
     }
 
     if (received < 0) {
         mp_raise_BrokenPipeError();
         return 0;
+    }
+
+    if (source_out) {
+        *source_out = sockaddr_to_tuple(&source_addr);
     }
 
     return received;
@@ -605,29 +629,10 @@ mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t *self, const
 mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port, const uint8_t *buf, uint32_t len) {
 
-    // Set parameters
-    const struct addrinfo hints = {
-        .ai_family = AF_INET,
-        .ai_socktype = SOCK_STREAM,
-    };
-    struct addrinfo *result_i;
-    int error = lwip_getaddrinfo(host, NULL, &hints, &result_i);
-    if (error != 0 || result_i == NULL) {
-        common_hal_socketpool_socketpool_raise_gaierror_noname();
-    }
+    struct sockaddr_storage addr;
+    resolve_host_or_throw(self, host, &addr, port);
 
-    // Set parameters
-    struct sockaddr_in dest_addr;
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wcast-align"
-    dest_addr.sin_addr.s_addr = ((struct sockaddr_in *)result_i->ai_addr)->sin_addr.s_addr;
-    #pragma GCC diagnostic pop
-    lwip_freeaddrinfo(result_i);
-
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = htons(port);
-
-    int bytes_sent = lwip_sendto(self->num, buf, len, 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+    int bytes_sent = lwip_sendto(self->num, buf, len, 0, (struct sockaddr *)&addr, addr.s2_len);
     if (bytes_sent < 0) {
         mp_raise_BrokenPipeError();
         return 0;

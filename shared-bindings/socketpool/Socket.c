@@ -57,14 +57,10 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket___exit___obj, 4, 4,
 //|         Returns a tuple of (new_socket, remote_address)"""
 static mp_obj_t _socketpool_socket_accept(mp_obj_t self_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint8_t ip[4];
-    uint32_t port;
-
-    socketpool_socket_obj_t *sock = common_hal_socketpool_socket_accept(self, ip, &port);
 
     mp_obj_t tuple_contents[2];
-    tuple_contents[0] = MP_OBJ_FROM_PTR(sock);
-    tuple_contents[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
+    tuple_contents[0] = MP_OBJ_FROM_PTR(common_hal_socketpool_socket_accept(self, &tuple_contents[1]));
+
     return mp_obj_new_tuple(2, tuple_contents);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(socketpool_socket_accept_obj, _socketpool_socket_accept);
@@ -158,13 +154,9 @@ static mp_obj_t socketpool_socket_recvfrom_into(mp_obj_t self_in, mp_obj_t data_
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_WRITE);
 
-    byte ip[4];
-    uint32_t port;
-    mp_int_t ret = common_hal_socketpool_socket_recvfrom_into(self,
-        (byte *)bufinfo.buf, bufinfo.len, ip, &port);
     mp_obj_t tuple_contents[2];
-    tuple_contents[0] = mp_obj_new_int_from_uint(ret);
-    tuple_contents[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
+    tuple_contents[0] = mp_obj_new_int_from_uint(common_hal_socketpool_socket_recvfrom_into(self,
+        (byte *)bufinfo.buf, bufinfo.len, &tuple_contents[1]));
     return mp_obj_new_tuple(2, tuple_contents);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_recvfrom_into_obj, socketpool_socket_recvfrom_into);
