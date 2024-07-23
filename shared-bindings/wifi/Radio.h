@@ -86,7 +86,7 @@ extern void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self);
 extern bool common_hal_wifi_radio_get_ap_active(wifi_radio_obj_t *self);
 extern mp_obj_t common_hal_wifi_radio_get_stations_ap(wifi_radio_obj_t *self);
 
-extern void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self);
+extern void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self, bool ipv4, bool ipv6);
 extern void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_start_dhcp_server(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_stop_dhcp_server(wifi_radio_obj_t *self);
@@ -104,6 +104,12 @@ extern mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self)
 uint32_t wifi_radio_get_ipv4_address(wifi_radio_obj_t *self);
 extern mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self);
 extern mp_obj_t common_hal_wifi_radio_get_ipv4_address_ap(wifi_radio_obj_t *self);
+
+mp_obj_t common_hal_wifi_radio_get_addresses(wifi_radio_obj_t *self);
+mp_obj_t common_hal_wifi_radio_get_addresses_ap(wifi_radio_obj_t *self);
+
+extern mp_obj_t common_hal_wifi_radio_get_dns(wifi_radio_obj_t *self);
+extern void common_hal_wifi_radio_set_dns(wifi_radio_obj_t *self, mp_obj_t dns_addr);
 
 extern void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway, mp_obj_t ipv4_dns_addr);
 extern void common_hal_wifi_radio_set_ipv4_address_ap(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway);

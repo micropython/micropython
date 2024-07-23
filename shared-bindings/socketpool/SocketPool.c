@@ -142,28 +142,14 @@ static mp_obj_t socketpool_socketpool_getaddrinfo(size_t n_args, const mp_obj_t 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const char *host = mp_obj_str_get_str(args[ARG_host].u_obj);
-    mp_int_t port = args[ARG_port].u_int;
-    mp_obj_t ip_str = mp_const_none;
-
-    if (strlen(host) > 0 && ipaddress_parse_ipv4address(host, strlen(host), NULL)) {
-        ip_str = args[ARG_host].u_obj;
-    }
-
-    if (ip_str == mp_const_none) {
-        ip_str = common_hal_socketpool_socketpool_gethostbyname_raise(self, host);
-    }
-
-    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));
-    tuple->items[0] = MP_OBJ_NEW_SMALL_INT(SOCKETPOOL_AF_INET);
-    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(SOCKETPOOL_SOCK_STREAM);
-    tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);
-    tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-    mp_obj_tuple_t *sockaddr = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
-    sockaddr->items[0] = ip_str;
-    sockaddr->items[1] = MP_OBJ_NEW_SMALL_INT(port);
-    tuple->items[4] = MP_OBJ_FROM_PTR(sockaddr);
-    return mp_obj_new_list(1, (mp_obj_t *)&tuple);
+    return common_hal_socketpool_getaddrinfo_raise(
+        self,
+        mp_obj_str_get_str(args[ARG_host].u_obj),
+        args[ARG_port].u_int,
+        args[ARG_family].u_int,
+        args[ARG_type].u_int,
+        args[ARG_proto].u_int,
+        args[ARG_flags].u_int);
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_getaddrinfo_obj, 1, socketpool_socketpool_getaddrinfo);
 
@@ -206,15 +192,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, socketpool_socketpool_make_new,
     locals_dict, &socketpool_socketpool_locals_dict
     );
-
-MP_WEAK
-mp_obj_t common_hal_socketpool_socketpool_gethostbyname_raise(socketpool_socketpool_obj_t *self, const char *host) {
-    mp_obj_t ip_str = common_hal_socketpool_socketpool_gethostbyname(self, host);
-    if (ip_str == mp_const_none) {
-        common_hal_socketpool_socketpool_raise_gaierror_noname();
-    }
-    return ip_str;
-}
 
 MP_WEAK NORETURN
 void common_hal_socketpool_socketpool_raise_gaierror_noname(void) {
