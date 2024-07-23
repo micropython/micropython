@@ -29,16 +29,33 @@
 #include "irq.h"
 #include "led.h"
 #include "storage.h"
+#include "drivers/memory/external_flash_device.h"
 
 #if MICROPY_HW_ENABLE_STORAGE
 
 int32_t spi_bdev_ioctl(spi_bdev_t *bdev, uint32_t op, uint32_t arg) {
     switch (op) {
         case BDEV_IOCTL_INIT:
+            #ifdef MICROPY_HW_BDEV_SPIFLASH_CONFIG
+            if (!arg) {
+                arg = (uint32_t)(MICROPY_HW_BDEV_SPIFLASH_CONFIG);
+            }
+            #endif
             bdev->spiflash.config = (const mp_spiflash_config_t *)arg;
-            mp_spiflash_init(&bdev->spiflash);
+            int ret = mp_spiflash_init(&bdev->spiflash);
             bdev->flash_tick_counter_last_write = 0;
-            return 0;
+            return ret;
+
+        case BDEV_IOCTL_NUM_BLOCKS:
+            #if MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES
+            return MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES / FLASH_BLOCK_SIZE;
+            #else
+            if (bdev->spiflash.device != NULL) {
+                external_flash_device *flash = (external_flash_device *)bdev->spiflash.device;
+                return flash->total_size / FLASH_BLOCK_SIZE;
+            }
+            return -1;
+            #endif
 
         case BDEV_IOCTL_IRQ_HANDLER: {
             int ret = 0;
