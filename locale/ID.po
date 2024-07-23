@@ -1571,7 +1571,6 @@ msgstr ""
 msgid "Only IPv4 addresses supported"
 msgstr "Hanya alamat IPv4 yang didukung"
 
-#: ports/espressif/common-hal/socketpool/Socket.c
 #: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr "Hanysa socket IPv4 yang didukung"
@@ -2244,6 +2243,10 @@ msgstr "Format tidak didukung"
 
 #: shared-bindings/hashlib/__init__.c
 msgid "Unsupported hash algorithm"
+msgstr ""
+
+#: ports/espressif/common-hal/socketpool/Socket.c
+msgid "Unsupported socket type"
 msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
