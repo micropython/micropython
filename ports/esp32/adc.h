@@ -39,11 +39,7 @@ typedef struct _machine_adc_block_obj_t {
     adc_unit_t unit_id;
     mp_int_t bits;
     adc_bits_width_t width;
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 1)
-    adc_cali_handle_t *handle[ADC_ATTEN_MAX];
-    #else
-    esp_adc_cal_characteristics_t *characteristics[ADC_ATTEN_MAX];
-    #endif
+    adc_cali_handle_t handle[ADC_ATTEN_MAX];
 } machine_adc_block_obj_t;
 
 typedef struct _machine_adc_obj_t {
