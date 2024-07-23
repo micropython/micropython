@@ -693,19 +693,19 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_stations_ap_obj, wifi_radio_get_station
 MP_PROPERTY_GETTER(wifi_radio_stations_ap_obj,
     (mp_obj_t)&wifi_radio_get_stations_ap_obj);
 
-//|     def start_dhcp(self, *, ipv4: bool = supports_ipv4, ipv6: bool = supports_ipv6) -> None:
+//|     def start_dhcp(self, *, ipv4: bool = True, ipv6: bool = False) -> None:
 //|         """Starts the station DHCP client.
 //|
-//|         By default, calling this function starts all supported types of DHCP.
-//|         If the ``ipv4`` and ``ipv6`` arguments are specified as `False` then
-//|         the corresponding DHCP client is stopped if it was active.
+//|         By default, calling this function starts DHCP for IPv4 networks but not
+//|         IPv6 networks. When the the ``ipv4`` and ``ipv6`` arguments are `False`
+//|         then the corresponding DHCP client is stopped if it was active.
 //|         """
 //|         ...
 static mp_obj_t wifi_radio_start_dhcp_client(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ipv4, ARG_ipv6 };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ipv4, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = MP_ROM_TRUE } },
-        { MP_QSTR_ipv6, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = CIRCUITPY_SOCKETPOOL_IPV6 ? MP_ROM_TRUE : MP_ROM_FALSE } },
+        { MP_QSTR_ipv6, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = MP_ROM_FALSE } },
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);

@@ -551,6 +551,10 @@ void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self, bool ipv4, 
     } else {
         dhcp6_disable(esp_netif_get_netif_impl(self->netif));
     }
+    #else
+    if (ipv6) {
+        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_ipv6);
+    }
     #endif
 }
 
