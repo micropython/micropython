@@ -96,12 +96,23 @@ static soft_timer_entry_t mp_network_soft_timer;
 #define MICROPY_HW_WIZNET_SPI_BAUDRATE  (2000000)
 #endif
 
+#ifndef MICROPY_HW_WIZNET_LISTEN_BACKLOG
+#define MICROPY_HW_WIZNET_LISTEN_BACKLOG 2
+#endif
+
 #ifndef WIZCHIP_SREG_ADDR
 #if (_WIZCHIP_ == 5500)
 #define WIZCHIP_SREG_ADDR(sn, addr)    (_W5500_IO_BASE_ + (addr << 8) + (WIZCHIP_SREG_BLOCK(sn) << 3))
 #else
 #define WIZCHIP_SREG_ADDR(sn, addr)    (_WIZCHIP_IO_BASE_ + WIZCHIP_SREG_BLOCK(sn) + (addr))
 #endif
+#endif
+
+#if WIZNET5K_PROVIDED_STACK
+typedef struct _wiznet5k_listen_wait_obj_t {
+    mod_network_socket_obj_t *socket;
+    uint16_t port;
+} wiznet5k_listen_wait_obj_t;
 #endif
 
 typedef struct _wiznet5k_obj_t {
@@ -122,6 +133,7 @@ typedef struct _wiznet5k_obj_t {
     wiz_NetInfo netinfo;
     uint8_t socket_used;
     mod_network_socket_obj_t *sockets[_WIZCHIP_SOCK_NUM_];
+    wiznet5k_listen_wait_obj_t listen_wait[MICROPY_HW_WIZNET_LISTEN_BACKLOG];
     bool active;
     uint8_t *dhcp_buf;
     uint8_t dhcp_state;
@@ -439,6 +451,7 @@ static void wiznet5k_dhcp_poll(void) {
     }
 }
 
+static bool wiznet5k_socket_try_relisten(mod_network_socket_obj_t *socket, uint16_t port, int *errno);
 void wiznet5k_try_poll(void) {
     // If using DHCP for the interface, periodically renew/update the address
     wiznet5k_dhcp_poll();
@@ -456,10 +469,23 @@ void wiznet5k_try_poll(void) {
         }
     }
 
-    // There's really nothing to do here. The interrupt that triggered this will
-    // release a WFE() wait and will trigger a poll() loop which will
-    // wiznet5k_socket_ioctl will detect the readable or writeable state of the
-    // respective socket(s).
+    // If any sockets were listening and then accepted a connection, the
+    // listener socket is put in the listen_wait list. Here we should try to
+    // open the listener socket again.
+    for (mp_uint_t sn = 0; sn < MICROPY_HW_WIZNET_LISTEN_BACKLOG; sn++) {
+        wiznet5k_listen_wait_obj_t *waiter = wiznet5k_obj.listen_wait + sn;
+        if (waiter->socket != NULL) {
+            int _errno2;
+            if (wiznet5k_socket_try_relisten(waiter->socket, waiter->port, &_errno2)) {
+                // Socket is now listening again
+                waiter->socket = NULL;
+            }
+        }
+    }
+
+    // The interrupt that triggered this will release a WFE() wait and will
+    // trigger a poll() loop which will wiznet5k_socket_ioctl will detect the
+    // readable or writeable state of the respective socket(s).
 }
 
 static void wiz_dhcp_assign(void) {
@@ -634,6 +660,15 @@ static void wiznet5k_socket_close(mod_network_socket_obj_t *socket) {
         wiznet5k_obj.sockets[sn] = NULL;
     }
 
+    for (sn = 0; sn < MICROPY_HW_WIZNET_LISTEN_BACKLOG; sn++) {
+        wiznet5k_listen_wait_obj_t *waiter = wiznet5k_obj.listen_wait + sn;
+        if (waiter->socket == socket) {
+            // Cancel the wait for an open socket
+            waiter->socket = NULL;
+            break;
+        }
+    }
+
     socket->fileno = -1;
     if (socket->_private != NULL) {
         m_del(wiznet5k_socket_extra_t, socket->_private, 1);
@@ -678,7 +713,47 @@ static int wiznet5k_socket_listen(mod_network_socket_obj_t *socket, mp_int_t bac
     return 0;
 }
 
+static bool wiznet5k_socket_try_relisten(mod_network_socket_obj_t *socket, uint16_t port, int *_errno) {
+    socket->fileno = -1;
+    socket->bound = false;
+
+    if (wiznet5k_socket_socket(socket, _errno) == 0
+        && wiznet5k_socket_bind(socket, NULL, port, _errno) == 0
+        && wiznet5k_socket_listen(socket, 0, _errno) == 0) {
+        return true;
+    }
+
+    // TODO: Inspect for terminal ERRNO and return true to indicate listen
+    // should not be retried.
+    return false;
+}
+
+static void wiznet5k_socket_relisten(mod_network_socket_obj_t *socket, uint16_t port) {
+    int _errno2;
+
+    if (!wiznet5k_socket_try_relisten(socket, port, &_errno2)) {
+        // Unable to re-listen now (probably no more available sockets).
+        // Instead, add to a wait list and re-listen when a socket
+        // becomes available.
+        for (mp_uint_t sn = 0; sn < MICROPY_HW_WIZNET_LISTEN_BACKLOG; sn++) {
+            wiznet5k_listen_wait_obj_t *waiter = wiznet5k_obj.listen_wait + sn;
+            if (waiter->socket == NULL) {
+                waiter->port = port;
+                waiter->socket = socket;
+                break;
+            }
+        }
+    }
+}
+
 static int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_socket_obj_t *socket2, byte *ip, mp_uint_t *port, int *_errno) {
+    uint8_t sn = (uint8_t)socket->fileno;
+    if (sn >= _WIZCHIP_SOCK_NUM_) {
+        *_errno = MP_EINVAL;
+        return -1;
+    }
+
+    mp_uint_t start = mp_hal_ticks_ms();
     for (;;) {
         int sr = getSn_SR((uint8_t)socket->fileno);
         if (sr == SOCK_ESTABLISHED) {
@@ -694,28 +769,28 @@ static int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_
 
             // WIZnet turns the listening socket into the client socket, so we
             // need to re-bind and re-listen on another socket for the server.
-            // TODO handle errors, especially no-more-sockets error
-            socket->domain = MOD_NETWORK_AF_INET;
-            socket->fileno = -1;
-            socket->bound = false;
-            uint16_t lport = getSn_PORT(socket2->fileno);
-            int _errno2;
-            if (wiznet5k_socket_socket(socket, &_errno2) != 0) {
-                // printf("(bad resocket %d)\n", _errno2);
-            } else if (wiznet5k_socket_bind(socket, NULL, lport, &_errno2) != 0) {
-                // printf("(bad rebind %d)\n", _errno2);
-            } else if (wiznet5k_socket_listen(socket, 0, &_errno2) != 0) {
-                // printf("(bad relisten %d)\n", _errno2);
-            }
+            wiznet5k_socket_relisten(socket, getSn_PORT(socket2->fileno));
 
             return 0;
         }
         if (sr == SOCK_CLOSED || sr == SOCK_CLOSE_WAIT) {
+            // Somehow the accepted socket was closed. Attempt to start listening again
+            uint16_t port = getSn_PORT(socket->fileno);
             wiznet5k_socket_close(socket);
+            wiznet5k_socket_relisten(socket, port);
             *_errno = MP_ENOTCONN; // ??
             return -1;
         }
-        mp_hal_delay_ms(1);
+        if (socket->timeout == 0) {
+            *_errno = MP_EAGAIN;
+            return -1;
+        } else if (socket->timeout > 0) {
+            if ((uint32_t)(mp_hal_ticks_ms() - start) > (uint32_t)socket->timeout) {
+                *_errno = MP_ETIMEDOUT;
+                return -1;
+            }
+        }
+        mp_event_wait_ms(1);
     }
 }
 
@@ -980,6 +1055,10 @@ static int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t req
             if (wiznet5k_obj.use_interrupt) {
                 setSn_IR(sn, (Sn_IR_RECV | Sn_IR_CON | Sn_IR_DISCON));
             }
+        } else if (socket->state == MOD_NETWORK_SS_LISTENING) {
+            // Listening socket is in dormant state and not currently listening,
+            // so also not currently readable or writeable.
+            ret = 0;
         } else {
             ret |= MP_STREAM_POLL_NVAL;
         }
@@ -1108,6 +1187,7 @@ static mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     wiznet5k_obj.active = false;
     wiznet5k_obj.socket_used = 0;
     memset(wiznet5k_obj.sockets, 0, sizeof(wiznet5k_obj.sockets));
+    memset(wiznet5k_obj.listen_wait, 0, sizeof(wiznet5k_obj.listen_wait));
     #endif
 
     // Return wiznet5k object
