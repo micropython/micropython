@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-06-28 22:09+0000\n"
+"PO-Revision-Date: 2024-07-24 22:09+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
@@ -1306,7 +1306,7 @@ msgstr "Layer must be a Group or TileGrid subclass"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "Length of %q must be an even multiple of channel_count * type_size"
-msgstr ""
+msgstr "Length of %q must be an even multiple of channel_count * type_size"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
@@ -2255,7 +2255,7 @@ msgstr "Unsupported hash algorithm"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Unsupported socket type"
-msgstr ""
+msgstr "Unsupported socket type"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/espressif/common-hal/dualbank/__init__.c
