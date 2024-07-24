@@ -95,6 +95,21 @@ static mp_obj_t object___delattr__(mp_obj_t self_in, mp_obj_t attr) {
 static MP_DEFINE_CONST_FUN_OBJ_2(object___delattr___obj, object___delattr__);
 #endif
 
+#if MICROPY_PY_METACLASSES
+static mp_obj_t object___init_subclass__(mp_obj_t cls_in) {
+    // call over to the next base, essentially `super(object, cls).__init_subclass__()`
+    // (but if this is the last base, we're done)
+    // mp_obj_t init_subclass_method[2] = {&mp_type_object, cls_in};
+    // mp_load_super_method_maybe(MP_QSTR___init_subclass__, init_subclass_method);
+    // if (init_subclass_method[1] != MP_OBJ_NULL) {
+    //     mp_call_method_n_kw(0, 0, init_subclass_method);
+    // }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(object___init_subclass___fun_obj, object___init_subclass__);
+static MP_DEFINE_CONST_CLASSMETHOD_OBJ(object___init_subclass___obj, MP_ROM_PTR(&object___init_subclass___fun_obj));
+#endif
+
 static const mp_rom_map_elem_t object_locals_dict_table[] = {
     #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&object___init___obj) },
@@ -105,6 +120,9 @@ static const mp_rom_map_elem_t object_locals_dict_table[] = {
     #if MICROPY_PY_DELATTR_SETATTR
     { MP_ROM_QSTR(MP_QSTR___setattr__), MP_ROM_PTR(&object___setattr___obj) },
     { MP_ROM_QSTR(MP_QSTR___delattr__), MP_ROM_PTR(&object___delattr___obj) },
+    #endif
+    #if MICROPY_PY_METACLASSES
+    { MP_ROM_QSTR(MP_QSTR___init_subclass__), MP_ROM_PTR(&object___init_subclass___obj) },
     #endif
 };
 
