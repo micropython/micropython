@@ -100,11 +100,22 @@ static void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 }
 #endif
 
-#if defined(MBEDTLS_PEM_PARSE_C)
-static int mbedtls_is_pem(const byte *data, size_t len) {
-    return (len >= 10) && (strstr((const char *)data, "-----BEGIN") != NULL);
+// Given a string-like object holding PEM or DER formatted ASN.1 data, return a
+// pointer to its buffer and the correct length for mbedTLS APIs.
+//
+// (mbedTLS >= 3.5 rejects DER formatted data with trailing bytes within keylen,
+// but PEM must include a terminating NUL byte in the keylen...)
+static const unsigned char *asn1_get_data(mp_obj_t obj, size_t *out_len) {
+    size_t len;
+    const char *str = mp_obj_str_get_data(obj, &len);
+    #if defined(MBEDTLS_PEM_PARSE_C)
+    if (strstr(str, "-----BEGIN ") != NULL) {
+        ++len;
+    }
+    #endif
+    *out_len = len;
+    return (const unsigned char *)str;
 }
-#endif
 
 static NORETURN void mbedtls_raise_error(int err) {
     // Handle special cases.
@@ -352,15 +363,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_set_ciphers_obj, ssl_context_set_ci
 
 static void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, mp_obj_t cert_obj) {
     size_t key_len;
-    const byte *key = (const byte *)mp_obj_str_get_data(key_obj, &key_len);
-
-    #if defined(MBEDTLS_PEM_PARSE_C)
-    // len should include terminating null if the data is PEM encoded
-    if (mbedtls_is_pem(key, key_len)) {
-        key_len += 1;
-    }
-    #endif
-
+    const unsigned char *key = asn1_get_data(key_obj, &key_len);
     int ret;
     #if MBEDTLS_VERSION_NUMBER >= 0x03000000
     ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0, mbedtls_ctr_drbg_random, &self->ctr_drbg);
@@ -372,15 +375,7 @@ static void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, m
     }
 
     size_t cert_len;
-    const byte *cert = (const byte *)mp_obj_str_get_data(cert_obj, &cert_len);
-
-    #if defined(MBEDTLS_PEM_PARSE_C)
-    // len should include terminating null if the data is PEM encoded
-    if (mbedtls_is_pem(cert, cert_len)) {
-        cert_len += 1;
-    }
-    #endif
-
+    const unsigned char *cert = asn1_get_data(cert_obj, &cert_len);
     ret = mbedtls_x509_crt_parse(&self->cert, cert, cert_len);
     if (ret != 0) {
         mbedtls_raise_error(MBEDTLS_ERR_X509_BAD_INPUT_DATA); // use general error for all cert errors
@@ -402,15 +397,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(ssl_context_load_cert_chain_obj, ssl_context_lo
 
 static void ssl_context_load_cadata(mp_obj_ssl_context_t *self, mp_obj_t cadata_obj) {
     size_t cacert_len;
-    const byte *cacert = (const byte *)mp_obj_str_get_data(cadata_obj, &cacert_len);
-
-    #if defined(MBEDTLS_PEM_PARSE_C)
-    // len should include terminating null if the data is PEM encoded
-    if (mbedtls_is_pem(cacert, cacert_len)) {
-        cacert_len += 1;
-    }
-    #endif
-
+    const unsigned char *cacert = asn1_get_data(cadata_obj, &cacert_len);
     int ret = mbedtls_x509_crt_parse(&self->cacert, cacert, cacert_len);
     if (ret != 0) {
         mbedtls_raise_error(MBEDTLS_ERR_X509_BAD_INPUT_DATA); // use general error for all cert errors
