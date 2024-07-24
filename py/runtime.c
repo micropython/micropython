@@ -1153,6 +1153,10 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
             // base type (which is what is passed in the `type` argument to this function).
             if (self != MP_OBJ_NULL) {
                 type = mp_obj_get_type(self);
+                if (type == &mp_type_type) {
+                    // `self` is already a type, so use `self` directly.
+                    type = MP_OBJ_TO_PTR(self);
+                }
             }
             dest[0] = ((mp_obj_static_class_method_t *)MP_OBJ_TO_PTR(member))->fun;
             dest[1] = MP_OBJ_FROM_PTR(type);
