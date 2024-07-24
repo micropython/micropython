@@ -39,6 +39,11 @@
 #include "extmod/modplatform.h"
 #include "genhdr/mpversion.h"
 
+// CIRCUITPY-CHANGE
+#if CIRCUITPY_WARNINGS
+#include "shared-module/warnings/__init__.h"
+#endif
+
 #if MICROPY_PY_SYS_SETTRACE
 #include "py/objmodule.h"
 #include "py/profile.h"
@@ -134,6 +139,11 @@ STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
 
 STATIC mp_obj_t mp_sys_print_exception(size_t n_args, const mp_obj_t *args) {
+    // CIRCUITPY-CHANGE
+    #if CIRCUITPY_WARNINGS
+    warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_print_exception, MP_QSTR_sys, MP_QSTR_traceback);
+    #endif
+
     #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
     void *stream_obj = &mp_sys_stdout_obj;
     if (n_args > 1) {
