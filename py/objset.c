@@ -177,7 +177,9 @@ static mp_obj_t set_copy(mp_obj_t self_in) {
     mp_obj_set_t *other = mp_obj_malloc(mp_obj_set_t, self->base.type);
     mp_set_init(&other->set, self->set.alloc);
     other->set.used = self->set.used;
-    memcpy(other->set.table, self->set.table, self->set.alloc * sizeof(mp_obj_t));
+    if (self->set.alloc) {
+        memcpy(other->set.table, self->set.table, self->set.alloc * sizeof(mp_obj_t));
+    }
     return MP_OBJ_FROM_PTR(other);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(set_copy_obj, set_copy);

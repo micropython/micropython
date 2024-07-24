@@ -103,7 +103,7 @@ bool mp_seq_cmp_bytes(mp_uint_t op, const byte *data1, size_t len1, const byte *
         }
     }
     size_t min_len = len1 < len2 ? len1 : len2;
-    int res = memcmp(data1, data2, min_len);
+    int res = min_len ? memcmp(data1, data2, min_len) : 0;
     if (op == MP_BINARY_OP_EQUAL) {
         // If we are checking for equality, here's the answer
         return res == 0;

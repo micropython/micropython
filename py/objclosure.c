@@ -38,25 +38,36 @@ typedef struct _mp_obj_closure_t {
 
 static mp_obj_t closure_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_closure_t *self = MP_OBJ_TO_PTR(self_in);
+    bool args_heap = false;
+    bool closed_only = false;
+    mp_obj_t args_temp[5];
+    mp_obj_t *args2;
 
     // need to concatenate closed-over-vars and args
-
     size_t n_total = self->n_closed + n_args + 2 * n_kw;
-    if (n_total <= 5) {
-        // use stack to allocate temporary args array
-        mp_obj_t args2[5];
-        memcpy(args2, self->closed, self->n_closed * sizeof(mp_obj_t));
-        memcpy(args2 + self->n_closed, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
-        return mp_call_function_n_kw(self->fun, self->n_closed + n_args, n_kw, args2);
+
+    if (n_args == 0 && n_kw == 0) {
+        // Don't need to concatenate if closure takes no arguments
+        args2 = self->closed;
+        closed_only = true;
+    } else if (n_total < MP_ARRAY_SIZE(args_temp)) {
+        // Allocate temporary array on stack to save size
+        args2 = args_temp;
     } else {
-        // use heap to allocate temporary args array
-        mp_obj_t *args2 = m_new(mp_obj_t, n_total);
+        args2 = m_new(mp_obj_t, n_total);
+        args_heap = true;
+    }
+
+    if (!closed_only) {
         memcpy(args2, self->closed, self->n_closed * sizeof(mp_obj_t));
         memcpy(args2 + self->n_closed, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
-        mp_obj_t res = mp_call_function_n_kw(self->fun, self->n_closed + n_args, n_kw, args2);
-        m_del(mp_obj_t, args2, n_total);
-        return res;
     }
+
+    mp_obj_t res = mp_call_function_n_kw(self->fun, self->n_closed + n_args, n_kw, args2);
+    if (args_heap) {
+        m_del(mp_obj_t, args2, n_total);
+    }
+    return res;
 }
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED

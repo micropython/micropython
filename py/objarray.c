@@ -128,7 +128,9 @@ static mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
         size_t sz = mp_binary_get_size('@', typecode, NULL);
         size_t len = bufinfo.len / sz;
         mp_obj_array_t *o = array_new(typecode, len);
-        memcpy(o->items, bufinfo.buf, len * sz);
+        if (len) {
+            memcpy(o->items, bufinfo.buf, len * sz);
+        }
         return MP_OBJ_FROM_PTR(o);
     }
 
@@ -189,7 +191,9 @@ static mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
         // 1 arg, an integer: construct a blank bytearray of that length
         mp_uint_t len = mp_obj_get_int(args[0]);
         mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
-        memset(o->items, 0, len);
+        if (len) {
+            memset(o->items, 0, len);
+        }
         return MP_OBJ_FROM_PTR(o);
     } else {
         // 1 arg: construct the bytearray from that
@@ -414,6 +418,10 @@ static mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     // allow to extend by anything that has the buffer protocol (extension to CPython)
     mp_buffer_info_t arg_bufinfo;
     mp_get_buffer_raise(arg_in, &arg_bufinfo, MP_BUFFER_READ);
+
+    if (!arg_bufinfo.len) {
+        return mp_const_none; // Empty sequence, nothing to extend
+    }
 
     size_t sz = mp_binary_get_size('@', self->typecode, NULL);
 
@@ -670,7 +678,9 @@ size_t mp_obj_array_len(mp_obj_t self_in) {
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 mp_obj_t mp_obj_new_bytearray(size_t n, const void *items) {
     mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, n);
-    memcpy(o->items, items, n);
+    if (n) {
+        memcpy(o->items, items, n);
+    }
     return MP_OBJ_FROM_PTR(o);
 }
 
