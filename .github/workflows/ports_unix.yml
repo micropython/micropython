@@ -235,3 +235,17 @@ jobs:
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
+
+  qemu_riscv64:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install packages
+      run: source tools/ci.sh && ci_unix_qemu_riscv64_setup
+    - name: Build
+      run: source tools/ci.sh && ci_unix_qemu_riscv64_build
+    - name: Run main test suite
+      run: source tools/ci.sh && ci_unix_qemu_riscv64_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures

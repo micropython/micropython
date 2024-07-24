@@ -427,6 +427,11 @@ CI_UNIX_OPTS_QEMU_ARM=(
     MICROPY_STANDALONE=1
 )
 
+CI_UNIX_OPTS_QEMU_RISCV64=(
+    CROSS_COMPILE=riscv64-linux-gnu-
+    VARIANT=coverage
+)
+
 function ci_unix_build_helper {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix "$@" submodules
@@ -690,6 +695,28 @@ function ci_unix_qemu_arm_run_tests {
     export QEMU_LD_PREFIX=/usr/arm-linux-gnueabi
     file ./ports/unix/build-coverage/micropython
     (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.*\.py')
+}
+
+function ci_unix_qemu_riscv64_setup {
+    . /etc/os-release
+    for repository in "${VERSION_CODENAME}" "${VERSION_CODENAME}-updates" "${VERSION_CODENAME}-security"
+    do
+        sudo add-apt-repository -y -n "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports ${repository} main"
+    done
+    sudo apt-get update
+    sudo dpkg --add-architecture riscv64
+    sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libffi-dev:riscv64
+    sudo apt-get install qemu-user
+    qemu-riscv64 --version
+}
+
+function ci_unix_qemu_riscv64_build {
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_RISCV64[@]}"
+}
+
+function ci_unix_qemu_riscv64_run_tests {
+    file ./ports/unix/build-coverage/micropython
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py)
 }
 
 ########################################################################################
