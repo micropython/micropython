@@ -329,6 +329,17 @@ static mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
 void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] != MP_OBJ_NULL) {
         // not load attribute
+        #if MICROPY_ENABLE_DOC_STRING
+        if (attr == MP_QSTR___doc__) {
+            mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
+            if (dest[1] == MP_OBJ_NULL) {
+                self->doc_string = mp_const_none;
+            } else {
+                self->doc_string = dest[1];
+            }
+            dest[0] = MP_OBJ_NULL; // success with store/delete
+        }
+        #endif
         return;
     }
     if (attr == MP_QSTR___name__) {
@@ -338,6 +349,12 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
         dest[0] = MP_OBJ_FROM_PTR(self->context->module.globals);
     }
+    #if MICROPY_ENABLE_DOC_STRING
+    if (attr == MP_QSTR___doc__) {
+        mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
+        dest[0] = self->doc_string;
+    }
+    #endif
 }
 #endif
 
@@ -382,6 +399,9 @@ mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_
     o->bytecode = code;
     o->context = context;
     o->child_table = child_table;
+    #if MICROPY_ENABLE_DOC_STRING
+    o->doc_string = mp_const_none;
+    #endif
     if (def_pos_args != NULL) {
         memcpy(o->extra_args, def_pos_args->items, n_def_args * sizeof(mp_obj_t));
     }
