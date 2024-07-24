@@ -1612,7 +1612,6 @@ msgstr "Только 8 или 16 бит моно с поддержкой %d."
 msgid "Only IPv4 addresses supported"
 msgstr "Поддерживаются только адреса IPv4"
 
-#: ports/espressif/common-hal/socketpool/Socket.c
 #: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr "Поддерживаются только сокеты IPv4"
@@ -2292,6 +2291,10 @@ msgstr "Неподдерживаемый формат"
 #: shared-bindings/hashlib/__init__.c
 msgid "Unsupported hash algorithm"
 msgstr "Неподдерживаемый алгоритм хеширования"
+
+#: ports/espressif/common-hal/socketpool/Socket.c
+msgid "Unsupported socket type"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/espressif/common-hal/dualbank/__init__.c

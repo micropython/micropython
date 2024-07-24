@@ -1625,7 +1625,6 @@ msgstr "%dx 오버샘플링이 포함된 8 또는 16 비트 모노만 지원됩�
 msgid "Only IPv4 addresses supported"
 msgstr "IPv4 주소만 지원됩니다"
 
-#: ports/espressif/common-hal/socketpool/Socket.c
 #: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr "IPv4 소켓만 지원됩니다"
@@ -2302,6 +2301,10 @@ msgstr ""
 
 #: shared-bindings/hashlib/__init__.c
 msgid "Unsupported hash algorithm"
+msgstr ""
+
+#: ports/espressif/common-hal/socketpool/Socket.c
+msgid "Unsupported socket type"
 msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
