@@ -1269,12 +1269,12 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     #if MICROPY_PY_METACLASSES
     // call __init_subclass__ from each base class
     for (size_t i = 0; i < bases_len; i++) {
-        size_t j = bases_len - i - 1; // reversed iteration order to match the usual recursion
         mp_obj_t init_subclass_method[2];
-        mp_load_method_maybe(bases_items[j], MP_QSTR___init_subclass__, init_subclass_method);
+        mp_load_method_maybe(bases_items[i], MP_QSTR___init_subclass__, init_subclass_method);
         if (init_subclass_method[1] != MP_OBJ_NULL) {
             init_subclass_method[1] = MP_OBJ_FROM_PTR(o);
             mp_call_method_n_kw(0, 0, init_subclass_method);
+            break;
         }
     }
     #endif
