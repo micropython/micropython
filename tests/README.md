@@ -195,6 +195,7 @@ $ openssl x509 -in rsa_cert.pem -out rsa_cert.der -outform DER
 
 To test elliptic curve key/cert pairs, create a key then a certificate using:
 ```
-$ openssl ecparam -name prime256v1 -genkey -noout -out ec_key.der -outform DER
-$ openssl req -new -x509 -key ec_key.der -out ec_cert.der -outform DER -days 365 -nodes -subj '/CN=micropython.local/O=MicroPython/C=AU'
+$ openssl ecparam -name prime256v1 -genkey -noout -out ec_key.pem
+$ openssl x509 -in ec_key.pem -out ec_key.der -outform DER
+$ openssl req -new -x509 -key ec_key.pem -out ec_cert.der -outform DER -days 365 -nodes -subj '/CN=micropython.local/O=MicroPython/C=AU'
 ```
