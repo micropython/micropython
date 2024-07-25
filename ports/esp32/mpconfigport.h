@@ -282,6 +282,10 @@ typedef long mp_off_t;
 #define MICROPY_PY_MACHINE_BOOTLOADER       (0)
 #endif
 
+// Workaround for upstream bug https://github.com/espressif/esp-idf/issues/14273
+// Can be removed if a fix is available in supported ESP-IDF versions.
+#define MICROPY_PY_MATH_GAMMA_FIX_NEGINF (1)
+
 #ifndef MICROPY_BOARD_STARTUP
 #define MICROPY_BOARD_STARTUP boardctrl_startup
 #endif
