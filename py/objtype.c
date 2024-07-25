@@ -1274,7 +1274,6 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         if (init_subclass_method[1] != MP_OBJ_NULL) {
             init_subclass_method[1] = MP_OBJ_FROM_PTR(o);
             mp_call_method_n_kw(0, 0, init_subclass_method);
-            break;
         }
     }
     #endif
