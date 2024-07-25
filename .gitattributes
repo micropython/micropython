@@ -10,12 +10,15 @@
 *.props text eol=crlf
 *.bat text eol=crlf
 
+# CIRCUITPY-CHANGE: add some more binary types.
 # These are binary so should never be modified by git.
 *.a binary
+*.ico binary
 *.png binary
 *.jpg binary
 *.dxf binary
 *.mpy binary
+*.der binary
 *.deb binary
 *.zip binary
 *.pdf binary
@@ -24,11 +27,4 @@
 # These should also not be modified by git.
 tests/basics/string_cr_conversion.py -text
 tests/basics/string_crlf_conversion.py -text
-ports/stm32/pybcdc.inf_template -text
-ports/stm32/usbhost/** -text
-ports/cc3200/hal/aes.c -text
-ports/cc3200/hal/aes.h -text
-ports/cc3200/hal/des.c -text
-ports/cc3200/hal/i2s.c -text
-ports/cc3200/hal/i2s.h -text
-ports/cc3200/version.h -text
+# CIRCUITPY-CHANGE: remove non-CircuitPython tests

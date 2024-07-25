@@ -116,3 +116,4 @@
 // Enable the "machine" module, mostly for machine.mem*.
 #define MICROPY_PY_MACHINE             (1)
 #define MICROPY_PY_MACHINE_PULSE       (1)
+#define MICROPY_PY_MACHINE_PIN_BASE    (1)

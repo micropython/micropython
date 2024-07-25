@@ -1,6 +1,7 @@
 """
 Generate header file with macros defining MicroPython version info.
 
+# CIRCUITPY-CHANGE: This script is thoroughly reword for use with CircuitPython.
 This script works with Python 3.7 and newer
 """
 

@@ -175,6 +175,7 @@ STATIC void *thread_entry(void *args_in) {
     // The GC starts off unlocked on this thread.
     ts.gc_lock_depth = 0;
 
+    ts.nlr_jump_callback_top = NULL;
     ts.mp_pending_exception = MP_OBJ_NULL;
 
     // set locals and globals from the calling context
@@ -235,7 +236,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     // check for keyword arguments
     if (n_args == 2) {
         // just position arguments
-        th_args = m_new_obj_var(thread_entry_args_t, mp_obj_t, pos_args_len);
+        th_args = m_new_obj_var(thread_entry_args_t, args, mp_obj_t, pos_args_len);
         th_args->n_kw = 0;
     } else {
         // positional and keyword arguments
@@ -243,7 +244,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
             mp_raise_TypeError(MP_ERROR_TEXT("expecting a dict for keyword args"));
         }
         mp_map_t *map = &((mp_obj_dict_t *)MP_OBJ_TO_PTR(args[2]))->map;
-        th_args = m_new_obj_var(thread_entry_args_t, mp_obj_t, pos_args_len + 2 * map->used);
+        th_args = m_new_obj_var(thread_entry_args_t, args, mp_obj_t, pos_args_len + 2 * map->used);
         th_args->n_kw = map->used;
         // copy across the keyword arguments
         for (size_t i = 0, n = pos_args_len; i < map->alloc; ++i) {

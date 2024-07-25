@@ -59,6 +59,7 @@ STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
     while (s < top) {
         unichar ch;
         ch = utf8_get_char(s);
+        // CIRCUITPY-CHANGE: print printable Unicode chars
         const byte *start = s;
         s = utf8_next_char(s);
         if (ch == quote_char) {

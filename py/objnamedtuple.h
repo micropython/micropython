@@ -26,12 +26,14 @@
 #ifndef MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H
 #define MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H
 
+// CIRCUITPY-CHANGE
 #include <string.h>
 
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
 
+// CIRCUITPY-CHANGE
 #if MICROPY_PY_COLLECTIONS
 
 typedef struct _mp_obj_namedtuple_type_t {
@@ -46,6 +48,7 @@ typedef struct _mp_obj_namedtuple_t {
     mp_obj_tuple_t tuple;
 } mp_obj_namedtuple_t;
 
+// CIRCUITPY-CHANGE: make public
 void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 size_t mp_obj_namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr name);
 void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);

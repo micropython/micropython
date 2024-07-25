@@ -70,11 +70,11 @@ def test(bdev, vfs_class):
     # Wait 1 second so mtime will increase by at least 1.
     time.sleep(1)
 
-    # Open test1 for reading and ensre mtime did not change.
+    # Open test1 for reading and ensure mtime did not change.
     vfs.open("test1", "rt").close()
     print(vfs.stat("test1") == stat1)
 
-    # Open test1 for writing and ensre mtime increased from the previous value.
+    # Open test1 for writing and ensure mtime increased from the previous value.
     vfs.open("test1", "wt").close()
     stat1_old = stat1
     stat1 = vfs.stat("test1")

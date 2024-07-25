@@ -64,7 +64,7 @@ try:
 except TypeError:
     print("TypeError")
 
-
+# CIRCUITPY-CHANGE
 # Same tests, but now with pop() and appendleft()
 
 d = deque((), 2)

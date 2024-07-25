@@ -305,13 +305,27 @@ STATIC bool gc_try_add_heap(size_t failed_alloc) {
     // - If the new heap won't fit in the available free space, add the largest
     //   new heap that will fit (this may lead to failed system heap allocations
     //   elsewhere, but some allocation will likely fail in this circumstance!)
-    size_t total_heap = 0;
+
+    // Compute total number of blocks in the current heap.
+    size_t total_blocks = 0;
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area);
          area != NULL;
          area = NEXT_AREA(area)) {
-        total_heap += area->gc_pool_end - area->gc_alloc_table_start;
-        total_heap += ALLOC_TABLE_GAP_BYTE + sizeof(mp_state_mem_area_t);
+        total_blocks += area->gc_alloc_table_byte_len * BLOCKS_PER_ATB;
     }
+
+    // Compute bytes needed to build a heap with total_blocks blocks.
+    size_t total_heap =
+        total_blocks / BLOCKS_PER_ATB
+        #if MICROPY_ENABLE_FINALISER
+        + total_blocks / BLOCKS_PER_FTB
+        #endif
+        + total_blocks * BYTES_PER_BLOCK
+        + ALLOC_TABLE_GAP_BYTE
+        + sizeof(mp_state_mem_area_t);
+
+    // Round up size to the nearest multiple of BYTES_PER_BLOCK.
+    total_heap = (total_heap + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1));
 
     DEBUG_printf("total_heap " UINT_FMT " bytes\n", total_heap);
 
@@ -851,6 +865,7 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
             }
             #endif
 
+            // CIRCUITPY-CHANGE
             #if CIRCUITPY_DEBUG
             gc_dump_alloc_table(&mp_plat_print);
             #endif
@@ -936,6 +951,7 @@ found:
     gc_dump_alloc_table(&mp_plat_print);
     #endif
 
+    // CIRCUITPY-CHANGE
     #if CIRCUITPY_MEMORYMONITOR
     memorymonitor_track_allocation(end_block - start_block + 1);
     #endif

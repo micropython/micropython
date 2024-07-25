@@ -30,6 +30,9 @@
 
 #if MICROPY_PY_COLLECTIONS_DEQUE
 
+// CIRCUITPY-CHANGE: Upcoming https://github.com/micropython/micropython/pull/10724
+// will incporate some or all of the changes here.
+
 typedef struct _mp_obj_deque_t {
     mp_obj_base_t base;
     size_t alloc;
@@ -40,6 +43,7 @@ typedef struct _mp_obj_deque_t {
     #define FLAG_CHECK_OVERFLOW 1
 } mp_obj_deque_t;
 
+// CIRCUITPY-CHANGE: add operations
 static mp_obj_t mp_obj_deque_append(mp_obj_t self_in, mp_obj_t arg);
 static mp_obj_t mp_obj_deque_extend(mp_obj_t self_in, mp_obj_t arg_in);
 #if MICROPY_PY_COLLECTIONS_DEQUE_ITER
@@ -64,6 +68,7 @@ static mp_obj_t deque_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
         o->flags = mp_obj_get_int(args[2]);
     }
 
+    // CIRCUITPY-CHANGE: allow non-empty initialization
     mp_obj_deque_extend(MP_OBJ_FROM_PTR(o), args[0]);
 
     return MP_OBJ_FROM_PTR(o);

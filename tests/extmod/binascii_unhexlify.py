@@ -12,6 +12,7 @@ for x in (
 ):
     print(binascii.unhexlify(x))
 
+# CIRCUITPY-CHANGE
 # Unicode strings can be decoded
 print(binascii.unhexlify("313233344142434461626364"))
 

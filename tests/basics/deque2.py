@@ -6,6 +6,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+# CIRCUITPY-CHANGE: more functionality
 # Initial sequence is supported
 d = deque([1, 2, 3], 10)
 

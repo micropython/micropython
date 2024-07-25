@@ -29,6 +29,7 @@
 
 #include "py/runtime.h"
 
+// CIRCUITPY-CHANGE: PLACE_IN_ITCM
 void PLACE_IN_ITCM(mp_arg_check_num_sig)(size_t n_args, size_t n_kw, uint32_t sig) {
     // TODO maybe take the function name as an argument so we can print nicer error messages
 
@@ -50,6 +51,7 @@ void PLACE_IN_ITCM(mp_arg_check_num_sig)(size_t n_args, size_t n_kw, uint32_t si
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
+            // CIRCUITPY-CHANGE: specific mp_raise routine
             mp_raise_TypeError_varg(MP_ERROR_TEXT("function takes %d positional arguments but %d were given"),
                 n_args_min, n_args);
             #endif
@@ -59,6 +61,7 @@ void PLACE_IN_ITCM(mp_arg_check_num_sig)(size_t n_args, size_t n_kw, uint32_t si
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
+            // CIRCUITPY-CHANGE: specific mp_raise routine
             mp_raise_TypeError_varg(
                 MP_ERROR_TEXT("function missing %d required positional arguments"),
                 n_args_min - n_args);
@@ -67,6 +70,7 @@ void PLACE_IN_ITCM(mp_arg_check_num_sig)(size_t n_args, size_t n_kw, uint32_t si
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
+            // CIRCUITPY-CHANGE: specific mp_raise routine
             mp_raise_TypeError_varg(
                 MP_ERROR_TEXT("function expected at most %d arguments, got %d"),
                 n_args_max, n_args);
@@ -75,6 +79,7 @@ void PLACE_IN_ITCM(mp_arg_check_num_sig)(size_t n_args, size_t n_kw, uint32_t si
     }
 }
 
+// CIRCUITPY-CHANGE: better keyword arg checking in next two routines
 inline void mp_arg_check_num_kw_array(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
     mp_arg_check_num_sig(n_args, n_kw, MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, takes_kw));
 }
@@ -176,7 +181,7 @@ NORETURN void mp_arg_error_unimpl_kw(void) {
 }
 #endif
 
-
+// CIRCUITPY-CHANGE: more specific mp_raise routines
 mp_int_t mp_arg_validate_int(mp_int_t i, mp_int_t required_i, qstr arg_name) {
     if (i != required_i) {
         mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be %d"), arg_name, required_i);

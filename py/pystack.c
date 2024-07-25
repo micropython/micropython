@@ -36,6 +36,7 @@ void mp_pystack_init(void *start, void *end) {
     MP_STATE_THREAD(pystack_cur) = start;
 }
 
+// CIRCUITPY-CHANGE: PLACE_IN_ITCM
 void *PLACE_IN_ITCM(mp_pystack_alloc)(size_t n_bytes) {
     n_bytes = (n_bytes + (MICROPY_PYSTACK_ALIGN - 1)) & ~(MICROPY_PYSTACK_ALIGN - 1);
     #if MP_PYSTACK_DEBUG

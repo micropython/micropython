@@ -16,6 +16,8 @@ except (ImportError, AttributeError):
 
 
 class UserFile(io.IOBase):
+    buffer_size = 16
+
     def __init__(self, mode, data):
         assert isinstance(data, bytes)
         self.is_text = mode.find("b") == -1
@@ -39,7 +41,11 @@ class UserFile(io.IOBase):
 
     def ioctl(self, req, arg):
         print("ioctl", req, arg)
-        return 0
+        if req == 4:  # MP_STREAM_CLOSE
+            return 0
+        if req == 11:  # MP_STREAM_GET_BUFFER_SIZE
+            return UserFile.buffer_size
+        return -1
 
 
 class UserFS:
@@ -70,6 +76,8 @@ user_files = {
     "/usermod2.py": b"print('in usermod2')",
     "/usermod3.py": b"syntax error",
     "/usermod4.mpy": b"syntax error",
+    "/usermod5.py": b"print('in usermod5')",
+    "/usermod6.py": b"print('in usermod6')",
 }
 os.mount(UserFS(user_files), "/userfs")
 
@@ -92,6 +100,14 @@ try:
     import usermod4
 except ValueError:
     print("ValueError in usermod4")
+
+# Test an import with largest buffer size
+UserFile.buffer_size = 255
+import usermod5
+
+# Test an import with over-size buffer size (should be safely limited internally)
+UserFile.buffer_size = 1024
+import usermod6
 
 # unmount and undo path addition
 os.umount("/userfs")

@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+# CIRCUITPY-CHANGES: many additions
+
 # Compiled Sources
 ###################
 *.o

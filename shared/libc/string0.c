@@ -172,7 +172,7 @@ int strcmp(const char *s1, const char *s2) {
 }
 
 int strncmp(const char *s1, const char *s2, size_t n) {
-    while (*s1 && *s2 && n > 0) {
+    while (n > 0 && *s1 && *s2) {
         char c1 = *s1++; // XXX UTF8 get char, next char
         char c2 = *s2++; // XXX UTF8 get char, next char
         n--;

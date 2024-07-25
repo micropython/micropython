@@ -47,6 +47,7 @@ extern const mp_obj_type_t mp_type_vfs_fat_textio;
 
 MP_DECLARE_CONST_FUN_OBJ_3(fat_vfs_open_obj);
 
+// CIRCUITPY-CHANGE
 typedef struct _pyb_file_obj_t {
     mp_obj_base_t base;
     FIL fp;

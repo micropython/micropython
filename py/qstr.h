@@ -36,6 +36,8 @@
 // for qstrs that are referenced this way, but you don't want to have them in ROM.
 
 // first entry in enum will be MP_QSTRnull=0, which indicates invalid/no qstr
+
+// CIRCUITPY-CHANGE: TODO: Check QDEF0 QDEF1 stuff here from MicroPython
 enum {
     #ifndef NO_QSTR
 #define QDEF(id, hash, len, str) id,
@@ -69,6 +71,7 @@ typedef uint16_t qstr_len_t;
 
 typedef struct _qstr_pool_t {
     const struct _qstr_pool_t *prev;
+    // CIRCUITPY-CHANGE: TODO, check bitfield width here from MicroPython
     size_t total_prev_len;
     size_t alloc;
     size_t len;
@@ -79,6 +82,7 @@ typedef struct _qstr_pool_t {
 
 #define QSTR_TOTAL() (MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len)
 
+// CIRCUITPY-CHANGE: added
 void qstr_reset(void);
 void qstr_init(void);
 
@@ -97,7 +101,9 @@ void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, si
 void qstr_dump_data(void);
 
 #if MICROPY_ROM_TEXT_COMPRESSION
-void mp_decompress_rom_string(byte *dst, mp_rom_error_text_t src);
+// CIRCUITPY-CHANGE: not const previusly, should it be??
+// TEST COMPILE with const ******************
+void mp_decompress_rom_string(byte *dst, const mp_rom_error_text_t src);
 #define MP_IS_COMPRESSED_ROM_STRING(s) (*(byte *)(s) == 0xff)
 #endif
 

@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// CIRCUITPY-CHANGE: thoroughly reworked
+// CIRCUITPY-CHANGE: API and implementation thoroughly reworked
 
 typedef struct _ringbuf_t {
     uint8_t *buf;

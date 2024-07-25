@@ -48,6 +48,7 @@
 /******************************************************************************/
 /* builtin functions                                                          */
 
+// CIRCUITPY-CHANGE: PLACE_IN_ITCM
 STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_0_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)args;
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_0));
@@ -61,6 +62,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     call, fun_builtin_0_call
     );
 
+// CIRCUITPY-CHANGE: PLACE_IN_ITCM
 STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_1_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_1));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
@@ -85,6 +87,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     call, fun_builtin_2_call
     );
 
+// CIRCUITPY-CHANGE: PLACE_IN_ITCM
 STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_3_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_3));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
@@ -215,7 +218,7 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     // RuntimeError should be raised instead. So, we use m_new_obj_var_maybe(),
     // return NULL, then vm.c takes the needed action (either raise
     // RuntimeError or fallback to stack allocation).
-    code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
+    code_state = m_new_obj_var_maybe(mp_code_state_t, state, byte, state_size);
     if (!code_state) {
         return NULL;
     }
@@ -230,6 +233,7 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
 }
 #endif
 
+// CIRCUITPY-CHANGE: PLACE_IN_ITCM
 STATIC mp_obj_t PLACE_IN_ITCM(fun_bc_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
 
@@ -247,10 +251,10 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_bc_call)(mp_obj_t self_in, size_t n_args, size
     // allocate state for locals and stack
     mp_code_state_t *code_state = NULL;
     #if MICROPY_ENABLE_PYSTACK
-    code_state = mp_pystack_alloc(sizeof(mp_code_state_t) + state_size);
+    code_state = mp_pystack_alloc(offsetof(mp_code_state_t, state) + state_size);
     #else
     if (state_size > VM_MAX_STATE_ON_STACK) {
-        code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
+        code_state = m_new_obj_var_maybe(mp_code_state_t, state, byte, state_size);
         #if MICROPY_DEBUG_VM_STACK_OVERFLOW
         if (code_state != NULL) {
             memset(code_state->state, 0, state_size);
@@ -258,7 +262,7 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_bc_call)(mp_obj_t self_in, size_t n_args, size
         #endif
     }
     if (code_state == NULL) {
-        code_state = alloca(sizeof(mp_code_state_t) + state_size);
+        code_state = alloca(offsetof(mp_code_state_t, state) + state_size);
         #if MICROPY_DEBUG_VM_STACK_OVERFLOW
         memset(code_state->state, 0, state_size);
         #endif
@@ -320,7 +324,7 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_bc_call)(mp_obj_t self_in, size_t n_args, size
     #else
     // free the state if it was allocated on the heap
     if (state_size != 0) {
-        m_del_var(mp_code_state_t, byte, state_size, code_state);
+        m_del_var(mp_code_state_t, state, byte, state_size, code_state);
     }
     #endif
 
@@ -402,6 +406,7 @@ mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_
 
 #if MICROPY_EMIT_NATIVE
 
+// CIRCUITPY-CHANGE: PLACE_IN_ITCM
 STATIC mp_obj_t PLACE_IN_ITCM(fun_native_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
@@ -499,6 +504,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
     }
 }
 
+// CIRCUITPY-CHANGE: PLACE_IN_ITCM
 STATIC mp_obj_t PLACE_IN_ITCM(fun_asm_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_fun_asm_t *self = self_in;
 

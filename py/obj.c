@@ -29,16 +29,19 @@
 #include <stdarg.h>
 #include <assert.h>
 
+// CIRCUITPY-CHANGE
 #include "shared/runtime/interrupt_char.h"
 #include "py/obj.h"
 #include "py/objtype.h"
 #include "py/objint.h"
 #include "py/objstr.h"
+// CIRCUITPY-CHANGE
 #include "py/qstr.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/stream.h" // for mp_obj_print
 
+// CIRCUITPY-CHANGE
 #include "supervisor/shared/stack.h"
 
 // Allocates an object and also sets type, for mp_obj_malloc{,_var} macros.
@@ -244,6 +247,7 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
     mp_obj_print_exception_with_limit(print, exc, 0);
 }
 
+// CIRCUITPY-CHANGE
 bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
     if (arg == mp_const_false) {
         return 0;
@@ -490,6 +494,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("can't convert to complex"));
         #else
+        // CIRCUITPY-CHANGE: more specific mp_raise
         mp_raise_TypeError_varg(
             MP_ERROR_TEXT("can't convert %s to complex"), mp_obj_get_type_str(arg));
         #endif
@@ -509,6 +514,7 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("expected tuple/list"));
         #else
+        // CIRCUITPY-CHANGE: more specific mp_raise
         mp_raise_TypeError_varg(
             MP_ERROR_TEXT("object '%s' isn't a tuple or list"), mp_obj_get_type_str(o));
         #endif
@@ -587,6 +593,7 @@ mp_obj_t mp_obj_len(mp_obj_t o_in) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("object has no len"));
         #else
+        // CIRCUITPY-CHANGE: more specific mp_raise
         mp_raise_TypeError_varg(
             MP_ERROR_TEXT("object of type '%s' has no len()"), mp_obj_get_type_str(o_in));
         #endif
@@ -619,6 +626,7 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     const mp_obj_type_t *type = mp_obj_get_type(base);
     if (MP_OBJ_TYPE_HAS_SLOT(type, subscr)) {
         mp_obj_t ret = MP_OBJ_TYPE_GET_SLOT(type, subscr)(base, index, value);
+        // CIRCUITPY-CHANGE
         // May have called port specific C code. Make sure it didn't mess up the heap.
         assert_heap_ok();
         if (ret != MP_OBJ_NULL) {
@@ -630,6 +638,7 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("object doesn't support item deletion"));
         #else
+        // CIRCUITPY-CHANGE: more specific mp_raise
         mp_raise_TypeError_varg(
             MP_ERROR_TEXT("'%s' object doesn't support item deletion"), mp_obj_get_type_str(base));
         #endif
@@ -637,6 +646,7 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("object isn't subscriptable"));
         #else
+        // CIRCUITPY-CHANGE: more specific mp_raise
         mp_raise_TypeError_varg(
             MP_ERROR_TEXT("'%s' object isn't subscriptable"), mp_obj_get_type_str(base));
         #endif
@@ -644,6 +654,7 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("object doesn't support item assignment"));
         #else
+        // CIRCUITPY-CHANGE: more specific mp_raise
         mp_raise_TypeError_varg(
             MP_ERROR_TEXT("'%s' object doesn't support item assignment"), mp_obj_get_type_str(base));
         #endif

@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_EXTMOD_VIRTPIN_H
 
 #include "py/obj.h"
+// CIRCUITPY-CHANGE
 #include "py/proto.h"
 
 #define MP_PIN_READ   (1)
@@ -36,6 +37,7 @@
 
 // Pin protocol
 typedef struct _mp_pin_p_t {
+    // CIRCUITPY-CHANGE
     MP_PROTOCOL_HEAD
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
 } mp_pin_p_t;

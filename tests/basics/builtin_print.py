@@ -1,5 +1,6 @@
 # test builtin print function
 
+# CIRCUITPY-CHANGE: break the test
 print("break the test")
 print()
 print(None)

@@ -818,7 +818,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
     uint8_t *ip, uint32_t *port) {
     // Create new socket object, do it here because we must not raise an out-of-memory
     // exception when the LWIP concurrency lock is held
-    socketpool_socket_obj_t *accepted = m_new_ll_obj_with_finaliser(socketpool_socket_obj_t);
+    socketpool_socket_obj_t *accepted = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     socketpool_socket_reset(accepted);
 
     int ret = socketpool_socket_accept(socket, ip, port, accepted);

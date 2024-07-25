@@ -58,6 +58,7 @@ typedef struct _mp_obj_gen_instance_t {
 } mp_obj_gen_instance_t;
 
 STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    // CIRCUITPY-CHANGE
     // A generating or coroutine function is just a bytecode function
     // with type mp_type_gen_wrap or mp_type_coro_wrap.
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
@@ -66,9 +67,11 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     const uint8_t *ip = self_fun->bytecode;
     MP_BC_PRELUDE_SIG_DECODE(ip);
 
+    // CIRCUITPY-CHANGE
     // allocate the generator or coroutine object, with room for local stack and exception stack
     mp_obj_gen_instance_t *o = mp_obj_malloc_var(mp_obj_gen_instance_t, byte,
         n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t),
+        // CIRCUITPY-CHANGE
         #if MICROPY_PY_ASYNC_AWAIT
         self_fun->base.type == &mp_type_gen_wrap ? &mp_type_gen_instance : &mp_type_coro_instance
         #else
@@ -97,6 +100,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     call, gen_wrap_call
     );
 
+// CIRCUITPY-CHANGE
 #if MICROPY_PY_ASYNC_AWAIT
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_coro_wrap,
@@ -124,6 +128,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // Determine start of prelude.
+    // CIRCUITPY-CHANGE: prevent compiler warning
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
     uintptr_t prelude_ptr_index = ((uintptr_t *)self_fun->bytecode)[0];
@@ -141,6 +146,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
 
     // Allocate the generator object, with room for local stack (exception stack not needed).
     mp_obj_gen_instance_native_t *o = mp_obj_malloc_var(mp_obj_gen_instance_native_t, byte, n_state * sizeof(mp_obj_t),
+        // CIRCUITPY-CHANGE
         #if MICROPY_PY_ASYNC_AWAIT
         (self_fun->base.type == &mp_type_native_gen_wrap) ? &mp_type_gen_instance : &mp_type_coro_instance
         #else
@@ -160,6 +166,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     o->code_state.exc_sp_idx = MP_CODE_STATE_EXC_SP_IDX_SENTINEL;
 
     // Prepare the generator instance for execution
+    // CIRCUITPY-CHANGE: prevent compiler warning
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
     uintptr_t start_offset = ((uintptr_t *)self_fun->bytecode)[1];
@@ -183,7 +190,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     NATIVE_GEN_WRAP_TYPE_ATTR
     );
 
-
+// CIRCUITPY-CHANGE
 #if MICROPY_PY_ASYNC_AWAIT
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_native_coro_wrap,
@@ -359,6 +366,7 @@ STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
+// CIRCUITPY-CHANGE
 #if MICROPY_PY_ASYNC_AWAIT
 STATIC mp_obj_t coro_instance_await(mp_obj_t self_in) {
     return self_in;
@@ -388,6 +396,7 @@ STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gen_instance_throw_obj, 2, 4, gen_instance_throw);
 
+// CIRCUITPY-CHANGE
 static mp_obj_t generatorexit(void) {
     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
     MP_STATIC_ASSERT(!MICROPY_CONST_GENERATOREXIT_OBJ);
@@ -400,6 +409,7 @@ static mp_obj_t generatorexit(void) {
 
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
     mp_obj_t ret;
+    // CIRCUITPY-CHANGE
     switch (mp_obj_gen_resume(self_in, mp_const_none, generatorexit(), &ret)) {
         case MP_VM_RETURN_YIELD:
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("generator ignored GeneratorExit"));
@@ -452,8 +462,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &gen_instance_locals_dict
     );
 
+// CIRCUITPY-CHANGE: additions for coroutines
 #if MICROPY_PY_ASYNC_AWAIT
-// CIRCUITPY-CHANGE
 // coroutine instance locals dict and type
 // same as generator, but with addition of __await()__.
 STATIC const mp_rom_map_elem_t coro_instance_locals_dict_table[] = {

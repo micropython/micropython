@@ -96,7 +96,6 @@ SECTIONS
 
         /* Less critical portions of the runtime. */
         *runtime.o(.text.mp_import* .text.mp_resume* .text.mp_make_raise*  .text.mp_init)
-        *gc.o(.text.gc_never_free .text.gc_make_long_lived)
 
         /* Anything marked cold/unlikely should be in flash. */
         *(.text.unlikely.*)

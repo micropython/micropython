@@ -37,6 +37,7 @@ else
 Q = @
 endif
 
+# CIRCUITPY-CHANGE
 ifneq ($(filter rules,$(BUILD_VERBOSE)),)
 # This clever shell redefinition will print out the makefile line that is causing an action.
 # Note that -j can cause the order to be confusing.
@@ -70,6 +71,7 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 SIZE = $(CROSS_COMPILE)size
 STRIP = $(CROSS_COMPILE)strip
 AR = $(CROSS_COMPILE)ar
+WINDRES = $(CROSS_COMPILE)windres
 
 MAKE_MANIFEST = $(PYTHON) $(TOP)/tools/makemanifest.py
 MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py

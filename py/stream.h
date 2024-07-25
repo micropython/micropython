@@ -45,6 +45,7 @@
 #define MP_STREAM_GET_DATA_OPTS (8)  // Get data/message options
 #define MP_STREAM_SET_DATA_OPTS (9)  // Set data/message options
 #define MP_STREAM_GET_FILENO    (10) // Get fileno of underlying file
+#define MP_STREAM_GET_BUFFER_SIZE (11) // Get preferred buffer size for file
 
 // These poll ioctl values are compatible with Linux
 #define MP_STREAM_POLL_RD       (0x0001)
@@ -77,6 +78,7 @@ typedef struct _mp_stream_p_t {
     mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
     mp_uint_t is_text : 1; // default is bytes, set this for text stream
+    // CIRCUITPY-CHANGE: pyserial compatibility
     bool pyserial_readinto_compatibility : 1;         // Disallow size parameter in readinto()
     bool pyserial_read_compatibility : 1;             // Disallow omitting read(size) size parameter
     bool pyserial_dont_return_none_compatibility : 1; // Don't return None for read() or readinto()
@@ -124,7 +126,7 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode,
 #define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
 
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
-// CIRCUITPY-CHANGE
+// CIRCUITPY-CHANGE: make public
 mp_obj_t mp_stream_flush(mp_obj_t self);
 
 #if MICROPY_STREAMS_POSIX_API

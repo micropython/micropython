@@ -35,6 +35,7 @@ class B(A):
         return super().foo().count(2) # calling a subsequent method
 print(B().foo())
 
+# CIRCUITPY-CHANGE: extra test
 try:
     super(1, 1).x
 except TypeError:

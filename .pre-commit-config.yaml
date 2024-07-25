@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: Unlicense
 
+# CIRCUITPY-CHANGE: CircuitPython-specific.
+
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1

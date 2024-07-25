@@ -34,6 +34,7 @@
 
 #if MICROPY_PY_BINASCII
 
+// CIRCUITPY-CHANGE: added
 static void check_not_unicode(const mp_obj_t arg) {
     #if MICROPY_CPYTHON_COMPAT
     if (mp_obj_is_str(arg)) {

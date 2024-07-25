@@ -53,6 +53,12 @@ def script_to_map(test_file):
     return r
 
 
+def load_profile(profile_file, test_dirs, exclude_tests):
+    profile_globals = {"test_dirs": test_dirs, "exclude_tests": exclude_tests}
+    exec(profile_file.read(), profile_globals)
+    return profile_globals["test_dirs"], profile_globals["exclude_tests"]
+
+
 test_function = (
     "void {name}(void* data) {{\n"
     "  static const char pystr[] = {script};\n"
@@ -71,58 +77,55 @@ testgroup_struct = "struct testgroup_t groups[] = {{\n{body}\n  END_OF_GROUPS\n}
 testgroup_member = '  {{ "{name}", {name}_tests }},'
 
 ## XXX: may be we could have `--without <groups>` argument...
-# currently these tests are selected because they pass on qemu-arm
-test_dirs = (
-    "basics",
-    "micropython",
-    "misc",
-    "extmod",
-    "float",
-    "inlineasm",
-    "qemu-arm",
-)  # 'import', 'io',)
-exclude_tests = (
-    # pattern matching in .exp
-    "basics/bytes_compare3.py",
-    "extmod/ticks_diff.py",
-    "extmod/time_ms_us.py",
-    # unicode char issue
-    "extmod/json_loads.py",
-    # doesn't output to python stdout
-    "extmod/re_debug.py",
-    "extmod/vfs_basic.py",
-    "extmod/vfs_fat_ramdisk.py",
-    "extmod/vfs_fat_fileio.py",
-    "extmod/vfs_fat_fsusermount.py",
-    "extmod/vfs_fat_oldproto.py",
-    # rounding issues
-    "float/float_divmod.py",
-    # requires double precision floating point to work
-    "float/float2int_doubleprec_intbig.py",
-    "float/float_format_ints_doubleprec.py",
-    "float/float_parse_doubleprec.py",
-    # inline asm FP tests (require Cortex-M4)
-    "inlineasm/asmfpaddsub.py",
-    "inlineasm/asmfpcmp.py",
-    "inlineasm/asmfpldrstr.py",
-    "inlineasm/asmfpmuldiv.py",
-    "inlineasm/asmfpsqrt.py",
-    # different filename in output
-    "micropython/emg_exc.py",
-    "micropython/heapalloc_traceback.py",
-    # don't have emergency exception buffer
-    "micropython/heapalloc_exc_compressed_emg_exc.py",
-    # pattern matching in .exp
-    "micropython/meminfo.py",
-    # needs sys stdfiles
-    "misc/print_exception.py",
-    # settrace .exp files are too large
-    "misc/sys_settrace_loop.py",
-    "misc/sys_settrace_generator.py",
-    "misc/sys_settrace_features.py",
-    # don't have f-string
-    "basics/string_fstring.py",
-    "basics/string_fstring_debug.py",
+
+test_dirs = set(
+    (
+        "basics",
+        "extmod",
+        "float",
+        "micropython",
+        "misc",
+    )
+)
+
+exclude_tests = set(
+    (
+        # pattern matching in .exp
+        "basics/bytes_compare3.py",
+        "extmod/ticks_diff.py",
+        "extmod/time_ms_us.py",
+        # unicode char issue
+        "extmod/json_loads.py",
+        # doesn't output to python stdout
+        "extmod/re_debug.py",
+        "extmod/vfs_basic.py",
+        "extmod/vfs_fat_ramdisk.py",
+        "extmod/vfs_fat_fileio.py",
+        "extmod/vfs_fat_fsusermount.py",
+        "extmod/vfs_fat_oldproto.py",
+        # rounding issues
+        "float/float_divmod.py",
+        # requires double precision floating point to work
+        "float/float2int_doubleprec_intbig.py",
+        "float/float_format_ints_doubleprec.py",
+        "float/float_parse_doubleprec.py",
+        # different filename in output
+        "micropython/emg_exc.py",
+        "micropython/heapalloc_traceback.py",
+        # don't have emergency exception buffer
+        "micropython/heapalloc_exc_compressed_emg_exc.py",
+        # pattern matching in .exp
+        "micropython/meminfo.py",
+        # needs sys stdfiles
+        "misc/print_exception.py",
+        # settrace .exp files are too large
+        "misc/sys_settrace_loop.py",
+        "misc/sys_settrace_generator.py",
+        "misc/sys_settrace_features.py",
+        # don't have f-string
+        "basics/string_fstring.py",
+        "basics/string_fstring_debug.py",
+    )
 )
 
 output = []
@@ -133,11 +136,18 @@ argparser = argparse.ArgumentParser(
 )
 argparser.add_argument("--stdin", action="store_true", help="read list of tests from stdin")
 argparser.add_argument("--exclude", action="append", help="exclude test by name")
+argparser.add_argument(
+    "--profile",
+    type=argparse.FileType("rt", encoding="utf-8"),
+    help="optional profile file providing test directories and exclusion list",
+)
 args = argparser.parse_args()
 
 if not args.stdin:
+    if args.profile:
+        test_dirs, exclude_tests = load_profile(args.profile, test_dirs, exclude_tests)
     if args.exclude:
-        exclude_tests += tuple(args.exclude)
+        exclude_tests = exclude_tests.union(args.exclude)
     for group in test_dirs:
         tests += [test for test in glob("{}/*.py".format(group)) if test not in exclude_tests]
 else:

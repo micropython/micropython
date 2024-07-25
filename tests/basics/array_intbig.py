@@ -1,4 +1,5 @@
 # test array types QqLl that require big-ints
+# CIRCUITPY-CHANGE: conditionalize
 import skip_if
 skip_if.no_bigint()
 

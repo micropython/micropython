@@ -142,8 +142,7 @@ STATIC mp_uint_t stdio_buffer_read(mp_obj_t self_in, void *buf, mp_uint_t size, 
 }
 
 STATIC mp_uint_t stdio_buffer_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
-    mp_hal_stdout_tx_strn(buf, size);
-    return size;
+    return mp_hal_stdout_tx_strn(buf, size);
 }
 
 STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {

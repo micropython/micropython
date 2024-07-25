@@ -27,6 +27,7 @@
 #include "py/mpconfig.h"
 #if MICROPY_VFS && MICROPY_VFS_FAT
 
+// CIRCUITPY-CHANGE: more includes
 #include <stdio.h>
 #include <string.h>
 
@@ -63,6 +64,7 @@ const byte fresult_to_errno_table[20] = {
 
 STATIC void file_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
+    // CIRCUITPY-CHANGE
     mp_printf(print, "<io.%q %p>", mp_obj_get_type_qstr(self_in), MP_OBJ_TO_PTR(self_in));
 }
 
@@ -198,6 +200,7 @@ STATIC mp_obj_t fat_vfs_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_i
     const mp_obj_type_t *type = &mp_type_vfs_fat_textio;
     int mode = 0;
     const char *mode_s = mp_obj_str_get_str(mode_in);
+    // CIRCUITPY-CHANGE: validate mode
     uint32_t rwxa_count = 0;
     uint32_t bt_count = 0;
     uint32_t plus_count = 0;

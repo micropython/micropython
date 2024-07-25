@@ -527,7 +527,7 @@ class Pyboard:
     def fs_stat(self, src):
         try:
             self.exec_("import os")
-            return os.stat_result(self.eval("os.stat(%s)" % (("'%s'" % src)), parse=True))
+            return os.stat_result(self.eval("os.stat(%s)" % ("'%s'" % src), parse=True))
         except PyboardError as e:
             raise e.convert(src)
 

@@ -56,12 +56,14 @@ def test(bdev, vfs_class):
     # create binary, print, write, flush, close
     f = vfs.open("test.bin", "wb")
     print(f)
+    # CIRCUITPY-CHANGE
     f.write(b"littlefs")
     f.flush()
     f.close()
 
     # create for append
     f = vfs.open("test.bin", "ab")
+    # CIRCUITPY-CHANGE
     f.write(b"more")
     f.close()
 
@@ -90,6 +92,7 @@ def test(bdev, vfs_class):
     # create read and write
     with vfs.open("test.bin", "r+b") as f:
         print(f.read(8))
+        # CIRCUITPY-CHANGE
         f.write(b"MORE")
     with vfs.open("test.bin", "rb") as f:
         print(f.read())

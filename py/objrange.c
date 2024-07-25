@@ -104,6 +104,7 @@ STATIC mp_obj_t range_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
         if (n_args == 3) {
             o->step = mp_obj_get_int(args[2]);
             if (o->step == 0) {
+                // CIRCUITPY-CHANGE
                 mp_raise_ValueError_varg(MP_ERROR_TEXT("%q step cannot be zero"), MP_QSTR_range);
             }
         }

@@ -33,6 +33,7 @@ def gen3():
     yield 3
     yield 4
 
+# CIRCUITPY-CHANGE: traceback
 def gen4():
     yield -1
     try:
@@ -126,6 +127,7 @@ g = gen9()
 print(next(g))
 g.close()
 
+# CIRCUITPY-CHANGE
 # Test that, when chaining to a GeneratorExit exception generated internally,
 # no exception or crash occurs
 def gen10():

@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "py/smallint.h"
 #include "py/nativeglue.h"
+// CIRCUITPY-CHANGE
 #include "py/objtype.h"
 #include "py/gc.h"
 
@@ -320,7 +321,8 @@ const mp_fun_table_t mp_fun_table = {
     gc_realloc,
     mp_printf,
     mp_vprintf,
-    mp_raise_msg_str, // CIRCUITPY-CHANGE
+    // CIRCUITPY-CHANGE
+    mp_raise_msg_str,
     mp_obj_get_type,
     mp_obj_new_str,
     mp_obj_new_bytes,
@@ -329,8 +331,9 @@ const mp_fun_table_t mp_fun_table = {
     mp_obj_new_float_from_d,
     mp_obj_get_float_to_f,
     mp_obj_get_float_to_d,
-    mp_get_buffer_raise,
+    mp_get_buffer,
     mp_get_stream_raise,
+    // CIRCUITPY-CHANGE
     mp_obj_assert_native_inited,
     &mp_plat_print,
     &mp_type_type,

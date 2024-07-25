@@ -79,7 +79,7 @@ int mp_printf(const mp_print_t *print, const char *fmt, ...);
 int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
 #endif
 
-// CIRCUITPY-CHANGE
+// CIRCUITPY-CHANGE: compressed string printers
 struct compressed_string;
 int mp_cprintf(const mp_print_t *print, const struct compressed_string *compressed_fmt, ...);
 #ifdef va_start

@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 
+// CIRCUITPY-CHANGE
 #if CIRCUITPY_WARNINGS
 #include "shared-module/warnings/__init__.h"
 #endif
@@ -66,6 +67,7 @@ STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *de
 STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
+        // CIRCUITPY-CHANGE
         #if CIRCUITPY_8_9_WARNINGS && CIRCUITPY_DISPLAYIO && CIRCUITPY_WARNINGS
         if (self == &displayio_module) {
             #if CIRCUITPY_BUSDISPLAY
@@ -203,6 +205,7 @@ STATIC const mp_module_delegation_entry_t mp_builtin_module_delegation_table[] =
 // Attempts to find (and initialise) a built-in, otherwise returns
 // MP_OBJ_NULL.
 mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
+    // CIRCUITPY-CHANGE
     #if CIRCUITPY_PARALLELDISPLAYBUS && CIRCUITPY_WARNINGS
     if (module_name == MP_QSTR_paralleldisplay) {
         warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q renamed %q"), MP_QSTR_paralleldisplay, MP_QSTR_paralleldisplaybus);

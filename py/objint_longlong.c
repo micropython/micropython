@@ -43,7 +43,7 @@
 const mp_obj_int_t mp_sys_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
 
-// CIRCUITPY-CHANGE
+// CIRCUITPY-CHANGE: bit_length
 mp_obj_t mp_obj_int_bit_length_impl(mp_obj_t self_in) {
     assert(mp_obj_is_type(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;

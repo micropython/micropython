@@ -235,6 +235,7 @@ mp_vm_return_kind_t MICROPY_WRAP_MP_EXECUTE_BYTECODE(mp_execute_bytecode)(mp_cod
 // about to be dispatched.
 #define MARK_EXC_IP_GLOBAL() { code_state->ip = ip; }
 #endif
+
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "py/vmentrytable.h"
     // CIRCUITPY-CHANGE
@@ -1444,8 +1445,8 @@ unwind_loop:
             // - constant GeneratorExit object, because it's const
             // - exceptions re-raised by END_FINALLY
             // - exceptions re-raised explicitly by "raise"
+            // CIRCUITPY-CHANGE: do always
             if ( true
-                // CIRCUITPY-CHANGE
                 #if MICROPY_CONST_GENERATOREXIT_OBJ
                 && nlr.ret_val != &mp_const_GeneratorExit_obj
                 #endif
@@ -1488,7 +1489,7 @@ unwind_loop:
                 // catch exception and pass to byte code
                 code_state->ip = exc_sp->handler;
                 mp_obj_t *sp = MP_TAGPTR_PTR(exc_sp->val_sp);
-                //CIRCUITPY
+                // CIRCUITPY-CHANGE
                 #if MICROPY_CPYTHON_EXCEPTION_CHAIN
                 mp_obj_t active_exception = get_active_exception(exc_sp, exc_stack);
                 #endif
@@ -1501,7 +1502,7 @@ unwind_loop:
                 }
                 #endif
                 // push exception object so it can be handled by bytecode
-                PUSH(obj);
+                PUSH(MP_OBJ_FROM_PTR(nlr.ret_val));
                 code_state->sp = sp;
 
             #if MICROPY_STACKLESS

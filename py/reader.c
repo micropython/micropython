@@ -134,12 +134,12 @@ void mp_reader_new_file_from_fd(mp_reader_t *reader, int fd, bool close_fd) {
 
 #if !MICROPY_VFS_POSIX
 // If MICROPY_VFS_POSIX is defined then this function is provided by the VFS layer
-void mp_reader_new_file(mp_reader_t *reader, const char *filename) {
+void mp_reader_new_file(mp_reader_t *reader, qstr filename) {
     MP_THREAD_GIL_EXIT();
-    int fd = open(filename, O_RDONLY, 0644);
+    int fd = open(qstr_str(filename), O_RDONLY, 0644);
     MP_THREAD_GIL_ENTER();
     if (fd < 0) {
-        mp_raise_OSError_with_filename(errno, filename);
+        mp_raise_OSError_with_filename(errno, qstr_str(filename));
     }
     mp_reader_new_file_from_fd(reader, fd, true);
 }

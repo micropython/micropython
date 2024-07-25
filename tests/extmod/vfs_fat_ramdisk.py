@@ -22,12 +22,14 @@ class RAMFS:
         # print("readblocks(%s, %x(%d))" % (n, id(buf), len(buf)))
         for i in range(len(buf)):
             buf[i] = self.data[n * self.SEC_SIZE + i]
+        # CIRCUITPY-CHANGE
         return 0
 
     def writeblocks(self, n, buf):
         # print("writeblocks(%s, %x)" % (n, id(buf)))
         for i in range(len(buf)):
             self.data[n * self.SEC_SIZE + i] = buf[i]
+        # CIRCUITPY-CHANGE
         return 0
 
     def ioctl(self, op, arg):
@@ -51,6 +53,7 @@ print(b"hello!" not in bdev.data)
 vfs = os.VfsFat(bdev)
 os.mount(vfs, "/ramdisk")
 
+# CIRCUITPY-CHANGE
 vfs.label = "label test"
 print("label:", vfs.label)
 print("statvfs:", vfs.statvfs("/ramdisk"))

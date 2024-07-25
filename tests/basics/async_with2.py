@@ -1,5 +1,6 @@
 # test waiting within async with enter/exit functions
 
+# CIRCUITPY-CHANGE
 # uPy allows normal generators to be awaitables.
 # CircuitPython does not.
 # In CircuitPython you need to have an __await__ method on an awaitable like in CPython;

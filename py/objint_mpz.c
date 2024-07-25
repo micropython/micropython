@@ -47,22 +47,22 @@ STATIC const mpz_dig_t maxsize_dig[] = {
     #define NUM_DIG 1
     (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 0) & DIG_MASK,
     #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 0) > DIG_MASK
-#undef NUM_DIG
+     #undef NUM_DIG
      #define NUM_DIG 2
-    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) & DIG_MASK,
-    #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) > DIG_MASK
-#undef NUM_DIG
+     (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) & DIG_MASK,
+     #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) > DIG_MASK
+      #undef NUM_DIG
       #define NUM_DIG 3
-    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) & DIG_MASK,
-    #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) > DIG_MASK
-#undef NUM_DIG
+      (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) & DIG_MASK,
+      #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) > DIG_MASK
+       #undef NUM_DIG
        #define NUM_DIG 4
-    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) & DIG_MASK,
-    #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) > DIG_MASK
-    #error cannot encode MP_SSIZE_MAX as mpz
-    #endif
-    #endif
-    #endif
+       (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) & DIG_MASK,
+       #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) > DIG_MASK
+        #error cannot encode MP_SSIZE_MAX as mpz
+       #endif
+      #endif
+     #endif
     #endif
 };
 // *FORMAT-ON*
@@ -244,6 +244,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
                 if (mpz_is_zero(zrhs)) {
                 zero_division_error:
+                    // CIRCUITPY-CHANGE: remove redundant message
                     mp_raise_ZeroDivisionError();
                 }
                 mpz_t rem;
@@ -364,6 +365,7 @@ mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
         mpz_t *rhs = mp_mpz_for_int(exponent, &r_temp);
         mpz_t *mod = mp_mpz_for_int(modulus,  &m_temp);
 
+        // CIRCUITPY-CHANGE: extra checking
         if (mpz_is_zero(mod)) {
             mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("pow() 3rd argument cannot be 0"));
         }

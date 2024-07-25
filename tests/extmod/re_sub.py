@@ -73,6 +73,6 @@ except TypeError:
 # Include \ in the sub replacement
 print(re.sub("b", "\\\\b", "abc"))
 
-# Using ^, make sre it doesn't repeatedly match
+# Using ^, make sure it doesn't repeatedly match
 print(re.sub("^ab", "*", "abababcabab"))
 print(re.sub("^ab|cab", "*", "abababcabab"))

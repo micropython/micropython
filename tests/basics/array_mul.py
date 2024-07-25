@@ -1,3 +1,4 @@
+# CIRCUITPY-CHANGE: new test
 try:
     import array
 except ImportError:
