@@ -1,6 +1,22 @@
 extern "C" {
 #include <examplemodule.h>
+// Include the public API. This is only here to verify everything compiles as C++,
+// an actual application should only include what is needed.
+#include <py/gc.h>
+#include <py/obj.h>
+#include <py/objarray.h>
+#include <py/objexcept.h>
+#include <py/objfun.h>
+#include <py/objgenerator.h>
+#include <py/objint.h>
+#include <py/objlist.h>
+#include <py/objmodule.h>
+#include <py/objnamedtuple.h>
 #include <py/objstr.h>
+#include <py/objstringio.h>
+#include <py/objtuple.h>
+#include <py/objtype.h>
+#include <py/runtime.h>
 
 // Here we implement the function using C++ code, but since it's
 // declaration has to be compatible with C everything goes in extern "C" scope.
