@@ -8,7 +8,10 @@ except ImportError:
 
 import time, sys
 
+MAX_DELTA_MS = 4
+
 # Configure pins based on the board.
+# Tuples of (i2s_id, sck_pin, ws_pin, sd_tx_pin, sd_rx_pin)
 # A board must have at least one instance to test, both TX and RX mode.
 if "pyboard" in sys.platform:
     i2s_instances = ((2, Pin("Y6"), Pin("Y5"), Pin("Y8"), Pin("Y8")),)
@@ -22,6 +25,10 @@ elif "mimxrt" in sys.platform:
         (1, Pin("D26"), Pin("D27"), Pin("D7"), Pin("D8")),
         (2, Pin("D4"), Pin("D3"), Pin("D2"), None),
     )
+elif "esp32" in sys.platform:
+    i2s_instances = ((0, Pin(18), Pin(19), Pin(21), Pin(14)),)
+    # Allow for small additional RTOS overhead
+    MAX_DELTA_MS = 8
 
 TEST_BYTES = b"01234567"
 RATE = 11025  # frames/sec
@@ -73,11 +80,12 @@ def test(i2s_id, sck_pin, ws_pin, sd_pin, mode, bits_per_sample, frame_format):
     i2s.deinit()
 
     # Time should be in range of 400ms.
-    time_in_range = abs(dt - 400) <= 4
+    time_delta = abs(dt - 400)
+    time_in_range = time_delta <= MAX_DELTA_MS
 
     # Print out test result if requested, or if time not in range.
     if print_results or not time_in_range:
-        print(mode_str, bits_per_sample, channels, time_in_range)
+        print(mode_str, bits_per_sample, channels, time_in_range or time_delta)
 
 
 print_results = True
