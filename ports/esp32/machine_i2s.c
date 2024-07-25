@@ -151,7 +151,7 @@ static uint32_t get_dma_buf_count(uint8_t mode, i2s_data_bit_width_t bits, forma
 
     uint32_t dma_buf_count = ibuf / (DMA_BUF_LEN_IN_I2S_FRAMES * dma_frame_size_in_bytes);
 
-    return dma_buf_count;
+    return MAX(dma_buf_count, 2); // ESP-IDF requires at least two DMA buffers
 }
 
 static uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
@@ -363,9 +363,9 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
     chan_config.auto_clear = true;
 
     if (mode == MICROPY_PY_MACHINE_I2S_CONSTANT_TX) {
-        ESP_ERROR_CHECK(i2s_new_channel(&chan_config, &self->i2s_chan_handle, NULL));
+        check_esp_err(i2s_new_channel(&chan_config, &self->i2s_chan_handle, NULL));
     } else { // rx
-        ESP_ERROR_CHECK(i2s_new_channel(&chan_config, NULL, &self->i2s_chan_handle));
+        check_esp_err(i2s_new_channel(&chan_config, NULL, &self->i2s_chan_handle));
     }
 
     i2s_std_slot_config_t slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(get_dma_bits(mode, bits), get_dma_format(mode, format));
@@ -394,9 +394,9 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
         std_cfg.gpio_cfg.din = self->sd;
     }
 
-    ESP_ERROR_CHECK(i2s_channel_init_std_mode(self->i2s_chan_handle, &std_cfg));
-    ESP_ERROR_CHECK(i2s_channel_register_event_callback(self->i2s_chan_handle, &i2s_callbacks, self));
-    ESP_ERROR_CHECK(i2s_channel_enable(self->i2s_chan_handle));
+    check_esp_err(i2s_channel_init_std_mode(self->i2s_chan_handle, &std_cfg));
+    check_esp_err(i2s_channel_register_event_callback(self->i2s_chan_handle, &i2s_callbacks, self));
+    check_esp_err(i2s_channel_enable(self->i2s_chan_handle));
 }
 
 static machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
@@ -419,9 +419,12 @@ static machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
 
 static void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     if (!self->is_deinit) {
-        ESP_ERROR_CHECK(i2s_channel_disable(self->i2s_chan_handle));
-        ESP_ERROR_CHECK(i2s_channel_register_event_callback(self->i2s_chan_handle, &i2s_callbacks_null, self));
-        ESP_ERROR_CHECK(i2s_del_channel(self->i2s_chan_handle));
+        if (self->i2s_chan_handle) {
+            i2s_channel_disable(self->i2s_chan_handle);
+            i2s_channel_register_event_callback(self->i2s_chan_handle, &i2s_callbacks_null, self);
+            i2s_del_channel(self->i2s_chan_handle);
+            self->i2s_chan_handle = NULL;
+        }
 
         if (self->non_blocking_mode_task != NULL) {
             vTaskDelete(self->non_blocking_mode_task);
