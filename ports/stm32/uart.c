@@ -243,8 +243,13 @@ bool uart_exists(int uart_id) {
 }
 
 // assumes Init parameters have been set up correctly
+#if defined(STM32H7)
+bool uart_init(machine_uart_obj_t *uart_obj,
+    uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop, uint32_t flow, uint32_t invert) {
+#else
 bool uart_init(machine_uart_obj_t *uart_obj,
     uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop, uint32_t flow) {
+#endif
     USART_TypeDef *UARTx;
     IRQn_Type irqn;
     uint8_t uart_fn = AF_FN_UART;
@@ -586,6 +591,22 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     huart.Init.Mode = UART_MODE_TX_RX;
     huart.Init.HwFlowCtl = flow;
     huart.Init.OverSampling = UART_OVERSAMPLING_16;
+
+    #if defined(STM32H7)
+    huart.AdvancedInit.AdvFeatureInit = (UART_ADVFEATURE_TXINVERT_INIT | UART_ADVFEATURE_RXINVERT_INIT);
+    if(invert & UART_ADVFEATURE_RXINVERT_INIT) {
+        huart.AdvancedInit.RxPinLevelInvert = UART_ADVFEATURE_RXINV_ENABLE;
+    }
+    else {
+        huart.AdvancedInit.RxPinLevelInvert = UART_ADVFEATURE_RXINV_DISABLE;
+    }
+    if(invert & UART_ADVFEATURE_TXINVERT_INIT) {
+        huart.AdvancedInit.TxPinLevelInvert = UART_ADVFEATURE_TXINV_ENABLE;
+    }
+    else {
+        huart.AdvancedInit.TxPinLevelInvert = UART_ADVFEATURE_TXINV_DISABLE;
+    }
+    #endif
 
     #if defined(STM32G4)  // H7 and WB also have fifo..
     huart.FifoMode = UART_FIFOMODE_ENABLE;
