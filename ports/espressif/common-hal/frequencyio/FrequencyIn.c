@@ -41,10 +41,10 @@ static esp_err_t init_pcnt(frequencyio_frequencyin_obj_t *self) {
     if (result != ESP_OK) {
         return result;
     }
-    
+
     // Set watchpoints at limis, to auto-accumulate overflows.
-    pcnt_unit_add_watch_point(self->unit, INT16_MIN);
-    pcnt_unit_add_watch_point(self->unit, INT16_MAX);
+    pcnt_unit_add_watch_point(self->internal_data->unit, INT16_MIN);
+    pcnt_unit_add_watch_point(self->internal_data->unit, INT16_MAX);
 
     pcnt_chan_config_t channel_config = {
         .edge_gpio_num = self->pin,
