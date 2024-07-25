@@ -20,14 +20,18 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
 
     pcnt_unit_config_t unit_config = {
         // Set counter limit
-        .low_limit = -1,
+        .low_limit = INT16_MIN,
         .high_limit = INT16_MAX
     };
-    // The pulse count driver automatically counts roll overs.
+    // Enable PCNT internal accumulator to count overflows.
     unit_config.flags.accum_count = true;
 
     // initialize PCNT
     CHECK_ESP_RESULT(pcnt_new_unit(&unit_config, &self->unit));
+
+    // Set watchpoints at limis, to auto-accumulate overflows.
+    pcnt_unit_add_watch_point(self->unit, INT16_MIN);
+    pcnt_unit_add_watch_point(self->unit, INT16_MAX);
 
     self->pin = pin->number;
     pcnt_chan_config_t channel_config = {

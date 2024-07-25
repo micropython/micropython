@@ -23,14 +23,18 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     // in CircuitPython.
     pcnt_unit_config_t unit_config = {
         // Set counter limit
-        .low_limit = -INT16_MAX,
+        .low_limit = INT16_MIN,
         .high_limit = INT16_MAX
     };
-    // The pulse count driver automatically counts roll overs.
+    // Enable PCNT internal accumulator to count overflows.
     unit_config.flags.accum_count = true;
 
     // initialize PCNT
     CHECK_ESP_RESULT(pcnt_new_unit(&unit_config, &self->unit));
+
+    // Set watchpoints at limits, to auto-accumulate overflows.
+    pcnt_unit_add_watch_point(self->unit, INT16_MIN);
+    pcnt_unit_add_watch_point(self->unit, INT16_MAX);
 
     pcnt_chan_config_t channel_a_config = {
         .edge_gpio_num = pin_a->number,
