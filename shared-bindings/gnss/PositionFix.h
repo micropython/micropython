@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_GNSS_POSITIONFIX_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_GNSS_POSITIONFIX_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -24,5 +23,3 @@ typedef struct {
 extern const gnss_positionfix_obj_t gnss_positionfix_invalid_obj;
 extern const gnss_positionfix_obj_t gnss_positionfix_fix2d_obj;
 extern const gnss_positionfix_obj_t gnss_positionfix_fix3d_obj;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_GNSS_POSITIONFIX_H

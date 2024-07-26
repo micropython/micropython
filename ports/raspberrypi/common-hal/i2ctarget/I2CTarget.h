@@ -6,9 +6,6 @@
 
 #pragma once
 
-#ifndef MICROPY_INCLUDED_RPI_COMMON_HAL_I2C_TARGET_H
-#define MICROPY_INCLUDED_RPI_COMMON_HAL_I2C_TARGET_H
-
 #include "py/obj.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "src/rp2_common/hardware_i2c/include/hardware/i2c.h"
@@ -24,5 +21,3 @@ typedef struct {
     uint8_t scl_pin;
     uint8_t sda_pin;
 } i2ctarget_i2c_target_obj_t;
-
-#endif MICROPY_INCLUDED_RPI_COMMON_HAL_BUSIO_I2C_TARGET_H

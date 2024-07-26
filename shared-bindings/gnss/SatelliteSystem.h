@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_GNSS_SATELLITESYSTEM_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_GNSS_SATELLITESYSTEM_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -29,5 +28,3 @@ extern const gnss_satellitesystem_obj_t gnss_satellitesystem_glonass_obj;
 extern const gnss_satellitesystem_obj_t gnss_satellitesystem_sbas_obj;
 extern const gnss_satellitesystem_obj_t gnss_satellitesystem_qzss_l1ca_obj;
 extern const gnss_satellitesystem_obj_t gnss_satellitesystem_qzss_l1s_obj;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_GNSS_SATELLITESYSTEM_H

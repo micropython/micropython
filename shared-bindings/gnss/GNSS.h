@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_GNSS_GNSS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_GNSS_GNSS_H
+#pragma once
 
 #include "common-hal/gnss/GNSS.h"
 #include "shared-bindings/gnss/SatelliteSystem.h"
@@ -23,5 +22,3 @@ mp_float_t common_hal_gnss_get_longitude(gnss_obj_t *self);
 mp_float_t common_hal_gnss_get_altitude(gnss_obj_t *self);
 void common_hal_gnss_get_timestamp(gnss_obj_t *self, timeutils_struct_time_t *tm);
 gnss_positionfix_t common_hal_gnss_get_fix(gnss_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_GNSS_GNSS_H
