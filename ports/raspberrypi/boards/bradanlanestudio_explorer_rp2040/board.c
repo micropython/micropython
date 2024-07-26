@@ -146,32 +146,33 @@ static int _set_vid(void) {
     vid_setting = value;
     /*
         Voltage Divider with 3.3V: (1241 * V)
-         10K/ 15K = 1.98V = 2458
-         15K/ 10K = 1.32V = 1638
-         15K/4.7K = 0.79V =  980
-         15K/  2K = 1.32V =  482
-         15K/  1K = 1.32V =  256
+          10K/ 15K = 1.98V = 2458    GT 2000 = TBD
+          15K/ 10K = 1.32V = 1638    GT 1200 = Explorer  with SSD1681 BW
+          15K/4.7K = 0.79V =  980    GT  600 = Explorer  with SSD1681 BWR
+          15K/  2K = 0.39V =  482    GT  300 = Explorer  with SSD1608 BW
+         100K/ 10K = 0.30V =  372              ditto
+          15K/  1K = 0.21V =  256    GT  150 = DCNextGen with SSD1681 BWR
         Note: extreme values (using 100K or greater) will not create a strong enough current for the ADC to read accurately
         Note: we do not get a usable value when the voltage divider is missing
     */
 
     // TODO change to min/max to tighten up the ranges (requires sampling of the initial boards)
     if (value > 2800) {
-        vid_setting = 9;
+        vid_setting = 9;            // invalid
     } else if (value > 2000) {
-        vid_setting = 5;
+        vid_setting = 5;            // future
     } else if (value > 1200) {
-        vid_setting = 4;
+        vid_setting = 4;            // Explorer  SSD1681 BW
     } else if (value > 600) {
-        vid_setting = 3;
+        vid_setting = 3;            // Explorer  SSD1681 BWR
     } else if (value > 300) {
-        vid_setting = 2;
+        vid_setting = 2;            // Explorer  SSD1608 BW
     } else if (value > 150) {
-        vid_setting = 1;
+        vid_setting = 1;            // DCNextGen SSD1681 BWR
     } else {
-        vid_setting = 0;
-    }
+        vid_setting = 0;            // invalid
 
+    }
     return vid_setting;
 }
 
@@ -227,8 +228,29 @@ void board_init(void) {
     display = &allocate_display()->epaper_display;
     display->base.type = &epaperdisplay_epaperdisplay_type;
 
-    // VID codes: 1 = tricolor ePaper (BWR), 2 = monochrome ePaper (BW), other codes are TBD
+    // default to no rotation
+    int rotation = 0;
     if (vid_setting == 1) {
+        // DCNextGen SSD1681 BWR rotated 270
+        rotation = 270;
+    }
+
+    // default to BWR refresh rates
+    float refresh_time = 15.0;
+    float seconds_per_frame = 20.0;
+    if ((vid_setting == 2) || (vid_setting == 4)) {
+        // BW displays have faster refresh rates
+        refresh_time = 1.0;
+        seconds_per_frame = 5.0;
+    }
+
+    // VID 1, 3, and 4 = SSD1681 display driver
+    // VID 2           = SSD1608 display driver
+
+    // VID codes: see above
+    if ((vid_setting == 1) ||   // DCNextGen SSD1681 BWR rotated 270
+        (vid_setting == 3) ||   // Explorer  SSD1681 BW  rotated 0
+        (vid_setting == 4)) {   // Explorer  SSD1681 BWR rotated 0
         common_hal_epaperdisplay_epaperdisplay_construct(
             display,
             bus,
@@ -241,7 +263,7 @@ void board_init(void) {
             HEIGHT + 0x60,                                                                                  // ram_height RAM is actually only 200 bits high but we use 296 to match the 9 bits
             0,                                                                                              // colstart
             0,                                                                                              // rowstart
-            270,                                                                                            // rotation
+            rotation,                                                                                       // rotation
             SSD_SET_RAMXPOS,                                                                                // set_column_window_command
             SSD_SET_RAMYPOS,                                                                                // set_row_window_command
             SSD_SET_RAMXCOUNT,                                                                              // set_current_column_command
@@ -252,16 +274,16 @@ void board_init(void) {
             false,                                                                                          // color_bits_inverted
             0xFF0000,                                                                                       // highlight_color (RED for tri-color display)
             _refresh_sequence_ssd1681, sizeof(_refresh_sequence_ssd1681),                                   // refresh_display_command
-            15.0,                                                                                           // refresh_time
+            refresh_time,                                                                                   // refresh_time
             &pin_GPIO9, // DEFAULT_SPI_BUS_BUSY,                                                            // busy_pin
             true,                                                                                           // busy_state
-            20.0,                                                                                           // seconds_per_frame (does not seem the user can change this)
+            seconds_per_frame,                                                                              // seconds_per_frame (does not seem the user can change this)
             true,                                                                                           // always_toggle_chip_select
             false,                                                                                          // not grayscale
             false,                                                                                          // not acep
             false,                                                                                          // not two_byte_sequence_length
             true);                                                                                          // address_little_endian
-    } else if (vid_setting == 2) {
+    } else if (vid_setting == 2) {  // Explorer SSD1608 BW
         common_hal_epaperdisplay_epaperdisplay_construct(
             display,
             bus,
@@ -274,7 +296,7 @@ void board_init(void) {
             HEIGHT /* + 0x60 */,                                                                             // ram_height RAM is actually only 200 bits high but we use 296 to match the 9 bits
             0,                                                                                              // colstart
             0,                                                                                              // rowstart
-            0,                                                                                            // rotation
+            rotation,                                                                                       // rotation
             SSD_SET_RAMXPOS,                                                                                // set_column_window_command
             SSD_SET_RAMYPOS,                                                                                // set_row_window_command
             SSD_SET_RAMXCOUNT,                                                                              // set_current_column_command
@@ -285,10 +307,10 @@ void board_init(void) {
             false,                                                                                          // color_bits_inverted
             0x000000,                                                                                       // highlight_color (RED for tri-color display)
             _refresh_sequence_ssd1608, sizeof(_refresh_sequence_ssd1608),                                   // refresh_display_command
-            1.0,                                                                                            // refresh_time
+            refresh_time,                                                                                   // refresh_time
             &pin_GPIO9, // DEFAULT_SPI_BUS_BUSY,                                                            // busy_pin
             true,                                                                                           // busy_state
-            5.0,                                                                                            // seconds_per_frame (does not seem the user can change this)
+            seconds_per_frame,                                                                              // seconds_per_frame (does not seem the user can change this)
             true,                                                                                           // always_toggle_chip_select
             false,                                                                                          // not grayscale
             false,                                                                                          // not acep

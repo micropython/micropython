@@ -110,6 +110,7 @@ autoapi_template_dir = 'docs/autoapi/templates'
 autoapi_python_class_content = "both"
 autoapi_python_use_implicit_namespaces = True
 autoapi_root = "shared-bindings"
+autoapi_file_patterns = ["*.pyi"]
 
 # Suppress cache warnings to prevent "unpickable" [sic] warning
 # about autoapi_prepare_jinja_env() from sphinx >= 7.3.0.
