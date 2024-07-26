@@ -61,6 +61,8 @@
 #define MICROPY_VERSION_STRING MICROPY_VERSION_STRING_BASE
 #endif
 
+#endif // CIRCUITPY
+
 // If this is enabled, then in-progress/breaking changes slated for the 2.x
 // release will be enabled.
 #ifndef MICROPY_PREVIEW_VERSION_2

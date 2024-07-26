@@ -323,7 +323,8 @@ def qstr_escape(qst):
 static_qstr_list_ident = list(map(qstr_escape, static_qstr_list))
 
 
-def parse_input_headers(infiles):
+# CIRCUITPY-CHANGE: add translations handling
+def parse_input_headers_with_translations(infiles):
     qcfgs = {}
     qstrs = {}
     # CIRCUITPY-CHANGE: add translations
@@ -428,12 +429,18 @@ def print_qstr_data(qcfgs, qstrs, translations):
         qbytes = make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr)
         print("QDEF0(MP_QSTR_%s, %s)" % (qstr_escape(qstr), qbytes))
 
+    # CIRCUITPY-CHANGE: track total qstr size
+    total_qstr_size = 0
+
     # add remaining qstrs to the sorted (by value) pool (unless they're in
     # operator_qstr_list, in which case add them to the unsorted pool)
     for ident, qstr in sorted(qstrs.values(), key=lambda x: x[1]):
         qbytes = make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr)
         pool = 0 if qstr in operator_qstr_list else 1
         print("QDEF%d(MP_QSTR_%s, %s)" % (pool, ident, qbytes))
+
+        # CIRCUITPY-CHANGE: track total qstr size
+        total_qstr_size += len(qstr)
 
     # CIRCUITPY-CHANGE: translations
     print(

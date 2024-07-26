@@ -101,7 +101,8 @@ const qstr_len_t mp_qstr_const_lengths_static[] = {
 #undef QDEF0
 #undef QDEF1
 // CIRCUITPY-CHANGE: translations
-#undef TRANSLATION    #endif
+#undef TRANSLATION
+    #endif
 };
 
 const qstr_pool_t mp_qstr_const_pool_static = {

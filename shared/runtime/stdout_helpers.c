@@ -26,7 +26,7 @@
 
 #include <string.h>
 // CIRCUITPY-CHANGE
-#include <bool.h>
+#include <stdbool.h>
 #include "py/mphal.h"
 
 /*

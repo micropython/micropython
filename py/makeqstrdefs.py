@@ -152,8 +152,8 @@ def process_file(f):
         )
     elif args.mode == _MODE_ROOT_POINTER:
         re_match = re.compile(r"MP_REGISTER_ROOT_POINTER\(.*?\);")
-   # CIRCUITPY-CHANGE: added
-   re_translate = re.compile(r"MP_COMPRESSED_ROM_TEXT\(\"((?:(?=(\\?))\2.)*?)\"\)")
+    # CIRCUITPY-CHANGE: added
+    re_translate = re.compile(r"MP_COMPRESSED_ROM_TEXT\(\"((?:(?=(\\?))\2.)*?)\"\)")
     output = []
     last_fname = None
     for line in f:

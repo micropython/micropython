@@ -6,6 +6,11 @@
 
 #include <string.h>
 
+#include "mpconfigboard.h"
+#include "mphalport.h"
+#include "reset.h"
+#include "supervisor/shared/tick.h"
+
 #include "shared/readline/readline.h"
 #include "shared/runtime/interrupt_char.h"
 #include "py/mphal.h"
@@ -21,10 +26,6 @@
 #include "hal/include/hal_sleep.h"
 #include "sam.h"
 
-#include "mpconfigboard.h"
-#include "mphalport.h"
-#include "reset.h"
-#include "supervisor/shared/tick.h"
 
 extern uint32_t common_hal_mcu_processor_get_frequency(void);
 

@@ -573,7 +573,7 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_er
         // We have some memory to format the string.
         struct _exc_printer_t exc_pr = {!used_emg_buf, o_str_alloc, 0, o_str_buf};
         mp_print_t print = {&exc_pr, exc_add_strn};
-        mp_vcprintf(&print, fmt, ap);
+        mp_vcprintf(&print, fmt, args);
         exc_pr.buf[exc_pr.len] = '\0';
         o_str->len = exc_pr.len;
         o_str->data = exc_pr.buf;

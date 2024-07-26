@@ -13,11 +13,13 @@
 #include "supervisor/shared/translate/compressed_string.h"
 
 #ifndef NO_QSTR
-#define QDEF(id, hash, len, str)
+#define QDEF0(id, hash, len, str)
+#define QDEF1(id, hash, len, str)
 #define TRANSLATION(english_id, number) extern struct compressed_string translation##number;
 #include "genhdr/qstrdefs.generated.h"
+#undef QDEF0
+#undef QDEF1
 #undef TRANSLATION
-#undef QDEF
 #endif
 
 #if CIRCUITPY_TRANSLATE_OBJECT == 0

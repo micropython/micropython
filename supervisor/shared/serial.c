@@ -318,25 +318,31 @@ uint32_t serial_bytes_available(void) {
     return count;
 }
 
-void serial_write_substring(const char *text, uint32_t length) {
+uint32_t serial_write_substring(const char *text, uint32_t length) {
     if (length == 0) {
-        return;
+        return 0;
     }
+
+    // See https://github.com/micropython/micropython/pull/11850 for the motivation for returning
+    // the number of chars written.
+
+    // Assume that unless otherwise reported, we sent all that we got.
+    uint32_t length_sent = length;
 
     #if CIRCUITPY_TERMINALIO
     int errcode;
     if (!_serial_display_write_disabled) {
-        common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t *)text, length, &errcode);
+        length_sent = common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t *)text, length, &errcode);
     }
     #endif
 
     if (_serial_console_write_disabled) {
-        return;
+        return length_sent;
     }
 
     #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected()) {
-        tud_vendor_write(text, length);
+        length_sent = tud_vendor_write(text, length);
     }
     #endif
 
@@ -346,7 +352,7 @@ void serial_write_substring(const char *text, uint32_t length) {
         _first_write_done = true;
     }
     int uart_errcode;
-    common_hal_busio_uart_write(&console_uart, (const uint8_t *)text, length, &uart_errcode);
+    length_sent = common_hal_busio_uart_write(&console_uart, (const uint8_t *)text, length, &uart_errcode);
     #endif
 
     #if CIRCUITPY_SERIAL_BLE
@@ -359,7 +365,7 @@ void serial_write_substring(const char *text, uint32_t length) {
 
     #if CIRCUITPY_USB_DEVICE && CIRCUITPY_USB_CDC
     if (!usb_cdc_console_enabled()) {
-        return;
+        return length;
     }
     #endif
 
@@ -384,6 +390,8 @@ void serial_write_substring(const char *text, uint32_t length) {
 
     board_serial_write_substring(text, length);
     port_serial_write_substring(text, length);
+
+    return length_sent;
 }
 
 void serial_write(const char *text) {
