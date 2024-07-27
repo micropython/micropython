@@ -75,7 +75,7 @@ STATIC bool repl_display_debugging_info = 0;
 // EXEC_FLAG_ALLOW_DEBUGGING allows debugging info to be printed after executing the code
 // EXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
 // CIRCUITPY-CHANGE: add result support
-STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input_kind, mp_uint_t exec_flags) {
+STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input_kind, mp_uint_t exec_flags, pyexec_result_t *result) {
     int ret = 0;
     #if MICROPY_REPL_INFO
     uint32_t start = 0;
@@ -117,7 +117,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
                 } else if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
                     lex = mp_lexer_new(MP_QSTR__lt_stdin_gt_, *(mp_reader_t *)source);
                 } else if (exec_flags & EXEC_FLAG_SOURCE_IS_FILENAME) {
-                    lex = mp_lexer_new_from_file(source);
+                    lex = mp_lexer_new_from_file(qstr_from_str(source));
                 } else {
                     lex = (mp_lexer_t *)source;
                 }
