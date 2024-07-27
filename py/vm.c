@@ -1445,7 +1445,7 @@ unwind_loop:
             // - constant GeneratorExit object, because it's const
             // - exceptions re-raised by END_FINALLY
             // - exceptions re-raised explicitly by "raise"
-            // CIRCUITPY-CHANGE: MICROPY_CONST_GENERATOREXIT_OBJ check; true just helps formatting. 
+            // CIRCUITPY-CHANGE: MICROPY_CONST_GENERATOREXIT_OBJ check; true just helps formatting.
             if ( true
                 #if MICROPY_CONST_GENERATOREXIT_OBJ
                 && nlr.ret_val != &mp_const_GeneratorExit_obj
@@ -1498,7 +1498,7 @@ unwind_loop:
                 mp_obj_t ret_val_obj = MP_OBJ_FROM_PTR(nlr.ret_val);
                 #if MICROPY_CPYTHON_EXCEPTION_CHAIN
                 if (active_exception != MP_OBJ_NULL && active_exception != ret_val_obj) {
-                    mp_store_attr(obj, MP_QSTR___context__, active_exception);
+                    mp_store_attr(ret_val_obj, MP_QSTR___context__, active_exception);
                 }
                 #endif
                 // push exception object so it can be handled by bytecode

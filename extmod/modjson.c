@@ -441,7 +441,8 @@ STATIC mp_obj_t mod_json_loads(mp_obj_t obj) {
     mp_get_buffer_raise(obj, &bufinfo, MP_BUFFER_READ);
     vstr_t vstr = {bufinfo.len, bufinfo.len, (char *)bufinfo.buf, true};
     mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
-    return mod_json_load(MP_OBJ_FROM_PTR(&sio), false);
+    // CIRCUITPY-CHANGE
+    return _mod_json_load(MP_OBJ_FROM_PTR(&sio), false);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_json_loads_obj, mod_json_loads);
 

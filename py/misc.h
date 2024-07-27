@@ -34,6 +34,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
+// CIRCUITPY-CHANGE: include directly instead of depending on previous includes
+#include "mpconfig.h"
+
 typedef unsigned char byte;
 typedef unsigned int uint;
 
@@ -134,6 +137,9 @@ size_t m_get_peak_bytes_allocated(void);
 
 // align ptr to the nearest multiple of "alignment"
 #define MP_ALIGN(ptr, alignment) (void *)(((uintptr_t)(ptr) + ((alignment) - 1)) & ~((alignment) - 1))
+
+// CIRCUITPY-CHANGE
+#define sizeof_field(TYPE, MEMBER) sizeof((((TYPE *)0)->MEMBER))
 
 /** unichar / UTF-8 *********************************************/
 

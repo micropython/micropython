@@ -407,8 +407,8 @@ STATIC mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size
         // CIRCUITPY-CHANGE: check for ctrl-C interrupt
         if (mp_hal_is_interrupted()) {
             return 0;
-
-        // CIRCUITPY-CHANGE: mp_event_wait_* do RUN_BACKGROUND_TASKS
+        }
+        // CIRCUITPY-CHANGE: mp_event_wait_ms() and mp_event_wait_indefinite() will do RUN_BACKGROUND_TASKS
         if (has_timeout) {
             mp_event_wait_ms(timeout - elapsed);
         } else {
