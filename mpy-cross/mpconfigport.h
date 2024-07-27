@@ -26,6 +26,10 @@
 
 // options to control how MicroPython is built
 
+// CIRCUITPY-CHANGE: mpy-cross doesn't have background tasks
+#define RUN_BACKGROUND_TASKS ((void)0)
+
+
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #define MICROPY_PERSISTENT_CODE_SAVE (1)

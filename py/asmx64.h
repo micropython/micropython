@@ -124,8 +124,8 @@ void asm_x64_call_ind(asm_x64_t *as, size_t fun_id, int temp_r32);
 // Holds a pointer to mp_fun_table
 #define ASM_X64_REG_FUN_TABLE ASM_X64_REG_RBP
 
-#// CIRCUITPY-CHANGE: prevent #if warning
-if defined(GENERIC_ASM_API) && GENERIC_ASM_API
+// CIRCUITPY-CHANGE: prevent #if warning
+#if defined(GENERIC_ASM_API) && GENERIC_ASM_API
 
 // The following macros provide a (mostly) arch-independent API to
 // generate native code, and are used by the native emitter.
