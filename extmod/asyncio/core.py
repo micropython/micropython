@@ -129,6 +129,15 @@ class IOQueue:
             else:
                 self.poller.modify(s, select.POLLIN)
 
+    def all_tasks(self):
+        tasks = set()
+        for q1, q2, _ in self.map.values():
+            if q1 is not None:
+                tasks.add(q1)
+            if q2 is not None:
+                tasks.add(q2)
+
+        return tasks
 
 ################################################################################
 # Main run loop
@@ -285,6 +294,14 @@ class Loop:
     def close():
         pass
 
+    def all_tasks():
+        tasks = set(_task_queue)
+        tasks.update(_io_queue.all_tasks())
+        if cur_task is not None:
+            tasks.add(cur_task)
+
+        return tasks
+
     def set_exception_handler(handler):
         Loop._exc_handler = handler
 
@@ -309,6 +326,13 @@ def current_task():
     if cur_task is None:
         raise RuntimeError("no running event loop")
     return cur_task
+
+
+def all_tasks():
+    if cur_task is None:
+        raise RuntimeError("no running event loop")
+
+    return Loop.all_tasks()
 
 
 def new_event_loop():
