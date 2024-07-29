@@ -70,6 +70,8 @@ EXCLUSIONS = [
     "tests/**/repl_*.py",
     # don't reindent this third-party code we vendored in
     "ports/raspberrypi/lwip_src",
+    # line breaks
+    "tools/mpy-tool.py",
 ]
 
 
