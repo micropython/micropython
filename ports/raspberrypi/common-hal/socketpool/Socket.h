@@ -35,7 +35,7 @@ typedef struct _lwip_socket_obj_t {
         } connection;
     } incoming;
     mp_obj_t callback;
-    byte peer[4];
+    ip_addr_t peer;
     mp_uint_t peer_port;
     mp_uint_t timeout;
     uint16_t recv_offset;

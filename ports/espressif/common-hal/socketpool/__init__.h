@@ -5,3 +5,8 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
+
+struct addrinfo;
+
+int socketpool_getaddrinfo_common(const char *host, int service, const struct addrinfo *hints, struct addrinfo **res);
+void socketpool_resolve_host_or_throw(int family, int type, const char *hostname, struct sockaddr_storage *addr, int port);

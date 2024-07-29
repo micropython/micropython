@@ -72,6 +72,7 @@ EXCLUSIONS = [
     "ports/raspberrypi/lwip_src",
 ]
 
+
 # CIRCUITPY-CHANGE
 # None of the standard Python path matching routines implement the matching
 # we want, which is most like git's "pathspec" version of globs.
@@ -141,6 +142,7 @@ def relative_filename(arg):
 
 def list_files(args):
     return sorted(arg for arg in args if path_rx.match(relative_filename(arg)))
+
 
 # CIRCUITPY-CHANGE: handle inline documentation
 def fixup_c(filename):

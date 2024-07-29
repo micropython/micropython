@@ -247,8 +247,8 @@ mp_obj_t MICROPY_WRAP_MP_LOAD_GLOBAL(mp_load_global)(qstr qst) {
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_msg(&mp_type_NameError, MP_ERROR_TEXT("name not defined"));
             #else
-           // CIRCUITPY-CHANGE: slight message change 
-           mp_raise_msg_varg(&mp_type_NameError, MP_ERROR_TEXT("name '%q' is not defined"), qst);
+            // CIRCUITPY-CHANGE: slight message change
+            mp_raise_msg_varg(&mp_type_NameError, MP_ERROR_TEXT("name '%q' is not defined"), qst);
             #endif
         }
     }

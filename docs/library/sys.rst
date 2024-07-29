@@ -15,6 +15,23 @@ Functions
    function raise as `SystemExit` exception. If an argument is given, its
    value given as an argument to `SystemExit`.
 
+.. function:: print_exception(exc, file=sys.stdout, /)
+
+   This function is being deprecated and will be removed starting in
+   CircuitPython 10.x, `traceback.print_exception()` should be used instead.
+
+   Print exception with a traceback to a file-like object *file* (or
+   `sys.stdout` by default).
+
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      This is simplified version of a function which appears in the
+      `traceback` module in CPython. Unlike `traceback.print_exception()`,
+      this function takes just exception value instead of exception type,
+      exception value, and traceback object; *file* argument should be
+      positional; further arguments are not supported.
+
 Constants
 ---------
 
@@ -97,12 +114,6 @@ Constants
    If you need to check whether your program runs on CircuitPython (vs other
    Python implementation), use `sys.implementation` instead.
 
-.. data:: ps1
-          ps2
-
-   Mutable attributes holding strings, which are used for the REPL prompt.  The defaults
-   give the standard Python prompt of ``>>>`` and ``...``.
-
 .. data:: stderr
 
    Standard error ``stream``.
@@ -114,14 +125,6 @@ Constants
 .. data:: stdout
 
    Standard output ``stream``.
-
-.. data:: tracebacklimit
-
-   A mutable attribute holding an integer value which is the maximum number of traceback
-   entries to store in an exception.  Set to 0 to disable adding tracebacks.  Defaults
-   to 1000.
-
-   Note: this is not available on all ports.
 
 .. data:: version
 

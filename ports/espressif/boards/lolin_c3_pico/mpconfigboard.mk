@@ -11,5 +11,8 @@ CIRCUITPY_LEGACY_4MB_FLASH_LAYOUT = 1
 
 CIRCUITPY_ESP_USB_SERIAL_JTAG = 1
 
+# Not enough flash
+CIRCUITPY_SOCKETPOOL_IPV6 = 0
+
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel

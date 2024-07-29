@@ -195,7 +195,7 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, str, len), {});
     mp_uint_t written = ret < 0 ? 0 : ret;
     // CIRCUITPY-CHANGE: need to conditionalize MICROPY_PY_OS_DUPTERM
-    #if MICROPY_PY_OS_DUPTERM    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    #if MICROPY_PY_OS_DUPTERM int dupterm_res = mp_os_dupterm_tx_strn(str, len);
     if (dupterm_res >= 0) {
         written = MIN((mp_uint_t)dupterm_res, written);
     }

@@ -177,7 +177,7 @@ internal_bench/bytebuf:
 
 ## Test key/certificates
 
-SSL/TLS tests in `multi_net` and `net_inet` use a 
+SSL/TLS tests in `multi_net` and `net_inet` use a
 self-signed key/cert pair that is randomly generated and to be used for
 testing/demonstration only. You should always generate your own key/cert.
 

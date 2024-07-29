@@ -77,7 +77,7 @@ STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
 }
 #endif
 
-// CIRCUITPY-CHANGE: move extern to top level to prevent warnings 
+// CIRCUITPY-CHANGE: move extern to top level to prevent warnings
 #if MICROPY_MODULE_FROZEN
 extern const char mp_frozen_names[];
 #endif

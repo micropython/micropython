@@ -7,6 +7,7 @@
 #
 # LWIP
 #
+# CONFIG_LWIP_IPV6 is not set
 CONFIG_LWIP_LOCAL_HOSTNAME="lolin-c3-pico"
 # end of LWIP
 

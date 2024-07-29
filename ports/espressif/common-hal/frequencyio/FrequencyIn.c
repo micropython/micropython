@@ -30,10 +30,10 @@ static IRAM_ATTR bool timer_interrupt_handler(gptimer_handle_t timer,
 static esp_err_t init_pcnt(frequencyio_frequencyin_obj_t *self) {
     pcnt_unit_config_t unit_config = {
         // Set counter limit
-        .low_limit = -INT16_MAX + 1,
+        .low_limit = INT16_MIN,
         .high_limit = INT16_MAX
     };
-    // The pulse count driver automatically counts roll overs.
+    // Enable PCNT internal accumulator to count overflows.
     unit_config.flags.accum_count = true;
 
     // initialize PCNT
@@ -41,6 +41,10 @@ static esp_err_t init_pcnt(frequencyio_frequencyin_obj_t *self) {
     if (result != ESP_OK) {
         return result;
     }
+
+    // Set watchpoints at limis, to auto-accumulate overflows.
+    pcnt_unit_add_watch_point(self->internal_data->unit, INT16_MIN);
+    pcnt_unit_add_watch_point(self->internal_data->unit, INT16_MAX);
 
     pcnt_chan_config_t channel_config = {
         .edge_gpio_num = self->pin,

@@ -453,7 +453,6 @@ def print_qstr_data(qcfgs, qstrs, translations):
     print("// {} bytes worth of qstr".format(total_qstr_size))
 
 
-
 def do_work(infiles):
     # CIRCUITPY-CHANGE: include translations
     qcfgs, qstrs, translations = parse_input_headers_with_translations(infiles)

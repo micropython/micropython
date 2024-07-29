@@ -338,7 +338,11 @@ bool supervisor_start_web_workflow(void) {
         #endif
 
         if (common_hal_socketpool_socket_get_closed(&listening)) {
+            #if CIRCUITPY_SOCKETPOOL_IPV6
+            socketpool_socket(&pool, SOCKETPOOL_AF_INET6, SOCKETPOOL_SOCK_STREAM, 0, &listening);
+            #else
             socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, 0, &listening);
+            #endif
             common_hal_socketpool_socket_settimeout(&listening, 0);
             // Bind to any ip. (Not checking for failures)
             common_hal_socketpool_socket_bind(&listening, "", 0, web_api_port);
@@ -1592,12 +1596,10 @@ void supervisor_web_workflow_background(void *data) {
         if ((!common_hal_socketpool_socket_get_connected(&active) ||
              (!active_request.in_progress && !active_request.new_socket)) &&
             !common_hal_socketpool_socket_get_closed(&listening)) {
-            uint32_t ip;
-            uint32_t port;
             if (!common_hal_socketpool_socket_get_closed(&active)) {
                 common_hal_socketpool_socket_close(&active);
             }
-            int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port, &active);
+            int newsoc = socketpool_socket_accept(&listening, NULL, &active);
             if (newsoc == -EBADF) {
                 common_hal_socketpool_socket_close(&listening);
                 break;

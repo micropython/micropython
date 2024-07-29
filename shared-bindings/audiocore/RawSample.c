@@ -17,7 +17,12 @@
 //|     """A raw audio sample buffer in memory"""
 //|
 //|     def __init__(
-//|         self, buffer: ReadableBuffer, *, channel_count: int = 1, sample_rate: int = 8000
+//|         self,
+//|         buffer: ReadableBuffer,
+//|         *,
+//|         channel_count: int = 1,
+//|         sample_rate: int = 8000,
+//|         single_buffer: bool = True
 //|     ) -> None:
 //|         """Create a RawSample based on the given buffer of values. If channel_count is more than
 //|         1 then each channel's samples should alternate. In other words, for a two channel buffer, the
@@ -27,34 +32,58 @@
 //|         :param ~circuitpython_typing.ReadableBuffer buffer: A buffer with samples
 //|         :param int channel_count: The number of channels in the buffer
 //|         :param int sample_rate: The desired playback sample rate
+//|         :param bool single_buffer: Selects single buffered or double buffered transfer mode.  This affects
+//|                                    what happens if the sample buffer is changed while the sample is playing.
+//|                                    In single buffered transfers, a change in buffer contents will not affect active playback.
+//|                                    In double buffered transfers, changed buffer contents will
+//|                                    be played back when the transfer reaches the next half-buffer point.
 //|
-//|         Simple 8ksps 440 Hz sin wave::
+//|         Playing 8ksps 440 Hz and 880 Hz sine waves::
 //|
-//|           import audiocore
-//|           import audioio
-//|           import board
+//|           import analogbufio
 //|           import array
-//|           import time
+//|           import audiocore
+//|           import audiopwmio
+//|           import board
 //|           import math
+//|           import time
 //|
-//|           # Generate one period of sine wav.
+//|           # Generate one period of sine wave.
 //|           length = 8000 // 440
 //|           sine_wave = array.array("h", [0] * length)
 //|           for i in range(length):
 //|               sine_wave[i] = int(math.sin(math.pi * 2 * i / length) * (2 ** 15))
+//|           pwm = audiopwmio.PWMAudioOut(left_channel=board.D12, right_channel=board.D13)
 //|
-//|           dac = audioio.AudioOut(board.SPEAKER)
-//|           sine_wave = audiocore.RawSample(sine_wave)
-//|           dac.play(sine_wave, loop=True)
+//|           # Play single-buffered
+//|           sample = audiocore.RawSample(sine_wave)
+//|           pwm.play(sample, loop=True)
+//|           time.sleep(3)
+//|           # changing the wave has no effect
+//|           for i in range(length):
+//|                sine_wave[i] = int(math.sin(math.pi * 4 * i / length) * (2 ** 15))
+//|           time.sleep(3)
+//|           pwm.stop()
 //|           time.sleep(1)
-//|           dac.stop()"""
+//|
+//|           # Play double-buffered
+//|           sample = audiocore.RawSample(sine_wave, single_buffer=False)
+//|           pwm.play(sample, loop=True)
+//|           time.sleep(3)
+//|           # changing the wave takes effect almost immediately
+//|           for i in range(length):
+//|               sine_wave[i] = int(math.sin(math.pi * 2 * i / length) * (2 ** 15))
+//|           time.sleep(3)
+//|           pwm.stop()
+//|           pwm.deinit()"""
 //|         ...
 static mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_buffer, ARG_channel_count, ARG_sample_rate };
+    enum { ARG_buffer, ARG_channel_count, ARG_sample_rate, ARG_single_buffer };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL } },
         { MP_QSTR_channel_count, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1 } },
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 8000} },
+        { MP_QSTR_single_buffer, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -69,9 +98,12 @@ static mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
     } else if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
         mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"), MP_QSTR_buffer);
     }
+    if (!args[ARG_single_buffer].u_bool && bufinfo.len % (bytes_per_sample * args[ARG_channel_count].u_int * 2) != 0) {
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Length of %q must be an even multiple of channel_count * type_size"), MP_QSTR_buffer);
+    }
     common_hal_audioio_rawsample_construct(self, ((uint8_t *)bufinfo.buf), bufinfo.len,
         bytes_per_sample, signed_samples, args[ARG_channel_count].u_int,
-        args[ARG_sample_rate].u_int);
+        args[ARG_sample_rate].u_int, args[ARG_single_buffer].u_bool);
 
     return MP_OBJ_FROM_PTR(self);
 }

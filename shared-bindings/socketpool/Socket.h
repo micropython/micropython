@@ -10,7 +10,7 @@
 
 extern const mp_obj_type_t socketpool_socket_type;
 
-socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port);
+socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *self, mp_obj_t *peer_out);
 size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self, const char *host, size_t hostlen, uint32_t port);
 void common_hal_socketpool_socket_close(socketpool_socket_obj_t *self);
 void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self, const char *host, size_t hostlen, uint32_t port);
@@ -20,7 +20,7 @@ mp_uint_t common_hal_socketpool_socket_get_timeout(socketpool_socket_obj_t *self
 mp_int_t common_hal_socketpool_socket_get_type(socketpool_socket_obj_t *self);
 bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t *self, int backlog);
 mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *self,
-    uint8_t *buf, uint32_t len, uint8_t *ip, uint32_t *port);
+    uint8_t *buf, uint32_t len, mp_obj_t *peer_out);
 mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len);
 mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len);
 mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
@@ -31,7 +31,7 @@ bool common_hal_socketpool_readable(socketpool_socket_obj_t *self);
 bool common_hal_socketpool_writable(socketpool_socket_obj_t *self);
 
 // Non-allocating versions for internal use.
-int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port, socketpool_socket_obj_t *accepted);
+int socketpool_socket_accept(socketpool_socket_obj_t *self, mp_obj_t *peer_out, socketpool_socket_obj_t *accepted);
 void socketpool_socket_close(socketpool_socket_obj_t *self);
 int socketpool_socket_send(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len);
 int socketpool_socket_recv_into(socketpool_socket_obj_t *self,

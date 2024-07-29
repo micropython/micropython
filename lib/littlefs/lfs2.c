@@ -1079,7 +1079,7 @@ static lfs2_stag_t lfs2_dir_fetchmatch(lfs2_t *lfs2,
 
     // if either block address is invalid we return LFS2_ERR_CORRUPT here,
     // otherwise later writes to the pair could fail
-    if (lfs2->block_count 
+    if (lfs2->block_count
             && (pair[0] >= lfs2->block_count || pair[1] >= lfs2->block_count)) {
         return LFS2_ERR_CORRUPT;
     }

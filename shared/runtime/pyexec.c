@@ -46,7 +46,7 @@
 #include "shared/runtime/pyexec.h"
 #include "genhdr/mpversion.h"
 
-// CIRCUITPY-CHANGE: atexit suport
+// CIRCUITPY-CHANGE: atexit support
 #if CIRCUITPY_ATEXIT
 #include "shared-module/atexit/__init__.h"
 #endif
@@ -193,7 +193,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(exception_obj)), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // at the moment, the value of SystemExit is unused
             ret = pyexec_system_exit;
-        // CIRCUITPY-CHANGE
+            // CIRCUITPY-CHANGE
         #if CIRCUITPY_ALARM
         } else if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(exception_obj)), MP_OBJ_FROM_PTR(&mp_type_DeepSleepRequest))) {
             ret = PYEXEC_DEEP_SLEEP;

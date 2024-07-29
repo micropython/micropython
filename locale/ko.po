@@ -1231,6 +1231,7 @@ msgid "Interrupted by output function"
 msgstr "출력 함수로 인해 종료되었다"
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/espressif/common-hal/microcontroller/Processor.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
@@ -1337,6 +1338,10 @@ msgstr "레이어가 이미 그룹에 있습니다"
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr "레이어는 그룹 또는 TileGrid 하위 클래스 여야 합니다"
+
+#: shared-bindings/audiocore/RawSample.c
+msgid "Length of %q must be an even multiple of channel_count * type_size"
+msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
@@ -1620,7 +1625,6 @@ msgstr "%dx 오버샘플링이 포함된 8 또는 16 비트 모노만 지원됩�
 msgid "Only IPv4 addresses supported"
 msgstr "IPv4 주소만 지원됩니다"
 
-#: ports/espressif/common-hal/socketpool/Socket.c
 #: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr "IPv4 소켓만 지원됩니다"
@@ -2297,6 +2301,10 @@ msgstr ""
 
 #: shared-bindings/hashlib/__init__.c
 msgid "Unsupported hash algorithm"
+msgstr ""
+
+#: ports/espressif/common-hal/socketpool/Socket.c
+msgid "Unsupported socket type"
 msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
