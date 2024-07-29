@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-07-28 05:09+0000\n"
+"PO-Revision-Date: 2024-07-29 17:55+0000\n"
 "Last-Translator: gfbdrgng <hnaofegnp@hldrive.com>\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -4097,14 +4097,13 @@ msgid "string argument without an encoding"
 msgstr "строковый аргумент без кодировки"
 
 #: py/objstrunicode.c
-#, fuzzy
 msgid "string index out of range"
-msgstr "строковый индекс вне диапазона"
+msgstr "индекс строки выходит за пределы диапазона"
 
 #: py/objstrunicode.c
-#, fuzzy, c-format
+#, c-format
 msgid "string indices must be integers, not %s"
-msgstr "струнные индексы должны быть целых чисел, а не %s"
+msgstr "Индексы строк должны быть целыми числами, а не %s"
 
 #: extmod/moductypes.c
 msgid "struct: can't index"
@@ -4135,9 +4134,8 @@ msgid "syntax error in uctypes descriptor"
 msgstr "Синтаксическая ошибка в дескрипторе UCTYPES"
 
 #: extmod/modtime.c
-#, fuzzy
 msgid "ticks interval overflow"
-msgstr "клещей интервал перегрузка"
+msgstr "переполнение интервала тиков"
 
 #: ports/nordic/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
@@ -4150,12 +4148,12 @@ msgstr "таймаут должен быть < 655.35 сек"
 
 #: ports/raspberrypi/common-hal/floppyio/__init__.c
 msgid "timeout waiting for flux"
-msgstr ""
+msgstr "таймаут ожидания потока"
 
 #: ports/raspberrypi/common-hal/floppyio/__init__.c
 #: shared-module/floppyio/__init__.c
 msgid "timeout waiting for index pulse"
-msgstr ""
+msgstr "таймаут ожидания индексного импульса"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
@@ -4312,7 +4310,7 @@ msgstr "неподдерживаемая инструкция Xtensa '%s' с а�
 
 #: shared-module/bitmapfilter/__init__.c
 msgid "unsupported bitmap depth"
-msgstr ""
+msgstr "неподдерживаемая глубина растрового изображения"
 
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
@@ -4328,9 +4326,8 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "Неподдерживаемый символ формата '%c' (0x%x) при индексе %d"
 
 #: py/runtime.c
-#, fuzzy
 msgid "unsupported type for %q: '%s'"
-msgstr "неподдерживаемый тип для% q:%s \""
+msgstr "неподдерживаемый тип для %q: '%s'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
@@ -4367,10 +4364,12 @@ msgid ""
 "weights must be a sequence with an odd square number of elements (usually 9 "
 "or 25)"
 msgstr ""
+"Весом должна быть последовательность с нечетным квадратным числом элементов ("
+"обычно 9 или 25)"
 
 #: shared-bindings/bitmapfilter/__init__.c
 msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
-msgstr ""
+msgstr "Веса должны быть объектом типа %q, %q, %q или %q, а не %q "
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
