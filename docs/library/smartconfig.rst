@@ -38,12 +38,16 @@ A simple example would be::
         time.sleep_ms(100)
 
     print(smartconfig.info())
-    # (ssid, password, bssid, type[, rvd_data])
+    # (ssid, password, bssid, type[, v2_data])
 
     smartconfig.stop()
 
 Functions
 ---------
+
+.. function:: version()
+
+  Get the version of SmartConfig.
 
 .. function:: start()
 
@@ -68,11 +72,29 @@ Functions
   **Note:** If returns ``True``, it will automatically calls the
   ``smartconfig.stop()`` function.
 
+.. function:: timeout([seconds])
+
+  Gets or sets the timeout seconds for the SmartConfig process.
+
+  Parameter *seconds* range: 15s ~ 255s.
+
+.. function:: fast_mode([is_fast_mode])
+
+  Get or set the mode of SmartConfig. Default is normal mode.
+
+.. function:: v2_key([key])
+
+  Get or set the crypt key string for EspTouch V2 protocol.
+
+  *key* length must be 16 characters.
+
+  Passing ``None`` or an empty string ``''`` to clear the key.
+
 .. function:: info()
 
-  Returns a 4 or 5-tuple ``(ssid, password, bssid, type[, rvd_data])``.
+  Returns a 4 or 5-tuple ``(ssid, password, bssid, type[, v2_data])``.
 
-  **Note:** ``rvd_data`` is the custom data for EspTouch V2 protocol type.
+  **Note:** ``v2_data`` is the custom data for EspTouch V2 protocol type.
 
 .. function:: ssid()
 
@@ -97,9 +119,9 @@ Functions
   When SmartConfig process done, you can get the protocol type used by the
   phone.
 
-.. function:: rvd_data()
+.. function:: v2_data()
 
-  Returns the received ``rvd_data`` as ``bytes``.
+  Returns the received ``v2_data`` as ``str``.
 
 Constants
 ---------

@@ -11,6 +11,10 @@
 #include "esp_log.h"
 #include "esp_smartconfig.h"
 
+#include "mpconfigport.h"
+
+#if MICROPY_PY_SMARTCONFIG
+
 #include "mphalport.h"
 #include "modsmartconfig.h"
 
@@ -22,8 +26,13 @@ static bool smartconfig_process_done = false;
 static uint8_t ssid[33] = {0};
 static uint8_t bssid[6] = {0};
 static uint8_t password[65] = {0};
-static uint8_t rvd_data[33] = {0};
+static uint8_t v2_data[33] = {0};
+
+// smartconfig settings variables
 static int8_t type = SC_TYPE_ESPTOUCH_AIRKISS;
+static uint16_t timeout = 0;
+static bool fast_mode = false;
+static uint8_t v2_key[17] = {0};
 
 // event_handler used for esp_event_handler_register()
 static void event_handler(void *arg, esp_event_base_t event_base,
@@ -61,7 +70,7 @@ static void event_handler(void *arg, esp_event_base_t event_base,
         type = evt->type;
 
         if (evt->type == SC_TYPE_ESPTOUCH_V2) {
-            check_esp_err(esp_smartconfig_get_rvd_data(rvd_data, sizeof(rvd_data)));
+            check_esp_err(esp_smartconfig_get_rvd_data(v2_data, sizeof(v2_data)));
         }
 
         check_esp_err(esp_wifi_disconnect());
@@ -81,6 +90,12 @@ static void event_handler(void *arg, esp_event_base_t event_base,
 static void smartconfig_task(void *param) {
     check_esp_err(esp_smartconfig_set_type(type));
     smartconfig_start_config_t cfg = SMARTCONFIG_START_CONFIG_DEFAULT();
+
+    if (strlen((const char *)v2_key) == 16) {
+        cfg.esp_touch_v2_enable_crypt = true;
+        cfg.esp_touch_v2_key = (char *)v2_key;
+    }
+
     check_esp_err(esp_smartconfig_start(&cfg));
 
     EventBits_t uxBits;
@@ -112,12 +127,13 @@ static void smartconfig_init(void) {
     memset(ssid,     0, sizeof(ssid));
     memset(bssid,    0, sizeof(bssid));
     memset(password, 0, sizeof(password));
-    memset(rvd_data, 0, sizeof(rvd_data));
+    memset(v2_data, 0, sizeof(v2_data));
 
     wifi_event_group = xEventGroupCreate();
 
     esp_err_t err = esp_wifi_stop();
     if (err == ESP_ERR_WIFI_NOT_INIT) {
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("initialize wifi first"));
         return;
     }
     check_esp_err(err);
@@ -154,6 +170,65 @@ static mp_obj_t smartconfig_type(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(smartconfig_type_obj, 0, 1, smartconfig_type);
 
+// get/set timeout of smartconfig process
+// smartconfig.timeout([seconds])
+static mp_obj_t smartconfig_timeout(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0 || args[0] == mp_const_none) {
+        return mp_obj_new_int(timeout);
+    } else {
+        if (mp_obj_is_integer(args[0])) {
+            timeout = mp_obj_get_int(args[0]);
+
+            timeout = timeout > TIMEOUT_MAX ? TIMEOUT_MAX :
+                timeout < TIMEOUT_MIN ? TIMEOUT_MIN : timeout;
+
+            check_esp_err(esp_esptouch_set_timeout(timeout));
+        } else {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments"));
+        }
+    }
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(smartconfig_timeout_obj, 0, 1, smartconfig_timeout);
+
+// get/set smartconfig mode
+// smartconfig.fast_mode([is_fast_mode])
+static mp_obj_t smartconfig_fast_mode(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0 || args[0] == mp_const_none) {
+        return mp_obj_new_bool(fast_mode);
+    } else {
+        fast_mode = mp_obj_is_true(args[0]);
+        check_esp_err(esp_smartconfig_fast_mode(fast_mode));
+    }
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(smartconfig_fast_mode_obj, 0, 1, smartconfig_fast_mode);
+
+// get/set AES key for ESPTOUCH V2
+// smartconfig.v2_key([key])
+static mp_obj_t smartconfig_v2_key(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return mp_obj_new_str((const char *)v2_key, strlen((const char *)v2_key));
+    } else if (args[0] == mp_const_none) {
+        memset(v2_key, 0, sizeof(v2_key));
+    } else {
+        const char *key = mp_obj_str_get_str(args[0]);
+
+        if (strlen(key) == 0) {
+            memset(v2_key, 0, sizeof(v2_key));
+        } else if (strlen(key) != AES_KEY_LENGTH) {
+            mp_raise_ValueError(MP_ERROR_TEXT("v2_key length should be 16"));
+        } else {
+            memcpy(v2_key, key, strlen(key));
+        }
+    }
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(smartconfig_v2_key_obj, 0, 1, smartconfig_v2_key);
+
 static mp_obj_t smartconfig_start(void) {
     smartconfig_stop();
     smartconfig_init();
@@ -179,18 +254,18 @@ static mp_obj_t smartconfig_done(void) {
 static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_done_obj, smartconfig_done);
 
 // get smartconfig info
-// return: tuple(ssid, password, bssid, type[, rvd_data])
-//         rvd_data - EspTouch V2 reserved data
+// return: tuple(ssid, password, bssid, type[, v2_data])
+//         v2_data - EspTouch V2 reserved data
 static mp_obj_t smartconfig_info(void) {
     mp_obj_t info[] = {
         mp_obj_new_str((const char *)ssid, strlen((const char *)ssid)),
         mp_obj_new_str((const char *)password, strlen((const char *)password)),
         mp_obj_new_bytes(bssid, sizeof(bssid)),
         mp_obj_new_int(type),
-        mp_obj_new_bytes(rvd_data, strlen((const char *)rvd_data))
+        mp_obj_new_str((const char *)v2_data, strlen((const char *)v2_data))
     };
 
-    if (rvd_data[0] == 0x00) {
+    if (v2_data[0] == 0x00) {
         return mp_obj_new_tuple(4, info);
     }
 
@@ -216,15 +291,25 @@ static mp_obj_t smartconfig_bssid(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_bssid_obj, smartconfig_bssid);
 
-// get rvd_data bytes
-static mp_obj_t smartconfig_rvd_data(void) {
-    return mp_obj_new_bytes(rvd_data, strlen((const char *)rvd_data));
+// get v2_data string
+static mp_obj_t smartconfig_v2_data(void) {
+    return mp_obj_new_str((const char *)v2_data, strlen((const char *)v2_data));
 }
-static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_rvd_data_obj, smartconfig_rvd_data);
+static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_v2_data_obj, smartconfig_v2_data);
+
+// get sc_version string
+static mp_obj_t smartconfig_version(void) {
+    const char *version = esp_smartconfig_get_version();
+    return mp_obj_new_str(version, strlen(version));
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_version_obj, smartconfig_version);
 
 static const mp_rom_map_elem_t smartconfig_module_globals_table[] = {
     {MP_ROM_QSTR(MP_QSTR___name__),                 MP_ROM_QSTR(MP_QSTR_smartconfig)},
     {MP_ROM_QSTR(MP_QSTR_type),                     MP_ROM_PTR(&smartconfig_type_obj)},
+    {MP_ROM_QSTR(MP_QSTR_timeout),                  MP_ROM_PTR(&smartconfig_timeout_obj)},
+    {MP_ROM_QSTR(MP_QSTR_fast_mode),                MP_ROM_PTR(&smartconfig_fast_mode_obj)},
+    {MP_ROM_QSTR(MP_QSTR_v2_key),                  MP_ROM_PTR(&smartconfig_v2_key_obj)},
     {MP_ROM_QSTR(MP_QSTR_start),                    MP_ROM_PTR(&smartconfig_start_obj)},
     {MP_ROM_QSTR(MP_QSTR_stop),                     MP_ROM_PTR(&smartconfig_stop_obj)},
     {MP_ROM_QSTR(MP_QSTR_done),                     MP_ROM_PTR(&smartconfig_done_obj)},
@@ -232,7 +317,8 @@ static const mp_rom_map_elem_t smartconfig_module_globals_table[] = {
     {MP_ROM_QSTR(MP_QSTR_ssid),                     MP_ROM_PTR(&smartconfig_ssid_obj)},
     {MP_ROM_QSTR(MP_QSTR_password),                 MP_ROM_PTR(&smartconfig_password_obj)},
     {MP_ROM_QSTR(MP_QSTR_bssid),                    MP_ROM_PTR(&smartconfig_bssid_obj)},
-    {MP_ROM_QSTR(MP_QSTR_rvd_data),                 MP_ROM_PTR(&smartconfig_rvd_data_obj)},
+    {MP_ROM_QSTR(MP_QSTR_v2_data),                 MP_ROM_PTR(&smartconfig_v2_data_obj)},
+    {MP_ROM_QSTR(MP_QSTR_version),                  MP_ROM_PTR(&smartconfig_version_obj)},
     {MP_ROM_QSTR(MP_QSTR_TYPE_ESPTOUCH),            MP_ROM_INT(SC_TYPE_ESPTOUCH)},
     {MP_ROM_QSTR(MP_QSTR_TYPE_AIRKISS),             MP_ROM_INT(SC_TYPE_AIRKISS)},
     {MP_ROM_QSTR(MP_QSTR_TYPE_ESPTOUCH_AIRKISS),    MP_ROM_INT(SC_TYPE_ESPTOUCH_AIRKISS)},
@@ -246,3 +332,4 @@ const mp_obj_module_t smartconfig_user_cmodule = {
 };
 
 MP_REGISTER_MODULE(MP_QSTR_smartconfig, smartconfig_user_cmodule);
+#endif // MICROPY_PY_SMARTCONFIG
