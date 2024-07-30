@@ -28,7 +28,7 @@
 #include "py/mphal.h"
 #include "usb_serial_jtag.h"
 
-#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG_ENABLED
 
 #include "hal/usb_serial_jtag_ll.h"
 #include "esp_intr_alloc.h"
@@ -117,4 +117,4 @@ void usb_serial_jtag_tx_strn(const char *str, size_t len) {
     }
 }
 
-#endif // CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+#endif // CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG_ENABLED
