@@ -159,7 +159,7 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         }
     }
 
-    #if CONFIG_IDF_TARGET_ESP32C3
+    #if CONFIG_IDF_TARGET_ESP32C3 && CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG_ENABLED
     if (index == 18 || index == 19) {
         CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
     }
