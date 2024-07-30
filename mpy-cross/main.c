@@ -37,7 +37,8 @@
 #include "py/stackctrl.h"
 #include "genhdr/mpversion.h"
 #ifdef _WIN32
-#include "ports/windows/fmode.h"
+// CIRCUITPY-CHANGE
+#include "fmode.h"
 #endif
 
 // Command line options, with their defaults
