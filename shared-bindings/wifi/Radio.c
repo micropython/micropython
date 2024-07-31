@@ -52,13 +52,13 @@ static bool hostname_valid(const char *ptr, size_t len) {
 }
 
 static void validate_hex_password(const uint8_t *buf, size_t len) {
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++)
+    {
         if (!unichar_isxdigit(buf[i])) {
             mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid hex password"));
         }
     }
 }
-
 
 //| class Radio:
 //|     """Native wifi radio.
@@ -133,7 +133,6 @@ MP_PROPERTY_GETSET(wifi_radio_hostname_obj,
 //|     **Limitations:** Not settable on RP2040 CYW43 boards, such as Pi Pico W.
 //|     """
 
-
 static mp_obj_t _wifi_radio_get_mac_address(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(common_hal_wifi_radio_get_mac_address(self));
@@ -186,6 +185,29 @@ MP_PROPERTY_GETSET(wifi_radio_tx_power_obj,
     (mp_obj_t)&wifi_radio_get_tx_power_obj,
     (mp_obj_t)&wifi_radio_set_tx_power_obj);
 
+#if CIRCUITPY_WIFI_RADIO_SETTABLE_LISTEN_INTERVAL
+//|     listen_interval: int
+//|     """Wifi power save listen interval power, in DTIM periods, or 100ms intervals if TWT is supported."""
+static mp_obj_t wifi_radio_get_listen_interval(mp_obj_t self_in) {
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_int(common_hal_wifi_radio_get_listen_interval(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_listen_interval_obj, wifi_radio_get_listen_interval);
+
+static mp_obj_t wifi_radio_set_listen_interval(mp_obj_t self_in, mp_obj_t listen_interval_in) {
+    mp_int_t listen_interval = mp_obj_get_int(listen_interval_in);
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_wifi_radio_set_listen_interval(self, listen_interval);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_listen_interval_obj, wifi_radio_set_listen_interval);
+
+MP_PROPERTY_GETSET(wifi_radio_listen_interval_obj,
+    (mp_obj_t)&wifi_radio_get_listen_interval_obj,
+    (mp_obj_t)&wifi_radio_set_listen_interval_obj);
+
+#endif
+
 //|     mac_address_ap: ReadableBuffer
 //|     """MAC address for the AP. When the address is altered after interface is started
 //|        the changes would only be reflected once the interface restarts.
@@ -235,10 +257,14 @@ MP_PROPERTY_GETTER(wifi_radio_mac_address_ap_obj,
 //|         """
 //|         ...
 static mp_obj_t wifi_radio_start_scanning_networks(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_start_channel, ARG_stop_channel };
+    enum
+    {
+        ARG_start_channel,
+        ARG_stop_channel
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_start_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_stop_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 11} },
+        {MP_QSTR_start_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1}},
+        {MP_QSTR_stop_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 11}},
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -328,13 +354,20 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|         """
 //|         ...
 static mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_password, ARG_channel, ARG_authmode, ARG_max_connections };
+    enum
+    {
+        ARG_ssid,
+        ARG_password,
+        ARG_channel,
+        ARG_authmode,
+        ARG_max_connections
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = mp_const_empty_bytes} },
-        { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_empty_tuple } },
-        { MP_QSTR_max_connections, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 4} },
+        {MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_password, MP_ARG_OBJ, {.u_obj = mp_const_empty_bytes}},
+        {MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1}},
+        {MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_empty_tuple}},
+        {MP_QSTR_max_connections, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 4}},
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -426,13 +459,20 @@ MP_PROPERTY_GETTER(wifi_radio_ap_active_obj,
 //|         connect to the AP with the given ``bssid`` and ``ssid``."""
 //|         ...
 static mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_password, ARG_channel, ARG_bssid, ARG_timeout };
+    enum
+    {
+        ARG_ssid,
+        ARG_password,
+        ARG_channel,
+        ARG_bssid,
+        ARG_timeout
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = mp_const_empty_bytes} },
-        { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_password, MP_ARG_OBJ, {.u_obj = mp_const_empty_bytes}},
+        {MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -461,7 +501,7 @@ static mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
         }
     }
 
-    #define MAC_ADDRESS_LENGTH 6
+#define MAC_ADDRESS_LENGTH 6
 
     mp_buffer_info_t bssid;
     bssid.len = 0;
@@ -553,12 +593,27 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_subnet_ap_obj,
 //|         """
 //|         ...
 static mp_obj_t wifi_radio_set_ipv4_address(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ipv4, ARG_netmask, ARG_gateway, ARG_ipv4_dns };
+    enum
+    {
+        ARG_ipv4,
+        ARG_netmask,
+        ARG_gateway,
+        ARG_ipv4_dns
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_ipv4, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
-        { MP_QSTR_netmask, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
-        { MP_QSTR_gateway, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
-        { MP_QSTR_ipv4_dns, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL} },
+        {
+            MP_QSTR_ipv4,
+            MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ,
+        },
+        {
+            MP_QSTR_netmask,
+            MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ,
+        },
+        {
+            MP_QSTR_gateway,
+            MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ,
+        },
+        {MP_QSTR_ipv4_dns, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL}},
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -580,11 +635,25 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_set_ipv4_address_obj, 1, wifi_radio
 //|         """Sets the IP v4 address of the access point. Must include the netmask and gateway."""
 //|         ...
 static mp_obj_t wifi_radio_set_ipv4_address_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ipv4, ARG_netmask, ARG_gateway };
+    enum
+    {
+        ARG_ipv4,
+        ARG_netmask,
+        ARG_gateway
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_ipv4, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
-        { MP_QSTR_netmask, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
-        { MP_QSTR_gateway, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
+        {
+            MP_QSTR_ipv4,
+            MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ,
+        },
+        {
+            MP_QSTR_netmask,
+            MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ,
+        },
+        {
+            MP_QSTR_gateway,
+            MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ,
+        },
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -702,10 +771,14 @@ MP_PROPERTY_GETTER(wifi_radio_stations_ap_obj,
 //|         """
 //|         ...
 static mp_obj_t wifi_radio_start_dhcp_client(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ipv4, ARG_ipv6 };
+    enum
+    {
+        ARG_ipv4,
+        ARG_ipv6
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_ipv4, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = MP_ROM_TRUE } },
-        { MP_QSTR_ipv6, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = MP_ROM_FALSE } },
+        {MP_QSTR_ipv4, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = MP_ROM_TRUE}},
+        {MP_QSTR_ipv6, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = MP_ROM_FALSE}},
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -760,10 +833,17 @@ MP_PROPERTY_GETTER(wifi_radio_ap_info_obj,
 //|         ...
 //|
 static mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ip, ARG_timeout };
+    enum
+    {
+        ARG_ip,
+        ARG_timeout
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_ip, MP_ARG_REQUIRED | MP_ARG_OBJ, },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {
+            MP_QSTR_ip,
+            MP_ARG_REQUIRED | MP_ARG_OBJ,
+        },
+        {MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -785,51 +865,53 @@ static mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_
 static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_ping_obj, 1, wifi_radio_ping);
 
 static const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_enabled), MP_ROM_PTR(&wifi_radio_enabled_obj) },
+    {MP_ROM_QSTR(MP_QSTR_enabled), MP_ROM_PTR(&wifi_radio_enabled_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_hostname),    MP_ROM_PTR(&wifi_radio_hostname_obj) },
+    {MP_ROM_QSTR(MP_QSTR_hostname), MP_ROM_PTR(&wifi_radio_hostname_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_mac_address), MP_ROM_PTR(&wifi_radio_mac_address_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mac_address_ap), MP_ROM_PTR(&wifi_radio_mac_address_ap_obj) },
+    {MP_ROM_QSTR(MP_QSTR_mac_address), MP_ROM_PTR(&wifi_radio_mac_address_obj)},
+    {MP_ROM_QSTR(MP_QSTR_mac_address_ap), MP_ROM_PTR(&wifi_radio_mac_address_ap_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_tx_power), MP_ROM_PTR(&wifi_radio_tx_power_obj) },
-    { MP_ROM_QSTR(MP_QSTR_start_scanning_networks),    MP_ROM_PTR(&wifi_radio_start_scanning_networks_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop_scanning_networks),    MP_ROM_PTR(&wifi_radio_stop_scanning_networks_obj) },
+    {MP_ROM_QSTR(MP_QSTR_tx_power), MP_ROM_PTR(&wifi_radio_tx_power_obj)},
+    {MP_ROM_QSTR(MP_QSTR_listen_interval), MP_ROM_PTR(&wifi_radio_listen_interval_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_start_station),    MP_ROM_PTR(&wifi_radio_start_station_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop_station),    MP_ROM_PTR(&wifi_radio_stop_station_obj) },
+    {MP_ROM_QSTR(MP_QSTR_start_scanning_networks), MP_ROM_PTR(&wifi_radio_start_scanning_networks_obj)},
+    {MP_ROM_QSTR(MP_QSTR_stop_scanning_networks), MP_ROM_PTR(&wifi_radio_stop_scanning_networks_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_start_ap),    MP_ROM_PTR(&wifi_radio_start_ap_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop_ap),    MP_ROM_PTR(&wifi_radio_stop_ap_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ap_active),   MP_ROM_PTR(&wifi_radio_ap_active_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stations_ap),   MP_ROM_PTR(&wifi_radio_stations_ap_obj) },
+    {MP_ROM_QSTR(MP_QSTR_start_station), MP_ROM_PTR(&wifi_radio_start_station_obj)},
+    {MP_ROM_QSTR(MP_QSTR_stop_station), MP_ROM_PTR(&wifi_radio_stop_station_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_start_dhcp),    MP_ROM_PTR(&wifi_radio_start_dhcp_client_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop_dhcp),    MP_ROM_PTR(&wifi_radio_stop_dhcp_client_obj) },
-    { MP_ROM_QSTR(MP_QSTR_start_dhcp_ap),    MP_ROM_PTR(&wifi_radio_start_dhcp_server_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop_dhcp_ap),    MP_ROM_PTR(&wifi_radio_stop_dhcp_server_obj) },
+    {MP_ROM_QSTR(MP_QSTR_start_ap), MP_ROM_PTR(&wifi_radio_start_ap_obj)},
+    {MP_ROM_QSTR(MP_QSTR_stop_ap), MP_ROM_PTR(&wifi_radio_stop_ap_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ap_active), MP_ROM_PTR(&wifi_radio_ap_active_obj)},
+    {MP_ROM_QSTR(MP_QSTR_stations_ap), MP_ROM_PTR(&wifi_radio_stations_ap_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_connect),    MP_ROM_PTR(&wifi_radio_connect_obj) },
+    {MP_ROM_QSTR(MP_QSTR_start_dhcp), MP_ROM_PTR(&wifi_radio_start_dhcp_client_obj)},
+    {MP_ROM_QSTR(MP_QSTR_stop_dhcp), MP_ROM_PTR(&wifi_radio_stop_dhcp_client_obj)},
+    {MP_ROM_QSTR(MP_QSTR_start_dhcp_ap), MP_ROM_PTR(&wifi_radio_start_dhcp_server_obj)},
+    {MP_ROM_QSTR(MP_QSTR_stop_dhcp_ap), MP_ROM_PTR(&wifi_radio_stop_dhcp_server_obj)},
+
+    {MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&wifi_radio_connect_obj)},
     // { MP_ROM_QSTR(MP_QSTR_connect_to_enterprise),    MP_ROM_PTR(&wifi_radio_connect_to_enterprise_obj) },
-    { MP_ROM_QSTR(MP_QSTR_connected),    MP_ROM_PTR(&wifi_radio_connected_obj) },
+    {MP_ROM_QSTR(MP_QSTR_connected), MP_ROM_PTR(&wifi_radio_connected_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_ap_info),    MP_ROM_PTR(&wifi_radio_ap_info_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ipv4_dns),    MP_ROM_PTR(&wifi_radio_ipv4_dns_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ipv4_gateway),    MP_ROM_PTR(&wifi_radio_ipv4_gateway_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ipv4_gateway_ap),    MP_ROM_PTR(&wifi_radio_ipv4_gateway_ap_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ipv4_subnet),    MP_ROM_PTR(&wifi_radio_ipv4_subnet_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ipv4_subnet_ap),    MP_ROM_PTR(&wifi_radio_ipv4_subnet_ap_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ipv4_address),    MP_ROM_PTR(&wifi_radio_ipv4_address_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ipv4_address_ap),    MP_ROM_PTR(&wifi_radio_ipv4_address_ap_obj) },
+    {MP_ROM_QSTR(MP_QSTR_ap_info), MP_ROM_PTR(&wifi_radio_ap_info_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ipv4_dns), MP_ROM_PTR(&wifi_radio_ipv4_dns_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ipv4_gateway), MP_ROM_PTR(&wifi_radio_ipv4_gateway_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ipv4_gateway_ap), MP_ROM_PTR(&wifi_radio_ipv4_gateway_ap_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ipv4_subnet), MP_ROM_PTR(&wifi_radio_ipv4_subnet_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ipv4_subnet_ap), MP_ROM_PTR(&wifi_radio_ipv4_subnet_ap_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ipv4_address), MP_ROM_PTR(&wifi_radio_ipv4_address_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ipv4_address_ap), MP_ROM_PTR(&wifi_radio_ipv4_address_ap_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_set_ipv4_address),    MP_ROM_PTR(&wifi_radio_set_ipv4_address_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set_ipv4_address_ap),    MP_ROM_PTR(&wifi_radio_set_ipv4_address_ap_obj) },
+    {MP_ROM_QSTR(MP_QSTR_set_ipv4_address), MP_ROM_PTR(&wifi_radio_set_ipv4_address_obj)},
+    {MP_ROM_QSTR(MP_QSTR_set_ipv4_address_ap), MP_ROM_PTR(&wifi_radio_set_ipv4_address_ap_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_addresses),    MP_ROM_PTR(&wifi_radio_addresses_obj) },
-    { MP_ROM_QSTR(MP_QSTR_addresses_ap),    MP_ROM_PTR(&wifi_radio_addresses_ap_obj) },
-    { MP_ROM_QSTR(MP_QSTR_dns),    MP_ROM_PTR(&wifi_radio_dns_obj) },
+    {MP_ROM_QSTR(MP_QSTR_addresses), MP_ROM_PTR(&wifi_radio_addresses_obj)},
+    {MP_ROM_QSTR(MP_QSTR_addresses_ap), MP_ROM_PTR(&wifi_radio_addresses_ap_obj)},
+    {MP_ROM_QSTR(MP_QSTR_dns), MP_ROM_PTR(&wifi_radio_dns_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_ping), MP_ROM_PTR(&wifi_radio_ping_obj) },
+    {MP_ROM_QSTR(MP_QSTR_ping), MP_ROM_PTR(&wifi_radio_ping_obj)},
 };
 
 static MP_DEFINE_CONST_DICT(wifi_radio_locals_dict, wifi_radio_locals_dict_table);
@@ -838,8 +920,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     wifi_radio_type,
     MP_QSTR_Radio,
     MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
-    locals_dict, &wifi_radio_locals_dict
-    );
+    locals_dict, &wifi_radio_locals_dict);
 
 const mp_obj_namedtuple_type_t wifi_radio_station_type = {
     NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_WifiRadioStation),
