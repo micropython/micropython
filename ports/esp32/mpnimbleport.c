@@ -32,7 +32,9 @@
 
 #define DEBUG_printf(...) // printf("nimble (esp32): " __VA_ARGS__)
 
+#if !CONFIG_IDF_TARGET_ESP32C6
 #include "esp_nimble_hci.h"
+#endif
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 
@@ -46,13 +48,16 @@ static void ble_host_task(void *param) {
 
 void mp_bluetooth_nimble_port_hci_init(void) {
     DEBUG_printf("mp_bluetooth_nimble_port_hci_init\n");
+    #if !CONFIG_IDF_TARGET_ESP32C6
     esp_nimble_hci_init();
+    #endif
 }
 
 void mp_bluetooth_nimble_port_hci_deinit(void) {
     DEBUG_printf("mp_bluetooth_nimble_port_hci_deinit\n");
-
+    #if !CONFIG_IDF_TARGET_ESP32C6
     esp_nimble_hci_deinit();
+    #endif
 }
 
 void mp_bluetooth_nimble_port_start(void) {

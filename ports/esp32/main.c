@@ -72,7 +72,7 @@
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
 
 // Set the margin for detecting stack overflow, depending on the CPU architecture.
-#if CONFIG_IDF_TARGET_ESP32C3
+#if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
 #define MP_TASK_STACK_LIMIT_MARGIN (2048)
 #else
 #define MP_TASK_STACK_LIMIT_MARGIN (1024)

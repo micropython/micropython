@@ -7,6 +7,9 @@ CONFIG_BT_NIMBLE_SVC_GAP_DEVICE_NAME="MPY ESP32"
 
 CONFIG_BT_NIMBLE_MAX_CONNECTIONS=4
 
+# Needed to enable esp_nimble_hci on ESP32C6
+#CONFIG_BT_NIMBLE_LEGACY_VHCI_ENABLE=y
+
 # Put NimBLE on core 1, and for synchronisation
 # with the ringbuffer and scheduler MP needs to be on the same core.
 # MP on core 1 prevents interference with WiFi for time sensitive operations.
