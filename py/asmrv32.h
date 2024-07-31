@@ -331,7 +331,7 @@ static inline void asm_rv32_opcode_lw(asm_rv32_t *state, mp_uint_t rd, mp_uint_t
 }
 
 // MUL RD, RS1, RS2
-static inline void asm_rv32m_opcode_mul(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
+static inline void asm_rv32_opcode_mul(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
     // R: 0000001 ..... ..... 000 ..... 0110011
     asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 0x00, 0x01, rd, rs1, rs2));
 }
@@ -479,7 +479,7 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_
 #define ASM_MOV_REG_LOCAL(state, rd, local) asm_rv32_emit_mov_reg_local(state, rd, local)
 #define ASM_MOV_REG_PCREL(state, rd, label) asm_rv32_emit_mov_reg_pcrel(state, rd, label)
 #define ASM_MOV_REG_REG(state, rd, rs) asm_rv32_opcode_cmv(state, rd, rs)
-#define ASM_MUL_REG_REG(state, rd, rs) asm_rv32m_opcode_mul(state, rd, rd, rs)
+#define ASM_MUL_REG_REG(state, rd, rs) asm_rv32_opcode_mul(state, rd, rd, rs)
 #define ASM_NEG_REG(state, rd) asm_rv32_opcode_sub(state, rd, ASM_RV32_REG_ZERO, rd)
 #define ASM_NOT_REG(state, rd) asm_rv32_opcode_xori(state, rd, rd, -1)
 #define ASM_OR_REG_REG(state, rd, rs) asm_rv32_opcode_or(state, rd, rd, rs)
