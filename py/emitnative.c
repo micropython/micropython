@@ -357,6 +357,7 @@ static void emit_native_mov_reg_qstr(emit_t *emit, int arg_reg, qstr qst) {
     #endif
 }
 
+// This function may clobber REG_TEMP0 (and `reg_dest` can be REG_TEMP0).
 static void emit_native_mov_reg_qstr_obj(emit_t *emit, int reg_dest, qstr qst) {
     #if MICROPY_PERSISTENT_CODE_SAVE
     emit_load_reg_with_object(emit, reg_dest, MP_OBJ_NEW_QSTR(qst));
@@ -1117,6 +1118,7 @@ static exc_stack_entry_t *emit_native_pop_exc_stack(emit_t *emit) {
     return e;
 }
 
+// This function will clobber REG_TEMP0 (and `reg` can be REG_TEMP0).
 static void emit_load_reg_with_object(emit_t *emit, int reg, mp_obj_t obj) {
     emit->scope->scope_flags |= MP_SCOPE_FLAG_HASCONSTS;
     size_t table_off = mp_emit_common_use_const_obj(emit->emit_common, obj);
@@ -1391,9 +1393,9 @@ static void emit_native_load_const_str(emit_t *emit, qstr qst) {
 
 static void emit_native_load_const_obj(emit_t *emit, mp_obj_t obj) {
     emit_native_pre(emit);
-    need_reg_single(emit, REG_RET, 0);
-    emit_load_reg_with_object(emit, REG_RET, obj);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+    need_reg_single(emit, REG_TEMP0, 0);
+    emit_load_reg_with_object(emit, REG_TEMP0, obj);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_TEMP0);
 }
 
 static void emit_native_load_null(emit_t *emit) {
