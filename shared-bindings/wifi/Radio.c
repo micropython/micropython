@@ -185,19 +185,26 @@ MP_PROPERTY_GETSET(wifi_radio_tx_power_obj,
     (mp_obj_t)&wifi_radio_get_tx_power_obj,
     (mp_obj_t)&wifi_radio_set_tx_power_obj);
 
-#if CIRCUITPY_WIFI_RADIO_SETTABLE_LISTEN_INTERVAL
 //|     listen_interval: int
 //|     """Wifi power save listen interval power, in DTIM periods, or 100ms intervals if TWT is supported."""
 static mp_obj_t wifi_radio_get_listen_interval(mp_obj_t self_in) {
+    #if CIRCUITPY_WIFI_RADIO_SETTABLE_LISTEN_INTERVAL
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(common_hal_wifi_radio_get_listen_interval(self));
+    #else
+    return mp_obj_new_int(0);
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_listen_interval_obj, wifi_radio_get_listen_interval);
 
 static mp_obj_t wifi_radio_set_listen_interval(mp_obj_t self_in, mp_obj_t listen_interval_in) {
+    #if CIRCUITPY_WIFI_RADIO_SETTABLE_LISTEN_INTERVAL
     mp_int_t listen_interval = mp_obj_get_int(listen_interval_in);
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_wifi_radio_set_listen_interval(self, listen_interval);
+    #else
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("Listen interval is not supported"));
+    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_listen_interval_obj, wifi_radio_set_listen_interval);
@@ -205,8 +212,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_listen_interval_obj, wifi_radio_set_lis
 MP_PROPERTY_GETSET(wifi_radio_listen_interval_obj,
     (mp_obj_t)&wifi_radio_get_listen_interval_obj,
     (mp_obj_t)&wifi_radio_set_listen_interval_obj);
-
-#endif
 
 //|     mac_address_ap: ReadableBuffer
 //|     """MAC address for the AP. When the address is altered after interface is started
