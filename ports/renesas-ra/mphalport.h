@@ -52,6 +52,10 @@ static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
 
+static inline void mp_hal_wake_main_task_from_isr(void) {
+    // Defined for tinyusb support, nothing needs to be done here.
+}
+
 // timing functions
 
 #include "irq.h"
