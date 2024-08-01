@@ -301,7 +301,7 @@ void asm_rv32_emit_call_ind(asm_rv32_t *state, mp_uint_t index) {
     mp_uint_t offset = index * ASM_WORD_SIZE;
     state->saved_registers_mask |= (1U << ASM_RV32_REG_RA);
 
-    if (IS_IN_C_REGISTER_WINDOW(REG_FUN_TABLE) && IS_IN_C_REGISTER_WINDOW(INTERNAL_TEMPORARY) && FIT_SIGNED(offset, 7)) {
+    if (IS_IN_C_REGISTER_WINDOW(REG_FUN_TABLE) && IS_IN_C_REGISTER_WINDOW(INTERNAL_TEMPORARY) && FIT_UNSIGNED(offset, 6)) {
         // c.lw   temporary, offset(fun_table)
         // c.jalr temporary
         asm_rv32_opcode_clw(state, MAP_IN_C_REGISTER_WINDOW(INTERNAL_TEMPORARY), MAP_IN_C_REGISTER_WINDOW(REG_FUN_TABLE), offset);
@@ -487,7 +487,7 @@ void asm_rv32_emit_mov_reg_local_addr(asm_rv32_t *state, mp_uint_t rd, mp_uint_t
 void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, mp_int_t offset) {
     mp_int_t scaled_offset = offset * sizeof(ASM_WORD_SIZE);
 
-    if (IS_IN_C_REGISTER_WINDOW(rd) && IS_IN_C_REGISTER_WINDOW(rs) && FIT_SIGNED(offset, 7)) {
+    if (scaled_offset >= 0 && IS_IN_C_REGISTER_WINDOW(rd) && IS_IN_C_REGISTER_WINDOW(rs) && FIT_UNSIGNED(scaled_offset, 6)) {
         // c.lw rd', offset(rs')
         asm_rv32_opcode_clw(state, MAP_IN_C_REGISTER_WINDOW(rd), MAP_IN_C_REGISTER_WINDOW(rs), scaled_offset);
         return;
