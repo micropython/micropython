@@ -203,7 +203,7 @@ static mp_obj_t wifi_radio_set_listen_interval(mp_obj_t self_in, mp_obj_t listen
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_wifi_radio_set_listen_interval(self, listen_interval);
     #else
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("Listen interval is not supported"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("can't set attribute"));
     #endif
     return mp_const_none;
 }
