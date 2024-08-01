@@ -32,6 +32,7 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     nlr_buf_t nlr;
@@ -69,4 +70,8 @@ mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
 void nlr_jump_fail(void *val) {
     printf("uncaught NLR\n");
     exit(1);
+}
+
+void qemu_print_strn(const char *str, size_t len) {
+    mp_hal_stdout_tx_strn_cooked(str, len);
 }

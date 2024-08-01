@@ -25,4 +25,4 @@ passed to the linker.
 
 To build and run image with builtin testsuite:
 
-    make -f Makefile.test test
+    make test
