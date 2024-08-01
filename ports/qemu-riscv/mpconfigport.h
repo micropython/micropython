@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stddef.h>
 #include <stdint.h>
 
 // options to control how MicroPython is built
@@ -70,8 +71,7 @@ typedef long mp_off_t;
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
-#ifdef TEST
-#include "shared/upytesthelper/upytesthelper.h"
-#undef MP_PLAT_PRINT_STRN
-#define MP_PLAT_PRINT_STRN(str, len) upytest_output(str, len)
-#endif
+// All printing is passed through a custom function to check test output.
+#define MP_PLAT_PRINT_STRN(str, len) qemu_print_strn(str, len)
+
+void qemu_print_strn(const char *str, size_t len);
