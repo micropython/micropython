@@ -67,7 +67,8 @@ static inline int __metal_sleep_usec(unsigned int usec) {
 }
 
 static inline void metal_generic_default_poll(void) {
-    MICROPY_EVENT_POLL_HOOK
+    mp_event_handle_nowait();
+    __WFI();
 }
 
 #endif // MICROPY_INCLUDED_MIMXRT_METAL_PORT_H
