@@ -1,4 +1,11 @@
-# test machine.Timer
+# test "soft" machine.Timer (no hardware ID)
+import sys
+
+
+if sys.platform == "esp32":
+    print("SKIP")  # TODO: Implement soft timers for esp32 port
+    raise SystemExit
+
 
 try:
     import time, machine as machine
