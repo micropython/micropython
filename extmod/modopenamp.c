@@ -192,13 +192,13 @@ static mp_obj_t endpoint_send(uint n_args, const mp_obj_t *pos_args, mp_map_t *k
     for (mp_uint_t start = mp_hal_ticks_ms(); ;) {
         bytes = rpmsg_send_offchannel_raw(&self->ep, src, dest, rbuf.buf, rbuf.len, false);
         if (bytes > 0 || timeout == 0) {
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_handle_nowait();
             break;
         }
         if (timeout > 0 && (mp_hal_ticks_ms() - start > timeout)) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("timeout waiting for a free buffer"));
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
     return mp_obj_new_int(bytes);
 }
