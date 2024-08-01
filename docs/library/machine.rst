@@ -172,6 +172,24 @@ Power related functions
 
    Availability: ESP32, WiPy.
 
+.. function:: wake_ext1_pins()
+
+   Returns the GPIO pin numbers of those pins which caused wakeup from deep sleep as a
+   tuple of integers.
+
+   This is a direct interface to the ESP-IDF ``esp_sleep_get_ext1_wakeup_status()`` function.
+
+   Availability: ESP32 (except ESP32C3).
+
+.. function:: wake_gpio_pins()
+
+   Returns the GPIO pin numbers of those pins which caused wakeup from deep sleep as a
+   tuple of integers.
+
+   This is a direct interface to the ESP-IDF ``esp_sleep_get_gpio_wakeup_status()`` function.
+
+   Availability: ESP32C3 only.
+
 Miscellaneous functions
 -----------------------
 
