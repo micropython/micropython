@@ -278,8 +278,7 @@ function ci_qemu_riscv_build {
     make ${MAKEOPTS} -C ports/qemu-riscv submodules
     make ${MAKEOPTS} -C ports/qemu-riscv
     make ${MAKEOPTS} -C ports/qemu-riscv clean
-    make ${MAKEOPTS} -C ports/qemu-riscv -f Makefile.test submodules
-    make ${MAKEOPTS} -C ports/qemu-riscv -f Makefile.test test
+    make ${MAKEOPTS} -C ports/qemu-riscv test
 }
 
 ########################################################################################
