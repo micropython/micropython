@@ -38,7 +38,7 @@
 #if MICROPY_PY_THREAD
 
 #define MP_THREAD_MIN_STACK_SIZE                        (4 * 1024)
-#define MP_THREAD_DEFAULT_STACK_SIZE                    (MP_THREAD_MIN_STACK_SIZE + 1024)
+#define MP_THREAD_DEFAULT_STACK_SIZE                    (MP_THREAD_MIN_STACK_SIZE + MP_TASK_STACK_LIMIT_MARGIN)
 #define MP_THREAD_PRIORITY                              (ESP_TASK_PRIO_MIN + 1)
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0) && !CONFIG_FREERTOS_ENABLE_STATIC_TASK_CLEAN_UP
@@ -161,7 +161,7 @@ mp_uint_t mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_s
     thread = th;
 
     // adjust the stack_size to provide room to recover from hitting the limit
-    *stack_size -= 1024;
+    *stack_size -= MP_TASK_STACK_LIMIT_MARGIN;
 
     mp_thread_mutex_unlock(&thread_mutex);
 
