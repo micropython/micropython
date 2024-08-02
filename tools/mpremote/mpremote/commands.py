@@ -56,7 +56,11 @@ def do_connect(state, args=None):
             # Connect to the given device.
             if dev.startswith("port:"):
                 dev = dev[len("port:") :]
-            state.transport = SerialTransport(dev, baudrate=115200)
+            opts = {}
+            if args and args.insecure_certificate:
+                import ssl
+                opts = {"sslopt": {"cert_reqs": ssl.CERT_NONE}}
+            state.transport = SerialTransport(dev, baudrate=115200, **opts)
             return
     except TransportError as er:
         msg = er.args[0]
