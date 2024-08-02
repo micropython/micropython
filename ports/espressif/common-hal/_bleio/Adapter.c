@@ -24,6 +24,7 @@
 #include "shared-bindings/_bleio/Connection.h"
 #include "shared-bindings/_bleio/ScanEntry.h"
 #include "shared-bindings/time/__init__.h"
+#include "shared/runtime/interrupt_char.h"
 
 #include "controller/ble_ll_adv.h"
 #include "nimble/hci_common.h"
@@ -39,6 +40,7 @@
 #include "common-hal/_bleio/Connection.h"
 
 #include "esp_bt.h"
+#include "esp_mac.h"
 #include "esp_nimble_hci.h"
 #include "nvs_flash.h"
 
@@ -46,31 +48,29 @@
 #include "shared-module/os/__init__.h"
 #endif
 
+// Status variables used while busy-waiting for events.
+static volatile bool _nimble_sync;
+static volatile int _connection_status;
+
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
-
-// static void bluetooth_adapter_background(void *data) {
-//     supervisor_bluetooth_background();
-//     bleio_background();
-// }
-
-bool ble_active = false;
 
 static void nimble_host_task(void *param) {
     nimble_port_run();
     nimble_port_freertos_deinit();
 }
 
-static TaskHandle_t cp_task = NULL;
 
 static void _on_sync(void) {
-    int rc = ble_hs_util_ensure_addr(0);
+    int rc = ble_hs_util_ensure_addr(false);
     assert(rc == 0);
 
-    xTaskNotifyGive(cp_task);
+    _nimble_sync = true;
 }
 
 // All examples have this. It'd make sense in a header.
 void ble_store_config_init(void);
+
+char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0, 0, 0, 0};
 
 void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enabled) {
     const bool is_enabled = common_hal_bleio_adapter_get_enabled(self);
@@ -81,15 +81,6 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     }
 
     if (enabled) {
-        esp_err_t err = nvs_flash_init();
-        if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-            // NVS partition was truncated and needs to be erased
-            // Retry nvs_flash_init
-            ESP_ERROR_CHECK(nvs_flash_erase());
-            err = nvs_flash_init();
-        }
-        ESP_ERROR_CHECK(err);
-
         CHECK_ESP_RESULT(nimble_port_init());
 
         // ble_hs_cfg.reset_cb = blecent_on_reset;
@@ -104,8 +95,8 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         ble_hs_cfg.sm_our_key_dist |= BLE_SM_PAIR_KEY_DIST_ENC;
         ble_hs_cfg.sm_their_key_dist |= BLE_SM_PAIR_KEY_DIST_ENC;
 
-        ble_hs_cfg.sm_mitm = 1;
-        ble_hs_cfg.sm_sc = 1;
+        ble_hs_cfg.sm_mitm = 0;
+        ble_hs_cfg.sm_sc = 0;
         /* Stores the IRK */
         ble_hs_cfg.sm_our_key_dist |= BLE_SM_PAIR_KEY_DIST_ID;
         ble_hs_cfg.sm_their_key_dist |= BLE_SM_PAIR_KEY_DIST_ID;
@@ -122,7 +113,17 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         } else
         #endif
         {
-            ble_svc_gap_device_name_set("CIRCUITPY");
+            uint8_t mac[6];
+            esp_read_mac(mac, ESP_MAC_BT);
+            mp_int_t len = sizeof(default_ble_name) - 1;
+            default_ble_name[len - 6] = nibble_to_hex_lower[mac[3] >> 4 & 0xf];
+            default_ble_name[len - 5] = nibble_to_hex_lower[mac[3] & 0xf];
+            default_ble_name[len - 4] = nibble_to_hex_lower[mac[4] >> 4 & 0xf];
+            default_ble_name[len - 3] = nibble_to_hex_lower[mac[4] & 0xf];
+            default_ble_name[len - 2] = nibble_to_hex_lower[mac[5] >> 4 & 0xf];
+            default_ble_name[len - 1] = nibble_to_hex_lower[mac[5] & 0xf];
+            default_ble_name[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
+            ble_svc_gap_device_name_set(default_ble_name);
         }
 
         // Clear all of the internal connection objects.
@@ -134,15 +135,26 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
 
         ble_store_config_init();
 
-        cp_task = xTaskGetCurrentTaskHandle();
-
+        _nimble_sync = false;
         nimble_port_freertos_init(nimble_host_task);
-        // Wait for sync.
-        ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(200));
+        // Wait for sync from nimble task.
+        const uint64_t timeout_time_ms = common_hal_time_monotonic_ms() + 200;
+        while (!_nimble_sync && (common_hal_time_monotonic_ms() < timeout_time_ms)) {
+            RUN_BACKGROUND_TASKS;
+            if (mp_hal_is_interrupted()) {
+                // Return prematurely. Then the interrupt will be raised.
+                return;
+            }
+        }
+
+        if (!_nimble_sync) {
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Update failed"));
+        }
     } else {
         int ret = nimble_port_stop();
-        while (xTaskGetHandle("nimble_host") != NULL) {
-            vTaskDelay(pdMS_TO_TICKS(2));
+        while (xTaskGetHandle("nimble_host") != NULL && !mp_hal_is_interrupted()) {
+            RUN_BACKGROUND_TASKS;
+            common_hal_time_delay_ms(2);
         }
         if (ret == 0) {
             nimble_port_deinit();
@@ -178,6 +190,14 @@ bool common_hal_bleio_adapter_set_address(bleio_adapter_obj_t *self, bleio_addre
     }
     int result = ble_hs_id_set_rnd(bufinfo.buf);
     return result == 0;
+}
+
+uint16_t bleio_adapter_get_name(char *buf, uint16_t len) {
+    const char *name = ble_svc_gap_device_name();
+    uint16_t full_len = strlen(name);
+    memcpy(buf, name, MIN(full_len, len));
+
+    return full_len;
 }
 
 mp_obj_str_t *common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
@@ -270,8 +290,19 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
         duration_ms = BLE_HS_FOREVER;
     }
 
-    CHECK_NIMBLE_ERROR(ble_gap_disc(own_addr_type, duration_ms, &disc_params,
-        _scan_event, self->scan_results));
+    int tries = 5;
+    int status;
+    // BLE_HS_EBUSY may occasionally occur, indicating something has not finished. Retry a few times if so.
+    do {
+        status = ble_gap_disc(own_addr_type, duration_ms, &disc_params,
+            _scan_event, self->scan_results);
+        if (status != BLE_HS_EBUSY) {
+            break;
+        }
+        common_hal_time_delay_ms(50);
+        RUN_BACKGROUND_TASKS;
+    } while (tries-- > 0);
+    CHECK_NIMBLE_ERROR(status);
 
     return MP_OBJ_FROM_PTR(self->scan_results);
 }
@@ -302,14 +333,15 @@ static int _mtu_reply(uint16_t conn_handle,
     if (error->status == 0) {
         connection->mtu = mtu;
     }
-    xTaskNotify(cp_task, conn_handle, eSetValueWithOverwrite);
+    // Set status var to connection handle to report that connection is now established.
+    // Another routine is waiting for this.
+    _connection_status = conn_handle;
     return 0;
 }
 
 static void _new_connection(uint16_t conn_handle) {
     // Set the tx_power for the connection higher than the advertisement.
     esp_ble_tx_power_set(conn_handle, ESP_PWR_LVL_N0);
-
 
     // Find an empty connection. One should always be available because the SD has the same
     // total connection limit.
@@ -346,13 +378,14 @@ static int _connect_event(struct ble_gap_event *event, void *self_in) {
     switch (event->type) {
         case BLE_GAP_EVENT_CONNECT:
             if (event->connect.status == 0) {
-                // This triggers an MTU exchange. Its reply will unblock CP.
+                // This triggers an MTU exchange. Its reply will exit the loop waiting for a connection.
                 _new_connection(event->connect.conn_handle);
                 // Set connections objs back to NULL since we have a new
                 // connection and need a new tuple.
                 self->connection_objs = NULL;
             } else {
-                xTaskNotify(cp_task, -event->connect.status, eSetValueWithOverwrite);
+                // The loop waiting for the connection to be comnpleted will stop when _connection_status changes.
+                _connection_status = -event->connect.status;
             }
             break;
 
@@ -390,23 +423,31 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     ble_addr_t addr;
     _convert_address(address, &addr);
 
-    cp_task = xTaskGetCurrentTaskHandle();
-    // Make sure we don't have a pending notification from a previous time. This
-    // can happen if a previous wait timed out before the notification was given.
-    xTaskNotifyStateClear(cp_task);
+    const int timeout_ms = SEC_TO_UNITS(timeout, UNIT_1_MS) + 0.5f;
     CHECK_NIMBLE_ERROR(
         ble_gap_connect(own_addr_type, &addr,
-            SEC_TO_UNITS(timeout, UNIT_1_MS) + 0.5f,
+            timeout_ms,
             &conn_params,
             _connect_event, self));
 
-    int error_code;
-    CHECK_NOTIFY(xTaskNotifyWait(0, 0, (uint32_t *)&error_code, 200));
-    // Negative values are error codes, connection handle otherwise.
-    if (error_code < 0) {
-        CHECK_BLE_ERROR(-error_code);
+    // Wait an extra 50 ms to give the connect method the opportunity to time out.
+
+    const uint64_t timeout_time_ms = common_hal_time_monotonic_ms() + timeout_ms;
+    // _connection_status gets set to either a positive connection handle or a negative error code.
+    _connection_status = BLEIO_HANDLE_INVALID;
+    while (_connection_status == BLEIO_HANDLE_INVALID && (common_hal_time_monotonic_ms() < timeout_time_ms)) {
+        RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            // Return prematurely. Then the interrupt exception  will be raised.
+            return mp_const_none;
+        }
     }
-    uint16_t conn_handle = error_code;
+
+    // Negative values are error codes, connection handle otherwise.
+    if (_connection_status < 0) {
+        CHECK_BLE_ERROR(-_connection_status);
+    }
+    const uint16_t conn_handle = _connection_status;
 
     // TODO: If we have keys, then try and encrypt the connection.
 
@@ -499,6 +540,8 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
     if (ble_gap_adv_active() && !self->user_advertising) {
         return BLE_HS_EBUSY;
     }
+    // Override anonymous because it isn't working with the ESP-IDF.
+    anonymous = false;
 
     uint32_t rc;
 
@@ -515,18 +558,31 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
         return rc;
     }
 
-    bool high_duty_directed = directed_to != NULL && interval <= 3.5 && timeout <= 1.3;
+    bool high_duty_directed = directed_to != NULL && interval <= 3.5 && timeout <= 1; // Really 1.3, but it's an int
+
+    uint32_t timeout_ms = timeout * 1000;
+    if (timeout_ms == 0) {
+        timeout_ms = BLE_HS_FOREVER;
+    }
+
 
     #if MYNEWT_VAL(BLE_EXT_ADV)
     bool extended = advertising_data_len > BLE_ADV_LEGACY_DATA_MAX_LEN ||
         scan_response_data_len > BLE_ADV_LEGACY_DATA_MAX_LEN;
 
+    bool scannable = scan_response_data_len > 0;
+    bool legacy_pdu = !extended && !anonymous;
+    if (legacy_pdu && connectable) {
+        // Connectable legacy advertisements are always scannable too.
+        scannable = true;
+    }
+
     struct ble_gap_ext_adv_params adv_params = {
         .connectable = connectable,
-        .scannable = scan_response_data_len > 0,
+        .scannable = scannable,
         .directed = directed_to != NULL,
         .high_duty_directed = high_duty_directed,
-        .legacy_pdu = !extended,
+        .legacy_pdu = legacy_pdu,
         .anonymous = anonymous,
         .include_tx_power = extended,
         .scan_req_notif = false,
@@ -570,7 +626,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
         }
     }
 
-    rc = ble_gap_ext_adv_start(0, timeout / 10, 0);
+    rc = ble_gap_ext_adv_start(0, timeout_ms, 0);
     #else
     uint8_t conn_mode = connectable ? BLE_GAP_CONN_MODE_UND : BLE_GAP_CONN_MODE_NON;
     if (directed_to != NULL) {
@@ -599,7 +655,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
         }
     }
     rc = ble_gap_adv_start(own_addr_type, directed_to != NULL ? &peer: NULL,
-        timeout / 10,
+        timeout_ms,
         &adv_params,
         _advertising_event, self);
     #endif
@@ -643,11 +699,9 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
         mp_raise_NotImplementedError(NULL);
     }
 
-    if (!timeout) {
-        timeout = BLE_HS_FOREVER;
-    } else if (timeout > INT32_MAX) {
+    if ((uint64_t)timeout * 1000ll >= BLE_HS_FOREVER) {
         mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Timeout is too long: Maximum timeout length is %d seconds"),
-            INT32_MAX / 1000);
+            BLE_HS_FOREVER / 1000 - 1);
     }
 
     CHECK_NIMBLE_ERROR(_common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, timeout, interval,
@@ -712,14 +766,46 @@ mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
     return self->connection_objs;
 }
 
+#define NIMBLE_NVS_PEER_SEC_KEY                  "peer_sec"
+#define NIMBLE_NVS_OUR_SEC_KEY                   "our_sec"
+#define NIMBLE_NVS_CCCD_SEC_KEY                  "cccd_sec"
+#define NIMBLE_NVS_PEER_RECORDS_KEY              "p_dev_rec"
+#define NIMBLE_NVS_NAMESPACE                     "nimble_bond"
+
+// Implement bonding control ourselves when the adapter isn't enabled so that it
+// can run when BLE is off.
 void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self) {
-    ble_store_clear();
+    if (common_hal_bleio_adapter_get_enabled(self)) {
+        ble_store_clear();
+    } else {
+        nvs_handle_t nimble_handle;
+        esp_err_t err = nvs_open(NIMBLE_NVS_NAMESPACE, NVS_READWRITE, &nimble_handle);
+        if (err != ESP_OK) {
+            return;
+        }
+        nvs_erase_all(nimble_handle);
+        nvs_commit(nimble_handle);
+        nvs_close(nimble_handle);
+    }
 }
 
 bool common_hal_bleio_adapter_is_bonded_to_central(bleio_adapter_obj_t *self) {
-    int count;
-    ble_store_util_count(BLE_STORE_OBJ_TYPE_PEER_SEC, &count);
-    return count > 0;
+    if (common_hal_bleio_adapter_get_enabled(self)) {
+        int count;
+        ble_store_util_count(BLE_STORE_OBJ_TYPE_PEER_SEC, &count);
+        return count > 0;
+    }
+    nvs_handle_t nimble_handle;
+    esp_err_t err = nvs_open(NIMBLE_NVS_NAMESPACE, NVS_READONLY, &nimble_handle);
+    if (err != ESP_OK) {
+        return false;
+    }
+    err = nvs_find_key(nimble_handle, "peer_sec_1", NULL);
+    nvs_close(nimble_handle);
+    if (err == ESP_OK) {
+        return true;
+    }
+    return false;
 }
 
 void bleio_adapter_gc_collect(bleio_adapter_obj_t *adapter) {

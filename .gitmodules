@@ -143,7 +143,7 @@
 [submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
 	url = https://github.com/adafruit/esp-idf.git
-	branch = circuitpython-v5.1.3
+	branch = circuitpython-v5.2.2
 [submodule "ports/espressif/esp-protocols"]
 	path = ports/espressif/esp-protocols
 	url = https://github.com/espressif/esp-protocols.git
@@ -386,3 +386,12 @@
 [submodule "frozen/Adafruit_CircuitPython_Bitmap_Font"]
 	path = frozen/Adafruit_CircuitPython_Bitmap_Font
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Bitmap_Font
+[submodule "frozen/Adafruit_CircuitPython_MPU6050"]
+	path = frozen/Adafruit_CircuitPython_MPU6050
+	url = https://github.com/adafruit/Adafruit_CircuitPython_MPU6050
+[submodule "frozen/Adafruit_CircuitPython_Pixel_Framebuf"]
+	path = frozen/Adafruit_CircuitPython_Pixel_Framebuf
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Pixel_Framebuf
+[submodule "frozen/Adafruit_CircuitPython_LED_Animation"]
+	path = frozen/Adafruit_CircuitPython_LED_Animation
+	url = https://github.com/adafruit/Adafruit_CircuitPython_LED_Animation

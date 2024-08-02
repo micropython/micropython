@@ -668,15 +668,20 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
         }
     }
 
-    // Negotiate for better PHY, larger MTU and data lengths since we are the central. These are
-    // nice-to-haves so ignore any errors.
+    // Negotiate for better PHY, larger MTU and data lengths since we are the central.
+    // The peer may decline, which is its prerogative.
     ble_gap_phys_t const phys = {
         .rx_phys = BLE_GAP_PHY_AUTO,
         .tx_phys = BLE_GAP_PHY_AUTO,
     };
     sd_ble_gap_phy_update(conn_handle, &phys);
-    sd_ble_gattc_exchange_mtu_request(conn_handle, BLE_GATTS_VAR_ATTR_LEN_MAX);
-    sd_ble_gap_data_length_update(conn_handle, NULL, NULL);
+    // The MTU size passed here has to match the value passed in the BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST
+    // event handler in Connection.c, per the SD doc:
+    //     "The value must be equal to Server RX MTU size given in
+    //     sd_ble_gatts_exchange_mtu_reply if an ATT_MTU exchange has
+    //     already been performed in the other direction."
+    check_nrf_error(sd_ble_gattc_exchange_mtu_request(conn_handle, BLE_GATTS_VAR_ATTR_LEN_MAX));
+    check_nrf_error(sd_ble_gap_data_length_update(conn_handle, NULL, NULL));
 
     // Make the connection object and return it.
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
@@ -742,6 +747,13 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
         common_hal_bleio_adapter_stop_advertising(self);
     }
 
+    // A zero timeout means unlimited. Do the checking here
+    // rather than in common_hal_bleio_adapter_start_advertising(), because
+    // _common_hal_bleio_adapter_start_advertising() is called for BLE workflow with
+    // a zero (unlimited) timeout.
+    if (timeout == 0) {
+        timeout = BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED;
+    }
     uint32_t err_code;
     bool extended = advertising_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX ||
         scan_response_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX;
@@ -871,15 +883,11 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     // Anonymous mode requires a timeout so that we don't continue to broadcast
     // the same data while cycling the MAC address -- otherwise, what's the
     // point of randomizing the MAC address?
-    if (!timeout) {
-        if (anonymous) {
-            // The Nordic macro is in units of 10ms. Convert to seconds.
-            uint32_t adv_timeout_max_secs = UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS);
-            uint32_t rotate_timeout_max_secs = BLE_GAP_DEFAULT_PRIVATE_ADDR_CYCLE_INTERVAL_S;
-            timeout = MIN(adv_timeout_max_secs, rotate_timeout_max_secs);
-        } else {
-            timeout = BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED;
-        }
+    if (anonymous) {
+        // The Nordic macro is in units of 10ms. Convert to seconds.
+        uint32_t adv_timeout_max_secs = UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS);
+        uint32_t rotate_timeout_max_secs = BLE_GAP_DEFAULT_PRIVATE_ADDR_CYCLE_INTERVAL_S;
+        timeout = MIN(adv_timeout_max_secs, rotate_timeout_max_secs);
     } else {
         if (SEC_TO_UNITS(timeout, UNIT_10_MS) > BLE_GAP_ADV_TIMEOUT_LIMITED_MAX) {
             mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Timeout is too long: Maximum timeout length is %d seconds"),

@@ -70,7 +70,6 @@ uint32_t common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer
     }
 
     uint32_t num_bytes_read = ringbuf_get_n(&self->ringbuf, data, len);
-
     return num_bytes_read;
 }
 

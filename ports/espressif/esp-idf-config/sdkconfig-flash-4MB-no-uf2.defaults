@@ -22,4 +22,9 @@ CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="esp-idf-config/partitions-4MB-no-uf2.csv
 CONFIG_PARTITION_TABLE_FILENAME="esp-idf-config/partitions-4MB-no-uf2.csv"
 # end of Partition Table
 
+#
+# Power Management
+#
+CONFIG_PM_ENABLE=n # required for CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY, but doesn't fit with this partition table
+
 # end of Espressif IoT Development Framework Configuration

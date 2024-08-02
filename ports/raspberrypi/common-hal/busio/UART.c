@@ -42,12 +42,18 @@ void never_reset_uart(uint8_t num) {
     uart_status[num] = STATUS_NEVER_RESET;
 }
 
-static uint8_t pin_init(const uint8_t uart, const mcu_pin_obj_t *pin, const uint8_t pin_type) {
+static void pin_check(const uint8_t uart, const mcu_pin_obj_t *pin, const uint8_t pin_type) {
     if (pin == NULL) {
-        return NO_PIN;
+        return;
     }
     if (!(((pin->number % 4) == pin_type) && ((((pin->number + 4) / 8) % NUM_UARTS) == uart))) {
         raise_ValueError_invalid_pins();
+    }
+}
+
+static uint8_t pin_init(const uint8_t uart, const mcu_pin_obj_t *pin, const uint8_t pin_type) {
+    if (pin == NULL) {
+        return NO_PIN;
     }
     claim_pin(pin);
     gpio_set_function(pin->number, GPIO_FUNC_UART);
@@ -90,10 +96,15 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     uint8_t uart_id = ((((tx != NULL) ? tx->number : rx->number) + 4) / 8) % NUM_UARTS;
 
+    pin_check(uart_id, tx, 0);
+    pin_check(uart_id, rx, 1);
+    pin_check(uart_id, cts, 2);
+    pin_check(uart_id, rts, 3);
+
     if (uart_status[uart_id] != STATUS_FREE) {
         mp_raise_ValueError(MP_ERROR_TEXT("UART peripheral in use"));
     }
-    // These may raise exceptions if pins are already in use.
+
     self->tx_pin = pin_init(uart_id, tx, 0);
     self->rx_pin = pin_init(uart_id, rx, 1);
     self->cts_pin = pin_init(uart_id, cts, 2);

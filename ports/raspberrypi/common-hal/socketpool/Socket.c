@@ -21,6 +21,7 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/workflow.h"
+#include "common-hal/socketpool/__init__.h"
 
 #include "lwip/dns.h"
 #include "lwip/err.h"
@@ -35,6 +36,36 @@
 #include "lwip/udp.h"
 
 #include "sdk/src/rp2_common/pico_cyw43_arch/include/pico/cyw43_arch.h"
+
+mp_obj_t socketpool_ip_addr_to_str(const ip_addr_t *addr) {
+    char ip_str[IPADDR_STRLEN_MAX]; // big enough for any supported address type
+    switch (IP_GET_TYPE(addr)) {
+        #if CIRCUITPY_SOCKETPOOL_IPV6
+        case IPADDR_TYPE_V6:
+            ip6addr_ntoa_r(ip_2_ip6(addr), ip_str, sizeof(ip_str));
+            break;
+        #endif
+        default:
+            ip4addr_ntoa_r(ip_2_ip4(addr), ip_str, sizeof(ip_str));
+    }
+    return mp_obj_new_str(ip_str, strlen(ip_str));
+}
+
+static mp_obj_t socketpool_ip_addr_and_port_to_tuple(const ip_addr_t *addr, int port) {
+    mp_obj_t args[CIRCUITPY_SOCKETPOOL_IPV6 ? 4 : 2] = {
+        socketpool_ip_addr_to_str(addr),
+        MP_OBJ_NEW_SMALL_INT(port),
+    };
+    int n = 2;
+    #if CIRCUITPY_SOCKETPOOL_IPV6
+    if (IP_GET_TYPE(addr) == IPADDR_TYPE_V6) {
+        items[2] = MP_OBJ_NEW_SMALL_INT(0); // sin6_flowinfo
+        items[3] = MP_OBJ_NEW_SMALL_INT(ip_2_ip6(addr)->zone);
+        n = 4;
+    }
+    #endif
+    return mp_obj_new_tuple(n, args);
+}
 
 #define MICROPY_PY_LWIP_SOCK_RAW (1)
 
@@ -380,7 +411,7 @@ static mp_uint_t lwip_raw_udp_send(socketpool_socket_obj_t *socket, const byte *
 }
 
 // Helper function for recv/recvfrom to handle raw/UDP packets
-static mp_uint_t lwip_raw_udp_receive(socketpool_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, uint32_t *port, int *_errno) {
+static mp_uint_t lwip_raw_udp_receive(socketpool_socket_obj_t *socket, byte *buf, mp_uint_t len, mp_obj_t *peer_out, int *_errno) {
 
     if (socket->incoming.pbuf == NULL) {
         if (socket->timeout == 0) {
@@ -400,9 +431,8 @@ static mp_uint_t lwip_raw_udp_receive(socketpool_socket_obj_t *socket, byte *buf
         }
     }
 
-    if (ip != NULL) {
-        memcpy(ip, &socket->peer, sizeof(socket->peer));
-        *port = socket->peer_port;
+    if (peer_out != NULL) {
+        *peer_out = socketpool_ip_addr_and_port_to_tuple(&socket->peer, socket->peer_port);
     }
 
     struct pbuf *p = socket->incoming.pbuf;
@@ -726,7 +756,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     return socket;
 }
 
-int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port, socketpool_socket_obj_t *accepted) {
+int socketpool_socket_accept(socketpool_socket_obj_t *self, mp_obj_t *peer_out, socketpool_socket_obj_t *accepted) {
     if (self->type != MOD_NETWORK_SOCK_STREAM) {
         return -MP_EOPNOTSUPP;
     }
@@ -808,20 +838,21 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
     MICROPY_PY_LWIP_EXIT
 
     // output values
-    memcpy(ip, &(accepted->pcb.tcp->remote_ip), NETUTILS_IPV4ADDR_BUFSIZE);
-    *port = (mp_uint_t)accepted->pcb.tcp->remote_port;
+    if (peer_out) {
+        *peer_out = socketpool_ip_addr_and_port_to_tuple(&accepted->pcb.tcp->remote_ip, accepted->pcb.tcp->remote_port);
+    }
 
     return 1;
 }
 
 socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *socket,
-    uint8_t *ip, uint32_t *port) {
+    mp_obj_t *peer_out) {
     // Create new socket object, do it here because we must not raise an out-of-memory
     // exception when the LWIP concurrency lock is held
     socketpool_socket_obj_t *accepted = m_new_ll_obj_with_finaliser(socketpool_socket_obj_t);
     socketpool_socket_reset(accepted);
 
-    int ret = socketpool_socket_accept(socket, ip, port, accepted);
+    int ret = socketpool_socket_accept(socket, peer_out, accepted);
 
     if (ret <= 0) {
         m_del_obj(socketpool_socket_obj_t, accepted);
@@ -852,7 +883,7 @@ size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     ip_addr_t bind_addr;
     const ip_addr_t *bind_addr_ptr = &bind_addr;
     if (hostlen > 0) {
-        socketpool_resolve_host_raise(socket->pool, host, &bind_addr);
+        socketpool_resolve_host_raise(host, &bind_addr);
     } else {
         bind_addr_ptr = IP_ANY_TYPE;
     }
@@ -941,7 +972,7 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *socket,
 
     // get address
     ip_addr_t dest;
-    socketpool_resolve_host_raise(socket->pool, host, &dest);
+    socketpool_resolve_host_raise(host, &dest);
 
     err_t err = ERR_ARG;
     switch (socket->type) {
@@ -966,7 +997,7 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *socket,
                 mp_raise_OSError(error_lookup_table[-err]);
             }
             socket->peer_port = (mp_uint_t)port;
-            memcpy(socket->peer, &dest, sizeof(socket->peer));
+            memcpy(&socket->peer, &dest, sizeof(socket->peer));
             MICROPY_PY_LWIP_EXIT
 
             // And now we wait...
@@ -1054,14 +1085,17 @@ bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t *socket, int ba
 }
 
 mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *socket,
-    uint8_t *buf, uint32_t len, uint8_t *ip, uint32_t *port) {
+    uint8_t *buf, uint32_t len, mp_obj_t *peer_out) {
     int _errno;
 
     mp_uint_t ret = 0;
     switch (socket->type) {
         case SOCKETPOOL_SOCK_STREAM: {
-            memcpy(ip, &socket->peer, sizeof(socket->peer));
-            *port = (mp_uint_t)socket->peer_port;
+            // output values
+            if (peer_out) {
+                *peer_out = socketpool_ip_addr_and_port_to_tuple(&socket->peer, socket->peer_port);
+            }
+
             ret = lwip_tcp_receive(socket, (byte *)buf, len, &_errno);
             break;
         }
@@ -1069,7 +1103,7 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *so
         #if MICROPY_PY_LWIP_SOCK_RAW
         case SOCKETPOOL_SOCK_RAW:
         #endif
-            ret = lwip_raw_udp_receive(socket, (byte *)buf, len, ip, port, &_errno);
+            ret = lwip_raw_udp_receive(socket, (byte *)buf, len, peer_out, &_errno);
             break;
     }
     if (ret == (unsigned)-1) {
@@ -1092,7 +1126,7 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *socket,
         #if MICROPY_PY_LWIP_SOCK_RAW
         case SOCKETPOOL_SOCK_RAW:
         #endif
-            ret = lwip_raw_udp_receive(socket, (byte *)buf, len, NULL, NULL, &_errno);
+            ret = lwip_raw_udp_receive(socket, (byte *)buf, len, NULL, &_errno);
             break;
     }
     if (ret == (unsigned)-1) {
@@ -1143,7 +1177,7 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *socket,
     const char *host, size_t hostlen, uint32_t port, const uint8_t *buf, uint32_t len) {
     int _errno;
     ip_addr_t ip;
-    socketpool_resolve_host_raise(socket->pool, host, &ip);
+    socketpool_resolve_host_raise(host, &ip);
 
     mp_uint_t ret = 0;
     switch (socket->type) {

@@ -19,8 +19,12 @@
 #include "supervisor/shared/bluetooth/bluetooth.h"
 
 #include "common-hal/_bleio/__init__.h"
-// #include "common-hal/_bleio/bonding.h"
 #include "common-hal/_bleio/ble_events.h"
+
+#include "nvs_flash.h"
+
+
+background_callback_t bleio_background_callback;
 
 void bleio_user_reset() {
     // Stop any user scanning or advertising.
@@ -36,7 +40,6 @@ void bleio_user_reset() {
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
     // Set this explicitly to save data.
-    common_hal_bleio_adapter_obj.base.type = &bleio_adapter_type;
     if (!common_hal_bleio_adapter_get_enabled(&common_hal_bleio_adapter_obj)) {
         return;
     }
@@ -52,7 +55,26 @@ void bleio_reset() {
 // It currently only has properties and no state. Inited by bleio_reset
 bleio_adapter_obj_t common_hal_bleio_adapter_obj;
 
-void bleio_background(void) {
+void bleio_background(void *data) {
+    (void)data;
+    supervisor_bluetooth_background();
+}
+
+void common_hal_bleio_init(void) {
+    common_hal_bleio_adapter_obj.base.type = &bleio_adapter_type;
+
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        // NVS partition was truncated and needs to be erased
+        // Retry nvs_flash_init
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(err);
+
+
+    bleio_background_callback.fun = bleio_background;
+    bleio_background_callback.data = NULL;
 }
 
 void common_hal_bleio_gc_collect(void) {
@@ -77,7 +99,7 @@ void check_nimble_error(int rc, const char *file, size_t line) {
             mp_raise_ConnectionError(MP_ERROR_TEXT("Not connected"));
             return;
         default:
-            #if CIRCUITPY_VERBOSE_BLE
+            #if CIRCUITPY_VERBOSE_BLE || CIRCUITPY_DEBUG
             if (file) {
                 mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown system firmware error at %s:%d: %d"), file, line, rc);
             }
@@ -104,7 +126,7 @@ void check_ble_error(int error_code, const char *file, size_t line) {
             mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Insufficient encryption"));
             return;
         default:
-            #if CIRCUITPY_VERBOSE_BLE
+            #if CIRCUITPY_VERBOSE_BLE || CIRCUITPY_DEBUG
             if (file) {
                 mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown BLE error at %s:%d: %d"), file, line, error_code);
             }

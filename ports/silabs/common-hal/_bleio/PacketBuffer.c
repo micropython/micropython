@@ -145,7 +145,7 @@ void _common_hal_bleio_packet_buffer_construct(
     uint32_t *outgoing_buffer1,
     uint32_t *outgoing_buffer2,
     size_t max_packet_size,
-    void *static_handler_entry) {
+    ble_event_handler_t static_handler_entry) {
 
     bleio_characteristic_properties_t temp_prop;
     self->characteristic = characteristic;

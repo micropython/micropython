@@ -20,6 +20,8 @@
 #define BLEIO_TOTAL_CONNECTION_COUNT 5
 #endif
 
+#define BLEIO_HANDLE_INVALID BLE_CONN_HANDLE_INVALID
+
 extern bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
 typedef struct {

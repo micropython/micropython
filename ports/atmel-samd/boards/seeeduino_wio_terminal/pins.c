@@ -82,14 +82,15 @@ static const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_2),  MP_ROM_PTR(&pin_PC27) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_3),  MP_ROM_PTR(&pin_PC28) },
 
-    // Special named pins
+    // Special named pins - follows the schematic, but see comments
+    // The WIO Terminal has an accelerometer, not a gyroscope
     { MP_OBJ_NEW_QSTR(MP_QSTR_LIGHT),  MP_ROM_PTR(&pin_PD01) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_BUZZER),  MP_ROM_PTR(&pin_PD11) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_IR),  MP_ROM_PTR(&pin_PB31) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_MIC),  MP_ROM_PTR(&pin_PC30) },
-    { MP_ROM_QSTR(MP_QSTR_GYROSCOPE_SCL),  MP_ROM_PTR(&pin_PA12) },
-    { MP_ROM_QSTR(MP_QSTR_GYROSCOPE_SDA),  MP_ROM_PTR(&pin_PA13) },
-    { MP_ROM_QSTR(MP_QSTR_GYROSCOPE_INT),  MP_ROM_PTR(&pin_PC21) },
+    { MP_ROM_QSTR(MP_QSTR_GYROSCOPE_SCL),  MP_ROM_PTR(&pin_PA12) },     // Despite the name, this is the ACCELEROMETER
+    { MP_ROM_QSTR(MP_QSTR_GYROSCOPE_SDA),  MP_ROM_PTR(&pin_PA13) },     // Despite the name, this is the ACCELEROMETER
+    { MP_ROM_QSTR(MP_QSTR_GYROSCOPE_INT),  MP_ROM_PTR(&pin_PC21) },     // Despite the name, this is the ACCELEROMETER
 
     // DAC
     { MP_OBJ_NEW_QSTR(MP_QSTR_DAC0),  MP_ROM_PTR(&pin_PA02) },

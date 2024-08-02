@@ -229,11 +229,13 @@ LDFLAGS += \
 	-Tesp32c6.rom.newlib.ld \
 	-Tesp32c6.rom.coexist.ld \
 	-Tesp32c6.rom.heap.ld \
+	-Tesp32c6.rom.systimer.ld \
 	-Tesp32c6.rom.wdt.ld
 else ifeq ($(IDF_TARGET),esp32h2)
 LDFLAGS += \
 	-Tesp32h2.rom.heap.ld \
 	-Tesp32h2.rom.newlib.ld \
+	-Tesp32h2.rom.systimer.ld \
 	-Tesp32h2.rom.wdt.ld
 else ifeq ($(IDF_TARGET),esp32s2)
 LDFLAGS += \
@@ -405,7 +407,11 @@ ifeq ($(UF2_BOOTLOADER), 1)
 	FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
 else
 ifeq ($(CIRCUITPY_ESP_FLASH_SIZE), 4MB)
-	FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE)-no-ota-no-uf2.defaults
+	ifeq ($(CIRCUITPY_LEGACY_4MB_FLASH_LAYOUT), 1)
+		FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE)-no-uf2.defaults
+	else
+		FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE)-no-ota-no-uf2.defaults
+	endif
 else
 	FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE)-no-uf2.defaults
 endif

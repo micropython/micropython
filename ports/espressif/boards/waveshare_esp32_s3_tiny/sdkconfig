@@ -1,0 +1,16 @@
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Component config
+#
+#
+# LWIP
+#
+# CONFIG_LWIP_IPV6 is not set
+CONFIG_LWIP_LOCAL_HOSTNAME="waveshare-esp32-s3-tiny"
+# end of LWIP
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

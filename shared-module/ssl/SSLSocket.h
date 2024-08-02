@@ -29,6 +29,7 @@ typedef struct ssl_sslsocket_obj {
     mbedtls_x509_crt cacert;
     mbedtls_x509_crt cert;
     mbedtls_pk_context pkey;
+    uintptr_t poll_mask;
     bool closed;
     mp_obj_t accept_args[2];
     mp_obj_t bind_args[3];

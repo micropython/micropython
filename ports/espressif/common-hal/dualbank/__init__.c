@@ -27,7 +27,7 @@ void dualbank_reset(void) {
 
 static void __attribute__((noreturn)) task_fatal_error(void) {
     ESP_LOGE(TAG, "Exiting task due to fatal error...");
-    mp_raise_RuntimeError(MP_ERROR_TEXT("Update Failed"));
+    mp_raise_RuntimeError(MP_ERROR_TEXT("Update failed"));
 }
 
 void common_hal_dualbank_flash(const void *buf, const size_t len, const size_t offset) {

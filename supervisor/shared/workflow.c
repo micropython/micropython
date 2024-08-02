@@ -18,6 +18,9 @@
 #if CIRCUITPY_BLEIO
 #include "shared-bindings/_bleio/__init__.h"
 #include "supervisor/shared/bluetooth/bluetooth.h"
+#if CIRCUITPY_SERIAL_BLE
+#include "supervisor/shared/bluetooth/serial.h"
+#endif
 #endif
 
 #if CIRCUITPY_TINYUSB || CIRCUITPY_USB_KEYBOARD_WORKFLOW
@@ -27,6 +30,7 @@
 
 #if CIRCUITPY_WEB_WORKFLOW
 #include "supervisor/shared/web_workflow/web_workflow.h"
+#include "supervisor/shared/web_workflow/websocket.h"
 static background_callback_t workflow_background_cb = {NULL, NULL};
 #endif
 
@@ -60,14 +64,27 @@ void supervisor_workflow_request_background(void) {
 }
 
 // Return true if host has completed connection to us (such as USB enumeration).
+// This is used to determine when to pretend to deep sleep.
 bool supervisor_workflow_active(void) {
     #if CIRCUITPY_USB_DEVICE
     // Eventually there might be other non-USB workflows, such as BLE.
     // tud_ready() checks for usb mounted and not suspended.
-    return tud_ready();
-    #else
-    return false;
+    if (tud_ready()) {
+        return true;
+    }
     #endif
+    #if CIRCUITPY_WEB_WORKFLOW
+    if (websocket_connected()) {
+        return true;
+    }
+    #endif
+    #if CIRCUITPY_SERIAL_BLE
+    if (ble_serial_connected()) {
+        return true;
+    }
+    #endif
+
+    return false;
 }
 
 void supervisor_workflow_start(void) {
@@ -83,7 +100,6 @@ void supervisor_workflow_start(void) {
 
     #if CIRCUITPY_BLEIO
     bleio_reset();
-    supervisor_bluetooth_enable_workflow();
     supervisor_start_bluetooth();
     #endif
 

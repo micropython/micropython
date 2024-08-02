@@ -59,3 +59,9 @@
 extern portMUX_TYPE background_task_mutex;
 #define CALLBACK_CRITICAL_BEGIN (taskENTER_CRITICAL(&background_task_mutex))
 #define CALLBACK_CRITICAL_END (taskEXIT_CRITICAL(&background_task_mutex))
+
+// 20 dBm is the default and the highest max tx power.
+// Allow a different value to be specified for boards that have trouble with using the maximum power.
+#ifndef CIRCUITPY_WIFI_DEFAULT_TX_POWER
+#define CIRCUITPY_WIFI_DEFAULT_TX_POWER (20)
+#endif

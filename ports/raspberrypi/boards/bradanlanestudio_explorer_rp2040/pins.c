@@ -38,9 +38,9 @@ static const mp_rom_map_elem_t board_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_GP0), MP_ROM_PTR(&pin_GPIO0) },
     { MP_ROM_QSTR(MP_QSTR_GP1), MP_ROM_PTR(&pin_GPIO1) },
-    // GPIO0 and GPIO1 are also the UART
-    { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_GPIO0) },
-    { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_GPIO1) },
+    // GPIO0 and GPIO1 are used for IR and not for  UART
+    { MP_ROM_QSTR(MP_QSTR_IR_TX), MP_ROM_PTR(&pin_GPIO0) },
+    { MP_ROM_QSTR(MP_QSTR_IR_RX), MP_ROM_PTR(&pin_GPIO1) },
 
     { MP_ROM_QSTR(MP_QSTR_GP2), MP_ROM_PTR(&pin_GPIO2) },
     { MP_ROM_QSTR(MP_QSTR_GP3), MP_ROM_PTR(&pin_GPIO3) },
@@ -111,17 +111,13 @@ static const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_TOUCH9), MP_ROM_PTR(&pin_GPIO27) },
 
     { MP_ROM_QSTR(MP_QSTR_GP28), MP_ROM_PTR(&pin_GPIO28) },
-    // GPIO28 is also the interrupt pin of the accelerometer
-    { MP_ROM_QSTR(MP_QSTR_ACCEL_INT), MP_ROM_PTR(&pin_GPIO28) },
+    // GPIO28 is also the interrupt pin of the accelerometer on one version of the board
 
     { MP_ROM_QSTR(MP_QSTR_GP29), MP_ROM_PTR(&pin_GPIO29) },
     // GPIO29 is also the ID value of the board (an analog read value between 0 .. 4096)
-    // { MP_ROM_QSTR(MP_QSTR_VID), MP_ROM_PTR(&pin_GPIO29) },
-
 
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
-
+    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
     { MP_ROM_QSTR(MP_QSTR_DISPLAY), MP_ROM_PTR(&displays[0].epaper_display)},
 
     { MP_ROM_QSTR(MP_QSTR_VID), MP_ROM_PTR(&board_vid_obj) },

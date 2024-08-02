@@ -105,7 +105,10 @@ ifeq ($(CIRCUITPY_AESIO),1)
 SRC_PATTERNS += aesio/%
 endif
 ifeq ($(CIRCUITPY_ALARM),1)
-SRC_PATTERNS += alarm/%
+SRC_PATTERNS += alarm/__init__.c alarm/SleepMemory.c alarm/pin/% alarm/time/%
+endif
+ifeq ($(CIRCUITPY_ALARM_TOUCH),1)
+SRC_PATTERNS += alarm/touch/%
 endif
 ifeq ($(CIRCUITPY_ANALOGBUFIO),1)
 SRC_PATTERNS += analogbufio/%

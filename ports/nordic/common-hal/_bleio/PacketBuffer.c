@@ -194,7 +194,7 @@ void _common_hal_bleio_packet_buffer_construct(
     bleio_packet_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic,
     uint32_t *incoming_buffer, size_t incoming_buffer_size,
     uint32_t *outgoing_buffer1, uint32_t *outgoing_buffer2, size_t max_packet_size,
-    void *static_handler_entry) {
+    ble_event_handler_t *static_handler_entry) {
 
     self->characteristic = characteristic;
     self->client = self->characteristic->service->is_remote;

@@ -48,7 +48,7 @@ static const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_RGB_LED_G), MP_ROM_PTR(&pin_P0_16)  },
     { MP_ROM_QSTR(MP_QSTR_RGB_LED_B), MP_ROM_PTR(&pin_P0_06)  },
 
-    // Power line to LSM9DS1.
+    // Power line to LSM9DS1, LPS22 and HTS221.
     { MP_ROM_QSTR(MP_QSTR_VDD_ENV), MP_ROM_PTR(&pin_P0_22)  },
 
     // Pullup voltage for SDA1 and SCL1

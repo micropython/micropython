@@ -2,6 +2,8 @@
 //
 // SPDX-FileCopyrightText: Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
 //
+// SPDX-FileCopyrightText: Copyright (c) 2024 Tim Chinowsky
+//
 // SPDX-License-Identifier: MIT
 
 #include "shared-bindings/audiocore/RawSample.h"
@@ -16,13 +18,17 @@ void common_hal_audioio_rawsample_construct(audioio_rawsample_obj_t *self,
     uint8_t bytes_per_sample,
     bool samples_signed,
     uint8_t channel_count,
-    uint32_t sample_rate) {
+    uint32_t sample_rate,
+    bool single_buffer) {
+
     self->buffer = buffer;
     self->bits_per_sample = bytes_per_sample * 8;
     self->samples_signed = samples_signed;
     self->len = len;
     self->channel_count = channel_count;
     self->sample_rate = sample_rate;
+    self->single_buffer = single_buffer;
+    self->buffer_index = 0;
 }
 
 void common_hal_audioio_rawsample_deinit(audioio_rawsample_obj_t *self) {
@@ -56,19 +62,33 @@ audioio_get_buffer_result_t audioio_rawsample_get_buffer(audioio_rawsample_obj_t
     uint8_t channel,
     uint8_t **buffer,
     uint32_t *buffer_length) {
-    *buffer_length = self->len;
-    if (single_channel_output) {
-        *buffer = self->buffer + (channel % self->channel_count) * (self->bits_per_sample / 8);
+
+    if (self->single_buffer) {
+        *buffer_length = self->len;
+        if (single_channel_output) {
+            *buffer = self->buffer + (channel % self->channel_count) * (self->bits_per_sample / 8);
+        } else {
+            *buffer = self->buffer;
+        }
+        return GET_BUFFER_DONE;
     } else {
-        *buffer = self->buffer;
+        *buffer_length = self->len / 2;
+        if (single_channel_output) {
+            *buffer = self->buffer + (channel % self->channel_count) * (self->bits_per_sample / 8) + \
+                self->len / 2 * self->buffer_index;
+        } else {
+            *buffer = self->buffer + self->len / 2 * self->buffer_index;
+        }
+        self->buffer_index = 1 - self->buffer_index;
+        return GET_BUFFER_DONE;
     }
-    return GET_BUFFER_DONE;
 }
 
 void audioio_rawsample_get_buffer_structure(audioio_rawsample_obj_t *self, bool single_channel_output,
     bool *single_buffer, bool *samples_signed,
     uint32_t *max_buffer_length, uint8_t *spacing) {
-    *single_buffer = true;
+
+    *single_buffer = self->single_buffer;
     *samples_signed = self->samples_signed;
     *max_buffer_length = self->len;
     if (single_channel_output) {

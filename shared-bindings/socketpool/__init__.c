@@ -18,6 +18,21 @@
 //|
 //| For more information about the `socket` module, see the CPython documentation:
 //| https://docs.python.org/3/library/socket.html
+//|
+//| .. jinja
+//|
+//| .. raw:: html
+//|
+//|     <p>
+//|     <details>
+//|     <summary>AF_INET6 (IPv6) supported on these boards</summary>
+//|     <ul>
+//|     {% for board in support_matrix_reverse["socketpool.socketpool.AF_INET6"] %}
+//|     <li> {{ board }}
+//|     {% endfor %}
+//|     </ul>
+//|     </details>
+//|     </p>
 //| """
 
 static const mp_rom_map_elem_t socketpool_globals_table[] = {

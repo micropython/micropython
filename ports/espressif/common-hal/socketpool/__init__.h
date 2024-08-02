@@ -6,8 +6,7 @@
 
 #pragma once
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SOCKETPOOL___INIT___H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SOCKETPOOL___INIT___H
+struct addrinfo;
 
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SOCKETPOOL___INIT___H
+int socketpool_getaddrinfo_common(const char *host, int service, const struct addrinfo *hints, struct addrinfo **res);
+void socketpool_resolve_host_or_throw(int family, int type, const char *hostname, struct sockaddr_storage *addr, int port);

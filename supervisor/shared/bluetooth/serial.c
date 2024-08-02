@@ -36,10 +36,13 @@ const uint8_t circuitpython_base_uuid[16] = {0x6e, 0x68, 0x74, 0x79, 0x50, 0x74,
 static mp_obj_list_t characteristic_list;
 static mp_obj_t characteristic_list_items[3];
 
-static uint32_t _outgoing1[BLE_GATTS_VAR_ATTR_LEN_MAX / 4];
-static uint32_t _outgoing2[BLE_GATTS_VAR_ATTR_LEN_MAX / 4];
-static ble_drv_evt_handler_entry_t rx_static_handler_entry;
-static ble_drv_evt_handler_entry_t tx_static_handler_entry;
+#if BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE % 4 != 0
+#error "BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE must be a multiple of 4"
+#endif
+static uint32_t _outgoing1[BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE / 4];
+static uint32_t _outgoing2[BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE / 4];
+static ble_event_handler_t rx_static_handler_entry;
+static ble_event_handler_t tx_static_handler_entry;
 static bleio_packet_buffer_obj_t _tx_packet_buffer;
 static uint32_t _incoming[64];
 static bleio_characteristic_buffer_obj_t _rx_buffer;
@@ -64,6 +67,7 @@ void supervisor_start_bluetooth_serial(void) {
     // RX
     supervisor_ble_circuitpython_rx_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_circuitpython_rx_uuid, 0x0002, circuitpython_base_uuid);
+    supervisor_ble_circuitpython_rx_characteristic.base.type = &bleio_characteristic_type;
     common_hal_bleio_characteristic_construct(&supervisor_ble_circuitpython_rx_characteristic,
         &supervisor_ble_circuitpython_service,
         0,                                       // handle (for remote only)
@@ -71,7 +75,7 @@ void supervisor_start_bluetooth_serial(void) {
         CHAR_PROP_WRITE | CHAR_PROP_WRITE_NO_RESPONSE,
         SECURITY_MODE_NO_ACCESS,
         SECURITY_MODE_ENC_NO_MITM,
-        BLE_GATTS_VAR_ATTR_LEN_MAX,                 // max length
+        BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE,                 // max length
         false,                                      // fixed length
         NULL,                                      // no initial value
         NULL);
@@ -79,6 +83,7 @@ void supervisor_start_bluetooth_serial(void) {
     // TX
     supervisor_ble_circuitpython_tx_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_circuitpython_tx_uuid, 0x0003, circuitpython_base_uuid);
+    supervisor_ble_circuitpython_tx_characteristic.base.type = &bleio_characteristic_type;
     common_hal_bleio_characteristic_construct(&supervisor_ble_circuitpython_tx_characteristic,
         &supervisor_ble_circuitpython_service,
         0,                                       // handle (for remote only)
@@ -86,7 +91,7 @@ void supervisor_start_bluetooth_serial(void) {
         CHAR_PROP_NOTIFY,
         SECURITY_MODE_ENC_NO_MITM,
         SECURITY_MODE_NO_ACCESS,
-        BLE_GATTS_VAR_ATTR_LEN_MAX,                  // max length
+        BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE,                  // max length
         false,                                       // fixed length
         NULL,                                       // no initial value
         NULL);
@@ -99,6 +104,7 @@ void supervisor_start_bluetooth_serial(void) {
 
     supervisor_ble_circuitpython_version_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_circuitpython_version_uuid, 0x0100, circuitpython_base_uuid);
+    supervisor_ble_circuitpython_version_characteristic.base.type = &bleio_characteristic_type;
     common_hal_bleio_characteristic_construct(&supervisor_ble_circuitpython_version_characteristic,
         &supervisor_ble_circuitpython_service,
         0,                                       // handle (for remote only)
@@ -115,13 +121,15 @@ void supervisor_start_bluetooth_serial(void) {
 
     // Use a PacketBuffer to transmit so that we glom characters to transmit
     // together and save BLE overhead.
+    _tx_packet_buffer.base.type = &bleio_packet_buffer_type;
     _common_hal_bleio_packet_buffer_construct(
         &_tx_packet_buffer, &supervisor_ble_circuitpython_tx_characteristic,
         NULL, 0,
-        _outgoing1, _outgoing2, BLE_GATTS_VAR_ATTR_LEN_MAX,
+        _outgoing1, _outgoing2, BLEIO_PACKET_BUFFER_MAX_PACKET_SIZE,
         &tx_static_handler_entry);
 
     // Use a CharacteristicBuffer for rx so we can read a single character at a time.
+    _rx_buffer.base.type = &bleio_characteristic_buffer_type;
     _common_hal_bleio_characteristic_buffer_construct(&_rx_buffer,
         &supervisor_ble_circuitpython_rx_characteristic,
         0.1f,
@@ -143,7 +151,7 @@ void supervisor_stop_bluetooth_serial(void) {
 }
 
 bool ble_serial_connected(void) {
-    return _tx_packet_buffer.conn_handle != BLE_CONN_HANDLE_INVALID;
+    return _tx_packet_buffer.conn_handle != BLEIO_HANDLE_INVALID;
 }
 
 uint32_t ble_serial_available(void) {
