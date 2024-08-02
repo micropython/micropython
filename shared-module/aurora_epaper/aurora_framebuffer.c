@@ -4,7 +4,8 @@
  * Copyright (c) Project Nayuki. (MIT License)
  * https://www.nayuki.io/page/pervasive-displays-epaper-panel-hardware-driver
  *
- * Copyright (c) wyrdsec (MIT License)
+ * Copyright 2023 Cisco Systems, Inc. and its affiliates
+ * Author: Wyrdsec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
