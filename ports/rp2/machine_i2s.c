@@ -171,6 +171,15 @@ void machine_i2s_init0(void) {
     }
 }
 
+void machine_i2s_deinit_all(void) {
+    for (uint8_t i = 0; i < MAX_I2S_RP2; i++) {
+        machine_i2s_obj_t *i2s = MP_STATE_PORT(machine_i2s_obj[i]);
+        if (i2s) {
+            mp_machine_i2s_deinit(i2s);
+        }
+    }
+}
+
 static int8_t get_frame_mapping_index(int8_t bits, format_t format) {
     if (format == MONO) {
         if (bits == 16) {

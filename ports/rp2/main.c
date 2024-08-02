@@ -214,6 +214,7 @@ int main(int argc, char **argv) {
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
         #endif
+        machine_i2s_deinit_all();
         rp2_dma_deinit();
         rp2_pio_deinit();
         #if MICROPY_PY_BLUETOOTH
