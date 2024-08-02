@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy_c3.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "STEMMA QT/QWIIC",
+        "RGB LED",
+        "USB-C",
+        "Breadboard friendly"
+    ],
+    "id": "dyg_mpv10",
+    "images": [
+        "deneyapkartg.jpg"
+    ],
+    "mcu": "esp32c3",
+    "product": "Deneyap Kart G",
+    "thumbnail": "",
+    "url": "https://deneyapkart.org/",
+    "vendor": "T3 Foundation"
+}
