@@ -583,7 +583,7 @@ friendly_repl_reset:
     for (;;) {
     input_restart:
 
-        #if MICROPY_HW_ENABLE_USB
+        #if MICROPY_HW_ENABLE_USB && 0
         if (usb_vcp_is_enabled()) {
             // If the user gets to here and interrupts are disabled then
             // they'll never see the prompt, traceback etc. The USB REPL needs

@@ -81,7 +81,9 @@
 #include "storage.h"
 #include "dma.h"
 #include "i2c.h"
-#include "usb.h"
+
+#include "tusb.h"
+#include "shared/tinyusb/mp_usbd.h"
 
 #if defined(MICROPY_HW_USB_FS)
 extern PCD_HandleTypeDef pcd_fs_handle;
@@ -149,7 +151,7 @@ void HardFault_C_Handler(ExceptionRegisters_t *regs) {
     #if MICROPY_HW_ENABLE_USB
     // We need to disable the USB so it doesn't try to write data out on
     // the VCP and then block indefinitely waiting for the buffer to drain.
-    pyb_usb_flags = 0;
+    // pyb_usb_flags = 0;
     #endif
 
     mp_hal_stdout_tx_str("HardFault\r\n");
@@ -300,7 +302,8 @@ void DebugMon_Handler(void) {
 
 #if MICROPY_HW_USB_FS
 void USB_UCPD1_2_IRQHandler(void) {
-    HAL_PCD_IRQHandler(&pcd_fs_handle);
+    tud_int_handler(0);
+    // HAL_PCD_IRQHandler(&pcd_fs_handle);
 }
 #endif
 
@@ -308,7 +311,8 @@ void USB_UCPD1_2_IRQHandler(void) {
 
 #if MICROPY_HW_USB_FS
 void USB_DRD_FS_IRQHandler(void) {
-    HAL_PCD_IRQHandler(&pcd_fs_handle);
+    tud_int_handler(0);
+    // HAL_PCD_IRQHandler(&pcd_fs_handle);
 }
 #endif
 
@@ -316,7 +320,8 @@ void USB_DRD_FS_IRQHandler(void) {
 
 #if MICROPY_HW_USB_FS
 void USB_IRQHandler(void) {
-    HAL_PCD_IRQHandler(&pcd_fs_handle);
+    tud_int_handler(0);
+    // HAL_PCD_IRQHandler(&pcd_fs_handle);
 }
 #endif
 
@@ -324,10 +329,16 @@ void USB_IRQHandler(void) {
 
 #if MICROPY_HW_USB_FS
 void USB_LP_IRQHandler(void) {
-    HAL_PCD_IRQHandler(&pcd_fs_handle);
+    // This function handles USB low priority interrupt, USB wake-up interrupt through EXTI line 28.
+    tud_int_handler(0);
+    // HAL_PCD_IRQHandler(&pcd_fs_handle);
 }
 #endif
 
+void USB_HP_IRQHandler(void) {
+    tud_int_handler(0);
+    // HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
 #else
 
 /**
@@ -338,14 +349,16 @@ void USB_LP_IRQHandler(void) {
 #if MICROPY_HW_USB_FS
 void OTG_FS_IRQHandler(void) {
     IRQ_ENTER(OTG_FS_IRQn);
-    HAL_PCD_IRQHandler(&pcd_fs_handle);
+    tud_int_handler(0);
+    // HAL_PCD_IRQHandler(&pcd_fs_handle);
     IRQ_EXIT(OTG_FS_IRQn);
 }
 #endif
 #if MICROPY_HW_USB_HS
 void OTG_HS_IRQHandler(void) {
     IRQ_ENTER(OTG_HS_IRQn);
-    HAL_PCD_IRQHandler(&pcd_hs_handle);
+    tud_int_handler(0);
+    // HAL_PCD_IRQHandler(&pcd_hs_handle);
     IRQ_EXIT(OTG_HS_IRQn);
 }
 #endif

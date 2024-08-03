@@ -77,7 +77,7 @@
 #include "pin.h"
 #include "extint.h"
 #include "usrsw.h"
-#include "usb.h"
+// #include "usb.h"
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
@@ -88,6 +88,10 @@
 #include "dac.h"
 #include "can.h"
 #include "subghz.h"
+
+#include "usbd_conf.h"
+#include "shared/tinyusb/mp_usbd.h"
+
 
 #if MICROPY_PY_THREAD
 static pyb_thread_t pyb_thread_main;
@@ -529,7 +533,8 @@ soft_reset:
     #endif
 
     #if MICROPY_HW_ENABLE_USB
-    pyb_usb_init0();
+    pyb_usbd_init();
+    mp_usbd_init();
     #endif
 
     #if MICROPY_PY_MACHINE_I2S
@@ -556,9 +561,9 @@ soft_reset:
 
     #if MICROPY_HW_ENABLE_USB
     // if the SD card isn't used as the USB MSC medium then use the internal flash
-    if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_NONE) {
-        pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_FLASH;
-    }
+    // if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_NONE) {
+    //     pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_FLASH;
+    // }
     #endif
 
     // set sys.path based on mounted filesystems (/sd is first so it can override /flash)
@@ -588,7 +593,8 @@ soft_reset:
     // or whose initialisation can be safely deferred until after running
     // boot.py.
 
-    #if MICROPY_HW_ENABLE_USB
+
+    #if 0
     // init USB device to default setting if it was not already configured
     if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
         #if MICROPY_HW_USB_MSC
@@ -685,6 +691,9 @@ soft_reset_exit:
     MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
     #else
     MP_STATE_PORT(pyb_stdio_uart) = NULL;
+    #endif
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+    mp_usbd_deinit();
     #endif
 
     MICROPY_BOARD_END_SOFT_RESET(&state);
