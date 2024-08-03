@@ -110,6 +110,10 @@
 #define MICROPY_HW_USB_CDC 1
 #define MICROPY_HW_USB_FS (1)
 
+#ifndef MICROPY_HW_TINYUSB_STACK
+#define MICROPY_HW_TINYUSB_STACK (MICROPY_HW_ENABLE_USB)
+#endif
+
 // Whether to enable the PA0-PA3 servo driver, exposed as pyb.Servo
 #ifndef MICROPY_HW_ENABLE_SERVO
 #define MICROPY_HW_ENABLE_SERVO (0)

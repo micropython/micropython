@@ -249,7 +249,6 @@ TINYUSB_SRC_C += $(addprefix lib/tinyusb/src/,\
 	portable/synopsys/dwc2/dcd_dwc2.c \
 	tusb.c \
 	)
-
 LDFLAGS +=  -Wl,--wrap=dcd_event_handler
 
 SRC_C += \
@@ -258,10 +257,7 @@ SRC_C += \
 	stm32_it.c \
 	usbd.c \
 	usbd_conf.c \
-	usbd_desc.c \
-	usbd_cdc_interface.c \
-	usbd_hid_interface.c \
-	usbd_msc_interface.c \
+	usb.c \
 	mphalport.c \
 	mpnetworkport.c \
 	mpthreadport.c \
@@ -291,7 +287,6 @@ SRC_C += \
 	can.c \
 	fdcan.c \
 	pyb_can.c \
-	usb.c \
 	eth.c \
 	eth_phy.c \
 	gccollect.c \
@@ -436,15 +431,6 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_i2s_ex.c \
 	)
 endif
-
-USBDEV_SRC_C += $(addprefix $(USBDEV_DIR)/,\
-	core/src/usbd_core.c \
-	core/src/usbd_ctlreq.c \
-	core/src/usbd_ioreq.c \
-	class/src/usbd_cdc_msc_hid.c \
-	class/src/usbd_msc_bot.c \
-	class/src/usbd_msc_scsi.c \
-	)
 
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 LIB_SRC_C += mbedtls/mbedtls_port.c

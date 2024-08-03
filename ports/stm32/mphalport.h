@@ -2,6 +2,7 @@
 #include STM32_HAL_H
 #include "pin.h"
 #include "py/ringbuf.h"
+#include "shared/runtime/interrupt_char.h"
 
 extern uint8_t mp_hal_unique_id_address[12];
 
@@ -38,7 +39,6 @@ static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
     return -mp_hal_status_to_errno_table[status];
 }
 
-extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
