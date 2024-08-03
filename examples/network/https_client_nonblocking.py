@@ -37,13 +37,13 @@ def read_nonblocking(poller, sock, n):
     return data
 
 
-def main(url):
+def main(url, addr_family=0):
     # Split the given URL into components.
     proto, _, host, path = url.split(b"/", 3)
     assert proto == b"https:"
 
     # Note: this getaddrinfo() call is blocking!
-    ai = socket.getaddrinfo(host, 443)[0]
+    ai = socket.getaddrinfo(host, 443, addr_family, socket.SOCK_STREAM)[0]
     addr = ai[-1]
     print("Connect address:", addr)
 
