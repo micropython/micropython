@@ -78,6 +78,15 @@
 #define MP_TASK_STACK_LIMIT_MARGIN (1024)
 #endif
 
+typedef struct _native_code_node_t {
+    struct _native_code_node_t *next;
+    uint32_t data[];
+} native_code_node_t;
+
+static native_code_node_t *native_code_head = NULL;
+
+static void esp_native_code_free_all(void);
+
 int vprintf_null(const char *format, va_list ap) {
     // do nothing: this is used as a log target during raw repl mode
     return 0;
@@ -130,8 +139,6 @@ soft_reset:
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     readline_init0();
 
-    MP_STATE_PORT(native_code_pointers) = MP_OBJ_NULL;
-
     // initialise peripherals
     machine_pins_init();
     #if MICROPY_PY_MACHINE_I2S
@@ -182,17 +189,10 @@ soft_reset_exit:
     mp_thread_deinit();
     #endif
 
-    // Free any native code pointers that point to iRAM.
-    if (MP_STATE_PORT(native_code_pointers) != MP_OBJ_NULL) {
-        size_t len;
-        mp_obj_t *items;
-        mp_obj_list_get(MP_STATE_PORT(native_code_pointers), &len, &items);
-        for (size_t i = 0; i < len; ++i) {
-            heap_caps_free(MP_OBJ_TO_PTR(items[i]));
-        }
-    }
-
     gc_sweep_all();
+
+    // Free any native code pointers that point to iRAM.
+    esp_native_code_free_all();
 
     mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
 
@@ -232,21 +232,27 @@ void nlr_jump_fail(void *val) {
     esp_restart();
 }
 
+static void esp_native_code_free_all(void) {
+    while (native_code_head != NULL) {
+        native_code_node_t *next = native_code_head->next;
+        heap_caps_free(native_code_head);
+        native_code_head = next;
+    }
+}
+
 void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     len = (len + 3) & ~3;
-    uint32_t *p = heap_caps_malloc(len, MALLOC_CAP_EXEC);
-    if (p == NULL) {
-        m_malloc_fail(len);
+    size_t len_node = sizeof(native_code_node_t) + len;
+    native_code_node_t *node = heap_caps_malloc(len_node, MALLOC_CAP_EXEC);
+    if (node == NULL) {
+        m_malloc_fail(len_node);
     }
-    if (MP_STATE_PORT(native_code_pointers) == MP_OBJ_NULL) {
-        MP_STATE_PORT(native_code_pointers) = mp_obj_new_list(0, NULL);
-    }
-    mp_obj_list_append(MP_STATE_PORT(native_code_pointers), MP_OBJ_TO_PTR(p));
+    node->next = native_code_head;
+    native_code_head = node;
+    void *p = node->data;
     if (reloc) {
         mp_native_relocate(reloc, buf, (uintptr_t)p);
     }
     memcpy(p, buf, len);
     return p;
 }
-
-MP_REGISTER_ROOT_POINTER(mp_obj_t native_code_pointers);
