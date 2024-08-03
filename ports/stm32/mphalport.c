@@ -7,6 +7,16 @@
 #include "extmod/misc.h"
 #include "usb.h"
 #include "uart.h"
+#include "shared/tinyusb/mp_usbd_cdc.h"
+
+#ifndef MICROPY_HW_STDIN_BUFFER_LEN
+#define MICROPY_HW_STDIN_BUFFER_LEN 128
+#endif
+
+extern volatile uint32_t ticks_us64_upper;
+
+static uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
+ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0 };
 
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
@@ -26,6 +36,9 @@ NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
 
 MP_WEAK uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
+    #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
+    ret |= mp_usbd_cdc_poll_interfaces(poll_flags);
+    #endif
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         mp_obj_t pyb_stdio_uart = MP_OBJ_FROM_PTR(MP_STATE_PORT(pyb_stdio_uart));
         int errcode;
@@ -53,6 +66,13 @@ MP_WEAK int mp_hal_stdin_rx_chr(void) {
         if (dupterm_c >= 0) {
             return dupterm_c;
         }
+        #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
+        mp_usbd_cdc_poll_interfaces(0);
+        #endif
+        int c = ringbuf_get(&stdin_ringbuf);
+        if (c != -1) {
+            return c;
+        }
         MICROPY_EVENT_POLL_HOOK
     }
 }
@@ -64,6 +84,13 @@ MP_WEAK mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
         did_write = true;
     }
+    #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
+    mp_uint_t cdc_res = mp_usbd_cdc_tx_strn(str, len);
+    if (cdc_res > 0) {
+        did_write = true;
+        ret = MIN(cdc_res, ret);
+    }
+    #endif
     #if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     lcd_print_strn(str, len);
     #endif
