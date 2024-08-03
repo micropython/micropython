@@ -49,13 +49,16 @@
 #include "servo.h"
 #include "dac.h"
 #include "lcd.h"
-// #include "usb.h"
 #include "portmodules.h"
 #include "modmachine.h"
 #include "extmod/modmachine.h"
 #include "extmod/modnetwork.h"
 #include "extmod/vfs.h"
 #include "extmod/modtime.h"
+
+#if !MICROPY_HW_TINYUSB_STACK
+#include "usb.h"
+#endif
 
 #if MICROPY_PY_PYB
 
@@ -167,22 +170,22 @@ static const mp_rom_map_elem_t pyb_module_globals_table[] = {
     // Deprecated (use network.country instead).
     { MP_ROM_QSTR(MP_QSTR_country), MP_ROM_PTR(&mod_network_country_obj) },
 
-    // #if MICROPY_HW_ENABLE_USB
-    // { MP_ROM_QSTR(MP_QSTR_usb_mode), MP_ROM_PTR(&pyb_usb_mode_obj) },
-    // #if MICROPY_HW_USB_HID
-    // { MP_ROM_QSTR(MP_QSTR_hid_mouse), MP_ROM_PTR(&pyb_usb_hid_mouse_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_hid_keyboard), MP_ROM_PTR(&pyb_usb_hid_keyboard_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_USB_HID), MP_ROM_PTR(&pyb_usb_hid_type) },
-    // #endif
-    // { MP_ROM_QSTR(MP_QSTR_USB_VCP), MP_ROM_PTR(&pyb_usb_vcp_type) },
-    // #if MICROPY_PY_PYB_LEGACY
-    // // these 2 are deprecated; use USB_VCP.isconnected and USB_HID.send instead
-    // { MP_ROM_QSTR(MP_QSTR_have_cdc), MP_ROM_PTR(&pyb_have_cdc_obj) },
-    // #if MICROPY_HW_USB_HID
-    // { MP_ROM_QSTR(MP_QSTR_hid), MP_ROM_PTR(&pyb_hid_send_report_obj) },
-    // #endif
-    // #endif
-    // #endif
+    #if MICROPY_HW_ENABLE_USB && !MICROPY_HW_TINYUSB_STACK
+    { MP_ROM_QSTR(MP_QSTR_usb_mode), MP_ROM_PTR(&pyb_usb_mode_obj) },
+    #if MICROPY_HW_USB_HID
+    { MP_ROM_QSTR(MP_QSTR_hid_mouse), MP_ROM_PTR(&pyb_usb_hid_mouse_obj) },
+    { MP_ROM_QSTR(MP_QSTR_hid_keyboard), MP_ROM_PTR(&pyb_usb_hid_keyboard_obj) },
+    { MP_ROM_QSTR(MP_QSTR_USB_HID), MP_ROM_PTR(&pyb_usb_hid_type) },
+    #endif
+    { MP_ROM_QSTR(MP_QSTR_USB_VCP), MP_ROM_PTR(&pyb_usb_vcp_type) },
+    #if MICROPY_PY_PYB_LEGACY
+    // these 2 are deprecated; use USB_VCP.isconnected and USB_HID.send instead
+    { MP_ROM_QSTR(MP_QSTR_have_cdc), MP_ROM_PTR(&pyb_have_cdc_obj) },
+    #if MICROPY_HW_USB_HID
+    { MP_ROM_QSTR(MP_QSTR_hid), MP_ROM_PTR(&pyb_hid_send_report_obj) },
+    #endif
+    #endif
+    #endif
 
     #if MICROPY_PY_PYB_LEGACY
     { MP_ROM_QSTR(MP_QSTR_millis), MP_ROM_PTR(&mp_time_ticks_ms_obj) },
