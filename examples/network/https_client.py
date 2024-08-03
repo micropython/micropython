@@ -32,7 +32,10 @@ def main(domain, addr_family=0, use_stream=True):
     s.connect(addr)
 
     # Upgrade the socket to a TLS connection.
-    s = ssl.wrap_socket(s)
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    s = ctx.wrap_socket(s)
     print(s)
 
     # Send request and read response.
