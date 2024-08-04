@@ -16,7 +16,7 @@
 
 #define DELAY 0x80
 
-// display init sequence according to LilyGO example app
+// Display init sequence according to LILYGO factory firmware
 uint8_t display_init_sequence[] = {
     // sw reset
     0x01, 0 | DELAY, 150,
@@ -58,8 +58,8 @@ void board_init(void) {
         bus,
         spi,
         &pin_GPIO38,    // DC
-        &pin_GPIO12,     // CS
-        NULL,    // RST
+        &pin_GPIO12,    // CS
+        NULL,           // RST
         40000000,       // baudrate
         0,              // polarity
         0               // phase
