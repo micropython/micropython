@@ -48,6 +48,10 @@ void __time_critical_func(machine_bitstream_high_low)(mp_hal_pin_obj_t pin, uint
         }
     }
     mp_hal_pin_output(pin);
+
+    // Set systick reset value.
+    systick_hw->rvr = 0x00FFFFFF;
+
     // Enable the systick counter, source CPU clock.
     systick_hw->csr = 5;
 
