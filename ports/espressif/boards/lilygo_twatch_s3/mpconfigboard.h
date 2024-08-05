@@ -16,7 +16,8 @@
                                      {.scl = &pin_GPIO40, .sda = &pin_GPIO39}}
 
 #define CIRCUITPY_BOARD_SPI         (2)
-#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO18, .mosi = &pin_GPIO13}, \ /*LCD*/
-                                     {.clock = &pin_GPIO3, .mosi = &pin_GPIO1, .miso = &pin_GPIO4}} /*LORA*/
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO18, .mosi = &pin_GPIO13}, \
+                                     {.clock = &pin_GPIO3, .mosi = &pin_GPIO1, .miso = &pin_GPIO4}}
+// LCD then LORA
 
 #define DOUBLE_TAP_PIN (&pin_GPIO21)
