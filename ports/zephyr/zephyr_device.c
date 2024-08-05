@@ -31,6 +31,12 @@ const struct device *zephyr_device_find(mp_obj_t name) {
     const char *dev_name = mp_obj_str_get_str(name);
     const struct device *dev = device_get_binding(dev_name);
 
+    #ifdef CONFIG_DEVICE_DT_METADATA
+    if (dev == NULL) {
+        dev = device_get_by_dt_nodelabel(dev_name);
+    }
+    #endif
+
     if (dev == NULL) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_ValueError(MP_ERROR_TEXT("device not found"));
