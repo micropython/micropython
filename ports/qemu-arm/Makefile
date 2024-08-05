@@ -137,8 +137,8 @@ $(BUILD)/test_main.o: $(BUILD)/genhdr/tests.h
 
 .PHONY: $(BUILD)/genhdr/tests.h
 $(BUILD)/genhdr/tests.h:
-	(cd $(TOP)/tests; ./run-tests.py --target=qemu-arm --write-exp)
-	$(Q)echo "Generating $@";(cd $(TOP)/tests; ../tools/tinytest-codegen.py --profile $(TESTS_PROFILE) $(addprefix --exclude ,$(TESTS_EXCLUDE))) > $@
+	$(Q)echo "Generating $@"
+	$(Q)(cd $(TOP)/tests; ../tools/tinytest-codegen.py --target qemu-arm --profile $(TESTS_PROFILE) $(addprefix --exclude ,$(TESTS_EXCLUDE))) > $@
 
 $(BUILD)/lib/tinytest/tinytest.o: CFLAGS += -DNO_FORKING
 

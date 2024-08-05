@@ -1146,22 +1146,6 @@ the last matching regex is used:
                     "cmdline",
                     "ports/unix",
                 )
-            elif args.target == "qemu-arm":
-                if not args.write_exp:
-                    raise ValueError("--target=qemu-arm must be used with --write-exp")
-                # Generate expected output files for qemu run.
-                # This list should match the test_dirs tuple in tinytest-codegen.py.
-                test_dirs += (
-                    "float",
-                    "inlineasm",
-                    "ports/qemu-arm",
-                )
-            elif args.target == "qemu-riscv":
-                if not args.write_exp:
-                    raise ValueError("--target=qemu-riscv must be used with --write-exp")
-                # Generate expected output files for qemu run.
-                # This list should match the test_dirs tuple in tinytest-codegen.py.
-                test_dirs += ("float",)
             elif args.target == "webassembly":
                 test_dirs += ("float", "ports/webassembly")
         else:

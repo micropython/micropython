@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-import os, sys
+import sys
 from glob import glob
 from re import sub
-import argparse
+
+run_tests = __import__("run-tests")
 
 
 def escape(s):
@@ -23,12 +24,15 @@ def chew_filename(t):
     return {"func": "test_{}_fn".format(sub(r"/|\.|-", "_", t)), "desc": t}
 
 
-def script_to_map(test_file):
+def script_to_map(run_tests_args, test_file, output_exp):
     r = {"name": chew_filename(test_file)["func"]}
-    with open(test_file, "rb") as f:
-        r["script"] = escape(f.read())
-    with open(test_file + ".exp", "rb") as f:
-        r["output"] = escape(f.read())
+    had_crash, script = run_tests.prepare_script_for_target(
+        run_tests_args, script_filename=test_file
+    )
+    if had_crash:
+        raise Exception("{} {}".format(test_file, script))
+    r["script"] = escape(script)
+    r["output"] = escape(output_exp)
     return r
 
 
@@ -57,7 +61,7 @@ testgroup_member = '  {{ "{name}", {name}_tests }},'
 
 ## XXX: may be we could have `--without <groups>` argument...
 
-test_dirs = set(
+test_dirs_base = set(
     (
         "basics",
         "extmod",
@@ -67,7 +71,7 @@ test_dirs = set(
     )
 )
 
-exclude_tests = set(
+exclude_tests_base = set(
     (
         # pattern matching in .exp
         "basics/bytes_compare3.py",
@@ -107,40 +111,78 @@ exclude_tests = set(
     )
 )
 
-output = []
-tests = []
 
-argparser = argparse.ArgumentParser(
-    description="Convert native MicroPython tests to tinytest/upytesthelper C code"
-)
-argparser.add_argument("--stdin", action="store_true", help="read list of tests from stdin")
-argparser.add_argument("--exclude", action="append", help="exclude test by name")
-argparser.add_argument(
-    "--profile",
-    type=argparse.FileType("rt", encoding="utf-8"),
-    help="optional profile file providing test directories and exclusion list",
-)
-args = argparser.parse_args()
+def main():
+    import argparse
 
-if not args.stdin:
-    if args.profile:
-        test_dirs, exclude_tests = load_profile(args.profile, test_dirs, exclude_tests)
-    if args.exclude:
-        exclude_tests = exclude_tests.union(args.exclude)
-    for group in test_dirs:
-        tests += [test for test in glob("{}/*.py".format(group)) if test not in exclude_tests]
-else:
-    for l in sys.stdin:
-        tests.append(l.rstrip())
+    argparser = argparse.ArgumentParser(
+        description="Convert native MicroPython tests to tinytest/upytesthelper C code"
+    )
+    argparser.add_argument("--target", default="unix", help="the target platform")
+    argparser.add_argument("--stdin", action="store_true", help="read list of tests from stdin")
+    argparser.add_argument("--exclude", action="append", help="exclude test by name")
+    argparser.add_argument(
+        "--profile",
+        type=argparse.FileType("rt", encoding="utf-8"),
+        help="optional profile file providing test directories and exclusion list",
+    )
+    args = argparser.parse_args()
 
-output.extend([test_function.format(**script_to_map(test)) for test in tests])
-testcase_members = [testcase_member.format(**chew_filename(test)) for test in tests]
-output.append(testcase_struct.format(name="", body="\n".join(testcase_members)))
+    class run_tests_args:
+        list_tests = False
+        write_exp = False
+        target = args.target
+        emit = "bytecode"
+        filters = []
+        via_mpy = False
+        mpy_cross_flags = ""
 
-testgroup_members = [testgroup_member.format(name=group) for group in [""]]
+    # Collect the list of tests to run.
+    tests = []
+    if not args.stdin:
+        if args.profile:
+            test_dirs, exclude_tests = load_profile(
+                args.profile, test_dirs_base, exclude_tests_base
+            )
+        if args.exclude:
+            exclude_tests = exclude_tests.union(args.exclude)
+        for group in test_dirs:
+            tests += [test for test in glob("{}/*.py".format(group)) if test not in exclude_tests]
+    else:
+        for l in sys.stdin:
+            tests.append(l.rstrip())
 
-output.append(testgroup_struct.format(body="\n".join(testgroup_members)))
+    # Prepare the expected output of each test.
+    test_exp_dict = {}
+    run_tests.run_tests(
+        pyb=None,
+        tests=tests,
+        args=run_tests_args,
+        result_dir=None,
+        num_threads=1,
+        return_exp_dict=test_exp_dict,
+    )
 
-## XXX: may be we could have `--output <filename>` argument...
-# Don't depend on what system locale is set, use utf8 encoding.
-sys.stdout.buffer.write("\n\n".join(output).encode("utf8"))
+    output = []
+    testcase_members = []
+
+    for test in tests:
+        if test in test_exp_dict:
+            output.append(
+                test_function.format(**script_to_map(run_tests_args, test, test_exp_dict[test]))
+            )
+            testcase_members.append(testcase_member.format(**chew_filename(test)))
+
+    output.append(testcase_struct.format(name="", body="\n".join(testcase_members)))
+
+    testgroup_members = [testgroup_member.format(name=group) for group in [""]]
+
+    output.append(testgroup_struct.format(body="\n".join(testgroup_members)))
+
+    ## XXX: may be we could have `--output <filename>` argument...
+    # Don't depend on what system locale is set, use utf8 encoding.
+    sys.stdout.buffer.write("\n\n".join(output).encode("utf8"))
+
+
+if __name__ == "__main__":
+    main()
