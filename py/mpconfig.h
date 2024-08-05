@@ -1393,6 +1393,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MATH_POW_FIX_NAN (0)
 #endif
 
+// Whether to provide fix for gamma(-inf) to raise ValueError
+#ifndef MICROPY_PY_MATH_GAMMA_FIX_NEGINF
+#define MICROPY_PY_MATH_GAMMA_FIX_NEGINF (0)
+#endif
+
 // Whether to provide "cmath" module
 #ifndef MICROPY_PY_CMATH
 #define MICROPY_PY_CMATH (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)

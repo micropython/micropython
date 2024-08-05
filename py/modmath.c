@@ -196,7 +196,17 @@ MATH_FUN_1(erf, erf)
 // erfc(x): return the complementary error function of x
 MATH_FUN_1(erfc, erfc)
 // gamma(x): return the gamma function of x
+#if MICROPY_PY_MATH_GAMMA_FIX_NEGINF
+static mp_float_t MICROPY_FLOAT_C_FUN(tgamma_func)(mp_float_t x) {
+    if (isinf(x) && x < 0) {
+        math_error();
+    }
+    return MICROPY_FLOAT_C_FUN(tgamma)(x);
+}
+MATH_FUN_1(gamma, tgamma_func)
+#else
 MATH_FUN_1(gamma, tgamma)
+#endif
 // lgamma(x): return the natural logarithm of the gamma function of x
 MATH_FUN_1(lgamma, lgamma)
 #endif
