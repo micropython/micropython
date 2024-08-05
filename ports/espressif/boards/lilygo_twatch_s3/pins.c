@@ -24,15 +24,16 @@ static const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DISPLAY), MP_ROM_PTR(&displays[0].display)},
 
     // TOUCH
+    { MP_ROM_QSTR(MP_QSTR_TOUCH_INT), MP_ROM_PTR(&pin_GPIO16) },
     { MP_ROM_QSTR(MP_QSTR_TOUCH_SCL), MP_ROM_PTR(&pin_GPIO40) },
     { MP_ROM_QSTR(MP_QSTR_TOUCH_SDA), MP_ROM_PTR(&pin_GPIO39) },
     { MP_ROM_QSTR(MP_QSTR_TOUCH_I2C), MP_ROM_PTR(&board_touch_i2c_obj) },
 
     // RTC
-    { MP_ROM_QSTR(MP_QSTR_RTC_INTERRUPT), MP_ROM_PTR(&pin_GPIO17) },
+    { MP_ROM_QSTR(MP_QSTR_RTC_INT), MP_ROM_PTR(&pin_GPIO17) },
 
-    // AXP2101
-    { MP_ROM_QSTR(MP_QSTR_AXP2101_INTERRUPT), MP_ROM_PTR(&pin_GPIO21) },
+    // AXP2101 PMU
+    { MP_ROM_QSTR(MP_QSTR_PMU_INT), MP_ROM_PTR(&pin_GPIO21) },
 
     // RADIO
     { MP_ROM_QSTR(MP_QSTR_RADIO_SCK), MP_ROM_PTR(&pin_GPIO3) },
@@ -44,9 +45,6 @@ static const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_RADIO_BUSY), MP_ROM_PTR(&pin_GPIO7) },
     { MP_ROM_QSTR(MP_QSTR_RADIO_SPI), MP_ROM_PTR(&board_radio_spi_obj) },
 
-    // CAPACITIVE
-    { MP_ROM_QSTR(MP_QSTR_CAPACITIVE_INTERRUPT), MP_ROM_PTR(&pin_GPIO16) },
-
     // MIC
     { MP_ROM_QSTR(MP_QSTR_MIC_DATA), MP_ROM_PTR(&pin_GPIO47) },
     { MP_ROM_QSTR(MP_QSTR_MIC_SCLK), MP_ROM_PTR(&pin_GPIO44) },
@@ -57,9 +55,9 @@ static const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_I2S_DOUT), MP_ROM_PTR(&pin_GPIO46) },
 
     // BMA423 AXIS SENSOR
-    { MP_ROM_QSTR(MP_QSTR_AXIS_INTERRUPT), MP_ROM_PTR(&pin_GPIO14) },
+    { MP_ROM_QSTR(MP_QSTR_AXIS_INT), MP_ROM_PTR(&pin_GPIO14) },
 
-    // I2C
+    // I2C, AXP2101, BMA423, RTC, DRV2605
     { MP_ROM_QSTR(MP_QSTR_I2C_SCL), MP_ROM_PTR(&pin_GPIO11) },
     { MP_ROM_QSTR(MP_QSTR_I2C_SDA), MP_ROM_PTR(&pin_GPIO10) },
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
