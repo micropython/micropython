@@ -187,7 +187,7 @@ MP_PROPERTY_GETSET(wifi_radio_tx_power_obj,
     (mp_obj_t)&wifi_radio_set_tx_power_obj);
 
 //|     listen_interval: int
-//|     """Wifi power save listen interval power, in DTIM periods, or 100ms intervals if TWT is supported."""
+//|     """Wifi power save listen interval, in DTIM periods, or 100ms intervals if TWT is supported."""
 static mp_obj_t wifi_radio_get_listen_interval(mp_obj_t self_in) {
     #if CIRCUITPY_WIFI_RADIO_SETTABLE_LISTEN_INTERVAL
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -204,7 +204,7 @@ static mp_obj_t wifi_radio_set_listen_interval(mp_obj_t self_in, mp_obj_t listen
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_wifi_radio_set_listen_interval(self, listen_interval);
     #else
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("can't set attribute"));
+    mp_raise_NotImplementedError(NULL);
     #endif
     return mp_const_none;
 }
