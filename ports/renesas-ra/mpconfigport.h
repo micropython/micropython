@@ -250,25 +250,10 @@ typedef unsigned int mp_uint_t; // must be pointer size
 
 typedef long mp_off_t;
 
-#if MICROPY_HW_ENABLE_USBDEV
-#define MICROPY_HW_USBDEV_TASK_HOOK extern void mp_usbd_task(void); mp_usbd_task();
-#define MICROPY_VM_HOOK_COUNT (10)
-#define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
-#define MICROPY_VM_HOOK_POLL if (--vm_hook_divisor == 0) { \
-        vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
-        MICROPY_HW_USBDEV_TASK_HOOK \
-}
-#define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
-#define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
-#else
-#define MICROPY_HW_USBDEV_TASK_HOOK
-#endif
-
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \
-        MICROPY_HW_USBDEV_TASK_HOOK \
         mp_handle_pending(true); \
         if (pyb_thread_enabled) { \
             MP_THREAD_GIL_EXIT(); \
@@ -284,7 +269,6 @@ typedef long mp_off_t;
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \
-        MICROPY_HW_USBDEV_TASK_HOOK \
         mp_handle_pending(true); \
         __WFI(); \
     } while (0);
