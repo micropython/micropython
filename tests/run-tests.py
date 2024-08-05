@@ -441,7 +441,7 @@ class PyboardNodeRunner:
         return had_crash, output_mupy
 
 
-def run_tests(pyb, tests, args, result_dir, num_threads=1):
+def run_tests(pyb, tests, args, result_dir, num_threads=1, *, return_exp_dict=None):
     test_count = ThreadSafeCounter()
     testcase_count = ThreadSafeCounter()
     passed_count = ThreadSafeCounter()
@@ -467,7 +467,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     # If we're asked to --list-tests, we can't assume that there's a
     # connection to target, so we can't run feature checks usefully.
-    if not (args.list_tests or args.write_exp):
+    if not (args.list_tests or args.write_exp or return_exp_dict is not None):
         # Even if we run completely different tests in a different directory,
         # we need to access feature_checks from the same directory as the
         # run-tests.py script itself so use base_path.
@@ -747,7 +747,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("micropython/schedule.py")  # native code doesn't check pending events
         skip_tests.add("stress/bytecode_limit.py")  # bytecode specific test
 
-    def run_one_test(test_file):
+    def run_one_test(test_file, *, output_dict=None):
         test_file = test_file.replace("\\", "/")
         test_file_abspath = os.path.abspath(test_file).replace("\\", "/")
 
@@ -796,8 +796,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             return
 
         if skip_it:
-            print("skip ", test_file)
-            skipped_tests.append(test_name)
+            if output_dict is None:
+                print("skip ", test_file)
+                skipped_tests.append(test_name)
             return
 
         # get expected output
@@ -822,6 +823,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # canonical form for all host platforms is to use \n for end-of-line
         output_expected = output_expected.replace(b"\r\n", b"\n")
+
+        if output_dict is not None:
+            output_dict[test_file] = output_expected
+            return
 
         if args.write_exp:
             return
@@ -862,10 +867,13 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         pool.map(run_one_test, tests)
     else:
         for test in tests:
-            run_one_test(test)
+            run_one_test(test, output_dict=return_exp_dict)
+
+    if return_exp_dict is not None:
+        return True
 
     # Leave RESULTS_FILE untouched here for future runs.
-    if args.list_tests:
+    if args.list_tests or args.write_exp:
         return True
 
     print(
