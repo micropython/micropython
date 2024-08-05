@@ -9,6 +9,7 @@
 
 CIRCUITPY_BOARD_BUS_SINGLETON(tft_spi, spi, 0)
 CIRCUITPY_BOARD_BUS_SINGLETON(radio_spi, spi, 1)
+CIRCUITPY_BOARD_BUS_SINGLETON(touch_i2c, i2c, 1)
 
 static const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
@@ -21,6 +22,11 @@ static const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_TFT_BL), MP_ROM_PTR(&pin_GPIO45) },
     { MP_ROM_QSTR(MP_QSTR_TFT_SPI), MP_ROM_PTR(&board_tft_spi_obj) },
     { MP_ROM_QSTR(MP_QSTR_DISPLAY), MP_ROM_PTR(&displays[0].display)},
+
+    // TOUCH
+    { MP_ROM_QSTR(MP_QSTR_TOUCH_SCL), MP_ROM_PTR(&pin_GPIO40) },
+    { MP_ROM_QSTR(MP_QSTR_TOUCH_SDA), MP_ROM_PTR(&pin_GPIO39) },
+    { MP_ROM_QSTR(MP_QSTR_TOUCH_I2C), MP_ROM_PTR(&board_touch_i2c_obj) },
 
     // RTC
     { MP_ROM_QSTR(MP_QSTR_RTC_INTERRUPT), MP_ROM_PTR(&pin_GPIO17) },
