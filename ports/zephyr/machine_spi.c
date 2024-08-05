@@ -84,6 +84,12 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     const char *dev_name = mp_obj_str_get_str(args[ARG_id].u_obj);
     const struct device *dev = device_get_binding(dev_name);
 
+    #ifdef CONFIG_DEVICE_DT_METADATA
+    if (dev == NULL) {
+        dev = device_get_by_dt_nodelabel(dev_name);
+    }
+    #endif
+
     if (dev == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("device not found"));
     }

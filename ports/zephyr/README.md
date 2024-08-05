@@ -102,7 +102,7 @@ To blink an LED:
     import time
     from machine import Pin
 
-    LED = Pin(("gpio@400ff040", 21), Pin.OUT)
+    LED = Pin(("gpiob", 21), Pin.OUT)
     while True:
         LED.value(1)
         time.sleep(0.5)
@@ -110,18 +110,18 @@ To blink an LED:
         time.sleep(0.5)
 
 The above code uses an LED location for a FRDM-K64F board (port B, pin 21;
-following Zephyr conventions port are identified by "GPIO_x", where *x*
-starts from 0). You will need to adjust it for another board (using board's
-reference materials). To execute the above sample, copy it to clipboard, in
-MicroPython REPL enter "paste mode" using Ctrl+E, paste clipboard, press
-Ctrl+D to finish paste mode and start execution.
+following Zephyr conventions port are identified by their devicetree node
+label. You will need to adjust it for another board (using board's reference
+materials). To execute the above sample, copy it to clipboard, in MicroPython
+REPL enter "paste mode" using Ctrl+E, paste clipboard, press Ctrl+D to finish
+paste mode and start execution.
 
 To respond to Pin change IRQs, on a FRDM-K64F board run:
 
     from machine import Pin
 
-    SW2 = Pin(("gpio@400ff080", 6), Pin.IN)
-    SW3 = Pin(("gpio@400ff000", 4), Pin.IN)
+    SW2 = Pin(("gpioc", 6), Pin.IN)
+    SW3 = Pin(("gpioa", 4), Pin.IN)
 
     SW2.irq(lambda t: print("SW2 changed"))
     SW3.irq(lambda t: print("SW3 changed"))
@@ -133,14 +133,14 @@ Example of using I2C to scan for I2C slaves:
 
     from machine import I2C
 
-    i2c = I2C("i2c@40066000")
+    i2c = I2C("i2c0")
     i2c.scan()
 
 Example of using SPI to write a buffer to the MOSI pin:
 
     from machine import SPI
 
-    spi = SPI("spi@4002c000")
+    spi = SPI("spi0")
     spi.init(baudrate=500000, polarity=1, phase=1, bits=8, firstbit=SPI.MSB)
     spi.write(b'abcd')
 
