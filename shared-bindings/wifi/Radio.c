@@ -52,13 +52,13 @@ static bool hostname_valid(const char *ptr, size_t len) {
 }
 
 static void validate_hex_password(const uint8_t *buf, size_t len) {
-    for (size_t i = 0; i < len; i++)
-    {
+    for (size_t i = 0; i < len; i++) {
         if (!unichar_isxdigit(buf[i])) {
             mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid hex password"));
         }
     }
 }
+
 
 //| class Radio:
 //|     """Native wifi radio.
@@ -132,6 +132,7 @@ MP_PROPERTY_GETSET(wifi_radio_hostname_obj,
 //|
 //|     **Limitations:** Not settable on RP2040 CYW43 boards, such as Pi Pico W.
 //|     """
+
 
 static mp_obj_t _wifi_radio_get_mac_address(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -262,11 +263,7 @@ MP_PROPERTY_GETTER(wifi_radio_mac_address_ap_obj,
 //|         """
 //|         ...
 static mp_obj_t wifi_radio_start_scanning_networks(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum
-    {
-        ARG_start_channel,
-        ARG_stop_channel
-    };
+    enum { ARG_start_channel, ARG_stop_channel };
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_start_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1}},
         {MP_QSTR_stop_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 11}},
@@ -359,14 +356,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|         """
 //|         ...
 static mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum
-    {
-        ARG_ssid,
-        ARG_password,
-        ARG_channel,
-        ARG_authmode,
-        ARG_max_connections
-    };
+    enum { ARG_ssid, ARG_password, ARG_channel, ARG_authmode, ARG_max_connections };
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ},
         {MP_QSTR_password, MP_ARG_OBJ, {.u_obj = mp_const_empty_bytes}},
@@ -464,14 +454,7 @@ MP_PROPERTY_GETTER(wifi_radio_ap_active_obj,
 //|         connect to the AP with the given ``bssid`` and ``ssid``."""
 //|         ...
 static mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum
-    {
-        ARG_ssid,
-        ARG_password,
-        ARG_channel,
-        ARG_bssid,
-        ARG_timeout
-    };
+    enum { ARG_ssid, ARG_password, ARG_channel, ARG_bssid, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ},
         {MP_QSTR_password, MP_ARG_OBJ, {.u_obj = mp_const_empty_bytes}},
@@ -598,26 +581,11 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_subnet_ap_obj,
 //|         """
 //|         ...
 static mp_obj_t wifi_radio_set_ipv4_address(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum
-    {
-        ARG_ipv4,
-        ARG_netmask,
-        ARG_gateway,
-        ARG_ipv4_dns
-    };
+    enum { ARG_ipv4, ARG_netmask, ARG_gateway, ARG_ipv4_dns };
     static const mp_arg_t allowed_args[] = {
-        {
-            MP_QSTR_ipv4,
-            MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ,
-        },
-        {
-            MP_QSTR_netmask,
-            MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ,
-        },
-        {
-            MP_QSTR_gateway,
-            MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ,
-        },
+        { MP_QSTR_ipv4, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
+        { MP_QSTR_netmask, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
+        { MP_QSTR_gateway, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
         {MP_QSTR_ipv4_dns, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL}},
     };
 
@@ -640,25 +608,11 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_set_ipv4_address_obj, 1, wifi_radio
 //|         """Sets the IP v4 address of the access point. Must include the netmask and gateway."""
 //|         ...
 static mp_obj_t wifi_radio_set_ipv4_address_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum
-    {
-        ARG_ipv4,
-        ARG_netmask,
-        ARG_gateway
-    };
+    enum { ARG_ipv4, ARG_netmask, ARG_gateway };
     static const mp_arg_t allowed_args[] = {
-        {
-            MP_QSTR_ipv4,
-            MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ,
-        },
-        {
-            MP_QSTR_netmask,
-            MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ,
-        },
-        {
-            MP_QSTR_gateway,
-            MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ,
-        },
+        { MP_QSTR_ipv4, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
+        { MP_QSTR_netmask, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
+        { MP_QSTR_gateway, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -776,11 +730,7 @@ MP_PROPERTY_GETTER(wifi_radio_stations_ap_obj,
 //|         """
 //|         ...
 static mp_obj_t wifi_radio_start_dhcp_client(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum
-    {
-        ARG_ipv4,
-        ARG_ipv6
-    };
+    enum { ARG_ipv4, ARG_ipv6 };
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_ipv4, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = MP_ROM_TRUE}},
         {MP_QSTR_ipv6, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = MP_ROM_FALSE}},
@@ -838,16 +788,9 @@ MP_PROPERTY_GETTER(wifi_radio_ap_info_obj,
 //|         ...
 //|
 static mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum
-    {
-        ARG_ip,
-        ARG_timeout
-    };
+    enum { ARG_ip, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        {
-            MP_QSTR_ip,
-            MP_ARG_REQUIRED | MP_ARG_OBJ,
-        },
+        { MP_QSTR_ip, MP_ARG_REQUIRED | MP_ARG_OBJ, },
         {MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
     };
 
@@ -925,7 +868,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     wifi_radio_type,
     MP_QSTR_Radio,
     MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
-    locals_dict, &wifi_radio_locals_dict);
+    locals_dict, &wifi_radio_locals_dict
+    );
 
 const mp_obj_namedtuple_type_t wifi_radio_station_type = {
     NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_WifiRadioStation),

@@ -217,8 +217,7 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     set_mode_ap(self, true);
 
     uint8_t esp_authmode = 0;
-    switch (authmode)
-    {
+    switch (authmode) {
         case AUTHMODE_OPEN:
             esp_authmode = WIFI_AUTH_OPEN;
             break;
@@ -269,8 +268,7 @@ mp_obj_t common_hal_wifi_radio_get_stations_ap(wifi_radio_obj_t *self) {
     }
 
     esp_netif_pair_mac_ip_t mac_ip_pair[esp_sta_list.num];
-    for (int i = 0; i < esp_sta_list.num; i++)
-    {
+    for (int i = 0; i < esp_sta_list.num; i++) {
         memcpy(mac_ip_pair[i].mac, esp_sta_list.sta[i].mac, MAC_ADDRESS_LENGTH);
         mac_ip_pair[i].ip.addr = 0;
     }
@@ -281,8 +279,7 @@ mp_obj_t common_hal_wifi_radio_get_stations_ap(wifi_radio_obj_t *self) {
     }
 
     mp_obj_t mp_sta_list = mp_obj_new_list(0, NULL);
-    for (int i = 0; i < esp_sta_list.num; i++)
-    {
+    for (int i = 0; i < esp_sta_list.num; i++) {
         mp_obj_t elems[3] = {
             mp_obj_new_bytes(esp_sta_list.sta[i].mac, MAC_ADDRESS_LENGTH),
             MP_OBJ_NEW_SMALL_INT(esp_sta_list.sta[i].rssi),
@@ -329,8 +326,7 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
             xEventGroupClearBits(self->event_group_handle, WIFI_DISCONNECTED_BIT);
             // Trying to switch networks so disconnect first.
             esp_wifi_disconnect();
-            do
-            {
+            do {
                 RUN_BACKGROUND_TASKS;
                 bits = xEventGroupWaitBits(self->event_group_handle,
                     WIFI_DISCONNECTED_BIT,
@@ -374,8 +370,7 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     self->retries_left = 5;
     esp_wifi_connect();
 
-    do
-    {
+    do {
         RUN_BACKGROUND_TASKS;
         bits = xEventGroupWaitBits(self->event_group_handle,
             WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT,
@@ -393,7 +388,8 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
             (self->last_disconnect_reason == WIFI_REASON_AUTH_FAIL) ||
             (self->last_disconnect_reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT) ||
             (self->last_disconnect_reason == WIFI_REASON_NO_AP_FOUND_W_COMPATIBLE_SECURITY) ||
-            (self->last_disconnect_reason == WIFI_REASON_NO_AP_FOUND_IN_AUTHMODE_THRESHOLD)) {
+            (self->last_disconnect_reason == WIFI_REASON_NO_AP_FOUND_IN_AUTHMODE_THRESHOLD)
+            ) {
             return WIFI_RADIO_ERROR_AUTH_FAIL;
         } else if (self->last_disconnect_reason == WIFI_REASON_NO_AP_FOUND) {
             return WIFI_RADIO_ERROR_NO_AP_FOUND;
@@ -494,8 +490,7 @@ static mp_obj_t common_hal_wifi_radio_get_addresses_netif(wifi_radio_obj_t *self
     mp_obj_tuple_t *result = MP_OBJ_TO_PTR(mp_obj_new_tuple(n_addresses, NULL));
 
     #if CIRCUITPY_SOCKETPOOL_IPV6
-    for (int i = 0; i < n_addresses6; i++)
-    {
+    for (int i = 0; i < n_addresses6; i++) {
         result->items[i] = espaddr6_to_str(&addresses[i]);
     }
     #endif
