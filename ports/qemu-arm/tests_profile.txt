@@ -1,10 +1,10 @@
 # Port-specific test directories.
 
-test_dirs.add(("inlineasm", "qemu-arm"))
+test_dirs.update(("inlineasm", "ports/qemu-arm"))
 
 # Port-specific tests exclusion list.
 
-exclude_tests.add(
+exclude_tests.update(
     (
         # inline asm FP tests (require Cortex-M4)
         "inlineasm/asmfpaddsub.py",

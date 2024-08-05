@@ -1,3 +1,7 @@
+# Port-specific test directories.
+
+test_dirs.update(())
+
 # Port-specific tests exclusion list.
 
-exclude_tests = exclude_tests.union(())
+exclude_tests.update(())
