@@ -63,6 +63,12 @@ static MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_touch_obj, esp32_wake_on_touch);
 
 static mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
+    #if CONFIG_IDF_TARGET_ESP32C3
+
+    mp_raise_ValueError(MP_ERROR_TEXT("not supported"));
+
+    #else
+
     if (machine_rtc_config.wake_on_touch) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
@@ -88,6 +94,8 @@ static mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     machine_rtc_config.ext0_level = args[ARG_level].u_bool;
     machine_rtc_config.ext0_wake_types = MACHINE_WAKE_SLEEP | MACHINE_WAKE_DEEPSLEEP;
+
+    #endif
 
     return mp_const_none;
 }

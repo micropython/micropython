@@ -76,6 +76,7 @@
     { MP_ROM_QSTR(MP_QSTR_PIN_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_EXT0) }, \
     { MP_ROM_QSTR(MP_QSTR_EXT0_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_EXT0) }, \
     { MP_ROM_QSTR(MP_QSTR_EXT1_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_EXT1) }, \
+    { MP_ROM_QSTR(MP_QSTR_GPIO_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_GPIO) }, \
     { MP_ROM_QSTR(MP_QSTR_TIMER_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TIMER) }, \
     { MP_ROM_QSTR(MP_QSTR_TOUCHPAD_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TOUCHPAD) }, \
     { MP_ROM_QSTR(MP_QSTR_ULP_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_ULP) }, \
@@ -146,7 +147,36 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
         esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
     }
 
-    #if !CONFIG_IDF_TARGET_ESP32C3
+    #if CONFIG_IDF_TARGET_ESP32C3
+
+    if (machine_rtc_config.ext1_pins != 0) {
+        gpio_int_type_t intr_type = machine_rtc_config.ext1_level ? GPIO_INTR_HIGH_LEVEL : GPIO_INTR_LOW_LEVEL;
+
+        for (int i = 0; i < GPIO_NUM_MAX; ++i) {
+            gpio_num_t gpio = (gpio_num_t)i;
+            uint64_t bm = 1ULL << i;
+
+            if (machine_rtc_config.ext1_pins & bm) {
+                gpio_sleep_set_direction(gpio, GPIO_MODE_INPUT);
+
+                if (MACHINE_WAKE_SLEEP == wake_type) {
+                    gpio_wakeup_enable(gpio, intr_type);
+                }
+            }
+        }
+
+        if (MACHINE_WAKE_DEEPSLEEP == wake_type) {
+            if (ESP_OK != esp_deep_sleep_enable_gpio_wakeup(
+                machine_rtc_config.ext1_pins,
+                machine_rtc_config.ext1_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW)) {
+                mp_raise_ValueError(MP_ERROR_TEXT("wake-up pin not supported"));
+            }
+        } else {
+            esp_sleep_enable_gpio_wakeup();
+        }
+    }
+
+    #else
 
     if (machine_rtc_config.ext0_pin != -1 && (machine_rtc_config.ext0_wake_types & wake_type)) {
         esp_sleep_enable_ext0_wakeup(machine_rtc_config.ext0_pin, machine_rtc_config.ext0_level ? 1 : 0);
