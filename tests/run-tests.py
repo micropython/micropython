@@ -1121,7 +1121,7 @@ the last matching regex is used:
             elif args.target == "rp2":
                 test_dirs += ("float", "stress", "inlineasm", "thread", "ports/rp2")
             elif args.target == "esp32":
-                test_dirs += ("float", "thread")
+                test_dirs += ("float", "stress", "thread")
             elif args.target in ("esp8266", "minimal", "nrf"):
                 test_dirs += ("float",)
             elif args.target == "wipy":
