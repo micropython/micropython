@@ -32,7 +32,7 @@
 #include "py/objfun.h"
 #include "py/runtime.h"
 #include "py/bc.h"
-#include "py/stackctrl.h"
+#include "py/cstack.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -194,7 +194,7 @@ static void dump_args(const mp_obj_t *a, size_t sz) {
 
 #if MICROPY_STACKLESS
 mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    MP_STACK_CHECK();
+    mp_cstack_check();
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
 
     size_t n_state, state_size;
@@ -225,7 +225,7 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
 #endif
 
 static mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    MP_STACK_CHECK();
+    mp_cstack_check();
 
     DEBUG_printf("Input n_args: " UINT_FMT ", n_kw: " UINT_FMT "\n", n_args, n_kw);
     DEBUG_printf("Input pos args: ");
@@ -397,7 +397,7 @@ mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_
 #if MICROPY_EMIT_NATIVE
 
 static mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    MP_STACK_CHECK();
+    mp_cstack_check();
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
     mp_call_fun_t fun = mp_obj_fun_native_get_function_start(self);
     return fun(self_in, n_args, n_kw, args);
@@ -431,7 +431,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 #if MICROPY_EMIT_NATIVE
 
 static mp_obj_t fun_viper_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    MP_STACK_CHECK();
+    mp_cstack_check();
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
     mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void *)self->bytecode);
     return fun(self_in, n_args, n_kw, args);

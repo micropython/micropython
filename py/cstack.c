@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2014 Paul Sokolovsky
+ * Copryight (c) 2024 Angus Gratton
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +25,22 @@
  * THE SOFTWARE.
  */
 
-// This API is deprecated, please use py/cstack.h instead
-
 #include "py/runtime.h"
+#include "py/cstack.h"
 
-#if !MICROPY_PREVIEW_VERSION_2
-
-#include "py/stackctrl.h"
-
-void mp_stack_ctrl_init(void) {
+void mp_cstack_init_with_sp_here(size_t stack_size) {
     #if __GNUC__ >= 13
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wdangling-pointer"
     #endif
     volatile int stack_dummy;
-    MP_STATE_THREAD(stack_top) = (char *)&stack_dummy;
+    mp_cstack_init_with_top((void *)&stack_dummy, stack_size);
     #if __GNUC__ >= 13
     #pragma GCC diagnostic pop
     #endif
 }
 
-void mp_stack_set_top(void *top) {
-    MP_STATE_THREAD(stack_top) = top;
-}
-
-mp_uint_t mp_stack_usage(void) {
+mp_uint_t mp_cstack_usage(void) {
     // Assumes descending stack
     volatile int stack_dummy;
     return MP_STATE_THREAD(stack_top) - (char *)&stack_dummy;
@@ -56,16 +48,10 @@ mp_uint_t mp_stack_usage(void) {
 
 #if MICROPY_STACK_CHECK
 
-void mp_stack_set_limit(mp_uint_t limit) {
-    MP_STATE_THREAD(stack_limit) = limit;
-}
-
-void mp_stack_check(void) {
-    if (mp_stack_usage() >= MP_STATE_THREAD(stack_limit)) {
+void mp_cstack_check(void) {
+    if (mp_cstack_usage() >= MP_STATE_THREAD(stack_limit)) {
         mp_raise_recursion_depth();
     }
 }
 
 #endif // MICROPY_STACK_CHECK
-
-#endif // !MICROPY_PREVIEW_VERSION_2

@@ -33,7 +33,7 @@
 #include "py/objstr.h"
 #include "py/objgenerator.h"
 #include "py/objfun.h"
-#include "py/stackctrl.h"
+#include "py/cstack.h"
 
 // Instance of GeneratorExit exception - needed by generator.close()
 const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj};
@@ -151,7 +151,7 @@ static void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
-    MP_STACK_CHECK();
+    mp_cstack_check();
     mp_check_self(mp_obj_is_type(self_in, &mp_type_gen_instance));
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->code_state.ip == 0) {

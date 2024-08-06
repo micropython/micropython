@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/objstr.h"
-#include "py/stackctrl.h"
+#include "py/cstack.h"
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE
 #include "py/unicode.h"
@@ -39,7 +39,7 @@
 
 #if MICROPY_PY_RE
 
-#define re1_5_stack_chk() MP_STACK_CHECK()
+#define re1_5_stack_chk() mp_cstack_check()
 
 #include "lib/re1.5/re1.5.h"
 

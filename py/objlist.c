@@ -29,7 +29,7 @@
 
 #include "py/objlist.h"
 #include "py/runtime.h"
-#include "py/stackctrl.h"
+#include "py/cstack.h"
 
 static mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur, mp_obj_iter_buf_t *iter_buf);
 static mp_obj_list_t *list_new(size_t n);
@@ -291,7 +291,7 @@ static mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
 }
 
 static void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, mp_obj_t binop_less_result) {
-    MP_STACK_CHECK();
+    mp_cstack_check();
     while (head < tail) {
         mp_obj_t *h = head - 1;
         mp_obj_t *t = tail;
