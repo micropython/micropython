@@ -21,7 +21,7 @@ bool cyw_ever_init;
 static uint32_t cyw_pin_claimed;
 
 void reset_pin_number_cyw(uint8_t pin_no) {
-    cyw_pin_claimed &= ~(1 << pin_no);
+    cyw_pin_claimed &= ~(1LL << pin_no);
 }
 #endif
 
@@ -29,7 +29,7 @@ static uint64_t never_reset_pins;
 
 void reset_all_pins(void) {
     for (size_t i = 0; i < NUM_BANK0_GPIOS; i++) {
-        if ((never_reset_pins & (1 << i)) != 0) {
+        if ((never_reset_pins & (1LL << i)) != 0) {
             continue;
         }
         reset_pin_number(i);
@@ -50,7 +50,7 @@ void never_reset_pin_number(uint8_t pin_number) {
         return;
     }
 
-    never_reset_pins |= 1 << pin_number;
+    never_reset_pins |= 1LL << pin_number;
 }
 
 // By default, all pins get reset in the same way
@@ -63,8 +63,8 @@ void reset_pin_number(uint8_t pin_number) {
         return;
     }
 
-    gpio_bank0_pin_claimed &= ~(1 << pin_number);
-    never_reset_pins &= ~(1 << pin_number);
+    gpio_bank0_pin_claimed &= ~(1LL << pin_number);
+    never_reset_pins &= ~(1LL << pin_number);
 
     // Allow the board to override the reset state of any pin
     if (board_reset_pin_number(pin_number)) {
@@ -97,27 +97,27 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
 void claim_pin(const mcu_pin_obj_t *pin) {
     #if CIRCUITPY_CYW43
     if (pin->base.type == &cyw43_pin_type) {
-        cyw_pin_claimed |= (1 << pin->number);
+        cyw_pin_claimed |= (1LL << pin->number);
         return;
     }
     #endif
     if (pin->number >= NUM_BANK0_GPIOS) {
         return;
     }
-    gpio_bank0_pin_claimed |= (1 << pin->number);
+    gpio_bank0_pin_claimed |= (1LL << pin->number);
 }
 
 bool pin_number_is_free(uint8_t pin_number) {
     if (pin_number >= NUM_BANK0_GPIOS) {
         return false;
     }
-    return !(gpio_bank0_pin_claimed & (1 << pin_number));
+    return !(gpio_bank0_pin_claimed & (1LL << pin_number));
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     #if CIRCUITPY_CYW43
     if (pin->base.type == &cyw43_pin_type) {
-        return !(cyw_pin_claimed & (1 << pin->number));
+        return !(cyw_pin_claimed & (1LL << pin->number));
     }
     #endif
     return pin_number_is_free(pin->number);
