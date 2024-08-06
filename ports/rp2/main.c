@@ -27,11 +27,11 @@
 #include <stdio.h>
 
 #include "py/compile.h"
+#include "py/cstack.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "py/stackctrl.h"
 #include "extmod/modbluetooth.h"
 #include "extmod/modnetwork.h"
 #include "shared/readline/readline.h"
@@ -114,8 +114,7 @@ int main(int argc, char **argv) {
     mp_hal_time_ns_set_from_rtc();
 
     // Initialise stack extents and GC heap.
-    mp_stack_set_top(&__StackTop);
-    mp_stack_set_limit(&__StackTop - &__StackBottom - 256);
+    mp_cstack_init_with_top(&__StackTop, &__StackTop - &__StackBottom);
     gc_init(&__GcHeapStart, &__GcHeapEnd);
 
     #if MICROPY_PY_LWIP
