@@ -32,6 +32,9 @@ static const mp_rom_map_elem_t board_module_globals_table[] = {
     // RTC
     { MP_ROM_QSTR(MP_QSTR_RTC_INT), MP_ROM_PTR(&pin_GPIO17) },
 
+    // IR
+    { MP_ROM_QSTR(MP_QSTR_IR_LED), MP_ROM_PTR(&pin_GPIO2) },
+
     // AXP2101 PMU
     { MP_ROM_QSTR(MP_QSTR_PMU_INT), MP_ROM_PTR(&pin_GPIO21) },
 
