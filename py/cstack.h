@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2024 Angus Gratton
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,49 +24,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_PY_CSTACK_H
+#define MICROPY_INCLUDED_PY_CSTACK_H
 
-// This API is deprecated, please use py/cstack.h instead
+#include "py/mpstate.h"
 
-#include "py/runtime.h"
+// Both init functions below accept the full stack size. Set the
+// MICROPY_STACK_CHECK_MARGIN to the number of bytes subtracted to account
+// for stack usage between checks.
 
-#if !MICROPY_PREVIEW_VERSION_2
+void mp_cstack_init_with_sp_here(size_t stack_size);
 
-#include "py/stackctrl.h"
+inline static void mp_cstack_init_with_top(void *top, size_t stack_size) {
+    MP_STATE_THREAD(stack_top) = (char *)top;
 
-void mp_stack_ctrl_init(void) {
-    #if __GNUC__ >= 13
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wdangling-pointer"
+    #if MICROPY_STACK_CHECK
+    assert(stack_size > MICROPY_STACK_CHECK_MARGIN); // Should be enforced by port
+    MP_STATE_THREAD(stack_limit) = stack_size - MICROPY_STACK_CHECK_MARGIN;
+    #else
+    (void)stack_size;
     #endif
-    volatile int stack_dummy;
-    MP_STATE_THREAD(stack_top) = (char *)&stack_dummy;
-    #if __GNUC__ >= 13
-    #pragma GCC diagnostic pop
-    #endif
 }
 
-void mp_stack_set_top(void *top) {
-    MP_STATE_THREAD(stack_top) = top;
-}
-
-mp_uint_t mp_stack_usage(void) {
-    // Assumes descending stack
-    volatile int stack_dummy;
-    return MP_STATE_THREAD(stack_top) - (char *)&stack_dummy;
-}
+mp_uint_t mp_cstack_usage(void);
 
 #if MICROPY_STACK_CHECK
 
-void mp_stack_set_limit(mp_uint_t limit) {
-    MP_STATE_THREAD(stack_limit) = limit;
+void mp_cstack_check(void);
+
+#else
+
+inline static void mp_cstack_check(void) {
+    // No-op when stack checking is disabled
 }
 
-void mp_stack_check(void) {
-    if (mp_stack_usage() >= MP_STATE_THREAD(stack_limit)) {
-        mp_raise_recursion_depth();
-    }
-}
+#endif
 
-#endif // MICROPY_STACK_CHECK
-
-#endif // !MICROPY_PREVIEW_VERSION_2
+#endif // MICROPY_INCLUDED_PY_CSTACK_H

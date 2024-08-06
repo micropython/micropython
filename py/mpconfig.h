@@ -690,6 +690,13 @@
 #define MICROPY_STACK_CHECK (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Additional margin between the places in the runtime where Python stack is
+// checked and the actual end of the C stack. Needs to be large enough to avoid
+// overflows from function calls made between checks.
+#ifndef MICROPY_STACK_CHECK_MARGIN
+#define MICROPY_STACK_CHECK_MARGIN (0)
+#endif
+
 // Whether to have an emergency exception buffer
 #ifndef MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (0)

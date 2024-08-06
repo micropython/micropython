@@ -11,7 +11,7 @@
 
 const char *stack_top;
 
-void mp_stack_check(void) {
+void mp_cstack_check(void) {
     // Assumes descending stack on target
     volatile char dummy;
     if (stack_top - &dummy >= STACK_LIMIT) {
