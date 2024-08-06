@@ -81,6 +81,10 @@
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 #endif
 
+#ifndef MICROPY_HW_ENABLE_PSRAM
+#define MICROPY_HW_ENABLE_PSRAM (0)
+#endif
+
 // Memory allocation policies
 #define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
 #define MICROPY_ALLOC_PATH_MAX                  (128)
