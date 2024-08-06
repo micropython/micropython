@@ -28,6 +28,6 @@ FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_FocalTouch
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_IRRemote
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DRV2605
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_PCF8563
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_RFM9x
 FROZEN_MPY_DIRS += $(TOP)/frozen/CircuitPython_AXP2101
 FROZEN_MPY_DIRS += $(TOP)/frozen/CircuitPython_BMA423
+# FROZEN_MPY_DIRS += $(TOP)/frozen/CircuitPython_SX126X # To be added in the future
