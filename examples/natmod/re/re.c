@@ -4,7 +4,6 @@
 #define MICROPY_PY_RE_MATCH_SPAN_START_END (1)
 #define MICROPY_PY_RE_SUB (0) // requires vstr interface
 
-#include <alloca.h>
 #include "py/dynruntime.h"
 
 #define STACK_LIMIT (2048)
@@ -26,6 +25,12 @@ void *memcpy(void *dst, const void *src, size_t n) {
 void *memset(void *s, int c, size_t n) {
     return mp_fun_table.memset_(s, c, n);
 }
+
+#if (defined(_PICOLIBC__) && !defined(HAVE_BUILTIN_ALLOCA))
+#define alloca(n) m_malloc(n)
+#else
+#include <alloca.h>
+#endif
 #endif
 
 void *memmove(void *dest, const void *src, size_t n) {
