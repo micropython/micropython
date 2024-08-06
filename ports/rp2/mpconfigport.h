@@ -158,6 +158,8 @@
 // Number 3 is currently used by pico-sdk (PICO_TIME_DEFAULT_ALARM_POOL_HARDWARE_ALARM_NUM)
 #define MICROPY_HW_SOFT_TIMER_ALARM_NUM         (2)
 
+#define MICROPY_STACK_CHECK_MARGIN              (256)
+
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN                (1)
 #define MICROPY_FATFS_LFN_CODE_PAGE             437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
