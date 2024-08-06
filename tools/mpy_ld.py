@@ -134,12 +134,7 @@ def asm_jump_rv32(entry):
     # auipc t6, HI(entry)       ; PC + 0
     # jalr  zero, t6, LO(entry) ; PC + 4
     # ...                       ; PC + 8
-    upper, lower = (entry & 0xFFFFF000), (entry & 0xFFF)
-    if lower & 0x800 != 0:
-        upper += 0x1000
-        lower -= 0x1000
-    upper = upper & 0xFFFFFFFF
-    lower = lower & 0xFFFFFFFF
+    upper, lower = split_riscv_address(entry)
     return struct.pack(
         "<II", (upper | 0x00000F97) & 0xFFFFFFFF, ((lower << 20) | 0x000F8067) & 0xFFFFFFFF
     )
@@ -241,12 +236,17 @@ def pack_u24le(data, offset, value):
     data[offset + 2] = value >> 16 & 0xFF
 
 
-def split_riscv_immediate(value):
-    if value >= -4095 and value < 0:
+def split_riscv_address(value):
+    # The address can be represented with just the lowest 12 bits
+    if value < 0 and value > -2048:
+        value = 4096 + value
         return 0, value
-
+    # 2s complement
+    if value < 0:
+        value = 0x100000000 + value
     upper, lower = (value & 0xFFFFF000), (value & 0xFFF)
-    if value & 0x800 != 0:
+    if lower & 0x800 != 0:
+        # Reverse lower part sign extension
         upper += 0x1000
     return upper & 0xFFFFFFFF, lower & 0xFFFFFFFF
 
@@ -530,8 +530,6 @@ def do_relocation_text(env, text_addr, r):
         or s_bind == "STB_LOCAL"
         and env.arch.name == "EM_XTENSA"
         and r_info_type == R_XTENSA_32  # not GOT
-        or env.arch.name == "EM_RISCV"
-        and r_info_type == R_RISCV_PCREL_HI20
     ):
         # Standard relocation to fixed location within text/rodata
         if hasattr(s, "resolved"):
@@ -560,9 +558,6 @@ def do_relocation_text(env, text_addr, r):
             #   R_ARM_THM_CALL: bl
             #   R_ARM_THM_JUMP24: b.w
             reloc_type = "thumb_b"
-        elif r_info_type == R_RISCV_PCREL_HI20:
-            r.computed_reloc = reloc
-            reloc_type = "riscv_hi20"
 
     elif (
         env.arch.name == "EM_386"
@@ -732,6 +727,9 @@ def process_riscv32_relocation(env, text_addr, r):
     assert env.arch.name == "EM_RISCV"
 
     s = r.sym
+
+    # TODO: Use the resolved relocation if present?
+
     r_offset = r["r_offset"] + text_addr
     r_info_type = r["r_info_type"]
     try:
@@ -741,15 +739,22 @@ def process_riscv32_relocation(env, text_addr, r):
         r_addend = 0
 
     if r_info_type == R_RISCV_GOT_HI20:
-        # Upper part of a relocation pointing to GOT, RISC-V specific
+        # Upper part of a relocation pointing to GOT
         got_entry = env.got_entries[s.name]
         addr = env.got_section.addr + got_entry.offset
         reloc = addr - r_offset + r_addend
         r.computed_reloc = reloc
         reloc_type = "riscv_hi20"
 
+    elif r_info_type == R_RISCV_PCREL_HI20:
+        # Upper part of a PC-relative address relocation
+        addr = s.section.addr + s["st_value"]
+        reloc = addr - r_offset + r_addend
+        r.computed_reloc = reloc
+        reloc_type = "riscv_hi20"
+
     elif r_info_type == R_RISCV_PCREL_LO12_I:
-        # Lower part of an absolute address relocation, RISC-V specific
+        # Lower part of a PC-relative address relocation
         parent = None
         for potential_parent in s.section.reloc:
             if potential_parent["r_offset"] != s["st_value"]:
@@ -765,37 +770,37 @@ def process_riscv32_relocation(env, text_addr, r):
         reloc_type = "riscv_lo12i"
 
     elif r_info_type == R_RISCV_RVC_BRANCH:
-        # Compressed opcode conditional branch, RISC-V specific
+        # Compressed opcode conditional branch
         addr = s.section.addr + s["st_value"]
         reloc = addr + r_addend - r_offset
         reloc_type = "riscv_cb"
 
     elif r_info_type == R_RISCV_RVC_JUMP:
-        # Compressed opcode jump, RISC-V specific
+        # Compressed opcode jump
         addr = s.section.addr + s["st_value"]
         reloc = addr + r_addend - r_offset
         reloc_type = "riscv_cj"
 
     elif r_info_type in (R_RISCV_CALL, R_RISCV_CALL_PLT):
-        # Two opcodes call, RISC-V specific
+        # Two opcodes call
         addr = s.section.addr + s["st_value"]
         reloc = addr + r_addend - r_offset
         reloc_type = "riscv_call"
 
     elif r_info_type == R_RISCV_BRANCH:
-        # Conditional branch, RISC-V specific
+        # Conditional branch
         addr = s.section.addr + s["st_value"]
         reloc = addr + r_addend - r_offset
         reloc_type = "riscv_b"
 
     elif r_info_type == R_RISCV_ADD32:
-        # Positive bias to a 32-bits literal, RISC-V specific
+        # Positive bias to a 32-bits literal
         addr = s.section.addr + s["st_value"]
         value = addr + r_addend
         reloc_type = "riscv_bias32"
 
     elif r_info_type == R_RISCV_SUB32:
-        # Negative bias to a 32-bits literal, RISC-V specific
+        # Negative bias to a 32-bits literal
         addr = s.section.addr + s["st_value"]
         value = -(addr + r_addend)
         reloc_type = "riscv_bias32"
@@ -807,25 +812,23 @@ def process_riscv32_relocation(env, text_addr, r):
     # Write relocation
     if reloc_type == "riscv_hi20":
         # Patch the upper 20 bits of the opcode
-        if reloc & 0x800 == 0x800:
-            reloc += 0x1000
+        upper, _ = split_riscv_address(reloc)
         (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
         struct.pack_into(
             "<I",
             env.full_text,
             r_offset,
-            ((existing & 0xFFF) | (reloc & 0xFFFFF000)) & 0xFFFFFFFF,
+            ((existing & 0xFFF) | upper) & 0xFFFFFFFF,
         )
     elif reloc_type == "riscv_lo12i":
         # Patch the upper 12 bits of the opcode
-        # if reloc & 0x800 == 0x800:
-        #    reloc -= 0x1000
+        _, lower = split_riscv_address(reloc)
         (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
         struct.pack_into(
             "<I",
             env.full_text,
             r_offset,
-            ((existing & 0xFFFFF) | ((reloc & 0x00000FFF) << 20)) & 0xFFFFFFFF,
+            ((existing & 0xFFFFF) | (lower << 20)) & 0xFFFFFFFF,
         )
     elif reloc_type == "riscv_cb":
         # Patch the target of a compressed branch opcode
@@ -866,20 +869,20 @@ def process_riscv32_relocation(env, text_addr, r):
         )
     elif reloc_type == "riscv_call":
         # Patch a pair of opcodes forming a call operation
-        upper, lower = split_riscv_immediate(reloc)
+        upper, lower = split_riscv_address(reloc)
         (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
         struct.pack_into(
             "<I",
             env.full_text,
             r_offset,
-            ((existing & 0xFFF) | (upper & 0xFFFFF000)) & 0xFFFFFFFF,
+            ((existing & 0xFFF) | upper) & 0xFFFFFFFF,
         )
         (existing,) = struct.unpack_from("<I", env.full_text, r_offset + 4)
         struct.pack_into(
             "<I",
             env.full_text,
             r_offset + 4,
-            ((existing & 0xFFFFF) | ((lower & 0x00000FFF) << 20)) & 0xFFFFFFFF,
+            ((existing & 0xFFFFF) | (lower << 20)) & 0xFFFFFFFF,
         )
     elif reloc_type == "riscv_b":
         # Patch a conditional opcode
