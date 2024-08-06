@@ -26,6 +26,7 @@
 
 #include <string.h>
 
+#include "rp2_psram.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
@@ -96,10 +97,21 @@ static uint32_t begin_critical_flash_section(void) {
     if (use_multicore_lockout()) {
         multicore_lockout_start_blocking();
     }
-    return save_and_disable_interrupts();
+    uint32_t state = save_and_disable_interrupts();
+
+    // We're about to invalidate the XIP cache, clean it first to commit any dirty writes to PSRAM
+    uint8_t *maintenance_ptr = (uint8_t *)XIP_MAINTENANCE_BASE;
+    for (int i = 1; i < 16 * 1024; i += 8) {
+        maintenance_ptr[i] = 0;
+    }
+
+    return state;
 }
 
 static void end_critical_flash_section(uint32_t state) {
+    #if defined(MICROPY_HW_PSRAM_CS_PIN) && MICROPY_HW_ENABLE_PSRAM
+    psram_init(MICROPY_HW_PSRAM_CS_PIN);
+    #endif
     restore_interrupts(state);
     if (use_multicore_lockout()) {
         multicore_lockout_end_blocking();
@@ -178,11 +190,16 @@ static mp_obj_t rp2_flash_readblocks(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rp2_flash_readblocks_obj, 3, 4, rp2_flash_readblocks);
 
+static inline size_t min_size(size_t a, size_t b) {
+    return a < b ? a : b;
+}
+
 static mp_obj_t rp2_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     rp2_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t offset = mp_obj_get_int(args[1]) * BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+
     if (n_args == 3) {
         mp_uint_t atomic_state = begin_critical_flash_section();
         flash_range_erase(self->flash_base + offset, bufinfo.len);
@@ -192,10 +209,31 @@ static mp_obj_t rp2_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     } else {
         offset += mp_obj_get_int(args[3]);
     }
-    mp_uint_t atomic_state = begin_critical_flash_section();
-    flash_range_program(self->flash_base + offset, bufinfo.buf, bufinfo.len);
-    end_critical_flash_section(atomic_state);
-    mp_event_handle_nowait();
+
+    if ((uintptr_t)bufinfo.buf >= SRAM_BASE) {
+        mp_uint_t atomic_state = begin_critical_flash_section();
+        flash_range_program(self->flash_base + offset, bufinfo.buf, bufinfo.len);
+        end_critical_flash_section(atomic_state);
+        mp_event_handle_nowait();
+    } else {
+        size_t bytes_left = bufinfo.len;
+        size_t bytes_offset = 0;
+        static uint8_t copy_buffer[BLOCK_SIZE_BYTES] = {0};
+
+        while (bytes_left) {
+            memcpy(copy_buffer, bufinfo.buf + bytes_offset, min_size(bytes_left, BLOCK_SIZE_BYTES));
+            mp_uint_t atomic_state = begin_critical_flash_section();
+            flash_range_program(self->flash_base + offset + bytes_offset, copy_buffer, min_size(bytes_left, BLOCK_SIZE_BYTES));
+            end_critical_flash_section(atomic_state);
+            bytes_offset += BLOCK_SIZE_BYTES;
+            if (bytes_left <= BLOCK_SIZE_BYTES) {
+                break;
+            }
+            bytes_left -= BLOCK_SIZE_BYTES;
+            mp_event_handle_nowait();
+        }
+    }
+
     // TODO check return value
     return mp_const_none;
 }

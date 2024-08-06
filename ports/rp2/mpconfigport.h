@@ -83,6 +83,9 @@
 
 // Memory allocation policies
 #define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
+#ifdef MICROPY_HW_ENABLE_PSRAM
+#define MICROPY_GC_SPLIT_HEAP                   (1)
+#endif
 #define MICROPY_ALLOC_PATH_MAX                  (128)
 #define MICROPY_QSTR_BYTES_IN_HASH              (1)
 

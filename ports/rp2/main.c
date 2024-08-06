@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 
+#include "rp2_psram.h"
 #include "py/compile.h"
 #include "py/cstack.h"
 #include "py/runtime.h"
@@ -120,7 +121,14 @@ int main(int argc, char **argv) {
 
     // Initialise stack extents and GC heap.
     mp_cstack_init_with_top(&__StackTop, &__StackTop - &__StackBottom);
+
     gc_init(&__GcHeapStart, &__GcHeapEnd);
+    #if defined(MICROPY_HW_PSRAM_CS_PIN) && MICROPY_HW_ENABLE_PSRAM
+    size_t psram_size = psram_init(MICROPY_HW_PSRAM_CS_PIN);
+    if (psram_size) {
+        gc_add((void *)PSRAM_LOCATION, (void *)(PSRAM_LOCATION + psram_size));
+    }
+    #endif
 
     #if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
