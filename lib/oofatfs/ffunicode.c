@@ -499,6 +499,7 @@ DWORD ff_wtoupper ( /* Returns up-converted code point */
     DWORD uni       /* Unicode code point to be up-converted */
 )
 {
+    // CIRCUITPY-CHANGE
     #if FF_FS_CASE_INSENSITIVE_COMPARISON_ASCII_ONLY
     // Only uppercase ASCII characters. Everything else will require the user to
     // pass in an uppercase version.

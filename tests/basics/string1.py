@@ -5,7 +5,9 @@ print('abc')
 print(r'abc')
 print(u'abc')
 print(repr('\a\b\t\n\v\f\r'))
-print('\z') # unrecognised escape char
+# CIRCUITPY-CHANGE: unrecognized escape characters are caught with a SyntaxWarning in 3.12, so skip this test
+# MicroPython v1.23 (or maybe later) merge fixes this, so this is temporary
+### print('\z') # unrecognised escape char
 
 # construction
 print(str())

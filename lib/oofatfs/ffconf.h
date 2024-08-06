@@ -72,6 +72,7 @@
 #define FF_USE_MKFS     1
 /* This option switches f_mkfs() function. (0:Disable or 1:Enable) */
 
+// CIRCUITPY-CHANGE: optional FAT32 support
 #ifdef MICROPY_FATFS_MKFS_FAT32
 #define FF_MKFS_FAT32   MICROPY_FATFS_MKFS_FAT32
 #else
@@ -79,6 +80,7 @@
 #endif
 /* This option switches off FAT32 support in f_mkfs() */
 
+// CIRCUITPY-CHANGE: enable fast seek
 #define FF_USE_FASTSEEK   1
 /* This option switches fast seek function. (0:Disable or 1:Enable) */
 
@@ -169,6 +171,7 @@
 /  memory for the working buffer, memory management functions, ff_memalloc() and
 /  ff_memfree() in ffsystem.c, need to be added to the project. */
 
+// CIRCUITPY-CHANGE: unicode filenames for FAT
 #ifdef MICROPY_FATFS_LFN_UNICODE
 #define FF_LFN_UNICODE  (MICROPY_FATFS_LFN_UNICODE)
 #else
@@ -267,6 +270,7 @@
 /  for variable sector size mode and disk_ioctl() function needs to implement
 /  GET_SECTOR_SIZE command. */
 
+// CIRCUITPY-CHANGE: align FATFS window buffer for tinyusb
 #ifdef MICROPY_FATFS_WINDOW_ALIGNMENT
 #define FF_WINDOW_ALIGNMENT   (MICROPY_FATFS_WINDOW_ALIGNMENT)
 #else
@@ -379,6 +383,7 @@
 /  SemaphoreHandle_t and etc. A header file for O/S definitions needs to be
 /  included somewhere in the scope of ff.h. */
 
+// CIRCUITPY-CHANGE: random volids
 #ifndef FF_FS_MAKE_VOLID
 #define FF_FS_MAKE_VOLID (0)
 #endif

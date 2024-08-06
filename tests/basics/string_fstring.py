@@ -35,7 +35,9 @@ print(f"a{ {0,1,2}}")
 print(f"\\")
 print(f'#')
 try:
-    eval("f'{\}'")
+    # CIRCUITPY-CHANGE: 3.12 catches {\} with a syntax warning of invalid escape sequence
+    # MicroPython v1.23 (or maybe later) merge fixes this, so this is temporary
+    eval("f'{\\}'")
 except SyntaxError:
     print('SyntaxError')
 try:

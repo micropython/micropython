@@ -278,6 +278,7 @@ typedef struct {
 
 
 /* SBCS up-case tables (\x80-\xFF) */
+// CIRCUITPY-CHANGE
 // Optimize the 437-only case with a truncated lookup table.
 #if FF_CODE_PAGE == 437
 #define TBL_CT437  {0x80,0x9A,0x45,0x41,0x8E,0x41,0x8F,0x80,0x45,0x45,0x45,0x49,0x49,0x49,0x8E,0x8F, \
@@ -1187,6 +1188,7 @@ static DWORD get_fat (      /* 0xFFFFFFFF:Disk error, 1:Internal error, 2..0x7FF
                     break;
                 }
             }
+            // CIRCUITPY-CHANGE: explicit fallthrough
             MP_FALLTHROUGH
             /* go to default */
 #endif
@@ -1997,6 +1999,7 @@ static void gen_numname (
         if (c > '9') c += 7;
         ns[i--] = c;
         seq /= 16;
+    // CIRCUITPY-CHANGE: limit to 8 digits
     } while (seq && i > 0);
     ns[i] = '~';
 
@@ -2894,6 +2897,7 @@ static FRESULT create_name (    /* FR_OK: successful, FR_INVALID_NAME: could not
             }
 #elif FF_CODE_PAGE < 900    /* SBCS cfg */
             wc = ff_uni2oem(wc, CODEPAGE);          /* Unicode ==> ANSI/OEM code */
+            // CIRCUITPY-CHANGE
             // Optimize the 437-only case with a truncated lookup table.
 #if FF_CODE_PAGE == 437
             if (wc & 0x80 && wc < (0xA5 - 0x80)) wc = ExCvt[wc & 0x7F];   /* Convert extended character to upper (SBCS) */
@@ -4832,7 +4836,7 @@ FRESULT f_rename (
     DWORD dw;
     DEF_NAMBUF
 
-
+    // CIRCUITPY-CHANGE
     // Check to see if we're moving a directory into itself. This occurs when we're moving a
     // directory where the old path is a prefix of the new and the next character is a "/" and thus
     // preserves the original directory name.
@@ -5425,6 +5429,7 @@ FRESULT f_mkfs (
     // CIRCUITPY-CHANGE: Make number of root directory entries changeable. See below.
     UINT n_rootdir = 512;       /* Default number of root directory entries for FAT volume */
     static const WORD cst[] = {1, 4, 16, 64, 256, 512, 0};  /* Cluster size boundary for FAT volume (4Ks unit) */
+// CIRCUITPY-CHANGE: optional FAT32 support
 #if FF_MKFS_FAT32
     static const WORD cst32[] = {1, 2, 4, 8, 16, 32, 0};    /* Cluster size boundary for FAT32 volume (128Ks unit) */
 #endif
@@ -5439,6 +5444,7 @@ FRESULT f_mkfs (
     DWORD tbl[3];
 #endif
 
+    // CIRCUITPY-CHANGE: random volids
     DWORD volid = MAKE_VOLID();
 
     /* Check mounted drive and clear work area */
@@ -5500,6 +5506,7 @@ FRESULT f_mkfs (
             }
         }
         if (au > 128) LEAVE_MKFS(FR_INVALID_PARAMETER); /* Too large au for FAT/FAT32 */
+        // CIRCUITPY-CHANGE: optional FAT32 support
         if (FF_MKFS_FAT32 && (opt & FM_FAT32)) {   /* FAT32 possible? */
             if ((opt & FM_ANY) == FM_FAT32 || !(opt & FM_FAT)) {    /* FAT32 only or no-FAT? */
                 fmt = FS_FAT32; break;
@@ -5555,6 +5562,7 @@ FRESULT f_mkfs (
                 }
                 st = 1;         /* Do not compress short run */
                 /* go to next case */
+                // CIRCUITPY-CHANGE: explicit fallthrough
                 MP_FALLTHROUGH
             case 1:
                 ch = si++;      /* Fill the short run */
@@ -5641,6 +5649,7 @@ FRESULT f_mkfs (
             st_dword(buf + BPB_DataOfsEx, b_data - b_vol);          /* Data offset [sector] */
             st_dword(buf + BPB_NumClusEx, n_clst);                  /* Number of clusters */
             st_dword(buf + BPB_RootClusEx, 2 + tbl[0] + tbl[1]);    /* Root dir cluster # */
+            // CIRCUITPY-CHANGE: random volids
             st_dword(buf + BPB_VolIDEx, volid);             /* VSN */
             st_word(buf + BPB_FSVerEx, 0x100);                      /* Filesystem version (1.00) */
             for (buf[BPB_BytsPerSecEx] = 0, i = ss; i >>= 1; buf[BPB_BytsPerSecEx]++) ; /* Log2 of sector size [byte] */
@@ -5677,6 +5686,7 @@ FRESULT f_mkfs (
         do {
             pau = au;
             /* Pre-determine number of clusters and FAT sub-type */
+// CIRCUITPY-CHANGE: optional FAT32 support
 #if FF_MKFS_FAT32
             if (fmt == FS_FAT32) {  /* FAT32 volume */
                 if (pau == 0) { /* au auto-selection */
@@ -5725,6 +5735,7 @@ FRESULT f_mkfs (
             /* Determine number of clusters and final check of validity of the FAT sub-type */
             if (sz_vol < b_data + pau * 16 - b_vol) LEAVE_MKFS(FR_MKFS_ABORTED);    /* Too small volume */
             n_clst = (sz_vol - sz_rsv - sz_fat * n_fats - sz_dir) / pau;
+// CIRCUITPY-CHANGE: optional FAT32 support
 #if FF_MKFS_FAT32
             if (fmt == FS_FAT32) {
                 if (n_clst <= MAX_FAT16) {  /* Too few clusters for FAT32 */
@@ -5766,6 +5777,7 @@ FRESULT f_mkfs (
         buf[BPB_SecPerClus] = (BYTE)pau;                /* Cluster size [sector] */
         st_word(buf + BPB_RsvdSecCnt, (WORD)sz_rsv);    /* Size of reserved area */
         buf[BPB_NumFATs] = (BYTE)n_fats;                /* Number of FATs */
+// CIRCUITPY-CHANGE: optional FAT32 support
 #if FF_MKFS_FAT32
         st_word(buf + BPB_RootEntCnt, (WORD)((fmt == FS_FAT32) ? 0 : n_rootdir));   /* Number of root directory entries */
 #else
@@ -5780,6 +5792,7 @@ FRESULT f_mkfs (
         st_word(buf + BPB_SecPerTrk, 63);               /* Number of sectors per track (for int13) */
         st_word(buf + BPB_NumHeads, 255);               /* Number of heads (for int13) */
         st_dword(buf + BPB_HiddSec, b_vol);             /* Volume offset in the physical drive [sector] */
+// CIRCUITPY-CHANGE: optional FAT32 support
 #if FF_MKFS_FAT32
         if (fmt == FS_FAT32) {
             st_dword(buf + BS_VolID32, volid);  /* VSN */
@@ -5803,6 +5816,7 @@ FRESULT f_mkfs (
         if (disk_write(pdrv, buf, b_vol, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR); /* Write it to the VBR sector */
 
         /* Create FSINFO record if needed */
+// CIRCUITPY-CHANGE: optional FAT32 support
 #if FF_MKFS_FAT32
         if (fmt == FS_FAT32) {
             disk_write(pdrv, buf, b_vol + 6, 1);        /* Write backup VBR (VBR + 6) */
@@ -5821,6 +5835,7 @@ FRESULT f_mkfs (
         mem_set(buf, 0, (UINT)szb_buf);
         sect = b_fat;       /* FAT start sector */
         for (i = 0; i < n_fats; i++) {          /* Initialize FATs each */
+// CIRCUITPY-CHANGE: optional FAT32 support
 #if FF_MKFS_FAT32
             if (fmt == FS_FAT32) {
                 st_dword(buf + 0, 0xFFFFFFF8);  /* Entry 0 */
@@ -5841,6 +5856,7 @@ FRESULT f_mkfs (
         }
 
         /* Initialize root directory (fill with zero) */
+// CIRCUITPY-CHANGE: optional FAT32 support
 #if FF_MKFS_FAT32
         nsect = (fmt == FS_FAT32) ? pau : sz_dir;   /* Number of root directory sectors */
 #else
@@ -5857,6 +5873,7 @@ FRESULT f_mkfs (
     if (FF_FS_EXFAT && fmt == FS_EXFAT) {
         sys = 0x07;         /* HPFS/NTFS/exFAT */
     } else {
+        // CIRCUITPY-CHANGE: optional FAT32 support
         if (FF_MKFS_FAT32 && fmt == FS_FAT32) {
             sys = 0x0C;     /* FAT32X */
         } else {
