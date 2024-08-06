@@ -51,12 +51,6 @@ mp_uint_t mp_stack_usage(void) {
 
 #if MICROPY_STACK_CHECK
 
-void mp_stack_set_limit(mp_uint_t limit) {
-    assert(limit > MICROPY_STACK_CHECK_MARGIN); // Should be enforced by port
-    limit -= MICROPY_STACK_CHECK_MARGIN;
-    MP_STATE_THREAD(stack_limit) = limit;
-}
-
 void mp_stack_check(void) {
     if (mp_stack_usage() >= MP_STATE_THREAD(stack_limit)) {
         mp_raise_recursion_depth();
