@@ -41,7 +41,7 @@
 #include "esp_log.h"
 #include "esp_psram.h"
 
-#include "py/stackctrl.h"
+#include "py/cstack.h"
 #include "py/nlr.h"
 #include "py/compile.h"
 #include "py/runtime.h"
@@ -70,13 +70,6 @@
 
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
-
-// Set the margin for detecting stack overflow, depending on the CPU architecture.
-#if CONFIG_IDF_TARGET_ESP32C3
-#define MP_TASK_STACK_LIMIT_MARGIN (2048)
-#else
-#define MP_TASK_STACK_LIMIT_MARGIN (1024)
-#endif
 
 typedef struct _native_code_node_t {
     struct _native_code_node_t *next;
@@ -132,8 +125,7 @@ void mp_task(void *pvParameter) {
 
 soft_reset:
     // initialise the stack pointer for the main thread
-    mp_stack_set_top((void *)sp);
-    mp_stack_set_limit(MICROPY_TASK_STACK_SIZE - MP_TASK_STACK_LIMIT_MARGIN);
+    mp_cstack_init_with_top((void *)sp, MICROPY_TASK_STACK_SIZE);
     gc_init(mp_task_heap, mp_task_heap + MICROPY_GC_INITIAL_HEAP_SIZE);
     mp_init();
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
