@@ -23,17 +23,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_SAMD_MODMACHINE_H
-#define MICROPY_INCLUDED_SAMD_MODMACHINE_H
+#ifndef MICROPY_INCLUDED_RP2_MPBTHCIPORT_H
+#define MICROPY_INCLUDED_RP2_MPBTHCIPORT_H
 
-#include "py/obj.h"
-#include "shared/timeutils/timeutils.h"
+#include "mphalport.h"
 
-#if MICROPY_PY_MACHINE_DAC
-extern const mp_obj_type_t machine_dac_type;
-#endif
+void mp_bluetooth_hci_config_interface(mp_obj_t uart, mp_obj_t cs, mp_obj_t busy, mp_obj_t rts, mp_obj_t cts);
 
-void rtc_gettime(timeutils_struct_time_t *tm);
-void machine_uart_set_baudrate(mp_obj_t self, uint32_t baudrate);
+// Initialise the HCI subsystem (should be called once, early on).
+void mp_bluetooth_hci_init(void);
 
-#endif // MICROPY_INCLUDED_SAMD_MODMACHINE_H
+// Poll the HCI now, or after a certain timeout.
+void mp_bluetooth_hci_poll_now(void);
+void mp_bluetooth_hci_poll_in_ms(uint32_t ms);
+
+// Must be provided by the stack bindings (e.g. mpnimbleport.c or mpbtstackport.c).
+// Request new data from the uart and pass to the stack, and run pending events/callouts.
+// This is a low-level function and should not be called directly, use
+// mp_bluetooth_hci_poll_now/mp_bluetooth_hci_poll_in_ms instead.
+void mp_bluetooth_hci_poll(void);
+
+#endif // MICROPY_INCLUDED_RP2_MPBTHCIPORT_H

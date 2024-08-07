@@ -13,7 +13,11 @@ ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
+ifneq ($(BOARD_VARIANT),)
+BUILD ?= build-$(BOARD)-$(BOARD_VARIANT)
+else
 BUILD ?= build-$(BOARD)
+endif
 
 CROSS_COMPILE ?= arm-none-eabi-
 UF2CONV ?= $(TOP)/tools/uf2conv.py
@@ -33,6 +37,7 @@ FROZEN_MANIFEST ?= boards/manifest.py
 # Include py core make definitions
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
+include ${TOP}/extmod/nimble/nimble.mk
 
 GIT_SUBMODULES += lib/asf4 lib/tinyusb
 
