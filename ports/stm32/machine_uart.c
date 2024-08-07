@@ -533,6 +533,7 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
 
     if (*errcode == 0 || *errcode == MP_ETIMEDOUT) {
         // return number of bytes written, even if there was a timeout
+        *errcode = 0;
         return num_tx << self->char_width;
     } else {
         return MP_STREAM_ERROR;
