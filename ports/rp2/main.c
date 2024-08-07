@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
 
     // Initialise stack extents and GC heap.
     mp_stack_set_top(&__StackTop);
-    mp_stack_set_limit(&__StackTop - &__StackBottom - 256);
+    mp_stack_set_limit(&__StackTop - &__StackBottom);
     gc_init(&__GcHeapStart, &__GcHeapEnd);
 
     #if MICROPY_PY_LWIP

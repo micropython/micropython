@@ -194,6 +194,12 @@
 #define MICROPY_TASK_STACK_SIZE             (16 * 1024)
 #endif
 
+#if CONFIG_IDF_TARGET_ARCH_RISCV // RISC-V SoCs use more stack than Xtensa
+#define MICROPY_STACK_CHECK_MARGIN          (2048) // This may be unnecessarily conservative
+#else
+#define MICROPY_STACK_CHECK_MARGIN          (1024)
+#endif
+
 #define MP_STATE_PORT MP_STATE_VM
 
 // type definitions for the specific machine
