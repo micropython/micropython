@@ -1,3 +1,5 @@
+TESTS_PROFILE = $(dir $(abspath $(firstword $(MAKEFILE_LIST))))/tests_profile.txt
+
 include ../../py/mkenv.mk
 -include mpconfigport.mk
 
@@ -86,6 +88,7 @@ SRC_RUN_C = \
 SRC_TEST_C = \
 	test_main.c \
 	lib/tinytest/tinytest.c \
+	shared/upytesthelper/upytesthelper.c \
 
 LIB_SRC_C += $(SRC_LIB_LIBM_C)
 LIB_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
@@ -124,5 +127,28 @@ run: $(BUILD)/firmware.elf
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(ALL_OBJ_RUN)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(ALL_OBJ_RUN) $(LIBS)
 	$(Q)$(SIZE) $@
+
+$(BUILD)/firmware-test.elf: $(LDSCRIPT) $(ALL_OBJ_TEST)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(ALL_OBJ_TEST) $(LIBS)
+	$(Q)$(SIZE) $@
+
+$(BUILD)/test_main.o: $(BUILD)/genhdr/tests.h
+
+.PHONY: $(BUILD)/genhdr/tests.h
+$(BUILD)/genhdr/tests.h:
+	(cd $(TOP)/tests; ./run-tests.py --target=qemu-riscv --write-exp)
+	$(Q)echo "Generating $@";(cd $(TOP)/tests; ../tools/tinytest-codegen.py --profile $(TESTS_PROFILE) $(addprefix --exclude ,$(TESTS_EXCLUDE))) > $@
+
+$(BUILD)/lib/tinytest/tinytest.o: CFLAGS += -DNO_FORKING
+
+# Note: Using timeout(1) to handle cases where qemu hangs (e.g. this can happen with alignment errors).
+test: $(BUILD)/firmware-test.elf
+	timeout --foreground -k 5s 60s qemu-system-riscv32 -machine $(BOARD) -bios none $(QEMU_EXTRA) -nographic -monitor null -semihosting -kernel $< > $(BUILD)/console.out
+	$(Q)tail -n2 $(BUILD)/console.out
+	$(Q)tail -n1 $(BUILD)/console.out | grep -q "status: 0"
+
+# `make debugtest` will block QEMU until a debugger is connected to port 1234.
+debugtest: $(BUILD)/firmware-test.elf
+	qemu-system-riscv32 -machine $(BOARD) -bios none $(QEMU_EXTRA) -nographic -monitor null -semihosting -serial mon:stdio -S -s -kernel $<
 
 include $(TOP)/py/mkrules.mk

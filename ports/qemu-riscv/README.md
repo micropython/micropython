@@ -26,4 +26,4 @@ Linux distribution's package manager, or independently packaged ones like
 
 To build and run the image with builtin testsuite:
 
-    make -f Makefile.test test
+    make test
