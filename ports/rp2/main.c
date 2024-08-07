@@ -79,6 +79,9 @@ int main(int argc, char **argv) {
 
     pendsv_init();
     soft_timer_init();
+    // set the MCU frequency and as a side effect the peripheral clock
+    // to 48 MHz.
+    set_sys_clock_khz(125000, false);
 
     #if MICROPY_HW_ENABLE_UART_REPL
     bi_decl(bi_program_feature("UART REPL"))
@@ -232,6 +235,10 @@ int main(int argc, char **argv) {
 
         gc_sweep_all();
         mp_deinit();
+        #if MICROPY_HW_ENABLE_UART_REPL
+        setup_default_uart();
+        mp_uart_init();
+        #endif
     }
 
     return 0;
