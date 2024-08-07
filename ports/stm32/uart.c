@@ -1069,26 +1069,20 @@ size_t uart_tx_data(machine_uart_obj_t *self, const void *src_in, size_t num_cha
     }
 
     uint32_t timeout;
-    if (self->uartx->CR3 & USART_CR3_CTSE) {
-        // CTS can hold off transmission for an arbitrarily long time. Apply
-        // the overall timeout rather than the character timeout.
-        timeout = self->timeout;
-    } else {
-        #if defined(STM32G4)
-        // With using UART FIFO, the timeout should be long enough that FIFO becomes empty.
-        // Since previous data transfer may be ongoing, the timeout must be multiplied
-        // timeout_char by FIFO size + 1.
-        // STM32G4 has 8 words FIFO.
-        timeout = (8 + 1) * self->timeout_char;
-        #else
-        // The timeout specified here is for waiting for the TX data register to
-        // become empty (ie between chars), as well as for the final char to be
-        // completely transferred.  The default value for timeout_char is long
-        // enough for 1 char, but we need to double it to wait for the last char
-        // to be transferred to the data register, and then to be transmitted.
-        timeout = 2 * self->timeout_char;
-        #endif
-    }
+    #if defined(STM32G4)
+    // With using UART FIFO, the timeout should be long enough that FIFO becomes empty.
+    // Since previous data transfer may be ongoing, the timeout must be multiplied
+    // timeout_char by FIFO size + 1.
+    // STM32G4 has 8 words FIFO.
+    timeout = (8 + 1) * self->timeout_char;
+    #else
+    // The timeout specified here is for waiting for the TX data register to
+    // become empty (ie between chars), as well as for the final char to be
+    // completely transferred.  The default value for timeout_char is long
+    // enough for 1 char, but we need to double it to wait for the last char
+    // to be transferred to the data register, and then to be transmitted.
+    timeout = 2 * self->timeout_char;
+    #endif
 
     const uint8_t *src = (const uint8_t *)src_in;
     size_t num_tx = 0;
