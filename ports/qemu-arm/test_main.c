@@ -33,6 +33,7 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "shared/runtime/gchelper.h"
+#include "shared/upytesthelper/upytesthelper.h"
 #include "lib/tinytest/tinytest.h"
 #include "lib/tinytest/tinytest_macros.h"
 
@@ -63,4 +64,8 @@ mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
 void nlr_jump_fail(void *val) {
     printf("uncaught NLR\n");
     exit(1);
+}
+
+void qemu_print_strn(const char *str, size_t len) {
+    upytest_output(str, len);
 }
