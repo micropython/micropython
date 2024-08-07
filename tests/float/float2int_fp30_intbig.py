@@ -56,7 +56,7 @@ print("power of 10 test: %s" % (testpass and "passed" or "failed"))
 def fp2int_test(num, name, should_fail):
     try:
         x = int(num)
-        passed = ~should_fail
+        passed = not should_fail
     except:
         passed = should_fail
     print("%s: %s" % (name, passed and "passed" or "failed"))
