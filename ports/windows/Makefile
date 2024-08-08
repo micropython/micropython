@@ -45,9 +45,9 @@ LDFLAGS += -lm -lbcrypt $(LDFLAGS_EXTRA)
 # Debugging/Optimization
 ifdef DEBUG
 CFLAGS += -g
-COPT = -O0
+COPT ?= -O0
 else
-COPT = -Os #-DNDEBUG
+COPT ?= -Os #-DNDEBUG
 endif
 
 # source files

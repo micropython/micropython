@@ -25,9 +25,10 @@ CFLAGS += $(INC) -Wall -Werror -std=gnu99 -nostdlib $(CFLAGS_PIC16BIT) $(COPT)
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-CFLAGS += -O0 -ggdb
+COPT ?= -O0
+CFLAGS += -ggdb
 else
-CFLAGS += -O1 -DNDEBUG
+COPT ?= -O1 -DNDEBUG
 endif
 
 LDFLAGS += --heap=0 -nostdlib -T $(XC16)/support/$(PARTFAMILY)/gld/p$(PART).gld -Map=$@.map --cref -p$(PART)

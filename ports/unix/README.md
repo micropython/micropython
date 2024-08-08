@@ -82,7 +82,8 @@ To build a debuggable version of the Unix port, there are two options
 
 1. Run `make [other arguments] DEBUG=1`. Note setting `DEBUG` also reduces the
    optimisation level, so it's not a good option for builds that also want the
-   best performance.
+   best performance. When using gdb and facing 'optimized out' values or stepping
+   through the source not halting at the correct location, also pass `COPT=-O0`.
 2. Run `make [other arguments] STRIP=`. Note that the value of `STRIP` is
    empty. This will skip the build step that strips symbols and debug
    information, but changes nothing else in the build configuration.

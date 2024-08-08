@@ -36,7 +36,7 @@ LDFLAGS += -Wl,-map,$@.map -Wl,-dead_strip
 endif
 endif
 
-CSUPEROPT = -Os # save some code space
+CSUPEROPT ?= -Os # save some code space
 
 # Tune for Debugging or Optimization
 CFLAGS += -g  # always include debug info in the ELF
