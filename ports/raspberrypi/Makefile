@@ -121,6 +121,7 @@ INC += \
 	-isystem sdk/src/rp2_common/hardware_watchdog/include/ \
 	-isystem sdk/src/rp2_common/hardware_xosc/include/ \
 	-isystem sdk/src/rp2_common/pico_aon_timer/include/ \
+	-isystem sdk/src/rp2_common/pico_atomic/include/ \
 	-isystem sdk/src/rp2_common/pico_bootrom/include/ \
 	-isystem sdk/src/rp2_common/pico_double/include/ \
 	-isystem sdk/src/rp2_common/pico_multicore/include/ \
@@ -454,6 +455,7 @@ SRC_SDK := \
 	src/rp2_common/hardware_watchdog/watchdog.c \
 	src/rp2_common/hardware_xosc/xosc.c \
 	src/rp2_common/pico_aon_timer/aon_timer.c \
+	src/rp2_common/pico_atomic/atomic.c \
 	src/rp2_common/pico_bootrom/bootrom.c \
 	src/rp2_common/pico_bootsel_via_double_reset/pico_bootsel_via_double_reset.c \
 	src/rp2_common/pico_clib_interface/newlib_interface.c \
