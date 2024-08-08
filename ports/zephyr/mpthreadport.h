@@ -3,7 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Linaro Limited
+ * Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+ * Copyright (c) 2017 Pycom Limited
+ * Copyright (c) 2024 Daniel Campora on behalf of REMOTE TECH LTD
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +25,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#ifndef MICROPY_INCLUDED_ZEPHYR_MPTHREADPORT_H
+#define MICROPY_INCLUDED_ZEPHYR_MPTHREADPORT_H
+
 #include <zephyr/zephyr.h>
-#include "zephyr_getchar.h"
 
-int real_main(void);
-int mp_console_init(void);
 
-void main(void) {
-    #ifdef CONFIG_CONSOLE_SUBSYS
-    mp_console_init();
-    #else
-    zephyr_getchar_init();
-    #endif
-    real_main();
-}
+typedef struct _mp_thread_mutex_t {
+    struct k_sem handle;
+} mp_thread_mutex_t;
+
+void mp_thread_init(void *stack, uint32_t stack_len);
+void mp_thread_gc_others(void);
+void mp_thread_deinit(void);
+
+#endif // MICROPY_INCLUDED_ZEPHYR_MPTHREADPORT_H

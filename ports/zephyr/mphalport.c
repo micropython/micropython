@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include <zephyr/zephyr.h>
 
 static struct k_poll_signal wait_signal;
 static struct k_poll_event wait_events[2] = {
@@ -51,12 +52,15 @@ void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms) {
         k_poll_event_init(&wait_events[1], K_POLL_TYPE_SEM_AVAILABLE, K_POLL_MODE_NOTIFY_ONLY, sem);
     }
     for (;;) {
+        mp_handle_pending(true);
+        MP_THREAD_GIL_EXIT();
         k_timeout_t wait;
         if (timeout_ms == (uint32_t)-1) {
             wait = K_FOREVER;
         } else {
             uint32_t dt = mp_hal_ticks_ms() - t0;
             if (dt >= timeout_ms) {
+                MP_THREAD_GIL_ENTER();
                 return;
             }
             wait = K_MSEC(timeout_ms - dt);
@@ -65,9 +69,9 @@ void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms) {
         if (wait_events[0].state == K_POLL_STATE_SIGNALED) {
             wait_events[0].signal->signaled = 0;
             wait_events[0].state = K_POLL_STATE_NOT_READY;
-            mp_handle_pending(true);
         } else if (sem && wait_events[1].state == K_POLL_STATE_SEM_AVAILABLE) {
             wait_events[1].state = K_POLL_STATE_NOT_READY;
+            MP_THREAD_GIL_ENTER();
             return;
         }
     }

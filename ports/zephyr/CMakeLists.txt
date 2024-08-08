@@ -47,6 +47,7 @@ set(MICROPY_SOURCE_PORT
     mphalport.c
     uart_core.c
     zephyr_storage.c
+    mpthreadport.c
 )
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 

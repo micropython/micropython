@@ -121,9 +121,11 @@ static void vfs_init(void) {
 #endif // MICROPY_VFS
 
 int real_main(void) {
-    mp_stack_ctrl_init();
-    // Make MicroPython's stack limit somewhat smaller than full stack available
-    mp_stack_set_limit(CONFIG_MAIN_STACK_SIZE - 512);
+    volatile int stack_dummy;
+
+    #if MICROPY_PY_THREAD
+    mp_thread_init((void *)&stack_dummy, (CONFIG_MAIN_STACK_SIZE - 128) / sizeof(uintptr_t));
+    #endif
 
     init_zephyr();
     mp_hal_init();
@@ -136,6 +138,9 @@ int real_main(void) {
     #endif
 
 soft_reset:
+    mp_stack_set_top((void *)&stack_dummy);
+    // Make MicroPython's stack limit somewhat smaller than full stack available
+    mp_stack_set_limit(CONFIG_MAIN_STACK_SIZE - 512);
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
@@ -174,6 +179,12 @@ soft_reset:
     machine_pin_deinit();
     #endif
 
+    #if MICROPY_PY_THREAD
+    mp_thread_deinit();
+    gc_sweep_all();
+    gc_collect();
+    #endif
+
     goto soft_reset;
 
     return 0;
@@ -185,6 +196,9 @@ void gc_collect(void) {
     void *dummy;
     gc_collect_start();
     gc_collect_root(&dummy, ((mp_uint_t)MP_STATE_THREAD(stack_top) - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
+    #if MICROPY_PY_THREAD
+    mp_thread_gc_others();
+    #endif
     gc_collect_end();
 }
 
