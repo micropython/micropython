@@ -88,6 +88,7 @@ static inline void mp_sched_run_pending(void) {
 
     #if MICROPY_SCHEDULER_STATIC_NODES
     // Run all pending C callbacks.
+    mp_sched_node_t *orig_tail = MP_STATE_VM(sched_tail);
     while (MP_STATE_VM(sched_head) != NULL) {
         mp_sched_node_t *node = MP_STATE_VM(sched_head);
         MP_STATE_VM(sched_head) = node->next;
@@ -99,6 +100,10 @@ static inline void mp_sched_run_pending(void) {
         MICROPY_END_ATOMIC_SECTION(atomic_state);
         callback(node);
         atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+        if (MP_STATE_VM(sched_head) == orig_tail) {
+            // Don't execute anything that was queued while we were running
+            break;
+        }
     }
     #endif
 

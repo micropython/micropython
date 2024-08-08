@@ -24,11 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
+#include "mp_usbd.h"
 
 #if MICROPY_HW_ENABLE_USBDEV
-
-#include "mp_usbd.h"
 
 #ifndef NO_QSTR
 #include "device/dcd.h"
@@ -37,7 +35,11 @@
 #if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
 void mp_usbd_task(void) {
-    tud_task_ext(0, false);
+    if (MICROPY_HW_USBD_TASK_CAN_RUN()) {
+        tud_task_ext(0, false);
+    } else {
+        mp_usbd_schedule_task();
+    }
 }
 
 void mp_usbd_task_callback(mp_sched_node_t *node) {

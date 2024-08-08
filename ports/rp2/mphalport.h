@@ -68,6 +68,11 @@
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
 
+#if MICROPY_PY_THREAD
+// Only run the TinyUSB task on CPU 0 to avoid data races
+#define MICROPY_HW_USBD_TASK_CAN_RUN() (get_core_num() == 0)
+#endif
+
 // Port-specific function to create a wakeup interrupt after timeout_ms and enter WFE
 void mp_wfe_or_timeout(uint32_t timeout_ms);
 

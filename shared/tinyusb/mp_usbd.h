@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_H
 #define MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_H
 
-#include "py/mpconfig.h"
+#include "py/mphal.h"
 
 #if MICROPY_HW_ENABLE_USBDEV
 
@@ -66,6 +66,11 @@ extern const tusb_desc_device_t mp_usbd_builtin_desc_dev;
 extern const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN];
 
 void mp_usbd_task_callback(mp_sched_node_t *node);
+
+#ifndef MICROPY_HW_USBD_TASK_CAN_RUN
+// Redefine this macro on ports where the TinyUSB task can't always execute
+#define MICROPY_HW_USBD_TASK_CAN_RUN() (1)
+#endif
 
 #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 void mp_usbd_deinit(void);
