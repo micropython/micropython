@@ -344,24 +344,41 @@ static mp_obj_t ssl_context_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) 
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_set_ciphers_obj, ssl_context_set_ciphers);
 
+// Given a string-like object, return a ASN.1 container buffer (PEM or DER) and its
+// correct length. Result is not necessarily a C string.
+//
+// Starting with mbedTLS 3.5, DER formatted keys must consume the entire keylen
+// argument (no trailing bytes) or parsing fails. However, PEM formatted keys
+// must be submitted with a terminating NUL byte included in the keylen...
+static const byte *asn1_get_data(mp_obj_t obj, size_t *out_len) {
+    size_t len;
+    const char *str = mp_obj_str_get_data(obj, &len);
+    #if defined(MBEDTLS_PEM_PARSE_C)
+    // This is the heuristic for PEM format used by mbedtls_pk_load_file()...
+    if (strstr(str, "-----BEGIN ") != NULL) {
+        len++;
+    }
+    #endif
+    *out_len = len;
+    return (const byte *)str;
+}
+
 static void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, mp_obj_t cert_obj) {
     size_t key_len;
-    const byte *key = (const byte *)mp_obj_str_get_data(key_obj, &key_len);
-    // len should include terminating null
     int ret;
+    const byte *key = asn1_get_data(key_obj, &key_len);
     #if MBEDTLS_VERSION_NUMBER >= 0x03000000
-    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len + 1, NULL, 0, mbedtls_ctr_drbg_random, &self->ctr_drbg);
+    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0, mbedtls_ctr_drbg_random, &self->ctr_drbg);
     #else
-    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len + 1, NULL, 0);
+    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0);
     #endif
     if (ret != 0) {
         mbedtls_raise_error(MBEDTLS_ERR_PK_BAD_INPUT_DATA); // use general error for all key errors
     }
 
     size_t cert_len;
-    const byte *cert = (const byte *)mp_obj_str_get_data(cert_obj, &cert_len);
-    // len should include terminating null
-    ret = mbedtls_x509_crt_parse(&self->cert, cert, cert_len + 1);
+    const byte *cert = asn1_get_data(cert_obj, &cert_len);
+    ret = mbedtls_x509_crt_parse(&self->cert, cert, cert_len);
     if (ret != 0) {
         mbedtls_raise_error(MBEDTLS_ERR_X509_BAD_INPUT_DATA); // use general error for all cert errors
     }
@@ -382,9 +399,8 @@ static MP_DEFINE_CONST_FUN_OBJ_3(ssl_context_load_cert_chain_obj, ssl_context_lo
 
 static void ssl_context_load_cadata(mp_obj_ssl_context_t *self, mp_obj_t cadata_obj) {
     size_t cacert_len;
-    const byte *cacert = (const byte *)mp_obj_str_get_data(cadata_obj, &cacert_len);
-    // len should include terminating null
-    int ret = mbedtls_x509_crt_parse(&self->cacert, cacert, cacert_len + 1);
+    const byte *cacert = asn1_get_data(cadata_obj, &cacert_len);
+    int ret = mbedtls_x509_crt_parse(&self->cacert, cacert, cacert_len);
     if (ret != 0) {
         mbedtls_raise_error(MBEDTLS_ERR_X509_BAD_INPUT_DATA); // use general error for all cert errors
     }

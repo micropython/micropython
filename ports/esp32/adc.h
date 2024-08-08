@@ -30,6 +30,7 @@
 
 #include "py/runtime.h"
 #include "esp_adc_cal.h"
+#include "esp_adc/adc_cali_scheme.h"
 
 #define ADC_ATTEN_MAX SOC_ADC_ATTEN_NUM
 
@@ -38,7 +39,7 @@ typedef struct _machine_adc_block_obj_t {
     adc_unit_t unit_id;
     mp_int_t bits;
     adc_bits_width_t width;
-    esp_adc_cal_characteristics_t *characteristics[ADC_ATTEN_MAX];
+    adc_cali_handle_t handle[ADC_ATTEN_MAX];
 } machine_adc_block_obj_t;
 
 typedef struct _machine_adc_obj_t {

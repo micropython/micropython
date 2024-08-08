@@ -99,6 +99,10 @@ CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-4MiB.csv"
 # To reduce iRAM usage
 CONFIG_ESP32_WIFI_IRAM_OPT=n
 CONFIG_ESP32_WIFI_RX_IRAM_OPT=n
+CONFIG_SPI_MASTER_ISR_IN_IRAM=n
+CONFIG_SPI_SLAVE_ISR_IN_IRAM=n
+CONFIG_ESP_EVENT_POST_FROM_IRAM_ISR=n
+CONFIG_PERIPH_CTRL_FUNC_IN_IRAM=n
 
 # Legacy ADC Calibration Configuration
 # Only on: ESP32
@@ -117,3 +121,10 @@ CONFIG_ETH_USE_SPI_ETHERNET=y
 CONFIG_ETH_SPI_ETHERNET_W5500=y
 CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL=y
 CONFIG_ETH_SPI_ETHERNET_DM9051=y
+
+# Using newlib "nano" formatting saves size on SoCs where "nano" formatting
+# functions are in ROM. Note some newer chips (c2,c6) have "full" newlib
+# formatting in ROM instead and should override this, check
+# ESP_ROM_HAS_NEWLIB_NANO_FORMAT.
+CONFIG_NEWLIB_NANO_FORMAT=y
+

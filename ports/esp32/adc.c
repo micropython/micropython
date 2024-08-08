@@ -28,6 +28,7 @@
 #include "py/mphal.h"
 #include "adc.h"
 #include "driver/adc.h"
+#include "esp_adc/adc_cali_scheme.h"
 
 #define DEFAULT_VREF 1100
 
@@ -62,31 +63,48 @@ void madcblock_bits_helper(machine_adc_block_obj_t *self, mp_int_t bits) {
     if (self->unit_id == ADC_UNIT_1) {
         adc1_config_width(self->width);
     }
-    for (adc_atten_t atten = ADC_ATTEN_DB_0; atten < ADC_ATTEN_MAX; atten++) {
-        if (self->characteristics[atten] != NULL) {
-            esp_adc_cal_characterize(self->unit_id, atten, self->width, DEFAULT_VREF, self->characteristics[atten]);
-        }
-    }
 }
 
 mp_int_t madcblock_read_helper(machine_adc_block_obj_t *self, adc_channel_t channel_id) {
-    int raw;
+    int raw = 0;
     if (self->unit_id == ADC_UNIT_1) {
         raw = adc1_get_raw(channel_id);
     } else {
+        #if (SOC_ADC_PERIPH_NUM >= 2)
         check_esp_err(adc2_get_raw(channel_id, self->width, &raw));
+        #endif
     }
     return raw;
 }
 
+static esp_err_t ensure_adc_calibration(machine_adc_block_obj_t *self, adc_atten_t atten) {
+    if (self->handle[atten] != NULL) {
+        return ESP_OK;
+    }
+
+    #if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
+    adc_cali_curve_fitting_config_t cali_config = {
+        .unit_id = self->unit_id,
+        .atten = atten,
+        .bitwidth = self->width,
+    };
+    return adc_cali_create_scheme_curve_fitting(&cali_config, &self->handle[atten]);
+    #else
+    adc_cali_line_fitting_config_t cali_config = {
+        .unit_id = self->unit_id,
+        .atten = atten,
+        .bitwidth = self->width,
+    };
+    return adc_cali_create_scheme_line_fitting(&cali_config, &self->handle[atten]);
+    #endif
+}
+
 mp_int_t madcblock_read_uv_helper(machine_adc_block_obj_t *self, adc_channel_t channel_id, adc_atten_t atten) {
     int raw = madcblock_read_helper(self, channel_id);
-    esp_adc_cal_characteristics_t *adc_chars = self->characteristics[atten];
-    if (adc_chars == NULL) {
-        adc_chars = malloc(sizeof(esp_adc_cal_characteristics_t));
-        esp_adc_cal_characterize(self->unit_id, atten, self->width, DEFAULT_VREF, adc_chars);
-        self->characteristics[atten] = adc_chars;
-    }
-    mp_int_t uv = esp_adc_cal_raw_to_voltage(raw, adc_chars) * 1000;
-    return uv;
+    int uv;
+
+    check_esp_err(ensure_adc_calibration(self, atten));
+    check_esp_err(adc_cali_raw_to_voltage(self->handle[atten], raw, &uv));
+
+    return (mp_int_t)uv * 1000;
 }
