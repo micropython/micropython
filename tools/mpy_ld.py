@@ -660,7 +660,10 @@ def do_relocation_text(env, text_addr, r):
             log_name = s.section.name
         else:
             log_name = s.name
-    log(LOG_LEVEL_3, "  {:08x} {} -> {:08x}".format(r_offset, log_name, addr))
+    if addr is not None:
+        log(LOG_LEVEL_3, "  {:08x} {} -> {:08x}".format(r_offset, log_name, addr))
+    else:
+        log(LOG_LEVEL_3, "  {:08x} {}".format(r_offset, log_name))
 
 
 def do_relocation_data(env, text_addr, r):
@@ -726,6 +729,7 @@ def do_relocation_data(env, text_addr, r):
 def process_riscv32_relocation(env, text_addr, r):
     assert env.arch.name == "EM_RISCV"
 
+    addr = None
     s = r.sym
 
     # TODO: Use the resolved relocation if present?
@@ -742,14 +746,14 @@ def process_riscv32_relocation(env, text_addr, r):
         # Upper part of a relocation pointing to GOT
         got_entry = env.got_entries[s.name]
         addr = env.got_section.addr + got_entry.offset
-        reloc = addr - r_offset + r_addend
+        reloc = addr + r_addend - r_offset
         r.computed_reloc = reloc
         reloc_type = "riscv_hi20"
 
     elif r_info_type == R_RISCV_PCREL_HI20:
         # Upper part of a PC-relative address relocation
         addr = s.section.addr + s["st_value"]
-        reloc = addr - r_offset + r_addend
+        reloc = addr + r_addend - r_offset
         r.computed_reloc = reloc
         reloc_type = "riscv_hi20"
 
@@ -795,14 +799,12 @@ def process_riscv32_relocation(env, text_addr, r):
 
     elif r_info_type == R_RISCV_ADD32:
         # Positive bias to a 32-bits literal
-        addr = s.section.addr + s["st_value"]
-        value = addr + r_addend
+        value = s["st_value"] + r_addend
         reloc_type = "riscv_bias32"
 
     elif r_info_type == R_RISCV_SUB32:
         # Negative bias to a 32-bits literal
-        addr = s.section.addr + s["st_value"]
-        value = -(addr + r_addend)
+        value = -(s["st_value"] + r_addend)
         reloc_type = "riscv_bias32"
 
     else:
@@ -902,6 +904,8 @@ def process_riscv32_relocation(env, text_addr, r):
         )
     elif reloc_type == "riscv_bias32":
         # Bias a 32-bits literal
+        if value < 0:
+            value = 0x100000000 + value
         (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
         struct.pack_into("<I", env.full_text, r_offset, (existing + value) & 0xFFFFFFFF)
     else:
