@@ -37,6 +37,14 @@ extern pyexec_mode_kind_t pyexec_mode_kind;
 
 #define PYEXEC_FORCED_EXIT (0x100)
 
+#if MICROPY_ENABLE_EXIT_CODE_HANDLING
+#define PYEXEC_NORMAL_EXIT_0 (0)
+#define PYEXEC_UNHANDLED_EXCEPTION (1)
+#define PYEXEC_KEYBOARD_INTERRUPT (128 + 2) // same as SIG INT exit code
+#define PYEXEC_ABORT (128 + 9) // same as SIG KILL exit code
+#endif
+
+
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);
 int pyexec_file(const char *filename);
