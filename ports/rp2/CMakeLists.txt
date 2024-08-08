@@ -93,6 +93,14 @@ include(${MICROPY_DIR}/py/usermod.cmake)
 
 add_executable(${MICROPY_TARGET})
 
+# Provide a C-level definitions of PICO_ARM.
+# (The pico-sdk already defines PICO_RISCV when it's enabled.)
+if(PICO_ARM)
+    target_compile_definitions(pico_platform_headers INTERFACE
+        PICO_ARM=1
+    )
+endif()
+
 set(MICROPY_QSTRDEFS_PORT
     ${MICROPY_PORT_DIR}/qstrdefsport.h
 )
@@ -108,7 +116,6 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/shared/netutils/netutils.c
     ${MICROPY_DIR}/shared/netutils/trace.c
     ${MICROPY_DIR}/shared/readline/readline.c
-    ${MICROPY_DIR}/shared/runtime/gchelper_thumb1.s
     ${MICROPY_DIR}/shared/runtime/gchelper_native.c
     ${MICROPY_DIR}/shared/runtime/interrupt_char.c
     ${MICROPY_DIR}/shared/runtime/mpirq.c
@@ -122,6 +129,16 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/shared/tinyusb/mp_usbd_descriptor.c
     ${MICROPY_DIR}/shared/tinyusb/mp_usbd_runtime.c
 )
+
+if(PICO_ARM)
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/shared/runtime/gchelper_thumb1.s
+    )
+elseif(PICO_RISCV)
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/shared/runtime/gchelper_rv32i.s
+    )
+endif()
 
 set(MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/bus/softspi.c
@@ -178,7 +195,6 @@ set(MICROPY_SOURCE_QSTR
 )
 
 set(PICO_SDK_COMPONENTS
-    cmsis_core
     hardware_adc
     hardware_base
     hardware_boot_lock
@@ -222,6 +238,17 @@ set(PICO_SDK_COMPONENTS
     tinyusb_device
 )
 
+if(PICO_ARM)
+    list(APPEND PICO_SDK_COMPONENTS
+        cmsis_core
+    )
+elseif(PICO_RISCV)
+    list(APPEND PICO_SDK_COMPONENTS
+        hardware_hazard3
+        hardware_riscv
+    )
+endif()
+
 # Use our custom pico_float_micropython float implementation.  This is needed for two reasons:
 # - to fix inf handling in pico-sdk's __wrap___aeabi_fadd();
 # - so we can use our own libm functions, to fix inaccuracies in the pico-sdk versions.
@@ -243,7 +270,7 @@ if(PICO_RP2040)
         ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_init_rom_rp2040.c
         ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_v1_rom_shim_rp2040.S
     )
-elseif(PICO_RP2350)
+elseif(PICO_RP2350 AND PICO_ARM)
     target_sources(pico_float_micropython INTERFACE
         ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_aeabi_dcp.S
         ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_conv_m33.S
@@ -491,6 +518,12 @@ target_link_options(${MICROPY_TARGET} PRIVATE
     -Wl,--wrap=runtime_init_clocks
 )
 
+if(PICO_RP2350)
+    target_link_options(${MICROPY_TARGET} PRIVATE
+        -Wl,--defsym=__micropy_extra_stack__=4096
+    )
+endif()
+
 # Apply optimisations to performance-critical source code.
 set_source_files_properties(
     ${MICROPY_PY_DIR}/map.c
@@ -563,7 +596,7 @@ endif()
 
 pico_add_extra_outputs(${MICROPY_TARGET})
 
-pico_find_compiler(PICO_COMPILER_SIZE ${PICO_GCC_TRIPLE}-size)
+pico_find_compiler_with_triples(PICO_COMPILER_SIZE "${PICO_GCC_TRIPLE}" size)
 
 add_custom_command(TARGET ${MICROPY_TARGET}
     POST_BUILD

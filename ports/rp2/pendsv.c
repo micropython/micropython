@@ -31,10 +31,10 @@
 
 #if PICO_RP2040
 #include "RP2040.h"
-#elif PICO_RP2350
+#elif PICO_RP2350 && PICO_ARM
 #include "RP2350.h"
-#else
-#error Unknown chip
+#elif PICO_RISCV
+#include "pico/aon_timer.h"
 #endif
 
 #if MICROPY_PY_NETWORK_CYW43
@@ -42,6 +42,8 @@
 #endif
 
 static pendsv_dispatch_t pendsv_dispatch_table[PENDSV_DISPATCH_NUM_SLOTS];
+
+void PendSV_Handler(void);
 
 // Using the nowait variant here as softtimer updates PendSV from the loop of mp_wfe_or_timeout(),
 // where we don't want the CPU event bit to be set.
@@ -75,10 +77,16 @@ void pendsv_resume(void) {
 void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
     pendsv_dispatch_table[slot] = f;
     if (pendsv_mutex.mutex.enter_count == 0) {
+        #if PICO_ARM
         // There is a race here where other core calls pendsv_suspend() before
         // ISR can execute, but dispatch will happen later when other core
         // calls pendsv_resume().
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+        #elif PICO_RISCV
+        struct timespec ts;
+        aon_timer_get_time(&ts);
+        aon_timer_enable_alarm(&ts, PendSV_Handler, false);
+        #endif
     } else {
         #if MICROPY_PY_NETWORK_CYW43
         CYW43_STAT_INC(PENDSV_DISABLED_COUNT);

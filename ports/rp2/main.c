@@ -60,10 +60,8 @@
 #endif
 #if PICO_RP2040
 #include "RP2040.h" // cmsis, for PendSV_IRQn and SCB/SCB_SCR_SEVONPEND_Msk
-#elif PICO_RP2350
+#elif PICO_RP2350 && PICO_ARM
 #include "RP2350.h" // cmsis, for PendSV_IRQn and SCB/SCB_SCR_SEVONPEND_Msk
-#else
-#error Unknown processor
 #endif
 #include "pico/aon_timer.h"
 #include "shared/timeutils/timeutils.h"
@@ -82,7 +80,9 @@ bi_decl(bi_program_feature_group_with_flags(BINARY_INFO_TAG_MICROPYTHON,
 
 int main(int argc, char **argv) {
     // This is a tickless port, interrupts should always trigger SEV.
+    #if PICO_ARM
     SCB->SCR |= SCB_SCR_SEVONPEND_Msk;
+    #endif
 
     pendsv_init();
     soft_timer_init();

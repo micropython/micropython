@@ -78,10 +78,16 @@
 
 // MicroPython emitters
 #define MICROPY_PERSISTENT_CODE_LOAD            (1)
+#if PICO_ARM
 #define MICROPY_EMIT_THUMB                      (1)
-#define MICROPY_EMIT_THUMB_ARMV7M               (0)
 #define MICROPY_EMIT_INLINE_THUMB               (1)
+#if PICO_RP2040
+#define MICROPY_EMIT_THUMB_ARMV7M               (0)
 #define MICROPY_EMIT_INLINE_THUMB_FLOAT         (0)
+#endif
+#elif PICO_RISCV
+#define MICROPY_EMIT_RV32                       (1)
+#endif
 
 // Optimisations
 #define MICROPY_OPT_COMPUTED_GOTO               (1)
