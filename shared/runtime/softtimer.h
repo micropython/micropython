@@ -44,6 +44,7 @@ typedef struct _soft_timer_entry_t {
         void (*c_callback)(struct _soft_timer_entry_t *);
         mp_obj_t py_callback;
     };
+    void *context;
 } soft_timer_entry_t;
 
 extern volatile uint32_t soft_timer_next;

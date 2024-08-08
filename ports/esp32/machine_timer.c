@@ -38,6 +38,7 @@
 #include "hal/timer_hal.h"
 #include "hal/timer_ll.h"
 #include "soc/timer_periph.h"
+#include "machine_timer.h"
 
 #define TIMER_DIVIDER  8
 
@@ -46,27 +47,8 @@
 
 #define TIMER_FLAGS    0
 
-typedef struct _machine_timer_obj_t {
-    mp_obj_base_t base;
-
-    timer_hal_context_t hal_context;
-    mp_uint_t group;
-    mp_uint_t index;
-
-    mp_uint_t repeat;
-    // ESP32 timers are 64 or 54-bit
-    uint64_t period;
-
-    mp_obj_t callback;
-
-    intr_handle_t handle;
-
-    struct _machine_timer_obj_t *next;
-} machine_timer_obj_t;
-
 const mp_obj_type_t machine_timer_type;
 
-static void machine_timer_disable(machine_timer_obj_t *self);
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 
 void machine_timer_deinit_all(void) {
@@ -130,7 +112,33 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     return self;
 }
 
-static void machine_timer_disable(machine_timer_obj_t *self) {
+machine_timer_obj_t *machine_timer_create(mp_uint_t timer) {
+
+    machine_timer_obj_t *self = NULL;
+    mp_uint_t group = (timer >> 1) & 1;
+    mp_uint_t index = timer & 1;
+
+    // Check whether the timer is already initialized, if so use it
+    for (machine_timer_obj_t *t = MP_STATE_PORT(machine_timer_obj_head); t; t = t->next) {
+        if (t->group == group && t->index == index) {
+            self = t;
+            break;
+        }
+    }
+    // The timer does not exist, create it.
+    if (self == NULL) {
+        self = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
+        self->group = group;
+        self->index = index;
+
+        // Add the timer to the linked-list of timers
+        self->next = MP_STATE_PORT(machine_timer_obj_head);
+        MP_STATE_PORT(machine_timer_obj_head) = self;
+    }
+    return self;
+}
+
+void machine_timer_disable(machine_timer_obj_t *self) {
     if (self->hal_context.dev != NULL) {
         // Disable the counter and alarm.
         timer_ll_enable_counter(self->hal_context.dev, self->index, false);
@@ -162,7 +170,7 @@ static void machine_timer_isr(void *self_in) {
     }
 }
 
-static void machine_timer_enable(machine_timer_obj_t *self) {
+void machine_timer_enable(machine_timer_obj_t *self, void (*timer_isr)) {
     // Initialise the timer.
     timer_hal_init(&self->hal_context, self->group, self->index);
     timer_ll_enable_counter(self->hal_context.dev, self->index, false);
@@ -176,7 +184,7 @@ static void machine_timer_enable(machine_timer_obj_t *self) {
     timer_ll_clear_intr_status(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index));
     ESP_ERROR_CHECK(
         esp_intr_alloc(timer_group_periph_signals.groups[self->group].timer_irq_id[self->index],
-            TIMER_FLAGS, machine_timer_isr, self, &self->handle)
+            TIMER_FLAGS, timer_isr, self, &self->handle)
         );
     timer_ll_enable_intr(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index), true);
 
@@ -234,7 +242,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     self->callback = args[ARG_callback].u_obj;
     self->handle = NULL;
 
-    machine_timer_enable(self);
+    machine_timer_enable(self, machine_timer_isr);
 
     return mp_const_none;
 }

@@ -17,6 +17,7 @@
 #define MICROPY_PY_MACHINE_I2C          (1)
 #define MICROPY_PY_MACHINE_ADC          (1)
 #define MICROPY_PY_MACHINE_TEMP         (1)
+#define MICROPY_PY_MACHINE_UART_IRQ     (1)
 
 #define MICROPY_HW_ENABLE_USBDEV        (1)
 #define MICROPY_HW_USB_CDC              (1)
