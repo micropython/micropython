@@ -225,6 +225,9 @@ static void __no_inline_not_in_flash_func(setup_psram)(void) {
         _psram_size *= 4;
     }
 
+    // Mark that we can write to PSRAM.
+    xip_ctrl_hw->ctrl |= XIP_CTRL_WRITABLE_M1_BITS;
+
     // Test write to the PSRAM.
     volatile uint32_t *psram_nocache = (volatile uint32_t *)0x15000000;
     psram_nocache[0] = 0x12345678;
@@ -233,9 +236,6 @@ static void __no_inline_not_in_flash_func(setup_psram)(void) {
         _psram_size = 0;
         return;
     }
-
-    // Mark that we can write to PSRAM.
-    xip_ctrl_hw->ctrl |= XIP_CTRL_WRITABLE_M1_BITS;
 }
 
 void port_heap_init(void) {
