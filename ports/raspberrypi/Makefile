@@ -51,11 +51,11 @@ SRC_CYW43 := \
 	lib/cyw43-driver/src/cyw43_lwip.c \
 
 PIOASM = $(BUILD)/pioasm/pioasm/pioasm
-.PHONY: PioasmBuild
-PioasmBuild: $(PIOASM)
+.PHONY: pioasmBuild
+pioasmBuild: $(PIOASM)
 $(PIOASM):
 	$(Q)cmake -S pioasm -B $(BUILD)/pioasm
-	$(Q)$(MAKE) -C $(BUILD)/pioasm PioasmBuild
+	$(Q)$(MAKE) -C $(BUILD)/pioasm pioasmBuild
 
 $(BUILD)/cyw43_bus_pio_spi.pio.h: sdk/src/rp2_common/pico_cyw43_driver/cyw43_bus_pio_spi.pio $(PIOASM)
 	$(Q)$(PIOASM) -o c-sdk $< $@
