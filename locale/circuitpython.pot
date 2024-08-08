@@ -154,7 +154,7 @@ msgstr ""
 msgid "%q length must be >= %d"
 msgstr ""
 
-#: py/objmodule.c py/runtime.c
+#: py/modsys.c py/objmodule.c py/runtime.c
 msgid "%q moved from %q to %q"
 msgstr ""
 
@@ -1184,8 +1184,7 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
-#: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c
-#: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2350.c py/argcheck.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid %q"
@@ -2337,6 +2336,7 @@ msgid "You pressed the SW38 button at start up."
 msgstr ""
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
+#: ports/espressif/boards/vidi_x/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
 msgstr ""
 
