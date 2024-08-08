@@ -156,6 +156,10 @@ static const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&mod_network_ipconfig_obj) },
     #endif
 
+    #if MICROPY_PY_NETWORK_PPP_LWIP
+    { MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&mp_network_ppp_lwip_type) },
+    #endif
+
     // Defined per port in mpconfigport.h
     #ifdef MICROPY_PORT_NETWORK_INTERFACES
     { MP_ROM_QSTR(MP_QSTR_route), MP_ROM_PTR(&network_route_obj) },

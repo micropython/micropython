@@ -35,6 +35,9 @@
 #define LWIP_DNS_SUPPORT_MDNS_QUERIES   1
 #define LWIP_MDNS_RESPONDER             1
 #define LWIP_IGMP                       1
+#define PPP_SUPPORT                     1
+#define PAP_SUPPORT                     1
+#define CHAP_SUPPORT                    1
 
 #define LWIP_NUM_NETIF_CLIENT_DATA      LWIP_MDNS_RESPONDER
 #define MEMP_NUM_UDP_PCB                (4 + LWIP_MDNS_RESPONDER)
@@ -76,5 +79,8 @@ extern uint32_t rng_get(void);
 #endif
 
 typedef uint32_t sys_prot_t;
+
+// needed for PPP
+#define sys_jiffies sys_now
 
 #endif // MICROPY_INCLUDED_STM32_LWIP_LWIPOPTS_H
