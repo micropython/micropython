@@ -125,6 +125,17 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     return did_write ? ret : 0;
 }
 
+#if PICO_RISCV
+__attribute__((naked)) mp_uint_t mp_hal_ticks_cpu(void) {
+    __asm volatile (
+        "li a0, 4\n" // mask value to uninhibit mcycle counter
+        "csrw mcountinhibit, a0\n" // uninhibit mcycle counter
+        "csrr a0, mcycle\n" // get mcycle counter
+        "ret\n"
+        );
+}
+#endif
+
 void mp_hal_delay_us(mp_uint_t us) {
     // Avoid calling sleep_us() and invoking the alarm pool by splitting long
     // sleeps into an optional longer sleep and a shorter busy-wait

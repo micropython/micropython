@@ -96,11 +96,15 @@ static inline mp_uint_t mp_hal_ticks_ms(void) {
     return to_ms_since_boot(get_absolute_time());
 }
 
+#if PICO_ARM
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
     // ticks_cpu() is defined as using the highest-resolution timing source
     // in the system. This is usually a CPU clock, but doesn't have to be.
     return time_us_32();
 }
+#elif PICO_RISCV
+mp_uint_t mp_hal_ticks_cpu(void);
+#endif
 
 static inline mp_uint_t mp_hal_get_cpu_freq(void) {
     return clock_get_hz(clk_sys);
