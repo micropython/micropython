@@ -19,7 +19,6 @@
 MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 512K
-    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 32K     /* sectors 0,1 */
     FLASH_APP (rx)  : ORIGIN = 0x08008000, LENGTH = 480K    /* sectors 2-7 */
     FLASH_EXT (rx)  : ORIGIN = 0x90000000, LENGTH = 2048K   /* external QSPI */
     RAM (rwx)       : ORIGIN = 0x20000000, LENGTH = 256K    /* DTCM+SRAM1+SRAM2 */

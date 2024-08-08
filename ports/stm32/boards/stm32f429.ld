@@ -6,7 +6,7 @@
 MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 2048K /* entire flash */
-    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 16K /* sector 0, 16 KiB */
+    FLASH_START (rx): ORIGIN = 0x08000000, LENGTH = 16K /* sector 0, 16 KiB */
     FLASH_FS (rx)   : ORIGIN = 0x08004000, LENGTH = 112K /* sectors 1-4: 3*16K+64K */
     FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 896K /* sectors 5-11 are 128K */
     CCMRAM (xrw)    : ORIGIN = 0x10000000, LENGTH = 64K
