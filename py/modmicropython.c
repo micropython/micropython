@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
+#include "py/ringbuf.h"
 
 #if MICROPY_PY_MICROPYTHON
 
@@ -202,6 +203,9 @@ static const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     #endif
     #if MICROPY_ENABLE_SCHEDULER
     { MP_ROM_QSTR(MP_QSTR_schedule), MP_ROM_PTR(&mp_micropython_schedule_obj) },
+    #endif
+    #if MICROPY_PY_MICROPYTHON_RINGBUFFER
+    { MP_ROM_QSTR(MP_QSTR_ringbuffer), MP_ROM_PTR(&mp_type_micropython_ringbuffer) },
     #endif
 };
 

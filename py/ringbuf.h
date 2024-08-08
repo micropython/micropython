@@ -28,9 +28,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "py/mpconfig.h"
 
-#ifdef _MSC_VER
-#include "py/mpconfig.h" // For inline.
+#if MICROPY_PY_MICROPYTHON_RINGBUFFER
+#include "py/obj.h"
 #endif
 
 typedef struct _ringbuf_t {
@@ -98,5 +99,9 @@ int ringbuf_put16(ringbuf_t *r, uint16_t v);
 
 int ringbuf_get_bytes(ringbuf_t *r, uint8_t *data, size_t data_len);
 int ringbuf_put_bytes(ringbuf_t *r, const uint8_t *data, size_t data_len);
+
+#if MICROPY_PY_MICROPYTHON_RINGBUFFER
+extern const mp_obj_type_t mp_type_micropython_ringbuffer;
+#endif
 
 #endif // MICROPY_INCLUDED_PY_RINGBUF_H
