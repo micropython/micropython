@@ -132,7 +132,7 @@ function ci_esp32_idf_setup {
 function ci_esp32_build_common {
     source esp-idf/export.sh
     make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/esp32 submodules
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2 submodules
 }
 
 function ci_esp32_build_cmod_spiram_s2 {

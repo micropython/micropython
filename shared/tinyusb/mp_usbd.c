@@ -49,12 +49,17 @@ void mp_usbd_task_callback(mp_sched_node_t *node) {
 
 extern void __real_dcd_event_handler(dcd_event_t const *event, bool in_isr);
 
+// Provide stub for ports that don't have/need the wake main task function.
+void __attribute((weak)) mp_hal_wake_main_task_from_isr(void) {
+}
+
 // If -Wl,--wrap=dcd_event_handler is passed to the linker, then this wrapper
 // will be called and allows MicroPython to schedule the TinyUSB task when
 // dcd_event_handler() is called from an ISR.
 TU_ATTR_FAST_FUNC void __wrap_dcd_event_handler(dcd_event_t const *event, bool in_isr) {
     __real_dcd_event_handler(event, in_isr);
     mp_usbd_schedule_task();
+    mp_hal_wake_main_task_from_isr();
 }
 
 TU_ATTR_FAST_FUNC void mp_usbd_schedule_task(void) {
