@@ -166,7 +166,12 @@ static void machine_timer_enable(machine_timer_obj_t *self) {
     // Initialise the timer.
     timer_hal_init(&self->hal_context, self->group, self->index);
     timer_ll_enable_counter(self->hal_context.dev, self->index, false);
+#if CONFIG_IDF_TARGET_ESP32C2
+    // ESP32C2 Only supports clock source GPTIMER_CLK_SRC_PLL_F40M and GPTIMER_CLK_SRC_XTAL
+    timer_ll_set_clock_source(self->hal_context.dev, self->index, GPTIMER_CLK_SRC_XTAL);
+#else
     timer_ll_set_clock_source(self->hal_context.dev, self->index, GPTIMER_CLK_SRC_APB);
+#endif
     timer_ll_set_clock_prescale(self->hal_context.dev, self->index, TIMER_DIVIDER);
     timer_hal_set_counter_value(&self->hal_context, 0);
     timer_ll_set_count_direction(self->hal_context.dev, self->index, GPTIMER_COUNT_UP);

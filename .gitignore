@@ -23,3 +23,9 @@ user.props
 
 # MacOS desktop metadata files
 .DS_Store
+
+# Clangd cache
+.cache/
+
+# VSCode Settings
+.vscode/
