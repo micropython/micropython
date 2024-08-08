@@ -99,6 +99,31 @@ CROSS = xtensa-esp32-elf-
 CFLAGS +=
 MICROPY_FLOAT_IMPL ?= float
 
+else ifeq ($(ARCH),rv32imc)
+
+# rv32imc
+CROSS = riscv64-unknown-elf-
+CFLAGS += -mabi=ilp32
+# If Picolibc is available then select it explicitly.  Ubuntu 22.04 ships its
+# bare metal RISC-V toolchain with Picolibc rather than Newlib, and the default
+# is "nosys" so a value must be provided.  To avoid having per-distro
+# workarounds, always select Picolibc if available.
+PICOLIBC_SPECS = $(shell $(CROSS)gcc --print-file-name=picolibc.specs)
+ifneq ($(PICOLIBC_SPECS),picolibc.specs)
+CFLAGS += --specs=$(PICOLIBC_SPECS)
+endif
+
+# GCC 10 and lower do not recognise the Zicsr extension in the
+# architecture name.  "Make" unfortunately does not provide any simple way
+# to perform numeric comparisons, so to keep things simple we assume that
+# GCC is at least version 10 for the time being.
+ifeq ($(word 1, $(subst ., , $(shell $(CROSS)gcc -dumpversion))),10)
+CFLAGS += -march=rv32imac
+else
+CFLAGS += -march=rv32imac_zicsr
+endif
+MICROPY_FLOAT_IMPL ?= none
+
 else
 $(error architecture '$(ARCH)' not supported)
 endif
