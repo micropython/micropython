@@ -1234,6 +1234,23 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         }
     }
 
+    #if MICROPY_PY_DESCRIPTORS
+    // call __set_name__ on all entries (especially descriptors)
+    for (size_t i = 0; i < locals_map->alloc; i++) {
+        if (mp_map_slot_is_filled(locals_map, i)) {
+            elem = &(locals_map->table[i]);
+
+            mp_obj_t set_name_method[4];
+            mp_load_method_maybe(elem->value, MP_QSTR___set_name__, set_name_method);
+            if (set_name_method[1] != MP_OBJ_NULL) {
+                set_name_method[2] = MP_OBJ_FROM_PTR(o);
+                set_name_method[3] = elem->key;
+                mp_call_method_n_kw(2, 0, set_name_method);
+            }
+        }
+    }
+    #endif
+
     return MP_OBJ_FROM_PTR(o);
 }
 
