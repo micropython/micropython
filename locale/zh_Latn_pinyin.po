@@ -123,7 +123,8 @@ msgstr "%q zhōng de %q bì xū shì %q lèi xíng, ér bù shì %q"
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/usb_host/Port.c
-#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2350.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/usb_host/Port.c
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -167,7 +168,7 @@ msgstr "%q chángdù bìxū <= %d"
 msgid "%q length must be >= %d"
 msgstr "%q chángdù bìxū >= %d"
 
-#: py/objmodule.c py/runtime.c
+#: py/modsys.c py/objmodule.c py/runtime.c
 msgid "%q moved from %q to %q"
 msgstr "%q cóng %q yídòngdào %q"
 
@@ -524,7 +525,7 @@ msgid "All event channels in use"
 msgstr "suǒyǒu shìjiàn píndào dōu zài shǐyòng zhōng"
 
 #: ports/raspberrypi/common-hal/floppyio/__init__.c
-#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/usb_host/Port.c
 msgid "All state machines in use"
@@ -534,7 +535,7 @@ msgstr "suǒyǒu zhuàngtàijī dōu zài shǐyòng zhōng"
 msgid "All sync event channels in use"
 msgstr "suǒyǒu tóngbù shìjiàn píndào dōu zài shǐyòng zhōng"
 
-#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c
 msgid "All timers for this pin are in use"
 msgstr "cǐ yǐnjiǎo de suǒyǒu jìshíqì dōu zài shǐyòng zhōng"
 
@@ -1193,7 +1194,9 @@ msgstr "nèi bù cuò wù #%d"
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2350.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Internal resource(s) in use"
 msgstr "zhèngzài shǐyòng de nèibù zīyuán"
 
@@ -1214,11 +1217,15 @@ msgstr "bèi shūchū gōngnéng zhōngduàn"
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
-#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid %q"
 msgstr "wú xiào %q"
+
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2350.c
+msgid "Invalid %q and %q"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 #: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
@@ -2381,6 +2388,7 @@ msgid "You pressed the SW38 button at start up."
 msgstr "nín zài qǐ dòng shí àn xià le SW38 àn niǔ."
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
+#: ports/espressif/boards/vidi_x/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
 msgstr "nín zài qǐ dòng shí àn xià le yīn liàng àn niǔ."
 
