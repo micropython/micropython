@@ -30,7 +30,7 @@
 #include "shared-module/displayio/__init__.h"
 
 // | class AuroraMemoryFramebuffer:
-// |     """A framebuffer for Pervasive Displays Aurora E-paper display. These displays are 2 color only.
+// |     """A framebuffer for Pervasive Displays Aurora E-paper displays. These displays are 2 color only.
 // |
 // |     This initializes a display and connects it to CircuitPython.
 // |
