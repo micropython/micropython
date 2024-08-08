@@ -12,8 +12,14 @@
 #include "supervisor/usb.h"
 
 #include "src/common/pico_time/include/pico/time.h"
+#ifdef PICO_RP2040
 #include "src/rp2040/hardware_structs/include/hardware/structs/mpu.h"
-#include "src/rp2_common/cmsis/stub/CMSIS/Device/RaspberryPi/RP2040/Include/RP2040.h"
+#include "src/rp2_common/cmsis/stub/CMSIS/Device/RP2040/Include/RP2040.h"
+#endif
+#ifdef PICO_RP2350
+#include "src/rp2350/hardware_structs/include/hardware/structs/mpu.h"
+#include "src/rp2_common/cmsis/stub/CMSIS/Device/RP2350/Include/RP2350.h"
+#endif
 #include "src/rp2_common/hardware_dma/include/hardware/dma.h"
 #include "src/rp2_common/pico_multicore/include/pico/multicore.h"
 
@@ -39,13 +45,21 @@ static void __not_in_flash_func(core1_main)(void) {
 
     // Turn off flash access. After this, it will hard fault. Better than messing
     // up CIRCUITPY.
+    #if __CORTEX_M == 0
     MPU->CTRL = MPU_CTRL_PRIVDEFENA_Msk | MPU_CTRL_ENABLE_Msk;
     MPU->RNR = 6; // 7 is used by pico-sdk stack protection.
-    MPU->RBAR = XIP_MAIN_BASE | MPU_RBAR_VALID_Msk;
+    MPU->RBAR = XIP_BASE | MPU_RBAR_VALID_Msk;
     MPU->RASR = MPU_RASR_XN_Msk | // Set execute never and everything else is restricted.
         MPU_RASR_ENABLE_Msk |
         (0x1b << MPU_RASR_SIZE_Pos);         // Size is 0x10000000 which masks up to SRAM region.
     MPU->RNR = 7;
+    #endif
+    #if __CORTEX_M == 33
+    MPU->CTRL = MPU_CTRL_PRIVDEFENA_Msk | MPU_CTRL_ENABLE_Msk;
+    MPU->RNR = 6; // 7 is used by pico-sdk stack protection.
+    MPU->RBAR = XIP_BASE | MPU_RBAR_XN_Msk;
+    MPU->RLAR = XIP_SRAM_BASE | MPU_RLAR_EN_Msk;
+    #endif
 
     _core1_ready = true;
 

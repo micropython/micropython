@@ -255,10 +255,13 @@ jobs:
         wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-mingw-w64-i686-arm-none-eabi.zip
         unzip -q -d /tmp gcc-arm.zip
         tar -C /tmp/arm-gnu-toolchain* -cf - . | tar -C /usr/local -xf -
-        pip install wheel
-        # requirements_dev.txt doesn't install on windows. (with msys2 python)
+        # We could use a venv instead, but that requires entering the venv on each run step
+        # that runs in its own shell. There are some actions that help with that, but not for msys2
+        # that I can find. (dhalbert)
+        pip install --break-system-packages wheel
+        # requirements-dev.txt doesn't install on windows. (with msys2 python)
         # instead, pick a subset for what we want to do
-        pip install cascadetoml jinja2 typer click intelhex
+        pip install --break-system-packages cascadetoml jinja2 typer click intelhex
         # check that installed packages work....?
         which python; python --version; python -c "import cascadetoml"
         which python3; python3 --version; python3 -c "import cascadetoml"

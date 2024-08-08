@@ -68,8 +68,8 @@
 	url = https://github.com/adafruit/nrfx.git
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
-	url = https://github.com/hathach/tinyusb.git
-	branch = master
+	url = https://github.com/tannewt/tinyusb.git
+	branch = esp_fix
 	fetchRecurseSubmodules = false
 [submodule "tools/huffman"]
 	path = tools/huffman
@@ -344,8 +344,8 @@
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Wave.git
 [submodule "ports/raspberrypi/lib/Pico-PIO-USB"]
 	path = ports/raspberrypi/lib/Pico-PIO-USB
-	url = https://github.com/sekigon-gonnoc/Pico-PIO-USB.git
-	branch = main
+	url = https://github.com/adafruit/Pico-PIO-USB.git
+	branch = sdk2_fix
 [submodule "lib/micropython-lib"]
 	path = lib/micropython-lib
 	url = https://github.com/micropython/micropython-lib.git

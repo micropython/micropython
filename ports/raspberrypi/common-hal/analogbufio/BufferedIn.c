@@ -13,7 +13,7 @@
 #include "py/runtime.h"
 #include "src/rp2_common/hardware_adc/include/hardware/adc.h"
 #include "src/rp2_common/hardware_dma/include/hardware/dma.h"
-#include "src/common/pico_stdlib/include/pico/stdlib.h"
+#include "src/common/pico_stdlib_headers/include/pico/stdlib.h"
 
 #define ADC_FIRST_PIN_NUMBER 26
 #define ADC_PIN_COUNT 4

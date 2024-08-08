@@ -5,4 +5,4 @@ include(../sdk/pico_sdk_init.cmake)
 pico_sdk_init()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PICO_SDK_PATH}/tools)
-find_package(Pioasm REQUIRED)
+find_package(pioasm REQUIRED)

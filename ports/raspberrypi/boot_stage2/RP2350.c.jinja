@@ -1,0 +1,162 @@
+#include "sdk/src/rp2350/hardware_structs/include/hardware/structs/qmi.h"
+#include "sdk/src/rp2350/hardware_structs/include/hardware/structs/pads_qspi.h"
+#include "sdk/src/rp2350/hardware_regs/include/hardware/regs/addressmap.h"
+// #include "sdk/src/rp2040/hardware_regs/include/hardware/regs/m0plus.h"
+
+// "Mode bits" are 8 special bits sent immediately after
+// the address bits in a "Read Data Fast Quad I/O" command sequence.
+// On W25Q080, the four LSBs are don't care, and if MSBs == 0xa, the
+// next read does not require the 0xeb instruction prefix.
+#define MODE_CONTINUOUS_READ 0xa0
+
+// Define interface width: single/dual/quad IO
+{% if quad_ok %}
+#define RFMT \
+        (QMI_M0_RFMT_PREFIX_WIDTH_VALUE_S << QMI_M0_RFMT_PREFIX_WIDTH_LSB | \
+        QMI_M0_RFMT_ADDR_WIDTH_VALUE_Q   << QMI_M0_RFMT_ADDR_WIDTH_LSB | \
+        QMI_M0_RFMT_SUFFIX_WIDTH_VALUE_Q << QMI_M0_RFMT_SUFFIX_WIDTH_LSB | \
+        QMI_M0_RFMT_DUMMY_WIDTH_VALUE_Q  << QMI_M0_RFMT_DUMMY_WIDTH_LSB | \
+        QMI_M0_RFMT_DATA_WIDTH_VALUE_Q   << QMI_M0_RFMT_DATA_WIDTH_LSB | \
+        QMI_M0_RFMT_PREFIX_LEN_VALUE_8   << QMI_M0_RFMT_PREFIX_LEN_LSB | \
+        QMI_M0_RFMT_SUFFIX_LEN_VALUE_8   << QMI_M0_RFMT_SUFFIX_LEN_LSB)
+{% else %}
+#define RFMT \
+        (QMI_M0_RFMT_PREFIX_WIDTH_VALUE_S << QMI_M0_RFMT_PREFIX_WIDTH_LSB | \
+        QMI_M0_RFMT_ADDR_WIDTH_VALUE_S   << QMI_M0_RFMT_ADDR_WIDTH_LSB | \
+        QMI_M0_RFMT_SUFFIX_WIDTH_VALUE_S << QMI_M0_RFMT_SUFFIX_WIDTH_LSB | \
+        QMI_M0_RFMT_DUMMY_WIDTH_VALUE_S  << QMI_M0_RFMT_DUMMY_WIDTH_LSB | \
+        QMI_M0_RFMT_DATA_WIDTH_VALUE_S   << QMI_M0_RFMT_DATA_WIDTH_LSB | \
+        QMI_M0_RFMT_PREFIX_LEN_VALUE_8   << QMI_M0_RFMT_PREFIX_LEN_LSB)
+{% endif %}
+
+#define READ_INSTRUCTION (0x{{ '%02x' % read_command }})
+
+#define CMD_READ_STATUS1 0x05
+#define CMD_READ_STATUS2 0x35
+#define CMD_WRITE_ENABLE 0x06
+#define CMD_WRITE_STATUS1 0x01
+#define CMD_WRITE_STATUS2 0x31
+
+#define SREG_DATA 0x02
+
+static uint32_t wait_and_read(uint8_t);
+static uint8_t read_flash_sreg(uint8_t status_command);
+
+// This function is use by the bootloader to enable the XIP flash. It is also
+// used by the SDK to reinit XIP after doing non-read flash interactions such as
+// writing or erasing. This code must compile down to position independent
+// assembly because we don't know where in RAM it'll be when run.
+
+// This must be the first defined function so that it is placed at the start of
+// memory where the bootloader jumps to!
+extern void _stage2_boot(void);
+void __attribute__((section(".entry._stage2_boot"), used)) _stage2_boot(void) {
+    uint32_t lr;
+    asm ("MOV %0, LR\n" : "=r" (lr) );
+
+    // Set aggressive pad configuration for QSPI
+    // - SCLK 8mA drive, no slew limiting
+    // - SDx disable input Schmitt to reduce delay
+
+    // SCLK
+    pads_qspi_hw->io[0] = PADS_QSPI_GPIO_QSPI_SCLK_DRIVE_VALUE_8MA << PADS_QSPI_GPIO_QSPI_SCLK_DRIVE_LSB |
+                          PADS_QSPI_GPIO_QSPI_SCLK_SLEWFAST_BITS;
+
+    // Data lines
+    uint32_t data_settings = pads_qspi_hw->io[1];
+    data_settings &= ~PADS_QSPI_GPIO_QSPI_SCLK_SCHMITT_BITS;
+    pads_qspi_hw->io[2] = data_settings;
+    {% if quad_ok %}
+    pads_qspi_hw->io[1] = data_settings;
+    pads_qspi_hw->io[3] = data_settings;
+    pads_qspi_hw->io[4] = data_settings;
+    {% endif %}
+
+    // QMI config
+
+    // Need to use direct serial mode to send SR commands. Choose a
+    // conservative direct-mode divisor (5 MHz at 150 MHz clk_sys)
+    // since the XIP-mode divisor may be unsafe without an RX delay.
+    qmi_hw->direct_csr = 30 << QMI_DIRECT_CSR_CLKDIV_LSB |
+                            QMI_DIRECT_CSR_EN_BITS |
+                            QMI_DIRECT_CSR_AUTO_CS0N_BITS;
+
+    // Need to poll for the cooldown on the last XIP transfer to expire
+    // (via direct-mode BUSY flag) before it is safe to perform the first
+    // direct-mode operation
+    while ((qmi_hw->direct_csr & QMI_DIRECT_CSR_BUSY_BITS) != 0) {}
+
+    {% if quad_ok %}
+    // Program status register.
+    // Enable SSI and select slave 0
+    {% if quad_enable_status_byte == 1 %}
+    uint8_t result = read_flash_sreg(CMD_READ_STATUS1);
+    {% elif quad_enable_status_byte == 2 %}
+    uint8_t result = read_flash_sreg(CMD_READ_STATUS2);
+    {% endif %}
+    if (result != {{ quad_enable_bit_mask }}) {
+        qmi_hw->direct_tx = (uint8_t) CMD_WRITE_ENABLE;
+        wait_and_read(1);
+
+        {% if split_status_write %}
+        {% if quad_enable_status_byte == 1 %}
+        qmi_hw->direct_tx = (uint8_t) CMD_WRITE_STATUS1;
+        {% elif quad_enable_status_byte == 2 %}
+        qmi_hw->direct_tx = (uint8_t) CMD_WRITE_STATUS2;
+        {% endif %}
+        qmi_hw->direct_tx = {{ quad_enable_bit_mask }};
+        wait_and_read(2);
+        {% else %}
+        qmi_hw->direct_tx = (uint8_t) CMD_WRITE_STATUS1;
+        {% if quad_enable_status_byte == 2 %}
+        qmi_hw->direct_tx = 0x0;
+        {% endif %}
+        qmi_hw->direct_tx = {{ quad_enable_bit_mask }};
+        wait_and_read({{ quad_enable_status_byte + 1 }});
+        {% endif %}
+        // Wait for the write to complete.
+        while ((read_flash_sreg(CMD_READ_STATUS1) & 0x1) != 0) {}
+    }
+    {% endif %}
+
+    // Disable direct mode
+    qmi_hw->direct_csr &= ~QMI_DIRECT_CSR_EN_BITS;
+
+    qmi_hw->m[0].timing =
+        1                      << QMI_M0_TIMING_COOLDOWN_LSB |
+        1                      << QMI_M0_TIMING_RXDELAY_LSB |
+        {{ clock_divider }}  << QMI_M0_TIMING_CLKDIV_LSB;
+    qmi_hw->m[0].rcmd =
+        READ_INSTRUCTION     << QMI_M0_RCMD_PREFIX_LSB |
+        MODE_CONTINUOUS_READ << QMI_M0_RCMD_SUFFIX_LSB;
+    qmi_hw->m[0].rfmt =
+        RFMT |
+        {{ wait_cycles }}                << QMI_M0_RFMT_DUMMY_LEN_LSB;
+
+    {% if quad_ok %}
+    // Dummy transfer to get into continuous mode.
+    (void) *((uint32_t*) XIP_NOCACHE_NOALLOC_BASE);
+
+    // Set prefix to 0 to skip the command portion.
+    qmi_hw->m[0].rfmt &= ~QMI_M0_RFMT_PREFIX_LEN_BITS;
+    {% endif %}
+    // Stage 2 never goes straight to the program image on RP2350. So, we always return.
+}
+
+static uint32_t wait_and_read(uint8_t count) {
+    while ((qmi_hw->direct_csr & QMI_DIRECT_CSR_TXEMPTY_BITS) == 0) {}
+    while ((qmi_hw->direct_csr & QMI_DIRECT_CSR_BUSY_BITS) != 0) {}
+    uint32_t result = 0;
+    while (count > 0) {
+        result = qmi_hw->direct_rx;
+        count--;
+    }
+    return result;
+}
+
+static uint8_t read_flash_sreg(uint8_t status_command) {
+    qmi_hw->direct_tx = status_command;
+    qmi_hw->direct_tx = status_command;
+
+    return wait_and_read(2);
+}

@@ -192,7 +192,7 @@ bool board_reset_pin_number(uint8_t pin_number) {
             // glitch.
             gpio_put(pin_number, 1);
             gpio_set_dir(pin_number, GPIO_OUT);
-            hw_write_masked(&padsbank0_hw->io[pin_number], PADS_BANK0_GPIO0_DRIVE_VALUE_12MA << PADS_BANK0_GPIO0_DRIVE_LSB, PADS_BANK0_GPIO0_DRIVE_BITS);
+            hw_write_masked(&pads_bank0_hw->io[pin_number], PADS_BANK0_GPIO0_DRIVE_VALUE_12MA << PADS_BANK0_GPIO0_DRIVE_LSB, PADS_BANK0_GPIO0_DRIVE_BITS);
             gpio_set_function(pin_number, GPIO_FUNC_SIO);
         }
         return true;
