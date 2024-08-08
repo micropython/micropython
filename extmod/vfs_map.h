@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2022 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_EXTMOD_VFS_MAP_H
+#define MICROPY_INCLUDED_EXTMOD_VFS_MAP_H
 
-// qstrs specific to this port
-// *FORMAT-OFF*
+#include "py/builtin.h"
+#include "py/obj.h"
 
-// Entries for sys.path
-Q(/flash)
-Q(/flash/lib)
-Q(/sd)
-Q(/sd/lib)
-Q(/mapfs)
+typedef struct _mp_obj_vfs_map_t mp_obj_vfs_map_t;
 
-// For os.sep
-Q(/)
+extern const mp_obj_type_t mp_type_vfs_map;
 
-#if MICROPY_HW_ENABLE_USB
-// for usb modes
-Q(VCP)
-Q(MSC)
-Q(VCP+MSC)
-Q(VCP+HID)
-Q(VCP+MSC+HID)
-#if MICROPY_HW_USB_CDC_NUM >= 2
-Q(2xVCP)
-Q(2xVCP+MSC)
-Q(2xVCP+MSC+HID)
-#endif
-#if MICROPY_HW_USB_CDC_NUM >= 3
-Q(3xVCP)
-Q(3xVCP+MSC)
-Q(3xVCP+MSC+HID)
-#endif
-#endif
+mp_import_stat_t mp_vfs_map_search_filesystem(mp_obj_vfs_map_t *self, const char *path, size_t *size_out, const uint8_t **data_out);
+mp_obj_t mp_vfs_map_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_in);
+
+#endif // MICROPY_INCLUDED_EXTMOD_VFS_MAP_H

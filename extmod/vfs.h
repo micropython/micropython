@@ -55,6 +55,7 @@
 // At the moment the VFS protocol just has import_stat, but could be extended to other methods
 typedef struct _mp_vfs_proto_t {
     mp_import_stat_t (*import_stat)(void *self, const char *path);
+    size_t (*memmap)(void *self, const char *path, const void **ptr_out);
 } mp_vfs_proto_t;
 
 typedef struct _mp_vfs_blockdev_t {

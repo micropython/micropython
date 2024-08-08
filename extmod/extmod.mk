@@ -59,6 +59,8 @@ SRC_EXTMOD_C += \
 	extmod/vfs_fat_diskio.c \
 	extmod/vfs_fat_file.c \
 	extmod/vfs_lfs.c \
+	extmod/vfs_map.c \
+	extmod/vfs_map_file.c \
 	extmod/vfs_posix.c \
 	extmod/vfs_posix_file.c \
 	extmod/vfs_reader.c \

@@ -6,6 +6,7 @@ import serial.tools.list_ports
 
 from .transport import TransportError
 from .transport_serial import SerialTransport, stdout_write_bytes
+from .mapfs import make_mapfs
 
 
 class CommandError(Exception):
@@ -259,3 +260,46 @@ def do_rtc(state, args):
         _do_execbuffer(state, "import machine; machine.RTC().datetime({})".format(timetuple), True)
     else:
         _do_execbuffer(state, "import machine; print(machine.RTC().datetime())", True)
+
+
+def do_deploy_mapfs(state, args):
+    state.ensure_raw_repl()
+    state.did_action()
+
+    # Detect the mapfs and get its associated device.
+    state.transport.exec("import vfs; mapfs = vfs.mount('/mapfs')")
+    if state.transport.eval("mapfs") == b"None":
+        print("/mapfs does not exist on device")
+        sys.exit(1)
+    if state.transport.eval("mapfs.device()") == b"None":
+        print("/mapfs does not have an associated device")
+        sys.exit(1)
+    state.transport.exec("dev=mapfs.device()")
+    block_count = int(str(state.transport.eval("dev.ioctl(4,0)"), "ascii"))
+    block_size = int(str(state.transport.eval("dev.ioctl(5,0)"), "ascii"))
+    print(
+        f"/mapfs is a block device of size {block_count}*{block_size}={block_count * block_size} bytes"
+    )
+
+    # Create the mapfs filesystem.
+    mapfs = make_mapfs(args.path[0], "/")
+    print(f"Image size is {len(mapfs)} bytes")
+
+    if len(mapfs) > block_count * block_size:
+        print("/mapfs is too small for image")
+        sys.exit(1)
+
+    # Deploy the mapfs filesystem to the device.
+    state.transport.exec(f"buf=bytearray({block_size})")
+    for block in range(0, (len(mapfs) + block_size - 1) // block_size):
+        mapfs_block = mapfs[block * block_size : (block + 1) * block_size]
+        off = 0
+        while off < len(mapfs_block):
+            l = min(len(mapfs_block) - off, 256)
+            state.transport.exec(f"buf[{off}:{off+l}]=" + repr(mapfs_block[off : off + l]))
+            off += l
+        print(f"\rWriting block {block}", end="")
+        state.transport.exec(f"dev.writeblocks({block},buf)")
+
+    print()
+    print("Image deployed")

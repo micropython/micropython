@@ -208,6 +208,17 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
         { MP_QSTR_mkfs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_FALSE} },
     };
 
+    if (n_args == 1) {
+        // query mount table
+        const char *path = mp_obj_str_get_str(pos_args[0]);
+        for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
+            if (strncmp(path, vfs->str, vfs->len) == 0 && path[vfs->len] == '\0') {
+                return vfs->obj;
+            }
+        }
+        return mp_const_none;
+    }
+
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -262,7 +273,7 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_mount_obj, 2, mp_vfs_mount);
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_mount_obj, 1, mp_vfs_mount);
 
 mp_obj_t mp_vfs_umount(mp_obj_t mnt_in) {
     // remove vfs from the mount table

@@ -151,6 +151,7 @@
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_LFS2                        (1)
 #define MICROPY_VFS_FAT                         (1)
+#define MICROPY_VFS_MAP                         (1)
 #define MICROPY_SSL_MBEDTLS                     (1)
 #define MICROPY_PY_LWIP_SOCK_RAW                (MICROPY_PY_LWIP)
 

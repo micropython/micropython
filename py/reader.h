@@ -28,15 +28,30 @@
 
 #include "py/obj.h"
 
-// the readbyte function must return the next byte in the input stream
-// it must return MP_READER_EOF if end of stream
-// it can be called again after returning MP_READER_EOF, and in that case must return MP_READER_EOF
-#define MP_READER_EOF ((mp_uint_t)(-1))
+#define MP_READER_EOF ((uintptr_t)(-1))
+
+// Reader ioctl request codes.
+#define MP_READER_CLOSE (1)
+#define MP_READER_MEMMAP (2)
+
+// Used as arg for MP_READER_MEMMAP ioctl request.
+typedef struct _mp_reader_ioctl_memmap_t {
+    size_t len;
+    const uint8_t *ptr;
+} mp_reader_ioctl_memmap_t;
 
 typedef struct _mp_reader_t {
+    // Pointer to the context of this reader, passed as the first argument to the methods below.
     void *data;
-    mp_uint_t (*readbyte)(void *data);
-    void (*close)(void *data);
+
+    // The readbyte function must return the next byte in the input stream.
+    // It must return MP_READER_EOF if end of stream.  It can be called again after returning
+    // MP_READER_EOF, and in that case must return MP_READER_EOF.
+    uintptr_t (*readbyte)(void *data);
+
+    // Ioctl method for performing various control actions.
+    // On error it must return a negative errno value.
+    intptr_t (*ioctl)(void *data, uintptr_t request, uintptr_t arg);
 } mp_reader_t;
 
 void mp_reader_new_mem(mp_reader_t *reader, const byte *buf, size_t len, size_t free_len);

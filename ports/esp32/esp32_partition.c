@@ -265,6 +265,16 @@ static MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_mark_app_valid_cancel_rollback_
 static MP_DEFINE_CONST_CLASSMETHOD_OBJ(esp32_partition_mark_app_valid_cancel_rollback_obj,
     MP_ROM_PTR(&esp32_partition_mark_app_valid_cancel_rollback_fun_obj));
 
+static mp_obj_t esp32_partition_mmap(mp_obj_t self_in) {
+    esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    const void *ptr;
+    esp_partition_mmap_handle_t handle;
+    // TODO need to esp_partition_munmap(handle) on soft reset
+    check_esp_err(esp_partition_mmap(self->part, 0, self->part->size, ESP_PARTITION_MMAP_DATA, &ptr, &handle));
+    return mp_obj_new_memoryview('B', self->part->size, (void *)ptr);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_mmap_obj, esp32_partition_mmap);
+
 static const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&esp32_partition_find_obj) },
 
@@ -276,6 +286,7 @@ static const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_boot), MP_ROM_PTR(&esp32_partition_set_boot_obj) },
     { MP_ROM_QSTR(MP_QSTR_mark_app_valid_cancel_rollback), MP_ROM_PTR(&esp32_partition_mark_app_valid_cancel_rollback_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_next_update), MP_ROM_PTR(&esp32_partition_get_next_update_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mmap), MP_ROM_PTR(&esp32_partition_mmap_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_BOOT), MP_ROM_INT(ESP32_PARTITION_BOOT) },
     { MP_ROM_QSTR(MP_QSTR_RUNNING), MP_ROM_INT(ESP32_PARTITION_RUNNING) },

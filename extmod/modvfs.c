@@ -31,6 +31,7 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "extmod/vfs_lfs.h"
+#include "extmod/vfs_map.h"
 #include "extmod/vfs_posix.h"
 
 #if !MICROPY_VFS
@@ -50,6 +51,9 @@ static const mp_rom_map_elem_t vfs_module_globals_table[] = {
     #endif
     #if MICROPY_VFS_LFS2
     { MP_ROM_QSTR(MP_QSTR_VfsLfs2), MP_ROM_PTR(&mp_type_vfs_lfs2) },
+    #endif
+    #if MICROPY_VFS_MAP
+    { MP_ROM_QSTR(MP_QSTR_VfsMap), MP_ROM_PTR(&mp_type_vfs_map) },
     #endif
     #if MICROPY_VFS_POSIX
     { MP_ROM_QSTR(MP_QSTR_VfsPosix), MP_ROM_PTR(&mp_type_vfs_posix) },
