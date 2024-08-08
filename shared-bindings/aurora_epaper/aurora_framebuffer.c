@@ -45,7 +45,7 @@
 // |         display.refresh()
 // |
 // |     For more information on how these displays are driven see:
-// |     https://www.pervasivedisplays.com/wp-content/uploads/2023/02/4P018-00_04_G2_Aurora-Mb_COG_Driver_Interface_Timing_for_small-size_20231107.pdf
+// |     <https://www.pervasivedisplays.com/wp-content/uploads/2023/02/4P018-00_04_G2_Aurora-Mb_COG_Driver_Interface_Timing_for_small-size_20231107.pdf>
 // |     """
 // |
 // |     def __init__(
@@ -62,7 +62,7 @@
 // |     ) -> None:
 // |     """Create a framebuffer for the Aurora CoG display.
 // |
-// |     .. note:: Displays of size 1.9" and 2.6" are not tested, and exibit unexpected behavior.
+// |     .. note:: Displays of size 1.9" and 2.6" are not tested, and may exibit unexpected behavior.
 // |
 // |     :param busio.SPI spi_bus: The SPI bus that the display is connected to
 // |     :param microcontroller.Pin chip_select: The pin connected to the displays chip select input
