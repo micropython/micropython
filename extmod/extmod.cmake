@@ -216,6 +216,7 @@ if(MICROPY_SSL_MBEDTLS)
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pkcs12.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pkcs5.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pkparse.c
+        ${MICROPY_LIB_MBEDTLS_DIR}/library/pk_ecc.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pk_wrap.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pkwrite.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/platform.c
