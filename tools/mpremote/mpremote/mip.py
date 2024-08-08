@@ -81,6 +81,11 @@ def _rewrite_url(url, branch=None):
 
 
 def _download_file(transport, url, dest):
+    if url.split(":", 1)[0] not in ("http", "https"):
+        print("Installing:", dest, "from", url)
+        _ensure_path_exists(transport, dest)
+        transport.fs_put(url, dest, progress_callback=show_progress_bar)
+        return
     try:
         with urllib.request.urlopen(url) as src:
             fd, path = tempfile.mkstemp()
@@ -118,6 +123,8 @@ def _install_json(transport, package_json_url, index, target, version, mpy):
         _download_file(transport, file_url, fs_target_path)
     for target_path, url in package_json.get("urls", ()):
         fs_target_path = target + "/" + target_path
+        if url.split(":", 1)[0] not in ("http", "https", "github"):
+            url = f"{package_json_url.rsplit('/', 1)[0]}/{url}"  # Relative URLs
         _download_file(transport, _rewrite_url(url, version), fs_target_path)
     for dep, dep_version in package_json.get("deps", ()):
         _install_package(transport, dep, index, target, dep_version, mpy)
