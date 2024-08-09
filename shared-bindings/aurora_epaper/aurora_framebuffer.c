@@ -161,7 +161,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(aurora_epaper_framebuffer_get_free_bus_obj, aur
 static mp_obj_t aurora_epaper_framebuffer_set_free_bus(mp_obj_t self_in, mp_obj_t free_bus) {
     aurora_epaper_framebuffer_obj_t *self = (aurora_epaper_framebuffer_obj_t *)self_in;
     common_hal_aurora_epaper_framebuffer_set_free_bus(self, mp_obj_is_true(free_bus));
-    return mp_const_none;When True the spi bus passed into the device will be freed on deinit. If you have multiple displays this could be used to keep the other active on soft reset.
+    return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(aurora_epaper_framebuffer_set_free_bus_obj, aurora_epaper_framebuffer_set_free_bus);
 
