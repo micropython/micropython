@@ -1,6 +1,7 @@
 #include "hardware/structs/ioqspi.h"
 #include "hardware/structs/qmi.h"
 #include "hardware/structs/xip_ctrl.h"
+#include "hardware/clocks.h"
 #include "hardware/sync.h"
 #include "rp2_psram.h"
 
@@ -11,11 +12,13 @@ void __no_inline_not_in_flash_func(psram_set_qmi_timing)() {
         ;
     }
 
-    // For > 133 MHz
-    qmi_hw->m[0].timing = 0x40000202;
-
-    // For <= 133 MHz
-    // qmi_hw->m[0].timing = 0x40000101;
+    if (clock_get_hz(clk_sys) > 133000000) {
+        // For > 133 MHz
+        qmi_hw->m[0].timing = 0x40000202;
+    } else {
+        // For <= 133 MHz
+        qmi_hw->m[0].timing = 0x40000101;
+    }
 
     // Force a read through XIP to ensure the timing is applied
     volatile uint32_t *ptr = (volatile uint32_t *)0x14000000;
@@ -123,29 +126,29 @@ size_t __no_inline_not_in_flash_func(psram_init)(uint cs_pin) {
         ;
     }
 
-    #if 0
-    // Set PSRAM timing for APS6404:
-    // - Max select assumes a sys clock speed >= 240MHz
-    // - Min deselect assumes a sys clock speed <= 305MHz
-    // - Clkdiv of 2 is OK up to 266MHz.
-    qmi_hw->m[1].timing = 1 << QMI_M1_TIMING_COOLDOWN_LSB |
-        QMI_M1_TIMING_PAGEBREAK_VALUE_1024 << QMI_M1_TIMING_PAGEBREAK_LSB |
-        30 << QMI_M1_TIMING_MAX_SELECT_LSB |
-        5 << QMI_M1_TIMING_MIN_DESELECT_LSB |
-        3 << QMI_M1_TIMING_RXDELAY_LSB |
-        2 << QMI_M1_TIMING_CLKDIV_LSB;
-    #else
-    // Set PSRAM timing for APS6404:
-    // - Max select assumes a sys clock speed >= 120MHz
-    // - Min deselect assumes a sys clock speed <= 138MHz
-    // - Clkdiv of 1 is OK up to 133MHz.
-    qmi_hw->m[1].timing = 1 << QMI_M1_TIMING_COOLDOWN_LSB |
-        QMI_M1_TIMING_PAGEBREAK_VALUE_1024 << QMI_M1_TIMING_PAGEBREAK_LSB |
-        15 << QMI_M1_TIMING_MAX_SELECT_LSB |
-        2 << QMI_M1_TIMING_MIN_DESELECT_LSB |
-        2 << QMI_M1_TIMING_RXDELAY_LSB |
-        1 << QMI_M1_TIMING_CLKDIV_LSB;
-    #endif
+    if (clock_get_hz(clk_sys) >= 120000000) {
+        // Set PSRAM timing for APS6404:
+        // - Max select assumes a sys clock speed >= 120MHz
+        // - Min deselect assumes a sys clock speed <= 305MHz
+        // - Clkdiv of 2 is OK up to 266MHz.
+        qmi_hw->m[1].timing = 1 << QMI_M1_TIMING_COOLDOWN_LSB |
+            QMI_M1_TIMING_PAGEBREAK_VALUE_1024 << QMI_M1_TIMING_PAGEBREAK_LSB |
+            15 << QMI_M1_TIMING_MAX_SELECT_LSB |
+            5 << QMI_M1_TIMING_MIN_DESELECT_LSB |
+            3 << QMI_M1_TIMING_RXDELAY_LSB |
+            2 << QMI_M1_TIMING_CLKDIV_LSB;
+    } else {
+        // Set PSRAM timing for APS6404:
+        // - Max select assumes a sys clock speed >= 120MHz
+        // - Min deselect assumes a sys clock speed <= 138MHz
+        // - Clkdiv of 1 is OK up to 133MHz.
+        qmi_hw->m[1].timing = 1 << QMI_M1_TIMING_COOLDOWN_LSB |
+            QMI_M1_TIMING_PAGEBREAK_VALUE_1024 << QMI_M1_TIMING_PAGEBREAK_LSB |
+            15 << QMI_M1_TIMING_MAX_SELECT_LSB |
+            2 << QMI_M1_TIMING_MIN_DESELECT_LSB |
+            2 << QMI_M1_TIMING_RXDELAY_LSB |
+            1 << QMI_M1_TIMING_CLKDIV_LSB;
+    }
 
     // Set PSRAM commands and formats
     qmi_hw->m[1].rfmt =
@@ -175,6 +178,5 @@ size_t __no_inline_not_in_flash_func(psram_init)(uint cs_pin) {
     // Enable writes to PSRAM
     hw_set_bits(&xip_ctrl_hw->ctrl, XIP_CTRL_WRITABLE_M1_BITS);
 
-    // TODO: Detect PSRAM ID and size
     return psram_size;
 }

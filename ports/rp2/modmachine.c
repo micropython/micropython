@@ -31,6 +31,7 @@
 #include "mp_usbd.h"
 #include "modmachine.h"
 #include "uart.h"
+#include "rp2_psram.h"
 #include "clocks_extra.h"
 #include "hardware/pll.h"
 #include "hardware/structs/rosc.h"
@@ -114,6 +115,9 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_UART_REPL
     setup_default_uart();
     mp_uart_init();
+    #endif
+    #if defined(MICROPY_HW_PSRAM_CS_PIN) && MICROPY_HW_ENABLE_PSRAM
+    psram_init(MICROPY_HW_PSRAM_CS_PIN);
     #endif
 }
 
