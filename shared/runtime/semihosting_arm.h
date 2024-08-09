@@ -38,6 +38,8 @@ Then make sure the debugger is attached and enables semihosting.  In OpenOCD thi
 done with ARM semihosting enable followed by reset.  The terminal will need further
 configuration to work with MicroPython (bash: stty raw -echo).
 
+If mp_semihosting_rx_char() doesn't work then try mp_semihosting_rx_chars(str, 1).
+
 */
 
 #include <stddef.h>
@@ -45,6 +47,7 @@ configuration to work with MicroPython (bash: stty raw -echo).
 
 void mp_semihosting_init();
 int mp_semihosting_rx_char();
+int mp_semihosting_rx_chars(char *str, size_t len);
 uint32_t mp_semihosting_tx_strn(const char *str, size_t len);
 uint32_t mp_semihosting_tx_strn_cooked(const char *str, size_t len);
 
