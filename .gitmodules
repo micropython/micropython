@@ -398,6 +398,3 @@
 [submodule "frozen/Adafruit_CircuitPython_Wiznet5k"]
 	path = frozen/Adafruit_CircuitPython_Wiznet5k
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Wiznet5k
-[submodule "Adafruit_CircuitPython_Wiznet5k"]
-	path = Adafruit_CircuitPython_Wiznet5k
-	url = https://github.com/adafruit/Adafruit_CircuitPython_Wiznet5k
