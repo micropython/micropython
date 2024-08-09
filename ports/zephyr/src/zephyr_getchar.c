@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/drivers/console/uart_console.h>
 #include <zephyr/sys/printk.h>

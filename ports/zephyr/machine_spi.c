@@ -28,7 +28,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/spi.h>
 
 #include "py/runtime.h"
@@ -84,6 +84,12 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     const char *dev_name = mp_obj_str_get_str(args[ARG_id].u_obj);
     const struct device *dev = device_get_binding(dev_name);
 
+    #ifdef CONFIG_DEVICE_DT_METADATA
+    if (dev == NULL) {
+        dev = device_get_by_dt_nodelabel(dev_name);
+    }
+    #endif
+
     if (dev == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("device not found"));
     }
@@ -102,7 +108,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
                 args[ARG_bits].u_int << 5 |
                 SPI_LINES_SINGLE),
         .slave = 0,
-        .cs = NULL
+        .cs = {},
     };
 
     machine_hard_spi_obj_t *self = mp_obj_malloc(machine_hard_spi_obj_t, &machine_spi_type);
@@ -157,7 +163,7 @@ static void machine_hard_spi_init(mp_obj_base_t *obj, size_t n_args, const mp_ob
         .frequency = baudrate,
         .operation = operation,
         .slave = 0,
-        .cs = NULL
+        .cs = {},
     };
 
     self->config = cfg;

@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/i2c.h>
 
 #include "py/runtime.h"
@@ -66,6 +66,12 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     const char *dev_name = mp_obj_str_get_str(args[ARG_id].u_obj);
     const struct device *dev = device_get_binding(dev_name);
+
+    #ifdef CONFIG_DEVICE_DT_METADATA
+    if (dev == NULL) {
+        dev = device_get_by_dt_nodelabel(dev_name);
+    }
+    #endif
 
     if (dev == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("device not found"));

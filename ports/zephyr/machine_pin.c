@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 
 #include "py/runtime.h"
@@ -133,7 +133,15 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     mp_obj_get_array_fixed_n(args[0], 2, &items);
     const char *drv_name = mp_obj_str_get_str(items[0]);
     int wanted_pin = mp_obj_get_int(items[1]);
+
     const struct device *wanted_port = device_get_binding(drv_name);
+
+    #ifdef CONFIG_DEVICE_DT_METADATA
+    if (wanted_port == NULL) {
+        wanted_port = device_get_by_dt_nodelabel(drv_name);
+    }
+    #endif
+
     if (!wanted_port) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid port"));
     }

@@ -28,7 +28,7 @@
 
 #include "py/runtime.h"
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/sensor.h>
 
 #if MICROPY_PY_ZSENSOR
@@ -41,10 +41,22 @@ typedef struct _mp_obj_sensor_t {
 static mp_obj_t sensor_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     mp_obj_sensor_t *o = mp_obj_malloc(mp_obj_sensor_t, type);
-    o->dev = device_get_binding(mp_obj_str_get_str(args[0]));
-    if (o->dev == NULL) {
+
+    const char *dev_name = mp_obj_str_get_str(args[0]);
+    const struct device *dev = device_get_binding(dev_name);
+
+    #ifdef CONFIG_DEVICE_DT_METADATA
+    if (dev == NULL) {
+        dev = device_get_by_dt_nodelabel(dev_name);
+    }
+    #endif
+
+    if (dev == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("dev not found"));
     }
+
+    o->dev = dev;
+
     return MP_OBJ_FROM_PTR(o);
 }
 
