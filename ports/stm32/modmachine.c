@@ -289,9 +289,13 @@ NORETURN static void mp_machine_reset(void) {
 
 // Activate the bootloader without BOOT* pins.
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
-    #if MICROPY_HW_ENABLE_USB
+    #if MICROPY_HW_ENABLE_USB && !MICROPY_HW_TINYUSB_STACK
     pyb_usb_dev_deinit();
     #endif
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE && MICROPY_HW_TINYUSB_STACK
+    mp_usbd_deinit();
+    #endif
+
     #if MICROPY_HW_ENABLE_STORAGE
     storage_flush();
     #endif
