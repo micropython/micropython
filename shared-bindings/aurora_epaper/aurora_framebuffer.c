@@ -74,7 +74,7 @@
 //|         :param int width: The width of the display in pixels
 //|         :param int height: The height of the display in pixels
 //|         :param microcontroller.Pin power: The pin that controls power to the display (optional).
-//|         :param bool free_bus: Determines whether the SPI bus passed in will be freed when the frame buffer is freed.
+//|         :param bool free_bus: Determines whether the SPI bus passed in will be freed when the frame buffer is freed (optional).
 //|         """
 //|         ...
 static mp_obj_t aurora_epaper_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
