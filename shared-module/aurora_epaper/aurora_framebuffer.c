@@ -421,9 +421,9 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
 
         uint32_t evenMap =
             (whiteMap << 2 | whiteMap) << 0 |
-            (whiteMap << 2 | blackMap) << 4 |
-            (blackMap << 2 | whiteMap) << 16 |
-            (blackMap << 2 | blackMap) << 20;
+                    (whiteMap << 2 | blackMap) << 4 |
+                    (blackMap << 2 | whiteMap) << 16 |
+                    (blackMap << 2 | blackMap) << 20;
 
         int stride = common_hal_aurora_epaper_framebuffer_get_row_stride(self);
 
@@ -449,9 +449,9 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
 
         uint32_t oddMap =
             (whiteMap << 2 | whiteMap) << 0 |
-            (whiteMap << 2 | blackMap) << 16 |
-            (blackMap << 2 | whiteMap) << 4 |
-            (blackMap << 2 | blackMap) << 20;
+                    (whiteMap << 2 | blackMap) << 16 |
+                    (blackMap << 2 | whiteMap) << 4 |
+                    (blackMap << 2 | blackMap) << 20;
 
         // Odd bytes
         for (int x = 0; x < stride; x++) {
@@ -467,7 +467,7 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
             common_hal_busio_spi_write(self->bus, &border, 1);
         }
 
-        #undef DO_MAP
+#undef DO_MAP
     }
     // This code is untested
     else if (self->type == SMALL_1_9 || self->type == LARGE_2_6) {
@@ -478,9 +478,9 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
 
         uint32_t pixelMap =
             (whiteMap << 2 | whiteMap) << 0 |
-            (whiteMap << 2 | blackMap) << 4 |
-            (blackMap << 2 | whiteMap) << 8 |
-            (blackMap << 2 | blackMap) << 12;
+                    (whiteMap << 2 | blackMap) << 4 |
+                    (blackMap << 2 | whiteMap) << 8 |
+                    (blackMap << 2 | blackMap) << 12;
 
         int stride = common_hal_aurora_epaper_framebuffer_get_row_stride(self);
 
@@ -522,7 +522,7 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
 
         common_hal_busio_spi_write(self->bus, &border, 1);
 
-        #undef DO_MAP
+#undef DO_MAP
     } else {
         mp_raise_TypeError(MP_ERROR_TEXT("Unknown device size."));
     }

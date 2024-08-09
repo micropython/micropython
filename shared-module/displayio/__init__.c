@@ -306,7 +306,7 @@ void reset_displays(void) {
                 common_hal_aurora_epaper_framebuffer_set_free_bus(false);
             }
             #endif
-            // Set to None, gets deinit'd up by display_base 
+            // Set to None, gets deinit'd up by display_base
             display_buses[i].bus_base.type = &mp_type_NoneType;
         #endif
         } else {

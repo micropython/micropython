@@ -153,7 +153,7 @@ msgstr ""
 msgid "%q length must be >= %d"
 msgstr ""
 
-#: py/objmodule.c py/runtime.c
+#: py/modsys.c py/objmodule.c py/runtime.c
 msgid "%q moved from %q to %q"
 msgstr ""
 
@@ -1207,6 +1207,11 @@ msgstr ""
 msgid "Invalid BSSID"
 msgstr ""
 
+#: shared-module/aurora_epaper/aurora_framebuffer.c
+#, c-format
+msgid "Invalid CoG id=%d"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
 msgstr ""
@@ -2154,6 +2159,14 @@ msgstr ""
 msgid "Unknown BLE error: %d"
 msgstr ""
 
+#: shared-module/aurora_epaper/aurora_framebuffer.c
+msgid "Unknown device size."
+msgstr ""
+
+#: shared-module/aurora_epaper/aurora_framebuffer.c
+msgid "Unknown display type!"
+msgstr ""
+
 #: ports/espressif/common-hal/max3421e/Max3421E.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
@@ -2209,6 +2222,10 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Unsupported colorspace"
+msgstr ""
+
+#: shared-module/aurora_epaper/aurora_framebuffer.c
+msgid "Unsupported device size."
 msgstr ""
 
 #: shared-module/displayio/bus_core.c
@@ -2329,6 +2346,7 @@ msgid "You pressed the SW38 button at start up."
 msgstr ""
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
+#: ports/espressif/boards/vidi_x/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
 msgstr ""
 
