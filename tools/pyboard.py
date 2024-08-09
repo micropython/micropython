@@ -237,7 +237,7 @@ class ProcessPtyToTerminal:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        pty_line = self.subp.stderr.readline().decode("utf-8")
+        pty_line = self.subp.stdout.readline().decode("utf-8")
         m = re.search(r"/dev/pts/[0-9]+", pty_line)
         if not m:
             print("Error: unable to find PTY device in startup line:", pty_line)
