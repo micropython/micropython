@@ -30,6 +30,8 @@
 #include <time.h>
 #include <sys/time.h>
 
+#include "pico/aon_timer.h"
+
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -37,8 +39,6 @@
 #include "py/mperrno.h"
 #include "extmod/modmachine.h"
 #include "shared/timeutils/timeutils.h"
-#include "hardware/rtc.h"
-#include "pico/util/datetime.h"
 
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
@@ -50,14 +50,12 @@ static const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    bool r = rtc_running();
+    bool r = aon_timer_is_running();
 
     if (!r) {
-        // This shouldn't happen as rtc_init() is already called in main so
-        // it's here just in case
-        rtc_init();
-        datetime_t t = { .month = 1, .day = 1 };
-        rtc_set_datetime(&t);
+        // This shouldn't happen. it's here just in case
+        struct timespec ts = { 0, 0 };
+        aon_timer_start(&ts);
         mp_hal_time_ns_set_from_rtc();
     }
     // return constant object
@@ -66,47 +64,36 @@ static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
 
 static mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
-        bool ret;
-        datetime_t t;
-
-        ret = rtc_get_datetime(&t);
-        if (!ret) {
-            mp_raise_OSError(MP_EIO);
-        }
-
+        struct timespec ts;
+        timeutils_struct_time_t tm;
+        aon_timer_get_time(&ts);
+        timeutils_seconds_since_epoch_to_struct_time(ts.tv_sec, &tm);
         mp_obj_t tuple[8] = {
-            mp_obj_new_int(t.year),
-            mp_obj_new_int(t.month),
-            mp_obj_new_int(t.day),
-            mp_obj_new_int(t.dotw),
-            mp_obj_new_int(t.hour),
-            mp_obj_new_int(t.min),
-            mp_obj_new_int(t.sec),
-            mp_obj_new_int(0)
+            mp_obj_new_int(tm.tm_year),
+            mp_obj_new_int(tm.tm_mon),
+            mp_obj_new_int(tm.tm_mday),
+            mp_obj_new_int(tm.tm_wday),
+            mp_obj_new_int(tm.tm_hour),
+            mp_obj_new_int(tm.tm_min),
+            mp_obj_new_int(tm.tm_sec),
+            mp_obj_new_int(0),
         };
-
         return mp_obj_new_tuple(8, tuple);
     } else {
         mp_obj_t *items;
-
         mp_obj_get_array_fixed_n(args[1], 8, &items);
-
-        datetime_t t = {
-            .year = mp_obj_get_int(items[0]),
-            .month = mp_obj_get_int(items[1]),
-            .day = mp_obj_get_int(items[2]),
-            .hour = mp_obj_get_int(items[4]),
-            .min = mp_obj_get_int(items[5]),
-            .sec = mp_obj_get_int(items[6]),
+        timeutils_struct_time_t tm = {
+            .tm_year = mp_obj_get_int(items[0]),
+            .tm_mon = mp_obj_get_int(items[1]),
+            .tm_mday = mp_obj_get_int(items[2]),
+            .tm_hour = mp_obj_get_int(items[4]),
+            .tm_min = mp_obj_get_int(items[5]),
+            .tm_sec = mp_obj_get_int(items[6]),
         };
-        // Deliberately ignore the weekday argument and compute the proper value
-        t.dotw = timeutils_calc_weekday(t.year, t.month, t.day);
-
-        if (!rtc_set_datetime(&t)) {
-            mp_raise_OSError(MP_EINVAL);
-        }
+        struct timespec ts = { 0, 0 };
+        ts.tv_sec = timeutils_seconds_since_epoch(tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+        aon_timer_set_time(&ts);
         mp_hal_time_ns_set_from_rtc();
-
     }
     return mp_const_none;
 }
