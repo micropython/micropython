@@ -60,20 +60,20 @@
 //|         power: Optional[microcontroller.Pin] = None,
 //|         free_bus: Optional[bool] = True,
 //|     ) -> None:
-//|     """Create a framebuffer for the Aurora CoG display.
+//|         """Create a framebuffer for the Aurora CoG display.
 //|
-//|     .. note:: Displays of size 1.9" and 2.6" are not tested, and may exibit unexpected behavior.
+//|         .. note:: Displays of size 1.9" and 2.6" are not tested, and may exibit unexpected behavior.
 //|
-//|     :param busio.SPI spi_bus: The SPI bus that the display is connected to
-//|     :param microcontroller.Pin chip_select: The pin connected to the displays chip select input
-//|     :param microcontroller.Pin reset: The pin connected to the displays reset input
-//|     :param microcontroller.Pin busy: The pin connected to the displays busy output
-//|     :param microcontroller.Pin discharge: The pin connected to the displays discharge input
-//|     :param int width: The width of the display in pixels
-//|     :param int height: The height of the display in pixels
-//|     :param microcontroller.Pin power: The pin that controls power to the display (optional).
-//|     :param bool free_bus: Determines whether the SPI bus passed in will be freed when the frame buffer is freed.
-//|     """
+//|         :param busio.SPI spi_bus: The SPI bus that the display is connected to
+//|         :param microcontroller.Pin chip_select: The pin connected to the displays chip select input
+//|         :param microcontroller.Pin reset: The pin connected to the displays reset input
+//|         :param microcontroller.Pin busy: The pin connected to the displays busy output
+//|         :param microcontroller.Pin discharge: The pin connected to the displays discharge input
+//|         :param int width: The width of the display in pixels
+//|         :param int height: The height of the display in pixels
+//|         :param microcontroller.Pin power: The pin that controls power to the display (optional).
+//|         :param bool free_bus: Determines whether the SPI bus passed in will be freed when the frame buffer is freed.
+//|         """
 //|...
 static mp_obj_t aurora_epaper_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_spi_bus, ARG_chip_select, ARG_reset, ARG_busy, ARG_discharge, ARG_width, ARG_height, ARG_power, ARG_free_bus, NUM_ARGS };
