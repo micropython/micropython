@@ -74,7 +74,7 @@
 //|         :param microcontroller.Pin power: The pin that controls power to the display (optional).
 //|         :param bool free_bus: Determines whether the SPI bus passed in will be freed when the frame buffer is freed.
 //|         """
-//|...
+//|         ...
 static mp_obj_t aurora_epaper_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_spi_bus, ARG_chip_select, ARG_reset, ARG_busy, ARG_discharge, ARG_width, ARG_height, ARG_power, ARG_free_bus, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
@@ -121,7 +121,7 @@ static mp_int_t aurora_epaper_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer
 //|         """Free the resources (pins, timers, etc.) associated with this
 //|         AuroraMemoryFramebuffer instance.  After deinitialization, no further operations
 //|         may be performed."""
-//| ...
+//|         ...
 static mp_obj_t aurora_epaper_framebuffer_deinit(mp_obj_t self_in) {
     aurora_epaper_framebuffer_obj_t *self = (aurora_epaper_framebuffer_obj_t *)self_in;
     common_hal_aurora_epaper_framebuffer_deinit(self);
@@ -136,7 +136,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(aurora_epaper_framebuffer_deinit_obj, aurora_ep
 //|         """Set the ambient temperature (in celsius) for the display driver.
 //|         Higher temperature means faster update speed.
 //|         """
-//| ...
+//|         ...
 static mp_obj_t aurora_epaper_frambuffer_set_temperature(mp_obj_t self_in, mp_obj_t temperature) {
     aurora_epaper_framebuffer_obj_t *self = (aurora_epaper_framebuffer_obj_t *)self_in;
 
@@ -149,7 +149,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(aurora_epaper_frambuffer_set_temperature_obj, a
 //|     free_bus: bool
 //|         """When True the spi bus passed into the device will be freed on deinit.
 //|         If you have multiple displays this could be used to keep the other active on soft reset."""
-//| ...
+//|         ...
 static mp_obj_t aurora_epaper_framebuffer_get_free_bus(mp_obj_t self_in) {
     aurora_epaper_framebuffer_obj_t *self = (aurora_epaper_framebuffer_obj_t *)self_in;
     return mp_obj_new_bool(self->free_bus);
