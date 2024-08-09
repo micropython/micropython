@@ -25,10 +25,13 @@
  */
 
 #include "lib/oofatfs/ff.h"
-#include "hardware/rtc.h"
+#include "pico/aon_timer.h"
+#include "shared/timeutils/timeutils.h"
 
 MP_WEAK DWORD get_fattime(void) {
-    datetime_t t;
-    rtc_get_datetime(&t);
-    return ((t.year - 1980) << 25) | ((t.month) << 21) | ((t.day) << 16) | ((t.hour) << 11) | ((t.min) << 5) | (t.sec / 2);
+    struct timespec ts;
+    timeutils_struct_time_t tm;
+    aon_timer_get_time(&ts);
+    timeutils_seconds_since_epoch_to_struct_time(ts.tv_sec, &tm);
+    return ((tm.tm_year - 1980) << 25) | ((tm.tm_mon) << 21) | ((tm.tm_mday) << 16) | ((tm.tm_hour) << 11) | ((tm.tm_min) << 5) | (tm.tm_sec / 2);
 }
