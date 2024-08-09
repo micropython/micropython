@@ -99,11 +99,13 @@ static uint32_t begin_critical_flash_section(void) {
     }
     uint32_t state = save_and_disable_interrupts();
 
+    #if defined(MICROPY_HW_PSRAM_CS_PIN) && MICROPY_HW_ENABLE_PSRAM
     // We're about to invalidate the XIP cache, clean it first to commit any dirty writes to PSRAM
     uint8_t *maintenance_ptr = (uint8_t *)XIP_MAINTENANCE_BASE;
     for (int i = 1; i < 16 * 1024; i += 8) {
         maintenance_ptr[i] = 0;
     }
+    #endif
 
     return state;
 }

@@ -165,7 +165,6 @@ set(MICROPY_SOURCE_PORT
     pendsv.c
     rp2_flash.c
     rp2_pio.c
-    rp2_psram.c
     rp2_dma.c
     uart.c
     usbd.c
@@ -173,6 +172,12 @@ set(MICROPY_SOURCE_PORT
     mbedtls/mbedtls_port.c
     ${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c
 )
+
+if(PICO_RP2350)
+    list(APPEND MICROPY_SOURCE_PORT
+        rp2_psram.c
+    )
+endif()
 
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
