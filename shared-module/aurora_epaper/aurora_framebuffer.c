@@ -417,7 +417,7 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
 
         // 3 bit to 4 bit lookup table
         #define DO_MAP(mapping, input) \
-                (((mapping) >> (((input) & 5) << 2)) & 0xF)
+    (((mapping) >> (((input) & 5) << 2)) & 0xF)
 
         uint32_t evenMap =
             (whiteMap << 2 | whiteMap) << 0 |
@@ -474,7 +474,7 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
 
         // 2 bit to 4 bit lookup table
         #define DO_MAP(mapping, input) \
-                (((mapping) >> (((input) & 0x3) << 2)) & 0xF)
+    (((mapping) >> (((input) & 0x3) << 2)) & 0xF)
 
         uint32_t pixelMap =
             (whiteMap << 2 | whiteMap) << 0 |
