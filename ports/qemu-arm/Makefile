@@ -6,6 +6,7 @@ QSTR_DEFS = qstrdefsport.h
 
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
+FROZEN_MANIFEST ?= "freeze('test-frzmpy')"
 
 # include py core make definitions
 include $(TOP)/py/py.mk
@@ -78,15 +79,16 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 SRC_COMMON_C = \
 	startup.c \
 	uart.c \
+	mphalport.c \
 	shared/libc/string0.c \
+	shared/readline/readline.c \
+	shared/runtime/interrupt_char.c \
+	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
+	shared/runtime/pyexec.c \
 
 SRC_RUN_C = \
 	main.c \
-
-SRC_TEST_C = \
-	test_main.c \
-	lib/tinytest/tinytest.c \
 
 LIB_SRC_C += $(SRC_LIB_LIBM_C)
 LIB_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
@@ -113,10 +115,21 @@ OBJ = $(OBJ_COMMON) $(OBJ_RUN) $(OBJ_TEST)
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_COMMON_C) $(SRC_RUN_C) $(LIB_SRC_C)
 
-all: run
+all: $(BUILD)/firmware.elf
 
-run: $(BUILD)/firmware.elf
-	qemu-system-arm -machine $(BOARD) $(QEMU_EXTRA) -nographic -monitor null -semihosting -kernel $<
+.PHONY: repl
+repl: $(BUILD)/firmware.elf
+	$(ECHO) "Use machine.reset() to exit"
+	qemu-system-arm -machine $(BOARD) $(QEMU_EXTRA) -nographic -monitor null -semihosting -serial mon:stdio -kernel $<
+
+.PHONY: remote
+remote: $(BUILD)/firmware.elf
+	qemu-system-arm -machine $(BOARD) $(QEMU_EXTRA) -nographic -monitor null -semihosting -serial pty -kernel $<
+
+.PHONY: test
+test: $(BUILD)/firmware.elf
+	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
+	cd $(TOP)/tests && ./run-tests.py --target qemu-arm --device execpty:"qemu-system-arm -machine $(BOARD) $(QEMU_EXTRA) -nographic -monitor null -semihosting -serial pty -kernel ../$(DIRNAME)/$<"
 
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(ALL_OBJ_RUN)

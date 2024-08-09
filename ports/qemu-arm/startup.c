@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "shared/runtime/semihosting_arm.h"
 #include "uart.h"
 
 extern uint32_t _estack, _sidata, _sdata, _edata, _sbss, _ebss;
@@ -97,6 +98,8 @@ const uint32_t isr_vector[] __attribute__((section(".isr_vector"))) = {
 #endif
 
 void _start(void) {
+    mp_semihosting_init();
+
     // Enable the UART
     uart_init();
 
@@ -134,13 +137,3 @@ void __assert_func(const char *file, int line, const char *func, const char *exp
     exit(1);
 }
 #endif
-
-// The following are needed for tinytest
-
-#include <stdio.h>
-
-int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
-    return 0;
-}
-
-struct _reent *_impure_ptr;
