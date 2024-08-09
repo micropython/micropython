@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Ilya Dmitrichenko
+ * Copyright (c) 2024 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,43 +24,38 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
+#include "py/mphal.h"
+#include "shared/runtime/semihosting_arm.h"
+#include "uart.h"
 
-#include "py/compile.h"
-#include "py/runtime.h"
-#include "py/stackctrl.h"
-#include "py/gc.h"
-#include "py/mperrno.h"
-#include "shared/runtime/gchelper.h"
-#include "lib/tinytest/tinytest.h"
-#include "lib/tinytest/tinytest_macros.h"
+// UART is better behaved with redirection under qemu-system-arm, so prefer that for stdio.
+#define USE_UART (1)
+#define USE_SEMIHOSTING (0)
 
-#define HEAP_SIZE (100 * 1024)
-
-#include "genhdr/tests.h"
-
-int main() {
-    mp_stack_ctrl_init();
-    mp_stack_set_limit(10240);
-    static uint32_t heap[HEAP_SIZE / sizeof(uint32_t)];
-    upytest_set_heap(heap, (char *)heap + HEAP_SIZE);
-    int r = tinytest_main(0, NULL, groups);
-    printf("status: %d\n", r);
-    return r;
+int mp_hal_stdin_rx_chr(void) {
+    for (;;) {
+        #if USE_UART
+        int c = uart_rx_chr();
+        if (c >= 0) {
+            return c;
+        }
+        #endif
+        #if USE_SEMIHOSTING
+        char str[1];
+        int ret = mp_semihosting_rx_chars(str, 1);
+        if (ret == 0) {
+            return str[0];
+        }
+        #endif
+    }
 }
 
-void gc_collect(void) {
-    gc_collect_start();
-    gc_helper_collect_regs_and_stack();
-    gc_collect_end();
-}
-
-mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
-    mp_raise_OSError(MP_ENOENT);
-}
-
-void nlr_jump_fail(void *val) {
-    printf("uncaught NLR\n");
-    exit(1);
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    #if USE_UART
+    uart_tx_strn(str, len);
+    #endif
+    #if USE_SEMIHOSTING
+    mp_semihosting_tx_strn(str, len);
+    #endif
+    return len;
 }

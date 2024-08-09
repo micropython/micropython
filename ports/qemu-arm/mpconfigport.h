@@ -30,6 +30,9 @@
 
 #define MICROPY_CONFIG_ROM_LEVEL    (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
+#define MICROPY_HW_BOARD_NAME "qemu"
+#define MICROPY_HW_MCU_NAME "cortex"
+
 #if defined(__ARM_ARCH_ISA_ARM)
 #define MICROPY_EMIT_ARM            (1)
 #define MICROPY_EMIT_INLINE_THUMB   (1)
@@ -42,8 +45,8 @@
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_ENABLE_GC           (1)
-#define MICROPY_KBD_EXCEPTION       (0)
-#define MICROPY_HELPER_REPL         (0)
+#define MICROPY_KBD_EXCEPTION       (1)
+#define MICROPY_HELPER_REPL         (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_WARNINGS            (1)
@@ -58,6 +61,7 @@
 #define MICROPY_PY_ASYNCIO          (0)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/qemu-arm/modmachine.c"
+#define MICROPY_PY_MACHINE_RESET    (1)
 #define MICROPY_PY_MACHINE_PIN_BASE (1)
 #define MICROPY_VFS                 (1)
 
@@ -83,3 +87,5 @@ typedef long mp_off_t;
 #undef MP_PLAT_PRINT_STRN
 #define MP_PLAT_PRINT_STRN(str, len) upytest_output(str, len)
 #endif
+
+#define MP_STATE_PORT MP_STATE_VM

@@ -74,6 +74,7 @@ void uart_tx_strn(const char *buf, size_t len) {
 #elif defined(QEMU_SOC_MPS2)
 
 #define UART_STATE_TXFULL (1 << 0)
+#define UART_STATE_RXFULL (1 << 1)
 
 #define UART_CTRL_TX_EN (1 << 0)
 #define UART_CTRL_RX_EN (1 << 1)
@@ -90,7 +91,7 @@ typedef struct _UART_t {
 
 void uart_init(void) {
     UART0->BAUDDIV = 16;
-    UART0->CTRL = UART_CTRL_TX_EN;
+    UART0->CTRL = UART_CTRL_TX_EN | UART_CTRL_RX_EN;
 }
 
 void uart_tx_strn(const char *buf, size_t len) {
@@ -99,6 +100,13 @@ void uart_tx_strn(const char *buf, size_t len) {
         }
         UART0->DATA = buf[i];
     }
+}
+
+int uart_rx_chr(void) {
+    if (!(UART0->STATE & UART_STATE_RXFULL)) {
+        return -1;
+    }
+    return UART0->DATA;
 }
 
 #elif defined(QEMU_SOC_IMX6)

@@ -32,34 +32,43 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
+#include "shared/runtime/gchelper.h"
+#include "shared/runtime/pyexec.h"
 
-void do_str(const char *src, mp_parse_input_kind_t input_kind) {
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
-        qstr source_name = lex->source_name;
-        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, true);
-        mp_call_function_0(module_fun);
-        nlr_pop();
-    } else {
-        // uncaught exception
-        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-    }
-}
+#define HEAP_SIZE (100 * 1024)
 
+static uint32_t gc_heap[HEAP_SIZE / sizeof(uint32_t)];
 int main(int argc, char **argv) {
     mp_stack_ctrl_init();
     mp_stack_set_limit(10240);
-    uint32_t heap[16 * 1024 / 4];
-    gc_init(heap, (char *)heap + 16 * 1024);
-    mp_init();
-    do_str("print('hello world!')", MP_PARSE_SINGLE_INPUT);
-    mp_deinit();
-    return 0;
+    gc_init(gc_heap, (char *)gc_heap + HEAP_SIZE);
+
+    for (;;) {
+        mp_init();
+
+        for (;;) {
+            if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+                if (pyexec_raw_repl() != 0) {
+                    break;
+                }
+            } else {
+                if (pyexec_friendly_repl() != 0) {
+                    break;
+                }
+            }
+        }
+
+        printf("MPY: soft reboot\n");
+
+        gc_sweep_all();
+        mp_deinit();
+    }
 }
 
 void gc_collect(void) {
+    gc_collect_start();
+    gc_helper_collect_regs_and_stack();
+    gc_collect_end();
 }
 
 mp_lexer_t *mp_lexer_new_from_file(qstr filename) {

@@ -30,5 +30,6 @@
 
 void uart_init(void);
 void uart_tx_strn(const char *buf, size_t len);
+int uart_rx_chr(void);
 
 #endif // MICROPY_INCLUDED_QEMU_ARM_UART_H
