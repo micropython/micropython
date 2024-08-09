@@ -117,11 +117,17 @@ int main(int argc, char **argv) {
     mp_stack_set_top(&__StackTop);
     mp_stack_set_limit(&__StackTop - &__StackBottom - 256);
 
-    gc_init(&__GcHeapStart, &__GcHeapEnd);
     #if defined(MICROPY_HW_PSRAM_CS_PIN) && MICROPY_HW_ENABLE_PSRAM
     size_t psram_size = psram_init(MICROPY_HW_PSRAM_CS_PIN);
     if (psram_size) {
+        #if MICROPY_GC_SPLIT_HEAP
+        gc_init(&__GcHeapStart, &__GcHeapEnd);
         gc_add((void *)PSRAM_LOCATION, (void *)(PSRAM_LOCATION + psram_size));
+        #else
+        gc_init((void *)PSRAM_LOCATION, (void *)(PSRAM_LOCATION + psram_size));
+        #endif
+    } else {
+        gc_init(&__GcHeapStart, &__GcHeapEnd);
     }
     #endif
 
