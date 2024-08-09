@@ -34,6 +34,7 @@
 #define SYS_OPEN   0x01
 #define SYS_WRITEC 0x03
 #define SYS_WRITE  0x05
+#define SYS_READ   0x06
 #define SYS_READC  0x07
 
 // Constants:
@@ -89,6 +90,20 @@ void mp_semihosting_init() {
 
 int mp_semihosting_rx_char() {
     return mp_semihosting_call(SYS_READC, NULL);
+}
+
+// Returns 0 on success.
+int mp_semihosting_rx_chars(char *str, size_t len) {
+    struct {
+        uint32_t fd;
+        const char *str;
+        uint32_t len;
+    } args = {
+        .fd = mp_semihosting_stdout,
+        .str = str,
+        .len = len,
+    };
+    return mp_semihosting_call(SYS_READ, &args);
 }
 
 static void mp_semihosting_tx_char(char c) {
