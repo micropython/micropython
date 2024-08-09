@@ -147,9 +147,9 @@ static mp_obj_t aurora_epaper_frambuffer_set_temperature(mp_obj_t self_in, mp_ob
 static MP_DEFINE_CONST_FUN_OBJ_2(aurora_epaper_frambuffer_set_temperature_obj, aurora_epaper_frambuffer_set_temperature);
 
 //|     free_bus: bool
-//|         """When True the spi bus passed into the device will be freed on deinit.
-//|         If you have multiple displays this could be used to keep the other active on soft reset."""
-//|         ...
+//|     """When True the spi bus passed into the device will be freed on deinit.
+//|     If you have multiple displays this could be used to keep the other active on soft reset."""
+//|     ...
 static mp_obj_t aurora_epaper_framebuffer_get_free_bus(mp_obj_t self_in) {
     aurora_epaper_framebuffer_obj_t *self = (aurora_epaper_framebuffer_obj_t *)self_in;
     return mp_obj_new_bool(self->free_bus);
