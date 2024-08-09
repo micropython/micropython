@@ -30,7 +30,9 @@
 #include "shared-module/displayio/__init__.h"
 
 //| class AuroraMemoryFramebuffer:
-//|     """A framebuffer for Pervasive Displays Aurora E-paper displays. These displays are 2 color only.
+//|     """A framebuffer for Pervasive Displays Aurora E-paper displays.
+//|
+//|     These displays are 2 color only.
 //|
 //|     This initializes a display and connects it to CircuitPython.
 //|
@@ -45,7 +47,7 @@
 //|         display.refresh()
 //|
 //|     For more information on how these displays are driven see:
-//|     <https://www.pervasivedisplays.com/wp-content/uploads/2023/02/4P018-00_04_G2_Aurora-Mb_COG_Driver_Interface_Timing_for_small-size_20231107.pdf>
+//|     https://www.pervasivedisplays.com/wp-content/uploads/2023/02/4P018-00_04_G2_Aurora-Mb_COG_Driver_Interface_Timing_for_small-size_20231107.pdf
 //|     """
 //|
 //|     def __init__(
@@ -159,7 +161,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(aurora_epaper_framebuffer_get_free_bus_obj, aur
 static mp_obj_t aurora_epaper_framebuffer_set_free_bus(mp_obj_t self_in, mp_obj_t free_bus) {
     aurora_epaper_framebuffer_obj_t *self = (aurora_epaper_framebuffer_obj_t *)self_in;
     common_hal_aurora_epaper_framebuffer_set_free_bus(self, mp_obj_is_true(free_bus));
-    return mp_const_none;
+    return mp_const_none;When True the spi bus passed into the device will be freed on deinit. If you have multiple displays this could be used to keep the other active on soft reset.
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(aurora_epaper_framebuffer_set_free_bus_obj, aurora_epaper_framebuffer_set_free_bus);
 
