@@ -122,12 +122,20 @@ int main(int argc, char **argv) {
     // Initialise stack extents and GC heap.
     mp_cstack_init_with_top(&__StackTop, &__StackTop - &__StackBottom);
 
-    gc_init(&__GcHeapStart, &__GcHeapEnd);
     #if defined(MICROPY_HW_PSRAM_CS_PIN) && MICROPY_HW_ENABLE_PSRAM
     size_t psram_size = psram_init(MICROPY_HW_PSRAM_CS_PIN);
     if (psram_size) {
+        #if MICROPY_GC_SPLIT_HEAP
+        gc_init(&__GcHeapStart, &__GcHeapEnd);
         gc_add((void *)PSRAM_LOCATION, (void *)(PSRAM_LOCATION + psram_size));
+        #else
+        gc_init((void *)PSRAM_LOCATION, (void *)(PSRAM_LOCATION + psram_size));
+        #endif
+    } else {
+        gc_init(&__GcHeapStart, &__GcHeapEnd);
     }
+    #else
+    gc_init(&__GcHeapStart, &__GcHeapEnd);
     #endif
 
     #if MICROPY_PY_LWIP
