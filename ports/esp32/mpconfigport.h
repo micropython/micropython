@@ -314,3 +314,8 @@ void boardctrl_startup(void);
 #endif
 #endif
 #endif
+
+// The minimum string length threshold for string printing to stdout operations to be GIL-aware.
+#ifndef MICROPY_PY_STRING_TX_GIL_THRESHOLD
+#define MICROPY_PY_STRING_TX_GIL_THRESHOLD  (20)
+#endif

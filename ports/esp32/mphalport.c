@@ -47,6 +47,10 @@
 #include "usb_serial_jtag.h"
 #include "uart.h"
 
+#if MICROPY_PY_STRING_TX_GIL_THRESHOLD < 0
+#error "MICROPY_PY_STRING_TX_GIL_THRESHOLD must be positive"
+#endif
+
 TaskHandle_t mp_main_task_handle;
 
 static uint8_t stdin_ringbuf_array[260];
@@ -129,7 +133,13 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     // Only release the GIL if many characters are being sent
     mp_uint_t ret = len;
     bool did_write = false;
-    bool release_gil = len > 20;
+    bool release_gil = len > MICROPY_PY_STRING_TX_GIL_THRESHOLD;
+    #if MICROPY_DEBUG_PRINTERS && MICROPY_DEBUG_VERBOSE && MICROPY_PY_THREAD_GIL
+    // If verbose debug output is enabled some strings are printed before the
+    // GIL mutex is set up.  When that happens, no Python code is running and
+    // therefore the interpreter doesn't care about the GIL not being ready.
+    release_gil = release_gil && (MP_STATE_VM(gil_mutex).handle != NULL);
+    #endif
     if (release_gil) {
         MP_THREAD_GIL_EXIT();
     }
