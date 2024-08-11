@@ -5,7 +5,6 @@
 
 #define PSRAM_LOCATION _u(0x11000000)
 
-extern void psram_set_qmi_timing();
 extern size_t psram_init(uint cs_pin);
 
 #endif

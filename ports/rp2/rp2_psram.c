@@ -6,27 +6,6 @@
 #include "rp2_psram.h"
 
 
-void __no_inline_not_in_flash_func(psram_set_qmi_timing)() {
-    // Make sure flash is deselected - QMI doesn't appear to have a busy flag(!)
-    while ((ioqspi_hw->io[1].status & IO_QSPI_GPIO_QSPI_SS_STATUS_OUTTOPAD_BITS) != IO_QSPI_GPIO_QSPI_SS_STATUS_OUTTOPAD_BITS) {
-        ;
-    }
-
-    // Use the minimum divisor assuming a 133MHz flash.
-    // RX delay equal to the divisor means sampling at the same time as the next falling edge of SCK after the
-    // falling edge that generated the data.  This is pretty tight at 133MHz but seems to work with the Winbond flash chips.
-    const int max_flash_freq = 133000000;
-    const int divisor = (clock_get_hz(clk_sys) + max_flash_freq - 1) / max_flash_freq;
-    const int rxdelay = divisor;
-    qmi_hw->m[0].timing = (1 << QMI_M0_TIMING_COOLDOWN_LSB) |
-        rxdelay << QMI_M1_TIMING_RXDELAY_LSB |
-        divisor << QMI_M1_TIMING_CLKDIV_LSB;
-
-    // Force a read through XIP to ensure the timing is applied
-    volatile uint32_t *ptr = (volatile uint32_t *)0x14000000;
-    (void)*ptr;
-}
-
 size_t __no_inline_not_in_flash_func(psram_detect)() {
     int psram_size = 0;
 
@@ -109,8 +88,6 @@ size_t __no_inline_not_in_flash_func(psram_init)(uint cs_pin) {
     if (!psram_size) {
         return 0;
     }
-
-    psram_set_qmi_timing();
 
     // Enable direct mode, PSRAM CS, clkdiv of 10.
     qmi_hw->direct_csr = 10 << QMI_DIRECT_CSR_CLKDIV_LSB | \
