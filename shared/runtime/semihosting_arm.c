@@ -36,6 +36,7 @@
 #define SYS_WRITE  0x05
 #define SYS_READ   0x06
 #define SYS_READC  0x07
+#define SYS_EXIT   0x18
 
 // Constants:
 #define OPEN_MODE_READ  (0) // mode "r"
@@ -86,6 +87,13 @@ static int mp_semihosting_open_console(uint32_t mode) {
 
 void mp_semihosting_init() {
     mp_semihosting_stdout = mp_semihosting_open_console(OPEN_MODE_WRITE);
+}
+
+void mp_semihosting_exit(int status) {
+    if (status == 0) {
+        status = 0x20026;
+    }
+    mp_semihosting_call(SYS_EXIT, (void *)(uintptr_t)status);
 }
 
 int mp_semihosting_rx_char() {
