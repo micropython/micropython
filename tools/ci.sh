@@ -244,6 +244,65 @@ function ci_powerpc_build {
 }
 
 ########################################################################################
+# ports/psoc6
+
+MPY_MTB_CI_DOCKER_VERSION=0.5.0
+
+function ci_psoc6_setup {
+    # Access to serial device 
+    if [ "$1" = "--dev-access" ]; then
+        device0_flag=--device=/dev/ttyACM0 
+        device1_flag=--device=/dev/ttyACM1
+    else
+        device0_flag=
+        device1_flag=
+    fi
+
+    docker pull ifxmakers/mpy-mtb-ci:${MPY_MTB_CI_DOCKER_VERSION}
+    docker run --name mtb-ci --rm --privileged -d -it \
+      ${device0_flag} \
+      ${device1_flag} \
+      -v "$(pwd)":/micropython \
+      -w /micropython/ports/psoc6 \
+      ifxmakers/mpy-mtb-ci:${MPY_MTB_CI_DOCKER_VERSION}
+    docker ps -a
+
+    # This command prevents the issue "fatal: detected dubious ownership in repository at '/micropython'""
+    docker exec mtb-ci /bin/bash -c "git config --global --add safe.directory /micropython"
+    docker exec mtb-ci /bin/bash -c "git config --global --add safe.directory /micropython/lib/micropython-lib"
+    docker exec mtb-ci /bin/bash -c "git config --global --add safe.directory /micropython/lib/mbedtls"
+    docker exec mtb-ci /bin/bash -c "git config --global --add safe.directory /micropython/lib/lwip"
+}
+
+function ci_psoc6_build {
+    board=$1
+    docker exec mtb-ci make mtb_init BOARD=${board}
+    docker exec mtb-ci make submodules
+    docker exec mtb-ci make
+}
+
+function ci_psoc6_deploy {
+    docker exec mtb-ci make program
+}
+
+function ci_psoc6_flash_multiple_devices {
+    board=$1
+    # hex file including path with respect to micropython root
+    hex_file=$2
+    devs_file=$3
+
+    docker exec mtb-ci make program_multi BOARD=${board} EXT_HEX_FILE=../../${hex_file} DEVS_FILE=../../${devs_file}
+}
+
+function ci_psoc6_run_tests {
+    docker exec mtb-ci /bin/bash -c "cd ../../tests && ./run-tests.py --target psoc6 --device /dev/ttyACM0 -d psoc6"
+}
+
+function ci_psoc6_teardown {
+    docker stop mtb-ci
+}
+
+########################################################################################
 # ports/qemu-arm
 
 function ci_qemu_arm_setup {
