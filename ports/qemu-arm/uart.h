@@ -28,7 +28,11 @@
 
 #include <stddef.h>
 
+// Returned from uart_rx_chr when there are no chars available.
+#define UART_RX_NO_CHAR (-1)
+
 void uart_init(void);
+int uart_rx_chr(void);
 void uart_tx_strn(const char *buf, size_t len);
 
 #endif // MICROPY_INCLUDED_QEMU_ARM_UART_H
