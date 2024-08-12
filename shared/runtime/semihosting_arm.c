@@ -40,10 +40,6 @@
 #define OPEN_MODE_READ  (0) // mode "r"
 #define OPEN_MODE_WRITE (4) // mode "w"
 
-#ifndef __thumb__
-#error Semihosting is only implemented for ARM microcontrollers.
-#endif
-
 static int mp_semihosting_stdout;
 
 static uint32_t mp_semihosting_call(uint32_t num, const void *arg) {
@@ -61,7 +57,13 @@ static uint32_t mp_semihosting_call(uint32_t num, const void *arg) {
     register uint32_t num_reg __asm__ ("r0") = num;
     register const void *args_reg __asm__ ("r1") = arg;
     __asm__ __volatile__ (
+        #if defined(__ARM_ARCH_ISA_ARM)
+        "svc 0x00123456\n"    // invoke semihosting call
+        #elif defined(__ARM_ARCH_ISA_THUMB)
         "bkpt 0xAB\n"         // invoke semihosting call
+        #else
+        #error Unknown architecture
+        #endif
         : "+r" (num_reg)      // call number and result
         : "r" (args_reg)      // arguments
         : "memory");          // make sure args aren't optimized away
