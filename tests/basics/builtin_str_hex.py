@@ -20,5 +20,20 @@ for x in (
     "08090a0b0c0d0e0f",
     "7f80ff",
     "313233344142434461626364",
+    "ab\tcd\n  ef ",
+    "ab cd ef",
+    "ab cd ef ",
+    " ab cd ef ",
+    # Invalid hex strings:
+    "abcde",  # Odd number of hex digits
+    "ab cd e",
+    "a b cd ef",  # Spaces between hex pairs
+    "ab cd e f ",
+    "abga",  # Invalid hex digits
+    "ab_cd",
+    "ab:cd",
 ):
-    print(bytes.fromhex(x))
+    try:
+        print(bytes.fromhex(x))
+    except ValueError as e:
+        print("ValueError:", e)
