@@ -395,6 +395,15 @@
 [submodule "frozen/Adafruit_CircuitPython_LED_Animation"]
 	path = frozen/Adafruit_CircuitPython_LED_Animation
 	url = https://github.com/adafruit/Adafruit_CircuitPython_LED_Animation
+[submodule "frozen/CircuitPython_AXP2101"]
+	path = frozen/CircuitPython_AXP2101
+	url = https://github.com/CDarius/CircuitPython_AXP2101
+[submodule "frozen/CircuitPython_BMA423"]
+	path = frozen/CircuitPython_BMA423
+	url = https://github.com/jposada202020/CircuitPython_BMA423
+[submodule "frozen/Adafruit_CircuitPython_PCF8563"]
+	path = frozen/Adafruit_CircuitPython_PCF8563
+	url = https://github.com/adafruit/Adafruit_CircuitPython_PCF8563
 [submodule "frozen/Adafruit_CircuitPython_Wiznet5k"]
 	path = frozen/Adafruit_CircuitPython_Wiznet5k
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Wiznet5k
