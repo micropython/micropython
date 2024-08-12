@@ -1249,6 +1249,11 @@ msgstr "Parâmetro BLE inválido"
 msgid "Invalid BSSID"
 msgstr "BSSID Inválido"
 
+#: shared-module/aurora_epaper/aurora_framebuffer.c
+#, c-format
+msgid "Invalid CoG id=%d"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
 msgstr "Endereço MAC inválido"
@@ -2222,6 +2227,14 @@ msgstr "Houve um erro BLE desconhecido em %s:%d: %d"
 msgid "Unknown BLE error: %d"
 msgstr "Houve um erro BLE desconhecido: %d"
 
+#: shared-module/aurora_epaper/aurora_framebuffer.c
+msgid "Unknown device size."
+msgstr ""
+
+#: shared-module/aurora_epaper/aurora_framebuffer.c
+msgid "Unknown display type!"
+msgstr ""
+
 #: ports/espressif/common-hal/max3421e/Max3421E.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
@@ -2280,6 +2293,10 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Unsupported colorspace"
 msgstr "Espaço de cor não compatível"
+
+#: shared-module/aurora_epaper/aurora_framebuffer.c
+msgid "Unsupported device size."
+msgstr ""
 
 #: shared-module/displayio/bus_core.c
 msgid "Unsupported display bus type"
