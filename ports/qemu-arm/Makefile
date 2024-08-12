@@ -1,3 +1,8 @@
+BOARD ?= mps2-an385
+
+# Make the build directory reflect the board.
+BUILD ?= build-$(BOARD)
+
 include ../../py/mkenv.mk
 -include mpconfigport.mk
 
@@ -10,8 +15,6 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 # include py core make definitions
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
-
-BOARD ?= mps2-an385
 
 ifeq ($(BOARD),netduino2)
 CFLAGS += -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
