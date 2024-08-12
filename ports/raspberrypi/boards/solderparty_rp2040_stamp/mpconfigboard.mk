@@ -9,6 +9,7 @@ CHIP_FAMILY = rp2
 EXTERNAL_FLASH_DEVICES = "GD25Q64C"
 
 CIRCUITPY__EVE = 1
+CIRCUITPY_PICODVI = 1
 
 FROZEN_MPY_DIRS += $(TOP)/ports/raspberrypi/boards/solderparty_rp2040_stamp
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID

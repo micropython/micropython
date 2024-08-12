@@ -181,7 +181,10 @@ ifneq ($(IDF_TARGET),esp32c6)
 endif
 
 ifeq ($(IDF_TARGET_ARCH),xtensa)
-CFLAGS += -mlongcalls
+# Remove the last two flags once TinyUSB is updated with the `#include <xtensa_api.h>` instead of
+# `#include "xtensa/xtensa_api.h"`.
+
+CFLAGS += -mlongcalls -isystem esp-idf/components/xtensa/deprecated_include/ -Wno-error=cpp
 else ifeq ($(IDF_TARGET_ARCH),riscv)
 CFLAGS += -march=rv32imac_zicsr_zifencei
 endif

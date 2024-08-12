@@ -20,6 +20,10 @@ CIRCUITPY_FULL_BUILD ?= 1
 # If SSL is enabled, it's mbedtls
 CIRCUITPY_SSL_MBEDTLS = 1
 
+# Wifi Power Save
+CIRCUITPY_WIFI_RADIO_SETTABLE_LISTEN_INTERVAL = 1
+
+
 # These modules are implemented in ports/<port>/common-hal:
 CIRCUITPY_ALARM ?= 1
 CIRCUITPY_ALARM_TOUCH ?= 0

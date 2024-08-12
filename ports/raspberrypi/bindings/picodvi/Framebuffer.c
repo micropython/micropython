@@ -32,9 +32,9 @@
 //|         color_depth: int = 8,
 //|     ) -> None:
 //|         """Create a Framebuffer object with the given dimensions. Memory is
-//|         allocated outside of onto the heap and then moved outside on VM end.
+//|         allocated onto the heap and then moved outside on VM end.
 //|
-//|         .. warning:: This will change the system clock speed to match the DVI signal.
+//|         .. warning:: This may change the system clock speed to match the DVI signal.
 //|            Make sure to initialize other objects after this one so they account
 //|            for the changed clock.
 //|
@@ -49,6 +49,7 @@
 //|
 //|         * 1 - Each bit is a pixel. Either white (1) or black (0).
 //|         * 2 - Each 2 bits is a pixels. Grayscale between white (0x3) and black (0x0).
+//|         * 4 - Each nibble is a pixels in RGB format. The fourth bit is ignored. (RP2350 only)
 //|         * 8 - Each byte is a pixels in RGB332 format.
 //|         * 16 - Each two bytes are a pixel in RGB565 format.
 //|
@@ -101,7 +102,7 @@ static mp_obj_t picodvi_framebuffer_make_new(const mp_obj_type_t *type, size_t n
     mp_uint_t width = (mp_uint_t)mp_arg_validate_int_min(args[ARG_width].u_int, 0, MP_QSTR_width);
     mp_uint_t height = (mp_uint_t)mp_arg_validate_int_min(args[ARG_height].u_int, 0, MP_QSTR_height);
     mp_uint_t color_depth = args[ARG_color_depth].u_int;
-    if (color_depth != 1 && color_depth != 2 && color_depth != 8 && color_depth != 16) {
+    if (color_depth != 1 && color_depth != 2 && color_depth != 4 && color_depth != 8 && color_depth != 16) {
         mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_color_depth);
     }
     common_hal_picodvi_framebuffer_construct(self,
@@ -195,7 +196,10 @@ static int picodvi_framebuffer_get_height_proto(mp_obj_t self_in) {
 
 static int picodvi_framebuffer_get_color_depth_proto(mp_obj_t self_in) {
     return common_hal_picodvi_framebuffer_get_color_depth(self_in);
-    ;
+}
+
+static bool picodvi_framebuffer_get_grayscale_proto(mp_obj_t self_in) {
+    return common_hal_picodvi_framebuffer_get_grayscale(self_in);
 }
 
 static int picodvi_framebuffer_get_bytes_per_cell_proto(mp_obj_t self_in) {
@@ -220,6 +224,7 @@ static const framebuffer_p_t picodvi_framebuffer_proto = {
     .get_width = picodvi_framebuffer_get_width_proto,
     .get_height = picodvi_framebuffer_get_height_proto,
     .get_color_depth = picodvi_framebuffer_get_color_depth_proto,
+    .get_grayscale = picodvi_framebuffer_get_grayscale_proto,
     .get_row_stride = picodvi_framebuffer_get_row_stride_proto,
     .get_bytes_per_cell = picodvi_framebuffer_get_bytes_per_cell_proto,
     .get_native_frames_per_second = picodvi_framebuffer_get_native_frames_per_second_proto,

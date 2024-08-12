@@ -41,9 +41,15 @@ static int8_t _sm_dma_plus_one[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 #define SM_DMA_ALLOCATED(pio_index, sm) (_sm_dma_plus_one[(pio_index)][(sm)] != 0)
 #define SM_DMA_GET_CHANNEL(pio_index, sm) (_sm_dma_plus_one[(pio_index)][(sm)] - 1)
 #define SM_DMA_CLEAR_CHANNEL(pio_index, sm) (_sm_dma_plus_one[(pio_index)][(sm)] = 0)
-#define SM_DMA_SET_CHANNEL(pio_isntance, sm, channel) (_sm_dma_plus_one[(pio_index)][(sm)] = (channel) + 1)
+#define SM_DMA_SET_CHANNEL(pio_index, sm, channel) (_sm_dma_plus_one[(pio_index)][(sm)] = (channel) + 1)
 
-static PIO pio_instances[2] = {pio0, pio1};
+static PIO pio_instances[NUM_PIOS] = {
+    pio0,
+    pio1
+    #if NUM_PIOS == 3
+    , pio2
+    #endif
+};
 typedef void (*interrupt_handler_type)(void *);
 static interrupt_handler_type _interrupt_handler[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 static void *_interrupt_arg[NUM_PIOS][NUM_PIO_STATE_MACHINES];

@@ -23,6 +23,9 @@
 #include "supervisor/flash.h"
 #include "supervisor/usb.h"
 
+#ifdef PICO_RP2350
+#include "src/rp2350/hardware_structs/include/hardware/structs/qmi.h"
+#endif
 #include "src/rp2040/hardware_structs/include/hardware/structs/sio.h"
 #include "src/rp2_common/hardware_flash/include/hardware/flash.h"
 #include "src/common/pico_binary_info/include/pico/binary_info.h"
@@ -38,6 +41,31 @@ static uint8_t _cache[SECTOR_SIZE];
 static uint32_t _cache_lba = NO_CACHE;
 static uint32_t _flash_size = 0;
 
+#ifdef PICO_RP2350
+static uint32_t m1_rfmt;
+static uint32_t m1_timing;
+#endif
+
+static void save_psram_settings(void) {
+    #ifdef PICO_RP2350
+    // We're about to invalidate the XIP cache, clean it first to commit any dirty writes to PSRAM
+    uint8_t *maintenance_ptr = (uint8_t *)XIP_MAINTENANCE_BASE;
+    for (int i = 1; i < 16 * 1024; i += 8) {
+        maintenance_ptr[i] = 0;
+    }
+
+    m1_timing = qmi_hw->m[1].timing;
+    m1_rfmt = qmi_hw->m[1].rfmt;
+    #endif
+}
+
+static void restore_psram_settings(void) {
+    #ifdef PICO_RP2350
+    qmi_hw->m[1].timing = m1_timing;
+    qmi_hw->m[1].rfmt = m1_rfmt;
+    #endif
+}
+
 void supervisor_flash_init(void) {
     bi_decl_if_func_used(bi_block_device(
         BINARY_INFO_MAKE_TAG('C', 'P'),
@@ -52,7 +80,9 @@ void supervisor_flash_init(void) {
     // Read the RDID register to get the flash capacity.
     uint8_t cmd[] = {0x9f, 0, 0, 0};
     uint8_t data[4];
+    save_psram_settings();
     flash_do_cmd(cmd, data, 4);
+    restore_psram_settings();
     uint8_t power_of_two = FLASH_DEFAULT_POWER_OF_TWO;
     // Flash must be at least 2MB (1 << 21) because we use the first 1MB for the
     // CircuitPython core. We validate the range because Adesto Tech flash chips
@@ -82,8 +112,10 @@ void port_internal_flash_flush(void) {
     #if CIRCUITPY_AUDIOCORE
     uint32_t channel_mask = audio_dma_pause_all();
     #endif
+    save_psram_settings();
     flash_range_erase(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + _cache_lba, SECTOR_SIZE);
     flash_range_program(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + _cache_lba, _cache, SECTOR_SIZE);
+    restore_psram_settings();
     _cache_lba = NO_CACHE;
     #if CIRCUITPY_AUDIOCORE
     audio_dma_unpause_mask(channel_mask);

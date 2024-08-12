@@ -26,4 +26,5 @@ int common_hal_picodvi_framebuffer_get_width(picodvi_framebuffer_obj_t *self);
 int common_hal_picodvi_framebuffer_get_height(picodvi_framebuffer_obj_t *self);
 int common_hal_picodvi_framebuffer_get_row_stride(picodvi_framebuffer_obj_t *self);
 int common_hal_picodvi_framebuffer_get_color_depth(picodvi_framebuffer_obj_t *self);
+bool common_hal_picodvi_framebuffer_get_grayscale(picodvi_framebuffer_obj_t *self);
 mp_int_t common_hal_picodvi_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);

@@ -6,9 +6,15 @@
 
 #pragma once
 
-#include "src/rp2040/hardware_regs/include/hardware/platform_defs.h"
+#include "hardware/platform_defs.h"
 
+#ifdef PICO_RP2040
 #define MICROPY_PY_SYS_PLATFORM             "RP2040"
+#endif
+
+#ifdef PICO_RP2350
+#define MICROPY_PY_SYS_PLATFORM             "RP2350"
+#endif
 
 // Setting a non-default value also requires a non-default link.ld
 #ifndef CIRCUITPY_FIRMWARE_SIZE

@@ -49,7 +49,7 @@ void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self,
     self->x_shift = 0; // Used to divide the index by the number of pixels per word. Its used in a
                        // shift which effectively divides by 2 ** x_shift.
     uint32_t power_of_two = 1;
-    while (power_of_two < ALIGN_BITS / bits_per_value) {
+    while (power_of_two < 8 / bits_per_value) {
         self->x_shift++;
         power_of_two <<= 1;
     }
@@ -90,13 +90,14 @@ uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t
         return 0;
     }
     int32_t row_start = y * self->stride;
-    uint32_t bytes_per_value = self->bits_per_value / 8;
+    uint32_t *row = self->data + row_start;
+    uint8_t bytes_per_value = self->bits_per_value / 8;
+    uint8_t values_per_byte = 8 / self->bits_per_value;
     if (bytes_per_value < 1) {
-        uint32_t word = self->data[row_start + (x >> self->x_shift)];
-
-        return (word >> (sizeof(uint32_t) * 8 - ((x & self->x_mask) + 1) * self->bits_per_value)) & self->bitmask;
+        uint8_t bits = ((uint8_t *)row)[x >> self->x_shift];
+        uint8_t bit_position = (values_per_byte - (x & self->x_mask) - 1) * self->bits_per_value;
+        return (bits >> bit_position) & self->bitmask;
     } else {
-        uint32_t *row = self->data + row_start;
         if (bytes_per_value == 1) {
             return ((uint8_t *)row)[x];
         } else if (bytes_per_value == 2) {
@@ -134,16 +135,16 @@ void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y
 
     // Update one pixel of data
     int32_t row_start = y * self->stride;
-    uint32_t bytes_per_value = self->bits_per_value / 8;
+    uint32_t *row = self->data + row_start;
+    uint8_t bytes_per_value = self->bits_per_value / 8;
+    uint8_t values_per_byte = 8 / self->bits_per_value;
     if (bytes_per_value < 1) {
-        uint32_t bit_position = (sizeof(uint32_t) * 8 - ((x & self->x_mask) + 1) * self->bits_per_value);
-        uint32_t index = row_start + (x >> self->x_shift);
-        uint32_t word = self->data[index];
-        word &= ~(self->bitmask << bit_position);
-        word |= (value & self->bitmask) << bit_position;
-        self->data[index] = word;
+        uint8_t bits = ((uint8_t *)row)[x >> self->x_shift];
+        uint8_t bit_position = (values_per_byte - (x & self->x_mask) - 1) * self->bits_per_value;
+        bits &= ~(self->bitmask << bit_position);
+        bits |= (value & self->bitmask) << bit_position;
+        ((uint8_t *)row)[x >> self->x_shift] = bits;
     } else {
-        uint32_t *row = self->data + row_start;
         if (bytes_per_value == 1) {
             ((uint8_t *)row)[x] = value;
         } else if (bytes_per_value == 2) {
