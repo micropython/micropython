@@ -17,7 +17,7 @@ MMFAR = SCB + 0x034  # (R/W)  MemManage Fault Address Register */
 BFAR = SCB + 0x038  # (R/W)  BusFault Address Register */
 AFSR = SCB + 0x03C  # (R/W)  Auxiliary Fault Status Register */
 
-PARTS = {0xC27: "Cortex M7", 0xC60: "Cortex M0+"}
+PARTS = {0xC27: "Cortex M7", 0xC60: "Cortex M0+", 0xD21: "Cortex M33"}
 
 EXCEPTIONS = {
     0: "Thread mode",
@@ -123,6 +123,54 @@ class CortexMFault(gdb.Command):
             print("Bus fault when reading vector table")
             print("VTOR", hex(vtor))
 
+    def _armv8m_fault(self):
+        icsr = self._read(ICSR)
+        if (icsr & (1 << 11)) != 0:  # RETTOBASE
+            print("No preempted exceptions")
+        else:
+            print("Another exception was preempted")
+        print("icsr", hex(icsr))
+        vectactive = icsr & 0x1FF
+        if vectactive != 0:
+            if vectactive in EXCEPTIONS:
+                print(EXCEPTIONS[vectactive])
+            else:
+                print(vectactive - 16)
+        vectpending = (icsr >> 12) & 0x1FF
+        if vectpending != 0:
+            if vectpending in EXCEPTIONS:
+                print(EXCEPTIONS[vectpending])
+            else:
+                print(vectpending - 16)
+
+        vtor = self._read(VTOR)
+        print("vtor", hex(vtor))
+
+        cfsr = self._read(CFSR)
+        ufsr = cfsr >> 16
+        bfsr = (cfsr >> 8) & 0xFF
+        mmfsr = cfsr & 0xFF
+        print("ufsr", hex(ufsr), "bfsr", hex(bfsr), "mmfsr", hex(mmfsr))
+        if (bfsr & (1 << 7)) != 0:
+            print("Bad address", hex(self._read(BFAR)))
+        if (bfsr & (1 << 3)) != 0:
+            print("Unstacking from exception error")
+        if (bfsr & (1 << 2)) != 0:
+            print("Imprecise data bus error")
+        if (bfsr & (1 << 1)) != 0:
+            print("Precise data bus error")
+        if (bfsr & (1 << 0)) != 0:
+            print("Instruction bus error")
+
+        if (mmfsr & (1 << 7)) != 0:
+            print("Bad address", hex(self._read(MMFAR)))
+        if (mmfsr & (1 << 3)) != 0:
+            print("Unstacking from exception error")
+        if (mmfsr & (1 << 1)) != 0:
+            print("Data access violation")
+        if (mmfsr & (1 << 0)) != 0:
+            print("Instruction access violation")
+
     def invoke(self, arg, from_tty):
         cpuid = self._read(CPUID)
         implementer = cpuid >> 24
@@ -134,7 +182,9 @@ class CortexMFault(gdb.Command):
         part_no = (cpuid >> 4) & 0xFFF
         print(PARTS[part_no])
 
-        if architecture == 0xF:
+        if part_no == 0xD21:
+            self._armv8m_fault()
+        elif architecture == 0xF:
             self._armv7m_fault()
         elif architecture == 0xC:
             self._armv6m_fault()
