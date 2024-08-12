@@ -34,6 +34,11 @@
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
 
+#if CIRCUITPY_AURORA_EPAPER
+#include "shared-bindings/aurora_epaper/aurora_framebuffer.h"
+#include "shared-module/aurora_epaper/aurora_framebuffer.h"
+#endif
+
 #ifdef BOARD_USE_INTERNAL_SPI
 #include "supervisor/spi_flash_api.h"
 #endif
@@ -293,6 +298,17 @@ void reset_displays(void) {
                 common_hal_picodvi_framebuffer_deinit(vc);
             }
         #endif
+        #if CIRCUITPY_AURORA_EPAPER
+        } else if (display_bus_type == &aurora_framebuffer_type) {
+            #if CIRCUITPY_BOARD_SPI
+            aurora_epaper_framebuffer_obj_t *aurora = &display_buses[i].aurora_epaper;
+            if (common_hal_board_is_spi(aurora->bus)) {
+                common_hal_aurora_epaper_framebuffer_set_free_bus(false);
+            }
+            #endif
+            // Set to None, gets deinit'd up by display_base
+            display_buses[i].bus_base.type = &mp_type_NoneType;
+        #endif
         } else {
             // Not an active display bus.
             continue;
@@ -341,6 +357,11 @@ void displayio_gc_collect(void) {
         #if CIRCUITPY_SHARPDISPLAY
         if (display_bus_type == &sharpdisplay_framebuffer_type) {
             common_hal_sharpdisplay_framebuffer_collect_ptrs(&display_buses[i].sharpdisplay);
+        }
+        #endif
+        #if CIRCUITPY_AURORA_EPAPER
+        if (display_bus_type == &aurora_framebuffer_type) {
+            common_hal_aurora_epaper_framebuffer_collect_ptrs(&display_buses[i].aurora_epaper);
         }
         #endif
     }

@@ -25,6 +25,11 @@
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
 
+#if CIRCUITPY_AURORA_EPAPER
+#include "shared-bindings/aurora_epaper/aurora_framebuffer.h"
+#include "shared-module/aurora_epaper/aurora_framebuffer.h"
+#endif
+
 #if CIRCUITPY_BOARD_I2C
 // Statically allocate the I2C object so it can live past the end of the heap and into the next VM.
 // That way it can be used by built-in I2CDisplay displays and be accessible through board.I2C().
@@ -191,7 +196,7 @@ void reset_board_buses(void) {
     #if CIRCUITPY_BOARD_SPI
     for (uint8_t instance = 0; instance < CIRCUITPY_BOARD_SPI; instance++) {
         bool display_using_spi = false;
-        #if CIRCUITPY_FOURWIRE || CIRCUITPY_SHARPDISPLAY
+        #if CIRCUITPY_FOURWIRE || CIRCUITPY_SHARPDISPLAY || CIRCUITPY_AURORA_EPAPER
         for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
             mp_const_obj_t bus_type = display_buses[i].bus_base.type;
             #if CIRCUITPY_FOURWIRE
@@ -202,6 +207,12 @@ void reset_board_buses(void) {
             #endif
             #if CIRCUITPY_SHARPDISPLAY
             if (bus_type == &sharpdisplay_framebuffer_type && display_buses[i].sharpdisplay.bus == &spi_obj[instance]) {
+                display_using_spi = true;
+                break;
+            }
+            #endif
+            #if CIRCUITPY_AURORA_EPAPER
+            if (bus_type == &aurora_epaper_framebuffer_type && display_buses[i].aurora_epaper.bus == &spi_obj[instance]) {
                 display_using_spi = true;
                 break;
             }

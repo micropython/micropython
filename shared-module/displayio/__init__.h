@@ -7,6 +7,9 @@
 #if CIRCUITPY_BUSDISPLAY
 #include "shared-bindings/busdisplay/BusDisplay.h"
 #endif
+#if CIRCUITPY_AURORA_EPAPER
+#include "shared-module/aurora_epaper/aurora_framebuffer.h"
+#endif
 #include "shared-bindings/displayio/Group.h"
 #if CIRCUITPY_EPAPERDISPLAY
 #include "shared-bindings/epaperdisplay/EPaperDisplay.h"
@@ -74,6 +77,9 @@ typedef struct {
         #endif
         #if CIRCUITPY_DOTCLOCKFRAMEBUFFER
         dotclockframebuffer_framebuffer_obj_t dotclock;
+        #endif
+        #if CIRCUITPY_AURORA_EPAPER
+        aurora_epaper_framebuffer_obj_t aurora_epaper;
         #endif
     };
 } primary_display_bus_t;

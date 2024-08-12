@@ -24,6 +24,12 @@
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
 
+#if CIRCUITPY_AURORA_EPAPER
+#include "shared-module/displayio/__init__.h"
+#include "shared-bindings/aurora_epaper/aurora_framebuffer.h"
+#include "shared-module/aurora_epaper/aurora_framebuffer.h"
+#endif
+
 #if CIRCUITPY_STATUS_BAR
 #include "supervisor/shared/status_bar.h"
 #endif
