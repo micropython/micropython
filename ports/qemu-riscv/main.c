@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Ilya Dmitrichenko
+ * Copyright (c) 2014-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,28 +32,34 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
-#include "shared/runtime/gchelper.h"
-#include "lib/tinytest/tinytest.h"
-#include "lib/tinytest/tinytest_macros.h"
 
-#define HEAP_SIZE (100 * 1024)
+void do_str(const char *src, mp_parse_input_kind_t input_kind) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
+        qstr source_name = lex->source_name;
+        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, true);
+        mp_call_function_0(module_fun);
+        nlr_pop();
+    } else {
+        // uncaught exception
+        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+    }
+}
 
-#include "genhdr/tests.h"
-
-int main() {
+int main(int argc, char **argv) {
     mp_stack_ctrl_init();
     mp_stack_set_limit(10240);
-    static uint32_t heap[HEAP_SIZE / sizeof(uint32_t)];
-    upytest_set_heap(heap, (char *)heap + HEAP_SIZE);
-    int r = tinytest_main(0, NULL, groups);
-    printf("status: %d\n", r);
-    return r;
+    uint32_t heap[16 * 1024 / 4];
+    gc_init(heap, (char *)heap + 16 * 1024);
+    mp_init();
+    do_str("print('hello world!')", MP_PARSE_SINGLE_INPUT);
+    mp_deinit();
+    return 0;
 }
 
 void gc_collect(void) {
-    gc_collect_start();
-    gc_helper_collect_regs_and_stack();
-    gc_collect_end();
 }
 
 mp_lexer_t *mp_lexer_new_from_file(qstr filename) {

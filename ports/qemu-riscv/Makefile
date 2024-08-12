@@ -81,7 +81,7 @@ SRC_COMMON_C = \
 	shared/runtime/sys_stdio_mphal.c \
 
 SRC_RUN_C = \
-	ports/qemu-arm/main.c \
+	main.c \
 
 SRC_TEST_C = \
 	test_main.c \

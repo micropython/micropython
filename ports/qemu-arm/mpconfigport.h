@@ -42,22 +42,19 @@
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_ENABLE_GC           (1)
-#define MICROPY_KBD_EXCEPTION       (0)
-#define MICROPY_HELPER_REPL         (0)
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_WARNINGS            (1)
-#define MICROPY_PY_BUILTINS_INPUT   (0)
-#define MICROPY_PY_BUILTINS_HELP    (0)
 #define MICROPY_PY_IO_IOBASE        (0)
 #define MICROPY_PY_SYS_PLATFORM     "qemu-arm"
-#define MICROPY_PY_SYS_STDFILES     (0)
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
 #define MICROPY_PY_SELECT           (0)
 #define MICROPY_PY_TIME             (0)
 #define MICROPY_PY_ASYNCIO          (0)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/qemu-arm/modmachine.c"
+#define MICROPY_PY_MACHINE_RESET    (1)
 #define MICROPY_PY_MACHINE_PIN_BASE (1)
 #define MICROPY_VFS                 (1)
 
@@ -78,8 +75,4 @@ typedef long mp_off_t;
 // We need an implementation of the log2 function which is not a macro.
 #define MP_NEED_LOG2 (1)
 
-#ifdef TEST
-#include "shared/upytesthelper/upytesthelper.h"
-#undef MP_PLAT_PRINT_STRN
-#define MP_PLAT_PRINT_STRN(str, len) upytest_output(str, len)
-#endif
+#define MP_STATE_PORT MP_STATE_VM

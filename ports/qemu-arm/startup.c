@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "shared/runtime/semihosting_arm.h"
 #include "uart.h"
 
 extern uint32_t _estack, _sidata, _sdata, _edata, _sbss, _ebss;
@@ -97,6 +98,8 @@ const uint32_t isr_vector[] __attribute__((section(".isr_vector"))) = {
 #endif
 
 void _start(void) {
+    mp_semihosting_init();
+
     // Enable the UART
     uart_init();
 
@@ -108,21 +111,9 @@ void _start(void) {
     exit(0);
 }
 
-__attribute__((naked)) void exit(int status) {
+void exit(int status) {
     // Force qemu to exit using ARM Semihosting
-    __asm volatile (
-        "mov r1, r0\n"
-        "cmp r1, #0\n"
-        "bne .notclean\n"
-        "ldr r1, =0x20026\n" // ADP_Stopped_ApplicationExit, a clean exit
-        ".notclean:\n"
-        "movs r0, #0x18\n" // SYS_EXIT
-        #if defined(__ARM_ARCH_ISA_ARM)
-        "svc 0x00123456\n"
-        #elif defined(__ARM_ARCH_ISA_THUMB)
-        "bkpt 0xab\n"
-        #endif
-        );
+    mp_semihosting_exit(status);
     for (;;) {
     }
 }
@@ -134,13 +125,3 @@ void __assert_func(const char *file, int line, const char *func, const char *exp
     exit(1);
 }
 #endif
-
-// The following are needed for tinytest
-
-#include <stdio.h>
-
-int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
-    return 0;
-}
-
-struct _reent *_impure_ptr;

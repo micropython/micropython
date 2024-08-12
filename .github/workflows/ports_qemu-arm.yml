@@ -29,4 +29,4 @@ jobs:
       run: source tools/ci.sh && ci_qemu_arm_build
     - name: Print failures
       if: failure()
-      run: grep --before-context=100 --text "FAIL" ports/qemu-arm/build/console.out
+      run: tests/run-tests.py --print-failures
