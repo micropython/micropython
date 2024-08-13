@@ -232,9 +232,11 @@ static void soft_timer_hardware_callback(unsigned int alarm_num) {
     // This ISR only runs on core0, but if core1 is running Python code then it
     // may be blocked in WFE so wake it up as well. Unfortunately this also sets
     // the event flag on core0, so a subsequent WFE on this core will not suspend
+    #if MICROPY_PY_THREAD
     if (core1_entry != NULL) {
         __sev();
     }
+    #endif
 }
 
 void soft_timer_init(void) {
