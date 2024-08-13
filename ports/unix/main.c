@@ -44,7 +44,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/objstr.h"
-#include "py/stackctrl.h"
+#include "py/cstack.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "extmod/misc.h"
@@ -468,12 +468,20 @@ int main(int argc, char **argv) {
     #if MICROPY_PY_THREAD
     mp_thread_init();
     #endif
+
+    // Define a reasonable stack limit to detect stack overflow.
+    mp_uint_t stack_size = 40000 * (sizeof(void *) / 4);
+    #if defined(__arm__) && !defined(__thumb2__)
+    // ARM (non-Thumb) architectures require more stack.
+    stack_size *= 2;
+    #endif
+
     // We should capture stack top ASAP after start, and it should be
     // captured guaranteedly before any other stack variables are allocated.
     // For this, actual main (renamed main_) should not be inlined into
     // this function. main_() itself may have other functions inlined (with
     // their own stack variables), that's why we need this main/main_ split.
-    mp_stack_ctrl_init();
+    mp_cstack_init_with_sp_here(stack_size);
     return main_(argc, argv);
 }
 
@@ -491,14 +499,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // catch EPIPE themselves.
     signal(SIGPIPE, SIG_IGN);
     #endif
-
-    // Define a reasonable stack limit to detect stack overflow.
-    mp_uint_t stack_limit = 40000 * (sizeof(void *) / 4);
-    #if defined(__arm__) && !defined(__thumb2__)
-    // ARM (non-Thumb) architectures require more stack.
-    stack_limit *= 2;
-    #endif
-    mp_stack_set_limit(stack_limit);
 
     pre_process_options(argc, argv);
 
