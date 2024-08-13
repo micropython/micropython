@@ -510,8 +510,8 @@ void port_idle_until_interrupt(void) {
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
-extern void HardFault_Handler(void); // provide a prototype to avoid a missing-prototypes diagnostic
-__attribute__((used)) void __not_in_flash_func(HardFault_Handler)(void) {
+extern void isr_hardfault(void); // provide a prototype to avoid a missing-prototypes diagnostic
+__attribute__((used)) void __not_in_flash_func(isr_hardfault)(void) {
     // Only safe mode from core 0 which is running CircuitPython. Core 1 faulting
     // should not be fatal to CP. (Fingers crossed.)
     if (get_core_num() == 0) {
