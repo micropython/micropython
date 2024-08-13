@@ -147,6 +147,7 @@ set(MICROPY_SOURCE_DRIVERS
 
 set(MICROPY_SOURCE_PORT
     clocks_extra.c
+    datetime_patch.c
     fatfs_port.c
     help.c
     machine_bitstream.c
