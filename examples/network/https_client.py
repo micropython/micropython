@@ -15,9 +15,13 @@ import ssl
 
 # `addr_family` selects IPv4 vs IPv6: 0 means either, or use
 # socket.AF_INET or socket.AF_INET6 to select a particular one.
-def main(domain, addr_family=0, use_stream=True):
+def main(url, addr_family=0, use_stream=True):
+    # Split the given URL into components.
+    proto, _, host, path = url.split(b"/", 3)
+    assert proto == b"https:"
+
     # Lookup the server address, for the given family and socket type.
-    ai = socket.getaddrinfo(domain, 443, addr_family, socket.SOCK_STREAM)
+    ai = socket.getaddrinfo(host, 443, addr_family, socket.SOCK_STREAM)
     print("Address infos:", ai)
 
     # Select the first address.
@@ -39,19 +43,20 @@ def main(domain, addr_family=0, use_stream=True):
     print(s)
 
     # Send request and read response.
+    request = b"GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n" % (path, host)
     if use_stream:
         # Both CPython and MicroPython SSLSocket objects support read() and
         # write() methods.
-        s.write(b"GET / HTTP/1.0\r\n\r\n")
+        s.write(request)
         print(s.read(4096))
     else:
         # MicroPython SSLSocket objects implement only stream interface, not
         # socket interface
-        s.send(b"GET / HTTP/1.0\r\n\r\n")
+        s.send(request)
         print(s.recv(4096))
 
     # Close the socket.
     s.close()
 
 
-main("google.com")
+main(b"https://www.google.com/")
