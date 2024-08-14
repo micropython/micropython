@@ -36,6 +36,12 @@
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
 #endif
 
+// Select the low-level system tick implementation.
+#if !defined(MICROPY_HW_SYSTEM_TICK_USE_LPTIMER) \
+    && !defined(MICROPY_HW_SYSTEM_TICK_USE_UTIMER)
+#define MICROPY_HW_SYSTEM_TICK_USE_UTIMER       (1)
+#endif
+
 #ifndef MICROPY_HW_ENABLE_OSPI
 #define MICROPY_HW_ENABLE_OSPI                  (CORE_M55_HP)
 #endif
