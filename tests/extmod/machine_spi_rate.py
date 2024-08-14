@@ -21,11 +21,10 @@ if "pyboard" in sys.platform:
 elif "rp2" in sys.platform:
     spi_instances = ((0, Pin(18), Pin(19), Pin(16)),)
 elif "esp32" in sys.platform:
-    spi_instances = [
-        (1, Pin(18), Pin(19), Pin(21)),
-    ]
-    if "ESP32C3" not in str(sys.implementation):
-        spi_instances.append((2, Pin(18), Pin(19), Pin(21)))
+    if "ESP32C3" in str(sys.implementation):
+        spi_instances = ((1, Pin(4), Pin(5), Pin(6)),)
+    else:
+        spi_instances = ((1, Pin(18), Pin(19), Pin(21)), (2, Pin(18), Pin(19), Pin(21)))
 else:
     print("Please add support for this test on this platform.")
     raise SystemExit
