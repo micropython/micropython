@@ -16,6 +16,8 @@
 #include "py/runtime.h"
 
 #include "src/rp2_common/hardware_irq/include/hardware/irq.h"
+#include "hardware/regs/intctrl.h" // For isr_ macro.
+
 
 #if CIRCUITPY_AUDIOCORE
 
@@ -459,7 +461,7 @@ static void dma_callback_fun(void *arg) {
     }
 }
 
-void isr_dma_0(void) {
+void __not_in_flash_func(isr_dma_0)(void) {
     for (size_t i = 0; i < NUM_DMA_CHANNELS; i++) {
         uint32_t mask = 1 << i;
         if ((dma_hw->intr & mask) == 0) {
