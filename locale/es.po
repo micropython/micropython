@@ -1226,10 +1226,12 @@ msgstr ""
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c shared-bindings/pwmio/PWMOut.c
+#: shared-module/aurora_epaper/aurora_framebuffer.c
 msgid "Invalid %q"
 msgstr "%q inválido"
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2350.c
+#: shared-module/aurora_epaper/aurora_framebuffer.c
 msgid "Invalid %q and %q"
 msgstr ""
 
@@ -1252,11 +1254,6 @@ msgstr "Parámetro BLE invalido"
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
 msgstr "BSSID inválido"
-
-#: shared-module/aurora_epaper/aurora_framebuffer.c
-#, c-format
-msgid "Invalid CoG id=%d"
-msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
@@ -2225,14 +2222,6 @@ msgstr "Error BLE desconocido en %s:%d: %d"
 msgid "Unknown BLE error: %d"
 msgstr "Error BLE desconocido: %d"
 
-#: shared-module/aurora_epaper/aurora_framebuffer.c
-msgid "Unknown device size."
-msgstr ""
-
-#: shared-module/aurora_epaper/aurora_framebuffer.c
-msgid "Unknown display type!"
-msgstr ""
-
 #: ports/espressif/common-hal/max3421e/Max3421E.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
@@ -2291,10 +2280,6 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Unsupported colorspace"
 msgstr "Espacio de color no sportado"
-
-#: shared-module/aurora_epaper/aurora_framebuffer.c
-msgid "Unsupported device size."
-msgstr ""
 
 #: shared-module/displayio/bus_core.c
 msgid "Unsupported display bus type"
