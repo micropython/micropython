@@ -13,9 +13,13 @@ import socket
 
 # `addr_family` selects IPv4 vs IPv6: 0 means either, or use
 # socket.AF_INET or socket.AF_INET6 to select a particular one.
-def main(domain, addr_family=0, use_stream=False):
+def main(url, addr_family=0, use_stream=False):
+    # Split the given URL into components.
+    proto, _, host, path = url.split(b"/", 3)
+    assert proto == b"http:"
+
     # Lookup the server address, for the given family and socket type.
-    ai = socket.getaddrinfo(domain, 80, addr_family, socket.SOCK_STREAM)
+    ai = socket.getaddrinfo(host, 80, addr_family, socket.SOCK_STREAM)
     print("Address infos:", ai)
 
     # Select the first address.
@@ -30,18 +34,19 @@ def main(domain, addr_family=0, use_stream=False):
     s.connect(addr)
 
     # Send request and read response.
+    request = b"GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n" % (path, host)
     if use_stream:
         # MicroPython socket objects support stream (aka file) interface
         # directly, but the line below is needed for CPython.
         s = s.makefile("rwb", 0)
-        s.write(b"GET / HTTP/1.0\r\n\r\n")
+        s.write(request)
         print(s.read())
     else:
-        s.send(b"GET / HTTP/1.0\r\n\r\n")
+        s.send(request)
         print(s.recv(4096))
 
     # Close the socket.
     s.close()
 
 
-main("google.com")
+main(b"http://www.google.com/")
