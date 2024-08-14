@@ -9,17 +9,22 @@
  *
  */
 
-//#include "RTE_Components.h"
-
 #include "tusb_option.h"
 
 #if CFG_TUD_ENABLED
+
+#if defined(CORE_M55_HE)
+#include "M55_HE.h"
+#elif defined(CORE_M55_HP)
+#include "M55_HP.h"
+#else
+#error "Unsupported core!"
+#endif
 
 #include "device/dcd.h"
 
 #include "alif_dcd_reg.h"
 
-#include "irq.h"
 #include "clk.h"
 #include "power.h"
 
@@ -162,8 +167,10 @@ void dcd_init(uint8_t rhport)
     udev->dalepena_b.usbactep = (1 << 1) | (1 << 0);
 
     // enable interrupts in the NVIC
+#if !defined(TUSB_ALIF_NO_IRQ_CFG)
     NVIC_ClearPendingIRQ(USB_IRQ_IRQn);
-    NVIC_SetPriority(USB_IRQ_IRQn, IRQ_PRI_USB);
+    NVIC_SetPriority(USB_IRQ_IRQn, 5);
+#endif
     dcd_int_enable(rhport);
 }
 
@@ -407,7 +414,7 @@ bool dcd_edpt_xfer(uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t t
             }
             uint8_t ret = _dcd_start_xfer(ep, buffer, total_bytes,
                             total_bytes ? TRBCTL_NORMAL : TRBCTL_NORMAL_ZLP);
-            (void) ret; LOG("start xfer sts %u", ret);
+            LOG("start xfer sts %u", ret);
         }
     }
 
@@ -455,7 +462,7 @@ void dcd_uninit(void)
     disable_usb_periph_clk(); // disable usb peripheral clock
 }
 
-MP_WEAK void USB_IRQHandler(void)
+void USB_IRQHandler(void)
 {
     dcd_int_handler(TUD_OPT_RHPORT);
 }
@@ -512,6 +519,8 @@ static void _dcd_handle_depevt(uint8_t ep, uint8_t evt, uint8_t sts, uint16_t pa
                             _sts_stage = 0;
                             dcd_event_xfer_complete(TUD_OPT_RHPORT, tu_edpt_addr(0, TUSB_DIR_OUT),
                                                     0, XFER_RESULT_SUCCESS, true);
+
+                            // *(volatile uint32_t*) 0x4900C000 ^= 8; // [TEMP]
                         }
                     }
                 } else {
@@ -587,7 +596,7 @@ static void _dcd_handle_depevt(uint8_t ep, uint8_t evt, uint8_t sts, uint16_t pa
                     // issue the block command and pass the status
                     _dcd_cmd_wait(ep, CMDTYP_DEPSTRTXFER, 0);
 
-                    // *(volatile uint32_t*) 0x49007000 ^= 16; // [TEMP]
+                    *(volatile uint32_t*) 0x49007000 ^= 16; // [TEMP]
                 }
             }
         } break;

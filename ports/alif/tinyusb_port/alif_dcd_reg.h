@@ -16,10 +16,6 @@ extern "C" {
 
 //--------------------------------------------------------------------------------------------------
 
-#include ALIF_CMSIS_H
-
-//--------------------------------------------------------------------------------------------------
-
 #define _rw volatile uint32_t
 #define __w volatile uint32_t
 #define __r volatile const uint32_t
@@ -49,7 +45,7 @@ volatile struct {
 
     union {
         _rw gsbuscfg1;
-        struct { 
+        struct {
             __r : 8;
             _rw pipetranslimit : 4;
             _rw en1kpage       : 1;
@@ -133,7 +129,7 @@ volatile struct {
     union {
         _rw gsnpsid;
     };
-    
+
     __r : 32;
 
     union {
@@ -162,7 +158,7 @@ volatile struct {
             _rw buserraddr : 32;
         } gbuserraddrhi_b;
     };
-    
+
     __r : 32; __r : 32;
 
     __r ghwparams[8];
@@ -171,7 +167,7 @@ volatile struct {
     __r : 32; __r : 32; __r : 32; __r : 32;
     __r : 32; __r : 32; __r : 32; __r : 32;
     __r : 32; __r : 32; __r : 32;
-    
+
     // base + 0x9C here
 
     union {
@@ -196,7 +192,7 @@ volatile struct {
     __r : 32; __r : 32; __r : 32; __r : 32;
 
     // base + 0x100 here
-    
+
     union {
         _rw gusb2phycfg0;
         struct {
@@ -239,7 +235,7 @@ volatile struct {
     __r : 32; __r : 32; __r : 32; __r : 32;
 
     // base + 0x200 here
-    
+
     union {
         _rw gtxfifosiz[4];
         struct {
@@ -255,9 +251,9 @@ volatile struct {
     __r : 32; __r : 32; __r : 32; __r : 32;
     __r : 32; __r : 32; __r : 32; __r : 32;
     __r : 32; __r : 32; __r : 32; __r : 32;
-    
+
     // base + 0x280 here
-    
+
     union {
         _rw grxfifosiz[4];
         struct {
@@ -273,23 +269,23 @@ volatile struct {
     __r : 32; __r : 32; __r : 32; __r : 32;
     __r : 32; __r : 32; __r : 32; __r : 32;
     __r : 32; __r : 32; __r : 32; __r : 32;
-    
+
     // base + 0x300 here
-    
+
     union {
         _rw gevntadrlo0;
         struct {
             _rw evntadrlo : 32;
         } gevntadrlo0_b;
     };
-    
+
     union {
         _rw gevntadrhi0;
         struct {
             _rw evntadrhi : 32;
         } gevntadrhi0_b;
     };
-    
+
     union {
         _rw gevntsiz0;
         struct {
@@ -298,7 +294,7 @@ volatile struct {
             _rw evntintrptmask : 1;
         } gevntsiz0_b;
     };
-    
+
     union {
         _rw gevntcount0;
         struct {
@@ -307,7 +303,7 @@ volatile struct {
             _rw evnt_handler_busy : 1;
         } gevntcount0_b;
     };
-    
+
     __r : 32; __r : 32; __r : 32; __r : 32;
     __r : 32; __r : 32; __r : 32; __r : 32;
     __r : 32; __r : 32; __r : 32; __r : 32;
@@ -341,13 +337,13 @@ volatile struct {
     __r : 32; __r : 32; __r : 32; __r : 32;
 
     // base + 0x500 here
-    
+
     __r ghwparams8;
-    
+
     __r : 32; __r : 32; __r : 32;
-    
+
     // base + 0x510 here
-    
+
     union {
         _rw gtxfifopridev;
         struct {
@@ -355,9 +351,9 @@ volatile struct {
             __r : 28;
         } gtxfifopridev_b;
     };
-    
+
     __r : 32;
-    
+
     union {
         _rw gtxfifoprihst;
         struct {
@@ -365,7 +361,7 @@ volatile struct {
             __r : 30;
         } gtxfifoprihst_b;
     };
-    
+
     union {
         _rw grxfifoprihst;
         struct {
@@ -373,11 +369,11 @@ volatile struct {
             __r : 30;
         } grxfifoprihst_b;
     };
-    
+
     __r : 32; __r : 32; __r : 32; __r : 32;
-    
+
     // base + 0x530 here
-    
+
     union {
         _rw gfladj;
         struct {
@@ -391,11 +387,11 @@ volatile struct {
             _rw gfladj_refclk_240mhzdecr_pls1 : 1;
         } gfladj_b;
     };
-    
+
     __r : 32; __r : 32; __r : 32;
-    
+
     // base + 0x540 here
-    
+
     union {
         _rw gusb2rhbctl0;
         struct {
@@ -420,7 +416,7 @@ volatile struct {
             __r : 8;
         } dcfg_b;
     };
-    
+
     union {
         _rw dctl;
         struct {
@@ -439,7 +435,7 @@ volatile struct {
             _rw run_stop : 1;
         } dctl_b;
     };
-    
+
     union {
         _rw devten;
         struct {
@@ -462,7 +458,7 @@ volatile struct {
             __r : 15;
         } devten_b;
     };
-    
+
     union {
         _rw dsts;
         struct {
@@ -480,14 +476,14 @@ volatile struct {
             __r : 2;
         } dsts_b;
     };
-    
+
     union {
         _rw dgcmdpar;
         struct {
             _rw parameter : 32;
         } dgcmdpar_b;
     };
-    
+
     union {
         _rw dgcmd;
         struct {
@@ -502,7 +498,7 @@ volatile struct {
     };
 
     __r : 32; __r : 32;
-    
+
     union {
         _rw dalepena;
         struct {
@@ -548,7 +544,7 @@ volatile struct {
                 _rw parameter : 32;
             } par0_b;
         };
-    
+
         union {
             _rw depcmd;
             struct {
@@ -563,7 +559,7 @@ volatile struct {
             } depcmd_b;
         };
     } depcmd[8];
-    
+
     __r : 32; __r : 32; __r : 32; __r : 32;
     __r : 32; __r : 32; __r : 32; __r : 32;
     __r : 32; __r : 32; __r : 32; __r : 32;
@@ -590,7 +586,7 @@ volatile struct {
     __r : 32; __r : 32; __r : 32; __r : 32;
 
     // base + 0x300 here
-    
+
     union {
         _rw dev_imod0;
         struct {
