@@ -7,7 +7,7 @@
 #pragma once
 
 #include "common-hal/microcontroller/Pin.h"
-#include "components/driver/ledc/include/driver/ledc.h"
+#include "driver/ledc.h"
 
 typedef struct {
     mp_obj_base_t base;

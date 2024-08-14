@@ -16,7 +16,7 @@
 #include "supervisor/usb.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-#include "components/driver/gpio/include/driver/gpio.h"
+#include "driver/gpio.h"
 
 #ifdef CFG_TUSB_DEBUG
   #define USBH_STACK_SIZE     (3 * configMINIMAL_STACK_SIZE)

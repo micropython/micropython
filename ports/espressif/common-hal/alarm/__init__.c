@@ -30,8 +30,8 @@
 
 #include "esp_sleep.h"
 
-#include "components/driver/gpio/include/driver/gpio.h"
-#include "components/driver/uart/include/driver/uart.h"
+#include "driver/gpio.h"
+#include "driver/uart.h"
 
 // Singleton instance of SleepMemory.
 const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {

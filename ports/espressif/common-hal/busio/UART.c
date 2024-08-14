@@ -8,7 +8,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busio/UART.h"
 
-#include "components/driver/uart/include/driver/uart.h"
+#include "driver/uart.h"
 
 #include "mpconfigport.h"
 #include "shared/readline/readline.h"
@@ -56,7 +56,7 @@ void uart_reset(void) {
     for (uart_port_t num = 0; num < UART_NUM_MAX; num++) {
         #ifdef CONFIG_ESP_CONSOLE_UART_NUM
         // Do not reset the UART used by the IDF for logging.
-        if (num == CONFIG_ESP_CONSOLE_UART_NUM) {
+        if ((int)num == CONFIG_ESP_CONSOLE_UART_NUM) {
             continue;
         }
         #endif

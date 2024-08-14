@@ -10,7 +10,7 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #ifdef SOC_DAC_SUPPORTED
-#include "esp-idf/components/driver/dac/include/driver/dac_oneshot.h"
+#include "driver/dac_oneshot.h"
 #endif
 #include "py/obj.h"
 

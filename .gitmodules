@@ -143,7 +143,7 @@
 [submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
 	url = https://github.com/adafruit/esp-idf.git
-	branch = circuitpython-v5.2.2
+	branch = circuitpython-v5.3
 [submodule "ports/espressif/esp-protocols"]
 	path = ports/espressif/esp-protocols
 	url = https://github.com/espressif/esp-protocols.git
@@ -354,8 +354,8 @@
 	url = https://github.com/adafruit/certificates
 [submodule "lib/tlsf"]
 	path = lib/tlsf
-	url = https://github.com/adafruit/tlsf.git
-	branch = circuitpython
+	url = https://github.com/espressif/tlsf.git
+	branch = idf
 [submodule "frozen/CircuitPython_AXP313A"]
 	path = frozen/CircuitPython_AXP313A
 	url = https://github.com/bill88t/CircuitPython_AXP313A

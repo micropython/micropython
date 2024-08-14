@@ -77,23 +77,10 @@ static void recv_cb(const esp_now_recv_info_t *esp_now_info, const uint8_t *msg,
         return;
     }
 
-    // Get the RSSI value from the wifi packet header
-    // Secret magic to get the rssi from the wifi packet header
-    // See espnow.c:espnow_recv_cb() at https://github.com/espressif/esp-now/
-    // In the wifi packet the msg comes after a wifi_promiscuous_pkt_t
-    // and a espnow_frame_format_t.
-    // Backtrack to get a pointer to the wifi_promiscuous_pkt_t.
-    #define SIZEOF_ESPNOW_FRAME_FORMAT 39
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wcast-align"
-    wifi_promiscuous_pkt_t *wifi_packet = (wifi_promiscuous_pkt_t *)(
-        msg - SIZEOF_ESPNOW_FRAME_FORMAT - sizeof(wifi_promiscuous_pkt_t));
-    #pragma GCC diagnostic pop
-
     espnow_header_t header;
     header.magic = ESPNOW_MAGIC;
     header.msg_len = msg_len;
-    header.rssi = wifi_packet->rx_ctrl.rssi;
+    header.rssi = esp_now_info->rx_ctrl->rssi;
     header.time_ms = mp_hal_ticks_ms();
 
     ringbuf_put_n(buf, (uint8_t *)&header, sizeof(header));

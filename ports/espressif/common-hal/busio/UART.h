@@ -8,7 +8,7 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "components/hal/include/hal/uart_types.h"
+#include "hal/uart_types.h"
 #include "py/obj.h"
 
 #include "freertos/FreeRTOS.h"
