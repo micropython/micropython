@@ -27,9 +27,140 @@
 #include "irq.h"
 #include "system_tick.h"
 
-#include "utimer.h"
-
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
+
+#if MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
+
+#include "lptimer.h"
+#include "sys_ctrl_lptimer.h"
+
+// Channel 0 and 1 are cascaded to make a 64-bit counter.
+// Channel 2 is used for system_tick_wfe_with_timeout_us.
+// Channel 3 is used for system_tick_schedule_after_us.
+#define LPTIMER ((LPTIMER_Type *)LPTIMER_BASE)
+#define LPTIMER_CH_A (0)
+#define LPTIMER_CH_B (1)
+#define LPTIMER_CH_C (2)
+#define LPTIMER_CH_D (3)
+
+uint64_t system_tick_source_hz;
+
+void system_tick_init(void) {
+    lptimer_disable_counter(LPTIMER, LPTIMER_CH_A);
+    lptimer_disable_counter(LPTIMER, LPTIMER_CH_B);
+
+    ANA_REG->MISC_CTRL |= 1 << 0; // SEL_32K, select LXFO
+
+    select_lptimer_clk(LPTIMER_CLK_SOURCE_32K, LPTIMER_CH_A);
+    select_lptimer_clk(LPTIMER_CLK_SOURCE_CASCADE, LPTIMER_CH_B);
+    select_lptimer_clk(LPTIMER_CLK_SOURCE_32K, LPTIMER_CH_C);
+    select_lptimer_clk(LPTIMER_CLK_SOURCE_32K, LPTIMER_CH_D);
+
+    lptimer_load_max_count(LPTIMER, LPTIMER_CH_A);
+    lptimer_set_mode_freerunning(LPTIMER, LPTIMER_CH_A);
+
+    lptimer_load_max_count(LPTIMER, LPTIMER_CH_B);
+    lptimer_set_mode_freerunning(LPTIMER, LPTIMER_CH_B);
+
+    lptimer_enable_counter(LPTIMER, LPTIMER_CH_B);
+    lptimer_enable_counter(LPTIMER, LPTIMER_CH_A);
+
+    system_tick_source_hz = 32768;
+
+    NVIC_ClearPendingIRQ(LPTIMER2_IRQ_IRQn);
+    NVIC_SetPriority(LPTIMER2_IRQ_IRQn, IRQ_PRI_SYSTEM_TICK);
+    NVIC_EnableIRQ(LPTIMER2_IRQ_IRQn);
+
+    NVIC_ClearPendingIRQ(LPTIMER3_IRQ_IRQn);
+    NVIC_SetPriority(LPTIMER3_IRQ_IRQn, IRQ_PRI_SYSTEM_TICK);
+    NVIC_EnableIRQ(LPTIMER3_IRQ_IRQn);
+}
+
+void LPTIMER2_IRQHandler(void) {
+    lptimer_clear_interrupt(LPTIMER, LPTIMER_CH_C);
+    __SEV();
+}
+
+void LPTIMER3_IRQHandler(void) {
+    lptimer_clear_interrupt(LPTIMER, LPTIMER_CH_D);
+    lptimer_mask_interrupt(LPTIMER, LPTIMER_CH_D);
+    lptimer_disable_counter(LPTIMER, LPTIMER_CH_D);
+    system_tick_schedule_callback();
+    __SEV();
+}
+
+uint32_t system_tick_get_u32(void) {
+    return 0xffffffff - lptimer_get_count(LPTIMER, LPTIMER_CH_A);
+}
+
+uint64_t system_tick_get_u64(void) {
+    // Get 64-bit counter value from the hardware timer.
+    // Sample it twice in case the low counter wraps around while sampling.
+    uint32_t irq_state = disable_irq();
+    uint32_t lo0 = lptimer_get_count(LPTIMER, LPTIMER_CH_A);
+    uint32_t hi0 = lptimer_get_count(LPTIMER, LPTIMER_CH_B);
+    uint32_t lo1 = lptimer_get_count(LPTIMER, LPTIMER_CH_A);
+    uint32_t hi1 = lptimer_get_count(LPTIMER, LPTIMER_CH_B);
+    enable_irq(irq_state);
+
+    if (hi0 == hi1) {
+        // Low counter may have wrapped around between sampling of lo0 and hi0, so prefer second sampling.
+        lo0 = lo1;
+        hi0 = hi1;
+    } else {
+        // Low counter wrapped around either between sampling of hi0 and lo1, or sampling of lo1 and hi1.
+        // In either case use the first sampling.
+    }
+
+    // Convert from descending count to ascending.
+    lo0 = 0xffffffff - lo0;
+    hi0 = 0xffffffff - hi0;
+
+    // Return a 64-bit value.
+    return ((uint64_t)hi0 << 32) | (uint64_t)lo0;
+}
+
+void system_tick_wfe_with_timeout_us(uint32_t timeout_us) {
+    // Maximum 131 second timeout, to not overflow 32-bit ticks when
+    // LPTIMER is clocked at 32768Hz.
+    uint32_t timeout_ticks = (uint64_t)MIN(timeout_us, 131000000) * system_tick_source_hz / 1000000;
+
+    // Set up the LPTIMER interrupt to fire after the given timeout.
+    lptimer_disable_counter(LPTIMER, LPTIMER_CH_C);
+    lptimer_set_mode_userdefined(LPTIMER, LPTIMER_CH_C);
+    lptimer_load_count(LPTIMER, LPTIMER_CH_C, &timeout_ticks);
+    lptimer_clear_interrupt(LPTIMER, LPTIMER_CH_C);
+    lptimer_unmask_interrupt(LPTIMER, LPTIMER_CH_C);
+    lptimer_enable_counter(LPTIMER, LPTIMER_CH_C);
+
+    // Wait for an event.
+    __WFE();
+
+    // Disable the LPTIMER interrupt (in case a different interrupt woke the WFE).
+    lptimer_mask_interrupt(LPTIMER, LPTIMER_CH_C);
+    lptimer_disable_counter(LPTIMER, LPTIMER_CH_C);
+}
+
+void system_tick_schedule_after_us(uint32_t ticks_us) {
+    // Disable the interrupt in case it's still active.
+    lptimer_mask_interrupt(LPTIMER, LPTIMER_CH_D);
+
+    // Maximum 131 second timeout, to not overflow 32-bit ticks when
+    // LPTIMER is clocked at 32768Hz.
+    uint32_t timeout_ticks = (uint64_t)MIN(ticks_us, 131000000) * system_tick_source_hz / 1000000;
+
+    // Set up the LPTIMER interrupt to fire after the given timeout.
+    lptimer_disable_counter(LPTIMER, LPTIMER_CH_D);
+    lptimer_set_mode_userdefined(LPTIMER, LPTIMER_CH_D);
+    lptimer_load_count(LPTIMER, LPTIMER_CH_D, &timeout_ticks);
+    lptimer_clear_interrupt(LPTIMER, LPTIMER_CH_D);
+    lptimer_unmask_interrupt(LPTIMER, LPTIMER_CH_D);
+    lptimer_enable_counter(LPTIMER, LPTIMER_CH_D);
+}
+
+#elif MICROPY_HW_SYSTEM_TICK_USE_UTIMER
+
+#include "utimer.h"
 
 #define UTIMER ((UTIMER_Type *)UTIMER_BASE)
 #define UTIMER_CHANNEL (11)
@@ -166,3 +297,5 @@ void system_tick_schedule_after_us(uint32_t ticks_us) {
         }
     }
 }
+
+#endif
