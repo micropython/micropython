@@ -120,16 +120,28 @@ mp_uint_t mp_hal_ticks_cpu(void) {
 
 mp_uint_t mp_hal_ticks_us(void) {
     // Convert system tick to microsecond counter.
+    #if MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
+    return system_tick_get_u64() * 1000000 / system_tick_source_hz;
+    #else
     return system_tick_get_u64() / system_core_clock_mhz;
+    #endif
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
     // Convert system tick to millisecond counter.
+    #if MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
+    return system_tick_get_u64() * 1000ULL / system_tick_source_hz;
+    #else
     return system_tick_get_u64() / (SystemCoreClock / 1000);
+    #endif
 }
 
 void mp_hal_delay_us(mp_uint_t us) {
+    #if MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
+    uint64_t ticks_delay = (uint64_t)us * system_tick_source_hz / 1000000;
+    #else
     uint64_t ticks_delay = (uint64_t)us * system_core_clock_mhz;
+    #endif
     uint64_t start = system_tick_get_u64();
     while (system_tick_get_u64() - start < ticks_delay) {
     }
