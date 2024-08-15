@@ -62,11 +62,7 @@
 // Python internal features
 #define MICROPY_READER_VFS                  (1)
 #define MICROPY_ENABLE_GC                   (1)
-#if CONFIG_IDF_TARGET_ARCH_RISCV                   // RISC-V SoCs use more stack than Xtensa
-#define MICROPY_STACK_CHECK_MARGIN          (2048) // This may be unnecessarily conservative
-#else
 #define MICROPY_STACK_CHECK_MARGIN          (1024)
-#endif
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL)
