@@ -122,6 +122,8 @@ endif
 
 all: $(BUILD)/firmware.kernel$(SUFFIX).img $(BUILD)/firmware.disk.img.zip
 
+$(BUILD)/lib/tlsf/tlsf.o: CFLAGS += -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
+
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
