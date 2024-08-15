@@ -63,7 +63,7 @@ void common_hal_aurora_epaper_framebuffer_construct(
     } else if (width == 232 && height == 128) {
         self->type = LARGE_2_6;
     } else {
-        mp_raise_TypeError(MP_ERROR_TEXT("Unsupported device size."));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q and %q"), MP_QSTR_width, MP_QSTR_height);
     }
 
     // CS
@@ -235,7 +235,7 @@ bool common_hal_aurora_epaper_framebuffer_power_on(aurora_epaper_framebuffer_obj
 
     if (cog_id != 0x12) {
         common_hal_busio_spi_unlock(self->bus);
-        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid CoG id=%d"), cog_id);
+        mp_raise_RuntimeError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_id);
         return false;
     }
 
@@ -261,7 +261,6 @@ bool common_hal_aurora_epaper_framebuffer_power_on(aurora_epaper_framebuffer_obj
             break;
         default:
             common_hal_busio_spi_unlock(self->bus);
-            mp_raise_ValueError(MP_ERROR_TEXT("Unknown display type!"));
             return false;
     }
 
@@ -523,8 +522,6 @@ void common_hal_aurora_epaper_framebuffer_draw_line(aurora_epaper_framebuffer_ob
         common_hal_busio_spi_write(self->bus, &border, 1);
 
 #undef DO_MAP
-    } else {
-        mp_raise_TypeError(MP_ERROR_TEXT("Unknown device size."));
     }
 
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
