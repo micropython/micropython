@@ -70,6 +70,8 @@ void _start(void) {
 
     #if MICROPY_HW_ENABLE_USBDEV
     // Takes about 200ms.
+    NVIC_ClearPendingIRQ(USB_IRQ_IRQn);
+    NVIC_SetPriority(USB_IRQ_IRQn, IRQ_PRI_USB);
     tusb_init();
     #endif
 
