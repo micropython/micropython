@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-07-24 22:09+0000\n"
+"PO-Revision-Date: 2024-08-10 14:09+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
@@ -1206,12 +1206,14 @@ msgstr "Interrupted by output function"
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c shared-bindings/pwmio/PWMOut.c
+#: shared-module/aurora_epaper/aurora_framebuffer.c
 msgid "Invalid %q"
 msgstr "Invalid %q"
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2350.c
+#: shared-module/aurora_epaper/aurora_framebuffer.c
 msgid "Invalid %q and %q"
-msgstr ""
+msgstr "Invalid %q and %q"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 #: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c

@@ -1241,10 +1241,12 @@ msgstr "출력 함수로 인해 종료되었다"
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c shared-bindings/pwmio/PWMOut.c
+#: shared-module/aurora_epaper/aurora_framebuffer.c
 msgid "Invalid %q"
 msgstr "잘못된 %q"
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2350.c
+#: shared-module/aurora_epaper/aurora_framebuffer.c
 msgid "Invalid %q and %q"
 msgstr ""
 

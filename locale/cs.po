@@ -1207,10 +1207,12 @@ msgstr ""
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c shared-bindings/pwmio/PWMOut.c
+#: shared-module/aurora_epaper/aurora_framebuffer.c
 msgid "Invalid %q"
 msgstr "Špatný %s"
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2350.c
+#: shared-module/aurora_epaper/aurora_framebuffer.c
 msgid "Invalid %q and %q"
 msgstr ""
 
