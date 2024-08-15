@@ -8,7 +8,6 @@
 #include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "driver/gpio.h"
-#include "hal/gpio_hal.h"
 #include "common-hal/microcontroller/Pin.h"
 
 void board_init(void) {
