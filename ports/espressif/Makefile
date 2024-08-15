@@ -401,8 +401,10 @@ SRC_C += common-hal/_bleio/ble_events.c
 endif
 
 ifneq ($(CIRCUITPY_DOTCLOCKFRAMEBUFFER),0)
-CFLAGS += -isystem esp-idf/components/esp_lcd/include
-CFLAGS += -isystem esp-idf/components/esp_lcd/interface
+CFLAGS += \
+	-isystem esp-idf/components/esp_lcd/include \
+	-isystem esp-idf/components/esp_lcd/interface \
+	-isystem esp-idf/components/esp_lcd/rgb/include
 endif
 
 ifneq ($(CIRCUITPY_ESPCAMERA),0)
@@ -439,11 +441,23 @@ ifneq ($(CIRCUITPY_NEOPIXEL_WRITE),0)
 CHIP_COMPONENTS += esp_driver_rmt
 endif
 
+ifneq ($(CIRCUITPY_PARALLELDISPLAYBUS),0)
+CHIP_COMPONENTS += esp_driver_i2s
+endif
+
+ifneq ($(CIRCUITPY_PULSEIO),0)
+CHIP_COMPONENTS += esp_driver_rmt
+endif
+
 ifneq ($(CIRCUITPY_COUNTIO),0)
 CHIP_COMPONENTS += esp_driver_pcnt
 endif
 
 ifneq ($(CIRCUITPY_ROTARYIO),0)
+CHIP_COMPONENTS += esp_driver_pcnt
+endif
+
+ifneq ($(CIRCUITPY_FREQUENCYIO),0)
 CHIP_COMPONENTS += esp_driver_pcnt
 endif
 
