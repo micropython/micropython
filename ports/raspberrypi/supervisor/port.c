@@ -267,6 +267,7 @@ static bool max_size_walker(void *ptr, size_t size, int used, void *user) {
     if (!used && *max_size < size) {
         *max_size = size;
     }
+    return true;
 }
 
 size_t port_heap_get_largest_free_size(void) {
