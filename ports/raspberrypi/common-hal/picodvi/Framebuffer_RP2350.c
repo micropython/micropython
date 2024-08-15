@@ -119,7 +119,6 @@ static void __not_in_flash_func(dma_irq_handler)(void) {
     if (active_picodvi == NULL) {
         return;
     }
-    // gpio_put(10, 1);
     uint ch_num = active_picodvi->dma_pixel_channel;
     dma_channel_hw_t *ch = &dma_hw->ch[ch_num];
     dma_hw->intr = 1u << ch_num;
@@ -128,7 +127,6 @@ static void __not_in_flash_func(dma_irq_handler)(void) {
     // will trigger the pixel channel).
     ch = &dma_hw->ch[active_picodvi->dma_command_channel];
     ch->al3_read_addr_trig = (uintptr_t)active_picodvi->dma_commands;
-    // gpio_put(10, 0);
 }
 
 void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
@@ -391,11 +389,6 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
         gpio_set_function(i, 0); // HSTX
         never_reset_pin_number(i);
     }
-
-    // gpio_init(10);
-    // gpio_put(10, 0);
-    // gpio_set_dir(10, GPIO_OUT);
-    // never_reset_pin_number(10);
 
     dma_channel_config c;
     c = dma_channel_get_default_config(self->dma_command_channel);
