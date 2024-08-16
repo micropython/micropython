@@ -1065,11 +1065,6 @@ the last matching regex is used:
         pyb = None
     elif args.target in LOCAL_TARGETS:
         pyb = None
-        if not args.mpy_cross_flags:
-            if args.target == "unix":
-                args.mpy_cross_flags = "-march=host"
-            elif args.target == "qemu-arm":
-                args.mpy_cross_flags = "-march=armv7m"
         if args.target == "webassembly":
             pyb = PyboardNodeRunner()
     elif args.target in EXTERNAL_TARGETS:
@@ -1077,23 +1072,18 @@ the last matching regex is used:
         sys.path.append(base_path("../tools"))
         import pyboard
 
-        if not args.mpy_cross_flags:
-            if args.target == "esp8266":
-                args.mpy_cross_flags = "-march=xtensa"
-            elif args.target == "esp32":
-                args.mpy_cross_flags = "-march=xtensawin"
-            elif args.target == "rp2":
-                args.mpy_cross_flags = "-march=armv6m"
-            elif args.target == "pyboard":
-                args.mpy_cross_flags = "-march=armv7emsp"
-            else:
-                args.mpy_cross_flags = "-march=armv7m"
-
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyboard.Pyboard.run_script_on_remote_target = run_script_on_remote_target
         pyb.enter_raw_repl()
     else:
         raise ValueError("target must be one of %s" % ", ".join(LOCAL_TARGETS + EXTERNAL_TARGETS))
+
+    # Automatically detect the native architecture for mpy-cross if not given.
+    if not (args.list_tests or args.write_exp) and not args.mpy_cross_flags:
+        output = run_feature_check(pyb, args, "target_info.py")
+        arch = str(output, "ascii").strip()
+        if arch != "None":
+            args.mpy_cross_flags = "-march=" + arch
 
     if args.run_failures and (any(args.files) or args.test_dirs is not None):
         raise ValueError(
