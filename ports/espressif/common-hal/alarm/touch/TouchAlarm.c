@@ -129,7 +129,7 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
     touch_pad_isr_register(touch_interrupt, NULL);
     touch_pad_intr_enable();
     #else
-    touch_pad_timeout_set(true, SOC_TOUCH_PAD_THRESHOLD_MAX);
+    touch_pad_timeout_set(true, TOUCH_PAD_THRESHOLD_MAX);
     touch_pad_isr_register(touch_interrupt, NULL, TOUCH_PAD_INTR_MASK_ALL);
     touch_pad_intr_enable(TOUCH_PAD_INTR_MASK_ACTIVE | TOUCH_PAD_INTR_MASK_INACTIVE);
     #endif

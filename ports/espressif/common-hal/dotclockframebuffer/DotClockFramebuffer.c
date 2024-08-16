@@ -19,7 +19,7 @@
 #include "esp_log.h"
 #define TAG "LCD"
 
-#include "components/esp_rom/include/esp_rom_sys.h"
+#include "esp_rom_sys.h"
 
 #include "bindings/espidf/__init__.h"
 #include "py/objarray.h"
@@ -28,11 +28,11 @@
 #include "common-hal/espidf/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
-#include "components/driver/gpio/include/driver/gpio.h"
-#include "components/esp_rom/include/esp_rom_gpio.h"
-#include "components/hal/esp32s3/include/hal/lcd_ll.h"
-#include "components/hal/include/hal/gpio_hal.h"
-#include "components/soc/esp32s3/include/soc/lcd_cam_struct.h"
+#include "driver/gpio.h"
+#include "esp_rom_gpio.h"
+#include "hal/lcd_ll.h"
+#include "hal/gpio_hal.h"
+#include "soc/lcd_cam_struct.h"
 #include "esp_heap_caps.h"
 
 // should be from rom/cache.h but it wasn't working

@@ -14,8 +14,7 @@
 #include "supervisor/shared/board.h"
 
 #include "shared-module/displayio/mipi_constants.h"
-#include "components/driver/gpio/include/driver/gpio.h"
-#include "components/hal/include/hal/gpio_hal.h"
+#include "driver/gpio.h"
 #include "common-hal/microcontroller/Pin.h"
 
 #define DELAY 0x80

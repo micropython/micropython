@@ -7,9 +7,8 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "py/runtime.h"
 
-#include "components/driver/gpio/include/driver/gpio.h"
-
-#include "components/hal/include/hal/gpio_hal.h"
+#include "driver/gpio.h"
+#include "hal/gpio_hal.h"
 
 static bool _pin_is_input(uint8_t pin_number) {
     const uint32_t iomux = READ_PERI_REG(GPIO_PIN_MUX_REG[pin_number]);

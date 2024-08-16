@@ -13,7 +13,7 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/board.h"
 
-#include "components/log/include/esp_log.h"
+#include "esp_log.h"
 
 static const char *TAG = "board";
 

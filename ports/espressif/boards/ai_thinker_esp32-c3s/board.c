@@ -8,7 +8,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/board.h"
 
-#include "components/driver/gpio/include/driver/gpio.h"
+#include "driver/gpio.h"
 #include "soc/usb_serial_jtag_struct.h"
 
 void board_init(void) {

@@ -6,7 +6,7 @@
 
 #include "supervisor/board.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "components/driver/gpio/include/driver/gpio.h"
+#include "driver/gpio.h"
 
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     // Pull USER_PWR_SHUTDOWN down (pull up shuts down power)

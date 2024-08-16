@@ -5,6 +5,7 @@ import pathlib
 import click
 import copy
 import kconfiglib
+import kconfiglib.core
 import os
 
 OPT_SETTINGS = [
@@ -127,7 +128,7 @@ def sym_default(sym):
     # Skip symbols that cannot be changed. Only check
     # non-choice symbols, as selects don't affect choice
     # symbols.
-    if not sym.choice and sym.visibility <= kconfiglib.expr_value(sym.rev_dep):
+    if not sym.choice and sym.visibility <= kconfiglib.core.expr_value(sym.rev_dep):
         return True
 
     # Skip symbols whose value matches their default
@@ -142,7 +143,7 @@ def sym_default(sym):
         sym.choice
         and not sym.choice.is_optional
         and sym.choice._selection_from_defaults() is sym
-        and sym.orig_type is kconfiglib.BOOL
+        and sym.orig_type is kconfiglib.core.BOOL
         and sym.tri_value == 2
     ):
         return True
@@ -288,7 +289,7 @@ def update(debug, board, update_all):
             current_group.pop()
             continue
 
-        if node.item is kconfiglib.MENU:
+        if node.item is kconfiglib.core.MENU:
             if node.prompt:
                 print("  " * len(current_group), i, node.prompt[0])
         i += 1
@@ -300,7 +301,7 @@ def update(debug, board, update_all):
 
         # We have a configuration item.
         item = node.item
-        if isinstance(item, kconfiglib.Symbol):
+        if isinstance(item, kconfiglib.core.Symbol):
             if item._visited:
                 continue
             item._visited = True
@@ -459,14 +460,14 @@ def update(debug, board, update_all):
                     default_settings.append(config_string)
 
         else:
-            if item is kconfiglib.COMMENT:
+            if item is kconfiglib.core.COMMENT:
                 print("comment", repr(item))
-            elif item is kconfiglib.MENU:
+            elif item is kconfiglib.core.MENU:
                 if node.list:
                     current_group.append(node.prompt[0])
                     pending_nodes.append(None)
                     pending_nodes.append(node.list)
-            elif isinstance(item, kconfiglib.Choice):
+            elif isinstance(item, kconfiglib.core.Choice):
                 # Choices are made up of individual symbols that we need to check.
                 pending_nodes.append(node.list)
             else:

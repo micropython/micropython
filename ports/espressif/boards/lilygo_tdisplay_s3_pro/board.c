@@ -14,8 +14,7 @@
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/board/__init__.h"
 
-#include "components/driver/gpio/include/driver/gpio.h"
-#include "components/hal/include/hal/gpio_hal.h"
+#include "driver/gpio.h"
 #include "common-hal/microcontroller/Pin.h"
 
 uint8_t display_init_sequence[] = {

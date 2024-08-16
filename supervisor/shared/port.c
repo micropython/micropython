@@ -46,11 +46,12 @@ MP_WEAK void *port_realloc(void *ptr, size_t size) {
     return tlsf_realloc(heap, ptr, size);
 }
 
-static void max_size_walker(void *ptr, size_t size, int used, void *user) {
+static bool max_size_walker(void *ptr, size_t size, int used, void *user) {
     size_t *max_size = (size_t *)user;
     if (!used && *max_size < size) {
         *max_size = size;
     }
+    return true;
 }
 
 MP_WEAK size_t port_heap_get_largest_free_size(void) {

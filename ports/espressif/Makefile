@@ -62,19 +62,7 @@ INC += \
 	-isystem esp-idf/components/bt/host/nimble/nimble/porting/nimble/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/porting/npl/freertos/include \
 	-isystem esp-idf/components/bt/host/nimble/port/include \
-	-isystem esp-idf/components/driver/include \
-	-isystem esp-idf/components/driver/deprecated \
-	-isystem esp-idf/components/driver/dac/include \
-	-isystem esp-idf/components/driver/gpio/include \
-	-isystem esp-idf/components/driver/gptimer/include \
 	-isystem esp-idf/components/driver/i2c/include \
-	-isystem esp-idf/components/driver/i2s/include \
-	-isystem esp-idf/components/driver/$(IDF_TARGET)/include \
-	-isystem esp-idf/components/driver/ledc/include \
-	-isystem esp-idf/components/driver/pcnt/include \
-	-isystem esp-idf/components/driver/rmt/include \
-	-isystem esp-idf/components/driver/spi/include \
-	-isystem esp-idf/components/driver/temperature_sensor/include \
 	-isystem esp-idf/components/driver/touch_sensor/include \
 	-isystem esp-idf/components/driver/touch_sensor/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/driver/twai/include \
@@ -86,7 +74,21 @@ INC += \
 	-isystem esp-idf/components/esp_app_format/include \
 	-isystem esp-idf/components/esp_bootloader_format/include \
 	-isystem esp-idf/components/esp_common/include \
+	-isystem esp-idf/components/esp_driver_deprecated \
+	-isystem esp-idf/components/esp_driver_dac/include \
+	-isystem esp-idf/components/esp_driver_gpio/include \
+	-isystem esp-idf/components/esp_driver_gptimer/include \
+	-isystem esp-idf/components/esp_driver_i2c/include \
+	-isystem esp-idf/components/esp_driver_i2s/include \
+	-isystem esp-idf/components/esp_driver_$(IDF_TARGET)/include \
+	-isystem esp-idf/components/esp_driver_ledc/include \
+	-isystem esp-idf/components/esp_driver_pcnt/include \
+	-isystem esp-idf/components/esp_driver_rmt/include \
+	-isystem esp-idf/components/esp_driver_spi/include \
+	-isystem esp-idf/components/esp_driver_tsens/include \
+	-isystem esp-idf/components/esp_driver_uart/include \
 	-isystem esp-idf/components/esp_event/include \
+	-isystem esp-idf/components/esp_hw_support/dma/include \
 	-isystem esp-idf/components/esp_hw_support/include \
 	-isystem esp-idf/components/esp_hw_support/include/soc \
 	-isystem esp-idf/components/esp_netif/include \
@@ -98,6 +100,7 @@ INC += \
 	-isystem esp-idf/components/esp_system/include \
 	-isystem esp-idf/components/esp_timer/include \
 	-isystem esp-idf/components/esp_wifi/include \
+	-isystem esp-idf/components/esp_wifi/include/local \
 	-isystem esp-idf/components/freertos/config/include \
 	-isystem esp-idf/components/freertos/config/include/freertos \
 	-isystem esp-idf/components/freertos/config/$(IDF_TARGET_ARCH)/include \
@@ -146,6 +149,29 @@ CFLAGS += \
 # This define is in FreeRTOS as tskSTACK_FILL_BYTE 0xa5U which we expand out to a full word.
 CFLAGS += -DSTACK_CANARY_VALUE=0xa5a5a5a5
 
+# IDF 5.3 uses a new ESP_SYSTEM_INIT_FN macro to "register" functions to run on
+# init. They work by placing function pointers into a linker section that ends
+# up as a function pointer array. To ensure the linker includes these functions,
+# one must provide `-u` arguments to state the symbols are missing. This would
+# normally happen implicitly by another function calling to these.
+REGISTRATION_FUNCTIONS = \
+	-u newlib_include_pthread_impl \
+	-u ld_include_highint_hdl \
+	-u __cxx_fatal_exception \
+	-u esp_app_desc \
+	-u esp_timer_init_include_func \
+	-u uart_vfs_include_dev_init \
+	-u esp_vfs_include_console_register \
+	-u __ubsan_include \
+	-u esp_system_include_startup_funcs \
+	-u esp_efuse_startup_include_func \
+	-u newlib_include_heap_impl \
+	-u newlib_include_syscalls_impl \
+	-u newlib_include_pthread_impl \
+	-u newlib_include_assert_impl \
+	-u newlib_include_getentropy_impl \
+	-u newlib_include_init_funcs
+
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
 	CFLAGS += -ggdb
@@ -178,6 +204,8 @@ CFLAGS += $(INC) -Werror -Wall -std=gnu11 -Wl,--gc-sections $(BASE_CFLAGS) $(C_D
 ifneq ($(IDF_TARGET),esp32c6)
 	CFLAGS += --specs=nano.specs
 	LDFLAGS += -T$(IDF_TARGET).rom.newlib-nano.ld
+else
+	LDFLAGS += -T$(IDF_TARGET).rom.newlib-normal.ld
 endif
 
 ifeq ($(IDF_TARGET_ARCH),xtensa)
@@ -187,11 +215,14 @@ ifeq ($(IDF_TARGET_ARCH),xtensa)
 CFLAGS += -mlongcalls -isystem esp-idf/components/xtensa/deprecated_include/ -Wno-error=cpp
 else ifeq ($(IDF_TARGET_ARCH),riscv)
 CFLAGS += -march=rv32imac_zicsr_zifencei
+LDFLAGS += \
+	-Lesp-idf/components/riscv/ld \
+	-Trom.api.ld
 endif
 
 $(BUILD)/lib/tlsf/tlsf.o: CFLAGS += -Wno-cast-align
 
-LDFLAGS = $(CFLAGS) -Wl,-nostdlib -Wl,-Map=$@.map -Wl,-cref -Wl,--undefined=uxTopUsedPriority
+LDFLAGS += $(CFLAGS) -Wl,-nostdlib -Wl,-Map=$@.map -Wl,-cref -Wl,--undefined=uxTopUsedPriority
 
 LDFLAGS += \
 	-L$(BUILD)/esp-idf/esp-idf/esp_system/ld \
@@ -210,20 +241,37 @@ LDFLAGS += \
 
 ifeq ($(IDF_TARGET),esp32)
 LDFLAGS += \
-	-T$(IDF_TARGET).rom.newlib-data.ld \
-	-T$(IDF_TARGET).rom.newlib-funcs.ld \
-	-T$(IDF_TARGET).rom.spiflash.ld
+	-Tesp32.rom.newlib-data.ld \
+	-Tesp32.rom.newlib-funcs.ld \
+	-Tesp32.rom.newlib-time.ld \
+	-Tesp32.rom.spiflash_legacy.ld
+
+CHIP_COMPONENTS = \
+	esp_driver_dac
+
 else ifeq ($(IDF_TARGET),esp32c2)
 LDFLAGS += \
 	-Tesp32c2.rom.heap.ld \
 	-Tesp32c2.rom.newlib.ld \
-	-Tesp32c2.rom.version.ld
+	-Tesp32c2.rom.version.ld \
+	-Tesp32c2.rom.systimer.ld \
+	-Tesp32c2.rom.wdt.ld
+
 CFLAGS += -DSOC_XTAL_FREQ_MHZ=CONFIG_XTAL_FREQ
+
+CHIP_COMPONENTS = \
+	esp_driver_tsens
+
 else ifeq ($(IDF_TARGET),esp32c3)
 LDFLAGS += \
 	-Tesp32c3.rom.newlib.ld \
+	-Tesp32c3.rom.newlib-time.ld \
 	-Tesp32c3.rom.version.ld \
 	-Tesp32c3.rom.eco3.ld
+
+CHIP_COMPONENTS = \
+	esp_driver_tsens
+
 else ifeq ($(IDF_TARGET),esp32c6)
 LDFLAGS += \
 	-Tesp32c6.rom.phy.ld \
@@ -234,21 +282,43 @@ LDFLAGS += \
 	-Tesp32c6.rom.heap.ld \
 	-Tesp32c6.rom.systimer.ld \
 	-Tesp32c6.rom.wdt.ld
+
+
+CHIP_COMPONENTS = \
+	esp_driver_tsens
+
 else ifeq ($(IDF_TARGET),esp32h2)
 LDFLAGS += \
 	-Tesp32h2.rom.heap.ld \
 	-Tesp32h2.rom.newlib.ld \
 	-Tesp32h2.rom.systimer.ld \
 	-Tesp32h2.rom.wdt.ld
+
+CHIP_COMPONENTS = \
+	esp_driver_tsens
+
 else ifeq ($(IDF_TARGET),esp32s2)
 LDFLAGS += \
-	-T$(IDF_TARGET).rom.newlib-data.ld \
-	-T$(IDF_TARGET).rom.newlib-funcs.ld \
-	-T$(IDF_TARGET).rom.spiflash.ld
+	-Tesp32s2.rom.newlib-data.ld \
+	-Tesp32s2.rom.newlib-funcs.ld \
+	-Tesp32s2.rom.newlib-time.ld \
+	-Tesp32s2.rom.spiflash_legacy.ld
+
+CHIP_COMPONENTS = \
+	esp_driver_dac \
+	esp_driver_tsens
+
 else ifeq ($(IDF_TARGET),esp32s3)
 LDFLAGS += \
 	-Tesp32s3.rom.newlib.ld \
-	-Tesp32s3.rom.version.ld
+	-Tesp32s3.rom.newlib-time.ld \
+	-Tesp32s3.rom.version.ld \
+	-Tesp32s3.rom.systimer.ld \
+	-Tesp32s3.rom.wdt.ld
+
+CHIP_COMPONENTS = \
+	esp_driver_tsens
+
 endif
 
 LIBS := -lgcc -lc -lstdc++
@@ -322,13 +392,19 @@ ifneq ($(CIRCUITPY_USB_DEVICE),0)
 SRC_C += lib/tinyusb/src/portable/espressif/esp32sx/dcd_esp32sx.c
 endif
 
+ifneq ($(CIRCUITPY_AUDIOBUSIO),0)
+CHIP_COMPONENTS += esp_driver_i2s
+endif
+
 ifneq ($(CIRCUITPY_BLEIO),0)
 SRC_C += common-hal/_bleio/ble_events.c
 endif
 
 ifneq ($(CIRCUITPY_DOTCLOCKFRAMEBUFFER),0)
-CFLAGS += -isystem esp-idf/components/esp_lcd/include
-CFLAGS += -isystem esp-idf/components/esp_lcd/interface
+CFLAGS += \
+	-isystem esp-idf/components/esp_lcd/include \
+	-isystem esp-idf/components/esp_lcd/interface \
+	-isystem esp-idf/components/esp_lcd/rgb/include
 endif
 
 ifneq ($(CIRCUITPY_ESPCAMERA),0)
@@ -359,6 +435,30 @@ SRC_ULP := \
 	$(wildcard common-hal/espulp/*.c) \
 	$(wildcard bindings/espulp/*.c)
 SRC_C += $(SRC_ULP)
+endif
+
+ifneq ($(CIRCUITPY_NEOPIXEL_WRITE),0)
+CHIP_COMPONENTS += esp_driver_rmt
+endif
+
+ifneq ($(CIRCUITPY_PARALLELDISPLAYBUS),0)
+CHIP_COMPONENTS += esp_driver_i2s
+endif
+
+ifneq ($(CIRCUITPY_PULSEIO),0)
+CHIP_COMPONENTS += esp_driver_rmt
+endif
+
+ifneq ($(CIRCUITPY_COUNTIO),0)
+CHIP_COMPONENTS += esp_driver_pcnt
+endif
+
+ifneq ($(CIRCUITPY_ROTARYIO),0)
+CHIP_COMPONENTS += esp_driver_pcnt
+endif
+
+ifneq ($(CIRCUITPY_FREQUENCYIO),0)
+CHIP_COMPONENTS += esp_driver_pcnt
 endif
 
 SRC_COMMON_HAL_EXPANDED = \
@@ -490,7 +590,7 @@ ifeq ($(IDF_TARGET),esp32)
 BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/librtc.a
 endif
 
-ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc esp_app_format esp_common esp_event esp_hw_support esp_mm esp_partition esp_phy esp_pm esp_ringbuf esp_rom esp_system esp_timer freertos hal heap log newlib nvs_flash pthread soc spi_flash vfs
+ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) $(CHIP_COMPONENTS) app_update bootloader_support driver esp_driver_gpio esp_driver_gptimer esp_driver_ledc esp_driver_spi esp_driver_uart efuse esp_adc esp_app_format esp_common esp_event esp_hw_support esp_mm esp_partition esp_phy esp_pm esp_ringbuf esp_rom esp_system esp_timer freertos hal heap log newlib nvs_flash pthread soc spi_flash vfs esp_vfs_console
 ifneq ($(CIRCUITPY_WIFI),0)
 	ESP_IDF_COMPONENTS_LINK += esp_coex esp_netif esp-tls esp_wifi lwip mbedtls mdns wpa_supplicant
 endif
@@ -507,7 +607,7 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 	ifeq ($(BLE_IMPL),esp32)
 		# BLE will hang the ESP32 and trigger an interrupt watchdog without this undefined symbol at
 		# link because a weak version of the interrupt that BLE uses will be linked incorrectly.
-		LDFLAGS += -u ld_include_hli_vectors_bt
+		REGISTRATION_FUNCTIONS += -u ld_include_hli_vectors_bt
 		BINARY_BLOBS += esp-idf/components/bt/controller/lib_esp32/$(IDF_TARGET)/libbtdm_app.a
 	endif
 
@@ -619,7 +719,7 @@ esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 
 $(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp $(IDF_CMAKE_TARGETS)
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--print-memory-usage -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) $(LIBS) -Wl,--end-group -u newlib_include_pthread_impl -u ld_include_highint_hdl -u __cxx_fatal_exception -u esp_app_desc
+	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--print-memory-usage -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) $(LIBS) -Wl,--end-group $(REGISTRATION_FUNCTIONS)
 
 $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf | tools/build_memory_info.py
 	$(STEPECHO) "Create $@"

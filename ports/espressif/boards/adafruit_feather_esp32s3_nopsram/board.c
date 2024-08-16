@@ -7,9 +7,7 @@
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "components/driver/gpio/include/driver/gpio.h"
-#include "components/hal/include/hal/gpio_hal.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "driver/gpio.h"
 
 void board_init(void) {
     reset_board();

@@ -10,8 +10,8 @@
 
 #include "py/mphal.h"
 
-#include "components/driver/gpio/include/driver/gpio.h"
-#include "components/hal/include/hal/gpio_hal.h"
+#include "driver/gpio.h"
+#include "soc/gpio_periph.h"
 
 static uint64_t _never_reset_pin_mask;
 static uint64_t _skip_reset_once_pin_mask;

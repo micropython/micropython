@@ -11,12 +11,11 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/board.h"
-#include "components/driver/gpio/include/driver/gpio.h"
-#include "components/hal/include/hal/gpio_hal.h"
+#include "driver/gpio.h"
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "components/log/include/esp_log.h"
+#include "esp_log.h"
 #include "supervisor/filesystem.h"
 
 #define DELAY               0x80
