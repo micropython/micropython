@@ -123,11 +123,16 @@ void alarm_pin_pinalarm_reset(void) {
 static void configure_pins_for_sleep(void) {
     _pinhandler_gpiote_count = 0;
 
+    int n_pin_alarms = __builtin_popcountll(high_alarms) + __builtin_popcountll(low_alarms);
+    const int MAX_N_PIN_ALARMS_FOR_SENSE_FEATURE = 2;
+
     nrfx_gpiote_in_config_t cfg = {
         .sense = NRF_GPIOTE_POLARITY_TOGGLE,
         .pull = NRF_GPIO_PIN_PULLUP,
         .is_watcher = false,
-        .hi_accuracy = true,
+        // hi_accuracy = False reduces sleep current by a factor of ~10x by using the SENSE feature,
+        // but only works if not more than MAX_N_PIN_ALARMS_FOR_SENSE_FEATURE pin alarms are used.
+        .hi_accuracy = (n_pin_alarms > MAX_N_PIN_ALARMS_FOR_SENSE_FEATURE),
         .skip_gpio_setup = false
     };
     for (size_t i = 0; i < 64; ++i) {
