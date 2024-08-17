@@ -357,8 +357,9 @@ coverage:
 	make -j -C ports/unix VARIANT=coverage
 
 .PHONY: coverage-clean
-coverage-clean:
+coverage-fresh:
 	make -C ports/unix VARIANT=coverage clean
+	make -j -C ports/unix VARIANT=coverage
 
 .PHONY: run-tests
 run-tests:
