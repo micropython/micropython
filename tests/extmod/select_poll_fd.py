@@ -37,6 +37,12 @@ print(poller.poll(0))
 # Test registering a very large number of file descriptors (will trigger
 # EINVAL due to more than OPEN_MAX fds). Typically it's 1024 (and on GitHub CI
 # we force this via `ulimit -n 1024`).
+# CIRCUITPY-CHANGE: set max number of file descriptors here
+try:
+    import resource
+    resource.setrlimit(resource.RLIMIT_NOFILE, (1024, 1024))
+except ImportError:
+    pass
 poller = select.poll()
 for fd in range(6000):
     poller.register(fd)
