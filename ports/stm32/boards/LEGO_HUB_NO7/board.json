@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "lego_hub_7.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "Hub No.7",
     "thumbnail": "",
