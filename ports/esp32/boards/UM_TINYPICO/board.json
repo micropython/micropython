@@ -22,8 +22,5 @@
     "product": "TinyPICO",
     "thumbnail": "",
     "url": "https://www.tinypico.com/",
-    "variants": {
-        "IDF3": "Compiled with IDF 3.x"
-    },
     "vendor": "Unexpected Maker"
 }
