@@ -65,6 +65,8 @@ Use the :mod:`time <time>` module::
     start = time.ticks_ms() # get millisecond counter
     delta = time.ticks_diff(time.ticks_ms(), start) # compute time difference
 
+Note that :func:`time.sleep_us()` delays by busy waiting. During that time, other tasks are
+not scheduled.
 
 Clock and time
 --------------
