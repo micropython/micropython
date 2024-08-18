@@ -785,5 +785,5 @@ function ci_zephyr_run_tests {
     docker exec zephyr-ci west build -p auto -b qemu_cortex_m3 -- -DCONF_FILE=prj_minimal.conf
     # Issues with zephyr tests:
     # - inf_nan_arith fails pow(-1, nan) test
-    (cd tests && ./run-tests.py --target minimal --device execpty:"qemu-system-arm -cpu cortex-m3 -machine lm3s6965evb -nographic -monitor null -serial pty -kernel ../ports/zephyr/build/zephyr/zephyr.elf" -d basics float --exclude inf_nan_arith)
+    (cd tests && ./run-tests.py -t execpty:"qemu-system-arm -cpu cortex-m3 -machine lm3s6965evb -nographic -monitor null -serial pty -kernel ../ports/zephyr/build/zephyr/zephyr.elf" -d basics float --exclude inf_nan_arith)
 }

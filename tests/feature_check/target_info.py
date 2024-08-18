@@ -4,6 +4,7 @@
 
 import sys
 
+platform = getattr(sys, "platform", "minimal")
 sys_mpy = getattr(sys.implementation, "_mpy", 0)
 arch = [
     None,
@@ -19,4 +20,4 @@ arch = [
     "xtensawin",
     "rv32imc",
 ][sys_mpy >> 10]
-print(arch)
+print(platform, arch)

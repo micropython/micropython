@@ -95,7 +95,7 @@ Or manually by first starting the emulation with `make run` and then running the
 tests against the serial device, for example:
 
     $ cd ../../tests
-    $ ./run-tests.py --target qemu --device /dev/pts/1
+    $ ./run-tests.py -t /dev/pts/1
 
 Extra make options
 ------------------

@@ -89,9 +89,12 @@ os.chdir('/__vfstest')
 __import__('__injected_test')
 """
 
+# Platforms associated with the unix port, values of `sys.platform`.
+PC_PLATFORMS = ("darwin", "linux", "win32")
+
 # Tests to skip on specific targets.
 # These are tests that are difficult to detect that they should not be run on the given target.
-target_tests_to_skip = {
+platform_tests_to_skip = {
     "esp8266": (
         "micropython/viper_args.py",  # too large
         "micropython/viper_binop_arith.py",  # too large
@@ -161,7 +164,7 @@ target_tests_to_skip = {
         "micropython/extreme_exc.py",
         "micropython/heapalloc_exc_compressed_emg_exc.py",
     ),
-    "wipy": (
+    "WiPy": (
         "misc/print_exception.py",  # requires error reporting full
     ),
     "zephyr": (
@@ -195,6 +198,53 @@ def convert_regex_escapes(line):
     if cs[-1] == "\n":
         cs[-1] = "\r*\n"
     return bytes("".join(cs), "utf8")
+
+
+def get_test_instance(test_instance, baudrate, user, password):
+    if test_instance.startswith("port:"):
+        _, port = test_instance.split(":", 1)
+    elif test_instance == "unix":
+        return None
+    elif test_instance == "webassembly":
+        return PyboardNodeRunner()
+    elif test_instance.startswith("a") and test_instance[1:].isdigit():
+        port = "/dev/ttyACM" + test_instance[1:]
+    elif test_instance.startswith("u") and test_instance[1:].isdigit():
+        port = "/dev/ttyUSB" + test_instance[1:]
+    elif test_instance.startswith("c") and test_instance[1:].isdigit():
+        port = "COM" + test_instance[1:]
+    else:
+        # Assume it's a device path.
+        port = test_instance
+
+    global pyboard
+    sys.path.append(base_path("../tools"))
+    import pyboard
+
+    pyb = pyboard.Pyboard(port, baudrate, user, password)
+    pyboard.Pyboard.run_script_on_remote_target = run_script_on_remote_target
+    pyb.enter_raw_repl()
+    return pyb
+
+
+def detect_test_platform(pyb, args):
+    # Run a script to detect various bits of information about the target test instance.
+    output = run_feature_check(pyb, args, "target_info.py")
+    if output.endswith(b"CRASH"):
+        raise ValueError("cannot detect platform: {}".format(output))
+    platform, arch = str(output, "ascii").strip().split()
+    if arch == "None":
+        arch = None
+
+    args.platform = platform
+    args.arch = arch
+    if arch and not args.mpy_cross_flags:
+        args.mpy_cross_flags = "-march=" + arch
+
+    print("platform={}".format(platform), end="")
+    if arch:
+        print(" arch={}".format(arch), end="")
+    print()
 
 
 def prepare_script_for_target(args, *, script_filename=None, script_text=None, force_plain=False):
@@ -706,18 +756,18 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("extmod/ssl_poll.py")
 
     # Skip thread mutation tests on targets that don't have the GIL.
-    if args.target in ("rp2", "unix"):
+    if args.platform in PC_PLATFORMS + ("rp2",):
         for t in tests:
             if t.startswith("thread/mutate_"):
                 skip_tests.add(t)
 
     # Some tests shouldn't be run on pyboard
-    if args.target != "unix":
+    if args.platform not in PC_PLATFORMS:
         skip_tests.add("basics/exception_chain.py")  # warning is not printed
         skip_tests.add("micropython/meminfo.py")  # output is very different to PC output
 
-    # Skip target-specific tests.
-    skip_tests.update(target_tests_to_skip.get(args.target, ()))
+    # Skip platform-specific tests.
+    skip_tests.update(platform_tests_to_skip.get(args.platform, ()))
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":
@@ -932,17 +982,38 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""Run and manage tests for MicroPython.
 
+By default the tests are run against the unix port of MicroPython. To run it
+against something else, use the -t option.  See below for details.
+
 Tests are discovered by scanning test directories for .py files or using the
 specified test files. If test files nor directories are specified, the script
 expects to be ran in the tests directory (where this file is located) and the
 builtin tests suitable for the target platform are ran.
+
 When running tests, run-tests.py compares the MicroPython output of the test with the output
 produced by running the test through CPython unless a <test>.exp file is found, in which
 case it is used as comparison.
+
 If a test fails, run-tests.py produces a pair of <test>.out and <test>.exp files in the result
 directory with the MicroPython output and the expectations, respectively.
 """,
         epilog="""\
+The -t option accepts the following for the test instance:
+- unix - use the unix port of MicroPython, specified by the MICROPY_MICROPYTHON
+  environment variable (which defaults to the standard variant of either the unix
+  or windows ports, depending on the host platform)
+- webassembly - use the webassembly port of MicroPython, specified by the
+  MICROPY_MICROPYTHON_MJS environment variable (which defaults to the standard
+  variant of the webassembly port)
+- port:<device> - connect to and use the given serial port device
+- a<n> - connect to and use /dev/ttyACM<n>
+- u<n> - connect to and use /dev/ttyUSB<n>
+- c<n> - connect to and use COM<n>
+- exec:<command> - execute a command and attach to its stdin/stdout
+- execpty:<command> - execute a command and attach to the printed /dev/pts/<n> device
+- <a>.<b>.<c>.<d> - connect to the given IPv4 address
+- anything else specifies a serial port
+
 Options -i and -e can be multiple and processed in the order given. Regex
 "search" (vs "match") operation is used. An action (include/exclude) of
 the last matching regex is used:
@@ -951,11 +1022,8 @@ the last matching regex is used:
   run-tests.py -e async -i async_foo - include all, exclude async, yet still include async_foo
 """,
     )
-    cmd_parser.add_argument("--target", default="unix", help="the target platform")
     cmd_parser.add_argument(
-        "--device",
-        default="/dev/ttyACM0",
-        help="the serial device or the IP address of the pyboard",
+        "-t", "--test-instance", default="unix", help="the MicroPython instance to test"
     )
     cmd_parser.add_argument(
         "-b", "--baudrate", default=115200, help="the baud rate of the serial device"
@@ -1039,43 +1107,11 @@ the last matching regex is used:
 
         sys.exit(0)
 
-    LOCAL_TARGETS = (
-        "unix",
-        "webassembly",
-    )
-    EXTERNAL_TARGETS = (
-        "pyboard",
-        "wipy",
-        "esp8266",
-        "esp32",
-        "minimal",
-        "nrf",
-        "qemu",
-        "renesas-ra",
-        "rp2",
-        "zephyr",
-    )
-    if args.target in LOCAL_TARGETS:
-        pyb = None
-        if args.target == "webassembly":
-            pyb = PyboardNodeRunner()
-    elif args.target in EXTERNAL_TARGETS:
-        global pyboard
-        sys.path.append(base_path("../tools"))
-        import pyboard
+    # Get the test instance to run on.
+    pyb = get_test_instance(args.test_instance, args.baudrate, args.user, args.password)
 
-        pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
-        pyboard.Pyboard.run_script_on_remote_target = run_script_on_remote_target
-        pyb.enter_raw_repl()
-    else:
-        raise ValueError("target must be one of %s" % ", ".join(LOCAL_TARGETS + EXTERNAL_TARGETS))
-
-    # Automatically detect the native architecture for mpy-cross if not given.
-    if not args.mpy_cross_flags:
-        output = run_feature_check(pyb, args, "target_info.py")
-        arch = str(output, "ascii").strip()
-        if arch != "None":
-            args.mpy_cross_flags = "-march=" + arch
+    # Automatically detect the platform.
+    detect_test_platform(pyb, args)
 
     if args.run_failures and (any(args.files) or args.test_dirs is not None):
         raise ValueError(
@@ -1091,7 +1127,7 @@ the last matching regex is used:
             tests = []
     elif len(args.files) == 0:
         test_extensions = ("*.py",)
-        if args.target == "webassembly":
+        if args.platform == "webassembly":
             test_extensions += ("*.js", "*.mjs")
 
         if args.test_dirs is None:
@@ -1101,23 +1137,23 @@ the last matching regex is used:
                 "misc",
                 "extmod",
             )
-            if args.target == "pyboard":
+            if args.platform == "pyboard":
                 # run pyboard tests
                 test_dirs += ("float", "stress", "inlineasm", "ports/stm32")
-            elif args.target in ("renesas-ra"):
+            elif args.platform == "renesas-ra":
                 test_dirs += ("float", "inlineasm", "ports/renesas-ra")
-            elif args.target == "rp2":
+            elif args.platform == "rp2":
                 test_dirs += ("float", "stress", "thread", "ports/rp2")
                 if "arm" in args.mpy_cross_flags:
                     test_dirs += ("inlineasm",)
-            elif args.target == "esp32":
+            elif args.platform == "esp32":
                 test_dirs += ("float", "stress", "thread")
-            elif args.target in ("esp8266", "minimal", "nrf"):
+            elif args.platform in ("esp8266", "minimal", "nrf"):
                 test_dirs += ("float",)
-            elif args.target == "wipy":
+            elif args.platform == "WiPy":
                 # run WiPy tests
                 test_dirs += ("ports/cc3200",)
-            elif args.target == "unix":
+            elif args.platform in PC_PLATFORMS:
                 # run PC tests
                 test_dirs += (
                     "float",
@@ -1128,13 +1164,13 @@ the last matching regex is used:
                     "cmdline",
                     "ports/unix",
                 )
-            elif args.target == "qemu":
+            elif args.platform == "qemu":
                 test_dirs += (
                     "float",
                     "inlineasm",
                     "ports/qemu",
                 )
-            elif args.target == "webassembly":
+            elif args.platform == "webassembly":
                 test_dirs += ("float", "ports/webassembly")
         else:
             # run tests from these directories

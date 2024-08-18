@@ -1,7 +1,19 @@
 # MicroPython Test Suite
 
-This directory contains tests for various functionality areas of MicroPython.
-To run all stable tests, run "run-tests.py" script in this directory.
+This directory contains tests for most parts of MicroPython.
+
+To run all stable tests, run the "run-tests.py" script in this directory.  By default
+that will run the test suite against the unix port of MicroPython.
+
+To run the test suite against a bare-metal target (a board running MicroPython firmware)
+use the `-t` option to specify the serial port.  This will automatically detect the
+target platform and run the appropriate set of tests for that platform.  For example:
+
+    $ ./run-tests.py -t /dev/ttyACM0
+
+That will run tests on the `/dev/ttyACM0` serial port.  You can also use shortcut
+device names like `a<n>` for `/dev/ttyACM<n>` and `c<n>` for `COM<n>`.  Use
+`./run-tests.py --help` to see all of the device possibilites, and other options.
 
 Tests of capabilities not supported on all platforms should be written
 to check for the capability being present. If it is not, the test
