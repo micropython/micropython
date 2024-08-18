@@ -61,6 +61,7 @@
 #include "lwip/err.h"
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
+#include "lwip/ethip6.h"
 #include "netif/etharp.h"
 
 #define TRACE_ETH_TX (0x0002)
@@ -297,12 +298,20 @@ static err_t wiznet5k_netif_init(struct netif *netif) {
     netif->hwaddr_len = sizeof(netif->hwaddr);
     int ret = WIZCHIP_EXPORT(socket)(0, Sn_MR_MACRAW, 0, 0);
     if (ret != 0) {
-        printf("WIZNET fatal error in netifinit: %d\n", ret);
+        printf("WIZNET fatal error in netif_init: %d\n", ret);
         return ERR_IF;
     }
 
     // Enable MAC filtering so we only get frames destined for us, to reduce load on lwIP
     setSn_MR(0, getSn_MR(0) | Sn_MR_MFEN);
+
+    #if LWIP_IPV6
+    netif->output_ip6 = ethip6_output;
+    netif->flags |= NETIF_FLAG_MLD6;
+    #else
+    // Drop IPv6 packets if firmware does not support it
+    setSn_MR(0, getSn_MR(0) | Sn_MR_MIP6B);
+    #endif
 
     return ERR_OK;
 }
@@ -846,6 +855,10 @@ static mp_obj_t wiznet5k_active(size_t n_args, const mp_obj_t *args) {
                     mp_hal_get_mac(MP_HAL_MAC_ETH0, mac);
                     setSHAR(mac);
                 }
+
+                #if WIZNET5K_WITH_LWIP_STACK && LWIP_IPV6
+                netif_create_ip6_linklocal_address(&self->netif, 1);
+                #endif
 
                 // seems we need a small delay after init
                 mp_hal_delay_ms(250);
