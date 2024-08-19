@@ -749,6 +749,11 @@ function ci_zephyr_setup {
       -w /micropython/ports/zephyr \
       zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}
     docker ps -a
+
+    # qemu-system-arm is needed to run the test suite.
+    sudo apt-get update
+    sudo apt-get install qemu-system-arm
+    qemu-system-arm --version
 }
 
 function ci_zephyr_install {
@@ -762,4 +767,11 @@ function ci_zephyr_build {
     docker exec zephyr-ci west build -p auto -b frdm_k64f
     docker exec zephyr-ci west build -p auto -b mimxrt1050_evk
     docker exec zephyr-ci west build -p auto -b nucleo_wb55rg # for bluetooth
+}
+
+function ci_zephyr_run_tests {
+    docker exec zephyr-ci west build -p auto -b qemu_cortex_m3 -- -DCONF_FILE=prj_minimal.conf
+    # Issues with zephyr tests:
+    # - inf_nan_arith fails pow(-1, nan) test
+    (cd tests && ./run-tests.py --target minimal --device execpty:"qemu-system-arm -cpu cortex-m3 -machine lm3s6965evb -nographic -monitor null -serial pty -kernel ../ports/zephyr/build/zephyr/zephyr.elf" -d basics float --exclude inf_nan_arith)
 }
