@@ -48,6 +48,7 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/stackctrl.h"
+#include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
 #include "extmod/modbluetooth.h"
@@ -180,11 +181,8 @@ soft_reset:
 }
 
 void gc_collect(void) {
-    // WARNING: This gc_collect implementation doesn't try to get root
-    // pointers from CPU registers, and thus may function incorrectly.
-    void *dummy;
     gc_collect_start();
-    gc_collect_root(&dummy, ((mp_uint_t)MP_STATE_THREAD(stack_top) - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
+    gc_helper_collect_regs_and_stack();
     #if MICROPY_PY_THREAD
     mp_thread_gc_others();
     #endif

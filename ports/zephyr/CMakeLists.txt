@@ -54,6 +54,7 @@ list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 set(MICROPY_SOURCE_SHARED
     libc/printf.c
     readline/readline.c
+    runtime/gchelper_generic.c
     runtime/interrupt_char.c
     runtime/mpirq.c
     runtime/pyexec.c
