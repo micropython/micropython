@@ -59,13 +59,6 @@
 #include "modmachine.h"
 #include "modzephyr.h"
 
-#ifdef TEST
-#include "shared/upytesthelper/upytesthelper.h"
-#include "lib/tinytest/tinytest.c"
-#include "shared/upytesthelper/upytesthelper.c"
-#include TEST
-#endif
-
 static char heap[MICROPY_HEAP_SIZE];
 
 void init_zephyr(void) {
@@ -127,13 +120,6 @@ int real_main(void) {
 
     init_zephyr();
     mp_hal_init();
-
-    #ifdef TEST
-    static const char *argv[] = {"test"};
-    upytest_set_heap(heap, heap + sizeof(heap));
-    int r = tinytest_main(1, argv, groups);
-    printf("status: %d\n", r);
-    #endif
 
 soft_reset:
     #if MICROPY_ENABLE_GC
