@@ -138,11 +138,11 @@ platform_tests_to_skip = {
     ),
     "qemu": (
         # Skip tests that require Cortex-M4.
-        "inlineasm/asmfpaddsub.py",
-        "inlineasm/asmfpcmp.py",
-        "inlineasm/asmfpldrstr.py",
-        "inlineasm/asmfpmuldiv.py",
-        "inlineasm/asmfpsqrt.py",
+        "inlineasm/thumb/asmfpaddsub.py",
+        "inlineasm/thumb/asmfpcmp.py",
+        "inlineasm/thumb/asmfpldrstr.py",
+        "inlineasm/thumb/asmfpmuldiv.py",
+        "inlineasm/thumb/asmfpsqrt.py",
     ),
     "webassembly": (
         "basics/string_format_modulo.py",  # can't print nulls to stdout
@@ -664,17 +664,17 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         # Check if @micropython.asm_thumb supports Thumb2 instructions, and skip such tests if it doesn't
         output = run_feature_check(pyb, args, "inlineasm_thumb2.py")
         if output != b"thumb2\n":
-            skip_tests.add("inlineasm/asmbcc.py")
-            skip_tests.add("inlineasm/asmbitops.py")
-            skip_tests.add("inlineasm/asmconst.py")
-            skip_tests.add("inlineasm/asmdiv.py")
-            skip_tests.add("inlineasm/asmfpaddsub.py")
-            skip_tests.add("inlineasm/asmfpcmp.py")
-            skip_tests.add("inlineasm/asmfpldrstr.py")
-            skip_tests.add("inlineasm/asmfpmuldiv.py")
-            skip_tests.add("inlineasm/asmfpsqrt.py")
-            skip_tests.add("inlineasm/asmit.py")
-            skip_tests.add("inlineasm/asmspecialregs.py")
+            skip_tests.add("inlineasm/thumb/asmbcc.py")
+            skip_tests.add("inlineasm/thumb/asmbitops.py")
+            skip_tests.add("inlineasm/thumb/asmconst.py")
+            skip_tests.add("inlineasm/thumb/asmdiv.py")
+            skip_tests.add("inlineasm/thumb/asmfpaddsub.py")
+            skip_tests.add("inlineasm/thumb/asmfpcmp.py")
+            skip_tests.add("inlineasm/thumb/asmfpldrstr.py")
+            skip_tests.add("inlineasm/thumb/asmfpmuldiv.py")
+            skip_tests.add("inlineasm/thumb/asmfpsqrt.py")
+            skip_tests.add("inlineasm/thumb/asmit.py")
+            skip_tests.add("inlineasm/thumb/asmspecialregs.py")
 
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
@@ -1215,15 +1215,15 @@ the last matching regex is used:
             )
             if args.platform == "pyboard":
                 # run pyboard tests
-                test_dirs += ("float", "stress", "inlineasm", "ports/stm32")
+                test_dirs += ("float", "stress", "inlineasm/thumb", "ports/stm32")
             elif args.platform == "mimxrt":
-                test_dirs += ("float", "stress", "inlineasm")
+                test_dirs += ("float", "stress", "inlineasm/thumb")
             elif args.platform == "renesas-ra":
-                test_dirs += ("float", "inlineasm", "ports/renesas-ra")
+                test_dirs += ("float", "inlineasm/thumb", "ports/renesas-ra")
             elif args.platform == "rp2":
                 test_dirs += ("float", "stress", "thread", "ports/rp2")
                 if "arm" in args.mpy_cross_flags:
-                    test_dirs += ("inlineasm",)
+                    test_dirs += ("inlineasm/thumb",)
             elif args.platform == "esp32":
                 test_dirs += ("float", "stress", "thread")
             elif args.platform in ("esp8266", "minimal", "samd", "nrf"):
@@ -1245,7 +1245,7 @@ the last matching regex is used:
             elif args.platform == "qemu":
                 test_dirs += (
                     "float",
-                    "inlineasm",
+                    "inlineasm/thumb",
                     "ports/qemu",
                 )
             elif args.platform == "webassembly":
