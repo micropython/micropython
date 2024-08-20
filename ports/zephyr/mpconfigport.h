@@ -82,15 +82,10 @@
 #endif
 #ifdef CONFIG_BT
 #define MICROPY_PY_BLUETOOTH        (1)
-#define MICROPY_PY_BUILTINS_SET     (1)
-#define MICROPY_PY_STRUCT           (1)
 #ifdef CONFIG_BT_CENTRAL
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
 #endif
 #define MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT (0)
-#else
-#define MICROPY_PY_BUILTINS_SET     (0)
-#define MICROPY_PY_STRUCT           (0)
 #endif
 #define MICROPY_PY_BINASCII         (1)
 #define MICROPY_PY_HASHLIB          (1)
