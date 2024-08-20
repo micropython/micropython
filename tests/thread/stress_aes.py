@@ -273,7 +273,7 @@ if __name__ == "__main__":
     elif sys.platform == "rp2":
         n_thread = 1
         n_loop = 2
-    elif sys.platform in ("esp32", "pyboard"):
+    elif sys.platform in ("esp32", "pyboard", "zephyr"):
         n_thread = 2
         n_loop = 2
     else:
