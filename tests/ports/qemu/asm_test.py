@@ -1,4 +1,4 @@
-import frozen_asm
+import frozen_asm_thumb as frozen_asm
 
 print(frozen_asm.asm_add(1, 2))
 print(frozen_asm.asm_add1(3))
