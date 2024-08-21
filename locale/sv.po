@@ -1407,10 +1407,6 @@ msgstr "NVS-fel"
 msgid "Name or service not known"
 msgstr "Namn eller tjänst inte känd"
 
-#: py/qstr.c
-msgid "Name too long"
-msgstr "Name är för långt"
-
 #: shared-bindings/displayio/TileGrid.c
 msgid "New bitmap must be same size as old bitmap"
 msgstr "Ny bitmapp måste ha samma storlek som tidigare bitmapp"
@@ -3570,6 +3566,10 @@ msgstr "namnet '%q' är inte definierat"
 msgid "name not defined"
 msgstr "namn inte definierat"
 
+#: py/qstr.c
+msgid "name too long"
+msgstr ""
+
 #: py/persistentcode.c
 msgid "native code in .mpy unsupported"
 msgstr "Inbyggd kod i .mpy stöds inte"
@@ -4406,6 +4406,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Name too long"
+#~ msgstr "Name är för långt"
 
 #~ msgid "Update Failed"
 #~ msgstr "Uppdateringen misslyckades"

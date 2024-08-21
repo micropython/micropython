@@ -1416,10 +1416,6 @@ msgstr "Erro NVS"
 msgid "Name or service not known"
 msgstr "Nome ou serviço desconhecido"
 
-#: py/qstr.c
-msgid "Name too long"
-msgstr "Nome muito longo"
-
 #: shared-bindings/displayio/TileGrid.c
 msgid "New bitmap must be same size as old bitmap"
 msgstr "O novo bitmap deve ter o mesmo tamanho que o bitmap antigo"
@@ -3602,6 +3598,10 @@ msgstr "o nome '%q' não está definido"
 msgid "name not defined"
 msgstr "nome não definido"
 
+#: py/qstr.c
+msgid "name too long"
+msgstr ""
+
 #: py/persistentcode.c
 msgid "native code in .mpy unsupported"
 msgstr "código nativo em .mpy não é compatível"
@@ -4445,6 +4445,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Name too long"
+#~ msgstr "Nome muito longo"
 
 #~ msgid "Update Failed"
 #~ msgstr "A atualização falou"

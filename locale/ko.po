@@ -1437,10 +1437,6 @@ msgstr "NVS 오류"
 msgid "Name or service not known"
 msgstr "이름 또는 서비스를 알 수 없습니다"
 
-#: py/qstr.c
-msgid "Name too long"
-msgstr "이름이 너무 깁니다"
-
 #: shared-bindings/displayio/TileGrid.c
 msgid "New bitmap must be same size as old bitmap"
 msgstr "새로운 비트맵은 원본 비트맵과 크기가 같아야 합니다"
@@ -3597,6 +3593,10 @@ msgstr ""
 msgid "name not defined"
 msgstr ""
 
+#: py/qstr.c
+msgid "name too long"
+msgstr ""
+
 #: py/persistentcode.c
 msgid "native code in .mpy unsupported"
 msgstr ""
@@ -4433,6 +4433,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Name too long"
+#~ msgstr "이름이 너무 깁니다"
 
 #~ msgid "Error: Failure to bind"
 #~ msgstr "오류: 바인드에 실패했습니다"
