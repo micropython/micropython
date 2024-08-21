@@ -62,6 +62,7 @@ typedef struct _machine_uart_buf_t {
 #define nrfx_uart_tx              nrfx_uarte_tx
 #define nrfx_uart_tx_in_progress  nrfx_uarte_tx_in_progress
 #define nrfx_uart_init            nrfx_uarte_init
+#define nrfx_uart_uninit          nrfx_uarte_uninit
 #define nrfx_uart_event_t         nrfx_uarte_event_t
 #define NRFX_UART_INSTANCE        NRFX_UARTE_INSTANCE
 
@@ -255,7 +256,11 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     self->buf.rx_ringbuf.iput = 0;
 
     // Enable event callback and start asynchronous receive
+    if (self->initialized) {
+        nrfx_uart_uninit(self->p_uart);
+    }
     nrfx_uart_init(self->p_uart, &config, uart_event_handler);
+    self->initialized = true;
     nrfx_uart_rx(self->p_uart, &self->buf.rx_buf[0], 1);
 
     #if NRFX_UART_ENABLED
@@ -266,7 +271,10 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
-    (void)self;
+    if (self->initialized) {
+        nrfx_uart_uninit(self->p_uart);
+    }
+    self->initialized = false;
 }
 
 // Write a single character on the bus.  `data` is an integer to write.
