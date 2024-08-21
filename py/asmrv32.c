@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "py/emit.h"
+#include "py/misc.h"
 #include "py/mpconfig.h"
 
 // wrapper around everything in this file
@@ -41,27 +42,6 @@
 #define DEBUG_printf DEBUG_printf
 #else
 #define DEBUG_printf(...) (void)0
-#endif
-
-#ifndef MP_POPCOUNT
-#ifdef _MSC_VER
-#include <intrin.h>
-#define MP_POPCOUNT __popcnt
-#else
-#if defined __has_builtin
-#if __has_builtin(__builtin_popcount)
-#define MP_POPCOUNT __builtin_popcount
-#endif
-#else
-static uint32_t fallback_popcount(uint32_t value) {
-    value = value - ((value >> 1) & 0x55555555);
-    value = (value & 0x33333333) + ((value >> 2) & 0x33333333);
-    value = (value + (value >> 4)) & 0x0F0F0F0F;
-    return value * 0x01010101;
-}
-#define MP_POPCOUNT fallback_popcount
-#endif
-#endif
 #endif
 
 #define INTERNAL_TEMPORARY ASM_RV32_REG_S0
@@ -249,7 +229,7 @@ static void adjust_stack(asm_rv32_t *state, mp_int_t stack_size) {
 // stack to hold all the tainted registers and an arbitrary amount of space
 // for locals.
 static void emit_function_prologue(asm_rv32_t *state, mp_uint_t registers) {
-    mp_uint_t registers_count = MP_POPCOUNT(registers);
+    mp_uint_t registers_count = mp_popcount(registers);
     state->stack_size = (registers_count + state->locals_count) * sizeof(uint32_t);
     mp_uint_t old_saved_registers_mask = state->saved_registers_mask;
     // Move stack pointer up.
