@@ -114,7 +114,7 @@ STATIC mp_obj_t hashlib_sha256_digest(mp_obj_t self_in) {
 
 #else
 
-// CIRCUITPY-CHNAGE
+// CIRCUITPY-CHANGE
 static void check_not_unicode(const mp_obj_t arg) {
     #if MICROPY_CPYTHON_COMPAT
     if (mp_obj_is_str(arg)) {

@@ -46,8 +46,6 @@ for p in ports_to_delete:
     except sh.ErrorReturnCode_128:
         pass
 
-sys.exit(0)
-
 # We inherit stm32 changes into stm because we did a git rename.
 git.status("--porcelain=1", "ports/stm", _out=out_buf)
 out_buf.seek(0)

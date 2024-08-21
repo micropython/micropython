@@ -152,7 +152,7 @@ typedef long mp_off_t;
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MAX_SS           (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-// CIRCUITPY_CHANGE: enable FAT32 support
+// CIRCUITPY-CHANGE: enable FAT32 support
 #define MICROPY_FATFS_MKFS_FAT32       (1)
 // CIRCUITPY-CHANGE: allow FAT label access
 #define MICROPY_FATFS_USE_LABEL (1)

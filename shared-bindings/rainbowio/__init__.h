@@ -9,6 +9,4 @@
 
 #include "py/obj.h"
 
-///#include "shared-module/rainbowio/__init__.h"
-
 int32_t colorwheel(mp_float_t pos);

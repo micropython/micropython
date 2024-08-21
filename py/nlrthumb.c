@@ -134,7 +134,7 @@ NORETURN void nlr_jump(void *val) {
         "bx     lr                  \n" // return
         :                           // output operands
         : "r" (top)                 // input operands
-        // CIRCUITPY-CHANGE: MicroPython caught up with this change in https://github.com/micropython/micropython/pull/14126
+        // CIRCUITPY-CHANGE: MicroPython makes this change in https://github.com/micropython/micropython/pull/14126 (later than v1.22)
         : "memory"                  // clobbered registers
         );
 

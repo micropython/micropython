@@ -112,8 +112,6 @@ void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, si
 void qstr_dump_data(void);
 
 #if MICROPY_ROM_TEXT_COMPRESSION
-// CIRCUITPY-CHANGE: TODO not const previusly, should it be??
-// TEST COMPILE with const ******************
 void mp_decompress_rom_string(byte *dst, const mp_rom_error_text_t src);
 #define MP_IS_COMPRESSED_ROM_STRING(s) (*(byte *)(s) == 0xff)
 #endif
