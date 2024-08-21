@@ -196,8 +196,10 @@ void status_led_deinit() {
 
     #elif defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
     #if CIRCUITPY_BITBANG_APA102
+    shared_module_bitbangio_spi_unlock(&status_apa102);
     shared_module_bitbangio_spi_deinit(&status_apa102);
     #else
+    common_hal_busio_spi_unlock(&status_apa102);
     common_hal_busio_spi_deinit(&status_apa102);
     #endif
 
