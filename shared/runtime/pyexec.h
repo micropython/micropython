@@ -61,7 +61,7 @@ int pyexec_friendly_repl(void);
 // CIRCUITPY-CHANGE: result out argument
 int pyexec_file(const char *filename, pyexec_result_t *result);
 int pyexec_file_if_exists(const char *filename, pyexec_result_t *result);
-int pyexec_frozen_module(const char *name, pyexec_result_t *result);
+int pyexec_frozen_module(const char *name, bool allow_keyboard_interrupt, pyexec_result_t *result);
 void pyexec_event_repl_init(void);
 int pyexec_event_repl_process_char(int c);
 extern uint8_t pyexec_repl_active;

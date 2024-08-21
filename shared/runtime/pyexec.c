@@ -144,7 +144,6 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         }
 
         // execute code
-        // CIRCUITPY-CHANGE
         if (!(exec_flags & EXEC_FLAG_NO_INTERRUPT)) {
             mp_hal_set_interrupt_char(CHAR_CTRL_C);
         }
@@ -787,7 +786,7 @@ int pyexec_file_if_exists(const char *filename, pyexec_result_t *result) {
     #if MICROPY_MODULE_FROZEN
     if (mp_find_frozen_module(filename, NULL, NULL) == MP_IMPORT_STAT_FILE) {
         // CIRCUITPY-CHANGE: pass result arg
-        return pyexec_frozen_module(filename, result);
+        return pyexec_frozen_module(filename, true, result);
     }
     #endif
     if (mp_import_stat(filename) != MP_IMPORT_STAT_FILE) {
