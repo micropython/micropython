@@ -1,3 +1,4 @@
+# CIRCUITPY-CHANGE
 # Skip if long ints are not supported.
 try:
     # We have to use variables because 1 << 40 causes an exception on parse and

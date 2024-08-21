@@ -11,6 +11,7 @@ async def foo():
     return 42
 
 
+# CIRCUITPY-CHANGE: await
 try:
     foo().__await__
 except AttributeError:

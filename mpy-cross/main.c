@@ -37,6 +37,7 @@
 #include "py/stackctrl.h"
 #include "genhdr/mpversion.h"
 #ifdef _WIN32
+// CIRCUITPY-CHANGE
 #include "fmode.h"
 #endif
 
@@ -71,7 +72,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         if (strcmp(file, "-") == 0) {
             lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, STDIN_FILENO, false);
         } else {
-            lex = mp_lexer_new_from_file(file);
+            lex = mp_lexer_new_from_file(qstr_from_str(file));
         }
 
         qstr source_name;
@@ -104,7 +105,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
                 vstr_add_str(&vstr, output_file);
             }
 
-            mp_raw_code_save_file(&cm, vstr_null_terminated_str(&vstr));
+            mp_raw_code_save_file(&cm, qstr_from_strn(vstr.buf, vstr.len));
             vstr_clear(&vstr);
         }
 
@@ -247,6 +248,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
             } else if (strcmp(argv[a], "--version") == 0) {
+                // CIRCUITPY-CHANGE
                 printf("CircuitPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
                     "; mpy-cross emitting mpy v" MP_STRINGIFY(MPY_VERSION) "." MP_STRINGIFY(MPY_SUB_VERSION) "\n");
                 return 0;

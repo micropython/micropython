@@ -124,6 +124,7 @@ void asm_x64_call_ind(asm_x64_t *as, size_t fun_id, int temp_r32);
 // Holds a pointer to mp_fun_table
 #define ASM_X64_REG_FUN_TABLE ASM_X64_REG_RBP
 
+// CIRCUITPY-CHANGE: prevent #if warning
 #if defined(GENERIC_ASM_API) && GENERIC_ASM_API
 
 // The following macros provide a (mostly) arch-independent API to
@@ -186,8 +187,6 @@ void asm_x64_call_ind(asm_x64_t *as, size_t fun_id, int temp_r32);
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_x64_mov_r64_to_local((as), (reg_src), (local_num))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_x64_mov_i64_to_r64_optimised((as), (imm), (reg_dest))
-#define ASM_MOV_REG_IMM_FIX_U16(as, reg_dest, imm) asm_x64_mov_i32_to_r64((as), (imm), (reg_dest))
-#define ASM_MOV_REG_IMM_FIX_WORD(as, reg_dest, imm) asm_x64_mov_i32_to_r64((as), (imm), (reg_dest))
 #define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_x64_mov_local_to_r64((as), (local_num), (reg_dest))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_x64_mov_r64_r64((as), (reg_dest), (reg_src))
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_x64_mov_local_addr_to_r64((as), (local_num), (reg_dest))

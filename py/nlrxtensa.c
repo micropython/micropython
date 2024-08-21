@@ -26,6 +26,7 @@
 
 #include "py/mpstate.h"
 
+// CIRCUITPY-CHANGE: avoid warning
 #if defined(MICROPY_NLR_XTENSA) && MICROPY_NLR_XTENSA
 
 #undef nlr_push
@@ -74,6 +75,7 @@ NORETURN void nlr_jump(void *val) {
         "ret.n                      \n" // return
         :                           // output operands
         : "r" (top)                 // input operands
+        // CIRCUITPY-CHANGE: MicroPython caught up with this change in https://github.com/micropython/micropython/pull/14126
         : "memory"                  // clobbered registers
         );
 

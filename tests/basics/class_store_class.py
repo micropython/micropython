@@ -8,6 +8,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+# CIRCUITPY-CHANGE
 import skip_if
 skip_if.no_cpython_compat()
 

@@ -125,7 +125,8 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_get_int_truncated(o)         (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_UINT))
 #define mp_obj_str_get_str(s)               (mp_obj_str_get_data_dyn((s), NULL))
 #define mp_obj_str_get_data(o, len)         (mp_obj_str_get_data_dyn((o), (len)))
-#define mp_get_buffer_raise(o, bufinfo, fl) (mp_fun_table.get_buffer_raise((o), (bufinfo), (fl)))
+#define mp_get_buffer(o, bufinfo, fl)       (mp_fun_table.get_buffer((o), (bufinfo), (fl)))
+#define mp_get_buffer_raise(o, bufinfo, fl) (mp_fun_table.get_buffer((o), (bufinfo), (fl) | MP_BUFFER_RAISE_IF_UNSUPPORTED))
 #define mp_get_stream_raise(s, flags)       (mp_fun_table.get_stream_raise((s), (flags)))
 #define mp_obj_is_true(o)                   (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_BOOL))
 
@@ -137,6 +138,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 
 #define mp_obj_malloc_helper(n, t)          (mp_obj_malloc_helper_dyn(n, t))
 
+// CIRCUITPY-CHANGE: new routine
 #define mp_obj_assert_native_inited(o)      (mp_fun_table.assert_native_inited((o)))
 
 static inline mp_obj_t mp_obj_new_str_of_type_dyn(const mp_obj_type_t *type, const byte *data, size_t len) {
@@ -235,6 +237,7 @@ static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type
 
 #define nlr_raise(o)                            (mp_raise_dyn(o))
 #define mp_raise_type_arg(type, arg)            (mp_raise_dyn(mp_obj_new_exception_arg1_dyn((type), (arg))))
+// CIRCUITPY-CHANGE: use str
 #define mp_raise_msg(type, msg)                 (mp_fun_table.raise_msg_str((type), (msg)))
 #define mp_raise_OSError(er)                    (mp_raise_OSError_dyn(er))
 #define mp_raise_NotImplementedError(msg)       (mp_raise_msg(&mp_type_NotImplementedError, (msg)))
@@ -252,6 +255,7 @@ static NORETURN inline void mp_raise_dyn(mp_obj_t o) {
     }
 }
 
+// CIRCUITPY-CHANGE: new routine
 static NORETURN inline void mp_raise_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
     mp_fun_table.raise(mp_obj_new_exception_arg1_dyn(exc_type, arg));
     for (;;) {

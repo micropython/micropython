@@ -55,7 +55,7 @@ STATIC mp_obj_t slice_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
 
 #if MICROPY_PY_BUILTINS_SLICE_INDICES
 STATIC mp_obj_t slice_indices(mp_obj_t self_in, mp_obj_t length_obj) {
-    mp_int_t length = mp_obj_int_get_checked(length_obj);
+    mp_int_t length = mp_obj_get_int(length_obj);
     mp_bound_slice_t bound_indices;
     mp_obj_slice_indices(self_in, length, &bound_indices);
 
@@ -92,6 +92,7 @@ STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 #endif
 
+// CIRCUITPY-CHANGE
 #if MICROPY_PY_BUILTINS_SLICE_ATTRS
 STATIC mp_obj_t slice_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -134,6 +135,7 @@ STATIC MP_DEFINE_CONST_DICT(slice_locals_dict, slice_locals_dict_table);
 #define SLICE_TYPE_ATTR_OR_LOCALS_DICT
 #endif
 
+// CIRCUITPY-CHANGE
 #if MICROPY_PY_BUILTINS_SLICE_INDICES || MICROPY_PY_BUILTINS_SLICE_ATTRS
 #define SLICE_MAKE_NEW make_new, slice_make_new,
 #else
@@ -170,6 +172,7 @@ void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *r
     } else {
         step = mp_obj_get_int(self->step);
         if (step == 0) {
+            // CIRCUITPY-CHANGE
             mp_raise_ValueError_varg(MP_ERROR_TEXT("%q step cannot be zero"), MP_QSTR_slice);
         }
     }

@@ -4,7 +4,10 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-desc = {"f32": uctypes.FLOAT32 | 0, "f64": uctypes.FLOAT64 | 0}
+desc = {
+    "f32": uctypes.FLOAT32 | 0,
+    "f64": uctypes.FLOAT64 | 0,
+}
 
 data = bytearray(8)
 

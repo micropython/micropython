@@ -1,8 +1,6 @@
 # test thread coordination using a lock object
 #
-# SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
-#
-# SPDX-License-Identifier: MIT
+# MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
 
 import _thread
 

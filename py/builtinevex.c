@@ -136,17 +136,18 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     }
     #endif
 
-    // Extract the source code.
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
     // create the lexer
     // MP_PARSE_SINGLE_INPUT is used to indicate a file input
     mp_lexer_t *lex;
     if (MICROPY_PY_BUILTINS_EXECFILE && parse_input_kind == MP_PARSE_SINGLE_INPUT) {
-        lex = mp_lexer_new_from_file(bufinfo.buf);
+        lex = mp_lexer_new_from_file(mp_obj_str_get_qstr(args[0]));
         parse_input_kind = MP_PARSE_FILE_INPUT;
     } else {
+        // Extract the source code.
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+
         lex = mp_lexer_new_from_str_len(MP_QSTR__lt_string_gt_, bufinfo.buf, bufinfo.len, 0);
     }
 

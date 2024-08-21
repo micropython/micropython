@@ -36,7 +36,7 @@ int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     toggle_tx_led();
 
     #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
@@ -58,7 +58,7 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     }
     #endif
 
-    serial_write_substring(str, len);
+    return serial_write_substring(str, len);
 }
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {

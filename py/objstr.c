@@ -1102,6 +1102,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             terse_str_format_value_error();
             #else
+            // CIRCUITPY-CHANGE
             mp_raise_ValueError_varg(MP_ERROR_TEXT("unmatched '%c' in format"), '{');
             #endif
         }
@@ -1128,6 +1129,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 }
                 field_name = str_to_int(field_name, field_name_top, &index);
                 if ((uint)index >= n_args - 1) {
+                    // CIRCUITPY-CHANGE
                     mp_raise_IndexError_varg(MP_ERROR_TEXT("%q index out of range"), MP_QSTR_tuple);
                 }
                 arg = args[index + 1];
@@ -1157,6 +1159,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 #endif
             }
             if ((uint)*arg_i >= n_args - 1) {
+                // CIRCUITPY-CHANGE: more specific mp_raise
                 mp_raise_IndexError_varg(MP_ERROR_TEXT("%q index out of range"), MP_QSTR_tuple);
             }
             arg = args[(*arg_i) + 1];
@@ -1337,6 +1340,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                     terse_str_format_value_error();
                     #else
+                    // CIRCUITPY-CHANGE: more specific mp_raise
                     mp_raise_ValueError_varg(
                         MP_ERROR_TEXT("unknown format code '%c' for object of type '%q'"),
                         type, mp_obj_get_type_qstr(arg));
@@ -1409,6 +1413,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                     terse_str_format_value_error();
                     #else
+                    // CIRCUITPY-CHANGE: more specific mp_raise
                     mp_raise_ValueError_varg(
                         MP_ERROR_TEXT("unknown format code '%c' for object of type '%q'"),
                         type, mp_obj_get_type_qstr(arg));
@@ -1445,6 +1450,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                     terse_str_format_value_error();
                     #else
+                    // CIRCUITPY-CHANGE: more specific mp_raise
                     mp_raise_ValueError_varg(
                         MP_ERROR_TEXT("unknown format code '%c' for object of type '%q'"),
                         type, mp_obj_get_type_qstr(arg));
@@ -1497,6 +1503,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
         // Dictionary value lookup
         if (*str == '(') {
             if (dict == MP_OBJ_NULL) {
+                // CIRCUITPY-CHANGE: clearer message
                 mp_raise_TypeError(MP_ERROR_TEXT("format requires a dict"));
             }
             arg_i = 1; // we used up the single dict argument
@@ -1578,6 +1585,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
         if (arg == MP_OBJ_NULL) {
             if (arg_i >= n_args) {
             not_enough_args:
+                // CIRCUITPY-CHANGE: clearer message
                 mp_raise_TypeError(MP_ERROR_TEXT("not enough arguments for format string"));
             }
             arg = args[arg_i++];
@@ -1588,6 +1596,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
                     size_t slen;
                     const char *s = mp_obj_str_get_data(arg, &slen);
                     if (slen != 1) {
+                        // CIRCUITPY-CHANGE: clearer message
                         mp_raise_TypeError(MP_ERROR_TEXT("%%c requires int or char"));
                     }
                     mp_print_strn(&print, s, 1, flags, ' ', width);
@@ -1595,6 +1604,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
                     char ch = mp_obj_get_int(arg);
                     mp_print_strn(&print, &ch, 1, flags, ' ', width);
                 } else {
+                    // CIRCUITPY-CHANGE: clearer message
                     mp_raise_TypeError(MP_ERROR_TEXT("%%c requires int or char"));
                 }
                 break;
@@ -1656,6 +1666,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
                 #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                 terse_str_format_value_error();
                 #else
+                // CIRCUITPY-CHANGE: more specific mp_raise
                 mp_raise_ValueError_varg(
                     MP_ERROR_TEXT("unsupported format character '%c' (0x%x) at index %d"),
                     *str, *str, str - start_str);
@@ -1666,6 +1677,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
     if (dict == MP_OBJ_NULL && arg_i != n_args) {
         // NOTE: if `dict` exists, then `n_args` is 1 and the dict is always consumed; either
         // positionally, or as a map of named args, even if none were actually referenced.
+        // CIRCUITPY-CHANGE: clearer message
         mp_raise_TypeError(MP_ERROR_TEXT("not all arguments converted during string formatting"));
     }
 
@@ -2059,6 +2071,7 @@ mp_obj_t mp_obj_bytes_fromhex(mp_obj_t type_in, mp_obj_t data) {
 STATIC mp_obj_t bytes_hex_as_str(size_t n_args, const mp_obj_t *args) {
     return mp_obj_bytes_hex(n_args, args, &mp_type_str);
 }
+// CIRCUITPY-CHANGE: make public
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_obj_bytes_hex_as_str_obj, 1, 2, bytes_hex_as_str);
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bytes_fromhex_obj, mp_obj_bytes_fromhex);
@@ -2092,6 +2105,7 @@ STATIC const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&mp_obj_array_extend_obj) },
     #endif
     #if MICROPY_PY_BUILTINS_BYTES_HEX
+    // CIRCUITPY-CHANGE: different name
     { MP_ROM_QSTR(MP_QSTR_hex), MP_ROM_PTR(&mp_obj_bytes_hex_as_str_obj) },
     { MP_ROM_QSTR(MP_QSTR_fromhex), MP_ROM_PTR(&bytes_fromhex_classmethod_obj) },
     #endif
@@ -2342,7 +2356,7 @@ mp_obj_t mp_obj_new_bytes(const byte *data, size_t len) {
     return mp_obj_new_str_copy(&mp_type_bytes, data, len);
 }
 
-// CIRCUITPY-CHANGE
+// CIRCUITPY-CHANGE: new function
 mp_obj_t mp_obj_new_bytes_of_zeros(size_t len) {
     vstr_t vstr;
     vstr_init_len(&vstr, len);
@@ -2374,7 +2388,9 @@ STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in) {
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     mp_raise_TypeError(MP_ERROR_TEXT("can't convert to str implicitly"));
     #else
+    // CIRCUTTPY-CHANGE
     const qstr src_name = mp_obj_get_type_qstr(self_in);
+    // CIRCUTTPY-CHANGE: more specific mp_raise
     mp_raise_TypeError_varg(MP_ERROR_TEXT("can't convert '%q' object to %q implicitly"),
         src_name, src_name == MP_QSTR_str ? MP_QSTR_bytes : MP_QSTR_str);
     #endif

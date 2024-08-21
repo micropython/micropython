@@ -4,9 +4,11 @@
 //
 // SPDX-License-Identifier: MIT
 
-#include "shared-bindings/rainbowio/__init__.h"
 #include "py/mpconfig.h"
 #include "py/obj.h"
+
+#include "shared-bindings/rainbowio/__init__.h"
+
 //| """`rainbowio` module.
 //|
 //| Provides the `colorwheel()` function."""

@@ -40,6 +40,7 @@ typedef struct _mp_rom_obj_tuple_t {
     mp_rom_obj_t items[];
 } mp_rom_obj_tuple_t;
 
+// CIRCUITPY-CHANGE
 extern const mp_obj_type_t mp_type_tuple;
 
 void mp_obj_tuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);

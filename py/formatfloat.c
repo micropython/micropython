@@ -80,6 +80,7 @@ static inline int fp_isless1(float x) {
 
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 
+// CIRCUITPY-CHANGE: prevent warnings
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #define FPTYPE double
 #define FPCONST(x) x

@@ -2,6 +2,7 @@
 # and provides rules to build 3rd-party components for extmod modules.
 
 # CIRCUITPY-CHANGE: many extmod modules removed
+# CIRCUITPY-CHANGE: modzlib.c still used
 SRC_EXTMOD_C += \
 	extmod/modasyncio.c \
 	extmod/modbinascii.c \
@@ -36,6 +37,96 @@ SRC_QSTR += $(SRC_EXTMOD_C)
 
 CFLAGS += $(CFLAGS_EXTMOD) $(CFLAGS_THIRDPARTY)
 LDFLAGS += $(LDFLAGS_EXTMOD) $(LDFLAGS_THIRDPARTY)
+
+################################################################################
+# libm/libm_dbl math library
+
+# Single-precision math library.
+SRC_LIB_LIBM_C += $(addprefix lib/libm/,\
+	acoshf.c \
+	asinfacosf.c \
+	asinhf.c \
+	atan2f.c \
+	atanf.c \
+	atanhf.c \
+	ef_rem_pio2.c \
+	erf_lgamma.c \
+	fmodf.c \
+	kf_cos.c \
+	kf_rem_pio2.c \
+	kf_sin.c \
+	kf_tan.c \
+	log1pf.c \
+	math.c \
+	nearbyintf.c \
+	roundf.c \
+	sf_cos.c \
+	sf_erf.c \
+	sf_frexp.c \
+	sf_ldexp.c \
+	sf_modf.c \
+	sf_sin.c \
+	sf_tan.c \
+	wf_lgamma.c \
+	wf_tgamma.c \
+	)
+
+# Choose only one of these sqrt implementations, software or hardware.
+SRC_LIB_LIBM_SQRT_SW_C += lib/libm/ef_sqrt.c
+SRC_LIB_LIBM_SQRT_HW_C += lib/libm/thumb_vfp_sqrtf.c
+
+# Double-precision math library.
+SRC_LIB_LIBM_DBL_C += $(addprefix lib/libm_dbl/,\
+	__cos.c \
+	__expo2.c \
+	__fpclassify.c \
+	__rem_pio2.c \
+	__rem_pio2_large.c \
+	__signbit.c \
+	__sin.c \
+	__tan.c \
+	acos.c \
+	acosh.c \
+	asin.c \
+	asinh.c \
+	atan.c \
+	atan2.c \
+	atanh.c \
+	ceil.c \
+	cos.c \
+	cosh.c \
+	copysign.c \
+	erf.c \
+	exp.c \
+	expm1.c \
+	floor.c \
+	fmod.c \
+	frexp.c \
+	ldexp.c \
+	lgamma.c \
+	log.c \
+	log10.c \
+	log1p.c \
+	modf.c \
+	nearbyint.c \
+	pow.c \
+	rint.c \
+	round.c \
+	scalbn.c \
+	sin.c \
+	sinh.c \
+	tan.c \
+	tanh.c \
+	tgamma.c \
+	trunc.c \
+	)
+
+# Choose only one of these sqrt implementations, software or hardware.
+SRC_LIB_LIBM_DBL_SQRT_SW_C += lib/libm_dbl/sqrt.c
+SRC_LIB_LIBM_DBL_SQRT_HW_C += lib/libm_dbl/thumb_vfp_sqrt.c
+
+# Too many warnings in libm_dbl, disable for now.
+$(BUILD)/lib/libm_dbl/%.o: CFLAGS += -Wno-double-promotion -Wno-float-conversion
 
 ################################################################################
 # VFS FAT FS
@@ -75,6 +166,7 @@ SRC_THIRDPARTY_C += $(addprefix $(LITTLEFS_DIR)/,\
 	lfs2_util.c \
 	)
 
+# CIRCUITPY-CHANGE: -Wno-missing-field-initializers instead of -Wno-shadow
 $(BUILD)/$(LITTLEFS_DIR)/lfs2.o: CFLAGS += -Wno-missing-field-initializers
 endif
 
@@ -235,6 +327,9 @@ SRC_THIRDPARTY_C += $(addprefix $(LWIP_DIR)/,\
 	core/ipv6/nd6.c \
 	netif/ethernet.c \
 	)
+ifeq ($(MICROPY_PY_LWIP_LOOPBACK),1)
+CFLAGS_EXTMOD += -DLWIP_NETIF_LOOPBACK=1
+endif
 ifeq ($(MICROPY_PY_LWIP_SLIP),1)
 CFLAGS_EXTMOD += -DMICROPY_PY_LWIP_SLIP=1
 SRC_THIRDPARTY_C += $(LWIP_DIR)/netif/slipif.c

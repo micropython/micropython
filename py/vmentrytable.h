@@ -26,6 +26,7 @@
 
 // *FORMAT-OFF*
 
+// CIRCUITPY-CHANGE: #ifdef instead of #if
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winitializer-overrides"
@@ -35,8 +36,10 @@
 #pragma GCC diagnostic ignored "-Woverride-init"
 #endif // __GNUC__ >= 5
 
+// CIRCUITPY-CHANGE
 #include "supervisor/linker.h"
 
+// CIRCUITPY-CHANGE
 #if MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE
 #define COMPUTE_ENTRY(x) ((char *)(x) - (char *) && entry_MP_BC_LOAD_CONST_FALSE)
 typedef int16_t entry_table_type;
@@ -45,6 +48,7 @@ typedef int16_t entry_table_type;
 typedef void *entry_table_type;
 #endif
 
+// CIRCUITPY-CHANGE: PLACE_IN_DTCM_DATA
 static entry_table_type const PLACE_IN_DTCM_DATA(entry_table[256]) = {
     [0 ... 255] = COMPUTE_ENTRY(&& entry_default),
     [MP_BC_LOAD_CONST_FALSE] = COMPUTE_ENTRY(&& entry_MP_BC_LOAD_CONST_FALSE),
@@ -130,6 +134,7 @@ static entry_table_type const PLACE_IN_DTCM_DATA(entry_table[256]) = {
     [MP_BC_BINARY_OP_MULTI ... MP_BC_BINARY_OP_MULTI + MP_BC_BINARY_OP_MULTI_NUM - 1] = COMPUTE_ENTRY(&& entry_MP_BC_BINARY_OP_MULTI),
 };
 
+// CIRCUITPY-CHANGE: #ifdef instead of #if
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__

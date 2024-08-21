@@ -18,6 +18,7 @@ class RAMFS:
     def __init__(self, blocks):
         self.data = bytearray(blocks * self.SEC_SIZE)
 
+    # CIRCUITPY-CHANGES: made during v1.12 merge
     # Don't do any allocations in the below functions because they may be called
     # during a gc_sweep from a finalizer.
     def readblocks(self, n, buf):

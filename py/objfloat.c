@@ -270,6 +270,7 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
             if (rhs_val == 0) {
             zero_division_error:
+                // CIRCUITPY-CHANGE: a message here is redundant
                 mp_raise_ZeroDivisionError();
             }
             // Python specs require that x == (x//y)*y + (x%y) so we must

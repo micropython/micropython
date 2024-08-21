@@ -1,3 +1,6 @@
+# all: Update Python formatting to ruff-format.
+bbd8760bd9a2302e5abee29db279102bb11d7732
+
 # all: Fix various spelling mistakes found by codespell 2.2.6.
 cf490a70917a1b2d38ba9b58e763e0837d0f7ca7
 

@@ -5,8 +5,3 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
-
-#ifndef SHARED_BINDINGS_NVM_H
-#define SHARED_BINDINGS_NVM_H
-
-#endif  // SHARED_BINDINGS_NVM_H

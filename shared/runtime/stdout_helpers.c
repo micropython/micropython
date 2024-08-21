@@ -25,8 +25,8 @@
  */
 
 #include <string.h>
-#include <unistd.h>
-#include "py/mpconfig.h"
+// CIRCUITPY-CHANGE
+#include <stdbool.h>
 #include "py/mphal.h"
 
 /*
@@ -36,8 +36,11 @@
  */
 
 // CIRCUITPY-CHANGE: changes
+// Note https://github.com/adafruit/circuitpython/pull/8614
 // Send "cooked" string of given length, where every occurrence of
-// LF character is replaced with CR LF.
+// LF character is replaced with CR LF ("\n" is converted to "\r\n").
+// This is an optimised version to reduce the number of calls made
+// to mp_hal_stdout_tx_strn.
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     bool last_cr = false;
     while (len > 0) {

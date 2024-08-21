@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+// CIRCUITPY-CHANGE
 #include "py/nlr.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -98,6 +99,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &property_locals_dict
     );
 
+// CIRCUITPY-CHANGE
 #if MICROPY_PY_OPTIMIZE_PROPERTY_FLASH_SIZE
 extern const mp_obj_property_t __property_getter_start, __property_getter_end, __property_getset_start, __property_getset_end;
 #endif

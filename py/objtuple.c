@@ -187,6 +187,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_SENTINEL) {
         // load
         mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
+        // CIRCUITPY-CHANGE
         // when called with a native type (eg namedtuple) using mp_obj_tuple_subscr, get the native self
         if (MP_OBJ_TYPE_GET_SLOT_OR_NULL(self->base.type, subscr) != &mp_obj_tuple_subscr) {
             self = MP_OBJ_TO_PTR(mp_obj_cast_to_native_base(self_in, MP_OBJ_FROM_PTR(&mp_type_tuple)));
@@ -271,7 +272,7 @@ void mp_obj_tuple_get(mp_obj_t self_in, size_t *len, mp_obj_t **items) {
 void mp_obj_tuple_del(mp_obj_t self_in) {
     assert(mp_obj_is_type(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
-    m_del_var(mp_obj_tuple_t, mp_obj_t, self->len, self);
+    m_del_var(mp_obj_tuple_t, items, mp_obj_t, self->len, self);
 }
 
 /******************************************************************************/

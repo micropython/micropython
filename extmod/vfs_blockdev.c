@@ -30,6 +30,7 @@
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
 
+// CIRCUITPY-CHANGE
 #if CIRCUITPY_SDCARDIO
 #include "shared-bindings/sdcardio/SDCard.h"
 #endif

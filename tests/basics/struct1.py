@@ -45,6 +45,7 @@ print(v == (10, 100, 200, 300))
 # network byte order
 print(struct.pack('!i', 123))
 
+# CIRCUITPY-CHANGE: more tests
 # too short / too long arguments
 buf = bytearray(b'>>>123<<<')
 try:

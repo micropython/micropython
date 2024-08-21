@@ -42,6 +42,7 @@ try:
 except:
     print('empty')
 
+# CIRCUITPY-CHANGE: more tests
 # fromkeys returns the correct type and order
 d = dict.fromkeys('abcdefghij')
 print(type(d) == dict)

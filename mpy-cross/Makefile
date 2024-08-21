@@ -1,6 +1,7 @@
 include ../py/mkenv.mk
 
 # define main target
+# CIRCUITPY-CHANGE
 PROG ?= mpy-cross
 
 # qstr definitions (must come before including py.mk)
@@ -21,6 +22,7 @@ CWARN = -Wall -Werror
 CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith
 CFLAGS += $(INC) $(CWARN) -std=gnu99 $(COPT) $(CFLAGS_EXTRA)
 CFLAGS += -fdata-sections -ffunction-sections -fno-asynchronous-unwind-tables
+# CIRCUITPY-CHANGE
 CFLAGS += -DCIRCUITPY
 
 # Debugging/Optimization
@@ -46,6 +48,7 @@ endif
 LDFLAGS += $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 
 # source files
+# CIRCUITPY-CHANGE: extra files
 SRC_C = \
 	main.c \
 	gccollect.c \

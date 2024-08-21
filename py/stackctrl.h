@@ -45,6 +45,7 @@ void mp_stack_check(void);
 
 #endif
 
+// CIRCUITPY-CHANGE: provide max stack usage
 #if MICROPY_MAX_STACK_USAGE
 
 const char MP_MAX_STACK_USAGE_SENTINEL_BYTE;

@@ -51,6 +51,7 @@
 
 #if MICROPY_PY_SYS
 
+// CIRCUITPY-CHANGE
 #include "genhdr/mpversion.h"
 
 // defined per port; type of these is irrelevant, just need pointer
@@ -66,31 +67,47 @@ const mp_print_t mp_sys_stdout_print = {&mp_sys_stdout_obj, mp_stream_write_adap
 STATIC const MP_DEFINE_STR_OBJ(mp_sys_version_obj, "3.4.0; " MICROPY_BANNER_NAME_AND_VERSION);
 
 // version_info - Python language version that this implementation conforms to, as a tuple of ints
-#define I(n) MP_OBJ_NEW_SMALL_INT(n)
-// TODO: CPython is now at 5-element array, but save 2 els so far...
-STATIC const mp_obj_tuple_t mp_sys_version_info_obj = {{&mp_type_tuple}, 3, {I(3), I(4), I(0)}};
+// TODO: CPython is now at 5-element array (major, minor, micro, releaselevel, serial), but save 2 els so far...
+STATIC const mp_rom_obj_tuple_t mp_sys_version_info_obj = {{&mp_type_tuple}, 3, {MP_ROM_INT(3), MP_ROM_INT(4), MP_ROM_INT(0)}};
 
 // sys.implementation object
 // this holds the MicroPython version
-STATIC const mp_obj_tuple_t mp_sys_implementation_version_info_obj = {
+STATIC const mp_rom_obj_tuple_t mp_sys_implementation_version_info_obj = {
     {&mp_type_tuple},
-    3,
-    { I(MICROPY_VERSION_MAJOR), I(MICROPY_VERSION_MINOR), I(MICROPY_VERSION_MICRO) }
+    4,
+    {
+        MP_ROM_INT(MICROPY_VERSION_MAJOR),
+        MP_ROM_INT(MICROPY_VERSION_MINOR),
+        MP_ROM_INT(MICROPY_VERSION_MICRO),
+        #if MICROPY_VERSION_PRERELEASE
+        MP_ROM_QSTR(MP_QSTR_preview),
+        #else
+        MP_ROM_QSTR(MP_QSTR_),
+        #endif
+    }
 };
 STATIC const MP_DEFINE_STR_OBJ(mp_sys_implementation_machine_obj, MICROPY_BANNER_MACHINE);
-#if MICROPY_PERSISTENT_CODE_LOAD
-#define SYS_IMPLEMENTATION_ELEMS \
-    MP_ROM_QSTR(MP_QSTR_circuitpython), \
-    MP_ROM_PTR(&mp_sys_implementation_version_info_obj), \
-    MP_ROM_PTR(&mp_sys_implementation_machine_obj), \
-    MP_ROM_INT(MPY_FILE_HEADER_INT)
-#else
-#define SYS_IMPLEMENTATION_ELEMS \
+// CIRCUITPY-CHANGE: MP_QSTR_circuitpython
+#define SYS_IMPLEMENTATION_ELEMS_BASE \
     MP_ROM_QSTR(MP_QSTR_circuitpython), \
     MP_ROM_PTR(&mp_sys_implementation_version_info_obj), \
     MP_ROM_PTR(&mp_sys_implementation_machine_obj)
+
+#if MICROPY_PERSISTENT_CODE_LOAD
+#define SYS_IMPLEMENTATION_ELEMS__MPY \
+    , MP_ROM_INT(MPY_FILE_HEADER_INT)
+#else
+#define SYS_IMPLEMENTATION_ELEMS__MPY
 #endif
+
 #if MICROPY_PY_ATTRTUPLE
+#if MICROPY_PREVIEW_VERSION_2
+#define SYS_IMPLEMENTATION_ELEMS__V2 \
+    , MP_ROM_TRUE
+#else
+#define SYS_IMPLEMENTATION_ELEMS__V2
+#endif
+
 STATIC const qstr impl_fields[] = {
     MP_QSTR_name,
     MP_QSTR_version,
@@ -98,19 +115,30 @@ STATIC const qstr impl_fields[] = {
     #if MICROPY_PERSISTENT_CODE_LOAD
     MP_QSTR__mpy,
     #endif
+    #if MICROPY_PREVIEW_VERSION_2
+    MP_QSTR__v2,
+    #endif
 };
 STATIC MP_DEFINE_ATTRTUPLE(
     mp_sys_implementation_obj,
     impl_fields,
-    3 + MICROPY_PERSISTENT_CODE_LOAD,
-    SYS_IMPLEMENTATION_ELEMS
+    3 + MICROPY_PERSISTENT_CODE_LOAD + MICROPY_PREVIEW_VERSION_2,
+    SYS_IMPLEMENTATION_ELEMS_BASE
+    SYS_IMPLEMENTATION_ELEMS__MPY
+    SYS_IMPLEMENTATION_ELEMS__V2
     );
 #else
 STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
     {&mp_type_tuple},
     3 + MICROPY_PERSISTENT_CODE_LOAD,
+    // Do not include SYS_IMPLEMENTATION_ELEMS__V2 because
+    // SYS_IMPLEMENTATION_ELEMS__MPY may be empty if
+    // MICROPY_PERSISTENT_CODE_LOAD is disabled, which means they'll share
+    // the same index. Cannot query _v2 if MICROPY_PY_ATTRTUPLE is
+    // disabled.
     {
-        SYS_IMPLEMENTATION_ELEMS
+        SYS_IMPLEMENTATION_ELEMS_BASE
+                                SYS_IMPLEMENTATION_ELEMS__MPY
     }
 };
 #endif
@@ -126,6 +154,10 @@ STATIC const MP_DEFINE_STR_OBJ(mp_sys_platform_obj, MICROPY_PY_SYS_PLATFORM);
 // executable - the path to the micropython binary
 // This object is non-const and is populated at startup in main()
 MP_DEFINE_STR_OBJ(mp_sys_executable_obj, "");
+#endif
+
+#if MICROPY_PY_SYS_INTERN
+MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_intern_obj, mp_obj_str_intern_checked);
 #endif
 
 // exit([retval]): raise SystemExit, with optional argument given to the exception
@@ -278,6 +310,10 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     #else
     { MP_ROM_QSTR(MP_QSTR_maxsize), MP_ROM_PTR(&mp_sys_maxsize_obj) },
     #endif
+    #endif
+
+    #if MICROPY_PY_SYS_INTERN
+    { MP_ROM_QSTR(MP_QSTR_intern), MP_ROM_PTR(&mp_sys_intern_obj) },
     #endif
 
     #if MICROPY_PY_SYS_EXIT

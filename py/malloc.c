@@ -267,6 +267,7 @@ void m_tracked_free(void *ptr_in) {
     if (ptr_in == NULL) {
         return;
     }
+    // CIRCUITPY-CHANGE: cast to avoid compiler warning
     m_tracked_node_t *node = (m_tracked_node_t *)(void *)((uint8_t *)ptr_in - sizeof(m_tracked_node_t));
     #if MICROPY_DEBUG_VERBOSE
     size_t data_bytes;

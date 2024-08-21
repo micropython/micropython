@@ -13,11 +13,13 @@
 #include "supervisor/shared/translate/compressed_string.h"
 
 #ifndef NO_QSTR
-#define QDEF(id, hash, len, str)
+#define QDEF0(id, hash, len, str)
+#define QDEF1(id, hash, len, str)
 #define TRANSLATION(english_id, number) extern struct compressed_string translation##number;
 #include "genhdr/qstrdefs.generated.h"
+#undef QDEF0
+#undef QDEF1
 #undef TRANSLATION
-#undef QDEF
 #endif
 
 #if CIRCUITPY_TRANSLATE_OBJECT == 0
@@ -32,11 +34,13 @@ __attribute__((always_inline))
 // optimization.
 __attribute__((no_instrument_function)) mp_rom_error_text_t MP_COMPRESSED_ROM_TEXT(const char *original) {
     #ifndef NO_QSTR
-    #define QDEF(id, hash, len, str)
+    #define QDEF0(id, hash, len, str)
+    #define QDEF1(id, hash, len, str)
     #define TRANSLATION(english_id, number) if (strcmp(original, english_id) == 0) { return (mp_rom_error_text_t)&translation##number; } else
     #include "genhdr/qstrdefs.generated.h"
 #undef TRANSLATION
-#undef QDEF
+#undef QDEF0
+#undef QDEF1
     #endif
     return NULL;
 }

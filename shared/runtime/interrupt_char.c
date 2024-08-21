@@ -26,6 +26,7 @@
 
 #include "py/obj.h"
 #include "py/mpstate.h"
+// CIRCUITPY-CHANGE
 #include "shared/runtime/interrupt_char.h"
 
 #if MICROPY_KBD_EXCEPTION

@@ -356,19 +356,20 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# repl\n");
 
         const char *str;
-        size_t len = mp_repl_autocomplete("__n", 3, &mp_plat_print, &str);
+        size_t len = mp_repl_autocomplete("__n", 3, &mp_plat_print, &str); // expect "ame__"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
 
-        len = mp_repl_autocomplete("im", 2,  &mp_plat_print, &str);
+        len = mp_repl_autocomplete("im", 2,  &mp_plat_print, &str); // expect "port"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
-        mp_repl_autocomplete("import ", 7,  &mp_plat_print, &str);
-        len = mp_repl_autocomplete("import ti", 9,  &mp_plat_print, &str);
+        mp_repl_autocomplete("import ", 7,  &mp_plat_print, &str); // expect the list of builtins
+        len = mp_repl_autocomplete("import ti", 9,  &mp_plat_print, &str); // expect "me"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
+        // CIRCUITPY-CHANGE
         mp_repl_autocomplete("import ra", 9,  &mp_plat_print, &str);
 
         mp_store_global(MP_QSTR_sys, mp_import_name(MP_QSTR_sys, mp_const_none, MP_OBJ_NEW_SMALL_INT(0)));
-        mp_repl_autocomplete("sys.", 4, &mp_plat_print, &str);
-        len = mp_repl_autocomplete("sys.impl", 8, &mp_plat_print, &str);
+        mp_repl_autocomplete("sys.", 4, &mp_plat_print, &str); // expect dir(sys)
+        len = mp_repl_autocomplete("sys.impl", 8, &mp_plat_print, &str); // expect "ementation"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
     }
 
@@ -545,7 +546,7 @@ STATIC mp_obj_t extra_coverage(void) {
         fun_bc.context = &context;
         fun_bc.child_table = NULL;
         fun_bc.bytecode = (const byte *)"\x01"; // just needed for n_state
-        mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, mp_obj_t, 1);
+        mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, state, mp_obj_t, 1);
         code_state->fun_bc = &fun_bc;
         code_state->ip = (const byte *)"\x00"; // just needed for an invalid opcode
         code_state->sp = &code_state->state[0];
@@ -578,9 +579,10 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_sched_unlock();
         mp_printf(&mp_plat_print, "unlocked\n");
 
-        // drain pending callbacks
+        // drain pending callbacks, and test mp_event_wait_indefinite(), mp_event_wait_ms()
+        mp_event_wait_indefinite(); // the unix port only waits 500us in this call
         while (mp_sched_num_pending()) {
-            mp_handle_pending(true);
+            mp_event_wait_ms(1);
         }
 
         // setting the keyboard interrupt and raising it during mp_handle_pending
@@ -610,6 +612,7 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_handle_pending(true);
     }
 
+    // CIRCUITPY-CHANGE: ringbuf is different
     // ringbuf
     {
         #define RINGBUF_SIZE 99

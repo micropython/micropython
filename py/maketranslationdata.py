@@ -527,7 +527,7 @@ def qstr_escape(qst):
 
 def parse_qstrs(infile):
     r = {}
-    rx = re.compile(r'QDEF\([A-Za-z0-9_]+,\s*\d+,\s*\d+,\s*(?P<cstr>"(?:[^"\\\\]*|\\.)")\)')
+    rx = re.compile(r'QDEF[01]\([A-Za-z0-9_]+,\s*\d+,\s*\d+,\s*(?P<cstr>"(?:[^"\\\\]*|\\.)")\)')
     content = infile.read()
     for i, mat in enumerate(rx.findall(content, re.M)):
         mat = eval(mat)

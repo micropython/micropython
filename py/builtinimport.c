@@ -166,11 +166,11 @@ STATIC void do_load_from_lexer(mp_module_context_t *context, mp_lexer_t *lex) {
 #endif
 
 #if (MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD) || MICROPY_MODULE_FROZEN_MPY
-STATIC void do_execute_raw_code(const mp_module_context_t *context, const mp_raw_code_t *rc, const char *source_name) {
-    (void)source_name;
-
+STATIC void do_execute_raw_code(const mp_module_context_t *context, const mp_raw_code_t *rc, qstr source_name) {
     #if MICROPY_PY___FILE__
-    mp_store_attr(MP_OBJ_FROM_PTR(&context->module), MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(source_name)));
+    mp_store_attr(MP_OBJ_FROM_PTR(&context->module), MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+    #else
+    (void)source_name;
     #endif
 
     // execute the module in its context
@@ -226,7 +226,12 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
         if (frozen_type == MP_FROZEN_MPY) {
             const mp_frozen_module_t *frozen = modref;
             module_obj->constants = frozen->constants;
-            do_execute_raw_code(module_obj, frozen->rc, file_str + frozen_path_prefix_len);
+            #if MICROPY_PY___FILE__
+            qstr frozen_file_qstr = qstr_from_str(file_str + frozen_path_prefix_len);
+            #else
+            qstr frozen_file_qstr = MP_QSTRnull;
+            #endif
+            do_execute_raw_code(module_obj, frozen->rc, frozen_file_qstr);
             return;
         }
         #endif
@@ -234,14 +239,16 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
 
     #endif // MICROPY_MODULE_FROZEN
 
+    qstr file_qstr = qstr_from_str(file_str);
+
     // If we support loading .mpy files then check if the file extension is of
     // the correct format and, if so, load and execute the file.
     #if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
         mp_compiled_module_t cm;
         cm.context = module_obj;
-        mp_raw_code_load_file(file_str, &cm);
-        do_execute_raw_code(cm.context, cm.rc, file_str);
+        mp_raw_code_load_file(file_qstr, &cm);
+        do_execute_raw_code(cm.context, cm.rc, file_qstr);
         return;
     }
     #endif
@@ -249,12 +256,13 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
     // If we can compile scripts then load the file and compile and execute it.
     #if MICROPY_ENABLE_COMPILER
     {
-        mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
+        mp_lexer_t *lex = mp_lexer_new_from_file(file_qstr);
         do_load_from_lexer(module_obj, lex);
         return;
     }
     #else
     // If we get here then the file was not frozen and we can't compile scripts.
+    // CIRCUITPY-CHANGE: use more specific mp_raise
     mp_raise_ImportError(MP_ERROR_TEXT("script compilation not supported"));
     #endif
 }

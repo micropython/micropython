@@ -5,3 +5,6 @@ USB_PRODUCT = "BLOK"
 print(binascii.b2a_base64(b"fo"))
         # again, neither will "there" or "wither", since they have "the"
 i1Qb$TE"rl
+ZEN = "the zen of python beautiful is better than ugly explicit is better than implicit simple is better than complex complex is better than complicated flat is better than nested sparse is better than dense readability counts special cases arent special enough to break the rules although practicality beats purity errors should never pass silently unless explicitly silenced in the face of ambiguity refuse the temptation to guess there should be one and preferably only one obvious way to do it although that way may not be obvious at first unless youre dutch now is better than never although never is often better than right now if the implementation is hard to explain its a bad idea if the implementation is easy to explain it may be a good idea namespaces are one honking great idea  lets do more of those"
+    "arent",
+    "youre",

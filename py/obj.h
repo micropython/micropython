@@ -390,12 +390,13 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
     const mp_obj_fun_builtin_var_t obj_name = \
     {{&mp_type_fun_builtin_var}, MP_OBJ_FUN_MAKE_SIG(n_args_min, MP_OBJ_FUN_ARGS_MAX, true), .fun.kw = fun_name}
 
+// CIRCUITPY-CHANGE
 #define MP_DEFINE_CONST_PROP_GET(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t fun_name##_obj = {{&mp_type_fun_builtin_1}, .fun._1 = fun_name}; \
     MP_PROPERTY_GETTER(obj_name, (mp_obj_t)&fun_name##_obj);
 
+// CIRCUITPY-CHANGE
 // These macros are used to define constant or mutable map/dict objects
-// These macros are used to define constant map/dict objects
 // You can put "static" in front of the definition to make it local
 
 #define MP_DEFINE_CONST_MAP(map_name, table_name) \
@@ -423,6 +424,7 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 
 #define MP_DEFINE_CONST_DICT(dict_name, table_name) MP_DEFINE_CONST_DICT_WITH_SIZE(dict_name, table_name, MP_ARRAY_SIZE(table_name))
 
+// CIRCUITPY-CHANGE: mutable version
 #define MP_DEFINE_MUTABLE_MAP(map_name, table_name) \
     mp_map_t map_name = { \
         .all_keys_are_qstrs = 1, \
@@ -433,6 +435,7 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
         .table = table_name, \
     }
 
+// CIRCUITPY-CHANGE: mutable version
 #define MP_DEFINE_MUTABLE_DICT(dict_name, table_name) \
     mp_obj_dict_t dict_name = {                 \
         .base = {&mp_type_dict}, \
@@ -873,6 +876,7 @@ extern const mp_obj_type_t mp_type_fun_bc;
 extern const mp_obj_type_t mp_type_module;
 extern const mp_obj_type_t mp_type_staticmethod;
 extern const mp_obj_type_t mp_type_classmethod;
+extern const mp_obj_type_t mp_type_bound_meth;
 extern const mp_obj_type_t mp_type_property;
 extern const mp_obj_type_t mp_type_stringio;
 extern const mp_obj_type_t mp_type_bytesio;
@@ -918,9 +922,11 @@ extern const mp_obj_type_t mp_type_UnicodeError;
 extern const mp_obj_type_t mp_type_ValueError;
 extern const mp_obj_type_t mp_type_ViperTypeError;
 extern const mp_obj_type_t mp_type_ZeroDivisionError;
+// CIRCUITPY-CHANGE
 #if CIRCUITPY_ALARM
 extern const mp_obj_type_t mp_type_DeepSleepRequest;
 #endif
+// CIRCUITPY-CHANGE
 #if CIRCUITPY_WARNINGS
 extern const mp_obj_type_t mp_type_Warning;
 extern const mp_obj_type_t mp_type_FutureWarning;
@@ -983,10 +989,10 @@ void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
 // optimizations (other tricks like using ({ expr; exper; }) or (exp, expr, expr) in mp_obj_is_type() result
 // in missed optimizations)
 #define mp_type_assert_not_bool_int_str_nonetype(t) (                                     \
-    MP_STATIC_ASSERT_NOT_MSC((t) != &mp_type_bool), assert((t) != &mp_type_bool),         \
-    MP_STATIC_ASSERT_NOT_MSC((t) != &mp_type_int), assert((t) != &mp_type_int),           \
-    MP_STATIC_ASSERT_NOT_MSC((t) != &mp_type_str), assert((t) != &mp_type_str),           \
-    MP_STATIC_ASSERT_NOT_MSC((t) != &mp_type_NoneType), assert((t) != &mp_type_NoneType), \
+    MP_STATIC_ASSERT_NONCONSTEXPR((t) != &mp_type_bool), assert((t) != &mp_type_bool),         \
+    MP_STATIC_ASSERT_NONCONSTEXPR((t) != &mp_type_int), assert((t) != &mp_type_int),           \
+    MP_STATIC_ASSERT_NONCONSTEXPR((t) != &mp_type_str), assert((t) != &mp_type_str),           \
+    MP_STATIC_ASSERT_NONCONSTEXPR((t) != &mp_type_NoneType), assert((t) != &mp_type_NoneType), \
     1)
 
 #define mp_obj_is_type(o, t) (mp_type_assert_not_bool_int_str_nonetype(t) && mp_obj_is_exact_type(o, t))
@@ -1034,7 +1040,6 @@ mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
-
 // CIRCUITPY-CHANGE: our own conversion routines that don't bring double routines
 extern mp_float_t uint64_to_float(uint64_t ui64);
 extern uint64_t float_to_uint64(float f);

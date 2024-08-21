@@ -101,6 +101,7 @@
         out_byte(out_env, z);                                       \
     } while (0)
 
+// CIRCUITPY-CHANGE: avoid warnings
 #define MP_BC_PRELUDE_SIG_DECODE_INTO(ip, S, E, F, A, K, D)     \
     do {                                                            \
         uint8_t z = *(ip)++;                                        \

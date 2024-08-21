@@ -36,6 +36,7 @@
 #include "py/objlist.h"
 #include "py/objexcept.h"
 
+// CIRCUITPY-CHANGE
 #if CIRCUITPY_WARNINGS
 #include "shared-bindings/warnings/__init__.h"
 #endif
@@ -166,6 +167,7 @@ typedef struct _mp_state_vm_t {
     struct _m_tracked_node_t *m_tracked_head;
     #endif
 
+    // CIRCUITPY-CHANGE: trackback
     // non-heap memory for creating a traceback if we can't allocate RAM
     mp_obj_traceback_t mp_emergency_traceback_obj;
 
@@ -188,6 +190,7 @@ typedef struct _mp_state_vm_t {
     mp_obj_exception_t mp_kbd_exception;
     #endif
 
+    // CIRCUITPY-CHANGE
     // exception object of type ReloadException
     mp_obj_exception_t mp_reload_exception;
 
@@ -268,8 +271,10 @@ typedef struct _mp_state_vm_t {
     #endif
 } mp_state_vm_t;
 
-// This structure holds state that is specific to a given thread.
-// Everything in this structure is scanned for root pointers.
+// This structure holds state that is specific to a given thread. Everything
+// in this structure is scanned for root pointers.  Anything added to this
+// structure must have corresponding initialisation added to thread_entry (in
+// py/modthread.c).
 typedef struct _mp_state_thread_t {
     // Stack top at the start of program
     char *stack_top;
@@ -316,6 +321,7 @@ typedef struct _mp_state_thread_t {
     struct _mp_code_state_t *current_code_state;
     #endif
 
+    // CIRCUITPY-CHANGE
     #if CIRCUITPY_WARNINGS
     warnings_action_t warnings_action;
     #endif

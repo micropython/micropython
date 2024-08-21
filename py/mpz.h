@@ -142,7 +142,7 @@ void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const m
 static inline size_t mpz_max_num_bits(const mpz_t *z) {
     return z->len * MPZ_DIG_SIZE;
 }
-// CIRCUITPY-CHANGE
+// CIRCUITPY-CHANGE: add num_bits function
 static inline size_t mpz_num_bits(const mpz_t *z) {
     if (mpz_is_zero(z)) {
         return 0;

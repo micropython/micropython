@@ -8,7 +8,7 @@ For instance, there are file renames in the porcelain output that are not handle
 I add a sys.exit(0) after a section, and once a section runs, I delete it temporarily
 and move on to the next section. -- dhalbert
 
-Updated for v1.21.0 merge - dhalbert
+Updated for v1.22.2 merge - dhalbert
 
 """
 
@@ -16,6 +16,7 @@ from io import StringIO
 
 import sh
 from sh import git
+import sys
 
 out_buf = StringIO()
 
@@ -27,16 +28,14 @@ ports_to_delete = [
     "esp8266",
     "mimxrt",
     "minimal",
-    "nordic",
+    "nrf",
     "pic16bit",
     "powerpc",
     "qemu-arm",
-    "raspberrypi",
     "renesas-ra",
     "rp2",
     "samd",
     "stm32",
-    "teensy",
     "webassembly",
     "windows",
     "zephyr",

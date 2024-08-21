@@ -97,9 +97,11 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, 
     mp_arg_error_terse_mismatch();
     #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
     (void)f;
+    // CIRCUITPY-CHANGE: more specific mp_raise routine
     mp_raise_TypeError_varg(
         MP_ERROR_TEXT("function takes %d positional arguments but %d were given"), expected, given);
     #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+    // CIRCUITPY-CHANGE: more specific mp_raise routine
     mp_raise_TypeError_varg(
         MP_ERROR_TEXT("%q() takes %d positional arguments but %d were given"),
         mp_obj_fun_get_name(MP_OBJ_FROM_PTR(f)), expected, given);
@@ -281,6 +283,7 @@ STATIC void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_arg
                 if (elem != NULL) {
                     code_state_state[n_state - 1 - n_pos_args - i] = elem->value;
                 } else {
+                    // CIRCUITPY-CHANGE: more specific mp_raise routine
                     mp_raise_TypeError_varg(
                         MP_ERROR_TEXT("function missing required keyword argument '%q'"),
                         MP_OBJ_QSTR_VALUE(arg_names[n_pos_args + i]));

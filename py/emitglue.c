@@ -43,6 +43,7 @@
 #define DEBUG_printf DEBUG_printf
 #define DEBUG_OP_printf(...) DEBUG_printf(__VA_ARGS__)
 #else // don't print debugging info
+// CIRCUITPY-CHANGE: prevent warnings
 #define DEBUG_PRINT (0)
 #define DEBUG_printf(...) (void)0
 #define DEBUG_OP_printf(...) (void)0
@@ -88,6 +89,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     mp_prof_extract_prelude(code, prelude);
     #endif
 
+    // CIRCUITPY-CHANGE: prevent warning
     #if defined(DEBUG_PRINT) && DEBUG_PRINT
     #if !(MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS)
     const size_t len = 0;
@@ -111,6 +113,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     // so that the generated native code which was created in data RAM will
     // be available for execution from instruction RAM.
     #if MICROPY_EMIT_THUMB || MICROPY_EMIT_INLINE_THUMB
+    // CIRCUITPY-CHANGE: prevent warning
     #if defined(__ICACHE_PRESENT) && __ICACHE_PRESENT == 1
     // Flush D-cache, so the code emitted is stored in RAM.
     MP_HAL_CLEAN_DCACHE(fun_data, fun_len);
@@ -189,6 +192,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, const mp_module
         case MP_CODE_NATIVE_VIPER:
             fun = mp_obj_new_fun_native(def_args, rc->fun_data, context, rc->children);
             // Check for a generator function, and if so change the type of the object
+            // CIRCUITPY-CHANGE: distinguish generators and async
             if ((rc->scope_flags & MP_SCOPE_FLAG_ASYNC) != 0) {
                 ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_native_coro_wrap;
             } else if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
@@ -206,6 +210,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, const mp_module
             assert(rc->kind == MP_CODE_BYTECODE);
             fun = mp_obj_new_fun_bc(def_args, rc->fun_data, context, rc->children);
             // check for generator functions and if so change the type of the object
+            // CIRCUITPY-CHANGE: distinguish generators and async
             // A generator is MP_SCOPE_FLAG_ASYNC | MP_SCOPE_FLAG_GENERATOR,
             // so check for ASYNC first.
             #if MICROPY_PY_ASYNC_AWAIT

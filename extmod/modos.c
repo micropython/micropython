@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 
@@ -46,6 +47,13 @@
 
 #if MICROPY_VFS_POSIX
 #include "extmod/vfs_posix.h"
+#endif
+
+#if MICROPY_MBFS
+#if MICROPY_VFS
+#error "MICROPY_MBFS requires MICROPY_VFS to be disabled"
+#endif
+#include "ports/nrf/modules/os/microbitfs.h"
 #endif
 
 #if MICROPY_PY_OS_UNAME
@@ -121,6 +129,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_os_uname_obj, mp_os_uname);
 
 #endif
 
+#if MICROPY_PY_OS_DUPTERM_NOTIFY
+STATIC mp_obj_t mp_os_dupterm_notify(mp_obj_t obj_in) {
+    (void)obj_in;
+    for (;;) {
+        int c = mp_os_dupterm_rx_chr();
+        if (c < 0) {
+            break;
+        }
+        ringbuf_put(&stdin_ringbuf, c);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_dupterm_notify_obj, mp_os_dupterm_notify);
+#endif
+
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_os) },
 
@@ -186,6 +209,14 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     #if MICROPY_VFS_POSIX
     { MP_ROM_QSTR(MP_QSTR_VfsPosix), MP_ROM_PTR(&mp_type_vfs_posix) },
     #endif
+    #endif
+
+    #if MICROPY_MBFS
+    // For special micro:bit filesystem only.
+    { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&os_mbfs_listdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&os_mbfs_ilistdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&os_mbfs_stat_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&os_mbfs_remove_obj) },
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);

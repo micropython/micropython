@@ -1,8 +1,6 @@
 # test basic capability to start a new thread
 #
-# SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
-#
-# SPDX-License-Identifier: MIT
+# MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
 
 import time
 import _thread

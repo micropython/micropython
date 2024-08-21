@@ -87,6 +87,7 @@ STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
 }
 
 STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    // CIRCUITPY-CHANGE
     mp_obj_dict_t *self = native_dict(self_in);
     bool first = true;
     const char *item_separator = ", ";
@@ -127,6 +128,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     }
 }
 
+// CIRCUITPY-CHANGE
 // This is a helper function to initialize an empty, but typed dictionary with
 // a given number of slots.
 STATIC mp_obj_t dict_new_typed(const mp_obj_type_t *type, const size_t n) {
@@ -160,6 +162,7 @@ mp_obj_t mp_obj_dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 }
 
 STATIC mp_obj_t dict_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    // CIRCUITPY-CHANGE
     mp_obj_dict_t *self = native_dict(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL:
@@ -178,6 +181,7 @@ STATIC mp_obj_t dict_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t dict_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    // CIRCUITPY-CHANGE
     mp_obj_dict_t *o = native_dict(lhs_in);
     switch (op) {
         case MP_BINARY_OP_CONTAINS: {
@@ -239,6 +243,7 @@ STATIC mp_obj_t dict_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_
 
 // Note: Make sure this is inlined in load part of dict_subscr() below.
 mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index) {
+    // CIRCUITPY-CHANGE
     mp_obj_dict_t *self = native_dict(self_in);
     mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
     if (elem == NULL) {
@@ -255,6 +260,7 @@ STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         return mp_const_none;
     } else if (value == MP_OBJ_SENTINEL) {
         // load
+        // CIRCUITPY-CHANGE
         mp_obj_dict_t *self = native_dict(self_in);
         mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
         if (elem == NULL) {
@@ -272,6 +278,7 @@ STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 /******************************************************************************/
 /* dict methods                                                               */
 
+// CIRCUITPY-CHANGE
 STATIC void PLACE_IN_ITCM(mp_ensure_not_fixed)(const mp_obj_dict_t * dict) {
     if (dict->map.is_fixed) {
         mp_raise_TypeError(NULL);
@@ -280,6 +287,7 @@ STATIC void PLACE_IN_ITCM(mp_ensure_not_fixed)(const mp_obj_dict_t * dict) {
 
 STATIC mp_obj_t dict_clear(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
+    // CIRCUITPY-CHANGE
     mp_obj_dict_t *self = native_dict(self_in);
     mp_ensure_not_fixed(self);
 
@@ -291,8 +299,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_clear_obj, dict_clear);
 
 mp_obj_t mp_obj_dict_copy(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
+    // CIRCUITPY-CHANGE
     mp_obj_dict_t *self = native_dict(self_in);
     mp_obj_t other_out = mp_obj_new_dict(self->map.alloc);
+    // CIRCUITPY-CHANGE
     mp_obj_dict_t *other = native_dict(other_out);
     other->base.type = self->base.type;
     other->map.used = self->map.used;
@@ -307,6 +317,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, mp_obj_dict_copy);
 #if MICROPY_PY_BUILTINS_DICT_FROMKEYS
 // this is a classmethod
 STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
+    // CIRCUITPY-CHANGE
     mp_obj_type_t *type = MP_OBJ_TO_PTR(args[0]);
     mp_obj_t iter = mp_getiter(args[1], NULL);
     mp_obj_t value = mp_const_none;
@@ -340,6 +351,7 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(dict_fromkeys_obj, MP_ROM_PTR(&dict_fromk
 
 STATIC mp_obj_t dict_get_helper(size_t n_args, const mp_obj_t *args, mp_map_lookup_kind_t lookup_kind) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(args[0]));
+    // CIRCUITPY-CHANGE
     mp_obj_dict_t *self = native_dict(args[0]);
     if (lookup_kind != MP_MAP_LOOKUP) {
         mp_ensure_not_fixed(self);
@@ -385,9 +397,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_setdefault_obj, 2, 3, dict_setde
 
 STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
+    // CIRCUITPY-CHANGE
     mp_obj_dict_t *self = native_dict(self_in);
     mp_ensure_not_fixed(self);
     if (self->map.used == 0) {
+        // CIRCUITPY-CHANGE
         mp_raise_msg_varg(&mp_type_KeyError, MP_ERROR_TEXT("pop from empty %q"), MP_QSTR_dict);
     }
     size_t cur = 0;
@@ -410,6 +424,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_popitem_obj, dict_popitem);
 
 STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(args[0]));
+    // CIRCUITPY-CHANGE
     mp_obj_dict_t *self = native_dict(args[0]);
     mp_ensure_not_fixed(self);
 
@@ -536,6 +551,7 @@ typedef struct _mp_obj_dict_view_t {
 STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_dict_view_it));
     mp_obj_dict_view_it_t *self = MP_OBJ_TO_PTR(self_in);
+    // CIRCUITPY-CHANGE
     mp_map_elem_t *next = dict_iter_next(native_dict(self->dict), &self->cur);
 
     if (next == NULL) {
@@ -594,7 +610,6 @@ STATIC void dict_view_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     mp_print_str(print, "])");
 }
 
-// CIRCUITPY-CHANGE
 STATIC mp_obj_t dict_view_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_obj_dict_view_t *o = MP_OBJ_TO_PTR(o_in);
     // only dict.values() supports __hash__.
@@ -742,6 +757,7 @@ size_t mp_obj_dict_len(mp_obj_t self_in) {
 
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
+    // CIRCUITPY-CHANGE
     mp_obj_dict_t *self = native_dict(self_in);
     mp_ensure_not_fixed(self);
     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;

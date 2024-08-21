@@ -59,6 +59,7 @@ STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
     while (s < top) {
         unichar ch;
         ch = utf8_get_char(s);
+        // CIRCUITPY-CHANGE: print printable Unicode chars
         const byte *start = s;
         s = utf8_next_char(s);
         if (ch == quote_char) {
@@ -76,8 +77,10 @@ STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
             // CIRCUITPY-CHANGE: print printable Unicode chars
         } else if (ch <= 0x1f || (0x7f <= ch && ch <= 0xa0) || ch == 0xad) {
             mp_printf(print, "\\x%02x", ch);
-        } else if ((0x2000 <= ch && ch <= 0x200f) || ch == 0x2028 || ch == 0x2029) {
+        } else if ((0x2000 <= ch && ch <= 0x200f) || ch == 0x2028 || ch == 0x2029 || ch == 0xffff) {
             mp_printf(print, "\\u%04x", ch);
+        } else if (ch == 0x1ffff) {
+            mp_printf(print, "\\U%08x", ch);
         } else {
             // Print the full character out.
             int width = s - start;

@@ -140,8 +140,10 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
     if (u.p.exp == ((1 << MP_FLOAT_EXP_BITS) - 1)) {
         // ...then number is Inf (positive or negative) if fraction is 0, else NaN.
         if (u.p.frc == 0) {
+            // CIRCUITPY-CHANGE
             mp_raise_msg_varg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert %s to int"), "inf");
         } else {
+            // CIRCUITPY-CHANGE
             mp_raise_ValueError_varg(MP_ERROR_TEXT("can't convert %s to int"), "NaN");
         }
     } else {
@@ -300,7 +302,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
     return b;
 }
 
-// CIRCUITPY-CHANGE
+// CIRCUITPY-CHANGE: more thorough checking
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 
 void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_signed) {
@@ -528,6 +530,7 @@ STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(int_from_bytes_fun_obj, 3, int_from_bytes);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_bytes_fun_obj));
 
+// CIRCUITPY-CHANGE: supports signed
 STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_length, ARG_byteorder, ARG_signed };
     static const mp_arg_t allowed_args[] = {

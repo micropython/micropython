@@ -238,12 +238,12 @@ STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     }
     #endif
     int caps_num = (self->re.sub + 1) * 2;
-    mp_obj_match_t *match = m_new_obj_var(mp_obj_match_t, char *, caps_num);
+    mp_obj_match_t *match = m_new_obj_var(mp_obj_match_t, caps, char *, caps_num);
     // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
     memset((char *)match->caps, 0, caps_num * sizeof(char *));
     int res = re1_5_recursiveloopprog(&self->re, &subj, match->caps, caps_num, is_anchored);
     if (res == 0) {
-        m_del_var(mp_obj_match_t, char *, caps_num, match);
+        m_del_var(mp_obj_match_t, caps, char *, caps_num, match);
         return mp_const_none;
     }
 

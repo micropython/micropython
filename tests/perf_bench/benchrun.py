@@ -2,6 +2,7 @@ def bm_run(N, M):
     try:
         from time import ticks_us, ticks_diff
     except ImportError:
+        # CIRCUITPY-CHANGE
         import time
 
         ticks_us = lambda: int(time.monotonic_ns() // 1000)

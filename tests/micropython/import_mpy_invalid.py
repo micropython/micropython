@@ -15,6 +15,7 @@ class UserFile(io.IOBase):
         self.data = memoryview(data)
         self.pos = 0
 
+    # CIRCUITPY-CHANGE
     def read(self):
         return self.data
 
@@ -48,6 +49,7 @@ class UserFS:
 
 
 # these are the test .mpy files
+# CIRCUITPY-CHANGE: C instead of M
 user_files = {
     "/mod0.mpy": b"",  # empty file
     "/mod1.mpy": b"C",  # too short header
@@ -63,6 +65,7 @@ for i in range(len(user_files)):
     mod = "mod%u" % i
     try:
         __import__(mod)
+    # CIRCUITPY-CHANGE
     except Exception as e:
         print(mod, type(e).__name__, e)
 

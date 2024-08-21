@@ -40,18 +40,19 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-// CIRCUITPY-CHANGE: a number of changes
-
-#define READLINE_HIST_SIZE (MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)))
-
 // flags for readline_t.auto_indent_state
 #define AUTO_INDENT_ENABLED (0x01)
 #define AUTO_INDENT_JUST_ADDED (0x02)
 
 enum { ESEQ_NONE, ESEQ_ESC, ESEQ_ESC_BRACKET, ESEQ_ESC_BRACKET_DIGIT, ESEQ_ESC_O };
 
+#ifdef _MSC_VER
+// work around MSVC compiler bug: https://stackoverflow.com/q/62259834/1976323
+#pragma warning(disable : 4090)
+#endif
+
 void readline_init0(void) {
-    memset(MP_STATE_PORT(readline_hist), 0, READLINE_HIST_SIZE * sizeof(const char*));
+    memset(MP_STATE_PORT(readline_hist), 0, MICROPY_READLINE_HISTORY_SIZE * sizeof(const char*));
 }
 
 STATIC char *str_dup_maybe(const char *str) {
@@ -64,6 +65,7 @@ STATIC char *str_dup_maybe(const char *str) {
     return s2;
 }
 
+// CIRCUITPY-CHANGE
 STATIC size_t count_cont_bytes(char *start, char *end) {
     int count = 0;
     for (char *pos = start; pos < end; pos++) {
@@ -109,6 +111,7 @@ typedef struct _readline_t {
     int escape_seq;
     int hist_cur;
     size_t cursor_pos;
+    // CIRCUITPY-CHANGE
     uint8_t utf8_cont_chars;
     char escape_seq_buf[1];
     #if MICROPY_REPL_AUTO_INDENT
@@ -149,6 +152,7 @@ STATIC size_t cursor_count_word(int forward) {
 #endif
 
 int readline_process_char(int c) {
+    // CIRCUITPY-CHANGE
     size_t last_line_len = utf8_charlen((byte *)rl.line->buf, rl.line->len);
     int cont_chars = 0;
     int redraw_step_back = 0;
@@ -187,6 +191,7 @@ int readline_process_char(int c) {
             // set redraw parameters
             redraw_from_cursor = true;
         #endif
+        // CIRCUITPY-CHANGE: add ctrl-L
         } else if (c == CHAR_CTRL_L) {
             // CTRL-L is clear screen / redraw. This specific sequence is used
             // (instead of a slightly more minimal sequence) for compatibility
@@ -205,6 +210,7 @@ int readline_process_char(int c) {
             goto up_arrow_key;
         } else if (c == CHAR_CTRL_U) {
             // CTRL-U is kill from beginning-of-line up to cursor
+            // CIRCUITPY-CHANGE
             cont_chars = count_cont_bytes(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
             vstr_cut_out_bytes(rl.line, rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
             // set redraw parameters
@@ -245,6 +251,7 @@ int readline_process_char(int c) {
                 int nspace = 1;
                 #endif
 
+                // CIRCUITPY-CHANGE
                 // Check if we have moved into a UTF-8 continuation byte
                 while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos-nspace])) {
                     nspace++;
@@ -305,6 +312,7 @@ int readline_process_char(int c) {
                 redraw_step_forward = compl_len;
             }
         #endif
+        // CIRCUITPY-CHANGE: UTF8 handling
         } else if (32 <= c) {
             // printable character
             uint8_t lcp = rl.line->buf[rl.cursor_pos];
@@ -381,7 +389,8 @@ backward_kill_word:
 up_arrow_key:
 #endif
                 // up arrow
-                if (rl.hist_cur + 1 < (int)READLINE_HIST_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
+                if (rl.hist_cur + 1 < MICROPY_READLINE_HISTORY_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
+                    // CIRCUITPY-CHANGE
                     // Check for continuation characters
                     cont_chars = count_cont_bytes(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
                     // increase hist num
@@ -400,6 +409,7 @@ down_arrow_key:
 #endif
                 // down arrow
                 if (rl.hist_cur >= 0) {
+                    // CIRCUITPY-CHANGE
                     // Check for continuation characters
                     cont_chars = count_cont_bytes(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
                     // decrease hist num
@@ -444,6 +454,7 @@ left_arrow_key:
         if (c == '~') {
             if (rl.escape_seq_buf[0] == '1' || rl.escape_seq_buf[0] == '7') {
 home_key:
+                // CIRCUITPY-CHANGE
                 cont_chars = count_cont_bytes(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
                 redraw_step_back = rl.cursor_pos - rl.orig_line_len;
             } else if (rl.escape_seq_buf[0] == '4' || rl.escape_seq_buf[0] == '8') {
@@ -455,6 +466,7 @@ end_key:
 delete_key:
 #endif
                 if (rl.cursor_pos < rl.line->len) {
+                    // CIRCUITPY-CHANGE
                     size_t len = 1;
                     while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos+len]) &&
                             rl.cursor_pos+len < rl.line->len) {
@@ -508,19 +520,23 @@ redraw:
 
     // redraw command prompt, efficiently
     if (redraw_step_back > 0) {
+        // CIRCUITPY-CHANGE
         mp_hal_move_cursor_back(redraw_step_back-cont_chars);
         rl.cursor_pos -= redraw_step_back;
     }
     if (redraw_from_cursor) {
+        // CIRCUITPY-CHANGE
         if (utf8_charlen((byte *)rl.line->buf, rl.line->len) < last_line_len) {
             // erase old chars
             mp_hal_erase_line_from_cursor(last_line_len - rl.cursor_pos);
         }
+        // CIRCUITPY-CHANGE
         // Check for continuation characters
         cont_chars = count_cont_bytes(rl.line->buf+rl.cursor_pos+redraw_step_forward, rl.line->buf+rl.line->len);
         // draw new chars
         mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
         // move cursor forward if needed (already moved forward by length of line, so move it back)
+        // CIRCUITPY-CHANGE
         mp_hal_move_cursor_back(rl.line->len - (rl.cursor_pos + redraw_step_forward) - cont_chars);
         rl.cursor_pos += redraw_step_forward;
     } else if (redraw_step_forward > 0) {

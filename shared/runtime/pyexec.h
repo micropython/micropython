@@ -28,13 +28,12 @@
 
 #include "py/obj.h"
 
-// CIRCUITPY-CHANGE: multiple changes
-
 typedef enum {
     PYEXEC_MODE_FRIENDLY_REPL,
     PYEXEC_MODE_RAW_REPL,
 } pyexec_mode_kind_t;
 
+// CIRCUITPY-CHANGE
 typedef struct {
     int return_code;
     mp_obj_t exception;
@@ -52,23 +51,27 @@ extern pyexec_mode_kind_t pyexec_mode_kind;
 extern int pyexec_system_exit;
 
 #define PYEXEC_FORCED_EXIT (0x100)
+// CIRCUITPY-CHANGE: additional flags
 #define PYEXEC_EXCEPTION   (0x200)
 #define PYEXEC_DEEP_SLEEP  (0x400)
 #define PYEXEC_RELOAD      (0x800)
 
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);
+// CIRCUITPY-CHANGE: result out argument
 int pyexec_file(const char *filename, pyexec_result_t *result);
 int pyexec_file_if_exists(const char *filename, pyexec_result_t *result);
-int pyexec_frozen_module(const char *name, pyexec_result_t *result);
+int pyexec_frozen_module(const char *name, bool allow_keyboard_interrupt, pyexec_result_t *result);
 void pyexec_event_repl_init(void);
 int pyexec_event_repl_process_char(int c);
 extern uint8_t pyexec_repl_active;
 
+// CIRCUITPY-CHANGE: atexit support
 #if CIRCUITPY_ATEXIT
 int pyexec_exit_handler(const void *source, pyexec_result_t *result);
 #endif
 
+// CIRCUITPY-CHANGE
 #if CIRCUITPY_WATCHDOG
 pyexec_result_t *pyexec_result(void);
 #endif

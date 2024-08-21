@@ -42,6 +42,7 @@
 #include "extmod/vfs_lfs.h"
 #endif
 
+// CIRCUITPY-CHANGE: handle undefined without a warning
 #if defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX
 #include "extmod/vfs_posix.h"
 #endif
@@ -310,6 +311,7 @@ mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    // CIRCUITPY-CHANGE: handle undefined without a warning
     #if defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX
     // If the file is an integer then delegate straight to the POSIX handler
     if (mp_obj_is_small_int(args[ARG_file].u_obj)) {
@@ -434,6 +436,7 @@ mp_obj_t mp_vfs_listdir(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_listdir_obj, 0, 1, mp_vfs_listdir);
 
 mp_obj_t mp_vfs_mkdir(mp_obj_t path_in) {
+    // CIRCUITPY-CHANGE: initialize
     mp_obj_t path_out = mp_const_none;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
     if (vfs == MP_VFS_ROOT || (vfs != MP_VFS_NONE && !strcmp(mp_obj_str_get_str(path_out), "/"))) {

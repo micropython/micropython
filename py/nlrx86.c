@@ -26,6 +26,7 @@
 
 #include "py/mpstate.h"
 
+// CIRCUITPY-CHANGE: avoid warning
 #if defined(MICROPY_NLR_X86) && MICROPY_NLR_X86
 
 #undef nlr_push
@@ -33,6 +34,7 @@
 // For reference, x86 callee save regs are:
 //  ebx, esi, edi, ebp, esp, eip
 
+// CIRCUITPY-CHANGE: avoid warning
 #if defined(MICROPY_NLR_OS_WINDOWS) && MICROPY_NLR_OS_WINDOWS
 unsigned int nlr_push_tail(nlr_buf_t *nlr) asm ("nlr_push_tail");
 #else
@@ -95,6 +97,7 @@ NORETURN void nlr_jump(void *val) {
         "ret                        \n" // return
         :                           // output operands
         : "r" (top)                 // input operands
+        // CIRCUITPY-CHANGE: MicroPython caught up with this change in https://github.com/micropython/micropython/pull/14126
         : "memory"                  // clobbered registers
         );
 

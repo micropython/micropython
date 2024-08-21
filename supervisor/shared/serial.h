@@ -23,7 +23,7 @@ void serial_early_init(void);
 void serial_init(void);
 void serial_write(const char *text);
 // Only writes up to given length. Does not check for null termination at all.
-void serial_write_substring(const char *text, uint32_t length);
+uint32_t serial_write_substring(const char *text, uint32_t length);
 char serial_read(void);
 uint32_t serial_bytes_available(void);
 bool serial_connected(void);

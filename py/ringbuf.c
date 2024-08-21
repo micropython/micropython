@@ -6,7 +6,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-// CIRCUITPY-CHANGE: thoroughly reworked
+// CIRCUITPY-CHANGE: API and implementation thoroughly reworked
+// No attempt to have atomic operations. Add guards if atomicity required.
 
 #include "ringbuf.h"
 

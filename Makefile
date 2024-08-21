@@ -282,6 +282,7 @@ check-stubs: stubs
 	@(cd $(STUBDIR) && set -- */__init__.pyi && mypy "$${@%/*}")
 	@tools/test-stubs.sh
 
+.PHONY: update-frozen-libraries
 update-frozen-libraries:
 	@echo "Updating all frozen libraries to latest tagged version."
 	cd frozen; for library in *; do cd $$library; ../../tools/git-checkout-latest-tag.sh; cd ..; done
@@ -350,3 +351,16 @@ remove-all-submodules:
 .PHONY: fetch-tags
 fetch-tags:
 	git fetch --tags --recurse-submodules=no --shallow-since="2023-02-01" https://github.com/adafruit/circuitpython HEAD
+
+.PHONY: coverage
+coverage:
+	make -j -C ports/unix VARIANT=coverage
+
+.PHONY: coverage-clean
+coverage-fresh:
+	make -C ports/unix VARIANT=coverage clean
+	make -j -C ports/unix VARIANT=coverage
+
+.PHONY: run-tests
+run-tests:
+	cd tests; MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py

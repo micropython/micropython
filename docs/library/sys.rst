@@ -66,7 +66,7 @@ Constants
 .. data:: maxsize
 
    Maximum value which a native integer type can hold on the current platform,
-   or maximum value representable by CircuitPython integer type, if it's smaller
+   or maximum value representable by the CircuitPython integer type, if it's smaller
    than platform max value (that is the case for CircuitPython ports without
    long int support).
 

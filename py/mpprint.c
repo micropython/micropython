@@ -492,9 +492,11 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 qstr qst = va_arg(args, qstr);
                 size_t len;
                 const char *str = (const char *)qstr_data(qst, &len);
+                // CIRCUITPY-CHANGE
                 chrs += print_str_common(print, str, prec, len, flags, fill, width);
                 break;
             }
+            // CIRCUITPY-CHANGE: new code to print compressed strings
             case 'S': {
                 mp_rom_error_text_t arg = va_arg(args, mp_rom_error_text_t);
                 size_t len_with_nul = decompress_length(arg);
@@ -509,6 +511,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 #ifndef NDEBUG
                 // With debugging enabled, catch printing of null string pointers
                 if (str == NULL) {
+                    // CIRCUITPY-CHANGE
                     str = "(null)";
                 }
                 #endif
@@ -546,6 +549,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             case 'p':
             case 'P': // don't bother to handle upcase for 'P'
                 // Use unsigned long int to work on both ILP32 and LP64 systems
+                // CIRCUITPY-CHANGE: print 0x prefix
                 #if SUPPORT_INT_BASE_PREFIX
                 chrs += mp_print_int(print, va_arg(args, unsigned long int), 0, 16, 'a', flags | PF_FLAG_SHOW_PREFIX, fill, width);
                 #else
@@ -593,6 +597,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
     return chrs;
 }
 
+// CIRCUITPY-CHANGE: compressed string printer
 int mp_cprintf(const mp_print_t *print, mp_rom_error_text_t compressed_fmt, ...) {
     va_list ap;
     va_start(ap, compressed_fmt);
@@ -601,6 +606,7 @@ int mp_cprintf(const mp_print_t *print, mp_rom_error_text_t compressed_fmt, ...)
     return ret;
 }
 
+// CIRCUITPY-CHANGE: compressed string printer
 int mp_vcprintf(const mp_print_t *print, mp_rom_error_text_t compressed_fmt, va_list args) {
     char fmt[decompress_length(compressed_fmt)];
     // TODO: Optimise this to format-while-decompressing (and not require the temp stack space).

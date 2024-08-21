@@ -1,6 +1,7 @@
 """
 Generate header file with macros defining MicroPython version info.
 
+# CIRCUITPY-CHANGE: This script is thoroughly reworked for use with CircuitPython.
 This script works with Python 3.7 and newer
 """
 
@@ -116,6 +117,7 @@ def make_version_header(repo_path, filename):
 #define MICROPY_VERSION_MAJOR (%s)
 #define MICROPY_VERSION_MINOR (%s)
 #define MICROPY_VERSION_MICRO (%s)
+#define MICROPY_VERSION_PRERELEASE 0
 #define MICROPY_VERSION_STRING "%s"
 // Combined version as a 32-bit number for convenience
 #define MICROPY_VERSION (MICROPY_VERSION_MAJOR << 16 | MICROPY_VERSION_MINOR << 8 | MICROPY_VERSION_MICRO)

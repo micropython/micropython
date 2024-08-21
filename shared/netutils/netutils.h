@@ -35,8 +35,6 @@
 #define NETUTILS_TRACE_PAYLOAD      (0x0002)
 #define NETUTILS_TRACE_NEWLINE      (0x0004)
 
-#include "py/runtime.h"
-
 typedef enum _netutils_endian_t {
     NETUTILS_LITTLE,
     NETUTILS_BIG,

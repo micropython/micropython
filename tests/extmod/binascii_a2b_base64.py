@@ -25,6 +25,7 @@ print(binascii.a2b_base64(b"Zm9v=="))
 print(binascii.a2b_base64(b"Zm9v==="))
 print(binascii.a2b_base64(b"Zm9v===YmFy"))
 
+# CIRCUITPY-CHANGE
 # Unicode strings can be decoded
 print(binascii.a2b_base64("Zm9v===YmFy"))
 

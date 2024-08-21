@@ -350,6 +350,7 @@ void asm_thumb_b_rel12(asm_thumb_t *as, int rel);
 // Holds a pointer to mp_fun_table
 #define ASM_THUMB_REG_FUN_TABLE ASM_THUMB_REG_R7
 
+// CIRCUITPY-CHANGE: prevent #if warning
 #if defined(GENERIC_ASM_API) && GENERIC_ASM_API
 
 // The following macros provide a (mostly) arch-independent API to
@@ -401,7 +402,6 @@ void asm_thumb_b_rel12(asm_thumb_t *as, int rel);
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg) asm_thumb_mov_local_reg((as), (local_num), (reg))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_thumb_mov_reg_i32_optimised((as), (reg_dest), (imm))
-#define ASM_MOV_REG_IMM_FIX_WORD(as, reg_dest, imm) asm_thumb_mov_reg_i32((as), (reg_dest), (imm))
 #define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_thumb_mov_reg_local((as), (reg_dest), (local_num))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_thumb_mov_reg_reg((as), (reg_dest), (reg_src))
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_thumb_mov_reg_local_addr((as), (reg_dest), (local_num))

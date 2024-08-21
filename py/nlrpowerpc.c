@@ -114,6 +114,7 @@ NORETURN void nlr_jump(void *val) {
         "blr ;"
         :
         : "r" (&top->regs)
+        // CIRCUITPY-CHANGE: MicroPython caught up with this change in https://github.com/micropython/micropython/pull/14126
         : "memory"
         );
 

@@ -32,4 +32,5 @@
 mp_dynamic_compiler_t mp_dynamic_compiler = {0};
 #endif
 
+// CIRCUITPY-CHANGE: PLACE_IN_DTCM_BSS
 mp_state_ctx_t PLACE_IN_DTCM_BSS(mp_state_ctx);

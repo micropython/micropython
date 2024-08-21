@@ -170,7 +170,7 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
         // Implemented by probing all possible qstrs with mp_load_method_maybe
         size_t nqstr = QSTR_TOTAL();
         for (size_t i = MP_QSTR_ + 1; i < nqstr; ++i) {
-            // CIRCUITPY-CHANGE: changes PR #6539
+            // CIRCUITPY-CHANGE: changes PR #6539: catch dir() exceptions
             mp_obj_t dest[2] = {};
             mp_load_method_protected(args[0], i, dest, true);
             if (dest[0] != MP_OBJ_NULL) {
@@ -740,6 +740,7 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IndentationError), MP_ROM_PTR(&mp_type_IndentationError) },
     { MP_ROM_QSTR(MP_QSTR_IndexError), MP_ROM_PTR(&mp_type_IndexError) },
     { MP_ROM_QSTR(MP_QSTR_KeyboardInterrupt), MP_ROM_PTR(&mp_type_KeyboardInterrupt) },
+    // CIRCUITPY-CHANGE: add ReloadException
     { MP_ROM_QSTR(MP_QSTR_ReloadException), MP_ROM_PTR(&mp_type_ReloadException) },
     { MP_ROM_QSTR(MP_QSTR_KeyError), MP_ROM_PTR(&mp_type_KeyError) },
     { MP_ROM_QSTR(MP_QSTR_LookupError), MP_ROM_PTR(&mp_type_LookupError) },
@@ -747,6 +748,7 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_NameError), MP_ROM_PTR(&mp_type_NameError) },
     { MP_ROM_QSTR(MP_QSTR_NotImplementedError), MP_ROM_PTR(&mp_type_NotImplementedError) },
     { MP_ROM_QSTR(MP_QSTR_OSError), MP_ROM_PTR(&mp_type_OSError) },
+    // CIRCUITPY-CHANGE: add TimeoutEror ConnectionError, BrokenPipeError
     { MP_ROM_QSTR(MP_QSTR_TimeoutError), MP_ROM_PTR(&mp_type_TimeoutError) },
     { MP_ROM_QSTR(MP_QSTR_ConnectionError), MP_ROM_PTR(&mp_type_ConnectionError) },
     { MP_ROM_QSTR(MP_QSTR_BrokenPipeError), MP_ROM_PTR(&mp_type_BrokenPipeError) },
@@ -767,6 +769,7 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ViperTypeError), MP_ROM_PTR(&mp_type_ViperTypeError) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_ZeroDivisionError), MP_ROM_PTR(&mp_type_ZeroDivisionError) },
+    // CIRCUITYPY-CHANGE
     #if CIRCUITPY_WARNINGS
     { MP_ROM_QSTR(MP_QSTR_Warning), MP_ROM_PTR(&mp_type_Warning) },
     { MP_ROM_QSTR(MP_QSTR_FutureWarning), MP_ROM_PTR(&mp_type_FutureWarning) },

@@ -6,6 +6,7 @@
 
 #pragma once
 #include <stdint.h>
-#include "py/misc.h"
+
+#include "py/obj.h"
 
 int32_t colorwheel(mp_float_t pos);

@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
+// CIRCUITPY-CHANGE: enhanced getenv
 #if defined(MICROPY_UNIX_COVERAGE)
 #include "py/objstr.h"
 typedef int os_getenv_err_t;

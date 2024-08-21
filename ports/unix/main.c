@@ -54,7 +54,8 @@
 #include "genhdr/mpversion.h"
 #include "input.h"
 
-#if defined(MICROPY_UNIX_COVERAGE) // CIRCUITPY-CHANGE
+// CIRCUITPY-CHANGE
+#if defined(MICROPY_UNIX_COVERAGE)
 #include "py/objstr.h"
 typedef int os_getenv_err_t;
 mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_);
@@ -109,6 +110,7 @@ STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDERR_FILENO, str, len), {});
+    // CIRCUITPY-CHANGE: This should have been conditionalized.
     #if MICROPY_PY_OS_DUPTERM
     mp_os_dupterm_tx_strn(str, len);
     #endif
@@ -159,7 +161,8 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
             const vstr_t *vstr = source;
             lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, false);
         } else if (source_kind == LEX_SRC_FILENAME) {
-            lex = mp_lexer_new_from_file((const char *)source);
+            const char *filename = (const char *)source;
+            lex = mp_lexer_new_from_file(qstr_from_str(filename));
         } else { // LEX_SRC_STDIN
             lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
         }
@@ -326,10 +329,10 @@ STATIC int do_repl(void) {
         }
 
         int ret = execute_from_lexer(LEX_SRC_STR, line, MP_PARSE_SINGLE_INPUT, true);
+        free(line);
         if (ret & FORCED_EXIT) {
             return ret;
         }
-        free(line);
     }
 
     #endif

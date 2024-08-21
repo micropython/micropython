@@ -26,8 +26,7 @@
 #ifndef MICROPY_INCLUDED_LIB_MP_READLINE_READLINE_H
 #define MICROPY_INCLUDED_LIB_MP_READLINE_READLINE_H
 
-// CIRCUITPY-CHANGE: a number of changes
-
+// CIRCUITPY-CHANGE: for vstr_t
 #include "py/misc.h"
 
 #define CHAR_CTRL_A (1)
@@ -37,6 +36,7 @@
 #define CHAR_CTRL_E (5)
 #define CHAR_CTRL_F (6)
 #define CHAR_CTRL_K (11)
+// CIRCUITPY-CHANGE: ctrl-L support
 #define CHAR_CTRL_L (12)
 #define CHAR_CTRL_N (14)
 #define CHAR_CTRL_P (16)

@@ -25,10 +25,17 @@
  */
 #include <errno.h>
 #include <unistd.h>
+// CIRCUITPY-CHANGE: extra include
 #include <stdbool.h>
 
 #ifndef CHAR_CTRL_C
 #define CHAR_CTRL_C (3)
+#endif
+
+// If threading is enabled, configure the atomic section.
+#if MICROPY_PY_THREAD
+#define MICROPY_BEGIN_ATOMIC_SECTION() (mp_thread_unix_begin_atomic_section(), 0xffffffff)
+#define MICROPY_END_ATOMIC_SECTION(x) (void)x; mp_thread_unix_end_atomic_section()
 #endif
 
 // CIRCUITPY-CHANGE: mp_hal_set_interrupt_char(int) instead of char

@@ -10,6 +10,7 @@ s = A()[1:2:3]
 # check type
 print(type(s) is slice)
 
+# CIRCUITPY-CHANGE: more tests
 s = slice(10)
 print(s)
 

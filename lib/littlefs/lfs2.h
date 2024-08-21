@@ -8,8 +8,6 @@
 #ifndef LFS2_H
 #define LFS2_H
 
-#include <stdint.h>
-#include <stdbool.h>
 #include "lfs2_util.h"
 
 #ifdef __cplusplus
@@ -23,14 +21,14 @@ extern "C"
 // Software library version
 // Major (top-nibble), incremented on backwards incompatible changes
 // Minor (bottom-nibble), incremented on feature additions
-#define LFS2_VERSION 0x00020005
+#define LFS2_VERSION 0x00020008
 #define LFS2_VERSION_MAJOR (0xffff & (LFS2_VERSION >> 16))
 #define LFS2_VERSION_MINOR (0xffff & (LFS2_VERSION >>  0))
 
 // Version of On-disk data structures
 // Major (top-nibble), incremented on backwards incompatible changes
 // Minor (bottom-nibble), incremented on feature additions
-#define LFS2_DISK_VERSION 0x00020000
+#define LFS2_DISK_VERSION 0x00020001
 #define LFS2_DISK_VERSION_MAJOR (0xffff & (LFS2_DISK_VERSION >> 16))
 #define LFS2_DISK_VERSION_MINOR (0xffff & (LFS2_DISK_VERSION >>  0))
 
@@ -114,6 +112,8 @@ enum lfs2_type {
     LFS2_TYPE_SOFTTAIL       = 0x600,
     LFS2_TYPE_HARDTAIL       = 0x601,
     LFS2_TYPE_MOVESTATE      = 0x7ff,
+    LFS2_TYPE_CCRC           = 0x500,
+    LFS2_TYPE_FCRC           = 0x5ff,
 
     // internal chip sources
     LFS2_FROM_NOOP           = 0x000,
@@ -263,6 +263,14 @@ struct lfs2_config {
     // can help bound the metadata compaction time. Must be <= block_size.
     // Defaults to block_size when zero.
     lfs2_size_t metadata_max;
+
+#ifdef LFS2_MULTIVERSION
+    // On-disk version to use when writing in the form of 16-bit major version
+    // + 16-bit minor version. This limiting metadata to what is supported by
+    // older minor versions. Note that some features will be lost. Defaults to
+    // to the most recent minor version when zero.
+    uint32_t disk_version;
+#endif
 };
 
 // File info structure
@@ -278,6 +286,27 @@ struct lfs2_info {
     // reduce RAM. LFS2_NAME_MAX is stored in superblock and must be
     // respected by other littlefs drivers.
     char name[LFS2_NAME_MAX+1];
+};
+
+// Filesystem info structure
+struct lfs2_fsinfo {
+    // On-disk version.
+    uint32_t disk_version;
+
+    // Size of a logical block in bytes.
+    lfs2_size_t block_size;
+
+    // Number of logical blocks in filesystem.
+    lfs2_size_t block_count;
+
+    // Upper limit on the length of file names in bytes.
+    lfs2_size_t name_max;
+
+    // Upper limit on the size of files in bytes.
+    lfs2_size_t file_max;
+
+    // Upper limit on the size of custom attributes in bytes.
+    lfs2_size_t attr_max;
 };
 
 // Custom attribute structure, used to describe custom attributes
@@ -410,6 +439,7 @@ typedef struct lfs2 {
     } free;
 
     const struct lfs2_config *cfg;
+    lfs2_size_t block_count;
     lfs2_size_t name_max;
     lfs2_size_t file_max;
     lfs2_size_t attr_max;
@@ -534,8 +564,8 @@ int lfs2_file_open(lfs2_t *lfs2, lfs2_file_t *file,
 // are values from the enum lfs2_open_flags that are bitwise-ored together.
 //
 // The config struct provides additional config options per file as described
-// above. The config struct must be allocated while the file is open, and the
-// config struct must be zeroed for defaults and backwards compatibility.
+// above. The config struct must remain allocated while the file is open, and
+// the config struct must be zeroed for defaults and backwards compatibility.
 //
 // Returns a negative error code on failure.
 int lfs2_file_opencfg(lfs2_t *lfs2, lfs2_file_t *file,
@@ -659,6 +689,12 @@ int lfs2_dir_rewind(lfs2_t *lfs2, lfs2_dir_t *dir);
 
 /// Filesystem-level filesystem operations
 
+// Find on-disk info about the filesystem
+//
+// Fills out the fsinfo structure based on the filesystem found on-disk.
+// Returns a negative error code on failure.
+int lfs2_fs_stat(lfs2_t *lfs2, struct lfs2_fsinfo *fsinfo);
+
 // Finds the current size of the filesystem
 //
 // Note: Result is best effort. If files share COW structures, the returned
@@ -675,6 +711,40 @@ lfs2_ssize_t lfs2_fs_size(lfs2_t *lfs2);
 //
 // Returns a negative error code on failure.
 int lfs2_fs_traverse(lfs2_t *lfs2, int (*cb)(void*, lfs2_block_t), void *data);
+
+// Attempt to proactively find free blocks
+//
+// Calling this function is not required, but may allowing the offloading of
+// the expensive block allocation scan to a less time-critical code path.
+//
+// Note: littlefs currently does not persist any found free blocks to disk.
+// This may change in the future.
+//
+// Returns a negative error code on failure. Finding no free blocks is
+// not an error.
+int lfs2_fs_gc(lfs2_t *lfs2);
+
+#ifndef LFS2_READONLY
+// Attempt to make the filesystem consistent and ready for writing
+//
+// Calling this function is not required, consistency will be implicitly
+// enforced on the first operation that writes to the filesystem, but this
+// function allows the work to be performed earlier and without other
+// filesystem changes.
+//
+// Returns a negative error code on failure.
+int lfs2_fs_mkconsistent(lfs2_t *lfs2);
+#endif
+
+#ifndef LFS2_READONLY
+// Grows the filesystem to a new size, updating the superblock with the new
+// block count.
+//
+// Note: This is irreversible.
+//
+// Returns a negative error code on failure.
+int lfs2_fs_grow(lfs2_t *lfs2, lfs2_size_t block_count);
+#endif
 
 #ifndef LFS2_READONLY
 #ifdef LFS2_MIGRATE

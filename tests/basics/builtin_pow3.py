@@ -29,6 +29,7 @@ try:
 except TypeError:
     print("TypeError expected")
 
+# CIRCUITPY-CHANGE
 try:
     print(pow(4, 5, 0))
 except ValueError:

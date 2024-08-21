@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 
+// CIRCUITPY-CHANGE
 #include "py/binary.h"
 #include "py/objarray.h"
 #include "py/objlist.h"
@@ -111,6 +112,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_json_dumps_obj, mod_json_dumps);
 
 #endif
 
+// CIRCUITPY-CHANGE
 #define JSON_DEBUG(...) (void)0
 // #define JSON_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
 
@@ -147,6 +149,7 @@ typedef struct _json_stream_t {
 
 STATIC byte json_stream_next(json_stream_t *s) {
     mp_uint_t ret = s->read(s->stream_obj, &s->cur, 1, &s->errcode);
+    // CIRCUITPY-CHANGE
     JSON_DEBUG("  usjon_stream_next err:%2d cur: %c \n", s->errcode, s->cur);
     if (s->errcode != 0) {
         mp_raise_OSError(s->errcode);
@@ -427,6 +430,7 @@ fail:
     mp_raise_ValueError(MP_ERROR_TEXT("syntax error in JSON"));
 }
 
+// CIRCUITPY-CHANGE
 STATIC mp_obj_t mod_json_load(mp_obj_t stream_obj) {
     return _mod_json_load(stream_obj, true);
 }
@@ -437,6 +441,7 @@ STATIC mp_obj_t mod_json_loads(mp_obj_t obj) {
     mp_get_buffer_raise(obj, &bufinfo, MP_BUFFER_READ);
     vstr_t vstr = {bufinfo.len, bufinfo.len, (char *)bufinfo.buf, true};
     mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
+    // CIRCUITPY-CHANGE
     return _mod_json_load(MP_OBJ_FROM_PTR(&sio), false);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_json_loads_obj, mod_json_loads);

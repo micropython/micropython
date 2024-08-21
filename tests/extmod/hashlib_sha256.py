@@ -23,6 +23,7 @@ print(hashlib.sha256(b"\xff" * 64).digest())
 # 56 bytes is a boundary case in the algorithm
 print(hashlib.sha256(b"\xff" * 56).digest())
 
+# CIRCUITPY-CHANGE
 sha256 = hashlib.sha256(b"hello")
 try:
     sha256.update("world")

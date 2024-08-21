@@ -96,6 +96,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/objstr.c
     ${MICROPY_PY_DIR}/objstringio.c
     ${MICROPY_PY_DIR}/objstrunicode.c
+# CIRCUITPY-CHANGE: add objtraceback.c
     ${MICROPY_PY_DIR}/objtraceback.c
     ${MICROPY_PY_DIR}/objtuple.c
     ${MICROPY_PY_DIR}/objtype.c

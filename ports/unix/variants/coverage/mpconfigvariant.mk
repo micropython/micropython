@@ -1,6 +1,7 @@
 # Disable optimisations and enable assert() on coverage builds.
 DEBUG ?= 1
 
+# CIRCUITPY-CHANGE: add exception chaining
 CFLAGS += \
 	-fprofile-arcs -ftest-coverage \
 	-Wformat -Wmissing-declarations -Wmissing-prototypes \
@@ -13,6 +14,7 @@ LDFLAGS += -fprofile-arcs -ftest-coverage
 FROZEN_MANIFEST ?= $(VARIANT_DIR)/manifest.py
 USER_C_MODULES = $(TOP)/examples/usercmodule
 
+# CIRCUITPY-CHANGE: use CircuitPython bindings and implementations
 SRC_QRIO := $(patsubst ../../%,%,$(wildcard ../../shared-bindings/qrio/*.c ../../shared-module/qrio/*.c ../../lib/quirc/lib/*.c))
 SRC_C += $(SRC_QRIO)
 

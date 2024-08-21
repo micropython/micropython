@@ -51,6 +51,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
             switch (val_type) {
                 case 'b':
                 case 'B':
+                // CIRCUITPY-CHANGE: x code: padding
                 case 'x':
                     size = 1;
                     break;
@@ -70,6 +71,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
                 case 'Q':
                     size = 8;
                     break;
+                    // CIRCUITPY-CHANGE: non-standard typecodes can be turned off
                 #if MICROPY_NONSTANDARD_TYPECODES
                 case 'P':
                 case 'O':
@@ -97,6 +99,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
                 case BYTEARRAY_TYPECODE:
                 case 'b':
                 case 'B':
+                // CIRCUITPY-CHANGE: x code: padding
                 case 'x':
                     align = size = 1;
                     break;
@@ -120,6 +123,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
                     align = alignof(long long);
                     size = sizeof(long long);
                     break;
+                    // CIRCUITPY-CHANGE: non-standard typecodes can be turned off
                 #if MICROPY_NONSTANDARD_TYPECODES
                 case 'P':
                 case 'O':
@@ -186,6 +190,7 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, size_t index) {
         case 'd':
             return mp_obj_new_float_from_d(((double *)p)[index]);
         #endif
+            // CIRCUITPY-CHANGE: non-standard typecodes can be turned off
             #if MICROPY_NONSTANDARD_TYPECODES
         // Extension to CPython: array of objects
         case 'O':
@@ -243,6 +248,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte *p_base, byte *
 
     long long val = mp_binary_get_int(size, is_signed(val_type), (struct_type == '>'), p);
 
+    // CIRCUITPY-CHANGE: non-standard typecodes can be turned off
     if (MICROPY_NONSTANDARD_TYPECODES && (val_type == 'O')) {
         return (mp_obj_t)(mp_uint_t)val;
     #if MICROPY_NONSTANDARD_TYPECODES
@@ -316,6 +322,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
 
     mp_uint_t val;
     switch (val_type) {
+        // CIRCUITPY-CHANGE: non-standard typecodes can be turned off
         #if MICROPY_NONSTANDARD_TYPECODES
         case 'O':
             val = (mp_uint_t)val_in;
@@ -350,6 +357,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
         }
         #endif
         default: {
+            // CIRCUITPY-CHANGE: add overflow checks
             bool signed_type = is_signed(val_type);
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
             if (mp_obj_is_exact_type(val_in, &mp_type_int)) {
@@ -389,6 +397,7 @@ void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_
             ((double *)p)[index] = mp_obj_get_float_to_d(val_in);
             break;
         #endif
+        // CIRCUITPY-CHANGE: non-standard typecodes can be turned off
         #if MICROPY_NONSTANDARD_TYPECODES
         // Extension to CPython: array of objects
         case 'O':
@@ -396,6 +405,7 @@ void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_
             break;
         #endif
         default: {
+            // CIRCUITPY-CHANGE: add overflow checks
             size_t size = mp_binary_get_size('@', typecode, NULL);
             bool signed_type = is_signed(typecode);
 
@@ -459,6 +469,7 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, size_t index, mp_i
             ((double *)p)[index] = (double)val;
             break;
         #endif
+            // CIRCUITPY-CHANGE: non-standard typecodes can be turned off
             #if MICROPY_NONSTANDARD_TYPECODES
         // Extension to CPython: array of pointers
         case 'P':

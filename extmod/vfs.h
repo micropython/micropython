@@ -28,6 +28,7 @@
 
 #include "py/builtin.h"
 #include "py/obj.h"
+// CIRCUITPY-CHANGE
 #include "py/proto.h"
 
 // return values of mp_vfs_lookup_path
@@ -44,6 +45,7 @@
 #define MP_BLOCKDEV_FLAG_FREE_OBJ       (0x0002) // fs_user_mount_t obj should be freed on umount
 #define MP_BLOCKDEV_FLAG_HAVE_IOCTL     (0x0004) // new protocol with ioctl
 #define MP_BLOCKDEV_FLAG_NO_FILESYSTEM  (0x0008) // the block device has no filesystem on it
+// CIRCUITPY-CHANGE: additional flags
 // Device is writable over USB and read-only to MicroPython.
 #define MP_BLOCKDEV_FLAG_USB_WRITABLE             (0x0010)
 // Bit set when the above flag is checked before opening a file for write.
@@ -59,9 +61,9 @@
 #define MP_BLOCKDEV_IOCTL_BLOCK_SIZE    (5)
 #define MP_BLOCKDEV_IOCTL_BLOCK_ERASE   (6)
 
-
 // At the moment the VFS protocol just has import_stat, but could be extended to other methods
 typedef struct _mp_vfs_proto_t {
+    // CIRCUITPY-CHANGE
     MP_PROTOCOL_HEAD
     mp_import_stat_t (*import_stat)(void *self, const char *path);
 } mp_vfs_proto_t;
@@ -88,6 +90,7 @@ typedef struct _mp_vfs_mount_t {
     struct _mp_vfs_mount_t *next;
 } mp_vfs_mount_t;
 
+// CIRCUITPY-CHANGE: allow outside use of ilistdir_it_iternext
 typedef struct _mp_vfs_ilistdir_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
@@ -124,7 +127,6 @@ mp_obj_t mp_vfs_stat(mp_obj_t path_in);
 mp_obj_t mp_vfs_statvfs(mp_obj_t path_in);
 
 int mp_vfs_mount_and_chdir_protected(mp_obj_t bdev, mp_obj_t mount_point);
-mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in);
 
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_vfs_mount_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_umount_obj);

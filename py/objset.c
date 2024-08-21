@@ -361,6 +361,7 @@ STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t obj = mp_set_remove_first(&self->set);
     if (obj == MP_OBJ_NULL) {
+        // CIRCUITPY-CHANGE
         mp_raise_msg_varg(&mp_type_KeyError, MP_ERROR_TEXT("pop from empty %q"), MP_QSTR_set);
     }
     return obj;
@@ -446,6 +447,7 @@ STATIC mp_obj_t set_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             }
             MP_FALLTHROUGH
         #endif
+        // CIRCUITPY-CHANGE
         /* FALLTHROUGH */
         default:
             return MP_OBJ_NULL;      // op not supported

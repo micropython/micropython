@@ -25,6 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# CIRCUITPY-CHANGE: more imports
 import argparse
 import glob
 import fnmatch
@@ -36,6 +37,7 @@ import sys
 import subprocess
 
 # Relative to top-level repo dir.
+# CIRCUITPY-CHANGE: different directory trees
 PATHS = [
     # C
     "main.c",
@@ -58,6 +60,7 @@ PATHS = [
     "tests/circuitpython-*/**/*.py",
 ]
 
+# CIRCUITPY-CHANGE: different exclusions
 EXCLUSIONS = [
     # STM32 build includes generated Python code.
     "ports/*/build*",
@@ -67,9 +70,12 @@ EXCLUSIONS = [
     "tests/**/repl_*.py",
     # don't reindent this third-party code we vendored in
     "ports/raspberrypi/lwip_src",
+    # line breaks
+    "tools/mpy-tool.py",
 ]
 
 
+# CIRCUITPY-CHANGE
 # None of the standard Python path matching routines implement the matching
 # we want, which is most like git's "pathspec" version of globs.
 # In particular, we want "**/" to match all directories.
@@ -113,7 +119,7 @@ path_rx = re.compile(path_re)
 TOP = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 UNCRUSTIFY_CFG = os.path.join(TOP, "tools/uncrustify.cfg")
-
+# CIRCUITPY-CHANGE
 C_EXTS = (
     ".c",
     ".h",
@@ -140,6 +146,7 @@ def list_files(args):
     return sorted(arg for arg in args if path_rx.match(relative_filename(arg)))
 
 
+# CIRCUITPY-CHANGE: handle inline documentation
 def fixup_c(filename):
     # Read file.
     with open(filename) as f:
@@ -188,6 +195,7 @@ def fixup_c(filename):
         assert not dedent_stack, filename
 
 
+# CIRCUITPY-CHANGE: different options and logic.
 def main():
     cmd_parser = argparse.ArgumentParser(
         description="Auto-format C and Python files -- to be used via pre-commit only."

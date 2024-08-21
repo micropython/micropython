@@ -78,6 +78,7 @@ NORETURN void nlr_jump(void *val) {
         "nop            \n"
         :
         : "r" (top)
+        // CIRCUITPY-CHANGE: MicroPython caught up with this change in https://github.com/micropython/micropython/pull/14126
         : "memory"
         );
     MP_UNREACHABLE

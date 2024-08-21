@@ -193,6 +193,7 @@ ifeq ($(MICROPY_PY_JNI),1)
 CFLAGS += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
 endif
 
+# CIRCUITPY-CHANGE: CircuitPython-specific files.
 # source files
 SRC_C += \
 	main.c \
@@ -230,11 +231,9 @@ OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
-# Append any auto-generated sources that are needed by sources listed in
-# SRC_QSTR
-SRC_QSTR_AUTO_DEPS +=
 
 ifneq ($(FROZEN_MANIFEST),)
+# CIRCUITPY-CHANGE
 # To use frozen code create a manifest.py file with a description of files to
 # freeze, then invoke make with FROZEN_MANIFEST=manifest.py (be sure to build from scratch).
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool

@@ -653,6 +653,7 @@ STATIC const mp_rom_map_elem_t mp_constants_table[] = {
 STATIC MP_DEFINE_CONST_MAP(mp_constants_map, mp_constants_table);
 #endif
 
+// CIRCUITPY-CHANGE: avoid compiler warning
 #if defined(MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND) && MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND
 // Some versions of the xtensa-esp32-elf-gcc compiler generate wrong code if this
 // function is static, so provide a hook for them to work around this problem.
@@ -1009,7 +1010,7 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
 
     #if MICROPY_COMP_CONST_TUPLE
     if (build_tuple(parser, src_line, rule_id, num_args)) {
-        // we built a tuple from this rule so return straightaway
+        // we built a tuple from this rule so return straight away
         return;
     }
     #endif

@@ -115,6 +115,23 @@ bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
 bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback);
 #endif
 
+// Handles any pending MicroPython events without waiting for an interrupt or event.
+void mp_event_handle_nowait(void);
+
+// Handles any pending MicroPython events and then suspends execution until the
+// next interrupt or event.
+//
+// Note: on "tickless" ports this can suspend execution for a long time,
+// don't call unless you know an interrupt is coming to continue execution.
+// On "ticked" ports it may return early due to the tick interrupt.
+void mp_event_wait_indefinite(void);
+
+// Handle any pending MicroPython events and then suspends execution until the
+// next interrupt or event, or until timeout_ms milliseconds have elapsed.
+//
+// On "ticked" ports it may return early due to the tick interrupt.
+void mp_event_wait_ms(mp_uint_t timeout_ms);
+
 // extra printing method specifically for mp_obj_t's which are integral type
 int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec);
 
@@ -249,6 +266,7 @@ NORETURN void mp_raise_TypeError(mp_rom_error_text_t msg);
 NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg);
 #endif
 
+// CIRCUITPY-CHANGE: new mp_raise routines
 NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg);
 NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
 NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt

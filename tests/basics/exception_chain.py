@@ -1,3 +1,5 @@
+# CIRCUITPY-CHANGE: exception chaining is supported
+
 try:
     Exception().__cause__
 except AttributeError:

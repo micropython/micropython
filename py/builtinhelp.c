@@ -77,6 +77,7 @@ STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
 }
 #endif
 
+// CIRCUITPY-CHANGE: move extern to top level to prevent warnings
 #if MICROPY_MODULE_FROZEN
 extern const char mp_frozen_names[];
 #endif
@@ -122,6 +123,7 @@ STATIC void mp_help_print_modules(void) {
 
     #if MICROPY_ENABLE_EXTERNAL_IMPORT
     // let the user know there may be other modules available from the filesystem
+    // CIRCUITPY-CHANGE: make translatable
     serial_write_compressed(MP_ERROR_TEXT("Plus any modules on the filesystem\n"));
     #endif
 }
@@ -138,9 +140,11 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // try to print something sensible about the given object
+    // CIRCUITPY-CHANGE: make translatable
     mp_cprintf(MP_PYTHON_PRINTER, MP_ERROR_TEXT("object "));
     mp_obj_print(obj, PRINT_STR);
 
+    // CIRCUITPY-CHANGE: make translatable
     mp_cprintf(MP_PYTHON_PRINTER, MP_ERROR_TEXT(" is of type %q\n"), type->name);
 
     mp_map_t *map = NULL;
@@ -166,6 +170,7 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
 
 STATIC mp_obj_t mp_builtin_help(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
+        // CIRCUITPY-CHANGE: make translatable
         // print a general help message. Translate only works on single strings on one line.
         mp_cprintf(MP_PYTHON_PRINTER,
             MP_ERROR_TEXT("Welcome to Adafruit CircuitPython %s!\n\nVisit circuitpython.org for more information.\n\nTo list built-in modules type `help(\"modules\")`.\n"),

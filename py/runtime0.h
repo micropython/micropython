@@ -25,6 +25,8 @@
  */
 #ifndef MICROPY_INCLUDED_PY_RUNTIME0_H
 #define MICROPY_INCLUDED_PY_RUNTIME0_H
+
+// CIRCUITPY-CHANGE
 #include "mpconfig.h"
 
 // The first four must fit in 8 bits, see emitbc.c
@@ -35,7 +37,7 @@
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)
 #define MP_SCOPE_FLAG_VARARGS      (0x04)
 #define MP_SCOPE_FLAG_DEFKWARGS    (0x08)
-// CIRCUITPY-CHANGE
+// CIRCUITPY-CHANGE: FLAG_ASYNC
 #define MP_SCOPE_FLAG_ASYNC        (0x10)
 #define MP_SCOPE_FLAG_REFGLOBALS   (0x20) // used only if native emitter enabled
 #define MP_SCOPE_FLAG_HASCONSTS    (0x40) // used only if native emitter enabled

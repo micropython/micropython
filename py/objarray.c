@@ -293,6 +293,7 @@ STATIC void memoryview_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
         dest[0] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->typecode & TYPECODE_MASK, NULL));
     }
+    // CIRCUITPY-CHANGE
     #if MICROPY_PY_BUILTINS_BYTES_HEX || MICROPY_CPYTHON_COMPAT
     else {
         // Need to forward to locals dict.
@@ -518,6 +519,7 @@ STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
 MP_DEFINE_CONST_FUN_OBJ_2(mp_obj_array_extend_obj, array_extend);
 #endif
 
+// CIRCUITPY-CHANGE: buffer_finder used belo
 #if MICROPY_PY_BUILTINS_BYTEARRAY && MICROPY_CPYTHON_COMPAT
 STATIC mp_obj_t buffer_finder(size_t n_args, const mp_obj_t *args, int direction, bool is_index) {
     mp_check_self(mp_obj_is_type(args[0], &mp_type_bytearray));
@@ -653,6 +655,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 } else {
                     mp_seq_replace_slice_no_grow(dest_items, o->len,
                         slice.start, slice.stop, src_items, src_len, item_sz);
+                    // CIRCUITPY-CHANGE
                     #if MICROPY_NONSTANDARD_TYPECODES
                     // Clear "freed" elements at the end of list
                     // TODO: This is actually only needed for typecode=='O'
@@ -732,7 +735,6 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
     return 0;
 }
 
-
 // CIRCUITPY-CHANGE
 #if MICROPY_CPYTHON_COMPAT && MICROPY_PY_BUILTINS_BYTEARRAY
 // Directly lifted from objstr.c
@@ -808,6 +810,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 #define MEMORYVIEW_TYPE_ATTR
 #endif
 
+// CIRCUITPY-CHANGE: provides cast
 #if MICROPY_CPYTHON_COMPAT
 // CIRCUITPY-CHANGE: provides cast
 STATIC const mp_rom_map_elem_t memoryview_locals_dict_table[] = {

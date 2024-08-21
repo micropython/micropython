@@ -31,6 +31,6 @@ m = re.match(r"(([0-9]*)([a-z]*)\d*)", "1234hello567")
 print_groups(m)
 
 # named class within a class set
-print_groups(re.match("([^\s]+)\s*([^\s]+)", "1 23"))
-print_groups(re.match("([\s\d]+)([\W]+)", "1  2-+="))
-print_groups(re.match("([\W]+)([^\W]+)([^\S]+)([^\D]+)", " a_1 23"))
+print_groups(re.match(r"([^\s]+)\s*([^\s]+)", "1 23"))
+print_groups(re.match(r"([\s\d]+)([\W]+)", "1  2-+="))
+print_groups(re.match(r"([\W]+)([^\W]+)([^\S]+)([^\D]+)", " a_1 23"))

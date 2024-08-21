@@ -115,7 +115,7 @@ def test(bdev, vfs_class):
     vfs.chdir("/testdir")
     print(vfs.getcwd())
 
-    # create file in directory to make sre paths are relative
+    # create file in directory to make sure paths are relative
     vfs.open("test2", "w").close()
     print_stat(vfs.stat("test2"))
     print_stat(vfs.stat("/testdir/test2"))

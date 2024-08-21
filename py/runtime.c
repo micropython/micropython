@@ -33,6 +33,7 @@
 
 #include "py/parsenum.h"
 #include "py/compile.h"
+// CIRCUITPY-CHANGE: added
 #include "py/mperrno.h"
 #include "py/objstr.h"
 #include "py/objtuple.h"
@@ -41,12 +42,13 @@
 #include "py/objmodule.h"
 #include "py/objgenerator.h"
 #include "py/smallint.h"
+#include "py/stream.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/stackctrl.h"
-#include "py/stream.h"
 #include "py/gc.h"
 
+// CIRCUITPY-CHANGE
 #if CIRCUITPY_WARNINGS
 #include "shared-module/warnings/__init__.h"
 #endif
@@ -245,6 +247,7 @@ mp_obj_t MICROPY_WRAP_MP_LOAD_GLOBAL(mp_load_global)(qstr qst) {
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_msg(&mp_type_NameError, MP_ERROR_TEXT("name not defined"));
             #else
+            // CIRCUITPY-CHANGE: slight message change
             mp_raise_msg_varg(&mp_type_NameError, MP_ERROR_TEXT("name '%q' is not defined"), qst);
             #endif
         }
@@ -268,6 +271,7 @@ mp_obj_t __attribute__((noinline)) mp_load_build_class(void) {
     return MP_OBJ_FROM_PTR(&mp_builtin___build_class___obj);
 }
 
+// CIRCUITPY-CHANGE: PLACE_IN_ITCM
 void PLACE_IN_ITCM(mp_store_name)(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store name %s <- %p\n", qstr_str(qst), obj);
     mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst), obj);
@@ -279,6 +283,7 @@ void mp_delete_name(qstr qst) {
     mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst));
 }
 
+// CIRCUITPY-CHANGE: PLACE_IN_ITCM
 void PLACE_IN_ITCM(mp_store_global)(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qst), obj);
     mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(qst), obj);
@@ -686,12 +691,14 @@ unsupported_op:
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     mp_raise_TypeError(MP_ERROR_TEXT("unsupported type for operator"));
     #else
+    // CIRCUITPY-CHANGE: use new raise function
     mp_raise_TypeError_varg(
         MP_ERROR_TEXT("unsupported types for %q: '%q', '%q'"),
         mp_binary_op_method_name[op], mp_obj_get_type_qstr(lhs), mp_obj_get_type_qstr(rhs));
     #endif
 
 zero_division:
+    // CIRCUITPY-CHANGE: use new raise function
     mp_raise_ZeroDivisionError();
 }
 
@@ -728,6 +735,7 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, size_t n_args, size_t n_kw, cons
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     mp_raise_TypeError(MP_ERROR_TEXT("object not callable"));
     #else
+    // CIRCUITPY-CHANGE: use new raise function and different message
     mp_raise_TypeError_varg(MP_ERROR_TEXT("'%q' object is not callable"), mp_obj_get_type_qstr(fun_in));
     #endif
 }
@@ -744,6 +752,7 @@ mp_obj_t mp_call_method_n_kw(size_t n_args, size_t n_kw, const mp_obj_t *args) {
 #if !MICROPY_STACKLESS
 STATIC
 #endif
+// CIRCUITPY-CHANGE: PLACE_IN_ITCM
 void PLACE_IN_ITCM(mp_call_prepare_args_n_kw_var)(bool have_self, size_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args) {
     mp_obj_t fun = *args++;
     mp_obj_t self = MP_OBJ_NULL;
@@ -989,6 +998,7 @@ too_short:
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     mp_raise_ValueError(MP_ERROR_TEXT("wrong number of values to unpack"));
     #else
+    // CIRCUITPY-CHANGE: use new raise function
     mp_raise_ValueError_varg(MP_ERROR_TEXT("need more than %d values to unpack"),
         (int)seq_len);
     #endif
@@ -996,6 +1006,7 @@ too_long:
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     mp_raise_ValueError(MP_ERROR_TEXT("wrong number of values to unpack"));
     #else
+    // CIRCUITPY-CHANGE: use new raise function
     mp_raise_ValueError_varg(MP_ERROR_TEXT("too many values to unpack (expected %d)"),
         (int)num);
     #endif
@@ -1059,6 +1070,7 @@ too_short:
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     mp_raise_ValueError(MP_ERROR_TEXT("wrong number of values to unpack"));
     #else
+    // CIRCUITPY-CHANGE: use new raise function
     mp_raise_ValueError_varg(MP_ERROR_TEXT("need more than %d values to unpack"),
         (int)seq_len);
     #endif
@@ -1095,6 +1107,7 @@ STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     if (n_args > 0) {
         const mp_obj_type_t *arg0_type = mp_obj_get_type(args[0]);
         if (arg0_type != self->type) {
+            // CIRCUITPY-CHANGE: clearer error message
             mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_self, self->type->name, arg0_type->name);
         }
     }
@@ -1264,6 +1277,7 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // no attribute/method called attr
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+        // CIRCUITPY-CHANGE: use new raise function
         mp_raise_AttributeError(MP_ERROR_TEXT("no such attribute"));
         #else
         // following CPython, we give a more detailed error message for type objects
@@ -1340,6 +1354,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     #endif
     }
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+    // CIRCUITPY-CHANGE: use new raise function
     mp_raise_AttributeError(MP_ERROR_TEXT("no such attribute"));
     #else
     mp_raise_msg_varg(&mp_type_AttributeError,
@@ -1394,6 +1409,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     mp_raise_TypeError(MP_ERROR_TEXT("object not iterable"));
     #else
+    // CIRCUITPY-CHANGE: raise function
     mp_raise_TypeError_varg(
         MP_ERROR_TEXT("'%q' object is not iterable"), mp_obj_get_type_qstr(o_in));
     #endif
@@ -1402,8 +1418,6 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
 
 STATIC mp_fun_1_t type_get_iternext(const mp_obj_type_t *type) {
     if ((type->flags & MP_TYPE_FLAG_ITER_IS_STREAM) == MP_TYPE_FLAG_ITER_IS_STREAM) {
-        // CIRCUITPY-CHANGE: unneeded declaration
-        // mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
         return mp_stream_unbuffered_iter;
     } else if (type->flags & MP_TYPE_FLAG_ITER_IS_ITERNEXT) {
         return (mp_fun_1_t)MP_OBJ_TYPE_GET_SLOT(type, iter);
@@ -1432,6 +1446,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(MP_ERROR_TEXT("object not an iterator"));
             #else
+            // CIRCUITPY-CHANGE: raise function
             mp_raise_TypeError_varg(MP_ERROR_TEXT("'%q' object is not an iterator"),
                 mp_obj_get_type_qstr(o_in));
             #endif
@@ -1469,6 +1484,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(MP_ERROR_TEXT("object not an iterator"));
             #else
+            // CIRCUITPY-CHANGE: raise function
             mp_raise_TypeError_varg(MP_ERROR_TEXT("'%q' object is not an iterator"),
                 mp_obj_get_type_qstr(o_in));
             #endif
@@ -1480,7 +1496,7 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
     assert((send_value != MP_OBJ_NULL) ^ (throw_value != MP_OBJ_NULL));
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
 
-    // CIRCUITPY-CHANGE: distinguishes generators and coroutines.
+    // CIRCUITPY-CHANGE: CircuitPython distinguishes generators and coroutines.
     if (type == &mp_type_gen_instance
         #if MICROPY_PY_ASYNC_AWAIT
         || type == &mp_type_coro_instance
@@ -1658,6 +1674,7 @@ mp_obj_t __attribute__((noinline, )) mp_import_from(mp_obj_t module, qstr name) 
 void mp_import_all(mp_obj_t module) {
     DEBUG_printf("import all %p\n", module);
 
+    // CIRCUITPY-CHANGE: displayio name changes; remove in 10.0
     #if CIRCUITPY_DISPLAYIO && CIRCUITPY_WARNINGS
     if (module == &displayio_module) {
         #if CIRCUITPY_BUSDISPLAY
@@ -1730,7 +1747,7 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
 
 #endif // MICROPY_ENABLE_COMPILER
 
-// CIRCUITPY-CHANGE: MP_COLD are CIRCUITPY
+// CIRCUITPY-CHANGE: MP_COLD
 NORETURN MP_COLD void m_malloc_fail(size_t num_bytes) {
     DEBUG_printf("memory allocation failed, allocating %u bytes\n", (uint)num_bytes);
     #if MICROPY_ENABLE_GC
@@ -1744,24 +1761,29 @@ NORETURN MP_COLD void m_malloc_fail(size_t num_bytes) {
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
 
+// CIRCUITPY-CHANGE: MP_COLD
 NORETURN MP_COLD void mp_raise_type(const mp_obj_type_t *exc_type) {
     nlr_raise(mp_obj_new_exception(exc_type));
 }
 
+// CIRCUITPY-CHANGE: MP_COLD
 NORETURN MP_COLD void mp_raise_ValueError_no_msg(void) {
     mp_raise_type(&mp_type_ValueError);
 }
 
+// CIRCUITPY-CHANGE: MP_COLD
 NORETURN MP_COLD void mp_raise_TypeError_no_msg(void) {
     mp_raise_type(&mp_type_TypeError);
 }
 
+// CIRCUITPY-CHANGE: MP_COLD
 NORETURN MP_COLD void mp_raise_NotImplementedError_no_msg(void) {
     mp_raise_type(&mp_type_NotImplementedError);
 }
 
 #else
 
+// CIRCUITPY-CHANGE: MP_COLD
 NORETURN MP_COLD void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg) {
     if (msg == NULL) {
         nlr_raise(mp_obj_new_exception(exc_type));
@@ -1770,16 +1792,22 @@ NORETURN MP_COLD void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_t
     }
 }
 
+// CIRCUITPY-CHANGE: new function for use below.
 NORETURN MP_COLD void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, va_list argptr) {
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(exc_type, fmt, argptr);
     nlr_raise(exception);
 }
 
+// CIRCUITPY-CHANGE: MP_COLD and use mp_raise_msg_vlist()
 NORETURN MP_COLD void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
     mp_raise_msg_vlist(exc_type, fmt, argptr);
     va_end(argptr);
+}
+
+NORETURN MP_COLD void mp_raise_ValueError(mp_rom_error_text_t msg) {
+    mp_raise_msg(&mp_type_ValueError, msg);
 }
 
 NORETURN MP_COLD void mp_raise_msg_str(const mp_obj_type_t *exc_type, const char *msg) {
@@ -1790,14 +1818,17 @@ NORETURN MP_COLD void mp_raise_msg_str(const mp_obj_type_t *exc_type, const char
     }
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_AttributeError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_AttributeError, msg);
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_RuntimeError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_RuntimeError, msg);
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_RuntimeError_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
@@ -1805,14 +1836,17 @@ NORETURN MP_COLD void mp_raise_RuntimeError_varg(mp_rom_error_text_t fmt, ...) {
     va_end(argptr);
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_ImportError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_ImportError, msg);
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_IndexError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_IndexError, msg);
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_IndexError_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
@@ -1820,10 +1854,7 @@ NORETURN MP_COLD void mp_raise_IndexError_varg(mp_rom_error_text_t fmt, ...) {
     va_end(argptr);
 }
 
-NORETURN MP_COLD void mp_raise_ValueError(mp_rom_error_text_t msg) {
-    mp_raise_msg(&mp_type_ValueError, msg);
-}
-
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_ValueError_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
@@ -1831,10 +1862,12 @@ NORETURN MP_COLD void mp_raise_ValueError_varg(mp_rom_error_text_t fmt, ...) {
     va_end(argptr);
 }
 
+// CIRCUITPY-CHANGE: MP_COLD
 NORETURN MP_COLD void mp_raise_TypeError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_TypeError, msg);
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_TypeError_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
@@ -1842,10 +1875,12 @@ NORETURN MP_COLD void mp_raise_TypeError_varg(mp_rom_error_text_t fmt, ...) {
     va_end(argptr);
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_OSError_msg(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_OSError, msg);
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_OSError_errno_str(int errno_, mp_obj_t str) {
     mp_obj_t args[2] = {
         MP_OBJ_NEW_SMALL_INT(errno_),
@@ -1854,6 +1889,7 @@ NORETURN MP_COLD void mp_raise_OSError_errno_str(int errno_, mp_obj_t str) {
     nlr_raise(mp_obj_new_exception_args(&mp_type_OSError, 2, args));
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_OSError_msg_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
@@ -1861,10 +1897,12 @@ NORETURN MP_COLD void mp_raise_OSError_msg_varg(mp_rom_error_text_t fmt, ...) {
     va_end(argptr);
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_ConnectionError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_ConnectionError, msg);
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_BrokenPipeError(void) {
     mp_raise_type_arg(&mp_type_BrokenPipeError, MP_OBJ_NEW_SMALL_INT(MP_EPIPE));
 }
@@ -1873,6 +1911,7 @@ NORETURN MP_COLD void mp_raise_NotImplementedError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_NotImplementedError, msg);
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_NotImplementedError_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
@@ -1880,7 +1919,7 @@ NORETURN MP_COLD void mp_raise_NotImplementedError_varg(mp_rom_error_text_t fmt,
     va_end(argptr);
 }
 
-
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_OverflowError_varg(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
@@ -1888,11 +1927,12 @@ NORETURN MP_COLD void mp_raise_OverflowError_varg(mp_rom_error_text_t fmt, ...) 
     va_end(argptr);
 }
 
+// CIRCUITPY-CHANGE: MP_COLD
 NORETURN MP_COLD void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg) {
     nlr_raise(mp_obj_new_exception_arg1(exc_type, arg));
 }
 
-// Leave this as not COLD because it is used by iterators in normal execution.
+// CIRCUITPY-CHANGE: MP_COLD
 NORETURN void mp_raise_StopIteration(mp_obj_t arg) {
     if (arg == MP_OBJ_NULL) {
         mp_raise_type(&mp_type_StopIteration);
@@ -1911,10 +1951,12 @@ NORETURN void mp_raise_TypeError_int_conversion(mp_const_obj_t arg) {
     #endif
 }
 
+// CIRCUITPY-CHANGE: MP_COLD
 NORETURN MP_COLD void mp_raise_OSError(int errno_) {
     mp_raise_type_arg(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_));
 }
 
+// CIRCUITPY-CHANGE: MP_COLD
 NORETURN MP_COLD void mp_raise_OSError_with_filename(int errno_, const char *filename) {
     vstr_t vstr;
     vstr_init(&vstr, 32);
@@ -1924,10 +1966,12 @@ NORETURN MP_COLD void mp_raise_OSError_with_filename(int errno_, const char *fil
     nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
 }
 
+// CIRCUITPY-CHANGE: added
 NORETURN MP_COLD void mp_raise_ZeroDivisionError(void) {
     mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("division by zero"));
 }
 #if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK
+// CIRCUITPY-CHANGE: MP_COLD
 NORETURN MP_COLD void mp_raise_recursion_depth(void) {
     mp_raise_RuntimeError(MP_ERROR_TEXT("maximum recursion depth exceeded"));
 }

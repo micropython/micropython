@@ -40,6 +40,11 @@
 
 #include "py/smallint.h"
 
+// makeqstrdata.py has a fixed list of qstrs at the start that we can assume
+// are available with know indices on all MicroPython implementations, and
+// avoid needing to duplicate the string data in the .mpy file. This is the
+// last one in that list (anything with a qstr less than or equal to this is
+// assumed to be in the list).
 #define QSTR_LAST_STATIC MP_QSTR_zip
 
 #if MICROPY_DYNAMIC_COMPILER
@@ -459,7 +464,7 @@ void mp_raw_code_load_mem(const byte *buf, size_t len, mp_compiled_module_t *con
 
 #if MICROPY_HAS_FILE_READER
 
-void mp_raw_code_load_file(const char *filename, mp_compiled_module_t *context) {
+void mp_raw_code_load_file(qstr filename, mp_compiled_module_t *context) {
     mp_reader_t reader;
     mp_reader_new_file(&reader, filename);
     mp_raw_code_load(&reader, context);
@@ -598,6 +603,7 @@ STATIC void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
 
 void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
     // header contains:
+    // CIRCUITPY-CHANGE
     //  byte  'C' (CIRCUITPY)
     //  byte  version
     //  byte  native arch (and sub-version if native)
@@ -646,12 +652,12 @@ STATIC void fd_print_strn(void *env, const char *str, size_t len) {
     (void)ret;
 }
 
-void mp_raw_code_save_file(mp_compiled_module_t *cm, const char *filename) {
+void mp_raw_code_save_file(mp_compiled_module_t *cm, qstr filename) {
     MP_THREAD_GIL_EXIT();
-    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    int fd = open(qstr_str(filename), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     MP_THREAD_GIL_ENTER();
     if (fd < 0) {
-        mp_raise_OSError_with_filename(errno, filename);
+        mp_raise_OSError_with_filename(errno, qstr_str(filename));
     }
     mp_print_t fd_print = {(void *)(intptr_t)fd, fd_print_strn};
     mp_raw_code_save(cm, &fd_print);
