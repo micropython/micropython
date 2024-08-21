@@ -10,9 +10,9 @@
 # them as CircuitPython.
 #
 # Typical usages:
-# header_change.py *.c *.h --change
-# find boards common-hal/ peripherals/ supervisor/ -name '*.[ch]' |xargs header_change.py
-# find boards common-hal/ peripherals/ supervisor/ -name '*.[ch]' |xargs header_change.py --change
+# circuitpy_header_change.py *.c *.h --change
+# find boards common-hal/ peripherals/ supervisor/ -name '*.[ch]' |xargs circuitpy_header_change.py
+# find boards common-hal/ peripherals/ supervisor/ -name '*.[ch]' |xargs circutipy_header_change.py --change
 
 import click
 import os
