@@ -129,6 +129,7 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 
     // Wait for any other users of this to finish.
     while (!common_hal_busio_spi_try_lock(self)) {
+        RUN_BACKGROUND_TASKS;
     }
 
     // Mark us as deinit early in case we are used in an interrupt.
@@ -139,7 +140,10 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     spi_bus_remove_device(spi_handle[self->host_id]);
     spi_bus_free(self->host_id);
 
+    // Release the mutex before we delete it. Otherwise FreeRTOS gets unhappy.
+    xSemaphoreGive(self->mutex);
     vSemaphoreDelete(self->mutex);
+    self->mutex = NULL;
 
     common_hal_reset_pin(self->MOSI);
     common_hal_reset_pin(self->MISO);
@@ -166,7 +170,7 @@ bool common_hal_busio_spi_try_lock(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_has_lock(busio_spi_obj_t *self) {
-    return xSemaphoreGetMutexHolder(self->mutex) == xTaskGetCurrentTaskHandle();
+    return self->mutex != NULL && xSemaphoreGetMutexHolder(self->mutex) == xTaskGetCurrentTaskHandle();
 }
 
 void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
