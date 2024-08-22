@@ -1413,10 +1413,6 @@ msgstr "NVS cuò wù"
 msgid "Name or service not known"
 msgstr "míng chēng huò fú wù wèi zhī"
 
-#: py/qstr.c
-msgid "Name too long"
-msgstr "Míngchēng tài zhǎng"
-
 #: shared-bindings/displayio/TileGrid.c
 msgid "New bitmap must be same size as old bitmap"
 msgstr "xīn wèi tú de dàxiǎo bìxū yǔ jiù wèi tú xiāngtóng"
@@ -3576,6 +3572,10 @@ msgstr "míngchēng '%q' wèi dìngyì"
 msgid "name not defined"
 msgstr "míngchēng wèi dìngyì"
 
+#: py/qstr.c
+msgid "name too long"
+msgstr ""
+
 #: py/persistentcode.c
 msgid "native code in .mpy unsupported"
 msgstr "bù zhīchí .mpy zhōngde běnjī dàimǎ"
@@ -4418,6 +4418,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Name too long"
+#~ msgstr "Míngchēng tài zhǎng"
 
 #~ msgid "Update Failed"
 #~ msgstr "gēng xīn shī bài"

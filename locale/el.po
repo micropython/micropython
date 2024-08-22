@@ -1406,10 +1406,6 @@ msgstr ""
 msgid "Name or service not known"
 msgstr ""
 
-#: py/qstr.c
-msgid "Name too long"
-msgstr ""
-
 #: shared-bindings/displayio/TileGrid.c
 msgid "New bitmap must be same size as old bitmap"
 msgstr ""
@@ -3543,6 +3539,10 @@ msgstr ""
 
 #: py/runtime.c
 msgid "name not defined"
+msgstr ""
+
+#: py/qstr.c
+msgid "name too long"
 msgstr ""
 
 #: py/persistentcode.c

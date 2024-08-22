@@ -1388,10 +1388,6 @@ msgstr ""
 msgid "Name or service not known"
 msgstr ""
 
-#: py/qstr.c
-msgid "Name too long"
-msgstr "Nama terlalu panjang"
-
 #: shared-bindings/displayio/TileGrid.c
 msgid "New bitmap must be same size as old bitmap"
 msgstr ""
@@ -3539,6 +3535,10 @@ msgstr ""
 msgid "name not defined"
 msgstr ""
 
+#: py/qstr.c
+msgid "name too long"
+msgstr ""
+
 #: py/persistentcode.c
 msgid "native code in .mpy unsupported"
 msgstr ""
@@ -4375,6 +4375,9 @@ msgstr "zi harus berjenis float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "Zi harus berbentuk (n_section, 2)"
+
+#~ msgid "Name too long"
+#~ msgstr "Nama terlalu panjang"
 
 #~ msgid "All PCNT units in use"
 #~ msgstr "Semua unit PCNT sedang digunakan"
