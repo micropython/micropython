@@ -24,8 +24,9 @@
 //|         as part of remote Services."""
 //|         ...
 
+//|     @classmethod
 //|     def add_to_service(
-//|         self,
+//|         cls,
 //|         service: Service,
 //|         uuid: UUID,
 //|         *,

@@ -25,7 +25,7 @@ static void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self
 //|     """Accumulates a Characteristic's incoming values in a FIFO buffer."""
 //|
 //|     def __init__(
-//|         self, characteristic: Characteristic, *, timeout: int = 1, buffer_size: int = 64
+//|         self, characteristic: Characteristic, *, timeout: float = 1.0, buffer_size: int = 64
 //|     ) -> None:
 //|         """Monitor the given Characteristic. Each time a new value is written to the Characteristic
 //|         add the newly-written bytes to a FIFO buffer.
@@ -33,7 +33,7 @@ static void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self
 //|         :param Characteristic characteristic: The Characteristic to monitor.
 //|           It may be a local Characteristic provided by a Peripheral Service, or a remote Characteristic
 //|           in a remote Service that a Central has connected to.
-//|         :param int timeout:  the timeout in seconds to wait for the first character and between subsequent characters.
+//|         :param float timeout:  the timeout in seconds to wait for the first character and between subsequent characters.
 //|         :param int buffer_size: Size of ring buffer that stores incoming data coming from client.
 //|           Must be >= 1."""
 //|         ...
