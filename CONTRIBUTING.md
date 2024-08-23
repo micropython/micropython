@@ -50,11 +50,6 @@ Build Documentation:
 
 - For SAMD21 debugging workflow tips check out [this learn guide](https://learn.adafruit.com/debugging-the-samd21-with-gdb) from Scott (@tannewt).
 
-- There are some additional links and notes in [BUILDING.md](BUILDING.md) and
-  port-specific README files under the [ports/](ports) directory. But, those
-  files may be out of date. It's best to begin with the Building CircuitPython
-  learn guide.
-
 ## Developer contacts
 Scott Shawcroft ([@tannewt](https://github.com/tannewt)) is the lead developer of CircuitPython
 and is sponsored by [Adafruit Industries LLC](https://adafruit.com). Scott is usually available
