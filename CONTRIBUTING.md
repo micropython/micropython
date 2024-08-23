@@ -30,16 +30,10 @@ As CircuitPython grows, there are more and more ways to contribute. Here are som
 
 ## Building CircuitPython: Getting started with C
 
-The CircuitPython core is implemented mostly in C, along with some "frozen"
-Python modules that provide commonly needed functionality. Some C code, like
-the Python virtual machine (VM), is shared between all supported development
-boards. Other code is specific to a family of microcontrollers (ports) or to
-individual boards.
-
-If you want to add suport for new boards, add features to the core, fix bugs in
-the core, or compile with special options (perhaps to make a debug build with
-UART logging), you will need to install a development environment with build
-tools.
+The CircuitPython core is implemented mostly in C. If you want to add suport
+for new boards, add features to the core, fix bugs in the core, or compile with
+special options (perhaps to make a debug build with UART logging), you will
+need to install a development environment with build tools.
 
 Build Documentation:
 
