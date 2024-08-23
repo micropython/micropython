@@ -272,7 +272,7 @@ static mp_int_t mp_machine_reset_cause(void) {
 #include "esp32s3/rom/usb/chip_usb_dw_wrapper.h"
 #endif
 
-MP_NORETURN static void machine_bootloader_rtc(void) {
+MP_NORETURN void machine_bootloader_rtc(void) {
     #if CONFIG_IDF_TARGET_ESP32S3 && MICROPY_HW_USB_CDC
     usb_usj_mode();
     usb_dc_prepare_persist();
