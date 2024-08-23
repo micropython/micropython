@@ -154,7 +154,7 @@ STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
 
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     stdio_buffer_obj_type,
-    MP_QSTR_StringIO,
+    MP_QSTR_FileIO,
     MP_TYPE_FLAG_ITER_IS_STREAM,
     print, stdio_obj_print,
     protocol, &stdio_buffer_obj_stream_p,
