@@ -28,11 +28,32 @@ As CircuitPython grows, there are more and more ways to contribute. Here are som
 * Contribute Python code to CircuitPython libraries that support new devices or features of an existing device.
 * Contribute C code to CircuitPython which fixes an open issue or adds a new feature.
 
-## Getting started with C
-CircuitPython developer Dan Halbert (@dhalbert) has written up build instructions using native build
-tools [here](https://learn.adafruit.com/building-circuitpython).
+## Building CircuitPython: Getting started with C
 
-For SAMD21 debugging workflow tips check out [this learn guide](https://learn.adafruit.com/debugging-the-samd21-with-gdb) from Scott (@tannewt).
+The CircuitPython core is implemented mostly in C, along with some "frozen"
+Python modules that provide commonly needed functionality. Some C code, like
+the Python virtual machine (VM), is shared between all supported development
+boards. Other code is specific to a family of microcontrollers (ports) or to
+individual boards.
+
+If you want to add suport for new boards, add features to the core, fix bugs in
+the core, or compile with special options (perhaps to make a debug build with
+UART logging), you will need to install a development environment with build
+tools.
+
+Build Documentation:
+
+- [Building CircuitPython Learn Guide](https://learn.adafruit.com/building-circuitpython):
+  CircuitPython developer Dan Halbert (@dhalbert) wrote this guide with build
+  instructions for using native build tools. **This is the primary getting
+  started documentation for building CircuitPython.**
+
+- For SAMD21 debugging workflow tips check out [this learn guide](https://learn.adafruit.com/debugging-the-samd21-with-gdb) from Scott (@tannewt).
+
+- There are some additional links and notes in [BUILDING.md](BUILDING.md) and
+  port-specific README files under the [ports/](ports) directory. But, those
+  files may be out of date. It's best to begin with the Building CircuitPython
+  learn guide.
 
 ## Developer contacts
 Scott Shawcroft ([@tannewt](https://github.com/tannewt)) is the lead developer of CircuitPython
