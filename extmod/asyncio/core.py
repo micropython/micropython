@@ -254,7 +254,11 @@ def run_until_complete(main_task=None):
 
 # Create a new task from a coroutine and run it until it finishes
 def run(coro):
-    return run_until_complete(create_task(coro))
+    try:
+        return run_until_complete(create_task(coro))
+    finally:
+        Loop.close()
+        run_until_complete()
 
 
 ################################################################################
@@ -292,7 +296,9 @@ class Loop:
             _stop_task = None
 
     def close():
-        pass
+        for t in Loop.all_tasks():
+            if not t.done() and t is not cur_task:
+                t.cancel()
 
     def all_tasks():
         tasks = set(_task_queue)
