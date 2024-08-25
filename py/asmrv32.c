@@ -45,12 +45,6 @@
 #endif
 
 #define INTERNAL_TEMPORARY ASM_RV32_REG_S0
-#define AVAILABLE_REGISTERS_COUNT 32
-
-#define IS_IN_C_REGISTER_WINDOW(register_number) \
-    (((register_number) >= ASM_RV32_REG_X8) && ((register_number) <= ASM_RV32_REG_X15))
-#define MAP_IN_C_REGISTER_WINDOW(register_number) \
-    ((register_number) - ASM_RV32_REG_X8)
 
 #define FIT_UNSIGNED(value, bits) (((value) & ~((1U << (bits)) - 1)) == 0)
 #define FIT_SIGNED(value, bits) \
@@ -106,7 +100,6 @@ static void split_immediate(mp_int_t immediate, mp_uint_t *upper, mp_uint_t *low
     // Turn the lower half from unsigned to signed.
     if ((*lower & 0x800) != 0) {
         *upper += 0x1000;
-        *lower -= 0x1000;
     }
 }
 
@@ -180,7 +173,7 @@ void asm_rv32_emit_optimised_load_immediate(asm_rv32_t *state, mp_uint_t rd, mp_
 
 static void emit_registers_store(asm_rv32_t *state, mp_uint_t registers_mask) {
     mp_uint_t offset = 0;
-    for (mp_uint_t register_index = 0; register_index < AVAILABLE_REGISTERS_COUNT; register_index++) {
+    for (mp_uint_t register_index = 0; register_index < RV32_AVAILABLE_REGISTERS_COUNT; register_index++) {
         if (registers_mask & (1U << register_index)) {
             assert(FIT_UNSIGNED(offset >> 2, 6) && "Registers save stack offset out of range.");
             // c.swsp register, offset
@@ -192,7 +185,7 @@ static void emit_registers_store(asm_rv32_t *state, mp_uint_t registers_mask) {
 
 static void emit_registers_load(asm_rv32_t *state, mp_uint_t registers_mask) {
     mp_uint_t offset = 0;
-    for (mp_uint_t register_index = 0; register_index < AVAILABLE_REGISTERS_COUNT; register_index++) {
+    for (mp_uint_t register_index = 0; register_index < RV32_AVAILABLE_REGISTERS_COUNT; register_index++) {
         if (registers_mask & (1U << register_index)) {
             assert(FIT_UNSIGNED(offset >> 2, 6) && "Registers load stack offset out of range.");
             // c.lwsp register, offset
@@ -262,7 +255,7 @@ static bool calculate_displacement_for_label(asm_rv32_t *state, mp_uint_t label,
 
 void asm_rv32_entry(asm_rv32_t *state, mp_uint_t locals) {
     state->saved_registers_mask |= (1U << REG_FUN_TABLE) | (1U << REG_LOCAL_1) | \
-        (1U << REG_LOCAL_2) | (1U << REG_LOCAL_3) | (1U << INTERNAL_TEMPORARY);
+        (1U << REG_LOCAL_2) | (1U << REG_LOCAL_3);
     state->locals_count = locals;
     emit_function_prologue(state, state->saved_registers_mask);
 }
@@ -281,10 +274,11 @@ void asm_rv32_emit_call_ind(asm_rv32_t *state, mp_uint_t index) {
     mp_uint_t offset = index * ASM_WORD_SIZE;
     state->saved_registers_mask |= (1U << ASM_RV32_REG_RA);
 
-    if (IS_IN_C_REGISTER_WINDOW(REG_FUN_TABLE) && IS_IN_C_REGISTER_WINDOW(INTERNAL_TEMPORARY) && FIT_UNSIGNED(offset, 6)) {
+    if (RV32_IS_IN_C_REGISTER_WINDOW(REG_FUN_TABLE) && RV32_IS_IN_C_REGISTER_WINDOW(INTERNAL_TEMPORARY) && FIT_UNSIGNED(offset, 6)) {
+        state->saved_registers_mask |= (1U << INTERNAL_TEMPORARY);
         // c.lw   temporary, offset(fun_table)
         // c.jalr temporary
-        asm_rv32_opcode_clw(state, MAP_IN_C_REGISTER_WINDOW(INTERNAL_TEMPORARY), MAP_IN_C_REGISTER_WINDOW(REG_FUN_TABLE), offset);
+        asm_rv32_opcode_clw(state, RV32_MAP_IN_C_REGISTER_WINDOW(INTERNAL_TEMPORARY), RV32_MAP_IN_C_REGISTER_WINDOW(REG_FUN_TABLE), offset);
         asm_rv32_opcode_cjalr(state, INTERNAL_TEMPORARY);
         return;
     }
@@ -341,9 +335,9 @@ void asm_rv32_emit_jump_if_reg_nonzero(asm_rv32_t *state, mp_uint_t rs, mp_uint_
     ptrdiff_t displacement = 0;
     bool can_emit_short_jump = calculate_displacement_for_label(state, label, &displacement);
 
-    if (can_emit_short_jump && FIT_SIGNED(displacement, 8) && IS_IN_C_REGISTER_WINDOW(rs)) {
+    if (can_emit_short_jump && FIT_SIGNED(displacement, 8) && RV32_IS_IN_C_REGISTER_WINDOW(rs)) {
         // c.bnez rs', displacement
-        asm_rv32_opcode_cbnez(state, MAP_IN_C_REGISTER_WINDOW(rs), displacement);
+        asm_rv32_opcode_cbnez(state, RV32_MAP_IN_C_REGISTER_WINDOW(rs), displacement);
         return;
     }
 
@@ -364,8 +358,8 @@ void asm_rv32_emit_jump_if_reg_nonzero(asm_rv32_t *state, mp_uint_t rs, mp_uint_
     //    jalr   zero, temporary, LO(displacement) ; PC + 8
     //    ...                                      ; PC + 12
 
-    if (can_emit_short_jump && IS_IN_C_REGISTER_WINDOW(rs)) {
-        asm_rv32_opcode_cbeqz(state, MAP_IN_C_REGISTER_WINDOW(rs), 10);
+    if (can_emit_short_jump && RV32_IS_IN_C_REGISTER_WINDOW(rs)) {
+        asm_rv32_opcode_cbeqz(state, RV32_MAP_IN_C_REGISTER_WINDOW(rs), 10);
         // Compensate for the C.BEQZ opcode.
         displacement -= ASM_HALFWORD_SIZE;
     } else {
@@ -438,9 +432,9 @@ void asm_rv32_emit_mov_reg_local(asm_rv32_t *state, mp_uint_t rd, mp_uint_t loca
 void asm_rv32_emit_mov_reg_local_addr(asm_rv32_t *state, mp_uint_t rd, mp_uint_t local) {
     mp_uint_t offset = state->locals_stack_offset + (local * ASM_WORD_SIZE);
 
-    if (FIT_UNSIGNED(offset, 10) && offset != 0 && IS_IN_C_REGISTER_WINDOW(rd)) {
+    if (FIT_UNSIGNED(offset, 10) && offset != 0 && RV32_IS_IN_C_REGISTER_WINDOW(rd)) {
         // c.addi4spn rd', offset
-        asm_rv32_opcode_caddi4spn(state, MAP_IN_C_REGISTER_WINDOW(rd), offset);
+        asm_rv32_opcode_caddi4spn(state, RV32_MAP_IN_C_REGISTER_WINDOW(rd), offset);
         return;
     }
 
@@ -459,9 +453,9 @@ void asm_rv32_emit_mov_reg_local_addr(asm_rv32_t *state, mp_uint_t rd, mp_uint_t
 void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, mp_int_t offset) {
     mp_int_t scaled_offset = offset * sizeof(ASM_WORD_SIZE);
 
-    if (scaled_offset >= 0 && IS_IN_C_REGISTER_WINDOW(rd) && IS_IN_C_REGISTER_WINDOW(rs) && FIT_UNSIGNED(scaled_offset, 6)) {
+    if (scaled_offset >= 0 && RV32_IS_IN_C_REGISTER_WINDOW(rd) && RV32_IS_IN_C_REGISTER_WINDOW(rs) && FIT_UNSIGNED(scaled_offset, 6)) {
         // c.lw rd', offset(rs')
-        asm_rv32_opcode_clw(state, MAP_IN_C_REGISTER_WINDOW(rd), MAP_IN_C_REGISTER_WINDOW(rs), scaled_offset);
+        asm_rv32_opcode_clw(state, RV32_MAP_IN_C_REGISTER_WINDOW(rd), RV32_MAP_IN_C_REGISTER_WINDOW(rs), scaled_offset);
         return;
     }
 

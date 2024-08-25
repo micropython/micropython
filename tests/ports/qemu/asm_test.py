@@ -3,6 +3,8 @@ import sys
 arch = getattr(sys.implementation, "_mpy", 0) >> 10
 if arch >= 3 and arch <= 8:
     import frozen_asm_thumb as frozen_asm
+elif arch == 11:
+    import frozen_asm_rv32 as frozen_asm
 else:
     raise ImportError
 
