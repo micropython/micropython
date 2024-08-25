@@ -1245,9 +1245,12 @@ the last matching regex is used:
             elif args.platform == "qemu":
                 test_dirs += (
                     "float",
-                    "inlineasm/thumb",
                     "ports/qemu",
                 )
+                if args.arch == "rv32imc":
+                    test_dirs += ("inlineasm/rv32",)
+                else:
+                    test_dirs += ("inlineasm/thumb",)
             elif args.platform == "webassembly":
                 test_dirs += ("float", "ports/webassembly")
         else:

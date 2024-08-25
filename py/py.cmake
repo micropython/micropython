@@ -24,6 +24,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/emitbc.c
     ${MICROPY_PY_DIR}/emitcommon.c
     ${MICROPY_PY_DIR}/emitglue.c
+    ${MICROPY_PY_DIR}/emitinlinerv32.c
     ${MICROPY_PY_DIR}/emitinlinethumb.c
     ${MICROPY_PY_DIR}/emitinlinextensa.c
     ${MICROPY_PY_DIR}/emitnarm.c
