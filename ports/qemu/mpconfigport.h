@@ -39,6 +39,7 @@
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 #elif defined(__riscv)
 #define MICROPY_EMIT_RV32           (1)
+#define MICROPY_EMIT_INLINE_RV32    (1)
 #endif
 
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
