@@ -54,7 +54,7 @@ static const sys_stdio_obj_t stdio_buffer_obj;
 
 static void stdio_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<io.FileIO %d>", self->fd);
+    mp_printf(print, "<io.%s %d>", mp_obj_get_type_str(self_in), self->fd);
 }
 
 static mp_uint_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
@@ -122,7 +122,7 @@ static const mp_stream_p_t stdio_obj_stream_p = {
 
 MP_DEFINE_CONST_OBJ_TYPE(
     stdio_obj_type,
-    MP_QSTR_FileIO,
+    MP_QSTR_TextIOWrapper,
     MP_TYPE_FLAG_ITER_IS_STREAM,
     print, stdio_obj_print,
     protocol, &stdio_obj_stream_p,
