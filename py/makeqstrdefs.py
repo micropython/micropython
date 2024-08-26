@@ -85,11 +85,12 @@ def preprocess():
 
 
 def write_out(fname, output):
-    if output:
-        for m, r in [("/", "__"), ("\\", "__"), (":", "@"), ("..", "@@")]:
-            fname = fname.replace(m, r)
-        with open(args.output_dir + "/" + fname + "." + args.mode, "w") as f:
-            f.write("\n".join(output) + "\n")
+    for m, r in [("/", "__"), ("\\", "__"), (":", "@"), ("..", "@@")]:
+        fname = fname.replace(m, r)
+    out_file = args.output_dir + "/" + fname + "." + args.mode
+    with open(out_file, "w") as f:
+        f.write("\n".join(output) + "\n")
+    return out_file
 
 
 def process_file(f):
@@ -107,41 +108,47 @@ def process_file(f):
         re_match = re.compile(r"MP_REGISTER_ROOT_POINTER\(.*?\);")
     output = []
     last_fname = None
-    for line in f:
-        if line.isspace():
-            continue
-        m = re_line.match(line)
-        if m:
-            fname = m.group(1)
-            if not is_c_source(fname) and not is_cxx_source(fname):
+    with open(args.split_file, "w") as split_file:
+        for line in f:
+            if line.isspace():
                 continue
-            if fname != last_fname:
-                write_out(last_fname, output)
-                output = []
-                last_fname = fname
-            continue
-        for match in re_match.findall(line):
-            if args.mode == _MODE_QSTR:
-                name = match.replace("MP_QSTR_", "")
-                output.append("Q(" + name + ")")
-            elif args.mode in (_MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
-                output.append(match)
+            m = re_line.match(line)
+            if m:
+                fname = m.group(1)
+                if not is_c_source(fname) and not is_cxx_source(fname):
+                    continue
+                if fname != last_fname:
+                    if output:
+                        split_file.write(write_out(last_fname, output) + "\n")
+                    output = []
+                    last_fname = fname
+                continue
+            for match in re_match.findall(line):
+                if args.mode == _MODE_QSTR:
+                    name = match.replace("MP_QSTR_", "")
+                    output.append("Q(" + name + ")")
+                elif args.mode in (_MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
+                    output.append(match)
 
-    if last_fname:
-        write_out(last_fname, output)
+        if last_fname and output:
+            split_file.write(write_out(last_fname, output) + "\n")
+
     return ""
 
 
 def cat_together():
-    import glob
     import hashlib
 
     hasher = hashlib.md5()
     all_lines = []
-    for fname in glob.glob(args.output_dir + "/*." + args.mode):
-        with open(fname, "rb") as f:
-            lines = f.readlines()
-            all_lines += lines
+    with open(args.split_file, "r") as split_file:
+        for fname in split_file:
+            fname = fname.rstrip()
+            if not fname:
+                continue
+            with open(fname, "rb") as f:
+                lines = f.readlines()
+                all_lines += lines
     all_lines.sort()
     all_lines = b"\n".join(all_lines)
     hasher.update(all_lines)
@@ -230,6 +237,9 @@ if __name__ == "__main__":
         os.makedirs(args.output_dir)
     except OSError:
         pass
+
+    if args.command in ("split", "cat"):
+        args.split_file = args.output_dir + "/" + args.mode + ".split"
 
     if args.command == "split":
         with io.open(args.input_filename, encoding="utf-8") as infile:
