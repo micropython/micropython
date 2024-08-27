@@ -95,6 +95,10 @@ void usb_serial_jtag_poll_rx(void) {
     }
 }
 
+#ifndef USB_SERIAL_JTAG_PACKET_SZ_BYTES
+#define USB_SERIAL_JTAG_PACKET_SZ_BYTES USB_SERIAL_JTAG_RDWR_BYTE_S
+#endif
+
 void usb_serial_jtag_tx_strn(const char *str, size_t len) {
     while (len) {
         size_t l = len;
