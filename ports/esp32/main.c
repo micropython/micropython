@@ -101,7 +101,7 @@ void mp_task(void *pvParameter) {
     #endif
     #if MICROPY_HW_ESP_USB_SERIAL_JTAG
     usb_serial_jtag_init();
-    #elif CONFIG_USB_OTG_SUPPORTED
+    #elif MICROPY_HW_USB_CDC
     usb_init();
     #endif
     #if MICROPY_HW_ENABLE_UART_REPL
