@@ -260,6 +260,11 @@ typedef long mp_off_t;
 // board specifics
 #define MICROPY_PY_SYS_PLATFORM "esp32"
 
+// Enable stdio over USB Serial/JTAG peripheral
+#ifndef MICROPY_HW_ESP_USB_SERIAL_JTAG
+#define MICROPY_HW_ESP_USB_SERIAL_JTAG      (SOC_USB_SERIAL_JTAG_SUPPORTED)
+#endif
+
 // ESP32-S3 extended IO for 47 & 48
 #ifndef MICROPY_HW_ESP32S3_EXTENDED_IO
 #define MICROPY_HW_ESP32S3_EXTENDED_IO      (1)

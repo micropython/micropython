@@ -99,7 +99,7 @@ void mp_task(void *pvParameter) {
     #if MICROPY_PY_THREAD
     mp_thread_init(pxTaskGetStackStart(NULL), MICROPY_TASK_STACK_SIZE / sizeof(uintptr_t));
     #endif
-    #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG_ENABLED
+    #if MICROPY_HW_ESP_USB_SERIAL_JTAG
     usb_serial_jtag_init();
     #elif CONFIG_USB_OTG_SUPPORTED
     usb_init();
