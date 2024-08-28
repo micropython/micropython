@@ -32,7 +32,16 @@ Then build using:
 The default qemu-supported board is `mps2-an385`, a Cortex-M3 board.  To select a
 different board pass the `BOARD` argument to `make`, for example:
 
-    $ make BOARD=sabrelite
+    $ make BOARD=SABRELITE
+
+Available boards are:
+
+| Name for `BOARD=` | Corresponding qemu board |
+| ----------------- | ------------------------ |
+| `MICROBIT`        | `microbit`               |
+| `MPS2_AN385`      | `mps2-an385`             |
+| `NETDUINO2`       | `netduino2`              |
+| `SABRELITE`       | `sabrelite`              |
 
 Running
 -------
@@ -67,3 +76,11 @@ tests against the serial device, for example:
 
     $ cd ../../tests
     $ ./run-tests.py --target qemu-arm --device /dev/pts/1
+
+Extra make options
+------------------
+
+The following options can be specified on the `make` command line:
+- `CFLAGS_EXTRA`: pass in extra flags for the compiler.
+- `RUN_TESTS_EXTRA`: pass in extra flags for `run-tests.py` when invoked via
+  `make test`.
