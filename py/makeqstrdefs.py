@@ -225,10 +225,11 @@ if __name__ == "__main__":
         sys.exit(0)
 
     args.mode = sys.argv[2]
-    args.input_filename = sys.argv[3]  # Unused for command=cat
+    args.input_filename = sys.argv[3]  # Possibly unused for command=cat
     args.output_dir = sys.argv[4]
-    args.output_file = None if len(sys.argv) == 5 else sys.argv[5]  # Unused for command=split
-
+    args.output_file = (
+        None if len(sys.argv) == 5 else sys.argv[5]
+    )  # Possibly unused for command=split
     if args.mode not in (_MODE_QSTR, _MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
         print("error: mode %s unrecognised" % sys.argv[2])
         sys.exit(2)
@@ -238,12 +239,23 @@ if __name__ == "__main__":
     except OSError:
         pass
 
-    if args.command in ("split", "cat"):
-        args.split_file = args.output_dir + "/" + args.mode + ".split"
+    # _ has been used historically to indicate 'not an actual argument'
+    def is_actual_file(arg):
+        return args is not None and arg != "_"
 
     if args.command == "split":
+        args.split_file = (
+            args.output_file
+            if is_actual_file(args.output_file)
+            else args.output_dir + "/" + args.mode + ".split"
+        )
         with io.open(args.input_filename, encoding="utf-8") as infile:
             process_file(infile)
 
     if args.command == "cat":
+        args.split_file = (
+            args.input_filename
+            if is_actual_file(args.input_filename)
+            else args.output_dir + "/" + args.mode + ".split"
+        )
         cat_together()

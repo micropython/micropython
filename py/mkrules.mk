@@ -123,42 +123,38 @@ $(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(QSTR_GL
 
 $(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split qstr $< $(HEADER_BUILD)/qstr _
-	$(Q)$(TOUCH) $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split qstr $< $(HEADER_BUILD)/qstr $(HEADER_BUILD)/qstr.split
 
 $(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat qstr _ $(HEADER_BUILD)/qstr $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat qstr $(HEADER_BUILD)/qstr.split $(HEADER_BUILD)/qstr $@
 
 # Module definitions via MP_REGISTER_MODULE.
 $(HEADER_BUILD)/moduledefs.split: $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split module $< $(HEADER_BUILD)/module _
-	$(Q)$(TOUCH) $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split module $< $(HEADER_BUILD)/module $(HEADER_BUILD)/moduledefs.split
 
 $(HEADER_BUILD)/moduledefs.collected: $(HEADER_BUILD)/moduledefs.split
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat module _ $(HEADER_BUILD)/module $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat module $(HEADER_BUILD)/moduledefs.split $(HEADER_BUILD)/module $@
 
 # Module definitions via MP_REGISTER_ROOT_POINTER.
 $(HEADER_BUILD)/root_pointers.split: $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split root_pointer $< $(HEADER_BUILD)/root_pointer _
-	$(Q)$(TOUCH) $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split root_pointer $< $(HEADER_BUILD)/root_pointer $(HEADER_BUILD)/root_pointers.split
 
 $(HEADER_BUILD)/root_pointers.collected: $(HEADER_BUILD)/root_pointers.split
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat root_pointer _ $(HEADER_BUILD)/root_pointer $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat root_pointer $(HEADER_BUILD)/root_pointers.split $(HEADER_BUILD)/root_pointer $@
 
 # Compressed error strings.
 $(HEADER_BUILD)/compressed.split: $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split compress $< $(HEADER_BUILD)/compress _
-	$(Q)$(TOUCH) $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split compress $< $(HEADER_BUILD)/compress $(HEADER_BUILD)/compressed.split
 
 $(HEADER_BUILD)/compressed.collected: $(HEADER_BUILD)/compressed.split
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat compress _ $(HEADER_BUILD)/compress $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat compress $(HEADER_BUILD)/compressed.split $(HEADER_BUILD)/compress $@
 
 # $(sort $(var)) removes duplicates
 #
