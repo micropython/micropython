@@ -197,7 +197,9 @@ mp_uint_t mp_hal_ticks_cpu(void) {
 
 mp_uint_t mp_hal_ticks_us(void) {
     // Convert system tick to microsecond counter.
-    #if MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
+    #if MICROPY_HW_SYSTEM_TICK_USE_SYSTICK
+    return system_tick_get_u64();
+    #elif MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
     return system_tick_get_u64() * 1000000 / system_tick_source_hz;
     #else
     return system_tick_get_u64() / system_core_clock_mhz;
@@ -206,7 +208,9 @@ mp_uint_t mp_hal_ticks_us(void) {
 
 mp_uint_t mp_hal_ticks_ms(void) {
     // Convert system tick to millisecond counter.
-    #if MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
+    #if MICROPY_HW_SYSTEM_TICK_USE_SYSTICK
+    return system_tick_get_u64() / 1000ULL;
+    #elif MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
     return system_tick_get_u64() * 1000ULL / system_tick_source_hz;
     #else
     return system_tick_get_u64() / (SystemCoreClock / 1000);
@@ -214,7 +218,9 @@ mp_uint_t mp_hal_ticks_ms(void) {
 }
 
 void mp_hal_delay_us(mp_uint_t us) {
-    #if MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
+    #if MICROPY_HW_SYSTEM_TICK_USE_SYSTICK
+    uint64_t ticks_delay = (uint64_t)us;
+    #elif MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
     uint64_t ticks_delay = (uint64_t)us * system_tick_source_hz / 1000000;
     #else
     uint64_t ticks_delay = (uint64_t)us * system_core_clock_mhz;
@@ -244,6 +250,8 @@ void system_tick_schedule_callback(void) {
     pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
 }
 
+#if !defined(MICROPY_SOFT_TIMER_TICKS_MS)
+
 uint32_t soft_timer_get_ms(void) {
     return mp_hal_ticks_ms();
 }
@@ -254,3 +262,5 @@ void soft_timer_schedule_at_ms(uint32_t ticks_ms) {
     ms = MIN(ms, 4000000); // ensure ms * 1000 doesn't overflow
     system_tick_schedule_after_us(ms * 1000);
 }
+
+#endif

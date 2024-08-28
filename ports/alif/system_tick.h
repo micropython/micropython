@@ -30,7 +30,7 @@
 
 #if MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
 extern uint64_t system_tick_source_hz;
-#else
+#elif MICROPY_HW_SYSTEM_TICK_USE_UTIMER
 extern uint64_t system_core_clock_mhz;
 #endif
 
