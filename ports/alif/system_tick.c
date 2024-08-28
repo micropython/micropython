@@ -29,7 +29,69 @@
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 
-#if MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
+#if MICROPY_HW_SYSTEM_TICK_USE_SYSTICK
+
+#include "shared/runtime/softtimer.h"
+#include "pendsv.h"
+
+volatile uint32_t system_tick_ms_counter;
+
+void system_tick_init(void) {
+    // Configure SysTick to run at 1kHz (1ms interval)
+    SysTick_Config(SystemCoreClock / 1000);
+    NVIC_SetPriority(SysTick_IRQn, IRQ_PRI_SYSTEM_TICK);
+    NVIC_EnableIRQ(SysTick_IRQn);
+}
+
+void SysTick_Handler(void) {
+    uint32_t uw_tick = system_tick_ms_counter + 1;
+    system_tick_ms_counter = uw_tick;
+
+    // Read the systick control register to clear the COUNTFLAG bit.
+    SysTick->CTRL;
+
+    if (soft_timer_next == uw_tick) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
+    }
+}
+
+uint32_t system_tick_get_u32(void) {
+    return system_tick_get_u64();
+}
+
+uint64_t system_tick_get_u64(void) {
+    mp_uint_t irq_state = disable_irq();
+    uint32_t counter = SysTick->VAL;
+    uint32_t milliseconds = system_tick_ms_counter;
+    uint32_t status = SysTick->CTRL;
+    enable_irq(irq_state);
+
+    // It's still possible for the COUNTFLAG bit to get set if the counter was
+    // reloaded between reading VAL and reading CTRL.  With interrupts disabled
+    // it definitely takes less than 50 cycles between reading VAL and
+    // reading CTRL, so the test (counter > 50) is to cover the case where VAL
+    // is +ve and very close to zero, and the COUNTFLAG bit is also set.
+    if ((status & SysTick_CTRL_COUNTFLAG_Msk) && counter > 50) {
+        // This means that the HW reloaded VAL between the time we read VAL and the
+        // time we read CTRL, which implies that there is an interrupt pending
+        // to increment the tick counter.
+        milliseconds++;
+    }
+    uint32_t load = SysTick->LOAD;
+    counter = load - counter; // Convert from decrementing to incrementing
+
+    // Calculate 64-bit microsecond counter.
+    return (uint64_t)milliseconds * 1000ULL + (uint64_t)((counter * 1000) / (load + 1));
+}
+
+void system_tick_wfe_with_timeout_us(uint32_t timeout_us) {
+    if (timeout_us > 1000) {
+        // SysTick will wake us in at most 1ms.
+        __WFI();
+    }
+}
+
+#elif MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
 
 #include "lptimer.h"
 #include "sys_ctrl_lptimer.h"
