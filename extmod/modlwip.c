@@ -127,15 +127,15 @@ sio_fd_t sio_open(u8_t dvnum) {
 }
 
 void sio_send(u8_t c, sio_fd_t fd) {
-    mp_obj_type_t *type = mp_obj_get_type(MP_STATE_VM(lwip_slip_stream));
+    const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(lwip_slip_stream));
     int error;
-    type->stream_p->write(MP_STATE_VM(lwip_slip_stream), &c, 1, &error);
+    stream_p->write(MP_STATE_VM(lwip_slip_stream), &c, 1, &error);
 }
 
 u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len) {
-    mp_obj_type_t *type = mp_obj_get_type(MP_STATE_VM(lwip_slip_stream));
+    const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(lwip_slip_stream));
     int error;
-    mp_uint_t out_sz = type->stream_p->read(MP_STATE_VM(lwip_slip_stream), data, len, &error);
+    mp_uint_t out_sz = stream_p->read(MP_STATE_VM(lwip_slip_stream), data, len, &error);
     if (out_sz == MP_STREAM_ERROR) {
         if (mp_is_nonblocking_error(error)) {
             return 0;
