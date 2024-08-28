@@ -285,6 +285,12 @@ void mp_delete_global(qstr qst) {
 mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
     DEBUG_OP_printf("unary " UINT_FMT " %q %p\n", op, mp_unary_op_method_name[op], arg);
 
+    #if MICROPY_COMP_EXTRA_VALIDATION
+    if (arg == MP_OBJ_NULL) {
+        goto unbounded_local_variable;
+    }
+    #endif
+
     if (op == MP_UNARY_OP_NOT) {
         // "not x" is the negative of whether "x" is true per Python semantics
         return mp_obj_new_bool(mp_obj_is_true(arg) == 0);
@@ -362,10 +368,21 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
             mp_unary_op_method_name[op], mp_obj_get_type_str(arg));
         #endif
     }
+
+    #if MICROPY_COMP_EXTRA_VALIDATION
+unbounded_local_variable:
+    mp_raise_msg(&mp_type_NameError, MP_ERROR_TEXT("cannot access local variable"));
+    #endif
 }
 
 mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     DEBUG_OP_printf("binary " UINT_FMT " %q %p %p\n", op, mp_binary_op_method_name[op], lhs, rhs);
+
+    #if MICROPY_COMP_EXTRA_VALIDATION
+    if (lhs == MP_OBJ_NULL || rhs == MP_OBJ_NULL) {
+        goto unbounded_local_variable;
+    }
+    #endif
 
     // TODO correctly distinguish inplace operators for mutable objects
     // lookup logic that CPython uses for +=:
@@ -685,6 +702,11 @@ unsupported_op:
 
 zero_division:
     mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("divide by zero"));
+
+    #if MICROPY_COMP_EXTRA_VALIDATION
+unbounded_local_variable:
+    mp_raise_msg(&mp_type_NameError, MP_ERROR_TEXT("local variable referenced before assignment"));
+    #endif
 }
 
 mp_obj_t mp_call_function_0(mp_obj_t fun) {
@@ -709,6 +731,12 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, size_t n_args, size_t n_kw, cons
 
     DEBUG_OP_printf("calling function %p(n_args=" UINT_FMT ", n_kw=" UINT_FMT ", args=%p)\n", fun_in, n_args, n_kw, args);
 
+    #if MICROPY_COMP_EXTRA_VALIDATION
+    if (fun_in == MP_OBJ_NULL) {
+        goto missing_function;
+    }
+    #endif
+
     // get the type
     const mp_obj_type_t *type = mp_obj_get_type(fun_in);
 
@@ -722,6 +750,11 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, size_t n_args, size_t n_kw, cons
     #else
     mp_raise_msg_varg(&mp_type_TypeError,
         MP_ERROR_TEXT("'%s' object isn't callable"), mp_obj_get_type_str(fun_in));
+    #endif
+
+    #if MICROPY_COMP_EXTRA_VALIDATION
+missing_function:
+    mp_raise_msg(&mp_type_NameError, MP_ERROR_TEXT("function name not defined"));
     #endif
 }
 
@@ -1054,6 +1087,13 @@ too_short:
 
 mp_obj_t mp_load_attr(mp_obj_t base, qstr attr) {
     DEBUG_OP_printf("load attr %p.%s\n", base, qstr_str(attr));
+
+    #if MICROPY_COMP_EXTRA_VALIDATION
+    if (base == MP_OBJ_NULL) {
+        goto unbounded_local_variable;
+    }
+    #endif
+
     // use load_method
     mp_obj_t dest[2];
     mp_load_method(base, attr, dest);
@@ -1064,6 +1104,11 @@ mp_obj_t mp_load_attr(mp_obj_t base, qstr attr) {
         // load_method returned a method, so build a bound method object
         return mp_obj_new_bound_meth(dest[0], dest[1]);
     }
+
+    #if MICROPY_COMP_EXTRA_VALIDATION
+unbounded_local_variable:
+    mp_raise_msg(&mp_type_NameError, MP_ERROR_TEXT("local variable referenced before assignment"));
+    #endif
 }
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG

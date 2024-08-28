@@ -500,6 +500,12 @@
 #define MICROPY_COMP_RETURN_IF_EXPR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to enable extra arguments validation when running native code
+// Requires MICROPY_DYNAMIC_COMPILER and costs 160 bytes (Thumb2)
+#ifndef MICROPY_COMP_EXTRA_VALIDATION
+#define MICROPY_COMP_EXTRA_VALIDATION (0)
+#endif
+
 /*****************************************************************************/
 /* Internal debugging stuff                                                  */
 
