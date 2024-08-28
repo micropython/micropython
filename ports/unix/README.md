@@ -142,8 +142,16 @@ By default, builds are stripped of symbols and debug information to save size.
 To build a debuggable version of the Unix port, there are two options:
 
 1. Run `make [other arguments] DEBUG=1`. Note setting `DEBUG` also reduces the
-   optimisation level, so it's not a good option for builds that also want the
-   best performance.
+   optimisation level and enables assertions, so it's not a good option for
+   builds that also want the best performance.
 2. Run `make [other arguments] STRIP=`. Note that the value of `STRIP` is
    empty. This will skip the build step that strips symbols and debug
    information, but changes nothing else in the build configuration.
+
+### Optimisation Level
+
+The default compiler optimisation level is -Os, or -Og if `DEBUG=1` is set.
+
+Setting the variable `COPT` will explicitly set the optimisation level. For
+example `make [other arguments] COPT=-O0 DEBUG=1` will build a binary with no
+optimisations, assertions enabled, and debug symbols.
