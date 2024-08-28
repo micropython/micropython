@@ -192,6 +192,7 @@ provide a way to control networking interfaces of various kinds.
    network.WLANWiPy.rst
    network.WIZNET5K.rst
    network.LAN.rst
+   network.PPP.rst
 
 Network functions
 =================
