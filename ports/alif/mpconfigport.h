@@ -37,9 +37,13 @@
 #endif
 
 // Select the low-level system tick implementation.
-#if !defined(MICROPY_HW_SYSTEM_TICK_USE_LPTIMER) \
+#if !defined(MICROPY_HW_SYSTEM_TICK_USE_SYSTICK) \
+    && !defined(MICROPY_HW_SYSTEM_TICK_USE_LPTIMER) \
     && !defined(MICROPY_HW_SYSTEM_TICK_USE_UTIMER)
 #define MICROPY_HW_SYSTEM_TICK_USE_UTIMER       (1)
+#endif
+#if MICROPY_HW_SYSTEM_TICK_USE_SYSTICK
+#define MICROPY_SOFT_TIMER_TICKS_MS             system_tick_ms_counter
 #endif
 
 #ifndef MICROPY_HW_ENABLE_OSPI
