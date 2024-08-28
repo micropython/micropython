@@ -1,10 +1,13 @@
-BOARD ?= mps2-an385
+BOARD ?= MPS2_AN385
 
 # Make the build directory reflect the board.
 BUILD ?= build-$(BOARD)
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
+
+# Include board specific .mk file.
+include boards/$(BOARD).mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -17,58 +20,16 @@ FROZEN_MANIFEST ?= "freeze('test-frzmpy')"
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-CFLAGS += -DMICROPY_HW_BOARD_NAME='"$(BOARD)"'
-QEMU_ARGS += -machine $(BOARD) -nographic -monitor null -semihosting
-
-ifeq ($(BOARD),netduino2)
-CFLAGS += -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
-CFLAGS += -DQEMU_SOC_STM32
-CFLAGS += -DMICROPY_HW_MCU_NAME='"STM32"'
-LDSCRIPT = stm32.ld
-SRC_BOARD_O = shared/runtime/gchelper_native.o shared/runtime/gchelper_thumb2.o
-MPY_CROSS_FLAGS += -march=armv7m
-endif
-
-ifeq ($(BOARD),microbit)
-CFLAGS += -mthumb -mcpu=cortex-m0 -mfloat-abi=soft
-CFLAGS += -DQEMU_SOC_NRF51
-CFLAGS += -DMICROPY_HW_MCU_NAME='"nRF51"'
-LDSCRIPT = nrf51.ld
-QEMU_ARGS += -global nrf51-soc.flash-size=1048576 -global nrf51-soc.sram-size=262144
-SRC_BOARD_O = shared/runtime/gchelper_native.o shared/runtime/gchelper_thumb1.o
-MPY_CROSS_FLAGS += -march=armv7m
-endif
-
-ifeq ($(BOARD),mps2-an385)
-CFLAGS += -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
-CFLAGS += -DQEMU_SOC_MPS2
-CFLAGS += -DMICROPY_HW_MCU_NAME='"Cortex-M3"'
-LDSCRIPT = mps2.ld
-SRC_BOARD_O = shared/runtime/gchelper_native.o shared/runtime/gchelper_thumb2.o
-MPY_CROSS_FLAGS += -march=armv7m
-endif
-
-ifeq ($(BOARD),sabrelite)
-CFLAGS += -mcpu=cortex-a9
-CFLAGS += -DQEMU_SOC_IMX6
-CFLAGS += -DMICROPY_HW_MCU_NAME='"Cortex-A9"'
-LDSCRIPT = imx6.ld
-QEMU_ARGS += -m 128M
-SRC_BOARD_O = shared/runtime/gchelper_generic.o
-# It's really armv7a but closest supported value is armv6.
-MPY_CROSS_FLAGS += -march=armv6
-# Cortex-A9 should support unaligned-access, but qemu doesn't seem to.
-CFLAGS += -mno-unaligned-access
-# These don't work on Cortex-A9.
-TESTS_EXCLUDE = --exclude '(asmdiv|asmspecialregs).py'
-endif
-
 CROSS_COMPILE ?= arm-none-eabi-
+
+QEMU_SYSTEM = qemu-system-$(QEMU_ARCH)
+QEMU_ARGS += -machine $(QEMU_MACHINE) -nographic -monitor null -semihosting
 
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 
+CFLAGS += -DMICROPY_HW_BOARD_NAME='"$(QEMU_MACHINE)"'
 CFLAGS += $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -Werror -std=gnu99 $(COPT) \
 	 -ffunction-sections -fdata-sections
 CFLAGS += $(CFLAGS_EXTRA)
@@ -135,16 +96,16 @@ all: $(BUILD)/firmware.elf
 .PHONY: repl
 repl: $(BUILD)/firmware.elf
 	$(ECHO) "Use machine.reset() to exit"
-	qemu-system-arm $(QEMU_ARGS) -serial mon:stdio -kernel $<
+	$(QEMU_SYSTEM) $(QEMU_ARGS) -serial mon:stdio -kernel $<
 
 .PHONY: run
 run: $(BUILD)/firmware.elf
-	qemu-system-arm $(QEMU_ARGS) -serial pty -kernel $<
+	$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel $<
 
 .PHONY: test
 test: $(BUILD)/firmware.elf
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && ./run-tests.py --target qemu-arm --device execpty:"qemu-system-arm $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(TESTS_EXCLUDE)
+	cd $(TOP)/tests && ./run-tests.py --target qemu-arm --device execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(RUN_TESTS_ARGS) $(RUN_TESTS_EXTRA)
 
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(ALL_OBJ_RUN)

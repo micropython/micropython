@@ -259,7 +259,7 @@ function ci_qemu_arm_build {
     make ${MAKEOPTS} -C ports/qemu-arm CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
     make ${MAKEOPTS} -C ports/qemu-arm clean
     make ${MAKEOPTS} -C ports/qemu-arm test
-    make ${MAKEOPTS} -C ports/qemu-arm BOARD=sabrelite test
+    make ${MAKEOPTS} -C ports/qemu-arm BOARD=SABRELITE test
 }
 
 ########################################################################################
