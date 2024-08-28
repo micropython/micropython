@@ -69,6 +69,7 @@ R_XTENSA_PLT = 6
 R_386_GOTOFF = 9
 R_386_GOTPC = 10
 R_ARM_THM_CALL = 10
+R_XTENSA_ASM_EXPAND = 11
 R_XTENSA_DIFF32 = 19
 R_XTENSA_SLOT0_OP = 20
 R_ARM_BASE_PREL = 25  # aka R_ARM_GOTPC
@@ -562,9 +563,14 @@ def do_relocation_text(env, text_addr, r):
         reloc = addr - r_offset
         reloc_type = "xtensa_l32r"
 
-    elif env.arch.name == "EM_XTENSA" and r_info_type in (R_XTENSA_DIFF32, R_XTENSA_PDIFF32):
+    elif env.arch.name == "EM_XTENSA" and r_info_type in (
+        R_XTENSA_DIFF32,
+        R_XTENSA_PDIFF32,
+        R_XTENSA_ASM_EXPAND,
+    ):
         if s.section.name.startswith(".text"):
-            # it looks like R_XTENSA_[P]DIFF32 into .text is already correctly relocated
+            # it looks like R_XTENSA_[P]DIFF32 into .text is already correctly relocated,
+            # and expand relaxations cannot occur in non-executable sections.
             return
         assert 0
 
