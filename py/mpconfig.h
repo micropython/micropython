@@ -976,6 +976,16 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_VM_ABORT (0)
 #endif
 
+// Whether to handle abort behavior in pyexec code
+#ifndef MICROPY_PYEXEC_ENABLE_VM_ABORT
+#define MICROPY_PYEXEC_ENABLE_VM_ABORT (0)
+#endif
+
+// Whether to set exit codes according to the exit reason (keyboard interrupt, crash, normal exit, ...)
+#ifndef MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING
+#define MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING (0)
+#endif
+
 // Support for internal scheduler
 #ifndef MICROPY_ENABLE_SCHEDULER
 #define MICROPY_ENABLE_SCHEDULER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
