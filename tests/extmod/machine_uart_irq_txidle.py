@@ -16,27 +16,20 @@ if "rp2" in sys.platform:
     uart_id = 0
     tx_pin = "GPIO0"
     rx_pin = "GPIO1"
-    min_window = 1
 elif "samd" in sys.platform and "ItsyBitsy M0" in sys.implementation._machine:
     uart_id = 0
     tx_pin = "D1"
     rx_pin = "D0"
-    # For SAMD delay_ms has to be used for the trailing window, and the
-    # mininmal time is 11 ms to allow for scheduling.
-    min_window = 11
 elif "samd" in sys.platform and "ItsyBitsy M4" in sys.implementation._machine:
     uart_id = 3
     tx_pin = "D1"
     rx_pin = "D0"
-    min_window = 11
 elif "mimxrt" in sys.platform:
     uart_id = 1
     tx_pin = None
-    min_window = 0
 elif "nrf" in sys.platform:
     uart_id = 0
     tx_pin = None
-    min_window = 0
 else:
     print("Please add support for this test on this platform.")
     raise SystemExit
@@ -61,12 +54,11 @@ for bits_per_s in (2400, 9600, 115200):
     # the test marks a time window close to the expected of the sending
     # and the time at which the IRQ should have been fired.
     # It is just a rough estimation of 10 characters before and
-    # 20 characters after the data's end, unless there is a need to
-    # wait a minimal time, like for SAMD devices.
+    # 20 characters after the data's end.
 
     bits_per_char = 10  # 1(startbit) + 8(bits) + 1(stopbit) + 0(parity)
     start_time_us = (len(text) - 10) * bits_per_char * 1_000_000 // bits_per_s
-    window_ms = max(min_window, 20 * bits_per_char * 1_000 // bits_per_s + 1)
+    window_ms = 20 * bits_per_char * 1_000 // bits_per_s + 1
 
     print("write", bits_per_s)
     uart.write(text)
