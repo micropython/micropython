@@ -1080,6 +1080,7 @@ class RawCodeNative(RawCode):
             MP_NATIVE_ARCH_X64,
             MP_NATIVE_ARCH_XTENSA,
             MP_NATIVE_ARCH_XTENSAWIN,
+            MP_NATIVE_ARCH_RV32IMC,
         ):
             self.fun_data_attributes = '__attribute__((section(".text,\\"ax\\",@progbits # ")))'
         else:
