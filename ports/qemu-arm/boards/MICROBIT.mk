@@ -6,7 +6,7 @@ CFLAGS += -mthumb -mcpu=cortex-m0 -mfloat-abi=soft
 CFLAGS += -DQEMU_SOC_NRF51
 CFLAGS += -DMICROPY_HW_MCU_NAME='"nRF51"'
 
-LDSCRIPT = nrf51.ld
+LDSCRIPT = mcu/arm/nrf51.ld
 
 SRC_BOARD_O = shared/runtime/gchelper_native.o shared/runtime/gchelper_thumb1.o
 
