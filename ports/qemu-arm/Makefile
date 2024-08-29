@@ -51,7 +51,8 @@ endif
 LDFLAGS= -T $(LDSCRIPT) --gc-sections -Map=$(@:.elf=.map)
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
-SRC_COMMON_C = \
+SRC_C = \
+	main.c \
 	startup.c \
 	uart.c \
 	mphalport.c \
@@ -63,33 +64,16 @@ SRC_COMMON_C = \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 
-SRC_RUN_C = \
-	main.c \
-
 LIB_SRC_C += $(SRC_LIB_LIBM_C)
 LIB_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 
-OBJ_COMMON =
-OBJ_COMMON += $(PY_O)
-OBJ_COMMON += $(addprefix $(BUILD)/, $(SRC_COMMON_C:.c=.o))
-OBJ_COMMON += $(addprefix $(BUILD)/, $(SRC_BOARD_O))
-OBJ_COMMON += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-
-OBJ_RUN =
-OBJ_RUN += $(addprefix $(BUILD)/, $(SRC_RUN_C:.c=.o))
-
-ALL_OBJ_RUN = $(OBJ_COMMON) $(OBJ_RUN)
-
-OBJ_TEST =
-OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_TEST_C:.c=.o))
-
-ALL_OBJ_TEST = $(OBJ_COMMON) $(OBJ_TEST)
-
-# All object files, needed to get dependencies correct
-OBJ = $(OBJ_COMMON) $(OBJ_RUN) $(OBJ_TEST)
+OBJ += $(PY_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_BOARD_O))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_COMMON_C) $(SRC_RUN_C) $(LIB_SRC_C)
+SRC_QSTR += $(SRC_C) $(LIB_SRC_C)
 
 all: $(BUILD)/firmware.elf
 
@@ -108,8 +92,8 @@ test: $(BUILD)/firmware.elf
 	cd $(TOP)/tests && ./run-tests.py --target qemu-arm --device execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(RUN_TESTS_ARGS) $(RUN_TESTS_EXTRA)
 
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
-$(BUILD)/firmware.elf: $(LDSCRIPT) $(ALL_OBJ_RUN)
-	$(Q)$(LD) $(LDFLAGS) -o $@ $(ALL_OBJ_RUN) $(LIBS)
+$(BUILD)/firmware.elf: $(LDSCRIPT) $(OBJ)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
 include $(TOP)/py/mkrules.mk
