@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018-2021 Damien P. George
+ * Copyright (c) 2018-2024 Damien P. George
+ * Copyright (c) 2023 Alessandro Gatti
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -172,6 +173,38 @@ int uart_rx_chr(void) {
 void uart_tx_strn(const char *buf, size_t len) {
     for (size_t i = 0; i < len; ++i) {
         UART1->UTXD = buf[i];
+    }
+}
+
+#elif defined(QEMU_SOC_VIRT)
+
+// Line status register bits.
+#define UART_LSR_THRE (0x20)
+#define UART_LSR_DR (0x01)
+
+typedef struct _UART_t {
+    volatile uint8_t DR;
+    volatile uint8_t r0[4];
+    volatile uint8_t LSR;
+} UART_t;
+
+#define UART0 ((UART_t *)(0x10000000))
+
+void uart_init(void) {
+}
+
+int uart_rx_chr(void) {
+    if (UART0->LSR & UART_LSR_DR) {
+        return UART0->DR;
+    }
+    return UART_RX_NO_CHAR;
+}
+
+void uart_tx_strn(const char *buffer, size_t length) {
+    for (size_t index = 0; index < length; index++) {
+        while (!(UART0->LSR & UART_LSR_THRE)) {
+        }
+        UART0->DR = buffer[index];
     }
 }
 

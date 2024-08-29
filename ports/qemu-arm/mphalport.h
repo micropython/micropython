@@ -24,4 +24,5 @@
  * THE SOFTWARE.
  */
 
+#include <stddef.h>
 #include "shared/runtime/interrupt_char.h"

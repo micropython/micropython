@@ -1,3 +1,6 @@
+################################################################################
+# Initial setup of Makefile environment
+
 BOARD ?= MPS2_AN385
 
 # Make the build directory reflect the board.
@@ -14,16 +17,79 @@ QSTR_DEFS = qstrdefsport.h
 
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
+
+ifeq ($(QEMU_ARCH),arm)
 FROZEN_MANIFEST ?= "freeze('test-frzmpy')"
+endif
+ifeq ($(QEMU_ARCH),riscv32)
+FROZEN_MANIFEST ?= "freeze('test-frzmpy', ('frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
+endif
 
 # include py core make definitions
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
+################################################################################
+# ARM specific settings
+
+ifeq ($(QEMU_ARCH),arm)
+
 CROSS_COMPILE ?= arm-none-eabi-
+
+LDFLAGS += -nostdlib
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+
+SRC_C += \
+	mcu/arm/startup.c \
+	shared/runtime/semihosting_arm.c \
+
+endif
+
+################################################################################
+# RISC-V 32-bit specific settings
+
+ifeq ($(QEMU_ARCH),riscv32)
+
+CROSS_COMPILE ?= riscv64-unknown-elf-
+
+GCC_VERSION = $(word 1, $(subst ., , $(shell $(CC) -dumpversion)))
+
+RV32_ABI = ilp32
+
+QEMU_ARGS += -bios none
+
+# GCC 10 and lower do not recognise the Zicsr extension in the architecture name.
+ifeq ($(shell test $(GCC_VERSION) -le 10; echo $$?),0)
+RV32_ARCH ?= rv32imac
+else
+# Recent GCC versions explicitly require to declare extensions.
+RV32_ARCH ?= rv32imac_zicsr
+endif
+
+AFLAGS += -mabi=$(RV32_ABI) -march=$(RV32_ARCH)
+CFLAGS += $(AFLAGS)
+LDFLAGS += -mabi=$(RV32_ABI) -march=$(RV32_ARCH) -Wl,-EL
+
+SRC_C += \
+	mcu/rv32/interrupts.c \
+	mcu/rv32/startup.c \
+
+SRC_BOARD_O += mcu/rv32/entrypoint.o
+
+endif
+
+################################################################################
+# Project specific settings and compiler/linker flags
 
 QEMU_SYSTEM = qemu-system-$(QEMU_ARCH)
 QEMU_ARGS += -machine $(QEMU_MACHINE) -nographic -monitor null -semihosting
+QEMU_ARGS += $(QEMU_EXTRA)
+
+# Specifying QEMU_DEBUG=1 will block qemu until a debugger is connected.
+ifeq ($(QEMU_DEBUG),1)
+QEMU_DEBUG_ARGS ?= -s
+QEMU_ARGS += -S $(QEMU_DEBUG_ARGS) $(QEMU_DEBUG_EXTRA)
+endif
 
 INC += -I.
 INC += -I$(TOP)
@@ -34,6 +100,8 @@ CFLAGS += $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -We
 	 -ffunction-sections -fdata-sections
 CFLAGS += $(CFLAGS_EXTRA)
 
+LDFLAGS += -T $(LDSCRIPT) -Wl,--gc-sections -Wl,-Map=$(@:.elf=.map)
+
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -g
@@ -42,25 +110,31 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-## With CoudeSourcery it's actually a little different, you just need `-T generic-m-hosted.ld`.
-## Although for some reason `$(LD)` will not find that linker script, it works with `$(CC)`.
-## It turns out that this is specific to CoudeSourcery, and ARM version of GCC ships something
-## else instead and according to the following files, this is what we need to pass to `$(CC).
-## - gcc-arm-none-eabi-4_8-2014q1/share/gcc-arm-none-eabi/samples/src/makefile.conf
-## - gcc-arm-none-eabi-4_8-2014q1/share/gcc-arm-none-eabi/samples/src/qemu/Makefile
-LDFLAGS= -T $(LDSCRIPT) --gc-sections -Map=$(@:.elf=.map)
-LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+# If Picolibc is available then select it explicitly.  Ubuntu 22.04 ships its
+# bare metal RISC-V toolchain with Picolibc rather than Newlib, and the default
+# is "nosys" so a value must be provided.  To avoid having per-distro
+# workarounds, always select Picolibc if available.
+PICOLIBC_SPECS = $(shell $(CC) --print-file-name=picolibc.specs)
+ifeq ($(PICOLIBC_SPECS),picolibc.specs)
+# Picolibc was not found.
+else
+$(info picolibc used $(PICOLIBC_SPECS))
+SPECS_FRAGMENT = --specs=$(PICOLIBC_SPECS)
+CFLAGS += $(SPECS_FRAGMENT)
+LDFLAGS += $(SPECS_FRAGMENT)
+endif
 
-SRC_C = \
+################################################################################
+# Source files and libraries
+
+SRC_C += \
 	main.c \
-	startup.c \
 	uart.c \
 	mphalport.c \
 	shared/libc/string0.c \
 	shared/readline/readline.c \
 	shared/runtime/interrupt_char.c \
 	shared/runtime/pyexec.c \
-	shared/runtime/semihosting_arm.c \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 
@@ -74,6 +148,9 @@ OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(LIB_SRC_C)
+
+################################################################################
+# Main targets
 
 all: $(BUILD)/firmware.elf
 
@@ -91,9 +168,11 @@ test: $(BUILD)/firmware.elf
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && ./run-tests.py --target qemu-arm --device execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(RUN_TESTS_ARGS) $(RUN_TESTS_EXTRA)
 
-## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(OBJ)
-	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
+
+################################################################################
+# Remaining make rules
 
 include $(TOP)/py/mkrules.mk

@@ -8,7 +8,7 @@ CFLAGS += -DMICROPY_HW_MCU_NAME='"Cortex-A9"'
 # Cortex-A9 should support unaligned-access, but qemu doesn't seem to.
 CFLAGS += -mno-unaligned-access
 
-LDSCRIPT = imx6.ld
+LDSCRIPT = mcu/arm/imx6.ld
 
 SRC_BOARD_O = shared/runtime/gchelper_generic.o
 

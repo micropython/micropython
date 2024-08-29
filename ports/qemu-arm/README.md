@@ -1,8 +1,8 @@
 MicroPython port to qemu-arm
 ============================
 
-This is experimental, community-supported port for Cortex-M emulation as
-provided by QEMU (http://qemu.org).
+This is experimental, community-supported port for Cortex-M and RISC-V RV32IMC
+emulation as provided by QEMU (http://qemu.org).
 
 The purposes of this port are to enable:
 
@@ -17,6 +17,25 @@ The purposes of this port are to enable:
     - no need for JTAG or even an MCU chip itself
     - no need to use OpenOCD or anything else that might slow down the
       process in terms of plugging things together, pressing buttons, etc.
+
+Dependencies
+------------
+
+### ARM
+
+For ARM-based boards the build requires a bare-metal ARM toolchain, such as
+`arm-none-eabi-gcc`.
+
+### RISC-V
+
+For RISC-V-based boards the build requires a bare metal RISC-V toolchain with GCC 10
+or later, either with multilib support or 32 bits specific (M, C, and Zicsr
+extensions must be supported, along with ilp32 ABI).  Both newlib and picolibc are
+supported, with the latter having precedence if found.
+
+Most pre-built toolchains should work out of the box, either coming from your
+Linux distribution's package manager, or independently packaged ones like
+[xPack](https://xpack.github.io/dev-tools/riscv-none-elf-gcc/).
 
 Build instructions
 ------------------
@@ -36,12 +55,13 @@ different board pass the `BOARD` argument to `make`, for example:
 
 Available boards are:
 
-| Name for `BOARD=` | Corresponding qemu board |
-| ----------------- | ------------------------ |
-| `MICROBIT`        | `microbit`               |
-| `MPS2_AN385`      | `mps2-an385`             |
-| `NETDUINO2`       | `netduino2`              |
-| `SABRELITE`       | `sabrelite`              |
+| Name for `BOARD=` | Architecture | Corresponding qemu board |
+| ----------------- | ------------ | ------------------------ |
+| `MICROBIT`        | `arm`        | `microbit`               |
+| `MPS2_AN385`      | `arm`        | `mps2-an385`             |
+| `NETDUINO2`       | `arm`        | `netduino2`              |
+| `SABRELITE`       | `arm`        | `sabrelite`              |
+| `VIRT_RV32`       | `riscv32`    | `virt`                   |
 
 Running
 -------
@@ -84,3 +104,9 @@ The following options can be specified on the `make` command line:
 - `CFLAGS_EXTRA`: pass in extra flags for the compiler.
 - `RUN_TESTS_EXTRA`: pass in extra flags for `run-tests.py` when invoked via
   `make test`.
+- `QEMU_DEBUG=1`: when running qemu (via `repl`, `run` or `test` target), qemu
+  will block until a debugger is connected.  By default it waits for a gdb connection
+  on TCP port 1234.
+- `QEMU_DEBUG_ARGS`: defaults to `-s` (gdb on TCP port 1234), but can be overridden
+  with different qemu gdb arguments.
+- `QEMU_DEBUG_EXTRA`: extra options to pass to qemu when `QEMU_DEBUG=1` is used.
