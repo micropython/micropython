@@ -2,10 +2,10 @@
 MPY_DIR = ../../..
 
 # Name of module
-MOD = features1
+MOD = thumbyraster
 
 # Source files (.c or .py)
-SRC = features1.c
+SRC = main.c
 
 # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
 ARCH = armv8m
