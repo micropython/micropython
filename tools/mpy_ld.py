@@ -88,10 +88,22 @@ def asm_jump_x86(entry):
 
 
 def asm_jump_thumb(entry):
-    # Only signed values that fit in 12 bits are supported
     b_off = entry - 4
-    assert b_off >> 11 == 0 or b_off >> 11 == -1, b_off
-    return struct.pack("<H", 0xE000 | (b_off >> 1 & 0x07FF))
+    if b_off >> 11 == 0 or b_off >> 11 == -1:
+        return struct.pack("<H9H", 0xE000 | (b_off >> 1 & 0x07FF), *([0xDE00] * 9))
+    else:
+        # sub   sp, #4
+        # push  {r6, r7}
+        # ldr   r7, [pc, #8]
+        # add   r6, pc, #0
+        # add   r7, r6
+        # str   r7, [sp, #8]
+        # pop   {r6, r7}
+        # pop   {pc}
+        # .word entry - 8
+        return struct.pack(
+            "<HHHHHHHHI", 0xB081, 0xB4C0, 0x4F02, 0xA600, 0x4437, 0x9702, 0xBCC0, 0xBD00, b_off - 4
+        )
 
 
 def asm_jump_thumb2(entry):
