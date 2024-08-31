@@ -715,6 +715,7 @@ void gc_info(gc_info_t *info) {
 
     info->used *= BYTES_PER_BLOCK;
     info->free *= BYTES_PER_BLOCK;
+    info->max_free *= BYTES_PER_BLOCK;
 
     #if MICROPY_GC_SPLIT_HEAP_AUTO
     info->max_new_split = gc_get_max_new_split();
