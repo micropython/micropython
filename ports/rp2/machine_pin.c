@@ -86,7 +86,6 @@ typedef struct _machine_pin_irq_obj_t {
 } machine_pin_irq_obj_t;
 
 static const mp_irq_methods_t machine_pin_irq_methods;
-extern const machine_pin_obj_t machine_pin_obj_table[NUM_BANK0_GPIOS];
 
 // Mask with "1" indicating that the corresponding pin is in simulated open-drain mode.
 uint64_t machine_pin_open_drain_mask;

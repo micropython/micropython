@@ -64,6 +64,8 @@ extern const mp_obj_type_t machine_pin_af_type;
 // Include all of the individual pin objects
 #include "genhdr/pins.h"
 
+extern const machine_pin_obj_t machine_pin_obj_table[NUM_BANK0_GPIOS];
+
 extern const mp_obj_type_t pin_cpu_pins_obj_type;
 extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
 
