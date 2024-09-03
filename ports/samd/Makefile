@@ -183,7 +183,7 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
-	$(Q)$(PYTHON) $(UF2CONV) -b $(TEXT0) -c -o $@ $<
+	$(Q)$(PYTHON) $(UF2CONV) $(UF2CONV_FLAGS) -b $(TEXT0) -c -o $@ $<
 
 # pin_af.c: $(BUILD)/$(GEN_PIN_AF) | $(HEADER_BUILD)
 
