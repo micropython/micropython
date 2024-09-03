@@ -1,33 +1,21 @@
-# Test sys.std* objects.
+# Test sys.std*.buffer objects.
 
 import sys
 
 try:
-    sys.stdout
-    sys.stdin
-    sys.stderr
+    sys.stdout.buffer
+    sys.stdin.buffer
+    sys.stderr.buffer
 except AttributeError:
     print("SKIP")
     raise SystemExit
 
 # CPython is more verbose; no need to match exactly
 
-print('TextIOWrapper' in str(sys.stdout))
-print('TextIOWrapper' in str(sys.stderr))
-print('TextIOWrapper' in str(sys.stdin))
+print('FileIO' in str(sys.stdout.buffer))
+print('FileIO' in str(sys.stderr.buffer))
+print('FileIO' in str(sys.stdin.buffer))
 
-print('TextIOWrapper' in str(type(sys.stdout)))
-print('TextIOWrapper' in str(type(sys.stderr)))
-print('TextIOWrapper' in str(type(sys.stdin)))
-
-# # .buffer member is optional
-# try:
-#     print('FileIO' in str(sys.stdout.buffer))
-#     print('FileIO' in str(sys.stderr.buffer))
-#     print('FileIO' in str(sys.stdin.buffer))
-#
-#     print('FileIO' in str(type(sys.stdout.buffer)))
-#     print('FileIO' in str(type(sys.stderr.buffer)))
-#     print('FileIO' in str(type(sys.stdin.buffer)))
-# except AttributeError:
-#     print("SKIP")
+print('FileIO' in str(type(sys.stdout.buffer)))
+print('FileIO' in str(type(sys.stderr.buffer)))
+print('FileIO' in str(type(sys.stdin.buffer)))
