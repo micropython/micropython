@@ -40,7 +40,11 @@
 #if !defined(MICROPY_HW_SYSTEM_TICK_USE_SYSTICK) \
     && !defined(MICROPY_HW_SYSTEM_TICK_USE_LPTIMER) \
     && !defined(MICROPY_HW_SYSTEM_TICK_USE_UTIMER)
+#if CORE_M55_HP
 #define MICROPY_HW_SYSTEM_TICK_USE_UTIMER       (1)
+#else
+#define MICROPY_HW_SYSTEM_TICK_USE_SYSTICK      (1)
+#endif
 #endif
 #if MICROPY_HW_SYSTEM_TICK_USE_SYSTICK
 #define MICROPY_SOFT_TIMER_TICKS_MS             system_tick_ms_counter
