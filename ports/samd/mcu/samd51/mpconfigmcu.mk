@@ -14,3 +14,5 @@ SRC_S += shared/runtime/gchelper_thumb2.s
 
 SRC_C += \
 	fatfs_port.c \
+
+UF2CONV_FLAGS += -f 0x55114460
