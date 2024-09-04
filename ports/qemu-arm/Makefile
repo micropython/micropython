@@ -105,9 +105,9 @@ LDFLAGS += -T $(LDSCRIPT) -Wl,--gc-sections -Wl,-Map=$(@:.elf=.map)
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -g
-COPT = -O0
+COPT ?= -O0
 else
-COPT += -Os -DNDEBUG
+COPT ?= -Os -DNDEBUG
 endif
 
 # If Picolibc is available then select it explicitly.  Ubuntu 22.04 ships its

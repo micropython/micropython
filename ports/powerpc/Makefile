@@ -24,9 +24,9 @@ INC += -I$(BUILD)
 CFLAGS += $(INC) -g -Wall -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
 CFLAGS += -mno-string -mno-multiple -mno-vsx -mno-altivec -nostdlib
 CFLAGS += -mlittle-endian -mstrict-align -msoft-float
-CFLAGS += -Os
 CFLAGS += -fdata-sections -ffunction-sections -fno-stack-protector -ffreestanding
 CFLAGS += -U_FORTIFY_SOURCE
+COPT ?= -Os
 
 LDFLAGS += -N -T powerpc.lds -nostdlib
 

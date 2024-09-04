@@ -323,11 +323,11 @@ SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 
 CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG),1)
-CFLAGS += -Og
+COPT ?= -Og
 # Disable text compression in debug builds
 MICROPY_ROM_TEXT_COMPRESSION = 0
 else
-CFLAGS += -Os -DNDEBUG
+COPT ?= -Os -DNDEBUG
 endif
 
 # Set default values for optional variables
@@ -337,6 +337,7 @@ MICROPY_HW_SDRAM_SIZE ?= 0
 # Configure default compiler flags
 CFLAGS += \
 	$(INC) \
+	$(COPT) \
 	-D__START=main \
 	-D__STARTUP_CLEAR_BSS \
 	-D__STARTUP_INITIALIZE_RAMFUNCTION \
