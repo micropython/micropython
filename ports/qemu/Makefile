@@ -166,7 +166,7 @@ run: $(BUILD)/firmware.elf
 .PHONY: test
 test: $(BUILD)/firmware.elf
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && ./run-tests.py --target qemu-arm --device execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(RUN_TESTS_ARGS) $(RUN_TESTS_EXTRA)
+	cd $(TOP)/tests && ./run-tests.py --target qemu --device execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(RUN_TESTS_ARGS) $(RUN_TESTS_EXTRA)
 
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(OBJ)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)

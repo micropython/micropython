@@ -1,5 +1,5 @@
-MicroPython port to qemu-arm
-============================
+MicroPython port to qemu
+========================
 
 This is experimental, community-supported port for Cortex-M and RISC-V RV32IMC
 emulation as provided by QEMU (http://qemu.org).
@@ -95,7 +95,7 @@ Or manually by first starting the emulation with `make run` and then running the
 tests against the serial device, for example:
 
     $ cd ../../tests
-    $ ./run-tests.py --target qemu-arm --device /dev/pts/1
+    $ ./run-tests.py --target qemu --device /dev/pts/1
 
 Extra make options
 ------------------

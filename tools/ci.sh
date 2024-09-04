@@ -244,7 +244,7 @@ function ci_powerpc_build {
 }
 
 ########################################################################################
-# ports/qemu-arm
+# ports/qemu
 
 function ci_qemu_setup_arm {
     ci_gcc_arm_setup
@@ -262,17 +262,17 @@ function ci_qemu_setup_rv32 {
 
 function ci_qemu_build_arm {
     make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/qemu-arm submodules
-    make ${MAKEOPTS} -C ports/qemu-arm CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
-    make ${MAKEOPTS} -C ports/qemu-arm clean
-    make ${MAKEOPTS} -C ports/qemu-arm test
-    make ${MAKEOPTS} -C ports/qemu-arm BOARD=SABRELITE test
+    make ${MAKEOPTS} -C ports/qemu submodules
+    make ${MAKEOPTS} -C ports/qemu CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
+    make ${MAKEOPTS} -C ports/qemu clean
+    make ${MAKEOPTS} -C ports/qemu test
+    make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test
 }
 
 function ci_qemu_build_rv32 {
     make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/qemu-arm BOARD=VIRT_RV32 submodules
-    make ${MAKEOPTS} -C ports/qemu-arm BOARD=VIRT_RV32 test
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 submodules
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test
 }
 
 ########################################################################################

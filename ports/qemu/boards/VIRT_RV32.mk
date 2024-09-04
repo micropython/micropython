@@ -11,4 +11,4 @@ SRC_BOARD_O += shared/runtime/gchelper_native.o shared/runtime/gchelper_rv32i.o
 MPY_CROSS_FLAGS += -march=rv32imc
 
 # These Thumb tests don't run on RV32, so exclude them.
-RUN_TESTS_ARGS = --exclude 'inlineasm|qemu-arm/asm_test'
+RUN_TESTS_ARGS = --exclude 'inlineasm|qemu/asm_test'
