@@ -465,9 +465,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     upy_float_precision = 32
 
-    # If we're asked to --list-tests, we can't assume that there's a
-    # connection to target, so we can't run feature checks usefully.
-    if not (args.list_tests or args.write_exp):
+    if True:
         # Even if we run completely different tests in a different directory,
         # we need to access feature_checks from the same directory as the
         # run-tests.py script itself so use base_path.
@@ -797,11 +795,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_io_module and is_io_module
         skip_it |= skip_fstring and is_fstring
 
-        if args.list_tests:
-            if not skip_it:
-                print(test_file)
-            return
-
         if skip_it:
             print("skip ", test_file)
             skipped_tests.append(test_name)
@@ -821,17 +814,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                     cwd=os.path.dirname(test_file),
                     stderr=subprocess.STDOUT,
                 )
-                if args.write_exp:
-                    with open(test_file_expected, "wb") as f:
-                        f.write(output_expected)
             except subprocess.CalledProcessError:
                 output_expected = b"CPYTHON3 CRASH"
 
         # canonical form for all host platforms is to use \n for end-of-line
         output_expected = output_expected.replace(b"\r\n", b"\n")
-
-        if args.write_exp:
-            return
 
         # run MicroPython
         output_mupy = run_micropython(pyb, args, test_file, test_file_abspath)
@@ -861,7 +848,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         test_count.increment()
 
-    if pyb or args.list_tests:
+    if pyb:
         num_threads = 1
 
     if num_threads > 1:
@@ -870,10 +857,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     else:
         for test in tests:
             run_one_test(test)
-
-    # Leave RESULTS_FILE untouched here for future runs.
-    if args.list_tests:
-        return True
 
     print(
         "{} tests performed ({} individual testcases)".format(
@@ -984,14 +967,6 @@ the last matching regex is used:
         help="include test by regex on path/name.py",
     )
     cmd_parser.add_argument(
-        "--write-exp",
-        action="store_true",
-        help="use CPython to generate .exp files to run tests w/o CPython",
-    )
-    cmd_parser.add_argument(
-        "--list-tests", action="store_true", help="list tests instead of running them"
-    )
-    cmd_parser.add_argument(
         "--emit", default="bytecode", help="MicroPython emitter to use (bytecode or native)"
     )
     cmd_parser.add_argument("--heapsize", help="heapsize to use (use default if not specified)")
@@ -1062,9 +1037,7 @@ the last matching regex is used:
         "rp2",
         "zephyr",
     )
-    if args.list_tests:
-        pyb = None
-    elif args.target in LOCAL_TARGETS:
+    if args.target in LOCAL_TARGETS:
         pyb = None
         if args.target == "webassembly":
             pyb = PyboardNodeRunner()
@@ -1080,7 +1053,7 @@ the last matching regex is used:
         raise ValueError("target must be one of %s" % ", ".join(LOCAL_TARGETS + EXTERNAL_TARGETS))
 
     # Automatically detect the native architecture for mpy-cross if not given.
-    if not (args.list_tests or args.write_exp) and not args.mpy_cross_flags:
+    if not args.mpy_cross_flags:
         output = run_feature_check(pyb, args, "target_info.py")
         arch = str(output, "ascii").strip()
         if arch != "None":
