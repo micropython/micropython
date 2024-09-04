@@ -33,31 +33,29 @@
 #define DEFAULT_VREF 1100
 
 void madcblock_bits_helper(machine_adc_block_obj_t *self, mp_int_t bits) {
-    switch (bits) {
-        #if CONFIG_IDF_TARGET_ESP32
-        case 9:
-            self->width = ADC_WIDTH_BIT_9;
-            break;
-        case 10:
-            self->width = ADC_WIDTH_BIT_10;
-            break;
-        case 11:
-            self->width = ADC_WIDTH_BIT_11;
-            break;
-        #endif
-        #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32S3
-        case 12:
-            self->width = ADC_WIDTH_BIT_12;
-            break;
-        #endif
-        #if CONFIG_IDF_TARGET_ESP32S2
-        case 13:
-            self->width = ADC_WIDTH_BIT_13;
-            break;
-        #endif
-        default:
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid bits"));
+    if (bits >= SOC_ADC_RTC_MIN_BITWIDTH && bits <= SOC_ADC_RTC_MIN_BITWIDTH) {
+        switch (bits) {
+            case 9:
+                self->width = ADC_BITWIDTH_9;
+                break;
+            case 10:
+                self->width = ADC_BITWIDTH_10;
+                break;
+            case 11:
+                self->width = ADC_BITWIDTH_11;
+                break;
+            case 12:
+                self->width = ADC_BITWIDTH_12;
+                break;
+            case 13:
+                self->width = ADC_BITWIDTH_13;
+                break;
+            default:
+        }
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid bits"));
     }
+
     self->bits = bits;
 
     if (self->unit_id == ADC_UNIT_1) {
