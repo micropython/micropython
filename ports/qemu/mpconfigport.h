@@ -49,17 +49,13 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_IO_IOBASE        (0)
-#if defined(__ARM_ARCH)
-#define MICROPY_PY_SYS_PLATFORM     "qemu-arm"
-#elif defined(__riscv)
-#define MICROPY_PY_SYS_PLATFORM     "qemu-riscv32"
-#endif
+#define MICROPY_PY_SYS_PLATFORM     "qemu"
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
 #define MICROPY_PY_SELECT           (0)
 #define MICROPY_PY_TIME             (0)
 #define MICROPY_PY_ASYNCIO          (0)
 #define MICROPY_PY_MACHINE          (1)
-#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/qemu-arm/modmachine.c"
+#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/qemu/modmachine.c"
 #define MICROPY_PY_MACHINE_RESET    (1)
 #define MICROPY_PY_MACHINE_PIN_BASE (1)
 #define MICROPY_VFS                 (1)

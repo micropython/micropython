@@ -1,4 +1,4 @@
-name: qemu-arm port
+name: qemu port
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
       - 'shared/**'
       - 'lib/**'
       - 'drivers/**'
-      - 'ports/qemu-arm/**'
+      - 'ports/qemu/**'
       - 'tests/**'
 
 concurrency:

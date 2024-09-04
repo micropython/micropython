@@ -675,7 +675,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tests.add(
                 "extmod/time_time_ns.py"
             )  # RA fsp rtc function doesn't support nano sec info
-        elif args.target == "qemu-arm":
+        elif args.target == "qemu":
             skip_tests.add("inlineasm/asmfpaddsub.py")  # requires Cortex-M4
             skip_tests.add("inlineasm/asmfpcmp.py")
             skip_tests.add("inlineasm/asmfpldrstr.py")
@@ -1054,7 +1054,7 @@ the last matching regex is used:
         "esp32",
         "minimal",
         "nrf",
-        "qemu-arm",
+        "qemu",
         "renesas-ra",
         "rp2",
     )
@@ -1131,11 +1131,11 @@ the last matching regex is used:
                     "cmdline",
                     "ports/unix",
                 )
-            elif args.target == "qemu-arm":
+            elif args.target == "qemu":
                 test_dirs += (
                     "float",
                     "inlineasm",
-                    "ports/qemu-arm",
+                    "ports/qemu",
                 )
             elif args.target == "webassembly":
                 test_dirs += ("float", "ports/webassembly")
