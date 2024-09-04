@@ -105,22 +105,22 @@ readblocks
 read 1 a
 read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 readblocks
-opened
+OSError [Errno 5] EIO
 readblocks
-read 1 a
-read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 readblocks
-opened
+OSError [Errno 5] EIO
 readblocks
-read 1 a
-read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+OSError [Errno 5] EIO
 readblocks
-opened
 readblocks
-read 1 a
-read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+OSError [Errno 5] EIO
 readblocks
-opened
+OSError [Errno 5] EIO
 readblocks
-read 1 a
-read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+readblocks
+OSError [Errno 5] EIO
+readblocks
+OSError [Errno 5] EIO
+readblocks
+readblocks
+OSError [Errno 5] EIO

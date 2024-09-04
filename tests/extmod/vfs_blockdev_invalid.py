@@ -52,6 +52,8 @@ except MemoryError:
 
 def test(vfs_class):
     print(vfs_class)
+    bdev.read_res = 0  # reset function results
+    bdev.write_res = 0
 
     vfs_class.mkfs(bdev)
     fs = vfs_class(bdev)
@@ -84,4 +86,4 @@ def test(vfs_class):
 
 
 test(vfs.VfsLfs2)
-test(vfs.VfsFat)  # Looks like most failures of underlying device are ignored by VFAT currently
+test(vfs.VfsFat)
