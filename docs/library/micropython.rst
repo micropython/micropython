@@ -136,6 +136,14 @@ Functions
    the heap may be locked) and scheduling a function to call later will lift
    those restrictions.
 
+   On multi-threaded ports, the scheduled function's behaviour depends on
+   whether the Global Interpreter Lock (GIL) is enabled for the specific port:
+
+   - If GIL is enabled, the function can preempt any thread and run in its
+     context.
+   - If GIL is disabled, the function will only preempt the main thread and run
+     in its context.
+
    Note: If `schedule()` is called from a preempting IRQ, when memory
    allocation is not allowed and the callback to be passed to `schedule()` is
    a bound method, passing this directly will fail. This is because creating a
