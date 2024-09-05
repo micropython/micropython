@@ -674,6 +674,8 @@ function ci_unix_qemu_arm_setup {
     sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
     sudo apt-get install qemu-user
     qemu-arm --version
+    sudo mkdir /etc/qemu-binfmt
+    sudo ln -s /usr/arm-linux-gnueabi/ /etc/qemu-binfmt/arm
 }
 
 function ci_unix_qemu_arm_build {
@@ -684,7 +686,6 @@ function ci_unix_qemu_arm_build {
 function ci_unix_qemu_arm_run_tests {
     # Issues with ARM tests:
     # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
-    export QEMU_LD_PREFIX=/usr/arm-linux-gnueabi
     file ./ports/unix/build-coverage/micropython
     (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.*\.py')
 }
