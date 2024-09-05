@@ -23,3 +23,8 @@ user.props
 
 # MacOS desktop metadata files
 .DS_Store
+mpy-cross/.vs/mpy-cross/FileContentIndex/9cd1b583-0517-4941-aaf9-d097c7dfc5ae.vsidx
+mpy-cross/.vs/mpy-cross/v17/.suo
+mpy-cross/.vs/mpy-cross/v17/Browse.VC.db
+mpy-cross/.vs/mpy-cross/v17/Solution.VC.db
+mpy-cross/mpy-cross.vcxproj.user
