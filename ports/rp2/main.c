@@ -83,6 +83,9 @@ int main(int argc, char **argv) {
     // Set the MCU frequency and as a side effect the peripheral clock to 48 MHz.
     set_sys_clock_khz(125000, false);
 
+    // Hook for setting up anything that needs to be super early in the bootup process.
+    MICROPY_BOARD_STARTUP();
+
     #if MICROPY_HW_ENABLE_UART_REPL
     bi_decl(bi_program_feature("UART REPL"))
     setup_default_uart();
@@ -152,6 +155,9 @@ int main(int argc, char **argv) {
     }
     #endif
 
+    // Hook for setting up anything that can wait until after other hardware features are initialised.
+    MICROPY_BOARD_EARLY_INIT();
+
     for (;;) {
 
         // Initialise MicroPython runtime.
@@ -213,6 +219,10 @@ int main(int argc, char **argv) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+
+        // Hook for resetting anything immediately following a soft reset command.
+        MICROPY_BOARD_START_SOFT_RESET();
+
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
         #endif
@@ -232,6 +242,9 @@ int main(int argc, char **argv) {
         #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
         mp_usbd_deinit();
         #endif
+
+        // Hook for resetting anything right at the end of a soft reset command.
+        MICROPY_BOARD_END_SOFT_RESET();
 
         gc_sweep_all();
         mp_deinit();
