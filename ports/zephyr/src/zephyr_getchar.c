@@ -46,7 +46,6 @@ static int console_irq_input_hook(uint8_t ch) {
     }
     // printk("%x\n", ch);
     k_sem_give(&uart_sem);
-    k_yield();
     return 1;
 }
 
