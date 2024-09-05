@@ -704,6 +704,7 @@ function ci_unix_qemu_riscv64_setup {
 
 function ci_unix_qemu_riscv64_build {
     ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_RISCV64[@]}"
+    ci_unix_build_ffi_lib_helper riscv64-linux-gnu-gcc
 }
 
 function ci_unix_qemu_riscv64_run_tests {
