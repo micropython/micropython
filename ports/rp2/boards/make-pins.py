@@ -10,8 +10,8 @@ import boardgen
 
 # This is NUM_BANK0_GPIOS. Pin indices are 0 to 29 (inclusive).
 NUM_GPIOS = 30
-# Up to 10 additional extended pins (e.g. via the wifi chip).
-NUM_EXT_GPIOS = 10
+# Up to 32 additional extended pins (e.g. via the wifi chip or io expanders).
+NUM_EXT_GPIOS = 32
 
 
 class Rp2Pin(boardgen.Pin):
