@@ -40,6 +40,7 @@ LDFLAGS += -nostdlib
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 SRC_C += \
+	mcu/arm/errorhandler.c \
 	mcu/arm/startup.c \
 	shared/runtime/semihosting_arm.c \
 
