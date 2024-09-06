@@ -681,8 +681,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tests.add("inlineasm/asmfpldrstr.py")
             skip_tests.add("inlineasm/asmfpmuldiv.py")
             skip_tests.add("inlineasm/asmfpsqrt.py")
-        elif args.target == "qemu-riscv":
-            skip_tests.add("misc/print_exception.py")  # requires sys stdfiles
         elif args.target == "webassembly":
             skip_tests.add("basics/string_format_modulo.py")  # can't print nulls to stdout
             skip_tests.add("basics/string_strip.py")  # can't print nulls to stdout
@@ -1047,7 +1045,6 @@ the last matching regex is used:
 
     LOCAL_TARGETS = (
         "unix",
-        "qemu-riscv",
         "webassembly",
     )
     EXTERNAL_TARGETS = (
@@ -1140,12 +1137,6 @@ the last matching regex is used:
                     "inlineasm",
                     "ports/qemu-arm",
                 )
-            elif args.target == "qemu-riscv":
-                if not args.write_exp:
-                    raise ValueError("--target=qemu-riscv must be used with --write-exp")
-                # Generate expected output files for qemu run.
-                # This list should match the test_dirs tuple in tinytest-codegen.py.
-                test_dirs += ("float",)
             elif args.target == "webassembly":
                 test_dirs += ("float", "ports/webassembly")
         else:
