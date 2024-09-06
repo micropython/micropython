@@ -62,6 +62,7 @@ library.
    builtins.rst
    cmath.rst
    collections.rst
+   datetime.rst
    errno.rst
    gc.rst
    gzip.rst
@@ -78,6 +79,7 @@ library.
    socket.rst
    ssl.rst
    struct.rst
+   suntime.rst
    sys.rst
    time.rst
    zlib.rst
