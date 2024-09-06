@@ -238,7 +238,7 @@ static void wait_for_flash_ready(void) {
 }
 
 static uint8_t get_baud(int32_t freq_mhz) {
-    int baud = get_peripheral_freq() / (freq_mhz * 1000000) - 1;
+    int baud = get_cpu_freq() / (freq_mhz * 1000000) - 1;
     if (baud < 1) {
         baud = 1;
     }
