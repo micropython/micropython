@@ -122,3 +122,5 @@ The following options can be specified on the `make` command line:
 - `QEMU_DEBUG_ARGS`: defaults to `-s` (gdb on TCP port 1234), but can be overridden
   with different qemu gdb arguments.
 - `QEMU_DEBUG_EXTRA`: extra options to pass to qemu when `QEMU_DEBUG=1` is used.
+- `QEMU_GC_HEAP_SIZE`: pass in an optional value (in KBytes) for overriding the GC
+  heap size used by the port.
