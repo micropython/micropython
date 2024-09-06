@@ -1470,6 +1470,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_MODULES (1)
 #endif
 
+// Whether to provide "sys._exc_traceback" function.
+#ifndef MICROPY_PY_SYS_EXC_TRACEBACK
+#define MICROPY_PY_SYS_EXC_TRACEBACK (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to provide "sys.exc_info" function
 // Avoid enabling this, this function is Python2 heritage
 #ifndef MICROPY_PY_SYS_EXC_INFO
