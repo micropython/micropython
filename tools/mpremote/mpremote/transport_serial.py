@@ -35,7 +35,7 @@
 # Once the API is stabilised, the idea is that mpremote can be used both
 # as a command line tool and a library for interacting with devices.
 
-import ast, io, errno, os, re, struct, sys, time
+import ast, io, errno, os, re, struct, sys, time, contextlib, urllib
 from collections import namedtuple
 from errno import EPERM
 from .console import VT_ENABLED
@@ -56,6 +56,24 @@ def reraise_filesystem_error(e, info):
         if b"OSError" in e.args[2] and b"ENOENT" in e.args[2]:
             raise FileNotFoundError(info)
     raise
+
+
+@contextlib.contextmanager
+def open_file(src : str):
+    """Open a file. Can be either on local disk or a HTTP(S) URL"""
+    is_http = src.startswith('https://') or src.startswith('http://')
+    if is_http:
+        conn = urllib.request.urlopen(src, timeout=60.0)
+        size = int(conn.headers['content-length'])
+        file_like = conn
+    else:
+        size = os.path.getsize(src)
+        file_like = open(src, "rb")
+
+    # attach a size() method, so consumers can know the file size
+    file_like.size = lambda : size
+    yield file_like
+    file_like.close()
 
 
 class SerialTransport(Transport):
@@ -405,11 +423,12 @@ class SerialTransport(Transport):
         self.exec("f.close()")
 
     def fs_put(self, src, dest, chunk_size=256, progress_callback=None):
-        if progress_callback:
-            src_size = os.path.getsize(src)
-            written = 0
+
         self.exec("f=open('%s','wb')\nw=f.write" % dest)
-        with open(src, "rb") as f:
+        with open_file(src) as f:
+            if progress_callback:
+                src_size = f.size()
+                written = 0
             while True:
                 data = f.read(chunk_size)
                 if not data:
