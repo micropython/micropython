@@ -190,7 +190,7 @@ static mp_obj_t return_ffi_value(ffi_union_t *val, char type) {
         case 'h':
         case 'i':
         case 'l':
-            return mp_obj_new_int((signed)val->ffi);
+            return mp_obj_new_int((ffi_sarg)val->ffi);
         case 'B':
         case 'H':
         case 'I':
