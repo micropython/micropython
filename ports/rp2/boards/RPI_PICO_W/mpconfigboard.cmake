@@ -12,3 +12,7 @@ set(MICROPY_PY_BLUETOOTH_CYW43 ON)
 
 # Board specific version of the frozen manifest
 set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)
+
+set(MICROPY_SOURCE_BOARD
+    ${MICROPY_BOARD_DIR}/machine_pin_cyw43.c
+)
