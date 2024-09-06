@@ -80,6 +80,20 @@ point to sections of the code where performance is not paramount. For example,
 capture ADC readings as integers values to an array in one quick go, and only then
 convert them to floating-point numbers for signal processing.
 
+Integers
+~~~~~~~~
+
+On most ports, integers between -2**30 and 2**30-1 are treated as "small
+integers", and the value is stored directly in the object handle.  For integers
+outside this range, the value is stored in space allocated from the heap,
+resulting in heap allocations, and consequent garbage collection, when such
+values are instantiated.  This occurs where values are calculated from other
+values, or converted from other formats such as an array.
+
+Where possible, working with 32-bit values as pairs of 16-bit values will be
+more efficient.  Alternatively, the viper code emitter (see below) can
+manipulate 32-bit values natively.
+
 Arrays
 ~~~~~~
 
@@ -310,6 +324,27 @@ The following example illustrates the use of a ``ptr16`` cast to toggle pin X1 `
         odr = ptr16(stm.GPIOA + stm.GPIO_ODR)
         for _ in range(n):
             odr[0] ^= BIT0
+
+As noted above, Viper can be used to work efficiently with integer values that
+are within the range of a machine word, but fall outside the "small integer"
+range (-2**30 to 2**30-1 on most ports).  For example, the following two
+functions will toggle the nth bit in the first item in an array of 32-bit
+integers, but unlike the Viper function, the standard version will incur heap
+allocations when n is 30 or 31.
+
+.. code:: python
+
+    def toggle_bit(a, n):
+        a[0] ^= 1 << n
+
+    @micropython.viper
+    def toggle_bit_viper(a: ptr32, n: uint):
+        a[0] ^= 1 << n
+
+    def test():
+        arr = array.array('I', [0])
+        toggle_bit(arr, 30)
+        toggle_bit_viper(arr, 30)
 
 A detailed technical description of the three code emitters may be found
 on Kickstarter here `Note 1 <https://www.kickstarter.com/projects/214379695/micro-python-python-for-microcontrollers/posts/664832>`_
