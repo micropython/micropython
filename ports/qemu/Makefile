@@ -20,7 +20,11 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 
 ifeq ($(QEMU_ARCH),arm)
 MICROPY_HEAP_SIZE ?= 122880
+ifeq ($(BOARD),MICROBIT)
+FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py'))"
+else
 FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_asm_thumb.py', 'frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
+endif
 endif
 ifeq ($(QEMU_ARCH),riscv32)
 MICROPY_HEAP_SIZE ?= 122880
