@@ -31,3 +31,11 @@ int64_t f64i(int64_t x) {
 uint64_t f64u(uint64_t x) {
     return x ^ 1;
 }
+
+long fli(long x) {
+    return x ^ 1;
+}
+
+unsigned long flu(unsigned long x) {
+    return x ^ 1;
+}
