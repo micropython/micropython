@@ -584,3 +584,37 @@ $(addprefix $(BUILD)/, $(SRC_OPENAMP_C:.c=.o)): $(BUILD)/openamp/metal/config.h
 SRC_THIRDPARTY_C += $(SRC_LIBMETAL_C) $(SRC_OPENAMP_C)
 
 endif # MICROPY_PY_OPENAMP
+
+################################################################################
+# NXP PlugNTrust
+ifeq ($(MICROPY_PY_PLUGNTRUST),1)
+PLUGNTRUST_LIB = lib/plugntrust
+PLUGNTRUST_EXT = extmod/plugntrust
+GIT_SUBMODULES += $(PLUGNTRUST_LIB)
+CFLAGS_EXTMOD += -DMICROPY_PY_PLUGNTRUST
+CFLAGS_THIRDPARTY += -DT1oI2C -DT1oI2C_UM11225 #-DSMLOG_DEBUG_MESSAGES #-DWITH_PLATFORM_SCP03
+
+INC += -I$(TOP)/$(PLUGNTRUST_EXT)
+INC += -I$(TOP)/$(PLUGNTRUST_LIB)/lib/apdu
+INC += -I$(TOP)/$(PLUGNTRUST_LIB)/lib/t1oi2c
+INC += -I$(TOP)/$(PLUGNTRUST_LIB)/lib/mbedtls_alt
+INC += -I$(TOP)/$(MBEDTLS_DIR)/library
+
+SRC_THIRDPARTY_C += $(addprefix $(PLUGNTRUST_EXT)/, \
+	sm_port.c \
+	)
+
+SRC_THIRDPARTY_C += $(addprefix $(PLUGNTRUST_LIB)/, \
+	lib/apdu/smCom.c\
+	lib/apdu/se05x_tlv.c \
+	lib/apdu/se05x_APDU_impl.c \
+	lib/t1oi2c/phNxpEse_Api.c \
+	lib/t1oi2c/phNxpEsePal_i2c.c \
+	lib/t1oi2c/phNxpEseProto7816_3.c \
+	lib/mbedtls_alt/ecdsa_o.c \
+	lib/mbedtls_alt/ecdsa_se05x.c \
+	lib/mbedtls_alt/se05x_mbedtls.c \
+	)
+
+$(BUILD)/$(PLUGNTRUST_LIB)/%.o: CFLAGS += -Wno-unused-but-set-variable -Wno-format
+endif # MICROPY_PY_PLUGNTRUST
