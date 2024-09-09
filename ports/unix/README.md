@@ -32,7 +32,7 @@ On Debian/Ubuntu/Mint and related Linux distros, you can install all these
 dependencies with a command like:
 
 ```
-# apt install build-essential git python3 pkg-config libbfi-dev
+# apt install build-essential git python3 pkg-config libffi-dev
 ```
 
 (See below for steps to build either a standalone or minimal MicroPython
