@@ -34,7 +34,13 @@ include ../../../py/mkenv.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
 # A board can set MBOOT_TEXT0_ADDR to a custom location where mboot should reside.
+ifeq ($(MCU_SERIES),n6)
+MBOOT_TEXT0_ADDR ?= 0x34180400
+MBOOT_LD_FILES ?= stm32_memory_n6.ld stm32_sections.ld
+else
 MBOOT_TEXT0_ADDR ?= 0x08000000
+MBOOT_LD_FILES ?= stm32_memory.ld stm32_sections.ld
+endif
 
 # The string in MBOOT_VERSION (default defined in version.c if not defined by a
 # board) will be stored in the final MBOOT_VERSION_ALLOCATED_BYTES bytes of mboot flash.
@@ -89,7 +95,6 @@ CFLAGS += -DMBOOT_VERSION=\"$(MBOOT_VERSION)\"
 endif
 CFLAGS += -DMBOOT_VERSION_ALLOCATED_BYTES=$(MBOOT_VERSION_ALLOCATED_BYTES) -DMBOOT_VERSION_INCLUDE_OPTIONS=$(MBOOT_VERSION_INCLUDE_OPTIONS)
 
-MBOOT_LD_FILES ?= stm32_memory.ld stm32_sections.ld
 LDFLAGS += -nostdlib -L . $(addprefix -T,$(MBOOT_LD_FILES)) -Map=$(@:.elf=.map) --cref
 LDFLAGS += --defsym mboot_version_len=$(MBOOT_VERSION_ALLOCATED_BYTES)
 LIBS += $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
@@ -137,12 +142,11 @@ SRC_C += \
 	drivers/bus/softqspi.c \
 	drivers/memory/spiflash.c \
 	ports/stm32/flash.c \
-	ports/stm32/flashbdev.c \
 	ports/stm32/i2cslave.c \
 	ports/stm32/powerctrlboot.c \
 	ports/stm32/qspi.c \
-	ports/stm32/spibdev.c \
 	ports/stm32/usbd_conf.c \
+	ports/stm32/xspi.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O += \
@@ -169,21 +173,33 @@ SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal.c \
 	hal_cortex.c \
 	hal_dma.c \
-	hal_flash.c \
-	hal_flash_ex.c \
 	hal_pcd.c \
 	hal_pcd_ex.c \
 	hal_pwr_ex.c \
 	hal_rcc.c \
 	hal_rcc_ex.c \
+	ll_rcc.c \
 	ll_usb.c \
 	)
+
+ifneq ($(MCU_SERIES),n6)
+SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_flash.c \
+	hal_flash_ex.c \
+	)
+endif
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7))
 SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_mmc.c \
 	hal_sd.c \
 	ll_sdmmc.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),n6)
+SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_bsec.c \
 	)
 endif
 
@@ -206,7 +222,7 @@ $(TOP)/lib/stm32lib/README.md:
 	$(ECHO) "stm32lib submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/stm32lib)
 
-.PHONY: deploy deploy-stlink
+.PHONY: deploy deploy-stlink deploy-trusted
 
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
@@ -216,9 +232,15 @@ deploy-stlink: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board via ST-LINK"
 	$(Q)$(STFLASH) write $(BUILD)/firmware.bin $(MBOOT_TEXT0_ADDR)
 
-$(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
+deploy-trusted: $(BUILD)/firmware-trusted.bin
+	$(STM32_CUBE_PROGRAMMER)/bin/STM32_Programmer.sh -c port=SWD mode=HOTPLUG ap=1 -el $(DKEL) -w $^ 0x70000000 -hardRst
+
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data -j .mboot_version_text $^ $(BUILD)/firmware.bin
+
+$(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
+	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(DFU) -b $(MBOOT_TEXT0_ADDR):$(BUILD)/firmware.bin $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
@@ -229,6 +251,10 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
+
+$(BUILD)/firmware-trusted.bin: $(BUILD)/firmware.bin
+	/bin/rm -f $@
+	$(STM32_CUBE_PROGRAMMER)/bin/STM32_SigningTool_CLI -bin $^ -nk -of 0x80000000 -t fsbl -o $@ -hv $(STM32_N6_HEADER_VERSION)
 
 #########################################
 # Rules to generate header files
