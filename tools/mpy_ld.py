@@ -89,10 +89,26 @@ def asm_jump_x86(entry):
 
 
 def asm_jump_thumb(entry):
-    # Only signed values that fit in 12 bits are supported
+    # This function must return the same number of bytes for the encoding of the jump
+    # regardless of the value of `entry`.
     b_off = entry - 4
-    assert b_off >> 11 == 0 or b_off >> 11 == -1, b_off
-    return struct.pack("<H", 0xE000 | (b_off >> 1 & 0x07FF))
+    if b_off >> 11 == 0 or b_off >> 11 == -1:
+        # Signed value fits in 12 bits.
+        b0 = 0xE000 | (b_off >> 1 & 0x07FF)
+        b1 = 0
+        b2 = 0
+        b3 = 0
+    else:
+        # Use bl to do a large jump/call:
+        #   push {r0, lr}
+        #   bl <dest>
+        #   pop {r0, pc}
+        b_off -= 2  # skip "push {r0, lr}"
+        b0 = 0xB400 | 0x0100 | 0x0001  # push, lr, r0
+        b1 = 0xF000 | (((b_off) >> 12) & 0x07FF)
+        b2 = 0xF800 | (((b_off) >> 1) & 0x07FF)
+        b3 = 0xBC00 | 0x0100 | 0x0001  # pop, pc, r0
+    return struct.pack("<HHHH", b0, b1, b2, b3)
 
 
 def asm_jump_thumb2(entry):
