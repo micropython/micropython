@@ -68,3 +68,6 @@
 [submodule "lib/arduino-lib"]
 	path = lib/arduino-lib
 	url = https://github.com/arduino/arduino-lib-mpy.git
+[submodule "lib/plugntrust"]
+	path = lib/plugntrust
+	url = https://github.com/NXPPlugNTrust/nano-package.git
