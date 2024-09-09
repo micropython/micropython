@@ -33,6 +33,14 @@ SECTIONS
         _etext = .;
     } >FLASH_BL
 
+    /* Secure Gateway stubs */
+    .gnu.sgstubs :
+    {
+        . = ALIGN(4);
+        *(.gnu.sgstubs*)
+        . = ALIGN(4);
+    } >FLASH_BL
+
     /* used by the startup to initialize data */
     _sidata = LOADADDR(.data);
 
