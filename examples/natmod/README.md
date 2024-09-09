@@ -1,12 +1,12 @@
 # Dynamic Native Modules
 
 Dynamic Native Modules are .mpy files that contain native machine code from a
-language other than Python. For more info see [the documentation]
-(https://docs.micropython.org/en/latest/develop/natmod.html).
+language other than Python. For more info see [the
+documentation](https://docs.micropython.org/en/latest/develop/natmod.html).
 
-This should not be confused with [User C Modules]
-(https://docs.micropython.org/en/latest/develop/cmodules.html) which are a
-mechanism to add additional out-of-tree modules into the firmware build.
+This should not be confused with [User C
+Modules](https://docs.micropython.org/en/latest/develop/cmodules.html) which are
+a mechanism to add additional out-of-tree modules into the firmware build.
 
 ## Examples
 
