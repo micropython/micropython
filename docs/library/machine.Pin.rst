@@ -238,6 +238,12 @@ The following methods are not part of the core Pin API and only implemented on c
 
    Availability: cc3200 port.
 
+.. method:: Pin.toggle()
+
+   Toggle output pin from "0" to "1" or vice-versa.
+
+   Availability: mimxrt, samd, rp2 ports.
+
 Constants
 ---------
 
