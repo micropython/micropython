@@ -41,6 +41,7 @@ DFU=$(TOP)/tools/dfu.py
 PYDFU ?= $(TOP)/tools/pydfu.py
 BOOTLOADER_DFU_USB_VID ?= 0x0483
 BOOTLOADER_DFU_USB_PID ?= 0xDF11
+DFU_FW_VER ?= 0
 STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
@@ -207,7 +208,10 @@ deploy-stlink: $(BUILD)/firmware.dfu
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
-	$(Q)$(PYTHON) $(DFU) -b $(MBOOT_TEXT0_ADDR):$(BUILD)/firmware.bin $@
+	$(Q)$(PYTHON) $(DFU) \
+		-D $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) \
+		-V $(DFU_FW_VER) \
+		-b $(MBOOT_TEXT0_ADDR):$(BUILD)/firmware.bin $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
