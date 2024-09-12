@@ -381,7 +381,10 @@ void stm32_main(uint32_t reset_mode) {
     #endif
 
     SCB_EnableICache();
+    #if defined(STM32N6) && defined(NDEBUG)
+    // See ST Errata ES0620 - Rev 0.2 section 2.1.2
     SCB_EnableDCache();
+    #endif
 
     #elif defined(STM32H5)
 
