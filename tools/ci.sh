@@ -155,12 +155,15 @@ PYTHON_VER=$(python --version | cut -d' ' -f2)
 export IDF_CCACHE_ENABLE=1
 
 function ci_esp32_idf_setup {
-    pip3 install pyelftools
     git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
     # doing a treeless clone isn't quite as good as --shallow-submodules, but it
     # is smaller than full clones and works when the submodule commit isn't a head.
     git -C esp-idf submodule update --init --recursive --filter=tree:0
     ./esp-idf/install.sh
+    # Install additional packages for mpy_ld into the IDF env
+    source esp-idf/export.sh
+    pip3 install pyelftools
+    pip3 install ar
 }
 
 function ci_esp32_build_common {
@@ -287,6 +290,7 @@ function ci_qemu_setup_arm {
     sudo apt-get update
     sudo apt-get install qemu-system
     sudo pip3 install pyelftools
+    sudo pip3 install ar
     qemu-system-arm --version
 }
 
@@ -295,6 +299,7 @@ function ci_qemu_setup_rv32 {
     sudo apt-get update
     sudo apt-get install qemu-system
     sudo pip3 install pyelftools
+    sudo pip3 install ar
     qemu-system-riscv32 --version
 }
 
@@ -385,6 +390,7 @@ function ci_samd_build {
 function ci_stm32_setup {
     ci_gcc_arm_setup
     pip3 install pyelftools
+    pip3 install ar
     pip3 install pyhy
 }
 
@@ -503,17 +509,39 @@ function ci_native_mpy_modules_build {
     else
         arch=$1
     fi
-    for natmod in features1 features3 features4 deflate framebuf heapq random re
+    for natmod in features1 features3 features4 heapq re
     do
+        make -C examples/natmod/$natmod clean
         make -C examples/natmod/$natmod ARCH=$arch
     done
-    # btree requires thread local storage support on rv32imc.
-    if [ $arch != rv32imc ]; then
-        make -C examples/natmod/btree ARCH=$arch
+
+    # deflate, framebuf, and random currently cannot build on xtensa due to
+    # some symbols that have been removed from the compiler's runtime, in
+    # favour of being provided from ROM.
+    if [ $arch != "xtensa" ]; then
+        for natmod in deflate framebuf random
+        do
+            make -C examples/natmod/$natmod clean
+            make -C examples/natmod/$natmod ARCH=$arch
+        done
     fi
-    # features2 requires soft-float on armv7m and rv32imc.
-    if [ $arch != rv32imc ] && [ $arch != armv7m ]; then
+
+    # features2 requires soft-float on armv7m, rv32imc, and xtensa.  On armv6m
+    # the compiler generates absolute relocations in the object file
+    # referencing soft-float functions, which is not supported at the moment.
+    make -C examples/natmod/features2 clean
+    if [ $arch = "rv32imc" ] || [ $arch = "armv7m" ] || [ $arch = "xtensa" ]; then
+        make -C examples/natmod/features2 ARCH=$arch MICROPY_FLOAT_IMPL=float
+    elif [ $arch != "armv6m" ]; then
         make -C examples/natmod/features2 ARCH=$arch
+    fi
+
+    # btree requires thread local storage support on rv32imc, whilst on xtensa
+    # it relies on symbols that are provided from ROM but not exposed to
+    # natmods at the moment.
+    if [ $arch != "rv32imc" ] && [ $arch != "xtensa" ]; then
+        make -C examples/natmod/btree clean
+        make -C examples/natmod/btree ARCH=$arch
     fi
 }
 
@@ -550,6 +578,7 @@ function ci_unix_standard_v2_run_tests {
 function ci_unix_coverage_setup {
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
+    sudo pip3 install ar
     gcc --version
     python3 --version
 }
@@ -598,6 +627,7 @@ function ci_unix_32bit_setup {
     sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386 python2.7
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
+    sudo pip3 install ar
     gcc --version
     python2.7 --version
     python3 --version
