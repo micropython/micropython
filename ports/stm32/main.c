@@ -374,7 +374,11 @@ void stm32_main(uint32_t reset_mode) {
     #endif
 
     SCB_EnableICache();
+    #if defined(STM32N6) && !defined(NDEBUG)
+    // Don't enable D-cache on N6 when debugging; see ST Errata ES0620 - Rev 0.2 section 2.1.2.
+    #else
     SCB_EnableDCache();
+    #endif
 
     #elif defined(STM32H5)
 
