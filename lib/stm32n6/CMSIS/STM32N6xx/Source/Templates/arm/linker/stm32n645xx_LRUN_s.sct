@@ -1,0 +1,115 @@
+#! armclang -E --target=arm-arm-none-eabi -mcpu=cortex-m55 -xc
+
+
+/*--------------------- ROM Configuration ----------------------------------
+; <h> ROM Configuration
+;   <o0> ROM Base Address <0x0-0xFFFFFFFF:8>
+;   <o1> ROM Size (in Bytes) <0x0-0xFFFFFFFF:8>
+; </h>
+ *----------------------------------------------------------------------------*/
+#define __ROM_BASE      0x34000400
+#define __ROM_SIZE      0x00063C00
+
+/*--------------------- Embedded RAM Configuration ---------------------------
+; <h> RAM Configuration
+;   <o0> RAM Base Address    <0x0-0xFFFFFFFF:8>
+;   <o1> RAM Size (in Bytes) <0x0-0xFFFFFFFF:8>
+; </h>
+ *----------------------------------------------------------------------------*/
+#define __RAM_BASE      0x34064000
+#define __RAM_SIZE      0x0009C000
+
+/*--------------------- Stack / Heap Configuration ---------------------------
+; <h> Stack / Heap Configuration
+;   <o0> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
+;   <o1> Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
+; </h>
+ *----------------------------------------------------------------------------*/
+#define __STACK_SIZE    0x00000800
+#define __HEAP_SIZE     0x00000200
+
+/*
+// <h> NOINIT Data Configuration
+//   <i> specify the size of the section which holds the uninitialized data
+//   <o0>  NOINIT Size (in Bytes) <0x0-0xFFFFFFFF:32>
+// </h>
+ */
+#define __NOINIT_SIZE        0x00000000
+
+/*
+// <h> CMSE Veneer Configuration
+//   <o0>  CMSE Veneer Size (in Bytes) <0x0-0xFFFFFFFF:32>
+// </h>
+ */
+#define __CMSEVENEER_SIZE    0x00002000
+
+/*
+// <<< end of configuration section >>>
+ */
+
+#define __STACKSEAL_SIZE   ( 8 )
+
+/*----------------------------------------------------------------------------
+  User Stack & Heap boundary definition
+ *----------------------------------------------------------------------------*/
+#define __STACK_TOP  ( __RAM_BASE + __RAM_SIZE - __STACKSEAL_SIZE )  /* starts at end of RAM - 8 byte stack seal */
+#define __HEAP_BASE    (AlignExpr(+0, 8))           /* starts after RW_RAM section, 8 byte aligned */
+
+
+
+/*----------------------------------------------------------------------------
+  Scatter File Definitions definition
+ *----------------------------------------------------------------------------*/
+#define __RO_BASE       __ROM_BASE
+#define __RO_SIZE       __ROM_SIZE
+
+#define __CV_BASE          ( __ROM_BASE + __ROM_SIZE - __CMSEVENEER_SIZE )
+#define __CV_SIZE          ( __CMSEVENEER_SIZE )
+
+#define __LR_BASE          ( __ROM_BASE )
+#define __LR_SIZE          ( __ROM_SIZE - __CV_SIZE )
+
+#define __RW_BASE       __RAM_BASE
+#define __RW_SIZE          ( __RAM_SIZE - __STACK_SIZE - __HEAP_SIZE - __NOINIT_SIZE - __STACKSEAL_SIZE )
+
+#define __ER_BASE       __RW_BASE + __RW_SIZE
+#define __ER_SIZE       0x10000
+
+
+
+
+
+LR_IROM1 0x34000400 0x00063C00  {    ; load region size_region
+  ER_IROM1 0x34000400 0x00063C00  {  ; load address = execution address
+   *.o (RESET, +First)
+   *(InRoot$$Sections)
+   .ANY (+RO)
+   .ANY (+XO)
+   *(Veneer$$CMSE) 
+  }
+
+  RW_IRAM1 0x34064000 0x0009C000  {  ; RW data
+   .ANY (+RW +ZI)
+  }
+ 
+  RW_NONCACHEABLEBUFFER +0 ALIGN 0x4 {  ; RW non-cacheable data
+   .ANY (.noncacheable)
+  }
+  
+ 
+#if __HEAP_SIZE > 0
+  ARM_LIB_HEAP  __HEAP_BASE EMPTY  __HEAP_SIZE  {   ; Reserve empty region for heap
+  }
+#endif
+
+  ARM_LIB_STACK __STACK_TOP EMPTY -__STACK_SIZE {   ; Reserve empty region for stack
+  }  
+}
+
+/*
+LR_IROM3 0x34062000 0x00002000  {    ; load region size_region
+  ER_IROM3 0x34062000 0x00002000  {  ; load address = execution address
+   *(Veneer$$CMSE)                   ; check with partition.h
+  }
+}
+*/

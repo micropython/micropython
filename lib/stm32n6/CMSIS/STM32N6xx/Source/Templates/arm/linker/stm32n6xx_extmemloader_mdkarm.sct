@@ -1,0 +1,23 @@
+; *************************************************************
+; MDK-ARM ExtFlashLoader Linker Control File (scatter-loading)
+; *************************************************************
+PRG 0 PI            ; Programming Functions
+{
+  PrgCode +0           ; Code
+  {
+    * (+RO)
+  }
+  PrgData +0           ; Data
+  {
+    * (+ZI,+RW)
+  }
+
+}
+
+DSCR +0x1000
+{
+  DevDscr +0
+  {
+    FlashDev.o
+  }
+}

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Release Notes for STM32N6xx HAL Drivers</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="_htmresc/mini-st_2020.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" type="image/x-icon" href="_htmresc/favicon.png" />
+</head>
+<body>
+<div class="row">
+<div class="col-sm-12 col-lg-4">
+<center>
+<h1 id="release-notes-for">Release Notes for</h1>
+<h1 id="stm32n6xx-hal-drivers"><mark>STM32N6xx HAL Drivers</mark></h1>
+<p>Copyright © 2024 STMicroelectronics</p>
+<a href="https://www.st.com" class="logo"><img src="_htmresc/st_logo_2020.png" alt="ST logo" /></a>
+</center>
+<h1 id="purpose">Purpose</h1>
+<p>The STM32Cube HAL and LL, an STM32 abstraction layer embedded software, ensure maximized portability across STM32 portfolio.</p>
+<p>The portable APIs layer provides a generic, multi instanced and simple set of APIs to interact with the upper layer (application, libraries and stacks). It is composed of native and extended APIs set. It is directly built around a generic architecture and allows the build-upon layers, like the middleware layer, to implement its functions without knowing in-depth the used STM32 device. This improves the library code reusability and guarantees an easy portability on other devices and STM32 families.</p>
+<p>The Low Layer (LL) drivers are part of the STM32Cube firmware HAL that provides a basic set of optimized and one shot services. The Low layer drivers, contrary to the HAL ones are not fully portable across the STM32 families; the availability of some functions depends on the physical availability of the relative features on the product. The Low Layer (LL) drivers are designed to offer the following features:</p>
+<ul>
+<li>New set of inline functions for direct and atomic register access</li>
+<li>One-shot operations that can be used by the HAL drivers or from application level</li>
+<li>Full independence from HAL and standalone usage (without HAL drivers)</li>
+<li>Full features coverage of all the supported peripherals</li>
+</ul>
+</div>
+<div class="col-sm-12 col-lg-8">
+<h1 id="update-history">Update History</h1>
+<div class="collapse">
+<input type="checkbox" id="collapse-section2" checked aria-hidden="true"> <label for="collapse-section2" checked aria-hidden="true"><strong>V1.1.0 / 05-February-2025</strong></label>
+<div>
+<h2 id="main-changes">Main Changes</h2>
+<h3 id="first-maintenance-release-of-stm32cuben6-halll-drivers-supporting-stm32n657xx-stm32n655xx-stm32n647xx-and-stm32n645xx-devices">First maintenance release of <strong>STM32CubeN6</strong> HAL/LL drivers supporting <strong>STM32N657xx</strong>, <strong>STM32N655xx</strong>, <strong>STM32N647xx</strong> and <strong>STM32N645xx</strong> devices</h3>
+<h2 id="contents">Contents</h2>
+<ul>
+<li><p>Maintenance release of <strong>HAL/LL Drivers</strong> for <strong>STM32N6xx</strong> series</p>
+<ul>
+<li><strong>HAL/LL drivers</strong> are available for all peripherals:
+<ul>
+<li><strong>HAL</strong>: ADC, BSEC, CACHEAXI, CORTEX, CRC, CRYP, DCMI, DCMIPP, DMA, DMA2D, DTS, ETH, EXTI, FDCAN, GFXMMU, GFXTIM, GPIO, GPU2D, HASH, HCD, I2C, I3C, ICACHE, IRDA, IWDG, JPEG, LPTIM, LTDC, MCE, MDF, MDIOS, MMC, NAND, NOR, PCD, PKA, PSSI, PWR, RAMCFG, RCC, RIF, RNG, RTC, SAI, SD, <strong>SDIO</strong> <strong><span style="color:red">(new)</span></strong>, SDRAM, SMARTCARD, SMBUS, SPDIFRX, SPI, SRAM, TIM, UART, USART, WWDG, XSPI</li>
+<li><strong>LL</strong>: ADC, CORTEX, CRC, DLYB, DMA, DMA2D, EXTI, FMC, GPIO, I2C, I3C, LPTIM, LPUART, PKA, PWR, RCC, RNG, RTC, SDMMC, SPI, TIM, UCPD, USART</li>
+</ul></li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h3 id="hal-drivers-updates"><strong>HAL Drivers</strong> updates</h3>
+<ul>
+<li><strong>HAL ADC</strong> driver
+<ul>
+<li>Fix VREFINT_CAL_ADDR in setting the correct VREFINT_CAL address</li>
+<li>Correct VREFINT_CAL_VREF definition</li>
+</ul></li>
+<li><strong>HAL CORTEX</strong> driver
+<ul>
+<li>Add PXN (privilege execute never) attribute to Cortex HAL driver MPU_ConfigRegion() API</li>
+</ul></li>
+<li><strong>HAL CRYP</strong> driver
+<ul>
+<li>Correct pConf-&gt;KeyProtection setting in HAL_CRYP_GetConfig()</li>
+</ul></li>
+<li><strong>HAL DMA</strong> driver
+<ul>
+<li>Ensure that callback functions are set to NULL in HAL_DMA_Init() when state is HAL_DMA_STATE_RESET</li>
+</ul></li>
+<li><strong>HAL ETH</strong> driver
+<ul>
+<li>Add HAL_ETH_PTP_AddendUpdate() static API allowing to update Addend register</li>
+</ul></li>
+<li><strong>HAL Generic</strong> driver
+<ul>
+<li>Fix non-cacheable definitions in stm32n6xx_hal.h file</li>
+</ul></li>
+<li><strong>HAL HASH</strong> driver
+<ul>
+<li>Correct HAL_HASH_SetConfig() prototype in inserting ‘const’ qualifier</li>
+</ul></li>
+<li><strong>HAL LTDC</strong> driver
+<ul>
+<li>Correct LTDC_ARGB_PIXEL_SIZE_i_BYTE definitions</li>
+</ul></li>
+<li><strong>HAL MDIOS</strong> driver
+<ul>
+<li>Remove multiple volatile reads or writes in interrupt handler HAL_MDIOS_IRQHandler() for better performance</li>
+</ul></li>
+<li><strong>HAL RCC</strong> driver
+<ul>
+<li>Clarify HSE management when using HAL_RCC_OscConfig() API</li>
+</ul></li>
+<li><strong>HAL RIF</strong> driver
+<ul>
+<li>Clarify registers index and bits definitions used to apply RIF configuration to a given peripheral</li>
+</ul></li>
+<li><strong>HAL SDIO</strong> driver
+<ul>
+<li>Deliver new HAL SDIO driver<br />
+</li>
+</ul></li>
+<li><strong>HAL SDMMC</strong> driver
+<ul>
+<li>Fix clock computation in MMC_HighSpeed() API<br />
+</li>
+</ul></li>
+<li><strong>HAL TIM</strong> driver
+<ul>
+<li>Fix TIM_Base_SetConfig() to make sure events are cleared at configuration update</li>
+</ul></li>
+<li><strong>HAL UART</strong> driver
+<ul>
+<li>Add reference to HAL_UARTEx_WakeupCallback() in I/O operation functions description</li>
+</ul></li>
+<li><strong>HAL XSPI</strong> driver
+<ul>
+<li>Check BUSY flag instead of TC flag in HAL_XSPI_Command() when in indirect mode to ensure that command is fully completed and FIFO flushed<br />
+</li>
+<li>Fix MISRA-C:2012 Rule 8.13 warning in correcting misplaced ‘const’ qualifier for APIs HAL_XSPI_HyperbusCfg() and HAL_XSPI_HyperbusCmd()</li>
+</ul></li>
+</ul>
+<h3 id="ll-drivers-updates"><strong>LL Drivers</strong> updates</h3>
+<ul>
+<li><strong>LL LPTIM</strong> driver
+<ul>
+<li>Fix channel mode configuration in LL_LPTIM_CC_SetChannelMode() API</li>
+</ul></li>
+<li><strong>LL LPUART</strong> driver
+<ul>
+<li>Solve out-of-bound memory access warning when using LPUART_PRESCALER_TAB[] array<br />
+</li>
+</ul></li>
+<li><strong>LL USART</strong> driver
+<ul>
+<li>Solve out-of-bound memory access warning when using USART_PRESCALER_TAB[] array</li>
+</ul></li>
+<li><strong>LL UTILS</strong> driver
+<ul>
+<li>Correct PLL frequency division in LL_PLL_ConfigSystemClock_HSI(), LL_PLL_ConfigSystemClock_MSI() and LL_PLL_ConfigSystemClock_HSE() APIs</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="supported-devices">Supported Devices</h2>
+<ul>
+<li>STM32N6xx devices</li>
+</ul>
+<h2 id="known-limitations">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="backward-compatibility">Backward Compatibility</h2>
+<ul>
+<li>Not applicable</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section1"  aria-hidden="true"> <label for="collapse-section1" checked aria-hidden="true"><strong>V1.0.0 / 30-October-2024</strong></label>
+<div>
+<h2 id="first-release">First Release</h2>
+<h3 id="first-official-release-of-stm32cuben6-firmware-package-supporting-stm32n6xx-devices">First official release of <strong>STM32CubeN6</strong> firmware package supporting <strong>STM32N6xx</strong> devices</h3>
+<h2 id="contents-1">Contents</h2>
+<ul>
+<li>First official release of <strong>HAL/LL drivers</strong> for <strong>STM32N6xx</strong> series
+<ul>
+<li><strong>HAL/LL drivers</strong> are available for all peripherals:
+<ul>
+<li><strong>HAL</strong>: ADC, BSEC, CACHEAXI, CORTEX, CRC, CRYP, DCMI, DCMIPP, DMA, DMA2D, DTS, ETH, EXTI, FDCAN, GFXMMU, GFXTIM, GPIO, GPU2D, HASH, HCD, I2C, I3C, ICACHE, IRDA, IWDG, JPEG, LPTIM, LTDC, MCE, MDF, MDIOS, MMC, NAND, NOR, PCD, PKA, PSSI, PWR, RAMCFG, RCC, RIF, RNG, RTC, SAI, SD, SDRAM, SMARTCARD, SMBUS, SPDIFRX, SPI, SRAM, TIM, UART, USART, WWDG, XSPI</li>
+<li><strong>LL</strong>: ADC, CORTEX, CRC, DLYB, DMA, DMA2D, EXTI, FMC, GPIO, I2C, I3C, LPTIM, LPUART, PKA, PWR, RCC, RNG, RTC, SDMMC, SPI, TIM, UCPD, USART</li>
+</ul></li>
+</ul></li>
+</ul>
+<h2 id="supported-devices-1">Supported Devices</h2>
+<ul>
+<li>STM32N6xx devices</li>
+</ul>
+<h2 id="known-limitations-1">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="dependencies-1">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="backward-compatibility-1">Backward Compatibility</h2>
+<ul>
+<li>Not applicable</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<footer class="sticky">
+<div class="columns">
+<div class="column" style="width:95%;">
+<p>For complete documentation on STM32 Microcontrollers </mark>, visit: <span style="font-color: blue;"><a href="http://www.st.com/stm32">www.st.com/stm32</a></span></p>
+<p><em>This release note uses up to date web standards and, for this reason, should not be opened with Internet Explorer but preferably with popular browsers such as Google Chrome, Mozilla Firefox, Opera or Microsoft Edge.</em></p>
+</div><div class="column" style="width:5%;">
+<p><abbr title="Based on template cx566953 version 2.0">Info</abbr></p>
+</div>
+</div>
+</footer>
+</body>
+</html>
