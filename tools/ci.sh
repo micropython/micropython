@@ -55,11 +55,12 @@ function ci_code_size_setup {
     sudo apt-get install gcc-multilib
     gcc --version
     ci_gcc_arm_setup
+    ci_gcc_riscv_setup
 }
 
 function ci_code_size_build {
     # check the following ports for the change in their code size
-    PORTS_TO_CHECK=bmusxpd
+    PORTS_TO_CHECK=bmusxpdv
     SUBMODULES="lib/asf4 lib/berkeley-db-1.xx lib/btstack lib/cyw43-driver lib/lwip lib/mbedtls lib/micropython-lib lib/nxp_driver lib/pico-sdk lib/stm32lib lib/tinyusb"
 
     # starts off at either the ref/pull/N/merge FETCH_HEAD, or the current branch HEAD
