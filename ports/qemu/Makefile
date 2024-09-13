@@ -57,7 +57,6 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 SRC_C += \
 	mcu/arm/errorhandler.c \
 	mcu/arm/startup.c \
-	shared/runtime/semihosting_arm.c \
 
 endif
 
@@ -153,6 +152,7 @@ SRC_C += \
 	shared/readline/readline.c \
 	shared/runtime/interrupt_char.c \
 	shared/runtime/pyexec.c \
+	shared/runtime/semihosting.c \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 

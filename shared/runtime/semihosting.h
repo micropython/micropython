@@ -52,7 +52,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <stdnoreturn.h>
+
+#ifndef NORETURN
+#define NORETURN __attribute__((noreturn))
+#endif
 
 // A container for heap and stack pointers as returned by SYS_HEAPINFO.
 typedef struct {
@@ -123,7 +126,7 @@ int mp_semihosting_tx_strn_cooked(const char *string, size_t length);
 // Terminates execution with the given code and an optional subcode.  This
 // will choose the appropriate semihosting call (either SYS_EXIT or
 // SYS_EXIT_EXTENDED) depending on the host system's reported capabilities.
-noreturn void mp_semihosting_terminate(unsigned int code, unsigned int subcode);
+NORETURN void mp_semihosting_terminate(unsigned int code, unsigned int subcode);
 
 // Direct semihosting calls access.
 
@@ -234,13 +237,13 @@ void mp_semihosting_heapinfo(mp_semihosting_heap_info_t *block);
 // This should be preferred over mp_semihosting_exit_extended if the host
 // system does not support the SYS_EXIT_EXTENDED semihosting call.  In doubt
 // use mp_semihosting_terminate instead.
-noreturn void mp_semihosting_exit(unsigned int code, unsigned int subcode);
+NORETURN void mp_semihosting_exit(unsigned int code, unsigned int subcode);
 
 // Terminate the execution with the given reason code and optional subcode.
 // This should be preferred over mp_semihosting_exit if the host system
 // supports this semihosting call.  In doubt use mp_semihosting_terminate
 // instead.
-noreturn void mp_semihosting_exit_extended(unsigned int code, unsigned int subcode);
+NORETURN void mp_semihosting_exit_extended(unsigned int code, unsigned int subcode);
 
 // Fill the given structure with how many ticks were counted since execution
 // started.  On success, the function will return 0, or -1 if it was not
