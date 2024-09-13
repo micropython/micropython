@@ -32,6 +32,7 @@
 #include "py/mperrno.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/runtime/semihosting.h"
 
 #if MICROPY_HEAP_SIZE <= 0
 #error MICROPY_HEAP_SIZE must be a positive integer.
