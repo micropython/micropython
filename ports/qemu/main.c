@@ -33,6 +33,7 @@
 #include "py/mperrno.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/runtime/semihosting.h"
 
 #define HEAP_SIZE (100 * 1024)
 
