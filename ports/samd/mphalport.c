@@ -69,13 +69,9 @@ void mp_hal_clr_pin_mux(mp_hal_pin_obj_t pin) {
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-    if (ms > 10) {
-        uint32_t t0 = systick_ms;
-        while (systick_ms - t0 < ms) {
-            MICROPY_EVENT_POLL_HOOK
-        }
-    } else {
-        mp_hal_delay_us(ms * 1000);
+    uint32_t t0 = systick_ms;
+    while (systick_ms - t0 < ms) {
+        MICROPY_EVENT_POLL_HOOK
     }
 }
 
@@ -94,10 +90,10 @@ void mp_hal_delay_us(mp_uint_t us) {
 }
 
 uint64_t mp_hal_ticks_us_64(void) {
-    uint32_t us64_upper = ticks_us64_upper;
     uint32_t us64_lower;
     uint8_t intflag;
     __disable_irq();
+    uint32_t us64_upper = ticks_us64_upper;
     #if defined(MCU_SAMD21)
     us64_lower = REG_TC4_COUNT32_COUNT;
     intflag = TC4->COUNT32.INTFLAG.reg;

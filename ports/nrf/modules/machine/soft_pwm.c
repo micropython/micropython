@@ -199,6 +199,8 @@ static void machine_soft_pwm_start(machine_pwm_obj_t *self) {
             duty_width = self->duty * DUTY_FULL_SCALE / 65536;
         } else if (self->duty_mode == DUTY_NS) {
             duty_width = (uint64_t)self->duty * self->freq * DUTY_FULL_SCALE / 1000000000ULL;
+        } else {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid duty mode"));
         }
         pwm_set_duty_cycle(self->pwm_pin, duty_width);
     }

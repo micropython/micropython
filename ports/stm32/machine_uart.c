@@ -41,6 +41,7 @@
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) }, \
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_FLAG_IDLE) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RX), MP_ROM_INT(UART_FLAG_RXNE) }, \
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -152,6 +153,12 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_read_buf_len, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} }, // legacy
     };
+
+    if (self->is_enabled && n_args == 1 && kw_args->used == 0) {
+        // Only change the baudrate if that's all that is given.
+        uart_set_baudrate(self, mp_obj_get_int(pos_args[0]));
+        return;
+    }
 
     // parse args
     struct {
@@ -526,6 +533,7 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
 
     if (*errcode == 0 || *errcode == MP_ETIMEDOUT) {
         // return number of bytes written, even if there was a timeout
+        *errcode = 0;
         return num_tx << self->char_width;
     } else {
         return MP_STREAM_ERROR;

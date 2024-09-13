@@ -4,13 +4,13 @@
 # This replicates the basic functionality of the pre-processor, including adding a "micropython"
 # platform that is almost identical to the built-in "generic" platform with a few small changes
 # provided by the files in extmod/libmetal.
-$(BUILD)/openamp: $(BUILD)
+$(BUILD)/openamp: | $(BUILD)
 	$(MKDIR) -p $@
 
-$(BUILD)/openamp/metal: $(BUILD)/openamp
+$(BUILD)/openamp/metal: | $(BUILD)/openamp
 	$(MKDIR) -p $@
 
-$(BUILD)/openamp/metal/config.h: $(BUILD)/openamp/metal $(TOP)/$(LIBMETAL_DIR)/lib/config.h
+$(BUILD)/openamp/metal/config.h: $(TOP)/$(LIBMETAL_DIR)/lib/config.h | $(BUILD)/openamp/metal
 	@$(ECHO) "GEN $@"
 	@for file in $(TOP)/$(LIBMETAL_DIR)/lib/*.c $(TOP)/$(LIBMETAL_DIR)/lib/*.h; do $(SED) -e "s/@PROJECT_SYSTEM@/micropython/g" -e "s/@PROJECT_PROCESSOR@/arm/g" $$file > $(BUILD)/openamp/metal/$$(basename $$file); done
 	$(MKDIR) -p $(BUILD)/openamp/metal/processor/arm
@@ -33,7 +33,6 @@ SRC_LIBMETAL_C := $(addprefix $(BUILD)/openamp/metal/,\
 	shmem.c \
 	softirq.c \
 	version.c \
-	device.c \
 	system/micropython/condition.c \
 	system/micropython/device.c \
 	system/micropython/io.c \

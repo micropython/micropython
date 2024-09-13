@@ -34,15 +34,13 @@
 #define SYS_OPEN   0x01
 #define SYS_WRITEC 0x03
 #define SYS_WRITE  0x05
+#define SYS_READ   0x06
 #define SYS_READC  0x07
+#define SYS_EXIT   0x18
 
 // Constants:
 #define OPEN_MODE_READ  (0) // mode "r"
 #define OPEN_MODE_WRITE (4) // mode "w"
-
-#ifndef __thumb__
-#error Semihosting is only implemented for ARM microcontrollers.
-#endif
 
 static int mp_semihosting_stdout;
 
@@ -61,7 +59,13 @@ static uint32_t mp_semihosting_call(uint32_t num, const void *arg) {
     register uint32_t num_reg __asm__ ("r0") = num;
     register const void *args_reg __asm__ ("r1") = arg;
     __asm__ __volatile__ (
+        #if defined(__ARM_ARCH_ISA_ARM)
+        "svc 0x00123456\n"    // invoke semihosting call
+        #elif defined(__ARM_ARCH_ISA_THUMB)
         "bkpt 0xAB\n"         // invoke semihosting call
+        #else
+        #error Unknown architecture
+        #endif
         : "+r" (num_reg)      // call number and result
         : "r" (args_reg)      // arguments
         : "memory");          // make sure args aren't optimized away
@@ -85,8 +89,29 @@ void mp_semihosting_init() {
     mp_semihosting_stdout = mp_semihosting_open_console(OPEN_MODE_WRITE);
 }
 
+void mp_semihosting_exit(int status) {
+    if (status == 0) {
+        status = 0x20026;
+    }
+    mp_semihosting_call(SYS_EXIT, (void *)(uintptr_t)status);
+}
+
 int mp_semihosting_rx_char() {
     return mp_semihosting_call(SYS_READC, NULL);
+}
+
+// Returns 0 on success.
+int mp_semihosting_rx_chars(char *str, size_t len) {
+    struct {
+        uint32_t fd;
+        const char *str;
+        uint32_t len;
+    } args = {
+        .fd = mp_semihosting_stdout,
+        .str = str,
+        .len = len,
+    };
+    return mp_semihosting_call(SYS_READ, &args);
 }
 
 static void mp_semihosting_tx_char(char c) {

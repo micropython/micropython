@@ -19,10 +19,10 @@ You can check if the interfaces are active by::
 
 You can also check the network settings of the interface by::
 
-    >>> ap_if.ifconfig()
-    ('192.168.4.1', '255.255.255.0', '192.168.4.1', '8.8.8.8')
+    >>> ap_if.ipconfig('addr4')
+    ('192.168.4.1', '255.255.255.0')
 
-The returned values are: IP address, netmask, gateway, DNS.
+The returned values are: IP address and netmask.
 
 Configuration of the WiFi
 -------------------------
@@ -45,8 +45,8 @@ To check if the connection is established use::
 
 Once established you can check the IP address::
 
-    >>> sta_if.ifconfig()
-    ('192.168.0.2', '255.255.255.0', '192.168.0.1', '8.8.8.8')
+    >>> sta_if.ipconfig('addr4')
+    ('192.168.0.2', '255.255.255.0')
 
 You can then disable the access-point interface if you no longer need it::
 
@@ -64,7 +64,7 @@ connect to your WiFi network::
             sta_if.connect('<ssid>', '<key>')
             while not sta_if.isconnected():
                 pass
-        print('network config:', sta_if.ifconfig())
+        print('network config:', sta_if.ipconfig('addr4'))
 
 Sockets
 -------

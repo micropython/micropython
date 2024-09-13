@@ -38,7 +38,7 @@
 #if MICROPY_PY_THREAD
 
 #define MP_THREAD_MIN_STACK_SIZE                        (4 * 1024)
-#define MP_THREAD_DEFAULT_STACK_SIZE                    (MP_THREAD_MIN_STACK_SIZE + 1024)
+#define MP_THREAD_DEFAULT_STACK_SIZE                    (MP_THREAD_MIN_STACK_SIZE + MICROPY_STACK_CHECK_MARGIN)
 #define MP_THREAD_PRIORITY                              (ESP_TASK_PRIO_MIN + 1)
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0) && !CONFIG_FREERTOS_ENABLE_STATIC_TASK_CLEAN_UP
@@ -160,9 +160,6 @@ mp_uint_t mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_s
     th->next = thread;
     thread = th;
 
-    // adjust the stack_size to provide room to recover from hitting the limit
-    *stack_size -= 1024;
-
     mp_thread_mutex_unlock(&thread_mutex);
 
     return (mp_uint_t)th->id;
@@ -221,6 +218,11 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
     xSemaphoreGive(mutex->handle);
+    // Python threads run at equal priority, so pre-emptively yield here to
+    // prevent pathological imbalances where a thread unlocks and then
+    // immediately re-locks a mutex before a context switch can occur, leaving
+    // another thread waiting for an unbounded period of time.
+    taskYIELD();
 }
 
 void mp_thread_deinit(void) {

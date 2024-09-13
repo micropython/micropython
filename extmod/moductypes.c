@@ -143,6 +143,10 @@ static inline mp_uint_t uctypes_struct_scalar_size(int val_type) {
 
 // Get size of aggregate type descriptor
 static mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_uint_t *max_field_size) {
+    if (t->len == 0) {
+        syntax_error();
+    }
+
     mp_uint_t total_size = 0;
 
     mp_int_t offset_ = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
@@ -150,8 +154,15 @@ static mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_
 
     switch (agg_type) {
         case STRUCT:
+            if (t->len != 2) {
+                syntax_error();
+            }
             return uctypes_struct_size(t->items[1], layout_type, max_field_size);
         case PTR:
+            // Second field ignored, but should still be present for consistency.
+            if (t->len != 2) {
+                syntax_error();
+            }
             if (sizeof(void *) > *max_field_size) {
                 *max_field_size = sizeof(void *);
             }
@@ -167,15 +178,17 @@ static mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_
                 if (item_s > *max_field_size) {
                     *max_field_size = item_s;
                 }
-            } else {
+            } else if (t->len == 3) {
                 // Elements of array are aggregates
                 item_s = uctypes_struct_size(t->items[2], layout_type, max_field_size);
+            } else {
+                syntax_error();
             }
 
             return item_s * arr_sz;
         }
         default:
-            assert(0);
+            syntax_error();
     }
 
     return total_size;

@@ -184,18 +184,18 @@ WLAN (WiFi)
 
 See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
 
-    import machine
+    import machine, network
     from network import WLAN
 
     # configure the WLAN subsystem in station mode (the default is AP)
     wlan = WLAN(mode=WLAN.STA)
     # go for fixed IP settings
-    wlan.ifconfig(config=('192.168.0.107', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
+    network.ipconfig(dns='8.8.8.8')
+    wlan.ipconfig(addr4='192.168.0.107/24', gw4='192.168.0.1')
     wlan.scan()     # scan for available networks
     wlan.connect(ssid='mynetwork', auth=(WLAN.WPA2, 'mynetworkkey'))
     while not wlan.isconnected():
         pass
-    print(wlan.ifconfig())
     # enable wake on WLAN
     wlan.irq(trigger=WLAN.ANY_EVENT, wake=machine.SLEEP)
     # go to sleep

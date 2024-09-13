@@ -104,6 +104,23 @@ static void pio1_irq0(void) {
     pio_irq0(pio1);
 }
 
+// Returns the correct irq0 handler wrapper for a given pio
+static inline irq_handler_t rp2_pio_get_irq_handler(PIO pio) {
+    return pio == pio0 ? pio0_irq0 : pio1_irq0;
+}
+
+// Add the irq0 handler if it's not added, and if no other handler is present
+void rp2_pio_irq_set_exclusive_handler(PIO pio, uint irq) {
+    irq_handler_t current = irq_get_exclusive_handler(irq);
+    // If the IRQ is set and isn't our handler, or a shared handler is set, then raise an error
+    if ((current && current != rp2_pio_get_irq_handler(pio)) || irq_has_shared_handler(irq)) {
+        mp_raise_ValueError("irq claimed by external resource");
+        // If the IRQ is not set, add our handler
+    } else if (!current) {
+        irq_set_exclusive_handler(irq, rp2_pio_get_irq_handler(pio));
+    }
+}
+
 // Calls pio_add_program() and keeps track of used instruction memory.
 static uint rp2_pio_add_managed_program(PIO pio, struct pio_program *pio_program) {
     uint offset = pio_add_program(pio, pio_program);
@@ -143,15 +160,18 @@ void rp2_pio_init(void) {
     // Set up interrupts.
     memset(MP_STATE_PORT(rp2_pio_irq_obj), 0, sizeof(MP_STATE_PORT(rp2_pio_irq_obj)));
     memset(MP_STATE_PORT(rp2_state_machine_irq_obj), 0, sizeof(MP_STATE_PORT(rp2_state_machine_irq_obj)));
-    irq_set_exclusive_handler(PIO0_IRQ_0, pio0_irq0);
-    irq_set_exclusive_handler(PIO1_IRQ_0, pio1_irq0);
 }
 
 void rp2_pio_deinit(void) {
     // Disable and clear interrupts.
-    irq_set_mask_enabled((1u << PIO0_IRQ_0) | (1u << PIO0_IRQ_1), false);
-    irq_remove_handler(PIO0_IRQ_0, pio0_irq0);
-    irq_remove_handler(PIO1_IRQ_0, pio1_irq0);
+    if (irq_get_exclusive_handler(PIO0_IRQ_0) == pio0_irq0) {
+        irq_set_enabled(PIO0_IRQ_0, false);
+        irq_remove_handler(PIO0_IRQ_0, pio0_irq0);
+    }
+    if (irq_get_exclusive_handler(PIO1_IRQ_0) == pio1_irq0) {
+        irq_set_enabled(PIO1_IRQ_0, false);
+        irq_remove_handler(PIO1_IRQ_0, pio1_irq0);
+    }
 
     rp2_state_machine_reset_all();
 
@@ -379,6 +399,7 @@ static mp_obj_t rp2_pio_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
         // Enable IRQ if a handler is given.
         if (args[ARG_handler].u_obj != mp_const_none) {
+            rp2_pio_irq_set_exclusive_handler(self->pio, self->irq);
             self->pio->inte0 = irq->trigger;
             irq_set_enabled(self->irq, true);
         }
@@ -872,6 +893,7 @@ static mp_obj_t rp2_state_machine_irq(size_t n_args, const mp_obj_t *pos_args, m
         }
 
         if (self->pio->inte0) {
+            rp2_pio_irq_set_exclusive_handler(self->pio, self->irq);
             irq_set_enabled(self->irq, true);
         }
     }

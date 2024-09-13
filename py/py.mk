@@ -36,9 +36,10 @@ ifneq ($(USER_C_MODULES),)
 # C/C++ files that are included in the QSTR/module build
 SRC_USERMOD_C :=
 SRC_USERMOD_CXX :=
-# Other C/C++ files (e.g. libraries or helpers)
+# Other C/C++/Assembly files (e.g. libraries or helpers)
 SRC_USERMOD_LIB_C :=
 SRC_USERMOD_LIB_CXX :=
+SRC_USERMOD_LIB_ASM :=
 # Optionally set flags
 CFLAGS_USERMOD :=
 CXXFLAGS_USERMOD :=
@@ -60,6 +61,7 @@ SRC_USERMOD_PATHFIX_C += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD_C))
 SRC_USERMOD_PATHFIX_CXX += $(patsubst $(USER_C_MODULES)/%.cpp,%.cpp,$(SRC_USERMOD_CXX))
 SRC_USERMOD_PATHFIX_LIB_C += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD_LIB_C))
 SRC_USERMOD_PATHFIX_LIB_CXX += $(patsubst $(USER_C_MODULES)/%.cpp,%.cpp,$(SRC_USERMOD_LIB_CXX))
+SRC_USERMOD_PATHFIX_LIB_ASM += $(patsubst $(USER_C_MODULES)/%.S,%.S,$(SRC_USERMOD_LIB_ASM))
 
 CFLAGS += $(CFLAGS_USERMOD)
 CXXFLAGS += $(CXXFLAGS_USERMOD)
@@ -70,6 +72,7 @@ PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_C:.c=.o))
 PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_CXX:.cpp=.o))
 PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_C:.c=.o))
 PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_CXX:.cpp=.o))
+PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_ASM:.S=.o))
 endif
 
 # py object files
@@ -128,6 +131,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	nativeglue.o \
 	pairheap.o \
 	ringbuf.o \
+	cstack.o \
 	stackctrl.o \
 	argcheck.o \
 	warning.o \

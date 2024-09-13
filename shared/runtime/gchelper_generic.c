@@ -150,23 +150,24 @@ static void gc_helper_get_regs(gc_helper_regs_t arr) {
     arr[10] = x29;
 }
 
-#elif defined(__riscv) && defined(__riscv_xlen) && (__riscv_xlen == 32)
+#elif defined(__riscv) && (__riscv_xlen <= 64)
 
-// Fallback implementation for RV32I, prefer gchelper_rv32i.s
+// Fallback implementation for RV32I and RV64I, prefer gchelper_rv32i.s
+// for RV32I targets or gchelper_rv64i.s for RV64I targets.
 
 static void gc_helper_get_regs(gc_helper_regs_t arr) {
-    register long s0 asm ("x8");
-    register long s1 asm ("x9");
-    register long s2 asm ("x18");
-    register long s3 asm ("x19");
-    register long s4 asm ("x20");
-    register long s5 asm ("x21");
-    register long s6 asm ("x22");
-    register long s7 asm ("x23");
-    register long s8 asm ("x24");
-    register long s9 asm ("x25");
-    register long s10 asm ("x26");
-    register long s11 asm ("x27");
+    register uintptr_t s0 asm ("x8");
+    register uintptr_t s1 asm ("x9");
+    register uintptr_t s2 asm ("x18");
+    register uintptr_t s3 asm ("x19");
+    register uintptr_t s4 asm ("x20");
+    register uintptr_t s5 asm ("x21");
+    register uintptr_t s6 asm ("x22");
+    register uintptr_t s7 asm ("x23");
+    register uintptr_t s8 asm ("x24");
+    register uintptr_t s9 asm ("x25");
+    register uintptr_t s10 asm ("x26");
+    register uintptr_t s11 asm ("x27");
     arr[0] = s0;
     arr[1] = s1;
     arr[2] = s2;

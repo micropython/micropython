@@ -52,11 +52,20 @@
 
 #if MICROPY_PY_OPENAMP_RSC_TABLE_ENABLE
 #define VIRTIO_DEV_ID           0xFF
+#if MICROPY_PY_OPENAMP_HOST
+#define VIRTIO_DEV_ROLE         RPMSG_HOST
+#else
+#define VIRTIO_DEV_ROLE         RPMSG_REMOTE
+#endif // MICROPY_PY_OPENAMP_HOST
 #define VIRTIO_DEV_FEATURES     (1 << VIRTIO_RPMSG_F_NS)
 
 #define VRING0_ID               0   // VRING0 ID (host to remote) fixed to 0 for linux compatibility
 #define VRING1_ID               1   // VRING1 ID (remote to host) fixed to 1 for linux compatibility
+#if MICROPY_PY_OPENAMP_HOST
 #define VRING_NOTIFY_ID         VRING0_ID
+#else
+#define VRING_NOTIFY_ID         VRING1_ID
+#endif // MICROPY_PY_OPENAMP_HOST
 
 #define VRING_COUNT             2
 #define VRING_ALIGNMENT         32
@@ -71,13 +80,15 @@
 #define VRING_BUFF_ADDR         (METAL_SHM_ADDR + 0x2000)
 #define VRING_BUFF_SIZE         (METAL_SHM_SIZE - 0x2000)
 
+#if MICROPY_PY_OPENAMP_HOST
 static const char openamp_trace_buf[128];
 #define MICROPY_PY_OPENAMP_TRACE_BUF       ((uint32_t)openamp_trace_buf)
 #define MICROPY_PY_OPENAMP_TRACE_BUF_LEN   sizeof(MICROPY_PY_OPENAMP_TRACE_BUF)
+#endif // MICROPY_PY_OPENAMP_HOST
 
 #endif // MICROPY_PY_OPENAMP_RSC_TABLE_ENABLE
 
-#if MICROPY_PY_OPENAMP_REMOTEPROC
+#if MICROPY_PY_OPENAMP_HOST && MICROPY_PY_OPENAMP_REMOTEPROC
 extern mp_obj_type_t openamp_remoteproc_type;
 #endif
 
@@ -181,13 +192,13 @@ static mp_obj_t endpoint_send(uint n_args, const mp_obj_t *pos_args, mp_map_t *k
     for (mp_uint_t start = mp_hal_ticks_ms(); ;) {
         bytes = rpmsg_send_offchannel_raw(&self->ep, src, dest, rbuf.buf, rbuf.len, false);
         if (bytes > 0 || timeout == 0) {
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_handle_nowait();
             break;
         }
         if (timeout > 0 && (mp_hal_ticks_ms() - start > timeout)) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("timeout waiting for a free buffer"));
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
     return mp_obj_new_int(bytes);
 }
@@ -210,7 +221,7 @@ static mp_obj_t endpoint_make_new(const mp_obj_type_t *type, size_t n_args, size
     enum { ARG_name, ARG_callback, ARG_src, ARG_dest };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_name, MP_ARG_OBJ | MP_ARG_REQUIRED,  {.u_rom_obj = MP_ROM_NONE } },
-        { MP_QSTR_callback, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_callback, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_src, MP_ARG_INT | MP_ARG_KW_ONLY,  {.u_int = RPMSG_ADDR_ANY } },
         { MP_QSTR_dest, MP_ARG_INT | MP_ARG_KW_ONLY,  {.u_int = RPMSG_ADDR_ANY } },
     };
@@ -263,16 +274,15 @@ static void openamp_ns_callback(struct rpmsg_device *rdev, const char *name, uin
     // the Name Service (NS) announcement containing the name of the channel.
     virtio_dev_obj_t *virtio_device = metal_container_of(rdev, virtio_dev_obj_t, rvdev);
     if (virtio_device->ns_callback != mp_const_none) {
-        mp_call_function_2(virtio_device->ns_callback, mp_obj_new_int(dest), mp_obj_new_str(name, strlen(name)));
+        mp_call_function_2(virtio_device->ns_callback, mp_obj_new_int(dest), mp_obj_new_str_from_cstr(name));
     }
 }
 
-#if MICROPY_PY_OPENAMP_RSC_TABLE_ENABLE
+#if MICROPY_PY_OPENAMP_HOST && MICROPY_PY_OPENAMP_RSC_TABLE_ENABLE
 // The shared resource table must be initialized manually by the host here,
 // because it's not located in the data region, so the startup code doesn't
 // know about it.
-static void openamp_rsc_table_init(openamp_rsc_table_t **rsc_table_out) {
-    openamp_rsc_table_t *rsc_table = METAL_RSC_ADDR;
+static void openamp_rsc_table_init(openamp_rsc_table_t *rsc_table) {
     memset(rsc_table, 0, METAL_RSC_SIZE);
 
     rsc_table->version = 1;
@@ -299,9 +309,8 @@ static void openamp_rsc_table_init(openamp_rsc_table_t **rsc_table_out) {
     // Flush resource table.
     metal_cache_flush((uint32_t *)rsc_table, sizeof(openamp_rsc_table_t));
     #endif
-    *rsc_table_out = rsc_table;
 }
-#endif // MICROPY_PY_OPENAMP_RSC_TABLE_ENABLE
+#endif // MICROPY_PY_OPENAMP_HOST && MICROPY_PY_OPENAMP_RSC_TABLE_ENABLE
 
 static mp_obj_t openamp_new_service_callback(mp_obj_t ns_callback) {
     if (MP_STATE_PORT(virtio_device) == NULL) {
@@ -342,8 +351,10 @@ void openamp_init(void) {
     metal_init(&metal_params);
 
     // Initialize the shared resource table.
-    openamp_rsc_table_t *rsc_table;
-    openamp_rsc_table_init(&rsc_table);
+    openamp_rsc_table_t *rsc_table = METAL_RSC_ADDR;
+    #if MICROPY_PY_OPENAMP_HOST
+    openamp_rsc_table_init(rsc_table);
+    #endif // MICROPY_PY_OPENAMP_HOST
 
     if (metal_register_generic_device(&shm_device) != 0) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Failed to register metal device"));
@@ -368,7 +379,7 @@ void openamp_init(void) {
     }
 
     // Create virtio device.
-    struct virtio_device *vdev = rproc_virtio_create_vdev(RPMSG_HOST, VIRTIO_DEV_ID,
+    struct virtio_device *vdev = rproc_virtio_create_vdev(VIRTIO_DEV_ROLE, VIRTIO_DEV_ID,
         &rsc_table->vdev, rsc_io, NULL, metal_rproc_notify, NULL);
     if (vdev == NULL) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Failed to create virtio device"));
@@ -389,8 +400,8 @@ void openamp_init(void) {
     // The remote processor detects that the virtio device is ready by polling
     // the status field in the resource table.
     rpmsg_virtio_init_shm_pool(&virtio_device->shm_pool, (void *)VRING_BUFF_ADDR, (size_t)VRING_BUFF_SIZE);
-    rpmsg_init_vdev(&virtio_device->rvdev, vdev, openamp_ns_callback, shm_io, &virtio_device->shm_pool);
 
+    rpmsg_init_vdev(&virtio_device->rvdev, vdev, openamp_ns_callback, shm_io, &virtio_device->shm_pool);
     MP_STATE_PORT(virtio_device) = virtio_device;
 }
 
@@ -399,7 +410,7 @@ static const mp_rom_map_elem_t globals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ENDPOINT_ADDR_ANY), MP_ROM_INT(RPMSG_ADDR_ANY) },
     { MP_ROM_QSTR(MP_QSTR_new_service_callback), MP_ROM_PTR(&openamp_new_service_callback_obj) },
     { MP_ROM_QSTR(MP_QSTR_Endpoint), MP_ROM_PTR(&endpoint_type) },
-    #if MICROPY_PY_OPENAMP_REMOTEPROC
+    #if MICROPY_PY_OPENAMP_HOST && MICROPY_PY_OPENAMP_REMOTEPROC
     { MP_ROM_QSTR(MP_QSTR_RemoteProc), MP_ROM_PTR(&openamp_remoteproc_type) },
     #endif
 };

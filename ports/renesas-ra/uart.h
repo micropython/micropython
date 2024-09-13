@@ -29,6 +29,7 @@
 #define MICROPY_INCLUDED_RA_UART_H
 
 #include "shared/runtime/mpirq.h"
+#include "shared/runtime/softtimer.h"
 #include "pin.h"
 
 typedef enum {
@@ -57,11 +58,27 @@ typedef enum {
 #define UART_HWCONTROL_CTS  (1)
 #define UART_HWCONTROL_RTS  (2)
 
+#define UART_IRQ_RX (0x10)
+#define UART_IRQ_RXIDLE (0x1000)
+#define RXIDLE_TIMER_MIN (1)
+
 // OR-ed IRQ flags which are allowed to be used by the user
-#define MP_UART_ALLOWED_FLAGS ((uint32_t)0x00000010)
+#define MP_UART_ALLOWED_FLAGS ((uint32_t)(UART_IRQ_RX | UART_IRQ_RXIDLE))
 
 // OR-ed IRQ flags which should not be touched by the user
 #define MP_UART_RESERVED_FLAGS ((uint16_t)0x0020)
+
+enum {
+    RXIDLE_INACTIVE,
+    RXIDLE_STANDBY,
+    RXIDLE_ARMED,
+    RXIDLE_ALERT,
+};
+
+typedef struct _soft_timer_entry_extended_t {
+    soft_timer_entry_t base;
+    void *context;
+} soft_timer_entry_extended_t;
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
@@ -87,6 +104,9 @@ typedef struct _machine_uart_obj_t {
     uint16_t mp_irq_trigger;            // user IRQ trigger mask
     uint16_t mp_irq_flags;              // user IRQ active IRQ flags
     mp_irq_obj_t *mp_irq_obj;           // user IRQ object
+    soft_timer_entry_extended_t rxidle_timer;
+    uint8_t rxidle_state;
+    uint16_t rxidle_ms;
 } machine_uart_obj_t;
 
 extern const mp_irq_methods_t uart_irq_methods;
@@ -100,6 +120,8 @@ void uart_irq_config(machine_uart_obj_t *self, bool enable);
 void uart_set_rxbuf(machine_uart_obj_t *self, size_t len, void *buf);
 void uart_deinit(machine_uart_obj_t *uart_obj);
 // void uart_irq_handler(mp_uint_t uart_id);
+void uart_irq_configure_timer(machine_uart_obj_t *self, mp_uint_t trigger);
+void uart_soft_timer_callback(soft_timer_entry_t *self);
 
 void uart_attach_to_repl(machine_uart_obj_t *self, bool attached);
 uint32_t uart_get_baudrate(machine_uart_obj_t *self);

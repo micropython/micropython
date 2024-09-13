@@ -248,7 +248,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
             } else if (strcmp(argv[a], "--version") == 0) {
-                printf("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
+                printf(MICROPY_BANNER_NAME_AND_VERSION
                     "; mpy-cross emitting mpy v" MP_STRINGIFY(MPY_VERSION) "." MP_STRINGIFY(MPY_SUB_VERSION) "\n");
                 return 0;
             } else if (strcmp(argv[a], "-v") == 0) {

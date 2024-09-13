@@ -1,0 +1,12 @@
+write 2400
+ready
+IRQ_RXIDLE: True data: b'12345678'
+done
+write 9600
+ready
+IRQ_RXIDLE: True data: b'12345678'
+done
+write 115200
+ready
+IRQ_RXIDLE: True data: b'12345678'
+done

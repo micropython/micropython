@@ -80,6 +80,10 @@
 
 #define UART_HWCONTROL_CTS  (1)
 #define UART_HWCONTROL_RTS  (2)
+// OR-ed IRQ flags which are allowed to be used by the user
+#define MP_UART_ALLOWED_FLAGS (UART_UARTMIS_RTMIS_BITS | UART_UARTMIS_TXMIS_BITS | UART_UARTMIS_BEMIS_BITS)
+#define UART_FIFO_SIZE_RX           (32)
+#define UART_FIFO_TRIGGER_LEVEL_RX  (24)
 
 static mutex_t write_mutex_0;
 static mutex_t write_mutex_1;
@@ -111,12 +115,15 @@ typedef struct _machine_uart_obj_t {
     mutex_t *read_mutex;
     ringbuf_t write_buffer;
     mutex_t *write_mutex;
+    uint16_t mp_irq_trigger;   // user IRQ trigger mask
+    uint16_t mp_irq_flags;     // user IRQ active IRQ flags
+    mp_irq_obj_t *mp_irq_obj;  // user IRQ object
 } machine_uart_obj_t;
 
 static machine_uart_obj_t machine_uart_obj[] = {
     {{&machine_uart_type}, uart0, 0, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
      MICROPY_HW_UART0_TX, MICROPY_HW_UART0_RX, MICROPY_HW_UART0_CTS, MICROPY_HW_UART0_RTS,
-     0, 0, 0, 0, {NULL, 1, 0, 0}, &read_mutex_0, {NULL, 1, 0, 0}, &write_mutex_0},
+     0, 0, 0, 0, {NULL, 1, 0, 0}, &read_mutex_0, {NULL, 1, 0, 0}, &write_mutex_0, 0, 0, NULL},
     {{&machine_uart_type}, uart1, 1, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
      MICROPY_HW_UART1_TX, MICROPY_HW_UART1_RX, MICROPY_HW_UART1_CTS, MICROPY_HW_UART1_RTS,
      0, 0, 0, 0, {NULL, 1, 0, 0}, &read_mutex_1, {NULL, 1, 0, 0}, &write_mutex_1},
@@ -144,14 +151,15 @@ static inline void read_mutex_unlock(machine_uart_obj_t *u) {
     mutex_exit(u->read_mutex);
 }
 
-// take all bytes from the fifo and store them in the buffer
-static void uart_drain_rx_fifo(machine_uart_obj_t *self) {
+// take at most max_items bytes from the fifo and store them in the buffer
+static void uart_drain_rx_fifo(machine_uart_obj_t *self, uint32_t max_items) {
     if (read_mutex_try_lock(self)) {
-        while (uart_is_readable(self->uart) && ringbuf_free(&self->read_buffer) > 0) {
+        while (uart_is_readable(self->uart) && ringbuf_free(&self->read_buffer) > 0 && max_items > 0) {
             // Get a byte from uart and put into the buffer. Every entry from
             // the FIFO is accompanied by 4 error bits, that may be used for
             // error handling.
             uint16_t c = uart_get_hw(self->uart)->dr;
+            max_items -= 1;
             if (c & UART_UARTDR_OE_BITS) {
                 // Overrun Error: We missed at least one byte. Not much we can do here.
             }
@@ -187,15 +195,30 @@ static void uart_fill_tx_fifo(machine_uart_obj_t *self) {
 }
 
 static inline void uart_service_interrupt(machine_uart_obj_t *self) {
-    if (uart_get_hw(self->uart)->mis & (UART_UARTMIS_RXMIS_BITS | UART_UARTMIS_RTMIS_BITS)) { // rx interrupt?
-        // clear all interrupt bits but tx
-        uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & (~UART_UARTICR_TXIC_BITS);
-        uart_drain_rx_fifo(self);
+    uint16_t mp_irq_flags = uart_get_hw(self->uart)->mis & (UART_UARTMIS_RXMIS_BITS | UART_UARTMIS_RTMIS_BITS);
+    if (mp_irq_flags) { // rx interrupt?
+        // clear all interrupt bits but tx and break
+        uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & ~(UART_UARTICR_TXIC_BITS | UART_UARTICR_BEIC_BITS);
+        uart_drain_rx_fifo(self, UART_FIFO_TRIGGER_LEVEL_RX - 1);
     }
     if (uart_get_hw(self->uart)->mis & UART_UARTMIS_TXMIS_BITS) { // tx interrupt?
-        // clear all interrupt bits but rx
-        uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & ~(UART_UARTICR_RXIC_BITS | UART_UARTICR_RTIC_BITS);
-        uart_fill_tx_fifo(self);
+        // clear all interrupt bits but rx and break
+        uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & ~(UART_UARTICR_RXIC_BITS | UART_UARTICR_RTIC_BITS | UART_UARTICR_BEIC_BITS);
+        if (ringbuf_avail(&self->write_buffer) == 0) {
+            mp_irq_flags |= UART_UARTMIS_TXMIS_BITS;
+        } else {
+            uart_fill_tx_fifo(self);
+        }
+    }
+    if (uart_get_hw(self->uart)->mis & UART_UARTMIS_BEMIS_BITS) { // break interrupt?
+        // CLear the event
+        hw_set_bits(&uart_get_hw(self->uart)->icr, UART_UARTICR_BEIC_BITS);
+        mp_irq_flags |= UART_UARTMIS_BEMIS_BITS;
+    }
+    // Check the flags to see if the user handler should be called
+    if (self->mp_irq_trigger & mp_irq_flags) {
+        self->mp_irq_flags = mp_irq_flags;
+        mp_irq_handler(self->mp_irq_obj);
     }
 }
 
@@ -215,14 +238,17 @@ static void uart1_irq_handler(void) {
     { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) }, \
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) }, \
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_UARTMIS_RTMIS_BITS) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_TXIDLE), MP_ROM_INT(UART_UARTMIS_TXMIS_BITS) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_BREAK), MP_ROM_INT(UART_UARTMIS_BEMIS_BITS) }, \
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, "
-        "txbuf=%d, rxbuf=%d, timeout=%u, timeout_char=%u, invert=%s)",
+        "txbuf=%d, rxbuf=%d, timeout=%u, timeout_char=%u, invert=%s, irq=%d)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
         self->stop, self->tx, self->rx, self->write_buffer.size - 1, self->read_buffer.size - 1,
-        self->timeout, self->timeout_char, _invert_name[self->invert]);
+        self->timeout, self->timeout_char, _invert_name[self->invert], self->mp_irq_trigger);
 }
 
 static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -441,11 +467,19 @@ static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     self->baudrate = 0;
     MP_STATE_PORT(rp2_uart_rx_buffer[self->uart_id]) = NULL;
     MP_STATE_PORT(rp2_uart_tx_buffer[self->uart_id]) = NULL;
+    MP_STATE_PORT(rp2_uart_irq_obj)[self->uart_id] = NULL;
+    self->mp_irq_obj = NULL;
+    self->mp_irq_trigger = 0;
+}
+
+void machine_uart_deinit_all() {
+    mp_machine_uart_deinit((machine_uart_obj_t *)&machine_uart_obj[0]);
+    mp_machine_uart_deinit((machine_uart_obj_t *)&machine_uart_obj[1]);
 }
 
 static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
     // get all bytes from the fifo first
-    uart_drain_rx_fifo(self);
+    uart_drain_rx_fifo(self, UART_FIFO_SIZE_RX + 1);
     return ringbuf_avail(&self->read_buffer);
 }
 
@@ -460,6 +494,77 @@ static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     uart_set_break(self->uart, false);
 }
 
+static void uart_set_irq_level(machine_uart_obj_t *self, uint16_t trigger) {
+    if (trigger & UART_UARTMIS_BEMIS_BITS) {
+        // Enable the break Interrupt
+        hw_set_bits(&uart_get_hw(self->uart)->imsc, UART_UARTIMSC_BEIM_BITS);
+    } else {
+        // Disable the break Interrupt
+        hw_clear_bits(&uart_get_hw(self->uart)->imsc, UART_UARTIMSC_BEIM_BITS);
+    }
+    if (trigger & UART_UARTMIS_RTMIS_BITS) {
+        // Set the RX trigger level to 3/4 FIFO_size
+        hw_write_masked(&uart_get_hw(self->uart)->ifls, 0b011 << UART_UARTIFLS_RXIFLSEL_LSB,
+                UART_UARTIFLS_RXIFLSEL_BITS);
+    } else {
+        // Set the RX trigger level to 1/8 FIFO_size
+        hw_write_masked(&uart_get_hw(self->uart)->ifls, 0 << UART_UARTIFLS_RXIFLSEL_LSB,
+                UART_UARTIFLS_RXIFLSEL_BITS);
+    }
+}
+
+static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    self->mp_irq_trigger = new_trigger;
+    uart_set_irq_level(self, new_trigger);
+    return 0;
+}
+
+static mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return self->mp_irq_flags;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return self->mp_irq_trigger;
+    }
+    return 0;
+}
+
+static const mp_irq_methods_t uart_irq_methods = {
+    .trigger = uart_irq_trigger,
+    .info = uart_irq_info,
+};
+
+static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args, mp_arg_val_t *args) {
+    if (self->mp_irq_obj == NULL) {
+        self->mp_irq_trigger = 0;
+        self->mp_irq_obj = mp_irq_new(&uart_irq_methods, MP_OBJ_FROM_PTR(self));
+        MP_STATE_PORT(rp2_uart_irq_obj)[self->uart_id] = self->mp_irq_obj;
+    }
+
+    if (any_args) {
+        // Check the handler
+        mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
+        if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
+        }
+
+        // Check the trigger
+        mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
+        mp_uint_t not_supported = trigger & ~MP_UART_ALLOWED_FLAGS;
+        if (trigger != 0 && not_supported) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%04x unsupported"), not_supported);
+        }
+
+        self->mp_irq_obj->handler = handler;
+        self->mp_irq_obj->ishard = args[MP_IRQ_ARG_INIT_hard].u_bool;
+        self->mp_irq_trigger = trigger;
+        uart_set_irq_level(self, trigger);
+    }
+
+    return self->mp_irq_obj;
+}
+
 static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t start = mp_hal_ticks_ms();
@@ -471,7 +576,7 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
         while (ringbuf_avail(&self->read_buffer) == 0) {
             if (uart_is_readable(self->uart)) {
                 // Force a few incoming bytes to the buffer
-                uart_drain_rx_fifo(self);
+                uart_drain_rx_fifo(self, UART_FIFO_SIZE_RX + 1);
                 break;
             }
             mp_uint_t elapsed = mp_hal_ticks_ms() - start;
@@ -572,3 +677,4 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
 
 MP_REGISTER_ROOT_POINTER(void *rp2_uart_rx_buffer[2]);
 MP_REGISTER_ROOT_POINTER(void *rp2_uart_tx_buffer[2]);
+MP_REGISTER_ROOT_POINTER(void *rp2_uart_irq_obj[2]);

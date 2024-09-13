@@ -390,7 +390,6 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_binary_op_t op, mp_obj_t lhs_in, mp
 // this is a classmethod
 static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     // TODO: Support signed param (assumes signed=False at the moment)
-    (void)n_args;
 
     // get the buffer info
     mp_buffer_info_t bufinfo;
@@ -398,7 +397,8 @@ static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
 
     const byte *buf = (const byte *)bufinfo.buf;
     int delta = 1;
-    if (args[2] == MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
+    bool big_endian = n_args < 3 || args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
+    if (!big_endian) {
         buf += bufinfo.len - 1;
         delta = -1;
     }
@@ -409,7 +409,7 @@ static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
         #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
         if (value > (MP_SMALL_INT_MAX >> 8)) {
             // Result will overflow a small-int so construct a big-int
-            return mp_obj_int_from_bytes_impl(args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little), bufinfo.len, bufinfo.buf);
+            return mp_obj_int_from_bytes_impl(big_endian, bufinfo.len, bufinfo.buf);
         }
         #endif
         value = (value << 8) | *buf;
@@ -417,19 +417,18 @@ static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     return mp_obj_new_int_from_uint(value);
 }
 
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 3, 4, int_from_bytes);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 2, 4, int_from_bytes);
 static MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_bytes_fun_obj));
 
 static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
     // TODO: Support signed (currently behaves as if signed=(val < 0))
-    (void)n_args;
     bool overflow;
 
-    mp_int_t dlen = mp_obj_get_int(args[1]);
+    mp_int_t dlen = n_args < 2 ? 1 : mp_obj_get_int(args[1]);
     if (dlen < 0) {
         mp_raise_ValueError(NULL);
     }
-    bool big_endian = args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
+    bool big_endian = n_args < 3 || args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
 
     vstr_t vstr;
     vstr_init_len(&vstr, dlen);
@@ -469,7 +468,7 @@ static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
 
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 3, 4, int_to_bytes);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 1, 4, int_to_bytes);
 
 static const mp_rom_map_elem_t int_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_from_bytes), MP_ROM_PTR(&int_from_bytes_obj) },

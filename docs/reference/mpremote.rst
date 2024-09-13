@@ -469,9 +469,9 @@ An example ``config.py`` might look like:
     for ap in wl.scan():
         print(ap)
     """,], # Print out nearby WiFi networks.
-        "wl_ifconfig": [
+        "wl_ipconfig": [
     "exec",
-    "import network; sta_if = network.WLAN(network.STA_IF); print(sta_if.ifconfig())",
+    "import network; sta_if = network.WLAN(network.STA_IF); print(sta_if.ipconfig('addr4'))",
     """,], # Print ip address of station interface.
         "test": ["mount", ".", "exec", "import test"], # Mount current directory and run test.py.
         "demo": ["run", "path/to/demo.py"], # Execute demo.py on the device.

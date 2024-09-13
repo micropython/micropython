@@ -100,6 +100,23 @@ static void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 }
 #endif
 
+// Given a string-like object holding PEM or DER formatted ASN.1 data, return a
+// pointer to its buffer and the correct length for mbedTLS APIs.
+//
+// (mbedTLS >= 3.5 rejects DER formatted data with trailing bytes within keylen,
+// but PEM must include a terminating NUL byte in the keylen...)
+static const unsigned char *asn1_get_data(mp_obj_t obj, size_t *out_len) {
+    size_t len;
+    const char *str = mp_obj_str_get_data(obj, &len);
+    #if defined(MBEDTLS_PEM_PARSE_C)
+    if (strstr(str, "-----BEGIN ") != NULL) {
+        ++len;
+    }
+    #endif
+    *out_len = len;
+    return (const unsigned char *)str;
+}
+
 static NORETURN void mbedtls_raise_error(int err) {
     // Handle special cases.
     if (err == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
@@ -307,7 +324,7 @@ static mp_obj_t ssl_context_get_ciphers(mp_obj_t self_in) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
     for (const int *cipher_list = mbedtls_ssl_list_ciphersuites(); *cipher_list; ++cipher_list) {
         const char *cipher_name = mbedtls_ssl_get_ciphersuite_name(*cipher_list);
-        mp_obj_list_append(list, MP_OBJ_FROM_PTR(mp_obj_new_str(cipher_name, strlen(cipher_name))));
+        mp_obj_list_append(list, MP_OBJ_FROM_PTR(mp_obj_new_str_from_cstr(cipher_name)));
     }
     return list;
 }
@@ -346,22 +363,20 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_set_ciphers_obj, ssl_context_set_ci
 
 static void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, mp_obj_t cert_obj) {
     size_t key_len;
-    const byte *key = (const byte *)mp_obj_str_get_data(key_obj, &key_len);
-    // len should include terminating null
+    const unsigned char *key = asn1_get_data(key_obj, &key_len);
     int ret;
     #if MBEDTLS_VERSION_NUMBER >= 0x03000000
-    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len + 1, NULL, 0, mbedtls_ctr_drbg_random, &self->ctr_drbg);
+    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0, mbedtls_ctr_drbg_random, &self->ctr_drbg);
     #else
-    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len + 1, NULL, 0);
+    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0);
     #endif
     if (ret != 0) {
         mbedtls_raise_error(MBEDTLS_ERR_PK_BAD_INPUT_DATA); // use general error for all key errors
     }
 
     size_t cert_len;
-    const byte *cert = (const byte *)mp_obj_str_get_data(cert_obj, &cert_len);
-    // len should include terminating null
-    ret = mbedtls_x509_crt_parse(&self->cert, cert, cert_len + 1);
+    const unsigned char *cert = asn1_get_data(cert_obj, &cert_len);
+    ret = mbedtls_x509_crt_parse(&self->cert, cert, cert_len);
     if (ret != 0) {
         mbedtls_raise_error(MBEDTLS_ERR_X509_BAD_INPUT_DATA); // use general error for all cert errors
     }
@@ -382,9 +397,8 @@ static MP_DEFINE_CONST_FUN_OBJ_3(ssl_context_load_cert_chain_obj, ssl_context_lo
 
 static void ssl_context_load_cadata(mp_obj_ssl_context_t *self, mp_obj_t cadata_obj) {
     size_t cacert_len;
-    const byte *cacert = (const byte *)mp_obj_str_get_data(cadata_obj, &cacert_len);
-    // len should include terminating null
-    int ret = mbedtls_x509_crt_parse(&self->cacert, cacert, cacert_len + 1);
+    const unsigned char *cacert = asn1_get_data(cadata_obj, &cacert_len);
+    int ret = mbedtls_x509_crt_parse(&self->cacert, cacert, cacert_len);
     if (ret != 0) {
         mbedtls_raise_error(MBEDTLS_ERR_X509_BAD_INPUT_DATA); // use general error for all cert errors
     }
@@ -572,8 +586,8 @@ static mp_obj_t mod_ssl_cipher(mp_obj_t o_in) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
     const char *cipher_suite = mbedtls_ssl_get_ciphersuite(&o->ssl);
     const char *tls_version = mbedtls_ssl_get_version(&o->ssl);
-    mp_obj_t tuple[2] = {mp_obj_new_str(cipher_suite, strlen(cipher_suite)),
-                         mp_obj_new_str(tls_version, strlen(tls_version))};
+    mp_obj_t tuple[2] = {mp_obj_new_str_from_cstr(cipher_suite),
+                         mp_obj_new_str_from_cstr(tls_version)};
 
     return mp_obj_new_tuple(2, tuple);
 }

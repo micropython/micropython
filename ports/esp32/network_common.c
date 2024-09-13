@@ -166,7 +166,7 @@ static mp_obj_t esp_network_ipconfig(size_t n_args, const mp_obj_t *args, mp_map
             case MP_QSTR_dns: {
                 char addr_str[IPADDR_STRLEN_MAX];
                 ipaddr_ntoa_r(dns_getserver(0), addr_str, sizeof(addr_str));
-                return mp_obj_new_str(addr_str, strlen(addr_str));
+                return mp_obj_new_str_from_cstr(addr_str);
             }
             default: {
                 mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
@@ -328,7 +328,7 @@ mp_obj_t esp_ifname(esp_netif_t *netif) {
     char ifname[NETIF_NAMESIZE + 1] = {0};
     mp_obj_t ret = mp_const_none;
     if (esp_netif_get_netif_impl_name(netif, ifname) == ESP_OK && ifname[0] != 0) {
-        ret = mp_obj_new_str((char *)ifname, strlen(ifname));
+        ret = mp_obj_new_str_from_cstr((char *)ifname);
     }
     return ret;
 }

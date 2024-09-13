@@ -52,7 +52,7 @@ typedef enum {
 #define CHAR_WIDTH_9BIT (1)
 
 // OR-ed IRQ flags which are allowed to be used by the user
-#define MP_UART_ALLOWED_FLAGS UART_FLAG_IDLE
+#define MP_UART_ALLOWED_FLAGS (UART_FLAG_IDLE | UART_FLAG_RXNE)
 
 // OR-ed IRQ flags which should not be touched by the user
 #define MP_UART_RESERVED_FLAGS UART_FLAG_RXNE

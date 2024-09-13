@@ -29,12 +29,17 @@
 
 #include "driver/uart.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "esp_task.h"
+#include "shared/runtime/mpirq.h"
 
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "uart.h"
+#include "machine_timer.h"
 
 #if SOC_UART_SUPPORT_XTAL_CLK
 // Works independently of APB frequency, on ESP32C3, ESP32S3.
@@ -49,6 +54,18 @@
 #define UART_INV_CTS UART_SIGNAL_CTS_INV
 
 #define UART_INV_MASK (UART_INV_TX | UART_INV_RX | UART_INV_RTS | UART_INV_CTS)
+#define UART_IRQ_RX (1 << UART_DATA)
+#define UART_IRQ_RXIDLE (0x1000)
+#define UART_IRQ_BREAK (1 << UART_BREAK)
+#define MP_UART_ALLOWED_FLAGS (UART_IRQ_RX | UART_IRQ_RXIDLE | UART_IRQ_BREAK)
+#define RXIDLE_TIMER_MIN (5000)  // 500 us
+
+enum {
+    RXIDLE_INACTIVE,
+    RXIDLE_STANDBY,
+    RXIDLE_ARMED,
+    RXIDLE_ALERT,
+};
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
@@ -66,6 +83,14 @@ typedef struct _machine_uart_obj_t {
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
     uint32_t invert;        // lines to invert
+    TaskHandle_t uart_event_task;
+    QueueHandle_t uart_queue;
+    uint16_t mp_irq_trigger;   // user IRQ trigger mask
+    uint16_t mp_irq_flags;     // user IRQ active IRQ flags
+    mp_irq_obj_t *mp_irq_obj;  // user IRQ object
+    machine_timer_obj_t *rxidle_timer;
+    uint8_t rxidle_state;
+    uint16_t rxidle_period;
 } machine_uart_obj_t;
 
 static const char *_parity_name[] = {"None", "1", "0"};
@@ -80,14 +105,82 @@ static const char *_parity_name[] = {"None", "1", "0"};
     { MP_ROM_QSTR(MP_QSTR_INV_CTS), MP_ROM_INT(UART_INV_CTS) }, \
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HW_FLOWCTRL_RTS) }, \
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HW_FLOWCTRL_CTS) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RX), MP_ROM_INT(UART_IRQ_RX) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_IRQ_RXIDLE) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_BREAK), MP_ROM_INT(UART_IRQ_BREAK) }, \
+
+static void uart_timer_callback(void *self_in) {
+    machine_timer_obj_t *self = self_in;
+
+    uint32_t intr_status = timer_ll_get_intr_status(self->hal_context.dev);
+
+    if (intr_status & TIMER_LL_EVENT_ALARM(self->index)) {
+        timer_ll_clear_intr_status(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index));
+        if (self->repeat) {
+            timer_ll_enable_alarm(self->hal_context.dev, self->index, true);
+        }
+    }
+
+    // The UART object is referred here by the callback field.
+    machine_uart_obj_t *uart = (machine_uart_obj_t *)self->callback;
+    if (uart->rxidle_state == RXIDLE_ALERT) {
+        // At the first call, just switch the state
+        uart->rxidle_state = RXIDLE_ARMED;
+    } else if (uart->rxidle_state == RXIDLE_ARMED) {
+        // At the second call, run the irq callback and stop the timer
+        uart->rxidle_state = RXIDLE_STANDBY;
+        uart->mp_irq_flags = UART_IRQ_RXIDLE;
+        mp_irq_handler(uart->mp_irq_obj);
+        mp_hal_wake_main_task_from_isr();
+        machine_timer_disable(uart->rxidle_timer);
+    }
+}
+
+static void uart_event_task(void *self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uart_event_t event;
+    for (;;) {
+        // Waiting for an UART event.
+        if (xQueueReceive(self->uart_queue, (void *)&event, (TickType_t)portMAX_DELAY)) {
+            uint16_t mp_irq_flags = 0;
+            switch (event.type) {
+                // Event of UART receiving data
+                case UART_DATA:
+                    if (self->mp_irq_trigger & UART_IRQ_RXIDLE) {
+                        if (self->rxidle_state != RXIDLE_INACTIVE) {
+                            if (self->rxidle_state == RXIDLE_STANDBY) {
+                                self->rxidle_timer->repeat = true;
+                                self->rxidle_timer->handle = NULL;
+                                machine_timer_enable(self->rxidle_timer, uart_timer_callback);
+                            }
+                        }
+                        self->rxidle_state = RXIDLE_ALERT;
+                    }
+                    mp_irq_flags |= UART_IRQ_RX;
+                    break;
+                case UART_BREAK:
+                    mp_irq_flags |= UART_IRQ_BREAK;
+                    break;
+                default:
+                    break;
+            }
+            // Check the flags to see if the user handler should be called
+            if (self->mp_irq_trigger & mp_irq_flags) {
+                self->mp_irq_flags = mp_irq_flags;
+                mp_irq_handler(self->mp_irq_obj);
+                mp_hal_wake_main_task_from_isr();
+            }
+        }
+    }
+}
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t baudrate;
     check_esp_err(uart_get_baudrate(self->uart_num, &baudrate));
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, rts=%d, cts=%d, txbuf=%u, rxbuf=%u, timeout=%u, timeout_char=%u",
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, rts=%d, cts=%d, txbuf=%u, rxbuf=%u, timeout=%u, timeout_char=%u, irq=%d",
         self->uart_num, baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->tx, self->rx, self->rts, self->cts, self->txbuf, self->rxbuf, self->timeout, self->timeout_char);
+        self->stop, self->tx, self->rx, self->rts, self->cts, self->txbuf, self->rxbuf, self->timeout, self->timeout_char, self->mp_irq_trigger);
     if (self->invert) {
         mp_printf(print, ", invert=");
         uint32_t invert_mask = self->invert;
@@ -348,6 +441,8 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     self->timeout_char = 0;
     self->invert = 0;
     self->flowcontrol = 0;
+    self->uart_event_task = 0;
+    self->rxidle_state = RXIDLE_INACTIVE;
 
     switch (uart_num) {
         case UART_NUM_0:
@@ -378,7 +473,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
         // Setup
         check_esp_err(uart_param_config(self->uart_num, &uartcfg));
 
-        check_esp_err(uart_driver_install(uart_num, self->rxbuf, self->txbuf, 0, NULL, 0));
+        check_esp_err(uart_driver_install(uart_num, self->rxbuf, self->txbuf, 3, &self->uart_queue, 0));
     }
 
     mp_map_t kw_args;
@@ -420,6 +515,96 @@ static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
 
     // Restore original setting
     check_esp_err(uart_set_baudrate(self->uart_num, baudrate));
+}
+
+// Configure the timer used for IRQ_RXIDLE
+static void uart_irq_configure_timer(machine_uart_obj_t *self, mp_uint_t trigger) {
+
+    self->rxidle_state = RXIDLE_INACTIVE;
+
+    if (trigger & UART_IRQ_RXIDLE) {
+        // The RXIDLE event is always a soft IRQ.
+        self->mp_irq_obj->ishard = false;
+        uint32_t baudrate;
+        uart_get_baudrate(self->uart_num, &baudrate);
+        mp_int_t period = TIMER_SCALE * 20 / baudrate + 1;
+        if (period < RXIDLE_TIMER_MIN) {
+            period = RXIDLE_TIMER_MIN;
+        }
+        self->rxidle_period = period;
+        self->rxidle_timer->period = period;
+        // The Python callback is not used. So use this
+        // data field to hold a reference to the UART object.
+        self->rxidle_timer->callback = self;
+        self->rxidle_timer->repeat = true;
+        self->rxidle_timer->handle = NULL;
+        self->rxidle_state = RXIDLE_STANDBY;
+    }
+}
+
+static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    uart_irq_configure_timer(self, new_trigger);
+    self->mp_irq_trigger = new_trigger;
+    return 0;
+}
+
+static mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return self->mp_irq_flags;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return self->mp_irq_trigger;
+    }
+    return 0;
+}
+
+static const mp_irq_methods_t uart_irq_methods = {
+    .trigger = uart_irq_trigger,
+    .info = uart_irq_info,
+};
+
+static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args, mp_arg_val_t *args) {
+    if (self->mp_irq_obj == NULL) {
+        self->mp_irq_trigger = 0;
+        self->mp_irq_obj = mp_irq_new(&uart_irq_methods, MP_OBJ_FROM_PTR(self));
+    }
+
+    if (any_args) {
+        // Check the handler
+        mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
+        if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
+        }
+
+        // Check the trigger
+        mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
+        mp_uint_t not_supported = trigger & ~MP_UART_ALLOWED_FLAGS;
+        if (trigger != 0 && not_supported) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%04x unsupported"), not_supported);
+        }
+
+        self->mp_irq_obj->handler = handler;
+        if (args[MP_IRQ_ARG_INIT_hard].u_bool) {
+            mp_raise_ValueError(MP_ERROR_TEXT("hard IRQ is not supported"));
+        }
+        self->mp_irq_obj->ishard = false;
+        self->mp_irq_trigger = trigger;
+        self->rxidle_timer = machine_timer_create(0);
+        uart_irq_configure_timer(self, trigger);
+
+        // Start a task for handling events
+        if (handler != mp_const_none && self->uart_event_task == NULL) {
+            xTaskCreatePinnedToCore(uart_event_task, "uart_event_task", 2048, self,
+                ESP_TASKD_EVENT_PRIO, (TaskHandle_t *)&self->uart_event_task, MP_TASK_COREID);
+        } else if (handler == mp_const_none && self->uart_event_task != NULL) {
+            vTaskDelete(self->uart_event_task);
+            self->uart_event_task = NULL;
+        }
+    }
+
+    return self->mp_irq_obj;
 }
 
 static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {

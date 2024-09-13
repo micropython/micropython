@@ -29,7 +29,7 @@
 
 #include "py/objlist.h"
 #include "py/runtime.h"
-#include "py/stackctrl.h"
+#include "py/cstack.h"
 
 static mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur, mp_obj_iter_buf_t *iter_buf);
 static mp_obj_list_t *list_new(size_t n);
@@ -188,7 +188,7 @@ static mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
-                return mp_seq_extract_slice(self->len, self->items, &slice);
+                return mp_seq_extract_slice(self->items, &slice);
             }
             mp_obj_list_t *res = list_new(slice.stop - slice.start);
             mp_seq_copy(res->items, self->items + slice.start, res->len, mp_obj_t);
@@ -291,7 +291,7 @@ static mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
 }
 
 static void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, mp_obj_t binop_less_result) {
-    MP_STACK_CHECK();
+    mp_cstack_check();
     while (head < tail) {
         mp_obj_t *h = head - 1;
         mp_obj_t *t = tail;

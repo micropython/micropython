@@ -256,9 +256,13 @@ SECTIONS
     __StackBottom = __StackTop - SIZEOF(.stack_dummy);
     PROVIDE(__stack = __StackTop);
 
-    /* Check GC heap is at least 128 KB */
-    /* On a RP2040 using all SRAM this should always be the case. */
-    ASSERT((__GcHeapEnd - __GcHeapStart) > 128*1024, "GcHeap is too small")
+    /* Check GC heap is at least 32 KB */
+    /* This is quarter the minimum RAM suggested for full-featured MicroPython.
+     * This value accounts for large static buffers included in user C or C++
+     * modules, which might significantly reduce the available heap but also
+     * lower demand for memory at runtime.
+     */
+    ASSERT((__GcHeapEnd - __GcHeapStart) > 32*1024, "GcHeap is too small")
 
     ASSERT( __binary_info_header_end - __logical_binary_start <= 256, "Binary info must be in first 256 bytes of the binary")
     /* todo assert on extra code */

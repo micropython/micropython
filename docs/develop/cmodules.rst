@@ -59,7 +59,7 @@ A MicroPython user C module is a directory with the following files:
     SRC_USERMOD_LIB_C += $(EXAMPLE_MOD_DIR)/utils/algorithm.c
 
   Similarly, use ``SRC_USERMOD_CXX`` and ``SRC_USERMOD_LIB_CXX`` for C++
-  source files.
+  source files. If you want to include assembly files use ``SRC_USERMOD_LIB_ASM``.
 
   If you have custom compiler options (like ``-I`` to add directories to search
   for header files), these should be added to ``CFLAGS_USERMOD`` for C code

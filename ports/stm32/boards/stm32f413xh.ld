@@ -6,7 +6,7 @@
 MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1536K /* entire flash */
-    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 16K /* sector 0 */
+    FLASH_START (rx): ORIGIN = 0x08000000, LENGTH = 16K /* sector 0 */
     FLASH_FS (rx)   : ORIGIN = 0x08004000, LENGTH = 176K /* sectors 1,2,3 are 16K, 4 is 64K, 5 is 128K (64K used) for filesystem */
     FLASH_FS2 (rx)  : ORIGIN = 0x08040000, LENGTH = 64K /* sector 6 is 128K (64K used) for filesystem, Total filesystem 240K */
     FLASH_TEXT (rx) : ORIGIN = 0x08060000, LENGTH = 1152K /* sectors 7,8,9,10,11,12,13,14,15  are 128K*/

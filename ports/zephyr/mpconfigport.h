@@ -43,17 +43,13 @@
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_KBD_EXCEPTION       (1)
-#define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_PY_ASYNC_AWAIT      (0)
-#define MICROPY_PY_ATTRTUPLE        (0)
 #define MICROPY_PY_BUILTINS_BYTES_HEX (1)
-#define MICROPY_PY_BUILTINS_ENUMERATE (0)
 #define MICROPY_PY_BUILTINS_FILTER  (0)
 #define MICROPY_PY_BUILTINS_MIN_MAX (0)
 #define MICROPY_PY_BUILTINS_PROPERTY (0)
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS (0)
 #define MICROPY_PY_BUILTINS_REVERSED (0)
-#define MICROPY_PY_BUILTINS_SET     (0)
 #define MICROPY_PY_BUILTINS_STR_COUNT (0)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
@@ -94,7 +90,7 @@
 #define MICROPY_PY_ZEPHYR           (1)
 #define MICROPY_PY_ZSENSOR          (1)
 #define MICROPY_PY_SYS_MODULES      (0)
-#define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
+#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_ENABLE_SCHEDULER    (1)
@@ -112,6 +108,13 @@
 #define MICROPY_COMP_CONST_FOLDING  (0)
 #define MICROPY_COMP_CONST (0)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)
+
+// When CONFIG_THREAD_CUSTOM_DATA is enabled, MICROPY_PY_THREAD is enabled automatically
+#ifdef CONFIG_THREAD_CUSTOM_DATA
+#define MICROPY_PY_THREAD                   (1)
+#define MICROPY_PY_THREAD_GIL               (1)
+#define MICROPY_PY_THREAD_GIL_VM_DIVISOR    (32)
+#endif
 
 void mp_hal_signal_event(void);
 #define MICROPY_SCHED_HOOK_SCHEDULED mp_hal_signal_event()
@@ -139,3 +142,21 @@ typedef long mp_off_t;
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
+
+#if MICROPY_PY_THREAD
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
+        MP_THREAD_GIL_EXIT(); \
+        k_msleep(1); \
+        MP_THREAD_GIL_ENTER(); \
+    } while (0);
+#else
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
+        k_msleep(1); \
+    } while (0);
+#endif

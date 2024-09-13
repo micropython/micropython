@@ -7,6 +7,7 @@
 #include "py/objint.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/repl.h"
 #include "py/mpz.h"
@@ -388,7 +389,7 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# str\n");
 
         // intern string
-        mp_printf(&mp_plat_print, "%d\n", mp_obj_is_qstr(mp_obj_str_intern(mp_obj_new_str("intern me", 9))));
+        mp_printf(&mp_plat_print, "%d\n", mp_obj_is_qstr(mp_obj_str_intern(mp_obj_new_str_from_cstr("intern me"))));
     }
 
     // bytearray
@@ -471,12 +472,12 @@ static mp_obj_t extra_coverage(void) {
         // call mp_call_function_1_protected
         mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_1_protected with invalid args
-        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str("abc", 3));
+        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str_from_cstr("abc"));
 
         // call mp_call_function_2_protected
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_2_protected with invalid args
-        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str("abc", 3), mp_obj_new_str("abc", 3));
+        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str_from_cstr("abc"), mp_obj_new_str_from_cstr("abc"));
 
         // mp_obj_int_get_checked with mp_obj_int_t that has a value that is a small integer
         mp_printf(&mp_plat_print, "%d\n", mp_obj_int_get_checked(mp_obj_int_new_mpz()));
@@ -733,10 +734,36 @@ static mp_obj_t extra_coverage(void) {
         // mp_obj_is_integer accepts ints and booleans
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_integer(mp_obj_new_int_from_ll(1)));
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_const_true), mp_obj_is_integer(mp_const_false));
-        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_obj_new_str("1", 1)), mp_obj_is_integer(mp_const_none));
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_obj_new_str_from_cstr("1")), mp_obj_is_integer(mp_const_none));
 
         // mp_obj_is_int accepts small int and object ints
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_int(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_int(mp_obj_new_int_from_ll(1)));
+    }
+
+    // Legacy stackctrl.h API, this has been replaced by cstack.h
+    {
+        mp_printf(&mp_plat_print, "# stackctrl\n");
+        char *old_stack_top = MP_STATE_THREAD(stack_top);
+        size_t old_stack_limit = 0;
+        size_t new_stack_limit = SIZE_MAX;
+        #if MICROPY_STACK_CHECK
+        old_stack_limit = MP_STATE_THREAD(stack_limit);
+        MP_STACK_CHECK();
+        #endif
+
+        mp_stack_ctrl_init(); // Will set stack top incorrectly
+        mp_stack_set_top(old_stack_top); // ... and restore it
+
+        #if MICROPY_STACK_CHECK
+        mp_stack_set_limit(MP_STATE_THREAD(stack_limit));
+        MP_STACK_CHECK();
+        new_stack_limit = MP_STATE_THREAD(stack_limit);
+        #endif
+
+        // Nothing should have changed
+        mp_printf(&mp_plat_print, "%d %d\n",
+            old_stack_top == MP_STATE_THREAD(stack_top),
+            MICROPY_STACK_CHECK == 0 || old_stack_limit == new_stack_limit);
     }
 
     mp_printf(&mp_plat_print, "# end coverage.c\n");

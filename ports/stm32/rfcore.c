@@ -539,8 +539,12 @@ void rfcore_init(void) {
     while (LL_HSEM_1StepLock(HSEM, CFG_HW_PWR_STANDBY_SEMID)) {
     }
 
-    // Select LSE as RF wakeup source
+    // Set the wakeup source to LSE or fall back to use HSE
+    #if MICROPY_HW_RTC_USE_LSE
     RCC->CSR = (RCC->CSR & ~RCC_CSR_RFWKPSEL) | 1 << RCC_CSR_RFWKPSEL_Pos;
+    #else
+    RCC->CSR = (RCC->CSR & ~RCC_CSR_RFWKPSEL) | 3 << RCC_CSR_RFWKPSEL_Pos;
+    #endif
 
     // Initialise IPCC and shared memory structures
     ipcc_init(IRQ_PRI_SDIO);

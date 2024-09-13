@@ -47,6 +47,10 @@
 #include "usb_serial_jtag.h"
 #include "uart.h"
 
+#if MICROPY_PY_STRING_TX_GIL_THRESHOLD < 0
+#error "MICROPY_PY_STRING_TX_GIL_THRESHOLD must be positive"
+#endif
+
 TaskHandle_t mp_main_task_handle;
 
 static uint8_t stdin_ringbuf_array[260];
@@ -100,7 +104,7 @@ void check_esp_err_(esp_err_t code, const char *func, const int line, const char
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
-    #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    #if MICROPY_HW_ESP_USB_SERIAL_JTAG
     usb_serial_jtag_poll_rx();
     #endif
     if ((poll_flags & MP_STREAM_POLL_RD) && stdin_ringbuf.iget != stdin_ringbuf.iput) {
@@ -114,7 +118,7 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+        #if MICROPY_HW_ESP_USB_SERIAL_JTAG
         usb_serial_jtag_poll_rx();
         #endif
         int c = ringbuf_get(&stdin_ringbuf);
@@ -129,14 +133,20 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     // Only release the GIL if many characters are being sent
     mp_uint_t ret = len;
     bool did_write = false;
-    bool release_gil = len > 20;
+    bool release_gil = len > MICROPY_PY_STRING_TX_GIL_THRESHOLD;
+    #if MICROPY_DEBUG_PRINTERS && MICROPY_DEBUG_VERBOSE && MICROPY_PY_THREAD_GIL
+    // If verbose debug output is enabled some strings are printed before the
+    // GIL mutex is set up.  When that happens, no Python code is running and
+    // therefore the interpreter doesn't care about the GIL not being ready.
+    release_gil = release_gil && (MP_STATE_VM(gil_mutex).handle != NULL);
+    #endif
     if (release_gil) {
         MP_THREAD_GIL_EXIT();
     }
-    #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    #if MICROPY_HW_ESP_USB_SERIAL_JTAG
     usb_serial_jtag_tx_strn(str, len);
     did_write = true;
-    #elif CONFIG_USB_OTG_SUPPORTED
+    #elif MICROPY_HW_USB_CDC
     usb_tx_strn(str, len);
     did_write = true;
     #endif

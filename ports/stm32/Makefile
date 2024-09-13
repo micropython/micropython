@@ -143,7 +143,15 @@ CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
 CFLAGS += -fsingle-precision-constant
 endif
 
-LDFLAGS += -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Wl,-Map=$(@:.elf=.map) -Wl,--cref
+# Configure linker include dir for ram/rom isr support
+ifeq ($(MICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM),1)
+CFLAGS += -DMICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM=1
+LD_ISR_DIR = boards/common_isr_ram
+else
+LD_ISR_DIR = boards/common_isr_rom
+endif
+
+LDFLAGS += -nostdlib -L $(LD_DIR) -L $(LD_ISR_DIR) $(addprefix -T,$(LD_FILES)) -Wl,-Map=$(@:.elf=.map) -Wl,--cref
 LDFLAGS += -Wl,--defsym=_estack_reserve=8
 LIBS += "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
 
@@ -465,7 +473,8 @@ OBJ += $(GEN_PINS_SRC:.c=.o)
 # Don't use -O3 with this file because gcc tries to optimise memset in terms of itself.
 $(BUILD)/shared/libc/string0.o: COPT += -O2
 
-# We put several files into the first 16K section with the ISRs.
+ifneq ($(MICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM),1)
+# If MBOOT or RAM_IFS is not used we put several files into the first 16K section with the ISRs.
 # If we compile these using -O0 then it won't fit. So if you really want these
 # to be compiled with -O0, then edit boards/common.ld (in the .isr_vector section)
 # and comment out the following lines.
@@ -474,6 +483,7 @@ $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 $(PY_BUILD)/formatfloat.o: COPT += -Os
 $(PY_BUILD)/parsenum.o: COPT += -Os
 $(PY_BUILD)/mpprint.o: COPT += -Os
+endif
 
 all: $(TOP)/lib/stm32lib/README.md all_main $(BUILD)/firmware.hex
 
@@ -557,7 +567,7 @@ TEXT0_ADDR ?= 0x08000000
 ifeq ($(TEXT1_ADDR),)
 # No TEXT1_ADDR given so put all firmware at TEXT0_ADDR location
 
-TEXT0_SECTIONS ?= .isr_vector .text .data .ARM
+TEXT0_SECTIONS ?= .isr_vector .isr_extratext .text .data .ARM
 
 deploy-stlink: $(BUILD)/firmware.bin
 	$(call RUN_STLINK,$^,$(TEXT0_ADDR))
@@ -574,7 +584,7 @@ $(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
 else
 # TEXT0_ADDR and TEXT1_ADDR are specified so split firmware between these locations
 
-TEXT0_SECTIONS ?= .isr_vector
+TEXT0_SECTIONS ?= .isr_vector .isr_extratext
 TEXT1_SECTIONS ?= .text .data .ARM
 
 deploy-stlink: $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin

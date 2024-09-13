@@ -132,9 +132,9 @@ static void split_immediate(mp_int_t immediate, mp_uint_t *upper, mp_uint_t *low
 
 static void load_upper_immediate(asm_rv32_t *state, mp_uint_t rd, mp_uint_t immediate) {
     // if immediate fits in 17 bits and is ≠ 0:
-    //   c.lui  rd, HI(immediate)
+    //   c.lui rd, HI(immediate)
     // else:
-    //   lui    rd, HI(immediate)
+    //   lui   rd, HI(immediate)
     if (FIT_SIGNED(immediate, 17) && ((immediate >> 12) != 0)) {
         asm_rv32_opcode_clui(state, rd, immediate);
     } else {
@@ -270,6 +270,14 @@ static void emit_function_epilogue(asm_rv32_t *state, mp_uint_t registers) {
     state->saved_registers_mask = old_saved_registers_mask;
 }
 
+static bool calculate_displacement_for_label(asm_rv32_t *state, mp_uint_t label, ptrdiff_t *displacement) {
+    assert(displacement != NULL && "Displacement pointer is NULL");
+
+    mp_uint_t label_offset = state->base.label_offsets[label];
+    *displacement = (ptrdiff_t)(label_offset - state->base.code_offset);
+    return (label_offset != (mp_uint_t)-1) && (*displacement < 0);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void asm_rv32_entry(asm_rv32_t *state, mp_uint_t locals) {
@@ -293,7 +301,7 @@ void asm_rv32_emit_call_ind(asm_rv32_t *state, mp_uint_t index) {
     mp_uint_t offset = index * ASM_WORD_SIZE;
     state->saved_registers_mask |= (1U << ASM_RV32_REG_RA);
 
-    if (IS_IN_C_REGISTER_WINDOW(REG_FUN_TABLE) && IS_IN_C_REGISTER_WINDOW(INTERNAL_TEMPORARY) && FIT_SIGNED(offset, 7)) {
+    if (IS_IN_C_REGISTER_WINDOW(REG_FUN_TABLE) && IS_IN_C_REGISTER_WINDOW(INTERNAL_TEMPORARY) && FIT_UNSIGNED(offset, 6)) {
         // c.lw   temporary, offset(fun_table)
         // c.jalr temporary
         asm_rv32_opcode_clw(state, MAP_IN_C_REGISTER_WINDOW(INTERNAL_TEMPORARY), MAP_IN_C_REGISTER_WINDOW(REG_FUN_TABLE), offset);
@@ -304,8 +312,8 @@ void asm_rv32_emit_call_ind(asm_rv32_t *state, mp_uint_t index) {
     if (FIT_UNSIGNED(offset, 11)) {
         // lw     temporary, offset(fun_table)
         // c.jalr temporary
-        asm_rv32_opcode_lw(state, INTERNAL_TEMPORARY, REG_FUN_TABLE, offset);
-        asm_rv32_opcode_cjalr(state, INTERNAL_TEMPORARY);
+        asm_rv32_opcode_lw(state, REG_TEMP2, REG_FUN_TABLE, offset);
+        asm_rv32_opcode_cjalr(state, REG_TEMP2);
         return;
     }
 
@@ -313,23 +321,21 @@ void asm_rv32_emit_call_ind(asm_rv32_t *state, mp_uint_t index) {
     mp_uint_t lower = 0;
     split_immediate(offset, &upper, &lower);
 
-    // TODO: Can this clobber REG_TEMP[0:2]?
-
     // lui    temporary, HI(index) ; Or c.lui if possible
     // c.add  temporary, fun_table
     // lw     temporary, LO(index)(temporary)
     // c.jalr temporary
-    load_upper_immediate(state, INTERNAL_TEMPORARY, upper);
-    asm_rv32_opcode_cadd(state, INTERNAL_TEMPORARY, REG_FUN_TABLE);
-    asm_rv32_opcode_lw(state, INTERNAL_TEMPORARY, INTERNAL_TEMPORARY, lower);
-    asm_rv32_opcode_cjalr(state, INTERNAL_TEMPORARY);
+    load_upper_immediate(state, REG_TEMP2, upper);
+    asm_rv32_opcode_cadd(state, REG_TEMP2, REG_FUN_TABLE);
+    asm_rv32_opcode_lw(state, REG_TEMP2, REG_TEMP2, lower);
+    asm_rv32_opcode_cjalr(state, REG_TEMP2);
 }
 
 void asm_rv32_emit_jump_if_reg_eq(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t label) {
-    ptrdiff_t displacement = (ptrdiff_t)(state->base.label_offsets[label] - state->base.code_offset);
+    ptrdiff_t displacement = 0;
+    bool can_emit_short_jump = calculate_displacement_for_label(state, label, &displacement);
 
-    // The least significant bit is ignored anyway.
-    if (FIT_SIGNED(displacement, 13)) {
+    if (can_emit_short_jump && FIT_SIGNED(displacement, 13)) {
         // beq rs1, rs2, displacement
         asm_rv32_opcode_beq(state, rs1, rs2, displacement);
         return;
@@ -342,43 +348,32 @@ void asm_rv32_emit_jump_if_reg_eq(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs
     mp_uint_t lower = 0;
     split_immediate(displacement, &upper, &lower);
 
-    // TODO: Can this clobber REG_TEMP[0:2]?
-
     // bne   rs1, rs2, 12                      ; PC + 0
     // auipc temporary, HI(displacement)       ; PC + 4
     // jalr  zero, temporary, LO(displacement) ; PC + 8
     // ...                                     ; PC + 12
     asm_rv32_opcode_bne(state, rs1, rs2, 12);
-    asm_rv32_opcode_auipc(state, INTERNAL_TEMPORARY, upper);
-    asm_rv32_opcode_jalr(state, ASM_RV32_REG_ZERO, INTERNAL_TEMPORARY, lower);
+    asm_rv32_opcode_auipc(state, REG_TEMP2, upper);
+    asm_rv32_opcode_jalr(state, ASM_RV32_REG_ZERO, REG_TEMP2, lower);
 }
 
 void asm_rv32_emit_jump_if_reg_nonzero(asm_rv32_t *state, mp_uint_t rs, mp_uint_t label) {
-    ptrdiff_t displacement = (ptrdiff_t)(state->base.label_offsets[label] - state->base.code_offset);
+    ptrdiff_t displacement = 0;
+    bool can_emit_short_jump = calculate_displacement_for_label(state, label, &displacement);
 
-    if (FIT_SIGNED(displacement, 9) && IS_IN_C_REGISTER_WINDOW(rs)) {
+    if (can_emit_short_jump && FIT_SIGNED(displacement, 8) && IS_IN_C_REGISTER_WINDOW(rs)) {
         // c.bnez rs', displacement
         asm_rv32_opcode_cbnez(state, MAP_IN_C_REGISTER_WINDOW(rs), displacement);
         return;
     }
 
-    // The least significant bit is ignored anyway.
-    if (FIT_SIGNED(displacement, 13)) {
+    if (can_emit_short_jump && FIT_SIGNED(displacement, 13)) {
         // bne rs, zero, displacement
         asm_rv32_opcode_bne(state, rs, ASM_RV32_REG_ZERO, displacement);
         return;
     }
 
-    // Compensate for the initial C.BEQZ/BEQ opcode.
-    displacement -= IS_IN_C_REGISTER_WINDOW(rs) ? ASM_HALFWORD_SIZE : ASM_WORD_SIZE;
-
-    mp_uint_t upper = 0;
-    mp_uint_t lower = 0;
-    split_immediate(displacement, &upper, &lower);
-
-    // TODO: Can this clobber REG_TEMP[0:2]?
-
-    // if rs1 in C window (the offset always fits):
+    // if rs1 in C window and displacement is negative:
     //    c.beqz rs', 10                           ; PC + 0
     //    auipc  temporary, HI(displacement)       ; PC + 2
     //    jalr   zero, temporary, LO(displacement) ; PC + 6
@@ -388,13 +383,22 @@ void asm_rv32_emit_jump_if_reg_nonzero(asm_rv32_t *state, mp_uint_t rs, mp_uint_
     //    auipc  temporary, HI(displacement)       ; PC + 4
     //    jalr   zero, temporary, LO(displacement) ; PC + 8
     //    ...                                      ; PC + 12
-    if (IS_IN_C_REGISTER_WINDOW(rs)) {
+
+    if (can_emit_short_jump && IS_IN_C_REGISTER_WINDOW(rs)) {
         asm_rv32_opcode_cbeqz(state, MAP_IN_C_REGISTER_WINDOW(rs), 10);
+        // Compensate for the C.BEQZ opcode.
+        displacement -= ASM_HALFWORD_SIZE;
     } else {
         asm_rv32_opcode_beq(state, rs, ASM_RV32_REG_ZERO, 12);
+        // Compensate for the BEQ opcode.
+        displacement -= ASM_WORD_SIZE;
     }
-    asm_rv32_opcode_auipc(state, INTERNAL_TEMPORARY, upper);
-    asm_rv32_opcode_jalr(state, ASM_RV32_REG_ZERO, INTERNAL_TEMPORARY, lower);
+
+    mp_uint_t upper = 0;
+    mp_uint_t lower = 0;
+    split_immediate(displacement, &upper, &lower);
+    asm_rv32_opcode_auipc(state, REG_TEMP2, upper);
+    asm_rv32_opcode_jalr(state, ASM_RV32_REG_ZERO, REG_TEMP2, lower);
 }
 
 void asm_rv32_emit_mov_local_reg(asm_rv32_t *state, mp_uint_t local, mp_uint_t rs) {
@@ -416,14 +420,12 @@ void asm_rv32_emit_mov_local_reg(asm_rv32_t *state, mp_uint_t local, mp_uint_t r
     mp_uint_t lower = 0;
     split_immediate(offset, &upper, &lower);
 
-    // TODO: Can this clobber REG_TEMP[0:2]?
-
     // lui   temporary, HI(offset) ; Or c.lui if possible
     // c.add temporary, sp
     // sw    rs, LO(offset)(temporary)
-    load_upper_immediate(state, INTERNAL_TEMPORARY, upper);
-    asm_rv32_opcode_cadd(state, INTERNAL_TEMPORARY, ASM_RV32_REG_SP);
-    asm_rv32_opcode_sw(state, rs, INTERNAL_TEMPORARY, lower);
+    load_upper_immediate(state, REG_TEMP2, upper);
+    asm_rv32_opcode_cadd(state, REG_TEMP2, ASM_RV32_REG_SP);
+    asm_rv32_opcode_sw(state, rs, REG_TEMP2, lower);
 }
 
 void asm_rv32_emit_mov_reg_local(asm_rv32_t *state, mp_uint_t rd, mp_uint_t local) {
@@ -477,7 +479,7 @@ void asm_rv32_emit_mov_reg_local_addr(asm_rv32_t *state, mp_uint_t rd, mp_uint_t
 void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, mp_int_t offset) {
     mp_int_t scaled_offset = offset * sizeof(ASM_WORD_SIZE);
 
-    if (IS_IN_C_REGISTER_WINDOW(rd) && IS_IN_C_REGISTER_WINDOW(rs) && FIT_SIGNED(offset, 7)) {
+    if (scaled_offset >= 0 && IS_IN_C_REGISTER_WINDOW(rd) && IS_IN_C_REGISTER_WINDOW(rs) && FIT_UNSIGNED(scaled_offset, 6)) {
         // c.lw rd', offset(rs')
         asm_rv32_opcode_clw(state, MAP_IN_C_REGISTER_WINDOW(rd), MAP_IN_C_REGISTER_WINDOW(rs), scaled_offset);
         return;
@@ -502,10 +504,10 @@ void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_
 }
 
 void asm_rv32_emit_jump(asm_rv32_t *state, mp_uint_t label) {
-    ptrdiff_t displacement = (ptrdiff_t)(state->base.label_offsets[label] - state->base.code_offset);
+    ptrdiff_t displacement = 0;
+    bool can_emit_short_jump = calculate_displacement_for_label(state, label, &displacement);
 
-    // The least significant bit is ignored anyway.
-    if (FIT_SIGNED(displacement, 13)) {
+    if (can_emit_short_jump && FIT_SIGNED(displacement, 12)) {
         // c.j displacement
         asm_rv32_opcode_cj(state, displacement);
         return;
@@ -515,12 +517,10 @@ void asm_rv32_emit_jump(asm_rv32_t *state, mp_uint_t label) {
     mp_uint_t lower = 0;
     split_immediate(displacement, &upper, &lower);
 
-    // TODO: Can this clobber REG_TEMP[0:2]?
-
     // auipc temporary, HI(displacement)
     // jalr  zero, temporary, LO(displacement)
-    asm_rv32_opcode_auipc(state, INTERNAL_TEMPORARY, upper);
-    asm_rv32_opcode_jalr(state, ASM_RV32_REG_ZERO, INTERNAL_TEMPORARY, lower);
+    asm_rv32_opcode_auipc(state, REG_TEMP2, upper);
+    asm_rv32_opcode_jalr(state, ASM_RV32_REG_ZERO, REG_TEMP2, lower);
 }
 
 void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, mp_int_t offset) {
@@ -536,12 +536,12 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint
     mp_uint_t lower = 0;
     split_immediate(scaled_offset, &upper, &lower);
 
-    // lui   rd, HI(offset) ; Or c.lui if possible
-    // c.add rd, rs
-    // sw    rd, LO(offset)(rd)
-    load_upper_immediate(state, rd, upper);
-    asm_rv32_opcode_cadd(state, rd, rs);
-    asm_rv32_opcode_sw(state, rd, rd, lower);
+    // lui   temporary, HI(offset) ; Or c.lui if possible
+    // c.add temporary, rs
+    // sw    rd, LO(offset)(temporary)
+    load_upper_immediate(state, REG_TEMP2, upper);
+    asm_rv32_opcode_cadd(state, REG_TEMP2, rs);
+    asm_rv32_opcode_sw(state, rd, REG_TEMP2, lower);
 }
 
 void asm_rv32_emit_mov_reg_pcrel(asm_rv32_t *state, mp_uint_t rd, mp_uint_t label) {
@@ -549,11 +549,6 @@ void asm_rv32_emit_mov_reg_pcrel(asm_rv32_t *state, mp_uint_t rd, mp_uint_t labe
     mp_uint_t upper = 0;
     mp_uint_t lower = 0;
     split_immediate(displacement, &upper, &lower);
-
-    // Compressed instructions are not used even if they may allow for code size
-    // savings as the code changes size between compute and emit passes
-    // otherwise.  If that happens then the assertion at asmbase.c:93 triggers
-    // when built in debug mode.
 
     // auipc rd, HI(relative)
     // addi  rd, rd, LO(relative)

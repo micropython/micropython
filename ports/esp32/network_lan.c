@@ -36,6 +36,7 @@
 
 #include "esp_eth.h"
 #include "esp_eth_mac.h"
+#include "esp_mac.h"
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_netif.h"
@@ -90,6 +91,17 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
             break;
         default:
             break;
+    }
+}
+
+static void set_mac_address(lan_if_obj_t *self, uint8_t *mac, size_t len) {
+    if (len != 6) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid buffer length"));
+    }
+    if (((mac[0] & 0x01) != 0) ||
+        (esp_eth_ioctl(self->eth_handle, ETH_CMD_S_MAC_ADDR, mac) != ESP_OK) ||
+        (esp_netif_set_mac(self->base.netif, mac) != ESP_OK)) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("failed setting MAC address"));
     }
 }
 
@@ -302,6 +314,14 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_netif_attach failed"));
     }
 
+    // If MAC address is unset, set it to the address reserved for the ESP32 ETH interface
+    uint8_t mac_addr[6];
+    esp_eth_ioctl(self->eth_handle, ETH_CMD_G_MAC_ADDR, mac_addr);
+    if ((mac_addr[0] | mac_addr[1] | mac_addr[2] | mac_addr[3] | mac_addr[4] | mac_addr[5]) == 0) {
+        esp_read_mac(mac_addr, ESP_MAC_ETH);  // Get ESP32 MAC address for ETH iface
+        set_mac_address(self, mac_addr, sizeof(mac_addr));
+    }
+
     eth_status = ETH_INITIALIZED;
 
     return MP_OBJ_FROM_PTR(&lan_obj);
@@ -312,13 +332,14 @@ static mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
     lan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (n_args > 1) {
-        if (mp_obj_is_true(args[1])) {
+        bool make_active = mp_obj_is_true(args[1]);
+        if (make_active && !self->base.active) {
             esp_netif_set_hostname(self->base.netif, mod_network_hostname_data);
             self->base.active = (esp_eth_start(self->eth_handle) == ESP_OK);
             if (!self->base.active) {
                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet enable failed"));
             }
-        } else {
+        } else if (!make_active && self->base.active) {
             self->base.active = !(esp_eth_stop(self->eth_handle) == ESP_OK);
             if (self->base.active) {
                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet disable failed"));
@@ -355,15 +376,7 @@ static mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     case MP_QSTR_mac: {
                         mp_buffer_info_t bufinfo;
                         mp_get_buffer_raise(kwargs->table[i].value, &bufinfo, MP_BUFFER_READ);
-                        if (bufinfo.len != 6) {
-                            mp_raise_ValueError(MP_ERROR_TEXT("invalid buffer length"));
-                        }
-                        if (
-                            (esp_eth_ioctl(self->eth_handle, ETH_CMD_S_MAC_ADDR, bufinfo.buf) != ESP_OK) ||
-                            (esp_netif_set_mac(self->base.netif, bufinfo.buf) != ESP_OK)
-                            ) {
-                            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("failed setting MAC address"));
-                        }
+                        set_mac_address(self, bufinfo.buf, bufinfo.len);
                         break;
                     }
                     default:

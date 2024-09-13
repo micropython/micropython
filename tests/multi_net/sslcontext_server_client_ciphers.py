@@ -13,14 +13,12 @@ PORT = 8000
 # These are test certificates. See tests/README.md for details.
 cert = cafile = "ec_cert.der"
 key = "ec_key.der"
-with open(cafile, "rb") as f:
-    cadata = f.read()
-with open(key, "rb") as f:
-    keydata = f.read()
 
 try:
-    os.stat(cafile)
-    os.stat(key)
+    with open(cafile, "rb") as f:
+        cadata = f.read()
+    with open(key, "rb") as f:
+        keydata = f.read()
 except OSError:
     print("SKIP")
     raise SystemExit

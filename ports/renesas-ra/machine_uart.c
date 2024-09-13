@@ -41,6 +41,8 @@
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) }, \
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RX), MP_ROM_INT(UART_IRQ_RX) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_IRQ_RXIDLE) }, \
 
 static const char *_parity_name[] = {"None", "ODD", "EVEN"};
 
@@ -296,6 +298,8 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
         // reference existing UART object
         self = MP_STATE_PORT(machine_uart_obj_all)[uart_id];
     }
+    self->mp_irq_obj = NULL;
+    self->rxidle_state = RXIDLE_INACTIVE;
 
     // start the peripheral
     mp_map_t kw_args;
@@ -350,6 +354,29 @@ static mp_int_t mp_machine_uart_readchar(machine_uart_obj_t *self) {
     }
 }
 
+// Configure the timer used for IRQ_RXIDLE
+void uart_irq_configure_timer(machine_uart_obj_t *self, mp_uint_t trigger) {
+    self->rxidle_state = RXIDLE_INACTIVE;
+
+    if (trigger & UART_IRQ_RXIDLE) {
+        // The RXIDLE event is always a soft IRQ.
+        self->mp_irq_obj->ishard = false;
+        mp_int_t ms = 13000 / self->baudrate + 1;
+        if (ms < RXIDLE_TIMER_MIN) {
+            ms = RXIDLE_TIMER_MIN;
+        }
+        self->rxidle_ms = ms;
+        self->rxidle_timer.context = self;
+        soft_timer_static_init(
+            &self->rxidle_timer.base,
+            SOFT_TIMER_MODE_PERIODIC,
+            ms,
+            uart_soft_timer_callback
+            );
+        self->rxidle_state = RXIDLE_STANDBY;
+    }
+}
+
 static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args, mp_arg_val_t *args) {
     if (self->mp_irq_obj == NULL) {
         self->mp_irq_trigger = 0;
@@ -375,6 +402,7 @@ static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args
         self->mp_irq_obj->handler = handler;
         self->mp_irq_obj->ishard = args[MP_IRQ_ARG_INIT_hard].u_bool;
         self->mp_irq_trigger = trigger;
+        uart_irq_configure_timer(self, trigger);
         uart_irq_config(self, true);
     }
 

@@ -5,11 +5,10 @@ import ssl
 # This certificate was obtained from micropython.org using openssl:
 # $ openssl s_client -showcerts -connect micropython.org:443 </dev/null 2>/dev/null
 # The certificate is from Let's Encrypt:
-# 1 s:/C=US/O=Let's Encrypt/CN=R3
-#   i:/C=US/O=Internet Security Research Group/CN=ISRG Root X1
-# Validity
-#            Not Before: Sep  4 00:00:00 2020 GMT
-#            Not After : Sep 15 16:00:00 2025 GMT
+# 1 s:C=US, O=Let's Encrypt, CN=R11
+#   i:C=US, O=Internet Security Research Group, CN=ISRG Root X1
+#   a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
+#   v:NotBefore: Mar 13 00:00:00 2024 GMT; NotAfter: Mar 12 23:59:59 2027 GMT
 # Copy PEM content to a file (certmpy.pem) and convert to DER e.g.
 # $ openssl x509 -in certmpy.pem -out certmpy.der -outform DER
 # Then convert to hex format, eg using binascii.hexlify(data).

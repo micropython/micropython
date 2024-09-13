@@ -127,7 +127,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_country_obj, 0, 1, network_count
 
 mp_obj_t mod_network_hostname(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
-        return mp_obj_new_str(mod_network_hostname_data, strlen(mod_network_hostname_data));
+        return mp_obj_new_str_from_cstr(mod_network_hostname_data);
     } else {
         size_t len;
         const char *str = mp_obj_str_get_data(args[0], &len);
@@ -154,6 +154,10 @@ static const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_hostname), MP_ROM_PTR(&mod_network_hostname_obj) },
     #if LWIP_VERSION_MAJOR >= 2 || MICROPY_PY_NETWORK_NINAW10
     { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&mod_network_ipconfig_obj) },
+    #endif
+
+    #if MICROPY_PY_NETWORK_PPP_LWIP
+    { MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&mp_network_ppp_lwip_type) },
     #endif
 
     // Defined per port in mpconfigport.h

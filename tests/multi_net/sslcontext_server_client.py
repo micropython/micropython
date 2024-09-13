@@ -15,17 +15,13 @@ certfile = "ec_cert.der"
 keyfile = "ec_key.der"
 
 try:
-    os.stat(certfile)
-    os.stat(keyfile)
+    with open(certfile, "rb") as cf:
+        cert = cadata = cf.read()
+    with open(keyfile, "rb") as kf:
+        key = kf.read()
 except OSError:
     print("SKIP")
     raise SystemExit
-
-with open(certfile, "rb") as cf:
-    cert = cadata = cf.read()
-
-with open(keyfile, "rb") as kf:
-    key = kf.read()
 
 
 # Server

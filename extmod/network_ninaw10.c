@@ -266,7 +266,7 @@ static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_key,      MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NINA_SEC_WPA_PSK} },
         { MP_QSTR_channel,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     };
 
@@ -277,7 +277,6 @@ static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
 
     // get ssid
     const char *ssid = mp_obj_str_get_str(args[ARG_ssid].u_obj);
-
     if (strlen(ssid) == 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("SSID can't be empty"));
     }
@@ -290,12 +289,6 @@ static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
 
     // get security mode
     mp_uint_t security = args[ARG_security].u_int;
-    if (security == -1 && self->itf == MOD_NETWORK_STA_IF) {
-        security = NINA_SEC_WPA_PSK;
-    } else if (security == -1 && self->itf == MOD_NETWORK_AP_IF) {
-        security = NINA_SEC_WEP;
-    }
-
     // Ensure that the key is not empty if a security mode is used.
     if (security != NINA_SEC_OPEN && strlen(key) == 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("key can't be empty"));
@@ -326,11 +319,6 @@ static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
         soft_timer_reinsert(&mp_wifi_poll_timer, NINAW10_POLL_INTERVAL);
     } else {
         mp_uint_t channel = args[ARG_channel].u_int;
-
-        if (security != NINA_SEC_OPEN && security != NINA_SEC_WEP) {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("AP mode only supports WEP or OPEN security modes"));
-        }
-
         // Initialize WiFi in AP mode.
         if (nina_start_ap(ssid, security, key, channel) != 0) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("failed to start in AP mode"));
@@ -536,7 +524,7 @@ static mp_obj_t network_ninaw10_config(size_t n_args, const mp_obj_t *args, mp_m
             case MP_QSTR_ssid: {
                 nina_netinfo_t netinfo;
                 nina_netinfo(&netinfo);
-                return mp_obj_new_str(netinfo.ssid, strlen(netinfo.ssid));
+                return mp_obj_new_str_from_cstr(netinfo.ssid);
             }
             case MP_QSTR_security: {
                 nina_netinfo_t netinfo;

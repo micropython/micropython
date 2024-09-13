@@ -438,6 +438,10 @@ The i.MXRT MCU supports battery backup of the RTC.  By connecting a battery of
 current drawn from the battery is ~20µA, which is rather high.  A CR2032 coin
 cell will last for about one year.
 
+Note: In v1.23.0 the support for subseconds was removed. When reading the RTC, 0 will
+be returned as value for subsecond, When setting the RTC time, the subsecond
+field is ignored. The RTC itself does not provide a microsecond value.
+
 SD card
 -------
 
@@ -528,7 +532,7 @@ Ethernet.  Example usage::
     lan.active(True)
 
 If there is a DHCP server in the LAN, the IP address is supplied by that server.
-Otherwise, the IP address can be set with lan.ifconfig().  The default address
+Otherwise, the IP address can be set with lan.ipconfig(addr4="...").  The default address
 is 192.168.0.1.
 
 Teensy 4.1 does not have an Ethernet jack on the board, but PJRC offers an

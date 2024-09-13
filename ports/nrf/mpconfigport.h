@@ -151,7 +151,6 @@
 #define MICROPY_PY_OS_INCLUDEFILE   "ports/nrf/modules/os/modos.c"
 #define MICROPY_PY_OS_DUPTERM       (1)
 #define MICROPY_PY_OS_DUPTERM_STREAM_DETACHED_ATTACHED (1)
-#define MICROPY_PY_OS_SEP           (1)
 #define MICROPY_PY_OS_SYNC          (MICROPY_VFS)
 #define MICROPY_PY_OS_UNAME         (1)
 #define MICROPY_PY_OS_URANDOM       (MICROPY_HW_ENABLE_RNG)
@@ -159,8 +158,7 @@
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
-#if MICROPY_HW_USB_CDC_1200BPS_TOUCH
-#define MICROPY_HW_ENABLE_USBDEV    (1)
+#if MICROPY_HW_ENABLE_USBDEV
 #define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_SCHEDULER_STATIC_NODES (1)
 #endif
@@ -232,6 +230,10 @@
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/nrf/modules/machine/uart.c"
 #define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (1)
 
+#if defined(NRF52840)
+#define MICROPY_PY_MACHINE_UART_IRQ  (1)
+#endif
+
 #ifndef MICROPY_PY_MACHINE_TIMER_NRF
 #define MICROPY_PY_MACHINE_TIMER_NRF (1)
 #endif
@@ -298,6 +300,24 @@
 #define MICROPY_PY_BLE_NUS                       (0)
 #endif
 
+// Whether to enable the REPL on a UART.
+#ifndef MICROPY_HW_ENABLE_UART_REPL
+// note: if both uart repl and cdc are enabled, uart hwfc can cause the cdc to lock up.
+#define MICROPY_HW_ENABLE_UART_REPL (!MICROPY_PY_BLE_NUS && !MICROPY_HW_USB_CDC)
+#endif
+
+#if MICROPY_HW_ENABLE_UART_REPL
+
+#ifndef MICROPY_HW_UART_REPL
+#define MICROPY_HW_UART_REPL (0)
+#endif
+
+#ifndef MICROPY_HW_UART_REPL_BAUD
+#define MICROPY_HW_UART_REPL_BAUD (115200)
+#endif
+
+#endif
+
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
@@ -332,17 +352,21 @@ long unsigned int rng_generate_random_word(void);
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#if MICROPY_HW_USB_CDC
-#include "device/usbd.h"
-#define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();
-#define MICROPY_EXCLUDE_SHARED_TINYUSB_USBD_CDC (1)
-#else
-#define MICROPY_HW_USBDEV_TASK_HOOK ;
+#if MICROPY_HW_ENABLE_USBDEV
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC (1)
 #endif
+
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID  (0xf055)
+#endif
+#ifndef MICROPY_HW_USB_PID
+#define MICROPY_HW_USB_PID  (0x9802)
+#endif
+#endif // MICROPY_HW_ENABLE_USBDEV
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        MICROPY_HW_USBDEV_TASK_HOOK \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
         __WFI(); \
