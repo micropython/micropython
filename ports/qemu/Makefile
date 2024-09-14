@@ -243,7 +243,7 @@ all: $(BUILD)/firmware.elf
 
 .PHONY: repl
 repl: $(BUILD)/firmware.elf
-	$(ECHO) "Use machine.reset() to exit"
+	$(ECHO) "Use \"import machine; machine.reset()\" to exit, or press CTRL+A followed by X"
 	$(QEMU_SYSTEM) $(QEMU_ARGS) -serial mon:stdio -kernel $<
 
 .PHONY: run
