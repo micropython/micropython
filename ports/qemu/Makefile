@@ -239,6 +239,14 @@ SRC_QSTR += $(SRC_C) $(LIBM_SRC_C)
 ################################################################################
 # Main targets
 
+ifneq ($(strip $(QEMU_FS_ROOT)),)
+ifneq ($(wildcard $(QEMU_FS_ROOT)/.),)
+QEMU_ARGS += -semihosting-config arg="-mp $(QEMU_FS_ROOT)"
+else
+$(error "$(QEMU_FS_ROOT)" is not a directory.)
+endif
+endif
+
 all: $(BUILD)/firmware.elf
 
 .PHONY: repl
