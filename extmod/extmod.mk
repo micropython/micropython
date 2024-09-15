@@ -68,6 +68,7 @@ SRC_EXTMOD_C += \
 	extmod/vfs_posix.c \
 	extmod/vfs_posix_file.c \
 	extmod/vfs_reader.c \
+	extmod/vfs_semihosting.c \
 	extmod/virtpin.c \
 	shared/libc/abort_.c \
 	shared/libc/printf.c \
