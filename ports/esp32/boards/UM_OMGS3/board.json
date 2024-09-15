@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "RGB LED",
+        "External RAM",
+        "WiFi",
+        "BLE"
+    ],
+    "features_non_filterable": [
+        "I2C BAT Fuel Gauge"
+    ],
+    "id": "omgs3",
+    "images": [
+        "unexpectedmaker_omgs3.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "OMGS3",
+    "thumbnail": "",
+    "url": "https://omgs3.io",
+    "vendor": "Unexpected Maker"
+}
