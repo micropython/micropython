@@ -101,6 +101,9 @@ typedef struct _mp_bt_zephyr_conn_t {
 } mp_bt_zephyr_conn_t;
 
 typedef struct _mp_bluetooth_zephyr_root_pointers_t {
+    // list of objects to be tracked by the gc
+    mp_obj_t objs_list;
+
     // Characteristic (and descriptor) value storage.
     mp_gatts_db_t gatts_db;
 
@@ -110,7 +113,6 @@ typedef struct _mp_bluetooth_zephyr_root_pointers_t {
 
     // active connections
     mp_bt_zephyr_conn_t *connections;
-
 } mp_bluetooth_zephyr_root_pointers_t;
 
 static int mp_bluetooth_zephyr_ble_state;
@@ -278,6 +280,8 @@ int mp_bluetooth_init(void) {
     MP_STATE_PORT(bluetooth_zephyr_root_pointers)->connections = NULL;
     mp_bt_zephyr_next_conn = NULL;
 
+    MP_STATE_PORT(bluetooth_zephyr_root_pointers)->objs_list = mp_obj_new_list(0, NULL);
+
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     mp_bluetooth_zephyr_gap_scan_state = MP_BLUETOOTH_ZEPHYR_GAP_SCAN_STATE_INACTIVE;
     k_timer_init(&mp_bluetooth_zephyr_gap_scan_timer, gap_scan_cb_timeout, NULL);
@@ -322,6 +326,7 @@ void mp_bluetooth_deinit(void) {
     mp_bluetooth_zephyr_ble_state = MP_BLUETOOTH_ZEPHYR_BLE_STATE_SUSPENDED;
 
     MP_STATE_PORT(bluetooth_zephyr_root_pointers) = NULL;
+    mp_bt_zephyr_next_conn = NULL;
 }
 
 bool mp_bluetooth_is_active(void) {
@@ -409,6 +414,7 @@ int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, cons
 
     // pre-allocate a new connection structure as we cannot allocate this inside the connection callback
     mp_bt_zephyr_next_conn = m_new0(mp_bt_zephyr_conn_t, 1);
+    mp_obj_list_append(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->objs_list, MP_OBJ_FROM_PTR(mp_bt_zephyr_next_conn));
 
     return bt_err_to_errno(bt_le_adv_start(&param, bt_ad_data, bt_ad_len, bt_sd_data, bt_sd_len));
 }
@@ -442,6 +448,9 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
 
     // Reset the gatt characteristic value db.
     mp_bluetooth_gatts_db_reset(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db);
+    MP_STATE_PORT(bluetooth_zephyr_root_pointers)->connections = NULL;
+    MP_STATE_PORT(bluetooth_zephyr_root_pointers)->objs_list = mp_obj_new_list(0, NULL);
+    mp_bt_zephyr_next_conn = NULL;
 
     return 0;
 
@@ -474,6 +483,7 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
 
     // allocate one extra so that we can know later where the final attribute is
     struct bt_gatt_attr *svc_attributes = m_new(struct bt_gatt_attr, total_attributes + 1);
+    mp_obj_list_append(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->objs_list, MP_OBJ_FROM_PTR(svc_attributes));
 
     size_t handle_index = 0;
     size_t descriptor_index = 0;
@@ -553,6 +563,7 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
     }
 
     struct bt_gatt_service *service = m_new(struct bt_gatt_service, 1);
+    mp_obj_list_append(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->objs_list, MP_OBJ_FROM_PTR(service));
     service->attrs = svc_attributes;
     service->attr_count = attr_index;
     // invalidate the last attribute uuid pointer so that we new this is the end of attributes for this service
@@ -808,6 +819,7 @@ int mp_bluetooth_gap_peripheral_connect_cancel(void) {
 // Note: modbluetooth UUIDs store their data in LE.
 static struct bt_uuid *create_zephyr_uuid(const mp_obj_bluetooth_uuid_t *uuid) {
     struct bt_uuid *result = (struct bt_uuid *)m_new(union uuid_u, 1);
+    mp_obj_list_append(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->objs_list, MP_OBJ_FROM_PTR(result));
     if (uuid->type == MP_BLUETOOTH_UUID_TYPE_16) {
         bt_uuid_create(result, uuid->data, 2);
     } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_32) {
@@ -832,11 +844,13 @@ static void gatt_db_add(const struct bt_gatt_attr *pattern, struct bt_gatt_attr 
 
     // Store the UUID.
     attr->uuid = (const struct bt_uuid *)m_new(union uuid_u, 1);
+    mp_obj_list_append(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->objs_list, MP_OBJ_FROM_PTR(attr->uuid));
     memcpy((void *)attr->uuid, &u->uuid, uuid_size);
 
     // Copy user_data to the buffer.
     if (user_data_len) {
         attr->user_data = m_new(uint8_t, user_data_len);
+        mp_obj_list_append(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->objs_list, MP_OBJ_FROM_PTR(attr->user_data));
         memcpy(attr->user_data, pattern->user_data, user_data_len);
     }
 }
