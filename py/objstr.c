@@ -1950,8 +1950,7 @@ static mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
         new_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8);
         args = new_args;
         n_args++;
-    }
-    else if (n_args == 2) {
+    } else if (n_args == 2) {
         if (args[1] != MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8) && args[1] != MP_OBJ_NEW_QSTR(MP_QSTR_ascii)) {
             mp_raise_ValueError(MP_ERROR_TEXT("only utf-8 and ascii encodings are supported"));
         }
