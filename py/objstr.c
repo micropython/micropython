@@ -1951,6 +1951,12 @@ static mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
+    else if (n_args == 2) {
+        if (args[1] != MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8) && args[1] != MP_OBJ_NEW_QSTR(MP_QSTR_ascii)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("only utf-8 and ascii encodings are supported"));
+        }
+    }
+
     return mp_obj_str_make_new(&mp_type_str, n_args, 0, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj, 1, 3, bytes_decode);
