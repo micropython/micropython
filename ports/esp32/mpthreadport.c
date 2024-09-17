@@ -222,7 +222,11 @@ void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
     // prevent pathological imbalances where a thread unlocks and then
     // immediately re-locks a mutex before a context switch can occur, leaving
     // another thread waiting for an unbounded period of time.
-    taskYIELD();
+#if MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ
+    extern uint32_t g_irq_state;
+    if(g_irq_state==1)
+#endif
+        taskYIELD();
 }
 
 void mp_thread_deinit(void) {

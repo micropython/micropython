@@ -2,7 +2,7 @@
 
 cd `dirname $(readlink -f "$0")`
 
-export PATH=~/.espressif/python_env/idf5.0_py3.10_env/bin:$PATH
+export PATH=~/.espressif/python_env/idf5*_env/bin:$PATH
 
 cd ~/projects/esp-idf
 source export.sh
