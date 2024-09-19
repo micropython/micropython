@@ -191,9 +191,12 @@ static mp_obj_t return_ffi_value(ffi_union_t *val, char type) {
         case 'i':
         case 'l':
             return mp_obj_new_int((ffi_sarg)val->ffi);
+        case 'I':
+            // On RV64, 32-bit values are stored as signed integers inside the
+            // holding register.
+            return mp_obj_new_int_from_uint(val->ffi & 0xFFFFFFFF);
         case 'B':
         case 'H':
-        case 'I':
         case 'L':
             return mp_obj_new_int_from_uint(val->ffi);
         case 'q':
