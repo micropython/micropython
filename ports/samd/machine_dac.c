@@ -44,12 +44,7 @@ typedef struct _dac_obj_t {
     uint8_t vref;
 } dac_obj_t;
 
-<<<<<<< HEAD
 static dac_obj_t dac_obj[] = {
-=======
-
-STATIC dac_obj_t dac_obj[] = {
->>>>>>> 67cfbc720 (ports/samd/machine_dac.c: Fix SAMD51 DAC for two channels.)
     #if defined(MCU_SAMD21)
     {{&machine_dac_type}, 0, PIN_PA02},
     #elif defined(MCU_SAMD51)
@@ -179,13 +174,8 @@ static void dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     mp_printf(print, "DAC(%u, Pin=%q, vref=%d)", self->id, pin_find_by_id(self->gpio_id)->name, self->vref);
 }
 
-<<<<<<< HEAD
 static mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
     Dac *dac = dac_bases[0]; // Just one DAC
-=======
-STATIC mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
-    Dac *dac = dac_bases[0]; // Just one DAC register block
->>>>>>> 67cfbc720 (ports/samd/machine_dac.c: Fix SAMD51 DAC for two channels.)
     int value = mp_obj_get_int(value_in);
     if (value < 0 || value > MAX_DAC_VALUE) {
         mp_raise_ValueError(MP_ERROR_TEXT("value out of range"));
