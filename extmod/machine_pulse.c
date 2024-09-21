@@ -46,7 +46,7 @@ MP_WEAK mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, m
     return mp_hal_ticks_us() - start;
 }
 
-STATIC mp_obj_t machine_time_pulse_us_(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_time_pulse_us_(size_t n_args, const mp_obj_t *args) {
     mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(args[0]);
     int level = 0;
     if (mp_obj_is_true(args[1])) {

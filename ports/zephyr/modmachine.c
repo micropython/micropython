@@ -45,19 +45,19 @@
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
 
-STATIC mp_obj_t machine_reset(void) {
+static mp_obj_t machine_reset(void) {
     sys_reboot(SYS_REBOOT_COLD);
     // Won't get here, Zephyr has infiniloop on its side
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
-STATIC mp_obj_t machine_reset_cause(void) {
+static mp_obj_t machine_reset_cause(void) {
     printf("Warning: %s is not implemented\n", __func__);
     return MP_OBJ_NEW_SMALL_INT(42);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     k_yield();
 }

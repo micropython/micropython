@@ -49,15 +49,15 @@ typedef struct _sys_stdio_obj_t {
 } sys_stdio_obj_t;
 
 #if MICROPY_PY_SYS_STDIO_BUFFER
-STATIC const sys_stdio_obj_t stdio_buffer_obj;
+static const sys_stdio_obj_t stdio_buffer_obj;
 #endif
 
-STATIC void stdio_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void stdio_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<io.FileIO %d>", self->fd);
 }
 
-STATIC mp_uint_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->fd == STDIO_FD_IN) {
         for (uint i = 0; i < size; i++) {
@@ -74,7 +74,7 @@ STATIC mp_uint_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *er
     }
 }
 
-STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->fd == STDIO_FD_OUT || self->fd == STDIO_FD_ERR) {
         mp_hal_stdout_tx_strn_cooked(buf, size);
@@ -85,7 +85,7 @@ STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, 
     }
 }
 
-STATIC mp_uint_t stdio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t stdio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)self_in;
     if (request == MP_STREAM_POLL) {
         return mp_hal_stdio_poll(arg);
@@ -97,7 +97,7 @@ STATIC mp_uint_t stdio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg,
     }
 }
 
-STATIC const mp_rom_map_elem_t stdio_locals_dict_table[] = {
+static const mp_rom_map_elem_t stdio_locals_dict_table[] = {
     #if MICROPY_PY_SYS_STDIO_BUFFER
     { MP_ROM_QSTR(MP_QSTR_buffer), MP_ROM_PTR(&stdio_buffer_obj) },
     #endif
@@ -111,9 +111,9 @@ STATIC const mp_rom_map_elem_t stdio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&mp_stream___exit___obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(stdio_locals_dict, stdio_locals_dict_table);
+static MP_DEFINE_CONST_DICT(stdio_locals_dict, stdio_locals_dict_table);
 
-STATIC const mp_stream_p_t stdio_obj_stream_p = {
+static const mp_stream_p_t stdio_obj_stream_p = {
     .read = stdio_read,
     .write = stdio_write,
     .ioctl = stdio_ioctl,
@@ -134,25 +134,25 @@ const sys_stdio_obj_t mp_sys_stdout_obj = {{&stdio_obj_type}, .fd = STDIO_FD_OUT
 const sys_stdio_obj_t mp_sys_stderr_obj = {{&stdio_obj_type}, .fd = STDIO_FD_ERR};
 
 #if MICROPY_PY_SYS_STDIO_BUFFER
-STATIC mp_uint_t stdio_buffer_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t stdio_buffer_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     for (uint i = 0; i < size; i++) {
         ((byte *)buf)[i] = mp_hal_stdin_rx_chr();
     }
     return size;
 }
 
-STATIC mp_uint_t stdio_buffer_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t stdio_buffer_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     return mp_hal_stdout_tx_strn(buf, size);
 }
 
-STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
+static const mp_stream_p_t stdio_buffer_obj_stream_p = {
     .read = stdio_buffer_read,
     .write = stdio_buffer_write,
     .ioctl = stdio_ioctl,
     .is_text = false,
 };
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     stdio_buffer_obj_type,
     MP_QSTR_FileIO,
     MP_TYPE_FLAG_ITER_IS_STREAM,
@@ -161,5 +161,5 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &stdio_locals_dict
     );
 
-STATIC const sys_stdio_obj_t stdio_buffer_obj = {{&stdio_buffer_obj_type}, .fd = 0}; // fd unused
+static const sys_stdio_obj_t stdio_buffer_obj = {{&stdio_buffer_obj_type}, .fd = 0}; // fd unused
 #endif

@@ -81,7 +81,7 @@ NORETURN void esp_exceptions_helper(esp_err_t e) {
     }
 }
 
-STATIC mp_obj_t esp_initialize() {
+static mp_obj_t esp_initialize() {
     static int initialized = 0;
     if (!initialized) {
         esp_exceptions(esp_netif_init());
@@ -91,7 +91,7 @@ STATIC mp_obj_t esp_initialize() {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(esp_network_initialize_obj, esp_initialize);
 
-STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
     base_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     esp_netif_ip_info_t info;
     esp_netif_dns_info_t dns_info;
@@ -163,7 +163,7 @@ mp_obj_t esp_ifname(esp_netif_t *netif) {
     return ret;
 }
 
-STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj, 0, 1, esp_phy_mode);

@@ -42,10 +42,10 @@
 
 uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
-STATIC mp_sched_node_t mp_bluetooth_hci_sched_node;
-STATIC soft_timer_entry_t mp_bluetooth_hci_soft_timer;
+static mp_sched_node_t mp_bluetooth_hci_sched_node;
+static soft_timer_entry_t mp_bluetooth_hci_soft_timer;
 
-STATIC void mp_bluetooth_hci_soft_timer_callback(soft_timer_entry_t *self) {
+static void mp_bluetooth_hci_soft_timer_callback(soft_timer_entry_t *self) {
     mp_bluetooth_hci_poll_now();
 }
 
@@ -58,7 +58,7 @@ void mp_bluetooth_hci_init(void) {
         );
 }
 
-STATIC void mp_bluetooth_hci_start_polling(void) {
+static void mp_bluetooth_hci_start_polling(void) {
     mp_bluetooth_hci_poll_now();
 }
 
@@ -67,7 +67,7 @@ void mp_bluetooth_hci_poll_in_ms(uint32_t ms) {
 }
 
 // For synchronous mode, we run all BLE stack code inside a scheduled task.
-STATIC void run_events_scheduled_task(mp_sched_node_t *node) {
+static void run_events_scheduled_task(mp_sched_node_t *node) {
     // This will process all buffered HCI UART data, and run any callouts or events.
     mp_bluetooth_hci_poll();
 }

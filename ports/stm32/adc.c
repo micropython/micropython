@@ -245,7 +245,7 @@ static inline uint32_t adc_get_internal_channel(uint32_t channel) {
     return channel;
 }
 
-STATIC bool is_adcx_channel(int channel) {
+static bool is_adcx_channel(int channel) {
     #if defined(STM32F411xE)
     // The HAL has an incorrect IS_ADC_CHANNEL macro for the F411 so we check for temp
     return IS_ADC_CHANNEL(channel) || channel == ADC_CHANNEL_TEMPSENSOR;
@@ -272,7 +272,7 @@ STATIC bool is_adcx_channel(int channel) {
     #endif
 }
 
-STATIC void adc_wait_for_eoc_or_timeout(ADC_HandleTypeDef *adcHandle, int32_t timeout) {
+static void adc_wait_for_eoc_or_timeout(ADC_HandleTypeDef *adcHandle, int32_t timeout) {
     uint32_t tickstart = HAL_GetTick();
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32L1)
     while ((adcHandle->Instance->SR & ADC_FLAG_EOC) != ADC_FLAG_EOC) {
@@ -287,7 +287,7 @@ STATIC void adc_wait_for_eoc_or_timeout(ADC_HandleTypeDef *adcHandle, int32_t ti
     }
 }
 
-STATIC void adcx_clock_enable(ADC_HandleTypeDef *adch) {
+static void adcx_clock_enable(ADC_HandleTypeDef *adch) {
     #if defined(STM32F0) || defined(STM32F4) || defined(STM32F7) || defined(STM32L1)
     ADCx_CLK_ENABLE();
     #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
@@ -316,7 +316,7 @@ STATIC void adcx_clock_enable(ADC_HandleTypeDef *adch) {
     #endif
 }
 
-STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
+static void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adcx_clock_enable(adch);
 
     adch->Init.Resolution = resolution;
@@ -384,7 +384,7 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     #endif
 }
 
-STATIC void adc_init_single(pyb_obj_adc_t *adc_obj, ADC_TypeDef *adc) {
+static void adc_init_single(pyb_obj_adc_t *adc_obj, ADC_TypeDef *adc) {
     adc_obj->handle.Instance = adc;
     adcx_init_periph(&adc_obj->handle, ADC_RESOLUTION_12B);
 
@@ -397,7 +397,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj, ADC_TypeDef *adc) {
     #endif
 }
 
-STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) {
+static void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) {
     ADC_ChannelConfTypeDef sConfig;
 
     #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
@@ -462,7 +462,7 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     HAL_ADC_ConfigChannel(adc_handle, &sConfig);
 }
 
-STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
+static uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
     uint32_t value;
     #if defined(STM32G4)
     // For STM32G4 there is errata 2.7.7, "Wrong ADC result if conversion done late after
@@ -479,7 +479,7 @@ STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
     return value;
 }
 
-STATIC uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32_t channel) {
+static uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32_t channel) {
     adc_config_channel(adcHandle, channel);
     uint32_t raw_value = adc_read_channel(adcHandle);
 
@@ -498,7 +498,7 @@ STATIC uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32
 /******************************************************************************/
 /* MicroPython bindings : adc object (single channel)                         */
 
-STATIC void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_obj_adc_t *self = MP_OBJ_TO_PTR(self_in);
     #if defined STM32H5
     unsigned adc_id = 1;
@@ -516,7 +516,7 @@ STATIC void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
 /// \classmethod \constructor(pin)
 /// Create an ADC object associated with the given pin.
 /// This allows you to then read analog values on that pin.
-STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -587,11 +587,11 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 /// \method read()
 /// Read the value on the analog pin and return it.  The returned value
 /// will be between 0 and 4095.
-STATIC mp_obj_t adc_read(mp_obj_t self_in) {
+static mp_obj_t adc_read(mp_obj_t self_in) {
     pyb_obj_adc_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(adc_config_and_read_channel(&self->handle, self->channel));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
+static MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 
 /// \method read_timed(buf, timer)
 ///
@@ -627,7 +627,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 ///         print(val)                      # print the value out
 ///
 /// This function does not allocate any memory.
-STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_in) {
+static mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_in) {
     pyb_obj_adc_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_buffer_info_t bufinfo;
@@ -699,7 +699,7 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
 
     return mp_obj_new_int(bufinfo.len);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(adc_read_timed_obj, adc_read_timed);
+static MP_DEFINE_CONST_FUN_OBJ_3(adc_read_timed_obj, adc_read_timed);
 
 // read_timed_multi((adcx, adcy, ...), (bufx, bufy, ...), timer)
 //
@@ -709,7 +709,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(adc_read_timed_obj, adc_read_timed);
 // the sample resolution will be reduced to 8 bits.
 //
 // This function should not allocate any heap memory.
-STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_in, mp_obj_t tim_in) {
+static mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_in, mp_obj_t tim_in) {
     size_t nadcs, nbufs;
     mp_obj_t *adc_array, *buf_array;
     mp_obj_get_array(adc_array_in, &nadcs, &adc_array);
@@ -802,16 +802,16 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
 
     return mp_obj_new_bool(success);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(adc_read_timed_multi_fun_obj, adc_read_timed_multi);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(adc_read_timed_multi_obj, MP_ROM_PTR(&adc_read_timed_multi_fun_obj));
+static MP_DEFINE_CONST_FUN_OBJ_3(adc_read_timed_multi_fun_obj, adc_read_timed_multi);
+static MP_DEFINE_CONST_STATICMETHOD_OBJ(adc_read_timed_multi_obj, MP_ROM_PTR(&adc_read_timed_multi_fun_obj));
 
-STATIC const mp_rom_map_elem_t adc_locals_dict_table[] = {
+static const mp_rom_map_elem_t adc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&adc_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_timed), MP_ROM_PTR(&adc_read_timed_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_timed_multi), MP_ROM_PTR(&adc_read_timed_multi_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
+static MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_adc_type,
@@ -897,7 +897,7 @@ int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
     return 12;
 }
 
-STATIC uint32_t adc_config_and_read_ref(ADC_HandleTypeDef *adcHandle, uint32_t channel) {
+static uint32_t adc_config_and_read_ref(ADC_HandleTypeDef *adcHandle, uint32_t channel) {
     uint32_t raw_value = adc_config_and_read_channel(adcHandle, channel);
     // Scale raw reading to the number of bits used by the calibration constants
     return raw_value << (ADC_CAL_BITS - adc_get_resolution(adcHandle));
@@ -919,7 +919,7 @@ int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 // correction factor for reference value
-STATIC volatile float adc_refcor = 1.0f;
+static volatile float adc_refcor = 1.0f;
 
 float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
     #if defined(STM32G4) || defined(STM32L1) || defined(STM32L4)
@@ -974,7 +974,7 @@ float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
 /******************************************************************************/
 /* MicroPython bindings : adc_all object                                      */
 
-STATIC mp_obj_t adc_all_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t adc_all_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
@@ -990,7 +990,7 @@ STATIC mp_obj_t adc_all_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t adc_all_read_channel(mp_obj_t self_in, mp_obj_t channel) {
+static mp_obj_t adc_all_read_channel(mp_obj_t self_in, mp_obj_t channel) {
     pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t chan = adc_get_internal_channel(mp_obj_get_int(channel));
     if (!is_adcx_channel(chan)) {
@@ -999,9 +999,9 @@ STATIC mp_obj_t adc_all_read_channel(mp_obj_t self_in, mp_obj_t channel) {
     uint32_t data = adc_config_and_read_channel(&self->handle, chan);
     return mp_obj_new_int(data);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(adc_all_read_channel_obj, adc_all_read_channel);
+static MP_DEFINE_CONST_FUN_OBJ_2(adc_all_read_channel_obj, adc_all_read_channel);
 
-STATIC mp_obj_t adc_all_read_core_temp(mp_obj_t self_in) {
+static mp_obj_t adc_all_read_core_temp(mp_obj_t self_in) {
     pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     #if MICROPY_PY_BUILTINS_FLOAT
     float data = adc_read_core_temp_float(&self->handle);
@@ -1011,32 +1011,32 @@ STATIC mp_obj_t adc_all_read_core_temp(mp_obj_t self_in) {
     return mp_obj_new_int(data);
     #endif
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_temp_obj, adc_all_read_core_temp);
+static MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_temp_obj, adc_all_read_core_temp);
 
 #if MICROPY_PY_BUILTINS_FLOAT
-STATIC mp_obj_t adc_all_read_core_vbat(mp_obj_t self_in) {
+static mp_obj_t adc_all_read_core_vbat(mp_obj_t self_in) {
     pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     float data = adc_read_core_vbat(&self->handle);
     return mp_obj_new_float(data);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vbat_obj, adc_all_read_core_vbat);
+static MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vbat_obj, adc_all_read_core_vbat);
 
-STATIC mp_obj_t adc_all_read_core_vref(mp_obj_t self_in) {
+static mp_obj_t adc_all_read_core_vref(mp_obj_t self_in) {
     pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     float data = adc_read_core_vref(&self->handle);
     return mp_obj_new_float(data);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vref_obj, adc_all_read_core_vref);
+static MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vref_obj, adc_all_read_core_vref);
 
-STATIC mp_obj_t adc_all_read_vref(mp_obj_t self_in) {
+static mp_obj_t adc_all_read_vref(mp_obj_t self_in) {
     pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     adc_read_core_vref(&self->handle);
     return mp_obj_new_float(ADC_SCALE_V * adc_refcor);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_vref_obj, adc_all_read_vref);
+static MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_vref_obj, adc_all_read_vref);
 #endif
 
-STATIC const mp_rom_map_elem_t adc_all_locals_dict_table[] = {
+static const mp_rom_map_elem_t adc_all_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read_channel), MP_ROM_PTR(&adc_all_read_channel_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_core_temp), MP_ROM_PTR(&adc_all_read_core_temp_obj) },
     #if MICROPY_PY_BUILTINS_FLOAT
@@ -1046,7 +1046,7 @@ STATIC const mp_rom_map_elem_t adc_all_locals_dict_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(adc_all_locals_dict, adc_all_locals_dict_table);
+static MP_DEFINE_CONST_DICT(adc_all_locals_dict, adc_all_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_adc_all_type,

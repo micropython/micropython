@@ -49,7 +49,7 @@ typedef struct _machine_i2c_obj_t {
     uint32_t freq;
 } machine_i2c_obj_t;
 
-STATIC machine_i2c_obj_t machine_i2c_obj[] = {
+static machine_i2c_obj_t machine_i2c_obj[] = {
     #if defined(MICROPY_HW_I2C0_SCL)
     {{&machine_i2c_type}, R_IIC0, 0, MICROPY_HW_I2C0_SCL, MICROPY_HW_I2C0_SDA, 0},
     #endif
@@ -61,10 +61,10 @@ STATIC machine_i2c_obj_t machine_i2c_obj[] = {
     #endif
 };
 
-STATIC int i2c_read(machine_i2c_obj_t *self, uint16_t addr, uint8_t *dest, size_t len, bool stop);
-STATIC int i2c_write(machine_i2c_obj_t *self, uint16_t addr, const uint8_t *src, size_t len, bool stop);
+static int i2c_read(machine_i2c_obj_t *self, uint16_t addr, uint8_t *dest, size_t len, bool stop);
+static int i2c_write(machine_i2c_obj_t *self, uint16_t addr, const uint8_t *src, size_t len, bool stop);
 
-STATIC int i2c_read(machine_i2c_obj_t *self, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
+static int i2c_read(machine_i2c_obj_t *self, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
     bool flag;
     xaction_t action;
     xaction_unit_t unit;
@@ -74,7 +74,7 @@ STATIC int i2c_read(machine_i2c_obj_t *self, uint16_t addr, uint8_t *dest, size_
     return flag? len:-1;
 }
 
-STATIC int i2c_write(machine_i2c_obj_t *self, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
+static int i2c_write(machine_i2c_obj_t *self, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
     bool flag;
     xaction_t action;
     xaction_unit_t unit;
@@ -86,18 +86,18 @@ STATIC int i2c_write(machine_i2c_obj_t *self, uint16_t addr, const uint8_t *src,
 
 // MicroPython bindings for machine API
 
-STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2C(%u, freq=%u, scl=%q, sda=%q)",
         self->i2c_id, self->freq, self->scl->name, self->sda->name);
 }
 
-STATIC void  machine_i2c_init(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void  machine_i2c_init(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_raise_NotImplementedError(MP_ERROR_TEXT("init is not supported."));
     return;
 }
 
-STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     enum { ARG_id, ARG_freq, ARG_scl, ARG_sda };
     static const mp_arg_t allowed_args[] = {
@@ -136,7 +136,7 @@ STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, s
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
+static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int ret;
     bool stop;
@@ -149,7 +149,7 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     return ret;
 }
 
-STATIC const mp_machine_i2c_p_t machine_i2c_p = {
+static const mp_machine_i2c_p_t machine_i2c_p = {
     .init = machine_i2c_init,
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_i2c_transfer_single,

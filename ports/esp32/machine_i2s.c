@@ -81,12 +81,12 @@ typedef struct _machine_i2s_obj_t {
     TaskHandle_t non_blocking_mode_task;
 } machine_i2s_obj_t;
 
-STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
+static mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
 
 // The frame map is used with the readinto() method to transform the audio sample data coming
 // from DMA memory (32-bit stereo, with the L and R channels reversed) to the format specified
 // in the I2S constructor.  e.g.  16-bit mono
-STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
+static const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
     { 6,  7, -1, -1, -1, -1, -1, -1 },  // Mono, 16-bits
     { 4,  5,  6,  7, -1, -1, -1, -1 },  // Mono, 32-bits
     { 6,  7,  2,  3, -1, -1, -1, -1 },  // Stereo, 16-bits
@@ -122,7 +122,7 @@ void machine_i2s_init0() {
 //    samples in appbuf are in little endian format:
 //       0x77 is the most significant byte of the 32-bit sample
 //       0x44 is the least significant byte of the 32-bit sample
-STATIC void swap_32_bit_stereo_channels(mp_buffer_info_t *bufinfo) {
+static void swap_32_bit_stereo_channels(mp_buffer_info_t *bufinfo) {
     int32_t swap_sample;
     int32_t *sample = bufinfo->buf;
     uint32_t num_samples = bufinfo->len / 4;
@@ -133,7 +133,7 @@ STATIC void swap_32_bit_stereo_channels(mp_buffer_info_t *bufinfo) {
     }
 }
 
-STATIC int8_t get_frame_mapping_index(i2s_bits_per_sample_t bits, format_t format) {
+static int8_t get_frame_mapping_index(i2s_bits_per_sample_t bits, format_t format) {
     if (format == MONO) {
         if (bits == I2S_BITS_PER_SAMPLE_16BIT) {
             return 0;
@@ -149,7 +149,7 @@ STATIC int8_t get_frame_mapping_index(i2s_bits_per_sample_t bits, format_t forma
     }
 }
 
-STATIC i2s_bits_per_sample_t get_dma_bits(uint8_t mode, i2s_bits_per_sample_t bits) {
+static i2s_bits_per_sample_t get_dma_bits(uint8_t mode, i2s_bits_per_sample_t bits) {
     if (mode == (I2S_MODE_MASTER | I2S_MODE_TX)) {
         return bits;
     } else { // Master Rx
@@ -158,7 +158,7 @@ STATIC i2s_bits_per_sample_t get_dma_bits(uint8_t mode, i2s_bits_per_sample_t bi
     }
 }
 
-STATIC i2s_channel_fmt_t get_dma_format(uint8_t mode, format_t format) {
+static i2s_channel_fmt_t get_dma_format(uint8_t mode, format_t format) {
     if (mode == (I2S_MODE_MASTER | I2S_MODE_TX)) {
         if (format == MONO) {
             return I2S_CHANNEL_FMT_ONLY_LEFT;
@@ -171,7 +171,7 @@ STATIC i2s_channel_fmt_t get_dma_format(uint8_t mode, format_t format) {
     }
 }
 
-STATIC uint32_t get_dma_buf_count(uint8_t mode, i2s_bits_per_sample_t bits, format_t format, int32_t ibuf) {
+static uint32_t get_dma_buf_count(uint8_t mode, i2s_bits_per_sample_t bits, format_t format, int32_t ibuf) {
     // calculate how many DMA buffers need to be allocated
     uint32_t dma_frame_size_in_bytes =
         (get_dma_bits(mode, bits) / 8) * (get_dma_format(mode, format) == I2S_CHANNEL_FMT_RIGHT_LEFT ? 2: 1);
@@ -181,7 +181,7 @@ STATIC uint32_t get_dma_buf_count(uint8_t mode, i2s_bits_per_sample_t bits, form
     return dma_buf_count;
 }
 
-STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
+static uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
 
     // copy audio samples from DMA memory to the app buffer
     // audio samples are read from DMA memory in chunks
@@ -256,7 +256,7 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
     return a_index;
 }
 
-STATIC size_t copy_appbuf_to_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
+static size_t copy_appbuf_to_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
     if ((self->bits == I2S_BITS_PER_SAMPLE_32BIT) && (self->format == STEREO)) {
         swap_32_bit_stereo_channels(appbuf);
     }
@@ -289,7 +289,7 @@ STATIC size_t copy_appbuf_to_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appb
 }
 
 // FreeRTOS task used for non-blocking mode
-STATIC void task_for_non_blocking_mode(void *self_in) {
+static void task_for_non_blocking_mode(void *self_in) {
     machine_i2s_obj_t *self = (machine_i2s_obj_t *)self_in;
 
     non_blocking_descriptor_t descriptor;
@@ -306,7 +306,7 @@ STATIC void task_for_non_blocking_mode(void *self_in) {
     }
 }
 
-STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args) {
+static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args) {
     // are Pins valid?
     int8_t sck = args[ARG_sck].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_sck].u_obj);
     int8_t ws = args[ARG_ws].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_ws].u_obj);
@@ -398,7 +398,7 @@ STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
     check_esp_err(i2s_set_pin(self->i2s_id, &pin_config));
 }
 
-STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
+static machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
     if (i2s_id < 0 || i2s_id >= I2S_NUM_AUTO) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
     }
@@ -416,7 +416,7 @@ STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
     return self;
 }
 
-STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
+static void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     i2s_driver_uninstall(self->i2s_id);
 
     if (self->non_blocking_mode_task != NULL) {
@@ -432,7 +432,7 @@ STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     self->i2s_event_queue = NULL;
 }
 
-STATIC void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
+static void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
     if (self->io_mode == NON_BLOCKING) {
         // create a queue linking the MicroPython task to a FreeRTOS task
         // that manages the non blocking mode of operation

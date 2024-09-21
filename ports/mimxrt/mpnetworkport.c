@@ -55,7 +55,7 @@ u32_t sys_now(void) {
     return mp_hal_ticks_ms();
 }
 
-STATIC void pyb_lwip_poll(void) {
+static void pyb_lwip_poll(void) {
     // Run the lwIP internal updates
     sys_check_timeouts();
 }

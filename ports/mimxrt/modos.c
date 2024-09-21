@@ -43,8 +43,8 @@
 static bool initialized = false;
 
 #if defined(MIMXRT117x_SERIES)
-STATIC caam_handle_t caam_handle;
-STATIC caam_rng_state_handle_t caam_state_handle = kCAAM_RngStateHandle0;
+static caam_handle_t caam_handle;
+static caam_rng_state_handle_t caam_state_handle = kCAAM_RngStateHandle0;
 
 #if defined(FSL_FEATURE_HAS_L1CACHE) || defined(__DCACHE_PRESENT)
 AT_NONCACHEABLE_SECTION(static caam_job_ring_interface_t s_jrif0);
@@ -52,7 +52,7 @@ AT_NONCACHEABLE_SECTION(static caam_job_ring_interface_t s_jrif0);
 static caam_job_ring_interface_t s_jrif0;
 #endif
 
-STATIC void trng_start(void) {
+static void trng_start(void) {
     caam_config_t config;
 
     if (!initialized) {
@@ -71,7 +71,7 @@ void trng_random_data(unsigned char *output, size_t len) {
 
 #else
 
-STATIC void trng_start(void) {
+static void trng_start(void) {
     trng_config_t trngConfig;
 
     if (!initialized) {
@@ -99,7 +99,7 @@ uint32_t trng_random_u32(void) {
 }
 
 #if MICROPY_PY_OS_URANDOM
-STATIC mp_obj_t mp_os_urandom(mp_obj_t num) {
+static mp_obj_t mp_os_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
     vstr_t vstr;
     vstr_init_len(&vstr, n);
@@ -109,5 +109,5 @@ STATIC mp_obj_t mp_os_urandom(mp_obj_t num) {
 
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_urandom_obj, mp_os_urandom);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_os_urandom_obj, mp_os_urandom);
 #endif

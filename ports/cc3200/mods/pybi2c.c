@@ -74,18 +74,18 @@ typedef struct _pyb_i2c_obj_t {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC pyb_i2c_obj_t pyb_i2c_obj = {.baudrate = 0};
+static pyb_i2c_obj_t pyb_i2c_obj = {.baudrate = 0};
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC bool pyb_i2c_write(byte addr, byte *data, uint len, bool stop);
+static bool pyb_i2c_write(byte addr, byte *data, uint len, bool stop);
 
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
 // only master mode is available for the moment
-STATIC void i2c_init (pyb_i2c_obj_t *self) {
+static void i2c_init (pyb_i2c_obj_t *self) {
     // Enable the I2C Peripheral
     MAP_PRCMPeripheralClkEnable(PRCM_I2CA0, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
     MAP_PRCMPeripheralReset(PRCM_I2CA0);
@@ -93,7 +93,7 @@ STATIC void i2c_init (pyb_i2c_obj_t *self) {
     MAP_I2CMasterInitExpClk(I2CA0_BASE, self->baudrate);
 }
 
-STATIC bool pyb_i2c_transaction(uint cmd) {
+static bool pyb_i2c_transaction(uint cmd) {
     // Convert the timeout to microseconds
     int32_t timeout = PYBI2C_TRANSC_TIMEOUT_MS * 1000;
     // Sanity check, t_timeout must be between 1 and 255
@@ -137,14 +137,14 @@ STATIC bool pyb_i2c_transaction(uint cmd) {
     return true;
 }
 
-STATIC void pyb_i2c_check_init(pyb_i2c_obj_t *self) {
+static void pyb_i2c_check_init(pyb_i2c_obj_t *self) {
     // not initialized
     if (!self->baudrate) {
         mp_raise_OSError(MP_EPERM);
     }
 }
 
-STATIC bool pyb_i2c_scan_device(byte devAddr) {
+static bool pyb_i2c_scan_device(byte devAddr) {
     bool ret = false;
     // Set the I2C slave address
     MAP_I2CMasterSlaveAddrSet(I2CA0_BASE, devAddr, true);
@@ -163,7 +163,7 @@ STATIC bool pyb_i2c_scan_device(byte devAddr) {
     return ret;
 }
 
-STATIC bool pyb_i2c_mem_addr_write (byte addr, byte *mem_addr, uint mem_addr_len) {
+static bool pyb_i2c_mem_addr_write (byte addr, byte *mem_addr, uint mem_addr_len) {
     // Set I2C codec slave address
     MAP_I2CMasterSlaveAddrSet(I2CA0_BASE, addr, false);
     // Write the first byte to the controller.
@@ -181,7 +181,7 @@ STATIC bool pyb_i2c_mem_addr_write (byte addr, byte *mem_addr, uint mem_addr_len
     return true;
 }
 
-STATIC bool pyb_i2c_mem_write (byte addr, byte *mem_addr, uint mem_addr_len, byte *data, uint data_len) {
+static bool pyb_i2c_mem_write (byte addr, byte *mem_addr, uint mem_addr_len, byte *data, uint data_len) {
     if (pyb_i2c_mem_addr_write (addr, mem_addr, mem_addr_len)) {
         // Loop until the completion of transfer or error
         while (data_len--) {
@@ -197,7 +197,7 @@ STATIC bool pyb_i2c_mem_write (byte addr, byte *mem_addr, uint mem_addr_len, byt
     return false;
 }
 
-STATIC bool pyb_i2c_write(byte addr, byte *data, uint len, bool stop) {
+static bool pyb_i2c_write(byte addr, byte *data, uint len, bool stop) {
     // Set I2C codec slave address
     MAP_I2CMasterSlaveAddrSet(I2CA0_BASE, addr, false);
     // Write the first byte to the controller.
@@ -220,7 +220,7 @@ STATIC bool pyb_i2c_write(byte addr, byte *data, uint len, bool stop) {
     return true;
 }
 
-STATIC bool pyb_i2c_read(byte addr, byte *data, uint len) {
+static bool pyb_i2c_read(byte addr, byte *data, uint len) {
     // Initiate a burst or single receive sequence
     uint cmd = --len > 0 ? I2C_MASTER_CMD_BURST_RECEIVE_START : I2C_MASTER_CMD_SINGLE_RECEIVE;
     // Set I2C codec slave address
@@ -245,7 +245,7 @@ STATIC bool pyb_i2c_read(byte addr, byte *data, uint len) {
     return true;
 }
 
-STATIC void pyb_i2c_read_into (mp_arg_val_t *args, vstr_t *vstr) {
+static void pyb_i2c_read_into (mp_arg_val_t *args, vstr_t *vstr) {
     pyb_i2c_check_init(&pyb_i2c_obj);
     // get the buffer to receive into
     pyb_buf_get_for_recv(args[1].u_obj, vstr);
@@ -256,7 +256,7 @@ STATIC void pyb_i2c_read_into (mp_arg_val_t *args, vstr_t *vstr) {
     }
 }
 
-STATIC void pyb_i2c_readmem_into (mp_arg_val_t *args, vstr_t *vstr) {
+static void pyb_i2c_readmem_into (mp_arg_val_t *args, vstr_t *vstr) {
     pyb_i2c_check_init(&pyb_i2c_obj);
     // get the buffer to receive into
     pyb_buf_get_for_recv(args[2].u_obj, vstr);
@@ -281,7 +281,7 @@ STATIC void pyb_i2c_readmem_into (mp_arg_val_t *args, vstr_t *vstr) {
 /******************************************************************************/
 /* MicroPython bindings                                                      */
 /******************************************************************************/
-STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_i2c_obj_t *self = self_in;
     if (self->baudrate > 0) {
         mp_printf(print, "I2C(0, baudrate=%u)", self->baudrate);
@@ -290,7 +290,7 @@ STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
 }
 
-STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_scl, ARG_sda, ARG_freq };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -322,7 +322,7 @@ STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self, size_t n_args, const mp
     return mp_const_none;
 }
 
-STATIC mp_obj_t pyb_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t pyb_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // check the id argument, if given
     if (n_args > 0) {
         if (all_args[0] != MP_OBJ_NEW_SMALL_INT(0)) {
@@ -346,12 +346,12 @@ STATIC mp_obj_t pyb_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return (mp_obj_t)self;
 }
 
-STATIC mp_obj_t pyb_i2c_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pyb_i2c_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return pyb_i2c_init_helper(pos_args[0], n_args - 1, pos_args + 1, kw_args);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_init_obj, 1, pyb_i2c_init);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_init_obj, 1, pyb_i2c_init);
 
-STATIC mp_obj_t pyb_i2c_deinit(mp_obj_t self_in) {
+static mp_obj_t pyb_i2c_deinit(mp_obj_t self_in) {
     // disable the peripheral
     MAP_I2CMasterDisable(I2CA0_BASE);
     MAP_PRCMPeripheralClkDisable(PRCM_I2CA0, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
@@ -361,9 +361,9 @@ STATIC mp_obj_t pyb_i2c_deinit(mp_obj_t self_in) {
     pyb_sleep_remove ((const mp_obj_t)self_in);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_deinit_obj, pyb_i2c_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_deinit_obj, pyb_i2c_deinit);
 
-STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
+static mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
     pyb_i2c_check_init(&pyb_i2c_obj);
     mp_obj_t list = mp_obj_new_list(0, NULL);
     for (uint addr = 0x08; addr <= 0x77; addr++) {
@@ -376,10 +376,10 @@ STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
     }
     return list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_scan_obj, pyb_i2c_scan);
+static MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_scan_obj, pyb_i2c_scan);
 
-STATIC mp_obj_t pyb_i2c_readfrom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    STATIC const mp_arg_t pyb_i2c_readfrom_args[] = {
+static mp_obj_t pyb_i2c_readfrom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t pyb_i2c_readfrom_args[] = {
         { MP_QSTR_addr,    MP_ARG_REQUIRED | MP_ARG_INT, },
         { MP_QSTR_nbytes,  MP_ARG_REQUIRED | MP_ARG_OBJ, },
     };
@@ -394,10 +394,10 @@ STATIC mp_obj_t pyb_i2c_readfrom(size_t n_args, const mp_obj_t *pos_args, mp_map
     // return the received data
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_readfrom_obj, 3, pyb_i2c_readfrom);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_readfrom_obj, 3, pyb_i2c_readfrom);
 
-STATIC mp_obj_t pyb_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    STATIC const mp_arg_t pyb_i2c_readfrom_into_args[] = {
+static mp_obj_t pyb_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t pyb_i2c_readfrom_into_args[] = {
         { MP_QSTR_addr,    MP_ARG_REQUIRED | MP_ARG_INT, },
         { MP_QSTR_buf,     MP_ARG_REQUIRED | MP_ARG_OBJ, },
     };
@@ -412,10 +412,10 @@ STATIC mp_obj_t pyb_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args, m
     // return the number of bytes received
     return mp_obj_new_int(vstr.len);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_readfrom_into_obj, 1, pyb_i2c_readfrom_into);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_readfrom_into_obj, 1, pyb_i2c_readfrom_into);
 
-STATIC mp_obj_t pyb_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    STATIC const mp_arg_t pyb_i2c_writeto_args[] = {
+static mp_obj_t pyb_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t pyb_i2c_writeto_args[] = {
         { MP_QSTR_addr,    MP_ARG_REQUIRED | MP_ARG_INT,  },
         { MP_QSTR_buf,     MP_ARG_REQUIRED | MP_ARG_OBJ,  },
         { MP_QSTR_stop,    MP_ARG_KW_ONLY  | MP_ARG_BOOL, {.u_bool = true} },
@@ -440,10 +440,10 @@ STATIC mp_obj_t pyb_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_map_
     // return the number of bytes written
     return mp_obj_new_int(bufinfo.len);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_writeto_obj, 1, pyb_i2c_writeto);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_writeto_obj, 1, pyb_i2c_writeto);
 
-STATIC mp_obj_t pyb_i2c_readfrom_mem(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    STATIC const mp_arg_t pyb_i2c_readfrom_mem_args[] = {
+static mp_obj_t pyb_i2c_readfrom_mem(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t pyb_i2c_readfrom_mem_args[] = {
         { MP_QSTR_addr,     MP_ARG_REQUIRED  | MP_ARG_INT, },
         { MP_QSTR_memaddr,  MP_ARG_REQUIRED  | MP_ARG_INT, },
         { MP_QSTR_nbytes,   MP_ARG_REQUIRED  | MP_ARG_OBJ, },
@@ -458,16 +458,16 @@ STATIC mp_obj_t pyb_i2c_readfrom_mem(size_t n_args, const mp_obj_t *pos_args, mp
     pyb_i2c_readmem_into (args, &vstr);
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_readfrom_mem_obj, 1, pyb_i2c_readfrom_mem);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_readfrom_mem_obj, 1, pyb_i2c_readfrom_mem);
 
-STATIC const mp_arg_t pyb_i2c_readfrom_mem_into_args[] = {
+static const mp_arg_t pyb_i2c_readfrom_mem_into_args[] = {
     { MP_QSTR_addr,     MP_ARG_REQUIRED  | MP_ARG_INT, },
     { MP_QSTR_memaddr,  MP_ARG_REQUIRED  | MP_ARG_INT, },
     { MP_QSTR_buf,      MP_ARG_REQUIRED  | MP_ARG_OBJ, },
     { MP_QSTR_addrsize, MP_ARG_KW_ONLY   | MP_ARG_INT, {.u_int = 8} },
 };
 
-STATIC mp_obj_t pyb_i2c_readfrom_mem_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pyb_i2c_readfrom_mem_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(pyb_i2c_readfrom_mem_into_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), pyb_i2c_readfrom_mem_into_args, args);
@@ -477,9 +477,9 @@ STATIC mp_obj_t pyb_i2c_readfrom_mem_into(size_t n_args, const mp_obj_t *pos_arg
     pyb_i2c_readmem_into (args, &vstr);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_readfrom_mem_into_obj, 1, pyb_i2c_readfrom_mem_into);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_readfrom_mem_into_obj, 1, pyb_i2c_readfrom_mem_into);
 
-STATIC mp_obj_t pyb_i2c_writeto_mem(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pyb_i2c_writeto_mem(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(pyb_i2c_readfrom_mem_into_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(pyb_i2c_readfrom_mem_into_args), pyb_i2c_readfrom_mem_into_args, args);
@@ -504,9 +504,9 @@ STATIC mp_obj_t pyb_i2c_writeto_mem(size_t n_args, const mp_obj_t *pos_args, mp_
 
     mp_raise_OSError(MP_EIO);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_writeto_mem_obj, 1, pyb_i2c_writeto_mem);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_writeto_mem_obj, 1, pyb_i2c_writeto_mem);
 
-STATIC const mp_rom_map_elem_t pyb_i2c_locals_dict_table[] = {
+static const mp_rom_map_elem_t pyb_i2c_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init),                MP_ROM_PTR(&pyb_i2c_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),              MP_ROM_PTR(&pyb_i2c_deinit_obj) },
@@ -519,7 +519,7 @@ STATIC const mp_rom_map_elem_t pyb_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_writeto_mem),         MP_ROM_PTR(&pyb_i2c_writeto_mem_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_i2c_locals_dict, pyb_i2c_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pyb_i2c_locals_dict, pyb_i2c_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_i2c_type,

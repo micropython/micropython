@@ -92,7 +92,7 @@ void octospi_init(void) {
     OCTOSPI1->CR |= OCTOSPI_CR_EN;
 }
 
-STATIC int octospi_ioctl(void *self_in, uint32_t cmd) {
+static int octospi_ioctl(void *self_in, uint32_t cmd) {
     (void)self_in;
     switch (cmd) {
         case MP_QSPI_IOCTL_INIT:
@@ -112,7 +112,7 @@ STATIC int octospi_ioctl(void *self_in, uint32_t cmd) {
     return 0; // success
 }
 
-STATIC int octospi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t data) {
+static int octospi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t data) {
     (void)self_in;
 
     OCTOSPI1->FCR = OCTOSPI_FCR_CTCF; // clear TC flag
@@ -166,7 +166,7 @@ STATIC int octospi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32
     return 0;
 }
 
-STATIC int octospi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
+static int octospi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
     (void)self_in;
 
     uint8_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
@@ -231,7 +231,7 @@ STATIC int octospi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr
     return 0;
 }
 
-STATIC int octospi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest) {
+static int octospi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest) {
     (void)self_in;
 
     OCTOSPI1->FCR = OCTOSPI_FCR_CTCF; // clear TC flag
@@ -269,7 +269,7 @@ STATIC int octospi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *de
     return 0;
 }
 
-STATIC int octospi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
+static int octospi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
     (void)self_in;
 
     #if defined(MICROPY_HW_OSPIFLASH_IO1) && !defined(MICROPY_HW_OSPIFLASH_IO2) && !defined(MICROPY_HW_OSPIFLASH_IO4)

@@ -48,8 +48,8 @@
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC const mp_irq_methods_t pyb_rtc_irq_methods;
-STATIC pyb_rtc_obj_t pyb_rtc_obj;
+static const mp_irq_methods_t pyb_rtc_irq_methods;
+static pyb_rtc_obj_t pyb_rtc_obj;
 
 /******************************************************************************
  FUNCTION-LIKE MACROS
@@ -60,16 +60,16 @@ STATIC pyb_rtc_obj_t pyb_rtc_obj;
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC void pyb_rtc_set_time (uint32_t secs, uint16_t msecs);
-STATIC uint32_t pyb_rtc_reset (void);
-STATIC void pyb_rtc_disable_interupt (void);
-STATIC void pyb_rtc_irq_enable (mp_obj_t self_in);
-STATIC void pyb_rtc_irq_disable (mp_obj_t self_in);
-STATIC int pyb_rtc_irq_flags (mp_obj_t self_in);
-STATIC uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds);
-STATIC mp_obj_t pyb_rtc_datetime(mp_obj_t self, const mp_obj_t datetime);
-STATIC void pyb_rtc_set_alarm (pyb_rtc_obj_t *self, uint32_t seconds, uint16_t mseconds);
-STATIC void rtc_msec_add(uint16_t msecs_1, uint32_t *secs, uint16_t *msecs_2);
+static void pyb_rtc_set_time (uint32_t secs, uint16_t msecs);
+static uint32_t pyb_rtc_reset (void);
+static void pyb_rtc_disable_interupt (void);
+static void pyb_rtc_irq_enable (mp_obj_t self_in);
+static void pyb_rtc_irq_disable (mp_obj_t self_in);
+static int pyb_rtc_irq_flags (mp_obj_t self_in);
+static uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds);
+static mp_obj_t pyb_rtc_datetime(mp_obj_t self, const mp_obj_t datetime);
+static void pyb_rtc_set_alarm (pyb_rtc_obj_t *self, uint32_t seconds, uint16_t mseconds);
+static void rtc_msec_add(uint16_t msecs_1, uint32_t *secs, uint16_t *msecs_2);
 
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
@@ -137,7 +137,7 @@ void pyb_rtc_disable_alarm (void) {
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC void pyb_rtc_set_time (uint32_t secs, uint16_t msecs) {
+static void pyb_rtc_set_time (uint32_t secs, uint16_t msecs) {
     // add the RTC access time
     rtc_msec_add(RTC_ACCESS_TIME_MSEC, &secs, &msecs);
     // convert from mseconds to cycles
@@ -146,7 +146,7 @@ STATIC void pyb_rtc_set_time (uint32_t secs, uint16_t msecs) {
     MAP_PRCMRTCSet(secs, msecs);
 }
 
-STATIC uint32_t pyb_rtc_reset (void) {
+static uint32_t pyb_rtc_reset (void) {
     // fresh reset; configure the RTC Calendar
     // set the date to 1st Jan 2015
     // set the time to 00:00:00
@@ -158,14 +158,14 @@ STATIC uint32_t pyb_rtc_reset (void) {
     return seconds;
 }
 
-STATIC void pyb_rtc_disable_interupt (void) {
+static void pyb_rtc_disable_interupt (void) {
     uint primsk = disable_irq();
     MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
     (void)MAP_PRCMIntStatus();
     enable_irq(primsk);
 }
 
-STATIC void pyb_rtc_irq_enable (mp_obj_t self_in) {
+static void pyb_rtc_irq_enable (mp_obj_t self_in) {
     pyb_rtc_obj_t *self = self_in;
     // we always need interrupts if repeat is enabled
     if ((self->pwrmode & PYB_PWR_MODE_ACTIVE) || self->repeat) {
@@ -176,7 +176,7 @@ STATIC void pyb_rtc_irq_enable (mp_obj_t self_in) {
     self->irq_enabled = true;
 }
 
-STATIC void pyb_rtc_irq_disable (mp_obj_t self_in) {
+static void pyb_rtc_irq_disable (mp_obj_t self_in) {
     pyb_rtc_obj_t *self = self_in;
     self->irq_enabled = false;
     if (!self->repeat) { // we always need interrupts if repeat is enabled
@@ -184,12 +184,12 @@ STATIC void pyb_rtc_irq_disable (mp_obj_t self_in) {
     }
 }
 
-STATIC int pyb_rtc_irq_flags (mp_obj_t self_in) {
+static int pyb_rtc_irq_flags (mp_obj_t self_in) {
     pyb_rtc_obj_t *self = self_in;
     return self->irq_flags;
 }
 
-STATIC uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds) {
+static uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds) {
     timeutils_struct_time_t tm;
     uint32_t useconds;
 
@@ -234,7 +234,7 @@ STATIC uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds) {
 ///
 ///     (year, month, day, hours, minutes, seconds, milliseconds, tzinfo=None)
 ///
-STATIC mp_obj_t pyb_rtc_datetime(mp_obj_t self_in, const mp_obj_t datetime) {
+static mp_obj_t pyb_rtc_datetime(mp_obj_t self_in, const mp_obj_t datetime) {
     uint32_t seconds;
     uint32_t useconds;
 
@@ -250,7 +250,7 @@ STATIC mp_obj_t pyb_rtc_datetime(mp_obj_t self_in, const mp_obj_t datetime) {
     return mp_const_none;
 }
 
-STATIC void pyb_rtc_set_alarm (pyb_rtc_obj_t *self, uint32_t seconds, uint16_t mseconds) {
+static void pyb_rtc_set_alarm (pyb_rtc_obj_t *self, uint32_t seconds, uint16_t mseconds) {
     // disable the interrupt before updating anything
     if (self->irq_enabled) {
         MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
@@ -266,7 +266,7 @@ STATIC void pyb_rtc_set_alarm (pyb_rtc_obj_t *self, uint32_t seconds, uint16_t m
     }
 }
 
-STATIC void rtc_msec_add (uint16_t msecs_1, uint32_t *secs, uint16_t *msecs_2) {
+static void rtc_msec_add (uint16_t msecs_1, uint32_t *secs, uint16_t *msecs_2) {
     if (msecs_1 + *msecs_2 >= 1000) { // larger than one second
         *msecs_2 = (msecs_1 + *msecs_2) - 1000;
         *secs += 1; // carry flag
@@ -279,11 +279,11 @@ STATIC void rtc_msec_add (uint16_t msecs_1, uint32_t *secs, uint16_t *msecs_2) {
 /******************************************************************************/
 // MicroPython bindings
 
-STATIC const mp_arg_t pyb_rtc_init_args[] = {
+static const mp_arg_t pyb_rtc_init_args[] = {
     { MP_QSTR_id,                             MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_datetime,                       MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 };
-STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -309,15 +309,15 @@ STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return (mp_obj_t)&pyb_rtc_obj;
 }
 
-STATIC mp_obj_t pyb_rtc_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pyb_rtc_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(pyb_rtc_init_args) - 1];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), &pyb_rtc_init_args[1], args);
     return pyb_rtc_datetime(pos_args[0], args[0].u_obj);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_init_obj, 1, pyb_rtc_init);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_init_obj, 1, pyb_rtc_init);
 
-STATIC mp_obj_t pyb_rtc_now (mp_obj_t self_in) {
+static mp_obj_t pyb_rtc_now (mp_obj_t self_in) {
     timeutils_struct_time_t tm;
     uint32_t seconds;
     uint16_t mseconds;
@@ -338,16 +338,16 @@ STATIC mp_obj_t pyb_rtc_now (mp_obj_t self_in) {
     };
     return mp_obj_new_tuple(8, tuple);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_now_obj, pyb_rtc_now);
+static MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_now_obj, pyb_rtc_now);
 
-STATIC mp_obj_t pyb_rtc_deinit (mp_obj_t self_in) {
+static mp_obj_t pyb_rtc_deinit (mp_obj_t self_in) {
     pyb_rtc_reset();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_deinit_obj, pyb_rtc_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_deinit_obj, pyb_rtc_deinit);
 
-STATIC mp_obj_t pyb_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    STATIC const mp_arg_t allowed_args[] = {
+static mp_obj_t pyb_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,                            MP_ARG_INT,  {.u_int = 0} },
         { MP_QSTR_time,                          MP_ARG_OBJ,  {.u_obj = mp_const_none} },
         { MP_QSTR_repeat,     MP_ARG_KW_ONLY   | MP_ARG_BOOL, {.u_bool = false} },
@@ -385,9 +385,9 @@ STATIC mp_obj_t pyb_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_alarm_obj, 1, pyb_rtc_alarm);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_alarm_obj, 1, pyb_rtc_alarm);
 
-STATIC mp_obj_t pyb_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pyb_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
     pyb_rtc_obj_t *self = args[0];
     int32_t ms_left;
     uint32_t c_seconds;
@@ -408,9 +408,9 @@ STATIC mp_obj_t pyb_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
     }
     return mp_obj_new_int(ms_left);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc_alarm_left);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc_alarm_left);
 
-STATIC mp_obj_t pyb_rtc_alarm_cancel(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pyb_rtc_alarm_cancel(size_t n_args, const mp_obj_t *args) {
     // only alarm id 0 is available
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
         mp_raise_OSError(MP_ENODEV);
@@ -419,10 +419,10 @@ STATIC mp_obj_t pyb_rtc_alarm_cancel(size_t n_args, const mp_obj_t *args) {
     pyb_rtc_disable_alarm();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_cancel_obj, 1, 2, pyb_rtc_alarm_cancel);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_cancel_obj, 1, 2, pyb_rtc_alarm_cancel);
 
 /// \method irq(trigger, priority, handler, wake)
-STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mp_irq_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mp_irq_INIT_NUM_ARGS, mp_irq_init_args, args);
     pyb_rtc_obj_t *self = pos_args[0];
@@ -453,9 +453,9 @@ STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 invalid_args:
     mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_irq_obj, 1, pyb_rtc_irq);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_irq_obj, 1, pyb_rtc_irq);
 
-STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
+static const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init),            MP_ROM_PTR(&pyb_rtc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&pyb_rtc_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_now),             MP_ROM_PTR(&pyb_rtc_now_obj) },
@@ -467,7 +467,7 @@ STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
     // class constants
     { MP_ROM_QSTR(MP_QSTR_ALARM0),          MP_ROM_INT(PYB_RTC_ALARM0) },
 };
-STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_rtc_type,
@@ -477,7 +477,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &pyb_rtc_locals_dict
     );
 
-STATIC const mp_irq_methods_t pyb_rtc_irq_methods = {
+static const mp_irq_methods_t pyb_rtc_irq_methods = {
     .init = pyb_rtc_irq,
     .enable = pyb_rtc_irq_enable,
     .disable = pyb_rtc_irq_disable,

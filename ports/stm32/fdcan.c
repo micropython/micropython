@@ -340,7 +340,7 @@ int can_receive(FDCAN_HandleTypeDef *can, int fifo, FDCAN_RxHeaderTypeDef *hdr, 
     return 0; // success
 }
 
-STATIC void can_rx_irq_handler(uint can_id, uint fifo_id) {
+static void can_rx_irq_handler(uint can_id, uint fifo_id) {
     mp_obj_t callback;
     pyb_can_obj_t *self;
     mp_obj_t irq_reason = MP_OBJ_NEW_SMALL_INT(0);

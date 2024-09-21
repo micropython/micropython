@@ -312,7 +312,7 @@ HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout) {
     }
 }
 
-STATIC void can_rx_irq_handler(uint can_id, uint fifo_id) {
+static void can_rx_irq_handler(uint can_id, uint fifo_id) {
     mp_obj_t callback;
     pyb_can_obj_t *self;
     mp_obj_t irq_reason = MP_OBJ_NEW_SMALL_INT(0);
@@ -354,7 +354,7 @@ STATIC void can_rx_irq_handler(uint can_id, uint fifo_id) {
     pyb_can_handle_callback(self, fifo_id, callback, irq_reason);
 }
 
-STATIC void can_sce_irq_handler(uint can_id) {
+static void can_sce_irq_handler(uint can_id) {
     pyb_can_obj_t *self = MP_STATE_PORT(pyb_can_obj_all)[can_id - 1];
     if (self) {
         self->can.Instance->MSR = CAN_MSR_ERRI;

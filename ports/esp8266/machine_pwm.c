@@ -38,14 +38,14 @@ typedef struct _machine_pwm_obj_t {
     int32_t duty_ns;
 } machine_pwm_obj_t;
 
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty);
+static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty);
 
-STATIC bool pwm_inited = false;
+static bool pwm_inited = false;
 
 /******************************************************************************/
 // MicroPython bindings for PWM
 
-STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "PWM(%u", self->pin->phys_port);
     if (self->active) {
@@ -55,7 +55,7 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     mp_printf(print, ")");
 }
 
-STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_freq, ARG_duty, ARG_duty_u16, ARG_duty_ns };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = -1} },
@@ -96,7 +96,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     pwm_start();
 }
 
-STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
     pyb_pin_obj_t *pin = mp_obj_get_pin_obj(args[0]);
 
@@ -121,17 +121,17 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
+static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     pwm_delete(self->channel);
     self->active = 0;
     pwm_start();
 }
 
-STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     return MP_OBJ_NEW_SMALL_INT(pwm_get_freq(0));
 }
 
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
+static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     pwm_set_freq(freq, 0);
     if (self->duty_ns != -1) {
         mp_machine_pwm_duty_set_ns(self, self->duty_ns);
@@ -140,7 +140,7 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     }
 }
 
-STATIC void set_active(machine_pwm_obj_t *self, bool set_pin) {
+static void set_active(machine_pwm_obj_t *self, bool set_pin) {
     if (!self->active) {
         pwm_add(self->pin->phys_port, self->pin->periph, self->pin->func);
         self->active = 1;
@@ -150,37 +150,37 @@ STATIC void set_active(machine_pwm_obj_t *self, bool set_pin) {
     }
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
     set_active(self, true);
     return MP_OBJ_NEW_SMALL_INT(pwm_get_duty(self->channel));
 }
 
-STATIC void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
+static void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
     set_active(self, false);
     self->duty_ns = -1;
     pwm_set_duty(duty, self->channel);
     pwm_start();
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     set_active(self, true);
     return MP_OBJ_NEW_SMALL_INT(pwm_get_duty(self->channel) * 65536 / 1024);
 }
 
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty) {
+static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty) {
     set_active(self, false);
     self->duty_ns = -1;
     pwm_set_duty(duty * 1024 / 65536, self->channel);
     pwm_start();
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     set_active(self, true);
     uint32_t freq = pwm_get_freq(0);
     return MP_OBJ_NEW_SMALL_INT(pwm_get_duty(self->channel) * 976563 / freq);
 }
 
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
+static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
     set_active(self, false);
     self->duty_ns = duty;
     uint32_t freq = pwm_get_freq(0);

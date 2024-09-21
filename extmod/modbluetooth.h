@@ -498,11 +498,11 @@ typedef struct {
 
 typedef mp_map_t *mp_gatts_db_t;
 
-STATIC inline void mp_bluetooth_gatts_db_create(mp_gatts_db_t *db) {
+static inline void mp_bluetooth_gatts_db_create(mp_gatts_db_t *db) {
     *db = m_new(mp_map_t, 1);
 }
 
-STATIC inline void mp_bluetooth_gatts_db_reset(mp_gatts_db_t db) {
+static inline void mp_bluetooth_gatts_db_reset(mp_gatts_db_t db) {
     mp_map_init(db, 0);
 }
 

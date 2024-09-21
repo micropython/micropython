@@ -135,7 +135,7 @@ static const sdspi_device_config_t spi_dev_defaults[2] = {
     if (arg_vals[arg_id].u_obj != mp_const_none) \
     config.pin_var = machine_pin_get_id(arg_vals[arg_id].u_obj)
 
-STATIC esp_err_t sdcard_ensure_card_init(sdcard_card_obj_t *self, bool force) {
+static esp_err_t sdcard_ensure_card_init(sdcard_card_obj_t *self, bool force) {
     if (force || !(self->flags & SDCARD_CARD_FLAGS_CARD_INIT_DONE)) {
         DEBUG_printf("  Calling card init");
 
@@ -166,7 +166,7 @@ STATIC esp_err_t sdcard_ensure_card_init(sdcard_card_obj_t *self, bool force) {
 // transfers. Only 1-bit is supported on the SPI interfaces.
 // card = SDCard(slot=1, width=None, present_pin=None, wp_pin=None)
 
-STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     enum {
         ARG_slot,
@@ -179,7 +179,7 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         ARG_cs,
         ARG_freq,
     };
-    STATIC const mp_arg_t allowed_args[] = {
+    static const mp_arg_t allowed_args[] = {
         { MP_QSTR_slot,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_width,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_cd,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -315,7 +315,7 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t sd_deinit(mp_obj_t self_in) {
+static mp_obj_t sd_deinit(mp_obj_t self_in) {
     sdcard_card_obj_t *self = self_in;
 
     DEBUG_printf("De-init host\n");
@@ -335,9 +335,9 @@ STATIC mp_obj_t sd_deinit(mp_obj_t self_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(sd_deinit_obj, sd_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(sd_deinit_obj, sd_deinit);
 
-STATIC mp_obj_t sd_info(mp_obj_t self_in) {
+static mp_obj_t sd_info(mp_obj_t self_in) {
     sdcard_card_obj_t *self = self_in;
     // We could potential return a great deal more SD card data but it
     // is not clear that it is worth the extra code space to do
@@ -355,9 +355,9 @@ STATIC mp_obj_t sd_info(mp_obj_t self_in) {
     };
     return mp_obj_new_tuple(2, tuple);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(sd_info_obj, sd_info);
+static MP_DEFINE_CONST_FUN_OBJ_1(sd_info_obj, sd_info);
 
-STATIC mp_obj_t machine_sdcard_readblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf) {
+static mp_obj_t machine_sdcard_readblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf) {
     sdcard_card_obj_t *self = self_in;
     mp_buffer_info_t bufinfo;
     esp_err_t err;
@@ -372,9 +372,9 @@ STATIC mp_obj_t machine_sdcard_readblocks(mp_obj_t self_in, mp_obj_t block_num, 
 
     return mp_obj_new_bool(err == ESP_OK);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_readblocks_obj, machine_sdcard_readblocks);
+static MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_readblocks_obj, machine_sdcard_readblocks);
 
-STATIC mp_obj_t machine_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf) {
+static mp_obj_t machine_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf) {
     sdcard_card_obj_t *self = self_in;
     mp_buffer_info_t bufinfo;
     esp_err_t err;
@@ -389,9 +389,9 @@ STATIC mp_obj_t machine_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t block_num,
 
     return mp_obj_new_bool(err == ESP_OK);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_writeblocks_obj, machine_sdcard_writeblocks);
+static MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_writeblocks_obj, machine_sdcard_writeblocks);
 
-STATIC mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
+static mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     sdcard_card_obj_t *self = self_in;
     esp_err_t err = ESP_OK;
     mp_int_t cmd = mp_obj_get_int(cmd_in);
@@ -428,9 +428,9 @@ STATIC mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
             return MP_OBJ_NEW_SMALL_INT(-1); // error
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_ioctl_obj, machine_sdcard_ioctl);
+static MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_ioctl_obj, machine_sdcard_ioctl);
 
-STATIC const mp_rom_map_elem_t machine_sdcard_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_sdcard_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&sd_info_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&sd_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&sd_deinit_obj) },
@@ -440,7 +440,7 @@ STATIC const mp_rom_map_elem_t machine_sdcard_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&machine_sdcard_ioctl_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(machine_sdcard_locals_dict, machine_sdcard_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_sdcard_locals_dict, machine_sdcard_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_sdcard_type,

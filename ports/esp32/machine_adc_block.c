@@ -41,11 +41,11 @@ machine_adc_block_obj_t madcblock_obj[] = {
     #endif
 };
 
-STATIC void mp_machine_adc_block_print(const mp_print_t *print, machine_adc_block_obj_t *self) {
+static void mp_machine_adc_block_print(const mp_print_t *print, machine_adc_block_obj_t *self) {
     mp_printf(print, "ADCBlock(%u, bits=%u)", self->unit_id, self->bits);
 }
 
-STATIC void mp_machine_adc_block_bits_set(machine_adc_block_obj_t *self, mp_int_t bits) {
+static void mp_machine_adc_block_bits_set(machine_adc_block_obj_t *self, mp_int_t bits) {
     if (bits != -1) {
         madcblock_bits_helper(self, bits);
     } else if (self->width == -1) {
@@ -53,7 +53,7 @@ STATIC void mp_machine_adc_block_bits_set(machine_adc_block_obj_t *self, mp_int_
     }
 }
 
-STATIC machine_adc_block_obj_t *mp_machine_adc_block_get(mp_int_t unit) {
+static machine_adc_block_obj_t *mp_machine_adc_block_get(mp_int_t unit) {
     for (int i = 0; i < MP_ARRAY_SIZE(madcblock_obj); i++) {
         if (unit == madcblock_obj[i].unit_id) {
             return &madcblock_obj[i];
@@ -62,7 +62,7 @@ STATIC machine_adc_block_obj_t *mp_machine_adc_block_get(mp_int_t unit) {
     return NULL;
 }
 
-STATIC machine_adc_obj_t *mp_machine_adc_block_connect(machine_adc_block_obj_t *self, mp_int_t channel_id, mp_hal_pin_obj_t gpio_id, mp_map_t *kw_args) {
+static machine_adc_obj_t *mp_machine_adc_block_connect(machine_adc_block_obj_t *self, mp_int_t channel_id, mp_hal_pin_obj_t gpio_id, mp_map_t *kw_args) {
     const machine_adc_obj_t *adc = madc_search_helper(self, channel_id, gpio_id);
     if (adc == NULL) {
         return NULL;

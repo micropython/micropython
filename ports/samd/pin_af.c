@@ -53,7 +53,7 @@ const machine_pin_obj_t *pin_find_by_id(int pin_id) {
     mp_raise_ValueError(MP_ERROR_TEXT("not a Pin"));
 }
 
-STATIC const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
+static const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
     mp_map_elem_t *named_elem = mp_map_lookup((mp_map_t *)&named_pins->map, name, MP_MAP_LOOKUP);
     if (named_elem != NULL) {
         return named_elem->value;

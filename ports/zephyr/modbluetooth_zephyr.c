@@ -61,21 +61,21 @@ typedef struct _mp_bluetooth_zephyr_root_pointers_t {
     mp_gatts_db_t gatts_db;
 } mp_bluetooth_zephyr_root_pointers_t;
 
-STATIC int mp_bluetooth_zephyr_ble_state;
+static int mp_bluetooth_zephyr_ble_state;
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
-STATIC int mp_bluetooth_zephyr_gap_scan_state;
-STATIC struct k_timer mp_bluetooth_zephyr_gap_scan_timer;
-STATIC struct bt_le_scan_cb mp_bluetooth_zephyr_gap_scan_cb_struct;
+static int mp_bluetooth_zephyr_gap_scan_state;
+static struct k_timer mp_bluetooth_zephyr_gap_scan_timer;
+static struct bt_le_scan_cb mp_bluetooth_zephyr_gap_scan_cb_struct;
 #endif
 
-STATIC int bt_err_to_errno(int err) {
+static int bt_err_to_errno(int err) {
     // Zephyr uses errno codes directly, but they are negative.
     return -err;
 }
 
 // modbluetooth (and the layers above it) work in BE for addresses, Zephyr works in LE.
-STATIC void reverse_addr_byte_order(uint8_t *addr_out, const bt_addr_le_t *addr_in) {
+static void reverse_addr_byte_order(uint8_t *addr_out, const bt_addr_le_t *addr_in) {
     for (int i = 0; i < 6; ++i) {
         addr_out[i] = addr_in->a.val[5 - i];
     }
@@ -98,12 +98,12 @@ void gap_scan_cb_recv(const struct bt_le_scan_recv_info *info, struct net_buf_si
     mp_bluetooth_gap_on_scan_result(info->addr->type, addr, info->adv_type, info->rssi, buf->data, buf->len);
 }
 
-STATIC mp_obj_t gap_scan_stop(mp_obj_t unused) {
+static mp_obj_t gap_scan_stop(mp_obj_t unused) {
     (void)unused;
     mp_bluetooth_gap_scan_stop();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gap_scan_stop_obj, gap_scan_stop);
+static MP_DEFINE_CONST_FUN_OBJ_1(gap_scan_stop_obj, gap_scan_stop);
 
 void gap_scan_cb_timeout(struct k_timer *timer_id) {
     DEBUG_printf("gap_scan_cb_timeout\n");
@@ -212,7 +212,7 @@ int mp_bluetooth_gap_set_device_name(const uint8_t *buf, size_t len) {
 
 // Zephyr takes advertising/scan data as an array of (type, len, payload) packets,
 // and this function constructs such an array from raw advertising/scan data.
-STATIC void mp_bluetooth_prepare_bt_data(const uint8_t *data, size_t len, struct bt_data *bt_data, size_t *bt_len) {
+static void mp_bluetooth_prepare_bt_data(const uint8_t *data, size_t len, struct bt_data *bt_data, size_t *bt_len) {
     size_t i = 0;
     const uint8_t *d = data;
     while (d < data + len && i < *bt_len) {

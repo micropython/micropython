@@ -38,14 +38,14 @@ HANDLE std_in = NULL;
 HANDLE con_out = NULL;
 DWORD orig_mode = 0;
 
-STATIC void assure_stdin_handle() {
+static void assure_stdin_handle() {
     if (!std_in) {
         std_in = GetStdHandle(STD_INPUT_HANDLE);
         assert(std_in != INVALID_HANDLE_VALUE);
     }
 }
 
-STATIC void assure_conout_handle() {
+static void assure_conout_handle() {
     if (!con_out) {
         con_out = CreateFile("CONOUT$", GENERIC_READ | GENERIC_WRITE,
             FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -143,7 +143,7 @@ typedef struct item_t {
 } item_t;
 
 // map virtual key codes to key sequences known by MicroPython's readline implementation
-STATIC item_t keyCodeMap[] = {
+static item_t keyCodeMap[] = {
     {VK_UP, "[A"},
     {VK_DOWN, "[B"},
     {VK_RIGHT, "[C"},
@@ -155,7 +155,7 @@ STATIC item_t keyCodeMap[] = {
 };
 
 // likewise, but with Ctrl key down
-STATIC item_t ctrlKeyCodeMap[] = {
+static item_t ctrlKeyCodeMap[] = {
     {VK_LEFT, "b"},
     {VK_RIGHT, "f"},
     {VK_DELETE, "d"},
@@ -163,9 +163,9 @@ STATIC item_t ctrlKeyCodeMap[] = {
     {0, ""} // sentinel
 };
 
-STATIC const char *cur_esc_seq = NULL;
+static const char *cur_esc_seq = NULL;
 
-STATIC int esc_seq_process_vk(WORD vk, bool ctrl_key_down) {
+static int esc_seq_process_vk(WORD vk, bool ctrl_key_down) {
     for (item_t *p = (ctrl_key_down ? ctrlKeyCodeMap : keyCodeMap); p->vkey != 0; ++p) {
         if (p->vkey == vk) {
             cur_esc_seq = p->seq;
@@ -175,7 +175,7 @@ STATIC int esc_seq_process_vk(WORD vk, bool ctrl_key_down) {
     return 0; // nothing found
 }
 
-STATIC int esc_seq_chr() {
+static int esc_seq_chr() {
     if (cur_esc_seq) {
         const char c = *cur_esc_seq++;
         if (c) {

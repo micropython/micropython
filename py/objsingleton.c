@@ -37,7 +37,7 @@ typedef struct _mp_obj_singleton_t {
     qstr name;
 } mp_obj_singleton_t;
 
-STATIC void singleton_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void singleton_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_singleton_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "%q", self->name);

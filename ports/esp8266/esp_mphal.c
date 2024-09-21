@@ -36,7 +36,7 @@
 #include "extmod/misc.h"
 #include "shared/runtime/pyexec.h"
 
-STATIC byte stdin_ringbuf_array[256];
+static byte stdin_ringbuf_array[256];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len);
 const mp_print_t mp_debug_print = {NULL, mp_hal_debug_tx_strn_cooked};

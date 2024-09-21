@@ -22,29 +22,29 @@
 
 // A function that uses the default float type configured for the current target
 // This default can be overridden by specifying MICROPY_FLOAT_IMPL at the make level
-STATIC mp_obj_t add(mp_obj_t x, mp_obj_t y) {
+static mp_obj_t add(mp_obj_t x, mp_obj_t y) {
     return mp_obj_new_float(mp_obj_get_float(x) + mp_obj_get_float(y));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(add_obj, add);
+static MP_DEFINE_CONST_FUN_OBJ_2(add_obj, add);
 
 // A function that explicitly uses single precision floats
-STATIC mp_obj_t add_f(mp_obj_t x, mp_obj_t y) {
+static mp_obj_t add_f(mp_obj_t x, mp_obj_t y) {
     return mp_obj_new_float_from_f(mp_obj_get_float_to_f(x) + mp_obj_get_float_to_f(y));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(add_f_obj, add_f);
+static MP_DEFINE_CONST_FUN_OBJ_2(add_f_obj, add_f);
 
 #if USE_DOUBLE
 // A function that explicitly uses double precision floats
-STATIC mp_obj_t add_d(mp_obj_t x, mp_obj_t y) {
+static mp_obj_t add_d(mp_obj_t x, mp_obj_t y) {
     return mp_obj_new_float_from_d(mp_obj_get_float_to_d(x) + mp_obj_get_float_to_d(y));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(add_d_obj, add_d);
+static MP_DEFINE_CONST_FUN_OBJ_2(add_d_obj, add_d);
 #endif
 
 // A function that computes the product of floats in an array.
 // This function uses the most general C argument interface, which is more difficult
 // to use but has access to the globals dict of the module via self->globals.
-STATIC mp_obj_t productf(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
+static mp_obj_t productf(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
     // Check number of arguments is valid
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 

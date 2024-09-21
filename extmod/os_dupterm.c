@@ -208,7 +208,7 @@ int mp_os_dupterm_tx_strn(const char *str, size_t len) {
     return did_write ? ret : -1;
 }
 
-STATIC mp_obj_t mp_os_dupterm(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_os_dupterm(size_t n_args, const mp_obj_t *args) {
     mp_int_t idx = 0;
     if (n_args == 2) {
         idx = mp_obj_get_int(args[1]);

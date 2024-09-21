@@ -36,7 +36,7 @@
 #if MICROPY_PY_IO
 
 #if MICROPY_CPYTHON_COMPAT
-STATIC void check_stringio_is_open(const mp_obj_stringio_t *o) {
+static void check_stringio_is_open(const mp_obj_stringio_t *o) {
     if (o->vstr == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("I/O operation on closed file"));
     }
@@ -45,13 +45,13 @@ STATIC void check_stringio_is_open(const mp_obj_stringio_t *o) {
 #define check_stringio_is_open(o)
 #endif
 
-STATIC void stringio_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void stringio_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_stringio_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, self->base.type == &mp_type_stringio ? "<io.StringIO 0x%x>" : "<io.BytesIO 0x%x>", self);
 }
 
-STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
     check_stringio_is_open(o);
@@ -67,7 +67,7 @@ STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
     return size;
 }
 
-STATIC void stringio_copy_on_write(mp_obj_stringio_t *o) {
+static void stringio_copy_on_write(mp_obj_stringio_t *o) {
     const void *buf = o->vstr->buf;
     o->vstr->buf = m_new(char, o->vstr->len);
     o->vstr->fixed_buf = false;
@@ -75,7 +75,7 @@ STATIC void stringio_copy_on_write(mp_obj_stringio_t *o) {
     memcpy(o->vstr->buf, buf, o->vstr->len);
 }
 
-STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
     check_stringio_is_open(o);
@@ -109,7 +109,7 @@ STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, 
     return size;
 }
 
-STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
     switch (request) {
@@ -162,22 +162,22 @@ STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
 
 #define STREAM_TO_CONTENT_TYPE(o) (((o)->base.type == &mp_type_stringio) ? &mp_type_str : &mp_type_bytes)
 
-STATIC mp_obj_t stringio_getvalue(mp_obj_t self_in) {
+static mp_obj_t stringio_getvalue(mp_obj_t self_in) {
     mp_obj_stringio_t *self = MP_OBJ_TO_PTR(self_in);
     check_stringio_is_open(self);
     // TODO: Try to avoid copying string
     return mp_obj_new_str_of_type(STREAM_TO_CONTENT_TYPE(self), (byte *)self->vstr->buf, self->vstr->len);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(stringio_getvalue_obj, stringio_getvalue);
+static MP_DEFINE_CONST_FUN_OBJ_1(stringio_getvalue_obj, stringio_getvalue);
 
-STATIC mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type) {
+static mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type) {
     mp_obj_stringio_t *o = mp_obj_malloc(mp_obj_stringio_t, type);
     o->pos = 0;
     o->ref_obj = MP_OBJ_NULL;
     return o;
 }
 
-STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)n_kw; // TODO check n_kw==0
 
     mp_uint_t sz = 16;
@@ -215,7 +215,7 @@ STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, s
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC const mp_rom_map_elem_t stringio_locals_dict_table[] = {
+static const mp_rom_map_elem_t stringio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
@@ -229,9 +229,9 @@ STATIC const mp_rom_map_elem_t stringio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&mp_stream___exit___obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(stringio_locals_dict, stringio_locals_dict_table);
+static MP_DEFINE_CONST_DICT(stringio_locals_dict, stringio_locals_dict_table);
 
-STATIC const mp_stream_p_t stringio_stream_p = {
+static const mp_stream_p_t stringio_stream_p = {
     .read = stringio_read,
     .write = stringio_write,
     .ioctl = stringio_ioctl,
@@ -249,7 +249,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 #if MICROPY_PY_IO_BYTESIO
-STATIC const mp_stream_p_t bytesio_stream_p = {
+static const mp_stream_p_t bytesio_stream_p = {
     .read = stringio_read,
     .write = stringio_write,
     .ioctl = stringio_ioctl,

@@ -49,7 +49,7 @@ typedef struct _mp_reader_vfs_t {
     byte buf[];
 } mp_reader_vfs_t;
 
-STATIC mp_uint_t mp_reader_vfs_readbyte(void *data) {
+static mp_uint_t mp_reader_vfs_readbyte(void *data) {
     mp_reader_vfs_t *reader = (mp_reader_vfs_t *)data;
     if (reader->bufpos >= reader->buflen) {
         if (reader->buflen < reader->bufsize) {
@@ -70,7 +70,7 @@ STATIC mp_uint_t mp_reader_vfs_readbyte(void *data) {
     return reader->buf[reader->bufpos++];
 }
 
-STATIC void mp_reader_vfs_close(void *data) {
+static void mp_reader_vfs_close(void *data) {
     mp_reader_vfs_t *reader = (mp_reader_vfs_t *)data;
     mp_stream_close(reader->file);
     m_del_obj(mp_reader_vfs_t, reader);

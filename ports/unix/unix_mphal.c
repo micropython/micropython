@@ -46,7 +46,7 @@
 #ifndef _WIN32
 #include <signal.h>
 
-STATIC void sighandler(int signum) {
+static void sighandler(int signum) {
     if (signum == SIGINT) {
         #if MICROPY_ASYNC_KBD_INTR
         #if MICROPY_PY_THREAD_GIL

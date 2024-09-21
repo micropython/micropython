@@ -43,8 +43,8 @@ typedef struct {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC network_server_obj_t network_server_obj;
-STATIC const mp_obj_type_t network_server_type;
+static network_server_obj_t network_server_obj;
+static const mp_obj_type_t network_server_type;
 
 /// \module network - network configuration
 ///
@@ -54,7 +54,7 @@ void mod_network_init0(void) {
 }
 
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-STATIC mp_obj_t network_server_init_helper(mp_obj_t self, const mp_arg_val_t *args) {
+static mp_obj_t network_server_init_helper(mp_obj_t self, const mp_arg_val_t *args) {
     const char *user = SERVERS_DEF_USER;
     const char *pass = SERVERS_DEF_PASS;
     if (args[0].u_obj != MP_OBJ_NULL) {
@@ -81,12 +81,12 @@ STATIC mp_obj_t network_server_init_helper(mp_obj_t self, const mp_arg_val_t *ar
     return mp_const_none;
 }
 
-STATIC const mp_arg_t network_server_args[] = {
+static const mp_arg_t network_server_args[] = {
     { MP_QSTR_id,                            MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_login,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_timeout,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 };
-STATIC mp_obj_t network_server_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t network_server_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -108,16 +108,16 @@ STATIC mp_obj_t network_server_make_new(const mp_obj_type_t *type, size_t n_args
     return (mp_obj_t)self;
 }
 
-STATIC mp_obj_t network_server_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t network_server_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(network_server_args) - 1];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), &network_server_args[1], args);
     return network_server_init_helper(pos_args[0], args);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_server_init_obj, 1, network_server_init);
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_server_init_obj, 1, network_server_init);
 
 // timeout value given in seconds
-STATIC mp_obj_t network_server_timeout(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t network_server_timeout(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         uint32_t timeout = mp_obj_get_int(args[1]);
         servers_set_timeout(timeout * 1000);
@@ -127,23 +127,23 @@ STATIC mp_obj_t network_server_timeout(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_int(servers_get_timeout() / 1000);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_server_timeout_obj, 1, 2, network_server_timeout);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_server_timeout_obj, 1, 2, network_server_timeout);
 
-STATIC mp_obj_t network_server_running(mp_obj_t self_in) {
+static mp_obj_t network_server_running(mp_obj_t self_in) {
     // get
     return mp_obj_new_bool(servers_are_enabled());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_server_running_obj, network_server_running);
+static MP_DEFINE_CONST_FUN_OBJ_1(network_server_running_obj, network_server_running);
 
-STATIC mp_obj_t network_server_deinit(mp_obj_t self_in) {
+static mp_obj_t network_server_deinit(mp_obj_t self_in) {
     // simply stop the servers
     servers_stop();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_server_deinit_obj, network_server_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(network_server_deinit_obj, network_server_deinit);
 #endif
 
-STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_network) },
     { MP_ROM_QSTR(MP_QSTR_WLAN),                MP_ROM_PTR(&mod_network_nic_type_wlan) },
 
@@ -152,7 +152,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
 #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
 
 const mp_obj_module_t mp_module_network = {
     .base = { &mp_type_module },
@@ -162,16 +162,16 @@ const mp_obj_module_t mp_module_network = {
 MP_REGISTER_MODULE(MP_QSTR_network, mp_module_network);
 
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-STATIC const mp_rom_map_elem_t network_server_locals_dict_table[] = {
+static const mp_rom_map_elem_t network_server_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init),                MP_ROM_PTR(&network_server_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),              MP_ROM_PTR(&network_server_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_timeout),             MP_ROM_PTR(&network_server_timeout_obj) },
     { MP_ROM_QSTR(MP_QSTR_isrunning),           MP_ROM_PTR(&network_server_running_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(network_server_locals_dict, network_server_locals_dict_table);
+static MP_DEFINE_CONST_DICT(network_server_locals_dict, network_server_locals_dict_table);
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     network_server_type,
     MP_QSTR_Server,
     MP_TYPE_FLAG_NONE,

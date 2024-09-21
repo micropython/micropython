@@ -44,7 +44,7 @@
 
 #define DEBUG_printf(...) // printf(__VA_ARGS__)
 
-STATIC hci_transport_config_uart_t hci_transport_config_uart = {
+static hci_transport_config_uart_t hci_transport_config_uart = {
     .type = HCI_TRANSPORT_CONFIG_UART,
     .baudrate_init = 1000000,
     .baudrate_main = 0,

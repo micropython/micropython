@@ -35,13 +35,13 @@
 
 extern uint32_t ticks;
 
-STATIC mp_obj_t microbit_reset_(void) {
+static mp_obj_t microbit_reset_(void) {
     NVIC_SystemReset();
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(microbit_reset_obj, microbit_reset_);
 
-STATIC mp_obj_t microbit_sleep(mp_obj_t ms_in) {
+static mp_obj_t microbit_sleep(mp_obj_t ms_in) {
     mp_int_t ms = 0;
     if (mp_obj_is_integer(ms_in)) {
         ms = mp_obj_get_int(ms_in);
@@ -57,7 +57,7 @@ STATIC mp_obj_t microbit_sleep(mp_obj_t ms_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(microbit_sleep_obj, microbit_sleep);
 
-STATIC mp_obj_t microbit_running_time(void) {
+static mp_obj_t microbit_running_time(void) {
     return MP_OBJ_NEW_SMALL_INT(ticks);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(microbit_running_time_obj, microbit_running_time);
@@ -70,7 +70,7 @@ static const monochrome_5by5_t panic = SMALL_IMAGE(
     1,0,0,0,1
 );
 
-STATIC mp_obj_t microbit_panic(mp_uint_t n_args, const mp_obj_t *args) {
+static mp_obj_t microbit_panic(mp_uint_t n_args, const mp_obj_t *args) {
     while(true) {
         microbit_display_show(&microbit_display_obj, (microbit_image_obj_t*)&panic);
         mp_hal_delay_ms(1000);
@@ -95,7 +95,7 @@ STATIC mp_obj_t microbit_panic(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(microbit_panic_obj, 0, 1, microbit_panic);
 
-STATIC mp_obj_t microbit_temperature(void) {
+static mp_obj_t microbit_temperature(void) {
     int temp = temp_read();
 #if MICROPY_PY_BUILTINS_FLOAT
     return mp_obj_new_float((mp_float_t)temp / MICROPY_FLOAT_CONST(100.0));
@@ -109,7 +109,7 @@ void board_modules_init0(void) {
     ticker_register_low_pri_callback(microbit_display_tick);
 }
 
-STATIC const mp_rom_map_elem_t microbit_module_globals_table[] = {
+static const mp_rom_map_elem_t microbit_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Image), MP_ROM_PTR(&microbit_image_type) },
 
     { MP_ROM_QSTR(MP_QSTR_display), MP_ROM_PTR(&microbit_display_obj) },
@@ -150,7 +150,7 @@ STATIC const mp_rom_map_elem_t microbit_module_globals_table[] = {
 */
 };
 
-STATIC MP_DEFINE_CONST_DICT(microbit_module_globals, microbit_module_globals_table);
+static MP_DEFINE_CONST_DICT(microbit_module_globals, microbit_module_globals_table);
 
 const mp_obj_module_t microbit_module = {
     .base = { &mp_type_module },

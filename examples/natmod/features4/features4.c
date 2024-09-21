@@ -24,7 +24,7 @@ typedef struct {
 
 // Essentially Factorial.__new__ (but also kind of __init__).
 // Takes a single argument (the number to find the factorial of)
-STATIC mp_obj_t factorial_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args_in) {
+static mp_obj_t factorial_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args_in) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     mp_obj_factorial_t *o = mp_obj_malloc(mp_obj_factorial_t, type);
@@ -33,7 +33,7 @@ STATIC mp_obj_t factorial_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_int_t factorial_helper(mp_int_t x) {
+static mp_int_t factorial_helper(mp_int_t x) {
     if (x == 0) {
         return 1;
     }
@@ -41,16 +41,16 @@ STATIC mp_int_t factorial_helper(mp_int_t x) {
 }
 
 // Implements Factorial.calculate()
-STATIC mp_obj_t factorial_calculate(mp_obj_t self_in) {
+static mp_obj_t factorial_calculate(mp_obj_t self_in) {
     mp_obj_factorial_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(factorial_helper(self->n));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(factorial_calculate_obj, factorial_calculate);
+static MP_DEFINE_CONST_FUN_OBJ_1(factorial_calculate_obj, factorial_calculate);
 
 // Locals dict for the Factorial type (will have a single method, calculate,
 // added in mpy_init).
 mp_map_elem_t factorial_locals_dict_table[1];
-STATIC MP_DEFINE_CONST_DICT(factorial_locals_dict, factorial_locals_dict_table);
+static MP_DEFINE_CONST_DICT(factorial_locals_dict, factorial_locals_dict_table);
 
 // This is the entry point and is called when the module is imported
 mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {

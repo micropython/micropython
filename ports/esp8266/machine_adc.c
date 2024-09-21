@@ -37,10 +37,10 @@ typedef struct _machine_adc_obj_t {
     bool isvdd;
 } machine_adc_obj_t;
 
-STATIC machine_adc_obj_t machine_adc_vdd3 = {{&machine_adc_type}, true};
-STATIC machine_adc_obj_t machine_adc_adc = {{&machine_adc_type}, false};
+static machine_adc_obj_t machine_adc_vdd3 = {{&machine_adc_type}, true};
+static machine_adc_obj_t machine_adc_adc = {{&machine_adc_type}, false};
 
-STATIC uint16_t adc_read(machine_adc_obj_t *self) {
+static uint16_t adc_read(machine_adc_obj_t *self) {
     if (self->isvdd) {
         return system_get_vdd33();
     } else {
@@ -48,12 +48,12 @@ STATIC uint16_t adc_read(machine_adc_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "ADC(%u)", self->isvdd);
 }
 
-STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     mp_int_t chn = mp_obj_get_int(args[0]);
@@ -69,12 +69,12 @@ STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type_in, size_t n_a
 }
 
 // read_u16()
-STATIC mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
+static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     uint32_t value = adc_read(self);
     return value * 65535 / 1024;
 }
 
 // Legacy method
-STATIC mp_int_t mp_machine_adc_read(machine_adc_obj_t *self) {
+static mp_int_t mp_machine_adc_read(machine_adc_obj_t *self) {
     return adc_read(self);
 }

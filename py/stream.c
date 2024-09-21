@@ -38,7 +38,7 @@
 // TODO: should be in mpconfig.h
 #define DEFAULT_BUFFER_SIZE 256
 
-STATIC mp_obj_t stream_readall(mp_obj_t self_in);
+static mp_obj_t stream_readall(mp_obj_t self_in);
 
 // Returns error condition in *errcode, if non-zero, return value is number of bytes written
 // before error condition occurred. If *errcode == 0, returns total bytes written (which will
@@ -96,7 +96,7 @@ const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("stream operation not supported"));
 }
 
-STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte flags) {
+static mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte flags) {
     // What to do if sz < -1?  Python docs don't specify this case.
     // CPython does a readall, but here we silently let negatives through,
     // and they will cause a MemoryError.
@@ -218,12 +218,12 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
     }
 }
 
-STATIC mp_obj_t stream_read(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t stream_read(size_t n_args, const mp_obj_t *args) {
     return stream_read_generic(n_args, args, MP_STREAM_RW_READ);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);
 
-STATIC mp_obj_t stream_read1(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t stream_read1(size_t n_args, const mp_obj_t *args) {
     return stream_read_generic(n_args, args, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj, 1, 2, stream_read1);
@@ -249,7 +249,7 @@ void mp_stream_write_adaptor(void *self, const char *buf, size_t len) {
     mp_stream_write(MP_OBJ_FROM_PTR(self), buf, len, MP_STREAM_RW_WRITE);
 }
 
-STATIC mp_obj_t stream_write_method(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t stream_write_method(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
     size_t max_len = (size_t)-1;
@@ -268,14 +268,14 @@ STATIC mp_obj_t stream_write_method(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_write_obj, 2, 4, stream_write_method);
 
-STATIC mp_obj_t stream_write1_method(mp_obj_t self_in, mp_obj_t arg) {
+static mp_obj_t stream_write1_method(mp_obj_t self_in, mp_obj_t arg) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
     return mp_stream_write(self_in, bufinfo.buf, bufinfo.len, MP_STREAM_RW_WRITE | MP_STREAM_RW_ONCE);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write1_obj, stream_write1_method);
 
-STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
 
@@ -303,7 +303,7 @@ STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj, 2, 3, stream_readinto);
 
-STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
+static mp_obj_t stream_readall(mp_obj_t self_in) {
     const mp_stream_p_t *stream_p = mp_get_stream(self_in);
 
     mp_uint_t total_size = 0;
@@ -348,7 +348,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
 }
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
-STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) {
     const mp_stream_p_t *stream_p = mp_get_stream(args[0]);
 
     mp_int_t max_size = -1;
@@ -406,7 +406,7 @@ STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj, 1, 2, stream_unbuffered_readline);
 
 // TODO take an optional extra argument (what does it do exactly?)
-STATIC mp_obj_t stream_unbuffered_readlines(mp_obj_t self) {
+static mp_obj_t stream_unbuffered_readlines(mp_obj_t self) {
     mp_obj_t lines = mp_obj_new_list(0, NULL);
     for (;;) {
         mp_obj_t line = stream_unbuffered_readline(1, &self);
@@ -438,13 +438,13 @@ mp_obj_t mp_stream_close(mp_obj_t stream) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_close_obj, mp_stream_close);
 
-STATIC mp_obj_t mp_stream___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_stream___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     return mp_stream_close(args[0]);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream___exit___obj, 4, 4, mp_stream___exit__);
 
-STATIC mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
     struct mp_stream_seek_t seek_s;
     // TODO: Could be uint64
     seek_s.offset = mp_obj_get_int(args[1]);
@@ -470,7 +470,7 @@ STATIC mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj, 2, 3, stream_seek);
 
-STATIC mp_obj_t stream_tell(mp_obj_t self) {
+static mp_obj_t stream_tell(mp_obj_t self) {
     mp_obj_t offset = MP_OBJ_NEW_SMALL_INT(0);
     mp_obj_t whence = MP_OBJ_NEW_SMALL_INT(SEEK_CUR);
     const mp_obj_t args[3] = {self, offset, whence};
@@ -478,7 +478,7 @@ STATIC mp_obj_t stream_tell(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_tell_obj, stream_tell);
 
-STATIC mp_obj_t stream_flush(mp_obj_t self) {
+static mp_obj_t stream_flush(mp_obj_t self) {
     const mp_stream_p_t *stream_p = mp_get_stream(self);
     int error;
     mp_uint_t res = stream_p->ioctl(self, MP_STREAM_FLUSH, 0, &error);
@@ -489,7 +489,7 @@ STATIC mp_obj_t stream_flush(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_flush_obj, stream_flush);
 
-STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     uintptr_t val = 0;
     if (n_args > 2) {

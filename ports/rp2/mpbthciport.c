@@ -65,7 +65,7 @@ void mp_bluetooth_hci_poll_in_ms(uint32_t ms) {
 
 // For synchronous mode, we run all BLE stack code inside a scheduled task.
 // This task is scheduled periodically via a timer, or immediately after UART RX IRQ.
-STATIC void run_events_scheduled_task(mp_sched_node_t *node) {
+static void run_events_scheduled_task(mp_sched_node_t *node) {
     (void)node;
     // This will process all buffered HCI UART data, and run any callouts or events.
     mp_bluetooth_hci_poll();
@@ -81,7 +81,7 @@ void mp_bluetooth_hci_poll_now(void) {
 
 mp_obj_t mp_bthci_uart;
 
-STATIC void mp_bluetooth_hci_start_polling(void) {
+static void mp_bluetooth_hci_start_polling(void) {
     mp_bluetooth_hci_poll_now();
 }
 

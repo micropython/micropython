@@ -79,7 +79,7 @@ static inline byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int n) {
 }
 
 /*
-STATIC void asm_thumb_write_byte_1(asm_thumb_t *as, byte b1) {
+static void asm_thumb_write_byte_1(asm_thumb_t *as, byte b1) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 1);
     c[0] = b1;
 }
@@ -91,7 +91,7 @@ STATIC void asm_thumb_write_byte_1(asm_thumb_t *as, byte b1) {
 #define IMM32_L2(x) (((x) >> 16) & 0xff)
 #define IMM32_L3(x) (((x) >> 24) & 0xff)
 
-STATIC void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
+static void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 4);
     c[0] = IMM32_L0(w32);
     c[1] = IMM32_L1(w32);
@@ -216,7 +216,7 @@ void asm_thumb_exit(asm_thumb_t *as) {
     asm_thumb_op16(as, OP_POP_RLIST_PC(as->push_reglist));
 }
 
-STATIC mp_uint_t get_label_dest(asm_thumb_t *as, uint label) {
+static mp_uint_t get_label_dest(asm_thumb_t *as, uint label) {
     assert(label < as->base.max_num_labels);
     return as->base.label_offsets[label];
 }

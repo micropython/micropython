@@ -112,7 +112,7 @@ void mp_js_init_repl() {
     pyexec_event_repl_init();
 }
 
-STATIC void gc_scan_func(void *begin, void *end) {
+static void gc_scan_func(void *begin, void *end) {
     gc_collect_root((void **)begin, (void **)end - (void **)begin + 1);
 }
 

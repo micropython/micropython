@@ -126,12 +126,12 @@ typedef struct _i2s_clock_config_t {
     uint32_t clock_divider;
 } i2s_clock_config_t;
 
-STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
+static mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
 
 // The frame map is used with the readinto() method to transform the audio sample data coming
 // from DMA memory (32-bit stereo) to the format specified
 // in the I2S constructor.  e.g.  16-bit mono
-STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
+static const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
     {-1, -1,  0,  1, -1, -1, -1, -1 },  // Mono, 16-bits
     { 0,  1,  2,  3, -1, -1, -1, -1 },  // Mono, 32-bits
     {-1, -1,  0,  1, -1, -1,  2,  3 },  // Stereo, 16-bits
@@ -143,7 +143,7 @@ STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYT
 
 // Configuration 1: for sampling frequencies [Hz]:  8000, 12000, 16000, 24000, 32000, 48000
 // Clock frequency = 786,432,000 Hz = 48000 * 64 * 256
-STATIC const clock_audio_pll_config_t audioPllConfig_8000_48000 = {
+static const clock_audio_pll_config_t audioPllConfig_8000_48000 = {
     .loopDivider = 32,          // PLL loop divider. Valid range for DIV_SELECT divider value: 27~54
     .postDivider = 1,           // Divider after the PLL, should only be 1, 2, 4, 8, 16
     .numerator = 76800,         // 30 bit numerator of fractional loop divider
@@ -155,7 +155,7 @@ STATIC const clock_audio_pll_config_t audioPllConfig_8000_48000 = {
 
 // Configuration 2: for sampling frequencies [Hz]:  11025, 22050, 44100
 // Clock frequency = 722,534,400 = 44100 * 64 * 256
-STATIC const clock_audio_pll_config_t audioPllConfig_11025_44100 = {
+static const clock_audio_pll_config_t audioPllConfig_11025_44100 = {
     .loopDivider = 30,          // PLL loop divider. Valid range for DIV_SELECT divider value: 27~54
     .postDivider = 1,           // Divider after the PLL, should only be 1, 2, 4, 8, 16
     .numerator = 10560,         // 30 bit numerator of fractional loop divider
@@ -170,7 +170,7 @@ STATIC const clock_audio_pll_config_t audioPllConfig_11025_44100 = {
 // which is 2**n: 0->1, 1->2, 2->4, 3->8, 4->16, 5->32
 // The divider is 8 bit and must be given as n (not n-1)
 // So the total division factor is given by (2**p) * d
-STATIC const i2s_clock_config_t clock_config_map[] = {
+static const i2s_clock_config_t clock_config_map[] = {
     {kSAI_SampleRate8KHz, &audioPllConfig_8000_48000, 1, 192},     // 384
     {kSAI_SampleRate11025Hz, &audioPllConfig_11025_44100, 1, 128}, // 256
     {kSAI_SampleRate12KHz, &audioPllConfig_8000_48000, 1, 128},    // 256
@@ -182,10 +182,10 @@ STATIC const i2s_clock_config_t clock_config_map[] = {
     {kSAI_SampleRate48KHz, &audioPllConfig_8000_48000, 0, 64}      // 64
 };
 
-STATIC const clock_root_t i2s_clock_mux[] = I2S_CLOCK_MUX;
+static const clock_root_t i2s_clock_mux[] = I2S_CLOCK_MUX;
 #else
 // for 10xx the total division factor is given by (p + 1) * (d + 1)
-STATIC const i2s_clock_config_t clock_config_map[] = {
+static const i2s_clock_config_t clock_config_map[] = {
     {kSAI_SampleRate8KHz, &audioPllConfig_8000_48000, 5, 63},      // 384
     {kSAI_SampleRate11025Hz, &audioPllConfig_11025_44100, 3, 63},  // 256
     {kSAI_SampleRate12KHz, &audioPllConfig_8000_48000, 3, 63},     // 256
@@ -197,18 +197,18 @@ STATIC const i2s_clock_config_t clock_config_map[] = {
     {kSAI_SampleRate48KHz, &audioPllConfig_8000_48000, 0, 63}      // 64
 };
 
-STATIC const clock_mux_t i2s_clock_mux[] = I2S_CLOCK_MUX;
-STATIC const clock_div_t i2s_clock_pre_div[] = I2S_CLOCK_PRE_DIV;
-STATIC const clock_div_t i2s_clock_div[] = I2S_CLOCK_DIV;
-STATIC const iomuxc_gpr_mode_t i2s_iomuxc_gpr_mode[] = I2S_IOMUXC_GPR_MODE;
+static const clock_mux_t i2s_clock_mux[] = I2S_CLOCK_MUX;
+static const clock_div_t i2s_clock_pre_div[] = I2S_CLOCK_PRE_DIV;
+static const clock_div_t i2s_clock_div[] = I2S_CLOCK_DIV;
+static const iomuxc_gpr_mode_t i2s_iomuxc_gpr_mode[] = I2S_IOMUXC_GPR_MODE;
 #endif
 
-STATIC const I2S_Type *i2s_base_ptr[] = I2S_BASE_PTRS;
+static const I2S_Type *i2s_base_ptr[] = I2S_BASE_PTRS;
 
-STATIC const dma_request_source_t i2s_dma_req_src_tx[] = I2S_DMA_REQ_SRC_TX;
-STATIC const dma_request_source_t i2s_dma_req_src_rx[] = I2S_DMA_REQ_SRC_RX;
-STATIC const gpio_map_t i2s_gpio_map[] = I2S_GPIO_MAP;
-AT_NONCACHEABLE_SECTION_ALIGN(STATIC edma_tcd_t edmaTcd[MICROPY_HW_I2S_NUM], 32);
+static const dma_request_source_t i2s_dma_req_src_tx[] = I2S_DMA_REQ_SRC_TX;
+static const dma_request_source_t i2s_dma_req_src_rx[] = I2S_DMA_REQ_SRC_RX;
+static const gpio_map_t i2s_gpio_map[] = I2S_GPIO_MAP;
+AT_NONCACHEABLE_SECTION_ALIGN(edma_tcd_t edmaTcd[MICROPY_HW_I2S_NUM], 32);
 
 // called on processor reset
 void machine_i2s_init0() {
@@ -228,7 +228,7 @@ void machine_i2s_deinit_all(void) {
     }
 }
 
-STATIC int8_t get_frame_mapping_index(int8_t bits, format_t format) {
+static int8_t get_frame_mapping_index(int8_t bits, format_t format) {
     if (format == MONO) {
         if (bits == 16) {
             return 0;
@@ -244,7 +244,7 @@ STATIC int8_t get_frame_mapping_index(int8_t bits, format_t format) {
     }
 }
 
-STATIC int8_t get_dma_bits(uint16_t mode, int8_t bits) {
+static int8_t get_dma_bits(uint16_t mode, int8_t bits) {
     if (mode == TX) {
         if (bits == 16) {
             return 16;
@@ -258,7 +258,7 @@ STATIC int8_t get_dma_bits(uint16_t mode, int8_t bits) {
     }
 }
 
-STATIC bool lookup_gpio(const machine_pin_obj_t *pin, i2s_pin_function_t fn, uint8_t hw_id, uint16_t *index) {
+static bool lookup_gpio(const machine_pin_obj_t *pin, i2s_pin_function_t fn, uint8_t hw_id, uint16_t *index) {
     for (uint16_t i = 0; i < ARRAY_SIZE(i2s_gpio_map); i++) {
         if ((pin->name == i2s_gpio_map[i].name) &&
             (i2s_gpio_map[i].fn == fn) &&
@@ -270,7 +270,7 @@ STATIC bool lookup_gpio(const machine_pin_obj_t *pin, i2s_pin_function_t fn, uin
     return false;
 }
 
-STATIC bool set_iomux(const machine_pin_obj_t *pin, i2s_pin_function_t fn, uint8_t hw_id) {
+static bool set_iomux(const machine_pin_obj_t *pin, i2s_pin_function_t fn, uint8_t hw_id) {
     uint16_t mapping_index;
     if (lookup_gpio(pin, fn, hw_id, &mapping_index)) {
         iomux_table_t iom = i2s_gpio_map[mapping_index].iomux;
@@ -283,7 +283,7 @@ STATIC bool set_iomux(const machine_pin_obj_t *pin, i2s_pin_function_t fn, uint8
     }
 }
 
-STATIC bool is_rate_supported(int32_t rate) {
+static bool is_rate_supported(int32_t rate) {
     for (uint16_t i = 0; i < ARRAY_SIZE(clock_config_map); i++) {
         if (clock_config_map[i].rate == rate) {
             return true;
@@ -292,7 +292,7 @@ STATIC bool is_rate_supported(int32_t rate) {
     return false;
 }
 
-STATIC const clock_audio_pll_config_t *get_pll_config(int32_t rate) {
+static const clock_audio_pll_config_t *get_pll_config(int32_t rate) {
     for (uint16_t i = 0; i < ARRAY_SIZE(clock_config_map); i++) {
         if (clock_config_map[i].rate == rate) {
             return clock_config_map[i].pll_config;
@@ -301,7 +301,7 @@ STATIC const clock_audio_pll_config_t *get_pll_config(int32_t rate) {
     return 0;
 }
 
-STATIC const uint32_t get_clock_pre_divider(int32_t rate) {
+static const uint32_t get_clock_pre_divider(int32_t rate) {
     for (uint16_t i = 0; i < ARRAY_SIZE(clock_config_map); i++) {
         if (clock_config_map[i].rate == rate) {
             return clock_config_map[i].clock_pre_divider;
@@ -310,7 +310,7 @@ STATIC const uint32_t get_clock_pre_divider(int32_t rate) {
     return 0;
 }
 
-STATIC const uint32_t get_clock_divider(int32_t rate) {
+static const uint32_t get_clock_divider(int32_t rate) {
     for (uint16_t i = 0; i < ARRAY_SIZE(clock_config_map); i++) {
         if (clock_config_map[i].rate == rate) {
             return clock_config_map[i].clock_divider;
@@ -320,7 +320,7 @@ STATIC const uint32_t get_clock_divider(int32_t rate) {
 }
 
 // function is used in IRQ context
-STATIC void empty_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
+static void empty_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
     uint16_t dma_buffer_offset = 0;
 
     if (dma_ping_pong == TOP_HALF) {
@@ -343,7 +343,7 @@ STATIC void empty_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
 }
 
 // function is used in IRQ context
-STATIC void feed_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
+static void feed_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
     uint16_t dma_buffer_offset = 0;
 
     if (dma_ping_pong == TOP_HALF) {
@@ -387,7 +387,7 @@ STATIC void feed_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
     MP_HAL_CLEAN_DCACHE(dma_buffer_p, SIZEOF_HALF_DMA_BUFFER_IN_BYTES);
 }
 
-STATIC void edma_i2s_callback(edma_handle_t *handle, void *userData, bool transferDone, uint32_t tcds) {
+static void edma_i2s_callback(edma_handle_t *handle, void *userData, bool transferDone, uint32_t tcds) {
     machine_i2s_obj_t *self = userData;
 
     if (self->mode == TX) {
@@ -423,7 +423,7 @@ STATIC void edma_i2s_callback(edma_handle_t *handle, void *userData, bool transf
     }
 }
 
-STATIC bool i2s_init(machine_i2s_obj_t *self) {
+static bool i2s_init(machine_i2s_obj_t *self) {
 
     #if defined(MIMXRT117x_SERIES)
     clock_audio_pll_config_t pll_config = *get_pll_config(self->rate);
@@ -570,7 +570,7 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
     return true;
 }
 
-STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args) {
+static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args) {
     // is Mode valid?
     uint16_t i2s_mode = args[ARG_mode].u_int;
     if ((i2s_mode != (RX)) &&
@@ -667,7 +667,7 @@ STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
     }
 }
 
-STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
+static machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
     if (i2s_id < 1 || i2s_id > MICROPY_HW_I2S_NUM) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S(%d) does not exist"), i2s_id);
     }
@@ -694,7 +694,7 @@ STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
     return self;
 }
 
-STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
+static void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     // use self->i2s_inst as in indication that I2S object has already been de-initialized
     if (self->i2s_inst != NULL) {
         EDMA_AbortTransfer(&self->edmaHandle);
@@ -718,7 +718,7 @@ STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
+static void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
     (void)self;
 }
 

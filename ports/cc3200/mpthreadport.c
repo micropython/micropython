@@ -46,9 +46,9 @@ typedef struct _mp_thread_t {
 } mp_thread_t;
 
 // the mutex controls access to the linked list
-STATIC mp_thread_mutex_t thread_mutex;
-STATIC mp_thread_t thread_entry0;
-STATIC mp_thread_t *thread; // root pointer, handled bp mp_thread_gc_others
+static mp_thread_mutex_t thread_mutex;
+static mp_thread_t thread_entry0;
+static mp_thread_t *thread; // root pointer, handled bp mp_thread_gc_others
 
 void mp_thread_init(void) {
     mp_thread_mutex_init(&thread_mutex);
@@ -103,9 +103,9 @@ void mp_thread_start(void) {
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
-STATIC void *(*ext_thread_entry)(void *) = NULL;
+static void *(*ext_thread_entry)(void *) = NULL;
 
-STATIC void freertos_entry(void *arg) {
+static void freertos_entry(void *arg) {
     if (ext_thread_entry) {
         ext_thread_entry(arg);
     }

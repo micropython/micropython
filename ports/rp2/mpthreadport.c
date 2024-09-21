@@ -39,14 +39,14 @@ extern uint8_t __StackTop, __StackBottom;
 void *core_state[2];
 
 // This will be non-NULL while Python code is executing.
-STATIC void *(*core1_entry)(void *) = NULL;
+static void *(*core1_entry)(void *) = NULL;
 
-STATIC void *core1_arg = NULL;
-STATIC uint32_t *core1_stack = NULL;
-STATIC size_t core1_stack_num_words = 0;
+static void *core1_arg = NULL;
+static uint32_t *core1_stack = NULL;
+static size_t core1_stack_num_words = 0;
 
 // Thread mutex.
-STATIC mutex_t atomic_mutex;
+static mutex_t atomic_mutex;
 
 uint32_t mp_thread_begin_atomic_section(void) {
     if (core1_entry) {
@@ -102,7 +102,7 @@ void mp_thread_gc_others(void) {
     }
 }
 
-STATIC void core1_entry_wrapper(void) {
+static void core1_entry_wrapper(void) {
     // Allow MICROPY_BEGIN_ATOMIC_SECTION to be invoked from core0.
     multicore_lockout_victim_init();
 

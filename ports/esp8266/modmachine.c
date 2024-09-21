@@ -59,11 +59,11 @@
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET), MP_ROM_INT(REASON_WDT_RST) }, \
     { MP_ROM_QSTR(MP_QSTR_SOFT_RESET), MP_ROM_INT(REASON_SOFT_RESTART) }, \
 
-STATIC mp_obj_t mp_machine_get_freq(void) {
+static mp_obj_t mp_machine_get_freq(void) {
     return mp_obj_new_int(system_get_cpu_freq() * 1000000);
 }
 
-STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
     if (freq != 80 && freq != 160) {
         mp_raise_ValueError(MP_ERROR_TEXT("frequency can only be either 80Mhz or 160MHz"));
@@ -71,7 +71,7 @@ STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     system_update_cpu_freq(freq);
 }
 
-NORETURN STATIC void mp_machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     system_restart();
 
     // we must not return
@@ -80,21 +80,21 @@ NORETURN STATIC void mp_machine_reset(void) {
     }
 }
 
-STATIC mp_int_t mp_machine_reset_cause(void) {
+static mp_int_t mp_machine_reset_cause(void) {
     return system_get_rst_info()->reason;
 }
 
-STATIC mp_obj_t mp_machine_unique_id(void) {
+static mp_obj_t mp_machine_unique_id(void) {
     uint32_t id = system_get_chip_id();
     return mp_obj_new_bytes((byte *)&id, sizeof(id));
 }
 
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     asm ("waiti 0");
     mp_event_handle_nowait(); // handle any events after possibly a long wait (eg feed WDT)
 }
 
-STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     uint32_t max_us = 0xffffffff;
     if (n_args == 1) {
         mp_int_t max_ms = mp_obj_get_int(args[0]);
@@ -114,7 +114,7 @@ STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     }
 }
 
-NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     // default to sleep forever
     uint32_t sleep_us = 0;
 
@@ -172,7 +172,7 @@ typedef struct _esp_timer_obj_t {
     mp_obj_t callback;
 } esp_timer_obj_t;
 
-STATIC void esp_timer_arm_ms(esp_timer_obj_t *self, uint32_t ms, bool repeat) {
+static void esp_timer_arm_ms(esp_timer_obj_t *self, uint32_t ms, bool repeat) {
     if (ms <= ESP_TIMER_MS_MAX) {
         self->remain_ms = 0;
         self->period_ms = 0;
@@ -189,7 +189,7 @@ STATIC void esp_timer_arm_ms(esp_timer_obj_t *self, uint32_t ms, bool repeat) {
     os_timer_arm(&self->timer, ms, repeat);
 }
 
-STATIC void esp_timer_arm_us(esp_timer_obj_t *self, uint32_t us, bool repeat) {
+static void esp_timer_arm_us(esp_timer_obj_t *self, uint32_t us, bool repeat) {
     if (us < ESP_TIMER_US_MIN) {
         us = ESP_TIMER_US_MIN;
     }
@@ -204,18 +204,18 @@ STATIC void esp_timer_arm_us(esp_timer_obj_t *self, uint32_t us, bool repeat) {
 
 const mp_obj_type_t esp_timer_type;
 
-STATIC void esp_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void esp_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     esp_timer_obj_t *self = self_in;
     mp_printf(print, "Timer(%p)", &self->timer);
 }
 
-STATIC mp_obj_t esp_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t esp_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     esp_timer_obj_t *tim = mp_obj_malloc(esp_timer_obj_t, &esp_timer_type);
     return tim;
 }
 
-STATIC void esp_timer_cb(void *arg) {
+static void esp_timer_cb(void *arg) {
     esp_timer_obj_t *self = arg;
     if (self->remain_ms != 0) {
         // Handle periods larger than the maximum system period
@@ -234,7 +234,7 @@ STATIC void esp_timer_cb(void *arg) {
     }
 }
 
-STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
         ARG_mode,
         ARG_callback,
@@ -298,26 +298,26 @@ STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, cons
     return mp_const_none;
 }
 
-STATIC mp_obj_t esp_timer_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t esp_timer_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return esp_timer_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_timer_init_obj, 1, esp_timer_init);
+static MP_DEFINE_CONST_FUN_OBJ_KW(esp_timer_init_obj, 1, esp_timer_init);
 
-STATIC mp_obj_t esp_timer_deinit(mp_obj_t self_in) {
+static mp_obj_t esp_timer_deinit(mp_obj_t self_in) {
     esp_timer_obj_t *self = self_in;
     os_timer_disarm(&self->timer);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_timer_deinit_obj, esp_timer_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_timer_deinit_obj, esp_timer_deinit);
 
-STATIC const mp_rom_map_elem_t esp_timer_locals_dict_table[] = {
+static const mp_rom_map_elem_t esp_timer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp_timer_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&esp_timer_init_obj) },
 //    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&esp_timer_callback_obj) },
     { MP_ROM_QSTR(MP_QSTR_ONE_SHOT), MP_ROM_INT(false) },
     { MP_ROM_QSTR(MP_QSTR_PERIODIC), MP_ROM_INT(true) },
 };
-STATIC MP_DEFINE_CONST_DICT(esp_timer_locals_dict, esp_timer_locals_dict_table);
+static MP_DEFINE_CONST_DICT(esp_timer_locals_dict, esp_timer_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     esp_timer_type,
