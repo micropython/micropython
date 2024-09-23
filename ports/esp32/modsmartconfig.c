@@ -26,7 +26,7 @@ static bool smartconfig_process_done = false;
 static uint8_t ssid[33] = {0};
 static uint8_t bssid[6] = {0};
 static uint8_t password[65] = {0};
-static uint8_t v2_data[33] = {0};
+static uint8_t v2_data[65] = {0};
 
 // smartconfig settings variables
 static int8_t type = SC_TYPE_ESPTOUCH_AIRKISS;
@@ -127,7 +127,7 @@ static void smartconfig_init(void) {
     memset(ssid,     0, sizeof(ssid));
     memset(bssid,    0, sizeof(bssid));
     memset(password, 0, sizeof(password));
-    memset(v2_data, 0, sizeof(v2_data));
+    memset(v2_data,  0, sizeof(v2_data));
 
     wifi_event_group = xEventGroupCreate();
 
