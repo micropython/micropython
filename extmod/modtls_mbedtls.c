@@ -53,6 +53,10 @@
 #else
 #include "mbedtls/version.h"
 #endif
+#if MICROPY_PY_SSL_ECDSA_SIGN_ALT
+#include "mbedtls/ecdsa.h"
+#include "mbedtls/asn1.h"
+#endif
 
 #define MP_STREAM_POLL_RDWR (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)
 
@@ -767,6 +771,74 @@ static MP_DEFINE_CONST_OBJ_TYPE(
 /******************************************************************************/
 // ssl module.
 
+#if MICROPY_PY_SSL_ECDSA_SIGN_ALT
+int mbedtls_ecdsa_sign_alt(mbedtls_ecp_group *grp, mbedtls_mpi *r, mbedtls_mpi *s,
+    const mbedtls_mpi *d, const unsigned char *buf, size_t blen,
+    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng) {
+
+    int ret;
+    uint8_t key[256];
+
+    if (MP_STATE_PORT(ecdsa_sign_alt_cb) == mp_const_none) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    size_t klen = mbedtls_mpi_size(d);
+    if (klen > sizeof(key)) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    // Convert the MPI private key (d) to a binary array
+    ret = mbedtls_mpi_write_binary(d, key, klen);
+    if (ret != 0) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    nlr_buf_t nlr;
+    mp_buffer_info_t sig;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t ret = mp_call_function_2(MP_STATE_PORT(ecdsa_sign_alt_cb),
+            mp_obj_new_bytearray_by_ref(klen, (void *)key),
+            mp_obj_new_bytearray_by_ref(blen, (void *)buf));
+        mp_get_buffer_raise(ret, &sig, MP_BUFFER_READ);
+        nlr_pop();
+    } else {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    size_t len = 0;
+    uint8_t *p = (uint8_t *)sig.buf;
+    uint8_t *e = (uint8_t *)sig.buf + sig.len;
+
+    // Parse the DER-encoded signature to extract r and s
+    ret = mbedtls_asn1_get_tag(&p, e, &len,
+        MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE);
+    if (ret != 0) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    // Extract r (first integer in the ASN.1 sequence)
+    ret = mbedtls_asn1_get_mpi(&p, e, r);
+    if (ret != 0) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    // Extract s (second integer in the ASN.1 sequence)
+    ret = mbedtls_asn1_get_mpi(&p, e, s);
+    if (ret != 0) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    return 0;
+}
+
+static mp_obj_t mod_ssl_ecdsa_sign_alt(mp_obj_t o_in) {
+    MP_STATE_PORT(ecdsa_sign_alt_cb) = o_in;
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(mod_ssl_ecdsa_sign_alt_obj, mod_ssl_ecdsa_sign_alt);
+#endif
+
 static const mp_rom_map_elem_t mp_module_tls_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_tls) },
 
@@ -780,6 +852,9 @@ static const mp_rom_map_elem_t mp_module_tls_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_CERT_NONE), MP_ROM_INT(MBEDTLS_SSL_VERIFY_NONE) },
     { MP_ROM_QSTR(MP_QSTR_CERT_OPTIONAL), MP_ROM_INT(MBEDTLS_SSL_VERIFY_OPTIONAL) },
     { MP_ROM_QSTR(MP_QSTR_CERT_REQUIRED), MP_ROM_INT(MBEDTLS_SSL_VERIFY_REQUIRED) },
+    #ifdef MICROPY_PY_SSL_ECDSA_SIGN_ALT
+    { MP_ROM_QSTR(MP_QSTR_ecdsa_sign_alt), MP_ROM_PTR(&mod_ssl_ecdsa_sign_alt_obj) },
+    #endif
 };
 static MP_DEFINE_CONST_DICT(mp_module_tls_globals, mp_module_tls_globals_table);
 
@@ -789,5 +864,8 @@ const mp_obj_module_t mp_module_tls = {
 };
 
 MP_REGISTER_MODULE(MP_QSTR_tls, mp_module_tls);
+#if MICROPY_PY_SSL_ECDSA_SIGN_ALT
+MP_REGISTER_ROOT_POINTER(mp_obj_t ecdsa_sign_alt_cb);
+#endif
 
 #endif // MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
