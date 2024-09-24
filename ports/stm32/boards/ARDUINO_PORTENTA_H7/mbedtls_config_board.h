@@ -2,6 +2,7 @@
 #define MICROPY_INCLUDED_MBEDTLS_CONFIG_BOARD_H
 
 #define MBEDTLS_ECP_NIST_OPTIM
+#define MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
 
 #include "ports/stm32/mbedtls/mbedtls_config_port.h"
 
