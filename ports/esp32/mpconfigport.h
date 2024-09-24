@@ -47,13 +47,6 @@
 #define MICROPY_EMIT_RV32                   (1)
 #endif
 
-// workaround for xtensa-esp32-elf-gcc esp-2020r3, which can generate wrong code for loops
-// see https://github.com/espressif/esp-idf/issues/9130
-// this was fixed in newer versions of the compiler by:
-//   "gas: use literals/const16 for xtensa loop relaxation"
-//   https://github.com/jcmvbkbc/binutils-gdb-xtensa/commit/403b0b61f6d4358aee8493cb1d11814e368942c9
-#define MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND (1)
-
 // optimisations
 #ifndef MICROPY_OPT_COMPUTED_GOTO
 #define MICROPY_OPT_COMPUTED_GOTO           (1)
