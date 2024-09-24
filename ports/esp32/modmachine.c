@@ -79,6 +79,10 @@
     { MP_ROM_QSTR(MP_QSTR_TIMER_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TIMER) }, \
     { MP_ROM_QSTR(MP_QSTR_TOUCHPAD_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TOUCHPAD) }, \
     { MP_ROM_QSTR(MP_QSTR_ULP_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_ULP) }, \
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
+    /* get/set base mac address */ \
+    { MP_ROM_QSTR(MP_QSTR_base_mac_addr), MP_ROM_PTR(&machine_base_mac_addr_obj) }, \
+    #endif
 
 typedef enum {
     MP_PWRON_RESET = 1,
@@ -249,6 +253,31 @@ static mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_
     return MP_OBJ_NEW_SMALL_INT(esp_sleep_get_wakeup_cause());
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_wake_reason_obj, 0,  machine_wake_reason);
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
+STATIC mp_obj_t machine_base_mac_addr(size_t n_args, const mp_obj_t *args) {
+    if(n_args == 0) {
+        uint8_t mac[6];
+	esp_err_t ret = esp_base_mac_addr_get(mac);
+	if (ret != ESP_OK)
+	    mp_raise_ValueError(MP_ERROR_TEXT("Getting base MAC addr failed"));
+	
+	return mp_obj_new_bytes(mac, 6);
+    }
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+    if(bufinfo.len != 6)
+        mp_raise_ValueError(MP_ERROR_TEXT("Not a valid MAC address"));
+    
+    esp_err_t ret = esp_base_mac_addr_set(bufinfo.buf);
+    if (ret != ESP_OK)
+        mp_raise_ValueError(MP_ERROR_TEXT("Changing base MAC addr failed"));
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_base_mac_addr_obj, 0, 1, machine_base_mac_addr);
+#endif
 
 NORETURN static void mp_machine_reset(void) {
     esp_restart();
