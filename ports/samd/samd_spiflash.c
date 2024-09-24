@@ -45,6 +45,7 @@ const uint8_t _COMMANDS_32BIT[] = {0x13, 0x12, 0x21};  // READ, PROGRAM_PAGE, ER
 
 #define COMMAND_JEDEC_ID (0x9F)
 #define COMMAND_READ_STATUS (0x05)
+#define COMMAND_WRITE_SR1 (0x01)
 #define COMMAND_WRITE_ENABLE (0x06)
 #define COMMAND_READ_SFDP (0x5A)
 #define PAGE_SIZE (256)
@@ -88,7 +89,7 @@ static void wait(spiflash_obj_t *self) {
         mp_hal_pin_write(self->cs, 0);
         spi_transfer((mp_obj_base_t *)self->spi, 2, msg, msg);
         mp_hal_pin_write(self->cs, 1);
-    } while (msg[1] != 0 && timeout-- > 0);
+    } while ((msg[1] & 1) != 0 && timeout-- > 0);
 }
 
 static void get_id(spiflash_obj_t *self, uint8_t id[3]) {
@@ -120,6 +121,17 @@ static void write_enable(spiflash_obj_t *self) {
     msg[0] = COMMAND_WRITE_ENABLE;
     mp_hal_pin_write(self->cs, 0);
     spi_transfer(self->spi, 1, msg, NULL);
+    mp_hal_pin_write(self->cs, 1);
+}
+
+// Write status register 1
+static void write_sr1(spiflash_obj_t *self, uint8_t value) {
+    uint8_t msg[2];
+    msg[0] = COMMAND_WRITE_SR1;
+    msg[1] = value;
+
+    mp_hal_pin_write(self->cs, 0);
+    spi_transfer(self->spi, 2, msg, NULL);
     mp_hal_pin_write(self->cs, 1);
 }
 
@@ -155,27 +167,36 @@ static mp_obj_t spiflash_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_hal_pin_write(self->cs, 1);
 
     wait(self);
-
     // Get the flash size from the device ID (default)
     uint8_t id[3];
     get_id(self, id);
+    bool read_sfdp = true;
+
     if (id[1] == 0x84 && id[2] == 1) {  // Adesto
         self->size = 512 * 1024;
-    } else if (id[1] == 0x1f && id[2] == 1) {  // Atmel / Renesas
+    } else if (id[0] == 0x1f && id[1] == 0x45 && id[2] == 1) {  // Adesto/Renesas 8 MBit
         self->size = 1024 * 1024;
+        read_sfdp = false;
+        self->sectorsize = 4096;
+        self->addr_is_32bit = false;
+        // Globally unlock the sectors, which are locked after power on.
+        write_enable(self);
+        write_sr1(self, 0);
     } else {
         self->size = 1 << id[2];
     }
 
     // Get the addr_is_32bit flag and the sector size
-    uint8_t buffer[128];
-    get_sfdp(self, 0, buffer, 16);  // get the header
-    int len = MIN(buffer[11] * 4, sizeof(buffer));
-    if (len >= 29) {
-        int addr = buffer[12] + (buffer[13] << 8) + (buffer[14] << 16);
-        get_sfdp(self, addr, buffer, len);  // Get the JEDEC mandatory table
-        self->sectorsize = 1 << buffer[28];
-        self->addr_is_32bit = ((buffer[2] >> 1) & 0x03) != 0;
+    if (read_sfdp) {
+        uint8_t buffer[128];
+        get_sfdp(self, 0, buffer, 16);  // get the header
+        int len = MIN(buffer[11] * 4, sizeof(buffer));
+        if (len >= 29) {
+            int addr = buffer[12] + (buffer[13] << 8) + (buffer[14] << 16);
+            get_sfdp(self, addr, buffer, len);  // Get the JEDEC mandatory table
+            self->sectorsize = 1 << buffer[28];
+            self->addr_is_32bit = ((buffer[2] >> 1) & 0x03) != 0;
+        }
     }
     self->commands = self->addr_is_32bit ? _COMMANDS_32BIT : _COMMANDS_24BIT;
 
