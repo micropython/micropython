@@ -42,6 +42,7 @@ SRC_EXTMOD_C += \
 	extmod/modsocket.c \
 	extmod/modtls_axtls.c \
 	extmod/modtls_mbedtls.c \
+	extmod/mbedtls/mbedtls_alt.c \
 	extmod/modtime.c \
 	extmod/moductypes.c \
 	extmod/modvfs.c \
@@ -242,6 +243,10 @@ MBEDTLS_CONFIG_FILE ?= \"mbedtls/mbedtls_config_port.h\"
 GIT_SUBMODULES += $(MBEDTLS_DIR)
 CFLAGS_EXTMOD += -DMBEDTLS_CONFIG_FILE=$(MBEDTLS_CONFIG_FILE)
 CFLAGS_EXTMOD += -DMICROPY_SSL_MBEDTLS=1 -I$(TOP)/$(MBEDTLS_DIR)/include
+ifeq ($(MICROPY_PY_SSL_ECDSA_SIGN_ALT),1)
+CFLAGS_EXTMOD += -DMICROPY_PY_SSL_ECDSA_SIGN_ALT=1
+LDFLAGS_EXTMOD += -Wl,--wrap=mbedtls_ecdsa_write_signature
+endif
 SRC_THIRDPARTY_C += lib/mbedtls_errors/mp_mbedtls_errors.c
 SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	aes.c \
