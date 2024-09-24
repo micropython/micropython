@@ -53,6 +53,10 @@
 #else
 #include "mbedtls/version.h"
 #endif
+#if MICROPY_PY_SSL_ECDSA_SIGN_ALT
+#include "mbedtls/ecdsa.h"
+#include "mbedtls/asn1.h"
+#endif
 
 #define MP_STREAM_POLL_RDWR (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)
 
@@ -68,6 +72,9 @@ typedef struct _mp_obj_ssl_context_t {
     int authmode;
     int *ciphersuites;
     mp_obj_t handler;
+    #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
+    mp_obj_t ecdsa_sign_callback;
+    #endif
 } mp_obj_ssl_context_t;
 
 // This corresponds to an SSLSocket object.
@@ -248,6 +255,9 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     mbedtls_pk_init(&self->pkey);
     self->ciphersuites = NULL;
     self->handler = mp_const_none;
+    #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
+    self->ecdsa_sign_callback = mp_const_none;
+    #endif
 
     #ifdef MBEDTLS_DEBUG_C
     // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
@@ -295,6 +305,10 @@ static void ssl_context_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[0] = MP_OBJ_NEW_SMALL_INT(self->authmode);
         } else if (attr == MP_QSTR_verify_callback) {
             dest[0] = self->handler;
+        #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
+        } else if (attr == MP_QSTR_ecdsa_sign_callback) {
+            dest[0] = self->ecdsa_sign_callback;
+        #endif
         } else {
             // Continue lookup in locals_dict.
             dest[1] = MP_OBJ_SENTINEL;
@@ -305,6 +319,11 @@ static void ssl_context_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             self->authmode = mp_obj_get_int(dest[1]);
             dest[0] = MP_OBJ_NULL;
             mbedtls_ssl_conf_authmode(&self->conf, self->authmode);
+        #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
+        } else if (attr == MP_QSTR_ecdsa_sign_callback) {
+            dest[0] = MP_OBJ_NULL;
+            self->ecdsa_sign_callback = dest[1];
+        #endif
         } else if (attr == MP_QSTR_verify_callback) {
             dest[0] = MP_OBJ_NULL;
             self->handler = dest[1];
@@ -785,6 +804,57 @@ static MP_DEFINE_CONST_OBJ_TYPE(
 
 /******************************************************************************/
 // ssl module.
+
+#if MICROPY_PY_SSL_ECDSA_SIGN_ALT
+int micropy_mbedtls_ecdsa_sign_alt(const mbedtls_mpi *d, const unsigned char *hash, size_t hlen, unsigned char *sig, size_t sig_size, size_t *slen) {
+    uint8_t key[256];
+
+    // Check if the current context has an alternative sign function.
+    mp_obj_ssl_context_t *ssl_ctx = MP_STATE_THREAD(tls_ssl_context);
+    if (ssl_ctx == NULL || ssl_ctx->ecdsa_sign_callback == mp_const_none) {
+        return MBEDTLS_ERR_PLATFORM_FEATURE_UNSUPPORTED;
+    }
+
+    size_t klen = mbedtls_mpi_size(d);
+    if (klen > sizeof(key)) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    // Convert the MPI private key (d) to a binary array
+    if (mbedtls_mpi_write_binary(d, key, klen) != 0) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    nlr_buf_t nlr;
+    mp_buffer_info_t sig_buf;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t ret = mp_call_function_2(ssl_ctx->ecdsa_sign_callback,
+            mp_obj_new_bytearray_by_ref(klen, (void *)key),
+            mp_obj_new_bytearray_by_ref(hlen, (void *)hash));
+        if (ret == mp_const_none) {
+            // key couldn't be used by the alternative implementation.
+            nlr_pop();
+            return MBEDTLS_ERR_PLATFORM_FEATURE_UNSUPPORTED;
+        }
+        mp_get_buffer_raise(ret, &sig_buf, MP_BUFFER_READ);
+        nlr_pop();
+    } else {
+        // The alternative implementation failed to sign.
+        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    // Check if the buffer fits.
+    if (sig_buf.len > sig_size) {
+        return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
+    }
+
+    // Copy ASN.1 signature to buffer.
+    *slen = sig_buf.len;
+    memcpy(sig, sig_buf.buf, sig_buf.len);
+    return 0;
+}
+#endif
 
 static const mp_rom_map_elem_t mp_module_tls_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_tls) },
