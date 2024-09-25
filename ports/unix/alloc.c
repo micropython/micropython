@@ -31,7 +31,6 @@
 #include <sys/mman.h>
 
 #include "py/mpstate.h"
-#include "py/gc.h"
 
 #if MICROPY_EMIT_NATIVE || (MICROPY_PY_FFI && MICROPY_FORCE_PLAT_ALLOC_EXEC)
 
@@ -76,12 +75,6 @@ void mp_unix_free_exec(void *ptr, size_t size) {
             *rg = next;
             return;
         }
-    }
-}
-
-void mp_unix_mark_exec(void) {
-    for (mmap_region_t *rg = MP_STATE_VM(mmap_region_head); rg != NULL; rg = rg->next) {
-        gc_collect_root(rg->ptr, rg->len / sizeof(mp_uint_t));
     }
 }
 
