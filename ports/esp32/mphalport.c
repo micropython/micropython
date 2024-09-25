@@ -57,6 +57,8 @@ TaskHandle_t mp_main_task_handle;
 static uint8_t stdin_ringbuf_array[260];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
+portMUX_TYPE mp_atomic_mux = portMUX_INITIALIZER_UNLOCKED;
+
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
 #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_NORMAL
 void check_esp_err_(esp_err_t code)
