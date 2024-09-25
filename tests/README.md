@@ -203,6 +203,18 @@ internal_bench/bytebuf:
 1 tests performed (3 individual testcases)
 ```
 
+## Serial reliability and performance test
+
+Serial port reliability and performance can be tested using the `serial_test.py` script.
+Pass the name of the port to test against, for example:
+
+    $ ./serial_test.py -t /dev/ttyACM0
+
+If no port is specified then `/dev/ttyACM0` is used as the default.
+
+The test will send data out to the target, and receive data from the target, in various
+chunk sizes.  The throughput of the serial connection will be reported for each sub-test.
+
 ## Test key/certificates
 
 SSL/TLS tests in `multi_net` and `net_inet` use self-signed key/cert pairs
