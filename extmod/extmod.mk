@@ -46,6 +46,7 @@ SRC_EXTMOD_C += \
 	extmod/modtls_mbedtls.c \
 	extmod/mbedtls/mbedtls_alt.c \
 	extmod/modtime.c \
+	extmod/modtyping.c \
 	extmod/moductypes.c \
 	extmod/modvfs.c \
 	extmod/modwebrepl.c \
