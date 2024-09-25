@@ -196,6 +196,7 @@ set(MICROPY_SOURCE_QSTR
 )
 
 set(PICO_SDK_COMPONENTS
+    boot_bootrom_headers
     hardware_adc
     hardware_base
     hardware_boot_lock
@@ -222,6 +223,7 @@ set(PICO_SDK_COMPONENTS
     pico_base_headers
     pico_binary_info
     pico_bootrom
+    pico_flash
     pico_multicore
     pico_platform
     pico_platform_compiler
