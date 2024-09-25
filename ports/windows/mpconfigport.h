@@ -143,6 +143,8 @@
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
 #define MICROPY_PY_TIME_CUSTOM_SLEEP (1)
 #define MICROPY_PY_TIME_INCLUDEFILE "ports/unix/modtime.c"
+#define MICROPY_PY_TYPING           (1)
+#define MICROPY_PY_TYPING_EXTRA_MODULES (1)
 #define MICROPY_PY_ERRNO            (1)
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_DEFLATE          (1)

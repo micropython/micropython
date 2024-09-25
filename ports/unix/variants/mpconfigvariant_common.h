@@ -121,3 +121,7 @@
 #define MICROPY_PY_MACHINE             (1)
 #define MICROPY_PY_MACHINE_PULSE       (1)
 #define MICROPY_PY_MACHINE_PIN_BASE    (1)
+
+// Enable "typing" and related modules.
+#define MICROPY_PY_TYPING               (1)
+#define MICROPY_PY_TYPING_EXTRA_MODULES (1)
