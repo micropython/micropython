@@ -258,6 +258,10 @@ SRC_C += \
 	usbd.c \
 	usbd_conf.c \
 	usb.c \
+	usbd_desc.c \
+	usbd_cdc_interface.c \
+	usbd_hid_interface.c \
+	usbd_msc_interface.c \
 	mphalport.c \
 	mpnetworkport.c \
 	mpthreadport.c \
@@ -432,6 +436,15 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_i2s_ex.c \
 	)
 endif
+
+USBDEV_SRC_C += $(addprefix $(USBDEV_DIR)/,\
+	core/src/usbd_core.c \
+	core/src/usbd_ctlreq.c \
+	core/src/usbd_ioreq.c \
+	class/src/usbd_cdc_msc_hid.c \
+	class/src/usbd_msc_bot.c \
+	class/src/usbd_msc_scsi.c \
+	)
 
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 LIB_SRC_C += mbedtls/mbedtls_port.c
