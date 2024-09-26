@@ -318,6 +318,7 @@ static void print_help(char **argv) {
     printf(
         "usage: %s [<opts>] [-X <implopt>] [-c <command> | -m <module> | <filename>]\n"
         "Options:\n"
+        "--version : show version information\n"
         "-h : print this help message\n"
         "-i : enable inspection via REPL after running command/module/file\n"
         #if MICROPY_DEBUG_PRINTERS
@@ -367,6 +368,10 @@ static void pre_process_options(int argc, char **argv) {
             }
             if (strcmp(argv[a], "-h") == 0) {
                 print_help(argv);
+                exit(0);
+            }
+            if (strcmp(argv[a], "--version") == 0) {
+                printf(MICROPY_BANNER_NAME_AND_VERSION "; " MICROPY_BANNER_MACHINE "\n");
                 exit(0);
             }
             if (strcmp(argv[a], "-X") == 0) {
