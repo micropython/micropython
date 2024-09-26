@@ -79,6 +79,8 @@ static bool mdns_initialised = false;
 static uint8_t conf_wifi_sta_reconnects = 0;
 static uint8_t wifi_sta_reconnects;
 
+static uint8_t wifi_country_code[2] = { 0 };
+
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
 static void network_wlan_wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
@@ -718,6 +720,49 @@ unknown:
     mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(network_wlan_config_obj, 1, network_wlan_config);
+
+mp_obj_t mp_network_country(size_t n_args, const mp_obj_t *pos_args) {
+    if (n_args == 0) {
+        if (wifi_started) {
+            // ESP-IDF docs state the country code is three characters long.
+            char country_code[4] = { 0 };
+            esp_exceptions(esp_wifi_get_country_code(country_code));
+            assert(country_code[3] == '\0' && "Trashed terminator");
+            wifi_country_code[0] = country_code[0];
+            wifi_country_code[1] = country_code[1];
+        }
+
+        // Maintain compatibility with the default implementation.
+        if ((wifi_country_code[0] == '0' && wifi_country_code[1] == '1') ||
+            (wifi_country_code[0] == '\0' && wifi_country_code[1] == '\0')) {
+            return MP_OBJ_NEW_QSTR(MP_QSTR_XX);
+        }
+
+        return mp_obj_new_str((const char *)wifi_country_code, 2);
+    }
+
+    if (n_args == 1) {
+        size_t country_size = 0;
+        const char *country_code = mp_obj_str_get_data(pos_args[0], &country_size);
+        // Maintain compatibility with the default implementation.
+        if (country_size == 2 && country_code[0] == 'X' && country_code[1] == 'X') {
+            country_code = qstr_str(MP_QSTR_01);
+        }
+        // Always follow the AP's country if one is set.
+        esp_exceptions(esp_wifi_set_country_code(country_code, true));
+        wifi_country_code[0] = country_code[0];
+        wifi_country_code[1] = country_code[1];
+    } else {
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+        mp_arg_error_terse_mismatch();
+        #else
+        // TODO better error message
+        mp_raise_TypeError(MP_ERROR_TEXT("extra positional arguments given"));
+        #endif
+    }
+
+    return mp_const_none;
+}
 
 static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&network_wlan_active_obj) },
