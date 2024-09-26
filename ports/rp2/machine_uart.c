@@ -458,6 +458,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+    uart_tx_wait_blocking(self->uart); // Flush TX FIFO if necessary
     uart_deinit(self->uart);
     if (self->uart_id == 0) {
         irq_set_enabled(UART0_IRQ, false);
