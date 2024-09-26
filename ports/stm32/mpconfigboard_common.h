@@ -111,7 +111,7 @@
 #define MICROPY_HW_USB_FS (1)
 
 #ifndef MICROPY_HW_TINYUSB_STACK
-#define MICROPY_HW_TINYUSB_STACK (MICROPY_HW_ENABLE_USB)
+#define MICROPY_HW_TINYUSB_STACK (0)
 #endif
 
 // Whether to enable the PA0-PA3 servo driver, exposed as pyb.Servo
@@ -677,10 +677,10 @@
 #define MICROPY_HW_USB_CDC_NUM (1)
 #endif
 #ifndef MICROPY_HW_USB_MSC
-#define MICROPY_HW_USB_MSC (0)
+#define MICROPY_HW_USB_MSC (MICROPY_HW_ENABLE_USB && !MICROPY_HW_TINYUSB_STACK)
 #endif
 #ifndef MICROPY_HW_USB_HID
-#define MICROPY_HW_USB_HID (0)
+#define MICROPY_HW_USB_HID (MICROPY_HW_ENABLE_USB && !MICROPY_HW_TINYUSB_STACK)
 #endif
 
 // Pin definition header file
