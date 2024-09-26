@@ -141,4 +141,6 @@ void mod_network_register_nic(mp_obj_t nic);
 mp_obj_t mod_network_find_nic(const uint8_t *ip);
 #endif
 
+mp_obj_t mp_network_country(size_t n_args, const mp_obj_t *args);
+
 #endif // MICROPY_INCLUDED_MODNETWORK_H
