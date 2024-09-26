@@ -170,11 +170,6 @@ void mp_unix_alloc_exec(size_t min_size, void **ptr, size_t *size);
 void mp_unix_free_exec(void *ptr, size_t size);
 #define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
 #define MP_PLAT_FREE_EXEC(ptr, size) mp_unix_free_exec(ptr, size)
-#ifndef MICROPY_FORCE_PLAT_ALLOC_EXEC
-// Use MP_PLAT_ALLOC_EXEC for any executable memory allocation, including for FFI
-// (overriding libffi own implementation)
-#define MICROPY_FORCE_PLAT_ALLOC_EXEC (1)
-#endif
 
 // If enabled, configure how to seed random on init.
 #ifdef MICROPY_PY_RANDOM_SEED_INIT_FUNC
