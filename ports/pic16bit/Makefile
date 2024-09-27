@@ -7,7 +7,7 @@ QSTR_DEFS = qstrdefsport.h
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-XCVERSION ?= 1.35
+XCVERSION ?= 2.10
 XC16 ?= /opt/microchip/xc16/v$(XCVERSION)
 CROSS_COMPILE ?= $(XC16)/bin/xc16-
 
@@ -31,7 +31,7 @@ CFLAGS += -O1 -DNDEBUG
 endif
 
 LDFLAGS += --heap=0 -nostdlib -T $(XC16)/support/$(PARTFAMILY)/gld/p$(PART).gld -Map=$@.map --cref -p$(PART)
-LIBS += -L$(XC16)/lib -L$(XC16)/lib/$(PARTFAMILY) -lc -lm -lpic30
+LIBS += -L$(XC16)/lib -L$(XC16)/lib/$(PARTFAMILY) -lc99-elf -lm-elf -lc99-pic30-elf
 
 SRC_C = \
 	main.c \
