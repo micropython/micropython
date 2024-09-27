@@ -108,7 +108,7 @@ typedef struct {
 static telnet_data_t telnet_data;
 static const char *telnet_welcome_msg =
     "MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
-    ", build: " MICROPY_BUILD_ID "; " MICROPY_HW_BOARD_NAME
+    MICROPY_BUILD_ID_STR "; " MICROPY_HW_BOARD_NAME
     " with " MICROPY_HW_MCU_NAME "\r\n";
 static const char* telnet_request_user      = "Login as: ";
 static const char* telnet_request_password  = "Password: ";
