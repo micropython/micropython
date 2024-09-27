@@ -184,7 +184,7 @@ def do_filesystem_cp(state, src, dest, multiple, check_hash=False):
             f.write(data)
 
 
-def do_filesystem_recursive_cp(state, src, dest, multiple):
+def do_filesystem_recursive_cp(state, src, dest, multiple, check_hash):
     # Ignore trailing / on both src and dest. (Unix cp ignores them too)
     src = src.rstrip("/" + os.path.sep + (os.path.altsep if os.path.altsep else ""))
     dest = dest.rstrip("/" + os.path.sep + (os.path.altsep if os.path.altsep else ""))
@@ -257,7 +257,7 @@ def do_filesystem_recursive_cp(state, src, dest, multiple):
 
     # If no directories were encountered then we must have just had a file.
     if not dirs:
-        return do_filesystem_cp(state, src, dest, multiple)
+        return do_filesystem_cp(state, src, dest, multiple, check_hash)
 
     def _mkdir(a, *b):
         try:
@@ -287,7 +287,7 @@ def do_filesystem_recursive_cp(state, src, dest, multiple):
         else:
             dest_path_joined = os.path.join(dest, *dest_path_split)
 
-        do_filesystem_cp(state, src_path_joined, dest_path_joined, multiple=False, check_hash=True)
+        do_filesystem_cp(state, src_path_joined, dest_path_joined, False, check_hash)
 
 
 def do_filesystem(state, args):
@@ -352,9 +352,11 @@ def do_filesystem(state, args):
                 print(digest.hex())
             elif command == "cp":
                 if args.recursive:
-                    do_filesystem_recursive_cp(state, path, cp_dest, len(paths) > 1)
+                    do_filesystem_recursive_cp(
+                        state, path, cp_dest, len(paths) > 1, not args.force
+                    )
                 else:
-                    do_filesystem_cp(state, path, cp_dest, len(paths) > 1)
+                    do_filesystem_cp(state, path, cp_dest, len(paths) > 1, not args.force)
     except FileNotFoundError as er:
         raise CommandError("{}: {}: No such file or directory.".format(command, er.args[0]))
     except IsADirectoryError as er:

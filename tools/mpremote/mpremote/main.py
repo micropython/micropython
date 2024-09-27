@@ -184,6 +184,13 @@ def argparse_filesystem():
     _bool_flag(cmd_parser, "recursive", "r", False, "recursive copy (for cp command only)")
     _bool_flag(
         cmd_parser,
+        "force",
+        "f",
+        False,
+        "force copy even if file is unchanged (for cp command only)",
+    )
+    _bool_flag(
+        cmd_parser,
         "verbose",
         "v",
         None,
