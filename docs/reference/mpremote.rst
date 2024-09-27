@@ -227,11 +227,12 @@ The full list of supported commands are:
   - ``cat <file..>`` to show the contents of a file or files on the device
   - ``ls`` to list the current directory
   - ``ls <dirs...>`` to list the given directories
-  - ``cp [-r] <src...> <dest>`` to copy files
+  - ``cp [-rf] <src...> <dest>`` to copy files
   - ``rm <src...>`` to remove files on the device
   - ``mkdir <dirs...>`` to create directories on the device
   - ``rmdir <dirs...>`` to remove directories on the device
   - ``touch <file..>`` to create the files (if they don't already exist)
+  - ``sha256sum <file..>`` to calculate the SHA256 sum of files
 
   The ``cp`` command uses a convention where a leading ``:`` represents a remote
   path. Without a leading ``:`` means a local path. This is based on the
@@ -255,6 +256,11 @@ The full list of supported commands are:
 
   This will copy the file to the device then enter the REPL. The ``+`` prevents
   ``"repl"`` being interpreted as a path.
+
+  The ``cp`` command supports the ``-r`` option to make a recursive copy.  By
+  default ``cp`` will skip copying files to the remote device if the SHA256 hash
+  of the source and destination file matches.  To force a copy regardless of the
+  hash use the ``-f`` option.
 
   **Note:** For convenience, all of the filesystem sub-commands are also
   :ref:`aliased as regular commands <mpremote_shortcuts>`, i.e. you can write
