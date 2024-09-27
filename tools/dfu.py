@@ -8,6 +8,7 @@ import sys, struct, zlib, os
 from optparse import OptionParser
 
 DEFAULT_DEVICE = "0x0483:0xdf11"
+DEFAULT_VERSION = 0
 
 
 def named(tuple, names):
@@ -72,7 +73,7 @@ def parse(file, dump_images=False):
         print("PARSE ERROR")
 
 
-def build(file, targets, device=DEFAULT_DEVICE):
+def build(file, targets, device=DEFAULT_DEVICE, version=DEFAULT_VERSION):
     data = b""
     for t, target in enumerate(targets):
         tdata = b""
@@ -88,7 +89,7 @@ def build(file, targets, device=DEFAULT_DEVICE):
         data += tdata
     data = struct.pack("<5sBIB", b"DfuSe", 1, len(data) + 11, len(targets)) + data
     v, d = map(lambda x: int(x, 0) & 0xFFFF, device.split(":", 1))
-    data += struct.pack("<4H3sB", 0, d, v, 0x011A, b"UFD", 16)
+    data += struct.pack("<4H3sB", version, d, v, 0x011A, b"UFD", 16)
     crc = compute_crc(data)
     data += struct.pack("<I", crc)
     open(file, "wb").write(data)
@@ -114,6 +115,16 @@ if __name__ == "__main__":
         dest="device",
         help="build for DEVICE, defaults to %s" % DEFAULT_DEVICE,
         metavar="DEVICE",
+    )
+    parser.add_option(
+        "-V",
+        "--version",
+        action="store",
+        dest="version",
+        type="int",
+        default=DEFAULT_VERSION,
+        help="Set version in DFU file suffix, defaults to %s." % DEFAULT_DEVICE,
+        metavar="VERSION",
     )
     parser.add_option(
         "-d",
@@ -143,15 +154,15 @@ if __name__ == "__main__":
                 sys.exit(1)
             target.append({"address": address, "data": open(binfile, "rb").read()})
         outfile = args[0]
-        device = DEFAULT_DEVICE
-        if options.device:
-            device = options.device
+        device = options.device
         try:
             v, d = map(lambda x: int(x, 0) & 0xFFFF, device.split(":", 1))
         except:
             print("Invalid device '%s'." % device)
             sys.exit(1)
-        build(outfile, [target], device)
+        version = options.version
+        assert 0 <= version <= 0xFFFF, f"Invalid version {version}"
+        build(outfile, [target], device, version)
     elif len(args) == 1:
         infile = args[0]
         if not os.path.isfile(infile):
