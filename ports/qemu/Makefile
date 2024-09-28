@@ -19,7 +19,11 @@ QSTR_DEFS = qstrdefsport.h
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 
 ifeq ($(QEMU_ARCH),arm)
+ifeq ($(BOARD),MICROBIT)
+FROZEN_MANIFEST ?= "freeze('test-frzmpy', ('frozen_const.py'))"
+else
 FROZEN_MANIFEST ?= "freeze('test-frzmpy')"
+endif
 endif
 ifeq ($(QEMU_ARCH),riscv32)
 FROZEN_MANIFEST ?= "freeze('test-frzmpy', ('frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
@@ -40,6 +44,7 @@ LDFLAGS += -nostdlib
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 SRC_C += \
+	mcu/arm/errorhandler.c \
 	mcu/arm/startup.c \
 	shared/runtime/semihosting_arm.c \
 
