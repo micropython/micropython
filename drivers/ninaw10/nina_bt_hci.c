@@ -50,6 +50,11 @@
 #define OCF_SET_EVENT_MASK      (0x0001)
 #define OCF_RESET               (0x0003)
 
+// Use the name CS instead of GPIO1
+#ifndef MICROPY_HW_NINA_CS
+#define MICROPY_HW_NINA_CS MICROPY_HW_NINA_GPIO1
+#endif
+
 #define error_printf(...)   // mp_printf(&mp_plat_print, "nina_bt_hci.c: " __VA_ARGS__)
 #define debug_printf(...)   // mp_printf(&mp_plat_print, "nina_bt_hci.c: " __VA_ARGS__)
 
@@ -58,6 +63,12 @@ extern uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
 static int nina_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *param_buf) {
     uint8_t *buf = mp_bluetooth_hci_cmd_buf;
+
+    // Clear the UART input buffer before sending the reset command.
+    // The ESP32 reset message may stick in it.
+    while (mp_bluetooth_hci_uart_any()) {
+        mp_bluetooth_hci_uart_readchar();
+    }
 
     buf[0] = HCI_COMMAND_PACKET;
     buf[1] = ocf;
@@ -125,8 +136,17 @@ int mp_bluetooth_hci_controller_init(void) {
     mp_hal_pin_output(MICROPY_HW_NINA_RESET);
     mp_hal_pin_write(MICROPY_HW_NINA_RESET, 0);
 
-    mp_hal_pin_output(MICROPY_HW_NINA_GPIO1);
-    mp_hal_pin_write(MICROPY_HW_NINA_GPIO1, 0);
+    // care for dedicated setting of RTS/CTS
+    #ifdef MICROPY_HW_NINA_RTS
+    mp_hal_pin_output(MICROPY_HW_NINA_RTS);
+    mp_hal_pin_write(MICROPY_HW_NINA_RTS, 0);
+    #endif
+    #ifdef  MICROPY_HW_NINA_CTS
+    mp_hal_pin_input(MICROPY_HW_NINA_CTS);
+    #endif
+
+    mp_hal_pin_output(MICROPY_HW_NINA_CS);
+    mp_hal_pin_write(MICROPY_HW_NINA_CS, 0);
     mp_hal_delay_ms(150);
 
     mp_hal_pin_write(MICROPY_HW_NINA_RESET, 1);
