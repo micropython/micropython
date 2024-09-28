@@ -32,7 +32,7 @@ CONFIG_LOG_MAXIMUM_LEVEL_INFO=y
 
 # Main XTAL Config
 # Only on: ESP32
-CONFIG_XTAL_FREQ_AUTO=y
+CONFIG_XTAL_FREQ_AUTO=n
 
 # ESP System Settings
 # Only on: ESP32, ESP32S3
@@ -43,7 +43,7 @@ CONFIG_ESP_INT_WDT_TIMEOUT_MS=8000
 CONFIG_ESP_TASK_WDT_TIMEOUT_S=10
 
 # Power Management
-CONFIG_PM_ENABLE=y
+CONFIG_PM_ENABLE=n
 
 # Memory protection
 # This is required to allow allocating IRAM
