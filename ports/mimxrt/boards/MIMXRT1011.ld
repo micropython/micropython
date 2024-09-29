@@ -27,8 +27,8 @@ dtcm_size           = 0x00008000;
 ocrm_start          = 0x20200000;
 ocrm_size           = 0x00010000;
 
-/* 20kiB stack. */
-__stack_size__ = 0x5000;
+/* 10kiB stack. */
+__stack_size__ = 0x2800;
 _estack = __StackTop;
 _sstack = __StackLimit;
 

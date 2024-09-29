@@ -237,6 +237,7 @@ SECTIONS
     __START_BSS = .;
     __bss_start__ = .;
     __bss_section_table = .;
+    *(.bss._dcd_data)
     *(m_usb_dma_noninit_data)
     *(.bss)
     *(.bss*)
