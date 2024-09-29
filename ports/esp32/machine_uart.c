@@ -408,10 +408,10 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     #else
     uint8_t uart_fifo_len = UART_FIFO_LEN;
     #endif
-    
+
     if (args[ARG_flow].u_int == UART_HW_FLOWCTRL_MAX) {
         // Enable XON/XOFF flow control
-        check_esp_err(uart_set_sw_flow_ctrl(self->uart_num, 1, uart_fifo_len/2, uart_fifo_len - 8));
+        check_esp_err(uart_set_sw_flow_ctrl(self->uart_num, 1, uart_fifo_len / 2, uart_fifo_len - 8));
         // Disable hardware RTS/CTS flow control
         check_esp_err(uart_set_hw_flow_ctrl(self->uart_num, 0, 0));
     } else {
