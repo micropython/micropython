@@ -39,6 +39,7 @@
 
 void machine_usbd_cdc_init0(void);
 extern const mp_obj_type_t machine_usbd_cdc_type;
+void machine_usbd_cdc_set_interrupt_char(int c);
 
 
 uintptr_t mp_usbd_cdc_poll_interfaces(uintptr_t poll_flags);

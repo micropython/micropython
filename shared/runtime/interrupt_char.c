@@ -27,12 +27,20 @@
 #include "py/obj.h"
 #include "py/mpstate.h"
 
+#if MICROPY_HW_USB_CDC && MICROPY_HW_ENABLE_USBDEV
+#include "shared/tinyusb/mp_usbd_cdc.h"
+#endif
+
 #if MICROPY_KBD_EXCEPTION
 
 int mp_interrupt_char = -1;
 
 void mp_hal_set_interrupt_char(int c) {
     mp_interrupt_char = c;
+
+    #if MICROPY_HW_USB_CDC && MICROPY_HW_ENABLE_USBDEV
+    machine_usbd_cdc_set_interrupt_char(c);
+    #endif
 }
 
 #endif

@@ -237,6 +237,7 @@ const machine_usbd_cdc_obj_t machine_usbd_cdc_obj = {{&machine_usbd_cdc_type}};/
 
 
 static bool machine_usbd_cdc_irq_scheduled;// [MICROPY_HW_USB_CDC_NUM];
+static void machine_usbd_cdc_attach_to_repl(const machine_usbd_cdc_obj_t *self, bool attached);
 
 void machine_usbd_cdc_init0(void) {
     // for (size_t i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
@@ -249,6 +250,7 @@ void machine_usbd_cdc_init0(void) {
     // Activate USB_CDC(0) on dupterm slot 1 for the REPL
     // todo auto detect appropriate slot
     MP_STATE_VM(dupterm_objs[1]) = MP_OBJ_FROM_PTR(&machine_usbd_cdc_obj);
+    machine_usbd_cdc_attach_to_repl(&machine_usbd_cdc_obj, true);
     #endif
 
 }
@@ -279,6 +281,36 @@ static void machine_usbd_cdc_print(const mp_print_t *print, mp_obj_t self_in, mp
     mp_printf(print, "USBD_CDC()");
 }
 
+void machine_usbd_cdc_set_interrupt_char(int c) {
+    tud_cdc_set_wanted_char(c);
+}
+
+static void machine_usbd_cdc_attach_to_repl(const machine_usbd_cdc_obj_t *self, bool attached) {
+    UNUSED(self);
+    // self->attached_to_repl = attached;
+    if (attached) {
+        // Default behavior is non-blocking when attached to repl
+        // self->flow &= ~USBD_CDC_FLOWCONTROL_CTS;
+        #if MICROPY_KBD_EXCEPTION
+        machine_usbd_cdc_set_interrupt_char(mp_interrupt_char);
+        #endif
+    } else {
+        // self->flow |= USBD_CDC_FLOWCONTROL_CTS;
+        #if MICROPY_KBD_EXCEPTION
+        machine_usbd_cdc_set_interrupt_char(-1);
+        #endif
+    }
+}
+
+#if MICROPY_KBD_EXCEPTION
+void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
+    // Clear the date buffer
+    // stdin_ringbuf.iget = stdin_ringbuf.iput = 0;
+    tud_cdc_read_flush();
+    // and stop
+    mp_sched_keyboard_interrupt();
+}
+#endif
 /// \classmethod \constructor()
 /// Create a new USB_CDC object.
 static mp_obj_t machine_usbd_cdc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -550,6 +582,9 @@ static mp_uint_t machine_usbd_cdc_ioctl(mp_obj_t self_in, mp_uint_t request, uin
         uintptr_t flags = arg;
         ret = mp_usbd_cdc_poll_interfaces(flags);
     } else if (request == MP_STREAM_CLOSE) {
+        ret = 0;
+    } else if (request == MP_STREAM_REPL_ATTACHED) {
+        machine_usbd_cdc_attach_to_repl(self, arg);
         ret = 0;
     } else {
         *errcode = MP_EINVAL;
