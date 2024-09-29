@@ -22,7 +22,8 @@ datatypes are provided: `str`(including basic Unicode support), `bytes`,
 `os`, `sys`, `time`, `re`, and `struct`, etc. Some ports have support for
 `_thread` module (multithreading), `socket` and `ssl` for networking, and
 `asyncio`. Note that only a subset of Python 3 functionality is implemented
-for the data types and modules.
+for the data types and modules. Floating point numbers are only single 
+precision on many platforms, as well.
 
 MicroPython can execute scripts in textual source form (.py files) or from
 precompiled bytecode (.mpy files), in both cases either from an on-device
