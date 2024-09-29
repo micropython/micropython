@@ -504,7 +504,7 @@ class Pyboard:
         return self.exec_(pyfile)
 
     def get_time(self):
-        t = str(self.eval("pyb.RTC().datetime()"), encoding="utf8")[1:-1].split(", ")
+        t = str(self.eval("machine.RTC().datetime()"), encoding="utf8")[1:-1].split(", ")
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
 
     def fs_exists(self, src):
