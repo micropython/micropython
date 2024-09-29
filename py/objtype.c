@@ -1234,6 +1234,50 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         }
     }
 
+    #if MICROPY_PY_METACLASSES
+    // __init_subclass__ is a special-cased classmethod in CPython
+    // See: https://github.com/python/cpython/blob/3de092b82f5aa02fa293cd654c2ab26556ecf703/Objects/typeobject.c#L4247
+    elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(MP_QSTR___init_subclass__), MP_MAP_LOOKUP);
+    if (elem != NULL) {
+        // __init_subclass__ slot exists; check if it is a function
+        if (mp_obj_is_fun(elem->value)) {
+            // __init_subclass__ is a function, wrap it in a classmethod decorator
+            elem->value = static_class_method_make_new(&mp_type_classmethod, 1, 0, &elem->value);
+        }
+    }
+    #endif
+
+    // CPython calls __set_name__ on class members before calling __init_subclass__ on bases.
+    // See: https://github.com/python/cpython/blob/3de092b82f5aa02fa293cd654c2ab26556ecf703/Objects/typeobject.c#L4369-L4375
+    #if MICROPY_PY_DESCRIPTORS | MICROPY_PY_METACLASSES
+    // call __set_name__ on all entries (especially descriptors)
+    for (size_t i = 0; i < locals_map->alloc; i++) {
+        if (mp_map_slot_is_filled(locals_map, i)) {
+            elem = &(locals_map->table[i]);
+
+            mp_obj_t set_name_method[4];
+            mp_load_method_maybe(elem->value, MP_QSTR___set_name__, set_name_method);
+            if (set_name_method[1] != MP_OBJ_NULL) {
+                set_name_method[2] = MP_OBJ_FROM_PTR(o);
+                set_name_method[3] = elem->key;
+                mp_call_method_n_kw(2, 0, set_name_method);
+            }
+        }
+    }
+    #endif
+
+    #if MICROPY_PY_METACLASSES
+    // call __init_subclass__ from each base class
+    for (size_t i = 0; i < bases_len; i++) {
+        mp_obj_t init_subclass_method[2];
+        mp_load_method_maybe(bases_items[i], MP_QSTR___init_subclass__, init_subclass_method);
+        if (init_subclass_method[1] != MP_OBJ_NULL) {
+            init_subclass_method[1] = MP_OBJ_FROM_PTR(o);
+            mp_call_method_n_kw(0, 0, init_subclass_method);
+        }
+    }
+    #endif
+
     return MP_OBJ_FROM_PTR(o);
 }
 
