@@ -261,6 +261,13 @@ function ci_qemu_setup_rv32 {
     qemu-system-riscv32 --version
 }
 
+function ci_qemu_setup_rv64 {
+    ci_gcc_riscv_setup
+    sudo apt-get update
+    sudo apt-get install qemu-system
+    qemu-system-riscv64 --version
+}
+
 function ci_qemu_build_arm {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu submodules
@@ -274,6 +281,12 @@ function ci_qemu_build_rv32 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 submodules
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test
+}
+
+function ci_qemu_build_rv64 {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 submodules
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 test
 }
 
 ########################################################################################

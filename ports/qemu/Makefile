@@ -24,6 +24,9 @@ endif
 ifeq ($(QEMU_ARCH),riscv32)
 FROZEN_MANIFEST ?= "freeze('test-frzmpy', ('frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
 endif
+ifeq ($(QEMU_ARCH),riscv64)
+FROZEN_MANIFEST ?= "freeze('test-frzmpy', ('frozen_const.py',))"
+endif
 
 # include py core make definitions
 include $(TOP)/py/py.mk
@@ -75,6 +78,39 @@ SRC_C += \
 	mcu/rv32/startup.c \
 
 SRC_BOARD_O += mcu/rv32/entrypoint.o
+
+endif
+
+################################################################################
+# RISC-V 64-bit specific settings
+
+ifeq ($(QEMU_ARCH),riscv64)
+
+CROSS_COMPILE ?= riscv64-unknown-elf-
+
+GCC_VERSION = $(word 1, $(subst ., , $(shell $(CC) -dumpversion)))
+
+RV64_ABI = lp64
+
+QEMU_ARGS += -bios none
+
+# GCC 10 and lower do not recognise the Zicsr extension in the architecture name.
+ifeq ($(shell test $(GCC_VERSION) -le 10; echo $$?),0)
+RV64_ARCH ?= rv64imac
+else
+# Recent GCC versions explicitly require to declare extensions.
+RV64_ARCH ?= rv64imac_zicsr
+endif
+
+AFLAGS += -mabi=$(RV64_ABI) -march=$(RV64_ARCH)
+CFLAGS += $(AFLAGS) -mcmodel=medany
+LDFLAGS += -mabi=$(RV64_ABI) -march=$(RV64_ARCH) -Wl,-EL
+
+SRC_C += \
+	mcu/rv64/interrupts.c \
+	mcu/rv64/startup.c \
+
+SRC_BOARD_O += mcu/rv64/entrypoint.o
 
 endif
 
