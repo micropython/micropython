@@ -19,6 +19,7 @@ arch = [
     "xtensa",
     "xtensawin",
     "rv32imc",
+    "rv64imc",
 ][sys_mpy >> 10]
 build = getattr(sys.implementation, "_build", "unknown")
 thread = getattr(sys.implementation, "_thread", None)

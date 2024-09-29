@@ -98,6 +98,7 @@ enum {
     MP_NATIVE_ARCH_XTENSA,
     MP_NATIVE_ARCH_XTENSAWIN,
     MP_NATIVE_ARCH_RV32IMC,
+    MP_NATIVE_ARCH_RV64IMC,
     MP_NATIVE_ARCH_DEBUG, // this entry should always be last
 };
 
