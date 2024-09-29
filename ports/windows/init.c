@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <windows.h>
@@ -33,6 +34,11 @@
 #include "fmode.h"
 
 extern BOOL WINAPI console_sighandler(DWORD evt);
+
+#if MICROPY_PY_SOCKET
+extern void wsa_startup();
+extern void wsa_cleanup();
+#endif
 
 #ifdef _MSC_VER
 void invalid_param_handler(const wchar_t *expr, const wchar_t *fun, const wchar_t *file, unsigned int line, uintptr_t p) {
@@ -61,8 +67,14 @@ void init() {
     _set_output_format(_TWO_DIGIT_EXPONENT);
     #endif
     set_fmode_binary();
+    #if MICROPY_PY_SOCKET
+    wsa_startup();
+    #endif
 }
 
 void deinit() {
     SetConsoleCtrlHandler(console_sighandler, FALSE);
+    #if MICROPY_PY_SOCKET
+    wsa_cleanup();
+    #endif
 }
