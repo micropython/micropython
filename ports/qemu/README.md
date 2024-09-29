@@ -1,8 +1,8 @@
 MicroPython port to qemu
 ========================
 
-This is experimental, community-supported port for Cortex-M and RISC-V RV32IMC
-emulation as provided by QEMU (http://qemu.org).
+This is experimental, community-supported port for Cortex-M and RISC-V
+RV32IMC/RV64IMC emulation as provided by QEMU (http://qemu.org).
 
 The purposes of this port are to enable:
 
@@ -26,9 +26,9 @@ Dependencies
 For ARM-based boards the build requires a bare-metal ARM toolchain, such as
 `arm-none-eabi-gcc`.
 
-### RISC-V
+### RISC-V 32
 
-For RISC-V-based boards the build requires a bare metal RISC-V toolchain with GCC 10
+For RV32-based boards the build requires a bare metal RISC-V toolchain with GCC 10
 or later, either with multilib support or 32 bits specific (M, C, and Zicsr
 extensions must be supported, along with ilp32 ABI).  Both newlib and picolibc are
 supported, with the latter having precedence if found.
@@ -36,6 +36,20 @@ supported, with the latter having precedence if found.
 Most pre-built toolchains should work out of the box, either coming from your
 Linux distribution's package manager, or independently packaged ones like
 [xPack](https://xpack.github.io/dev-tools/riscv-none-elf-gcc/).
+
+### RISC-V 64
+
+For RV64-based boards the build requires a bare metal RISC-V toolchain with GCC 10
+or later, either with multilib support or 64 bits specific (M, C, and Zicsr
+extensions must be supported, along with lp64 ABI).  Both newlib and picolibc are
+supported, with the latter having precedence if found.
+
+Most pre-built toolchains should work out of the box, either coming from your
+Linux distribution's package manager, or independently packaged ones like
+[xPack](https://xpack.github.io/dev-tools/riscv-none-elf-gcc/).
+
+As a rule of thumb, if your toolchain is able to generate `RVA20` compliant
+binaries then you're good to go.
 
 Build instructions
 ------------------
@@ -63,6 +77,7 @@ Available boards are:
 | `NETDUINO2`       | `arm`        | `netduino2`              |
 | `SABRELITE`       | `arm`        | `sabrelite`              |
 | `VIRT_RV32`       | `riscv32`    | `virt`                   |
+| `VIRT_RV64`       | `riscv64`    | `virt`                   |
 
 Running
 -------
@@ -100,8 +115,8 @@ tests against the serial device, for example:
     $ ./run-tests.py -t /dev/pts/1
 
 Selected native modules that come as examples with the MicroPython source tree
-can also be tested with this command (this is currently supported only for the
-`VIRT_RV32` board):
+can also be tested with this command (this is currently not supported for the
+`VIRT_RV64` board):
 
     $ make test_natmod
 
