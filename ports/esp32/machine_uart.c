@@ -212,15 +212,19 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
     if (self->flowcontrol) {
         mp_printf(print, ", flow=");
         uint32_t flow_mask = self->flowcontrol;
-        if (flow_mask & UART_HW_FLOWCTRL_RTS) {
-            mp_printf(print, "RTS");
-            flow_mask &= ~UART_HW_FLOWCTRL_RTS;
-            if (flow_mask) {
-                mp_printf(print, "|");
+        if (flow_mask == UART_HW_FLOWCTRL_MAX) {
+            mp_printf(print, "XONXOFF");
+        } else {
+            if (flow_mask & UART_HW_FLOWCTRL_RTS) {
+                mp_printf(print, "RTS");
+                flow_mask &= ~UART_HW_FLOWCTRL_RTS;
+                if (flow_mask) {
+                    mp_printf(print, "|");
+                }
             }
-        }
-        if (flow_mask & UART_HW_FLOWCTRL_CTS) {
-            mp_printf(print, "CTS");
+            if (flow_mask & UART_HW_FLOWCTRL_CTS) {
+                mp_printf(print, "CTS");
+            }
         }
     }
     mp_printf(print, ")");
@@ -392,9 +396,9 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     }
     check_esp_err(uart_set_line_inverse(self->uart_num, self->invert));
 
-    // set hardware flow control
+    // set flow control
     if (args[ARG_flow].u_int != -1) {
-        if (args[ARG_flow].u_int & ~UART_HW_FLOWCTRL_CTS_RTS) {
+        if (args[ARG_flow].u_int != UART_HW_FLOWCTRL_MAX && args[ARG_flow].u_int & ~UART_HW_FLOWCTRL_CTS_RTS) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid flow control mask"));
         }
         self->flowcontrol = args[ARG_flow].u_int;
@@ -404,7 +408,17 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     #else
     uint8_t uart_fifo_len = UART_FIFO_LEN;
     #endif
-    check_esp_err(uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, uart_fifo_len - uart_fifo_len / 4));
+    if (args[ARG_flow].u_int == UART_HW_FLOWCTRL_MAX) {
+        // Enable XON/XOFF flow control
+        check_esp_err(uart_set_sw_flow_ctrl(self->uart_num, 1, uart_fifo_len / 2, uart_fifo_len - 8));
+        // Disable hardware RTS/CTS flow control
+        check_esp_err(uart_set_hw_flow_ctrl(self->uart_num, 0, 0));
+    } else {
+        // Disable XON/XOFF flow control
+        check_esp_err(uart_set_sw_flow_ctrl(self->uart_num, 0, 0, 0));
+        // Enable RTS and/or CTS hardware flow control according to self->flowcontrol
+        check_esp_err(uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, uart_fifo_len - uart_fifo_len / 4));
+    }
 }
 
 static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
