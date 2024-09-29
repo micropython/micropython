@@ -243,28 +243,17 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #if MICROPY_PY_THREAD
-#define MICROPY_EVENT_POLL_HOOK \
+#define MICROPY_INTERNAL_EVENT_HOOK \
     do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
         if (pyb_thread_enabled) { \
             MP_THREAD_GIL_EXIT(); \
             pyb_thread_yield(); \
             MP_THREAD_GIL_ENTER(); \
-        } else { \
-            __WFI(); \
         } \
     } while (0);
 
 #define MICROPY_THREAD_YIELD() pyb_thread_yield()
 #else
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-        __WFI(); \
-    } while (0);
-
 #define MICROPY_THREAD_YIELD()
 #endif
 

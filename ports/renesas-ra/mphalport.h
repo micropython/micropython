@@ -35,6 +35,14 @@
 #define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV)
 #define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state)
 
+// Port level Wait-for-Event macro
+//
+// Do not use this macro directly, include py/runtime.h and
+// call mp_event_wait_indefinite() or mp_event_wait_ms(timeout).
+// Uses WFI which will wake up from regular systick interrupt if not
+// before from any other source.
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) __WFI()
+
 #define MICROPY_PY_LWIP_ENTER
 #define MICROPY_PY_LWIP_REENTER
 #define MICROPY_PY_LWIP_EXIT
