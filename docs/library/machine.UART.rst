@@ -76,7 +76,7 @@ Methods
          - ``0`` means no flow control.
          - ``UART.RTS`` will enable hardware receive flow control by using the RTS output pin to
            signal if the receive FIFO has sufficient space to accept more data.
-         - ``UART.CTS`` will enable hardward transmit flow control by pausing transmission when the
+         - ``UART.CTS`` will enable hardware transmit flow control by pausing transmission when the
            CTS input pin signals that the receiver is running low on buffer space.
          - ``UART.RTS | UART.CTS`` will enable both, for full hardware flow control.
          - ``UART.XONOFF`` will enable XON/XOFF flow control in both the transmit
