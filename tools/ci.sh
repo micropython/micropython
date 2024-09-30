@@ -284,14 +284,14 @@ function ci_qemu_build_arm {
     make ${MAKEOPTS} -C ports/qemu submodules
     make ${MAKEOPTS} -C ports/qemu CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
     make ${MAKEOPTS} -C ports/qemu clean
-    make ${MAKEOPTS} -C ports/qemu test
-    make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test
+    make ${MAKEOPTS} -C ports/qemu test_full
+    make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full
 }
 
 function ci_qemu_build_rv32 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 submodules
-    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test_full
 }
 
 ########################################################################################
