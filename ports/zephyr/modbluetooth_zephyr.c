@@ -130,7 +130,6 @@ static size_t bt_ad_len = 0;
 static struct bt_data bt_sd_data[8];
 static size_t bt_sd_len = 0;
 
-static mp_bt_zephyr_conn_t mp_bt_zephyr_conn;
 static mp_bt_zephyr_conn_t *mp_bt_zephyr_next_conn;
 
 static mp_bt_zephyr_conn_t *mp_bt_zephyr_find_connection(uint8_t conn_handle);
@@ -290,9 +289,10 @@ int mp_bluetooth_init(void) {
     bt_le_scan_cb_register(&mp_bluetooth_zephyr_gap_scan_cb_struct);
     #endif
 
-    bt_conn_cb_register(&mp_bt_zephyr_conn_callbacks);
-
     if (mp_bluetooth_zephyr_ble_state == MP_BLUETOOTH_ZEPHYR_BLE_STATE_OFF) {
+
+        bt_conn_cb_register(&mp_bt_zephyr_conn_callbacks);
+
         // bt_enable can only be called once.
         int ret = bt_enable(NULL);
         if (ret) {
@@ -315,6 +315,13 @@ void mp_bluetooth_deinit(void) {
     }
 
     mp_bluetooth_gap_advertise_stop();
+
+    #if CONFIG_BT_GATT_DYNAMIC_DB
+    for (size_t i = 0; i < MP_STATE_PORT(bluetooth_zephyr_root_pointers)->n_services; ++i) {
+        bt_gatt_service_unregister(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->services[i]);
+        MP_STATE_PORT(bluetooth_zephyr_root_pointers)->services[i] = NULL;
+    }
+    #endif
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     mp_bluetooth_gap_scan_stop();
