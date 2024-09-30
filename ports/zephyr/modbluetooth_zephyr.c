@@ -686,6 +686,10 @@ static ssize_t mp_bt_zephyr_gatts_attr_write(struct bt_conn *conn, const struct 
         return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
     }
 
+    if (entry->append) {
+        offset = entry->data_len;
+    }
+
     // copy the data into the buffer in the gatts database
     memcpy(&entry->data[offset], buf, len);
     entry->data_len = offset + len;
