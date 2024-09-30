@@ -198,8 +198,9 @@
 #define MICROPY_PY_LWIP_SOCK_RAW                (MICROPY_PY_LWIP)
 
 // Hardware timer alarm index. Available range 0-3.
-// Number 3 is currently used by pico-sdk (PICO_TIME_DEFAULT_ALARM_POOL_HARDWARE_ALARM_NUM)
+// Number 3 is currently used by pico-sdk alarm pool (PICO_TIME_DEFAULT_ALARM_POOL_HARDWARE_ALARM_NUM)
 #define MICROPY_HW_SOFT_TIMER_ALARM_NUM         (2)
+#define MICROPY_HW_LIGHTSLEEP_ALARM_NUM         (1)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN                (2)
