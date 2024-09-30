@@ -137,6 +137,9 @@ static void mp_machine_idle(void) {
     MICROPY_INTERNAL_WFE(1);
 }
 
+static void alarm_sleep_callback(uint alarm_id) {
+}
+
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_int_t delay_ms = 0;
     bool use_timer_alarm = false;
@@ -206,6 +209,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     // Disable ROSC.
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_DISABLE << ROSC_CTRL_ENABLE_LSB;
 
+    bool alarm_armed = false;
     if (n_args == 0) {
         #if MICROPY_PY_NETWORK_CYW43
         gpio_set_dormant_irq_enabled(CYW43_PIN_WL_HOST_WAKE, GPIO_IRQ_LEVEL_HIGH, true);
@@ -214,16 +218,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     } else {
         uint32_t save_sleep_en0 = clocks_hw->sleep_en0;
         uint32_t save_sleep_en1 = clocks_hw->sleep_en1;
-        bool timer3_enabled = irq_is_enabled(3);
-
-        const uint32_t alarm_num = 3;
-        const uint32_t irq_num = TIMER_ALARM_IRQ_NUM(timer_hw, alarm_num);
         if (use_timer_alarm) {
-            // Make sure ALARM3/IRQ3 is enabled on _this_ core
-            if (!timer3_enabled) {
-                irq_set_enabled(irq_num, true);
-            }
-            hw_set_bits(&timer_hw->inte, 1u << alarm_num);
             // Use timer alarm to wake.
             clocks_hw->sleep_en0 = 0x0;
             #if PICO_RP2040
@@ -233,8 +228,11 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
             #else
             #error Unknown processor
             #endif
-            timer_hw->intr = 1u << alarm_num; // clear any IRQ
-            timer_hw->alarm[alarm_num] = timer_hw->timerawl + delay_ms * 1000;
+            hardware_alarm_claim(MICROPY_HW_LIGHTSLEEP_ALARM_NUM);
+            hardware_alarm_set_callback(MICROPY_HW_LIGHTSLEEP_ALARM_NUM, alarm_sleep_callback);
+            if (hardware_alarm_set_target(MICROPY_HW_LIGHTSLEEP_ALARM_NUM, make_timeout_time_ms(delay_ms)) == PICO_OK) {
+                alarm_armed = true;
+            }
         } else {
             // TODO: Use RTC alarm to wake.
             clocks_hw->sleep_en0 = 0x0;
@@ -264,10 +262,8 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         #endif
 
         // Go into low-power mode.
-        __wfi();
-
-        if (!timer3_enabled) {
-            irq_set_enabled(irq_num, false);
+        if (alarm_armed) {
+            __wfi();
         }
         clocks_hw->sleep_en0 = save_sleep_en0;
         clocks_hw->sleep_en1 = save_sleep_en1;
@@ -282,6 +278,15 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     // Re-sync mp_hal_time_ns() counter with aon timer.
     mp_hal_time_ns_set_from_rtc();
+
+    // Note: This must be done after MICROPY_END_ATOMIC_SECTION
+    if (use_timer_alarm) {
+        if (alarm_armed) {
+            hardware_alarm_cancel(MICROPY_HW_LIGHTSLEEP_ALARM_NUM);
+        }
+        hardware_alarm_set_callback(MICROPY_HW_LIGHTSLEEP_ALARM_NUM, NULL);
+        hardware_alarm_unclaim(MICROPY_HW_LIGHTSLEEP_ALARM_NUM);
+    }
 }
 
 NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
