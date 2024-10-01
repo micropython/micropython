@@ -660,6 +660,13 @@ static void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
 
     // try __getattr__
     if (attr != MP_QSTR___getattr__) {
+        #if MICROPY_PY_DESCRIPTORS
+        // With descriptors enabled, don't delegate lookups of __get__/__set__/__delete__.
+        if (attr == MP_QSTR___get__ || attr == MP_QSTR___set__ || attr == MP_QSTR___delete__) {
+            return;
+        }
+        #endif
+
         #if MICROPY_PY_DELATTR_SETATTR
         // If the requested attr is __setattr__/__delattr__ then don't delegate the lookup
         // to __getattr__.  If we followed CPython's behaviour then __setattr__/__delattr__
