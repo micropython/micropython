@@ -52,6 +52,9 @@ void mp_os_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_stream_close(term);
+        const mp_stream_p_t *stream_p = mp_get_stream_raise(term, MP_STREAM_OP_IOCTL);
+        int errcode = 0;
+        stream_p->ioctl(term, MP_STREAM_REPL_ATTACHED, 0, &errcode);
         nlr_pop();
     } else {
         // Ignore any errors during stream closing
@@ -214,6 +217,7 @@ int mp_os_dupterm_tx_strn(const char *str, size_t len) {
 
 static mp_obj_t mp_os_dupterm(size_t n_args, const mp_obj_t *args) {
     mp_int_t idx = 0;
+    int errcode = 0;
     if (n_args == 2) {
         idx = mp_obj_get_int(args[1]);
     }
@@ -225,12 +229,16 @@ static mp_obj_t mp_os_dupterm(size_t n_args, const mp_obj_t *args) {
     mp_obj_t previous_obj = MP_STATE_VM(dupterm_objs[idx]);
     if (previous_obj == MP_OBJ_NULL) {
         previous_obj = mp_const_none;
+    } else {
+        const mp_stream_p_t *stream_p = mp_get_stream_raise(previous_obj, MP_STREAM_OP_IOCTL);
+        stream_p->ioctl(previous_obj, MP_STREAM_REPL_ATTACHED, 0, &errcode);
     }
     if (args[0] == mp_const_none) {
         MP_STATE_VM(dupterm_objs[idx]) = MP_OBJ_NULL;
     } else {
-        mp_get_stream_raise(args[0], MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+        const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
         MP_STATE_VM(dupterm_objs[idx]) = args[0];
+        stream_p->ioctl(args[0], MP_STREAM_REPL_ATTACHED, 1, &errcode);
     }
 
     #if MICROPY_PY_OS_DUPTERM_STREAM_DETACHED_ATTACHED
