@@ -447,6 +447,10 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
         }
     }
 
+    if (args[ARG_bits].u_int != -1 && args[ARG_bits].u_int <= 0) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Invalid number of bits (%d)"), args[ARG_bits].u_int);
+    }
+
     machine_hw_spi_obj_t *self = &machine_hw_spi_obj[spi_id - 1];
     self->host = spi_id;
 
