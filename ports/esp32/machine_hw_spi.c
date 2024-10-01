@@ -196,6 +196,10 @@ static void machine_hw_spi_init_internal(machine_hw_spi_obj_t *self, mp_arg_val_
         changed = true;
     }
 
+    if (args[ARG_bits].u_int != -1 && args[ARG_bits].u_int <= 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid bits"));
+    }
+
     if (args[ARG_bits].u_int != -1 && args[ARG_bits].u_int != self->bits) {
         self->bits = args[ARG_bits].u_int;
         changed = true;
