@@ -48,17 +48,17 @@ uintptr_t mp_usbd_cdc_poll_interfaces(uintptr_t poll_flags) {
     }
 
     // any CDC interfaces left to poll?
-    if (cdc_itf_pending && ringbuf_free(&stdin_ringbuf)) {
-        for (uint8_t itf = 0; itf < 8; ++itf) {
-            if (cdc_itf_pending & (1 << itf)) {
-                tud_cdc_rx_cb(itf);
-                if (!cdc_itf_pending) {
-                    break;
-                }
-            }
-        }
-    }
-    if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
+    // if (cdc_itf_pending && ringbuf_free(&stdin_ringbuf)) {
+    //     for (uint8_t itf = 0; itf < 8; ++itf) {
+    //         if (cdc_itf_pending & (1 << itf)) {
+    //             tud_cdc_rx_cb(itf);
+    //             if (!cdc_itf_pending) {
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // }
+    if ((poll_flags & MP_STREAM_POLL_RD) && tud_cdc_available()) {
         ret |= MP_STREAM_POLL_RD;
     }
     if ((poll_flags & MP_STREAM_POLL_WR) &&
@@ -70,7 +70,12 @@ uintptr_t mp_usbd_cdc_poll_interfaces(uintptr_t poll_flags) {
     return ret;
 }
 
+mp_uint_t mp_usbd_cdc_rx_strn(const char *buf, mp_uint_t len) {
+    return tud_cdc_read(buf, len);
+}
+
 void tud_cdc_rx_cb(uint8_t itf) {
+    #if 0
     // consume pending USB data immediately to free usb buffer and keep the endpoint from stalling.
     // in case the ringbuffer is full, mark the CDC interface that need attention later on for polling
     cdc_itf_pending &= ~(1 << itf);
@@ -94,6 +99,7 @@ void tud_cdc_rx_cb(uint8_t itf) {
             return;
         }
     }
+    #endif
     usbd_cdc_rx_event_callback();
 }
 
@@ -207,6 +213,7 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
 typedef struct _machine_usbd_cdc_obj_t {
     mp_obj_base_t base;
     // usbd_cdc_itf_t *cdc_itf;
+
 } machine_usbd_cdc_obj_t;
 
 // const machine_usbd_cdc_obj_t machine_usbd_cdc_obj[MICROPY_HW_USB_CDC_NUM] = {
@@ -229,21 +236,21 @@ static void machine_usbd_cdc_init0(void) {
     machine_usbd_cdc_irq_scheduled = false;
     // }
 
-    #if MICROPY_HW_USB_CDC_REPL
+    // #if MICROPY_HW_USB_CDC_REPL
     // Activate USB_CDC(0) on dupterm slot 1 for the REPL
     // todo auto detect appropriate slot
     MP_STATE_VM(dupterm_objs[1]) = MP_OBJ_FROM_PTR(&machine_usbd_cdc_obj);
     usb_vcp_attach_to_repl(&machine_usbd_cdc_obj, true);
-    #endif
+    // #endif
 
 }
 
 static mp_obj_t machine_usbd_cdc_irq_run(mp_obj_t self_in) {
     machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint8_t idx = self->cdc_itf->cdc_idx;
+    // uint8_t idx = self->cdc_idx;
     mp_obj_t callback = MP_STATE_PORT(machine_usbd_cdc_irq);
     machine_usbd_cdc_irq_scheduled = false;
-    if (callback != mp_const_none && usbd_cdc_rx_num(self->cdc_itf)) {
+    if (callback != mp_const_none && usbd_cdc_rx_num(self)) {
         mp_call_function_1(callback, self_in);
     }
     return mp_const_none;
@@ -261,19 +268,34 @@ void usbd_cdc_rx_event_callback(void) {
 
 static void machine_usbd_cdc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     int id = ((machine_usbd_cdc_obj_t *)MP_OBJ_TO_PTR(self_in))->cdc_itf->cdc_idx;
-    mp_printf(print, "USB_CDC(%u)", id);
+    mp_printf(print, "USBD_CDC(%u)", id);
 }
 
-// void usb_vcp_attach_to_repl(const machine_usbd_cdc_obj_t *self, bool attached) {
-//     self->cdc_itf->attached_to_repl = attached;
-//     if (attached) {
-//         // Default behavior is non-blocking when attached to repl
-//         self->cdc_itf->flow &= ~USBD_CDC_FLOWCONTROL_CTS;
-//     } else {
-//         self->cdc_itf->flow |= USBD_CDC_FLOWCONTROL_CTS;
-//     }
-// }
+void machine_usbd_cdc_attach_to_repl(const machine_usbd_cdc_obj_t *self, bool attached) {
+    // self->attached_to_repl = attached;
+    if (attached) {
+        // Default behavior is non-blocking when attached to repl
+        // self->flow &= ~USBD_CDC_FLOWCONTROL_CTS;
+        #if MICROPY_KBD_EXCEPTION
+        tud_cdc_set_wanted_char(mp_interrupt_char);
+        #endif
+    } else {
+        // self->flow |= USBD_CDC_FLOWCONTROL_CTS;
+        #if MICROPY_KBD_EXCEPTION
+        tud_cdc_set_wanted_char(-1);
+        #endif
+    }
+}
 
+#if MICROPY_KBD_EXCEPTION
+void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
+    // Clear the date buffer
+    // stdin_ringbuf.iget = stdin_ringbuf.iput = 0;
+    tud_cdc_read_flush();
+    // and stop
+    mp_sched_keyboard_interrupt();
+}
+#endif
 /// \classmethod \constructor()
 /// Create a new USB_CDC object.
 static mp_obj_t machine_usbd_cdc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -303,9 +325,9 @@ static mp_obj_t machine_usbd_cdc_init(size_t n_args, const mp_obj_t *pos_args, m
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // flow control
-    if (args[ARG_flow].u_int != -1) {
-        self->cdc_itf->flow = args[ARG_flow].u_int;
-    }
+    // if (args[ARG_flow].u_int != -1) {
+    //    self->flow = args[ARG_flow].u_int;
+    // }
 
     return mp_const_none;
 }
@@ -360,7 +382,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_usbd_cdc_any_obj, machine_usbd_cdc_any)
 //     pyb_buf_get_for_send(vals[0].u_obj, &bufinfo, data);
 
 //     // send the data
-//     int ret = usbd_cdc_tx(self->cdc_itf, bufinfo.buf, bufinfo.len, vals[1].u_int);
+//     int ret = usbd_cdc_tx(self, bufinfo.buf, bufinfo.len, vals[1].u_int);
 
 //     return mp_obj_new_int(ret);
 // }
@@ -387,7 +409,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_usbd_cdc_any_obj, machine_usbd_cdc_any)
 //     mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &vstr);
 
 //     // receive the data
-//     int ret = usbd_cdc_rx(self->cdc_itf, (uint8_t *)vstr.buf, vstr.len, vals[1].u_int);
+//     int ret = usbd_cdc_rx(self, (uint8_t *)vstr.buf, vstr.len, vals[1].u_int);
 
 //     // return the received data
 //     if (o_ret != MP_OBJ_NULL) {
@@ -467,7 +489,7 @@ static MP_DEFINE_CONST_DICT(machine_usbd_cdc_locals_dict, machine_usbd_cdc_local
 
 static mp_uint_t machine_usbd_cdc_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    int ret = usbd_cdc_rx(self->cdc_itf, (byte *)buf, size, 0);
+    int ret = usbd_cdc_rx(self, (byte *)buf, size, 0);
     if (ret == 0) {
         // return EAGAIN error to indicate non-blocking
         *errcode = MP_EAGAIN;
@@ -493,13 +515,16 @@ static mp_uint_t machine_usbd_cdc_ioctl(mp_obj_t self_in, mp_uint_t request, uin
     if (request == MP_STREAM_POLL) {
         uintptr_t flags = arg;
         ret = 0;
-        if ((flags & MP_STREAM_POLL_RD) && usbd_cdc_rx_num(self->cdc_itf) > 0) {
+        if ((flags & MP_STREAM_POLL_RD) && usbd_cdc_rx_num(self) > 0) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && usbd_cdc_tx_half_empty(self->cdc_itf)) {
+        if ((flags & MP_STREAM_POLL_WR) && usbd_cdc_tx_half_empty(self)) {
             ret |= MP_STREAM_POLL_WR;
         }
     } else if (request == MP_STREAM_CLOSE) {
+        ret = 0;
+    } else if (request == MP_STREAM_REPL_ATTACHED) {
+        machine_usbd_cdc_attach_to_repl(arg);
         ret = 0;
     } else {
         *errcode = MP_EINVAL;
