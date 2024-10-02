@@ -4,7 +4,20 @@
 #define MICROPY_PY_RE_MATCH_SPAN_START_END (1)
 #define MICROPY_PY_RE_SUB (0) // requires vstr interface
 
+#if defined __has_builtin
+#if __has_builtin(__builtin_alloca)
+#define alloca __builtin_alloca
+#endif
+#endif
+
+#if !defined(alloca)
+#if defined(_PICOLIBC__) && !defined(HAVE_BUILTIN_ALLOCA)
+#define alloca(n) m_malloc(n)
+#else
 #include <alloca.h>
+#endif
+#endif
+
 #include "py/dynruntime.h"
 
 #define STACK_LIMIT (2048)
