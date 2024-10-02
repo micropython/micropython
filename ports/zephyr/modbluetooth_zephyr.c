@@ -586,7 +586,7 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
     // now that the service has been registered, we can assign the handles for the characteristics and the descriptors
     // we are not interested in the handle of the service itself, so we start the loop from index 1
     for (int i = 1; i < total_attributes; i++) {
-        // store all the relevant handles (characteristics and attributes defined in Python)
+        // store all the relevant handles (characteristics and descriptors defined in Python)
         if (!((uint64_t)(attrs_to_ignore >> i) & (uint64_t)0x01)) {
             if (svc_attributes[i].user_data == NULL) {
                 mp_bluetooth_gatts_db_create_entry(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, svc_attributes[i].handle, MP_BLUETOOTH_DEFAULT_ATTR_LEN);
@@ -649,11 +649,18 @@ static void mp_bt_zephyr_gatt_indicate_done(struct bt_conn *conn, struct bt_gatt
 
 static ssize_t mp_bt_zephyr_gatts_attr_read(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset) {
     // we receive the value handle, but to look up in the gatts db we need the characteristic handle, and that is is the value handle minus 1
-    uint16_t chr_handle = attr->handle - 1;
+    uint16_t _handle = attr->handle - 1;
 
-    mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, chr_handle);
+    DEBUG_printf("BLE attr read for handle %d\n", attr->handle);
+
+    mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, _handle);
     if (!entry) {
-        return BT_GATT_ERR(BT_ATT_ERR_INVALID_HANDLE);
+        // it could be a descriptor instead
+        _handle = attr->handle;
+        entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, _handle);
+        if (!entry) {
+            return BT_GATT_ERR(BT_ATT_ERR_INVALID_HANDLE);
+        }
     }
 
     return bt_gatt_attr_read(conn, attr, buf, len, offset, entry->data, entry->data_len);
@@ -663,14 +670,19 @@ static ssize_t mp_bt_zephyr_gatts_attr_write(struct bt_conn *conn, const struct 
     struct bt_conn_info info;
     bt_conn_get_info(conn, &info);
 
-    DEBUG_printf("Attr write on connection id %d\n", info.id);
+    DEBUG_printf("BLE attr write for handle %d\n", attr->handle);
 
     // the characteristic handle is the value handle minus 1
-    uint16_t chr_handle = attr->handle - 1;
+    uint16_t _handle = attr->handle - 1;
 
-    mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, chr_handle);
+    mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, _handle);
     if (!entry) {
-        return BT_GATT_ERR(BT_ATT_ERR_INVALID_HANDLE);
+        // it could be a descriptor instead
+        _handle = attr->handle;
+        entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, _handle);
+        if (!entry) {
+            return BT_GATT_ERR(BT_ATT_ERR_INVALID_HANDLE);
+        }
     }
 
     // Don't write anything if prepare flag is set
@@ -694,7 +706,7 @@ static ssize_t mp_bt_zephyr_gatts_attr_write(struct bt_conn *conn, const struct 
     memcpy(&entry->data[offset], buf, len);
     entry->data_len = offset + len;
 
-    mp_bluetooth_gatts_on_write(info.id, chr_handle);
+    mp_bluetooth_gatts_on_write(info.id, _handle);
 
     return len;
 }
