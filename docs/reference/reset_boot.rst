@@ -244,6 +244,7 @@ two processes:
 The specific process(es) are different on each port:
 
 - :doc:`pyboard and stm32 port instructions </pyboard/tutorial/reset>`
+- :doc:`esp32 port instructions </esp32/tutorial/reset>`
 - :doc:`renesas-ra port instructions </renesas-ra/tutorial/reset>`
 - :doc:`rp2 port instructions </rp2/tutorial/reset>`
 - :doc:`wipy port instructions </wipy/tutorial/reset>`
