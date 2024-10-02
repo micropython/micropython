@@ -170,6 +170,10 @@ Exceptions
 
 .. exception:: KeyboardInterrupt
 
+   |see_cpython| `python:KeyboardInterrupt`.
+
+   See also in the context of :ref:`soft_bricking`.
+
 .. exception:: KeyError
 
 .. exception:: MemoryError

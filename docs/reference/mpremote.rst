@@ -547,9 +547,9 @@ device at ``/dev/ttyACM1``, printing each result.
 
   mpremote resume exec "print_state_info()" soft-reset
 
-Connect to the device without triggering a soft reset and execute the
-``print_state_info()`` function (e.g. to find out information about the current
-program state), then trigger a soft reset.
+Connect to the device without triggering a :ref:`soft reset <soft_reset>` and
+execute the ``print_state_info()`` function (e.g. to find out information about
+the current program state), then trigger a soft reset.
 
 .. code-block:: bash
 
