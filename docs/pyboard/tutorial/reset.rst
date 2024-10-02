@@ -10,6 +10,8 @@ execution of ``boot.py`` and ``main.py`` and gives default USB settings.
 If you have problems with the filesystem you can do a factory reset,
 which restores the filesystem to its original state.
 
+For more information, see :doc:`/reference/reset_boot`.
+
 Safe mode
 ---------
 
