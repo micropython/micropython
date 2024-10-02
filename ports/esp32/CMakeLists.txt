@@ -74,5 +74,9 @@ list(APPEND EXTRA_COMPONENT_DIRS main_${IDF_TARGET})
 # Enable the panic handler wrapper
 idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=esp_panic_handler" APPEND)
 
+# Patch LWIP memory pool allocators (see lwip_patch.c)
+idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=memp_malloc" APPEND)
+idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=memp_free" APPEND)
+
 # Define the project.
 project(micropython)
