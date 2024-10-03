@@ -123,8 +123,6 @@ static struct k_timer mp_bluetooth_zephyr_gap_scan_timer;
 static struct bt_le_scan_cb mp_bluetooth_zephyr_gap_scan_cb_struct;
 #endif
 
-static struct bt_gatt_attr ccc_definition = BT_GATT_CCC(NULL, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE);
-
 static struct bt_data bt_ad_data[8];
 static size_t bt_ad_len = 0;
 static struct bt_data bt_sd_data[8];
@@ -498,6 +496,7 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
     // bitfield of the handles we should ignore, should be more than enough for most applications
     uint64_t attrs_to_ignore = 0;
     uint64_t attrs_are_chrs = 0;
+    uint64_t chr_has_ccc = 0;
 
     add_service(create_zephyr_uuid(service_uuid), &svc_attributes[attr_index]);
     attr_index += 1;
@@ -525,8 +524,11 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
 
         add_characteristic(&add_char, &svc_attributes[attr_index], &svc_attributes[attr_index + 1]);
 
-        struct bt_gatt_attr *curr_char_value = &svc_attributes[attr_index];
+        struct bt_gatt_attr *curr_char = &svc_attributes[attr_index];
         attrs_are_chrs |= (1 << attr_index);
+        if (characteristic_flags[i] & (MP_BLUETOOTH_CHARACTERISTIC_FLAG_NOTIFY | MP_BLUETOOTH_CHARACTERISTIC_FLAG_INDICATE)) {
+            chr_has_ccc |= (1 << attr_index);
+        }
         attr_index += 1;
         attrs_to_ignore |= (1 << attr_index);   // ignore the value handle
         attr_index += 1;
@@ -544,7 +546,7 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
                     add_desc.permissions |= BT_GATT_PERM_WRITE;
                 }
 
-                add_descriptor(curr_char_value, &add_desc, &svc_attributes[attr_index]);
+                add_descriptor(curr_char, &add_desc, &svc_attributes[attr_index]);
                 attr_index += 1;
 
                 descriptor_index++;
@@ -564,7 +566,7 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
 
             attrs_to_ignore |= (1 << attr_index);
 
-            add_descriptor(curr_char_value, &add_desc, &svc_attributes[attr_index]);
+            add_descriptor(curr_char, &add_desc, &svc_attributes[attr_index]);
             attr_index += 1;
         }
     }
@@ -597,6 +599,11 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
                     mp_bluetooth_gatts_db_create_entry(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, svc_attributes[i].handle, MP_BLUETOOTH_DEFAULT_ATTR_LEN);
                     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, svc_attributes[i].handle);
                     svc_attributes[i + 1].user_data = entry->data;
+
+                    if (((uint64_t)(chr_has_ccc >> i) & (uint64_t)0x01)) {
+                        // create another database entry for the ccc of this characteristic
+                        mp_bluetooth_gatts_db_create_entry(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, svc_attributes[i].handle + 2, 1);
+                    }
                 }
             }
             handles[handle_index++] = svc_attributes[i].handle;
@@ -734,23 +741,29 @@ int mp_bluetooth_gatts_notify_indicate(uint16_t conn_handle, uint16_t value_hand
 
     if (connection) {
         struct bt_gatt_attr *attr_val = mp_bt_zephyr_find_attr_by_handle(value_handle + 1);
+        mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, value_handle + 2);
 
         if (attr_val) {
             switch (gatts_op) {
                 case MP_BLUETOOTH_GATTS_OP_NOTIFY: {
-                    err = bt_gatt_notify(connection->conn, attr_val, value, value_len);
+                    err = 0;
+                    if (entry && (entry->data[0] == BT_GATT_CCC_NOTIFY)) {     // if the characteristic has been subscribed
+                        err = bt_gatt_notify(connection->conn, attr_val, value, value_len);
+                    }
                     break;
                 }
                 case MP_BLUETOOTH_GATTS_OP_INDICATE: {
-                    struct bt_gatt_indicate_params params = {
-                        .uuid = NULL,
-                        .attr = attr_val,
-                        .func = mp_bt_zephyr_gatt_indicate_done,
-                        .destroy = NULL,
-                        .data = value,
-                        .len = value_len
-                    };
-                    err = bt_gatt_indicate(connection->conn, &params);
+                    if (entry && (entry->data[0] == BT_GATT_CCC_INDICATE)) { 
+                        struct bt_gatt_indicate_params params = {
+                            .uuid = NULL,
+                            .attr = attr_val,
+                            .func = mp_bt_zephyr_gatt_indicate_done,
+                            .destroy = NULL,
+                            .data = value,
+                            .len = value_len
+                        };
+                        err = bt_gatt_indicate(connection->conn, &params);
+                    }
                     break;
                 }
             }
@@ -915,6 +928,13 @@ static void add_characteristic(struct add_characteristic *ch, struct bt_gatt_att
     chrc_data->properties = ch->properties;
     chrc_data->uuid = attr_value->uuid;
 }
+
+static void ccc_cfg_changed(const struct bt_gatt_attr *attr, uint16_t value) {
+    mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, attr->handle);
+    entry->data[0] = value;
+}
+
+static struct bt_gatt_attr ccc_definition = BT_GATT_CCC(ccc_cfg_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE);
 
 static void add_ccc(struct bt_gatt_attr *attr, struct bt_gatt_attr *attr_desc) {
     struct bt_gatt_chrc *chrc = attr->user_data;
