@@ -21,7 +21,7 @@ endif
 
 JLINK_CMD = '\
 ExitOnError 1\n\
-Device AE722F80F55D5_HP\n\
+Device $(JLINK_DEV)\n\
 SelectInterface SWD\n\
 Speed auto\n\
 Connect\n\

@@ -1,5 +1,7 @@
+# TODO: alif_ensemble-cmsis-dfp only supports AE722F80F55D5XX at the moment.
 MCU_SERIES = E7
 MCU_VARIANT = AE722F80F55D5XX
+JLINK_DEV = AE302F80F55D5_HP
 
 # MicroPython settings
 MICROPY_FLOAT_IMPL = float

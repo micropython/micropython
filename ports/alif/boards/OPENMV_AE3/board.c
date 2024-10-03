@@ -27,24 +27,8 @@
 #include "py/mphal.h"
 #include "ospi_flash.h"
 
-#if 0
-// TODO: currently does not work, need to wait for next hardware revision
-// ISSI IS25WP256D octal flash.
-const ospi_flash_settings_t ospi_flash_settings = {
-    .jedec_id = 0x195b9d, // manuf=0x9d, type=0x5b=1.8V, density=0x19=256Mb
-    .freq_mhz = 80000000,
-    .is_quad = true,
-    .is_oct = false,
-    .is_ddr = true,
-    .read_id_dummy_cycles = 0,
-    .read_dummy_cycles = 16,
-    .read_command = 0xfd, // octal DDR read
-    .write_command = 0xc2, // octal DDR write
-};
-#endif
-
 void board_startup(void) {
     // Switch the USB multiplexer to use the Alif USB port.
-    mp_hal_pin_output(pin_USB_MUX);
-    mp_hal_pin_high(pin_USB_MUX);
+    mp_hal_pin_output(pin_USB_D_SEL);
+    mp_hal_pin_high(pin_USB_D_SEL);
 }
