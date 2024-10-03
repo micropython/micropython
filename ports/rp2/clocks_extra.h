@@ -28,6 +28,6 @@
 
 #include "hardware/clocks.h"
 
-void clocks_init_optional_usb(bool init_usb);
+void runtime_init_clocks_optional_usb(bool init_usb);
 
 #endif // MICROPY_INCLUDED_RP2_CLOCKS_EXTRA_H
