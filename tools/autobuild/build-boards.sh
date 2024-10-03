@@ -99,7 +99,7 @@ function build_esp8266_boards {
 }
 
 function build_mimxrt_boards {
-    build_boards modmimxrt.c $1 $2 bin hex
+    build_boards modmimxrt.c $1 $2 bin hex uf2
 }
 
 function build_nrf_boards {
