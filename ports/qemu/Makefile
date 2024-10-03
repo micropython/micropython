@@ -19,15 +19,19 @@ QSTR_DEFS = qstrdefsport.h
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 
 ifeq ($(QEMU_ARCH),arm)
-FROZEN_MANIFEST ?= "freeze('test-frzmpy')"
+QEMU_GC_HEAP_SIZE ?= 100
+FROZEN_MANIFEST ?= "freeze('test-frzmpy', ('frozen_asm_thumb.py', 'frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
 endif
 ifeq ($(QEMU_ARCH),riscv32)
-FROZEN_MANIFEST ?= "freeze('test-frzmpy', ('frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
+QEMU_GC_HEAP_SIZE ?= 120
+FROZEN_MANIFEST ?= "freeze('test-frzmpy', ('frozen_asm_rv32imc.py', 'frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
 endif
 
 # include py core make definitions
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
+
+CFLAGS += -DGC_HEAP_SIZE=$(QEMU_GC_HEAP_SIZE)
 
 ################################################################################
 # ARM specific settings

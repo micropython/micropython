@@ -39,6 +39,7 @@
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 #elif defined(__riscv)
 #define MICROPY_EMIT_RV32           (1)
+#define MICROPY_EMIT_INLINE_RV32    (1)
 #endif
 
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
@@ -48,6 +49,7 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_WARNINGS            (1)
+#define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_PY_IO_IOBASE        (0)
 #define MICROPY_PY_SYS_PLATFORM     "qemu"
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)

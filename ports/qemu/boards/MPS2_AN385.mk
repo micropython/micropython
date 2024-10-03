@@ -10,3 +10,6 @@ LDSCRIPT = mcu/arm/mps2.ld
 SRC_BOARD_O = shared/runtime/gchelper_native.o shared/runtime/gchelper_thumb2.o
 
 MPY_CROSS_FLAGS += -march=armv7m
+
+# These RV32 tests don't run on Thumb, so exclude them.
+RUN_TESTS_ARGS = --exclude 'inlineasm/rv32imc'
