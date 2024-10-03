@@ -81,7 +81,7 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq, uint3
         .master.clk_speed = freq,
     };
     i2c_param_config(self->port, &conf);
-    int timeout = I2C_SCLK_FREQ / 1000000 * timeout_us;
+    int timeout = i2c_ll_calculate_timeout_us_to_reg_val(I2C_SCLK_FREQ, timeout_us);
     i2c_set_timeout(self->port, (timeout > I2C_LL_MAX_TIMEOUT) ? I2C_LL_MAX_TIMEOUT : timeout);
     i2c_driver_install(self->port, I2C_MODE_MASTER, 0, 0, 0);
 }
