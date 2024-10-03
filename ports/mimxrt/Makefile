@@ -21,6 +21,7 @@ BUILD ?= build-$(BOARD)
 PORT ?= /dev/ttyACM0
 CROSS_COMPILE ?= arm-none-eabi-
 GIT_SUBMODULES += lib/tinyusb lib/nxp_driver
+UF2CONV ?= $(TOP)/tools/uf2conv.py
 
 # MicroPython feature configurations
 MICROPY_VFS_LFS2 ?= 1
@@ -162,6 +163,13 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_romapi.c
 endif
 
+# If not empty, then it is 10xx.
+ifneq ($(findstring MIMXRT10, $(MCU_SERIES)),)
+APPLICATION_ADDR := 0x6000C000
+else
+APPLICATION_ADDR := 0x3000C000
+endif
+
 ifeq ($(MCU_SERIES), MIMXRT1176)
 INC += -I$(TOP)/$(MCU_DIR)/drivers/cm7
 
@@ -251,6 +259,11 @@ else ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),internal))
     CFLAGS += -DMICROPY_HW_FLASH_INTERNAL
 else
     $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
+endif
+
+# Set a flag if the UF2 bootloader is used
+ifeq ($(USE_UF2_BOOTLOADER),1)
+	CFLAGS += -DMICROPY_MACHINE_UF2_BOOTLOADER=1
 endif
 
 # Add sources for respective board flash type
@@ -470,7 +483,11 @@ $(BUILD)/lib/tinyusb/src/device/usbd.o: CFLAGS += -Wno-missing-braces
 # Build targets
 # =============================================================================
 
+ifeq ($(USE_UF2_BOOTLOADER),1)
+all: $(BUILD)/firmware.hex $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
+else
 all: $(BUILD)/firmware.hex $(BUILD)/firmware.bin
+endif
 
 # Process linker scripts with C preprocessor to exchange LDDEFINES and
 #	aggregate output of preprocessor in a single linker script `link.ld`
@@ -486,6 +503,10 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom $< $@
+
+$(BUILD)/firmware.uf2: $(BUILD)/firmware.elf
+	$(Q)$(OBJCOPY) -O binary -R .stack -R .ivt -R .flash_config $^ $@-binpart
+	$(Q)$(PYTHON) $(UF2CONV) -b $(APPLICATION_ADDR) -f MIMXRT10XX -c -o $@ $@-binpart
 
 # Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
