@@ -641,10 +641,28 @@ int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
-    if (send_update) {
-        return MP_EOPNOTSUPP;
+
+    int err = mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, value_handle, value, value_len);
+
+    if ((err == 0) && send_update) {
+        struct bt_gatt_attr *attr_val = mp_bt_zephyr_find_attr_by_handle(value_handle + 1);
+        mp_bluetooth_gatts_db_entry_t *ccc_entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, value_handle + 2);
+
+        if (ccc_entry && (ccc_entry->data[0] == BT_GATT_CCC_NOTIFY)) {
+            err = bt_gatt_notify(NULL, attr_val, value, value_len);
+        } else if (ccc_entry && (ccc_entry->data[0] == BT_GATT_CCC_INDICATE)) {
+            struct bt_gatt_indicate_params params = {
+                .uuid = NULL,
+                .attr = attr_val,
+                .func = mp_bt_zephyr_gatt_indicate_done,
+                .destroy = NULL,
+                .data = value,
+                .len = value_len
+            };
+            err = bt_gatt_indicate(NULL, &params);
+        }
     }
-    return mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, value_handle, value, value_len);
+    return err;
 }
 
 static void mp_bt_zephyr_gatt_indicate_done(struct bt_conn *conn, struct bt_gatt_indicate_params *params, uint8_t err) {
@@ -747,13 +765,13 @@ int mp_bluetooth_gatts_notify_indicate(uint16_t conn_handle, uint16_t value_hand
             switch (gatts_op) {
                 case MP_BLUETOOTH_GATTS_OP_NOTIFY: {
                     err = 0;
-                    if (entry && (entry->data[0] == BT_GATT_CCC_NOTIFY)) {     // if the characteristic has been subscribed
+                    if (entry && (entry->data[0] == BT_GATT_CCC_NOTIFY)) {  // if the characteristic has been subscribed for notifications
                         err = bt_gatt_notify(connection->conn, attr_val, value, value_len);
                     }
                     break;
                 }
                 case MP_BLUETOOTH_GATTS_OP_INDICATE: {
-                    if (entry && (entry->data[0] == BT_GATT_CCC_INDICATE)) { 
+                    if (entry && (entry->data[0] == BT_GATT_CCC_INDICATE)) { // if the characteristic has been subscribed for indications
                         struct bt_gatt_indicate_params params = {
                             .uuid = NULL,
                             .attr = attr_val,
