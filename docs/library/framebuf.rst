@@ -112,12 +112,15 @@ The following methods draw shapes onto the FrameBuffer.
 Drawing text
 ------------
 
-.. method:: FrameBuffer.text(s, x, y[, c])
+.. method:: FrameBuffer.text(s, x, y[, c[, size]])
 
     Write text to the FrameBuffer using the the coordinates as the upper-left
     corner of the text. The color of the text can be defined by the optional
-    argument but is otherwise a default value of 1. All characters have
+    ``c`` argument but is otherwise a default value of 1. Characters have base
     dimensions of 8x8 pixels and there is currently no way to change the font.
+    The optional ``size`` argument (which defaults to ``8``) allows a font size
+    to be specified. The standard 8x8 font will be crudely scaled, so integer
+    multiples of 8 (e.g., ``16``) will work best.
 
 
 Other methods
