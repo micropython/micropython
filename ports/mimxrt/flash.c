@@ -28,10 +28,8 @@
 
 void flash_init(void) {
     // Upload the custom flash configuration
-    // This should be performed by the boot ROM but for some reason it is not.
-    FLEXSPI_UpdateLUT(BOARD_FLEX_SPI, 0,
-        qspiflash_config.memConfig.lookupTable,
-        ARRAY_SIZE(qspiflash_config.memConfig.lookupTable));
+    // And fix the entry for PAGEPROGRAM_QUAD
+    flexspi_nor_update_lut();
 
     // Configure FLEXSPI IP FIFO access.
     BOARD_FLEX_SPI->MCR0 &= ~(FLEXSPI_MCR0_ARDFEN_MASK);
