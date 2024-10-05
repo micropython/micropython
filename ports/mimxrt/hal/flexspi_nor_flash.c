@@ -36,6 +36,23 @@
 #include <assert.h>
 #include "fsl_common.h"
 #include "flexspi_nor_flash.h"
+#include "flexspi_flash_config.h"
+
+uint32_t LUT_pageprogram_quad[4] = {
+    // 10 Page Program - quad mode
+    FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x32, RADDR_SDR, FLEXSPI_1PAD, 24),
+    FLEXSPI_LUT_SEQ(WRITE_SDR, FLEXSPI_4PAD, 0x04, STOP, FLEXSPI_1PAD, 0),
+    FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
+    FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
+};
+
+void flexspi_nor_update_lut(void) {
+    uint32_t lookuptable_copy[64];
+    memcpy(lookuptable_copy, (const uint32_t *)&qspiflash_config.memConfig.lookupTable, 64 * sizeof(uint32_t));
+    // write PAGEPROGRAM_QUAD code to entry 10
+    memcpy(&lookuptable_copy[10 * 4], LUT_pageprogram_quad, 4 * sizeof(uint32_t));
+    FLEXSPI_UpdateLUT(BOARD_FLEX_SPI, 0, lookuptable_copy, 64);
+}
 
 void flexspi_nor_reset(FLEXSPI_Type *base) __attribute__((section(".ram_functions")));
 void flexspi_nor_reset(FLEXSPI_Type *base) {
@@ -106,9 +123,9 @@ status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base) __attribute__((section
 status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base) {
     flexspi_transfer_t flashXfer;
     status_t status;
-    uint32_t writeValue = 0x40;
+    uint32_t writeValue = qspiflash_config.memConfig.deviceModeArg;
 
-    /* Write neable */
+    /* Write enable */
     status = flexspi_nor_write_enable(base, 0);
 
     if (status != kStatus_Success) {
@@ -225,25 +242,6 @@ status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, co
     status = flexspi_nor_wait_bus_busy(base);
 
     flexspi_nor_reset(BOARD_FLEX_SPI);
-
-    return status;
-}
-
-status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId) __attribute__((section(".ram_functions")));
-status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId) {
-    uint32_t temp;
-    flexspi_transfer_t flashXfer;
-    flashXfer.deviceAddress = 0;
-    flashXfer.port = kFLEXSPI_PortA1;
-    flashXfer.cmdType = kFLEXSPI_Read;
-    flashXfer.SeqNumber = 1;
-    flashXfer.seqIndex = NOR_CMD_LUT_SEQ_IDX_READID;
-    flashXfer.data = &temp;
-    flashXfer.dataSize = 2;
-
-    status_t status = FLEXSPI_TransferBlocking(base, &flashXfer);
-
-    *vendorId = temp;
 
     return status;
 }
