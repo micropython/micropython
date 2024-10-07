@@ -44,7 +44,6 @@
 #include "shared/runtime/pyexec.h"
 #include "shared/tinyusb/mp_usbd.h"
 #include "shared/tinyusb/mp_usbd_cdc.h"
-#include "mphalport.h"
 #include "usb.h"
 #include "usb_serial_jtag.h"
 #include "uart.h"

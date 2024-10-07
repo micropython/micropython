@@ -30,10 +30,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "modmachine.h"
-#include "mphalport.h"
 
 #include "hal/timer_hal.h"
 #include "hal/timer_ll.h"

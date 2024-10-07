@@ -28,8 +28,8 @@
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "extmod/vfs.h"
-#include "mphalport.h"
 #include "modesp32.h"
 #include "esp_ota_ops.h"
 
