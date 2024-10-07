@@ -48,7 +48,7 @@ The following demo function makes a fancy show on the LEDs::
         # cycle
         for i in range(4 * n):
             for j in range(n):
-                np[j] = (0, 0, 0)
+                np[j-1] = (0, 0, 0)
             np[i % n] = (255, 255, 255)
             np.write()
             time.sleep_ms(25)
@@ -56,7 +56,7 @@ The following demo function makes a fancy show on the LEDs::
         # bounce
         for i in range(4 * n):
             for j in range(n):
-                np[j] = (0, 0, 128)
+                np[j-1] = (0, 0, 128)
             if (i // n) % 2 == 0:
                 np[i % n] = (0, 0, 0)
             else:
@@ -71,7 +71,7 @@ The following demo function makes a fancy show on the LEDs::
                     val = i & 0xff
                 else:
                     val = 255 - (i & 0xff)
-                np[j] = (val, 0, 0)
+                np[j-1] = (val, 0, 0)
             np.write()
 
         # clear
