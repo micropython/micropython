@@ -122,6 +122,7 @@ SRC_C = \
 	mpu.c \
 	mpuart.c \
 	msc_disk.c \
+	ospi_ext.c \
 	ospi_flash.c \
 	pendsv.c \
 	system_tick.c \
