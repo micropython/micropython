@@ -97,10 +97,16 @@ static inline qstr mp_hal_pin_name(mp_hal_pin_obj_t pin) {
 }
 
 static inline void mp_hal_pin_input(mp_hal_pin_obj_t pin) {
+    uint8_t alt_func = PINMUX_ALTERNATE_FUNCTION_0;
+    uint8_t pad_ctrl = PADCTRL_READ_ENABLE;
+    pinconf_set(pin->port, pin->pin, alt_func, pad_ctrl);
     gpio_set_direction_input(pin->gpio, pin->pin);
 }
 
 static inline void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
+    uint8_t alt_func = PINMUX_ALTERNATE_FUNCTION_0;
+    uint8_t pad_ctrl = PADCTRL_READ_ENABLE;
+    pinconf_set(pin->port, pin->pin, alt_func, pad_ctrl);
     gpio_set_direction_output(pin->gpio, pin->pin);
 }
 
