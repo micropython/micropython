@@ -26,24 +26,67 @@
 #ifndef MICROPY_INCLUDED_ALIF_OSPI_FLASH_H
 #define MICROPY_INCLUDED_ALIF_OSPI_FLASH_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "py/mphal.h"
+
+// Format of command, address and data phases.
+enum {
+    OSPI_FLASH_OCTAL_MODE_SSS,
+    OSPI_FLASH_OCTAL_MODE_SDD,
+    OSPI_FLASH_OCTAL_MODE_DDD,
+};
+
+struct _ospi_flash_t;
+
+typedef struct _ospi_pin_settings_t {
+    uint32_t peripheral_number;
+    const mp_hal_pin_obj_t pin_reset;
+    const mp_hal_pin_obj_t pin_cs;
+    const mp_hal_pin_obj_t pin_clk;
+    const mp_hal_pin_obj_t pin_rwds;
+    const mp_hal_pin_obj_t pin_d0;
+    const mp_hal_pin_obj_t pin_d1;
+    const mp_hal_pin_obj_t pin_d2;
+    const mp_hal_pin_obj_t pin_d3;
+    const mp_hal_pin_obj_t pin_d4;
+    const mp_hal_pin_obj_t pin_d5;
+    const mp_hal_pin_obj_t pin_d6;
+    const mp_hal_pin_obj_t pin_d7;
+} ospi_pin_settings_t;
 
 typedef struct _ospi_flash_settings_t {
     uint32_t jedec_id;
-    uint32_t freq_mhz;
-    bool is_quad : 1;
-    bool is_oct : 1;
-    bool is_ddr : 1;
+    uint32_t freq_hz;
+    int (*octal_switch)(struct _ospi_flash_t *);
+    uint8_t octal_mode;
+    bool rxds;
+    uint8_t inst_len;
+    uint8_t xip_data_len;
+    uint16_t read_sr;
+    uint8_t read_sr_dummy_cycles;
+    uint16_t read_id;
     uint8_t read_id_dummy_cycles;
+    uint16_t write_en;
+    uint16_t read_command;
     uint8_t read_dummy_cycles;
-    uint8_t read_command;
-    uint8_t write_command;
+    uint16_t write_command;
+    uint16_t erase_command;
 } ospi_flash_settings_t;
 
-// Provided by the board when it enables OSPI1.
+// Provided by the board when it enables OSPI.
+extern const ospi_pin_settings_t ospi_pin_settings;
 extern const ospi_flash_settings_t ospi_flash_settings;
 
+// Functions specific to ISSI flash chips.
+int ospi_flash_issi_octal_switch(struct _ospi_flash_t *self);
+
+// Functions specific to MX flash chips.
+int ospi_flash_mx_octal_switch(struct _ospi_flash_t *self);
+uint8_t ospi_flash_mx_read_cr(struct _ospi_flash_t *self);
+uint8_t ospi_flash_mx_read_cr2(struct _ospi_flash_t *self, uint32_t addr);
+int ospi_flash_mx_write_cr(struct _ospi_flash_t *self, uint8_t value);
+int ospi_flash_mx_write_cr2(struct _ospi_flash_t *self, uint32_t addr, uint8_t value);
+
+// SPI flash interface.
 int ospi_flash_init(void);
 int ospi_flash_erase_sector(uint32_t addr);
 int ospi_flash_read(uint32_t addr, uint32_t len, uint8_t *dest);
