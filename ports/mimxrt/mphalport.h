@@ -109,6 +109,10 @@ __attribute__((always_inline)) static inline uint32_t disable_irq(void) {
 
 void mp_hal_set_interrupt_char(int c);
 
+static inline void mp_hal_wake_main_task_from_isr(void) {
+    // Defined for tinyusb support, nothing needs to be done here.
+}
+
 static inline mp_uint_t mp_hal_ticks_ms(void) {
     return ticks_ms32();
 }

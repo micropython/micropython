@@ -252,6 +252,9 @@ bool uart_init(machine_uart_obj_t *uart_obj,
 
     const machine_pin_obj_t *pins[4] = {0};
 
+    // Default pull is pull-up on RX and CTS (the input pins).
+    uint32_t pins_pull[4] = { GPIO_NOPULL, GPIO_PULLUP, GPIO_NOPULL, GPIO_PULLUP };
+
     switch (uart_obj->uart_id) {
         #if defined(MICROPY_HW_UART1_TX) && defined(MICROPY_HW_UART1_RX)
         case PYB_UART_1:
@@ -269,6 +272,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             if (flow & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART1_CTS;
             }
+            #endif
+            #if defined(MICROPY_HW_UART1_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART1_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART1_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART1_CTS_PULL;
             #endif
             __HAL_RCC_USART1_CLK_ENABLE();
             break;
@@ -294,6 +303,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             if (flow & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART2_CTS;
             }
+            #endif
+            #if defined(MICROPY_HW_UART2_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART2_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART2_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART2_CTS_PULL;
             #endif
             __HAL_RCC_USART2_CLK_ENABLE();
             break;
@@ -321,6 +336,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             if (flow & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART3_CTS;
             }
+            #endif
+            #if defined(MICROPY_HW_UART3_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART3_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART3_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART3_CTS_PULL;
             #endif
             __HAL_RCC_USART3_CLK_ENABLE();
             break;
@@ -358,6 +379,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
                 pins[3] = MICROPY_HW_UART4_CTS;
             }
             #endif
+            #if defined(MICROPY_HW_UART4_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART4_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART4_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART4_CTS_PULL;
+            #endif
             break;
         #endif
 
@@ -393,6 +420,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
                 pins[3] = MICROPY_HW_UART5_CTS;
             }
             #endif
+            #if defined(MICROPY_HW_UART5_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART5_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART5_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART5_CTS_PULL;
+            #endif
             break;
         #endif
 
@@ -418,6 +451,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             if (flow & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART6_CTS;
             }
+            #endif
+            #if defined(MICROPY_HW_UART6_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART6_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART6_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART6_CTS_PULL;
             #endif
             __HAL_RCC_USART6_CLK_ENABLE();
             break;
@@ -447,6 +486,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
                 pins[3] = MICROPY_HW_UART7_CTS;
             }
             #endif
+            #if defined(MICROPY_HW_UART7_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART7_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART7_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART7_CTS_PULL;
+            #endif
             break;
         #endif
 
@@ -474,6 +519,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
                 pins[3] = MICROPY_HW_UART8_CTS;
             }
             #endif
+            #if defined(MICROPY_HW_UART8_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART8_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART8_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART8_CTS_PULL;
+            #endif
             break;
         #endif
 
@@ -485,6 +536,9 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             __HAL_RCC_UART9_CLK_ENABLE();
             pins[0] = MICROPY_HW_UART9_TX;
             pins[1] = MICROPY_HW_UART9_RX;
+            #if defined(MICROPY_HW_UART9_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART9_RX_PULL;
+            #endif
             break;
         #endif
 
@@ -502,6 +556,9 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             #endif
             pins[0] = MICROPY_HW_UART10_TX;
             pins[1] = MICROPY_HW_UART10_RX;
+            #if defined(MICROPY_HW_UART10_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART10_RX_PULL;
+            #endif
             break;
         #endif
 
@@ -527,6 +584,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
                 pins[3] = MICROPY_HW_LPUART1_CTS;
             }
             #endif
+            #if defined(MICROPY_HW_LPUART1_RX_PULL)
+            pins_pull[1] = MICROPY_HW_LPUART1_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_LPUART1_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_LPUART1_CTS_PULL;
+            #endif
             __HAL_RCC_LPUART1_CLK_ENABLE();
             break;
         #endif
@@ -551,6 +614,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
                 pins[3] = MICROPY_HW_LPUART2_CTS;
             }
             #endif
+            #if defined(MICROPY_HW_LPUART2_RX_PULL)
+            pins_pull[1] = MICROPY_HW_LPUART2_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_LPUART2_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_LPUART2_CTS_PULL;
+            #endif
             __HAL_RCC_LPUART2_CLK_ENABLE();
             break;
         #endif
@@ -564,10 +633,7 @@ bool uart_init(machine_uart_obj_t *uart_obj,
 
     for (uint i = 0; i < 4; i++) {
         if (pins[i] != NULL) {
-            // Configure pull-up on RX and CTS (the input pins).
-            uint32_t pull = (i & 1) ? MP_HAL_PIN_PULL_UP : MP_HAL_PIN_PULL_NONE;
-            bool ret = mp_hal_pin_config_alt(pins[i], mode, pull, uart_fn, uart_unit);
-            if (!ret) {
+            if (!mp_hal_pin_config_alt(pins[i], mode, pins_pull[i], uart_fn, uart_unit)) {
                 return false;
             }
         }

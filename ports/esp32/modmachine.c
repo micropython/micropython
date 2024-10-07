@@ -222,7 +222,19 @@ static mp_int_t mp_machine_reset_cause(void) {
 
 #if MICROPY_ESP32_USE_BOOTLOADER_RTC
 #include "soc/rtc_cntl_reg.h"
+#include "usb.h"
+#if CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/usb/usb_dc.h"
+#include "esp32s3/rom/usb/usb_persist.h"
+#include "esp32s3/rom/usb/chip_usb_dw_wrapper.h"
+#endif
+
 NORETURN static void machine_bootloader_rtc(void) {
+    #if CONFIG_IDF_TARGET_ESP32S3
+    usb_usj_mode();
+    usb_dc_prepare_persist();
+    chip_usb_set_persist_flags(USBDC_BOOT_DFU);
+    #endif
     REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
     esp_restart();
 }

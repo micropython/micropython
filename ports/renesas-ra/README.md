@@ -63,6 +63,26 @@ passed as the argument to `BOARD=`; for example `RA4M1_CLICKER`, `EK_RA4M1`,
 The above command should produce binary images `firmware.hex` in the
 build-EK_RA6M2/` subdirectory (or the equivalent directory for the board specified).
 
+## Board definition auto-generated code
+
+The supported board definitions contain auto-generated configuration files in
+the `boards/<BOARD_NAME>/ra_cfg` and `boards/<BOARD_NAME>/ra_gen` folders.
+
+These are generated with the [RA Smart Configurator](https://www.renesas.com/us/en/software-tool/ra-smart-configurator)
+tool which is used to define peripheral configuration, pinouts, interrupts etc. for each board.
+
+This tool can be installed either as part of the "Renesas e² studio", or separately with
+the fsp driver package from https://github.com/renesas/fsp/releases eg.
+* [setup_fsp_v4_4_0_rasc_v2023-04.exe](https://github.com/renesas/fsp/releases/download/v4.4.0/setup_fsp_v4_4_0_rasc_v2023-04.exe)
+* [setup_fsp_v4_4_0_rasc_v2023-04.exe](https://github.com/renesas/fsp/releases/download/v4.4.0/setup_fsp_v4_4_0_rasc_v2023-04.AppImage)
+
+This tool can be used to create new board definitions or modify existing ones
+by opening one of the `configuration.xml` files in the board folders.
+
+Once the `configuration.xml` file is opened in RA Smart Configurator and modified as
+needed, the "Generate Project Content" button can be pressed to export new copies
+of the `ra_cfg` and `ra_gen` folders.
+
 ## Supported/Unsupported functions
 Please refer to the `renesas-ra` quick reference.
 

@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 
 #include "py/runtime.h"
@@ -38,6 +38,7 @@
 #include "extmod/modmachine.h"
 #include "shared/runtime/mpirq.h"
 #include "modmachine.h"
+#include "zephyr_device.h"
 
 #if MICROPY_PY_MACHINE
 
@@ -131,12 +132,8 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     }
     mp_obj_t *items;
     mp_obj_get_array_fixed_n(args[0], 2, &items);
-    const char *drv_name = mp_obj_str_get_str(items[0]);
+    const struct device *wanted_port = zephyr_device_find(items[0]);
     int wanted_pin = mp_obj_get_int(items[1]);
-    const struct device *wanted_port = device_get_binding(drv_name);
-    if (!wanted_port) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid port"));
-    }
 
     machine_pin_obj_t *pin = m_new_obj(machine_pin_obj_t);
     pin->base = machine_pin_obj_template;

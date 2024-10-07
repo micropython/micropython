@@ -29,7 +29,7 @@
 #if MICROPY_PY_ZEPHYR
 
 #include <stdio.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/debug/thread_analyzer.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_uart.h>

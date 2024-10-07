@@ -107,7 +107,9 @@ static mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_k
     if (self->sig & 1) {
         // function allows keywords
 
-        // we create a map directly from the given args array
+        // we create a map directly from the given args array; self->fun.kw does still
+        // expect args to have both positional and keyword arguments, ordered as:
+        // arg0 arg1 ... arg<n_args> key0 value0 key1 value1 ... key<n_kw> value<n_kw>
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
 

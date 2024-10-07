@@ -35,9 +35,6 @@
 #include "double_tap.h"
 #include "usb.h"
 
-#include "tinyusb.h"
-#include "tusb_cdc_acm.h"
-
 #define LED_RED     GPIO_NUM_46
 #define LED_GREEN   GPIO_NUM_0
 #define LED_BLUE    GPIO_NUM_45
@@ -85,11 +82,6 @@ void NANO_ESP32_enter_bootloader(void) {
     }
 
     esp_restart();
-}
-
-void NANO_ESP32_usb_callback_line_state_changed(int itf, void *event_in) {
-    cdcacm_event_t *event = event_in;
-    mp_usbd_line_state_cb(itf, event->line_state_changed_data.dtr, event->line_state_changed_data.rts);
 }
 
 void NANO_ESP32_board_startup(void) {

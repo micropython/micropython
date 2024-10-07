@@ -31,9 +31,8 @@
 #include <sys/mman.h>
 
 #include "py/mpstate.h"
-#include "py/gc.h"
 
-#if MICROPY_EMIT_NATIVE || (MICROPY_PY_FFI && MICROPY_FORCE_PLAT_ALLOC_EXEC)
+#if MICROPY_EMIT_NATIVE
 
 #if defined(__OpenBSD__) || defined(__MACH__)
 #define MAP_ANONYMOUS MAP_ANON
@@ -79,12 +78,6 @@ void mp_unix_free_exec(void *ptr, size_t size) {
     }
 }
 
-void mp_unix_mark_exec(void) {
-    for (mmap_region_t *rg = MP_STATE_VM(mmap_region_head); rg != NULL; rg = rg->next) {
-        gc_collect_root(rg->ptr, rg->len / sizeof(mp_uint_t));
-    }
-}
-
 MP_REGISTER_ROOT_POINTER(void *mmap_region_head);
 
-#endif // MICROPY_EMIT_NATIVE || (MICROPY_PY_FFI && MICROPY_FORCE_PLAT_ALLOC_EXEC)
+#endif // MICROPY_EMIT_NATIVE
