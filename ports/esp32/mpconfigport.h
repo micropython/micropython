@@ -42,7 +42,11 @@
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
 #if CONFIG_IDF_TARGET_ARCH_RISCV
+#if CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT
+#define MICROPY_EMIT_RV32                   (0)
+#else
 #define MICROPY_EMIT_RV32                   (1)
+#endif
 #else
 #define MICROPY_EMIT_XTENSAWIN              (1)
 #endif
@@ -263,8 +267,12 @@
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
+#if SOC_CPU_IDRAM_SPLIT_USING_PMP && !CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT
+// On targets with this configuration all RAM is executable so no need for a custom commit function.
+#else
 void *esp_native_code_commit(void *, size_t, void *);
 #define MP_PLAT_COMMIT_EXEC(buf, len, reloc) esp_native_code_commit(buf, len, reloc)
+#endif
 #define MP_SSIZE_MAX (0x7fffffff)
 
 #if MICROPY_PY_SOCKET_EVENTS
