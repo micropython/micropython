@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022-2023 Damien P. George
+ * Copyright (c) 2013-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,29 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include "py/obj.h"
 #include "py/mphal.h"
+#include "shared/timeutils/timeutils.h"
 
-// Send string of given length to stdout, converting \n to \r\n.
-void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
-    printf("%.*s", (int)len, str);
+// Return the localtime as an 8-tuple.
+static mp_obj_t mp_time_localtime_get(void) {
+    mp_int_t seconds = mp_hal_time_ns() / 1000000000;
+    timeutils_struct_time_t tm;
+    timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
+    mp_obj_t tuple[8] = {
+        tuple[0] = mp_obj_new_int(tm.tm_year),
+        tuple[1] = mp_obj_new_int(tm.tm_mon),
+        tuple[2] = mp_obj_new_int(tm.tm_mday),
+        tuple[3] = mp_obj_new_int(tm.tm_hour),
+        tuple[4] = mp_obj_new_int(tm.tm_min),
+        tuple[5] = mp_obj_new_int(tm.tm_sec),
+        tuple[6] = mp_obj_new_int(tm.tm_wday),
+        tuple[7] = mp_obj_new_int(tm.tm_yday),
+    };
+    return mp_obj_new_tuple(8, tuple);
+}
+
+// Returns the number of seconds, as an integer, since the Epoch.
+static mp_obj_t mp_time_time_get(void) {
+    return mp_obj_new_int(mp_hal_time_ns() / 1000000000);
 }
