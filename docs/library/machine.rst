@@ -70,6 +70,9 @@ Reset related functions
    Performs a :ref:`soft reset <soft_reset>` of the interpreter, deleting all
    Python objects and resetting the Python heap.
 
+   .. note:: This function is deprecated. Call the Python standard
+             :func:`sys.exit()` function instead.
+
 .. function:: reset_cause()
 
    Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.

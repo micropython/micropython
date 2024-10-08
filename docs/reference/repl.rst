@@ -154,7 +154,7 @@ method by which you're connected to the MicroPython board (USB-serial, or Wifi).
 You can perform a soft reset from the REPL by pressing Ctrl-D, or from your python
 code by executing: ::
 
-    machine.soft_reset()
+    sys.exit()
 
 For example, if you reset your MicroPython board, and you execute a dir()
 command, you'd see something like this:

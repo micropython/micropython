@@ -194,6 +194,12 @@ Exceptions
 
     |see_cpython| `python:SystemExit`.
 
+    On non-embedded ports (i.e. Windows and Unix), an unhandled ``SystemExit``
+    exits the MicroPython process in a similar way to CPython.
+
+    On embedded ports, an unhandled ``SystemExit`` causes a :ref:`soft_reset` of
+    MicroPython.
+
 .. exception:: TypeError
 
     |see_cpython| `python:TypeError`.

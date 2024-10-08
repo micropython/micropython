@@ -24,7 +24,7 @@ Soft Reset
 
 When MicroPython is already running, it's possible to trigger a soft reset by
 :ref:`typing Ctrl-D in the REPL <repl_soft_reset>` or executing
-:func:`machine.soft_reset()`.
+:func:`sys.exit()`.
 
 A soft reset clears the Python interpreter, frees all Python memory, and starts
 the MicroPython environment again.
