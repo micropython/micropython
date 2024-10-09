@@ -47,6 +47,12 @@ SECTIONS
         _edata = .;
     } >RAM AT> FLASH_BL
 
+    /* Final section of mboot flash reserved for mboot version */
+    .mboot_ver_data (ORIGIN(FLASH_BL) + LENGTH(FLASH_BL) - mboot_ver_len) : 
+    {
+        KEEP(*(.mboot_ver)) ; 
+    } >FLASH_BL
+
     /* Zeroed-out data section */
     .bss :
     {
