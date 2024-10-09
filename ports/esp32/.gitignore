@@ -1,2 +1,8 @@
 dependencies.lock
 managed_components/
+
+# MacOS desktop metadata files
+.DS_Store
+
+# Clangd cache
+.cache/
