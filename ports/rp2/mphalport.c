@@ -278,3 +278,11 @@ void mp_wfe_or_timeout(uint32_t timeout_ms) {
     // Clean up the timer node if it's not already
     soft_timer_remove(&timer);
 }
+
+int mp_hal_is_pin_reserved(int n) {
+    #if MICROPY_PY_NETWORK_CYW43
+    return n == CYW43_PIN_WL_HOST_WAKE;
+    #else
+    return false;
+    #endif
+}
