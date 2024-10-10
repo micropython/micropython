@@ -49,7 +49,7 @@ static KEYEX_CB keyex_cb[MICROPY_HW_MAX_UART] = {(KEYEX_CB)NULL};
 
 static int chk_kbd_interrupt(int d) {
     if (d == mp_interrupt_char) {
-        pendsv_kbd_intr();
+        mp_sched_keyboard_interrupt();
         return 1;
     } else {
         return 0;
