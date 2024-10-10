@@ -3,11 +3,14 @@
 
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-1070evk"
 
+#if MICROPY_PY_THREAD
+#else
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
     } while (0);
+#endif
 
 // MIMXRT1170_EVK has 2 user LEDs
 #define MICROPY_HW_LED1_PIN (pin_GPIO_AD_04)
