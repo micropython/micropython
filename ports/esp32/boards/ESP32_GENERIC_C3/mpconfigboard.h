@@ -8,3 +8,5 @@
 
 // Enable UART REPL for modules that have an external USB-UART and don't use native USB.
 #define MICROPY_HW_ENABLE_UART_REPL         (1)
+
+#define USB_SERIAL_JTAG_PACKET_SZ_BYTES     (64)
