@@ -41,7 +41,7 @@
 #include "i2c.h"
 #include "spi.h"
 #include "uart.h"
-#include "can.h"
+#include "pyb_can.h"
 #include "adc.h"
 #include "storage.h"
 #include "sdcard.h"
