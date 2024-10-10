@@ -76,6 +76,11 @@ typedef enum {
     MP_SOFT_RESET
 } reset_reason_t;
 
+// Copied from inc/uf2.h in https://github.com/Microsoft/uf2-samd21
+#define DBL_TAP_REG   SNVS->LPGPR[3]
+#define DBL_TAP_MAGIC 0xf01669ef // Randomly selected, adjusted to have first and last bit set
+#define DBL_TAP_MAGIC_QUICK_BOOT 0xf02669ef
+
 static mp_obj_t mp_machine_unique_id(void) {
     unsigned char id[8];
     mp_hal_get_unique_id(id);
@@ -154,6 +159,10 @@ NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     }
 }
 
+// static bool uf2_bootloader_available(void) {
+//     return SNVS->LPGPR[0] != 0;
+// }
+
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if defined(MICROPY_BOARD_ENTER_BOOTLOADER)
     // If a board has a custom bootloader, call it first.
@@ -163,7 +172,11 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     uint32_t arg = 0xEB110000;
     ROM_RunBootloader(&arg);
     #else
-    // No custom bootloader, or run bootloader API, then just reset.
+    // No custom bootloader, or run bootloader API, the set
+    // the flag for the UF2 bootloader
+    // Pretend to be the first of the two reset presses needed to enter the
+    // bootloader. That way one reset will end in the bootloader.
+    DBL_TAP_REG = DBL_TAP_MAGIC;
     WDOG_TriggerSystemSoftwareReset(WDOG1);
     #endif
     while (1) {

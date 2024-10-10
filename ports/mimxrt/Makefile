@@ -161,6 +161,13 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_romapi.c
 endif
 
+# If not empty, then it is 10xx.
+ifneq ($(findstring MIMXRT10, $(MCU_SERIES)),)
+BOOTLOADER_SIZE := 0x6000C000
+else
+BOOTLOADER_SIZE := 0x3000C000
+endif
+
 ifeq ($(MCU_SERIES), MIMXRT1176)
 INC += -I$(TOP)/$(MCU_DIR)/drivers/cm7
 
@@ -467,7 +474,13 @@ $(BUILD)/lib/tinyusb/src/device/usbd.o: CFLAGS += -Wno-missing-braces
 # Build targets
 # =============================================================================
 
+# Do not build the .uf2 target for MIMXRT1050_EVK, MIMXRT1170_EVK, Teensy40 and Teensy41
+# These boards do not support the bootloader properly.
+ifneq ($(BOARD), $(filter $(BOARD), MIMXRT1050_EVK TEENSY40 TEENSY41 MIMXRT1170_EVK))
+all: $(BUILD)/firmware.hex $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
+else
 all: $(BUILD)/firmware.hex $(BUILD)/firmware.bin
+endif
 
 # Process linker scripts with C preprocessor to exchange LDDEFINES and
 #	aggregate output of preprocessor in a single linker script `link.ld`
@@ -483,6 +496,11 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom $< $@
+
+$(BUILD)/firmware.uf2: $(BUILD)/firmware.elf
+	$(Q)$(OBJCOPY) -O binary -R .stack -R .ivt -R .flash_config $^ $@-binpart
+	$(Q)$(PYTHON) $(TOP)/tools/uf2conv.py -b $(BOOTLOADER_SIZE) -f MIMXRT10XX -c -o $@ $@-binpart
+	$(Q)rm $@-binpart
 
 # Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
