@@ -62,7 +62,8 @@ dma.write = dest
 dma.count = len(dest) // 4
 dma.ctrl = dma.pack_ctrl()
 dt = run_and_time_dma(dma)
-print(70 <= dt <= 110)
+expected_dt = 90 * 120000000 // machine.freq()
+print(abs(dt - expected_dt) <= 20)
 print(dest[:8], dest[-8:])
 dma.close()
 

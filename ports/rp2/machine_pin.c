@@ -86,10 +86,10 @@ typedef struct _machine_pin_irq_obj_t {
 } machine_pin_irq_obj_t;
 
 static const mp_irq_methods_t machine_pin_irq_methods;
-extern const machine_pin_obj_t machine_pin_obj_table[NUM_BANK0_GPIOS];
+static const int num_intr_regs = sizeof(iobank0_hw->intr) / sizeof(iobank0_hw->intr[0]);
 
 // Mask with "1" indicating that the corresponding pin is in simulated open-drain mode.
-uint32_t machine_pin_open_drain_mask;
+uint64_t machine_pin_open_drain_mask;
 
 #if MICROPY_HW_PIN_EXT_COUNT
 static inline bool is_ext_pin(__unused const machine_pin_obj_t *self) {
@@ -100,7 +100,7 @@ static inline bool is_ext_pin(__unused const machine_pin_obj_t *self) {
 #endif
 
 static void gpio_irq(void) {
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < num_intr_regs; ++i) {
         uint32_t intr = iobank0_hw->intr[i];
         if (intr) {
             for (int j = 0; j < 8; ++j) {
@@ -298,7 +298,7 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
                 mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin af: %d"), af);
             }
             gpio_set_function(self->id, af);
-            machine_pin_open_drain_mask &= ~(1 << self->id);
+            machine_pin_open_drain_mask &= ~(1ULL << self->id);
         }
     }
 
@@ -380,7 +380,7 @@ static mp_obj_t machine_pin_low(mp_obj_t self_in) {
     } else if (GPIO_IS_OPEN_DRAIN(self->id)) {
         gpio_set_dir(self->id, GPIO_OUT);
     } else {
-        gpio_clr_mask(1u << self->id);
+        gpio_clr_mask64(1ULL << self->id);
     }
     return mp_const_none;
 }
@@ -396,7 +396,7 @@ static mp_obj_t machine_pin_high(mp_obj_t self_in) {
     } else if (GPIO_IS_OPEN_DRAIN(self->id)) {
         gpio_set_dir(self->id, GPIO_IN);
     } else {
-        gpio_set_mask(1u << self->id);
+        gpio_set_mask64(1ULL << self->id);
     }
     return mp_const_none;
 }
@@ -417,7 +417,7 @@ static mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
             gpio_set_dir(self->id, GPIO_OUT);
         }
     } else {
-        gpio_xor_mask(1u << self->id);
+        gpio_xor_mask64(1ULL << self->id);
     }
     return mp_const_none;
 }

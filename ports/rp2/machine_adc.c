@@ -31,9 +31,8 @@
 #include "hardware/adc.h"
 #include "machine_pin.h"
 
-#define ADC_IS_VALID_GPIO(gpio) ((gpio) >= 26 && (gpio) <= 29)
-#define ADC_CHANNEL_FROM_GPIO(gpio) ((gpio) - 26)
-#define ADC_CHANNEL_TEMPSENSOR (4)
+#define ADC_IS_VALID_GPIO(gpio) ((gpio) >= ADC_BASE_PIN && (gpio) < (ADC_BASE_PIN + NUM_ADC_CHANNELS))
+#define ADC_CHANNEL_FROM_GPIO(gpio) ((gpio) - ADC_BASE_PIN)
 
 static uint16_t adc_config_and_read_u16(uint32_t channel) {
     adc_select_input(channel);
@@ -47,7 +46,7 @@ static uint16_t adc_config_and_read_u16(uint32_t channel) {
 // MicroPython bindings for machine.ADC
 
 #define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(ADC_CHANNEL_TEMPSENSOR) }, \
+    { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(ADC_TEMPERATURE_CHANNEL_NUM) }, \
 
 typedef struct _machine_adc_obj_t {
     mp_obj_base_t base;
@@ -75,7 +74,7 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
 
     if (mp_obj_is_int(source)) {
         channel = mp_obj_get_int(source);
-        if (!(channel >= 0 && channel <= ADC_CHANNEL_TEMPSENSOR)) {
+        if (!(channel >= 0 && channel < NUM_ADC_CHANNELS)) {
             // Not a valid ADC channel, fallback to searching for a pin.
             channel = -1;
         }
@@ -116,7 +115,7 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
             adc_gpio_init(pin->id);
             channel = ADC_CHANNEL_FROM_GPIO(pin->id);
         }
-    } else if (channel == ADC_CHANNEL_TEMPSENSOR) {
+    } else if (channel == ADC_TEMPERATURE_CHANNEL_NUM) {
         // Enable temperature sensor.
         adc_set_temp_sensor_enabled(1);
     }

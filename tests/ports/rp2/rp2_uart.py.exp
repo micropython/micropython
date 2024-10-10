@@ -1,0 +1,1 @@
+UART(0, baudrate=115200, bits=8, parity=None, stop=1, tx=0, rx=1, txbuf=256, rxbuf=256, timeout=0, timeout_char=1, invert=None, irq=0)

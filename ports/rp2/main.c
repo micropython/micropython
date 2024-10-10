@@ -47,11 +47,9 @@
 #include "genhdr/mpversion.h"
 #include "mp_usbd.h"
 
-#include "RP2040.h" // cmsis, for PendSV_IRQn and SCB/SCB_SCR_SEVONPEND_Msk
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "pico/unique_id.h"
-#include "hardware/rtc.h"
 #include "hardware/structs/rosc.h"
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
@@ -60,6 +58,13 @@
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
+#if PICO_RP2040
+#include "RP2040.h" // cmsis, for PendSV_IRQn and SCB/SCB_SCR_SEVONPEND_Msk
+#elif PICO_RP2350 && PICO_ARM
+#include "RP2350.h" // cmsis, for PendSV_IRQn and SCB/SCB_SCR_SEVONPEND_Msk
+#endif
+#include "pico/aon_timer.h"
+#include "shared/timeutils/timeutils.h"
 
 extern uint8_t __StackTop, __StackBottom;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
@@ -75,13 +80,15 @@ bi_decl(bi_program_feature_group_with_flags(BINARY_INFO_TAG_MICROPYTHON,
 
 int main(int argc, char **argv) {
     // This is a tickless port, interrupts should always trigger SEV.
+    #if PICO_ARM
     SCB->SCR |= SCB_SCR_SEVONPEND_Msk;
+    #endif
 
     pendsv_init();
     soft_timer_init();
 
     // Set the MCU frequency and as a side effect the peripheral clock to 48 MHz.
-    set_sys_clock_khz(125000, false);
+    set_sys_clock_khz(SYS_CLK_KHZ, false);
 
     // Hook for setting up anything that needs to be super early in the bootup process.
     MICROPY_BOARD_STARTUP();
@@ -106,17 +113,9 @@ int main(int argc, char **argv) {
     #endif
 
     // Start and initialise the RTC
-    datetime_t t = {
-        .year = 2021,
-        .month = 1,
-        .day = 1,
-        .dotw = 4, // 0 is Monday, so 4 is Friday
-        .hour = 0,
-        .min = 0,
-        .sec = 0,
-    };
-    rtc_init();
-    rtc_set_datetime(&t);
+    struct timespec ts = { 0, 0 };
+    ts.tv_sec = timeutils_seconds_since_epoch(2021, 1, 1, 0, 0, 0);
+    aon_timer_start(&ts);
     mp_hal_time_ns_set_from_rtc();
 
     // Initialise stack extents and GC heap.
