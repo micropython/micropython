@@ -66,7 +66,13 @@ static void rgb_pulse_delay() {
     mp_hal_pin_write(LED_BLUE, 1);
 }
 
-void NANO_ESP32_enter_bootloader(void) {
+NORETURN void NANO_ESP32_enter_bootloader(size_t n_args, const void *args) {
+    mp_int_t mode;
+    if (n_args == 1 && mp_obj_get_int_maybe(*(const mp_obj_t *)args, &mode) && mode == 1) {
+        // jump to hardware bootloader (does not return)
+        machine_bootloader_rtc();
+    }
+
     if (!_recovery_active) {
         // check for valid partition scheme
         const esp_partition_t *ota_part = esp_ota_get_next_update_partition(NULL);
@@ -104,7 +110,7 @@ void NANO_ESP32_board_startup(void) {
     _recovery_marker_found = double_tap_check_match();
     if (_recovery_marker_found && !_recovery_active) {
         // double tap detected in user application, reboot to factory
-        NANO_ESP32_enter_bootloader();
+        NANO_ESP32_enter_bootloader(0, NULL);
     }
 
     // delay with mark set then proceed

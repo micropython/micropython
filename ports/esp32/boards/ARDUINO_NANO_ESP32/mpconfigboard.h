@@ -1,3 +1,5 @@
+#include <stddef.h> // for size_t
+
 #define MICROPY_HW_BOARD_NAME               "Arduino Nano ESP32"
 #define MICROPY_HW_MCU_NAME                 "ESP32S3"
 
@@ -22,8 +24,12 @@
 #define MICROPY_HW_USB_CDC_1200BPS_TOUCH    (1)
 #define MICROPY_SCHEDULER_STATIC_NODES      (1)
 
+// Custom bootloader function may fall back to the default one
+#define MICROPY_ESP32_USE_BOOTLOADER_RTC    (1)
+
 #define MICROPY_BOARD_STARTUP                           NANO_ESP32_board_startup
 void NANO_ESP32_board_startup(void);
 
-#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)     NANO_ESP32_enter_bootloader()
-void NANO_ESP32_enter_bootloader(void);
+// args is an array of mp_obj_t, but that type isn't yet defined when this file is parsed
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)     NANO_ESP32_enter_bootloader(nargs, args)
+void NANO_ESP32_enter_bootloader(size_t n_args, const void *args);
