@@ -121,7 +121,7 @@ class SerialTransport(Transport):
         return data
 
     def enter_raw_repl(self, soft_reset=True):
-        self.serial.write(b"\r\x03\x03")  # ctrl-C twice: interrupt any running program
+        self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
 
         # flush input (without relying on serial.flushInput())
         n = self.serial.inWaiting()
