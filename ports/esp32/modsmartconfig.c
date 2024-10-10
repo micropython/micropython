@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/mphal.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -15,7 +16,6 @@
 
 #if MICROPY_PY_SMARTCONFIG
 
-#include "mphalport.h"
 #include "modsmartconfig.h"
 
 static EventGroupHandle_t wifi_event_group;
