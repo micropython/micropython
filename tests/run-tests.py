@@ -824,6 +824,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output_mupy = run_micropython(pyb, args, test_file, test_file_abspath)
 
         if output_mupy == b"SKIP\n":
+            if pyb is not None and hasattr(pyb, "read_until"):
+                # Running on a target over a serial connection, and the target requested
+                # to skip the test.  It does this via a SystemExit which triggers a soft
+                # reset.  Wait for the soft reset to finish, so we don't interrupt the
+                # start-up code (eg boot.py) when preparing to run the next test.
+                pyb.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
             print("skip ", test_file)
             skipped_tests.append(test_name)
             return
