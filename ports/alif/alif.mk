@@ -119,6 +119,7 @@ SRC_C = \
 	main.c \
 	modalif.c \
 	mphalport.c \
+	mpu.c \
 	mpuart.c \
 	msc_disk.c \
 	ospi_flash.c \
