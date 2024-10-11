@@ -57,23 +57,28 @@ typedef struct _rp2_dma_ctrl_field_t {
 } rp2_dma_ctrl_field_t;
 
 static rp2_dma_ctrl_field_t rp2_dma_ctrl_fields_table[] = {
-    { MP_QSTR_enable,        0, 1, 0 },
-    { MP_QSTR_high_pri,      1, 1, 0 },
-    { MP_QSTR_size,          2, 2, 0 },
-    { MP_QSTR_inc_read,      4, 1, 0 },
-    { MP_QSTR_inc_write,     5, 1, 0 },
-    { MP_QSTR_ring_size,     6, 4, 0 },
-    { MP_QSTR_ring_sel,     10, 1, 0 },
-    { MP_QSTR_chain_to,     11, 4, 0 },
-    { MP_QSTR_treq_sel,     15, 6, 0 },
-    { MP_QSTR_irq_quiet,    21, 1, 0 },
-    { MP_QSTR_bswap,        22, 1, 0 },
-    { MP_QSTR_sniff_en,     23, 1, 0 },
-    { MP_QSTR_busy,         24, 1, 1 },
-    // bits 25 through 28 are reserved
-    { MP_QSTR_write_err,    29, 1, 0 },
-    { MP_QSTR_read_err,     30, 1, 0 },
-    { MP_QSTR_ahb_err,      31, 1, 1 },
+    { MP_QSTR_enable, DMA_CH0_CTRL_TRIG_EN_LSB, 1, 0 },
+    { MP_QSTR_high_pri, DMA_CH0_CTRL_TRIG_HIGH_PRIORITY_LSB, 1, 0 },
+    { MP_QSTR_size, DMA_CH0_CTRL_TRIG_DATA_SIZE_LSB, 2, 0 },
+    { MP_QSTR_inc_read,     DMA_CH0_CTRL_TRIG_INCR_READ_LSB, 1, 0 },
+    #if PICO_RP2350
+    { MP_QSTR_inc_read_rev,  DMA_CH0_CTRL_TRIG_INCR_READ_REV_LSB, 1, 0 },
+    #endif
+    { MP_QSTR_inc_write,    DMA_CH0_CTRL_TRIG_INCR_WRITE_LSB, 1, 0 },
+    #if PICO_RP2350
+    { MP_QSTR_inc_write_rev, DMA_CH0_CTRL_TRIG_INCR_WRITE_REV_LSB, 1, 0 },
+    #endif
+    { MP_QSTR_ring_size,    DMA_CH0_CTRL_TRIG_RING_SIZE_LSB, 4, 0 },
+    { MP_QSTR_ring_sel,     DMA_CH0_CTRL_TRIG_RING_SEL_LSB, 1, 0 },
+    { MP_QSTR_chain_to,     DMA_CH0_CTRL_TRIG_CHAIN_TO_LSB, 4, 0 },
+    { MP_QSTR_treq_sel,     DMA_CH0_CTRL_TRIG_TREQ_SEL_LSB, 6, 0 },
+    { MP_QSTR_irq_quiet,    DMA_CH0_CTRL_TRIG_IRQ_QUIET_LSB, 1, 0 },
+    { MP_QSTR_bswap,        DMA_CH0_CTRL_TRIG_BSWAP_LSB, 1, 0 },
+    { MP_QSTR_sniff_en,     DMA_CH0_CTRL_TRIG_SNIFF_EN_LSB, 1, 0 },
+    { MP_QSTR_busy,         DMA_CH0_CTRL_TRIG_BUSY_LSB, 1, 1 },
+    { MP_QSTR_write_err,    DMA_CH0_CTRL_TRIG_WRITE_ERROR_LSB, 1, 0 },
+    { MP_QSTR_read_err,     DMA_CH0_CTRL_TRIG_READ_ERROR_LSB, 1, 0 },
+    { MP_QSTR_ahb_err,      DMA_CH0_CTRL_TRIG_AHB_ERROR_LSB, 1, 1 },
 };
 
 static const uint32_t rp2_dma_ctrl_field_count = MP_ARRAY_SIZE(rp2_dma_ctrl_fields_table);
@@ -298,7 +303,12 @@ static mp_obj_t rp2_dma_active(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rp2_dma_active_obj, 1, 2, rp2_dma_active);
 
 // Default is quiet, unpaced, read and write incrementing, word transfers, enabled
-#define DEFAULT_DMA_CONFIG (1 << 21) | (0x3f << 15) | (1 << 5) | (1 << 4) | (2 << 2) | (1 << 0)
+#define DEFAULT_DMA_CONFIG (1 << DMA_CH0_CTRL_TRIG_IRQ_QUIET_LSB) | \
+    (DMA_CH0_CTRL_TRIG_TREQ_SEL_VALUE_PERMANENT << DMA_CH0_CTRL_TRIG_TREQ_SEL_LSB) | \
+    (1 << DMA_CH0_CTRL_TRIG_INCR_WRITE_LSB) | \
+    (1 << DMA_CH0_CTRL_TRIG_INCR_READ_LSB) | \
+    (2 << DMA_CH0_CTRL_TRIG_DATA_SIZE_LSB) | \
+    (1 << DMA_CH0_CTRL_TRIG_EN_LSB)
 
 // DMA.pack_ctrl(...)
 static mp_obj_t rp2_dma_pack_ctrl(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2024 Angus Gratton
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,19 @@
  * THE SOFTWARE.
  */
 
-#include "lib/oofatfs/ff.h"
-#include "pico/aon_timer.h"
+#include <time.h>
+#include "py/mpconfig.h"
 #include "shared/timeutils/timeutils.h"
 
-MP_WEAK DWORD get_fattime(void) {
-    struct timespec ts;
-    timeutils_struct_time_t tm;
-    aon_timer_get_time(&ts);
-    timeutils_seconds_since_epoch_to_struct_time(ts.tv_sec, &tm);
-    return ((tm.tm_year - 1980) << 25) | ((tm.tm_mon) << 21) | ((tm.tm_mday) << 16) | ((tm.tm_hour) << 11) | ((tm.tm_min) << 5) | (tm.tm_sec / 2);
+// This is a workaround for the issue that pico-sdk datetime.c will otherwise
+// pull in a lot of libc code for time zone support.
+//
+// Upstream issue is https://github.com/raspberrypi/pico-sdk/issues/1810
+
+struct tm *localtime_r(const time_t *__restrict time, struct tm *__restrict local_time) {
+    return gmtime_r(time, local_time);
+}
+
+time_t mktime(struct tm *__restrict tm) {
+    return timeutils_mktime(tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 }

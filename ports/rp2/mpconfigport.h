@@ -35,7 +35,16 @@
 #include "mpconfigboard.h"
 
 // Board and hardware specific configuration
+#if PICO_RP2040
 #define MICROPY_HW_MCU_NAME                     "RP2040"
+#elif PICO_RP2350 && PICO_ARM
+#define MICROPY_HW_MCU_NAME                     "RP2350"
+#elif PICO_RP2350 && PICO_RISCV
+#define MICROPY_HW_MCU_NAME                     "RP2350-RISCV"
+#else
+#error Unknown MCU
+#endif
+
 #ifndef MICROPY_HW_ENABLE_UART_REPL
 #define MICROPY_HW_ENABLE_UART_REPL             (0) // useful if there is no USB
 #endif
@@ -62,17 +71,34 @@
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 #endif
 
+#ifndef MICROPY_HW_ENABLE_PSRAM
+#define MICROPY_HW_ENABLE_PSRAM (0)
+#endif
+
 // Memory allocation policies
+#if MICROPY_HW_ENABLE_PSRAM
+#define MICROPY_GC_STACK_ENTRY_TYPE             uint32_t
+#else
 #define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
+#endif
+#ifndef MICROPY_GC_SPLIT_HEAP
+#define MICROPY_GC_SPLIT_HEAP                   (0) // whether PSRAM is added to or replaces the heap
+#endif
 #define MICROPY_ALLOC_PATH_MAX                  (128)
 #define MICROPY_QSTR_BYTES_IN_HASH              (1)
 
 // MicroPython emitters
 #define MICROPY_PERSISTENT_CODE_LOAD            (1)
+#if PICO_ARM
 #define MICROPY_EMIT_THUMB                      (1)
-#define MICROPY_EMIT_THUMB_ARMV7M               (0)
 #define MICROPY_EMIT_INLINE_THUMB               (1)
+#if PICO_RP2040
+#define MICROPY_EMIT_THUMB_ARMV7M               (0)
 #define MICROPY_EMIT_INLINE_THUMB_FLOAT         (0)
+#endif
+#elif PICO_RISCV
+#define MICROPY_EMIT_RV32                       (1)
+#endif
 
 // Optimisations
 #define MICROPY_OPT_COMPUTED_GOTO               (1)

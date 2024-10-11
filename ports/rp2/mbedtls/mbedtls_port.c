@@ -29,9 +29,9 @@
 
 #include "mbedtls_config_port.h"
 
-#include "hardware/rtc.h"
 #include "shared/timeutils/timeutils.h"
 #include "mbedtls/platform_time.h"
+#include "pico/aon_timer.h"
 
 extern uint8_t rosc_random_u8(size_t cycles);
 
@@ -44,9 +44,9 @@ int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t 
 }
 
 time_t rp2_rtctime_seconds(time_t *timer) {
-    datetime_t t;
-    rtc_get_datetime(&t);
-    return timeutils_seconds_since_epoch(t.year, t.month, t.day, t.hour, t.min, t.sec);
+    struct timespec ts;
+    aon_timer_get_time(&ts);
+    return ts.tv_sec;
 }
 
 mbedtls_ms_time_t mbedtls_ms_time(void) {
