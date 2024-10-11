@@ -390,6 +390,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     if (n_args > 0 || kw_args->used > 0 || self->baudrate == 0) {
         if (self->baudrate == 0) {
             self->baudrate = DEFAULT_UART_BAUDRATE;
+            self->timeout_char = 0;
         }
 
         // Make sure timeout_char is at least as long as a whole character (13 bits to be safe).
