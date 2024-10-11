@@ -1095,7 +1095,9 @@ the last matching regex is used:
             elif args.target in ("renesas-ra"):
                 test_dirs += ("float", "inlineasm", "ports/renesas-ra")
             elif args.target == "rp2":
-                test_dirs += ("float", "stress", "inlineasm", "thread", "ports/rp2")
+                test_dirs += ("float", "stress", "thread", "ports/rp2")
+                if "arm" in args.mpy_cross_flags:
+                    test_dirs += ("inlineasm",)
             elif args.target == "esp32":
                 test_dirs += ("float", "stress", "thread")
             elif args.target in ("esp8266", "minimal", "nrf"):
