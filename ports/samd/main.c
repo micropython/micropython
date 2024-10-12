@@ -35,9 +35,12 @@
 #include "shared/runtime/softtimer.h"
 #include "shared/tinyusb/mp_usbd.h"
 #include "clock_config.h"
+#include "dma_manager.h"
+#include "tc_manager.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
 extern void adc_deinit_all(void);
+extern void dac_deinit_all(void);
 extern void pin_irq_deinit_all(void);
 extern void pwm_deinit_all(void);
 extern void sercom_deinit_all(void);
@@ -87,8 +90,17 @@ void samd_main(void) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        #if MICROPY_HW_DMA_MANAGER
+        dma_deinit();
+        #endif
+        #if MICROPY_HW_TC_MANAGER
+        tc_deinit();
+        #endif
         #if MICROPY_PY_MACHINE_ADC
         adc_deinit_all();
+        #endif
+        #if MICROPY_PY_MACHINE_DAC
+        dac_deinit_all();
         #endif
         pin_irq_deinit_all();
         #if MICROPY_PY_MACHINE_PWM
