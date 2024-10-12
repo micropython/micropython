@@ -105,15 +105,44 @@ add_custom_command(
     COMMAND_EXPAND_LISTS
 )
 
-add_custom_command(
-    OUTPUT ${MICROPY_QSTRDEFS_PREPROCESSED}
-    COMMAND cat ${MICROPY_QSTRDEFS_PY} ${MICROPY_QSTRDEFS_PORT} ${MICROPY_QSTRDEFS_COLLECTED} | sed "s/^Q(.*)/\"&\"/" | ${CMAKE_C_COMPILER} -E ${MICROPY_CPP_FLAGS} - | sed "s/^\\\"\\(Q(.*)\\)\\\"/\\1/" > ${MICROPY_QSTRDEFS_PREPROCESSED}
-    DEPENDS ${MICROPY_QSTRDEFS_PY}
-        ${MICROPY_QSTRDEFS_PORT}
-        ${MICROPY_QSTRDEFS_COLLECTED}
-    VERBATIM
-    COMMAND_EXPAND_LISTS
-)
+set(MP_QSTRDEFS_PREPROCESS_SED0 "s/^Q(.*)/\"&\"/")
+set(MP_QSTRDEFS_PREPROCESS_SED1 "s/^\\\"\\(Q(.*)\\)\\\"/\\1/")
+
+if(CMAKE_HOST_WIN32)
+    # Escape " with additional ".
+    string(REPLACE "\"" "\"\"" MP_QSTRDEFS_PREPROCESS_SED0 "${MP_QSTRDEFS_PREPROCESS_SED0}")
+    # Piped commands fails when forward slash is used with executable.
+    # For example: `echo a | C:/gcc/bin/gcc.exe` fails with the following error:
+    # "'C:' is not recognized as an internal or external command, operable program
+    #  or batch file."
+    # Backslash usage avoids the issue.
+    string(REPLACE "/" "\\\\" CMAKE_C_COMPILER "${CMAKE_C_COMPILER}")
+    # Escape `<` and `>` in the -DMP_CONFIGFILE
+    # otherwise generated command is invalid for CMD
+    set(MP_CPP_FLAGS_ESCAPED ${MICROPY_CPP_FLAGS})
+    string(REGEX MATCH "-DMP_CONFIGFILE=<(.+h)>" MP_CONFIGFILE_DEF "${MP_CPP_FLAGS_ESCAPED}")
+    # provide input as a string to preserve ';'
+    string(REPLACE "-DMP_CONFIGFILE=<${CMAKE_MATCH_1}>" "-DMP_CONFIGFILE=^<${CMAKE_MATCH_1}^>" MP_CPP_FLAGS_ESCAPED "${MP_CPP_FLAGS_ESCAPED}")
+    # not VERBATIM mode is used to unwrap \" within SED commands
+    add_custom_command(
+        OUTPUT ${MICROPY_QSTRDEFS_PREPROCESSED}
+        COMMAND cat ${MICROPY_QSTRDEFS_PY} ${MICROPY_QSTRDEFS_PORT} ${MICROPY_QSTRDEFS_COLLECTED} | sed "\"${MP_QSTRDEFS_PREPROCESS_SED0}\"" | ${CMAKE_C_COMPILER} -E ${MP_CPP_FLAGS_ESCAPED} - | sed "\"${MP_QSTRDEFS_PREPROCESS_SED1}\"" > ${MICROPY_QSTRDEFS_PREPROCESSED}
+        DEPENDS ${MICROPY_QSTRDEFS_PY}
+            ${MICROPY_QSTRDEFS_PORT}
+            ${MICROPY_QSTRDEFS_COLLECTED}
+        COMMAND_EXPAND_LISTS
+    )
+else()
+    add_custom_command(
+        OUTPUT ${MICROPY_QSTRDEFS_PREPROCESSED}
+        COMMAND cat ${MICROPY_QSTRDEFS_PY} ${MICROPY_QSTRDEFS_PORT} ${MICROPY_QSTRDEFS_COLLECTED} | sed ${MP_QSTRDEFS_PREPROCESS_SED0} | ${CMAKE_C_COMPILER} -E ${MICROPY_CPP_FLAGS} - | sed ${MP_QSTRDEFS_PREPROCESS_SED1} > ${MICROPY_QSTRDEFS_PREPROCESSED}
+        DEPENDS ${MICROPY_QSTRDEFS_PY}
+            ${MICROPY_QSTRDEFS_PORT}
+            ${MICROPY_QSTRDEFS_COLLECTED}
+        VERBATIM
+        COMMAND_EXPAND_LISTS
+    )
+endif()
 
 add_custom_command(
     OUTPUT ${MICROPY_QSTRDEFS_GENERATED}
