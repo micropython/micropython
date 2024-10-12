@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Damien P. George
+ * Copyright (c) 2018-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_SAMD_MODMACHINE_H
-#define MICROPY_INCLUDED_SAMD_MODMACHINE_H
+#ifndef MICROPY_INCLUDED_MBEDTLS_CONFIG_H
+#define MICROPY_INCLUDED_MBEDTLS_CONFIG_H
 
-#include "py/obj.h"
-#include "shared/timeutils/timeutils.h"
+// Time hook.
+#include <time.h>
+extern time_t samd_rtctime_seconds(time_t *timer);
+#define MBEDTLS_PLATFORM_TIME_MACRO samd_rtctime_seconds
+#define MBEDTLS_PLATFORM_MS_TIME_ALT mbedtls_ms_time
 
-#if MICROPY_PY_MACHINE_DAC
-extern const mp_obj_type_t machine_dac_type;
-#endif
+// Set MicroPython-specific options.
+#define MICROPY_MBEDTLS_CONFIG_BARE_METAL (1)
 
-void rtc_gettime(timeutils_struct_time_t *tm);
-void machine_uart_set_baudrate(mp_obj_t self, uint32_t baudrate);
+// Include common mbedtls configuration.
+#include "extmod/mbedtls/mbedtls_config_common.h"
 
-#endif // MICROPY_INCLUDED_SAMD_MODMACHINE_H
+#endif /* MICROPY_INCLUDED_MBEDTLS_CONFIG_H */
