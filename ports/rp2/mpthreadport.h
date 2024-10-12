@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_RP2_MPTHREADPORT_H
 #define MICROPY_INCLUDED_RP2_MPTHREADPORT_H
 
+#include <stdint.h>
 #include "pico/mutex.h"
 
 typedef struct mutex mp_thread_mutex_t;
@@ -52,8 +53,8 @@ static inline void mp_thread_mutex_init(mp_thread_mutex_t *m) {
     mutex_init(m);
 }
 
-static inline int mp_thread_mutex_lock(mp_thread_mutex_t *m, int wait) {
-    if (wait) {
+static inline int mp_thread_mutex_lock(mp_thread_mutex_t *m, int64_t timeout) {
+    if (timeout < 0) {
         mutex_enter_blocking(m);
         return 1;
     } else {
