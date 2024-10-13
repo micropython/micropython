@@ -86,10 +86,6 @@ int main(int argc, char **argv) {
     SCB->SCR |= SCB_SCR_SEVONPEND_Msk;
     #endif
 
-    #if defined(MICROPY_HW_PSRAM_CS_PIN) && MICROPY_HW_ENABLE_PSRAM
-    size_t psram_size = psram_init(MICROPY_HW_PSRAM_CS_PIN);
-    #endif
-
     pendsv_init();
     soft_timer_init();
 
@@ -101,6 +97,10 @@ int main(int argc, char **argv) {
 
     // Set the flash divisor to an appropriate value
     rp2_flash_set_timing();
+
+    #if defined(MICROPY_HW_PSRAM_CS_PIN) && MICROPY_HW_ENABLE_PSRAM
+    size_t psram_size = psram_init(MICROPY_HW_PSRAM_CS_PIN);
+    #endif
 
     #if MICROPY_HW_ENABLE_UART_REPL
     bi_decl(bi_program_feature("UART REPL"))

@@ -9,8 +9,6 @@
 size_t __no_inline_not_in_flash_func(psram_detect)() {
     int psram_size = 0;
 
-    uint32_t intr_stash = save_and_disable_interrupts();
-
     // Try and read the PSRAM ID via direct_csr.
     qmi_hw->direct_csr = 30 << QMI_DIRECT_CSR_CLKDIV_LSB | QMI_DIRECT_CSR_EN_BITS;
 
@@ -76,12 +74,13 @@ size_t __no_inline_not_in_flash_func(psram_detect)() {
         }
     }
 
-    restore_interrupts(intr_stash);
     return psram_size;
 }
 
 size_t __no_inline_not_in_flash_func(psram_init)(uint cs_pin) {
     gpio_set_function(cs_pin, GPIO_FUNC_XIP_CS1);
+
+    uint32_t intr_stash = save_and_disable_interrupts();
 
     size_t psram_size = psram_detect();
 
@@ -161,6 +160,8 @@ size_t __no_inline_not_in_flash_func(psram_init)(uint cs_pin) {
 
     // Enable writes to PSRAM
     hw_set_bits(&xip_ctrl_hw->ctrl, XIP_CTRL_WRITABLE_M1_BITS);
+
+    restore_interrupts(intr_stash);
 
     return psram_size;
 }
