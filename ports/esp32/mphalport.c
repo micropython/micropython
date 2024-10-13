@@ -109,12 +109,6 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
     #if MICROPY_HW_ESP_USB_SERIAL_JTAG
     usb_serial_jtag_poll_rx();
-    if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
-        ret |= MP_STREAM_POLL_RD;
-    }
-    if (poll_flags & MP_STREAM_POLL_WR) {
-        ret |= MP_STREAM_POLL_WR;
-    }
     #endif
     #if MICROPY_HW_USB_CDC
     ret |= mp_usbd_cdc_poll_interfaces(poll_flags);
@@ -122,6 +116,13 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     #if MICROPY_PY_OS_DUPTERM
     ret |= mp_os_dupterm_poll(poll_flags);
     #endif
+    // Check ringbuffer directly for uart and usj.
+    if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
+        ret |= MP_STREAM_POLL_RD;
+    }
+    if (poll_flags & MP_STREAM_POLL_WR) {
+        ret |= MP_STREAM_POLL_WR;
+    }
     return ret;
 }
 
