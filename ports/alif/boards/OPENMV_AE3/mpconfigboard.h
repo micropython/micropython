@@ -64,3 +64,10 @@ extern void board_exit_standby(void);
 // Murata 1YN configuration
 #define CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE     "lib/cyw43-driver/firmware/w43439_sdio_1yn_7_95_59_combined.h"
 #define CYW43_WIFI_NVRAM_INCLUDE_FILE           "lib/cyw43-driver/firmware/wifi_nvram_1yn.h"
+#define CYW43_BT_FIRMWARE_INCLUDE_FILE          "lib/cyw43-driver/firmware/cyw43_btfw_1yn.h"
+#define CYW43_BT_UART_BAUDRATE_DOWNLOAD_FIRMWARE (2000000)
+#define CYW43_BT_UART_BAUDRATE_ACTIVE_USE       (2000000)
+
+// Bluetooth config
+#define MICROPY_HW_BLE_UART_ID                  (0)
+#define MICROPY_HW_BLE_UART_BAUDRATE            (115200)
