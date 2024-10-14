@@ -47,6 +47,7 @@ INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(MCU_CORE)/include/
 INC += -I$(ALIF_DFP_REL_HERE)/Device/$(MCU_SERIES)/$(MCU_VARIANT)/
 INC += -I$(TOP)/lib/tinyusb/src
 INC += -Itinyusb_port
+INC += -Ilwip_inc
 
 GEN_PIN_MKPINS = mcu/make-pins.py
 GEN_PIN_PREFIX = mcu/pins_prefix.c
@@ -122,6 +123,7 @@ SRC_C = \
 	main.c \
 	modalif.c \
 	mphalport.c \
+	mpnetworkport.c \
 	mpu.c \
 	mpuart.c \
 	msc_disk.c \
@@ -134,6 +136,10 @@ SRC_C = \
 	usbd.c \
 	vfs_rom_ioctl.c \
 	$(wildcard $(BOARD_DIR)/*.c)
+
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+SRC_C += mbedtls/mbedtls_port.c
+endif
 
 ifeq ($(MICROPY_FLOAT_IMPL),float)
 LIBM_SRC_C += $(SRC_LIB_LIBM_C)
@@ -148,7 +154,6 @@ endif
 SHARED_SRC_C += $(addprefix shared/,\
 	libc/string0.c \
 	netutils/dhcpserver.c \
-	netutils/netutils.c \
 	netutils/trace.c \
 	readline/readline.c \
 	runtime/gchelper_native.c \
