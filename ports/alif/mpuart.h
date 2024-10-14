@@ -26,7 +26,20 @@
 #ifndef MICROPY_INCLUDED_ALIF2_UART_H
 #define MICROPY_INCLUDED_ALIF2_UART_H
 
-void mp_uart_init(void);
-void mp_uart_write_strn(const char *str, size_t len);
+#include "py/ringbuf.h"
+
+void mp_uart_init(unsigned int uart_id, uint32_t baudrate, mp_hal_pin_obj_t tx, mp_hal_pin_obj_t rx, ringbuf_t *rx_ringbuf);
+void mp_uart_deinit(unsigned int uart_id);
+
+void mp_uart_set_irq_callback(unsigned int uart_id, void (*callback)(void));
+void mp_uart_set_flow(unsigned int uart_id, mp_hal_pin_obj_t rts, mp_hal_pin_obj_t cts);
+void mp_uart_set_baudrate(unsigned int uart_id, uint32_t baudrate);
+
+size_t mp_uart_rx_any(unsigned int uart_id);
+int mp_uart_rx_char(unsigned int uart_id);
+void mp_uart_tx_data(unsigned int uart_id, const uint8_t *src, size_t len);
+
+void mp_uart_init_repl(void);
+void mp_uart_write_strn_repl(const char *str, size_t len);
 
 #endif // MICROPY_INCLUDED_ALIF2_UART_H
