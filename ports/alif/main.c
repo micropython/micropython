@@ -66,7 +66,7 @@ int main(void) {
     MICROPY_BOARD_EARLY_INIT();
 
     #if MICROPY_HW_ENABLE_UART_REPL
-    mp_uart_init();
+    mp_uart_init_repl();
     #endif
     #if MICROPY_HW_ENABLE_OSPI
     if (ospi_flash_init() != 0) {

@@ -91,7 +91,7 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     #endif
 
     #if MICROPY_HW_ENABLE_UART_REPL
-    mp_uart_write_strn(str, len);
+    mp_uart_write_strn_repl(str, len);
     did_write = true;
     #endif
 
