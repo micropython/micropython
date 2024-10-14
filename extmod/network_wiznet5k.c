@@ -58,6 +58,7 @@
 #include "shared/netutils/netutils.h"
 #include "lib/wiznet5k/Ethernet/wizchip_conf.h"
 #include "lib/wiznet5k/Ethernet/socket.h"
+#include "lwip/apps/mdns.h"
 #include "lwip/err.h"
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
@@ -863,6 +864,10 @@ static mp_obj_t wiznet5k_active(size_t n_args, const mp_obj_t *args) {
                 // seems we need a small delay after init
                 mp_hal_delay_ms(250);
 
+                #if LWIP_MDNS_RESPONDER
+                mdns_resp_restart(&self->netif);
+                mdns_resp_add_netif(&self->netif, mod_network_hostname_data, 300);
+                #endif
             }
         } else {
             #if WIZNET5K_WITH_LWIP_STACK
