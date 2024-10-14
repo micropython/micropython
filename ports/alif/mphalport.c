@@ -38,6 +38,7 @@
 #include "tusb.h"
 #include "mpuart.h"
 #include "pendsv.h"
+#include "se_services.h"
 #include "system_tick.h"
 
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
@@ -237,3 +238,32 @@ void soft_timer_schedule_at_ms(uint32_t ticks_ms) {
 }
 
 #endif
+
+/*******************************************************************************/
+// MAC address
+
+// Generate a random locally administered MAC address (LAA)
+void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]) {
+    uint8_t id[8];
+    se_services_get_unique_id(id);
+    buf[0] = 0x02; // LAA range
+    buf[1] = id[4];
+    buf[2] = id[3];
+    buf[3] = id[2];
+    buf[4] = id[1];
+    buf[5] = (id[0] << 2) | idx;
+}
+
+// A board can override this if needed
+MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
+    mp_hal_generate_laa_mac(idx, buf);
+}
+
+void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
+    static const char hexchr[16] = "0123456789ABCDEF";
+    uint8_t mac[6];
+    mp_hal_get_mac(idx, mac);
+    for (; chr_len; ++chr_off, --chr_len) {
+        *dest++ = hexchr[mac[chr_off >> 1] >> (4 * (1 - (chr_off & 1))) & 0xf];
+    }
+}

@@ -39,6 +39,11 @@
 #define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
 #define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
 
+// Prevent the "lwIP task" from running.
+#define MICROPY_PY_LWIP_ENTER   MICROPY_PY_PENDSV_ENTER
+#define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
+#define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
+
 // Port level Wait-for-Event macro
 //
 // Do not use this macro directly, include py/runtime.h and
@@ -202,3 +207,17 @@ void mp_hal_pin_config(const machine_pin_obj_t *pin, uint32_t mode,
 
 // Include all the pin definitions.
 #include "genhdr/pins_board.h"
+
+/******************************************************************************/
+// Other HAL functions.
+
+enum {
+    MP_HAL_MAC_WLAN0 = 0,
+    MP_HAL_MAC_WLAN1,
+    MP_HAL_MAC_BDADDR,
+    MP_HAL_MAC_ETH0,
+};
+
+void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
+void mp_hal_get_mac(int idx, uint8_t buf[6]);
+void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest);

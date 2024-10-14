@@ -30,6 +30,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/stackctrl.h"
+#include "extmod/modnetwork.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
@@ -41,6 +42,11 @@
 #include "pendsv.h"
 #include "se_services.h"
 #include "system_tick.h"
+
+#if MICROPY_PY_LWIP
+#include "lwip/init.h"
+#include "lwip/apps/mdns.h"
+#endif
 
 extern uint8_t __StackTop, __StackLimit;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
@@ -82,6 +88,17 @@ int main(void) {
     mp_stack_set_top(&__StackTop);
     mp_stack_set_limit(&__StackTop - &__StackLimit - 1024);
     gc_init(&__GcHeapStart, &__GcHeapEnd);
+
+    #if MICROPY_PY_LWIP
+    // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
+    // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
+    // So for now we only init the lwIP stack once on power-up.
+    lwip_init();
+    #if LWIP_MDNS_RESPONDER
+    mdns_resp_init();
+    #endif
+    mod_network_lwip_init();
+    #endif
 
     for (;;) {
         // Initialise MicroPython runtime.
