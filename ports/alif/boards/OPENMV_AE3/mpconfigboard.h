@@ -9,7 +9,6 @@ typedef intptr_t mp_off_t;
 #define MICROPY_HW_USB_MSC          (CORE_M55_HP)
 #define MICROPY_HW_ENABLE_HW_I2C    (1)
 #define MICROPY_HW_ENABLE_OSPI      (CORE_M55_HP)
-#define MICROPY_HW_ENABLE_UART_REPL (0)
 
 // ROMFS partitions
 #define MICROPY_HW_ROMFS_ENABLE_PART0 (1)

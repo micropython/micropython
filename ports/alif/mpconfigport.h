@@ -73,7 +73,7 @@
 #define MICROPY_HW_USB_PID                      (0x9802) // interface has CDC only
 #endif
 #ifndef MICROPY_HW_ENABLE_UART_REPL
-#define MICROPY_HW_ENABLE_UART_REPL             (CORE_M55_HP) // useful if there is no USB
+#define MICROPY_HW_ENABLE_UART_REPL             (0)
 #endif
 #define MICROPY_HW_FLASH_BLOCK_SIZE_BYTES       (4096)
 
