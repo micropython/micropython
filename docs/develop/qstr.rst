@@ -60,8 +60,8 @@ Processing happens in the following stages:
    means that ``qstr.i.last`` will only contain data from files that have
    changed since the last compile.
 
-2. ``qstr.split`` is an empty file created after running ``makeqstrdefs.py split``
-   on qstr.i.last. It's just used as a dependency to indicate that the step ran.
+2. ``qstr.split`` is a file created after running ``makeqstrdefs.py split``
+   on qstr.i.last. It's used as a dependency to indicate that the step ran.
    This script outputs one file per input C file,  ``genhdr/qstr/...file.c.qstr``,
    which contains only the matched QSTRs. Each QSTR is printed as ``Q(Foo)``.
    This step is necessary to combine the existing files with the new data
