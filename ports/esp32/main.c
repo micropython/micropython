@@ -53,7 +53,7 @@
 #include "shared/runtime/pyexec.h"
 #include "shared/timeutils/timeutils.h"
 #include "shared/tinyusb/mp_usbd.h"
-#include "mbedtls/platform_time.h"
+#include "mbedtls/platform.h"
 
 #include "uart.h"
 #include "usb.h"
@@ -95,6 +95,25 @@ time_t platform_mbedtls_time(time_t *timer) {
     return tv.tv_sec + TIMEUTILS_SECONDS_1970_TO_2000;
 }
 
+// Custom mbedTLS allocator function
+static void *tls_calloc(size_t c, size_t len) {
+    // Calling plain calloc() allows mbedTLS to allocate from PSRAM or internal memory
+    //
+    // (The ESP-IDF default is internal-only, partly for physical security to prevent
+    // possible information leakage from unencrypted PSRAM contents on the original
+    // ESP32 - no PSRAM encryption on that chip. MicroPython doesn't support flash
+    // encryption and is already storing the Python heap in PSRAM so this isn't a
+    // significant factor in overall physical security.)
+    void *p = calloc(c, len);
+    if (p == NULL) {
+        // A Python object (i.e. SSL socket) may be holding references
+        // to some ESP-IDF buffers which will be freed after collection
+        gc_collect();
+        p = calloc(c, len);
+    }
+    return p;
+}
+
 void mp_task(void *pvParameter) {
     volatile uint32_t sp = (uint32_t)esp_cpu_get_sp();
     #if MICROPY_PY_THREAD
@@ -108,6 +127,7 @@ void mp_task(void *pvParameter) {
     #if MICROPY_HW_ENABLE_UART_REPL
     uart_stdout_init();
     #endif
+    mbedtls_platform_set_calloc_free(&tls_calloc, &free);
     machine_init();
 
     // Configure time function, for mbedtls certificate time validation.
