@@ -37,6 +37,7 @@
 #define MICROPY_HW_USB_CDC_DTR_RTS_BOOTLOADER (0)
 #endif
 
+void machine_usbd_cdc_init0(void);
 // extern const mp_obj_type_t pyb_usb_vcp_type;
 extern const mp_obj_type_t machine_usbd_cdc_type;
 // extern void machine_usbd_cdc_attach_to_repl(const machine_usbd_cdc_obj_t *self, bool attached);
@@ -45,6 +46,6 @@ extern const mp_obj_type_t machine_usbd_cdc_type;
 uintptr_t mp_usbd_cdc_poll_interfaces(uintptr_t poll_flags);
 // void tud_cdc_rx_cb(uint8_t itf);
 mp_uint_t mp_usbd_cdc_tx_strn(const char *str, mp_uint_t len);
-mp_uint_t mp_usbd_cdc_rx_strn(const char *buf, mp_uint_t len);
+mp_uint_t mp_usbd_cdc_rx_strn(char *buf, mp_uint_t len);
 
 #endif // MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_CDC_H

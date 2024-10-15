@@ -53,6 +53,7 @@ void mp_os_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
     if (nlr_push(&nlr) == 0) {
         mp_stream_close(term);
         const mp_stream_p_t *stream_p = mp_get_stream_raise(term, MP_STREAM_OP_IOCTL);
+        int errcode = 0;
         stream_p->ioctl(term, MP_STREAM_REPL_ATTACHED, 0, &errcode);
         nlr_pop();
     } else {

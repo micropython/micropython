@@ -28,6 +28,7 @@
 #include "py/mphal.h"
 #include "py/stream.h"
 #include "extmod/modmachine.h"
+#include "shared/runtime/mpirq.h"
 
 #include "mp_usbd.h"
 #include "mp_usbd_cdc.h"
@@ -38,6 +39,12 @@ static uint8_t cdc_itf_pending; // keep track of cdc interfaces which need atten
 static int8_t cdc_connected_flush_delay = 0;
 static void usbd_cdc_rx_event_callback(void);
 
+// Constants for USBD_CDC.irq trigger.
+#define USBD_CDC_IRQ_RX (1)
+
+#ifndef UNUSED
+#define UNUSED(X) (void)X      /* To avoid gcc/g++ warnings */
+#endif
 
 uintptr_t mp_usbd_cdc_poll_interfaces(uintptr_t poll_flags) {
     uintptr_t ret = 0;
@@ -70,12 +77,12 @@ uintptr_t mp_usbd_cdc_poll_interfaces(uintptr_t poll_flags) {
     return ret;
 }
 
-mp_uint_t mp_usbd_cdc_rx_strn(const char *buf, mp_uint_t len) {
+mp_uint_t mp_usbd_cdc_rx_strn(char *buf, mp_uint_t len) {
     return tud_cdc_read(buf, len);
 }
 
 void tud_cdc_rx_cb(uint8_t itf) {
-    #if 0
+    #if !MICROPY_PY_OS_DUPTERM
     // consume pending USB data immediately to free usb buffer and keep the endpoint from stalling.
     // in case the ringbuffer is full, mark the CDC interface that need attention later on for polling
     cdc_itf_pending &= ~(1 << itf);
@@ -229,28 +236,30 @@ const machine_usbd_cdc_obj_t machine_usbd_cdc_obj = {{&machine_usbd_cdc_type}};/
 
 
 static bool machine_usbd_cdc_irq_scheduled;// [MICROPY_HW_USB_CDC_NUM];
+static void machine_usbd_cdc_attach_to_repl(const machine_usbd_cdc_obj_t *self, bool attached);
 
-static void machine_usbd_cdc_init0(void) {
+void machine_usbd_cdc_init0(void) {
     // for (size_t i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
     MP_STATE_PORT(machine_usbd_cdc_irq) = mp_const_none;
     machine_usbd_cdc_irq_scheduled = false;
     // }
 
+    #if MICROPY_PY_OS_DUPTERM
     // #if MICROPY_HW_USB_CDC_REPL
     // Activate USB_CDC(0) on dupterm slot 1 for the REPL
     // todo auto detect appropriate slot
     MP_STATE_VM(dupterm_objs[1]) = MP_OBJ_FROM_PTR(&machine_usbd_cdc_obj);
-    usb_vcp_attach_to_repl(&machine_usbd_cdc_obj, true);
-    // #endif
+    machine_usbd_cdc_attach_to_repl(&machine_usbd_cdc_obj, true);
+    #endif
 
 }
 
 static mp_obj_t machine_usbd_cdc_irq_run(mp_obj_t self_in) {
-    machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    // machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // uint8_t idx = self->cdc_idx;
     mp_obj_t callback = MP_STATE_PORT(machine_usbd_cdc_irq);
     machine_usbd_cdc_irq_scheduled = false;
-    if (callback != mp_const_none && usbd_cdc_rx_num(self)) {
+    if (callback != mp_const_none && tud_cdc_available()) {
         mp_call_function_1(callback, self_in);
     }
     return mp_const_none;
@@ -267,11 +276,12 @@ void usbd_cdc_rx_event_callback(void) {
 }
 
 static void machine_usbd_cdc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    int id = ((machine_usbd_cdc_obj_t *)MP_OBJ_TO_PTR(self_in))->cdc_itf->cdc_idx;
-    mp_printf(print, "USBD_CDC(%u)", id);
+    // int id = ((machine_usbd_cdc_obj_t *)MP_OBJ_TO_PTR(self_in))->cdc_itf->cdc_idx;
+    mp_printf(print, "USBD_CDC()");
 }
 
-void machine_usbd_cdc_attach_to_repl(const machine_usbd_cdc_obj_t *self, bool attached) {
+static void machine_usbd_cdc_attach_to_repl(const machine_usbd_cdc_obj_t *self, bool attached) {
+    UNUSED(self);
     // self->attached_to_repl = attached;
     if (attached) {
         // Default behavior is non-blocking when attached to repl
@@ -321,7 +331,7 @@ static mp_obj_t machine_usbd_cdc_init(size_t n_args, const mp_obj_t *pos_args, m
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    // machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // flow control
@@ -349,7 +359,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_usbd_cdc_isconnected_obj, machine_usbd_
 /// Return `True` if any characters waiting, else `False`.
 static mp_obj_t machine_usbd_cdc_any(mp_obj_t self_in) {
     UNUSED(self_in);
-    if (ringbuf_peek(&stdin_ringbuf) != -1) {
+    if (tud_cdc_available()) {
         return mp_const_true;
     } else {
         return mp_const_false;
@@ -429,7 +439,7 @@ static mp_obj_t machine_usbd_cdc_irq(size_t n_args, const mp_obj_t *pos_args, mp
         { MP_QSTR_trigger, MP_ARG_INT, {.u_int = USBD_CDC_IRQ_RX} },
         { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
     };
-    machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    // machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -480,16 +490,17 @@ static const mp_rom_map_elem_t machine_usbd_cdc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&mp_stream___exit___obj) },
 
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(USBD_CDC_FLOWCONTROL_RTS) },
-    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(USBD_CDC_FLOWCONTROL_CTS) },
+    // { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(USBD_CDC_FLOWCONTROL_RTS) },
+    // { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(USBD_CDC_FLOWCONTROL_CTS) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RX), MP_ROM_INT(USBD_CDC_IRQ_RX) },
 };
 
 static MP_DEFINE_CONST_DICT(machine_usbd_cdc_locals_dict, machine_usbd_cdc_locals_dict_table);
 
 static mp_uint_t machine_usbd_cdc_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
-    machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    int ret = usbd_cdc_rx(self, (byte *)buf, size, 0);
+    UNUSED(self_in);
+    // machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    int ret = mp_usbd_cdc_rx_strn((char *)buf, size);
     if (ret == 0) {
         // return EAGAIN error to indicate non-blocking
         *errcode = MP_EAGAIN;
@@ -499,7 +510,7 @@ static mp_uint_t machine_usbd_cdc_read(mp_obj_t self_in, void *buf, mp_uint_t si
 }
 
 static mp_uint_t machine_usbd_cdc_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
-    machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    UNUSED(self_in);
     int ret = mp_usbd_cdc_tx_strn((const char *)buf, size);
     if (ret == 0) {
         // return EAGAIN error to indicate non-blocking
@@ -514,17 +525,11 @@ static mp_uint_t machine_usbd_cdc_ioctl(mp_obj_t self_in, mp_uint_t request, uin
     machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (request == MP_STREAM_POLL) {
         uintptr_t flags = arg;
-        ret = 0;
-        if ((flags & MP_STREAM_POLL_RD) && usbd_cdc_rx_num(self) > 0) {
-            ret |= MP_STREAM_POLL_RD;
-        }
-        if ((flags & MP_STREAM_POLL_WR) && usbd_cdc_tx_half_empty(self)) {
-            ret |= MP_STREAM_POLL_WR;
-        }
+        ret = mp_usbd_cdc_poll_interfaces(flags);
     } else if (request == MP_STREAM_CLOSE) {
         ret = 0;
     } else if (request == MP_STREAM_REPL_ATTACHED) {
-        machine_usbd_cdc_attach_to_repl(arg);
+        machine_usbd_cdc_attach_to_repl(self, arg);
         ret = 0;
     } else {
         *errcode = MP_EINVAL;

@@ -32,6 +32,10 @@
 #include "extmod/modmachine.h"
 #include "shared/runtime/pyexec.h"
 
+#if MICROPY_HW_USB_CDC
+#include "shared/tinyusb/mp_usbd_cdc.h"
+#endif
+
 #if MICROPY_PY_MACHINE_DHT_READINTO
 #include "drivers/dht/dht.h"
 #endif
