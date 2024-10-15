@@ -16,6 +16,12 @@ BUILD ?= build-$(BOARD)
 # that can be built with or without mboot.
 USE_MBOOT ?= 1
 
+# The string in MBOOT_VER will be stored in the final MBOOT_VER_LEN bytes of mboot flash
+# defaults to git version, but may be useful to include configuration info in this
+# e.g. filesystem support. Can make this region smaller by reducing MBOOT_VER_LEN
+MBOOT_VER ?= mboot-upy-$(shell git describe --dirty)
+MBOOT_VER_LEN ?= 64
+
 # Set MBOOT_ENABLE_PACKING to 1 to enable DFU packing with encryption and signing.
 # Ensure the MBOOT_PACK_xxx values match stm32/Makefile, to build matching application firmware.
 MBOOT_ENABLE_PACKING ?= 0
@@ -78,6 +84,7 @@ CFLAGS += -DBUILDING_MBOOT=$(BUILDING_MBOOT)
 CFLAGS += -DMICROPY_HW_STM32WB_FLASH_SYNCRONISATION=0
 CFLAGS += -DUSBD_ENABLE_VENDOR_DEVICE_REQUESTS=1
 CFLAGS += -DBOOTLOADER_DFU_USB_VID=$(BOOTLOADER_DFU_USB_VID) -DBOOTLOADER_DFU_USB_PID=$(BOOTLOADER_DFU_USB_PID)
+CFLAGS += -DMBOOT_VER=\"$(MBOOT_VER)\"
 
 MBOOT_LD_FILES ?= stm32_memory.ld stm32_sections.ld
 LDFLAGS += -nostdlib -L . $(addprefix -T,$(MBOOT_LD_FILES)) -Map=$(@:.elf=.map) --cref
@@ -121,6 +128,7 @@ SRC_C += \
 	vfs_fat.c \
 	vfs_lfs.c \
 	vfs_raw.c \
+	ver.c \
 	drivers/bus/softspi.c \
 	drivers/bus/softqspi.c \
 	drivers/memory/spiflash.c \
@@ -206,7 +214,7 @@ deploy-stlink: $(BUILD)/firmware.dfu
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data -j .mboot_ver_data $^ $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(DFU) -b $(MBOOT_TEXT0_ADDR):$(BUILD)/firmware.bin $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
@@ -215,7 +223,7 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) --defsym mboot_ver_len=$(MBOOT_VER_LEN) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 #########################################
