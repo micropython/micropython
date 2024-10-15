@@ -76,6 +76,10 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     nlr_buf_t nlr;
     nlr.ret_val = NULL;
     if (nlr_push(&nlr) == 0) {
+        #if MICROPY_PYEXEC_ENABLE_VM_ABORT
+        nlr_set_abort(&nlr);
+        #endif
+
         mp_obj_t module_fun;
         #if MICROPY_MODULE_FROZEN_MPY
         if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
@@ -120,7 +124,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         mp_hal_set_interrupt_char(-1); // disable interrupt
         mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
         nlr_pop();
-        ret = 1;
+        ret = PYEXEC_NORMAL_EXIT;
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
             mp_hal_stdout_tx_strn("\x04", 1);
         }
@@ -139,15 +143,41 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_hal_stdout_tx_strn("\x04", 1);
         }
 
-        // check for SystemExit
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
-            // at the moment, the value of SystemExit is unused
+        #if MICROPY_PYEXEC_ENABLE_VM_ABORT
+        if (nlr.ret_val == NULL) { // abort
+            ret = PYEXEC_ABORT;
+        } else
+        #endif
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) { // system exit
+            #if MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING
+            mp_obj_t val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
+            if (val != mp_const_none) {
+                if (mp_obj_is_int(val)) {
+                    ret = (int)mp_obj_int_get_truncated(val);
+                } else {
+                    mp_obj_print_helper(MICROPY_ERROR_PRINTER, val, PRINT_STR);
+                    mp_print_str(MICROPY_ERROR_PRINTER, "\n");
+                    ret = PYEXEC_UNHANDLED_EXCEPTION;
+                }
+            } else {
+                ret = PYEXEC_NORMAL_EXIT;
+            }
+            #else
             ret = PYEXEC_FORCED_EXIT;
-        } else {
+            #endif
+        } else { // other exception
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-            ret = 0;
+            ret = PYEXEC_UNHANDLED_EXCEPTION;
+            #if MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING
+            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_KeyboardInterrupt))) { // keyboard interrupt
+                ret = PYEXEC_KEYBOARD_INTERRUPT;
+            }
+            #endif
         }
     }
+    #if MICROPY_PYEXEC_ENABLE_VM_ABORT
+    nlr_set_abort(NULL);
+    #endif
 
     #if MICROPY_REPL_INFO
     // display debugging info if wanted
