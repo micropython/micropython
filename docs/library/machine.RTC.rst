@@ -83,7 +83,7 @@ Methods
    a `bytes` object.
 
    Data written to RTC user memory is persistent across restarts, including
-   `machine.soft_reset()` and `machine.deepsleep()`.
+   :ref:`soft_reset` and `machine.deepsleep()`.
 
    The maximum length of RTC user memory is 2048 bytes by default on esp32,
    and 492 bytes on esp8266.
