@@ -166,6 +166,13 @@ static NORETURN void mbedtls_raise_error(int err) {
     #endif
 }
 
+// Stores the current SSLContext for use in mbedtls callbacks where the current state is not passed.
+static inline void store_active_context(mp_obj_ssl_context_t *ssl_context) {
+    #if MICROPY_PY_SSL_MBEDTLS_NEED_ACTIVE_CONTEXT
+    MP_STATE_THREAD(tls_ssl_context) = ssl_context;
+    #endif
+}
+
 static void ssl_check_async_handshake_failure(mp_obj_ssl_socket_t *sslsock, int *errcode) {
     if (
         #if MBEDTLS_VERSION_NUMBER >= 0x03000000
@@ -497,6 +504,9 @@ static int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
 static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t sock,
     bool server_side, bool do_handshake_on_connect, mp_obj_t server_hostname) {
 
+    // Store the current SSL context.
+    store_active_context(ssl_context);
+
     // Verify the socket object has the full stream protocol
     mp_get_stream_raise(sock, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
 
@@ -602,6 +612,9 @@ static mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
         return MP_STREAM_ERROR;
     }
 
+    // Store the current SSL context.
+    store_active_context(o->ssl_context);
+
     int ret = mbedtls_ssl_read(&o->ssl, buf, size);
     if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
         // end of stream
@@ -643,6 +656,9 @@ static mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
         return MP_STREAM_ERROR;
     }
 
+    // Store the current SSL context.
+    store_active_context(o->ssl_context);
+
     int ret = mbedtls_ssl_write(&o->ssl, buf, size);
     if (ret >= 0) {
         return ret;
@@ -680,6 +696,9 @@ static mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
     mp_obj_t sock = self->sock;
 
     if (request == MP_STREAM_CLOSE) {
+        // Clear the SSL context.
+        store_active_context(NULL);
+
         if (sock == MP_OBJ_NULL) {
             // Already closed socket, do nothing.
             return 0;
