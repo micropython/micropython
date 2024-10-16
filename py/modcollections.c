@@ -28,6 +28,11 @@
 
 #if MICROPY_PY_COLLECTIONS
 
+#if MICROPY_PY_TYPING && MICROPY_PY_TYPING_EXTRA_MODULES && MICROPY_MODULE_BUILTIN_SUBPACKAGES
+// Enable importing collections.abc as an alias of the typing module.
+extern const mp_obj_module_t mp_module_typing;
+#endif
+
 static const mp_rom_map_elem_t mp_module_collections_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_collections) },
     #if MICROPY_PY_COLLECTIONS_DEQUE
@@ -36,6 +41,9 @@ static const mp_rom_map_elem_t mp_module_collections_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_namedtuple), MP_ROM_PTR(&mp_namedtuple_obj) },
     #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
     { MP_ROM_QSTR(MP_QSTR_OrderedDict), MP_ROM_PTR(&mp_type_ordereddict) },
+    #endif
+    #if MICROPY_PY_TYPING && MICROPY_PY_TYPING_EXTRA_MODULES && MICROPY_MODULE_BUILTIN_SUBPACKAGES
+    { MP_ROM_QSTR(MP_QSTR_abc), MP_ROM_PTR(&mp_module_typing) },
     #endif
 };
 
