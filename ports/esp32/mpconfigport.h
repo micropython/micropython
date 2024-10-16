@@ -348,6 +348,10 @@ typedef long mp_off_t;
 #endif
 #endif
 
+#ifdef MICROPY_ESP32_USE_BOOTLOADER_RTC
+void machine_bootloader_rtc(void);
+#endif
+
 #ifdef MICROPY_BOARD_ENTER_BOOTLOADER
 #define MICROPY_PY_MACHINE_BOOTLOADER       (1)
 #else
