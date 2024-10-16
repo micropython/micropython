@@ -17,4 +17,4 @@ CONFIG_BT_NIMBLE_PINNED_TO_CORE=1
 
 # Increase NimBLE task stack size from the default, because Python code
 # (BLE IRQ handlers) will most likely run on this task.
-CONFIG_BT_NIMBLE_TASK_STACK_SIZE=6144
+CONFIG_BT_NIMBLE_TASK_STACK_SIZE=4096

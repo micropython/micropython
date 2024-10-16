@@ -99,6 +99,11 @@ static mp_obj_t mp_machine_get_freq(void) {
 
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
+    #if CONFIG_IDF_TARGET_ESP32C2
+    if (freq != 80 && freq != 120) {
+        mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 80MHz or 120MHz"));
+    }
+    #else
     if (freq != 20 && freq != 40 && freq != 80 && freq != 160
         #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6)
         && freq != 240
@@ -110,6 +115,7 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
         #endif
     }
+    #endif
     #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
     esp_pm_config_t pm;
     #else
@@ -119,6 +125,8 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     esp_pm_config_esp32c3_t pm;
     #elif CONFIG_IDF_TARGET_ESP32C6
     esp_pm_config_esp32c6_t pm;
+    #elif CONFIG_IDF_TARGET_ESP32C2
+    esp_pm_config_esp32c2_t pm;
     #elif CONFIG_IDF_TARGET_ESP32S2
     esp_pm_config_esp32s2_t pm;
     #elif CONFIG_IDF_TARGET_ESP32S3
@@ -147,30 +155,32 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
         esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
     }
 
-    #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6)
+    #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32C2)
 
     if (machine_rtc_config.ext0_pin != -1 && (machine_rtc_config.ext0_wake_types & wake_type)) {
         esp_sleep_enable_ext0_wakeup(machine_rtc_config.ext0_pin, machine_rtc_config.ext0_level ? 1 : 0);
     }
-
+    #endif
+    #if SOC_PM_SUPPORT_EXT1_WAKEUP
     if (machine_rtc_config.ext1_pins != 0) {
         esp_sleep_enable_ext1_wakeup(
             machine_rtc_config.ext1_pins,
             machine_rtc_config.ext1_level ? ESP_EXT1_WAKEUP_ANY_HIGH : ESP_EXT1_WAKEUP_ALL_LOW);
     }
-
+    #endif
+    #if SOC_PM_SUPPORT_TOUCH_SENSOR_WAKEUP
     if (machine_rtc_config.wake_on_touch) {
         if (esp_sleep_enable_touchpad_wakeup() != ESP_OK) {
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_touchpad_wakeup() failed"));
         }
     }
-
+    #endif
+    #if SOC_ULP_SUPPORTED
     if (machine_rtc_config.wake_on_ulp) {
         if (esp_sleep_enable_ulp_wakeup() != ESP_OK) {
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_ulp_wakeup() failed"));
         }
     }
-
     #endif
 
     switch (wake_type) {
