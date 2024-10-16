@@ -124,6 +124,8 @@ CFLAGS += $(SPECS_FRAGMENT)
 LDFLAGS += $(SPECS_FRAGMENT)
 endif
 
+RUN_TESTS_FULL_ARGS = --target qemu --device execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../ports/qemu/$<" $(RUN_TESTS_ARGS)
+
 ################################################################################
 # Source files and libraries
 
@@ -165,8 +167,13 @@ run: $(BUILD)/firmware.elf
 
 .PHONY: test
 test: $(BUILD)/firmware.elf
-	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && ./run-tests.py --target qemu --device execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(RUN_TESTS_ARGS) $(RUN_TESTS_EXTRA)
+	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) $(RUN_TESTS_EXTRA)
+
+.PHONY: test_full
+test_full: $(BUILD)/firmware.elf
+	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS)
+	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) --via-mpy
+	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) --via-mpy --emit native
 
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(OBJ)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
