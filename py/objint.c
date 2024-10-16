@@ -55,7 +55,7 @@ static mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args,
                 return o;
             } else if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
                 // a textual representation, parse it
-                return mp_parse_num_integer(bufinfo.buf, bufinfo.len, 0, NULL);
+                return mp_parse_num_integer(bufinfo.buf, bufinfo.len, 10, NULL);
             #if MICROPY_PY_BUILTINS_FLOAT
             } else if (mp_obj_is_float(args[0])) {
                 return mp_obj_new_int_from_float(mp_obj_float_get(args[0]));
