@@ -69,15 +69,25 @@ Methods
          - ``UART.INV_RX`` will invert RX line (idle state of RX line now logic low).
          - ``UART.INV_TX | UART.INV_RX`` will invert both lines (idle state at logic low).
 
-     - *flow* specifies which hardware flow control signals to use. The value
-       is a bitmask.
+     - *flow* specifies the type of flow control to use. The value
+       is one of the following.  The set of supported flow control types
+       depends on the port.
 
-         - ``0`` will ignore hardware flow control signals.
+         - ``0`` disables all flow control.
          - ``UART.RTS`` will enable receive flow control by using the RTS output pin to
            signal if the receive FIFO has sufficient space to accept more data.
          - ``UART.CTS`` will enable transmit flow control by pausing transmission when the
            CTS input pin signals that the receiver is running low on buffer space.
          - ``UART.RTS | UART.CTS`` will enable both, for full hardware flow control.
+         - ``UART.XONOFF`` will enable XON/XOFF flow control in both the transmit
+           and receive directions.  When the receiver's internal buffer is almost
+           full, an XOFF character (CTRL-S) will be transmitted to tell the other
+           end to pause sending.  When the buffer has drained so there is more space
+           available, an XON character (CTRL-Q) will be transmitted to tell the
+           other end to resume sending.  Similarly, when the receiver receives XOFF,
+           the transmitter will pause sending until XON is received.  XONXOFF flow
+           control cannot be used at the same time as RTC/CTS flow control.
+
 
    On the WiPy only the following keyword-only parameter is supported:
 
