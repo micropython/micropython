@@ -64,6 +64,19 @@ Reset_Handler:
  *      __ram_function_start__/__ram_function_end__ : ramfunction region
  *      copied to. Both must be aligned to 4 bytes boundary.  */
 
+/* Copy the ISR Vector table to the start of ITCM to be available when the
+   .uf2 bootloader is used */
+
+    ldr    r1, = __Vectors
+    ldr    r2, = __Vectors_RAM
+    movs   r3, 1024
+
+.LC_ISR:
+    subs    r3, #4
+    ldr    r0, [r1, r3]
+    str    r0, [r2, r3]
+    bgt    .LC_ISR
+
     ldr    r1, =__etext
     ldr    r2, =__data_start__
     ldr    r3, =__data_end__
