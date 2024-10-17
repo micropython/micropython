@@ -23,3 +23,12 @@ jobs:
       run: make -C examples/embedding -f micropython_embed.mk && make -C examples/embedding
     - name: Run
       run: ./examples/embedding/embed | grep "hello world"
+
+  embedding-full:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: make -C examples/embedding-full -f micropython_embed.mk submodules && make -C examples/embedding-full -f micropython_embed.mk && make -C examples/embedding-full
+    - name: Run
+      run: ./examples/embedding-full/embed
