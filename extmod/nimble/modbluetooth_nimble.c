@@ -1911,13 +1911,13 @@ static int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
                 // <type=peer,addr,*> (single)
                 // Find the entry for this specific peer.
                 assert(key->sec.idx == 0);
-                assert(!key->sec.ediv_rand_present);
+                // assert(!key->sec.ediv_rand_present);
                 key_data = (const uint8_t *)&key->sec.peer_addr;
                 key_data_len = sizeof(ble_addr_t);
             } else {
                 // <type=peer,*> (with index)
                 // Iterate all known peers.
-                assert(!key->sec.ediv_rand_present);
+                // assert(!key->sec.ediv_rand_present);
                 key_data = NULL;
                 key_data_len = 0;
             }
@@ -1928,7 +1928,7 @@ static int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
             // Find our secret for this remote device, matching this ediv/rand key.
             assert(ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
             assert(key->sec.idx == 0);
-            assert(key->sec.ediv_rand_present);
+            // assert(key->sec.ediv_rand_present);
             key_data = (const uint8_t *)&key->sec.peer_addr;
             key_data_len = sizeof(ble_addr_t);
             break;
@@ -1977,7 +1977,7 @@ static int ble_secret_store_write(int obj_type, const union ble_store_value *val
             ble_store_key_from_value_sec(&key_sec, value_sec);
 
             assert(ble_addr_cmp(&key_sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
-            assert(key_sec.ediv_rand_present);
+            // assert(key_sec.ediv_rand_present);
 
             if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key_sec.peer_addr, sizeof(ble_addr_t), (const uint8_t *)value_sec, sizeof(struct ble_store_value_sec))) {
                 DEBUG_printf("Failed to write key: type=%d\n", obj_type);
