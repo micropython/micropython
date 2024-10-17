@@ -7,8 +7,10 @@ MOD = features1
 # Source files (.c or .py)
 SRC = features1.c
 
-# Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
+# Architecture to build for (x86, x64, armv7m, xtensa, xtensawin, rv32imc)
 ARCH = x64
+
+CLEAN_EXTRA = "$(MOD).mpy"
 
 # Include to get the rules for compiling and linking the module
 include $(MPY_DIR)/py/dynruntime.mk

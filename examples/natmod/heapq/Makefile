@@ -7,7 +7,9 @@ MOD = heapq_$(ARCH)
 # Source files (.c or .py)
 SRC = heapq.c
 
-# Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
+# Architecture to build for (x86, x64, armv7m, xtensa, xtensawin, rv32imc)
 ARCH = x64
+
+CLEAN_EXTRA = "$(MOD).mpy"
 
 include $(MPY_DIR)/py/dynruntime.mk
