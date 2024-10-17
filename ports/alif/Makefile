@@ -6,32 +6,50 @@ GIT_SUBMODULES += lib/tinyusb lib/alif_ensemble-cmsis-dfp
 
 ALIF_TOOLS ?= tools
 
-ifeq ($(MCU_CORE),M55_HP)
-ALIF_TOC_CONFIG = mcu/M55_HP_cfg.json
-ALIF_TOC_APPS = $(BUILD)/M55_HP/firmware.bin
-else ifeq ($(MCU_CORE),M55_HE)
-ALIF_TOC_CONFIG = mcu/M55_HE_cfg.json
-ALIF_TOC_APPS = $(BUILD)/M55_HE/firmware.bin
-else ifeq ($(MCU_CORE),M55_DUAL)
-ALIF_TOC_CONFIG = mcu/M55_DUAL_cfg.json
-ALIF_TOC_APPS = $(BUILD)/M55_HP/firmware.bin $(BUILD)/M55_HE/firmware.bin
-else
-$(error Invalid MCU core specified))
-endif
-
-JLINK_CMD = '\
+JLINK_CMD_PREFIX = \
 ExitOnError 1\n\
 Device $(JLINK_DEV)\n\
 SelectInterface SWD\n\
 Speed auto\n\
 Connect\n\
 Reset\n\
-ShowHWStatus\n\
-LoadFile "$(BUILD)/firmware.toc.bin",0x8057f4c0\n\
+ShowHWStatus\n
+
+JLINK_CMD_SUFFIX = \
+Reset\n\
+Exit
+
+ifeq ($(MCU_CORE),M55_HP)
+
+ALIF_TOC_CONFIG = mcu/M55_HP_cfg.json
+ALIF_TOC_APPS = $(BUILD)/M55_HP/firmware.bin
+JLINK_CMD = '\
+$(JLINK_CMD_PREFIX)\
+LoadFile "$(BUILD)/M55_HP/firmware.bin",0x80020000\n\
+$(JLINK_CMD_SUFFIX)'
+
+else ifeq ($(MCU_CORE),M55_HE)
+
+ALIF_TOC_CONFIG = mcu/M55_HE_cfg.json
+ALIF_TOC_APPS = $(BUILD)/M55_HE/firmware.bin
+JLINK_CMD = '\
+$(JLINK_CMD_PREFIX)\
+LoadFile "$(BUILD)/M55_HE/firmware.bin",0x80420000\n\
+$(JLINK_CMD_SUFFIX)'
+
+else ifeq ($(MCU_CORE),M55_DUAL)
+
+ALIF_TOC_CONFIG = mcu/M55_DUAL_cfg.json
+ALIF_TOC_APPS = $(BUILD)/M55_HP/firmware.bin $(BUILD)/M55_HE/firmware.bin
+JLINK_CMD = '\
+$(JLINK_CMD_PREFIX)\
 LoadFile "$(BUILD)/M55_HP/firmware.bin",0x80020000\n\
 LoadFile "$(BUILD)/M55_HE/firmware.bin",0x80420000\n\
-Reset\n\
-Exit'
+$(JLINK_CMD_SUFFIX)'
+
+else
+$(error Invalid MCU core specified))
+endif
 
 include ../../py/mkenv.mk
 include mpconfigport.mk
@@ -73,7 +91,7 @@ deploy: $(BUILD)/firmware.toc.bin
 	$(ECHO) "Writing $< to the board"
 	$(Q)cd $(ALIF_TOOLS) && python app-write-mram.py -p
 
-deploy-jlink: $(BUILD)/firmware.toc.bin
+deploy-jlink: $(ALIF_TOC_APPS)
 	$(Q)echo -e $(JLINK_CMD) | $(JLINK_EXE)
 
 include $(TOP)/py/mkrules.mk
