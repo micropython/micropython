@@ -95,7 +95,9 @@
 #define MICROPY_PY_OS_INCLUDEFILE      "ports/unix/modos.c"
 #define MICROPY_PY_OS_ERRNO            (1)
 #define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV (1)
+#ifndef MICROPY_PY_OS_SYSTEM
 #define MICROPY_PY_OS_SYSTEM           (1)
+#endif
 #define MICROPY_PY_OS_URANDOM          (1)
 
 // Enable the unix-specific "time" module.
@@ -111,7 +113,9 @@
 #endif
 
 // The "select" module is enabled by default, but disable select.select().
+#ifndef MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
 #define MICROPY_PY_SELECT_POSIX_OPTIMISATIONS (1)
+#endif
 #define MICROPY_PY_SELECT_SELECT       (0)
 
 // Enable the "websocket" module.
