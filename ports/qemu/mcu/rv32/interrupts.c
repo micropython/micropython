@@ -144,7 +144,7 @@ const char *lookup_cause(uint32_t mcause) {
             case 11:
                 return exception_causes[6];
             default:
-                return (mcause >= 16) ?
+                return ((mcause & 0x7FFFFFFF) >= 16) ?
                        exception_causes[7] :
                        exception_causes[0];
         }
