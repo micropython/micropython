@@ -26,6 +26,9 @@ elif "esp32" in sys.platform:
         spi_instances = ((1, Pin(4), Pin(5), Pin(6)),)
     else:
         spi_instances = ((1, Pin(18), Pin(19), Pin(21)), (2, Pin(18), Pin(19), Pin(21)))
+elif "esp8266" in sys.platform:
+    MAX_DELTA_MS = 50  # port requires much looser timing requirements
+    spi_instances = ((1, None, None, None),)  # explicit pin choice not allowed
 else:
     print("Please add support for this test on this platform.")
     raise SystemExit
