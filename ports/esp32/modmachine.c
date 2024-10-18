@@ -231,7 +231,7 @@ static mp_int_t mp_machine_reset_cause(void) {
 #endif
 
 NORETURN static void machine_bootloader_rtc(void) {
-    #if CONFIG_IDF_TARGET_ESP32S3
+    #if CONFIG_IDF_TARGET_ESP32S3 && MICROPY_HW_USB_CDC
     usb_usj_mode();
     usb_dc_prepare_persist();
     chip_usb_set_persist_flags(USBDC_BOOT_DFU);
