@@ -1814,6 +1814,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SSL_FINALISER (MICROPY_ENABLE_FINALISER)
 #endif
 
+// Whether to add a root pointer for the current ssl object
+#ifndef MICROPY_PY_SSL_MBEDTLS_NEED_ACTIVE_CONTEXT
+#define MICROPY_PY_SSL_MBEDTLS_NEED_ACTIVE_CONTEXT (MICROPY_PY_SSL_ECDSA_SIGN_ALT)
+#endif
+
 // Whether to provide the "vfs" module
 #ifndef MICROPY_PY_VFS
 #define MICROPY_PY_VFS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES && MICROPY_VFS)
