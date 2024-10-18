@@ -1765,7 +1765,7 @@ def merge_mpy(compiled_modules, output_file):
             f.write(merged_mpy)
 
 
-def main():
+def main(args=None):
     global global_qstrs
 
     import argparse
@@ -1797,7 +1797,7 @@ def main():
     )
     cmd_parser.add_argument("-o", "--output", default=None, help="output file")
     cmd_parser.add_argument("files", nargs="+", help="input .mpy files")
-    args = cmd_parser.parse_args()
+    args = cmd_parser.parse_args(args)
 
     # set config values relevant to target machine
     config.MICROPY_LONGINT_IMPL = {
