@@ -656,6 +656,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tests.add("extmod/random_basic.py")  # requires random
             skip_tests.add("extmod/random_extra.py")  # requires random
         elif args.target == "esp8266":
+            skip_tests.add("micropython/viper_args.py")  # too large
+            skip_tests.add("micropython/viper_binop_arith.py")  # too large
             skip_tests.add("misc/rge_sm.py")  # too large
         elif args.target == "minimal":
             skip_tests.add("basics/class_inplace_op.py")  # all special methods not supported

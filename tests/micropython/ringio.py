@@ -45,4 +45,4 @@ try:
     # Size must be int.
     micropython.RingIO(None)
 except TypeError as ex:
-    print(ex)
+    print(repr(ex)[:24], repr(ex)[-9:])
