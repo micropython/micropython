@@ -40,6 +40,7 @@
 #define CMD_RDSR        (0x05)
 #define CMD_WREN        (0x06)
 #define CMD_SEC_ERASE   (0x20)
+#define CMD_WRCR        (0x31)  // sometimes referred to as SR byte 2
 #define CMD_RDCR        (0x35)
 #define CMD_RD_DEVID    (0x9f)
 #define CMD_CHIP_ERASE  (0xc7)
@@ -199,9 +200,16 @@ void mp_spiflash_init(mp_spiflash_t *self) {
         }
         uint32_t data = (sr & 0xff) | (cr & 0xff) << 8;
         if (ret == 0 && !(data & (QSPI_QE_MASK << 8))) {
+            // Write both bytes of SR
             data |= QSPI_QE_MASK << 8;
             mp_spiflash_write_cmd(self, CMD_WREN);
             mp_spiflash_write_cmd_data(self, CMD_WRSR, 2, data);
+            mp_spiflash_wait_wip0(self);
+
+            // Write just byte 2 of SR for flash that only supports that mode of setting SR
+            data = (cr & 0xff) | QSPI_QE_MASK;
+            mp_spiflash_write_cmd(self, CMD_WREN);
+            mp_spiflash_write_cmd_data(self, CMD_WRCR, 1, data);
             mp_spiflash_wait_wip0(self);
         }
     }
