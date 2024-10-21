@@ -14,6 +14,7 @@ if "rp2" in sys.platform:
     uart_id = 0
     tx_pin = "GPIO0"
     rx_pin = "GPIO1"
+    timing_margin_us = 180
 else:
     print("SKIP")
     raise SystemExit
@@ -31,4 +32,5 @@ for bits_per_s in (2400, 9600, 115200):
     # 1(startbit) + 8(bits) + 1(stopbit) + 0(parity)
     bits_per_char = 10
     expect_us = (len(text)) * bits_per_char * 1_000_000 // bits_per_s
-    print(bits_per_s, duration_us <= expect_us)
+    delta_us = abs(duration_us - expect_us)
+    print(bits_per_s, delta_us <= timing_margin_us or delta_us)
