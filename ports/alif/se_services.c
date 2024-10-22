@@ -113,6 +113,9 @@ void se_services_init(void) {
 
     // Create SE services channel for sending requests.
     se_services_handle = SERVICES_register_channel(MHU_M55_SE_MHU0, 0);
+
+    // Send heartbeat services requests until one succeeds.
+    SERVICES_synchronize_with_se(se_services_handle);
 }
 
 void se_services_dump_device_data(void) {

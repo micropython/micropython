@@ -72,6 +72,7 @@ void _start(void) {
     if (se_services_set_run_profile(&runp)) {
         panic("se_services_set_run_profile");
     }
+    mp_hal_delay_ms(20);
     #endif
 
     #if MICROPY_HW_ENABLE_UART_REPL

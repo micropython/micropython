@@ -194,6 +194,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	se_services/source/services_host_handler.c \
 	se_services/source/services_host_system.c \
 	se_services/source/services_host_power.c \
+	se_services/source/services_host_maintenance.c \
 	)
 
 $(BUILD)/tinyusb_port/tusb_alif_dcd.o: CFLAGS += -Wno-unused-variable -DTUSB_ALIF_NO_IRQ_CFG=1
