@@ -93,14 +93,35 @@ static void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
         );
 }
 
-static mp_obj_t network_cyw43_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    if (n_args == 0 || mp_obj_get_int(args[0]) == MOD_NETWORK_STA_IF) {
+// Allow the port to add extra parameters
+#ifdef MICROPY_PY_NETWORK_CYW43_OBJ_INIT_ARGS
+#define EXTRA_ARGS MICROPY_PY_NETWORK_CYW43_OBJ_INIT_ARGS
+#else
+#define EXTRA_ARGS
+#endif
+
+MP_WEAK void network_cyw43_obj_init(mp_arg_val_t *args) {
+}
+
+static mp_obj_t network_cyw43_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_interface, ARG_last };
+    const mp_arg_t allowed_args[] = {
+        { MP_QSTR_interface, MP_ARG_INT, {.u_int = MOD_NETWORK_STA_IF} },
+        EXTRA_ARGS
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
+    mp_arg_parse_all(n_args, all_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    network_cyw43_obj_init(args + ARG_last);
+    if (args[ARG_interface].u_int == MOD_NETWORK_STA_IF) {
         return MP_OBJ_FROM_PTR(&network_cyw43_wl_sta);
     } else {
         return MP_OBJ_FROM_PTR(&network_cyw43_wl_ap);
     }
 }
+#undef EXTRA_ARGS
 
 static mp_obj_t network_cyw43_send_ethernet(mp_obj_t self_in, mp_obj_t buf_in) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(self_in);
