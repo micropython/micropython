@@ -460,6 +460,8 @@ void dcd_uninit(void)
     enable_usb_phy_isolation(); // enable usb phy isolation
     disable_usb_phy_power(); // power down usb phy
     disable_usb_periph_clk(); // disable usb peripheral clock
+    dcd_int_disable(TUD_OPT_RHPORT);
+    NVIC_ClearPendingIRQ(USB_IRQ_IRQn);
 }
 
 void USB_IRQHandler(void)
