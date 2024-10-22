@@ -190,7 +190,7 @@ idf_component_register(
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
     LDFRAGMENTS
-        linker.lf
+        ${MICROPY_PORT_DIR}/main_${IDF_TARGET}/linker.lf
     REQUIRES
         ${IDF_COMPONENTS}
 )
