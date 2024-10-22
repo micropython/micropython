@@ -236,6 +236,13 @@ target_include_directories(${MICROPY_TARGET} PUBLIC
 target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
 target_link_libraries(${MICROPY_TARGET} usermod)
 
+# Enable the panic handler wrapper
+idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=esp_panic_handler" APPEND)
+
+# Patch LWIP memory pool allocators (see lwip_patch.c)
+idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=memp_malloc" APPEND)
+idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=memp_free" APPEND)
+
 # Collect all of the include directories and compile definitions for the IDF components,
 # including those added by the IDF Component Manager via idf_components.yaml.
 foreach(comp ${__COMPONENT_NAMES_RESOLVED})
