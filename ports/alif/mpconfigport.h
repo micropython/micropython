@@ -56,7 +56,9 @@
 #ifndef MICROPY_HW_ENABLE_USBDEV
 #define MICROPY_HW_ENABLE_USBDEV                (CORE_M55_HP)
 #endif
+#ifndef MICROPY_HW_USB_PRODUCT_FS_STRING
 #define MICROPY_HW_USB_PRODUCT_FS_STRING        "Board in HS mode"
+#endif
 #ifndef MICROPY_HW_USB_CDC
 #define MICROPY_HW_USB_CDC                      (CORE_M55_HP)
 #endif
