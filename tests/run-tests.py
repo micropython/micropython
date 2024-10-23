@@ -724,6 +724,42 @@ class PyboardNodeRunner:
         return had_crash, output_mupy
 
 
+stdout_isatty = sys.stdout.isatty()
+end_erase = "                                 \r"
+
+
+def print_output_skip(test):
+    if stdout_isatty:
+        print("skip ", test, end=end_erase)
+    else:
+        print("skip ", test)
+
+
+def print_output_start(test):
+    if stdout_isatty:
+        print(".... ", test, end=end_erase)
+
+
+def print_output_end_skip(test, reason):
+    if stdout_isatty:
+        return
+        print(reason, test, end=end_erase)
+    else:
+        print(reason, test)
+
+
+def print_output_end_pass(test, extra_info):
+    if stdout_isatty:
+        return
+        print("pass ", test, extra_info, end=end_erase)
+    else:
+        print("pass ", test, extra_info)
+
+
+def print_output_end_fail(test, extra_info):
+    print("FAIL ", test, extra_info)
+
+
 def run_tests(pyb, tests, args, result_dir, num_threads=1):
     testcase_count = ThreadSafeCounter()
     test_results = ThreadSafeCounter([])
@@ -981,9 +1017,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_inlineasm and is_inlineasm
 
         if skip_it:
-            print("skip ", test_file)
+            print_output_skip(test_file)
             test_results.append((test_file, "skip", ""))
             return
+
+        print_output_start(test_file)
 
         # Run the test on the MicroPython target.
         output_mupy = run_micropython(pyb, args, test_file, test_file_abspath)
@@ -996,11 +1034,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 # reset.  Wait for the soft reset to finish, so we don't interrupt the
                 # start-up code (eg boot.py) when preparing to run the next test.
                 pyb.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
-            print("skip ", test_file)
+            print_output_end_skip(test_file, "skip")
             test_results.append((test_file, "skip", ""))
             return
         elif output_mupy == b"SKIP-TOO-LARGE\n":
-            print("lrge ", test_file)
+            print_output_end_skip(test_file, "lrge")
             test_results.append((test_file, "skip", "too large"))
             return
 
@@ -1087,12 +1125,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Print test summary, update counters, and save .exp/.out files if needed.
         if test_passed:
-            print("pass ", test_file, extra_info)
+            print_output_end_pass(test_file, extra_info)
             test_results.append((test_file, "pass", ""))
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
-            print("FAIL ", test_file, extra_info)
+            print_output_end_fail(test_file, extra_info)
             if output_expected is not None:
                 with open(filename_expected, "wb") as f:
                     f.write(output_expected)
