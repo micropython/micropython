@@ -95,6 +95,10 @@ extern const byte mp_binary_op_method_name[];
 void mp_init(void);
 void mp_deinit(void);
 
+#if MICROPY_PY_SYS_ATEXIT
+void mp_sys_atexit_execute(void);
+#endif
+
 void mp_sched_exception(mp_obj_t exc);
 void mp_sched_keyboard_interrupt(void);
 #if MICROPY_ENABLE_VM_ABORT

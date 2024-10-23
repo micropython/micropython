@@ -1488,7 +1488,7 @@ typedef double mp_float_t;
 
 // Whether to provide "sys.atexit" function (MicroPython extension)
 #ifndef MICROPY_PY_SYS_ATEXIT
-#define MICROPY_PY_SYS_ATEXIT (0)
+#define MICROPY_PY_SYS_ATEXIT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
 // Whether to provide the "sys.path" attribute (which forces module delegation
