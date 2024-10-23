@@ -155,6 +155,16 @@ static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
     gpio_set_direction_output(pin->gpio, pin->pin);
 }
 
+static inline void mp_hal_pin_config_irq_falling(mp_hal_pin_obj_t pin, bool enable) {
+    if (enable) {
+        gpio_enable_interrupt(pin->gpio, pin->pin);
+        gpio_interrupt_set_edge_trigger(pin->gpio, pin->pin);
+        gpio_interrupt_set_polarity_low(pin->gpio, pin->pin);
+    } else {
+        gpio_disable_interrupt(pin->gpio, pin->pin);
+    }
+}
+
 static inline void mp_hal_pin_low(mp_hal_pin_obj_t pin) {
     gpio_set_value_low(pin->gpio, pin->pin);
 }
