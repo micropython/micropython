@@ -152,6 +152,10 @@ static uint32_t begin_critical_flash_section(void) {
     uint8_t *maintenance_ptr = (uint8_t *)XIP_MAINTENANCE_BASE;
     for (int i = 1; i < 16 * 1024; i += 8) {
         maintenance_ptr[i] = 0;
+
+        // Must also invalidate the cache lines to prevent rare hangs
+        // See: https://forums.raspberrypi.com/viewtopic.php?t=378249)
+        maintenance_ptr[i - 1] = 0;
     }
     #endif
 
