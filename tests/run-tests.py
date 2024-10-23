@@ -597,6 +597,34 @@ class PyboardNodeRunner:
         # Return the results.
         return had_crash, output_mupy
 
+def print_output_skip(test):
+    if 0:
+        print("skip ", test)
+    else:
+        print("skip ", test, end="         \r")
+
+def print_output_start(test):
+    if 0:
+        pass
+    else:
+        print(".... ", test, end="            \r")
+
+def print_output_end_skip(test):
+    if 0:
+        print("skip ", test)
+    else:
+        return
+        print("skip ", test, end="              \r")
+
+def print_output_end_pass(test, extra_info):
+    if 0:
+        print("pass ", test, extra_info)
+    else:
+        return
+        print("pass ", test, extra_info, end="              \r")
+
+def print_output_end_fail(test, extra_info):
+    print("FAIL ", test, extra_info)
 
 def run_tests(pyb, tests, args, result_dir, num_threads=1):
     test_count = ThreadSafeCounter()
@@ -889,9 +917,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_inlineasm and is_inlineasm
 
         if skip_it:
-            print("skip ", test_file)
+            print_output_skip(test_file)
             skipped_tests.append(test_name)
             return
+
+        print_output_start(test_file)
 
         # Run the test on the MicroPython target.
         output_mupy = run_micropython(pyb, args, test_file, test_file_abspath)
@@ -904,7 +934,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 # reset.  Wait for the soft reset to finish, so we don't interrupt the
                 # start-up code (eg boot.py) when preparing to run the next test.
                 pyb.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
-            print("skip ", test_file)
+            print_output_end_skip(test_file)
             skipped_tests.append(test_name)
             return
 
@@ -987,12 +1017,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Print test summary, update counters, and save .exp/.out files if needed.
         if test_passed:
-            print("pass ", test_file, extra_info)
+            print_output_end_pass(test_file, extra_info)
             passed_count.increment()
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
-            print("FAIL ", test_file, extra_info)
+            print_output_end_fail(test_file, extra_info)
             if output_expected is not None:
                 with open(filename_expected, "wb") as f:
                     f.write(output_expected)
