@@ -1614,6 +1614,17 @@ typedef double mp_float_t;
 #define MICROPY_PY_THREAD_GIL_VM_DIVISOR (32)
 #endif
 
+// Whether to provide the minimal typing module.
+#ifndef MICROPY_PY_TYPING
+#define MICROPY_PY_TYPING (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether to provide the minimal abc and typing_extensions modules.
+// They will simply be aliases for the typing module.
+#ifndef MICROPY_PY_TYPING_EXTRA_MODULES
+#define MICROPY_PY_TYPING_EXTRA_MODULES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Extended modules
 
 #ifndef MICROPY_PY_ASYNCIO
