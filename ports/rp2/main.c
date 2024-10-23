@@ -32,6 +32,7 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/objmodule.h"
 #include "extmod/modbluetooth.h"
 #include "extmod/modnetwork.h"
 #include "shared/readline/readline.h"
@@ -240,6 +241,9 @@ int main(int argc, char **argv) {
         soft_timer_deinit();
         #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
         mp_usbd_deinit();
+        #endif
+        #if MICROPY_PY_SYS_ATEXIT
+        mp_sys_atexit_execute();
         #endif
 
         // Hook for resetting anything right at the end of a soft reset command.

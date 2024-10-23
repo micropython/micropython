@@ -48,6 +48,7 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/stackctrl.h"
+#include "py/objmodule.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
@@ -170,6 +171,10 @@ soft_reset:
     #if MICROPY_PY_THREAD
     mp_thread_deinit();
     gc_collect();
+    #endif
+
+    #if MICROPY_PY_SYS_ATEXIT
+    mp_sys_atexit_execute();
     #endif
 
     gc_sweep_all();

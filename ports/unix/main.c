@@ -43,6 +43,7 @@
 #include "py/builtin.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "py/objmodule.h"
 #include "py/objstr.h"
 #include "py/cstack.h"
 #include "py/mphal.h"
@@ -753,10 +754,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #endif
 
     #if MICROPY_PY_SYS_ATEXIT
-    // Beware, the sys.settrace callback should be disabled before running sys.atexit.
-    if (mp_obj_is_callable(MP_STATE_VM(sys_exitfunc))) {
-        mp_call_function_0(MP_STATE_VM(sys_exitfunc));
-    }
+    mp_sys_atexit_execute();
     #endif
 
     #if MICROPY_PY_MICROPYTHON_MEM_INFO

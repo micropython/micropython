@@ -32,6 +32,7 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/objmodule.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/runtime/softtimer.h"
@@ -696,6 +697,10 @@ soft_reset_exit:
     MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
     #else
     MP_STATE_PORT(pyb_stdio_uart) = NULL;
+    #endif
+
+    #if MICROPY_PY_SYS_ATEXIT
+    mp_sys_atexit_execute();
     #endif
 
     MICROPY_BOARD_END_SOFT_RESET(&state);
