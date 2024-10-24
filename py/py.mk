@@ -33,6 +33,9 @@ ifneq ($(USER_C_MODULES),)
 # pre-define USERMOD variables as expanded so that variables are immediate
 # expanded as they're added to them
 
+# Confirm the provided path exists, show abspath if not to make it clearer to fix.
+$(if $(wildcard $(USER_C_MODULES)/.),,$(error USER_C_MODULES doesn't exist: $(abspath $(USER_C_MODULES))))
+
 # C/C++ files that are included in the QSTR/module build
 SRC_USERMOD_C :=
 SRC_USERMOD_CXX :=
