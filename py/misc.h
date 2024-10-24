@@ -380,6 +380,18 @@ static inline bool mp_check(bool value) {
 
 // mp_int_t can be larger than long, i.e. Windows 64-bit, nan-box variants
 static inline uint32_t mp_clz_mpi(mp_int_t x) {
+    #ifdef __XC16__
+    mp_uint_t mask = MP_OBJ_WORD_MSBIT_HIGH;
+    mp_uint_t zeroes = 0;
+    while (mask != 0) {
+        if (mask & (mp_uint_t)x) {
+            break;
+        }
+        zeroes++;
+        mask >>= 1;
+    }
+    return zeroes;
+    #else
     MP_STATIC_ASSERT(sizeof(mp_int_t) == sizeof(long long)
         || sizeof(mp_int_t) == sizeof(long));
 
@@ -389,6 +401,7 @@ static inline uint32_t mp_clz_mpi(mp_int_t x) {
     } else {
         return mp_clzll((unsigned long long)x);
     }
+    #endif
 }
 
 #endif // MICROPY_INCLUDED_PY_MISC_H

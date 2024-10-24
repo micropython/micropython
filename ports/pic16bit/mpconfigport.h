@@ -93,7 +93,3 @@ typedef int mp_off_t;
 #define MICROPY_MPHALPORT_H "pic16bit_mphal.h"
 #define MICROPY_HW_BOARD_NAME "dsPICSK"
 #define MICROPY_HW_MCU_NAME "dsPIC33"
-
-// XC16 toolchain doesn't seem to define these
-typedef int intptr_t;
-typedef unsigned int uintptr_t;
