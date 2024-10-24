@@ -241,10 +241,13 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
         // Configure the new resolution and frequency
         timer->duty_resolution = res;
         timer->freq_hz = freq;
-        #if SOC_LEDC_SUPPORT_XTAL_CLOCK
-        timer->clk_cfg = LEDC_USE_XTAL_CLK;
-        #else
+
+        #if SOC_LEDC_SUPPORT_PLL_DIV_CLOCK
+        timer->clk_cfg = LEDC_USE_PLL_DIV_CLK;
+        #elif SOC_LEDC_SUPPORT_APB_CLOCK
         timer->clk_cfg = LEDC_USE_APB_CLK;
+        #elif SOC_LEDC_SUPPORT_XTAL_CLOCK
+        timer->clk_cfg = LEDC_USE_XTAL_CLK;
         #endif
         #if SOC_LEDC_SUPPORT_REF_TICK
         if (freq < EMPIRIC_FREQ) {
