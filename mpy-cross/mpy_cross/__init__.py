@@ -44,6 +44,7 @@ NATIVE_ARCHS = {
     "NATIVE_ARCH_XTENSA": "xtensa",
     "NATIVE_ARCH_XTENSAWIN": "xtensawin",
     "NATIVE_ARCH_RV32IMC": "rv32imc",
+    "NATIVE_ARCH_RV64IMC": "rv64imc",
 }
 
 globals().update(NATIVE_ARCHS)
