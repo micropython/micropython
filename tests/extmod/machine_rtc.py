@@ -6,7 +6,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-rtc = machine.RTC()
+rtc = RTC()
 
 # Save datetime.
 orig_datetime = rtc.datetime()
