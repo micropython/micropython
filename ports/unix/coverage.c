@@ -292,6 +292,13 @@ static mp_obj_t extra_coverage(void) {
             gc_collect();
         }
 
+        // resize one of the blocks
+        void *before = ptrs[1];
+        ptrs[1] = FLIP_POINTER(m_tracked_realloc(FLIP_POINTER(ptrs[1]), 2 * NUM_BYTES));
+        void *after = ptrs[1];
+        bool location_changed = before != after;
+        mp_printf(&mp_plat_print, "%d\n", location_changed);
+
         // check the memory blocks have the correct content
         for (size_t i = 0; i < NUM_PTRS; ++i) {
             bool correct_contents = true;

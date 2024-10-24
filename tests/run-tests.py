@@ -939,6 +939,10 @@ the last matching regex is used:
   run-tests.py -i async - exclude all, then include tests containing "async" anywhere
   run-tests.py -e '/big.+int' - include all, then exclude by regex
   run-tests.py -e async -i async_foo - include all, exclude async, yet still include async_foo
+
+For tests that use cpython, unix micropython and mpy-cross, the default executables
+vcan be overridden with the environment variables MICROPY_CPYTHON3, MICROPY_MICROPYTHON and
+MICROPY_MPYCROSS respectively.
 """,
     )
     cmd_parser.add_argument("--target", default="unix", help="the target platform")
