@@ -27,7 +27,7 @@
 #include "drivers/bus/spi.h"
 
 int mp_soft_spi_ioctl(void *self_in, uint32_t cmd) {
-    mp_soft_spi_obj_t *self = (mp_soft_spi_obj_t*)self_in;
+    mp_soft_spi_obj_t *self = (mp_soft_spi_obj_t *)self_in;
 
     switch (cmd) {
         case MP_SPI_IOCTL_INIT:
@@ -53,7 +53,7 @@ static uint8_t swap_bits(uint8_t byte) {
 }
 
 void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
-    mp_soft_spi_obj_t *self = (mp_soft_spi_obj_t*)self_in;
+    mp_soft_spi_obj_t *self = (mp_soft_spi_obj_t *)self_in;
     uint32_t delay_half = self->delay_half;
 
     // If a port defines MICROPY_HW_SOFTSPI_MIN_DELAY, and the configured

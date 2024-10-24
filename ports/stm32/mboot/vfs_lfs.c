@@ -67,7 +67,7 @@ static uint8_t lfs_lookahead_buffer[LFS_LOOKAHEAD_SIZE];
 
 #endif
 
-static int dev_read(const struct LFSx_API (config) * c, LFSx_API(block_t)block, LFSx_API(off_t)off, void *buffer, LFSx_API(size_t)size) {
+static int dev_read(const struct LFSx_API(config) * c, LFSx_API(block_t)block, LFSx_API(off_t)off, void *buffer, LFSx_API(size_t)size) {
     VFS_LFSx_CONTEXT_T *ctx = c->context;
     if (0 <= block && block < ctx->config.block_count) {
         mboot_addr_t addr = ctx->bdev_base_addr + (mboot_addr_t)block * (mboot_addr_t)ctx->config.block_size + (mboot_addr_t)off;
@@ -77,15 +77,15 @@ static int dev_read(const struct LFSx_API (config) * c, LFSx_API(block_t)block, 
     return LFSx_MACRO(_ERR_IO);
 }
 
-static int dev_prog(const struct LFSx_API (config) * c, LFSx_API(block_t)block, LFSx_API(off_t)off, const void *buffer, LFSx_API(size_t)size) {
+static int dev_prog(const struct LFSx_API(config) * c, LFSx_API(block_t)block, LFSx_API(off_t)off, const void *buffer, LFSx_API(size_t)size) {
     return LFSx_MACRO(_ERR_IO);
 }
 
-static int dev_erase(const struct LFSx_API (config) * c, LFSx_API(block_t)block) {
+static int dev_erase(const struct LFSx_API(config) * c, LFSx_API(block_t)block) {
     return LFSx_MACRO(_ERR_IO);
 }
 
-static int dev_sync(const struct LFSx_API (config) * c) {
+static int dev_sync(const struct LFSx_API(config) * c) {
     return LFSx_MACRO(_ERR_OK);
 }
 

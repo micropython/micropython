@@ -79,8 +79,8 @@ static void *m_malloc_bluetooth(size_t size) {
     return alloc->data;
 }
 
-static mp_bluetooth_nimble_malloc_t* get_nimble_malloc(void *ptr) {
-    return (mp_bluetooth_nimble_malloc_t*)((uintptr_t)ptr - sizeof(mp_bluetooth_nimble_malloc_t));
+static mp_bluetooth_nimble_malloc_t *get_nimble_malloc(void *ptr) {
+    return (mp_bluetooth_nimble_malloc_t *)((uintptr_t)ptr - sizeof(mp_bluetooth_nimble_malloc_t));
 }
 
 static void m_free_bluetooth(void *ptr) {
@@ -94,10 +94,10 @@ static void m_free_bluetooth(void *ptr) {
         MP_STATE_PORT(bluetooth_nimble_memory) = NULL;
     }
     m_free(alloc
-    #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-           , alloc->size
-    #endif
-    );
+        #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+        , alloc->size
+        #endif
+        );
 }
 
 // Check if a nimble ptr is tracked.
@@ -117,7 +117,7 @@ static bool is_valid_nimble_malloc(void *ptr) {
 
 void *nimble_malloc(size_t size) {
     DEBUG_MALLOC_printf("NIMBLE malloc(%u)\n", (uint)size);
-    void* ptr = m_malloc_bluetooth(size);
+    void *ptr = m_malloc_bluetooth(size);
     DEBUG_MALLOC_printf("  --> %p\n", ptr);
     return ptr;
 }
