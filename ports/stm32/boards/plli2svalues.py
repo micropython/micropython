@@ -137,8 +137,11 @@ def search_header(filename, re_include, re_define, lookup, val):
             m = regex_define.match(line)
             if m:
                 # found lookup value
+                found = m.group(3)
+                if "*" in found or "/" in found:
+                    found = eval(found)
                 if m.group(1) == lookup:
-                    val[0] = int(m.group(3))
+                    val[0] = int(found)
     return val
 
 
@@ -166,35 +169,41 @@ def main():
             break
 
     if mcu_series in mcu_support_plli2s:
-        if len(argv) != 2:
+        if len(argv) not in (1, 2):
             print("usage: pllvalues.py [-c] [-m <mcu_series>] <hse in MHz> <pllm in MHz>")
             sys.exit(1)
 
         if argv[0].startswith("hse:"):
-            # extract HSE_VALUE from header file
+            hse = int(argv[0][len("hse:") :])
+
+        if argv[0].startswith("pllm:"):
+            pllm = int(argv[0][len("pllm:") :])
+
+        if argv[0].startswith("file:"):
+            # extract HSE_VALUE and from header file
             (hse,) = search_header(
-                argv[0][len("hse:") :],
+                argv[0][len("file:") :],
                 r'#include "(boards/[A-Za-z0-9_./]+)"',
-                r"#define +(HSE_VALUE) +\((\(uint32_t\))?([0-9]+)\)",
-                "HSE_VALUE",
+                r"static.* (micropy_hw_hse_value) = +\(*(\(uint32_t\))?([0-9 +-/\*]+)\)*;",
+                "micropy_hw_hse_value",
                 [None],
             )
             if hse is None:
-                raise ValueError("%s does not contain a definition of HSE_VALUE" % argv[0])
-            argv.pop(0)
+                raise ValueError(
+                    "%s does not contain a definition of micropy_hw_hse_value" % argv[0]
+                )
 
-        if argv[0].startswith("pllm:"):
             # extract MICROPY_HW_CLK_PLLM from header file
             (pllm,) = search_header(
-                argv[0][len("pllm:") :],
+                argv[0][len("file:") :],
                 r'#include "(boards/[A-Za-z0-9_./]+)"',
-                r"#define +(MICROPY_HW_CLK_PLLM) +\((\(uint32_t\))?([0-9]+)\)",
-                "MICROPY_HW_CLK_PLLM",
+                r"static.* (micropy_hw_clk_pllm) = +\(*(\(uint32_t\))?([0-9 +-/\*]+)\)*;",
+                "micropy_hw_clk_pllm",
                 [None],
             )
             if pllm is None:
                 raise ValueError(
-                    "%s does not contain a definition of MICROPY_HW_CLK_PLLM" % argv[0]
+                    "%s does not contain a definition of micropy_hw_clk_pllm" % argv[0]
                 )
             argv.pop(0)
 
