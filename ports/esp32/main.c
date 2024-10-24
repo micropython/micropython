@@ -49,6 +49,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mphal.h"
+#include "py/objmodule.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/timeutils/timeutils.h"
@@ -180,6 +181,10 @@ soft_reset_exit:
 
     #if MICROPY_PY_THREAD
     mp_thread_deinit();
+    #endif
+
+    #if MICROPY_PY_SYS_ATEXIT
+    mp_sys_atexit_execute();
     #endif
 
     gc_sweep_all();

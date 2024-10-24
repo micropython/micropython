@@ -208,13 +208,42 @@ static MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_getsizeof_obj, mp_sys_getsizeof);
 #endif
 
 #if MICROPY_PY_SYS_ATEXIT
+typedef struct _m_atexit_node_t {
+    struct _m_atexit_node_t *prev;
+    struct _m_atexit_node_t *next;
+    mp_obj_t fn;
+} m_atexit_node_t;
+
 // atexit(callback): Callback is called when sys.exit is called.
 static mp_obj_t mp_sys_atexit(mp_obj_t obj) {
-    mp_obj_t old = MP_STATE_VM(sys_exitfunc);
-    MP_STATE_VM(sys_exitfunc) = obj;
-    return old;
+    m_atexit_node_t *node = m_malloc(sizeof(m_atexit_node_t));
+    if (MP_STATE_VM(sys_exitfunc) != mp_const_none) {
+        MP_STATE_VM(sys_exitfunc)->prev = node;
+    }
+    node->fn = obj;
+    node->prev = NULL;
+    node->next = MP_STATE_VM(sys_exitfunc);
+    MP_STATE_VM(sys_exitfunc) = node;
+    return obj;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_atexit_obj, mp_sys_atexit);
+
+void mp_sys_atexit_execute(void) {
+    // walk through the linked list and execute each function
+    // Beware, the sys.settrace callback should be disabled before running sys.atexit.
+    while (MP_STATE_VM(sys_exitfunc) != mp_const_none) {
+        if (mp_obj_is_callable(MP_STATE_VM(sys_exitfunc)->fn)) {
+            nlr_buf_t nlr;
+            if (nlr_push(&nlr) == 0) {
+                mp_call_function_0(MP_STATE_VM(sys_exitfunc)->fn);
+            } else {
+                // Uncaught exception: print it out.
+                mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+            }
+        }
+        MP_STATE_VM(sys_exitfunc) = MP_STATE_VM(sys_exitfunc)->next;
+    }
+}
 #endif
 
 #if MICROPY_PY_SYS_SETTRACE
@@ -364,7 +393,7 @@ MP_REGISTER_ROOT_POINTER(mp_obj_base_t * cur_exception);
 
 #if MICROPY_PY_SYS_ATEXIT
 // exposed through sys.atexit function
-MP_REGISTER_ROOT_POINTER(mp_obj_t sys_exitfunc);
+MP_REGISTER_ROOT_POINTER(struct _m_atexit_node_t *sys_exitfunc);
 #endif
 
 #if MICROPY_PY_SYS_ATTR_DELEGATION

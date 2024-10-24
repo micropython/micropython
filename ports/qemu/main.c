@@ -31,6 +31,7 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
+#include "py/objmodule.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 
@@ -60,6 +61,9 @@ int main(int argc, char **argv) {
 
         mp_printf(&mp_plat_print, "MPY: soft reboot\n");
 
+        #if MICROPY_PY_SYS_ATEXIT
+        mp_sys_atexit_execute();
+        #endif
         gc_sweep_all();
         mp_deinit();
     }

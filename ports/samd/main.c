@@ -29,6 +29,7 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/stackctrl.h"
+#include "py/objmodule.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
@@ -97,6 +98,9 @@ void samd_main(void) {
         soft_timer_deinit();
         #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
         mp_usbd_deinit();
+        #endif
+        #if MICROPY_PY_SYS_ATEXIT
+        mp_sys_atexit_execute();
         #endif
         gc_sweep_all();
         #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART

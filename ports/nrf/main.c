@@ -35,6 +35,7 @@
 #include "py/lexer.h"
 #include "py/parse.h"
 #include "py/obj.h"
+#include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/gc.h"
@@ -292,6 +293,11 @@ soft_reset:
     pwm_deinit_all();
     #endif
 
+    #if MICROPY_PY_SYS_ATEXIT
+    mp_sys_atexit_execute();
+    #endif
+
+    gc_sweep_all();
     mp_deinit();
 
     printf("MPY: soft reboot\n");

@@ -15,6 +15,11 @@ def do_at_exit():
     print("done at exit:", some_var)
 
 
+@sys.atexit
+def do_at_exit_2():
+    print("done at exit last")
+
+
 sys.atexit(do_at_exit)
 
 some_var = "ok"
