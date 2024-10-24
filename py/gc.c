@@ -641,6 +641,9 @@ void gc_collect_end(void) {
     }
     MP_STATE_THREAD(gc_lock_depth)--;
     GC_EXIT();
+    #if MICROPY_TRACKED_ALLOC && MICROPY_ENABLE_FINALISER
+    m_tracked_free_pending();
+    #endif
 }
 
 void gc_sweep_all(void) {
