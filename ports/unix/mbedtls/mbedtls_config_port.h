@@ -32,6 +32,9 @@
 // Enable mbedtls modules
 #define MBEDTLS_TIMING_C
 
+// Enable DTLS
+#define MBEDTLS_SSL_PROTO_DTLS
+
 // Include common mbedtls configuration.
 #include "extmod/mbedtls/mbedtls_config_common.h"
 
