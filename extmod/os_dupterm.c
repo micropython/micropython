@@ -37,6 +37,7 @@
 #if MICROPY_PY_OS_DUPTERM
 
 #include "shared/runtime/interrupt_char.h"
+#include "shared/tinyusb/mp_usbd_cdc.h"
 
 void mp_os_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
     mp_obj_t term = MP_STATE_VM(dupterm_objs[dupterm_idx]);
@@ -61,6 +62,16 @@ void mp_os_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
     }
 }
 
+#if MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM
+static bool is_builtin_stream(mp_const_obj_t stream) {
+    if (mp_obj_get_type(stream) == &machine_usbd_cdc_type || mp_os_dupterm_is_builtin_stream(stream)) {
+        // return false;
+        return true;
+    }
+    return false;
+}
+#endif
+
 uintptr_t mp_os_dupterm_poll(uintptr_t poll_flags) {
     uintptr_t poll_flags_out = 0;
 
@@ -74,7 +85,7 @@ uintptr_t mp_os_dupterm_poll(uintptr_t poll_flags) {
         mp_uint_t ret = 0;
         const mp_stream_p_t *stream_p = mp_get_stream(s);
         #if MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM
-        if (mp_os_dupterm_is_builtin_stream(s)) {
+        if (is_builtin_stream(s)) {
             ret = stream_p->ioctl(s, MP_STREAM_POLL, poll_flags, &errcode);
         } else
         #endif
@@ -123,7 +134,7 @@ int mp_os_dupterm_rx_chr(void) {
         }
 
         #if MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM
-        if (mp_os_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
+        if (is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
             byte buf[1];
             int errcode = 0;
             const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
@@ -187,7 +198,7 @@ int mp_os_dupterm_tx_strn(const char *str, size_t len) {
         did_write = true;
 
         #if MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM
-        if (mp_os_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
+        if (is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
             int errcode = 0;
             const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
             mp_uint_t written = stream_p->write(MP_STATE_VM(dupterm_objs[idx]), str, len, &errcode);
