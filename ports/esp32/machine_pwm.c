@@ -60,7 +60,7 @@ typedef struct _chan_t {
     // Which channel has which timer assigned?
     // (-1 if not assigned)
     int timer_idx;
-    // Is ligth sleep enable has been set for this pin
+    // Is light sleep enable has been set for this pin
     bool lightsleepenabled;
 } chan_t;
 
@@ -128,7 +128,11 @@ static const ledc_clk_cfg_t clk_source_map[] = {
     #else
     -1,
     #endif
+    #if SOC_LEDC_SUPPORT_XTAL_CLOCK
     LEDC_USE_XTAL_CLK 
+    #else
+    -1
+    #endif
 };
 
 // Config of timer upon which we run all PWM'ed GPIO pins
@@ -260,7 +264,7 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
         uint32_t src_clock_freq;
 
         if ( esp_clk_tree_src_get_freq_hz(led_src_clock, ESP_CLK_TREE_SRC_FREQ_PRECISION_APPROX, &src_clock_freq) != ESP_OK ) {
-            mp_raise_ValueError(MP_ERROR_TEXT("Error on getting reference clock frequence"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Error on getting reference clock frequency."));
         }        
 
         uint32_t res = ledc_find_suitable_duty_resolution(src_clock_freq, freq);
@@ -449,7 +453,7 @@ static bool is_timer_in_use(int current_channel_idx, int timer_idx) {
 }
 
 #if !(PWM_SUPPORT_INDEP_CLOCK_SRC)
-// Check if a timer is alreday set with a different clock source
+// Check if a timer is already set with a different clock source
 static int is_timer_with_different_clock(int current_timer_idx, ledc_clk_cfg_t ref_clk_src) {
     for(int i=0; i < PWM_TIMER_MAX; i++) {
         if ( (i != current_timer_idx) && (timers[i].clk_cfg != LEDC_AUTO_CLK) && (timers[i].clk_cfg != ref_clk_src)) {
@@ -484,9 +488,11 @@ static int find_clock_in_use() {
         return PWM_REF_TICK;
     } 
     #endif
+    #if SOC_LEDC_SUPPORT_XTAL_CLOCK
     else if (found_clk == LEDC_USE_XTAL_CLK) {
         return PWM_XTAL_CLK;
     }
+    #endif
 
     return PWM_AUTO_CLK;
 }
@@ -542,9 +548,12 @@ static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
             mp_printf(print, ", clock=PWM_APB_CLK(%d)",PWM_APB_CLK);
         } else if (clk_src == LEDC_USE_RC_FAST_CLK) {
             mp_printf(print, ", clock=PWM_RC_FAST_CLK(%d)",PWM_RC_FAST_CLK);
-        } else if (clk_src == LEDC_USE_XTAL_CLK) {
+        } 
+        #if SOC_LEDC_SUPPORT_XTAL_CLOCK
+        else if (clk_src == LEDC_USE_XTAL_CLK) {
             mp_printf(print, ", clock=PWM_XTAL_CLK(%d)",PWM_XTAL_CLK);
         }
+        #endif
         #if SOC_LEDC_SUPPORT_REF_TICK
         else if (clk_src == LEDC_USE_REF_TICK) {
             mp_printf(print, ", clock=PWM_REF_TICK(%d)",PWM_REF_TICK);
@@ -555,7 +564,7 @@ static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
         }
         
         if(self->lightsleepenabled) {
-            mp_printf(print, ", ligth sleep enabled");
+            mp_printf(print, ", light sleep enabled");
         }
     }
     mp_printf(print, ")");
@@ -577,7 +586,9 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     mp_arg_parse_all(n_args, pos_args, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // ***************************** Decode clok and ligh sleep mode *********************************
+    int freq = args[ARG_freq].u_int;
+
+    // ***************************** Decode clok and light sleep mode *********************************
     int pwm_src_clock = args[ARG_clock].u_int;
     if (pwm_src_clock >= _PWM_LAST_CLK_IDX) {
         mp_raise_ValueError(MP_ERROR_TEXT("Bad value for clock."));
@@ -652,9 +663,7 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     if (((duty != -1) && (duty_u16 != -1)) || ((duty != -1) && (duty_ns != -1)) || ((duty_u16 != -1) && (duty_ns != -1))) {
         mp_raise_ValueError(MP_ERROR_TEXT("only one of parameters 'duty', 'duty_u16' or 'duty_ns' is allowed"));
     }
-
-
-    int freq = args[ARG_freq].u_int;
+    
     // Check if freq wasn't passed as an argument
     if (freq == -1) {
         // Check if already set, otherwise use the default freq.
