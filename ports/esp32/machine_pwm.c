@@ -156,15 +156,6 @@ static void set_duty_ns(machine_pwm_obj_t *self, int ns);
 
 static void pwm_init(void) {
 
-    // YDE:: Pour les light_sleep mode
-    // check_esp_err(rtc_clk_slow_freq_set(RTC_SLOW_FREQ_8MD256));
-    
-    // check_esp_err(esp_sleep_pd_config(ESP_PD_DOMAIN_RC_FAST, ESP_PD_OPTION_ON));
-    
-    // check_esp_err(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON));
-    // check_esp_err(esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_ON)); // Valable pour l'ESP32-WROOM-32 si Gpio 16&17
-    // check_esp_err(esp_sleep_periph_use_8m(true)); // normalement fait dans /driver/ledc/ledc.c
-
     // Initial condition: no channels assigned
     for (int i = 0; i < PWM_CHANNEL_MAX; ++i) {
         chans[i].pin = -1;
@@ -266,44 +257,6 @@ static void configure_channel(machine_pwm_obj_t *self) {
 static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_config_t *timer, ledc_clk_cfg_t led_src_clock) {
     if (freq != timer->freq_hz) {
 
-        // Find the highest bit resolution for the requested frequency
-/*      unsigned int i=0;
-
-        switch(src_clock) {
-            case PWM_APB_CLK:
-                i = APB_CLK_FREQ;
-                break;
-            case PWM_RC_FAST_CLK:
-                i = RC_FAST_CLK_FREQ;
-                break;
-            case PWM_REF_TICK:
-                i = REF_CLK_FREQ;
-                break;
-        }
- 
-        int divider = (i + freq / 2) / freq; // rounded
-        if (divider == 0) {
-            divider = 1;
-        }
-        float f = (float)i / divider; // actual frequency
-        if (f <= 1.0) {
-            f = 1.0;
-        }
-        i = (unsigned int)roundf((float)i / f);
-
-        unsigned int res = 0;
-        for (; i > 1; i >>= 1) {
-            ++res;
-        }
-        if (res == 0) {
-            res = 1;
-        } else if (res > HIGHEST_PWM_RES) {
-            // Limit resolution to HIGHEST_PWM_RES to match units of our duty
-            res = HIGHEST_PWM_RES;
-        }
-*/        
-        //esp_err_t esp_clk_tree_src_get_freq_hz(soc_module_clk_t clk_src, esp_clk_tree_src_freq_precision_t precision, uint32_t *freq_value)
-
         uint32_t src_clock_freq;
 
         if ( esp_clk_tree_src_get_freq_hz(led_src_clock, ESP_CLK_TREE_SRC_FREQ_PRECISION_APPROX, &src_clock_freq) != ESP_OK ) {
@@ -320,19 +273,6 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
         timer->freq_hz = freq;
         timer->clk_cfg = led_src_clock;
 
-/*
-        #if SOC_LEDC_SUPPORT_XTAL_CLOCK
-        timer->clk_cfg = LEDC_USE_XTAL_CLK;
-        #else
-        timer->clk_cfg = LEDC_USE_APB_CLK;
-        
-        #endif
-        #if SOC_LEDC_SUPPORT_REF_TICK
-        if (freq < EMPIRIC_FREQ) {
-            timer->clk_cfg = LEDC_USE_REF_TICK;
-        }
-        #endif
-*/
         // Set frequency
         esp_err_t err = ledc_timer_config(timer);
         if (err != ESP_OK) {
@@ -346,8 +286,6 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
                 check_esp_err(err);
             }
         }
-
-        //check_esp_err(esp_sleep_periph_use_8m(true)); ==> ne sert à rien
 
         // Reset the timer if low speed
         if (self->mode == LEDC_LOW_SPEED_MODE) {
@@ -521,6 +459,38 @@ static int is_timer_with_different_clock(int current_timer_idx, ledc_clk_cfg_t r
 
     return false;
 }
+
+// This check if a clock is already set in the timer list, if yes, return the PWM_XXX_CLK value
+static int find_clock_in_use() {
+
+    ledc_clk_cfg_t found_clk = LEDC_AUTO_CLK;
+
+    for(int i=0; i < PWM_TIMER_MAX; i++) {
+        if (timers[i].clk_cfg != LEDC_AUTO_CLK)  {
+            found_clk = timers[i].clk_cfg;
+            break;
+        }
+    }
+
+    if (found_clk == LEDC_AUTO_CLK) {
+        return PWM_AUTO_CLK;
+    } else if (found_clk == LEDC_USE_APB_CLK) {
+        return PWM_APB_CLK;
+    } else if (found_clk == LEDC_USE_RC_FAST_CLK) {
+        return PWM_RC_FAST_CLK;        
+    } 
+    #if SOC_LEDC_SUPPORT_REF_TICK
+    else if (found_clk == LEDC_USE_REF_TICK) {
+        return PWM_REF_TICK;
+    } 
+    #endif
+    else if (found_clk == LEDC_USE_XTAL_CLK) {
+        return PWM_XTAL_CLK;
+    }
+
+    return PWM_AUTO_CLK;
+}
+
 #endif
 
 // Find a free PWM channel, also spot if our pin is already mentioned.
@@ -552,13 +522,6 @@ static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     mp_printf(print, "PWM(Pin(%u)", self->pin);
     if (self->active) {
         mp_printf(print, ", freq=%u", ledc_get_freq(self->mode, self->timer));
-
-        uint32_t rduty = get_duty_raw(self);
-        if (rduty == LEDC_ERR_DUTY) {
-            mp_printf(print, ", raw_duty=<ERROR>");
-        } else {
-            mp_printf(print, ", raw_duty=%d", rduty);
-        }
 
         if (self->duty_x == PWM_RES_10_BIT) {
             mp_printf(print, ", duty=%d", get_duty_u10(self));
@@ -620,6 +583,11 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
         mp_raise_ValueError(MP_ERROR_TEXT("Bad value for clock."));
     }
 
+    // Check if the clock is available:
+    if (clk_source_map[pwm_src_clock] < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Clock source not available for this Soc."));
+    }
+
     if(args[ARG_lightSleepEnable].u_int > 0) {
         // The light sleep enabled is requested 
         // => GPIO need to be in the not disabled list
@@ -641,19 +609,32 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     // if auto clock => Determine the best clock
     if (pwm_src_clock == PWM_AUTO_CLK) {
 
-        pwm_src_clock = PWM_APB_CLK;
+        #if !(PWM_SUPPORT_INDEP_CLOCK_SRC)
+            int pwm_clk = find_clock_in_use();
+            if (pwm_clk != PWM_AUTO_CLK) {
+                pwm_src_clock = pwm_clk;
+            }
+            else {
+                pwm_src_clock = PWM_APB_CLK;
+            }
+        #else
+            pwm_src_clock = PWM_APB_CLK;
 
-        #if SOC_LEDC_SUPPORT_REF_TICK
-        if (freq < EMPIRIC_FREQ) {
-            pwm_src_clock = PWM_REF_TICK; // 1 MHz
-        }
+            #if SOC_LEDC_SUPPORT_REF_TICK
+            if (freq < EMPIRIC_FREQ) {
+                pwm_src_clock = PWM_REF_TICK; // 1 MHz
+            }
+            #endif
         #endif
     }
-
-    // Check if the clock is available:
-    if (clk_source_map[pwm_src_clock] < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Clock source not available for this Soc."));
+    #if !(PWM_SUPPORT_INDEP_CLOCK_SRC)
+    else {
+        int pwm_clk = find_clock_in_use();
+        if ((pwm_clk != PWM_AUTO_CLK) && (pwm_clk != pwm_src_clock)) { 
+            mp_raise_ValueError(MP_ERROR_TEXT("one or more active timers use a different clock source, not supported by the current SoC."));
+        }
     }
+    #endif
 
 
     // Note: High Speed Mode (available on ESP32 only, not on S2/S3), only supports REF_TICK(1MHz) and APB_CLK(80MHz)    
