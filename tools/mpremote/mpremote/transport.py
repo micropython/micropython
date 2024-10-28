@@ -151,9 +151,9 @@ class Transport:
             while data:
                 chunk = data[:chunk_size]
                 self.exec("w(" + repr(chunk) + ")")
-                written += len(chunk)
                 data = data[len(chunk) :]
                 if progress_callback:
+                    written += len(chunk)
                     progress_callback(written, src_size)
             self.exec("f.close()")
         except TransportExecError as e:

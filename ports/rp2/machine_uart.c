@@ -491,8 +491,9 @@ static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
 }
 
 static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+    // TX is done when: nothing in the ringbuf, TX FIFO is empty, TX output is not busy.
     return ringbuf_avail(&self->write_buffer) == 0
-           && (uart_get_hw(self->uart)->fr & UART_UARTFR_TXFE_BITS);
+           && (uart_get_hw(self->uart)->fr & (UART_UARTFR_TXFE_BITS | UART_UARTFR_BUSY_BITS)) == UART_UARTFR_TXFE_BITS;
 }
 
 static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {

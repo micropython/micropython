@@ -2,8 +2,8 @@
 import sys
 
 
-if sys.platform == "esp32":
-    print("SKIP")  # TODO: Implement soft timers for esp32 port
+if sys.platform in ("esp32", "esp8266"):
+    print("SKIP")  # TODO: Implement soft timers for esp32/esp8266 ports
     raise SystemExit
 
 

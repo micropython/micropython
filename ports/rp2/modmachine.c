@@ -261,6 +261,9 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     // Bring back all clocks.
     runtime_init_clocks_optional_usb(disable_usb);
     MICROPY_END_ATOMIC_SECTION(my_interrupts);
+
+    // Re-sync mp_hal_time_ns() counter with aon timer.
+    mp_hal_time_ns_set_from_rtc();
 }
 
 NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {

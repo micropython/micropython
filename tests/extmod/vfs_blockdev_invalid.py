@@ -19,7 +19,7 @@ class RAMBlockDevice:
         self.write_res = 0
 
     def readblocks(self, block, buf, off=0):
-        print("readblocks")
+        # print("readblocks", block, len(buf), off)
         addr = block * self.ERASE_BLOCK_SIZE + off
         for i in range(len(buf)):
             buf[i] = self.data[addr + i]
