@@ -1717,7 +1717,7 @@ size_t mpz_as_str_inpl(const mpz_t *i, unsigned int base, const char *prefix, ch
                 break;
             }
         }
-        if (comma && (s - last_comma) == 3) {
+        if (!done && comma && (s - last_comma) == 3) {
             *s++ = comma;
             last_comma = s;
         }

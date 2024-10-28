@@ -35,7 +35,16 @@
 #include "mpconfigboard.h"
 
 // Board and hardware specific configuration
+#if PICO_RP2040
 #define MICROPY_HW_MCU_NAME                     "RP2040"
+#elif PICO_RP2350 && PICO_ARM
+#define MICROPY_HW_MCU_NAME                     "RP2350"
+#elif PICO_RP2350 && PICO_RISCV
+#define MICROPY_HW_MCU_NAME                     "RP2350-RISCV"
+#else
+#error Unknown MCU
+#endif
+
 #ifndef MICROPY_HW_ENABLE_UART_REPL
 #define MICROPY_HW_ENABLE_UART_REPL             (0) // useful if there is no USB
 #endif
@@ -69,10 +78,16 @@
 
 // MicroPython emitters
 #define MICROPY_PERSISTENT_CODE_LOAD            (1)
+#if PICO_ARM
 #define MICROPY_EMIT_THUMB                      (1)
-#define MICROPY_EMIT_THUMB_ARMV7M               (0)
 #define MICROPY_EMIT_INLINE_THUMB               (1)
+#if PICO_RP2040
+#define MICROPY_EMIT_THUMB_ARMV7M               (0)
 #define MICROPY_EMIT_INLINE_THUMB_FLOAT         (0)
+#endif
+#elif PICO_RISCV
+#define MICROPY_EMIT_RV32                       (1)
+#endif
 
 // Optimisations
 #define MICROPY_OPT_COMPUTED_GOTO               (1)
@@ -260,7 +275,9 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_HW_BOOTSEL_DELAY_US 8
 #endif
 
+#if PICO_ARM
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
+#endif
 
 #define MP_SSIZE_MAX (0x7fffffff)
 typedef intptr_t mp_int_t; // must be pointer size

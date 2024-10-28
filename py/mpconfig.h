@@ -30,7 +30,7 @@
 // as well as a fallback to generate MICROPY_GIT_TAG if the git repo or tags
 // are unavailable.
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 24
+#define MICROPY_VERSION_MINOR 25
 #define MICROPY_VERSION_MICRO 0
 #define MICROPY_VERSION_PRERELEASE 1
 
@@ -424,18 +424,6 @@
 
 // Convenience definition for whether any native or inline assembler emitter is enabled
 #define MICROPY_EMIT_MACHINE_CODE (MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM)
-
-// Whether native relocatable code loaded from .mpy files is explicitly tracked
-// so that the GC cannot reclaim it.  Needed on architectures that allocate
-// executable memory on the MicroPython heap and don't explicitly track this
-// data some other way.
-#ifndef MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
-#if !MICROPY_EMIT_MACHINE_CODE || defined(MP_PLAT_ALLOC_EXEC) || defined(MP_PLAT_COMMIT_EXEC)
-#define MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE (0)
-#else
-#define MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE (1)
-#endif
-#endif
 
 /*****************************************************************************/
 /* Compiler configuration                                                    */
@@ -1826,6 +1814,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SSL_FINALISER (MICROPY_ENABLE_FINALISER)
 #endif
 
+// Whether to add a root pointer for the current ssl object
+#ifndef MICROPY_PY_SSL_MBEDTLS_NEED_ACTIVE_CONTEXT
+#define MICROPY_PY_SSL_MBEDTLS_NEED_ACTIVE_CONTEXT (MICROPY_PY_SSL_ECDSA_SIGN_ALT)
+#endif
+
 // Whether to provide the "vfs" module
 #ifndef MICROPY_PY_VFS
 #define MICROPY_PY_VFS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES && MICROPY_VFS)
@@ -1992,14 +1985,48 @@ typedef double mp_float_t;
 #define MICROPY_MAKE_POINTER_CALLABLE(p) (p)
 #endif
 
-// If these MP_PLAT_*_EXEC macros are overridden then the memory allocated by them
-// must be somehow reachable for marking by the GC, since the native code
-// generators store pointers to GC managed memory in the code.
-#ifndef MP_PLAT_ALLOC_EXEC
-#define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) do { *ptr = m_new(byte, min_size); *size = min_size; } while (0)
+// Whether native text/BSS/rodata memory loaded from .mpy files is explicitly tracked
+// so that the GC cannot reclaim it.
+//
+// In general a port should let these options have their defaults, but the defaults here
+// can be overridden if needed by defining both MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA
+// and MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA.
+#ifndef MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA
+#if MICROPY_EMIT_MACHINE_CODE && MICROPY_PERSISTENT_CODE_LOAD
+// Pointer tracking is required when loading native code is enabled.
+#if defined(MP_PLAT_ALLOC_EXEC) || defined(MP_PLAT_COMMIT_EXEC)
+// If a port defined a custom allocator or commit function for native text, then the
+// text does not need to be tracked (its allocation is managed by the port).  But the
+// BSS/rodata must be tracked (if there is any) because if there are any pointers to it
+// in the function data, they aren't traced by the GC.
+#define MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA (0)
+#define MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA (1)
+#else
+// If a port uses the default allocator (the GC heap) then all native text is allocated
+// on the GC heap.  But it's not guaranteed that a pointer to the head of the block of
+// native text (which may contain multiple native functions) will be retained for the GC
+// to trace.  This is because native functions can start inside the big block of text
+// and so it's possible that the only GC-reachable pointers are pointers inside.
+// Therefore the big block is explicitly tracked. If there is any BSS/rodata memory,
+// then it does not need to be explicitly tracked because a pointer to it is stored into
+// the function text via `mp_native_relocate()`.
+#define MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA (1)
+#define MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA (0)
+#endif
+#else // MICROPY_EMIT_MACHINE_CODE && MICROPY_PERSISTENT_CODE_LOAD
+// Pointer tracking not needed when loading native code is disabled.
+#define MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA (0)
+#define MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA (0)
+#endif
 #endif
 
-#ifndef MP_PLAT_FREE_EXEC
+// If these macros are defined then the memory allocated by them does not need to be
+// traced by the GC.  But if they are left undefined then the GC heap will be used as
+// the allocator and the memory must be traced by the GC.  See also above logic for
+// enabling MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA and
+// MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA.
+#ifndef MP_PLAT_ALLOC_EXEC
+#define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) do { *ptr = m_new(byte, min_size); *size = min_size; } while (0)
 #define MP_PLAT_FREE_EXEC(ptr, size) m_del(byte, ptr, size)
 #endif
 

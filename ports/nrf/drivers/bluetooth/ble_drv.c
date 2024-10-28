@@ -30,13 +30,13 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "py/mphal.h"
 #include "py/runtime.h"
 #include "ble_drv.h"
 #include "nrf_sdm.h"
 #include "ble_gap.h"
 #include "ble.h" // sd_ble_uuid_encode
 #include "drivers/flash.h"
-#include "mphalport.h"
 
 
 #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC

@@ -71,6 +71,7 @@ port_data = {
     "r": PortData("nrf", "nrf", "build-PCA10040/firmware.elf"),
     "p": PortData("rp2", "rp2", "build-RPI_PICO_W/firmware.elf", "BOARD=RPI_PICO_W"),
     "d": PortData("samd", "samd", "build-ADAFRUIT_ITSYBITSY_M4_EXPRESS/firmware.elf"),
+    "v": PortData("qemu rv32", "qemu", "build-VIRT_RV32/firmware.elf", "BOARD=VIRT_RV32"),
 }
 
 

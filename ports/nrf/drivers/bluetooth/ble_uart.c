@@ -29,8 +29,8 @@
 #include <string.h>
 #include "ble_uart.h"
 #include "ringbuffer.h"
-#include "mphalport.h"
 #include "shared/runtime/interrupt_char.h"
+#include "py/mphal.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_SYS_STDFILES

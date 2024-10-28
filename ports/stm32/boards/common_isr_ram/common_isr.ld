@@ -14,7 +14,7 @@
        flash (in main.c) along with the isr_vector above.
     */
     . = ALIGN(4);
-    *(.text.pendsv_kbd_intr)
+    *(.text.mp_sched_keyboard_interrupt)
     *(.text.pendsv_schedule_dispatch)
     *(.text.storage_systick_callback)
     *(.text.SysTick_Handler)

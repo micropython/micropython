@@ -67,10 +67,20 @@ static machine_pwm_obj_t machine_pwm_obj[] = {
     {{&machine_pwm_type}, 6, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
     {{&machine_pwm_type}, 7, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
     {{&machine_pwm_type}, 7, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
+    #if NUM_PWM_SLICES == 12
+    {{&machine_pwm_type}, 8, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 8, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 9, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 9, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 10, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 10, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 11, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 11, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
+    #endif
 };
 
 static bool defer_start;
-static bool slice_freq_set[8];
+static bool slice_freq_set[NUM_PWM_SLICES];
 
 static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
 static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16);
@@ -155,7 +165,7 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 
 // Stop all active slices.
 void machine_pwm_deinit_all(void) {
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < NUM_PWM_SLICES; i++) {
         slice_freq_set[i] = false;
         pwm_set_enabled(machine_pwm_obj[i].slice, false);
     }

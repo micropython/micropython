@@ -28,7 +28,7 @@
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
-#include "mphalport.h"
+#include "py/mphal.h"
 #include "modesp32.h"
 #include "nvs_flash.h"
 #include "nvs.h"

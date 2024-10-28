@@ -45,4 +45,4 @@ try:
     # Size must be int.
     micropython.RingIO(None)
 except TypeError as ex:
-    print(ex)
+    print(type(ex))

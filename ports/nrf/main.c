@@ -31,6 +31,7 @@
 
 #include "py/nlr.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "py/lexer.h"
 #include "py/parse.h"
 #include "py/obj.h"
@@ -53,7 +54,6 @@
 #include "i2c.h"
 #include "adc.h"
 #include "rtcounter.h"
-#include "mphalport.h"
 
 #if MICROPY_PY_MACHINE_HW_PWM
 #include "pwm.h"

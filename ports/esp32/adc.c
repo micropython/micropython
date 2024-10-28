@@ -45,7 +45,7 @@ void madcblock_bits_helper(machine_adc_block_obj_t *self, mp_int_t bits) {
             self->width = ADC_WIDTH_BIT_11;
             break;
         #endif
-        #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S3
+        #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32S3
         case 12:
             self->width = ADC_WIDTH_BIT_12;
             break;

@@ -177,11 +177,21 @@ internal_bench/bytebuf:
 
 ## Test key/certificates
 
-SSL/TLS tests in `multi_net` and `net_inet` use a
-self-signed key/cert pair that is randomly generated and to be used for
-testing/demonstration only. You should always generate your own key/cert.
+SSL/TLS tests in `multi_net` and `net_inet` use self-signed key/cert pairs
+that are randomly generated to be used for testing/demonstration only.
 
-To generate a new self-signed RSA key/cert pair with openssl do:
+To run tests on-device the `.der` files should be copied and the current time
+set to ensure certs validity. This can be done with:
+```
+$ mpremote rtc --set cp multi_net/*.der net_inet/*.der :
+```
+
+### Generating new test key/certificates
+
+The keys used for the unit tests are included in the tests folders so don't generally
+need to be re-created by end users. This section is included here for reference only.
+
+A new self-signed RSA key/cert pair can be created with openssl:
 ```
 $ openssl req -x509 -newkey rsa:2048 -keyout rsa_key.pem -out rsa_cert.pem -days 365 -nodes -subj '/CN=micropython.local/O=MicroPython/C=AU'
 ```
@@ -193,8 +203,9 @@ $ openssl pkey -in rsa_key.pem -out rsa_key.der -outform DER
 $ openssl x509 -in rsa_cert.pem -out rsa_cert.der -outform DER
 ```
 
-To test elliptic curve key/cert pairs, create a key then a certificate using:
+For elliptic curve tests using key/cert pairs, create a key then a certificate using:
 ```
-$ openssl ecparam -name prime256v1 -genkey -noout -out ec_key.der -outform DER
-$ openssl req -new -x509 -key ec_key.der -out ec_cert.der -outform DER -days 365 -nodes -subj '/CN=micropython.local/O=MicroPython/C=AU'
+$ openssl ecparam -name prime256v1 -genkey -noout -out ec_key.pem
+$ openssl x509 -in ec_key.pem -out ec_key.der -outform DER
+$ openssl req -new -x509 -key ec_key.pem -out ec_cert.der -outform DER -days 365 -nodes -subj '/CN=micropython.local/O=MicroPython/C=AU'
 ```

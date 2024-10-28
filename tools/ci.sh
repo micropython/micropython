@@ -55,11 +55,12 @@ function ci_code_size_setup {
     sudo apt-get install gcc-multilib
     gcc --version
     ci_gcc_arm_setup
+    ci_gcc_riscv_setup
 }
 
 function ci_code_size_build {
     # check the following ports for the change in their code size
-    PORTS_TO_CHECK=bmusxpd
+    PORTS_TO_CHECK=bmusxpdv
     SUBMODULES="lib/asf4 lib/berkeley-db-1.xx lib/btstack lib/cyw43-driver lib/lwip lib/mbedtls lib/micropython-lib lib/nxp_driver lib/pico-sdk lib/stm32lib lib/tinyusb"
 
     # starts off at either the ref/pull/N/merge FETCH_HEAD, or the current branch HEAD
@@ -308,6 +309,8 @@ function ci_rp2_build {
     make ${MAKEOPTS} -C ports/rp2
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W submodules
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W USER_C_MODULES=../../examples/usercmodule/micropython.cmake
+    make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO2 submodules
+    make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO2
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO submodules
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO
 
@@ -421,6 +424,7 @@ CI_UNIX_OPTS_QEMU_ARM=(
 CI_UNIX_OPTS_QEMU_RISCV64=(
     CROSS_COMPILE=riscv64-linux-gnu-
     VARIANT=coverage
+    MICROPY_STANDALONE=1
 )
 
 function ci_unix_build_helper {
@@ -691,16 +695,12 @@ function ci_unix_qemu_arm_run_tests {
 }
 
 function ci_unix_qemu_riscv64_setup {
-    . /etc/os-release
-    for repository in "${VERSION_CODENAME}" "${VERSION_CODENAME}-updates" "${VERSION_CODENAME}-security"
-    do
-        sudo add-apt-repository -y -n "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports ${repository} main"
-    done
     sudo apt-get update
-    sudo dpkg --add-architecture riscv64
-    sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libffi-dev:riscv64
+    sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu
     sudo apt-get install qemu-user
     qemu-riscv64 --version
+    sudo mkdir /etc/qemu-binfmt
+    sudo ln -s /usr/riscv64-linux-gnu/ /etc/qemu-binfmt/riscv64
 }
 
 function ci_unix_qemu_riscv64_build {
@@ -729,9 +729,9 @@ function ci_windows_build {
 ########################################################################################
 # ports/zephyr
 
-ZEPHYR_DOCKER_VERSION=v0.21.0
-ZEPHYR_SDK_VERSION=0.13.2
-ZEPHYR_VERSION=v3.1.0
+ZEPHYR_DOCKER_VERSION=v0.26.13
+ZEPHYR_SDK_VERSION=0.16.8
+ZEPHYR_VERSION=v3.7.0
 
 function ci_zephyr_setup {
     docker pull zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}

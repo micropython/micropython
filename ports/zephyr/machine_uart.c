@@ -28,10 +28,11 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/machine_uart.c via MICROPY_PY_MACHINE_UART_INCLUDEFILE.
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/uart.h>
 
 #include "py/mperrno.h"
+#include "zephyr_device.h"
 
 // The UART class doesn't have any constants for this port.
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS
@@ -75,10 +76,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
-    self->dev = device_get_binding(mp_obj_str_get_str(args[0]));
-    if (!self->dev) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Bad device name"));
-    }
+    self->dev = zephyr_device_find(args[0]);
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);

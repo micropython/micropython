@@ -50,6 +50,10 @@ uint64_t mp_hal_ticks_us_64(void);
 
 void mp_hal_set_interrupt_char(int c);
 
+static inline void mp_hal_wake_main_task_from_isr(void) {
+    // Defined for tinyusb support, nothing needs to be done here.
+}
+
 __attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
     __set_PRIMASK(state);
 }

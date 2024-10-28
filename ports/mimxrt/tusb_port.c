@@ -25,7 +25,7 @@
  */
 
 #include "tusb.h"
-#include "mphalport.h"
+#include "py/mphal.h"
 
 #ifndef MICROPY_HW_USB_VID
 #define MICROPY_HW_USB_VID (0xf055)

@@ -49,8 +49,8 @@ void PORTENTA_board_low_power(int mode);
 #define MICROPY_BOARD_ENTER_STANDBY PORTENTA_board_low_power(2);
 
 void PORTENTA_board_osc_enable(int enable);
-#define MICROPY_BOARD_OSC_ENABLE    PORTENTA_board_osc_enable(1);
-#define MICROPY_BOARD_OSC_DISABLE   PORTENTA_board_osc_enable(0);
+#define MICROPY_BOARD_PRE_STOP      PORTENTA_board_osc_enable(0);
+#define MICROPY_BOARD_POST_STOP     PORTENTA_board_osc_enable(1);
 
 // PLL1 400MHz/50MHz for SDMMC and FDCAN
 // USB and RNG are clocked from the HSI48

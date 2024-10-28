@@ -656,6 +656,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tests.add("extmod/random_basic.py")  # requires random
             skip_tests.add("extmod/random_extra.py")  # requires random
         elif args.target == "esp8266":
+            skip_tests.add("micropython/viper_args.py")  # too large
+            skip_tests.add("micropython/viper_binop_arith.py")  # too large
             skip_tests.add("misc/rge_sm.py")  # too large
         elif args.target == "minimal":
             skip_tests.add("basics/class_inplace_op.py")  # all special methods not supported
@@ -824,6 +826,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output_mupy = run_micropython(pyb, args, test_file, test_file_abspath)
 
         if output_mupy == b"SKIP\n":
+            if pyb is not None and hasattr(pyb, "read_until"):
+                # Running on a target over a serial connection, and the target requested
+                # to skip the test.  It does this via a SystemExit which triggers a soft
+                # reset.  Wait for the soft reset to finish, so we don't interrupt the
+                # start-up code (eg boot.py) when preparing to run the next test.
+                pyb.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
             print("skip ", test_file)
             skipped_tests.append(test_name)
             return
@@ -1089,7 +1097,9 @@ the last matching regex is used:
             elif args.target in ("renesas-ra"):
                 test_dirs += ("float", "inlineasm", "ports/renesas-ra")
             elif args.target == "rp2":
-                test_dirs += ("float", "stress", "inlineasm", "thread", "ports/rp2")
+                test_dirs += ("float", "stress", "thread", "ports/rp2")
+                if "arm" in args.mpy_cross_flags:
+                    test_dirs += ("inlineasm",)
             elif args.target == "esp32":
                 test_dirs += ("float", "stress", "thread")
             elif args.target in ("esp8266", "minimal", "nrf"):

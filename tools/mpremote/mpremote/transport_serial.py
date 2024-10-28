@@ -35,27 +35,10 @@
 # Once the API is stabilised, the idea is that mpremote can be used both
 # as a command line tool and a library for interacting with devices.
 
-import ast, io, errno, os, re, struct, sys, time
-from collections import namedtuple
+import ast, io, os, re, struct, sys, time
 from errno import EPERM
 from .console import VT_ENABLED
-from .transport import TransportError, Transport
-
-
-def stdout_write_bytes(b):
-    b = b.replace(b"\x04", b"")
-    sys.stdout.buffer.write(b)
-    sys.stdout.buffer.flush()
-
-
-listdir_result = namedtuple("dir_result", ["name", "st_mode", "st_ino", "st_size"])
-
-
-def reraise_filesystem_error(e, info):
-    if len(e.args) >= 3:
-        if b"OSError" in e.args[2] and b"ENOENT" in e.args[2]:
-            raise FileNotFoundError(info)
-    raise
+from .transport import TransportError, TransportExecError, Transport
 
 
 class SerialTransport(Transport):
@@ -138,7 +121,7 @@ class SerialTransport(Transport):
         return data
 
     def enter_raw_repl(self, soft_reset=True):
-        self.serial.write(b"\r\x03\x03")  # ctrl-C twice: interrupt any running program
+        self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
 
         # flush input (without relying on serial.flushInput())
         n = self.serial.inWaiting()
@@ -271,7 +254,7 @@ class SerialTransport(Transport):
         self.exec_raw_no_follow(command)
         return self.follow(timeout, data_consumer)
 
-    def eval(self, expression, parse=False):
+    def eval(self, expression, parse=True):
         if parse:
             ret = self.exec("print(repr({}))".format(expression))
             ret = ret.strip()
@@ -284,7 +267,7 @@ class SerialTransport(Transport):
     def exec(self, command, data_consumer=None):
         ret, ret_err = self.exec_raw(command, data_consumer=data_consumer)
         if ret_err:
-            raise TransportError("exception", ret, ret_err)
+            raise TransportExecError(ret, ret_err.decode())
         return ret
 
     def execfile(self, filename):
@@ -292,218 +275,9 @@ class SerialTransport(Transport):
             pyfile = f.read()
         return self.exec(pyfile)
 
-    def fs_exists(self, src):
-        try:
-            self.exec("import os\nos.stat(%s)" % (("'%s'" % src) if src else ""))
-            return True
-        except TransportError:
-            return False
-
-    def fs_ls(self, src):
-        cmd = (
-            "import os\nfor f in os.ilistdir(%s):\n"
-            " print('{:12} {}{}'.format(f[3]if len(f)>3 else 0,f[0],'/'if f[1]&0x4000 else ''))"
-            % (("'%s'" % src) if src else "")
-        )
-        self.exec(cmd, data_consumer=stdout_write_bytes)
-
-    def fs_listdir(self, src=""):
-        buf = bytearray()
-
-        def repr_consumer(b):
-            buf.extend(b.replace(b"\x04", b""))
-
-        cmd = "import os\nfor f in os.ilistdir(%s):\n" " print(repr(f), end=',')" % (
-            ("'%s'" % src) if src else ""
-        )
-        try:
-            buf.extend(b"[")
-            self.exec(cmd, data_consumer=repr_consumer)
-            buf.extend(b"]")
-        except TransportError as e:
-            reraise_filesystem_error(e, src)
-
-        return [
-            listdir_result(*f) if len(f) == 4 else listdir_result(*(f + (0,)))
-            for f in ast.literal_eval(buf.decode())
-        ]
-
-    def fs_stat(self, src):
-        try:
-            self.exec("import os")
-            return os.stat_result(self.eval("os.stat(%s)" % ("'%s'" % src), parse=True))
-        except TransportError as e:
-            reraise_filesystem_error(e, src)
-
-    def fs_cat(self, src, chunk_size=256):
-        cmd = (
-            "with open('%s') as f:\n while 1:\n"
-            "  b=f.read(%u)\n  if not b:break\n  print(b,end='')" % (src, chunk_size)
-        )
-        self.exec(cmd, data_consumer=stdout_write_bytes)
-
-    def fs_readfile(self, src, chunk_size=256):
-        buf = bytearray()
-
-        def repr_consumer(b):
-            buf.extend(b.replace(b"\x04", b""))
-
-        cmd = (
-            "with open('%s', 'rb') as f:\n while 1:\n"
-            "  b=f.read(%u)\n  if not b:break\n  print(b,end='')" % (src, chunk_size)
-        )
-        try:
-            self.exec(cmd, data_consumer=repr_consumer)
-        except TransportError as e:
-            reraise_filesystem_error(e, src)
-        return ast.literal_eval(buf.decode())
-
-    def fs_writefile(self, dest, data, chunk_size=256):
-        self.exec("f=open('%s','wb')\nw=f.write" % dest)
-        while data:
-            chunk = data[:chunk_size]
-            self.exec("w(" + repr(chunk) + ")")
-            data = data[len(chunk) :]
-        self.exec("f.close()")
-
-    def fs_cp(self, src, dest, chunk_size=256, progress_callback=None):
-        if progress_callback:
-            src_size = self.fs_stat(src).st_size
-            written = 0
-        self.exec("fr=open('%s','rb')\nr=fr.read\nfw=open('%s','wb')\nw=fw.write" % (src, dest))
-        while True:
-            data_len = int(self.exec("d=r(%u)\nw(d)\nprint(len(d))" % chunk_size))
-            if not data_len:
-                break
-            if progress_callback:
-                written += data_len
-                progress_callback(written, src_size)
-        self.exec("fr.close()\nfw.close()")
-
-    def fs_get(self, src, dest, chunk_size=256, progress_callback=None):
-        if progress_callback:
-            src_size = self.fs_stat(src).st_size
-            written = 0
-        self.exec("f=open('%s','rb')\nr=f.read" % src)
-        with open(dest, "wb") as f:
-            while True:
-                data = bytearray()
-                self.exec("print(r(%u))" % chunk_size, data_consumer=lambda d: data.extend(d))
-                assert data.endswith(b"\r\n\x04")
-                try:
-                    data = ast.literal_eval(str(data[:-3], "ascii"))
-                    if not isinstance(data, bytes):
-                        raise ValueError("Not bytes")
-                except (UnicodeError, ValueError) as e:
-                    raise TransportError("fs_get: Could not interpret received data: %s" % str(e))
-                if not data:
-                    break
-                f.write(data)
-                if progress_callback:
-                    written += len(data)
-                    progress_callback(written, src_size)
-        self.exec("f.close()")
-
-    def fs_put(self, src, dest, chunk_size=256, progress_callback=None):
-        if progress_callback:
-            src_size = os.path.getsize(src)
-            written = 0
-        self.exec("f=open('%s','wb')\nw=f.write" % dest)
-        with open(src, "rb") as f:
-            while True:
-                data = f.read(chunk_size)
-                if not data:
-                    break
-                if sys.version_info < (3,):
-                    self.exec("w(b" + repr(data) + ")")
-                else:
-                    self.exec("w(" + repr(data) + ")")
-                if progress_callback:
-                    written += len(data)
-                    progress_callback(written, src_size)
-        self.exec("f.close()")
-
-    def fs_mkdir(self, dir):
-        self.exec("import os\nos.mkdir('%s')" % dir)
-
-    def fs_rmdir(self, dir):
-        self.exec("import os\nos.rmdir('%s')" % dir)
-
-    def fs_rm(self, src):
-        self.exec("import os\nos.remove('%s')" % src)
-
-    def fs_touch(self, src):
-        self.exec("f=open('%s','a')\nf.close()" % src)
-
-    def filesystem_command(self, args, progress_callback=None, verbose=False):
-        def fname_remote(src):
-            if src.startswith(":"):
-                src = src[1:]
-            # Convert all path separators to "/", because that's what a remote device uses.
-            return src.replace(os.path.sep, "/")
-
-        def fname_cp_dest(src, dest):
-            _, src = os.path.split(src)
-            if dest is None or dest == "":
-                dest = src
-            elif dest == ".":
-                dest = "./" + src
-            elif dest.endswith("/"):
-                dest += src
-            return dest
-
-        cmd = args[0]
-        args = args[1:]
-        try:
-            if cmd == "cp":
-                srcs = args[:-1]
-                dest = args[-1]
-                if dest.startswith(":"):
-                    op_remote_src = self.fs_cp
-                    op_local_src = self.fs_put
-                else:
-                    op_remote_src = self.fs_get
-                    op_local_src = lambda src, dest, **_: __import__("shutil").copy(src, dest)
-                for src in srcs:
-                    if verbose:
-                        print("cp %s %s" % (src, dest))
-                    if src.startswith(":"):
-                        op = op_remote_src
-                    else:
-                        op = op_local_src
-                    src2 = fname_remote(src)
-                    dest2 = fname_cp_dest(src2, fname_remote(dest))
-                    op(src2, dest2, progress_callback=progress_callback)
-            else:
-                ops = {
-                    "cat": self.fs_cat,
-                    "ls": self.fs_ls,
-                    "mkdir": self.fs_mkdir,
-                    "rm": self.fs_rm,
-                    "rmdir": self.fs_rmdir,
-                    "touch": self.fs_touch,
-                }
-                if cmd not in ops:
-                    raise TransportError("'{}' is not a filesystem command".format(cmd))
-                if cmd == "ls" and not args:
-                    args = [""]
-                for src in args:
-                    src = fname_remote(src)
-                    if verbose:
-                        print("%s :%s" % (cmd, src))
-                    ops[cmd](src)
-        except TransportError as er:
-            if len(er.args) > 1:
-                print(str(er.args[2], "ascii"))
-            else:
-                print(er)
-            self.exit_raw_repl()
-            self.close()
-            sys.exit(1)
-
     def mount_local(self, path, unsafe_links=False):
         fout = self.serial
-        if self.eval('"RemoteFS" in globals()') == b"False":
+        if not self.eval('"RemoteFS" in globals()'):
             self.exec(fs_hook_code)
         self.exec("__mount()")
         self.mounted = True

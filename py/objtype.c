@@ -85,14 +85,14 @@ static int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
 
 // This wrapper function allows a subclass of a native type to call the
 // __init__() method (corresponding to type->make_new) of the native type.
-static mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(args[0]);
     const mp_obj_type_t *native_base = NULL;
     instance_count_native_bases(self->base.type, &native_base);
-    self->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args - 1, 0, args + 1);
+    self->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args - 1, kw_args->used, args + 1);
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(native_base_init_wrapper_obj, 1, MP_OBJ_FUN_ARGS_MAX, native_base_init_wrapper);
+static MP_DEFINE_CONST_FUN_OBJ_KW(native_base_init_wrapper_obj, 1, native_base_init_wrapper);
 
 #if !MICROPY_CPYTHON_COMPAT
 static
@@ -660,6 +660,13 @@ static void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
 
     // try __getattr__
     if (attr != MP_QSTR___getattr__) {
+        #if MICROPY_PY_DESCRIPTORS
+        // With descriptors enabled, don't delegate lookups of __get__/__set__/__delete__.
+        if (attr == MP_QSTR___get__ || attr == MP_QSTR___set__ || attr == MP_QSTR___delete__) {
+            return;
+        }
+        #endif
+
         #if MICROPY_PY_DELATTR_SETATTR
         // If the requested attr is __setattr__/__delattr__ then don't delegate the lookup
         // to __getattr__.  If we followed CPython's behaviour then __setattr__/__delattr__

@@ -72,6 +72,20 @@ typedef struct _bytecode_prelude_t {
 static int read_byte(mp_reader_t *reader);
 static size_t read_uint(mp_reader_t *reader);
 
+#if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA || MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA
+
+// An mp_obj_list_t that tracks native text/BSS/rodata to prevent the GC from reclaiming them.
+MP_REGISTER_ROOT_POINTER(mp_obj_t persistent_code_root_pointers);
+
+static void track_root_pointer(void *ptr) {
+    if (MP_STATE_PORT(persistent_code_root_pointers) == MP_OBJ_NULL) {
+        MP_STATE_PORT(persistent_code_root_pointers) = mp_obj_new_list(0, NULL);
+    }
+    mp_obj_list_append(MP_STATE_PORT(persistent_code_root_pointers), MP_OBJ_FROM_PTR(ptr));
+}
+
+#endif
+
 #if MICROPY_EMIT_MACHINE_CODE
 
 typedef struct _reloc_info_t {
@@ -299,11 +313,10 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
                 read_bytes(reader, rodata, rodata_size);
             }
 
-            // Viper code with BSS/rodata should not have any children.
-            // Reuse the children pointer to reference the BSS/rodata
-            // memory so that it is not reclaimed by the GC.
-            assert(!has_children);
-            children = (void *)data;
+            #if MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA
+            // Track the BSS/rodata memory so it's not reclaimed by the GC.
+            track_root_pointer(data);
+            #endif
         }
     }
     #endif
@@ -351,16 +364,9 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
         fun_data = MP_PLAT_COMMIT_EXEC(fun_data, fun_data_len, opt_ri);
         #else
         if (native_scope_flags & MP_SCOPE_FLAG_VIPERRELOC) {
-            #if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
-            // If native code needs relocations then it's not guaranteed that a pointer to
-            // the head of `buf` (containing the machine code) will be retained for the GC
-            // to trace.  This is because native functions can start inside `buf` and so
-            // it's possible that the only GC-reachable pointers are pointers inside `buf`.
-            // So put this `buf` on a list of reachable root pointers.
-            if (MP_STATE_PORT(track_reloc_code_list) == MP_OBJ_NULL) {
-                MP_STATE_PORT(track_reloc_code_list) = mp_obj_new_list(0, NULL);
-            }
-            mp_obj_list_append(MP_STATE_PORT(track_reloc_code_list), MP_OBJ_FROM_PTR(fun_data));
+            #if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA
+            // Track the function data memory so it's not reclaimed by the GC.
+            track_root_pointer(fun_data);
             #endif
             // Do the relocations.
             mp_native_relocate(&ri, fun_data, (uintptr_t)fun_data);
@@ -662,8 +668,3 @@ void mp_raw_code_save_file(mp_compiled_module_t *cm, qstr filename) {
 #endif // MICROPY_PERSISTENT_CODE_SAVE_FILE
 
 #endif // MICROPY_PERSISTENT_CODE_SAVE
-
-#if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
-// An mp_obj_list_t that tracks relocated native code to prevent the GC from reclaiming them.
-MP_REGISTER_ROOT_POINTER(mp_obj_t track_reloc_code_list);
-#endif

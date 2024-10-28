@@ -15,7 +15,8 @@ import time, sys
 
 # Configure pins based on the target.
 if "esp32" in sys.platform:
-    if "ESP32S2" in sys.implementation._machine or "ESP32C3" in sys.implementation._machine:
+    _machine = sys.implementation._machine
+    if "ESP32S2" in _machine or "ESP32C3" in _machine or "ESP32C6" in _machine:
         print("SKIP")
         raise SystemExit
     # ESP32 needs separate UART instances for the test

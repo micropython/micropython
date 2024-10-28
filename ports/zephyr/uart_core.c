@@ -28,7 +28,7 @@
 #include "py/runtime.h"
 #include "src/zephyr_getchar.h"
 // Zephyr headers
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/console/console.h>
 #include <zephyr/console/tty.h>

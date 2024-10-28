@@ -127,3 +127,13 @@ CONFIG_ETH_SPI_ETHERNET_DM9051=y
 # formatting in ROM instead and should override this, check
 # ESP_ROM_HAS_NEWLIB_NANO_FORMAT.
 CONFIG_NEWLIB_NANO_FORMAT=y
+
+# IRAM/DRAM split protection is a memory protection feature on some parts
+# that support SOC_CPU_IDRAM_SPLIT_USING_PMP, eg. C2, C5, C6, H2
+# Due to limitations in the PMP system this feature breaks native emitters
+# so is disabled by default.
+CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT=n
+
+# Further limit total sockets in TIME-WAIT when there are many short-lived
+# connections.
+CONFIG_LWIP_MAX_ACTIVE_TCP=12
