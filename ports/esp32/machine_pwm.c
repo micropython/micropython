@@ -7,7 +7,6 @@
  * Copyright (c) 2018 Alan Dragomirecky
  * Copyright (c) 2020 Antoine Aubert
  * Copyright (c) 2021 Ihor Nehrutsa
- * Copyright (c) 2024 Yoann Darche
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
