@@ -149,13 +149,12 @@ static uint32_t begin_critical_flash_section(void) {
 
     #if defined(MICROPY_HW_PSRAM_CS_PIN) && MICROPY_HW_ENABLE_PSRAM
     // We're about to invalidate the XIP cache, clean it first to commit any dirty writes to PSRAM
-    uint8_t *maintenance_ptr = (uint8_t *)XIP_MAINTENANCE_BASE;
+    // Use the upper 16k of the maintenance space (0x1bffc000 through 0x1bffffff) to workaround
+    // incorrect behaviour of the XIP clean operation, where it also alters the tag of the associated
+    // cache line: https://forums.raspberrypi.com/viewtopic.php?t=378249#p2263677
+    volatile uint8_t *maintenance_ptr = (volatile uint8_t *)(XIP_SRAM_BASE + (XIP_MAINTENANCE_BASE - XIP_BASE));
     for (int i = 1; i < 16 * 1024; i += 8) {
         maintenance_ptr[i] = 0;
-
-        // Must also invalidate the cache lines to prevent rare hangs
-        // See: https://forums.raspberrypi.com/viewtopic.php?t=378249)
-        maintenance_ptr[i - 1] = 0;
     }
     #endif
 
