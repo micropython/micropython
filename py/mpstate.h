@@ -293,6 +293,10 @@ typedef struct _mp_state_thread_t {
     bool prof_callback_is_executing;
     struct _mp_code_state_t *current_code_state;
     #endif
+
+    #if MICROPY_PY_SSL_MBEDTLS_NEED_ACTIVE_CONTEXT
+    struct _mp_obj_ssl_context_t *tls_ssl_context;
+    #endif
 } mp_state_thread_t;
 
 // This structure combines the above 3 structures.

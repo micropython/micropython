@@ -275,7 +275,9 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_HW_BOOTSEL_DELAY_US 8
 #endif
 
+#if PICO_ARM
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
+#endif
 
 #define MP_SSIZE_MAX (0x7fffffff)
 typedef intptr_t mp_int_t; // must be pointer size

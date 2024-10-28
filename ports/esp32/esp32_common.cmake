@@ -1,3 +1,9 @@
+# This is the common ESP-IDF "main component" CMakeLists.txt contents for MicroPython.
+#
+# This file is included directly from a main_${IDF_TARGET}/CMakeLists.txt file
+# (or included from an out-of-tree main component CMakeLists.txt for out-of-tree
+# builds.)
+
 # Set location of base MicroPython directory.
 if(NOT MICROPY_DIR)
     get_filename_component(MICROPY_DIR ${CMAKE_CURRENT_LIST_DIR}/../.. ABSOLUTE)
@@ -235,6 +241,13 @@ target_include_directories(${MICROPY_TARGET} PUBLIC
 # Add additional extmod and usermod components.
 target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
 target_link_libraries(${MICROPY_TARGET} usermod)
+
+# Enable the panic handler wrapper
+idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=esp_panic_handler" APPEND)
+
+# Patch LWIP memory pool allocators (see lwip_patch.c)
+idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=memp_malloc" APPEND)
+idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=memp_free" APPEND)
 
 # Collect all of the include directories and compile definitions for the IDF components,
 # including those added by the IDF Component Manager via idf_components.yaml.
