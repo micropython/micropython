@@ -1,0 +1,30 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "SPIRAM",
+        "IMU",
+        "Microphone",
+        "Battery Charging",
+        "STEMMA QT/QWIIC",
+        "RGB LED",
+        "USB-MICRO",
+        "Breadboard friendly"
+    ],
+    "id": "dydk_mpv10",
+    "images": [
+        "deneyapkart.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "Deneyap Kart",
+    "thumbnail": "",
+    "url": "https://deneyapkart.org/",
+    "variants": {
+        "idf3": "Compiled with IDF 3.x"
+    },
+    "vendor": "T3 Foundation"
+}
