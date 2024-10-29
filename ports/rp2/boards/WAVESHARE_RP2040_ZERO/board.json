@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "RGB WS2812B LED",
+        "USB-C"
+    ],
+    "images": [
+        "Waveshare-RP2040-Zero.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "RP2040-Zero",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Waveshare"
+}
