@@ -208,7 +208,7 @@ static mp_obj_t deque_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 
     size_t offset = mp_get_index(self->base.type, deque_len(self), index, false);
     size_t index_val = self->i_get + offset;
-    if (index_val > self->alloc) {
+    if (index_val >= self->alloc) {
         index_val -= self->alloc;
     }
 
