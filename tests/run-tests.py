@@ -89,6 +89,88 @@ os.chdir('/__vfstest')
 __import__('__injected_test')
 """
 
+# Tests to skip on specific targets.
+# These are tests that are difficult to detect that they should not be run on the given target.
+target_tests_to_skip = {
+    "esp8266": (
+        "micropython/viper_args.py",  # too large
+        "micropython/viper_binop_arith.py",  # too large
+        "misc/rge_sm.py",  # too large
+    ),
+    "minimal": (
+        "basics/class_inplace_op.py",  # all special methods not supported
+        "basics/subclass_native_init.py",  # native subclassing corner cases not support
+        "misc/rge_sm.py",  # too large
+        "micropython/opt_level.py",  # don't assume line numbers are stored
+    ),
+    "nrf": (
+        "basics/io_buffered_writer.py",
+        "basics/io_bytesio_cow.py",
+        "basics/io_bytesio_ext.py",
+        "basics/io_bytesio_ext2.py",
+        "basics/io_iobase.py",
+        "basics/io_stringio1.py",
+        "basics/io_stringio_base.py",
+        "basics/io_stringio_with.py",
+        "basics/io_write_ext.py",
+        "basics/memoryview1.py",  # no item assignment for memoryview
+        "extmod/random_basic.py",  # unimplemented: random.seed
+        "micropython/opt_level.py",  # no support for line numbers
+        "misc/non_compliant.py",  # no item assignment for bytearray
+    ),
+    "renesas-ra": (
+        "extmod/time_time_ns.py",  # RA fsp rtc function doesn't support nano sec info
+    ),
+    "rp2": (
+        # Skip thread tests that require more that 2 threads.
+        "thread/stress_heap.py",
+        "thread/thread_lock2.py",
+        "thread/thread_lock3.py",
+        "thread/thread_shared2.py",
+    ),
+    "qemu": (
+        # Skip tests that require Cortex-M4.
+        "inlineasm/asmfpaddsub.py",
+        "inlineasm/asmfpcmp.py",
+        "inlineasm/asmfpldrstr.py",
+        "inlineasm/asmfpmuldiv.py",
+        "inlineasm/asmfpsqrt.py",
+    ),
+    "webassembly": (
+        "basics/string_format_modulo.py",  # can't print nulls to stdout
+        "basics/string_strip.py",  # can't print nulls to stdout
+        "extmod/asyncio_basic2.py",
+        "extmod/asyncio_cancel_self.py",
+        "extmod/asyncio_current_task.py",
+        "extmod/asyncio_exception.py",
+        "extmod/asyncio_gather_finished_early.py",
+        "extmod/asyncio_get_event_loop.py",
+        "extmod/asyncio_heaplock.py",
+        "extmod/asyncio_loop_stop.py",
+        "extmod/asyncio_new_event_loop.py",
+        "extmod/asyncio_threadsafeflag.py",
+        "extmod/asyncio_wait_for_fwd.py",
+        "extmod/binascii_a2b_base64.py",
+        "extmod/re_stack_overflow.py",
+        "extmod/time_res.py",
+        "extmod/vfs_posix.py",
+        "extmod/vfs_posix_enoent.py",
+        "extmod/vfs_posix_paths.py",
+        "extmod/vfs_userfs.py",
+        "micropython/emg_exc.py",
+        "micropython/extreme_exc.py",
+        "micropython/heapalloc_exc_compressed_emg_exc.py",
+    ),
+    "wipy": (
+        "misc/print_exception.py",  # requires error reporting full
+    ),
+    "zephyr": (
+        # Skip thread tests that require more than 4 threads.
+        "thread/stress_heap.py",
+        "thread/thread_lock3.py",
+    ),
+}
+
 
 def rm_f(fname):
     if os.path.exists(fname):
@@ -629,85 +711,13 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             if t.startswith("thread/mutate_"):
                 skip_tests.add(t)
 
-    # Skip thread tests that require many threads on targets that don't support multiple threads.
-    if args.target == "rp2":
-        skip_tests.add("thread/stress_heap.py")
-        skip_tests.add("thread/thread_lock2.py")
-        skip_tests.add("thread/thread_lock3.py")
-        skip_tests.add("thread/thread_shared2.py")
-    elif args.target == "zephyr":
-        skip_tests.add("thread/stress_heap.py")
-        skip_tests.add("thread/thread_lock3.py")
-
     # Some tests shouldn't be run on pyboard
     if args.target != "unix":
         skip_tests.add("basics/exception_chain.py")  # warning is not printed
         skip_tests.add("micropython/meminfo.py")  # output is very different to PC output
 
-        if args.target == "wipy":
-            skip_tests.add("misc/print_exception.py")  # requires error reporting full
-            skip_tests.update(
-                {
-                    "extmod/uctypes_%s.py" % t
-                    for t in "bytearray le native_le ptr_le ptr_native_le sizeof sizeof_native array_assign_le array_assign_native_le".split()
-                }
-            )  # requires uctypes
-            skip_tests.add("extmod/heapq1.py")  # heapq not supported by WiPy
-            skip_tests.add("extmod/random_basic.py")  # requires random
-            skip_tests.add("extmod/random_extra.py")  # requires random
-        elif args.target == "esp8266":
-            skip_tests.add("micropython/viper_args.py")  # too large
-            skip_tests.add("micropython/viper_binop_arith.py")  # too large
-            skip_tests.add("misc/rge_sm.py")  # too large
-        elif args.target == "minimal":
-            skip_tests.add("basics/class_inplace_op.py")  # all special methods not supported
-            skip_tests.add(
-                "basics/subclass_native_init.py"
-            )  # native subclassing corner cases not support
-            skip_tests.add("misc/rge_sm.py")  # too large
-            skip_tests.add("micropython/opt_level.py")  # don't assume line numbers are stored
-        elif args.target == "nrf":
-            skip_tests.add("basics/memoryview1.py")  # no item assignment for memoryview
-            skip_tests.add("extmod/random_basic.py")  # unimplemented: random.seed
-            skip_tests.add("micropython/opt_level.py")  # no support for line numbers
-            skip_tests.add("misc/non_compliant.py")  # no item assignment for bytearray
-            for t in tests:
-                if t.startswith("basics/io_"):
-                    skip_tests.add(t)
-        elif args.target == "renesas-ra":
-            skip_tests.add(
-                "extmod/time_time_ns.py"
-            )  # RA fsp rtc function doesn't support nano sec info
-        elif args.target == "qemu":
-            skip_tests.add("inlineasm/asmfpaddsub.py")  # requires Cortex-M4
-            skip_tests.add("inlineasm/asmfpcmp.py")
-            skip_tests.add("inlineasm/asmfpldrstr.py")
-            skip_tests.add("inlineasm/asmfpmuldiv.py")
-            skip_tests.add("inlineasm/asmfpsqrt.py")
-        elif args.target == "webassembly":
-            skip_tests.add("basics/string_format_modulo.py")  # can't print nulls to stdout
-            skip_tests.add("basics/string_strip.py")  # can't print nulls to stdout
-            skip_tests.add("extmod/asyncio_basic2.py")
-            skip_tests.add("extmod/asyncio_cancel_self.py")
-            skip_tests.add("extmod/asyncio_current_task.py")
-            skip_tests.add("extmod/asyncio_exception.py")
-            skip_tests.add("extmod/asyncio_gather_finished_early.py")
-            skip_tests.add("extmod/asyncio_get_event_loop.py")
-            skip_tests.add("extmod/asyncio_heaplock.py")
-            skip_tests.add("extmod/asyncio_loop_stop.py")
-            skip_tests.add("extmod/asyncio_new_event_loop.py")
-            skip_tests.add("extmod/asyncio_threadsafeflag.py")
-            skip_tests.add("extmod/asyncio_wait_for_fwd.py")
-            skip_tests.add("extmod/binascii_a2b_base64.py")
-            skip_tests.add("extmod/re_stack_overflow.py")
-            skip_tests.add("extmod/time_res.py")
-            skip_tests.add("extmod/vfs_posix.py")
-            skip_tests.add("extmod/vfs_posix_enoent.py")
-            skip_tests.add("extmod/vfs_posix_paths.py")
-            skip_tests.add("extmod/vfs_userfs.py")
-            skip_tests.add("micropython/emg_exc.py")
-            skip_tests.add("micropython/extreme_exc.py")
-            skip_tests.add("micropython/heapalloc_exc_compressed_emg_exc.py")
+    # Skip target-specific tests.
+    skip_tests.update(target_tests_to_skip.get(args.target, ()))
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":
