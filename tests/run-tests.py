@@ -1140,6 +1140,8 @@ the last matching regex is used:
             if args.platform == "pyboard":
                 # run pyboard tests
                 test_dirs += ("float", "stress", "inlineasm", "ports/stm32")
+            elif args.platform == "mimxrt":
+                test_dirs += ("float", "stress", "inlineasm")
             elif args.platform == "renesas-ra":
                 test_dirs += ("float", "inlineasm", "ports/renesas-ra")
             elif args.platform == "rp2":
@@ -1148,7 +1150,7 @@ the last matching regex is used:
                     test_dirs += ("inlineasm",)
             elif args.platform == "esp32":
                 test_dirs += ("float", "stress", "thread")
-            elif args.platform in ("esp8266", "minimal", "nrf"):
+            elif args.platform in ("esp8266", "minimal", "samd", "nrf"):
                 test_dirs += ("float",)
             elif args.platform == "WiPy":
                 # run WiPy tests
