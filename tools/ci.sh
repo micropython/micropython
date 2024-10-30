@@ -39,12 +39,18 @@ function ci_c_code_formatting_run {
 # commit formatting
 
 function ci_commit_formatting_run {
-    git remote add upstream https://github.com/micropython/micropython.git
-    git fetch --depth=100 upstream master
+    # Default GitHub Actions checkout for a PR is a generated merge commit where
+    # the parents are the head of base branch (i.e. master) and the head of the
+    # PR branch, respectively. Use these parents to find the merge-base (i.e.
+    # where the PR branch head was branched)
+
     # If the common ancestor commit hasn't been found, fetch more.
-    git merge-base upstream/master HEAD || git fetch --unshallow upstream master
-    # For a PR, upstream/master..HEAD ends with a merge commit into master, exclude that one.
-    tools/verifygitlog.py -v upstream/master..HEAD --no-merges
+    git merge-base HEAD^1 HEAD^2 || git fetch --unshallow origin
+
+    MERGE_BASE=$(git merge-base HEAD^1 HEAD^2)
+    HEAD=$(git rev-parse HEAD^2)
+    echo "Checking commits between merge base ${MERGE_BASE} and PR head ${HEAD}..."
+    tools/verifygitlog.py -v "${MERGE_BASE}..${HEAD}"
 }
 
 ########################################################################################
