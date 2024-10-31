@@ -51,14 +51,14 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     deflateio_type.name = MP_QSTR_DeflateIO;
     MP_OBJ_TYPE_SET_SLOT(&deflateio_type, make_new, &deflateio_make_new, 0);
     MP_OBJ_TYPE_SET_SLOT(&deflateio_type, protocol, &deflateio_stream_p, 1);
-    deflateio_locals_dict_table[0] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_read), MP_OBJ_FROM_PTR(&mp_stream_read_obj) };
-    deflateio_locals_dict_table[1] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_readinto), MP_OBJ_FROM_PTR(&mp_stream_readinto_obj) };
-    deflateio_locals_dict_table[2] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_readline), MP_OBJ_FROM_PTR(&mp_stream_unbuffered_readline_obj) };
-    deflateio_locals_dict_table[3] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_write), MP_OBJ_FROM_PTR(&mp_stream_write_obj) };
-    deflateio_locals_dict_table[4] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_close), MP_OBJ_FROM_PTR(&mp_stream_close_obj) };
-    deflateio_locals_dict_table[5] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR___enter__), MP_OBJ_FROM_PTR(&mp_identity_obj) };
-    deflateio_locals_dict_table[6] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR___exit__), MP_OBJ_FROM_PTR(&mp_stream___exit___obj) };
-    MP_OBJ_TYPE_SET_SLOT(&deflateio_type, locals_dict, (void*)&deflateio_locals_dict, 2);
+    deflateio_locals_dict_table[0] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_read), MP_OBJ_FROM_PTR(&mp_stream_read_obj) };
+    deflateio_locals_dict_table[1] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), MP_OBJ_FROM_PTR(&mp_stream_readinto_obj) };
+    deflateio_locals_dict_table[2] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_readline), MP_OBJ_FROM_PTR(&mp_stream_unbuffered_readline_obj) };
+    deflateio_locals_dict_table[3] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_write), MP_OBJ_FROM_PTR(&mp_stream_write_obj) };
+    deflateio_locals_dict_table[4] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR_close), MP_OBJ_FROM_PTR(&mp_stream_close_obj) };
+    deflateio_locals_dict_table[5] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), MP_OBJ_FROM_PTR(&mp_identity_obj) };
+    deflateio_locals_dict_table[6] = (mp_map_elem_t) { MP_OBJ_NEW_QSTR(MP_QSTR___exit__), MP_OBJ_FROM_PTR(&mp_stream___exit___obj) };
+    MP_OBJ_TYPE_SET_SLOT(&deflateio_type, locals_dict, (void *)&deflateio_locals_dict, 2);
 
     mp_store_global(MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR_deflate));
     mp_store_global(MP_QSTR_DeflateIO, MP_OBJ_FROM_PTR(&deflateio_type));
