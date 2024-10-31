@@ -293,16 +293,14 @@ int readline_process_char(int c) {
                 break;
             #if MICROPY_REPL_EMACS_WORDS_MOVE
             case 'b':
-#if MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
-backward_word:
-#endif
+                goto backward_word; // Ensure label always used
+            backward_word:
                 redraw_step_back = cursor_count_word(0);
                 rl.escape_seq = ESEQ_NONE;
                 break;
             case 'f':
-#if MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
-forward_word:
-#endif
+                goto forward_word; // Ensure label is always used
+            forward_word:
                 redraw_step_forward = cursor_count_word(1);
                 rl.escape_seq = ESEQ_NONE;
                 break;
@@ -312,9 +310,8 @@ forward_word:
                 rl.escape_seq = ESEQ_NONE;
                 break;
             case 127:
-#if MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
-backward_kill_word:
-#endif
+                goto backward_kill_word; // Ensure label is always used
+            backward_kill_word:
                 redraw_step_back = cursor_count_word(0);
                 vstr_cut_out_bytes(rl.line, rl.cursor_pos - redraw_step_back, redraw_step_back);
                 redraw_from_cursor = true;
