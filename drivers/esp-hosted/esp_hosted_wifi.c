@@ -80,51 +80,49 @@ static void esp_hosted_macstr_to_bytes(const uint8_t *mac_str, size_t mac_len, u
 // to avoid bleeding the protocol buffer API into the public interface, convert esp_hosted_security_t
 // to/from CtrlWifiSecProt here.
 
-static esp_hosted_security_t sec_prot_to_hosted_security(CtrlWifiSecProt sec_prot)
-{
+static esp_hosted_security_t sec_prot_to_hosted_security(CtrlWifiSecProt sec_prot) {
     switch (sec_prot) {
-    case CTRL__WIFI_SEC_PROT__Open:
-        return ESP_HOSTED_SEC_OPEN;
-    case CTRL__WIFI_SEC_PROT__WEP:
-        return ESP_HOSTED_SEC_WEP;
-    case CTRL__WIFI_SEC_PROT__WPA_PSK:
-        return ESP_HOSTED_SEC_WPA_PSK;
-    case CTRL__WIFI_SEC_PROT__WPA2_PSK:
-        return ESP_HOSTED_SEC_WPA2_PSK;
-    case CTRL__WIFI_SEC_PROT__WPA_WPA2_PSK:
-        return ESP_HOSTED_SEC_WPA_WPA2_PSK;
-    case CTRL__WIFI_SEC_PROT__WPA2_ENTERPRISE:
-        return ESP_HOSTED_SEC_WPA2_ENTERPRISE;
-    case CTRL__WIFI_SEC_PROT__WPA3_PSK:
-        return ESP_HOSTED_SEC_WPA3_PSK;
-    case CTRL__WIFI_SEC_PROT__WPA2_WPA3_PSK:
-        return ESP_HOSTED_SEC_WPA2_WPA3_PSK;
-    default:
-        return ESP_HOSTED_SEC_INVALID;
+        case CTRL__WIFI_SEC_PROT__Open:
+            return ESP_HOSTED_SEC_OPEN;
+        case CTRL__WIFI_SEC_PROT__WEP:
+            return ESP_HOSTED_SEC_WEP;
+        case CTRL__WIFI_SEC_PROT__WPA_PSK:
+            return ESP_HOSTED_SEC_WPA_PSK;
+        case CTRL__WIFI_SEC_PROT__WPA2_PSK:
+            return ESP_HOSTED_SEC_WPA2_PSK;
+        case CTRL__WIFI_SEC_PROT__WPA_WPA2_PSK:
+            return ESP_HOSTED_SEC_WPA_WPA2_PSK;
+        case CTRL__WIFI_SEC_PROT__WPA2_ENTERPRISE:
+            return ESP_HOSTED_SEC_WPA2_ENTERPRISE;
+        case CTRL__WIFI_SEC_PROT__WPA3_PSK:
+            return ESP_HOSTED_SEC_WPA3_PSK;
+        case CTRL__WIFI_SEC_PROT__WPA2_WPA3_PSK:
+            return ESP_HOSTED_SEC_WPA2_WPA3_PSK;
+        default:
+            return ESP_HOSTED_SEC_INVALID;
     }
 }
 
-static CtrlWifiSecProt hosted_security_to_sec_prot(esp_hosted_security_t hosted_security)
-{
+static CtrlWifiSecProt hosted_security_to_sec_prot(esp_hosted_security_t hosted_security) {
     switch (hosted_security) {
-    case ESP_HOSTED_SEC_OPEN:
-        return CTRL__WIFI_SEC_PROT__Open;
-    case ESP_HOSTED_SEC_WEP:
-        return CTRL__WIFI_SEC_PROT__WEP;
-    case ESP_HOSTED_SEC_WPA_PSK:
-        return CTRL__WIFI_SEC_PROT__WPA_PSK;
-    case ESP_HOSTED_SEC_WPA2_PSK:
-        return CTRL__WIFI_SEC_PROT__WPA2_PSK;
-    case ESP_HOSTED_SEC_WPA_WPA2_PSK:
-        return CTRL__WIFI_SEC_PROT__WPA_WPA2_PSK;
-    case ESP_HOSTED_SEC_WPA2_ENTERPRISE:
-        return CTRL__WIFI_SEC_PROT__WPA2_ENTERPRISE;
-    case ESP_HOSTED_SEC_WPA3_PSK:
-        return CTRL__WIFI_SEC_PROT__WPA3_PSK;
-    case ESP_HOSTED_SEC_WPA2_WPA3_PSK:
-        return CTRL__WIFI_SEC_PROT__WPA2_WPA3_PSK;
-    default:
-        abort(); // Range should be checked by the caller, making this unreachable
+        case ESP_HOSTED_SEC_OPEN:
+            return CTRL__WIFI_SEC_PROT__Open;
+        case ESP_HOSTED_SEC_WEP:
+            return CTRL__WIFI_SEC_PROT__WEP;
+        case ESP_HOSTED_SEC_WPA_PSK:
+            return CTRL__WIFI_SEC_PROT__WPA_PSK;
+        case ESP_HOSTED_SEC_WPA2_PSK:
+            return CTRL__WIFI_SEC_PROT__WPA2_PSK;
+        case ESP_HOSTED_SEC_WPA_WPA2_PSK:
+            return CTRL__WIFI_SEC_PROT__WPA_WPA2_PSK;
+        case ESP_HOSTED_SEC_WPA2_ENTERPRISE:
+            return CTRL__WIFI_SEC_PROT__WPA2_ENTERPRISE;
+        case ESP_HOSTED_SEC_WPA3_PSK:
+            return CTRL__WIFI_SEC_PROT__WPA3_PSK;
+        case ESP_HOSTED_SEC_WPA2_WPA3_PSK:
+            return CTRL__WIFI_SEC_PROT__WPA2_WPA3_PSK;
+        default:
+            abort(); // Range should be checked by the caller, making this unreachable
     }
 }
 
