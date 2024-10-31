@@ -139,6 +139,8 @@ static mp_obj_t alif_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg
             int ret = ospi_flash_erase_sector(self->flash_base_addr + offset);
             return MP_OBJ_NEW_SMALL_INT(ret);
         }
+        case 7: // potential MP_BLOCKDEV_IOCTL_GET_MMAP_ADDRESS
+            return mp_obj_new_int(ospi_flash_get_xip_base() + self->flash_base_addr);
         default:
             return mp_const_none;
     }
