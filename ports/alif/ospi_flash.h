@@ -88,6 +88,7 @@ int ospi_flash_mx_write_cr2(struct _ospi_flash_t *self, uint32_t addr, uint8_t v
 
 // SPI flash interface.
 int ospi_flash_init(void);
+uintptr_t ospi_flash_get_xip_base(void);
 int ospi_flash_erase_sector(uint32_t addr);
 int ospi_flash_read(uint32_t addr, uint32_t len, uint8_t *dest);
 int ospi_flash_write(uint32_t addr, uint32_t len, const uint8_t *src);
