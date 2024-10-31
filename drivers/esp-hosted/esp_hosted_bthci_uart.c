@@ -139,12 +139,12 @@ int mp_bluetooth_hci_controller_init(void) {
     mp_hal_pin_output(MICROPY_HW_BLE_UART_RTS);
     mp_hal_pin_write(MICROPY_HW_BLE_UART_RTS, 0);
 
-    for (size_t i=0; i<3; i++ ){
+    for (size_t i = 0; i < 3; i++) {
         // Send reset command
         if (!esp_hosted_hci_cmd(OGF_HOST_CTL, OCF_RESET, 0, NULL)) {
             return 0;
         }
-    
+
         mp_bluetooth_hci_controller_drain_rx(100);
         debug_printf("HCI reset failed, retry...\n");
     }
