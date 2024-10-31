@@ -744,12 +744,27 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SEC_WPA2_WPA3), MP_ROM_INT(WIFI_AUTH_WPA2_WPA3_PSK) },
     { MP_ROM_QSTR(MP_QSTR_SEC_WAPI), MP_ROM_INT(WIFI_AUTH_WAPI_PSK) },
     { MP_ROM_QSTR(MP_QSTR_SEC_OWE), MP_ROM_INT(WIFI_AUTH_OWE) },
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 5) && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 1, 0) || ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 2)
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA3_ENT_192), MP_ROM_INT(WIFI_AUTH_WPA3_ENT_192) },
+    #endif
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA3_EXT_PSK), MP_ROM_INT(WIFI_AUTH_WPA3_EXT_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA3_EXT_PSK_MIXED_MODE), MP_ROM_INT(WIFI_AUTH_WPA3_EXT_PSK_MIXED_MODE) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_PM_NONE), MP_ROM_INT(WIFI_PS_NONE) },
     { MP_ROM_QSTR(MP_QSTR_PM_PERFORMANCE), MP_ROM_INT(WIFI_PS_MIN_MODEM) },
     { MP_ROM_QSTR(MP_QSTR_PM_POWERSAVE), MP_ROM_INT(WIFI_PS_MAX_MODEM) },
 };
 static MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
+_Static_assert(WIFI_AUTH_MAX == 13, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");
+#elif ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 5) && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 1, 0) || ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 2)
+_Static_assert(WIFI_AUTH_MAX == 11, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");
+#else
+_Static_assert(WIFI_AUTH_MAX == 10, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");
+#endif
 
 MP_DEFINE_CONST_OBJ_TYPE(
     esp_network_wlan_type,
