@@ -1474,4 +1474,9 @@ the last matching regex is used:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print()
+        print("INTERRUPT")
+        sys.exit(1)
