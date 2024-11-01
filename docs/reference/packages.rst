@@ -69,9 +69,9 @@ On the Unix port, ``mip`` can be used at the REPL as above, and also by using ``
     $ ./micropython -m mip install pkgname-or-url
     $ ./micropython -m mip install pkgname-or-url@version
 
-The ``--target=path``, ``--no-mpy``, and ``--index`` arguments can be set::
+The ``--target path``, ``--no-mpy``, and ``--index`` arguments can be set::
 
-    $ ./micropython -m mip install --target=third-party pkgname
+    $ ./micropython -m mip install --target third-party pkgname
     $ ./micropython -m mip install --no-mpy pkgname
     $ ./micropython -m mip install --index https://host/pi pkgname
 

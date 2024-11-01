@@ -1,7 +1,6 @@
 name: Check code size
 
 on:
-  push:
   pull_request:
     paths:
       - '.github/workflows/*.yml'
