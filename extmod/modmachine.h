@@ -255,6 +255,7 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bitstream_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_time_pulse_us_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_time_hardware_pulse_us_obj);
 
 #if MICROPY_PY_MACHINE_I2C
 int mp_machine_i2c_transfer_adaptor(mp_obj_base_t *self, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags);
