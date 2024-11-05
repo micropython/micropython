@@ -1,15 +1,24 @@
 # test that socket.connect() on a non-blocking socket raises EINPROGRESS
 # and that an immediate write/send/read/recv does the right thing
 
-import sys, time, socket, errno, ssl
+import errno
+import select
+import socket
+import ssl
 
-isMP = sys.implementation.name == "micropython"
+# only mbedTLS supports non-blocking mode
+if not hasattr(ssl, "MBEDTLS_VERSION"):
+    print("SKIP")
+    raise SystemExit
 
 
-def dp(e):
-    # uncomment next line for development and testing, to print the actual exceptions
-    # print(repr(e))
-    pass
+# get the name of an errno error code
+def errno_name(er):
+    if er == errno.EAGAIN:
+        return "EAGAIN"
+    if er == errno.EINPROGRESS:
+        return "EINPROGRESS"
+    return er
 
 
 # do_connect establishes the socket and wraps it if tls is True.
@@ -22,112 +31,75 @@ def do_connect(peer_addr, tls, handshake):
         # print("Connecting to", peer_addr)
         s.connect(peer_addr)
     except OSError as er:
-        print("connect:", er.errno == errno.EINPROGRESS)
-        if er.errno != errno.EINPROGRESS:
-            print("  got", er.errno)
+        print("connect:", errno_name(er.errno))
     # wrap with ssl/tls if desired
     if tls:
         ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-        if hasattr(ssl_context, "check_hostname"):
-            ssl_context.check_hostname = False
-
         try:
             s = ssl_context.wrap_socket(s, do_handshake_on_connect=handshake)
-            print("wrap: True")
+            print("wrap ok: True")
         except Exception as e:
-            dp(e)
-            print("wrap:", e)
-    elif handshake:
-        # just sleep a little bit, this allows any connect() errors to happen
-        time.sleep(0.2)
+            print("wrap er:", e)
     return s
 
 
-# test runs the test against a specific peer address.
-def test(peer_addr, tls=False, handshake=False):
-    # MicroPython plain sockets have read/write, but CPython's don't
-    # MicroPython TLS sockets and CPython's have read/write
-    # hasRW captures this wonderful state of affairs
-    hasRW = isMP or tls
+# poll a socket and print out the result
+def poll(s):
+    poller = select.poll()
+    poller.register(s)
+    print("poll:   ", poller.poll(0))
 
-    # MicroPython plain sockets and CPython's have send/recv
-    # MicroPython TLS sockets don't have send/recv, but CPython's do
-    # hasSR captures this wonderful state of affairs
-    hasSR = not (isMP and tls)
+
+# test runs the test against a specific peer address.
+def test(peer_addr, tls, handshake):
+    # MicroPython plain and TLS sockets have read/write
+    hasRW = True
+
+    # MicroPython plain sockets have send/recv
+    # MicroPython TLS sockets don't have send/recv
+    hasSR = not tls
 
     # connect + send
+    # non-blocking send should raise EAGAIN
     if hasSR:
         s = do_connect(peer_addr, tls, handshake)
-        # send -> 4 or EAGAIN
+        poll(s)
         try:
             ret = s.send(b"1234")
-            print("send:", handshake and ret == 4)
+            print("send ok:", ret)  # shouldn't get here
         except OSError as er:
-            #
-            dp(er)
-            print("send:", er.errno in (errno.EAGAIN, errno.EINPROGRESS))
+            print("send er:", errno_name(er.errno))
         s.close()
-    else:  # fake it...
-        print("connect:", True)
-        if tls:
-            print("wrap:", True)
-        print("send:", True)
 
     # connect + write
+    # non-blocking write should return None
     if hasRW:
         s = do_connect(peer_addr, tls, handshake)
-        # write -> None
-        try:
-            ret = s.write(b"1234")
-            print("write:", ret in (4, None))  # SSL may accept 4 into buffer
-        except OSError as er:
-            dp(er)
-            print("write:", False)  # should not raise
-        except ValueError as er:  # CPython
-            dp(er)
-            print("write:", er.args[0] == "Write on closed or unwrapped SSL socket.")
+        poll(s)
+        ret = s.write(b"1234")
+        print("write:  ", ret)
         s.close()
-    else:  # fake it...
-        print("connect:", True)
-        if tls:
-            print("wrap:", True)
-        print("write:", True)
 
+    # connect + recv
+    # non-blocking recv should raise EAGAIN
     if hasSR:
-        # connect + recv
         s = do_connect(peer_addr, tls, handshake)
-        # recv -> EAGAIN
+        poll(s)
         try:
-            print("recv:", s.recv(10))
+            ret = s.recv(10)
+            print("recv ok:", ret)  # shouldn't get here
         except OSError as er:
-            dp(er)
-            print("recv:", er.errno == errno.EAGAIN)
+            print("recv er:", errno_name(er.errno))
         s.close()
-    else:  # fake it...
-        print("connect:", True)
-        if tls:
-            print("wrap:", True)
-        print("recv:", True)
 
     # connect + read
+    # non-blocking read should return None
     if hasRW:
         s = do_connect(peer_addr, tls, handshake)
-        # read -> None
-        try:
-            ret = s.read(10)
-            print("read:", ret is None)
-        except OSError as er:
-            dp(er)
-            print("read:", False)  # should not raise
-        except ValueError as er:  # CPython
-            dp(er)
-            print("read:", er.args[0] == "Read on closed or unwrapped SSL socket.")
+        poll(s)
+        ret = s.read(10)
+        print("read:   ", ret)
         s.close()
-    else:  # fake it...
-        print("connect:", True)
-        if tls:
-            print("wrap:", True)
-        print("read:", True)
 
 
 if __name__ == "__main__":
@@ -136,10 +108,8 @@ if __name__ == "__main__":
     print("--- Plain sockets to nowhere ---")
     test(socket.getaddrinfo("192.0.2.1", 80)[0][-1], False, False)
     print("--- SSL sockets to nowhere ---")
-    # this test fails with AXTLS because do_handshake=False blocks on first read/write and
-    # there it times out until the connect is aborted
     test(socket.getaddrinfo("192.0.2.1", 443)[0][-1], True, False)
     print("--- Plain sockets ---")
-    test(socket.getaddrinfo("micropython.org", 80)[0][-1], False, True)
+    test(socket.getaddrinfo("micropython.org", 80)[0][-1], False, False)
     print("--- SSL sockets ---")
     test(socket.getaddrinfo("micropython.org", 443)[0][-1], True, True)
