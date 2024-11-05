@@ -1,0 +1,70 @@
+Test frequencies: (50, 100, 500, 1000, 2000, 5000, 10000)
+freq= 50       duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 50       duty_u16 = 8192  =  12.50% : True True : 0 True 1 True
+freq= 50       duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 50       duty_u16 = 24576 =  37.50% : True True : 0 True 1 True
+freq= 50       duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 50       duty_u16 = 40960 =  62.50% : True True : 0 True 1 True
+freq= 50       duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 50       duty_u16 = 57344 =  87.50% : True True : 0 True 1 True
+freq= 50       duty_u16 = 65536 = 100.00% : True True :        1 False
+
+freq= 100      duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 100      duty_u16 = 8192  =  12.50% : True True : 0 True 1 True
+freq= 100      duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 100      duty_u16 = 24576 =  37.50% : True True : 0 True 1 True
+freq= 100      duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 100      duty_u16 = 40960 =  62.50% : True True : 0 True 1 True
+freq= 100      duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 100      duty_u16 = 57344 =  87.50% : True True : 0 True 1 True
+freq= 100      duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 500      duty_u16 = 0     =   0.00% : True (0, 262144) : 0 True
+freq= 500      duty_u16 = 8192  =  12.50% : True True : 0 True 1 True
+freq= 500      duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 500      duty_u16 = 24576 =  37.50% : True True : 0 True 1 True
+freq= 500      duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 500      duty_u16 = 40960 =  62.50% : True True : 0 True 1 True
+freq= 500      duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 500      duty_u16 = 57344 =  87.50% : True True : 0 True 1 True
+freq= 500      duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 1000     duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 1000     duty_u16 = 8192  =  12.50% : True True : 0 True 1 True
+freq= 1000     duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 1000     duty_u16 = 24576 =  37.50% : True True : 0 True 1 True
+freq= 1000     duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 1000     duty_u16 = 40960 =  62.50% : True True : 0 True 1 True
+freq= 1000     duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 1000     duty_u16 = 57344 =  87.50% : True True : 0 True 1 True
+freq= 1000     duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 2000     duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 2000     duty_u16 = 8192  =  12.50% : True True : 0 True 1 True
+freq= 2000     duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 2000     duty_u16 = 24576 =  37.50% : True True : 0 True 1 True
+freq= 2000     duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 2000     duty_u16 = 40960 =  62.50% : True True : 0 True 1 True
+freq= 2000     duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 2000     duty_u16 = 57344 =  87.50% : True True : 0 True 1 True
+freq= 2000     duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 5000     duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 5000     duty_u16 = 8192  =  12.50% : True True : 0 True 1 True
+freq= 5000     duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 5000     duty_u16 = 24576 =  37.50% : True True : 0 True 1 True
+freq= 5000     duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 5000     duty_u16 = 40960 =  62.50% : True True : 0 True 1 True
+freq= 5000     duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 5000     duty_u16 = 57344 =  87.50% : True True : 0 True 1 True
+freq= 5000     duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 10000    duty_u16 = 0     =   0.00% : True (0, 65536) : 0 False
+freq= 10000    duty_u16 = 8192  =  12.50% : True True : 0 True 1 True
+freq= 10000    duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 10000    duty_u16 = 24576 =  37.50% : True True : 0 True 1 True
+freq= 10000    duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 10000    duty_u16 = 40960 =  62.50% : True True : 0 True 1 True
+freq= 10000    duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 10000    duty_u16 = 57344 =  87.50% : True True : 0 True 1 True
+freq= 10000    duty_u16 = 65536 = 100.00% : True True :        1 True
