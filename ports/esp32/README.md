@@ -195,7 +195,7 @@ quickly call `wlan_connect()` and it just works):
 ```python
 def wlan_connect(ssid='MYSSID', password='MYPASS'):
     import network
-    wlan = network.WLAN(network.STA_IF)
+    wlan = network.WLAN(network.WLAN.IF_STA)
     if not wlan.active() or not wlan.isconnected():
         wlan.active(True)
         print('connecting to:', ssid)
