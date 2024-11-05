@@ -1,0 +1,49 @@
+freq=50    duty_u16=0     : True True : 0 True
+freq=50    duty_u16=6553  : True True : 0 True 1 True
+freq=50    duty_u16=16383 : True True : 0 True 1 True
+freq=50    duty_u16=32767 : True True : 0 True 1 True
+freq=50    duty_u16=49151 : True True : 0 True 1 True
+freq=50    duty_u16=58981 : True True : 0 True 1 True
+freq=50    duty_u16=65535 : True True :        1 True
+freq=100   duty_u16=0     : True True : 0 True
+freq=100   duty_u16=6553  : True True : 0 True 1 True
+freq=100   duty_u16=16383 : True True : 0 True 1 True
+freq=100   duty_u16=32767 : True True : 0 True 1 True
+freq=100   duty_u16=49151 : True True : 0 True 1 True
+freq=100   duty_u16=58981 : True True : 0 True 1 True
+freq=100   duty_u16=65535 : True True :        1 True
+freq=500   duty_u16=0     : True True : 0 True
+freq=500   duty_u16=6553  : True True : 0 True 1 True
+freq=500   duty_u16=16383 : True True : 0 True 1 True
+freq=500   duty_u16=32767 : True True : 0 True 1 True
+freq=500   duty_u16=49151 : True True : 0 True 1 True
+freq=500   duty_u16=58981 : True True : 0 True 1 True
+freq=500   duty_u16=65535 : True True :        1 True
+freq=1000  duty_u16=0     : True True : 0 True
+freq=1000  duty_u16=6553  : True True : 0 True 1 True
+freq=1000  duty_u16=16383 : True True : 0 True 1 True
+freq=1000  duty_u16=32767 : True True : 0 True 1 True
+freq=1000  duty_u16=49151 : True True : 0 True 1 True
+freq=1000  duty_u16=58981 : True True : 0 True 1 True
+freq=1000  duty_u16=65535 : True True :        1 True
+freq=2000  duty_u16=0     : True True : 0 True
+freq=2000  duty_u16=6553  : True True : 0 True 1 True
+freq=2000  duty_u16=16383 : True True : 0 True 1 True
+freq=2000  duty_u16=32767 : True True : 0 True 1 True
+freq=2000  duty_u16=49151 : True True : 0 True 1 True
+freq=2000  duty_u16=58981 : True True : 0 True 1 True
+freq=2000  duty_u16=65535 : True True :        1 True
+freq=5000  duty_u16=0     : True True : 0 True
+freq=5000  duty_u16=6553  : True True : 0 True 1 True
+freq=5000  duty_u16=16383 : True True : 0 True 1 True
+freq=5000  duty_u16=32767 : True True : 0 True 1 True
+freq=5000  duty_u16=49151 : True True : 0 True 1 True
+freq=5000  duty_u16=58981 : True True : 0 True 1 True
+freq=5000  duty_u16=65535 : True True :        1 True
+freq=10000 duty_u16=0     : True True : 0 True
+freq=10000 duty_u16=6553  : True True : 0 True 1 True
+freq=10000 duty_u16=16383 : True True : 0 True 1 True
+freq=10000 duty_u16=32767 : True True : 0 True 1 True
+freq=10000 duty_u16=49151 : True True : 0 True 1 True
+freq=10000 duty_u16=58981 : True True : 0 True 1 True
+freq=10000 duty_u16=65535 : True True :        1 True
