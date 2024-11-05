@@ -1,0 +1,132 @@
+Test frequencies: (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50, 100, 500, 1000, 2000, 5000, 10000, 100000, 1000000, 10000000, 20000000, 40000000)
+freq= 1        duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 1        duty_u16 = 16384 =  25.00% : True True : 0 (750000, 749567) 1 (250000, 249856)
+freq= 1        duty_u16 = 32768 =  50.00% : True True : 0 (500000, 499712) 1 (500000, 499712)
+freq= 1        duty_u16 = 49152 =  75.00% : True True : 0 (250000, 249856) 1 (750000, 749568)
+freq= 1        duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 2        duty_u16 = 0     =   0.00% : True (0, 131072) : 0 True
+freq= 2        duty_u16 = 16384 =  25.00% : True True : 0 (375000, 374783) 1 True
+freq= 2        duty_u16 = 32768 =  50.00% : True True : 0 (250000, 249856) 1 (250000, 249855)
+freq= 2        duty_u16 = 49152 =  75.00% : True True : 0 True 1 (375000, 374784)
+freq= 2        duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 3        duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 3        duty_u16 = 16384 =  25.00% : True True : 0 (250000, 250367) 1 (83333, 83456)
+freq= 3        duty_u16 = 32768 =  50.00% : True True : 0 (166667, 166912) 1 (166666, 166912)
+freq= 3        duty_u16 = 49152 =  75.00% : True True : 0 (83334, 83456) 1 (249999, 250367)
+freq= 3        duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 4        duty_u16 = 0     =   0.00% : True (0, 131072) : 0 True
+freq= 4        duty_u16 = 16384 =  25.00% : True True : 0 (187500, 187391) 1 True
+freq= 4        duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 4        duty_u16 = 49152 =  75.00% : True True : 0 True 1 (187500, 187392)
+freq= 4        duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 5        duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 5        duty_u16 = 16384 =  25.00% : True True : 0 (150000, 150144) 1 True
+freq= 5        duty_u16 = 32768 =  50.00% : True True : 0 (100000, 100095) 1 (100000, 100096)
+freq= 5        duty_u16 = 49152 =  75.00% : True True : 0 True 1 (150000, 150143)
+freq= 5        duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 6        duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 6        duty_u16 = 16384 =  25.00% : True True : 0 (125000, 125184) 1 True
+freq= 6        duty_u16 = 32768 =  50.00% : True True : 0 (83333, 83455) 1 (83333, 83456)
+freq= 6        duty_u16 = 49152 =  75.00% : True True : 0 True 1 (124999, 125183)
+freq= 6        duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 7        duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 7        duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 7        duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 7        duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 7        duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 8        duty_u16 = 0     =   0.00% : True (0, 131072) : 0 True
+freq= 8        duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 8        duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 8        duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 8        duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 9        duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 9        duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 9        duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 9        duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 9        duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 10       duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 10       duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 10       duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 10       duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 10       duty_u16 = 65536 = 100.00% : True True :        1 False
+
+freq= 50       duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 50       duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 50       duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 50       duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 50       duty_u16 = 65536 = 100.00% : True True :        1 False
+
+freq= 100      duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 100      duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 100      duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 100      duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 100      duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 500      duty_u16 = 0     =   0.00% : True (0, 262144) : 0 True
+freq= 500      duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 500      duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 500      duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 500      duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 1000     duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 1000     duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 1000     duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 1000     duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 1000     duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 2000     duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 2000     duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 2000     duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 2000     duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 2000     duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 5000     duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 5000     duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 5000     duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 5000     duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 5000     duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 10000    duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 10000    duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 10000    duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 10000    duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 10000    duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 100000   duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 100000   duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 100000   duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 100000   duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 100000   duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 1000000  duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 1000000  duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 1000000  duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 1000000  duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 1000000  duty_u16 = 65536 = 100.00% : True True :        1 True
+
+freq= 10000000 duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 10000000 duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 10000000 duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 10000000 duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 10000000 duty_u16 = 65536 = 100.00% : True True : 0 False
+
+freq= 20000000 duty_u16 = 0     =   0.00% : True True : 0 True
+freq= 20000000 duty_u16 = 16384 =  25.00% : True True : 0 True 1 True
+freq= 20000000 duty_u16 = 32768 =  50.00% : True True : 0 True 1 True
+freq= 20000000 duty_u16 = 49152 =  75.00% : True True : 0 True 1 True
+freq= 20000000 duty_u16 = 65536 = 100.00% : True True : 0 False
+
+freq= 40000000 duty_u16 = 0     =   0.00% : True (0, 98304) : 0 True
+freq= 40000000 duty_u16 = 16384 =  25.00% : True (16384, 98304) : 0 True 1 True
+freq= 40000000 duty_u16 = 32768 =  50.00% : True (32768, 98304) : 0 True 1 True
+freq= 40000000 duty_u16 = 49152 =  75.00% : True (49152, 98304) : 0 True 1 True
+freq= 40000000 duty_u16 = 65536 = 100.00% : True True : 0 True
