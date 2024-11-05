@@ -701,7 +701,12 @@ static mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
 
     MICROPY_PY_LWIP_ENTER
 
-    u16_t available = tcp_sndbuf(socket->pcb.tcp);
+    // If the socket is still connecting then don't let data be written to it.
+    // Otherwise, get the number of available bytes in the output buffer.
+    u16_t available = 0;
+    if (socket->state != STATE_CONNECTING) {
+        available = tcp_sndbuf(socket->pcb.tcp);
+    }
 
     if (available == 0) {
         // Non-blocking socket
@@ -718,7 +723,8 @@ static mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
         // If peer fully closed socket, we would have socket->state set to ERR_RST (connection
         // reset) by error callback.
         // Avoid sending too small packets, so wait until at least 16 bytes available
-        while (socket->state >= STATE_CONNECTED && (available = tcp_sndbuf(socket->pcb.tcp)) < 16) {
+        while (socket->state == STATE_CONNECTING
+               || (socket->state >= STATE_CONNECTED && (available = tcp_sndbuf(socket->pcb.tcp)) < 16)) {
             MICROPY_PY_LWIP_EXIT
             if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
                 *_errno = MP_ETIMEDOUT;
@@ -1548,7 +1554,7 @@ static mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
                 // raw socket is writable
                 ret |= MP_STREAM_POLL_WR;
             #endif
-            } else if (socket->pcb.tcp != NULL && tcp_sndbuf(socket->pcb.tcp) > 0) {
+            } else if (socket->state != STATE_CONNECTING && socket->pcb.tcp != NULL && tcp_sndbuf(socket->pcb.tcp) > 0) {
                 // TCP socket is writable
                 // Note: pcb.tcp==NULL if state<0, and in this case we can't call tcp_sndbuf
                 ret |= MP_STREAM_POLL_WR;
