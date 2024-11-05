@@ -198,6 +198,29 @@ Miscellaneous functions
    above. The timeout is the same for both cases and given by *timeout_us* (which
    is in microseconds).
 
+.. function:: time_hardware_pulse_us(pin, pulse_level, timeout_us=1000000, /)
+
+   Time a pulse on the given *pin*, and return the duration of the pulse in
+   microseconds.  The *pulse_level* argument should be 0 to time a low pulse
+   or 1 to time a high pulse.
+
+   If the pin is initially equal to *pulse_level* then first waits until
+   the pin input becomes different from *pulse_level* (***).
+   Then the function waits until the pin input becomes equal to *pulse_level* (**),
+   then the function counts the duration that the pin is equal to *pulse_level* (*).
+
+   The function returns -3 if there was timeout waiting for condition marked (***) above.
+   The function will return -2 if there was timeout waiting for condition marked
+   (**) above, and -1 if there was timeout during the main measurement, marked (*)
+   above. The timeout is the same for all cases and given by *timeout_us* (which
+   is in microseconds).
+
+   The difference from `time_pulse_us` is that if the pin is initially equal to *pulse_level*
+   then `time_pulse_us` counts the pulse duration immediately,
+   but `time_hardware_pulse_us` first waits for the different *pulse_level*,
+   then waits the equal to *pulse_level* and then counts pulse duration.
+   A little bit longer, but with higher accuracy.
+
 .. function:: bitstream(pin, encoding, timing, data, /)
 
    Transmits *data* by bit-banging the specified *pin*. The *encoding* argument

@@ -188,6 +188,7 @@ static const mp_rom_map_elem_t machine_module_globals_table[] = {
     #endif
     #if MICROPY_PY_MACHINE_PULSE
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us), MP_ROM_PTR(&machine_time_pulse_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_time_hardware_pulse_us), MP_ROM_PTR(&machine_time_hardware_pulse_us_obj) },
     #endif
 
     // Classes for PinBase and Signal.

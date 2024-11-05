@@ -245,6 +245,7 @@ uintptr_t MICROPY_MACHINE_MEM_GET_WRITE_ADDR(mp_obj_t addr_o, uint align);
 NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args);
 void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len);
 mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us);
+mp_uint_t machine_time_hardware_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us);
 
 MP_DECLARE_CONST_FUN_OBJ_0(machine_unique_id_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(machine_reset_obj);
@@ -255,6 +256,7 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bitstream_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_time_pulse_us_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_time_hardware_pulse_us_obj);
 
 #if MICROPY_PY_MACHINE_I2C
 int mp_machine_i2c_transfer_adaptor(mp_obj_base_t *self, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags);
