@@ -6,7 +6,7 @@ from flashbdev import bdev
 def wifi():
     import binascii
 
-    ap_if = network.WLAN(network.AP_IF)
+    ap_if = network.WLAN(network.WLAN.IF_AP)
     ssid = b"MicroPython-%s" % binascii.hexlify(ap_if.config("mac")[-3:])
     ap_if.config(ssid=ssid, security=network.AUTH_WPA_WPA2_PSK, key=b"micropythoN")
 
