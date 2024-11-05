@@ -181,19 +181,22 @@ Miscellaneous functions
    varies by hardware (so use substring of a full value if you expect a short
    ID). In some MicroPython ports, ID corresponds to the network MAC address.
 
-.. function:: time_pulse_us(pin, pulse_level, timeout_us=1000000, /)
+.. function:: time_pulse_us(pin, pulse_level, timeout_us=1000000, wait_opposite=false, /)
 
    Time a pulse on the given *pin*, and return the duration of the pulse in
    microseconds.  The *pulse_level* argument should be 0 to time a low pulse
    or 1 to time a high pulse.
 
-   If the current input value of the pin is different to *pulse_level*,
-   the function first (*) waits until the pin input becomes equal to *pulse_level*,
-   then (**) times the duration that the pin is equal to *pulse_level*.
+   If *wait_opposite* is true, if the pin is initially equal to *pulse_level* then first
+   waits until the pin input becomes different from *pulse_level* (***).
+   Then if the current input value of the pin is different to *pulse_level*,
+   the function first (**) waits until the pin input becomes equal to *pulse_level*,
+   then (*) times the duration that the pin is equal to *pulse_level*.
    If the pin is already equal to *pulse_level* then timing starts straight away.
 
+   The function returns -3 if there was timeout waiting for condition marked (***) above.
    The function will return -2 if there was timeout waiting for condition marked
-   (*) above, and -1 if there was timeout during the main measurement, marked (**)
+   (**) above, and -1 if there was timeout during the main measurement, marked (*)
    above. The timeout is the same for both cases and given by *timeout_us* (which
    is in microseconds).
 
