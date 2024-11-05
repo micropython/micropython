@@ -71,8 +71,9 @@ static mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
         }
     }
 
+    #define WAIT_OPPOSITE false
     // time pulse, should be 80us
-    ticks = machine_time_pulse_us(pin, 1, 150);
+    ticks = machine_time_pulse_us(pin, 1, 150, WAIT_OPPOSITE);
     if ((mp_int_t)ticks < 0) {
         goto timeout;
     }
@@ -80,7 +81,7 @@ static mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
     // time 40 pulses for data (either 26us or 70us)
     uint8_t *buf = bufinfo.buf;
     for (int i = 0; i < 40; ++i) {
-        ticks = machine_time_pulse_us(pin, 1, 100);
+        ticks = machine_time_pulse_us(pin, 1, 100, WAIT_OPPOSITE);
         if ((mp_int_t)ticks < 0) {
             goto timeout;
         }
