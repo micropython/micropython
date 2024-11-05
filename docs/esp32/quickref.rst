@@ -79,11 +79,11 @@ Networking
 WLAN
 ^^^^
 
-The :mod:`network` module::
+The :class:`network.WLAN` class in the :mod:`network` module::
 
     import network
 
-    wlan = network.WLAN(network.STA_IF) # create station interface
+    wlan = network.WLAN(network.WLAN.IF_STA) # create station interface
     wlan.active(True)       # activate the interface
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
@@ -91,7 +91,7 @@ The :mod:`network` module::
     wlan.config('mac')      # get the interface's MAC address
     wlan.ipconfig('addr4')  # get the interface's IPv4 addresses
 
-    ap = network.WLAN(network.AP_IF) # create access-point interface
+    ap = network.WLAN(network.WLAN.IF_AP) # create access-point interface
     ap.config(ssid='ESP-AP') # set the SSID of the access point
     ap.config(max_clients=10) # set how many clients can connect to the network
     ap.active(True)         # activate the interface
@@ -100,7 +100,7 @@ A useful function for connecting to your local WiFi network is::
 
     def do_connect():
         import network
-        wlan = network.WLAN(network.STA_IF)
+        wlan = network.WLAN(network.WLAN.IF_STA)
         wlan.active(True)
         if not wlan.isconnected():
             print('connecting to network...')
@@ -124,7 +124,8 @@ to reconnect forever).
 LAN
 ^^^
 
-To use the wired interfaces one has to specify the pins and mode ::
+To use the wired interfaces via :class:`network.LAN` one has to specify the pins
+and mode ::
 
     import network
 
