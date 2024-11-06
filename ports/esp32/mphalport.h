@@ -57,10 +57,11 @@ extern ringbuf_t stdin_ringbuf;
 extern portMUX_TYPE mp_atomic_mux;
 
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
-#if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_NORMAL
+#if 0//MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_NORMAL
 #define check_esp_err(code) check_esp_err_(code)
 void check_esp_err_(esp_err_t code);
 #else
+#define MICROPY_ERROR_REPORTING_NORMAL_PLUS
 #define check_esp_err(code) check_esp_err_(code, __FUNCTION__, __LINE__, __FILE__)
 void check_esp_err_(esp_err_t code, const char *func, const int line, const char *file);
 #endif
