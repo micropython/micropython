@@ -260,6 +260,12 @@ static uint32_t ledc_find_suitable_duty_resolution(uint32_t src_clk_freq, uint32
     for (; freq > 1; freq >>= 1) {
         ++res;
     }
+    return res;
+}
+#endif
+
+static uint32_t find_suitable_duty_resolution(uint32_t src_clk_freq, uint32_t timer_freq) {
+    unsigned int res = ledc_find_suitable_duty_resolution(src_clk_freq, timer_freq);
     if (res == 0) {
         res = 1;
     } else if (res > HIGHEST_PWM_RES) {
@@ -268,7 +274,6 @@ static uint32_t ledc_find_suitable_duty_resolution(uint32_t src_clk_freq, uint32
     }
     return res;
 }
-#endif
 
 static void pwm_is_active(machine_pwm_obj_t *self) {
     if (self->timer < 0) {
@@ -449,7 +454,7 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq) {
         #endif
 
         // Configure the new resolution and frequency
-        timer->duty_resolution = ledc_find_suitable_duty_resolution(src_clk_freq, timer->freq_hz);
+        timer->duty_resolution = find_suitable_duty_resolution(src_clk_freq, timer->freq_hz);
 
         // Configure timer - Set frequency
         if (ESP_OK != ledc_timer_config(timer)) {
