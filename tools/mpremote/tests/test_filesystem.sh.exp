@@ -38,6 +38,10 @@ print("World")
 print("Hello")
 print("World")
 -----
+cp ${TMP}/a.py :aaa
+print("Hello")
+print("World")
+-----
 rm :b.py
 rm :c.py
 ls :

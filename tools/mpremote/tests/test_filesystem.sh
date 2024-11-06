@@ -66,6 +66,11 @@ $MPREMOTE resume cp "${TMP}/a.py" :aaa
 $MPREMOTE resume cp "${TMP}/a.py" :bbb/b.py
 $MPREMOTE resume cat :aaa/a.py bbb/b.py
 
+# Test cp -f (force copy).
+echo -----
+$MPREMOTE resume cp -f "${TMP}/a.py" :aaa
+$MPREMOTE resume cat :aaa/a.py
+
 echo -----
 $MPREMOTE resume rm :b.py c.py
 $MPREMOTE resume ls
