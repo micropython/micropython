@@ -110,12 +110,8 @@ void PWM_SetupPwmx_u16(PWM_Type *base, pwm_submodule_t subModule,
 
     base->SM[subModule].OCTRL = (base->SM[subModule].OCTRL & ~PWM_OCTRL_POLX_MASK) | PWM_OCTRL_POLX(!invert);
 
-    // Switch the output on or off.
-    if (duty_cycle == 0) {
-        base->OUTEN &= ~(1U << subModule);
-    } else {
-        base->OUTEN |= (1U << subModule);
-    }
+    // Enable PWM output
+    base->OUTEN |= (1U << subModule);
 }
 
 #ifdef FSL_FEATURE_SOC_TMR_COUNT
