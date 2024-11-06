@@ -751,20 +751,33 @@ APA102 (DotStar) uses a different driver as it has an additional clock pin.
 Capacitive touch
 ----------------
 
-Use the ``TouchPad`` class in the ``machine`` module::
+ESP32, ESP32-S2 and ESP32-S3 support capacitive touch via the ``TouchPad`` class
+in the ``machine`` module::
 
     from machine import TouchPad, Pin
 
     t = TouchPad(Pin(14))
     t.read()              # Returns a smaller number when touched
 
-``TouchPad.read`` returns a value relative to the capacitive variation. Small numbers (typically in
-the *tens*) are common when a pin is touched, larger numbers (above *one thousand*) when
-no touch is present. However the values are *relative* and can vary depending on the board
-and surrounding composition so some calibration may be required.
+``TouchPad.read`` returns a value proportional to the capacitance between the
+pin and the board's Ground connection. On ESP32 the number becomes smaller when
+the pin (or connected touch pad) is touched, on ESP32-S2 and ESP32-S3 the number
+becomes larger when the pin is touched.
 
-There are ten capacitive touch-enabled pins that can be used on the ESP32: 0, 2, 4, 12, 13
-14, 15, 27, 32, 33. Trying to assign to any other pins will result in a ``ValueError``.
+In all cases, a touch causes a significant change in the return value. Note the
+returned values are *relative* and can vary depending on the board and
+surrounding environment so some calibration (i.e. comparison to a baseline or
+rolling average) may be required.
+
+========= ==============================================
+Chip      Touch-enabled pins
+--------- ----------------------------------------------
+ESP32     0, 2, 4, 12, 13, 14, 15, 27, 32, 33
+ESP32-S2  1 to 14 inclusive
+ESP32-S3  1 to 14 inclusive
+========= ==============================================
+
+Trying to assign to any other pins will result in a ``ValueError``.
 
 Note that TouchPads can be used to wake an ESP32 from sleep::
 
