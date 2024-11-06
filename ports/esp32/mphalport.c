@@ -60,7 +60,7 @@ ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 
 portMUX_TYPE mp_atomic_mux = portMUX_INITIALIZER_UNLOCKED;
 
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
-#if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_NORMAL
+#ifndef MICROPY_ERROR_REPORTING_NORMAL_PLUS
 void check_esp_err_(esp_err_t code)
 #else
 void check_esp_err_(esp_err_t code, const char *func, const int line, const char *file)
@@ -87,7 +87,7 @@ void check_esp_err_(esp_err_t code, const char *func, const int line, const char
             return;
         }
         o_str->base.type = &mp_type_str;
-        #if MICROPY_ERROR_REPORTING > MICROPY_ERROR_REPORTING_NORMAL
+        #ifdef MICROPY_ERROR_REPORTING_NORMAL_PLUS
         char err_msg[64];
         esp_err_to_name_r(code, err_msg, sizeof(err_msg));
         vstr_t vstr;
