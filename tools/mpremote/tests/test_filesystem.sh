@@ -71,6 +71,11 @@ echo -----
 $MPREMOTE resume cp -f "${TMP}/a.py" :aaa
 $MPREMOTE resume cat :aaa/a.py
 
+# Test cp where the destination has a trailing /.
+echo -----
+$MPREMOTE resume cp "${TMP}/a.py" :aaa/
+$MPREMOTE resume cp "${TMP}/a.py" :aaa/a.py/ || echo "expect error"
+
 echo -----
 $MPREMOTE resume rm :b.py c.py
 $MPREMOTE resume ls
