@@ -385,8 +385,8 @@ static void set_duty_u16(machine_pwm_obj_t *self, int duty) {
     if (err != ESP_OK)
     #endif
     {
-    check_esp_err(ledc_set_duty(self->mode, self->channel, channel_duty));
-    check_esp_err(ledc_update_duty(self->mode, self->channel));
+        check_esp_err(ledc_set_duty(self->mode, self->channel, channel_duty));
+        check_esp_err(ledc_update_duty(self->mode, self->channel));
     }
 
     self->duty_x = UI_RES_16_BIT;
