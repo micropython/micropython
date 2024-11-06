@@ -346,6 +346,18 @@ but only 8 different PWM frequencies are available, the remaining 8 channels mus
 have the same frequency.  On the other hand, 16 independent PWM duty cycles are
 possible at the same frequency.
 
+Note: New PWM parameters take effect in the next PWM cycle.
+
+    pwm = PWM(2, duty=512)
+    print(pwm)
+    >>>PWM(Pin(2), freq=5000, duty=1024)  # the duty is not relevant
+    pwm.init(freq=2, duty=64)
+    print(pwm)
+    >>>PWM(Pin(2), freq=2, duty=16)  # the duty is not relevant
+    time.sleep(1 / 2)                # wait one PWM period
+    print(pwm)
+    >>>PWM(Pin(2), freq=2, duty=64)  # the duty is actual
+
 See more examples in the :ref:`esp32_pwm` tutorial.
 
 DAC (digital to analog conversion)
