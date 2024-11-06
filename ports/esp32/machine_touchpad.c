@@ -96,9 +96,6 @@ static mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     if (!initialized) {
         touch_pad_init();
         touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
-        #if TOUCH_HW_VER == 2
-        touch_pad_fsm_start();
-        #endif
         initialized = 1;
     }
     #if SOC_TOUCH_VERSION_1
@@ -107,6 +104,10 @@ static mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     esp_err_t err = touch_pad_config(self->touchpad_id);
     #endif
     if (err == ESP_OK) {
+        #if SOC_TOUCH_VERSION_2
+        touch_pad_fsm_start();
+        #endif
+
         return MP_OBJ_FROM_PTR(self);
     }
     mp_raise_ValueError(MP_ERROR_TEXT("Touch pad error"));
