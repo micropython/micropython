@@ -45,6 +45,7 @@
 #include "py/gc.h"
 #include "py/objstr.h"
 #include "py/cstack.h"
+#include "py/modatexit.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
@@ -755,6 +756,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
             ret = execute_from_lexer(LEX_SRC_STDIN, NULL, MP_PARSE_FILE_INPUT, false);
         }
     }
+
+    #if MICROPY_PY_ATEXIT
+    int atexit_code = mp_atexit_execute();
+    ret = (atexit_code != 0) ? atexit_code : ret;
+    #endif
 
     #if MICROPY_PY_SYS_SETTRACE
     MP_STATE_THREAD(prof_trace_callback) = MP_OBJ_NULL;
