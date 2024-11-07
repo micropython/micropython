@@ -79,27 +79,18 @@ MP_WEAK mp_uint_t machine_time_hardware_pulse_us(mp_hal_pin_obj_t pin, int pulse
             return (mp_uint_t)-3;
         }
     }
-    //mp_uint_t delta1 = mp_hal_ticks_us() - start;
     start = mp_hal_ticks_us();
     while (mp_hal_pin_read(pin) != pulse_level) {
         if ((mp_uint_t)(mp_hal_ticks_us() - start) >= timeout_us) {
             return (mp_uint_t)-2;
         }
     }
-    //mp_uint_t delta2 = mp_hal_ticks_us() - start;
     start = mp_hal_ticks_us();
     while (mp_hal_pin_read(pin) == pulse_level) {
         if ((mp_uint_t)(mp_hal_ticks_us() - start) >= timeout_us) {
             return (mp_uint_t)-1;
         }
     }
-    /*
-    #define min(a,b) (((a)<(b))?(a):(b))
-    #include "py/mpprint.h"
-    #define debug_printf(...) mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, "\n");
-    debug_printf("\n delta1=%d %d %d \n", delta1, delta2, min(delta1, delta2));
-    return min(delta1, delta2); // alhorithm delay
-    */
     return mp_hal_ticks_us() - start;
 }
 

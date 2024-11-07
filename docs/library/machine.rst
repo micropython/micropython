@@ -217,9 +217,9 @@ Miscellaneous functions
 
    The difference from `time_pulse_us` is that if the pin is initially equal to *pulse_level*
    then `time_pulse_us` counts the pulse duration immediately,
-   but `time_hardware_pulse_us` first waits the different *pulse_level*,
+   but `time_hardware_pulse_us` first waits for the different *pulse_level*,
    then waits the equal to *pulse_level* and then counts pulse duration.
-   A little bit longer, but higher accuracy.
+   A little bit longer, but with higher accuracy.
 
 .. function:: bitstream(pin, encoding, timing, data, /)
 

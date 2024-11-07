@@ -245,6 +245,7 @@ uintptr_t MICROPY_MACHINE_MEM_GET_WRITE_ADDR(mp_obj_t addr_o, uint align);
 NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args);
 void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len);
 mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us);
+mp_uint_t machine_time_hardware_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us);
 
 MP_DECLARE_CONST_FUN_OBJ_0(machine_unique_id_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(machine_reset_obj);
