@@ -36,6 +36,7 @@ typedef enum {
 extern pyexec_mode_kind_t pyexec_mode_kind;
 
 #define PYEXEC_FORCED_EXIT (0x100)
+int pyexec_handle_uncaught_exception(mp_obj_base_t *exc);
 
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);
