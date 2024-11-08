@@ -114,7 +114,7 @@ static mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_machine_lightsleep(n_args, args);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 3, machine_lightsleep);
 
 NORETURN static mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_machine_deepsleep(n_args, args);
