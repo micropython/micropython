@@ -303,7 +303,7 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
         uint32_t res = ledc_find_suitable_duty_resolution(src_clock_freq, freq);
         #else
 
-        if(led_src_clock == LEDC_USE_APB_CLK) {
+        if (led_src_clock == LEDC_USE_APB_CLK) {
             src_clock_freq = APB_CLK_FREQ;
         } else if (led_src_clock == LEDC_USE_RC_FAST_CLK) {
             src_clock_freq = SOC_CLK_RC_FAST_FREQ_APPROX;
