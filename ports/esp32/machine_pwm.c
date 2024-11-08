@@ -289,7 +289,6 @@ static uint32_t ledc_find_suitable_duty_resolution(uint32_t src_clk_freq, uint32
 
 static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_config_t *timer, ledc_clk_cfg_t led_src_clock) {
 
-    esp_err_t err;
     if (freq != timer->freq_hz) {
 
         uint32_t src_clock_freq;
