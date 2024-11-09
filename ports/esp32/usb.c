@@ -28,14 +28,16 @@
 #include "py/mphal.h"
 #include "usb.h"
 
-#if MICROPY_HW_USB_CDC
 #include "esp_rom_gpio.h"
 #include "esp_mac.h"
 #include "esp_private/usb_phy.h"
 
+static usb_phy_handle_t phy_hdl;
+
+#if MICROPY_HW_USB_CDC
+
 #include "shared/tinyusb/mp_usbd.h"
 
-static usb_phy_handle_t phy_hdl;
 
 
 void usb_init(void) {
@@ -57,6 +59,17 @@ void usb_init(void) {
 
 }
 
+void mp_usbd_port_get_serial_number(char *serial_buf) {
+    // use factory default MAC as serial ID
+    uint8_t mac[8];
+    esp_efuse_mac_get_default(mac);
+    MP_STATIC_ASSERT(sizeof(mac) * 2 <= MICROPY_HW_USB_DESC_STR_MAX);
+    mp_usbd_hex_str(serial_buf, mac, sizeof(mac));
+}
+
+#endif // MICROPY_HW_USB_CDC
+
+
 #if CONFIG_IDF_TARGET_ESP32S3
 void usb_usj_mode(void) {
     // Switch the USB PHY back to Serial/Jtag mode, disabling OTG support
@@ -68,13 +81,3 @@ void usb_usj_mode(void) {
     usb_new_phy(&phy_conf, &phy_hdl);
 }
 #endif
-
-void mp_usbd_port_get_serial_number(char *serial_buf) {
-    // use factory default MAC as serial ID
-    uint8_t mac[8];
-    esp_efuse_mac_get_default(mac);
-    MP_STATIC_ASSERT(sizeof(mac) * 2 <= MICROPY_HW_USB_DESC_STR_MAX);
-    mp_usbd_hex_str(serial_buf, mac, sizeof(mac));
-}
-
-#endif // MICROPY_HW_USB_CDC
