@@ -942,6 +942,8 @@ static mp_obj_t esp_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     if (n_args > 5) {
         hints.ai_flags = mp_obj_get_int(args[5]);
     }
+    // Since we rely on ai_canonname after this call (in _getaddrinfo_inner), we explicitly ask for it
+    hints.ai_flags = hints.ai_flags | AI_CANONNAME;
 
     _getaddrinfo_inner(args[0], args[1], &hints, &res);
     mp_obj_t ret_list = mp_obj_new_list(0, NULL);
