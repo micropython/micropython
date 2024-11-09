@@ -66,12 +66,14 @@ void mp_usbd_port_get_serial_number(char *serial_buf) {
     mp_usbd_hex_str(serial_buf, mac, sizeof(mac));
 }
 
-#else // !MICROPY_HW_USB_CDC
+#endif
 
 #if CONFIG_IDF_TARGET_ESP32S3
 
+#if !MICROPY_HW_USB_CDC
 #include "esp_private/usb_phy.h"
 static usb_phy_handle_t phy_hdl;
+#endif
 
 void usb_usj_mode(void) {
     // Switch the USB PHY back to Serial/Jtag mode, disabling OTG support
@@ -84,4 +86,3 @@ void usb_usj_mode(void) {
 }
 #endif
 
-#endif // MICROPY_HW_USB_CDC
