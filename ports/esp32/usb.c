@@ -30,13 +30,12 @@
 
 #include "esp_rom_gpio.h"
 #include "esp_mac.h"
-#include "esp_private/usb_phy.h"
 
-static usb_phy_handle_t phy_hdl;
 
 #if MICROPY_HW_USB_CDC
-
 #include "shared/tinyusb/mp_usbd.h"
+#include "esp_private/usb_phy.h"
+static usb_phy_handle_t phy_hdl;
 
 
 
@@ -67,10 +66,13 @@ void mp_usbd_port_get_serial_number(char *serial_buf) {
     mp_usbd_hex_str(serial_buf, mac, sizeof(mac));
 }
 
-#endif // MICROPY_HW_USB_CDC
-
+#else // !MICROPY_HW_USB_CDC
 
 #if CONFIG_IDF_TARGET_ESP32S3
+
+#include "esp_private/usb_phy.h"
+static usb_phy_handle_t phy_hdl;
+
 void usb_usj_mode(void) {
     // Switch the USB PHY back to Serial/Jtag mode, disabling OTG support
     // This should be run before jumping to bootloader.
@@ -81,3 +83,5 @@ void usb_usj_mode(void) {
     usb_new_phy(&phy_conf, &phy_hdl);
 }
 #endif
+
+#endif // MICROPY_HW_USB_CDC
