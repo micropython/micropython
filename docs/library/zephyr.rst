@@ -22,9 +22,10 @@ Functions
 
    Returns the thread id of the current thread, which is used to reference the thread.
 
-.. function:: thread_analyze()
+.. function:: thread_analyze(cpu)
 
-   Runs the Zephyr debug thread analyzer on the current thread and prints stack size statistics in the format:
+   Runs the Zephyr debug thread analyzer on the current thread on the given cpu
+   and prints stack size statistics in the format:
 
     "``thread_name``-20s: STACK: unused ``available_stack_space`` usage ``stack_space_used``
     / ``stack_size`` (``percent_stack_space_used`` %); CPU: ``cpu_utilization`` %"
