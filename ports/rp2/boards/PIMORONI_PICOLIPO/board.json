@@ -18,7 +18,9 @@
     "thumbnail": "",
     "url": "https://shop.pimoroni.com/products/pimoroni-pico-lipo",
     "variants": {
-        "FLASH_16M": "16 MiB Flash"
+        "FLASH_16M": "16 MiB Flash",
+        "TYPING_PY": "16 MiB Flash and typing.py",
+        "TYPING_C": "16 MiB Flash and typing.c"
     },
     "vendor": "Pimoroni"
 }

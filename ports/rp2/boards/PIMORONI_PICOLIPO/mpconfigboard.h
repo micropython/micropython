@@ -12,3 +12,9 @@
 #define MICROPY_HW_UART1_RX  (9)
 #define MICROPY_HW_UART1_CTS (10)
 #define MICROPY_HW_UART1_RTS (11)
+
+// partial typing implementation in C
+#ifndef MICROPY_PY_TYPING
+#define MICROPY_PY_TYPING           (0)
+#define MICROPY_PY_TYPING_EXTRA_MODULES (0)
+#endif
