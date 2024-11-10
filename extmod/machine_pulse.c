@@ -64,7 +64,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_time_pulse_us_obj, 2, 3, machine_tim
 
 MP_WEAK mp_uint_t/*uint64_t*/ machine_time_hardware_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us) {
     /*mp_uint_t*/uint64_t start = mp_hal_ticks_us();
-    #define TEST_JITTER 1//0
+    #define TEST_JITTER 0
     #if TEST_JITTER
     while (mp_hal_pin_read(pin) == pulse_level) {
         if ((uint64_t)(mp_hal_ticks_us() - start) >= (uint64_t)start) {
@@ -93,7 +93,7 @@ MP_WEAK mp_uint_t/*uint64_t*/ machine_time_hardware_pulse_us(mp_hal_pin_obj_t pi
         }
         */
     }
-    return mp_hal_ticks_us() - start;
+    return (mp_uint_t)(mp_hal_ticks_us() - start);
 }
 
 static mp_obj_t machine_time_hardware_pulse_us_(size_t n_args, const mp_obj_t *args) {
