@@ -21,3 +21,7 @@
 #define MICROPY_HW_PIN_EXT_COUNT    CYW43_WL_GPIO_COUNT
 
 #define MICROPY_HW_PIN_RESERVED(i) ((i) == CYW43_PIN_WL_HOST_WAKE || (i) == CYW43_PIN_WL_REG_ON)
+
+// Typing module
+#define MICROPY_PY_TYPING           (1)
+#define MICROPY_PY_TYPING_EXTRA_MODULES (1)

@@ -15,5 +15,9 @@
     "product": "Pico",
     "thumbnail": "",
     "url": "https://www.raspberrypi.com/products/raspberry-pi-pico/",
-    "vendor": "Raspberry Pi"
+    "vendor": "Raspberry Pi",
+    "variants": {
+        "TYPING_PY": "typing",
+        "TYPING_C": "typing"
+    }
 }
