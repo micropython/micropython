@@ -818,9 +818,9 @@ function ci_windows_build {
 ########################################################################################
 # ports/zephyr
 
-ZEPHYR_DOCKER_VERSION=v0.26.13
-ZEPHYR_SDK_VERSION=0.16.8
-ZEPHYR_VERSION=v3.7.0
+ZEPHYR_DOCKER_VERSION=v0.27.4
+ZEPHYR_SDK_VERSION=0.17.0
+ZEPHYR_VERSION=v4.0.0
 
 function ci_zephyr_setup {
     IMAGE=ghcr.io/zephyrproject-rtos/ci:${ZEPHYR_DOCKER_VERSION}
