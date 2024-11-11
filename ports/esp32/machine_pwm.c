@@ -377,11 +377,16 @@ static void set_duty(machine_pwm_obj_t *self) {
     }
 }
 
+static void check_freq_ranges(int freq, int upper_freq) {
+    if ((freq <= 0) || (freq > upper_freq)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("frequency must be from 1Hz to %dMHz"), upper_freq / 1000000);
+    }
+}
+
 // Set timer frequency
 static void set_freq(machine_pwm_obj_t *self, unsigned int freq) {
     ledc_timer_config_t *timer = &timers[self->mode][self->timer];
     if (timer->freq_hz != freq) {
-        timer->freq_hz = freq;
         timer->clk_cfg = LEDC_AUTO_CLK;
         uint32_t src_clk_freq = 0;
 
@@ -409,7 +414,10 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq) {
         if (err != ESP_OK) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unable to query source clock frequency %d"), (int)timer->clk_cfg);
         }
+        // machine.freq(20_000_000) reduces APB_CLK_FREQ to 20MHz and the highest PWM frequency to 10MHz
+        check_freq_ranges(freq, src_clk_freq / 2);
         #endif
+        timer->freq_hz = freq;
 
         // Configure the new resolution and frequency
         timer->duty_resolution = find_suitable_duty_resolution(src_clk_freq, timer->freq_hz);
@@ -600,9 +608,7 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
 
     int freq = args[ARG_freq].u_int;
     if (freq != -1) {
-        if ((freq <= 0) || (freq > 40000000)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("frequency must be from 1Hz to 40MHz"));
-        }
+        check_freq_ranges(freq, 40000000);
     }
 
     int duty = args[ARG_duty].u_int;
@@ -728,10 +734,8 @@ static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
 }
 
 static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
-    if ((freq <= 0) || (freq > 40000000)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("frequency must be from 1Hz to 40MHz"));
-    }
     pwm_is_active(self);
+    check_freq_ranges(freq, 40000000);
     if (freq == timers[self->mode][self->timer].freq_hz) {
         return;
     }
