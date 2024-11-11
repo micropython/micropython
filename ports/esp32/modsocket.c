@@ -213,7 +213,7 @@ static int mdns_getaddrinfo(const char *host_str, const char *port_str,
 #endif // MICROPY_HW_ENABLE_MDNS_QUERIES
 
 static void _getaddrinfo_inner(const mp_obj_t host, const mp_obj_t portx,
-    const struct addrinfo *hints, struct addrinfo **res) {
+    struct addrinfo *hints, struct addrinfo **res) {
     int retval = 0;
 
     *res = NULL;
@@ -234,6 +234,9 @@ static void _getaddrinfo_inner(const mp_obj_t host, const mp_obj_t portx,
     }
 
     MP_THREAD_GIL_EXIT();
+
+    // The ai_canonname field is used below, so set the hint.
+    hints->ai_flags |= AI_CANONNAME;
 
     #if MICROPY_HW_ENABLE_MDNS_QUERIES
     retval = mdns_getaddrinfo(host_str, port_str, hints, res);
@@ -264,7 +267,8 @@ static void _getaddrinfo_inner(const mp_obj_t host, const mp_obj_t portx,
 static void _socket_getaddrinfo(const mp_obj_t addrtuple, struct addrinfo **resp) {
     mp_obj_t *elem;
     mp_obj_get_array_fixed_n(addrtuple, 2, &elem);
-    _getaddrinfo_inner(elem[0], elem[1], NULL, resp);
+    struct addrinfo hints = { 0 };
+    _getaddrinfo_inner(elem[0], elem[1], &hints, resp);
 }
 
 static mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
