@@ -43,7 +43,7 @@
 
 #include "py/mpprint.h"
 
-#define debug_printf(...) //mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
+#define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
 #define debug_printf0(...)//  mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
 #define debug_printf2(...) //mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
 #define debug_printf3(...) //mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
@@ -234,7 +234,7 @@ static void configure_pin(machine_pwm_obj_t *self) {
     }
 }
 
-#define apply_duty(self) debug_printf0("apply_duty(self->channel=%d,self->channel_duty=%d,self->pin=%d,self->mode=%d,self->timer=%d)", self->channel,self->channel_duty,self->pin,self->mode,self->timer); _apply_duty(self) ;
+#define apply_duty(self) debug_printf0("apply_duty(self->channel=%d,self->channel_duty=%d,self->pin=%d,self->mode=%d,self->timer=%d)", self->channel, self->channel_duty, self->pin, self->mode, self->timer); _apply_duty(self);
 static void _apply_duty(machine_pwm_obj_t *self) {
     ledc_timer_config_t *timer = &timers[self->mode][self->timer];
 
@@ -279,9 +279,6 @@ static void _apply_duty(machine_pwm_obj_t *self) {
         cfg.flags.output_invert = self->output_invert ^ 1;
     }
     check_esp_err(ledc_channel_config(&cfg));
-//    if (ledc_channel_config(&cfg) != ESP_OK) {
-  //      mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM not supported on Pin(%d)"), self->pin);
-    //}
 }
 /*
 static unsigned int calc_divider(uint32_t src_clk_freq, uint32_t timer_freq) {
@@ -304,7 +301,7 @@ static uint32_t calc_divider(uint32_t src_clk_freq, uint32_t timer_freq) {
 }
 
 // Temporary workaround for ledc_find_suitable_duty_resolution function only being added in IDF V5.2
-#if 1//ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 2, 0)
+#if 1 // ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 2, 0)
 /*
 static uint32_t _ledc_find_suitable_duty_resolution(uint32_t src_clk_freq, uint32_t timer_freq) {
     // This implementation is based on the one used in Micropython v1.23
@@ -328,7 +325,6 @@ static uint32_t _ledc_find_suitable_duty_resolution(uint32_t src_clk_freq, uint3
 static uint32_t _ledc_find_suitable_duty_resolution(uint32_t src_clk_freq, uint32_t timer_freq) {
     // Find the highest bit resolution for the requested frequency
     uint32_t divider = calc_divider(src_clk_freq, timer_freq);
-    //uint32_t freq = src_clk_freq;
     // actual frequency
     uint32_t freq = (uint32_t)((uint64_t)src_clk_freq * (uint64_t)divider / (uint64_t)src_clk_freq);
 
@@ -342,23 +338,13 @@ static uint32_t _ledc_find_suitable_duty_resolution(uint32_t src_clk_freq, uint3
 #endif
 
 static uint32_t find_suitable_duty_resolution(uint32_t src_clk_freq, uint32_t timer_freq) {
-    unsigned int resolution = 0;
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
-    unsigned int resolution1 = ledc_find_suitable_duty_resolution(src_clk_freq, timer_freq);
-    //if (resolution == 0)
-    //{
-        unsigned int resolution2 = _ledc_find_suitable_duty_resolution(src_clk_freq, timer_freq);
-    //}
-    //if (timer_freq < 10)
-    #endif
-    {
-        // magic second calculation
-    //    resolution = _ledc_find_suitable_duty_resolution(src_clk_freq, timer_freq);
-    }
+    unsigned int resolution = _ledc_find_suitable_duty_resolution(src_clk_freq, timer_freq);
+    #if 0 // ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
+    unsigned int resolution2 = ledc_find_suitable_duty_resolution(src_clk_freq, timer_freq);
     if (resolution1 != resolution2) {
-        debug_printf5("resolution1=%d, resolution2=%d", resolution1, resolution2);
+        debug_printf("resolution1=%d, resolution2=%d", resolution1, resolution2);
     }
-    resolution = resolution2;
+    #endif
     if (resolution == 0) {
         resolution = 1;
     } else if (resolution > HIGHEST_PWM_RES) {
@@ -376,17 +362,9 @@ static uint32_t get_duty_u16(machine_pwm_obj_t *self) {
     debug_printf("MAX_TIMER_DUTY=%d timer->duty_resolution=%d self->channel_duty=%d ledc_duty()=%d", MAX_TIMER_DUTY, timer->duty_resolution, self->channel_duty, ledc_duty())
 
     debug_printf2("get_duty_u16():self->output_invert=%d, ledc_duty()=%d", self->output_invert, ledc_duty())
-    //if ((self->channel_duty == timer_duty) || (ledc_duty() >= timer_duty)) {
     if (self->channel_duty == timer_duty) {
         return UI16_DUTY;
-        //return self->output_invert == 0 ? UI16_DUTY : 0;
-        //return HIGHEST_PWM_RES;
     } else {
-        /*
-        if ((self->output_invert) && (ledc_duty() == 0)) {
-            return UI16_DUTY;
-        }
-        */
         int duty_resolution = timers[self->mode][self->timer].duty_resolution;
         debug_printf2("duty_resolution=%d", duty_resolution)
         if (duty_resolution <= UI_RES_16_BIT) {
@@ -431,7 +409,6 @@ static void set_duty_u10(machine_pwm_obj_t *self, int duty) {
     if ((duty < 0) || (duty > UI10_DUTY)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty must be from 0 to %u"), UI10_DUTY);
     }
-    // set_duty_u16(self, duty << (UI_RES_16_BIT - UI_RES_10_BIT));
     self->duty_x = UI_RES_10_BIT;
     self->duty_ui = duty;
     apply_duty(self);
@@ -441,7 +418,6 @@ static void set_duty_ns(machine_pwm_obj_t *self, int ns) {
     if ((ns < 0) || (ns > duty_to_ns(self, UI16_DUTY))) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty_ns must be from 0 to %d ns"), duty_to_ns(self, UI16_DUTY));
     }
-    // set_duty_u16(self, ns_to_duty(self, ns));
     self->duty_x = -UI_RES_16_BIT;
     self->duty_ui = ns;
     apply_duty(self);
@@ -457,12 +433,16 @@ static void set_duty(machine_pwm_obj_t *self) {
     }
 }
 
+static void check_freq_ranges(int freq, int upper_freq) {
+    if ((freq <= 0) || (freq > upper_freq)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("frequency must be from 1Hz to %dMHz"), upper_freq / 1000000);
+    }
+}
+
 // Set timer frequency
 static void set_freq(machine_pwm_obj_t *self, unsigned int freq) {
     ledc_timer_config_t *timer = &timers[self->mode][self->timer];
     if (timer->freq_hz != freq) {
-        //int timer_freq_hz = timer->freq_hz;
-        timer->freq_hz = freq;
         timer->clk_cfg = LEDC_AUTO_CLK;
         uint32_t src_clk_freq = 0;
 
@@ -486,12 +466,14 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq) {
         #endif
 
         #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
-        esp_err_t err = ESP_OK;
-        err = esp_clk_tree_src_get_freq_hz(timer->clk_cfg, ESP_CLK_TREE_SRC_FREQ_PRECISION_EXACT, &src_clk_freq);
+        esp_err_t err = esp_clk_tree_src_get_freq_hz(timer->clk_cfg, ESP_CLK_TREE_SRC_FREQ_PRECISION_EXACT, &src_clk_freq);
         if (err != ESP_OK) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unable to query source clock frequency %d"), (int)timer->clk_cfg);
         }
+        // machine.freq(20_000_000) reduces APB_CLK_FREQ to 20MHz and the highest PWM frequency to 10MHz
+        check_freq_ranges(freq, src_clk_freq / 2);
         #endif
+        timer->freq_hz = freq;
 
         // Configure the new resolution and frequency
         timer->duty_resolution = find_suitable_duty_resolution(src_clk_freq, timer->freq_hz);
@@ -499,14 +481,7 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq) {
         debug_printf5("src_clk_freq=%d, timer->freq_hz=%d, timer->clk_cfg=%d, timer->duty_resolution=%d", src_clk_freq, timer->freq_hz, timer->clk_cfg, timer->duty_resolution)
 
         // Configure timer - Set frequency
-        err = ESP_FAIL;
-        //if (timer_freq_hz == -1)
-        {
-            //check_esp_err(ledc_timer_config(timer));
-            err = ledc_timer_config(timer);
-        }
-        if (err != ESP_OK)
-        {
+        if (ESP_OK != ledc_timer_config(timer)) {
             uint32_t divider = calc_divider(src_clk_freq, timer->freq_hz);
             debug_printf5("divider=%d, timer->clk_cfg=%d, err=0x%X", divider, timer->clk_cfg, err);
             check_esp_err(ledc_timer_set(timer->speed_mode, timer->timer_num, divider, timer->duty_resolution, timer->clk_cfg));
@@ -601,8 +576,6 @@ static void _select_a_timer(machine_pwm_obj_t *self, int freq) {
         self->timer = timer;
         check_esp_err(ledc_bind_channel_timer(self->mode, self->channel, self->timer));
         register_channel(self->mode, self->channel, self->pin, self->timer);
-    } else {
-        ////// timer = -1;
     }
     if (timer >= 0) {
         self->timer = timer;
@@ -695,9 +668,7 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
 
     int freq = args[ARG_freq].u_int;
     if (freq != -1) {
-        if ((freq <= 0) || (freq > 40000000)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("frequency must be from 1Hz to 40MHz"));
-        }
+        check_freq_ranges(freq, 40000000);
     }
 
     int duty = args[ARG_duty].u_int;
@@ -834,10 +805,8 @@ static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
 }
 
 static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
-    if ((freq <= 0) || (freq > 40000000)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("frequency must be from 1Hz to 40MHz"));
-    }
     pwm_is_active(self);
+    check_freq_ranges(freq, 40000000);
     if (freq == timers[self->mode][self->timer].freq_hz) {
         return;
     }
