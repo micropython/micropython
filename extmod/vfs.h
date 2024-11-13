@@ -59,6 +59,11 @@
 #define MP_VFS_ROM_IOCTL_WRITE                      (4) // rom_ioctl(4, <id>, <offset>, <buf>)
 #define MP_VFS_ROM_IOCTL_WRITE_COMPLETE             (5) // rom_ioctl(5, <id>)
 
+// Function signatures used when MP_BLOCKDEV_FLAG_NATIVE is set.
+// Should return 0 for success, or a negative errno code for failure.
+typedef int (*mp_vfs_blockdev_native_readblocks)(uint8_t *, uint32_t, uint32_t);
+typedef int (*mp_vfs_blockdev_native_writeblocks)(const uint8_t *, uint32_t, uint32_t);
+
 // At the moment the VFS protocol just has import_stat, but could be extended to other methods
 typedef struct _mp_vfs_proto_t {
     mp_import_stat_t (*import_stat)(void *self, const char *path);
