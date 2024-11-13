@@ -311,7 +311,17 @@ static MP_DEFINE_CONST_FUN_OBJ_1(network_cyw43_disconnect_obj, network_cyw43_dis
 
 static mp_obj_t network_cyw43_isconnected(mp_obj_t self_in) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_bool(cyw43_tcpip_link_status(self->cyw, self->itf) == 3);
+    bool result = (cyw43_tcpip_link_status(self->cyw, self->itf) == CYW43_LINK_UP);
+
+    if (result && self->itf == CYW43_ITF_AP) {
+        // For AP we need to not only know if the link is up, but also if any stations
+        // have associated.
+        uint8_t mac_buf[6];
+        int num_stas = 1;
+        cyw43_wifi_ap_get_stas(self->cyw, &num_stas, mac_buf);
+        result = num_stas > 0;
+    }
+    return mp_obj_new_bool(result);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(network_cyw43_isconnected_obj, network_cyw43_isconnected);
 
