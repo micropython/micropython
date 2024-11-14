@@ -638,3 +638,30 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
     }
     return ret;
 }
+
+extern void __real_LPUART_TransferHandleIRQ(LPUART_Type *base, void *irqHandle);
+
+// In the Makefile -Wl,--wrap=LPUART_TransferHandleIRQ is passed to the linker forcing this
+// wrapper to be called first as the LPUART_TransferHandleIRQ() ISR handler, allowing us to handle
+// the idle interrupt before the original driver.
+void __wrap_LPUART_TransferHandleIRQ(LPUART_Type *base, void *irqHandle) {
+
+    uint32_t status = LPUART_GetStatusFlags(base);
+    uint32_t enabledInterrupts = LPUART_GetEnabledInterrupts(base);
+    lpuart_handle_t *handle = (lpuart_handle_t *)irqHandle;
+
+    // If IDLE flag is set and the IDLE interrupt is enabled.
+    if ((0U != ((uint32_t)kLPUART_IdleLineFlag & status)) &&
+        (0U != ((uint32_t)kLPUART_IdleLineInterruptEnable & enabledInterrupts))) {
+        // Clear IDLE flag to skip sdk idle flag handler.
+        LPUART_ClearStatusFlags(base, kLPUART_IdleLineFlag);
+        // Run micropython idle handler if defined.
+        if (NULL != handle->callback) {
+            handle->callback(base, handle, kStatus_LPUART_IdleLineDetected, handle->userData);
+        } else {
+            /* Avoid MISRA 15.7 */
+        }
+    }
+
+    __real_LPUART_TransferHandleIRQ(base, irqHandle);
+}
