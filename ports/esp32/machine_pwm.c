@@ -48,7 +48,7 @@
 #define debug_printf2(...) //mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
 #define debug_printf3(...) //mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
 #define debug_printf4(...)//  mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
-#define debug_printf5(...)   //mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
+#define debug_printf5(...) //mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
 
 typedef struct _chan_t {
     // Which channel has which GPIO pin assigned?
@@ -73,22 +73,23 @@ static ledc_timer_config_t timers[LEDC_SPEED_MODE_MAX][LEDC_TIMER_MAX];
 #define UI_RES_10_BIT (10)
 
 // Maximum duty value on 10-bit resolution
-#define UI10_DUTY (1 << UI_RES_10_BIT)
+#define UI10_DUTY ((1 << UI_RES_10_BIT) - 1)
 
 // Duty resolution of user interface in `duty_u16(0..2^16)` and `duty_u16` parameter in constructor/initializer
 #define UI_RES_16_BIT (16)
 // Maximum duty value on highest user interface resolution
-#define UI16_DUTY (1 << UI_RES_16_BIT)
+#define UI16_DUTY ((1 << UI_RES_16_BIT) - 1)
 
 #define HIGHEST_PWM_RES (LEDC_TIMER_BIT_MAX - 1)
+//#define HIGHEST_PWM_RES (LEDC_TIMER_BIT_MAX - 1 - 1)
 
 // timer_duty is the MAX value of a channel_duty
-#define timer_duty (1 << timer->duty_resolution)
+#define timer_duty ((1 << timer->duty_resolution) - 1)
 
 // All chips except esp32 and esp32s2 do not have timer-specific clock sources, which means clock source for all timers must be the same one.
 #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2
 // If the PWM frequency is less than EMPIRIC_FREQ, then LEDC_REF_CLK_HZ(1 MHz) source is used, else LEDC_APB_CLK_HZ(80 MHz) source is used
-#define EMPIRIC_FREQ (10) // Hz
+//#define EMPIRIC_FREQ (10) // Hz
 #endif
 // Config of timer upon which we run all PWM'ed GPIO pins
 static bool pwm_inited = false;
@@ -135,6 +136,7 @@ static void pwm_init(void) {
             timers[mode][timer].speed_mode = mode;
             timers[mode][timer].timer_num = timer;
             timers[mode][timer].clk_cfg = LEDC_AUTO_CLK; // will reinstall later
+            timers[mode][timer].deconfigure = false;
         }
     }
 }
@@ -274,11 +276,25 @@ static void _apply_duty(machine_pwm_obj_t *self) {
         .flags.output_invert = self->output_invert,
     };
     debug_printf4("apply_duty():self->channel_duty=%d, timer_duty=%d, cfg.flags.output_invert=%d", self->channel_duty, timer_duty, cfg.flags.output_invert)
+    /*
     if (self->channel_duty == timer_duty) {
         cfg.duty = 0;
         cfg.flags.output_invert = self->output_invert ^ 1;
     }
+    */
     check_esp_err(ledc_channel_config(&cfg));
+    /*
+    #define USE_THREAD_SAFE_LEDC_API 0
+    #if USE_THREAD_SAFE_LEDC_API
+    check_esp_err(ledc_set_duty_and_update(self->mode, self->channel, channel_duty, timer_duty - 1));
+    esp_err_t err = ESP_OK; // ledc_set_duty_and_update(self->mode, self->channel, channel_duty, timer_duty - 1);
+    if (err != ESP_OK)
+    #endif
+    {
+        check_esp_err(ledc_set_duty(self->mode, self->channel, channel_duty));
+        check_esp_err(ledc_update_duty(self->mode, self->channel));
+    }
+    */
 }
 /*
 static unsigned int calc_divider(uint32_t src_clk_freq, uint32_t timer_freq) {
@@ -297,6 +313,12 @@ static uint32_t calc_divider(uint32_t src_clk_freq, uint32_t timer_freq) {
 */
 static uint32_t calc_divider(uint32_t src_clk_freq, uint32_t timer_freq) {
     uint32_t divider = (uint32_t)(((uint64_t)src_clk_freq + timer_freq / 2) / timer_freq); // rounded
+/*
+    uint32_t divider2 = (uint32_t)((uint64_t)src_clk_freq / timer_freq); // tracate
+    if (divider != divider2) {
+        debug_printf5("divider=%d, divider2=%d", divider, divider2);
+    }
+*/
     return divider == 0 ? 1 : divider;
 }
 
@@ -322,31 +344,44 @@ static uint32_t _ledc_find_suitable_duty_resolution(uint32_t src_clk_freq, uint3
     return res;
 }
 */
+/*
+    unsigned int freq = src_clk_freq;
+    unsigned int divider = calc_divider(src_clk_freq, timer_freq);
+    float f = (float)src_clk_freq / divider; // actual frequency
+    if (f <= 1.0) {
+        f = 1.0;
+    }
+    freq = (unsigned int)roundf((float)src_clk_freq + (src_clk_freq / divider /2) / (src_clk_freq / divider));
+*/
 static uint32_t _ledc_find_suitable_duty_resolution(uint32_t src_clk_freq, uint32_t timer_freq) {
     // Find the highest bit resolution for the requested frequency
     uint32_t divider = calc_divider(src_clk_freq, timer_freq);
-    // actual frequency
-    uint32_t freq = (uint32_t)((uint64_t)src_clk_freq * (uint64_t)divider / (uint64_t)src_clk_freq);
+    uint32_t f = src_clk_freq / divider; // actual frequency
+    uint32_t freq = src_clk_freq + (f / 2) / f; // rounded
+    uint32_t freq1 = freq;
 
     uint32_t resolution = 0;
     for (; freq > 1; freq >>= 1) {
         ++resolution;
     }
-    debug_printf5("\nsrc_clk_freq=%d, timer_freq=%d, divider=%d, freq=%d, resolution=%d", src_clk_freq, timer_freq, divider, freq, resolution);
+    //if (src_clk_freq != freq1) {
+    if (1) {
+        debug_printf5("\nsrc_clk_freq=%d, timer_freq=%d, divider=%d, freq=%d, resolution=%d", src_clk_freq, timer_freq, divider, freq1, resolution);
+    }
     return resolution;
 }
 #endif
 
 static uint32_t find_suitable_duty_resolution(uint32_t src_clk_freq, uint32_t timer_freq) {
-    unsigned int resolution = _ledc_find_suitable_duty_resolution(src_clk_freq, timer_freq);
-    #if 0 // ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
-    unsigned int resolution2 = ledc_find_suitable_duty_resolution(src_clk_freq, timer_freq);
-    if (resolution1 != resolution2) {
-        debug_printf("resolution1=%d, resolution2=%d", resolution1, resolution2);
-    }
+    unsigned int ledc_resolution = _ledc_find_suitable_duty_resolution(src_clk_freq, timer_freq);
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
+    unsigned int resolution = ledc_find_suitable_duty_resolution(src_clk_freq, timer_freq);
+    //if (resolution != resolution2) {
+        debug_printf5("resolution=%d, ledc_resolution=%d", resolution, ledc_resolution);
+    //}
     #endif
     if (resolution == 0) {
-        resolution = 1;
+        //resolution = 1;
     } else if (resolution > HIGHEST_PWM_RES) {
         // Limit resolution to HIGHEST_PWM_RES to match units of our duty
         resolution = HIGHEST_PWM_RES;
@@ -358,13 +393,16 @@ static uint32_t find_suitable_duty_resolution(uint32_t src_clk_freq, uint32_t ti
 
 static uint32_t get_duty_u16(machine_pwm_obj_t *self) {
     pwm_is_active(self);
-    ledc_timer_config_t *timer = &timers[self->mode][self->timer];
+    //ledc_timer_config_t *timer = &timers[self->mode][self->timer];
     debug_printf("MAX_TIMER_DUTY=%d timer->duty_resolution=%d self->channel_duty=%d ledc_duty()=%d", MAX_TIMER_DUTY, timer->duty_resolution, self->channel_duty, ledc_duty())
 
     debug_printf2("get_duty_u16():self->output_invert=%d, ledc_duty()=%d", self->output_invert, ledc_duty())
+    #if 0 // UI16_DUTY == 65536
     if (self->channel_duty == timer_duty) {
         return UI16_DUTY;
-    } else {
+    } else
+    #endif
+    {
         int duty_resolution = timers[self->mode][self->timer].duty_resolution;
         debug_printf2("duty_resolution=%d", duty_resolution)
         if (duty_resolution <= UI_RES_16_BIT) {
@@ -391,18 +429,6 @@ static void set_duty_u16(machine_pwm_obj_t *self, int duty) {
     self->duty_x = UI_RES_16_BIT;
     self->duty_ui = duty;
     apply_duty(self);
-    /*
-    #define USE_THREAD_SAFE_LEDC_API 0
-    #if USE_THREAD_SAFE_LEDC_API
-    check_esp_err(ledc_set_duty_and_update(self->mode, self->channel, channel_duty, timer_duty - 1));
-    esp_err_t err = ESP_OK; // ledc_set_duty_and_update(self->mode, self->channel, channel_duty, timer_duty - 1);
-    if (err != ESP_OK)
-    #endif
-    {
-        check_esp_err(ledc_set_duty(self->mode, self->channel, channel_duty));
-        check_esp_err(ledc_update_duty(self->mode, self->channel));
-    }
-    */
 }
 
 static void set_duty_u10(machine_pwm_obj_t *self, int duty) {
@@ -477,15 +503,23 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq) {
 
         // Configure the new resolution and frequency
         timer->duty_resolution = find_suitable_duty_resolution(src_clk_freq, timer->freq_hz);
-        //debug_printf5("SOC_MOD_CLK_APB=%d, LEDC_USE_APB_CLK=%d, LEDC_AUTO_CLK=%d", SOC_MOD_CLK_APB, LEDC_USE_APB_CLK, LEDC_AUTO_CLK);
-        debug_printf5("src_clk_freq=%d, timer->freq_hz=%d, timer->clk_cfg=%d, timer->duty_resolution=%d", src_clk_freq, timer->freq_hz, timer->clk_cfg, timer->duty_resolution)
+        debug_printf5("SOC_MOD_CLK_APB=%d, LEDC_USE_APB_CLK=%d, LEDC_AUTO_CLK=%d, LEDC_USE_REF_TICK=%d", SOC_MOD_CLK_APB, LEDC_USE_APB_CLK, LEDC_AUTO_CLK, LEDC_USE_REF_TICK);
+        debug_printf5("src_clk_freq=%d, timer->freq_hz=%d, timer->clk_cfg=%d, timer->duty_resolution=%d, timer->speed_mode=%d, timer->timer_num=%d", src_clk_freq, timer->freq_hz, timer->clk_cfg, timer->duty_resolution, timer->speed_mode, timer->timer_num)
 
         // Configure timer - Set frequency
-        if (ESP_OK != ledc_timer_config(timer)) {
+        check_esp_err(ledc_timer_config(timer));
+        /*
+        err = ledc_timer_config(timer);
+        if (1) {
+        //if (ESP_OK != (err = ledc_timer_config(timer))) {
             uint32_t divider = calc_divider(src_clk_freq, timer->freq_hz);
             debug_printf5("divider=%d, timer->clk_cfg=%d, err=0x%X", divider, timer->clk_cfg, err);
             check_esp_err(ledc_timer_set(timer->speed_mode, timer->timer_num, divider, timer->duty_resolution, timer->clk_cfg));
+            if (freq >= EMPIRIC_FREQ) {
+                check_esp_err(ledc_set_freq(timer->speed_mode, timer->timer_num,timer->freq_hz));
+            }
         }
+        */
         // Reset the timer if low speed
         if (self->mode == LEDC_LOW_SPEED_MODE) {
             check_esp_err(ledc_timer_rst(self->mode, self->timer));
