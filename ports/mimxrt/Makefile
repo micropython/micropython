@@ -137,6 +137,7 @@ SRC_HAL_IMX_C += \
 	$(MCUX_SDK_DIR)/drivers/lpi2c/fsl_lpi2c.c \
 	$(MCUX_SDK_DIR)/drivers/lpspi/fsl_lpspi.c \
 	$(MCUX_SDK_DIR)/drivers/lpspi/fsl_lpspi_edma.c \
+	$(MCUX_SDK_DIR)/drivers/lpuart/fsl_lpuart.c \
 	$(MCUX_SDK_DIR)/drivers/pit/fsl_pit.c \
 	$(MCUX_SDK_DIR)/drivers/pwm/fsl_pwm.c \
 	$(MCUX_SDK_DIR)/drivers/sai/fsl_sai.c \
@@ -151,6 +152,10 @@ SRC_HAL_IMX_C += hal/fsl_flexspi_nor_boot.c
 else
 SRC_HAL_IMX_C += $(MCU_DIR)/xip/fsl_flexspi_nor_boot.c
 endif
+
+# UART IRQ wrapper for UART.IRQ_RXIDLE support (see machine_uart.c for implementation details)
+# Double wrapping is required because SDK stores function pointers in s_lpuartIsr[] dispatch table
+LDFLAGS += --wrap=LPUART_TransferCreateHandle --wrap=LPUART_TransferHandleIRQ
 
 INC_HAL_IMX += \
 	-I$(TOP)/$(MCU_DIR) \
@@ -244,7 +249,6 @@ SRC_C += \
 	eth.c \
 	fatfs_port.c \
 	flash.c \
-	hal/fsl_lpuart.c \
 	hal/pwm_backport.c \
 	help.c \
 	led.c \
@@ -505,7 +509,8 @@ LDFLAGS += \
 	--cref \
 	--gc-sections \
 	--print-memory-usage \
-	-Map=$@.map
+	-Map=$@.map \
+    --wrap=LPUART_TransferCreateHandle --wrap=LPUART_TransferHandleIRQ
 
 # LDDEFINES are used for link time adaptation of linker scripts, utilizing
 #	the C preprocessor. Therefore keep LDDEFINES separated from LDFLAGS!
