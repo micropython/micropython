@@ -41,4 +41,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: firmware
-        path: ports/stm32/build-STM32F412RG/firmware.bin
+        path: ports/stm32/boards/STM32F412/firmware.bin
