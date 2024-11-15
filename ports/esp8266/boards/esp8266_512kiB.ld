@@ -2,7 +2,8 @@
 
    Flash layout:
     0x40200000 36k  header + iram/dram init
-    0x40209000 456k firmware (irom0)
+    0x40209000 448k firmware (irom0)
+    0x40279000 8k   ROMFS
     0x4027b000 20k  SDK parameters
 */
 
@@ -11,7 +12,8 @@ MEMORY
     dport0_0_seg : org = 0x3ff00000, len = 16
     dram0_0_seg :  org = 0x3ffe8000, len = 80K
     iram1_0_seg :  org = 0x40100000, len = 32K
-    irom0_0_seg :  org = 0x40209000, len = 512K - 36K - 20K
+    irom0_0_seg :  org = 0x40209000, len = 512K - 36K - 20K - 8K
+    FLASH_ROMFS :  org = 0x4027a000, len = 8K
 }
 
 /* define common sections and symbols */
