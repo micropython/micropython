@@ -164,9 +164,16 @@ static MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 #define IS_OTA_FIRMWARE() ((*(uint32_t *)0x40200000 & 0xff00) == 0x100)
 
 extern byte _firmware_size[];
+#if MICROPY_VFS_ROM_IOCTL
+extern uint8_t _micropy_hw_romfs_size;
+#endif
 
 static mp_obj_t esp_flash_user_start(void) {
-    return MP_OBJ_NEW_SMALL_INT((uint32_t)_firmware_size);
+    uint32_t flash_user_start = (uint32_t)_firmware_size;
+    #if MICROPY_VFS_ROM_IOCTL
+    flash_user_start += (uint32_t)&_micropy_hw_romfs_size;
+    #endif
+    return MP_OBJ_NEW_SMALL_INT(flash_user_start);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj, esp_flash_user_start);
 
