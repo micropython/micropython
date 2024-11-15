@@ -38,6 +38,10 @@
 #error "MICROPY_PY_VFS requires MICROPY_VFS"
 #endif
 
+#if MICROPY_VFS_ROM
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_rom_ioctl_obj, 1, 4, mp_vfs_rom_ioctl);
+#endif
+
 static const mp_rom_map_elem_t vfs_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_vfs) },
 
@@ -53,6 +57,7 @@ static const mp_rom_map_elem_t vfs_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_VfsLfs2), MP_ROM_PTR(&mp_type_vfs_lfs2) },
     #endif
     #if MICROPY_VFS_ROM
+    { MP_ROM_QSTR(MP_QSTR_rom_ioctl), MP_ROM_PTR(&mp_vfs_rom_ioctl_obj) },
     { MP_ROM_QSTR(MP_QSTR_VfsRom), MP_ROM_PTR(&mp_type_vfs_rom) },
     #endif
     #if MICROPY_VFS_POSIX
