@@ -345,21 +345,25 @@ static const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_osdebug), MP_ROM_PTR(&esp_osdebug_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep_type), MP_ROM_PTR(&esp_sleep_type_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&esp_deepsleep_obj) },
+    #if MICROPY_PY_ESP_FLASH_FUNCS
     { MP_ROM_QSTR(MP_QSTR_flash_id), MP_ROM_PTR(&esp_flash_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_read), MP_ROM_PTR(&esp_flash_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_write), MP_ROM_PTR(&esp_flash_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_erase), MP_ROM_PTR(&esp_flash_erase_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_size), MP_ROM_PTR(&esp_flash_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_user_start), MP_ROM_PTR(&esp_flash_user_start_obj) },
+    #endif
     #if MICROPY_ESP8266_APA102
     { MP_ROM_QSTR(MP_QSTR_apa102_write), MP_ROM_PTR(&esp_apa102_write_obj) },
     #endif
+    #if MICROPY_PY_ESP_EXTRA_FUNCS
     { MP_ROM_QSTR(MP_QSTR_freemem), MP_ROM_PTR(&esp_freemem_obj) },
     { MP_ROM_QSTR(MP_QSTR_meminfo), MP_ROM_PTR(&esp_meminfo_obj) },
     { MP_ROM_QSTR(MP_QSTR_check_fw), MP_ROM_PTR(&esp_check_fw_obj) },
     { MP_ROM_QSTR(MP_QSTR_malloc), MP_ROM_PTR(&esp_malloc_obj) },
     { MP_ROM_QSTR(MP_QSTR_free), MP_ROM_PTR(&esp_free_obj) },
     { MP_ROM_QSTR(MP_QSTR_esf_free_bufs), MP_ROM_PTR(&esp_esf_free_bufs_obj) },
+    #endif
     #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
     { MP_ROM_QSTR(MP_QSTR_set_native_code_location), MP_ROM_PTR(&esp_set_native_code_location_obj) },
     #endif
@@ -379,3 +383,96 @@ const mp_obj_module_t esp_module = {
 };
 
 MP_REGISTER_MODULE(MP_QSTR_esp, esp_module);
+
+/////
+
+#if MICROPY_VFS_ROM
+
+#include "py/objarray.h"
+#include "extmod/vfs.h"
+
+#define FLASH_MEM_BASE (0x40200000)
+#define FLASH_PAGE_SIZE (4096)
+
+#define MICROPY_HW_ROMFS_BASE (uintptr_t)(&_micropy_hw_romfs_start)
+#define MICROPY_HW_ROMFS_BYTES (uintptr_t)(&_micropy_hw_romfs_size)
+
+#define ROMFS_SPI_FLASH_OFFSET (MICROPY_HW_ROMFS_BASE - FLASH_MEM_BASE)
+
+extern uint8_t _micropy_hw_romfs_start;
+extern uint8_t _micropy_hw_romfs_size;
+
+static const MP_DEFINE_MEMORYVIEW_OBJ(romfs_obj, 'B', 0, MICROPY_HW_ROMFS_BYTES, (void *)MICROPY_HW_ROMFS_BASE);
+
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
+    switch (mp_obj_get_int(args[0])) {
+        case MP_VFS_ROM_IOCTL_GET_NUMBER_OF_SEGMENTS:
+            return MP_OBJ_NEW_SMALL_INT(1);
+        case MP_VFS_ROM_IOCTL_GET_SEGMENT:
+            return MP_OBJ_FROM_PTR(&romfs_obj);
+        case MP_VFS_ROM_IOCTL_WRITE_PREPARE: {
+            uint32_t dest = ROMFS_SPI_FLASH_OFFSET;
+            uint32_t dest_max = dest + mp_obj_get_int(args[2]);
+
+            // Erase sector.
+            while (dest < dest_max) {
+                ets_loop_iter(); // flash access takes time so run any pending tasks
+                SpiFlashOpResult res = spi_flash_erase_sector(dest / FLASH_PAGE_SIZE);
+                ets_loop_iter();
+                if (res != SPI_FLASH_RESULT_OK) {
+                    return MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? -MP_ETIMEDOUT : -MP_EIO);
+                }
+                dest += FLASH_PAGE_SIZE;
+            }
+            return MP_OBJ_NEW_SMALL_INT(4);
+        }
+        case MP_VFS_ROM_IOCTL_WRITE: {
+            mp_int_t offset = ROMFS_SPI_FLASH_OFFSET + mp_obj_get_int(args[2]);
+            mp_buffer_info_t bufinfo;
+            mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
+            ets_loop_iter(); // flash access takes time so run any pending tasks
+            SpiFlashOpResult res = spi_flash_write(offset, bufinfo.buf, (bufinfo.len + 3) & ~3);
+            ets_loop_iter();
+            if (res == SPI_FLASH_RESULT_OK) {
+                return MP_OBJ_NEW_SMALL_INT(0);
+            }
+            return MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? -MP_ETIMEDOUT : -MP_EIO);
+        }
+
+        /*
+        case 1: // address
+            return mp_obj_new_int(MICROPY_HW_ROMFS_BASE);
+        case 2: { // num blocks
+            return MP_OBJ_NEW_SMALL_INT(MICROPY_HW_ROMFS_BYTES / FLASH_PAGE_SIZE);
+        }
+        case 3: // block_size
+            return MP_OBJ_NEW_SMALL_INT(FLASH_PAGE_SIZE);
+        case 4: { // erase
+            mp_int_t sector = (ROMFS_SPI_FLASH_OFFSET + mp_obj_get_int(args[1])) / FLASH_PAGE_SIZE;
+            ets_loop_iter(); // flash access takes time so run any pending tasks
+            SpiFlashOpResult res = spi_flash_erase_sector(sector);
+            ets_loop_iter();
+            if (res == SPI_FLASH_RESULT_OK) {
+                return MP_OBJ_NEW_SMALL_INT(0);
+            }
+            return MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? -MP_ETIMEDOUT : -MP_EIO);
+        }
+        case 5: { // write
+            mp_int_t offset = ROMFS_SPI_FLASH_OFFSET + mp_obj_get_int(args[1]);
+            mp_buffer_info_t bufinfo;
+            mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+            ets_loop_iter(); // flash access takes time so run any pending tasks
+            SpiFlashOpResult res = spi_flash_write(offset, bufinfo.buf, (bufinfo.len + 3) & ~3);
+            ets_loop_iter();
+            if (res == SPI_FLASH_RESULT_OK) {
+                return MP_OBJ_NEW_SMALL_INT(0);
+            }
+            return MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? -MP_ETIMEDOUT : -MP_EIO);
+        }
+        */
+        default:
+            return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+}
+
+#endif // MICROPY_VFS_ROM
