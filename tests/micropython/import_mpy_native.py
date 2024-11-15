@@ -28,7 +28,7 @@ class UserFile(io.IOBase):
         return n
 
     def ioctl(self, req, arg):
-        return 0
+        return -1
 
 
 class UserFS:
