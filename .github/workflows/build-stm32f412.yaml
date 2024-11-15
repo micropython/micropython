@@ -1,0 +1,44 @@
+name: Build STM32F412
+
+on:
+  push:
+    branches:
+      - stm32f412-support
+  pull_request:
+    branches:
+      - stm32f412-support
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+
+    - name: Install ARM GCC Toolchain
+      run: |
+        sudo apt update
+        sudo apt install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
+
+    - name: Update submodules
+      run: git submodule update --init --recursive
+
+    - name: Build mpy-cross
+      run: make -C mpy-cross
+
+    - name: Build STM32 firmware
+      run: |
+        cd ports/stm32
+        make BOARD=STM32F412RG
+
+    - name: Upload firmware artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: firmware
+        path: ports/stm32/build-STM32F412RG/firmware.bin
