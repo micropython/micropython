@@ -38,7 +38,7 @@ jobs:
     - name: Build STM32 firmware
       run: |
         cd ports/stm32
-        make BOARD=STM32F412 
+        make BOARD=STM32F412
 
     - name: Upload firmware artifact
       uses: actions/upload-artifact@v4
