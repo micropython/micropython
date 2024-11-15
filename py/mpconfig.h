@@ -991,6 +991,11 @@ typedef double mp_float_t;
 #define MICROPY_VFS (0)
 #endif
 
+// Whether to include support for writable filesystems.
+#ifndef MICROPY_VFS_WRITABLE
+#define MICROPY_VFS_WRITABLE (1)
+#endif
+
 // Support for VFS POSIX component, to mount a POSIX filesystem within VFS
 #ifndef MICROPY_VFS_POSIX
 #define MICROPY_VFS_POSIX (0)
