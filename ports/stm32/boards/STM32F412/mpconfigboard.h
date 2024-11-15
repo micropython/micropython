@@ -1,0 +1,6 @@
+#define MICROPY_HW_BOARD_NAME       "STM32F412RG"
+#define MICROPY_HW_MCU_NAME         "STM32F412RG"
+
+#define MICROPY_HW_HAS_FLASH        (1)
+#define MICROPY_HW_ENABLE_UART_REPL (1)
+#define MICROPY_HW_ENABLE_USB       (1)
