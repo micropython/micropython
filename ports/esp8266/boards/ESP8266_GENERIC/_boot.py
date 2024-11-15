@@ -4,3 +4,7 @@
 import gc
 
 gc.threshold((gc.mem_free() + gc.mem_alloc()) // 4)
+
+import vfs
+
+vfs.mount(vfs.VfsRom(vfs.rom_ioctl(1)), "/")
