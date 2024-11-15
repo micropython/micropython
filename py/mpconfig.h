@@ -1006,6 +1006,11 @@ typedef double mp_float_t;
 #define MICROPY_VFS_WRITABLE (1)
 #endif
 
+// Whether to enable the mp_vfs_rom_ioctl C function, and vfs.rom_ioctl Python function
+#ifndef MICROPY_VFS_ROM_IOCTL
+#define MICROPY_VFS_ROM_IOCTL (MICROPY_VFS_ROM)
+#endif
+
 // Support for VFS POSIX component, to mount a POSIX filesystem within VFS
 #ifndef MICROPY_VFS_POSIX
 #define MICROPY_VFS_POSIX (0)
