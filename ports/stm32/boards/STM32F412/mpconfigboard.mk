@@ -1,1 +1,3 @@
-
+MCU_SERIES = f4
+CMSIS_MCU = STM32F412xx
+LD_FILE = boards/stm32f412rg.ld
