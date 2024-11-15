@@ -134,6 +134,7 @@ SRC_C = \
 	fatfs_port.c \
 	posix_helpers.c \
 	hspi.c \
+	vfs_rom_ioctl.c \
 	$(wildcard $(BOARD_DIR)/*.c) \
 
 ifeq ($(MICROPY_PY_ESPNOW),1)
