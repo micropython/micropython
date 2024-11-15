@@ -122,4 +122,9 @@ MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_rmdir_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_stat_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_statvfs_obj);
 
+#if MICROPY_VFS_ROM
+// A port must define this.
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args);
+#endif
+
 #endif // MICROPY_INCLUDED_EXTMOD_VFS_H
