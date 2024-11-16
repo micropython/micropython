@@ -8,7 +8,7 @@
         "nucleo_f412zg.jpg"
     ],
     "mcu": "stm32f4",
-    "product": "Nucleo F412ZG",
+    "product": "Nucleo F412RG",
     "thumbnail": "",
     "url": "",
     "vendor": "ST Microelectronics"
