@@ -31,7 +31,9 @@ class File(io.IOBase):
         self.off = 0
 
     def ioctl(self, request, arg):
-        return 0
+        if request == 4:  # MP_STREAM_CLOSE
+            return 0
+        return -1
 
     def readinto(self, buf):
         buf[:] = memoryview(file_data)[self.off : self.off + len(buf)]
