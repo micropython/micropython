@@ -5,10 +5,10 @@
     "docs": "",
     "features": [],
     "images": [
-        "nucleo_f412zg.jpg"
+        "nucleo_f412rg.jpg"
     ],
     "mcu": "stm32f4",
-    "product": "Nucleo F412ZG",
+    "product": "STM32F412",
     "thumbnail": "",
     "url": "",
     "vendor": "ST Microelectronics"
