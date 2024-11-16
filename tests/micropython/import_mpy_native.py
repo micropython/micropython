@@ -28,6 +28,8 @@ class UserFile(io.IOBase):
         return n
 
     def ioctl(self, req, arg):
+        if req == 4:  # MP_STREAM_CLOSE
+            return 0
         return -1
 
 
