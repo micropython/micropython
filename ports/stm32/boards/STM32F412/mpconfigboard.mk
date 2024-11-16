@@ -1,5 +1,6 @@
 MCU_SERIES = f4
-CMSIS_MCU = STM32F412Rx
+CMSIS_MCU = STM32F412xx
+HAL_MCU = STM32F4xx
 AF_FILE = boards/stm32f412_af.csv
 LD_FILE = boards/stm32f412rg.ld boards/common_ifs.ld
 TEXT0_ADDR = 0x08000000
