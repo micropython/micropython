@@ -175,14 +175,7 @@ static size_t read_uint(mp_reader_t *reader) {
 }
 
 #if MICROPY_VFS_ROM
-static inline const uint8_t *map_try_read_bytes(mp_reader_t *reader, size_t len) {
-    uintptr_t ioctl_arg = len;
-    intptr_t ret = reader->ioctl(reader->data, MP_READER_MEMMAP, (uintptr_t)&ioctl_arg);
-    if (ret < 0) {
-        return NULL;
-    }
-    return (const uint8_t *)ioctl_arg;
-}
+const uint8_t *map_try_read_bytes(mp_reader_t *reader, size_t len);
 #endif
 
 static qstr load_qstr(mp_reader_t *reader) {
