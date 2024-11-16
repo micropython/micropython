@@ -3,10 +3,10 @@ name: Build STM32F412
 on:
   push:
     branches:
-      - stm32f412
+      - stm32f412RGT6
   pull_request:
     branches:
-      - stm32f412
+      - stm32f412RGT6
     paths:
       - 'ports/stm32/**'  # 监听文件变化
 
