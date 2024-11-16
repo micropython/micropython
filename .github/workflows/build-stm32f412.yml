@@ -3,10 +3,10 @@ name: Build STM32F412
 on:
   push:
     branches:
-      - stm32f412RG
+      - stm32f412
   pull_request:
     branches:
-      - stm32f412RG
+      - stm32f412
     paths:
       - 'ports/stm32/**'  # 监听文件变化
 
@@ -38,7 +38,7 @@ jobs:
     - name: Build STM32 firmware
       run: |
         cd ports/stm32
-        make BOARD=STM32F412
+        make V=1 BOARD=STM32F412
 
     - name: Upload firmware artifact
       uses: actions/upload-artifact@v4
