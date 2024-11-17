@@ -78,6 +78,19 @@ mp_obj_t mp_vfs_rom_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_
     return MP_OBJ_FROM_PTR(o);
 }
 
+static mp_int_t vfs_rom_file_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    mp_obj_vfs_rom_file_t *self = MP_OBJ_TO_PTR(self_in);
+    if (flags == MP_BUFFER_READ) {
+        bufinfo->buf = (void *)self->file_data;
+        bufinfo->len = self->file_size;
+        bufinfo->typecode = 'B';
+        return 0;
+    } else {
+        // can't write to a ROM file
+        return 1;
+    }
+}
+
 static mp_uint_t vfs_rom_file_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_vfs_rom_file_t *self = MP_OBJ_TO_PTR(o_in);
     size_t remain = self->file_size - self->file_offset;
@@ -145,6 +158,7 @@ static MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_vfs_rom_fileio,
     MP_QSTR_FileIO,
     MP_TYPE_FLAG_ITER_IS_STREAM,
+    buffer, vfs_rom_file_get_buffer,
     protocol, &vfs_rom_fileio_stream_p,
     locals_dict, &vfs_rom_rawfile_locals_dict
     );
