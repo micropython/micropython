@@ -87,9 +87,10 @@ void mp_reader_new_file(mp_reader_t *reader, qstr filename) {
     int errcode = 0;
 
     #if MICROPY_VFS_ROM
-    // Check if the stream can initialise a reader itself.
-    mp_uint_t reader_ret = stream_p->ioctl(file, MP_STREAM_INIT_READER, (uintptr_t)reader, &errcode);
-    if (reader_ret == 0) {
+    // Check if the stream can be memory mapped.
+    mp_buffer_info_t bufinfo;
+    if (mp_get_buffer(file, &bufinfo, MP_BUFFER_READ)) {
+        mp_reader_new_mem(reader, bufinfo.buf, bufinfo.len, (size_t)-1);
         return;
     }
     #endif
