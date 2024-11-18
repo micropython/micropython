@@ -266,6 +266,7 @@ static MP_DEFINE_CONST_CLASSMETHOD_OBJ(esp32_partition_mark_app_valid_cancel_rol
     MP_ROM_PTR(&esp32_partition_mark_app_valid_cancel_rollback_fun_obj));
 
 static mp_obj_t esp32_partition_mmap(mp_obj_t self_in) {
+    // TODO convert to buffer protocol
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const void *ptr;
     esp_partition_mmap_handle_t handle;
@@ -303,3 +304,52 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, esp32_partition_print,
     locals_dict, &esp32_partition_locals_dict
     );
+
+/******************************************************************************/
+// romfs partition
+
+#if MICROPY_VFS_ROM
+
+static esp32_partition_obj_t esp32_partition_romfs_obj = {
+    .base = { .type = NULL },
+    .part = NULL,
+    .cache = NULL,
+    .block_size = NATIVE_BLOCK_SIZE_BYTES,
+};
+
+static const void *esp32_partition_romfs_ptr = NULL;
+static esp_partition_mmap_handle_t esp32_partition_romfs_handle;
+
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
+    if (esp32_partition_romfs_obj.base.type == NULL) {
+        esp32_partition_romfs_obj.base.type = &esp32_partition_type;
+        // Get the romfs partition.
+        // TODO: number of segments ioctl can be used if there is more than one romfs.
+        esp_partition_iterator_t iter = esp_partition_find(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "romfs");
+        if (iter != NULL) {
+            esp32_partition_romfs_obj.part = esp_partition_get(iter);
+        }
+        esp_partition_iterator_release(iter);
+    }
+
+    if (esp32_partition_romfs_obj.part == NULL) {
+        return MP_OBJ_NEW_SMALL_INT(-MP_ENODEV);
+    }
+
+    switch (mp_obj_get_int(args[0])) {
+        case -1: // request object-based capabilities
+            return MP_OBJ_FROM_PTR(&esp32_partition_romfs_obj);
+        case 0: // number of segments
+            return MP_OBJ_NEW_SMALL_INT(1);
+        case 1: // address
+            if (esp32_partition_romfs_ptr == NULL) {
+                // TODO need to esp_partition_munmap(handle) on soft reset
+                check_esp_err(esp_partition_mmap(esp32_partition_romfs_obj.part, 0, esp32_partition_romfs_obj.part->size, ESP_PARTITION_MMAP_DATA, &esp32_partition_romfs_ptr, &esp32_partition_romfs_handle));
+            }
+            return mp_obj_new_int((uintptr_t)esp32_partition_romfs_ptr);
+        default:
+            return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+}
+
+#endif // MICROPY_VFS_ROM
