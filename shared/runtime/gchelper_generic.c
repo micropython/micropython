@@ -101,6 +101,10 @@ static void gc_helper_get_regs(gc_helper_regs_t arr) {
 // Fallback implementation, prefer gchelper_thumb1.s or gchelper_thumb2.s
 
 static void gc_helper_get_regs(gc_helper_regs_t arr) {
+    #ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wuninitialized"
+    #endif
     register long r4 asm ("r4");
     register long r5 asm ("r5");
     register long r6 asm ("r6");
@@ -121,6 +125,9 @@ static void gc_helper_get_regs(gc_helper_regs_t arr) {
     arr[7] = r11;
     arr[8] = r12;
     arr[9] = r13;
+    #ifdef __clang__
+    #pragma clang diagnostic pop
+    #endif
 }
 
 #elif defined(__aarch64__)
