@@ -25,7 +25,8 @@
  * THE SOFTWARE.
  */
 
-#include "stdio.h"
+#include <stdio.h>
+#include <stdint.h>
 
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -81,7 +82,7 @@ void mp_thread_init(void *stack, uint32_t stack_len) {
 }
 
 void mp_thread_gc_others(void) {
-    mp_thread_mutex_lock(&thread_mutex, 1);
+    mp_thread_mutex_lock(&thread_mutex, -1);
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         gc_collect_root((void **)&th, 1);
         gc_collect_root(&th->arg, 1); // probably not needed
@@ -109,7 +110,7 @@ mp_uint_t mp_thread_get_id(void) {
 }
 
 void mp_thread_start(void) {
-    mp_thread_mutex_lock(&thread_mutex, 1);
+    mp_thread_mutex_lock(&thread_mutex, -1);
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == xTaskGetCurrentTaskHandle()) {
             th->ready = 1;
@@ -143,7 +144,7 @@ mp_uint_t mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_s
     // Allocate linked-list node (must be outside thread_mutex lock)
     mp_thread_t *th = m_new_obj(mp_thread_t);
 
-    mp_thread_mutex_lock(&thread_mutex, 1);
+    mp_thread_mutex_lock(&thread_mutex, -1);
 
     // create thread
     BaseType_t result = xTaskCreatePinnedToCore(freertos_entry, name, *stack_size / sizeof(StackType_t), arg, priority, &th->id, MP_TASK_COREID);
@@ -170,7 +171,7 @@ mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size
 }
 
 void mp_thread_finish(void) {
-    mp_thread_mutex_lock(&thread_mutex, 1);
+    mp_thread_mutex_lock(&thread_mutex, -1);
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == xTaskGetCurrentTaskHandle()) {
             th->ready = 0;
@@ -188,7 +189,7 @@ void FREERTOS_TASK_DELETE_HOOK(void *tcb) {
         return;
     }
     mp_thread_t *prev = NULL;
-    mp_thread_mutex_lock(&thread_mutex, 1);
+    mp_thread_mutex_lock(&thread_mutex, -1);
     for (mp_thread_t *th = thread; th != NULL; prev = th, th = th->next) {
         // unlink the node from the list
         if ((void *)th->id == tcb) {
@@ -212,8 +213,8 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
     xSemaphoreGive(mutex->handle);
 }
 
-int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
-    return pdTRUE == xSemaphoreTake(mutex->handle, wait ? portMAX_DELAY : 0);
+int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int64_t timeout) {
+    return pdTRUE == xSemaphoreTake(mutex->handle, timeout < 0 ? portMAX_DELAY : timeout);
 }
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
@@ -229,7 +230,7 @@ void mp_thread_deinit(void) {
     for (;;) {
         // Find a task to delete
         TaskHandle_t id = NULL;
-        mp_thread_mutex_lock(&thread_mutex, 1);
+        mp_thread_mutex_lock(&thread_mutex, -1);
         for (mp_thread_t *th = thread; th != NULL; th = th->next) {
             // Don't delete the current task
             if (th->id != xTaskGetCurrentTaskHandle()) {
