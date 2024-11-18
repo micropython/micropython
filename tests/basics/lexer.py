@@ -83,3 +83,11 @@ try:
     exec(r"'\U0000000'")
 except SyntaxError:
     print("SyntaxError")
+
+# Properly formed integer literals
+print(eval("00"))
+# badly formed integer literals
+try:
+    eval("01")
+except SyntaxError:
+    print("SyntaxError")
