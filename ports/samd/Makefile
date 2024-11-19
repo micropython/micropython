@@ -90,7 +90,7 @@ CFLAGS += $(CFLAGS_EXTRA)
 CFLAGS += -DMICROPY_HW_CODESIZE=$(strip $(subst K,' ', $(MICROPY_HW_CODESIZE)))
 
 LDFLAGS += -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
-LDFLAGS += --defsym=_codesize=$(MICROPY_HW_CODESIZE)
+LDFLAGS += --defsym=_codesize=$(MICROPY_HW_CODESIZE) --defsym=_micropy_hw_romfs_part0_size=$(MICROPY_HW_ROMFS_BYTES)
 
 LIBS += $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
@@ -102,6 +102,10 @@ else
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += --gc-sections --print-memory-usage
 CFLAGS += -fdata-sections -ffunction-sections
+endif
+# Disable VFSROM support if the size was set to 0
+ifeq ($(MICROPY_HW_ROMFS_BYTES),0)
+	CFLAGS += -DMICROPY_VFS_ROM=0
 endif
 
 # Flags for optional C++ source code

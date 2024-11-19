@@ -86,6 +86,9 @@
 #define MICROPY_PY_OS_INCLUDEFILE           "ports/samd/modos.c"
 #define MICROPY_READER_VFS                  (1)
 #define MICROPY_VFS                         (1)
+#ifndef MICROPY_VFS_ROM
+#define MICROPY_VFS_ROM                     (1)
+#endif
 #ifndef MICROPY_PY_MACHINE_ADC
 #define MICROPY_PY_MACHINE_ADC              (1)
 #endif
