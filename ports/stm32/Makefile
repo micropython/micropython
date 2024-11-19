@@ -71,6 +71,7 @@ PYDFU ?= $(TOP)/tools/pydfu.py
 DFU_UTIL ?= dfu-util
 BOOTLOADER_DFU_USB_VID ?= 0x0483
 BOOTLOADER_DFU_USB_PID ?= 0xDF11
+DFU_FW_VER ?= 0
 STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
@@ -534,6 +535,7 @@ define GENERATE_DFU
 	$(ECHO) "GEN $(1)"
 	$(Q)$(PYTHON) $(DFU) \
 	-D $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) \
+	-V $(DFU_FW_VER) \
 	$(if $(2),$(addprefix -b ,$(3):$(2))) \
 	$(if $(4),$(addprefix -b ,$(5):$(4))) \
 	$(1)
