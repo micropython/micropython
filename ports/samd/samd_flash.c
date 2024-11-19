@@ -28,9 +28,10 @@
 
 #include "py/runtime.h"
 #include "extmod/vfs.h"
+#include "py/mperrno.h"
 #include "samd_soc.h"
 
-#if MICROPY_HW_MCUFLASH
+#if MICROPY_HW_MCUFLASH || MICROPY_VFS_ROM
 
 // ASF 4
 #include "hal_flash.h"
@@ -45,7 +46,6 @@
 #endif
 
 static struct flash_descriptor flash_desc;
-static mp_int_t BLOCK_SIZE = VFS_BLOCK_SIZE_BYTES; // Board specific: mpconfigboard.h
 extern const mp_obj_type_t samd_flash_type;
 
 typedef struct _samd_flash_obj_t {
@@ -54,8 +54,9 @@ typedef struct _samd_flash_obj_t {
     uint32_t flash_size;
 } samd_flash_obj_t;
 
+#if MICROPY_HW_MCUFLASH
+static mp_int_t BLOCK_SIZE = VFS_BLOCK_SIZE_BYTES; // Board specific: mpconfigboard.h
 extern uint8_t _oflash_fs, _sflash_fs;
-
 // Build a Flash storage at top.
 static samd_flash_obj_t samd_flash_obj = {
     .base = { &samd_flash_type },
@@ -63,9 +64,18 @@ static samd_flash_obj_t samd_flash_obj = {
     .flash_size = (uint32_t)&_sflash_fs, // Get from MCU-Specific loader script.
 };
 
+static mp_obj_t samd_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    // No args required. bdev=Flash(). Start Addr & Size defined in samd_flash_obj.
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+
+    // Return singleton object.
+    return MP_OBJ_FROM_PTR(&samd_flash_obj);
+}
+#endif  // MICROPY_HW_MCUFLASH
+
 // Flash init (from cctpy)
 // Method is needed for when MP starts up in _boot.py
-static void samd_flash_init(void) {
+void samd_flash_init(void) {
     #ifdef SAMD51
     hri_mclk_set_AHBMASK_NVMCTRL_bit(MCLK);
     #endif
@@ -76,26 +86,18 @@ static void samd_flash_init(void) {
     flash_init(&flash_desc, NVMCTRL);
 }
 
-static mp_obj_t samd_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    // No args required. bdev=Flash(). Start Addr & Size defined in samd_flash_obj.
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
-
-    samd_flash_init();
-
-    // Return singleton object.
-    return MP_OBJ_FROM_PTR(&samd_flash_obj);
-}
-
+#if MICROPY_HW_MCUFLASH
 // Function for ioctl.
 static mp_obj_t eraseblock(uint32_t sector_in) {
     // Destination address aligned with page start to be erased.
-    uint32_t DEST_ADDR = sector_in; // Number of pages to be erased.
-    mp_int_t PAGE_SIZE = flash_get_page_size(&flash_desc); // adf4 API call
+    uint32_t dest_addr = sector_in; // Number of pages to be erased.
+    mp_int_t page_size = flash_get_page_size(&flash_desc); // adf4 API call
 
-    flash_erase(&flash_desc, DEST_ADDR, (BLOCK_SIZE / PAGE_SIZE));
+    flash_erase(&flash_desc, dest_addr, (BLOCK_SIZE / page_size));
 
     return mp_const_none;
 }
+
 
 static mp_obj_t samd_flash_version(void) {
     return MP_OBJ_NEW_SMALL_INT(flash_get_version());
@@ -131,7 +133,7 @@ static mp_obj_t samd_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     }
     // Write data to flash (adf4 API)
     flash_write(&flash_desc, offset, bufinfo.buf, bufinfo.len);
-    // TODO check return value
+
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_flash_writeblocks_obj, 3, 4, samd_flash_writeblocks);
@@ -178,5 +180,74 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, samd_flash_make_new,
     locals_dict, &samd_flash_locals_dict
     );
+#endif
 
-#endif  // MICROPY_HW_MCUFLASH
+#if MICROPY_VFS_ROM
+//
+// Uses object-based capabilities for devices using the internal flash
+// for the regular file system and ioctl function for devices with
+// external flash.
+//
+extern uint8_t _oflash_vfsrom, _sflash_vfsrom;
+
+#define MICROPY_HW_ROMFS_BASE ((uint32_t)&_oflash_vfsrom)
+#define MICROPY_HW_ROMFS_BYTES ((uint32_t)&_sflash_vfsrom)
+#define VFSROM_BLOCK_SIZE  (2048)
+
+#if MICROPY_HW_MCUFLASH
+static samd_flash_obj_t samd_flash_romfs_obj = {
+    .base = { &samd_flash_type },
+    .flash_base = MICROPY_HW_ROMFS_BASE, // Get from MCU-Specific loader script.
+    .flash_size = MICROPY_HW_ROMFS_BYTES, // Get from MCU-Specific loader script.
+};
+#endif
+
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
+    if (MICROPY_HW_ROMFS_BYTES <= 0) {
+        return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+    switch (mp_obj_get_int(args[0])) {
+        #if MICROPY_HW_MCUFLASH
+        case -1: // request object-based capabilities
+            return MP_OBJ_FROM_PTR(&samd_flash_romfs_obj);
+        #endif
+
+        case 0: // number of segments
+            return MP_OBJ_NEW_SMALL_INT(1);
+        case 1: // address
+            return mp_obj_new_int(MICROPY_HW_ROMFS_BASE);
+
+        #if !MICROPY_HW_MCUFLASH
+        case 2: // num blocks
+            return MP_OBJ_NEW_SMALL_INT(MICROPY_HW_ROMFS_BYTES / VFSROM_BLOCK_SIZE);
+        case 3: // block_size
+            return MP_OBJ_NEW_SMALL_INT(VFSROM_BLOCK_SIZE);
+        case 4: { // erase one block at offset address of flash
+            if (n_args < 2) {
+                return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+            }
+            // Erase sector.
+            uint32_t dest_addr = MICROPY_HW_ROMFS_BASE + mp_obj_get_int(args[1]);
+            mp_int_t page_size = flash_get_page_size(&flash_desc); // adf4 API call
+            flash_erase(&flash_desc, dest_addr, (VFSROM_BLOCK_SIZE / page_size));
+            return MP_OBJ_NEW_SMALL_INT(0);
+        }
+        case 5: { // write to byte offset address in flash
+            if (n_args < 3) {
+                return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+            }
+            uint32_t dest_addr = MICROPY_HW_ROMFS_BASE + mp_obj_get_int(args[1]);
+            mp_buffer_info_t bufinfo;
+            mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+            // Write data to flash.
+            flash_write(&flash_desc, dest_addr, bufinfo.buf, bufinfo.len);
+            return MP_OBJ_NEW_SMALL_INT(0);
+        }
+        #endif
+        default:
+            return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+}
+#endif
+
+#endif  // MICROPY_HW_MCUFLASH || MICROPY_VFS_ROM
