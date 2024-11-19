@@ -3,6 +3,12 @@ import vfs
 import samd
 import sys
 
+try:
+    vfs.mount(vfs.VfsRom(vfs.rom_ioctl(1)), "/rom")
+    sys.path.insert(0, "/rom")
+except:
+    pass
+
 bdev = samd.Flash()
 
 # Try to mount the filesystem, and format the flash if it doesn't exist.
