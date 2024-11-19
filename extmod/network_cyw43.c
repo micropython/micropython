@@ -361,13 +361,15 @@ static mp_obj_t network_cyw43_status(size_t n_args, const mp_obj_t *args) {
             if (self->itf != CYW43_ITF_AP) {
                 mp_raise_ValueError(MP_ERROR_TEXT("AP required"));
             }
-            int num_stas;
-            uint8_t macs[32 * 6];
+            static const unsigned mac_len = 6;
+            static const unsigned max_stas = 32;
+            int num_stas = max_stas;
+            uint8_t macs[max_stas * mac_len];
             cyw43_wifi_ap_get_stas(self->cyw, &num_stas, macs);
             mp_obj_t list = mp_obj_new_list(num_stas, NULL);
             for (int i = 0; i < num_stas; ++i) {
                 mp_obj_t tuple[1] = {
-                    mp_obj_new_bytes(&macs[i * 6], 6),
+                    mp_obj_new_bytes(&macs[i * mac_len], mac_len),
                 };
                 ((mp_obj_list_t *)MP_OBJ_TO_PTR(list))->items[i] = mp_obj_new_tuple(1, tuple);
             }
