@@ -96,12 +96,17 @@
 #elif defined(_PICOLIBC__)
 #define MICROPY_PLATFORM_LIBC_LIB       "picolibc"
 #define MICROPY_PLATFORM_LIBC_VER       _PICOLIBC_VERSION
+#elif defined(__ANDROID__)
+#define MICROPY_PLATFORM_LIBC_LIB       "bionic"
+#define MICROPY_PLATFORM_LIBC_VER       MP_STRINGIFY(__ANDROID_API__)
 #else
 #define MICROPY_PLATFORM_LIBC_LIB       ""
 #define MICROPY_PLATFORM_LIBC_VER       ""
 #endif
 
-#if defined(__linux)
+#if defined(__ANDROID__)
+#define MICROPY_PLATFORM_SYSTEM         "Android"
+#elif defined(__linux)
 #define MICROPY_PLATFORM_SYSTEM         "Linux"
 #elif defined(__unix__)
 #define MICROPY_PLATFORM_SYSTEM         "Unix"
