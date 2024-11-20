@@ -36,7 +36,11 @@
 // See: https://sourceforge.net/p/predef/wiki/Home/
 
 #if defined(__ARM_ARCH)
+#if defined(__ARM_ARCH_ISA_A64)
+#define MICROPY_PLATFORM_ARCH   "aarch64"
+#else
 #define MICROPY_PLATFORM_ARCH   "arm"
+#endif
 #elif defined(__x86_64__) || defined(_M_X64)
 #define MICROPY_PLATFORM_ARCH   "x86_64"
 #elif defined(__i386__) || defined(_M_IX86)
