@@ -520,7 +520,7 @@ def do_deploy_romfs(state, args):
             )
         else:
             if offset % block_size == 0:
-                state.transport.exec(f"vfs.rom_ioctl(4, {offset // block_size})")
+                state.transport.exec(f"vfs.rom_ioctl(4,{offset})")
             state.transport.exec(f"vfs.rom_ioctl(5,{offset},buf)")
 
     print()
