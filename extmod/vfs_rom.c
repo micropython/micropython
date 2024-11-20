@@ -33,9 +33,11 @@
 
 #if MICROPY_VFS_ROM
 
-#define MAGIC_LEN (2)
-#define MAGIC_BYTE0 ('M')
-#define MAGIC_BYTE1 ('F')
+#define MAGIC_LEN (4)
+#define MAGIC_BYTE0 ('R')
+#define MAGIC_BYTE1 ('M')
+#define MAGIC_BYTE2 (0x01) // version
+#define MAGIC_BYTE3 (0x00) // flags
 
 #define GET_LE16(p) ((p)[0] | (p)[1] << 8)
 #define GET_LE32(p) ((p)[0] | (p)[1] << 8 | (p)[2] << 16 | (p)[3] << 24)
@@ -47,14 +49,11 @@ struct _mp_obj_vfs_rom_t {
 };
 
 mp_import_stat_t mp_vfs_rom_search_filesystem(mp_obj_vfs_rom_t *self, const char *path, size_t *size_out, const uint8_t **data_out) {
-    if (!(self->filesystem[0] == MAGIC_BYTE0 && self->filesystem[1] == MAGIC_BYTE1)) {
-        return MP_IMPORT_STAT_NO_EXIST;
-    }
     if (path[0] == '/') {
         ++path;
     }
     size_t path_len = strlen(path);
-    const uint8_t *fs = self->filesystem + MAGIC_LEN;
+    const uint8_t *fs = self->filesystem;
     for (;;) {
         uint16_t nlen = GET_LE16(fs);
         fs += 2;
@@ -103,6 +102,16 @@ static mp_obj_t vfs_rom_make_new(const mp_obj_type_t *type, size_t n_args, size_
         self->filesystem = (const uint8_t *)(uintptr_t)mp_obj_get_int(self->memory);
     }
 
+    // Verify it is a ROMFS.
+    if (!(self->filesystem[0] == MAGIC_BYTE0
+          && self->filesystem[1] == MAGIC_BYTE1
+          && self->filesystem[2] == MAGIC_BYTE2
+          && self->filesystem[3] == MAGIC_BYTE3)) {
+        mp_raise_OSError(MP_ENODEV);
+    }
+
+    self->filesystem += MAGIC_LEN;
+
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -126,8 +135,14 @@ static MP_DEFINE_CONST_FUN_OBJ_1(vfs_rom_umount_obj, vfs_rom_umount);
 static MP_DEFINE_CONST_FUN_OBJ_3(vfs_rom_open_obj, mp_vfs_rom_file_open);
 
 static mp_obj_t vfs_rom_chdir(mp_obj_t self_in, mp_obj_t path_in) {
-    (void)self_in;
-    (void)path_in;
+    mp_obj_vfs_rom_t *self = MP_OBJ_TO_PTR(self_in);
+    const char *path = vfs_rom_get_path_str(self, path_in);
+    if (path[0] == '/' && path[1] == '\0') {
+        // Allow chdir to the root of the filesystem.
+    } else {
+        // Don't allow chdir to any subdirectory (not currently implemented).
+        mp_raise_OSError(MP_EOPNOTSUPP);
+    }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(vfs_rom_chdir_obj, vfs_rom_chdir);
@@ -178,8 +193,12 @@ static mp_obj_t vfs_rom_ilistdir_it_iternext(mp_obj_t self_in) {
         const uint8_t *nstr = self->index;
         self->index += nlen + flen;
 
-        if ((path_len == 0 && memchr(nstr, '/', nlen) == NULL)
-            || (path_len < nlen && nstr[path_len] == '/' && memcmp(path, nstr, path_len) == 0 && memchr(nstr + path_len + 1, '/', nlen - path_len - 1) == NULL)) {
+        if (nlen == 0) {
+            // Don't include the root directory entry in listdir output.
+        } else if ((path_len == 0 && memchr(nstr, '/', nlen) == NULL)
+                   || (path_len < nlen && nstr[path_len] == '/'
+                       && memcmp(path, nstr, path_len) == 0
+                       && memchr(nstr + path_len + 1, '/', nlen - path_len - 1) == NULL)) {
             // Make 4-tuple with info about this entry: (name, attr, inode, size)
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(4, NULL));
 
@@ -209,18 +228,11 @@ static mp_obj_t vfs_rom_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     iter->base.type = &mp_type_polymorph_iter;
     iter->iternext = vfs_rom_ilistdir_it_iternext;
     iter->is_str = mp_obj_get_type(path_in) == &mp_type_str;
-    iter->path = mp_obj_str_get_str(path_in);
-    if (!(self->filesystem[0] == MAGIC_BYTE0 && self->filesystem[1] == MAGIC_BYTE1)) {
+    iter->path = vfs_rom_get_path_str(self, path_in);
+    if (mp_vfs_rom_search_filesystem(self, iter->path, NULL, NULL) != MP_IMPORT_STAT_DIR) {
         mp_raise_OSError(MP_ENOENT);
     }
-    if (iter->path[0] == '\0'
-        || (iter->path[0] == '.' && iter->path[1] == '\0')
-        || (iter->path[0] == '/' && iter->path[1] == '\0')) {
-        // pass
-    } else if (mp_vfs_rom_search_filesystem(self, iter->path, NULL, NULL) != MP_IMPORT_STAT_DIR) {
-        mp_raise_OSError(MP_ENOENT);
-    }
-    iter->index = self->filesystem + MAGIC_LEN;
+    iter->index = self->filesystem;
     return MP_OBJ_FROM_PTR(iter);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(vfs_rom_ilistdir_obj, vfs_rom_ilistdir);
@@ -262,7 +274,7 @@ static mp_obj_t vfs_rom_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
     t->items[6] = MP_OBJ_NEW_SMALL_INT(0); // f_ffree
     t->items[7] = MP_OBJ_NEW_SMALL_INT(0); // f_favail
     t->items[8] = MP_OBJ_NEW_SMALL_INT(0); // f_flags
-    t->items[9] = MP_OBJ_NEW_SMALL_INT(65535); // f_namemax
+    t->items[9] = MP_OBJ_NEW_SMALL_INT(32767); // f_namemax
     return MP_OBJ_FROM_PTR(t);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(vfs_rom_statvfs_obj, vfs_rom_statvfs);
