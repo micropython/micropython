@@ -4,12 +4,13 @@ import struct, sys, os
 
 
 class VfsRomWriter:
-    MAGIC = b"MF"
+    MAGIC = b"RM\x01\x00"
 
     def __init__(self):
         self.filename = None
         self.data = bytearray()
         self.data += VfsRomWriter.MAGIC
+        self.mkdir("")
 
     def finalise(self):
         self.data += b"\x00\x00"
