@@ -106,29 +106,21 @@ static mp_uint_t vfs_rom_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t 
     mp_obj_vfs_rom_file_t *self = MP_OBJ_TO_PTR(o_in);
 
     switch (request) {
-        case MP_STREAM_FLUSH:
-            return 0;
         case MP_STREAM_SEEK: {
             struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)arg;
             if (s->whence == 0) { // SEEK_SET
-                self->file_offset = MIN(self->file_size, (size_t)s->offset);
+                self->file_offset = (size_t)s->offset;
             } else if (s->whence == 1) { // SEEK_CUR
-                self->file_offset = MIN(self->file_size, self->file_offset + s->offset);
+                self->file_offset += s->offset;
             } else { // SEEK_END
-                self->file_offset = self->file_size;
+                self->file_offset = self->file_size + s->offset;
             }
+            self->file_offset = MIN(self->file_size, self->file_offset);
             s->offset = self->file_offset;
             return 0;
         }
         case MP_STREAM_CLOSE:
             return 0;
-        case MP_STREAM_POLL: {
-            mp_uint_t ret = 0;
-            if (arg & MP_STREAM_POLL_RD) {
-                ret |= MP_STREAM_POLL_RD;
-            }
-            return ret;
-        }
         default:
             *errcode = MP_EINVAL;
             return MP_STREAM_ERROR;
@@ -142,7 +134,6 @@ static const mp_rom_map_elem_t vfs_rom_rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&mp_stream___exit___obj) },
