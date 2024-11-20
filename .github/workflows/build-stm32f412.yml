@@ -3,10 +3,10 @@ name: Build STM32F412
 on:
   push:
     branches:
-      - stm32f412
+      - stm32f412RG
   pull_request:
     branches:
-      - stm32f412
+      - stm32f412RG
 
 jobs:
   build:
