@@ -10,13 +10,21 @@ except (ImportError, AttributeError):
 
 import unittest
 
+IFDIR = 0x4000
+IFREG = 0x8000
+
+SEEK_SET = 0
+SEEK_CUR = 1
+SEEK_END = 2
+
 
 class VfsRomWriter:
-    MAGIC = b"MF"
+    MAGIC = b"RM\x01\x00"
 
     def __init__(self):
         self.data = bytearray()
         self.data += VfsRomWriter.MAGIC
+        self.mkdir("")
 
     def finalise(self):
         self.data += b"\x00\x00"
@@ -42,10 +50,9 @@ def make_romfs(files):
     return fs.finalise()
 
 
-class Test(unittest.TestCase):
+class TestBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.orig_sys_path = list(sys.path)
         fs_inner = make_romfs((("test_inner.txt", b"contents_inner"), ("c.py", b"")))
         cls.romfs = make_romfs(
             (
@@ -56,37 +63,116 @@ class Test(unittest.TestCase):
                 ("dir/b.py", b""),
             )
         )
+        cls.romfs_ilistdir = [
+            ("fs.romfs", IFREG, 0, 52),
+            ("test.txt", IFREG, 0, 8),
+            ("dir", IFDIR, 0, 0),
+        ]
+        cls.romfs_listdir = [x[0] for x in cls.romfs_ilistdir]
+        cls.romfs_listdir_dir = ["a.py", "b.py"]
+        cls.romfs_listdir_bytes = [bytes(x, "ascii") for x in cls.romfs_listdir]
         cls.romfs_addr = uctypes.addressof(cls.romfs)
         cls.romfs_addr_range = range(cls.romfs_addr, cls.romfs_addr + len(cls.romfs))
 
-    @classmethod
-    def tearDownClass(cls):
-        sys.path = cls.orig_sys_path
 
+class TestStandalone(TestBase):
+    def test_constructor(self):
+        self.assertIsInstance(vfs.VfsRom(self.romfs), vfs.VfsRom)
+        self.assertIsInstance(vfs.VfsRom(self.romfs_addr), vfs.VfsRom)
+        with self.assertRaises(OSError):
+            vfs.VfsRom(b"not a romfs")
+
+    def test_mount(self):
+        vfs.VfsRom(self.romfs).mount(True, False)
+        with self.assertRaises(OSError):
+            vfs.VfsRom(self.romfs).mount(True, True)
+
+    def test_ilistdir(self):
+        fs = vfs.VfsRom(self.romfs)
+        self.assertEqual(list(fs.ilistdir("")), self.romfs_ilistdir)
+        self.assertEqual(list(fs.ilistdir("/")), self.romfs_ilistdir)
+
+    def test_stat(self):
+        fs = vfs.VfsRom(self.romfs)
+        self.assertEqual(fs.stat(""), (IFDIR, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+        self.assertEqual(fs.stat("/"), (IFDIR, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+        self.assertEqual(fs.stat("test.txt"), (IFREG, 0, 0, 0, 0, 0, 8, 0, 0, 0))
+        self.assertEqual(fs.stat("dir"), (IFDIR, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+
+    def test_statvfs(self):
+        fs = vfs.VfsRom(self.romfs)
+        self.assertEqual(fs.statvfs(""), (0, 0, 0, 0, 0, 0, 0, 0, 0, 32767))
+
+    def test_open(self):
+        fs = vfs.VfsRom(self.romfs)
+        with fs.open("test.txt", "") as f:
+            self.assertEqual(f.read(), "contents")
+        with fs.open("test.txt", "rt") as f:
+            self.assertEqual(f.read(), "contents")
+        with fs.open("test.txt", "rb") as f:
+            self.assertEqual(f.read(), b"contents")
+        with self.assertRaises(OSError):
+            fs.open("file does not exist", "")
+        with self.assertRaises(OSError):
+            fs.open("test.txt", "w")
+        with self.assertRaises(OSError):
+            fs.open("test.txt", "a")
+        with self.assertRaises(OSError):
+            fs.open("test.txt", "+")
+
+    def test_file_seek(self):
+        fs = vfs.VfsRom(self.romfs)
+        with fs.open("test.txt", "") as f:
+            self.assertEqual(f.seek(0, SEEK_SET), 0)
+            self.assertEqual(f.seek(3, SEEK_SET), 3)
+            self.assertEqual(f.read(), "tents")
+            self.assertEqual(f.seek(0, SEEK_SET), 0)
+            self.assertEqual(f.seek(100, SEEK_CUR), 8)
+            self.assertEqual(f.seek(-1, SEEK_END), 7)
+            self.assertEqual(f.read(), "s")
+            self.assertEqual(f.seek(1, SEEK_END), 8)
+
+    def test_memory_mapping(self):
+        fs = vfs.VfsRom(self.romfs)
+        with fs.open("test.txt", "rb") as f:
+            addr = uctypes.addressof(f)
+            data = memoryview(f)
+            self.assertIn(addr, self.romfs_addr_range)
+            self.assertIn(addr + len(data), self.romfs_addr_range)
+            self.assertEqual(bytes(data), b"contents")
+
+
+class TestMounted(TestBase):
     def setUp(self):
+        self.orig_sys_path = list(sys.path)
+        self.orig_cwd = os.getcwd()
         vfs.mount(vfs.VfsRom(self.romfs), "/test_rom")
 
     def tearDown(self):
         vfs.umount("/test_rom")
+        os.chdir(self.orig_cwd)
+        sys.path = self.orig_sys_path
 
-    def test_file_operations(self):
-        self.assertEqual(os.listdir("/test_rom"), ["fs.romfs", "test.txt", "dir"])
+    def test_listdir(self):
+        self.assertEqual(os.listdir("/test_rom"), self.romfs_listdir)
+        self.assertEqual(os.listdir("/test_rom/dir"), self.romfs_listdir_dir)
+        self.assertEqual(os.listdir(b"/test_rom"), self.romfs_listdir_bytes)
 
-        with open("/test_rom/test.txt") as f:
-            self.assertEqual(f.read(), "contents")
+    def test_chdir(self):
+        os.chdir("/test_rom")
+        self.assertEqual(os.listdir(), self.romfs_listdir)
+
+        os.chdir("/test_rom/")
+        self.assertEqual(os.listdir(), self.romfs_listdir)
+
+        # chdir within the romfs is not implemented.
+        with self.assertRaises(OSError):
+            os.chdir("/test_rom/dir")
 
     def test_import(self):
         sys.path.append("/test_rom/dir")
         self.assertEqual(__import__("a").__file__, "/test_rom/dir/a.py")
         self.assertEqual(__import__("b").__file__, "/test_rom/dir/b.py")
-
-    def test_memory_mapping(self):
-        with open("/test_rom/test.txt", "rb") as f:
-            addr = uctypes.addressof(f)
-            data = memoryview(f)
-            self.assertIn(addr, self.romfs_addr_range)
-            self.assertIn(addr + len(data), self.romfs_addr_range)
-            self.assertEqual(bytes(data), f.read())
 
     def test_romfs_inner(self):
         with open("/test_rom/fs.romfs", "rb") as f:
