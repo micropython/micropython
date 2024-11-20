@@ -53,7 +53,13 @@
 #define MICROPY_PLATFORM_ARCH   ""
 #endif
 
-#if defined(__GNUC__)
+#if defined(__clang__)
+#define MICROPY_PLATFORM_COMPILER \
+    "Clang " \
+    MP_STRINGIFY(__clang_major__) "." \
+    MP_STRINGIFY(__clang_minor__) "." \
+    MP_STRINGIFY(__clang_patchlevel__)
+#elif defined(__GNUC__)
 #define MICROPY_PLATFORM_COMPILER \
     "GCC " \
     MP_STRINGIFY(__GNUC__) "." \
