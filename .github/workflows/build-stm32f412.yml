@@ -3,16 +3,10 @@ name: Build STM32F412
 on:
   push:
     branches:
-      - stm32f412RGT6
+      - stm32f412
   pull_request:
     branches:
-      - stm32f412RGT6
-    paths:
-      - 'ports/stm32/**'  # 监听文件变化
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+      - stm32f412
 
 jobs:
   build:
@@ -20,28 +14,31 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/checkout@v3
       with:
-        python-version: '3.10'  # 推荐使用稳定版本
+        submodules: recursive
 
-    - name: Install ARM GCC Toolchain
+    - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
+        sudo apt install -y gcc-arm-none-eabi libnewlib-arm-none-eabi python3
 
-    - name: Update submodules
-      run: git submodule update --init --recursive
+    - name: Download STM32CubeF4 HAL files
+      run: |
+        git clone https://github.com/STMicroelectronics/STM32CubeF4.git
+        cp STM32CubeF4/Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f412xx.h lib/stm32lib/CMSIS/STM32F4xx/Include/
+        cp STM32CubeF4/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f412xx.c lib/stm32lib/CMSIS/STM32F4xx/Templates/
+
+    - name: Build mpy-cross
+      run: make -C mpy-cross
 
     - name: Build STM32 firmware
       run: |
         cd ports/stm32
-        make V=1 BOARD=STM32F412
+        make BOARD=STM32F412RG V=1
 
     - name: Upload firmware artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: firmware
-        path: ports/stm32/boards/STM32F412/firmware.bin
+        path: ports/stm32/build-STM32F412RG/firmware.bin
