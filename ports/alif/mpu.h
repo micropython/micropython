@@ -36,3 +36,4 @@
 #define MP_MPU_REGION_MRAM                  (3)
 #define MP_MPU_REGION_OSPI_REGISTERS        (4)
 #define MP_MPU_REGION_OSPI0_XIP             (5)
+#define MP_MPU_REGION_OPENAMP               (6)
