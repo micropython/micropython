@@ -24,8 +24,15 @@
  * THE SOFTWARE.
  */
 
-#define MP_MPU_ATTR_INDEX_NORMAL_WT_RA_TRANSIENT    (0)
-#define MP_MPU_ATTR_INDEX_DEVICE_nGnRE              (1)
-#define MP_MPU_ATTR_INDEX_NORMAL_WB_RA_WA           (2)
-#define MP_MPU_ATTR_INDEX_NORMAL_WT_RA              (3)
-#define MP_MPU_ATTR_INDEX_NORMAL_NON_CACHEABLE      (4)
+#define MP_MPU_ATTR_NORMAL_WT_RA_TRANSIENT  (0)
+#define MP_MPU_ATTR_DEVICE_nGnRE            (1)
+#define MP_MPU_ATTR_NORMAL_WB_RA_WA         (2)
+#define MP_MPU_ATTR_NORMAL_WT_RA            (3)
+#define MP_MPU_ATTR_NORMAL_NON_CACHEABLE    (4)
+
+#define MP_MPU_REGION_SRAM0                 (0)
+#define MP_MPU_REGION_SRAM1                 (1)
+#define MP_MPU_REGION_HOST_PERIPHERALS      (2)
+#define MP_MPU_REGION_MRAM                  (3)
+#define MP_MPU_REGION_OSPI_REGISTERS        (4)
+#define MP_MPU_REGION_OSPI0_XIP             (5)
