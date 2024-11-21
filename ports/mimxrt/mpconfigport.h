@@ -60,6 +60,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_SCHEDULER_DEPTH             (8)
 #define MICROPY_SCHEDULER_STATIC_NODES      (1)
 #define MICROPY_VFS                         (1)
+#ifndef MICROPY_VFS_ROM
+#define MICROPY_VFS_ROM                     (1)
+#endif
 
 // Control over Python builtins
 #define MICROPY_PY_BUILTINS_HELP_TEXT       mimxrt_help_text
