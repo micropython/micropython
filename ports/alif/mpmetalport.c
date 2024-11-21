@@ -48,28 +48,22 @@ int metal_sys_init(const struct metal_init_params *params) {
     hwsem_reset(METAL_HSEM_REMOTE);
     #endif
 
-    // Enable the hardware semaphore IRQ.
-    NVIC_ClearPendingIRQ(METAL_HSEM_IRQn);
-    NVIC_SetPriority(METAL_HSEM_IRQn, IRQ_PRI_HWSEM);
-    NVIC_EnableIRQ(METAL_HSEM_IRQn);
-
     // If cache management is not enabled, configure the MPU to disable
     // caching for the entire Open-AMP shared memory region.
     #ifndef VIRTIO_USE_DCACHE
     ARM_MPU_Disable();
-    // NOTE: The startup code uses the first 4 attributes.
-    #define MEMATTR_IDX_NORMAL_NON_CACHEABLE      4
-    ARM_MPU_SetMemAttr(MEMATTR_IDX_NORMAL_NON_CACHEABLE, ARM_MPU_ATTR(
-        ARM_MPU_ATTR_NON_CACHEABLE,
-        ARM_MPU_ATTR_NON_CACHEABLE));
     MPU->RNR = METAL_MPU_REGION_ID;
-    MPU->RBAR = ARM_MPU_RBAR(METAL_MPU_REGION_BASE, ARM_MPU_SH_NON, 0, 1, 0); // RO-0, NP-1, XN-0
-    MPU->RLAR = ARM_MPU_RLAR(METAL_MPU_REGION_BASE + METAL_MPU_REGION_SIZE - 1, MEMATTR_IDX_NORMAL_NON_CACHEABLE);
+    MPU->RBAR = ARM_MPU_RBAR(METAL_MPU_REGION_BASE, ARM_MPU_SH_NON, 0, 1, 1); // RO-0, NP-1, XN-1
+    MPU->RLAR = ARM_MPU_RLAR(METAL_MPU_REGION_BASE + METAL_MPU_REGION_SIZE - 1, MP_MPU_ATTR_NORMAL_NON_CACHEABLE);
     ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk | MPU_CTRL_HFNMIENA_Msk);
     #endif
 
     metal_bus_register(&metal_generic_bus);
 
+    // Enable the hardware semaphore IRQ.
+    NVIC_ClearPendingIRQ(METAL_HSEM_IRQn);
+    NVIC_SetPriority(METAL_HSEM_IRQn, IRQ_PRI_HWSEM);
+    NVIC_EnableIRQ(METAL_HSEM_IRQn);
     return 0;
 }
 

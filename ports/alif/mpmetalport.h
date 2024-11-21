@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "mpu.h"
 
 #define METAL_HAVE_STDATOMIC_H      0
 #define METAL_HAVE_FUTEX_H          0
@@ -66,7 +67,7 @@
 #define METAL_SHM_ADDR              ((metal_phys_addr_t)(_openamp_shm_region_start + METAL_RSC_SIZE))
 #define METAL_SHM_SIZE              ((size_t)(_openamp_shm_region_end - _openamp_shm_region_start - METAL_RSC_SIZE))
 
-#define METAL_MPU_REGION_ID         (9) // NOTE: The startup code uses the first 9 regions.
+#define METAL_MPU_REGION_ID         (MP_MPU_REGION_OPENAMP)
 #define METAL_MPU_REGION_BASE       ((uint32_t)_openamp_shm_region_start)
 #define METAL_MPU_REGION_SIZE       (0x00010000U)
 
