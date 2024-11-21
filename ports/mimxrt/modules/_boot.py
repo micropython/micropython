@@ -8,6 +8,12 @@ import sys
 import mimxrt
 from machine import Pin
 
+try:
+    vfs.mount(vfs.VfsRom(vfs.rom_ioctl(1)), "/rom")
+    sys.path.insert(0, "/rom")
+except:
+    pass
+
 bdev = mimxrt.Flash()
 try:
     fs = vfs.VfsLfs2(bdev, progsize=256)

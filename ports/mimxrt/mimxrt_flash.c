@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2020-2021 Damien P. George
  * Copyright (c) 2021-2023 Philipp Ebensberger
+ * Copyright (c) 2021-2024 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +30,7 @@
 
 #include "py/runtime.h"
 #include "extmod/vfs.h"
+#include "py/mperrno.h"
 #include "modmimxrt.h"
 #include "flash.h"
 #include BOARD_FLASH_OPS_HEADER_H
@@ -153,3 +155,37 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, mimxrt_flash_make_new,
     locals_dict, &mimxrt_flash_locals_dict
     );
+
+#if MICROPY_VFS_ROM
+
+#ifndef MICROPY_HW_ROMFS_BYTES
+#define MICROPY_HW_ROMFS_BYTES (256 * 1024)
+#endif
+// Put ROMFS at the upper end of the respective code space.
+// For machine.mem32 the absolute address is required, for the flash functions
+// erase and write the offset to the flash start address.
+#define MICROPY_HW_ROMFS_ADDRESS (((uint32_t)&__vfs_start) - MICROPY_HW_ROMFS_BYTES)
+#define MICROPY_HW_ROMFS_BASE (MICROPY_HW_FLASH_STORAGE_BASE - MICROPY_HW_ROMFS_BYTES)
+
+static mimxrt_flash_obj_t mimxrt_flash_romfs_obj = {
+    .base = { &mimxrt_flash_type },
+};
+
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
+    if (MICROPY_HW_ROMFS_BYTES <= 0) {
+        return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+    switch (mp_obj_get_int(args[0])) {
+        case -1: // request object-based capabilities
+            mimxrt_flash_romfs_obj.flash_base = MICROPY_HW_ROMFS_BASE;
+            mimxrt_flash_romfs_obj.flash_size = MICROPY_HW_ROMFS_BYTES;
+            return MP_OBJ_FROM_PTR(&mimxrt_flash_romfs_obj);
+        case 0: // number of segments
+            return MP_OBJ_NEW_SMALL_INT(1);
+        case 1: // address
+            return mp_obj_new_int(MICROPY_HW_ROMFS_ADDRESS);
+        default:
+            return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+}
+#endif  // MICROPY_VFS_ROM
