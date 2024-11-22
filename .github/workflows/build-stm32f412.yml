@@ -1,4 +1,4 @@
-name: Build STM32F412
+name: Build STM32F412RG Firmware
 
 on:
   push:
@@ -13,33 +13,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    # Checkout the repository
+    - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        submodules: recursive  # 确保递归克隆子模块
+        submodules: recursive # 确保子模块被正确更新
 
+    # Install dependencies
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y gcc-arm-none-eabi libnewlib-arm-none-eabi python3 git make
+        sudo apt install -y build-essential gcc-arm-none-eabi libnewlib-arm-none-eabi libffi-dev git python3
 
-    - name: Verify submodules
-      run: |
-        git submodule update --init --recursive
-        ls -R lib/stm32lib
+    # Update submodules
+    - name: Update submodules
+      run: git submodule update --init --recursive
 
+    # Build mpy-cross
     - name: Build mpy-cross
       run: make -C mpy-cross
 
-    - name: Build STM32 firmware
+    # Build firmware for STM32F412RG
+    - name: Build firmware
       run: |
-        cd ports/stm32
-        make BOARD=STM32F412RG clean
-        make BOARD=STM32F412RG V=1 \
-          CFLAGS="-I../../py -I../../extmod -I../../lib/stm32lib/CMSIS/STM32F4xx/Include -I../../lib/stm32lib/CMSIS/Include"
+        make -C ports/stm32 BOARD=STM32F412RG clean
+        make -C ports/stm32 BOARD=STM32F412RG
+      env:
+        PATH: /usr/bin:$PATH
 
-    - name: Upload firmware artifact
+    # Upload firmware as an artifact
+    - name: Upload firmware
       uses: actions/upload-artifact@v3
       with:
-        name: firmware
+        name: stm32f412rg-firmware
         path: ports/stm32/build-STM32F412RG/firmware.bin
