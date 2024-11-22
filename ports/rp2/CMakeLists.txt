@@ -407,7 +407,6 @@ if (MICROPY_PY_NETWORK_CYW43)
 
     target_link_libraries(${MICROPY_TARGET}
         cyw43_driver_picow
-        cmsis_core
     )
     target_include_directories(${MICROPY_TARGET} PRIVATE
         ${MICROPY_DIR}/lib/cyw43-driver/
