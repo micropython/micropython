@@ -16,12 +16,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        submodules: recursive  # 确保子模块递归克隆
+        submodules: recursive  # 确保递归克隆子模块
 
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y gcc-arm-none-eabi libnewlib-arm-none-eabi python3 git make  # 安装必要的依赖项
+        sudo apt install -y gcc-arm-none-eabi libnewlib-arm-none-eabi python3 git make
+
+    - name: Verify submodules
+      run: |
+        git submodule update --init --recursive
+        ls -R lib/stm32lib
 
     - name: Build mpy-cross
       run: make -C mpy-cross
@@ -30,8 +35,8 @@ jobs:
       run: |
         cd ports/stm32
         make BOARD=STM32F412RG V=1 \
-           CFLAGS="-I../../py -I../../extmod -I../../lib/stm32lib/CMSIS/STM32F4xx/Include -I../../lib/stm32lib/CMSIS/Include"
-        
+          CFLAGS="-I../../py -I../../extmod -I../../lib/stm32lib/CMSIS/STM32F4xx/Include -I../../lib/stm32lib/CMSIS/Include"
+
     - name: Upload firmware artifact
       uses: actions/upload-artifact@v3
       with:
