@@ -29,7 +29,8 @@ jobs:
     - name: Build STM32 firmware
       run: |
         cd ports/stm32
-        make BOARD=STM32F412RG V=1 CFLAGS="-I../../py -I../../extmod -I../../lib/stm32lib/CMSIS/STM32F4xx/Include"
+        make BOARD=STM32F412RG V=1 \
+           CFLAGS="-I../../py -I../../extmod -I../../lib/stm32lib/CMSIS/STM32F4xx/Include -I../../lib/stm32lib/CMSIS/Include"
         
     - name: Upload firmware artifact
       uses: actions/upload-artifact@v3
