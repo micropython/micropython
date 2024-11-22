@@ -1,5 +1,10 @@
 #define MICROPY_HW_BOARD_NAME       "STM32F412RG" //my custom PCB
 #define MICROPY_HW_MCU_NAME         "STM32F412RG"
+#define MICROPY_HW_FLASH_FS_LABEL   "VCCGNDF407VE"
+
+// 1 = use internal flash (1024 KByte)
+// 0 = use external SPI flash
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
