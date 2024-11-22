@@ -7,43 +7,26 @@ on:
   pull_request:
     branches:
       - stm32f412RGT6
-
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        board: [STM32f412RG]
     steps:
-    # Checkout the repository
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v2
+    - name: arm-none-eabi-gcc
+      uses: carlosperate/arm-none-eabi-gcc-action@v1.3.0
       with:
-        submodules: recursive # 确保子模块被正确更新
-
-    # Install dependencies
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y build-essential gcc-arm-none-eabi libnewlib-arm-none-eabi libffi-dev git python3
-
-    # Update submodules
+        release: '9-2019-q4' # The arm-none-eabi-gcc release to use.
     - name: Update submodules
-      run: git submodule update --init --recursive
-
-    # Build mpy-cross
+      run: git submodule update --init --recursive  
     - name: Build mpy-cross
-      run: make -C mpy-cross
-
-    # Build firmware for STM32F412RG
-    - name: Build firmware
-      run: |
-        make -C ports/stm32 BOARD=STM32F412RG clean
-        make -C ports/stm32 BOARD=STM32F412RG
-      env:
-        PATH: /usr/bin:$PATH
-
-    # Upload firmware as an artifact
-    - name: Upload firmware
-      uses: actions/upload-artifact@v3
+      run: make -j $(nproc) -C mpy-cross
+    - name: Build ${{ matrix.board }}
+      run: make -j $(nproc) -C ports/stm32 BOARD=${{ matrix.board }}
+    - uses: actions/upload-artifact@v2
+      if: ${{ env.GITHUB_EVENT_NAME }} == 'push'
       with:
-        name: stm32f412rg-firmware
-        path: ports/stm32/build-STM32F412RG/firmware.bin
+        name: ${{ matrix.board }}.hex
+        path: ports/stm32/build-${{ matrix.board }}/firmware.hex
