@@ -23,12 +23,6 @@ jobs:
         sudo apt update
         sudo apt install -y gcc-arm-none-eabi libnewlib-arm-none-eabi python3
 
-    - name: Download STM32CubeF4 HAL files
-      run: |
-        git clone https://github.com/STMicroelectronics/STM32CubeF4.git
-        cp STM32CubeF4/Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f412xx.h lib/stm32lib/CMSIS/STM32F4xx/Include/
-        cp STM32CubeF4/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f412xx.c lib/stm32lib/CMSIS/STM32F4xx/Templates/
-
     - name: Build mpy-cross
       run: make -C mpy-cross
 
