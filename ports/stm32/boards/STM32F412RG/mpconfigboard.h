@@ -6,11 +6,12 @@
 // 0 = use external SPI flash
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 
-#define MICROPY_HW_HAS_SWITCH       (1)
+#define MICROPY_HW_HAS_LED          (0)
+#define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
-#define MICROPY_HW_ENABLE_SERVO     (1)
+#define MICROPY_HW_ENABLE_SERVO     (0)
 
 // HSE is 8MHz
 #define MICROPY_HW_CLK_PLLM (8) // 1M HSE
