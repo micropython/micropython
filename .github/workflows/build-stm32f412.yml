@@ -7,26 +7,35 @@ on:
   pull_request:
     branches:
       - stm32f412RGT6
+
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        board: [STM32f412RG]
+        board: [STM32F412RG] # Ensure this matches your board directory name in ports/stm32/boards
     steps:
-    - uses: actions/checkout@v4
-    - name: arm-none-eabi-gcc
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Install ARM GCC Toolchain
       uses: carlosperate/arm-none-eabi-gcc-action@v1.3.0
       with:
-        release: '9-2019-q4' # The arm-none-eabi-gcc release to use.
-    - name: Update submodules
+        release: '9-2019-q4' # Update if compatibility issues arise
+
+    - name: Update Submodules
       run: git submodule update --init --recursive  
+
     - name: Build mpy-cross
       run: make -j $(nproc) -C mpy-cross
-    - name: Build ${{ matrix.board }}
-      run: make -j $(nproc) -C ports/stm32 BOARD=${{ matrix.board }}
-    - uses: actions/upload-artifact@v2
-      if: ${{ env.GITHUB_EVENT_NAME }} == 'push'
+
+    - name: Build Firmware
+      run: make -j $(nproc) -C ports/stm32 BOARD=${{ matrix.board }} V=1
+
+    - name: Upload Firmware Artifact
+      uses: actions/upload-artifact@v2
+      if: ${{ github.event_name == 'push' }}
       with:
         name: ${{ matrix.board }}.hex
         path: ports/stm32/build-${{ matrix.board }}/firmware.hex
+
