@@ -4,7 +4,6 @@
  */
 #ifndef MICROPY_INCLUDED_STM32F4XX_HAL_CONF_H
 #define MICROPY_INCLUDED_STM32F4XX_HAL_CONF_H
-#define STM32F412Rx
 #define STM32F412xG
 // Oscillator values in Hz
 #define HSE_VALUE (8000000)
