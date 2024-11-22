@@ -34,6 +34,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/frozenmod.h"
+#include "py/modatexit.h"
 #include "py/mphal.h"
 #if MICROPY_HW_ENABLE_USB
 #include "irq.h"
@@ -187,6 +188,11 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     if (exec_flags & EXEC_FLAG_PRINT_EOF) {
         mp_hal_stdout_tx_strn("\x04", 1);
     }
+
+    #if MICROPY_PY_ATEXIT
+    int atexit_code = mp_atexit_execute();
+    ret = (atexit_code != 0) ? atexit_code : ret;
+    #endif
 
     #ifdef MICROPY_BOARD_AFTER_PYTHON_EXEC
     MICROPY_BOARD_AFTER_PYTHON_EXEC(input_kind, exec_flags, nlr.ret_val, &ret);
