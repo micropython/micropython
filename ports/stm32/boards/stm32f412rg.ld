@@ -1,5 +1,5 @@
 /*
-    GNU linker script for STM32F412zx (1MB flash, 256kB RAM)
+    GNU linker script for STM32F412rx (1MB flash, 256kB RAM)
 */
 
 /* Specify the memory areas */
