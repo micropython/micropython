@@ -13,29 +13,28 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        board: [STM32F412RG] # Ensure this matches your board directory name in ports/stm32/boards
+        board: [STM32F412RG] # 确保此处与 ports/stm32/boards/ 中的文件夹名称一致
     steps:
-    - name: Checkout Repository
+    - name: 检出代码
       uses: actions/checkout@v3
 
-    - name: Install ARM GCC Toolchain
-      uses: carlosperate/arm-none-eabi-gcc-action@v1.3.0
-      with:
-        release: '9-2019-q4' # Update if compatibility issues arise
+    - name: 安装 ARM 工具链
+      run: |
+        sudo apt update
+        sudo apt install -y gcc-arm-none-eabi
 
-    - name: Update Submodules
+    - name: 初始化子模块
       run: git submodule update --init --recursive  
 
-    - name: Build mpy-cross
+    - name: 编译 mpy-cross
       run: make -j $(nproc) -C mpy-cross
 
-    - name: Build Firmware
+    - name: 编译固件
       run: make -j $(nproc) -C ports/stm32 BOARD=${{ matrix.board }} V=1
 
-    - name: Upload Firmware Artifact
+    - name: 上传固件
       uses: actions/upload-artifact@v2
       if: ${{ github.event_name == 'push' }}
       with:
         name: ${{ matrix.board }}.hex
         path: ports/stm32/build-${{ matrix.board }}/firmware.hex
-
