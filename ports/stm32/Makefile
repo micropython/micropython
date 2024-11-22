@@ -253,7 +253,7 @@ SRC_C += \
 	pybthread.c \
 	factoryreset.c \
 	timer.c \
-	led.c \
+#	led.c \
 	pin.c \
 	pin_defs_stm32.c \
 	pin_named_pins.c \
