@@ -97,6 +97,7 @@ def _bool_flag(cmd_parser, name, short_name, default, description):
 
 def argparse_connect():
     cmd_parser = argparse.ArgumentParser(description="connect to given device")
+    _bool_flag(cmd_parser, "insecure-certificate", "k", False, "Don't check certificate validity.")
     cmd_parser.add_argument(
         "device", nargs=1, help="Either list, auto, id:x, port:x, or any valid device name/path"
     )
