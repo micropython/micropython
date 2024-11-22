@@ -269,7 +269,6 @@ SRC_C += \
 	ulpi.c \
 	can.c \
 	fdcan.c \
-	pyb_can.c \
 	usb.c \
 	eth.c \
 	eth_phy.c \
