@@ -16,12 +16,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        submodules: recursive
+        submodules: recursive  # 确保子模块递归克隆
 
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y gcc-arm-none-eabi libnewlib-arm-none-eabi python3
+        sudo apt install -y gcc-arm-none-eabi libnewlib-arm-none-eabi python3 git make  # 安装必要的依赖项
 
     - name: Build mpy-cross
       run: make -C mpy-cross
@@ -29,7 +29,7 @@ jobs:
     - name: Build STM32 firmware
       run: |
         cd ports/stm32
-        make BOARD=STM32F412RG V=1 CFLAGS="-I../../lib/stm32lib/CMSIS/STM32F4xx/Include"
+        make BOARD=STM32F412RG V=1 CFLAGS="-I../../lib/stm32lib/CMSIS/STM32F4xx/Include -I../../py"  # 添加py目录的路径以找到parsenum.h等头文件
 
     - name: Upload firmware artifact
       uses: actions/upload-artifact@v3
