@@ -52,8 +52,8 @@
 #define MICROPY_HW_LED2             (pin_A9) // green
 #define MICROPY_HW_LED3             (pin_A10) // orange
 //#define MICROPY_HW_LED4             (pin_D15) // blue
-//#define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
-//#define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
+#define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
+#define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // USB config
 #define MICROPY_HW_USB_FS              (1)
