@@ -33,7 +33,7 @@ jobs:
       run: make -j $(nproc) -C ports/stm32 BOARD=${{ matrix.board }} V=1
 
     - name: 上传固件
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: ${{ github.event_name == 'push' }}
       with:
         name: ${{ matrix.board }}.hex
