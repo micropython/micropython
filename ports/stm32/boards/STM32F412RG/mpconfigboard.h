@@ -5,7 +5,7 @@
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
-//#define MICROPY_HW_ENABLE_SERVO     (1)
+#define MICROPY_HW_ENABLE_SERVO     (1)
 
 // HSE is 8MHz
 #define MICROPY_HW_CLK_PLLM (8) // 1M HSE
@@ -14,7 +14,7 @@
 #define MICROPY_HW_CLK_PLLQ (4)// divide core clock by this to get
 
 // does not have a 32kHz crystal
-//#define MICROPY_HW_RTC_USE_LSE      (0)
+#define MICROPY_HW_RTC_USE_LSE      (0)
 
 // UART config
 #define MICROPY_HW_UART1_TX     (pin_B6)
@@ -43,7 +43,12 @@
 #define MICROPY_HW_USRSW_PRESSED    (1)
 
 // LEDs
-
+#define MICROPY_HW_LED1             (pin_D14) // red
+#define MICROPY_HW_LED2             (pin_D12) // green
+#define MICROPY_HW_LED3             (pin_D13) // orange
+#define MICROPY_HW_LED4             (pin_D15) // blue
+#define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
+#define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // USB config
 #define MICROPY_HW_USB_FS              (1)
