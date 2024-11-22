@@ -170,6 +170,26 @@ Configuration
         <https://docs.espressif.com/projects/esp-idf/en/v4.4.1/esp32/
         api-reference/network/esp_wifi.html#_CPPv415wifi_phy_rate_t>`_.
 
+        *pm*: (ESP32 only) Set the ESPNOW wireless power saving parameters.
+        Usage: ``e.config(pm=(window, interval))``: every ``interval``
+        milliseconds the radio will be turned on for ``window`` milliseconds to
+        listen for incoming messages (``interval`` should be a multiple of
+        100ms). Incoming messages will be lost while the radio is off. Messages
+        may be sent at any time. By default, ESPNOW power saving is disabled and
+        the radio is turned on continuously. Examples::
+
+          e.config(pm=(75, 200))  # equivalent to WLAN.config(pm=WLAN.PM_PERFORMANCE)
+          e.config(pm=(75, 300))  # equivalent to WLAN.config(pm=WLAN.PM_POWERSAVE)
+
+        If the device is also connected to a wifi Access Point, the wifi power
+        saving mode will be used instead
+        (see `WLAN.config(pm=XX)<network.WLAN.config>`).
+
+        See `Config ESP-NOW Power-saving Parameter
+        <https://docs.espressif.com/projects/esp-idf/en/v5.0.2/esp32/
+        api-reference/network/
+        esp_now.html#config-esp-now-power-saving-parameter>`_.
+
     .. data:: Returns:
 
         ``None`` or the value of the parameter being queried.
