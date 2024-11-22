@@ -42,10 +42,10 @@
 
 
 // 用户开关
-#define MICROPY_HW_USRSW_PIN        (pin_C6)
-#define MICROPY_HW_USRSW_PULL       (GPIO_NOPULL)
-#define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_RISING)
-#define MICROPY_HW_USRSW_PRESSED    (1)
+//#define MICROPY_HW_USRSW_PIN        (pin_C6)
+//#define MICROPY_HW_USRSW_PULL       (GPIO_NOPULL)
+//#define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_RISING)
+//#define MICROPY_HW_USRSW_PRESSED    (1)
 
 // LEDs
 //#define MICROPY_HW_LED1             (pin_D14) // red
