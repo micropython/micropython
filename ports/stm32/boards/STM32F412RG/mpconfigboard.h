@@ -4,7 +4,8 @@
 
 // 1 = use internal flash (1024 KByte)
 // 0 = use external SPI flash
-#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1) //1=internal flash(1024 KByte),0=external SPI flash
+#define MICROPY_HW_FLASH_STORAGE_BYTES (512 * 1024) //512K Udisk
 
 #define MICROPY_HW_HAS_LED          (0)
 #define MICROPY_HW_HAS_SWITCH       (0)
