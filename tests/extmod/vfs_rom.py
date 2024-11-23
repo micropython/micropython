@@ -17,6 +17,27 @@ SEEK_SET = 0
 SEEK_CUR = 1
 SEEK_END = 2
 
+# An mpy file with two constant objects: a str and bytes.
+test_mpy = (
+    b"M\x06\x00\x1f"  # mpy file header
+    b"\x03"  # n_qstr
+    b"\x02"  # n_obj
+    b"\x0etest.py\x00"  # qstr0 = "test.py"
+    b"\x0estr_obj\x00"  # qstr1 = "str_obj"
+    b"\x12bytes_obj\x00"  # qstr2 = "bytes_obj"
+    b"\x05\x14this is a str object\x00"
+    b"\x06\x16this is a bytes object\x00"
+    b"\x68"  # 13 bytes, no children, bytecode
+    b"\x00\x02"  # prelude
+    b"\x00"  # simple name (test.py)
+    b"\x23\x00"  # LOAD_CONST_OBJ(0)
+    b"\x17\x01"  # STORE_GLOBAL(str_obj)
+    b"\x23\x01"  # LOAD_CONST_OBJ(1)
+    b"\x17\x02"  # STORE_GLOBAL(bytes_obj)
+    b"\x51"  # LOAD_CONST_NONE
+    b"\x63"  # RETURN_VALUE
+)
+
 
 class VfsRomWriter:
     MAGIC = b"RM\x01\x00"
@@ -61,6 +82,7 @@ class TestBase(unittest.TestCase):
                 ("dir/", b""),
                 ("dir/a.py", b""),
                 ("dir/b.py", b""),
+                ("dir/test.mpy", test_mpy),
             )
         )
         cls.romfs_ilistdir = [
@@ -69,7 +91,7 @@ class TestBase(unittest.TestCase):
             ("dir", IFDIR, 0, 0),
         ]
         cls.romfs_listdir = [x[0] for x in cls.romfs_ilistdir]
-        cls.romfs_listdir_dir = ["a.py", "b.py"]
+        cls.romfs_listdir_dir = ["a.py", "b.py", "test.mpy"]
         cls.romfs_listdir_bytes = [bytes(x, "ascii") for x in cls.romfs_listdir]
         cls.romfs_addr = uctypes.addressof(cls.romfs)
         cls.romfs_addr_range = range(cls.romfs_addr, cls.romfs_addr + len(cls.romfs))
@@ -169,10 +191,19 @@ class TestMounted(TestBase):
         with self.assertRaises(OSError):
             os.chdir("/test_rom/dir")
 
-    def test_import(self):
+    def test_import_py(self):
         sys.path.append("/test_rom/dir")
         self.assertEqual(__import__("a").__file__, "/test_rom/dir/a.py")
         self.assertEqual(__import__("b").__file__, "/test_rom/dir/b.py")
+
+    def test_import_mpy(self):
+        sys.path.append("/test_rom/dir")
+        test = __import__("test")
+        self.assertEqual(test.__file__, "/test_rom/dir/test.mpy")
+        self.assertEqual(test.str_obj, "this is a str object")
+        self.assertEqual(test.bytes_obj, b"this is a bytes object")
+        self.assertIn(uctypes.addressof(test.str_obj), self.romfs_addr_range)
+        self.assertIn(uctypes.addressof(test.bytes_obj), self.romfs_addr_range)
 
     def test_romfs_inner(self):
         with open("/test_rom/fs.romfs", "rb") as f:
