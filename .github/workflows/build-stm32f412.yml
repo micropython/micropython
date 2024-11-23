@@ -16,7 +16,7 @@ jobs:
         board: [STM32F412RG] # 确保此处与 ports/stm32/boards/ 中的文件夹名称一致
     steps:
     - name: 检出代码
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: 安装 ARM 工具链
       run: |
