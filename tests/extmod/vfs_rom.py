@@ -137,7 +137,7 @@ class TestStandalone(TestBase):
 
     def test_statvfs(self):
         fs = vfs.VfsRom(self.romfs)
-        self.assertEqual(fs.statvfs(""), (0, 0, 0, 0, 0, 0, 0, 0, 0, 32767))
+        self.assertEqual(fs.statvfs(""), (4096, 0, 1, 0, 0, 0, 0, 0, 0, 32767))
 
     def test_open(self):
         fs = vfs.VfsRom(self.romfs)
