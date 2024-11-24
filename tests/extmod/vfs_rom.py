@@ -71,6 +71,20 @@ def make_romfs(files):
     return fs.finalise()
 
 
+# A class to test if a value is within a range, needed because MicroPython's range
+# doesn't support arbitrary objects.
+class Range:
+    def __init__(self, lower, upper):
+        self._lower = lower
+        self._upper = upper
+
+    def __repr__(self):
+        return "Range({}, {})".format(self._lower, self._upper)
+
+    def __contains__(self, value):
+        return self._lower <= value < self._upper
+
+
 class TestBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -94,7 +108,7 @@ class TestBase(unittest.TestCase):
         cls.romfs_listdir_dir = ["a.py", "b.py", "test.mpy"]
         cls.romfs_listdir_bytes = [bytes(x, "ascii") for x in cls.romfs_listdir]
         cls.romfs_addr = uctypes.addressof(cls.romfs)
-        cls.romfs_addr_range = range(cls.romfs_addr, cls.romfs_addr + len(cls.romfs))
+        cls.romfs_addr_range = Range(cls.romfs_addr, cls.romfs_addr + len(cls.romfs))
 
 
 class TestStandalone(TestBase):
