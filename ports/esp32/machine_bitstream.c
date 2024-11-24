@@ -90,12 +90,86 @@ static void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, u
     mp_hal_quiet_timing_exit(irq_state);
 }
 
+/******************************************************************************/
+// RMT implementation
+
+#include "driver/rmt_tx.h"
+#include "driver/rmt_encoder.h"
+
+static void machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
+    // Use 40MHz clock (although 2MHz would probably be sufficient).
+    uint32_t clock_div = 2;
+    rmt_channel_handle_t channel = NULL;
+    // TODO create a permanent/reserved channel outside this function? Lazy creation?
+    rmt_tx_channel_config_t tx_chan_config = {
+        .clk_src = RMT_CLK_SRC_DEFAULT,
+        .gpio_num = pin,
+        .mem_block_symbols = 64,
+        .resolution_hz = APB_CLK_FREQ / clock_div,
+        .trans_queue_depth = 1,
+    };
+    check_esp_err(rmt_new_tx_channel(&tx_chan_config, &channel));
+    check_esp_err(rmt_enable_core1(channel));
+
+    // Get the tick rate in kHz (this will likely be 40000).
+    uint32_t counter_clk_khz = APB_CLK_FREQ / clock_div;
+    counter_clk_khz /= 1000;
+
+    // Convert nanoseconds to pulse duration.
+    // Example: 500ns = 40000 * 500 / 1e6 = 20 ticks
+    // 20 ticks / 40MHz = 500e-9
+    rmt_bytes_encoder_config_t bytes_encoder_config = {
+        .bit0 = {
+            .level0 = 1,
+            .duration0 = (counter_clk_khz * timing_ns[0]) / 1e6,
+            .level1 = 0,
+            .duration1 = (counter_clk_khz * timing_ns[1]) / 1e6,
+        },
+        .bit1 = {
+            .level0 = 1,
+            .duration0 = (counter_clk_khz * timing_ns[2]) / 1e6,
+            .level1 = 0,
+            .duration1 = (counter_clk_khz * timing_ns[3]) / 1e6,
+        },
+        .flags.msb_first = 1
+    };
+
+    // Install the bits->highlow encoder.
+    rmt_encoder_handle_t encoder;
+    check_esp_err(rmt_new_bytes_encoder(&bytes_encoder_config, &encoder));
+
+    rmt_transmit_config_t tx_config = {
+        .loop_count = 0,
+        .flags.eot_level = 0,
+    };
+
+    // Stream the byte data using the encoder.
+    rmt_encoder_reset(encoder);
+    check_esp_err(rmt_transmit(channel, encoder, buf, len, &tx_config));
+
+    // Wait 50% longer than we expect (if every bit takes the maximum time).
+    uint32_t timeout_ms = (3 * len / 2) * (1 + (8 * MAX(timing_ns[0] + timing_ns[1], timing_ns[2] + timing_ns[3])) / 1000000);
+    check_esp_err(rmt_tx_wait_all_done(channel, timeout_ms));
+
+    // Disable and release channel.
+    check_esp_err(rmt_del_encoder(encoder));
+    rmt_disable(channel);
+    rmt_del_channel(channel);
+
+    // Cancel RMT output to GPIO pin.
+    esp_rom_gpio_connect_out_signal(pin, SIG_GPIO_OUT_IDX, false, false);
+}
 
 /******************************************************************************/
 // Interface to machine.bitstream
 
 void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
-    machine_bitstream_high_low_bitbang(pin, timing_ns, buf, len);
+    if (false) {
+        // TODO test whether channel creation was successful?
+        machine_bitstream_high_low_bitbang(pin, timing_ns, buf, len);
+    } else {
+        machine_bitstream_high_low_rmt(pin, timing_ns, buf, len);
+    }
 }
 
 #endif // MICROPY_PY_MACHINE_BITSTREAM
