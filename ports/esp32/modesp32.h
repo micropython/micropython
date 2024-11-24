@@ -1,6 +1,8 @@
 #ifndef MICROPY_INCLUDED_ESP32_MODESP32_H
 #define MICROPY_INCLUDED_ESP32_MODESP32_H
 
+#include "driver/rmt_tx.h"
+
 #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 
     #define RTC_VALID_EXT_PINS \
@@ -69,5 +71,7 @@ extern const mp_obj_type_t esp32_pcnt_type;
 
 void esp32_pcnt_deinit_all(void);
 #endif
+
+esp_err_t rmt_enable_core1(rmt_channel_handle_t channel);
 
 #endif // MICROPY_INCLUDED_ESP32_MODESP32_H
