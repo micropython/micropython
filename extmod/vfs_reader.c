@@ -90,7 +90,7 @@ void mp_reader_new_file(mp_reader_t *reader, qstr filename) {
     // Check if the stream can be memory mapped.
     mp_buffer_info_t bufinfo;
     if (mp_get_buffer(file, &bufinfo, MP_BUFFER_READ)) {
-        mp_reader_new_mem(reader, bufinfo.buf, bufinfo.len, (size_t)-1);
+        mp_reader_new_mem(reader, bufinfo.buf, bufinfo.len, MP_READER_IS_ROM);
         return;
     }
     #endif

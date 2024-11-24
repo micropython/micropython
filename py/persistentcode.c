@@ -174,10 +174,6 @@ static size_t read_uint(mp_reader_t *reader) {
     return unum;
 }
 
-#if MICROPY_VFS_ROM
-const uint8_t *map_try_read_bytes(mp_reader_t *reader, size_t len);
-#endif
-
 static qstr load_qstr(mp_reader_t *reader) {
     size_t len = read_uint(reader);
     if (len & 1) {
