@@ -37,6 +37,7 @@ from .commands import (
     do_rtc,
     do_soft_reset,
     do_deploy_romfs,
+    do_romfs,
 )
 from .mip import do_mip
 from .repl import do_repl
@@ -235,6 +236,14 @@ def argparse_deploy_romfs():
     return cmd_parser
 
 
+def argparse_romfs():
+    cmd_parser = argparse.ArgumentParser(description="manage romfs")
+    _bool_flag(cmd_parser, "mpy", "m", True, "download as compiled .mpy files (default)")
+    cmd_parser.add_argument("command", nargs=1, help="romfs command (e.g. build, deploy)")
+    cmd_parser.add_argument("path", nargs=1, help="path to directory to deploy")
+    return cmd_parser
+
+
 def argparse_none(description):
     return lambda: argparse.ArgumentParser(description=description)
 
@@ -321,6 +330,10 @@ _COMMANDS = {
     "deploy-romfs": (
         do_deploy_romfs,
         argparse_deploy_romfs,
+    ),
+    "romfs": (
+        do_romfs,
+        argparse_romfs,
     ),
 }
 

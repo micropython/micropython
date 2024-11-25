@@ -481,9 +481,29 @@ def do_rtc(state, args):
         print(state.transport.eval("machine.RTC().datetime()"))
 
 
-def do_deploy_romfs(state, args):
+def _do_romfs_build(state, args):
+    state.did_action()
+
+    input_directory = args.path[0]
+    output_file = input_directory + ".romfs"
+    romfs = make_romfs(input_directory, "/")
+    print(f"Image size is {len(romfs)} bytes")
+    with open(output_file, "wb") as f:
+        f.write(romfs)
+
+
+def _do_romfs_deploy(state, args):
     state.ensure_raw_repl()
     state.did_action()
+
+    # Read in or create the romfs filesystem.
+    romfs_filename = args.path[0]
+    if romfs_filename.endswith(".romfs"):
+        with open(romfs_filename, "rb") as f:
+            romfs = f.read()
+    else:
+        romfs = make_romfs(romfs_filename, "/")
+    print(f"Image size is {len(romfs)} bytes")
 
     # Detect the romfs and get its associated device.
     state.transport.exec("import vfs")
@@ -497,10 +517,7 @@ def do_deploy_romfs(state, args):
         block_size = state.transport.eval("vfs.rom_ioctl(3)")
     print(f"ROMFS partition has size {block_count}*{block_size}={block_count * block_size} bytes")
 
-    # Create the romfs filesystem.
-    romfs = make_romfs(args.path[0], "/")
-    print(f"Image size is {len(romfs)} bytes")
-
+    # Check if romfs will fit on the target device.
     if len(romfs) > block_count * block_size:
         print("ROMFS partition is too small for image")
         sys.exit(1)
@@ -525,3 +542,16 @@ def do_deploy_romfs(state, args):
 
     print()
     print("Image deployed")
+
+
+def do_deploy_romfs(state, args):
+    _do_romfs_deploy(state, args)
+
+
+def do_romfs(state, args):
+    if args.command[0] == "build":
+        _do_romfs_build(state, args)
+    elif args.command[0] == "deploy":
+        _do_romfs_deploy(state, args)
+    else:
+        raise CommandError(f"romfs: '{args.command[0]}' is not a command")
