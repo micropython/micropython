@@ -99,7 +99,7 @@ static mp_obj_t vfs_rom_make_new(const mp_obj_type_t *type, size_t n_args, size_
     if (mp_get_buffer(self->memory, &bufinfo, MP_BUFFER_READ)) {
         self->filesystem = bufinfo.buf;
     } else {
-        self->filesystem = (const uint8_t *)(uintptr_t)mp_obj_get_int(self->memory);
+        self->filesystem = (const uint8_t *)(uintptr_t)mp_obj_get_int_truncated(self->memory);
     }
 
     // Verify it is a ROMFS.
