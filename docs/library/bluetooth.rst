@@ -665,7 +665,7 @@ L2CAP connection-oriented-channels
 
     Connect to a listening peer on the specified *psm* with local MTU set to *mtu*.
 
-    On successful connection, the the ``_IRQ_L2CAP_CONNECT`` event will be
+    On successful connection, the ``_IRQ_L2CAP_CONNECT`` event will be
     raised, allowing the client to obtain the CID and the local and remote (peer) MTU.
 
     An unsuccessful connection will raise the ``_IRQ_L2CAP_DISCONNECT`` event
