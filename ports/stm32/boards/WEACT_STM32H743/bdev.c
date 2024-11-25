@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2023 Matt Trenitni
+ * Copyright (c) 2023 Matt Trentini
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 
 #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
 // Shared cache for first and second SPI block devices
-STATIC mp_spiflash_cache_t spi_bdev_cache;
+static mp_spiflash_cache_t spi_bdev_cache;
 #endif
 
 // First external SPI flash uses hardware QSPI interface

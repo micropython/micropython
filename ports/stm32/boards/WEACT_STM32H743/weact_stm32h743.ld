@@ -36,12 +36,3 @@ _micropy_hw_internal_flash_storage_ram_cache_end = ORIGIN(DTCM) + LENGTH(DTCM);
 /* Location of filesystem flash storage */
 _micropy_hw_internal_flash_storage_start = ORIGIN(FLASH_FS);
 _micropy_hw_internal_flash_storage_end = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
-
-/* Define output sections */
-SECTIONS
-{
-    .eth_buffers (NOLOAD) : {
-        . = ABSOLUTE(0x30040000);
-        *eth.o*(.bss.eth_dma)
-    } >RAM_D2
-}

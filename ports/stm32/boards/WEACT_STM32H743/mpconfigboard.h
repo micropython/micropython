@@ -133,3 +133,14 @@ extern struct _spi_bdev_t spi_bdev;
 
 // USB config
 #define MICROPY_HW_USB_FS (1)
+
+// Ethernet via RMII
+#define MICROPY_HW_ETH_MDC          (pin_C1)
+#define MICROPY_HW_ETH_MDIO         (pin_A2)
+#define MICROPY_HW_ETH_RMII_REF_CLK (pin_A1)
+#define MICROPY_HW_ETH_RMII_CRS_DV  (pin_A7)
+#define MICROPY_HW_ETH_RMII_RXD0    (pin_C4)
+#define MICROPY_HW_ETH_RMII_RXD1    (pin_C5)
+#define MICROPY_HW_ETH_RMII_TX_EN   (pin_B11)
+#define MICROPY_HW_ETH_RMII_TXD0    (pin_B12)
+#define MICROPY_HW_ETH_RMII_TXD1    (pin_B13)
