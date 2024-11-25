@@ -1,7 +1,7 @@
 # Test VfsRom filesystem.
 
 try:
-    import sys, struct, os, uctypes, vfs
+    import sys, struct, os, select, uctypes, vfs
 
     vfs.VfsRom
 except (ImportError, AttributeError):
@@ -21,7 +21,7 @@ SEEK_END = 2
 test_mpy = (
     # header
     b"M\x06\x00\x1f"  # mpy file header
-    b"\x06"  # n_qstr
+    b"\x07"  # n_qstr
     b"\x04"  # n_obj
     # qstrs
     b"\x0etest.py\x00"  # qstr0 = "test.py"
@@ -30,6 +30,7 @@ test_mpy = (
     b"\x12bytes_obj\x00"  # qstr3 = "bytes_obj"
     b"\x0eint_obj\x00"  # qstr4 = "int_obj"
     b"\x12float_obj\x00"  # qstr5 = "float_obj"
+    b"\x12float_obj\x00"  # duplicate qstr, to test interning when it already exists
     # objects
     b"\x05\x14this is a str object\x00"
     b"\x06\x16this is a bytes object\x00"
@@ -140,6 +141,8 @@ class TestStandalone(TestBase):
         fs = vfs.VfsRom(self.romfs)
         self.assertEqual(list(fs.ilistdir("")), self.romfs_ilistdir)
         self.assertEqual(list(fs.ilistdir("/")), self.romfs_ilistdir)
+        with self.assertRaises(OSError):
+            fs.ilistdir("does not exist")
 
     def test_stat(self):
         fs = vfs.VfsRom(self.romfs)
@@ -147,6 +150,8 @@ class TestStandalone(TestBase):
         self.assertEqual(fs.stat("/"), (IFDIR, 0, 0, 0, 0, 0, 0, 0, 0, 0))
         self.assertEqual(fs.stat("test.txt"), (IFREG, 0, 0, 0, 0, 0, 8, 0, 0, 0))
         self.assertEqual(fs.stat("dir"), (IFDIR, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+        with self.assertRaises(OSError):
+            fs.stat("does not exist")
 
     def test_statvfs(self):
         fs = vfs.VfsRom(self.romfs)
@@ -180,6 +185,14 @@ class TestStandalone(TestBase):
             self.assertEqual(f.seek(-1, SEEK_END), 7)
             self.assertEqual(f.read(), "s")
             self.assertEqual(f.seek(1, SEEK_END), 8)
+
+    def test_file_ioctl_invalid(self):
+        fs = vfs.VfsRom(self.romfs)
+        with fs.open("test.txt", "") as f:
+            p = select.poll()
+            p.register(f)
+            with self.assertRaises(OSError):
+                p.poll(0)
 
     def test_memory_mapping(self):
         fs = vfs.VfsRom(self.romfs)
