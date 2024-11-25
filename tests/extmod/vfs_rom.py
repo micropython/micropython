@@ -1,12 +1,17 @@
 # Test VfsRom filesystem.
 
 try:
-    import sys, struct, os, select, uctypes, vfs
+    import sys, struct, os, uctypes, vfs
 
     vfs.VfsRom
-except (ImportError, AttributeError):
-    print("SKIP")
+except (ImportError, AttributeError) as er:
+    print("SKIP", er)
     raise SystemExit
+
+try:
+    import select
+except ImportError:
+    select = None
 
 import unittest
 
@@ -21,8 +26,8 @@ SEEK_END = 2
 test_mpy = (
     # header
     b"M\x06\x00\x1f"  # mpy file header
-    b"\x07"  # n_qstr
-    b"\x04"  # n_obj
+    b"\x06"  # n_qstr
+    b"\x05"  # n_obj
     # qstrs
     b"\x0etest.py\x00"  # qstr0 = "test.py"
     b"\x0f"  # qstr1 = "<module>"
@@ -30,12 +35,12 @@ test_mpy = (
     b"\x12bytes_obj\x00"  # qstr3 = "bytes_obj"
     b"\x0eint_obj\x00"  # qstr4 = "int_obj"
     b"\x12float_obj\x00"  # qstr5 = "float_obj"
-    b"\x12float_obj\x00"  # duplicate qstr, to test interning when it already exists
     # objects
     b"\x05\x14this is a str object\x00"
     b"\x06\x16this is a bytes object\x00"
     b"\x07\x0a1234567890"  # long-int object
     b"\x08\x041.23"  # float object
+    b"\x05\x07str_obj\x00"  # str object of existing qstr
     # bytecode
     b"\x81\x28"  # 21 bytes, no children, bytecode
     b"\x00\x02"  # prelude
@@ -186,6 +191,7 @@ class TestStandalone(TestBase):
             self.assertEqual(f.read(), "s")
             self.assertEqual(f.seek(1, SEEK_END), 8)
 
+    @unittest.skipIf(select is None, "no select module")
     def test_file_ioctl_invalid(self):
         fs = vfs.VfsRom(self.romfs)
         with fs.open("test.txt", "") as f:
