@@ -1,6 +1,6 @@
-#define MICROPY_HW_BOARD_NAME       "STM32F412RG" //my custom PCB
-#define MICROPY_HW_MCU_NAME         "STM32F412RG"
-#define MICROPY_HW_FLASH_FS_LABEL   "VCCGNDF407VE"
+#define MICROPY_HW_BOARD_NAME       "STM32F412RG-1" //my custom PCB
+#define MICROPY_HW_MCU_NAME         "STM32F412RG-2"
+#define MICROPY_HW_FLASH_FS_LABEL   "STM32F412RG-3"
 
 // 1 = use internal flash (1024 KByte)
 // 0 = use external SPI flash
@@ -38,7 +38,7 @@
 
 // SPI buses
 #define MICROPY_HW_SPI1_NSS  (pin_B2)
-#define MICROPY_HW_SPI1_SCK  (pin_B6)
+#define MICROPY_HW_SPI1_SCK  (pin_B3)
 #define MICROPY_HW_SPI1_MISO (pin_B4)
 #define MICROPY_HW_SPI1_MOSI (pin_B5)
 
