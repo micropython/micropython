@@ -245,6 +245,8 @@ static mp_obj_t load_obj(mp_reader_t *reader) {
         vstr_t vstr;
         #if MICROPY_VFS_ROM
         memmap = map_try_read_bytes(reader, len);
+        vstr.buf = (void *)memmap;
+        vstr.len = len;
         #endif
         if (memmap == NULL) {
             vstr_init_len(&vstr, len);
