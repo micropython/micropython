@@ -17,23 +17,36 @@ SEEK_SET = 0
 SEEK_CUR = 1
 SEEK_END = 2
 
-# An mpy file with two constant objects: a str and bytes.
+# An mpy file with four constant objects: str, bytes, long-int, float.
 test_mpy = (
+    # header
     b"M\x06\x00\x1f"  # mpy file header
-    b"\x03"  # n_qstr
-    b"\x02"  # n_obj
+    b"\x06"  # n_qstr
+    b"\x04"  # n_obj
+    # qstrs
     b"\x0etest.py\x00"  # qstr0 = "test.py"
-    b"\x0estr_obj\x00"  # qstr1 = "str_obj"
-    b"\x12bytes_obj\x00"  # qstr2 = "bytes_obj"
+    b"\x0f"  # qstr1 = "<module>"
+    b"\x0estr_obj\x00"  # qstr2 = "str_obj"
+    b"\x12bytes_obj\x00"  # qstr3 = "bytes_obj"
+    b"\x0eint_obj\x00"  # qstr4 = "int_obj"
+    b"\x12float_obj\x00"  # qstr5 = "float_obj"
+    # objects
     b"\x05\x14this is a str object\x00"
     b"\x06\x16this is a bytes object\x00"
-    b"\x68"  # 13 bytes, no children, bytecode
+    b"\x07\x0a1234567890"  # long-int object
+    b"\x08\x041.23"  # float object
+    # bytecode
+    b"\x81\x28"  # 21 bytes, no children, bytecode
     b"\x00\x02"  # prelude
-    b"\x00"  # simple name (test.py)
+    b"\x01"  # simple name (<module>)
     b"\x23\x00"  # LOAD_CONST_OBJ(0)
-    b"\x17\x01"  # STORE_GLOBAL(str_obj)
+    b"\x16\x02"  # STORE_NAME(str_obj)
     b"\x23\x01"  # LOAD_CONST_OBJ(1)
-    b"\x17\x02"  # STORE_GLOBAL(bytes_obj)
+    b"\x16\x03"  # STORE_NAME(bytes_obj)
+    b"\x23\x02"  # LOAD_CONST_OBJ(2)
+    b"\x16\x04"  # STORE_NAME(int_obj)
+    b"\x23\x03"  # LOAD_CONST_OBJ(3)
+    b"\x16\x05"  # STORE_NAME(float_obj)
     b"\x51"  # LOAD_CONST_NONE
     b"\x63"  # RETURN_VALUE
 )
@@ -216,6 +229,8 @@ class TestMounted(TestBase):
         self.assertEqual(test.__file__, "/test_rom/dir/test.mpy")
         self.assertEqual(test.str_obj, "this is a str object")
         self.assertEqual(test.bytes_obj, b"this is a bytes object")
+        self.assertEqual(test.int_obj, 1234567890)
+        self.assertEqual(test.float_obj, 1.23)
         self.assertIn(uctypes.addressof(test.str_obj), self.romfs_addr_range)
         self.assertIn(uctypes.addressof(test.bytes_obj), self.romfs_addr_range)
 
