@@ -602,7 +602,7 @@ static mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
                 if (agg_type == PTR) {
                     byte *p = *(void **)self->addr;
-                    return mp_obj_new_int((mp_int_t)(uintptr_t)p);
+                    return mp_obj_new_int_from_uint((mp_int_t)(uintptr_t)p);
                 }
             }
             MP_FALLTHROUGH
