@@ -69,6 +69,11 @@
 #define MICROPY_VFS                        (CORE_FEAT)
 #endif
 
+// VfsROM filesystem
+#ifndef MICROPY_VFS_ROM
+#define MICROPY_VFS_ROM                    (CORE_FEAT)
+#endif
+
 // micro:bit filesystem
 #ifndef MICROPY_MBFS
 #define MICROPY_MBFS                       (!MICROPY_VFS)
