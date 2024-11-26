@@ -2,10 +2,7 @@
 
 // Board and hardware specific configuration
 #define MICROPY_HW_BOARD_NAME               "W5100S-EVB-Pico2"
-#ifndef PICO_FLASH_SIZE_BYTES
-#define PICO_FLASH_SIZE_BYTES               (16 * 1024 * 1024)
-#endif
-#define MICROPY_HW_FLASH_STORAGE_BYTES      (PICO_FLASH_SIZE_BYTES - 1024 * 1024)
+#define MICROPY_HW_FLASH_STORAGE_BYTES      (1408 * 1024)
 
 // Enable networking.
 #define MICROPY_PY_NETWORK                  (1)
