@@ -1,4 +1,7 @@
-#include "py/obj.h"
+//#include "py/obj.h"
+#include "py/mperrno.h"
+#include "py/mphal.h"
+#include "py/runtime.h"
 #include "stm32f4xx.h"
 
 // 自定义的 gpio_toggle 函数：翻转 GPIOA 的某个引脚
