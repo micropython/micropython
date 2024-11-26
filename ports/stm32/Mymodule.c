@@ -24,7 +24,7 @@ static mp_obj_t gpio_write(mp_obj_t pin_obj, mp_obj_t value_obj) {
 
 // 使用宏定义函数对象
 static MP_DEFINE_CONST_FUN_OBJ_1(gpio_toggle_obj, gpio_toggle);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(gpio_write_obj, gpio_write);
+static MP_DEFINE_CONST_FUN_OBJ_2(gpio_write_obj, gpio_write);
 
 // 定义模块全局方法表，包含我们新增的 gpio_write 函数
 static const mp_rom_map_elem_t mymodule_globals_table[] = {
