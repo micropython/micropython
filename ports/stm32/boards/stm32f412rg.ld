@@ -5,9 +5,9 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K /* entire flash */
-    FLASH_START (rx): ORIGIN = 0x08000000, LENGTH = 16K /* sector 0 */
-    FLASH_FS (rx)   : ORIGIN = 0x08004000, LENGTH = 576K /* sectors 1,2,3,4: 16k+16k+16k+16k(of 64k)=64k */
+    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K /* 起始地址,总容量 */
+    FLASH_START (rx): ORIGIN = 0x08000000, LENGTH = 16K /* 扇区0起始地址,容量,扇区0用于引导 */
+    FLASH_FS (rx)   : ORIGIN = 0x08004000, LENGTH = 576K /*系统 */
     FLASH_TEXT (rx) : ORIGIN = 0x08094000, LENGTH = 384K /* sectors 5,6,7,8,9,10,11 are 128K */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 240K
     FS_CACHE (xrw)  : ORIGIN = 0x2003c000, LENGTH = 16K
