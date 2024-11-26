@@ -6,24 +6,21 @@
 static mp_obj_t gpioa_write(mp_obj_t pin_obj, mp_obj_t value_obj) {
     uint32_t pin = mp_obj_get_int(pin_obj);      // 获取引脚号
     uint32_t value = mp_obj_get_int(value_obj);  // 获取值（0 或 1）
-    if (value) GPIOA->BSRR = (1 << pin);  // 设置引脚为高电平
-    else GPIOA->BSRR = (1 << pin+16);  // 设置引脚为低电平
+    GPIOA->BSRR = (value ? (1 << pin) : (1 << (pin + 16)));
     return mp_const_none;  // 返回 None，表示函数执行完毕
 }
 
 static mp_obj_t gpiob_write(mp_obj_t pin_obj, mp_obj_t value_obj) {
     uint32_t pin = mp_obj_get_int(pin_obj);      // 获取引脚号
     uint32_t value = mp_obj_get_int(value_obj);  // 获取值（0 或 1）
-    if (value) GPIOB->BSRR = (1 << pin);  // 设置引脚为高电平
-    else GPIOB->BSRR = (1 << pin+16);  // 设置引脚为低电平
+    GPIOB->BSRR = (value ? (1 << pin) : (1 << (pin + 16)));
     return mp_const_none;  // 返回 None，表示函数执行完毕
 }
 
 static mp_obj_t gpioc_write(mp_obj_t pin_obj, mp_obj_t value_obj) {
     uint32_t pin = mp_obj_get_int(pin_obj);      // 获取引脚号
     uint32_t value = mp_obj_get_int(value_obj);  // 获取值（0 或 1）
-    if (value) GPIOC->BSRR = (1 << pin);  // 设置引脚为高电平
-    else GPIOC->BSRR = (1 << pin+16);  // 设置引脚为低电平
+    GPIOC->BSRR = (value ? (1 << pin) : (1 << (pin + 16)));
     return mp_const_none;  // 返回 None，表示函数执行完毕
 }
 
