@@ -1,12 +1,12 @@
 #define MICROPY_HW_BOARD_NAME       "micropython-bohr" //my custom PCB
-#define MICROPY_HW_MCU_NAME         "STM32F412RG-2"
+#define MICROPY_HW_MCU_NAME         "STM32F412RGT6"
 #define MICROPY_HW_FLASH_FS_LABEL   "STM32F412RG-3"
 
 // 1 = use internal flash (1024 KByte)
 // 0 = use external SPI flash
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0) //1=internal flash(1024 KByte),0=external SPI flash
 #define MICROPY_HW_SPIFLASH_SIZE_BITS (32 * 1024 * 1024) // W25Q32 - 32 Mbit (4 MByte)
-#define MICROPY_HW_FLASH_STORAGE_BYTES (512 * 1024) //512K Udisk
+#define MICROPY_HW_FLASH_STORAGE_BYTES (32 * 1024 * 1024) //512K Udisk
 
 #define MICROPY_HW_HAS_LED          (0)
 #define MICROPY_HW_HAS_SWITCH       (0)
