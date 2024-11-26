@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "Dual-core",
+        "External Flash",
+        "RGB LED",
+        "USB"
+    ],
+    "images": [
+        "1-102010550-xiao-rp2350.jpg"
+    ],
+    "mcu": "rp2350",
+    "product": "XIAO RP2350",
+    "thumbnail": "",
+    "url": "https://www.seeedstudio.com/Seeed-XIAO-RP2350-p-5944.html",
+    "variants": {
+        "RISCV": "RISC-V CPU mode"
+    },
+    "vendor": "Seeed Studio"
+}
