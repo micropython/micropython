@@ -11,6 +11,7 @@
 #define MICROPY_HW_FLASH_STORAGE_BASE (0x08080000)  // 文件系统起始地址
 #define MICROPY_HW_FLASH_STORAGE_BYTES (512 * 1024) // 文件系统容量 512KB
 
+#define MICROPY_PY_MYMODULE         (1)
 #define MICROPY_HW_HAS_LED          (0)
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (1)
