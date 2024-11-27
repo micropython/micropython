@@ -41,6 +41,6 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, size_t index, mp_i
 mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte *p_base, byte **ptr);
 void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p_base, byte **ptr);
 long long mp_binary_get_int(size_t size, bool is_signed, bool big_endian, const byte *src);
-void mp_binary_set_int(size_t val_sz, bool big_endian, byte *dest, mp_uint_t val);
+void mp_binary_set_int(size_t dest_sz, byte *dest, size_t val_sz, mp_uint_t val, bool big_endian);
 
 #endif // MICROPY_INCLUDED_PY_BINARY_H
