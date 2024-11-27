@@ -38,16 +38,16 @@
 #endif
 #endif
 
-#define MICROPY_EMIT_X64            (1)
-#define MICROPY_EMIT_X86            (1)
+#define MICROPY_EMIT_X64            (0)
+#define MICROPY_EMIT_X86            (0)
 #define MICROPY_EMIT_THUMB          (1)
 #define MICROPY_EMIT_INLINE_THUMB   (1)
-#define MICROPY_EMIT_ARM            (1)
-#define MICROPY_EMIT_XTENSA         (1)
-#define MICROPY_EMIT_INLINE_XTENSA  (1)
-#define MICROPY_EMIT_XTENSAWIN      (1)
-#define MICROPY_EMIT_RV32           (1)
-#define MICROPY_EMIT_NATIVE_DEBUG   (1)
+#define MICROPY_EMIT_ARM            (0)
+#define MICROPY_EMIT_XTENSA         (0)
+#define MICROPY_EMIT_INLINE_XTENSA  (0)
+#define MICROPY_EMIT_XTENSAWIN      (0)
+#define MICROPY_EMIT_RV32           (0)
+#define MICROPY_EMIT_NATIVE_DEBUG   (0)
 #define MICROPY_EMIT_NATIVE_DEBUG_PRINTER (&mp_stdout_print)
 
 #define MICROPY_DYNAMIC_COMPILER    (1)
