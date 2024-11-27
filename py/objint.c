@@ -502,8 +502,8 @@ static MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_
 static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_length, ARG_byteorder, ARG_signed };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_length,    MP_ARG_REQUIRED | MP_ARG_INT, {} },
-        { MP_QSTR_byteorder, MP_ARG_REQUIRED | MP_ARG_OBJ, {} },
+        { MP_QSTR_length,    MP_ARG_INT, { .u_int = 1 } },
+        { MP_QSTR_byteorder, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_QSTR(MP_QSTR_big) } },
         { MP_QSTR_signed,    MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -542,7 +542,7 @@ static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-static MP_DEFINE_CONST_FUN_OBJ_KW(int_to_bytes_obj, 3, int_to_bytes);
+static MP_DEFINE_CONST_FUN_OBJ_KW(int_to_bytes_obj, 1, int_to_bytes);
 
 static const mp_rom_map_elem_t int_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_from_bytes), MP_ROM_PTR(&int_from_bytes_obj) },
