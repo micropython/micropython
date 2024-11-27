@@ -3,9 +3,9 @@
 #include "stm32f4xx.h"
 
 // 定义 GPIO 端口常量，暴露给 Python 使用
-static const mp_obj_t GPIOA_obj = (mp_obj_t)GPIOA;
-static const mp_obj_t GPIOB_obj = (mp_obj_t)GPIOB;
-static const mp_obj_t GPIOC_obj = (mp_obj_t)GPIOC;
+static const mp_obj_t GPIOA_obj = (mp_obj_t)&GPIOA;
+static const mp_obj_t GPIOB_obj = (mp_obj_t)&GPIOB;
+static const mp_obj_t GPIOC_obj = (mp_obj_t)&GPIOC;
 
 // 自定义的通用 gpio_write 函数：设置指定 GPIO 引脚为 HIGH 或 LOW
 static mp_obj_t gpio_write(mp_obj_t gpio_obj, mp_obj_t pin_obj, mp_obj_t value_obj) {
