@@ -374,7 +374,21 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte *p_base, byte *
     }
 }
 
-void mp_binary_set_int(size_t val_sz, bool big_endian, byte *dest, mp_uint_t val) {
+void mp_binary_set_int(size_t dest_sz, byte *dest, size_t val_sz, mp_uint_t val, bool big_endian) {
+    if (dest_sz > val_sz) {
+        // zero/sign extension if needed
+        int c = ((mp_int_t)val < 0) ? 0xff : 0x00;
+        memset(dest, c, dest_sz);
+
+        // big endian: write val_sz bytes at end of 'dest'
+        if (big_endian) {
+            dest += dest_sz - val_sz;
+        }
+    } else if (dest_sz < val_sz) {
+        // truncate 'val' into 'dest'
+        val_sz = dest_sz;
+    }
+
     if (MP_ENDIANNESS_LITTLE && !big_endian) {
         memcpy(dest, &val, val_sz);
     } else if (MP_ENDIANNESS_BIG && big_endian) {
@@ -438,48 +452,21 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
                 val = fp_dp.i64;
             } else {
                 int be = struct_type == '>';
-                mp_binary_set_int(sizeof(uint32_t), be, p, fp_dp.i32[MP_ENDIANNESS_BIG ^ be]);
+                mp_binary_set_int(sizeof(uint32_t), p, sizeof(uint32_t), fp_dp.i32[MP_ENDIANNESS_BIG ^ be], be);
+                // Now fall through and copy the second word, below
                 p += sizeof(uint32_t);
+                size = sizeof(uint32_t);
                 val = fp_dp.i32[MP_ENDIANNESS_LITTLE ^ be];
             }
             break;
         }
         #endif
-        default: {
-            #if OVERFLOW_CHECKS
-            bool signed_type = is_signed(val_type);
-            #endif
-            #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-            if (mp_obj_is_exact_type(val_in, &mp_type_int)) {
-                // It's a longint.
-                #if OVERFLOW_CHECKS
-                mp_obj_int_buffer_overflow_check(val_in, size, signed_type);
-                #endif
-                mp_obj_int_to_bytes_impl(val_in, struct_type == '>', size, p);
-                return;
-            }
-            #endif
-            {
-                val = mp_obj_get_int(val_in);
-
-                #if OVERFLOW_CHECKS
-                // Small int checking is separate, to be fast.
-                mp_small_int_buffer_overflow_check(val, size, signed_type);
-                #endif
-                // zero/sign extend if needed
-                if (MP_BYTES_PER_OBJ_WORD < 8 && size > sizeof(val)) {
-                    int c = (mp_int_t)val < 0 ? 0xff : 0x00;
-                    memset(p, c, size);
-                    if (struct_type == '>') {
-                        p += size - sizeof(val);
-                    }
-                }
-            }
-            break;
-        }
+        default:
+            mp_obj_int_to_bytes(val_in, size, p, struct_type == '>', is_signed(val_type), OVERFLOW_CHECKS);
+            return;
     }
 
-    mp_binary_set_int(MIN((size_t)size, sizeof(val)), struct_type == '>', p, val);
+    mp_binary_set_int(size, p, sizeof(val), val, struct_type == '>');
 }
 
 void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_in) {
@@ -498,29 +485,9 @@ void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_
             break;
         default: {
             size_t size = mp_binary_get_size('@', typecode, NULL);
-            #if OVERFLOW_CHECKS
-            bool signed_type = is_signed(typecode);
-            #endif
-            #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-            if (mp_obj_is_exact_type(val_in, &mp_type_int)) {
-                // It's a long int.
-                #if OVERFLOW_CHECKS
-                mp_obj_int_buffer_overflow_check(val_in, size, signed_type);
-                #endif
-                mp_obj_int_to_bytes_impl(val_in, MP_ENDIANNESS_BIG,
-                    size, (uint8_t *)p + index * size);
-                return;
-            }
-            #endif
-            mp_int_t val = mp_obj_get_int(val_in);
-            if (val < 0 && typecode == BYTEARRAY_TYPECODE) {
-                val = val & 0xFF;
-            }
-            #if OVERFLOW_CHECKS
-            // Small int checking is separate, to be fast.
-            mp_small_int_buffer_overflow_check(val, size, signed_type);
-            #endif
-            mp_binary_set_val_array_from_int(typecode, p, index, val);
+            p = (uint8_t *)p + index * size;
+            mp_obj_int_to_bytes(val_in, size, p, MP_ENDIANNESS_BIG, is_signed(typecode), OVERFLOW_CHECKS);
+            return;
         }
     }
 }

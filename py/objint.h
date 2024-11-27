@@ -54,15 +54,11 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
 char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
     int base, const char *prefix, char base_char, char comma);
 
-#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_signed);
-#endif
-void mp_small_int_buffer_overflow_check(mp_int_t val, size_t nbytes, bool is_signed);
-
 mp_int_t mp_obj_int_hash(mp_obj_t self_in);
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf);
-// Returns true if 'self_in' fit into 'len' bytes of 'buf' without overflowing, 'buf' is truncated otherwise.
-bool mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf);
+// Write an integer to a byte sequence.
+// If overflow_check is true, raises OverflowError if 'self_in' doesn't fit. If false, truncate to fit.
+void mp_obj_int_to_bytes(mp_obj_t self_in, size_t buf_len, byte *buf, bool big_endian, bool is_signed, bool overflow_check);
 int mp_obj_int_sign(mp_obj_t self_in);
 mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in);
 mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
