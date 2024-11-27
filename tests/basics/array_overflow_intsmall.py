@@ -1,3 +1,9 @@
+# This test currently requires an .exp file but in MP 2 it shouldn't.
+#
+# This is because MicroPython 1.x truncates integers written into arrays
+# (see also cpydiff/module_array_constructor), but MicroPython 2 will change to
+# match CPython.
+
 try:
     from array import array
 except ImportError:
@@ -16,13 +22,12 @@ def test_bytearray_overflow(val):
     try:
         print(bytearray([val]))
     except (OverflowError, ValueError):
-        # CircuitPython always does OverflowError
         print("(OverflowError, ValueError)")
 
 
 # small int -1
 test_array_overflow("Q", -1)
-test_array_overflow("L", -1)
+# test_array_overflow("L", -1)   # 32-bit vs 64-bit results differ
 test_array_overflow("I", -1)
 test_array_overflow("H", -1)
 test_array_overflow("B", -1)
