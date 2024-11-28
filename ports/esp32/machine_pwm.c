@@ -298,8 +298,7 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
         if (esp_clk_tree_src_get_freq_hz(led_src_clock, ESP_CLK_TREE_SRC_FREQ_PRECISION_APPROX, &src_clock_freq) != ESP_OK) {
             mp_raise_ValueError(MP_ERROR_TEXT("Error on getting reference clock frequency (FREQ_PRECISION_APPROX)."));
         }
-
-        uint32_t res = ledc_find_suitable_duty_resolution(src_clock_freq, freq);
+                
         #else
 
         if (led_src_clock == LEDC_USE_APB_CLK) {
@@ -310,11 +309,9 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
             src_clock_freq = REF_CLK_FREQ;
         }
 
-        uint32_t res = ledc_find_suitable_duty_resolution(src_clock_freq, freq);
-
         #endif
 
-        timer->duty_resolution = res;
+        timer->duty_resolution = ledc_find_suitable_duty_resolution(src_clock_freq, freq);
         timer->freq_hz = freq;
         timer->clk_cfg = led_src_clock;
         timer->deconfigure = false;
