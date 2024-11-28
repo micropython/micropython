@@ -325,7 +325,7 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
 
             if (err == ESP_FAIL) {
                 mp_raise_msg_varg(&mp_type_ValueError,
-                    MP_ERROR_TEXT("ledc_timer_config::unreachable frequency %d :: precision=%d"), freq, res);
+                    MP_ERROR_TEXT("ledc_timer_config::unreachable frequency %d :: precision=%d"), freq, timer->duty_resolution);
             } else {
                 check_esp_err(err);
             }
