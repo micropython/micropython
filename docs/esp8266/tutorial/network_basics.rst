@@ -1,14 +1,15 @@
 Network basics
 ==============
 
-The network module is used to configure the WiFi connection.  There are two WiFi
-interfaces, one for the station (when the ESP8266 connects to a router) and one
-for the access point (for other devices to connect to the ESP8266).  Create
+The :class:`network.WLAN` class in the :mod:`network` module is used to
+configure the WiFi connection.  There are two WiFi interfaces, one for
+the station (when the ESP8266 connects to a router) and one for the
+access point (for other devices to connect to the ESP8266).  Create
 instances of these objects using::
 
     >>> import network
-    >>> sta_if = network.WLAN(network.STA_IF)
-    >>> ap_if = network.WLAN(network.AP_IF)
+    >>> sta_if = network.WLAN(network.WLAN.IF_STA)
+    >>> ap_if = network.WLAN(network.WLAN.IF_AP)
 
 You can check if the interfaces are active by::
 
@@ -57,7 +58,7 @@ connect to your WiFi network::
 
     def do_connect():
         import network
-        sta_if = network.WLAN(network.STA_IF)
+        sta_if = network.WLAN(network.WLAN.IF_STA)
         if not sta_if.isconnected():
             print('connecting to network...')
             sta_if.active(True)

@@ -38,6 +38,16 @@ print("World")
 print("Hello")
 print("World")
 -----
+cp ${TMP}/a.py :aaa
+print("Hello")
+print("World")
+-----
+cp ${TMP}/a.py :aaa/
+Up to date: aaa/a.py
+cp ${TMP}/a.py :aaa/a.py/
+mpremote: cp: destination is not a directory
+expect error
+-----
 rm :b.py
 rm :c.py
 ls :

@@ -24,7 +24,7 @@ typedef struct _pwm_signal_param_u16
     uint16_t deadtimeValue;    // The deadtime value; only used if channel pair is operating in complementary mode
 } pwm_signal_param_u16_t;
 
-#define PWM_FULL_SCALE  (65536UL)
+#define PWM_FULL_SCALE  (65535UL)
 
 void PWM_UpdatePwmDutycycle_u16(PWM_Type *base, pwm_submodule_t subModule,
     pwm_channels_t pwmSignal, uint32_t dutyCycle, uint16_t center);

@@ -477,7 +477,7 @@ An example ``config.py`` might look like:
     """,], # Print out nearby WiFi networks.
         "wl_ipconfig": [
     "exec",
-    "import network; sta_if = network.WLAN(network.STA_IF); print(sta_if.ipconfig('addr4'))",
+    "import network; sta_if = network.WLAN(network.WLAN.IF_STA); print(sta_if.ipconfig('addr4'))",
     """,], # Print ip address of station interface.
         "test": ["mount", ".", "exec", "import test"], # Mount current directory and run test.py.
         "demo": ["run", "path/to/demo.py"], # Execute demo.py on the device.
@@ -547,9 +547,9 @@ device at ``/dev/ttyACM1``, printing each result.
 
   mpremote resume exec "print_state_info()" soft-reset
 
-Connect to the device without triggering a soft reset and execute the
-``print_state_info()`` function (e.g. to find out information about the current
-program state), then trigger a soft reset.
+Connect to the device without triggering a :ref:`soft reset <soft_reset>` and
+execute the ``print_state_info()`` function (e.g. to find out information about
+the current program state), then trigger a soft reset.
 
 .. code-block:: bash
 

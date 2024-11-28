@@ -1,0 +1,44 @@
+--- Plain sockets to nowhere ---
+connect: EINPROGRESS
+poll:    []
+send er: EAGAIN
+connect: EINPROGRESS
+poll:    []
+write:   None
+connect: EINPROGRESS
+poll:    []
+recv er: EAGAIN
+connect: EINPROGRESS
+poll:    []
+read:    None
+--- SSL sockets to nowhere ---
+connect: EINPROGRESS
+wrap ok: True
+poll:    []
+write:   None
+connect: EINPROGRESS
+wrap ok: True
+poll:    []
+read:    None
+--- Plain sockets ---
+connect: EINPROGRESS
+poll:    []
+send er: EAGAIN
+connect: EINPROGRESS
+poll:    []
+write:   None
+connect: EINPROGRESS
+poll:    []
+recv er: EAGAIN
+connect: EINPROGRESS
+poll:    []
+read:    None
+--- SSL sockets ---
+connect: EINPROGRESS
+wrap ok: True
+poll:    [(<SSLSocket>, 4)]
+write:   4
+connect: EINPROGRESS
+wrap ok: True
+poll:    [(<SSLSocket>, 4)]
+read:    None
