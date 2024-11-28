@@ -298,7 +298,7 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
         if (esp_clk_tree_src_get_freq_hz(led_src_clock, ESP_CLK_TREE_SRC_FREQ_PRECISION_APPROX, &src_clock_freq) != ESP_OK) {
             mp_raise_ValueError(MP_ERROR_TEXT("Error on getting reference clock frequency (FREQ_PRECISION_APPROX)."));
         }
-                
+
         #else
 
         if (led_src_clock == LEDC_USE_APB_CLK) {
