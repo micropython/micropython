@@ -17,4 +17,4 @@ extern void board_startup(void);
 
 // This is used for alif.Flash() and USB MSC.
 #define MICROPY_HW_FLASH_STORAGE_BASE_ADDR      (0)
-#define MICROPY_HW_FLASH_STORAGE_BYTES          (24 * 1024 * 1024)
+#define MICROPY_HW_FLASH_STORAGE_BYTES          (16 * 1024 * 1024)
