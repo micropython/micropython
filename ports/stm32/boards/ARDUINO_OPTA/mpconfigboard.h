@@ -25,9 +25,11 @@ typedef unsigned int mp_uint_t;     // must be pointer size
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_TIMER     (1)
+#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET   (0)
 
 // Flash storage config
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE            (1)
+#define MICROPY_HW_SPIFLASH_SOFT_RESET              (1)
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE    (0)
 
 #define MICROPY_BOARD_STARTUP       OPTA_board_startup
