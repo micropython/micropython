@@ -151,8 +151,15 @@ uint32_t trng_random_u32(void);
 #endif
 
 #define MICROPY_HW_ENABLE_USBDEV            (1)
+// Enable USB-CDC serial port
+#ifndef MICROPY_HW_USB_CDC
 #define MICROPY_HW_USB_CDC                  (1)
 #define MICROPY_HW_USB_CDC_1200BPS_TOUCH    (1)
+#endif
+// Enable USB Mass Storage with FatFS filesystem.
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC                  (0)
+#endif
 
 // Hooks to add builtins
 
