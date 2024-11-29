@@ -63,6 +63,10 @@
 
 static char heap[MICROPY_HEAP_SIZE];
 
+#if defined(CONFIG_USB_DEVICE_STACK_NEXT)
+extern int mp_usbd_init(void);
+#endif // defined(CONFIG_USB_DEVICE_STACK_NEXT)
+
 void init_zephyr(void) {
     // We now rely on CONFIG_NET_APP_SETTINGS to set up bootstrap
     // network addresses.
@@ -141,6 +145,10 @@ soft_reset:
 
     #ifdef CONFIG_USB_DEVICE_STACK
     usb_enable(NULL);
+    #endif
+
+    #ifdef CONFIG_USB_DEVICE_STACK_NEXT
+    mp_usbd_init();
     #endif
 
     #if MICROPY_VFS
