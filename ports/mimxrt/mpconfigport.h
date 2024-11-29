@@ -188,6 +188,14 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID (0xf055)
+#endif
+
+#ifndef MICROPY_HW_USB_PID
+#define MICROPY_HW_USB_PID (0x9802)
+#endif
+
 #ifndef  MICROPY_EVENT_POLL_HOOK
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
