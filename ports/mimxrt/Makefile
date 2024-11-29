@@ -217,6 +217,7 @@ SRC_C += \
 	modmimxrt.c \
 	mphalport.c \
 	mpnetworkport.c \
+	msc_disk.c \
 	network_lan.c \
 	pendsv.c \
 	pin.c \
