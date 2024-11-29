@@ -1,1 +1,0 @@
-JSFLAGS += -s ASYNCIFY

@@ -1,1 +1,0 @@
-MICROPY_FLOAT_IMPL = double

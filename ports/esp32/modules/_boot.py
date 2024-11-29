@@ -1,13 +1,17 @@
 import gc
-import vfs
+import esp32
+import uos
 from flashbdev import bdev
 
 try:
     if bdev:
-        vfs.mount(bdev, "/")
+        uos.mount(bdev, "/")
 except OSError:
     import inisetup
 
-    inisetup.setup()
+    vfs = inisetup.setup()
 
 gc.collect()
+
+
+import at_firmware_minified

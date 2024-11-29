@@ -1,67 +1,17 @@
-[![Unix CI badge](https://github.com/micropython/micropython/actions/workflows/ports_unix.yml/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![STM32 CI badge](https://github.com/micropython/micropython/actions/workflows/ports_stm32.yml/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![Docs CI badge](https://github.com/micropython/micropython/actions/workflows/docs.yml/badge.svg)](https://docs.micropython.org/) [![codecov](https://codecov.io/gh/micropython/micropython/branch/master/graph/badge.svg?token=I92PfD05sD)](https://codecov.io/gh/micropython/micropython)
-
-The MicroPython project
+AMAS Firmware Based on MicroPython
 =======================
-<p align="center">
-  <img src="https://raw.githubusercontent.com/micropython/micropython/master/logo/upython-with-micro.jpg" alt="MicroPython Logo"/>
-</p>
+This firmware is based on MicroPython, and as such, this repo is a fork of the main Micropython repo to preserve code acknowledgements. The main differences are in the build process; this repo contains several required libraries as frozen modules of ESP32, and contains only the sdkconfig files of the specific supported development boards. Any code related to the Smart Habitat firmware (not the base MicroPython firmware) is licensed under AGPL-v3.0, and is only used during the build process of the bin file (keeping the underlying MicroPython firmware under its own license).
 
-This is the MicroPython project, which aims to put an implementation
-of Python 3.x on microcontrollers and small embedded systems.
-You can find the official website at [micropython.org](http://www.micropython.org).
+Flashing the firmware
+---------------------
 
-WARNING: this project is in beta stage and is subject to changes of the
-code-base, including project-wide name changes and API changes.
-
-MicroPython implements the entire Python 3.4 syntax (including exceptions,
-`with`, `yield from`, etc., and additionally `async`/`await` keywords from
-Python 3.5 and some select features from later versions). The following core
-datatypes are provided: `str`(including basic Unicode support), `bytes`,
-`bytearray`, `tuple`, `list`, `dict`, `set`, `frozenset`, `array.array`,
-`collections.namedtuple`, classes and instances. Builtin modules include
-`os`, `sys`, `time`, `re`, and `struct`, etc. Some ports have support for
-`_thread` module (multithreading), `socket` and `ssl` for networking, and
-`asyncio`. Note that only a subset of Python 3 functionality is implemented
-for the data types and modules.
-
-MicroPython can execute scripts in textual source form (.py files) or from
-precompiled bytecode (.mpy files), in both cases either from an on-device
-filesystem or "frozen" into the MicroPython executable.
-
-MicroPython also provides a set of MicroPython-specific modules to access
-hardware-specific functionality and peripherals such as GPIO, Timers, ADC,
-DAC, PWM, SPI, I2C, CAN, Bluetooth, and USB.
-
-Getting started
----------------
-
-See the [online documentation](https://docs.micropython.org/) for the API
-reference and information about using MicroPython and information about how
-it is implemented.
-
-We use [GitHub Discussions](https://github.com/micropython/micropython/discussions)
-as our forum, and [Discord](https://discord.gg/RB8HZSAExQ) for chat. These
-are great places to ask questions and advice from the community or to discuss your
-MicroPython-based projects.
-
-For bugs and feature requests, please [raise an issue](https://github.com/micropython/micropython/issues/new/choose)
-and follow the templates there.
-
-For information about the [MicroPython pyboard](https://store.micropython.org/pyb-features),
-the officially supported board from the
-[original Kickstarter campaign](https://www.kickstarter.com/projects/214379695/micro-python-python-for-microcontrollers),
-see the [schematics and pinouts](http://github.com/micropython/pyboard) and
-[documentation](https://docs.micropython.org/en/latest/pyboard/quickref.html).
-
-Contributing
-------------
-
-MicroPython is an open-source project and welcomes contributions. To be
-productive, please be sure to follow the
-[Contributors' Guidelines](https://github.com/micropython/micropython/wiki/ContributorGuidelines)
-and the [Code Conventions](https://github.com/micropython/micropython/blob/master/CODECONVENTIONS.md).
-Note that MicroPython is licenced under the MIT license, and all contributions
-should follow this license.
+You can download `.bin` file from `release` folder of the required platform and flash it to any ESP32 to start.
+- For Windows systems, use the [Espressif Flash Download Tool](https://www.espressif.com/en/support/download/other-tools)
+- For Linux/Mac use [Espressif esptool](https://github.com/espressif/esptool) -- [Documentation](https://docs.espressif.com/projects/esptool/en/latest/esp32s3/esptool/flashing-firmware.html)
+- Download Thonny Python IDE (for Windows), or use any IDE capable of serial communication for Linux/Mac
+- Upload 2 files to the ESP32 control unit 
+  - `token` containing the token to be used for local API
+  - `platform` containing the board name (only `ESP32_GENERIC_S3 (N2R8)` is supported for now)
 
 About this repository
 ---------------------
@@ -71,56 +21,71 @@ This repository contains the following components:
   core library.
 - [mpy-cross/](mpy-cross/) -- the MicroPython cross-compiler which is used to turn scripts
   into precompiled bytecode.
-- [ports/](ports/) -- platform-specific code for the various ports and architectures that MicroPython runs on.
+- [ports/](ports/) -- ESP32-specific code.
 - [lib/](lib/) -- submodules for external dependencies.
 - [tests/](tests/) -- test framework and test scripts.
-- [docs/](docs/) -- user documentation in Sphinx reStructuredText format. This is used to generate the [online documentation](http://docs.micropython.org).
 - [extmod/](extmod/) -- additional (non-core) modules implemented in C.
 - [tools/](tools/) -- various tools, including the pyboard.py module.
-- [examples/](examples/) -- a few example Python scripts.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
-You will also need bash, gcc, and Python 3.3+ available as the command `python3`
+You will also need bash, gcc, and Python 3.11/3.10 available as the command `python`, or `python3` 
 (if your system only has Python 2.7 then invoke make with the additional option
 `PYTHON=python2`). Some ports (rp2 and esp32) additionally use CMake.
 
-Supported platforms & architectures
+Setting up ESP-IDF and the build environment
 -----------------------------------
 
-MicroPython runs on a wide range of microcontrollers, as well as on Unix-like
-(including Linux, BSD, macOS, WSL) and Windows systems.
+MicroPython on ESP32 requires the Espressif IDF version 5 (IoT development
+framework, aka SDK).  The ESP-IDF includes the libraries and RTOS needed to
+manage the ESP32 microcontroller, as well as a way to manage the required
+build environment and toolchains needed to build the firmware.
 
-Microcontroller targets can be as small as 256kiB flash + 16kiB RAM, although
-devices with at least 512kiB flash + 128kiB RAM allow a much more
-full-featured experience.
+The ESP-IDF changes quickly and MicroPython only supports certain versions.
+Currently MicroPython supports v5.2.2 only
+although other IDF v5 versions may also work.
 
-The [Unix](ports/unix) and [Windows](ports/windows) ports allow both
-development and testing of MicroPython itself, as well as providing
-lightweight alternative to CPython on these platforms (in particular on
-embedded Linux systems).
+To install the ESP-IDF the full instructions can be found at the
+[Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation-step-by-step).
 
-The ["minimal"](ports/minimal) port provides an example of a very basic
-MicroPython port and can be compiled as both a standalone Linux binary as
-well as for ARM Cortex M4. Start with this if you want to port MicroPython to
-another microcontroller. Additionally the ["bare-arm"](ports/bare-arm) port
-is an example of the absolute minimum configuration, and is used to keep
-track of the code size of the core runtime and VM.
+If you are on a Windows machine then the [Windows Subsystem for
+Linux](https://msdn.microsoft.com/en-au/commandline/wsl/install_guide) is the
+most efficient way to install the ESP32 toolchain and build the project. If
+you use WSL then follow the Linux instructions rather than the Windows
+instructions.
 
-In addition, the following ports are provided in this repository:
- - [cc3200](ports/cc3200) -- Texas Instruments CC3200 (including PyCom WiPy).
- - [esp32](ports/esp32) -- Espressif ESP32 SoC (including ESP32S2, ESP32S3, ESP32C3, ESP32C6).
- - [esp8266](ports/esp8266) -- Espressif ESP8266 SoC.
- - [mimxrt](ports/mimxrt) -- NXP m.iMX RT (including Teensy 4.x).
- - [nrf](ports/nrf) -- Nordic Semiconductor nRF51 and nRF52.
- - [pic16bit](ports/pic16bit) -- Microchip PIC 16-bit.
- - [powerpc](ports/powerpc) -- IBM PowerPC (including Microwatt)
- - [qemu](ports/qemu) -- QEMU-based emulated target (for testing)
- - [renesas-ra](ports/renesas-ra) -- Renesas RA family.
- - [rp2](ports/rp2) -- Raspberry Pi RP2040 (including Pico and Pico W).
- - [samd](ports/samd) -- Microchip (formerly Atmel) SAMD21 and SAMD51.
- - [stm32](ports/stm32) -- STMicroelectronics STM32 family (including F0, F4, F7, G0, G4, H7, L0, L4, WB)
- - [webassembly](ports/webassembly) -- Emscripten port targeting browsers and NodeJS.
- - [zephyr](ports/zephyr) -- Zephyr RTOS.
+The Espressif instructions will guide you through using the `install.sh`
+(or `install.bat`) script to download the toolchain and set up your environment.
+The steps to take are summarised below.
+
+To check out a copy of the IDF use git clone:
+
+```bash
+$ git clone -b v5.2.2 --recursive https://github.com/espressif/esp-idf.git
+```
+
+(You don't need a full recursive clone; see the `ci_esp32_setup` function in
+`tools/ci.sh` in this repository for more detailed set-up commands.)
+
+If you already have a copy of the IDF then checkout a version compatible with
+MicroPython and update the submodules using:
+
+```bash
+$ cd esp-idf
+$ git checkout v5.2.2
+$ git submodule update --init --recursive
+```
+
+After you've cloned and checked out the IDF to the correct version, run the
+`install.sh` script:
+
+```bash
+$ cd esp-idf
+$ ./install.sh       # (or install.bat on Windows)
+$ source export.sh   # (or export.bat on Windows)
+```
+
+The `install.sh` step only needs to be done once. You will need to source
+`export.sh` for every new session.
 
 The MicroPython cross-compiler, mpy-cross
 -----------------------------------------
@@ -133,15 +98,51 @@ firmware/executable for a port.  To build mpy-cross use:
     $ cd mpy-cross
     $ make
 
-External dependencies
+Building the firmware
 ---------------------
 
-The core MicroPython VM and runtime has no external dependencies, but a given
-port might depend on third-party drivers or vendor HALs. This repository
-includes [several submodules](lib/) linking to these external dependencies.
-Before compiling a given port, use
+The MicroPython cross-compiler must be built to pre-compile some of the
+built-in scripts to bytecode.  This can be done by (from the root of
+this repository):
 
-    $ cd ports/name
-    $ make submodules
+```bash
+$ make -C mpy-cross
+```
 
-to ensure that all required submodules are initialised.
+Then to build MicroPython for the ESP32 run:
+
+```bash
+$ cd ports/esp32
+$ make BOARD=ESP32_GENERIC_S3 submodules
+$ make BOARD=ESP32_GENERIC_S3
+```
+
+This will produce a combined `firmware.bin` image in the `build-ESP32_GENERIC_S3/`
+subdirectory (this firmware image is made up of: bootloader.bin, partitions.bin
+and micropython.bin).
+
+To flash the firmware you must have your ESP32 module in the bootloader
+mode and connected to a serial port on your PC.  Refer to the documentation
+for your particular ESP32 module for how to do this.
+You will also need to have user permissions to access the `/dev/ttyUSB0` device.
+On Linux, you can enable this by adding your user to the `dialout` group, and
+rebooting or logging out and in again. (Note: on some distributions this may
+be the `uucp` group, run `ls -la /dev/ttyUSB0` to check.)
+
+```bash
+$ sudo adduser <username> dialout
+```
+
+If you are installing MicroPython to your module for the first time, or
+after installing any other firmware, you should first erase the flash
+completely:
+
+```bash
+$ make BOARD=ESP32_GENERIC_S3 PORT=/dev/ttyACM0 erase
+```
+
+To flash the MicroPython firmware to your ESP32 use:
+
+```bash
+$ make BOARD=ESP32_GENERIC_S3 PORT=/dev/ttyACM0 deploy
+```
