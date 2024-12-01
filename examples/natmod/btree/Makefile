@@ -7,7 +7,7 @@ MOD = btree_$(ARCH)
 # Source files (.c or .py)
 SRC = btree_c.c
 
-# Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
+# Architecture to build for (x86, x64, armv7m, xtensa, xtensawin, rv32imc)
 ARCH = x64
 
 BTREE_DIR = $(MPY_DIR)/lib/berkeley-db-1.xx
@@ -31,6 +31,8 @@ SRC += $(addprefix $(realpath $(BTREE_DIR))/,\
 	btree/bt_utils.c \
 	mpool/mpool.c \
 	)
+
+CLEAN_EXTRA = "$(MOD).mpy"
 
 include $(MPY_DIR)/py/dynruntime.mk
 
