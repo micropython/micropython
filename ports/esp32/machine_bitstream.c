@@ -147,9 +147,8 @@ static void machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timin
     rmt_encoder_reset(encoder);
     check_esp_err(rmt_transmit(channel, encoder, buf, len, &tx_config));
 
-    // Wait 50% longer than we expect (if every bit takes the maximum time).
-    uint32_t timeout_ms = (3 * len / 2) * (1 + (8 * MAX(timing_ns[0] + timing_ns[1], timing_ns[2] + timing_ns[3])) / 1000000);
-    check_esp_err(rmt_tx_wait_all_done(channel, timeout_ms));
+    // Wait until completion.
+    rmt_tx_wait_all_done(channel, -1);
 
     // Disable and release channel.
     check_esp_err(rmt_del_encoder(encoder));
