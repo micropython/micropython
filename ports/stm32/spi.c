@@ -545,6 +545,15 @@ void spi_deinit(const spi_t *spi_obj) {
     }
 }
 
+void spi_deinit_all(void) {
+    for (int i = 0; i < MP_ARRAY_SIZE(spi_obj); i++) {
+        const spi_t *spi = &spi_obj[i];
+        if (spi->spi != NULL) {
+            spi_deinit(spi);
+        }
+    }
+}
+
 static HAL_StatusTypeDef spi_wait_dma_finished(const spi_t *spi, uint32_t t_start, uint32_t timeout) {
     volatile HAL_SPI_StateTypeDef *state = &spi->spi->State;
     for (;;) {
