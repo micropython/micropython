@@ -678,6 +678,10 @@ soft_reset_exit:
     soft_timer_deinit();
     timer_deinit();
     uart_deinit_all();
+    spi_deinit_all();
+    #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
+    pyb_i2c_deinit_all();
+    #endif
     #if MICROPY_HW_ENABLE_CAN
     can_deinit_all();
     #endif
