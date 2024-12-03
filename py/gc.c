@@ -502,7 +502,9 @@ static void sweep_run_finalisers(void) {
                                 #if MICROPY_ENABLE_SCHEDULER
                                 mp_sched_lock();
                                 #endif
+                                MP_STATE_MEM(gc_sweep_finaliser) = true;
                                 mp_call_function_1_protected(dest[0], dest[1]);
+                                MP_STATE_MEM(gc_sweep_finaliser) = false;
                                 #if MICROPY_ENABLE_SCHEDULER
                                 mp_sched_unlock();
                                 #endif
@@ -903,10 +905,16 @@ found:
 // force the freeing of a piece of memory
 // TODO: freeing here does not call finaliser
 void gc_free(void *ptr) {
-    if (MP_STATE_THREAD(gc_lock_depth) > 0) {
-        // Cannot free while the GC is locked. However free is an optimisation
-        // to reclaim the memory immediately, this means it will now be left
-        // until the next collection.
+    // Cannot free while the GC is locked. However free is an optimisation
+    // to reclaim the memory immediately, this means it will now be left
+    // until the next collection.
+    bool free_later = MP_STATE_THREAD(gc_lock_depth) > 0;
+    #if MICROPY_ENABLE_FINALISER
+    // Special case, free immediately if running finaliser from gc_sweep()
+    free_later = free_later && !MP_STATE_MEM(gc_sweep_finaliser);
+    #endif
+
+    if (free_later) {
         return;
     }
 
