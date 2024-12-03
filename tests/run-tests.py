@@ -1154,11 +1154,18 @@ the last matching regex is used:
     args = cmd_parser.parse_args()
 
     if args.print_failures:
-        for exp in glob(os.path.join(args.result_dir, "*.exp")):
-            testbase = exp[:-4]
+        for out in glob(os.path.join(args.result_dir, "*.out")):
+            testbase = out[:-4]
             print()
             print("FAILURE {0}".format(testbase))
-            os.system("{0} {1}.exp {1}.out".format(DIFF, testbase))
+            if os.path.exists(testbase + ".exp"):
+                # Show diff of expected and actual output.
+                os.system("{0} {1}.exp {1}.out".format(DIFF, testbase))
+            else:
+                # No expected output, just show the actual output (eg from a unittest).
+                with open(out) as f:
+                    for line in f:
+                        print(line, end="")
 
         sys.exit(0)
 
