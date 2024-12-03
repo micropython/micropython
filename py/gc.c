@@ -334,12 +334,12 @@ void gc_lock(void) {
     // - each thread has its own gc_lock_depth so there are no races between threads;
     // - a hard interrupt will only change gc_lock_depth during its execution, and
     //   upon return will restore the value of gc_lock_depth.
-    MP_STATE_THREAD(gc_lock_depth)++;
+    MP_STATE_THREAD(gc_lock_depth) += (1 << GC_LOCK_DEPTH_SHIFT);
 }
 
 void gc_unlock(void) {
     // This does not need to be atomic, See comment above in gc_lock.
-    MP_STATE_THREAD(gc_lock_depth)--;
+    MP_STATE_THREAD(gc_lock_depth) -= (1 << GC_LOCK_DEPTH_SHIFT);
 }
 
 bool gc_is_locked(void) {
@@ -581,13 +581,18 @@ static void gc_sweep(void) {
     }
 }
 
-void gc_collect_start(void) {
+static void gc_collect_start_common(void) {
     GC_ENTER();
-    MP_STATE_THREAD(gc_lock_depth)++;
+    assert((MP_STATE_THREAD(gc_lock_depth) & GC_COLLECT_FLAG) == 0);
+    MP_STATE_THREAD(gc_lock_depth) |= GC_COLLECT_FLAG;
+    MP_STATE_MEM(gc_stack_overflow) = 0;
+}
+
+void gc_collect_start(void) {
+    gc_collect_start_common();
     #if MICROPY_GC_ALLOC_THRESHOLD
     MP_STATE_MEM(gc_alloc_amount) = 0;
     #endif
-    MP_STATE_MEM(gc_stack_overflow) = 0;
 
     // Trace root pointers.  This relies on the root pointers being organised
     // correctly in the mp_state_ctx structure.  We scan nlr_top, dict_locals,
@@ -658,14 +663,12 @@ void gc_collect_end(void) {
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
         area->gc_last_free_atb_index = 0;
     }
-    MP_STATE_THREAD(gc_lock_depth)--;
+    MP_STATE_THREAD(gc_lock_depth) &= ~GC_COLLECT_FLAG;
     GC_EXIT();
 }
 
 void gc_sweep_all(void) {
-    GC_ENTER();
-    MP_STATE_THREAD(gc_lock_depth)++;
-    MP_STATE_MEM(gc_stack_overflow) = 0;
+    gc_collect_start_common();
     gc_collect_end();
 }
 
@@ -902,10 +905,13 @@ found:
 // force the freeing of a piece of memory
 // TODO: freeing here does not call finaliser
 void gc_free(void *ptr) {
-    if (MP_STATE_THREAD(gc_lock_depth) > 0) {
-        // Cannot free while the GC is locked. However free is an optimisation
-        // to reclaim the memory immediately, this means it will now be left
-        // until the next collection.
+    // Cannot free while the GC is locked, unless we're only doing a gc sweep.
+    // However free is an optimisation to reclaim the memory immediately, this
+    // means it will now be left until the next collection.
+    //
+    // (We have the optimisation to free immediately from inside a gc sweep so
+    // that finalisers can free more memory when trying to avoid MemoryError.)
+    if (MP_STATE_THREAD(gc_lock_depth) & ~GC_COLLECT_FLAG) {
         return;
     }
 
@@ -930,7 +936,8 @@ void gc_free(void *ptr) {
     #endif
 
     size_t block = BLOCK_FROM_PTR(area, ptr);
-    assert(ATB_GET_KIND(area, block) == AT_HEAD);
+    assert(ATB_GET_KIND(area, block) == AT_HEAD
+        || (ATB_GET_KIND(area, block) == AT_MARK && (MP_STATE_THREAD(gc_lock_depth) & GC_COLLECT_FLAG)));
 
     #if MICROPY_ENABLE_FINALISER
     FTB_CLEAR(area, block);
