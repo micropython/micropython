@@ -478,32 +478,42 @@ static void gc_deal_with_stack_overflow(void) {
 }
 
 // Run finalisers for all to-be-freed blocks first
-// (necessary for gc_sweep_all() to avoid accessing already-freed memory)
+// (necessary during gc_sweep_all() to avoid accessing already-freed memory)
 static void sweep_run_finalisers(void) {
     #if MICROPY_ENABLE_FINALISER
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
         assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
-        for (size_t block = 0; block <= area->gc_last_used_block; block++) {
-            MICROPY_GC_HOOK_LOOP(block);
-            if (ATB_GET_KIND(area, block) == AT_HEAD && FTB_GET(area, block)) {
-                mp_obj_base_t *obj = (mp_obj_base_t *)PTR_FROM_BLOCK(area, block);
-                if (obj->type != NULL) {
-                    // if the object has a type then see if it has a __del__ method
-                    mp_obj_t dest[2];
-                    mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
-                    if (dest[0] != MP_OBJ_NULL) {
-                        // load_method returned a method, execute it in a protected environment
-                        #if MICROPY_ENABLE_SCHEDULER
-                        mp_sched_lock();
-                        #endif
-                        mp_call_function_1_protected(dest[0], dest[1]);
-                        #if MICROPY_ENABLE_SCHEDULER
-                        mp_sched_unlock();
-                        #endif
+        // Small speed optimisation: skip over empty FTB blocks
+        size_t ftb_end = (area->gc_last_used_block + BLOCKS_PER_FTB) / BLOCKS_PER_FTB;
+        for (size_t ftb_idx = 0; ftb_idx < ftb_end; ftb_idx++) {
+            byte ftb = area->gc_finaliser_table_start[ftb_idx];
+            size_t block = ftb_idx * BLOCKS_PER_FTB;
+            while (ftb) {
+                MICROPY_GC_HOOK_LOOP(block);
+                if (ftb & 1) { // FTB_GET(area, block) shortcut
+                    if (ATB_GET_KIND(area, block) == AT_HEAD) {
+                        mp_obj_base_t *obj = (mp_obj_base_t *)PTR_FROM_BLOCK(area, block);
+                        if (obj->type != NULL) {
+                            // if the object has a type then see if it has a __del__ method
+                            mp_obj_t dest[2];
+                            mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
+                            if (dest[0] != MP_OBJ_NULL) {
+                                // load_method returned a method, execute it in a protected environment
+                                #if MICROPY_ENABLE_SCHEDULER
+                                mp_sched_lock();
+                                #endif
+                                mp_call_function_1_protected(dest[0], dest[1]);
+                                #if MICROPY_ENABLE_SCHEDULER
+                                mp_sched_unlock();
+                                #endif
+                            }
+                        }
+                        // clear finaliser flag
+                        FTB_CLEAR(area, block);
                     }
                 }
-                // clear finaliser flag
-                FTB_CLEAR(area, block);
+                ftb >>= 1;
+                block++;
             }
         }
     }
