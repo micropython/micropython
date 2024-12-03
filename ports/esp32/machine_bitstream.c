@@ -109,7 +109,7 @@ static void machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timin
         .trans_queue_depth = 1,
     };
     check_esp_err(rmt_new_tx_channel(&tx_chan_config, &channel));
-    check_esp_err(rmt_enable_core1(channel));
+    check_esp_err(rmt_enable(channel));
 
     // Get the tick rate in kHz (this will likely be 40000).
     uint32_t counter_clk_khz = APB_CLK_FREQ / clock_div;

@@ -68,44 +68,6 @@ typedef struct _esp32_rmt_obj_t {
     mp_uint_t idle_level;
 } esp32_rmt_obj_t;
 
-#if MP_TASK_COREID == 0
-
-typedef struct _rmt_enable_state_t {
-    SemaphoreHandle_t handle;
-    rmt_channel_handle_t channel;
-    esp_err_t ret;
-} rmt_enable_state_t;
-
-static void rmt_enable_task(void *pvParameter) {
-    rmt_enable_state_t *state = pvParameter;
-    state->ret = rmt_enable(state->channel);
-    xSemaphoreGive(state->handle);
-    vTaskDelete(NULL);
-}
-
-// Call rmt_enable on core 1.  This ensures that the RMT interrupt handler is
-// serviced on core 1, so that WiFi (if active) does not interrupt it and cause glitches.
-esp_err_t rmt_enable_core1(rmt_channel_handle_t channel) {
-    TaskHandle_t th;
-    rmt_enable_state_t state;
-    state.handle = xSemaphoreCreateBinary();
-    state.channel = channel;
-    xTaskCreatePinnedToCore(rmt_enable_task, "rmt_enable_task", 2048 / sizeof(StackType_t), &state, ESP_TASK_PRIO_MIN + 1, &th, 1);
-    xSemaphoreTake(state.handle, portMAX_DELAY);
-    vSemaphoreDelete(state.handle);
-    return state.ret;
-}
-
-#else
-
-// MicroPython runs on core 1, so we can call the RMT installer directly and its
-// interrupt handler will also run on core 1.
-esp_err_t rmt_enable_core1(rmt_channel_handle_t channel) {
-    return rmt_enable(channel);
-}
-
-#endif
-
 static bool IRAM_ATTR esp32_rmt_tx_trans_done(rmt_channel_handle_t channel, const rmt_tx_done_event_data_t *edata, void *user_ctx) {
     esp32_rmt_obj_t *self = user_ctx;
     self->tx_ongoing -= 1;
@@ -357,7 +319,7 @@ static mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *args) {
     if (self->enabled) {
         rmt_tx_wait_all_done(self->channel, -1);
     } else {
-        check_esp_err(rmt_enable_core1(self->channel));
+        check_esp_err(rmt_enable(self->channel));
         self->enabled = true;
     }
 
