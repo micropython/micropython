@@ -477,6 +477,39 @@ static void gc_deal_with_stack_overflow(void) {
     }
 }
 
+// Run finalisers for all to-be-freed blocks first
+// (necessary for gc_sweep_all() to avoid accessing already-freed memory)
+static void sweep_run_finalisers(void) {
+    #if MICROPY_ENABLE_FINALISER
+    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+        assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
+        for (size_t block = 0; block <= area->gc_last_used_block; block++) {
+            MICROPY_GC_HOOK_LOOP(block);
+            if (ATB_GET_KIND(area, block) == AT_HEAD && FTB_GET(area, block)) {
+                mp_obj_base_t *obj = (mp_obj_base_t *)PTR_FROM_BLOCK(area, block);
+                if (obj->type != NULL) {
+                    // if the object has a type then see if it has a __del__ method
+                    mp_obj_t dest[2];
+                    mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
+                    if (dest[0] != MP_OBJ_NULL) {
+                        // load_method returned a method, execute it in a protected environment
+                        #if MICROPY_ENABLE_SCHEDULER
+                        mp_sched_lock();
+                        #endif
+                        mp_call_function_1_protected(dest[0], dest[1]);
+                        #if MICROPY_ENABLE_SCHEDULER
+                        mp_sched_unlock();
+                        #endif
+                    }
+                }
+                // clear finaliser flag
+                FTB_CLEAR(area, block);
+            }
+        }
+    }
+    #endif // MICROPY_ENABLE_FINALISER
+}
+
 static void gc_sweep(void) {
     #if MICROPY_PY_GC_COLLECT_RETVAL
     MP_STATE_MEM(gc_collected) = 0;
@@ -486,40 +519,17 @@ static void gc_sweep(void) {
     #if MICROPY_GC_SPLIT_HEAP_AUTO
     mp_state_mem_area_t *prev_area = NULL;
     #endif
+
+    sweep_run_finalisers();
+
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
-        size_t end_block = area->gc_alloc_table_byte_len * BLOCKS_PER_ATB;
-        if (area->gc_last_used_block < end_block) {
-            end_block = area->gc_last_used_block + 1;
-        }
-
         size_t last_used_block = 0;
+        assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
 
-        for (size_t block = 0; block < end_block; block++) {
+        for (size_t block = 0; block <= area->gc_last_used_block; block++) {
             MICROPY_GC_HOOK_LOOP(block);
             switch (ATB_GET_KIND(area, block)) {
                 case AT_HEAD:
-                    #if MICROPY_ENABLE_FINALISER
-                    if (FTB_GET(area, block)) {
-                        mp_obj_base_t *obj = (mp_obj_base_t *)PTR_FROM_BLOCK(area, block);
-                        if (obj->type != NULL) {
-                            // if the object has a type then see if it has a __del__ method
-                            mp_obj_t dest[2];
-                            mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
-                            if (dest[0] != MP_OBJ_NULL) {
-                                // load_method returned a method, execute it in a protected environment
-                                #if MICROPY_ENABLE_SCHEDULER
-                                mp_sched_lock();
-                                #endif
-                                mp_call_function_1_protected(dest[0], dest[1]);
-                                #if MICROPY_ENABLE_SCHEDULER
-                                mp_sched_unlock();
-                                #endif
-                            }
-                        }
-                        // clear finaliser flag
-                        FTB_CLEAR(area, block);
-                    }
-                    #endif
                     free_tail = 1;
                     DEBUG_printf("gc_sweep(%p)\n", (void *)PTR_FROM_BLOCK(area, block));
                     #if MICROPY_PY_GC_COLLECT_RETVAL
