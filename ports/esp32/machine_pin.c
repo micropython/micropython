@@ -129,7 +129,29 @@ gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
 
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
-    mp_printf(print, "Pin(%u)", PIN_OBJ_PTR_INDEX(self));
+    gpio_num_t gpio_num = PIN_OBJ_PTR_INDEX(self);
+
+    bool pu, pd, ie, oe, od, slp_sel;
+    uint32_t drv, fun_sel, sig_out;
+    gpio_get_io_config(gpio_num, &pu, &pd, &ie, &oe, &od, &drv, &fun_sel, &sig_out, &slp_sel);
+
+    mp_printf(print, "Pin(%u", gpio_num);
+    if (oe) {
+        mp_printf(print, ", mode=Pin.OUT");
+    } else if (od) {
+        mp_printf(print, ", mode=Pin.OPEN_DRAIN");
+    } else if (ie) {
+        mp_printf(print, ", mode=Pin.IN");
+    }
+    if (pu) {
+        mp_printf(print, ", pull=Pin.PULL_UP");
+    } else if (pd) {
+        mp_printf(print, ", pull=Pin.PULL_DOWN");
+    }
+    if (drv != GPIO_DRIVE_CAP_2) {
+        mp_printf(print, ", drive=Pin.DRIVE_%u", drv);
+    }
+    mp_printf(print, ")");
 }
 
 // pin.init(mode=None, pull=-1, *, value, drive, hold)
