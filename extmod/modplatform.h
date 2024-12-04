@@ -48,7 +48,11 @@
 #elif defined(__xtensa__)
 #define MICROPY_PLATFORM_ARCH   "xtensa"
 #elif defined(__riscv)
+#if __riscv_xlen == 64
+#define MICROPY_PLATFORM_ARCH   "riscv64"
+#else
 #define MICROPY_PLATFORM_ARCH   "riscv"
+#endif
 #else
 #define MICROPY_PLATFORM_ARCH   ""
 #endif
