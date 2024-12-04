@@ -653,7 +653,7 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     huart.Init.HwFlowCtl = flow;
     huart.Init.OverSampling = UART_OVERSAMPLING_16;
 
-    #if defined(STM32G4)  // H7 and WB also have fifo..
+    #if defined(STM32G4) || defined(STM32H7) // WB also has a fifo..
     huart.FifoMode = UART_FIFOMODE_ENABLE;
     #endif
 
@@ -700,6 +700,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
         }
         uart_obj->char_width = CHAR_WIDTH_8BIT;
     }
+
+    #if defined(STM32H7)
+    HAL_UARTEx_SetTxFifoThreshold(&huart, UART_TXFIFO_THRESHOLD_1_8);
+    HAL_UARTEx_SetRxFifoThreshold(&huart, UART_RXFIFO_THRESHOLD_1_8);
+    HAL_UARTEx_EnableFifoMode(&huart);
+    #endif
 
     uart_obj->mp_irq_trigger = 0;
     uart_obj->mp_irq_obj = NULL;
@@ -1141,6 +1147,9 @@ size_t uart_tx_data(machine_uart_obj_t *self, const void *src_in, size_t num_cha
     // timeout_char by FIFO size + 1.
     // STM32G4 has 8 words FIFO.
     timeout = (8 + 1) * self->timeout_char;
+    #elif defined(STM32H7)
+    // STM32H7 has 16 words FIFO.
+    timeout = (16 + 1) * self->timeout_char;
     #else
     // The timeout specified here is for waiting for the TX data register to
     // become empty (ie between chars), as well as for the final char to be
