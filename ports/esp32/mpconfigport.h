@@ -215,6 +215,10 @@
 #else
 #define MICROPY_HW_USB_VID  (CONFIG_TINYUSB_DESC_CUSTOM_VID)
 #endif
+
+#ifndef MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+#define MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE    (1) // Support machine.USBDevice
+#endif
 #endif
 
 #ifndef MICROPY_HW_USB_PID
