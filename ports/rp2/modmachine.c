@@ -124,8 +124,10 @@ static void mp_machine_idle(void) {
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_int_t delay_ms = 0;
     bool use_timer_alarm = false;
+    uint32_t req_sleep_en0 = 0;
+    uint32_t req_sleep_en1 = 0;
 
-    if (n_args == 1) {
+    if (n_args >= 1) {
         delay_ms = mp_obj_get_int(args[0]);
         if (delay_ms <= 1) {
             // Sleep is too small, just use standard delay.
@@ -140,6 +142,12 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
             mp_raise_ValueError(MP_ERROR_TEXT("sleep too long"));
         }
     }
+
+    if (n_args >= 2)
+        req_sleep_en0 |= mp_obj_get_int(args[1]);
+
+    if (n_args >= 3)
+        req_sleep_en1 |= mp_obj_get_int(args[2]);
 
     const uint32_t xosc_hz = XOSC_MHZ * 1000000;
 
@@ -171,7 +179,10 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     clock_configure(clk_ref, CLOCKS_CLK_REF_CTRL_SRC_VALUE_XOSC_CLKSRC, 0, xosc_hz, xosc_hz);
 
     // CLK_SYS = CLK_REF
-    clock_configure(clk_sys, CLOCKS_CLK_SYS_CTRL_SRC_VALUE_CLK_REF, 0, xosc_hz, xosc_hz);
+    // Leave this running if dependant clocks need it during LightSleep()
+    if (((req_sleep_en0 & CLOCKS_SLEEP_EN0_CLK_SYS_DEPENDANTS_BITS) == 0) &&
+            ((req_sleep_en1 & CLOCKS_SLEEP_EN1_CLK_SYS_DEPENDANTS_BITS) == 0))
+        clock_configure(clk_sys, CLOCKS_CLK_SYS_CTRL_SRC_VALUE_CLK_REF, 0, xosc_hz, xosc_hz);
 
     // CLK_RTC = XOSC / 256
     #if PICO_RP2040
@@ -182,7 +193,10 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS, xosc_hz, xosc_hz);
 
     // Disable PLLs.
-    pll_deinit(pll_sys);
+    if (((req_sleep_en0 & CLOCKS_SLEEP_EN0_CLK_SYS_DEPENDANTS_BITS) == 0) &&
+            ((req_sleep_en1 & CLOCKS_SLEEP_EN1_CLK_SYS_DEPENDANTS_BITS) == 0)) {
+        pll_deinit(pll_sys);
+    }
     if (disable_usb) {
         pll_deinit(pll_usb);
     }
@@ -207,11 +221,11 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
             }
             hw_set_bits(&timer_hw->inte, 1u << alarm_num);
             // Use timer alarm to wake.
-            clocks_hw->sleep_en0 = 0x0;
+            clocks_hw->sleep_en0 = req_sleep_en0;
             #if PICO_RP2040
-            clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_SYS_TIMER_BITS;
+            clocks_hw->sleep_en1 = req_sleep_en1 | CLOCKS_SLEEP_EN1_CLK_SYS_TIMER_BITS;
             #elif PICO_RP2350
-            clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_REF_TICKS_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_TIMER0_BITS;
+            clocks_hw->sleep_en1 = req_sleep_en1 | CLOCKS_SLEEP_EN1_CLK_REF_TICKS_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_TIMER0_BITS;
             #else
             #error Unknown processor
             #endif
@@ -219,8 +233,8 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
             timer_hw->alarm[alarm_num] = timer_hw->timerawl + delay_ms * 1000;
         } else {
             // TODO: Use RTC alarm to wake.
-            clocks_hw->sleep_en0 = 0x0;
-            clocks_hw->sleep_en1 = 0x0;
+            clocks_hw->sleep_en0 = req_sleep_en0;
+            clocks_hw->sleep_en1 = req_sleep_en1;
         }
 
         if (!disable_usb) {
@@ -246,7 +260,9 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         #endif
 
         // Go into low-power mode.
-        __wfi();
+	if (timer_hw->armed & (1 << 3)) {
+            __wfi();
+	}
 
         if (!timer3_enabled) {
             irq_set_enabled(irq_num, false);
@@ -259,7 +275,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB;
 
     // Bring back all clocks.
-    runtime_init_clocks_optional_usb(disable_usb);
+    runtime_init_clocks_optional_usb(disable_usb, req_sleep_en0, req_sleep_en1);
     MICROPY_END_ATOMIC_SECTION(my_interrupts);
 
     // Re-sync mp_hal_time_ns() counter with aon timer.
