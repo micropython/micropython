@@ -431,6 +431,8 @@ CI_UNIX_OPTS_QEMU_MIPS=(
     CROSS_COMPILE=mips-linux-gnu-
     VARIANT=coverage
     MICROPY_STANDALONE=1
+    # Without this setting (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call).
+    CFLAGS_EXTRA="-D_FILE_OFFSET_BITS=64"
 )
 
 CI_UNIX_OPTS_QEMU_ARM=(
@@ -682,10 +684,8 @@ function ci_unix_qemu_mips_build {
 }
 
 function ci_unix_qemu_mips_run_tests {
-    # Issues with MIPS tests:
-    # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.*\.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py)
 }
 
 function ci_unix_qemu_arm_setup {
