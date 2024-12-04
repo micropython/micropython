@@ -183,6 +183,10 @@ soft_reset_exit:
     mp_thread_deinit();
     #endif
 
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+    mp_usbd_deinit();
+    #endif
+
     gc_sweep_all();
 
     // Free any native code pointers that point to iRAM.
