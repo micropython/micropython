@@ -448,6 +448,25 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
     }
 }
 
+void mp_ob_get_array_min_max(mp_obj_t o, size_t min_len, size_t max_len, size_t *len, mp_obj_t **items) {
+    mp_obj_get_array(o, len, items);
+    if (*len < min_len) {
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+        mp_raise_ValueError(MP_ERROR_TEXT("tuple/list length too short"));
+        #else
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("requested minimum length %d but object has length %d"), (int)min_len, (int)*len);
+        #endif
+    } else if (*len > max_len) {
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+        mp_raise_ValueError(MP_ERROR_TEXT("tuple/list length too long"));
+        #else
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("requested maximum length %d but object has length %d"), (int)max_len, (int)*len);
+        #endif
+    }
+}
+
 // is_slice determines whether the index is a slice index
 size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool is_slice) {
     mp_int_t i;
