@@ -307,11 +307,11 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
     freq = pwm0.freq()         # get current frequency
     pwm0.freq(1000)            # set PWM frequency from 1Hz to 40MHz
 
-    duty = pwm0.duty()         # get current duty cycle, range 0-1024 (default 512, 50%)
-    pwm0.duty(256)             # set duty cycle from 0 to 1024 as a ratio duty/1024, (now 25%)
+    duty = pwm0.duty()         # get current duty cycle, range 0-1023 (default 512, 50%)
+    pwm0.duty(256)             # set duty cycle from 0 to 1023 as a ratio duty/1023, (now 25%)
 
-    duty_u16 = pwm0.duty_u16() # get current duty cycle, range 0-65536
-    pwm0.duty_u16(2**16*3//4)  # set duty cycle from 0 to 65536 as a ratio duty_u16/65536, (now 75%)
+    duty_u16 = pwm0.duty_u16() # get current duty cycle, range 0-65535
+    pwm0.duty_u16(2**16*3//4)  # set duty cycle from 0 to 65535 as a ratio duty_u16/65535, (now 75%)
 
     duty_ns = pwm0.duty_ns()   # get current pulse width in ns
     pwm0.duty_ns(250_000)      # set pulse width in nanoseconds from 0 to 1_000_000_000/freq, (now 25%)
@@ -351,7 +351,7 @@ Note: New PWM parameters take effect in the next PWM cycle.
 
     pwm = PWM(2, duty=512)
     print(pwm)
-    >>>PWM(Pin(2), freq=5000, duty=1024)  # the duty is not relevant
+    >>>PWM(Pin(2), freq=5000, duty=1023)  # the duty is not relevant
     pwm.init(freq=2, duty=64)
     print(pwm)
     >>>PWM(Pin(2), freq=2, duty=16)  # the duty is not relevant

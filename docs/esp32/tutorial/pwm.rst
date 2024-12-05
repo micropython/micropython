@@ -16,14 +16,16 @@ low all of the time.
     from time import sleep
     from machine import Pin, PWM
     try:
-        f = 100  # Hz
-        d = 2**16 // 16  # 6.25%
+        F = 10000  # Hz
+        D = 2**16 // 16  # 6.25%
         pins = (2, 4, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26, 27, 32, 33)
         pwms = []
         for i, pin in enumerate(pins):
-            pwms.append(PWM(Pin(pin), freq=f * (i // 2 + 1), duty_u16=min(2**16 - 1, d * (i + 1))))
+            f = F * (i // 2 + 1)
+            d = min(2**16 - 1, D * (i + 1))
+            pwms.append(PWM(pin, freq=f, duty_u16=d))
+            sleep(1/f)
             print(pwms[i])
-        sleep(60)
     finally:
         for pwm in pwms:
             try:
@@ -33,22 +35,22 @@ low all of the time.
 
   Output is::
 
-    PWM(Pin(2), freq=100, duty_u16=4096)  # resolution=16, (duty=6.25%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(4), freq=100, duty_u16=8192)  # resolution=16, (duty=12.50%, resolution=0.002%), mode=0, channel=1, timer=0
-    PWM(Pin(12), freq=199, duty_u16=12288)  # resolution=16, (duty=18.75%, resolution=0.002%), mode=0, channel=2, timer=1
-    PWM(Pin(13), freq=199, duty_u16=16384)  # resolution=16, (duty=25.00%, resolution=0.002%), mode=0, channel=3, timer=1
-    PWM(Pin(14), freq=299, duty_u16=20480)  # resolution=16, (duty=31.25%, resolution=0.002%), mode=0, channel=4, timer=2
-    PWM(Pin(15), freq=299, duty_u16=24576)  # resolution=16, (duty=37.50%, resolution=0.002%), mode=0, channel=5, timer=2
-    PWM(Pin(16), freq=400, duty_u16=28672)  # resolution=16, (duty=43.75%, resolution=0.002%), mode=0, channel=6, timer=3
-    PWM(Pin(18), freq=400, duty_u16=32768)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=7, timer=3
-    PWM(Pin(19), freq=500, duty_u16=36864)  # resolution=16, (duty=56.25%, resolution=0.002%), mode=1, channel=0, timer=0
-    PWM(Pin(22), freq=500, duty_u16=40960)  # resolution=16, (duty=62.50%, resolution=0.002%), mode=1, channel=1, timer=0
-    PWM(Pin(23), freq=599, duty_u16=45056)  # resolution=16, (duty=68.75%, resolution=0.002%), mode=1, channel=2, timer=1
-    PWM(Pin(25), freq=599, duty_u16=49152)  # resolution=16, (duty=75.00%, resolution=0.002%), mode=1, channel=3, timer=1
-    PWM(Pin(26), freq=700, duty_u16=53248)  # resolution=16, (duty=81.25%, resolution=0.002%), mode=1, channel=4, timer=2
-    PWM(Pin(27), freq=700, duty_u16=57344)  # resolution=16, (duty=87.50%, resolution=0.002%), mode=1, channel=5, timer=2
-    PWM(Pin(32), freq=799, duty_u16=61440)  # resolution=16, (duty=93.75%, resolution=0.002%), mode=1, channel=6, timer=3
-    PWM(Pin(33), freq=799, duty_u16=65536)  # resolution=16, (duty=100.00%, resolution=0.002%), mode=1, channel=7, timer=3
+    PWM(Pin(2), freq=10000, duty_u16=4096)  # duty=6.25%, raw_duty=256, resolution=12, mode=0, channel=0, timer=0
+    PWM(Pin(4), freq=10000, duty_u16=8192)  # duty=12.50%, raw_duty=512, resolution=12, mode=0, channel=1, timer=0
+    PWM(Pin(12), freq=20000, duty_u16=12288)  # duty=18.75%, raw_duty=384, resolution=11, mode=0, channel=2, timer=1
+    PWM(Pin(13), freq=20000, duty_u16=16384)  # duty=25.00%, raw_duty=512, resolution=11, mode=0, channel=3, timer=1
+    PWM(Pin(14), freq=30030, duty_u16=20480)  # duty=31.25%, raw_duty=640, resolution=11, mode=0, channel=4, timer=2
+    PWM(Pin(15), freq=30030, duty_u16=24576)  # duty=37.50%, raw_duty=768, resolution=11, mode=0, channel=5, timer=2
+    PWM(Pin(16), freq=40000, duty_u16=28672)  # duty=43.75%, raw_duty=448, resolution=10, mode=0, channel=6, timer=3
+    PWM(Pin(18), freq=40000, duty_u16=32768)  # duty=50.00%, raw_duty=512, resolution=10, mode=0, channel=7, timer=3
+    PWM(Pin(19), freq=50000, duty_u16=36864)  # duty=56.25%, raw_duty=576, resolution=10, mode=1, channel=0, timer=0
+    PWM(Pin(22), freq=50000, duty_u16=40960)  # duty=62.50%, raw_duty=640, resolution=10, mode=1, channel=1, timer=0
+    PWM(Pin(23), freq=60060, duty_u16=45056)  # duty=68.75%, raw_duty=704, resolution=10, mode=1, channel=2, timer=1
+    PWM(Pin(25), freq=60060, duty_u16=49152)  # duty=75.00%, raw_duty=768, resolution=10, mode=1, channel=3, timer=1
+    PWM(Pin(26), freq=69930, duty_u16=53248)  # duty=81.25%, raw_duty=832, resolution=10, mode=1, channel=4, timer=2
+    PWM(Pin(27), freq=69930, duty_u16=57344)  # duty=87.50%, raw_duty=896, resolution=10, mode=1, channel=5, timer=2
+    PWM(Pin(32), freq=80000, duty_u16=61440)  # duty=93.75%, raw_duty=480, resolution=9, mode=1, channel=6, timer=3
+    PWM(Pin(33), freq=80000, duty_u16=65535)  # duty=100.00%, raw_duty=0, resolution=9, mode=1, channel=7, timer=3
 
 
 * Example of a **smooth frequency change**::
@@ -56,17 +58,18 @@ low all of the time.
     from time import sleep
     from machine import Pin, PWM
 
-    F_MIN = 100
-    F_MAX = 1000
+    F_MIN = 1000
+    F_MAX = 10000
 
     f = F_MIN
-    delta_f = 100
+    delta_f = F_MAX // 50
 
-    p = PWM(Pin(27), f)
+    pwm = PWM(Pin(27), f)
 
     while True:
-        p.freq(f)
-        print(p)
+        pwm.freq(f)
+        sleep(1/f)
+        print(pwm)
 
         sleep(.2)
 
@@ -83,28 +86,25 @@ low all of the time.
 
   Output is::
 
-    PWM(Pin(27), freq=100, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=199, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=299, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=400, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=500, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=599, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=700, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=799, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=900, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
+PWM(Pin(27), freq=998, duty_u16=32768)  # duty=50.00%, raw_duty=32768, resolution=16, mode=0, channel=0, timer=2
+PWM(Pin(27), freq=1202, duty_u16=32768)  # duty=50.00%, raw_duty=32768, resolution=16, mode=0, channel=0, timer=2
+PWM(Pin(27), freq=1401, duty_u16=65536)  # duty=100.00%, raw_duty=32768, resolution=15, mode=0, channel=0, timer=2
+PWM(Pin(27), freq=1598, duty_u16=32768)  # duty=50.00%, raw_duty=16384, resolution=15, mode=0, channel=0, timer=2
+...
+PWM(Pin(27), freq=9398, duty_u16=32768)  # duty=50.00%, raw_duty=4096, resolution=13, mode=0, channel=0, timer=0
+PWM(Pin(27), freq=9615, duty_u16=32768)  # duty=50.00%, raw_duty=4096, resolution=13, mode=0, channel=0, timer=0
+PWM(Pin(27), freq=9804, duty_u16=32768)  # duty=50.00%, raw_duty=2048, resolution=12, mode=0, channel=0, timer=0
+PWM(Pin(27), freq=10000, duty_u16=32768)  # duty=50.00%, raw_duty=2048, resolution=12, mode=0, channel=0, timer=1
 
-    PWM(Pin(27), freq=998, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=900, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=799, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=700, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=599, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=500, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=400, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=299, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=199, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=100, duty=512)  # resolution=16, (duty=50.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    ...
+PWM(Pin(27), freq=10000, duty_u16=32768)  # duty=50.00%, raw_duty=2048, resolution=12, mode=0, channel=0, timer=1
+PWM(Pin(27), freq=9804, duty_u16=32768)  # duty=50.00%, raw_duty=2048, resolution=12, mode=0, channel=0, timer=0
+PWM(Pin(27), freq=9615, duty_u16=32768)  # duty=50.00%, raw_duty=4096, resolution=13, mode=0, channel=0, timer=0
+PWM(Pin(27), freq=9398, duty_u16=32768)  # duty=50.00%, raw_duty=4096, resolution=13, mode=0, channel=0, timer=0
+...
+PWM(Pin(27), freq=1598, duty_u16=32768)  # duty=50.00%, raw_duty=16384, resolution=15, mode=0, channel=0, timer=2
+PWM(Pin(27), freq=1401, duty_u16=32768)  # duty=50.00%, raw_duty=16384, resolution=15, mode=0, channel=0, timer=2
+PWM(Pin(27), freq=1202, duty_u16=16384)  # duty=25.00%, raw_duty=16384, resolution=16, mode=0, channel=0, timer=2
+PWM(Pin(27), freq=998, duty_u16=32768)  # duty=50.00%, raw_duty=32768, resolution=16, mode=0, channel=0, timer=2
 
 
 * Example of a **smooth duty change**::
@@ -117,59 +117,54 @@ low all of the time.
     duty_u16 = 0
     delta_d = 256
 
-    pwm = PWM(Pin(27), 1000, duty_u16=duty_u16)
-    print(pwm)
+    pwm = PWM(Pin(27), freq=1000, duty_u16=duty_u16)
 
     while True:
         pwm.duty_u16(duty_u16)
-
-        sleep(.001)
-
+        sleep(2/pwm.freq())
         print(pwm)
+
+        if duty_u16 >= DUTY_MAX:
+            print()
+            sleep(2)
+        elif duty_u16 <= 0:
+            print()
+            sleep(2)
 
         duty_u16 += delta_d
         if duty_u16 >= DUTY_MAX:
             duty_u16 = DUTY_MAX
             delta_d = -delta_d
-            print()
         elif duty_u16 <= 0:
             duty_u16 = 0
             delta_d = -delta_d
-            print()
 
   See `PWM wave on Pin(27) with an oscilloscope. <https://user-images.githubusercontent.com/70886343/224020123-1c958e85-0c91-4ca6-8b4c-b3bb956892b1.mp4>`_
 
   Output is::
 
-    PWM(Pin(27), freq=998, duty_u16=0)  # resolution=16, (duty=0.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=256)  # resolution=16, (duty=0.39%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=512)  # resolution=16, (duty=0.78%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=768)  # resolution=16, (duty=1.17%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=1024)  # resolution=16, (duty=1.56%, resolution=0.002%), mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=0)  # duty=0.00%, raw_duty=0, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=256)  # duty=0.39%, raw_duty=256, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=512)  # duty=0.78%, raw_duty=512, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=768)  # duty=1.17%, raw_duty=768, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=1024)  # duty=1.56%, raw_duty=1024, resolution=16, mode=0, channel=0, timer=0
     ...
-    PWM(Pin(27), freq=998, duty_u16=64256)  # resolution=16, (duty=98.05%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=64512)  # resolution=16, (duty=98.44%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=64768)  # resolution=16, (duty=98.83%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=65024)  # resolution=16, (duty=99.22%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=65280)  # resolution=16, (duty=99.61%, resolution=0.002%), mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=64512)  # duty=98.44%, raw_duty=64512, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=64768)  # duty=98.83%, raw_duty=64768, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=65024)  # duty=99.22%, raw_duty=65024, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=65280)  # duty=99.61%, raw_duty=65280, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=65535)  # duty=100.00%, raw_duty=0, resolution=16, mode=0, channel=0, timer=0
 
-    PWM(Pin(27), freq=998, duty_u16=65536)  # resolution=16, (duty=100.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=65279)  # resolution=16, (duty=99.61%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=65023)  # resolution=16, (duty=99.22%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=64767)  # resolution=16, (duty=98.83%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=64511)  # resolution=16, (duty=98.44%, resolution=0.002%), mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=65279)  # duty=99.61%, raw_duty=65279, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=65023)  # duty=99.22%, raw_duty=65023, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=64767)  # duty=98.83%, raw_duty=64767, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=64511)  # duty=98.44%, raw_duty=64511, resolution=16, mode=0, channel=0, timer=0
     ...
-    PWM(Pin(27), freq=998, duty_u16=1279)  # resolution=16, (duty=1.95%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=1024)  # resolution=16, (duty=1.56%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=767)  # resolution=16, (duty=1.17%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=511)  # resolution=16, (duty=0.78%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=255)  # resolution=16, (duty=0.39%, resolution=0.002%), mode=0, channel=0, timer=0
-
-    PWM(Pin(27), freq=998, duty_u16=0)  # resolution=16, (duty=0.00%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=256)  # resolution=16, (duty=0.39%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=512)  # resolution=16, (duty=0.78%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=768)  # resolution=16, (duty=1.17%, resolution=0.002%), mode=0, channel=0, timer=0
-    PWM(Pin(27), freq=998, duty_u16=1024)  # resolution=16, (duty=1.56%, resolution=0.002%), mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=1023)  # duty=1.56%, raw_duty=1023, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=767)  # duty=1.17%, raw_duty=767, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=511)  # duty=0.78%, raw_duty=511, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=255)  # duty=0.39%, raw_duty=255, resolution=16, mode=0, channel=0, timer=0
+    PWM(Pin(27), freq=998, duty_u16=0)  # duty=0.00%, raw_duty=0, resolution=16, mode=0, channel=0, timer=0
 
 
 * Example of a **smooth duty change and PWM output inversion**::
@@ -183,8 +178,8 @@ low all of the time.
         duty_u16 = 0
         delta_d = 2**16 // 32
 
-        pwm = PWM(Pin(27), 5000)
-        pwmi = PWM(Pin(32), 5000, invert=1)
+        pwm = PWM(Pin(27))
+        pwmi = PWM(Pin(32), invert=1)
 
         while True:
             pwm.duty_u16(duty_u16)
@@ -214,19 +209,23 @@ low all of the time.
 
   Output is::
 
+    PWM(Pin(27), freq=5000, duty_u16=0)  # duty=0.00%, raw_duty=0, resolution=13, mode=0, channel=0, timer=3
+    PWM(Pin(32), freq=5000, duty_u16=32768, invert=1)  # duty=50.00%, raw_duty=4096, resolution=13, mode=0, channel=1, timer=3
+    PWM(Pin(27), freq=5000, duty_u16=2048)  # duty=3.13%, raw_duty=256, resolution=13, mode=0, channel=0, timer=3
+    PWM(Pin(32), freq=5000, duty_u16=2048, invert=1)  # duty=3.13%, raw_duty=256, resolution=13, mode=0, channel=1, timer=3
+    PWM(Pin(27), freq=5000, duty_u16=4096)  # duty=6.25%, raw_duty=512, resolution=13, mode=0, channel=0, timer=3
+    PWM(Pin(32), freq=5000, duty_u16=4096, invert=1)  # duty=6.25%, raw_duty=512, resolution=13, mode=0, channel=1, timer=3
+    PWM(Pin(27), freq=5000, duty_u16=6144)  # duty=9.38%, raw_duty=768, resolution=13, mode=0, channel=0, timer=3
+    PWM(Pin(32), freq=5000, duty_u16=6144, invert=1)  # duty=9.38%, raw_duty=768, resolution=13, mode=0, channel=1, timer=3
+    PWM(Pin(27), freq=5000, duty_u16=8192)  # duty=12.50%, raw_duty=1024, resolution=13, mode=0, channel=0, timer=3
+    PWM(Pin(32), freq=5000, duty_u16=8192, invert=1)  # duty=12.50%, raw_duty=1024, resolution=13, mode=0, channel=1, timer=3    ...
     ...
-    PWM(Pin(27), freq=5000, duty_u16=24576)  # resolution=13, (duty=37.50%, resolution=0.012%), mode=0, channel=0, timer=0
-    PWM(Pin(32), freq=5000, duty_u16=24576, invert=1)  # resolution=13, (duty=37.50%, resolution=0.012%), mode=0, channel=1, timer=0
-    PWM(Pin(27), freq=5000, duty_u16=26624)  # resolution=13, (duty=40.63%, resolution=0.012%), mode=0, channel=0, timer=0
-    PWM(Pin(32), freq=5000, duty_u16=26624, invert=1)  # resolution=13, (duty=40.63%, resolution=0.012%), mode=0, channel=1, timer=0
-    PWM(Pin(27), freq=5000, duty_u16=28672)  # resolution=13, (duty=43.75%, resolution=0.012%), mode=0, channel=0, timer=0
-    PWM(Pin(32), freq=5000, duty_u16=28672, invert=1)  # resolution=13, (duty=43.75%, resolution=0.012%), mode=0, channel=1, timer=0
-    ...
+
 
   See `PWM waves on Pin(27) and Pin(32) <https://user-images.githubusercontent.com/70886343/222743883-dca25aa8-681d-471c-933a-6f9beacb6eee.mp4>`_ with an oscilloscope.
 
 
-Note: the Pin.OUT mode does not need to be specified.  The channel is initialized
+Note: the Pin.OUT mode does not need to be specified. The channel is initialized
 to PWM mode internally once for each Pin that is passed to the PWM constructor.
 
 The following code is wrong::
