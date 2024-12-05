@@ -92,7 +92,7 @@
 #define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
 #endif
 #ifndef MICROPY_GC_SPLIT_HEAP
-#define MICROPY_GC_SPLIT_HEAP                   (0) // whether PSRAM is added to or replaces the heap
+#define MICROPY_GC_SPLIT_HEAP                   MICROPY_HW_ENABLE_PSRAM // whether PSRAM is added to or replaces the heap
 #endif
 #define MICROPY_ALLOC_PATH_MAX                  (128)
 #define MICROPY_QSTR_BYTES_IN_HASH              (1)
