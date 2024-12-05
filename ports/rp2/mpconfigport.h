@@ -88,6 +88,7 @@
 // Memory allocation policies
 #if MICROPY_HW_ENABLE_PSRAM
 #define MICROPY_GC_STACK_ENTRY_TYPE             uint32_t
+#define MICROPY_ALLOC_GC_STACK_SIZE             (1024) // Avoid slowdown when GC stack overflow causes a full sweep of PSRAM-backed heap
 #else
 #define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
 #endif
