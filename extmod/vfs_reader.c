@@ -85,6 +85,16 @@ void mp_reader_new_file(mp_reader_t *reader, qstr filename) {
 
     const mp_stream_p_t *stream_p = mp_get_stream(file);
     int errcode = 0;
+
+    #if MICROPY_VFS_ROM
+    // Check if the stream can be memory mapped.
+    mp_buffer_info_t bufinfo;
+    if (mp_get_buffer(file, &bufinfo, MP_BUFFER_READ)) {
+        mp_reader_new_mem(reader, bufinfo.buf, bufinfo.len, MP_READER_IS_ROM);
+        return;
+    }
+    #endif
+
     mp_uint_t bufsize = stream_p->ioctl(file, MP_STREAM_GET_BUFFER_SIZE, 0, &errcode);
     if (bufsize == MP_STREAM_ERROR || bufsize == 0) {
         // bufsize == 0 is included here to support mpremote v1.21 and older where mount file ioctl
@@ -98,6 +108,7 @@ void mp_reader_new_file(mp_reader_t *reader, qstr filename) {
     rf->file = file;
     rf->bufsize = bufsize;
     rf->buflen = mp_stream_rw(rf->file, rf->buf, rf->bufsize, &errcode, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
+
     if (errcode != 0) {
         mp_raise_OSError(errcode);
     }

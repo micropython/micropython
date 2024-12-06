@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2016 Damien P. George
+ * Copyright (c) 2022 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_PY_READER_H
-#define MICROPY_INCLUDED_PY_READER_H
+#ifndef MICROPY_INCLUDED_EXTMOD_VFS_ROM_H
+#define MICROPY_INCLUDED_EXTMOD_VFS_ROM_H
 
+#include "py/builtin.h"
 #include "py/obj.h"
 
-// Pass to the `free_len` argument to `mp_reader_new_mem` to indicate that the data is in ROM.
-// This means that the data is addressable and will remain valid at least until a soft reset.
-#define MP_READER_IS_ROM ((size_t)-1)
+typedef struct _mp_obj_vfs_rom_t mp_obj_vfs_rom_t;
 
-// the readbyte function must return the next byte in the input stream
-// it must return MP_READER_EOF if end of stream
-// it can be called again after returning MP_READER_EOF, and in that case must return MP_READER_EOF
-#define MP_READER_EOF ((mp_uint_t)(-1))
+extern const mp_obj_type_t mp_type_vfs_rom;
 
-typedef struct _mp_reader_t {
-    void *data;
-    mp_uint_t (*readbyte)(void *data);
-    void (*close)(void *data);
-} mp_reader_t;
+mp_import_stat_t mp_vfs_rom_search_filesystem(mp_obj_vfs_rom_t *self, const char *path, size_t *size_out, const uint8_t **data_out);
+mp_obj_t mp_vfs_rom_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_in);
 
-void mp_reader_new_mem(mp_reader_t *reader, const byte *buf, size_t len, size_t free_len);
-void mp_reader_new_file(mp_reader_t *reader, qstr filename);
-void mp_reader_new_file_from_fd(mp_reader_t *reader, int fd, bool close_fd);
-
-const uint8_t *map_try_read_bytes(mp_reader_t *reader, size_t len);
-
-#endif // MICROPY_INCLUDED_PY_READER_H
+#endif // MICROPY_INCLUDED_EXTMOD_VFS_ROM_H
