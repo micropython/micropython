@@ -432,7 +432,7 @@ CI_UNIX_OPTS_QEMU_MIPS=(
     VARIANT=coverage
     MICROPY_STANDALONE=1
     # Without this setting (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call).
-    CFLAGS_EXTRA="-D_FILE_OFFSET_BITS=64"
+    #CFLAGS_EXTRA="-D_FILE_OFFSET_BITS=64"
 )
 
 CI_UNIX_OPTS_QEMU_ARM=(
