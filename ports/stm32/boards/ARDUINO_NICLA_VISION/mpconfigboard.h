@@ -184,8 +184,8 @@ extern struct _spi_bdev_t spi_bdev;
 
 // FDCAN bus
 #define MICROPY_HW_CAN1_NAME        "FDCAN1"
-#define MICROPY_HW_CAN1_TX          (pin_A10)
-#define MICROPY_HW_CAN1_RX          (pin_A9)
+#define MICROPY_HW_CAN1_TX          (pin_B9)
+#define MICROPY_HW_CAN1_RX          (pin_B8)
 #define MICROPY_HW_CAN_IS_RESERVED(id) (id != PYB_CAN_1)
 
 // LEDs
