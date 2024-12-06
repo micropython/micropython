@@ -4,8 +4,8 @@ try:
     import sys, struct, os, uctypes, vfs
 
     vfs.VfsRom
-except (ImportError, AttributeError) as er:
-    print("SKIP", er)
+except (ImportError, AttributeError):
+    print("SKIP")
     raise SystemExit
 
 try:
