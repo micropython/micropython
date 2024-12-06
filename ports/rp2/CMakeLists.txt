@@ -173,6 +173,12 @@ set(MICROPY_SOURCE_PORT
     ${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c
 )
 
+if(PICO_RP2350)
+    list(APPEND MICROPY_SOURCE_PORT
+        rp2_psram.c
+    )
+endif()
+
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_DIR}/shared/readline/readline.c
