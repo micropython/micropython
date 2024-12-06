@@ -41,6 +41,12 @@
 // The ADC class doesn't have any constants for this port.
 #define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS
 
+#if defined(MIMXRT117x_SERIES)
+#define ADC_UV_FULL_RANGE (3840000)
+#else
+#define ADC_UV_FULL_RANGE (3300000)
+#endif
+
 typedef struct _machine_adc_obj_t {
     mp_obj_base_t base;
     ADC_Type *adc;
@@ -77,15 +83,6 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
     // Extract arguments
     ADC_Type *adc_instance = pin->adc_list[0].instance;  // NOTE: we only use the first ADC assignment - multiple assignments are not supported for now
     uint8_t channel = pin->adc_list[0].channel;
-
-    #if 0 // done in adc_read_u16
-    // Configure ADC peripheral channel
-    adc_channel_config_t channel_config = {
-        .channelNumber = (uint32_t)channel,
-        .enableInterruptOnConversionCompleted = false,
-    };
-    ADC_SetChannelConfig(adc_instance, 0UL, &channel_config);  // NOTE: we always choose channel group '0' since we only perform software triggered conversion
-    #endif
 
     // Create ADC Instance
     machine_adc_obj_t *o = mp_obj_malloc(machine_adc_obj_t, &machine_adc_type);
@@ -169,3 +166,7 @@ void machine_adc_init(void) {
     }
 }
 #endif
+
+static mp_int_t mp_machine_adc_read_uv(machine_adc_obj_t *self) {
+    return (uint64_t)ADC_UV_FULL_RANGE * mp_machine_adc_read_u16(self) / 65536;
+}
