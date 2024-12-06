@@ -5,10 +5,6 @@
 # needs to be duplicated for out-of-tree builds, and can easily get out of date.
 cmake_minimum_required(VERSION 3.12)
 
-# Retrieve IDF version
-include($ENV{IDF_PATH}/tools/cmake/version.cmake)
-set(IDF_VERSION "${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}.${IDF_VERSION_PATCH}")
-
 # Set the board if it's not already set.
 if(NOT MICROPY_BOARD)
     set(MICROPY_BOARD ESP32_GENERIC)
@@ -34,12 +30,6 @@ set(SDKCONFIG ${CMAKE_BINARY_DIR}/sdkconfig)
 
 # Save the manifest file set from the cmake command line.
 set(MICROPY_USER_FROZEN_MANIFEST ${MICROPY_FROZEN_MANIFEST})
-
-# Specific options for IDF v5.2 and later
-set(SDKCONFIG_IDF_VERSION_SPECIFIC "")
-if (IDF_VERSION VERSION_GREATER_EQUAL "5.2.0")
-    set(SDKCONFIG_IDF_VERSION_SPECIFIC boards/sdkconfig.idf52)
-endif()
 
 # Include board config; this is expected to set (among other options):
 # - SDKCONFIG_DEFAULTS
