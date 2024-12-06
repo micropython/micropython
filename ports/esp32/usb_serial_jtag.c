@@ -35,10 +35,13 @@
 #include "soc/periph_defs.h"
 #include "freertos/portmacro.h"
 
-#define USB_SERIAL_JTAG_BUF_SIZE (64)
+// Number of bytes in the input buffer, and number of bytes for output chunking.
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0)
+#define USB_SERIAL_JTAG_PACKET_SZ_BYTES (64)
+#endif
 
 static DRAM_ATTR portMUX_TYPE rx_mux = portMUX_INITIALIZER_UNLOCKED;
-static uint8_t rx_buf[USB_SERIAL_JTAG_BUF_SIZE];
+static uint8_t rx_buf[USB_SERIAL_JTAG_PACKET_SZ_BYTES];
 static volatile bool terminal_connected = false;
 
 static void usb_serial_jtag_handle_rx(void) {
@@ -48,8 +51,8 @@ static void usb_serial_jtag_handle_rx(void) {
         portENTER_CRITICAL(&rx_mux);
     }
     size_t req_len = ringbuf_free(&stdin_ringbuf);
-    if (req_len > USB_SERIAL_JTAG_BUF_SIZE) {
-        req_len = USB_SERIAL_JTAG_BUF_SIZE;
+    if (req_len > USB_SERIAL_JTAG_PACKET_SZ_BYTES) {
+        req_len = USB_SERIAL_JTAG_PACKET_SZ_BYTES;
     }
     size_t len = usb_serial_jtag_ll_read_rxfifo(rx_buf, req_len);
     for (size_t i = 0; i < len; ++i) {
