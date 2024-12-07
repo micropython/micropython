@@ -448,8 +448,8 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
                 if (self->flags == LAYOUT_NATIVE) {
                     set_aligned_basic(val_type & 6, self->addr + offset, val);
                 } else {
-                    mp_binary_set_int(GET_SCALAR_SIZE(val_type & 7), self->flags == LAYOUT_BIG_ENDIAN,
-                        self->addr + offset, val);
+                    size_t item_size = GET_SCALAR_SIZE(val_type & 7);
+                    mp_binary_set_int(item_size, self->addr + offset, item_size, val, self->flags == LAYOUT_BIG_ENDIAN);
                 }
                 return set_val; // just !MP_OBJ_NULL
             }
