@@ -141,6 +141,7 @@ extern struct _spi_bdev_t spi_bdev;
 
 #define MICROPY_HW_SDRAM_BURST_LENGTH       1
 #define MICROPY_HW_SDRAM_CAS_LATENCY        2
+#define MICROPY_HW_SDRAM_FREQUENCY_KHZ      (90000) // 90 MHz
 #define MICROPY_HW_SDRAM_COLUMN_BITS_NUM    8
 #define MICROPY_HW_SDRAM_ROW_BITS_NUM       12
 #define MICROPY_HW_SDRAM_MEM_BUS_WIDTH      32
@@ -150,6 +151,7 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_SDRAM_RBURST             (1)
 #define MICROPY_HW_SDRAM_WRITE_PROTECTION   (0)
 #define MICROPY_HW_SDRAM_AUTOREFRESH_NUM    (8)
+#define MICROPY_HW_SDRAM_REFRESH_CYCLES     8192
 
 // See pins.csv for CPU pin mapping
 #define MICROPY_HW_FMC_SDCKE0  (pyb_pin_FMC_SDCKE0)
