@@ -250,6 +250,7 @@ SRC_C += \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_sdcard.c \
+	modrenesas.c \
 	extint.c \
 	usrsw.c \
 	flash.c \
