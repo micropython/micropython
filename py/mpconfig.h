@@ -1629,6 +1629,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_THREAD_GIL_VM_DIVISOR (32)
 #endif
 
+// Is a recursive mutex type in use?
+#ifndef MICROPY_PY_THREAD_RECURSIVE_MUTEX
+#define MICROPY_PY_THREAD_RECURSIVE_MUTEX (MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL)
+#endif
+
 // Extended modules
 
 #ifndef MICROPY_PY_ASYNCIO
