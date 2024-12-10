@@ -101,7 +101,7 @@ static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     return (mp_obj_t)&machine_rtc_obj;
 }
 
-static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *args, bool use_init_format) {
     if (n_args == 1) {
         // Get time
 
@@ -126,26 +126,36 @@ static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
         return mp_obj_new_tuple(8, tuple);
     } else {
         // Set time
-
         mp_obj_t *items;
-        mp_obj_get_array_fixed_n(args[1], 8, &items);
 
         struct timeval tv = {0};
-        tv.tv_sec = timeutils_seconds_since_epoch(mp_obj_get_int(items[0]), mp_obj_get_int(items[1]), mp_obj_get_int(items[2]), mp_obj_get_int(items[4]), mp_obj_get_int(items[5]), mp_obj_get_int(items[6]));
-        tv.tv_usec = mp_obj_get_int(items[7]);
+        if (use_init_format) {
+            size_t seq_len;
+            mp_ob_get_array_min_max(args[1], 3, 8, &seq_len, &items);
+            mp_int_t hour = seq_len > 3 ? mp_obj_get_int(items[3]) : 0;
+            mp_int_t minute = seq_len > 4 ? mp_obj_get_int(items[4]) : 0;
+            mp_int_t second = seq_len > 5 ? mp_obj_get_int(items[5]) : 0;
+            mp_int_t subsecond = seq_len > 6 ? mp_obj_get_int(items[6]) : 0;
+            tv.tv_sec = timeutils_seconds_since_epoch(mp_obj_get_int(items[0]), mp_obj_get_int(items[1]), mp_obj_get_int(items[2]), hour, minute, second);
+            tv.tv_usec = subsecond;
+        } else {
+            mp_obj_get_array_fixed_n(args[1], 8, &items);
+            tv.tv_sec = timeutils_seconds_since_epoch(mp_obj_get_int(items[0]), mp_obj_get_int(items[1]), mp_obj_get_int(items[2]), mp_obj_get_int(items[4]), mp_obj_get_int(items[5]), mp_obj_get_int(items[6]));
+            tv.tv_usec = mp_obj_get_int(items[7]);
+        }
         settimeofday(&tv, NULL);
 
         return mp_const_none;
     }
 }
 static mp_obj_t machine_rtc_datetime(size_t n_args, const mp_obj_t *args) {
-    return machine_rtc_datetime_helper(n_args, args);
+    return machine_rtc_datetime_helper(n_args, args, false);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
 
 static mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
     mp_obj_t args[2] = {self_in, date};
-    machine_rtc_datetime_helper(2, args);
+    machine_rtc_datetime_helper(2, args, true);
 
     return mp_const_none;
 }
