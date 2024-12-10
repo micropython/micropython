@@ -57,6 +57,11 @@
 #define MICROPY_PY_MACHINE_PIN_LEGACY (!MICROPY_PREVIEW_VERSION_2)
 #endif
 
+// Whether to include support for alternate function selection in machine.Pin (and pyb.Pin).
+#ifndef MICROPY_PY_MACHINE_PIN_ALT_SUPPORT
+#define MICROPY_PY_MACHINE_PIN_ALT_SUPPORT (1)
+#endif
+
 // Whether machine.bootloader() will enter the bootloader via reset, or direct jump.
 #ifndef MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
 #define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (1)
