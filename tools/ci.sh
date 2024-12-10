@@ -747,7 +747,7 @@ ZEPHYR_SDK_VERSION=0.16.8
 ZEPHYR_VERSION=v3.7.0
 
 function ci_zephyr_setup {
-    IMAGE=zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}
+    IMAGE=ghcr.io/zephyrproject-rtos/ci:${ZEPHYR_DOCKER_VERSION}
 
     docker pull ${IMAGE}
 
