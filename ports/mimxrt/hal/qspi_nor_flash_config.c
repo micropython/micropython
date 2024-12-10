@@ -48,7 +48,7 @@ const flexspi_nor_config_t qspiflash_config = {
             .seqId = 4u,
             .seqNum = 1u,
         },
-        .deviceModeArg = 0x40,
+        .deviceModeArg = 0x0200,
         // Enable DDR mode, Wordaddassable, Safe configuration, Differential clock
         .deviceType = kFlexSpiDeviceType_SerialNOR,
         .sflashPadType = kSerialFlash_4Pads,
@@ -63,7 +63,7 @@ const flexspi_nor_config_t qspiflash_config = {
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
 
             // 1 Read status register -> 1
-            FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x05, READ_SDR, FLEXSPI_1PAD, 0x01),
+            FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x05, READ_SDR, FLEXSPI_1PAD, 0x02),
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
@@ -93,7 +93,7 @@ const flexspi_nor_config_t qspiflash_config = {
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
 
             // 6 Write Status Reg
-            FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x01, WRITE_SDR, FLEXSPI_1PAD, 0x04),
+            FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x01, WRITE_SDR, FLEXSPI_1PAD, 0x08),
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
