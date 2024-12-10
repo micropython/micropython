@@ -1011,6 +1011,12 @@ typedef double mp_float_t;
 #define MICROPY_VFS_LFS2 (0)
 #endif
 
+// Support for VFS Semihosting, to mount a local directory on an embedded target,
+// either emulated or under a debugger.
+#ifndef MICROPY_VFS_SEMIHOSTING
+#define MICROPY_VFS_SEMIHOSTING (0)
+#endif
+
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 
