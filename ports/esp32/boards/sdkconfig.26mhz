@@ -1,0 +1,6 @@
+#
+# Main XTAL Config
+#
+CONFIG_XTAL_FREQ_26=y
+# CONFIG_XTAL_FREQ_40 is not set
+CONFIG_XTAL_FREQ=26
