@@ -254,6 +254,7 @@ static void configure_channel(machine_pwm_obj_t *self) {
 
 }
 
+
 // Temporary workaround for ledc_find_suitable_duty_resolution function only being added in IDF V5.2
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 2, 0)
 static uint32_t ledc_find_suitable_duty_resolution(uint32_t src_clk_freq, uint32_t timer_freq) {

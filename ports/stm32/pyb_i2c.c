@@ -428,6 +428,15 @@ int pyb_i2c_init_freq(const pyb_i2c_obj_t *self, mp_int_t freq) {
     return pyb_i2c_init(self->i2c);
 }
 
+void pyb_i2c_deinit_all(void) {
+    for (int i = 0; i < MP_ARRAY_SIZE(pyb_i2c_obj); i++) {
+        const pyb_i2c_obj_t *pyb_i2c = &pyb_i2c_obj[i];
+        if (pyb_i2c->i2c != NULL) {
+            i2c_deinit(pyb_i2c->i2c);
+        }
+    }
+}
+
 static void i2c_reset_after_error(I2C_HandleTypeDef *i2c) {
     // wait for bus-busy flag to be cleared, with a timeout
     for (int timeout = 50; timeout > 0; --timeout) {

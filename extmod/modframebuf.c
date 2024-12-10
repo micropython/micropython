@@ -536,6 +536,10 @@ static mp_obj_t framebuf_ellipse(size_t n_args, const mp_obj_t *args_in) {
     } else {
         mask |= ELLIPSE_MASK_ALL;
     }
+    if (args[2] == 0 && args[3] == 0) {
+        setpixel_checked(self, args[0], args[1], args[4], mask & ELLIPSE_MASK_ALL);
+        return mp_const_none;
+    }
     mp_int_t two_asquare = 2 * args[2] * args[2];
     mp_int_t two_bsquare = 2 * args[3] * args[3];
     mp_int_t x = args[2];

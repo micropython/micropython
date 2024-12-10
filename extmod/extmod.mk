@@ -616,6 +616,6 @@ $(BUILD)/$(OPENAMP_DIR)/lib/virtio_mmio/virtio_mmio_drv.o: CFLAGS += -Wno-unused
 # We need to have generated libmetal before compiling OpenAMP.
 $(addprefix $(BUILD)/, $(SRC_OPENAMP_C:.c=.o)): $(BUILD)/openamp/metal/config.h
 
-SRC_THIRDPARTY_C += $(SRC_LIBMETAL_C) $(SRC_OPENAMP_C)
+SRC_THIRDPARTY_C += $(SRC_OPENAMP_C) $(SRC_LIBMETAL_C:$(BUILD)/%=%)
 
 endif # MICROPY_PY_OPENAMP

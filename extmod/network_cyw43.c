@@ -60,6 +60,10 @@ typedef struct _network_cyw43_obj_t {
 static const network_cyw43_obj_t network_cyw43_wl_sta = { { &mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_STA };
 static const network_cyw43_obj_t network_cyw43_wl_ap = { { &mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_AP };
 
+// Avoid race conditions with callbacks by tracking the last up or down request
+// we have made for each interface.
+static bool if_active[2];
+
 static void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(self_in);
     struct netif *netif = &self->cyw->netif[self->itf];
@@ -122,6 +126,10 @@ static MP_DEFINE_CONST_FUN_OBJ_3(network_cyw43_ioctl_obj, network_cyw43_ioctl);
 /*******************************************************************************/
 // network API
 
+static uint32_t get_country_code(void) {
+    return CYW43_COUNTRY(mod_network_country_code[0], mod_network_country_code[1], 0);
+}
+
 static mp_obj_t network_cyw43_deinit(mp_obj_t self_in) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cyw43_deinit(self->cyw);
@@ -132,10 +140,11 @@ static MP_DEFINE_CONST_FUN_OBJ_1(network_cyw43_deinit_obj, network_cyw43_deinit)
 static mp_obj_t network_cyw43_active(size_t n_args, const mp_obj_t *args) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
-        return mp_obj_new_bool(cyw43_tcpip_link_status(self->cyw, self->itf));
+        return mp_obj_new_bool(if_active[self->itf]);
     } else {
-        uint32_t country = CYW43_COUNTRY(mod_network_country_code[0], mod_network_country_code[1], 0);
-        cyw43_wifi_set_up(self->cyw, self->itf, mp_obj_is_true(args[1]), country);
+        bool value = mp_obj_is_true(args[1]);
+        cyw43_wifi_set_up(self->cyw, self->itf, value, get_country_code());
+        if_active[self->itf] = value;
         return mp_const_none;
     }
 }
@@ -311,7 +320,17 @@ static MP_DEFINE_CONST_FUN_OBJ_1(network_cyw43_disconnect_obj, network_cyw43_dis
 
 static mp_obj_t network_cyw43_isconnected(mp_obj_t self_in) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_bool(cyw43_tcpip_link_status(self->cyw, self->itf) == 3);
+    bool result = (cyw43_tcpip_link_status(self->cyw, self->itf) == CYW43_LINK_UP);
+
+    if (result && self->itf == CYW43_ITF_AP) {
+        // For AP we need to not only know if the link is up, but also if any stations
+        // have associated.
+        uint8_t mac_buf[6];
+        int num_stas = 1;
+        cyw43_wifi_ap_get_stas(self->cyw, &num_stas, mac_buf);
+        result = num_stas > 0;
+    }
+    return mp_obj_new_bool(result);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(network_cyw43_isconnected_obj, network_cyw43_isconnected);
 
@@ -351,13 +370,15 @@ static mp_obj_t network_cyw43_status(size_t n_args, const mp_obj_t *args) {
             if (self->itf != CYW43_ITF_AP) {
                 mp_raise_ValueError(MP_ERROR_TEXT("AP required"));
             }
-            int num_stas;
-            uint8_t macs[32 * 6];
+            static const unsigned mac_len = 6;
+            static const unsigned max_stas = 32;
+            int num_stas = max_stas;
+            uint8_t macs[max_stas * mac_len];
             cyw43_wifi_ap_get_stas(self->cyw, &num_stas, macs);
             mp_obj_t list = mp_obj_new_list(num_stas, NULL);
             for (int i = 0; i < num_stas; ++i) {
                 mp_obj_t tuple[1] = {
-                    mp_obj_new_bytes(&macs[i * 6], 6),
+                    mp_obj_new_bytes(&macs[i * mac_len], mac_len),
                 };
                 ((mp_obj_list_t *)MP_OBJ_TO_PTR(list))->items[i] = mp_obj_new_tuple(1, tuple);
             }
@@ -445,6 +466,10 @@ static mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
             mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
         }
 
+        // A number of these options only update buffers in memory, and
+        // won't do anything until the interface is cycled down and back up
+        bool cycle_active = false;
+
         for (size_t i = 0; i < kwargs->alloc; ++i) {
             if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
                 mp_map_elem_t *e = &kwargs->table[i];
@@ -457,6 +482,7 @@ static mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                     }
                     case MP_QSTR_channel: {
                         cyw43_wifi_ap_set_channel(self->cyw, mp_obj_get_int(e->value));
+                        cycle_active = true;
                         break;
                     }
                     case MP_QSTR_ssid:
@@ -464,6 +490,7 @@ static mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                         size_t len;
                         const char *str = mp_obj_str_get_data(e->value, &len);
                         cyw43_wifi_ap_set_ssid(self->cyw, len, (const uint8_t *)str);
+                        cycle_active = true;
                         break;
                     }
                     case MP_QSTR_monitor: {
@@ -483,6 +510,7 @@ static mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                     }
                     case MP_QSTR_security: {
                         cyw43_wifi_ap_set_auth(self->cyw, mp_obj_get_int(e->value));
+                        cycle_active = true;
                         break;
                     }
                     case MP_QSTR_key:
@@ -490,6 +518,7 @@ static mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                         size_t len;
                         const char *str = mp_obj_str_get_data(e->value, &len);
                         cyw43_wifi_ap_set_password(self->cyw, len, (const uint8_t *)str);
+                        cycle_active = true;
                         break;
                     }
                     case MP_QSTR_pm: {
@@ -517,6 +546,13 @@ static mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                         mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
                 }
             }
+        }
+
+        // If the interface is already active, cycle it down and up
+        if (cycle_active && if_active[self->itf]) {
+            uint32_t country = get_country_code();
+            cyw43_wifi_set_up(self->cyw, self->itf, false, country);
+            cyw43_wifi_set_up(self->cyw, self->itf, true, country);
         }
 
         return mp_const_none;

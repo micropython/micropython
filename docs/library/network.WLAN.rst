@@ -8,7 +8,7 @@ This class provides a driver for WiFi network processors.  Example usage::
 
     import network
     # enable station interface and connect to WiFi access point
-    nic = network.WLAN(network.STA_IF)
+    nic = network.WLAN(network.WLAN.IF_STA)
     nic.active(True)
     nic.connect('your-ssid', 'your-key')
     # now use sockets as usual
@@ -18,8 +18,8 @@ Constructors
 .. class:: WLAN(interface_id)
 
 Create a WLAN network interface object. Supported interfaces are
-``network.STA_IF`` (station aka client, connects to upstream WiFi access
-points) and ``network.AP_IF`` (access point, allows other WiFi clients to
+``network.WLAN.IF_STA`` (station aka client, connects to upstream WiFi access
+points) and ``network.WLAN.IF_AP`` (access point, allows other WiFi clients to
 connect). Availability of the methods below depends on interface type.
 For example, only STA interface may `WLAN.connect()` to an access point.
 
@@ -75,7 +75,7 @@ Methods
     Return the current status of the wireless connection.
 
     When called with no argument the return value describes the network link status.
-    The possible statuses are defined as constants:
+    The possible statuses are defined as constants in the :mod:`network` module:
 
         * ``STAT_IDLE`` -- no connection and no activity,
         * ``STAT_CONNECTING`` -- connecting in progress,
@@ -126,7 +126,7 @@ Methods
    =============  ===========
    mac            MAC address (bytes)
    ssid           WiFi access point name (string)
-   channel        WiFi channel (integer)
+   channel        WiFi channel (integer). Depending on the port this may only be supported on the AP interface.
    hidden         Whether SSID is hidden (boolean)
    security       Security protocol supported (enumeration, see module constants)
    key            Access key (string)

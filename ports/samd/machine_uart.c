@@ -107,10 +107,17 @@ static const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0,
 
 // take all bytes from the fifo and store them in the buffer
 static void uart_drain_rx_fifo(machine_uart_obj_t *self, Sercom *uart) {
+    uint8_t bits = self->bits;
     while (uart->USART.INTFLAG.bit.RXC != 0) {
-        if (ringbuf_free(&self->read_buffer) > 0) {
-            // get a byte from uart and put into the buffer
-            ringbuf_put(&(self->read_buffer), uart->USART.DATA.bit.DATA);
+        if (ringbuf_free(&self->read_buffer) >= (bits <= 8 ? 1 : 2)) {
+            // get a word from uart and put into the buffer
+            if (bits <= 8) {
+                ringbuf_put(&(self->read_buffer), uart->USART.DATA.bit.DATA);
+            } else {
+                uint16_t data = uart->USART.DATA.bit.DATA;
+                ringbuf_put(&(self->read_buffer), data);
+                ringbuf_put(&(self->read_buffer), data >> 8);
+            }
         } else {
             // if the buffer is full, disable the RX interrupt
             // allowing RTS to come up. It will be re-enabled by the next read
@@ -150,7 +157,12 @@ void common_uart_irq_handler(int uart_id) {
             #if MICROPY_HW_UART_TXBUF
             // handle the outgoing data
             if (ringbuf_avail(&self->write_buffer) > 0) {
-                uart->USART.DATA.bit.DATA = ringbuf_get(&self->write_buffer);
+                if (self->bits <= 8) {
+                    uart->USART.DATA.bit.DATA = ringbuf_get(&self->write_buffer);
+                } else {
+                    uart->USART.DATA.bit.DATA =
+                        ringbuf_get(&self->write_buffer) | (ringbuf_get(&self->write_buffer) << 8);
+                }
             } else {
                 #if MICROPY_PY_MACHINE_UART_IRQ
                 // Set the TXIDLE flag
@@ -274,6 +286,17 @@ void machine_uart_set_baudrate(mp_obj_t self_in, uint32_t baudrate) {
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    size_t rxbuf_len = self->read_buffer.size - 1;
+    #if MICROPY_HW_UART_TXBUF
+    size_t txbuf_len = self->write_buffer.size - 1;
+    #endif
+    if (self->bits > 8) {
+        rxbuf_len /= 2;
+        #if MICROPY_HW_UART_TXBUF
+        txbuf_len /= 2;
+        #endif
+    }
+
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
         "timeout=%u, timeout_char=%u, rxbuf=%d"
         #if MICROPY_HW_UART_TXBUF
@@ -287,9 +310,9 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         #endif
         ")",
         self->id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop + 1, self->timeout, self->timeout_char, self->read_buffer.size - 1
+        self->stop + 1, self->timeout, self->timeout_char, rxbuf_len
         #if MICROPY_HW_UART_TXBUF
-        , self->write_buffer.size - 1
+        , txbuf_len
         #endif
         #if MICROPY_HW_UART_RTSCTS
         , self->rts != 0xff ? pin_find_by_id(self->rts)->name : MP_QSTR_None
@@ -411,6 +434,14 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         }
     }
     #endif
+
+    // Double the buffer lengths for 9 bit transfer
+    if (self->bits > 8) {
+        rxbuf_len *= 2;
+        #if MICROPY_HW_UART_TXBUF
+        txbuf_len *= 2;
+        #endif
+    }
     // Initialise the UART peripheral if any arguments given, or it was not initialised previously.
     if (n_args > 0 || kw_args->used > 0 || self->new) {
         self->new = false;
@@ -619,7 +650,12 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
     uint64_t timeout_char = self->timeout_char;
     uint8_t *dest = buf_in;
 
-    for (size_t i = 0; i < size; i++) {
+    // Check that size is even for 9 bit transfers.
+    if ((self->bits >= 9) && (size & 1)) {
+        *errcode = MP_EIO;
+        return MP_STREAM_ERROR;
+    }
+    for (size_t i = 0; i < size;) {
         // Wait for the first/next character
         while (ringbuf_avail(&self->read_buffer) == 0) {
             if (mp_hal_ticks_ms_64() > t) {  // timed out
@@ -633,6 +669,11 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
             MICROPY_EVENT_POLL_HOOK
         }
         *dest++ = ringbuf_get(&(self->read_buffer));
+        i++;
+        if (self->bits >= 9 && i < size) {
+            *dest++ = ringbuf_get(&(self->read_buffer));
+            i++;
+        }
         t = mp_hal_ticks_ms_64() + timeout_char;
         // (Re-)Enable RXC interrupt
         if ((uart->USART.INTENSET.reg & SERCOM_USART_INTENSET_RXC) == 0) {
@@ -647,12 +688,19 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
     size_t i = 0;
     const uint8_t *src = buf_in;
     Sercom *uart = sercom_instance[self->id];
-
     uint64_t t = mp_hal_ticks_ms_64() + self->timeout;
+    uint8_t bits = self->bits;
+    // Check that size is even for 9 bit transfers.
+    if ((bits >= 9) && (size & 1)) {
+        *errcode = MP_EIO;
+        return MP_STREAM_ERROR;
+    }
+
     #if MICROPY_HW_UART_TXBUF
 
     #if MICROPY_PY_MACHINE_UART_IRQ
     // Prefill the FIFO to get rid of the initial IRQ_TXIDLE event
+    // Do not care for 9 Bit transfer here since the UART is not yet started.
     while (i < size && ringbuf_free(&(self->write_buffer)) > 0) {
         ringbuf_put(&(self->write_buffer), *src++);
         i++;
@@ -672,8 +720,16 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
             }
             MICROPY_EVENT_POLL_HOOK
         }
-        ringbuf_put(&(self->write_buffer), *src++);
-        i++;
+        if (bits >= 9) {
+            mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+            ringbuf_put(&(self->write_buffer), *src++);
+            ringbuf_put(&(self->write_buffer), *src++);
+            i += 2;
+            MICROPY_END_ATOMIC_SECTION(atomic_state);
+        } else {
+            ringbuf_put(&(self->write_buffer), *src++);
+            i += 1;
+        }
         uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_DRE; // kick off the IRQ
     }
 
@@ -691,7 +747,13 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
             }
             MICROPY_EVENT_POLL_HOOK
         }
-        uart->USART.DATA.bit.DATA = *src++;
+        if (self->bits > 8 && i < (size - 1)) {
+            uart->USART.DATA.bit.DATA = *(uint16_t *)src;
+            i++;
+            src += 2;
+        } else {
+            uart->USART.DATA.bit.DATA = *src++;
+        }
         i++;
     }
     #endif

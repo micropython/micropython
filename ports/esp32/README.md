@@ -28,7 +28,7 @@ manage the ESP32 microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
 The ESP-IDF changes quickly and MicroPython only supports certain versions.
-Currently MicroPython supports v5.0.4, v5.0.5, v5.1.2, v5.2.0, v5.2.2.
+Currently MicroPython supports v5.2, v5.2.2, and v5.3.
 
 To install the ESP-IDF the full instructions can be found at the
 [Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation-step-by-step).
@@ -195,7 +195,7 @@ quickly call `wlan_connect()` and it just works):
 ```python
 def wlan_connect(ssid='MYSSID', password='MYPASS'):
     import network
-    wlan = network.WLAN(network.STA_IF)
+    wlan = network.WLAN(network.WLAN.IF_STA)
     if not wlan.active() or not wlan.isconnected():
         wlan.active(True)
         print('connecting to:', ssid)

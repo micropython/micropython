@@ -60,6 +60,18 @@ const mp_obj_type_t mp_network_ppp_lwip_type;
 
 static mp_obj_t network_ppp___del__(mp_obj_t self_in);
 
+static void network_ppp_stream_uart_irq_disable(network_ppp_obj_t *self) {
+    if (self->stream == mp_const_none) {
+        return;
+    }
+
+    // Disable UART IRQ.
+    mp_obj_t dest[3];
+    mp_load_method(self->stream, MP_QSTR_irq, dest);
+    dest[2] = mp_const_none;
+    mp_call_method_n_kw(1, 0, dest);
+}
+
 static void network_ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
     network_ppp_obj_t *self = ctx;
     switch (err_code) {
@@ -68,12 +80,9 @@ static void network_ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
             break;
         case PPPERR_USER:
             if (self->state >= STATE_ERROR) {
-                // Disable UART IRQ.
-                mp_obj_t dest[3];
-                mp_load_method(self->stream, MP_QSTR_irq, dest);
-                dest[2] = mp_const_none;
-                mp_call_method_n_kw(1, 0, dest);
-                // Indicate that the IRQ is disabled.
+                network_ppp_stream_uart_irq_disable(self);
+                // Indicate that we are no longer connected and thus
+                // only need to free the PPP PCB, not close it.
                 self->state = STATE_ACTIVE;
             }
             // Clean up the PPP PCB.
@@ -91,7 +100,9 @@ static mp_obj_t network_ppp_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     mp_obj_t stream = all_args[0];
 
-    mp_get_stream_raise(stream, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE);
+    if (stream != mp_const_none) {
+        mp_get_stream_raise(stream, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE);
+    }
 
     network_ppp_obj_t *self = mp_obj_malloc_with_finaliser(network_ppp_obj_t, type);
     self->state = STATE_INACTIVE;
@@ -105,7 +116,7 @@ static mp_obj_t network_ppp___del__(mp_obj_t self_in) {
     network_ppp_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->state >= STATE_ACTIVE) {
         if (self->state >= STATE_ERROR) {
-            // Still connected over the UART stream.
+            // Still connected over the stream.
             // Force the connection to close, with nocarrier=1.
             self->state = STATE_INACTIVE;
             ppp_close(self->pcb, 1);
@@ -127,10 +138,11 @@ static mp_obj_t network_ppp_poll(size_t n_args, const mp_obj_t *args) {
     }
 
     mp_int_t total_len = 0;
-    for (;;) {
+    mp_obj_t stream = self->stream;
+    while (stream != mp_const_none) {
         uint8_t buf[256];
         int err;
-        mp_uint_t len = mp_stream_rw(self->stream, buf, sizeof(buf), &err, 0);
+        mp_uint_t len = mp_stream_rw(stream, buf, sizeof(buf), &err, 0);
         if (len == 0) {
             break;
         }
@@ -149,16 +161,42 @@ static mp_obj_t network_ppp_poll(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ppp_poll_obj, 1, 2, network_ppp_poll);
 
+static void network_ppp_stream_uart_irq_enable(network_ppp_obj_t *self) {
+    if (self->stream == mp_const_none) {
+        return;
+    }
+
+    // Enable UART IRQ to call PPP.poll() when incoming data is ready.
+    mp_obj_t dest[4];
+    mp_load_method(self->stream, MP_QSTR_irq, dest);
+    dest[2] = mp_obj_new_bound_meth(MP_OBJ_FROM_PTR(&network_ppp_poll_obj), MP_OBJ_FROM_PTR(self));
+    dest[3] = mp_load_attr(self->stream, MP_QSTR_IRQ_RXIDLE);
+    mp_call_method_n_kw(2, 0, dest);
+}
+
 static mp_obj_t network_ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
         mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
     }
-    // network_ppp_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    network_ppp_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (kwargs->used != 0) {
         for (size_t i = 0; i < kwargs->alloc; i++) {
             if (mp_map_slot_is_filled(kwargs, i)) {
                 switch (mp_obj_str_get_qstr(kwargs->table[i].key)) {
+                    case MP_QSTR_stream: {
+                        if (kwargs->table[i].value != mp_const_none) {
+                            mp_get_stream_raise(kwargs->table[i].value, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE);
+                        }
+                        if (self->state >= STATE_ACTIVE) {
+                            network_ppp_stream_uart_irq_disable(self);
+                        }
+                        self->stream = kwargs->table[i].value;
+                        if (self->state >= STATE_ACTIVE) {
+                            network_ppp_stream_uart_irq_enable(self);
+                        }
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -174,6 +212,10 @@ static mp_obj_t network_ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t
     mp_obj_t val = mp_const_none;
 
     switch (mp_obj_str_get_qstr(args[1])) {
+        case MP_QSTR_stream: {
+            val = self->stream;
+            break;
+        }
         default:
             mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
     }
@@ -201,10 +243,14 @@ static u32_t network_ppp_output_callback(ppp_pcb *pcb, const void *data, u32_t l
     }
     mp_printf(&mp_plat_print, ")\n");
     #endif
+    mp_obj_t stream = self->stream;
+    if (stream == mp_const_none) {
+        return 0;
+    }
     int err;
     // The return value from this output callback is the number of bytes written out.
     // If it's less than the requested number of bytes then lwIP will propagate out an error.
-    return mp_stream_rw(self->stream, (void *)data, len, &err, MP_STREAM_RW_WRITE);
+    return mp_stream_rw(stream, (void *)data, len, &err, MP_STREAM_RW_WRITE);
 }
 
 static mp_obj_t network_ppp_connect(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -227,12 +273,7 @@ static mp_obj_t network_ppp_connect(size_t n_args, const mp_obj_t *args, mp_map_
         }
         self->state = STATE_ACTIVE;
 
-        // Enable UART IRQ to call PPP.poll() when incoming data is ready.
-        mp_obj_t dest[4];
-        mp_load_method(self->stream, MP_QSTR_irq, dest);
-        dest[2] = mp_obj_new_bound_meth(MP_OBJ_FROM_PTR(&network_ppp_poll_obj), MP_OBJ_FROM_PTR(self));
-        dest[3] = mp_load_attr(self->stream, MP_QSTR_IRQ_RXIDLE);
-        mp_call_method_n_kw(2, 0, dest);
+        network_ppp_stream_uart_irq_enable(self);
     }
 
     if (self->state == STATE_CONNECTING || self->state == STATE_CONNECTED) {

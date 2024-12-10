@@ -45,6 +45,8 @@
 typedef struct _machine_pwm_obj_t {
     mp_obj_base_t base;
     PWM_Type *instance;
+    const machine_pin_obj_t *pwm_pin;
+    const machine_pin_af_obj_t *pwm_pin_af_obj;
     bool is_flexpwm;
     uint8_t complementary;
     uint8_t module;
@@ -255,6 +257,8 @@ static void configure_flexpwm(machine_pwm_obj_t *self) {
         PWM_SetupFaultDisableMap(self->instance, self->submodule, self->channel2, kPWM_faultchannel_1, 0);
     }
 
+    // clear the load okay bit for the submodules in case there is a pending load
+    PWM_SetPwmLdok(self->instance, 1 << self->submodule, false);
     if (self->channel1 != kPWM_PwmX) {  // Only for A/B channels
         // Initialize the channel parameters
         pwmSignal.pwmChannel = self->channel1;
@@ -283,6 +287,17 @@ static void configure_flexpwm(machine_pwm_obj_t *self) {
             self->instance->SM[self->submodule].CTRL &= ~(PWM_CTRL_DBLEN_MASK | PWM_CTRL_SPLIT_MASK);
         }
     } else {
+        if (self->duty_u16 == 0) {
+            // For duty_u16 == 0 just set the output to GPIO mode
+            if (self->invert) {
+                mp_hal_pin_high(self->pwm_pin);
+            } else {
+                mp_hal_pin_low(self->pwm_pin);
+            }
+            IOMUXC_SetPinMux(self->pwm_pin->muxRegister, PIN_AF_MODE_ALT5, 0, 0, 0, 0U);
+        } else {
+            IOMUXC_SetPinMux(self->pwm_pin->muxRegister, self->pwm_pin_af_obj->af_mode, 0, 0, 0, 0U);
+        }
         PWM_SetupPwmx_u16(self->instance, self->submodule, self->freq, self->duty_u16,
             self->invert, pwmSourceClockInHz);
         if (self->xor) {
@@ -408,12 +423,16 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
             }
             self->center = center;
         } else {  // Use alignment setting shortcut
-            if (args[ARG_align].u_int >= 0) {
+            uint32_t duty = self->duty_u16;
+            if (duty == VALUE_NOT_SET && self->duty_ns != VALUE_NOT_SET) {
+                duty = duty_ns_to_duty_u16(self->freq, self->duty_ns);
+            }
+            if (args[ARG_align].u_int >= 0 && duty != VALUE_NOT_SET && self->freq != VALUE_NOT_SET) {
                 uint8_t align = args[ARG_align].u_int & 3; // limit to 0..3
                 if (align == PWM_BEGIN) {
-                    self->center = self->duty_u16 / 2;
+                    self->center = duty / 2;
                 } else if (align == PWM_END) {
-                    self->center = PWM_FULL_SCALE - self->duty_u16 / 2;
+                    self->center = PWM_FULL_SCALE - duty / 2;
                 } else {
                     self->center = 32768; // Default value: mid.
                 }
@@ -515,6 +534,8 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 
     // Create and populate the PWM object.
     machine_pwm_obj_t *self = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);
+    self->pwm_pin = pin1;
+    self->pwm_pin_af_obj = af_obj1;
     self->is_flexpwm = is_flexpwm;
     self->instance = af_obj1->instance;
     self->module = module;
@@ -534,6 +555,8 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 
     // Initialize the Pin(s).
     CLOCK_EnableClock(kCLOCK_Iomuxc); // just in case it was not set yet
+    // Configure PWMX channels to pin output mode to be prepared for duty_u16 == 0.
+    mp_hal_pin_output(pin1);
     IOMUXC_SetPinMux(pin1->muxRegister, af_obj1->af_mode, af_obj1->input_register, af_obj1->input_daisy,
         pin1->configRegister, 0U);
     IOMUXC_SetPinConfig(pin1->muxRegister, af_obj1->af_mode, af_obj1->input_register, af_obj1->input_daisy,

@@ -62,9 +62,12 @@ Methods
 
    Get the number of milliseconds left before the alarm expires.
 
-.. method:: RTC.cancel(alarm_id=0)
+.. method:: RTC.alarm_cancel(alarm_id=0)
 
    Cancel a running alarm.
+
+   The mimxrt port also exposes this function as ``RTC.cancel(alarm_id=0)``, but this is
+   scheduled to be removed in MicroPython 2.0.
 
 .. method:: RTC.irq(*, trigger, handler=None, wake=machine.IDLE)
 
@@ -83,7 +86,7 @@ Methods
    a `bytes` object.
 
    Data written to RTC user memory is persistent across restarts, including
-   `machine.soft_reset()` and `machine.deepsleep()`.
+   :ref:`soft_reset` and `machine.deepsleep()`.
 
    The maximum length of RTC user memory is 2048 bytes by default on esp32,
    and 492 bytes on esp8266.

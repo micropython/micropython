@@ -163,7 +163,7 @@ Methods
      - ``callback`` - as per TimerChannel.callback()
 
      - ``pin`` None (the default) or a Pin object. If specified (and not None)
-       this will cause the alternate function of the the indicated pin
+       this will cause the alternate function of the indicated pin
        to be configured for this timer channel. An error will be raised if
        the pin doesn't support any alternate functions for this timer channel.
 

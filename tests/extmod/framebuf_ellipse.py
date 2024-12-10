@@ -63,3 +63,18 @@ for x, y in (
     fbuf.fill(0)
     fbuf.ellipse(x, y, 6, 12, 0xAA, True)
     printbuf()
+
+# Draw an ellipse with both radius 0
+fbuf.fill(0)
+fbuf.ellipse(15, 15, 0, 0, 0xFF, True)
+printbuf()
+
+# Draw an ellipse with both radius 0 out of bounds
+fbuf.fill(0)
+fbuf.ellipse(45, 45, 0, 0, 0xFF, True)
+printbuf()
+
+# Draw an ellipse with radius 0 and all sectors masked out
+fbuf.fill(0)
+fbuf.ellipse(15, 15, 0, 0, 0xFF, True, 0)
+printbuf()

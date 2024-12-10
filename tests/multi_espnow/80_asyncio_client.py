@@ -50,7 +50,7 @@ def client_send(e, peer, msg, sync):
 
 
 def init(e, sta_active=True, ap_active=False):
-    wlans = [network.WLAN(i) for i in [network.STA_IF, network.AP_IF]]
+    wlans = [network.WLAN(i) for i in [network.WLAN.IF_STA, network.WLAN.IF_AP]]
     e.active(True)
     e.set_pmk(default_pmk)
     wlans[0].active(sta_active)

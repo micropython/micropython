@@ -23,7 +23,6 @@
 #define MICROPY_OPT_MATH_FACTORIAL              (0)
 #define MICROPY_REPL_EMACS_KEYS                 (0)
 #define MICROPY_PY_BUILTINS_COMPLEX             (0)
-#define MICROPY_PY_FUNCTION_ATTRS               (0)
 #define MICROPY_PY_DELATTR_SETATTR              (0)
 #define MICROPY_PY_BUILTINS_STR_CENTER          (0)
 #define MICROPY_PY_BUILTINS_STR_PARTITION       (0)

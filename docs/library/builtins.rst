@@ -170,6 +170,10 @@ Exceptions
 
 .. exception:: KeyboardInterrupt
 
+   |see_cpython| `python:KeyboardInterrupt`.
+
+   See also in the context of :ref:`soft_bricking`.
+
 .. exception:: KeyError
 
 .. exception:: MemoryError
@@ -189,6 +193,12 @@ Exceptions
 .. exception:: SystemExit
 
     |see_cpython| `python:SystemExit`.
+
+    On non-embedded ports (i.e. Windows and Unix), an unhandled ``SystemExit``
+    exits the MicroPython process in a similar way to CPython.
+
+    On embedded ports, an unhandled ``SystemExit`` currently causes a
+    :ref:`soft_reset` of MicroPython.
 
 .. exception:: TypeError
 

@@ -508,6 +508,10 @@ def run_feature_check(pyb, args, test_file):
     return run_micropython(pyb, args, test_file_path, test_file_path, is_special=True)
 
 
+class TestError(Exception):
+    pass
+
+
 class ThreadSafeCounter:
     def __init__(self, start=0):
         self._value = start
@@ -862,29 +866,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skipped_tests.append(test_name)
             return
 
-        # get expected output
-        test_file_expected = test_file + ".exp"
-        if os.path.isfile(test_file_expected):
-            # expected output given by a file, so read that in
-            with open(test_file_expected, "rb") as f:
-                output_expected = f.read()
-        else:
-            # run CPython to work out expected output
-            try:
-                output_expected = subprocess.check_output(
-                    CPYTHON3_CMD + [test_file_abspath],
-                    cwd=os.path.dirname(test_file),
-                    stderr=subprocess.STDOUT,
-                )
-            except subprocess.CalledProcessError:
-                output_expected = b"CPYTHON3 CRASH"
-
-        # canonical form for all host platforms is to use \n for end-of-line
-        output_expected = output_expected.replace(b"\r\n", b"\n")
-
-        # run MicroPython
+        # Run the test on the MicroPython target.
         output_mupy = run_micropython(pyb, args, test_file, test_file_abspath)
 
+        # Check if the target requested to skip this test.
         if output_mupy == b"SKIP\n":
             if pyb is not None and hasattr(pyb, "read_until"):
                 # Running on a target over a serial connection, and the target requested
@@ -896,22 +881,96 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skipped_tests.append(test_name)
             return
 
-        testcase_count.add(len(output_expected.splitlines()))
+        # Look at the output of the test to see if unittest was used.
+        uses_unittest = False
+        output_mupy_lines = output_mupy.splitlines()
+        if any(
+            line == b"ImportError: no module named 'unittest'" for line in output_mupy_lines[-3:]
+        ):
+            raise TestError(
+                (
+                    "error: test {} requires unittest".format(test_file),
+                    "(eg run `mpremote mip install unittest` to install it)",
+                )
+            )
+        elif (
+            len(output_mupy_lines) > 4
+            and output_mupy_lines[-4] == b"-" * 70
+            and output_mupy_lines[-2] == b""
+        ):
+            # look for unittest summary
+            unittest_ran_match = re.match(rb"Ran (\d+) tests$", output_mupy_lines[-3])
+            unittest_result_match = re.match(
+                b"("
+                rb"(OK)( \(skipped=(\d+)\))?"
+                b"|"
+                rb"(FAILED) \(failures=(\d+), errors=(\d+)\)"
+                b")$",
+                output_mupy_lines[-1],
+            )
+            uses_unittest = unittest_ran_match and unittest_result_match
+
+        # Determine the expected output.
+        if uses_unittest:
+            # Expected output is result of running unittest.
+            output_expected = None
+        else:
+            test_file_expected = test_file + ".exp"
+            if os.path.isfile(test_file_expected):
+                # Expected output given by a file, so read that in.
+                with open(test_file_expected, "rb") as f:
+                    output_expected = f.read()
+            else:
+                # Run CPython to work out expected output.
+                try:
+                    output_expected = subprocess.check_output(
+                        CPYTHON3_CMD + [test_file_abspath],
+                        cwd=os.path.dirname(test_file),
+                        stderr=subprocess.STDOUT,
+                    )
+                except subprocess.CalledProcessError:
+                    output_expected = b"CPYTHON3 CRASH"
+
+            # Canonical form for all host platforms is to use \n for end-of-line.
+            output_expected = output_expected.replace(b"\r\n", b"\n")
+
+        # Work out if test passed or not.
+        test_passed = False
+        extra_info = ""
+        if uses_unittest:
+            test_passed = unittest_result_match.group(2) == b"OK"
+            num_test_cases = int(unittest_ran_match.group(1))
+            extra_info = "unittest: {} ran".format(num_test_cases)
+            if test_passed and unittest_result_match.group(4) is not None:
+                num_skipped = int(unittest_result_match.group(4))
+                num_test_cases -= num_skipped
+                extra_info += ", {} skipped".format(num_skipped)
+            elif not test_passed:
+                num_failures = int(unittest_result_match.group(6))
+                num_errors = int(unittest_result_match.group(7))
+                extra_info += ", {} failures, {} errors".format(num_failures, num_errors)
+            extra_info = "(" + extra_info + ")"
+            testcase_count.add(num_test_cases)
+        else:
+            testcase_count.add(len(output_expected.splitlines()))
+            test_passed = output_expected == output_mupy
 
         filename_expected = os.path.join(result_dir, test_basename + ".exp")
         filename_mupy = os.path.join(result_dir, test_basename + ".out")
 
-        if output_expected == output_mupy:
-            print("pass ", test_file)
+        # Print test summary, update counters, and save .exp/.out files if needed.
+        if test_passed:
+            print("pass ", test_file, extra_info)
             passed_count.increment()
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
-            with open(filename_expected, "wb") as f:
-                f.write(output_expected)
+            print("FAIL ", test_file, extra_info)
+            if output_expected is not None:
+                with open(filename_expected, "wb") as f:
+                    f.write(output_expected)
             with open(filename_mupy, "wb") as f:
                 f.write(output_mupy)
-            print("FAIL ", test_file)
             failed_tests.append((test_name, test_file))
 
         test_count.increment()
@@ -919,12 +978,17 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if pyb:
         num_threads = 1
 
-    if num_threads > 1:
-        pool = ThreadPool(num_threads)
-        pool.map(run_one_test, tests)
-    else:
-        for test in tests:
-            run_one_test(test)
+    try:
+        if num_threads > 1:
+            pool = ThreadPool(num_threads)
+            pool.map(run_one_test, tests)
+        else:
+            for test in tests:
+                run_one_test(test)
+    except TestError as er:
+        for line in er.args[0]:
+            print(line)
+        sys.exit(1)
 
     print(
         "{} tests performed ({} individual testcases)".format(
@@ -1090,11 +1154,18 @@ the last matching regex is used:
     args = cmd_parser.parse_args()
 
     if args.print_failures:
-        for exp in glob(os.path.join(args.result_dir, "*.exp")):
-            testbase = exp[:-4]
+        for out in glob(os.path.join(args.result_dir, "*.out")):
+            testbase = out[:-4]
             print()
             print("FAILURE {0}".format(testbase))
-            os.system("{0} {1}.exp {1}.out".format(DIFF, testbase))
+            if os.path.exists(testbase + ".exp"):
+                # Show diff of expected and actual output.
+                os.system("{0} {1}.exp {1}.out".format(DIFF, testbase))
+            else:
+                # No expected output, just show the actual output (eg from a unittest).
+                with open(out) as f:
+                    for line in f:
+                        print(line, end="")
 
         sys.exit(0)
 
@@ -1189,8 +1260,15 @@ the last matching regex is used:
         tests = args.files
 
     if not args.keep_path:
-        # clear search path to make sure tests use only builtin modules and those in extmod
-        os.environ["MICROPYPATH"] = ".frozen" + os.pathsep + base_path("../extmod")
+        # Clear search path to make sure tests use only builtin modules, those in
+        # extmod, and a path to unittest in case it's needed.
+        os.environ["MICROPYPATH"] = (
+            ".frozen"
+            + os.pathsep
+            + base_path("../extmod")
+            + os.pathsep
+            + base_path("../lib/micropython-lib/python-stdlib/unittest")
+        )
 
     try:
         os.makedirs(args.result_dir, exist_ok=True)

@@ -80,7 +80,7 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
         pwm_set_duty(args[ARG_duty].u_int, self->channel);
     }
     if (args[ARG_duty_u16].u_int != -1) {
-        pwm_set_duty(args[ARG_duty_u16].u_int * 1000 / 65536, self->channel);
+        pwm_set_duty(args[ARG_duty_u16].u_int * 1000 / 65535, self->channel);
     }
     if (args[ARG_duty_ns].u_int != -1) {
         uint32_t freq = pwm_get_freq(0);
@@ -164,13 +164,13 @@ static void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
 
 static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     set_active(self, true);
-    return MP_OBJ_NEW_SMALL_INT(pwm_get_duty(self->channel) * 65536 / 1024);
+    return MP_OBJ_NEW_SMALL_INT(pwm_get_duty(self->channel) * 65535 / 1024);
 }
 
 static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty) {
     set_active(self, false);
     self->duty_ns = -1;
-    pwm_set_duty(duty * 1024 / 65536, self->channel);
+    pwm_set_duty(duty * 1024 / 65535, self->channel);
     pwm_start();
 }
 

@@ -19,10 +19,10 @@ QSTR_DEFS = qstrdefsport.h
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 
 ifeq ($(QEMU_ARCH),arm)
-FROZEN_MANIFEST ?= "freeze('test-frzmpy')"
+FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy')"
 endif
 ifeq ($(QEMU_ARCH),riscv32)
-FROZEN_MANIFEST ?= "freeze('test-frzmpy', ('frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
+FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
 endif
 
 # include py core make definitions

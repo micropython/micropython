@@ -62,6 +62,7 @@ void ticker_init0(void) {
 #else
     NRFX_IRQ_PRIORITY_SET(FastTicker_IRQn, 2);
 #endif
+    m_num_of_slow_tickers = 0;
 
     NRFX_IRQ_PRIORITY_SET(SlowTicker_IRQn, 3);
 

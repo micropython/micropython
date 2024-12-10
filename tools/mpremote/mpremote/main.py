@@ -547,7 +547,10 @@ def main():
 
         return 0
     except CommandError as e:
+        # Make sure existing stdout appears before the error message on stderr.
+        sys.stdout.flush()
         print(f"{_PROG}: {e}", file=sys.stderr)
+        sys.stderr.flush()
         return 1
     finally:
         do_disconnect(state)

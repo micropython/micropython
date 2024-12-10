@@ -36,3 +36,9 @@ Functions
    Encode binary data in base64 format, as in `RFC 3548
    <https://tools.ietf.org/html/rfc3548.html>`_. Returns the encoded data
    followed by a newline character if newline is true, as a bytes object.
+
+.. function:: crc32(data, [value])
+
+   Compute CRC-32, the 32-bit checksum of *data*, starting with an initial CRC
+   of *value*. The default initial CRC is zero. The algorithm is consistent
+   with the ZIP file checksum.

@@ -70,8 +70,11 @@ Methods
 
 .. method:: PPP.config(config_parameters)
 
-   Sets or gets parameters of the PPP interface. There are currently no parameter that
-   can be set or retrieved.
+   Sets or gets parameters of the PPP interface. The only parameter that can be
+   retrieved and set is the underlying stream, using::
+
+      stream = PPP.config("stream")
+      PPP.config(stream=stream)
 
 .. method:: PPP.ipconfig('param')
             PPP.ipconfig(param=value, ...)

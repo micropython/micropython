@@ -15,6 +15,32 @@ That will run tests on the `/dev/ttyACM0` serial port.  You can also use shortcu
 device names like `a<n>` for `/dev/ttyACM<n>` and `c<n>` for `COM<n>`.  Use
 `./run-tests.py --help` to see all of the device possibilites, and other options.
 
+There are three kinds of tests:
+
+* Tests that use `unittest`: these tests require `unittest` to be installed on the
+  target (eg via `mpremote mip install unittest`), and are used to test things that are
+  MicroPython-specific, such as behaviour that is different to CPython, modules that
+  aren't available in CPython, and hardware tests.  These tests are run only under
+  MicroPython and the test passes if the `unittest` runner prints "OK" at the end of the
+  run.  Other output may be printed, eg for use as diagnostics, and this output does not
+  affect the result of the test.
+
+* Tests with a corresponding `.exp` file: similar to the `unittest` tests, these tests
+  are for features that generally cannot be run under CPython.  In this case the test is
+  run under MicroPython only and the output from MicroPython is compared against the
+  provided `.exp` file.  The test passes if the output matches exactly.
+
+* Tests without a corresponding `.exp` file (and don't use `unittest`): these tests are
+  used to test MicroPython behaviour that should precisely match CPython.  These tests
+  are first run under CPython and the output captured, and then run under MicroPython
+  and the output compared to the CPython output.  The test passes if the output matches
+  exactly.  If the output differs then the test fails and the outputs are saved in a
+  `.exp` and a `.out` file respectively.
+
+In all three cases above, the test can usually be run directly on the target MicroPython
+instance, either using the unix port with `micropython <test.py>`, or on a board with
+`mpremote run <test.py>`.  This is useful for creating and debugging tests.
+
 Tests of capabilities not supported on all platforms should be written
 to check for the capability being present. If it is not, the test
 should merely output 'SKIP' followed by the line terminator, and call
@@ -26,15 +52,6 @@ There are a few features for which this mechanism cannot be used to
 condition a test. The run-tests.py script uses small scripts in the
 feature_check directory to check whether each such feature is present,
 and skips the relevant tests if not.
-
-Tests are generally verified by running the test both in MicroPython and
-in CPython and comparing the outputs. If the output differs the test fails
-and the outputs are saved in a .out and a .exp file respectively.
-For tests that cannot be run in CPython, for example because they use
-the machine module, a .exp file can be provided next to the test's .py
-file. A convenient way to generate that is to run the test, let it fail
-(because CPython cannot run it) and then copy the .out file (but not
-before checking it manually!)
 
 When creating new tests, anything that relies on float support should go in the
 float/ subdirectory.  Anything that relies on import x, where x is not a built-in

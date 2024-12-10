@@ -6,6 +6,10 @@ except AttributeError:
     print("SKIP")
     raise SystemExit
 
+if sys.version.startswith("3.12"):
+    # There is a CPython change in settrace that is reverted in 3.13!
+    print("WARNING: this test will fail when compared to CPython 3.12.x behaviour")
+
 
 def print_stacktrace(frame, level=0):
     # Ignore CPython specific helpers.

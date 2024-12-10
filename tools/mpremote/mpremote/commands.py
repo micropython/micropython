@@ -129,8 +129,15 @@ def _remote_path_basename(a):
 
 def do_filesystem_cp(state, src, dest, multiple, check_hash=False):
     if dest.startswith(":"):
-        dest_exists = state.transport.fs_exists(dest[1:])
-        dest_isdir = dest_exists and state.transport.fs_isdir(dest[1:])
+        dest_no_slash = dest.rstrip("/" + os.path.sep + (os.path.altsep or ""))
+        dest_exists = state.transport.fs_exists(dest_no_slash[1:])
+        dest_isdir = dest_exists and state.transport.fs_isdir(dest_no_slash[1:])
+
+        # A trailing / on dest forces it to be a directory.
+        if dest != dest_no_slash:
+            if not dest_isdir:
+                raise CommandError("cp: destination is not a directory")
+            dest = dest_no_slash
     else:
         dest_exists = os.path.exists(dest)
         dest_isdir = dest_exists and os.path.isdir(dest)

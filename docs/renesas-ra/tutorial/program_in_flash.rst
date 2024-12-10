@@ -28,6 +28,8 @@ As the factory setting, following 2 files are created in the file system:
 * boot.py : executed first when the system starts
 * main.py : executed after boot.py completes
 
+See :doc:`/reference/reset_boot` for more information.
+
 Write a program in the internal file system
 -------------------------------------------
 

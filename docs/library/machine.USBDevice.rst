@@ -32,10 +32,10 @@ Managing a runtime USB interface can be tricky, especially if you are communicat
 with MicroPython over a built-in USB-CDC serial port that's part of the same USB
 device.
 
-- A MicroPython soft reset will always clear all runtime USB interfaces, which
-  results in the entire USB device disconnecting from the host. If MicroPython
-  is also providing a built-in USB-CDC serial port then this will re-appear
-  after the soft reset.
+- A MicroPython :ref:`soft reset <soft_reset>` will always clear all runtime USB
+  interfaces, which results in the entire USB device disconnecting from the
+  host. If MicroPython is also providing a built-in USB-CDC serial port then
+  this will re-appear after the soft reset.
 
   This means some functions (like ``mpremote run``) that target the USB-CDC
   serial port will immediately fail if a runtime USB interface is active,
@@ -44,9 +44,9 @@ device.
   no more runtime USB interface.
 
 - To configure a runtime USB device on every boot, it's recommended to place the
-  configuration code in the ``boot.py`` file on the :ref:`device VFS
+  configuration code in the :ref:`boot.py` file on the :ref:`device VFS
   <filesystem>`. On each reset this file is executed before the USB subsystem is
-  initialised (and before ``main.py``), so it allows the board to come up with the runtime
+  initialised (and before :ref:`main.py`), so it allows the board to come up with the runtime
   USB device immediately.
 
 - For development or debugging, it may be convenient to connect a hardware

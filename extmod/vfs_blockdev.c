@@ -58,6 +58,13 @@ static int mp_vfs_blockdev_call_rw(mp_obj_t *args, size_t block_num, size_t bloc
     if (ret == mp_const_none) {
         return 0;
     } else {
+        // Some block devices return a bool indicating success, so
+        // convert those to an errno integer code.
+        if (ret == mp_const_true) {
+            return 0;
+        } else if (ret == mp_const_false) {
+            return -MP_EIO;
+        }
         // Block device functions are expected to return 0 on success
         // and negative integer on errors. Check for positive integer
         // results as some callers (i.e. littlefs) will produce corrupt

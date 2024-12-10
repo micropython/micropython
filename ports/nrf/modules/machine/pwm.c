@@ -285,7 +285,7 @@ static mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
     if (self->p_config->duty_mode[self->channel] == DUTY_PERCENT) {
         return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel]);
     } else if (self->p_config->duty_mode[self->channel] == DUTY_U16) {
-        return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel] * 100 / 65536);
+        return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel] * 100 / 65535);
     } else {
         return MP_OBJ_NEW_SMALL_INT(-1);
     }
@@ -301,7 +301,7 @@ static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     if (self->p_config->duty_mode[self->channel] == DUTY_U16) {
         return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel]);
     } else if (self->p_config->duty_mode[self->channel] == DUTY_PERCENT) {
-        return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel] * 65536 / 100);
+        return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel] * 65535 / 100);
     } else {
         return MP_OBJ_NEW_SMALL_INT(-1);
     }
@@ -365,7 +365,7 @@ static void machine_hard_pwm_start(const machine_pwm_obj_t *self) {
         if (self->p_config->duty_mode[i] == DUTY_PERCENT) {
             pulse_width = ((period * self->p_config->duty[i]) / 100);
         } else if (self->p_config->duty_mode[i] == DUTY_U16) {
-            pulse_width = ((period * self->p_config->duty[i]) / 65536);
+            pulse_width = ((period * self->p_config->duty[i]) / 65535);
         } else if (self->p_config->duty_mode[i] == DUTY_NS) {
             pulse_width = (uint64_t)self->p_config->duty[i] * tick_freq / 1000000000ULL;
         }

@@ -79,11 +79,11 @@ Networking
 WLAN
 ^^^^
 
-The :mod:`network` module::
+The :class:`network.WLAN` class in the :mod:`network` module::
 
     import network
 
-    wlan = network.WLAN(network.STA_IF) # create station interface
+    wlan = network.WLAN(network.WLAN.IF_STA) # create station interface
     wlan.active(True)       # activate the interface
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
@@ -91,7 +91,7 @@ The :mod:`network` module::
     wlan.config('mac')      # get the interface's MAC address
     wlan.ipconfig('addr4')  # get the interface's IPv4 addresses
 
-    ap = network.WLAN(network.AP_IF) # create access-point interface
+    ap = network.WLAN(network.WLAN.IF_AP) # create access-point interface
     ap.config(ssid='ESP-AP') # set the SSID of the access point
     ap.config(max_clients=10) # set how many clients can connect to the network
     ap.active(True)         # activate the interface
@@ -100,7 +100,7 @@ A useful function for connecting to your local WiFi network is::
 
     def do_connect():
         import network
-        wlan = network.WLAN(network.STA_IF)
+        wlan = network.WLAN(network.WLAN.IF_STA)
         wlan.active(True)
         if not wlan.isconnected():
             print('connecting to network...')
@@ -124,7 +124,8 @@ to reconnect forever).
 LAN
 ^^^
 
-To use the wired interfaces one has to specify the pins and mode ::
+To use the wired interfaces via :class:`network.LAN` one has to specify the pins
+and mode ::
 
     import network
 
@@ -750,20 +751,33 @@ APA102 (DotStar) uses a different driver as it has an additional clock pin.
 Capacitive touch
 ----------------
 
-Use the ``TouchPad`` class in the ``machine`` module::
+ESP32, ESP32-S2 and ESP32-S3 support capacitive touch via the ``TouchPad`` class
+in the ``machine`` module::
 
     from machine import TouchPad, Pin
 
     t = TouchPad(Pin(14))
     t.read()              # Returns a smaller number when touched
 
-``TouchPad.read`` returns a value relative to the capacitive variation. Small numbers (typically in
-the *tens*) are common when a pin is touched, larger numbers (above *one thousand*) when
-no touch is present. However the values are *relative* and can vary depending on the board
-and surrounding composition so some calibration may be required.
+``TouchPad.read`` returns a value proportional to the capacitance between the
+pin and the board's Ground connection. On ESP32 the number becomes smaller when
+the pin (or connected touch pad) is touched, on ESP32-S2 and ESP32-S3 the number
+becomes larger when the pin is touched.
 
-There are ten capacitive touch-enabled pins that can be used on the ESP32: 0, 2, 4, 12, 13
-14, 15, 27, 32, 33. Trying to assign to any other pins will result in a ``ValueError``.
+In all cases, a touch causes a significant change in the return value. Note the
+returned values are *relative* and can vary depending on the board and
+surrounding environment so some calibration (i.e. comparison to a baseline or
+rolling average) may be required.
+
+========= ==============================================
+Chip      Touch-enabled pins
+--------- ----------------------------------------------
+ESP32     0, 2, 4, 12, 13, 14, 15, 27, 32, 33
+ESP32-S2  1 to 14 inclusive
+ESP32-S3  1 to 14 inclusive
+========= ==============================================
+
+Trying to assign to any other pins will result in a ``ValueError``.
 
 Note that TouchPads can be used to wake an ESP32 from sleep::
 
