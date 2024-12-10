@@ -4,45 +4,42 @@ import struct, sys, os
 
 
 class VfsRomWriter:
-    MAGIC = b"RM\x01\x00"
+    MAGIC = 0x294d
 
     def __init__(self):
-        self.filename = None
         self.data = bytearray()
-        self.data += VfsRomWriter.MAGIC
         self.mkdir("")
 
+    def _encode_uint(self, value):
+        encoded = [value & 0x7F]
+        value >>= 7
+        while value != 0:
+            encoded.insert(0, 0x80 | (value & 0x7F))
+            value >>= 7
+        return bytes(encoded)
+
+    def _pack(self, kind, payload):
+        return self._encode_uint(kind) + self._encode_uint(len(payload)) + payload
+
     def finalise(self):
-        self.data += b"\x00\x00"
+        encoded_kind = self._encode_uint(VfsRomWriter.MAGIC)
+        encoded_len = self._encode_uint(len(self.data))
+        if (len(encoded_len) + len(self.data)) % 2 == 1:
+            encoded_len = b"\x80" + encoded_len
+        self.data = encoded_kind + encoded_len + self.data
+        return self.data
 
-    def open(self, filename, attr):
-        assert self.filename is None
-        assert attr == "wb"
-        self.filename = filename
-        self.filedata = b""
-        return self
+    def mkdir(self, dirname):
+        payload = bytes(dirname, "ascii")
+        self.data += self._pack(1, payload)
 
-    def mkdir(self, dir):
-        assert self.filename is None
-        self.data += struct.pack("<H", 0x8000 | len(dir))
-        self.data += bytes(dir, "ascii")
-
-    def close(self):
-        assert self.filename
-        self.data += struct.pack("<HI", len(self.filename), len(self.filedata))
-        self.data += bytes(self.filename, "ascii")
-        self.data += self.filedata
-        self.filename = None
-
-    def write(self, data):
-        assert self.filename
-        self.filedata += data
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, a, b, c):
-        self.close()
+    def mkfile(self, filename, filedata):
+        filename = bytes(filename, "ascii")
+        payload = self._encode_uint(len(filename))
+        payload += self._encode_uint(len(filedata))
+        payload += filename
+        payload += filedata
+        self.data += self._pack(2, payload)
 
 
 def copy_recursively(vfs, src_dir, dest_dir):
@@ -64,8 +61,8 @@ def copy_recursively(vfs, src_dir, dest_dir):
         else:
             # todo mpy-cross .py files
             print(" -", dest_name)
-            with open(src_name, "rb") as src, vfs.open(dest_name, "wb") as dest:
-                dest.write(src.read())
+            with open(src_name, "rb") as src:
+                vfs.mkfile(dest_name, src.read())
 
 
 def make_romfs(src_dir, dest_dir):
@@ -86,9 +83,7 @@ def make_romfs(src_dir, dest_dir):
             print("Error: OSError {}".format(er.args[0]), file=sys.stderr)
             sys.exit(1)
 
-    vfs.finalise()
-
-    return vfs.data
+    return vfs.finalise()
 
 
 def main():
