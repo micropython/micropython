@@ -157,7 +157,9 @@ void machine_rtc_start(void) {
     // Do a basic init.
     SNVS_LP_Init(SNVS);
     // Disable all external Tamper
+    #if defined(FSL_FEATURE_SNVS_HAS_MULTIPLE_TAMPER) && (FSL_FEATURE_SNVS_HAS_MULTIPLE_TAMPER > 0)
     SNVS_LP_DisableAllExternalTamper(SNVS);
+    #endif
 
     SNVS_LP_SRTC_StartTimer(SNVS);
     // If the date is not set, set it to a more recent start date,
