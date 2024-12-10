@@ -42,6 +42,10 @@ INC += -I$(VARIANT_DIR)
 CFLAGS += $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Werror -std=gnu99 -DUNIX -D__USE_MINGW_ANSI_STDIO=1 $(COPT) $(CFLAGS_EXTRA)
 LDFLAGS += -lm -lbcrypt $(LDFLAGS_EXTRA)
 
+# Force the use of 64-bits for file sizes in C library functions on 32-bit platforms.
+# This option has no effect on 64-bit builds.
+CFLAGS += -D_FILE_OFFSET_BITS=64
+
 # Debugging/Optimization
 ifdef DEBUG
 CFLAGS += -g
