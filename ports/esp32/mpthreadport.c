@@ -41,12 +41,6 @@
 #define MP_THREAD_DEFAULT_STACK_SIZE                    (MP_THREAD_MIN_STACK_SIZE + MICROPY_STACK_CHECK_MARGIN)
 #define MP_THREAD_PRIORITY                              (ESP_TASK_PRIO_MIN + 1)
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0) && !CONFIG_FREERTOS_ENABLE_STATIC_TASK_CLEAN_UP
-#define FREERTOS_TASK_DELETE_HOOK                       vTaskPreDeletionHook
-#else
-#define FREERTOS_TASK_DELETE_HOOK                       vPortCleanUpTCB
-#endif
-
 // this structure forms a linked list, one node per active thread
 typedef struct _mp_thread_t {
     TaskHandle_t id;        // system id of thread
@@ -76,7 +70,7 @@ void mp_thread_init(void *stack, uint32_t stack_len) {
     // memory barrier to ensure above data is committed
     __sync_synchronize();
 
-    // FREERTOS_TASK_DELETE_HOOK needs the thread ready after thread_mutex is ready
+    // vTaskPreDeletionHook needs the thread ready after thread_mutex is ready
     thread = &thread_entry0;
 }
 
@@ -180,9 +174,10 @@ void mp_thread_finish(void) {
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
-// This is called from the FreeRTOS idle task and is not within Python context,
-// so MP_STATE_THREAD is not valid and it does not have the GIL.
-void FREERTOS_TASK_DELETE_HOOK(void *tcb) {
+// This is called either from vTaskDelete() or from the FreeRTOS idle task, so
+// may not be within Python context. Therefore MP_STATE_THREAD may not be valid
+// and it does not have the GIL.
+void vTaskPreDeletionHook(void *tcb) {
     if (thread == NULL) {
         // threading not yet initialised
         return;
@@ -243,7 +238,7 @@ void mp_thread_deinit(void) {
             // No tasks left to delete
             break;
         } else {
-            // Call FreeRTOS to delete the task (it will call FREERTOS_TASK_DELETE_HOOK)
+            // Call FreeRTOS to delete the task (it will call vTaskPreDeletionHook)
             vTaskDelete(id);
         }
     }
@@ -251,7 +246,7 @@ void mp_thread_deinit(void) {
 
 #else
 
-void FREERTOS_TASK_DELETE_HOOK(void *tcb) {
+void vTaskPreDeletionHook(void *tcb) {
 }
 
 #endif // MICROPY_PY_THREAD
