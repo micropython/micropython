@@ -747,14 +747,24 @@ ZEPHYR_SDK_VERSION=0.16.8
 ZEPHYR_VERSION=v3.7.0
 
 function ci_zephyr_setup {
-    docker pull zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}
+    IMAGE=zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}
+
+    docker pull ${IMAGE}
+
+    # Directories cached by GitHub Actions, mounted
+    # into the container
+    ZEPHYRPROJECT_DIR="$(pwd)/zephyrproject"
+
+    mkdir -p "${ZEPHYRPROJECT_DIR}"
+
     docker run --name zephyr-ci -d -it \
       -v "$(pwd)":/micropython \
+      -v "${ZEPHYRPROJECT_DIR}":/zephyrproject \
       -e ZEPHYR_SDK_INSTALL_DIR=/opt/toolchains/zephyr-sdk-${ZEPHYR_SDK_VERSION} \
       -e ZEPHYR_TOOLCHAIN_VARIANT=zephyr \
       -e ZEPHYR_BASE=/zephyrproject/zephyr \
       -w /micropython/ports/zephyr \
-      zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}
+      ${IMAGE}
     docker ps -a
 
     # qemu-system-arm is needed to run the test suite.
