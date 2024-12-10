@@ -577,8 +577,12 @@ static const mp_rom_map_elem_t pin_locals_dict_table[] = {
     #endif
 
     // class attributes
+    #if MICROPY_PY_MACHINE_PIN_BOARD_NUM_ENTRIES > 0
     { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&pin_board_pins_obj_type) },
+    #endif
+    #if MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES > 0
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&pin_cpu_pins_obj_type) },
+    #endif
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_MODE_INPUT) },
