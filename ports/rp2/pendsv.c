@@ -26,7 +26,7 @@
 
 #include <assert.h>
 #include "py/mpconfig.h"
-#include "mutex_extra.h"
+#include "py/mpthread.h"
 #include "pendsv.h"
 
 #if PICO_RP2040
@@ -47,21 +47,21 @@ void PendSV_Handler(void);
 
 // Using the nowait variant here as softtimer updates PendSV from the loop of mp_wfe_or_timeout(),
 // where we don't want the CPU event bit to be set.
-static recursive_mutex_nowait_t pendsv_mutex;
+static mp_thread_recursive_mutex_t pendsv_mutex;
 
 void pendsv_init(void) {
-    recursive_mutex_nowait_init(&pendsv_mutex);
+    mp_thread_recursive_mutex_init(&pendsv_mutex);
 }
 
 void pendsv_suspend(void) {
     // Recursive Mutex here as either core may call pendsv_suspend() and expect
     // both mutual exclusion (other core can't enter pendsv_suspend() at the
     // same time), and that no PendSV handler will run.
-    recursive_mutex_nowait_enter_blocking(&pendsv_mutex);
+    mp_thread_recursive_mutex_lock(&pendsv_mutex, 1);
 }
 
 void pendsv_resume(void) {
-    recursive_mutex_nowait_exit(&pendsv_mutex);
+    mp_thread_recursive_mutex_unlock(&pendsv_mutex);
 
     // Run pendsv if needed.  Find an entry with a dispatch and call pendsv dispatch
     // with it.  If pendsv runs it will service all slots.
@@ -97,7 +97,7 @@ void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
 // PendSV interrupt handler to perform background processing.
 void PendSV_Handler(void) {
 
-    if (!recursive_mutex_nowait_try_enter(&pendsv_mutex, NULL)) {
+    if (!mp_thread_recursive_mutex_lock(&pendsv_mutex, 0)) {
         // Failure here means core 1 holds pendsv_mutex. ISR will
         // run again after core 1 calls pendsv_resume().
         return;
@@ -117,5 +117,5 @@ void PendSV_Handler(void) {
         }
     }
 
-    recursive_mutex_nowait_exit(&pendsv_mutex);
+    mp_thread_recursive_mutex_unlock(&pendsv_mutex);
 }
