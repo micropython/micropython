@@ -29,10 +29,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - id: idf_ver
-      name: Read the ESP-IDF version
-      run: source tools/ci.sh && echo "IDF_VER=$IDF_VER" | tee "$GITHUB_OUTPUT"
-
     - name: Cached ESP-IDF install
       id: cache_esp_idf
       uses: actions/cache@v4
@@ -42,7 +38,8 @@ jobs:
           ~/.espressif/
           !~/.espressif/dist/
           ~/.cache/pip/
-        key: esp-idf-${{ steps.idf_ver.outputs.IDF_VER }}
+        # ci.sh includes the ESP-IDF version for the build
+        key: esp-idf-${{ hashFiles('tools/ci.sh') }}
 
     - name: Install ESP-IDF packages
       if: steps.cache_esp_idf.outputs.cache-hit != 'true'

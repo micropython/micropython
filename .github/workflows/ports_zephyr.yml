@@ -30,9 +30,17 @@ jobs:
         docker-images: false
         swap-storage: false
     - uses: actions/checkout@v4
+    - name: Cached Zephyr install
+      id: cache_zephyr
+      uses: actions/cache@v4
+      with:
+        path: ~/zephyrproject/zephyr
+        # ci.sh contains all Zephyr version numbers, which all need to match
+        key: zephyr-${{ hashFiles('tools/ci.sh') }}
     - name: Install packages
       run: source tools/ci.sh && ci_zephyr_setup
     - name: Install Zephyr
+      if: steps.cache_zephyr.outputs.cache-hit != 'true'
       run: source tools/ci.sh && ci_zephyr_install
     - name: Build
       run: source tools/ci.sh && ci_zephyr_build
