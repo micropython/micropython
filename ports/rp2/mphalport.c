@@ -266,15 +266,13 @@ void soft_timer_init(void) {
 }
 
 void mp_wfe_or_timeout(uint32_t timeout_ms) {
-    soft_timer_entry_t timer;
+    best_effort_wfe_or_timeout(delayed_by_ms(get_absolute_time(), timeout_ms));
+}
 
-    // Note the timer doesn't have an associated callback, it just exists to create a
-    // hardware interrupt to wake the CPU
-    soft_timer_static_init(&timer, SOFT_TIMER_MODE_ONE_SHOT, 0, NULL);
-    soft_timer_insert(&timer, timeout_ms);
-
-    __wfe();
-
-    // Clean up the timer node if it's not already
-    soft_timer_remove(&timer);
+int mp_hal_is_pin_reserved(int n) {
+    #if MICROPY_PY_NETWORK_CYW43
+    return n == CYW43_PIN_WL_HOST_WAKE;
+    #else
+    return false;
+    #endif
 }
