@@ -33,7 +33,9 @@
 #include "py/mphal.h"
 #include "pin.h"
 #include "dma.h"
+#ifndef NO_QSTR
 #include "genhdr/plli2stable.h"
+#endif
 
 // Notes on this port's specific implementation of I2S:
 // - the DMA callbacks (1/2 complete and complete) are used to implement the asynchronous background operations

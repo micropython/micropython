@@ -230,7 +230,9 @@ def print_table(hse, valid_plls):
 
 def search_header_for_hsx_values(filename, vals):
     regex_inc = re.compile(r'#include "(boards/[A-Za-z0-9_./]+)"')
-    regex_def = re.compile(r"#define +(HSE_VALUE|HSI_VALUE) +\((\(uint32_t\))?([0-9]+)\)")
+    regex_def = re.compile(
+        r"static.* +(micropy_hw_hs[ei]_value) = +\(*(\(uint32_t\))?([0-9 +-/\*]+)\)*;",
+    )
     with open(filename) as f:
         for line in f:
             line = line.strip()
@@ -242,8 +244,11 @@ def search_header_for_hsx_values(filename, vals):
             m = regex_def.match(line)
             if m:
                 # Found HSE_VALUE or HSI_VALUE
-                val = int(m.group(3)) // 1000000
-                if m.group(1) == "HSE_VALUE":
+                found = m.group(3)
+                if "*" in found or "/" in found:
+                    found = eval(found)
+                val = int(found) // 1000000
+                if m.group(1) == "micropy_hw_hse_value":
                     vals[0] = val
                 else:
                     vals[1] = val
@@ -282,7 +287,7 @@ def main():
         # extract HSE_VALUE, and optionally HSI_VALUE, from header file
         hse, hsi = search_header_for_hsx_values(argv[0][5:], [None, None])
         if hse is None:
-            raise ValueError("%s does not contain a definition of HSE_VALUE" % argv[0])
+            raise ValueError("%s does not contain a definition of micropy_hw_hse_value" % argv[0])
     else:
         # HSE given directly as an integer
         hse = int(argv[0])
