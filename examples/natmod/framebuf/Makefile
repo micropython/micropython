@@ -10,4 +10,6 @@ SRC = framebuf.c
 # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
 ARCH = x64
 
+CLEAN_EXTRA = "$(MOD).mpy"
+
 include $(MPY_DIR)/py/dynruntime.mk
