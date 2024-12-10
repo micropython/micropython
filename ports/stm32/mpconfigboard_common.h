@@ -52,6 +52,11 @@
 #define MICROPY_PY_PYB_LEGACY (1)
 #endif
 
+// Whether to include legacy methods and constants in machine.Pin (which is also pyb.Pin).
+#ifndef MICROPY_PY_MACHINE_PIN_LEGACY
+#define MICROPY_PY_MACHINE_PIN_LEGACY (!MICROPY_PREVIEW_VERSION_2)
+#endif
+
 // Whether machine.bootloader() will enter the bootloader via reset, or direct jump.
 #ifndef MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
 #define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (1)
