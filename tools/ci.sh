@@ -754,13 +754,16 @@ function ci_zephyr_setup {
     docker pull ${IMAGE}
 
     mkdir -p ./zephyrproject
+    mkdir -p ccache
 
     docker run --name zephyr-ci -d -it \
        -v "$(pwd)":/micropython \
        -v "$(pwd)/zephyrproject":/zephyrproject \
+       -v "$(pwd)/ccache":/root/.cache/ccache \
       -e ZEPHYR_SDK_INSTALL_DIR=/opt/toolchains/zephyr-sdk-${ZEPHYR_SDK_VERSION} \
       -e ZEPHYR_TOOLCHAIN_VARIANT=zephyr \
       -e ZEPHYR_BASE=/zephyrproject/zephyr \
+      -e CCACHE_MAXSIZE=150M \
       -w /micropython/ports/zephyr \
       ${IMAGE}
     docker ps -a
