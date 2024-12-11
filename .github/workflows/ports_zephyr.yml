@@ -42,6 +42,10 @@ jobs:
         # cache the "workspace"
         path: ./zephyrproject
         key: zephyr-workspace-${{ steps.versions.outputs.ZEPHYR }}
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: zephyr
     - name: Install packages
       run: source tools/ci.sh && ci_zephyr_setup
     - name: Install Zephyr

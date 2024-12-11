@@ -754,12 +754,15 @@ function ci_zephyr_setup {
     # Directories cached by GitHub Actions, mounted
     # into the container
     ZEPHYRPROJECT_DIR="$(pwd)/zephyrproject"
+    CCACHE_DIR="$(pwd)/.ccache"
 
     mkdir -p "${ZEPHYRPROJECT_DIR}"
+    mkdir -p "${CCACHE_DIR}"
 
     docker run --name zephyr-ci -d -it \
       -v "$(pwd)":/micropython \
       -v "${ZEPHYRPROJECT_DIR}":/zephyrproject \
+      -v "${CCACHE_DIR}":/root/.cache/ccache \
       -e ZEPHYR_SDK_INSTALL_DIR=/opt/toolchains/zephyr-sdk-${ZEPHYR_SDK_VERSION} \
       -e ZEPHYR_TOOLCHAIN_VARIANT=zephyr \
       -e ZEPHYR_BASE=/zephyrproject/zephyr \
