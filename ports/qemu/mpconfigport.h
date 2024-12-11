@@ -42,7 +42,9 @@
 #endif
 
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
+#define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_MEM_STATS           (1)
+#define MICROPY_READER_VFS          (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
@@ -59,6 +61,7 @@
 #define MICROPY_PY_MACHINE_RESET    (1)
 #define MICROPY_PY_MACHINE_PIN_BASE (1)
 #define MICROPY_VFS                 (1)
+#define MICROPY_VFS_ROM             (1)
 
 // type definitions for the specific machine
 
