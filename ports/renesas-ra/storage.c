@@ -36,6 +36,13 @@
 #include "led.h"
 #include "storage.h"
 #include "irq.h"
+#include "flash.h"
+
+typedef struct _pyb_flash_obj_t {
+    mp_obj_base_t base;
+    uint32_t start; // in bytes
+    uint32_t len; // in bytes
+} pyb_flash_obj_t;
 
 #if MICROPY_HW_ENABLE_STORAGE
 
@@ -236,12 +243,6 @@ int storage_readblocks_ext(uint8_t *dest, uint32_t block, uint32_t offset, uint3
 }
 #endif
 
-typedef struct _pyb_flash_obj_t {
-    mp_obj_base_t base;
-    uint32_t start; // in bytes
-    uint32_t len; // in bytes
-} pyb_flash_obj_t;
-
 // This Flash object represents the entire available flash, with emulated partition table at start
 const pyb_flash_obj_t pyb_flash_obj = {
     { &pyb_flash_type },
@@ -427,3 +428,56 @@ void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
 }
 
 #endif
+
+#if MICROPY_VFS_ROM
+
+extern uint32_t _micropy_hw_vfsrom_storage_start, _micropy_hw_vfsrom_storage_len;
+
+#define MICROPY_HW_ROMFS_BASE ((uint32_t)&_micropy_hw_vfsrom_storage_start)
+#define MICROPY_HW_ROMFS_BYTES ((uint32_t)&_micropy_hw_vfsrom_storage_len)
+#define VFSROM_BLOCK_SIZE (2048)
+
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
+    if (MICROPY_HW_ROMFS_BYTES <= 0) {
+        return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+    switch (mp_obj_get_int(args[0])) {
+        case 0: // number of segments
+            return MP_OBJ_NEW_SMALL_INT(1);
+        case 1: // address
+            return mp_obj_new_int(MICROPY_HW_ROMFS_BASE);
+        case 2: // num blocks
+            return MP_OBJ_NEW_SMALL_INT(MICROPY_HW_ROMFS_BYTES / VFSROM_BLOCK_SIZE);
+        case 3: // block_size
+            return MP_OBJ_NEW_SMALL_INT(VFSROM_BLOCK_SIZE);
+        case 4: { // erase one block at the offset address to VFSROM
+            if (n_args < 2) {
+                return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+            }
+            uint32_t dest = MICROPY_HW_ROMFS_BASE + mp_obj_get_int(args[1]);
+            uint32_t sec_size = sector_size(MICROPY_HW_ROMFS_BASE);
+            // Erase only at a physical sector boundary.
+            if ((dest % sec_size) == 0) {
+                // Erase sector.
+                flash_erase(dest, sec_size);
+            }
+            return MP_OBJ_NEW_SMALL_INT(0);
+        }
+        case 5: { // write starting at the byte offset address to VFSROM
+            if (n_args < 3) {
+                return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+            }
+            uint32_t dest = MICROPY_HW_ROMFS_BASE + mp_obj_get_int(args[1]);
+            mp_buffer_info_t bufinfo;
+            mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+            // Write data to flash.
+            flash_write(dest, bufinfo.buf, bufinfo.len);
+            return MP_OBJ_NEW_SMALL_INT(0);
+        }
+
+        default:
+            return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+}
+
+#endif  // MICROPY_VFS_ROM
