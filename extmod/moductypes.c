@@ -448,8 +448,8 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
                 if (self->flags == LAYOUT_NATIVE) {
                     set_aligned_basic(val_type & 6, self->addr + offset, val);
                 } else {
-                    mp_binary_set_int(GET_SCALAR_SIZE(val_type & 7), self->flags == LAYOUT_BIG_ENDIAN,
-                        self->addr + offset, val);
+                    size_t item_size = GET_SCALAR_SIZE(val_type & 7);
+                    mp_binary_set_int(item_size, self->addr + offset, item_size, val, self->flags == LAYOUT_BIG_ENDIAN);
                 }
                 return set_val; // just !MP_OBJ_NULL
             }
@@ -602,7 +602,7 @@ static mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
                 if (agg_type == PTR) {
                     byte *p = *(void **)self->addr;
-                    return mp_obj_new_int((mp_int_t)(uintptr_t)p);
+                    return mp_obj_new_int_from_uint((uintptr_t)p);
                 }
             }
             MP_FALLTHROUGH
@@ -629,7 +629,7 @@ static mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, 
 static mp_obj_t uctypes_struct_addressof(mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    return mp_obj_new_int((mp_int_t)(uintptr_t)bufinfo.buf);
+    return mp_obj_new_int_from_uint((uintptr_t)bufinfo.buf);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_addressof_obj, uctypes_struct_addressof);
 
