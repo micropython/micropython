@@ -124,8 +124,10 @@ endif
 
 ifeq ($(MICROPY_USE_READLINE),1)
 INC += -I$(TOP)/shared/readline
+INC += -I$(TOP)/shared/runtime
 CFLAGS += -DMICROPY_USE_READLINE=1
 SHARED_SRC_C_EXTRA += readline/readline.c
+SHARED_SRC_C_EXTRA += runtime/pyexec.c
 endif
 ifeq ($(MICROPY_PY_TERMIOS),1)
 CFLAGS += -DMICROPY_PY_TERMIOS=1
