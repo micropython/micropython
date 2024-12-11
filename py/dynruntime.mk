@@ -38,6 +38,8 @@ MPY_CROSS_FLAGS += -march=$(ARCH)
 SRC_O += $(addprefix $(BUILD)/, $(patsubst %.c,%.o,$(filter %.c,$(SRC))) $(patsubst %.S,%.o,$(filter %.S,$(SRC))))
 SRC_MPY += $(addprefix $(BUILD)/, $(patsubst %.py,%.mpy,$(filter %.py,$(SRC))))
 
+CLEAN_EXTRA += $(MOD).mpy
+
 ################################################################################
 # Architecture configuration
 
