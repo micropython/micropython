@@ -241,6 +241,97 @@ static const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     #endif
 };
 
+#define DEFINE_EXTI_IRQ_HANDLER(line) \
+    void EXTI##line##_IRQHandler(void) { \
+        MP_STATIC_ASSERT(EXTI##line##_IRQn > 0); \
+        IRQ_ENTER(EXTI##line##_IRQn); \
+        Handle_EXTI_Irq(line); \
+        IRQ_EXIT(EXTI##line##_IRQn); \
+    }
+
+#if defined(STM32F0) || defined(STM32L0) || defined(STM32G0)
+
+void EXTI0_1_IRQHandler(void) {
+    MP_STATIC_ASSERT(EXTI0_1_IRQn > 0);
+    IRQ_ENTER(EXTI0_1_IRQn);
+    Handle_EXTI_Irq(0);
+    Handle_EXTI_Irq(1);
+    IRQ_EXIT(EXTI0_1_IRQn);
+}
+
+void EXTI2_3_IRQHandler(void) {
+    MP_STATIC_ASSERT(EXTI2_3_IRQn > 0);
+    IRQ_ENTER(EXTI2_3_IRQn);
+    Handle_EXTI_Irq(2);
+    Handle_EXTI_Irq(3);
+    IRQ_EXIT(EXTI2_3_IRQn);
+}
+
+void EXTI4_15_IRQHandler(void) {
+    MP_STATIC_ASSERT(EXTI4_15_IRQn > 0);
+    IRQ_ENTER(EXTI4_15_IRQn);
+    for (int i = 4; i <= 15; ++i) {
+        Handle_EXTI_Irq(i);
+    }
+    IRQ_EXIT(EXTI4_15_IRQn);
+}
+
+#elif defined(STM32F4) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7) || defined(STM32L1) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+
+DEFINE_EXTI_IRQ_HANDLER(0)
+DEFINE_EXTI_IRQ_HANDLER(1)
+DEFINE_EXTI_IRQ_HANDLER(2)
+DEFINE_EXTI_IRQ_HANDLER(3)
+DEFINE_EXTI_IRQ_HANDLER(4)
+
+void EXTI9_5_IRQHandler(void) {
+    MP_STATIC_ASSERT(EXTI9_5_IRQn > 0);
+    IRQ_ENTER(EXTI9_5_IRQn);
+    Handle_EXTI_Irq(5);
+    Handle_EXTI_Irq(6);
+    Handle_EXTI_Irq(7);
+    Handle_EXTI_Irq(8);
+    Handle_EXTI_Irq(9);
+    IRQ_EXIT(EXTI9_5_IRQn);
+}
+
+void EXTI15_10_IRQHandler(void) {
+    MP_STATIC_ASSERT(EXTI15_10_IRQn > 0);
+    IRQ_ENTER(EXTI15_10_IRQn);
+    Handle_EXTI_Irq(10);
+    Handle_EXTI_Irq(11);
+    Handle_EXTI_Irq(12);
+    Handle_EXTI_Irq(13);
+    Handle_EXTI_Irq(14);
+    Handle_EXTI_Irq(15);
+    IRQ_EXIT(EXTI15_10_IRQn);
+}
+
+#elif defined(STM32H5)
+
+DEFINE_EXTI_IRQ_HANDLER(0)
+DEFINE_EXTI_IRQ_HANDLER(1)
+DEFINE_EXTI_IRQ_HANDLER(2)
+DEFINE_EXTI_IRQ_HANDLER(3)
+DEFINE_EXTI_IRQ_HANDLER(4)
+DEFINE_EXTI_IRQ_HANDLER(5)
+DEFINE_EXTI_IRQ_HANDLER(6)
+DEFINE_EXTI_IRQ_HANDLER(7)
+DEFINE_EXTI_IRQ_HANDLER(8)
+DEFINE_EXTI_IRQ_HANDLER(9)
+DEFINE_EXTI_IRQ_HANDLER(10)
+DEFINE_EXTI_IRQ_HANDLER(11)
+DEFINE_EXTI_IRQ_HANDLER(12)
+DEFINE_EXTI_IRQ_HANDLER(13)
+DEFINE_EXTI_IRQ_HANDLER(14)
+DEFINE_EXTI_IRQ_HANDLER(15)
+
+#else
+
+#error Unsupported processor
+
+#endif
+
 // Set override_callback_obj to true if you want to unconditionally set the
 // callback function.
 uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj) {
