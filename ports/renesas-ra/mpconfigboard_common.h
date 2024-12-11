@@ -154,6 +154,11 @@
 #define MICROPY_HW_UART_IS_RESERVED(uart_id) (false)
 #endif
 
+// Whether to support the VFSROM file system
+#ifndef MICROPY_VFS_ROM
+#define MICROPY_VFS_ROM             (1)
+#endif
+
 /*****************************************************************************/
 // General configuration
 

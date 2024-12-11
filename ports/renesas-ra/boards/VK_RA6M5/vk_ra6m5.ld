@@ -5,7 +5,8 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  FLASH (rx)         : ORIGIN = 0x00000000, LENGTH = 0x00100000  /* 1MB/2MB */
+  FLASH (rx)         : ORIGIN = 0x00000000, LENGTH = 0x000A0000  /* 640KB/2MB */
+  FLASH_ROMFS (r)    : ORIGIN = 0x000A0000, LENGTH = 0x00060000  /* 384KB/2MB */
   FLASH_FS (r)       : ORIGIN = 0x00100000, LENGTH = 0x00100000  /* 1MB/2MB */
   RAM (rwx)          : ORIGIN = 0x20000000, LENGTH = 0x00080000  /* 512KB */
   OSPI_RAM (rwx)     : ORIGIN = 0x68000000, LENGTH = 0x00800000  /* 8MB/8MB */
@@ -306,3 +307,6 @@ _micropy_hw_internal_flash_storage_end   = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
 
 _micropy_hw_external_flash_storage_start = ORIGIN(QSPI_FLASH);
 _micropy_hw_external_flash_storage_end   = ORIGIN(QSPI_FLASH) + LENGTH(QSPI_FLASH);
+
+_micropy_hw_romfs_part0_start            = ORIGIN(FLASH_ROMFS);
+_micropy_hw_romfs_part0_size             = LENGTH(FLASH_ROMFS);
