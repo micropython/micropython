@@ -339,7 +339,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_tilt_obj, pyb_accel_tilt);
 /// Get a 3-tuple of filtered x, y and z values.
 static mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
     pyb_accel_obj_t *self = MP_OBJ_TO_PTR(self_in);
-RETRY:
+retry:
     memmove(self->buf, self->buf + NUM_AXIS, NUM_AXIS * (FILT_DEPTH - 1) * sizeof(int16_t));
 
     #if MICROPY_HW_HAS_MMA7660
@@ -376,11 +376,10 @@ RETRY:
         }
         tuple[i] = mp_obj_new_int(val/FILT_DEPTH);
     }
-    if(self->buf[ 0]==0&&self->buf[1]==0&&self->buf[2]==0)
+    if(self->buf[0]==0&&self->buf[1]==0&&self->buf[2]==0)
     {
-        goto RETRY;
+        goto retry;
     }
-
     return mp_obj_new_tuple(3, tuple);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_xyz);
