@@ -52,6 +52,7 @@ enum {
     #if PHY_GENERIC_ENABLED
     PHY_GENERIC,
     #endif
+    PHY_OPENETH,
     // PHYs which are actually SPI Ethernet MAC+PHY chips:
     PHY_KSZ8851SNL = 100, PHY_DM9051, PHY_W5500
 };
