@@ -245,8 +245,11 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         #endif
         #endif
 
-        // Go into low-power mode.
-        __wfi();
+        // A timer other than #3 could fire.
+        // Repeatedly go into low-power mode until timer 3 is no longer armed.
+        while (timer_hw->armed & (1u << alarm_num)) {
+            __wfi();
+        }
 
         if (!timer3_enabled) {
             irq_set_enabled(irq_num, false);
