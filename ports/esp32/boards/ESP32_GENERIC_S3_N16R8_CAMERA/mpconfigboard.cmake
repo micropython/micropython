@@ -6,16 +6,10 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.ble
     boards/sdkconfig.spiram_sx
     boards/ESP32_GENERIC_S3_N16R8/sdkconfig.board
+    boards/sdkconfig.240mhz
+    boards/sdkconfig.spiram_oct
 )
 
-if(MICROPY_BOARD_VARIANT STREQUAL "SPIRAM_OCT")
-    set(SDKCONFIG_DEFAULTS
-        ${SDKCONFIG_DEFAULTS}
-        boards/sdkconfig.240mhz
-        boards/sdkconfig.spiram_oct
-    )
-
-    list(APPEND MICROPY_DEF_BOARD
-        MICROPY_HW_BOARD_NAME="ESP32S3-N16R8 with camera module"
-    )
-endif()
+list(APPEND MICROPY_DEF_BOARD
+    MICROPY_HW_BOARD_NAME="ESP32S3-N16R8 with camera module"
+)
