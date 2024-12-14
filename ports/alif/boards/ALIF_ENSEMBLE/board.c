@@ -32,7 +32,8 @@ const ospi_pin_settings_t ospi_pin_settings = {
     .peripheral_number = 1,
     .pin_reset = pin_OSPI1_RESET,
     .pin_cs = pin_OSPI1_CS,
-    .pin_clk = pin_OSPI1_SCLK,
+    .pin_clk_p = pin_OSPI1_SCLK,
+    .pin_clk_n = NULL,
     .pin_rwds = pin_OSPI1_RXDS,
     .pin_d0 = pin_OSPI1_D0,
     .pin_d1 = pin_OSPI1_D1,
@@ -44,22 +45,12 @@ const ospi_pin_settings_t ospi_pin_settings = {
     .pin_d7 = pin_OSPI1_D7,
 };
 
-// ISSI IS25WX256 octal flash.
-const ospi_flash_settings_t ospi_flash_settings = {
-    .jedec_id = 0x1a5b9d, // manuf=0x9d, type=0x5b=1.8V, density=0x1a=512Mb
-    .freq_hz = 100000000,
-    .octal_switch = ospi_flash_issi_octal_switch,
-    .octal_mode = OSPI_FLASH_OCTAL_MODE_SDD,
-    .rxds = false,
-    .inst_len = OSPI_INST_L_8bit,
-    .xip_data_len = OSPI_DATA_L_16bit,
-    .read_sr = 0x05,
-    .read_sr_dummy_cycles = 8,
-    .write_en = 0x06,
-    .read_id = 0x9f,
-    .read_id_dummy_cycles = 8,
-    .read_command = 0xfd, // octal DDR read
-    .read_dummy_cycles = 16,
-    .write_command = 0xc2, // octal DDR write
-    .erase_command = 0x21, // 4kiB sector erase with 32-bit address
+const ospi_flash_settings_t ospi_flash_settings[] = {
+    {
+        .jedec_id = 0x1a5b9d,
+        .freq_hz = 100000000,
+        .read_dummy_cycles = 16,
+        OSPI_FLASH_SETTINGS_IS25,
+    },
 };
+const size_t ospi_flash_settings_len = 1;
