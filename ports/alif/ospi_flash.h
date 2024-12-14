@@ -42,7 +42,8 @@ typedef struct _ospi_pin_settings_t {
     uint32_t peripheral_number;
     const mp_hal_pin_obj_t pin_reset;
     const mp_hal_pin_obj_t pin_cs;
-    const mp_hal_pin_obj_t pin_clk;
+    const mp_hal_pin_obj_t pin_clk_p;
+    const mp_hal_pin_obj_t pin_clk_n;
     const mp_hal_pin_obj_t pin_rwds;
     const mp_hal_pin_obj_t pin_d0;
     const mp_hal_pin_obj_t pin_d1;

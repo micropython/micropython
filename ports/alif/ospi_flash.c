@@ -264,26 +264,30 @@ int ospi_flash_init(void) {
 
     self->pin = pin;
 
-    uint32_t pad_ctrl = PADCTRL_OUTPUT_DRIVE_STRENGTH_12MA | PADCTRL_SLEW_RATE_FAST | PADCTRL_READ_ENABLE;
+    uint32_t ck_pad_ctrl = PADCTRL_OUTPUT_DRIVE_STRENGTH_12MA | PADCTRL_SLEW_RATE_FAST;
+    uint32_t io_pad_ctrl = PADCTRL_OUTPUT_DRIVE_STRENGTH_12MA | PADCTRL_SLEW_RATE_FAST | PADCTRL_READ_ENABLE;
 
     pinconf_set(pin->pin_cs->port, pin->pin_cs->pin, OSPI_PIN_FUNCTION, PADCTRL_OUTPUT_DRIVE_STRENGTH_12MA);
-    pinconf_set(pin->pin_clk->port, pin->pin_clk->pin, OSPI_PIN_FUNCTION, PADCTRL_OUTPUT_DRIVE_STRENGTH_12MA | PADCTRL_SLEW_RATE_FAST);
+    pinconf_set(pin->pin_clk_p->port, pin->pin_clk_p->pin, OSPI_PIN_FUNCTION, ck_pad_ctrl);
+    if (pin->pin_clk_n != NULL) {
+        pinconf_set(pin->pin_clk_n->port, pin->pin_clk_n->pin, OSPI_PIN_FUNCTION, ck_pad_ctrl);
+    }
     if (pin->pin_rwds != NULL) {
-        pinconf_set(pin->pin_rwds->port, pin->pin_rwds->pin, OSPI_PIN_FUNCTION, pad_ctrl);
+        pinconf_set(pin->pin_rwds->port, pin->pin_rwds->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
         if (pin->pin_rwds->port == PORT_10 && pin->pin_rwds->pin == PIN_7) {
             // Alif: P5_6 is needed to support proper alt function selection of P10_7.
-            pinconf_set(PORT_5, PIN_6, OSPI_PIN_FUNCTION, pad_ctrl);
+            pinconf_set(PORT_5, PIN_6, OSPI_PIN_FUNCTION, io_pad_ctrl);
         }
     }
-    pinconf_set(pin->pin_d0->port, pin->pin_d0->pin, OSPI_PIN_FUNCTION, pad_ctrl);
-    pinconf_set(pin->pin_d1->port, pin->pin_d1->pin, OSPI_PIN_FUNCTION, pad_ctrl);
-    pinconf_set(pin->pin_d2->port, pin->pin_d2->pin, OSPI_PIN_FUNCTION, pad_ctrl);
-    pinconf_set(pin->pin_d3->port, pin->pin_d3->pin, OSPI_PIN_FUNCTION, pad_ctrl);
+    pinconf_set(pin->pin_d0->port, pin->pin_d0->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
+    pinconf_set(pin->pin_d1->port, pin->pin_d1->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
+    pinconf_set(pin->pin_d2->port, pin->pin_d2->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
+    pinconf_set(pin->pin_d3->port, pin->pin_d3->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
     if (pin->pin_d4 != NULL) {
-        pinconf_set(pin->pin_d4->port, pin->pin_d4->pin, OSPI_PIN_FUNCTION, pad_ctrl);
-        pinconf_set(pin->pin_d5->port, pin->pin_d5->pin, OSPI_PIN_FUNCTION, pad_ctrl);
-        pinconf_set(pin->pin_d6->port, pin->pin_d6->pin, OSPI_PIN_FUNCTION, pad_ctrl);
-        pinconf_set(pin->pin_d7->port, pin->pin_d7->pin, OSPI_PIN_FUNCTION, pad_ctrl);
+        pinconf_set(pin->pin_d4->port, pin->pin_d4->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
+        pinconf_set(pin->pin_d5->port, pin->pin_d5->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
+        pinconf_set(pin->pin_d6->port, pin->pin_d6->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
+        pinconf_set(pin->pin_d7->port, pin->pin_d7->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
     }
 
     // Reset the SPI flash.
