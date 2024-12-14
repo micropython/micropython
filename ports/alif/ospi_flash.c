@@ -318,7 +318,8 @@ static int ospi_flash_xip_enter(ospi_flash_t *self) {
     if (!self->xip_active) {
         uint32_t irq_state = disable_irq();
         self->xip_active = true;
-        ospi_xip_enter_16bit_cmd(&self->cfg, self->set->xip_data_len, self->set->read_command, self->set->read_command, self->set->read_dummy_cycles);
+        ospi_xip_enter_ext(&self->cfg, self->set->inst_len, self->set->xip_data_len,
+            self->set->read_command, self->set->read_command, self->set->read_dummy_cycles);
         enable_irq(irq_state);
     }
     return 0;
@@ -327,7 +328,7 @@ static int ospi_flash_xip_enter(ospi_flash_t *self) {
 static int ospi_flash_xip_exit(ospi_flash_t *self) {
     if (self->xip_active) {
         uint32_t irq_state = disable_irq();
-        ospi_xip_exit_16bit_cmd(&self->cfg, self->set->read_command, self->set->read_command);
+        ospi_xip_exit_ext(&self->cfg, self->set->inst_len, self->set->read_command, self->set->read_command);
         self->xip_active = false;
         enable_irq(irq_state);
     }
