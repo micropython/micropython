@@ -28,8 +28,6 @@
 #include "ospi_ext.h"
 #include "ospi_xip_user.h"
 
-#define INST_L16bit (3)
-
 static void ospi_xip_disable(ospi_flash_cfg_t *ospi_cfg) {
     ospi_cfg->aes_regs->aes_control &= ~AES_CONTROL_XIP_EN;
 }
@@ -208,7 +206,7 @@ void ospi_setup_write_ext(ospi_flash_cfg_t *ospi_cfg, bool rxds, uint32_t inst_l
     spi_enable(ospi_cfg);
 }
 
-void ospi_xip_enter_16bit_cmd(ospi_flash_cfg_t *ospi_cfg, uint32_t data_len, uint16_t incr_command, uint16_t wrap_command, uint16_t read_dummy_cycles) {
+void ospi_xip_enter_ext(ospi_flash_cfg_t *ospi_cfg, uint32_t inst_len, uint32_t data_len, uint16_t incr_command, uint16_t wrap_command, uint16_t read_dummy_cycles) {
     spi_disable(ospi_cfg);
 
     uint32_t val = CTRLR0_IS_MST
@@ -224,12 +222,11 @@ void ospi_xip_enter_16bit_cmd(ospi_flash_cfg_t *ospi_cfg, uint32_t data_len, uin
     val = (OCTAL << XIP_CTRL_FRF_OFFSET)
         | (0x2 << XIP_CTRL_TRANS_TYPE_OFFSET)
         | (ADDR_L32bit << XIP_CTRL_ADDR_L_OFFSET)
-        | (INST_L16bit << XIP_CTRL_INST_L_OFFSET)
+        | (inst_len << XIP_CTRL_INST_L_OFFSET)
         | (0x0 << XIP_CTRL_MD_BITS_EN_OFFSET)
         | (read_dummy_cycles << XIP_CTRL_WAIT_CYCLES_OFFSET)
         | (0x1 << XIP_CTRL_DFC_HC_OFFSET)
         | (ospi_cfg->ddr_en << XIP_CTRL_DDR_EN_OFFSET)
-        | (ospi_cfg->ddr_en << XIP_CTRL_INST_DDR_EN_OFFSET)
         | (0x1 << XIP_CTRL_RXDS_EN_OFFSET)
         | (0x1 << XIP_CTRL_INST_EN_OFFSET)
         | (0x0 << XIP_CTRL_CONT_XFER_EN_OFFSET)
@@ -238,6 +235,10 @@ void ospi_xip_enter_16bit_cmd(ospi_flash_cfg_t *ospi_cfg, uint32_t data_len, uin
         | (0x0 << XIP_CTRL_XIP_MBL_OFFSET)
         | (0x0 << XIP_PREFETCH_EN_OFFSET)
         | (0x0 << XIP_CTRL_RXDS_VL_EN_OFFSET);
+
+    if (inst_len == OSPI_INST_L_16bit) {
+        val |= 1 << XIP_CTRL_INST_DDR_EN_OFFSET;
+    }
 
     ospi_writel(ospi_cfg, xip_ctrl, val);
 
@@ -254,7 +255,7 @@ void ospi_xip_enter_16bit_cmd(ospi_flash_cfg_t *ospi_cfg, uint32_t data_len, uin
     ospi_xip_enable(ospi_cfg);
 }
 
-void ospi_xip_exit_16bit_cmd(ospi_flash_cfg_t *ospi_cfg, uint16_t incr_command, uint16_t wrap_command) {
+void ospi_xip_exit_ext(ospi_flash_cfg_t *ospi_cfg, uint32_t inst_len, uint16_t incr_command, uint16_t wrap_command) {
     spi_disable(ospi_cfg);
 
     uint32_t val = CTRLR0_IS_MST
@@ -272,7 +273,7 @@ void ospi_xip_exit_16bit_cmd(ospi_flash_cfg_t *ospi_cfg, uint16_t incr_command, 
         | (2 << CTRLR0_XIP_MBL_OFFSET)
         | (1 << CTRLR0_XIP_DFS_HC_OFFSET)
         | (1 << CTRLR0_XIP_INST_EN_OFFSET)
-        | (CTRLR0_INST_L_16bit << CTRLR0_INST_L_OFFSET)
+        | (inst_len << CTRLR0_INST_L_OFFSET)
         | (ospi_cfg->addrlen) << (CTRLR0_ADDR_L_OFFSET)
         | (ospi_cfg->wait_cycles << CTRLR0_WAIT_CYCLES_OFFSET);
 
