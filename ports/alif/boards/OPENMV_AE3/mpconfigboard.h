@@ -1,28 +1,28 @@
-#define MICROPY_HW_BOARD_NAME   "OpenMV-AE3"
-#define MICROPY_HW_MCU_NAME     "AE302F80F55D5AE"
+#define MICROPY_HW_BOARD_NAME       "OpenMV-AE3"
+#define MICROPY_HW_MCU_NAME         "AE302F80F55D5AE"
 
-#define MICROPY_OBJ_REPR        (MICROPY_OBJ_REPR_C)
+#define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
 typedef intptr_t mp_off_t;
 
-#define MICROPY_HW_USB_MSC      (CORE_M55_HP)
-#define MICROPY_HW_ENABLE_OSPI  (CORE_M55_HP)
+#define MICROPY_HW_USB_MSC          (CORE_M55_HP)
+#define MICROPY_HW_ENABLE_OSPI      (CORE_M55_HP)
 #define MICROPY_HW_ENABLE_UART_REPL (0)
 
-#define MICROPY_HW_USB_VID      0x37C5
-#define MICROPY_HW_USB_PID      0x16E3
+#define MICROPY_HW_USB_VID          0x37C5
+#define MICROPY_HW_USB_PID          0x16E3
 
 #define MICROPY_HW_USB_MANUFACTURER_STRING  "OpenMV"
 #define MICROPY_HW_USB_PRODUCT_FS_STRING    "OpenMV Camera"
 #define MICROPY_HW_USB_MSC_INQUIRY_VENDOR_STRING "OpenMV"
 
 extern void board_startup(void);
-#define MICROPY_BOARD_STARTUP   board_startup
+#define MICROPY_BOARD_STARTUP       board_startup
 
 extern void board_early_init(void);
 #define MICROPY_BOARD_EARLY_INIT board_early_init
 
 // This is used for alif.Flash() and USB MSC.
-#define MICROPY_HW_FLASH_STORAGE_BASE_ADDR      (0)
-#define MICROPY_HW_FLASH_STORAGE_BYTES          (16 * 1024 * 1024)
+#define MICROPY_HW_FLASH_STORAGE_BASE_ADDR  (0)
+#define MICROPY_HW_FLASH_STORAGE_BYTES      (16 * 1024 * 1024)

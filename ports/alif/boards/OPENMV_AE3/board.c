@@ -29,13 +29,12 @@
 #include "ospi_flash.h"
 #include "se_services.h"
 
-#define USE_DDR (1)
-
 const ospi_pin_settings_t ospi_pin_settings = {
     .peripheral_number = 0,
     .pin_reset = pin_FLASH_RESET,
     .pin_cs = pin_FLASH_CS,
-    .pin_clk = pin_FLASH_SCLK_P,
+    .pin_clk_p = pin_FLASH_SCLK_P,
+    .pin_clk_n = pin_FLASH_SCLK_N,
     .pin_rwds = pin_FLASH_DQSM,
     .pin_d0 = pin_FLASH_D0,
     .pin_d1 = pin_FLASH_D1,
@@ -47,32 +46,27 @@ const ospi_pin_settings_t ospi_pin_settings = {
     .pin_d7 = pin_FLASH_D7,
 };
 
-// Macronix MX25UM25645G.
-const ospi_flash_settings_t ospi_flash_settings = {
-    .jedec_id = 0x3980c2, // manuf=0xc2, type=0x80, density=0x39
-    .freq_hz = 50000000,
-    .octal_switch = ospi_flash_mx_octal_switch,
-    .rxds = true,
-    .inst_len = OSPI_INST_L_16bit,
-    .xip_data_len = OSPI_DATA_L_16bit,
-    .read_sr = 0x05fa,
-    .read_sr_dummy_cycles = 4,
-    .write_en = 0x06f9,
-    .read_id = 0x9f60,
-    .read_id_dummy_cycles = 4,
-    .read_dummy_cycles = 20,
-    .write_command = 0x12ed, // PP4B (starting address must be even)
-    .erase_command = 0x21de, // SE4B
-
-    // Select between DDR and SDR mode.
-    #if USE_DDR
-    .octal_mode = OSPI_FLASH_OCTAL_MODE_DDD,
-    .read_command = 0xee11, // 8DTRD (starting address must be even)
-    #else
-    .octal_mode = OSPI_FLASH_OCTAL_MODE_SSS,
-    .read_command = 0xec13, // 8READ
-    #endif
+const ospi_flash_settings_t ospi_flash_settings[] = {
+    {
+        .jedec_id = 0x3980c2,
+        .freq_hz = 50000000,
+        .read_dummy_cycles = 6,
+        OSPI_FLASH_SETTINGS_MX25,
+    },
+    {
+        .jedec_id = 0x195b9d,
+        .freq_hz = 50000000,
+        .read_dummy_cycles = 6,
+        OSPI_FLASH_SETTINGS_IS25,
+    },
+    {
+        .jedec_id = 0x17bb6b,
+        .freq_hz = 50000000,
+        .read_dummy_cycles = 4,
+        OSPI_FLASH_SETTINGS_EM,
+    },
 };
+const size_t ospi_flash_settings_len = 3;
 
 void board_startup(void) {
     // Switch the USB multiplexer to use the Alif USB port.
