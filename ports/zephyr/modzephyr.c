@@ -48,11 +48,12 @@ static mp_obj_t mod_current_tid(void) {
 static MP_DEFINE_CONST_FUN_OBJ_0(mod_current_tid_obj, mod_current_tid);
 
 #ifdef CONFIG_THREAD_ANALYZER
-static mp_obj_t mod_thread_analyze(void) {
-    thread_analyzer_print();
+static mp_obj_t mod_thread_analyze(mp_obj_t cpu_in) {
+    unsigned int cpu = mp_obj_get_int(cpu_in);
+    thread_analyzer_print(cpu);
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_analyze_obj, mod_thread_analyze);
+static MP_DEFINE_CONST_FUN_OBJ_1(mod_thread_analyze_obj, mod_thread_analyze);
 #endif
 
 #ifdef CONFIG_SHELL_BACKEND_SERIAL
