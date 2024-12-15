@@ -41,12 +41,12 @@
 #ifdef MICROPY_HW_SPI_NO_DEFAULT_PINS
 
 // With no default SPI, need to require the pin args.
-#define MICROPY_HW_SPI0_SCK     (0)
-#define MICROPY_HW_SPI0_MOSI    (0)
-#define MICROPY_HW_SPI0_MISO    (0)
-#define MICROPY_HW_SPI1_SCK     (0)
-#define MICROPY_HW_SPI1_MOSI    (0)
-#define MICROPY_HW_SPI1_MISO    (0)
+#define MICROPY_HW_SPI0_SCK     (-1)
+#define MICROPY_HW_SPI0_MOSI    (-1)
+#define MICROPY_HW_SPI0_MISO    (-1)
+#define MICROPY_HW_SPI1_SCK     (-1)
+#define MICROPY_HW_SPI1_MOSI    (-1)
+#define MICROPY_HW_SPI1_MISO    (-1)
 #define MICROPY_SPI_PINS_ARG_OPTS MP_ARG_REQUIRED
 
 #else
@@ -97,9 +97,9 @@ typedef struct _machine_spi_obj_t {
     uint8_t phase;
     uint8_t bits;
     uint8_t firstbit;
-    uint8_t sck;
-    uint8_t mosi;
-    uint8_t miso;
+    int8_t sck;
+    int8_t mosi;
+    int8_t miso;
     uint32_t baudrate;
 } machine_spi_obj_t;
 
@@ -120,7 +120,7 @@ static machine_spi_obj_t machine_spi_obj[] = {
 
 static void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "SPI(%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, sck=%u, mosi=%u, miso=%u)",
+    mp_printf(print, "SPI(%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, sck=%d, mosi=%d, miso=%d)",
         self->spi_id, self->baudrate, self->polarity, self->phase, self->bits,
         self->sck, self->mosi, self->miso);
 }
@@ -159,6 +159,8 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
             mp_raise_ValueError(MP_ERROR_TEXT("bad SCK pin"));
         }
         self->sck = sck;
+    } else {
+        self->sck = -1;
     }
     if (args[ARG_mosi].u_obj != mp_const_none) {
         int mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
@@ -166,6 +168,8 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
             mp_raise_ValueError(MP_ERROR_TEXT("bad MOSI pin"));
         }
         self->mosi = mosi;
+    } else {
+        self->mosi = -1;
     }
     if (args[ARG_miso].u_obj != mp_const_none) {
         int miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
@@ -173,6 +177,8 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
             mp_raise_ValueError(MP_ERROR_TEXT("bad MISO pin"));
         }
         self->miso = miso;
+    } else {
+        self->miso = -1;
     }
 
     // Initialise the SPI peripheral if any arguments given, or it was not initialised previously.
@@ -189,9 +195,15 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         spi_init(self->spi_inst, self->baudrate);
         self->baudrate = spi_set_baudrate(self->spi_inst, self->baudrate);
         spi_set_format(self->spi_inst, self->bits, self->polarity, self->phase, self->firstbit);
-        gpio_set_function(self->sck, GPIO_FUNC_SPI);
-        gpio_set_function(self->miso, GPIO_FUNC_SPI);
-        gpio_set_function(self->mosi, GPIO_FUNC_SPI);
+        if (self->sck >= 0) {
+            gpio_set_function(self->sck, GPIO_FUNC_SPI);
+        }
+        if (self->miso >= 0) {
+            gpio_set_function(self->miso, GPIO_FUNC_SPI);
+        }
+        if (self->mosi >= 0) {
+            gpio_set_function(self->mosi, GPIO_FUNC_SPI);
+        }
     }
 
     return MP_OBJ_FROM_PTR(self);
