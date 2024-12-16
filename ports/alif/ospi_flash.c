@@ -146,13 +146,19 @@ static uint32_t ospi_flash_read_id(ospi_flash_t *self) {
 /******************************************************************************/
 // Functions specific to ISSI flash chips.
 
-int ospi_flash_issi_octal_switch(ospi_flash_t *self) {
-    // Switch SPI flash to Octal DDR mode.
+int ospi_flash_issi_init(ospi_flash_t *self) {
     const uint8_t cmd_wrvol = 0x81;
+
+    // Configure dummy cycles.
+    ospi_flash_wren_spi(self);
+    uint8_t buf0[5] = {cmd_wrvol, 0, 0, 1, self->set->read_dummy_cycles};
+    ospi_spi_transfer(&self->cfg, sizeof(buf0), buf0, buf0);
+
+    // Switch SPI flash to Octal DDR mode.
     const uint8_t issi_mode_octal_ddr_dqs = 0xe7;
     ospi_flash_wren_spi(self);
-    uint8_t buf[5] = {cmd_wrvol, 0, 0, 0, issi_mode_octal_ddr_dqs};
-    ospi_spi_transfer(&self->cfg, sizeof(buf), buf, buf);
+    uint8_t buf1[5] = {cmd_wrvol, 0, 0, 0, issi_mode_octal_ddr_dqs};
+    ospi_spi_transfer(&self->cfg, sizeof(buf1), buf1, buf1);
     self->cfg.ddr_en = 1;
     return 0;
 }
@@ -160,8 +166,7 @@ int ospi_flash_issi_octal_switch(ospi_flash_t *self) {
 /******************************************************************************/
 // Functions specific to MX flash chips.
 
-int ospi_flash_mx_octal_switch(ospi_flash_t *self) {
-    // Switch SPI flash to Octal SDR or DDR mode (SOPI or DOPI) by writing to CR2.
+int ospi_flash_mx_init(ospi_flash_t *self) {
     const uint8_t cmd_wrcr2 = 0x72;
     const uint8_t mx_mode_enable_sopi = 0x01;
     const uint8_t mx_mode_enable_dopi = 0x02;
@@ -171,9 +176,26 @@ int ospi_flash_mx_octal_switch(ospi_flash_t *self) {
     } else {
         mx_mode = mx_mode_enable_sopi;
     }
+
+    // Configure dummy cycles.
+    uint8_t ddc_value = 0;
+    const uint8_t ospi_flash_mx_ddc[][2] = {
+        {20, 0}, {18, 1}, {16, 2}, {14, 3}, {12, 4}, {10, 5}, {8, 6}, {6, 7}
+    };
+    for (size_t i = 0; i < MP_ARRAY_SIZE(ospi_flash_mx_ddc); i++) {
+        if (self->set->read_dummy_cycles == ospi_flash_mx_ddc[i][0]) {
+            ddc_value = ospi_flash_mx_ddc[i][1];
+            break;
+        }
+    }
     ospi_flash_wren_spi(self);
-    uint8_t buf[6] = {cmd_wrcr2, 0, 0, 0, 0, mx_mode};
-    ospi_spi_transfer(&self->cfg, sizeof(buf), buf, buf);
+    uint8_t buf0[6] = {cmd_wrcr2, 0, 0, 3, 0, ddc_value};
+    ospi_spi_transfer(&self->cfg, sizeof(buf0), buf0, buf0);
+
+    // Switch SPI flash to Octal SDR or DDR mode.
+    ospi_flash_wren_spi(self);
+    uint8_t buf1[6] = {cmd_wrcr2, 0, 0, 0, 0, mx_mode};
+    ospi_spi_transfer(&self->cfg, sizeof(buf1), buf1, buf1);
     if (self->set->octal_mode == OSPI_FLASH_OCTAL_MODE_DDD) {
         self->cfg.ddr_en = 1;
     } else {
@@ -310,8 +332,8 @@ int ospi_flash_init(void) {
     ospi_init(&self->cfg);
 
     // Switch to octal mode if needed.
-    if (set->octal_switch != NULL) {
-        set->octal_switch(self);
+    if (set->flash_init != NULL) {
+        set->flash_init(self);
 
         // Check the device ID after switching mode.
         if (ospi_flash_read_id(self) != set->jedec_id) {
@@ -321,7 +343,6 @@ int ospi_flash_init(void) {
 
     // Enter XIP mode.  It will be disabled during flash read/erase/write.
     ospi_flash_xip_enter(self);
-
     return 0;
 }
 
