@@ -57,7 +57,7 @@ typedef struct _ospi_pin_settings_t {
 typedef struct _ospi_flash_settings_t {
     uint32_t jedec_id;
     uint32_t freq_hz;
-    int (*octal_switch)(struct _ospi_flash_t *);
+    int (*flash_init)(struct _ospi_flash_t *);
     uint8_t octal_mode;
     bool rxds;
     uint8_t inst_len;
@@ -79,10 +79,10 @@ extern const ospi_flash_settings_t ospi_flash_settings[];
 extern const size_t ospi_flash_settings_len;
 
 // Functions specific to ISSI flash chips.
-int ospi_flash_issi_octal_switch(struct _ospi_flash_t *self);
+int ospi_flash_issi_init(struct _ospi_flash_t *self);
 
 // Functions specific to MX flash chips.
-int ospi_flash_mx_octal_switch(struct _ospi_flash_t *self);
+int ospi_flash_mx_init(struct _ospi_flash_t *self);
 uint8_t ospi_flash_mx_read_cr(struct _ospi_flash_t *self);
 uint8_t ospi_flash_mx_read_cr2(struct _ospi_flash_t *self, uint32_t addr);
 int ospi_flash_mx_write_cr(struct _ospi_flash_t *self, uint8_t value);
