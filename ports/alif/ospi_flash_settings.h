@@ -31,7 +31,7 @@
 
 // Macronix MX25
 #define OSPI_FLASH_SETTINGS_MX25 \
-    .octal_switch = ospi_flash_mx_octal_switch, \
+    .flash_init = ospi_flash_mx_init, \
     .octal_mode = OSPI_FLASH_OCTAL_MODE_DDD, \
     .rxds = true, \
     .inst_len = OSPI_INST_L_16bit, \
@@ -47,7 +47,7 @@
 
 // Everspin EM.
 #define OSPI_FLASH_SETTINGS_EM \
-    .octal_switch = ospi_flash_issi_octal_switch, \
+    .flash_init = ospi_flash_issi_init, \
     .octal_mode = OSPI_FLASH_OCTAL_MODE_DDD, \
     .rxds = false, \
     .inst_len = OSPI_INST_L_8bit, \
@@ -63,7 +63,7 @@
 
 // ISSI IS25.
 #define OSPI_FLASH_SETTINGS_IS25 \
-    .octal_switch = ospi_flash_issi_octal_switch, \
+    .flash_init = ospi_flash_issi_init, \
     .octal_mode = OSPI_FLASH_OCTAL_MODE_DDD, \
     .rxds = true, \
     .inst_len = OSPI_INST_L_8bit, \
