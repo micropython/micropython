@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_ALIF_OSPI_FLASH_H
 
 #include "py/mphal.h"
+#include "ospi_flash_settings.h"
 
 // Format of command, address and data phases.
 enum {
@@ -74,7 +75,8 @@ typedef struct _ospi_flash_settings_t {
 
 // Provided by the board when it enables OSPI.
 extern const ospi_pin_settings_t ospi_pin_settings;
-extern const ospi_flash_settings_t ospi_flash_settings;
+extern const ospi_flash_settings_t ospi_flash_settings[];
+extern const size_t ospi_flash_settings_len;
 
 // Functions specific to ISSI flash chips.
 int ospi_flash_issi_octal_switch(struct _ospi_flash_t *self);

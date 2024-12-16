@@ -238,9 +238,9 @@ int ospi_flash_init(void) {
     ospi_flash_t *self = &global_flash;
 
     const ospi_pin_settings_t *pin = &ospi_pin_settings;
-    const ospi_flash_settings_t *set = &ospi_flash_settings;
+    const ospi_flash_settings_t *set = NULL;
+
     self->pin = pin;
-    self->set = set;
 
     uint32_t pad_ctrl = PADCTRL_OUTPUT_DRIVE_STRENGTH_12MA | PADCTRL_SLEW_RATE_FAST | PADCTRL_READ_ENABLE;
 
@@ -283,15 +283,31 @@ int ospi_flash_init(void) {
     }
     self->cfg.ser = 1; // enable slave select
     self->cfg.addrlen = 8; // 32-bit address length
-    self->cfg.ospi_clock = set->freq_hz;
     self->cfg.ddr_en = 0;
     self->cfg.wait_cycles = 0; // used only for ospi_xip_exit
+    self->cfg.ospi_clock = 100000;  // use 100KHz for detection.
     ospi_init(&self->cfg);
 
-    // Check the device ID before attempting to switch to octal mode (if needed).
-    if (ospi_flash_read_id_spi(self) != set->jedec_id) {
+    // Read the device ID.
+    uint32_t jedec_id = ospi_flash_read_id_spi(self);
+
+    // Auto-detect the flash.
+    for (size_t i = 0; i < ospi_flash_settings_len; i++) {
+        set = &ospi_flash_settings[i];
+        if (jedec_id == set->jedec_id) {
+            self->set = set;
+            break;
+        }
+    }
+
+    if (self->set == NULL) {
+        // Flash part is not supported.
         return -1;
     }
+
+    // Switch to the higher frequency.
+    self->cfg.ospi_clock = set->freq_hz;
+    ospi_init(&self->cfg);
 
     // Switch to octal mode if needed.
     if (set->octal_switch != NULL) {
