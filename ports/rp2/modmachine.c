@@ -197,6 +197,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         xosc_dormant();
     } else {
         bool timer3_enabled = irq_is_enabled(3);
+        uint64_t endtime_us_64 = timer_time_us_64(timer_hw) + delay_ms * 1000;
 
         const uint32_t alarm_num = 3;
         const uint32_t irq_num = TIMER_ALARM_IRQ_NUM(timer_hw, alarm_num);
@@ -216,7 +217,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
             #error Unknown processor
             #endif
             timer_hw->intr = 1u << alarm_num; // clear any IRQ
-            timer_hw->alarm[alarm_num] = timer_hw->timerawl + delay_ms * 1000;
+            timer_hw->alarm[alarm_num] = ((uint32_t)((endtime_us_64) & 0xffffffff));
         } else {
             // TODO: Use RTC alarm to wake.
             clocks_hw->sleep_en0 = 0x0;
@@ -245,10 +246,23 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         #endif
         #endif
 
+
         // A timer other than #3 could fire.
-        // Repeatedly go into low-power mode until timer 3 is no longer armed.
-        while (timer_hw->armed & (1u << alarm_num)) {
+        // Repeatedly go into low-power mode until timer 3 is no longer armed or
+        // there is less that 30 microseconds left to go.
+        //
+        // This means lightsleep can return 50 microseconds early.
+        // That is still close, even for a 1 millisecond sleep.
+        // But this masks a race condition where and interrupt occurs after the armed bit
+        // is checked but before __wfi() is called.
+        // Note: 50 microseconds is a magic number.
+        // Given that all interrupts are masked except the interrupt for timer_hw
+        // This should be more than enough to mask the race condition.
+
+        uint64_t currenttime_us_64 = timer_time_us_64(timer_hw);
+        while (timer_hw->armed & (1u << alarm_num) && (endtime_us_64 - currenttime_us_64) > 50) {
             __wfi();
+            currenttime_us_64 = timer_time_us_64(timer_hw);
         }
 
         if (!timer3_enabled) {
