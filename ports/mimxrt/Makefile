@@ -78,6 +78,7 @@ INC += -I$(TOP)/lib/oofatfs
 INC += -I$(TOP)/lib/tinyusb/hw
 INC += -I$(TOP)/lib/tinyusb/hw/bsp/teensy_40
 INC += -I$(TOP)/lib/tinyusb/src
+INC += -I$(TOP)/shared/tinyusb
 INC += -I.
 INC += -Ihal
 
@@ -215,7 +216,7 @@ SRC_C += \
 	sdio.c \
 	systick.c \
 	ticks.c \
-	tusb_port.c \
+	usbd.c \
 
 SHARED_SRC_C += \
 	shared/libc/printf.c \
@@ -234,6 +235,7 @@ SHARED_SRC_C += \
 	shared/timeutils/timeutils.c \
 	shared/tinyusb/mp_usbd.c \
 	shared/tinyusb/mp_usbd_cdc.c \
+	shared/tinyusb/mp_usbd_descriptor.c \
 
 # Set flash driver name, base address and internal flash flag, based on the flash type.
 ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash))
@@ -343,6 +345,7 @@ CFLAGS += \
 	-DBOARD_$(BOARD) \
 	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT1XXX \
+	-DCFG_TUD_MAX_SPEED=OPT_MODE_HIGH_SPEED \
 	-DCLOCK_CONFIG_H='<boards/$(MCU_SERIES)_clock_config.h>' \
 	-DCPU_$(MCU_SERIES)$(MCU_CORE) \
 	-DCPU_$(MCU_VARIANT) \

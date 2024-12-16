@@ -43,7 +43,7 @@
 #include "modesp32.h"
 #include "genhdr/pins.h"
 
-#if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
+#if SOC_USB_SERIAL_JTAG_SUPPORTED
 #include "soc/usb_serial_jtag_reg.h"
 #endif
 

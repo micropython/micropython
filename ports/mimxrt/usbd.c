@@ -1,7 +1,9 @@
 /*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jim Mussared
+ * Copyright (c) 2024 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +22,21 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
  */
-#ifndef MICROPY_INCLUDED_MIMXRT_TUSB_CONFIG_H
-#define MICROPY_INCLUDED_MIMXRT_TUSB_CONFIG_H
 
-#define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
+#include "py/mpconfig.h"
 
-#define CFG_TUSB_OS             (OPT_OS_NONE)
+#if MICROPY_HW_ENABLE_USBDEV
 
-#define CFG_TUD_CDC             (1)
-#define CFG_TUD_CDC_RX_BUFSIZE  (512)
-#define CFG_TUD_CDC_TX_BUFSIZE  (512)
-#define CFG_TUD_CDC_PERSISTENT_TX_BUFF (1)
+#include "py/mphal.h"
+#include "mp_usbd.h"
+#include "string.h"
+#include "tusb.h"
 
-#endif // MICROPY_INCLUDED_MIMXRT_TUSB_CONFIG_H
+void mp_usbd_port_get_serial_number(char *serial_buf) {
+    uint8_t uid[8];
+    mp_hal_get_unique_id(uid);
+    mp_usbd_hex_str(serial_buf, uid, sizeof(uid));
+}
+
+#endif

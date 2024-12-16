@@ -71,7 +71,7 @@ Methods
 
    Otherwise, a TimerChannel object is initialized and returned.
 
-   The operating mode is is the one configured to the Timer object that was used to
+   The operating mode is the one configured to the Timer object that was used to
    create the channel.
 
    - ``channel`` if the width of the timer is 16-bit, then must be either ``TIMER.A``, ``TIMER.B``.

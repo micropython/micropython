@@ -245,15 +245,15 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
     /* Send the command */
     HAL_SDRAM_SendCommand(hsdram, command, 0x1000);
 
-    /* Step 8: Set the refresh rate counter
+    /* Step 8: Set the refresh rate counter.
+       Assuming 90MHz frequency, 8192 refresh cycles and 64ms refresh rate:
        RefreshRate = 64 ms / 8192 cyc = 7.8125 us/cyc
-
        RefreshCycles = 7.8125 us * 90 MHz = 703
        According to the formula on p.1665 of the reference manual,
        we also need to subtract 20 from the value, so the target
        refresh rate is 703 - 20 = 683.
      */
-    #define REFRESH_COUNT (MICROPY_HW_SDRAM_REFRESH_RATE * 90000 / 8192 - 20)
+    #define REFRESH_COUNT (MICROPY_HW_SDRAM_REFRESH_RATE * MICROPY_HW_SDRAM_FREQUENCY_KHZ / MICROPY_HW_SDRAM_REFRESH_CYCLES - 20)
     HAL_SDRAM_ProgramRefreshRate(hsdram, REFRESH_COUNT);
 
     #if defined(STM32F7) || defined(STM32H7)

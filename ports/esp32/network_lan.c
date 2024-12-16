@@ -30,8 +30,6 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
-#include "esp_idf_version.h"
-
 #if MICROPY_PY_NETWORK_LAN
 
 #include "esp_eth.h"

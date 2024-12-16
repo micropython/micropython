@@ -357,7 +357,7 @@ static inline uint32_t mp_clzll(unsigned long long x) {
 // Microsoft don't ship _BitScanReverse64 on Win32, so emulate it
 static inline uint32_t mp_clzll(unsigned long long x) {
     unsigned long h = x >> 32;
-    return h ? mp_clzl(h) : (mp_clzl(x) + 32);
+    return h ? mp_clzl(h) : (mp_clzl((unsigned long)x) + 32);
 }
 #endif
 
