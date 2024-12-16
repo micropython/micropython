@@ -72,8 +72,11 @@ enum {
 #define TYPE2SMALLINT(x, nbits) ((((int)x) << (32 - nbits)) >> 1)
 #define GET_TYPE(x, nbits) (((x) >> (31 - nbits)) & ((1 << nbits) - 1))
 // Bit 0 is "is_signed"
-#define GET_SCALAR_SIZE(val_type) (1 << ((val_type) >> 1))
+#define GET_SCALAR_SIZE(val_type) (1 << (((val_type) & 7) >> 1))
 #define VALUE_MASK(type_nbits) ~((int)0x80000000 >> type_nbits)
+
+#define INT_TYPE_IS_SIGNED(TYPE) ((TYPE) & 1)
+#define INT_TYPE_TO_UNSIGNED(TYPE) ((TYPE) & 6)
 
 #define IS_SCALAR_ARRAY(tuple_desc) ((tuple_desc)->len == 2)
 // We cannot apply the below to INT8, as their range [-128, 127]
@@ -137,7 +140,7 @@ static inline mp_uint_t uctypes_struct_scalar_size(int val_type) {
     if (val_type == FLOAT32) {
         return 4;
     } else {
-        return GET_SCALAR_SIZE(val_type & 7);
+        return GET_SCALAR_SIZE(val_type);
     }
 }
 
@@ -302,6 +305,12 @@ static inline mp_uint_t get_aligned_basic(uint val_type, void *p) {
     return 0;
 }
 
+#if MICROPY_PREVIEW_VERSION_2
+static void raise_overflow_exception(void) {
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("value would truncate"));
+}
+#endif
+
 static inline void set_aligned_basic(uint val_type, void *p, mp_uint_t v) {
     switch (val_type) {
         case UINT8:
@@ -358,7 +367,58 @@ static void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
         return;
     }
     #endif
+
+    // Special case where mp_int_t can't hold the target type, fall through
+    if (sizeof(mp_int_t) < 8 && (val_type == INT64 || val_type == UINT64)) {
+        // Doesn't offer atomic store semantics, but should at least try
+        set_unaligned(val_type, (void *)&((uint64_t *)p)[index], MP_ENDIANNESS_BIG, val);
+        return;
+    }
+
+    #if MICROPY_PREVIEW_VERSION_2
+    // V2 raises exception if setting int will truncate
+    mp_int_t v;
+    bool ok = mp_obj_get_int_maybe(val, &v);
+    if (ok) {
+        switch (val_type) {
+            case UINT8:
+                ok = (v == (uint8_t)v);
+                break;
+            case INT8:
+                ok = (v == (int8_t)v);
+                break;
+            case UINT16:
+                ok = (v == (uint16_t)v);
+                break;
+            case INT16:
+                ok = (v == (int16_t)v);
+                break;
+            case UINT32:
+                ok = (v == (uint32_t)v);
+                break;
+            case INT32:
+                ok = (v == (int32_t)v);
+                break;
+            case UINT64:
+                assert(sizeof(mp_int_t) == 8);
+                ok = v >= 0;
+                break;
+            case INT64:
+                assert(sizeof(mp_int_t) == 8);
+                break;
+            default:
+                assert(0);
+                ok = false;
+        }
+        if (!ok) {
+            raise_overflow_exception();
+        }
+    }
+
+    #else
     mp_int_t v = mp_obj_get_int_truncated(val);
+    #endif
+
     switch (val_type) {
         case UINT8:
             ((uint8_t *)p)[index] = (uint8_t)v;
@@ -380,12 +440,8 @@ static void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
             return;
         case INT64:
         case UINT64:
-            if (sizeof(mp_int_t) == 8) {
-                ((uint64_t *)p)[index] = (uint64_t)v;
-            } else {
-                // TODO: Doesn't offer atomic store semantics, but should at least try
-                set_unaligned(val_type, (void *)&((uint64_t *)p)[index], MP_ENDIANNESS_BIG, val);
-            }
+            assert(sizeof(mp_int_t) == 8);
+            ((uint64_t *)p)[index] = (uint64_t)v;
             return;
         default:
             assert(0);
@@ -427,28 +483,38 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             offset &= (1 << OFFSET_BITS) - 1;
             mp_uint_t val;
             if (self->flags == LAYOUT_NATIVE) {
-                val = get_aligned_basic(val_type & 6, self->addr + offset);
+                val = get_aligned_basic(INT_TYPE_TO_UNSIGNED(val_type), self->addr + offset);
             } else {
-                val = mp_binary_get_int(GET_SCALAR_SIZE(val_type & 7), val_type & 1, self->flags, self->addr + offset);
+                val = mp_binary_get_int(GET_SCALAR_SIZE(val_type), INT_TYPE_IS_SIGNED(val_type),
+                    self->flags, self->addr + offset);
             }
             if (set_val == MP_OBJ_NULL) {
                 val >>= bit_offset;
                 val &= (1 << bit_len) - 1;
                 // TODO: signed
-                assert((val_type & 1) == 0);
+                assert(!INT_TYPE_IS_SIGNED(val_type));
                 return mp_obj_new_int(val);
             } else {
-                mp_uint_t set_val_int = (mp_uint_t)mp_obj_get_int(set_val);
                 mp_uint_t mask = (1 << bit_len) - 1;
+                mp_uint_t set_val_int;
+
+                #if MICROPY_PREVIEW_VERSION_2
+                if (!mp_obj_get_int_maybe(set_val, (mp_int_t *)&set_val_int) || (set_val_int & mask) != set_val_int) {
+                    raise_overflow_exception();
+                }
+                #else
+                set_val_int = (mp_uint_t)mp_obj_get_int(set_val);
+                #endif
+
                 set_val_int &= mask;
                 set_val_int <<= bit_offset;
                 mask <<= bit_offset;
                 val = (val & ~mask) | set_val_int;
 
                 if (self->flags == LAYOUT_NATIVE) {
-                    set_aligned_basic(val_type & 6, self->addr + offset, val);
+                    set_aligned_basic(INT_TYPE_TO_UNSIGNED(val_type), self->addr + offset, val);
                 } else {
-                    size_t item_size = GET_SCALAR_SIZE(val_type & 7);
+                    size_t item_size = GET_SCALAR_SIZE(val_type);
                     mp_binary_set_int(item_size, self->addr + offset, item_size, val, self->flags == LAYOUT_BIG_ENDIAN);
                 }
                 return set_val; // just !MP_OBJ_NULL
