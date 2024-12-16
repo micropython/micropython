@@ -359,6 +359,8 @@ Note: New PWM parameters take effect in the next PWM cycle.
     print(pwm)
     >>>PWM(Pin(2), freq=2, duty=64)  # the duty is actual
 
+Note: machine.freq(20_000_000) reduces the highest PWM frequency to 10 MHz.
+
 See more examples in the :ref:`esp32_pwm` tutorial.
 
 DAC (digital to analog conversion)
