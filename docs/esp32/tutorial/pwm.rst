@@ -69,9 +69,8 @@ low all of the time.
     while True:
         pwm.freq(f)
         sleep(1/f)
+        sleep(.1)
         print(pwm)
-
-        sleep(.2)
 
         f += delta_f
         if f > F_MAX or f < F_MIN:
@@ -88,7 +87,7 @@ low all of the time.
 
 PWM(Pin(27), freq=998, duty_u16=32768)  # duty=50.00%, raw_duty=32768, resolution=16, mode=0, channel=0, timer=2
 PWM(Pin(27), freq=1202, duty_u16=32768)  # duty=50.00%, raw_duty=32768, resolution=16, mode=0, channel=0, timer=2
-PWM(Pin(27), freq=1401, duty_u16=65536)  # duty=100.00%, raw_duty=32768, resolution=15, mode=0, channel=0, timer=2
+PWM(Pin(27), freq=1401, duty_u16=32768)  # duty=50.00%, raw_duty=16384, resolution=15, mode=0, channel=0, timer=2
 PWM(Pin(27), freq=1598, duty_u16=32768)  # duty=50.00%, raw_duty=16384, resolution=15, mode=0, channel=0, timer=2
 ...
 PWM(Pin(27), freq=9398, duty_u16=32768)  # duty=50.00%, raw_duty=4096, resolution=13, mode=0, channel=0, timer=0
@@ -103,7 +102,7 @@ PWM(Pin(27), freq=9398, duty_u16=32768)  # duty=50.00%, raw_duty=4096, resolutio
 ...
 PWM(Pin(27), freq=1598, duty_u16=32768)  # duty=50.00%, raw_duty=16384, resolution=15, mode=0, channel=0, timer=2
 PWM(Pin(27), freq=1401, duty_u16=32768)  # duty=50.00%, raw_duty=16384, resolution=15, mode=0, channel=0, timer=2
-PWM(Pin(27), freq=1202, duty_u16=16384)  # duty=25.00%, raw_duty=16384, resolution=16, mode=0, channel=0, timer=2
+PWM(Pin(27), freq=1202, duty_u16=32768)  # duty=50.00%, raw_duty=32768, resolution=16, mode=0, channel=0, timer=2
 PWM(Pin(27), freq=998, duty_u16=32768)  # duty=50.00%, raw_duty=32768, resolution=16, mode=0, channel=0, timer=2
 
 
