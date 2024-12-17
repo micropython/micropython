@@ -174,6 +174,12 @@ uint32_t se_services_enable_clock(clock_enable_t clock, bool enable) {
     return error_code;
 }
 
+uint32_t se_services_select_pll_source(pll_source_t source, pll_target_t target) {
+    uint32_t error_code;
+    SERVICES_clocks_select_pll_source(se_services_handle, source, target, &error_code);
+    return error_code;
+}
+
 uint32_t se_services_get_run_profile(run_profile_t *profile) {
     uint32_t error_code;
     SERVICES_get_run_cfg(se_services_handle, profile, &error_code);
