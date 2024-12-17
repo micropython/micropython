@@ -59,10 +59,13 @@ DIFF = os.getenv("MICROPY_DIFF", "diff -u")
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
 # Code to allow a target MicroPython to import an .mpy from RAM
+# Note: the module is named `__injected_test` but it needs to have `__name__` set to
+# `__main__` so that the test sees itself as the main module, eg so unittest works.
 injected_import_hook_code = """\
 import sys, os, io, vfs
 class __File(io.IOBase):
   def __init__(self):
+    sys.modules['__injected_test'].__name__ = '__main__'
     self.off = 0
   def ioctl(self, request, arg):
     return 0
