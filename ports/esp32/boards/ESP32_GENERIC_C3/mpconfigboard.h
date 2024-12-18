@@ -1,6 +1,7 @@
 // This configuration is for a generic ESP32C3 board with 4MiB (or more) of flash.
-
+#ifndef MICROPY_HW_BOARD_NAME
 #define MICROPY_HW_BOARD_NAME               "ESP32C3 module"
+#endif
 #define MICROPY_HW_MCU_NAME                 "ESP32C3"
 
 #define MICROPY_HW_ENABLE_SDCARD            (0)

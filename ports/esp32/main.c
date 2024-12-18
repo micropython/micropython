@@ -257,3 +257,14 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     memcpy(p, buf, len);
     return p;
 }
+
+
+// Workaround for https://github.com/espressif/esp-insights/issues/38
+extern int  __real_esp_efuse_rtc_calib_get_ver(void);
+int __wrap_esp_efuse_rtc_calib_get_ver(void) {
+    #if CONFIG_ETH_USE_OPENETH // detect QEMU build
+    return 1;
+    #else
+    return __real_esp_efuse_rtc_calib_get_ver();
+    #endif
+}

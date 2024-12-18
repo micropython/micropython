@@ -1,0 +1,8 @@
+set(SDKCONFIG_DEFAULTS
+    ${SDKCONFIG_DEFAULTS}
+    boards/ESP32_GENERIC_C3/sdkconfig.qemu
+)
+
+list(APPEND MICROPY_DEF_BOARD
+    MICROPY_HW_BOARD_NAME="Generic ESP32C3 module with QEMU"
+)
