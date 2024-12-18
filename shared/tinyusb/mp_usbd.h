@@ -35,6 +35,10 @@
 #include "py/objarray.h"
 #include "py/runtime.h"
 
+#if MICROPY_HW_USB_NET
+#include "mp_usbd_net.h"
+#endif
+
 #ifndef NO_QSTR
 #include "tusb.h"
 #include "device/dcd.h"
@@ -45,6 +49,10 @@ static inline void mp_usbd_init_tud(void) {
     tusb_init();
     tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0, .tx_persistent = 1 };
     tud_cdc_configure_fifo(&cfg);
+
+    #if MICROPY_HW_USB_NET
+    mp_usbd_net_init();
+    #endif
 }
 
 // Run the TinyUSB device task
@@ -64,9 +72,15 @@ void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
 
 // Length of built-in configuration descriptor
 #define MP_USBD_BUILTIN_DESC_CFG_LEN (TUD_CONFIG_DESC_LEN +                     \
-    (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) +  \
-    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0)    \
-    )
+    (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) + \
+    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0) + \
+    (CFG_TUD_NCM ? (TUD_CDC_NCM_DESC_LEN) : 0) + \
+    (CFG_TUD_ECM_RNDIS ? (TUD_RNDIS_DESC_LEN) : 0) \
+)
+
+
+// Alternate config length used by ETH / ECM-RNDIS
+#define MP_USBD_ALT_CONFIG_TOTAL_LEN     (TUD_CONFIG_DESC_LEN + TUD_CDC_ECM_DESC_LEN)
 
 // Built-in USB device and configuration descriptor values
 extern const tusb_desc_device_t mp_usbd_builtin_desc_dev;

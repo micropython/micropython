@@ -80,10 +80,9 @@ INC += -I$(TOP)/lib/tinyusb/src
 INC += -I$(TOP)/shared/tinyusb
 INC += -I.
 INC += -Ihal
-
-# All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
-ifeq ($(MICROPY_PY_LWIP),1)
 INC += -Ilwip_inc
+
+ifeq ($(MICROPY_HW_ETHERNET),1)
 INC += -Ihal/phy
 endif
 
@@ -106,8 +105,10 @@ SRC_TINYUSB_C += \
 	lib/tinyusb/src/portable/chipidea/ci_hs/dcd_ci_hs.c \
 	lib/tinyusb/src/tusb.c
 
-# All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
-ifeq ($(MICROPY_PY_LWIP),1)
+# All settings for Ethernet support are controlled by the value of MICROPY_HW_ETHERNET
+ifeq ($(MICROPY_HW_ETHERNET),1)
+MICROPY_PY_LWIP = 1
+
 SRC_ETH_C += \
 	$(MCUX_SDK_DIR)/drivers/enet/fsl_enet.c \
 	hal/phy/device/phydp83825/fsl_phydp83825.c \
@@ -281,6 +282,7 @@ SHARED_SRC_C += \
 	shared/timeutils/timeutils.c \
 	shared/tinyusb/mp_usbd.c \
 	shared/tinyusb/mp_usbd_cdc.c \
+	shared/tinyusb/mp_usbd_net.c \
 	shared/tinyusb/mp_usbd_descriptor.c \
 
 # Set flash driver name, base address and internal flash flag, based on the flash type.
@@ -447,8 +449,8 @@ else
 endif
 
 
-# All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
-ifeq ($(MICROPY_PY_LWIP),1)
+# All settings for Ethernet support are controlled by the value of MICROPY_HW_ETHERNET
+ifeq ($(MICROPY_HW_ETHERNET),1)
 CFLAGS += \
 	-DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1
 endif
@@ -470,7 +472,8 @@ LDFLAGS += \
 	--gc-sections \
 	--print-memory-usage \
 	-Map=$@.map \
-    --wrap=LPUART_TransferHandleIRQ
+    --wrap=LPUART_TransferHandleIRQ \
+    --wrap=dcd_event_handler
 
 # LDDEFINES are used for link time adaptation of linker scripts, utilizing
 #	the C preprocessor. Therefore keep LDDEFINES separated from LDFLAGS!
