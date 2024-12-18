@@ -458,6 +458,7 @@ SRC_THIRDPARTY_C += $(addprefix $(CYW43_DIR)/src/,\
 	cyw43_lwip.c \
 	cyw43_ll.c \
 	cyw43_sdio.c \
+	cyw43_spi.c \
 	cyw43_stats.c \
 	)
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
