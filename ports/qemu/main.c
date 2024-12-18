@@ -77,3 +77,7 @@ void nlr_jump_fail(void *val) {
     mp_printf(&mp_plat_print, "uncaught NLR\n");
     exit(1);
 }
+
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
+    return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+}
