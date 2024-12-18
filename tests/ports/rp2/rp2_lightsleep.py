@@ -9,7 +9,7 @@
 # A range of sleep periods (1 to 512ms) are tested. The total nominal sleep time
 # is 10.23 seconds, but on most ports this will finish much earlier as interrupts
 # happen before each timeout expires.
-import sys
+import sys, time
 
 try:
     from machine import lightsleep, Pin
@@ -27,10 +27,28 @@ try:
 except AttributeError:
     led = None
 
+t0 = time.ticks_ms()
+
 for n in range(100):
     if led:
         led.toggle()
     sys.stdout.write(chr(ord("a") + (n % 26)))
     lightsleep(2 ** (n % 10))
 
-print("\nDONE")
+print()  # end of line
+
+delta = time.ticks_diff(time.ticks_ms(), t0)
+
+if delta < 2500:
+    # As per note above, we don't expect the full 10.23 seconds
+    # but a very short total runtime may indicate a bug with
+    # lightsleep
+    print("Unexpected short test time", delta, "ms")
+elif delta > 11000:
+    # Similarly, the test shouldn't take much longer than the max lightsleep
+    # time
+    print("Unexpected long test time", delta, "ms")
+else:
+    print("Test time OK")
+
+print("DONE")
