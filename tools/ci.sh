@@ -114,9 +114,19 @@ function ci_mpy_format_test {
     python2 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
     python3 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
 
+    # Build MicroPython
+    ci_unix_standard_build
+    micropython=./ports/unix/build-standard/micropython
+    $micropython -m mip install --target . argparse __future__
+    export MICROPYPATH=.
+
+    # Test mpy-tool.py in MicroPython
+    $micropython ./tools/mpy-tool.py -x -d tests/frozen/frozentest.mpy
+
     # Test mpy-tool.py dump feature on native code
     make -C examples/natmod/features1
     ./tools/mpy-tool.py -xd examples/natmod/features1/features1.mpy
+    $micropython ./tools/mpy-tool.py -x -d examples/natmod/features1/features1.mpy
 }
 
 ########################################################################################
