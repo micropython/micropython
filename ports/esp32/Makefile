@@ -106,6 +106,9 @@ size-components:
 size-files:
 	$(call RUN_IDF_PY,size-files)
 
+qemu:
+	$(call RUN_IDF_PY,qemu monitor)
+
 # Run idf.py with the UPDATE_SUBMODULES flag to update
 # necessary submodules for this board.
 #
