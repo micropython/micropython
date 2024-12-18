@@ -231,7 +231,7 @@ def print_table(hse, valid_plls):
 def search_header_for_hsx_values(filename):
     hse = hsi = None
     regex_def = re.compile(
-        r"static.* +(micropy_hw_hs[ei]_value) = +\(*(\(uint32_t\))?([0-9 +-/\*]+)\)*;",
+        r"static.* +(micropy_hw_hs[ei]_value) = +([0-9 +-/\*()]+);",
     )
     with open(filename) as f:
         for line in f:
@@ -239,10 +239,8 @@ def search_header_for_hsx_values(filename):
             m = regex_def.match(line)
             if m:
                 # Found HSE_VALUE or HSI_VALUE
-                found = m.group(3)
-                if "*" in found or "/" in found:
-                    found = eval(found)
-                val = int(found) // 1000000
+                found = m.group(2)
+                val = eval(found) // 1000000
                 if m.group(1) == "micropy_hw_hse_value":
                     hse = val
                 else:
