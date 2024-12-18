@@ -240,7 +240,7 @@
 #endif
 
 #ifndef MICROPY_PY_NETWORK_PPP_LWIP
-#define MICROPY_PY_NETWORK_PPP_LWIP     (0)
+#define MICROPY_PY_NETWORK_PPP_LWIP     (MICROPY_PY_LWIP)
 #endif
 #endif
 
