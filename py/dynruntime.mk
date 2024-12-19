@@ -38,6 +38,8 @@ MPY_CROSS_FLAGS += -march=$(ARCH)
 SRC_O += $(addprefix $(BUILD)/, $(patsubst %.c,%.o,$(filter %.c,$(SRC))) $(patsubst %.S,%.o,$(filter %.S,$(SRC))))
 SRC_MPY += $(addprefix $(BUILD)/, $(patsubst %.py,%.mpy,$(filter %.py,$(SRC))))
 
+CLEAN_EXTRA += $(MOD).mpy
+
 ################################################################################
 # Architecture configuration
 
@@ -98,6 +100,22 @@ else ifeq ($(ARCH),xtensawin)
 CROSS = xtensa-esp32-elf-
 CFLAGS +=
 MICROPY_FLOAT_IMPL ?= float
+
+else ifeq ($(ARCH),rv32imc)
+
+# rv32imc
+CROSS = riscv64-unknown-elf-
+CFLAGS += -march=rv32imac -mabi=ilp32 -mno-relax
+# If Picolibc is available then select it explicitly.  Ubuntu 22.04 ships its
+# bare metal RISC-V toolchain with Picolibc rather than Newlib, and the default
+# is "nosys" so a value must be provided.  To avoid having per-distro
+# workarounds, always select Picolibc if available.
+PICOLIBC_SPECS = $(shell $(CROSS)gcc --print-file-name=picolibc.specs)
+ifneq ($(PICOLIBC_SPECS),picolibc.specs)
+CFLAGS += --specs=$(PICOLIBC_SPECS)
+endif
+
+MICROPY_FLOAT_IMPL ?= none
 
 else
 $(error architecture '$(ARCH)' not supported)
