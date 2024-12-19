@@ -548,7 +548,7 @@ void spi_deinit(const spi_t *spi_obj) {
 void spi_deinit_all(void) {
     for (int i = 0; i < MP_ARRAY_SIZE(spi_obj); i++) {
         const spi_t *spi = &spi_obj[i];
-        if (spi->spi != NULL) {
+        if (spi->spi != NULL && !MICROPY_HW_SPI_IS_RESERVED(i + 1) && !MICROPY_HW_SPI_IS_STATIC(i + 1)) {
             spi_deinit(spi);
         }
     }
