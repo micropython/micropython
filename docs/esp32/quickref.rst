@@ -320,24 +320,51 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
 
     pwm2 = PWM(Pin(2), freq=20000, duty=512)  # create and configure in one go
     print(pwm2)                               # view PWM settings
+    pwm2.deinit()                             # turn off PWM on the pin
+
+    pwm0 = PWM(Pin(0), duty_u16=16384)            # The output is at a high level 25% of the time.
+    pwm2 = PWM(Pin(2), duty_u16=16384, invert=1)  # The output is at a low level 25% of the time.
+
+    pwm4 = PWM(Pin(4), light_sleep_enable=True)   # Allow PWM during light sleep mode
 
 ESP chips have different hardware peripherals:
 
-=====================================================  ========  ========  ========
-Hardware specification                                    ESP32  ESP32-S2  ESP32-C3
------------------------------------------------------  --------  --------  --------
-Number of groups (speed modes)                                2         1         1
-Number of timers per group                                    4         4         4
-Number of channels per group                                  8         8         6
------------------------------------------------------  --------  --------  --------
-Different PWM frequencies (groups * timers)                   8         4         4
-Total PWM channels (Pins, duties) (groups * channels)        16         8         6
-=====================================================  ========  ========  ========
+=======================================================  ========  =========  ==========
+Hardware specification                                      ESP32  ESP32-S2,  ESP32-C2,
+                                                                   ESP32-S3,  ESP32-C3,
+                                                                   ESP32-P2   ESP32-C5,
+                                                                              ESP32-C6,
+                                                                              ESP32-H2
+-------------------------------------------------------  --------  ---------  ----------
+Number of groups (speed modes)                                  2          1         1
+Number of timers per group                                      4          4         4
+Number of channels per group                                    8          8         6
+-------------------------------------------------------  --------  ---------  ----------
+Different PWM frequencies = (groups * timers)                   8          4         4
+Total PWM channels (Pins, duties) = (groups * channels)        16          8         6
+=======================================================  ========  =========  ==========
+
+In light sleep, the ESP32 PWM can only operate in low speed mode, so only 4 timers and
+8 channels are available.
 
 A maximum number of PWM channels (Pins) are available on the ESP32 - 16 channels,
 but only 8 different PWM frequencies are available, the remaining 8 channels must
 have the same frequency.  On the other hand, 16 independent PWM duty cycles are
 possible at the same frequency.
+
+Note: New PWM parameters take effect in the next PWM cycle.
+
+    pwm = PWM(2, duty=512)
+    print(pwm)
+    >>>PWM(Pin(2), freq=5000, duty=1023)  # the duty is not relevant
+    pwm.init(freq=2, duty=64)
+    print(pwm)
+    >>>PWM(Pin(2), freq=2, duty=16)  # the duty is not relevant
+    time.sleep(1 / 2)                # wait one PWM period
+    print(pwm)
+    >>>PWM(Pin(2), freq=2, duty=64)  # the duty is actual
+
+Note: machine.freq(20_000_000) reduces the highest PWM frequency to 10 MHz.
 
 See more examples in the :ref:`esp32_pwm` tutorial.
 

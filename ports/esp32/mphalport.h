@@ -29,6 +29,8 @@
 #ifndef INCLUDED_MPHALPORT_H
 #define INCLUDED_MPHALPORT_H
 
+#include "esp_timer.h"
+
 #include "py/ringbuf.h"
 #include "shared/runtime/interrupt_char.h"
 
@@ -57,10 +59,11 @@ extern ringbuf_t stdin_ringbuf;
 extern portMUX_TYPE mp_atomic_mux;
 
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
-#if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_NORMAL
+#if 0//MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_NORMAL
 #define check_esp_err(code) check_esp_err_(code)
 void check_esp_err_(esp_err_t code);
 #else
+#define MICROPY_ERROR_REPORTING_NORMAL_PLUS
 #define check_esp_err(code) check_esp_err_(code, __FUNCTION__, __LINE__, __FILE__)
 void check_esp_err_(esp_err_t code, const char *func, const int line, const char *file);
 #endif
@@ -81,7 +84,10 @@ static inline void mp_end_atomic_section(mp_uint_t state) {
 #define MICROPY_BEGIN_ATOMIC_SECTION() mp_begin_atomic_section()
 #define MICROPY_END_ATOMIC_SECTION(state) mp_end_atomic_section(state)
 
+#define mp_hal_ticks_us esp_timer_get_time
+#ifndef mp_hal_ticks_us
 uint32_t mp_hal_ticks_us(void);
+#endif
 __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
     uint32_t ccount;
     #if CONFIG_IDF_TARGET_ARCH_RISCV
