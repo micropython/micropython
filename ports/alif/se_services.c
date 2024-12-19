@@ -93,14 +93,6 @@ void se_services_init(void) {
     mhu_driver_in.debug_print = NULL; // not currently used by MHU_driver_initialize
     MHU_driver_initialize(&mhu_driver_in, &mhu_driver_out);
 
-    // Enable MHU interrupts.
-    NVIC_ClearPendingIRQ(MHU_SESS_S_RX_IRQ_IRQn);
-    NVIC_SetPriority(MHU_SESS_S_RX_IRQ_IRQn, IRQ_PRI_MHU);
-    NVIC_EnableIRQ(MHU_SESS_S_RX_IRQ_IRQn);
-    NVIC_ClearPendingIRQ(MHU_SESS_S_TX_IRQ_IRQn);
-    NVIC_SetPriority(MHU_SESS_S_TX_IRQ_IRQn, IRQ_PRI_MHU);
-    NVIC_EnableIRQ(MHU_SESS_S_TX_IRQ_IRQn);
-
     // Initialize SE services.
     services_lib_t services_init_params = {
         .packet_buffer_address = (uint32_t)packet_buffer,
@@ -113,6 +105,14 @@ void se_services_init(void) {
 
     // Create SE services channel for sending requests.
     se_services_handle = SERVICES_register_channel(MHU_M55_SE_MHU0, 0);
+
+    // Enable MHU interrupts.
+    NVIC_ClearPendingIRQ(MHU_SESS_S_RX_IRQ_IRQn);
+    NVIC_SetPriority(MHU_SESS_S_RX_IRQ_IRQn, IRQ_PRI_MHU);
+    NVIC_EnableIRQ(MHU_SESS_S_RX_IRQ_IRQn);
+    NVIC_ClearPendingIRQ(MHU_SESS_S_TX_IRQ_IRQn);
+    NVIC_SetPriority(MHU_SESS_S_TX_IRQ_IRQn, IRQ_PRI_MHU);
+    NVIC_EnableIRQ(MHU_SESS_S_TX_IRQ_IRQn);
 
     // Send heartbeat services requests until one succeeds.
     SERVICES_synchronize_with_se(se_services_handle);
