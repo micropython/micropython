@@ -281,7 +281,7 @@ int ospi_flash_init(void) {
     }
     pinconf_set(pin->pin_d0->port, pin->pin_d0->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
     pinconf_set(pin->pin_d1->port, pin->pin_d1->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
-    pinconf_set(pin->pin_d2->port, pin->pin_d2->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
+    pinconf_set(pin->pin_d2->port, pin->pin_d2->pin, OSPI_PIN_FUNCTION, io_pad_ctrl | PADCTRL_DRIVER_DISABLED_PULL_UP);
     pinconf_set(pin->pin_d3->port, pin->pin_d3->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
     if (pin->pin_d4 != NULL) {
         pinconf_set(pin->pin_d4->port, pin->pin_d4->pin, OSPI_PIN_FUNCTION, io_pad_ctrl);
