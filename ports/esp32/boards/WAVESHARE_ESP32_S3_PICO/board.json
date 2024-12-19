@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy_s3.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "External RAM",
+        "WiFi"
+    ],
+    "images": [
+        "generic_s3.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "Waveshare ESP32-S3-Pico",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/ESP32-S3-Pico.htm",
+    "vendor": "Waveshare",
+    "variants": {
+        "SPIRAM_OCT": "Support for SPIRAM"
+    }
+}
