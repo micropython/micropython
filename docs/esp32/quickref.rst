@@ -325,6 +325,8 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
     pwm0 = PWM(Pin(0), duty_u16=16384)            # The output is at a high level 25% of the time.
     pwm2 = PWM(Pin(2), duty_u16=16384, invert=1)  # The output is at a low level 25% of the time.
 
+    pwm4 = PWM(Pin(4), light_sleep_enable=True)   # Allow PWM during light sleep mode
+
 ESP chips have different hardware peripherals:
 
 =======================================================  ========  =========  ==========
@@ -341,6 +343,9 @@ Number of channels per group                                    8          8    
 Different PWM frequencies = (groups * timers)                   8          4         4
 Total PWM channels (Pins, duties) = (groups * channels)        16          8         6
 =======================================================  ========  =========  ==========
+
+In light sleep, the ESP32 PWM can only operate in low speed mode, so only 4 timers and
+8 channels are available.
 
 A maximum number of PWM channels (Pins) are available on the ESP32 - 16 channels,
 but only 8 different PWM frequencies are available, the remaining 8 channels must
