@@ -123,4 +123,10 @@ target_sources(app PRIVATE
     src/zephyr_getchar.c
 )
 
+if (CONFIG_DT_HAS_ZEPHYR_CDC_ACM_UART_ENABLED)
+target_sources(app PRIVATE
+    src/usbd_cdc_acm.c
+)
+endif()
+
 target_link_libraries(app PRIVATE ${MICROPY_TARGET})
