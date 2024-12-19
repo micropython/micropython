@@ -16,4 +16,4 @@ SRC_BOARD_O = shared/runtime/gchelper_generic.o
 MPY_CROSS_FLAGS += -march=armv6
 
 # These tests don't work on Cortex-A9, so exclude them.
-RUN_TESTS_ARGS = --exclude '(asmdiv|asmspecialregs).py'
+RUN_TESTS_ARGS = --exclude 'inlineasm/thumb/(asmdiv|asmspecialregs).py'
