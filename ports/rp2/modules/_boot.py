@@ -1,5 +1,10 @@
 import vfs
+import sys
 import machine, rp2
+
+
+vfs.mount(vfs.VfsRom(vfs.rom_ioctl(1)), "/rom")
+sys.path.insert(0, "/rom")
 
 
 # Try to mount the filesystem, and format the flash if it doesn't exist.
@@ -12,4 +17,4 @@ except:
     fs = vfs.VfsLfs2(bdev, progsize=256)
 vfs.mount(fs, "/")
 
-del vfs, bdev, fs
+del vfs, sys, bdev, fs

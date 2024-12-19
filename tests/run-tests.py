@@ -68,7 +68,9 @@ class __File(io.IOBase):
     sys.modules['__injected_test'].__name__ = '__main__'
     self.off = 0
   def ioctl(self, request, arg):
-    return 0
+    if request == 4: # MP_STREAM_CLOSE
+      return 0
+    return -1
   def readinto(self, buf):
     buf[:] = memoryview(__buf)[self.off:self.off + len(buf)]
     self.off += len(buf)
