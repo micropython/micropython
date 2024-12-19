@@ -95,10 +95,12 @@ mp_obj_t mp_vfs_chdir(mp_obj_t path_in);
 mp_obj_t mp_vfs_getcwd(void);
 mp_obj_t mp_vfs_ilistdir(size_t n_args, const mp_obj_t *args);
 mp_obj_t mp_vfs_listdir(size_t n_args, const mp_obj_t *args);
+#if MICROPY_VFS_WRITABLE
 mp_obj_t mp_vfs_mkdir(mp_obj_t path_in);
 mp_obj_t mp_vfs_remove(mp_obj_t path_in);
 mp_obj_t mp_vfs_rename(mp_obj_t old_path_in, mp_obj_t new_path_in);
 mp_obj_t mp_vfs_rmdir(mp_obj_t path_in);
+#endif
 mp_obj_t mp_vfs_stat(mp_obj_t path_in);
 mp_obj_t mp_vfs_statvfs(mp_obj_t path_in);
 
@@ -111,10 +113,12 @@ MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_chdir_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(mp_vfs_getcwd_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_ilistdir_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_listdir_obj);
+#if MICROPY_VFS_WRITABLE
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_mkdir_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_remove_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_vfs_rename_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_rmdir_obj);
+#endif
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_stat_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_statvfs_obj);
 
