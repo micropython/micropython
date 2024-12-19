@@ -1045,6 +1045,7 @@ bool mp_obj_get_complex_maybe(mp_obj_t self_in, mp_float_t *real, mp_float_t *im
 #endif
 void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items); // *items may point inside a GC block
 void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items); // *items may point inside a GC block
+void mp_ob_get_array_min_max(mp_obj_t o, size_t min_len, size_t max_len, size_t *len, mp_obj_t **items); // *items may point inside a GC block
 size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool is_slice);
 mp_obj_t mp_obj_id(mp_obj_t o_in);
 mp_obj_t mp_obj_len(mp_obj_t o_in);
