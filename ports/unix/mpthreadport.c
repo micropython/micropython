@@ -321,6 +321,26 @@ void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
     // TODO check return value
 }
 
+#if MICROPY_PY_THREAD_RECURSIVE_MUTEX
+
+void mp_thread_recursive_mutex_init(mp_thread_recursive_mutex_t *mutex) {
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(mutex, &attr);
+    pthread_mutexattr_destroy(&attr);
+}
+
+int mp_thread_recursive_mutex_lock(mp_thread_recursive_mutex_t *mutex, int wait) {
+    return mp_thread_mutex_lock(mutex, wait);
+}
+
+void mp_thread_recursive_mutex_unlock(mp_thread_recursive_mutex_t *mutex) {
+    mp_thread_mutex_unlock(mutex);
+}
+
+#endif // MICROPY_PY_THREAD_RECURSIVE_MUTEX
+
 #endif // MICROPY_PY_THREAD
 
 // this is used even when MICROPY_PY_THREAD is disabled
