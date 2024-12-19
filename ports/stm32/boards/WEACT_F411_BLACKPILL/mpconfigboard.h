@@ -86,6 +86,9 @@
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 
 #else
+// Reserve SPI flash bus.
+#define MICROPY_HW_SPI_IS_RESERVED(id)  (id == 1)
+
 // Disable internal filesystem to use spiflash.
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 

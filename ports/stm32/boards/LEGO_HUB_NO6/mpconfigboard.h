@@ -65,6 +65,7 @@
 #define MICROPY_HW_SPI2_SCK                      (pyb_pin_FLASH_SCK)
 #define MICROPY_HW_SPI2_MISO                     (pyb_pin_FLASH_MISO)
 #define MICROPY_HW_SPI2_MOSI                     (pyb_pin_FLASH_MOSI)
+#define MICROPY_HW_SPI_IS_RESERVED(id)           (id == 2)  // Reserve SPI flash bus.
 
 // USB config
 #define MICROPY_HW_USB_VBUS_DETECT_PIN           (pyb_pin_USB_VBUS)
