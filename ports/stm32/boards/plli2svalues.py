@@ -132,12 +132,9 @@ def search_header(filename, re_define, lookup):
             m = regex_define.match(line)
             if m:
                 # found lookup value
-                found = m.group(3)
-                if "*" in found or "/" in found:
-                    # process define using multiply or divide to calculate value
-                    found = eval(found)
+                found = m.group(2)
                 if m.group(1) == lookup:
-                    val = int(found)
+                    val = eval(found)
     return val
 
 
@@ -179,7 +176,7 @@ def main():
             # extract hse value from processed header files
             hse = search_header(
                 argv[0][len("file:") :],
-                r"static.* (micropy_hw_hse_value) = +\(*(\(uint32_t\))?([0-9 +-/\*]+)\)*;",
+                r"static.* (micropy_hw_hse_value) = +([0-9 +-/\*()]+);",
                 "micropy_hw_hse_value",
             )
             if hse is None:
@@ -190,7 +187,7 @@ def main():
             # extract pllm value from processed header files
             pllm = search_header(
                 argv[0][len("file:") :],
-                r"static.* (micropy_hw_clk_pllm) = +\(*(\(uint32_t\))?([0-9 +-/\*]+)\)*;",
+                r"static.* (micropy_hw_clk_pllm) = +([0-9 +-/\*()]+);",
                 "micropy_hw_clk_pllm",
             )
             if pllm is None:

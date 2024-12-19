@@ -16,12 +16,6 @@ try:
 except ImportError:
     print("SKIP")
     raise SystemExit
-
-# RP2350 currently fails this test, needs further investigation.
-if "RP2350" in sys.implementation._machine:
-    print("SKIP")
-    raise SystemExit
-
 try:
     led = Pin(Pin.board.LED, Pin.OUT)
 except AttributeError:

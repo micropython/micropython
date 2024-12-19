@@ -42,11 +42,20 @@ Methods
 
    Initialise the RTC. Datetime is a tuple of the form:
 
-      ``(year, month, day[, hour[, minute[, second[, microsecond[, tzinfo]]]]])``
+      ``(year, month, day, hour, minute, second, microsecond, tzinfo)``
+
+   All eight arguments must be present. The ``microsecond`` and ``tzinfo``
+   values are currently ignored but might be used in the future.
+
+   Availability: CC3200, ESP32, MIMXRT, SAMD. The rtc.init() method on
+   the stm32 and renesas-ra ports just (re-)starts the RTC and does not
+   accept arguments.
 
 .. method:: RTC.now()
 
    Get get the current datetime tuple.
+
+   Availability: WiPy.
 
 .. method:: RTC.deinit()
 
