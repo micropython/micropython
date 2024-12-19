@@ -110,10 +110,11 @@ class VfsRomWriter:
             data
         )
 
-    def mkfile(self, filename, filedata):
+    def mkfile(self, filename, filedata, extra_payload=b""):
         filename = bytes(filename, "ascii")
         payload = self._encode_uint(len(filename))
         payload += filename
+        payload += extra_payload
         if isinstance(filedata, tuple):
             sub_payload = self._encode_uint(filedata[0])
             sub_payload += self._encode_uint(filedata[1])
@@ -204,13 +205,33 @@ class TestEmptyROMFS(unittest.TestCase):
         self.assertEqual(fs.stat(""), (IFDIR, 0, 0, 0, 0, 0, 0, 0, 0, 0))
         self.assertEqual(fs.statvfs(""), (1, 0, 0, 0, 0, 0, 0, 0, 0, 32767))
 
+    def test_unknown_record(self):
+        fs = VfsRomWriter()
+        fs._extend(fs._pack(VfsRomWriter.ROMFS_RECORD_KIND_PADDING, b"payload"))
+        fs.mkfile(
+            "test",
+            b"contents",
+            extra_payload=fs._pack(VfsRomWriter.ROMFS_RECORD_KIND_PADDING, b"pad"),
+        )
+        romfs = fs.finalise()
+        fs = vfs.VfsRom(romfs)
+        self.assertEqual(list(fs.ilistdir("")), [("test", IFREG, 0, 8)])
+        with fs.open("test", "rb") as f:
+            self.assertEqual(f.read(), b"contents")
+
+    def test_error(self):
+        with self.assertRaises(OSError) as ctx:
+            vfs.VfsRom(b"")
+        self.assertEqual(ctx.exception.errno, errno.ENODEV)
+        with self.assertRaises(OSError) as ctx:
+            vfs.VfsRom(b"not a romfs")
+        self.assertEqual(ctx.exception.errno, errno.ENODEV)
+
 
 class TestStandalone(TestBase):
     def test_constructor(self):
         self.assertIsInstance(vfs.VfsRom(self.romfs), vfs.VfsRom)
         self.assertIsInstance(vfs.VfsRom(self.romfs_addr), vfs.VfsRom)
-        with self.assertRaises(OSError):
-            vfs.VfsRom(b"not a romfs")
 
     def test_mount(self):
         vfs.VfsRom(self.romfs).mount(True, False)
