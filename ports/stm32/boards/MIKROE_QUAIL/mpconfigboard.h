@@ -71,6 +71,7 @@
 // External SPI Flash config (Cypress S25FL164K)
 #if !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 
+#define MICROPY_HW_SPI_IS_STATIC(id)  (id == 3) // Shared with SPIFLASH.
 #define MICROPY_HW_SPIFLASH_SIZE_BITS (64 * 1024 * 1024) // 64 Mbit (8 MByte)
 
 #define MICROPY_HW_SPIFLASH_CS (pin_A13)
