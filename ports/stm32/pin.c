@@ -280,6 +280,8 @@ static mp_obj_t pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_
     }
 }
 
+#if MICROPY_PY_MACHINE_PIN_LEGACY
+
 /// \classmethod mapper([fun])
 /// Get or set the pin mapper function.
 static mp_obj_t pin_mapper(size_t n_args, const mp_obj_t *args) {
@@ -304,20 +306,6 @@ static mp_obj_t pin_map_dict(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_map_dict_fun_obj, 1, 2, pin_map_dict);
 static MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_map_dict_obj, MP_ROM_PTR(&pin_map_dict_fun_obj));
 
-/// \classmethod af_list()
-/// Returns an array of alternate functions available for this pin.
-static mp_obj_t pin_af_list(mp_obj_t self_in) {
-    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t result = mp_obj_new_list(0, NULL);
-
-    const pin_af_obj_t *af = self->af;
-    for (mp_uint_t i = 0; i < self->num_af; i++, af++) {
-        mp_obj_list_append(result, MP_OBJ_FROM_PTR(af));
-    }
-    return result;
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(pin_af_list_obj, pin_af_list);
-
 /// \classmethod debug([state])
 /// Get or set the debugging state (`True` or `False` for on or off).
 static mp_obj_t pin_debug(size_t n_args, const mp_obj_t *args) {
@@ -330,14 +318,31 @@ static mp_obj_t pin_debug(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_debug_fun_obj, 1, 2, pin_debug);
 static MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, MP_ROM_PTR(&pin_debug_fun_obj));
 
-// init(mode, pull=None, alt=-1, *, value, alt)
+#endif // MICROPY_PY_MACHINE_PIN_LEGACY
+
+// init(mode, pull=None, af=-1, *, value, alt)
 static mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {
+        ARG_mode,
+        ARG_pull,
+        #if MICROPY_PY_MACHINE_PIN_ALT_SUPPORT
+        ARG_af,
+        #endif
+        ARG_value,
+        #if MICROPY_PY_MACHINE_PIN_ALT_SUPPORT
+        ARG_alt,
+        #endif
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+        #if MICROPY_PY_MACHINE_PIN_ALT_SUPPORT
         { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
+        #endif
         { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        #if MICROPY_PY_MACHINE_PIN_ALT_SUPPORT
         { MP_QSTR_alt, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
+        #endif
     };
 
     // parse args
@@ -345,35 +350,38 @@ static mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get io mode
-    uint mode = args[0].u_int;
+    uint mode = args[ARG_mode].u_int;
     if (!IS_GPIO_MODE(mode)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin mode: %d"), mode);
     }
 
     // get pull mode
     uint pull = GPIO_NOPULL;
-    if (args[1].u_obj != mp_const_none) {
-        pull = mp_obj_get_int(args[1].u_obj);
+    if (args[ARG_pull].u_obj != mp_const_none) {
+        pull = mp_obj_get_int(args[ARG_pull].u_obj);
     }
     if (!IS_GPIO_PULL(pull)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin pull: %d"), pull);
     }
 
+    mp_int_t af = -1;
+    #if MICROPY_PY_MACHINE_PIN_ALT_SUPPORT
     // get af (alternate function); alt-arg overrides af-arg
-    mp_int_t af = args[4].u_int;
+    af = args[ARG_alt].u_int;
     if (af == -1) {
-        af = args[2].u_int;
+        af = args[ARG_af].u_int;
     }
     if ((mode == GPIO_MODE_AF_PP || mode == GPIO_MODE_AF_OD) && !IS_GPIO_AF(af)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin af: %d"), af);
     }
+    #endif
 
     // enable the peripheral clock for the port of this pin
     mp_hal_gpio_clock_enable(self->gpio);
 
     // if given, set the pin value before initialising to prevent glitches
-    if (args[3].u_obj != MP_OBJ_NULL) {
-        mp_hal_pin_write(self, mp_obj_is_true(args[3].u_obj));
+    if (args[ARG_value].u_obj != MP_OBJ_NULL) {
+        mp_hal_pin_write(self, mp_obj_is_true(args[ARG_value].u_obj));
     }
 
     // configure the GPIO as requested
@@ -442,6 +450,8 @@ static mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
 
+#if MICROPY_PY_MACHINE_PIN_LEGACY
+
 /// \method name()
 /// Get the pin name.
 static mp_obj_t pin_name(mp_obj_t self_in) {
@@ -468,6 +478,20 @@ static mp_obj_t pin_names(mp_obj_t self_in) {
     return result;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(pin_names_obj, pin_names);
+
+/// \classmethod af_list()
+/// Returns an array of alternate functions available for this pin.
+static mp_obj_t pin_af_list(mp_obj_t self_in) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t result = mp_obj_new_list(0, NULL);
+
+    const pin_af_obj_t *af = self->af;
+    for (mp_uint_t i = 0; i < self->num_af; i++, af++) {
+        mp_obj_list_append(result, MP_OBJ_FROM_PTR(af));
+    }
+    return result;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_af_list_obj, pin_af_list);
 
 /// \method port()
 /// Get the pin port.
@@ -520,6 +544,8 @@ static mp_obj_t pin_af(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
+#endif // MICROPY_PY_MACHINE_PIN_LEGACY
+
 static const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&pin_init_obj) },
@@ -531,6 +557,7 @@ static const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // Legacy names as used by pyb.Pin
     { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&pin_on_obj) },
+    #if MICROPY_PY_MACHINE_PIN_LEGACY
     { MP_ROM_QSTR(MP_QSTR_name),    MP_ROM_PTR(&pin_name_obj) },
     { MP_ROM_QSTR(MP_QSTR_names),   MP_ROM_PTR(&pin_names_obj) },
     { MP_ROM_QSTR(MP_QSTR_af_list), MP_ROM_PTR(&pin_af_list_obj) },
@@ -540,36 +567,51 @@ static const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mode),    MP_ROM_PTR(&pin_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_pull),    MP_ROM_PTR(&pin_pull_obj) },
     { MP_ROM_QSTR(MP_QSTR_af),      MP_ROM_PTR(&pin_af_obj) },
+    #endif
 
+    #if MICROPY_PY_MACHINE_PIN_LEGACY
     // class methods
     { MP_ROM_QSTR(MP_QSTR_mapper),  MP_ROM_PTR(&pin_mapper_obj) },
     { MP_ROM_QSTR(MP_QSTR_dict),    MP_ROM_PTR(&pin_map_dict_obj) },
     { MP_ROM_QSTR(MP_QSTR_debug),   MP_ROM_PTR(&pin_debug_obj) },
+    #endif
 
     // class attributes
+    #if MICROPY_PY_MACHINE_PIN_BOARD_NUM_ENTRIES > 0
     { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&pin_board_pins_obj_type) },
+    #endif
+    #if MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES > 0
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&pin_cpu_pins_obj_type) },
+    #endif
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_MODE_INPUT) },
     { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_MODE_OUTPUT_PP) },
     { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_OUTPUT_OD) },
+    #if MICROPY_PY_MACHINE_PIN_ALT_SUPPORT
     { MP_ROM_QSTR(MP_QSTR_ALT),       MP_ROM_INT(GPIO_MODE_AF_PP) },
     { MP_ROM_QSTR(MP_QSTR_ALT_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_AF_OD) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_ANALOG),    MP_ROM_INT(GPIO_MODE_ANALOG) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULLUP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULLDOWN) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_MODE_IT_RISING) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_MODE_IT_FALLING) },
 
+    #if MICROPY_PY_MACHINE_PIN_LEGACY
     // legacy class constants
     { MP_ROM_QSTR(MP_QSTR_OUT_PP),    MP_ROM_INT(GPIO_MODE_OUTPUT_PP) },
     { MP_ROM_QSTR(MP_QSTR_OUT_OD),    MP_ROM_INT(GPIO_MODE_OUTPUT_OD) },
+    #if MICROPY_PY_MACHINE_PIN_ALT_SUPPORT
     { MP_ROM_QSTR(MP_QSTR_AF_PP),     MP_ROM_INT(GPIO_MODE_AF_PP) },
     { MP_ROM_QSTR(MP_QSTR_AF_OD),     MP_ROM_INT(GPIO_MODE_AF_OD) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_PULL_NONE), MP_ROM_INT(GPIO_NOPULL) },
+    #endif
 
+    #if MICROPY_PY_MACHINE_PIN_ALT_SUPPORT
     #include "genhdr/pins_af_const.h"
+    #endif
 };
 
 static MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
