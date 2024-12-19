@@ -26,11 +26,22 @@ Dependencies
 For ARM-based boards the build requires a bare-metal ARM toolchain, such as
 `arm-none-eabi-gcc`.
 
-### RISC-V
+### RISC-V 32
 
-For RISC-V-based boards the build requires a bare metal RISC-V toolchain with GCC 10
+For RV32-based boards the build requires a bare metal RISC-V toolchain with GCC 10
 or later, either with multilib support or 32 bits specific (M, C, and Zicsr
 extensions must be supported, along with ilp32 ABI).  Both newlib and picolibc are
+supported, with the latter having precedence if found.
+
+Most pre-built toolchains should work out of the box, either coming from your
+Linux distribution's package manager, or independently packaged ones like
+[xPack](https://xpack.github.io/dev-tools/riscv-none-elf-gcc/).
+
+### RISC-V 64
+
+For RV64-based boards the build requires a bare metal RISC-V toolchain with GCC 10
+or later, either with multilib support or 64 bits specific (M, C, and Zicsr
+extensions must be supported, along with lp64 ABI).  Both newlib and picolibc are
 supported, with the latter having precedence if found.
 
 Most pre-built toolchains should work out of the box, either coming from your
@@ -62,6 +73,7 @@ Available boards are:
 | `NETDUINO2`       | `arm`        | `netduino2`              |
 | `SABRELITE`       | `arm`        | `sabrelite`              |
 | `VIRT_RV32`       | `riscv32`    | `virt`                   |
+| `VIRT_RV64`       | `riscv64`    | `virt`                   |
 
 Running
 -------
@@ -110,3 +122,5 @@ The following options can be specified on the `make` command line:
 - `QEMU_DEBUG_ARGS`: defaults to `-s` (gdb on TCP port 1234), but can be overridden
   with different qemu gdb arguments.
 - `QEMU_DEBUG_EXTRA`: extra options to pass to qemu when `QEMU_DEBUG=1` is used.
+- `QEMU_GC_HEAP_SIZE`: pass in an optional value (in KBytes) for overriding the GC
+  heap size used by the port.

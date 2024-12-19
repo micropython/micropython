@@ -34,7 +34,7 @@
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 
-#define HEAP_SIZE (100 * 1024)
+#define HEAP_SIZE (GC_HEAP_SIZE * 1024)
 
 static uint32_t gc_heap[HEAP_SIZE / sizeof(uint32_t)];
 

@@ -130,7 +130,8 @@ static int usage(char **argv) {
         "Target specific options:\n"
         "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
         "-march=<arch> : set architecture for native emitter;\n"
-        "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin, rv32imc, debug\n"
+        "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp,\n"
+        "                armv7emdp, xtensa, xtensawin, rv32imc, rv64imc, debug\n"
         "\n"
         "Implementation specific options:\n", argv[0]
         );
@@ -316,6 +317,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "rv32imc") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_RV32IMC;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_RV32I;
+                } else if (strcmp(arch, "rv64imc") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_RV64IMC;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_RV64I;
                 } else if (strcmp(arch, "debug") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_DEBUG;
                     mp_dynamic_compiler.nlr_buf_num_regs = 0;
@@ -329,6 +333,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     #elif defined(__arm__) && !defined(__thumb2__)
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
+                    #elif defined(__riscv) && (__riscv_xlen == 64)
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_RV64IMC;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_RV64I;
                     #else
                     mp_printf(&mp_stderr_print, "unable to determine host architecture for -march=host\n");
                     exit(1);
