@@ -890,7 +890,6 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(network_wlan_eap_connect_obj, 1, network_wlan_eap_connect);
 
-
 static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&network_wlan_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&network_wlan_connect_obj) },
@@ -901,6 +900,7 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&network_wlan_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_network_ifconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&esp_nic_ipconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_eap_connect), MP_ROM_PTR(&network_wlan_eap_connect_obj) },
 
     // Constants
     { MP_ROM_QSTR(MP_QSTR_IF_STA), MP_ROM_INT(WIFI_IF_STA)},
