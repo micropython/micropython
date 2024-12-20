@@ -42,7 +42,7 @@
 
 #include "py/mpprint.h"
 
-#define debug_printf(...) mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
+#define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
 /*
 Set in micropython/ports/esp32/mpconfigport.h
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL + 1)
@@ -247,7 +247,7 @@ static void apply_duty(machine_pwm_obj_t *self) {
     }
     self->channel_duty = duty >> (UI_RES_16_BIT - timers[self->mode][self->timer].duty_resolution);
 
-    if ((chans[self->mode][self->channel].pin == -1) || (self->channel_duty == max_timer_duty)) {
+    if ((chans[self->mode][self->channel].pin == -1) || (self->channel_duty == 0) || (self->channel_duty == max_timer_duty)) {
         // New PWM assignment
         ledc_channel_config_t cfg = {
             .channel = self->channel,
