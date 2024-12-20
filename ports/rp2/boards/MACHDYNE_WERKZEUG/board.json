@@ -6,9 +6,7 @@
     "features": [
         "Dual-core",
         "External Flash",
-        "USB-C",
-        "USB Host",
-        "PMOD"
+        "USB-C"
     ],
     "images": [
         "werkzeug.jpg"
