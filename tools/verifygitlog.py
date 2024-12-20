@@ -47,7 +47,7 @@ def git_log(pretty_format, *args):
 
 
 def diagnose_subject_line(subject_line, subject_line_format, err):
-    err.error("Subject line: " + subject_line)
+    err.error('Subject line: "' + subject_line + '"')
     if not subject_line.endswith("."):
         err.error('* must end with "."')
     if not re.match(r"^[^!]+: ", subject_line):
