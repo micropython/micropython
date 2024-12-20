@@ -62,6 +62,8 @@ void _start(void) {
     pendsv_init();
     se_services_init();
 
+    MICROPY_BOARD_EARLY_INIT();
+
     #if CORE_M55_HP
     run_profile_t runp = { 0 };
     if (se_services_get_run_profile(&runp)) {
@@ -92,8 +94,6 @@ void _start(void) {
     mp_stack_set_top(&__StackTop);
     mp_stack_set_limit(&__StackTop - &__StackLimit - 1024);
     gc_init(&__GcHeapStart, &__GcHeapEnd);
-
-    *(volatile uint32_t *)0x4900C000 ^= 1; // turn off blue LED
 
     for (;;) {
         // Initialise MicroPython runtime.

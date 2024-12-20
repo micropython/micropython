@@ -172,5 +172,14 @@ typedef intptr_t mp_off_t;
 #define MICROPY_BOARD_STARTUP()
 #endif
 
+#ifndef MICROPY_BOARD_EARLY_INIT
+#define MICROPY_BOARD_EARLY_INIT()
+#endif
+
+#ifndef MICROPY_BOARD_FATAL_ERROR
+extern void panic(const char *);
+#define MICROPY_BOARD_FATAL_ERROR panic
+#endif
+
 // Needed for MICROPY_PY_RANDOM_SEED_INIT_FUNC.
 uint64_t se_services_rand64(void);
