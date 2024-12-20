@@ -42,7 +42,7 @@
 
 #include "py/mpprint.h"
 
-#define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
+#define debug_printf(...) mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
 /*
 Set in micropython/ports/esp32/mpconfigport.h
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL + 1)
@@ -247,27 +247,35 @@ static void apply_duty(machine_pwm_obj_t *self) {
     }
     self->channel_duty = duty >> (UI_RES_16_BIT - timers[self->mode][self->timer].duty_resolution);
 
-    ledc_channel_config_t cfg = {
-        .channel = self->channel,
-        .duty = self->channel_duty,
-        .gpio_num = self->pin,
-        .intr_type = LEDC_INTR_DISABLE,
-        .speed_mode = self->mode,
-        .timer_sel = self->timer,
-        .flags.output_invert = self->output_invert,
-    };
-    if (self->channel_duty && (self->channel_duty == max_timer_duty)) {
-        cfg.duty = 0;
-        cfg.flags.output_invert = self->output_invert ^ 1;
+    if ((chans[self->mode][self->channel].pin == -1) || (self->channel_duty == max_timer_duty)) {
+        // New PWM assignment
+        ledc_channel_config_t cfg = {
+            .channel = self->channel,
+            .duty = self->channel_duty,
+            .gpio_num = self->pin,
+            .intr_type = LEDC_INTR_DISABLE,
+            .speed_mode = self->mode,
+            .timer_sel = self->timer,
+            .flags.output_invert = self->output_invert,
+        };
+        if (self->channel_duty && (self->channel_duty == max_timer_duty)) {
+            cfg.duty = 0;
+            cfg.flags.output_invert = self->output_invert ^ 1;
+        }
+        check_esp_err(ledc_channel_config(&cfg));
+        if (self->light_sleep_enable) {
+            // Disable SLP_SEL to change GPIO status automantically in lightsleep.
+            check_esp_err(gpio_sleep_sel_dis(self->pin));
+            chans[self->mode][self->channel].light_sleep_enable = true;
+        }
+        check_esp_err(ledc_bind_channel_timer(self->mode, self->channel, self->timer));
+        reconfigure_pin(self);
+        debug_printf("AAA self->mode=%d, self->channel=%d, self->channel_duty=%d", self->mode, self->channel, self->channel_duty)
+    } else {
+        debug_printf("BBB self->mode=%d, self->channel=%d, self->channel_duty=%d", self->mode, self->channel, self->channel_duty)
+        check_esp_err(ledc_set_duty(self->mode, self->channel, self->channel_duty));
+        check_esp_err(ledc_update_duty(self->mode, self->channel));
     }
-    check_esp_err(ledc_channel_config(&cfg));
-    if (self->light_sleep_enable) {
-        // Disable SLP_SEL to change GPIO status automantically in lightsleep.
-        check_esp_err(gpio_sleep_sel_dis(self->pin));
-        chans[self->mode][self->channel].light_sleep_enable = true;
-    }
-    check_esp_err(ledc_bind_channel_timer(self->mode, self->channel, self->timer));
-    reconfigure_pin(self);
     register_channel(self->mode, self->channel, self->pin, self->timer);
 }
 
@@ -533,7 +541,7 @@ static void select_timer(machine_pwm_obj_t *self, int freq) {
         // Bind the channel to the timer
         self->mode = mode;
         self->timer = timer;
-        register_channel(self->mode, self->channel, self->pin, self->timer);
+        register_channel(self->mode, self->channel, /*self->pin*/-1, self->timer);
     }
 }
 
