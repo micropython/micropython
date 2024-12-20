@@ -229,11 +229,11 @@ void ospi_xip_enter_ext(ospi_flash_cfg_t *ospi_cfg, uint32_t inst_len, uint32_t 
         | (ospi_cfg->ddr_en << XIP_CTRL_DDR_EN_OFFSET)
         | (0x1 << XIP_CTRL_RXDS_EN_OFFSET)
         | (0x1 << XIP_CTRL_INST_EN_OFFSET)
-        | (0x0 << XIP_CTRL_CONT_XFER_EN_OFFSET)
+        | (0x1 << XIP_CTRL_CONT_XFER_EN_OFFSET)
         | (0x0 << XIP_CTRL_HYPERBUS_EN_OFFSET)
         | (0x1 << XIP_CTRL_RXDS_SIG_EN)
         | (0x0 << XIP_CTRL_XIP_MBL_OFFSET)
-        | (0x0 << XIP_PREFETCH_EN_OFFSET)
+        | (0x1 << XIP_PREFETCH_EN_OFFSET)
         | (0x0 << XIP_CTRL_RXDS_VL_EN_OFFSET);
 
     if (inst_len == OSPI_INST_L_16bit) {
@@ -242,8 +242,8 @@ void ospi_xip_enter_ext(ospi_flash_cfg_t *ospi_cfg, uint32_t inst_len, uint32_t 
 
     ospi_writel(ospi_cfg, xip_ctrl, val);
 
-    ospi_writel(ospi_cfg, rx_sample_dly, 4);
-    ospi_writel(ospi_cfg, txd_drive_edge, 1);
+    ospi_writel(ospi_cfg, rx_sample_dly, OSPI_XIP_RX_SAMPLE_DELAY);
+    ospi_writel(ospi_cfg, txd_drive_edge, OSPI_XIP_DDR_DRIVE_EDGE);
     ospi_cfg->aes_regs->aes_rxds_delay = OSPI_XIP_RXDS_DELAY;
 
     ospi_writel(ospi_cfg, xip_mode_bits, 0x0);
