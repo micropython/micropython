@@ -416,7 +416,6 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq) {
                 timer.clk_cfg = LEDC_USE_REF_TICK; // 1 MHz
             }
             #endif
-
         }
         #if !(CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2)
         // Check for clock source conflic
@@ -433,15 +432,18 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq) {
 
         // Configure the new resolution
         timer.duty_resolution = find_suitable_duty_resolution(src_clk_freq, self->freq);
-        timers[self->mode][self->timer].duty_resolution = timer.duty_resolution;
-        timers[self->mode][self->timer].clk_cfg = timer.clk_cfg;
-
         // Configure timer - Set frequency
-        check_esp_err(ledc_timer_config(&timer));
+        if ((timers[self->mode][self->timer].duty_resolution == timer.duty_resolution) && (timers[self->mode][self->timer].clk_cfg == timer.clk_cfg)) {
+            check_esp_err(ledc_set_freq(self->mode, self->timer, freq));
+        } else {
+            check_esp_err(ledc_timer_config(&timer));
+        }
         // Reset the timer if low speed
         if (self->mode == LEDC_LOW_SPEED_MODE) {
             check_esp_err(ledc_timer_rst(self->mode, self->timer));
         }
+        timers[self->mode][self->timer].duty_resolution = timer.duty_resolution;
+        timers[self->mode][self->timer].clk_cfg = timer.clk_cfg;
     }
 }
 
