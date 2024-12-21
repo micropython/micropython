@@ -12,3 +12,5 @@ MPY_CROSS_FLAGS += -march=rv32imc
 
 # These Thumb tests don't run on RV32, so exclude them.
 RUN_TESTS_ARGS = --exclude 'inlineasm|qemu/asm_test'
+
+RUN_NATMODTESTS_ARGS = --arch rv32imc
