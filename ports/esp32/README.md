@@ -5,6 +5,9 @@ This is a port of MicroPython to the Espressif ESP32 series of
 microcontrollers.  It uses the ESP-IDF framework and MicroPython runs as
 a task under FreeRTOS.
 
+Currently supports ESP32, ESP32-C3, ESP32-C6, ESP32-S2 and ESP32-S3
+(ESP8266 is supported by a separate MicroPython port).
+
 Supported features include:
 - REPL (Python prompt) over UART0.
 - 16k stack for the MicroPython task and approximately 100k Python heap.
@@ -67,12 +70,16 @@ After you've cloned and checked out the IDF to the correct version, run the
 
 ```bash
 $ cd esp-idf
-$ ./install.sh       # (or install.bat on Windows)
+$ ./install.sh esp32 # (or install.bat on Windows)
 $ source export.sh   # (or export.bat on Windows)
 ```
 
-The `install.sh` step only needs to be done once. You will need to source
-`export.sh` for every new session.
+The `install.sh` step only needs to be done once. Change `esp32` if you are
+targeting other chip. Use comma-separated list like `esp32,esp32s2` to
+install for multiple chips. Or omit the chip to install for all Espressif
+chips (which is slower).
+
+You will need to source `export.sh` for every new session.
 
 Building the firmware
 ---------------------
@@ -85,7 +92,7 @@ this repository):
 $ make -C mpy-cross
 ```
 
-Then to build MicroPython for the ESP32 run:
+Then to build MicroPython for ESP32 run:
 
 ```bash
 $ cd ports/esp32
@@ -106,7 +113,7 @@ rebooting or logging out and in again. (Note: on some distributions this may
 be the `uucp` group, run `ls -la /dev/ttyUSB0` to check.)
 
 ```bash
-$ sudo adduser <username> dialout
+$ sudo usermod -aG dialout <username>
 ```
 
 If you are installing MicroPython to your module for the first time, or
@@ -141,7 +148,7 @@ $ idf.py -D MICROPY_BOARD=ESP32_GENERIC build
 $ idf.py flash
 ```
 
-Some boards also support "variants", which are allow for small variations of
+Some boards also support "variants", which allow for small variations of
 an otherwise similar board. For example different flash sizes or features. For
 example to build the `OTA` variant of `ESP32_GENERIC`.
 
@@ -173,7 +180,7 @@ or
 $ miniterm.py /dev/ttyUSB0 115200
 ```
 
-You can also use `idf.py monitor`.
+You can also use `idf.py monitor` or `mpremote`.
 
 Configuring the WiFi and using the board
 ----------------------------------------
