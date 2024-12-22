@@ -202,6 +202,14 @@ idf_component_register(
         ${IDF_COMPONENTS}
 )
 
+# If a ULP binary image is to be embedded into the build, you can define the
+# appropriate variables to have ESP-IDF build it for your board using your
+# mpconfigboard.cmake
+if(DEFINED ulp_app_name)
+message("ULP embedded APP: ${ulp_app_name} ${ulp_sources} ${ulp_exp_dep_srcs}")
+ulp_embed_binary(${ulp_app_name} "${ulp_sources}" "${ulp_exp_dep_srcs}")
+endif()
+
 # Set the MicroPython target as the current (main) IDF component target.
 set(MICROPY_TARGET ${COMPONENT_TARGET})
 
