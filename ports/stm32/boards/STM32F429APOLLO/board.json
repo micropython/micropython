@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "stm32f429apollo.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "STM32F429APOLLO",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}
