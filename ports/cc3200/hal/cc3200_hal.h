@@ -30,6 +30,10 @@
 #include "hal/utils.h"
 #include "hal/systick.h"
 
+// assembly functions to handle critical sections, interrupt
+// disabling/enabling and sleep mode enter/exit
+#include "cc3200_asm.h"
+
 /******************************************************************************
  DEFINE CONSTANTS
  ******************************************************************************/
@@ -54,6 +58,9 @@
                                         __asm(" dsb \n"     \
                                               " isb \n");   \
                                      }
+
+#define MICROPY_BEGIN_ATOMIC_SECTION()              disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state)           enable_irq(state)
 
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS

@@ -1,0 +1,4 @@
+verify_callback: <class 'memoryview'> True 1
+verify_callback: <class 'memoryview'> True 0
+verify_callback_fail: <class 'memoryview'> True 1
+MBEDTLS_ERR_ERROR_GENERIC_ERROR

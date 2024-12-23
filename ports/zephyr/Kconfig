@@ -30,7 +30,7 @@ config MICROPY_CONFIGFILE
 
 config MICROPY_HEAP_SIZE
 	int "Heap size"
-	default 16384
+	default 49152
 
 config MICROPY_VFS_FAT
 	bool "FatFS file system"

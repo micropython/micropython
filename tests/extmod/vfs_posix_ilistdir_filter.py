@@ -1,9 +1,9 @@
 # Test ilistdir filter of . and .. for VfsPosix.
 
 try:
-    import os
+    import os, vfs
 
-    os.VfsPosix
+    vfs.VfsPosix
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -11,24 +11,24 @@ except (ImportError, AttributeError):
 
 def test(testdir):
     curdir = os.getcwd()
-    vfs = os.VfsPosix(testdir)
-    # When VfsPosix is used the intended way via os.mount(), it can only be called
+    fs = vfs.VfsPosix(testdir)
+    # When VfsPosix is used the intended way via vfs.mount(), it can only be called
     # with relative paths when the CWD is inside or at its root, so simulate that.
     os.chdir(testdir)
 
     dirs = [".a", "..a", "...a", "a.b", "a..b"]
 
     for dir in dirs:
-        vfs.mkdir(dir)
+        fs.mkdir(dir)
 
     dirs = []
-    for entry in vfs.ilistdir("/"):
+    for entry in fs.ilistdir("/"):
         dirs.append(entry[0])
     dirs.sort()
 
     print(dirs)
 
-    # Done with vfs, restore CWD.
+    # Done with fs, restore CWD.
     os.chdir(curdir)
 
 

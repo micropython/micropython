@@ -43,6 +43,7 @@
 #define MP_STREAM_GET_DATA_OPTS (8)  // Get data/message options
 #define MP_STREAM_SET_DATA_OPTS (9)  // Set data/message options
 #define MP_STREAM_GET_FILENO    (10) // Get fileno of underlying file
+#define MP_STREAM_GET_BUFFER_SIZE (11) // Get preferred buffer size for file
 
 // These poll ioctl values are compatible with Linux
 #define MP_STREAM_POLL_RD       (0x0001)
@@ -114,6 +115,7 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len, byte fla
 mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode, byte flags);
 #define mp_stream_write_exactly(stream, buf, size, err) mp_stream_rw(stream, (byte *)buf, size, err, MP_STREAM_RW_WRITE)
 #define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
+mp_off_t mp_stream_seek(mp_obj_t stream, mp_off_t offset, int whence, int *errcode);
 
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
 

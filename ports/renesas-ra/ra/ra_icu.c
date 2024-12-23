@@ -520,7 +520,7 @@ static const ra_icu_pin_t ra_irq_pins[] = {
     #endif
 
     #else
-    #error "CMSIS MCU Series is not speficied."
+    #error "CMSIS MCU Series is not specified."
     #endif
 };
 #define ICU_PINS_SIZE (sizeof(ra_irq_pins) / sizeof(ra_icu_pin_t))

@@ -35,9 +35,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
-#include "modmachine.h"
-#include "extmod/machine_spi.h"
-#include "mpconfigboard.h"
+#include "extmod/modmachine.h"
 
 #include "nina_bsp.h"
 #include "nina_wifi_drv.h"

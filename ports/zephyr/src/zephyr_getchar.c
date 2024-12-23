@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/drivers/console/uart_console.h>
 #include <zephyr/sys/printk.h>
@@ -46,18 +46,19 @@ static int console_irq_input_hook(uint8_t ch) {
     }
     // printk("%x\n", ch);
     k_sem_give(&uart_sem);
-    k_yield();
     return 1;
 }
 
-uint8_t zephyr_getchar(void) {
-    mp_hal_wait_sem(&uart_sem, -1);
-    k_sem_take(&uart_sem, K_FOREVER);
-    unsigned int key = irq_lock();
-    uint8_t c = uart_ringbuf[i_get++];
-    i_get &= UART_BUFSIZE - 1;
-    irq_unlock(key);
-    return c;
+int zephyr_getchar(void) {
+    mp_hal_wait_sem(&uart_sem, 0);
+    if (k_sem_take(&uart_sem, K_MSEC(0)) == 0) {
+        unsigned int key = irq_lock();
+        int c = (int)uart_ringbuf[i_get++];
+        i_get &= UART_BUFSIZE - 1;
+        irq_unlock(key);
+        return c;
+    }
+    return -1;
 }
 
 void zephyr_getchar_init(void) {

@@ -56,7 +56,7 @@ typedef struct _esp_hosted_obj_t {
 static esp_hosted_obj_t esp_hosted_sta_if = {{(mp_obj_type_t *)&mod_network_esp_hosted_type}, ESP_HOSTED_STA_IF};
 static esp_hosted_obj_t esp_hosted_ap_if = {{(mp_obj_type_t *)&mod_network_esp_hosted_type}, ESP_HOSTED_AP_IF};
 
-STATIC mp_obj_t network_esp_hosted_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t network_esp_hosted_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_t esp_hosted_obj;
     // TODO fix
@@ -70,7 +70,7 @@ STATIC mp_obj_t network_esp_hosted_make_new(const mp_obj_type_t *type, size_t n_
     return esp_hosted_obj;
 }
 
-STATIC mp_obj_t network_esp_hosted_active(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t network_esp_hosted_active(size_t n_args, const mp_obj_t *args) {
     esp_hosted_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (n_args == 2) {
@@ -95,9 +95,9 @@ STATIC mp_obj_t network_esp_hosted_active(size_t n_args, const mp_obj_t *args) {
     }
     return mp_obj_new_bool(esp_hosted_wifi_link_status(self->itf));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_esp_hosted_active_obj, 1, 2, network_esp_hosted_active);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_esp_hosted_active_obj, 1, 2, network_esp_hosted_active);
 
-STATIC int esp_hosted_scan_callback(esp_hosted_scan_result_t *scan_result, void *arg) {
+static int esp_hosted_scan_callback(esp_hosted_scan_result_t *scan_result, void *arg) {
     mp_obj_t scan_list = (mp_obj_t)arg;
     mp_obj_t ap[6] = {
         mp_obj_new_bytes((uint8_t *)scan_result->ssid, strlen(scan_result->ssid)),
@@ -111,15 +111,15 @@ STATIC int esp_hosted_scan_callback(esp_hosted_scan_result_t *scan_result, void 
     return 0;
 }
 
-STATIC mp_obj_t network_esp_hosted_scan(mp_obj_t self_in) {
+static mp_obj_t network_esp_hosted_scan(mp_obj_t self_in) {
     mp_obj_t scan_list;
     scan_list = mp_obj_new_list(0, NULL);
     esp_hosted_wifi_scan(esp_hosted_scan_callback, scan_list, 10000);
     return scan_list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_esp_hosted_scan_obj, network_esp_hosted_scan);
+static MP_DEFINE_CONST_FUN_OBJ_1(network_esp_hosted_scan_obj, network_esp_hosted_scan);
 
-STATIC mp_obj_t network_esp_hosted_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t network_esp_hosted_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ssid, ARG_key, ARG_security, ARG_bssid, ARG_channel };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -182,29 +182,36 @@ STATIC mp_obj_t network_esp_hosted_connect(mp_uint_t n_args, const mp_obj_t *pos
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_esp_hosted_connect_obj, 1, network_esp_hosted_connect);
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_esp_hosted_connect_obj, 1, network_esp_hosted_connect);
 
-STATIC mp_obj_t network_esp_hosted_disconnect(mp_obj_t self_in) {
+static mp_obj_t network_esp_hosted_disconnect(mp_obj_t self_in) {
     esp_hosted_obj_t *self = self_in;
     esp_hosted_wifi_disconnect(self->itf);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_esp_hosted_disconnect_obj, network_esp_hosted_disconnect);
+static MP_DEFINE_CONST_FUN_OBJ_1(network_esp_hosted_disconnect_obj, network_esp_hosted_disconnect);
 
-STATIC mp_obj_t network_esp_hosted_isconnected(mp_obj_t self_in) {
+static mp_obj_t network_esp_hosted_isconnected(mp_obj_t self_in) {
     esp_hosted_obj_t *self = self_in;
     return mp_obj_new_bool(esp_hosted_wifi_is_connected(self->itf));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_esp_hosted_isconnected_obj, network_esp_hosted_isconnected);
+static MP_DEFINE_CONST_FUN_OBJ_1(network_esp_hosted_isconnected_obj, network_esp_hosted_isconnected);
 
-STATIC mp_obj_t network_esp_hosted_ifconfig(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t network_esp_hosted_ifconfig(size_t n_args, const mp_obj_t *args) {
     esp_hosted_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     void *netif = esp_hosted_wifi_get_netif(self->itf);
     return mod_network_nic_ifconfig(netif, n_args - 1, args + 1);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_esp_hosted_ifconfig_obj, 1, 2, network_esp_hosted_ifconfig);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_esp_hosted_ifconfig_obj, 1, 2, network_esp_hosted_ifconfig);
 
-STATIC mp_obj_t network_esp_hosted_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+static mp_obj_t network_esp_hosted_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    esp_hosted_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    void *netif = esp_hosted_wifi_get_netif(self->itf);
+    return mod_network_nic_ipconfig(netif, n_args - 1, args + 1, kwargs);
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_esp_hosted_ipconfig_obj, 1, network_esp_hosted_ipconfig);
+
+static mp_obj_t network_esp_hosted_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     esp_hosted_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (kwargs->used == 0) {
@@ -223,7 +230,7 @@ STATIC mp_obj_t network_esp_hosted_config(size_t n_args, const mp_obj_t *args, m
             case MP_QSTR_essid: {
                 esp_hosted_netinfo_t netinfo;
                 esp_hosted_wifi_netinfo(&netinfo);
-                return mp_obj_new_str(netinfo.ssid, strlen(netinfo.ssid));
+                return mp_obj_new_str_from_cstr(netinfo.ssid);
             }
             case MP_QSTR_security: {
                 esp_hosted_netinfo_t netinfo;
@@ -253,9 +260,9 @@ STATIC mp_obj_t network_esp_hosted_config(size_t n_args, const mp_obj_t *args, m
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_esp_hosted_config_obj, 1, network_esp_hosted_config);
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_esp_hosted_config_obj, 1, network_esp_hosted_config);
 
-STATIC mp_obj_t network_esp_hosted_status(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t network_esp_hosted_status(size_t n_args, const mp_obj_t *args) {
     esp_hosted_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (n_args == 1) {
@@ -290,22 +297,32 @@ STATIC mp_obj_t network_esp_hosted_status(size_t n_args, const mp_obj_t *args) {
 
     mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_esp_hosted_status_obj, 1, 2, network_esp_hosted_status);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_esp_hosted_status_obj, 1, 2, network_esp_hosted_status);
 
-STATIC const mp_rom_map_elem_t network_esp_hosted_locals_dict_table[] = {
+static const mp_rom_map_elem_t network_esp_hosted_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active),              MP_ROM_PTR(&network_esp_hosted_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_scan),                MP_ROM_PTR(&network_esp_hosted_scan_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect),             MP_ROM_PTR(&network_esp_hosted_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect),          MP_ROM_PTR(&network_esp_hosted_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected),         MP_ROM_PTR(&network_esp_hosted_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig),            MP_ROM_PTR(&network_esp_hosted_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipconfig),            MP_ROM_PTR(&network_esp_hosted_ipconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_config),              MP_ROM_PTR(&network_esp_hosted_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_status),              MP_ROM_PTR(&network_esp_hosted_status_obj) },
+
+    // Class constants.
+    { MP_ROM_QSTR(MP_QSTR_IF_STA),              MP_ROM_INT(MOD_NETWORK_STA_IF) },
+    { MP_ROM_QSTR(MP_QSTR_IF_AP),               MP_ROM_INT(MOD_NETWORK_AP_IF) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_OPEN),            MP_ROM_INT(ESP_HOSTED_SEC_OPEN) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WEP),             MP_ROM_INT(ESP_HOSTED_SEC_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA_WPA2),        MP_ROM_INT(ESP_HOSTED_SEC_WPA_WPA2_PSK) },
+
+    // For backwards compatibility.
     { MP_ROM_QSTR(MP_QSTR_OPEN),                MP_ROM_INT(ESP_HOSTED_SEC_OPEN) },
     { MP_ROM_QSTR(MP_QSTR_WEP),                 MP_ROM_INT(ESP_HOSTED_SEC_WEP) },
     { MP_ROM_QSTR(MP_QSTR_WPA_PSK),             MP_ROM_INT(ESP_HOSTED_SEC_WPA_WPA2_PSK) },
 };
-STATIC MP_DEFINE_CONST_DICT(network_esp_hosted_locals_dict, network_esp_hosted_locals_dict_table);
+static MP_DEFINE_CONST_DICT(network_esp_hosted_locals_dict, network_esp_hosted_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mod_network_esp_hosted_type,

@@ -16,6 +16,12 @@ endif
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
+ifneq ($(BOARD_VARIANT),)
+ifeq ($(wildcard $(BOARD_DIR)/mpconfigvariant_$(BOARD_VARIANT).mk),)
+$(error Invalid BOARD_VARIANT specified: $(BOARD_VARIANT))
+endif
+endif
+
 # If the build directory is not given, make it reflect the board name (and
 # optionally the board variant).
 ifneq ($(BOARD_VARIANT),)
@@ -26,8 +32,13 @@ endif
 
 include ../../py/mkenv.mk
 
-# Optional
--include $(BOARD_DIR)/mpconfigboard.mk
+# Include board specific .mk file, and optional board variant .mk file.
+include $(BOARD_DIR)/mpconfigboard.mk
+ifeq ($(BOARD_VARIANT),)
+-include $(BOARD_DIR)/mpconfigvariant.mk
+else
+include $(BOARD_DIR)/mpconfigvariant_$(BOARD_VARIANT).mk
+endif
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
@@ -38,7 +49,7 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 MICROPY_PY_SSL = 1
 MICROPY_SSL_AXTLS = 1
 AXTLS_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096
-BTREE_DEFS_EXTRA = -DDEFPSIZE=1024 -DMINCACHE=3
+BTREE_DEFS_EXTRA = -DMICROPY_BERKELEY_DB_DEFPSIZE=1024 -DMICROPY_BERKELEY_DB_MINCACHE=3
 
 FROZEN_MANIFEST ?= boards/manifest.py
 
@@ -96,6 +107,9 @@ COPT += -Os -DNDEBUG
 LDFLAGS += --gc-sections
 endif
 
+# Flags for optional C++ source code
+CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS))
+
 # Options for mpy-cross
 MPY_CROSS_FLAGS += -march=xtensa
 
@@ -110,11 +124,10 @@ SRC_C = \
 	uart.c \
 	esppwm.c \
 	espapa102.c \
-	modmachine.c \
 	machine_bitstream.c \
 	machine_pin.c \
 	machine_rtc.c \
-	machine_hspi.c \
+	machine_spi.c \
 	modesp.c \
 	network_wlan.c \
 	ets_alt_task.c \
@@ -128,35 +141,8 @@ SRC_C += \
 	modespnow.c
 endif
 
-LIB_SRC_C = $(addprefix lib/,\
-	libm/math.c \
-	libm/fmodf.c \
-	libm/nearbyintf.c \
-	libm/ef_sqrt.c \
-	libm/erf_lgamma.c \
-	libm/kf_rem_pio2.c \
-	libm/kf_sin.c \
-	libm/kf_cos.c \
-	libm/kf_tan.c \
-	libm/ef_rem_pio2.c \
-	libm/sf_erf.c \
-	libm/sf_sin.c \
-	libm/sf_cos.c \
-	libm/sf_tan.c \
-	libm/sf_frexp.c \
-	libm/sf_modf.c \
-	libm/sf_ldexp.c \
-	libm/acoshf.c \
-	libm/asinfacosf.c \
-	libm/asinhf.c \
-	libm/atanf.c \
-	libm/atanhf.c \
-	libm/atan2f.c \
-	libm/log1pf.c \
-	libm/roundf.c \
-	libm/wf_lgamma.c \
-	libm/wf_tgamma.c \
-	)
+LIB_SRC_C += $(SRC_LIB_LIBM_C)
+LIB_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 
 SHARED_SRC_C = $(addprefix shared/,\
 	libc/__errno.c \
@@ -187,8 +173,6 @@ OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SHARED_SRC_C)
-# Append any auto-generated sources that are needed by sources listed in SRC_QSTR
-SRC_QSTR_AUTO_DEPS +=
 
 all: $(FWBIN)
 

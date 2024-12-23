@@ -32,6 +32,7 @@
 #include "py/ringbuf.h"
 #include "samd_soc.h"
 #include "pin_af.h"
+#include "shared/runtime/softtimer.h"
 
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_BUFFER_SIZE (256)
@@ -40,7 +41,30 @@
 #define FLOW_CONTROL_RTS (1)
 #define FLOW_CONTROL_CTS (2)
 
+#if MICROPY_PY_MACHINE_UART_IRQ
+#define UART_IRQ_RXIDLE (4096)
+#define RXIDLE_TIMER_MIN (1)
+#define MP_UART_ALLOWED_FLAGS (SERCOM_USART_INTFLAG_RXC | SERCOM_USART_INTFLAG_TXC | UART_IRQ_RXIDLE)
+
+#define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RX), MP_ROM_INT(SERCOM_USART_INTFLAG_RXC) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_IRQ_RXIDLE) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_TXIDLE), MP_ROM_INT(SERCOM_USART_INTFLAG_TXC) }, \
+
+enum {
+    RXIDLE_INACTIVE,
+    RXIDLE_STANDBY,
+    RXIDLE_ARMED,
+    RXIDLE_ALERT,
+};
+#else
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS
+#endif
+
+typedef struct _soft_timer_entry_extended_t {
+    soft_timer_entry_t base;
+    void *context;
+} soft_timer_entry_extended_t;
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
@@ -49,6 +73,7 @@ typedef struct _machine_uart_obj_t {
     uint8_t bits;
     uint8_t parity;
     uint8_t stop;
+    uint8_t flow_control;
     uint8_t tx;
     uint8_t rx;
     sercom_pad_config_t tx_pad_config;
@@ -66,18 +91,33 @@ typedef struct _machine_uart_obj_t {
     #if MICROPY_HW_UART_TXBUF
     ringbuf_t write_buffer;
     #endif
+    #if MICROPY_PY_MACHINE_UART_IRQ
+    uint16_t mp_irq_trigger;   // user IRQ trigger mask
+    uint16_t mp_irq_flags;     // user IRQ active IRQ flags
+    mp_irq_obj_t *mp_irq_obj;  // user IRQ object
+    soft_timer_entry_extended_t rxidle_timer;
+    uint8_t rxidle_state;
+    uint16_t rxidle_ms;
+    #endif
 } machine_uart_obj_t;
 
-STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
+static const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
 
 // Irq handler
 
 // take all bytes from the fifo and store them in the buffer
-STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self, Sercom *uart) {
+static void uart_drain_rx_fifo(machine_uart_obj_t *self, Sercom *uart) {
+    uint8_t bits = self->bits;
     while (uart->USART.INTFLAG.bit.RXC != 0) {
-        if (ringbuf_free(&self->read_buffer) > 0) {
-            // get a byte from uart and put into the buffer
-            ringbuf_put(&(self->read_buffer), uart->USART.DATA.bit.DATA);
+        if (ringbuf_free(&self->read_buffer) >= (bits <= 8 ? 1 : 2)) {
+            // get a word from uart and put into the buffer
+            if (bits <= 8) {
+                ringbuf_put(&(self->read_buffer), uart->USART.DATA.bit.DATA);
+            } else {
+                uint16_t data = uart->USART.DATA.bit.DATA;
+                ringbuf_put(&(self->read_buffer), data);
+                ringbuf_put(&(self->read_buffer), data >> 8);
+            }
         } else {
             // if the buffer is full, disable the RX interrupt
             // allowing RTS to come up. It will be re-enabled by the next read
@@ -92,50 +132,199 @@ void common_uart_irq_handler(int uart_id) {
     // Handle IRQ
     if (self != NULL) {
         Sercom *uart = sercom_instance[self->id];
+        #if MICROPY_PY_MACHINE_UART_IRQ
+        uint16_t mp_irq_flags = 0;
+        #endif
         if (uart->USART.INTFLAG.bit.RXC != 0) {
             // Now handler the incoming data
             uart_drain_rx_fifo(self, uart);
+            #if MICROPY_PY_MACHINE_UART_IRQ
+            if (ringbuf_avail(&self->read_buffer) > 0) {
+                if (self->mp_irq_trigger & UART_IRQ_RXIDLE) {
+                    if (self->rxidle_state != RXIDLE_INACTIVE) {
+                        if (self->rxidle_state == RXIDLE_STANDBY) {
+                            self->rxidle_timer.base.mode = SOFT_TIMER_MODE_PERIODIC;
+                            soft_timer_insert(&self->rxidle_timer.base, self->rxidle_ms);
+                        }
+                        self->rxidle_state = RXIDLE_ALERT;
+                    }
+                } else {
+                    mp_irq_flags = SERCOM_USART_INTFLAG_RXC;
+                }
+            }
+            #endif
         } else if (uart->USART.INTFLAG.bit.DRE != 0) {
             #if MICROPY_HW_UART_TXBUF
             // handle the outgoing data
             if (ringbuf_avail(&self->write_buffer) > 0) {
-                uart->USART.DATA.bit.DATA = ringbuf_get(&self->write_buffer);
+                if (self->bits <= 8) {
+                    uart->USART.DATA.bit.DATA = ringbuf_get(&self->write_buffer);
+                } else {
+                    uart->USART.DATA.bit.DATA =
+                        ringbuf_get(&self->write_buffer) | (ringbuf_get(&self->write_buffer) << 8);
+                }
             } else {
-                // Stop the interrupt if there is no more data
+                #if MICROPY_PY_MACHINE_UART_IRQ
+                // Set the TXIDLE flag
+                mp_irq_flags |= SERCOM_USART_INTFLAG_TXC;
+                #endif
+                // Stop the DRE interrupt if there is no more data
                 uart->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE;
             }
             #endif
-        } else {
-            // Disable the other interrupts, if set by error
-            uart->USART.INTENCLR.reg = (uint8_t) ~(SERCOM_USART_INTENCLR_DRE | SERCOM_USART_INTENCLR_RXC);
         }
+        // Disable the other interrupts, if set by error
+        uart->USART.INTENCLR.reg = (uint8_t) ~(SERCOM_USART_INTENCLR_DRE | SERCOM_USART_INTENCLR_RXC);
+
+        #if MICROPY_PY_MACHINE_UART_IRQ
+        // Check the flags to see if the uart user handler should be called
+        // The handler for RXIDLE is called in the timer callback
+        if (self->mp_irq_trigger & mp_irq_flags) {
+            self->mp_irq_flags = mp_irq_flags;
+            mp_irq_handler(self->mp_irq_obj);
+        }
+        #endif
     }
 }
 
-STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+#if MICROPY_PY_MACHINE_UART_IRQ
+static void uart_soft_timer_callback(soft_timer_entry_t *self) {
+    machine_uart_obj_t *uart = ((soft_timer_entry_extended_t *)self)->context;
+    if (uart->rxidle_state == RXIDLE_ALERT) {
+        // At the first call, just switch the state
+        uart->rxidle_state = RXIDLE_ARMED;
+    } else if (uart->rxidle_state == RXIDLE_ARMED) {
+        // At the second call, run the irq callback and stop the timer
+        // by setting the mode to SOFT_TIMER_MODE_ONE_SHOT.
+        // Calling soft_timer_remove() would fail here.
+        self->mode = SOFT_TIMER_MODE_ONE_SHOT;
+        uart->rxidle_state = RXIDLE_STANDBY;
+        uart->mp_irq_flags = UART_IRQ_RXIDLE;
+        mp_irq_handler(uart->mp_irq_obj);
+    }
+}
+#endif
+
+// Configure the Sercom device
+static void machine_sercom_configure(machine_uart_obj_t *self) {
+    Sercom *uart = sercom_instance[self->id];
+
+    // Reset (clear) the peripheral registers.
+    while (uart->USART.SYNCBUSY.bit.SWRST) {
+    }
+    uart->USART.CTRLA.bit.SWRST = 1; // Reset all Registers, disable peripheral
+    while (uart->USART.SYNCBUSY.bit.SWRST) {
+    }
+
+    uint8_t txpo = self->tx_pad_config.pad_nr;
+    #if defined(MCU_SAMD21)
+    if (self->tx_pad_config.pad_nr == 2) { // Map pad 2 to TXPO = 1
+        txpo = 1;
+    } else
+    #endif
+    if (self->tx_pad_config.pad_nr != 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid UART pin"));
+    }
+    #if MICROPY_HW_UART_RTSCTS
+    if ((self->flow_control & FLOW_CONTROL_RTS) && self->rts_pad_config.pad_nr == 2) {
+        txpo = 2;
+        mp_hal_set_pin_mux(self->rts, self->rts_pad_config.alt_fct);
+    }
+    if ((self->flow_control & FLOW_CONTROL_CTS) && self->cts_pad_config.pad_nr == 3) {
+        txpo = 2;
+        mp_hal_set_pin_mux(self->cts, self->cts_pad_config.alt_fct);
+    }
+    #endif
+
+    uart->USART.CTRLA.reg =
+        SERCOM_USART_CTRLA_DORD // Data order
+        | SERCOM_USART_CTRLA_FORM(self->parity != 0 ? 1 : 0)  // Enable parity or not
+        | SERCOM_USART_CTRLA_RXPO(self->rx_pad_config.pad_nr) // Set Pad#
+        | SERCOM_USART_CTRLA_TXPO(txpo) // Set Pad#
+        | SERCOM_USART_CTRLA_MODE(1) // USART with internal clock
+    ;
+    uart->USART.CTRLB.reg =
+        SERCOM_USART_CTRLB_RXEN   // Enable Rx & Tx
+        | SERCOM_USART_CTRLB_TXEN
+        | ((self->parity & 1) << SERCOM_USART_CTRLB_PMODE_Pos)
+        | (self->stop << SERCOM_USART_CTRLB_SBMODE_Pos)
+        | SERCOM_USART_CTRLB_CHSIZE((self->bits & 7) | (self->bits & 1))
+    ;
+    while (uart->USART.SYNCBUSY.bit.CTRLB) {
+    }
+
+    // USART is driven by the clock of GCLK Generator 2, freq by get_peripheral_freq()
+    // baud rate; 65536 * (1 - 16 * 115200/bus_freq)
+    uint32_t baud = 65536 - ((uint64_t)(65536 * 16) * self->baudrate + get_peripheral_freq() / 2) / get_peripheral_freq();
+    uart->USART.BAUD.bit.BAUD = baud; // Set Baud
+
+    sercom_register_irq(self->id, &common_uart_irq_handler);
+
+    // Enable RXC interrupt
+    uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
+    #if defined(MCU_SAMD21)
+    NVIC_EnableIRQ(SERCOM0_IRQn + self->id);
+    #elif defined(MCU_SAMD51)
+    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 2);
+    #endif
+    #if MICROPY_HW_UART_TXBUF
+    // Enable DRE interrupt
+    // SAMD21 has just 1 IRQ for all USART events, so no need for an additional NVIC enable
+    #if defined(MCU_SAMD51)
+    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 0);
+    #endif
+    #endif
+
+    sercom_enable(uart, 1);
+}
+
+void machine_uart_set_baudrate(mp_obj_t self_in, uint32_t baudrate) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    self->baudrate = baudrate;
+    machine_sercom_configure(self);
+}
+
+static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    size_t rxbuf_len = self->read_buffer.size - 1;
+    #if MICROPY_HW_UART_TXBUF
+    size_t txbuf_len = self->write_buffer.size - 1;
+    #endif
+    if (self->bits > 8) {
+        rxbuf_len /= 2;
+        #if MICROPY_HW_UART_TXBUF
+        txbuf_len /= 2;
+        #endif
+    }
+
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
         "timeout=%u, timeout_char=%u, rxbuf=%d"
         #if MICROPY_HW_UART_TXBUF
         ", txbuf=%d"
         #endif
         #if MICROPY_HW_UART_RTSCTS
-        ", rts=%s, cts=%s"
+        ", rts=%q, cts=%q"
+        #endif
+        #if MICROPY_PY_MACHINE_UART_IRQ
+        ", irq=%d"
         #endif
         ")",
         self->id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop + 1, self->timeout, self->timeout_char, self->read_buffer.size - 1
+        self->stop + 1, self->timeout, self->timeout_char, rxbuf_len
         #if MICROPY_HW_UART_TXBUF
-        , self->write_buffer.size - 1
+        , txbuf_len
         #endif
         #if MICROPY_HW_UART_RTSCTS
-        , self->rts != 0xff ? pin_name(self->rts) : "None"
-        , self->cts != 0xff ? pin_name(self->cts) : "None"
+        , self->rts != 0xff ? pin_find_by_id(self->rts)->name : MP_QSTR_None
+        , self->cts != 0xff ? pin_find_by_id(self->cts)->name : MP_QSTR_None
+        #endif
+        #if MICROPY_PY_MACHINE_UART_IRQ
+        , self->mp_irq_trigger
         #endif
         );
 }
 
-STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx,
            ARG_timeout, ARG_timeout_char, ARG_rxbuf, ARG_txbuf, ARG_rts, ARG_cts };
     static const mp_arg_t allowed_args[] = {
@@ -148,9 +337,7 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        #if MICROPY_HW_UART_TXBUF
         { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        #endif
         #if MICROPY_HW_UART_RTSCTS
         { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -194,22 +381,22 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     if (args[ARG_rx].u_obj != mp_const_none) {
         self->rx = mp_hal_get_pin_obj(args[ARG_rx].u_obj);
     }
+    self->flow_control = 0;
     #if MICROPY_HW_UART_RTSCTS
-    uint8_t flow_control = 0;
     // Set RTS/CTS pins if configured.
     if (args[ARG_rts].u_obj != mp_const_none) {
         self->rts = mp_hal_get_pin_obj(args[ARG_rts].u_obj);
         self->rts_pad_config = get_sercom_config(self->rts, self->id);
-        flow_control = FLOW_CONTROL_RTS;
+        self->flow_control = FLOW_CONTROL_RTS;
     }
     if (args[ARG_cts].u_obj != mp_const_none) {
         self->cts = mp_hal_get_pin_obj(args[ARG_cts].u_obj);
         self->cts_pad_config = get_sercom_config(self->cts, self->id);
-        flow_control |= FLOW_CONTROL_CTS;
+        self->flow_control |= FLOW_CONTROL_CTS;
     }
     // rts only flow control is not allowed. Otherwise the state of the
     // cts pin is undefined.
-    if (flow_control == FLOW_CONTROL_RTS) {
+    if (self->flow_control == FLOW_CONTROL_RTS) {
         mp_raise_ValueError(MP_ERROR_TEXT("cts missing for flow control"));
     }
     #endif
@@ -247,6 +434,14 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         }
     }
     #endif
+
+    // Double the buffer lengths for 9 bit transfer
+    if (self->bits > 8) {
+        rxbuf_len *= 2;
+        #if MICROPY_HW_UART_TXBUF
+        txbuf_len *= 2;
+        #endif
+    }
     // Initialise the UART peripheral if any arguments given, or it was not initialised previously.
     if (n_args > 0 || kw_args->used > 0 || self->new) {
         self->new = false;
@@ -278,79 +473,12 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         // Next: Set up the clocks
         enable_sercom_clock(self->id);
 
-        // Next: Configure the USART
-        Sercom *uart = sercom_instance[self->id];
-        // Reset (clear) the peripheral registers.
-        while (uart->USART.SYNCBUSY.bit.SWRST) {
-        }
-        uart->USART.CTRLA.bit.SWRST = 1; // Reset all Registers, disable peripheral
-        while (uart->USART.SYNCBUSY.bit.SWRST) {
-        }
-
-        uint8_t txpo = self->tx_pad_config.pad_nr;
-        #if defined(MCU_SAMD21)
-        if (self->tx_pad_config.pad_nr == 2) { // Map pad 2 to TXPO = 1
-            txpo = 1;
-        } else
-        #endif
-        if (self->tx_pad_config.pad_nr != 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid UART pin"));
-        }
-        #if MICROPY_HW_UART_RTSCTS
-        if ((flow_control & FLOW_CONTROL_RTS) && self->rts_pad_config.pad_nr == 2) {
-            txpo = 2;
-            mp_hal_set_pin_mux(self->rts, self->rts_pad_config.alt_fct);
-        }
-        if ((flow_control & FLOW_CONTROL_CTS) && self->cts_pad_config.pad_nr == 3) {
-            txpo = 2;
-            mp_hal_set_pin_mux(self->cts, self->cts_pad_config.alt_fct);
-        }
-        #endif
-
-        uart->USART.CTRLA.reg =
-            SERCOM_USART_CTRLA_DORD // Data order
-            | SERCOM_USART_CTRLA_FORM(self->parity != 0 ? 1 : 0)  // Enable parity or not
-            | SERCOM_USART_CTRLA_RXPO(self->rx_pad_config.pad_nr) // Set Pad#
-            | SERCOM_USART_CTRLA_TXPO(txpo) // Set Pad#
-            | SERCOM_USART_CTRLA_MODE(1) // USART with internal clock
-        ;
-        uart->USART.CTRLB.reg =
-            SERCOM_USART_CTRLB_RXEN   // Enable Rx & Tx
-            | SERCOM_USART_CTRLB_TXEN
-            | ((self->parity & 1) << SERCOM_USART_CTRLB_PMODE_Pos)
-            | (self->stop << SERCOM_USART_CTRLB_SBMODE_Pos)
-            | SERCOM_USART_CTRLB_CHSIZE((self->bits & 7) | (self->bits & 1))
-        ;
-        while (uart->USART.SYNCBUSY.bit.CTRLB) {
-        }
-
-        // USART is driven by the clock of GCLK Generator 2, freq by get_peripheral_freq()
-        // baud rate; 65536 * (1 - 16 * 115200/bus_freq)
-        uint32_t baud = 65536 - ((uint64_t)(65536 * 16) * self->baudrate + get_peripheral_freq() / 2) / get_peripheral_freq();
-        uart->USART.BAUD.bit.BAUD = baud; // Set Baud
-
-        sercom_register_irq(self->id, &common_uart_irq_handler);
-
-        // Enable RXC interrupt
-        uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
-        #if defined(MCU_SAMD21)
-        NVIC_EnableIRQ(SERCOM0_IRQn + self->id);
-        #elif defined(MCU_SAMD51)
-        NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 2);
-        #endif
-        #if MICROPY_HW_UART_TXBUF
-        // Enable DRE interrupt
-        // SAMD21 has just 1 IRQ for all USART events, so no need for an additional NVIC enable
-        #if defined(MCU_SAMD51)
-        NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 0);
-        #endif
-        #endif
-
-        sercom_enable(uart, 1);
+        // Configure the sercom module
+        machine_sercom_configure(self);
     }
 }
 
-STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get UART bus.
@@ -373,6 +501,10 @@ STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     self->rts = 0xff;
     self->cts = 0xff;
     #endif
+    #if MICROPY_PY_MACHINE_UART_IRQ
+    self->mp_irq_obj = NULL;
+    self->rxidle_state = RXIDLE_INACTIVE;
+    #endif
     self->new = true;
     MP_STATE_PORT(sercom_table[uart_id]) = self;
 
@@ -383,7 +515,7 @@ STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     // Check if it is the active object.
     if (MP_STATE_PORT(sercom_table)[self->id] == self) {
         Sercom *uart = sercom_instance[self->id];
@@ -396,11 +528,11 @@ STATIC void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     }
 }
 
-STATIC mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
+static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
     return ringbuf_avail(&self->read_buffer);
 }
 
-STATIC bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
     Sercom *uart = sercom_instance[self->id];
 
     return uart->USART.INTFLAG.bit.DRE
@@ -410,7 +542,7 @@ STATIC bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
            && uart->USART.INTFLAG.bit.TXC;
 }
 
-STATIC void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
+static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     uint32_t break_time_us = 13 * 1000000 / self->baudrate;
 
     // Wait for the tx buffer to drain.
@@ -432,14 +564,98 @@ STATIC void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     mp_hal_set_pin_mux(self->tx, self->tx_pad_config.alt_fct);
 }
 
-STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+#if MICROPY_PY_MACHINE_UART_IRQ
+
+// Configure the timer used for IRQ_RXIDLE
+static void uart_irq_configure_timer(machine_uart_obj_t *self, mp_uint_t trigger) {
+    self->rxidle_state = RXIDLE_INACTIVE;
+
+    if (trigger & UART_IRQ_RXIDLE) {
+        // The RXIDLE event is always a soft IRQ.
+        self->mp_irq_obj->ishard = false;
+        mp_int_t ms = 13000 / self->baudrate + 1;
+        if (ms < RXIDLE_TIMER_MIN) {
+            ms = RXIDLE_TIMER_MIN;
+        }
+        self->rxidle_ms = ms;
+        self->rxidle_timer.context = self;
+        soft_timer_static_init(
+            &self->rxidle_timer.base,
+            SOFT_TIMER_MODE_PERIODIC,
+            ms,
+            uart_soft_timer_callback
+            );
+        self->rxidle_state = RXIDLE_STANDBY;
+    }
+}
+
+static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    uart_irq_configure_timer(self, new_trigger);
+    self->mp_irq_trigger = new_trigger;
+    return 0;
+}
+
+static mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return self->mp_irq_flags;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return self->mp_irq_trigger;
+    }
+    return 0;
+}
+
+static const mp_irq_methods_t uart_irq_methods = {
+    .trigger = uart_irq_trigger,
+    .info = uart_irq_info,
+};
+
+static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args, mp_arg_val_t *args) {
+    if (self->mp_irq_obj == NULL) {
+        self->mp_irq_trigger = 0;
+        self->mp_irq_obj = mp_irq_new(&uart_irq_methods, MP_OBJ_FROM_PTR(self));
+    }
+
+    if (any_args) {
+        // Check the handler
+        mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
+        if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
+        }
+
+        // Check the trigger
+        mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
+        mp_uint_t not_supported = trigger & ~MP_UART_ALLOWED_FLAGS;
+        if (trigger != 0 && not_supported) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%04x unsupported"), not_supported);
+        }
+        uart_irq_configure_timer(self, trigger);
+
+        self->mp_irq_obj->handler = handler;
+        self->mp_irq_obj->ishard = args[MP_IRQ_ARG_INIT_hard].u_bool;
+        self->mp_irq_trigger = trigger;
+    }
+
+    return self->mp_irq_obj;
+}
+
+#endif
+
+static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     Sercom *uart = sercom_instance[self->id];
     uint64_t t = mp_hal_ticks_ms_64() + self->timeout;
     uint64_t timeout_char = self->timeout_char;
     uint8_t *dest = buf_in;
 
-    for (size_t i = 0; i < size; i++) {
+    // Check that size is even for 9 bit transfers.
+    if ((self->bits >= 9) && (size & 1)) {
+        *errcode = MP_EIO;
+        return MP_STREAM_ERROR;
+    }
+    for (size_t i = 0; i < size;) {
         // Wait for the first/next character
         while (ringbuf_avail(&self->read_buffer) == 0) {
             if (mp_hal_ticks_ms_64() > t) {  // timed out
@@ -453,6 +669,11 @@ STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
             MICROPY_EVENT_POLL_HOOK
         }
         *dest++ = ringbuf_get(&(self->read_buffer));
+        i++;
+        if (self->bits >= 9 && i < size) {
+            *dest++ = ringbuf_get(&(self->read_buffer));
+            i++;
+        }
         t = mp_hal_ticks_ms_64() + timeout_char;
         // (Re-)Enable RXC interrupt
         if ((uart->USART.INTENSET.reg & SERCOM_USART_INTENSET_RXC) == 0) {
@@ -462,15 +683,30 @@ STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
     return size;
 }
 
-STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     size_t i = 0;
     const uint8_t *src = buf_in;
     Sercom *uart = sercom_instance[self->id];
+    uint64_t t = mp_hal_ticks_ms_64() + self->timeout;
+    uint8_t bits = self->bits;
+    // Check that size is even for 9 bit transfers.
+    if ((bits >= 9) && (size & 1)) {
+        *errcode = MP_EIO;
+        return MP_STREAM_ERROR;
+    }
 
     #if MICROPY_HW_UART_TXBUF
-    uint64_t t = mp_hal_ticks_ms_64() + self->timeout;
 
+    #if MICROPY_PY_MACHINE_UART_IRQ
+    // Prefill the FIFO to get rid of the initial IRQ_TXIDLE event
+    // Do not care for 9 Bit transfer here since the UART is not yet started.
+    while (i < size && ringbuf_free(&(self->write_buffer)) > 0) {
+        ringbuf_put(&(self->write_buffer), *src++);
+        i++;
+    }
+    uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_DRE; // kick off the IRQ
+    #endif
     while (i < size) {
         // Wait for the first/next character to be sent.
         while (ringbuf_free(&(self->write_buffer)) == 0) {
@@ -484,8 +720,16 @@ STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
             }
             MICROPY_EVENT_POLL_HOOK
         }
-        ringbuf_put(&(self->write_buffer), *src++);
-        i++;
+        if (bits >= 9) {
+            mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+            ringbuf_put(&(self->write_buffer), *src++);
+            ringbuf_put(&(self->write_buffer), *src++);
+            i += 2;
+            MICROPY_END_ATOMIC_SECTION(atomic_state);
+        } else {
+            ringbuf_put(&(self->write_buffer), *src++);
+            i += 1;
+        }
         uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_DRE; // kick off the IRQ
     }
 
@@ -493,15 +737,30 @@ STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
 
     while (i < size) {
         while (!(uart->USART.INTFLAG.bit.DRE)) {
+            if (mp_hal_ticks_ms_64() > t) {  // timed out
+                if (i <= 0) {
+                    *errcode = MP_EAGAIN;
+                    return MP_STREAM_ERROR;
+                } else {
+                    return i;
+                }
+            }
+            MICROPY_EVENT_POLL_HOOK
         }
-        uart->USART.DATA.bit.DATA = *src++;
+        if (self->bits > 8 && i < (size - 1)) {
+            uart->USART.DATA.bit.DATA = *(uint16_t *)src;
+            i++;
+            src += 2;
+        } else {
+            uart->USART.DATA.bit.DATA = *src++;
+        }
         i++;
     }
     #endif
     return size;
 }
 
-STATIC mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
     Sercom *uart = sercom_instance[self->id];

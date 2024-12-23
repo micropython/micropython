@@ -40,9 +40,10 @@
 #include "py/objmodule.h"
 #include "py/objgenerator.h"
 #include "py/smallint.h"
+#include "py/stream.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
-#include "py/stackctrl.h"
+#include "py/cstack.h"
 #include "py/gc.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
@@ -118,8 +119,8 @@ void mp_init(void) {
     MP_STATE_VM(mp_module_builtins_override_dict) = NULL;
     #endif
 
-    #if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
-    MP_STATE_VM(track_reloc_code_list) = MP_OBJ_NULL;
+    #if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA || MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA
+    MP_STATE_VM(persistent_code_root_pointers) = MP_OBJ_NULL;
     #endif
 
     #if MICROPY_PY_OS_DUPTERM
@@ -168,6 +169,10 @@ void mp_init(void) {
 
     #if MICROPY_PY_BLUETOOTH
     MP_STATE_VM(bluetooth) = MP_OBJ_NULL;
+    #endif
+
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+    MP_STATE_VM(usbd) = MP_OBJ_NULL;
     #endif
 
     #if MICROPY_PY_THREAD_GIL
@@ -730,7 +735,7 @@ mp_obj_t mp_call_method_n_kw(size_t n_args, size_t n_kw, const mp_obj_t *args) {
 
 // This function only needs to be exposed externally when in stackless mode.
 #if !MICROPY_STACKLESS
-STATIC
+static
 #endif
 void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args) {
     mp_obj_t fun = *args++;
@@ -1073,7 +1078,7 @@ typedef struct _mp_obj_checked_fun_t {
     mp_obj_t fun;
 } mp_obj_checked_fun_t;
 
-STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_checked_fun_t *self = MP_OBJ_TO_PTR(self_in);
     if (n_args > 0) {
         const mp_obj_type_t *arg0_type = mp_obj_get_type(args[0]);
@@ -1089,14 +1094,14 @@ STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     return mp_call_function_n_kw(self->fun, n_args, n_kw, args);
 }
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_checked_fun,
     MP_QSTR_function,
     MP_TYPE_FLAG_BINDS_SELF,
     call, checked_fun_call
     );
 
-STATIC mp_obj_t mp_obj_new_checked_fun(const mp_obj_type_t *type, mp_obj_t fun) {
+static mp_obj_t mp_obj_new_checked_fun(const mp_obj_type_t *type, mp_obj_t fun) {
     mp_obj_checked_fun_t *o = mp_obj_malloc(mp_obj_checked_fun_t, &mp_type_checked_fun);
     o->type = type;
     o->fun = fun;
@@ -1148,6 +1153,10 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
             // base type (which is what is passed in the `type` argument to this function).
             if (self != MP_OBJ_NULL) {
                 type = mp_obj_get_type(self);
+                if (type == &mp_type_type) {
+                    // `self` is already a type, so use `self` directly.
+                    type = MP_OBJ_TO_PTR(self);
+                }
             }
             dest[0] = ((mp_obj_static_class_method_t *)MP_OBJ_TO_PTR(member))->fun;
             dest[1] = MP_OBJ_FROM_PTR(type);
@@ -1325,9 +1334,8 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
 
 }
 
-STATIC mp_fun_1_t type_get_iternext(const mp_obj_type_t *type) {
+static mp_fun_1_t type_get_iternext(const mp_obj_type_t *type) {
     if ((type->flags & MP_TYPE_FLAG_ITER_IS_STREAM) == MP_TYPE_FLAG_ITER_IS_STREAM) {
-        mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
         return mp_stream_unbuffered_iter;
     } else if (type->flags & MP_TYPE_FLAG_ITER_IS_ITERNEXT) {
         return (mp_fun_1_t)MP_OBJ_TYPE_GET_SLOT(type, iter);
@@ -1366,7 +1374,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
 // will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration() (or any subclass thereof)
 // may raise other exceptions
 mp_obj_t mp_iternext(mp_obj_t o_in) {
-    MP_STACK_CHECK(); // enumerate, filter, map and zip can recursively call mp_iternext
+    mp_cstack_check(); // enumerate, filter, map and zip can recursively call mp_iternext
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (TYPE_HAS_ITERNEXT(type)) {
         MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;

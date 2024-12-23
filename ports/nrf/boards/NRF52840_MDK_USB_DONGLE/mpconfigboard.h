@@ -30,7 +30,6 @@
 
 #define MICROPY_PY_MACHINE_UART      (1)
 #define MICROPY_PY_MACHINE_HW_PWM    (1)
-#define MICROPY_PY_MACHINE_HW_SPI    (1)
 #define MICROPY_PY_MACHINE_RTCOUNTER (1)
 #define MICROPY_PY_MACHINE_I2C       (1)
 #define MICROPY_PY_MACHINE_ADC       (1)
@@ -38,6 +37,7 @@
 
 #define MICROPY_HW_ENABLE_RNG        (1)
 
+#define MICROPY_HW_ENABLE_USBDEV     (1)
 #define MICROPY_HW_USB_CDC           (1)
 
 #define MICROPY_HW_HAS_LED           (1)

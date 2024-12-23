@@ -65,6 +65,8 @@ Use the :mod:`time <time>` module::
     start = time.ticks_ms() # get millisecond counter
     delta = time.ticks_diff(time.ticks_ms(), start) # compute time difference
 
+Note that :func:`time.sleep_us()` delays by busy waiting. During that time, other tasks are
+not scheduled.
 
 Clock and time
 --------------
@@ -213,7 +215,7 @@ PWM Constructor
 
       - *freq* should be an integer which sets the frequency in Hz for the
         PWM cycle. The valid frequency range is 1 Hz to 24 MHz.
-      - *duty_u16* sets the duty cycle as a ratio ``duty_u16 / 65536``.
+      - *duty_u16* sets the duty cycle as a ratio ``duty_u16 / 65535``.
       - *duty_ns* sets the pulse width in nanoseconds. The limitation for X channels
         apply as well.
       - *invert*\=True|False. Setting a bit inverts the respective output.
@@ -244,7 +246,7 @@ Use the :ref:`machine.ADC <machine.ADC>` class::
     from machine import ADC
 
     adc0 = ADC(Pin('A0'))            # create ADC object on ADC pin, average=16
-    adc0.read_u16()                  # read value, 0-65536 across voltage range 0.0v - 3.3v
+    adc0.read_u16()                  # read value, 0-65535 across voltage range 0.0v - 3.3v
     adc1 = ADC(Pin('A1'), average=1) # create ADC object on ADC pin, average=1
 
 The resolution of the ADC is 12 bit with 12 bit accuracy, irrespective of the

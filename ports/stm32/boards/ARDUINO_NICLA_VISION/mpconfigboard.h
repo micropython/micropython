@@ -4,10 +4,12 @@
  * Copyright (c) 2023 Arduino SA
  */
 
-#define MICROPY_HW_BOARD_NAME       "NICLAVISION"
+#define MICROPY_HW_BOARD_NAME       "Arduino Nicla Vision"
 #define MICROPY_HW_MCU_NAME         "STM32H747"
-#define MICROPY_PY_SYS_PLATFORM     "Nicla Vision"
-#define MICROPY_HW_FLASH_FS_LABEL   "niclavision"
+#define MICROPY_HW_FLASH_FS_LABEL   "Nicla Vision"
+
+// Network config
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-nicla-vision"
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 #define UINT_FMT                    "%u"
@@ -27,9 +29,11 @@ typedef unsigned int mp_uint_t;     // must be pointer size
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SDCARD    (0)
 #define MICROPY_HW_ENABLE_MMCARD    (0)
+#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET   (0)
 
 // Flash storage config
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE            (1)
+#define MICROPY_HW_SPIFLASH_SOFT_RESET              (1)
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE    (0)
 
 #define MICROPY_BOARD_STARTUP       NICLAV_board_startup
@@ -47,8 +51,8 @@ void NICLAV_board_low_power(int mode);
 #define MICROPY_BOARD_ENTER_STANDBY NICLAV_board_low_power(2);
 
 void NICLAV_board_osc_enable(int enable);
-#define MICROPY_BOARD_OSC_ENABLE    NICLAV_board_osc_enable(1);
-#define MICROPY_BOARD_OSC_DISABLE   NICLAV_board_osc_enable(0);
+#define MICROPY_BOARD_PRE_STOP      NICLAV_board_osc_enable(0);
+#define MICROPY_BOARD_POST_STOP     NICLAV_board_osc_enable(1);
 
 // PLL1 400MHz/50MHz for SDMMC and FDCAN
 // USB and RNG are clocked from the HSI48
@@ -106,6 +110,13 @@ void NICLAV_board_osc_enable(int enable);
 
 // SMPS configuration
 #define MICROPY_HW_PWR_SMPS_CONFIG      (PWR_LDO_SUPPLY)
+
+// Configure the analog switches for dual-pad pins.
+#define MICROPY_HW_ANALOG_SWITCH_PA0    (SYSCFG_SWITCH_PA0_OPEN)
+#define MICROPY_HW_ANALOG_SWITCH_PA1    (SYSCFG_SWITCH_PA1_OPEN)
+// PC2_C and PC3_C, which are connected to ULPI NXT and DIR pins.
+#define MICROPY_HW_ANALOG_SWITCH_PC2    (SYSCFG_SWITCH_PC2_CLOSE)
+#define MICROPY_HW_ANALOG_SWITCH_PC3    (SYSCFG_SWITCH_PC3_CLOSE)
 
 // There is an external 32kHz oscillator
 #define RTC_ASYNCH_PREDIV           (0)

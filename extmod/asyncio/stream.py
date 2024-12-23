@@ -13,12 +13,6 @@ class Stream:
     def get_extra_info(self, v):
         return self.e[v]
 
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, exc_type, exc, tb):
-        await self.close()
-
     def close(self):
         pass
 
@@ -63,6 +57,8 @@ class Stream:
         while True:
             yield core._io_queue.queue_read(self.s)
             l2 = self.s.readline()  # may do multiple reads but won't block
+            if l2 is None:
+                continue
             l += l2
             if not l2 or l[-1] == 10:  # \n (check l in case l2 is str)
                 return l
@@ -100,19 +96,29 @@ StreamWriter = Stream
 # Create a TCP stream connection to a remote host
 #
 # async
-def open_connection(host, port):
+def open_connection(host, port, ssl=None, server_hostname=None):
     from errno import EINPROGRESS
     import socket
 
     ai = socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM)[0]  # TODO this is blocking!
     s = socket.socket(ai[0], ai[1], ai[2])
     s.setblocking(False)
-    ss = Stream(s)
     try:
         s.connect(ai[-1])
     except OSError as er:
         if er.errno != EINPROGRESS:
             raise er
+    # wrap with SSL, if requested
+    if ssl:
+        if ssl is True:
+            import ssl as _ssl
+
+            ssl = _ssl.SSLContext(_ssl.PROTOCOL_TLS_CLIENT)
+        if not server_hostname:
+            server_hostname = host
+        s = ssl.wrap_socket(s, server_hostname=server_hostname, do_handshake_on_connect=False)
+        s.setblocking(False)
+    ss = Stream(s)
     yield core._io_queue.queue_write(s)
     return ss, ss
 
@@ -135,7 +141,7 @@ class Server:
     async def wait_closed(self):
         await self.task
 
-    async def _serve(self, s, cb):
+    async def _serve(self, s, cb, ssl):
         self.state = False
         # Accept incoming connections
         while True:
@@ -156,6 +162,13 @@ class Server:
             except:
                 # Ignore a failed accept
                 continue
+            if ssl:
+                try:
+                    s2 = ssl.wrap_socket(s2, server_side=True, do_handshake_on_connect=False)
+                except OSError as e:
+                    core.sys.print_exception(e)
+                    s2.close()
+                    continue
             s2.setblocking(False)
             s2s = Stream(s2, {"peername": addr})
             core.create_task(cb(s2s, s2s))
@@ -163,7 +176,7 @@ class Server:
 
 # Helper function to start a TCP stream server, running as a new task
 # TODO could use an accept-callback on socket read activity instead of creating a task
-async def start_server(cb, host, port, backlog=5):
+async def start_server(cb, host, port, backlog=5, ssl=None):
     import socket
 
     # Create and bind server socket.
@@ -176,7 +189,7 @@ async def start_server(cb, host, port, backlog=5):
 
     # Create and return server object and task.
     srv = Server()
-    srv.task = core.create_task(srv._serve(s, cb))
+    srv.task = core.create_task(srv._serve(s, cb, ssl))
     try:
         # Ensure that the _serve task has been scheduled so that it gets to
         # handle cancellation.

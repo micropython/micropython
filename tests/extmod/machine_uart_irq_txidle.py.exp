@@ -1,0 +1,12 @@
+write 2400
+ready
+IRQ_TXIDLE: True
+done
+write 9600
+ready
+IRQ_TXIDLE: True
+done
+write 115200
+ready
+IRQ_TXIDLE: True
+done

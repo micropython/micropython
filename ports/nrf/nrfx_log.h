@@ -28,7 +28,7 @@
 #define NRFX_LOG_H
 
 #include <stdio.h>
-#include "mphalport.h"
+#include "py/mphal.h"
 #include "nrfx_config.h"
 
 #define LOG_TEST_UART 1

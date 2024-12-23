@@ -54,6 +54,8 @@ extern TaskHandle_t mp_main_task_handle;
 
 extern ringbuf_t stdin_ringbuf;
 
+extern portMUX_TYPE mp_atomic_mux;
+
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
 #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_NORMAL
 #define check_esp_err(code) check_esp_err_(code)
@@ -63,10 +65,26 @@ void check_esp_err_(esp_err_t code);
 void check_esp_err_(esp_err_t code, const char *func, const int line, const char *file);
 #endif
 
+static inline mp_uint_t mp_begin_atomic_section(void) {
+    portENTER_CRITICAL(&mp_atomic_mux);
+    return 0;
+}
+
+static inline void mp_end_atomic_section(mp_uint_t state) {
+    (void)state;
+    portEXIT_CRITICAL(&mp_atomic_mux);
+}
+
+// Note: These atomic macros disable interrupts on the calling CPU, and on SMP
+// systems also protect against concurrent access to an atomic section on the
+// other CPU.
+#define MICROPY_BEGIN_ATOMIC_SECTION() mp_begin_atomic_section()
+#define MICROPY_END_ATOMIC_SECTION(state) mp_end_atomic_section(state)
+
 uint32_t mp_hal_ticks_us(void);
 __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
     uint32_t ccount;
-    #if CONFIG_IDF_TARGET_ESP32C3
+    #if CONFIG_IDF_TARGET_ARCH_RISCV
     __asm__ __volatile__ ("csrr %0, 0x7E2" : "=r" (ccount)); // Machine Performance Counter Value
     #else
     __asm__ __volatile__ ("rsr %0,ccount" : "=a" (ccount));
@@ -83,6 +101,7 @@ uint32_t mp_hal_get_cpu_freq(void);
 #define mp_hal_quiet_timing_exit(irq_state) MICROPY_END_ATOMIC_SECTION(irq_state)
 
 // Wake up the main task if it is sleeping
+void mp_hal_wake_main_task(void);
 void mp_hal_wake_main_task_from_isr(void);
 
 // C-level pin HAL

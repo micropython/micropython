@@ -122,7 +122,7 @@ typedef struct _machine_uart_irq_map_t {
     uint16_t flag;
 } machine_uart_irq_map_t;
 
-STATIC const machine_uart_irq_map_t mp_uart_irq_map[] = {
+static const machine_uart_irq_map_t mp_uart_irq_map[] = {
     { USART_CR1_IDLEIE, UART_FLAG_IDLE}, // RX idle
     { USART_CR1_PEIE,   UART_FLAG_PE},   // parity error
     #if defined(STM32G0) || defined(STM32WL)
@@ -250,7 +250,10 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     uint8_t uart_fn = AF_FN_UART;
     int uart_unit;
 
-    const pin_obj_t *pins[4] = {0};
+    const machine_pin_obj_t *pins[4] = {0};
+
+    // Default pull is pull-up on RX and CTS (the input pins).
+    uint32_t pins_pull[4] = { GPIO_NOPULL, GPIO_PULLUP, GPIO_NOPULL, GPIO_PULLUP };
 
     switch (uart_obj->uart_id) {
         #if defined(MICROPY_HW_UART1_TX) && defined(MICROPY_HW_UART1_RX)
@@ -269,6 +272,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             if (flow & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART1_CTS;
             }
+            #endif
+            #if defined(MICROPY_HW_UART1_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART1_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART1_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART1_CTS_PULL;
             #endif
             __HAL_RCC_USART1_CLK_ENABLE();
             break;
@@ -294,6 +303,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             if (flow & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART2_CTS;
             }
+            #endif
+            #if defined(MICROPY_HW_UART2_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART2_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART2_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART2_CTS_PULL;
             #endif
             __HAL_RCC_USART2_CLK_ENABLE();
             break;
@@ -321,6 +336,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             if (flow & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART3_CTS;
             }
+            #endif
+            #if defined(MICROPY_HW_UART3_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART3_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART3_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART3_CTS_PULL;
             #endif
             __HAL_RCC_USART3_CLK_ENABLE();
             break;
@@ -358,6 +379,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
                 pins[3] = MICROPY_HW_UART4_CTS;
             }
             #endif
+            #if defined(MICROPY_HW_UART4_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART4_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART4_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART4_CTS_PULL;
+            #endif
             break;
         #endif
 
@@ -393,6 +420,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
                 pins[3] = MICROPY_HW_UART5_CTS;
             }
             #endif
+            #if defined(MICROPY_HW_UART5_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART5_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART5_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART5_CTS_PULL;
+            #endif
             break;
         #endif
 
@@ -418,6 +451,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             if (flow & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART6_CTS;
             }
+            #endif
+            #if defined(MICROPY_HW_UART6_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART6_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART6_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART6_CTS_PULL;
             #endif
             __HAL_RCC_USART6_CLK_ENABLE();
             break;
@@ -447,6 +486,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
                 pins[3] = MICROPY_HW_UART7_CTS;
             }
             #endif
+            #if defined(MICROPY_HW_UART7_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART7_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART7_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART7_CTS_PULL;
+            #endif
             break;
         #endif
 
@@ -474,6 +519,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
                 pins[3] = MICROPY_HW_UART8_CTS;
             }
             #endif
+            #if defined(MICROPY_HW_UART8_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART8_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART8_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART8_CTS_PULL;
+            #endif
             break;
         #endif
 
@@ -485,6 +536,9 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             __HAL_RCC_UART9_CLK_ENABLE();
             pins[0] = MICROPY_HW_UART9_TX;
             pins[1] = MICROPY_HW_UART9_RX;
+            #if defined(MICROPY_HW_UART9_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART9_RX_PULL;
+            #endif
             break;
         #endif
 
@@ -502,6 +556,9 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             #endif
             pins[0] = MICROPY_HW_UART10_TX;
             pins[1] = MICROPY_HW_UART10_RX;
+            #if defined(MICROPY_HW_UART10_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART10_RX_PULL;
+            #endif
             break;
         #endif
 
@@ -527,6 +584,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
                 pins[3] = MICROPY_HW_LPUART1_CTS;
             }
             #endif
+            #if defined(MICROPY_HW_LPUART1_RX_PULL)
+            pins_pull[1] = MICROPY_HW_LPUART1_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_LPUART1_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_LPUART1_CTS_PULL;
+            #endif
             __HAL_RCC_LPUART1_CLK_ENABLE();
             break;
         #endif
@@ -551,6 +614,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
                 pins[3] = MICROPY_HW_LPUART2_CTS;
             }
             #endif
+            #if defined(MICROPY_HW_LPUART2_RX_PULL)
+            pins_pull[1] = MICROPY_HW_LPUART2_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_LPUART2_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_LPUART2_CTS_PULL;
+            #endif
             __HAL_RCC_LPUART2_CLK_ENABLE();
             break;
         #endif
@@ -564,10 +633,7 @@ bool uart_init(machine_uart_obj_t *uart_obj,
 
     for (uint i = 0; i < 4; i++) {
         if (pins[i] != NULL) {
-            // Configure pull-up on RX and CTS (the input pins).
-            uint32_t pull = (i & 1) ? MP_HAL_PIN_PULL_UP : MP_HAL_PIN_PULL_NONE;
-            bool ret = mp_hal_pin_config_alt(pins[i], mode, pull, uart_fn, uart_unit);
-            if (!ret) {
+            if (!mp_hal_pin_config_alt(pins[i], mode, pins_pull[i], uart_fn, uart_unit)) {
                 return false;
             }
         }
@@ -1038,7 +1104,7 @@ bool uart_tx_wait(machine_uart_obj_t *self, uint32_t timeout) {
 
 // Waits at most timeout milliseconds for UART flag to be set.
 // Returns true if flag is/was set, false on timeout.
-STATIC bool uart_wait_flag_set(machine_uart_obj_t *self, uint32_t flag, uint32_t timeout) {
+static bool uart_wait_flag_set(machine_uart_obj_t *self, uint32_t flag, uint32_t timeout) {
     // Note: we don't use WFI to idle in this loop because UART tx doesn't generate
     // an interrupt and the flag can be set quickly if the baudrate is large.
     uint32_t start = HAL_GetTick();
@@ -1069,26 +1135,20 @@ size_t uart_tx_data(machine_uart_obj_t *self, const void *src_in, size_t num_cha
     }
 
     uint32_t timeout;
-    if (self->uartx->CR3 & USART_CR3_CTSE) {
-        // CTS can hold off transmission for an arbitrarily long time. Apply
-        // the overall timeout rather than the character timeout.
-        timeout = self->timeout;
-    } else {
-        #if defined(STM32G4)
-        // With using UART FIFO, the timeout should be long enough that FIFO becomes empty.
-        // Since previous data transfer may be ongoing, the timeout must be multiplied
-        // timeout_char by FIFO size + 1.
-        // STM32G4 has 8 words FIFO.
-        timeout = (8 + 1) * self->timeout_char;
-        #else
-        // The timeout specified here is for waiting for the TX data register to
-        // become empty (ie between chars), as well as for the final char to be
-        // completely transferred.  The default value for timeout_char is long
-        // enough for 1 char, but we need to double it to wait for the last char
-        // to be transferred to the data register, and then to be transmitted.
-        timeout = 2 * self->timeout_char;
-        #endif
-    }
+    #if defined(STM32G4)
+    // With using UART FIFO, the timeout should be long enough that FIFO becomes empty.
+    // Since previous data transfer may be ongoing, the timeout must be multiplied
+    // timeout_char by FIFO size + 1.
+    // STM32G4 has 8 words FIFO.
+    timeout = (8 + 1) * self->timeout_char;
+    #else
+    // The timeout specified here is for waiting for the TX data register to
+    // become empty (ie between chars), as well as for the final char to be
+    // completely transferred.  The default value for timeout_char is long
+    // enough for 1 char, but we need to double it to wait for the last char
+    // to be transferred to the data register, and then to be transmitted.
+    timeout = 2 * self->timeout_char;
+    #endif
 
     const uint8_t *src = (const uint8_t *)src_in;
     size_t num_tx = 0;
@@ -1169,7 +1229,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
                 data &= self->char_mask;
                 if (self->attached_to_repl && data == mp_interrupt_char) {
                     // Handle interrupt coming in on a UART REPL
-                    pendsv_kbd_intr();
+                    mp_sched_keyboard_interrupt();
                 } else {
                     if (self->char_width == CHAR_WIDTH_9BIT) {
                         ((uint16_t *)self->read_buf)[self->read_buf_head] = data;
@@ -1215,7 +1275,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
     }
 }
 
-STATIC mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uart_irq_config(self, false);
     self->mp_irq_trigger = new_trigger;
@@ -1223,7 +1283,7 @@ STATIC mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     return 0;
 }
 
-STATIC mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+static mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (info_type == MP_IRQ_INFO_FLAGS) {
         return self->mp_irq_flags;

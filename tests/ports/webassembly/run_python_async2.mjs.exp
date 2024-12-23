@@ -1,0 +1,8 @@
+_text await start
+_text awaited end
+_Response.text start
+_Response.text end
+OK
+_Response.text start
+_Response.text end
+OK

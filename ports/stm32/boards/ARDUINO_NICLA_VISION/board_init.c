@@ -65,11 +65,6 @@ void NICLAV_board_early_init(void) {
     }
     #endif
 
-    // Make sure PC2 and PC3 and PC2_C and PC3_C pads are connected
-    // through the analog switch for ULPI NXT and DIR pins.
-    HAL_SYSCFG_AnalogSwitchConfig(SYSCFG_SWITCH_PC2, SYSCFG_SWITCH_PC2_CLOSE);
-    HAL_SYSCFG_AnalogSwitchConfig(SYSCFG_SWITCH_PC3, SYSCFG_SWITCH_PC3_CLOSE);
-
     #if MICROPY_HW_USB_HS_ULPI3320
     // Make sure UPLI is Not in low-power mode.
     ulpi_leave_low_power();

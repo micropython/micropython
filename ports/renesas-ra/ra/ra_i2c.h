@@ -47,9 +47,9 @@ typedef enum
     RA_I2C_STATUS_AddrWriteCompleted = 3,
     RA_I2C_STATUS_DataWriteCompleted = 4,
     RA_I2C_STATUS_DataSendCompleted = 5,
-    RA_I2C_STATUS_FirstReceiveCompleted = 5,
-    RA_I2C_STATUS_LastReceiveCompleted = 6,
-    RA_I2C_STATUS_Stopped = 7,
+    RA_I2C_STATUS_FirstReceiveCompleted = 6,
+    RA_I2C_STATUS_LastReceiveCompleted = 7,
+    RA_I2C_STATUS_Stopped = 8,
 } xaction_status_t;
 
 typedef enum
@@ -64,6 +64,7 @@ typedef enum
 typedef struct {
     volatile uint32_t m_bytes_transferred;
     volatile uint32_t m_bytes_transfer;
+    uint32_t m_bytes_total;
     bool m_fread;
     uint8_t *buf;
     void *next;
@@ -75,7 +76,7 @@ typedef struct {
     uint32_t m_current;
     uint32_t m_address;
     volatile xaction_status_t m_status;
-    xaction_error_t m_error;
+    volatile xaction_error_t m_error;
     bool m_stop;
 } xaction_t;
 

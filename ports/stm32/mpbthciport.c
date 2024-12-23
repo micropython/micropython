@@ -41,10 +41,10 @@
 uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
 // Soft timer for scheduling a HCI poll.
-STATIC soft_timer_entry_t mp_bluetooth_hci_soft_timer;
+static soft_timer_entry_t mp_bluetooth_hci_soft_timer;
 
 // This is called by soft_timer and executes at IRQ_PRI_PENDSV.
-STATIC void mp_bluetooth_hci_soft_timer_callback(soft_timer_entry_t *self) {
+static void mp_bluetooth_hci_soft_timer_callback(soft_timer_entry_t *self) {
     mp_bluetooth_hci_poll_now();
 }
 
@@ -57,7 +57,7 @@ void mp_bluetooth_hci_init(void) {
         );
 }
 
-STATIC void mp_bluetooth_hci_start_polling(void) {
+static void mp_bluetooth_hci_start_polling(void) {
     mp_bluetooth_hci_poll_now();
 }
 
@@ -67,12 +67,12 @@ void mp_bluetooth_hci_poll_in_ms_default(uint32_t ms) {
 
 #if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 
-STATIC mp_sched_node_t mp_bluetooth_hci_sched_node;
+static mp_sched_node_t mp_bluetooth_hci_sched_node;
 
 // For synchronous mode, we run all BLE stack code inside a scheduled task.
 // This task is scheduled periodically via a soft timer, or
 // immediately on HCI UART RXIDLE.
-STATIC void run_events_scheduled_task(mp_sched_node_t *node) {
+static void run_events_scheduled_task(mp_sched_node_t *node) {
     // This will process all buffered HCI UART data, and run any callouts or events.
     (void)node;
     mp_bluetooth_hci_poll();
@@ -133,7 +133,7 @@ int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
 }
 
 // Callback to forward data from rfcore to the bluetooth hci handler.
-STATIC void mp_bluetooth_hci_uart_msg_cb(void *env, const uint8_t *buf, size_t len) {
+static void mp_bluetooth_hci_uart_msg_cb(void *env, const uint8_t *buf, size_t len) {
     mp_bluetooth_hci_uart_readchar_t handler = (mp_bluetooth_hci_uart_readchar_t)env;
     for (size_t i = 0; i < len; ++i) {
         handler(buf[i]);
@@ -170,7 +170,12 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     DEBUG_printf("mp_bluetooth_hci_uart_init (stm32)\n");
 
     // bits (8), stop (1), parity (none) and flow (rts/cts) are assumed to match MYNEWT_VAL_BLE_HCI_UART_ constants in syscfg.h.
+    #if MICROPY_PY_MACHINE_UART
     mp_bluetooth_hci_uart_obj.base.type = &machine_uart_type;
+    #else
+    // With machine.UART disabled this object is not user-accessible so doesn't need a type.
+    mp_bluetooth_hci_uart_obj.base.type = NULL;
+    #endif
     mp_bluetooth_hci_uart_obj.uart_id = port;
     mp_bluetooth_hci_uart_obj.is_static = true;
     // We don't want to block indefinitely, but expect flow control is doing its job.

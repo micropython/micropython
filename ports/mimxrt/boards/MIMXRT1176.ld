@@ -57,3 +57,7 @@ _gc_heap_end = ORIGIN(m_sdram) + LENGTH(m_sdram);
 _gc_heap_start = ORIGIN(m_ocrm);
 _gc_heap_end = ORIGIN(m_ocrm) + LENGTH(m_ocrm);
 #endif
+
+/* CM4 DTCM */
+_openamp_shm_region_start = 0x20220000;
+_openamp_shm_region_end  = 0x20230000;

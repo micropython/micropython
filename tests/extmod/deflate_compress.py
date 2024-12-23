@@ -146,3 +146,9 @@ for wbits in range(5, 10):
     next_len = len(result)
     print(next_len < prev_len and decompress(result, deflate.RAW, wbits) == buf)
     prev_len = next_len
+
+# Verify that compression is optimal: in the bytes below, the final "123" should be
+# compressed by referencing the "123" just before it, and not the one all the way back
+# at the start of the bytes.
+compressed = compress(b"1234567890abcdefghijklmnopqrstuvwxyz123123", deflate.RAW)
+print(len(compressed), compressed)

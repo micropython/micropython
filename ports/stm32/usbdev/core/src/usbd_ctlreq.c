@@ -120,6 +120,14 @@ USBD_StatusTypeDef  USBD_StdDevReq (USBD_HandleTypeDef *pdev , USBD_SetupReqType
 {
   USBD_StatusTypeDef ret = USBD_OK;
 
+  #if USBD_ENABLE_VENDOR_DEVICE_REQUESTS
+  // Pass through vendor device requests directly to the implementation.
+  // It must call `USBD_CtlError(pdev, req);` if it does not respond to the request.
+  if ((req->bmRequest & 0xe0) == 0xc0) {
+    return pdev->pClass->Setup (pdev, req);
+  }
+  #endif
+
   switch (req->bRequest)
   {
   case USB_REQ_GET_DESCRIPTOR:

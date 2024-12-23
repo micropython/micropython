@@ -28,7 +28,7 @@
 // Include Zephyr's autoconf.h, which should be made first by Zephyr makefiles
 #include "autoconf.h"
 // Included here to get basic Zephyr environment (macros, etc.)
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 
 // Usually passed from Makefile
 #ifndef MICROPY_HEAP_SIZE
@@ -83,3 +83,5 @@ typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM
+
+#define MICROPY_EVENT_POLL_HOOK

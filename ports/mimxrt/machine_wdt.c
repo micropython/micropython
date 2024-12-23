@@ -36,9 +36,9 @@ typedef struct _machine_wdt_obj_t {
     mp_obj_base_t base;
 } machine_wdt_obj_t;
 
-STATIC const machine_wdt_obj_t machine_wdt = {{&machine_wdt_type}};
+static const machine_wdt_obj_t machine_wdt = {{&machine_wdt_type}};
 
-STATIC machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
+static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
     // Verify the WDT id.
     if (id != 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("WDT(%d) doesn't exist"), id);
@@ -59,12 +59,12 @@ STATIC machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t
     return (machine_wdt_obj_t *)&machine_wdt;
 }
 
-STATIC void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
+static void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
     (void)self;
     WDOG_Refresh(WDOG1);
 }
 
-STATIC void mp_machine_wdt_timeout_ms_set(machine_wdt_obj_t *self, mp_int_t timeout_ms) {
+static void mp_machine_wdt_timeout_ms_set(machine_wdt_obj_t *self, mp_int_t timeout_ms) {
     (void)self;
 
     // confine to the valid range

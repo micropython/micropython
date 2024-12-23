@@ -59,13 +59,13 @@ static jmethodID List_size_mid;
 
 static jclass IndexException_class;
 
-STATIC const mp_obj_type_t jobject_type;
-STATIC const mp_obj_type_t jmethod_type;
+static const mp_obj_type_t jobject_type;
+static const mp_obj_type_t jmethod_type;
 
-STATIC mp_obj_t new_jobject(jobject jo);
-STATIC mp_obj_t new_jclass(jclass jc);
-STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool is_constr, size_t n_args, const mp_obj_t *args);
-STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out);
+static mp_obj_t new_jobject(jobject jo);
+static mp_obj_t new_jclass(jclass jc);
+static mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool is_constr, size_t n_args, const mp_obj_t *args);
+static bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out);
 
 typedef struct _mp_obj_jclass_t {
     mp_obj_base_t base;
@@ -87,7 +87,7 @@ typedef struct _mp_obj_jmethod_t {
 
 // Utility functions
 
-STATIC bool is_object_type(const char *jtypesig) {
+static bool is_object_type(const char *jtypesig) {
     while (*jtypesig != ' ' && *jtypesig) {
         if (*jtypesig == '.') {
             return true;
@@ -97,7 +97,7 @@ STATIC bool is_object_type(const char *jtypesig) {
     return false;
 }
 
-STATIC void check_exception(void) {
+static void check_exception(void) {
     jobject exc = JJ1(ExceptionOccurred);
     if (exc) {
         // JJ1(ExceptionDescribe);
@@ -110,7 +110,7 @@ STATIC void check_exception(void) {
     }
 }
 
-STATIC void print_jobject(const mp_print_t *print, jobject obj) {
+static void print_jobject(const mp_print_t *print, jobject obj) {
     jobject str_o = JJ(CallObjectMethod, obj, Object_toString_mid);
     const char *str = JJ(GetStringUTFChars, str_o, NULL);
     mp_printf(print, str);
@@ -119,7 +119,7 @@ STATIC void print_jobject(const mp_print_t *print, jobject obj) {
 
 // jclass
 
-STATIC void jclass_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void jclass_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_jclass_t *self = MP_OBJ_TO_PTR(self_in);
     if (kind == PRINT_REPR) {
         mp_printf(print, "<jclass @%p \"", self->cls);
@@ -130,7 +130,7 @@ STATIC void jclass_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     }
 }
 
-STATIC void jclass_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
+static void jclass_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // load attribute
         mp_obj_jclass_t *self = MP_OBJ_TO_PTR(self_in);
@@ -156,7 +156,7 @@ STATIC void jclass_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t jclass_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t jclass_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (n_kw != 0) {
         mp_raise_TypeError(MP_ERROR_TEXT("kwargs not supported"));
     }
@@ -167,14 +167,14 @@ STATIC mp_obj_t jclass_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     return call_method(self->cls, NULL, methods, true, n_args, args);
 }
 
-STATIC const mp_rom_map_elem_t jclass_locals_dict_table[] = {
+static const mp_rom_map_elem_t jclass_locals_dict_table[] = {
 //    { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&ffivar_get_obj) },
 //    { MP_ROM_QSTR(MP_QSTR_set), MP_ROM_PTR(&ffivar_set_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(jclass_locals_dict, jclass_locals_dict_table);
+static MP_DEFINE_CONST_DICT(jclass_locals_dict, jclass_locals_dict_table);
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     jclass_type,
     MP_QSTR_jclass,
     MP_TYPE_FLAG_NONE,
@@ -184,7 +184,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &jclass_locals_dict
     );
 
-STATIC mp_obj_t new_jclass(jclass jc) {
+static mp_obj_t new_jclass(jclass jc) {
     mp_obj_jclass_t *o = mp_obj_malloc(mp_obj_jclass_t, &jclass_type);
     o->cls = jc;
     return MP_OBJ_FROM_PTR(o);
@@ -192,7 +192,7 @@ STATIC mp_obj_t new_jclass(jclass jc) {
 
 // jobject
 
-STATIC void jobject_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void jobject_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_jobject_t *self = MP_OBJ_TO_PTR(self_in);
     if (kind == PRINT_REPR) {
         mp_printf(print, "<jobject @%p \"", self->obj);
@@ -203,7 +203,7 @@ STATIC void jobject_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
 }
 
-STATIC void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
+static void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // load attribute
         mp_obj_jobject_t *self = MP_OBJ_TO_PTR(self_in);
@@ -233,7 +233,7 @@ STATIC void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
     }
 }
 
-STATIC void get_jclass_name(jobject obj, char *buf) {
+static void get_jclass_name(jobject obj, char *buf) {
     jclass obj_class = JJ(GetObjectClass, obj);
     jstring name = JJ(CallObjectMethod, obj_class, Class_getName_mid);
     jint len = JJ(GetStringLength, name);
@@ -241,7 +241,7 @@ STATIC void get_jclass_name(jobject obj, char *buf) {
     check_exception();
 }
 
-STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+static mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_jobject_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t idx = mp_obj_get_int(index);
     char class_name[64];
@@ -291,7 +291,7 @@ STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
     return MP_OBJ_NULL;
 }
 
-STATIC mp_obj_t jobject_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+static mp_obj_t jobject_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_jobject_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL:
@@ -309,19 +309,19 @@ STATIC mp_obj_t jobject_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 
 // TODO: subscr_load_adaptor & subscr_getiter convenience functions
 // should be moved to common location for reuse.
-STATIC mp_obj_t subscr_load_adaptor(mp_obj_t self_in, mp_obj_t index_in) {
+static mp_obj_t subscr_load_adaptor(mp_obj_t self_in, mp_obj_t index_in) {
     return mp_obj_subscr(self_in, index_in, MP_OBJ_SENTINEL);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(subscr_load_adaptor_obj, subscr_load_adaptor);
 
 // .getiter special method which returns iterator which works in terms
 // of object subscription.
-STATIC mp_obj_t subscr_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
+static mp_obj_t subscr_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     mp_obj_t dest[2] = {MP_OBJ_FROM_PTR(&subscr_load_adaptor_obj), self_in};
     return mp_obj_new_getitem_iter(dest, iter_buf);
 }
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     jobject_type,
     MP_QSTR_jobject,
     MP_TYPE_FLAG_ITER_IS_GETITER,
@@ -332,12 +332,12 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     iter, subscr_getiter
     );
 
-STATIC mp_obj_t new_jobject(jobject jo) {
+static mp_obj_t new_jobject(jobject jo) {
     if (jo == NULL) {
         return mp_const_none;
     } else if (JJ(IsInstanceOf, jo, String_class)) {
         const char *s = JJ(GetStringUTFChars, jo, NULL);
-        mp_obj_t ret = mp_obj_new_str(s, strlen(s));
+        mp_obj_t ret = mp_obj_new_str_from_cstr(s);
         JJ(ReleaseStringUTFChars, jo, s);
         return ret;
     } else if (JJ(IsInstanceOf, jo, Class_class)) {
@@ -353,7 +353,7 @@ STATIC mp_obj_t new_jobject(jobject jo) {
 
 // jmethod
 
-STATIC void jmethod_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void jmethod_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_jmethod_t *self = MP_OBJ_TO_PTR(self_in);
     // Variable value printed as cast to int
@@ -368,14 +368,14 @@ STATIC void jmethod_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     } \
     arg_type += sizeof(java_type_name) - 1;
 
-STATIC const char *strprev(const char *s, char c) {
+static const char *strprev(const char *s, char c) {
     while (*s != c) {
         s--;
     }
     return s;
 }
 
-STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
+static bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
     const char *arg_type = *jtypesig;
     const mp_obj_type_t *type = mp_obj_get_type(arg);
 
@@ -442,7 +442,7 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
 // perspective, it's aggregate object which may require passing via stack
 // instead of registers. Work that around by passing jobject and typecasting
 // it.
-STATIC mp_obj_t jvalue2py(const char *jtypesig, jobject arg) {
+static mp_obj_t jvalue2py(const char *jtypesig, jobject arg) {
     if (arg == NULL || MATCH(jtypesig, "void")) {
         return mp_const_none;
     } else if (MATCH(jtypesig, "boolean")) {
@@ -460,7 +460,7 @@ STATIC mp_obj_t jvalue2py(const char *jtypesig, jobject arg) {
 }
 #endif
 
-STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool is_constr, size_t n_args, const mp_obj_t *args) {
+static mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool is_constr, size_t n_args, const mp_obj_t *args) {
     jvalue jargs[n_args];
 //    printf("methods=%p\n", methods);
     jsize num_methods = JJ(GetArrayLength, methods);
@@ -550,7 +550,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
 }
 
 
-STATIC mp_obj_t jmethod_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t jmethod_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (n_kw != 0) {
         mp_raise_TypeError(MP_ERROR_TEXT("kwargs not supported"));
     }
@@ -568,7 +568,7 @@ STATIC mp_obj_t jmethod_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     return call_method(self->obj, name, methods, false, n_args, args);
 }
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     jmethod_type,
     MP_QSTR_jmethod,
     MP_TYPE_FLAG_NONE,
@@ -582,7 +582,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
 #define LIBJVM_SO "libjvm.so"
 #endif
 
-STATIC void create_jvm(void) {
+static void create_jvm(void) {
     JavaVMInitArgs args;
     JavaVMOption options;
     options.optionString = "-Djava.class.path=.";
@@ -635,7 +635,7 @@ STATIC void create_jvm(void) {
     IndexException_class = JJ(FindClass, "java/lang/IndexOutOfBoundsException");
 }
 
-STATIC mp_obj_t mod_jni_cls(mp_obj_t cls_name_in) {
+static mp_obj_t mod_jni_cls(mp_obj_t cls_name_in) {
     const char *cls_name = mp_obj_str_get_str(cls_name_in);
     if (!env) {
         create_jvm();
@@ -648,7 +648,7 @@ STATIC mp_obj_t mod_jni_cls(mp_obj_t cls_name_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_jni_cls_obj, mod_jni_cls);
 
-STATIC mp_obj_t mod_jni_array(mp_obj_t type_in, mp_obj_t size_in) {
+static mp_obj_t mod_jni_array(mp_obj_t type_in, mp_obj_t size_in) {
     if (!env) {
         create_jvm();
     }
@@ -696,19 +696,19 @@ STATIC mp_obj_t mod_jni_array(mp_obj_t type_in, mp_obj_t size_in) {
 MP_DEFINE_CONST_FUN_OBJ_2(mod_jni_array_obj, mod_jni_array);
 
 
-STATIC mp_obj_t mod_jni_env(void) {
+static mp_obj_t mod_jni_env(void) {
     return mp_obj_new_int((mp_int_t)(uintptr_t)env);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mod_jni_env_obj, mod_jni_env);
 
-STATIC const mp_rom_map_elem_t mp_module_jni_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_jni_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_jni) },
     { MP_ROM_QSTR(MP_QSTR_cls), MP_ROM_PTR(&mod_jni_cls_obj) },
     { MP_ROM_QSTR(MP_QSTR_array), MP_ROM_PTR(&mod_jni_array_obj) },
     { MP_ROM_QSTR(MP_QSTR_env), MP_ROM_PTR(&mod_jni_env_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_jni_globals, mp_module_jni_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_jni_globals, mp_module_jni_globals_table);
 
 const mp_obj_module_t mp_module_jni = {
     .base = { &mp_type_module },

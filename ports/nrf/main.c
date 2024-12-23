@@ -31,6 +31,7 @@
 
 #include "py/nlr.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "py/lexer.h"
 #include "py/parse.h"
 #include "py/obj.h"
@@ -53,7 +54,6 @@
 #include "i2c.h"
 #include "adc.h"
 #include "rtcounter.h"
-#include "mphalport.h"
 
 #if MICROPY_PY_MACHINE_HW_PWM
 #include "pwm.h"
@@ -73,7 +73,7 @@
 #include "softpwm.h"
 #endif
 
-#if MICROPY_HW_USB_CDC
+#if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
 #include "usb_cdc.h"
 #endif
 
@@ -107,7 +107,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 extern uint32_t _heap_start;
 extern uint32_t _heap_end;
 
-int main(int argc, char **argv) {
+void NORETURN _start(void) {
     // Hook for a board to run code at start up, for example check if a
     // bootloader should be entered instead of the main application.
     MICROPY_BOARD_STARTUP();
@@ -137,7 +137,7 @@ soft_reset:
     mp_init();
     readline_init0();
 
-    #if MICROPY_PY_MACHINE_HW_SPI
+    #if MICROPY_PY_MACHINE_SPI
     spi_init0();
     #endif
 
@@ -165,13 +165,13 @@ soft_reset:
     uart_init0();
     #endif
 
-    #if (MICROPY_PY_BLE_NUS == 0) && (MICROPY_HW_USB_CDC == 0)
+    #if MICROPY_HW_ENABLE_UART_REPL
     {
         mp_obj_t args[2] = {
-            MP_OBJ_NEW_SMALL_INT(0),
-            MP_OBJ_NEW_SMALL_INT(115200),
+            MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL),
+            MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL_BAUD),
         };
-        MP_STATE_PORT(board_stdio_uart) = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, MP_ARRAY_SIZE(args), 0, args);
+        MP_STATE_VM(dupterm_objs[0]) = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
     #endif
 
@@ -191,6 +191,9 @@ soft_reset:
 
     if (ret != 0) {
         printf("MPY: can't mount flash\n");
+    } else {
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
     }
     #endif
 
@@ -258,14 +261,16 @@ soft_reset:
 
     led_state(1, 0);
 
-    #if MICROPY_HW_USB_CDC
+    #if MICROPY_VFS || MICROPY_MBFS || MICROPY_MODULE_FROZEN
+    ret_code = pyexec_file_if_exists("boot.py");
+    #endif
+
+    #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
     usb_cdc_init();
     #endif
 
     #if MICROPY_VFS || MICROPY_MBFS || MICROPY_MODULE_FROZEN
-    // run boot.py and main.py if they exist.
-    ret = pyexec_file_if_exists("boot.py");
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret_code != 0) {
         pyexec_file_if_exists("main.py");
     }
     #endif
@@ -296,8 +301,6 @@ soft_reset:
     #endif
 
     goto soft_reset;
-
-    return 0;
 }
 
 #if !MICROPY_VFS
@@ -365,8 +368,4 @@ void nlr_jump_fail(void *val) {
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
     printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
     __fatal_error("Assertion failed");
-}
-
-void _start(void) {
-    main(0, NULL);
 }

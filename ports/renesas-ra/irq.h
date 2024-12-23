@@ -54,11 +54,26 @@ extern uint32_t irq_stats[IRQ_STATS_MAX];
 #define IRQ_EXIT(irq)
 #endif
 
+// We have inlined IRQ functions for efficiency (they are generally
+// 1 machine instruction).
+//
+// Note on IRQ state: you should not need to know the specific
+// value of the state variable, but rather just pass the return
+// value from disable_irq back to enable_irq.
+
 static inline uint32_t query_irq(void) {
     return __get_PRIMASK();
 }
 
-// enable_irq and disable_irq are defined inline in mpconfigport.h
+static inline void enable_irq(mp_uint_t state) {
+    __set_PRIMASK(state);
+}
+
+static inline mp_uint_t disable_irq(void) {
+    mp_uint_t state = __get_PRIMASK();
+    __disable_irq();
+    return state;
+}
 
 #if __CORTEX_M >= 0x03
 

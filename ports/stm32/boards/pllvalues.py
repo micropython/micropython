@@ -228,26 +228,24 @@ def print_table(hse, valid_plls):
     print("found %u valid configurations" % len(valid_plls))
 
 
-def search_header_for_hsx_values(filename, vals):
-    regex_inc = re.compile(r'#include "(boards/[A-Za-z0-9_./]+)"')
-    regex_def = re.compile(r"#define +(HSE_VALUE|HSI_VALUE) +\((\(uint32_t\))?([0-9]+)\)")
+def search_header_for_hsx_values(filename):
+    hse = hsi = None
+    regex_def = re.compile(
+        r"static.* +(micropy_hw_hs[ei]_value) = +([0-9 +-/\*()]+);",
+    )
     with open(filename) as f:
         for line in f:
             line = line.strip()
-            m = regex_inc.match(line)
-            if m:
-                # Search included file
-                search_header_for_hsx_values(m.group(1), vals)
-                continue
             m = regex_def.match(line)
             if m:
                 # Found HSE_VALUE or HSI_VALUE
-                val = int(m.group(3)) // 1000000
-                if m.group(1) == "HSE_VALUE":
-                    vals[0] = val
+                found = m.group(2)
+                val = eval(found) // 1000000
+                if m.group(1) == "micropy_hw_hse_value":
+                    hse = val
                 else:
-                    vals[1] = val
-    return vals
+                    hsi = val
+    return hse, hsi
 
 
 def main():
@@ -280,9 +278,9 @@ def main():
 
     if argv[0].startswith("file:"):
         # extract HSE_VALUE, and optionally HSI_VALUE, from header file
-        hse, hsi = search_header_for_hsx_values(argv[0][5:], [None, None])
+        hse, hsi = search_header_for_hsx_values(argv[0][5:])
         if hse is None:
-            raise ValueError("%s does not contain a definition of HSE_VALUE" % argv[0])
+            raise ValueError("%s does not contain a definition of micropy_hw_hse_value" % argv[0])
     else:
         # HSE given directly as an integer
         hse = int(argv[0])

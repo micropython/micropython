@@ -31,12 +31,25 @@ The MicroPython REPL is accessed via the USB serial port. Tab-completion is usef
 find out what methods an object has. Paste mode (ctrl-E) is useful to paste a
 large slab of Python code into the REPL.
 
-The :mod:`machine` module::
+The :mod:`machine` module:
+
+machine.freq() allows to change the MCU frequency and control the peripheral
+frequency for UART and SPI. Usage::
+
+    machine.freq(MCU_frequency[, peripheral_frequency=48_000_000])
+
+The MCU frequency can be set in a range from less than 48 MHz to about 250MHz.
+The default at boot time is 125 MHz. The peripheral frequency must be either
+48 MHz or identical to the MCU frequency, with 48 MHz as the default.
+If the peripheral frequency is changed, any already existing instance of
+UART and SPI will change it's baud rate and may have to be re-configured::
 
     import machine
 
     machine.freq()          # get the current frequency of the CPU
-    machine.freq(240000000) # set the CPU frequency to 240 MHz
+    machine.freq(240000000) # set the CPU frequency to 240 MHz and keep
+                            # the UART frequency at 48MHz
+    machine.freq(125000000, 125000000) # set the CPU and UART frequency to 125 MHz
 
 The :mod:`rp2` module::
 
@@ -187,6 +200,14 @@ Use the :ref:`machine.ADC <machine.ADC>` class::
     adc = ADC(Pin(26))     # create ADC object on ADC pin
     adc.read_u16()         # read value, 0-65535 across voltage range 0.0v - 3.3v
 
+The argument of the constructor ADC specifies either a Pin by number, name of as
+Pin object, or a channel number in the range 0 - 3 or ADC.CORE_TEMP for the
+internal temperature sensor. If a pin is specified,
+the pin is initialized in high-Z mode. If a channel number is used, the pin
+is not initialized and configuring is left to the user code. After hard reset,
+RP2040 pins operate in current sink mode at about 60µA. If the pin is not
+otherwise configured, that may lead to wrong ADC readings.
+
 Software SPI bus
 ----------------
 
@@ -289,8 +310,9 @@ See :ref:`machine.RTC <machine.RTC>` ::
     from machine import RTC
 
     rtc = RTC()
-    rtc.datetime((2017, 8, 23, 2, 12, 48, 0, 0)) # set a specific date and
+    rtc.datetime((2017, 8, 23, 0, 1, 12, 48, 0)) # set a specific date and
                                                  # time, eg. 2017/8/23 1:12:48
+                                                 # the day-of-week value is ignored
     rtc.datetime() # get date and time
 
 WDT (Watchdog timer)

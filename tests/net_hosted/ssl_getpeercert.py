@@ -1,7 +1,14 @@
 # test ssl.getpeercert() method
 
+import io
 import socket
 import ssl
+
+s_test = ssl.wrap_socket(io.BytesIO(), server_side=True, do_handshake=False)
+s_test.close()
+if not hasattr(s_test, "getpeercert"):
+    print("SKIP")
+    raise SystemExit
 
 
 def test(peer_addr):

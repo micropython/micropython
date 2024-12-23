@@ -26,6 +26,7 @@
 
 #include <string.h>
 #include "py/mphal.h"
+#include "shared/tinyusb/mp_usbd_cdc.h"
 
 #include <esp_system.h>
 #include <esp_ota_ops.h>
@@ -33,9 +34,6 @@
 
 #include "double_tap.h"
 #include "usb.h"
-
-#include "tinyusb.h"
-#include "tusb_cdc_acm.h"
 
 #define LED_RED     GPIO_NUM_46
 #define LED_GREEN   GPIO_NUM_0
@@ -84,12 +82,6 @@ void NANO_ESP32_enter_bootloader(void) {
     }
 
     esp_restart();
-}
-
-void NANO_ESP32_usb_callback_line_state_changed(int itf, void *event_in) {
-    extern void mp_usbd_line_state_cb(uint8_t itf, bool dtr, bool rts);
-    cdcacm_event_t *event = event_in;
-    mp_usbd_line_state_cb(itf, event->line_state_changed_data.dtr, event->line_state_changed_data.rts);
 }
 
 void NANO_ESP32_board_startup(void) {

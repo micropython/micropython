@@ -17,11 +17,11 @@ Now you have all files at hand that you will need for updating.
 
 2. Push and hold the "Boot" button, then press "Reset", and release both buttons.
 
-3. Run the commands: 
+3. Run the commands:
 
 ```
-sudo ./sdphost -u 0x1fc9,0x0145 -- write-file 0x20206400 tinyuf2-imxrt1010_evk-0.9.0.bin 
-sudo ./sdphost -u 0x1fc9,0x0145 -- jump-address 0x20207000 
+sudo ./sdphost -u 0x1fc9,0x0145 -- write-file 0x20206400 tinyuf2-imxrt1010_evk-0.9.0.bin
+sudo ./sdphost -u 0x1fc9,0x0145 -- jump-address 0x20207000
 ```
 Wait until a drive icon appears on the computer (or mount it explicitly), and then run:
 ```
@@ -32,7 +32,7 @@ You can put all of that in a script. Just add a short wait before the 3rd comman
 4. Once the upload is finished, push Reset again.
 
 Using sudo is Linux specific. You may not need it at all, if the access rights are set properly,
-and you will not need it for Windows. 
+and you will not need it for Windows.
 
 Once the generic boot-loader is available, this procedure is only required for the first
 firmware load or in case the flash is corrupted and the existing firmware is not functioning

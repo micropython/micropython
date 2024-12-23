@@ -8,3 +8,5 @@ world
 took 200 200
 task_raise
 ValueError
+task_raise
+ValueError

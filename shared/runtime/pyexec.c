@@ -44,10 +44,9 @@
 #include "genhdr/mpversion.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
-int pyexec_system_exit = 0;
 
 #if MICROPY_REPL_INFO
-STATIC bool repl_display_debugging_info = 0;
+static bool repl_display_debugging_info = 0;
 #endif
 
 #define EXEC_FLAG_PRINT_EOF             (1 << 0)
@@ -64,7 +63,7 @@ STATIC bool repl_display_debugging_info = 0;
 // EXEC_FLAG_PRINT_EOF prints 2 EOF chars: 1 after normal output, 1 after exception output
 // EXEC_FLAG_ALLOW_DEBUGGING allows debugging info to be printed after executing the code
 // EXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
-STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input_kind, mp_uint_t exec_flags) {
+static int parse_compile_execute(const void *source, mp_parse_input_kind_t input_kind, mp_uint_t exec_flags) {
     int ret = 0;
     #if MICROPY_REPL_INFO
     uint32_t start = 0;
@@ -73,9 +72,6 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     #ifdef MICROPY_BOARD_BEFORE_PYTHON_EXEC
     MICROPY_BOARD_BEFORE_PYTHON_EXEC(input_kind, exec_flags);
     #endif
-
-    // by default a SystemExit exception returns 0
-    pyexec_system_exit = 0;
 
     nlr_buf_t nlr;
     nlr.ret_val = NULL;
@@ -88,7 +84,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
             ctx->module.globals = mp_globals_get();
             ctx->constants = frozen->constants;
-            module_fun = mp_make_function_from_raw_code(frozen->rc, ctx, NULL);
+            module_fun = mp_make_function_from_proto_fun(frozen->proto_fun, ctx, NULL);
         } else
         #endif
         {
@@ -146,7 +142,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         // check for SystemExit
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // at the moment, the value of SystemExit is unused
-            ret = pyexec_system_exit;
+            ret = PYEXEC_FORCED_EXIT;
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
             ret = 0;
@@ -201,7 +197,7 @@ typedef struct _mp_reader_stdin_t {
     uint16_t window_remain;
 } mp_reader_stdin_t;
 
-STATIC mp_uint_t mp_reader_stdin_readbyte(void *data) {
+static mp_uint_t mp_reader_stdin_readbyte(void *data) {
     mp_reader_stdin_t *reader = (mp_reader_stdin_t *)data;
 
     if (reader->eof) {
@@ -233,7 +229,7 @@ STATIC mp_uint_t mp_reader_stdin_readbyte(void *data) {
     return c;
 }
 
-STATIC void mp_reader_stdin_close(void *data) {
+static void mp_reader_stdin_close(void *data) {
     mp_reader_stdin_t *reader = (mp_reader_stdin_t *)data;
     if (!reader->eof) {
         reader->eof = true;
@@ -247,7 +243,7 @@ STATIC void mp_reader_stdin_close(void *data) {
     }
 }
 
-STATIC void mp_reader_new_stdin(mp_reader_t *reader, mp_reader_stdin_t *reader_stdin, uint16_t buf_max) {
+static void mp_reader_new_stdin(mp_reader_t *reader, mp_reader_stdin_t *reader_stdin, uint16_t buf_max) {
     // Make flow-control window half the buffer size, and indicate to the host that 2x windows are
     // free (sending the window size implicitly indicates that a window is free, and then the 0x01
     // indicates that another window is free).
@@ -263,7 +259,7 @@ STATIC void mp_reader_new_stdin(mp_reader_t *reader, mp_reader_stdin_t *reader_s
     reader->close = mp_reader_stdin_close;
 }
 
-STATIC int do_reader_stdin(int c) {
+static int do_reader_stdin(int c) {
     if (c != 'A') {
         // Unsupported command.
         mp_hal_stdout_tx_strn("R\x00", 2);
@@ -294,8 +290,8 @@ typedef struct _repl_t {
 
 repl_t repl;
 
-STATIC int pyexec_raw_repl_process_char(int c);
-STATIC int pyexec_friendly_repl_process_char(int c);
+static int pyexec_raw_repl_process_char(int c);
+static int pyexec_friendly_repl_process_char(int c);
 
 void pyexec_event_repl_init(void) {
     MP_STATE_VM(repl_line) = vstr_new(32);
@@ -310,7 +306,7 @@ void pyexec_event_repl_init(void) {
     }
 }
 
-STATIC int pyexec_raw_repl_process_char(int c) {
+static int pyexec_raw_repl_process_char(int c) {
     if (c == CHAR_CTRL_A) {
         // reset raw REPL
         if (vstr_len(MP_STATE_VM(repl_line)) == 2 && vstr_str(MP_STATE_VM(repl_line))[0] == CHAR_CTRL_E) {
@@ -364,7 +360,7 @@ reset:
     return 0;
 }
 
-STATIC int pyexec_friendly_repl_process_char(int c) {
+static int pyexec_friendly_repl_process_char(int c) {
     if (repl.paste_mode) {
         if (c == CHAR_CTRL_C) {
             // cancel everything

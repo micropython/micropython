@@ -112,7 +112,7 @@ Check that you have Python available on your system:
 .. code-block:: bash
 
    $ python3
-   Python 3.5.0 (default, Jul 17 2020, 14:04:10) 
+   Python 3.5.0 (default, Jul 17 2020, 14:04:10)
    [GCC 5.4.0 20160609] on linux
    Type "help", "copyright", "credits" or "license" for more information.
    >>> 
@@ -278,7 +278,7 @@ To run a selection of tests on a board/device connected over USB use:
 .. code-block:: bash
 
    $ cd tests
-   $ ./run-tests.py --target minimal --device /dev/ttyACM0
+   $ ./run-tests.py -t /dev/ttyACM0
 
 See also :ref:`writingtests`.
 

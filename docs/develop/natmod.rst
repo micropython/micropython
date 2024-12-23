@@ -39,7 +39,8 @@ options for the ``ARCH`` variable, see below):
 * ``armv7emsp`` (ARM Thumb 2, single precision float, eg Cortex-M4F, Cortex-M7)
 * ``armv7emdp`` (ARM Thumb 2, double precision float, eg Cortex-M7)
 * ``xtensa`` (non-windowed, eg ESP8266)
-* ``xtensawin`` (windowed with window size 8, eg ESP32)
+* ``xtensawin`` (windowed with window size 8, eg ESP32, ESP32S3)
+* ``rv32imc`` (RISC-V 32 bits with compressed instructions, eg ESP32C3, ESP32C6)
 
 When compiling and linking the native .mpy file the architecture must be chosen
 and the corresponding file can only be imported on that architecture.  For more
@@ -128,7 +129,7 @@ The file ``factorial.c`` contains:
     #include "py/dynruntime.h"
 
     // Helper function to compute factorial
-    STATIC mp_int_t factorial_helper(mp_int_t x) {
+    static mp_int_t factorial_helper(mp_int_t x) {
         if (x == 0) {
             return 1;
         }
@@ -136,7 +137,7 @@ The file ``factorial.c`` contains:
     }
 
     // This is the function which will be called from Python, as factorial(x)
-    STATIC mp_obj_t factorial(mp_obj_t x_obj) {
+    static mp_obj_t factorial(mp_obj_t x_obj) {
         // Extract the integer from the MicroPython input object
         mp_int_t x = mp_obj_get_int(x_obj);
         // Calculate the factorial
@@ -145,7 +146,7 @@ The file ``factorial.c`` contains:
         return mp_obj_new_int(result);
     }
     // Define a Python reference to the function above
-    STATIC MP_DEFINE_CONST_FUN_OBJ_1(factorial_obj, factorial);
+    static MP_DEFINE_CONST_FUN_OBJ_1(factorial_obj, factorial);
 
     // This is the entry point and is called when the module is imported
     mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
@@ -172,7 +173,7 @@ The file ``Makefile`` contains:
     # Source files (.c or .py)
     SRC = factorial.c
 
-    # Architecture to build for (x86, x64, armv6m, armv7m, xtensa, xtensawin)
+    # Architecture to build for (x86, x64, armv6m, armv7m, xtensa, xtensawin, rv32imc)
     ARCH = x64
 
     # Include to get the rules for compiling and linking the module

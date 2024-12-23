@@ -1,4 +1,8 @@
 # Test Lock class
+#
+# This test has a corresponding .exp file because it tests a very specific ordering of
+# events when cancelling a task waiting on a lock, and that ordering should not change
+# (even though it does match CPython's output).
 
 try:
     import asyncio

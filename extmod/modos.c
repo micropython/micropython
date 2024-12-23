@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 
@@ -48,6 +49,13 @@
 #include "extmod/vfs_posix.h"
 #endif
 
+#if MICROPY_MBFS
+#if MICROPY_VFS
+#error "MICROPY_MBFS requires MICROPY_VFS to be disabled"
+#endif
+#include "ports/nrf/modules/os/microbitfs.h"
+#endif
+
 #if MICROPY_PY_OS_UNAME
 #include "genhdr/mpversion.h"
 #endif
@@ -65,11 +73,12 @@
 #if MICROPY_PY_OS_SYNC
 // sync()
 // Sync all filesystems.
-STATIC mp_obj_t mp_os_sync(void) {
+static mp_obj_t mp_os_sync(void) {
     #if MICROPY_VFS_FAT
     for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
-        // this assumes that vfs->obj is fs_user_mount_t with block device functions
-        disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
+        if (mp_obj_is_type(vfs->obj, &mp_fat_vfs_type)) {
+            disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
+        }
     }
     #endif
     return mp_const_none;
@@ -85,20 +94,20 @@ MP_DEFINE_CONST_FUN_OBJ_0(mp_os_sync_obj, mp_os_sync);
 #define CONST_RELEASE const
 #endif
 
-STATIC const qstr mp_os_uname_info_fields[] = {
+static const qstr mp_os_uname_info_fields[] = {
     MP_QSTR_sysname,
     MP_QSTR_nodename,
     MP_QSTR_release,
     MP_QSTR_version,
     MP_QSTR_machine
 };
-STATIC const MP_DEFINE_STR_OBJ(mp_os_uname_info_sysname_obj, MICROPY_PY_SYS_PLATFORM);
-STATIC const MP_DEFINE_STR_OBJ(mp_os_uname_info_nodename_obj, MICROPY_PY_SYS_PLATFORM);
-STATIC CONST_RELEASE MP_DEFINE_STR_OBJ(mp_os_uname_info_release_obj, MICROPY_VERSION_STRING);
-STATIC const MP_DEFINE_STR_OBJ(mp_os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE MICROPY_BUILD_TYPE_PAREN);
-STATIC const MP_DEFINE_STR_OBJ(mp_os_uname_info_machine_obj, MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME);
+static const MP_DEFINE_STR_OBJ(mp_os_uname_info_sysname_obj, MICROPY_PY_SYS_PLATFORM);
+static const MP_DEFINE_STR_OBJ(mp_os_uname_info_nodename_obj, MICROPY_PY_SYS_PLATFORM);
+static CONST_RELEASE MP_DEFINE_STR_OBJ(mp_os_uname_info_release_obj, MICROPY_VERSION_STRING);
+static const MP_DEFINE_STR_OBJ(mp_os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE MICROPY_BUILD_TYPE_PAREN);
+static const MP_DEFINE_STR_OBJ(mp_os_uname_info_machine_obj, MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME);
 
-STATIC MP_DEFINE_ATTRTUPLE(
+static MP_DEFINE_ATTRTUPLE(
     mp_os_uname_info_obj,
     mp_os_uname_info_fields,
     5,
@@ -109,7 +118,7 @@ STATIC MP_DEFINE_ATTRTUPLE(
     MP_ROM_PTR(&mp_os_uname_info_machine_obj)
     );
 
-STATIC mp_obj_t mp_os_uname(void) {
+static mp_obj_t mp_os_uname(void) {
     #if MICROPY_PY_OS_UNAME_RELEASE_DYNAMIC
     const char *release = mp_os_uname_release();
     mp_os_uname_info_release_obj.len = strlen(release);
@@ -117,20 +126,32 @@ STATIC mp_obj_t mp_os_uname(void) {
     #endif
     return MP_OBJ_FROM_PTR(&mp_os_uname_info_obj);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_os_uname_obj, mp_os_uname);
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_os_uname_obj, mp_os_uname);
 
 #endif
 
-STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
+#if MICROPY_PY_OS_DUPTERM_NOTIFY
+static mp_obj_t mp_os_dupterm_notify(mp_obj_t obj_in) {
+    (void)obj_in;
+    for (;;) {
+        int c = mp_os_dupterm_rx_chr();
+        if (c < 0) {
+            break;
+        }
+        ringbuf_put(&stdin_ringbuf, c);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_os_dupterm_notify_obj, mp_os_dupterm_notify);
+#endif
+
+static const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_os) },
 
     #if MICROPY_PY_OS_GETENV_PUTENV_UNSETENV
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mp_os_getenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_putenv), MP_ROM_PTR(&mp_os_putenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_unsetenv), MP_ROM_PTR(&mp_os_unsetenv_obj) },
-    #endif
-    #if MICROPY_PY_OS_SEP
-    { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
     #endif
     #if MICROPY_PY_OS_SYNC
     { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&mp_os_sync_obj) },
@@ -146,16 +167,19 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     #endif
 
     #if MICROPY_VFS
+    { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
     { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&mp_vfs_chdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&mp_vfs_getcwd_obj) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&mp_vfs_listdir_obj) },
+    #if MICROPY_VFS_WRITABLE
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mp_vfs_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&mp_vfs_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&mp_vfs_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&mp_vfs_rmdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mp_vfs_remove_obj) }, // unlink aliases to remove
+    #endif
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mp_vfs_stat_obj) },
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mp_vfs_statvfs_obj) },
-    { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mp_vfs_remove_obj) }, // unlink aliases to remove
     #endif
 
     // The following are MicroPython extensions.
@@ -172,6 +196,10 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
 
     #if MICROPY_VFS
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mp_vfs_ilistdir_obj) },
+    #endif
+
+    // The following MicroPython extensions are deprecated.  Use the `vfs` module instead.
+    #if !MICROPY_PREVIEW_VERSION_2 && MICROPY_VFS
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },
     #if MICROPY_VFS_FAT
@@ -187,8 +215,16 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_VfsPosix), MP_ROM_PTR(&mp_type_vfs_posix) },
     #endif
     #endif
+
+    #if MICROPY_MBFS
+    // For special micro:bit filesystem only.
+    { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&os_mbfs_listdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&os_mbfs_ilistdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&os_mbfs_stat_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&os_mbfs_remove_obj) },
+    #endif
 };
-STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
+static MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
 const mp_obj_module_t mp_module_os = {
     .base = { &mp_type_module },

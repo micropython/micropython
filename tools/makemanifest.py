@@ -245,7 +245,11 @@ def main():
             b'#include "py/emitglue.h"\n'
             b"extern const qstr_pool_t mp_qstr_const_pool;\n"
             b"const qstr_pool_t mp_qstr_frozen_const_pool = {\n"
-            b"    (qstr_pool_t*)&mp_qstr_const_pool, MP_QSTRnumber_of, 0, 0\n"
+            b"    #if MICROPY_QSTR_BYTES_IN_HASH\n"
+            b"    (qstr_pool_t*)&mp_qstr_const_pool, MP_QSTRnumber_of, 0, 0, 0, NULL, NULL, {},\n"
+            b"    #else\n"
+            b"    (qstr_pool_t*)&mp_qstr_const_pool, MP_QSTRnumber_of, 0, 0, 0, NULL, {},\n"
+            b"    #endif\n"
             b"};\n"
             b'const char mp_frozen_names[] = { MP_FROZEN_STR_NAMES "\\0"};\n'
             b"const mp_raw_code_t *const mp_frozen_mpy_content[] = {NULL};\n"

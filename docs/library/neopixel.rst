@@ -43,7 +43,8 @@ Constructors
         - *pin* is a machine.Pin instance.
         - *n* is the number of LEDs in the strip.
         - *bpp* is 3 for RGB LEDs, and 4 for RGBW LEDs.
-        - *timing* is 0 for 400KHz, and 1 for 800kHz LEDs (most are 800kHz).
+        - *timing* is 0 for 400KHz, and 1 for 800kHz LEDs (most are 800kHz). You
+          may also supply a timing tuple as accepted by `machine.bitstream()`.
 
 Pixel access methods
 --------------------

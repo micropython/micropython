@@ -49,7 +49,7 @@ typedef struct _machine_pin_af_obj_t {
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
     qstr name;
-    uint8_t id                  : 5;
+    uint8_t id                  : 6;
     #if MICROPY_HW_PIN_EXT_COUNT
     uint8_t is_ext              : 1;
     uint8_t is_output           : 1;
@@ -59,17 +59,18 @@ typedef struct _machine_pin_obj_t {
     const machine_pin_af_obj_t *af;
 } machine_pin_obj_t;
 
-extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_pin_af_type;
 
 // Include all of the individual pin objects
 #include "genhdr/pins.h"
 
+extern const machine_pin_obj_t machine_pin_obj_table[NUM_BANK0_GPIOS];
+
 extern const mp_obj_type_t pin_cpu_pins_obj_type;
-extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
 
 extern const mp_obj_type_t pin_board_pins_obj_type;
-extern const mp_obj_dict_t pin_board_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
 
 void machine_pin_ext_init(void);
 bool machine_pin_ext_is_adc_channel(const machine_pin_obj_t *self);

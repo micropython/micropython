@@ -31,16 +31,16 @@ From then on program the firmware starting at address 0x1000:
 
 ### Linux
 ```bash
-esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 912600 write_flash -z 0x1000 tinypico-micropython-firmware-version.bin
+esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash -z 0x1000 tinypico-micropython-firmware-version.bin
 ```
 
 ### Mac
 ```bash
-esptool.py --chip esp32 --port /dev/tty.SLAB_USBtoUART --baud 912600 write_flash -z 0x1000 tinypico-micropython-firmware-version.bin
+esptool.py --chip esp32 --port /dev/tty.SLAB_USBtoUART --baud 921600 write_flash -z 0x1000 tinypico-micropython-firmware-version.bin
 ```
 
 ### Windows
 Change (X) to whatever COM port is being used by the board
 ```bash
-esptool --chip esp32 --port COM(X) --baud 912600 write_flash -z 0x1000 tinypico-micropython-firmware-version.bin
+esptool --chip esp32 --port COM(X) --baud 921600 write_flash -z 0x1000 tinypico-micropython-firmware-version.bin
 ```

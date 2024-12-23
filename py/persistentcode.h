@@ -35,7 +35,7 @@
 // set) must also match MPY_SUB_VERSION. This allows 3 additional updates to
 // the native ABI per bytecode revision.
 #define MPY_VERSION 6
-#define MPY_SUB_VERSION 2
+#define MPY_SUB_VERSION 3
 
 // Macros to encode/decode sub-version to/from the feature byte. This replaces
 // the bits previously used to encode the flags (map caching and unicode)
@@ -71,6 +71,8 @@
     #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSA)
 #elif MICROPY_EMIT_XTENSAWIN
     #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSAWIN)
+#elif MICROPY_EMIT_RV32
+    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_RV32IMC)
 #else
     #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_NONE)
 #endif
@@ -95,6 +97,8 @@ enum {
     MP_NATIVE_ARCH_ARMV7EMDP,
     MP_NATIVE_ARCH_XTENSA,
     MP_NATIVE_ARCH_XTENSAWIN,
+    MP_NATIVE_ARCH_RV32IMC,
+    MP_NATIVE_ARCH_DEBUG, // this entry should always be last
 };
 
 enum {

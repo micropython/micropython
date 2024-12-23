@@ -140,16 +140,12 @@ typedef struct _machine_pin_irq_obj_t {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
-extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_pin_af_type;
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 // Include board specific pins
 #include "genhdr/pins.h"  // pins.h must included at this location
-
-extern const machine_pin_obj_t *machine_pin_board_pins[];
-extern const uint32_t num_board_pins;
 
 extern const mp_obj_type_t machine_pin_board_pins_obj_type;
 extern const mp_obj_type_t machine_pin_cpu_pins_obj_type;

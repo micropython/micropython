@@ -28,13 +28,13 @@ void uzlib_lz77_init(uzlib_lz77_state_t *state, uint8_t *hist, size_t hist_max) 
     state->hist_len = 0;
 }
 
-// Push the given byte to the history.
 // Search back in the history for the maximum match of the given src data,
 // with support for searching beyond the end of the history and into the src buffer
 // (effectively the history and src buffer are concatenated).
 static size_t uzlib_lz77_search_max_match(uzlib_lz77_state_t *state, const uint8_t *src, size_t len, size_t *longest_offset) {
     size_t longest_len = 0;
     for (size_t hist_search = 0; hist_search < state->hist_len; ++hist_search) {
+        // Search for a match.
         size_t match_len;
         for (match_len = 0; match_len <= MATCH_LEN_MAX && match_len < len; ++match_len) {
             uint8_t hist;
@@ -47,7 +47,11 @@ static size_t uzlib_lz77_search_max_match(uzlib_lz77_state_t *state, const uint8
                 break;
             }
         }
-        if (match_len >= MATCH_LEN_MIN && match_len > longest_len) {
+
+        // Take this match if its length is at least the minimum, and larger than previous matches.
+        // If the length is the same as the previous longest then take this match as well, because
+        // this match will be closer (more recent in the history) and take less bits to encode.
+        if (match_len >= MATCH_LEN_MIN && match_len >= longest_len) {
             longest_len = match_len;
             *longest_offset = state->hist_len - hist_search;
         }

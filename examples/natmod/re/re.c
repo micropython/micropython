@@ -4,14 +4,27 @@
 #define MICROPY_PY_RE_MATCH_SPAN_START_END (1)
 #define MICROPY_PY_RE_SUB (0) // requires vstr interface
 
+#if defined __has_builtin
+#if __has_builtin(__builtin_alloca)
+#define alloca __builtin_alloca
+#endif
+#endif
+
+#if !defined(alloca)
+#if defined(_PICOLIBC__) && !defined(HAVE_BUILTIN_ALLOCA)
+#define alloca(n) m_malloc(n)
+#else
 #include <alloca.h>
+#endif
+#endif
+
 #include "py/dynruntime.h"
 
 #define STACK_LIMIT (2048)
 
 const char *stack_top;
 
-void mp_stack_check(void) {
+void mp_cstack_check(void) {
     // Assumes descending stack on target
     volatile char dummy;
     if (stack_top - &dummy >= STACK_LIMIT) {
@@ -38,10 +51,10 @@ mp_obj_full_type_t re_type;
 #include "extmod/modre.c"
 
 mp_map_elem_t match_locals_dict_table[5];
-STATIC MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);
+static MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);
 
 mp_map_elem_t re_locals_dict_table[3];
-STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
+static MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
 
 mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
     MP_DYNRUNTIME_INIT_ENTRY

@@ -8,6 +8,7 @@
 #define MICROPY_HW_ENABLE_ADC               (1)
 #define MICROPY_HW_ENABLE_DAC               (1)
 #define MICROPY_HW_ENABLE_USB               (1)
+#define MICROPY_HW_ENABLE_SDCARD            (1)
 #define MICROPY_HW_HAS_SWITCH               (1)
 #define MICROPY_HW_HAS_FLASH                (1)
 
@@ -105,6 +106,11 @@
 // USB config
 #define MICROPY_HW_USB_FS                   (1)
 #define MICROPY_HW_USB_MAIN_DEV             (USB_PHY_FS_ID)
+
+// SD card
+#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_H14)
+#define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
+#define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
 // Ethernet via RMII
 #define MICROPY_HW_ETH_MDC                  (pin_C1)

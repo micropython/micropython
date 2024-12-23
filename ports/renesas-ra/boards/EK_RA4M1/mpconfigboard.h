@@ -40,7 +40,7 @@
 // I2C (not supported)
 // #define MICROPY_HW_I2C0_SCL      (pin_P204) // Conflict with SPI1
 // #define MICROPY_HW_I2C0_SDA      (pin_P407) // Conflict with USB_VBUS
-// #define MICROPY_HW_I2C0_SCL      (pin_P400) // Conflict wiht PMOD B (GPIO)
+// #define MICROPY_HW_I2C0_SCL      (pin_P400) // Conflict with PMOD B (GPIO)
 // #define MICROPY_HW_I2C0_SDA      (pin_P401) // Conflict with PMOD B (TXD1)
 // #define MICROPY_HW_I2C1_SCL      (pin_P100) // Conflict with PMOD A (MISOA_A)
 // #define MICROPY_HW_I2C1_SDA      (pin_P101) // Conflict with PMOD A (MOSIA_A)

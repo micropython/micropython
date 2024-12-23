@@ -1,11 +1,11 @@
 # Test for VfsFat using a RAM device, mtime feature
 
 try:
-    import time, os
+    import time, os, vfs
 
     time.time
     time.sleep
-    os.VfsFat
+    vfs.VfsFat
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -41,21 +41,21 @@ def test(bdev, vfs_class):
     vfs_class.mkfs(bdev)
 
     # construction
-    vfs = vfs_class(bdev)
+    fs = vfs_class(bdev)
 
     # Create an empty file, should have a timestamp.
     current_time = int(time.time())
-    vfs.open("test1", "wt").close()
+    fs.open("test1", "wt").close()
 
     # Wait 2 seconds so mtime will increase (FAT has 2 second resolution).
     time.sleep(2)
 
     # Create another empty file, should have a timestamp.
-    vfs.open("test2", "wt").close()
+    fs.open("test2", "wt").close()
 
     # Stat the files and check mtime is non-zero.
-    stat1 = vfs.stat("test1")
-    stat2 = vfs.stat("test2")
+    stat1 = fs.stat("test1")
+    stat2 = fs.stat("test2")
     print(stat1[8] != 0, stat2[8] != 0)
 
     # Check that test1 has mtime which matches time.time() at point of creation.
@@ -67,8 +67,8 @@ def test(bdev, vfs_class):
     print(stat1[8] < stat2[8])
 
     # Unmount.
-    vfs.umount()
+    fs.umount()
 
 
 bdev = RAMBlockDevice(50)
-test(bdev, os.VfsFat)
+test(bdev, vfs.VfsFat)

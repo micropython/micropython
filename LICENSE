@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2013-2023 Damien P. George
+Copyright (c) 2013-2024 Damien P. George
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -48,16 +48,17 @@ used during the build process and is not part of the compiled source code.
         /cmsis (BSD-3-clause)
         /crypto-algorithms (NONE)
         /libhydrogen (ISC)
+        /libmetal (BSD-3-clause)
         /littlefs (BSD-3-clause)
         /lwip (BSD-3-clause)
         /mynewt-nimble (Apache-2.0)
         /nrfx (BSD-3-clause)
         /nxp_driver (BSD-3-Clause)
         /oofatfs (BSD-1-clause)
+        /open-amp (BSD-3-clause)
         /pico-sdk (BSD-3-clause)
         /re15 (BSD-3-clause)
         /stm32lib (BSD-3-clause)
-        /tinytest (BSD-3-clause)
         /tinyusb (MIT)
         /uzlib (Zlib)
         /wiznet5k (MIT)
@@ -69,6 +70,9 @@ used during the build process and is not part of the compiled source code.
             /FreeRTOS (GPL-2.0 with FreeRTOS exception)
         /esp32
             /ppp_set_auth.* (Apache-2.0)
+        /rp2
+            /mutex_extra.c (BSD-3-clause)
+            /clocks_extra.c (BSD-3-clause)
         /stm32
             /usbd*.c (MCD-ST Liberty SW License Agreement V2)
             /stm32_it.* (MIT + BSD-3-clause)
@@ -78,8 +82,6 @@ used during the build process and is not part of the compiled source code.
                 /*/stm32*.h (BSD-3-clause)
             /usbdev (MCD-ST Liberty SW License Agreement V2)
             /usbhost (MCD-ST Liberty SW License Agreement V2)
-        /teensy
-            /core (PJRC.COM)
         /zephyr
             /src (Apache-2.0)
     /tools

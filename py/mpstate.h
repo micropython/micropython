@@ -293,6 +293,10 @@ typedef struct _mp_state_thread_t {
     bool prof_callback_is_executing;
     struct _mp_code_state_t *current_code_state;
     #endif
+
+    #if MICROPY_PY_SSL_MBEDTLS_NEED_ACTIVE_CONTEXT
+    struct _mp_obj_ssl_context_t *tls_ssl_context;
+    #endif
 } mp_state_thread_t;
 
 // This structure combines the above 3 structures.
@@ -310,7 +314,6 @@ extern mp_state_ctx_t mp_state_ctx;
 #define MP_STATE_MAIN_THREAD(x) (mp_state_ctx.thread.x)
 
 #if MICROPY_PY_THREAD
-extern mp_state_thread_t *mp_thread_get_state(void);
 #define MP_STATE_THREAD(x) (mp_thread_get_state()->x)
 #define mp_thread_is_main_thread() (mp_thread_get_state() == &mp_state_ctx.thread)
 #else

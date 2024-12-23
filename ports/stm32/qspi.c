@@ -68,7 +68,7 @@ static inline void qspi_mpu_disable_all(void) {
     // Configure MPU to disable access to entire QSPI region, to prevent CPU
     // speculative execution from accessing this region and modifying QSPI registers.
     uint32_t irq_state = mpu_config_start();
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x00, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x00, MPU_REGION_SIZE_256MB));
     mpu_config_end(irq_state);
 }
 
@@ -84,30 +84,30 @@ static inline void qspi_mpu_enable_mapped(void) {
     // unprivileged or the background region is disabled, the MPU issues a fault.
     uint32_t irq_state = mpu_config_start();
     #if MICROPY_HW_QSPI_MPU_REGION_SIZE > 128
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0xFF, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0xFF, MPU_REGION_SIZE_256MB));
     #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 64
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x0F, MPU_REGION_SIZE_256MB));
     #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 32
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x03, MPU_REGION_SIZE_256MB));
     #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 16
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_256MB));
     #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 8
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_32MB));
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x0F, MPU_REGION_SIZE_32MB));
     #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 4
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_32MB));
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x03, MPU_REGION_SIZE_32MB));
     #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 2
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_32MB));
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_32MB));
     #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 1
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_32MB));
-    mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_16MB));
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x0F, MPU_REGION_SIZE_32MB));
+    mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_16MB));
     #else
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_32MB));
-    mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_4MB));
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_32MB));
+    mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x03, MPU_REGION_SIZE_4MB));
     #endif
     mpu_config_end(irq_state);
 }
@@ -172,7 +172,7 @@ void qspi_memory_map(void) {
     qspi_mpu_enable_mapped();
 }
 
-STATIC int qspi_ioctl(void *self_in, uint32_t cmd) {
+static int qspi_ioctl(void *self_in, uint32_t cmd) {
     (void)self_in;
     switch (cmd) {
         case MP_QSPI_IOCTL_INIT:
@@ -196,7 +196,7 @@ STATIC int qspi_ioctl(void *self_in, uint32_t cmd) {
     return 0; // success
 }
 
-STATIC int qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t data) {
+static int qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t data) {
     (void)self_in;
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
@@ -252,7 +252,7 @@ STATIC int qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t 
     return 0;
 }
 
-STATIC int qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
+static int qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
     (void)self_in;
 
     uint8_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
@@ -316,7 +316,7 @@ STATIC int qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, s
     return 0;
 }
 
-STATIC int qspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest) {
+static int qspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest) {
     (void)self_in;
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
@@ -350,7 +350,7 @@ STATIC int qspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest)
     return 0;
 }
 
-STATIC int qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
+static int qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
     (void)self_in;
 
     uint8_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;

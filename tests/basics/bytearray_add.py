@@ -15,4 +15,11 @@ print(b)
 
 # this inplace add tests the code when the buffer doesn't need to be increased
 b = bytearray()
-b += b''
+b += b""
+
+# extend a bytearray from itself
+b = bytearray(b"abcdefgh")
+for _ in range(4):
+    c = bytearray(b)  # extra allocation, as above
+    b.extend(b)
+print(b)

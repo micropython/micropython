@@ -55,10 +55,8 @@ function build_board {
     $MICROPY_AUTOBUILD_MAKE BOARD=$board BUILD=$build_dir && copy_artefacts $dest_dir $descr $fw_tag $build_dir $@
     rm -rf $build_dir
 
-    # Query variants from board.json and build them. Ignore the special "IDF3"
-    # variant for ESP32 boards (this allows the downloads page to still have
-    # the idf3 files for older releases that used to be explicitly built).
-    for variant in `cat $board_json | python3 -c "import json,sys; print(' '.join(v for v in json.load(sys.stdin).get('variants', {}).keys() if v != 'IDF3'))"`; do
+    # Query variants from board.json and build them.
+    for variant in `cat $board_json | python3 -c "import json,sys; print(' '.join(json.load(sys.stdin).get('variants', {}).keys()))"`; do
         local variant_build_dir=$build_dir-$variant
         echo "building variant $descr $board $variant"
         $MICROPY_AUTOBUILD_MAKE BOARD=$board BOARD_VARIANT=$variant BUILD=$variant_build_dir && copy_artefacts $dest_dir $descr-$variant $fw_tag $variant_build_dir $@

@@ -8,10 +8,12 @@
 
 # These are binary so should never be modified by git.
 *.a binary
+*.ico binary
 *.png binary
 *.jpg binary
 *.dxf binary
 *.mpy binary
+*.der binary
 
 # These should also not be modified by git.
 tests/basics/string_cr_conversion.py -text

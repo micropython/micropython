@@ -9,6 +9,6 @@ MEMORY
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 120K
 }
 
-/* Location from which mboot is allowed to write to flash.
-   Must be the start of a flash erase sector. */
-_mboot_writable_flash_start = ORIGIN(FLASH_BL) + LENGTH(FLASH_BL);
+/* Location of protected flash area which must not be modified, because mboot lives there. */
+_mboot_protected_flash_start = ORIGIN(FLASH_BL);
+_mboot_protected_flash_end_exclusive = ORIGIN(FLASH_BL) + LENGTH(FLASH_BL);

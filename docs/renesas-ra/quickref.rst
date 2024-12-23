@@ -206,8 +206,9 @@ See :ref:`machine.RTC <machine.RTC>` ::
     from machine import RTC
 
     rtc = RTC()
-    rtc.datetime((2017, 8, 23, 1, 12, 48, 0, 0)) # set a specific date and time
-                                                 # time, eg 2017/8/23 1:12:48
+    rtc.datetime((2017, 8, 23, 0, 1, 12, 48, 0)) # set a specific date and
+                                                 # time, eg. 2017/8/23 1:12:48
+                                                 # the day-of-week value is ignored
     rtc.datetime() # get date and time
 
 Following functions are not supported at the present::
@@ -387,15 +388,15 @@ SDCard
 The frozen sdcard driver (drivers/sdcard/sdcard.py) is available by connecting microSD card device to hardware SPI0 pins.::
 
     from machine import Pin, SPI
-    import os, sdcard
+    import os, vfs, sdcard
 
     spi = SPI(0, baudrate=500000)
     cs = Pin.cpu.P103
     sd = sdcard.SDCard(spi, cs)
-    os.mount(sd, '/sd')
+    vfs.mount(sd, '/sd')
     os.listdir('/')
     os.chdir('/sd')
-    os.umount('/sd')
+    vfs.umount('/sd')
 
 OneWire driver
 --------------

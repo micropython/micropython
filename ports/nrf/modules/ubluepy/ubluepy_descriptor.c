@@ -34,14 +34,14 @@
 #include "modubluepy.h"
 #include "ble_drv.h"
 
-STATIC void ubluepy_descriptor_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+static void ubluepy_descriptor_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_descriptor_obj_t * self = (ubluepy_descriptor_obj_t *)o;
 
     mp_printf(print, "Descriptor(uuid: 0x" HEX2_FMT HEX2_FMT ")",
               self->p_uuid->value[1], self->p_uuid->value[0]);
 }
 
-STATIC mp_obj_t ubluepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t ubluepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
 
     enum { ARG_NEW_UUID };
 
@@ -62,13 +62,13 @@ STATIC mp_obj_t ubluepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_
     return MP_OBJ_FROM_PTR(s);
 }
 
-STATIC const mp_rom_map_elem_t ubluepy_descriptor_locals_dict_table[] = {
+static const mp_rom_map_elem_t ubluepy_descriptor_locals_dict_table[] = {
 #if 0
     { MP_ROM_QSTR(MP_QSTR_binVal), MP_ROM_PTR(&ubluepy_descriptor_bin_val_obj) },
 #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(ubluepy_descriptor_locals_dict, ubluepy_descriptor_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ubluepy_descriptor_locals_dict, ubluepy_descriptor_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     ubluepy_descriptor_type,

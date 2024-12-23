@@ -2,9 +2,9 @@
 # The first import of a module will intern strings that don't already exist, and
 # this test should be representative of what happens in a real application.
 
-import io, os, sys
+import sys, io, vfs
 
-if not (hasattr(io, "IOBase") and hasattr(os, "mount")):
+if not hasattr(io, "IOBase"):
     print("SKIP")
     raise SystemExit
 
@@ -86,7 +86,9 @@ class File(io.IOBase):
         self.off = 0
 
     def ioctl(self, request, arg):
-        return 0
+        if request == 4:  # MP_STREAM_CLOSE
+            return 0
+        return -1
 
     def readinto(self, buf):
         buf[:] = memoryview(file_data)[self.off : self.off + len(buf)]
@@ -112,7 +114,7 @@ class FS:
 
 
 def mount():
-    os.mount(FS(), "/__remote")
+    vfs.mount(FS(), "/__remote")
     sys.path.insert(0, "/__remote")
 
 

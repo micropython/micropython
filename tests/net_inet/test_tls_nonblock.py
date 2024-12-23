@@ -2,12 +2,12 @@ import socket, ssl, errno, sys, time, select
 
 
 def test_one(site, opts):
-    ai = socket.getaddrinfo(site, 443)
+    ai = socket.getaddrinfo(site, 443, socket.AF_INET)
     addr = ai[0][-1]
-    print(addr)
+    print(site)
 
     # Connect the raw socket
-    s = socket.socket()
+    s = socket.socket(socket.AF_INET)
     s.setblocking(False)
     try:
         s.connect(addr)
@@ -16,17 +16,22 @@ def test_one(site, opts):
         if e.errno != errno.EINPROGRESS:
             raise
 
+    # Create SSLContext.
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+
+    # CPython compatibility:
+    # - disable check_hostname
+    # - load default system certificate chain
+    # - must wait for socket to be writable before calling wrap_socket
     if sys.implementation.name != "micropython":
-        # in CPython we have to wait, otherwise wrap_socket is not happy
+        ssl_context.check_hostname = False
+        ssl_context.load_default_certs()
         select.select([], [s], [])
 
     try:
         # Wrap with SSL
         try:
-            if sys.implementation.name == "micropython":
-                s = ssl.wrap_socket(s, do_handshake=False)
-            else:
-                s = ssl.wrap_socket(s, do_handshake_on_connect=False)
+            s = ssl_context.wrap_socket(s, do_handshake_on_connect=False)
         except OSError as e:
             if e.errno != errno.EINPROGRESS:
                 raise
@@ -87,8 +92,7 @@ def test_one(site, opts):
 
 
 SITES = [
-    "google.com",
-    {"host": "www.google.com"},
+    "www.github.com",
     "micropython.org",
     "pypi.org",
     {"host": "api.pushbullet.com", "sni": True},
@@ -105,7 +109,7 @@ def main():
             test_one(site, opts)
             print(site, "ok")
         except Exception as e:
-            print(site, "error")
+            print(site, "error", e)
     print("DONE")
 
 

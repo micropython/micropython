@@ -58,7 +58,7 @@ typedef enum {
     MP_F_STORE_SET,
     MP_F_LIST_APPEND,
     MP_F_STORE_MAP,
-    MP_F_MAKE_FUNCTION_FROM_RAW_CODE,
+    MP_F_MAKE_FUNCTION_FROM_PROTO_FUN,
     MP_F_NATIVE_CALL_FUNCTION_N_KW,
     MP_F_CALL_METHOD_N_KW,
     MP_F_CALL_METHOD_N_KW_VAR,
@@ -112,7 +112,7 @@ typedef struct _mp_fun_table_t {
     void (*set_store)(mp_obj_t self_in, mp_obj_t item);
     mp_obj_t (*list_append)(mp_obj_t self_in, mp_obj_t arg);
     mp_obj_t (*dict_store)(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
-    mp_obj_t (*make_function_from_raw_code)(const mp_raw_code_t *rc, const mp_module_context_t *cm, const mp_obj_t *def_args);
+    mp_obj_t (*make_function_from_proto_fun)(mp_proto_fun_t proto_fun, const mp_module_context_t *cm, const mp_obj_t *def_args);
     mp_obj_t (*call_function_n_kw)(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args);
     mp_obj_t (*call_method_n_kw)(size_t n_args, size_t n_kw, const mp_obj_t *args);
     mp_obj_t (*call_method_n_kw_var)(bool have_self, size_t n_args_n_kw, const mp_obj_t *args);
@@ -154,9 +154,17 @@ typedef struct _mp_fun_table_t {
     mp_obj_t (*obj_new_float_from_d)(double d);
     float (*obj_get_float_to_f)(mp_obj_t o);
     double (*obj_get_float_to_d)(mp_obj_t o);
+    void (*load_method_maybe)(mp_obj_t base, qstr attr, mp_obj_t *dest);
     bool (*get_buffer)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
     const mp_stream_p_t *(*get_stream_raise)(mp_obj_t self_in, int flags);
+    void (*arg_parse_all)(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
+    void (*arg_parse_all_kw_array)(size_t n_pos, size_t n_kw, const mp_obj_t *args, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
+    size_t (*binary_get_size)(char struct_type, char val_type, size_t *palign);
+    mp_obj_t (*binary_get_val_array)(char typecode, void *p, size_t index);
+    void (*binary_set_val_array)(char typecode, void *p, size_t index, mp_obj_t val_in);
     const mp_print_t *plat_print;
+    // The following entries start at index 73 and are referenced by tools-mpy_ld.py,
+    // see constant MP_FUN_TABLE_MP_TYPE_TYPE_OFFSET.
     const mp_obj_type_t *type_type;
     const mp_obj_type_t *type_str;
     const mp_obj_type_t *type_list;
@@ -166,6 +174,7 @@ typedef struct _mp_fun_table_t {
     const mp_obj_type_t *type_fun_builtin_2;
     const mp_obj_type_t *type_fun_builtin_3;
     const mp_obj_type_t *type_fun_builtin_var;
+    const mp_obj_type_t *type_Exception;
     const mp_obj_fun_builtin_var_t *stream_read_obj;
     const mp_obj_fun_builtin_var_t *stream_readinto_obj;
     const mp_obj_fun_builtin_var_t *stream_unbuffered_readline_obj;

@@ -29,9 +29,7 @@
 #include <stddef.h>
 
 enum {
-    #if MICROPY_PY_LWIP
-    PENDSV_DISPATCH_LWIP,
-    #endif
+    PENDSV_DISPATCH_SOFT_TIMER,
     #if MICROPY_PY_NETWORK_CYW43
     PENDSV_DISPATCH_CYW43,
     #endif
@@ -44,8 +42,12 @@ enum {
 
 #define PENDSV_DISPATCH_NUM_SLOTS PENDSV_DISPATCH_MAX
 
+// PendSV IRQ priority, to run system-level tasks that preempt the main thread.
+#define IRQ_PRI_PENDSV PICO_LOWEST_IRQ_PRIORITY
+
 typedef void (*pendsv_dispatch_t)(void);
 
+void pendsv_init(void);
 void pendsv_suspend(void);
 void pendsv_resume(void);
 void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);

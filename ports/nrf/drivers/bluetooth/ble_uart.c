@@ -29,8 +29,8 @@
 #include <string.h>
 #include "ble_uart.h"
 #include "ringbuffer.h"
-#include "mphalport.h"
 #include "shared/runtime/interrupt_char.h"
+#include "py/mphal.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_SYS_STDFILES
@@ -97,23 +97,20 @@ static ubluepy_advertise_data_t m_adv_data_uart_service;
 static ubluepy_advertise_data_t m_adv_data_eddystone_url;
 #endif // BLUETOOTH_WEBBLUETOOTH_REPL
 
-int mp_hal_stdin_rx_chr(void) {
-    while (!ble_uart_enabled()) {
-        // wait for connection
+int mp_ble_uart_stdin_rx_chr(void) {
+    if (ble_uart_enabled() && !isBufferEmpty(mp_rx_ring_buffer)) {
+        uint8_t byte = -1;
+        bufferRead(mp_rx_ring_buffer, byte);
+        return (int)byte;
     }
-    while (isBufferEmpty(mp_rx_ring_buffer)) {
-        ;
-    }
-
-    uint8_t byte;
-    bufferRead(mp_rx_ring_buffer, byte);
-    return (int)byte;
+    return -1;
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+mp_uint_t mp_ble_uart_stdout_tx_strn(const char *str, size_t len) {
     // Not connected: drop output
-    if (!ble_uart_enabled()) return;
+    if (!ble_uart_enabled()) return 0;
 
+    mp_uint_t ret = len;
     uint8_t *buf = (uint8_t *)str;
     size_t send_len;
 
@@ -134,6 +131,7 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
         len -= send_len;
         buf += send_len;
     }
+    return ret;
 }
 
 void ble_uart_tx_char(char c) {
@@ -148,17 +146,8 @@ void ble_uart_tx_char(char c) {
                           (uint8_t *)&c);
 }
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
-    for (const char *top = str + len; str < top; str++) {
-        if (*str == '\n') {
-            ble_uart_tx_char('\r');
-        }
-        ble_uart_tx_char(*str);
-    }
-}
-
 #if MICROPY_PY_SYS_STDFILES
-uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+uintptr_t mp_ble_uart_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
     if ((poll_flags & MP_STREAM_POLL_RD) && ble_uart_enabled()
         && !isBufferEmpty(mp_rx_ring_buffer)) {
@@ -171,7 +160,7 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 }
 #endif
 
-STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
+static void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
 
     if (event_id == 16) {                // connect event
@@ -185,7 +174,7 @@ STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn
     }
 }
 
-STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
+static void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
     (void)self;
 

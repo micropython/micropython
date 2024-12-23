@@ -68,22 +68,22 @@ typedef struct _USBD_STORAGE {
 } USBD_StorageTypeDef;
 
 typedef struct {
-  uint32_t                 max_lun;   
-  uint32_t                 interface; 
+  uint32_t                 max_lun;
+  uint32_t                 interface;
   uint8_t                  bot_state;
-  uint8_t                  bot_status;  
+  uint8_t                  bot_status;
   uint16_t                 bot_data_length;
-  uint8_t                  bot_data[MSC_MEDIA_PACKET];  
+  uint8_t                  bot_data[MSC_MEDIA_PACKET];
   USBD_MSC_BOT_CBWTypeDef  cbw;
   USBD_MSC_BOT_CSWTypeDef  csw;
-  
+
   USBD_SCSI_SenseTypeDef   scsi_sense [SENSE_LIST_DEEPTH];
   uint8_t                  scsi_sense_head;
   uint8_t                  scsi_sense_tail;
-  
+
   uint16_t                 scsi_blk_size[USBD_MSC_MAX_LUN];
   uint32_t                 scsi_blk_nbr[USBD_MSC_MAX_LUN];
-  
+
   uint32_t                 scsi_blk_addr_in_blks;
   uint32_t                 scsi_blk_len;
 

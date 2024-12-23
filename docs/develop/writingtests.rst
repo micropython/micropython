@@ -60,7 +60,7 @@ Then to run on a board:
 
 .. code-block:: bash
 
-   $ ./run-tests.py --target minimal --device /dev/ttyACM0
+   $ ./run-tests.py -t /dev/ttyACM0
 
 And to run only a certain set of tests (eg a directory):
 

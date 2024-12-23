@@ -115,7 +115,7 @@ void PORTENTA_board_early_init(void) {
     mp_hal_pin_write(pyb_pin_ETH_RST, 1);
 
     // Put Eth in low-power mode
-    eth_init(&eth_instance, MP_HAL_MAC_ETH0);
+    eth_init(&eth_instance, MP_HAL_MAC_ETH0, 0, ETH_PHY_LAN8742);
     eth_low_power_mode(&eth_instance, true);
 
     #if MICROPY_HW_USB_HS_ULPI3320

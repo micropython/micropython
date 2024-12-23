@@ -26,12 +26,15 @@
 #ifndef MICROPY_INCLUDED_RP2_MPTHREADPORT_H
 #define MICROPY_INCLUDED_RP2_MPTHREADPORT_H
 
-#include "py/mpthread.h"
 #include "pico/mutex.h"
 
 typedef struct mutex mp_thread_mutex_t;
 
 extern void *core_state[2];
+
+typedef void *(*core_entry_func_t)(void *);
+
+extern core_entry_func_t core1_entry;
 
 void mp_thread_init(void);
 void mp_thread_deinit(void);

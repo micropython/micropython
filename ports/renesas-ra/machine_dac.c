@@ -43,7 +43,7 @@ typedef struct _machine_dac_obj_t {
     mp_hal_pin_obj_t dac;
 } machine_dac_obj_t;
 
-STATIC machine_dac_obj_t machine_dac_obj[] = {
+static machine_dac_obj_t machine_dac_obj[] = {
     #if defined(MICROPY_HW_DAC0)
     {{&machine_dac_type}, 0, 0, 0, MICROPY_HW_DAC0},
     #endif
@@ -52,12 +52,12 @@ STATIC machine_dac_obj_t machine_dac_obj[] = {
     #endif
 };
 
-STATIC void machine_dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);     // const char *qstr_str(qstr q);
-    mp_printf(print, "DAC(DA%d [#%d], runing=%u, out=%u mV)", self->ch, self->dac->pin, self->active, self->mv);
+    mp_printf(print, "DAC(DA%d [#%d], active=%u, out=%u mV)", self->ch, self->dac->pin, self->active, self->mv);
 }
 
-STATIC mp_obj_t machine_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t machine_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_hal_pin_obj_t pin_id = MP_OBJ_NULL;
     machine_dac_obj_t *self = MP_OBJ_NULL;
 
@@ -99,7 +99,7 @@ STATIC mp_obj_t machine_dac_make_new(const mp_obj_type_t *type, size_t n_args, s
 }
 
 // DAC.deinit()
-STATIC mp_obj_t machine_dac_deinit(mp_obj_t self_in) {
+static mp_obj_t machine_dac_deinit(mp_obj_t self_in) {
     machine_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     ra_dac_deinit(self->dac->pin, self->ch);
@@ -108,10 +108,10 @@ STATIC mp_obj_t machine_dac_deinit(mp_obj_t self_in) {
     self->mv = 0;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_dac_deinit_obj, machine_dac_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_dac_deinit_obj, machine_dac_deinit);
 
 // DAC.write(value)
-STATIC mp_obj_t machine_dac_write(mp_obj_t self_in, mp_obj_t data) { // mp_obj_t value_in
+static mp_obj_t machine_dac_write(mp_obj_t self_in, mp_obj_t data) { // mp_obj_t value_in
     machine_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t value = mp_obj_get_int(data);
 
@@ -124,18 +124,18 @@ STATIC mp_obj_t machine_dac_write(mp_obj_t self_in, mp_obj_t data) { // mp_obj_t
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_dac_write_obj, machine_dac_write);
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_dac_write_obj, machine_dac_write);
 
 // DAC.read()
-STATIC mp_obj_t machine_dac_read(mp_obj_t self_in) {
+static mp_obj_t machine_dac_read(mp_obj_t self_in) {
     machine_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     return MP_OBJ_NEW_SMALL_INT(ra_dac_read(self->ch));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_dac_read_obj, machine_dac_read);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_dac_read_obj, machine_dac_read);
 
 // DAC.write_mv(Vout)
-STATIC mp_obj_t machine_dac_write_mv(mp_obj_t self_in, mp_obj_t data) {  // mp_obj_t self_in, mp_obj_t value_in
+static mp_obj_t machine_dac_write_mv(mp_obj_t self_in, mp_obj_t data) {  // mp_obj_t self_in, mp_obj_t value_in
     machine_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t Vout = mp_obj_get_int(data);
 
@@ -149,19 +149,19 @@ STATIC mp_obj_t machine_dac_write_mv(mp_obj_t self_in, mp_obj_t data) {  // mp_o
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_dac_write_mv_obj, machine_dac_write_mv);
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_dac_write_mv_obj, machine_dac_write_mv);
 
 // DAC.read_mv()
-STATIC mp_obj_t machine_dac_read_mv(mp_obj_t self_in) {
+static mp_obj_t machine_dac_read_mv(mp_obj_t self_in) {
     machine_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     return MP_OBJ_NEW_SMALL_INT(self->mv);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_dac_read_mv_obj, machine_dac_read_mv);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_dac_read_mv_obj, machine_dac_read_mv);
 
 // MP_DEFINE_CONST_FUN_OBJ_2(mp_machine_dac_write_obj, mp_machine_dac_write);
 
-STATIC const mp_rom_map_elem_t machine_dac_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_dac_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_dac_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&machine_dac_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&machine_dac_write_obj) },
@@ -169,7 +169,7 @@ STATIC const mp_rom_map_elem_t machine_dac_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write_mv), MP_ROM_PTR(&machine_dac_write_mv_obj) }
 };
 
-STATIC MP_DEFINE_CONST_DICT(machine_dac_locals_dict, machine_dac_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_dac_locals_dict, machine_dac_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_dac_type,

@@ -29,9 +29,13 @@
 // extmod/machine_i2s.c via MICROPY_PY_MACHINE_I2S_INCLUDEFILE.
 
 #include <stdlib.h>
+#include <string.h>
 #include "py/mphal.h"
 #include "pin.h"
 #include "dma.h"
+#ifndef NO_QSTR
+#include "genhdr/plli2stable.h"
+#endif
 
 // Notes on this port's specific implementation of I2S:
 // - the DMA callbacks (1/2 complete and complete) are used to implement the asynchronous background operations
@@ -60,6 +64,13 @@ typedef enum {
     BOTTOM_HALF
 } ping_pong_t;
 
+typedef struct _plli2s_config_t {
+    uint32_t rate;
+    uint8_t bits;
+    uint8_t plli2sr;
+    uint16_t plli2sn;
+} plli2s_config_t;
+
 typedef struct _machine_i2s_obj_t {
     mp_obj_base_t base;
     uint8_t i2s_id;
@@ -85,22 +96,36 @@ typedef struct _machine_i2s_obj_t {
     const dma_descr_t *dma_descr_rx;
 } machine_i2s_obj_t;
 
-STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
+static mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
 
 // The frame map is used with the readinto() method to transform the audio sample data coming
 // from DMA memory (32-bit stereo) to the format specified
 // in the I2S constructor.  e.g.  16-bit mono
-STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
+static const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
     { 0,  1, -1, -1, -1, -1, -1, -1 },  // Mono, 16-bits
     { 2,  3,  0,  1, -1, -1, -1, -1 },  // Mono, 32-bits
     { 0,  1, -1, -1,  2,  3, -1, -1 },  // Stereo, 16-bits
     { 2,  3,  0,  1,  6,  7,  4,  5 },  // Stereo, 32-bits
 };
 
+static const plli2s_config_t plli2s_config[] = PLLI2S_TABLE;
+
 void machine_i2s_init0() {
     for (uint8_t i = 0; i < MICROPY_HW_MAX_I2S; i++) {
         MP_STATE_PORT(machine_i2s_obj)[i] = NULL;
     }
+}
+
+static bool lookup_plli2s_config(int8_t bits, int32_t rate, uint16_t *plli2sn, uint16_t *plli2sr) {
+    for (uint16_t i = 0; i < MP_ARRAY_SIZE(plli2s_config); i++) {
+        if ((plli2s_config[i].bits == bits) && (plli2s_config[i].rate == rate)) {
+            *plli2sn = plli2s_config[i].plli2sn;
+            *plli2sr = plli2s_config[i].plli2sr;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 //  For 32-bit audio samples, the STM32 HAL API expects each 32-bit sample to be encoded
@@ -125,7 +150,7 @@ void machine_i2s_init0() {
 //   where:
 //      LEFT Channel =  0x99, 0xBB, 0x11, 0x22
 //      RIGHT Channel = 0x44, 0x55, 0xAB, 0x77
-STATIC void reformat_32_bit_samples(int32_t *sample, uint32_t num_samples) {
+static void reformat_32_bit_samples(int32_t *sample, uint32_t num_samples) {
     int16_t sample_ms;
     int16_t sample_ls;
     for (uint32_t i = 0; i < num_samples; i++) {
@@ -135,7 +160,7 @@ STATIC void reformat_32_bit_samples(int32_t *sample, uint32_t num_samples) {
     }
 }
 
-STATIC int8_t get_frame_mapping_index(int8_t bits, format_t format) {
+static int8_t get_frame_mapping_index(int8_t bits, format_t format) {
     if (format == MONO) {
         if (bits == 16) {
             return 0;
@@ -151,7 +176,7 @@ STATIC int8_t get_frame_mapping_index(int8_t bits, format_t format) {
     }
 }
 
-STATIC int8_t get_dma_bits(uint16_t mode, int8_t bits) {
+static int8_t get_dma_bits(uint16_t mode, int8_t bits) {
     if (mode == I2S_MODE_MASTER_TX) {
         if (bits == 16) {
             return I2S_DATAFORMAT_16B;
@@ -166,7 +191,7 @@ STATIC int8_t get_dma_bits(uint16_t mode, int8_t bits) {
 }
 
 // function is used in IRQ context
-STATIC void empty_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
+static void empty_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
     uint16_t dma_buffer_offset = 0;
 
     if (dma_ping_pong == TOP_HALF) {
@@ -189,7 +214,7 @@ STATIC void empty_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
 }
 
 // function is used in IRQ context
-STATIC void feed_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
+static void feed_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
     uint16_t dma_buffer_offset = 0;
 
     if (dma_ping_pong == TOP_HALF) {
@@ -239,7 +264,7 @@ STATIC void feed_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
     MP_HAL_CLEAN_DCACHE(dma_buffer_p, SIZEOF_HALF_DMA_BUFFER_IN_BYTES);
 }
 
-STATIC bool i2s_init(machine_i2s_obj_t *self) {
+static bool i2s_init(machine_i2s_obj_t *self) {
 
     // init the GPIO lines
     GPIO_InitTypeDef GPIO_InitStructure;
@@ -293,6 +318,29 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
         HAL_GPIO_Init(self->sd->gpio, &GPIO_InitStructure);
     }
 
+    // configure I2S PLL
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S;
+
+    // lookup optimal PLL multiplier (PLLI2SN) and divisor (PLLI2SR) for a given sample size and sampling frequency
+    uint16_t plli2sn;
+    uint16_t plli2sr;
+
+    if (lookup_plli2s_config(self->mode == I2S_MODE_MASTER_RX ? 32 : self->bits, self->rate, &plli2sn, &plli2sr)) {
+        // match found
+        PeriphClkInitStruct.PLLI2S.PLLI2SN = plli2sn;
+        PeriphClkInitStruct.PLLI2S.PLLI2SR = plli2sr;
+    } else {
+        // no match for sample size and rate
+        // configure PLL to use power-on default values when a non-standard sampling frequency is used
+        PeriphClkInitStruct.PLLI2S.PLLI2SN = 192;
+        PeriphClkInitStruct.PLLI2S.PLLI2SR = 2;
+    }
+
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+        return false;
+    }
+
     if (HAL_I2S_Init(&self->hi2s) == HAL_OK) {
         // Reset and initialize Tx and Rx DMA channels
         if (self->mode == I2S_MODE_MASTER_RX) {
@@ -305,13 +353,10 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
             self->hi2s.hdmatx = &self->hdma_tx;
         }
 
-        __HAL_RCC_PLLI2S_ENABLE();  // start I2S clock
-
         return true;
     } else {
         return false;
     }
-
 }
 
 void HAL_I2S_ErrorCallback(I2S_HandleTypeDef *hi2s) {
@@ -396,7 +441,7 @@ void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
     feed_dma(self, TOP_HALF);
 }
 
-STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args) {
+static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args) {
     memset(&self->hi2s, 0, sizeof(self->hi2s));
 
     // are I2S pin assignments valid?
@@ -515,7 +560,7 @@ STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
     }
 }
 
-STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
+static machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
     uint8_t i2s_id_zero_base = 0;
 
     if (0) {
@@ -547,7 +592,7 @@ STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
     return self;
 }
 
-STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
+static void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     if (self->ring_buffer_storage != NULL) {
         dma_deinit(self->dma_descr_tx);
         dma_deinit(self->dma_descr_rx);
@@ -568,7 +613,7 @@ STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
+static void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
     (void)self;
 }
 

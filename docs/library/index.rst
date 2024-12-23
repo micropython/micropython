@@ -103,7 +103,9 @@ the following libraries.
    micropython.rst
    neopixel.rst
    network.rst
+   openamp.rst
    uctypes.rst
+   vfs.rst
 
 The following libraries provide drivers for hardware components.
 

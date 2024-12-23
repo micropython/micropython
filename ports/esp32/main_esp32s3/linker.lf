@@ -1,0 +1,1 @@
+# Empty linker fragment (no workaround required for S3, see main_esp32/linker.lf).

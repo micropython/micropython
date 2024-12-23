@@ -28,6 +28,7 @@ class Lora32Base:
         # OLED
         self.OLED_SDA = const(21)
         self.OLED_SCL = const(22)
+        self.OLED_RST = None
 
         if define_helpers:
             self.create_helpers()
@@ -35,7 +36,8 @@ class Lora32Base:
     def create_helpers(self):
         self.led = Pin(self.LED, Pin.OUT)
         self.i2c = SoftI2C(scl=Pin(self.OLED_SCL), sda=Pin(self.OLED_SDA))
-        self.oled = OLED(self.i2c)
+        rstpin = self.OLED_RST is not None and Pin(self.OLED_RST, Pin.OUT) or None
+        self.oled = OLED(self.i2c, rstpin)
 
 
 class Lora32v1_0(Lora32Base):

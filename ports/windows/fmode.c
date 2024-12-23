@@ -31,7 +31,7 @@
 
 // Workaround for setting file translation mode: we must distinguish toolsets
 // since mingw has no _set_fmode, and altering msvc's _fmode directly has no effect
-STATIC int set_fmode_impl(int mode) {
+static int set_fmode_impl(int mode) {
     #ifndef _MSC_VER
     _fmode = mode;
     return 0;

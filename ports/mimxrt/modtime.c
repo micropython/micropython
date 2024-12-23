@@ -30,7 +30,7 @@
 #include "fsl_snvs_lp.h"
 
 // Return the localtime as an 8-tuple.
-STATIC mp_obj_t mp_time_localtime_get(void) {
+static mp_obj_t mp_time_localtime_get(void) {
     // Get current date and time.
     snvs_lp_srtc_datetime_t t;
     SNVS_LP_SRTC_GetDatetime(SNVS, &t);
@@ -48,7 +48,7 @@ STATIC mp_obj_t mp_time_localtime_get(void) {
 }
 
 // Return the number of seconds since the Epoch.
-STATIC mp_obj_t mp_time_time_get(void) {
+static mp_obj_t mp_time_time_get(void) {
     snvs_lp_srtc_datetime_t t;
     SNVS_LP_SRTC_GetDatetime(SNVS, &t);
     // EPOCH is 1970 for this port, which leads to the following trouble:

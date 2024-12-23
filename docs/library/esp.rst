@@ -62,12 +62,35 @@ Functions
 
 .. function:: flash_erase(sector_no)
 
-.. function:: osdebug(level)
+.. function:: osdebug(uart_no)
 
-    Turn esp os debugging messages on or off.
+    .. note:: This is the ESP8266 form of this function.
 
-    The *level* parameter sets the threshold for the log messages for all esp components.
-    The log levels are defined as constants:
+    Change the level of OS serial debug log messages. On boot,
+    OS serial debug log messages are disabled.
+
+    ``uart_no`` is the number of the UART peripheral which should receive
+    OS-level output, or ``None`` to disable OS serial debug log messages.
+
+.. function:: osdebug(uart_no, [level])
+    :no-index:
+
+    .. note:: This is the ESP32 form of this function.
+
+    Change the level of OS serial debug log messages. On boot, OS
+    serial debug log messages are limited to Error output only.
+
+    The behaviour of this function depends on the arguments passed to it. The
+    following combinations are supported:
+
+    ``osdebug(None)`` restores the default OS debug log message level
+    (``LOG_ERROR``).
+
+    ``osdebug(0)`` enables all available OS debug log messages (in the
+    default build configuration this is ``LOG_INFO``).
+
+    ``osdebug(0, level)`` sets the OS debug log message level to the
+     specified value. The log levels are defined as constants:
 
         * ``LOG_NONE`` -- No log output
         * ``LOG_ERROR`` -- Critical errors, software module can not recover on its own
@@ -76,6 +99,15 @@ Functions
         * ``LOG_DEBUG`` -- Extra information which is not necessary for normal use (values, pointers, sizes, etc)
         * ``LOG_VERBOSE`` -- Bigger chunks of debugging information, or frequent messages
           which can potentially flood the output
+
+    .. note:: ``LOG_DEBUG`` and ``LOG_VERBOSE`` are not compiled into the
+              MicroPython binary by default, to save size. A custom build with a
+              modified "``sdkconfig``" source file is needed to see any output
+              at these log levels.
+
+    .. note:: Log output on ESP32 is automatically suspended in "Raw REPL" mode,
+              to prevent communications issues. This means OS level logging is never
+              seen when using ``mpremote run`` and similar tools.
 
 .. function:: set_native_code_location(start, length)
 

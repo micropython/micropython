@@ -1,10 +1,10 @@
 # Test for VfsLittle using a RAM device
 
 try:
-    import os
+    import os, vfs
 
-    os.VfsLfs1
-    os.VfsLfs2
+    vfs.VfsLfs1
+    vfs.VfsLfs2
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -47,44 +47,44 @@ def test(bdev, vfs_class):
     vfs_class.mkfs(bdev)
 
     # construction
-    vfs = vfs_class(bdev)
+    fs = vfs_class(bdev)
 
     # statvfs
-    print(vfs.statvfs("/"))
+    print(fs.statvfs("/"))
 
     # open, write close
-    f = vfs.open("test", "w")
+    f = fs.open("test", "w")
     f.write("littlefs")
     f.close()
 
     # statvfs after creating a file
-    print(vfs.statvfs("/"))
+    print(fs.statvfs("/"))
 
     # ilistdir
-    print(list(vfs.ilistdir()))
-    print(list(vfs.ilistdir("/")))
-    print(list(vfs.ilistdir(b"/")))
+    print(list(fs.ilistdir()))
+    print(list(fs.ilistdir("/")))
+    print(list(fs.ilistdir(b"/")))
 
     # mkdir, rmdir
-    vfs.mkdir("testdir")
-    print(list(vfs.ilistdir()))
-    print(sorted(list(vfs.ilistdir("testdir"))))
-    vfs.rmdir("testdir")
-    print(list(vfs.ilistdir()))
-    vfs.mkdir("testdir")
+    fs.mkdir("testdir")
+    print(list(fs.ilistdir()))
+    print(sorted(list(fs.ilistdir("testdir"))))
+    fs.rmdir("testdir")
+    print(list(fs.ilistdir()))
+    fs.mkdir("testdir")
 
     # stat a file
-    print_stat(vfs.stat("test"))
+    print_stat(fs.stat("test"))
 
     # stat a dir (size seems to vary on LFS2 so don't print that)
-    print_stat(vfs.stat("testdir"), False)
+    print_stat(fs.stat("testdir"), False)
 
     # read
-    with vfs.open("test", "r") as f:
+    with fs.open("test", "r") as f:
         print(f.read())
 
     # create large file
-    with vfs.open("testbig", "w") as f:
+    with fs.open("testbig", "w") as f:
         data = "large012" * 32 * 16
         print("data length:", len(data))
         for i in range(4):
@@ -92,63 +92,63 @@ def test(bdev, vfs_class):
             f.write(data)
 
     # stat after creating large file
-    print(vfs.statvfs("/"))
+    print(fs.statvfs("/"))
 
     # rename
-    vfs.rename("testbig", "testbig2")
-    print(sorted(list(vfs.ilistdir())))
-    vfs.chdir("testdir")
-    vfs.rename("/testbig2", "testbig2")
-    print(sorted(list(vfs.ilistdir())))
-    vfs.rename("testbig2", "/testbig2")
-    vfs.chdir("/")
-    print(sorted(list(vfs.ilistdir())))
+    fs.rename("testbig", "testbig2")
+    print(sorted(list(fs.ilistdir())))
+    fs.chdir("testdir")
+    fs.rename("/testbig2", "testbig2")
+    print(sorted(list(fs.ilistdir())))
+    fs.rename("testbig2", "/testbig2")
+    fs.chdir("/")
+    print(sorted(list(fs.ilistdir())))
 
     # remove
-    vfs.remove("testbig2")
-    print(sorted(list(vfs.ilistdir())))
+    fs.remove("testbig2")
+    print(sorted(list(fs.ilistdir())))
 
     # getcwd, chdir
-    vfs.mkdir("/testdir2")
-    vfs.mkdir("/testdir/subdir")
-    print(vfs.getcwd())
-    vfs.chdir("/testdir")
-    print(vfs.getcwd())
+    fs.mkdir("/testdir2")
+    fs.mkdir("/testdir/subdir")
+    print(fs.getcwd())
+    fs.chdir("/testdir")
+    print(fs.getcwd())
 
     # create file in directory to make sure paths are relative
-    vfs.open("test2", "w").close()
-    print_stat(vfs.stat("test2"))
-    print_stat(vfs.stat("/testdir/test2"))
-    vfs.remove("test2")
+    fs.open("test2", "w").close()
+    print_stat(fs.stat("test2"))
+    print_stat(fs.stat("/testdir/test2"))
+    fs.remove("test2")
 
     # chdir back to root and remove testdir
-    vfs.chdir("/")
-    print(vfs.getcwd())
-    vfs.chdir("testdir")
-    print(vfs.getcwd())
-    vfs.chdir("..")
-    print(vfs.getcwd())
-    vfs.chdir("testdir/subdir")
-    print(vfs.getcwd())
-    vfs.chdir("../..")
-    print(vfs.getcwd())
-    vfs.chdir("/./testdir2")
-    print(vfs.getcwd())
-    vfs.chdir("../testdir")
-    print(vfs.getcwd())
-    vfs.chdir("../..")
-    print(vfs.getcwd())
-    vfs.chdir(".//testdir")
-    print(vfs.getcwd())
-    vfs.chdir("subdir/./")
-    print(vfs.getcwd())
-    vfs.chdir("/")
-    print(vfs.getcwd())
-    vfs.rmdir("testdir/subdir")
-    vfs.rmdir("testdir")
-    vfs.rmdir("testdir2")
+    fs.chdir("/")
+    print(fs.getcwd())
+    fs.chdir("testdir")
+    print(fs.getcwd())
+    fs.chdir("..")
+    print(fs.getcwd())
+    fs.chdir("testdir/subdir")
+    print(fs.getcwd())
+    fs.chdir("../..")
+    print(fs.getcwd())
+    fs.chdir("/./testdir2")
+    print(fs.getcwd())
+    fs.chdir("../testdir")
+    print(fs.getcwd())
+    fs.chdir("../..")
+    print(fs.getcwd())
+    fs.chdir(".//testdir")
+    print(fs.getcwd())
+    fs.chdir("subdir/./")
+    print(fs.getcwd())
+    fs.chdir("/")
+    print(fs.getcwd())
+    fs.rmdir("testdir/subdir")
+    fs.rmdir("testdir")
+    fs.rmdir("testdir2")
 
 
 bdev = RAMBlockDevice(30)
-test(bdev, os.VfsLfs1)
-test(bdev, os.VfsLfs2)
+test(bdev, vfs.VfsLfs1)
+test(bdev, vfs.VfsLfs2)

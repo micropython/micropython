@@ -26,7 +26,9 @@
 #ifndef MICROPY_INCLUDED_STM32_MPU_H
 #define MICROPY_INCLUDED_STM32_MPU_H
 
-#if (defined(STM32F4) && defined(MICROPY_HW_ETH_MDC)) || defined(STM32F7) || defined(STM32H7)
+#include "irq.h"
+
+#if (defined(STM32F4) && defined(MICROPY_HW_ETH_MDC)) || defined(STM32F7) || defined(STM32H7) || defined(STM32WB)
 
 #define MPU_REGION_ETH      (MPU_REGION_NUMBER0)
 #define MPU_REGION_QSPI1    (MPU_REGION_NUMBER1)
@@ -35,7 +37,23 @@
 #define MPU_REGION_SDRAM1   (MPU_REGION_NUMBER4)
 #define MPU_REGION_SDRAM2   (MPU_REGION_NUMBER5)
 
-#define MPU_CONFIG_DISABLE(srd, size) ( \
+// Only relevant on CPUs with D-Cache, must be higher priority than SDRAM
+#define MPU_REGION_DMA_UNCACHED_1 (MPU_REGION_NUMBER6)
+#define MPU_REGION_DMA_UNCACHED_2 (MPU_REGION_NUMBER7)
+
+#ifdef MPU_REGION_NUMBER8
+#define MPU_REGION_OPENAMP  (MPU_REGION_NUMBER8)
+#define MPU_REGION_LAST_USED (MPU_REGION_NUMBER8)
+#else
+#define MPU_REGION_LAST_USED (MPU_REGION_NUMBER7)
+#endif
+
+// Attribute value to disable a region entirely, remove it from the MPU
+// (i.e. the MPU_REGION_ENABLE bit is unset.)
+#define MPU_CONFIG_DISABLE 0
+
+// Configure a region with all access disabled. Can also set a Subregion Disable mask.
+#define MPU_CONFIG_NOACCESS(srd, size) ( \
     MPU_INSTRUCTION_ACCESS_DISABLE << MPU_RASR_XN_Pos \
         | MPU_REGION_NO_ACCESS << MPU_RASR_AP_Pos \
         | MPU_TEX_LEVEL0 << MPU_RASR_TEX_Pos \
@@ -71,6 +89,30 @@
         | MPU_REGION_ENABLE << MPU_RASR_ENABLE_Pos \
     )
 
+#define MPU_CONFIG_UNCACHED(size) ( \
+    MPU_INSTRUCTION_ACCESS_DISABLE << MPU_RASR_XN_Pos \
+        | MPU_REGION_FULL_ACCESS << MPU_RASR_AP_Pos \
+        | MPU_TEX_LEVEL1 << MPU_RASR_TEX_Pos \
+        | MPU_ACCESS_NOT_SHAREABLE << MPU_RASR_S_Pos \
+        | MPU_ACCESS_NOT_CACHEABLE << MPU_RASR_C_Pos \
+        | MPU_ACCESS_NOT_BUFFERABLE << MPU_RASR_B_Pos \
+        | 0x00 << MPU_RASR_SRD_Pos \
+        | (size) << MPU_RASR_SIZE_Pos \
+        | MPU_REGION_ENABLE << MPU_RASR_ENABLE_Pos \
+    )
+
+#define MPU_CONFIG_SHARED_UNCACHED(size) ( \
+    MPU_INSTRUCTION_ACCESS_DISABLE << MPU_RASR_XN_Pos \
+        | MPU_REGION_FULL_ACCESS << MPU_RASR_AP_Pos \
+        | MPU_TEX_LEVEL1 << MPU_RASR_TEX_Pos \
+        | MPU_ACCESS_SHAREABLE << MPU_RASR_S_Pos \
+        | MPU_ACCESS_NOT_CACHEABLE << MPU_RASR_C_Pos \
+        | MPU_ACCESS_NOT_BUFFERABLE << MPU_RASR_B_Pos \
+        | 0x00 << MPU_RASR_SRD_Pos \
+        | (size) << MPU_RASR_SIZE_Pos \
+        | MPU_REGION_ENABLE << MPU_RASR_ENABLE_Pos \
+    )
+
 static inline void mpu_init(void) {
     MPU->CTRL = MPU_PRIVILEGED_DEFAULT | MPU_CTRL_ENABLE_Msk;
     SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
@@ -99,6 +141,7 @@ static inline void mpu_config_end(uint32_t irq_state) {
 
 #define MPU_REGION_SIG      (MPU_REGION_NUMBER0)
 #define MPU_REGION_ETH      (MPU_REGION_NUMBER1)
+#define MPU_REGION_LAST_USED (MPU_REGION_NUMBER1)
 
 #define ST_DEVICE_SIGNATURE_BASE (0x08fff800)
 #define ST_DEVICE_SIGNATURE_LIMIT (0x08ffffff)

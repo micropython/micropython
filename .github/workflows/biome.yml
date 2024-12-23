@@ -1,0 +1,16 @@
+name: JavaScript code lint and formatting with Biome
+
+on: [push, pull_request]
+
+jobs:
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Biome
+      uses: biomejs/setup-biome@v2
+      with:
+        version: 1.5.3
+    - name: Run Biome
+      run: biome ci --indent-style=space --indent-width=4 tests/ ports/webassembly

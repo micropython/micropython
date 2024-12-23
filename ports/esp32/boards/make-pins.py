@@ -1,185 +1,67 @@
 #!/usr/bin/env python
 
-import argparse
+import os
 import sys
-import csv
-import re
 
-MAX_CPU_PINS = 49
-
-
-def parse_pin(name_str):
-    """Parses a string and returns a pin number."""
-    if len(name_str) < 2:
-        raise ValueError("Expecting pin name to be at least 2 characters.")
-    if not name_str.startswith("GPIO"):
-        raise ValueError("Expecting pin name to start with GPIO")
-    return int(re.findall(r"\d+$", name_str)[0])
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../tools"))
+import boardgen
 
 
-class Pin:
-    def __init__(self, pin):
-        self.pin = pin
-        self.is_board = False
-
-    def cpu_pin_name(self):
-        return "GPIO{:d}".format(self.pin)
-
-    def is_board_pin(self):
-        return self.is_board
-
-    def set_is_board_pin(self):
-        self.is_board = True
+# Pins start at zero, and the highest pin index on any ESP32* chip is 48.
+NUM_GPIOS = 49
 
 
-class NamedPin:
-    def __init__(self, name, pin):
-        self._name = name
-        self._pin = pin
+class Esp32Pin(boardgen.Pin):
+    # Required by NumericPinGenerator.
+    def index(self):
+        return int(self._cpu_pin_name[4:])
 
-    def pin(self):
-        return self._pin
+    # The IDF provides `GPIO_NUM_x = x` as an enum.
+    def index_name(self):
+        return "GPIO_NUM_{:d}".format(self.index())
 
-    def name(self):
-        return self._name
+    # Emit the combined struct which contains both the pin and irq instances.
+    def definition(self):
+        return "{ .base = { .type = &machine_pin_type }, .irq = { .base = { .type = &machine_pin_irq_type } } }"
+
+    # This script isn't family-aware, so we always emit the maximum number of
+    # pins and rely on the `MICROPY_HW_ENABLE_GPIOn` macros defined in
+    # machine_pin.h to figure out which ones are actually available.
+    def enable_macro(self):
+        return "MICROPY_HW_ENABLE_{}".format(self._cpu_pin_name)
+
+    # ESP32 cpu names must be "GPIOn".
+    @staticmethod
+    def validate_cpu_pin_name(cpu_pin_name):
+        boardgen.Pin.validate_cpu_pin_name(cpu_pin_name)
+
+        if not cpu_pin_name.startswith("GPIO") or not cpu_pin_name[4:].isnumeric():
+            raise boardgen.PinGeneratorError(
+                "Invalid cpu pin name '{}', must be 'GPIOn'".format(cpu_pin_name)
+            )
+
+        if not (0 <= int(cpu_pin_name[4:]) < NUM_GPIOS):
+            raise boardgen.PinGeneratorError("Unknown cpu pin '{}'".format(cpu_pin_name))
 
 
-class Pins:
+class Esp32PinGenerator(boardgen.NumericPinGenerator):
     def __init__(self):
-        self.cpu_pins = []  # list of NamedPin objects
-        self.board_pins = []  # list of NamedPin objects
+        # Use custom pin type above.
+        super().__init__(pin_type=Esp32Pin)
 
-    def find_pin(self, pin_name):
-        for pin in self.cpu_pins:
-            if pin.name() == pin_name:
-                return pin.pin()
+        # Pre-define the pins (i.e. don't require them to be listed in pins.csv).
+        for i in range(NUM_GPIOS):
+            self.add_cpu_pin("GPIO{}".format(i))
 
-    def create_pins(self):
-        for pin_num in range(MAX_CPU_PINS):
-            pin = Pin(pin_num)
-            self.cpu_pins.append(NamedPin(pin.cpu_pin_name(), pin))
+    # Only use pre-defined cpu pins (do not let board.csv create them).
+    def find_pin_by_cpu_pin_name(self, cpu_pin_name, create=True):
+        return super().find_pin_by_cpu_pin_name(cpu_pin_name, create=False)
 
-    def parse_board_file(self, filename):
-        with open(filename, "r") as csvfile:
-            rows = csv.reader(csvfile)
-            for row in rows:
-                if len(row) == 0 or row[0].startswith("#"):
-                    # Skip empty lines, and lines starting with "#"
-                    continue
-                if len(row) != 2:
-                    raise ValueError("Expecting two entries in a row")
-
-                cpu_pin_name = row[1]
-                parse_pin(cpu_pin_name)
-                pin = self.find_pin(cpu_pin_name)
-                if not pin:
-                    raise ValueError("Unknown pin {}".format(cpu_pin_name))
-                pin.set_is_board_pin()
-                if row[0]:  # Only add board pins that have a name
-                    self.board_pins.append(NamedPin(row[0], pin))
-
-    def print_table(self, label, named_pins, out_source):
-        print("", file=out_source)
-        print(
-            "const machine_{}_obj_t machine_{}_obj_table[GPIO_NUM_MAX] = {{".format(label, label),
-            file=out_source,
-        )
-        for pin in named_pins:
-            print("    #if MICROPY_HW_ENABLE_{}".format(pin.name()), file=out_source)
-            print(
-                "    [GPIO_NUM_{}] = {{ .base = {{ .type = &machine_{}_type }} }},".format(
-                    pin.pin().pin, label
-                ),
-                file=out_source,
-            )
-            print("    #endif", file=out_source)
-        print("};", file=out_source)
-
-    def print_named(self, label, named_pins, out_source):
-        print("", file=out_source)
-        print(
-            "STATIC const mp_rom_map_elem_t machine_pin_{:s}_pins_locals_dict_table[] = {{".format(
-                label
-            ),
-            file=out_source,
-        )
-        for named_pin in named_pins:
-            pin = named_pin.pin()
-            print(
-                "  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&pin_{:s}) }},".format(
-                    named_pin.name(), pin.cpu_pin_name()
-                ),
-                file=out_source,
-            )
-
-        print("};", file=out_source)
-        print(
-            "MP_DEFINE_CONST_DICT(machine_pin_{:s}_pins_locals_dict, machine_pin_{:s}_pins_locals_dict_table);".format(
-                label, label
-            ),
-            file=out_source,
-        )
-
-    def print_tables(self, out_source):
-        self.print_table("pin", self.cpu_pins, out_source)
-        self.print_table("pin_irq", self.cpu_pins, out_source)
-        self.print_named("board", self.board_pins, out_source)
-
-    def print_header(self, out_header):
-        # Provide #defines for each cpu pin.
-        for named_pin in self.cpu_pins:
-            pin = named_pin.pin()
-            n = pin.cpu_pin_name()
-            print("#if MICROPY_HW_ENABLE_{}".format(n), file=out_header)
-            print(
-                "#define pin_{:s} (machine_pin_obj_table[{}])".format(n, pin.pin),
-                file=out_header,
-            )
-            print("#endif", file=out_header)
-
-        # Provide #define's mapping board to cpu name.
-        for named_pin in self.board_pins:
-            if named_pin.pin().is_board_pin():
-                print(
-                    "#define pin_{:s} pin_{:s}".format(
-                        named_pin.name(), named_pin.pin().cpu_pin_name()
-                    ),
-                    file=out_header,
-                )
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Generate board specific pin file")
-    parser.add_argument("--board-csv")
-    parser.add_argument("--prefix")
-    parser.add_argument("--output-source")
-    parser.add_argument("--output-header")
-    args = parser.parse_args(sys.argv[1:])
-
-    pins = Pins()
-    pins.create_pins()
-
-    if args.board_csv:
-        pins.parse_board_file(args.board_csv)
-
-    with open(args.output_source, "w") as out_source:
-        print("// This file was automatically generated by make-pins.py", file=out_source)
-        print("//", file=out_source)
-
-        if args.board_csv:
-            print("// --board-csv {:s}".format(args.board_csv), file=out_source)
-
-        if args.prefix:
-            print("// --prefix {:s}".format(args.prefix), file=out_source)
-            print("", file=out_source)
-            with open(args.prefix, "r") as prefix_file:
-                print(prefix_file.read(), end="", file=out_source)
-
-        pins.print_tables(out_source)
-
-    with open(args.output_header, "w") as out_header:
-        pins.print_header(out_header)
+    # This is provided by the IDF and is one more than the highest available
+    # GPIO num.
+    def cpu_table_size(self):
+        return "GPIO_NUM_MAX"
 
 
 if __name__ == "__main__":
-    main()
+    Esp32PinGenerator().main()

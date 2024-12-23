@@ -58,7 +58,7 @@ If importing an .mpy file fails then try the following:
     sys_mpy = sys.implementation._mpy
     arch = [None, 'x86', 'x64',
         'armv6', 'armv6m', 'armv7m', 'armv7em', 'armv7emsp', 'armv7emdp',
-        'xtensa', 'xtensawin'][sys_mpy >> 10]
+        'xtensa', 'xtensawin', 'rv32imc'][sys_mpy >> 10]
     print('mpy version:', sys_mpy & 0xff)
     print('mpy sub-version:', sys_mpy >> 8 & 3)
     print('mpy flags:', end='')
@@ -86,7 +86,8 @@ and .mpy version.
 =================== ============
 MicroPython release .mpy version
 =================== ============
-v1.22.0 and up      6.2
+v1.23.0 and up      6.3
+v1.22.x             6.2
 v1.20 - v1.21.0     6.1
 v1.19.x             6
 v1.12 - v1.18       5
@@ -102,6 +103,7 @@ MicroPython repository at which the .mpy version was changed.
 =================== ========================================
 .mpy version change Git commit
 =================== ========================================
+6.2 to 6.3          bdbc869f9ea200c0d28b2bc7bfb60acd9d884e1b
 6.1 to 6.2          6967ff3c581a66f73e9f3d78975f47528db39980
 6 to 6.1            d94141e1473aebae0d3c63aeaa8397651ad6fa01
 5 to 6              f2040bfc7ee033e48acef9f289790f3b4e6b74e5

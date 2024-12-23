@@ -21,6 +21,7 @@ implementation and the best practices to use them.
 
    glossary.rst
    repl.rst
+   reset_boot.rst
    mpremote.rst
    mpyfiles.rst
    isr_rules.rst
@@ -31,3 +32,4 @@ implementation and the best practices to use them.
    asm_thumb2_index.rst
    filesystem.rst
    pyboard.py.rst
+   micropython2_migration.rst

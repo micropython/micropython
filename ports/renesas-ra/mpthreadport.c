@@ -34,7 +34,7 @@
 #if MICROPY_PY_THREAD
 
 // the mutex controls access to the linked list
-STATIC mp_thread_mutex_t thread_mutex;
+static mp_thread_mutex_t thread_mutex;
 
 void mp_thread_init(void) {
     mp_thread_mutex_init(&thread_mutex);

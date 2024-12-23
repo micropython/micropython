@@ -1,10 +1,10 @@
 # Test for VfsLittle using a RAM device, with mount/umount
 
 try:
-    import os
+    import os, vfs
 
-    os.VfsLfs1
-    os.VfsLfs2
+    vfs.VfsLfs1
+    vfs.VfsLfs2
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -42,7 +42,7 @@ def test(vfs_class):
 
     # mount bdev unformatted
     try:
-        os.mount(bdev, "/lfs")
+        vfs.mount(bdev, "/lfs")
     except Exception as er:
         print(repr(er))
 
@@ -50,10 +50,10 @@ def test(vfs_class):
     vfs_class.mkfs(bdev)
 
     # construction
-    vfs = vfs_class(bdev)
+    fs = vfs_class(bdev)
 
     # mount
-    os.mount(vfs, "/lfs")
+    vfs.mount(fs, "/lfs")
 
     # import
     with open("/lfs/lfsmod.py", "w") as f:
@@ -73,11 +73,11 @@ def test(vfs_class):
     import lfsmod2
 
     # umount
-    os.umount("/lfs")
+    vfs.umount("/lfs")
 
     # mount read-only
-    vfs = vfs_class(bdev)
-    os.mount(vfs, "/lfs", readonly=True)
+    fs = vfs_class(bdev)
+    vfs.mount(fs, "/lfs", readonly=True)
 
     # test reading works
     with open("/lfs/subdir/lfsmod2.py") as f:
@@ -90,13 +90,13 @@ def test(vfs_class):
         print(repr(er))
 
     # umount
-    os.umount("/lfs")
+    vfs.umount("/lfs")
 
     # mount bdev again
-    os.mount(bdev, "/lfs")
+    vfs.mount(bdev, "/lfs")
 
     # umount
-    os.umount("/lfs")
+    vfs.umount("/lfs")
 
     # clear imported modules
     sys.modules.clear()
@@ -110,5 +110,5 @@ sys.path.append("/lfs")
 sys.path.append("")
 
 # run tests
-test(os.VfsLfs1)
-test(os.VfsLfs2)
+test(vfs.VfsLfs1)
+test(vfs.VfsLfs2)

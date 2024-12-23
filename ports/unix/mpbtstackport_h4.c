@@ -24,13 +24,15 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+
+#if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK && MICROPY_BLUETOOTH_BTSTACK_H4
+
 #include <pthread.h>
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-
-#if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK && MICROPY_BLUETOOTH_BTSTACK_H4
 
 #include "lib/btstack/src/hci_transport_h4.h"
 #include "lib/btstack/chipset/zephyr/btstack_chipset_zephyr.h"
@@ -42,7 +44,7 @@
 
 #define DEBUG_printf(...) // printf(__VA_ARGS__)
 
-STATIC hci_transport_config_uart_t hci_transport_config_uart = {
+static hci_transport_config_uart_t hci_transport_config_uart = {
     .type = HCI_TRANSPORT_CONFIG_UART,
     .baudrate_init = 1000000,
     .baudrate_main = 0,

@@ -87,12 +87,42 @@
 #define MICROPY_HW_ENABLE_GPIO11 (1)
 #define MICROPY_HW_ENABLE_GPIO12 (1)
 #define MICROPY_HW_ENABLE_GPIO13 (1)
-#if !CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+#if !MICROPY_HW_ESP_USB_SERIAL_JTAG
 #define MICROPY_HW_ENABLE_GPIO18 (1)
 #define MICROPY_HW_ENABLE_GPIO19 (1)
 #endif
 #define MICROPY_HW_ENABLE_GPIO20 (1)
 #define MICROPY_HW_ENABLE_GPIO21 (1)
+
+#elif CONFIG_IDF_TARGET_ESP32C6
+
+#define MICROPY_HW_ENABLE_GPIO0 (1)
+#define MICROPY_HW_ENABLE_GPIO1 (1)
+#define MICROPY_HW_ENABLE_GPIO2 (1)
+#define MICROPY_HW_ENABLE_GPIO3 (1)
+#define MICROPY_HW_ENABLE_GPIO4 (1)
+#define MICROPY_HW_ENABLE_GPIO5 (1)
+#define MICROPY_HW_ENABLE_GPIO6 (1)
+#define MICROPY_HW_ENABLE_GPIO7 (1)
+#define MICROPY_HW_ENABLE_GPIO8 (1)
+#define MICROPY_HW_ENABLE_GPIO9 (1)
+#define MICROPY_HW_ENABLE_GPIO10 (1)
+#define MICROPY_HW_ENABLE_GPIO11 (1)
+#if !CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+#define MICROPY_HW_ENABLE_GPIO12 (1)
+#define MICROPY_HW_ENABLE_GPIO13 (1)
+#endif
+#define MICROPY_HW_ENABLE_GPIO14 (1)
+#define MICROPY_HW_ENABLE_GPIO15 (1)
+#define MICROPY_HW_ENABLE_GPIO16 (1)
+#define MICROPY_HW_ENABLE_GPIO17 (1)
+#define MICROPY_HW_ENABLE_GPIO18 (1)
+#define MICROPY_HW_ENABLE_GPIO19 (1)
+#define MICROPY_HW_ENABLE_GPIO20 (1)
+#define MICROPY_HW_ENABLE_GPIO21 (1)
+#define MICROPY_HW_ENABLE_GPIO22 (1)
+#define MICROPY_HW_ENABLE_GPIO23 (1)
+// GPIO 24-30 are used for spi/sip flash.
 
 #elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 
@@ -146,18 +176,18 @@
 
 #endif
 
-typedef struct _machine_pin_obj_t {
-    mp_obj_base_t base;
-} machine_pin_obj_t;
-
 typedef struct _machine_pin_irq_obj_t {
     mp_obj_base_t base;
 } machine_pin_irq_obj_t;
 
+typedef struct _machine_pin_obj_t {
+    mp_obj_base_t base;
+    machine_pin_irq_obj_t irq;
+} machine_pin_obj_t;
+
 extern const mp_obj_type_t machine_pin_irq_type;
 
 extern const machine_pin_obj_t machine_pin_obj_table[GPIO_NUM_MAX];
-extern const machine_pin_irq_obj_t machine_pin_irq_obj_table[GPIO_NUM_MAX];
 
 extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
 

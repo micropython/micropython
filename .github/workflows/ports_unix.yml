@@ -55,6 +55,18 @@ jobs:
       if: failure()
       run: tests/run-tests.py --print-failures
 
+  standard_v2:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: source tools/ci.sh && ci_unix_standard_v2_build
+    - name: Run main test suite
+      run: source tools/ci.sh && ci_unix_standard_v2_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
   coverage:
     runs-on: ubuntu-latest
     steps:
@@ -76,10 +88,11 @@ jobs:
         (cd ports/unix && gcov -o build-coverage/py ../../py/*.c || true)
         (cd ports/unix && gcov -o build-coverage/extmod ../../extmod/*.c || true)
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
         fail_ci_if_error: true
         verbose: true
+        token: ${{ secrets.CODECOV_TOKEN }}
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
@@ -181,10 +194,10 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   macos:
-    runs-on: macos-11.0
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.8'
     - name: Build
@@ -219,6 +232,20 @@ jobs:
       run: source tools/ci.sh && ci_unix_qemu_arm_build
     - name: Run main test suite
       run: source tools/ci.sh && ci_unix_qemu_arm_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
+  qemu_riscv64:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install packages
+      run: source tools/ci.sh && ci_unix_qemu_riscv64_setup
+    - name: Build
+      run: source tools/ci.sh && ci_unix_qemu_riscv64_build
+    - name: Run main test suite
+      run: source tools/ci.sh && ci_unix_qemu_riscv64_run_tests
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures

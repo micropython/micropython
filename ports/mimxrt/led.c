@@ -34,13 +34,13 @@
 #if defined(MICROPY_HW_LED1_PIN)
 
 const machine_led_obj_t machine_led_obj[] = {
-    { .base = {&machine_led_type}, .led_id = 1U, .led_pin = &MICROPY_HW_LED1_PIN, },
+    { .base = {&machine_led_type}, .led_id = 1U, .led_pin = MICROPY_HW_LED1_PIN, },
     #if defined(MICROPY_HW_LED2_PIN)
-    { .base = {&machine_led_type}, .led_id = 2U, .led_pin = &MICROPY_HW_LED2_PIN, },
+    { .base = {&machine_led_type}, .led_id = 2U, .led_pin = MICROPY_HW_LED2_PIN, },
     #if defined(MICROPY_HW_LED3_PIN)
-    { .base = {&machine_led_type}, .led_id = 3U, .led_pin = &MICROPY_HW_LED3_PIN, },
+    { .base = {&machine_led_type}, .led_id = 3U, .led_pin = MICROPY_HW_LED3_PIN, },
     #if defined(MICROPY_HW_LED4_PIN)
-    { .base = {&machine_led_type}, .led_id = 4U, .led_pin = &MICROPY_HW_LED4_PIN, },
+    { .base = {&machine_led_type}, .led_id = 4U, .led_pin = MICROPY_HW_LED4_PIN, },
     #endif
     #endif
     #endif

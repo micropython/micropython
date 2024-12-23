@@ -34,7 +34,7 @@
 #include "py/objint.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
-#include "py/stackctrl.h"
+#include "py/cstack.h"
 #include "py/stream.h" // for mp_obj_print
 
 // Allocates an object and also sets type, for mp_obj_malloc{,_var} macros.
@@ -43,6 +43,15 @@ MP_NOINLINE void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *ty
     base->type = type;
     return base;
 }
+
+#if MICROPY_ENABLE_FINALISER
+// Allocates an object and also sets type, for mp_obj_malloc{,_var}_with_finaliser macros.
+MP_NOINLINE void *mp_obj_malloc_with_finaliser_helper(size_t num_bytes, const mp_obj_type_t *type) {
+    mp_obj_base_t *base = (mp_obj_base_t *)m_malloc_with_finaliser(num_bytes);
+    base->type = type;
+    return base;
+}
+#endif
 
 const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_t o_in) {
     #if MICROPY_OBJ_IMMEDIATE_OBJS && MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
@@ -108,7 +117,7 @@ const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
 
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     // There can be data structures nested too deep, or just recursive
-    MP_STACK_CHECK();
+    mp_cstack_check();
     #ifndef NDEBUG
     if (o_in == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");

@@ -78,10 +78,16 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_OS_URANDOM               (1)
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (trng_random_u32())
 #define MICROPY_PY_MACHINE                  (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE      "ports/mimxrt/modmachine.c"
+#define MICROPY_PY_MACHINE_RESET            (1)
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
+#define MICROPY_PY_MACHINE_BOOTLOADER       (1)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_MACHINE_ADC              (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/mimxrt/machine_adc.c"
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
+#define MICROPY_PY_MACHINE_DHT_READINTO     (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_PWM              (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/mimxrt/machine_pwm.c"
@@ -108,13 +114,16 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_UART             (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/mimxrt/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
+#define MICROPY_PY_MACHINE_UART_IRQ         (1)
 #define MICROPY_PY_ONEWIRE                  (1)
 
 // fatfs configuration used in ffconf.h
-#define MICROPY_FATFS_ENABLE_LFN            (1)
-#define MICROPY_FATFS_RPATH                 (2)
-#define MICROPY_FATFS_MAX_SS                (4096)
+#define MICROPY_FATFS_ENABLE_LFN            (2)
 #define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_USE_LABEL             (1)
+#define MICROPY_FATFS_RPATH                 (2)
+#define MICROPY_FATFS_MULTI_PARTITION       (1)
+#define MICROPY_FATFS_MAX_SS                (4096)
 
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK                  (1)
@@ -125,14 +134,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP)
 #define MICROPY_PY_LWIP_SOCK_RAW            (MICROPY_PY_LWIP)
-// #define MICROPY_PY_HASHLIB_MD5              (MICROPY_PY_SSL)
+#define MICROPY_PY_HASHLIB_MD5              (MICROPY_PY_SSL)
 #define MICROPY_PY_HASHLIB_SHA1             (MICROPY_PY_SSL)
-// #define MICROPY_PY_CRYPTOLIB                (MICROPY_PY_SSL)
-
-// Prevent the "LWIP task" from running.
-#define MICROPY_PY_LWIP_ENTER   MICROPY_PY_PENDSV_ENTER
-#define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
-#define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
+#define MICROPY_PY_CRYPTOLIB                (MICROPY_PY_SSL)
 
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
@@ -146,29 +150,10 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
 #endif
 
-// For regular code that wants to prevent "background tasks" from running.
-// These background tasks (LWIP, Bluetooth) run in PENDSV context.
-// TODO: Check for the settings of the STM32 port in irq.h
-#define NVIC_PRIORITYGROUP_4    ((uint32_t)0x00000003)
-#define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 15, 0)
-#define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
+#define MICROPY_HW_ENABLE_USBDEV            (1)
+#define MICROPY_HW_USB_CDC                  (1)
 
 // Hooks to add builtins
-
-__attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
-    __set_PRIMASK(state);
-}
-
-__attribute__((always_inline)) static inline uint32_t disable_irq(void) {
-    uint32_t state = __get_PRIMASK();
-    __disable_irq();
-    return state;
-}
-
-#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
-#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
 #if defined(IOMUX_TABLE_ENET)
 extern const struct _mp_obj_type_t network_lan_type;
@@ -205,6 +190,14 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID (0xf055)
+#endif
+
+#ifndef MICROPY_HW_USB_PID
+#define MICROPY_HW_USB_PID (0x9802)
+#endif
+
 #ifndef  MICROPY_EVENT_POLL_HOOK
 #define MICROPY_EVENT_POLL_HOOK \
     do { \

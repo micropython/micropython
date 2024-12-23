@@ -56,7 +56,7 @@ A simple example would be:
     import espnow
 
     # A WLAN interface must be active to send()/recv()
-    sta = network.WLAN(network.STA_IF)  # Or network.AP_IF
+    sta = network.WLAN(network.WLAN.IF_STA)  # Or network.WLAN.IF_AP
     sta.active(True)
     sta.disconnect()      # For ESP8266
 
@@ -76,7 +76,7 @@ A simple example would be:
     import espnow
 
     # A WLAN interface must be active to send()/recv()
-    sta = network.WLAN(network.STA_IF)
+    sta = network.WLAN(network.WLAN.IF_STA)
     sta.active(True)
     sta.disconnect()   # Because ESP8266 auto-connects to last Access Point
 
@@ -182,14 +182,14 @@ Configuration
 Sending and Receiving Data
 --------------------------
 
-A wifi interface (``network.STA_IF`` or ``network.AP_IF``) must be
+A wifi interface (``network.WLAN.IF_STA`` or ``network.WLAN.IF_AP``) must be
 `active()<network.WLAN.active>` before messages can be sent or received,
 but it is not necessary to connect or configure the WLAN interface.
 For example::
 
     import network
 
-    sta = network.WLAN(network.STA_IF)
+    sta = network.WLAN(network.WLAN.IF_STA)
     sta.active(True)
     sta.disconnect()    # For ESP8266
 
@@ -441,12 +441,14 @@ must first register the sender and use the same encryption keys as the sender
 
         - *channel*: The wifi channel (2.4GHz) to communicate with this peer.
           Must be an integer from 0 to 14. If channel is set to 0 the current
-          channel of the wifi device will be used. (default=0)
+          channel of the wifi device will be used, if channel is set to another
+          value then this must match the channel currently configured on the
+          interface (see :func:`WLAN.config`). (default=0)
 
         - *ifidx*: (ESP32 only) Index of the wifi interface which will be
           used to send data to this peer. Must be an integer set to
-          ``network.STA_IF`` (=0) or ``network.AP_IF`` (=1).
-          (default=0/``network.STA_IF``). See `ESPNow and Wifi Operation`_
+          ``network.WLAN.IF_STA`` (=0) or ``network.WLAN.IF_AP`` (=1).
+          (default=0/``network.WLAN.IF_STA``). See `ESPNow and Wifi Operation`_
           below for more information.
 
         - *encrypt*: (ESP32 only) If set to ``True`` data exchanged with
@@ -470,6 +472,9 @@ must first register the sender and use the same encryption keys as the sender
           registered.
         - ``OSError(num, "ESP_ERR_ESPNOW_FULL")`` if too many peers are
           already registered.
+        - ``OSError(num, "ESP_ERR_ESPNOW_CHAN")`` if a channel value was
+          set that doesn't match the channel currently configured for this
+          interface.
         - ``ValueError()`` on invalid keyword args or values.
 
 .. method:: ESPNow.del_peer(mac)
@@ -588,7 +593,7 @@ api-reference/network/esp_now.html#api-reference>`_. For example::
         elif err.args[1] == 'ESP_ERR_ESPNOW_NOT_FOUND':
             e.add_peer(peer)
         elif err.args[1] == 'ESP_ERR_ESPNOW_IF':
-            network.WLAN(network.STA_IF).active(True)
+            network.WLAN(network.WLAN.IF_STA).active(True)
         else:
             raise err
 
@@ -645,7 +650,7 @@ A small async server example::
     import asyncio
 
     # A WLAN interface must be active to send()/recv()
-    network.WLAN(network.STA_IF).active(True)
+    network.WLAN(network.WLAN.IF_STA).active(True)
 
     e = aioespnow.AIOESPNow()  # Returns AIOESPNow enhanced with async support
     e.active(True)
@@ -747,8 +752,8 @@ ESPNow and Wifi Operation
 -------------------------
 
 ESPNow messages may be sent and received on any `active()<network.WLAN.active>`
-`WLAN<network.WLAN()>` interface (``network.STA_IF`` or ``network.AP_IF``), even
-if that interface is also connected to a wifi network or configured as an access
+`WLAN<network.WLAN()>` interface (``network.WLAN.IF_STA`` or ``network.WLAN.IF_AP``),
+even if that interface is also connected to a wifi network or configured as an access
 point. When an ESP32 or ESP8266 device connects to a Wifi Access Point (see
 `ESP32 Quickref <../esp32/quickref.html#networking>`__) the following things
 happen which affect ESPNow communications:
@@ -832,8 +837,8 @@ Other issues to take care with when using ESPNow with wifi are:
     import network, time
 
     def wifi_reset():   # Reset wifi to AP_IF off, STA_IF on and disconnected
-      sta = network.WLAN(network.STA_IF); sta.active(False)
-      ap = network.WLAN(network.AP_IF); ap.active(False)
+      sta = network.WLAN(network.WLAN.IF_STA); sta.active(False)
+      ap = network.WLAN(network.WLAN.IF_AP); ap.active(False)
       sta.active(True)
       while not sta.active():
           time.sleep(0.1)

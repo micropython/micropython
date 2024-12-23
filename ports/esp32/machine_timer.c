@@ -30,14 +30,15 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "modmachine.h"
-#include "mphalport.h"
 
 #include "hal/timer_hal.h"
 #include "hal/timer_ll.h"
 #include "soc/timer_periph.h"
+#include "machine_timer.h"
 
 #define TIMER_DIVIDER  8
 
@@ -46,28 +47,9 @@
 
 #define TIMER_FLAGS    0
 
-typedef struct _machine_timer_obj_t {
-    mp_obj_base_t base;
-
-    timer_hal_context_t hal_context;
-    mp_uint_t group;
-    mp_uint_t index;
-
-    mp_uint_t repeat;
-    // ESP32 timers are 64-bit
-    uint64_t period;
-
-    mp_obj_t callback;
-
-    intr_handle_t handle;
-
-    struct _machine_timer_obj_t *next;
-} machine_timer_obj_t;
-
 const mp_obj_type_t machine_timer_type;
 
-STATIC void machine_timer_disable(machine_timer_obj_t *self);
-STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 
 void machine_timer_deinit_all(void) {
     // Disable, deallocate and remove all timers from list
@@ -80,19 +62,27 @@ void machine_timer_deinit_all(void) {
     }
 }
 
-STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_timer_obj_t *self = self_in;
     qstr mode = self->repeat ? MP_QSTR_PERIODIC : MP_QSTR_ONE_SHOT;
     uint64_t period = self->period / (TIMER_SCALE / 1000); // convert to ms
+    #if SOC_TIMER_GROUP_TIMERS_PER_GROUP == 1
+    mp_printf(print, "Timer(%u, mode=%q, period=%lu)", self->group, mode, period);
+    #else
     mp_printf(print, "Timer(%u, mode=%q, period=%lu)", (self->group << 1) | self->index, mode, period);
+    #endif
 }
 
-STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-    mp_uint_t group = (mp_obj_get_int(args[0]) >> 1) & 1;
-    mp_uint_t index = mp_obj_get_int(args[0]) & 1;
+machine_timer_obj_t *machine_timer_create(mp_uint_t timer) {
 
     machine_timer_obj_t *self = NULL;
+    #if SOC_TIMER_GROUP_TIMERS_PER_GROUP == 1
+    mp_uint_t group = timer & 1;
+    mp_uint_t index = 0;
+    #else
+    mp_uint_t group = (timer >> 1) & 1;
+    mp_uint_t index = timer & 1;
+    #endif
 
     // Check whether the timer is already initialized, if so use it
     for (machine_timer_obj_t *t = MP_STATE_PORT(machine_timer_obj_head); t; t = t->next) {
@@ -111,6 +101,18 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
         self->next = MP_STATE_PORT(machine_timer_obj_head);
         MP_STATE_PORT(machine_timer_obj_head) = self;
     }
+    return self;
+}
+
+static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+
+    // Create the new timer.
+    uint32_t timer_number = mp_obj_get_int(args[0]);
+    if (timer_number >= SOC_TIMER_GROUP_TOTAL_TIMERS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid Timer number"));
+    }
+    machine_timer_obj_t *self = machine_timer_create(timer_number);
 
     if (n_args > 1 || n_kw > 0) {
         mp_map_t kw_args;
@@ -121,7 +123,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     return self;
 }
 
-STATIC void machine_timer_disable(machine_timer_obj_t *self) {
+void machine_timer_disable(machine_timer_obj_t *self) {
     if (self->hal_context.dev != NULL) {
         // Disable the counter and alarm.
         timer_ll_enable_counter(self->hal_context.dev, self->index, false);
@@ -138,7 +140,7 @@ STATIC void machine_timer_disable(machine_timer_obj_t *self) {
     // referenced elsewhere
 }
 
-STATIC void machine_timer_isr(void *self_in) {
+static void machine_timer_isr(void *self_in) {
     machine_timer_obj_t *self = self_in;
 
     uint32_t intr_status = timer_ll_get_intr_status(self->hal_context.dev);
@@ -153,11 +155,11 @@ STATIC void machine_timer_isr(void *self_in) {
     }
 }
 
-STATIC void machine_timer_enable(machine_timer_obj_t *self) {
+void machine_timer_enable(machine_timer_obj_t *self, void (*timer_isr)) {
     // Initialise the timer.
     timer_hal_init(&self->hal_context, self->group, self->index);
     timer_ll_enable_counter(self->hal_context.dev, self->index, false);
-    timer_ll_set_clock_source(self->hal_context.dev, self->index, GPTIMER_CLK_SRC_APB);
+    timer_ll_set_clock_source(self->hal_context.dev, self->index, GPTIMER_CLK_SRC_DEFAULT);
     timer_ll_set_clock_prescale(self->hal_context.dev, self->index, TIMER_DIVIDER);
     timer_hal_set_counter_value(&self->hal_context, 0);
     timer_ll_set_count_direction(self->hal_context.dev, self->index, GPTIMER_COUNT_UP);
@@ -167,7 +169,7 @@ STATIC void machine_timer_enable(machine_timer_obj_t *self) {
     timer_ll_clear_intr_status(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index));
     ESP_ERROR_CHECK(
         esp_intr_alloc(timer_group_periph_signals.groups[self->group].timer_irq_id[self->index],
-            TIMER_FLAGS, machine_timer_isr, self, &self->handle)
+            TIMER_FLAGS, timer_isr, self, &self->handle)
         );
     timer_ll_enable_intr(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index), true);
 
@@ -183,7 +185,7 @@ STATIC void machine_timer_enable(machine_timer_obj_t *self) {
     timer_ll_enable_counter(self->hal_context.dev, self->index, true);
 }
 
-STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
         ARG_mode,
         ARG_callback,
@@ -225,31 +227,31 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     self->callback = args[ARG_callback].u_obj;
     self->handle = NULL;
 
-    machine_timer_enable(self);
+    machine_timer_enable(self, machine_timer_isr);
 
     return mp_const_none;
 }
 
-STATIC mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
+static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
     machine_timer_disable(self_in);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit);
 
-STATIC mp_obj_t machine_timer_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t machine_timer_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return machine_timer_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_timer_init_obj, 1, machine_timer_init);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_timer_init_obj, 1, machine_timer_init);
 
-STATIC mp_obj_t machine_timer_value(mp_obj_t self_in) {
+static mp_obj_t machine_timer_value(mp_obj_t self_in) {
     machine_timer_obj_t *self = self_in;
     uint64_t result = timer_ll_get_counter_value(self->hal_context.dev, self->index);
     return MP_OBJ_NEW_SMALL_INT((mp_uint_t)(result / (TIMER_SCALE / 1000))); // value in ms
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_value_obj, machine_timer_value);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_value_obj, machine_timer_value);
 
-STATIC const mp_rom_map_elem_t machine_timer_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_timer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_timer_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_timer_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_timer_init_obj) },
@@ -257,7 +259,7 @@ STATIC const mp_rom_map_elem_t machine_timer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ONE_SHOT), MP_ROM_INT(false) },
     { MP_ROM_QSTR(MP_QSTR_PERIODIC), MP_ROM_INT(true) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_timer_locals_dict, machine_timer_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_timer_locals_dict, machine_timer_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_timer_type,
