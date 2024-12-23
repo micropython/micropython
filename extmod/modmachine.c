@@ -228,6 +228,9 @@ static const mp_rom_map_elem_t machine_module_globals_table[] = {
     #if MICROPY_PY_MACHINE_SPI
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_spi_type) },
     #endif
+    #if MICROPY_PY_MACHINE_WIZNET_PIO_SPI
+    { MP_ROM_QSTR(MP_QSTR_WIZNET_PIO_SPI), MP_ROM_PTR(&machine_wiznet_pio_spi_type) },
+    #endif
     #if MICROPY_PY_MACHINE_UART
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&machine_uart_type) },
     #endif
