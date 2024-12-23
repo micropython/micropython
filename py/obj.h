@@ -183,13 +183,14 @@ static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 1) | 1))
 
+#define MAKE_FLOAT_OBJ(f) MP_ROM_PTR((mp_obj_t)((((((uint64_t) f) & ~3) | 2) + 0x80800000) & 0xffffffff))
 #if MICROPY_PY_BUILTINS_FLOAT
-#define mp_const_float_e MP_ROM_PTR((mp_obj_t)(((0x402df854 & ~3) | 2) + 0x80800000))
-#define mp_const_float_pi MP_ROM_PTR((mp_obj_t)(((0x40490fdb & ~3) | 2) + 0x80800000))
+#define mp_const_float_e  MAKE_FLOAT_OBJ(0x402df854)
+#define mp_const_float_pi MAKE_FLOAT_OBJ(0x40490fdb)
 #if MICROPY_PY_MATH_CONSTANTS
-#define mp_const_float_tau MP_ROM_PTR((mp_obj_t)(((0x40c90fdb & ~3) | 2) + 0x80800000))
-#define mp_const_float_inf MP_ROM_PTR((mp_obj_t)(((0x7f800000 & ~3) | 2) + 0x80800000))
-#define mp_const_float_nan MP_ROM_PTR((mp_obj_t)(((0xffc00000 & ~3) | 2) + 0x80800000))
+#define mp_const_float_tau MAKE_FLOAT_OBJ(0x40c90fdb)
+#define mp_const_float_inf MAKE_FLOAT_OBJ(0x7f800000)
+#define mp_const_float_nan MAKE_FLOAT_OBJ(0xffc00000)
 #endif
 
 static inline bool mp_obj_is_float(mp_const_obj_t o) {
@@ -202,7 +203,7 @@ static inline mp_float_t mp_obj_float_get(mp_const_obj_t o) {
     union {
         mp_float_t f;
         mp_uint_t u;
-    } num = {.u = ((mp_uint_t)o - 0x80800000) & ~3};
+    } num = {.u = ((mp_uint_t)o - 0x80800000u) & ~3u};
     return num.f;
 }
 static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
@@ -210,7 +211,7 @@ static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
         mp_float_t f;
         mp_uint_t u;
     } num = {.f = f};
-    return (mp_obj_t)(((num.u & ~0x3) | 2) + 0x80800000);
+    return (mp_obj_t)(((num.u & ~0x3u) | 2u) + 0x80800000u);
 }
 #endif
 
