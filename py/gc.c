@@ -113,8 +113,8 @@
 #endif
 
 #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
-#define GC_ENTER() mp_thread_mutex_lock(&MP_STATE_MEM(gc_mutex), 1)
-#define GC_EXIT() mp_thread_mutex_unlock(&MP_STATE_MEM(gc_mutex))
+#define GC_ENTER() mp_thread_recursive_mutex_lock(&MP_STATE_MEM(gc_mutex), 1)
+#define GC_EXIT() mp_thread_recursive_mutex_unlock(&MP_STATE_MEM(gc_mutex))
 #else
 #define GC_ENTER()
 #define GC_EXIT()
@@ -211,7 +211,7 @@ void gc_init(void *start, void *end) {
     #endif
 
     #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
-    mp_thread_mutex_init(&MP_STATE_MEM(gc_mutex));
+    mp_thread_recursive_mutex_init(&MP_STATE_MEM(gc_mutex));
     #endif
 }
 
@@ -477,29 +477,21 @@ static void gc_deal_with_stack_overflow(void) {
     }
 }
 
-static void gc_sweep(void) {
-    #if MICROPY_PY_GC_COLLECT_RETVAL
-    MP_STATE_MEM(gc_collected) = 0;
-    #endif
-    // free unmarked heads and their tails
-    int free_tail = 0;
-    #if MICROPY_GC_SPLIT_HEAP_AUTO
-    mp_state_mem_area_t *prev_area = NULL;
-    #endif
+// Run finalisers for all to-be-freed blocks first
+// (necessary during gc_sweep_all() to avoid accessing already-freed memory)
+static void sweep_run_finalisers(void) {
+    #if MICROPY_ENABLE_FINALISER
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
-        size_t end_block = area->gc_alloc_table_byte_len * BLOCKS_PER_ATB;
-        if (area->gc_last_used_block < end_block) {
-            end_block = area->gc_last_used_block + 1;
-        }
-
-        size_t last_used_block = 0;
-
-        for (size_t block = 0; block < end_block; block++) {
-            MICROPY_GC_HOOK_LOOP(block);
-            switch (ATB_GET_KIND(area, block)) {
-                case AT_HEAD:
-                    #if MICROPY_ENABLE_FINALISER
-                    if (FTB_GET(area, block)) {
+        assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
+        // Small speed optimisation: skip over empty FTB blocks
+        size_t ftb_end = (area->gc_last_used_block + BLOCKS_PER_FTB) / BLOCKS_PER_FTB;
+        for (size_t ftb_idx = 0; ftb_idx < ftb_end; ftb_idx++) {
+            byte ftb = area->gc_finaliser_table_start[ftb_idx];
+            size_t block = ftb_idx * BLOCKS_PER_FTB;
+            while (ftb) {
+                MICROPY_GC_HOOK_LOOP(block);
+                if (ftb & 1) { // FTB_GET(area, block) shortcut
+                    if (ATB_GET_KIND(area, block) == AT_HEAD) {
                         mp_obj_base_t *obj = (mp_obj_base_t *)PTR_FROM_BLOCK(area, block);
                         if (obj->type != NULL) {
                             // if the object has a type then see if it has a __del__ method
@@ -510,7 +502,9 @@ static void gc_sweep(void) {
                                 #if MICROPY_ENABLE_SCHEDULER
                                 mp_sched_lock();
                                 #endif
+                                MP_STATE_MEM(gc_sweep_finaliser) = true;
                                 mp_call_function_1_protected(dest[0], dest[1]);
+                                MP_STATE_MEM(gc_sweep_finaliser) = false;
                                 #if MICROPY_ENABLE_SCHEDULER
                                 mp_sched_unlock();
                                 #endif
@@ -519,7 +513,35 @@ static void gc_sweep(void) {
                         // clear finaliser flag
                         FTB_CLEAR(area, block);
                     }
-                    #endif
+                }
+                ftb >>= 1;
+                block++;
+            }
+        }
+    }
+    #endif // MICROPY_ENABLE_FINALISER
+}
+
+static void gc_sweep(void) {
+    #if MICROPY_PY_GC_COLLECT_RETVAL
+    MP_STATE_MEM(gc_collected) = 0;
+    #endif
+    // free unmarked heads and their tails
+    int free_tail = 0;
+    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    mp_state_mem_area_t *prev_area = NULL;
+    #endif
+
+    sweep_run_finalisers();
+
+    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+        size_t last_used_block = 0;
+        assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
+
+        for (size_t block = 0; block <= area->gc_last_used_block; block++) {
+            MICROPY_GC_HOOK_LOOP(block);
+            switch (ATB_GET_KIND(area, block)) {
+                case AT_HEAD:
                     free_tail = 1;
                     DEBUG_printf("gc_sweep(%p)\n", (void *)PTR_FROM_BLOCK(area, block));
                     #if MICROPY_PY_GC_COLLECT_RETVAL
@@ -883,10 +905,16 @@ found:
 // force the freeing of a piece of memory
 // TODO: freeing here does not call finaliser
 void gc_free(void *ptr) {
-    if (MP_STATE_THREAD(gc_lock_depth) > 0) {
-        // Cannot free while the GC is locked. However free is an optimisation
-        // to reclaim the memory immediately, this means it will now be left
-        // until the next collection.
+    // Cannot free while the GC is locked. However free is an optimisation
+    // to reclaim the memory immediately, this means it will now be left
+    // until the next collection.
+    bool free_later = MP_STATE_THREAD(gc_lock_depth) > 0;
+    #if MICROPY_ENABLE_FINALISER
+    // Special case, free immediately if running finaliser from gc_sweep()
+    free_later = free_later && !MP_STATE_MEM(gc_sweep_finaliser);
+    #endif
+
+    if (free_later) {
         return;
     }
 
@@ -911,7 +939,12 @@ void gc_free(void *ptr) {
     #endif
 
     size_t block = BLOCK_FROM_PTR(area, ptr);
+    #if MICROPY_ENABLE_FINALISER
+    assert(ATB_GET_KIND(area, block) == AT_HEAD
+        || (ATB_GET_KIND(area, block) == AT_MARK && MP_STATE_MEM(gc_sweep_finaliser)));
+    #else
     assert(ATB_GET_KIND(area, block) == AT_HEAD);
+    #endif
 
     #if MICROPY_ENABLE_FINALISER
     FTB_CLEAR(area, block);
