@@ -80,6 +80,19 @@ static mp_obj_t alif_flash_make_new(const mp_obj_type_t *type, size_t n_args, si
     return MP_OBJ_FROM_PTR(self);
 }
 
+static mp_int_t alif_flash_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    alif_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (flags == MP_BUFFER_READ) {
+        bufinfo->buf = (void *)(ospi_flash_get_xip_base() + self->flash_base_addr);
+        bufinfo->len = self->flash_size;
+        bufinfo->typecode = 'B';
+        return 0;
+    } else {
+        // Can't return a writable buffer.
+        return 1;
+    }
+}
+
 static mp_obj_t alif_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     alif_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t offset = mp_obj_get_int(args[1]) * MICROPY_HW_FLASH_BLOCK_SIZE_BYTES;
@@ -157,6 +170,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Flash,
     MP_TYPE_FLAG_NONE,
     make_new, alif_flash_make_new,
+    buffer, alif_flash_get_buffer,
     locals_dict, &alif_flash_locals_dict
     );
 #endif // MICROPY_HW_ENABLE_OSPI
