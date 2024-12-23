@@ -47,6 +47,7 @@
 #define MICROPY_EMIT_INLINE_XTENSA  (1)
 #define MICROPY_EMIT_XTENSAWIN      (1)
 #define MICROPY_EMIT_RV32           (1)
+#define MICROPY_EMIT_INLINE_RV32    (1)
 #define MICROPY_EMIT_NATIVE_DEBUG   (1)
 #define MICROPY_EMIT_NATIVE_DEBUG_PRINTER (&mp_stdout_print)
 

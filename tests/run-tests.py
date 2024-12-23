@@ -138,11 +138,11 @@ platform_tests_to_skip = {
     ),
     "qemu": (
         # Skip tests that require Cortex-M4.
-        "inlineasm/asmfpaddsub.py",
-        "inlineasm/asmfpcmp.py",
-        "inlineasm/asmfpldrstr.py",
-        "inlineasm/asmfpmuldiv.py",
-        "inlineasm/asmfpsqrt.py",
+        "inlineasm/thumb/asmfpaddsub.py",
+        "inlineasm/thumb/asmfpcmp.py",
+        "inlineasm/thumb/asmfpldrstr.py",
+        "inlineasm/thumb/asmfpmuldiv.py",
+        "inlineasm/thumb/asmfpsqrt.py",
     ),
     "webassembly": (
         "basics/string_format_modulo.py",  # can't print nulls to stdout
@@ -232,6 +232,14 @@ def get_test_instance(test_instance, baudrate, user, password):
     return pyb
 
 
+def detect_inline_asm_arch(pyb, args):
+    for arch in ("rv32", "thumb", "xtensa"):
+        output = run_feature_check(pyb, args, "inlineasm_{}.py".format(arch))
+        if output.strip() == arch.encode():
+            return arch
+    return None
+
+
 def detect_test_platform(pyb, args):
     # Run a script to detect various bits of information about the target test instance.
     output = run_feature_check(pyb, args, "target_info.py")
@@ -240,15 +248,19 @@ def detect_test_platform(pyb, args):
     platform, arch = str(output, "ascii").strip().split()
     if arch == "None":
         arch = None
+    inlineasm_arch = detect_inline_asm_arch(pyb, args)
 
     args.platform = platform
     args.arch = arch
     if arch and not args.mpy_cross_flags:
         args.mpy_cross_flags = "-march=" + arch
+    args.inlineasm_arch = inlineasm_arch
 
     print("platform={}".format(platform), end="")
     if arch:
         print(" arch={}".format(arch), end="")
+    if inlineasm_arch:
+        print(" inlineasm={}".format(inlineasm_arch), end="")
     print()
 
 
@@ -601,6 +613,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_io_module = False
     skip_fstring = False
     skip_endian = False
+    skip_inlineasm = False
     has_complex = True
     has_coverage = False
 
@@ -661,20 +674,21 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if output != b"a=1\n":
             skip_fstring = True
 
-        # Check if @micropython.asm_thumb supports Thumb2 instructions, and skip such tests if it doesn't
-        output = run_feature_check(pyb, args, "inlineasm_thumb2.py")
-        if output != b"thumb2\n":
-            skip_tests.add("inlineasm/asmbcc.py")
-            skip_tests.add("inlineasm/asmbitops.py")
-            skip_tests.add("inlineasm/asmconst.py")
-            skip_tests.add("inlineasm/asmdiv.py")
-            skip_tests.add("inlineasm/asmfpaddsub.py")
-            skip_tests.add("inlineasm/asmfpcmp.py")
-            skip_tests.add("inlineasm/asmfpldrstr.py")
-            skip_tests.add("inlineasm/asmfpmuldiv.py")
-            skip_tests.add("inlineasm/asmfpsqrt.py")
-            skip_tests.add("inlineasm/asmit.py")
-            skip_tests.add("inlineasm/asmspecialregs.py")
+        if args.inlineasm_arch == "thumb":
+            # Check if @micropython.asm_thumb supports Thumb2 instructions, and skip such tests if it doesn't
+            output = run_feature_check(pyb, args, "inlineasm_thumb2.py")
+            if output != b"thumb2\n":
+                skip_tests.add("inlineasm/thumb/asmbcc.py")
+                skip_tests.add("inlineasm/thumb/asmbitops.py")
+                skip_tests.add("inlineasm/thumb/asmconst.py")
+                skip_tests.add("inlineasm/thumb/asmdiv.py")
+                skip_tests.add("inlineasm/thumb/asmfpaddsub.py")
+                skip_tests.add("inlineasm/thumb/asmfpcmp.py")
+                skip_tests.add("inlineasm/thumb/asmfpldrstr.py")
+                skip_tests.add("inlineasm/thumb/asmfpmuldiv.py")
+                skip_tests.add("inlineasm/thumb/asmfpsqrt.py")
+                skip_tests.add("inlineasm/thumb/asmit.py")
+                skip_tests.add("inlineasm/thumb/asmspecialregs.py")
 
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
@@ -698,6 +712,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             CPYTHON3_CMD + [base_path("feature_check/byteorder.py")]
         )
         skip_endian = upy_byteorder != cpy_byteorder
+
+        skip_inlineasm = args.inlineasm_arch is None
 
     # These tests don't test slice explicitly but rather use it to perform the test
     misc_slice_tests = (
@@ -852,6 +868,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_const = test_name.startswith("const")
         is_io_module = test_name.startswith("io_")
         is_fstring = test_name.startswith("string_fstring")
+        is_inlineasm = test_name.startswith("asm")
 
         skip_it = test_file in skip_tests
         skip_it |= skip_native and is_native
@@ -865,6 +882,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_revops and "reverse_op" in test_name
         skip_it |= skip_io_module and is_io_module
         skip_it |= skip_fstring and is_fstring
+        skip_it |= skip_inlineasm and is_inlineasm
 
         if skip_it:
             print("skip ", test_file)
@@ -1213,17 +1231,17 @@ the last matching regex is used:
                 "misc",
                 "extmod",
             )
+            if args.inlineasm_arch is not None:
+                test_dirs += ("inlineasm/{}".format(args.inlineasm_arch),)
             if args.platform == "pyboard":
                 # run pyboard tests
-                test_dirs += ("float", "stress", "inlineasm", "ports/stm32")
+                test_dirs += ("float", "stress", "ports/stm32")
             elif args.platform == "mimxrt":
-                test_dirs += ("float", "stress", "inlineasm")
+                test_dirs += ("float", "stress")
             elif args.platform == "renesas-ra":
-                test_dirs += ("float", "inlineasm", "ports/renesas-ra")
+                test_dirs += ("float", "ports/renesas-ra")
             elif args.platform == "rp2":
                 test_dirs += ("float", "stress", "thread", "ports/rp2")
-                if "arm" in args.mpy_cross_flags:
-                    test_dirs += ("inlineasm",)
             elif args.platform == "esp32":
                 test_dirs += ("float", "stress", "thread")
             elif args.platform in ("esp8266", "minimal", "samd", "nrf"):
@@ -1245,7 +1263,6 @@ the last matching regex is used:
             elif args.platform == "qemu":
                 test_dirs += (
                     "float",
-                    "inlineasm",
                     "ports/qemu",
                 )
             elif args.platform == "webassembly":
