@@ -1,0 +1,24 @@
+;
+; Copyright (c) 2023 Raspberry Pi (Trading) Ltd.
+;
+; SPDX-License-Identifier: BSD-3-Clause
+;
+
+.program wiznet_pio_spi_write_read
+.side_set 1
+
+public write_bits:
+    out pins, 1             side 0
+    jmp x-- write_bits      side 1
+    set pins 0              side 0
+public write_end:
+read_byte_delay:
+    set pindirs 0           side 0
+read_byte:
+    set x 6                 side 1
+read_bits:
+    in pins, 1              side 0
+    jmp x-- read_bits       side 1
+    in pins, 1              side 0
+    jmp y-- read_byte       side 0
+public read_end:
