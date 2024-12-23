@@ -52,6 +52,7 @@ void board_init(void) {
     SCB_EnableICache();
     // Init clock
     BOARD_BootClockRUN();
+    CLOCK_SetMode(kCLOCK_ModeRun);
     SystemCoreClockUpdate();
 
     // Enable IOCON clock
