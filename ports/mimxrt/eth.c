@@ -62,6 +62,7 @@ typedef struct _eth_t {
     uint32_t trace_flags;
     struct netif netif;
     struct dhcp dhcp_struct;
+    uint32_t source_clock;
 } eth_t;
 
 typedef struct _iomux_table_t {
@@ -328,42 +329,42 @@ static void eth_gpio_init(const iomux_table_t iomux_table[], size_t iomux_table_
 }
 
 // eth_phy_init: Initilaize the PHY interface
-static void eth_phy_init(phy_handle_t *phyHandle, phy_config_t *phy_config,
-    phy_speed_t *speed, phy_duplex_t *duplex, uint32_t phy_settle_time) {
-
-    bool link = false;
-    bool autonego = false;
+static void eth_phy_init(phy_handle_t *phyHandle, phy_config_t *phy_config) {
     phy_config->autoNeg = true;
 
     status_t status = PHY_Init(phyHandle, phy_config);
-    if (status == kStatus_Success) {
-        uint64_t t = ticks_us64() + PHY_AUTONEGO_TIMEOUT_US;
-        // Wait for auto-negotiation success and link up
-        do {
-            PHY_GetAutoNegotiationStatus(phyHandle, &autonego);
-            PHY_GetLinkStatus(phyHandle, &link);
-            if (autonego && link) {
-                break;
-            }
-        } while (ticks_us64() < t);
-        if (!autonego) {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("PHY Auto-negotiation failed."));
-        }
-        PHY_GetLinkSpeedDuplex(phyHandle, speed, duplex);
-    } else {
+    if (status != kStatus_Success) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("PHY Init failed."));
     }
+}
+
+static void eth_phy_wait_nego(phy_handle_t *phyHandle, phy_speed_t *speed, phy_duplex_t *duplex, uint32_t phy_settle_time) {
+    bool link = false;
+    bool autonego = false;
+
+    uint64_t t = ticks_us64() + PHY_AUTONEGO_TIMEOUT_US;
+    // Wait for auto-negotiation success and link up
+    do {
+        PHY_GetAutoNegotiationStatus(phyHandle, &autonego);
+        PHY_GetLinkStatus(phyHandle, &link);
+        if (autonego && link) {
+            break;
+        }
+    } while (ticks_us64() < t);
+    if (!autonego) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("PHY Auto-negotiation failed."));
+    }
+    PHY_GetLinkSpeedDuplex(phyHandle, speed, duplex);
+
     mp_hal_delay_us(phy_settle_time);
 }
 
 // eth_init: Set up GPIO and the transceiver
 void eth_init_0(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int phy_addr, bool phy_clock) {
-    // Configuration values
-    enet_config_t enet_config;
 
     phy_config_t phy_config = {0};
 
-    uint32_t source_clock = eth_clock_init(eth_id, phy_clock);
+    self->source_clock = eth_clock_init(eth_id, phy_clock);
 
     const machine_pin_obj_t *reset_pin = NULL;
     #if defined(pin_ENET_RESET)
@@ -382,13 +383,18 @@ void eth_init_0(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int ph
     phy_config.phyAddr = phy_addr;
     phyHandle.mdioHandle = &mdioHandle;
     mdioHandle.resource.base = ENET;
-    mdioHandle.resource.csrClock_Hz = source_clock;
+    mdioHandle.resource.csrClock_Hz = self->source_clock;
 
+    eth_phy_init(&phyHandle, &phy_config);
+}
+void eth_init_0_end(eth_t *self) {
     phy_speed_t speed = kENET_MiiSpeed100M;
     phy_duplex_t duplex = kENET_MiiFullDuplex;
-    eth_phy_init(&phyHandle, &phy_config, &speed, &duplex, PHY_SETTLE_TIME_US);
+    eth_phy_wait_nego(&phyHandle, &speed, &duplex, PHY_SETTLE_TIME_US);
 
     ENET_Reset(ENET);
+    // Configuration values
+    enet_config_t enet_config;
     ENET_GetDefaultConfig(&enet_config);
     enet_config.miiSpeed = (enet_mii_speed_t)speed;
     enet_config.miiDuplex = (enet_mii_duplex_t)duplex;
@@ -398,7 +404,7 @@ void eth_init_0(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int ph
     // Set interrupt
     enet_config.interrupt |= ENET_TX_INTERRUPT | ENET_RX_INTERRUPT;
 
-    ENET_Init(ENET, &g_handle, &enet_config, &buffConfig[0], hw_addr, source_clock);
+    ENET_Init(ENET, &g_handle, &enet_config, &buffConfig[0], hw_addr, self->source_clock);
     ENET_SetCallback(&g_handle, eth_irq_handler, (void *)self);
     NVIC_SetPriority(ENET_IRQn, IRQ_PRI_PENDSV);
     ENET_EnableInterrupts(ENET, ENET_RX_INTERRUPT);
@@ -412,12 +418,10 @@ void eth_init_0(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int ph
 
 // eth_init: Set up GPIO and the transceiver
 void eth_init_1(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int phy_addr, bool phy_clock) {
-    // Configuration values
-    enet_config_t enet_config;
 
     phy_config_t phy_config = {0};
 
-    uint32_t source_clock = eth_clock_init(eth_id, phy_clock);
+    self->source_clock = eth_clock_init(eth_id, phy_clock);
 
     const machine_pin_obj_t *reset_pin = NULL;
     #if defined(pin_ENET_1_INT)
@@ -435,10 +439,8 @@ void eth_init_1(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int ph
     NVIC_SetPriority(ENET_1G_IRQn, IRQ_PRI_PENDSV);
     EnableIRQ(ENET_1G_MAC0_Tx_Rx_1_IRQn);
     EnableIRQ(ENET_1G_MAC0_Tx_Rx_2_IRQn);
-    phy_speed_t speed = kENET_MiiSpeed1000M;
     #else
     NVIC_SetPriority(ENET2_IRQn, IRQ_PRI_PENDSV);
-    phy_speed_t speed = kENET_MiiSpeed100M;
     #endif
 
     mp_hal_get_mac(1, hw_addr_1);
@@ -448,12 +450,18 @@ void eth_init_1(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int ph
     phy_config.phyAddr = phy_addr;
     phyHandle_1.mdioHandle = &mdioHandle_1;
     mdioHandle_1.resource.base = ENET_1;
-    mdioHandle_1.resource.csrClock_Hz = source_clock;
+    mdioHandle_1.resource.csrClock_Hz = self->source_clock;
 
+    eth_phy_init(&phyHandle_1, &phy_config);
+}
+void eth_init_1_end(eth_t *self) {
+    phy_speed_t speed = kENET_MiiSpeed100M;
     phy_duplex_t duplex = kENET_MiiFullDuplex;
-    eth_phy_init(&phyHandle_1, &phy_config, &speed, &duplex, PHY_SETTLE_TIME_US_1);
+    eth_phy_wait_nego(&phyHandle_1, &speed, &duplex, PHY_SETTLE_TIME_US_1);
 
     ENET_Reset(ENET_1);
+    // Configuration values
+    enet_config_t enet_config;
     ENET_GetDefaultConfig(&enet_config);
     enet_config.miiSpeed = (enet_mii_speed_t)speed;
     enet_config.miiDuplex = (enet_mii_duplex_t)duplex;
@@ -462,7 +470,7 @@ void eth_init_1(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int ph
     // Set interrupt
     enet_config.interrupt = ENET_TX_INTERRUPT | ENET_RX_INTERRUPT;
 
-    ENET_Init(ENET_1, &g_handle_1, &enet_config, &buffConfig_1[0], hw_addr_1, source_clock);
+    ENET_Init(ENET_1, &g_handle_1, &enet_config, &buffConfig_1[0], hw_addr_1, self->source_clock);
     ENET_SetCallback(&g_handle_1, eth_irq_handler, (void *)self);
     ENET_ClearInterruptStatus(ENET_1, ENET_TX_INTERRUPT | ENET_RX_INTERRUPT | ENET_ERR_INTERRUPT);
     ENET_EnableInterrupts(ENET_1, ENET_RX_INTERRUPT);
@@ -629,6 +637,15 @@ int eth_link_status(eth_t *self) {
 }
 
 int eth_start(eth_t *self) {
+
+    if (self == &eth_instance0) {
+        eth_init_0_end(self);
+    #if defined ENET_DUAL_PORT
+    } else {
+        eth_init_1_end(self);
+    #endif
+    }
+
     eth_lwip_deinit(self);
 
     // Make sure Eth is Not in low power mode.
