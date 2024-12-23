@@ -267,6 +267,8 @@ Classes
    machine.I2S.rst
    machine.RTC.rst
    machine.Timer.rst
+   machine.Counter.rst
+   machine.Encoder.rst
    machine.WDT.rst
    machine.SD.rst
    machine.SDCard.rst
