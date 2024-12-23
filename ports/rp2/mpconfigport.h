@@ -245,6 +245,13 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_HW_NIC_WIZNET5K
 #endif
 
+#if MICROPY_HW_NETWORK_USBNET
+extern const struct _mp_obj_type_t mod_network_nic_type_usbnet;
+#define MICROPY_HW_NIC_USBNET             { MP_ROM_QSTR(MP_QSTR_USBNET), MP_ROM_PTR(&mod_network_nic_type_usbnet) },
+#else
+#define MICROPY_HW_NIC_USBNET
+#endif
+
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
 #endif
@@ -253,6 +260,7 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
     MICROPY_HW_NIC_CYW43 \
     MICROPY_HW_NIC_NINAW10  \
     MICROPY_HW_NIC_WIZNET5K \
+    MICROPY_HW_NIC_USBNET \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 // Additional entries for use with pendsv_schedule_dispatch.
