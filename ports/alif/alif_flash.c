@@ -37,10 +37,10 @@ typedef struct _alif_flash_obj_t {
     uint32_t flash_size;
 } alif_flash_obj_t;
 
-static alif_flash_obj_t alif_flash_obj = {
+static const alif_flash_obj_t alif_flash_fs_obj = {
     .base = { &alif_flash_type },
     .flash_base_addr = MICROPY_HW_FLASH_STORAGE_BASE_ADDR,
-    .flash_size = MICROPY_HW_FLASH_STORAGE_BYTES,
+    .flash_size = MICROPY_HW_FLASH_STORAGE_FS_BYTES,
 };
 
 static mp_obj_t alif_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -54,8 +54,8 @@ static mp_obj_t alif_flash_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (args[ARG_start].u_int == -1 && args[ARG_len].u_int == -1) {
-        // Default singleton object that accesses entire flash
-        return MP_OBJ_FROM_PTR(&alif_flash_obj);
+        // Default singleton object that accesses writable-filesystem flash
+        return MP_OBJ_FROM_PTR(&alif_flash_fs_obj);
     }
 
     alif_flash_obj_t *self = mp_obj_malloc(alif_flash_obj_t, &alif_flash_type);
