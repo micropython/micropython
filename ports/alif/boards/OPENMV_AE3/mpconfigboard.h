@@ -11,6 +11,10 @@ typedef intptr_t mp_off_t;
 #define MICROPY_HW_ENABLE_OSPI      (CORE_M55_HP)
 #define MICROPY_HW_ENABLE_UART_REPL (0)
 
+// ROMFS partitions
+#define MICROPY_HW_ROMFS_ENABLE_PART0 (1)
+#define MICROPY_HW_ROMFS_ENABLE_PART1 (CORE_M55_HP)
+
 // I2C buses
 #define MICROPY_HW_I2C1_SCL         (pin_P0_5)
 #define MICROPY_HW_I2C1_SDA         (pin_P0_4)
@@ -53,6 +57,7 @@ extern void board_exit_standby(void);
 #define MICROPY_BOARD_EXIT_STANDBY board_exit_standby
 
 // This is used for alif.Flash() and USB MSC.
-#define MICROPY_HW_FLASH_STORAGE_BASE_ADDR  (0)
-#define MICROPY_HW_FLASH_STORAGE_BYTES      (32 * 1024 * 1024)
-#define MICROPY_HW_FLASH_STORAGE_FS_BYTES   (16 * 1024 * 1024)
+#define MICROPY_HW_FLASH_STORAGE_BASE_ADDR      (0)
+#define MICROPY_HW_FLASH_STORAGE_BYTES          (32 * 1024 * 1024)
+#define MICROPY_HW_FLASH_STORAGE_FS_BYTES       (16 * 1024 * 1024)
+#define MICROPY_HW_FLASH_STORAGE_ROMFS_BYTES    (16 * 1024 * 1024)
