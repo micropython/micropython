@@ -33,6 +33,7 @@
 #if MICROPY_PY_FRAMEBUF
 
 #include "extmod/font_petme128_8x8.h"
+#include "extmod/font_z1fonts.h"
 
 typedef struct _mp_obj_framebuf_t {
     mp_obj_base_t base;
@@ -813,9 +814,50 @@ static mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args_in) {
     mp_int_t x0 = mp_obj_get_int(args_in[2]);
     mp_int_t y0 = mp_obj_get_int(args_in[3]);
     mp_int_t col = 1;
+    mp_int_t font_id = 1;
     if (n_args >= 5) {
         col = mp_obj_get_int(args_in[4]);
     }
+    if (n_args >= 6) {
+        font_id = mp_obj_get_int(args_in[5]);
+    }
+
+    // set font data and entry size based on font_id
+    const uint8_t *font_data;
+    int entry_size;
+    int fixed_width;
+
+    switch (font_id) {
+        case 0:
+            font_data = font_z1mono58_6x8;
+            entry_size = 6;
+            fixed_width = 6;
+            break;
+        case 1:
+            font_data = font_petme128_8x8;
+            entry_size = 8;
+            fixed_width = 8;
+            break;
+        case 2:
+            font_data = font_z1prop8_6x8;
+            entry_size = 6;
+            fixed_width = -1; // indicates variable width
+            break;
+        case 3:
+            font_data = font_z1prop8b_8x8;
+            entry_size = 8;
+            fixed_width = -1; // indicates variable width
+            break;
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported font_id"));
+    }
+
+    // track the initial x position to calculate the drawn length
+    mp_int_t initial_x0 = x0;
+
+    // clip bounds
+    mp_int_t max_x = self->width;
+    mp_int_t max_y = self->height;
 
     // loop over chars
     for (; *str; ++str) {
@@ -824,25 +866,33 @@ static mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args_in) {
         if (chr < 32 || chr > 127) {
             chr = 127;
         }
-        // get char data
-        const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
+        // get char data based on pre-set font_data and entry_size
+        const uint8_t *chr_data = &font_data[(chr - 32) * entry_size];
+
+        // determine char width
+        int chr_width;
+        if (fixed_width > 0) {
+            chr_width = fixed_width;
+        } else { // font_id == 2 with variable width
+            chr_width = (chr_data[entry_size - 2] == 0) ? chr_data[entry_size - 1] : entry_size;
+        }
+
         // loop over char data
-        for (int j = 0; j < 8; j++, x0++) {
-            if (0 <= x0 && x0 < self->width) { // clip x
-                uint vline_data = chr_data[j]; // each byte is a column of 8 pixels, LSB at top
-                for (int y = y0; vline_data; vline_data >>= 1, y++) { // scan over vertical column
-                    if (vline_data & 1) { // only draw if pixel set
-                        if (0 <= y && y < self->height) { // clip y
-                            setpixel(self, x0, y, col);
-                        }
-                    }
+        for (int j = 0; j < chr_width && x0 < max_x && 0 <= x0; j++, x0++) {
+            uint vline_data = chr_data[j]; // each byte is a column of 8 pixels, LSB at top
+            for (int y = y0; vline_data && y < max_y && 0 <= y; vline_data >>= 1, y++) { // scan over vertical column
+                if (vline_data & 1) { // only draw if pixel set
+                    setpixel(self, x0, y, col);
                 }
             }
         }
     }
-    return mp_const_none;
+
+    // calculate the length of the drawn text
+    mp_int_t text_length = x0 - initial_x0;
+    return MP_OBJ_NEW_SMALL_INT(text_length);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_text_obj, 4, 5, framebuf_text);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_text_obj, 4, 6, framebuf_text);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 static const mp_rom_map_elem_t framebuf_locals_dict_table[] = {

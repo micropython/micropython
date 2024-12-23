@@ -94,10 +94,38 @@ for mapping in maps.keys():
     fbuf.text("hello", 0, 0, 0)  # clear
     print(buf)
 
+    # print fonts
+    print(fbuf.text("i", 0, 0, 1, 0))  # font_id 0
+    print(buf)
+    fbuf.text("i", 0, 0, 0, 0)  # clear
+    print(buf)
+    print(fbuf.text("i", 0, 0, 1, 1))  # font_id 1
+    print(buf)
+    fbuf.text("i", 0, 0, 0, 1)  # clear
+    print(buf)
+    print(fbuf.text("i", 0, 0, 1, 2))  # font_id 2
+    print(buf)
+    fbuf.text("i", 0, 0, 0, 2)  # clear
+    print(buf)
+    print(fbuf.text("i", 0, 0, 1, 3))  # font_id 3
+    print(buf)
+    fbuf.text("i", 0, 0, 0, 3)  # clear
+    print(buf)
+
     # char out of font range set to chr(127)
     fbuf.text(str(chr(31)), 0, 0)
     print(buf)
     print()
+
+# test invalid font_id
+try:
+    fbuf.text("foo", 0, 0, 1, -1)
+except ValueError:
+    print("ValueError")
+try:
+    fbuf.text("foo", 0, 0, 1, 4)
+except ValueError:
+    print("ValueError")
 
 # test invalid constructor, and stride argument
 try:
