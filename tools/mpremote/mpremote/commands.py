@@ -7,6 +7,7 @@ import serial.tools.list_ports
 
 from .transport import TransportError, stdout_write_bytes
 from .transport_serial import SerialTransport
+from .romfs import make_romfs
 
 
 class CommandError(Exception):
@@ -478,3 +479,79 @@ def do_rtc(state, args):
         state.transport.exec("machine.RTC().datetime({})".format(timetuple))
     else:
         print(state.transport.eval("machine.RTC().datetime()"))
+
+
+def _do_romfs_build(state, args):
+    state.did_action()
+
+    input_directory = args.path[0]
+    output_file = input_directory + ".romfs"
+    romfs = make_romfs(input_directory, "/")
+    print(f"Image size is {len(romfs)} bytes")
+    with open(output_file, "wb") as f:
+        f.write(romfs)
+
+
+def _do_romfs_deploy(state, args):
+    state.ensure_raw_repl()
+    state.did_action()
+
+    # Read in or create the romfs filesystem.
+    romfs_filename = args.path[0]
+    if romfs_filename.endswith(".romfs"):
+        with open(romfs_filename, "rb") as f:
+            romfs = f.read()
+    else:
+        romfs = make_romfs(romfs_filename, "/")
+    print(f"Image size is {len(romfs)} bytes")
+
+    # Detect the romfs and get its associated device.
+    state.transport.exec("import vfs")
+    has_object = state.transport.eval("hasattr(vfs.rom_ioctl(-1), 'ioctl')")
+    if has_object:
+        state.transport.exec("dev = vfs.rom_ioctl(-1)")
+        block_count = state.transport.eval("dev.ioctl(4,0)")
+        block_size = state.transport.eval("dev.ioctl(5,0)")
+    else:
+        block_count = state.transport.eval("vfs.rom_ioctl(2)")
+        block_size = state.transport.eval("vfs.rom_ioctl(3)")
+    print(f"ROMFS partition has size {block_count}*{block_size}={block_count * block_size} bytes")
+
+    # Check if romfs will fit on the target device.
+    if len(romfs) > block_count * block_size:
+        print("ROMFS partition is too small for image")
+        sys.exit(1)
+
+    # Deploy the romfs filesystem to the device.
+    chunk_size = min(4096, block_size)
+    state.transport.exec(f"buf=bytearray({chunk_size})")
+    for offset in range(0, len(romfs), chunk_size):
+        romfs_chunk = romfs[offset : offset + chunk_size]
+        state.transport.exec(f"buf[:{len(romfs_chunk)}]=" + repr(romfs_chunk))
+        print(f"\rWriting at offset {offset}", end="")
+        if has_object:
+            if offset % block_size == 0:
+                state.transport.exec(f"dev.ioctl(6, {offset // block_size})")
+            state.transport.exec(
+                f"dev.writeblocks({offset // block_size},buf,{offset % block_size})"
+            )
+        else:
+            if offset % block_size == 0:
+                state.transport.exec(f"vfs.rom_ioctl(4,{offset})")
+            state.transport.exec(f"vfs.rom_ioctl(5,{offset},buf)")
+
+    print()
+    print("Image deployed")
+
+
+def do_deploy_romfs(state, args):
+    _do_romfs_deploy(state, args)
+
+
+def do_romfs(state, args):
+    if args.command[0] == "build":
+        _do_romfs_build(state, args)
+    elif args.command[0] == "deploy":
+        _do_romfs_deploy(state, args)
+    else:
+        raise CommandError(f"romfs: '{args.command[0]}' is not a command")
