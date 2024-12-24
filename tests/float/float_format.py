@@ -25,3 +25,14 @@ for r in range(38):
     # But formatting as 0.999...e-r is NOT ok.
     if s[0] == "0":
         print("FAIL:", s)
+
+# check the thousand separator
+for val in (
+    123.4,
+    5678.9,
+    987654321.1,
+):
+    print("{:,.1f}".format(val))
+
+# check that the rounding up is done properly even with the thousand separator
+print("{:,.1f}".format(9999.999))
