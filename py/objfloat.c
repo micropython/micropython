@@ -47,13 +47,6 @@
 #define M_PI (3.14159265358979323846)
 #endif
 
-// Workaround a bug in recent MSVC where NAN is no longer constant.
-// (By redefining back to the previous MSVC definition of NAN)
-#if defined(_MSC_VER) && _MSC_VER >= 1942
-#undef NAN
-#define NAN (-(float)(((float)(1e+300 * 1e+300)) * 0.0F))
-#endif
-
 typedef struct _mp_obj_float_t {
     mp_obj_base_t base;
     mp_float_t value;
@@ -123,7 +116,7 @@ static void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     char buf[32];
     const int precision = 16;
     #endif
-    mp_format_float(o_val, buf, sizeof(buf), 'g', precision, '\0');
+    mp_format_float(o_val, buf, sizeof(buf), 'g', precision, '\0', '\0');
     mp_print_str(print, buf);
     if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
         // Python floats always have decimal point (unless inf or nan)
