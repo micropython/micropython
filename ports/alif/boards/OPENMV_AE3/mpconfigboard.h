@@ -20,6 +20,9 @@ typedef intptr_t mp_off_t;
 extern void board_startup(void);
 #define MICROPY_BOARD_STARTUP   board_startup
 
+extern void board_early_init(void);
+#define MICROPY_BOARD_EARLY_INIT board_early_init
+
 // This is used for alif.Flash() and USB MSC.
 #define MICROPY_HW_FLASH_STORAGE_BASE_ADDR      (0)
 #define MICROPY_HW_FLASH_STORAGE_BYTES          (16 * 1024 * 1024)
