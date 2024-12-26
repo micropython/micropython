@@ -11,3 +11,6 @@ LDSCRIPT = mcu/arm/nrf51.ld
 SRC_BOARD_O = shared/runtime/gchelper_native.o shared/runtime/gchelper_thumb1.o
 
 MPY_CROSS_FLAGS += -march=armv7m
+
+# Inline assembler tests are disabled for this board, so exclude them.
+RUN_TESTS_ARGS = --exclude 'inlineasm|qemu/asm_test'
