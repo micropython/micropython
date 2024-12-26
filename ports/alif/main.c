@@ -64,19 +64,6 @@ void _start(void) {
 
     MICROPY_BOARD_EARLY_INIT();
 
-    #if CORE_M55_HP
-    run_profile_t runp = { 0 };
-    if (se_services_get_run_profile(&runp)) {
-        panic("se_services_get_run_profile");
-    }
-    // Enable PD4 domain (disabled by default on B4 chips).
-    runp.power_domains |= PD4_MASK;
-    if (se_services_set_run_profile(&runp)) {
-        panic("se_services_set_run_profile");
-    }
-    mp_hal_delay_ms(20);
-    #endif
-
     #if MICROPY_HW_ENABLE_UART_REPL
     mp_uart_init();
     #endif
