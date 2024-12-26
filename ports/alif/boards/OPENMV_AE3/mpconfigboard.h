@@ -1,6 +1,11 @@
 #define MICROPY_HW_BOARD_NAME   "OpenMV-AE3"
 #define MICROPY_HW_MCU_NAME     "AE302F80F55D5AE"
 
+#define MICROPY_OBJ_REPR        (MICROPY_OBJ_REPR_C)
+typedef intptr_t mp_int_t; // must be pointer size
+typedef uintptr_t mp_uint_t; // must be pointer size
+typedef intptr_t mp_off_t;
+
 #define MICROPY_HW_USB_MSC      (CORE_M55_HP)
 #define MICROPY_HW_ENABLE_OSPI  (CORE_M55_HP)
 #define MICROPY_HW_ENABLE_UART_REPL (0)
