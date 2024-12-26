@@ -26,6 +26,8 @@
 
 #include <stdlib.h>
 
+#include "extmod/vfs.h"
+#include "extmod/vfs_semihosting.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
@@ -33,6 +35,7 @@
 #include "py/mperrno.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/runtime/semihosting.h"
 
 #define HEAP_SIZE (100 * 1024)
 
@@ -43,8 +46,64 @@ int main(int argc, char **argv) {
     mp_stack_set_limit(10240);
     gc_init(gc_heap, (char *)gc_heap + HEAP_SIZE);
 
+    #if MICROPY_VFS_SEMIHOSTING
+    // The fastest way to get something like command line pararameters into a
+    // non-Linux QEMU kernel is to use semihosting's command line argument
+    // string.  If there is no data to be put in the semihosting command
+    // buffer, QEMU puts the file name of the running kernel image in there
+    // instead (probably as an argv[0] emulation mechanism).  Anything coming
+    // in from the outside will be put in the buffer with no checks.
+    //
+    // Semihosting command buffer data can be passed from QEMU via the
+    // `-semihosting-config` command line argument, in the form
+    // '-semihosting-config arg="command line"' (the enclosing quotes will not
+    // be put in the buffer).
+    //
+    // One thing worth mentioning is the horrific lack of security of this, as
+    // besides MicroPython's honouring an optional `readonly` mount flag, the
+    // emulated interpreter is free to run havoc all through the host
+    // filesystem.
+
+    char command_line[512] = { 0 };
+    if (mp_semihosting_get_cmdline(&command_line, sizeof(command_line) - 1) != 0) {
+        mp_printf(&mp_plat_print, "Semihosting command line too long.\n");
+        exit(1);
+    }
+
+    // Since QEMU cannot have an empty buffer we have to add some command line
+    // parsing to make sure what is in there is actually an intended mountpoint
+    // and not the kernel image path.  For that, the mount point should be
+    // prefixed by the "-mp" commandline argument in position 0.
+
+    char *mountpoint = NULL;
+    if (command_line[0] == '-' && command_line[1] == 'm' &&
+        command_line[2] == 'p' && command_line[3] == ' ') {
+        // Skip any further spaces.
+        mountpoint = &command_line[4];
+        while (*mountpoint == ' ') {
+            mountpoint++;
+        }
+        // Make sure there's something worthwhile.
+        if (*mountpoint == '\0') {
+            mountpoint = NULL;
+        }
+    }
+    #endif
+
     for (;;) {
         mp_init();
+
+        #if MICROPY_VFS_SEMIHOSTING
+        if (mountpoint) {
+            mp_obj_t mountpoint_obj = mp_obj_new_str_from_cstr(mountpoint);
+            mp_obj_t args[2] = {
+                MP_OBJ_TYPE_GET_SLOT(&mp_type_vfs_semihosting, make_new)(&mp_type_vfs_semihosting, 1, 0, &mountpoint_obj),
+                MP_OBJ_NEW_QSTR(MP_QSTR__slash_),
+            };
+            mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
+            MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_mount_table);
+        }
+        #endif
 
         for (;;) {
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
