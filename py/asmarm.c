@@ -328,7 +328,7 @@ void asm_arm_ldrh_reg_reg(asm_arm_t *as, uint rd, uint rn) {
 
 void asm_arm_ldrh_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offset) {
     // ldrh rd, [rn, #off]
-    emit_al(as, 0x1f000b0 | (rn << 16) | (rd << 12) | ((byte_offset & 0xf0) << 4) | (byte_offset & 0xf));
+    emit_al(as, 0x1d000b0 | (rn << 16) | (rd << 12) | ((byte_offset & 0xf0) << 4) | (byte_offset & 0xf));
 }
 
 void asm_arm_ldrb_reg_reg(asm_arm_t *as, uint rd, uint rn) {
