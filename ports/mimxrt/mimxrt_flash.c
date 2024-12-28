@@ -158,14 +158,17 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 #if MICROPY_VFS_ROM
 
-#ifndef MICROPY_HW_ROMFS_BYTES
-#define MICROPY_HW_ROMFS_BYTES (256 * 1024)
-#endif
-// Put ROMFS at the upper end of the respective code space.
+extern uint8_t vfsrom_start;
+extern uint8_t vfsrom_end;
+
+// Put VfsRom file system between the code space and the VFS file system.
+// The size is defined in Makefile(s) as linker symbol MICROPY_HW_ROMFS_BYTES.
 // For machine.mem32 the absolute address is required, for the flash functions
 // erase and write the offset to the flash start address.
-#define MICROPY_HW_ROMFS_ADDRESS (((uint32_t)&__vfs_start) - MICROPY_HW_ROMFS_BYTES)
-#define MICROPY_HW_ROMFS_BASE (MICROPY_HW_FLASH_STORAGE_BASE - MICROPY_HW_ROMFS_BYTES)
+#define MICROPY_HW_ROMFS_ADDRESS ((uint32_t)&vfsrom_start)
+#define MICROPY_HW_ROMFS_BASE ((uintptr_t)&vfsrom_start - (uintptr_t)&__flash_start)
+#define MICROPY_HW_ROMFS_BYTES ((uintptr_t)&vfsrom_end - (uintptr_t)&vfsrom_start)
+
 
 static mimxrt_flash_obj_t mimxrt_flash_romfs_obj = {
     .base = { &mimxrt_flash_type },
