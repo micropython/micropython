@@ -78,7 +78,9 @@
 #define MICROPY_HW_FLASH_BLOCK_SIZE_BYTES       (4096)
 
 // Memory allocation policies
-#define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
+#ifndef MICROPY_ALLOC_GC_STACK_SIZE
+#define MICROPY_ALLOC_GC_STACK_SIZE             (128)
+#endif
 #define MICROPY_ALLOC_PATH_MAX                  (128)
 #define MICROPY_QSTR_BYTES_IN_HASH              (1)
 
