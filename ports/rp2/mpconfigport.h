@@ -213,6 +213,17 @@
 #endif
 #endif
 
+#if MICROPY_PY_NETWORK_PPP_LWIP
+// This Network interface requires the extended socket state.
+#ifndef MICROPY_PY_SOCKET_EXTENDED_STATE
+#define MICROPY_PY_SOCKET_EXTENDED_STATE    (1)
+#endif
+extern const struct _mp_obj_type_t mp_network_ppp_lwip_type;
+#define MICROPY_HW_NIC_PPP_LWIP             { MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&mp_network_ppp_lwip_type) },
+#else
+#define MICROPY_HW_NIC_PPP_LWIP
+#endif
+
 #if MICROPY_PY_NETWORK_CYW43
 extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #define MICROPY_HW_NIC_CYW43 \
@@ -253,6 +264,7 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
     MICROPY_HW_NIC_CYW43 \
     MICROPY_HW_NIC_NINAW10  \
     MICROPY_HW_NIC_WIZNET5K \
+    MICROPY_HW_NIC_PPP_LWIP \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 // Additional entries for use with pendsv_schedule_dispatch.
