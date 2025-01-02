@@ -156,7 +156,13 @@ static void pwm_deinit(int channel_idx) {
         int timer_idx = chans[channel_idx].timer_idx;
         if (timer_idx != -1) {
             if (!is_timer_in_use(channel_idx, timer_idx)) {
-                check_esp_err(ledc_timer_rst(TIMER_IDX_TO_MODE(timer_idx), TIMER_IDX_TO_TIMER(timer_idx)));
+                check_esp_err(ledc_timer_pause(TIMER_IDX_TO_MODE(timer_idx), TIMER_IDX_TO_TIMER(timer_idx)));
+                ledc_timer_config_t timer_config = {
+                    .deconfigure = true,
+                    .speed_mode = TIMER_IDX_TO_MODE(timer_idx),
+                    .timer_num = TIMER_IDX_TO_TIMER(timer_idx),
+                };
+                check_esp_err(ledc_timer_config(&timer_config));
                 // Flag it unused
                 timers[chans[channel_idx].timer_idx].freq_hz = -1;
             }
@@ -635,7 +641,13 @@ static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
 
         if (!current_in_use) {
             // Free the old timer
-            check_esp_err(ledc_timer_rst(self->mode, self->timer));
+            check_esp_err(ledc_timer_pause(self->mode, self->timer));
+            ledc_timer_config_t timer_config = {
+                .deconfigure = true,
+                .speed_mode = self->mode,
+                .timer_num = self->timer,
+            };
+            check_esp_err(ledc_timer_config(&timer_config));
             // Flag it unused
             timers[current_timer_idx].freq_hz = -1;
         }
