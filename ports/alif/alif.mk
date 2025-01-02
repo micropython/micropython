@@ -117,6 +117,7 @@ SRC_C = \
 	alif_flash.c \
 	fatfs_port.c \
 	machine_pin.c \
+	machine_i2c.c \
 	main.c \
 	modalif.c \
 	mphalport.c \
@@ -186,6 +187,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	Device/common/source/pm.c \
 	Device/core/$(MCU_CORE)/source/startup_$(MCU_CORE).c \
 	drivers/source/adc.c \
+	drivers/source/i2c.c \
 	drivers/source/mhu_driver.c \
 	drivers/source/mhu_receiver.c \
 	drivers/source/mhu_sender.c \
