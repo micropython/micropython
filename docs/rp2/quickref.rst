@@ -55,6 +55,116 @@ The :mod:`rp2` module::
 
     import rp2
 
+Networking
+----------
+
+WLAN
+^^^^
+
+.. note::
+   This section applies only to devices that include WiFi support, such as the `Pico W`_ and `Pico 2 W`_.
+
+The :class:`network.WLAN` class in the :mod:`network` module::
+
+    import network
+
+    wlan = network.WLAN(network.WLAN.IF_STA) # create station interface
+    wlan.active(True)       # activate the interface
+    wlan.scan()             # scan for access points
+    wlan.isconnected()      # check if the station is connected to an AP
+    wlan.connect('ssid', 'key') # connect to an AP
+    wlan.config('mac')      # get the interface's MAC address
+    wlan.ipconfig('addr4')  # get the interface's IPv4 addresses
+
+    ap = network.WLAN(network.WLAN.IF_AP) # create access-point interface
+    ap.config(ssid='RP2-AP') # set the SSID of the access point
+    ap.config(max_clients=10) # set how many clients can connect to the network
+    ap.active(True)         # activate the interface
+
+A useful function for connecting to your local WiFi network is::
+
+    def do_connect():
+        import network
+        wlan = network.WLAN(network.WLAN.IF_STA)
+        wlan.active(True)
+        if not wlan.isconnected():
+            print('connecting to network...')
+            wlan.connect('ssid', 'key')
+            while not wlan.isconnected():
+                pass
+        print('network config:', wlan.ipconfig('addr4'))
+
+Once the network is established the :mod:`socket <socket>` module can be used
+to create and use TCP/UDP sockets as usual, and the ``requests`` module for
+convenient HTTP requests.
+
+After a call to ``wlan.connect()``, the device will by default retry to connect
+**forever**, even when the authentication failed or no AP is in range.
+``wlan.status()`` will return ``network.STAT_CONNECTING`` in this state until a
+connection succeeds or the interface gets disabled.  This can be changed by
+calling ``wlan.config(reconnects=n)``, where n are the number of desired reconnect
+attempts (0 means it won't retry, -1 will restore the default behaviour of trying
+to reconnect forever).
+
+.. _Pico W: https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html#picow-technical-specification
+.. _Pico 2 W: https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html#pico2w-technical-specification
+
+LAN
+^^^
+
+.. note::
+   This section applies only to devices that include WiFi support, such as the `Wiznet W5500-EVB-Pico`_
+
+To use the wired interfaces via :class:`network.LAN` one has to specify the pins
+and mode ::
+
+    import network
+
+    lan = network.LAN(mdc=PIN_MDC, ...)   # Set the pin and mode configuration
+    lan.active(True)                      # activate the interface
+    lan.ipconfig('addr4')                 # get the interface's IPv4 addresses
+
+
+The keyword arguments for the constructor defining the PHY type and interface are:
+
+- mdc=pin-object    # set the mdc and mdio pins.
+- mdio=pin-object
+- reset=pin-object  # set the reset pin of the PHY device.
+- power=pin-object  # set the pin which switches the power of the PHY device.
+- phy_type=<type>   # Select the PHY device type. Supported devices are PHY_LAN8710,
+  PHY_LAN8720, PH_IP101, PHY_RTL8201, PHY_DP83848 and PHY_KSZ8041
+- phy_addr=number   # The address number of the PHY device.
+- ref_clk_mode=mode # Defines, whether the ref_clk at the ESP32 is an input
+  or output. Suitable values are Pin.IN and Pin.OUT.
+- ref_clk=pin-object  # defines the Pin used for ref_clk.
+
+These are working configurations for LAN interfaces of popular boards::
+
+    # Olimex ESP32-GATEWAY: power controlled by Pin(5)
+    # Olimex ESP32 PoE and ESP32-PoE ISO: power controlled by Pin(12)
+
+    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5),
+                      phy_type=network.PHY_LAN8720, phy_addr=0,
+                      ref_clk=machine.Pin(17), ref_clk_mode=machine.Pin.OUT)
+
+    # Wireless-Tag's WT32-ETH01
+
+    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18),
+                      phy_type=network.PHY_LAN8720, phy_addr=1, power=None)
+
+    # Wireless-Tag's WT32-ETH01 v1.4
+
+    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18),
+                      phy_type=network.PHY_LAN8720, phy_addr=1,
+                      power=machine.Pin(16))
+
+    # Espressif ESP32-Ethernet-Kit_A_V1.2
+
+    lan = network.LAN(id=0, mdc=Pin(23), mdio=Pin(18), power=Pin(5),
+                      phy_type=network.PHY_IP101, phy_addr=1)
+
+.. _Wiznet W5500-EVB-Pico: https://docs.wiznet.io/Product/iEthernet/W5500/w5500-evb-pico
+
 Delay and timing
 ----------------
 
