@@ -1,7 +1,7 @@
 # Test VfsRom filesystem.
 
 try:
-    import sys, struct, os, uctypes, vfs
+    import errno, sys, struct, os, uctypes, vfs
 
     vfs.VfsRom
 except (ImportError, AttributeError):

@@ -65,7 +65,9 @@ injected_import_hook_code = """\
 import sys, os, io, vfs
 class __File(io.IOBase):
   def __init__(self):
-    sys.modules['__injected_test'].__name__ = '__main__'
+    module = sys.modules['__injected_test']
+    module.__name__ = '__main__'
+    sys.modules['__main__'] = module
     self.off = 0
   def ioctl(self, request, arg):
     if request == 4: # MP_STREAM_CLOSE
@@ -82,6 +84,8 @@ class __FS:
     pass
   def chdir(self, path):
     pass
+  def getcwd(self):
+    return ""
   def stat(self, path):
     if path == '__injected_test.mpy':
       return tuple(0 for _ in range(10))
