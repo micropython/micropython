@@ -84,6 +84,8 @@ class __FS:
     pass
   def chdir(self, path):
     pass
+  def getcwd(self):
+    return ""
   def stat(self, path):
     if path == '__injected_test.mpy':
       return tuple(0 for _ in range(10))
