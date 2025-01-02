@@ -7,8 +7,19 @@ typedef uintptr_t mp_uint_t; // must be pointer size
 typedef intptr_t mp_off_t;
 
 #define MICROPY_HW_USB_MSC          (CORE_M55_HP)
+#define MICROPY_HW_ENABLE_HW_I2C    (1)
 #define MICROPY_HW_ENABLE_OSPI      (CORE_M55_HP)
 #define MICROPY_HW_ENABLE_UART_REPL (0)
+
+// I2C buses
+#define MICROPY_HW_I2C1_SCL         (pin_P0_5)
+#define MICROPY_HW_I2C1_SDA         (pin_P0_4)
+
+#define MICROPY_HW_I2C2_SCL         (pin_P5_1)
+#define MICROPY_HW_I2C2_SDA         (pin_P5_0)
+
+#define MICROPY_HW_I2C3_SCL         (pin_P1_1)
+#define MICROPY_HW_I2C3_SDA         (pin_P1_0)
 
 #define MICROPY_HW_USB_VID          0x37C5
 #define MICROPY_HW_USB_PID          0x16E3
