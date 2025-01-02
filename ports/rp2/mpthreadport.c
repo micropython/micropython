@@ -84,10 +84,10 @@ void mp_thread_deinit(void) {
     assert(get_core_num() == 0);
     // Must ensure that core1 is not currently holding the GC lock, otherwise
     // it will be terminated while holding the lock.
-    mp_thread_mutex_lock(&MP_STATE_MEM(gc_mutex), 1);
+    mp_thread_recursive_mutex_lock(&MP_STATE_MEM(gc_mutex), 1);
     multicore_reset_core1();
     core1_entry = NULL;
-    mp_thread_mutex_unlock(&MP_STATE_MEM(gc_mutex));
+    mp_thread_recursive_mutex_unlock(&MP_STATE_MEM(gc_mutex));
 }
 
 void mp_thread_gc_others(void) {

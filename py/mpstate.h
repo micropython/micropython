@@ -131,9 +131,14 @@ typedef struct _mp_state_mem_t {
     size_t gc_collected;
     #endif
 
+    #if MICROPY_ENABLE_FINALISER
+    // Flag is set when running a finaliser during GC sweep, with scheduler locked
+    bool gc_sweep_finaliser;
+    #endif
+
     #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     // This is a global mutex used to make the GC thread-safe.
-    mp_thread_mutex_t gc_mutex;
+    mp_thread_recursive_mutex_t gc_mutex;
     #endif
 } mp_state_mem_t;
 
