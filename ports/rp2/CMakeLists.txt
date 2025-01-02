@@ -195,6 +195,12 @@ set(MICROPY_SOURCE_QSTR
     ${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c
 )
 
+if (MICROPY_PY_NETWORK_CYW43)
+    list(APPEND MICROPY_SOURCE_QSTR
+        ${MICROPY_PORT_DIR}/rp2_init_cyw43.c
+    )
+endif()
+
 set(PICO_SDK_COMPONENTS
     boot_bootrom_headers
     hardware_adc
@@ -403,6 +409,7 @@ if (MICROPY_PY_NETWORK_CYW43)
 
     list(APPEND MICROPY_SOURCE_PORT
         machine_pin_cyw43.c
+        rp2_init_cyw43.c
     )
 
     target_link_libraries(${MICROPY_TARGET}
@@ -632,8 +639,12 @@ if(NOT PICO_NUM_EXT_GPIOS)
     set(PICO_NUM_EXT_GPIOS 10)
 endif()
 
-if(EXISTS "${MICROPY_BOARD_DIR}/pins.csv")
-    set(GEN_PINS_BOARD_CSV "${MICROPY_BOARD_DIR}/pins.csv")
+if (NOT PICO_PINS_CSV_NAME)
+    set(PICO_PINS_CSV_NAME pins.csv)
+endif()
+
+if(EXISTS "${MICROPY_BOARD_DIR}/${PICO_PINS_CSV_NAME}")
+    set(GEN_PINS_BOARD_CSV "${MICROPY_BOARD_DIR}/${PICO_PINS_CSV_NAME}")
     set(GEN_PINS_CSV_ARG --board-csv "${GEN_PINS_BOARD_CSV}")
 endif()
 
