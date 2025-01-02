@@ -168,13 +168,23 @@ void asm_arm_entry(asm_arm_t *as, int num_locals) {
 
     emit_al(as, asm_arm_op_push(as->push_reglist | 1 << ASM_ARM_REG_LR));
     if (as->stack_adjust > 0) {
-        emit_al(as, asm_arm_op_sub_imm(ASM_ARM_REG_SP, ASM_ARM_REG_SP, as->stack_adjust));
+        if (as->stack_adjust < 0x100) {
+            emit_al(as, asm_arm_op_sub_imm(ASM_ARM_REG_SP, ASM_ARM_REG_SP, as->stack_adjust));
+        } else {
+            asm_arm_mov_reg_i32_optimised(as, ASM_ARM_REG_R8, as->stack_adjust);
+            emit_al(as, asm_arm_op_sub_reg(ASM_ARM_REG_SP, ASM_ARM_REG_SP, ASM_ARM_REG_R8));
+        }
     }
 }
 
 void asm_arm_exit(asm_arm_t *as) {
     if (as->stack_adjust > 0) {
-        emit_al(as, asm_arm_op_add_imm(ASM_ARM_REG_SP, ASM_ARM_REG_SP, as->stack_adjust));
+        if (as->stack_adjust < 0x100) {
+            emit_al(as, asm_arm_op_add_imm(ASM_ARM_REG_SP, ASM_ARM_REG_SP, as->stack_adjust));
+        } else {
+            asm_arm_mov_reg_i32_optimised(as, ASM_ARM_REG_R8, as->stack_adjust);
+            emit_al(as, asm_arm_op_add_reg(ASM_ARM_REG_SP, ASM_ARM_REG_SP, ASM_ARM_REG_R8));
+        }
     }
 
     emit_al(as, asm_arm_op_pop(as->push_reglist | (1 << ASM_ARM_REG_PC)));
