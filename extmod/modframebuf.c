@@ -32,7 +32,7 @@
 
 #if MICROPY_PY_FRAMEBUF
 
-#include "extmod/font_petme128_8x8.h"
+#include "extmod/font_z1fonts.h"
 
 typedef struct _mp_obj_framebuf_t {
     mp_obj_base_t base;
@@ -813,36 +813,118 @@ static mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args_in) {
     mp_int_t x0 = mp_obj_get_int(args_in[2]);
     mp_int_t y0 = mp_obj_get_int(args_in[3]);
     mp_int_t col = 1;
+    mp_int_t font_id = 1;
     if (n_args >= 5) {
         col = mp_obj_get_int(args_in[4]);
     }
+    if (n_args >= 6) {
+        font_id = mp_obj_get_int(args_in[5]);
+    }
+
+
+    int fixed_width; // -1 indicates variable width
+    int bold; // 0: regular, 1: bold
+
+    switch (font_id) {
+        case 0:
+            // monospace 6x8 font
+            fixed_width = 6;
+            bold = 0;
+            break;
+        case 1:
+            // monospace 8x8 font(bold)
+            fixed_width = 8;
+            bold = 1;
+            break;
+        case 2:
+            // proportional 6x8 font
+            fixed_width = -1;
+            bold = 0;
+            break;
+        case 3:
+            // proportional 8x8 font(bold)
+            fixed_width = -1;
+            bold = 1;
+            break;
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported font_id"));
+    }
+
+    // track the initial x position to calculate the drawn length
+    mp_int_t initial_x0 = x0;
+
+    // clip bounds
+    mp_int_t max_x = self->width;
+    mp_int_t max_y = self->height;
 
     // loop over chars
     for (; *str; ++str) {
+        mp_int_t char_x0 = x0;
         // get char and make sure its in range of font
         int chr = *(uint8_t *)str;
         if (chr < 32 || chr > 127) {
             chr = 127;
         }
         // get char data
-        const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
+        const uint8_t *chr_data = &font_z1prop8_base_8x8[(chr - 32) * 8];
+
+        // columns
+        int columns = chr_data[5] >> 4;
+
+        // align to center
+        if (fixed_width > 0 && columns <= 4) { // align data only exists when columns <= 4(last byte LSB store p2m & r2b column appends)
+            int align = (chr_data[7] & 0x0F) >> 2; // mono append columns
+            if (bold) {
+                align += chr_data[7] & 0x03; // bold append columns
+            }
+            // ascending columns
+            align = (fixed_width - (columns + 1 + align)) >> 1;
+            x0 += align;
+        }
+
         // loop over char data
-        for (int j = 0; j < 8; j++, x0++) {
-            if (0 <= x0 && x0 < self->width) { // clip x
+        for (int j = 0; j < columns && x0 < max_x && 0 <= x0; j++, x0++) {
+            // m 0x8, da 0x4, dp 0x2, dn 0x1
+            int column_type = (chr_data[5 + ((j + 1) >> 1)] >> ((j & 0x01) << 2)) & 0x0F;
+            int x1 = x0;
+            int x2 = x0;
+            // dup prev: bold && dp
+            if (bold && (column_type & 0x02)) {
+                x1--;
+            }
+            // dup next:monospace && m || bold && da/dn
+            if ((fixed_width > 0 && (column_type & 0x08)) || (bold && (column_type & 0x05))) {
+                x2++;
+                // append insert: m/da
+                if ((fixed_width > 0 && (column_type & 0x08)) || (bold && (column_type & 0x04))) {
+                    x0++;
+                }
+            }
+
+            for (int x = x1; x <= x2 && x < max_x; x++) {
                 uint vline_data = chr_data[j]; // each byte is a column of 8 pixels, LSB at top
-                for (int y = y0; vline_data; vline_data >>= 1, y++) { // scan over vertical column
+                for (int y = y0; vline_data && y < max_y && 0 <= y; vline_data >>= 1, y++) { // scan over vertical column
                     if (vline_data & 1) { // only draw if pixel set
-                        if (0 <= y && y < self->height) { // clip y
-                            setpixel(self, x0, y, col);
-                        }
+                        setpixel(self, x, y, col);
                     }
                 }
             }
         }
+        if (fixed_width > 0) {
+            x0 = char_x0 + fixed_width;
+        } else {
+            x0++;
+        }
     }
-    return mp_const_none;
+
+    // calculate the length of the drawn text
+    mp_int_t text_length = x0 - initial_x0;
+    if (x0 > max_x) {
+        text_length = max_x - initial_x0;
+    }
+    return MP_OBJ_NEW_SMALL_INT(text_length);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_text_obj, 4, 5, framebuf_text);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_text_obj, 4, 6, framebuf_text);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 static const mp_rom_map_elem_t framebuf_locals_dict_table[] = {

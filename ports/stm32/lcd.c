@@ -32,7 +32,7 @@
 
 #if MICROPY_HW_HAS_LCD
 
-#include "extmod/font_petme128_8x8.h"
+#include "extmod/font_z1fonts.h"
 #include "pin.h"
 #include "bufhelper.h"
 #include "spi.h"
@@ -103,6 +103,9 @@ typedef struct _pyb_lcd_obj_t {
     // double buffering for pixel buffer
     byte pix_buf[LCD_PIX_BUF_BYTE_SIZE];
     byte pix_buf2[LCD_PIX_BUF_BYTE_SIZE];
+
+    // buf for converting from z1prop8_6x8 to z1mono8b_8x8
+    byte font_buf[8];
 } pyb_lcd_obj_t;
 
 static void lcd_delay(void) {
@@ -121,6 +124,49 @@ static void lcd_out(pyb_lcd_obj_t *lcd, int instr_data, uint8_t i) {
     HAL_SPI_Transmit(lcd->spi->spi, &i, 1, 1000);
     lcd_delay();
     mp_hal_pin_high(lcd->pin_cs1); // CS=1; disable
+}
+
+static void lcd_font_buf_convert(pyb_lcd_obj_t *lcd, int chr) {
+    // this is a simplified conversion of the modframebuf.framebuf_text(),
+    // assuming converts to bold & monospace(style compatible with original font)
+    const uint8_t *chr_data = &font_z1prop8_base_8x8[(chr - 32) * 8];
+
+    // align to center
+    int columns = chr_data[5] >> 4;
+    int x0 = 0;
+    if (columns <= 4) { // align data only exists when columns <= 4
+        int align = (chr_data[7] & 0x0F) >> 2; // mono append columns
+        // ascending columns
+        align = (LCD_CHAR_BUF_W - (columns + 1 + align)) >> 1;
+        x0 += align;
+    }
+
+    // clear font buffer
+    memset(lcd->font_buf, 0, 8);
+
+    // loop over char data
+    for (int j = 0; j < columns && x0 < 8; j++, x0++) {
+        // m 0x8, da 0x4, dp 0x2, dn 0x1
+        int column_type = (chr_data[5 + ((j + 1) >> 1)] >> ((j & 0x01) << 2)) & 0x0F;
+        int x1 = x0;
+        int x2 = x0;
+        // dup prev: dp
+        if ((column_type & 0x02) && x1 > 0) {
+            x1--;
+        }
+        // dup next:monospace && m || bold && da/dn
+        if ((column_type & 0x08) || (column_type & 0x05)) {
+            x2++;
+            // append insert: m/da
+            if ((column_type & 0x08) || (column_type & 0x04)) {
+                x0++;
+            }
+        }
+        uint8_t vline_data = chr_data[j]; // each byte is a column of 8 pixels, LSB at top
+        for (int x = x1; x <= x2 && x < 8; x++) {
+            lcd->font_buf[x] = lcd->font_buf[x] | vline_data;
+        }
+    }
 }
 
 // write a string to the LCD at the current cursor location
@@ -181,9 +227,9 @@ static void lcd_write_strn(pyb_lcd_obj_t *lcd, const char *str, unsigned int len
         if (chr < 32 || chr > 126) {
             chr = 127;
         }
-        const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
+        lcd_font_buf_convert(lcd, chr);
         for (int j = 7; j >= 0; j--) {
-            lcd_out(lcd, LCD_DATA, chr_data[j]);
+            lcd_out(lcd, LCD_DATA, lcd->font_buf[j]);
         }
     }
 }
@@ -465,7 +511,8 @@ static mp_obj_t pyb_lcd_text(size_t n_args, const mp_obj_t *args) {
             chr = 127;
         }
         // get char data
-        const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
+        lcd_font_buf_convert(self, chr);
+        const uint8_t *chr_data = self->font_buf;
         // loop over char data
         for (uint j = 0; j < 8; j++, x0++) {
             if (0 <= x0 && x0 < LCD_PIX_BUF_W) { // clip x
