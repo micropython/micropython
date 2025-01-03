@@ -183,12 +183,26 @@ static mp_obj_t nrf_flashbdev_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
+static mp_int_t nrf_flashbdev_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    nrf_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (flags == MP_BUFFER_READ) {
+        bufinfo->buf = (void *)self->start;
+        bufinfo->len = self->len;
+        bufinfo->typecode = 'B';
+        return 0;
+    } else {
+        // Unsupported.
+        return 1;
+    }
+}
+
 MP_DEFINE_CONST_OBJ_TYPE(
     nrf_flashbdev_type,
     MP_QSTR_Flash,
     MP_TYPE_FLAG_NONE,
     make_new, nrf_flashbdev_make_new,
     print, nrf_flashbdev_print,
+    buffer, nrf_flashbdev_get_buffer,
     locals_dict, &nrf_flashbdev_locals_dict
     );
 
@@ -221,12 +235,10 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
         return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
     }
     switch (mp_obj_get_int(args[0])) {
-        case -1: // request object-based capabilities
-            return MP_OBJ_FROM_PTR(&nrf_flash_romfs_obj);
-        case 0: // number of segments
+        case MP_VFS_ROM_IOCTL_GET_NUMBER_OF_SEGMENTS:
             return MP_OBJ_NEW_SMALL_INT(1);
-        case 1: // address
-            return mp_obj_new_int(MICROPY_HW_ROMFS_BASE);
+        case MP_VFS_ROM_IOCTL_GET_SEGMENT:
+            return MP_OBJ_FROM_PTR(&nrf_flash_romfs_obj);
         default:
             return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
     }
