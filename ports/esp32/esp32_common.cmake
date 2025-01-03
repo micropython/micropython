@@ -202,6 +202,9 @@ idf_component_register(
         ${IDF_COMPONENTS}
 )
 
+# Set the MicroPython target as the current (main) IDF component target.
+set(MICROPY_TARGET ${COMPONENT_TARGET})
+
 # If a ULP binary image is to be embedded into the build, you can define the
 # appropriate variables to have ESP-IDF build it for your board using your
 # mpconfigboard.cmake
@@ -216,10 +219,18 @@ if(DEFINED ulp_embedded_sources)
     )
     message("embedded ULP App sources: " ${ulp_sources} ",  deps: " ${ulp_depentants})
     ulp_embed_binary(${ulp_app_name} ${ulp_embedded_sources} ${ulp_depentants})
-endif()
 
-# Set the MicroPython target as the current (main) IDF component target.
-set(MICROPY_TARGET ${COMPONENT_TARGET})
+    set(ULP_LD_DIR ${CMAKE_BINARY_DIR}/esp-idf/main_${IDF_TARGET}/ulp_embedded)
+    add_custom_command(
+      OUTPUT ${CMAKE_BINARY_DIR}/esp32_ulpconst_qstr.h
+      COMMAND python ${MICROPY_PORT_DIR}/esp32_ulp_qstr.py ${ULP_LD_DIR}/ulp_embedded.ld
+      DEPENDS ${ULP_LD_DIR}/ulp_embedded.ld
+      COMMENT "Parsing ULP headers"
+      VERBATIM
+    )
+
+    add_library(ULP_CONST INTERFACE ${CMAKE_BINARY_DIR}/esp32_ulpconst_qstr.h)
+endif()
 
 # Define mpy-cross flags, for use with frozen code.
 if(CONFIG_IDF_TARGET_ARCH STREQUAL "xtensa")

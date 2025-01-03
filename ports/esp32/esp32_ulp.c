@@ -64,55 +64,73 @@ static mp_obj_t esp32_ulp_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     ulp_set_wakeup_period(0, 1000*10);//default wakeup 10ms
-    #ifdef ULP_EMBEDDED_APP
-    DEBUG_printf("embedded app size %d\n", (ulp_main_bin_end - ulp_main_bin_start));
-    #endif
     // return constant object
     return (mp_obj_t)&esp32_ulp_obj;
 }
 
-static mp_obj_t esp32_ulp_set_wakeup_period(mp_obj_t self_in, mp_obj_t period_index_in, mp_obj_t period_us_in) {
-    mp_uint_t period_index = mp_obj_get_int(period_index_in);
+
+static mp_obj_t esp32_ulp_set_wakeup_period(
+    mp_obj_t self_in, 
+#if CONFIG_IDF_TARGET_ESP32
+    mp_obj_t period_index_in, 
+#endif
+    mp_obj_t period_us_in
+) {
+    mp_uint_t period_index = 0;
+#if CONFIG_IDF_TARGET_ESP32
+    period_index = mp_obj_get_int(period_index_in);
+#endif
+
     mp_uint_t period_us = mp_obj_get_int(period_us_in);
     int _errno = ulp_set_wakeup_period(period_index, period_us);
-    if (_errno != ESP_OK) {
-        mp_raise_OSError(_errno);
-    }
+    if (_errno != ESP_OK)  mp_raise_OSError(_errno);
     return mp_const_none;
 }
+#if CONFIG_IDF_TARGET_ESP32
 static MP_DEFINE_CONST_FUN_OBJ_3(esp32_ulp_set_wakeup_period_obj, esp32_ulp_set_wakeup_period);
+#else
+static MP_DEFINE_CONST_FUN_OBJ_2(esp32_ulp_set_wakeup_period_obj, esp32_ulp_set_wakeup_period);
+#endif
 
-static mp_obj_t esp32_ulp_load_binary(mp_obj_t self_in, mp_obj_t load_addr_in, mp_obj_t program_binary_in) {
-    mp_uint_t load_addr = mp_obj_get_int(load_addr_in);
 
+static mp_obj_t esp32_ulp_load_and_run(
+    mp_obj_t self_in, 
+#if !TYPE_RISCV
+    mp_obj_t entry_point_in,
+#endif
+    mp_obj_t program_binary_in
+){
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(program_binary_in, &bufinfo, MP_BUFFER_READ);
-    
+    int _errno;
     #if TYPE_RISCV
-    int _errno = ulp_riscv_load_binary(bufinfo.buf, bufinfo.len / sizeof(uint32_t));
-    #else
-    int _errno = ulp_load_binary(load_addr, bufinfo.buf, bufinfo.len / sizeof(uint32_t));
+        ulp_riscv_timer_stop();
+        ulp_riscv_halt();
+        ulp_riscv_reset();
+        _errno = ulp_riscv_load_binary(bufinfo.buf, bufinfo.len);
+        if (_errno != ESP_OK) mp_raise_OSError(_errno);
+        
+        _errno = ulp_riscv_run();
+        if (_errno != ESP_OK) mp_raise_OSError(_errno);
+        ulp_riscv_timer_resume();
+    #else 
+        ulp_timer_stop();
+        _errno = ulp_load_binary(0, bufinfo.buf, bufinfo.len / sizeof(uint32_t));
+        if (_errno != ESP_OK) mp_raise_OSError(_errno);
+            
+        mp_uint_t entry_point = mp_obj_get_int(entry_point_in);
+        _errno = ulp_run(entry_point / sizeof(uint32_t));
+        if (_errno != ESP_OK) mp_raise_OSError(_errno);
+        ulp_timer_resume();
     #endif    
-    if (_errno != ESP_OK) {
-        mp_raise_OSError(_errno);
-    }
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_3(esp32_ulp_load_binary_obj, esp32_ulp_load_binary);
 
-static mp_obj_t esp32_ulp_run(mp_obj_t self_in, mp_obj_t entry_point_in) {
-    #if TYPE_RISCV
-    int _errno = ulp_riscv_run();
-    #else
-    mp_uint_t entry_point = mp_obj_get_int(entry_point_in);
-    int _errno = ulp_run(entry_point / sizeof(uint32_t));
-    #endif
-    if (_errno != ESP_OK) {
-        mp_raise_OSError(_errno);
-    }
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(esp32_ulp_run_obj, esp32_ulp_run);
+#if TYPE_RISCV
+static MP_DEFINE_CONST_FUN_OBJ_2(esp32_ulp_load_and_run_obj, esp32_ulp_load_and_run);
+#else
+static MP_DEFINE_CONST_FUN_OBJ_3(esp32_ulp_load_and_run_obj, esp32_ulp_load_and_run);
+#endif
 
 #ifdef ULP_EMBEDDED_APP
 static mp_obj_t esp32_ulp_load_and_run_embedded(mp_obj_t self_in) {
@@ -138,6 +156,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(esp32_ulp_load_and_run_embedded_obj, esp32_ulp_
 static mp_obj_t esp32_ulp_pause(mp_obj_t self_in) {
     #if TYPE_RISCV
     ulp_riscv_timer_stop();
+    ulp_riscv_halt();
     #else
     ulp_timer_stop();
     #endif
@@ -155,16 +174,44 @@ static mp_obj_t esp32_ulp_resume(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_ulp_resume_obj, esp32_ulp_resume);
 
+
+static mp_obj_t esp32_ulp_read(mp_obj_t self_in, mp_obj_t address) {
+    uint32_t addr = mp_obj_get_int(address);
+    if(addr < (uintptr_t)RTC_SLOW_MEM ) addr += (uintptr_t)RTC_SLOW_MEM;
+    if(addr > ((uintptr_t)(RTC_SLOW_MEM)+CONFIG_ULP_COPROC_RESERVE_MEM))
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid address"));
+
+    uint32_t val =  *(uint32_t *)addr;
+    return mp_obj_new_int(val);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(esp32_ulp_read_obj, esp32_ulp_read);
+
+static mp_obj_t esp32_ulp_write(mp_obj_t self_in, mp_obj_t address, mp_obj_t value) {
+    uintptr_t addr = mp_obj_get_int(address);
+    if(addr < (uintptr_t)RTC_SLOW_MEM ) addr += (uintptr_t)RTC_SLOW_MEM;
+    if(addr > ((uintptr_t)(RTC_SLOW_MEM)+CONFIG_ULP_COPROC_RESERVE_MEM))
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid address"));
+
+    *(uint32_t *)addr = mp_obj_get_int(value);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(esp32_ulp_write_obj, esp32_ulp_write);
+
+
 static const mp_rom_map_elem_t esp32_ulp_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_wakeup_period), MP_ROM_PTR(&esp32_ulp_set_wakeup_period_obj) },
-    { MP_ROM_QSTR(MP_QSTR_load_binary), MP_ROM_PTR(&esp32_ulp_load_binary_obj) },
-    { MP_ROM_QSTR(MP_QSTR_run), MP_ROM_PTR(&esp32_ulp_run_obj) },
+    { MP_ROM_QSTR(MP_QSTR_run), MP_ROM_PTR(&esp32_ulp_load_and_run_obj) },
     #ifdef ULP_EMBEDDED_APP
     { MP_ROM_QSTR(MP_QSTR_run_embedded), MP_ROM_PTR(&esp32_ulp_load_and_run_embedded_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&esp32_ulp_pause_obj) },
     { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&esp32_ulp_resume_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&esp32_ulp_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&esp32_ulp_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_RESERVE_MEM), MP_ROM_INT(CONFIG_ULP_COPROC_RESERVE_MEM) },
+    #ifdef ULP_EMBEDDED_APP
+    #include "genhdr/esp32_ulpconst_qstr.h"    
+    #endif
 };
 static MP_DEFINE_CONST_DICT(esp32_ulp_locals_dict, esp32_ulp_locals_dict_table);
 
