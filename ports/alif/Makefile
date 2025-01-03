@@ -34,7 +34,7 @@ ALIF_TOC_CONFIG = mcu/M55_HE_cfg.json
 ALIF_TOC_APPS = $(BUILD)/M55_HE/firmware.bin
 JLINK_CMD = '\
 $(JLINK_CMD_PREFIX)\
-LoadFile "$(BUILD)/M55_HE/firmware.bin",0x80420000\n\
+LoadFile "$(BUILD)/M55_HE/firmware.bin",0x8037e000\n\
 $(JLINK_CMD_SUFFIX)'
 
 else ifeq ($(MCU_CORE),M55_DUAL)
@@ -44,7 +44,7 @@ ALIF_TOC_APPS = $(BUILD)/M55_HP/firmware.bin $(BUILD)/M55_HE/firmware.bin
 JLINK_CMD = '\
 $(JLINK_CMD_PREFIX)\
 LoadFile "$(BUILD)/M55_HP/firmware.bin",0x80020000\n\
-LoadFile "$(BUILD)/M55_HE/firmware.bin",0x80420000\n\
+LoadFile "$(BUILD)/M55_HE/firmware.bin",0x8037e000\n\
 $(JLINK_CMD_SUFFIX)'
 
 else

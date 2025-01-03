@@ -30,9 +30,9 @@ ENTRY(Reset_Handler)
 MEMORY
 {
   #ifdef CORE_M55_HP
-  ROM   (rx)   : ORIGIN = 0x80020000, LENGTH = 0x00400000
+  ROM   (rx)   : ORIGIN = 0x80020000, LENGTH = 0x0035E000
   #else
-  ROM   (rx)   : ORIGIN = 0x80420000, LENGTH = 0x0015e000
+  ROM   (rx)   : ORIGIN = 0x8037E000, LENGTH = 0x00100000
   #endif
   ITCM  (rwx)  : ORIGIN = 0x00000000, LENGTH = 0x00040000
   #ifdef CORE_M55_HP
