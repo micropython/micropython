@@ -33,7 +33,7 @@
 // Feature settings with defaults
 
 #ifndef MICROPY_VFS_ROM
-#if defined(STM32F091xx) || defined(STM32F405xx)
+#if defined(STM32F091xC) || defined(STM32F405xx)
 #define MICROPY_VFS_ROM (1)
 #endif
 #endif

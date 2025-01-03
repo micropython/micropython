@@ -41,7 +41,7 @@ _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
 
 _micropy_hw_romfs_start = ORIGIN(FLASH_ROMFS);
-_micropy_hw_romfs_end = ORIGIN(FLASH_ROMFS) + LENGTH(FLASH_ROMFS);
+_micropy_hw_romfs_size = LENGTH(FLASH_ROMFS);
 
 /* Define output sections */
 SECTIONS

@@ -36,5 +36,4 @@ _micropy_hw_internal_flash_storage_start = ORIGIN(FLASH_FS);
 _micropy_hw_internal_flash_storage_end = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
 
 _micropy_hw_romfs_start = ORIGIN(FLASH_ROMFS);
-_micropy_hw_romfs_end = ORIGIN(FLASH_ROMFS) + LENGTH(FLASH_ROMFS);
 _micropy_hw_romfs_size = LENGTH(FLASH_ROMFS);
