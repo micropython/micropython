@@ -87,9 +87,6 @@
 #define MICROPY_GC_SPLIT_HEAP_AUTO          (1)
 
 // extended modules
-#ifndef MICROPY_PY_ULP
-#define MICROPY_PY_ULP                      (1)
-#endif
 #ifndef MICROPY_PY_ESPNOW
 #define MICROPY_PY_ESPNOW                   (1)
 #endif
@@ -126,6 +123,7 @@
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/esp32/machine_adc.c"
 #define MICROPY_PY_MACHINE_ADC_ATTEN_WIDTH  (1)
 #define MICROPY_PY_MACHINE_ADC_INIT         (1)
+#define MICROPY_PY_MACHINE_ADC_DEINIT       (1)
 #define MICROPY_PY_MACHINE_ADC_READ         (1)
 #define MICROPY_PY_MACHINE_ADC_READ_UV      (1)
 #define MICROPY_PY_MACHINE_ADC_BLOCK        (1)

@@ -10,4 +10,10 @@ endif()
 
 set(MICROPY_PY_TINYUSB ON)
 
+if(PREFER_FSM_ULP)
+list(APPEND MICROPY_DEF_CORE
+    CONFIG_IDF_TARGET_ULP_PREFER_FSM=1
+)
+endif()
+
 include(${MICROPY_PORT_DIR}/esp32_common.cmake)
