@@ -65,7 +65,7 @@ your system package manager or installed from PyPI in a virtual environment
 with `pip`.
 
 Each example provides a Makefile. You should specify the `ARCH` argument to
-make (one of x86, x64, armv6m, armv7m, xtensa, xtensawin):
+make (one of x86, x64, armv6m, armv7m, xtensa, xtensawin, rv32imc):
 
 ```
 $ cd features0

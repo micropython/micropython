@@ -39,6 +39,7 @@
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 #elif defined(__riscv)
 #define MICROPY_EMIT_RV32           (1)
+#define MICROPY_EMIT_INLINE_RV32    (1)
 #endif
 
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
@@ -60,6 +61,7 @@
 #define MICROPY_PY_MACHINE_RESET    (1)
 #define MICROPY_PY_MACHINE_PIN_BASE (1)
 #define MICROPY_VFS                 (1)
+#define MICROPY_VFS_ROM             (1)
 
 // type definitions for the specific machine
 
