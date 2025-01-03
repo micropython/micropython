@@ -9,7 +9,7 @@ import mimxrt
 from machine import Pin
 
 try:
-    vfs.mount(vfs.VfsRom(vfs.rom_ioctl(1)), "/rom")
+    vfs.mount(vfs.VfsRom(vfs.rom_ioctl(2)), "/rom")
     sys.path.insert(0, "/rom")
 except:
     pass
