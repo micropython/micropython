@@ -226,7 +226,8 @@ class TestEdgeCases(unittest.TestCase):
 class TestStandalone(TestBase):
     def test_constructor(self):
         self.assertIsInstance(vfs.VfsRom(self.romfs), vfs.VfsRom)
-        self.assertIsInstance(vfs.VfsRom(self.romfs_addr), vfs.VfsRom)
+        with self.assertRaises(TypeError):
+            vfs.VfsRom(self.romfs_addr)
 
     def test_mount(self):
         vfs.VfsRom(self.romfs).mount(True, False)

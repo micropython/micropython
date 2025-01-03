@@ -198,15 +198,13 @@ static mp_obj_t vfs_rom_make_new(const mp_obj_type_t *type, size_t n_args, size_
     self->base.type = type;
     self->memory = args[0];
 
+    // Get the ROMFS memory region.
     mp_buffer_info_t bufinfo;
-    if (mp_get_buffer(self->memory, &bufinfo, MP_BUFFER_READ)) {
-        if (bufinfo.len < ROMFS_SIZE_MIN) {
-            mp_raise_OSError(MP_ENODEV);
-        }
-        self->filesystem = bufinfo.buf;
-    } else {
-        self->filesystem = (const uint8_t *)(uintptr_t)mp_obj_get_int_truncated(self->memory);
+    mp_get_buffer_raise(self->memory, &bufinfo, MP_BUFFER_READ);
+    if (bufinfo.len < ROMFS_SIZE_MIN) {
+        mp_raise_OSError(MP_ENODEV);
     }
+    self->filesystem = bufinfo.buf;
 
     // Verify it is a ROMFS.
     if (!(self->filesystem[0] == ROMFS_HEADER_BYTE0
