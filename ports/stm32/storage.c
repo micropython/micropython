@@ -577,7 +577,7 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
         case MP_VFS_ROM_IOCTL_GET_SEGMENT:
             return MP_OBJ_FROM_PTR(&romfs_obj);
 
-        #if !MICROPY_HW_ENABLE_STORAGE
+            #if !MICROPY_HW_ENABLE_STORAGE
 
         case MP_VFS_ROM_IOCTL_WRITE_PREPARE: {
             // Erase sectors in given range.
@@ -610,7 +610,7 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
             return MP_OBJ_NEW_SMALL_INT(ret);
         }
 
-        #endif
+            #endif
 
         default:
             return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
