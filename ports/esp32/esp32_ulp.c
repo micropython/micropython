@@ -50,6 +50,11 @@
     extern const uint8_t ulp_main_bin_end[]   asm("_binary_ulp_embedded_bin_end");
 #endif
 
+#include "hal/adc_types.h"
+#include "driver/rtc_io.h"
+#include "ulp_adc.h"
+#include "py/mphal.h"
+
 typedef struct _esp32_ulp_obj_t {
     mp_obj_base_t base;
 } esp32_ulp_obj_t;
@@ -198,6 +203,55 @@ static mp_obj_t esp32_ulp_write(mp_obj_t self_in, mp_obj_t address, mp_obj_t val
 static MP_DEFINE_CONST_FUN_OBJ_3(esp32_ulp_write_obj, esp32_ulp_write);
 
 
+/*
+RTC pin functionality, can be moved to Pin class if needed
+*/
+
+static mp_obj_t esp32_ulp_rtc_init(mp_obj_t self_in, mp_obj_t pin_in) {
+    gpio_num_t gpio_id = mp_obj_get_int(pin_in);
+    
+    if(!rtc_gpio_is_valid_gpio(gpio_id)) mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
+    rtc_gpio_init(gpio_id);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(esp32_ulp_rtc_init_obj, esp32_ulp_rtc_init);
+
+
+static mp_obj_t esp32_ulp_rtc_deinit(mp_obj_t self_in, mp_obj_t pin_in) {
+    gpio_num_t gpio_id = mp_obj_get_int(pin_in);
+    
+    if(!rtc_gpio_is_valid_gpio(gpio_id)) mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
+    rtc_gpio_deinit(gpio_id);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(esp32_ulp_rtc_deinit_obj, esp32_ulp_rtc_deinit);
+
+
+static mp_obj_t esp32_ulp_adc_init(mp_obj_t self_in, mp_obj_t unit_in,  mp_obj_t channel_in) {
+    int unit = mp_obj_get_int(unit_in);
+    int channel = mp_obj_get_int(channel_in);
+    
+    if(unit < 0 || unit > SOC_ADC_PERIPH_NUM) mp_raise_ValueError(MP_ERROR_TEXT("invalid ADC unit"));
+
+     ulp_adc_cfg_t cfg = {
+        .adc_n    = unit,
+        .channel  = channel,
+        #if CONFIG_IDF_TARGET_ESP32S2
+        .width    = ADC_BITWIDTH_13,
+        #else
+        .width    = ADC_BITWIDTH_12,
+        #endif
+        .atten    = ADC_ATTEN_DB_11,
+        .ulp_mode = ADC_ULP_MODE_RISCV,
+    };
+    int _errno = ulp_adc_init(&cfg);
+    if(_errno != 0) mp_raise_ValueError(MP_ERROR_TEXT("ADC unit already in use or invalid channel"));
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(esp32_ulp_adc_init_obj, esp32_ulp_adc_init);
+
+
 static const mp_rom_map_elem_t esp32_ulp_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_wakeup_period), MP_ROM_PTR(&esp32_ulp_set_wakeup_period_obj) },
     { MP_ROM_QSTR(MP_QSTR_run), MP_ROM_PTR(&esp32_ulp_load_and_run_obj) },
@@ -208,6 +262,9 @@ static const mp_rom_map_elem_t esp32_ulp_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&esp32_ulp_resume_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&esp32_ulp_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&esp32_ulp_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rtc_init), MP_ROM_PTR(&esp32_ulp_rtc_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rtc_deinit), MP_ROM_PTR(&esp32_ulp_rtc_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_adc_input), MP_ROM_PTR(&esp32_ulp_adc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_RESERVE_MEM), MP_ROM_INT(CONFIG_ULP_COPROC_RESERVE_MEM) },
     #ifdef ULP_EMBEDDED_APP
     #include "genhdr/esp32_ulpconst_qstr.h"    
