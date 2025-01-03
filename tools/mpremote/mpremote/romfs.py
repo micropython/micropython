@@ -95,7 +95,9 @@ def copy_recursively(vfs, src_dir, print_prefix, mpy_cross):
             # A directory, enter it and copy its contents recursively.
             print(print_prefix + print_entry, name + "/")
             vfs.opendir(name)
-            mpy_cross_missed += copy_recursively(vfs, src_name + "/", print_prefix + print_recurse, mpy_cross)
+            mpy_cross_missed += copy_recursively(
+                vfs, src_name + "/", print_prefix + print_recurse, mpy_cross
+            )
             vfs.closedir()
         else:
             # A file.

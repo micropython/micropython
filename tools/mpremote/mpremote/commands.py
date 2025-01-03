@@ -515,7 +515,9 @@ def _do_romfs_deploy(state, args):
         rom_block_count = state.transport.eval("dev.ioctl(4,0)")
         rom_block_size = state.transport.eval("dev.ioctl(5,0)")
         rom_size = rom_block_count * rom_block_size
-        print(f"ROM partition has size {rom_size} bytes ({rom_block_count} blocks of {rom_block_size} bytes each)")
+        print(
+            f"ROM partition has size {rom_size} bytes ({rom_block_count} blocks of {rom_block_size} bytes each)"
+        )
     else:
         rom_size = state.transport.eval("len(dev)")
         print(f"ROM partition has size {rom_size} bytes")
