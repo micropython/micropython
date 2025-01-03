@@ -11,6 +11,7 @@
 #define MICROPY_PY_NETWORK          (0)
 #define MICROPY_PY_STM              (0)
 #define MICROPY_PY_PYB_LEGACY       (0)
+#define MICROPY_PY_MACHINE_PIN_LEGACY (0)
 #define MICROPY_PY_HEAPQ            (0)
 #define MICROPY_PY_FRAMEBUF         (0)
 
