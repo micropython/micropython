@@ -123,6 +123,7 @@
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/alif/modmachine.c"
 #define MICROPY_PY_MACHINE_RESET                (1)
+#define MICROPY_PY_MACHINE_BOOTLOADER           (1)
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS     (1)
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_MACHINE_ADC                  (1)
@@ -144,10 +145,6 @@
 // Set FatFS block size to flash sector size to avoid caching
 // the flash sector in memory to support smaller block sizes.
 #define MICROPY_FATFS_MAX_SS                    (MICROPY_HW_FLASH_BLOCK_SIZE_BYTES)
-#endif
-
-#ifndef MICROPY_BOARD_ENTER_BOOTLOADER
-#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
 #endif
 
 #define MP_STATE_PORT MP_STATE_VM
@@ -181,6 +178,10 @@ typedef intptr_t mp_off_t;
 #ifndef MICROPY_BOARD_FATAL_ERROR
 extern void panic(const char *);
 #define MICROPY_BOARD_FATAL_ERROR panic
+#endif
+
+#ifndef MICROPY_BOARD_ENTER_BOOTLOADER
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
 #endif
 
 // Needed for MICROPY_PY_RANDOM_SEED_INIT_FUNC.

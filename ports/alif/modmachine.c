@@ -47,6 +47,16 @@ NORETURN static void mp_machine_reset(void) {
     se_services_reset_soc();
 }
 
+NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+    __disable_irq();
+
+    MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
+
+    while (1) {
+        ;
+    }
+}
+
 static mp_int_t mp_machine_reset_cause(void) {
     // TODO
     return 0;
