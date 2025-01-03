@@ -5,8 +5,8 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 226K /* sectors 0-112 */
-    FLASH_ROMFS (rx): ORIGIN = 0x08036000, LENGTH = 10K /* sectors 113-117 */
+    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 224K /* sectors 0-111 */
+    FLASH_ROMFS (rx): ORIGIN = 0x08038000, LENGTH = 12K /* sectors 112-117 */
     FLASH_FS (r)    : ORIGIN = 0x0803B000, LENGTH = 20K /* sectors 118-127 */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 32K
 }
