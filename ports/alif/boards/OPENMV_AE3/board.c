@@ -29,6 +29,9 @@
 #include "ospi_flash.h"
 #include "se_services.h"
 
+#define OMV_BOOTLOADER_MAGIC_ADDR   (0x200FFFFCU)
+#define OMV_BOOTLOADER_MAGIC_VALUE  (0xB00710ADU)
+
 const ospi_pin_settings_t ospi_pin_settings = {
     .peripheral_number = 0,
     .pin_reset = pin_FLASH_RESET,
@@ -72,6 +75,11 @@ void board_startup(void) {
     // Switch the USB multiplexer to use the Alif USB port.
     mp_hal_pin_output(pin_USB_D_SEL);
     mp_hal_pin_high(pin_USB_D_SEL);
+}
+
+void board_enter_bootloader(void) {
+    *((uint32_t *)OMV_BOOTLOADER_MAGIC_ADDR) = OMV_BOOTLOADER_MAGIC_VALUE;
+    NVIC_SystemReset();
 }
 
 void board_early_init(void) {

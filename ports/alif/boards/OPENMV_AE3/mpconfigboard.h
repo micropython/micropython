@@ -23,6 +23,9 @@ extern void board_startup(void);
 extern void board_early_init(void);
 #define MICROPY_BOARD_EARLY_INIT board_early_init
 
+extern void board_enter_bootloader(void);
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) board_enter_bootloader()
+
 // This is used for alif.Flash() and USB MSC.
 #define MICROPY_HW_FLASH_STORAGE_BASE_ADDR  (0)
 #define MICROPY_HW_FLASH_STORAGE_BYTES      (16 * 1024 * 1024)
