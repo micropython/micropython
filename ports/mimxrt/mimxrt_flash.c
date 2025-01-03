@@ -62,6 +62,19 @@ static mp_obj_t mimxrt_flash_make_new(const mp_obj_type_t *type, size_t n_args, 
     return MP_OBJ_FROM_PTR(&mimxrt_flash_obj);
 }
 
+static mp_int_t mimxrt_flash_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    mimxrt_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (flags == MP_BUFFER_READ) {
+        bufinfo->buf = (void *)((uintptr_t)&__flash_start + self->flash_base);
+        bufinfo->len = self->flash_size;
+        bufinfo->typecode = 'B';
+        return 0;
+    } else {
+        // Write unsupported.
+        return 1;
+    }
+}
+
 // readblocks(block_num, buf, [offset])
 // read size of buffer number of bytes from block (with offset) into buffer
 static mp_obj_t mimxrt_flash_readblocks(size_t n_args, const mp_obj_t *args) {
@@ -153,6 +166,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Flash,
     MP_TYPE_FLAG_NONE,
     make_new, mimxrt_flash_make_new,
+    buffer, mimxrt_flash_get_buffer,
     locals_dict, &mimxrt_flash_locals_dict
     );
 
@@ -165,10 +179,8 @@ extern uint8_t vfsrom_end;
 // The size is defined in Makefile(s) as linker symbol MICROPY_HW_ROMFS_BYTES.
 // For machine.mem32 the absolute address is required, for the flash functions
 // erase and write the offset to the flash start address.
-#define MICROPY_HW_ROMFS_ADDRESS ((uint32_t)&vfsrom_start)
 #define MICROPY_HW_ROMFS_BASE ((uintptr_t)&vfsrom_start - (uintptr_t)&__flash_start)
 #define MICROPY_HW_ROMFS_BYTES ((uintptr_t)&vfsrom_end - (uintptr_t)&vfsrom_start)
-
 
 static mimxrt_flash_obj_t mimxrt_flash_romfs_obj = {
     .base = { &mimxrt_flash_type },
@@ -179,14 +191,12 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
         return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
     }
     switch (mp_obj_get_int(args[0])) {
-        case -1: // request object-based capabilities
+        case MP_VFS_ROM_IOCTL_GET_NUMBER_OF_SEGMENTS:
+            return MP_OBJ_NEW_SMALL_INT(1);
+        case MP_VFS_ROM_IOCTL_GET_SEGMENT:
             mimxrt_flash_romfs_obj.flash_base = MICROPY_HW_ROMFS_BASE;
             mimxrt_flash_romfs_obj.flash_size = MICROPY_HW_ROMFS_BYTES;
             return MP_OBJ_FROM_PTR(&mimxrt_flash_romfs_obj);
-        case 0: // number of segments
-            return MP_OBJ_NEW_SMALL_INT(1);
-        case 1: // address
-            return mp_obj_new_int(MICROPY_HW_ROMFS_ADDRESS);
         default:
             return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
     }
