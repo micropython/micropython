@@ -709,9 +709,11 @@ static bool handle_load_store_opcode_with_offset(emit_inline_asm_t *emit, qstr o
         return false;
     }
 
-    mp_uint_t rd;
-    mp_uint_t rs1;
-    parse_register_node(nodes[0], &rd, opcode_data->argument1_kind & C);
+    mp_uint_t rd = 0;
+    mp_uint_t rs1 = 0;
+    if (!parse_register_node(nodes[0], &rd, opcode_data->argument1_kind & C)) {
+        return false;
+    }
     if (!parse_register_node(nodes[1], &rs1, opcode_data->argument3_kind & C)) {
         return false;
     }
