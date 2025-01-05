@@ -346,7 +346,6 @@ int ospi_flash_init(void) {
     }
 
     // Enter XIP mode.  It will be disabled during flash read/erase/write.
-    self->xip_active = true;
     ospi_flash_xip_enter(self);
     return 0;
 }
