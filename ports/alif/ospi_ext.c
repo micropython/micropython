@@ -233,7 +233,7 @@ void ospi_xip_enter_ext(ospi_flash_cfg_t *ospi_cfg, uint32_t inst_len, uint32_t 
         | (0x0 << XIP_CTRL_HYPERBUS_EN_OFFSET)
         | (0x1 << XIP_CTRL_RXDS_SIG_EN)
         | (0x0 << XIP_CTRL_XIP_MBL_OFFSET)
-        | (0x1 << XIP_PREFETCH_EN_OFFSET)
+        | (0x0 << XIP_PREFETCH_EN_OFFSET)
         | (0x0 << XIP_CTRL_RXDS_VL_EN_OFFSET);
 
     if (inst_len == OSPI_INST_L_16bit) {
@@ -250,6 +250,7 @@ void ospi_xip_enter_ext(ospi_flash_cfg_t *ospi_cfg, uint32_t inst_len, uint32_t 
     ospi_writel(ospi_cfg, xip_incr_inst, incr_command);
     ospi_writel(ospi_cfg, xip_wrap_inst, wrap_command);
     ospi_writel(ospi_cfg, xip_ser, ospi_cfg->ser);
+    ospi_writel(ospi_cfg, xip_cnt_time_out, 100);
 
     spi_enable(ospi_cfg);
     ospi_xip_enable(ospi_cfg);
