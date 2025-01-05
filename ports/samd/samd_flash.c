@@ -72,6 +72,19 @@ static mp_obj_t samd_flash_make_new(const mp_obj_type_t *type, size_t n_args, si
     // Return singleton object.
     return MP_OBJ_FROM_PTR(&samd_flash_obj);
 }
+
+static mp_int_t samd_flash_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    samd_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (flags == MP_BUFFER_READ) {
+        bufinfo->buf = (void *)((uintptr_t)self->flash_base);
+        bufinfo->len = self->flash_size;
+        bufinfo->typecode = 'B';
+        return 0;
+    } else {
+        // Write unsupported.
+        return 1;
+    }
+}
 #endif  // MICROPY_HW_MCUFLASH
 
 // Flash init (from cctpy)
@@ -179,6 +192,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Flash,
     MP_TYPE_FLAG_NONE,
     make_new, samd_flash_make_new,
+    buffer, samd_flash_get_buffer,
     locals_dict, &samd_flash_locals_dict
     );
 #endif
@@ -223,11 +237,8 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
                 return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
             }
             uint32_t dest_addr = MICROPY_HW_ROMFS_BASE;
-            uint32_t dest_addr_max = dest_addr + mp_obj_get_int(args[2]);
             mp_int_t page_size = flash_get_page_size(&flash_desc); // adf4 API call
-            for (; dest_addr < dest_addr_max; dest_addr += page_size) {
-                flash_erase(&flash_desc, dest_addr, 1);
-            }
+            flash_erase(&flash_desc, dest_addr, mp_obj_get_int(args[2]) / page_size);
             return MP_OBJ_NEW_SMALL_INT(0);
         }
 
