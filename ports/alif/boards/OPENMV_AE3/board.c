@@ -52,8 +52,8 @@ const ospi_pin_settings_t ospi_pin_settings = {
 const ospi_flash_settings_t ospi_flash_settings[] = {
     {
         .jedec_id = 0x3980c2,
-        .freq_hz = 50000000,
-        .read_dummy_cycles = 6,
+        .freq_hz = 100000000,
+        .read_dummy_cycles = 10,
         OSPI_FLASH_SETTINGS_MX25,
     },
     {
@@ -64,8 +64,8 @@ const ospi_flash_settings_t ospi_flash_settings[] = {
     },
     {
         .jedec_id = 0x17bb6b,
-        .freq_hz = 50000000,
-        .read_dummy_cycles = 4,
+        .freq_hz = 60000000,
+        .read_dummy_cycles = 5,
         OSPI_FLASH_SETTINGS_EM,
     },
 };
