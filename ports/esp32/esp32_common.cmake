@@ -61,7 +61,9 @@ list(APPEND MICROPY_SOURCE_DRIVERS
 
 string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/tinyusb)
 if(MICROPY_PY_TINYUSB)
-    set(TINYUSB_SRC "${MICROPY_DIR}/lib/tinyusb/src")
+    if(EXISTS "${MICROPY_DIR}/lib/tinyusb/src")
+        set(TINYUSB_SRC "${MICROPY_DIR}/lib/tinyusb/src")
+    endif()
     string(TOUPPER OPT_MCU_${IDF_TARGET} tusb_mcu)
 
     list(APPEND MICROPY_DEF_TINYUSB
