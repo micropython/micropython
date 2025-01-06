@@ -237,9 +237,10 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
                 return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
             }
             uint32_t dest_addr = MICROPY_HW_ROMFS_BASE;
+            uint32_t bytes_used = mp_obj_get_int(args[2]);
             mp_int_t page_size = flash_get_page_size(&flash_desc); // adf4 API call
-            flash_erase(&flash_desc, dest_addr, mp_obj_get_int(args[2]) / page_size);
-            return MP_OBJ_NEW_SMALL_INT(0);
+            flash_erase(&flash_desc, dest_addr, (bytes_used + page_size - 1) / page_size);
+            return MP_OBJ_NEW_SMALL_INT(4);
         }
 
         case MP_VFS_ROM_IOCTL_WRITE: {
