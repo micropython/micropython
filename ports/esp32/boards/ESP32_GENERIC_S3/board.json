@@ -1,7 +1,10 @@
 {
     "deploy": [
-        "../deploy_s3.md"
+        "../deploy.md"
     ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
     "docs": "",
     "features": [
         "BLE",
