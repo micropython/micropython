@@ -36,19 +36,26 @@ Getting the firmware
 
 The first thing you need to do is download the most recent MicroPython firmware
 .bin file to load onto your ESP32 device. You can download it from the
-`MicroPython downloads page <https://micropython.org/download#esp32>`_.
-From here, you have 3 main choices:
+`MicroPython download page`_. Search for your particular board on this page.
 
-* Stable firmware builds
-* Daily firmware builds
-* Daily firmware builds with SPIRAM support
+.. note:: If you don't see your specific board on the download page, then it's
+          very likely that one of the generic firmwares will work. These are
+          listed at the top of the download page and have names matching the
+          onboard Espressif chip (i.e. `ESP32 / WROOM`_, `ESP32-C3`_,
+          `ESP32-S3`_, etc).
 
-If you are just starting with MicroPython, the best bet is to go for the Stable
-firmware builds. If you are an advanced, experienced MicroPython ESP32 user
-who would like to follow development closely and help with testing new
-features, there are daily builds.  If your board has SPIRAM support you can
-use either the standard firmware or the firmware with SPIRAM support, and in
-the latter case you will have access to more RAM for Python objects.
+          However, you may need to double check with the vendor you purchased
+          the board from.
+
+From here, you have a choice to make:
+
+* Download a stable firmware release.
+* Download a daily firmware "Preview" build.
+
+If you are just starting with MicroPython, the best bet is to go for the stable
+Release firmware builds. If you are an advanced, experienced MicroPython ESP32
+user who would like to follow development closely and help with testing new
+features, then you may find the Preview builds useful.
 
 .. _esp32_flashing:
 
@@ -71,71 +78,83 @@ For best results it is recommended to first erase the entire flash of your
 device before putting on new MicroPython firmware.
 
 Currently we only support esptool.py to copy across the firmware.  You can find
-this tool here: `<https://github.com/espressif/esptool/>`__, or install it
+this tool here: `<https://docs.espressif.com/projects/esptool/>`__, or install it
 using pip::
 
     pip install esptool
 
-Versions starting with 1.3 support both Python 2.7 and Python 3.4 (or newer).
-An older version (at least 1.2.1 is needed) works fine but will require Python
-2.7.
-
 Using esptool.py you can erase the flash with the command::
 
-    esptool.py --port /dev/ttyUSB0 erase_flash
+    esptool.py erase_flash
 
-And then deploy the new firmware using::
+.. note:: On Windows, the command may be named ``esptool`` not ``esptool.py``
 
-    esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash -z 0x1000 esp32-20180511-v1.9.4.bin
+Then deploy the new firmware. Use this command for original ESP32 and ESP32-S2 SoCs::
 
-Notes:
+    esptool.py --baud 460800 write_flash 0x1000 ESP32_BOARD_NAME-DATE-VERSION.bin
 
-* You might need to change the "port" setting to something else relevant for your
-  PC
-* You may need to reduce the baudrate if you get errors when flashing
-  (eg down to 115200 by adding ``--baud 115200`` into the command)
-* For some boards with a particular FlashROM configuration you may need to
-  change the flash mode (eg by adding ``-fm dio`` into the command)
-* The filename of the firmware should match the file that you have
+Use this command for all other SoCs (including ESP32-S3, ESP32-C3, and all newer chips)::
+
+    esptool.py --baud 460800 write_flash 0 ESP32_BOARD_NAME-DATE-VERSION.bin
+
+Replace ``ESP32_BOARD_NAME-DATE-VERSION.bin`` with the name of your firmware .bin file.
+
+.. note:: If you're unsure which command line to use, check the `MicroPython
+  download page`_ for your board. Each download page shows an accurate command
+  line example for that board and its SoC.
 
 If the above commands run without error then MicroPython should be installed on
-your board!
+your board! If the command fails, see :ref:`esp32_troubleshooting_install` below.
 
 Serial prompt
 -------------
 
 Once you have the firmware on the device you can access the REPL (Python prompt)
-over UART0 (GPIO1=TX, GPIO3=RX), which might be connected to a USB-serial
-converter, depending on your board.  The baudrate is 115200.
+over either UART0, which might be connected to a USB-serial converter depending
+on your board, or the chip's built-in USB device. The baudrate is 115200.
 
 From here you can now follow the ESP8266 tutorial, because these two Espressif chips
 are very similar when it comes to using MicroPython on them.  The ESP8266 tutorial
 is found at :ref:`esp8266_tutorial` (but skip the Introduction section).
 
+.. _esp32_troubleshooting_install:
+
 Troubleshooting installation problems
 -------------------------------------
 
 If you experience problems during flashing or with running firmware immediately
-after it, here are troubleshooting recommendations:
+after flashing, here are some troubleshooting recommendations:
 
-* Be aware of and try to exclude hardware problems.  There are 2 common
-  problems: bad power source quality, and worn-out/defective FlashROM.
-  Speaking of power source, not just raw amperage is important, but also low
-  ripple and noise/EMI in general.  The most reliable and convenient power
-  source is a USB port.
+* Esptool will try to detect the serial port where your ESP32 is connected. If
+  this doesn't work, or you have multiple serial ports, then you may need to
+  manually specify the port by adding the ``--port`` option to the start of the
+  ``esptool.py`` command line. For example, ``esptool.py --port /dev/ttyUSB0
+  <rest of line>`` for Linux or ``esptool --port COM4 <rest of line>`` for
+  Windows.
+* If the board isn't responding to esptool at all, it may need to be manually
+  reset into the bootloader download mode. Look for a button marked "BOOT" or
+  "IO0" on your board and a second button marked "RESET" or "RST". If you have
+  both buttons, try these steps:
 
-* The flashing instructions above use flashing speed of 460800 baud, which is
-  good compromise between speed and stability. However, depending on your
-  module/board, USB-UART converter, cables, host OS, etc., the above baud
-  rate may be too high and lead to errors. Try a more common 115200 baud
-  rate instead in such cases.
+  1. Press "BOOT" (or "IO0") and hold it down.
+  2. Press "RESET" (or "RST") and immediately release it.
+  3. Release "BOOT" (or "IO0").
+  4. Re-run the flashing steps from the download page.
 
-* To catch incorrect flash content (e.g. from a defective sector on a chip),
-  add ``--verify`` switch to the commands above.
+  If your board doesn't have these buttons, consult the board manufacturer's
+  documentation about entering bootloader download mode.
+* If you get errors part-way through the flashing process then try reducing the
+  speed of data transfer by removing the ``--baud 460800`` argument.
+* Hardware problems can cause flashing to fail. There are two common problems:
+  bad power source quality, and defective hardware (especially very low cost
+  unbranded development boards). Speaking of power source, not just raw amperage
+  is important, but also low ripple and noise/EMI in general. The most reliable
+  and convenient power source is a USB port.
+* If you still experience problems with flashing the firmware then please also
+  refer to the `esptool Troubleshooting documentation`_.
 
-* If you still experience problems with flashing the firmware please
-  refer to esptool.py project page, https://github.com/espressif/esptool
-  for additional documentation and a bug tracker where you can report problems.
-
-* If you are able to flash the firmware but the ``--verify`` option returns
-  errors even after multiple retries the you may have a defective FlashROM chip.
+.. _esptool Troubleshooting documentation: https://docs.espressif.com/projects/esptool/en/latest/esp32/troubleshooting.html
+.. _MicroPython download page: https://micropython.org/download/?port=esp32
+.. _ESP32 / WROOM: https://micropython.org/download/ESP32_GENERIC
+.. _ESP32-C3: https://micropython.org/download/ESP32_GENERIC_C3
+.. _ESP32-S3: https://micropython.org/download/ESP32_GENERIC_S3
