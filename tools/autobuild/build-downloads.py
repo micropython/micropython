@@ -91,7 +91,18 @@ def main(repo_path, output_path):
                 f.write("\n\n## Installation instructions\n")
             for deploy in blob["deploy"]:
                 with open(os.path.join(board_dir, deploy), "r") as fin:
-                    f.write(fin.read())
+                    body = fin.read()
+                    # any key in the board.json file can be substituted via Python str.format()
+                    try:
+                        body = body.format(**blob)
+                    except Exception as e:
+                        raise RuntimeError(
+                            "Failed to format deploy file {} according to {}: {}".format(
+                                fin.name, board_json, e
+                            )
+                        )
+                    f.write(body)
+                    f.write("\n")
 
     # Write the full index for the website to load.
     with open(os.path.join(output_path, "index.json"), "w") as f:

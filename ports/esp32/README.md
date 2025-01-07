@@ -229,6 +229,15 @@ files that configure ESP-IDF settings.  Some standard `sdkconfig` files are
 provided in the `boards/` directory, like `boards/sdkconfig.ble`.  You can
 also define custom ones in your board directory.
 
+Deployment instructions usually invoke the `boards/deploy.md` file (for boards
+with a USB/Serial converter connection), or the `boards/deploy_nativeusb.md`
+file (for boards with only a native USB port connection). These files are
+formatted for each board using template strings found in the `boards.json`
+files. You can also include the common `boards/deploy_flashmode.md` file if you
+have a board which requires manual resetting via the RESET and BOOT buttons.
+Boards with unique flashing steps can include custom `deploy.md` file(s).
+Existing `board.json` files contain examples of all of these combinations.
+
 See existing board definitions for further examples of configuration.
 
 Configuration

@@ -20,7 +20,7 @@ target serial port. For example:
 esptool.py --port PORTNAME erase_flash
 ```
 
-* On Linux, the port name is usually similar to `/dev/ttyUSB` or `/dev/ttyACM0`.
+* On Linux, the port name is usually similar to `/dev/ttyACM0`.
 * On Mac, the port name is usually similar to `/dev/cu.usbmodem01`.
 * On Windows, the port name is usually similar to `COM4`.
 
@@ -29,7 +29,7 @@ esptool.py --port PORTNAME erase_flash
 Then deploy the firmware to the board, starting at address {deploy_options[flash_offset]}:
 
 ```bash
-esptool.py --baud 460800 write_flash {deploy_options[flash_offset]} ESP32_BOARD_NAME-DATE-VERSION.bin
+esptool.py write_flash {deploy_options[flash_offset]} ESP32_BOARD_NAME-DATE-VERSION.bin
 ```
 
 Replace `ESP32_BOARD_NAME-DATE-VERSION.bin` with the `.bin` file downloaded from this page.
@@ -38,13 +38,10 @@ As above, if `esptool.py` can't automatically detect the serial port
 then you can pass it explicitly on the command line instead. For example:
 
 ```bash
-esptool.py --port PORTNAME --baud 460800 write_flash {deploy_options[flash_offset]} ESP32_BOARD_NAME-DATE-VERSION.bin
+esptool.py --port PORTNAME write_flash {deploy_options[flash_offset]} ESP32_BOARD_NAME-DATE-VERSION.bin
 ```
 
 ### Troubleshooting
-
-If flashing starts and then fails partway through, try removing the `--baud
-460800` option to flash at the slower default speed.
 
 If these steps don't work, consult the [MicroPython ESP32 Troubleshooting
 steps](https://docs.micropython.org/en/latest/esp32/tutorial/intro.html#troubleshooting-installation-problems)
