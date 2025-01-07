@@ -2,7 +2,7 @@
 add_library(usermod INTERFACE)
 
 function(usermod_gather_sources SOURCES_VARNAME INCLUDE_DIRECTORIES_VARNAME INCLUDED_VARNAME LIB)
-    if (NOT ${LIB} IN_LIST ${INCLUDED_VARNAME})
+    if (NOT ${LIB} IN_LIST ${INCLUDED_VARNAME} AND TARGET ${LIB})
         list(APPEND ${INCLUDED_VARNAME} ${LIB})
 
         if (NOT TARGET ${LIB})
