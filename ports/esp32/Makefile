@@ -111,7 +111,12 @@ size-files:
 # "GIT_SUBMODULES", and then abort. This extracts out that line from the idf.py
 # output and passes the list of submodules to py/mkrules.mk which does the
 # `git submodule init` on each.
+#
+# 'idf.py' leaves a directory ports/esp32/managed_components behind (But only the version
+# which is packed into docker.io/espressif/idf:v5.2.2).
+# This directory is a unwanted sideeffect, so we remove it
 submodules:
 	@GIT_SUBMODULES=$$(idf.py $(IDFPY_FLAGS) -B $(BUILD)/submodules -D ECHO_SUBMODULES=1 build 2>&1 | \
 	                  grep '^GIT_SUBMODULES=' | cut -d= -f2); \
+	rm -rf ./managed_components; \
 	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$${GIT_SUBMODULES}" submodules
