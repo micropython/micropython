@@ -89,6 +89,10 @@ uint8_t ospi_flash_mx_read_cr2(struct _ospi_flash_t *self, uint32_t addr);
 int ospi_flash_mx_write_cr(struct _ospi_flash_t *self, uint8_t value);
 int ospi_flash_mx_write_cr2(struct _ospi_flash_t *self, uint32_t addr, uint8_t value);
 
+// XIP control
+int ospi_flash_xip_enter(struct _ospi_flash_t *self);
+int ospi_flash_xip_exit(struct _ospi_flash_t *self);
+
 // SPI flash interface.
 int ospi_flash_init(void);
 uintptr_t ospi_flash_get_xip_base(void);

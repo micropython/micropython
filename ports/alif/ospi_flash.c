@@ -55,9 +55,6 @@ typedef struct _ospi_flash_t {
 
 static ospi_flash_t global_flash;
 
-static int ospi_flash_xip_enter(ospi_flash_t *self);
-static int ospi_flash_xip_exit(ospi_flash_t *self);
-
 /******************************************************************************/
 // Generic SPI-flash helper functions.
 
@@ -188,6 +185,7 @@ int ospi_flash_mx_init(ospi_flash_t *self) {
             break;
         }
     }
+
     ospi_flash_wren_spi(self);
     uint8_t buf0[6] = {cmd_wrcr2, 0, 0, 3, 0, ddc_value};
     ospi_spi_transfer(&self->cfg, sizeof(buf0), buf0, buf0);
@@ -355,7 +353,7 @@ uintptr_t ospi_flash_get_xip_base(void) {
     return (uintptr_t)self->cfg.xip_base;
 }
 
-static int ospi_flash_xip_enter(ospi_flash_t *self) {
+int ospi_flash_xip_enter(ospi_flash_t *self) {
     if (!self->xip_active) {
         uint32_t irq_state = disable_irq();
         self->xip_active = true;
@@ -366,7 +364,7 @@ static int ospi_flash_xip_enter(ospi_flash_t *self) {
     return 0;
 }
 
-static int ospi_flash_xip_exit(ospi_flash_t *self) {
+int ospi_flash_xip_exit(ospi_flash_t *self) {
     if (self->xip_active) {
         uint32_t irq_state = disable_irq();
         ospi_xip_exit_ext(&self->cfg, self->set->inst_len, self->set->read_command, self->set->read_command);
@@ -382,43 +380,23 @@ static int ospi_flash_xip_exit(ospi_flash_t *self) {
 int ospi_flash_erase_sector(uint32_t addr) {
     ospi_flash_t *self = &global_flash;
 
-    ospi_flash_xip_exit(self);
-
     ospi_flash_write_cmd(self, self->set->write_en);
     int ret = ospi_flash_wait_wel1(self);
     if (ret < 0) {
-        ospi_flash_xip_enter(self);
         return ret;
     }
 
     ospi_flash_write_cmd_addr(self, self->set->erase_command, OSPI_ADDR_L_32bit, addr);
     ret = ospi_flash_wait_wip0(self);
 
-    ospi_flash_xip_enter(self);
+    SCB_InvalidateDCache_by_Addr(global_flash.cfg.xip_base + addr, MICROPY_HW_FLASH_BLOCK_SIZE_BYTES);
     return ret;
 }
 
 int ospi_flash_read(uint32_t addr, uint32_t len, uint8_t *dest) {
-    // OSPI FIFO is limited to 256 bytes.  Need DMA to get a longer read.
-    // Note that direct reading is much faster than using XIP memory-mapped read.
     ospi_flash_t *self = &global_flash;
-
-    ospi_flash_xip_exit(self);
-
-    while (len) {
-        uint32_t l = len / 4;
-        if (l > 256) {
-            l = 256;
-        }
-        ospi_setup_read_ext(&self->cfg, self->set->rxds, self->set->inst_len, OSPI_ADDR_L_32bit, OSPI_DATA_L_32bit, l, self->set->read_dummy_cycles);
-        ospi_push(&self->cfg, self->set->read_command);
-        ospi_recv_blocking_32bit_data(&self->cfg, addr, (uint32_t *)dest);
-        addr += l * 4;
-        len -= l * 4;
-        dest += l * 4;
-    }
-
-    ospi_flash_xip_enter(self);
+    // Perform an XIP read (memcpy)
+    memcpy(dest, (void *)self->cfg.xip_base + addr, len);
     return 0;
 }
 
@@ -448,10 +426,9 @@ static int ospi_flash_write_page(uint32_t addr, uint32_t len, const uint8_t *src
 }
 
 int ospi_flash_write(uint32_t addr, uint32_t len, const uint8_t *src) {
-    ospi_flash_xip_exit(&global_flash);
-
     int ret = 0;
     uint32_t offset = addr & (PAGE_SIZE - 1);
+
     while (len) {
         size_t rest = PAGE_SIZE - offset;
         if (rest > len) {
@@ -467,7 +444,7 @@ int ospi_flash_write(uint32_t addr, uint32_t len, const uint8_t *src) {
         offset = 0;
     }
 
-    ospi_flash_xip_enter(&global_flash);
+    SCB_InvalidateDCache_by_Addr(global_flash.cfg.xip_base + addr, len);
     return ret;
 }
 
