@@ -25,6 +25,7 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "py/objarray.h"
 #include "py/runtime.h"
@@ -199,12 +200,19 @@ static void pyb_can_get_bit_timing(mp_uint_t baudrate, mp_uint_t sample_point,
     uint32_t max_brp, uint32_t max_bs1, uint32_t max_bs2, uint32_t min_tseg,
     mp_int_t *bs1_out, mp_int_t *bs2_out, mp_int_t *prescaler_out) {
     uint32_t can_kern_clk = pyb_can_get_source_freq();
+    mp_uint_t max_baud_error = baudrate / 1000; // Allow .1% deviation
+    const mp_uint_t MAX_SAMPLE_ERROR = 5; // round to nearest 1%, which is the param resolution
+    sample_point *= 10;
     // Calculate CAN bit timing.
     for (uint32_t brp = 1; brp < max_brp; brp++) {
         for (uint32_t bs1 = min_tseg; bs1 < max_bs1; bs1++) {
             for (uint32_t bs2 = min_tseg; bs2 < max_bs2; bs2++) {
-                if ((baudrate == (can_kern_clk / (brp * (1 + bs1 + bs2)))) &&
-                    ((sample_point * 10) == (((1 + bs1) * 1000) / (1 + bs1 + bs2)))) {
+                mp_int_t calc_baud = can_kern_clk / (brp * (1 + bs1 + bs2));
+                mp_int_t calc_sample = ((1 + bs1) * 1000) / (1 + bs1 + bs2);
+                mp_int_t baud_err = baudrate - calc_baud;
+                mp_int_t sample_err = sample_point - calc_sample;
+                if (abs(baud_err) < max_baud_error &&
+                    abs(sample_err) < MAX_SAMPLE_ERROR) {
                     *bs1_out = bs1;
                     *bs2_out = bs2;
                     *prescaler_out = brp;
