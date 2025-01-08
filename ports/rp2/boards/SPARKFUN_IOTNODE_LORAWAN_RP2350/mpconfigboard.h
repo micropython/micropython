@@ -1,6 +1,6 @@
 // Board and hardware specific configuration
 #define MICROPY_HW_BOARD_NAME          "SparkFun IoT Node LoRaWAN"
-#define MICROPY_HW_FLASH_STORAGE_BYTES (15 * 1024 * 1024)
+#define MICROPY_HW_FLASH_STORAGE_BYTES (14 * 1024 * 1024)
 
 #define MICROPY_HW_USB_VID (0x1B4F)
 #define MICROPY_HW_USB_PID (0x0044)
