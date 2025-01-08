@@ -269,8 +269,8 @@ static mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
     // Set BRS bit timings.
     self->can.Init.DataPrescaler = args[ARG_brs_prescaler].u_int;
     self->can.Init.DataSyncJumpWidth = args[ARG_brs_sjw].u_int;
-    self->can.Init.DataTimeSeg1 = args[ARG_bs1].u_int; // DataTimeSeg1 = Propagation_segment + Phase_segment_1
-    self->can.Init.DataTimeSeg2 = args[ARG_bs2].u_int;
+    self->can.Init.DataTimeSeg1 = args[ARG_brs_bs1].u_int; // DataTimeSeg1 = Propagation_segment + Phase_segment_1
+    self->can.Init.DataTimeSeg2 = args[ARG_brs_bs2].u_int;
     #else
     // Init filter banks for classic CAN.
     can2_start_bank = args[ARG_num_filter_banks].u_int;
