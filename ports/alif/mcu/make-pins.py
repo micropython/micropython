@@ -34,26 +34,36 @@ ADC12_ANA_MAP = {
 
 
 class AlifPin(boardgen.Pin):
+    def __init__(self, cpu_pin_name):
+        super().__init__(cpu_pin_name)
+        self._afs = ["MP_HAL_PIN_ALT_NONE"] * 8
+
+    # Called for each AF defined in the csv file for this pin.
+    def add_af(self, af_idx, af_name, af):
+        self._afs[af_idx] = f"MP_HAL_PIN_ALT_{af}"
+
     # Emit the struct which contains the pin instance.
     def definition(self):
         port, pin = self.name()[1:].split("_")
         adc12_periph, adc12_channel = ADC12_ANA_MAP.get(self.name(), (3, 7))
         base = "LPGPIO_BASE" if port == "15" else "GPIO{}_BASE".format(port)
         return (
-            "{{ "
-            ".base = {{ .type = &machine_pin_type }}, "
-            ".gpio = (GPIO_Type *){base}, "
-            ".port = PORT_{port}, "
-            ".pin = PIN_{pin}, "
-            ".adc12_periph = {adc12_periph}, "
-            ".adc12_channel = {adc12_channel}, "
-            ".name = MP_QSTR_P{port}_{pin} "
+            "{{\n"
+            "    .name = MP_QSTR_P{port}_{pin},\n"
+            "    .base = {{ .type = &machine_pin_type }},\n"
+            "    .gpio = (GPIO_Type *){base},\n"
+            "    .port = PORT_{port},\n"
+            "    .pin = PIN_{pin},\n"
+            "    .adc12_periph = {adc12_periph},\n"
+            "    .adc12_channel = {adc12_channel},\n"
+            "    .alt = {{{alt}}},\n"
             "}}".format(
                 port=port,
                 pin=pin,
                 base=base,
                 adc12_periph=adc12_periph,
                 adc12_channel=adc12_channel,
+                alt=", ".join([f"{af}" for af in self._afs]),
             )
         )
 
@@ -76,7 +86,7 @@ class AlifPin(boardgen.Pin):
 class AlifPinGenerator(boardgen.PinGenerator):
     def __init__(self):
         # Use custom pin type above.
-        super().__init__(pin_type=AlifPin)
+        super().__init__(pin_type=AlifPin, enable_af=True)
 
         # Pre-define the pins (i.e. don't require them to be listed in pins.csv).
         for i in range(NUM_PORTS):

@@ -74,11 +74,48 @@ extern ringbuf_t stdin_ringbuf;
 #define MP_HAL_PIN_MODE_INPUT                   (0)
 #define MP_HAL_PIN_MODE_OUTPUT                  (1)
 #define MP_HAL_PIN_MODE_OPEN_DRAIN              (2)
+#define MP_HAL_PIN_MODE_ALT                     (3)
 #define MP_HAL_PIN_PULL_NONE                    (0)
 #define MP_HAL_PIN_PULL_UP                      (1)
 #define MP_HAL_PIN_PULL_DOWN                    (2)
+#define MP_HAL_PIN_DRIVE_2MA                    (PADCTRL_OUTPUT_DRIVE_STRENGTH_2MA)
+#define MP_HAL_PIN_DRIVE_4MA                    (PADCTRL_OUTPUT_DRIVE_STRENGTH_4MA)
+#define MP_HAL_PIN_DRIVE_8MA                    (PADCTRL_OUTPUT_DRIVE_STRENGTH_8MA)
+#define MP_HAL_PIN_DRIVE_12MA                   (PADCTRL_OUTPUT_DRIVE_STRENGTH_12MA)
+#define MP_HAL_PIN_SPEED_LOW                    (0)
+#define MP_HAL_PIN_SPEED_HIGH                   (PADCTRL_SLEW_RATE_FAST)
 
 #define mp_hal_pin_obj_t const machine_pin_obj_t *
+
+enum {
+    MP_HAL_PIN_ALT_NONE = 0,
+    MP_HAL_PIN_ALT_ANA,
+    MP_HAL_PIN_ALT_AUDIO,
+    MP_HAL_PIN_ALT_CAM,
+    MP_HAL_PIN_ALT_CDC,
+    MP_HAL_PIN_ALT_CMP,
+    MP_HAL_PIN_ALT_ETH,
+    MP_HAL_PIN_ALT_FAULT,
+    MP_HAL_PIN_ALT_HFXO,
+    MP_HAL_PIN_ALT_I2C,
+    MP_HAL_PIN_ALT_I2S,
+    MP_HAL_PIN_ALT_I3C,
+    MP_HAL_PIN_ALT_JTAG,
+    MP_HAL_PIN_ALT_LPCAM,
+    MP_HAL_PIN_ALT_LPI2C,
+    MP_HAL_PIN_ALT_LPI2S,
+    MP_HAL_PIN_ALT_LPPDM,
+    MP_HAL_PIN_ALT_LPSPI,
+    MP_HAL_PIN_ALT_LPTMR,
+    MP_HAL_PIN_ALT_LPUART,
+    MP_HAL_PIN_ALT_OSPI,
+    MP_HAL_PIN_ALT_PDM,
+    MP_HAL_PIN_ALT_QEC,
+    MP_HAL_PIN_ALT_SD,
+    MP_HAL_PIN_ALT_SPI,
+    MP_HAL_PIN_ALT_UART,
+    MP_HAL_PIN_ALT_UT,
+};
 
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
@@ -88,6 +125,7 @@ typedef struct _machine_pin_obj_t {
     uint8_t adc12_periph : 2;
     uint8_t adc12_channel : 3;
     qstr name;
+    const uint8_t alt[8];
 } machine_pin_obj_t;
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
@@ -148,6 +186,9 @@ static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
 static inline void mp_hal_wake_main_task_from_isr(void) {
     // Defined for tinyusb support, nothing needs to be done here.
 }
+
+void mp_hal_pin_config(const machine_pin_obj_t *pin, uint32_t mode,
+    uint32_t pull, uint32_t speed, uint32_t drive, uint32_t alt, bool ren);
 
 // Include all the pin definitions.
 #include "genhdr/pins_board.h"
