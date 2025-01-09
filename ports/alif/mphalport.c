@@ -169,6 +169,56 @@ uint64_t mp_hal_time_ns(void) {
     return 0;
 }
 
+void mp_hal_pin_config(const machine_pin_obj_t *pin, uint32_t mode,
+    uint32_t pull, uint32_t speed, uint32_t drive, uint32_t alt, bool ren) {
+    uint8_t alt_func = PINMUX_ALTERNATE_FUNCTION_0;
+    uint8_t pad_ctrl = drive | speed | (ren ? PADCTRL_READ_ENABLE : 0);
+
+    // Configure pull-up or pull-down.
+    if (pull & MP_HAL_PIN_PULL_UP) {
+        pad_ctrl |= PADCTRL_DRIVER_DISABLED_PULL_UP;
+    }
+
+    if (pull & MP_HAL_PIN_PULL_DOWN) {
+        pad_ctrl |= PADCTRL_DRIVER_DISABLED_PULL_DOWN;
+    }
+
+    // Configure open-drain mode.
+    if (mode == MP_HAL_PIN_MODE_OPEN_DRAIN) {
+        pad_ctrl |= PADCTRL_DRIVER_OPEN_DRAIN;
+    }
+
+    // For ALT mode, find alternate function.
+    if (mode == MP_HAL_PIN_MODE_ALT) {
+        for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(pin->alt); i++) {
+            if (alt == pin->alt[i]) {
+                alt_func = i;
+                break;
+            }
+        }
+        if (alt_func == PINMUX_ALTERNATE_FUNCTION_0) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin af: %d"), alt);
+        }
+    }
+
+    // Set pad config.
+    pinconf_set(pin->port, pin->pin, alt_func, pad_ctrl);
+
+    // For INPUT/OUTPUT/OD modes, set the GPIO direction.
+    switch (mode) {
+        case MP_HAL_PIN_MODE_INPUT:
+            gpio_set_direction_input(pin->gpio, pin->pin);
+            break;
+        case MP_HAL_PIN_MODE_OUTPUT:
+        case MP_HAL_PIN_MODE_OPEN_DRAIN:
+            gpio_set_direction_output(pin->gpio, pin->pin);
+            break;
+        default:
+            break;
+    }
+}
+
+
 void system_tick_schedule_callback(void) {
     pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
 }
