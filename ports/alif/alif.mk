@@ -51,6 +51,7 @@ INC += -Itinyusb_port
 GEN_PIN_MKPINS = mcu/make-pins.py
 GEN_PIN_PREFIX = mcu/pins_prefix.c
 GEN_PINS_BOARD_CSV = $(BOARD_DIR)/pins.csv
+GEN_PINS_MCU_CSV = mcu/ensemble_pin_alt.csv
 GEN_PINS_SRC = $(BUILD)/pins_board.c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins_board.h
 
@@ -263,6 +264,7 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 $(BUILD)/%_board.c $(HEADER_BUILD)/%_board.h: $(BOARD_DIR)/%.csv $(GEN_PIN_MKPINS) $(GEN_PIN_PREFIX) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(GEN_PIN_MKPINS) \
+	    --af-csv $(GEN_PINS_MCU_CSV) \
 	    --board-csv $(GEN_PINS_BOARD_CSV) \
 	    --prefix $(GEN_PIN_PREFIX) \
 	    --output-source $(GEN_PINS_SRC) \
