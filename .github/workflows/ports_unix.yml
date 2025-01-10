@@ -219,7 +219,8 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   qemu_mips:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04 is needed for older libffi.
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
     - name: Install packages
@@ -233,7 +234,8 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   qemu_arm:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04 is needed for older libffi.
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
     - name: Install packages
@@ -247,7 +249,8 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   qemu_riscv64:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04 is needed for older libffi.
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
     - name: Install packages
