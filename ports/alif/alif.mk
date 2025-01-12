@@ -66,6 +66,7 @@ CFLAGS += $(INC) \
           -mcpu=cortex-m55 \
           -mtune=cortex-m55 \
           $(CFLAGS_FPU) \
+          -march=armv8.1-m.main+fp+mve.fp \
           -nostdlib \
           -fdata-sections \
           -ffunction-sections \
@@ -91,7 +92,7 @@ endif
 
 CFLAGS += $(CFLAGS_EXTRA)
 
-AFLAGS = -mthumb -march=armv8.1-m.main $(CFLAGS_FPU)
+AFLAGS = -mthumb -march=armv8.1-m.main+fp+mve.fp $(CFLAGS_FPU)
 
 LDFLAGS += -nostdlib \
            -T$(BUILD)/ensemble.ld \
