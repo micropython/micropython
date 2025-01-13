@@ -311,3 +311,108 @@ def asm_pio_encode(instr, sideset_count, sideset_opt=False):
     if len(emit.prog[_PROG_DATA]) != 1:
         raise PIOASMError("expecting exactly 1 instruction")
     return emit.prog[_PROG_DATA][0]
+
+
+class PIOProgram:
+    def __init__(
+        self,
+        f,
+        *,
+        sideset_count=0,
+        in_shiftdir=0,
+        out_shiftdir=0,
+        autopush=False,
+        autopull=False,
+        push_thresh=32,
+        pull_thresh=32,
+        fifo_join=0,
+    ):
+        self.sideset_count = sideset_count
+        emit = PIOASMEmit(
+            sideset_init=[0] * sideset_count,
+            in_shiftdir=in_shiftdir,
+            out_shiftdir=out_shiftdir,
+            autopush=autopush,
+            autopull=autopull,
+            push_thresh=push_thresh,
+            pull_thresh=pull_thresh,
+            fifo_join=fifo_join,
+        )
+        self._assemble(emit, f)
+        self.prog = emit.prog
+        self.labels = emit.labels
+        self.sideset_opt = emit.sideset_opt
+
+    def _assemble(self, emit, f):
+        gl = _pio_funcs
+        for name in _pio_directives:
+            gl[name] = getattr(emit, name)
+        for name in _pio_instructions:
+            gl[name] = getattr(emit, name)
+
+        old_gl = f.__globals__.copy()
+        f.__globals__.clear()
+        f.__globals__.update(gl)
+        _reset_pio_funcs()
+
+        emit.start_pass(0)
+        f()
+
+        emit.start_pass(1)
+        f()
+
+        f.__globals__.clear()
+        f.__globals__.update(old_gl)
+
+    def init_state_machine(
+        self,
+        sm_index,
+        freq=-1,
+        *,
+        out_init=None,
+        set_init=None,
+        sideset_init=None,
+        **kwargs,  # in_base, out_base, set_base, jmp_pin, sideset_base
+        ):
+        prog = self.prog
+        prog[_PROG_OUT_PINS] = out_init
+        prog[_PROG_SET_PINS] = set_init
+        prog[_PROG_SIDSET_PINS] = sideset_init
+        return StateMachine(sm_index,
+                            freq,
+                            prog,
+                            **kwargs)
+
+    def encode(self, instr, *, sm_index=None):
+        emit = PIOASMEmit()
+        emit.sideset_count = self.sideset_count
+        emit.sideset_opt = self.sideset_opt
+        emit.delay_max = 31 >> (emit.sideset_count + emit.sideset_opt)
+        emit.pass_ = 1
+        emit.num_instr = 0
+        emit.num_sideset = 0
+
+        gl = _pio_funcs
+        for name in _pio_instructions:
+            gl[name] = getattr(emit, name)
+
+        try:
+            exec(instr, gl)
+        finally:
+            _reset_pio_funcs()
+
+        if len(emit.prog[_PROG_DATA]) != 1:
+            raise PIOASMError("expecting exactly 1 instruction")
+        w = emit.prog[_PROG_DATA][0]
+
+        if w & 0xe000 == 0:
+            # jmp fixup
+            if sm_index is None:
+                raise PIOASMError("jmp requires valid sm_index")
+            offset = self.prog[_PROG_OFFSET_PIO0 + (sm_index >> 2)]
+            if offset == -1:
+                raise PIOASMError("jmp requires valid sm_index")
+            # given a successful load, this can't overflow the address field
+            w += offset
+
+        return w
