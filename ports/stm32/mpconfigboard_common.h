@@ -187,6 +187,12 @@
 #define MICROPY_HW_SPI_IS_RESERVED(spi_id) (false)
 #endif
 
+// Function to determine if the given spi_id is static or not.
+// Static SPI instances can be accessed by the user but are not deinit'd on soft reset.
+#ifndef MICROPY_HW_SPI_IS_STATIC
+#define MICROPY_HW_SPI_IS_STATIC(spi_id) (false)
+#endif
+
 // Function to determine if the given tim_id is reserved for system use or not.
 #ifndef MICROPY_HW_TIM_IS_RESERVED
 #define MICROPY_HW_TIM_IS_RESERVED(tim_id) (false)
