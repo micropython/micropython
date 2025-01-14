@@ -2,6 +2,11 @@
 # Initial setup of Makefile environment
 
 BOARD ?= MPS2_AN385
+BOARD_DIR ?= boards/$(BOARD)
+
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+$(error Invalid BOARD specified: $(BOARD_DIR))
+endif
 
 # Make the build directory reflect the board.
 BUILD ?= build-$(BOARD)
@@ -10,7 +15,7 @@ include ../../py/mkenv.mk
 -include mpconfigport.mk
 
 # Include board specific .mk file.
-include boards/$(BOARD).mk
+include $(BOARD_DIR)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
