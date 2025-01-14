@@ -112,6 +112,6 @@ size-files:
 # output and passes the list of submodules to py/mkrules.mk which does the
 # `git submodule init` on each.
 submodules:
-	@GIT_SUBMODULES=$$(idf.py $(IDFPY_FLAGS) -B $(BUILD)/submodules -D ECHO_SUBMODULES=1 build 2>&1 | \
+	@GIT_SUBMODULES=$$(IDF_COMPONENT_MANAGER=0 idf.py $(IDFPY_FLAGS) -B $(BUILD)/submodules -D ECHO_SUBMODULES=1 build 2>&1 | \
 	                  grep '^GIT_SUBMODULES=' | cut -d= -f2); \
 	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$${GIT_SUBMODULES}" submodules
