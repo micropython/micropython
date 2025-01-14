@@ -110,6 +110,11 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
+    - uses: actions/setup-python@v5
+      # note: can go back to installing mingw-w64-${{ matrix.env }}-python after
+      # MSYS2 updates to Python >3.12 (due to settrace compatibility issue)
+      with:
+        python-version: '3.11'
     - uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.sys }}
@@ -118,9 +123,9 @@ jobs:
           make
           mingw-w64-${{ matrix.env }}-gcc
           pkg-config
-          mingw-w64-${{ matrix.env }}-python3
           git
           diffutils
+        path-type: inherit  # Remove when setup-python is removed
     - uses: actions/checkout@v4
     - name: Build mpy-cross.exe
       run: make -C mpy-cross -j2

@@ -443,6 +443,8 @@ mp_obj_t mp_vfs_listdir(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_listdir_obj, 0, 1, mp_vfs_listdir);
 
+#if MICROPY_VFS_WRITABLE
+
 mp_obj_t mp_vfs_mkdir(mp_obj_t path_in) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
@@ -478,6 +480,8 @@ mp_obj_t mp_vfs_rmdir(mp_obj_t path_in) {
     return mp_vfs_proxy_call(vfs, MP_QSTR_rmdir, 1, &path_out);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_rmdir_obj, mp_vfs_rmdir);
+
+#endif // MICROPY_VFS_WRITABLE
 
 mp_obj_t mp_vfs_stat(mp_obj_t path_in) {
     mp_obj_t path_out;

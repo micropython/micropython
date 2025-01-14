@@ -182,11 +182,11 @@ static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
 }
 
 static inline void mp_hal_pin_low(mp_hal_pin_obj_t pin) {
-    gpio_clr_mask(1 << pin);
+    gpio_clr_mask64(UINT64_C(1) << pin);
 }
 
 static inline void mp_hal_pin_high(mp_hal_pin_obj_t pin) {
-    gpio_set_mask(1 << pin);
+    gpio_set_mask64(UINT64_C(1) << pin);
 }
 
 enum mp_hal_pin_interrupt_trigger {
@@ -210,5 +210,6 @@ enum {
 void mp_hal_get_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest);
 void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
+int mp_hal_is_pin_reserved(int n);
 
 #endif // MICROPY_INCLUDED_RP2_MPHALPORT_H

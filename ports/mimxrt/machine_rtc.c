@@ -185,7 +185,7 @@ static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     return (mp_obj_t)&machine_rtc_obj;
 }
 
-static mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args, int hour_index) {
     if (n_args == 1) {
         // Get date and time.
         snvs_lp_srtc_datetime_t srtc_date;
@@ -214,9 +214,9 @@ static mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args)
         srtc_date.month = mp_obj_get_int(items[1]);
         srtc_date.day = mp_obj_get_int(items[2]);
         // Ignore weekday at items[3]
-        srtc_date.hour = mp_obj_get_int(items[4]);
-        srtc_date.minute = mp_obj_get_int(items[5]);
-        srtc_date.second = mp_obj_get_int(items[6]);
+        srtc_date.hour = mp_obj_get_int(items[hour_index]);
+        srtc_date.minute = mp_obj_get_int(items[hour_index + 1]);
+        srtc_date.second = mp_obj_get_int(items[hour_index + 2]);
         if (SNVS_LP_SRTC_SetDatetime(SNVS, &srtc_date) != kStatus_Success) {
             mp_raise_ValueError(NULL);
         }
@@ -226,32 +226,13 @@ static mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args)
 }
 
 static mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
-    return machine_rtc_datetime_helper(n_args, args);
+    return machine_rtc_datetime_helper(n_args, args, 4);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
 
-static mp_obj_t machine_rtc_now(mp_obj_t self_in) {
-    // Get date and time in CPython order.
-    snvs_lp_srtc_datetime_t srtc_date;
-    SNVS_LP_SRTC_GetDatetime(SNVS, &srtc_date);
-
-    mp_obj_t tuple[8] = {
-        mp_obj_new_int(srtc_date.year),
-        mp_obj_new_int(srtc_date.month),
-        mp_obj_new_int(srtc_date.day),
-        mp_obj_new_int(srtc_date.hour),
-        mp_obj_new_int(srtc_date.minute),
-        mp_obj_new_int(srtc_date.second),
-        mp_obj_new_int(0),
-        mp_const_none,
-    };
-    return mp_obj_new_tuple(8, tuple);
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
-
 static mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
     mp_obj_t args[2] = {self_in, date};
-    machine_rtc_datetime_helper(2, args);
+    machine_rtc_datetime_helper(2, args, 3);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
@@ -389,12 +370,13 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
 static const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_rtc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&machine_rtc_datetime_obj) },
-    { MP_ROM_QSTR(MP_QSTR_now), MP_ROM_PTR(&machine_rtc_now_obj) },
     { MP_ROM_QSTR(MP_QSTR_calibration), MP_ROM_PTR(&machine_rtc_calibration_obj) },
     { MP_ROM_QSTR(MP_QSTR_alarm), MP_ROM_PTR(&machine_rtc_alarm_obj) },
     { MP_ROM_QSTR(MP_QSTR_alarm_left), MP_ROM_PTR(&machine_rtc_alarm_left_obj) },
     { MP_ROM_QSTR(MP_QSTR_alarm_cancel), MP_ROM_PTR(&machine_rtc_alarm_cancel_obj) },
+    #if !MICROPY_PREVIEW_VERSION_2
     { MP_ROM_QSTR(MP_QSTR_cancel), MP_ROM_PTR(&machine_rtc_alarm_cancel_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_rtc_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_ALARM0), MP_ROM_INT(0) },
 };

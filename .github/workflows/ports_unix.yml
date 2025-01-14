@@ -88,7 +88,7 @@ jobs:
         (cd ports/unix && gcov -o build-coverage/py ../../py/*.c || true)
         (cd ports/unix && gcov -o build-coverage/extmod ../../extmod/*.c || true)
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         fail_ci_if_error: true
         verbose: true
@@ -173,6 +173,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
     - name: Build
       run: source tools/ci.sh && ci_unix_settrace_build
     - name: Run main test suite
@@ -185,6 +190,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
     - name: Build
       run: source tools/ci.sh && ci_unix_settrace_stackless_build
     - name: Run main test suite
@@ -209,7 +219,8 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   qemu_mips:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04 is needed for older libffi.
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
     - name: Install packages
@@ -223,7 +234,8 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   qemu_arm:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04 is needed for older libffi.
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
     - name: Install packages
@@ -237,7 +249,8 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   qemu_riscv64:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04 is needed for older libffi.
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
     - name: Install packages

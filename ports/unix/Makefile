@@ -48,6 +48,10 @@ CWARN = -Wall -Werror
 CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
 CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
+# Force the use of 64-bits for file sizes in C library functions on 32-bit platforms.
+# This option has no effect on 64-bit builds.
+CFLAGS += -D_FILE_OFFSET_BITS=64
+
 # Debugging/Optimization
 ifdef DEBUG
 COPT ?= -Og

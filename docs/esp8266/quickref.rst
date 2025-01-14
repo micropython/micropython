@@ -163,10 +163,10 @@ sys.stdin.read() if it's needed to read characters from the UART(0)
 while it's also used for the REPL (or detach, read, then reattach).
 When detached the UART(0) can be used for other purposes.
 
-If there are no objects in any of the dupterm slots when the REPL is
-started (on hard or soft reset) then UART(0) is automatically attached.
-Without this, the only way to recover a board without a REPL would be to
-completely erase and reflash (which would install the default boot.py which
+If there are no objects in any of the dupterm slots when the REPL is started (on
+:doc:`hard or soft reset </reference/reset_boot>`) then UART(0) is automatically
+attached. Without this, the only way to recover a board without a REPL would be
+to completely erase and reflash (which would install the default boot.py which
 attaches the REPL).
 
 To detach the REPL from UART0, use::
@@ -284,7 +284,9 @@ See :ref:`machine.RTC <machine.RTC>` ::
     from machine import RTC
 
     rtc = RTC()
-    rtc.datetime((2017, 8, 23, 1, 12, 48, 0, 0)) # set a specific date and time
+    rtc.datetime((2017, 8, 23, 0, 1, 12, 48, 0)) # set a specific date and
+                                                 # time, eg. 2017/8/23 1:12:48
+                                                 # the day-of-week value is ignored
     rtc.datetime() # get date and time
 
     # synchronize with ntp

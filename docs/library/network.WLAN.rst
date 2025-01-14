@@ -126,7 +126,7 @@ Methods
    =============  ===========
    mac            MAC address (bytes)
    ssid           WiFi access point name (string)
-   channel        WiFi channel (integer)
+   channel        WiFi channel (integer). Depending on the port this may only be supported on the AP interface.
    hidden         Whether SSID is hidden (boolean)
    security       Security protocol supported (enumeration, see module constants)
    key            Access key (string)

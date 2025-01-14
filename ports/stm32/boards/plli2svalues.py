@@ -123,22 +123,18 @@ def generate_c_table(plli2s_table, hse, pllm):
     print("}")
 
 
-def search_header(filename, re_include, re_define, lookup, val):
-    regex_include = re.compile(re_include)
+def search_header(filename, re_define, lookup):
     regex_define = re.compile(re_define)
+    val = None
     with open(filename) as f:
         for line in f:
             line = line.strip()
-            m = regex_include.match(line)
-            if m:
-                # Search included file
-                search_header(m.group(1), re_include, re_define, lookup, val)
-                continue
             m = regex_define.match(line)
             if m:
                 # found lookup value
+                found = m.group(2)
                 if m.group(1) == lookup:
-                    val[0] = int(m.group(3))
+                    val = eval(found)
     return val
 
 
@@ -166,35 +162,37 @@ def main():
             break
 
     if mcu_series in mcu_support_plli2s:
-        if len(argv) != 2:
+        if len(argv) not in (1, 2):
             print("usage: pllvalues.py [-c] [-m <mcu_series>] <hse in MHz> <pllm in MHz>")
             sys.exit(1)
 
         if argv[0].startswith("hse:"):
-            # extract HSE_VALUE from header file
-            (hse,) = search_header(
-                argv[0][len("hse:") :],
-                r'#include "(boards/[A-Za-z0-9_./]+)"',
-                r"#define +(HSE_VALUE) +\((\(uint32_t\))?([0-9]+)\)",
-                "HSE_VALUE",
-                [None],
-            )
-            if hse is None:
-                raise ValueError("%s does not contain a definition of HSE_VALUE" % argv[0])
-            argv.pop(0)
+            hse = int(argv[0][len("hse:") :])
 
         if argv[0].startswith("pllm:"):
-            # extract MICROPY_HW_CLK_PLLM from header file
-            (pllm,) = search_header(
-                argv[0][len("pllm:") :],
-                r'#include "(boards/[A-Za-z0-9_./]+)"',
-                r"#define +(MICROPY_HW_CLK_PLLM) +\((\(uint32_t\))?([0-9]+)\)",
-                "MICROPY_HW_CLK_PLLM",
-                [None],
+            pllm = int(argv[0][len("pllm:") :])
+
+        if argv[0].startswith("file:"):
+            # extract hse value from processed header files
+            hse = search_header(
+                argv[0][len("file:") :],
+                r"static.* (micropy_hw_hse_value) = +([0-9 +-/\*()]+);",
+                "micropy_hw_hse_value",
+            )
+            if hse is None:
+                raise ValueError(
+                    "%s does not contain a definition of micropy_hw_hse_value" % argv[0]
+                )
+
+            # extract pllm value from processed header files
+            pllm = search_header(
+                argv[0][len("file:") :],
+                r"static.* (micropy_hw_clk_pllm) = +([0-9 +-/\*()]+);",
+                "micropy_hw_clk_pllm",
             )
             if pllm is None:
                 raise ValueError(
-                    "%s does not contain a definition of MICROPY_HW_CLK_PLLM" % argv[0]
+                    "%s does not contain a definition of micropy_hw_clk_pllm" % argv[0]
                 )
             argv.pop(0)
 

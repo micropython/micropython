@@ -93,7 +93,7 @@ static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     return (mp_obj_t)&machine_rtc_obj;
 }
 
-static mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args, int hour_index) {
     // Rtc *rtc = RTC;
     if (n_args == 1) {
         // Get date and time.
@@ -120,9 +120,9 @@ static mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args)
             RTC_MODE2_CLOCK_YEAR(mp_obj_get_int(items[0]) % 100) |
             RTC_MODE2_CLOCK_MONTH(mp_obj_get_int(items[1])) |
             RTC_MODE2_CLOCK_DAY(mp_obj_get_int(items[2])) |
-            RTC_MODE2_CLOCK_HOUR(mp_obj_get_int(items[4])) |
-            RTC_MODE2_CLOCK_MINUTE(mp_obj_get_int(items[5])) |
-            RTC_MODE2_CLOCK_SECOND(mp_obj_get_int(items[6]));
+            RTC_MODE2_CLOCK_HOUR(mp_obj_get_int(items[hour_index])) |
+            RTC_MODE2_CLOCK_MINUTE(mp_obj_get_int(items[hour_index + 1])) |
+            RTC_MODE2_CLOCK_SECOND(mp_obj_get_int(items[hour_index + 2]));
 
         RTC->MODE2.CLOCK.reg = date;
         #if defined(MCU_SAMD21)
@@ -138,13 +138,13 @@ static mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args)
 }
 
 static mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
-    return machine_rtc_datetime_helper(n_args, args);
+    return machine_rtc_datetime_helper(n_args, args, 4);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
 
 static mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
     mp_obj_t args[2] = {self_in, date};
-    machine_rtc_datetime_helper(2, args);
+    machine_rtc_datetime_helper(2, args, 3);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);

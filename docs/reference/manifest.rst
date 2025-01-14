@@ -26,7 +26,7 @@ re-flashing the entire firmware. However, it can still be useful to
 selectively freeze some rarely-changing dependencies (such as third-party
 libraries).
 
-The way to list the Python files to be be frozen into the firmware is via
+The way to list the Python files to be frozen into the firmware is via
 a "manifest", which is a Python file that will be interpreted by the build
 process. Typically you would write a manifest file as part of a board
 definition, but you can also write a stand-alone manifest file and use it with

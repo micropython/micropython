@@ -71,8 +71,9 @@ To access the REPL directly use:
 
     $ make repl
 
-This will start `qemu-system-arm` with the UART redirected to stdio.  It's also
-possible to redirect the UART to a pty device using:
+This will start `qemu-system-arm` (or `qemu-system-riscv32`) with the UART
+redirected to stdio.  It's also possible to redirect the UART to a pty device
+using:
 
     $ make run
 
@@ -84,7 +85,7 @@ for example `mpremote`:
 
 You can disconnect and reconnect to the serial device multiple times.  Once you
 are finished, stop the `make run` command by pressing Ctrl-C where that command
-was started (or execute `machine.reset()` at the REPL).
+was started (or execute `import machine; machine.reset()` at the REPL).
 
 The test suite can be run against the firmware by using the UART redirection.
 You can either do this automatically using the single command:
@@ -96,6 +97,17 @@ tests against the serial device, for example:
 
     $ cd ../../tests
     $ ./run-tests.py -t /dev/pts/1
+
+Selected native modules that come as examples with the MicroPython source tree
+can also be tested with this command (this is currently supported only for the
+`VIRT_RV32` board):
+
+    $ make test_natmod
+
+The same remarks about manually running the tests apply for native modules, but
+`run-natmodtests.py` should be run instead of `run-tests.py`.  In this case you
+also have to explicitly pass the architecture you are running native modules to
+`run-natmodtests.py` ("--arch rv32imc" for the `VIRT_RV32` board).
 
 Extra make options
 ------------------
@@ -110,3 +122,5 @@ The following options can be specified on the `make` command line:
 - `QEMU_DEBUG_ARGS`: defaults to `-s` (gdb on TCP port 1234), but can be overridden
   with different qemu gdb arguments.
 - `QEMU_DEBUG_EXTRA`: extra options to pass to qemu when `QEMU_DEBUG=1` is used.
+- `MICROPY_HEAP_SIZE`: pass in an optional value (in bytes) for overriding the GC
+  heap size used by the port.

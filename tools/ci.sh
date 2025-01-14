@@ -273,6 +273,7 @@ function ci_qemu_setup_arm {
 }
 
 function ci_qemu_setup_rv32 {
+    ci_mpy_format_setup
     ci_gcc_riscv_setup
     sudo apt-get update
     sudo apt-get install qemu-system
@@ -284,14 +285,18 @@ function ci_qemu_build_arm {
     make ${MAKEOPTS} -C ports/qemu submodules
     make ${MAKEOPTS} -C ports/qemu CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
     make ${MAKEOPTS} -C ports/qemu clean
-    make ${MAKEOPTS} -C ports/qemu test
-    make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test
+    make ${MAKEOPTS} -C ports/qemu test_full
+    make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full
 }
 
 function ci_qemu_build_rv32 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 submodules
-    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test_full
+
+    # Test building and running native .mpy with rv32imc architecture.
+    ci_native_mpy_modules_build rv32imc
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test_natmod
 }
 
 ########################################################################################
@@ -476,10 +481,14 @@ function ci_native_mpy_modules_build {
         arch=$1
     fi
     make -C examples/natmod/features1 ARCH=$arch
-    make -C examples/natmod/features2 ARCH=$arch
+    if [ $arch != rv32imc ]; then
+        # This requires soft-float support on rv32imc.
+        make -C examples/natmod/features2 ARCH=$arch
+        # This requires thread local storage support on rv32imc.
+        make -C examples/natmod/btree ARCH=$arch
+    fi
     make -C examples/natmod/features3 ARCH=$arch
     make -C examples/natmod/features4 ARCH=$arch
-    make -C examples/natmod/btree ARCH=$arch
     make -C examples/natmod/deflate ARCH=$arch
     make -C examples/natmod/framebuf ARCH=$arch
     make -C examples/natmod/heapq ARCH=$arch
@@ -651,9 +660,6 @@ function ci_unix_settrace_stackless_run_tests {
 }
 
 function ci_unix_macos_build {
-    # Install pkg-config to configure libffi paths.
-    brew install pkg-config
-
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix submodules
     #make ${MAKEOPTS} -C ports/unix deplibs
@@ -685,10 +691,8 @@ function ci_unix_qemu_mips_build {
 }
 
 function ci_unix_qemu_mips_run_tests {
-    # Issues with MIPS tests:
-    # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.*\.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py)
 }
 
 function ci_unix_qemu_arm_setup {
@@ -752,14 +756,27 @@ ZEPHYR_SDK_VERSION=0.16.8
 ZEPHYR_VERSION=v3.7.0
 
 function ci_zephyr_setup {
-    docker pull zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}
+    IMAGE=ghcr.io/zephyrproject-rtos/ci:${ZEPHYR_DOCKER_VERSION}
+
+    docker pull ${IMAGE}
+
+    # Directories cached by GitHub Actions, mounted
+    # into the container
+    ZEPHYRPROJECT_DIR="$(pwd)/zephyrproject"
+    CCACHE_DIR="$(pwd)/.ccache"
+
+    mkdir -p "${ZEPHYRPROJECT_DIR}"
+    mkdir -p "${CCACHE_DIR}"
+
     docker run --name zephyr-ci -d -it \
       -v "$(pwd)":/micropython \
+      -v "${ZEPHYRPROJECT_DIR}":/zephyrproject \
+      -v "${CCACHE_DIR}":/root/.cache/ccache \
       -e ZEPHYR_SDK_INSTALL_DIR=/opt/toolchains/zephyr-sdk-${ZEPHYR_SDK_VERSION} \
       -e ZEPHYR_TOOLCHAIN_VARIANT=zephyr \
       -e ZEPHYR_BASE=/zephyrproject/zephyr \
       -w /micropython/ports/zephyr \
-      zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}
+      ${IMAGE}
     docker ps -a
 
     # qemu-system-arm is needed to run the test suite.

@@ -50,6 +50,8 @@ features, there are daily builds.  If your board has SPIRAM support you can
 use either the standard firmware or the firmware with SPIRAM support, and in
 the latter case you will have access to more RAM for Python objects.
 
+.. _esp32_flashing:
+
 Deploying the firmware
 ----------------------
 

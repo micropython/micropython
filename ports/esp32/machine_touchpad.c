@@ -29,12 +29,22 @@
 #include "modmachine.h"
 #include "driver/gpio.h"
 
-#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+#if SOC_TOUCH_SENSOR_SUPPORTED
 
-#if CONFIG_IDF_TARGET_ESP32
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 3, 0)
+#if SOC_TOUCH_VERSION_1
+#define SOC_TOUCH_SENSOR_VERSION (1)
+#elif SOC_TOUCH_VERSION_2
+#define SOC_TOUCH_SENSOR_VERSION (2)
+#endif
+#endif
+
+#if SOC_TOUCH_SENSOR_VERSION == 1 // ESP32 only
 #include "driver/touch_pad.h"
-#elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+#elif SOC_TOUCH_SENSOR_VERSION == 2 // All other SoCs with touch, to date
 #include "driver/touch_sensor.h"
+#else
+#error "Unknown touch hardware version"
 #endif
 
 typedef struct _mtp_obj_t {
@@ -70,6 +80,8 @@ static const mtp_obj_t touchpad_obj[] = {
     {{&machine_touchpad_type}, GPIO_NUM_12, TOUCH_PAD_NUM12},
     {{&machine_touchpad_type}, GPIO_NUM_13, TOUCH_PAD_NUM13},
     {{&machine_touchpad_type}, GPIO_NUM_14, TOUCH_PAD_NUM14},
+    #else
+    #error "Please add GPIO mapping for this SoC"
     #endif
 };
 
@@ -92,17 +104,18 @@ static mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     if (!initialized) {
         touch_pad_init();
         touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
-        #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-        touch_pad_fsm_start();
-        #endif
         initialized = 1;
     }
-    #if CONFIG_IDF_TARGET_ESP32
+    #if SOC_TOUCH_SENSOR_VERSION == 1
     esp_err_t err = touch_pad_config(self->touchpad_id, 0);
-    #elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+    #elif SOC_TOUCH_SENSOR_VERSION == 2
     esp_err_t err = touch_pad_config(self->touchpad_id);
     #endif
     if (err == ESP_OK) {
+        #if SOC_TOUCH_SENSOR_VERSION == 2
+        touch_pad_fsm_start();
+        #endif
+
         return MP_OBJ_FROM_PTR(self);
     }
     mp_raise_ValueError(MP_ERROR_TEXT("Touch pad error"));
@@ -110,10 +123,10 @@ static mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
 static mp_obj_t mtp_config(mp_obj_t self_in, mp_obj_t value_in) {
     mtp_obj_t *self = self_in;
-    #if CONFIG_IDF_TARGET_ESP32
+    #if SOC_TOUCH_SENSOR_VERSION == 1
     uint16_t value = mp_obj_get_int(value_in);
     esp_err_t err = touch_pad_config(self->touchpad_id, value);
-    #elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+    #elif SOC_TOUCH_SENSOR_VERSION == 2
     esp_err_t err = touch_pad_config(self->touchpad_id);
     #endif
     if (err == ESP_OK) {
@@ -125,10 +138,10 @@ MP_DEFINE_CONST_FUN_OBJ_2(mtp_config_obj, mtp_config);
 
 static mp_obj_t mtp_read(mp_obj_t self_in) {
     mtp_obj_t *self = self_in;
-    #if CONFIG_IDF_TARGET_ESP32
+    #if SOC_TOUCH_SENSOR_VERSION == 1
     uint16_t value;
     esp_err_t err = touch_pad_read(self->touchpad_id, &value);
-    #elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+    #elif SOC_TOUCH_SENSOR_VERSION == 2
     uint32_t value;
     esp_err_t err = touch_pad_read_raw_data(self->touchpad_id, &value);
     #endif
@@ -155,4 +168,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &mtp_locals_dict
     );
 
-#endif
+#endif // SOC_TOUCH_SENSOR_SUPPORTED

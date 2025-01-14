@@ -59,13 +59,20 @@ DIFF = os.getenv("MICROPY_DIFF", "diff -u")
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
 # Code to allow a target MicroPython to import an .mpy from RAM
+# Note: the module is named `__injected_test` but it needs to have `__name__` set to
+# `__main__` so that the test sees itself as the main module, eg so unittest works.
 injected_import_hook_code = """\
 import sys, os, io, vfs
 class __File(io.IOBase):
   def __init__(self):
+    module = sys.modules['__injected_test']
+    module.__name__ = '__main__'
+    sys.modules['__main__'] = module
     self.off = 0
   def ioctl(self, request, arg):
-    return 0
+    if request == 4: # MP_STREAM_CLOSE
+      return 0
+    return -1
   def readinto(self, buf):
     buf[:] = memoryview(__buf)[self.off:self.off + len(buf)]
     self.off += len(buf)
@@ -77,6 +84,8 @@ class __FS:
     pass
   def chdir(self, path):
     pass
+  def getcwd(self):
+    return ""
   def stat(self, path):
     if path == '__injected_test.mpy':
       return tuple(0 for _ in range(10))
@@ -133,11 +142,11 @@ platform_tests_to_skip = {
     ),
     "qemu": (
         # Skip tests that require Cortex-M4.
-        "inlineasm/asmfpaddsub.py",
-        "inlineasm/asmfpcmp.py",
-        "inlineasm/asmfpldrstr.py",
-        "inlineasm/asmfpmuldiv.py",
-        "inlineasm/asmfpsqrt.py",
+        "inlineasm/thumb/asmfpaddsub.py",
+        "inlineasm/thumb/asmfpcmp.py",
+        "inlineasm/thumb/asmfpldrstr.py",
+        "inlineasm/thumb/asmfpmuldiv.py",
+        "inlineasm/thumb/asmfpsqrt.py",
     ),
     "webassembly": (
         "basics/string_format_modulo.py",  # can't print nulls to stdout
@@ -227,6 +236,14 @@ def get_test_instance(test_instance, baudrate, user, password):
     return pyb
 
 
+def detect_inline_asm_arch(pyb, args):
+    for arch in ("rv32", "thumb", "xtensa"):
+        output = run_feature_check(pyb, args, "inlineasm_{}.py".format(arch))
+        if output.strip() == arch.encode():
+            return arch
+    return None
+
+
 def detect_test_platform(pyb, args):
     # Run a script to detect various bits of information about the target test instance.
     output = run_feature_check(pyb, args, "target_info.py")
@@ -235,15 +252,19 @@ def detect_test_platform(pyb, args):
     platform, arch = str(output, "ascii").strip().split()
     if arch == "None":
         arch = None
+    inlineasm_arch = detect_inline_asm_arch(pyb, args)
 
     args.platform = platform
     args.arch = arch
     if arch and not args.mpy_cross_flags:
         args.mpy_cross_flags = "-march=" + arch
+    args.inlineasm_arch = inlineasm_arch
 
     print("platform={}".format(platform), end="")
     if arch:
         print(" arch={}".format(arch), end="")
+    if inlineasm_arch:
+        print(" inlineasm={}".format(inlineasm_arch), end="")
     print()
 
 
@@ -508,6 +529,10 @@ def run_feature_check(pyb, args, test_file):
     return run_micropython(pyb, args, test_file_path, test_file_path, is_special=True)
 
 
+class TestError(Exception):
+    pass
+
+
 class ThreadSafeCounter:
     def __init__(self, start=0):
         self._value = start
@@ -592,6 +617,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_io_module = False
     skip_fstring = False
     skip_endian = False
+    skip_inlineasm = False
     has_complex = True
     has_coverage = False
 
@@ -652,20 +678,21 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if output != b"a=1\n":
             skip_fstring = True
 
-        # Check if @micropython.asm_thumb supports Thumb2 instructions, and skip such tests if it doesn't
-        output = run_feature_check(pyb, args, "inlineasm_thumb2.py")
-        if output != b"thumb2\n":
-            skip_tests.add("inlineasm/asmbcc.py")
-            skip_tests.add("inlineasm/asmbitops.py")
-            skip_tests.add("inlineasm/asmconst.py")
-            skip_tests.add("inlineasm/asmdiv.py")
-            skip_tests.add("inlineasm/asmfpaddsub.py")
-            skip_tests.add("inlineasm/asmfpcmp.py")
-            skip_tests.add("inlineasm/asmfpldrstr.py")
-            skip_tests.add("inlineasm/asmfpmuldiv.py")
-            skip_tests.add("inlineasm/asmfpsqrt.py")
-            skip_tests.add("inlineasm/asmit.py")
-            skip_tests.add("inlineasm/asmspecialregs.py")
+        if args.inlineasm_arch == "thumb":
+            # Check if @micropython.asm_thumb supports Thumb2 instructions, and skip such tests if it doesn't
+            output = run_feature_check(pyb, args, "inlineasm_thumb2.py")
+            if output != b"thumb2\n":
+                skip_tests.add("inlineasm/thumb/asmbcc.py")
+                skip_tests.add("inlineasm/thumb/asmbitops.py")
+                skip_tests.add("inlineasm/thumb/asmconst.py")
+                skip_tests.add("inlineasm/thumb/asmdiv.py")
+                skip_tests.add("inlineasm/thumb/asmfpaddsub.py")
+                skip_tests.add("inlineasm/thumb/asmfpcmp.py")
+                skip_tests.add("inlineasm/thumb/asmfpldrstr.py")
+                skip_tests.add("inlineasm/thumb/asmfpmuldiv.py")
+                skip_tests.add("inlineasm/thumb/asmfpsqrt.py")
+                skip_tests.add("inlineasm/thumb/asmit.py")
+                skip_tests.add("inlineasm/thumb/asmspecialregs.py")
 
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
@@ -689,6 +716,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             CPYTHON3_CMD + [base_path("feature_check/byteorder.py")]
         )
         skip_endian = upy_byteorder != cpy_byteorder
+
+        skip_inlineasm = args.inlineasm_arch is None
 
     # These tests don't test slice explicitly but rather use it to perform the test
     misc_slice_tests = (
@@ -843,6 +872,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_const = test_name.startswith("const")
         is_io_module = test_name.startswith("io_")
         is_fstring = test_name.startswith("string_fstring")
+        is_inlineasm = test_name.startswith("asm")
 
         skip_it = test_file in skip_tests
         skip_it |= skip_native and is_native
@@ -856,35 +886,17 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_revops and "reverse_op" in test_name
         skip_it |= skip_io_module and is_io_module
         skip_it |= skip_fstring and is_fstring
+        skip_it |= skip_inlineasm and is_inlineasm
 
         if skip_it:
             print("skip ", test_file)
             skipped_tests.append(test_name)
             return
 
-        # get expected output
-        test_file_expected = test_file + ".exp"
-        if os.path.isfile(test_file_expected):
-            # expected output given by a file, so read that in
-            with open(test_file_expected, "rb") as f:
-                output_expected = f.read()
-        else:
-            # run CPython to work out expected output
-            try:
-                output_expected = subprocess.check_output(
-                    CPYTHON3_CMD + [test_file_abspath],
-                    cwd=os.path.dirname(test_file),
-                    stderr=subprocess.STDOUT,
-                )
-            except subprocess.CalledProcessError:
-                output_expected = b"CPYTHON3 CRASH"
-
-        # canonical form for all host platforms is to use \n for end-of-line
-        output_expected = output_expected.replace(b"\r\n", b"\n")
-
-        # run MicroPython
+        # Run the test on the MicroPython target.
         output_mupy = run_micropython(pyb, args, test_file, test_file_abspath)
 
+        # Check if the target requested to skip this test.
         if output_mupy == b"SKIP\n":
             if pyb is not None and hasattr(pyb, "read_until"):
                 # Running on a target over a serial connection, and the target requested
@@ -896,22 +908,96 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skipped_tests.append(test_name)
             return
 
-        testcase_count.add(len(output_expected.splitlines()))
+        # Look at the output of the test to see if unittest was used.
+        uses_unittest = False
+        output_mupy_lines = output_mupy.splitlines()
+        if any(
+            line == b"ImportError: no module named 'unittest'" for line in output_mupy_lines[-3:]
+        ):
+            raise TestError(
+                (
+                    "error: test {} requires unittest".format(test_file),
+                    "(eg run `mpremote mip install unittest` to install it)",
+                )
+            )
+        elif (
+            len(output_mupy_lines) > 4
+            and output_mupy_lines[-4] == b"-" * 70
+            and output_mupy_lines[-2] == b""
+        ):
+            # look for unittest summary
+            unittest_ran_match = re.match(rb"Ran (\d+) tests$", output_mupy_lines[-3])
+            unittest_result_match = re.match(
+                b"("
+                rb"(OK)( \(skipped=(\d+)\))?"
+                b"|"
+                rb"(FAILED) \(failures=(\d+), errors=(\d+)\)"
+                b")$",
+                output_mupy_lines[-1],
+            )
+            uses_unittest = unittest_ran_match and unittest_result_match
+
+        # Determine the expected output.
+        if uses_unittest:
+            # Expected output is result of running unittest.
+            output_expected = None
+        else:
+            test_file_expected = test_file + ".exp"
+            if os.path.isfile(test_file_expected):
+                # Expected output given by a file, so read that in.
+                with open(test_file_expected, "rb") as f:
+                    output_expected = f.read()
+            else:
+                # Run CPython to work out expected output.
+                try:
+                    output_expected = subprocess.check_output(
+                        CPYTHON3_CMD + [test_file_abspath],
+                        cwd=os.path.dirname(test_file),
+                        stderr=subprocess.STDOUT,
+                    )
+                except subprocess.CalledProcessError:
+                    output_expected = b"CPYTHON3 CRASH"
+
+            # Canonical form for all host platforms is to use \n for end-of-line.
+            output_expected = output_expected.replace(b"\r\n", b"\n")
+
+        # Work out if test passed or not.
+        test_passed = False
+        extra_info = ""
+        if uses_unittest:
+            test_passed = unittest_result_match.group(2) == b"OK"
+            num_test_cases = int(unittest_ran_match.group(1))
+            extra_info = "unittest: {} ran".format(num_test_cases)
+            if test_passed and unittest_result_match.group(4) is not None:
+                num_skipped = int(unittest_result_match.group(4))
+                num_test_cases -= num_skipped
+                extra_info += ", {} skipped".format(num_skipped)
+            elif not test_passed:
+                num_failures = int(unittest_result_match.group(6))
+                num_errors = int(unittest_result_match.group(7))
+                extra_info += ", {} failures, {} errors".format(num_failures, num_errors)
+            extra_info = "(" + extra_info + ")"
+            testcase_count.add(num_test_cases)
+        else:
+            testcase_count.add(len(output_expected.splitlines()))
+            test_passed = output_expected == output_mupy
 
         filename_expected = os.path.join(result_dir, test_basename + ".exp")
         filename_mupy = os.path.join(result_dir, test_basename + ".out")
 
-        if output_expected == output_mupy:
-            print("pass ", test_file)
+        # Print test summary, update counters, and save .exp/.out files if needed.
+        if test_passed:
+            print("pass ", test_file, extra_info)
             passed_count.increment()
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
-            with open(filename_expected, "wb") as f:
-                f.write(output_expected)
+            print("FAIL ", test_file, extra_info)
+            if output_expected is not None:
+                with open(filename_expected, "wb") as f:
+                    f.write(output_expected)
             with open(filename_mupy, "wb") as f:
                 f.write(output_mupy)
-            print("FAIL ", test_file)
             failed_tests.append((test_name, test_file))
 
         test_count.increment()
@@ -919,12 +1005,17 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if pyb:
         num_threads = 1
 
-    if num_threads > 1:
-        pool = ThreadPool(num_threads)
-        pool.map(run_one_test, tests)
-    else:
-        for test in tests:
-            run_one_test(test)
+    try:
+        if num_threads > 1:
+            pool = ThreadPool(num_threads)
+            pool.map(run_one_test, tests)
+        else:
+            for test in tests:
+                run_one_test(test)
+    except TestError as er:
+        for line in er.args[0]:
+            print(line)
+        sys.exit(1)
 
     print(
         "{} tests performed ({} individual testcases)".format(
@@ -1090,11 +1181,18 @@ the last matching regex is used:
     args = cmd_parser.parse_args()
 
     if args.print_failures:
-        for exp in glob(os.path.join(args.result_dir, "*.exp")):
-            testbase = exp[:-4]
+        for out in glob(os.path.join(args.result_dir, "*.out")):
+            testbase = out[:-4]
             print()
             print("FAILURE {0}".format(testbase))
-            os.system("{0} {1}.exp {1}.out".format(DIFF, testbase))
+            if os.path.exists(testbase + ".exp"):
+                # Show diff of expected and actual output.
+                os.system("{0} {1}.exp {1}.out".format(DIFF, testbase))
+            else:
+                # No expected output, just show the actual output (eg from a unittest).
+                with open(out) as f:
+                    for line in f:
+                        print(line, end="")
 
         sys.exit(0)
 
@@ -1137,17 +1235,17 @@ the last matching regex is used:
                 "misc",
                 "extmod",
             )
+            if args.inlineasm_arch is not None:
+                test_dirs += ("inlineasm/{}".format(args.inlineasm_arch),)
             if args.platform == "pyboard":
                 # run pyboard tests
-                test_dirs += ("float", "stress", "inlineasm", "ports/stm32")
+                test_dirs += ("float", "stress", "ports/stm32")
             elif args.platform == "mimxrt":
-                test_dirs += ("float", "stress", "inlineasm")
+                test_dirs += ("float", "stress")
             elif args.platform == "renesas-ra":
-                test_dirs += ("float", "inlineasm", "ports/renesas-ra")
+                test_dirs += ("float", "ports/renesas-ra")
             elif args.platform == "rp2":
                 test_dirs += ("float", "stress", "thread", "ports/rp2")
-                if "arm" in args.mpy_cross_flags:
-                    test_dirs += ("inlineasm",)
             elif args.platform == "esp32":
                 test_dirs += ("float", "stress", "thread")
             elif args.platform in ("esp8266", "minimal", "samd", "nrf"):
@@ -1169,7 +1267,6 @@ the last matching regex is used:
             elif args.platform == "qemu":
                 test_dirs += (
                     "float",
-                    "inlineasm",
                     "ports/qemu",
                 )
             elif args.platform == "webassembly":
@@ -1189,8 +1286,15 @@ the last matching regex is used:
         tests = args.files
 
     if not args.keep_path:
-        # clear search path to make sure tests use only builtin modules and those in extmod
-        os.environ["MICROPYPATH"] = ".frozen" + os.pathsep + base_path("../extmod")
+        # Clear search path to make sure tests use only builtin modules, those in
+        # extmod, and a path to unittest in case it's needed.
+        os.environ["MICROPYPATH"] = (
+            ".frozen"
+            + os.pathsep
+            + base_path("../extmod")
+            + os.pathsep
+            + base_path("../lib/micropython-lib/python-stdlib/unittest")
+        )
 
     try:
         os.makedirs(args.result_dir, exist_ok=True)
