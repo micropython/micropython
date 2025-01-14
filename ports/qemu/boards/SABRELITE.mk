@@ -17,6 +17,3 @@ MPY_CROSS_FLAGS += -march=armv6
 
 # These tests don't work on Cortex-A9, so exclude them.
 RUN_TESTS_ARGS += --exclude 'inlineasm/thumb/(asmbcc|asmbitops|asmconst|asmdiv|asmit|asmspecialregs).py'
-
-# These tests fail with via-mpy and the native (armv6) emitter, so exclude them.
-RUN_TESTS_ARGS += --exclude 'extmod/vfs_rom.py|float/math_domain.py'
