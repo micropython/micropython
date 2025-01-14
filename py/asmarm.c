@@ -292,8 +292,15 @@ void asm_arm_orr_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
 }
 
 void asm_arm_mov_reg_local_addr(asm_arm_t *as, uint rd, int local_num) {
-    // add rd, sp, #local_num*4
-    emit_al(as, asm_arm_op_add_imm(rd, ASM_ARM_REG_SP, local_num << 2));
+    if (local_num >= 0x40) {
+        // mov r8, #local_num*4
+        // add rd, sp, r8
+        asm_arm_mov_reg_i32_optimised(as, ASM_ARM_REG_R8, local_num << 2);
+        emit_al(as, asm_arm_op_add_reg(rd, ASM_ARM_REG_SP, ASM_ARM_REG_R8));
+    } else {
+        // add rd, sp, #local_num*4
+        emit_al(as, asm_arm_op_add_imm(rd, ASM_ARM_REG_SP, local_num << 2));
+    }
 }
 
 void asm_arm_mov_reg_pcrel(asm_arm_t *as, uint reg_dest, uint label) {
