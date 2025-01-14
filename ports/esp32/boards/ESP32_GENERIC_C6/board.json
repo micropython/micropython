@@ -7,7 +7,6 @@
         "BLE",
         "WiFi"
     ],
-    "id": "esp32c6",
     "images": [
         "esp32c6_devkitmini.jpg"
     ],
