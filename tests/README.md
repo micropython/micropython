@@ -222,7 +222,7 @@ need to be re-created by end users. This section is included here for reference 
 
 A new self-signed RSA key/cert pair can be created with openssl:
 ```
-$ openssl req -x509 -newkey rsa:2048 -keyout rsa_key.pem -out rsa_cert.pem -days 365 -nodes -subj '/CN=micropython.local/O=MicroPython/C=AU'
+$ openssl req -x509 -newkey rsa:2048 -keyout rsa_key.pem -out rsa_cert.pem -days 3650 -nodes -subj '/CN=micropython.local/O=MicroPython/C=AU'
 ```
 In this case CN is: micropython.local
 
@@ -235,6 +235,6 @@ $ openssl x509 -in rsa_cert.pem -out rsa_cert.der -outform DER
 For elliptic curve tests using key/cert pairs, create a key then a certificate using:
 ```
 $ openssl ecparam -name prime256v1 -genkey -noout -out ec_key.pem
-$ openssl x509 -in ec_key.pem -out ec_key.der -outform DER
-$ openssl req -new -x509 -key ec_key.pem -out ec_cert.der -outform DER -days 365 -nodes -subj '/CN=micropython.local/O=MicroPython/C=AU'
+$ openssl pkey -in ec_key.pem -out ec_key.der -outform DER
+$ openssl req -new -x509 -key ec_key.pem -out ec_cert.der -outform DER -days 3650 -nodes -subj '/CN=micropython.local/O=MicroPython/C=AU'
 ```
