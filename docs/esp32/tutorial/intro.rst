@@ -62,60 +62,17 @@ features, then you may find the Preview builds useful.
 Deploying the firmware
 ----------------------
 
-Once you have the MicroPython firmware you need to load it onto your ESP32 device.
-There are two main steps to do this: first you need to put your device in
-bootloader mode, and second you need to copy across the firmware.  The exact
-procedure for these steps is highly dependent on the particular board and you will
-need to refer to its documentation for details.
+Once you have the MicroPython firmware you need to load it onto your ESP32
+device. There are two main steps to do this: first you need to put your device
+in bootloader mode, and second you need to copy across the firmware. The exact
+procedure for these steps is highly dependent on the particular board.
 
-Fortunately, most boards have a USB connector, a USB-serial converter, and the DTR
-and RTS pins wired in a special way then deploying the firmware should be easy as
-all steps can be done automatically.  Boards that have such features
-include the Adafruit Feather HUZZAH32, M5Stack, Wemos LOLIN32, and TinyPICO
-boards, along with the Espressif DevKitC, PICO-KIT, WROVER-KIT dev-kits.
-
-For best results it is recommended to first erase the entire flash of your
-device before putting on new MicroPython firmware.
-
-Currently we only support esptool.py to copy across the firmware.  You can find
-this tool here: `<https://docs.espressif.com/projects/esptool/>`__, or install it
-using pip::
-
-    pip install esptool
-
-Using esptool.py you can erase the flash with the command::
-
-    esptool.py erase_flash
-
-.. note:: On Windows, the command may be named ``esptool`` not ``esptool.py``
-
-Then deploy the new firmware. Use this command for original ESP32 and ESP32-S2 SoCs::
-
-    esptool.py --baud 460800 write_flash 0x1000 ESP32_BOARD_NAME-DATE-VERSION.bin
-
-Use this command for all other SoCs (including ESP32-S3, ESP32-C3, and all newer chips)::
-
-    esptool.py --baud 460800 write_flash 0 ESP32_BOARD_NAME-DATE-VERSION.bin
-
-Replace ``ESP32_BOARD_NAME-DATE-VERSION.bin`` with the name of your firmware .bin file.
-
-.. note:: If you're unsure which command line to use, check the `MicroPython
-  download page`_ for your board. Each download page shows an accurate command
-  line example for that board and its SoC.
+Detailed steps can be found on the same `MicroPython download page`_ for your
+board. It's recommended that you follow the steps on the download page, as they
+are customised for your particular board.
 
 If the above commands run without error then MicroPython should be installed on
-your board! If the command fails, see :ref:`esp32_troubleshooting_install` below.
-
-Serial prompt
--------------
-
-Once you have the firmware on the device you can access the REPL (Python prompt)
-over either UART0, which might be connected to a USB-serial converter depending
-on your board, or the chip's built-in USB device. The baudrate is 115200.
-
-From here you can now follow the ESP8266 tutorial, because these two Espressif chips
-are very similar when it comes to using MicroPython on them.  The ESP8266 tutorial
-is found at :ref:`esp8266_tutorial` (but skip the Introduction section).
+your board! Skip ahead to :ref:`esp32_serial_prompt`.
 
 .. _esp32_troubleshooting_install:
 
@@ -152,6 +109,19 @@ after flashing, here are some troubleshooting recommendations:
   and convenient power source is a USB port.
 * If you still experience problems with flashing the firmware then please also
   refer to the `esptool Troubleshooting documentation`_.
+
+.. _esp32_serial_prompt:
+
+Serial prompt
+-------------
+
+Once you have the firmware on the device you can access the REPL (Python prompt)
+over either UART0, which might be connected to a USB-serial converter depending
+on your board, or the chip's built-in USB device. The baudrate is 115200.
+
+From here you can now follow the ESP8266 tutorial, because these two Espressif chips
+are very similar when it comes to using MicroPython on them.  The ESP8266 tutorial
+is found at :ref:`esp8266_tutorial` (but skip the Introduction section).
 
 .. _esptool Troubleshooting documentation: https://docs.espressif.com/projects/esptool/en/latest/esp32/troubleshooting.html
 .. _MicroPython download page: https://micropython.org/download/?port=esp32
