@@ -36,7 +36,7 @@
 #include <math.h>
 #endif
 
-static NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
+static MP_NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
     // if lex!=NULL then the parser called us and we need to convert the
     // exception's type from ValueError to SyntaxError and add traceback info
     if (lex != NULL) {

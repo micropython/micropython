@@ -143,7 +143,7 @@ typedef struct _mp_fun_table_t {
     int (*printf_)(const mp_print_t *print, const char *fmt, ...);
     int (*vprintf_)(const mp_print_t *print, const char *fmt, va_list args);
     #if defined(__GNUC__)
-    NORETURN // Only certain compilers support no-return attributes in function pointer declarations
+    MP_NORETURN // Only certain compilers support no-return attributes in function pointer declarations
     #endif
     void (*raise_msg)(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
     const mp_obj_type_t *(*obj_get_type)(mp_const_obj_t o_in);
