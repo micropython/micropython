@@ -555,12 +555,12 @@ static bool calc_pio_clock_dividers(
         *clkdiv_int = div_lo / 256;
         *clkdiv_frac = div_lo % 256;
         if (err != NULL)
-            *err = err_lo / (c3 * 256);
+            *err = (float)err_lo / (c3 * 256);
     } else {
         *clkdiv_int = div_hi / 256;
         *clkdiv_frac = div_hi % 256;
         if (err != NULL)
-            *err = err_hi / (c3 * 256);
+            *err = (float)err_hi / (c3 * 256);
     }
     return true;
 }
