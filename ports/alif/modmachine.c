@@ -47,11 +47,11 @@ static mp_obj_t mp_machine_unique_id(void) {
     return mp_obj_new_bytes(id, sizeof(id));
 }
 
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     se_services_reset_soc();
 }
 
-NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     __disable_irq();
 
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
@@ -112,7 +112,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     #endif
 }
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_USBDEV
     mp_machine_enable_usb(false);
     #endif

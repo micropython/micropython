@@ -89,7 +89,7 @@ typedef struct _mp_obj_uctypes_struct_t {
     uint32_t flags;
 } mp_obj_uctypes_struct_t;
 
-static NORETURN void syntax_error(void) {
+static MP_NORETURN void syntax_error(void) {
     mp_raise_TypeError(MP_ERROR_TEXT("syntax error in uctypes descriptor"));
 }
 

@@ -57,7 +57,7 @@ __asm(
     ".end nlr_push            \n"
     );
 
-NORETURN void nlr_jump(void *val) {
+MP_NORETURN void nlr_jump(void *val) {
     MP_NLR_JUMP_HEAD(val, top)
     __asm(
         "move $4, %0    \n"

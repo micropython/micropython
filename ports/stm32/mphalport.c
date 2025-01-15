@@ -20,7 +20,7 @@ const byte mp_hal_status_to_errno_table[4] = {
 uint8_t mp_hal_unique_id_address[12];
 #endif
 
-NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
+MP_NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
 

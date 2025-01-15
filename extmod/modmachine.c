@@ -45,11 +45,11 @@
 static void mp_machine_idle(void);
 
 #if MICROPY_PY_MACHINE_BOOTLOADER
-NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args);
+MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args);
 #endif
 
 #if MICROPY_PY_MACHINE_RESET
-NORETURN static void mp_machine_reset(void);
+MP_NORETURN static void mp_machine_reset(void);
 static mp_int_t mp_machine_reset_cause(void);
 #endif
 
@@ -58,7 +58,7 @@ static mp_obj_t mp_machine_unique_id(void);
 static mp_obj_t mp_machine_get_freq(void);
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args);
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args);
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args);
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args);
 #endif
 
 // The port can provide additional machine-module implementation in this file.
@@ -67,7 +67,7 @@ NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args);
 #endif
 
 #if MICROPY_PY_MACHINE_BOOTLOADER
-NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     mp_machine_bootloader(n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
@@ -81,7 +81,7 @@ static MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
 #if MICROPY_PY_MACHINE_RESET
 
-NORETURN static mp_obj_t machine_reset(void) {
+MP_NORETURN static mp_obj_t machine_reset(void) {
     mp_machine_reset();
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
@@ -116,7 +116,7 @@ static mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
 
-NORETURN static mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_machine_deepsleep(n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj, 0, 1, machine_deepsleep);

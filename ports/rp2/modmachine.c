@@ -65,7 +65,7 @@ static mp_obj_t mp_machine_unique_id(void) {
     return mp_obj_new_bytes(id.id, sizeof(id.id));
 }
 
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     watchdog_reboot(0, SRAM_END, 0);
     for (;;) {
         __wfi();
@@ -82,7 +82,7 @@ static mp_int_t mp_machine_reset_cause(void) {
     return reset_cause;
 }
 
-NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB;
     reset_usb_boot(0, 0);
@@ -338,7 +338,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     #endif
 }
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_machine_lightsleep(n_args, args);
     mp_machine_reset();
 }

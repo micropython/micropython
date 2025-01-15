@@ -65,7 +65,7 @@
 extern bool EIC_occured;
 extern uint32_t _dbl_tap_addr;
 
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_RESET;
     #ifdef DBL_TAP_ADDR_ALT
     *DBL_TAP_ADDR_ALT = DBL_TAP_MAGIC_RESET;
@@ -73,7 +73,7 @@ NORETURN static void mp_machine_reset(void) {
     NVIC_SystemReset();
 }
 
-NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_LOADER;
     #ifdef DBL_TAP_ADDR_ALT
     *DBL_TAP_ADDR_ALT = DBL_TAP_MAGIC_LOADER;
@@ -164,7 +164,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     set_cpu_freq(freq);
 }
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_machine_lightsleep(n_args, args);
     mp_machine_reset();
 }

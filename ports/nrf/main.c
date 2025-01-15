@@ -107,7 +107,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 extern uint32_t _heap_start;
 extern uint32_t _heap_end;
 
-void NORETURN _start(void) {
+void MP_NORETURN _start(void) {
     // Hook for a board to run code at start up, for example check if a
     // bootloader should be entered instead of the main application.
     MICROPY_BOARD_STARTUP();
@@ -353,7 +353,7 @@ void HardFault_Handler(void) {
     #endif
 }
 
-void NORETURN __fatal_error(const char *msg) {
+void MP_NORETURN __fatal_error(const char *msg) {
     while (1) {
         ;
     }
