@@ -600,7 +600,7 @@ static mp_obj_t rp2_calc_pio_clock_dividers(size_t n_args, const mp_obj_t *pos_a
         ARG_pio_clk_num, ARG_pio_clk_den,
     };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sys_clk_num, MP_ARG_OBJ },
+        { MP_QSTR_sys_clk_num, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_sys_clk_den, MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_pio_clk_num, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_pio_clk_den, MP_ARG_INT, {.u_int = 1} },
