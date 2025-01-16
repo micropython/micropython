@@ -248,13 +248,13 @@ clean-prog:
 .PHONY: clean-prog
 endif
 
+# If available, do blobless partial clones of submodules to save time and space.
+# A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.).
+# Fallback to standard submodule update if blobless isn't available (earlier than 2.36.0)
 submodules:
 	$(ECHO) "Updating submodules: $(GIT_SUBMODULES)"
 ifneq ($(GIT_SUBMODULES),)
 	$(Q)cd $(TOP) && git submodule sync $(GIT_SUBMODULES)
-	# If available, do blobless partial clones of submodules to save time and space.
-	# A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.).
-	# Fallback to standard submodule update if blobless isn't available (earlier than 2.36.0)
 	$(Q)cd $(TOP) && git submodule update --init --filter=blob:none $(GIT_SUBMODULES) || \
 	  git submodule update --init $(GIT_SUBMODULES)
 endif
