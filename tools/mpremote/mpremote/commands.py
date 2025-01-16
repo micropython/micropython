@@ -481,6 +481,33 @@ def do_rtc(state, args):
         print(state.transport.eval("machine.RTC().datetime()"))
 
 
+def _do_romfs_query(state, args):
+    state.ensure_raw_repl()
+    state.did_action()
+
+    # Detect the romfs and get its associated device.
+    state.transport.exec("import vfs")
+    num_rom_partitions = state.transport.eval("hasattr(vfs, 'rom_ioctl') and vfs.rom_ioctl(1)")
+    if num_rom_partitions is False:
+        print("No ROM partitions available")
+        return
+
+    for rom_id in range(num_rom_partitions):
+        state.transport.exec(f"dev=vfs.rom_ioctl(2,{rom_id})")
+        has_object = state.transport.eval("hasattr(dev,'ioctl')")
+        if has_object:
+            rom_block_count = state.transport.eval("dev.ioctl(4,0)")
+            rom_block_size = state.transport.eval("dev.ioctl(5,0)")
+            rom_size = rom_block_count * rom_block_size
+            print(
+                f"ROM{rom_id} partition has size {rom_size} bytes ({rom_block_count} blocks of {rom_block_size} bytes each)"
+            )
+        else:
+            rom_size = state.transport.eval("len(dev)")
+            print(f"ROM{rom_id} partition has size {rom_size} bytes")
+        print("Contents:", state.transport.eval("bytes(memoryview(dev)[:8]).hex(':')"), "...")
+
+
 def _do_romfs_build(state, args):
     state.did_action()
 
@@ -508,7 +535,6 @@ def _do_romfs_deploy(state, args):
     print(f"Image size is {len(romfs)} bytes")
 
     # Detect the romfs and get its associated device.
-    state.transport.exec("import vfs")
     state.transport.exec(f"import vfs;dev=vfs.rom_ioctl(2,{rom_id})")
     has_object = state.transport.eval("hasattr(dev,'ioctl')")
     if has_object:
@@ -562,7 +588,9 @@ def _do_romfs_deploy(state, args):
 
 
 def do_romfs(state, args):
-    if args.command[0] == "build":
+    if args.command[0] == "query":
+        _do_romfs_query(state, args)
+    elif args.command[0] == "build":
         _do_romfs_build(state, args)
     elif args.command[0] == "deploy":
         _do_romfs_deploy(state, args)

@@ -232,8 +232,8 @@ def argparse_mip():
 def argparse_romfs():
     cmd_parser = argparse.ArgumentParser(description="manage romfs")
     _bool_flag(cmd_parser, "mpy", "m", True, "download as compiled .mpy files (default)")
-    cmd_parser.add_argument("command", nargs=1, help="romfs command (e.g. build, deploy)")
-    cmd_parser.add_argument("path", nargs=1, help="path to directory to deploy")
+    cmd_parser.add_argument("command", nargs=1, help="romfs command (e.g. query, build, deploy)")
+    cmd_parser.add_argument("path", nargs="*", help="path to directory to deploy")
     return cmd_parser
 
 
