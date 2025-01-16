@@ -27,7 +27,6 @@
 #define MICROPY_HW_BOARD_NAME       "PYBD-SF2W"
 #define MICROPY_HW_MCU_NAME         "STM32F722IEK"
 
-#define MICROPY_VFS_ROM             (1)
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "PYBD"
 
 #define MICROPY_PY_PYB_LEGACY       (1)
@@ -64,6 +63,11 @@ void board_sleep(int value);
 #define MICROPY_HW_RTC_USE_BYPASS   (1)
 #define MICROPY_HW_RTC_USE_US       (1)
 #define MICROPY_HW_RTC_USE_CALOUT   (1)
+
+// ROMFS config
+#define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI (1)
+#define MICROPY_HW_ROMFS_QSPI_SPIFLASH_OBJ (&spi_bdev2.spiflash)
+#define MICROPY_HW_ROMFS_ENABLE_PART1 (1)
 
 // SPI flash #1, for R/W storage
 #define MICROPY_HW_SOFTQSPI_SCK_LOW(self) (GPIOE->BSRR = (0x10000 << 11))

@@ -32,12 +32,6 @@
 /*****************************************************************************/
 // Feature settings with defaults
 
-#ifndef MICROPY_VFS_ROM
-#if defined(STM32F091xC) || defined(STM32F405xx)
-#define MICROPY_VFS_ROM (1)
-#endif
-#endif
-
 // Whether to include the stm module
 #ifndef MICROPY_PY_STM
 #define MICROPY_PY_STM (1)
@@ -71,6 +65,26 @@
 // Whether machine.bootloader() will enter the bootloader via reset, or direct jump.
 #ifndef MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
 #define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (1)
+#endif
+
+// Whether to enable ROMFS on the internal flash.
+#ifndef MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH
+#define MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH (0)
+#endif
+
+// Whether to enable ROMFS on external QSPI flash.
+#ifndef MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI
+#define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI (0)
+#endif
+
+// Whether to enable ROMFS partition 1.
+#ifndef MICROPY_HW_ROMFS_ENABLE_PART1
+#define MICROPY_HW_ROMFS_ENABLE_PART1 (0)
+#endif
+
+// Whether to enable ROMFS partition 2.
+#ifndef MICROPY_HW_ROMFS_ENABLE_PART2
+#define MICROPY_HW_ROMFS_ENABLE_PART2 (0)
 #endif
 
 // Whether to enable storage on the internal flash of the MCU

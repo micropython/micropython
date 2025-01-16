@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/objarray.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "extmod/vfs_fat.h"
@@ -233,9 +232,6 @@ int storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_bl
 //
 // Expose the flash as an object with the block protocol.
 
-// If VfsRom is enabled then make pyb.Flash objects support raw internal flash.
-#define PYB_FLASH_ENABLE_RAW_INTERNAL_FLASH (MICROPY_VFS_ROM)
-
 #ifdef MICROPY_HW_BDEV_SPIFLASH_EXTENDED
 // Board defined an external SPI flash for use with extended block protocol
 #define MICROPY_HW_BDEV_BLOCKSIZE_EXT (MP_SPIFLASH_ERASE_BLOCK_SIZE)
@@ -269,9 +265,6 @@ typedef struct _pyb_flash_obj_t {
     uint32_t start; // in bytes
     uint32_t len; // in bytes
     bool use_native_block_size;
-    #if PYB_FLASH_ENABLE_RAW_INTERNAL_FLASH
-    bool is_raw_internal_flash;
-    #endif
 } pyb_flash_obj_t;
 
 // This Flash object represents the entire available flash, with emulated partition table at start
@@ -331,32 +324,12 @@ static mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
-#if PYB_FLASH_ENABLE_RAW_INTERNAL_FLASH
-static mp_int_t pyb_flash_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    pyb_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->is_raw_internal_flash && flags == MP_BUFFER_READ) {
-        bufinfo->buf = (void *)self->start;
-        bufinfo->len = self->len;
-        bufinfo->typecode = 'B';
-        return 0;
-    } else {
-        // Unsupported.
-        return 1;
-    }
-}
-#endif
-
 static mp_obj_t pyb_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     pyb_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t block_num = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
     mp_uint_t ret = -MP_EIO;
-    #if PYB_FLASH_ENABLE_RAW_INTERNAL_FLASH
-    if (self->is_raw_internal_flash) {
-        // Read from raw flash is not implemented.
-    } else
-    #endif
     if (n_args == 3) {
         // Cast self->start to signed in case it's pyb_flash_obj with negative start
         block_num += FLASH_PART1_START_BLOCK + (int32_t)self->start / FLASH_BLOCK_SIZE;
@@ -384,15 +357,6 @@ static mp_obj_t pyb_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
     mp_uint_t ret = -MP_EIO;
-    #if PYB_FLASH_ENABLE_RAW_INTERNAL_FLASH
-    if (self->is_raw_internal_flash) {
-        uint32_t sector_size = 0;
-        flash_get_sector_info(self->start, NULL, &sector_size);
-        uint32_t offset = n_args == 3 ? 0 : mp_obj_get_int(args[3]);
-        uint32_t dest = self->start + block_num * sector_size + offset;
-        ret = flash_write(dest, bufinfo.buf, bufinfo.len / 4);
-    } else
-    #endif
     if (n_args == 3) {
         // Cast self->start to signed in case it's pyb_flash_obj with negative start
         block_num += FLASH_PART1_START_BLOCK + (int32_t)self->start / FLASH_BLOCK_SIZE;
@@ -417,12 +381,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_flash_writeblocks_obj, 3, 4, pyb_
 static mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     pyb_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
-    #if PYB_FLASH_ENABLE_RAW_INTERNAL_FLASH
-    uint32_t sector_size = 0;
-    if (self->is_raw_internal_flash) {
-        flash_get_sector_info(self->start, NULL, &sector_size);
-    }
-    #endif
     switch (cmd) {
         case MP_BLOCKDEV_IOCTL_INIT: {
             mp_int_t ret = 0;
@@ -447,12 +405,6 @@ static mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
 
         case MP_BLOCKDEV_IOCTL_BLOCK_COUNT: {
             mp_int_t n;
-            #if PYB_FLASH_ENABLE_RAW_INTERNAL_FLASH
-            if (self->is_raw_internal_flash) {
-                // Get number of sectors of internal flash.
-                n = self->len / sector_size;
-            } else
-            #endif
             if (self == &pyb_flash_obj) {
                 // Get true size
                 n = storage_get_block_count();
@@ -466,12 +418,6 @@ static mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
 
         case MP_BLOCKDEV_IOCTL_BLOCK_SIZE: {
             mp_int_t n = FLASH_BLOCK_SIZE;
-            #if PYB_FLASH_ENABLE_RAW_INTERNAL_FLASH
-            if (self->is_raw_internal_flash) {
-                // Get actual sector size of internal flash.
-                n = sector_size;
-            } else
-            #endif
             if (self->use_native_block_size) {
                 n = MICROPY_HW_BDEV_BLOCKSIZE_EXT;
             }
@@ -480,13 +426,6 @@ static mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
 
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
             int ret = 0;
-            #if PYB_FLASH_ENABLE_RAW_INTERNAL_FLASH
-            if (self->is_raw_internal_flash) {
-                uint32_t dest = self->start + mp_obj_get_int(arg_in) * sector_size;
-                ret = flash_erase(dest);
-                return MP_OBJ_NEW_SMALL_INT(ret);
-            }
-            #endif
             #if defined(MICROPY_HW_BDEV_ERASEBLOCKS_EXT)
             if (self->use_native_block_size) {
                 mp_int_t block_num = self->start / MICROPY_HW_BDEV_BLOCKSIZE_EXT + mp_obj_get_int(arg_in);
@@ -511,19 +450,12 @@ static const mp_rom_map_elem_t pyb_flash_locals_dict_table[] = {
 
 static MP_DEFINE_CONST_DICT(pyb_flash_locals_dict, pyb_flash_locals_dict_table);
 
-#if PYB_FLASH_ENABLE_RAW_INTERNAL_FLASH
-#define PYB_FLASH_GET_BUFFER buffer, pyb_flash_get_buffer,
-#else
-#define PYB_FLASH_GET_BUFFER
-#endif
-
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_flash_type,
     MP_QSTR_Flash,
     MP_TYPE_FLAG_NONE,
     make_new, pyb_flash_make_new,
     print, pyb_flash_print,
-    PYB_FLASH_GET_BUFFER
     locals_dict, &pyb_flash_locals_dict
     );
 
@@ -545,76 +477,3 @@ void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
 }
 
 #endif
-
-/******************************************************************************/
-// romfs partition
-
-#if MICROPY_VFS_ROM
-
-#define MICROPY_HW_ROMFS_BASE (uintptr_t)(&_micropy_hw_romfs_start)
-#define MICROPY_HW_ROMFS_BYTES (uintptr_t)(&_micropy_hw_romfs_size)
-
-extern uint8_t _micropy_hw_romfs_start;
-extern uint8_t _micropy_hw_romfs_size;
-
-#if MICROPY_HW_ENABLE_STORAGE
-static const pyb_flash_obj_t romfs_obj = {
-    .base = { &pyb_flash_type },
-    .start = MICROPY_HW_ROMFS_BASE,
-    .len = MICROPY_HW_ROMFS_BYTES,
-    .use_native_block_size = false,
-    .is_raw_internal_flash = true,
-};
-#else
-static const MP_DEFINE_MEMORYVIEW_OBJ(romfs_obj, 'B', 0, MICROPY_HW_ROMFS_BYTES, (void *)MICROPY_HW_ROMFS_BASE);
-#endif
-
-mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
-    switch (mp_obj_get_int(args[0])) {
-        case MP_VFS_ROM_IOCTL_GET_NUMBER_OF_SEGMENTS:
-            return MP_OBJ_NEW_SMALL_INT(1);
-
-        case MP_VFS_ROM_IOCTL_GET_SEGMENT:
-            return MP_OBJ_FROM_PTR(&romfs_obj);
-
-            #if !MICROPY_HW_ENABLE_STORAGE
-
-        case MP_VFS_ROM_IOCTL_WRITE_PREPARE: {
-            // Erase sectors in given range.
-            if (n_args < 3) {
-                return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
-            }
-            uint32_t dest = MICROPY_HW_ROMFS_BASE;
-            uint32_t dest_max = dest + mp_obj_get_int(args[2]);
-            while (dest < dest_max) {
-                int ret = flash_erase(dest);
-                if (ret < 0) {
-                    return MP_OBJ_NEW_SMALL_INT(ret);
-                }
-                uint32_t sector_size = 0;
-                flash_get_sector_info(dest, NULL, &sector_size);
-                dest += sector_size;
-            }
-            return MP_OBJ_NEW_SMALL_INT(16);
-        }
-
-        case MP_VFS_ROM_IOCTL_WRITE: {
-            // Write data to flash.
-            if (n_args < 4) {
-                return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
-            }
-            uint32_t dest = MICROPY_HW_ROMFS_BASE + mp_obj_get_int(args[2]);
-            mp_buffer_info_t bufinfo;
-            mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
-            int ret = flash_write(dest, bufinfo.buf, bufinfo.len / 4);
-            return MP_OBJ_NEW_SMALL_INT(ret);
-        }
-
-            #endif
-
-        default:
-            return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
-    }
-}
-
-#endif // MICROPY_VFS_ROM
