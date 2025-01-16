@@ -369,17 +369,33 @@ class PIOProgram:
         sm_index,
         freq=-1,
         *,
+        clkdiv_int=None,
+        clkdiv_frac=1,
         out_init=None,
         set_init=None,
         sideset_init=None,
         **kwargs,  # in_base, out_base, set_base, jmp_pin, sideset_base
+        # Part of prog[], but can override: in_shiftdir, out_shiftdir, push_thresh, pull_thresh
         ):
         prog = self.prog
         prog[_PROG_OUT_PINS] = out_init
         prog[_PROG_SET_PINS] = set_init
         prog[_PROG_SIDSET_PINS] = sideset_init
+        if clkdiv_int is not None:
+            # Use the provided divisors
+            kwargs['clkdiv_int'], kwargs['clkdiv_frac'] = (clkdiv_int, clkdiv_frac)
+        elif isinstance(freq, float):
+            # Convert from frequency as float
+            kwargs['clkdiv_int'], kwargs['clkdiv_frac'], err = calc_pio_clock_dividers(
+                pio_clk_num=freq)
+        elif isinstance(freq, tuple):
+            # Convert from frequency as a ratio, num/den
+            kwargs['clkdiv_int'], kwargs['clkdiv_frac'], err = calc_pio_clock_dividers(
+                pio_clk_num=freq[0], pio_clk_den=freq[1])
+        else:
+            # Frequency as int, including magic values
+            kwargs['freq'] = freq
         return StateMachine(sm_index,
-                            freq,
                             prog,
                             **kwargs)
 
