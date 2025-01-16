@@ -71,7 +71,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "MicroPython"
-copyright = "- The MicroPython Documentation is Copyright © 2014-2024, " + micropy_authors
+copyright = "- The MicroPython Documentation is Copyright © 2014-2025, " + micropy_authors
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
