@@ -30,6 +30,7 @@ typedef unsigned int mp_uint_t;     // must be pointer size
 #define MICROPY_HW_ENABLE_SDCARD    (0)
 #define MICROPY_HW_ENABLE_MMCARD    (0)
 #define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET   (0)
+#define MICROPY_HW_TIM_IS_RESERVED(id) (id == 1)
 
 // Flash storage config
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE            (1)
@@ -42,7 +43,6 @@ void GIGA_board_startup(void);
 #define MICROPY_BOARD_EARLY_INIT    GIGA_board_early_init
 void GIGA_board_early_init(void);
 
-#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET   (0)
 #define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) GIGA_board_enter_bootloader()
 void GIGA_board_enter_bootloader(void);
 
