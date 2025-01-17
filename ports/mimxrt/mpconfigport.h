@@ -125,6 +125,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_FATFS_RPATH                 (2)
 #define MICROPY_FATFS_MULTI_PARTITION       (1)
 #define MICROPY_FATFS_MAX_SS                (4096)
+#define MICROPY_FATFS_EXFAT                 (1)
 
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK                  (1)
