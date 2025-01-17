@@ -17,12 +17,12 @@ low all of the time.
     from machine import Pin, PWM
     try:
         F = 10000  # Hz
-        D = 2**16 // 16  # 6.25%
+        D = 65536 // 16  # 6.25%
         pins = (2, 4, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26, 27, 32, 33)
         pwms = []
         for i, pin in enumerate(pins):
             f = F * (i // 2 + 1)
-            d = min(2**16 - 1, D * (i + 1))
+            d = min(65535, D * (i + 1))
             pwms.append(PWM(pin, freq=f, duty_u16=d))
             sleep(2/f)
             print(pwms[i])
@@ -111,7 +111,7 @@ low all of the time.
     from time import sleep
     from machine import Pin, PWM
 
-    DUTY_MAX = 2**16 - 1
+    DUTY_MAX = 65535
 
     duty_u16 = 0
     delta_d = 256
@@ -172,10 +172,10 @@ low all of the time.
     from machine import Pin, PWM
 
     try:
-        DUTY_MAX = 2**16 - 1
+        DUTY_MAX = 65535
 
         duty_u16 = 0
-        delta_d = 2**16 // 32
+        delta_d = 65536 // 32
 
         pwm = PWM(Pin(27))
         pwmi = PWM(Pin(32), invert=1)
