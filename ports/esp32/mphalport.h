@@ -36,6 +36,7 @@
 #include "freertos/task.h"
 
 #include "driver/spi_master.h"
+#include "soc/gpio_reg.h"
 
 #define MICROPY_PLATFORM_VERSION "IDF" IDF_VER
 
@@ -132,6 +133,15 @@ static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
 }
 static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
     return gpio_get_level(pin);
+}
+static inline int mp_hal_pin_read_output(mp_hal_pin_obj_t pin) {
+    #if defined(GPIO_OUT1_REG)
+    return pin < 32
+        ? (*(uint32_t *)GPIO_OUT_REG >> pin) & 1
+        : (*(uint32_t *)GPIO_OUT1_REG >> (pin - 32)) & 1;
+    #else
+    return (*(uint32_t *)GPIO_OUT_REG >> pin) & 1;
+    #endif
 }
 static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {
     gpio_set_level(pin, v);
