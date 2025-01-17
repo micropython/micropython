@@ -40,7 +40,7 @@ Constructors
    Setting *freq* may affect other PWM objects if the objects share the same
    underlying PWM generator (this is hardware specific).
    Only one of *duty_u16* and *duty_ns* should be specified at a time.
-   *invert* is available at RP2, i.MXRT, SAMD, nRF, ESP32 ports.
+   *invert* is available only on the RP2, i.MXRT, SAMD, nRF, ESP32 ports.
 
 Methods
 -------
@@ -76,10 +76,10 @@ Methods
    Use functions like these to convert percentages to u16 and back::
 
       def percents_to_u16(percents:int)->int:
-          return (percents * 2**16 + 50) // 100
+          return (percents * 65535 + 50) // 100
 
       def u16_to_percents(u16:int)->int:
-          return (u16 * 100 + 2**15) // 2**16
+          return (u16 * 100 + 32767) // 65535
 
 .. method:: PWM.duty_ns([value])
 
@@ -124,10 +124,10 @@ Limitations of PWM
   resolution of 8 bit, not 16-bit as may be expected.  In this case, the lowest
   8 bits of *duty_u16* are insignificant. So::
 
-    pwm=PWM(Pin(13), freq=300_000, duty_u16=2**16//2)
+    pwm=PWM(Pin(13), freq=300_000, duty_u16=65536//2)
 
   and::
 
-    pwm=PWM(Pin(13), freq=300_000, duty_u16=2**16//2 + 255)
+    pwm=PWM(Pin(13), freq=300_000, duty_u16=65536//2 + 255)
 
   will generate PWM with the same 50% duty cycle.
