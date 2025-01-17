@@ -81,7 +81,7 @@ low all of the time.
             elif f < F_MIN:
                 f = F_MIN
 
-  `See PWM wave on Pin(27) with an oscilloscope. <https://user-images.githubusercontent.com/70886343/224013926-73953f7b-9b75-4e32-9595-83236c76ca1f.mp4>`_
+  See PWM wave on Pin(27) with an oscilloscope.
 
   Output is::
 
@@ -138,7 +138,7 @@ low all of the time.
             duty_u16 = 0
             delta_d = -delta_d
 
-  See `PWM wave on Pin(27) with an oscilloscope. <https://user-images.githubusercontent.com/70886343/224020123-1c958e85-0c91-4ca6-8b4c-b3bb956892b1.mp4>`_
+  PWM wave on Pin(27) with an oscilloscope.
 
   Output is::
 
@@ -221,7 +221,7 @@ low all of the time.
     ...
 
 
-  See `PWM waves on Pin(27) and Pin(32) <https://user-images.githubusercontent.com/70886343/222743883-dca25aa8-681d-471c-933a-6f9beacb6eee.mp4>`_ with an oscilloscope.
+  See PWM waves on Pin(27) and Pin(32) with an oscilloscope.
 
 
 Note: the Pin.OUT mode does not need to be specified. The channel is initialized
