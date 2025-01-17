@@ -275,13 +275,6 @@ SECTIONS
         KEEP(*(.data_flash*))
         __Data_Flash_End = .;
     } > DATA_FLASH
-
-    .id_code :
-    {
-        __ID_Code_Start = .;
-        KEEP(*(.id_code*))
-        __ID_Code_End = .;
-    } > ID_CODE
 }
 /* produce a link error if there is not this amount of RAM for these sections */
 /* _minimum_stack_size = 2K; */
