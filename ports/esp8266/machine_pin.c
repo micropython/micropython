@@ -373,6 +373,14 @@ static mp_obj_t pyb_pin_on(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_on_obj, pyb_pin_on);
 
+// pin.toggle()
+static mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
+    pyb_pin_obj_t *self = self_in;
+    pin_set(self->phys_port, 1 - mp_hal_pin_read_output(self->phys_port));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
+
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
 static mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
@@ -435,6 +443,7 @@ static const mp_rom_map_elem_t pyb_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&pyb_pin_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_off),     MP_ROM_PTR(&pyb_pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&pyb_pin_on_obj) },
+    { MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&machine_pin_toggle_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&pyb_pin_irq_obj) },
 
     // class constants
