@@ -3467,7 +3467,7 @@ static void scope_compute_things(scope_t *scope) {
     }
 }
 
-#if !MICROPY_PERSISTENT_CODE_SAVE
+#if !MICROPY_EXPOSE_MP_COMPILE_TO_RAW_CODE
 static
 #endif
 void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl, mp_compiled_module_t *cm) {
