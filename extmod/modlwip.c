@@ -37,7 +37,6 @@
 
 #if MICROPY_PY_LWIP
 
-#include "shared/netutils/netutils.h"
 #include "modnetwork.h"
 
 #include "lwip/init.h"
@@ -308,7 +307,7 @@ typedef struct _lwip_socket_obj_t {
         } connection;
     } incoming;
     mp_obj_t callback;
-    byte peer[4];
+    ip_addr_t peer;
     mp_uint_t peer_port;
     mp_uint_t timeout;
     uint16_t recv_offset;
@@ -638,7 +637,7 @@ static mp_uint_t lwip_raw_udp_send(lwip_socket_obj_t *socket, const byte *buf, m
 }
 
 // Helper function for recv/recvfrom to handle raw/UDP packets
-static mp_uint_t lwip_raw_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
+static mp_uint_t lwip_raw_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_t len, ip_addr_t *ip, mp_uint_t *port, int *_errno) {
 
     if (socket->incoming.pbuf == NULL) {
         if (socket->timeout == 0) {
@@ -1132,7 +1131,7 @@ static mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                 mp_raise_OSError(error_lookup_table[-err]);
             }
             socket->peer_port = (mp_uint_t)port;
-            memcpy(socket->peer, &dest, sizeof(socket->peer));
+            memcpy(&socket->peer, &dest, sizeof(socket->peer));
             MICROPY_PY_LWIP_EXIT
 
             // And now we wait...
@@ -1294,13 +1293,13 @@ static mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     mp_int_t len = mp_obj_get_int(len_in);
     vstr_t vstr;
     vstr_init_len(&vstr, len);
-    byte ip[4];
+    ip_addr_t ip;
     mp_uint_t port;
 
     mp_uint_t ret = 0;
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM: {
-            memcpy(ip, &socket->peer, sizeof(socket->peer));
+            memcpy(&ip, &socket->peer, sizeof(socket->peer));
             port = (mp_uint_t)socket->peer_port;
             ret = lwip_tcp_receive(socket, (byte *)vstr.buf, len, &_errno);
             break;
@@ -1309,7 +1308,7 @@ static mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
         #if MICROPY_PY_LWIP_SOCK_RAW
         case MOD_NETWORK_SOCK_RAW:
         #endif
-            ret = lwip_raw_udp_receive(socket, (byte *)vstr.buf, len, ip, &port, &_errno);
+            ret = lwip_raw_udp_receive(socket, (byte *)vstr.buf, len, &ip, &port, &_errno);
             break;
     }
     if (ret == -1) {
@@ -1323,7 +1322,8 @@ static mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
         vstr.len = ret;
         tuple[0] = mp_obj_new_bytes_from_vstr(&vstr);
     }
-    tuple[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
+    tuple[1] = lwip_format_inet_addr(&ip, port);
+
     return mp_obj_new_tuple(2, tuple);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_recvfrom_obj, lwip_socket_recvfrom);
