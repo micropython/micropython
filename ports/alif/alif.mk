@@ -118,6 +118,7 @@ SRC_C = \
 	fatfs_port.c \
 	machine_pin.c \
 	machine_i2c.c \
+	machine_spi.c \
 	main.c \
 	modalif.c \
 	mphalport.c \
@@ -188,6 +189,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	Device/core/$(MCU_CORE)/source/startup_$(MCU_CORE).c \
 	drivers/source/adc.c \
 	drivers/source/i2c.c \
+	drivers/source/spi.c \
 	drivers/source/mhu_driver.c \
 	drivers/source/mhu_receiver.c \
 	drivers/source/mhu_sender.c \
@@ -206,6 +208,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	)
 
 $(BUILD)/tinyusb_port/tusb_alif_dcd.o: CFLAGS += -Wno-unused-variable -DTUSB_ALIF_NO_IRQ_CFG=1
+$(BUILD)/$(ALIF_DFP_REL_TOP)/drivers/source/spi.o: CFLAGS += -Wno-maybe-uninitialized
 $(BUILD)/$(ALIF_DFP_REL_TOP)/se_services/source/services_host_boot.o: CFLAGS += -Wno-stringop-truncation
 $(BUILD)/$(ALIF_DFP_REL_TOP)/se_services/source/services_host_system.o: CFLAGS += -Wno-maybe-uninitialized
 
