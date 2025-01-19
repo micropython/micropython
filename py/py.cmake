@@ -72,6 +72,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/objattrtuple.c
     ${MICROPY_PY_DIR}/objbool.c
     ${MICROPY_PY_DIR}/objboundmeth.c
+    ${MICROPY_PY_DIR}/objcode.c
     ${MICROPY_PY_DIR}/objcell.c
     ${MICROPY_PY_DIR}/objclosure.c
     ${MICROPY_PY_DIR}/objcomplex.c
