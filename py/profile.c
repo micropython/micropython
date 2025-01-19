@@ -38,9 +38,8 @@
 #endif
 
 #define prof_trace_cb MP_STATE_THREAD(prof_trace_callback)
-#define QSTR_MAP(context, idx) (context->constants.qstr_table[idx])
 
-static uint mp_prof_bytecode_lineno(const mp_raw_code_t *rc, size_t bc) {
+uint mp_prof_bytecode_lineno(const mp_raw_code_t *rc, size_t bc) {
     const mp_bytecode_prelude_t *prelude = &rc->prelude;
     return mp_bytecode_get_source_line(prelude->line_info, prelude->line_info_top, bc);
 }
@@ -69,137 +68,6 @@ void mp_prof_extract_prelude(const byte *bytecode, mp_bytecode_prelude_t *prelud
 }
 
 /******************************************************************************/
-// code object
-
-static void code_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
-    (void)kind;
-    mp_obj_code_t *o = MP_OBJ_TO_PTR(o_in);
-    const mp_raw_code_t *rc = o->rc;
-    const mp_bytecode_prelude_t *prelude = &rc->prelude;
-    mp_printf(print,
-        "<code object %q at 0x%p, file \"%q\", line %d>",
-        QSTR_MAP(o->context, prelude->qstr_block_name_idx),
-        o,
-        QSTR_MAP(o->context, 0),
-        rc->line_of_definition
-        );
-}
-
-static mp_obj_tuple_t *code_consts(const mp_module_context_t *context, const mp_raw_code_t *rc) {
-    mp_obj_tuple_t *consts = MP_OBJ_TO_PTR(mp_obj_new_tuple(rc->n_children + 1, NULL));
-
-    size_t const_no = 0;
-    for (size_t i = 0; i < rc->n_children; ++i) {
-        mp_obj_t code = mp_obj_new_code(context, rc->children[i]);
-        if (code == MP_OBJ_NULL) {
-            m_malloc_fail(sizeof(mp_obj_code_t));
-        }
-        consts->items[const_no++] = code;
-    }
-    consts->items[const_no++] = mp_const_none;
-
-    return consts;
-}
-
-static mp_obj_t raw_code_lnotab(const mp_raw_code_t *rc) {
-    // const mp_bytecode_prelude_t *prelude = &rc->prelude;
-    uint start = 0;
-    uint stop = rc->fun_data_len - start;
-
-    uint last_lineno = mp_prof_bytecode_lineno(rc, start);
-    uint lasti = 0;
-
-    const uint buffer_chunk_size = (stop - start) >> 2; // heuristic magic
-    uint buffer_size = buffer_chunk_size;
-    byte *buffer = m_new(byte, buffer_size);
-    uint buffer_index = 0;
-
-    for (uint i = start; i < stop; ++i) {
-        uint lineno = mp_prof_bytecode_lineno(rc, i);
-        size_t line_diff = lineno - last_lineno;
-        if (line_diff > 0) {
-            uint instr_diff = (i - start) - lasti;
-
-            assert(instr_diff < 256);
-            assert(line_diff < 256);
-
-            if (buffer_index + 2 > buffer_size) {
-                buffer = m_renew(byte, buffer, buffer_size, buffer_size + buffer_chunk_size);
-                buffer_size = buffer_size + buffer_chunk_size;
-            }
-            last_lineno = lineno;
-            lasti = i - start;
-            buffer[buffer_index++] = instr_diff;
-            buffer[buffer_index++] = line_diff;
-        }
-    }
-
-    mp_obj_t o = mp_obj_new_bytes(buffer, buffer_index);
-    m_del(byte, buffer, buffer_size);
-    return o;
-}
-
-static void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    if (dest[0] != MP_OBJ_NULL) {
-        // not load attribute
-        return;
-    }
-    mp_obj_code_t *o = MP_OBJ_TO_PTR(self_in);
-    const mp_raw_code_t *rc = o->rc;
-    const mp_bytecode_prelude_t *prelude = &rc->prelude;
-    switch (attr) {
-        case MP_QSTR_co_code:
-            dest[0] = mp_obj_new_bytes(
-                (void *)prelude->opcodes,
-                rc->fun_data_len - (prelude->opcodes - (const byte *)rc->fun_data)
-                );
-            break;
-        case MP_QSTR_co_consts:
-            dest[0] = MP_OBJ_FROM_PTR(code_consts(o->context, rc));
-            break;
-        case MP_QSTR_co_filename:
-            dest[0] = MP_OBJ_NEW_QSTR(QSTR_MAP(o->context, 0));
-            break;
-        case MP_QSTR_co_firstlineno:
-            dest[0] = MP_OBJ_NEW_SMALL_INT(mp_prof_bytecode_lineno(rc, 0));
-            break;
-        case MP_QSTR_co_name:
-            dest[0] = MP_OBJ_NEW_QSTR(QSTR_MAP(o->context, prelude->qstr_block_name_idx));
-            break;
-        case MP_QSTR_co_names:
-            dest[0] = MP_OBJ_FROM_PTR(o->dict_locals);
-            break;
-        case MP_QSTR_co_lnotab:
-            if (!o->lnotab) {
-                o->lnotab = raw_code_lnotab(rc);
-            }
-            dest[0] = o->lnotab;
-            break;
-    }
-}
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    mp_type_settrace_codeobj,
-    MP_QSTR_code,
-    MP_TYPE_FLAG_NONE,
-    print, code_print,
-    attr, code_attr
-    );
-
-mp_obj_t mp_obj_new_code(const mp_module_context_t *context, const mp_raw_code_t *rc) {
-    mp_obj_code_t *o = m_new_obj_maybe(mp_obj_code_t);
-    if (o == NULL) {
-        return MP_OBJ_NULL;
-    }
-    o->base.type = &mp_type_settrace_codeobj;
-    o->context = context;
-    o->rc = rc;
-    o->dict_locals = mp_locals_get(); // this is a wrong! how to do this properly?
-    o->lnotab = MP_OBJ_NULL;
-    return MP_OBJ_FROM_PTR(o);
-}
-
-/******************************************************************************/
 // frame object
 
 static void frame_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
@@ -211,9 +79,9 @@ static void frame_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     mp_printf(print,
         "<frame at 0x%p, file '%q', line %d, code %q>",
         frame,
-        QSTR_MAP(code->context, 0),
+        MP_CODE_QSTR_MAP(code->context, 0),
         frame->lineno,
-        QSTR_MAP(code->context, prelude->qstr_block_name_idx)
+        MP_CODE_QSTR_MAP(code->context, prelude->qstr_block_name_idx)
         );
 }
 
@@ -265,7 +133,7 @@ mp_obj_t mp_obj_new_frame(const mp_code_state_t *code_state) {
         return MP_OBJ_NULL;
     }
 
-    mp_obj_code_t *code = o->code = MP_OBJ_TO_PTR(mp_obj_new_code(code_state->fun_bc->context, code_state->fun_bc->rc));
+    mp_obj_code_t *code = o->code = MP_OBJ_TO_PTR(mp_obj_new_code(code_state->fun_bc->context, code_state->fun_bc->rc, false));
     if (code == NULL) {
         return MP_OBJ_NULL;
     }
