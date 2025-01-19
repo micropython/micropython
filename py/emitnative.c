@@ -2082,6 +2082,18 @@ static void emit_native_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label)
 }
 
 static void emit_native_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
+    // Skip the jump only if the exception stack and the emitter stack are
+    // empty.  An unwind request with an empty exception stack and an empty
+    // emitter stack only occurs at the end of a code block and it is the
+    // last reference to the exit label from an unwind block.  In that case
+    // the unwind block is right before the exit label anyway, so the jump
+    // can be omitted.
+    if (except_depth == 0 && label == emit->exit_label && emit->stack_info->vtype == VTYPE_PTR_NONE) {
+        // Simulate emit_native_jump's side effects.
+        mp_asm_base_suppress_code(&emit->as->base);
+        return;
+    }
+
     if (except_depth > 0) {
         exc_stack_entry_t *first_finally = NULL;
         exc_stack_entry_t *prev_finally = NULL;
