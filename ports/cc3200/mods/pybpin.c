@@ -680,6 +680,20 @@ static mp_obj_t pin_value(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
 
+// pin.toggle()
+static mp_obj_t pin_toggle(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
+    if (self->value) {
+        self->value = 0;
+        MAP_GPIOPinWrite(self->port, self->bit, 0);
+    } else {
+        self->value = 1;
+        MAP_GPIOPinWrite(self->port, self->bit, self->bit);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_toggle_obj, pin_toggle);
+
 static mp_obj_t pin_id(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
     return MP_OBJ_NEW_QSTR(self->name);
@@ -902,6 +916,7 @@ static const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init),                    MP_ROM_PTR(&pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),                   MP_ROM_PTR(&pin_value_obj) },
+    { MP_ROM_QSTR(MP_QSTR_toggle),                  MP_ROM_PTR(&pin_toggle_obj) },
     { MP_ROM_QSTR(MP_QSTR_id),                      MP_ROM_PTR(&pin_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_mode),                    MP_ROM_PTR(&pin_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_pull),                    MP_ROM_PTR(&pin_pull_obj) },
