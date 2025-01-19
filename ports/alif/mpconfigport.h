@@ -133,6 +133,7 @@
 #define MICROPY_PY_MACHINE_I2C                  (MICROPY_HW_ENABLE_HW_I2C)
 #define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1  (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
+#define MICROPY_PY_MACHINE_SPI                  (1)
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)
 #define MICROPY_PY_MACHINE_TIMER                (1)
 #define MICROPY_VFS                             (1)

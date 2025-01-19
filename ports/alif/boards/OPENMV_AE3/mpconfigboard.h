@@ -21,6 +21,12 @@ typedef intptr_t mp_off_t;
 #define MICROPY_HW_I2C3_SCL         (pin_P1_1)
 #define MICROPY_HW_I2C3_SDA         (pin_P1_0)
 
+// SPI buses
+#define MICROPY_HW_SPI0_MISO        (pin_P5_0)
+#define MICROPY_HW_SPI0_MOSI        (pin_P5_1)
+// #define MICROPY_HW_SPI0_NSS         (pin_P5_2)
+#define MICROPY_HW_SPI0_SCK         (pin_P5_3)
+
 #define MICROPY_HW_USB_VID          0x37C5
 #define MICROPY_HW_USB_PID          0x16E3
 
