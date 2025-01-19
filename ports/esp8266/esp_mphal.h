@@ -101,6 +101,12 @@ void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin);
 } while (0)
 #define mp_hal_pin_read(p) pin_get(p)
 #define mp_hal_pin_write(p, v) pin_set((p), (v))
-
+static inline int mp_hal_pin_output_value(mp_hal_pin_obj_t pin) {
+    if (pin >= 16) {
+        return READ_PERI_REG(RTC_GPIO_OUT) & 1;
+    } else {
+        return (GPIO_REG_READ(GPIO_OUT_ADDRESS) & (1 << pin)) ? 1 : 0;
+    }
+}
 void *ets_get_esf_buf_ctlblk(void);
 int ets_esf_free_bufs(int idx);
