@@ -28,6 +28,8 @@
 #include <string.h>
 #include <assert.h>
 
+#include "py/emitglue.h"
+#include "py/objcode.h"
 #include "py/objtuple.h"
 #include "py/objfun.h"
 #include "py/runtime.h"
@@ -150,6 +152,30 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
 
     return name;
 }
+
+#if MICROPY_PY_FUNCTION_ATTRS_CODE
+static mp_obj_t fun_bc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    (void)type;
+    mp_arg_check_num(n_args, n_kw, 2, 2, false);
+
+    if (!mp_obj_is_type(args[0], &mp_type_code)) {
+        mp_raise_TypeError(NULL);
+    }
+    if (!mp_obj_is_type(args[1], &mp_type_dict)) {
+        mp_raise_TypeError(NULL);
+    }
+
+    mp_obj_code_t *code = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_t globals = args[1];
+
+    mp_module_context_t *module_context = m_new_obj(mp_module_context_t);
+    module_context->module.base.type = &mp_type_module;
+    module_context->module.globals = MP_OBJ_TO_PTR(globals);
+    module_context->constants = *mp_code_get_constants(code);
+
+    return mp_make_function_from_proto_fun(mp_code_get_proto_fun(code), module_context, NULL);
+}
+#endif
 
 #if MICROPY_CPYTHON_COMPAT
 static void fun_bc_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
@@ -340,7 +366,27 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
         dest[0] = MP_OBJ_FROM_PTR(self->context->module.globals);
     }
+    #if MICROPY_PY_FUNCTION_ATTRS_CODE
+    if (attr == MP_QSTR___code__) {
+        const mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
+        if ((self->base.type == &mp_type_fun_bc
+             || self->base.type == &mp_type_gen_wrap)
+            && self->child_table == NULL) {
+            #if MICROPY_PY_BUILTINS_CODE <= MICROPY_PY_BUILTINS_CODE_BASIC
+            dest[0] = mp_obj_new_code(self->context->constants, self->bytecode);
+            #else
+            dest[0] = mp_obj_new_code(self->context, self->rc, true);
+            #endif
+        }
+    }
+    #endif
 }
+#endif
+
+#if MICROPY_PY_FUNCTION_ATTRS_CODE
+#define FUN_BC_MAKE_NEW make_new, fun_bc_make_new,
+#else
+#define FUN_BC_MAKE_NEW
 #endif
 
 #if MICROPY_CPYTHON_COMPAT
@@ -359,6 +405,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_bc,
     MP_QSTR_function,
     MP_TYPE_FLAG_BINDS_SELF,
+    FUN_BC_MAKE_NEW
     FUN_BC_TYPE_PRINT
     FUN_BC_TYPE_ATTR
     call, fun_bc_call
