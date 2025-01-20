@@ -955,8 +955,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                         cwd=os.path.dirname(test_file),
                         stderr=subprocess.STDOUT,
                     )
-                except subprocess.CalledProcessError:
-                    output_expected = b"CPYTHON3 CRASH"
+                except subprocess.CalledProcessError as er:
+                    output_expected = b"CPYTHON3 CRASH:\n" + er.output
 
             # Canonical form for all host platforms is to use \n for end-of-line.
             output_expected = output_expected.replace(b"\r\n", b"\n")
