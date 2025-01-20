@@ -344,7 +344,7 @@
 
 // Whether to support converting functions to persistent code (bytes)
 #ifndef MICROPY_PERSISTENT_CODE_SAVE_FUN
-#define MICROPY_PERSISTENT_CODE_SAVE_FUN (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#define MICROPY_PERSISTENT_CODE_SAVE_FUN (MICROPY_PY_MARSHAL)
 #endif
 
 // Whether generated code can persist independently of the VM/runtime instance
@@ -1380,6 +1380,11 @@ typedef double mp_float_t;
 // Whether to provide the _asdict function for namedtuple
 #ifndef MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT
 #define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#endif
+
+// Whether to provide "marshal" module
+#ifndef MICROPY_PY_MARSHAL
+#define MICROPY_PY_MARSHAL (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
 #endif
 
 // Whether to provide "math" module
