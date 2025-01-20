@@ -56,13 +56,13 @@ cmath           collections     cppexample      cryptolib
 deflate         errno           example_package
 ffi             framebuf        gc              hashlib
 heapq           io              json            machine
-math            os              platform        random
-re              select          socket          struct
-sys             termios         time            tls
-uctypes         vfs             websocket
+marshal         math            os              platform
+random          re              select          socket
+struct          sys             termios         time
+tls             uctypes         vfs             websocket
 me
 
-micropython     machine         math
+micropython     machine         marshal         math
 
 argv            atexit          byteorder       exc_info
 executable      exit            getsizeof       implementation
