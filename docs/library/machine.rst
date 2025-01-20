@@ -241,6 +241,7 @@ Constants
           machine.WDT_RESET
           machine.DEEPSLEEP_RESET
           machine.SOFT_RESET
+          machine.BROWNOUT_RESET - (ESP32 specific)
 
     Reset causes.
 
