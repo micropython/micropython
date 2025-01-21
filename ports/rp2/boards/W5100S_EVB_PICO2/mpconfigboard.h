@@ -6,7 +6,7 @@
 
 // Enable networking.
 #define MICROPY_PY_NETWORK                  (1)
-#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "W5500S-EVB-PICO2"
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "W5100S-EVB-PICO2"
 
 // Wiznet HW config.
 #define MICROPY_HW_WIZNET_SPI_ID            (0)
