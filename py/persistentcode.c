@@ -402,7 +402,7 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
 
     #if MICROPY_EMIT_MACHINE_CODE
     } else {
-        const uint8_t *prelude_ptr;
+        const uint8_t *prelude_ptr = NULL;
         #if MICROPY_EMIT_NATIVE_PRELUDE_SEPARATE_FROM_MACHINE_CODE
         if (kind == MP_CODE_NATIVE_PY) {
             // Executable code cannot be accessed byte-wise on this architecture, so copy
