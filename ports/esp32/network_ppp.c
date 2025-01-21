@@ -100,7 +100,12 @@ static mp_obj_t ppp_make_new(mp_obj_t stream) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(esp_network_ppp_make_new_obj, ppp_make_new);
 
-static u32_t ppp_output_callback(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx) {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
+static u32_t ppp_output_callback(ppp_pcb *pcb, const void *data, u32_t len, void *ctx)
+#else
+static u32_t ppp_output_callback(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
+#endif
+{
     ppp_if_obj_t *self = ctx;
 
     mp_obj_t stream = self->stream;
@@ -109,7 +114,7 @@ static u32_t ppp_output_callback(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
     }
 
     int err;
-    return mp_stream_rw(stream, data, len, &err, MP_STREAM_RW_WRITE);
+    return mp_stream_rw(stream, (void *)data, len, &err, MP_STREAM_RW_WRITE);
 }
 
 static void pppos_client_task(void *self_in) {
