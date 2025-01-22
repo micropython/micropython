@@ -65,7 +65,9 @@
 
 #define LWIP_NUM_NETIF_CLIENT_DATA      LWIP_MDNS_RESPONDER
 #define MEMP_NUM_UDP_PCB                (4 + LWIP_MDNS_RESPONDER)
-#define MEMP_NUM_SYS_TIMEOUT            (LWIP_NUM_SYS_TIMEOUT_INTERNAL + LWIP_MDNS_RESPONDER)
+
+// The mDNS responder requires 5 timers per IP version plus 2 others. Not having enough silently breaks it.
+#define MEMP_NUM_SYS_TIMEOUT            (LWIP_NUM_SYS_TIMEOUT_INTERNAL + (LWIP_MDNS_RESPONDER * (2 + (5 * (LWIP_IPV4 + LWIP_IPV6)))))
 
 #define SO_REUSE                        1
 #define TCP_LISTEN_BACKLOG              1
