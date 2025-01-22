@@ -209,13 +209,13 @@ The following methods are not part of the core Pin API and only implemented on c
 
    Set pin to "0" output level.
 
-   Availability: nrf, rp2, stm32 ports.
+   Availability: mimxrt, nrf, renesas-ra, rp2, samd, stm32 ports.
 
 .. method:: Pin.high()
 
    Set pin to "1" output level.
 
-   Availability: nrf, rp2, stm32 ports.
+   Availability: mimxrt, nrf, renesas-ra, rp2, samd, stm32 ports.
 
 .. method:: Pin.mode([mode])
 
@@ -242,7 +242,7 @@ The following methods are not part of the core Pin API and only implemented on c
 
    Toggle output pin from "0" to "1" or vice-versa.
 
-   Availability: mimxrt, samd, rp2 ports.
+   Availability: cc3200, esp32, esp8266, mimxrt, rp2, samd ports.
 
 Constants
 ---------
