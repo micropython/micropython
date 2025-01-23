@@ -694,6 +694,7 @@ static inline void asm_rv32_opcode_xori(asm_rv32_t *state, mp_uint_t rd, mp_uint
 #define REG_LOCAL_1 ASM_RV32_REG_S3
 #define REG_LOCAL_2 ASM_RV32_REG_S4
 #define REG_LOCAL_3 ASM_RV32_REG_S5
+#define REG_ZERO ASM_RV32_REG_ZERO
 
 void asm_rv32_meta_comparison_eq(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd);
 void asm_rv32_meta_comparison_ne(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd);
@@ -756,6 +757,7 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_
 #define ASM_STORE_REG_REG(state, rs1, rs2) ASM_STORE32_REG_REG(state, rs1, rs2)
 #define ASM_SUB_REG_REG(state, rd, rs) asm_rv32_opcode_sub(state, rd, rd, rs)
 #define ASM_XOR_REG_REG(state, rd, rs) asm_rv32_emit_optimised_xor(state, rd, rs)
+#define ASM_CLR_REG(state, rd)
 
 #endif
 
