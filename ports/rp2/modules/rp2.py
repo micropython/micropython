@@ -26,7 +26,7 @@ class PIOASMEmit:
         out_init=None,
         set_init=None,
         sideset_init=None,
-        sideset_pindirs=False,
+        side_pindir=False,
         in_shiftdir=PIO.SHIFT_LEFT,
         out_shiftdir=PIO.SHIFT_LEFT,
         autopush=False,
@@ -40,7 +40,7 @@ class PIOASMEmit:
         from array import array
 
         self.labels = {}
-        execctrl = sideset_pindirs << 29
+        execctrl = side_pindir << 29
         shiftctrl = (
             fifo_join << 30
             | (pull_thresh & 0x1F) << 25
