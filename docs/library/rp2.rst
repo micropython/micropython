@@ -37,8 +37,8 @@ For running PIO programs, see :class:`rp2.StateMachine`.
       be at most 5.
     - *sideset_init* configures the pins used for ``.side()`` modifiers. There
       can be at most 5.
-    - *side_pindir* configures whether ``.side()`` modifiers are used for
-      pin directions instead of pin values.
+    - *side_pindir* when set to ``True`` configures ``.side()`` modifiers to be
+      used for pin directions, instead of pin values (the default, when ``False``).
 
     The following parameters are used by default, but can be overridden in
     `StateMachine.init()`:
