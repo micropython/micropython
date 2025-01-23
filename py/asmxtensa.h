@@ -143,6 +143,14 @@ static inline void asm_xtensa_op_addi(asm_xtensa_t *as, uint reg_dest, uint reg_
     asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRI8(2, 12, reg_src, reg_dest, imm8 & 0xff));
 }
 
+static inline void asm_xtensa_op_addx2(asm_xtensa_t *as, uint reg_dest, uint reg_src_a, uint reg_src_b) {
+    asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRR(0, 0, 9, reg_dest, reg_src_a, reg_src_b));
+}
+
+static inline void asm_xtensa_op_addx4(asm_xtensa_t *as, uint reg_dest, uint reg_src_a, uint reg_src_b) {
+    asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRR(0, 0, 10, reg_dest, reg_src_a, reg_src_b));
+}
+
 static inline void asm_xtensa_op_and(asm_xtensa_t *as, uint reg_dest, uint reg_src_a, uint reg_src_b) {
     asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRR(0, 0, 1, reg_dest, reg_src_a, reg_src_b));
 }
