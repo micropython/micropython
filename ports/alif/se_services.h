@@ -37,6 +37,8 @@ uint32_t se_services_enable_clock(clock_enable_t clock, bool enable);
 uint32_t se_services_select_pll_source(pll_source_t source, pll_target_t target);
 uint32_t se_services_get_run_profile(run_profile_t *profile);
 uint32_t se_services_set_run_profile(run_profile_t *profile);
+uint32_t se_services_get_off_profile(off_profile_t *profile);
+uint32_t se_services_set_off_profile(off_profile_t *profile);
 
 uint32_t se_services_boot_process_toc_entry(const uint8_t *image_id);
 uint32_t se_services_boot_cpu(uint32_t cpu_id, uint32_t address);

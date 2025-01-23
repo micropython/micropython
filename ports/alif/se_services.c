@@ -192,6 +192,18 @@ uint32_t se_services_set_run_profile(run_profile_t *profile) {
     return error_code;
 }
 
+uint32_t se_services_get_off_profile(off_profile_t *profile) {
+    uint32_t error_code;
+    SERVICES_get_off_cfg(se_services_handle, profile, &error_code);
+    return error_code;
+}
+
+uint32_t se_services_set_off_profile(off_profile_t *profile) {
+    uint32_t error_code;
+    SERVICES_set_off_cfg(se_services_handle, profile, &error_code);
+    return error_code;
+}
+
 uint32_t se_services_boot_process_toc_entry(const uint8_t *image_id) {
     uint32_t error_code;
     SERVICES_boot_process_toc_entry(se_services_handle, image_id, &error_code);
