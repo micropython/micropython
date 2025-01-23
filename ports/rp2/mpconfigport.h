@@ -172,6 +172,7 @@
 #define MICROPY_SSL_MBEDTLS                     (1)
 #define MICROPY_PY_LWIP_PPP                     (MICROPY_PY_NETWORK_PPP_LWIP)
 #define MICROPY_PY_LWIP_SOCK_RAW                (MICROPY_PY_LWIP)
+#define MICROPY_PY_FRAMEBUF_ALL_FONTS           (1)
 
 // Hardware timer alarm index. Available range 0-3.
 // Number 3 is currently used by pico-sdk (PICO_TIME_DEFAULT_ALARM_POOL_HARDWARE_ALARM_NUM)
