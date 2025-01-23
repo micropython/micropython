@@ -1,0 +1,16 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "USB"
+    ],
+    "images": [
+        "generic_board.jpg"
+    ],
+    "mcu": "samd21",
+    "vendor": "Microchip",
+    "product": "Generic SAMD21J18",
+    "thumbnail": ""
+}
