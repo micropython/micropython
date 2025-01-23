@@ -567,6 +567,66 @@ The default devices at the board are:
 - SPI 0 at pins PA06/PA09/PA08, labelled D4, D2 and D0
 - DAC output on pin PA02, labelled D1
 
+Adafruit QT PY pin assignment table
+-----------------------------------
+
+=== ==== ============ ==== ==== ====== ====== ====== ======
+Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
+=== ==== ============ ==== ==== ====== ====== ====== ======
+  2 PA02           A0   2    0     -      -      -      -
+  3 PA03           A1   3    1     -      -      -      -
+  4 PA04           A2   4    4     -     0/0    0/0     -
+  5 PA05           A3   5    5     -     0/1    0/1     -
+  7 PA07           RX   7    7     -     0/3    1/1     -
+  6 PA06           TX   6    6     -     0/2    1/0     -
+  8 PA08     FLASH_CS   -   16    0/0    2/0    0/0    1/2
+ 19 PA19   FLASH_MISO   3    -    1/3    3/3    3/1    0/3
+ 22 PA22   FLASH_MOSI   6    -    3/0    5/0    4/0    0/4
+ 23 PA23    FLASH_SCK   7    -    3/1    5/1    4/1    0/5
+  9 PA09         MISO   9   17    0/1    2/1    0/1    1/3
+ 10 PA10         MOSI  10   18    0/2    2/2    1/0    0/2
+ 18 PA18       NEOPIX   2    -    1/2    3/2    3/0    0/2
+ 15 PA15      NEO_PWR  15    -    2/3    4/3    3/1    0/5
+ 11 PA11          SCK  11   19    0/3    2/3    1/1    0/3
+ 17 PA17          SCL   1    -    1/1    3/1    2/1    0/7
+ 16 PA16          SDA   0    -    1/0    3/0    2/0    0/6
+ 30 PA30        SWCLK  10    -     -     1/2    1/0     -
+ 31 PA31        SWDIO  11    -     -     1/3    1/1     -
+ 24 PA24       USB_DM  12    -    3/2    5/2    5/0    1/2
+ 25 PA25       USB_DP  13    -    3/3    5/3    5/1    1/3
+=== ==== ============ ==== ==== ====== ====== ====== ======
+
+For the definition of the table columns see the explanation at the table for
+Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
+
+The default devices at the board are:
+
+- UART 0 at pins PA07/PA06, labelled RX/TX
+- I2C 1 at pins PA16/PA17, labelled SDA/SCL
+- SPI 0 at pins PA09/PA10/PA11, labelled MISO, MOSI and SCK
+- DAC output on pin PA02, labelled A0
+
+Adafruit NeoKey Trinkey pin assignment table
+--------------------------------------------
+
+=== ==== ============ ==== ==== ====== ====== ====== ======
+Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
+=== ==== ============ ==== ==== ====== ====== ====== ======
+ 15 PA15     NEOPIXEL  15    -    2/3    4/3    3/1    0/5
+ 30 PA30        SWCLK  10    -     -     1/2    1/0     -
+ 31 PA31        SWDIO  11    -     -     1/3    1/1     -
+ 18 PA18       SWITCH   2    -    1/2    3/2    3/0    0/2
+  7 PA07        TOUCH   7    7     -     0/3    1/1     -
+ 24 PA24       USB_DM  12    -    3/2    5/2    5/0    1/2
+ 25 PA25       USB_DP  13    -    3/3    5/3    5/1    1/3
+=== ==== ============ ==== ==== ====== ====== ====== ======
+
+For the definition of the table columns see the explanation at the table for
+Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
+
+The board does not provide access to UART, I2C, SPI or DAC.
+
+
 SAMD21 Xplained PRO pin assignment table
 ----------------------------------------
 
