@@ -189,11 +189,14 @@ test_full: $(BUILD)/firmware.elf
 	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) --via-mpy
 	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) --via-mpy --emit native
 
+# "btree" currently does not build for rv32imc (Picolibc TLS incompatibility).
 .PHONY: test_natmod
 test_natmod: $(BUILD)/firmware.elf
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	# "btree" cannot build against Picolibc right now.
-	cd $(TOP)/tests && ./run-natmodtests.py -p -d execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(RUN_NATMODTESTS_ARGS) extmod/{deflate,framebuf,heapq,random_basic,re}*.py
+	cd $(TOP)/tests && \
+		for natmod in deflate framebuf heapq random_basic re; do \
+		./run-natmodtests.py -p -d execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" extmod/$$natmod*.py; \
+		done
 
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(OBJ)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
