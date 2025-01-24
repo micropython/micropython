@@ -40,6 +40,8 @@ endif
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
+GIT_SUBMODULES += lib/berkeley-db-1.xx
+
 CFLAGS += -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE)
 
 ################################################################################
