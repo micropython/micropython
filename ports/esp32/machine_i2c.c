@@ -146,12 +146,15 @@ static void machine_hw_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 }
 
 mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    MP_MACHINE_I2C_CHECK_FOR_LEGACY_SOFTI2C_CONSTRUCTION(n_args, n_kw, all_args);
+    // Create a SoftI2C instance if no id is specified (or is -1) but other arguments are given
+    if (n_args != 0) {
+        MP_MACHINE_I2C_CHECK_FOR_LEGACY_SOFTI2C_CONSTRUCTION(n_args, n_kw, all_args);
+    }
 
     // Parse args
     enum { ARG_id, ARG_scl, ARG_sda, ARG_freq, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = I2C_NUM_0} },
         { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
@@ -161,7 +164,9 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // Get I2C bus
-    mp_int_t i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
+    mp_int_t i2c_id = args[ARG_id].u_int;
+
+    // Check if the I2C bus is valid
     if (!(I2C_NUM_0 <= i2c_id && i2c_id < I2C_NUM_MAX)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
     }
