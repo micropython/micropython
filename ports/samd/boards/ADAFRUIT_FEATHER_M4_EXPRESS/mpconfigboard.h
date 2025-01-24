@@ -5,3 +5,26 @@
 #define MICROPY_HW_MCU_OSC32KULP    (1)
 
 #define MICROPY_HW_QSPIFLASH        GD25Q16C
+
+#define MICROPY_HW_WIFI_SPI_ID     (1)
+#define MICROPY_HW_WIFI_SPI_BAUDRATE (8000000)
+
+#define MICROPY_HW_WIFI_SPI_MOSI   (55)
+#define MICROPY_HW_WIFI_SPI_MISO   (54)
+#define MICROPY_HW_WIFI_SPI_SCK    (17)
+
+#define MICROPY_HW_NINA_ACK        (21)
+#define MICROPY_HW_NINA_CS         (23)
+#define MICROPY_HW_NINA_RESET      (22)
+
+// defines for BLE
+#define MICROPY_PY_BLUETOOTH_NINAW10 (1)
+
+#define MICROPY_HW_BLE_UART_ID       (5)
+#define MICROPY_HW_BLE_UART_BAUDRATE (115200)
+
+#define MICROPY_HW_BLE_UART_TX       (48)
+#define MICROPY_HW_BLE_UART_RX       (49)
+
+#define MICROPY_HW_NINA_RTS          (55)
+#define MICROPY_HW_NINA_CTS          (21)
