@@ -50,7 +50,9 @@
 ///
 /// This module provides network drivers and routing configuration.
 
+#if !defined(MICROPY_PY_NETWORK_COUNTRY)
 char mod_network_country_code[2] = "XX";
+#endif
 
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #error "MICROPY_PY_NETWORK_HOSTNAME_DEFAULT must be set in mpconfigport.h or mpconfigboard.h"
@@ -109,6 +111,9 @@ MP_REGISTER_ROOT_POINTER(mp_obj_list_t mod_network_nic_list);
 #endif // MICROPY_PORT_NETWORK_INTERFACES
 
 static mp_obj_t network_country(size_t n_args, const mp_obj_t *args) {
+    #if defined(MICROPY_PY_NETWORK_COUNTRY)
+    return MICROPY_PY_NETWORK_COUNTRY(n_args, args);
+    #else
     if (n_args == 0) {
         return mp_obj_new_str(mod_network_country_code, 2);
     } else {
@@ -121,6 +126,7 @@ static mp_obj_t network_country(size_t n_args, const mp_obj_t *args) {
         mod_network_country_code[1] = str[1];
         return mp_const_none;
     }
+    #endif
 }
 // TODO: Non-static to allow backwards-compatible pyb.country.
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_country_obj, 0, 1, network_country);
