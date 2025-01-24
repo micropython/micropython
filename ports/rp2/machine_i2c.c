@@ -97,7 +97,11 @@ static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_freq, ARG_scl, ARG_sda, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        #ifdef PICO_DEFAULT_I2C
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = PICO_DEFAULT_I2C} },
+        #else
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = -1} },
+        #endif
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
         { MP_QSTR_scl, MICROPY_I2C_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_sda, MICROPY_I2C_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -108,8 +112,9 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // Get I2C bus.
-    int i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
+    int i2c_id = args[ARG_id].u_int;
+
+    // Check if the I2C bus is valid
     if (i2c_id < 0 || i2c_id >= MP_ARRAY_SIZE(machine_i2c_obj)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
     }
