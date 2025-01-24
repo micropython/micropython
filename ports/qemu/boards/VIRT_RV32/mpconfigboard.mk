@@ -9,5 +9,3 @@ LDSCRIPT = mcu/rv32/virt.ld
 SRC_BOARD_O += shared/runtime/gchelper_native.o shared/runtime/gchelper_rv32i.o
 
 MPY_CROSS_FLAGS += -march=rv32imc
-
-RUN_NATMODTESTS_ARGS = --arch rv32imc

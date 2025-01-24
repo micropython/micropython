@@ -105,9 +105,7 @@ can also be tested with this command (this is currently supported only for the
     $ make test_natmod
 
 The same remarks about manually running the tests apply for native modules, but
-`run-natmodtests.py` should be run instead of `run-tests.py`.  In this case you
-also have to explicitly pass the architecture you are running native modules to
-`run-natmodtests.py` ("--arch rv32imc" for the `VIRT_RV32` board).
+`run-natmodtests.py` should be run instead of `run-tests.py`.
 
 Extra make options
 ------------------
