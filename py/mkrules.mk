@@ -206,6 +206,9 @@ MICROPY_MANIFEST_MPY_LIB_DIR = $(MPY_LIB_DIR)
 MICROPY_MANIFEST_PORT_DIR = $(shell pwd)
 MICROPY_MANIFEST_BOARD_DIR = $(BOARD_DIR)
 MICROPY_MANIFEST_MPY_DIR = $(TOP)
+# Set variables for BOARD and BOARD_VARIANT by default
+MICROPY_MANIFEST_BOARD = $(BOARD)
+MICROPY_MANIFEST_BOARD_VARIANT = $(BOARD_VARIANT)
 
 # Find all MICROPY_MANIFEST_* variables and turn them into command line arguments.
 MANIFEST_VARIABLES = $(foreach var,$(filter MICROPY_MANIFEST_%, $(.VARIABLES)),-v "$(subst MICROPY_MANIFEST_,,$(var))=$($(var))")

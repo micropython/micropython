@@ -222,6 +222,7 @@ class ManifestFile:
             "add_library": self.add_library,
             "package": self.package,
             "module": self.module,
+            "resolve": self.resolve,
             "options": IncludeOptions(**kwargs),
         }
 
@@ -571,6 +572,12 @@ class ManifestFile:
         frozen directly.
         """
         self._freeze_internal(path, script, exts=(".mpy",), kind=KIND_FREEZE_MPY, opt=opt)
+
+    def resolve(self, name):
+        if name[0] == "$" and name[1:] in self._path_vars.keys():
+            return self._path_vars[name[1:]]
+        else:
+            return None
 
 
 # Generate a temporary file with a line appended to the end that adds __version__.
