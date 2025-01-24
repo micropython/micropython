@@ -49,7 +49,7 @@ static MP_DEFINE_CONST_FUN_OBJ_0(mod_current_tid_obj, mod_current_tid);
 
 #ifdef CONFIG_THREAD_ANALYZER
 static mp_obj_t mod_thread_analyze(void) {
-    thread_analyzer_print();
+    thread_analyzer_print(0);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_analyze_obj, mod_thread_analyze);
