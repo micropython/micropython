@@ -121,7 +121,7 @@ typedef struct _eth_t {
     int16_t (*phy_get_link_status)(uint32_t phy_addr);
 } eth_t;
 
-static eth_dma_t eth_dma __attribute__((aligned(16384)));
+static eth_dma_t eth_dma MICROPY_HW_ETH_DMA_ATTRIBUTE;
 
 eth_t eth_instance;
 
