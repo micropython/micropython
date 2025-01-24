@@ -164,11 +164,14 @@ def main():
         sys.exit(1)
 
     manifest = manifestfile.ManifestFile(manifestfile.MODE_FREEZE, VARS)
+    ts_newest = 0
 
     # Include top-level inputs, to generate the manifest
     for input_manifest in args.files:
         try:
             manifest.execute(input_manifest)
+            if input_manifest.endswith(".py"):
+                ts_newest = max(ts_newest, get_timestamp(input_manifest))
         except manifestfile.ManifestFileError as er:
             print('freeze error executing "{}": {}'.format(input_manifest, er.args[0]))
             sys.exit(1)
@@ -176,7 +179,6 @@ def main():
     # Process the manifest
     str_paths = []
     mpy_files = []
-    ts_newest = 0
     for result in manifest.files():
         if result.kind == manifestfile.KIND_FREEZE_AS_STR:
             str_paths.append(
