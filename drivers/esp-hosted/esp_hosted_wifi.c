@@ -243,7 +243,7 @@ static int esp_hosted_request(CtrlMsgId msg_id, void *ctrl_payload) {
 
 static CtrlMsg *esp_hosted_response(CtrlMsgId msg_id, uint32_t timeout) {
     CtrlMsg *ctrl_msg = NULL;
-    for (mp_uint_t start = mp_hal_ticks_ms(); ; mp_hal_delay_ms(10)) {
+    for (mp_uint_t start = mp_hal_ticks_ms(); ; mp_event_wait_ms(10)) {
         if (!esp_hosted_stack_empty(&esp_state.stack)) {
             ctrl_msg = esp_hosted_stack_pop(&esp_state.stack, true);
             if (ctrl_msg->msg_id == msg_id) {
@@ -264,8 +264,6 @@ static CtrlMsg *esp_hosted_response(CtrlMsgId msg_id, uint32_t timeout) {
         if ((mp_hal_ticks_ms() - start) >= timeout) {
             return NULL;
         }
-
-        MICROPY_EVENT_POLL_HOOK
     }
 
     // If message type is a response, check the response struct's return value.
