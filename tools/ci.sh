@@ -266,6 +266,7 @@ function ci_powerpc_build {
 # ports/qemu
 
 function ci_qemu_setup_arm {
+    ci_mpy_format_setup
     ci_gcc_arm_setup
     sudo apt-get update
     sudo apt-get install qemu-system
@@ -287,6 +288,10 @@ function ci_qemu_build_arm {
     make ${MAKEOPTS} -C ports/qemu clean
     make ${MAKEOPTS} -C ports/qemu test_full
     make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full
+
+    # Test building and running native .mpy with armv7m architecture.
+    ci_native_mpy_modules_build armv7m
+    make ${MAKEOPTS} -C ports/qemu test_natmod
 }
 
 function ci_qemu_build_rv32 {
@@ -480,20 +485,18 @@ function ci_native_mpy_modules_build {
     else
         arch=$1
     fi
-    make -C examples/natmod/features1 ARCH=$arch
+    for natmod in features1 features3 features4 deflate framebuf heapq random re
+    do
+        make -C examples/natmod/$natmod ARCH=$arch
+    done
+    # btree requires thread local storage support on rv32imc.
     if [ $arch != rv32imc ]; then
-        # This requires soft-float support on rv32imc.
-        make -C examples/natmod/features2 ARCH=$arch
-        # This requires thread local storage support on rv32imc.
         make -C examples/natmod/btree ARCH=$arch
     fi
-    make -C examples/natmod/features3 ARCH=$arch
-    make -C examples/natmod/features4 ARCH=$arch
-    make -C examples/natmod/deflate ARCH=$arch
-    make -C examples/natmod/framebuf ARCH=$arch
-    make -C examples/natmod/heapq ARCH=$arch
-    make -C examples/natmod/random ARCH=$arch
-    make -C examples/natmod/re ARCH=$arch
+    # features2 requires soft-float on armv7m and rv32imc.
+    if [ $arch != rv32imc ] && [ $arch != armv7m ]; then
+        make -C examples/natmod/features2 ARCH=$arch
+    fi
 }
 
 function ci_native_mpy_modules_32bit_build {
