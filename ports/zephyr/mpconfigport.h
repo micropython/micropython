@@ -68,7 +68,6 @@
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_UART     (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/zephyr/machine_uart.c"
-#define MICROPY_PY_STRUCT           (0)
 #ifdef CONFIG_NETWORKING
 // If we have networking, we likely want errno comfort
 #define MICROPY_PY_ERRNO            (1)
