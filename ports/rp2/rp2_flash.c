@@ -190,6 +190,8 @@ static mp_obj_t rp2_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
             // TODO check return value
             return MP_OBJ_NEW_SMALL_INT(0);
         }
+        case 0x1000:
+            return MP_OBJ_NEW_SMALL_INT(self->flash_base);
         default:
             return mp_const_none;
     }
