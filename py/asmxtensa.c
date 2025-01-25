@@ -38,6 +38,8 @@
 #define SIGNED_FIT8(x) ((((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80))
 #define SIGNED_FIT12(x) ((((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800))
 
+#define ET_OUT_OF_RANGE MP_ERROR_TEXT("ERROR: xtensa %q out of range")
+
 void asm_xtensa_end_pass(asm_xtensa_t *as) {
     as->num_const = as->cur_const;
     as->cur_const = 0;
@@ -150,7 +152,7 @@ void asm_xtensa_bccz_reg_label(asm_xtensa_t *as, uint cond, uint reg, uint label
     uint32_t dest = get_label_dest(as, label);
     int32_t rel = dest - as->base.code_offset - 4;
     if (as->base.pass == MP_ASM_PASS_EMIT && !SIGNED_FIT12(rel)) {
-        printf("ERROR: xtensa bccz out of range\n");
+        mp_raise_msg_varg(&mp_type_RuntimeError, ET_OUT_OF_RANGE, MP_QSTR_bccz);
     }
     asm_xtensa_op_bccz(as, cond, reg, rel);
 }
@@ -159,7 +161,7 @@ void asm_xtensa_bcc_reg_reg_label(asm_xtensa_t *as, uint cond, uint reg1, uint r
     uint32_t dest = get_label_dest(as, label);
     int32_t rel = dest - as->base.code_offset - 4;
     if (as->base.pass == MP_ASM_PASS_EMIT && !SIGNED_FIT8(rel)) {
-        printf("ERROR: xtensa bcc out of range\n");
+        mp_raise_msg_varg(&mp_type_RuntimeError, ET_OUT_OF_RANGE, MP_QSTR_bcc);
     }
     asm_xtensa_op_bcc(as, cond, reg1, reg2, rel);
 }
