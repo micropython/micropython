@@ -29,7 +29,6 @@
 // Board specific definitions
 #include "mpconfigboard.h"
 #include "fsl_common.h"
-#include "lib/nxp_driver/sdk/CMSIS/Include/core_cm7.h"
 
 uint32_t trng_random_u32(void);
 
