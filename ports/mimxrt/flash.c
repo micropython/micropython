@@ -43,14 +43,13 @@ void flash_init(void) {
 __attribute__((section(".ram_functions"))) status_t flash_erase_block(uint32_t erase_addr) {
     status_t status = kStatus_Fail;
 
-    SCB_CleanInvalidateDCache();
-    SCB_DisableDCache();
     __disable_irq();
+    SCB_DisableDCache();
 
     status = flexspi_nor_flash_erase_block(BOARD_FLEX_SPI, erase_addr);
 
-    __enable_irq();
     SCB_EnableDCache();
+    __enable_irq();
 
     return status;
 }
@@ -60,14 +59,13 @@ __attribute__((section(".ram_functions"))) status_t flash_erase_block(uint32_t e
 __attribute__((section(".ram_functions"))) status_t flash_erase_sector(uint32_t erase_addr) {
     status_t status = kStatus_Fail;
 
-    SCB_CleanInvalidateDCache();
-    SCB_DisableDCache();
     __disable_irq();
+    SCB_DisableDCache();
 
     status = flexspi_nor_flash_erase_sector(BOARD_FLEX_SPI, erase_addr);
 
-    __enable_irq();
     SCB_EnableDCache();
+    __enable_irq();
 
     return status;
 }
@@ -84,8 +82,6 @@ __attribute__((section(".ram_functions"))) status_t flash_write_block(uint32_t d
         status = kStatus_Success;  // Nothing to do
     } else {
 
-        SCB_CleanInvalidateDCache();
-        SCB_DisableDCache();
 
         // write data in chunks not crossing a page boundary
         do {
@@ -96,7 +92,11 @@ __attribute__((section(".ram_functions"))) status_t flash_write_block(uint32_t d
             }
 
             __disable_irq();
+            SCB_DisableDCache();
+
             status = flexspi_nor_flash_page_program(BOARD_FLEX_SPI, dest_addr, (uint32_t *)src, write_length);
+
+            SCB_EnableDCache();
             __enable_irq();
 
             // Update remaining data length
@@ -107,7 +107,6 @@ __attribute__((section(".ram_functions"))) status_t flash_write_block(uint32_t d
             dest_addr += write_length;
         } while ((length > 0) && (status == kStatus_Success));
 
-        SCB_EnableDCache();
 
     }
     return status;
