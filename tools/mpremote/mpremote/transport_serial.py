@@ -98,11 +98,14 @@ class SerialTransport(Transport):
     def close(self):
         self.serial.close()
 
-    def read_until(self, min_num_bytes, ending, timeout=10, data_consumer=None):
+    def read_until(
+        self, min_num_bytes, ending, timeout=10, data_consumer=None, timeout_overall=None
+    ):
         """
         min_num_bytes: Obsolete.
         ending: Return if 'ending' matches.
         timeout [s]: Return if timeout between characters. None: Infinite timeout.
+        timeout_overall [s]: Return not later than timeout_overall. None: Infinite timeout.
         data_consumer: Use callback for incoming characters.
             If data_consumer is used then data is not accumulated and the ending must be 1 byte long
 
@@ -110,9 +113,10 @@ class SerialTransport(Transport):
         """
         assert data_consumer is None or len(ending) == 1
         assert isinstance(timeout, (type(None), int, float))
+        assert isinstance(timeout_overall, (type(None), int, float))
 
         data = b""
-        begin_char_s = time.monotonic()
+        begin_overall_s = begin_char_s = time.monotonic()
         while True:
             if data.endswith(ending):
                 break
@@ -127,10 +131,15 @@ class SerialTransport(Transport):
             else:
                 if timeout is not None and time.monotonic() >= begin_char_s + timeout:
                     break
+                if (
+                    timeout_overall is not None
+                    and time.monotonic() >= begin_overall_s + timeout_overall
+                ):
+                    break
                 time.sleep(0.01)
         return data
 
-    def enter_raw_repl(self, soft_reset=True):
+    def enter_raw_repl(self, soft_reset=True, timeout_overall=10):
         self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
 
         # flush input (without relying on serial.flushInput())
@@ -142,7 +151,9 @@ class SerialTransport(Transport):
         self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
 
         if soft_reset:
-            data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n>")
+            data = self.read_until(
+                1, b"raw REPL; CTRL-B to exit\r\n>", timeout_overall=timeout_overall
+            )
             if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
                 print(data)
                 raise TransportError("could not enter raw repl")
@@ -152,12 +163,12 @@ class SerialTransport(Transport):
             # Waiting for "soft reboot" independently to "raw REPL" (done below)
             # allows boot.py to print, which will show up after "soft reboot"
             # and before "raw REPL".
-            data = self.read_until(1, b"soft reboot\r\n")
+            data = self.read_until(1, b"soft reboot\r\n", timeout_overall=timeout_overall)
             if not data.endswith(b"soft reboot\r\n"):
                 print(data)
                 raise TransportError("could not enter raw repl")
 
-        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
+        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n", timeout_overall=timeout_overall)
         if not data.endswith(b"raw REPL; CTRL-B to exit\r\n"):
             print(data)
             raise TransportError("could not enter raw repl")
