@@ -41,11 +41,11 @@ size_t mp_parse_num_base(const char *str, size_t len, int *base) {
     if (c == '0') {
         c = *(p++) | 32;
         int b = *base;
-        if (c == 'x' && !(b & ~16)) {
+        if (c == 'x' && (b == 0 || b == 16)) {
             *base = 16;
-        } else if (c == 'o' && !(b & ~8)) {
+        } else if (c == 'o' && (b == 0 || b == 8)) {
             *base = 8;
-        } else if (c == 'b' && !(b & ~2)) {
+        } else if (c == 'b' && (b == 0 || b == 2)) {
             *base = 2;
         } else {
             p -= 2;
