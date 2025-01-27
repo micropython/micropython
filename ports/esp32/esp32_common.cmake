@@ -179,6 +179,13 @@ list(APPEND IDF_COMPONENTS
 	wpa_supplicant
 )
 
+# Provide the default LD fragment if not set
+if (MICROPY_USER_LDFRAGMENTS)
+    set(MICROPY_LDFRAGMENTS ${MICROPY_USER_LDFRAGMENTS})
+else()
+    set(MICROPY_LDFRAGMENTS linker.lf)
+endif()
+
 # Register the main IDF component.
 idf_component_register(
     SRCS
@@ -198,7 +205,7 @@ idf_component_register(
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
     LDFRAGMENTS
-        linker.lf
+        ${MICROPY_LDFRAGMENTS}
     REQUIRES
         ${IDF_COMPONENTS}
 )
