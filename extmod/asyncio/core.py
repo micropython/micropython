@@ -49,6 +49,9 @@ class SingletonGenerator:
             self.exc.__traceback__ = None
             raise self.exc
 
+    def send(self, x):
+        self.__next__()
+
 
 # Pause task execution for the given time (integer in milliseconds, uPy extension)
 # Use a SingletonGenerator to do it without allocating on the heap
