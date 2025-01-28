@@ -37,6 +37,7 @@
 #include "py/stream.h"
 #include "py/objstr.h"
 #include "py/reader.h"
+#include "py/gc.h"
 #include "extmod/vfs.h"
 
 // mbedtls_time_t
@@ -56,6 +57,10 @@
 #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/asn1.h"
+#endif
+
+#ifndef MICROPY_MBEDTLS_CONFIG_BARE_METAL
+#define MICROPY_MBEDTLS_CONFIG_BARE_METAL (0)
 #endif
 
 #define MP_STREAM_POLL_RDWR (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)
@@ -545,6 +550,16 @@ static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     mbedtls_ssl_init(&o->ssl);
 
     ret = mbedtls_ssl_setup(&o->ssl, &ssl_context->conf);
+    #if !MICROPY_MBEDTLS_CONFIG_BARE_METAL
+    if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
+        // If mbedTLS relies on platform libc heap for buffers (i.e. esp32
+        // port), then run a GC pass and then try again. This is useful because
+        // it may free a Python object (like an old SSL socket) whose finaliser
+        // frees some platform-level heap.
+        gc_collect();
+        ret = mbedtls_ssl_setup(&o->ssl, &ssl_context->conf);
+    }
+    #endif
     if (ret != 0) {
         goto cleanup;
     }
