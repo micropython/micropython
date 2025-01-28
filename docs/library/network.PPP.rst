@@ -5,7 +5,12 @@ class PPP -- create network connections over serial PPP
 =======================================================
 
 This class allows you to create a network connection over a serial port using
-the PPP protocol.  It is only available on selected ports and boards.
+the PPP protocol.
+
+.. note:: Currently only the esp32 port has PPP support enabled in the default
+          firmware build. PPP support can be enabled in custom builds of the
+          stm32 and rp2 ports by enabling networking support and setting
+          ``MICROPY_PY_NETWORK_PPP_LWIP`` to 1.
 
 Example usage::
 
