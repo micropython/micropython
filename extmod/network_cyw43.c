@@ -98,17 +98,17 @@ static mp_obj_t network_cyw43_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     if (n_args == 0 || mp_obj_get_int(args[0]) == MOD_NETWORK_STA_IF) {
         #if LWIP_MDNS_RESPONDER
-            // NOTE: interface is removed in network_cyw43_deinit
-            struct netif *netif = &network_cyw43_wl_sta.cyw->netif[network_cyw43_wl_sta.itf];
-            mdns_resp_add_netif(netif, mod_network_hostname_data);
+        // NOTE: interface is removed in network_cyw43_deinit
+        struct netif *netif = &network_cyw43_wl_sta.cyw->netif[network_cyw43_wl_sta.itf];
+        mdns_resp_add_netif(netif, mod_network_hostname_data);
         #endif
 
         return MP_OBJ_FROM_PTR(&network_cyw43_wl_sta);
     } else {
         #if LWIP_MDNS_RESPONDER
-            // NOTE: interface is removed in network_cyw43_deinit
-            struct netif *netif = &network_cyw43_wl_ap.cyw->netif[network_cyw43_wl_ap.itf];
-            mdns_resp_add_netif(netif, mod_network_hostname_data);
+        // NOTE: interface is removed in network_cyw43_deinit
+        struct netif *netif = &network_cyw43_wl_ap.cyw->netif[network_cyw43_wl_ap.itf];
+        mdns_resp_add_netif(netif, mod_network_hostname_data);
         #endif
 
         return MP_OBJ_FROM_PTR(&network_cyw43_wl_ap);
@@ -146,7 +146,7 @@ static uint32_t get_country_code(void) {
 static mp_obj_t network_cyw43_deinit(mp_obj_t self_in) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(self_in);
     #if LWIP_MDNS_RESPONDER
-        mdns_resp_remove_netif(&self->cyw->netif[self->itf]);
+    mdns_resp_remove_netif(&self->cyw->netif[self->itf]);
     #endif
 
     cyw43_deinit(self->cyw);
