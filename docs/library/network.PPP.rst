@@ -1,6 +1,11 @@
 .. currentmodule:: network
 .. _network.PPP:
 
+.. note:: Currently only the esp32 port has PPP support enabled in the default
+          build. PPP support can be enabled in custom builds of the stm32 and
+          rp2 ports by enabling networking support and setting
+          ``MICROPY_PY_NETWORK_PPP_LWIP`` to 1.
+
 class PPP -- create network connections over serial PPP
 =======================================================
 

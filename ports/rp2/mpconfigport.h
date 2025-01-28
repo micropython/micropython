@@ -212,6 +212,10 @@
 #ifndef MICROPY_PY_WEBREPL
 #define MICROPY_PY_WEBREPL              (1)
 #endif
+
+#ifndef MICROPY_PY_NETWORK_PPP_LWIP
+#define MICROPY_PY_NETWORK_PPP_LWIP     (0)
+#endif
 #endif
 
 #if MICROPY_PY_NETWORK_CYW43
