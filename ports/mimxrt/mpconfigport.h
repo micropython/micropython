@@ -151,7 +151,17 @@ uint32_t trng_random_u32(void);
 #endif
 
 #define MICROPY_HW_ENABLE_USBDEV            (1)
+// Enable USB-CDC serial port
+#ifndef MICROPY_HW_USB_CDC
 #define MICROPY_HW_USB_CDC                  (1)
+#endif
+// Enable USB Mass Storage with FatFS filesystem.
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC                  (0)
+#if MICROPY_PY_MACHINE_SDCARD && !defined(MICROPY_HW_SDCARD_SDMMC)
+#define MICROPY_HW_SDCARD_SDMMC             (1)
+#endif
+#endif
 
 // Hooks to add builtins
 
