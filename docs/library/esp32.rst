@@ -177,11 +177,11 @@ used to transmit or receive many other types of digital signals::
     import esp32
     from machine import Pin
 
-    r = esp32.RMT(0, pin=Pin(18), clock_div=8)
-    r  # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8, idle_level=0)
+    r = esp32.RMT(pin=Pin(18), clock_div=8)
+    r  # RMT(pin=18, source_freq=80000000, clock_div=8, idle_level=0)
 
     # To apply a carrier frequency to the high output
-    r = esp32.RMT(0, pin=Pin(18), clock_div=8, tx_carrier=(38000, 50, 1))
+    r = esp32.RMT(pin=Pin(18), clock_div=8, tx_carrier=(38000, 50, 1))
 
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
     r.write_pulses((1, 20, 2, 40), 0)  # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
@@ -210,13 +210,17 @@ For more details see Espressif's `ESP-IDF RMT documentation.
    *beta feature* and the interface may change in the future.
 
 
-.. class:: RMT(channel, *, pin=None, clock_div=8, idle_level=False, tx_carrier=None)
+.. class:: RMT(channel, *, pin=None, clock_div=8, idle_level=False, num_symbols=64, tx_carrier=None)
 
     This class provides access to one of the eight RMT channels. *channel* is
-    required and identifies which RMT channel (0-7) will be configured. *pin*,
-    also required, configures which Pin is bound to the RMT channel. *clock_div*
+    optional and a dummy parameter for backward compatibility. *pin* is required
+    and configures which Pin is bound to the RMT channel. *clock_div*
     is an 8-bit clock divider that divides the source clock (80MHz) to the RMT
-    channel allowing the resolution to be specified. *idle_level* specifies
+    channel allowing the resolution to be specified. *num_symbols* specifies the
+    RMT buffer allocated for this channel (minimum 64), from a small pool of
+    512 symbols that are shared by all channels. This buffer does not limit the
+    size of the pulse train that you can send, but bigger buffers reduce the
+    CPU load and the potential of glitches/imprecise pulse lengths. *idle_level* specifies
     what level the output will be when no transmission is in progress and can
     be any value that converts to a boolean, with ``True`` representing high
     voltage and ``False`` representing low.
@@ -241,14 +245,38 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     Returns ``True`` if the channel is idle or ``False`` if a sequence of
     pulses started with `RMT.write_pulses` is being transmitted. If the
     *timeout* keyword argument is given then block for up to this many
-    milliseconds for transmission to complete.
+    milliseconds for transmission to complete. Timeout of -1 blocks until
+    transmission is complete (and blocks forever if loop is enabled).
 
 .. method:: RMT.loop(enable_loop)
 
     Configure looping on the channel. *enable_loop* is bool, set to ``True`` to
     enable looping on the *next* call to `RMT.write_pulses`. If called with
     ``False`` while a looping sequence is currently being transmitted then the
-    current loop iteration will be completed and then transmission will stop.
+    transmission will stop. (Method deprecated by `RMT.loop_count`.)
+
+.. method:: RMT.loop_count(n)
+
+    Configure looping on the channel. *n* is int. Affects the *next* call to
+    `RMT.write_pulses`. Set to ``0`` to disable looping, ``-1`` to enable
+    infinite looping, or a positive number to loop for a given number of times.
+    If *n* is changed, the current transmission is stopped.
+
+    Note: looping for a finite number of times is not supported by all flavors
+    of ESP32.
+
+.. method:: RMT.disable()
+
+    Disable RMT channel. This is useful to stop an infinite transmission loop.
+    The current loop is finished and transmission stops.
+    The object is not invalidated, and the RMT channel is again enabled when a new
+    transmission is started.
+
+.. method:: RMT.release()
+
+    Release all RMT resources and invalidate the object. All subsequent method
+    calls will raise OSError. Useful to free RMT resources without having to wait
+    for the object to be garbage-collected.
 
 .. method:: RMT.write_pulses(duration, data=True)
 
@@ -277,18 +305,6 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     end of the current loop iteration before immediately beginning to loop the
     new sequence of pulses. Looping sequences longer than 126 pulses is not
     supported by the hardware.
-
-.. staticmethod:: RMT.bitstream_channel([value])
-
-    Select which RMT channel is used by the `machine.bitstream` implementation.
-    *value* can be ``None`` or a valid RMT channel number.  The default RMT
-    channel is the highest numbered one.
-
-    Passing in ``None`` disables the use of RMT and instead selects a bit-banging
-    implementation for `machine.bitstream`.
-
-    Passing in no argument will not change the channel.  This function returns
-    the current channel number.
 
 Constants
 ---------
