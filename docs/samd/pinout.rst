@@ -567,6 +567,66 @@ The default devices at the board are:
 - SPI 0 at pins PA06/PA09/PA08, labelled D4, D2 and D0
 - DAC output on pin PA02, labelled D1
 
+Adafruit QT PY pin assignment table
+-----------------------------------
+
+=== ==== ============ ==== ==== ====== ====== ====== ======
+Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
+=== ==== ============ ==== ==== ====== ====== ====== ======
+  2 PA02           A0   2    0     -      -      -      -
+  3 PA03           A1   3    1     -      -      -      -
+  4 PA04           A2   4    4     -     0/0    0/0     -
+  5 PA05           A3   5    5     -     0/1    0/1     -
+  7 PA07           RX   7    7     -     0/3    1/1     -
+  6 PA06           TX   6    6     -     0/2    1/0     -
+  8 PA08     FLASH_CS   -   16    0/0    2/0    0/0    1/2
+ 19 PA19   FLASH_MISO   3    -    1/3    3/3    3/1    0/3
+ 22 PA22   FLASH_MOSI   6    -    3/0    5/0    4/0    0/4
+ 23 PA23    FLASH_SCK   7    -    3/1    5/1    4/1    0/5
+  9 PA09         MISO   9   17    0/1    2/1    0/1    1/3
+ 10 PA10         MOSI  10   18    0/2    2/2    1/0    0/2
+ 18 PA18       NEOPIX   2    -    1/2    3/2    3/0    0/2
+ 15 PA15      NEO_PWR  15    -    2/3    4/3    3/1    0/5
+ 11 PA11          SCK  11   19    0/3    2/3    1/1    0/3
+ 17 PA17          SCL   1    -    1/1    3/1    2/1    0/7
+ 16 PA16          SDA   0    -    1/0    3/0    2/0    0/6
+ 30 PA30        SWCLK  10    -     -     1/2    1/0     -
+ 31 PA31        SWDIO  11    -     -     1/3    1/1     -
+ 24 PA24       USB_DM  12    -    3/2    5/2    5/0    1/2
+ 25 PA25       USB_DP  13    -    3/3    5/3    5/1    1/3
+=== ==== ============ ==== ==== ====== ====== ====== ======
+
+For the definition of the table columns see the explanation at the table for
+Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
+
+The default devices at the board are:
+
+- UART 0 at pins PA07/PA06, labelled RX/TX
+- I2C 1 at pins PA16/PA17, labelled SDA/SCL
+- SPI 0 at pins PA09/PA10/PA11, labelled MISO, MOSI and SCK
+- DAC output on pin PA02, labelled A0
+
+Adafruit NeoKey Trinkey pin assignment table
+--------------------------------------------
+
+=== ==== ============ ==== ==== ====== ====== ====== ======
+Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
+=== ==== ============ ==== ==== ====== ====== ====== ======
+ 15 PA15     NEOPIXEL  15    -    2/3    4/3    3/1    0/5
+ 30 PA30        SWCLK  10    -     -     1/2    1/0     -
+ 31 PA31        SWDIO  11    -     -     1/3    1/1     -
+ 18 PA18       SWITCH   2    -    1/2    3/2    3/0    0/2
+  7 PA07        TOUCH   7    7     -     0/3    1/1     -
+ 24 PA24       USB_DM  12    -    3/2    5/2    5/0    1/2
+ 25 PA25       USB_DP  13    -    3/3    5/3    5/1    1/3
+=== ==== ============ ==== ==== ====== ====== ====== ======
+
+For the definition of the table columns see the explanation at the table for
+Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
+
+The board does not provide access to UART, I2C, SPI or DAC.
+
+
 SAMD21 Xplained PRO pin assignment table
 ----------------------------------------
 
@@ -874,6 +934,188 @@ The default devices at the board are:
 - I2C 5 at pins PA22/PA23, labelled SDA/SCL
 - SPI 4 at pins PB12/PB11/PB13, labelled MOSI, MISO and SCK
 - DAC output on pins PA02 and PA05, labelled A0 and A4
+
+Generic SAMD21x18 pin assignment table
+--------------------------------------
+
+=== ==== ============ ==== ==== ====== ====== ====== ======
+Pin GPIO Name/Package IRQ  ADC  Serial Serial TCC/TC TCC/TC
+=== ==== ============ ==== ==== ====== ====== ====== ======
+  0 PA00     EGJ        0    -     -     1/0    2/0     -
+  1 PA01     EGJ        1    -     -     1/1    2/1     -
+  2 PA02     EGJ        2    0     -      -      -      -
+  3 PA03     EGJ        3    1     -      -      -      -
+  4 PA04     EGJ        4    4     -     0/0    0/0     -
+  5 PA05     EGJ        5    5     -     0/1    0/1     -
+  6 PA06     EGJ        6    6     -     0/2    1/0     -
+  7 PA07     EGJ        7    7     -     0/3    1/1     -
+  8 PA08     EGJ        -   16    0/0    2/0    0/0    1/2
+  9 PA09     EGJ        9   17    0/1    2/1    0/1    1/3
+ 10 PA10     EGJ       10   18    0/2    2/2    1/0    0/2
+ 11 PA11     EGJ       11   19    0/3    2/3    1/1    0/3
+ 12 PA12      GJ       12    -    2/0    4/0    2/0    0/6
+ 13 PA13      GJ       13    -    2/1    4/1    2/0    0/7
+ 14 PA14     EGJ       14    -    2/2    4/2    3/0    0/4
+ 15 PA15     EGJ       15    -    2/3    4/3    3/1    0/5
+ 16 PA16     EGJ        0    -    1/0    3/0    2/0    0/6
+ 17 PA17     EGJ        1    -    1/1    3/1    2/1    0/7
+ 18 PA18     EGJ        2    -    1/2    3/2    3/0    0/2
+ 19 PA19     EGJ        3    -    1/3    3/3    3/1    0/3
+ 20 PA20      GJ        4    -    5/2    3/2    7/0    0/4
+ 21 PA21      GJ        5    -    5/3    3/3    7/1    0/7
+ 22 PA22     EGJ        6    -    3/0    5/0    4/0    0/4
+ 23 PA23     EGJ        7    -    3/1    5/1    4/1    0/5
+ 24 PA24  USB_DM       12    -    3/2    5/2    5/0    1/2
+ 25 PA25  USB_DP       13    -    3/3    5/3    5/1    1/3
+ 27 PA27     EGJ       15    -     -      -      -      -
+ 28 PA28     EGJ        8    -     -      -      -      -
+ 30 PA30   SWCLK       10    -     -     1/2    1/0     -
+ 31 PA31   SWDIO       11    -     -     1/3    1/1     -
+ 32 PB00       J        0    8     -     5/2    7/0     -
+ 33 PB01       J        1    9     -     5/3    7/1     -
+ 34 PB02      GJ        2   10     -     5/0    6/0     -
+ 35 PB03      GJ        3   11     -     5/1    6/1     -
+ 36 PB04       J        4   12     -      -      -      -
+ 37 PB05       J        5   13     -      -      -      -
+ 38 PB06       J        6   14     -      -      -      -
+ 39 PB07       J        7   15     -      -      -      -
+ 40 PB08      GJ        8    2     -     4/0    4/0     -
+ 41 PB09      GJ        9    3     -     4/1    4/1     -
+ 42 PB10      GJ       10    -     -     4/2    5/0    0/4
+ 43 PB11      GJ       11    -     -     4/3    5/1    0/5
+ 44 PB12       J       12    -    4/0     -     4/0    0/6
+ 45 PB13       J       13    -    4/1     -     4/1    0/7
+ 46 PB14       J       14    -    4/2     -     5/0     -
+ 47 PB15       J       15    -    4/3     -     5/1     -
+ 48 PB16       J        0    -    5/0     -     6/0    0/4
+ 49 PB17       J        1    -    5/1     -     6/1    0/5
+ 54 PB22      GJ        6    -     -     5/2    7/0     -
+ 55 PB23      GJ        7    -     -     5/3    7/1     -
+ 62 PB30       J       14    -     -     5/0    0/0    1/2
+ 63 PB31       J       15    -     -     5/1    0/1    1/3
+=== ==== ============ ==== ==== ====== ====== ====== ======
+
+For the definition of the table columns see the explanation at the table for
+Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
+
+The Package column indicates the package letter providing this pin. An entry
+EGJ tells for instance, that the pin is available for SAMD21E18, SAMD21G18 and
+SAMD21J18.
+
+
+Generic SAMD51x19 and SAM51x20 pin assignment table
+---------------------------------------------------
+
+For the definition of the table columns see the explanation at the table for
+Adafruit ItsyBitsy M4 Express :ref:`samd51_pinout_table`.
+
+=== ==== ============ ==== ==== ==== ====== ====== ===== ===== =====
+Pin GPIO Name/Package IRQ  ADC  ADC  Serial Serial  TC    PWM   PWM
+=== ==== ============ ==== ==== ==== ====== ====== ===== ===== =====
+  8 PA08    QSPI_D0     -    8    2    0/0    2/1   0/0   0/0   1/4
+  9 PA09    QSPI_D1     9    9    3    0/1    2/0   0/1   0/1   1/5
+ 10 PA10    QSPI_D2    10   10    -    0/2    2/2   1/0   0/2   1/6
+ 11 PA11    QSPI_D3    11   11    -    0/3    2/3   1/1   0/3   1/7
+ 42 PB10   QSPI_SCK    10    -    -     -     4/2   5/0   0/4   1/0
+ 23 PA23    USB_SOF     7    -    -    3/1    5/0   4/1   1/7   0/3
+ 24 PA24     USB_DM     8    -    -    3/2    5/2   5/0   2/2    -
+ 25 PA25     USB_DP     9    -    -    3/3    5/3   5/1    -     -
+  0 PA00      GJP       0    -    -     -     1/0   2/0    -     -
+  1 PA01      GJP       1    -    -     -     1/1   2/1    -     -
+  2 PA02      GJP       2    0    -     -      -     -     -     -
+  3 PA03      GJP       3   10    -     -      -     -     -     -
+  4 PA04      GJP       4    4    -     -     0/0   0/0    -     -
+  5 PA05      GJP       5    5    -     -     0/1   0/1    -     -
+  6 PA06      GJP       6    6    -     -     0/2   1/0    -     -
+  7 PA07      GJP       7    7    -     -     0/3   1/1    -     -
+ 12 PA12      GJP      12    -    -    2/0    4/1   2/0   0/6   1/2
+ 13 PA13      GJP      13    -    -    2/1    4/0   2/1   0/7   1/3
+ 14 PA14      GJP      14    -    -    2/2    4/2   3/0   2/0   1/2
+ 15 PA15      GJP      15    -    -    2/3    4/3   3/1   2/1   1/3
+ 16 PA16      GJP       0    -    -    1/0    3/1   2/0   1/0   0/4
+ 17 PA17      GJP       1    -    -    1/1    3/0   2/1   1/1   0/5
+ 18 PA18      GJP       2    -    -    1/2    3/2   3/0   1/2   0/6
+ 19 PA19      GJP       3    -    -    1/3    3/3   3/1   1/3   0/7
+ 20 PA20      GJP       4    -    -    5/2    3/2   7/0   1/4   0/0
+ 21 PA21      GJP       5    -    -    5/3    3/3   7/1   1/5   0/1
+ 22 PA22      GJP       6    -    -    3/0    5/1   4/0   1/6   0/2
+ 27 PA27      GJP      11    -    -     -      -     -     -     -
+ 30 PA30      SWCLK    14    -    -    7/2    1/2   6/0   2/0    -
+ 31 PA31      SWDIO    15    -    -    7/3    1/3   6/1   2/1    -
+ 32 PB00       JP       0   12    -     -     5/2   7/0    -     -
+ 33 PB01       JP       1   13    -     -     5/3   7/1    -     -
+ 34 PB02      GJP       2   14    -     -     5/0   6/0   2/2    -
+ 35 PB03      GJP       3   15    -     -     5/1   6/1    -     -
+ 36 PB04       JP       4    -    6     -      -     -     -     -
+ 37 PB05       JP       5    -    7     -      -     -     -     -
+ 38 PB06       JP       6    -    8     -      -     -     -     -
+ 39 PB07       JP       7    -    9     -      -     -     -     -
+ 40 PB08      GJP       8    2    0     -     4/0   4/0    -     -
+ 41 PB09      GJP       9    3    1     -     4/1   4/1    -     -
+ 44 PB12       JP      12    -    -    4/0     -    4/0   3/0   0/0
+ 45 PB13       JP      13    -    -    4/1     -    4/1   3/1   0/1
+ 46 PB14       JP      14    -    -    4/2     -    5/0   4/0   0/2
+ 47 PB15       JP      15    -    -    4/3     -    5/1   4/1   0/3
+ 48 PB16       JP       0    -    -    5/0     -    6/0   3/0   0/4
+ 49 PB17       JP       1    -    -    5/1     -    6/1   3/1   0/5
+ 50 PB18        P       2    -    -    5/2    7/2    -    1/0    -
+ 51 PB19        P       3    -    -    5/3    7/3    -    1/1    -
+ 52 PB20        P       4    -    -    3/0    7/1    -    1/2    -
+ 53 PB21        P       5    -    -    3/1    7/0    -    1/3    -
+ 54 PB22      GJP       6    -    -    1/2    5/2   7/0    -     -
+ 55 PB23      GJP       7    -    -    1/3    5/3   7/1    -     -
+ 56 PB24        P       8    -    -    0/0    2/1    -     -     -
+ 57 PB25        P       9    -    -    0/1    2/0    -     -     -
+ 58 PB26        P      12    -    -    2/0    4/1    -    1/2    -
+ 59 PB27        P      13    -    -    2/1    4/0    -    1/3    -
+ 60 PB28        P      14    -    -    2/2    4/2    -    1/4    -
+ 61 PB29        P      15    -    -    2/3    4/3    -    1/5    -
+ 62 PB30       JP      14    -    -    7/0    5/1   0/0   4/0   0/6
+ 63 PB31       JP      15    -    -    7/1    5/0   0/1   4/1   0/7
+ 64 PC00        P       0    -   10     -      -     -     -     -
+ 65 PC01        P       1    -   11     -      -     -     -     -
+ 66 PC02        P       2    -    4     -      -     -     -     -
+ 67 PC03        P       3    -    5     -      -     -     -     -
+ 68 PC04        P       4    -    -    6/0     -     -    0/0    -
+ 69 PC05        P       5    -    -    6/1     -     -     -     -
+ 70 PC06        P       6    -    -    6/2     -     -     -     -
+ 71 PC07        P       9    -    -    6/3     -     -     -     -
+ 74 PC10        P      10    -    -    6/2    7/2    -    0/0   1/4
+ 75 PC11        P      11    -    -    6/3    7/3    -    0/1   1/5
+ 76 PC12        P      12    -    -    7/0    6/1    -    0/2   1/6
+ 77 PC13        P      13    -    -    7/1    6/0    -    0/3   1/7
+ 78 PC14        P      14    -    -    7/2    6/2    -    0/4   1/0
+ 79 PC15        P      15    -    -    7/3    6/3    -    0/5   1/1
+ 80 PC16        P       0    -    -    6/0    0/1    -    0/0    -
+ 81 PC17        P       1    -    -    6/1    0/0    -    0/1    -
+ 82 PC18        P       2    -    -    6/2    0/2    -    0/2    -
+ 83 PC19        P       3    -    -    6/3    0/3    -    0/3    -
+ 84 PC20        P       4    -    -     -      -     -    0/4    -
+ 85 PC21        P       5    -    -     -      -     -    0/5    -
+ 86 PC22        P       6    -    -    1/0    3/1    -    0/5    -
+ 87 PC23        P       7    -    -    1/1    3/0    -    0/7    -
+ 88 PC24        P       8    -    -    0/2    2/2    -     -     -
+ 89 PC25        P       9    -    -    0/3    2/3    -     -     -
+ 90 PC26        P      10    -    -     -      -     -     -     -
+ 91 PC27        P      11    -    -    1/0     -     -     -     -
+ 92 PC28        P      12    -    -    1/1     -     -     -     -
+ 94 PC30        P      14    -   12     -      -     -     -     -
+ 95 PC31        P      15    -   13     -      -     -     -     -
+ 96 PD00        P       0    -   14     -      -     -     -     -
+ 97 PD01        P       1    -   15     -      -     -     -     -
+104 PD08        P       3    -    -    7/0    6/1    -    0/1    -
+105 PD09        P       4    -    -    7/1    6/0    -    0/2    -
+106 PD10        P       5    -    -    7/2    6/2    -    0/3    -
+107 PD11        P       6    -    -    7/3    6/3    -    0/4    -
+108 PD12        P       7    -    -     -      -     -    0/5    -
+116 PD20        P      10    -    -    1/2    3/2    -    1/0    -
+117 PD21        P      11    -    -    1/3    3/3    -    1/1    -
+=== ==== ============ ==== ==== ==== ====== ====== ===== ===== =====
+
+
+The Package column indicates the package letter providing this pin. An entry
+GJP tells for instance, that the pin is available for SAMD51G19, SAMD51J19/-J20 and
+SAMD51P19/-P20.
 
 Scripts for creating the pin assignment tables
 ----------------------------------------------
