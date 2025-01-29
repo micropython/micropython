@@ -204,7 +204,7 @@ with each number, the bitstream is ``0101`` with durations of [100ns, 2000ns,
 For more details see Espressif's `ESP-IDF RMT documentation.
 <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/rmt.html>`_.
 
-.. Warning::
+.. warning::
    The current MicroPython RMT implementation lacks some features, most notably
    receiving pulses. RMT should be considered a
    *beta feature* and the interface may change in the future.
@@ -300,33 +300,146 @@ Constants
 Ultra-Low-Power co-processor
 ----------------------------
 
-This class gives access to the Ultra Low Power (ULP) co-processor on the ESP32,
-ESP32-S2 and ESP32-S3 chips.
+This class gives access to the Finite State Machine (FSM) Ultra Low Power (ULP)
+co-processor on the ESP32, ESP32-S2 and ESP32-S3 chips. In addition the ESP32-S2
+and ESP32-S3 chips contain a RISCV co-processor which can be accessed through this
+class.
 
-.. warning::
+.. note::
+    By default RISCV is preferred on supported chips, however, you can configure a custom build 
+    of micropython to revert back to using the FSM ULP.
+    Modify your mpconfigboard.cmake by specifying::
+        
+        set(PREFER_FSM_ULP ON)
 
-    This class does not provide access to the RISCV ULP co-processor available
-    on the ESP32-S2 and ESP32-S3 chips.
+You can compile a custom board definition which uses the ULP and embeds the app image into the firmware.
+To do this, edit or create a board definition in the ports/esp32/boards folder.
+Make sure the mpconfigboard.cmake file has the following definition::
+    
+    set(ulp_embedded_sources ${MICROPY_BOARD_DIR}/ulp/main_pin.c)
+    # and optionally
+    set(ulp_embedded_sources ${MICROPY_BOARD_DIR}/cmodules/somemodule.c)
+
+When any sources are defined like this, the ULP code will be automatically added the the firmware.
+Any variables prefixed with *var_* will be automatically added to the ULP class and you can use them to reference a memory location for reading and writing
+
+Example usage with embedded code::
+
+    import esp32
+    u = esp32.ULP()
+    u.run_embedded()
+    print(u.read(u.VAR_TEST))
+
+
+Example usage with external code::
+
+    import esp32
+    u = esp32.ULP()
+
+    with open("test.bin","rb") as file:
+        buf = file.read()
+
+    u.run(buf)
+    print(u.read(0x500000dc))
+
+Example usage with external code (FSM)::
+
+    import esp32
+    u = esp32.ULP()
+
+    with open("fsm.bin","rb") as file:
+        buf = file.read()
+
+    u.run(0x1c,buf)
+    print(u.write(0x500000dc, 42))
+
+Example usage with embedded code using ADC1 channel 1 on ESP32 S3 (GPIO_2)::
+
+    import esp32
+    u = esp32.ULP()
+
+    u.adc_init(1)
+    u.set_wakeup_period(100)
+    u.run_embedded()
+    print(u.write(u.VAR_DO_ADC_SAMPLING, 1))
+
+.. note::
+   Exposed variables are relative address offsets from RTC_SLOW_MEM address, 
+   
+   however you can use full address values also, if loading ULP code from outside the compilation process.
 
 .. class:: ULP()
 
     This class provides access to the Ultra-Low-Power co-processor.
 
 .. method:: ULP.set_wakeup_period(period_index, period_us)
+            ULP.set_wakeup_period(period_us)
 
-    Set the wake-up period.
+    Set the wake-up period. Time specified in micro-seconds.
+    *period_index* only on FSM.
+    Since only one slot is used by the RISCV ULP, you only provide the time period in this function.
 
-.. method:: ULP.load_binary(load_addr, program_binary)
+.. method:: ULP.run(entry_point, program_binary)
+            ULP.run(program_binary)
 
-    Load a *program_binary* into the ULP at the given *load_addr*.
+    Load a *program_binary* into the ULP and start from the beginning.
+    *program_binary* should be a bytearray.
 
-.. method:: ULP.run(entry_point)
+    *entry_point is only used for FSM*
+    Start the ULP running at the given *entry_point*, if applicable.
 
-    Start the ULP running at the given *entry_point*.
+.. method:: ULP.pause()
+
+    Stop the ULP wakeup timer from triggering. On RISCV, the ULP will also be halted.
+
+.. method:: ULP.resume()
+
+    Resume the ULP wakeup timer. On RISCV, the ULP will also be restarted.
+
+.. method:: ULP.read(address)
+
+    Read the contents of RTC memory, specifying either an absolute address within the RTC range
+    or use embedded variable constants, defined during compilation of firmware.
+
+.. method:: ULP.write(address, value)
+
+    Write to the contents of RTC memory, specifying either an absolute address within the RTC range
+    or use embedded variable constants, defined during compilation of firmware.
+
+    The function automatically prevents writing to any other location other than the RTC memory.
+
+    .. warning:: **Be careful** as you can overwrite the running ULP program instructions, requiring a reload.
+        
+
+.. method:: ULP.rtc_init(pin_number)
+
+    Initialize the give GPIO pin number (different RTC_IO number on ESP32).
+
+.. method:: ULP.rtc_deinit(pin_number)
+
+    Un-initialize the give GPIO pin number (different RTC_IO number on ESP32).
+
+.. method:: ULP.adc_init(channel)
+
+    Prepare the ADC for use by the ULP on the specified RTC_IO *channel*.
+
+    .. note:: Only ADC1 is working with the current ESP-IDF used by MicroPython
+
+.. method:: ULP.run_embedded()
+
+    This will load and run the embedded binary, exposing any variables onto the class, for reading and writing.
+
+    .. note:: Only available if firmware has compiled with a ULP program image
+        Start the ULP running the embedded ULP app image.
+
 
 
 Constants
 ---------
+
+.. data:: ULP.RESERVE_MEM
+
+    The amount of reserved RTC_SLOW_MEM in bytes.
 
 .. data:: esp32.WAKEUP_ALL_LOW
           esp32.WAKEUP_ANY_HIGH
