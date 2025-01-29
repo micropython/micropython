@@ -112,12 +112,23 @@ The following methods draw shapes onto the FrameBuffer.
 Drawing text
 ------------
 
-.. method:: FrameBuffer.text(s, x, y[, c])
+.. method:: FrameBuffer.text(s, x, y[, c [, font_id]])
 
-    Write text to the FrameBuffer using the the coordinates as the upper-left
+    Write text to the FrameBuffer using the coordinates as the upper-left
     corner of the text. The color of the text can be defined by the optional
-    argument but is otherwise a default value of 1. All characters have
-    dimensions of 8x8 pixels and there is currently no way to change the font.
+    argument *c*, which defaults to 1 if not provided. Additionally, you can
+    specify an optional *font_id* argument to select the font style, where
+    *font_id* can be 0, 1, 2, or 3. The method returns the width of the drawn
+    text in pixels.
+
+    The *font_id* argument is used to select the font style. The default *font_id*
+    is 1, which is the default monospace font Z1Mono8b_8x8. The other fonts are:
+
+    - 0: Z1Mono8_6x8 (A 6x8 monospace font)
+    - 2: Z1Prop8_6x8 (A 6x8 proportional font with a max width of 6 pixels)
+    - 3: Z1Prop8b_8x8 (An 8x8 proportional font with a max width of 8 pixels.
+      This font is more readable than Z1Mono8_6x8 on high DPI displays and usually
+      takes less screen width.)
 
 
 Other methods
