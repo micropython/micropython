@@ -242,17 +242,25 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     mp_printf(print, ")");
 }
 
-enum {
-    ARG_mode, ARG_pull, ARG_value, ARG_alt
-};
-static const mp_arg_t allowed_args[] = {
-    {MP_QSTR_mode,  MP_ARG_OBJ,                  {.u_rom_obj = MP_ROM_NONE}},
-    {MP_QSTR_pull,  MP_ARG_OBJ,                  {.u_rom_obj = MP_ROM_NONE}},
-    {MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
-    {MP_QSTR_alt,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GPIO_FUNC_SIO}},
-};
+// Allow the port to add extra parameters
+#ifdef MICROPY_HW_PIN_EXT_OBJ_INIT_ARGS
+#define EXTRA_ARGS MICROPY_HW_PIN_EXT_OBJ_INIT_ARGS
+#else
+#define EXTRA_ARGS
+#endif
+
+MP_WEAK void machine_pin_ext_obj_init(mp_arg_val_t *args) {
+}
 
 static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_mode, ARG_pull, ARG_value, ARG_alt, ARG_last };
+    const mp_arg_t allowed_args[] = {
+        {MP_QSTR_mode,  MP_ARG_OBJ,                  {.u_rom_obj = MP_ROM_NONE}},
+        {MP_QSTR_pull,  MP_ARG_OBJ,                  {.u_rom_obj = MP_ROM_NONE}},
+        {MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+        {MP_QSTR_alt,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GPIO_FUNC_SIO}},
+        EXTRA_ARGS
+    };
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -277,6 +285,10 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         mp_int_t mode = mp_obj_get_int(args[ARG_mode].u_obj);
         if (is_ext_pin(self)) {
             #if MICROPY_HW_PIN_EXT_COUNT
+
+            // called in case the port needs some initialisation before using an external pin
+            machine_pin_ext_obj_init(args + ARG_last);
+
             // The regular Pins are const, but the external pins are mutable.
             machine_pin_obj_t *mutable_self = (machine_pin_obj_t *)self;
             machine_pin_ext_config(mutable_self, mode, value);
@@ -312,6 +324,7 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     }
     return mp_const_none;
 }
+#undef EXTRA_ARGS
 
 // constructor(id, ...)
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
