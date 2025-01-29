@@ -156,8 +156,10 @@ void machine_rtc_start(void) {
     SNVS->HPCOMR |= SNVS_HPCOMR_NPSWA_EN_MASK;
     // Do a basic init.
     SNVS_LP_Init(SNVS);
+    #if FSL_FEATURE_SNVS_HAS_MULTIPLE_TAMPER
     // Disable all external Tamper
     SNVS_LP_DisableAllExternalTamper(SNVS);
+    #endif
 
     SNVS_LP_SRTC_StartTimer(SNVS);
     // If the date is not set, set it to a more recent start date,

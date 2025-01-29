@@ -69,6 +69,8 @@ static inline void restore_irq_pri(uint32_t basepri) {
 
 #define IRQ_PRI_SYSTICK         NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0)
 
+#define IRQ_PRI_CSI             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 3, 0)
+
 #define IRQ_PRI_OTG_HS          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 6, 0)
 
 #define IRQ_PRI_EXTINT          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 14, 0)
