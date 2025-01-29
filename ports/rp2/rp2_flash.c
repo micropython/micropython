@@ -70,10 +70,20 @@ bi_decl(bi_block_device(
     BINARY_INFO_BLOCK_DEV_FLAG_WRITE |
     BINARY_INFO_BLOCK_DEV_FLAG_PT_UNKNOWN));
 
+// This is a workaround to pico-sdk #2201: https://github.com/raspberrypi/pico-sdk/issues/2201
+// which means the multicore_lockout_victim_is_initialized returns true even after core1 is reset.
+static bool use_multicore_lockout(void) {
+    return multicore_lockout_victim_is_initialized(1 - get_core_num())
+           #if MICROPY_PY_THREAD
+           && core1_entry != NULL
+           #endif
+    ;
+}
+
 // Flash erase and write must run with interrupts disabled and the other core suspended,
 // because the XIP bit gets disabled.
 static uint32_t begin_critical_flash_section(void) {
-    if (multicore_lockout_victim_is_initialized(1 - get_core_num())) {
+    if (use_multicore_lockout()) {
         multicore_lockout_start_blocking();
     }
     return save_and_disable_interrupts();
@@ -81,7 +91,7 @@ static uint32_t begin_critical_flash_section(void) {
 
 static void end_critical_flash_section(uint32_t state) {
     restore_interrupts(state);
-    if (multicore_lockout_victim_is_initialized(1 - get_core_num())) {
+    if (use_multicore_lockout()) {
         multicore_lockout_end_blocking();
     }
 }
