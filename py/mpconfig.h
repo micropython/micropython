@@ -342,6 +342,11 @@
 #define MICROPY_PERSISTENT_CODE_SAVE_FILE (0)
 #endif
 
+// Whether to support converting functions to persistent code (bytes)
+#ifndef MICROPY_PERSISTENT_CODE_SAVE_FUN
+#define MICROPY_PERSISTENT_CODE_SAVE_FUN (MICROPY_PY_MARSHAL)
+#endif
+
 // Whether generated code can persist independently of the VM/runtime instance
 // This is enabled automatically when needed by other features
 #ifndef MICROPY_PERSISTENT_CODE
@@ -1041,6 +1046,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_FUNCTION_ATTRS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to implement the __code__ attribute on functions, and function constructor
+#ifndef MICROPY_PY_FUNCTION_ATTRS_CODE
+#define MICROPY_PY_FUNCTION_ATTRS_CODE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
+#endif
+
 // Whether to support the descriptors __get__, __set__, __delete__
 // This costs some code size and makes load/store/delete of instance
 // attributes slower for the classes that use this feature
@@ -1127,6 +1137,15 @@ typedef double mp_float_t;
 // Whether to support bytearray object
 #ifndef MICROPY_PY_BUILTINS_BYTEARRAY
 #define MICROPY_PY_BUILTINS_BYTEARRAY (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#endif
+
+// Whether to support code objects, and how many features they have
+#define MICROPY_PY_BUILTINS_CODE_NONE       (0)
+#define MICROPY_PY_BUILTINS_CODE_MINIMUM    (1)
+#define MICROPY_PY_BUILTINS_CODE_BASIC      (2)
+#define MICROPY_PY_BUILTINS_CODE_FULL       (3)
+#ifndef MICROPY_PY_BUILTINS_CODE
+#define MICROPY_PY_BUILTINS_CODE            (MICROPY_PY_SYS_SETTRACE ? MICROPY_PY_BUILTINS_CODE_FULL : (MICROPY_PY_FUNCTION_ATTRS_CODE ? MICROPY_PY_BUILTINS_CODE_BASIC : (MICROPY_PY_BUILTINS_COMPILE ? MICROPY_PY_BUILTINS_CODE_MINIMUM : MICROPY_PY_BUILTINS_CODE_NONE)))
 #endif
 
 // Whether to support dict.fromkeys() class method
@@ -1361,6 +1380,11 @@ typedef double mp_float_t;
 // Whether to provide the _asdict function for namedtuple
 #ifndef MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT
 #define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#endif
+
+// Whether to provide "marshal" module
+#ifndef MICROPY_PY_MARSHAL
+#define MICROPY_PY_MARSHAL (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
 #endif
 
 // Whether to provide "math" module
