@@ -36,7 +36,7 @@
 #define ELEM_DATA_START (&_estack[0])
 #define ELEM_DATA_MAX (&_estack[ELEM_DATA_SIZE])
 
-#define NORETURN __attribute__((noreturn))
+#define MP_NORETURN __attribute__((noreturn))
 #define MP_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 // The default UI code in ui.c only works if there is at least one LED configured.
