@@ -49,9 +49,9 @@ void asm_xtensa_end_pass(asm_xtensa_t *as) {
     if (as->base.pass == MP_ASM_PASS_EMIT) {
         uint8_t *d = as->base.code_base;
         printf("XTENSA ASM:");
-        for (int i = 0; i < ((as->base.code_size + 15) & ~15); ++i) {
+        for (size_t i = 0; i < ((as->base.code_size + 15) & ~15); ++i) {
             if (i % 16 == 0) {
-                printf("\n%08x:", (uint32_t)&d[i]);
+                printf("\n%p:", &d[i]);
             }
             if (i % 2 == 0) {
                 printf(" ");
