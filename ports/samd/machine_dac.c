@@ -57,7 +57,7 @@ typedef struct _dac_obj_t {
     #endif
 } dac_obj_t;
 Dac *const dac_bases[] = DAC_INSTS;
-STATIC void dac_init(dac_obj_t *self);
+static void dac_init(dac_obj_t *self);
 
 #if defined(MCU_SAMD21)
 
@@ -65,7 +65,7 @@ STATIC void dac_init(dac_obj_t *self);
 #define DEFAULT_DAC_VREF    (1)
 #define MAX_DAC_VREF        (2)
 
-STATIC dac_obj_t dac_obj[] = {
+static dac_obj_t dac_obj[] = {
     {{&machine_dac_type}, 0, 0, DEFAULT_DAC_VREF, PIN_PA02},
 };
 
@@ -75,7 +75,7 @@ STATIC dac_obj_t dac_obj[] = {
 #define DEFAULT_DAC_VREF    (2)
 #define MAX_DAC_VREF        (3)
 
-STATIC dac_obj_t dac_obj[] = {
+static dac_obj_t dac_obj[] = {
     {{&machine_dac_type}, 0, 0, DEFAULT_DAC_VREF, PIN_PA02},
     {{&machine_dac_type}, 1, 0, DEFAULT_DAC_VREF, PIN_PA05},
 };
@@ -131,7 +131,7 @@ void dac_irq_handler(int dma_channel) {
 
 #endif
 
-STATIC mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
+static mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     const mp_obj_t *all_args) {
 
     enum { ARG_id, ARG_vref, ARG_callback };
@@ -179,7 +179,7 @@ STATIC mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void dac_init(dac_obj_t *self) {
+static void dac_init(dac_obj_t *self) {
     // Init DAC
     if (self->initialized == false) {
         Dac *dac = dac_bases[0]; // Just one DAC
@@ -235,12 +235,12 @@ STATIC void dac_init(dac_obj_t *self) {
     self->initialized = true;
 }
 
-STATIC void dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     dac_obj_t *self = self_in;
     mp_printf(print, "DAC(%u, Pin=%q, vref=%d)", self->id, pin_find_by_id(self->gpio_id)->name, self->vref);
 }
 
-STATIC mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
+static mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
     Dac *dac = dac_bases[0]; // Just one DAC
     dac_obj_t *self = self_in;
 
@@ -270,7 +270,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(dac_write_obj, dac_write);
 
 #if MICROPY_PY_MACHINE_DAC_TIMED
 
-STATIC mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
     Dac *dac = dac_bases[0]; // Just one DAC used
     dac_obj_t *self = args[0];
     mp_buffer_info_t src;
@@ -360,9 +360,9 @@ STATIC mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dac_write_timed_obj, 3, 4, dac_write_timed);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dac_write_timed_obj, 3, 4, dac_write_timed);
 
-STATIC void dac_deinit_channel(dac_obj_t *self) {
+static void dac_deinit_channel(dac_obj_t *self) {
     self->initialized = false;
     if (self->dma_channel >= 0) {
         dac_stop_dma(self->dma_channel, true);
@@ -387,18 +387,18 @@ void dac_deinit_all(void) {
     #endif
 }
 
-STATIC mp_obj_t dac_deinit(mp_obj_t self_in) {
+static mp_obj_t dac_deinit(mp_obj_t self_in) {
     dac_deinit_all();
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(dac_deinit_obj, dac_deinit);
 
 // busy() : Report, if  the DAC device is busy
-STATIC mp_obj_t machine_dac_busy(mp_obj_t self_in) {
+static mp_obj_t machine_dac_busy(mp_obj_t self_in) {
     dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return self->busy ? mp_const_true : mp_const_false;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_dac_busy_obj, machine_dac_busy);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_dac_busy_obj, machine_dac_busy);
 #else
 
 void dac_deinit_all(void) {
@@ -412,7 +412,7 @@ void dac_deinit_all(void) {
 
 #endif
 
-STATIC const mp_rom_map_elem_t dac_locals_dict_table[] = {
+static const mp_rom_map_elem_t dac_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&dac_write_obj) },
     #if MICROPY_PY_MACHINE_DAC_TIMED
     { MP_ROM_QSTR(MP_QSTR_busy), MP_ROM_PTR(&machine_dac_busy_obj) },
@@ -421,7 +421,7 @@ STATIC const mp_rom_map_elem_t dac_locals_dict_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(dac_locals_dict, dac_locals_dict_table);
+static MP_DEFINE_CONST_DICT(dac_locals_dict, dac_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_dac_type,
