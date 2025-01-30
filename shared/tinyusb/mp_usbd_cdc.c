@@ -372,120 +372,6 @@ static mp_obj_t machine_usbd_cdc_any(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_usbd_cdc_any_obj, machine_usbd_cdc_any);
 
-/// \method send(data, *, timeout=5000)
-/// Send data over the USB CDC:
-///
-///   - `data` is the data to send (an integer to send, or a buffer object).
-///   - `timeout` is the timeout in milliseconds to wait for the send.
-///
-/// Return value: number of bytes sent.
-// static const mp_arg_t machine_usbd_cdc_send_args[] = {
-//     { MP_QSTR_data,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-//     { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
-// };
-// #define MACHINE_USBD_CDC_SEND_NUM_ARGS MP_ARRAY_SIZE(machine_usbd_cdc_send_args)
-
-// static mp_obj_t machine_usbd_cdc_send(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-//     // parse args
-//     machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-//     mp_arg_val_t vals[MACHINE_USBD_CDC_SEND_NUM_ARGS];
-//     mp_arg_parse_all(n_args - 1, args + 1, kw_args, MACHINE_USBD_CDC_SEND_NUM_ARGS, machine_usbd_cdc_send_args, vals);
-
-//     // get the buffer to send from
-//     mp_buffer_info_t bufinfo;
-//     uint8_t data[1];
-//     pyb_buf_get_for_send(vals[0].u_obj, &bufinfo, data);
-
-//     // send the data
-//     int ret = usbd_cdc_tx(self, bufinfo.buf, bufinfo.len, vals[1].u_int);
-
-//     return mp_obj_new_int(ret);
-// }
-// static MP_DEFINE_CONST_FUN_OBJ_KW(machine_usbd_cdc_send_obj, 1, machine_usbd_cdc_send);
-
-/// \method recv(data, *, timeout=5000)
-///
-/// Receive data on the bus:
-///
-///   - `data` can be an integer, which is the number of bytes to receive,
-///     or a mutable buffer, which will be filled with received bytes.
-///   - `timeout` is the timeout in milliseconds to wait for the receive.
-///
-/// Return value: if `data` is an integer then a new buffer of the bytes received,
-/// otherwise the number of bytes read into `data` is returned.
-// static mp_obj_t machine_usbd_cdc_recv(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-//     // parse args
-//     machine_usbd_cdc_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-//     mp_arg_val_t vals[MACHINE_USBD_CDC_SEND_NUM_ARGS];
-//     mp_arg_parse_all(n_args - 1, args + 1, kw_args, MACHINE_USBD_CDC_SEND_NUM_ARGS, machine_usbd_cdc_send_args, vals);
-
-//     // get the buffer to receive into
-//     vstr_t vstr;
-//     mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &vstr);
-
-//     // receive the data
-//     int ret = usbd_cdc_rx(self, (uint8_t *)vstr.buf, vstr.len, vals[1].u_int);
-
-//     // return the received data
-//     if (o_ret != MP_OBJ_NULL) {
-//         return mp_obj_new_int(ret); // number of bytes read into given buffer
-//     } else {
-//         vstr.len = ret; // set actual number of bytes read
-//         return mp_obj_new_bytes_from_vstr(&vstr); // create a new buffer
-//     }
-// }
-// static MP_DEFINE_CONST_FUN_OBJ_KW(machine_usbd_cdc_recv_obj, 1, machine_usbd_cdc_recv);
-
-static mp_obj_t machine_usbd_cdc_recv(uint n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_data, ARG_timeout };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_dest, MP_ARG_INT | MP_ARG_OBJ | MP_ARG_REQUIRED,  {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_timeout, MP_ARG_INT | MP_ARG_KW_ONLY,  {.u_int = 5000 } },
-    };
-
-    // Parse args.
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    vstr_t vstr;
-    mp_obj_t o_ret = mp_const_none;
-    if (mp_obj_is_int(args[ARG_data].u_obj)) {
-        // allocate a new bytearray of given length
-        vstr_init_len(&vstr, mp_obj_get_int(args[ARG_data].u_obj));
-    } else {
-        // get the existing buffer
-        mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(args[ARG_data].u_obj, &bufinfo, MP_BUFFER_WRITE);
-        vstr.buf = bufinfo.buf;
-        vstr.len = bufinfo.len;
-        o_ret = args[ARG_data].u_obj;
-    }
-    size_t read = 0;
-    uint32_t start = HAL_GetTick();
-    size_t timeout = args[ARG_timeout].u_int;
-    while (read < vstr.len && (HAL_GetTick() - start < timeout)) {
-
-        // int ret = machine_usbd_cdc_read(pos_args[0], vstr.buf, vstr.len - read, &errcode);
-        int ret = mp_usbd_cdc_rx_strn((char *)vstr.buf + read, vstr.len - read);
-
-        if (ret == 0) {
-            // mp_usbd_task();
-        } else {
-            read += ret;
-        }
-        mp_event_wait_ms(timeout);
-    }
-
-    // return the received data
-    if (o_ret != MP_OBJ_NULL) {
-        return mp_obj_new_int(read); // number of bytes read into given buffer
-    } else {
-        vstr.len = read; // set actual number of bytes read
-        return mp_obj_new_bytes_from_vstr(&vstr); // create a new buffer
-    }
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(machine_usbd_cdc_recv_obj, 2, machine_usbd_cdc_recv);
-
 // irq(handler=None, trigger=IRQ_RX, hard=False)
 static mp_obj_t machine_usbd_cdc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
@@ -531,8 +417,6 @@ static const mp_rom_map_elem_t machine_usbd_cdc_locals_dict_table[] = {
     // { MP_ROM_QSTR(MP_QSTR_setinterrupt), MP_ROM_PTR(&machine_usbd_cdc_setinterrupt_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&machine_usbd_cdc_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_usbd_cdc_any_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&machine_usbd_cdc_send_obj) },
-    { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&machine_usbd_cdc_recv_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
