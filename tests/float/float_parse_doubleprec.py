@@ -21,11 +21,11 @@ print(float("10.0000000000000000000e-308"))
 print(float("100.000000000000000000e-309"))
 
 # ensure repr() adds an extra digit when needed for accurate parsing
-if float(repr(2.0 ** 100)) != (2.0 ** 100):
-	# this test is needed for coverage, but it will
-	# only work if MICROPY_COMP_FLOAT_CONST == 1,
-	# so we should not make the test case fail
-	pass
+if float(repr(2.0**100)) != (2.0**100):
+    # this test is needed for coverage, but it will
+    # only work if MICROPY_COMP_FLOAT_CONST == 1,
+    # so we should not make the test case fail
+    pass
 
 # ensure repr does not add meaningless extra digits (1.234999999999)
 print(repr(1.2345))
