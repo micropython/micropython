@@ -18,9 +18,13 @@ test_syntax("A = const(1); A = const(2)")
 
 # these operations are not supported within const
 test_syntax("A = const(1 @ 2)")
-test_syntax("A = const(1 / 2)")
-test_syntax("A = const(1 ** -2)")
 test_syntax("A = const(1 << -2)")
 test_syntax("A = const(1 >> -2)")
 test_syntax("A = const(1 % 0)")
 test_syntax("A = const(1 // 0)")
+
+# Expressions below are supported if MICROPY_COMP_FLOAT_CONST is set.
+# They should not anymore be expected to always fail:
+#
+# test_syntax("A = const(1 / 2)")
+# test_syntax("A = const(1 ** -2)")
