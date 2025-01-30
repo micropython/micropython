@@ -51,6 +51,8 @@ uint32_t trng_random_u32(void);
 
 // Optimisations
 
+// Compiler configuration
+
 // Python internal features
 #define MICROPY_TRACKED_ALLOC               (MICROPY_SSL_MBEDTLS)
 #define MICROPY_READER_VFS                  (1)

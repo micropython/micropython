@@ -193,6 +193,16 @@ The following libraries are specific to the Zephyr port.
 
 .. _micropython_lib_extending:
 
+Libraries specific to MIMXRT devices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following libraries are specific MIMXRT devices.
+
+.. toctree::
+  :maxdepth: 2
+
+  machine.QECNT.rst
+
 Extending built-in libraries from Python
 ----------------------------------------
 
