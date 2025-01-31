@@ -52,6 +52,9 @@ void board_init(void) {
     SCB_EnableICache();
     // Init clock
     BOARD_BootClockRUN();
+    #if FSL_CLOCK_DRIVER_VERSION >= MAKE_VERSION(2, 5, 1)
+    CLOCK_SetMode(kCLOCK_ModeRun);
+    #endif
     SystemCoreClockUpdate();
 
     // Enable IOCON clock
