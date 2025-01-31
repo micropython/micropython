@@ -52,6 +52,9 @@ void board_init(void) {
     SCB_EnableICache();
     // Init clock
     BOARD_BootClockRUN();
+    #if !defined(MIMXRT117x_SERIES)
+    CLOCK_SetMode(kCLOCK_ModeRun);
+    #endif
     SystemCoreClockUpdate();
 
     // Enable IOCON clock
