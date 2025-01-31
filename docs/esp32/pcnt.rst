@@ -84,8 +84,9 @@ Methods
 .. method:: Counter.value([value])
 
    Get, and optionally set, the counter *value* as a signed 64-bit integer.
+   Attention: Setting the counter brokes the IRQ_MATCH and IRQ_ZERO events.
 
-.. method:: Counter.irq(handler=None, trigger=Counter.IRQ_MATCH1 | Counter.IRQ_ZERO, value=0)
+.. method:: Counter.irq(handler=None, trigger=Counter.IRQ_MATCH | Counter.IRQ_ZERO, value=0)
 
    -*handler* specifies a function is called when the respective *trigger* event happens.
     The callback function *handler* receives a single argument, which is the Counter object.
@@ -96,14 +97,16 @@ Methods
 
    -*trigger* events may be:
 
-    - Counter.IRQ_MATCH1 triggered when the counter matches the match1 value.
+    - Counter.IRQ_MATCH triggered when the counter matches the match value.
     - Counter.IRQ_ZERO triggered when the counter matches the 0.
+    - Counter.IRQ_ROLL_OVER triggered when the int16_t counter overloaded.
+    - Counter.IRQ_ROLL_UNDER triggered when the int16_t counter underloaded.
 
-    The default is - trigger=Counter.IRQ_MATCH1 | Counter.IRQ_ZERO.
+    The default is - trigger=Counter.IRQ_MATCH | Counter.IRQ_ZERO.
     The events are triggered when the counter value and match value are identical, but
     callbacks have always a latency.
 
-   - *value* sets a counter match1 value. When the counter matches these values,
+   - *value* sets a counter match value. When the counter matches these values,
      a callback function can be called. They are 0 by default.
 
 Attention: ``Counter.irq()`` resets counter to 0.
@@ -111,6 +114,18 @@ Attention: ``Counter.irq()`` resets counter to 0.
 .. method:: Counter.status()
 
    Returns the event status flags of the recent handled Counter interrupt as a bitmap.
+
+=====  ====  =======================  =============================================================
+bit #  mask   trigger                  coment
+=====  ====  =======================  =============================================================
+  0      1                             if zero event: 0 - when counting up, 1 - when counting down
+  2      4    Counter.IRQ_MATCH        match value event when counting up
+  3      8    Counter.IRQ_MATCH        match value event when counting down
+  4     16    Counter.IRQ_ROLL_UNDER   roll under event
+  5     32    Counter.IRQ_ROLL_OVER    roll over event
+  6     64    Counter.IRQ_ZERO         zero event
+=====  ====  =======================  =============================================================
+
 
 .. method:: Counter.id()
 
@@ -133,7 +148,7 @@ Constants
 
    Selects the counted edges.
 
-.. data:: Counter.IRQ_MATCH1
+.. data:: Counter.IRQ_MATCH
           Counter.IRQ_ZERO
 
    Selects callback triggers.
@@ -180,7 +195,7 @@ See `Quadrature encoder outputs.
 Constructor
 -----------
 
-.. class:: Encoder(id, phase_a=None, phase_b=None, \*, x124=4, filter_ns=0, match1=0)
+.. class:: Encoder(id, phase_a=None, phase_b=None, \*, x124=4, filter_ns=0, match=0)
 
     The Encoder starts to count immediately. Filtering is disabled.
 
@@ -203,7 +218,7 @@ Constructor
 
     These keywords are the same as the Counter keywords, see above:
       - *filter_ns*
-      - *match1*
+      - *match*
 
 Methods
 -------
@@ -218,7 +233,7 @@ in the constructor and internal hardware PCNT initialization.
 Constants
 ---------
 
-.. data:: Encoder.IRQ_MATCH1
+.. data:: Encoder.IRQ_MATCH
           Encoder.IRQ_ZERO
 
    Selects callback triggers.
@@ -237,13 +252,13 @@ Constants
             n += 1
             print('irq_handler2()', self.id(), self.value(), n)
 
-        enc = Encoder(0, phase_a=Pin(17, mode=Pin.IN), phase_b=Pin(16, mode=Pin.IN), match1=1000)
+        enc = Encoder(0, phase_a=Pin(17, mode=Pin.IN), phase_b=Pin(16, mode=Pin.IN), match=1000)
 
         enc.pause()
         flt = enc.filter()  # return current filter value.
         enc.filter(10_000)  # filter delay is 10ms
         c = enc.value(0)  # get current encoder value, set the encoder value to 0
-        enc.irq(irq_handler1, Encoder.IRQ_MATCH1)  # set irq handler
+        enc.irq(irq_handler1, Encoder.IRQ_MATCH)  # set irq handler
         enc.resume()
 
         _c = None

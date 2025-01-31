@@ -78,28 +78,42 @@ static void IRAM_ATTR pcnt_intr_handler(void *arg) {
                 // self->event_status = PCNT.status_unit[id].val;
                 pcnt_get_event_status(id, &self->event_status);
                 if (self->event_status & PCNT_EVT_H_LIM) {
+                    // when counting up
+                    // debug_printf("H");
                     self->counter += INT16_ROLL;
                     self->counter_accum += INT16_ROLL;
+                    if (self->handler_roll_over != MP_OBJ_NULL) {
+                        mp_sched_schedule(self->handler_roll_over, MP_OBJ_FROM_PTR(self));
+                        mp_hal_wake_main_task_from_isr();
+                    }
                 } else if (self->event_status & PCNT_EVT_L_LIM) {
+                    // when counting down
+                    // debug_printf("L");
                     self->counter -= INT16_ROLL;
                     self->counter_accum -= INT16_ROLL;
+                    if (self->handler_roll_under != MP_OBJ_NULL) {
+                        mp_sched_schedule(self->handler_roll_under, MP_OBJ_FROM_PTR(self));
+                        mp_hal_wake_main_task_from_isr();
+                    }
                 }
-
                 if (self->event_status & PCNT_EVT_THRES_1) {
-                    // counting up
+                    // when counting up & treshold value > 0
+                    // debug_printf("1");
                     if (self->counter_accum == self->counter_match) {
                         mp_sched_schedule(self->handler_match, MP_OBJ_FROM_PTR(self));
                         mp_hal_wake_main_task_from_isr();
                     }
-                }
-                if (self->event_status & PCNT_EVT_THRES_0) {
-                    // counting down
+                } else if (self->event_status & PCNT_EVT_THRES_0) {
+                    // when counting down & treshold value < 0
+                    // debug_printf("0");
                     if (self->counter_accum == self->counter_match + INT16_ROLL) {
                         mp_sched_schedule(self->handler_match, MP_OBJ_FROM_PTR(self));
                         mp_hal_wake_main_task_from_isr();
                     }
                 }
                 if (self->event_status & PCNT_EVT_ZERO) {
+                    // when counting up/down
+                    // debug_printf("Z");
                     if (self->counter == 0) {
                         mp_sched_schedule(self->handler_zero, MP_OBJ_FROM_PTR(self));
                         mp_hal_wake_main_task_from_isr();
@@ -161,6 +175,12 @@ static void set_filter_value(pcnt_unit_t unit, int16_t value) {
 }
 
 static void pcnt_disable_events(mp_pcnt_obj_t *self) {
+    if (self->handler_roll_over != MP_OBJ_NULL) {
+        self->handler_roll_over = MP_OBJ_NULL;
+    }
+    if (self->handler_roll_under != MP_OBJ_NULL) {
+        self->handler_roll_under = MP_OBJ_NULL;
+    }
     if (self->handler_match != MP_OBJ_NULL) {
         check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_THRES_1));
         check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_THRES_0));
@@ -183,6 +203,8 @@ static void reset(mp_pcnt_obj_t *self) {
     self->counter_match = 0;
     self->handler_match = MP_OBJ_NULL;
     self->handler_zero = MP_OBJ_NULL;
+    self->handler_roll_over = MP_OBJ_NULL;
+    self->handler_roll_under = MP_OBJ_NULL;
     self->event_status = 0;
 
     self->filter = 0;
@@ -192,7 +214,6 @@ static void reset(mp_pcnt_obj_t *self) {
 static void pcnt_deinit(mp_pcnt_obj_t *self) {
     if (self != NULL) {
         check_esp_err(pcnt_counter_pause(self->unit));
-
         check_esp_err(pcnt_intr_disable(self->unit));
 
         check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_L_LIM));
@@ -202,6 +223,7 @@ static void pcnt_deinit(mp_pcnt_obj_t *self) {
         check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
         check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
 
+        check_esp_err(pcnt_counter_clear(self->unit));
         reset(self);
         pcnts[self->unit] = NULL;
     }
@@ -317,7 +339,7 @@ static mp_obj_t machine_PCNT_irq(size_t n_pos_args, const mp_obj_t *pos_args, mp
     mp_obj_t handler = args[ARG_handler].u_obj;
     mp_uint_t trigger = args[ARG_trigger].u_int;
 
-    if (trigger & ~(PCNT_EVT_THRES_1 | PCNT_EVT_ZERO)) {
+    if (trigger & ~(PCNT_EVT_THRES_1 | PCNT_EVT_ZERO | PCNT_EVT_H_LIM | PCNT_EVT_L_LIM)) {
         mp_raise_ValueError(MP_ERROR_TEXT("trigger"));
     }
 
@@ -332,6 +354,12 @@ static mp_obj_t machine_PCNT_irq(size_t n_pos_args, const mp_obj_t *pos_args, mp
         if (trigger & PCNT_EVT_ZERO) {
             check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_ZERO));
             self->handler_zero = MP_OBJ_NULL;
+        }
+        if (trigger & PCNT_EVT_H_LIM) {
+            self->handler_roll_over = MP_OBJ_NULL;
+        }
+        if (trigger & PCNT_EVT_L_LIM) {
+            self->handler_roll_under = MP_OBJ_NULL;
         }
     } else {
         if (trigger & PCNT_EVT_THRES_1) {
@@ -361,6 +389,12 @@ static mp_obj_t machine_PCNT_irq(size_t n_pos_args, const mp_obj_t *pos_args, mp
             self->handler_match = handler;
             check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_THRES_1));
             check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_THRES_0));
+        }
+        if (trigger & PCNT_EVT_H_LIM) {
+            self->handler_roll_over = handler;
+        }
+        if (trigger & PCNT_EVT_L_LIM) {
+            self->handler_roll_under = handler;
         }
         if (trigger & PCNT_EVT_ZERO) {
             /*
@@ -571,11 +605,17 @@ static mp_obj_t machine_Counter_init(size_t n_args, const mp_obj_t *args, mp_map
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_Counter_init_obj, 1, machine_Counter_init);
 
 static void common_print_kw(const mp_print_t *print, mp_pcnt_obj_t *self) {
+    if (self->handler_roll_over != MP_OBJ_NULL) {
+        mp_printf(print, ", roll_over=%ld", INT16_ROLL);
+    }
+    if (self->handler_roll_under != MP_OBJ_NULL) {
+        mp_printf(print, ", roll_under=%ld", -INT16_ROLL);
+    }
     if (self->handler_match != MP_OBJ_NULL) {
-        mp_printf(print, ", match1=%ld", self->match);
+        mp_printf(print, ", match=%ld", self->match);
     }
     if (self->handler_zero != MP_OBJ_NULL) {
-        mp_printf(print, ", match=0");
+        mp_printf(print, ", match0=0");
     }
     mp_printf(print, ", filter_ns=%d)", filter_to_ns(self->filter));
 }
@@ -583,7 +623,12 @@ static void common_print_kw(const mp_print_t *print, mp_pcnt_obj_t *self) {
 static void machine_Counter_print(const mp_print_t *print, mp_obj_t self_obj, mp_print_kind_t kind) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    mp_printf(print, "Counter(%u, src=Pin(%u)", self->unit, self->aPinNumber);
+    mp_printf(print, "Counter(%u", self->unit);
+    if (self->aPinNumber == PCNT_PIN_NOT_USED) {
+        mp_printf(print, ")");
+        return;
+    }
+    mp_printf(print, "), src=Pin(%u)", self->aPinNumber);
     if (self->x124 < 0) {
         mp_printf(print, ", _src=Pin(%u)", self->bPinNumber);
     } else {
@@ -611,7 +656,9 @@ static void machine_Counter_print(const mp_print_t *print, mp_obj_t self_obj, mp
 
 #define COMMON_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_IRQ_ZERO), MP_ROM_INT(PCNT_EVT_ZERO) }, \
-    { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH1), MP_ROM_INT(PCNT_EVT_THRES_1) }
+    { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_OVER), MP_ROM_INT(PCNT_EVT_H_LIM) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_UNDER), MP_ROM_INT(PCNT_EVT_L_LIM) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH), MP_ROM_INT(PCNT_EVT_THRES_1) }
 
 static const mp_rom_map_elem_t machine_Counter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_Counter_init_obj) },
@@ -755,8 +802,12 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_Encoder_init_obj, 1, machine_Encoder_init);
 
 static void machine_Encoder_print(const mp_print_t *print, mp_obj_t self_obj, mp_print_kind_t kind) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-
-    mp_printf(print, "Encoder(%u, phase_a=Pin(%u), phase_b=Pin(%u), x124=%d", self->unit, self->aPinNumber, self->bPinNumber, self->x124);
+    mp_printf(print, "Encoder(%u", self->unit);
+    if (self->aPinNumber == PCNT_PIN_NOT_USED) {
+        mp_printf(print, ")");
+        return;
+    }
+    mp_printf(print, ", phase_a=Pin(%u), phase_b=Pin(%u), x124=%d", self->aPinNumber, self->bPinNumber, self->x124);
     common_print_kw(print, self);
 }
 

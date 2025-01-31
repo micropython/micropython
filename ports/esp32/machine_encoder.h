@@ -34,6 +34,8 @@ typedef struct _mp_pcnt_obj_t {
     counter_t counter_match; // (match - counter) - (match - counter) % INT16_ROLL
     mp_obj_t handler_match;
     mp_obj_t handler_zero;
+    mp_obj_t handler_roll_over;
+    mp_obj_t handler_roll_under;
     uint32_t event_status;
 
     int filter;
