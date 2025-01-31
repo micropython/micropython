@@ -151,6 +151,9 @@ typedef struct _mp_state_vm_t {
 
     #if MICROPY_TRACKED_ALLOC
     struct _m_tracked_node_t *m_tracked_head;
+    #if MICROPY_ENABLE_FINALISER
+    struct _m_tracked_node_t *m_tracked_pending_free_head;
+    #endif
     #endif
 
     // non-heap memory for creating an exception if we can't allocate RAM

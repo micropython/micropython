@@ -112,6 +112,11 @@ NORETURN void m_malloc_fail(size_t num_bytes);
 // them.  They can be used by code that requires traditional C malloc/free semantics.
 void *m_tracked_calloc(size_t nmemb, size_t size);
 void m_tracked_free(void *ptr_in);
+
+#if MICROPY_ENABLE_FINALISER
+// Internal function. Called after gc_sweep() to actually free any nodes freed from finalisers.
+void m_tracked_free_pending(void);
+#endif
 #endif
 
 #if MICROPY_MEM_STATS
