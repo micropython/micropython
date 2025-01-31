@@ -48,6 +48,7 @@
 #define IRQ_PRI_USB             NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 7, 0)
 #define IRQ_PRI_HWSEM           NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 8, 0)
 #define IRQ_PRI_GPU             NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 10, 0)
+#define IRQ_PRI_RTC             NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 100, 0)
 #define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 127, 0)
 
 // these states correspond to values from query_irq, enable_irq and disable_irq
