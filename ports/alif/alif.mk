@@ -119,6 +119,7 @@ SRC_C = \
 	machine_pin.c \
 	machine_i2c.c \
 	machine_spi.c \
+	machine_rtc.c \
 	main.c \
 	modalif.c \
 	mphalport.c \
