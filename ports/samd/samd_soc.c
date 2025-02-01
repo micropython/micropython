@@ -31,12 +31,12 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "py/runtime.h"
 #include "modmachine.h"
 #include "samd_soc.h"
 #include "sam.h"
 #include "tusb.h"
-#include "mphalport.h"
 
 extern void machine_rtc_start(bool force);
 

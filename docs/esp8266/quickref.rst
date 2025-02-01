@@ -49,11 +49,11 @@ The :mod:`esp` module::
 Networking
 ----------
 
-The :mod:`network` module::
+The :class:`network.WLAN` class in the :mod:`network` module::
 
     import network
 
-    wlan = network.WLAN(network.STA_IF) # create station interface
+    wlan = network.WLAN(network.WLAN.IF_STA) # create station interface
     wlan.active(True)       # activate the interface
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
@@ -61,7 +61,7 @@ The :mod:`network` module::
     wlan.config('mac')      # get the interface's MAC address
     wlan.ipconfig('addr4')  # get the interface's IPv4 addresses
 
-    ap = network.WLAN(network.AP_IF) # create access-point interface
+    ap = network.WLAN(network.WLAN.IF_AP) # create access-point interface
     ap.active(True)         # activate the interface
     ap.config(ssid='ESP-AP') # set the SSID of the access point
 
@@ -69,7 +69,7 @@ A useful function for connecting to your local WiFi network is::
 
     def do_connect():
         import network
-        wlan = network.WLAN(network.STA_IF)
+        wlan = network.WLAN(network.WLAN.IF_STA)
         wlan.active(True)
         if not wlan.isconnected():
             print('connecting to network...')
@@ -163,10 +163,10 @@ sys.stdin.read() if it's needed to read characters from the UART(0)
 while it's also used for the REPL (or detach, read, then reattach).
 When detached the UART(0) can be used for other purposes.
 
-If there are no objects in any of the dupterm slots when the REPL is
-started (on hard or soft reset) then UART(0) is automatically attached.
-Without this, the only way to recover a board without a REPL would be to
-completely erase and reflash (which would install the default boot.py which
+If there are no objects in any of the dupterm slots when the REPL is started (on
+:doc:`hard or soft reset </reference/reset_boot>`) then UART(0) is automatically
+attached. Without this, the only way to recover a board without a REPL would be
+to completely erase and reflash (which would install the default boot.py which
 attaches the REPL).
 
 To detach the REPL from UART0, use::
@@ -284,7 +284,9 @@ See :ref:`machine.RTC <machine.RTC>` ::
     from machine import RTC
 
     rtc = RTC()
-    rtc.datetime((2017, 8, 23, 1, 12, 48, 0, 0)) # set a specific date and time
+    rtc.datetime((2017, 8, 23, 0, 1, 12, 48, 0)) # set a specific date and
+                                                 # time, eg. 2017/8/23 1:12:48
+                                                 # the day-of-week value is ignored
     rtc.datetime() # get date and time
 
     # synchronize with ntp

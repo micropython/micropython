@@ -16,8 +16,6 @@
 
 #define DATA_CACHE_ENABLE           1
 #define INSTRUCTION_CACHE_ENABLE    1
-#define DATA_CACHE_ENABLE           1
-#define INSTRUCTION_CACHE_ENABLE    1
 #define PREFETCH_ENABLE             1
 #define USE_RTOS                    0
 

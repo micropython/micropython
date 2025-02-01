@@ -1911,24 +1911,21 @@ static int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
                 // <type=peer,addr,*> (single)
                 // Find the entry for this specific peer.
                 assert(key->sec.idx == 0);
-                assert(!key->sec.ediv_rand_present);
                 key_data = (const uint8_t *)&key->sec.peer_addr;
                 key_data_len = sizeof(ble_addr_t);
             } else {
                 // <type=peer,*> (with index)
                 // Iterate all known peers.
-                assert(!key->sec.ediv_rand_present);
                 key_data = NULL;
                 key_data_len = 0;
             }
             break;
         }
         case BLE_STORE_OBJ_TYPE_OUR_SEC: {
-            // <type=our,addr,ediv_rand>
-            // Find our secret for this remote device, matching this ediv/rand key.
+            // <type=our,addr,*>
+            // Find our secret for this remote device.
             assert(ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
             assert(key->sec.idx == 0);
-            assert(key->sec.ediv_rand_present);
             key_data = (const uint8_t *)&key->sec.peer_addr;
             key_data_len = sizeof(ble_addr_t);
             break;
@@ -1958,10 +1955,6 @@ static int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
 
     DEBUG_printf("ble_secret_store_read: found secret\n");
 
-    if (obj_type == BLE_STORE_OBJ_TYPE_OUR_SEC) {
-        // TODO: Verify ediv_rand matches.
-    }
-
     return 0;
 }
 
@@ -1970,14 +1963,13 @@ static int ble_secret_store_write(int obj_type, const union ble_store_value *val
     switch (obj_type) {
         case BLE_STORE_OBJ_TYPE_PEER_SEC:
         case BLE_STORE_OBJ_TYPE_OUR_SEC: {
-            // <type=peer,addr,edivrand>
+            // <type=peer,addr,*>
 
             struct ble_store_key_sec key_sec;
             const struct ble_store_value_sec *value_sec = &val->sec;
             ble_store_key_from_value_sec(&key_sec, value_sec);
 
             assert(ble_addr_cmp(&key_sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
-            assert(key_sec.ediv_rand_present);
 
             if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key_sec.peer_addr, sizeof(ble_addr_t), (const uint8_t *)value_sec, sizeof(struct ble_store_value_sec))) {
                 DEBUG_printf("Failed to write key: type=%d\n", obj_type);
@@ -2005,9 +1997,7 @@ static int ble_secret_store_delete(int obj_type, const union ble_store_key *key)
         case BLE_STORE_OBJ_TYPE_PEER_SEC:
         case BLE_STORE_OBJ_TYPE_OUR_SEC: {
             // <type=peer,addr,*>
-
             assert(ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
-            // ediv_rand is optional (will not be present for delete).
 
             if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key->sec.peer_addr, sizeof(ble_addr_t), NULL, 0)) {
                 DEBUG_printf("Failed to delete key: type=%d\n", obj_type);

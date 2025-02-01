@@ -281,3 +281,25 @@ def update_mpy(*args, **kwargs):
     elems = update_app_elements(*args, **kwargs)
     if elems:
         machine.bootloader(elems)
+
+
+def get_mboot_version(
+    mboot_base=0x0800_0000,  # address of start of mboot flash section
+    mboot_len=0x8000,  # length of mboot flash section
+    mboot_ver_len=64,  # length of mboot version section (defined in mboot/Makefile or in board dir)
+    valid_prefix="mboot-",  # prefix that the version string was defined with
+    include_opts=True,  # return the options mboot was built with (set False for just the version)
+):
+    s = ""
+    for i in range(mboot_ver_len):
+        c = stm.mem8[mboot_base + mboot_len - mboot_ver_len + i]
+        if c == 0x00 or c == 0xFF:  # have hit padding or empty flash
+            break
+        s += chr(c)
+    if s.startswith(valid_prefix):
+        if include_opts:
+            return s
+        else:
+            return s.split("+")[0]  # optional mboot config info stored after "+"
+    else:  # version hasn't been set, so on the original mboot (i.e. mboot-v1.0.0)
+        return None

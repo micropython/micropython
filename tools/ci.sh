@@ -39,12 +39,18 @@ function ci_c_code_formatting_run {
 # commit formatting
 
 function ci_commit_formatting_run {
-    git remote add upstream https://github.com/micropython/micropython.git
-    git fetch --depth=100 upstream master
+    # Default GitHub Actions checkout for a PR is a generated merge commit where
+    # the parents are the head of base branch (i.e. master) and the head of the
+    # PR branch, respectively. Use these parents to find the merge-base (i.e.
+    # where the PR branch head was branched)
+
     # If the common ancestor commit hasn't been found, fetch more.
-    git merge-base upstream/master HEAD || git fetch --unshallow upstream master
-    # For a PR, upstream/master..HEAD ends with a merge commit into master, exclude that one.
-    tools/verifygitlog.py -v upstream/master..HEAD --no-merges
+    git merge-base HEAD^1 HEAD^2 || git fetch --unshallow origin
+
+    MERGE_BASE=$(git merge-base HEAD^1 HEAD^2)
+    HEAD=$(git rev-parse HEAD^2)
+    echo "Checking commits between merge base ${MERGE_BASE} and PR head ${HEAD}..."
+    tools/verifygitlog.py -v "${MERGE_BASE}..${HEAD}"
 }
 
 ########################################################################################
@@ -55,32 +61,45 @@ function ci_code_size_setup {
     sudo apt-get install gcc-multilib
     gcc --version
     ci_gcc_arm_setup
+    ci_gcc_riscv_setup
 }
 
 function ci_code_size_build {
     # check the following ports for the change in their code size
-    PORTS_TO_CHECK=bmusxpd
+    PORTS_TO_CHECK=bmusxpdv
     SUBMODULES="lib/asf4 lib/berkeley-db-1.xx lib/btstack lib/cyw43-driver lib/lwip lib/mbedtls lib/micropython-lib lib/nxp_driver lib/pico-sdk lib/stm32lib lib/tinyusb"
 
-    # starts off at either the ref/pull/N/merge FETCH_HEAD, or the current branch HEAD
-    git checkout -b pull_request # save the current location
-    git remote add upstream https://github.com/micropython/micropython.git
-    git fetch --depth=100 upstream master
-    # If the common ancestor commit hasn't been found, fetch more.
-    git merge-base upstream/master HEAD || git fetch --unshallow upstream master
+    # Default GitHub pull request sets HEAD to a generated merge commit
+    # between PR branch (HEAD^2) and base branch (i.e. master) (HEAD^1).
+    #
+    # We want to compare this generated commit with the base branch, to see what
+    # the code size impact would be if we merged this PR.
+    REFERENCE=$(git rev-parse --short HEAD^1)
+    COMPARISON=$(git rev-parse --short HEAD)
+
+    echo "Comparing sizes of reference ${REFERENCE} to ${COMPARISON}..."
+    git log --oneline $REFERENCE..$COMPARISON
+
+    function code_size_build_step {
+        COMMIT=$1
+        OUTFILE=$2
+        IGNORE_ERRORS=$3
+
+        echo "Building ${COMMIT}..."
+        git checkout --detach $COMMIT
+        git submodule update --init $SUBMODULES
+        git show -s
+        tools/metrics.py clean $PORTS_TO_CHECK
+        tools/metrics.py build $PORTS_TO_CHECK | tee $OUTFILE || $IGNORE_ERRORS
+    }
+
     # build reference, save to size0
     # ignore any errors with this build, in case master is failing
-    git checkout `git merge-base --fork-point upstream/master pull_request`
-    git submodule update --init $SUBMODULES
-    git show -s
-    tools/metrics.py clean $PORTS_TO_CHECK
-    tools/metrics.py build $PORTS_TO_CHECK | tee ~/size0 || true
+    code_size_build_step $REFERENCE ~/size0 true
     # build PR/branch, save to size1
-    git checkout pull_request
-    git submodule update --init $SUBMODULES
-    git log upstream/master..HEAD
-    tools/metrics.py clean $PORTS_TO_CHECK
-    tools/metrics.py build $PORTS_TO_CHECK | tee ~/size1
+    code_size_build_step $COMPARISON ~/size1 false
+
+    unset -f code_size_build_step
 }
 
 ########################################################################################
@@ -254,6 +273,7 @@ function ci_qemu_setup_arm {
 }
 
 function ci_qemu_setup_rv32 {
+    ci_mpy_format_setup
     ci_gcc_riscv_setup
     sudo apt-get update
     sudo apt-get install qemu-system
@@ -265,14 +285,18 @@ function ci_qemu_build_arm {
     make ${MAKEOPTS} -C ports/qemu submodules
     make ${MAKEOPTS} -C ports/qemu CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
     make ${MAKEOPTS} -C ports/qemu clean
-    make ${MAKEOPTS} -C ports/qemu test
-    make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test
+    make ${MAKEOPTS} -C ports/qemu test_full
+    make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full
 }
 
 function ci_qemu_build_rv32 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 submodules
-    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test_full
+
+    # Test building and running native .mpy with rv32imc architecture.
+    ci_native_mpy_modules_build rv32imc
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test_natmod
 }
 
 ########################################################################################
@@ -308,6 +332,8 @@ function ci_rp2_build {
     make ${MAKEOPTS} -C ports/rp2
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W submodules
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W USER_C_MODULES=../../examples/usercmodule/micropython.cmake
+    make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO2 submodules
+    make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO2
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO submodules
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO
 
@@ -410,7 +436,6 @@ CI_UNIX_OPTS_QEMU_MIPS=(
     CROSS_COMPILE=mips-linux-gnu-
     VARIANT=coverage
     MICROPY_STANDALONE=1
-    LDFLAGS_EXTRA="-static"
 )
 
 CI_UNIX_OPTS_QEMU_ARM=(
@@ -422,6 +447,7 @@ CI_UNIX_OPTS_QEMU_ARM=(
 CI_UNIX_OPTS_QEMU_RISCV64=(
     CROSS_COMPILE=riscv64-linux-gnu-
     VARIANT=coverage
+    MICROPY_STANDALONE=1
 )
 
 function ci_unix_build_helper {
@@ -455,10 +481,14 @@ function ci_native_mpy_modules_build {
         arch=$1
     fi
     make -C examples/natmod/features1 ARCH=$arch
-    make -C examples/natmod/features2 ARCH=$arch
+    if [ $arch != rv32imc ]; then
+        # This requires soft-float support on rv32imc.
+        make -C examples/natmod/features2 ARCH=$arch
+        # This requires thread local storage support on rv32imc.
+        make -C examples/natmod/btree ARCH=$arch
+    fi
     make -C examples/natmod/features3 ARCH=$arch
     make -C examples/natmod/features4 ARCH=$arch
-    make -C examples/natmod/btree ARCH=$arch
     make -C examples/natmod/deflate ARCH=$arch
     make -C examples/natmod/framebuf ARCH=$arch
     make -C examples/natmod/heapq ARCH=$arch
@@ -630,9 +660,6 @@ function ci_unix_settrace_stackless_run_tests {
 }
 
 function ci_unix_macos_build {
-    # Install pkg-config to configure libffi paths.
-    brew install pkg-config
-
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix submodules
     #make ${MAKEOPTS} -C ports/unix deplibs
@@ -651,22 +678,21 @@ function ci_unix_macos_run_tests {
 
 function ci_unix_qemu_mips_setup {
     sudo apt-get update
-    sudo apt-get install gcc-mips-linux-gnu g++-mips-linux-gnu
+    sudo apt-get install gcc-mips-linux-gnu g++-mips-linux-gnu libc6-mips-cross
     sudo apt-get install qemu-user
     qemu-mips --version
+    sudo mkdir /etc/qemu-binfmt
+    sudo ln -s /usr/mips-linux-gnu/ /etc/qemu-binfmt/mips
 }
 
 function ci_unix_qemu_mips_build {
-    # qemu-mips on GitHub Actions will seg-fault if not linked statically
     ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_MIPS[@]}"
+    ci_unix_build_ffi_lib_helper mips-linux-gnu-gcc
 }
 
 function ci_unix_qemu_mips_run_tests {
-    # Issues with MIPS tests:
-    # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
-    # - ffi tests do not work
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.*\.py' --exclude 'ffi_(callback|float|float2).py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py)
 }
 
 function ci_unix_qemu_arm_setup {
@@ -674,6 +700,8 @@ function ci_unix_qemu_arm_setup {
     sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
     sudo apt-get install qemu-user
     qemu-arm --version
+    sudo mkdir /etc/qemu-binfmt
+    sudo ln -s /usr/arm-linux-gnueabi/ /etc/qemu-binfmt/arm
 }
 
 function ci_unix_qemu_arm_build {
@@ -684,26 +712,22 @@ function ci_unix_qemu_arm_build {
 function ci_unix_qemu_arm_run_tests {
     # Issues with ARM tests:
     # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
-    export QEMU_LD_PREFIX=/usr/arm-linux-gnueabi
     file ./ports/unix/build-coverage/micropython
     (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.*\.py')
 }
 
 function ci_unix_qemu_riscv64_setup {
-    . /etc/os-release
-    for repository in "${VERSION_CODENAME}" "${VERSION_CODENAME}-updates" "${VERSION_CODENAME}-security"
-    do
-        sudo add-apt-repository -y -n "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports ${repository} main"
-    done
     sudo apt-get update
-    sudo dpkg --add-architecture riscv64
-    sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libffi-dev:riscv64
+    sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu
     sudo apt-get install qemu-user
     qemu-riscv64 --version
+    sudo mkdir /etc/qemu-binfmt
+    sudo ln -s /usr/riscv64-linux-gnu/ /etc/qemu-binfmt/riscv64
 }
 
 function ci_unix_qemu_riscv64_build {
     ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_RISCV64[@]}"
+    ci_unix_build_ffi_lib_helper riscv64-linux-gnu-gcc
 }
 
 function ci_unix_qemu_riscv64_run_tests {
@@ -727,19 +751,32 @@ function ci_windows_build {
 ########################################################################################
 # ports/zephyr
 
-ZEPHYR_DOCKER_VERSION=v0.21.0
-ZEPHYR_SDK_VERSION=0.13.2
-ZEPHYR_VERSION=v3.1.0
+ZEPHYR_DOCKER_VERSION=v0.26.13
+ZEPHYR_SDK_VERSION=0.16.8
+ZEPHYR_VERSION=v3.7.0
 
 function ci_zephyr_setup {
-    docker pull zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}
+    IMAGE=ghcr.io/zephyrproject-rtos/ci:${ZEPHYR_DOCKER_VERSION}
+
+    docker pull ${IMAGE}
+
+    # Directories cached by GitHub Actions, mounted
+    # into the container
+    ZEPHYRPROJECT_DIR="$(pwd)/zephyrproject"
+    CCACHE_DIR="$(pwd)/.ccache"
+
+    mkdir -p "${ZEPHYRPROJECT_DIR}"
+    mkdir -p "${CCACHE_DIR}"
+
     docker run --name zephyr-ci -d -it \
       -v "$(pwd)":/micropython \
+      -v "${ZEPHYRPROJECT_DIR}":/zephyrproject \
+      -v "${CCACHE_DIR}":/root/.cache/ccache \
       -e ZEPHYR_SDK_INSTALL_DIR=/opt/toolchains/zephyr-sdk-${ZEPHYR_SDK_VERSION} \
       -e ZEPHYR_TOOLCHAIN_VARIANT=zephyr \
       -e ZEPHYR_BASE=/zephyrproject/zephyr \
       -w /micropython/ports/zephyr \
-      zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}
+      ${IMAGE}
     docker ps -a
 
     # qemu-system-arm is needed to run the test suite.
@@ -765,5 +802,5 @@ function ci_zephyr_run_tests {
     docker exec zephyr-ci west build -p auto -b qemu_cortex_m3 -- -DCONF_FILE=prj_minimal.conf
     # Issues with zephyr tests:
     # - inf_nan_arith fails pow(-1, nan) test
-    (cd tests && ./run-tests.py --target minimal --device execpty:"qemu-system-arm -cpu cortex-m3 -machine lm3s6965evb -nographic -monitor null -serial pty -kernel ../ports/zephyr/build/zephyr/zephyr.elf" -d basics float --exclude inf_nan_arith)
+    (cd tests && ./run-tests.py -t execpty:"qemu-system-arm -cpu cortex-m3 -machine lm3s6965evb -nographic -monitor null -serial pty -kernel ../ports/zephyr/build/zephyr/zephyr.elf" -d basics float --exclude inf_nan_arith)
 }

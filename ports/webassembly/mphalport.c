@@ -25,8 +25,8 @@
  */
 
 #include <unistd.h>
+#include "py/mphal.h"
 #include "library.h"
-#include "mphalport.h"
 
 static void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;

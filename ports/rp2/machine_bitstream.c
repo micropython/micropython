@@ -32,7 +32,30 @@
 
 #if MICROPY_PY_MACHINE_BITSTREAM
 
+#if PICO_RP2350
+#define MP_HAL_BITSTREAM_NS_OVERHEAD  (5)
+#else
 #define MP_HAL_BITSTREAM_NS_OVERHEAD  (9)
+#endif
+
+#if PICO_RISCV
+
+__attribute__((naked)) void mcycle_init(void) {
+    __asm volatile (
+        "li a0, 4\n"
+        "csrw mcountinhibit, a0\n"
+        "ret\n"
+        );
+}
+
+__attribute__((naked)) uint32_t mcycle_get(void) {
+    __asm volatile (
+        "csrr a0, mcycle\n"
+        "ret\n"
+        );
+}
+
+#endif
 
 void __time_critical_func(machine_bitstream_high_low)(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
     uint32_t fcpu_mhz = mp_hal_get_cpu_freq() / 1000000;
@@ -48,10 +71,16 @@ void __time_critical_func(machine_bitstream_high_low)(mp_hal_pin_obj_t pin, uint
         }
     }
     mp_hal_pin_output(pin);
-    // Enable the systick counter, source CPU clock.
-    systick_hw->csr = 5;
 
     uint32_t irq_state = mp_hal_quiet_timing_enter();
+
+    #if PICO_ARM
+
+    // Set systick reset value.
+    systick_hw->rvr = 0x00FFFFFF;
+
+    // Enable the systick counter, source CPU clock.
+    systick_hw->csr = 5;
 
     for (size_t i = 0; i < len; ++i) {
         uint8_t b = buf[i];
@@ -67,6 +96,27 @@ void __time_critical_func(machine_bitstream_high_low)(mp_hal_pin_obj_t pin, uint
             }
         }
     }
+
+    #elif PICO_RISCV
+
+    mcycle_init();
+
+    for (size_t i = 0; i < len; ++i) {
+        uint8_t b = buf[i];
+        for (size_t j = 0; j < 8; ++j) {
+            uint32_t *t = &timing_ns[b >> 6 & 2];
+            uint32_t start_ticks = mcycle_get();
+            mp_hal_pin_high(pin);
+            while ((mcycle_get() - start_ticks) < t[0]) {
+            }
+            b <<= 1;
+            mp_hal_pin_low(pin);
+            while ((mcycle_get() - start_ticks) < t[1]) {
+            }
+        }
+    }
+
+    #endif
 
     mp_hal_quiet_timing_exit(irq_state);
 }

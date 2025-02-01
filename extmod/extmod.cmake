@@ -58,6 +58,8 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/vfs_fat_diskio.c
     ${MICROPY_EXTMOD_DIR}/vfs_fat_file.c
     ${MICROPY_EXTMOD_DIR}/vfs_lfs.c
+    ${MICROPY_EXTMOD_DIR}/vfs_rom.c
+    ${MICROPY_EXTMOD_DIR}/vfs_rom_file.c
     ${MICROPY_EXTMOD_DIR}/vfs_posix.c
     ${MICROPY_EXTMOD_DIR}/vfs_posix_file.c
     ${MICROPY_EXTMOD_DIR}/vfs_reader.c
@@ -217,6 +219,7 @@ if(MICROPY_SSL_MBEDTLS)
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pkcs12.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pkcs5.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pkparse.c
+        ${MICROPY_LIB_MBEDTLS_DIR}/library/pk_ecc.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pk_wrap.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pkwrite.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/platform.c

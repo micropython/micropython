@@ -28,6 +28,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "py/runtime.h"
+
 #include "shared/runtime/semihosting_arm.h"
 #include "uart.h"
 
@@ -50,7 +52,7 @@ __attribute__((naked)) void Reset_Handler(void) {
     _start();
 }
 
-void Default_Handler(void) {
+NORETURN void Default_Handler(void) {
     for (;;) {
     }
 }
@@ -74,25 +76,35 @@ __attribute__((naked, section(".isr_vector"))) void isr_vector(void) {
 
 #elif defined(__ARM_ARCH_ISA_THUMB)
 
+extern void NMI_Handler(void);
+extern void HardFault_Handler(void);
+extern void MemManage_Handler(void);
+extern void BusFault_Handler(void);
+extern void UsageFault_Handler(void);
+extern void SVC_Handler(void);
+extern void DebugMon_Handler(void);
+extern void PendSV_Handler(void);
+extern void SysTick_Handler(void);
+
 // ARM architecture with Thumb-only ISA.
 
 const uint32_t isr_vector[] __attribute__((section(".isr_vector"))) = {
     (uint32_t)&_estack,
     (uint32_t)&Reset_Handler,
-    (uint32_t)&Default_Handler, // NMI_Handler
-    (uint32_t)&Default_Handler, // HardFault_Handler
-    (uint32_t)&Default_Handler, // MemManage_Handler
-    (uint32_t)&Default_Handler, // BusFault_Handler
-    (uint32_t)&Default_Handler, // UsageFault_Handler
+    (uint32_t)&NMI_Handler,
+    (uint32_t)&HardFault_Handler,
+    (uint32_t)&MemManage_Handler,
+    (uint32_t)&BusFault_Handler,
+    (uint32_t)&UsageFault_Handler,
     0,
     0,
     0,
     0,
-    (uint32_t)&Default_Handler, // SVC_Handler
-    (uint32_t)&Default_Handler, // DebugMon_Handler
+    (uint32_t)&SVC_Handler,
+    (uint32_t)&DebugMon_Handler,
     0,
-    (uint32_t)&Default_Handler, // PendSV_Handler
-    (uint32_t)&Default_Handler, // SysTick_Handler
+    (uint32_t)&PendSV_Handler,
+    (uint32_t)&SysTick_Handler,
 };
 
 #endif

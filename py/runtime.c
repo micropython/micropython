@@ -119,8 +119,8 @@ void mp_init(void) {
     MP_STATE_VM(mp_module_builtins_override_dict) = NULL;
     #endif
 
-    #if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
-    MP_STATE_VM(track_reloc_code_list) = MP_OBJ_NULL;
+    #if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA || MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA
+    MP_STATE_VM(persistent_code_root_pointers) = MP_OBJ_NULL;
     #endif
 
     #if MICROPY_PY_OS_DUPTERM

@@ -1,7 +1,6 @@
 name: Check code size
 
 on:
-  push:
   pull_request:
     paths:
       - '.github/workflows/*.yml'
@@ -24,7 +23,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
       with:

@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/i2c.h>
 
 #include "py/runtime.h"
@@ -37,6 +37,7 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "extmod/modmachine.h"
+#include "zephyr_device.h"
 
 #if MICROPY_PY_MACHINE_I2C
 
@@ -64,12 +65,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const char *dev_name = mp_obj_str_get_str(args[ARG_id].u_obj);
-    const struct device *dev = device_get_binding(dev_name);
-
-    if (dev == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("device not found"));
-    }
+    const struct device *dev = zephyr_device_find(args[ARG_id].u_obj);
 
     if ((args[ARG_scl].u_obj != MP_OBJ_NULL) || (args[ARG_sda].u_obj != MP_OBJ_NULL)) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("explicit choice of scl/sda is not implemented"));

@@ -172,6 +172,8 @@ class PinGenerator:
         self._pins = []
         self._pin_type = pin_type
         self._enable_af = enable_af
+        self._pin_cpu_num_entries = 0
+        self._pin_board_num_entries = 0
 
     # Allows a port to define a known cpu pin (without relying on it being in the
     # csv file).
@@ -298,6 +300,9 @@ class PinGenerator:
                     # Don't include hidden pins in Pins.board.
                     continue
 
+                # Keep track of the total number of Pin.board entries.
+                self._pin_board_num_entries += 1
+
                 # We don't use the enable macro for board pins, because they
                 # shouldn't be referenced in pins.csv unless they're
                 # available.
@@ -322,6 +327,9 @@ class PinGenerator:
             file=out_source,
         )
         for pin in self.available_pins(exclude_hidden=True):
+            # Keep track of the total number of Pin.cpu entries.
+            self._pin_cpu_num_entries += 1
+
             m = pin.enable_macro()
             if m:
                 print("    #if {}".format(m), file=out_source)
@@ -351,6 +359,20 @@ class PinGenerator:
 
     # Print the pin_CPUNAME and pin_BOARDNAME macros.
     def print_defines(self, out_header, cpu=True, board=True):
+        # Provide #defines for the number of cpu and board pins.
+        print(
+            "#define MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES ({})".format(
+                self._pin_cpu_num_entries
+            ),
+            file=out_header,
+        )
+        print(
+            "#define MICROPY_PY_MACHINE_PIN_BOARD_NUM_ENTRIES ({})".format(
+                self._pin_board_num_entries
+            ),
+            file=out_header,
+        )
+
         # Provide #defines for each cpu pin.
         for pin in self.available_pins():
             print(file=out_header)

@@ -38,10 +38,10 @@
 #include "soc/spi_pins.h"
 
 // SPI mappings by device, naming used by IDF old/new
-// upython   | ESP32     | ESP32S2   | ESP32S3 | ESP32C3
-// ----------+-----------+-----------+---------+---------
-// SPI(id=1) | HSPI/SPI2 | FSPI/SPI2 | SPI2    | SPI2
-// SPI(id=2) | VSPI/SPI3 | HSPI/SPI3 | SPI3    | err
+// upython   | ESP32     | ESP32S2   | ESP32S3 | ESP32C3 | ESP32C6
+// ----------+-----------+-----------+---------+---------+---------
+// SPI(id=1) | HSPI/SPI2 | FSPI/SPI2 | SPI2    | SPI2    | SPI2
+// SPI(id=2) | VSPI/SPI3 | HSPI/SPI3 | SPI3    | err     | err
 
 // Number of available hardware SPI peripherals.
 #if SOC_SPI_PERIPH_NUM > 2
@@ -196,6 +196,10 @@ static void machine_hw_spi_init_internal(machine_hw_spi_obj_t *self, mp_arg_val_
         changed = true;
     }
 
+    if (args[ARG_bits].u_int != -1 && args[ARG_bits].u_int <= 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid bits"));
+    }
+
     if (args[ARG_bits].u_int != -1 && args[ARG_bits].u_int != self->bits) {
         self->bits = args[ARG_bits].u_int;
         changed = true;
@@ -251,14 +255,14 @@ static void machine_hw_spi_init_internal(machine_hw_spi_obj_t *self, mp_arg_val_
 
     // Select DMA channel based on the hardware SPI host
     int dma_chan = 0;
-    #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C3
-    dma_chan = SPI_DMA_CH_AUTO;
-    #else
+    #if CONFIG_IDF_TARGET_ESP32
     if (self->host == SPI2_HOST) {
         dma_chan = 1;
     } else {
         dma_chan = 2;
     }
+    #else
+    dma_chan = SPI_DMA_CH_AUTO;
     #endif
 
     ret = spi_bus_initialize(self->host, &buscfg, dma_chan);

@@ -19,13 +19,8 @@
 #define MICROPY_HW_SPI2_SCK                 (18)
 
 #define MICROPY_HW_ENABLE_USBDEV            (1)
-#define MICROPY_EXCLUDE_SHARED_TINYUSB_USBD_CDC (1)
-#define MICROPY_HW_USB_EXTERNAL_TINYUSB     (1)
 #define MICROPY_HW_USB_CDC_1200BPS_TOUCH    (1)
 #define MICROPY_SCHEDULER_STATIC_NODES      (1)
-
-#define MICROPY_HW_USB_CUSTOM_LINE_STATE_CB             NANO_ESP32_usb_callback_line_state_changed
-void NANO_ESP32_usb_callback_line_state_changed(int itf, void *event);
 
 #define MICROPY_BOARD_STARTUP                           NANO_ESP32_board_startup
 void NANO_ESP32_board_startup(void);

@@ -54,7 +54,7 @@ typedef struct _machine_pwm_obj_t {
 #define PWM_CLK_READY   (1)
 #define PWM_TCC_ENABLED (2)
 #define PWM_MASTER_CLK  (get_peripheral_freq())
-#define PWM_FULL_SCALE  (65536)
+#define PWM_FULL_SCALE  (65535)
 #define PWM_UPDATE_TIMEOUT (2000)
 
 #define VALUE_NOT_SET    (-1)

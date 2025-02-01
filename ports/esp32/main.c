@@ -39,6 +39,7 @@
 #include "esp_task.h"
 #include "esp_event.h"
 #include "esp_log.h"
+#include "esp_memory_utils.h"
 #include "esp_psram.h"
 
 #include "py/cstack.h"
@@ -52,6 +53,7 @@
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/timeutils/timeutils.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "mbedtls/platform_time.h"
 
 #include "uart.h"
@@ -101,7 +103,7 @@ void mp_task(void *pvParameter) {
     #endif
     #if MICROPY_HW_ESP_USB_SERIAL_JTAG
     usb_serial_jtag_init();
-    #elif MICROPY_HW_USB_CDC
+    #elif MICROPY_HW_ENABLE_USBDEV
     usb_init();
     #endif
     #if MICROPY_HW_ENABLE_UART_REPL
@@ -181,6 +183,10 @@ soft_reset_exit:
     mp_thread_deinit();
     #endif
 
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+    mp_usbd_deinit();
+    #endif
+
     gc_sweep_all();
 
     // Free any native code pointers that point to iRAM.
@@ -236,6 +242,13 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     len = (len + 3) & ~3;
     size_t len_node = sizeof(native_code_node_t) + len;
     native_code_node_t *node = heap_caps_malloc(len_node, MALLOC_CAP_EXEC);
+    #if CONFIG_IDF_TARGET_ESP32S2
+    // Workaround for ESP-IDF bug https://github.com/espressif/esp-idf/issues/14835
+    if (node != NULL && !esp_ptr_executable(node)) {
+        free(node);
+        node = NULL;
+    }
+    #endif // CONFIG_IDF_TARGET_ESP32S2
     if (node == NULL) {
         m_malloc_fail(len_node);
     }

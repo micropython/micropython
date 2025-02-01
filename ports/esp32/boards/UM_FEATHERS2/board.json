@@ -1,7 +1,11 @@
 {
     "deploy": [
-        "deploy.md"
+        "../deploy_flashmode.md",
+        "../deploy_nativeusb.md"
     ],
+    "deploy_options": {
+        "flash_offset": "0x1000"
+    },
     "docs": "",
     "features": [
         "Battery Charging",
@@ -20,7 +24,7 @@
         "unexpectedmaker_feathers2.jpg"
     ],
     "mcu": "esp32s2",
-    "product": "Feather S2",
+    "product": "FeatherS2",
     "thumbnail": "",
     "url": "https://feathers2.io/",
     "vendor": "Unexpected Maker"

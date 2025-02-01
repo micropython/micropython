@@ -69,8 +69,13 @@
 #define MAX_BUFFER_SIZE  (32766)
 
 #define IS_VALID_PERIPH(uart, pin)  (((((pin) + 4) & 8) >> 3) == (uart))
+#if PICO_RP2350
+#define IS_VALID_TX(uart, pin)      (((pin) & 1) == 0 && IS_VALID_PERIPH(uart, pin))
+#define IS_VALID_RX(uart, pin)      (((pin) & 1) == 1 && IS_VALID_PERIPH(uart, pin))
+#else
 #define IS_VALID_TX(uart, pin)      (((pin) & 3) == 0 && IS_VALID_PERIPH(uart, pin))
 #define IS_VALID_RX(uart, pin)      (((pin) & 3) == 1 && IS_VALID_PERIPH(uart, pin))
+#endif
 #define IS_VALID_CTS(uart, pin)     (((pin) & 3) == 2 && IS_VALID_PERIPH(uart, pin))
 #define IS_VALID_RTS(uart, pin)     (((pin) & 3) == 3 && IS_VALID_PERIPH(uart, pin))
 
@@ -385,6 +390,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     if (n_args > 0 || kw_args->used > 0 || self->baudrate == 0) {
         if (self->baudrate == 0) {
             self->baudrate = DEFAULT_UART_BAUDRATE;
+            self->timeout_char = 0;
         }
 
         // Make sure timeout_char is at least as long as a whole character (13 bits to be safe).
@@ -398,8 +404,8 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         __dsb(); // make sure UARTLCR_H register is written to
         uart_set_fifo_enabled(self->uart, true);
         __dsb(); // make sure UARTLCR_H register is written to
-        gpio_set_function(self->tx, GPIO_FUNC_UART);
-        gpio_set_function(self->rx, GPIO_FUNC_UART);
+        gpio_set_function(self->tx, UART_FUNCSEL_NUM(self->uart, self->tx));
+        gpio_set_function(self->rx, UART_FUNCSEL_NUM(self->uart, self->rx));
         if (self->invert & UART_INVERT_RX) {
             gpio_set_inover(self->rx, GPIO_OVERRIDE_INVERT);
         }
@@ -458,6 +464,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+    uart_tx_wait_blocking(self->uart); // Flush TX FIFO if necessary
     uart_deinit(self->uart);
     if (self->uart_id == 0) {
         irq_set_enabled(UART0_IRQ, false);
@@ -484,8 +491,9 @@ static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
 }
 
 static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+    // TX is done when: nothing in the ringbuf, TX FIFO is empty, TX output is not busy.
     return ringbuf_avail(&self->write_buffer) == 0
-           && (uart_get_hw(self->uart)->fr & UART_UARTFR_TXFE_BITS);
+           && (uart_get_hw(self->uart)->fr & (UART_UARTFR_TXFE_BITS | UART_UARTFR_BUSY_BITS)) == UART_UARTFR_TXFE_BITS;
 }
 
 static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {

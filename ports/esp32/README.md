@@ -28,7 +28,7 @@ manage the ESP32 microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
 The ESP-IDF changes quickly and MicroPython only supports certain versions.
-Currently MicroPython supports v5.0.4, v5.0.5, v5.1.2, v5.2.0, v5.2.2.
+Currently MicroPython supports v5.2, v5.2.2, v5.3 and v5.4.
 
 To install the ESP-IDF the full instructions can be found at the
 [Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation-step-by-step).
@@ -195,7 +195,7 @@ quickly call `wlan_connect()` and it just works):
 ```python
 def wlan_connect(ssid='MYSSID', password='MYPASS'):
     import network
-    wlan = network.WLAN(network.STA_IF)
+    wlan = network.WLAN(network.WLAN.IF_STA)
     if not wlan.active() or not wlan.isconnected():
         wlan.active(True)
         print('connecting to:', ssid)
@@ -228,6 +228,15 @@ settings are put in `mpconfigboard.cmake`, including a list of `sdkconfig`
 files that configure ESP-IDF settings.  Some standard `sdkconfig` files are
 provided in the `boards/` directory, like `boards/sdkconfig.ble`.  You can
 also define custom ones in your board directory.
+
+Deployment instructions usually invoke the `boards/deploy.md` file (for boards
+with a USB/Serial converter connection), or the `boards/deploy_nativeusb.md`
+file (for boards with only a native USB port connection). These files are
+formatted for each board using template strings found in the `boards.json`
+files. You can also include the common `boards/deploy_flashmode.md` file if you
+have a board which requires manual resetting via the RESET and BOOT buttons.
+Boards with unique flashing steps can include custom `deploy.md` file(s).
+Existing `board.json` files contain examples of all of these combinations.
 
 See existing board definitions for further examples of configuration.
 

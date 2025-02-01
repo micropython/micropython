@@ -1,6 +1,6 @@
 name: Check commit message formatting
 
-on: [push, pull_request]
+on: [pull_request]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -12,7 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: '100'
+        fetch-depth: 100
     - uses: actions/setup-python@v5
     - name: Check commit message formatting
       run: source tools/ci.sh && ci_commit_formatting_run

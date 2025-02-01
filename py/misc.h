@@ -357,7 +357,7 @@ static inline uint32_t mp_clzll(unsigned long long x) {
 // Microsoft don't ship _BitScanReverse64 on Win32, so emulate it
 static inline uint32_t mp_clzll(unsigned long long x) {
     unsigned long h = x >> 32;
-    return h ? mp_clzl(h) : (mp_clzl(x) + 32);
+    return h ? mp_clzl(h) : (mp_clzl((unsigned long)x) + 32);
 }
 #endif
 
@@ -370,16 +370,45 @@ static inline uint32_t mp_ctz(uint32_t x) {
 static inline bool mp_check(bool value) {
     return value;
 }
+
+static inline uint32_t mp_popcount(uint32_t x) {
+    return __popcnt(x);
+}
 #else
 #define mp_clz(x) __builtin_clz(x)
 #define mp_clzl(x) __builtin_clzl(x)
 #define mp_clzll(x) __builtin_clzll(x)
 #define mp_ctz(x) __builtin_ctz(x)
 #define mp_check(x) (x)
+#if defined __has_builtin
+#if __has_builtin(__builtin_popcount)
+#define mp_popcount(x) __builtin_popcount(x)
+#endif
+#endif
+#if !defined(mp_popcount)
+static inline uint32_t mp_popcount(uint32_t x) {
+    x = x - ((x >> 1) & 0x55555555);
+    x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+    x = (x + (x >> 4)) & 0x0F0F0F0F;
+    return x * 0x01010101;
+}
+#endif
 #endif
 
 // mp_int_t can be larger than long, i.e. Windows 64-bit, nan-box variants
 static inline uint32_t mp_clz_mpi(mp_int_t x) {
+    #ifdef __XC16__
+    mp_uint_t mask = MP_OBJ_WORD_MSBIT_HIGH;
+    mp_uint_t zeroes = 0;
+    while (mask != 0) {
+        if (mask & (mp_uint_t)x) {
+            break;
+        }
+        zeroes++;
+        mask >>= 1;
+    }
+    return zeroes;
+    #else
     MP_STATIC_ASSERT(sizeof(mp_int_t) == sizeof(long long)
         || sizeof(mp_int_t) == sizeof(long));
 
@@ -389,6 +418,7 @@ static inline uint32_t mp_clz_mpi(mp_int_t x) {
     } else {
         return mp_clzll((unsigned long long)x);
     }
+    #endif
 }
 
 #endif // MICROPY_INCLUDED_PY_MISC_H

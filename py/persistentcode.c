@@ -72,6 +72,20 @@ typedef struct _bytecode_prelude_t {
 static int read_byte(mp_reader_t *reader);
 static size_t read_uint(mp_reader_t *reader);
 
+#if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA || MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA
+
+// An mp_obj_list_t that tracks native text/BSS/rodata to prevent the GC from reclaiming them.
+MP_REGISTER_ROOT_POINTER(mp_obj_t persistent_code_root_pointers);
+
+static void track_root_pointer(void *ptr) {
+    if (MP_STATE_PORT(persistent_code_root_pointers) == MP_OBJ_NULL) {
+        MP_STATE_PORT(persistent_code_root_pointers) = mp_obj_new_list(0, NULL);
+    }
+    mp_obj_list_append(MP_STATE_PORT(persistent_code_root_pointers), MP_OBJ_FROM_PTR(ptr));
+}
+
+#endif
+
 #if MICROPY_EMIT_MACHINE_CODE
 
 typedef struct _reloc_info_t {
@@ -167,18 +181,40 @@ static qstr load_qstr(mp_reader_t *reader) {
         return len >> 1;
     }
     len >>= 1;
-    qstr qst;
-    if (reader->readbytes) {
-        qst = qstr_from_strn((const char *)reader->readbytes(reader->data, len + 1), len);
-    } else {
-        char *str = m_new(char, len);
-        read_bytes(reader, (byte *)str, len);
-        read_byte(reader); // read and discard null terminator
-        qst = qstr_from_strn(str, len);
-        m_del(char, str, len);
+
+    #if MICROPY_VFS_ROM
+    // If possible, create the qstr from the memory-mapped string data.
+    const uint8_t *memmap = mp_reader_try_read_rom(reader, len + 1);
+    if (memmap != NULL) {
+        return qstr_from_strn_static((const char *)memmap, len);
     }
+    #endif
+
+    char *str = m_new(char, len);
+    read_bytes(reader, (byte *)str, len);
+    read_byte(reader); // read and discard null terminator
+    qstr qst = qstr_from_strn(str, len);
+    m_del(char, str, len);
     return qst;
 }
+
+#if MICROPY_VFS_ROM
+// Create a str/bytes object that can forever reference the given data.
+static mp_obj_t mp_obj_new_str_static(const mp_obj_type_t *type, const byte *data, size_t len) {
+    if (type == &mp_type_str) {
+        qstr q = qstr_find_strn((const char *)data, len);
+        if (q != MP_QSTRnull) {
+            return MP_OBJ_NEW_QSTR(q);
+        }
+    }
+    assert(data[len] == '\0');
+    mp_obj_str_t *o = mp_obj_malloc(mp_obj_str_t, type);
+    o->len = len;
+    o->hash = qstr_compute_hash(data, len);
+    o->data = data;
+    return MP_OBJ_FROM_PTR(o);
+}
+#endif
 
 static mp_obj_t load_obj(mp_reader_t *reader) {
     byte obj_type = read_byte(reader);
@@ -197,6 +233,8 @@ static mp_obj_t load_obj(mp_reader_t *reader) {
         return MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj);
     } else {
         size_t len = read_uint(reader);
+
+        // Handle empty bytes object, and tuple objects.
         if (len == 0 && obj_type == MP_PERSISTENT_OBJ_BYTES) {
             read_byte(reader); // skip null terminator
             return mp_const_empty_bytes;
@@ -207,16 +245,31 @@ static mp_obj_t load_obj(mp_reader_t *reader) {
             }
             return MP_OBJ_FROM_PTR(tuple);
         }
+
+        // Read in the object's data, either from ROM or into RAM.
+        const uint8_t *memmap = NULL;
         vstr_t vstr;
-        if (reader->readbytes) {
-            vstr_init_fixed_buf(&vstr, len + 1, (char *)reader->readbytes(reader->data, len));
-            vstr.len = len;
-        } else {
+        #if MICROPY_VFS_ROM
+        memmap = mp_reader_try_read_rom(reader, len);
+        vstr.buf = (void *)memmap;
+        vstr.len = len;
+        #endif
+        if (memmap == NULL) {
+            // Data could not be memory-mapped, so allocate it in RAM and read it in.
             vstr_init_len(&vstr, len);
             read_bytes(reader, (byte *)vstr.buf, len);
         }
+
+        // Create and return the object.
         if (obj_type == MP_PERSISTENT_OBJ_STR || obj_type == MP_PERSISTENT_OBJ_BYTES) {
-            read_byte(reader); // skip null terminator
+            read_byte(reader); // skip null terminator (it needs to be there for ROM str objects)
+            #if MICROPY_VFS_ROM
+            if (memmap != NULL) {
+                // Create a str/bytes that references the memory-mapped data.
+                const mp_obj_type_t *t = obj_type == MP_PERSISTENT_OBJ_STR ? &mp_type_str : &mp_type_bytes;
+                return mp_obj_new_str_static(t, memmap, len);
+            }
+            #endif
             if (obj_type == MP_PERSISTENT_OBJ_STR) {
                 return mp_obj_new_str_from_utf8_vstr(&vstr);
             } else {
@@ -253,12 +306,15 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
     #endif
 
     if (kind == MP_CODE_BYTECODE) {
-        if (reader->readbytes) {
-            fun_data = reader->readbytes(reader->data, fun_data_len);
-        } else {
-            // Allocate memory for the bytecode
+        #if MICROPY_VFS_ROM
+        // Try to reference memory-mapped data for the bytecode.
+        fun_data = (uint8_t *)mp_reader_try_read_rom(reader, fun_data_len);
+        #endif
+
+        if (fun_data == NULL) {
+            // Allocate memory for the bytecode.
             fun_data = m_new(uint8_t, fun_data_len);
-            // Load bytecode
+            // Load bytecode.
             read_bytes(reader, fun_data, fun_data_len);
         }
 
@@ -316,11 +372,10 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
                 read_bytes(reader, rodata, rodata_size);
             }
 
-            // Viper code with BSS/rodata should not have any children.
-            // Reuse the children pointer to reference the BSS/rodata
-            // memory so that it is not reclaimed by the GC.
-            assert(!has_children);
-            children = (void *)data;
+            #if MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA
+            // Track the BSS/rodata memory so it's not reclaimed by the GC.
+            track_root_pointer(data);
+            #endif
         }
     }
     #endif
@@ -350,7 +405,7 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
 
     #if MICROPY_EMIT_MACHINE_CODE
     } else {
-        const uint8_t *prelude_ptr;
+        const uint8_t *prelude_ptr = NULL;
         #if MICROPY_EMIT_NATIVE_PRELUDE_SEPARATE_FROM_MACHINE_CODE
         if (kind == MP_CODE_NATIVE_PY) {
             // Executable code cannot be accessed byte-wise on this architecture, so copy
@@ -368,16 +423,9 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
         fun_data = MP_PLAT_COMMIT_EXEC(fun_data, fun_data_len, opt_ri);
         #else
         if (native_scope_flags & MP_SCOPE_FLAG_VIPERRELOC) {
-            #if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
-            // If native code needs relocations then it's not guaranteed that a pointer to
-            // the head of `buf` (containing the machine code) will be retained for the GC
-            // to trace.  This is because native functions can start inside `buf` and so
-            // it's possible that the only GC-reachable pointers are pointers inside `buf`.
-            // So put this `buf` on a list of reachable root pointers.
-            if (MP_STATE_PORT(track_reloc_code_list) == MP_OBJ_NULL) {
-                MP_STATE_PORT(track_reloc_code_list) = mp_obj_new_list(0, NULL);
-            }
-            mp_obj_list_append(MP_STATE_PORT(track_reloc_code_list), MP_OBJ_FROM_PTR(fun_data));
+            #if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA
+            // Track the function data memory so it's not reclaimed by the GC.
+            track_root_pointer(fun_data);
             #endif
             // Do the relocations.
             mp_native_relocate(&ri, fun_data, (uintptr_t)fun_data);
@@ -679,8 +727,3 @@ void mp_raw_code_save_file(mp_compiled_module_t *cm, qstr filename) {
 #endif // MICROPY_PERSISTENT_CODE_SAVE_FILE
 
 #endif // MICROPY_PERSISTENT_CODE_SAVE
-
-#if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
-// An mp_obj_list_t that tracks relocated native code to prevent the GC from reclaiming them.
-MP_REGISTER_ROOT_POINTER(mp_obj_t track_reloc_code_list);
-#endif

@@ -42,7 +42,7 @@
 // This is a translation of the cycle counter implementation in ports/stm32/machine_bitstream.c.
 static void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
     uint32_t pin_mask, gpio_reg_set, gpio_reg_clear;
-    #if !CONFIG_IDF_TARGET_ESP32C3
+    #if SOC_GPIO_PIN_COUNT > 32
     if (pin >= 32) {
         pin_mask = 1 << (pin - 32);
         gpio_reg_set = GPIO_OUT1_W1TS_REG;

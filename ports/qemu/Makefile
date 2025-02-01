@@ -2,6 +2,11 @@
 # Initial setup of Makefile environment
 
 BOARD ?= MPS2_AN385
+BOARD_DIR ?= boards/$(BOARD)
+
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+$(error Invalid BOARD specified: $(BOARD_DIR))
+endif
 
 # Make the build directory reflect the board.
 BUILD ?= build-$(BOARD)
@@ -10,7 +15,7 @@ include ../../py/mkenv.mk
 -include mpconfigport.mk
 
 # Include board specific .mk file.
-include boards/$(BOARD).mk
+include $(BOARD_DIR)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -19,15 +24,23 @@ QSTR_DEFS = qstrdefsport.h
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 
 ifeq ($(QEMU_ARCH),arm)
-FROZEN_MANIFEST ?= "freeze('test-frzmpy')"
+MICROPY_HEAP_SIZE ?= 143360
+ifeq ($(BOARD),MICROBIT)
+FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py'))"
+else
+FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_asm_thumb.py', 'frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
+endif
 endif
 ifeq ($(QEMU_ARCH),riscv32)
-FROZEN_MANIFEST ?= "freeze('test-frzmpy', ('frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
+MICROPY_HEAP_SIZE ?= 143360
+FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_asm_rv32.py', 'frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
 endif
 
 # include py core make definitions
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
+
+CFLAGS += -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE)
 
 ################################################################################
 # ARM specific settings
@@ -40,6 +53,7 @@ LDFLAGS += -nostdlib
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 SRC_C += \
+	mcu/arm/errorhandler.c \
 	mcu/arm/startup.c \
 	shared/runtime/semihosting_arm.c \
 
@@ -124,6 +138,8 @@ CFLAGS += $(SPECS_FRAGMENT)
 LDFLAGS += $(SPECS_FRAGMENT)
 endif
 
+RUN_TESTS_FULL_ARGS = -t execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../ports/qemu/$<" $(RUN_TESTS_ARGS)
+
 ################################################################################
 # Source files and libraries
 
@@ -165,8 +181,19 @@ run: $(BUILD)/firmware.elf
 
 .PHONY: test
 test: $(BUILD)/firmware.elf
+	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) $(RUN_TESTS_EXTRA)
+
+.PHONY: test_full
+test_full: $(BUILD)/firmware.elf
+	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS)
+	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) --via-mpy
+	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) --via-mpy --emit native
+
+.PHONY: test_natmod
+test_natmod: $(BUILD)/firmware.elf
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && ./run-tests.py --target qemu --device execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(RUN_TESTS_ARGS) $(RUN_TESTS_EXTRA)
+	# "btree" cannot build against Picolibc right now.
+	cd $(TOP)/tests && ./run-natmodtests.py -p -d execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(RUN_NATMODTESTS_ARGS) extmod/{deflate,framebuf,heapq,random_basic,re}*.py
 
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(OBJ)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)

@@ -37,16 +37,18 @@
 #include "tusb.h"
 #include "uart.h"
 #include "hardware/irq.h"
-#include "hardware/rtc.h"
 #include "pico/unique_id.h"
+#include "pico/aon_timer.h"
 
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
 
+#if PICO_RP2040
 // This needs to be added to the result of time_us_64() to get the number of
 // microseconds since the Epoch.
 static uint64_t time_us_64_offset_from_epoch;
+#endif
 
 #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
 
@@ -123,6 +125,17 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     return did_write ? ret : 0;
 }
 
+#if PICO_RISCV
+__attribute__((naked)) mp_uint_t mp_hal_ticks_cpu(void) {
+    __asm volatile (
+        "li a0, 4\n" // mask value to uninhibit mcycle counter
+        "csrw mcountinhibit, a0\n" // uninhibit mcycle counter
+        "csrr a0, mcycle\n" // get mcycle counter
+        "ret\n"
+        );
+}
+#endif
+
 void mp_hal_delay_us(mp_uint_t us) {
     // Avoid calling sleep_us() and invoking the alarm pool by splitting long
     // sleeps into an optional longer sleep and a shorter busy-wait
@@ -145,27 +158,35 @@ void mp_hal_delay_ms(mp_uint_t ms) {
 }
 
 void mp_hal_time_ns_set_from_rtc(void) {
+    #if PICO_RP2040
     // Outstanding RTC register writes need at least two RTC clock cycles to
     // update. (See RP2040 datasheet section 4.8.4 "Reference clock").
     mp_hal_delay_us(44);
 
     // Sample RTC and time_us_64() as close together as possible, so the offset
     // calculated for the latter can be as accurate as possible.
-    datetime_t t;
-    rtc_get_datetime(&t);
+    struct timespec ts;
+    aon_timer_get_time(&ts);
     uint64_t us = time_us_64();
 
-    // Calculate the difference between the RTC Epoch seconds and time_us_64().
-    uint64_t s = timeutils_seconds_since_epoch(t.year, t.month, t.day, t.hour, t.min, t.sec);
-    time_us_64_offset_from_epoch = (uint64_t)s * 1000000ULL - us;
+    // Calculate the difference between the RTC Epoch and time_us_64().
+    time_us_64_offset_from_epoch = ((uint64_t)ts.tv_sec * 1000000ULL) + ((uint64_t)ts.tv_nsec / 1000ULL) - us;
+    #endif
 }
 
 uint64_t mp_hal_time_ns(void) {
-    // The RTC only has seconds resolution, so instead use time_us_64() to get a more
+    #if PICO_RP2040
+    // The RTC probably has limited resolution, so instead use time_us_64() to get a more
     // precise measure of Epoch time.  Both these "clocks" are clocked from the same
     // source so they remain synchronised, and only differ by a fixed offset (calculated
     // in mp_hal_time_ns_set_from_rtc).
     return (time_us_64_offset_from_epoch + time_us_64()) * 1000ULL;
+    #else
+    // aon timer has ms resolution
+    struct timespec ts;
+    aon_timer_get_time(&ts);
+    return ((uint64_t)ts.tv_sec * 1000000000ULL) + (uint64_t)ts.tv_nsec;
+    #endif
 }
 
 // Generate a random locally administered MAC address (LAA)
@@ -256,4 +277,12 @@ void mp_wfe_or_timeout(uint32_t timeout_ms) {
 
     // Clean up the timer node if it's not already
     soft_timer_remove(&timer);
+}
+
+int mp_hal_is_pin_reserved(int n) {
+    #if MICROPY_PY_NETWORK_CYW43
+    return n == CYW43_PIN_WL_HOST_WAKE;
+    #else
+    return false;
+    #endif
 }

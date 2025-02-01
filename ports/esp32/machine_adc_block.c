@@ -32,12 +32,9 @@
 #include "driver/adc.h"
 
 machine_adc_block_obj_t madcblock_obj[] = {
-    #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S3
-    {{&machine_adc_block_type}, ADC_UNIT_1, 12, -1, {0}},
-    {{&machine_adc_block_type}, ADC_UNIT_2, 12, -1, {0}},
-    #elif CONFIG_IDF_TARGET_ESP32S2
-    {{&machine_adc_block_type}, ADC_UNIT_1, 13, -1, {0}},
-    {{&machine_adc_block_type}, ADC_UNIT_2, 13, -1, {0}},
+    {{&machine_adc_block_type}, ADC_UNIT_1, SOC_ADC_RTC_MAX_BITWIDTH, -1, {0}},
+    #if SOC_ADC_PERIPH_NUM > 1
+    {{&machine_adc_block_type}, ADC_UNIT_2, SOC_ADC_RTC_MAX_BITWIDTH, -1, {0}},
     #endif
 };
 

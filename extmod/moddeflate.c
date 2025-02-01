@@ -142,7 +142,7 @@ static bool deflateio_init_read(mp_obj_deflateio_t *self) {
         }
     }
 
-    size_t window_len = 1 << wbits;
+    size_t window_len = (size_t)1 << wbits;
     self->read->window = m_new(uint8_t, window_len);
 
     uzlib_uncompress_init(&self->read->decomp, self->read->window, window_len);

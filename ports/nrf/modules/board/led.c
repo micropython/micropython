@@ -25,9 +25,9 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "py/runtime.h"
 
-#include "mphalport.h"
 #include "led.h"
 #include "mpconfigboard.h"
 

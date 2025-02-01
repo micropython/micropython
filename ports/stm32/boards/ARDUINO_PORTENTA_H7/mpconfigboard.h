@@ -29,9 +29,12 @@ typedef unsigned int mp_uint_t;     // must be pointer size
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SDCARD    (1)
 #define MICROPY_HW_ENABLE_MMCARD    (0)
+#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET   (0)
+#define MICROPY_HW_TIM_IS_RESERVED(id) (id == 1)
 
 // Flash storage config
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE            (1)
+#define MICROPY_HW_SPIFLASH_SOFT_RESET              (1)
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE    (0)
 
 #define MICROPY_BOARD_STARTUP       PORTENTA_board_startup
@@ -49,8 +52,8 @@ void PORTENTA_board_low_power(int mode);
 #define MICROPY_BOARD_ENTER_STANDBY PORTENTA_board_low_power(2);
 
 void PORTENTA_board_osc_enable(int enable);
-#define MICROPY_BOARD_OSC_ENABLE    PORTENTA_board_osc_enable(1);
-#define MICROPY_BOARD_OSC_DISABLE   PORTENTA_board_osc_enable(0);
+#define MICROPY_BOARD_PRE_STOP      PORTENTA_board_osc_enable(0);
+#define MICROPY_BOARD_POST_STOP     PORTENTA_board_osc_enable(1);
 
 // PLL1 400MHz/50MHz for SDMMC and FDCAN
 // USB and RNG are clocked from the HSI48
@@ -245,7 +248,7 @@ extern struct _spi_bdev_t spi_bdev;
 // Timing configuration for 200MHz/2=100MHz (10ns)
 #define MICROPY_HW_SDRAM_CLOCK_PERIOD       2
 #define MICROPY_HW_SDRAM_CAS_LATENCY        2
-#define MICROPY_HW_SDRAM_FREQUENCY          (100000) // 100 MHz
+#define MICROPY_HW_SDRAM_FREQUENCY_KHZ      (100000) // 100 MHz
 #define MICROPY_HW_SDRAM_TIMING_TMRD        (2)
 #define MICROPY_HW_SDRAM_TIMING_TXSR        (7)
 #define MICROPY_HW_SDRAM_TIMING_TRAS        (5)

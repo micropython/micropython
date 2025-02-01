@@ -1089,7 +1089,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///   - `callback` - as per TimerChannel.callback()
 ///
 ///   - `pin` None (the default) or a Pin object. If specified (and not None)
-///           this will cause the alternate function of the the indicated pin
+///           this will cause the alternate function of the indicated pin
 ///      to be configured for this timer channel. An error will be raised if
 ///      the pin doesn't support any alternate functions for this timer channel.
 ///
@@ -1197,7 +1197,7 @@ static mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_obj_t pin_obj = args[2].u_obj;
     if (pin_obj != mp_const_none) {
         if (!mp_obj_is_type(pin_obj, &pin_type)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("pin argument needs to be be a Pin type"));
+            mp_raise_ValueError(MP_ERROR_TEXT("pin argument needs to be a Pin type"));
         }
         const machine_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
         const pin_af_obj_t *af = pin_find_af(pin, AF_FN_TIM, self->tim_id);

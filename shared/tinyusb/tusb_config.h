@@ -83,7 +83,6 @@
 #ifndef CFG_TUD_CDC_TX_BUFSIZE
 #define CFG_TUD_CDC_TX_BUFSIZE  ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 256)
 #endif
-#define CFG_TUD_CDC_PERSISTENT_TX_BUFF (1)
 #endif
 
 // MSC Configuration

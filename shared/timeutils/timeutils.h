@@ -49,9 +49,11 @@ mp_uint_t timeutils_year_day(mp_uint_t year, mp_uint_t month, mp_uint_t date);
 void timeutils_seconds_since_2000_to_struct_time(mp_uint_t t,
     timeutils_struct_time_t *tm);
 
+// Year is absolute, month/date are 1-based, hour/minute/second are 0-based.
 mp_uint_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month,
     mp_uint_t date, mp_uint_t hour, mp_uint_t minute, mp_uint_t second);
 
+// Year is absolute, month/mday are 1-based, hours/minutes/seconds are 0-based.
 mp_uint_t timeutils_mktime_2000(mp_uint_t year, mp_int_t month, mp_int_t mday,
     mp_int_t hours, mp_int_t minutes, mp_int_t seconds);
 
@@ -60,13 +62,15 @@ mp_uint_t timeutils_mktime_2000(mp_uint_t year, mp_int_t month, mp_int_t mday,
 
 static inline void timeutils_seconds_since_epoch_to_struct_time(uint64_t t, timeutils_struct_time_t *tm) {
     // TODO this will give incorrect results for dates before 2000/1/1
-    timeutils_seconds_since_2000_to_struct_time(t - TIMEUTILS_SECONDS_1970_TO_2000, tm);
+    timeutils_seconds_since_2000_to_struct_time((mp_uint_t)(t - TIMEUTILS_SECONDS_1970_TO_2000), tm);
 }
 
+// Year is absolute, month/mday are 1-based, hours/minutes/seconds are 0-based.
 static inline uint64_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday, mp_int_t hours, mp_int_t minutes, mp_int_t seconds) {
     return timeutils_mktime_2000(year, month, mday, hours, minutes, seconds) + TIMEUTILS_SECONDS_1970_TO_2000;
 }
 
+// Year is absolute, month/date are 1-based, hour/minute/second are 0-based.
 static inline uint64_t timeutils_seconds_since_epoch(mp_uint_t year, mp_uint_t month,
     mp_uint_t date, mp_uint_t hour, mp_uint_t minute, mp_uint_t second) {
     // TODO this will give incorrect results for dates before 2000/1/1
@@ -74,7 +78,7 @@ static inline uint64_t timeutils_seconds_since_epoch(mp_uint_t year, mp_uint_t m
 }
 
 static inline mp_uint_t timeutils_seconds_since_epoch_from_nanoseconds_since_1970(uint64_t ns) {
-    return ns / 1000000000ULL;
+    return (mp_uint_t)(ns / 1000000000ULL);
 }
 
 static inline uint64_t timeutils_nanoseconds_since_epoch_to_nanoseconds_since_1970(uint64_t ns) {

@@ -31,6 +31,16 @@ print(d[0], d[1], d[-1])
 d[3] = 5
 print(d[3])
 
+# Access the last element via index, when the last element is at various locations
+d = deque((), 2)
+for i in range(4):
+    d.append(i)
+    print(i, d[-1])
+
+# Write the last element then access all elements from the end
+d[-1] = 4
+print(d[-2], d[-1])
+
 # Accessing indices out of bounds raises IndexError
 try:
     d[4]

@@ -227,11 +227,12 @@ The full list of supported commands are:
   - ``cat <file..>`` to show the contents of a file or files on the device
   - ``ls`` to list the current directory
   - ``ls <dirs...>`` to list the given directories
-  - ``cp [-r] <src...> <dest>`` to copy files
+  - ``cp [-rf] <src...> <dest>`` to copy files
   - ``rm <src...>`` to remove files on the device
   - ``mkdir <dirs...>`` to create directories on the device
   - ``rmdir <dirs...>`` to remove directories on the device
   - ``touch <file..>`` to create the files (if they don't already exist)
+  - ``sha256sum <file..>`` to calculate the SHA256 sum of files
 
   The ``cp`` command uses a convention where a leading ``:`` represents a remote
   path. Without a leading ``:`` means a local path. This is based on the
@@ -255,6 +256,11 @@ The full list of supported commands are:
 
   This will copy the file to the device then enter the REPL. The ``+`` prevents
   ``"repl"`` being interpreted as a path.
+
+  The ``cp`` command supports the ``-r`` option to make a recursive copy.  By
+  default ``cp`` will skip copying files to the remote device if the SHA256 hash
+  of the source and destination file matches.  To force a copy regardless of the
+  hash use the ``-f`` option.
 
   **Note:** For convenience, all of the filesystem sub-commands are also
   :ref:`aliased as regular commands <mpremote_shortcuts>`, i.e. you can write
@@ -471,7 +477,7 @@ An example ``config.py`` might look like:
     """,], # Print out nearby WiFi networks.
         "wl_ipconfig": [
     "exec",
-    "import network; sta_if = network.WLAN(network.STA_IF); print(sta_if.ipconfig('addr4'))",
+    "import network; sta_if = network.WLAN(network.WLAN.IF_STA); print(sta_if.ipconfig('addr4'))",
     """,], # Print ip address of station interface.
         "test": ["mount", ".", "exec", "import test"], # Mount current directory and run test.py.
         "demo": ["run", "path/to/demo.py"], # Execute demo.py on the device.
@@ -541,9 +547,9 @@ device at ``/dev/ttyACM1``, printing each result.
 
   mpremote resume exec "print_state_info()" soft-reset
 
-Connect to the device without triggering a soft reset and execute the
-``print_state_info()`` function (e.g. to find out information about the current
-program state), then trigger a soft reset.
+Connect to the device without triggering a :ref:`soft reset <soft_reset>` and
+execute the ``print_state_info()`` function (e.g. to find out information about
+the current program state), then trigger a soft reset.
 
 .. code-block:: bash
 

@@ -86,8 +86,8 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     init->DataSyncJumpWidth = 1;
     init->DataTimeSeg1 = 1;
     init->DataTimeSeg2 = 1;
-    init->StdFiltersNbr = 28; // /2  ? if FDCAN2 is used !!?
-    init->ExtFiltersNbr = 0; // Not used
+    init->StdFiltersNbr = 28;
+    init->ExtFiltersNbr = 8;
     init->TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
     #elif defined(STM32H7)
     // The dedicated FDCAN RAM is 2560 32-bit words and shared between the FDCAN instances.

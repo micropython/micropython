@@ -103,7 +103,8 @@ static mp_obj_t samd_flash_version(void) {
 static MP_DEFINE_CONST_FUN_OBJ_0(samd_flash_version_obj, samd_flash_version);
 
 static mp_obj_t samd_flash_readblocks(size_t n_args, const mp_obj_t *args) {
-    uint32_t offset = (mp_obj_get_int(args[1]) * BLOCK_SIZE) + samd_flash_obj.flash_base;
+    samd_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    uint32_t offset = (mp_obj_get_int(args[1]) * BLOCK_SIZE) + self->flash_base;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
     if (n_args == 4) {
@@ -118,7 +119,8 @@ static mp_obj_t samd_flash_readblocks(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_flash_readblocks_obj, 3, 4, samd_flash_readblocks);
 
 static mp_obj_t samd_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
-    uint32_t offset = (mp_obj_get_int(args[1]) * BLOCK_SIZE) + samd_flash_obj.flash_base;
+    samd_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    uint32_t offset = (mp_obj_get_int(args[1]) * BLOCK_SIZE) + self->flash_base;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
     if (n_args == 3) {

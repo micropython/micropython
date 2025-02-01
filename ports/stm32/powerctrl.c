@@ -28,8 +28,23 @@
 #include "py/mphal.h"
 #include "powerctrl.h"
 #include "rtc.h"
-#include "genhdr/pllfreqtable.h"
 #include "extmod/modbluetooth.h"
+#include "py/mpconfig.h"
+#ifndef NO_QSTR
+#include "genhdr/pllfreqtable.h"
+#endif
+
+// These will be defined / expanded in pre-processor output for use in the
+// boards/pllvalues.py script, then generally stripped from final firmware.
+#ifdef HSI_VALUE
+static uint32_t __attribute__((unused)) micropy_hw_hsi_value = HSI_VALUE;
+#endif
+#ifdef HSE_VALUE
+static uint32_t __attribute__((unused)) micropy_hw_hse_value = HSE_VALUE;
+#endif
+#ifdef MICROPY_HW_CLK_PLLM
+static uint32_t __attribute__((unused)) micropy_hw_clk_pllm = MICROPY_HW_CLK_PLLM;
+#endif
 
 #if defined(STM32H5) || defined(STM32H7)
 #define RCC_SR          RSR
@@ -827,10 +842,18 @@ void powerctrl_enter_stop_mode(void) {
     powerctrl_low_power_prep_wb55();
     #endif
 
+    #if defined(MICROPY_BOARD_PRE_STOP)
+    MICROPY_BOARD_PRE_STOP
+    #endif
+
     #if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
     #else
     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+    #endif
+
+    #if defined(MICROPY_BOARD_POST_STOP)
+    MICROPY_BOARD_POST_STOP
     #endif
 
     // reconfigure the system clock after waking up

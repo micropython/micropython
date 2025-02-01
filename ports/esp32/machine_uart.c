@@ -399,11 +399,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         }
         self->flowcontrol = args[ARG_flow].u_int;
     }
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
     uint8_t uart_fifo_len = UART_HW_FIFO_LEN(self->uart_num);
-    #else
-    uint8_t uart_fifo_len = UART_FIFO_LEN;
-    #endif
     check_esp_err(uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, uart_fifo_len - uart_fifo_len / 4));
 }
 
@@ -453,12 +449,18 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
             self->rx = 9;
             self->tx = 10;
             break;
-        #if SOC_UART_NUM > 2
+        #if SOC_UART_HP_NUM > 2
         case UART_NUM_2:
             self->rx = 16;
             self->tx = 17;
             break;
         #endif
+        #if SOC_UART_LP_NUM >= 1
+        case LP_UART_NUM_0:
+            self->rx = 4;
+            self->tx = 5;
+        #endif
+
     }
 
     #if MICROPY_HW_ENABLE_UART_REPL

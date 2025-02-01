@@ -58,6 +58,7 @@
 #include "shared/netutils/netutils.h"
 #include "lib/wiznet5k/Ethernet/wizchip_conf.h"
 #include "lib/wiznet5k/Ethernet/socket.h"
+#include "lwip/apps/mdns.h"
 #include "lwip/err.h"
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
@@ -201,6 +202,9 @@ static void wiznet5k_config_interrupt(bool enabled) {
 void wiznet5k_deinit(void) {
     for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
         if (netif == &wiznet5k_obj.netif) {
+            #if LWIP_MDNS_RESPONDER
+            mdns_resp_remove_netif(&wiznet5k_obj.netif);
+            #endif
             netif_remove(netif);
             netif->flags = 0;
             break;
@@ -334,6 +338,12 @@ static void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
     self->netif.flags |= NETIF_FLAG_UP;
     dhcp_start(&self->netif);
     self->netif.flags &= ~NETIF_FLAG_UP;
+
+    #if LWIP_MDNS_RESPONDER
+    // NOTE: interface is removed in ::wiznet5k_deinit(), which is called as
+    // part of the init sequence.
+    mdns_resp_add_netif(&self->netif, mod_network_hostname_data);
+    #endif
 }
 
 void wiznet5k_poll(void) {

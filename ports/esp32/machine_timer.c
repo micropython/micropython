@@ -30,10 +30,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "modmachine.h"
-#include "mphalport.h"
 
 #include "hal/timer_hal.h"
 #include "hal/timer_ll.h"
@@ -66,7 +66,7 @@ static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
     machine_timer_obj_t *self = self_in;
     qstr mode = self->repeat ? MP_QSTR_PERIODIC : MP_QSTR_ONE_SHOT;
     uint64_t period = self->period / (TIMER_SCALE / 1000); // convert to ms
-    #if CONFIG_IDF_TARGET_ESP32C3
+    #if SOC_TIMER_GROUP_TIMERS_PER_GROUP == 1
     mp_printf(print, "Timer(%u, mode=%q, period=%lu)", self->group, mode, period);
     #else
     mp_printf(print, "Timer(%u, mode=%q, period=%lu)", (self->group << 1) | self->index, mode, period);
@@ -76,7 +76,7 @@ static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 machine_timer_obj_t *machine_timer_create(mp_uint_t timer) {
 
     machine_timer_obj_t *self = NULL;
-    #if CONFIG_IDF_TARGET_ESP32C3
+    #if SOC_TIMER_GROUP_TIMERS_PER_GROUP == 1
     mp_uint_t group = timer & 1;
     mp_uint_t index = 0;
     #else
@@ -108,7 +108,11 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Create the new timer.
-    machine_timer_obj_t *self = machine_timer_create(mp_obj_get_int(args[0]));
+    uint32_t timer_number = mp_obj_get_int(args[0]);
+    if (timer_number >= SOC_TIMER_GROUP_TOTAL_TIMERS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid Timer number"));
+    }
+    machine_timer_obj_t *self = machine_timer_create(timer_number);
 
     if (n_args > 1 || n_kw > 0) {
         mp_map_t kw_args;
@@ -155,7 +159,7 @@ void machine_timer_enable(machine_timer_obj_t *self, void (*timer_isr)) {
     // Initialise the timer.
     timer_hal_init(&self->hal_context, self->group, self->index);
     timer_ll_enable_counter(self->hal_context.dev, self->index, false);
-    timer_ll_set_clock_source(self->hal_context.dev, self->index, GPTIMER_CLK_SRC_APB);
+    timer_ll_set_clock_source(self->hal_context.dev, self->index, GPTIMER_CLK_SRC_DEFAULT);
     timer_ll_set_clock_prescale(self->hal_context.dev, self->index, TIMER_DIVIDER);
     timer_hal_set_counter_value(&self->hal_context, 0);
     timer_ll_set_count_direction(self->hal_context.dev, self->index, GPTIMER_COUNT_UP);

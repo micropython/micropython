@@ -41,6 +41,7 @@
 #include "pico/bootrom.h"
 #include "pico/stdlib.h"
 #include "pico/unique_id.h"
+#include "pico/runtime_init.h"
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
@@ -162,6 +163,9 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     }
 
     clock_stop(clk_adc);
+    #if PICO_RP2350
+    clock_stop(clk_hstx);
+    #endif
 
     // CLK_REF = XOSC
     clock_configure(clk_ref, CLOCKS_CLK_REF_CTRL_SRC_VALUE_XOSC_CLKSRC, 0, xosc_hz, xosc_hz);
@@ -170,7 +174,9 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     clock_configure(clk_sys, CLOCKS_CLK_SYS_CTRL_SRC_VALUE_CLK_REF, 0, xosc_hz, xosc_hz);
 
     // CLK_RTC = XOSC / 256
+    #if PICO_RP2040
     clock_configure(clk_rtc, 0, CLOCKS_CLK_RTC_CTRL_AUXSRC_VALUE_XOSC_CLKSRC, xosc_hz, xosc_hz / 256);
+    #endif
 
     // CLK_PERI = CLK_SYS
     clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS, xosc_hz, xosc_hz);
@@ -190,46 +196,74 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         #endif
         xosc_dormant();
     } else {
-        uint32_t sleep_en0 = clocks_hw->sleep_en0;
-        uint32_t sleep_en1 = clocks_hw->sleep_en1;
         bool timer3_enabled = irq_is_enabled(3);
 
-        clocks_hw->sleep_en0 = CLOCKS_SLEEP_EN0_CLK_RTC_RTC_BITS;
+        const uint32_t alarm_num = 3;
+        const uint32_t irq_num = TIMER_ALARM_IRQ_NUM(timer_hw, alarm_num);
         if (use_timer_alarm) {
             // Make sure ALARM3/IRQ3 is enabled on _this_ core
-            timer_hw->inte |= 1 << 3;
             if (!timer3_enabled) {
-                irq_set_enabled(3, true);
+                irq_set_enabled(irq_num, true);
             }
+            hw_set_bits(&timer_hw->inte, 1u << alarm_num);
             // Use timer alarm to wake.
+            clocks_hw->sleep_en0 = 0x0;
+            #if PICO_RP2040
             clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_SYS_TIMER_BITS;
-            timer_hw->alarm[3] = timer_hw->timerawl + delay_ms * 1000;
+            #elif PICO_RP2350
+            clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_REF_TICKS_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_TIMER0_BITS;
+            #else
+            #error Unknown processor
+            #endif
+            timer_hw->intr = 1u << alarm_num; // clear any IRQ
+            timer_hw->alarm[alarm_num] = timer_hw->timerawl + delay_ms * 1000;
         } else {
             // TODO: Use RTC alarm to wake.
-            clocks_hw->sleep_en1 = 0;
+            clocks_hw->sleep_en0 = 0x0;
+            clocks_hw->sleep_en1 = 0x0;
         }
 
         if (!disable_usb) {
             clocks_hw->sleep_en0 |= CLOCKS_SLEEP_EN0_CLK_SYS_PLL_USB_BITS;
+            #if PICO_RP2040
             clocks_hw->sleep_en1 |= CLOCKS_SLEEP_EN1_CLK_USB_USBCTRL_BITS;
+            #elif PICO_RP2350
+            clocks_hw->sleep_en1 |= CLOCKS_SLEEP_EN1_CLK_USB_BITS;
+            #else
+            #error Unknown processor
+            #endif
         }
 
+        #if PICO_ARM
+        // Configure SLEEPDEEP bits on Cortex-M CPUs.
+        #if PICO_RP2040
         scb_hw->scr |= M0PLUS_SCR_SLEEPDEEP_BITS;
+        #elif PICO_RP2350
+        scb_hw->scr |= M33_SCR_SLEEPDEEP_BITS;
+        #else
+        #error Unknown processor
+        #endif
+        #endif
+
+        // Go into low-power mode.
         __wfi();
-        scb_hw->scr &= ~M0PLUS_SCR_SLEEPDEEP_BITS;
+
         if (!timer3_enabled) {
-            irq_set_enabled(3, false);
+            irq_set_enabled(irq_num, false);
         }
-        clocks_hw->sleep_en0 = sleep_en0;
-        clocks_hw->sleep_en1 = sleep_en1;
+        clocks_hw->sleep_en0 |= ~(0u);
+        clocks_hw->sleep_en1 |= ~(0u);
     }
 
     // Enable ROSC.
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB;
 
     // Bring back all clocks.
-    clocks_init_optional_usb(disable_usb);
+    runtime_init_clocks_optional_usb(disable_usb);
     MICROPY_END_ATOMIC_SECTION(my_interrupts);
+
+    // Re-sync mp_hal_time_ns() counter with aon timer.
+    mp_hal_time_ns_set_from_rtc();
 }
 
 NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {

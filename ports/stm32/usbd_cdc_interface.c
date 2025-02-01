@@ -315,7 +315,7 @@ int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc_in, size_t len) {
     // copy the incoming data into the circular buffer
     for (const uint8_t *src = cdc->rx_packet_buf, *top = cdc->rx_packet_buf + len; src < top; ++src) {
         if (cdc->attached_to_repl && *src == mp_interrupt_char) {
-            pendsv_kbd_intr();
+            mp_sched_keyboard_interrupt();
         } else {
             uint16_t next_put = (cdc->rx_buf_put + 1) & (MICROPY_HW_USB_CDC_RX_DATA_SIZE - 1);
             if (next_put == cdc->rx_buf_get) {

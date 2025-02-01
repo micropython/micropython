@@ -282,23 +282,29 @@ static mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
         mp_raise_ValueError(NULL);
     }
 
-    size_t height_required = height;
     size_t bpp = 1;
+    size_t height_required = height;
+    size_t width_required = width;
+    size_t strides_required = height - 1;
 
     switch (format) {
         case FRAMEBUF_MVLSB:
             height_required = (height + 7) & ~7;
+            strides_required = height_required - 8;
             break;
         case FRAMEBUF_MHLSB:
         case FRAMEBUF_MHMSB:
             stride = (stride + 7) & ~7;
+            width_required = (width + 7) & ~7;
             break;
         case FRAMEBUF_GS2_HMSB:
             stride = (stride + 3) & ~3;
+            width_required = (width + 3) & ~3;
             bpp = 2;
             break;
         case FRAMEBUF_GS4_HMSB:
             stride = (stride + 1) & ~1;
+            width_required = (width + 1) & ~1;
             bpp = 4;
             break;
         case FRAMEBUF_GS8:
@@ -314,7 +320,7 @@ static mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args_in[0], &bufinfo, MP_BUFFER_WRITE);
 
-    if (height_required * stride * bpp / 8 > bufinfo.len) {
+    if ((strides_required * stride + (height_required - strides_required) * width_required) * bpp / 8 > bufinfo.len) {
         mp_raise_ValueError(NULL);
     }
 
@@ -529,6 +535,10 @@ static mp_obj_t framebuf_ellipse(size_t n_args, const mp_obj_t *args_in) {
         mask |= mp_obj_get_int(args_in[7]) & ELLIPSE_MASK_ALL;
     } else {
         mask |= ELLIPSE_MASK_ALL;
+    }
+    if (args[2] == 0 && args[3] == 0) {
+        setpixel_checked(self, args[0], args[1], args[4], mask & ELLIPSE_MASK_ALL);
+        return mp_const_none;
     }
     mp_int_t two_asquare = 2 * args[2] * args[2];
     mp_int_t two_bsquare = 2 * args[3] * args[3];

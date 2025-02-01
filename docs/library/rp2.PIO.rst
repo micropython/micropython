@@ -27,6 +27,17 @@ Constructors
 Methods
 -------
 
+.. method:: PIO.gpio_base([base])
+
+    Query and optionally set the current GPIO base for this PIO instance.
+
+    If an argument is given then it must be a pin (or integer corresponding to a pin
+    number), restricted to either GPIO0 or GPIO16.  The GPIO base will then be set to
+    that pin.  Setting the GPIO base must be done before any programs are added or state
+    machines created.
+
+    Returns the current GPIO base pin.
+
 .. method:: PIO.add_program(program)
 
     Add the *program* to the instruction memory of this PIO instance.

@@ -31,6 +31,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "shared/runtime/mpirq.h"
+#include "machine_pin.h"
 #include "modrp2.h"
 
 #include "hardware/clocks.h"
@@ -54,7 +55,7 @@ typedef struct _rp2_state_machine_obj_t {
     PIO pio;
     uint8_t irq;
     uint8_t sm; // 0-3
-    uint8_t id; // 0-7
+    uint8_t id; // 0-7 on RP2040, or 0-11 on RP2350
 } rp2_state_machine_obj_t;
 
 typedef struct _rp2_state_machine_irq_obj_t {
@@ -63,11 +64,11 @@ typedef struct _rp2_state_machine_irq_obj_t {
     uint8_t trigger;
 } rp2_state_machine_irq_obj_t;
 
-static const rp2_state_machine_obj_t rp2_state_machine_obj[8];
-static uint8_t rp2_state_machine_initial_pc[8];
+static const rp2_state_machine_obj_t rp2_state_machine_obj[NUM_PIOS * 4];
+static uint8_t rp2_state_machine_initial_pc[NUM_PIOS * 4];
 
 // These masks keep track of PIO instruction memory used by this module.
-static uint32_t rp2_pio_instruction_memory_usage_mask[2];
+static uint32_t rp2_pio_instruction_memory_usage_mask[NUM_PIOS];
 
 static const rp2_state_machine_obj_t *rp2_state_machine_get_object(mp_int_t sm_id);
 static void rp2_state_machine_reset_all(void);
@@ -104,8 +105,19 @@ static void pio1_irq0(void) {
     pio_irq0(pio1);
 }
 
+#if NUM_PIOS >= 3
+static void pio2_irq0(void) {
+    pio_irq0(pio2);
+}
+#endif
+
 // Returns the correct irq0 handler wrapper for a given pio
 static inline irq_handler_t rp2_pio_get_irq_handler(PIO pio) {
+    #if NUM_PIOS >= 3
+    if (pio == pio2) {
+        return pio2_irq0;
+    }
+    #endif
     return pio == pio0 ? pio0_irq0 : pio1_irq0;
 }
 
@@ -172,6 +184,12 @@ void rp2_pio_deinit(void) {
         irq_set_enabled(PIO1_IRQ_0, false);
         irq_remove_handler(PIO1_IRQ_0, pio1_irq0);
     }
+    #if NUM_PIOS >= 3
+    if (irq_get_exclusive_handler(PIO2_IRQ_0) == pio2_irq0) {
+        irq_set_enabled(PIO2_IRQ_0, false);
+        irq_remove_handler(PIO2_IRQ_0, pio2_irq0);
+    }
+    #endif
 
     rp2_state_machine_reset_all();
 
@@ -180,6 +198,9 @@ void rp2_pio_deinit(void) {
     // and their PIO programs should remain intact.
     rp2_pio_remove_all_managed_programs(pio0);
     rp2_pio_remove_all_managed_programs(pio1);
+    #if NUM_PIOS >= 3
+    rp2_pio_remove_all_managed_programs(pio2);
+    #endif
 }
 
 /******************************************************************************/
@@ -212,7 +233,7 @@ static void asm_pio_override_shiftctrl(mp_obj_t arg, uint32_t bits, uint32_t lsb
     }
 }
 
-static void asm_pio_get_pins(const char *type, mp_obj_t prog_pins, mp_obj_t arg_base, asm_pio_config_t *config) {
+static void asm_pio_get_pins(PIO pio, const char *type, mp_obj_t prog_pins, mp_obj_t arg_base, asm_pio_config_t *config) {
     if (prog_pins != mp_const_none) {
         // The PIO program specified pins for initialisation on out/set/sideset.
         if (mp_obj_is_integer(prog_pins)) {
@@ -238,13 +259,21 @@ static void asm_pio_get_pins(const char *type, mp_obj_t prog_pins, mp_obj_t arg_
     if (arg_base != mp_const_none) {
         // The instantiation of the PIO program specified a base pin.
         config->base = mp_hal_get_pin_obj(arg_base);
+
+        #if PICO_PIO_USE_GPIO_BASE
+        // Check the base is within range of the configured gpio_base.
+        uint gpio_base = pio_get_gpio_base(pio);
+        if ((gpio_base == 0 && config->base >= 32) || (gpio_base == 16 && config->base < 16)) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("%s_base not within gpio_base range"), type);
+        }
+        #endif
     }
 }
 
 static void asm_pio_init_gpio(PIO pio, uint32_t sm, asm_pio_config_t *config) {
-    uint32_t pinmask = ((1 << config->count) - 1) << config->base;
-    pio_sm_set_pins_with_mask(pio, sm, config->pinvals << config->base, pinmask);
-    pio_sm_set_pindirs_with_mask(pio, sm, config->pindirs << config->base, pinmask);
+    uint32_t pinmask = ((1 << config->count) - 1) << (config->base - pio_get_gpio_base(pio));
+    pio_sm_set_pins_with_mask(pio, sm, config->pinvals << (config->base - pio_get_gpio_base(pio)), pinmask);
+    pio_sm_set_pindirs_with_mask(pio, sm, config->pindirs << (config->base - pio_get_gpio_base(pio)), pinmask);
     for (size_t i = 0; i < config->count; ++i) {
         gpio_set_function(config->base + i, GPIO_FUNC_PIO0 + pio_get_index(pio));
     }
@@ -258,6 +287,9 @@ static const mp_irq_methods_t rp2_pio_irq_methods;
 static rp2_pio_obj_t rp2_pio_obj[] = {
     { { &rp2_pio_type }, pio0, PIO0_IRQ_0 },
     { { &rp2_pio_type }, pio1, PIO1_IRQ_0 },
+    #if NUM_PIOS >= 3
+    { { &rp2_pio_type }, pio2, PIO2_IRQ_0 },
+    #endif
 };
 
 static void rp2_pio_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -357,6 +389,31 @@ static mp_obj_t rp2_pio_state_machine(size_t n_args, const mp_obj_t *pos_args, m
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(rp2_pio_state_machine_obj, 2, rp2_pio_state_machine);
 
+#if PICO_PIO_USE_GPIO_BASE
+// PIO.gpio_base([base])
+static mp_obj_t rp2_pio_gpio_base(size_t n_args, const mp_obj_t *args) {
+    rp2_pio_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (n_args > 1) {
+        // Set gpio_base value.
+        uint gpio_base = mp_hal_get_pin_obj(args[1]);
+
+        // Must be 0 for GPIOs 0 to 31 inclusive, or 16 for GPIOs 16 to 48 inclusive.
+        if (!(gpio_base == 0 || gpio_base == 16)) {
+            mp_raise_ValueError("invalid GPIO base");
+        }
+
+        if (pio_set_gpio_base(self->pio, gpio_base) != PICO_OK) {
+            mp_raise_OSError(MP_EINVAL);
+        }
+    }
+
+    // Return current gpio_base value.
+    return pio_get_gpio_base(self->pio) == 0 ? (mp_obj_t)pin_GPIO0 : (mp_obj_t)pin_GPIO16;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rp2_pio_gpio_base_obj, 1, 2, rp2_pio_gpio_base);
+#endif
+
 // PIO.irq(handler=None, trigger=IRQ_SM0|IRQ_SM1|IRQ_SM2|IRQ_SM3, hard=False)
 static mp_obj_t rp2_pio_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
@@ -410,6 +467,9 @@ static mp_obj_t rp2_pio_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 static MP_DEFINE_CONST_FUN_OBJ_KW(rp2_pio_irq_obj, 1, rp2_pio_irq);
 
 static const mp_rom_map_elem_t rp2_pio_locals_dict_table[] = {
+    #if PICO_PIO_USE_GPIO_BASE
+    { MP_ROM_QSTR(MP_QSTR_gpio_base), MP_ROM_PTR(&rp2_pio_gpio_base_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_add_program), MP_ROM_PTR(&rp2_pio_add_program_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove_program), MP_ROM_PTR(&rp2_pio_remove_program_obj) },
     { MP_ROM_QSTR(MP_QSTR_state_machine), MP_ROM_PTR(&rp2_pio_state_machine_obj) },
@@ -486,6 +546,12 @@ static const rp2_state_machine_obj_t rp2_state_machine_obj[] = {
     { { &rp2_state_machine_type }, pio1, PIO1_IRQ_0, 1, 5 },
     { { &rp2_state_machine_type }, pio1, PIO1_IRQ_0, 2, 6 },
     { { &rp2_state_machine_type }, pio1, PIO1_IRQ_0, 3, 7 },
+    #if NUM_PIOS >= 3
+    { { &rp2_state_machine_type }, pio2, PIO2_IRQ_0, 0, 8 },
+    { { &rp2_state_machine_type }, pio2, PIO2_IRQ_0, 1, 9 },
+    { { &rp2_state_machine_type }, pio2, PIO2_IRQ_0, 2, 10 },
+    { { &rp2_state_machine_type }, pio2, PIO2_IRQ_0, 3, 11 },
+    #endif
 };
 
 static const rp2_state_machine_obj_t *rp2_state_machine_get_object(mp_int_t sm_id) {
@@ -604,14 +670,14 @@ static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
 
     // Configure out pins, if needed.
     asm_pio_config_t out_config = ASM_PIO_CONFIG_DEFAULT;
-    asm_pio_get_pins("out", prog[PROG_OUT_PINS], args[ARG_out_base].u_obj, &out_config);
+    asm_pio_get_pins(self->pio, "out", prog[PROG_OUT_PINS], args[ARG_out_base].u_obj, &out_config);
     if (out_config.base >= 0) {
         sm_config_set_out_pins(&config, out_config.base, out_config.count);
     }
 
     // Configure set pin, if needed.
     asm_pio_config_t set_config = ASM_PIO_CONFIG_DEFAULT;
-    asm_pio_get_pins("set", prog[PROG_SET_PINS], args[ARG_set_base].u_obj, &set_config);
+    asm_pio_get_pins(self->pio, "set", prog[PROG_SET_PINS], args[ARG_set_base].u_obj, &set_config);
     if (set_config.base >= 0) {
         sm_config_set_set_pins(&config, set_config.base, set_config.count);
     }
@@ -623,7 +689,7 @@ static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
 
     // Configure sideset pin, if needed.
     asm_pio_config_t sideset_config = ASM_PIO_CONFIG_DEFAULT;
-    asm_pio_get_pins("sideset", prog[PROG_SIDESET_PINS], args[ARG_sideset_base].u_obj, &sideset_config);
+    asm_pio_get_pins(self->pio, "sideset", prog[PROG_SIDESET_PINS], args[ARG_sideset_base].u_obj, &sideset_config);
     if (sideset_config.base >= 0) {
         uint32_t count = sideset_config.count;
         if (config.execctrl & (1 << PIO_SM0_EXECCTRL_SIDE_EN_LSB)) {
@@ -951,5 +1017,5 @@ static const mp_irq_methods_t rp2_state_machine_irq_methods = {
     .info = rp2_state_machine_irq_info,
 };
 
-MP_REGISTER_ROOT_POINTER(void *rp2_pio_irq_obj[2]);
-MP_REGISTER_ROOT_POINTER(void *rp2_state_machine_irq_obj[8]);
+MP_REGISTER_ROOT_POINTER(void *rp2_pio_irq_obj[NUM_PIOS]);
+MP_REGISTER_ROOT_POINTER(void *rp2_state_machine_irq_obj[NUM_PIOS * 4]);

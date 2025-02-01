@@ -174,7 +174,7 @@ void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank) {
     filter.FilterActivation = DISABLE;
     filter.BankNumber = bank;
 
-    HAL_CAN_ConfigFilter(NULL, &filter);
+    HAL_CAN_ConfigFilter(&self->can, &filter);
 }
 
 int can_receive(CAN_HandleTypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms) {

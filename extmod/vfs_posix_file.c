@@ -160,12 +160,27 @@ static mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
             #if defined(__APPLE__)
             #define VFS_POSIX_STREAM_STDIO_ERR_CATCH (err == EINVAL || err == ENOTSUP)
             #elif defined(_MSC_VER)
+            // In debug builds fsync (i.e. _commit on windows) will generate a debug report via _ASSERTE when
+            // called with non-redirected stdin/stdout/stderr (i.e. _isatty) handles because FlushFileBuffers,
+            // which it calls internally, will fail since console output is not buffered.
+            // In release builds it also fails, but merely returns an error which is handled appropriately below.
+            // The check for the handle being stdin/stdout/stderr is added explicitly because according to
+            // the documentation _isatty is also true for serial ports for instance.
+            #ifdef _DEBUG
+            if ((o->fd == STDIN_FILENO || o->fd == STDOUT_FILENO || o->fd == STDERR_FILENO) && _isatty(o->fd)) {
+                return 0;
+            }
+            #endif
             #define VFS_POSIX_STREAM_STDIO_ERR_CATCH (err == EINVAL || err == EBADF)
             #else
             #define VFS_POSIX_STREAM_STDIO_ERR_CATCH (err == EINVAL)
             #endif
             MP_HAL_RETRY_SYSCALL(ret, fsync(o->fd), {
                 if (VFS_POSIX_STREAM_STDIO_ERR_CATCH
+                    // Note: comparing fd against the standard FILENOs is technically not correct, for example:
+                    // sys.stderr.close() in Python code results in close(STDERR_FILENO) here, but because
+                    // open() uses the next available file descriptor, opening an arbitrary file with
+                    // fd = open('/some/file') means that fd becomes STDERR_FILENO.
                     && (o->fd == STDIN_FILENO || o->fd == STDOUT_FILENO || o->fd == STDERR_FILENO)) {
                     return 0;
                 }

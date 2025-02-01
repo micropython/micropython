@@ -29,9 +29,12 @@ typedef unsigned int mp_uint_t;     // must be pointer size
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SDCARD    (0)
 #define MICROPY_HW_ENABLE_MMCARD    (0)
+#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET   (0)
+#define MICROPY_HW_TIM_IS_RESERVED(id) (id == 3)
 
 // Flash storage config
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE            (1)
+#define MICROPY_HW_SPIFLASH_SOFT_RESET              (1)
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE    (0)
 
 #define MICROPY_BOARD_STARTUP       NICLAV_board_startup
@@ -49,8 +52,8 @@ void NICLAV_board_low_power(int mode);
 #define MICROPY_BOARD_ENTER_STANDBY NICLAV_board_low_power(2);
 
 void NICLAV_board_osc_enable(int enable);
-#define MICROPY_BOARD_OSC_ENABLE    NICLAV_board_osc_enable(1);
-#define MICROPY_BOARD_OSC_DISABLE   NICLAV_board_osc_enable(0);
+#define MICROPY_BOARD_PRE_STOP      NICLAV_board_osc_enable(0);
+#define MICROPY_BOARD_POST_STOP     NICLAV_board_osc_enable(1);
 
 // PLL1 400MHz/50MHz for SDMMC and FDCAN
 // USB and RNG are clocked from the HSI48
@@ -184,8 +187,8 @@ extern struct _spi_bdev_t spi_bdev;
 
 // FDCAN bus
 #define MICROPY_HW_CAN1_NAME        "FDCAN1"
-#define MICROPY_HW_CAN1_TX          (pin_A10)
-#define MICROPY_HW_CAN1_RX          (pin_A9)
+#define MICROPY_HW_CAN1_TX          (pin_B9)
+#define MICROPY_HW_CAN1_RX          (pin_B8)
 #define MICROPY_HW_CAN_IS_RESERVED(id) (id != PYB_CAN_1)
 
 // LEDs
@@ -223,7 +226,7 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_BLE_UART_BAUDRATE_DOWNLOAD_FIRMWARE (3000000)
 
 #define MICROPY_HW_USB_VID                      0x2341
-#define MICROPY_HW_USB_PID                      0x045F
+#define MICROPY_HW_USB_PID                      0x055F
 #define MICROPY_HW_USB_PID_CDC_MSC              (MICROPY_HW_USB_PID)
 #define MICROPY_HW_USB_PID_CDC_HID              (MICROPY_HW_USB_PID)
 #define MICROPY_HW_USB_PID_CDC                  (MICROPY_HW_USB_PID)

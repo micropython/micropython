@@ -1,7 +1,10 @@
 {
     "deploy": [
-        "deploy.md"
+        "../deploy.md"
     ],
+    "deploy_options": {
+        "flash_offset": "0x1000"
+    },
     "docs": "",
     "features": [
         "BLE",

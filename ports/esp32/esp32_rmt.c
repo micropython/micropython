@@ -24,9 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "py/runtime.h"
 #include "modmachine.h"
-#include "mphalport.h"
 #include "modesp32.h"
 
 #include "esp_task.h"

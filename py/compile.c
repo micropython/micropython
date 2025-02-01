@@ -147,6 +147,7 @@ static const emit_inline_asm_method_table_t *emit_asm_table[] = {
     &emit_inline_thumb_method_table,
     &emit_inline_xtensa_method_table,
     NULL,
+    &emit_inline_rv32_method_table,
 };
 
 #elif MICROPY_EMIT_INLINE_ASM
@@ -157,6 +158,9 @@ static const emit_inline_asm_method_table_t *emit_asm_table[] = {
 #elif MICROPY_EMIT_INLINE_XTENSA
 #define ASM_DECORATOR_QSTR MP_QSTR_asm_xtensa
 #define ASM_EMITTER(f) emit_inline_xtensa_##f
+#elif MICROPY_EMIT_INLINE_RV32
+#define ASM_DECORATOR_QSTR MP_QSTR_asm_rv32
+#define ASM_EMITTER(f) emit_inline_rv32_##f
 #else
 #error "unknown asm emitter"
 #endif
@@ -854,6 +858,8 @@ static bool compile_built_in_decorator(compiler_t *comp, size_t name_len, mp_par
     } else if (attr == MP_QSTR_asm_thumb) {
         *emit_options = MP_EMIT_OPT_ASM;
     } else if (attr == MP_QSTR_asm_xtensa) {
+        *emit_options = MP_EMIT_OPT_ASM;
+    } else if (attr == MP_QSTR_asm_rv32) {
         *emit_options = MP_EMIT_OPT_ASM;
     #else
     } else if (attr == ASM_DECORATOR_QSTR) {

@@ -648,11 +648,6 @@ static const mp_rom_map_elem_t mp_constants_table[] = {
 static MP_DEFINE_CONST_MAP(mp_constants_map, mp_constants_table);
 #endif
 
-#if MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND
-// Some versions of the xtensa-esp32-elf-gcc compiler generate wrong code if this
-// function is static, so provide a hook for them to work around this problem.
-MP_NOINLINE
-#endif
 static bool fold_logical_constants(parser_t *parser, uint8_t rule_id, size_t *num_args) {
     if (rule_id == RULE_or_test
         || rule_id == RULE_and_test) {
