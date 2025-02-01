@@ -299,42 +299,43 @@ static uint32_t get_duty_ns(machine_pwm_obj_t *self) {
     return duty_to_ns(self, get_duty_u16(self));
 }
 
-static void set_duty_u16(machine_pwm_obj_t *self, int duty) {
+static void check_duty_u16(machine_pwm_obj_t *self, int duty) {
     if ((duty < 0) || (duty > MAX_16_DUTY)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty_u16 must be from 0 to %d"), MAX_16_DUTY);
     }
-
     self->duty_scale = DUTY_16;
     self->duty_ui = duty;
+}
+
+static void set_duty_u16(machine_pwm_obj_t *self, int duty) {
+    check_duty_u16(self, duty);
     apply_duty(self);
 }
 
-static void set_duty_u10(machine_pwm_obj_t *self, int duty) {
+static void check_duty_u10(machine_pwm_obj_t *self, int duty) {
     if ((duty < 0) || (duty > MAX_10_DUTY)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty must be from 0 to %u"), MAX_10_DUTY);
     }
     self->duty_scale = DUTY_10;
     self->duty_ui = duty;
+}
+
+static void set_duty_u10(machine_pwm_obj_t *self, int duty) {
+    check_duty_u10(self, duty);
     apply_duty(self);
 }
 
-static void set_duty_ns(machine_pwm_obj_t *self, int ns) {
+static void check_duty_ns(machine_pwm_obj_t *self, int ns) {
     if ((ns < 0) || (ns > duty_to_ns(self, MAX_16_DUTY))) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty_ns must be from 0 to %d ns"), duty_to_ns(self, MAX_16_DUTY));
     }
     self->duty_scale = DUTY_NS;
     self->duty_ui = ns;
-    apply_duty(self);
 }
 
-static void set_duty(machine_pwm_obj_t *self) {
-    if (self->duty_scale == DUTY_16) {
-        set_duty_u16(self, self->duty_ui);
-    } else if (self->duty_scale == DUTY_10) {
-        set_duty_u10(self, self->duty_ui);
-    } else if (self->duty_scale == DUTY_NS) {
-        set_duty_ns(self, self->duty_ui);
-    }
+static void set_duty_ns(machine_pwm_obj_t *self, int ns) {
+    check_duty_ns(self, ns);
+    apply_duty(self);
 }
 
 #if !(CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2)
@@ -518,7 +519,13 @@ static void select_timer(machine_pwm_obj_t *self, int freq) {
     }
 }
 
-/******************************************************************************/
+static void set_freq_duty(machine_pwm_obj_t *self, unsigned int freq) {
+    select_timer(self, freq);
+    set_freq(self, freq);
+    apply_duty(self);
+}
+
+// ******************************************************************************
 // MicroPython bindings for PWM
 
 static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -585,14 +592,11 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     int duty_u16 = args[ARG_duty_u16].u_int;
     int duty_ns = args[ARG_duty_ns].u_int;
     if (duty_u16 >= 0) {
-        self->duty_scale = DUTY_16;
-        self->duty_ui = duty_u16;
+        check_duty_u16(self, duty_u16);
     } else if (duty_ns >= 0) {
-        self->duty_scale = DUTY_NS;
-        self->duty_ui = duty_ns;
+        check_duty_ns(self, duty_ns);
     } else if (duty >= 0) {
-        self->duty_scale = DUTY_10;
-        self->duty_ui = duty;
+        check_duty_u10(self, duty);
     } else if (self->duty_scale == 0) {
         self->duty_scale = DUTY_16;
         self->duty_ui = PWM_DUTY;
@@ -623,10 +627,7 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
             freq = PWM_FREQ;
         }
     }
-
-    select_timer(self, freq);
-    set_freq(self, freq);
-    set_duty(self);
+    set_freq_duty(self, freq);
 }
 
 static void self_reset(machine_pwm_obj_t *self) {
@@ -685,9 +686,7 @@ static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     if (freq == timers[self->mode][self->timer].freq) {
         return;
     }
-    select_timer(self, freq);
-    set_freq(self, freq);
-    set_duty(self);
+    set_freq_duty(self, freq);
 }
 
 static mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
