@@ -46,11 +46,23 @@ uint32_t LUT_pageprogram_quad[4] = {
     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
 };
 
+uint32_t LUT_write_status[4] = {
+    // 4 Write status word for Quad mode
+    FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, MICROPY_HW_FLASH_QE_CMD, WRITE_SDR, FLEXSPI_1PAD, 0x01),
+    FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
+    FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
+    FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
+};
+
 void flexspi_nor_update_lut(void) {
     uint32_t lookuptable_copy[64];
     memcpy(lookuptable_copy, (const uint32_t *)&qspiflash_config.memConfig.lookupTable, 64 * sizeof(uint32_t));
+    // write WRITESTATUSREG code to entry 10
+    memcpy(&lookuptable_copy[NOR_CMD_LUT_SEQ_IDX_WRITESTATUSREG * 4],
+        LUT_write_status, 4 * sizeof(uint32_t));
     // write PAGEPROGRAM_QUAD code to entry 10
-    memcpy(&lookuptable_copy[10 * 4], LUT_pageprogram_quad, 4 * sizeof(uint32_t));
+    memcpy(&lookuptable_copy[NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD * 4],
+        LUT_pageprogram_quad, 4 * sizeof(uint32_t));
     FLEXSPI_UpdateLUT(BOARD_FLEX_SPI, 0, lookuptable_copy, 64);
 }
 
@@ -123,7 +135,7 @@ status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base) __attribute__((section
 status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base) {
     flexspi_transfer_t flashXfer;
     status_t status;
-    uint32_t writeValue = qspiflash_config.memConfig.deviceModeArg;
+    uint32_t writeValue = MICROPY_HW_FLASH_QE_ARG;
 
     /* Write enable */
     status = flexspi_nor_write_enable(base, 0);
