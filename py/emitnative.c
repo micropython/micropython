@@ -1609,6 +1609,7 @@ static void emit_native_load_subscr(emit_t *emit) {
                         #elif N_XTENSA || N_XTENSAWIN
                         if (index_value > 0 && index_value < 256) {
                             asm_xtensa_l32i_optimised(emit->as, REG_RET, reg_base, index_value);
+                            break;
                         }
                         #endif
                         need_reg_single(emit, reg_index, 0);
@@ -1887,6 +1888,7 @@ static void emit_native_store_subscr(emit_t *emit) {
                         #elif N_XTENSA || N_XTENSAWIN
                         if (index_value > 0 && index_value < 256) {
                             asm_xtensa_s32i_optimised(emit->as, REG_RET, reg_base, index_value);
+                            break;
                         }
                         #elif N_ARM
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
