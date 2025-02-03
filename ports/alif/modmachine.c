@@ -28,6 +28,9 @@
 // extmod/modmachine.c via MICROPY_PY_MACHINE_INCLUDEFILE.
 
 #include "se_services.h"
+#include "tusb.h"
+
+extern void dcd_uninit(void);
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
@@ -70,15 +73,56 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_raise_NotImplementedError(NULL);
 }
 
-static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
-    mp_int_t delay = -1;
-    if (n_args == 1) {
-        delay = mp_obj_get_int(args[0]);
+#if MICROPY_HW_ENABLE_USBDEV
+static void mp_machine_enable_usb(bool enable) {
+    if (enable) {
+        // Initialize TinyUSB and DCD.
+        tusb_init();
+    } else {
+        // Disconnect USB device.
+        tud_disconnect();
+        // Deinitialize TinyUSB.
+        tud_deinit(TUD_OPT_RHPORT);
+        // Deinitialize DCD (disables IRQs).
+        dcd_uninit();
     }
-    mp_hal_delay_ms(delay);
+}
+#endif
+
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    #if MICROPY_HW_ENABLE_USBDEV
+    mp_machine_enable_usb(false);
+    #endif
+
+    #ifdef MICROPY_BOARD_ENTER_STANDBY
+    MICROPY_BOARD_ENTER_STANDBY();
+    #endif
+
+    // This enters the deepest possible CPU sleep state, without
+    // losing CPU state. CPU and subsystem power will remain on.
+    pm_core_enter_deep_sleep();
+
+    #ifdef MICROPY_BOARD_EXIT_STANDBY
+    MICROPY_BOARD_EXIT_STANDBY();
+    #endif
+
+    #if MICROPY_HW_ENABLE_USBDEV
+    mp_machine_enable_usb(true);
+    #endif
 }
 
 NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
-    mp_machine_lightsleep(n_args, args);
+    #if MICROPY_HW_ENABLE_USBDEV
+    mp_machine_enable_usb(false);
+    #endif
+
+    #ifdef MICROPY_BOARD_ENTER_STOP
+    MICROPY_BOARD_ENTER_STOP();
+    #endif
+
+    // If power is removed from the subsystem, the function does
+    // not return, and the CPU will reboot when/if the subsystem
+    // is next powered up.
+    pm_core_enter_deep_sleep_request_subsys_off();
     mp_machine_reset();
 }

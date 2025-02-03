@@ -182,6 +182,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	Device/common/source/system_utils.c \
 	Device/common/source/tcm_partition.c \
 	Device/common/source/tgu_M55.c \
+	Device/common/source/pm.c \
 	Device/core/$(MCU_CORE)/source/startup_$(MCU_CORE).c \
 	drivers/source/adc.c \
 	drivers/source/mhu_driver.c \
