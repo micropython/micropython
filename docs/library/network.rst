@@ -201,6 +201,11 @@ The following are functions available in the network module.
 
 .. function:: country([code])
 
+    .. note:: On ESP32 this will always return the code for the "worldwide"
+              region until a WLAN interface is instantiated, but changing the
+              country code with no WLAN interface will raise an exception.
+    .. note:: On ESP32 the country code is automatically saved to flash.
+
     Get or set the two-letter ISO 3166-1 Alpha-2 country code to be used for
     radio compliance.
 
