@@ -118,4 +118,45 @@ void board_early_init(void) {
     if (se_services_set_run_profile(&run_profile)) {
         MICROPY_BOARD_FATAL_ERROR("se_services_set_run_profile");
     }
+
+    // Set default off profile
+    off_profile_t off_profile = {
+        .dcdc_mode = DCDC_MODE_PWM,
+        .dcdc_voltage = DCDC_VOUT_0825,
+        // CLK_SRC_LFRC or CLK_SRC_LFXO
+        .aon_clk_src = CLK_SRC_LFXO,
+        // CLK_SRC_HFRC, CLK_SRC_HFXO or CLK_SRC_PLL
+        .stby_clk_src = CLK_SRC_HFRC,
+        .stby_clk_freq = SCALED_FREQ_RC_STDBY_76_8_MHZ,
+        // Disable all power domains.
+        .power_domains = 0,
+        // Add all memories
+        .memory_blocks = SERAM_MASK | SRAM0_MASK | SRAM1_MASK | MRAM_MASK | BACKUP4K_MASK |
+            SRAM6A_MASK | SRAM6B_MASK | SRAM7_1_MASK | SRAM7_2_MASK | SRAM7_3_MASK |
+            SRAM8_MASK | SRAM9_MASK | FWRAM_MASK,
+        .ip_clock_gating = GPU_MASK | NPU_HP_MASK | NPU_HE_MASK | OSPI_1_MASK | CANFD_MASK | USB_MASK |
+            CDC200_MASK | CAMERA_MASK | MIPI_DSI_MASK | MIPI_CSI_MASK | LP_PERIPH_MASK,
+        .phy_pwr_gating = LDO_PHY_MASK | USB_PHY_MASK | MIPI_TX_DPHY_MASK | MIPI_RX_DPHY_MASK | MIPI_PLL_DPHY_MASK,
+        .vdd_ioflex_3V3 = IOFLEX_LEVEL_3V3,
+        .vtor_address = SCB->VTOR,
+        .vtor_address_ns = SCB->VTOR,
+        .ewic_cfg = EWIC_RTC_A,
+        .wakeup_events = WE_LPRTC,
+    };
+
+    if (se_services_set_off_profile(&off_profile)) {
+        MICROPY_BOARD_FATAL_ERROR("se_services_set_off_profile");
+    }
+}
+
+MP_WEAK void board_enter_stop(void) {
+
+}
+
+MP_WEAK void board_enter_standby(void) {
+
+}
+
+MP_WEAK void board_exit_standby(void) {
+
 }
