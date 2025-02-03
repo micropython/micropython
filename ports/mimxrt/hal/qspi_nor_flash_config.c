@@ -48,7 +48,7 @@ const flexspi_nor_config_t qspiflash_config = {
             .seqId = 4u,
             .seqNum = 1u,
         },
-        .deviceModeArg = 0x40,
+        .deviceModeArg = MICROPY_HW_FLASH_QE_ARG,
         .deviceType = kFlexSpiDeviceType_SerialNOR,
         .sflashPadType = kSerialFlash_4Pads,
         .serialClkFreq = MICROPY_HW_FLASH_CLK,
@@ -68,10 +68,7 @@ const flexspi_nor_config_t qspiflash_config = {
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
 
             // 2 Read extend parameters
-            FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x81, READ_SDR, FLEXSPI_1PAD, 0x04),
-            FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
-            FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
-            FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
+            EMPTY_LUT_SEQ
 
             // 3 Write Enable
             FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x06, STOP, FLEXSPI_1PAD, 0),
@@ -80,7 +77,7 @@ const flexspi_nor_config_t qspiflash_config = {
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
 
             // 4 Write Status Reg
-            FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x01, WRITE_SDR, FLEXSPI_1PAD, 0x01),
+            FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, MICROPY_HW_FLASH_QE_CMD, WRITE_SDR, FLEXSPI_1PAD, 0x01),
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
@@ -92,16 +89,10 @@ const flexspi_nor_config_t qspiflash_config = {
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
 
             // 6 Fast read quad mode - SDR
-            FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x6B, RADDR_SDR, FLEXSPI_1PAD, 24),
-            FLEXSPI_LUT_SEQ(DUMMY_SDR, FLEXSPI_4PAD, 0x08, READ_SDR, FLEXSPI_4PAD, 0x04),
-            FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
-            FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
+            EMPTY_LUT_SEQ
 
             // 7 Read ID
-            FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x90, DUMMY_SDR, FLEXSPI_1PAD, 24),
-            FLEXSPI_LUT_SEQ(READ_SDR, FLEXSPI_1PAD, 0x00, 0, 0, 0),
-            FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
-            FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
+            EMPTY_LUT_SEQ
 
             // 8 Erase Block (32k)
             FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x52, RADDR_SDR, FLEXSPI_1PAD, 24),
@@ -127,14 +118,17 @@ const flexspi_nor_config_t qspiflash_config = {
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
             FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
 
-            // 12 Empty LUT
-            EMPTY_LUT
+            // 12 Not used
+            EMPTY_LUT_SEQ
 
             // 13 READ SDFP
-            FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x5A, RADDR_SDR, FLEXSPI_1PAD, 24),
-            FLEXSPI_LUT_SEQ(DUMMY_SDR, FLEXSPI_1PAD, 8, READ_SDR, FLEXSPI_1PAD, 0x04),
-            FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
-            FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0),         // Filler
+            EMPTY_LUT_SEQ
+
+            // 14 Not used
+            EMPTY_LUT_SEQ
+
+            // 15 Not used
+            EMPTY_LUT_SEQ
         },
     },
     .pageSize = 256u,
