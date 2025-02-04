@@ -19,6 +19,8 @@ Functions and types
 
 .. class:: bytearray()
 
+    |see_cpython| `python:bytearray`.
+
 .. class:: bytes()
 
     |see_cpython| `python:bytes`.
@@ -103,6 +105,8 @@ Functions and types
 .. function:: max()
 
 .. class:: memoryview()
+
+    |see_cpython| `python:memoryview`.
 
 .. function:: min()
 

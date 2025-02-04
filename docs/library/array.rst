@@ -79,3 +79,8 @@ Classes
 
         **Note:** ``__repr__`` cannot be called directly (``a.__repr__()`` fails) and
         is not present in ``__dict__``, however ``str(a)`` and ``repr(a)`` both work.
+
+    Array objects also implement the buffer protocol, meaning the contents can
+    be accessed as raw bytes via a `memoryview` or other interfaces which use
+    this protocol.
+
