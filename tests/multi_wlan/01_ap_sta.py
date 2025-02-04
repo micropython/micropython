@@ -96,15 +96,7 @@ def instance1():
 
     print("STA connected")
 
-    # Print the current channel, if the port support this
-    try:
-        print("channel", sta.config("channel"))
-    except OSError as e:
-        if "AP" in str(e):
-            # ESP8266 only supports reading channel on the AP interface, so fake this result
-            print("channel", CHANNEL)
-        else:
-            raise
+    print("channel", sta.config("channel"))
 
     print("STA waiting for disconnect...")
 
