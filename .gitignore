@@ -24,3 +24,4 @@ user.props
 
 # MacOS desktop metadata files
 .DS_Store
+ports/esp8266/modules/*.py

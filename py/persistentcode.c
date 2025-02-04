@@ -321,10 +321,13 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
     #if MICROPY_EMIT_MACHINE_CODE
     } else {
         // Allocate memory for native data and load it
-        size_t fun_alloc;
-        MP_PLAT_ALLOC_EXEC(fun_data_len, (void **)&fun_data, &fun_alloc);
-        read_bytes(reader, fun_data, fun_data_len);
-
+        if (reader->readbytes) {
+            fun_data = reader->readbytes(reader->data, fun_data_len);
+        } else {
+            size_t fun_alloc;
+            MP_PLAT_ALLOC_EXEC(fun_data_len, (void **)&fun_data, &fun_alloc);
+            read_bytes(reader, fun_data, fun_data_len);
+        }
         if (kind == MP_CODE_NATIVE_PY) {
             // Read prelude offset within fun_data, and extract scope flags.
             prelude_offset = read_uint(reader);
