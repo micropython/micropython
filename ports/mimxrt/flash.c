@@ -29,7 +29,8 @@
 void flash_init(void) {
     // Upload the custom flash configuration
     // And fix the entry for PAGEPROGRAM_QUAD
-    flexspi_nor_update_lut();
+    // Update the flash CLK
+    flexspi_nor_update_lut_clk(MICROPY_HW_FLASH_CLK);
 
     // Configure FLEXSPI IP FIFO access.
     BOARD_FLEX_SPI->MCR0 &= ~(FLEXSPI_MCR0_ARDFEN_MASK);
