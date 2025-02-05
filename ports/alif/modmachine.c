@@ -38,7 +38,7 @@ static void mp_machine_idle(void) {
 }
 
 static mp_obj_t mp_machine_unique_id(void) {
-    uint8_t id[5];
+    uint8_t id[8] = {0};
     se_services_get_unique_id(id);
     return mp_obj_new_bytes(id, sizeof(id));
 }
