@@ -1,0 +1,19 @@
+machine.UART: ID parameter is ignored in this port.
+********UART Tests********
+
+Break Sent is received by Rx:  True
+Tx char is received by Rx char:  True
+Tx is received by Rx(read()):  True
+Tx is received by Rx(readline()):  True
+Tx is received by Rx(read(nbytes)): True
+Tx Ongoing:  True
+Tx Done:  True
+Tx is received by Rx(readinto(buf)):  True
+
+*******UART Interrupt Tests*******
+
+Tx Done
+Tx is received by Rx(readinto(buf)):  True
+Rx Done
+Rx Buffer Full
+Tx Empty
