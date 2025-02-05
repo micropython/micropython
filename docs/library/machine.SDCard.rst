@@ -77,24 +77,34 @@ ESP32
 `````
 
 SD cards support access in both SD/MMC mode and the simpler (but slower) SPI
-mode. ESP32 and ESP32-S3 chips can access SD cards using either mode. SPI mode
-makes use of a `SPI` host peripheral, which cannot concurrently be used for
-something else.
+mode.
+
+SPI mode makes use of a `SPI` host peripheral, which cannot concurrently be used
+for other SPI interactions.
 
 The ``slot`` argument determines which mode is used. Different values are
-available on different chips:
+supported on different chips:
 
-====== ================= ============ ========================
-Slot   Supported chips   Mode         Supported data width
-====== ================= ============ ========================
-0      ESP32-S3          SD/MMC       1, 4, or 8 bits.
-1      ESP32, ESP32-S3   SD/MMC       1 or 4 bits.
-2      ESP32, ESP32-S3   `SPI` (id=1) 1 bit.
-3      ESP32, ESP32-S3   `SPI` (id=0) 1 bit.
-====== ================= ============ ========================
+========== ======== ======== ============ ============
+Chip       Slot 0   Slot 1   Slot 2       Slot 3
+========== ======== ======== ============ ============
+ESP32               SD/MMC   SPI (id=1)   SPI (id=0)
+ESP32-C3                     SPI (id=0)
+ESP32-C6                     SPI (id=0)
+ESP32-S2                     SPI (id=1)   SPI (id=0)
+ESP32-S3   SD/MMC   SD/MMC   SPI (id=1)   SPI (id=0)
+========== ======== ======== ============ ============
 
-.. note:: On the original ESP32, SDMMC slot 0 is unavailable as its pins are
-          used to communicate with on-board flash memory.
+Different slots support different data bus widths (number of data pins):
+
+========== ========== =====================
+Slot       Type       Supported data widths
+========== ========== =====================
+0          SD/MMC     1, 4, 8
+1          SD/MMC     1, 4
+2          SPI        1
+3          SPI        1
+========== ========== =====================
 
 .. note:: Most ESP32 modules that provide an SD card slot using the
           dedicated hardware only wire up 1 data pin, so the default
@@ -105,8 +115,9 @@ Additional details depend on which ESP32 family chip is in use:
 Original ESP32
 ~~~~~~~~~~~~~~
 
-Pin assignments in SD/MMC mode are fixed on the original ESP32. When accessing a
-card in SPI mode, pins can be set to different values in the constructor.
+In SD/MMC mode (slot 1), pin assignments in SD/MMC mode are fixed on the
+original ESP32. The SPI mode slots (2 & 3) allow pins to be set to different
+values in the constructor.
 
 The default pin assignments are as follows:
 
@@ -176,6 +187,19 @@ parameters ``sck``, ``cs``, ``miso``, ``mosi`` as needed to assign pins.
 
 In either mode the ``cd`` and ``wp`` pins default to disabled, unless set in the
 constructor.
+
+Other ESP32 chips
+~~~~~~~~~~~~~~~~~
+
+Other ESP32 family chips do not have hardware SD/MMC host controllers and can
+only access SD cards in SPI mode.
+
+To access a card in SPI mode, set ``slot`` parameter value 2 or 3 and pass
+parameters ``sck``, ``cs``, ``miso``, ``mosi`` to assign pins.
+
+.. note:: ESP32-C3 and ESP32-C6 only have one available `SPI` bus, so the only
+          valid ``slot`` parameter value is 2. Using this bus for the SD card
+          will prevent also using it for :class:`machine.SPI`.
 
 cc3200
 ``````
