@@ -139,12 +139,9 @@ void se_services_dump_device_data(void) {
     printf("\n");
 }
 
-void se_services_get_unique_id(uint8_t id[5]) {
+void se_services_get_unique_id(uint8_t id[8]) {
     uint32_t error_code;
-    SERVICES_version_data_t data;
-    SERVICES_system_get_device_data(se_services_handle, &data, &error_code);
-    // The MfgData has 5 bytes of valid data, at least on REV_B2.
-    memcpy(id, data.MfgData, 5);
+    SERVICES_system_get_eui_extension(se_services_handle, false, id, &error_code);
 }
 
 __attribute__((noreturn)) void se_services_reset_soc(void) {

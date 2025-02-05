@@ -30,7 +30,7 @@
 
 void se_services_init(void);
 void se_services_dump_device_data(void);
-void se_services_get_unique_id(uint8_t id[5]);
+void se_services_get_unique_id(uint8_t id[8]);
 __attribute__((noreturn)) void se_services_reset_soc(void);
 uint64_t se_services_rand64(void);
 uint32_t se_services_enable_clock(clock_enable_t clock, bool enable);
