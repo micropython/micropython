@@ -33,7 +33,7 @@
 #include "se_services.h"
 
 void mp_usbd_port_get_serial_number(char *serial_buf) {
-    uint8_t id[5];
+    uint8_t id[8] = {0};
     se_services_get_unique_id(id);
     MP_STATIC_ASSERT(sizeof(id) * 2 <= MICROPY_HW_USB_DESC_STR_MAX);
     mp_usbd_hex_str(serial_buf, id, sizeof(id));
