@@ -213,7 +213,7 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     #if SOC_SDMMC_HOST_SUPPORTED
     static const int DEFAULT_SLOT = 1;
     #else
-    static const int DEFAULT_SLOT = 3;
+    static const int DEFAULT_SLOT = SD_SLOT_MAX;
     #endif
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_slot,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SLOT} },
@@ -257,7 +257,7 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         arg_vals[ARG_cmd].u_obj, arg_vals[ARG_data].u_obj);
     #endif
 
-    mp_uint_t slot_num = arg_vals[ARG_slot].u_int;
+    int slot_num = arg_vals[ARG_slot].u_int;
     if (slot_num < SD_SLOT_MIN || slot_num > SD_SLOT_MAX) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid slot number"));
     }
