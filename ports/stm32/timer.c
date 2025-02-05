@@ -264,8 +264,8 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
     #else
 
     uint32_t source, clk_div;
-    if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
-        // TIM{1,8,9,10,11} are on APB2
+    if (tim_id == 1 || (8 <= tim_id && tim_id <= 11) || tim_id == 20) {
+        // TIM{1,8,9,10,11,20} are on APB2
         #if defined(STM32F0) || defined(STM32G0)
         source = HAL_RCC_GetPCLK1Freq();
         clk_div = RCC->CFGR & RCC_CFGR_PPRE;
