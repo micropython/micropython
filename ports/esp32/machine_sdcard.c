@@ -364,7 +364,7 @@ static mp_obj_t machine_sdcard_readblocks(mp_obj_t self_in, mp_obj_t block_num, 
 
     err = sdcard_ensure_card_init((sdcard_card_obj_t *)self, false);
     if (err != ESP_OK) {
-        return false;
+        return mp_const_false;
     }
 
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_WRITE);
@@ -381,7 +381,7 @@ static mp_obj_t machine_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t block_num,
 
     err = sdcard_ensure_card_init((sdcard_card_obj_t *)self, false);
     if (err != ESP_OK) {
-        return false;
+        return mp_const_false;
     }
 
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
