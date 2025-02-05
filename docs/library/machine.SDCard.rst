@@ -77,9 +77,13 @@ ESP32
 `````
 
 SD cards support access in both SD/MMC mode and the simpler (but slower) SPI
-mode. ESP32 and ESP32-S3 chips can access SD cards using either mode. SPI mode
-makes use of a `SPI` host peripheral, which cannot concurrently be used for
-something else.
+mode.
+
+- ESP32 and ESP32-S3 chips can access SD cards using either mode.
+- All ESP32 family chips can access SD using SPI mode.
+
+SPI mode makes use of a `SPI` host peripheral, which cannot concurrently be used
+for something else.
 
 The ``slot`` argument determines which mode is used. Different values are
 available on different chips:
@@ -176,6 +180,19 @@ parameters ``sck``, ``cs``, ``miso``, ``mosi`` as needed to assign pins.
 
 In either mode the ``cd`` and ``wp`` pins default to disabled, unless set in the
 constructor.
+
+Other ESP32 chips
+~~~~~~~~~~~~~~~~~
+
+Other ESP32 family chips do not have hardware SD/MMC host controllers and can
+only access SD cards in SPI mode with ``width=1``.
+
+To access a card in SPI mode, set ``slot`` parameter value 2 or 3 and pass
+parameters ``sck``, ``cs``, ``miso``, ``mosi`` to assign pins.
+
+.. note:: ESP32-C3 and ESP32-C6 only have one available `SPI` bus, so the only
+          valid ``slot`` parameter value is 2. Using this bus for the SD card
+          will prevent also using it for :class:`machine.SPI`.
 
 cc3200
 ``````
