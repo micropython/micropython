@@ -1,0 +1,35 @@
+# Documentation
+images
+
+# Exports, Project settings
+.mtbLaunchConfigs
+.settings
+.vscode
+
+docs
+
+# LwIP
+$(SEARCH_lwip)/contrib/addons
+$(SEARCH_lwip)/contrib/apps
+$(SEARCH_lwip)/contrib/Coverity
+$(SEARCH_lwip)/contrib/examples
+$(SEARCH_lwip)/contrib/ports/unix
+$(SEARCH_lwip)/contrib/ports/win32
+$(SEARCH_lwip)/test
+$(SEARCH_lwip)/doc
+$(SEARCH_lwip)/src/apps
+$(SEARCH_lwip)/src/netif/ppp 
+$(SEARCH_lwip)/src/netif/slipif.c
+
+# mbedTLS
+$(SEARCH_mbedtls)/3rdparty
+$(SEARCH_mbedtls)/configs
+$(SEARCH_mbedtls)/programs
+$(SEARCH_mbedtls)/scripts
+$(SEARCH_mbedtls)/tests
+$(SEARCH_mbedtls)/doxygen
+$(SEARCH_mbedtls)/library/net_sockets.c
+
+$(SEARCH_wifi-host-driver)/docs
+
+$(SEARCH_mbedtls)/library/psa_crypto_driver_wrappers.c
