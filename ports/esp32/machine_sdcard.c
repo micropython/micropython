@@ -177,6 +177,10 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         ARG_mosi,
         ARG_sck,
         ARG_cs,
+        #if SOC_SDMMC_USE_GPIO_MATRIX
+        ARG_cmd,
+        ARG_data,
+        #endif
         ARG_freq,
     };
     static const mp_arg_t allowed_args[] = {
@@ -189,6 +193,11 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_cs,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        // Optional assignment of SDMMC interface pins, if host supports this
+        #if SOC_SDMMC_USE_GPIO_MATRIX
+        { MP_QSTR_cmd,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_data,    MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        #endif
         // freq is valid for both SPI and SDMMC interfaces
         { MP_QSTR_freq,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 20000000} },
     };
@@ -211,6 +220,11 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         arg_vals[ARG_miso].u_obj, arg_vals[ARG_mosi].u_obj,
         arg_vals[ARG_sck].u_obj, arg_vals[ARG_cs].u_obj);
 
+    #if SOC_SDMMC_USE_GPIO_MATRIX
+    DEBUG_printf("  cmd=%p, data=%p",
+        arg_vals[ARG_cmd].u_obj, arg_vals[ARG_data].u_obj);
+    #endif
+
     int slot_num = arg_vals[ARG_slot].u_int;
     if (slot_num < 0 || slot_num > 3) {
         mp_raise_ValueError(MP_ERROR_TEXT("slot number must be between 0 and 3 inclusive"));
@@ -221,6 +235,13 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     if (is_spi) {
         slot_num -= 2;
     }
+    // Verify valid argument combinations
+    #if SOC_SDMMC_USE_GPIO_MATRIX
+    if (is_spi && (arg_vals[ARG_cmd].u_obj != mp_const_none
+                   || arg_vals[ARG_data].u_obj != mp_const_none)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid config: SPI slot with SDMMC pin arguments"));
+    }
+    #endif
 
     DEBUG_printf("  Setting up host configuration");
 
@@ -306,6 +327,32 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("width must be 1 or 4 (or 8 on slot 0)"));
         }
+
+        #if SOC_SDMMC_USE_GPIO_MATRIX
+        // Optionally configure all the SDMMC pins, if chip supports this
+        SET_CONFIG_PIN(slot_config, clk, ARG_sck); // reuse SPI SCK for CLK
+        SET_CONFIG_PIN(slot_config, cmd, ARG_cmd);
+        if (arg_vals[ARG_data].u_obj != mp_const_none) {
+            mp_obj_t *data_vals;
+            size_t data_len;
+            mp_obj_get_array(arg_vals[ARG_data].u_obj, &data_len, &data_vals);
+            if (data_len != width) {
+                mp_raise_msg_varg(&mp_type_ValueError, "data argument length must match width %d", width);
+            }
+            slot_config.d0 = machine_pin_get_id(data_vals[0]);
+            if (width > 1) {
+                slot_config.d1 = machine_pin_get_id(data_vals[1]);
+                slot_config.d2 = machine_pin_get_id(data_vals[2]);
+                slot_config.d3 = machine_pin_get_id(data_vals[3]);
+            }
+            if (width == 8) {
+                slot_config.d4 = machine_pin_get_id(data_vals[4]);
+                slot_config.d5 = machine_pin_get_id(data_vals[5]);
+                slot_config.d6 = machine_pin_get_id(data_vals[6]);
+                slot_config.d7 = machine_pin_get_id(data_vals[7]);
+            }
+        }
+        #endif
 
         DEBUG_printf("  Calling init_slot()");
         check_esp_err(sdmmc_host_init_slot(self->host.slot, &slot_config));
