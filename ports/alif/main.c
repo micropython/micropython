@@ -68,7 +68,9 @@ void _start(void) {
     mp_uart_init();
     #endif
     #if MICROPY_HW_ENABLE_OSPI
-    ospi_flash_init();
+    if (ospi_flash_init() != 0) {
+        MICROPY_BOARD_FATAL_ERROR("ospi_init failed");
+    }
     #endif
     #if MICROPY_HW_ENABLE_USBDEV
     // Takes about 200ms.
