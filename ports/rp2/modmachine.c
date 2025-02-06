@@ -196,17 +196,8 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         #endif
         xosc_dormant();
     } else {
-        bool timer3_enabled = irq_is_enabled(3);
-
-        const uint32_t alarm_num = 3;
-        const uint32_t irq_num = TIMER_ALARM_IRQ_NUM(timer_hw, alarm_num);
+        uint32_t timer_irq_num;
         if (use_timer_alarm) {
-            // Make sure ALARM3/IRQ3 is enabled on _this_ core
-            if (!timer3_enabled) {
-                irq_set_enabled(irq_num, true);
-            }
-            hw_set_bits(&timer_hw->inte, 1u << alarm_num);
-            // Use timer alarm to wake.
             clocks_hw->sleep_en0 = 0x0;
             #if PICO_RP2040
             clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_SYS_TIMER_BITS;
@@ -215,8 +206,18 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
             #else
             #error Unknown processor
             #endif
-            timer_hw->intr = 1u << alarm_num; // clear any IRQ
-            timer_hw->alarm[alarm_num] = timer_hw->timerawl + delay_ms * 1000;
+
+            // Clobber the soft timer hardware alarm (as soft timer doesn't wake lightsleep)
+            // and repurpose it for the lightsleep wakeup
+            //
+            // The timer peripheral will already be configured via softtimer_init().
+            if (get_core_num() == 1) {
+                // On CPU0 the hardware alarm interrupt is already enabled, but IRQs won't be serviced
+                // due to the critical section so we also need to temporarily enable this IRQ on our CPU
+                timer_irq_num = hardware_alarm_get_irq_num(PICO_DEFAULT_TIMER_INSTANCE(), MICROPY_HW_SOFT_TIMER_ALARM_NUM);
+                irq_set_enabled(timer_irq_num, true);
+            }
+            hardware_alarm_set_target(MICROPY_HW_SOFT_TIMER_ALARM_NUM, delayed_by_ms(get_absolute_time(), delay_ms));
         } else {
             // TODO: Use RTC alarm to wake.
             clocks_hw->sleep_en0 = 0x0;
@@ -247,16 +248,24 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
         // Go into low-power mode.
         __wfi();
-
-        if (!timer3_enabled) {
-            irq_set_enabled(irq_num, false);
-        }
         clocks_hw->sleep_en0 |= ~(0u);
         clocks_hw->sleep_en1 |= ~(0u);
+
+        if (use_timer_alarm && get_core_num() == 1) {
+            // We don't have an easy way to clear any pending IRQ on this CPU,
+            // so we might get a spurious soft timer interrupt handler run on
+            // CPU1 unfortunately - but this should be harmless
+            irq_set_enabled(timer_irq_num, false);
+        }
     }
 
     // Enable ROSC.
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB;
+
+    // we might have missed at least one soft timer expiry that hasn't been processed
+    // depending on when we woke up, so force soft timer processing for when we exit
+    // the atomic section
+    hardware_alarm_force_irq(MICROPY_HW_SOFT_TIMER_ALARM_NUM);
 
     // Bring back all clocks.
     runtime_init_clocks_optional_usb(disable_usb);
