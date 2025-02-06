@@ -61,6 +61,7 @@ typedef struct _ospi_flash_settings_t {
     int (*flash_init)(struct _ospi_flash_t *);
     uint8_t octal_mode;
     bool rxds;
+    bool bswap16;
     uint8_t inst_len;
     uint8_t xip_data_len;
     uint16_t read_sr;
