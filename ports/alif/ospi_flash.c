@@ -414,8 +414,16 @@ static int ospi_flash_write_page(uint32_t addr, uint32_t len, const uint8_t *src
     ospi_push(&self->cfg, addr);
 
     const uint32_t *src32 = (const uint32_t *)src;
-    for (; len; len -= 4) {
-        ospi_push(&self->cfg, __ROR(*src32++, 16));
+    if (self->set->bswap16) {
+        // MX flashes swap 16-bit words when read in 8D-8D-8D.
+        for (; len; len -= 4) {
+            ospi_push(&self->cfg, __ROR(*src32++, 16));
+        }
+    } else {
+        // For the rest of the flashes, we just correct the endianness.
+        for (; len; len -= 4) {
+            ospi_push(&self->cfg, __REV(*src32++));
+        }
     }
 
     ospi_writel((&self->cfg), ser, self->cfg.ser);
