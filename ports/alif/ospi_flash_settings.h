@@ -34,6 +34,7 @@
     .flash_init = ospi_flash_mx_init, \
     .octal_mode = OSPI_FLASH_OCTAL_MODE_DDD, \
     .rxds = true, \
+    .bswap16 = true, \
     .inst_len = OSPI_INST_L_16bit, \
     .xip_data_len = OSPI_DATA_L_16bit, \
     .read_sr = 0x05fa, \
@@ -50,6 +51,7 @@
     .flash_init = ospi_flash_issi_init, \
     .octal_mode = OSPI_FLASH_OCTAL_MODE_DDD, \
     .rxds = false, \
+    .bswap16 = false, \
     .inst_len = OSPI_INST_L_8bit, \
     .xip_data_len = OSPI_DATA_L_16bit, \
     .read_sr = 0x05, \
@@ -65,7 +67,8 @@
 #define OSPI_FLASH_SETTINGS_IS25 \
     .flash_init = ospi_flash_issi_init, \
     .octal_mode = OSPI_FLASH_OCTAL_MODE_DDD, \
-    .rxds = true, \
+    .rxds = false, \
+    .bswap16 = false, \
     .inst_len = OSPI_INST_L_8bit, \
     .xip_data_len = OSPI_DATA_L_16bit, \
     .read_sr = 0x05, \
