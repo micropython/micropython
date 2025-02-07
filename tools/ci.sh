@@ -230,6 +230,8 @@ function ci_mimxrt_build {
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK
     make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40 submodules
     make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1060_EVK submodules
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1060_EVK CFLAGS_EXTRA=-DMICROPY_HW_USB_MSC=1
 }
 
 ########################################################################################
