@@ -39,14 +39,12 @@ typedef struct _machine_pwm_obj_t {
     uint32_t fz;
     uint8_t duty_type;
     mp_int_t duty;
-    // bool invert;
 } machine_pwm_obj_t;
 
 static machine_pwm_obj_t *pwm_obj[MAX_PWM_OBJS] = { NULL };
 
 static inline machine_pwm_obj_t *pwm_obj_alloc() {
-    for (uint8_t i = 0; i < MAX_PWM_OBJS; i++)
-    {
+    for (uint8_t i = 0; i < MAX_PWM_OBJS; i++) {
         if (pwm_obj[i] == NULL) {
             pwm_obj[i] = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);
             return pwm_obj[i];
@@ -57,8 +55,7 @@ static inline machine_pwm_obj_t *pwm_obj_alloc() {
 }
 
 static inline void pwm_obj_free(machine_pwm_obj_t *pwm_obj_ptr) {
-    for (uint8_t i = 0; i < MAX_PWM_OBJS; i++)
-    {
+    for (uint8_t i = 0; i < MAX_PWM_OBJS; i++) {
         if (pwm_obj[i] == pwm_obj_ptr) {
             pwm_obj[i] = NULL;
         }
@@ -79,38 +76,38 @@ static cy_rslt_t pwm_freq_duty_set(cyhal_pwm_t *pwm_obj, uint32_t fz, float duty
 }
 
 static inline cy_rslt_t pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint32_t pulse_width) {
-    return cyhal_pwm_set_period(pwm_obj, 1000000 / fz, pulse_width / 1000); // !# * --> /
+    return cyhal_pwm_set_period(pwm_obj, 1000000 / fz, pulse_width / 1000);
 }
-
-/*STATIC inline cy_rslt_t pwm_advanced_init(machine_pwm_obj_t *machine_pwm_obj) {
-    return cyhal_pwm_init_adv(&machine_pwm_obj->pwm_obj, machine_pwm_obj->pin, NC, CYHAL_PWM_LEFT_ALIGN, true, 0, true, NULL); // complimentary pin set as not connected
-}*/
 
 static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "frequency=%u duty_cycle=%f", self->fz, (double)self->duty);
+    mp_obj_t pin = mp_obj_new_int(self->pin);
+    const char *pin_name = mp_obj_str_get_str(pin_name_by_addr(pin));
+    mp_printf(print, "PWM(\"%s\",freq=%u, duty_u16=%f)", pin_name, self->fz, (double)self->duty);
 }
 
 static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_freq, ARG_duty_u16, ARG_duty_ns};
-    // enum { ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_invert };
+
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_freq,     MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
+        { MP_QSTR_freq, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
         { MP_QSTR_duty_u16, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
         { MP_QSTR_duty_ns,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
-        // { MP_QSTR_invert,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
     };
 
     // Parse the arguments.
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    // self->active = 1;
 
     if ((args[ARG_freq].u_int != VALUE_NOT_SET)) {
-        // pwm_freq_duty_set(&self->pwm_obj, args[ARG_freq].u_int, self->duty);
         self->fz = args[ARG_freq].u_int;
+    }
+
+    if ((args[ARG_duty_u16].u_int != VALUE_NOT_SET) &&
+        (args[ARG_duty_ns].u_int != VALUE_NOT_SET)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("PWM duty should be specified only in one format"));
     }
 
     if ((args[ARG_duty_u16].u_int != VALUE_NOT_SET)) {
@@ -118,27 +115,14 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
         pwm_freq_duty_set(&self->pwm_obj, self->fz, val);
         self->duty = args[ARG_duty_u16].u_int;
         self->duty_type = DUTY_U16;
-    }
-
-    if (args[ARG_duty_ns].u_int != VALUE_NOT_SET) {
+    } else if (args[ARG_duty_ns].u_int != VALUE_NOT_SET) {
         pwm_duty_set_ns(&self->pwm_obj, self->fz, args[ARG_duty_ns].u_int);
         self->duty = args[ARG_duty_ns].u_int;
         self->duty_type = DUTY_NS;
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("PWM duty should be specified in either ns or u16"));
     }
 
-    // inverts the respective output if the value is True
-    /*if (args[ARG_invert].u_int != VALUE_NOT_SET) {
-        self->invert = args[ARG_invert].u_int;
-        if (self->invert == 1) {
-            cyhal_pwm_free(&self->pwm_obj);
-            cy_rslt_t result = pwm_advanced_init(self);
-            if (result != CY_RSLT_SUCCESS) {
-                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM initialisation failed with return code %lx ! and invert output is not available"), result);
-            }
-            self->duty_type = DUTY_U16;
-            self->duty = ((1) - ((self->duty) / 65535)) * 65535;
-        }
-    }*/
     cyhal_pwm_start(&self->pwm_obj);
 }
 
@@ -151,7 +135,6 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->pin = pin_addr_by_name(all_args[0]);
     self->duty_type = DUTY_NOT_SET;
     self->fz = -1;
-    // self->invert = -1;
 
     // Initialize PWM
     cy_rslt_t result = cyhal_pwm_init(&self->pwm_obj, self->pin, NULL);
@@ -178,7 +161,6 @@ static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
 
 static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     if (self->duty_type == DUTY_NS) {
-        // duty_cycle = pulsewidth(ns)*freq(hz);
         return mp_obj_new_float(((self->duty) * (self->fz) * 65535) / 1000000000 - 1);
     } else {
         return mp_obj_new_float(self->duty);
