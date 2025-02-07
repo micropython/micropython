@@ -336,6 +336,26 @@ static uint8_t peek_rule(parser_t *parser, size_t n) {
 }
 #endif
 
+#if MICROPY_COMP_FLOAT_CONST
+static bool mp_parse_node_get_number_maybe(mp_parse_node_t pn, mp_obj_t *o) {
+    if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
+        *o = MP_OBJ_NEW_SMALL_INT(MP_PARSE_NODE_LEAF_SMALL_INT(pn));
+        return true;
+    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, RULE_const_object)) {
+        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
+        *o = mp_parse_node_extract_const_object(pns);
+        return mp_obj_is_int(*o) || mp_obj_is_float(*o);
+    } else {
+        return false;
+    }
+}
+bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
+    if (!mp_parse_node_get_number_maybe(pn, o)) {
+        return false;
+    }
+    return mp_obj_is_int(*o);
+}
+#else
 bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
     if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         *o = MP_OBJ_NEW_SMALL_INT(MP_PARSE_NODE_LEAF_SMALL_INT(pn));
@@ -348,6 +368,8 @@ bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
         return false;
     }
 }
+#define mp_parse_node_get_number_maybe mp_parse_node_get_int_maybe
+#endif
 
 #if MICROPY_COMP_CONST_TUPLE || MICROPY_COMP_CONST
 static bool mp_parse_node_is_const(mp_parse_node_t pn) {
@@ -642,11 +664,31 @@ static const mp_rom_map_elem_t mp_constants_table[] = {
     #if MICROPY_PY_UCTYPES
     { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
     #endif
+    #if MICROPY_PY_MATH && MICROPY_COMP_FLOAT_CONST
+    { MP_ROM_QSTR(MP_QSTR_math), MP_ROM_PTR(&mp_module_math) },
+    #endif
     // Extra constants as defined by a port
     MICROPY_PORT_CONSTANTS
 };
 static MP_DEFINE_CONST_MAP(mp_constants_map, mp_constants_table);
 #endif
+
+static bool binary_op_maybe(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs, mp_obj_t *res) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t tmp = mp_binary_op(op, lhs, rhs);
+        #if MICROPY_PY_BUILTINS_COMPLEX
+        if (mp_obj_is_type(tmp, &mp_type_complex)) {
+            return false;
+        }
+        #endif
+        *res = tmp;
+        nlr_pop();
+        return true;
+    } else {
+        return false;
+    }
+}
 
 static bool fold_logical_constants(parser_t *parser, uint8_t rule_id, size_t *num_args) {
     if (rule_id == RULE_or_test
@@ -706,7 +748,7 @@ static bool fold_logical_constants(parser_t *parser, uint8_t rule_id, size_t *nu
 }
 
 static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
-    // this code does folding of arbitrary integer expressions, eg 1 + 2 * 3 + 4
+    // this code does folding of arbitrary numeric expressions, eg 1 + 2 * 3 + 4
     // it does not do partial folding, eg 1 + 2 + x -> 3 + x
 
     mp_obj_t arg0;
@@ -716,7 +758,7 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         || rule_id == RULE_power) {
         // folding for binary ops: | ^ & **
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
-        if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
+        if (!mp_parse_node_get_number_maybe(pn, &arg0)) {
             return false;
         }
         mp_binary_op_t op;
@@ -732,60 +774,63 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         for (ssize_t i = num_args - 2; i >= 0; --i) {
             pn = peek_result(parser, i);
             mp_obj_t arg1;
-            if (!mp_parse_node_get_int_maybe(pn, &arg1)) {
+            if (!mp_parse_node_get_number_maybe(pn, &arg1)) {
                 return false;
             }
+            #if !MICROPY_COMP_FLOAT_CONST
             if (op == MP_BINARY_OP_POWER && mp_obj_int_sign(arg1) < 0) {
                 // ** can't have negative rhs
                 return false;
             }
-            arg0 = mp_binary_op(op, arg0, arg1);
+            #endif
+            if (!binary_op_maybe(op, arg0, arg1, &arg0)) {
+                return false;
+            }
         }
     } else if (rule_id == RULE_shift_expr
                || rule_id == RULE_arith_expr
                || rule_id == RULE_term) {
         // folding for binary ops: << >> + - * @ / % //
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
-        if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
+        if (!mp_parse_node_get_number_maybe(pn, &arg0)) {
             return false;
         }
         for (ssize_t i = num_args - 2; i >= 1; i -= 2) {
             pn = peek_result(parser, i - 1);
             mp_obj_t arg1;
-            if (!mp_parse_node_get_int_maybe(pn, &arg1)) {
+            if (!mp_parse_node_get_number_maybe(pn, &arg1)) {
                 return false;
             }
             mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i));
-            if (tok == MP_TOKEN_OP_AT || tok == MP_TOKEN_OP_SLASH) {
-                // Can't fold @ or /
+            if (tok == MP_TOKEN_OP_AT) {
+                // Can't fold @
                 return false;
             }
-            mp_binary_op_t op = MP_BINARY_OP_LSHIFT + (tok - MP_TOKEN_OP_DBL_LESS);
-            int rhs_sign = mp_obj_int_sign(arg1);
-            if (op <= MP_BINARY_OP_RSHIFT) {
-                // << and >> can't have negative rhs
-                if (rhs_sign < 0) {
-                    return false;
-                }
-            } else if (op >= MP_BINARY_OP_FLOOR_DIVIDE) {
-                // % and // can't have zero rhs
-                if (rhs_sign == 0) {
-                    return false;
-                }
+            #if !MICROPY_COMP_FLOAT_CONST
+            if (tok == MP_TOKEN_OP_SLASH) {
+                // Can't fold /
+                return false;
             }
-            arg0 = mp_binary_op(op, arg0, arg1);
+            #endif
+            mp_binary_op_t op = MP_BINARY_OP_LSHIFT + (tok - MP_TOKEN_OP_DBL_LESS);
+            if (!binary_op_maybe(op, arg0, arg1, &arg0)) {
+                return false;
+            }
         }
     } else if (rule_id == RULE_factor_2) {
         // folding for unary ops: + - ~
         mp_parse_node_t pn = peek_result(parser, 0);
-        if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
-            return false;
-        }
         mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, 1));
         mp_unary_op_t op;
         if (tok == MP_TOKEN_OP_TILDE) {
+            if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
+                return false;
+            }
             op = MP_UNARY_OP_INVERT;
         } else {
+            if (!mp_parse_node_get_number_maybe(pn, &arg0)) {
+                return false;
+            }
             assert(tok == MP_TOKEN_OP_PLUS || tok == MP_TOKEN_OP_MINUS); // should be
             op = MP_UNARY_OP_POSITIVE + (tok - MP_TOKEN_OP_PLUS);
         }

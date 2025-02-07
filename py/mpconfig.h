@@ -475,6 +475,11 @@
 #define MICROPY_COMP_CONST (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Whether to enable float module constants lookup and folding; eg const(-math.inf)
+#ifndef MICROPY_COMP_FLOAT_CONST
+#define MICROPY_COMP_FLOAT_CONST (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
+#endif
+
 // Whether to enable optimisation of: a, b = c, d
 // Costs 124 bytes (Thumb2)
 #ifndef MICROPY_COMP_DOUBLE_TUPLE_ASSIGN
