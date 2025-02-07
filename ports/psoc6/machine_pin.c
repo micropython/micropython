@@ -469,7 +469,7 @@ static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
 
-void mod_pin_deinit() {
+void machine_pin_deinit_all() {
     for (uint8_t i = 0; i < machine_pin_num_of_cpu_pins; i++) {
         if (pin_io[i] != NULL) {
             machine_pin_obj_deinit(pin_io[i]);

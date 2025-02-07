@@ -314,7 +314,7 @@ static mp_obj_t machine_adcblock_connect(size_t n_pos_args, const mp_obj_t *pos_
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_adcblock_connect_obj, 2, machine_adcblock_connect);
 
-void mod_adcblock_deinit(void) {
+void machine_adcblock_deinit_all(void) {
     for (uint8_t i = 0; i < MAX_BLOCKS; i++) {
         if (adc_block[i] != NULL) {
             machine_adcblock_deinit(adc_block[i]);

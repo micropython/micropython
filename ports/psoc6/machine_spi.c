@@ -419,7 +419,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 #endif
 
-void mod_spi_deinit() {
+void machine_spi_deinit_all() {
     for (uint8_t i = 0; i < MAX_SPI; i++) {
         if (spi_obj[i] != NULL) {
             machine_spi_deinit((mp_obj_base_t *)(spi_obj[i]));

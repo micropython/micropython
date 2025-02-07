@@ -51,18 +51,16 @@ extern const mp_obj_type_t machine_sdcard_type;
 #endif
 
 // Add all mod machine deinits
-void mod_pin_phy_deinit(void);
-void mod_pin_deinit(void);
-void mod_adc_deinit(void);
-void mod_adcblock_deinit(void);
-void mod_i2c_deinit(void);
-void mod_pwm_deinit(void);
-void mod_rtc_deinit(void);
-void mod_spi_deinit(void);
-void mod_timer_deinit(void);
-void mod_wdt_deinit(void);
-void mod_uart_deinit(void);
-void mod_sdcard_deinit(void);
+void machine_pin_deinit_all(void);
+void machine_adcblock_deinit_all(void);
+void machine_i2c_deinit_all(void);
+void machine_pwm_deinit_all(void);
+void machine_rtc_deinit_all(void);
+void machine_spi_deinit_all(void);
+void machine_timer_deinit_all(void);
+void machine_wdt_deinit(void);
+void machine_uart_deinit_all(void);
+void machine_sdcard_deinit_all(void);
 /* Note: the static functions' prototypes in the .c file cannot be declared here
 since they are static. The static type in those functions come from MPY hence
 should stay that way.  */
