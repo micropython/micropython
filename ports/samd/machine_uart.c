@@ -32,6 +32,7 @@
 #include "py/ringbuf.h"
 #include "samd_soc.h"
 #include "pin_af.h"
+#include "genhdr/pins.h"
 #include "shared/runtime/softtimer.h"
 
 #define DEFAULT_UART_BAUDRATE (115200)
@@ -298,7 +299,7 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
     }
 
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
-        "timeout=%u, timeout_char=%u, rxbuf=%d"
+        "tx=\"%q\", rx=\"%q\", timeout=%u, timeout_char=%u, rxbuf=%d"
         #if MICROPY_HW_UART_TXBUF
         ", txbuf=%d"
         #endif
@@ -310,7 +311,8 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         #endif
         ")",
         self->id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop + 1, self->timeout, self->timeout_char, rxbuf_len
+        self->stop + 1, pin_find_by_id(self->tx)->name, pin_find_by_id(self->rx)->name,
+        self->timeout, self->timeout_char, rxbuf_len
         #if MICROPY_HW_UART_TXBUF
         , txbuf_len
         #endif
@@ -448,7 +450,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
 
         // Check the rx/tx pin assignments
         if (self->tx == 0xff || self->rx == 0xff || (self->tx / 4) != (self->rx / 4)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("Non-matching or missing rx/tx"));
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid or missing rx/tx"));
         }
         self->rx_pad_config = get_sercom_config(self->rx, self->id);
         self->tx_pad_config = get_sercom_config(self->tx, self->id);
@@ -479,10 +481,16 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
 }
 
 static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+    mp_arg_check_num(n_args, n_kw, MICROPY_HW_DEFAULT_UART_ID < 0 ? 1 : 0, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get UART bus.
-    int uart_id = mp_obj_get_int(args[0]);
+    int uart_id = MICROPY_HW_DEFAULT_UART_ID;
+
+    if (n_args > 0) {
+        uart_id = mp_obj_get_int(args[0]);
+        n_args--;
+        args++;
+    }
     if (uart_id < 0 || uart_id > SERCOM_INST_NUM) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) doesn't exist"), uart_id);
     }
@@ -495,8 +503,15 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     self->stop = 0;
     self->timeout = 1;
     self->timeout_char = 1;
+    #if defined(pin_TX) && defined(pin_RX)
+    // Initialize with the default pins
+    self->tx = mp_hal_get_pin_obj((mp_obj_t)pin_TX);
+    self->rx = mp_hal_get_pin_obj((mp_obj_t)pin_RX);
+    #else
+    // Have to be defined
     self->tx = 0xff;
     self->rx = 0xff;
+    #endif
     #if MICROPY_HW_UART_RTSCTS
     self->rts = 0xff;
     self->cts = 0xff;
@@ -510,7 +525,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    mp_machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+    mp_machine_uart_init_helper(self, n_args, args, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
 }
