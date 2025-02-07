@@ -29,7 +29,7 @@
 // Board specific definitions
 #include "mpconfigboard.h"
 #include "fsl_common.h"
-#include "lib/nxp_driver/sdk/CMSIS/Include/core_cm7.h"
+#include "lib/cmsis/inc/core_cm7.h"
 
 uint32_t trng_random_u32(void);
 
@@ -152,6 +152,7 @@ uint32_t trng_random_u32(void);
 
 #define MICROPY_HW_ENABLE_USBDEV            (1)
 #define MICROPY_HW_USB_CDC                  (1)
+// #define MICROPY_HW_USB_NET                  (1)
 
 // Hooks to add builtins
 

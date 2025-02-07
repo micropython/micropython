@@ -6,7 +6,7 @@ import os
 import vfs
 import sys
 import mimxrt
-from machine import Pin
+from machine import Pin, UART
 
 bdev = mimxrt.Flash()
 try:
@@ -18,6 +18,9 @@ vfs.mount(fs, "/flash")
 os.chdir("/flash")
 sys.path.append("/flash")
 sys.path.append("/flash/lib")
+
+os.dupterm(UART(0))
+
 
 # do not mount the SD card if SKIPSD exists.
 try:
