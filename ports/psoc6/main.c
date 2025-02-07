@@ -80,7 +80,7 @@ extern uint8_t __StackTop, __StackLimit;
 __attribute__((section(".bss"))) static char gc_heap[MICROPY_GC_HEAP_SIZE];
 #endif
 
-extern void mod_rtc_init(void);
+extern void machine_rtc_init_all(void);
 extern void time_init(void);
 extern void os_init(void);
 extern void network_init(void);
@@ -157,7 +157,7 @@ void mpy_task(void *arg) {
     time_init();
 
 soft_reset:
-    mod_rtc_init();
+    machine_rtc_init_all();
     mp_init();
 
     // ANSI ESC sequence for clear screen. Refer to  https://stackoverflow.com/questions/517970/how-to-clear-the-interpreter-console

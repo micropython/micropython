@@ -87,12 +87,12 @@ bool rtc_memory_write_enabled() {
 }
 
 /* This function is run from main.c to init the RTC at boot time. This will set the RTC to PSoC default time: 1st Jan 2000*/
-void mod_rtc_init(void) {
+void machine_rtc_init_all(void) {
     cy_rslt_t result = cyhal_rtc_init(&psoc6_rtc);
     rtc_assert_raise("cyhal_rtc_init failed !", result);
 }
 
-void mod_rtc_deinit() {
+void machine_rtc_deinit_all() {
     if (rtc_memory_write_enabled() == false) {
         cyhal_rtc_free(&psoc6_rtc);
     }

@@ -319,7 +319,7 @@ static mp_obj_t machine_i2c_slave_irq_disable(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_slave_irq_disable_obj, machine_i2c_slave_irq_disable);
 
-void mod_i2c_deinit() {
+void machine_i2c_deinit_all() {
     for (uint8_t i = 0; i < MAX_I2C; i++) {
         if (i2c_obj[i] != NULL) {
             machine_i2c_deinit((mp_obj_base_t *)(i2c_obj[i]));

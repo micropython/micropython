@@ -483,7 +483,7 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
     return ret;
 }
 
-void mod_uart_deinit() {
+void machine_uart_deinit_all() {
     for (uint8_t i = 0; i < MAX_UART; i++) {
         if (uart_obj[i] != NULL) {
             mp_machine_uart_deinit(uart_obj[i]);

@@ -315,7 +315,7 @@ static mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
 static MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_ioctl_obj, machine_sdcard_ioctl);
 
 
-void mod_sdcard_deinit() {
+void machine_sdcard_deinit_all() {
     for (uint8_t i = 0; i < MAX_SDHC_SLOT; i++) {
         if (sdhc_obj[i] != NULL) {
             machine_sdcard_deinit(MP_OBJ_FROM_PTR(sdhc_obj[i]));

@@ -246,7 +246,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 
-void mod_timer_deinit() {
+void machine_timer_deinit_all() {
     for (uint8_t i = 0; i < MAX_TIMER; i++) {
         if (timer_obj[i] != NULL) {
             machine_timer_deinit((mp_obj_base_t *)(timer_obj[i]));

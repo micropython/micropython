@@ -125,16 +125,16 @@ void machine_deinit(void) {
     // we are doing a soft-reset so change the reset_cause
     reset_cause = MACHINE_SOFT_RESET;
     mplogger_print("machine deinit\n");
-    mod_wdt_deinit();
-    mod_pin_deinit();
-    mod_adcblock_deinit();
-    mod_i2c_deinit();
-    mod_pwm_deinit();
-    mod_spi_deinit();
-    mod_rtc_deinit();
-    mod_timer_deinit();
+    machine_wdt_deinit();
+    machine_pin_deinit_all();
+    machine_adcblock_deinit_all();
+    machine_i2c_deinit_all();
+    machine_pwm_deinit_all();
+    machine_spi_deinit_all();
+    machine_rtc_deinit_all();
+    machine_timer_deinit_all();
     #if MICROPY_ENABLE_SD_CARD
-    mod_sdcard_deinit();
+    machine_sdcard_deinit_all();
     #endif
 }
 

@@ -204,7 +204,7 @@ static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     }
 }
 
-void mod_pwm_deinit() {
+void machine_pwm_deinit_all() {
     for (uint8_t i = 0; i < MAX_PWM_OBJS; i++) {
         if (pwm_obj[i] != NULL) {
             mp_machine_pwm_deinit(pwm_obj[i]);
