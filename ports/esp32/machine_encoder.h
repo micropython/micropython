@@ -12,7 +12,7 @@ typedef int32_t counter_t;
 
 #define FILTER_MAX 1023
 
-enum edgeKind {
+enum edge_bit_mask {
     RISING = 0x1,
     FALLING = 0x2
 };
@@ -39,7 +39,7 @@ typedef struct _mp_pcnt_obj_t {
     uint32_t event_status;
 
     int filter;
-    enum edgeKind edge; // Counter only
+    enum edge_bit_mask edge; // Counter only
     int8_t x124; // Encoder: multiplier 1, 2 or 4 // Counter: 0 is 'direction=' keyword used, -1 is '_src=' keyword used
 } mp_pcnt_obj_t;
 
