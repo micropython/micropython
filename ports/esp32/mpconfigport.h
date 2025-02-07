@@ -138,6 +138,11 @@
 #define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (1)
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
+#define MICROPY_PY_MACHINE_SPI_MSB          (0)
+#define MICROPY_PY_MACHINE_SPI_LSB          (1)
+#ifndef MICROPY_PY_MACHINE_PCNT
+#define MICROPY_PY_MACHINE_PCNT             (1)
+#endif
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
 #ifndef MICROPY_PY_MACHINE_DAC
 #define MICROPY_PY_MACHINE_DAC              (SOC_DAC_SUPPORTED)
