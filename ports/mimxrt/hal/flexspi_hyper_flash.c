@@ -9,6 +9,9 @@
 #include "fsl_clock.h"
 #include "flexspi_hyper_flash.h"
 
+void flexspi_nor_update_lut_clk(uint32_t freq_index) {
+}
+
 // Copy of a few (pseudo-)functions from fsl_clock.h, which were nor reliably
 // inlined when they should be. That caused DEBUG mode to fail.
 // It does not increase the code size, since they were supposed to be inline.
