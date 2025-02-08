@@ -91,6 +91,8 @@ static const mp_rom_map_elem_t rp2_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DMA),                 MP_ROM_PTR(&rp2_dma_type) },
     { MP_ROM_QSTR(MP_QSTR_bootsel_button),      MP_ROM_PTR(&rp2_bootsel_button_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_calc_pio_clock_dividers), MP_ROM_PTR(&rp2_calc_pio_clock_dividers_obj) },
+
     #if MICROPY_PY_NETWORK_CYW43
     // Deprecated (use network.country instead).
     { MP_ROM_QSTR(MP_QSTR_country),             MP_ROM_PTR(&mod_network_country_obj) },

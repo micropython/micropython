@@ -32,6 +32,7 @@ extern const mp_obj_type_t rp2_flash_type;
 extern const mp_obj_type_t rp2_pio_type;
 extern const mp_obj_type_t rp2_state_machine_type;
 extern const mp_obj_type_t rp2_dma_type;
+extern const mp_obj_fun_builtin_var_t rp2_calc_pio_clock_dividers_obj;
 
 void rp2_pio_init(void);
 void rp2_pio_deinit(void);
