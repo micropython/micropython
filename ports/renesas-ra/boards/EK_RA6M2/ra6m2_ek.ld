@@ -3,9 +3,15 @@
 */
 
 /* Linker script to configure memory regions. */
+
+/*
+ * VFSROM_FS and FLASH_FS must start and length must be a multiple
+ * of the physical sector size of that region (32k).
+ */
 MEMORY
 {
-  FLASH (rx)         : ORIGIN = 0x00000000, LENGTH = 0x000e0000  /* 896KB/1MB */
+  FLASH (rx)         : ORIGIN = 0x00000000, LENGTH = 0x000e0000  /* 768KB/1MB */
+  VFSROM_FS (r)      : ORIGIN = 0x000c0000, LENGTH = 0x00020000  /* 128KB/1MB */
   FLASH_FS (r)       : ORIGIN = 0x000e0000, LENGTH = 0x00020000  /* 128KB/1MB */
   RAM (rwx)          : ORIGIN = 0x1FFE0000, LENGTH = 0x00060000  /* 384KB */
   DATA_FLASH (rx)    : ORIGIN = 0x40100000, LENGTH = 0x00008000  /* 32KB */
@@ -300,3 +306,6 @@ _heap_end = __HeapLimit;	/* tunable */
 
 _micropy_hw_internal_flash_storage_start = ORIGIN(FLASH_FS);
 _micropy_hw_internal_flash_storage_end   = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
+
+_micropy_hw_vfsrom_storage_start         = ORIGIN(VFSROM_FS);
+_micropy_hw_vfsrom_storage_len           = LENGTH(VFSROM_FS);

@@ -111,6 +111,14 @@
 #define MICROPY_STREAMS_POSIX_API   (1)
 #define MICROPY_MODULE_FROZEN_LEXER mp_lexer_new_from_str32
 
+#ifndef MICROPY_PY_ESP_FLASH_FUNCS
+#define MICROPY_PY_ESP_FLASH_FUNCS  (1)
+#endif
+
+#ifndef MICROPY_PY_ESP_EXTRA_FUNCS
+#define MICROPY_PY_ESP_EXTRA_FUNCS  (1)
+#endif
+
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MAX_SS           (4096)
