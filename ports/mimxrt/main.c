@@ -39,6 +39,7 @@
 #include "led.h"
 #include "pendsv.h"
 #include "modmachine.h"
+#include "modmimxrt.h"
 
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
@@ -55,6 +56,7 @@
 
 #include "systick.h"
 #include "extmod/modnetwork.h"
+#include "extmod/vfs.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
 
@@ -112,6 +114,19 @@ int main(void) {
 
         // Execute _boot.py to set up the filesystem.
         pyexec_frozen_module("_boot.py", false);
+
+        #if MICROPY_HW_USB_MSC
+        // Set the USB medium to flash block device.
+        mimxrt_msc_medium = &mimxrt_flash_type;
+
+        #if MICROPY_PY_MACHINE_SDCARD
+        const char *path = "/sdcard";
+        // If SD is mounted, set the USB medium to SD.
+        if (mp_vfs_lookup_path(path, &path) != MP_VFS_NONE) {
+            mimxrt_msc_medium = &machine_sdcard_type;
+        }
+        #endif
+        #endif
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");
