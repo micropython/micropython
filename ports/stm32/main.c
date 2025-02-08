@@ -86,7 +86,7 @@
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
-#include "can.h"
+#include "pyb_can.h"
 #include "subghz.h"
 
 #if MICROPY_PY_THREAD
@@ -536,7 +536,7 @@ soft_reset:
     timer_init0();
 
     #if MICROPY_HW_ENABLE_CAN
-    can_init0();
+    pyb_can_init0();
     #endif
 
     #if MICROPY_HW_ENABLE_USB
@@ -683,7 +683,7 @@ soft_reset_exit:
     pyb_i2c_deinit_all();
     #endif
     #if MICROPY_HW_ENABLE_CAN
-    can_deinit_all();
+    pyb_can_deinit_all();
     #endif
     #if MICROPY_HW_ENABLE_DAC
     dac_deinit_all();
