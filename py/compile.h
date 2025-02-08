@@ -40,7 +40,7 @@ extern bool mp_compile_allow_top_level_await;
 // mp_globals_get() will be used for the context
 mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl);
 
-#if MICROPY_PERSISTENT_CODE_SAVE
+#if MICROPY_PY_BUILTINS_CODE >= MICROPY_PY_BUILTINS_CODE_BASIC || MICROPY_PERSISTENT_CODE_SAVE
 // this has the same semantics as mp_compile
 void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl, mp_compiled_module_t *cm);
 #endif
