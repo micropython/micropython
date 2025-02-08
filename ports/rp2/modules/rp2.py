@@ -214,21 +214,6 @@ _pio_funcs = {
     # "block": see above
     "clear": 0x40,
     "rel": lambda x: x | 0x10,
-    # functions
-    "wrap_target": None,
-    "wrap": None,
-    "label": None,
-    "word": None,
-    "nop": None,
-    "jmp": None,
-    "wait": None,
-    "in_": None,
-    "out": None,
-    "push": None,
-    "pull": None,
-    "mov": None,
-    "irq": None,
-    "set": None,
 }
 
 
@@ -254,29 +239,21 @@ _pio_instructions = (
 )
 
 
-def _reset_pio_funcs():
-    for name in _pio_directives:
-        _pio_funcs[name] = None
-    for name in _pio_instructions:
-        _pio_funcs[name] = None
-
-
 def asm_pio(**kw):
     emit = PIOASMEmit(**kw)
 
     def dec(f):
         nonlocal emit
 
-        gl = _pio_funcs
+        gl = f.__globals__
+        old_gl = gl.copy()
+        gl.clear()
+
+        gl.update(_pio_funcs)
         for name in _pio_directives:
             gl[name] = getattr(emit, name)
         for name in _pio_instructions:
             gl[name] = getattr(emit, name)
-
-        old_gl = f.__globals__.copy()
-        f.__globals__.clear()
-        f.__globals__.update(gl)
-        _reset_pio_funcs()
 
         emit.start_pass(0)
         f()
@@ -284,8 +261,8 @@ def asm_pio(**kw):
         emit.start_pass(1)
         f()
 
-        f.__globals__.clear()
-        f.__globals__.update(old_gl)
+        gl.clear()
+        gl.update(old_gl)
 
         return emit.prog
 
@@ -302,15 +279,12 @@ def asm_pio_encode(instr, sideset_count, sideset_opt=False):
     emit.num_instr = 0
     emit.num_sideset = 0
 
-    gl = _pio_funcs
+    gl = _pio_funcs.copy()
     for name in _pio_instructions:
         gl[name] = getattr(emit, name)
     gl["jmp"] = None  # emit.jmp currently not supported
 
-    try:
-        exec(instr, gl)
-    finally:
-        _reset_pio_funcs()
+    exec(instr, gl)
 
     if len(emit.prog[_PROG_DATA]) != 1:
         raise PIOASMError("expecting exactly 1 instruction")
