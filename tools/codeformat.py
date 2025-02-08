@@ -34,13 +34,16 @@ import subprocess
 
 # Relative to top-level repo dir.
 PATHS = [
-    "drivers/ninaw10/*.[ch]",
+    "drivers/**/*.[ch]",
+    "examples/**/*.[ch]",
     "extmod/*.[ch]",
     "extmod/btstack/*.[ch]",
-    "extmod/nimble/*.[ch]",
+    "extmod/nimble/**/*.[ch]",
     "lib/mbedtls_errors/tester.c",
+    "shared/libc/*.[ch]",
     "shared/netutils/*.[ch]",
     "shared/timeutils/*.[ch]",
+    "shared/readline/*.[ch]",
     "shared/runtime/*.[ch]",
     "shared/tinyusb/*.[ch]",
     "mpy-cross/*.[ch]",
@@ -50,6 +53,7 @@ PATHS = [
 
 EXCLUSIONS = [
     # The cc3200 port is not fully formatted yet.
+    "drivers/cc3100/*/*.[ch]",
     "ports/cc3200/*/*.[ch]",
     # ESP-IDF downloads 3rd party code.
     "ports/esp32/managed_components/*",
