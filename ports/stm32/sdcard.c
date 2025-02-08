@@ -783,7 +783,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(sd_info_obj, sd_info);
 // now obsolete, kept for backwards compatibility
 static mp_obj_t sd_read(mp_obj_t self, mp_obj_t block_num) {
     uint8_t *dest = m_new(uint8_t, SDCARD_BLOCK_SIZE);
-    mp_uint_t ret = sdcard_read_blocks(dest, mp_obj_get_int(block_num), 1);
+    mp_uint_t ret = sdcard_read_blocks(dest, mp_obj_int_get_uint_checked(block_num), 1);
 
     if (ret != 0) {
         m_del(uint8_t, dest, SDCARD_BLOCK_SIZE);
@@ -802,7 +802,7 @@ static mp_obj_t sd_write(mp_obj_t self, mp_obj_t block_num, mp_obj_t data) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("writes must be a multiple of %d bytes"), SDCARD_BLOCK_SIZE);
     }
 
-    mp_uint_t ret = sdcard_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / SDCARD_BLOCK_SIZE);
+    mp_uint_t ret = sdcard_write_blocks(bufinfo.buf, mp_obj_int_get_uint_checked(block_num), bufinfo.len / SDCARD_BLOCK_SIZE);
 
     if (ret != 0) {
         mp_raise_msg_varg(&mp_type_Exception, MP_ERROR_TEXT("sdcard_write_blocks failed [%u]"), ret);
@@ -815,7 +815,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(sd_write_obj, sd_write);
 static mp_obj_t pyb_sdcard_readblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_WRITE);
-    mp_uint_t ret = sdcard_read_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / SDCARD_BLOCK_SIZE);
+    mp_uint_t ret = sdcard_read_blocks(bufinfo.buf, mp_obj_int_get_uint_checked(block_num), bufinfo.len / SDCARD_BLOCK_SIZE);
     return mp_obj_new_bool(ret == 0);
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(pyb_sdcard_readblocks_obj, pyb_sdcard_readblocks);
@@ -823,7 +823,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(pyb_sdcard_readblocks_obj, pyb_sdcard_readblock
 static mp_obj_t pyb_sdcard_writeblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    mp_uint_t ret = sdcard_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / SDCARD_BLOCK_SIZE);
+    mp_uint_t ret = sdcard_write_blocks(bufinfo.buf, mp_obj_int_get_uint_checked(block_num), bufinfo.len / SDCARD_BLOCK_SIZE);
     return mp_obj_new_bool(ret == 0);
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(pyb_sdcard_writeblocks_obj, pyb_sdcard_writeblocks);
