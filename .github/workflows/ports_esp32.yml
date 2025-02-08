@@ -34,6 +34,7 @@ jobs:
       run: source tools/ci.sh && echo "IDF_VER=$IDF_VER" | tee "$GITHUB_OUTPUT"
 
     - name: Cached ESP-IDF install
+      if: 0  # Temporary: skip cache for PR verification
       id: cache_esp_idf
       uses: actions/cache@v4
       with:
