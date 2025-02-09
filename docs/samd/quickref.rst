@@ -163,10 +163,15 @@ See :ref:`machine.UART <machine.UART>`. ::
     uart3.write('hello')  # write 5 bytes
     uart3.read(5)         # read up to 5 bytes
 
+    uart = UART()         # Use the default values for id, rx and tx.
+    uart = UART(baudrate=9600) # Use the default UART and set the baudrate
+
 The SAMD21/SAMD51 MCUs have up to eight hardware so called SERCOM devices, which can be used as UART,
 SPI or I2C device, but not every MCU variant and board exposes all
 TX and RX pins for users. For the assignment of Pins to devices and UART signals,
-refer to the :ref:`SAMD pinout <samd_pinout>`.
+refer to the :ref:`SAMD pinout <samd_pinout>`. If the id, rx or tx pins are not specified,
+the default values are used. The first positional argument (if given) is assumed to be the UART id.
+If the baudrate is changed and the UART id is omitted, it must be set using the baudrate keyword.
 
 PWM (pulse width modulation)
 ----------------------------
@@ -373,8 +378,18 @@ signal pins for users.  Hardware SPI is accessed via the
     spi = SPI(1, sck=Pin("SCK"), mosi=Pin("MOSI"), miso=Pin("MISO"), baudrate=10000000)
     spi.write('Hello World')
 
-If miso is not specified, it is not used. For the assignment of Pins to SPI devices and signals, refer to
-:ref:`SAMD pinout <samd_pinout>`.
+For the assignment of Pins to SPI devices and signals, refer to
+:ref:`SAMD pinout <samd_pinout>`. If the id, miso, mosi or sck pins are not specified,
+the default values are used. So it is possible to create the SPI object as::
+
+    from machine import SPI
+    spi = SPI()  # Use the default device and default baudrate
+    spi = SPI(baudrate=12_000_000)  # Use the default device and change the baudrate
+
+If the MISO signal shall be omitted, it must be defined as miso=None.
+The first positional argument (if given) is assumed to be the SPI id.
+If the baudrate is changed while the SPI id is omitted, it must be
+set using the baudrate keyword.
 
 Note: Even if the highest reliable baud rate at the moment is about 24 Mhz,
 setting a baud rate will not always result in exactly that frequency, especially
@@ -407,6 +422,7 @@ The SAMD21/SAMD51 MCUs have up to eight hardware so called SERCOM devices,
 which can be used as UART, SPI or I2C device, but not every MCU variant
 and board exposes all signal pins for users.
 For the assignment of Pins to devices and I2C signals, refer to :ref:`SAMD pinout <samd_pinout>`.
+If the id, scl or sda pins are not specified, the default values are used.
 
 Hardware I2C is accessed via the :ref:`machine.I2C <machine.I2C>` class and
 has the same methods as software SPI above::
@@ -415,6 +431,13 @@ has the same methods as software SPI above::
 
     i2c = I2C(2, scl=Pin("SCL"), sda=Pin("SDA"), freq=400_000)
     i2c.writeto(0x76, b"Hello World")
+
+    i2c2 = I2C()   # Use the default values for id, scl and sda.
+    i2c2 = I2C(freq=100_000) # Use the default device and set freq.
+
+The first positional argument (if given) is assumed to be the I2C id.
+If the freq is changed and the I2C id is omitted, it must be set using
+the freq keyword.
 
 OneWire driver
 --------------
