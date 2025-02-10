@@ -164,11 +164,13 @@ Configuration
         wait forever. The timeout can also be provided as arg to
         `recv()`/`irecv()`/`recvinto()`.
 
-        *rate*: (ESP32 only, IDF>=4.3.0 only) Set the transmission speed for
+        *rate*: (ESP32 only) Set the transmission speed for
         ESPNow packets. Must be set to a number from the allowed numeric values
         in `enum wifi_phy_rate_t
-        <https://docs.espressif.com/projects/esp-idf/en/v4.4.1/esp32/
-        api-reference/network/esp_wifi.html#_CPPv415wifi_phy_rate_t>`_.
+        <https://docs.espressif.com/projects/esp-idf/en/v5.2.3/esp32/
+        api-reference/network/esp_wifi.html#_CPPv415wifi_phy_rate_t>`_. This
+        parameter is actually *write-only* due to ESP-IDF not providing any
+        means for querying the radio interface's rate parameter.
 
     .. data:: Returns:
 
