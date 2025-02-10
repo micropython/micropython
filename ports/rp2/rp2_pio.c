@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <math.h>
 #include <string.h>
 
 #include "py/binary.h"
@@ -530,6 +531,116 @@ static const mp_irq_methods_t rp2_pio_irq_methods = {
 };
 
 /******************************************************************************/
+
+static bool calc_pio_clock_dividers(
+    int64_t sys_clk_num, int64_t sys_clk_den,
+    int64_t pio_clk_num, int64_t pio_clk_den,
+    uint16_t *clkdiv_int, uint8_t *clkdiv_frac,
+    mp_float_t *err)
+{
+    int32_t div_lo = sys_clk_num * pio_clk_den * 256 / (sys_clk_den * pio_clk_num);
+    int32_t div_hi = div_lo + 1;
+
+    if (div_lo < 1 * 256 || div_hi >= 65536 * 256) {
+        return false;
+    }
+
+    int64_t c1 = pio_clk_num * sys_clk_den;
+    int64_t c2 = sys_clk_num * pio_clk_den * 256;
+    int64_t c3 = sys_clk_den * pio_clk_den;
+    int64_t err_lo = c1 * div_lo - c2;
+    int64_t err_hi = c1 * div_hi - c2;
+
+    if (-err_lo <= err_hi) {
+        *clkdiv_int = div_lo / 256;
+        *clkdiv_frac = div_lo % 256;
+        if (err != NULL)
+            *err = (float)err_lo / (c3 * 256);
+    } else {
+        *clkdiv_int = div_hi / 256;
+        *clkdiv_frac = div_hi % 256;
+        if (err != NULL)
+            *err = (float)err_hi / (c3 * 256);
+    }
+    return true;
+}
+
+static bool extract_clock_num_den(mp_obj_t clk_num_obj, int32_t clk_den, int32_t *num, int32_t *den) {
+    if (mp_obj_is_int(clk_num_obj)) {
+        *num = mp_obj_get_int(clk_num_obj);
+        *den = clk_den;
+        return true;
+    }
+    if (mp_obj_is_float(clk_num_obj)) {
+        float m;
+        int e;
+        m = frexpf(mp_obj_get_float(clk_num_obj), &e);
+        // d = 2**21
+        int32_t d = 1 << 21;
+        // n = int(m * 2**21)
+        m *= d;
+        int64_t n = m;
+        // n = n * 2**e
+        n <<= e;
+        // Reduce by GCF
+        while ((d > 1) && ((n & 1) == 0)) {
+            n >>= 1;
+            d >>= 1;
+        }
+        *num = n;
+        *den = d;
+        return true;
+    }
+    return false;
+}
+
+static mp_obj_t rp2_calc_pio_clock_dividers(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {
+        ARG_sys_clk_num, ARG_sys_clk_den,
+        ARG_pio_clk_num, ARG_pio_clk_den,
+    };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_sys_clk_num, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_sys_clk_den, MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_pio_clk_num, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_pio_clk_den, MP_ARG_INT, {.u_int = 1} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    int32_t sys_clk_num, sys_clk_den;
+    if (args[ARG_sys_clk_num].u_obj == mp_const_none) {
+        // sys_clk_num arg is optional, defaults to system clock
+        sys_clk_num = clock_get_hz(clk_sys);
+        sys_clk_den = 1;
+    } else {
+        extract_clock_num_den(args[ARG_sys_clk_num].u_obj, args[ARG_sys_clk_den].u_int,
+                              &sys_clk_num, &sys_clk_den);
+    }
+
+    int32_t pio_clk_num, pio_clk_den;
+    extract_clock_num_den(args[ARG_pio_clk_num].u_obj, args[ARG_pio_clk_den].u_int,
+                          &pio_clk_num, &pio_clk_den);
+
+    uint16_t clkdiv_int;
+    uint8_t clkdiv_frac;
+    mp_float_t err;
+    if (!calc_pio_clock_dividers(sys_clk_num, sys_clk_den,
+                                 pio_clk_num, pio_clk_den,
+                                 &clkdiv_int, &clkdiv_frac,
+                                 &err)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("freq out of range"));
+    }
+
+    mp_obj_t tuple[3];
+    tuple[0] = mp_obj_new_int(clkdiv_int);
+    tuple[1] = mp_obj_new_int(clkdiv_frac);
+    tuple[2] = mp_obj_new_float(err);
+    return mp_obj_new_tuple(3, tuple);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(rp2_calc_pio_clock_dividers_obj, 0, rp2_calc_pio_clock_dividers);
+
+/******************************************************************************/
 // StateMachine object
 
 // This mask keeps track of state machines claimed by this module.
@@ -595,13 +706,15 @@ static void rp2_state_machine_print(const mp_print_t *print, mp_obj_t self_in, m
 // )
 static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_prog, ARG_freq,
+        ARG_prog, ARG_freq, ARG_clkdiv_int, ARG_clkdiv_frac,
         ARG_in_base, ARG_out_base, ARG_set_base, ARG_jmp_pin, ARG_sideset_base,
         ARG_in_shiftdir, ARG_out_shiftdir, ARG_push_thresh, ARG_pull_thresh
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_prog, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_clkdiv_int, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_clkdiv_frac, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_in_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_out_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_set_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -632,7 +745,11 @@ static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     // Compute the clock divider.
     uint16_t clkdiv_int;
     uint8_t clkdiv_frac;
-    if (args[ARG_freq].u_int < 0) {
+    if (args[ARG_clkdiv_int].u_obj != mp_const_none) {
+        // Integer divider defined: use it and fractional part.
+       clkdiv_int = args[ARG_clkdiv_int].u_int;
+       clkdiv_frac = args[ARG_clkdiv_frac].u_int;
+    } else if (args[ARG_freq].u_int < 0) {
         // Default: run at CPU frequency.
         clkdiv_int = 1;
         clkdiv_frac = 0;
@@ -642,12 +759,12 @@ static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
         clkdiv_frac = 0;
     } else {
         // Frequency given in Hz, compute clkdiv from it.
-        uint64_t div = (uint64_t)clock_get_hz(clk_sys) * 256ULL / (uint64_t)args[ARG_freq].u_int;
-        if (!(div >= 1 * 256 && div <= 65536 * 256)) {
+        int32_t sys_clk_num = clock_get_hz(clk_sys);
+        if (!calc_pio_clock_dividers(sys_clk_num, 1,
+                                     args[ARG_freq].u_int, 1,
+                                     &clkdiv_int, &clkdiv_frac, NULL)) {
             mp_raise_ValueError(MP_ERROR_TEXT("freq out of range"));
         }
-        clkdiv_int = div / 256;
-        clkdiv_frac = div & 0xff;
     }
 
     // Disable and reset the state machine.
