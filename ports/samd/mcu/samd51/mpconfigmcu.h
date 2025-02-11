@@ -18,10 +18,10 @@ unsigned long trng_random_u32(void);
 #define MICROPY_PY_MACHINE_UART_IRQ     (1)
 
 // fatfs configuration used in ffconf.h
-#define MICROPY_FATFS_ENABLE_LFN            (1)
-#define MICROPY_FATFS_RPATH                 (2)
-#define MICROPY_FATFS_MAX_SS                (4096)
-#define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_ENABLE_LFN        (1)
+#define MICROPY_FATFS_RPATH             (2)
+#define MICROPY_FATFS_MAX_SS            (4096)
+#define MICROPY_FATFS_LFN_CODE_PAGE     437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
 #define VFS_BLOCK_SIZE_BYTES            (1536) //
 
@@ -30,6 +30,12 @@ unsigned long trng_random_u32(void);
 #endif
 #ifndef MICROPY_HW_UART_RTSCTS
 #define MICROPY_HW_UART_RTSCTS          (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_ADC_READ_TIMED
+#define MICROPY_PY_MACHINE_ADC_READ_TIMED (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_DAC_TIMED
+#define MICROPY_PY_MACHINE_DAC_TIMED    (1)
 #endif
 
 #define CPU_FREQ                        (120000000)
