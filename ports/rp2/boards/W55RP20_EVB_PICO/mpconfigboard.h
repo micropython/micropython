@@ -1,4 +1,4 @@
-// Board config for Wiznet W5500-EVB-Pico.
+// Board config for Wiznet W55RP20-EVB-Pico.
 
 // Board and hardware specific configuration
 #define MICROPY_HW_BOARD_NAME               "W55RP20-EVB-Pico"
