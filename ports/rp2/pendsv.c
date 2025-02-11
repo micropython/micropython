@@ -43,10 +43,14 @@
 
 static pendsv_dispatch_t pendsv_dispatch_table[PENDSV_DISPATCH_NUM_SLOTS];
 
+static inline void pendsv_resume_run_dispatch(void);
+
 void PendSV_Handler(void);
 
-// Using the nowait variant here as softtimer updates PendSV from the loop of mp_wfe_or_timeout(),
-// where we don't want the CPU event bit to be set.
+#if MICROPY_PY_THREAD
+
+// Important to use a 'nowait' mutex here as softtimer updates PendSV from the
+// loop of mp_wfe_or_timeout(), where we don't want the CPU event bit to be set.
 static mp_thread_recursive_mutex_t pendsv_mutex;
 
 void pendsv_init(void) {
@@ -62,7 +66,40 @@ void pendsv_suspend(void) {
 
 void pendsv_resume(void) {
     mp_thread_recursive_mutex_unlock(&pendsv_mutex);
+    pendsv_resume_run_dispatch();
+}
 
+static inline int pendsv_suspend_count(void) {
+    return pendsv_mutex.mutex.enter_count;
+}
+
+#else
+
+// Without threads we don't include any pico-sdk mutex in the build,
+// but also we don't need to worry about cross-thread contention (or
+// races with interrupts that update this counter).
+static int pendsv_lock;
+
+void pendsv_init(void) {
+}
+
+void pendsv_suspend(void) {
+    pendsv_lock++;
+}
+
+void pendsv_resume(void) {
+    assert(pendsv_lock > 0);
+    pendsv_lock--;
+    pendsv_resume_run_dispatch();
+}
+
+static inline int pendsv_suspend_count(void) {
+    return pendsv_lock;
+}
+
+#endif
+
+static inline void pendsv_resume_run_dispatch(void) {
     // Run pendsv if needed.  Find an entry with a dispatch and call pendsv dispatch
     // with it.  If pendsv runs it will service all slots.
     int count = PENDSV_DISPATCH_NUM_SLOTS;
@@ -76,7 +113,7 @@ void pendsv_resume(void) {
 
 void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
     pendsv_dispatch_table[slot] = f;
-    if (pendsv_mutex.mutex.enter_count == 0) {
+    if (pendsv_suspend_count() == 0) {
         #if PICO_ARM
         // There is a race here where other core calls pendsv_suspend() before
         // ISR can execute, but dispatch will happen later when other core
@@ -97,6 +134,7 @@ void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
 // PendSV interrupt handler to perform background processing.
 void PendSV_Handler(void) {
 
+    #if MICROPY_PY_THREAD
     if (!mp_thread_recursive_mutex_lock(&pendsv_mutex, 0)) {
         // Failure here means core 1 holds pendsv_mutex. ISR will
         // run again after core 1 calls pendsv_resume().
@@ -104,6 +142,9 @@ void PendSV_Handler(void) {
     }
     // Core 0 should not already have locked pendsv_mutex
     assert(pendsv_mutex.mutex.enter_count == 1);
+    #else
+    assert(pendsv_suspend_count() == 0);
+    #endif
 
     #if MICROPY_PY_NETWORK_CYW43
     CYW43_STAT_INC(PENDSV_RUN_COUNT);
@@ -117,5 +158,7 @@ void PendSV_Handler(void) {
         }
     }
 
+    #if MICROPY_PY_THREAD
     mp_thread_recursive_mutex_unlock(&pendsv_mutex);
+    #endif
 }
