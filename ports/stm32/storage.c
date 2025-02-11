@@ -327,7 +327,7 @@ static mp_obj_t pyb_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     uint32_t block_num = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
-    mp_uint_t ret = -MP_EIO;
+    mp_int_t ret = -MP_EIO;
     if (n_args == 3) {
         // Cast self->start to signed in case it's pyb_flash_obj with negative start
         block_num += FLASH_PART1_START_BLOCK + (int32_t)self->start / FLASH_BLOCK_SIZE;
@@ -354,7 +354,7 @@ static mp_obj_t pyb_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     uint32_t block_num = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
-    mp_uint_t ret = -MP_EIO;
+    mp_int_t ret = -MP_EIO;
     if (n_args == 3) {
         // Cast self->start to signed in case it's pyb_flash_obj with negative start
         block_num += FLASH_PART1_START_BLOCK + (int32_t)self->start / FLASH_BLOCK_SIZE;
