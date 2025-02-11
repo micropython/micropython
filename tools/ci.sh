@@ -342,7 +342,8 @@ function ci_rp2_build {
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO2 submodules
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO2
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO submodules
-    make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO
+    # This build doubles as a build test for disabling threads in the config
+    make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO CFLAGS_EXTRA=-DMICROPY_PY_THREAD=0
 
     # Test building ninaw10 driver and NIC interface.
     make ${MAKEOPTS} -C ports/rp2 BOARD=ARDUINO_NANO_RP2040_CONNECT submodules
