@@ -223,6 +223,19 @@ low all of the time.
 
   See PWM waves on Pin(27) and Pin(32) with an oscilloscope.
 
+Note: New PWM parameters take effect in the next PWM cycle.
+
+    pwm = PWM(2, duty=512)
+    print(pwm)
+    >>>PWM(Pin(2), freq=5000, duty=1023)  # the duty is not relevant
+    pwm.init(freq=2, duty=64)
+    print(pwm)
+    >>>PWM(Pin(2), freq=2, duty=16)  # the duty is not relevant
+    time.sleep(1 / 2)                # wait one PWM period
+    print(pwm)
+    >>>PWM(Pin(2), freq=2, duty=64)  # the duty is actual
+
+Note: machine.freq(20_000_000) reduces the highest PWM frequency to 10 MHz.
 
 Note: the Pin.OUT mode does not need to be specified. The channel is initialized
 to PWM mode internally once for each Pin that is passed to the PWM constructor.
