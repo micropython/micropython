@@ -507,7 +507,7 @@ static void select_timer(machine_pwm_obj_t *self, int freq) {
         }
     }
     if (timer < 0) {
-        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("out of PWM timers:%d"), self->light_sleep_enable ? LEDC_TIMER_MAX : LEDC_SPEED_MODE_MAX *LEDC_TIMER_MAX);
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("out of %sPWM timers:%d"), self->light_sleep_enable ? "light sleep capable " : "", self->light_sleep_enable ? LEDC_TIMER_MAX : LEDC_SPEED_MODE_MAX *LEDC_TIMER_MAX);
     }
     // If the timer is found, then bind
     if (self->timer != timer) {
@@ -609,7 +609,7 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     int channel = -1;
     find_channel(self, &mode, &channel);
     if (channel < 0) {
-        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("out of PWM channels:%d"), self->light_sleep_enable ? LEDC_CHANNEL_MAX : LEDC_SPEED_MODE_MAX *LEDC_CHANNEL_MAX); // in all modes
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("out of %sPWM channels:%d"), self->light_sleep_enable ? "light sleep capable " : "", self->light_sleep_enable ? LEDC_CHANNEL_MAX : LEDC_SPEED_MODE_MAX *LEDC_CHANNEL_MAX);
     }
     self->mode = mode;
     self->channel = channel;
