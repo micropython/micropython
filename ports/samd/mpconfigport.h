@@ -138,6 +138,15 @@
 #ifndef MICROPY_HW_USB_PID
 #define MICROPY_HW_USB_PID (0x9802)
 #endif
+#ifndef MICROPY_HW_DEFAULT_UART_ID
+#define MICROPY_HW_DEFAULT_UART_ID          (-1)
+#endif
+#ifndef MICROPY_HW_DEFAULT_I2C_ID
+#define MICROPY_HW_DEFAULT_I2C_ID           (-1)
+#endif
+#ifndef MICROPY_HW_DEFAULT_SPI_ID
+#define MICROPY_HW_DEFAULT_SPI_ID           (-1)
+#endif
 
 // Additional entries for use with pendsv_schedule_dispatch.
 #ifndef MICROPY_BOARD_PENDSV_ENTRIES
