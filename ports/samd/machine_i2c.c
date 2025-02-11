@@ -127,14 +127,18 @@ static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_freq, ARG_scl, ARG_sda };
     static const mp_arg_t allowed_args[] = {
+        #if MICROPY_HW_DEFAULT_I2C_ID < 0
+        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1} },
+        #else
         { MP_QSTR_id, MP_ARG_INT, {.u_int = MICROPY_HW_DEFAULT_I2C_ID} },
-        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
+        #endif
+        { MP_QSTR_freq, MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
         #if defined(pin_SCL) && defined(pin_SDA)
         { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = pin_SCL} },
         { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = pin_SDA} },
         #else
-        { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         #endif
     };
 
@@ -163,12 +167,12 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         self->sda = mp_hal_get_pin_obj(args[ARG_sda].u_obj);
     }
     if (self->scl == 0xff || self->sda == 0xff) {
-        mp_raise_ValueError(MP_ERROR_TEXT("sda or scl missing"));
+        mp_raise_ValueError(MP_ERROR_TEXT("missing scl/sda"));
     }
     sercom_pad_config_t scl_pad_config = get_sercom_config(self->scl, self->id);
     sercom_pad_config_t sda_pad_config = get_sercom_config(self->sda, self->id);
     if (sda_pad_config.pad_nr != 0 || scl_pad_config.pad_nr != 1) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid pin for sda or scl"));
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid sda/scl pin"));
     }
     MP_STATE_PORT(sercom_table[self->id]) = self;
     self->freq = args[ARG_freq].u_int;
