@@ -33,14 +33,13 @@
 
 #include <math.h>
 #include "py/mphal.h"
-#include "driver/ledc.h"
 #include "esp_err.h"
+#include "driver/ledc.h"
 #include "soc/gpio_sig_map.h"
 #include "esp_clk_tree.h"
-
 #include "py/mpprint.h"
 
-#define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, ", LINE=%d\n", __LINE__);
+#define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, " | LINE=%d at %s\n", __LINE__, __FILE__);
 
 // 10-bit user interface resolution compatible with esp8266 PWM.duty()
 #define UI_RES_10_BIT  (10)
@@ -87,6 +86,7 @@ typedef struct _machine_pwm_obj_t {
     int duty_ui;       // saved values of UI duty
     int channel_duty;  // saved values of UI duty, calculated to raw channel->duty
     bool output_invert;
+    bool output_invert_prev;
 } machine_pwm_obj_t;
 
 typedef struct _chans_t {
@@ -242,7 +242,8 @@ static void apply_duty(machine_pwm_obj_t *self) {
     }
     self->channel_duty = duty >> (UI_RES_16_BIT - timers[self->mode][self->timer].duty_resolution);
 
-    if ((chans[self->mode][self->channel].pin == -1) || (self->channel_duty == 0) || (self->channel_duty == MAX_timer_duty)) {
+    if ((chans[self->mode][self->channel].pin == -1) || (self->channel_duty == 0) || (self->channel_duty == MAX_timer_duty) || (self->output_invert_prev != self->output_invert)) {
+        self->output_invert_prev = self->output_invert;
         // New PWM assignment
         ledc_channel_config_t cfg = {
             .channel = self->channel,
@@ -395,7 +396,7 @@ static void set_freq(machine_pwm_obj_t *self, unsigned int freq) {
         // Check for clock source conflic
         ledc_clk_cfg_t pwm_clk = find_clock_in_use();
         if ((pwm_clk != LEDC_AUTO_CLK) && (pwm_clk != timer.clk_cfg)) {
-            mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("one or more active timers use a different clock source, not supported by the current SoC."));
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("one or more active timers use a different clock source, not supported by the current SoC."));
         }
         #endif
 
@@ -639,6 +640,7 @@ static void self_reset(machine_pwm_obj_t *self) {
     self->duty_ui = 0;
     self->channel_duty = -1;
     self->output_invert = false;
+    self->output_invert_prev = false;
     self->light_sleep_enable = false;
 }
 
