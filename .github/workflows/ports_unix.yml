@@ -98,7 +98,7 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   coverage_32bit:
-    runs-on: ubuntu-20.04 # use 20.04 to get libffi-dev:i386
+    runs-on: ubuntu-22.04 # use 22.04 to get libffi-dev:i386
     steps:
     - uses: actions/checkout@v4
     - name: Install packages
@@ -116,7 +116,7 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   nanbox:
-    runs-on: ubuntu-20.04 # use 20.04 to get python2, and libffi-dev:i386
+    runs-on: ubuntu-22.04 # use 22.04 to get python2, and libffi-dev:i386
     steps:
     - uses: actions/checkout@v4
     - name: Install packages
@@ -142,7 +142,7 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   stackless_clang:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Install packages
@@ -156,7 +156,7 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   float_clang:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Install packages
