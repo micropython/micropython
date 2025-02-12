@@ -176,6 +176,7 @@ list(APPEND IDF_COMPONENTS
     ulp
     usb
     vfs
+	wpa_supplicant
 )
 
 # Register the main IDF component.
