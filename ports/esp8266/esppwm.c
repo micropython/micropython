@@ -26,7 +26,7 @@
 
 #define PWM_CHANNEL 8
 #define PWM_DEPTH 1023
-#define PWM_FREQ_MAX 1000
+#define PWM_FREQ_MAX 60000
 #define PWM_1S 1000000
 
 struct pwm_single_param {
