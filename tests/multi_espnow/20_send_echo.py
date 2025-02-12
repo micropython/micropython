@@ -35,7 +35,12 @@ def echo_server(e):
 
 
 def echo_test(e, peer, msg, sync):
-    print("TEST: send/recv(msglen=", len(msg), ",sync=", sync, "): ", end="", sep="")
+    # to get the same log output regardless of ESP-NOW V1 or V2,
+    # log the exact length unless it's overlong
+    msg_len = len(msg)
+    if msg_len > espnow.MAX_DATA_LEN:
+        msg_len = "max+{}".format(msg_len - espnow.MAX_DATA_LEN)
+    print("TEST: send/recv(msglen=", msg_len, ",sync=", sync, "): ", end="", sep="")
     try:
         if not e.send(peer, msg, sync):
             print("ERROR: Send failed.")
@@ -88,6 +93,6 @@ def instance1():
     multitest.next()
     peer = PEERS[0]
     e.add_peer(peer)
-    echo_client(e, peer, [1, 2, 8, 100, 249, 250, 251, 0])
+    echo_client(e, peer, [1, 2, 8, 100, 249, 250, espnow.MAX_DATA_LEN + 1, 0])
     echo_test(e, peer, b"!done", True)
     e.active(False)
