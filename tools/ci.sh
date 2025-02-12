@@ -106,12 +106,16 @@ function ci_code_size_build {
 # .mpy file format
 
 function ci_mpy_format_setup {
+    sudo apt-get update
+    sudo apt-get install python2.7
     sudo pip3 install pyelftools
+    python2.7 --version
+    python3 --version
 }
 
 function ci_mpy_format_test {
     # Test mpy-tool.py dump feature on bytecode
-    python2 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
+    python2.7 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
     python3 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
 
     # Test mpy-tool.py dump feature on native code
@@ -268,18 +272,18 @@ function ci_powerpc_build {
 # ports/qemu
 
 function ci_qemu_setup_arm {
-    ci_mpy_format_setup
     ci_gcc_arm_setup
     sudo apt-get update
     sudo apt-get install qemu-system
+    sudo pip3 install pyelftools
     qemu-system-arm --version
 }
 
 function ci_qemu_setup_rv32 {
-    ci_mpy_format_setup
     ci_gcc_riscv_setup
     sudo apt-get update
     sudo apt-get install qemu-system
+    sudo pip3 install pyelftools
     qemu-system-riscv32 --version
 }
 
@@ -580,10 +584,11 @@ function ci_unix_coverage_run_native_mpy_tests {
 function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
-    sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386
+    sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386 python2.7
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     gcc --version
+    python2.7 --version
     python3 --version
 }
 
@@ -602,12 +607,12 @@ function ci_unix_coverage_32bit_run_native_mpy_tests {
 
 function ci_unix_nanbox_build {
     # Use Python 2 to check that it can run the build scripts
-    ci_unix_build_helper PYTHON=python2 VARIANT=nanbox CFLAGS_EXTRA="-DMICROPY_PY_MATH_CONSTANTS=1"
+    ci_unix_build_helper PYTHON=python2.7 VARIANT=nanbox CFLAGS_EXTRA="-DMICROPY_PY_MATH_CONSTANTS=1"
     ci_unix_build_ffi_lib_helper gcc -m32
 }
 
 function ci_unix_nanbox_run_tests {
-    ci_unix_run_tests_full_helper nanbox PYTHON=python2
+    ci_unix_run_tests_full_helper nanbox PYTHON=python2.7
 }
 
 function ci_unix_float_build {
