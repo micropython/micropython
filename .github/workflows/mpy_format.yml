@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04 # use 20.04 to get python2
+    runs-on: ubuntu-22.04 # use 22.04 to get python2
     steps:
     - uses: actions/checkout@v4
     - name: Install packages
