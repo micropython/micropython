@@ -140,6 +140,7 @@ function ci_cc3200_build {
 
 # GitHub tag of ESP-IDF to use for CI (note: must be a tag or a branch)
 IDF_VER=v5.2.2
+PYTHON_VER=$(python --version | cut -d' ' -f2)
 
 export IDF_CCACHE_ENABLE=1
 
