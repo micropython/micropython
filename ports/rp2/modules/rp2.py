@@ -300,8 +300,8 @@ def asm_pio_encode(instr, sideset_count, sideset_opt=False):
 
 def _float_ratio(f):
     m, e = frexp(f)
-    n = int(m * 2 ** 21) * 2 ** e
-    d = 2 ** 21
+    n = int(m * 2**21) * 2**e
+    d = 2**21
     while d > 1 and n & 1 == 0:
         n >>= 1
         d >>= 1
