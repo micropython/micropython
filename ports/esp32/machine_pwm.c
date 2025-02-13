@@ -39,7 +39,7 @@
 #include "esp_clk_tree.h"
 #include "py/mpprint.h"
 
-#define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, " | LINE=%d at %s\n", __LINE__, __FILE__);
+#define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, " | %d at %s\n", __LINE__, __FILE__);
 
 // 10-bit user interface resolution compatible with esp8266 PWM.duty()
 #define UI_RES_10_BIT  (10)
@@ -237,13 +237,13 @@ static void apply_duty(machine_pwm_obj_t *self) {
     if (self->duty_scale == DUTY_16) {
         duty = self->duty_ui;
     } else if (self->duty_scale == DUTY_10) {
-        duty = self->duty_ui << (UI_RES_16_BIT - UI_RES_10_BIT);
+        duty = self->duty_ui == MAX_10_DUTY ? MAX_16_DUTY : self->duty_ui << (UI_RES_16_BIT - UI_RES_10_BIT);
     } else if (self->duty_scale == DUTY_NS) {
         duty = ns_to_duty(self, self->duty_ui);
     }
     self->channel_duty = duty >> (UI_RES_16_BIT - timers[self->mode][self->timer].duty_resolution);
-
-    if ((chans[self->mode][self->channel].pin == -1) || (self->channel_duty == MAX_timer_duty) || (self->output_invert_prev != self->output_invert) || (self->output_is_inverted != self->output_invert)) {
+    int max_timer_duty = MAX_timer_duty;
+    if ((chans[self->mode][self->channel].pin == -1) || (self->channel_duty == 0) || (self->channel_duty == max_timer_duty) || (self->output_invert_prev != self->output_invert) || (self->output_is_inverted != self->output_invert)) {
         self->output_invert_prev = self->output_invert;
         // New PWM assignment
         ledc_channel_config_t cfg = {
@@ -256,7 +256,7 @@ static void apply_duty(machine_pwm_obj_t *self) {
             .flags.output_invert = self->output_invert,
         };
         self->output_is_inverted = false;
-        if (self->channel_duty == MAX_timer_duty) {
+        if (self->channel_duty == max_timer_duty) {
             cfg.duty = 0;
             cfg.flags.output_invert = !self->output_invert;
             self->output_is_inverted = true;
@@ -268,11 +268,11 @@ static void apply_duty(machine_pwm_obj_t *self) {
             chans[self->mode][self->channel].light_sleep_enable = true;
         }
         check_esp_err(ledc_bind_channel_timer(self->mode, self->channel, self->timer));
-        reconfigure_pin(self);
     } else {
         check_esp_err(ledc_set_duty(self->mode, self->channel, self->channel_duty));
         check_esp_err(ledc_update_duty(self->mode, self->channel));
     }
+    reconfigure_pin(self);
     register_channel(self->mode, self->channel, self->pin, self->timer);
 }
 
@@ -545,7 +545,7 @@ static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
             mp_printf(print, ", duty_u16=%d", get_duty_u16(self));
         }
         if (self->output_invert) {
-            mp_printf(print, ", invert=%d", self->output_invert);
+            mp_printf(print, ", invert=%s", self->output_invert ? "True" : "False");
         }
         if (self->light_sleep_enable) {
             mp_printf(print, ", light_sleep_enable=True");
