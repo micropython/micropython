@@ -106,7 +106,14 @@ static void vfs_init(void) {
     bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_disk_access_type, make_new)(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/sd";
     #elif defined(CONFIG_FLASH_MAP) && FIXED_PARTITION_EXISTS(storage_partition)
-    mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(FIXED_PARTITION_ID(storage_partition)), MP_OBJ_NEW_SMALL_INT(4096) };
+    #if (DT_NODE_HAS_PROP(DT_INST(0, zephyr_flash_disk), cache_size))
+    mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(FIXED_PARTITION_ID(storage_partition)),
+                        MP_OBJ_NEW_SMALL_INT(DT_PROP(DT_INST(0, zephyr_flash_disk), cache_size)) };
+    #else
+    #warning "Device node 'zephyr_flash_disk' is missing property 'cache_size'. Using 4096 instead."
+    mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(FIXED_PARTITION_ID(storage_partition)),
+                        MP_OBJ_NEW_SMALL_INT(4096) };
+    #endif
     bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_flash_area_type, make_new)(&zephyr_flash_area_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/flash";
     #endif
