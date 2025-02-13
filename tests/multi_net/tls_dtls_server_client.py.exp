@@ -1,0 +1,14 @@
+--- instance0 ---
+incoming connection b'X'
+wrap socket
+b'client to server'
+b'client to server'
+b'client to server'
+b'client to server'
+--- instance1 ---
+connect
+wrap socket
+b'server to client'
+b'server to client'
+b'server to client'
+b'server to client'
