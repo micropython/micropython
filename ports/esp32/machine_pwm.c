@@ -87,6 +87,7 @@ typedef struct _machine_pwm_obj_t {
     int channel_duty;  // saved values of UI duty, calculated to raw channel->duty
     bool output_invert;
     bool output_invert_prev;
+    bool output_is_inverted;
 } machine_pwm_obj_t;
 
 typedef struct _chans_t {
@@ -216,7 +217,7 @@ static int duty_to_ns(machine_pwm_obj_t *self, int duty) {
 // Reconfigure PWM pin output as input/output. This allows to read the pin level.
 static void reconfigure_pin(machine_pwm_obj_t *self) {
     bool invert = self->output_invert;
-    if (self->channel_duty && (self->channel_duty == MAX_timer_duty)) {
+    if (self->channel_duty == MAX_timer_duty) {
         invert = !invert;
     }
     gpio_set_direction(self->pin, GPIO_MODE_INPUT_OUTPUT);
@@ -242,7 +243,7 @@ static void apply_duty(machine_pwm_obj_t *self) {
     }
     self->channel_duty = duty >> (UI_RES_16_BIT - timers[self->mode][self->timer].duty_resolution);
 
-    if ((chans[self->mode][self->channel].pin == -1) || (self->channel_duty == 0) || (self->channel_duty == MAX_timer_duty) || (self->output_invert_prev != self->output_invert)) {
+    if ((chans[self->mode][self->channel].pin == -1) || (self->channel_duty == MAX_timer_duty) || (self->output_invert_prev != self->output_invert) || (self->output_is_inverted != self->output_invert)) {
         self->output_invert_prev = self->output_invert;
         // New PWM assignment
         ledc_channel_config_t cfg = {
@@ -254,9 +255,11 @@ static void apply_duty(machine_pwm_obj_t *self) {
             .timer_sel = self->timer,
             .flags.output_invert = self->output_invert,
         };
-        if (self->channel_duty && (self->channel_duty == MAX_timer_duty)) {
+        self->output_is_inverted = false;
+        if (self->channel_duty == MAX_timer_duty) {
             cfg.duty = 0;
             cfg.flags.output_invert = !self->output_invert;
+            self->output_is_inverted = true;
         }
         check_esp_err(ledc_channel_config(&cfg));
         if (self->light_sleep_enable) {
@@ -641,6 +644,7 @@ static void self_reset(machine_pwm_obj_t *self) {
     self->channel_duty = -1;
     self->output_invert = false;
     self->output_invert_prev = false;
+    self->output_is_inverted = false;
     self->light_sleep_enable = false;
 }
 
