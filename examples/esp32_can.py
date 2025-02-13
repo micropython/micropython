@@ -51,8 +51,8 @@ dev = CAN(
     extframe=True,
     mode=CAN.SILENT_LOOPBACK,
     baudrate=CAN.BAUDRATE_500k,
-    tx_io=18,
-    rx_io=19,
+    tx=18,
+    rx=19,
     auto_restart=False,
 )
 
