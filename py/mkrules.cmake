@@ -53,6 +53,15 @@ foreach(_arg ${MICROPY_CPP_DEF})
 endforeach()
 list(APPEND MICROPY_CPP_FLAGS ${MICROPY_CPP_FLAGS_EXTRA})
 
+# Include anything passed in via CFLAGS_EXTRA
+# in both MICROPY_CPP_FLAGS and CMAKE_C_FLAGS
+if(DEFINED ENV{CFLAGS_EXTRA})
+  set(CFLAGS_EXTRA $ENV{CFLAGS_EXTRA})
+  string(APPEND CMAKE_C_FLAGS " ${CFLAGS_EXTRA}")  # ... not a list
+  separate_arguments(CFLAGS_EXTRA)
+  list(APPEND MICROPY_CPP_FLAGS ${CFLAGS_EXTRA})  # ... a list
+endif()
+
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 target_sources(${MICROPY_TARGET} PRIVATE
