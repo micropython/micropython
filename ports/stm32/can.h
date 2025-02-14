@@ -26,9 +26,16 @@
 #ifndef MICROPY_INCLUDED_STM32_CAN_H
 #define MICROPY_INCLUDED_STM32_CAN_H
 
-#include "py/obj.h"
+#include "py/mphal.h"
 
 #if MICROPY_HW_ENABLE_CAN
+
+// This API provides a higher abstraction layer over the two STM32
+// CAN controller APIs provided by the ST HAL (one for their classic
+// CAN controller, one for their FD CAN controller.)
+
+// There are two implementations, can.c and fdcan.c - only one is included in
+// the build for a given board.
 
 #define PYB_CAN_1 (1)
 #define PYB_CAN_2 (2)
@@ -61,31 +68,56 @@ typedef enum _rx_state_t {
     RX_STATE_FIFO_OVERFLOW,
 } rx_state_t;
 
-typedef struct _pyb_can_obj_t {
-    mp_obj_base_t base;
-    mp_obj_t rxcallback0;
-    mp_obj_t rxcallback1;
-    mp_uint_t can_id : 8;
-    bool is_enabled : 1;
-    byte rx_state0;
-    byte rx_state1;
-    uint16_t num_error_warning;
-    uint16_t num_error_passive;
-    uint16_t num_bus_off;
-    CAN_HandleTypeDef can;
-} pyb_can_obj_t;
+typedef enum {
+    CAN_INT_MESSAGE_RECEIVED,
+    CAN_INT_FIFO_FULL,
+    CAN_INT_FIFO_OVERFLOW, // These first 3 correspond to pyb.CAN.rxcallback args
 
-extern const mp_obj_type_t pyb_can_type;
+    CAN_INT_ERR_BUS_OFF,
+    CAN_INT_ERR_PASSIVE,
+    CAN_INT_ERR_WARNING,
+} can_int_t;
 
-void can_init0(void);
-void can_deinit_all(void);
-bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart);
-void can_deinit(pyb_can_obj_t *self);
+// RX FIFO numbering
+//
+// Note: For traditional CAN peripheral, the values of CAN_FIFO0 and CAN_FIFO1 are the same
+// as this enum. FDCAN macros FDCAN_RX_FIFO0 and FDCAN_RX_FIFO1 are hardware offsets and not the same.
+typedef enum {
+    CAN_RX_FIFO0,
+    CAN_RX_FIFO1,
+} can_rx_fifo_t;
 
-void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank);
-int can_receive(CAN_HandleTypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms);
-HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout);
-void pyb_can_handle_callback(pyb_can_obj_t *self, uint fifo_id, mp_obj_t callback, mp_obj_t irq_reason);
+bool can_init(CAN_HandleTypeDef *can, int can_id, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart);
+void can_deinit(CAN_HandleTypeDef *can);
+
+void can_clearfilter(CAN_HandleTypeDef *can, uint32_t filter_num, uint8_t bank);
+int can_receive(CAN_HandleTypeDef *can, can_rx_fifo_t fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms);
+HAL_StatusTypeDef can_transmit(CAN_HandleTypeDef *hcan, CanTxMsgTypeDef *txmsg, uint8_t *data, uint32_t Timeout);
+
+// Disable all CAN receive interrupts for a FIFO
+void can_disable_rx_interrupts(CAN_HandleTypeDef *can, can_rx_fifo_t fifo);
+
+// Enable CAN receive interrupts for a FIFO.
+//
+// Interrupt for CAN_INT_MESSAGE_RECEIVED is only enabled if enable_msg_received is set.
+void can_enable_rx_interrupts(CAN_HandleTypeDef *can, can_rx_fifo_t fifo, bool enable_msg_received);
+
+// Implemented in pyb_can.c, called from lower layer
+extern void can_irq_handler(uint can_id,  can_int_t interrupt, can_rx_fifo_t fifo);
+
+#if MICROPY_HW_ENABLE_FDCAN
+
+static inline unsigned can_rx_pending(CAN_HandleTypeDef *can, can_rx_fifo_t fifo) {
+    return HAL_FDCAN_GetRxFifoFillLevel(can, fifo == CAN_RX_FIFO0 ? FDCAN_RX_FIFO0 : FDCAN_RX_FIFO1);
+}
+
+#else
+
+static inline unsigned can_rx_pending(CAN_HandleTypeDef *can, can_rx_fifo_t fifo) {
+    return __HAL_CAN_MSG_PENDING(can, fifo == CAN_RX_FIFO0 ? CAN_FIFO0 : CAN_FIFO1);
+}
+
+#endif // MICROPY_HW_ENABLE_FDCAN
 
 #endif // MICROPY_HW_ENABLE_CAN
 
