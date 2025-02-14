@@ -70,6 +70,13 @@ The known limitations are:
 So, if your C code has writable data, make sure the data is defined globally,
 without an initialiser, and only written to within functions.
 
+The native module is not automatically linked against the standard static libraries
+like ``libm.a`` and ``libgcc.a``, which can lead to ``undefined symbol`` errors.
+You can link the runtime libraries by setting ``LINK_RUNTIME = 1``
+in your Makefile. Custom static libraries can also be linked by adding
+``MPY_LD_FLAGS += -l path/to/library.a``. Note that these are linked into
+the native module and will not be shared with other modules or the system.
+
 Linker limitation: the native module is not linked against the symbol table of the
 full MicroPython firmware.  Rather, it is linked against an explicit table of exported
 symbols found in ``mp_fun_table`` (in ``py/nativeglue.h``), that is fixed at firmware
