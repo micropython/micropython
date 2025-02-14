@@ -34,6 +34,7 @@
 #include "extmod/modmachine.h"
 #include "samd_soc.h"
 #include "pin_af.h"
+#include "genhdr/pins.h"
 #include "clock_config.h"
 
 #define DEFAULT_I2C_FREQ  (400000)
@@ -119,17 +120,22 @@ void common_i2c_irq_handler(int i2c_id) {
 
 static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2C(%u, freq=%u, scl=%u, sda=%u)",
-        self->id, self->freq, self->scl, self->sda);
+    mp_printf(print, "I2C(%u, freq=%u, scl=\"%q\", sda=\"%q\")",
+        self->id, self->freq, pin_find_by_id(self->scl)->name, pin_find_by_id(self->sda)->name);
 }
 
 mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_freq, ARG_scl, ARG_sda };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_freq, MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
-        { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = MICROPY_HW_DEFAULT_I2C_ID} },
+        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
+        #if defined(pin_SCL) && defined(pin_SDA)
+        { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = pin_SCL} },
+        { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = pin_SDA} },
+        #else
+        { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        #endif
     };
 
     // Parse args.
@@ -137,7 +143,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // Get I2C bus.
-    int id = mp_obj_get_int(args[ARG_id].u_obj);
+    int id = args[ARG_id].u_int;
     if (id < 0 || id >= SERCOM_INST_NUM) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), id);
     }
@@ -146,15 +152,21 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     machine_i2c_obj_t *self = mp_obj_malloc(machine_i2c_obj_t, &machine_i2c_type);
     self->id = id;
     self->instance = sercom_instance[self->id];
+    self->scl = 0xff;
+    self->sda = 0xff;
 
     // Set SCL/SDA pins.
-    sercom_pad_config_t scl_pad_config;
-    self->scl = mp_hal_get_pin_obj(args[ARG_scl].u_obj);
-    scl_pad_config = get_sercom_config(self->scl, self->id);
-
-    sercom_pad_config_t sda_pad_config;
-    self->sda = mp_hal_get_pin_obj(args[ARG_sda].u_obj);
-    sda_pad_config = get_sercom_config(self->sda, self->id);
+    if (args[ARG_scl].u_obj != MP_ROM_NONE) {
+        self->scl = mp_hal_get_pin_obj(args[ARG_scl].u_obj);
+    }
+    if (args[ARG_sda].u_obj != MP_ROM_NONE) {
+        self->sda = mp_hal_get_pin_obj(args[ARG_sda].u_obj);
+    }
+    if (self->scl == 0xff || self->sda == 0xff) {
+        mp_raise_ValueError(MP_ERROR_TEXT("sda or scl missing"));
+    }
+    sercom_pad_config_t scl_pad_config = get_sercom_config(self->scl, self->id);
+    sercom_pad_config_t sda_pad_config = get_sercom_config(self->sda, self->id);
     if (sda_pad_config.pad_nr != 0 || scl_pad_config.pad_nr != 1) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid pin for sda or scl"));
     }

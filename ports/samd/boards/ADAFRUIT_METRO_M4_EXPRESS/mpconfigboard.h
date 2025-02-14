@@ -4,6 +4,10 @@
 #define MICROPY_HW_XOSC32K                  (1)
 #define MICROPY_HW_QSPIFLASH                GD25Q16C
 
+#define MICROPY_HW_DEFAULT_UART_ID          (3)
+#define MICROPY_HW_DEFAULT_I2C_ID           (5)
+#define MICROPY_HW_DEFAULT_SPI_ID           (2)
+
 // defines for WLAN
 #define MICROPY_HW_WIFI_SPI_ID              (2)
 #define MICROPY_HW_WIFI_SPI_BAUDRATE        (8000000)
