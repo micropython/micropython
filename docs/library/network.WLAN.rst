@@ -85,7 +85,18 @@ Methods
         * ``STAT_GOT_IP`` -- connection successful.
 
     When called with one argument *param* should be a string naming the status
-    parameter to retrieve.  Supported parameters in WiFI STA mode are: ``'rssi'``.
+    parameter to retrieve, and different parameters are supported depending on the
+    mode the WiFi is in.
+
+    In STA mode, passing ``'rssi'`` returns a signal strength indicator value, whose
+    format varies depending on the port (this is available on all ports that support
+    WiFi network interfaces, except for CC3200).
+
+    In AP mode, passing ``'stations'`` returns a list of connected WiFi stations
+    (this is available on all ports that support WiFi network interfaces, except for
+    CC3200).  The format of the station information entries varies across ports,
+    providing either the raw BSSID of the connected station, the IP address of the
+    connected station, or both.
 
 .. method:: WLAN.isconnected()
 
