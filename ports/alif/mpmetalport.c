@@ -27,8 +27,6 @@
  */
 
 #include ALIF_CMSIS_H
-#include "hwsem.h"
-
 #include "py/mperrno.h"
 #include "py/mphal.h"
 
@@ -36,17 +34,13 @@
 #include "metal/utilities.h"
 #include "metal/device.h"
 
+#include "se_services.h"
+
 struct metal_state _metal;
 static mp_sched_node_t rproc_notify_node;
 
 int metal_sys_init(const struct metal_init_params *params) {
     metal_unused(params);
-
-    // Reset the hardware semaphore.
-    hwsem_reset(METAL_HSEM_DEVICE);
-    #if MICROPY_PY_OPENAMP_HOST
-    hwsem_reset(METAL_HSEM_REMOTE);
-    #endif
 
     // If cache management is not enabled, configure the MPU to disable
     // caching for the entire Open-AMP shared memory region.
@@ -59,18 +53,10 @@ int metal_sys_init(const struct metal_init_params *params) {
     #endif
 
     metal_bus_register(&metal_generic_bus);
-
-    // Enable the hardware semaphore IRQ.
-    NVIC_ClearPendingIRQ(METAL_HSEM_IRQn);
-    NVIC_SetPriority(METAL_HSEM_IRQn, IRQ_PRI_HWSEM);
-    NVIC_EnableIRQ(METAL_HSEM_IRQn);
     return 0;
 }
 
 void metal_sys_finish(void) {
-    NVIC_DisableIRQ(METAL_HSEM_IRQn);
-    NVIC_ClearPendingIRQ(METAL_HSEM_IRQn);
-    hwsem_reset(METAL_HSEM_DEVICE);
     metal_bus_unregister(&metal_generic_bus);
 }
 
@@ -99,15 +85,12 @@ void metal_machine_cache_invalidate(void *addr, unsigned int len) {
 }
 
 int metal_rproc_notify(void *priv, uint32_t id) {
-    // Release the HW semaphore to notify the other core.
-    hwsem_release(METAL_HSEM_REMOTE, HWSEM_MASTERID);
+    // Notify the remote core.
+    se_services_notify();
     return 0;
 }
 
-void METAL_HSEM_IRQ_HANDLER(void) {
-    // Schedule the node only if the other core released the Semaphore.
-    if (METAL_HSEM_DEVICE->HWSEM_REL_REG == 0) {
-        mp_sched_schedule_node(&rproc_notify_node, openamp_remoteproc_notified);
-    }
-    hwsem_request(METAL_HSEM_DEVICE, METAL_HSEM_REMOTE_ID);
+void metal_rproc_notified(void) {
+    // The remote core notified this core.
+    mp_sched_schedule_node(&rproc_notify_node, openamp_remoteproc_notified);
 }
