@@ -63,7 +63,7 @@ static const char *EXCEPTION_NAMES_TABLE[] = {
 // R0-R15, PSR, Kind
 uintptr_t registers_copy[18] = { 0 };
 
-__attribute__((naked)) NORETURN void exception_handler(uintptr_t kind) {
+__attribute__((naked)) MP_NORETURN void exception_handler(uintptr_t kind) {
     // Save registers
     __asm volatile (
         "ldr r1, =registers_copy \n"
@@ -137,39 +137,39 @@ __attribute__((naked)) NORETURN void exception_handler(uintptr_t kind) {
     for (;;) {}
 }
 
-__attribute__((naked)) NORETURN void NMI_Handler(void) {
+__attribute__((naked)) MP_NORETURN void NMI_Handler(void) {
     exception_handler(NMI);
 }
 
-__attribute__((naked)) NORETURN void HardFault_Handler(void) {
+__attribute__((naked)) MP_NORETURN void HardFault_Handler(void) {
     exception_handler(HARD_FAULT);
 }
 
-__attribute__((naked)) NORETURN void MemManage_Handler(void) {
+__attribute__((naked)) MP_NORETURN void MemManage_Handler(void) {
     exception_handler(MEM_MANAGE);
 }
 
-__attribute__((naked)) NORETURN void BusFault_Handler(void) {
+__attribute__((naked)) MP_NORETURN void BusFault_Handler(void) {
     exception_handler(BUS_FAULT);
 }
 
-__attribute__((naked)) NORETURN void UsageFault_Handler(void) {
+__attribute__((naked)) MP_NORETURN void UsageFault_Handler(void) {
     exception_handler(USAGE_FAULT);
 }
 
-__attribute__((naked)) NORETURN void SVC_Handler(void) {
+__attribute__((naked)) MP_NORETURN void SVC_Handler(void) {
     exception_handler(SV_CALL);
 }
 
-__attribute__((naked)) NORETURN void DebugMon_Handler(void) {
+__attribute__((naked)) MP_NORETURN void DebugMon_Handler(void) {
     exception_handler(DEBUG_MONITOR);
 }
 
-__attribute__((naked)) NORETURN void PendSV_Handler(void) {
+__attribute__((naked)) MP_NORETURN void PendSV_Handler(void) {
     exception_handler(PENDING_SV);
 }
 
-__attribute__((naked)) NORETURN void SysTick_Handler(void) {
+__attribute__((naked)) MP_NORETURN void SysTick_Handler(void) {
     exception_handler(SYSTEM_TICK);
 }
 

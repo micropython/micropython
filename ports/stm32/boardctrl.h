@@ -114,7 +114,7 @@ typedef struct _boardctrl_state_t {
     bool log_soft_reset;
 } boardctrl_state_t;
 
-NORETURN void boardctrl_fatal_error(const char *msg);
+MP_NORETURN void boardctrl_fatal_error(const char *msg);
 void boardctrl_maybe_enter_mboot(size_t n_args, const void *args);
 void boardctrl_before_soft_reset_loop(boardctrl_state_t *state);
 void boardctrl_top_soft_reset_loop(boardctrl_state_t *state);
