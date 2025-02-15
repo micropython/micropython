@@ -38,20 +38,6 @@
 
 #define METAL_MAX_DEVICE_REGIONS    2
 
-#if MICROPY_PY_OPENAMP_HOST
-#define METAL_HSEM_DEVICE           ((HWSEM_Type *)HWSEM14_BASE)
-#define METAL_HSEM_REMOTE           ((HWSEM_Type *)HWSEM15_BASE)
-#define METAL_HSEM_REMOTE_ID        (0x410FD222U)
-#define METAL_HSEM_IRQn             HWSEM_IRQ14_IRQn
-#define METAL_HSEM_IRQ_HANDLER      HWSEM_IRQ14Handler
-#else
-#define METAL_HSEM_DEVICE           ((HWSEM_Type *)HWSEM15_BASE)
-#define METAL_HSEM_REMOTE           ((HWSEM_Type *)HWSEM14_BASE)
-#define METAL_HSEM_REMOTE_ID        (0x410FD221U)
-#define METAL_HSEM_IRQn             HWSEM_IRQ15_IRQn
-#define METAL_HSEM_IRQ_HANDLER      HWSEM_IRQ15Handler
-#endif
-
 // Set to 1 to enable log output.
 #define METAL_LOG_HANDLER_ENABLE    0
 
