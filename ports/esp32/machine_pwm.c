@@ -36,10 +36,12 @@
 #include "esp_err.h"
 #include "driver/ledc.h"
 #include "soc/gpio_sig_map.h"
+#include "soc/ledc_periph.h"
 #include "esp_clk_tree.h"
 #include "py/mpprint.h"
 
 #define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, " | %d at %s\n", __LINE__, __FILE__);
+#define FADE 1
 
 // 10-bit user interface resolution compatible with esp8266 PWM.duty()
 #define UI_RES_10_BIT  (10)
@@ -220,14 +222,10 @@ static void reconfigure_pin(machine_pwm_obj_t *self) {
     if (self->channel_duty == MAX_timer_duty) {
         invert = !invert;
     }
+    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 4, 0)
     gpio_set_direction(self->pin, GPIO_MODE_INPUT_OUTPUT);
-    if (self->mode == LEDC_LOW_SPEED_MODE) {
-        esp_rom_gpio_connect_out_signal(self->pin, LEDC_LS_SIG_OUT0_IDX + self->channel, invert, false);
-    #if SOC_LEDC_SUPPORT_HS_MODE
-    } else if (self->mode == LEDC_HIGH_SPEED_MODE) {
-        esp_rom_gpio_connect_out_signal(self->pin, LEDC_HS_SIG_OUT0_IDX + self->channel, invert, false);
     #endif
-    }
+    esp_rom_gpio_connect_out_signal(self->pin, ledc_periph_signal[self->mode].sig_out0_idx + self->channel, invert, 0);
 }
 
 static void apply_duty(machine_pwm_obj_t *self) {
@@ -253,6 +251,7 @@ static void apply_duty(machine_pwm_obj_t *self) {
             .intr_type = LEDC_INTR_DISABLE,
             .speed_mode = self->mode,
             .timer_sel = self->timer,
+            .hpoint = 0,
             .flags.output_invert = self->output_invert,
         };
         self->output_is_inverted = false;
@@ -267,10 +266,13 @@ static void apply_duty(machine_pwm_obj_t *self) {
             check_esp_err(gpio_sleep_sel_dis(self->pin));
             chans[self->mode][self->channel].light_sleep_enable = true;
         }
-        check_esp_err(ledc_bind_channel_timer(self->mode, self->channel, self->timer));
     } else {
+        #if FADE
+        check_esp_err(ledc_set_duty_and_update(self->mode, self->channel, self->channel_duty, 0));
+        #else
         check_esp_err(ledc_set_duty(self->mode, self->channel, self->channel_duty));
         check_esp_err(ledc_update_duty(self->mode, self->channel));
+        #endif
     }
     reconfigure_pin(self);
     register_channel(self->mode, self->channel, self->pin, self->timer);
@@ -282,6 +284,16 @@ static uint32_t find_suitable_duty_resolution(uint32_t src_clk_freq, uint32_t ti
         // limit resolution to user interface
         resolution = UI_RES_16_BIT;
     }
+    /*
+    // Uncomment if duty is 65536!
+    // Note: On ESP32, ESP32S2, ESP32S3, ESP32C3, ESP32C2, ESP32C6, ESP32H2, ESP32P4, due to a hardware bug,
+    //       100% duty cycle (i.e. 2**duty_res) is not reachable when the binded timer selects the maximum duty
+    //       resolution. For example, the max duty resolution on ESP32C3 is 14-bit width, then set duty to (2**14)
+    //       will mess up the duty calculation in hardware.
+    if (resolution >= SOC_LEDC_TIMER_BIT_WIDTH)
+        resolution -= 1;
+    }
+    */
     return resolution;
 }
 
@@ -656,6 +668,9 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type,
     // start the PWM subsystem if it's not already running
     if (!pwm_inited) {
         pwm_init();
+        #if FADE
+        ledc_fade_func_install(0);
+        #endif
         pwm_inited = true;
     }
 
