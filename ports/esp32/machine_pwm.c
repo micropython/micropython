@@ -35,25 +35,26 @@
 #include "py/mphal.h"
 #include "esp_err.h"
 #include "driver/ledc.h"
-#include "soc/gpio_sig_map.h"
 #include "soc/ledc_periph.h"
+#include "soc/gpio_sig_map.h"
 #include "esp_clk_tree.h"
 #include "py/mpprint.h"
 
 #define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, " | %d at %s\n", __LINE__, __FILE__);
-#define FADE 1
+
+#define FADE
 
 // 10-bit user interface resolution compatible with esp8266 PWM.duty()
 #define UI_RES_10_BIT  (10)
 #define DUTY_10        UI_RES_10_BIT
-// Maximum duty value on 10-bit resolution
-#define MAX_10_DUTY    ((1U << UI_RES_10_BIT) - 1)
+// Maximum duty value on 10-bit resolution is 1024 but reduced to 1023 in UI
+#define MAX_10_DUTY    (1U << UI_RES_10_BIT)
 
 // 16-bit user interface resolution used in PWM.duty_u16()
 #define UI_RES_16_BIT  (16)
 #define DUTY_16        UI_RES_16_BIT
-// Maximum duty value on 16-bit resolution
-#define MAX_16_DUTY    ((1U << UI_RES_16_BIT) - 1)
+// Maximum duty value on 16-bit resolution is 65536 but reduced to 65535 in UI
+#define MAX_16_DUTY    (1U << UI_RES_16_BIT)
 
 // ns user interface used in PWM.duty_ns()
 #define DUTY_NS        (1)
@@ -62,9 +63,6 @@
 #define PWM_FREQ       (5000)
 // default duty 50%
 #define PWM_DUTY       ((1U << UI_RES_16_BIT) / 2)
-
-// MAX_timer_duty is the MAX value of a channel_duty
-#define MAX_timer_duty ((1U << timers[self->mode][self->timer].duty_resolution) - 1)
 
 // All chips except esp32 and esp32s2 do not have timer-specific clock sources, which means clock source for all timers must be the same one.
 #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2
@@ -89,7 +87,6 @@ typedef struct _machine_pwm_obj_t {
     int channel_duty;  // saved values of UI duty, calculated to raw channel->duty
     bool output_invert;
     bool output_invert_prev;
-    bool output_is_inverted;
 } machine_pwm_obj_t;
 
 typedef struct _chans_t {
@@ -218,14 +215,10 @@ static int duty_to_ns(machine_pwm_obj_t *self, int duty) {
 
 // Reconfigure PWM pin output as input/output. This allows to read the pin level.
 static void reconfigure_pin(machine_pwm_obj_t *self) {
-    bool invert = self->output_invert;
-    if (self->channel_duty == MAX_timer_duty) {
-        invert = !invert;
-    }
     #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 4, 0)
     gpio_set_direction(self->pin, GPIO_MODE_INPUT_OUTPUT);
     #endif
-    esp_rom_gpio_connect_out_signal(self->pin, ledc_periph_signal[self->mode].sig_out0_idx + self->channel, invert, 0);
+    esp_rom_gpio_connect_out_signal(self->pin, ledc_periph_signal[self->mode].sig_out0_idx + self->channel, self->output_invert, 0);
 }
 
 static void apply_duty(machine_pwm_obj_t *self) {
@@ -235,13 +228,12 @@ static void apply_duty(machine_pwm_obj_t *self) {
     if (self->duty_scale == DUTY_16) {
         duty = self->duty_ui;
     } else if (self->duty_scale == DUTY_10) {
-        duty = self->duty_ui == MAX_10_DUTY ? MAX_16_DUTY : self->duty_ui << (UI_RES_16_BIT - UI_RES_10_BIT);
+        duty = self->duty_ui << (UI_RES_16_BIT - UI_RES_10_BIT);
     } else if (self->duty_scale == DUTY_NS) {
         duty = ns_to_duty(self, self->duty_ui);
     }
     self->channel_duty = duty >> (UI_RES_16_BIT - timers[self->mode][self->timer].duty_resolution);
-    int max_timer_duty = MAX_timer_duty;
-    if ((chans[self->mode][self->channel].pin == -1) || (self->channel_duty == 0) || (self->channel_duty == max_timer_duty) || (self->output_invert_prev != self->output_invert) || (self->output_is_inverted != self->output_invert)) {
+    if ((chans[self->mode][self->channel].pin == -1) || (self->output_invert_prev != self->output_invert)) {
         self->output_invert_prev = self->output_invert;
         // New PWM assignment
         ledc_channel_config_t cfg = {
@@ -254,27 +246,21 @@ static void apply_duty(machine_pwm_obj_t *self) {
             .hpoint = 0,
             .flags.output_invert = self->output_invert,
         };
-        self->output_is_inverted = false;
-        if (self->channel_duty == max_timer_duty) {
-            cfg.duty = 0;
-            cfg.flags.output_invert = !self->output_invert;
-            self->output_is_inverted = true;
-        }
         check_esp_err(ledc_channel_config(&cfg));
         if (self->light_sleep_enable) {
             // Disable SLP_SEL to change GPIO status automantically in lightsleep.
             check_esp_err(gpio_sleep_sel_dis(self->pin));
             chans[self->mode][self->channel].light_sleep_enable = true;
         }
+        reconfigure_pin(self);
     } else {
-        #if FADE
+        #ifdef FADE
         check_esp_err(ledc_set_duty_and_update(self->mode, self->channel, self->channel_duty, 0));
         #else
         check_esp_err(ledc_set_duty(self->mode, self->channel, self->channel_duty));
         check_esp_err(ledc_update_duty(self->mode, self->channel));
         #endif
     }
-    reconfigure_pin(self);
     register_channel(self->mode, self->channel, self->pin, self->timer);
 }
 
@@ -284,25 +270,24 @@ static uint32_t find_suitable_duty_resolution(uint32_t src_clk_freq, uint32_t ti
         // limit resolution to user interface
         resolution = UI_RES_16_BIT;
     }
-    /*
-    // Uncomment if duty is 65536!
     // Note: On ESP32, ESP32S2, ESP32S3, ESP32C3, ESP32C2, ESP32C6, ESP32H2, ESP32P4, due to a hardware bug,
     //       100% duty cycle (i.e. 2**duty_res) is not reachable when the binded timer selects the maximum duty
     //       resolution. For example, the max duty resolution on ESP32C3 is 14-bit width, then set duty to (2**14)
     //       will mess up the duty calculation in hardware.
-    if (resolution >= SOC_LEDC_TIMER_BIT_WIDTH)
+    // Reduce the resolution from 14 to 13 bits to resolve the hardware bug.
+    if (resolution >= SOC_LEDC_TIMER_BIT_WIDTH) {
         resolution -= 1;
     }
-    */
     return resolution;
 }
 
 static uint32_t get_duty_u16(machine_pwm_obj_t *self) {
     pwm_is_active(self);
-    if (self->channel_duty == MAX_timer_duty) {
-        return MAX_16_DUTY;
+    int duty = ledc_get_duty(self->mode, self->channel) << (UI_RES_16_BIT - timers[self->mode][self->timer].duty_resolution);
+    if (duty != MAX_16_DUTY) {
+        return duty;
     } else {
-        return ledc_get_duty(self->mode, self->channel) << (UI_RES_16_BIT - timers[self->mode][self->timer].duty_resolution);
+        return MAX_16_DUTY - 1;
     }
 }
 
@@ -316,8 +301,11 @@ static uint32_t get_duty_ns(machine_pwm_obj_t *self) {
 }
 
 static void check_duty_u16(machine_pwm_obj_t *self, int duty) {
-    if ((duty < 0) || (duty > MAX_16_DUTY)) {
+    if ((duty < 0) || (duty > MAX_16_DUTY - 1)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty_u16 must be from 0 to %d"), MAX_16_DUTY);
+    }
+    if (duty == MAX_16_DUTY - 1) {
+        duty = MAX_16_DUTY;
     }
     self->duty_scale = DUTY_16;
     self->duty_ui = duty;
@@ -329,8 +317,11 @@ static void set_duty_u16(machine_pwm_obj_t *self, int duty) {
 }
 
 static void check_duty_u10(machine_pwm_obj_t *self, int duty) {
-    if ((duty < 0) || (duty > MAX_10_DUTY)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty must be from 0 to %u"), MAX_10_DUTY);
+    if ((duty < 0) || (duty > MAX_10_DUTY - 1)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty must be from 0 to %u"), MAX_10_DUTY - 1);
+    }
+    if (duty == MAX_10_DUTY - 1) {
+        duty = MAX_10_DUTY;
     }
     self->duty_scale = DUTY_10;
     self->duty_ui = duty;
@@ -656,7 +647,6 @@ static void self_reset(machine_pwm_obj_t *self) {
     self->channel_duty = -1;
     self->output_invert = false;
     self->output_invert_prev = false;
-    self->output_is_inverted = false;
     self->light_sleep_enable = false;
 }
 
@@ -668,7 +658,7 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type,
     // start the PWM subsystem if it's not already running
     if (!pwm_inited) {
         pwm_init();
-        #if FADE
+        #ifdef FADE
         ledc_fade_func_install(0);
         #endif
         pwm_inited = true;
@@ -684,7 +674,6 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type,
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_machine_pwm_init_helper(self, n_args - 1, args + 1, &kw_args);
-
     return MP_OBJ_FROM_PTR(self);
 }
 
