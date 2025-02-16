@@ -37,6 +37,9 @@
 #define WORD_SIZE (4)
 #define SIGNED_FIT8(x) ((((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80))
 #define SIGNED_FIT12(x) ((((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800))
+#define SIGNED_FIT18(x) ((((x) & 0xfffc0000) == 0) || (((x) & 0xfffc0000) == 0xfffc0000))
+
+#define ET_OUT_OF_RANGE MP_ERROR_TEXT("ERROR: xtensa %q out of range")
 
 void asm_xtensa_end_pass(asm_xtensa_t *as) {
     as->num_const = as->cur_const;
@@ -47,9 +50,9 @@ void asm_xtensa_end_pass(asm_xtensa_t *as) {
     if (as->base.pass == MP_ASM_PASS_EMIT) {
         uint8_t *d = as->base.code_base;
         printf("XTENSA ASM:");
-        for (int i = 0; i < ((as->base.code_size + 15) & ~15); ++i) {
+        for (size_t i = 0; i < ((as->base.code_size + 15) & ~15); ++i) {
             if (i % 16 == 0) {
-                printf("\n%08x:", (uint32_t)&d[i]);
+                printf("\n%p:", &d[i]);
             }
             if (i % 2 == 0) {
                 printf(" ");
@@ -150,7 +153,7 @@ void asm_xtensa_bccz_reg_label(asm_xtensa_t *as, uint cond, uint reg, uint label
     uint32_t dest = get_label_dest(as, label);
     int32_t rel = dest - as->base.code_offset - 4;
     if (as->base.pass == MP_ASM_PASS_EMIT && !SIGNED_FIT12(rel)) {
-        printf("ERROR: xtensa bccz out of range\n");
+        mp_obj_new_exception_msg_varg(&mp_type_RuntimeError, ET_OUT_OF_RANGE, MP_QSTR_bccz);
     }
     asm_xtensa_op_bccz(as, cond, reg, rel);
 }
@@ -159,7 +162,7 @@ void asm_xtensa_bcc_reg_reg_label(asm_xtensa_t *as, uint cond, uint reg1, uint r
     uint32_t dest = get_label_dest(as, label);
     int32_t rel = dest - as->base.code_offset - 4;
     if (as->base.pass == MP_ASM_PASS_EMIT && !SIGNED_FIT8(rel)) {
-        printf("ERROR: xtensa bcc out of range\n");
+        mp_obj_new_exception_msg_varg(&mp_type_RuntimeError, ET_OUT_OF_RANGE, MP_QSTR_bcc);
     }
     asm_xtensa_op_bcc(as, cond, reg1, reg2, rel);
 }
@@ -262,6 +265,42 @@ void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx) {
 void asm_xtensa_call_ind_win(asm_xtensa_t *as, uint idx) {
     asm_xtensa_l32i_optimised(as, ASM_XTENSA_REG_A8, ASM_XTENSA_REG_FUN_TABLE_WIN, idx);
     asm_xtensa_op_callx8(as, ASM_XTENSA_REG_A8);
+}
+
+void asm_xtensa_bit_branch(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t bit, mp_uint_t label, mp_uint_t condition) {
+    uint32_t dest = get_label_dest(as, label);
+    int32_t rel = dest - as->base.code_offset - 4;
+    if (as->base.pass == MP_ASM_PASS_EMIT && !SIGNED_FIT8(rel)) {
+        mp_obj_new_exception_msg_varg(&mp_type_RuntimeError, ET_OUT_OF_RANGE, MP_QSTR_bit_branch);
+    }
+    asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRI8(7, condition | ((bit >> 4) & 0x01), reg, bit & 0x0F, rel & 0xFF));
+}
+
+void asm_xtensa_immediate_branch(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t immediate, mp_uint_t label, mp_uint_t cond) {
+    uint32_t dest = get_label_dest(as, label);
+    int32_t rel = dest - as->base.code_offset - 4;
+    if (as->base.pass == MP_ASM_PASS_EMIT && !SIGNED_FIT8(rel)) {
+        mp_obj_new_exception_msg_varg(&mp_type_RuntimeError, ET_OUT_OF_RANGE, MP_QSTR_immediate_branch);
+    }
+    asm_xtensa_op24(as, ASM_XTENSA_ENCODE_BRI8(6, immediate, reg, (cond >> 2) & 0x03, cond & 0x03, rel));
+}
+
+void asm_xtensa_call0(asm_xtensa_t *as, mp_uint_t label) {
+    uint32_t dest = get_label_dest(as, label);
+    int32_t rel = dest - as->base.code_offset - 3;
+    if (as->base.pass == MP_ASM_PASS_EMIT && (((rel & 0x3) != 0) || !SIGNED_FIT18(rel))) {
+        mp_obj_new_exception_msg_varg(&mp_type_RuntimeError, ET_OUT_OF_RANGE, MP_QSTR_call0);
+    }
+    asm_xtensa_op_call0(as, rel);
+}
+
+void asm_xtensa_l32r(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t label) {
+    uint32_t dest = get_label_dest(as, label);
+    int32_t rel = dest - as->base.code_offset;
+    if (as->base.pass == MP_ASM_PASS_EMIT && !SIGNED_FIT18(rel)) {
+        mp_obj_new_exception_msg_varg(&mp_type_RuntimeError, ET_OUT_OF_RANGE, MP_QSTR_l32r);
+    }
+    asm_xtensa_op_l32r(as, reg, as->base.code_offset, dest);
 }
 
 #endif // MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA || MICROPY_EMIT_XTENSAWIN
