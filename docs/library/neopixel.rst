@@ -24,14 +24,14 @@ For example::
 
     # 32 LED strip connected to X8.
     p = machine.Pin.board.X8
-    n = neopixel.NeoPixel(p, 32)
+    np = neopixel.NeoPixel(p, 32)
 
     # Draw a red gradient.
     for i in range(32):
-        n[i] = (i * 8, 0, 0)
+        np[i] = (i * 8, 0, 0)
 
     # Update the strip.
-    n.write()
+    np.write()
 
 Constructors
 ------------
@@ -54,17 +54,17 @@ Pixel access methods
     Sets the value of all pixels to the specified *pixel* value (i.e. an
     RGB/RGBW tuple).
 
-.. method:: NeoPixel.__len__()
+.. method:: len(np)
 
-    Returns the number of LEDs in the strip.
+    Returns the number of LEDs in the strip for NeoPixel *np*.
 
-.. method:: NeoPixel.__setitem__(index, val)
+.. method:: np[index]
 
-    Set the pixel at *index* to the value, which is an RGB/RGBW tuple.
+    Returns the pixel of NeoPixel *np* at *index* as an RGB/RGBW tuple.
 
-.. method:: NeoPixel.__getitem__(index)
+.. method:: np[index] =  value
 
-    Returns the pixel at *index* as an RGB/RGBW tuple.
+    Set the pixel of NeoPixel *np* at *index* to the value, which is an RGB/RGBW tuple.
 
 Output methods
 --------------
