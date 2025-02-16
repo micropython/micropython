@@ -159,7 +159,7 @@ function ci_cc3200_build {
 # ports/esp32
 
 # GitHub tag of ESP-IDF to use for CI (note: must be a tag or a branch)
-IDF_VER=v5.2.2
+IDF_VER=v5.4.1
 PYTHON=$(command -v python3 2> /dev/null)
 PYTHON_VER=$(${PYTHON:-python} --version | cut -d' ' -f2)
 
