@@ -170,6 +170,38 @@ static mp_obj_t esp_disconnect(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
 
+static mp_obj_t build_stations_tuple(void) {
+    mp_uint_t count = wifi_softap_get_station_num();
+    if (count == 0) {
+        return mp_const_empty_tuple;
+    }
+    mp_obj_tuple_t *stations = NULL;
+    struct station_info *info = wifi_softap_get_station_info();
+    if (info == NULL) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("no station info available"));
+    }
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        stations = MP_OBJ_TO_PTR(mp_obj_new_tuple(count, NULL));
+        struct station_info *current = info;
+        size_t station_index = 0;
+        mp_obj_t entry[2] = { 0 };
+        char bssid_str[18] = { 0 };
+        while (current != NULL && station_index < count) {
+            mp_uint_t bssid_len = snprintf(bssid_str, 18, "%02X:%02X:%02X:%02X:%02X:%02X", current->bssid[0], current->bssid[1], current->bssid[2], current->bssid[3], current->bssid[4], current->bssid[5]);
+            entry[0] = mp_obj_new_str(bssid_str, bssid_len);
+            entry[1] = netutils_format_ipv4_addr((uint8_t *)&current->ip.addr, NETUTILS_BIG);
+            stations->items[station_index++] = mp_obj_new_tuple(2, entry);
+            current = STAILQ_NEXT(current, next);
+        }
+        nlr_pop();
+    } else {
+        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+    }
+    wifi_softap_free_station_info();
+    return stations != NULL ? MP_OBJ_FROM_PTR(stations) : MP_OBJ_NULL;
+}
+
 static mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
@@ -185,6 +217,12 @@ static mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
                 if (self->if_id == STATION_IF) {
                     return MP_OBJ_NEW_SMALL_INT(wifi_station_get_rssi());
                 }
+                break;
+            case MP_QSTR_stations:
+                if (self->if_id == SOFTAP_IF) {
+                    return build_stations_tuple();
+                }
+                break;
         }
         mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
     }

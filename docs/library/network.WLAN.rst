@@ -85,7 +85,10 @@ Methods
         * ``STAT_GOT_IP`` -- connection successful.
 
     When called with one argument *param* should be a string naming the status
-    parameter to retrieve.  Supported parameters in WiFI STA mode are: ``'rssi'``.
+    parameter to retrieve.  Supported parameters in WiFi STA mode are: ``'rssi'``.
+    In WiFi AP mode on ESP8266 the ``'stations'`` parameter is also supported,
+    returning a tuple of stations connected to the AP (as tuples containing the
+    BSSID and IPv4 address for each station).
 
 .. method:: WLAN.isconnected()
 
