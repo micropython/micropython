@@ -186,6 +186,9 @@ void machine_pwm_deinit_all(void) {
                 pwm_deinit(mode, channel, 0);
             }
         }
+        #if FADE
+        ledc_fade_func_uninstall();
+        #endif
         pwm_inited = false;
     }
 }
