@@ -42,7 +42,7 @@
 
 #define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, " | %d at %s\n", __LINE__, __FILE__);
 
-#define FADE
+#define FADE 1
 
 // 10-bit user interface resolution compatible with esp8266 PWM.duty()
 #define UI_RES_10_BIT  (10)
@@ -254,7 +254,7 @@ static void apply_duty(machine_pwm_obj_t *self) {
         }
         reconfigure_pin(self);
     } else {
-        #ifdef FADE
+        #if FADE
         check_esp_err(ledc_set_duty_and_update(self->mode, self->channel, self->channel_duty, 0));
         #else
         check_esp_err(ledc_set_duty(self->mode, self->channel, self->channel_duty));
@@ -658,7 +658,7 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type,
     // start the PWM subsystem if it's not already running
     if (!pwm_inited) {
         pwm_init();
-        #ifdef FADE
+        #if FADE
         ledc_fade_func_install(0);
         #endif
         pwm_inited = true;
