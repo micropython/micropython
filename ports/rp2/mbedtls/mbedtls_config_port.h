@@ -29,6 +29,10 @@
 // Set mbedtls configuration
 #define MBEDTLS_ECP_NIST_OPTIM
 
+// Enable mbedtls modules
+#define MBEDTLS_BASE64_C
+#define MBEDTLS_PEM_PARSE_C
+
 // Time hook
 #include <time.h>
 time_t rp2_rtctime_seconds(time_t *timer);
