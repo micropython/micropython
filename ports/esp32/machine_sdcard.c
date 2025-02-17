@@ -45,6 +45,10 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+#ifdef SDMMC_HOST_DEFAULT
+#define SUPPORT_SDMMC
+#endif
+
 //
 // There are three layers of abstraction: host, slot and card.
 // Creating an SD Card object will initialise the host and slot.
@@ -73,7 +77,7 @@ typedef struct _sdcard_obj_t {
 
 static const spi_bus_config_t spi_bus_defaults[2] = {
     {
-        #if CONFIG_IDF_TARGET_ESP32
+        #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C6
         .miso_io_num = GPIO_NUM_19,
         .mosi_io_num = GPIO_NUM_23,
         .sclk_io_num = GPIO_NUM_18,
@@ -120,6 +124,9 @@ static const sdspi_device_config_t spi_dev_defaults[2] = {
         #if CONFIG_IDF_TARGET_ESP32
         .host_id = VSPI_HOST,
         .gpio_cs = GPIO_NUM_5,
+        #elif CONFIG_IDF_TARGET_ESP32C6
+        .host_id = SPI2_HOST,
+        .gpio_cs = GPIO_NUM_5,
         #else
         .host_id = SPI3_HOST,
         .gpio_cs = GPIO_NUM_34,
@@ -132,8 +139,8 @@ static const sdspi_device_config_t spi_dev_defaults[2] = {
 };
 
 #define SET_CONFIG_PIN(config, pin_var, arg_id) \
-    if (arg_vals[arg_id].u_obj != mp_const_none) \
-    config.pin_var = machine_pin_get_id(arg_vals[arg_id].u_obj)
+        if (arg_vals[arg_id].u_obj != mp_const_none) \
+        config.pin_var = machine_pin_get_id(arg_vals[arg_id].u_obj)
 
 static esp_err_t sdcard_ensure_card_init(sdcard_card_obj_t *self, bool force) {
     if (force || !(self->flags & SDCARD_CARD_FLAGS_CARD_INIT_DONE)) {
@@ -221,6 +228,11 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     if (is_spi) {
         slot_num -= 2;
     }
+    #ifndef SUPPORT_SDMMC
+    if (!is_spi) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Native SDMMC (slots 0 and 1) not supported on esp32c6"));
+    }
+    #endif
 
     DEBUG_printf("  Setting up host configuration");
 
@@ -233,19 +245,22 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         sdmmc_host_t _temp_host = SDSPI_HOST_DEFAULT();
         _temp_host.max_freq_khz = freq / 1000;
         self->host = _temp_host;
-    } else {
+    }
+    #ifdef SUPPORT_SDMMC
+    else {
         sdmmc_host_t _temp_host = SDMMC_HOST_DEFAULT();
         _temp_host.max_freq_khz = freq / 1000;
         self->host = _temp_host;
     }
+    #endif
 
     if (is_spi) {
-        // Needs to match spi_dev_defaults above.
         #if CONFIG_IDF_TARGET_ESP32
         self->host.slot = slot_num ? HSPI_HOST : VSPI_HOST;
         #else
         self->host.slot = slot_num ? SPI2_HOST : SPI3_HOST;
         #endif
+        self->host.slot = spi_dev_defaults[slot_num].host_id;
     }
 
     DEBUG_printf("  Calling host.init()");
@@ -288,7 +303,9 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
             spi_bus_free(spi_host_id);
             mp_raise_ValueError(MP_ERROR_TEXT("SPI bus already in use"));
         }
-    } else {
+    }
+    #ifdef SUPPORT_SDMMC
+    else {
         // SD/MMC interface
         DEBUG_printf("  Setting up SDMMC slot configuration");
         sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
@@ -310,6 +327,7 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         DEBUG_printf("  Calling init_slot()");
         check_esp_err(sdmmc_host_init_slot(self->host.slot, &slot_config));
     }
+    #endif
 
     DEBUG_printf("  Returning new card object: %p", self);
     return MP_OBJ_FROM_PTR(self);
