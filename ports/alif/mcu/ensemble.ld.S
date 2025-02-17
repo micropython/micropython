@@ -27,12 +27,13 @@
 // Entry Point
 ENTRY(Reset_Handler)
 
+/* Note 8KBs are reserved at the end of MRAM for the ToC. */
 MEMORY
 {
   #ifdef CORE_M55_HP
-  ROM   (rx)   : ORIGIN = 0x80020000, LENGTH = 0x0035E000
+  ROM   (rx)   : ORIGIN = 0x80020000, LENGTH = 0x00300000
   #else
-  ROM   (rx)   : ORIGIN = 0x8037E000, LENGTH = 0x00100000
+  ROM   (rx)   : ORIGIN = 0x80320000, LENGTH = 0x0015E000
   #endif
   ITCM  (rwx)  : ORIGIN = 0x00000000, LENGTH = 0x00040000
   #ifdef CORE_M55_HP
