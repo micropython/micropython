@@ -29,8 +29,25 @@
 #include "ospi_flash.h"
 #include "se_services.h"
 
-#define OMV_BOOTLOADER_MAGIC_ADDR   (0x200FFFFCU)
-#define OMV_BOOTLOADER_MAGIC_VALUE  (0xB00710ADU)
+#define OMV_BOOT_MAGIC_ADDR     (0x200FFFFCU)
+#define OMV_BOOT_MAGIC_VALUE    (0xB00710ADU)
+
+#if CORE_M55_HP
+#define NPU_IRQ_NUMBER          NPU_HP_IRQ_IRQn
+#define NPU_BASE_ADDRESS        (void *)NPU_HP_BASE
+#else
+#define NPU_IRQ_NUMBER          NPU_HE_IRQ_IRQn
+#define NPU_BASE_ADDRESS        (void *)NPU_HE_BASE
+#endif
+
+typedef struct {
+    volatile uint32_t ID;       // 0x0
+    volatile uint32_t STATUS;   // 0x4
+    volatile uint32_t CMD;      // 0x8
+    volatile uint32_t RESET;    // 0xC
+} npu_regs_t;
+
+#define NPU ((npu_regs_t *)NPU_BASE_ADDRESS)
 
 const ospi_pin_settings_t ospi_pin_settings = {
     .peripheral_number = 0,
@@ -78,7 +95,7 @@ void board_startup(void) {
 }
 
 void board_enter_bootloader(void) {
-    *((uint32_t *)OMV_BOOTLOADER_MAGIC_ADDR) = OMV_BOOTLOADER_MAGIC_VALUE;
+    *((uint32_t *)OMV_BOOT_MAGIC_ADDR) = OMV_BOOT_MAGIC_VALUE;
     NVIC_SystemReset();
 }
 
@@ -111,7 +128,8 @@ void board_early_init(void) {
             SRAM8_MASK | SRAM9_MASK | FWRAM_MASK,
         .ip_clock_gating = GPU_MASK | NPU_HP_MASK | NPU_HE_MASK | OSPI_1_MASK | CANFD_MASK | USB_MASK |
             CDC200_MASK | CAMERA_MASK | MIPI_DSI_MASK | MIPI_CSI_MASK | LP_PERIPH_MASK,
-        .phy_pwr_gating = LDO_PHY_MASK | USB_PHY_MASK | MIPI_TX_DPHY_MASK | MIPI_RX_DPHY_MASK | MIPI_PLL_DPHY_MASK,
+        .phy_pwr_gating = LDO_PHY_MASK | USB_PHY_MASK | MIPI_TX_DPHY_MASK | MIPI_RX_DPHY_MASK |
+            MIPI_PLL_DPHY_MASK,
         .vdd_ioflex_3V3 = IOFLEX_LEVEL_3V3,
     };
 
@@ -136,7 +154,8 @@ void board_early_init(void) {
             SRAM8_MASK | SRAM9_MASK | FWRAM_MASK,
         .ip_clock_gating = GPU_MASK | NPU_HP_MASK | NPU_HE_MASK | OSPI_1_MASK | CANFD_MASK | USB_MASK |
             CDC200_MASK | CAMERA_MASK | MIPI_DSI_MASK | MIPI_CSI_MASK | LP_PERIPH_MASK,
-        .phy_pwr_gating = LDO_PHY_MASK | USB_PHY_MASK | MIPI_TX_DPHY_MASK | MIPI_RX_DPHY_MASK | MIPI_PLL_DPHY_MASK,
+        .phy_pwr_gating = LDO_PHY_MASK | USB_PHY_MASK | MIPI_TX_DPHY_MASK | MIPI_RX_DPHY_MASK |
+            MIPI_PLL_DPHY_MASK,
         .vdd_ioflex_3V3 = IOFLEX_LEVEL_3V3,
         .vtor_address = SCB->VTOR,
         .vtor_address_ns = SCB->VTOR,
@@ -150,7 +169,22 @@ void board_early_init(void) {
 }
 
 MP_WEAK void board_enter_stop(void) {
+    // Disable NPU interrupt
+    NVIC_DisableIRQ(NPU_IRQ_NUMBER);
+    NVIC_ClearPendingIRQ(NPU_IRQ_NUMBER);
 
+    // Soft-reset NPU
+    NPU->RESET = 0x00000000;
+
+    // Wait until reset
+    uint32_t data = 0;
+    do {
+        // Poll channel0 status registers
+        data = NPU->STATUS;
+    } while (data);
+
+    // Set default value, enables off for clocks and power.
+    NPU->CMD = 0x0000000C;
 }
 
 MP_WEAK void board_enter_standby(void) {
