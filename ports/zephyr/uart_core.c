@@ -33,6 +33,7 @@
 #include <zephyr/console/console.h>
 #include <zephyr/console/tty.h>
 #include <zephyr/drivers/uart.h>
+#include <zephyr/usb/usbd.h>
 
 
 #ifdef CONFIG_CONSOLE_SUBSYS
@@ -92,6 +93,29 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 
 #ifdef CONFIG_CONSOLE_SUBSYS
 
+#if defined(CONFIG_USB_DEVICE_STACK_NEXT)
+
+extern struct usbd_context *mpy_usbd_init_device(usbd_msg_cb_t msg_cb);
+
+static struct usbd_context *mpy_usbd;
+
+static int mp_usbd_init(void) {
+    int err;
+
+    mpy_usbd = mpy_usbd_init_device(NULL);
+    if (mpy_usbd == NULL) {
+        return -ENODEV;
+    }
+
+    err = usbd_enable(mpy_usbd);
+    if (err) {
+        return err;
+    }
+
+    return 0;
+}
+#endif
+
 int mp_console_init(void) {
 
     const struct device *uart_dev;
@@ -101,6 +125,14 @@ int mp_console_init(void) {
     if (!device_is_ready(uart_dev)) {
         return -ENODEV;
     }
+
+    #if DT_NODE_HAS_COMPAT(DT_CHOSEN(zephyr_console), zephyr_cdc_acm_uart) \
+    && CONFIG_USB_DEVICE_STACK_NEXT
+    ret = mp_usbd_init();
+    if (ret) {
+        return ret;
+    }
+    #endif
 
     ret = tty_init(&mp_console_serial, uart_dev);
 

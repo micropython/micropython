@@ -160,3 +160,6 @@ typedef long mp_off_t;
         k_msleep(1); \
     } while (0);
 #endif
+
+#define MICROPY_HW_USB_VID  (0x1209)
+#define MICROPY_HW_USB_PID  (0xADDA)
