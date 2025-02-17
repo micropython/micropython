@@ -1,5 +1,6 @@
 #include "storage.h"
 #include "qspi.h"
+#include "mpconfigboard.h"
 
 // This configuration is needed for mboot to be able to write to the external QSPI flash
 
@@ -21,6 +22,6 @@ spi_bdev_t spi_bdev;
 // This init function is needed to memory map the QSPI flash early in the boot process
 
 void board_early_init(void) {
-    qspi_init();
+    qspi_init(MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES);
     qspi_memory_map();
 }
