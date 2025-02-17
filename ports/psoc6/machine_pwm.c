@@ -32,6 +32,10 @@
 #include "machine_pin_phy.h"
 #include "mplogger.h"
 
+#define pwm_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
+}
+
 typedef struct _machine_pwm_obj_t {
     mp_obj_base_t base;
     cyhal_pwm_t pwm_obj;
@@ -69,14 +73,35 @@ enum {
     DUTY_NS
 };
 
-static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
+/* Unit conversion macros */
+#define pwm_duty_cycle_ns_to_u16(duty_ns, fz)       ((int)(((float)(duty_ns * fz) / (float)1000000000) * (float)65536) - 1)
+#define pwm_duty_cycle_u16_to_ns(duty_u16, fz)      ((int)(((float)(duty_u16 + 1) / (float)65536) * ((float)1000000000 / (float)fz)))
+#define pwm_duty_cycle_u16_to_percent(duty_u16)     ((float)((duty_u16) * 100) / (float)65535)
+#define pwm_freq_to_period_us(fz)                   ((uint32_t)(1000000 / fz))
+#define pwm_period_ns_to_us(period_ns)              ((uint32_t)(period_ns / 1000))
 
-static cy_rslt_t pwm_freq_duty_set(cyhal_pwm_t *pwm_obj, uint32_t fz, float duty_cycle) {
-    return cyhal_pwm_set_duty_cycle(pwm_obj, duty_cycle * 100, fz); // duty_cycle in percentage
+static void pwm_duty_ns_assert(mp_int_t duty_ns, uint32_t fz) {
+    if (duty_ns > (int)(1000000000 / fz)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM duty in ns is larger than the period %d ns"), (int)(1000000000 / fz));
+    }
 }
 
-static inline cy_rslt_t pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint32_t pulse_width) {
-    return cyhal_pwm_set_period(pwm_obj, 1000000 / fz, pulse_width / 1000);
+static inline void pwm_freq_duty_set(cyhal_pwm_t *pwm_obj, uint32_t fz, mp_int_t duty_cycle) {
+    cy_rslt_t ret = cyhal_pwm_set_duty_cycle(pwm_obj, pwm_duty_cycle_u16_to_percent(duty_cycle), fz);
+    pwm_assert_raise_val("PWM frequency and duty cycle set failed with return code %lx !", ret);
+}
+
+static void pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint32_t pulse_width) {
+    cy_rslt_t ret = cyhal_pwm_set_period(pwm_obj, pwm_freq_to_period_us(fz), pwm_period_ns_to_us(pulse_width));
+    pwm_assert_raise_val("PWM period set failed with return code %lx !", ret);
+}
+
+static void pwm_config(machine_pwm_obj_t *self) {
+    if (self->duty_type == DUTY_U16) {
+        pwm_freq_duty_set(&self->pwm_obj, self->fz, self->duty);
+    } else {
+        pwm_duty_set_ns(&self->pwm_obj, self->fz, self->duty);
+    }
 }
 
 static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -111,19 +136,20 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     }
 
     if ((args[ARG_duty_u16].u_int != VALUE_NOT_SET)) {
-        float val = (float)(args[ARG_duty_u16].u_int) / (float)65535;
-        pwm_freq_duty_set(&self->pwm_obj, self->fz, val);
-        self->duty = args[ARG_duty_u16].u_int;
+        self->duty = args[ARG_duty_u16].u_int > 65535 ? 65535 : args[ARG_duty_u16].u_int;
         self->duty_type = DUTY_U16;
     } else if (args[ARG_duty_ns].u_int != VALUE_NOT_SET) {
-        pwm_duty_set_ns(&self->pwm_obj, self->fz, args[ARG_duty_ns].u_int);
+        pwm_duty_ns_assert(args[ARG_duty_ns].u_int, self->fz);
         self->duty = args[ARG_duty_ns].u_int;
         self->duty_type = DUTY_NS;
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("PWM duty should be specified in either ns or u16"));
     }
 
-    cyhal_pwm_start(&self->pwm_obj);
+    pwm_config(self);
+
+    cy_rslt_t result = cyhal_pwm_start(&self->pwm_obj);
+    pwm_assert_raise_val("PWM start failed with return code %lx !", result);
 }
 
 static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -136,14 +162,9 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->duty_type = DUTY_NOT_SET;
     self->fz = -1;
 
-    // Initialize PWM
     cy_rslt_t result = cyhal_pwm_init(&self->pwm_obj, self->pin, NULL);
-
-    // To check whether PWM init is successful
-    if (result != CY_RSLT_SUCCESS) {
-        assert_pin_phy_used(result);
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM initialisation failed with return code %lx !"), result);
-    }
+    assert_pin_phy_used(result);
+    pwm_assert_raise_val("PWM initialisation failed with return code %lx !", result);
 
     // Process the remaining parameters.
     mp_map_t kw_args;
@@ -154,16 +175,17 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 }
 
 static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
-    cyhal_pwm_stop(&self->pwm_obj);
+    cy_rslt_t result = cyhal_pwm_stop(&self->pwm_obj);
+    pwm_assert_raise_val("PWM stop failed with return code %lx !", result);
     cyhal_pwm_free(&self->pwm_obj);
     pwm_obj_free(self);
 }
 
 static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     if (self->duty_type == DUTY_NS) {
-        return mp_obj_new_float(((self->duty) * (self->fz) * 65535) / 1000000000 - 1);
+        return mp_obj_new_int(pwm_duty_cycle_ns_to_u16(self->duty, self->fz));
     } else {
-        return mp_obj_new_float(self->duty);
+        return mp_obj_new_int(self->duty);
     }
 }
 
@@ -172,36 +194,35 @@ static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u
     // Check the value is more than the max value
     self->duty = duty_u16 > 65535 ? 65535 : duty_u16;
     self->duty_type = DUTY_U16;
-    pwm_freq_duty_set(&self->pwm_obj, self->fz, (float)(self->duty) / (float)65535); // s conversion of duty_u16 into dutyu16/65535
+    pwm_config(self);
 }
 
 static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     if (self->duty_type == DUTY_U16) {
-        return mp_obj_new_float(((self->duty) * 1000000000) / ((self->fz) * 65535));   // pw (ns) = duty_cycle*10^9/fz
+        return mp_obj_new_int(pwm_duty_cycle_u16_to_ns(self->duty, self->fz));
     } else {
-        return mp_obj_new_float(self->duty);
+        return mp_obj_new_int(self->duty);
     }
 }
 
 // sets the pulse width in nanoseconds
 static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
+    pwm_duty_ns_assert(duty_ns, self->fz);
     self->duty = duty_ns;
     self->duty_type = DUTY_NS;
-    pwm_duty_set_ns(&self->pwm_obj, self->fz, duty_ns);
+    pwm_config(self);
 }
 
 static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     return MP_OBJ_NEW_SMALL_INT(self->fz);
-
 }
 
 static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
-    self->fz = freq;
-    pwm_freq_duty_set(&self->pwm_obj, freq, self->duty);
     if (self->duty_type == DUTY_NS) {
-        self->duty = ((self->duty) * (self->fz) * 65535) / 1000000000;
-        mp_machine_pwm_duty_set_ns(self, self->duty);
+        pwm_duty_ns_assert(self->duty, freq);
     }
+    self->fz = freq;
+    pwm_config(self);
 }
 
 void machine_pwm_deinit_all() {
