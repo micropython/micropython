@@ -1,0 +1,8 @@
+/ {
+	flash_disk {
+		compatible = "zephyr,flash-disk";
+		partition = <&storage_partition>;
+		disk-name = "SOC-NV-FLASH";
+		cache-size = <4096>;
+	};
+};
