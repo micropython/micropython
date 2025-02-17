@@ -89,8 +89,7 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${MICROPY_QSTRDEFS_SPLIT}
-    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split qstr ${MICROPY_GENHDR_DIR}/qstr.i.last ${MICROPY_GENHDR_DIR}/qstr _
-    COMMAND touch ${MICROPY_QSTRDEFS_SPLIT}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split qstr ${MICROPY_GENHDR_DIR}/qstr.i.last ${MICROPY_GENHDR_DIR}/qstr ${MICROPY_QSTRDEFS_SPLIT}
     DEPENDS ${MICROPY_QSTRDEFS_LAST}
     VERBATIM
     COMMAND_EXPAND_LISTS
@@ -98,7 +97,7 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${MICROPY_QSTRDEFS_COLLECTED}
-    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat qstr _ ${MICROPY_GENHDR_DIR}/qstr ${MICROPY_QSTRDEFS_COLLECTED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat qstr ${MICROPY_QSTRDEFS_SPLIT} ${MICROPY_GENHDR_DIR}/qstr ${MICROPY_QSTRDEFS_COLLECTED}
     BYPRODUCTS "${MICROPY_QSTRDEFS_COLLECTED}.hash"
     DEPENDS ${MICROPY_QSTRDEFS_SPLIT}
     VERBATIM
@@ -127,8 +126,7 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${MICROPY_MODULEDEFS_SPLIT}
-    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split module ${MICROPY_GENHDR_DIR}/qstr.i.last ${MICROPY_GENHDR_DIR}/module _
-    COMMAND touch ${MICROPY_MODULEDEFS_SPLIT}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split module ${MICROPY_GENHDR_DIR}/qstr.i.last ${MICROPY_GENHDR_DIR}/module ${MICROPY_MODULEDEFS_SPLIT}
     DEPENDS ${MICROPY_QSTRDEFS_LAST}
     VERBATIM
     COMMAND_EXPAND_LISTS
@@ -136,7 +134,7 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${MICROPY_MODULEDEFS_COLLECTED}
-    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat module _ ${MICROPY_GENHDR_DIR}/module ${MICROPY_MODULEDEFS_COLLECTED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat module ${MICROPY_MODULEDEFS_SPLIT} ${MICROPY_GENHDR_DIR}/module ${MICROPY_MODULEDEFS_COLLECTED}
     BYPRODUCTS "${MICROPY_MODULEDEFS_COLLECTED}.hash"
     DEPENDS ${MICROPY_MODULEDEFS_SPLIT}
     VERBATIM
@@ -153,8 +151,7 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${MICROPY_ROOT_POINTERS_SPLIT}
-    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split root_pointer ${MICROPY_GENHDR_DIR}/qstr.i.last ${MICROPY_GENHDR_DIR}/root_pointer _
-    COMMAND touch ${MICROPY_ROOT_POINTERS_SPLIT}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split root_pointer ${MICROPY_GENHDR_DIR}/qstr.i.last ${MICROPY_GENHDR_DIR}/root_pointer ${MICROPY_ROOT_POINTERS_SPLIT}
     DEPENDS ${MICROPY_QSTRDEFS_LAST}
     VERBATIM
     COMMAND_EXPAND_LISTS
@@ -162,7 +159,7 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${MICROPY_ROOT_POINTERS_COLLECTED}
-    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat root_pointer _ ${MICROPY_GENHDR_DIR}/root_pointer ${MICROPY_ROOT_POINTERS_COLLECTED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat root_pointer ${MICROPY_ROOT_POINTERS_SPLIT} ${MICROPY_GENHDR_DIR}/root_pointer ${MICROPY_ROOT_POINTERS_COLLECTED}
     BYPRODUCTS "${MICROPY_ROOT_POINTERS_COLLECTED}.hash"
     DEPENDS ${MICROPY_ROOT_POINTERS_SPLIT}
     VERBATIM
