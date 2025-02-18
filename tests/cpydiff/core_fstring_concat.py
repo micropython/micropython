@@ -6,7 +6,9 @@ workaround: Use the + operator between literal strings when they are not both f-
 """
 
 x, y = 1, 2
+# fmt: off
 print("aa" f"{x}")  # works
 print(f"{x}" "ab")  # works
 print("a{}a" f"{x}")  # fails
 print(f"{x}" "a{}b")  # fails
+# fmt: on

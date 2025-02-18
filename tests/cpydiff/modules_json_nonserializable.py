@@ -4,6 +4,7 @@ description: JSON module does not throw exception when object is not serialisabl
 cause: Unknown
 workaround: Unknown
 """
+
 import json
 
 try:
