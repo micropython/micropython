@@ -167,12 +167,10 @@ class DotStar:
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            out = []
-            for in_i in range(*index.indices(self._n)):
-                out.append(
-                    tuple(self._buf[in_i * 4 + (3 - i) + START_HEADER_SIZE] for i in range(3))
-                )
-            return out
+            return [
+                tuple(self._buf[in_i * 4 + (3 - i) + START_HEADER_SIZE] for i in range(3))
+                for in_i in range(*index.indices(self._n))
+            ]
         if index < 0:
             index += len(self)
         if index >= self._n or index < 0:
