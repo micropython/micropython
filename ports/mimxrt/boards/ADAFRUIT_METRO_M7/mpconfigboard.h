@@ -52,7 +52,7 @@
     { IOMUXC_GPIO_02_LPI2C1_SCL }, { IOMUXC_GPIO_01_LPI2C1_SDA }, \
     { IOMUXC_GPIO_10_LPI2C2_SCL }, { IOMUXC_GPIO_09_LPI2C2_SDA },
 
-// Wifi Deinitions
+// Wifi Definitions
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-metro-m7"
 
 #define MICROPY_HW_WIFI_SPI_ID       (0)

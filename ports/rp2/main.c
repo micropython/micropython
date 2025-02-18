@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
     // Set the MCU frequency and as a side effect the peripheral clock to 48 MHz.
     set_sys_clock_khz(SYS_CLK_KHZ, false);
 
-    // Hook for setting up anything that needs to be super early in the bootup process.
+    // Hook for setting up anything that needs to be super early in the boot-up process.
     MICROPY_BOARD_STARTUP();
 
     #if MICROPY_HW_ENABLE_UART_REPL

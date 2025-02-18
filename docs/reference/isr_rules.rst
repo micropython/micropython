@@ -209,7 +209,7 @@ issue a further interrupt. It then schedules a callback to process the data.
 
 Scheduled callbacks should comply with the principles of interrupt handler design outlined below. This is to
 avoid problems resulting from I/O activity and the modification of shared data which can arise in any code
-which pre-empts the main program loop.
+which preempts the main program loop.
 
 Execution time needs to be considered in relation to the frequency with which interrupts can occur. If an
 interrupt occurs while the previous callback is executing, a further instance of the callback will be queued

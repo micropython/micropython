@@ -48,7 +48,7 @@ void mp_reader_new_file(mp_reader_t *reader, qstr filename);
 void mp_reader_new_file_from_fd(mp_reader_t *reader, int fd, bool close_fd);
 
 // Try to efficiently read the given number of bytes from a ROM-based reader.
-// Returns a valid, non-NULL pointer to the requseted data if the reader points to ROM.
+// Returns a valid, non-NULL pointer to the requested data if the reader points to ROM.
 // Returns NULL if the reader does not point to ROM.
 const uint8_t *mp_reader_try_read_rom(mp_reader_t *reader, size_t len);
 

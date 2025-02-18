@@ -1,4 +1,4 @@
-// Deinitions common to all SAMD21 boards
+// Definitions common to all SAMD21 boards
 #include "samd21.h"
 
 #define MICROPY_CONFIG_ROM_LEVEL        (MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES)
