@@ -70,7 +70,7 @@ void mp_hal_stdio_mode_orig(void) {
 }
 
 // Handler to be installed by SetConsoleCtrlHandler, currently used only to handle Ctrl-C.
-// This handler has to be installed just once (this has to be done elswhere in init code).
+// This handler has to be installed just once (this has to be done elsewhere in init code).
 // Previous versions of the mp_hal code would install a handler whenever Ctrl-C input is
 // allowed and remove the handler again when it is not. That is not necessary though (1),
 // and it might introduce problems (2) because console notifications are delivered to the

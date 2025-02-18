@@ -476,7 +476,7 @@ static void _lwip_tcp_err_unaccepted(void *arg, err_t err) {
     // because it's only ever used by lwIP if tcp_connect is called on the TCP PCB.
     lwip_socket_obj_t *socket = (lwip_socket_obj_t *)pcb->connected;
 
-    // Array is not volatile because thiss callback is executed within the lwIP context
+    // Array is not volatile because this callback is executed within the lwIP context
     uint8_t alloc = socket->incoming.connection.alloc;
     struct tcp_pcb **tcp_array = (struct tcp_pcb **)lwip_socket_incoming_array(socket);
 

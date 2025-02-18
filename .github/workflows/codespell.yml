@@ -8,6 +8,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     # codespell version should be kept in sync with .pre-commit-config.yml
-    - run: pip install --user codespell==2.2.6 tomli
+    - run: pip install --user codespell==2.4.1 tomli
     - run: codespell
 

@@ -213,7 +213,7 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
     xSemaphoreGive(mutex->handle);
-    // Python threads run at equal priority, so pre-emptively yield here to
+    // Python threads run at equal priority, so preemptively yield here to
     // prevent pathological imbalances where a thread unlocks and then
     // immediately re-locks a mutex before a context switch can occur, leaving
     // another thread waiting for an unbounded period of time.

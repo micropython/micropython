@@ -327,7 +327,7 @@ static void eth_gpio_init(const iomux_table_t iomux_table[], size_t iomux_table_
     }
 }
 
-// eth_phy_init: Initilaize the PHY interface
+// eth_phy_init: Initialize the PHY interface
 static void eth_phy_init(phy_handle_t *phyHandle, phy_config_t *phy_config,
     phy_speed_t *speed, phy_duplex_t *duplex, uint32_t phy_settle_time) {
 
