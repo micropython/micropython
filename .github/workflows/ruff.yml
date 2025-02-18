@@ -8,6 +8,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     # ruff version should be kept in sync with .pre-commit-config.yaml
-    - run: pip install --user ruff==0.1.3
+    - run: pipx install ruff==0.9.6
     - run: ruff check --output-format=github .
     - run: ruff format --diff .

@@ -22,9 +22,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-""" gen-cpydiff generates documentation which outlines operations that differ between MicroPython
-    and CPython. This script is called by the docs Makefile for html and Latex and may be run
-    manually using the command make gen-cpydiff. """
+"""gen-cpydiff generates documentation which outlines operations that differ between MicroPython
+and CPython. This script is called by the docs Makefile for html and Latex and may be run
+manually using the command make gen-cpydiff."""
 
 import os
 import subprocess
