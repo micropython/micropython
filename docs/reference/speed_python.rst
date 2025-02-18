@@ -219,7 +219,7 @@ process known as garbage collection reclaims the memory used by these redundant
 objects and the allocation is then tried again - a process which can take several
 milliseconds.
 
-There may be benefits in pre-empting this by periodically issuing `gc.collect()`.
+There may be benefits in preempting this by periodically issuing `gc.collect()`.
 Firstly doing a collection before it is actually required is quicker - typically on the
 order of 1ms if done frequently. Secondly you can determine the point in code
 where this time is used rather than have a longer delay occur at random points,

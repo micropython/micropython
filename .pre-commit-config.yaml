@@ -19,7 +19,7 @@ repos:
       - id: ruff-format
   - repo: https://github.com/codespell-project/codespell
     # Version should be kept in sync with .github/workflows/codespell.yml
-    rev: v2.2.6
+    rev: v2.4.1
     hooks:
       - id: codespell
         name: Spellcheck for changed files (codespell)

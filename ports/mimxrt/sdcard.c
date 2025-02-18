@@ -980,7 +980,7 @@ bool sdcard_power_on(mimxrt_sdcard_obj_t *card) {
         return false;
     }
 
-    // Finialize initialization
+    // Finalize initialization
     card->state->initialized = true;
     return true;
 }

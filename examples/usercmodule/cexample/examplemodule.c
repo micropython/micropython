@@ -74,7 +74,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // - A custom representation for __repr__ and __str__.
 // - Custom attribute handling to create a read/write "property".
 //
-// It re-uses some of the elements of the basic Timer class. This is allowed
+// It reuses some of the elements of the basic Timer class. This is allowed
 // because they both use example_Timer_obj_t as the instance structure.
 
 // Handles AdvancedTimer.__repr__, AdvancedTimer.__str__.
