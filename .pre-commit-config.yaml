@@ -13,7 +13,7 @@ repos:
         stages: [commit-msg]
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     # Version should be kept in sync with .github/workflows/ruff.yml
-    rev: v0.1.3
+    rev: v0.9.6
     hooks:
       - id: ruff
       - id: ruff-format

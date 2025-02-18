@@ -27,6 +27,17 @@ line-length = 99
 target-version = "py37"
 
 [tool.ruff.lint]
+exclude = [  # Ruff finds Python SyntaxError in these files
+  "tests/cmdline/repl_autocomplete.py",
+  "tests/cmdline/repl_autoindent.py",
+  "tests/cmdline/repl_basic.py",
+  "tests/cmdline/repl_cont.py",
+  "tests/cmdline/repl_emacs_keys.py",
+  "tests/cmdline/repl_words_move.py",
+  "tests/feature_check/repl_emacs_check.py",
+  "tests/feature_check/repl_words_move_check.py",
+  "tests/micropython/viper_args.py",
+]
 extend-select = ["C9", "PLC"]
 ignore = [
   "E401",
@@ -37,14 +48,12 @@ ignore = [
   "F401",
   "F403",
   "F405",
-  "PLC1901",
+  "PLC0206",
 ]
+mccabe.max-complexity = 40
 
-[tool.ruff.mccabe]
-max-complexity = 40
-
-[tool.ruff.per-file-ignores]
-# Exclude all tests from linting (does not apply to formatting).
+[tool.ruff.lint.per-file-ignores]
+# Exclude all tests from linting.
 "tests/**/*.py" = ["ALL"]
 "ports/cc3200/tools/uniflash.py" = ["E711"]
 # manifest.py files are evaluated with some global names pre-defined
@@ -57,3 +66,4 @@ max-complexity = 40
 #   repl_: not real python files
 #   viper_args: uses f(*)
 exclude = ["tests/basics/*.py", "tests/*/repl_*.py", "tests/micropython/viper_args.py"]
+quote-style = "preserve"
