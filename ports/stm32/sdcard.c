@@ -498,13 +498,27 @@ static HAL_StatusTypeDef sdcard_wait_finished(uint32_t timeout) {
     return HAL_OK;
 }
 
-mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+static HAL_StatusTypeDef sdcard_common_checks(uint32_t block_num, uint32_t num_blocks) {
     // check that SD card is initialised
     if (!(pyb_sdmmc_flags & PYB_SDMMC_FLAG_ACTIVE)) {
         return HAL_ERROR;
     }
 
-    HAL_StatusTypeDef err = HAL_OK;
+    // check that adding block_num & num_blocks don't overflow
+    // (the ST HAL does a bounds check, but only after adding them...)
+    uint32_t end_block;
+    if (__builtin_add_overflow(block_num, num_blocks, &end_block)) {
+        return HAL_ERROR;
+    }
+
+    return HAL_OK;
+}
+
+mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+    HAL_StatusTypeDef err = sdcard_common_checks(block_num, num_blocks);
+    if (err != HAL_OK) {
+        return err;
+    }
 
     // check that dest pointer is aligned on a 4-byte boundary
     uint8_t *orig_dest = NULL;
@@ -595,12 +609,10 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
 }
 
 mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
-    // check that SD card is initialised
-    if (!(pyb_sdmmc_flags & PYB_SDMMC_FLAG_ACTIVE)) {
-        return HAL_ERROR;
+    HAL_StatusTypeDef err = sdcard_common_checks(block_num, num_blocks);
+    if (err != HAL_OK) {
+        return err;
     }
-
-    HAL_StatusTypeDef err = HAL_OK;
 
     // check that src pointer is aligned on a 4-byte boundary
     if (((uint32_t)src & 3) != 0) {
