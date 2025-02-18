@@ -1,0 +1,24 @@
+name: pre-commit
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hook:
+    strategy:
+        fail-fast: false
+        matrix:
+          # codeformat generates too many changes
+          # ruff-format is blocked by micropython/micropython#16774
+          # hook: [codeformat, codespell, ruff, ruff-format]
+          hook: [codespell, ruff]
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+    - uses: pre-commit/action@v3.0.1
+      with:
+        extra_args: ${{ matrix.hook }} --all-files

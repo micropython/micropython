@@ -13,7 +13,7 @@ target platform and run the appropriate set of tests for that platform.  For exa
 
 That will run tests on the `/dev/ttyACM0` serial port.  You can also use shortcut
 device names like `a<n>` for `/dev/ttyACM<n>` and `c<n>` for `COM<n>`.  Use
-`./run-tests.py --help` to see all of the device possibilites, and other options.
+`./run-tests.py --help` to see all of the device possibilities, and other options.
 
 There are three kinds of tests:
 

@@ -5,18 +5,18 @@ ignore-words-list = "ans,asend,deques,dout,emac,extint,hsi,iput,mis,numer,shft,s
 quiet-level = 3
 skip = """
 */build*,\
-./.git,\
-./drivers/cc3100,\
-./lib,\
-./ports/cc3200/FreeRTOS,\
-./ports/cc3200/bootmgr/sl,\
-./ports/cc3200/hal,\
-./ports/cc3200/simplelink,\
-./ports/cc3200/telnet,\
-./ports/esp32/managed_components,\
+./.git/*,\
+./drivers/cc3100/*,\
+./lib/*,\
+./ports/cc3200/FreeRTOS/*,\
+./ports/cc3200/bootmgr/sl/*,\
+./ports/cc3200/hal/*,\
+./ports/cc3200/simplelink/*,\
+./ports/cc3200/telnet/*,\
+./ports/esp32/managed_components/*,\
 ./ports/nrf/drivers/bluetooth/s1*,\
-./ports/stm32/usbhost,\
-./tests,\
+./ports/stm32/usbhost/*,\
+./tests/*,\
 ACKNOWLEDGEMENTS,\
 """
 
@@ -27,6 +27,17 @@ line-length = 99
 target-version = "py37"
 
 [tool.ruff.lint]
+exclude = [  # Ruff finds Python SyntaxError in these files
+  "tests/cmdline/repl_autocomplete.py",
+  "tests/cmdline/repl_autoindent.py",
+  "tests/cmdline/repl_basic.py",
+  "tests/cmdline/repl_cont.py",
+  "tests/cmdline/repl_emacs_keys.py",
+  "tests/cmdline/repl_words_move.py",
+  "tests/feature_check/repl_emacs_check.py",
+  "tests/feature_check/repl_words_move_check.py",
+  "tests/micropython/viper_args.py",
+]
 extend-select = ["C9", "PLC"]
 ignore = [
   "E401",
