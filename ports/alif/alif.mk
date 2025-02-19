@@ -210,6 +210,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 $(BUILD)/tinyusb_port/tusb_alif_dcd.o: CFLAGS += -Wno-unused-variable -DTUSB_ALIF_NO_IRQ_CFG=1
 $(BUILD)/$(ALIF_DFP_REL_TOP)/se_services/source/services_host_boot.o: CFLAGS += -Wno-stringop-truncation
 $(BUILD)/$(ALIF_DFP_REL_TOP)/drivers/source/spi.o: CFLAGS += -Wno-maybe-uninitialized
+$(BUILD)/$(ALIF_DFP_REL_TOP)/se_services/source/services_host_system.o: CFLAGS += -Wno-maybe-uninitialized
 
 # Add Alif-specific implementation of libmetal (and optionally OpenAMP's rproc).
 # Note: libmetal code is generated via a pre-processor so ensure that runs first.
