@@ -87,8 +87,8 @@ static void usb_device_check_active(mp_obj_usb_device_t *usbd) {
     }
 }
 
-static mp_obj_t usb_device_submit_xfer(mp_obj_t self, mp_obj_t ep, mp_obj_t buffer) {
-    mp_obj_usb_device_t *usbd = (mp_obj_usb_device_t *)MP_OBJ_TO_PTR(self);
+static mp_obj_t usb_device_submit_xfer(size_t n_args, const mp_obj_t *args) {
+    mp_obj_usb_device_t *usbd = (mp_obj_usb_device_t *)MP_OBJ_TO_PTR(args[0]);
     int ep_addr;
     mp_buffer_info_t buf_info = { 0 };
     bool result;
@@ -96,8 +96,8 @@ static mp_obj_t usb_device_submit_xfer(mp_obj_t self, mp_obj_t ep, mp_obj_t buff
     usb_device_check_active(usbd);
 
     // Unmarshal arguments, raises TypeError if invalid
-    ep_addr = mp_obj_get_int(ep);
-    mp_get_buffer_raise(buffer, &buf_info, ep_addr & TUSB_DIR_IN_MASK ? MP_BUFFER_READ : MP_BUFFER_RW);
+    ep_addr = mp_obj_get_int(args[1]);
+    mp_get_buffer_raise(args[2], &buf_info, ep_addr & TUSB_DIR_IN_MASK ? MP_BUFFER_READ : MP_BUFFER_RW);
 
     uint8_t ep_num = tu_edpt_number(ep_addr);
     uint8_t ep_dir = tu_edpt_dir(ep_addr);
@@ -115,16 +115,17 @@ static mp_obj_t usb_device_submit_xfer(mp_obj_t self, mp_obj_t ep, mp_obj_t buff
         mp_raise_OSError(MP_EBUSY);
     }
 
-    result = usbd_edpt_xfer(USBD_RHPORT, ep_addr, buf_info.buf, buf_info.len);
+    uint len = (n_args == 3) ? buf_info.len : mp_obj_get_int(args[3]);
+    result = usbd_edpt_xfer(USBD_RHPORT, ep_addr, buf_info.buf, len);
 
     if (result) {
         // Store the buffer object until the transfer completes
-        usbd->xfer_data[ep_num][ep_dir] = buffer;
+        usbd->xfer_data[ep_num][ep_dir] = args[2];
     }
 
     return mp_obj_new_bool(result);
 }
-static MP_DEFINE_CONST_FUN_OBJ_3(usb_device_submit_xfer_obj, usb_device_submit_xfer);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_submit_xfer_obj, 3, 4, usb_device_submit_xfer);
 
 static mp_obj_t usb_device_active(size_t n_args, const mp_obj_t *args) {
     mp_obj_usb_device_t *usbd = (mp_obj_usb_device_t *)MP_OBJ_TO_PTR(args[0]);
