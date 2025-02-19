@@ -47,9 +47,15 @@ enum {
 
 typedef void (*pendsv_dispatch_t)(void);
 
+typedef struct pendsv_dispatch_wrapper_t {
+    pendsv_dispatch_t task;
+    int affinity;
+} pendsv_dispatch_wrapper_t;
+
 void pendsv_init(void);
 void pendsv_suspend(void);
 void pendsv_resume(void);
 void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
+void pendsv_schedule_dispatch_with_affinity(size_t slot, pendsv_dispatch_t f, int affinity);
 
 #endif // MICROPY_INCLUDED_RP2_PENDSV_H
