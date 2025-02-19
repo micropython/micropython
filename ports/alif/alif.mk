@@ -68,9 +68,9 @@ CFLAGS += $(INC) \
           -mtune=cortex-m55 \
           $(CFLAGS_FPU) \
           -march=armv8.1-m.main+fp+mve.fp \
-          -nostdlib \
           -fdata-sections \
           -ffunction-sections \
+          --specs=nosys.specs \
           -D$(MCU_CORE)=1 \
           -DCORE_$(MCU_CORE) \
           -DALIF_CMSIS_H="\"$(MCU_CORE).h\""
@@ -95,17 +95,16 @@ CFLAGS += $(CFLAGS_EXTRA)
 
 AFLAGS = -mthumb -march=armv8.1-m.main+fp+mve.fp $(CFLAGS_FPU)
 
-LDFLAGS += -nostdlib \
-           -T$(BUILD)/ensemble.ld \
-           -Map=$@.map \
-           --cref \
-           --gc-sections \
-           --print-memory-usage
-ifeq ($(MCU_CORE),M55_HP)
-LDFLAGS += --wrap=dcd_event_handler
-endif
+CFLAGS += -Wl,-T$(BUILD)/ensemble.ld \
+          -Wl,-Map=$@.map \
+          -Wl,--cref \
+          -Wl,--gc-sections \
+          -Wl,--print-memory-usage \
+          -Wl,--no-warn-rwx-segment
 
-LIBS += "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
+ifeq ($(MCU_CORE),M55_HP)
+CFLAGS += -Wl,--wrap=dcd_event_handler
+endif
 
 ################################################################################
 # Source files and libraries
@@ -126,6 +125,7 @@ SRC_C = \
 	mpu.c \
 	mpuart.c \
 	msc_disk.c \
+	nosys_stubs.c \
 	ospi_ext.c \
 	ospi_flash.c \
 	pendsv.c \
@@ -256,7 +256,7 @@ $(BUILD)/ensemble.ld: $(LD_FILE)
 
 $(BUILD)/firmware.elf: $(OBJ) $(BUILD)/ensemble.ld
 	$(ECHO) "Link $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(CC) $(CFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf

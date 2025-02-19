@@ -55,7 +55,7 @@ NORETURN void panic(const char *msg) {
     }
 }
 
-void _start(void) {
+int main(void) {
     system_tick_init();
 
     MICROPY_BOARD_STARTUP();
