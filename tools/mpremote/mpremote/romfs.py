@@ -127,6 +127,28 @@ def copy_recursively(vfs, src_dir, print_prefix, mpy_cross):
 
 
 def make_romfs(src_dir, *, mpy_cross):
+    if src_dir.endswith(".py"):
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
+        import manifestfile
+
+        VARS = {}
+        VARS["MPY_LIB_DIR"] = os.path.abspath("../../lib/micropython-lib")
+        manifest = manifestfile.ManifestFile(manifestfile.MODE_FREEZE, VARS)
+        try:
+            manifest.execute(src_dir)
+        except manifestfile.ManifestFileError as er:
+            print('freeze error executing "{}": {}'.format(src_dir, er.args[0]))
+            sys.exit(1)
+
+        manifest_dir_structure = {}
+        for result in manifest.files():
+            components = result.target_path.split("/")
+            s = manifest_dir_structure
+            for x in components[:-1]:
+                s = s.setdefault(x, {})
+            s[components[-1]] = result
+        return
+
     if not src_dir.endswith("/"):
         src_dir += "/"
 
