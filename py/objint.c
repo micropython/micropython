@@ -39,6 +39,9 @@
 #include <math.h>
 #endif
 
+#define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, "\n"); // mp_printf(&mp_plat_print, " | func:%s line:%d at %s\n", __FUNCTION__, __LINE__, __FILE__);
+#define _debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__);
+
 // This dispatcher function is expected to be independent of the implementation of long int
 static mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
@@ -386,7 +389,7 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_binary_op_t op, mp_obj_t lhs_in, mp
     }
     return MP_OBJ_NULL; // op not supported
 }
-
+/*
 // this is a classmethod
 static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     // TODO: Support signed param (assumes signed=False at the moment)
@@ -415,6 +418,88 @@ static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
         value = (value << 8) | *buf;
     }
     return mp_obj_new_int_from_uint(value);
+}
+*/
+
+void *reverce_memcpy(void *dest, const void *src, size_t len) {
+    char *d = (char *)dest + len - 1;
+    const char *s = src;
+    while (len--) {
+        *d-- = *s++;
+    }
+    return dest;
+}
+
+mp_obj_t mp_obj_integer_from_bytes_impl(bool big_endian, bool signd, size_t len, const byte *buf) {
+    if (len > sizeof(mp_int_t)) {
+        #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+        // Result will overflow a small-int size so construct a big-int
+        return mp_obj_int_from_bytes_impl(big_endian, signd, len, buf);
+        #else
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("small-int overflow"));
+        #endif
+    }
+    union {
+        mp_int_t value;
+        mp_uint_t uvalue;
+        byte buf[sizeof(mp_int_t)];
+    } result = {0};
+    // #if sizeof(mp_int_t) != sizeof(mp_uint_t)
+    // #error "sizeof(mp_int_t) != sizeof(mp_uint_t)"
+    // #endif
+
+    if (big_endian) {
+        reverce_memcpy(&result, buf, len);
+    } else { // little-endian
+        memcpy(&result, buf, len);
+    }
+
+    if ((signd) && (sizeof(result) > len) && (result.buf[len - 1] & 0x80)) {
+        // Sign propagation in little-endian
+        // x = 2
+        // x.to_bytes(1, 'little', True) -> b'\x02'
+        // x.to_bytes(4, 'little', True) -> b'\x02\x00\x00\x00'
+        // x = -2
+        // x.to_bytes(1, 'little', True) -> b'\xFE'
+        // x.to_bytes(4, 'little', True) -> b'\xFE\xFF\xFF\xFF'
+        _debug_printf(" 1result=0x%08X=", result.uvalue);
+        for (unsigned int i = 0; i < sizeof(result); i++) {
+            _debug_printf("\\%02X", result.buf[i]);
+        }
+        debug_printf("");
+
+        memset(result.buf + len, 0xFF, sizeof(result) - len);
+
+        _debug_printf("\n 2result=0x%08X=", result.uvalue);
+        for (unsigned int i = 0; i < sizeof(result); i++) {
+            _debug_printf("\\%02X", result.buf[i]);
+        }
+        debug_printf("");
+    }
+    // debug_printf("big_endian:%d signed:%d len:%d sizeof(result):%d result.value:%ld=0x%X", big_endian, signd, len, sizeof(result), result.value, result.value);
+    debug_printf("MP_SMALL_INT_MAX=%d=0x%X, MP_SMALL_INT_MIN=%d=0x%X, MP_SMALL_INT_POSITIVE_MASK=%d=0x%X", MP_SMALL_INT_MAX, MP_SMALL_INT_MAX, MP_SMALL_INT_MIN, MP_SMALL_INT_MIN, MP_SMALL_INT_POSITIVE_MASK, MP_SMALL_INT_POSITIVE_MASK);
+    // debug_printf("(MP_SMALL_INT_MAX << 1) + 1=%d=0x%X", (MP_SMALL_INT_MAX << 1) + 1, (MP_SMALL_INT_MAX << 1) + 1);
+    if (((!signd) && (result.uvalue > MP_SMALL_INT_MAX)) || (signd && ((result.value < MP_SMALL_INT_MIN) || (result.value > MP_SMALL_INT_MAX)))) {
+        // Result will overflow a small-int so construct a big-int
+        #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+        return mp_obj_int_from_bytes_impl(big_endian, signd, len, buf);
+        #else
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("small-int overflow"));
+        #endif
+    }
+    return mp_obj_new_int(result.value);
+}
+
+// this is a classmethod
+// result = int.from_bytes(bytearray(), order='big', signed=False)
+static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
+    // get the buffer info
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+    bool big_endian = n_args < 3 || args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
+    bool signd = (n_args > 3) && mp_obj_is_true(args[3]);
+
+    return mp_obj_integer_from_bytes_impl(big_endian, signd, bufinfo.len, bufinfo.buf);
 }
 
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 2, 4, int_from_bytes);

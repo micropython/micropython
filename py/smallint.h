@@ -60,6 +60,7 @@
 #endif
 
 #define MP_SMALL_INT_MAX ((mp_int_t)(~(MP_SMALL_INT_MIN)))
+// #define MP_SMALL_POSITIVE_INT_FITS(n) (((n) & (~MP_SMALL_INT_POSITIVE_MASK)) == 0)
 
 // https://stackoverflow.com/a/4589384/1976323
 // Number of bits in inttype_MAX, or in any (1<<k)-1 where 0 <= k < 2040

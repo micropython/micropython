@@ -850,7 +850,7 @@ size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigne
     return cur - str;
 }
 
-void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf) {
+void mpz_set_from_bytes(mpz_t *z, bool big_endian, bool signd, size_t len, const byte *buf) {
     int delta = 1;
     if (big_endian) {
         buf += len - 1;
