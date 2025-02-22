@@ -326,22 +326,23 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
             self->timeout_char = min_timeout_char;
         }
 
+        self->config.rxIdleType = kLPUART_IdleTypeStartBit;
+        self->config.rxIdleConfig = kLPUART_IdleCharacter4;
         #if defined(MIMXRT117x_SERIES)
         // Use the Lpuart1 clock value, which is set for All UART devices.
         LPUART_Init(self->lpuart, &self->config, CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart1));
         #else
         LPUART_Init(self->lpuart, &self->config, CLOCK_GetClockRootFreq(kCLOCK_UartClkRoot));
         #endif
-        self->config.rxIdleType = kLPUART_IdleTypeStartBit;
-        self->config.rxIdleConfig = kLPUART_IdleCharacter4;
-        LPUART_Init(self->lpuart, &self->config, BOARD_BOOTCLOCKRUN_UART_CLK_ROOT);
         LPUART_TransferCreateHandle(self->lpuart, &self->handle,  LPUART_UserCallback, self);
         uint8_t *buffer = m_new(uint8_t, rxbuf_len + 1);
         LPUART_TransferStartRingBuffer(self->lpuart, &self->handle, buffer, rxbuf_len);
         self->txbuf = m_new(uint8_t, txbuf_len); // Allocate the TX buffer.
         self->txbuf_len = txbuf_len;
 
+        #if MICROPY_PY_MACHINE_UART_IRQ
         LPUART_EnableInterrupts(self->lpuart, kLPUART_IdleLineInterruptEnable);
+        #endif
 
         // The Uart supports inverting, but not the fsl API, so it has to coded directly
         // And it has to be done after LPUART_Init.
@@ -381,6 +382,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     self->timeout_char = 1;
     self->new = true;
     self->mp_irq_obj = NULL;
+    self->mp_irq_trigger = 0;
 
     LPUART_GetDefaultConfig(&self->config);
 
@@ -427,6 +429,7 @@ void machine_uart_deinit_all(void) {
     }
 }
 
+#if MICROPY_PY_MACHINE_UART_IRQ
 static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     self->mp_irq_trigger = new_trigger;
@@ -475,6 +478,7 @@ static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args
 
     return self->mp_irq_obj;
 }
+#endif
 
 static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
