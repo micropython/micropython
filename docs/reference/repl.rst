@@ -213,7 +213,7 @@ echo turned off, and with optional flow control.
 Raw mode is entered using Ctrl-A. You then send your python code, followed by
 a Ctrl-D. The Ctrl-D will be acknowledged by 'OK' and then the python code will
 be compiled and executed. Any output (or errors) will be sent back. Entering
-Ctrl-B will leave raw mode and return the the regular (aka friendly) REPL.
+Ctrl-B will leave raw mode and return the regular (aka friendly) REPL.
 
 Raw-paste mode is an additional mode within the raw REPL that includes flow control,
 and which compiles code as it receives it. This makes it more robust for high-speed
