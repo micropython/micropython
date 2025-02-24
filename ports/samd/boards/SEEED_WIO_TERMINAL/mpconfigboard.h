@@ -3,4 +3,11 @@
 
 #define MICROPY_HW_XOSC32K          (1)
 
+#define MICROPY_HW_DEFAULT_UART_ID  (2)
+#define MICROPY_HW_DEFAULT_I2C_ID   (4)
+#define MICROPY_HW_DEFAULT_SPI_ID   (5)
+// Map SDA0/SCL0 to SDA/SCL
+#define pin_SDA  pin_SDA0
+#define pin_SCL  pin_SCL0
+
 #define MICROPY_HW_QSPIFLASH        W25Q32JV_IQ

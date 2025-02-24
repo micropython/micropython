@@ -32,6 +32,7 @@
 #include "py/ringbuf.h"
 #include "samd_soc.h"
 #include "pin_af.h"
+#include "genhdr/pins.h"
 #include "shared/runtime/softtimer.h"
 
 #define DEFAULT_UART_BAUDRATE (115200)
@@ -298,7 +299,7 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
     }
 
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
-        "timeout=%u, timeout_char=%u, rxbuf=%d"
+        "rx=\"%q\", tx=\"%q\", timeout=%u, timeout_char=%u, rxbuf=%d"
         #if MICROPY_HW_UART_TXBUF
         ", txbuf=%d"
         #endif
@@ -310,7 +311,8 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         #endif
         ")",
         self->id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop + 1, self->timeout, self->timeout_char, rxbuf_len
+        self->stop + 1, pin_find_by_id(self->rx)->name, pin_find_by_id(self->tx)->name,
+        self->timeout, self->timeout_char, rxbuf_len
         #if MICROPY_HW_UART_TXBUF
         , txbuf_len
         #endif
@@ -332,8 +334,13 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = -1} },
+        #if defined(pin_TX) && defined(pin_RX)
+        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = pin_TX} },
+        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = pin_RX} },
+        #else
         { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        #endif
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -479,12 +486,18 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
 }
 
 static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get UART bus.
-    int uart_id = mp_obj_get_int(args[0]);
+    int uart_id = MICROPY_HW_DEFAULT_UART_ID;
+    int arg_offset = 0;
+
+    if (n_args > 0 && mp_obj_get_int(args[0]) <= SERCOM_INST_NUM) {
+        uart_id = mp_obj_get_int(args[0]);
+        arg_offset = 1;
+    }
     if (uart_id < 0 || uart_id > SERCOM_INST_NUM) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) doesn't exist"), uart_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) does not exist"), uart_id);
     }
 
     // Create the UART object and fill it with defaults.
@@ -510,7 +523,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    mp_machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+    mp_machine_uart_init_helper(self, n_args - arg_offset, args + arg_offset, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
 }
