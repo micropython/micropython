@@ -181,11 +181,11 @@ static mp_obj_t mp_machine_unique_id(void) {
 }
 
 // Resets the board in a manner similar to pushing the external RESET button.
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     NVIC_SystemReset();
 }
 
-NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
     for (;;) {
     }
@@ -199,7 +199,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     __WFE();
 }
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_machine_reset();
 }
 

@@ -71,7 +71,7 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     system_update_cpu_freq(freq);
 }
 
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     system_restart();
 
     // we must not return
@@ -114,7 +114,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     }
 }
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     // default to sleep forever
     uint32_t sleep_us = 0;
 
