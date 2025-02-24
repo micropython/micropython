@@ -533,7 +533,7 @@ def run_tests(test_files, instances_truth, instances_test):
         else:
             print("FAIL")
             failed_tests.append(test_file)
-            if not cmd_args.show_output:
+            if False and not cmd_args.show_output:
                 print("### TEST ###")
                 print(output_test, end="")
                 print("### TRUTH ###")
