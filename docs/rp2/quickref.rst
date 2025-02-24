@@ -55,6 +55,60 @@ The :mod:`rp2` module::
 
     import rp2
 
+Networking
+----------
+
+WLAN
+^^^^
+
+.. note::
+   This section applies only to devices that include WiFi support, such as the `Pico W`_ and `Pico 2 W`_.
+
+The :class:`network.WLAN` class in the :mod:`network` module::
+
+    import network
+
+    wlan = network.WLAN(network.WLAN.IF_STA) # create station interface
+    wlan.active(True)       # activate the interface
+    wlan.scan()             # scan for access points
+    wlan.isconnected()      # check if the station is connected to an AP
+    wlan.connect('ssid', 'key') # connect to an AP
+    wlan.config('mac')      # get the interface's MAC address
+    wlan.ipconfig('addr4')  # get the interface's IPv4 addresses
+
+    ap = network.WLAN(network.WLAN.IF_AP) # create access-point interface
+    ap.config(ssid='RP2-AP') # set the SSID of the access point
+    ap.config(max_clients=10) # set how many clients can connect to the network
+    ap.active(True)         # activate the interface
+
+A useful function for connecting to your local WiFi network is::
+
+    def do_connect():
+        import network
+        wlan = network.WLAN(network.WLAN.IF_STA)
+        wlan.active(True)
+        if not wlan.isconnected():
+            print('connecting to network...')
+            wlan.connect('ssid', 'key')
+            while not wlan.isconnected():
+                pass
+        print('network config:', wlan.ipconfig('addr4'))
+
+Once the network is established the :mod:`socket <socket>` module can be used
+to create and use TCP/UDP sockets as usual, and the ``requests`` module for
+convenient HTTP requests.
+
+After a call to ``wlan.connect()``, the device will by default retry to connect
+**forever**, even when the authentication failed or no AP is in range.
+``wlan.status()`` will return ``network.STAT_CONNECTING`` in this state until a
+connection succeeds or the interface gets disabled.  This can be changed by
+calling ``wlan.config(reconnects=n)``, where n are the number of desired reconnect
+attempts (0 means it won't retry, -1 will restore the default behaviour of trying
+to reconnect forever).
+
+.. _Pico W: https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html#picow-technical-specification
+.. _Pico 2 W: https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html#pico2w-technical-specification
+
 Delay and timing
 ----------------
 
