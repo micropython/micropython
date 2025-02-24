@@ -165,6 +165,7 @@ soft_reset:
     #endif
     #if MICROPY_PY_MACHINE
     machine_pin_deinit();
+    machine_timer_deinit_all();
     #endif
 
     #if MICROPY_PY_THREAD
