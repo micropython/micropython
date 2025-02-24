@@ -114,7 +114,7 @@ Drawing text
 
 .. method:: FrameBuffer.text(s, x, y[, c])
 
-    Write text to the FrameBuffer using the the coordinates as the upper-left
+    Write text to the FrameBuffer using the coordinates as the upper-left
     corner of the text. The color of the text can be defined by the optional
     argument but is otherwise a default value of 1. All characters have
     dimensions of 8x8 pixels and there is currently no way to change the font.

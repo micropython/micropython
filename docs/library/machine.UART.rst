@@ -83,7 +83,7 @@ Methods
 
      - *pins* is a 4 or 2 item list indicating the TX, RX, RTS and CTS pins (in that order).
        Any of the pins can be None if one wants the UART to operate with limited functionality.
-       If the RTS pin is given the the RX pin must be given as well. The same applies to CTS.
+       If the RTS pin is given the RX pin must be given as well. The same applies to CTS.
        When no pins are given, then the default set of TX and RX pins is taken, and hardware
        flow control will be disabled. If *pins* is ``None``, no pin assignment will be made.
 
