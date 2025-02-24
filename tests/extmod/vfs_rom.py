@@ -223,6 +223,79 @@ class TestEdgeCases(unittest.TestCase):
             self.assertEqual(f.read(), b"contents")
 
 
+class TestCorrupt(unittest.TestCase):
+    def test_corrupt_filesystem(self):
+        # Make the filesystem length bigger than the buffer.
+        romfs = bytearray(make_romfs(()))
+        romfs[3] = 0x01
+        with self.assertRaises(OSError):
+            vfs.VfsRom(romfs)
+
+        # Corrupt the filesystem length.
+        romfs = bytearray(make_romfs(()))
+        romfs[3] = 0xFF
+        with self.assertRaises(OSError):
+            vfs.VfsRom(romfs)
+
+        # Corrupt the contents of the filesystem.
+        romfs = bytearray(make_romfs(()))
+        romfs[3] = 0x01
+        romfs.extend(b"\xff\xff")
+        fs = vfs.VfsRom(romfs)
+        with self.assertRaises(OSError):
+            fs.stat("a")
+        self.assertEqual(list(fs.ilistdir("")), [])
+
+    def test_corrupt_file_entry(self):
+        romfs = make_romfs((("file", b"data"),))
+
+        # Corrupt the length of filename.
+        romfs_corrupt = bytearray(romfs)
+        romfs_corrupt[7:] = b"\xff" * (len(romfs) - 7)
+        fs = vfs.VfsRom(romfs_corrupt)
+        with self.assertRaises(OSError):
+            fs.stat("file")
+        self.assertEqual(list(fs.ilistdir("")), [])
+
+        # Erase the data record (change it to a padding record).
+        romfs_corrupt = bytearray(romfs)
+        romfs_corrupt[12] = VfsRomWriter.ROMFS_RECORD_KIND_PADDING
+        fs = vfs.VfsRom(romfs_corrupt)
+        with self.assertRaises(OSError):
+            fs.stat("file")
+        self.assertEqual(list(fs.ilistdir("")), [])
+
+        # Corrupt the header of the data record.
+        romfs_corrupt = bytearray(romfs)
+        romfs_corrupt[12:] = b"\xff" * (len(romfs) - 12)
+        fs = vfs.VfsRom(romfs_corrupt)
+        with self.assertRaises(OSError):
+            fs.stat("file")
+
+        # Corrupt the interior of the data record.
+        romfs_corrupt = bytearray(romfs)
+        romfs_corrupt[13:] = b"\xff" * (len(romfs) - 13)
+        fs = vfs.VfsRom(romfs_corrupt)
+        with self.assertRaises(OSError):
+            fs.stat("file")
+
+        # Change the data record to an indirect pointer and corrupt the length.
+        romfs_corrupt = bytearray(romfs)
+        romfs_corrupt[12] = VfsRomWriter.ROMFS_RECORD_KIND_DATA_POINTER
+        romfs_corrupt[14:18] = b"\xff\xff\xff\xff"
+        fs = vfs.VfsRom(romfs_corrupt)
+        with self.assertRaises(OSError):
+            fs.stat("file")
+
+        # Change the data record to an indirect pointer and corrupt the offset.
+        romfs_corrupt = bytearray(romfs)
+        romfs_corrupt[12] = VfsRomWriter.ROMFS_RECORD_KIND_DATA_POINTER
+        romfs_corrupt[14:18] = b"\x00\xff\xff\xff"
+        fs = vfs.VfsRom(romfs_corrupt)
+        with self.assertRaises(OSError):
+            fs.stat("file")
+
+
 class TestStandalone(TestBase):
     def test_constructor(self):
         self.assertIsInstance(vfs.VfsRom(self.romfs), vfs.VfsRom)

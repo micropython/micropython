@@ -91,6 +91,7 @@
 #define ROMFS_RECORD_KIND_DATA_POINTER (3)
 #define ROMFS_RECORD_KIND_DIRECTORY (4)
 #define ROMFS_RECORD_KIND_FILE (5)
+#define ROMFS_RECORD_KIND_FILESYSTEM (0x14a6b1)
 
 typedef mp_uint_t record_kind_t;
 
@@ -101,34 +102,72 @@ struct _mp_obj_vfs_rom_t {
     const uint8_t *filesystem_end;
 };
 
-static record_kind_t extract_record(const uint8_t **fs, const uint8_t **fs_next) {
-    record_kind_t record_kind = mp_decode_uint(fs);
-    mp_uint_t record_len = mp_decode_uint(fs);
+// Returns 0 for success, -1 for failure.
+static int mp_decode_uint_checked(const uint8_t **ptr, const uint8_t *ptr_max, mp_uint_t *value_out) {
+    mp_uint_t unum = 0;
+    byte val;
+    const uint8_t *p = *ptr;
+    do {
+        if (p >= ptr_max) {
+            return -1;
+        }
+        val = *p++;
+        unum = (unum << 7) | (val & 0x7f);
+    } while ((val & 0x80) != 0);
+    *ptr = p;
+    *value_out = unum;
+    return 0;
+}
+
+static record_kind_t extract_record(const uint8_t **fs, const uint8_t **fs_next, const uint8_t *fs_max) {
+    mp_uint_t record_kind;
+    if (mp_decode_uint_checked(fs, fs_max, &record_kind) != 0) {
+        return ROMFS_RECORD_KIND_UNUSED;
+    }
+    mp_uint_t record_len;
+    if (mp_decode_uint_checked(fs, fs_max, &record_len) != 0) {
+        return ROMFS_RECORD_KIND_UNUSED;
+    }
     *fs_next = *fs + record_len;
     return record_kind;
 }
 
-static void extract_data(mp_obj_vfs_rom_t *self, const uint8_t *fs, const uint8_t *fs_top, size_t *size_out, const uint8_t **data_out) {
-    *size_out = 0;
-    *data_out = NULL;
+// Returns 0 for success, a negative integer for failure.
+static int extract_data(mp_obj_vfs_rom_t *self, const uint8_t *fs, const uint8_t *fs_top, size_t *size_out, const uint8_t **data_out) {
     while (fs < fs_top) {
         const uint8_t *fs_next;
-        record_kind_t record_kind = extract_record(&fs, &fs_next);
-        if (record_kind == ROMFS_RECORD_KIND_DATA_VERBATIM) {
-            // Verbatim data.
-            *size_out = fs_next - fs;
-            *data_out = fs;
+        record_kind_t record_kind = extract_record(&fs, &fs_next, fs_top);
+        if (record_kind == ROMFS_RECORD_KIND_UNUSED) {
+            // Corrupt filesystem.
             break;
+        } else if (record_kind == ROMFS_RECORD_KIND_DATA_VERBATIM) {
+            // Verbatim data.
+            if (size_out != NULL) {
+                *size_out = fs_next - fs;
+                *data_out = fs;
+            }
+            return 0;
         } else if (record_kind == ROMFS_RECORD_KIND_DATA_POINTER) {
             // Pointer to data.
-            *size_out = mp_decode_uint(&fs);
-            *data_out = self->filesystem + mp_decode_uint(&fs);
-            break;
+            mp_uint_t size;
+            if (mp_decode_uint_checked(&fs, fs_next, &size) != 0) {
+                break;
+            }
+            mp_uint_t offset;
+            if (mp_decode_uint_checked(&fs, fs_next, &offset) != 0) {
+                break;
+            }
+            if (size_out != NULL) {
+                *size_out = size;
+                *data_out = self->filesystem + offset;
+            }
+            return 0;
         } else {
             // Skip this record.
             fs = fs_next;
         }
     }
+    return -MP_EIO;
 }
 
 // Searches for `path` in the filesystem.
@@ -144,10 +183,17 @@ mp_import_stat_t mp_vfs_rom_search_filesystem(mp_obj_vfs_rom_t *self, const char
     }
     while (path_len > 0 && fs < fs_top) {
         const uint8_t *fs_next;
-        record_kind_t record_kind = extract_record(&fs, &fs_next);
-        if (record_kind == ROMFS_RECORD_KIND_DIRECTORY || record_kind == ROMFS_RECORD_KIND_FILE) {
+        record_kind_t record_kind = extract_record(&fs, &fs_next, fs_top);
+        if (record_kind == ROMFS_RECORD_KIND_UNUSED) {
+            // Corrupt filesystem.
+            return MP_IMPORT_STAT_NO_EXIST;
+        } else if (record_kind == ROMFS_RECORD_KIND_DIRECTORY || record_kind == ROMFS_RECORD_KIND_FILE) {
             // A directory or file record.
-            mp_uint_t name_len = mp_decode_uint(&fs);
+            mp_uint_t name_len;
+            if (mp_decode_uint_checked(&fs, fs_next, &name_len) != 0) {
+                // Corrupt filesystem.
+                return MP_IMPORT_STAT_NO_EXIST;
+            }
             if ((name_len == path_len
                  || (name_len < path_len && path[name_len] == '/'))
                 && memcmp(path, fs, name_len) == 0) {
@@ -167,8 +213,9 @@ mp_import_stat_t mp_vfs_rom_search_filesystem(mp_obj_vfs_rom_t *self, const char
                     if (path_len != 0) {
                         return MP_IMPORT_STAT_NO_EXIST;
                     }
-                    if (size_out != NULL) {
-                        extract_data(self, fs, fs_top, size_out, data_out);
+                    if (extract_data(self, fs, fs_top, size_out, data_out) != 0) {
+                        // Corrupt filesystem.
+                        return MP_IMPORT_STAT_NO_EXIST;
                     }
                     return MP_IMPORT_STAT_FILE;
                 }
@@ -214,7 +261,15 @@ static mp_obj_t vfs_rom_make_new(const mp_obj_type_t *type, size_t n_args, size_
     }
 
     // The ROMFS is a record itself, so enter into it and compute its limit.
-    extract_record(&self->filesystem, &self->filesystem_end);
+    record_kind_t record_kind = extract_record(&self->filesystem, &self->filesystem_end, self->filesystem + bufinfo.len);
+    if (record_kind != ROMFS_RECORD_KIND_FILESYSTEM) {
+        mp_raise_OSError(MP_ENODEV);
+    }
+
+    // Check the filesystem is within the limits of the input buffer.
+    if (self->filesystem_end > (const uint8_t *)bufinfo.buf + bufinfo.len) {
+        mp_raise_OSError(MP_ENODEV);
+    }
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -259,13 +314,21 @@ static mp_obj_t vfs_rom_ilistdir_it_iternext(mp_obj_t self_in) {
 
     while (self->index < self->index_top) {
         const uint8_t *index_next;
-        record_kind_t record_kind = extract_record(&self->index, &index_next);
+        record_kind_t record_kind = extract_record(&self->index, &index_next, self->index_top);
         uint32_t type;
         mp_uint_t name_len;
         size_t data_len;
-        if (record_kind == ROMFS_RECORD_KIND_DIRECTORY || record_kind == ROMFS_RECORD_KIND_FILE) {
+        if (record_kind == ROMFS_RECORD_KIND_UNUSED) {
+            // Corrupt filesystem.
+            self->index = self->index_top;
+            break;
+        } else if (record_kind == ROMFS_RECORD_KIND_DIRECTORY || record_kind == ROMFS_RECORD_KIND_FILE) {
             // A directory or file record.
-            name_len = mp_decode_uint(&self->index);
+            if (mp_decode_uint_checked(&self->index, index_next, &name_len) != 0) {
+                // Corrupt filesystem.
+                self->index = self->index_top;
+                break;
+            }
             if (record_kind == ROMFS_RECORD_KIND_DIRECTORY) {
                 // A directory.
                 type = MP_S_IFDIR;
@@ -274,7 +337,10 @@ static mp_obj_t vfs_rom_ilistdir_it_iternext(mp_obj_t self_in) {
                 // A file.
                 type = MP_S_IFREG;
                 const uint8_t *data_value;
-                extract_data(self->vfs_rom, self->index + name_len, index_next, &data_len, &data_value);
+                if (extract_data(self->vfs_rom, self->index + name_len, index_next, &data_len, &data_value) != 0) {
+                    // Corrupt filesystem.
+                    break;
+                }
             }
         } else {
             // Skip this record.
