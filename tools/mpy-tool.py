@@ -114,6 +114,7 @@ MP_NATIVE_ARCH_ARMV7EMDP = 8
 MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
 MP_NATIVE_ARCH_RV32IMC = 11
+MP_NATIVE_ARCH_RV64IMC = 12
 
 MP_PERSISTENT_OBJ_FUN_TABLE = 0
 MP_PERSISTENT_OBJ_NONE = 1
@@ -1081,6 +1082,7 @@ class RawCodeNative(RawCode):
             MP_NATIVE_ARCH_XTENSA,
             MP_NATIVE_ARCH_XTENSAWIN,
             MP_NATIVE_ARCH_RV32IMC,
+            MP_NATIVE_ARCH_RV64IMC,
         ):
             self.fun_data_attributes = '__attribute__((section(".text,\\"ax\\",@progbits # ")))'
         else:
@@ -1098,8 +1100,8 @@ class RawCodeNative(RawCode):
             self.fun_data_attributes += " __attribute__ ((aligned (4)))"
         elif (
             MP_NATIVE_ARCH_ARMV6M <= config.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP
-        ) or config.native_arch == MP_NATIVE_ARCH_RV32IMC:
-            # ARMVxxM or RV32IMC -- two byte align.
+        ) or MP_NATIVE_ARCH_RV32IMC <= config.native_arch <= MP_NATIVE_ARCH_RV64IMC:
+            # ARMVxxM or RV{32,64}IMC -- two byte align.
             self.fun_data_attributes += " __attribute__ ((aligned (2)))"
 
     def disassemble(self):
