@@ -243,7 +243,7 @@ _pio_instructions = (
 def asm_pio(**kw):
     emit = PIOASMEmit(**kw)
 
-    def dec(f):
+    def dec(f, **kw):
         nonlocal emit
 
         gl = f.__globals__
@@ -257,10 +257,10 @@ def asm_pio(**kw):
             gl[name] = getattr(emit, name)
 
         emit.start_pass(0)
-        f()
+        f(**kw)
 
         emit.start_pass(1)
-        f()
+        f(**kw)
 
         gl.clear()
         gl.update(old_gl)
