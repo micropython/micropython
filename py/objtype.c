@@ -974,6 +974,48 @@ static bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
 }
 #endif
 
+#if MICROPY_PY_DESCRIPTORS
+static void run_set_name_hooks(mp_map_t *locals_map_orig, mp_obj_t owner) {
+    // copy the dict so we can iterate safely even while __set_name__ potentially modifies the original
+    mp_map_t locals_map = *locals_map_orig;
+    locals_map.table = mp_local_alloc(locals_map.alloc * sizeof(mp_map_elem_t));
+    memcpy(locals_map.table, locals_map_orig->table, locals_map.alloc * sizeof(mp_map_elem_t));
+
+    #if MICROPY_ENABLE_PYSTACK
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0)
+    // Note: on !MICROPY_ENABLE_PYSTACK ports, `mp_local_alloc` is just `alloca` and `mp_local_free` is a no-op.
+    // Therefore we don't need to set an exception trap; the exception handler implicitly frees as it unwinds the stack.
+    #endif
+    {
+        // use the copy to call __set_name__ on each
+        for (size_t i = 0; i < locals_map.alloc; i++) {
+            if (mp_map_slot_is_filled(&locals_map, i)) {
+                mp_map_elem_t *elem = &(locals_map.table[i]);
+                mp_obj_t set_name_method[4];
+                mp_load_method_maybe(elem->value, MP_QSTR___set_name__, set_name_method);
+                if (set_name_method[1] != MP_OBJ_NULL) {
+                    set_name_method[2] = owner;
+                    set_name_method[3] = elem->key;
+                    mp_call_method_n_kw(2, 0, set_name_method);
+                }
+            }
+        }
+
+        #if MICROPY_ENABLE_PYSTACK
+        nlr_pop();
+        #endif
+        mp_local_free(locals_map.table);
+    }
+    #if MICROPY_ENABLE_PYSTACK
+    else {
+        mp_local_free(locals_map.table);
+        nlr_raise(nlr.ret_val);  // TODO cpython raises a RuntimeError in this situation
+    }
+    #endif
+}
+#endif
+
 static void type_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
@@ -1242,20 +1284,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     }
 
     #if MICROPY_PY_DESCRIPTORS
-    // call __set_name__ on all entries (especially descriptors)
-    for (size_t i = 0; i < locals_map->alloc; i++) {
-        if (mp_map_slot_is_filled(locals_map, i)) {
-            elem = &(locals_map->table[i]);
-
-            mp_obj_t set_name_method[4];
-            mp_load_method_maybe(elem->value, MP_QSTR___set_name__, set_name_method);
-            if (set_name_method[1] != MP_OBJ_NULL) {
-                set_name_method[2] = MP_OBJ_FROM_PTR(o);
-                set_name_method[3] = elem->key;
-                mp_call_method_n_kw(2, 0, set_name_method);
-            }
-        }
-    }
+    run_set_name_hooks(locals_map, MP_OBJ_FROM_PTR(o));
     #endif
 
     return MP_OBJ_FROM_PTR(o);
