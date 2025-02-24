@@ -591,8 +591,8 @@ def main():
         "-a",
         "--address",
         help="specify target memory address(hex or dec) when uploading .bin files",
-        dest="address",
-        default=False,
+        type=lambda x: int(x, 0),
+        default=None,
     )
     parser.add_argument("-x", "--exit", help="Exit DFU", action="store_true", default=False)
     parser.add_argument(
@@ -623,14 +623,10 @@ def main():
 
     if args.path:
         if str(args.path).endswith(".bin"):
-            if not args.address:
+            if args.address is None:
                 raise ValueError("Address must be specified using -a when uploading binary")
-            addr = str(args.address)
-            if addr.startswith("0x") or addr.startswith("0X"):
-                addr = int(addr, 16)
-            else:
-                addr = int(addr)
-            elements = read_bin_file(args.path, addr)
+
+            elements = read_bin_file(args.path, args.addr)
         else:
             elements = read_dfu_file(args.path)
 
