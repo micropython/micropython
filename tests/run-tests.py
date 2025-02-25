@@ -996,6 +996,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             if output_expected is not None:
                 with open(filename_expected, "wb") as f:
                     f.write(output_expected)
+            else:
+                rm_f(filename_expected)  # in case left over from previous failed run
             with open(filename_mupy, "wb") as f:
                 f.write(output_mupy)
             failed_tests.append((test_name, test_file))
