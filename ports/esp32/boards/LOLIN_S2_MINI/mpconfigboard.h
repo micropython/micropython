@@ -3,7 +3,6 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-s2-mini"
 
 #define MICROPY_PY_BLUETOOTH                (0)
-#define MICROPY_HW_ENABLE_SDCARD            (0)
 
 #define MICROPY_HW_I2C0_SCL                 (35)
 #define MICROPY_HW_I2C0_SDA                 (33)

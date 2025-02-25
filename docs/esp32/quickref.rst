@@ -747,7 +747,7 @@ See :ref:`machine.SDCard <machine.SDCard>`. ::
 
     import machine, os, vfs
 
-    # Slot 2 uses pins sck=18, cs=5, miso=19, mosi=23
+    # On original ESP32, slot 2 uses pins sck=18, cs=5, miso=19, mosi=23
     sd = machine.SDCard(slot=2)
     vfs.mount(sd, '/sd') # mount
 
