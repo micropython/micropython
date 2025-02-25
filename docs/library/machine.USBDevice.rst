@@ -223,11 +223,14 @@ Methods
     and on the host. Returns ``True`` if remote wakeup was enabled and
     active and the host was woken up.
 
-.. method:: USBDevice.submit_xfer(self, ep, buffer /)
+.. method:: USBDevice.submit_xfer(self, ep, buffer, [nbytes] /)
 
             Submit a USB transfer on endpoint number ``ep``. ``buffer`` must be
             an object implementing the buffer interface, with read access for
             ``IN`` endpoints and write access for ``OUT`` endpoints.
+
+            The optional ``nbytes`` parameter can be used to specify the number
+            of bytes to submit from the buffer.
 
             .. note:: ``ep`` cannot be the control Endpoint number 0. Control
                transfers are built up through successive executions of
