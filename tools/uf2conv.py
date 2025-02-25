@@ -118,7 +118,7 @@ def convert_from_uf2(buf):
         if blockno == (numblocks - 1):
             print("--- UF2 File Header Info ---")
             families = load_families()
-            for family_hex in families_found.keys():
+            for family_hex, target_address in families_found.items():
                 family_short_name = ""
                 for name, value in families.items():
                     if value == family_hex:
@@ -128,7 +128,7 @@ def convert_from_uf2(buf):
                         family_short_name, family_hex
                     )
                 )
-                print("Target Address is 0x{:08x}".format(families_found[family_hex]))
+                print("Target Address is 0x{:08x}".format(target_address))
             if all_flags_same:
                 print("All block flag values consistent, 0x{:04x}".format(hd[2]))
             else:
@@ -282,8 +282,7 @@ def get_drives():
             tmp = rootpath + "/" + os.environ["USER"]
             if os.path.isdir(tmp):
                 rootpath = tmp
-        for d in os.listdir(rootpath):
-            drives.append(os.path.join(rootpath, d))
+        drives.extend(os.path.join(rootpath, d) for d in os.listdir(rootpath))
 
     def has_info(d):
         try:
