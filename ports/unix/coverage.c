@@ -538,13 +538,32 @@ static mp_obj_t extra_coverage(void) {
     {
         mp_printf(&mp_plat_print, "# binary\n");
 
-        // call function with float and double typecodes
+        // call function with various typecodes
         float far[1];
         double dar[1];
+        int8_t i8ar[1];
+        uint8_t u8ar[1];
+        int16_t i16ar[1];
+        uint16_t u16ar[1];
+        int32_t i32ar[1];
+        uint32_t u32ar[1];
         mp_binary_set_val_array_from_int('f', far, 0, 123);
-        mp_printf(&mp_plat_print, "%.0f\n", (double)far[0]);
         mp_binary_set_val_array_from_int('d', dar, 0, 456);
+        mp_binary_set_val_array_from_int('b', i8ar, 0, -1);
+        mp_binary_set_val_array_from_int('B', u8ar, 0, 2);
+        mp_binary_set_val_array_from_int('h', i16ar, 0, -3);
+        mp_binary_set_val_array_from_int('H', u16ar, 0, 4);
+        mp_binary_set_val_array_from_int('i', i32ar, 0, -5);
+        mp_binary_set_val_array_from_int('I', u32ar, 0, 6);
+
+        mp_printf(&mp_plat_print, "%.0f\n", (double)far[0]);
         mp_printf(&mp_plat_print, "%.0lf\n", dar[0]);
+        mp_printf(&mp_plat_print, "%d\n", i8ar[0]);
+        mp_printf(&mp_plat_print, "%u\n", u8ar[0]);
+        mp_printf(&mp_plat_print, "%d\n", i16ar[0]);
+        mp_printf(&mp_plat_print, "%u\n", u16ar[0]);
+        mp_printf(&mp_plat_print, "%d\n", i32ar[0]);
+        mp_printf(&mp_plat_print, "%u\n", u32ar[0]);
     }
 
     // VM
