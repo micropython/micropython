@@ -12,6 +12,10 @@ LDSCRIPT = mcu/arm/imx6.ld
 
 SRC_BOARD_O = shared/runtime/gchelper_generic.o
 
+# Use a larger heap than the default so tests run with the native emitter have
+# enough memory (because emitted ARM machine code is larger than Thumb2 code).
+MICROPY_HEAP_SIZE ?= 163840
+
 # It's really armv7a but closest supported value is armv6.
 MPY_CROSS_FLAGS += -march=armv6
 
