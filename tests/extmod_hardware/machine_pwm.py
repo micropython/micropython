@@ -1,4 +1,4 @@
-# Test machine.PWM, frequncy and duty cycle (using machine.time_pulse_us).
+# Test machine.PWM, frequency and duty cycle (using machine.time_pulse_us).
 #
 # IMPORTANT: This test requires hardware connections: the PWM-output and pulse-input
 # pins must be wired together (see the variable `pwm_pulse_pins`).
