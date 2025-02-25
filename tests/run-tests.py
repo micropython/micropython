@@ -848,7 +848,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         test_file_abspath = os.path.abspath(test_file).replace("\\", "/")
 
         if args.filters:
-            # Default verdict is the opposit of the first action
+            # Default verdict is the opposite of the first action
             verdict = "include" if args.filters[0][0] == "exclude" else "exclude"
             for action, pat in args.filters:
                 if pat.search(test_file):
