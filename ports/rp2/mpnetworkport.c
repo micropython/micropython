@@ -68,7 +68,7 @@ static void gpio_irq_handler(void) {
         gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, false);
         cyw43_has_pending = 1;
         __sev();
-        pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+        pendsv_schedule_dispatch_with_affinity(PENDSV_DISPATCH_CYW43, cyw43_poll, 0);
         CYW43_STAT_INC(IRQ_COUNT);
     }
 }
