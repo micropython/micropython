@@ -22,6 +22,8 @@ print("0000".find('1', 3))
 print("0000".find('1', 4))
 print("0000".find('1', 5))
 print("aaaaaaaaaaa".find("bbb", 9, 2))
+print("".find(""))
+print("".find("a"))
 
 try:
     'abc'.find(1)
