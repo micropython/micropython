@@ -558,6 +558,8 @@ function ci_unix_coverage_run_mpy_merge_tests {
     outdir=$(mktemp -d)
     allmpy=()
 
+    export MICROPYPATH="${mptop}/lib/micropython-lib/python-stdlib/unittest"
+
     # Compile a selection of tests to .mpy and execute them, collecting the output.
     # None of the tests should SKIP.
     for inpy in $mptop/tests/basics/[acdel]*.py; do
