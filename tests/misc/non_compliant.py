@@ -63,12 +63,6 @@ try:
 except NotImplementedError:
     print("NotImplementedError")
 
-# str.endswith(s, start) not implemented
-try:
-    "abc".endswith("c", 1)
-except NotImplementedError:
-    print("NotImplementedError")
-
 # str subscr with step!=1 not implemented
 try:
     print("abc"[1:2:3])
