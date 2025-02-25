@@ -61,7 +61,7 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
 #define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, "\n"); // mp_printf(&mp_plat_print, " | func:%s line:%d at %s\n", __FUNCTION__, __LINE__, __FILE__);
 #define _debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__);
 
-mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, bool signd, size_t len, const byte *buf) {
+mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, bool is_signed, size_t len, const byte *buf) {
     if (len > sizeof(mp_longint_impl_t)) {
         mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("big-int overflow"));
     }
@@ -76,7 +76,7 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, bool signd, size_t len, con
         memcpy(&result, buf, len);
     }
 
-    if ((signd) && (sizeof(result) > len) && (result.buf[len - 1] & 0x80)) {
+    if ((is_signed) && (sizeof(result) > len) && (result.buf[len - 1] & 0x80)) {
         // Sign propagation in little-endian
         // x = 2
         // x.to_bytes(1, 'little', True) -> b'\x02'
