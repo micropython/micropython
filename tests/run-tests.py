@@ -999,6 +999,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             with open(filename_mupy, "wb") as f:
                 f.write(output_mupy)
             failed_tests.append((test_name, test_file))
+            if uses_unittest:
+                rm_f(filename_expected)  # in case left over from previous failed run
 
         test_count.increment()
 
