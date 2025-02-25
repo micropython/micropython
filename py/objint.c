@@ -491,18 +491,31 @@ mp_obj_t mp_obj_integer_from_bytes_impl(bool big_endian, bool is_signed, size_t 
 }
 
 // this is a classmethod
-// result = int.from_bytes(bytearray(), order='big', signed=False)
-static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
+// result = int.from_bytes(bytearray(), [[length=,] byteorder='big',] signed=False)
+static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_length, ARG_byteorder, ARG_signed };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_length,    MP_ARG_INT, { .u_int = -1 } },
+        { MP_QSTR_byteorder, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_QSTR(MP_QSTR_big) } },
+        { MP_QSTR_signed,    MP_ARG_BOOL, {.u_bool = false} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     // get the buffer info
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
-    bool big_endian = n_args < 3 || args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
-    bool is_signed = (n_args > 3) && mp_obj_is_true(args[3]);
+    mp_get_buffer_raise(pos_args[1], &bufinfo, MP_BUFFER_READ);
 
-    return mp_obj_integer_from_bytes_impl(big_endian, is_signed, bufinfo.len, bufinfo.buf);
+    mp_int_t len = args[ARG_length].u_int;
+    bool big_endian = args[ARG_byteorder].u_obj != MP_OBJ_NEW_QSTR(MP_QSTR_little);
+    bool is_signed = args[ARG_signed].u_bool;
+
+    if ((len < 0) || (len > bufinfo.len)) {
+        len = bufinfo.len;
+    }
+    return mp_obj_integer_from_bytes_impl(big_endian, is_signed, len, bufinfo.buf);
 }
-
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 2, 4, int_from_bytes);
+static MP_DEFINE_CONST_FUN_OBJ_KW(int_from_bytes_fun_obj, 2, int_from_bytes);
 static MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_bytes_fun_obj));
 
 static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {

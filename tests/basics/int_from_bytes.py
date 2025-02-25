@@ -20,7 +20,7 @@ def test_int(x, order, signed):
     print(f"x:{x}, x:0x{x:X}, size:{size}", end="")
     b = x.to_bytes(size, order, signed)
     print(f", b:{b}")
-    y = int.from_bytes(b, order, signed)
+    y = int.from_bytes(b, byteorder=order, signed=signed)
     print(x, y, x == y, b)
     print()
     assert x == y
@@ -144,7 +144,7 @@ def test_bytes(b, uint, order, signed):
     if order == "little":
         b = reverse(b)
         print(f"reverse:{b}, ", end="")
-    i = int.from_bytes(b, order, signed)
+    i = int.from_bytes(b, byteorder=order, signed=signed)
     if signed:
         print(f"sint:{sint}, from_bytes:{i}, {i == sint}, ", end="")
     else:
