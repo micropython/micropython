@@ -158,6 +158,8 @@
 
 static uint8_t pyb_sdmmc_flags;
 
+#define TIMEOUT_MS 30000
+
 // TODO: I think that as an optimization, we can allocate these dynamically
 //       if an sd card is detected. This will save approx 260 bytes of RAM
 //       when no sdcard was being used.
@@ -441,7 +443,7 @@ static void sdcard_reset_periph(void) {
     SDIO->ICR = SDMMC_STATIC_FLAGS;
 }
 
-static HAL_StatusTypeDef sdcard_wait_finished(uint32_t timeout) {
+static HAL_StatusTypeDef sdcard_wait_finished(void) {
     // Wait for HAL driver to be ready (eg for DMA to finish)
     uint32_t start = HAL_GetTick();
     for (;;) {
@@ -463,7 +465,7 @@ static HAL_StatusTypeDef sdcard_wait_finished(uint32_t timeout) {
         }
         __WFI();
         enable_irq(irq_state);
-        if (HAL_GetTick() - start >= timeout) {
+        if (HAL_GetTick() - start >= TIMEOUT_MS) {
             return HAL_TIMEOUT;
         }
     }
@@ -490,7 +492,7 @@ static HAL_StatusTypeDef sdcard_wait_finished(uint32_t timeout) {
         if (!(state == HAL_SD_CARD_SENDING || state == HAL_SD_CARD_RECEIVING || state == HAL_SD_CARD_PROGRAMMING)) {
             return HAL_ERROR;
         }
-        if (HAL_GetTick() - start >= timeout) {
+        if (HAL_GetTick() - start >= TIMEOUT_MS) {
             return HAL_TIMEOUT;
         }
         __WFI();
@@ -498,13 +500,27 @@ static HAL_StatusTypeDef sdcard_wait_finished(uint32_t timeout) {
     return HAL_OK;
 }
 
-mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+static HAL_StatusTypeDef sdcard_common_checks(uint32_t block_num, uint32_t num_blocks) {
     // check that SD card is initialised
     if (!(pyb_sdmmc_flags & PYB_SDMMC_FLAG_ACTIVE)) {
         return HAL_ERROR;
     }
 
-    HAL_StatusTypeDef err = HAL_OK;
+    // check that adding block_num & num_blocks don't overflow
+    // (the ST HAL does a bounds check, but only after adding them...)
+    uint32_t end_block;
+    if (__builtin_add_overflow(block_num, num_blocks, &end_block)) {
+        return HAL_ERROR;
+    }
+
+    return HAL_OK;
+}
+
+mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+    HAL_StatusTypeDef err = sdcard_common_checks(block_num, num_blocks);
+    if (err != HAL_OK) {
+        return err;
+    }
 
     // check that dest pointer is aligned on a 4-byte boundary
     uint8_t *orig_dest = NULL;
@@ -555,7 +571,7 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
             err = HAL_SD_ReadBlocks_DMA(&sdmmc_handle.sd, dest, block_num, num_blocks);
         }
         if (err == HAL_OK) {
-            err = sdcard_wait_finished(60000);
+            err = sdcard_wait_finished();
         }
 
         #if SDIO_USE_GPDMA
@@ -574,14 +590,14 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
     } else {
         #if MICROPY_HW_ENABLE_MMCARD
         if (pyb_sdmmc_flags & PYB_SDMMC_FLAG_MMC) {
-            err = HAL_MMC_ReadBlocks(&sdmmc_handle.mmc, dest, block_num, num_blocks, 60000);
+            err = HAL_MMC_ReadBlocks(&sdmmc_handle.mmc, dest, block_num, num_blocks, TIMEOUT_MS);
         } else
         #endif
         {
-            err = HAL_SD_ReadBlocks(&sdmmc_handle.sd, dest, block_num, num_blocks, 60000);
+            err = HAL_SD_ReadBlocks(&sdmmc_handle.sd, dest, block_num, num_blocks, TIMEOUT_MS);
         }
         if (err == HAL_OK) {
-            err = sdcard_wait_finished(60000);
+            err = sdcard_wait_finished();
         }
     }
 
@@ -595,12 +611,10 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
 }
 
 mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
-    // check that SD card is initialised
-    if (!(pyb_sdmmc_flags & PYB_SDMMC_FLAG_ACTIVE)) {
-        return HAL_ERROR;
+    HAL_StatusTypeDef err = sdcard_common_checks(block_num, num_blocks);
+    if (err != HAL_OK) {
+        return err;
     }
-
-    HAL_StatusTypeDef err = HAL_OK;
 
     // check that src pointer is aligned on a 4-byte boundary
     if (((uint32_t)src & 3) != 0) {
@@ -650,7 +664,7 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
             err = HAL_SD_WriteBlocks_DMA(&sdmmc_handle.sd, (uint8_t *)src, block_num, num_blocks);
         }
         if (err == HAL_OK) {
-            err = sdcard_wait_finished(60000);
+            err = sdcard_wait_finished();
         }
 
         #if SDIO_USE_GPDMA
@@ -669,14 +683,14 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
     } else {
         #if MICROPY_HW_ENABLE_MMCARD
         if (pyb_sdmmc_flags & PYB_SDMMC_FLAG_MMC) {
-            err = HAL_MMC_WriteBlocks(&sdmmc_handle.mmc, (uint8_t *)src, block_num, num_blocks, 60000);
+            err = HAL_MMC_WriteBlocks(&sdmmc_handle.mmc, (uint8_t *)src, block_num, num_blocks, TIMEOUT_MS);
         } else
         #endif
         {
-            err = HAL_SD_WriteBlocks(&sdmmc_handle.sd, (uint8_t *)src, block_num, num_blocks, 60000);
+            err = HAL_SD_WriteBlocks(&sdmmc_handle.sd, (uint8_t *)src, block_num, num_blocks, TIMEOUT_MS);
         }
         if (err == HAL_OK) {
-            err = sdcard_wait_finished(60000);
+            err = sdcard_wait_finished();
         }
     }
 
