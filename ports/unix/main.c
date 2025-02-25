@@ -45,6 +45,7 @@
 #include "py/gc.h"
 #include "py/objstr.h"
 #include "py/cstack.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "extmod/misc.h"
@@ -802,4 +803,8 @@ void nlr_jump_fail(void *val) {
     #endif
     fprintf(stderr, "FATAL: uncaught NLR %p\n", val);
     exit(1);
+}
+
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
+    return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
 }
