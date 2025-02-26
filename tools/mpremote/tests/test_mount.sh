@@ -26,3 +26,7 @@ $MPREMOTE mount ${TMP} exec "import mount_package; mount_package.x(); mount_pack
 echo -----
 $MPREMOTE mount ${TMP} exec "open('test.txt', 'w').write('hello world\n')"
 cat "${TMP}/test.txt"
+
+# Test RemoteFile.readline and RemoteFile.readlines methods.
+echo -----
+$MPREMOTE mount ${TMP} exec "print(open('test.txt').readlines())"
