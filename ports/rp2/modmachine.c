@@ -31,6 +31,8 @@
 #include "mp_usbd.h"
 #include "modmachine.h"
 #include "uart.h"
+#include "rp2_psram.h"
+#include "rp2_flash.h"
 #include "clocks_extra.h"
 #include "hardware/pll.h"
 #include "hardware/structs/rosc.h"
@@ -94,6 +96,11 @@ static mp_obj_t mp_machine_get_freq(void) {
 
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_int_t freq = mp_obj_get_int(args[0]);
+
+    // If necessary, increase the flash divider before increasing the clock speed
+    const int old_freq = clock_get_hz(clk_sys);
+    rp2_flash_set_timing_for_freq(MAX(freq, old_freq));
+
     if (!set_sys_clock_khz(freq / 1000, false)) {
         mp_raise_ValueError(MP_ERROR_TEXT("cannot change frequency"));
     }
@@ -111,9 +118,18 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
             }
         }
     }
+
+    // If clock speed was reduced, maybe we can reduce the flash divider
+    if (freq < old_freq) {
+        rp2_flash_set_timing_for_freq(freq);
+    }
+
     #if MICROPY_HW_ENABLE_UART_REPL
     setup_default_uart();
     mp_uart_init();
+    #endif
+    #if defined(MICROPY_HW_PSRAM_CS_PIN) && MICROPY_HW_ENABLE_PSRAM
+    psram_init(MICROPY_HW_PSRAM_CS_PIN);
     #endif
 }
 
