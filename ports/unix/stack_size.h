@@ -46,8 +46,15 @@
 #define UNIX_STACK_MUL_SANITIZERS 1
 #endif
 
-// Double the stack size for 64-bit builds, plus additional scaling
-#define UNIX_STACK_MULTIPLIER ((sizeof(void *) / 4) * UNIX_STACK_MUL_ARM * UNIX_STACK_MUL_SANITIZERS)
+#if defined(_MSC_VER)
+// Similarly Windows seems to require more stack
+#define UNIX_STACK_MUL_WINDOWS 2
+#else
+#define UNIX_STACK_MUL_WINDOWS 1
+#endif
+
+// Double the stack size for 64-bit builds, plus additional scalings
+#define UNIX_STACK_MULTIPLIER ((sizeof(void *) / 4) * (UNIX_STACK_MUL_ARM)*(UNIX_STACK_MUL_SANITIZERS)*(UNIX_STACK_MUL_WINDOWS))
 
 #endif // UNIX_STACK_MULTIPLIER
 
