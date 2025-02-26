@@ -661,8 +661,8 @@ static void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
     // try __getattr__
     if (attr != MP_QSTR___getattr__) {
         #if MICROPY_PY_DESCRIPTORS
-        // With descriptors enabled, don't delegate lookups of __get__/__set__/__delete__.
-        if (attr == MP_QSTR___get__ || attr == MP_QSTR___set__ || attr == MP_QSTR___delete__) {
+        // With descriptors enabled, don't delegate lookups of __get__/__set__/__delete__/__set_name__.
+        if (attr == MP_QSTR___get__ || attr == MP_QSTR___set__ || attr == MP_QSTR___delete__ || attr == MP_QSTR___set_name__) {
             return;
         }
         #endif
@@ -960,7 +960,7 @@ static bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
     #endif
     #if MICROPY_PY_DESCRIPTORS
     static const uint8_t to_check[] = {
-        MP_QSTR___get__, MP_QSTR___set__, MP_QSTR___delete__,
+        MP_QSTR___get__, MP_QSTR___set__, MP_QSTR___delete__, // not needed for MP_QSTR___set_name__ tho
     };
     for (size_t i = 0; i < MP_ARRAY_SIZE(to_check); ++i) {
         mp_obj_t dest_temp[2];
@@ -971,6 +971,40 @@ static bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
     }
     #endif
     return false;
+}
+#endif
+
+#if MICROPY_PY_DESCRIPTORS
+static void run_set_name_hooks(mp_obj_t locals_dict_orig, mp_obj_t owner) {
+    // copy the dict so we can iterate safely even while __set_name__ potentially modifies the original
+    mp_obj_t locals_dict_copy = mp_obj_dict_copy(locals_dict_orig);
+    mp_obj_dict_t *locals_dict = MP_OBJ_TO_PTR(locals_dict_copy);
+    mp_map_t *locals_map = mp_obj_dict_get_map(locals_dict_copy);
+
+    // make sure we don't leak this copy's memory
+    nlr_buf_t nlr;
+    bool ok = (nlr_push(&nlr) == 0);
+    if (ok) {
+        // use the copy to call __set_name__ on each
+        for (size_t i = 0; i < locals_map->alloc; i++) {
+            if (mp_map_slot_is_filled(locals_map, i)) {
+                mp_map_elem_t *elem = &(locals_map->table[i]);
+                mp_obj_t set_name_method[4];
+                mp_load_method_maybe(elem->value, MP_QSTR___set_name__, set_name_method);
+                if (set_name_method[1] != MP_OBJ_NULL) {
+                    set_name_method[2] = owner;
+                    set_name_method[3] = elem->key;
+                    mp_call_method_n_kw(2, 0, set_name_method);
+                }
+            }
+        }
+        nlr_pop();
+    }
+    mp_map_deinit(locals_map);
+    m_del_obj(locals_dict->base.type, locals_dict);
+    if (!ok) {
+        nlr_raise(nlr.ret_val); // TODO cpython raises a RuntimeError from this instead
+    }
 }
 #endif
 
@@ -1240,6 +1274,10 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
             elem->value = static_class_method_make_new(&mp_type_staticmethod, 1, 0, &elem->value);
         }
     }
+
+    #if MICROPY_PY_DESCRIPTORS
+    run_set_name_hooks(locals_dict, MP_OBJ_FROM_PTR(o));
+    #endif
 
     return MP_OBJ_FROM_PTR(o);
 }
