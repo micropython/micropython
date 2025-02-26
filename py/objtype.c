@@ -661,8 +661,8 @@ static void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
     // try __getattr__
     if (attr != MP_QSTR___getattr__) {
         #if MICROPY_PY_DESCRIPTORS
-        // With descriptors enabled, don't delegate lookups of __get__/__set__/__delete__.
-        if (attr == MP_QSTR___get__ || attr == MP_QSTR___set__ || attr == MP_QSTR___delete__) {
+        // With descriptors enabled, don't delegate lookups of __get__/__set__/__delete__/__set_name__.
+        if (attr == MP_QSTR___get__ || attr == MP_QSTR___set__ || attr == MP_QSTR___delete__ || attr == MP_QSTR___set_name__) {
             return;
         }
         #endif
@@ -960,7 +960,7 @@ static bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
     #endif
     #if MICROPY_PY_DESCRIPTORS
     static const uint8_t to_check[] = {
-        MP_QSTR___get__, MP_QSTR___set__, MP_QSTR___delete__,
+        MP_QSTR___get__, MP_QSTR___set__, MP_QSTR___delete__, // not needed for MP_QSTR___set_name__ tho
     };
     for (size_t i = 0; i < MP_ARRAY_SIZE(to_check); ++i) {
         mp_obj_t dest_temp[2];
@@ -1240,6 +1240,38 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
             elem->value = static_class_method_make_new(&mp_type_staticmethod, 1, 0, &elem->value);
         }
     }
+
+    #if MICROPY_PY_DESCRIPTORS
+    // make a list of all names of __set_name__-able attributes that won't be mutated by __set_name__ calls
+    mp_obj_list_t *setname_list = MP_OBJ_TO_PTR(mp_obj_list_make_new(&mp_type_list, 0, 0, NULL));
+    for (size_t i = 0; i < locals_map->alloc; i++) {
+        if (mp_map_slot_is_filled(locals_map, i)) {
+            elem = &(locals_map->table[i]);
+
+            mp_obj_t set_name_method[2];
+            mp_load_method_protected(elem->value, MP_QSTR___set_name__, set_name_method, true);
+            if (set_name_method[1] != MP_OBJ_NULL) {
+                mp_obj_list_append(MP_OBJ_FROM_PTR(setname_list), elem->key);
+            }
+        }
+    }
+
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        // then use that list to call __set_name__ on each
+        for (size_t i = 0; i < setname_list->len; i++) {
+            elem = mp_map_lookup(locals_map, setname_list->items[i], MP_MAP_LOOKUP);
+            mp_obj_t set_name_method[4] = { [2] = MP_OBJ_FROM_PTR(o), [3] = elem->key };
+            mp_load_method(elem->value, MP_QSTR___set_name__, set_name_method);
+            mp_call_method_n_kw(2, 0, set_name_method);
+        }
+        nlr_pop();
+    } else {
+        m_del_obj(&mp_type_list, setname_list);
+        nlr_raise(nlr.ret_val);
+    }
+    m_del_obj(&mp_type_list, setname_list);
+    #endif
 
     return MP_OBJ_FROM_PTR(o);
 }
