@@ -404,12 +404,13 @@ fs_hook_cmds = {
     "CMD_OPEN": 4,
     "CMD_CLOSE": 5,
     "CMD_READ": 6,
-    "CMD_WRITE": 7,
-    "CMD_SEEK": 8,
-    "CMD_REMOVE": 9,
-    "CMD_RENAME": 10,
-    "CMD_MKDIR": 11,
-    "CMD_RMDIR": 12,
+    "CMD_READLINE": 7,
+    "CMD_WRITE": 8,
+    "CMD_SEEK": 9,
+    "CMD_REMOVE": 10,
+    "CMD_RENAME": 11,
+    "CMD_MKDIR": 12,
+    "CMD_RMDIR": 13,
 }
 
 fs_hook_code = """\
@@ -592,12 +593,16 @@ class RemoteFile(io.IOBase):
         return n
 
     def readline(self):
-        l = ''
-        while 1:
-            c = self.read(1)
-            l += c
-            if c == '\\n' or c == '':
-                return l
+        c = self.cmd
+        c.begin(CMD_READLINE)
+        c.wr_s8(self.fd)
+        data = c.rd_bytes(None)
+        c.end()
+        if self.is_text:
+            data = str(data, 'utf8')
+        else:
+            data = bytes(data)
+        return data
 
     def readlines(self):
         ls = []
@@ -746,8 +751,7 @@ def __mount():
 """
 
 # Apply basic compression on hook code.
-for key, value in fs_hook_cmds.items():
-    fs_hook_code = re.sub(key, str(value), fs_hook_code)
+fs_hook_code = re.sub(r"CMD_[A-Z_]+", lambda m: str(fs_hook_cmds[m.group(0)]), fs_hook_code)
 fs_hook_code = re.sub(" *#.*$", "", fs_hook_code, flags=re.MULTILINE)
 fs_hook_code = re.sub("\n\n+", "\n", fs_hook_code)
 fs_hook_code = re.sub("    ", " ", fs_hook_code)
@@ -887,6 +891,14 @@ class PyboardCommand:
         self.wr_bytes(buf)
         # self.log_cmd(f"read {fd} {n} -> {len(buf)}")
 
+    def do_readline(self):
+        fd = self.rd_s8()
+        buf = self.data_files[fd][0].readline()
+        if self.data_files[fd][1]:
+            buf = bytes(buf, "utf8")
+        self.wr_bytes(buf)
+        # self.log_cmd(f"readline {fd} -> {len(buf)}")
+
     def do_seek(self):
         fd = self.rd_s8()
         n = self.rd_s32()
@@ -960,6 +972,7 @@ class PyboardCommand:
         fs_hook_cmds["CMD_OPEN"]: do_open,
         fs_hook_cmds["CMD_CLOSE"]: do_close,
         fs_hook_cmds["CMD_READ"]: do_read,
+        fs_hook_cmds["CMD_READLINE"]: do_readline,
         fs_hook_cmds["CMD_WRITE"]: do_write,
         fs_hook_cmds["CMD_SEEK"]: do_seek,
         fs_hook_cmds["CMD_REMOVE"]: do_remove,

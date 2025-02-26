@@ -5,3 +5,6 @@ Local directory ${TMP} is mounted at /remote
 -----
 Local directory ${TMP} is mounted at /remote
 hello world
+-----
+['hello world\n']
+Local directory ${TMP} is mounted at /remote
