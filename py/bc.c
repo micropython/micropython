@@ -88,6 +88,24 @@ const byte *mp_decode_uint_skip(const byte *ptr) {
     return ptr;
 }
 
+// This function does bounds checking when decoding a value.
+// Returns 0 for success, -1 for failure.
+int mp_decode_uint_checked(const uint8_t **ptr, const uint8_t *ptr_max, mp_uint_t *value_out) {
+    mp_uint_t unum = 0;
+    byte val;
+    const uint8_t *p = *ptr;
+    do {
+        if (p >= ptr_max) {
+            return -1;
+        }
+        val = *p++;
+        unum = (unum << 7) | (val & 0x7f);
+    } while ((val & 0x80) != 0);
+    *ptr = p;
+    *value_out = unum;
+    return 0;
+}
+
 static NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues

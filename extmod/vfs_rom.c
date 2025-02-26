@@ -102,23 +102,6 @@ struct _mp_obj_vfs_rom_t {
     const uint8_t *filesystem_end;
 };
 
-// Returns 0 for success, -1 for failure.
-static int mp_decode_uint_checked(const uint8_t **ptr, const uint8_t *ptr_max, mp_uint_t *value_out) {
-    mp_uint_t unum = 0;
-    byte val;
-    const uint8_t *p = *ptr;
-    do {
-        if (p >= ptr_max) {
-            return -1;
-        }
-        val = *p++;
-        unum = (unum << 7) | (val & 0x7f);
-    } while ((val & 0x80) != 0);
-    *ptr = p;
-    *value_out = unum;
-    return 0;
-}
-
 static record_kind_t extract_record(const uint8_t **fs, const uint8_t **fs_next, const uint8_t *fs_max) {
     mp_uint_t record_kind;
     if (mp_decode_uint_checked(fs, fs_max, &record_kind) != 0) {

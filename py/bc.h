@@ -272,6 +272,7 @@ void mp_encode_uint(void *env, mp_encode_uint_allocator_t allocator, mp_uint_t v
 mp_uint_t mp_decode_uint(const byte **ptr);
 mp_uint_t mp_decode_uint_value(const byte *ptr);
 const byte *mp_decode_uint_skip(const byte *ptr);
+int mp_decode_uint_checked(const uint8_t **ptr, const uint8_t *ptr_max, mp_uint_t *value_out);
 
 mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state,
 #ifndef __cplusplus
