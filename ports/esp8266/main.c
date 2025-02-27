@@ -47,7 +47,7 @@
 #include "modespnow.h"
 #endif
 
-static char heap[38 * 1024];
+static char heap[45 * 1024];
 
 static void mp_reset(void) {
     mp_stack_set_top((void *)0x40000000);
@@ -79,6 +79,9 @@ static void mp_reset(void) {
     #endif
 
     #if MICROPY_MODULE_FROZEN
+    #ifdef MICROPY_DFM
+    scan_dynamic_frozen(NULL, NULL);
+    #endif
     pyexec_frozen_module("_boot.py", false);
     int ret = pyexec_file_if_exists("boot.py");
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {

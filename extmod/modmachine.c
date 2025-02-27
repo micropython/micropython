@@ -124,16 +124,17 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj, 0, 1, machine_deepsle
 #endif
 
 #if MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ
-
+uint32_t g_irq_state = 1;
 static mp_obj_t machine_disable_irq(void) {
     uint32_t state = MICROPY_BEGIN_ATOMIC_SECTION();
+    g_irq_state = 0;
     return mp_obj_new_int(state);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
 
 static mp_obj_t machine_enable_irq(mp_obj_t state_in) {
-    uint32_t state = mp_obj_get_int(state_in);
-    MICROPY_END_ATOMIC_SECTION(state);
+    g_irq_state = mp_obj_get_int(state_in);
+    MICROPY_END_ATOMIC_SECTION(g_irq_state);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);

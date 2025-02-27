@@ -182,6 +182,7 @@ SECTIONS
 
         /* for -mforce-l32 */
         */*.o(.rodata*)
+		*modespnow.o(.text.espnow_del_peer .text.espnow_add_peer .text.espnow_config)
 
         _irom0_text_end = ABSOLUTE(.);
     } >irom0_0_seg :irom0_0_phdr
