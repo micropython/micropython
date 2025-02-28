@@ -431,7 +431,7 @@ if (MICROPY_PY_NETWORK_NINAW10)
 
     # Enable NINA-W10 WiFi and Bluetooth drivers.
     list(APPEND MICROPY_SOURCE_DRIVERS
-        ${MICROPY_DIR}/drivers/ninaw10/nina_bt_hci.c
+        ${MICROPY_DIR}/drivers/ninaw10/nina_bthci_uart.c
         ${MICROPY_DIR}/drivers/ninaw10/nina_wifi_drv.c
         ${MICROPY_DIR}/drivers/ninaw10/nina_wifi_bsp.c
         ${MICROPY_DIR}/drivers/ninaw10/machine_pin_nina.c
