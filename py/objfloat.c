@@ -124,6 +124,18 @@ static void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     const int precision = 16;
     #endif
     mp_format_float(o_val, buf, sizeof(buf), 'g', precision, '\0');
+    #if MICROPY_COMP_FLOAT_CONST
+    if (kind == PRINT_REPR) {
+        // For .mpy files, try to add an extra (partial) digit for precision.
+        // If the length increases by more than one digit, it means we are
+        // digging too far (eg. 1.234499999999), so we keep the short form
+        char ebuf[32];
+        mp_format_float(o_val, ebuf, sizeof(ebuf), 'g', precision + 1, '\0');
+        if (strlen(ebuf) - strlen(buf) == 1) {
+            memcpy(buf, ebuf, sizeof(buf));
+        }
+    }
+    #endif
     mp_print_str(print, buf);
     if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
         // Python floats always have decimal point (unless inf or nan)
