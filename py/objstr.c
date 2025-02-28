@@ -768,23 +768,11 @@ static mp_obj_t str_finder(size_t n_args, const mp_obj_t *args, int direction, b
 
     GET_STR_DATA_LEN(args[0], haystack, haystack_len);
     GET_STR_DATA_LEN(args[1], needle, needle_len);
+    size_t sub_len;
+    const byte *start = get_substring_data(args[0], n_args - 2, args + 2, &sub_len);
 
-    const byte *start = haystack;
-    const byte *end = haystack + haystack_len;
-    if (n_args >= 3 && args[2] != mp_const_none) {
-        start = str_index_to_ptr(self_type, haystack, haystack_len, args[2], true);
-    }
-    if (n_args >= 4 && args[3] != mp_const_none) {
-        end = str_index_to_ptr(self_type, haystack, haystack_len, args[3], true);
-    }
-
-    if (end < start) {
-        goto out_error;
-    }
-
-    const byte *p = find_subbytes(start, end - start, needle, needle_len, direction);
+    const byte *p = find_subbytes(start, sub_len, needle, needle_len, direction);
     if (p == NULL) {
-    out_error:
         // not found
         if (is_index) {
             mp_raise_ValueError(MP_ERROR_TEXT("substring not found"));
@@ -1779,32 +1767,24 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
 static mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     check_is_str_or_bytes(args[0]);
-
     // check argument type
     str_check_arg_type(self_type, args[1]);
 
-    GET_STR_DATA_LEN(args[0], haystack, haystack_len);
-    GET_STR_DATA_LEN(args[1], needle, needle_len);
-
-    const byte *start = haystack;
+    size_t haystack_len;
+    const byte *haystack = get_substring_data(args[0], n_args - 2, args + 2, &haystack_len);
     const byte *end = haystack + haystack_len;
-    if (n_args >= 3 && args[2] != mp_const_none) {
-        start = str_index_to_ptr(self_type, haystack, haystack_len, args[2], true);
-    }
-    if (n_args >= 4 && args[3] != mp_const_none) {
-        end = str_index_to_ptr(self_type, haystack, haystack_len, args[3], true);
-    }
+    GET_STR_DATA_LEN(args[1], needle, needle_len);
 
     // if needle_len is zero then we count each gap between characters as an occurrence
     if (needle_len == 0) {
-        return MP_OBJ_NEW_SMALL_INT(utf8_charlen(start, end - start) + 1);
+        return MP_OBJ_NEW_SMALL_INT(utf8_charlen(haystack, haystack_len) + 1);
     }
 
     bool is_str = self_type == &mp_type_str;
 
     // count the occurrences
     mp_int_t num_occurrences = 0;
-    for (const byte *haystack_ptr = start; haystack_ptr + needle_len <= end;) {
+    for (const byte *haystack_ptr = haystack; haystack_ptr + needle_len <= end;) {
         if (memcmp(haystack_ptr, needle, needle_len) == 0) {
             num_occurrences++;
             haystack_ptr += needle_len;
