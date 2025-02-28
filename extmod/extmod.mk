@@ -454,6 +454,7 @@ CYW43_DIR = lib/cyw43-driver
 GIT_SUBMODULES += $(CYW43_DIR)
 CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_CYW43=1
 SRC_THIRDPARTY_C += $(addprefix $(CYW43_DIR)/src/,\
+	cyw43_bthci_uart.c \
 	cyw43_ctrl.c \
 	cyw43_lwip.c \
 	cyw43_ll.c \
@@ -461,9 +462,6 @@ SRC_THIRDPARTY_C += $(addprefix $(CYW43_DIR)/src/,\
 	cyw43_spi.c \
 	cyw43_stats.c \
 	)
-ifeq ($(MICROPY_PY_BLUETOOTH),1)
-DRIVERS_SRC_C += drivers/cyw43/cywbt.c
-endif
 
 $(BUILD)/$(CYW43_DIR)/src/cyw43_%.o: CFLAGS += -std=c11
 endif # MICROPY_PY_NETWORK_CYW43
