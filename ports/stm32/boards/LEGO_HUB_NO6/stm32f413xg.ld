@@ -3,11 +3,11 @@
 */
 
 /* Specify the memory areas */
-/* FLASH_FS2 is placed before FLASH_TEXT to support 1MB and 1.5MB FLASH with common code in flashbdev.c */
 MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K /* entire flash */
-    FLASH_APP (rx)  : ORIGIN = 0x08010000, LENGTH = 976K
+    FLASH_APP (rx)  : ORIGIN = 0x08010000, LENGTH = 448K
+    FLASH_ROMFS (rx): ORIGIN = 0x08080000, LENGTH = 256K
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 320K /* SRAM1 + SRAM2 */
 }
 
@@ -25,3 +25,7 @@ _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
+
+/* ROMFS location */
+_micropy_hw_romfs_part1_start = ORIGIN(FLASH_ROMFS);
+_micropy_hw_romfs_part1_size = LENGTH(FLASH_ROMFS);
