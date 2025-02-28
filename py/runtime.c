@@ -757,17 +757,30 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
     mp_obj_t *args2;
     size_t args2_alloc;
     size_t args2_len = 0;
+    size_t n_args_star_args = n_args;
 
     // Try to get a hint for unpacked * args length
     ssize_t list_len = 0;
 
-    if (star_args != 0) {
-        for (size_t i = 0; i < n_args; i++) {
-            if ((star_args >> i) & 1) {
-                mp_obj_t len = mp_obj_len_maybe(args[i]);
-                if (len != MP_OBJ_NULL) {
+    if (star_args) {
+        // kw can also contain star args.
+        n_args_star_args += n_kw;
+
+        for (size_t i = 0; i < n_args_star_args; i++) {
+            if (!((star_args >> i) & 1)) {
+                continue;
+            }
+
+            mp_obj_t arg = i >= n_args ? args[n_args + 2 * (i - n_args) + 1] : args[i];
+
+            mp_obj_t len = mp_obj_len_maybe(arg);
+
+            if (len != MP_OBJ_NULL) {
+                list_len += mp_obj_get_int(len);
+
+                if (i < n_args) {
                     // -1 accounts for 1 of n_args occupied by this arg
-                    list_len += mp_obj_get_int(len) - 1;
+                    list_len--;
                 }
             }
         }
@@ -779,9 +792,20 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
     for (size_t i = 0; i < n_kw; i++) {
         mp_obj_t key = args[n_args + i * 2];
         mp_obj_t value = args[n_args + i * 2 + 1];
-        if (key == MP_OBJ_NULL && value != MP_OBJ_NULL && mp_obj_is_type(value, &mp_type_dict)) {
+
+        if (key == MP_OBJ_NULL) {
             // -1 accounts for 1 of n_kw occupied by this arg
-            kw_dict_len += mp_obj_dict_len(value) - 1;
+            kw_dict_len--;
+
+            if (((star_args >> (n_args + i)) & 1)) {
+                // star args were already handled above
+                continue;
+            }
+
+            // double-star args
+            if (mp_obj_is_type(value, &mp_type_dict)) {
+                kw_dict_len += mp_obj_dict_len(value);
+            }
         }
     }
 
@@ -814,8 +838,9 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
             args2[args2_len++] = self;
         }
 
-        for (size_t i = 0; i < n_args; i++) {
-            mp_obj_t arg = args[i];
+        for (size_t i = 0; i < n_args_star_args; i++) {
+            mp_obj_t arg = i >= n_args ? args[n_args + 2 * (i - n_args) + 1] : args[i];
+
             if ((star_args >> i) & 1) {
                 // star arg
                 if (mp_obj_is_type(arg, &mp_type_tuple) || mp_obj_is_type(arg, &mp_type_list)) {
@@ -846,7 +871,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
                         args2[args2_len++] = item;
                     }
                 }
-            } else {
+            } else if (i < n_args) {
                 // normal argument
                 assert(args2_len < args2_alloc);
                 args2[args2_len++] = arg;
@@ -870,6 +895,11 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
         mp_obj_t kw_key = args[n_args + i * 2];
         mp_obj_t kw_value = args[n_args + i * 2 + 1];
         if (kw_key == MP_OBJ_NULL) {
+            if ((star_args >> (n_args + i)) & 1) {
+                // star args have already been handled above
+                continue;
+            }
+
             // double-star args
             if (mp_obj_is_type(kw_value, &mp_type_dict)) {
                 // dictionary
