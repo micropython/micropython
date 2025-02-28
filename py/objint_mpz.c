@@ -112,12 +112,6 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
     return MP_OBJ_FROM_PTR(o);
 }
 
-bool mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
-    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
-    mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
-    return mpz_as_bytes(&self->mpz, big_endian, self->mpz.neg, len, buf);
-}
-
 int mp_obj_int_sign(mp_obj_t self_in) {
     if (mp_obj_is_small_int(self_in)) {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(self_in);
