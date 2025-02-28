@@ -28,29 +28,15 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "can.h"
+#include "pyb_can.h"
 #include "irq.h"
 
 #if MICROPY_HW_ENABLE_CAN
 
-void can_init0(void) {
-    for (uint i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_can_obj_all)); i++) {
-        MP_STATE_PORT(pyb_can_obj_all)[i] = NULL;
-    }
-}
-
-void can_deinit_all(void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_can_obj_all)); i++) {
-        pyb_can_obj_t *can_obj = MP_STATE_PORT(pyb_can_obj_all)[i];
-        if (can_obj != NULL) {
-            can_deinit(can_obj);
-        }
-    }
-}
-
 #if !MICROPY_HW_ENABLE_FDCAN
 
-bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart) {
-    CAN_InitTypeDef *init = &can_obj->can.Init;
+bool can_init(CAN_HandleTypeDef *can, int can_id, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart) {
+    CAN_InitTypeDef *init = &can->Init;
     init->Mode = mode << 4; // shift-left so modes fit in a small-int
     init->Prescaler = prescaler;
     init->SJW = ((sjw - 1) & 3) << 24;
@@ -67,7 +53,7 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     uint32_t sce_irq = 0;
     const machine_pin_obj_t *pins[2];
 
-    switch (can_obj->can_id) {
+    switch (can_id) {
         #if defined(MICROPY_HW_CAN1_TX)
         case PYB_CAN_1:
             CANx = CAN1;
@@ -107,21 +93,16 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     uint32_t pin_mode = MP_HAL_PIN_MODE_ALT;
     uint32_t pin_pull = MP_HAL_PIN_PULL_UP;
     for (int i = 0; i < 2; i++) {
-        if (!mp_hal_pin_config_alt(pins[i], pin_mode, pin_pull, AF_FN_CAN, can_obj->can_id)) {
+        if (!mp_hal_pin_config_alt(pins[i], pin_mode, pin_pull, AF_FN_CAN, can_id)) {
             return false;
         }
     }
 
     // init CANx
-    can_obj->can.Instance = CANx;
-    HAL_CAN_Init(&can_obj->can);
+    can->Instance = CANx;
+    HAL_CAN_Init(can);
 
-    can_obj->is_enabled = true;
-    can_obj->num_error_warning = 0;
-    can_obj->num_error_passive = 0;
-    can_obj->num_bus_off = 0;
-
-    __HAL_CAN_ENABLE_IT(&can_obj->can, CAN_IT_ERR | CAN_IT_BOF | CAN_IT_EPV | CAN_IT_EWG);
+    __HAL_CAN_ENABLE_IT(can, CAN_IT_ERR | CAN_IT_BOF | CAN_IT_EPV | CAN_IT_EWG);
 
     NVIC_SetPriority(sce_irq, IRQ_PRI_CAN);
     HAL_NVIC_EnableIRQ(sce_irq);
@@ -129,10 +110,9 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     return true;
 }
 
-void can_deinit(pyb_can_obj_t *self) {
-    self->is_enabled = false;
-    HAL_CAN_DeInit(&self->can);
-    if (self->can.Instance == CAN1) {
+void can_deinit(CAN_HandleTypeDef *can) {
+    HAL_CAN_DeInit(can);
+    if (can->Instance == CAN1) {
         HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
         HAL_NVIC_DisableIRQ(CAN1_RX1_IRQn);
         HAL_NVIC_DisableIRQ(CAN1_SCE_IRQn);
@@ -140,7 +120,7 @@ void can_deinit(pyb_can_obj_t *self) {
         __HAL_RCC_CAN1_RELEASE_RESET();
         __HAL_RCC_CAN1_CLK_DISABLE();
     #if defined(CAN2)
-    } else if (self->can.Instance == CAN2) {
+    } else if (can->Instance == CAN2) {
         HAL_NVIC_DisableIRQ(CAN2_RX0_IRQn);
         HAL_NVIC_DisableIRQ(CAN2_RX1_IRQn);
         HAL_NVIC_DisableIRQ(CAN2_SCE_IRQn);
@@ -149,7 +129,7 @@ void can_deinit(pyb_can_obj_t *self) {
         __HAL_RCC_CAN2_CLK_DISABLE();
     #endif
     #if defined(CAN3)
-    } else if (self->can.Instance == CAN3) {
+    } else if (can->Instance == CAN3) {
         HAL_NVIC_DisableIRQ(CAN3_RX0_IRQn);
         HAL_NVIC_DisableIRQ(CAN3_RX1_IRQn);
         HAL_NVIC_DisableIRQ(CAN3_SCE_IRQn);
@@ -160,7 +140,19 @@ void can_deinit(pyb_can_obj_t *self) {
     }
 }
 
-void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank) {
+void can_disable_rx_interrupts(CAN_HandleTypeDef *can, can_rx_fifo_t fifo) {
+    __HAL_CAN_DISABLE_IT(can, ((fifo == CAN_RX_FIFO0) ?
+        (CAN_IT_FMP0 | CAN_IT_FF0 | CAN_IT_FOV0) :
+        (CAN_IT_FMP1 | CAN_IT_FF1 | CAN_IT_FOV1)));
+}
+
+void can_enable_rx_interrupts(CAN_HandleTypeDef *can, can_rx_fifo_t fifo, bool enable_msg_received) {
+    __HAL_CAN_ENABLE_IT(can, ((fifo == CAN_RX_FIFO0) ?
+        ((enable_msg_received ? CAN_IT_FMP0 : 0) | CAN_IT_FF0 | CAN_IT_FOV0) :
+        ((enable_msg_received ? CAN_IT_FMP1 : 0) | CAN_IT_FF1 | CAN_IT_FOV1)));
+}
+
+void can_clearfilter(CAN_HandleTypeDef *can, uint32_t filter_num, uint8_t bank) {
     CAN_FilterConfTypeDef filter;
 
     filter.FilterIdHigh = 0;
@@ -168,18 +160,18 @@ void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank) {
     filter.FilterMaskIdHigh = 0;
     filter.FilterMaskIdLow = 0;
     filter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
-    filter.FilterNumber = f;
+    filter.FilterNumber = filter_num;
     filter.FilterMode = CAN_FILTERMODE_IDMASK;
     filter.FilterScale = CAN_FILTERSCALE_16BIT;
     filter.FilterActivation = DISABLE;
     filter.BankNumber = bank;
 
-    HAL_CAN_ConfigFilter(&self->can, &filter);
+    HAL_CAN_ConfigFilter(can, &filter);
 }
 
-int can_receive(CAN_HandleTypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms) {
+int can_receive(CAN_HandleTypeDef *can, can_rx_fifo_t fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms) {
     volatile uint32_t *rfr;
-    if (fifo == CAN_FIFO0) {
+    if (fifo == CAN_RX_FIFO0) {
         rfr = &can->Instance->RF0R;
     } else {
         rfr = &can->Instance->RF1R;
@@ -222,12 +214,15 @@ int can_receive(CAN_HandleTypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint8_t 
     return 0; // success
 }
 
-// We have our own version of CAN transmit so we can handle Timeout=0 correctly.
-HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout) {
+// Lightly modified version of HAL CAN_Transmit to handle Timeout=0 correctly
+HAL_StatusTypeDef can_transmit(CAN_HandleTypeDef *hcan, CanTxMsgTypeDef *txmsg, uint8_t *data, uint32_t Timeout) {
     uint32_t transmitmailbox;
     uint32_t tickstart;
     uint32_t rqcpflag = 0;
     uint32_t txokflag = 0;
+
+    hcan->pTxMsg = txmsg;
+    (void)data; // Not needed here, caller has set it up as &tx_msg->Data
 
     // Check the parameters
     assert_param(IS_CAN_IDTYPE(hcan->pTxMsg->IDE));
@@ -312,79 +307,90 @@ HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout) {
     }
 }
 
-static void can_rx_irq_handler(uint can_id, uint fifo_id) {
-    mp_obj_t callback;
-    pyb_can_obj_t *self;
-    mp_obj_t irq_reason = MP_OBJ_NEW_SMALL_INT(0);
-    byte *state;
+// Workaround for the __HAL_CAN macros expecting a CAN_HandleTypeDef which we
+// don't have in the ISR. Using this "fake" struct instead of CAN_HandleTypeDef
+// so it's not possible to accidentally call an API that uses one of the other
+// fields in the structure.
+typedef struct {
+    CAN_TypeDef *Instance;
+} fake_handle_t;
 
-    self = MP_STATE_PORT(pyb_can_obj_all)[can_id - 1];
+static void can_rx_irq_handler(uint can_id, CAN_TypeDef *instance, can_rx_fifo_t fifo) {
+    uint32_t full_flag, full_int, overrun_flag, overrun_int, pending_int;
 
-    if (fifo_id == CAN_FIFO0) {
-        callback = self->rxcallback0;
-        state = &self->rx_state0;
+    const fake_handle_t handle = {
+        .Instance = instance,
+    };
+
+    if (fifo == CAN_RX_FIFO0) {
+        full_flag = CAN_FLAG_FF0;
+        full_int = CAN_IT_FF0;
+        overrun_flag = CAN_FLAG_FOV0;
+        overrun_int = CAN_IT_FOV0;
+        pending_int = CAN_IT_FMP0;
     } else {
-        callback = self->rxcallback1;
-        state = &self->rx_state1;
+        full_flag = CAN_FLAG_FF1;
+        full_int = CAN_IT_FF1;
+        overrun_flag = CAN_FLAG_FOV1;
+        overrun_int = CAN_IT_FOV1;
+        pending_int = CAN_IT_FMP1;
     }
 
-    switch (*state) {
-        case RX_STATE_FIFO_EMPTY:
-            __HAL_CAN_DISABLE_IT(&self->can,  (fifo_id == CAN_FIFO0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
-            irq_reason = MP_OBJ_NEW_SMALL_INT(0);
-            *state = RX_STATE_MESSAGE_PENDING;
-            break;
-        case RX_STATE_MESSAGE_PENDING:
-            __HAL_CAN_DISABLE_IT(&self->can, (fifo_id == CAN_FIFO0) ? CAN_IT_FF0 : CAN_IT_FF1);
-            __HAL_CAN_CLEAR_FLAG(&self->can, (fifo_id == CAN_FIFO0) ? CAN_FLAG_FF0 : CAN_FLAG_FF1);
-            irq_reason = MP_OBJ_NEW_SMALL_INT(1);
-            *state = RX_STATE_FIFO_FULL;
-            break;
-        case RX_STATE_FIFO_FULL:
-            __HAL_CAN_DISABLE_IT(&self->can, (fifo_id == CAN_FIFO0) ? CAN_IT_FOV0 : CAN_IT_FOV1);
-            __HAL_CAN_CLEAR_FLAG(&self->can, (fifo_id == CAN_FIFO0) ? CAN_FLAG_FOV0 : CAN_FLAG_FOV1);
-            irq_reason = MP_OBJ_NEW_SMALL_INT(2);
-            *state = RX_STATE_FIFO_OVERFLOW;
-            break;
-        case RX_STATE_FIFO_OVERFLOW:
-            // This should never happen
-            break;
+    bool full = __HAL_CAN_GET_FLAG(&handle, full_flag);
+    bool overrun = __HAL_CAN_GET_FLAG(&handle, overrun_flag);
+
+    // Note: receive interrupt bits are disabled below, and re-enabled by the
+    // higher layer after calling can_receive()
+
+    if (full) {
+        __HAL_CAN_DISABLE_IT(&handle, full_int);
+        __HAL_CAN_CLEAR_FLAG(&handle, full_flag);
+        if (!overrun) {
+            can_irq_handler(can_id, CAN_INT_FIFO_FULL, fifo);
+        }
+    }
+    if (overrun) {
+        __HAL_CAN_DISABLE_IT(&handle, overrun_int);
+        __HAL_CAN_CLEAR_FLAG(&handle, overrun_flag);
+        can_irq_handler(can_id, CAN_INT_FIFO_OVERFLOW, fifo);
     }
 
-    pyb_can_handle_callback(self, fifo_id, callback, irq_reason);
+    if (!(full || overrun)) {
+        // Process of elimination, if neither of the above
+        // FIFO status flags are set then message pending interrupt is what fired.
+        __HAL_CAN_DISABLE_IT(&handle, pending_int);
+        can_irq_handler(can_id, CAN_INT_MESSAGE_RECEIVED, fifo);
+    }
 }
 
-static void can_sce_irq_handler(uint can_id) {
-    pyb_can_obj_t *self = MP_STATE_PORT(pyb_can_obj_all)[can_id - 1];
-    if (self) {
-        self->can.Instance->MSR = CAN_MSR_ERRI;
-        uint32_t esr = self->can.Instance->ESR;
-        if (esr & CAN_ESR_BOFF) {
-            ++self->num_bus_off;
-        } else if (esr & CAN_ESR_EPVF) {
-            ++self->num_error_passive;
-        } else if (esr & CAN_ESR_EWGF) {
-            ++self->num_error_warning;
-        }
+static void can_sce_irq_handler(uint can_id, CAN_TypeDef *instance) {
+    instance->MSR = CAN_MSR_ERRI; // Write to clear ERRIE interrupt
+    uint32_t esr = instance->ESR;
+    if (esr & CAN_ESR_BOFF) {
+        can_irq_handler(can_id, CAN_INT_ERR_BUS_OFF, 0);
+    } else if (esr & CAN_ESR_EPVF) {
+        can_irq_handler(can_id, CAN_INT_ERR_PASSIVE, 0);
+    } else if (esr & CAN_ESR_EWGF) {
+        can_irq_handler(can_id, CAN_INT_ERR_WARNING, 0);
     }
 }
 
 #if defined(MICROPY_HW_CAN1_TX)
 void CAN1_RX0_IRQHandler(void) {
     IRQ_ENTER(CAN1_RX0_IRQn);
-    can_rx_irq_handler(PYB_CAN_1, CAN_FIFO0);
+    can_rx_irq_handler(PYB_CAN_1, CAN1, CAN_RX_FIFO0);
     IRQ_EXIT(CAN1_RX0_IRQn);
 }
 
 void CAN1_RX1_IRQHandler(void) {
     IRQ_ENTER(CAN1_RX1_IRQn);
-    can_rx_irq_handler(PYB_CAN_1, CAN_FIFO1);
+    can_rx_irq_handler(PYB_CAN_1, CAN1, CAN_RX_FIFO1);
     IRQ_EXIT(CAN1_RX1_IRQn);
 }
 
 void CAN1_SCE_IRQHandler(void) {
     IRQ_ENTER(CAN1_SCE_IRQn);
-    can_sce_irq_handler(PYB_CAN_1);
+    can_sce_irq_handler(PYB_CAN_1, CAN1);
     IRQ_EXIT(CAN1_SCE_IRQn);
 }
 #endif
@@ -392,19 +398,19 @@ void CAN1_SCE_IRQHandler(void) {
 #if defined(MICROPY_HW_CAN2_TX)
 void CAN2_RX0_IRQHandler(void) {
     IRQ_ENTER(CAN2_RX0_IRQn);
-    can_rx_irq_handler(PYB_CAN_2, CAN_FIFO0);
+    can_rx_irq_handler(PYB_CAN_2, CAN2, CAN_RX_FIFO0);
     IRQ_EXIT(CAN2_RX0_IRQn);
 }
 
 void CAN2_RX1_IRQHandler(void) {
     IRQ_ENTER(CAN2_RX1_IRQn);
-    can_rx_irq_handler(PYB_CAN_2, CAN_FIFO1);
+    can_rx_irq_handler(PYB_CAN_2, CAN2, CAN_RX_FIFO1);
     IRQ_EXIT(CAN2_RX1_IRQn);
 }
 
 void CAN2_SCE_IRQHandler(void) {
     IRQ_ENTER(CAN2_SCE_IRQn);
-    can_sce_irq_handler(PYB_CAN_2);
+    can_sce_irq_handler(PYB_CAN_2, CAN2);
     IRQ_EXIT(CAN2_SCE_IRQn);
 }
 #endif
@@ -412,19 +418,19 @@ void CAN2_SCE_IRQHandler(void) {
 #if defined(MICROPY_HW_CAN3_TX)
 void CAN3_RX0_IRQHandler(void) {
     IRQ_ENTER(CAN3_RX0_IRQn);
-    can_rx_irq_handler(PYB_CAN_3, CAN_FIFO0);
+    can_rx_irq_handler(PYB_CAN_3, CAN3, CAN_RX_FIFO0);
     IRQ_EXIT(CAN3_RX0_IRQn);
 }
 
 void CAN3_RX1_IRQHandler(void) {
     IRQ_ENTER(CAN3_RX1_IRQn);
-    can_rx_irq_handler(PYB_CAN_3, CAN_FIFO1);
+    can_rx_irq_handler(PYB_CAN_3, CAN3, CAN_RX_FIFO1);
     IRQ_EXIT(CAN3_RX1_IRQn);
 }
 
 void CAN3_SCE_IRQHandler(void) {
     IRQ_ENTER(CAN3_SCE_IRQn);
-    can_sce_irq_handler(PYB_CAN_3);
+    can_sce_irq_handler(PYB_CAN_3, CAN3);
     IRQ_EXIT(CAN3_SCE_IRQn);
 }
 #endif
