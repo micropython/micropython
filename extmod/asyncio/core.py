@@ -163,9 +163,12 @@ def run_until_complete(main_task=None):
                 # A task waiting on _task_queue; "ph_key" is time to schedule task at
                 dt = max(0, ticks_diff(t.ph_key, ticks()))
             elif not _io_queue.map:
-                # No tasks can be woken so finished running
+                # No tasks can be woken
                 cur_task = None
-                return
+                if not main_task or not main_task.data:
+                    # no main_task, or main_task is done so finished running
+                    return
+                dt = 1
             # print('(poll {})'.format(dt), len(_io_queue.map))
             _io_queue.wait_io_event(dt)
 
@@ -191,7 +194,17 @@ def run_until_complete(main_task=None):
             if t is main_task:
                 cur_task = None
                 if isinstance(er, StopIteration):
+                    if t.state is True:
+                        t.state = False
+                    elif not callable(t.state):
+                        # Schedule any other tasks waiting on the completion of this task.
+                        while t.state.peek():
+                            _task_queue.push(t.state.pop())
+                        # Save return value of coro to pass up to caller.
+                        t.data = er
+                        t.state = False
                     return er.value
+                t.state = False
                 raise er
             if t.state:
                 # Task was running but is now finished.
