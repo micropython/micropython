@@ -33,6 +33,7 @@
 #include "extmod/modmachine.h"
 #include "samd_soc.h"
 #include "pin_af.h"
+#include "genhdr/pins.h"
 #include "clock_config.h"
 
 #define DEFAULT_SPI_BAUDRATE    (1000000)
@@ -82,8 +83,15 @@ void common_spi_irq_handler(int spi_id) {
 
 static void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "SPI(%u, baudrate=%u, firstbit=%u, polarity=%u, phase=%u, bits=8)",
-        self->id, self->baudrate, self->firstbit, self->polarity, self->phase);
+    mp_printf(print, "SPI(%u, baudrate=%u, firstbit=%u, polarity=%u, phase=%u, bits=8,"
+        " sck=\"%q\", mosi=\"%q\", miso=",
+        self->id, self->baudrate, self->firstbit, self->polarity, self->phase,
+        pin_find_by_id(self->sck)->name, pin_find_by_id(self->mosi)->name);
+    if (self->miso == 0xff) {
+        mp_printf(print, "None)");
+    } else {
+        mp_printf(print, "\"%q\")", pin_find_by_id(self->miso)->name);
+    }
 }
 
 static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -96,7 +104,7 @@ static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
         { MP_QSTR_firstbit, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_sck, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_mosi, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_miso, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_miso, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
     };
 
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -132,14 +140,16 @@ static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     if (args[ARG_mosi].u_obj != mp_const_none) {
         self->mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
     }
-    if (args[ARG_miso].u_obj != mp_const_none) {
-        self->miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
+    if (args[ARG_miso].u_obj != MP_ROM_INT(-1)) {
+        self->miso = args[ARG_miso].u_obj == mp_const_none ? 0xff : mp_hal_get_pin_obj(args[ARG_miso].u_obj);
     }
-
     // Initialise the SPI peripheral if any arguments given, or it was not initialised previously.
     if (n_args > 0 || kw_args->used > 0 || self->new) {
         self->new = false;
 
+        if (self->sck == 0xff || self->mosi == 0xff) {
+            mp_raise_ValueError(MP_ERROR_TEXT("missing sck/mosi"));
+        }
         // Get the pad and alt-fct numbers.
         self->sck_pad_config = get_sercom_config(self->sck, self->id);
         self->mosi_pad_config = get_sercom_config(self->mosi, self->id);
@@ -155,7 +165,7 @@ static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
         } else if (self->mosi_pad_config.pad_nr == 0 && self->sck_pad_config.pad_nr == 3) {
             dopo = 3;
         } else {
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid pin for sck or mosi"));
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid sck/mosi pin"));
         }
         #elif defined(MCU_SAMD51)
         if (self->mosi_pad_config.pad_nr == 0 && self->sck_pad_config.pad_nr == 1) {
@@ -232,10 +242,16 @@ static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
 }
 
 static mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+    mp_arg_check_num(n_args, n_kw, MICROPY_HW_DEFAULT_SPI_ID < 0 ? 1 : 0, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get SPI bus.
-    int spi_id = mp_obj_get_int(args[0]);
+    int spi_id = MICROPY_HW_DEFAULT_SPI_ID;
+
+    if (n_args > 0) {
+        spi_id = mp_obj_get_int(args[0]);
+        n_args--;
+        args++;
+    }
     if (spi_id < 0 || spi_id > SERCOM_INST_NUM) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
     }
@@ -247,16 +263,23 @@ static mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, s
     self->polarity = DEFAULT_SPI_POLARITY;
     self->phase = DEFAULT_SPI_PHASE;
     self->firstbit = DEFAULT_SPI_FIRSTBIT;
+    #if defined(pin_SCK) && defined(pin_MOSI) && defined(pin_MISO)
+    // Initialize with the default pins
+    self->sck = mp_hal_get_pin_obj((mp_obj_t)pin_SCK);
+    self->mosi = mp_hal_get_pin_obj((mp_obj_t)pin_MOSI);
+    self->miso = mp_hal_get_pin_obj((mp_obj_t)pin_MISO);
+    #else
     self->mosi = 0xff; // 0xff: pin not defined (yet)
     self->miso = 0xff;
     self->sck = 0xff;
+    #endif
 
     self->new = true;
     MP_STATE_PORT(sercom_table[spi_id]) = self;
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    machine_spi_init((mp_obj_base_t *)self, n_args - 1, args + 1, &kw_args);
+    machine_spi_init((mp_obj_base_t *)self, n_args, args, &kw_args);
     return self;
 }
 
