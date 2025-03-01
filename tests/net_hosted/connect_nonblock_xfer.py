@@ -1,11 +1,8 @@
 # test that socket.connect() on a non-blocking socket raises EINPROGRESS
 # and that an immediate write/send/read/recv does the right thing
 
-try:
-    import sys, time
-    import uerrno as errno, usocket as socket, ussl as ssl
-except:
-    import socket, errno, ssl
+import sys, time, socket, errno, ssl
+
 isMP = sys.implementation.name == "micropython"
 
 
@@ -30,11 +27,12 @@ def do_connect(peer_addr, tls, handshake):
             print("  got", er.errno)
     # wrap with ssl/tls if desired
     if tls:
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        if hasattr(ssl_context, "check_hostname"):
+            ssl_context.check_hostname = False
+
         try:
-            if sys.implementation.name == "micropython":
-                s = ssl.wrap_socket(s, do_handshake=handshake)
-            else:
-                s = ssl.wrap_socket(s, do_handshake_on_connect=handshake)
+            s = ssl_context.wrap_socket(s, do_handshake_on_connect=handshake)
             print("wrap: True")
         except Exception as e:
             dp(e)

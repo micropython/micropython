@@ -8,6 +8,8 @@
 #   - PIO irq handler
 #   - using the second core via _thread
 
+# ruff: noqa: F821 - @asm_pio decorator adds names to function scope
+
 import _thread
 from machine import Pin, UART
 from rp2 import PIO, StateMachine, asm_pio

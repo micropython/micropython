@@ -82,7 +82,7 @@
 #define MBOOT_ADDRESS_SPACE_64BIT (0)
 #endif
 
-// These values are used in initial_r0 to enter mboot programatically.
+// These values are used in initial_r0 to enter mboot programmatically.
 #define MBOOT_INITIAL_R0_KEY (0x70ad0000)
 #define MBOOT_INITIAL_R0_KEY_FSLOAD (MBOOT_INITIAL_R0_KEY | 0x80)
 
@@ -91,6 +91,31 @@
 #define MBOOT_LED_STATE_LED1 (0x02)
 #define MBOOT_LED_STATE_LED2 (0x04)
 #define MBOOT_LED_STATE_LED3 (0x08)
+
+// Whether to support loading firmware from a filesystem.
+#ifndef MBOOT_FSLOAD
+#define MBOOT_FSLOAD (0)
+#endif
+
+// Whether to support FAT filesystems.
+#ifndef MBOOT_VFS_FAT
+#define MBOOT_VFS_FAT (0)
+#endif
+
+// Whether to support Littlefs v1 filesystems.
+#ifndef MBOOT_VFS_LFS1
+#define MBOOT_VFS_LFS1 (0)
+#endif
+
+// Whether to support Littlefs v2 filesystems.
+#ifndef MBOOT_VFS_LFS2
+#define MBOOT_VFS_LFS2 (0)
+#endif
+
+// Whether to support raw filesystems.
+#ifndef MBOOT_VFS_RAW
+#define MBOOT_VFS_RAW (MBOOT_FSLOAD)
+#endif
 
 // These enum values are passed as the first argument to mboot_state_change() to
 // notify of a change in state of the bootloader activity.  This function has a
@@ -158,6 +183,7 @@ enum {
     ELEM_MOUNT_FAT = 1,
     ELEM_MOUNT_LFS1,
     ELEM_MOUNT_LFS2,
+    ELEM_MOUNT_RAW,
 };
 
 // Configure the type used to hold an address in the mboot address space.

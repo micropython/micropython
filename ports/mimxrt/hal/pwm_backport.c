@@ -18,10 +18,10 @@
 #include "hal/pwm_backport.h"
 
 void PWM_UpdatePwmDutycycle_u16(
-    PWM_Type *base, pwm_submodule_t subModule, pwm_channels_t pwmSignal, uint16_t dutyCycle, uint16_t Center_u16) {
+    PWM_Type *base, pwm_submodule_t subModule, pwm_channels_t pwmSignal, uint32_t dutyCycle, uint16_t Center_u16) {
     assert((uint16_t)pwmSignal < 2U);
-    uint16_t pulseCnt = 0, pwmHighPulse = 0;
-    uint16_t center;
+    uint32_t pulseCnt = 0, pwmHighPulse = 0;
+    uint32_t center;
 
     // check and confine bounds for Center_u16
     if ((Center_u16 + dutyCycle / 2) >= PWM_FULL_SCALE) {
@@ -36,11 +36,21 @@ void PWM_UpdatePwmDutycycle_u16(
 
     // Setup the PWM dutycycle of channel A or B
     if (pwmSignal == kPWM_PwmA) {
-        base->SM[subModule].VAL2 = center - pwmHighPulse / 2;
-        base->SM[subModule].VAL3 = base->SM[subModule].VAL2 + pwmHighPulse;
+        if (dutyCycle >= 65536) {
+            base->SM[subModule].VAL2 = 0;
+            base->SM[subModule].VAL3 = pulseCnt;
+        } else {
+            base->SM[subModule].VAL2 = center - pwmHighPulse / 2;
+            base->SM[subModule].VAL3 = base->SM[subModule].VAL2 + pwmHighPulse;
+        }
     } else {
-        base->SM[subModule].VAL4 = center - pwmHighPulse / 2;
-        base->SM[subModule].VAL5 = base->SM[subModule].VAL4 + pwmHighPulse;
+        if (dutyCycle >= 65536) {
+            base->SM[subModule].VAL4 = 0;
+            base->SM[subModule].VAL5 = pulseCnt;
+        } else {
+            base->SM[subModule].VAL4 = center - pwmHighPulse / 2;
+            base->SM[subModule].VAL5 = base->SM[subModule].VAL4 + pwmHighPulse;
+        }
     }
 }
 
@@ -86,32 +96,32 @@ void PWM_SetupPwm_u16(PWM_Type *base, pwm_submodule_t subModule, pwm_signal_para
 }
 
 void PWM_SetupPwmx_u16(PWM_Type *base, pwm_submodule_t subModule,
-    uint32_t pwmFreq_Hz, uint16_t duty_cycle, uint8_t invert, uint32_t srcClock_Hz) {
+    uint32_t pwmFreq_Hz, uint32_t duty_cycle, uint8_t invert, uint32_t srcClock_Hz) {
 
     uint32_t pulseCnt;
     uint32_t pwmClock;
 
     // Divide the clock by the prescale value
     pwmClock = (srcClock_Hz / (1U << ((base->SM[subModule].CTRL & PWM_CTRL_PRSC_MASK) >> PWM_CTRL_PRSC_SHIFT)));
-    pulseCnt = (pwmClock + (pwmFreq_Hz - 1) / 2) / pwmFreq_Hz;
+    pulseCnt = (pwmClock + (pwmFreq_Hz - 1) / 2) / pwmFreq_Hz - 1;
     base->SM[subModule].INIT = 0;
-    base->SM[subModule].VAL0 = ((uint32_t)duty_cycle * pulseCnt) / PWM_FULL_SCALE - 1;
-    base->SM[subModule].VAL1 = pulseCnt - 1;
+    base->SM[subModule].VAL0 = ((uint32_t)duty_cycle * pulseCnt) / PWM_FULL_SCALE;
+    base->SM[subModule].VAL1 = pulseCnt;
 
     base->SM[subModule].OCTRL = (base->SM[subModule].OCTRL & ~PWM_OCTRL_POLX_MASK) | PWM_OCTRL_POLX(!invert);
 
-    base->OUTEN |= (1U << subModule);
+    // Switch the output on or off.
+    if (duty_cycle == 0) {
+        base->OUTEN &= ~(1U << subModule);
+    } else {
+        base->OUTEN |= (1U << subModule);
+    }
 }
 
 #ifdef FSL_FEATURE_SOC_TMR_COUNT
 status_t QTMR_SetupPwm_u16(TMR_Type *base, qtmr_channel_selection_t channel, uint32_t pwmFreqHz,
-    uint16_t dutyCycleU16, bool outputPolarity, uint32_t srcClock_Hz, bool is_init) {
+    uint32_t dutyCycleU16, bool outputPolarity, uint32_t srcClock_Hz, bool is_init) {
     uint32_t periodCount, highCount, lowCount, reg;
-
-    if (dutyCycleU16 >= PWM_FULL_SCALE) {
-        // Invalid dutycycle
-        return kStatus_Fail;
-    }
 
     // Counter values to generate a PWM signal
     periodCount = ((srcClock_Hz + (pwmFreqHz - 1) / 2) / pwmFreqHz) - 2;
@@ -147,11 +157,18 @@ status_t QTMR_SetupPwm_u16(TMR_Type *base, qtmr_channel_selection_t channel, uin
 
     reg = base->CHANNEL[channel].CTRL;
     reg &= ~(TMR_CTRL_OUTMODE_MASK);
-    // Count until compare value is  reached and re-initialize the counter, toggle OFLAG output
-    // using alternating compare register
-    reg |= (TMR_CTRL_LENGTH_MASK | TMR_CTRL_OUTMODE(kQTMR_ToggleOnAltCompareReg));
+    if (dutyCycleU16 == 0) {
+        // Clear the output at the next compare
+        reg |= (TMR_CTRL_LENGTH_MASK | TMR_CTRL_OUTMODE(kQTMR_ClearOnCompare));
+    } else if (dutyCycleU16 >= 65536) {
+        // Set the output at the next compare
+        reg |= (TMR_CTRL_LENGTH_MASK | TMR_CTRL_OUTMODE(kQTMR_SetOnCompare));
+    } else {
+        // Count until compare value is  reached and re-initialize the counter, toggle OFLAG output
+        // using alternating compare register
+        reg |= (TMR_CTRL_LENGTH_MASK | TMR_CTRL_OUTMODE(kQTMR_ToggleOnAltCompareReg));
+    }
     base->CHANNEL[channel].CTRL = reg;
-
     return kStatus_Success;
 }
 #endif // FSL_FEATURE_SOC_TMR_COUNT

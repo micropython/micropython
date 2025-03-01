@@ -1,12 +1,9 @@
 # test MicroPython-specific features of array.array
 try:
-    import uarray as array
+    import array
 except ImportError:
-    try:
-        import array
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 # arrays of objects
 a = array.array('O')

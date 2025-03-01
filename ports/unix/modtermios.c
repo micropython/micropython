@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#if MICROPY_PY_TERMIOS
+
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
@@ -33,9 +35,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
-#if MICROPY_PY_TERMIOS
-
-STATIC mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
+static mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
     struct termios term;
     int fd = mp_obj_get_int(fd_in);
 
@@ -65,9 +65,9 @@ STATIC mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
     }
     return MP_OBJ_FROM_PTR(r);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_termios_tcgetattr_obj, mod_termios_tcgetattr);
+static MP_DEFINE_CONST_FUN_OBJ_1(mod_termios_tcgetattr_obj, mod_termios_tcgetattr);
 
-STATIC mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t attrs_in) {
+static mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t attrs_in) {
     struct termios term;
     int fd = mp_obj_get_int(fd_in);
     int when = mp_obj_get_int(when_in);
@@ -75,7 +75,7 @@ STATIC mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t
         // We don't export TCSANOW and friends to save on code space. Then
         // common lazy sense says that passing 0 should be godo enough, and
         // it is e.g. for glibc. But for other libc's it's not, so set just
-        // treat 0 as defauling to TCSANOW.
+        // treat 0 as defaulting to TCSANOW.
         when = TCSANOW;
     }
 
@@ -105,9 +105,9 @@ STATIC mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t
     RAISE_ERRNO(res, errno);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(mod_termios_tcsetattr_obj, mod_termios_tcsetattr);
+static MP_DEFINE_CONST_FUN_OBJ_3(mod_termios_tcsetattr_obj, mod_termios_tcsetattr);
 
-STATIC mp_obj_t mod_termios_setraw(mp_obj_t fd_in) {
+static mp_obj_t mod_termios_setraw(mp_obj_t fd_in) {
     struct termios term;
     int fd = mp_obj_get_int(fd_in);
     int res = tcgetattr(fd, &term);
@@ -123,9 +123,9 @@ STATIC mp_obj_t mod_termios_setraw(mp_obj_t fd_in) {
     RAISE_ERRNO(res, errno);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_termios_setraw_obj, mod_termios_setraw);
+static MP_DEFINE_CONST_FUN_OBJ_1(mod_termios_setraw_obj, mod_termios_setraw);
 
-STATIC const mp_rom_map_elem_t mp_module_termios_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_termios_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_termios) },
     { MP_ROM_QSTR(MP_QSTR_tcgetattr), MP_ROM_PTR(&mod_termios_tcgetattr_obj) },
     { MP_ROM_QSTR(MP_QSTR_tcsetattr), MP_ROM_PTR(&mod_termios_tcsetattr_obj) },
@@ -141,10 +141,31 @@ STATIC const mp_rom_map_elem_t mp_module_termios_globals_table[] = {
     #ifdef B115200
     C(B115200),
     #endif
+    #ifdef B230400
+    C(B230400),
+    #endif
+    #ifdef B460800
+    C(B460800),
+    #endif
+    #ifdef B500000
+    C(B500000),
+    #endif
+    #ifdef B576000
+    C(B576000),
+    #endif
+    #ifdef B921600
+    C(B921600),
+    #endif
+    #ifdef B1000000
+    C(B1000000),
+    #endif
+    #ifdef B1152000
+    C(B1152000)
+    #endif
 #undef C
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_termios_globals, mp_module_termios_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_termios_globals, mp_module_termios_globals_table);
 
 const mp_obj_module_t mp_module_termios = {
     .base = { &mp_type_module },

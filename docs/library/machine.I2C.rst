@@ -94,7 +94,7 @@ General Methods
      - *freq* is the SCL clock rate
 
    In the case of hardware I2C the actual clock frequency may be lower than the
-   requested frequency. This is dependant on the platform hardware. The actual
+   requested frequency. This is dependent on the platform hardware. The actual
    rate may be determined by printing the I2C object.
 
 .. method:: I2C.deinit()

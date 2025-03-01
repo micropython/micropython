@@ -24,10 +24,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_SPI
+
 #include "py/mphal.h"
-#include "extmod/machine_spi.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 #include "samd_soc.h"
 #include "pin_af.h"
 #include "clock_config.h"
@@ -56,9 +59,6 @@ typedef struct _machine_spi_obj_t {
     size_t rxlen;
 } machine_spi_obj_t;
 
-extern Sercom *sercom_instance[];
-MP_REGISTER_ROOT_POINTER(void *sercom_table[SERCOM_INST_NUM]);
-
 void common_spi_irq_handler(int spi_id) {
     // handle Sercom IRQ RXC
     machine_spi_obj_t *self = MP_STATE_PORT(sercom_table[spi_id]);
@@ -80,13 +80,13 @@ void common_spi_irq_handler(int spi_id) {
     }
 }
 
-STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(%u, baudrate=%u, firstbit=%u, polarity=%u, phase=%u, bits=8)",
         self->id, self->baudrate, self->firstbit, self->polarity, self->phase);
 }
 
-STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_firstbit,
            ARG_sck, ARG_mosi, ARG_miso};
     static const mp_arg_t allowed_args[] = {
@@ -231,7 +231,7 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     }
 }
 
-STATIC mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get SPI bus.
@@ -260,7 +260,7 @@ STATIC mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, s
     return self;
 }
 
-STATIC void machine_sercom_deinit(mp_obj_base_t *self_in) {
+static void machine_sercom_deinit(mp_obj_base_t *self_in) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     Sercom *spi = sercom_instance[self->id];
     // Disable interrupts (if any)
@@ -270,17 +270,7 @@ STATIC void machine_sercom_deinit(mp_obj_base_t *self_in) {
     MP_STATE_PORT(sercom_table[self->id]) = NULL;
 }
 
-void sercom_deinit_all(void) {
-    for (int i = 0; i < SERCOM_INST_NUM; i++) {
-        Sercom *spi = sercom_instance[i];
-        spi->SPI.INTENCLR.reg = 0xff;
-        sercom_register_irq(i, NULL);
-        sercom_enable(spi, 0);
-        MP_STATE_PORT(sercom_table[i]) = NULL;
-    }
-}
-
-STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
 
     Sercom *spi = sercom_instance[self->id];
@@ -326,7 +316,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 }
 
 
-STATIC const mp_machine_spi_p_t machine_spi_p = {
+static const mp_machine_spi_p_t machine_spi_p = {
     .init = machine_spi_init,
     .deinit = machine_sercom_deinit,
     .transfer = machine_spi_transfer,
@@ -341,3 +331,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &machine_spi_p,
     locals_dict, &mp_machine_spi_locals_dict
     );
+
+#endif

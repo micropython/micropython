@@ -59,7 +59,7 @@ void CRYPTOHASH_SHAMD5Start (uint32_t algo, uint32_t blocklen) {
         HWREG(SHAMD5_BASE + SHAMD5_O_MODE) |= SHAMD5_MODE_CLOSE_HASH;
     }
 
-    // set the lenght
+    // set the length
     HWREG(SHAMD5_BASE + SHAMD5_O_LENGTH) = blocklen;
 }
 

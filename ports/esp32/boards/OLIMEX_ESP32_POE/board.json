@@ -5,12 +5,12 @@
     "docs": "",
     "features": [
         "BLE",
-        "WiFi",
-        "MicroSD",
         "Battery Charging",
         "Ethernet",
+        "External Flash",
         "PoE",
-        "Breadboard friendly"
+        "WiFi",
+        "microSD"
     ],
     "images": [
         "ESP32-POE-ISO-1.jpg"

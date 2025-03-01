@@ -32,7 +32,7 @@ Glossary
 
     callee-owned tuple
         This is a MicroPython-specific construct where, for efficiency
-        reasons, some built-in functions or methods may re-use the same
+        reasons, some built-in functions or methods may reuse the same
         underlying tuple object to return data. This avoids having to allocate
         a new tuple for every call, and reduces heap fragmentation. Programs
         should not hold references to callee-owned tuples and instead only
@@ -120,7 +120,7 @@ Glossary
         <https://github.com/micropython/micropython-lib>`_ which provides
         implementations for many modules from CPython's standard library.
 
-        Some of the modules are are implemented in pure Python, and are able to
+        Some of the modules are implemented in pure Python, and are able to
         be used on all ports. However, the majority of these modules use
         :term:`FFI` to access operating system functionality, and as such can
         only be used on the :term:`MicroPython Unix port` (with limited support

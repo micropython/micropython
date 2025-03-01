@@ -46,7 +46,7 @@ Functions
 .. function:: settrace(tracefunc)
 
    Enable tracing of bytecode execution.  For details see the `CPython
-   documentaion <https://docs.python.org/3/library/sys.html#sys.settrace>`_.
+   documentation <https://docs.python.org/3/library/sys.html#sys.settrace>`_.
 
    This function requires a custom MicroPython build as it is typically not
    present in pre-built firmware (due to it affecting performance).  The relevant
@@ -69,13 +69,16 @@ Constants
    MicroPython, it has following attributes:
 
    * *name* - string "micropython"
-   * *version* - tuple (major, minor, micro), e.g. (1, 7, 0)
+   * *version* - tuple (major, minor, micro, releaselevel), e.g. (1, 22, 0, '')
    * *_machine* - string describing the underlying machine
    * *_mpy* - supported mpy file-format version (optional attribute)
 
    This object is the recommended way to distinguish MicroPython from other
    Python implementations (note that it still may not exist in the very
    minimal ports).
+
+   Starting with version 1.22.0-preview, the fourth node *releaselevel* in
+   *implementation.version* is either an empty string or ``"preview"``.
 
    .. admonition:: Difference to CPython
       :class: attention

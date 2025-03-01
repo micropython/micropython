@@ -42,13 +42,12 @@
 #include "simplelink.h"
 #include "modnetwork.h"
 #include "modwlan.h"
-#include "modusocket.h"
+#include "modsocket.h"
 #include "debug.h"
 #include "serverstask.h"
 #include "fifo.h"
 #include "socketfifo.h"
 #include "updater.h"
-#include "moduos.h"
 
 /******************************************************************************
  DEFINE PRIVATE CONSTANTS
@@ -97,7 +96,7 @@ typedef enum {
 typedef struct {
     bool            uservalid : 1;
     bool            passvalid : 1;
-} ftp_loggin_t;
+} ftp_login_t;
 
 typedef enum {
     E_FTP_NOTHING_OPEN = 0,
@@ -127,8 +126,8 @@ typedef struct {
     uint8_t             state;
     uint8_t             substate;
     uint8_t             txRetries;
-    uint8_t             logginRetries;
-    ftp_loggin_t        loggin;
+    uint8_t             loginRetries;
+    ftp_login_t         login;
     uint8_t             e_open;
     bool                closechild;
     bool                enabled;
@@ -202,7 +201,7 @@ static FIFO_t ftp_socketfifo;
 // all calls in an nlr handler.  The wrapper functions below assume that there
 // are only FATFS filesystems mounted.
 
-STATIC FATFS *lookup_path(const TCHAR **path) {
+static FATFS *lookup_path(const TCHAR **path) {
     mp_vfs_mount_t *fs = mp_vfs_lookup_path(*path, path);
     if (fs == MP_VFS_NONE || fs == MP_VFS_ROOT) {
         return NULL;
@@ -211,7 +210,7 @@ STATIC FATFS *lookup_path(const TCHAR **path) {
     return &((fs_user_mount_t*)MP_OBJ_TO_PTR(fs->obj))->fatfs;
 }
 
-STATIC FRESULT f_open_helper(FIL *fp, const TCHAR *path, BYTE mode) {
+static FRESULT f_open_helper(FIL *fp, const TCHAR *path, BYTE mode) {
     FATFS *fs = lookup_path(&path);
     if (fs == NULL) {
         return FR_NO_PATH;
@@ -219,7 +218,7 @@ STATIC FRESULT f_open_helper(FIL *fp, const TCHAR *path, BYTE mode) {
     return f_open(fs, fp, path, mode);
 }
 
-STATIC FRESULT f_opendir_helper(FF_DIR *dp, const TCHAR *path) {
+static FRESULT f_opendir_helper(FF_DIR *dp, const TCHAR *path) {
     FATFS *fs = lookup_path(&path);
     if (fs == NULL) {
         return FR_NO_PATH;
@@ -227,7 +226,7 @@ STATIC FRESULT f_opendir_helper(FF_DIR *dp, const TCHAR *path) {
     return f_opendir(fs, dp, path);
 }
 
-STATIC FRESULT f_stat_helper(const TCHAR *path, FILINFO *fno) {
+static FRESULT f_stat_helper(const TCHAR *path, FILINFO *fno) {
     FATFS *fs = lookup_path(&path);
     if (fs == NULL) {
         return FR_NO_PATH;
@@ -235,7 +234,7 @@ STATIC FRESULT f_stat_helper(const TCHAR *path, FILINFO *fno) {
     return f_stat(fs, path, fno);
 }
 
-STATIC FRESULT f_mkdir_helper(const TCHAR *path) {
+static FRESULT f_mkdir_helper(const TCHAR *path) {
     FATFS *fs = lookup_path(&path);
     if (fs == NULL) {
         return FR_NO_PATH;
@@ -243,7 +242,7 @@ STATIC FRESULT f_mkdir_helper(const TCHAR *path) {
     return f_mkdir(fs, path);
 }
 
-STATIC FRESULT f_unlink_helper(const TCHAR *path) {
+static FRESULT f_unlink_helper(const TCHAR *path) {
     FATFS *fs = lookup_path(&path);
     if (fs == NULL) {
         return FR_NO_PATH;
@@ -251,7 +250,7 @@ STATIC FRESULT f_unlink_helper(const TCHAR *path) {
     return f_unlink(fs, path);
 }
 
-STATIC FRESULT f_rename_helper(const TCHAR *path_old, const TCHAR *path_new) {
+static FRESULT f_rename_helper(const TCHAR *path_old, const TCHAR *path_new) {
     FATFS *fs_old = lookup_path(&path_old);
     if (fs_old == NULL) {
         return FR_NO_PATH;
@@ -329,10 +328,10 @@ void ftp_run (void) {
             if (ftp_data.c_sd < 0 && ftp_data.substate == E_FTP_STE_SUB_DISCONNECTED) {
                 if (E_FTP_RESULT_OK == ftp_wait_for_connection(ftp_data.lc_sd, &ftp_data.c_sd)) {
                     ftp_data.txRetries = 0;
-                    ftp_data.logginRetries = 0;
+                    ftp_data.loginRetries = 0;
                     ftp_data.ctimeout = 0;
-                    ftp_data.loggin.uservalid = false;
-                    ftp_data.loggin.passvalid = false;
+                    ftp_data.login.uservalid = false;
+                    ftp_data.login.passvalid = false;
                     strcpy (ftp_path, "/");
                     ftp_send_reply (220, "MicroPython FTP Server");
                     break;
@@ -684,7 +683,7 @@ static void ftp_process_cmd (void) {
     if (E_FTP_RESULT_OK == (result = ftp_recv_non_blocking(ftp_data.c_sd, ftp_cmd_buffer, FTP_MAX_PARAM_SIZE + FTP_CMD_SIZE_MAX, &len))) {
         // bufptr is moved as commands are being popped
         ftp_cmd_index_t cmd = ftp_pop_command(&bufptr);
-        if (!ftp_data.loggin.passvalid && (cmd != E_FTP_CMD_USER && cmd != E_FTP_CMD_PASS && cmd != E_FTP_CMD_QUIT && cmd != E_FTP_CMD_FEAT)) {
+        if (!ftp_data.login.passvalid && (cmd != E_FTP_CMD_USER && cmd != E_FTP_CMD_PASS && cmd != E_FTP_CMD_QUIT && cmd != E_FTP_CMD_FEAT)) {
             ftp_send_reply(332, NULL);
             return;
         }
@@ -754,16 +753,16 @@ static void ftp_process_cmd (void) {
         case E_FTP_CMD_USER:
             ftp_pop_param (&bufptr, ftp_scratch_buffer);
             if (!memcmp(ftp_scratch_buffer, servers_user, MAX(strlen(ftp_scratch_buffer), strlen(servers_user)))) {
-                ftp_data.loggin.uservalid = true && (strlen(servers_user) == strlen(ftp_scratch_buffer));
+                ftp_data.login.uservalid = true && (strlen(servers_user) == strlen(ftp_scratch_buffer));
             }
             ftp_send_reply(331, NULL);
             break;
         case E_FTP_CMD_PASS:
             ftp_pop_param (&bufptr, ftp_scratch_buffer);
             if (!memcmp(ftp_scratch_buffer, servers_pass, MAX(strlen(ftp_scratch_buffer), strlen(servers_pass))) &&
-                    ftp_data.loggin.uservalid) {
-                ftp_data.loggin.passvalid = true && (strlen(servers_pass) == strlen(ftp_scratch_buffer));
-                if (ftp_data.loggin.passvalid) {
+                    ftp_data.login.uservalid) {
+                ftp_data.login.passvalid = true && (strlen(servers_pass) == strlen(ftp_scratch_buffer));
+                if (ftp_data.login.passvalid) {
                     ftp_send_reply(230, NULL);
                     break;
                 }

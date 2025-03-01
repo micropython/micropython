@@ -15,12 +15,22 @@ set(MICROPY_ROOT_POINTERS_SPLIT "${MICROPY_GENHDR_DIR}/root_pointers.split")
 set(MICROPY_ROOT_POINTERS_COLLECTED "${MICROPY_GENHDR_DIR}/root_pointers.collected")
 set(MICROPY_ROOT_POINTERS "${MICROPY_GENHDR_DIR}/root_pointers.h")
 
+if(NOT MICROPY_PREVIEW_VERSION_2)
+    set(MICROPY_PREVIEW_VERSION_2 0)
+endif()
+
 # Need to do this before extracting MICROPY_CPP_DEF below. Rest of frozen
 # manifest handling is at the end of this file.
 if(MICROPY_FROZEN_MANIFEST)
     target_compile_definitions(${MICROPY_TARGET} PUBLIC
         MICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
         MICROPY_MODULE_FROZEN_MPY=\(1\)
+    )
+endif()
+
+if(MICROPY_PREVIEW_VERSION_2)
+    target_compile_definitions(${MICROPY_TARGET} PUBLIC
+        MICROPY_PREVIEW_VERSION_2=\(1\)
     )
 endif()
 
@@ -89,6 +99,7 @@ add_custom_command(
 add_custom_command(
     OUTPUT ${MICROPY_QSTRDEFS_COLLECTED}
     COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat qstr _ ${MICROPY_GENHDR_DIR}/qstr ${MICROPY_QSTRDEFS_COLLECTED}
+    BYPRODUCTS "${MICROPY_QSTRDEFS_COLLECTED}.hash"
     DEPENDS ${MICROPY_QSTRDEFS_SPLIT}
     VERBATIM
     COMMAND_EXPAND_LISTS
@@ -126,6 +137,7 @@ add_custom_command(
 add_custom_command(
     OUTPUT ${MICROPY_MODULEDEFS_COLLECTED}
     COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat module _ ${MICROPY_GENHDR_DIR}/module ${MICROPY_MODULEDEFS_COLLECTED}
+    BYPRODUCTS "${MICROPY_MODULEDEFS_COLLECTED}.hash"
     DEPENDS ${MICROPY_MODULEDEFS_SPLIT}
     VERBATIM
     COMMAND_EXPAND_LISTS
@@ -151,6 +163,7 @@ add_custom_command(
 add_custom_command(
     OUTPUT ${MICROPY_ROOT_POINTERS_COLLECTED}
     COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat root_pointer _ ${MICROPY_GENHDR_DIR}/root_pointer ${MICROPY_ROOT_POINTERS_COLLECTED}
+    BYPRODUCTS "${MICROPY_ROOT_POINTERS_COLLECTED}.hash"
     DEPENDS ${MICROPY_ROOT_POINTERS_SPLIT}
     VERBATIM
     COMMAND_EXPAND_LISTS
@@ -178,7 +191,12 @@ if(MICROPY_FROZEN_MANIFEST)
         set(MICROPY_LIB_DIR ${MICROPY_DIR}/lib/micropython-lib)
     endif()
 
-    if(NOT (${ECHO_SUBMODULES}) AND NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
+    if(ECHO_SUBMODULES)
+        # No-op, we're just doing submodule/variant discovery.
+        # Note: All the following rules are safe to run in discovery mode even
+        # though the submodule might not be available as they do not directly depend
+        # on anything from the submodule.
+    elseif(NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
         message(FATAL_ERROR " micropython-lib not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
     endif()
 
@@ -197,10 +215,33 @@ if(MICROPY_FROZEN_MANIFEST)
         )
     endif()
 
+    if(NOT MICROPY_CROSS_FLAGS)
+        set(MICROPY_CROSS_FLAGS "")
+    else()
+        set(MICROPY_CROSS_FLAGS "-f${MICROPY_CROSS_FLAGS}")
+    endif()
+
+    # Set default path variables to be passed to makemanifest.py. These will
+    # be available in path substitutions. Additional variables can be set
+    # per-board in mpconfigboard.cmake.
+    set(MICROPY_MANIFEST_PORT_DIR ${MICROPY_PORT_DIR})
+    set(MICROPY_MANIFEST_BOARD_DIR ${MICROPY_BOARD_DIR})
+    set(MICROPY_MANIFEST_MPY_DIR ${MICROPY_DIR})
+    set(MICROPY_MANIFEST_MPY_LIB_DIR ${MICROPY_LIB_DIR})
+
+    # Find all MICROPY_MANIFEST_* variables and turn them into command line arguments.
+    get_cmake_property(_manifest_vars VARIABLES)
+    list(FILTER _manifest_vars INCLUDE REGEX "MICROPY_MANIFEST_.*")
+    foreach(_manifest_var IN LISTS _manifest_vars)
+        list(APPEND _manifest_var_args "-v")
+        string(REGEX REPLACE "MICROPY_MANIFEST_(.*)" "\\1" _manifest_var_name ${_manifest_var})
+        list(APPEND _manifest_var_args "${_manifest_var_name}=${${_manifest_var}}")
+    endforeach()
+
     add_custom_target(
         BUILD_FROZEN_CONTENT ALL
         BYPRODUCTS ${MICROPY_FROZEN_CONTENT}
-        COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/tools/makemanifest.py -o ${MICROPY_FROZEN_CONTENT} -v "MPY_DIR=${MICROPY_DIR}" -v "MPY_LIB_DIR=${MICROPY_LIB_DIR}" -v "PORT_DIR=${MICROPY_PORT_DIR}" -v "BOARD_DIR=${MICROPY_BOARD_DIR}" -b "${CMAKE_BINARY_DIR}" -f${MICROPY_CROSS_FLAGS} --mpy-tool-flags=${MICROPY_MPY_TOOL_FLAGS} ${MICROPY_FROZEN_MANIFEST}
+        COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/tools/makemanifest.py -o ${MICROPY_FROZEN_CONTENT} ${_manifest_var_args} -b "${CMAKE_BINARY_DIR}" ${MICROPY_CROSS_FLAGS} --mpy-tool-flags=${MICROPY_MPY_TOOL_FLAGS} ${MICROPY_FROZEN_MANIFEST}
         DEPENDS
             ${MICROPY_QSTRDEFS_GENERATED}
             ${MICROPY_ROOT_POINTERS}
@@ -216,11 +257,5 @@ if(ECHO_SUBMODULES)
     # Note: the GIT_SUBMODULES is done via echo rather than message, as message splits
     # the output onto multiple lines
     execute_process(COMMAND ${CMAKE_COMMAND} -E echo "GIT_SUBMODULES=${GIT_SUBMODULES}")
-    message(FATAL_ERROR "Done")
-endif()
-
-# Display BOARD_VARIANTS
-if(ECHO_BOARD_VARIANTS)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E echo "BOARD_VARIANTS=${BOARD_VARIANTS}")
     message(FATAL_ERROR "Done")
 endif()

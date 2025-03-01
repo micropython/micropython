@@ -5,7 +5,7 @@ ifdef BOARD_DIR
 BOARD ?= $(notdir $(BOARD_DIR:/=))
 else
 # If not given on the command line, then default to RA6M2_EK.
-BOARD ?= RA6M2_EK
+BOARD ?= EK_RA6M2
 BOARD_DIR ?= boards/$(BOARD)
 endif
 
@@ -16,41 +16,6 @@ endif
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
-ifeq ($(BOARD),RA4M1_CLICKER)
-BOARD_LOW = ra4m1_ek
-CMSIS_MCU_LOW = ra4m1
-CMSIS_MCU_CAP = RA4M1
-USE_FSP_LPM = 0
-endif
-
-ifeq ($(BOARD),RA4M1_EK)
-BOARD_LOW = ra4m1_ek
-CMSIS_MCU_LOW = ra4m1
-CMSIS_MCU_CAP = RA4M1
-USE_FSP_LPM = 0
-endif
-
-ifeq ($(BOARD),RA4W1_EK)
-BOARD_LOW = ra4w1_ek
-CMSIS_MCU_LOW = ra4w1
-CMSIS_MCU_CAP = RA4W1
-USE_FSP_LPM = 1
-endif
-
-ifeq ($(BOARD),RA6M1_EK)
-BOARD_LOW = ra6m1_ek
-CMSIS_MCU_LOW = ra6m1
-CMSIS_MCU_CAP = RA6M1
-USE_FSP_LPM = 1
-endif
-
-ifeq ($(BOARD),RA6M2_EK)
-BOARD_LOW = ra6m2_ek
-CMSIS_MCU_LOW = ra6m2
-CMSIS_MCU_CAP = RA6M2
-USE_FSP_LPM = 1
-endif
-
 # select use wrapper function of FSP library
 USE_FSP_FLASH = 1
 
@@ -58,12 +23,15 @@ include ../../py/mkenv.mk
 -include mpconfigport.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
-# Files that are generated and needed before the QSTR build.
-#QSTR_GENERATED_HEADERS = $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
-QSTR_GENERATED_HEADERS = $(BUILD)/pins_qstr.h
+USE_FSP_LPM ?= 1
+USE_FSP_QSPI ?= 0
+FSP_BOARD_NAME ?= $(shell echo $(BOARD) | tr '[:upper:]' '[:lower:]')
+
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS += qstrdefsport.h $(QSTR_GENERATED_HEADERS)
-QSTR_GLOBAL_DEPENDENCIES += mpconfigboard_common.h $(BOARD_DIR)/mpconfigboard.h $(QSTR_GENERATED_HEADERS)
+QSTR_DEFS += qstrdefsport.h
+
+# Files that are generated and needed before the QSTR build.
+QSTR_GLOBAL_DEPENDENCIES += mpconfigboard_common.h $(BOARD_DIR)/mpconfigboard.h
 
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
@@ -75,7 +43,7 @@ FROZEN_MANIFEST ?= boards/manifest.py
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/fsp
+GIT_SUBMODULES += lib/fsp lib/tinyusb
 
 MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
 CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
@@ -89,7 +57,9 @@ SYSTEM_FILE ?= lib/fsp/ra/fsp/src/bsp/cmsis/Device/RENESAS/Source/system.o
 # Select the cross compile prefix
 CROSS_COMPILE ?= arm-none-eabi-
 
+INC += -imacros boards/compiler_barrier.h
 INC += -I.
+INC += -Ifsp_cfg
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(TOP)/$(CMSIS_DIR)
@@ -98,17 +68,23 @@ INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/inc
 INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/inc/api
 INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/inc/instances
 INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/src/bsp/cmsis/Device/RENESAS/Include
-#INC += -Ilwip_inc
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA4M1 RA4W1 RA6M1 RA6M2))
+INC += -I$(TOP)/lib/tinyusb/hw
+INC += -I$(TOP)/lib/tinyusb/src
+INC += -I$(TOP)/shared/tinyusb
+INC += -Ilwip_inc
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA4M1 RA4W1 RA6M1 RA6M2 RA6M5))
 INC += -Ira
 endif
 INC += -I$(BOARD_DIR)/ra_gen
+INC += -I$(BOARD_DIR)/ra_cfg/driver
 INC += -I$(BOARD_DIR)/ra_cfg/fsp_cfg
 INC += -I$(BOARD_DIR)/ra_cfg/fsp_cfg/bsp
 INC += -Idebug
 
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += -DRA_HAL_H='<$(CMSIS_MCU)_hal.h>'
+CFLAGS += -DRA_CFG_H='<$(FSP_BOARD_NAME)_conf.h>'
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_RAXXX
 
 # Basic Cortex-M flags
 CFLAGS_CORTEX_M = -mthumb
@@ -117,7 +93,12 @@ CFLAGS_CORTEX_M = -mthumb
 SUPPORTS_HARDWARE_FP_SINGLE = 0
 SUPPORTS_HARDWARE_FP_DOUBLE = 0
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),m4))
-CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard 
+CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+SUPPORTS_HARDWARE_FP_SINGLE = 1
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),m33))
+CFLAGS_CORTEX_M += -mfpu=fpv5-sp-d16 -mfloat-abi=hard
 SUPPORTS_HARDWARE_FP_SINGLE = 1
 endif
 
@@ -126,7 +107,9 @@ CFLAGS_MCU_RA4M1 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_RA4W1 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_RA6M1 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_RA6M2 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
+CFLAGS_MCU_RA6M5 = $(CFLAGS_CORTEX_M) -mtune=cortex-m33 -mcpu=cortex-m33
 
+ASFLAGS += $(CFLAGS_CORTEX_M) -mcpu=cortex-$(MCU_SERIES)
 CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_EXTRA)
 #CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(CMSIS_MCU))
@@ -174,6 +157,9 @@ LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
 LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
+# Hook tinyusb USB interrupt if used to service usb task.
+LDFLAGS += --wrap=dcd_event_handler
+
 # Options for mpy-cross
 MPY_CROSS_FLAGS += -march=armv7m
 
@@ -191,99 +177,43 @@ SHARED_SRC_C += $(addprefix shared/,\
 	runtime/stdout_helpers.c \
 	runtime/sys_stdio_mphal.c \
 	timeutils/timeutils.c \
+	tinyusb/mp_usbd.c \
+	tinyusb/mp_usbd_cdc.c \
+	tinyusb/mp_usbd_descriptor.c \
+	)
+
+# TinyUSB Stack source
+TINYUSB_SRC_C += $(addprefix lib/tinyusb/,\
+	src/class/cdc/cdc_device.c \
+	src/class/dfu/dfu_rt_device.c \
+	src/class/hid/hid_device.c \
+	src/class/midi/midi_device.c \
+	src/class/msc/msc_device.c \
+	src/class/usbtmc/usbtmc_device.c \
+	src/class/vendor/vendor_device.c \
+	src/common/tusb_fifo.c \
+	src/device/usbd.c \
+	src/device/usbd_control.c \
+	src/portable/renesas/rusb2/dcd_rusb2.c \
+	src/portable/renesas/rusb2/hcd_rusb2.c \
+	src/portable/renesas/rusb2/rusb2_common.c \
+	src/tusb.c \
 	)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
-LIBM_SRC_C += $(addprefix lib/libm_dbl/,\
-	__cos.c \
-	__expo2.c \
-	__fpclassify.c \
-	__rem_pio2.c \
-	__rem_pio2_large.c \
-	__signbit.c \
-	__sin.c \
-	__tan.c \
-	acos.c \
-	acosh.c \
-	asin.c \
-	asinh.c \
-	atan.c \
-	atan2.c \
-	atanh.c \
-	ceil.c \
-	cos.c \
-	cosh.c \
-	copysign.c \
-	erf.c \
-	exp.c \
-	expm1.c \
-	floor.c \
-	fmod.c \
-	frexp.c \
-	ldexp.c \
-	lgamma.c \
-	log.c \
-	log10.c \
-	log1p.c \
-	modf.c \
-	nearbyint.c \
-	pow.c \
-	rint.c \
-	round.c \
-	scalbn.c \
-	sin.c \
-	sinh.c \
-	tan.c \
-	tanh.c \
-	tgamma.c \
-	trunc.c \
-	)
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_DOUBLE),1)
-LIBM_SRC_C += lib/libm_dbl/thumb_vfp_sqrt.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_HW_C)
 else
-LIBM_SRC_C += lib/libm_dbl/sqrt.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_SW_C)
 endif
 else
-LIBM_SRC_C += $(addprefix lib/libm/,\
-	math.c \
-	acoshf.c \
-	asinfacosf.c \
-	asinhf.c \
-	atan2f.c \
-	atanf.c \
-	atanhf.c \
-	ef_rem_pio2.c \
-	erf_lgamma.c \
-	fmodf.c \
-	kf_cos.c \
-	kf_rem_pio2.c \
-	kf_sin.c \
-	kf_tan.c \
-	log1pf.c \
-	nearbyintf.c \
-	roundf.c \
-	sf_cos.c \
-	sf_erf.c \
-	sf_frexp.c \
-	sf_ldexp.c \
-	sf_modf.c \
-	sf_sin.c \
-	sf_tan.c \
-	wf_lgamma.c \
-	wf_tgamma.c \
-	)
+LIBM_SRC_C += $(SRC_LIB_LIBM_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_SINGLE),1)
-LIBM_SRC_C += lib/libm/thumb_vfp_sqrtf.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_HW_C)
 else
-LIBM_SRC_C += lib/libm/ef_sqrt.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 endif
-endif
-
-LIBM_O = $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
-
-# Too many warnings in libm_dbl, disable for now.
-ifeq ($(MICROPY_FLOAT_IMPL),double)
-$(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
 endif
 
 DRIVERS_SRC_C += $(addprefix drivers/,\
@@ -296,8 +226,11 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 SRC_C += \
 	boardctrl.c \
 	main.c \
+	ra_hal.c \
 	ra_it.c \
+	rng.c \
 	mphalport.c \
+	mpnetworkport.c \
 	mpthreadport.c \
 	irq.c \
 	pendsv.c \
@@ -311,30 +244,39 @@ SRC_C += \
 	uart.c \
 	gccollect.c \
 	help.c \
-	machine_adc.c \
+	machine_dac.c \
 	machine_i2c.c \
 	machine_spi.c \
-	machine_uart.c \
 	machine_pin.c \
 	machine_rtc.c \
-	modmachine.c \
-	modutime.c \
+	machine_sdcard.c \
 	extint.c \
 	usrsw.c \
 	flash.c \
 	flashbdev.c \
 	storage.c \
 	fatfs_port.c \
-	$(BOARD_DIR)/src/hal_entry.c \
+	usbd.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_C += $(addprefix $(BOARD_DIR)/ra_gen/,\
 	common_data.c \
 	hal_data.c \
-	main.c \
 	pin_data.c \
 	vector_data.c \
 	)
+
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+LIB_SRC_C += mbedtls/mbedtls_port.c
+endif
+
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+SRC_C += mpbthciport.c
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+SRC_C += mpnimbleport.c
+endif
 
 SRC_O += \
 	$(STARTUP_FILE) \
@@ -342,11 +284,6 @@ SRC_O += \
 
 SRC_O += \
 	shared/runtime/gchelper_thumb2.o
-
-HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/board/$(BOARD_LOW)/,\
-	board_init.c \
-	board_leds.c \
-	)
 
 HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/fsp/src/bsp/mcu/all/,\
 	bsp_clocks.c \
@@ -364,7 +301,22 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/fsp/src/bsp/mcu/all/,\
 
 HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/fsp/src/,\
 	r_ioport/r_ioport.c \
+	r_sci_uart/r_sci_uart.c \
 	)
+
+CFLAGS_FSP = -Wno-unused-variable -Wno-unused-function
+$(BUILD)/lib/fsp/ra/fsp/src/r_sci_uart/r_sci_uart.o: CFLAGS += $(CFLAGS_FSP)
+
+ifeq ($(USE_FSP_QSPI), 1)
+CFLAGS += -DUSE_FSP_QSPI
+HAL_SRC_C += $(HAL_DIR)/ra/fsp/src/r_qspi/r_qspi.c
+endif
+
+ifeq ($(USE_FSP_SDHI), 1)
+CFLAGS += -DUSE_FSP_SDHI
+HAL_SRC_C += $(HAL_DIR)/ra/fsp/src/r_sdhi/r_sdhi.c \
+	$(HAL_DIR)/ra/fsp/src/r_dtc/r_dtc.c
+endif
 
 ifeq ($(USE_FSP_LPM), 1)
 CFLAGS += -DUSE_FSP_LPM
@@ -378,16 +330,17 @@ HAL_SRC_C += $(HAL_DIR)/ra/fsp/src/r_flash_lp/r_flash_lp.c
 endif
 endif
 
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA6M1 RA6M2))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA6M1 RA6M2 RA6M5))
 ifeq ($(USE_FSP_FLASH), 1)
 CFLAGS += -DUSE_FSP_FLASH
 HAL_SRC_C += $(HAL_DIR)/ra/fsp/src/r_flash_hp/r_flash_hp.c
 endif
 endif
 
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA4M1 RA4W1 RA6M1 RA6M2))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA4M1 RA4W1 RA6M1 RA6M2 RA6M5))
 HAL_SRC_C += $(addprefix ra/,\
 	ra_adc.c \
+	ra_dac.c \
 	ra_flash.c \
 	ra_gpio.c \
 	ra_i2c.c \
@@ -398,21 +351,66 @@ HAL_SRC_C += $(addprefix ra/,\
 	ra_sci.c \
 	ra_spi.c \
 	ra_timer.c \
+	ra_gpt.c \
 	ra_utils.c \
 	)
 
 endif
 
+ifeq ($(MICROPY_HW_ENABLE_RNG),1)
+CRYPTO_DIR = ra/fsp/src/r_sce_protected/crypto_procedures_protected/src/sce9/
+
+INC += -I$(TOP)/$(HAL_DIR)/$(CRYPTO_DIR)/inc
+INC += -I$(TOP)/$(HAL_DIR)/$(CRYPTO_DIR)/inc/api
+INC += -I$(TOP)/$(HAL_DIR)/$(CRYPTO_DIR)/private/inc
+INC += -I$(TOP)/$(HAL_DIR)/$(CRYPTO_DIR)/inc/instances
+
+# The following FSP files are required for the random number generator.
+HAL_SRC_C += $(addprefix $(HAL_DIR)/$(CRYPTO_DIR)/,\
+	public/r_sce.c \
+	public/r_sce_ecc.c \
+	public/r_sce_sha.c \
+	public/r_sce_aes.c \
+	private/r_sce_private.c \
+	primitive/r_sce_p00.c \
+	primitive/r_sce_p20.c \
+	primitive/r_sce_p26.c \
+	primitive/r_sce_p81.c \
+	primitive/r_sce_p82.c \
+	primitive/r_sce_p92.c \
+	primitive/r_sce_p40.c \
+	primitive/r_sce_func050.c \
+	primitive/r_sce_func051.c \
+	primitive/r_sce_func052.c \
+	primitive/r_sce_func053.c \
+	primitive/r_sce_func054.c \
+	primitive/r_sce_func100.c \
+	primitive/r_sce_func101.c \
+	primitive/r_sce_func040.c \
+	primitive/r_sce_func048.c \
+	primitive/r_sce_func102.c \
+	primitive/r_sce_func103.c \
+	primitive/r_sce_subprc01.c\
+	)
+endif
+
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-OBJ += $(LIBM_O)
+OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(HAL_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(BUILD)/pins_$(BOARD).o
+
+ifeq ($(CMSIS_MCU),RA6M5)
+$(BUILD)/shared/runtime/gchelper_thumb2.o: $(TOP)/shared/runtime/gchelper_thumb2.s
+	$(ECHO) "AS $<"
+	$(Q)$(AS) $(ASFLAGS) -o $@ $<
+endif
 
 # This file contains performance critical functions so turn up the optimisation
 # level.  It doesn't add much to the code size and improves performance a bit.
@@ -429,25 +427,12 @@ $(PY_BUILD)/formatfloat.o: COPT += -Os
 $(PY_BUILD)/parsenum.o: COPT += -Os
 $(PY_BUILD)/mpprint.o: COPT += -Os
 
-all: $(TOP)/lib/fsp/README.md $(BUILD)/firmware.hex
+all: $(TOP)/lib/fsp/README.md $(BUILD)/firmware.hex $(BUILD)/firmware.bin
 
 # For convenience, automatically fetch required submodules if they don't exist
 $(TOP)/lib/fsp/README.md:
 	$(ECHO) "fsp submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/fsp)
-
-ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
-# To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
-# and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
-
-ifneq ($(FROZEN_MANIFEST)$(FROZEN_MPY_DIR),)
-# To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
-# then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-endif
 
 define GENERATE_ELF
 	$(ECHO) "LINK $(1)"
@@ -457,7 +442,7 @@ endef
 
 define GENERATE_BIN
 	$(ECHO) "GEN $(1)"
-	$(Q)$(OBJCOPY) -O binary $(addprefix -j ,$(3)) $(2) $(1)
+	$(Q)$(OBJCOPY) -I ihex -O binary $(2) $(1)
 endef
 
 define GENERATE_HEX
@@ -465,19 +450,10 @@ define GENERATE_HEX
 	$(Q)$(OBJCOPY) -O ihex $(2) $(1)
 endef
 
-.PHONY: 
+.PHONY:
 
-# A board should specify TEXT0_ADDR if to use a different location than the
-# default for the firmware memory location.  A board can also optionally define
-# TEXT1_ADDR to split the firmware into two sections; see below for details.
-TEXT0_ADDR ?= 0x00000000
-
-# No TEXT1_ADDR given so put all firmware at TEXT0_ADDR location
-
-TEXT0_SECTIONS ?= .isr_vector .text .data
-
-$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
-	$(call GENERATE_BIN,$@,$^,$(TEXT0_SECTIONS))
+$(BUILD)/firmware.bin: $(BUILD)/firmware.hex
+	$(call GENERATE_BIN,$@,$^)
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(call GENERATE_HEX,$@,$^)
@@ -500,20 +476,18 @@ endif
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA6M2))
 AF_FILE = boards/ra6m2_af.csv
 endif
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA6M5))
+AF_FILE = boards/ra6m5_af.csv
+endif
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-GEN_PINS_AD_CONST = $(HEADER_BUILD)/pins_ad_const.h
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-#GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 FILE2H = $(TOP)/tools/file2h.py
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 
-# Making OBJ use an order-only depenedency on the generated pins.h file
+# Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
@@ -527,12 +501,10 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
 .PRECIOUS: $(GEN_PINS_SRC)
-$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(HEADER_BUILD)/%_af_defs.h $(BUILD)/%_qstr.h: $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h: $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --ad-const $(GEN_PINS_AD_CONST) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
-
-#$(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
-#	$(call compile_c)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv $(AF_FILE) --prefix $(PREFIX_FILE) \
+	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR)
 
 CMSIS_MCU_HDR = $(CMSIS_DIR)/$(CMSIS_MCU_LOWER).h
 

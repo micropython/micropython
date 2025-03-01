@@ -1,16 +1,17 @@
 #define MICROPY_HW_BOARD_NAME       "NUCLEO-F091RC"
 #define MICROPY_HW_MCU_NAME         "STM32F091RCT6"
 
+#define MICROPY_QSTR_BYTES_IN_HASH  (0)
+
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_OPT_COMPUTED_GOTO   (0)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
-#define MICROPY_PY_USOCKET          (0)
+#define MICROPY_PY_SOCKET           (0)
 #define MICROPY_PY_NETWORK          (0)
 #define MICROPY_PY_STM              (0)
 #define MICROPY_PY_PYB_LEGACY       (0)
-#define MICROPY_PY_UHEAPQ           (0)
-#define MICROPY_PY_UTIMEQ           (0)
+#define MICROPY_PY_HEAPQ            (0)
 #define MICROPY_PY_FRAMEBUF         (0)
 
 #define MICROPY_HW_ENABLE_RTC       (1)

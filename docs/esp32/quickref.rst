@@ -18,6 +18,9 @@ working with this board it may be useful to get an overview of the microcontroll
    general.rst
    tutorial/index.rst
 
+Note that there are several varieties of ESP32 -- ESP32, ESP32C3, ESP32C6, ESP32S2, ESP32S3 --
+supported by MicroPython, with some differences in functionality between them.
+
 Installing MicroPython
 ----------------------
 
@@ -57,13 +60,18 @@ The :mod:`esp32` module::
 
     import esp32
 
-    esp32.hall_sensor()     # read the internal hall sensor
     esp32.raw_temperature() # read the internal temperature of the MCU, in Fahrenheit
-    esp32.ULP()             # access to the Ultra-Low-Power Co-processor
+    esp32.ULP()             # access to the Ultra-Low-Power Co-processor, not on ESP32C3/C6
 
 Note that the temperature sensor in the ESP32 will typically read higher than
 ambient due to the IC getting warm while it runs.  This effect can be minimised
 by reading the temperature sensor immediately after waking up from sleep.
+
+ESP32C3, ESP32C6, ESP32S2, and ESP32S3 also have an internal temperature sensor available.
+It is implemented a bit differently to the ESP32 and returns the temperature in
+Celsius::
+
+    esp32.mcu_temperature() # read the internal temperature of the MCU, in Celsius
 
 Networking
 ----------
@@ -81,7 +89,7 @@ The :mod:`network` module::
     wlan.isconnected()      # check if the station is connected to an AP
     wlan.connect('ssid', 'key') # connect to an AP
     wlan.config('mac')      # get the interface's MAC address
-    wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
+    wlan.ipconfig('addr4')  # get the interface's IPv4 addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
     ap.config(ssid='ESP-AP') # set the SSID of the access point
@@ -99,10 +107,10 @@ A useful function for connecting to your local WiFi network is::
             wlan.connect('ssid', 'key')
             while not wlan.isconnected():
                 pass
-        print('network config:', wlan.ifconfig())
+        print('network config:', wlan.ipconfig('addr4'))
 
 Once the network is established the :mod:`socket <socket>` module can be used
-to create and use TCP/UDP sockets as usual, and the ``urequests`` module for
+to create and use TCP/UDP sockets as usual, and the ``requests`` module for
 convenient HTTP requests.
 
 After a call to ``wlan.connect()``, the device will by default retry to connect
@@ -122,13 +130,14 @@ To use the wired interfaces one has to specify the pins and mode ::
 
     lan = network.LAN(mdc=PIN_MDC, ...)   # Set the pin and mode configuration
     lan.active(True)                      # activate the interface
-    lan.ifconfig()                        # get the interface's IP/netmask/gw/DNS addresses
+    lan.ipconfig('addr4')                 # get the interface's IPv4 addresses
 
 
 The keyword arguments for the constructor defining the PHY type and interface are:
 
 - mdc=pin-object    # set the mdc and mdio pins.
 - mdio=pin-object
+- reset=pin-object  # set the reset pin of the PHY device.
 - power=pin-object  # set the pin which switches the power of the PHY device.
 - phy_type=<type>   # Select the PHY device type. Supported devices are PHY_LAN8710,
   PHY_LAN8720, PH_IP101, PHY_RTL8201, PHY_DP83848 and PHY_KSZ8041
@@ -137,20 +146,12 @@ The keyword arguments for the constructor defining the PHY type and interface ar
   or output. Suitable values are Pin.IN and Pin.OUT.
 - ref_clk=pin-object  # defines the Pin used for ref_clk.
 
-The options ref_clk_mode and ref_clk require at least esp-idf version 4.4. For
-earlier esp-idf versions, these parameters must be defined by kconfig board options.
-
 These are working configurations for LAN interfaces of popular boards::
 
     # Olimex ESP32-GATEWAY: power controlled by Pin(5)
     # Olimex ESP32 PoE and ESP32-PoE ISO: power controlled by Pin(12)
 
     lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5),
-                      phy_type=network.PHY_LAN8720, phy_addr=0)
-
-    # or with dynamic ref_clk pin configuration
-
-    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5), 
                       phy_type=network.PHY_LAN8720, phy_addr=0,
                       ref_clk=machine.Pin(17), ref_clk_mode=machine.Pin.OUT)
 
@@ -159,20 +160,16 @@ These are working configurations for LAN interfaces of popular boards::
     lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18),
                       phy_type=network.PHY_LAN8720, phy_addr=1, power=None)
 
+    # Wireless-Tag's WT32-ETH01 v1.4
+
+    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18),
+                      phy_type=network.PHY_LAN8720, phy_addr=1,
+                      power=machine.Pin(16))
+
     # Espressif ESP32-Ethernet-Kit_A_V1.2
 
     lan = network.LAN(id=0, mdc=Pin(23), mdio=Pin(18), power=Pin(5),
                       phy_type=network.PHY_IP101, phy_addr=1)
-
-A suitable definition of the PHY interface in a sdkconfig.board file is::
-
-    CONFIG_ETH_PHY_INTERFACE_RMII=y
-    CONFIG_ETH_RMII_CLK_OUTPUT=y
-    CONFIG_ETH_RMII_CLK_OUT_GPIO=17
-    CONFIG_LWIP_LOCAL_HOSTNAME="ESP32_POE"
-
-The value assigned to CONFIG_ETH_RMII_CLK_OUT_GPIO may vary depending on the
-board's wiring.
 
 Delay and timing
 ----------------
@@ -305,8 +302,8 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
 
     from machine import Pin, PWM
 
-    pwm0 = PWM(Pin(0))         # create PWM object from a pin
-    freq = pwm0.freq()         # get current frequency (default 5kHz)
+    pwm0 = PWM(Pin(0), freq=5000, duty_u16=32768) # create PWM object from a pin
+    freq = pwm0.freq()         # get current frequency
     pwm0.freq(1000)            # set PWM frequency from 1Hz to 40MHz
 
     duty = pwm0.duty()         # get current duty cycle, range 0-1023 (default 512, 50%)
@@ -342,6 +339,19 @@ have the same frequency.  On the other hand, 16 independent PWM duty cycles are
 possible at the same frequency.
 
 See more examples in the :ref:`esp32_pwm` tutorial.
+
+DAC (digital to analog conversion)
+----------------------------------
+
+On the ESP32, DAC functionality is available on pins 25, 26.
+On the ESP32S2, DAC functionality is available on pins 17, 18.
+
+Use the DAC::
+
+    from machine import DAC, Pin
+
+    dac = DAC(Pin(25))  # create an DAC object acting on a pin
+    dac.write(128)      # set a raw analog value in the range 0-255, 50% now
 
 ADC (analog to digital conversion)
 ----------------------------------
@@ -650,15 +660,15 @@ SD card
 
 See :ref:`machine.SDCard <machine.SDCard>`. ::
 
-    import machine, os
+    import machine, os, vfs
 
     # Slot 2 uses pins sck=18, cs=5, miso=19, mosi=23
     sd = machine.SDCard(slot=2)
-    os.mount(sd, '/sd')  # mount
+    vfs.mount(sd, '/sd') # mount
 
     os.listdir('/sd')    # list directory contents
 
-    os.umount('/sd')     # eject
+    vfs.umount('/sd')    # eject
 
 RMT
 ---

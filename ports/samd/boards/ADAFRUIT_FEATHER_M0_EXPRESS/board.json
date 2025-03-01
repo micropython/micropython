@@ -5,11 +5,10 @@
     "docs": "",
     "features": [
         "Battery Charging",
-        "Breadboard Friendly",
+        "External Flash",
         "Feather",
-        "Micro USB",
         "RGB LED",
-        "SPI Flash"
+        "USB"
     ],
     "images": [
         "feather_m0_express.jpg"

@@ -23,6 +23,9 @@ Supported features include:
 
 Documentation is available at http://docs.micropython.org/en/latest/esp8266/quickref.html.
 
+The default build requires a 2MiB flash chip, but see below for support for
+1MiB and 512kiB options.
+
 Build instructions
 ------------------
 
@@ -67,10 +70,10 @@ Then to compile the ESP8266 firmware:
 
 ```
 $ cd ports/esp8266
-$ docker run --rm -v $HOME:$HOME -u $UID -w $PWD larsks/esp-open-sdk make -j BOARD=GENERIC
+$ docker run --rm -v $HOME:$HOME -u $UID -w $PWD larsks/esp-open-sdk make -j BOARD=ESP8266_GENERIC
 ```
 
-This will produce binary images in the `build-GENERIC/` subdirectory.
+This will produce binary images in the `build-ESP8266_GENERIC/` subdirectory.
 Substitute the board for whichever board you're using.
 
 __Building with a local toolchain__
@@ -106,10 +109,10 @@ Then to compile the ESP8266 firmware:
 
 ```
 $ cd ports/esp8266
-$ make -j BOARD=GENERIC
+$ make -j BOARD=ESP8266_GENERIC
 ```
 
-This will produce binary images in the `build-GENERIC/` subdirectory.
+This will produce binary images in the `build-ESP8266_GENERIC/` subdirectory.
 Substitute the board for whichever board you're using.
 
 
@@ -149,25 +152,29 @@ $ make PORT=/dev/ttyUSB0 FLASH_MODE=qio FLASH_SIZE=32m deploy
 (note that flash size is in megabits)
 
 If you want to flash manually using `esptool.py` directly, the image produced is
-`build-GENERIC/firmware-combined.bin`, to be flashed at 0x00000.
+`build-ESP8266_GENERIC/firmware.bin`, to be flashed at 0x00000.
 
-The default board definition is the directory `boards/GENERIC`.
+The default board definition is the directory `boards/ESP8266_GENERIC`.
 For a custom configuration you can define your own board in the directory `boards/`.
 
-The `BOARD` variable can be set on the make command line, for example:
+__Reduced FlashROM variants__
+
+The normal build described above requires modules with at least 2MiB of
+FlashROM onboard. There's a special configuration for 512kiB modules, which can
+be built with the `FLASH_512K` variant. This configuration is highly limited,
+lacks filesystem support, WebREPL, and has many other features disabled. It's
+mostly suitable for advanced users who are interested to fine-tune options to
+achieve a required setup. If you are an end user, please consider using a
+module with at least 2MiB of FlashROM.
+
+A variant is also provided for 1MiB modules which just lacks the included
+micropython-lib packages.
+
+The variant can be set on the make command line, for example:
 ```bash
-$ make BOARD=GENERIC_512K
+$ make BOARD=ESP8266_GENERIC BOARD_VARIANT=FLASH_512K
+$ make BOARD=ESP8266_GENERIC BOARD_VARIANT=FLASH_1M
 ```
-
-__512KB FlashROM version__
-
-The normal build described above requires modules with at least 1MB of FlashROM
-onboard. There's a special configuration for 512KB modules, which can be
-built with `make BOARD=GENERIC_512K`. This configuration is highly limited, lacks
-filesystem support, WebREPL, and has many other features disabled. It's mostly
-suitable for advanced users who are interested to fine-tune options to achieve a
-required setup. If you are an end user, please consider using a module with at
-least 1MB of FlashROM.
 
 First start
 -----------

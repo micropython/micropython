@@ -1,7 +1,4 @@
-try:
-    import usocket as socket, sys
-except:
-    import socket, sys
+import socket, sys
 
 
 def test_non_existent():

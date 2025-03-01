@@ -39,6 +39,7 @@
 
 #include CLOCK_CONFIG_H
 #include "modmachine.h"
+#include "irq.h"
 
 const uint8_t dcd_data[] = { 0x00 };
 
@@ -63,6 +64,7 @@ void board_init(void) {
 
     // 1ms tick timer
     SysTick_Config(SystemCoreClock / 1000);
+    NVIC_SetPriority(SysTick_IRQn, IRQ_PRI_SYSTICK);
 
     // USB0
     usb_phy0_init(0b0111, 0b0110, 0b0110);  // Configure nominal values for D_CAL and TXCAL45DP/DN

@@ -4,7 +4,6 @@
     ],
     "docs": "",
     "features": [],
-    "id": "pyblitev10",
     "images": [
         "PYBLITEv1_0.jpg",
         "PYBLITEv1_0-B.jpg",
@@ -15,10 +14,10 @@
     "thumbnail": "",
     "url": "https://store.micropython.org/product/PYBLITEv1.0",
     "variants": {
-        "dp": "Double-precision float",
-        "dp-thread": "Double precision float + Threads",
-        "network": "Wiznet 5200 Driver",
-        "thread": "Threading"
+        "DP": "Double-precision float",
+        "DP_THREAD": "Double precision float + Threads",
+        "NETWORK": "Wiznet 5200 Driver",
+        "THREAD": "Threading"
     },
     "vendor": "George Robotics"
 }

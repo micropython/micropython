@@ -1,0 +1,10 @@
+--- instance0 ---
+Server Start
+Server Done
+--- instance1 ---
+IRECV() test...
+TEST: send/recv(msglen=12,sync=True): OK
+RSSI test...
+OK
+DONE
+TEST: send/recv(msglen=5,sync=True): OK

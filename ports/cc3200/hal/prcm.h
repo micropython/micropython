@@ -189,8 +189,8 @@ unsigned char ulRstReg;
 #define PRCM_SSPI                 0x00000013
 #define PRCM_I2CA0                0x00000014
 // Note : PRCM_ADC is a dummy define for pinmux utility code generation
-// PRCM_ADC should never be used in any user code. 
-#define PRCM_ADC                  0x000000FF 
+// PRCM_ADC should never be used in any user code.
+#define PRCM_ADC                  0x000000FF
 
 //*****************************************************************************
 // User bits in the PRCM persistent registers

@@ -29,10 +29,11 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
+#include "extmod/virtpin.h"
 #include "shared/runtime/mpirq.h"
 #include "modmachine.h"
 #include "machine_pin.h"
-#include "extmod/virtpin.h"
 
 #include "hardware/irq.h"
 #include "hardware/regs/intctrl.h"
@@ -68,14 +69,14 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pin_cpu_pins_obj_type,
     MP_QSTR_cpu,
     MP_TYPE_FLAG_NONE,
-    locals_dict, &pin_cpu_pins_locals_dict
+    locals_dict, &machine_pin_cpu_pins_locals_dict
     );
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pin_board_pins_obj_type,
     MP_QSTR_board,
     MP_TYPE_FLAG_NONE,
-    locals_dict, &pin_board_pins_locals_dict
+    locals_dict, &machine_pin_board_pins_locals_dict
     );
 
 typedef struct _machine_pin_irq_obj_t {
@@ -84,22 +85,22 @@ typedef struct _machine_pin_irq_obj_t {
     uint32_t trigger;
 } machine_pin_irq_obj_t;
 
-STATIC const mp_irq_methods_t machine_pin_irq_methods;
-extern const machine_pin_obj_t *machine_pin_cpu_pins[NUM_BANK0_GPIOS];
+static const mp_irq_methods_t machine_pin_irq_methods;
+static const int num_intr_regs = sizeof(iobank0_hw->intr) / sizeof(iobank0_hw->intr[0]);
 
 // Mask with "1" indicating that the corresponding pin is in simulated open-drain mode.
-uint32_t machine_pin_open_drain_mask;
+uint64_t machine_pin_open_drain_mask;
 
 #if MICROPY_HW_PIN_EXT_COUNT
-STATIC inline bool is_ext_pin(__unused const machine_pin_obj_t *self) {
+static inline bool is_ext_pin(__unused const machine_pin_obj_t *self) {
     return self->is_ext;
 }
 #else
 #define is_ext_pin(x) false
 #endif
 
-STATIC void gpio_irq(void) {
-    for (int i = 0; i < 4; ++i) {
+static void gpio_irq(void) {
+    for (int i = 0; i < num_intr_regs; ++i) {
         uint32_t intr = iobank0_hw->intr[i];
         if (intr) {
             for (int j = 0; j < 8; ++j) {
@@ -166,7 +167,36 @@ const machine_pin_af_obj_t *machine_pin_find_alt_by_index(const machine_pin_obj_
     return NULL;
 }
 
-STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+const machine_pin_obj_t *machine_pin_find(mp_obj_t pin) {
+    // Is already a object of the proper type
+    if (mp_obj_is_type(pin, &machine_pin_type)) {
+        return MP_OBJ_TO_PTR(pin);
+    }
+    if (mp_obj_is_str(pin)) {
+        const char *name = mp_obj_str_get_str(pin);
+        // Try to find the pin in the board pins first.
+        const machine_pin_obj_t *self = machine_pin_find_named(&machine_pin_board_pins_locals_dict, pin);
+        if (self != NULL) {
+            return self;
+        }
+        // If not found, try to find the pin in the cpu pins which include
+        // CPU and and externally controlled pins (if any).
+        self = machine_pin_find_named(&machine_pin_cpu_pins_locals_dict, pin);
+        if (self != NULL) {
+            return self;
+        }
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unknown named pin \"%s\""), name);
+    } else if (mp_obj_is_int(pin)) {
+        // get the wanted pin object
+        int wanted_pin = mp_obj_get_int(pin);
+        if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_obj_table)) {
+            return &machine_pin_obj_table[wanted_pin];
+        }
+    }
+    mp_raise_ValueError("invalid pin");
+}
+
+static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
     uint funcsel = GPIO_GET_FUNCSEL(self->id);
     qstr mode_qst;
@@ -222,7 +252,7 @@ static const mp_arg_t allowed_args[] = {
     {MP_QSTR_alt,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GPIO_FUNC_SIO}},
 };
 
-STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -268,7 +298,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
                 mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin af: %d"), af);
             }
             gpio_set_function(self->id, af);
-            machine_pin_open_drain_mask &= ~(1 << self->id);
+            machine_pin_open_drain_mask &= ~(1ULL << self->id);
         }
     }
 
@@ -286,30 +316,8 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 // constructor(id, ...)
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-    const machine_pin_obj_t *self = NULL;
 
-    if (mp_obj_is_str(args[0])) {
-        const char *name = mp_obj_str_get_str(args[0]);
-        // Try to find the pin in the board pins first.
-        self = machine_pin_find_named(&pin_board_pins_locals_dict, args[0]);
-        if (!self) {
-            // If not found, try to find the pin in the cpu pins which include
-            // CPU and and externally controlled pins (if any).
-            self = machine_pin_find_named(&pin_cpu_pins_locals_dict, args[0]);
-        }
-        if (!self) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unknown named pin \"%s\""), name);
-        }
-    } else if (mp_obj_is_int(args[0])) {
-        // get the wanted pin object
-        int wanted_pin = mp_obj_get_int(args[0]);
-        if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_cpu_pins)) {
-            self = machine_pin_cpu_pins[wanted_pin];
-        }
-    }
-    if (!self) {
-        mp_raise_ValueError("invalid pin");
-    }
+    const machine_pin_obj_t *self = machine_pin_find(args[0]);
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
@@ -321,7 +329,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
 }
 
 // fast method for getting/setting pin value
-STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     machine_pin_obj_t *self = self_in;
     if (n_args == 0) {
@@ -351,19 +359,19 @@ STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
 }
 
 // pin.init(mode, pull)
-STATIC mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return machine_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_init_obj, 1, machine_pin_obj_init);
 
 // pin.value([value])
-STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
     return machine_pin_call(args[0], n_args - 1, 0, args + 1);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
 
 // pin.low()
-STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
+static mp_obj_t machine_pin_low(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (is_ext_pin(self)) {
         #if MICROPY_HW_PIN_EXT_COUNT
@@ -372,14 +380,14 @@ STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
     } else if (GPIO_IS_OPEN_DRAIN(self->id)) {
         gpio_set_dir(self->id, GPIO_OUT);
     } else {
-        gpio_clr_mask(1u << self->id);
+        gpio_clr_mask64(1ULL << self->id);
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
 
 // pin.high()
-STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
+static mp_obj_t machine_pin_high(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (is_ext_pin(self)) {
         #if MICROPY_HW_PIN_EXT_COUNT
@@ -388,15 +396,15 @@ STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
     } else if (GPIO_IS_OPEN_DRAIN(self->id)) {
         gpio_set_dir(self->id, GPIO_IN);
     } else {
-        gpio_set_mask(1u << self->id);
+        gpio_set_mask64(1ULL << self->id);
     }
     return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
 
 // pin.toggle()
-STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
+static mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (is_ext_pin(self)) {
         #if MICROPY_HW_PIN_EXT_COUNT
@@ -409,13 +417,13 @@ STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
             gpio_set_dir(self->id, GPIO_OUT);
         }
     } else {
-        gpio_xor_mask(1u << self->id);
+        gpio_xor_mask64(1ULL << self->id);
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
 
-STATIC machine_pin_irq_obj_t *machine_pin_get_irq(mp_hal_pin_obj_t pin) {
+static machine_pin_irq_obj_t *machine_pin_get_irq(mp_hal_pin_obj_t pin) {
     // Get the IRQ object.
     machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[pin]);
 
@@ -424,7 +432,7 @@ STATIC machine_pin_irq_obj_t *machine_pin_get_irq(mp_hal_pin_obj_t pin) {
         irq = m_new_obj(machine_pin_irq_obj_t);
         irq->base.base.type = &mp_irq_type;
         irq->base.methods = (mp_irq_methods_t *)&machine_pin_irq_methods;
-        irq->base.parent = MP_OBJ_FROM_PTR(machine_pin_cpu_pins[pin]);
+        irq->base.parent = MP_OBJ_FROM_PTR(&machine_pin_obj_table[pin]);
         irq->base.handler = mp_const_none;
         irq->base.ishard = false;
         MP_STATE_PORT(machine_pin_irq_obj[pin]) = irq;
@@ -451,7 +459,7 @@ void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trig
 }
 
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
-STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -477,9 +485,9 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     }
     return MP_OBJ_FROM_PTR(irq);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
 
-STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_pin_value_obj) },
@@ -515,9 +523,9 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ALT_GPCK), MP_ROM_INT(GPIO_FUNC_GPCK) },
     { MP_ROM_QSTR(MP_QSTR_ALT_USB), MP_ROM_INT(GPIO_FUNC_USB) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
-STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     machine_pin_obj_t *self = self_in;
 
@@ -545,7 +553,7 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
     return -1;
 }
 
-STATIC const mp_pin_p_t pin_pin_p = {
+static const mp_pin_p_t pin_pin_p = {
     .ioctl = pin_ioctl,
 };
 
@@ -560,7 +568,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_pin_locals_dict
     );
 
-STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[self->id]);
     gpio_set_irq_enabled(self->id, GPIO_IRQ_ALL, false);
@@ -570,7 +578,7 @@ STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger
     return 0;
 }
 
-STATIC mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+static mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[self->id]);
     if (info_type == MP_IRQ_INFO_FLAGS) {
@@ -581,16 +589,13 @@ STATIC mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     return 0;
 }
 
-STATIC const mp_irq_methods_t machine_pin_irq_methods = {
+static const mp_irq_methods_t machine_pin_irq_methods = {
     .trigger = machine_pin_irq_trigger,
     .info = machine_pin_irq_info,
 };
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
-    if (!mp_obj_is_type(obj, &machine_pin_type)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("expecting a Pin"));
-    }
-    machine_pin_obj_t *pin = MP_OBJ_TO_PTR(obj);
+    const machine_pin_obj_t *pin = machine_pin_find(obj);
     if (is_ext_pin(pin)) {
         mp_raise_ValueError(MP_ERROR_TEXT("expecting a regular GPIO Pin"));
     }

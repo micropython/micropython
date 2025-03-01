@@ -29,31 +29,40 @@
 
 #include "py/obj.h"
 #include "py/objint.h"
-#include "extmod/machine_mem.h"
+#include "extmod/modmachine.h"
 #include "rfcore.h"
 #include "portmodules.h"
+#include "subghz.h"
 
 #if MICROPY_PY_STM
 
 #include "genhdr/modstm_mpz.h"
 
-STATIC const mp_rom_map_elem_t stm_module_globals_table[] = {
+static const mp_rom_map_elem_t stm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_stm) },
 
     { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
 
+    #if MICROPY_PY_STM_CONST
     #include "genhdr/modstm_const.h"
+    #endif
 
     #if defined(STM32WB)
     { MP_ROM_QSTR(MP_QSTR_rfcore_status), MP_ROM_PTR(&rfcore_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_rfcore_fw_version), MP_ROM_PTR(&rfcore_fw_version_obj) },
     { MP_ROM_QSTR(MP_QSTR_rfcore_sys_hci), MP_ROM_PTR(&rfcore_sys_hci_obj) },
     #endif
+
+    #if defined(STM32WL)
+    { MP_ROM_QSTR(MP_QSTR_subghz_cs), MP_ROM_PTR(&subghz_cs_obj) },
+    { MP_ROM_QSTR(MP_QSTR_subghz_irq), MP_ROM_PTR(&subghz_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_subghz_is_busy), MP_ROM_PTR(&subghz_is_busy_obj) },
+    #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(stm_module_globals, stm_module_globals_table);
+static MP_DEFINE_CONST_DICT(stm_module_globals, stm_module_globals_table);
 
 const mp_obj_module_t stm_module = {
     .base = { &mp_type_module },

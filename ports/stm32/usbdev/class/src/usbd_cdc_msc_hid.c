@@ -204,7 +204,7 @@ static const uint8_t cdc_class_desc_data[CDC_CLASS_DESC_SIZE] = {
     0x08,   // bLength: 8 bytes
     USB_DESC_TYPE_ASSOCIATION, // bDescriptorType: IAD
     0x00,   // bFirstInterface: first interface for this association -- to be filled in
-    0x02,   // bInterfaceCount: nummber of interfaces for this association
+    0x02,   // bInterfaceCount: number of interfaces for this association
     0x02,   // bFunctionClass: Communication Interface Class
     0x02,   // bFunctionSubClass: Abstract Control Model
     0x01,   // bFunctionProtocol: Common AT commands

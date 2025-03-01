@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "RGB LED",
+        "External RAM",
+        "WiFi",
+        "BLE"
+    ],
+    "features_non_filterable": [
+        "TinyPICO Nano Compatible"
+    ],
+    "id": "nanos3",
+    "images": [
+        "unexpectedmaker_nanos3.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "NanoS3",
+    "thumbnail": "",
+    "url": "https://nanos3.io",
+    "vendor": "Unexpected Maker"
+}

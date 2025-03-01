@@ -50,7 +50,7 @@ typedef struct _id_info_t {
     uint8_t kind;
     uint8_t flags;
     // when it's an ID_INFO_KIND_LOCAL this is the unique number of the local
-    // whet it's an ID_INFO_KIND_CELL/FREE this is the unique number of the closed over variable
+    // when it's an ID_INFO_KIND_CELL/FREE this is the unique number of the closed over variable
     uint16_t local_num;
     qstr qst;
 } id_info_t;
@@ -76,6 +76,9 @@ typedef struct _scope_t {
     struct _scope_t *next;
     mp_parse_node_t pn;
     mp_raw_code_t *raw_code;
+    #if MICROPY_DEBUG_PRINTERS
+    size_t raw_code_data_len; // for mp_bytecode_print
+    #endif
     uint16_t simple_name; // a qstr
     uint16_t scope_flags;  // see runtime0.h
     uint16_t emit_options; // see emitglue.h

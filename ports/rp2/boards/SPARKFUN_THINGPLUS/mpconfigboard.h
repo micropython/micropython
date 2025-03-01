@@ -14,7 +14,7 @@
 #define MICROPY_HW_SPI1_MOSI (15)
 #define MICROPY_HW_SPI1_MISO (12)
 
-// Battery fuel guage MAX17048 on I2C1
+// Battery fuel gauge MAX17048 on I2C1
 // BATT_ALERT GPIO24
 
 // NeoPixel data GPIO8, power not toggleable

@@ -36,6 +36,7 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
+#include "extmod/misc.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_nvic.h"
@@ -48,8 +49,6 @@
 #include "telnet.h"
 #include "pybuart.h"
 #include "utils.h"
-#include "irq.h"
-#include "moduos.h"
 
 #ifdef USE_FREERTOS
 #include "FreeRTOS.h"
@@ -97,7 +96,7 @@ void HAL_SystemInit (void) {
 
 void HAL_SystemDeInit (void) {
 }
- 
+
 void HAL_IncrementTick(void) {
     HAL_tickCount++;
 }
@@ -141,17 +140,15 @@ void mp_hal_delay_ms(mp_uint_t delay) {
     }
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    if (MP_STATE_PORT(os_term_dup_obj)) {
-        if (mp_obj_is_type(MP_STATE_PORT(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
-            uart_tx_strn(MP_STATE_PORT(os_term_dup_obj)->stream_o, str, len);
-        } else {
-            MP_STATE_PORT(os_term_dup_obj)->write[2] = mp_obj_new_str_of_type(&mp_type_str, (const byte *)str, len);
-            mp_call_method_n_kw(1, 0, MP_STATE_PORT(os_term_dup_obj)->write);
-        }
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    mp_uint_t ret = len;
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res >= 0) {
+        ret = dupterm_res;
     }
     // and also to telnet
     telnet_tx_strn(str, len);
+    return ret;
 }
 
 int mp_hal_stdin_rx_chr(void) {
@@ -159,22 +156,14 @@ int mp_hal_stdin_rx_chr(void) {
         // read telnet first
         if (telnet_rx_any()) {
             return telnet_rx_char();
-        } else if (MP_STATE_PORT(os_term_dup_obj)) { // then the stdio_dup
-            if (mp_obj_is_type(MP_STATE_PORT(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
-                if (uart_rx_any(MP_STATE_PORT(os_term_dup_obj)->stream_o)) {
-                    return uart_rx_char(MP_STATE_PORT(os_term_dup_obj)->stream_o);
-                }
-            } else {
-                MP_STATE_PORT(os_term_dup_obj)->read[2] = mp_obj_new_int(1);
-                mp_obj_t data = mp_call_method_n_kw(1, 0, MP_STATE_PORT(os_term_dup_obj)->read);
-                // data len is > 0
-                if (mp_obj_is_true(data)) {
-                    mp_buffer_info_t bufinfo;
-                    mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
-                    return ((int *)(bufinfo.buf))[0];
-                }
-            }
         }
+
+        // then dupterm
+        int dupterm_c = mp_os_dupterm_rx_chr();
+        if (dupterm_c >= 0) {
+            return dupterm_c;
+        }
+
         mp_hal_delay_ms(1);
     }
 }

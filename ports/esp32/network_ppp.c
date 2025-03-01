@@ -32,6 +32,7 @@
 #include "py/stream.h"
 #include "shared/netutils/netutils.h"
 #include "modmachine.h"
+#include "ppp_set_auth.h"
 
 #include "netif/ppp/ppp.h"
 #include "netif/ppp/pppos.h"
@@ -41,6 +42,8 @@
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
 #include "netif/ppp/pppapi.h"
+
+#if defined(CONFIG_ESP_NETIF_TCPIP_LWIP) && defined(CONFIG_LWIP_PPP_SUPPORT)
 
 #define PPP_CLOSE_TIMEOUT_MS (4000)
 
@@ -64,7 +67,11 @@ static void ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
 
     switch (err_code) {
         case PPPERR_NONE:
+            #if CONFIG_LWIP_IPV6
             self->connected = (pppif->ip_addr.u_addr.ip4.addr != 0);
+            #else
+            self->connected = (pppif->ip_addr.addr != 0);
+            #endif // CONFIG_LWIP_IPV6
             break;
         case PPPERR_USER:
             self->clean_close = true;
@@ -77,12 +84,10 @@ static void ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
     }
 }
 
-STATIC mp_obj_t ppp_make_new(mp_obj_t stream) {
+static mp_obj_t ppp_make_new(mp_obj_t stream) {
     mp_get_stream_raise(stream, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE);
 
-    ppp_if_obj_t *self = m_new_obj_with_finaliser(ppp_if_obj_t);
-
-    self->base.type = &ppp_if_type;
+    ppp_if_obj_t *self = mp_obj_malloc_with_finaliser(ppp_if_obj_t, &ppp_if_type);
     self->stream = stream;
     self->active = false;
     self->connected = false;
@@ -103,9 +108,10 @@ static void pppos_client_task(void *self_in) {
     ppp_if_obj_t *self = (ppp_if_obj_t *)self_in;
     uint8_t buf[256];
 
-    while (ulTaskNotifyTake(pdTRUE, 0) == 0) {
+    int len = 0;
+    while (ulTaskNotifyTake(pdTRUE, len <= 0) == 0) {
         int err;
-        int len = mp_stream_rw(self->stream, buf, sizeof(buf), &err, 0);
+        len = mp_stream_rw(self->stream, buf, sizeof(buf), &err, 0);
         if (len > 0) {
             pppos_input_tcpip(self->pcb, (u8_t *)buf, len);
         }
@@ -113,9 +119,11 @@ static void pppos_client_task(void *self_in) {
 
     self->client_task_handle = NULL;
     vTaskDelete(NULL);
+    for (;;) {
+    }
 }
 
-STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (n_args > 1) {
@@ -161,9 +169,9 @@ STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
     }
     return mp_obj_new_bool(self->active);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ppp_active_obj, 1, 2, ppp_active);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ppp_active_obj, 1, 2, ppp_active);
 
-STATIC mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     enum { ARG_authmode, ARG_username, ARG_password };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PPPAUTHTYPE_NONE} },
@@ -216,7 +224,7 @@ STATIC mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(ppp_connect_obj, 1, ppp_connect_py);
 
-STATIC mp_obj_t ppp_delete(mp_obj_t self_in) {
+static mp_obj_t ppp_delete(mp_obj_t self_in) {
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t args[] = {self, mp_const_false};
     ppp_active(2, args);
@@ -224,7 +232,7 @@ STATIC mp_obj_t ppp_delete(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ppp_delete_obj, ppp_delete);
 
-STATIC mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // get
@@ -247,36 +255,122 @@ STATIC mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
         ip_addr_t dns;
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
+        #if CONFIG_LWIP_IPV6
         netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns.u_addr.ip4, NETUTILS_BIG);
+        #else
+        netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns, NETUTILS_BIG);
+        #endif // CONFIG_LWIP_IPV6
         dns_setserver(0, &dns);
         return mp_const_none;
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ppp_ifconfig_obj, 1, 2, ppp_ifconfig);
 
-STATIC mp_obj_t ppp_status(mp_obj_t self_in) {
+static mp_obj_t ppp_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    if (kwargs->used == 0) {
+        ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+        if (self->pcb == NULL) {
+            mp_raise_ValueError(MP_ERROR_TEXT("PPP not active"));
+        }
+        struct netif *netif = ppp_netif(self->pcb);
+        // Get config value
+        if (n_args != 2) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+
+        switch (mp_obj_str_get_qstr(args[1])) {
+            case MP_QSTR_addr4: {
+                mp_obj_t tuple[2] = {
+                    netutils_format_ipv4_addr((uint8_t *)&netif->ip_addr, NETUTILS_BIG),
+                    netutils_format_ipv4_addr((uint8_t *)&netif->netmask, NETUTILS_BIG),
+                };
+                return mp_obj_new_tuple(2, tuple);
+            }
+            case MP_QSTR_gw4: {
+                return netutils_format_ipv4_addr((uint8_t *)&netif->gw, NETUTILS_BIG);
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+        return mp_const_none;
+    } else {
+        mp_raise_TypeError(MP_ERROR_TEXT("setting properties not supported"));
+    }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ppp_status_obj, ppp_status);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ppp_ipconfig_obj, 1, ppp_ipconfig);
 
-STATIC mp_obj_t ppp_isconnected(mp_obj_t self_in) {
+static mp_obj_t ppp_status(mp_obj_t self_in) {
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(ppp_status_obj, ppp_status);
+
+static mp_obj_t ppp_isconnected(mp_obj_t self_in) {
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(self->connected);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ppp_isconnected_obj, ppp_isconnected);
+static MP_DEFINE_CONST_FUN_OBJ_1(ppp_isconnected_obj, ppp_isconnected);
 
-STATIC const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {
+static mp_obj_t ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    if (n_args != 1 && kwargs->used != 0) {
+        mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
+    }
+    ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (kwargs->used != 0) {
+        for (size_t i = 0; i < kwargs->alloc; i++) {
+            if (mp_map_slot_is_filled(kwargs, i)) {
+                switch (mp_obj_str_get_qstr(kwargs->table[i].key)) {
+                    default:
+                        break;
+                }
+            }
+        }
+        return mp_const_none;
+    }
+
+    if (n_args != 2) {
+        mp_raise_TypeError(MP_ERROR_TEXT("can query only one param"));
+    }
+
+    mp_obj_t val = mp_const_none;
+
+    switch (mp_obj_str_get_qstr(args[1])) {
+        case MP_QSTR_ifname: {
+            if (self->pcb != NULL) {
+                struct netif *pppif = ppp_netif(self->pcb);
+                char ifname[NETIF_NAMESIZE + 1] = {0};
+                netif_index_to_name(netif_get_index(pppif), ifname);
+                if (ifname[0] != 0) {
+                    val = mp_obj_new_str_from_cstr((char *)ifname);
+                }
+            }
+            break;
+        }
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+    }
+
+    return val;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(ppp_config_obj, 1, ppp_config);
+
+static const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&ppp_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&ppp_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&ppp_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&ppp_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&ppp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&ppp_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&ppp_ipconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ppp_delete_obj) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_NONE), MP_ROM_INT(PPPAUTHTYPE_NONE) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_PAP), MP_ROM_INT(PPPAUTHTYPE_PAP) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_CHAP), MP_ROM_INT(PPPAUTHTYPE_CHAP) },
 };
-STATIC MP_DEFINE_CONST_DICT(ppp_if_locals_dict, ppp_if_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ppp_if_locals_dict, ppp_if_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     ppp_if_type,
@@ -284,3 +378,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     locals_dict, &ppp_if_locals_dict
     );
+
+#endif

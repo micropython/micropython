@@ -1,5 +1,7 @@
 # This Python code will be merged with the C code in main.c
 
+# ruff: noqa: F821 - this file is evaluated with C-defined names in scope
+
 import array
 
 

@@ -1,8 +1,8 @@
 # tests for things that are not implemented, or have non-compliant behaviour
 
 try:
-    import uarray as array
-    import ustruct
+    import array
+    import struct
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -39,7 +39,7 @@ try:
 except NotImplementedError:
     print("NotImplementedError")
 
-# uPy raises TypeError, shold be ValueError
+# uPy raises TypeError, should be ValueError
 try:
     "%c" % b"\x01\x02"
 except (TypeError, ValueError):
@@ -106,10 +106,10 @@ except NotImplementedError:
     print("NotImplementedError")
 
 # struct pack with too many args, not checked by uPy
-print(ustruct.pack("bb", 1, 2, 3))
+print(struct.pack("bb", 1, 2, 3))
 
 # struct pack with too few args, not checked by uPy
-print(ustruct.pack("bb", 1))
+print(struct.pack("bb", 1))
 
 # array slice assignment with unsupported RHS
 try:

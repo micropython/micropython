@@ -75,6 +75,21 @@ Methods
       - ``wake`` specifies the sleep mode from where this interrupt can wake
         up the system.
 
+.. method:: RTC.memory([data])
+
+   ``RTC.memory(data)`` will write *data* to the RTC memory, where *data* is any
+   object which supports the buffer protocol (including `bytes`, `bytearray`,
+   `memoryview` and `array.array`). ``RTC.memory()`` reads RTC memory and returns
+   a `bytes` object.
+
+   Data written to RTC user memory is persistent across restarts, including
+   `machine.soft_reset()` and `machine.deepsleep()`.
+
+   The maximum length of RTC user memory is 2048 bytes by default on esp32,
+   and 492 bytes on esp8266.
+
+   Availability: esp32, esp8266 ports.
+
 Constants
 ---------
 

@@ -29,6 +29,8 @@
 const char zephyr_help_text[] =
     "Welcome to MicroPython!\n"
     "\n"
+    "For online docs please visit http://docs.micropython.org/\n"
+    "\n"
     "Control commands:\n"
     "  CTRL-A        -- on a blank line, enter raw REPL mode\n"
     "  CTRL-B        -- on a blank line, enter normal REPL mode\n"

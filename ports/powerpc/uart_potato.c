@@ -118,7 +118,7 @@ int mp_hal_stdin_rx_chr(void) {
     return (char)(val & 0x000000ff);
 }
 
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     int i;
 
     for (i = 0; i < len; i++) {
@@ -129,4 +129,5 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
         }
         potato_uart_reg_write(POTATO_CONSOLE_TX, val);
     }
+    return len;
 }

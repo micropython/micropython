@@ -16,10 +16,20 @@
 #define MICROPY_HW_CLK_PLLQ (7)
 
 // UART config
-#define MICROPY_HW_UART2_TX     (pin_A2)
-#define MICROPY_HW_UART2_RX     (pin_A3)
-#define MICROPY_HW_UART6_TX     (pin_C6)
-#define MICROPY_HW_UART6_RX     (pin_C7)
+#define MICROPY_HW_UART1_TX     (pin_B6)    // Arduino D10, pin 17 on CN10
+#define MICROPY_HW_UART1_RX     (pin_B7)    //              pin 21 on CN7
+#define MICROPY_HW_UART2_TX     (pin_A2)    // Arduino D1,  pin 35 on CN10
+#define MICROPY_HW_UART2_RX     (pin_A3)    // Arduino D0,  pin 37 on CN10
+#define MICROPY_HW_UART2_RTS    (pin_A1)    // Arduino A1,  pin 30 on CN7
+#define MICROPY_HW_UART2_CTS    (pin_A0)    // Arduino A0,  pin 28 on CN7
+#define MICROPY_HW_UART3_TX     (pin_B10)   // Arduino D6,  pin 25 on CN10
+#define MICROPY_HW_UART3_RX     (pin_C5)    //              pin  6 on CN10
+#define MICROPY_HW_UART3_RTS    (pin_B14)   //              pin 28 on CN10
+#define MICROPY_HW_UART3_CTS    (pin_B13)   //              pin 30 on CN10
+#define MICROPY_HW_UART4_TX     (pin_A0)    // Arduino A0,  pin 28 on CN7
+#define MICROPY_HW_UART4_RX     (pin_A1)    // Arduino A1,  pin 30 on CN7
+#define MICROPY_HW_UART6_TX     (pin_C6)    //              pin  4 on CN10
+#define MICROPY_HW_UART6_RX     (pin_C7)    // Arduino D9,  pin 19 on CN10
 // UART 2 connects to the STM32F103 (STLINK) on the Nucleo board
 // and this is exposed as a USB Serial port.
 #define MICROPY_HW_UART_REPL        PYB_UART_2

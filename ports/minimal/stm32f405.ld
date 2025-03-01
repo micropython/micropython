@@ -28,7 +28,7 @@ SECTIONS
 
         . = ALIGN(4);
         _etext = .;        /* define a global symbol at end of code */
-        _sidata = _etext;  /* This is used by the startup in order to initialize the .data secion */
+        _sidata = _etext;  /* This is used by the startup in order to initialize the .data section */
     } >FLASH
 
     /* This is the initialized data section

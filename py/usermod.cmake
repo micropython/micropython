@@ -5,6 +5,10 @@ function(usermod_gather_sources SOURCES_VARNAME INCLUDE_DIRECTORIES_VARNAME INCL
     if (NOT ${LIB} IN_LIST ${INCLUDED_VARNAME})
         list(APPEND ${INCLUDED_VARNAME} ${LIB})
 
+        if (NOT TARGET ${LIB})
+            return()
+        endif()
+
         # Gather library sources
         get_target_property(lib_sources ${LIB} INTERFACE_SOURCES)
         if (lib_sources)

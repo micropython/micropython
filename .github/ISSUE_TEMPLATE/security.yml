@@ -1,0 +1,60 @@
+name: Security report
+description: Report a security issue or vulnerability in MicroPython
+labels: ["security"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This form is for reporting security issues in MicroPython that are not readily exploitable.
+
+        1. For issues that are readily exploitable or have high impact, please email contact@micropython.org instead.
+        1. If this is a question about security, please ask it in [Discussions](https://github.com/orgs/micropython/discussions/) or [Discord](https://discord.gg/RB8HZSAExQ) instead.
+
+        #### Existing issue?
+
+        * Please search for [existing issues](https://github.com/micropython/micropython/issues) before reporting a new one.
+
+  - type: input
+    id: port-board-hw
+    attributes:
+      label: Port, board and/or hardware
+      description: |
+        Which MicroPython port(s) and board(s) are you using?
+      placeholder: |
+        esp32 port, ESP32-Duper board.
+  - type: textarea
+    id: version
+    attributes:
+      label: MicroPython version
+      description: |
+        To find the version:
+
+        1. Open a serial REPL.
+        2. Type Ctrl-B to see the startup message.
+        3. Copy-paste that output here.
+
+        If the version or configuration is modified from the official MicroPython releases or the master branch, please tell us the details of this as well.
+      placeholder: |
+        MicroPython v6.28.3 on 2029-01-23; PyBoard 9 with STM32F9
+  - type: textarea
+    id: report
+    attributes:
+      label: Issue Report
+      description: |
+        Please provide a clear and concise description of the security issue.
+
+        * What does this issue allow an attacker to do?
+        * How does the attacker exploit this issue?
+    validations:
+      required: true
+  - type: dropdown
+    id: code-of-conduct
+    attributes:
+      label: Code of Conduct
+      description: |
+        Do you agree to follow the MicroPython [Code of Conduct](https://github.com/micropython/micropython/blob/master/CODEOFCONDUCT.md) to ensure a safe and respectful space for everyone?
+      options:
+        - "Yes, I agree"
+      multiple: true
+    validations:
+      required: true

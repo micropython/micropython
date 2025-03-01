@@ -1,17 +1,16 @@
 # Test builtin execfile function using VFS.
 
 try:
-    import uio, uos
+    import io, os, vfs
 
     execfile
-    uio.IOBase
-    uos.mount
+    io.IOBase
 except (ImportError, NameError, AttributeError):
     print("SKIP")
     raise SystemExit
 
 
-class File(uio.IOBase):
+class File(io.IOBase):
     def __init__(self, data):
         self.data = data
         self.off = 0
@@ -44,18 +43,18 @@ class Filesystem:
 
 # First umount any existing mount points the target may have.
 try:
-    uos.umount("/")
+    vfs.umount("/")
 except OSError:
     pass
-for path in uos.listdir("/"):
-    uos.umount("/" + path)
+for path in os.listdir("/"):
+    vfs.umount("/" + path)
 
 # Create and mount the VFS object.
 files = {
     "/test.py": "print(123)",
 }
 fs = Filesystem(files)
-uos.mount(fs, "/test_mnt")
+vfs.mount(fs, "/test_mnt")
 
 # Test execfile with a file that doesn't exist.
 try:
@@ -66,5 +65,11 @@ except OSError:
 # Test execfile with a file that does exist.
 execfile("/test_mnt/test.py")
 
+# Test that it only works with string arguments.
+try:
+    execfile(b"aaa")
+except TypeError:
+    print("TypeError")
+
 # Unmount the VFS object.
-uos.umount(fs)
+vfs.umount(fs)

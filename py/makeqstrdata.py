@@ -52,7 +52,8 @@ codepoint2name[ord("^")] = "caret"
 codepoint2name[ord("|")] = "pipe"
 codepoint2name[ord("~")] = "tilde"
 
-# static qstrs, should be sorted
+# static qstrs, these must maintain a specific order for .mpy compatibility
+# See QSTR_LAST_STATIC at the top of py/persistentcode.c
 
 static_qstr_list = [
     "",
@@ -61,12 +62,7 @@ static_qstr_list = [
     " ",
     "*",
     "/",
-    "<dictcomp>",
-    "<genexpr>",
-    "<lambda>",
-    "<listcomp>",
     "<module>",
-    "<setcomp>",
     "_",
     "__call__",
     "__class__",
@@ -227,16 +223,87 @@ static_qstr_list = [
     "zip",
 ]
 
+# Additional QSTRs that must have index <255 because they are stored as `byte` values.
+# These are not part of the .mpy compatibility list, but we place them in the
+# fixed unsorted pool (i.e. QDEF0) to ensure their indices are small.
+unsorted_qstr_list = {
+    # From py/objtype.c: used in the `mp_binary_op_method_name` and `mp_unary_op_method_name` tables.
+    "__bool__",
+    "__pos__",
+    "__neg__",
+    "__invert__",
+    "__abs__",
+    "__float__",
+    "__complex__",
+    "__sizeof__",
+    "__lt__",
+    "__gt__",
+    "__eq__",
+    "__le__",
+    "__ge__",
+    "__ne__",
+    "__contains__",
+    "__iadd__",
+    "__isub__",
+    "__imul__",
+    "__imatmul__",
+    "__ifloordiv__",
+    "__itruediv__",
+    "__imod__",
+    "__ipow__",
+    "__ior__",
+    "__ixor__",
+    "__iand__",
+    "__ilshift__",
+    "__irshift__",
+    "__add__",
+    "__sub__",
+    "__mul__",
+    "__matmul__",
+    "__floordiv__",
+    "__truediv__",
+    "__mod__",
+    "__divmod__",
+    "__pow__",
+    "__or__",
+    "__xor__",
+    "__and__",
+    "__lshift__",
+    "__rshift__",
+    "__radd__",
+    "__rsub__",
+    "__rmul__",
+    "__rmatmul__",
+    "__rfloordiv__",
+    "__rtruediv__",
+    "__rmod__",
+    "__rpow__",
+    "__ror__",
+    "__rxor__",
+    "__rand__",
+    "__rlshift__",
+    "__rrshift__",
+    "__get__",
+    "__set__",
+    "__delete__",
+    # From py/scope.c: used in `scope_simple_name_table` table.
+    # Note: "<module>" is already in `static_qstr_list`.
+    "<lambda>",
+    "<listcomp>",
+    "<dictcomp>",
+    "<setcomp>",
+    "<genexpr>",
+}
+
 
 # this must match the equivalent function in qstr.c
-
-
 def compute_hash(qstr, bytes_hash):
     hash = 5381
     for b in qstr:
         hash = (hash * 33) ^ b
     # Make sure that valid hash is never zero, zero means "hash not computed"
-    return (hash & ((1 << (8 * bytes_hash)) - 1)) or 1
+    # if bytes_hash is zero, assume a 16-bit mask (to match qstr.c)
+    return (hash & ((1 << (8 * (bytes_hash or 2))) - 1)) or 1
 
 
 def qstr_escape(qst):
@@ -251,21 +318,12 @@ def qstr_escape(qst):
     return re.sub(r"[^A-Za-z0-9_]", esc_char, qst)
 
 
+static_qstr_list_ident = list(map(qstr_escape, static_qstr_list))
+
+
 def parse_input_headers(infiles):
     qcfgs = {}
     qstrs = {}
-
-    # add static qstrs
-    for qstr in static_qstr_list:
-        # work out the corresponding qstr name
-        ident = qstr_escape(qstr)
-
-        # don't add duplicates
-        assert ident not in qstrs
-
-        # add the qstr to the list, with order number to retain original order in file
-        order = len(qstrs) - 300000
-        qstrs[ident] = Qstr(order, ident, qstr)
 
     # read the qstrs in from the input files
     for infile in infiles:
@@ -301,22 +359,12 @@ def parse_input_headers(infiles):
                 ident = qstr_escape(qstr)
 
                 # don't add duplicates
+                if ident in static_qstr_list_ident:
+                    continue
                 if ident in qstrs:
                     continue
 
-                # add the qstr to the list, with order number to retain original order in file
-                order = len(qstrs)
-                # but put special method names like __add__ at the top of list, so
-                # that their id's fit into a byte
-                if ident == "":
-                    # Sort empty qstr above all still
-                    order = -200000
-                elif ident == "__dir__":
-                    # Put __dir__ after empty qstr for builtin dir() to work
-                    order = -190000
-                elif ident.startswith("__"):
-                    order -= 100000
-                qstrs[ident] = Qstr(order, ident, qstr)
+                qstrs[ident] = (ident, qstr)
 
     if not qcfgs:
         sys.stderr.write("ERROR: Empty preprocessor output - check for errors above\n")
@@ -325,44 +373,31 @@ def parse_input_headers(infiles):
     return qcfgs, qstrs
 
 
-class Qstr:
-    cfg_bytes_len = 0
-    cfg_bytes_hash = 0
-
-    def __init__(self, order, ident, qstr):
-        self.order = order
-        self.ident = ident
-        self.qstr = qstr
-
-    @property
-    def qbytes(self):
-        return bytes_cons(self.qstr, "utf8")
-
-    @property
-    def qlen(self):
-        if len(self.qbytes) >= (1 << (8 * Qstr.cfg_bytes_len)):
-            print("qstr is too long:", self.qstr)
-            assert False
-        return len(self.qbytes)
-
-    @property
-    def qhash(self):
-        return compute_hash(self.qbytes, Qstr.cfg_bytes_hash)
-
-    def _escape_bytes(self):
-        if all(32 <= ord(c) <= 126 and c != "\\" and c != '"' for c in self.qstr):
-            # qstr is all printable ASCII so render it as-is (for easier debugging)
-            return self.qstr
-        else:
-            # qstr contains non-printable codes so render entire thing as hex pairs
-            return "".join(("\\x%02x" % b) for b in self.qbytes)
-
-    @property
-    def qdata(self):
-        return self._escape_bytes()
+def escape_bytes(qstr, qbytes):
+    if all(32 <= ord(c) <= 126 and c != "\\" and c != '"' for c in qstr):
+        # qstr is all printable ASCII so render it as-is (for easier debugging)
+        return qstr
+    else:
+        # qstr contains non-printable codes so render entire thing as hex pairs
+        return "".join(("\\x%02x" % b) for b in qbytes)
 
 
-def print_qstr_data(qstrs):
+def make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr):
+    qbytes = bytes_cons(qstr, "utf8")
+    qlen = len(qbytes)
+    qhash = compute_hash(qbytes, cfg_bytes_hash)
+    if qlen >= (1 << (8 * cfg_bytes_len)):
+        print("qstr is too long:", qstr)
+        assert False
+    qdata = escape_bytes(qstr, qbytes)
+    return '%d, %d, "%s"' % (qhash, qlen, qdata)
+
+
+def print_qstr_data(qcfgs, qstrs):
+    # get config variables
+    cfg_bytes_len = int(qcfgs["BYTES_IN_LEN"])
+    cfg_bytes_hash = int(qcfgs["BYTES_IN_HASH"])
+
     # print out the starter of the generated C header file
     print("// This file was automatically generated by makeqstrdata.py")
     print("")
@@ -370,27 +405,22 @@ def print_qstr_data(qstrs):
     # add NULL qstr with no hash or data
     print('QDEF0(MP_QSTRnull, 0, 0, "")')
 
-    # split qstr values into two pools. static consts first.
-    q0_values = [q for q in qstrs.values() if q.order < 0]
-    q1_values = [q for q in qstrs.values() if q.order >= 0]
+    # add static qstrs to the first unsorted pool
+    for qstr in static_qstr_list:
+        qbytes = make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr)
+        print("QDEF0(MP_QSTR_%s, %s)" % (qstr_escape(qstr), qbytes))
 
-    # go through each qstr in pool 0 and print it out. pool0 has special sort.
-    for q in sorted(q0_values, key=lambda x: x.order):
-        print('QDEF0(MP_QSTR_%s, %d, %d, "%s")' % (q.ident, q.qhash, q.qlen, q.qdata))
-
-    # go through each qstr in pool 1 and print it out. pool1 is regularly sorted.
-    for q in sorted(q1_values, key=lambda x: (x.qhash, x.qlen)):
-        print('QDEF1(MP_QSTR_%s, %d, %d, "%s")' % (q.ident, q.qhash, q.qlen, q.qdata))
+    # add remaining qstrs to the sorted (by value) pool (unless they're in
+    # unsorted_qstr_list, in which case add them to the unsorted pool)
+    for ident, qstr in sorted(qstrs.values(), key=lambda x: x[1]):
+        qbytes = make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr)
+        pool = 0 if qstr in unsorted_qstr_list else 1
+        print("QDEF%d(MP_QSTR_%s, %s)" % (pool, ident, qbytes))
 
 
 def do_work(infiles):
     qcfgs, qstrs = parse_input_headers(infiles)
-
-    # get config variables
-    Qstr.cfg_bytes_len = int(qcfgs["BYTES_IN_LEN"])
-    Qstr.cfg_bytes_hash = int(qcfgs["BYTES_IN_HASH"])
-
-    print_qstr_data(qstrs)
+    print_qstr_data(qcfgs, qstrs)
 
 
 if __name__ == "__main__":

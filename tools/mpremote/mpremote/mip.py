@@ -12,13 +12,10 @@ from .commands import CommandError, show_progress_bar
 
 
 _PACKAGE_INDEX = "https://micropython.org/pi/v2"
-_CHUNK_SIZE = 128
 
 
 # This implements os.makedirs(os.dirname(path))
-def _ensure_path_exists(pyb, path):
-    import os
-
+def _ensure_path_exists(transport, path):
     split = path.split("/")
 
     # Handle paths starting with "/".
@@ -29,25 +26,9 @@ def _ensure_path_exists(pyb, path):
     prefix = ""
     for i in range(len(split) - 1):
         prefix += split[i]
-        if not pyb.fs_exists(prefix):
-            pyb.fs_mkdir(prefix)
+        if not transport.fs_exists(prefix):
+            transport.fs_mkdir(prefix)
         prefix += "/"
-
-
-# Copy from src (stream) to dest (function-taking-bytes)
-def _chunk(src, dest, length=None, op="downloading"):
-    buf = memoryview(bytearray(_CHUNK_SIZE))
-    total = 0
-    if length:
-        show_progress_bar(0, length, op)
-    while True:
-        n = src.readinto(buf)
-        if n == 0:
-            break
-        dest(buf if n == _CHUNK_SIZE else buf[:n])
-        total += n
-        if length:
-            show_progress_bar(total, length, op)
 
 
 def _rewrite_url(url, branch=None):
@@ -65,21 +46,28 @@ def _rewrite_url(url, branch=None):
             + "/"
             + "/".join(url[2:])
         )
+    elif url.startswith("gitlab:"):
+        url = url[7:].split("/")
+        url = (
+            "https://gitlab.com/"
+            + url[0]
+            + "/"
+            + url[1]
+            + "/-/raw/"
+            + branch
+            + "/"
+            + "/".join(url[2:])
+        )
     return url
 
 
-def _download_file(pyb, url, dest):
+def _download_file(transport, url, dest):
     try:
         with urllib.request.urlopen(url) as src:
-            fd, path = tempfile.mkstemp()
-            try:
-                print("Installing:", dest)
-                with os.fdopen(fd, "wb") as f:
-                    _chunk(src, f.write, src.length)
-                _ensure_path_exists(pyb, dest)
-                pyb.fs_put(path, dest, progress_callback=show_progress_bar)
-            finally:
-                os.unlink(path)
+            data = src.read()
+            print("Installing:", dest)
+            _ensure_path_exists(transport, dest)
+            transport.fs_writefile(dest, data, progress_callback=show_progress_bar)
     except urllib.error.HTTPError as e:
         if e.status == 404:
             raise CommandError(f"File not found: {url}")
@@ -89,7 +77,7 @@ def _download_file(pyb, url, dest):
         raise CommandError(f"{e.reason} requesting {url}")
 
 
-def _install_json(pyb, package_json_url, index, target, version, mpy):
+def _install_json(transport, package_json_url, index, target, version, mpy):
     try:
         with urllib.request.urlopen(_rewrite_url(package_json_url, version)) as response:
             package_json = json.load(response)
@@ -103,24 +91,25 @@ def _install_json(pyb, package_json_url, index, target, version, mpy):
     for target_path, short_hash in package_json.get("hashes", ()):
         fs_target_path = target + "/" + target_path
         file_url = f"{index}/file/{short_hash[:2]}/{short_hash}"
-        _download_file(pyb, file_url, fs_target_path)
+        _download_file(transport, file_url, fs_target_path)
     for target_path, url in package_json.get("urls", ()):
         fs_target_path = target + "/" + target_path
-        _download_file(pyb, _rewrite_url(url, version), fs_target_path)
+        _download_file(transport, _rewrite_url(url, version), fs_target_path)
     for dep, dep_version in package_json.get("deps", ()):
-        _install_package(pyb, dep, index, target, dep_version, mpy)
+        _install_package(transport, dep, index, target, dep_version, mpy)
 
 
-def _install_package(pyb, package, index, target, version, mpy):
+def _install_package(transport, package, index, target, version, mpy):
     if (
         package.startswith("http://")
         or package.startswith("https://")
         or package.startswith("github:")
+        or package.startswith("gitlab:")
     ):
         if package.endswith(".py") or package.endswith(".mpy"):
             print(f"Downloading {package} to {target}")
             _download_file(
-                pyb, _rewrite_url(package, version), target + "/" + package.rsplit("/")[-1]
+                transport, _rewrite_url(package, version), target + "/" + package.rsplit("/")[-1]
             )
             return
         else:
@@ -136,14 +125,12 @@ def _install_package(pyb, package, index, target, version, mpy):
 
         mpy_version = "py"
         if mpy:
-            pyb.exec("import sys")
-            mpy_version = (
-                int(pyb.eval("getattr(sys.implementation, '_mpy', 0) & 0xFF").decode()) or "py"
-            )
+            transport.exec("import sys")
+            mpy_version = transport.eval("getattr(sys.implementation, '_mpy', 0) & 0xFF") or "py"
 
         package = f"{index}/package/{mpy_version}/{package}/{version}.json"
 
-    _install_json(pyb, package, index, target, version, mpy)
+    _install_json(transport, package, index, target, version, mpy)
 
 
 def do_mip(state, args):
@@ -163,12 +150,8 @@ def do_mip(state, args):
                 args.index = _PACKAGE_INDEX
 
             if args.target is None:
-                state.pyb.exec("import sys")
-                lib_paths = (
-                    state.pyb.eval("'\\n'.join(p for p in sys.path if p.endswith('/lib'))")
-                    .decode()
-                    .split("\n")
-                )
+                state.transport.exec("import sys")
+                lib_paths = [p for p in state.transport.eval("sys.path") if p.endswith("/lib")]
                 if lib_paths and lib_paths[0]:
                     args.target = lib_paths[0]
                 else:
@@ -181,7 +164,12 @@ def do_mip(state, args):
 
             try:
                 _install_package(
-                    state.pyb, package, args.index.rstrip("/"), args.target, version, args.mpy
+                    state.transport,
+                    package,
+                    args.index.rstrip("/"),
+                    args.target,
+                    version,
+                    args.mpy,
                 )
             except CommandError:
                 print("Package may be partially installed")

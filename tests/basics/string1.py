@@ -5,7 +5,6 @@ print('abc')
 print(r'abc')
 print(u'abc')
 print(repr('\a\b\t\n\v\f\r'))
-print('\z') # unrecognised escape char
 
 # construction
 print(str())

@@ -1,10 +1,6 @@
 # test sys module
 
-try:
-    import usys as sys
-except ImportError:
-    import sys
-
+import sys
 print(sys.__name__)
 print(type(sys.path))
 print(type(sys.argv))
@@ -27,3 +23,18 @@ if hasattr(sys.implementation, '_mpy'):
 else:
     # Effectively skip subtests
     print(int)
+
+try:
+    print(sys.intern('micropython') == 'micropython')
+    has_intern = True
+except AttributeError:
+    has_intern = False
+    print(True)
+
+if has_intern:
+    try:
+        print(sys.intern(0))
+    except TypeError:
+        print(True)
+else:
+    print(True)

@@ -68,7 +68,6 @@ extern uint8_t _micropy_hw_internal_flash_storage_ram_cache_end[];
 #define FLASH_FLAG_FORCE_WRITE  (2)
 #define FLASH_FLAG_ERASED       (4)
 static __IO uint8_t flash_flags = 0;
-static uint32_t flash_cache_sector_id;
 static uint32_t flash_cache_sector_start;
 static uint32_t flash_cache_sector_size;
 static uint32_t flash_tick_counter_last_write;
@@ -80,7 +79,7 @@ int32_t flash_bdev_ioctl(uint32_t op, uint32_t arg) {
     switch (op) {
         case BDEV_IOCTL_INIT:
             flash_flags = 0;
-            flash_cache_sector_id = 0;
+            flash_cache_sector_start = (uint32_t)-1;
             flash_tick_counter_last_write = 0;
             return 0;
 
@@ -110,14 +109,13 @@ int32_t flash_bdev_ioctl(uint32_t op, uint32_t arg) {
 static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
     uint32_t flash_sector_start;
     uint32_t flash_sector_size;
-    int32_t flash_sector_id = flash_get_sector_info(flash_addr, &flash_sector_start, &flash_sector_size);
+    flash_get_sector_info(flash_addr, &flash_sector_start, &flash_sector_size);
     if (flash_sector_size > FLASH_SECTOR_SIZE_MAX) {
         flash_sector_size = FLASH_SECTOR_SIZE_MAX;
     }
-    if (flash_cache_sector_id != flash_sector_id) {
+    if (flash_cache_sector_start != flash_sector_start) {
         flash_bdev_ioctl(BDEV_IOCTL_SYNC, 0);
         memcpy((void *)CACHE_MEM_START_ADDR, (const void *)flash_sector_start, flash_sector_size);
-        flash_cache_sector_id = flash_sector_id;
         flash_cache_sector_start = flash_sector_start;
         flash_cache_sector_size = flash_sector_size;
     }
@@ -130,8 +128,8 @@ static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
 static uint8_t *flash_cache_get_addr_for_read(uint32_t flash_addr) {
     uint32_t flash_sector_start;
     uint32_t flash_sector_size;
-    int32_t flash_sector_id = flash_get_sector_info(flash_addr, &flash_sector_start, &flash_sector_size);
-    if (flash_cache_sector_id == flash_sector_id) {
+    flash_get_sector_info(flash_addr, &flash_sector_start, &flash_sector_size);
+    if (flash_cache_sector_start == flash_sector_start) {
         // in cache, copy from there
         return (uint8_t *)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
     }
@@ -159,28 +157,9 @@ static void flash_bdev_irq_handler(void) {
         return;
     }
 
-    // This code uses interrupts to erase the flash
-    /*
-    if (flash_erase_state == 0) {
-        flash_erase_it(flash_cache_sector_start, flash_cache_sector_size / 4);
-        flash_erase_state = 1;
-        return;
-    }
-
-    if (flash_erase_state == 1) {
-        // wait for erase
-        // TODO add timeout
-        #define flash_erase_done() (__HAL_FLASH_GET_FLAG(FLASH_FLAG_BSY) == RESET)
-        if (!flash_erase_done()) {
-            return;
-        }
-        flash_erase_state = 2;
-    }
-    */
-
     // This code erases the flash directly, waiting for it to finish
     if (!(flash_flags & FLASH_FLAG_ERASED)) {
-        flash_erase(flash_cache_sector_start, flash_cache_sector_size / 4);
+        flash_erase(flash_cache_sector_start);
         flash_flags |= FLASH_FLAG_ERASED;
         return;
     }

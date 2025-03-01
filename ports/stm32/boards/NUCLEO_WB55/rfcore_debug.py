@@ -35,6 +35,7 @@
 # See rfcore_firmware.py for more information.
 
 from machine import mem8, mem16, mem32
+from micropython import const
 import stm
 
 SRAM2A_BASE = const(0x2003_0000)
@@ -113,7 +114,14 @@ def ipcc_init():
     SYS_CMD_BUF = get_ipcc_table_word(TABLE_SYS, 0)
     SYS_SYS_QUEUE = get_ipcc_table_word(TABLE_SYS, 1)
 
-    global MM_BLE_SPARE_EVT_BUF, MM_SYS_SPARE_EVT_BUF, MM_BLE_POOL, MM_BLE_POOL_SIZE, MM_FREE_BUF_QUEUE, MM_EV_POOL, MM_EV_POOL_SIZE
+    global \
+        MM_BLE_SPARE_EVT_BUF, \
+        MM_SYS_SPARE_EVT_BUF, \
+        MM_BLE_POOL, \
+        MM_BLE_POOL_SIZE, \
+        MM_FREE_BUF_QUEUE, \
+        MM_EV_POOL, \
+        MM_EV_POOL_SIZE
     MM_BLE_SPARE_EVT_BUF = get_ipcc_table_word(TABLE_MEM_MANAGER, 0)
     MM_SYS_SPARE_EVT_BUF = get_ipcc_table_word(TABLE_MEM_MANAGER, 1)
     MM_BLE_POOL = get_ipcc_table_word(TABLE_MEM_MANAGER, 2)

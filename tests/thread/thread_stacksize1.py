@@ -1,10 +1,8 @@
 # test setting the thread stack size
 #
 # MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
-try:
-    import usys as sys
-except ImportError:
-    import sys
+
+import sys
 import _thread
 
 # different implementations have different minimum sizes

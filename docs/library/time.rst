@@ -163,8 +163,8 @@ Functions
    However, values returned by `ticks_ms()`, etc. functions may wrap around, so
    directly using subtraction on them will produce incorrect result. That is why
    `ticks_diff()` is needed, it implements modular (or more specifically, ring)
-   arithmetics to produce correct result even for wrap-around values (as long as they not
-   too distant inbetween, see below). The function returns **signed** value in the range
+   arithmetic to produce correct result even for wrap-around values (as long as they not
+   too distant in between, see below). The function returns **signed** value in the range
    [*-TICKS_PERIOD/2* .. *TICKS_PERIOD/2-1*] (that's a typical range definition for
    two's-complement signed binary integers). If the result is negative, it means that
    *ticks1* occurred earlier in time than *ticks2*. Otherwise, it means that
@@ -183,7 +183,7 @@ Functions
    has passed. To avoid this mistake, just look at the clock regularly. Your application
    should do the same. "Too long sleep" metaphor also maps directly to application
    behaviour: don't let your application run any single task for too long. Run tasks
-   in steps, and do time-keeping inbetween.
+   in steps, and do time-keeping in between.
 
    `ticks_diff()` is designed to accommodate various usage patterns, among them:
 

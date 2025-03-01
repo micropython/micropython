@@ -26,10 +26,12 @@
  */
 
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_I2C
+
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/machine_i2c.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 #include "samd_soc.h"
 #include "pin_af.h"
 #include "clock_config.h"
@@ -68,9 +70,7 @@ typedef struct _machine_i2c_obj_t {
     uint8_t *buf;
 } machine_i2c_obj_t;
 
-extern Sercom *sercom_instance[];
-
-STATIC void i2c_send_command(Sercom *i2c, uint8_t command) {
+static void i2c_send_command(Sercom *i2c, uint8_t command) {
     i2c->I2CM.CTRLB.bit.CMD = command;
     while (i2c->I2CM.SYNCBUSY.bit.SYSOP) {
     }
@@ -98,7 +98,7 @@ void common_i2c_irq_handler(int i2c_id) {
                 i2c->I2CM.INTFLAG.reg |= SERCOM_I2CM_INTFLAG_SB;
             }
         } else if (IRQ_DATA_SENT) {
-            if (NACK_RECVD) { // e.g. NACK after adress for both read and write.
+            if (NACK_RECVD) { // e.g. NACK after address for both read and write.
                 self->state = state_nack; // force stop of transmission
                 i2c->I2CM.INTFLAG.reg |= SERCOM_I2CM_INTFLAG_MB;
             } else if (self->len > 0) { // data to be sent
@@ -117,7 +117,7 @@ void common_i2c_irq_handler(int i2c_id) {
     }
 }
 
-STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2C(%u, freq=%u, scl=%u, sda=%u)",
         self->id, self->freq, self->scl, self->sda);
@@ -200,7 +200,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     #elif defined(MCU_SAMD51)
     NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id); // MB interrupt
     NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 1); // SB interrupt
-    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 3); // ERRROR interrupt
+    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 3); // ERROR interrupt
     #endif
 
     // Now enable I2C.
@@ -212,7 +212,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
+static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t *)self_in;
     Sercom *i2c = self->instance;
 
@@ -230,7 +230,7 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     i2c->I2CM.INTENSET.reg = SERCOM_I2CM_INTENSET_MB | SERCOM_I2CM_INTENSET_SB | SERCOM_I2CM_INTENSET_ERROR;
     self->state = state_busy;
 
-    // Send the adress, which kicks off the transfer
+    // Send the address, which kicks off the transfer
     i2c->I2CM.ADDR.bit.ADDR = (addr << 1) | READ_MODE;
 
     // Transfer the data
@@ -260,7 +260,7 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     return len;
 }
 
-STATIC const mp_machine_i2c_p_t machine_i2c_p = {
+static const mp_machine_i2c_p_t machine_i2c_p = {
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_i2c_transfer_single,
 };
@@ -274,3 +274,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &machine_i2c_p,
     locals_dict, &mp_machine_i2c_locals_dict
     );
+
+#endif

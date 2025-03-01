@@ -17,7 +17,7 @@ Requirements
 The first thing you need is a board with an ESP32 chip.  The MicroPython
 software supports the ESP32 chip itself and any board should work.  The main
 characteristic of a board is how the GPIO pins are connected to the outside
-world, and whether it includes a built-in USB-serial convertor to make the
+world, and whether it includes a built-in USB-serial converter to make the
 UART available to your PC.
 
 Names of pins will be given in this tutorial using the chip names (eg GPIO2)
@@ -59,7 +59,7 @@ bootloader mode, and second you need to copy across the firmware.  The exact
 procedure for these steps is highly dependent on the particular board and you will
 need to refer to its documentation for details.
 
-Fortunately, most boards have a USB connector, a USB-serial convertor, and the DTR
+Fortunately, most boards have a USB connector, a USB-serial converter, and the DTR
 and RTS pins wired in a special way then deploying the firmware should be easy as
 all steps can be done automatically.  Boards that have such features
 include the Adafruit Feather HUZZAH32, M5Stack, Wemos LOLIN32, and TinyPICO
@@ -104,7 +104,7 @@ Serial prompt
 
 Once you have the firmware on the device you can access the REPL (Python prompt)
 over UART0 (GPIO1=TX, GPIO3=RX), which might be connected to a USB-serial
-convertor, depending on your board.  The baudrate is 115200.
+converter, depending on your board.  The baudrate is 115200.
 
 From here you can now follow the ESP8266 tutorial, because these two Espressif chips
 are very similar when it comes to using MicroPython on them.  The ESP8266 tutorial
@@ -124,7 +124,7 @@ after it, here are troubleshooting recommendations:
 
 * The flashing instructions above use flashing speed of 460800 baud, which is
   good compromise between speed and stability. However, depending on your
-  module/board, USB-UART convertor, cables, host OS, etc., the above baud
+  module/board, USB-UART converter, cables, host OS, etc., the above baud
   rate may be too high and lead to errors. Try a more common 115200 baud
   rate instead in such cases.
 

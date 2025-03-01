@@ -41,7 +41,12 @@
 #define MICROPY_FLOAT_IMPL             (MICROPY_FLOAT_IMPL_DOUBLE)
 #endif
 
-// Enable arbritrary precision long-int by default.
+// Don't use native _Float16 because it increases code size by a lot.
+#ifndef MICROPY_FLOAT_USE_NATIVE_FLT16
+#define MICROPY_FLOAT_USE_NATIVE_FLT16 (0)
+#endif
+
+// Enable arbitrary precision long-int by default.
 #ifndef MICROPY_LONGINT_IMPL
 #define MICROPY_LONGINT_IMPL           (MICROPY_LONGINT_IMPL_MPZ)
 #endif
@@ -58,7 +63,7 @@
 #endif
 
 // Seed random on import.
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (mp_urandom_seed_init())
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC (mp_random_seed_init())
 
 // Allow exception details in low-memory conditions.
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
@@ -68,8 +73,8 @@
 #define MICROPY_PERSISTENT_CODE_LOAD   (1)
 
 // Extra memory debugging.
-#define MICROPY_MALLOC_USES_ALLOCATED_SIZE (0)
-#define MICROPY_MEM_STATS              (0)
+#define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
+#define MICROPY_MEM_STATS              (1)
 
 // Enable a small performance boost for the VM.
 #define MICROPY_OPT_COMPUTED_GOTO      (1)
@@ -87,43 +92,32 @@
 #define MICROPY_PY_SYS_EXC_INFO        (1)
 
 // Configure the "os" module with extra unix features.
-#define MICROPY_PY_UOS_INCLUDEFILE     "ports/unix/moduos.c"
-#define MICROPY_PY_UOS_ERRNO           (1)
-#define MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV (1)
-#define MICROPY_PY_UOS_SEP             (1)
-#define MICROPY_PY_UOS_SYSTEM          (1)
-#define MICROPY_PY_UOS_URANDOM         (1)
+#define MICROPY_PY_OS_INCLUDEFILE      "ports/unix/modos.c"
+#define MICROPY_PY_OS_ERRNO            (1)
+#define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV (1)
+#define MICROPY_PY_OS_SYSTEM           (1)
+#define MICROPY_PY_OS_URANDOM          (1)
 
 // Enable the unix-specific "time" module.
-#define MICROPY_PY_UTIME               (1)
-#define MICROPY_PY_UTIME_MP_HAL        (1)
+#define MICROPY_PY_TIME                (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS   (1)
+#define MICROPY_PY_TIME_CUSTOM_SLEEP   (1)
+#define MICROPY_PY_TIME_INCLUDEFILE    "ports/unix/modtime.c"
 
-// Enable the utimeq module used by the previous (v2) version of uasyncio.
-#define MICROPY_PY_UTIMEQ              (1)
-
-#if MICROPY_PY_USSL
-#define MICROPY_PY_UHASHLIB_MD5        (1)
-#define MICROPY_PY_UHASHLIB_SHA1       (1)
-#define MICROPY_PY_UCRYPTOLIB          (1)
+#if MICROPY_PY_SSL
+#define MICROPY_PY_HASHLIB_MD5         (1)
+#define MICROPY_PY_HASHLIB_SHA1        (1)
+#define MICROPY_PY_CRYPTOLIB           (1)
 #endif
 
-// Use the posix implementation of the "select" module (unless the variant
-// specifically asks for the MicroPython version).
-#ifndef MICROPY_PY_USELECT
-#define MICROPY_PY_USELECT             (0)
-#endif
-#ifndef MICROPY_PY_USELECT_POSIX
-#define MICROPY_PY_USELECT_POSIX       (!MICROPY_PY_USELECT)
-#endif
+// The "select" module is enabled by default, but disable select.select().
+#define MICROPY_PY_SELECT_POSIX_OPTIMISATIONS (1)
+#define MICROPY_PY_SELECT_SELECT       (0)
 
 // Enable the "websocket" module.
-#define MICROPY_PY_UWEBSOCKET          (1)
+#define MICROPY_PY_WEBSOCKET           (1)
 
 // Enable the "machine" module, mostly for machine.mem*.
 #define MICROPY_PY_MACHINE             (1)
 #define MICROPY_PY_MACHINE_PULSE       (1)
-
-// Required for LVGL
-#define MICROPY_ENABLE_SCHEDULER       (1)
-#define MICROPY_MODULE_BUILTIN_INIT    (1)
-#define MICROPY_PY_SYS_SETTRACE        (0)
+#define MICROPY_PY_MACHINE_PIN_BASE    (1)

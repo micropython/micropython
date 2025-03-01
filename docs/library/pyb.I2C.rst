@@ -97,7 +97,7 @@ Methods
        errors properly)
 
    The actual clock frequency may be lower than the requested frequency.
-   This is dependant on the platform hardware. The actual rate may be determined
+   This is dependent on the platform hardware. The actual rate may be determined
    by printing the I2C object.
 
 .. method:: I2C.is_ready(addr)

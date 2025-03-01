@@ -30,7 +30,7 @@ print(lock.locked())
 with lock:
     print(lock.locked())
 
-# test that lock is unlocked if an error is rasied
+# test that lock is unlocked if an error is raised
 try:
     with lock:
         print(lock.locked())

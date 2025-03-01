@@ -1,0 +1,7 @@
+OSError: client
+<SSLSocket>
+TestSocket.setblocking(False)
+TestSocket.setblocking(True)
+TestSocket.ioctl 4 0
+OSError: read
+OSError: write

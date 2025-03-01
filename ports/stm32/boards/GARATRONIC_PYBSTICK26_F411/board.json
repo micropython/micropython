@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "pybstick26_f411.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "GARATRONIC_PYBSTICK26_F411",
     "thumbnail": "",

@@ -26,8 +26,8 @@ FROZEN_MANIFEST ?= variants/manifest.py
 PROG ?= micropython
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = ../unix/qstrdefsport.h
-QSTR_GLOBAL_DEPENDENCIES = $(VARIANT_DIR)/mpconfigvariant.h
+QSTR_DEFS += ../unix/qstrdefsport.h
+QSTR_GLOBAL_DEPENDENCIES += $(VARIANT_DIR)/mpconfigvariant.h
 
 # include py core make definitions
 include $(TOP)/py/py.mk
@@ -56,8 +56,6 @@ SRC_C = \
 	shared/runtime/gchelper_generic.c \
 	ports/unix/main.c \
 	ports/unix/input.c \
-	ports/unix/modmachine.c \
-	ports/unix/modtime.c \
 	ports/unix/gccollect.c \
 	windows_mphal.c \
 	realpath.c \
@@ -90,12 +88,18 @@ LIB += -lws2_32 -lSDL2
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
-# Append any auto-generated sources that are needed by sources listed in
-# SRC_QSTR
-SRC_QSTR_AUTO_DEPS +=
 
 ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool -DMICROPY_MODULE_FROZEN_MPY=1 -DMPZ_DIG_SIZE=16
+CFLAGS += -DMPZ_DIG_SIZE=16
+endif
+
+ifeq ($(shell $(CC) -dumpmachine),i686-w64-mingw32)
+# GCC disables the SSE instruction set by default on i366 targets and we have
+# to specify all three of these options to enable it.
+# https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html (see -mfpmath=unit section)
+# Enabling the SSE instruction set is necessary to get correct rounding of floating points.
+# https://lemire.me/blog/2020/06/26/gcc-not-nearest
+CFLAGS += -msse -mfpmath=sse -march=pentium4
 endif
 
 CXXFLAGS += $(filter-out -std=gnu99,$(CFLAGS))
@@ -104,6 +108,9 @@ include $(TOP)/py/mkrules.mk
 
 .PHONY: test test_full
 
+# Note for recent gcc versions like 13.2:
+# - mingw64-x86_64 gcc builds will pass the math_domain_special test
+# - mingw64-ucrt64 gcc builds will pass all of the below tests
 RUN_TESTS_SKIP += -e math_fun -e float2int_double -e float_parse -e math_domain_special
 
 test: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
@@ -113,3 +120,9 @@ test: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 test_full: test
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) $(PYTHON) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) $(RUN_TESTS_SKIP) -d basics float micropython
+
+$(BUILD)/$(PROG): $(BUILD)/micropython.res
+
+$(BUILD)/%.res: %.rc
+	$(ECHO) "WINDRES $<"
+	$(Q)$(WINDRES) $< -O coff -o $@

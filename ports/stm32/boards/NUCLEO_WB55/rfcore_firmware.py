@@ -73,7 +73,7 @@ import struct, os
 
 try:
     import machine, stm
-    from ubinascii import crc32
+    from binascii import crc32
     from micropython import const
 except ImportError:
     # cpython
@@ -704,7 +704,7 @@ def check_for_updates(force=False):
     if fus_uptodate and ws_uptodate and not force:
         log(f"Already up to date: fus: {current_version_fus}, ws: {current_version_ws}")
     else:
-        log(f"Starting firmware update")
+        log("Starting firmware update")
         log(f" - fus: {current_version_fus} -> {vers_fus}")
         log(f" - ws:  {current_version_ws} -> {vers_ws}")
         _write_state(_STATE_WAITING_FOR_FUS)

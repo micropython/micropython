@@ -3,7 +3,7 @@
  *
  * FileName: uart.c
  *
- * Description: Two UART mode configration and interrupt handler.
+ * Description: Two UART mode configuration and interrupt handler.
  *              Check your hardware connection while use this mode.
  *
  * Modification history:
@@ -17,7 +17,8 @@
 #include "etshal.h"
 #include "c_types.h"
 #include "user_interface.h"
-#include "esp_mphal.h"
+#include "py/mphal.h"
+#include "py/runtime.h"
 
 // seems that this is missing in the Espressif SDK
 #define FUNC_U0RXD 0
@@ -164,7 +165,7 @@ uart_os_config(int uart) {
 *******************************************************************************/
 
 static void uart0_rx_intr_handler(void *para) {
-    /* uart0 and uart1 intr combine togther, when interrupt occur, see reg 0x3ff20020, bit2, bit0 represents
+    /* uart0 and uart1 intr combine together, when interrupt occur, see reg 0x3ff20020, bit2, bit0 represents
       * uart1 and uart0 respectively
       */
 
@@ -218,7 +219,7 @@ bool ICACHE_FLASH_ATTR uart_rx_wait(uint32_t timeout_us) {
         if (system_get_time() - start >= timeout_us) {
             return false; // timeout
         }
-        ets_event_poll();
+        mp_event_handle_nowait();
     }
 }
 

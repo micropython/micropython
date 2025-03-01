@@ -34,7 +34,7 @@ void mp_bluetooth_hci_poll_now(void);
 void mp_bluetooth_hci_poll_in_ms(uint32_t ms);
 
 // Must be provided by the stack bindings (e.g. mpnimbleport.c or mpbtstackport.c).
-// Request new data from the uart and pass to the stack, and run pending events/callouts.
+// Request new HCI data and pass to the stack, and run pending events/callouts.
 // This is a low-level function and should not be called directly, use
 // mp_bluetooth_hci_poll_now/mp_bluetooth_hci_poll_in_ms instead.
 void mp_bluetooth_hci_poll(void);

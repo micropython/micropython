@@ -54,11 +54,26 @@ extern uint32_t irq_stats[IRQ_STATS_MAX];
 #define IRQ_EXIT(irq)
 #endif
 
+// We have inlined IRQ functions for efficiency (they are generally
+// 1 machine instruction).
+//
+// Note on IRQ state: you should not need to know the specific
+// value of the state variable, but rather just pass the return
+// value from disable_irq back to enable_irq.
+
 static inline uint32_t query_irq(void) {
     return __get_PRIMASK();
 }
 
-// enable_irq and disable_irq are defined inline in mpconfigport.h
+static inline void enable_irq(mp_uint_t state) {
+    __set_PRIMASK(state);
+}
+
+static inline mp_uint_t disable_irq(void) {
+    mp_uint_t state = __get_PRIMASK();
+    __disable_irq();
+    return state;
+}
 
 #if __CORTEX_M >= 0x03
 
@@ -100,8 +115,8 @@ static inline void restore_irq_pri(uint32_t state) {
 //
 // The default priority grouping is set to NVIC_PRIORITYGROUP_4 in the
 // HAL_Init function. This corresponds to 4 bits for the priority field
-// and 0 bits for the sub-priority field (which means that for all intensive
-// purposes that the sub-priorities below are ignored).
+// and 0 bits for the sub-priority field (which means that for all intents
+// and purposes, the sub-priorities below are ignored).
 //
 // While a given interrupt is being processed, only higher priority (lower number)
 // interrupts will preempt a given interrupt. If sub-priorities are active

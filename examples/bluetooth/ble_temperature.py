@@ -3,6 +3,12 @@
 # The sensor's local value updates every second, and it will notify
 # any connected central every 10 seconds.
 
+# This example demonstrates the low-level bluetooth module. For most
+# applications, we recommend using the higher-level aioble library which takes
+# care of all IRQ handling and connection management. See
+# https://github.com/micropython/micropython-lib/tree/master/micropython/bluetooth/aioble
+# and in particular the temp_sensor.py example included with aioble.
+
 import bluetooth
 import random
 import struct

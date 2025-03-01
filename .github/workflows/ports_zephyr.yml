@@ -1,0 +1,43 @@
+name: zephyr port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/ports_zephyr.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'shared/**'
+      - 'lib/**'
+      - 'ports/zephyr/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: jlumbroso/free-disk-space@main
+      with:
+        # Only free up a few things so this step runs quickly.
+        android: false
+        dotnet: true
+        haskell: true
+        large-packages: false
+        docker-images: false
+        swap-storage: false
+    - uses: actions/checkout@v4
+    - name: Install packages
+      run: source tools/ci.sh && ci_zephyr_setup
+    - name: Install Zephyr
+      run: source tools/ci.sh && ci_zephyr_install
+    - name: Build
+      run: source tools/ci.sh && ci_zephyr_build
+    - name: Run main test suite
+      run: source tools/ci.sh && ci_zephyr_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
