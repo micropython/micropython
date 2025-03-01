@@ -334,13 +334,8 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = -1} },
-        #if defined(pin_TX) && defined(pin_RX)
-        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = pin_TX} },
-        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = pin_RX} },
-        #else
         { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        #endif
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -508,8 +503,15 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     self->stop = 0;
     self->timeout = 1;
     self->timeout_char = 1;
+    #if defined(pin_TX) && defined(pin_RX)
+    // Initialize with the default pins
+    self->tx = mp_hal_get_pin_obj((mp_obj_t)pin_TX);
+    self->rx = mp_hal_get_pin_obj((mp_obj_t)pin_RX);
+    #else
+    // Have to be defined
     self->tx = 0xff;
     self->rx = 0xff;
+    #endif
     #if MICROPY_HW_UART_RTSCTS
     self->rts = 0xff;
     self->cts = 0xff;

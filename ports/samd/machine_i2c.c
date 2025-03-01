@@ -156,19 +156,11 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     machine_i2c_obj_t *self = mp_obj_malloc(machine_i2c_obj_t, &machine_i2c_type);
     self->id = id;
     self->instance = sercom_instance[self->id];
-    self->scl = 0xff;
-    self->sda = 0xff;
 
     // Set SCL/SDA pins.
-    if (args[ARG_scl].u_obj != MP_ROM_NONE) {
-        self->scl = mp_hal_get_pin_obj(args[ARG_scl].u_obj);
-    }
-    if (args[ARG_sda].u_obj != MP_ROM_NONE) {
-        self->sda = mp_hal_get_pin_obj(args[ARG_sda].u_obj);
-    }
-    if (self->scl == 0xff || self->sda == 0xff) {
-        mp_raise_ValueError(MP_ERROR_TEXT("missing scl/sda"));
-    }
+    self->scl = mp_hal_get_pin_obj(args[ARG_scl].u_obj);
+    self->sda = mp_hal_get_pin_obj(args[ARG_sda].u_obj);
+
     sercom_pad_config_t scl_pad_config = get_sercom_config(self->scl, self->id);
     sercom_pad_config_t sda_pad_config = get_sercom_config(self->sda, self->id);
     if (sda_pad_config.pad_nr != 0 || scl_pad_config.pad_nr != 1) {
