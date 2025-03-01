@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PATH=`echo ~/.espressif/python_env/idf5.*env/bin`:$PATH
+export PATH=`echo ~/.espressif/python_env/idf5.2*env/bin`:$PATH
 
 if [ ! "$1" ]; then
 	make clean
