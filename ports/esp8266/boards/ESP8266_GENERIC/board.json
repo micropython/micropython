@@ -17,7 +17,8 @@
     "variants": {
         "OTA": "OTA compatible",
         "FLASH_1M": "1MiB flash",
-        "FLASH_512K": "512kiB flash"
+        "FLASH_512K": "512kiB flash",
+        "FLASH_2M_ROMFS": "2MiB flash with ROMFS"
     },
     "vendor": "Espressif"
 }
