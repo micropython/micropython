@@ -271,6 +271,9 @@ static void dhcp_server_process(void *arg, struct udp_pcb *upcb, struct pbuf *p,
             printf("DHCPS: client connected: MAC=%02x:%02x:%02x:%02x:%02x:%02x IP=%u.%u.%u.%u\n",
                 dhcp_msg.chaddr[0], dhcp_msg.chaddr[1], dhcp_msg.chaddr[2], dhcp_msg.chaddr[3], dhcp_msg.chaddr[4], dhcp_msg.chaddr[5],
                 dhcp_msg.yiaddr[0], dhcp_msg.yiaddr[1], dhcp_msg.yiaddr[2], dhcp_msg.yiaddr[3]);
+            if (d->on_client_connect != NULL) {
+                d->on_client_connect(dhcp_msg.yiaddr, dhcp_msg.chaddr);
+            }
             break;
         }
 
@@ -295,6 +298,7 @@ void dhcp_server_init(dhcp_server_t *d, ip_addr_t *ip, ip_addr_t *nm) {
     ip_addr_copy(d->ip, *ip);
     ip_addr_copy(d->nm, *nm);
     memset(d->lease, 0, sizeof(d->lease));
+    d->on_client_connect = NULL;
     if (dhcp_socket_new_dgram(&d->udp, d, dhcp_server_process) != 0) {
         return;
     }
@@ -303,6 +307,10 @@ void dhcp_server_init(dhcp_server_t *d, ip_addr_t *ip, ip_addr_t *nm) {
 
 void dhcp_server_deinit(dhcp_server_t *d) {
     dhcp_socket_free(&d->udp);
+}
+
+void dhcp_server_register_connect_cb(dhcp_server_t *d, dhcp_client_callback_t on_client_connect) {
+    d->on_client_connect = on_client_connect;
 }
 
 #endif // MICROPY_PY_LWIP
