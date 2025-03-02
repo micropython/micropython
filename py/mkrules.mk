@@ -27,6 +27,17 @@ OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/compressed.data.h
 CFLAGS += -DMICROPY_ROM_TEXT_COMPRESSION=1
 endif
 
+# Set the variant or board name.
+ifneq ($(VARIANT),)
+CFLAGS += -DMICROPY_BOARD_BUILD_NAME=\"$(VARIANT)\"
+else ifneq ($(BOARD),)
+ifeq ($(BOARD_VARIANT),)
+CFLAGS += -DMICROPY_BOARD_BUILD_NAME=\"$(BOARD)\"
+else
+CFLAGS += -DMICROPY_BOARD_BUILD_NAME=\"$(BOARD)-$(BOARD_VARIANT)\"
+endif
+endif
+
 # QSTR generation uses the same CFLAGS, with these modifications.
 QSTR_GEN_FLAGS = -DNO_QSTR
 # Note: := to force evaluation immediately.
