@@ -19,6 +19,19 @@ if(NOT MICROPY_PREVIEW_VERSION_2)
     set(MICROPY_PREVIEW_VERSION_2 0)
 endif()
 
+# Set the board name.
+if(MICROPY_BOARD)
+    if(MICROPY_BOARD_VARIANT)
+        set(MICROPY_BOARD_BUILD_NAME ${MICROPY_BOARD}-${MICROPY_BOARD_VARIANT})
+    else()
+        set(MICROPY_BOARD_BUILD_NAME ${MICROPY_BOARD})
+    endif()
+
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_BOARD_BUILD_NAME="${MICROPY_BOARD_BUILD_NAME}"
+    )
+endif()
+
 # Need to do this before extracting MICROPY_CPP_DEF below. Rest of frozen
 # manifest handling is at the end of this file.
 if(MICROPY_FROZEN_MANIFEST)

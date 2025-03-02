@@ -92,6 +92,17 @@ static const MP_DEFINE_STR_OBJ(mp_sys_implementation_machine_obj, MICROPY_BANNER
 #endif
 
 #if MICROPY_PY_ATTRTUPLE
+
+#if defined(MICROPY_BOARD_BUILD_NAME)
+static const MP_DEFINE_STR_OBJ(mp_sys_implementation__build_obj, MICROPY_BOARD_BUILD_NAME);
+#define MICROPY_BOARD_BUILD (1)
+#define SYS_IMPLEMENTATION_ELEMS__BUILD \
+    , MP_ROM_PTR(&mp_sys_implementation__build_obj)
+#else
+#define MICROPY_BOARD_BUILD (0)
+#define SYS_IMPLEMENTATION_ELEMS__BUILD
+#endif
+
 #if MICROPY_PREVIEW_VERSION_2
 #define SYS_IMPLEMENTATION_ELEMS__V2 \
     , MP_ROM_TRUE
@@ -106,6 +117,9 @@ static const qstr impl_fields[] = {
     #if MICROPY_PERSISTENT_CODE_LOAD
     MP_QSTR__mpy,
     #endif
+    #if defined(MICROPY_BOARD_BUILD_NAME)
+    MP_QSTR__build,
+    #endif
     #if MICROPY_PREVIEW_VERSION_2
     MP_QSTR__v2,
     #endif
@@ -113,19 +127,20 @@ static const qstr impl_fields[] = {
 static MP_DEFINE_ATTRTUPLE(
     mp_sys_implementation_obj,
     impl_fields,
-    3 + MICROPY_PERSISTENT_CODE_LOAD + MICROPY_PREVIEW_VERSION_2,
+    3 + MICROPY_PERSISTENT_CODE_LOAD + MICROPY_BOARD_BUILD + MICROPY_PREVIEW_VERSION_2,
     SYS_IMPLEMENTATION_ELEMS_BASE
     SYS_IMPLEMENTATION_ELEMS__MPY
+    SYS_IMPLEMENTATION_ELEMS__BUILD
     SYS_IMPLEMENTATION_ELEMS__V2
     );
 #else
 static const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
     {&mp_type_tuple},
     3 + MICROPY_PERSISTENT_CODE_LOAD,
-    // Do not include SYS_IMPLEMENTATION_ELEMS__V2 because
-    // SYS_IMPLEMENTATION_ELEMS__MPY may be empty if
+    // Do not include SYS_IMPLEMENTATION_ELEMS__BUILD or SYS_IMPLEMENTATION_ELEMS__V2
+    // because SYS_IMPLEMENTATION_ELEMS__MPY may be empty if
     // MICROPY_PERSISTENT_CODE_LOAD is disabled, which means they'll share
-    // the same index. Cannot query _v2 if MICROPY_PY_ATTRTUPLE is
+    // the same index. Cannot query _build or _v2 if MICROPY_PY_ATTRTUPLE is
     // disabled.
     {
         SYS_IMPLEMENTATION_ELEMS_BASE
