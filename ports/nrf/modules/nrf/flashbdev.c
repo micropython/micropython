@@ -80,7 +80,7 @@ mp_obj_t nrf_flashbdev_writeblocks(size_t n_args, const mp_obj_t *args) {
     nrf_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t block_num = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
+    mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
 
     mp_int_t address = self->start + (block_num * FLASH_PAGESIZE);
 
