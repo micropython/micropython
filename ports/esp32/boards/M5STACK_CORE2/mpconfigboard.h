@@ -1,0 +1,7 @@
+#define MICROPY_HW_BOARD_NAME "M5Stack Core2"
+#define MICROPY_HW_MCU_NAME "ESP32"
+
+// Required for LVGL
+#define MICROPY_ENABLE_SCHEDULER       (1)
+#define MICROPY_MODULE_BUILTIN_INIT    (1)
+#define MICROPY_PY_SYS_SETTRACE        (0)

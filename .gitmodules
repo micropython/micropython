@@ -17,9 +17,6 @@
 [submodule "lib/nrfx"]
 	path = lib/nrfx
 	url = https://github.com/NordicSemiconductor/nrfx.git
-[submodule "lib/lv_bindings"]
-	path = lib/lv_bindings
-	url = https://github.com/lvgl/lv_binding_micropython.git
 [submodule "lib/mbedtls"]
 	path = lib/mbedtls
 	url = https://github.com/ARMmbed/mbedtls.git
@@ -71,3 +68,6 @@
 [submodule "lib/arduino-lib"]
 	path = lib/arduino-lib
 	url = https://github.com/arduino/arduino-lib-mpy.git
+[submodule "user_modules/lv_binding_micropython"]
+	path = user_modules/lv_binding_micropython
+	url = https://github.com/lvgl/lv_binding_micropython.git

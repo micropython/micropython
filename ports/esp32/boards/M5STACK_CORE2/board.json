@@ -7,12 +7,17 @@
         "BLE",
         "WiFi",
         "SPIRAM",
+        "LCD",
+        "LED",
         "IMU",
         "RTC",
         "PMU",
         "SDCard",
+        "Button",
+        "Speaker",
         "Microphone",
-        "USB-C"
+        "Vibration Motor",
+        "USB-C"        
     ],
     "images": [
         "m5core2.jpg"
@@ -20,6 +25,6 @@
     "mcu": "esp32",
     "product": "M5Stack Core2",
     "thumbnail": "",
-    "url": "https://m5stack.com/",
+    "url": "https://shop.m5stack.com/products/m5stack-core2-esp32-iot-development-kit",
     "vendor": "M5 Stack"
 }
