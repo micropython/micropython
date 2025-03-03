@@ -52,7 +52,7 @@ __attribute__((naked)) void Reset_Handler(void) {
     _start();
 }
 
-NORETURN void Default_Handler(void) {
+MP_NORETURN void Default_Handler(void) {
     for (;;) {
     }
 }
