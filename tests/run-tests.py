@@ -999,8 +999,20 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             with open(filename_mupy, "wb") as f:
                 f.write(output_mupy)
             failed_tests.append((test_name, test_file))
+            if uses_unittest:
+                rm_f(filename_expected)  # in case left over from previous failed run
 
         test_count.increment()
+
+        # Print a note if this looks like it might have been a misfired unittest
+        if not (uses_unittest or test_passed):
+            with open(test_file, "r") as f:
+                if any(re.match("^import.+unittest", l) for l in f.readlines()):
+                    print(
+                        "NOTE: {} may be a unittest that doesn't run unittest.main()".format(
+                            test_file
+                        )
+                    )
 
     if pyb:
         num_threads = 1
