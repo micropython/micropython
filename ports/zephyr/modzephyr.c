@@ -33,6 +33,7 @@
 #include <zephyr/debug/thread_analyzer.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_uart.h>
+#include <zephyr/version.h>
 
 #include "modzephyr.h"
 #include "py/runtime.h"
@@ -49,7 +50,11 @@ static MP_DEFINE_CONST_FUN_OBJ_0(mod_current_tid_obj, mod_current_tid);
 
 #ifdef CONFIG_THREAD_ANALYZER
 static mp_obj_t mod_thread_analyze(void) {
+    #if KERNEL_VERSION_NUMBER >= ZEPHYR_VERSION(4, 0, 0)
+    thread_analyzer_print(0);
+    #else
     thread_analyzer_print();
+    #endif
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_analyze_obj, mod_thread_analyze);
