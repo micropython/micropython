@@ -476,8 +476,8 @@ int main(int argc, char **argv) {
 
     // Define a reasonable stack limit to detect stack overflow.
     mp_uint_t stack_size = 40000 * (sizeof(void *) / 4);
-    #if defined(__arm__) && !defined(__thumb2__)
-    // ARM (non-Thumb) architectures require more stack.
+    #if (defined(__arm__) && !defined(__thumb2__)) || defined(_MSC_VER)
+    // ARM (non-Thumb) architectures require more stack, as does Windows
     stack_size *= 2;
     #endif
 
