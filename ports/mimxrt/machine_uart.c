@@ -136,7 +136,7 @@ bool lpuart_set_iomux_cts(int8_t uart) {
     int index = (uart - 1) * 2;
 
     if (CTS.muxRegister != 0) {
-        IOMUXC_SetPinMux(CTS.muxRegister, CTS.muxMode, CTS.inputRegister, CTS.inputDaisy, CTS.configRegister, 0U);
+        IOMUXC_SetPinMux(CTS.muxRegister, CTS.muxMode, CTS.inputRegister, CTS.inputDaisy, CTS.configRegister, 1U);
         IOMUXC_SetPinConfig(CTS.muxRegister, CTS.muxMode, CTS.inputRegister, CTS.inputDaisy, CTS.configRegister,
             pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_IN, PIN_DRIVE_6, CTS.configRegister));
         return true;
