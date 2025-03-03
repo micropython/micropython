@@ -42,6 +42,35 @@ represented by VFS classes.
 
     Will raise ``OSError(EINVAL)`` if *mount_point* is not found.
 
+.. function:: mountinfo(path)
+
+    This function determines which mountpoint and filesystem the given path is (or
+    would be) on, and returns a tuple of the mountpoint and VFS object.
+
+    The returned tuple has the form *(path, vfs)*.
+
+    - *path* is a string (or bytes if *dir* is a bytes object) containing the mountpoint
+      path for the filesystem containing this path.
+    - *vfs* is the filesystem object used for that mountpoint.
+
+    Paths that exist in the root filesystem return ``(path='/', vfs=None)``;
+    paths not available in any filesystem return ``(path=None, vfs=None)``.
+
+.. function:: ilistmounts()
+
+    This function returns an iterator which then yields tuples corresponding to
+    all active mountpoints. The tuples have the form *(path, vfs)* just as in
+    :func:`mountinfo`.
+
+    If no filesystems are mounted, the iterator will be empty.
+
+.. function:: listmounts()
+
+    This function returns an list of tuples tuples corresponding to all active
+    mountpoints. The tuples have the form *(path, vfs)* just as in :func:`mountinfo`.
+
+    If no filesystems are mounted, returns an empty list.
+
 .. class:: VfsFat(block_dev)
 
     Create a filesystem object that uses the FAT filesystem format.  Storage of
