@@ -300,6 +300,74 @@ mp_obj_t mp_vfs_umount(mp_obj_t mnt_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_umount_obj, mp_vfs_umount);
 
+// get info about the associated filesystem mount for a particular path
+mp_obj_t mp_vfs_mountinfo(mp_obj_t path_in) {
+    const char *path = mp_obj_str_get_str(path_in);
+    const char *p_out;
+    mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
+
+    enum { FIELD_path, FIELD_vfs };
+    static const qstr fields[] = { MP_QSTR_path, MP_QSTR_vfs };
+    mp_obj_t items[MP_ARRAY_SIZE(fields)];
+
+    if (vfs == MP_VFS_NONE) {
+        items[FIELD_path] = mp_const_none;
+        items[FIELD_vfs] = mp_const_none;
+    } else if (vfs == MP_VFS_ROOT) {
+        items[FIELD_path] = mp_obj_new_str_of_type(mp_obj_get_type(path_in), (const byte *)"/", 1);
+        items[FIELD_vfs] = mp_const_none;
+    } else {
+        items[FIELD_path] = mp_obj_new_str_of_type(mp_obj_get_type(path_in), (const byte *)vfs->str, vfs->len);
+        items[FIELD_vfs] = MP_OBJ_FROM_PTR(vfs->obj);
+    }
+    return mp_obj_new_attrtuple(fields, MP_ARRAY_SIZE(fields), items);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_mountinfo_obj, mp_vfs_mountinfo);
+
+typedef struct _mp_vfs_ilistmounts_it_t {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+    mp_vfs_mount_t *vfs;
+} mp_vfs_ilistmounts_it_t;
+
+static mp_obj_t mp_vfs_ilistmounts_it_iternext(mp_obj_t self_in) {
+    mp_vfs_ilistmounts_it_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->vfs == NULL) {
+        return MP_OBJ_STOP_ITERATION;
+    } else {
+        mp_vfs_mount_t *vfs = self->vfs;
+
+        enum { FIELD_path, FIELD_vfs };
+        static const qstr fields[] = { MP_QSTR_path, MP_QSTR_vfs };
+        mp_obj_t items[MP_ARRAY_SIZE(fields)] = {
+            [FIELD_vfs] = vfs->obj,
+            [FIELD_path] = mp_obj_new_str(vfs->str, vfs->len),
+        };
+
+        self->vfs = vfs->next;
+        return mp_obj_new_attrtuple(fields, MP_ARRAY_SIZE(fields), items);
+    }
+}
+
+mp_obj_t mp_vfs_ilistmounts(void) {
+    mp_vfs_ilistmounts_it_t *iter = mp_obj_malloc(mp_vfs_ilistmounts_it_t, &mp_type_polymorph_iter);
+    iter->iternext = mp_vfs_ilistmounts_it_iternext;
+    iter->vfs = MP_STATE_VM(vfs_mount_table);
+    return MP_OBJ_FROM_PTR(iter);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(mp_vfs_ilistmounts_obj, mp_vfs_ilistmounts);
+
+mp_obj_t mp_vfs_listmounts(void) {
+    mp_obj_t iter = mp_vfs_ilistmounts();
+    mp_obj_t mount_list = mp_obj_new_list(0, NULL);
+    mp_obj_t next;
+    while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
+        mp_obj_list_append(mount_list, next);
+    }
+    return mount_list;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(mp_vfs_listmounts_obj, mp_vfs_listmounts);
+
 // Note: buffering and encoding args are currently ignored
 mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_file, ARG_mode, ARG_encoding };
