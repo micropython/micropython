@@ -6,11 +6,13 @@
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_OPT_COMPUTED_GOTO   (0)
+#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_SOCKET           (0)
 #define MICROPY_PY_NETWORK          (0)
 #define MICROPY_PY_STM              (0)
 #define MICROPY_PY_PYB_LEGACY       (0)
+#define MICROPY_PY_MACHINE_PIN_LEGACY (0)
 #define MICROPY_PY_HEAPQ            (0)
 #define MICROPY_PY_FRAMEBUF         (0)
 
@@ -31,6 +33,10 @@
 
 // The board has an external 32kHz crystal
 #define MICROPY_HW_RTC_USE_LSE      (1)
+
+// ROMFS config
+#define MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH (1)
+#define MICROPY_HW_ROMFS_ENABLE_PART1 (1)
 
 // UART config
 #define MICROPY_HW_UART1_TX     (pin_B6)
