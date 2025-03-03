@@ -66,10 +66,12 @@ void asm_xtensa_end_pass(asm_xtensa_t *as) {
 }
 
 void asm_xtensa_entry(asm_xtensa_t *as, int num_locals) {
-    // jump over the constants
-    asm_xtensa_op_j(as, as->num_const * WORD_SIZE + 4 - 4);
-    mp_asm_base_get_cur_to_write_bytes(&as->base, 1); // padding/alignment byte
-    as->const_table = (uint32_t *)mp_asm_base_get_cur_to_write_bytes(&as->base, as->num_const * 4);
+    if (as->num_const > 0) {
+        // jump over the constants
+        asm_xtensa_op_j(as, as->num_const * WORD_SIZE + 4 - 4);
+        mp_asm_base_get_cur_to_write_bytes(&as->base, 1); // padding/alignment byte
+        as->const_table = (uint32_t *)mp_asm_base_get_cur_to_write_bytes(&as->base, as->num_const * 4);
+    }
 
     // adjust the stack-pointer to store a0, a12, a13, a14, a15 and locals, 16-byte aligned
     as->stack_adjust = (((ASM_XTENSA_NUM_REGS_SAVED + num_locals) * WORD_SIZE) + 15) & ~15;
@@ -183,6 +185,8 @@ size_t asm_xtensa_mov_reg_i32(asm_xtensa_t *as, uint reg_dest, uint32_t i32) {
     // store the constant in the table
     if (as->const_table != NULL) {
         as->const_table[as->cur_const] = i32;
+    } else {
+        assert((as->base.pass != MP_ASM_PASS_EMIT) && "Constants table was not built.");
     }
     ++as->cur_const;
     return loc;
