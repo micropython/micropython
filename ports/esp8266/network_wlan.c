@@ -170,6 +170,36 @@ static mp_obj_t esp_disconnect(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
 
+static void build_stations_list_cleanup_callback(void *unused) {
+    (void)unused;
+    wifi_softap_free_station_info();
+}
+
+static mp_obj_t build_stations_list(void) {
+    mp_uint_t count = wifi_softap_get_station_num();
+    if (count == 0) {
+        return mp_obj_new_list(0, NULL);
+    }
+    struct station_info *info = wifi_softap_get_station_info();
+    if (info == NULL) {
+        return mp_obj_new_list(0, NULL);
+    }
+    MP_DEFINE_NLR_JUMP_CALLBACK_FUNCTION_1(ctx, build_stations_list_cleanup_callback, NULL);
+    nlr_push_jump_callback(&ctx.callback, mp_call_function_1_from_nlr_jump_callback);
+    mp_obj_list_t *stations = MP_OBJ_TO_PTR(mp_obj_new_list(count, NULL));
+    struct station_info *current = info;
+    size_t station_index = 0;
+    mp_obj_t entry[2] = { 0 };
+    while (current != NULL && station_index < count) {
+        entry[0] = mp_obj_new_bytes(current->bssid, sizeof(current->bssid));
+        entry[1] = netutils_format_ipv4_addr((uint8_t *)&current->ip.addr, NETUTILS_BIG);
+        stations->items[station_index++] = mp_obj_new_tuple(2, entry);
+        current = STAILQ_NEXT(current, next);
+    }
+    nlr_pop_jump_callback(true);
+    return MP_OBJ_FROM_PTR(stations);
+}
+
 static mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
@@ -185,6 +215,12 @@ static mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
                 if (self->if_id == STATION_IF) {
                     return MP_OBJ_NEW_SMALL_INT(wifi_station_get_rssi());
                 }
+                break;
+            case MP_QSTR_stations:
+                if (self->if_id == SOFTAP_IF) {
+                    return build_stations_list();
+                }
+                break;
         }
         mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
     }
