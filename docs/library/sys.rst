@@ -75,6 +75,8 @@ Constants
    * *version* - tuple (major, minor, micro, releaselevel), e.g. (1, 22, 0, '')
    * *_machine* - string describing the underlying machine
    * *_mpy* - supported mpy file-format version (optional attribute)
+   * *_build* - string that can help identify the configuration that
+     MicroPython was built with
 
    This object is the recommended way to distinguish MicroPython from other
    Python implementations (note that it still may not exist in the very
@@ -82,6 +84,16 @@ Constants
 
    Starting with version 1.22.0-preview, the fourth node *releaselevel* in
    *implementation.version* is either an empty string or ``"preview"``.
+
+   The *_build* entry was added in version 1.25.0 and is a hyphen-separated
+   set of elements.  New elements may be appended in the future so it's best to
+   access this field using ``sys.implementation._build.split("-")``.  The
+   elements that are currently used are:
+
+   * On the unix, webassembly and windows ports the first element is the variant
+     name, for example ``'standard'``.
+   * On microcontroller targets, the first element is the board name and the second
+     element (if present) is the board variant, for example ``'RPI_PICO2-RISCV'``
 
    .. admonition:: Difference to CPython
       :class: attention
