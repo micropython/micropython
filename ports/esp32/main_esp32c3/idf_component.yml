@@ -1,5 +1,0 @@
-## IDF Component Manager Manifest File
-dependencies:
-  espressif/mdns: "~1.1.0"
-  idf:
-    version: ">=5.2.0"
