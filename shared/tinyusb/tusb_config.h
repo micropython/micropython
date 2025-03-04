@@ -94,6 +94,16 @@
 #define CFG_TUD_MSC_BUFSIZE (MICROPY_FATFS_MAX_SS)
 #endif
 
+#if MICROPY_HW_NETWORK_USBNET
+// TinyUSB supports both RNDIS and NCM protocols.
+// NCM is now recommended by Microsoft on Win 11 and above.
+#define CFG_TUD_NCM             (1)
+#include "extmod/network_usbd_ncm.h"
+#ifndef MICROPY_HW_NETWORK_USBNET_INTERFACE_STRING
+#define MICROPY_HW_NETWORK_USBNET_INTERFACE_STRING "Board NET"
+#endif
+#endif // MICROPY_HW_NETWORK_USBNET
+
 #define USBD_RHPORT (0) // Currently only one port is supported
 
 // Define built-in interface, string and endpoint numbering based on the above config
@@ -105,6 +115,8 @@ enum _USBD_STR {
     USBD_STR_SERIAL = (0x03),
     USBD_STR_CDC,
     USBD_STR_MSC,
+    USBD_STR_NET,
+    USBD_STR_NET_MAC,
     USBD_STR_BUILTIN_MAX,
 };
 
@@ -122,6 +134,9 @@ enum _USBD_ITF {
     #if CFG_TUD_MSC
     USBD_ITF_MSC,
     #endif // CFG_TUD_MSC
+    #if CFG_TUD_NCM
+    USBD_ITF_NET,
+    #endif
 };
 
 enum _USBD_EP {
@@ -133,12 +148,17 @@ enum _USBD_EP {
     #if CFG_TUD_MSC
     USBD_MSC_EP_IN,
     #endif // CFG_TUD_MSC
+    #if CFG_TUD_NCM
+    USBD_NET_EP_CMD,
+    USBD_NET_EP_IN,
+    #endif // CFG_TUD_NET
     USBD_EP_BUILTIN_MAX
 };
 
 // define the matching in endpoints to each EP_OUT
 #define USBD_CDC_EP_OUT  ((USBD_CDC_EP_IN)&~TUSB_DIR_IN_MASK)
 #define USBD_MSC_EP_OUT  ((USBD_MSC_EP_IN)&~TUSB_DIR_IN_MASK)
+#define USBD_NET_EP_OUT  ((USBD_NET_EP_IN)&~TUSB_DIR_IN_MASK)
 
 
 /* Limits of builtin USB interfaces, endpoints, strings */
@@ -146,20 +166,14 @@ enum _USBD_EP {
 #define USBD_ITF_BUILTIN_MAX ( \
     (CFG_TUD_CDC ? 2 : 0) + \
     (CFG_TUD_MSC ? 1 : 0) + \
+    (CFG_TUD_NCM ? 1 : 0) + \
     1)
-
-// 1 plus the max index of the string table used
-#if 0
-#define USBD_STR_BUILTIN_MAX ( \
-    (CFG_TUD_CDC ? USBD_STR_CDC : 0) + \
-    (CFG_TUD_MSC ? USBD_STR_MSC : 0) + \
-    1)
-#endif
 
 // 1 plus the number of interfaces used by all enabled classes
 #define USBD_EP_BUILTIN_MAX ( \
     (CFG_TUD_CDC ? 2 : 0) + \
     (CFG_TUD_MSC ? 1 : 0) + \
+    (CFG_TUD_NCM ? 2 : 0) + \
     1)
 
 #endif // MICROPY_HW_ENABLE_USBDEV
