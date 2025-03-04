@@ -193,8 +193,6 @@ list(APPEND IDF_COMPONENTS
 # Provide the default LD fragment if not set
 if (MICROPY_USER_LDFRAGMENTS)
     set(MICROPY_LDFRAGMENTS ${MICROPY_USER_LDFRAGMENTS})
-else()
-    set(MICROPY_LDFRAGMENTS linker_esp32.lf)
 endif()
 
 # Register the main IDF component.
