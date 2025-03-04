@@ -176,6 +176,9 @@ static int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 
 #if MICROPY_USE_READLINE == 1
 #include "shared/readline/readline.h"
+#ifdef __linux__
+#include "shared/runtime/pyexec.h"
+#endif
 #else
 static char *strjoin(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
@@ -215,6 +218,19 @@ static int do_repl(void) {
             // cancel input
             mp_hal_stdout_tx_str("\r\n");
             goto input_restart;
+        #ifdef __linux__
+        } else if (ret == CHAR_CTRL_A) {
+            // Enter raw REPL
+            pyexec_mode_kind = PYEXEC_MODE_RAW_REPL;
+            mp_hal_stdout_tx_str("\r\n");
+            int status = pyexec_raw_repl();
+            if (status != 0) {
+                mp_hal_stdio_mode_orig();
+                vstr_clear(&line);
+                return status;
+            }
+            goto input_restart;
+        #endif
         } else if (ret == CHAR_CTRL_D) {
             // EOF
             printf("\n");
