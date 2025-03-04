@@ -45,6 +45,7 @@
 #include "py/gc.h"
 #include "py/objstr.h"
 #include "py/cstack.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "extmod/misc.h"
@@ -548,7 +549,14 @@ MP_NOINLINE int main_(int argc, char **argv) {
             MP_OBJ_NEW_QSTR(MP_QSTR__slash_),
         };
         mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
+
+        // Make sure the root that was just mounted is the current VFS (it's always at
+        // the end of the linked list).  Can't use chdir('/') because that will change
+        // the current path within the VfsPosix object.
         MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_mount_table);
+        while (MP_STATE_VM(vfs_cur)->next != NULL) {
+            MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_cur)->next;
+        }
     }
     #endif
 
@@ -803,3 +811,22 @@ void nlr_jump_fail(void *val) {
     fprintf(stderr, "FATAL: uncaught NLR %p\n", val);
     exit(1);
 }
+
+#if MICROPY_VFS_ROM_IOCTL
+
+static uint8_t romfs_buf[4] = { 0xd2, 0xcd, 0x31, 0x00 }; // empty ROMFS
+static const MP_DEFINE_MEMORYVIEW_OBJ(romfs_obj, 'B', 0, sizeof(romfs_buf), romfs_buf);
+
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
+    switch (mp_obj_get_int(args[0])) {
+        case MP_VFS_ROM_IOCTL_GET_NUMBER_OF_SEGMENTS:
+            return MP_OBJ_NEW_SMALL_INT(1);
+
+        case MP_VFS_ROM_IOCTL_GET_SEGMENT:
+            return MP_OBJ_FROM_PTR(&romfs_obj);
+    }
+
+    return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+}
+
+#endif
