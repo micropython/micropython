@@ -242,7 +242,7 @@ typedef long mp_off_t;
 
 // CL specific overrides from mpconfig
 
-#define NORETURN                    __declspec(noreturn)
+#define MP_NORETURN                 __declspec(noreturn)
 #define MP_WEAK
 #define MP_NOINLINE                 __declspec(noinline)
 #define MP_ALWAYSINLINE             __forceinline

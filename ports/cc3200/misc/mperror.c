@@ -159,7 +159,7 @@ void mperror_heartbeat_signal (void) {
     }
 }
 
-void NORETURN __fatal_error(const char *msg) {
+void MP_NORETURN __fatal_error(const char *msg) {
 #ifdef DEBUG
     if (msg != NULL) {
         // wait for 20ms
