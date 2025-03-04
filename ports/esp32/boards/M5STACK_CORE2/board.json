@@ -6,18 +6,14 @@
     "features": [
         "BLE",
         "WiFi",
-        "SPIRAM",
-        "LCD",
-        "LED",
-        "IMU",
-        "RTC",
-        "PMU",
+        "External Flash",
+        "External RAM",
         "SDCard",
-        "Button",
-        "Speaker",
-        "Microphone",
-        "Vibration Motor",
-        "USB-C"        
+        "IMU",
+        "USB-C",
+        "Battery Charging",
+        "Display",
+        "Microphone"
     ],
     "images": [
         "m5core2.jpg"

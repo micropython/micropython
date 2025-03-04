@@ -83,7 +83,7 @@ make -C mpy-cross
 make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16" BOARD=GENERIC_SPIRAM deploy
 ```
 
-Explanation about the paramters:
+Explanation about the parameters:
 - `LV_CFLAGS` are used to override color depth, for ILI9341 compatibility.
   - `LV_COLOR_DEPTH=16` is needed if you plan to use the ILI9341 driver.
 - `BOARD` - I use WROVER board with SPIRAM. You can choose other boards from `ports/esp32/boards/` directory.
@@ -148,7 +148,7 @@ import lvgl as lv
 from ili9341 import ili9341
 disp = ili9341()
 
-# Import XPT2046 driver and initalize it
+# Import XPT2046 driver and initialize it
 
 from xpt2046 import xpt2046
 touch = xpt2046()
@@ -160,7 +160,7 @@ By default, both ILI9341 and XPT2046 are initialized on the same SPI bus with th
 - XPT2046: `cs=25, spihost=esp.HSPI_HOST, mhz=5, max_cmds=16, cal_x0 = 3783, cal_y0 = 3948, cal_x1 = 242, cal_y1 = 423, transpose = True, samples = 3`
 
 You can change any of these parameters on ili9341/xpt2046 constructor.
-You can also initalize them on different SPI buses if you want, by providing miso/mosi/clk parameters. Set them to -1 to use existing (initialized) spihost bus.
+You can also initialize them on different SPI buses if you want, by providing miso/mosi/clk parameters. Set them to -1 to use existing (initialized) spihost bus.
 
 Now you can create the GUI itself:
 

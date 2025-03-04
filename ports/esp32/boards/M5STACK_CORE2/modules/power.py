@@ -74,7 +74,7 @@ class Power():
     
     # True turns on at 2V, False or 0 turns off. Alternatively, specify a voltage in range 1.8 - 3.3 volts.
     def vibrator(self, state):
-        if type(state) == bool and state:
+        if isinstance(state, bool) and state:
             self.axp.write(VIBRATOR, 2.0)
         else:
             self.axp.write(VIBRATOR, state)
