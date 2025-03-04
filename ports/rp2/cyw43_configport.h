@@ -126,7 +126,7 @@ uint cyw43_get_pin_wl(cyw43_pin_index_t pin_id);
 #define cyw43_hal_get_mac_ascii         mp_hal_get_mac_ascii
 #define cyw43_hal_generate_laa_mac      mp_hal_generate_laa_mac
 
-#define cyw43_schedule_internal_poll_dispatch(func) pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, func)
+#define cyw43_schedule_internal_poll_dispatch(func) pendsv_schedule_dispatch_with_affinity(PENDSV_DISPATCH_CYW43, func, 0)
 
 // Bluetooth requires dynamic memory allocation to load its firmware (the allocation
 // call is made from pico-sdk).  This allocation is always done at thread-level, not
