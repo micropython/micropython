@@ -63,13 +63,6 @@ SRC_C = \
 	fmode.c \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
-LIB_SRC_C = $(addprefix lib/,\
-        lv_bindings/driver/SDL/sdl_common.c \
-        lv_bindings/driver/SDL/sdl.c \
-        lv_bindings/driver/SDL/modSDL.c \
-        timeutils/timeutils.c \
-        )
-
 SHARED_SRC_C += $(addprefix shared/,\
 	$(SHARED_SRC_C_EXTRA) \
 	)
@@ -84,7 +77,7 @@ CFLAGS += -DMICROPY_USE_READLINE=1
 SRC_C += shared/readline/readline.c
 endif
 
-LIB += -lws2_32 -lSDL2
+LIB += -lws2_32
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)

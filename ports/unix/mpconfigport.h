@@ -42,10 +42,8 @@
 #ifndef MICROPY_PY_SYS_PLATFORM
 #if defined(__APPLE__) && defined(__MACH__)
     #define MICROPY_PY_SYS_PLATFORM  "darwin"
-    #define LINUX_FRAME_BUFFER 0
 #else
     #define MICROPY_PY_SYS_PLATFORM  "linux"
-    #define LINUX_FRAME_BUFFER 1
 #endif
 #endif
 

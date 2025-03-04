@@ -187,10 +187,6 @@
 #define MICROPY_PY_SOCKET_EVENTS            (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
 
-#define MICROPY_PY_LVGL                     (1)
-#define MICROPY_PY_ESPIDF                   (1)
-#define MICROPY_PY_RTCH                     (1)
-
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
 #define MICROPY_FATFS_RPATH                 (2)

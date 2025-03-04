@@ -34,8 +34,6 @@
 #include "pico/multicore.h"
 #include "mpconfigboard.h"
 
-#define MICROPY_PY_LVGL                         (1)
-
 // Board and hardware specific configuration
 #if PICO_RP2040
 #define MICROPY_HW_MCU_NAME                     "RP2040"

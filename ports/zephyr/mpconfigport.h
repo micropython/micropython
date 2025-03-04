@@ -36,9 +36,6 @@
 #define MICROPY_HEAP_SIZE (16 * 1024)
 #endif
 
-// LVGL
-#define MICROPY_PY_LVGL				(1)
-
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_ENABLE_GC           (1)
@@ -57,7 +54,6 @@
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT zephyr_help_text
-#define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_ARRAY            (0)
 #define MICROPY_PY_COLLECTIONS      (0)
 #define MICROPY_PY_CMATH            (0)

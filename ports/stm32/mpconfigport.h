@@ -88,7 +88,7 @@
 #define MICROPY_PY_SYS_PLATFORM     "pyboard"
 #endif
 #ifndef MICROPY_PY_THREAD
-#define MICROPY_PY_THREAD           (1)
+#define MICROPY_PY_THREAD           (0)
 #endif
 
 // extended modules
@@ -151,13 +151,6 @@
 #endif
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK          (1)
-#endif
-// LVGL is enable per board
-//#ifndef MICROPY_PY_LVGL
-//#define MICROPY_PY_LVGL             (1)
-//#endif
-#ifndef MICROPY_PY_RK043FN48H
-#define MICROPY_PY_RK043FN48H       (1)
 #endif
 #ifndef MICROPY_PY_ONEWIRE
 #define MICROPY_PY_ONEWIRE          (1)

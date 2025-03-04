@@ -1,1 +1,0 @@
-../../../lib/lv_bindings/driver/stm32/lvstm32.py
