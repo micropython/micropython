@@ -11,6 +11,8 @@ endif()
 # Include core source components.
 include(${MICROPY_DIR}/py/py.cmake)
 
+set(USER_C_MODULES "${MICROPY_DIR}/user_modules/lv_binding_micropython/micropython.cmake")
+
 # CMAKE_BUILD_EARLY_EXPANSION is set during the component-discovery phase of
 # `idf.py build`, so none of the extmod/usermod (and in reality, most of the
 # micropython) rules need to happen. Specifically, you cannot invoke add_library.

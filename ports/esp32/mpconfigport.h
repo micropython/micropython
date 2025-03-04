@@ -382,3 +382,8 @@ void boardctrl_startup(void);
 #ifndef MICROPY_PY_STRING_TX_GIL_THRESHOLD
 #define MICROPY_PY_STRING_TX_GIL_THRESHOLD  (20)
 #endif
+
+// Required for LVGL
+#define MICROPY_ENABLE_SCHEDULER       (1)
+#define MICROPY_MODULE_BUILTIN_INIT    (1)
+#define MICROPY_PY_SYS_SETTRACE        (0)
