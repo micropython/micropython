@@ -287,9 +287,9 @@ def main():
 
     # Select MCU parameters
     mcu = mcu_default
-    for m in mcu_table:
+    for m, new_mcu in mcu_table.items():
         if mcu_series.startswith(m):
-            mcu = mcu_table[m]
+            mcu = new_mcu
             break
 
     # Relax constraint on PLLQ being 48MHz on MCUs which have separate PLLs for 48MHz
