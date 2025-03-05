@@ -24,6 +24,10 @@
 #define MICROPY_HW_RTC_USE_US       (0)
 #define MICROPY_HW_RTC_USE_CALOUT   (1)
 
+// ROMFS config
+#define MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH (1)
+#define MICROPY_HW_ROMFS_ENABLE_PART1 (1)
+
 // UART config
 #define MICROPY_HW_UART1_NAME   "XB"
 #define MICROPY_HW_UART1_TX     (pin_B6)

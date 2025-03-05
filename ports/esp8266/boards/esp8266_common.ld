@@ -3,6 +3,10 @@
 /* define the top of RAM */
 _heap_end = ORIGIN(dram0_0_seg) + LENGTH(dram0_0_seg);
 
+/* define ROMFS extents */
+_micropy_hw_romfs_start = ORIGIN(FLASH_ROMFS);
+_micropy_hw_romfs_size = LENGTH(FLASH_ROMFS);
+
 PHDRS
 {
     dport0_0_phdr PT_LOAD;

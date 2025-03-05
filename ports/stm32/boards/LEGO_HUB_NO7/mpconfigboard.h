@@ -32,6 +32,10 @@
 // For 2.7 to 3.6 V, 75 to 100 MHz: 3 wait states.
 #define MICROPY_HW_FLASH_LATENCY                 FLASH_LATENCY_3
 
+// ROMFS config
+#define MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH   (1)
+#define MICROPY_HW_ROMFS_ENABLE_PART1            (1)
+
 // UART buses
 // Bluetooth HCI
 #define MICROPY_HW_UART2_CTS                     (pyb_pin_BT_CTS)
