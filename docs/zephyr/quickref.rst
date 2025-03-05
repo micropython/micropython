@@ -132,6 +132,21 @@ the ``io-channels`` property containing all the ADC channels)::
     adc = ADC(("adc", 0))
     adc.read_uv()
 
+Light-sleep mode
+----------------
+
+The following code can be used to sleep, reducing power consumption::
+
+    import machine
+
+    # put the device to sleep for 10 seconds
+    machine.lightsleep(10000)
+
+Notes:
+
+* Calling ``lightsleep()`` suspends the micropython thread, allowing Zephyr power management to reduce power consumption.
+
+
 Disk Access
 -----------
 
