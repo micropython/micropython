@@ -14,6 +14,18 @@ if(NOT MICROPY_PORT_DIR)
     get_filename_component(MICROPY_PORT_DIR ${MICROPY_DIR}/ports/esp32 ABSOLUTE)
 endif()
 
+# RISC-V specific inclusions
+if(CONFIG_IDF_TARGET_ARCH_RISCV)
+    list(APPEND MICROPY_SOURCE_LIB ${MICROPY_DIR}/shared/runtime/gchelper_generic.c)
+    list(APPEND IDF_COMPONENTS riscv)
+endif()
+
+if(NOT DEFINED MICROPY_PY_TINYUSB)
+  if(CONFIG_IDF_TARGET_ESP32S2 OR CONFIG_IDF_TARGET_ESP32S3)
+    set(MICROPY_PY_TINYUSB ON)
+  endif()
+endif()
+
 # Include core source components.
 include(${MICROPY_DIR}/py/py.cmake)
 
@@ -181,8 +193,6 @@ list(APPEND IDF_COMPONENTS
 # Provide the default LD fragment if not set
 if (MICROPY_USER_LDFRAGMENTS)
     set(MICROPY_LDFRAGMENTS ${MICROPY_USER_LDFRAGMENTS})
-else()
-    set(MICROPY_LDFRAGMENTS linker.lf)
 endif()
 
 # Register the main IDF component.
