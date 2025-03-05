@@ -31,6 +31,8 @@
 
 #include <stdio.h>
 #include <zephyr/sys/reboot.h>
+#include <zephyr/pm/pm.h>
+#include <zephyr/pm/device.h>
 
 #include "modmachine.h"
 
@@ -61,4 +63,41 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
 static void mp_machine_idle(void) {
     k_yield();
+}
+
+#ifdef CONFIG_PM_DEVICE
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    // Check if no argument is provided
+    if (n_args == 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("value must be provided"));
+    }
+    mp_int_t milliseconds = mp_obj_get_int(args[0]);
+    // Get the UART device
+    const struct device *uart0 = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
+    // Set UART device to low power state
+    pm_device_action_run(uart0, PM_DEVICE_ACTION_SUSPEND);
+    k_sleep(K_MSEC(milliseconds));
+    // Set UART device back to active state
+    pm_device_action_run(uart0, PM_DEVICE_ACTION_RESUME);
+}
+#else
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
+}
+#endif
+
+static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
+}
+
+static mp_obj_t mp_machine_get_freq(void) {
+    mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
+}
+
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+    mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
+}
+
+static mp_obj_t mp_machine_unique_id(void) {
+    mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
 }
