@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "RGB LED",
+        "USB-C"
+    ],
+    "images": [
+    ],
+    "mcu": "rp2040",
+    "product": "RP2040-Zero",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/wiki/RP2040-Zero",
+    "vendor": "Waveshare"
+}
