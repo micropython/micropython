@@ -170,6 +170,7 @@ SECTIONS
         *modonewire.o(.literal* .text*)
         *network_wlan.o(.literal* .text*)
         *esp_mphal.o(.literal* .text*)
+        *vfs_rom_ioctl.o(.literal* .text*)
 
         /* we put as much rodata as possible in this section */
         /* note that only rodata accessed as a machine word is allowed here */

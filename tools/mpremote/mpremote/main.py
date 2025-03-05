@@ -36,6 +36,7 @@ from .commands import (
     do_resume,
     do_rtc,
     do_soft_reset,
+    do_romfs,
 )
 from .mip import do_mip
 from .repl import do_repl
@@ -228,6 +229,32 @@ def argparse_mip():
     return cmd_parser
 
 
+def argparse_romfs():
+    cmd_parser = argparse.ArgumentParser(description="manage ROM partitions")
+    _bool_flag(
+        cmd_parser,
+        "mpy",
+        "m",
+        True,
+        "automatically compile .py files to .mpy when building the ROMFS image (default)",
+    )
+    cmd_parser.add_argument(
+        "--partition",
+        "-p",
+        type=int,
+        default=0,
+        help="ROMFS partition to use",
+    )
+    cmd_parser.add_argument(
+        "--output",
+        "-o",
+        help="output file",
+    )
+    cmd_parser.add_argument("command", nargs=1, help="romfs command, one of: query, build, deploy")
+    cmd_parser.add_argument("path", nargs="?", help="path to directory to deploy")
+    return cmd_parser
+
+
 def argparse_none(description):
     return lambda: argparse.ArgumentParser(description=description)
 
@@ -301,6 +328,10 @@ _COMMANDS = {
     "version": (
         do_version,
         argparse_none("print version and exit"),
+    ),
+    "romfs": (
+        do_romfs,
+        argparse_romfs,
     ),
 }
 
