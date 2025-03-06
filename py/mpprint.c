@@ -570,6 +570,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 mp_uint_t val;
                 if (fmt_chr == 'p' || fmt_chr == 'P') {
                     val = va_arg(args, uintptr_t);
+                    chrs += mp_print_str(print, "0x");  // used by meminfo JSON dumps
                 }
                 #if SUPPORT_LL_FORMAT
                 else if (long_long_arg) {
