@@ -197,7 +197,7 @@ function ci_esp32_build_s3_c3 {
 # ports/esp8266
 
 function ci_esp8266_setup {
-    sudo pip install pyserial esptool==3.3.1
+    sudo pip3 install pyserial esptool==3.3.1 pyelftools ar
     wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz
     zcat xtensa-lx106-elf-standalone.tar.gz | tar x
     # Remove this esptool.py so pip version is used instead
@@ -214,6 +214,9 @@ function ci_esp8266_build {
     make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC
     make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC BOARD_VARIANT=FLASH_512K
     make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC BOARD_VARIANT=FLASH_1M
+
+    # Test building native .mpy with xtensa architecture.
+    ci_native_mpy_modules_build xtensa
 }
 
 ########################################################################################
