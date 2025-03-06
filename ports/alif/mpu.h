@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdbool.h>
+
 #define MP_MPU_ATTR_NORMAL_WT_RA_TRANSIENT  (0)
 #define MP_MPU_ATTR_DEVICE_nGnRE            (1)
 #define MP_MPU_ATTR_NORMAL_WB_RA_WA         (2)
@@ -37,3 +39,5 @@
 #define MP_MPU_REGION_OSPI_REGISTERS        (4)
 #define MP_MPU_REGION_OSPI0_XIP             (5)
 #define MP_MPU_REGION_OPENAMP               (6)
+
+void mpu_config_mram(bool read_only);
