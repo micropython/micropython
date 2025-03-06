@@ -37,6 +37,8 @@
 #include "se_services.h"
 
 struct metal_state _metal;
+
+static bool metal_active;
 static mp_sched_node_t rproc_notify_node;
 
 int metal_sys_init(const struct metal_init_params *params) {
@@ -53,10 +55,13 @@ int metal_sys_init(const struct metal_init_params *params) {
     #endif
 
     metal_bus_register(&metal_generic_bus);
+    metal_active = true;
+
     return 0;
 }
 
 void metal_sys_finish(void) {
+    metal_active = false;
     metal_bus_unregister(&metal_generic_bus);
 }
 
@@ -91,6 +96,9 @@ int metal_rproc_notify(void *priv, uint32_t id) {
 }
 
 void metal_rproc_notified(void) {
+    if (!metal_active) {
+        return;
+    }
     // The remote core notified this core.
     mp_sched_schedule_node(&rproc_notify_node, openamp_remoteproc_notified);
 }
