@@ -39,14 +39,14 @@
 #include "pendsv.h"
 #include "system_tick.h"
 
-#if MICROPY_HW_USB_CDC
-
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
 #define MICROPY_HW_STDIN_BUFFER_LEN 512
 #endif
 
 static uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
 ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array) };
+
+#if MICROPY_HW_USB_CDC
 
 uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll
 
