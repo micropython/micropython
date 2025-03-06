@@ -137,6 +137,7 @@
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)
 #define MICROPY_PY_MACHINE_TIMER                (1)
 #define MICROPY_VFS                             (1)
+#define MICROPY_VFS_ROM                         (1)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN                (1)
