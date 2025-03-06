@@ -30,6 +30,7 @@
 
 #if MICROPY_PY_LWIP
 
+#include "extmod/network_usbd_ncm.h"
 #include "shared/runtime/softtimer.h"
 #include "lwip/timeouts.h"
 
@@ -119,6 +120,10 @@ static void mp_network_soft_timer_callback(soft_timer_entry_t *self) {
 
     #if MICROPY_PY_NETWORK_WIZNET5K
     wiznet5k_poll();
+    #endif
+
+    #if MICROPY_HW_NETWORK_USBNET
+    network_usbd_ncm_service_traffic();
     #endif
 }
 
