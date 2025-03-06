@@ -35,10 +35,8 @@
 #include "sys_ctrl_uart.h"
 #include "uart.h"
 
-#define TX_PORT PORT_12
-#define TX_PIN PIN_2
-#define RX_PORT PORT_12
-#define RX_PIN PIN_1
+#define TX_PIN pin_P12_2
+#define RX_PIN pin_P12_1
 #define UART_ID 4
 #define UART_IRQN UART4_IRQ_IRQn
 #define UART_PTR ((UART_Type *)UART4_BASE)
@@ -48,8 +46,8 @@
 static UART_TRANSFER transfer;
 
 void mp_uart_init(void) {
-    pinconf_set(TX_PORT, TX_PIN, PINMUX_ALTERNATE_FUNCTION_2, 0);
-    pinconf_set(RX_PORT, RX_PIN, PINMUX_ALTERNATE_FUNCTION_2, PADCTRL_READ_ENABLE);
+    mp_hal_pin_config(TX_PIN, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_UART, false);
+    mp_hal_pin_config(RX_PIN, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_UART, true);
     select_uart_clock_syst_pclk(UART_ID);
     enable_uart_clock(UART_ID);
     uart_software_reset(UART_PTR);
