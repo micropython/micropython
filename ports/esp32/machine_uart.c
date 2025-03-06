@@ -59,6 +59,7 @@
 #define UART_IRQ_BREAK (1 << UART_BREAK)
 #define MP_UART_ALLOWED_FLAGS (UART_IRQ_RX | UART_IRQ_RXIDLE | UART_IRQ_BREAK)
 #define RXIDLE_TIMER_MIN (5000)  // 500 us
+#define UART_QUEUE_SIZE (3)
 
 enum {
     RXIDLE_INACTIVE,
@@ -250,7 +251,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     // wait for all data to be transmitted before changing settings
     uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
 
-    if (args[ARG_txbuf].u_int >= 0 || args[ARG_rxbuf].u_int >= 0) {
+    if ((args[ARG_txbuf].u_int >= 0 && args[ARG_txbuf].u_int != self->txbuf) || (args[ARG_rxbuf].u_int >= 0 && args[ARG_rxbuf].u_int != self->rxbuf)) {
         // must reinitialise driver to change the tx/rx buffer size
         #if MICROPY_HW_ENABLE_UART_REPL
         if (self->uart_num == MICROPY_HW_UART_REPL) {
@@ -275,9 +276,20 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         check_esp_err(uart_get_word_length(self->uart_num, &uartcfg.data_bits));
         check_esp_err(uart_get_parity(self->uart_num, &uartcfg.parity));
         check_esp_err(uart_get_stop_bits(self->uart_num, &uartcfg.stop_bits));
+        bool recreate_event_task = false;
+        if (self->uart_event_task != NULL) {
+            vTaskDelete(self->uart_event_task);
+            self->uart_event_task = NULL;
+            recreate_event_task = true;
+        }
         check_esp_err(uart_driver_delete(self->uart_num));
+        self->uart_queue = NULL;
         check_esp_err(uart_param_config(self->uart_num, &uartcfg));
-        check_esp_err(uart_driver_install(self->uart_num, self->rxbuf, self->txbuf, 0, NULL, 0));
+        check_esp_err(uart_driver_install(self->uart_num, self->rxbuf, self->txbuf, UART_QUEUE_SIZE, &self->uart_queue, 0));
+        if (recreate_event_task) {
+            xTaskCreatePinnedToCore(uart_event_task, "uart_event_task", 2048, self,
+                ESP_TASKD_EVENT_PRIO, (TaskHandle_t *)&self->uart_event_task, MP_TASK_COREID);
+        }
     }
 
     // set baudrate
@@ -437,7 +449,8 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     self->timeout_char = 0;
     self->invert = 0;
     self->flowcontrol = 0;
-    self->uart_event_task = 0;
+    self->uart_event_task = NULL;
+    self->uart_queue = NULL;
     self->rxidle_state = RXIDLE_INACTIVE;
 
     switch (uart_num) {
@@ -470,12 +483,13 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     {
         // Remove any existing configuration
         check_esp_err(uart_driver_delete(self->uart_num));
+        self->uart_queue = NULL;
 
         // init the peripheral
         // Setup
         check_esp_err(uart_param_config(self->uart_num, &uartcfg));
 
-        check_esp_err(uart_driver_install(uart_num, self->rxbuf, self->txbuf, 3, &self->uart_queue, 0));
+        check_esp_err(uart_driver_install(uart_num, self->rxbuf, self->txbuf, UART_QUEUE_SIZE, &self->uart_queue, 0));
     }
 
     mp_map_t kw_args;
@@ -489,7 +503,12 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+    if (self->uart_event_task != NULL) {
+        vTaskDelete(self->uart_event_task);
+        self->uart_event_task = NULL;
+    }
     check_esp_err(uart_driver_delete(self->uart_num));
+    self->uart_queue = NULL;
 }
 
 static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
@@ -568,6 +587,15 @@ static const mp_irq_methods_t uart_irq_methods = {
 };
 
 static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args, mp_arg_val_t *args) {
+    #if MICROPY_HW_ENABLE_UART_REPL
+    if (self->uart_num == MICROPY_HW_UART_REPL) {
+        mp_raise_ValueError(MP_ERROR_TEXT("UART does not support IRQs"));
+    }
+    #endif
+    if (self->uart_queue == NULL && args[MP_IRQ_ARG_INIT_handler].u_obj != mp_const_none) {
+        mp_raise_ValueError(MP_ERROR_TEXT("UART must be initialized before configuring IRQ"));
+    }
+
     if (self->mp_irq_obj == NULL) {
         self->mp_irq_trigger = 0;
         self->mp_irq_obj = mp_irq_new(&uart_irq_methods, MP_OBJ_FROM_PTR(self));
