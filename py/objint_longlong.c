@@ -43,6 +43,7 @@
 const mp_obj_int_t mp_sys_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
 
+/*
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
     int delta = 1;
     if (!big_endian) {
@@ -55,6 +56,49 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
         value = (value << 8) | *buf;
     }
     return mp_obj_new_int_from_ll(value);
+}
+*/
+#define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, "\n"); // mp_printf(&mp_plat_print, " | func:%s line:%d at %s\n", __FUNCTION__, __LINE__, __FILE__);
+#define _debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__);
+
+mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, bool is_signed, size_t len, const byte *buf) {
+    if (len > sizeof(mp_longint_impl_t)) {
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("big-int overflow"));
+    }
+    union {
+        mp_longint_impl_t value;
+        byte buf[sizeof(mp_longint_impl_t)];
+    } result = {0};
+
+    if (big_endian) {
+        reverce_memcpy(&result, buf, len);
+    } else { // little-endian
+        memcpy(&result, buf, len);
+    }
+
+    if ((is_signed) && (sizeof(result) > len) && (result.buf[len - 1] & 0x80)) {
+        // Sign propagation in little-endian
+        // x = 2
+        // x.to_bytes(1, 'little', True) -> b'\x02'
+        // x.to_bytes(4, 'little', True) -> b'\x02\x00\x00\x00'
+        // x = -2
+        // x.to_bytes(1, 'little', True) -> b'\xFE'
+        // x.to_bytes(4, 'little', True) -> b'\xFE\xFF\xFF\xFF'
+        _debug_printf(" 3result=0x%08X=", result.value);
+        for (unsigned int i = 0; i < sizeof(result); i++) {
+            _debug_printf("\\%02X", result.buf[i]);
+        }
+        debug_printf("");
+
+        memset(result.buf + len, 0xFF, sizeof(result) - len);
+
+        _debug_printf("\n 4result=0x%08X=", result.value);
+        for (unsigned int i = 0; i < sizeof(result); i++) {
+            _debug_printf("\\%02X", result.buf[i]);
+        }
+        debug_printf("");
+    }
+    return mp_obj_new_int_from_ll(result.value);
 }
 
 bool mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
