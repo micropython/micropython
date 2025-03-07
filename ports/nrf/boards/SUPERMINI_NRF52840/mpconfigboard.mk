@@ -3,7 +3,7 @@ MCU_VARIANT = nrf52
 MCU_SUB_VARIANT = nrf52840
 SOFTDEV_VERSION = 6.1.1
 SD=s140
-LD_FILES += boards/SUPERMINI_NRF52840/bootloader.ld boards/nrf52840_1M_256k.ld
+LD_FILES += $(BOARD_DIR)/bootloader.ld boards/nrf52840_1M_256k.ld
 
 NRF_DEFINES += -DNRF52840_XXAA
 

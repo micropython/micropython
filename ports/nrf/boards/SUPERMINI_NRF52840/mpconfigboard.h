@@ -42,6 +42,7 @@
 
 #define MICROPY_HW_ENABLE_RNG       (1)
 
+#define MICROPY_HW_ENABLE_USBDEV    (1)
 #define MICROPY_HW_USB_CDC          (1)
 
 #define MICROPY_HW_HAS_LED          (1)
@@ -62,7 +63,7 @@
 #define MICROPY_HW_PWM1_NAME        "PWM1"
 #define MICROPY_HW_PWM2_NAME        "PWM2"
 
-#define MICROPY_HW_MUSIC_PIN        (38)
+#define MICROPY_HW_MUSIC_PIN        (32 + 6)
 
 #define MICROPY_HW_USB_VID          (0x239A)
 #define MICROPY_HW_USB_PID          (0x8052)
