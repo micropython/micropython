@@ -1,6 +1,33 @@
 #ifndef MICROPY_INCLUDED_ESP32_MODESP32_H
 #define MICROPY_INCLUDED_ESP32_MODESP32_H
+#if CONFIG_IDF_TARGET_ESP32C3
+    #define RTC_VALID_GPIO_PINS \
+    ( \
+    (1ll << 0) | \
+    (1ll << 1) | \
+    (1ll << 2) | \
+    (1ll << 3) | \
+    (1ll << 4) | \
+    (1ll << 5)   \
+    )
+    #define RTC_LAST_GPIO_PIN 5
 
+#endif
+#if CONFIG_IDF_TARGET_ESP32C6
+    #define RTC_VALID_GPIO_PINS \
+    ( \
+    (1ll << 0) | \
+    (1ll << 1) | \
+    (1ll << 2) | \
+    (1ll << 3) | \
+    (1ll << 4) | \
+    (1ll << 5) | \
+    (1ll << 6) | \
+    (1ll << 7)   \
+    )
+    #define RTC_LAST_GPIO_PIN 7
+
+#endif
 #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 
     #define RTC_VALID_EXT_PINS \
@@ -58,6 +85,7 @@
 #endif
 
 #define RTC_IS_VALID_EXT_PIN(pin_id) ((1ll << (pin_id)) & RTC_VALID_EXT_PINS)
+#define RTC_IS_VALID_GPIO_PIN(pin_id) ((1ll << (pin_id)) & RTC_VALID_GPIO_PINS)
 
 extern int8_t esp32_rmt_bitstream_channel_id;
 

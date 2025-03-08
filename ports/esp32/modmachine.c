@@ -45,7 +45,7 @@
 #define MICROPY_PY_MACHINE_SDCARD_ENTRY
 #endif
 
-#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+#if SOC_TOUCH_SENSOR_SUPPORTED
 #define MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY { MP_ROM_QSTR(MP_QSTR_TouchPad), MP_ROM_PTR(&machine_touchpad_type) },
 #else
 #define MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY
@@ -110,24 +110,11 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
         #endif
     }
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
-    esp_pm_config_t pm;
-    #else
-    #if CONFIG_IDF_TARGET_ESP32
-    esp_pm_config_esp32_t pm;
-    #elif CONFIG_IDF_TARGET_ESP32C3
-    esp_pm_config_esp32c3_t pm;
-    #elif CONFIG_IDF_TARGET_ESP32C6
-    esp_pm_config_esp32c6_t pm;
-    #elif CONFIG_IDF_TARGET_ESP32S2
-    esp_pm_config_esp32s2_t pm;
-    #elif CONFIG_IDF_TARGET_ESP32S3
-    esp_pm_config_esp32s3_t pm;
-    #endif
-    #endif
-    pm.max_freq_mhz = freq;
-    pm.min_freq_mhz = freq;
-    pm.light_sleep_enable = false;
+    esp_pm_config_t pm = {
+        .max_freq_mhz = freq,
+        .min_freq_mhz = freq,
+        .light_sleep_enable = false,
+    };
     esp_err_t ret = esp_pm_configure(&pm);
     if (ret != ESP_OK) {
         mp_raise_ValueError(NULL);
@@ -146,60 +133,30 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
         mp_int_t expiry = mp_obj_get_int(args[0]);
         esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
     }
-    #if CONFIG_IDF_TARGET_ESP32C3 || 1
-    if (1) {
-        if (wake_type==MACHINE_WAKE_DEEPSLEEP){
-            const gpio_config_t config = {
-                .pin_bit_mask = BIT(GPIO_NUM_2|GPIO_NUM_3|GPIO_NUM_4),
-                .mode = GPIO_MODE_INPUT,
-                .pull_up_en = true,
-            };
-        
-            gpio_config(&config);
-            if (esp_deep_sleep_enable_gpio_wakeup(BIT(GPIO_NUM_2), ESP_GPIO_WAKEUP_GPIO_LOW)){
-    //            if (esp_deep_sleep_enable_gpio_wakeup(BIT(GPIO_NUM_0|GPIO_NUM_1|GPIO_NUM_2|GPIO_NUM_4), ESP_GPIO_WAKEUP_GPIO_LOW)){
-                    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_gpio_wakeup() failed"));
-            }
-            if (esp_deep_sleep_enable_gpio_wakeup(BIT(GPIO_NUM_3), ESP_GPIO_WAKEUP_GPIO_LOW)){
-                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_gpio_wakeup() failed"));
-            }
-           if (esp_deep_sleep_enable_gpio_wakeup(BIT(GPIO_NUM_4), ESP_GPIO_WAKEUP_GPIO_LOW)){
-                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_gpio_wakeup() failed"));
-            }
-            if (esp_sleep_enable_gpio_wakeup() != ESP_OK) {
-                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_gpio_wakeup() failed"));
-            }
-            //esp_sleep_is_valid_wakeup_gpio(GPIO_NUM_2);
-            //esp_sleep_is_valid_wakeup_gpio(GPIO_NUM_4);
-            #if 0
-            if (esp_deep_sleep_enable_gpio_wakeup(BIT(GPIO_NUM_3), ESP_GPIO_WAKEUP_GPIO_LOW)){
-                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_gpio_wakeup() failed"));
-            }
-            if (esp_sleep_enable_gpio_wakeup() != ESP_OK) {
-                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_gpio_wakeup() failed"));
-            }
-            #endif
-        }
-    
-    }
 
-    #elif !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6))
+    #if SOC_PM_SUPPORT_EXT0_WAKEUP
     if (machine_rtc_config.ext0_pin != -1 && (machine_rtc_config.ext0_wake_types & wake_type)) {
         esp_sleep_enable_ext0_wakeup(machine_rtc_config.ext0_pin, machine_rtc_config.ext0_level ? 1 : 0);
     }
+    #endif
 
+    #if SOC_PM_SUPPORT_EXT1_WAKEUP
     if (machine_rtc_config.ext1_pins != 0) {
         esp_sleep_enable_ext1_wakeup(
             machine_rtc_config.ext1_pins,
             machine_rtc_config.ext1_level ? ESP_EXT1_WAKEUP_ANY_HIGH : ESP_EXT1_WAKEUP_ALL_LOW);
     }
+    #endif
 
+    #if SOC_TOUCH_SENSOR_SUPPORTED
     if (machine_rtc_config.wake_on_touch) {
         if (esp_sleep_enable_touchpad_wakeup() != ESP_OK) {
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_touchpad_wakeup() failed"));
         }
     }
+    #endif
 
+    #if SOC_ULP_SUPPORTED
     if (machine_rtc_config.wake_on_ulp) {
         if (esp_sleep_enable_ulp_wakeup() != ESP_OK) {
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_ulp_wakeup() failed"));
@@ -207,6 +164,27 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
     }
     #endif
 
+    #if SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP 
+    //#error SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP  
+    if (wake_type==MACHINE_WAKE_DEEPSLEEP){
+        if (machine_rtc_config.gpio_pins!=0){
+            uint64_t mask;
+            esp_deepsleep_gpio_wake_up_mode_t mode;
+            for (int i=0;i<=32;i++){
+                mask=1ll<<i;
+                if ((machine_rtc_config.gpio_pins & mask)!=0){
+                    mode=ESP_GPIO_WAKEUP_GPIO_LOW;
+                    if ((machine_rtc_config.gpio_level & mask)!=0){
+                        mode=ESP_GPIO_WAKEUP_GPIO_HIGH;
+                    }
+                    if (esp_deep_sleep_enable_gpio_wakeup(mask,mode) != ESP_OK) {
+                        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_gpio_wakeup() failed"));
+                    }    
+                }    
+            }
+        }
+    }
+    #endif
     switch (wake_type) {
         case MACHINE_WAKE_SLEEP:
             esp_light_sleep_start();
