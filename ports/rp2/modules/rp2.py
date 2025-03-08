@@ -241,10 +241,14 @@ _pio_instructions = (
 
 
 def asm_pio(**kw):
+    fn = kw.pop("program") if "program" in kw else None
+    args = kw.pop("args") if "args" in kw else {}
+
     emit = PIOASMEmit(**kw)
 
     def dec(f):
         nonlocal emit
+        nonlocal args
 
         gl = f.__globals__
         old_gl = gl.copy()
@@ -257,17 +261,17 @@ def asm_pio(**kw):
             gl[name] = getattr(emit, name)
 
         emit.start_pass(0)
-        f()
+        f(**args)
 
         emit.start_pass(1)
-        f()
+        f(**args)
 
         gl.clear()
         gl.update(old_gl)
 
         return emit.prog
 
-    return dec
+    return dec(fn) if fn else dec
 
 
 # sideset_count is inclusive of enable bit
