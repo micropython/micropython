@@ -39,7 +39,7 @@ mp_obj_t mp_atexit_register(mp_obj_t function) {
         mp_raise_ValueError(MP_ERROR_TEXT("function not callable"));
     }
     if (MP_STATE_VM(atexit_handlers) == NULL) {
-        MP_STATE_VM(atexit_handlers) = mp_obj_new_list(0, NULL);
+        MP_STATE_VM(atexit_handlers) = MP_OBJ_TO_PTR(mp_obj_new_list(0, NULL));
     }
     mp_obj_list_append(MP_OBJ_FROM_PTR(MP_STATE_VM(atexit_handlers)), function);
     // return the passed in function so this can be used as a decorator
@@ -61,11 +61,13 @@ mp_obj_t mp_atexit_unregister(mp_obj_t function) {
 static MP_DEFINE_CONST_FUN_OBJ_1(mp_atexit_unregister_obj, mp_atexit_unregister);
 #endif
 
+// port specific shutdown procedures should cLl this
+// to run any registered atexit handlers.
 int mp_atexit_execute(void) {
     int exit_code = 0;
     if (MP_STATE_VM(atexit_handlers) != NULL) {
         mp_obj_list_t *list = MP_STATE_VM(atexit_handlers);
-        for (size_t i = 0; i < list->len; i++) {
+        for (int i = list->len - 1; i >= 0; i--) {
             mp_obj_t function = list->items[i];
 
             nlr_buf_t nlr;

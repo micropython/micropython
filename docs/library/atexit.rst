@@ -15,4 +15,4 @@ Functions
 
 .. function:: unregister(func)
 
-   Remove func from the list of functions to be run at interpreter shutdown. Not enebled on all ports.
+   Remove func from the list of functions to be run at interpreter shutdown. Not enabled on all ports.

@@ -172,7 +172,7 @@ void mp_init(void) {
     #endif
 
     #if MICROPY_PY_ATEXIT
-    MP_STATE_VM(atexit) = NULL;
+    MP_STATE_VM(atexit_handlers) = NULL;
     #endif
 
     #if MICROPY_PY_BLUETOOTH
