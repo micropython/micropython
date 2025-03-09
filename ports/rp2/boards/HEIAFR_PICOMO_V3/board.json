@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "RGB LED",
+        "Display",
+        "USB-C"
+    ],
+    "images": [
+        "heiafr-picomo-v3.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "PicCoMo V3",
+    "thumbnail": "",
+    "url": "https://go.heia-fr.ch/picomo/",
+    "vendor": "HEIA-FR"
+}
