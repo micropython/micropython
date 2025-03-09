@@ -37,7 +37,6 @@
 #include "esp_pm.h"
 
 #include "modesp32.h"
-
 #include "modmachine.h"
 #include "machine_rtc.h"
 
