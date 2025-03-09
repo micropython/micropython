@@ -36,6 +36,8 @@
 #include "esp_sleep.h"
 #include "esp_pm.h"
 
+#include "modesp32.h"
+
 #include "modmachine.h"
 #include "machine_rtc.h"
 
@@ -170,7 +172,7 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
         if (machine_rtc_config.gpio_pins!=0){
             uint64_t mask;
             esp_deepsleep_gpio_wake_up_mode_t mode;
-            for (int i=0;i<=RTC_LAST_GPIO_PIN;i++){
+            for (int i=0;i<=(int)(RTC_LAST_GPIO_PIN);i++){
                 mask=1ll<<i;
                 if ((machine_rtc_config.gpio_pins & mask)!=0){
                     mode=ESP_GPIO_WAKEUP_GPIO_LOW;
