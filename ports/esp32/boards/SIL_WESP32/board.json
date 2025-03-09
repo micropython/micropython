@@ -18,7 +18,7 @@
         "wesp32-top.jpg"
     ],
     "mcu": "esp32",
-    "product": "SIL WESP32",
+    "product": "wESP32",
     "thumbnail": "",
     "url": "https://wesp32.com/",
     "vendor": "Silicognition"
