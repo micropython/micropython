@@ -156,7 +156,8 @@ void common_uart_irq_handler(int uart_id) {
                 }
             }
             #endif
-        } else if (uart->USART.INTFLAG.bit.DRE != 0) {
+        }
+        if (uart->USART.INTFLAG.bit.DRE != 0) {
             #if MICROPY_HW_UART_TXBUF
             // handle the outgoing data
             if (ringbuf_avail(&self->write_buffer) > 0) {
