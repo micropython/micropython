@@ -170,6 +170,12 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
     MICROPY_HW_NIC_CYW43 \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
+// Bluetooth code only runs in the scheduler, no locking/mutex required.
+#define MICROPY_PY_BLUETOOTH_ENTER uint32_t atomic_state = 0;
+#define MICROPY_PY_BLUETOOTH_EXIT (void)atomic_state;
+#define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
+#define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (1)
+
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
