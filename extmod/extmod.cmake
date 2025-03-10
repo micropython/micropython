@@ -109,7 +109,7 @@ if(MICROPY_PY_BTREE)
     set(MICROPY_LIB_BERKELEY_DIR "${MICROPY_DIR}/lib/berkeley-db-1.xx")
     string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/berkeley-db-1.xx)
 
-    if(ECHO_SUBMODULES)
+    if(LIST_SUBMODULES)
         # No-op, we're just doing submodule/variant discovery.
         # Cannot run the add_library/target_include_directories rules (even though
         # the build won't run) because IDF will attempt verify the files exist.

@@ -213,7 +213,7 @@ if(MICROPY_FROZEN_MANIFEST)
         set(MICROPY_LIB_DIR ${MICROPY_DIR}/lib/micropython-lib)
     endif()
 
-    if(ECHO_SUBMODULES)
+    if(LIST_SUBMODULES)
         # No-op, we're just doing submodule/variant discovery.
         # Note: All the following rules are safe to run in discovery mode even
         # though the submodule might not be available as they do not directly depend
@@ -272,12 +272,11 @@ if(MICROPY_FROZEN_MANIFEST)
     )
 endif()
 
-# Update submodules
-if(ECHO_SUBMODULES)
-    # If cmake is run with GIT_SUBMODULES defined on command line, process the port / board
-    # settings then print the final GIT_SUBMODULES variable and exit.
-    # Note: the GIT_SUBMODULES is done via echo rather than message, as message splits
-    # the output onto multiple lines
-    execute_process(COMMAND ${CMAKE_COMMAND} -E echo "GIT_SUBMODULES=${GIT_SUBMODULES}")
-    message(FATAL_ERROR "Done")
+# Generate a list of submodules to update
+if(LIST_SUBMODULES)
+    # If cmake is run with LIST_SUBMODULES defined on command line, process the port / board
+    # settings then write a shell snippet to the provided path and exit.
+    file(WRITE "${CMAKE_BINARY_DIR}/submodules.inc" "export GIT_SUBMODULES=\"${GIT_SUBMODULES}\"")
+    message("Generated list of submodules")
+    return()
 endif()
