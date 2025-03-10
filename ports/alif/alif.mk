@@ -115,6 +115,7 @@ SRC_O += \
 
 SRC_C = \
 	alif_flash.c \
+	cyw43_port_spi.c \
 	fatfs_port.c \
 	machine_pin.c \
 	machine_i2c.c \
@@ -196,12 +197,12 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	Device/core/$(MCU_CORE)/source/startup_$(MCU_CORE).c \
 	drivers/source/adc.c \
 	drivers/source/i2c.c \
-	drivers/source/spi.c \
 	drivers/source/mhu_driver.c \
 	drivers/source/mhu_receiver.c \
 	drivers/source/mhu_sender.c \
 	drivers/source/mram.c \
 	drivers/source/pinconf.c \
+	drivers/source/spi.c \
 	drivers/source/uart.c \
 	drivers/source/utimer.c \
 	ospi_xip/source/ospi/ospi_drv.c \
