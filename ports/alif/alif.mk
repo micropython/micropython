@@ -142,6 +142,10 @@ ifeq ($(MICROPY_SSL_MBEDTLS),1)
 SRC_C += mbedtls/mbedtls_port.c
 endif
 
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+SRC_C += mpbthciport.c mpnimbleport.c
+endif
+
 ifeq ($(MICROPY_FLOAT_IMPL),float)
 LIBM_SRC_C += $(SRC_LIB_LIBM_C)
 LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_HW_C)

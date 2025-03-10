@@ -30,12 +30,14 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/stackctrl.h"
+#include "extmod/modbluetooth.h"
 #include "extmod/modnetwork.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/runtime/softtimer.h"
 #include "tusb.h"
+#include "mpbthciport.h"
 #include "mpuart.h"
 #include "ospi_flash.h"
 #include "pendsv.h"
@@ -104,6 +106,10 @@ int main(void) {
     mod_network_lwip_init();
     #endif
 
+    #if MICROPY_PY_BLUETOOTH
+    mp_bluetooth_hci_init();
+    #endif
+
     #if MICROPY_PY_NETWORK_CYW43
     {
         cyw43_init(&cyw43_state);
@@ -152,6 +158,9 @@ int main(void) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        #if MICROPY_PY_BLUETOOTH
+        mp_bluetooth_deinit();
+        #endif
         soft_timer_deinit();
         gc_sweep_all();
         mp_deinit();
