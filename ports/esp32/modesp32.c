@@ -141,14 +141,13 @@ static mp_obj_t esp32_wake_on_gpio(size_t n_args, const mp_obj_t *pos_args, mp_m
     uint64_t gpio_pins = machine_rtc_config.gpio_pins;
     uint64_t level = machine_rtc_config.gpio_level;
 
-
     // Check that all pins are allowed
     if (args[ARG_pins].u_obj != mp_const_none) {
         size_t len = 0;
         mp_obj_t *elem;
         uint64_t mask;
         mp_obj_get_array(args[ARG_pins].u_obj, &len, &elem);
-        gpio_pins = 0;
+        //gpio_pins = 0;
 
         for (int i = 0; i < len; i++) {
 
@@ -164,10 +163,9 @@ static mp_obj_t esp32_wake_on_gpio(size_t n_args, const mp_obj_t *pos_args, mp_m
             else
                 level = level & (!mask);
         }
+        machine_rtc_config.gpio_level = level;
+        machine_rtc_config.gpio_pins = gpio_pins;
     }
-
-    machine_rtc_config.gpio_level = level;
-    machine_rtc_config.gpio_pins = gpio_pins;
 
     return mp_const_none;
 }

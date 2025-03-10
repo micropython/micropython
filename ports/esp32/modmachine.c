@@ -169,7 +169,7 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
     //#error SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP  
     if (wake_type==MACHINE_WAKE_DEEPSLEEP){
         if (machine_rtc_config.gpio_pins!=0){
-            uint64_t mask;
+            uint32_t mask;
             esp_deepsleep_gpio_wake_up_mode_t mode;
             for (int i=0;i<=(int)(RTC_LAST_GPIO_PIN);i++){
                 mask=1ll<<i;
