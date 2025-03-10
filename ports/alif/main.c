@@ -47,6 +47,9 @@
 #include "lwip/init.h"
 #include "lwip/apps/mdns.h"
 #endif
+#if MICROPY_PY_NETWORK_CYW43
+#include "lib/cyw43-driver/src/cyw43.h"
+#endif
 
 extern uint8_t __StackTop, __StackLimit;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
@@ -98,6 +101,18 @@ int main(void) {
     mdns_resp_init();
     #endif
     mod_network_lwip_init();
+    #endif
+
+    #if MICROPY_PY_NETWORK_CYW43
+    {
+        cyw43_init(&cyw43_state);
+        uint8_t buf[8];
+        memcpy(&buf[0], "ALIF", 4);
+        mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 8, 4, (char *)&buf[4]);
+        cyw43_wifi_ap_set_ssid(&cyw43_state, 8, buf);
+        cyw43_wifi_ap_set_auth(&cyw43_state, CYW43_AUTH_WPA2_AES_PSK);
+        cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t *)"alif0123");
+    }
     #endif
 
     for (;;) {
