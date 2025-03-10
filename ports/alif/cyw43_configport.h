@@ -32,6 +32,7 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "extmod/modnetwork.h"
+#include "extmod/mpbthci.h"
 #include "pendsv.h"
 
 #ifndef static_assert
@@ -39,6 +40,7 @@
 #endif
 
 #define CYW43_USE_SPI                   (1)
+#define CYW43_ENABLE_BLUETOOTH_OVER_UART (1)
 #define CYW43_LWIP                      (1)
 #define CYW43_USE_STATS                 (0)
 #define CYW43_PRINTF(...)               mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
@@ -78,6 +80,7 @@
 #define CYW43_HAL_PIN_PULL_NONE         0
 
 #define CYW43_HAL_MAC_WLAN0             MP_HAL_MAC_WLAN0
+#define CYW43_HAL_MAC_BDADDR            MP_HAL_MAC_BDADDR
 
 #define cyw43_hal_ticks_us              mp_hal_ticks_us
 #define cyw43_hal_ticks_ms              mp_hal_ticks_ms
@@ -87,12 +90,21 @@
 #define cyw43_hal_pin_low               mp_hal_pin_low
 #define cyw43_hal_pin_high              mp_hal_pin_high
 
+#define cyw43_hal_uart_set_baudrate     mp_bluetooth_hci_uart_set_baudrate
+#define cyw43_hal_uart_write            mp_bluetooth_hci_uart_write
+#define cyw43_hal_uart_readchar         mp_bluetooth_hci_uart_readchar
+
 #define cyw43_hal_get_mac               mp_hal_get_mac
 #define cyw43_hal_get_mac_ascii         mp_hal_get_mac_ascii
 #define cyw43_hal_generate_laa_mac      mp_hal_generate_laa_mac
 
 #define CYW43_PIN_WL_REG_ON             pin_WL_REG_ON
 #define CYW43_PIN_WL_IRQ                pin_WL_IRQ
+
+#define CYW43_PIN_BT_REG_ON             pin_BT_REG_ON
+#define CYW43_PIN_BT_HOST_WAKE          pin_BT_HOST_WAKE
+#define CYW43_PIN_BT_DEV_WAKE           pin_BT_DEV_WAKE
+#define CYW43_PIN_BT_CTS                pin_BT_UART_CTS
 
 #define cyw43_schedule_internal_poll_dispatch(func) pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, func)
 
@@ -119,5 +131,11 @@ static inline void cyw43_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uin
 static inline void cyw43_hal_pin_config_irq_falling(mp_hal_pin_obj_t pin, bool enable) {
     mp_hal_pin_config_irq_falling(pin, enable);
 }
+
+#define cyw43_bluetooth_controller_init mp_bluetooth_hci_controller_init
+#define cyw43_bluetooth_controller_deinit mp_bluetooth_hci_controller_deinit
+#define cyw43_bluetooth_controller_sleep_maybe mp_bluetooth_hci_controller_sleep_maybe
+#define cyw43_bluetooth_controller_woken mp_bluetooth_hci_controller_woken
+#define cyw43_bluetooth_controller_wakeup mp_bluetooth_hci_controller_wakeup
 
 #endif // MICROPY_INCLUDED_ALIF_CYW43_CONFIGPORT_H
