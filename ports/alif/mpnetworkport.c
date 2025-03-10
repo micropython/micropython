@@ -32,6 +32,10 @@
 #include "shared/runtime/softtimer.h"
 #include "lwip/timeouts.h"
 
+#if MICROPY_PY_NETWORK_CYW43
+#include "lib/cyw43-driver/src/cyw43.h"
+#endif
+
 // Poll lwIP every 64ms by default
 #define LWIP_TICK_RATE_MS 64
 
@@ -49,6 +53,16 @@ static void mp_network_soft_timer_callback(soft_timer_entry_t *self) {
 
     #if LWIP_NETIF_LOOPBACK
     netif_poll_all();
+    #endif
+
+    #if MICROPY_PY_NETWORK_CYW43
+    if (cyw43_poll) {
+        if (cyw43_sleep != 0) {
+            if (--cyw43_sleep == 0) {
+                cyw43_poll();
+            }
+        }
+    }
     #endif
 }
 
