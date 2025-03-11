@@ -106,12 +106,10 @@ size-components:
 size-files:
 	$(call RUN_IDF_PY,size-files)
 
-# Running the build with ECHO_SUBMODULES set will trigger py/mkrules.cmake to
-# print out the value of the GIT_SUBMODULES variable, prefixed with
-# "GIT_SUBMODULES", and then abort. This extracts out that line from the idf.py
-# output and passes the list of submodules to py/mkrules.mk which does the
-# `git submodule init` on each.
+# Run idf.py with the UPDATE_SUBMODULES flag to update
+# necessary submodules for this board.
+#
+# This is done in a dedicated build directory as some CMake cache values are not
+# set correctly if not all submodules are loaded yet.
 submodules:
-	@GIT_SUBMODULES=$$(IDF_COMPONENT_MANAGER=0 idf.py $(IDFPY_FLAGS) -B $(BUILD)/submodules -D ECHO_SUBMODULES=1 build 2>&1 | \
-	                  grep '^GIT_SUBMODULES=' | cut -d= -f2); \
-	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$${GIT_SUBMODULES}" GIT_SUBMODULES_FAIL_IF_EMPTY=1 submodules
+	IDF_COMPONENT_MANAGER=0 idf.py $(IDFPY_FLAGS) -B $(BUILD)/submodules -D UPDATE_SUBMODULES=1 reconfigure
