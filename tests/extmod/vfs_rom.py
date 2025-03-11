@@ -408,9 +408,11 @@ class TestMounted(TestBase):
 
     def test_chdir(self):
         os.chdir("/test_rom")
+        self.assertEqual(os.getcwd(), "/test_rom")
         self.assertEqual(os.listdir(), self.romfs_listdir)
 
         os.chdir("/test_rom/")
+        self.assertEqual(os.getcwd(), "/test_rom")
         self.assertEqual(os.listdir(), self.romfs_listdir)
 
         # chdir within the romfs is not implemented.
