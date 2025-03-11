@@ -340,8 +340,6 @@ if (MICROPY_PY_BLUETOOTH_CYW43)
 endif()
 
 if (MICROPY_BLUETOOTH_BTSTACK)
-    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/btstack)
-
     list(APPEND MICROPY_SOURCE_PORT mpbtstackport.c)
 
     include(${MICROPY_DIR}/extmod/btstack/btstack.cmake)
@@ -358,11 +356,6 @@ if (MICROPY_BLUETOOTH_BTSTACK)
 endif()
 
 if(MICROPY_BLUETOOTH_NIMBLE)
-    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/mynewt-nimble)
-    if(NOT (${LIST_SUBMODULES}) AND NOT EXISTS ${MICROPY_DIR}/lib/mynewt-nimble/nimble/host/include/host/ble_hs.h)
-        message(FATAL_ERROR " mynewt-nimble not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
-    endif()
-
     list(APPEND MICROPY_SOURCE_PORT mpnimbleport.c)
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_BLUETOOTH_NIMBLE=1
