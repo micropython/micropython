@@ -274,86 +274,88 @@ endif()
 # Library for lwIP network stack
 
 if(MICROPY_PY_LWIP)
-    add_library(micropy_lib_lwip INTERFACE)
-
-    set(MICROPY_LIB_LWIP_DIR "${MICROPY_DIR}/lib/lwip/src")
-
-    target_include_directories(micropy_lib_lwip INTERFACE
-        ${MICROPY_LIB_LWIP_DIR}/include
-    )
-
-    target_sources(micropy_lib_lwip INTERFACE
-        ${MICROPY_DIR}/shared/netutils/netutils.c
-        ${MICROPY_LIB_LWIP_DIR}/apps/mdns/mdns.c
-        ${MICROPY_LIB_LWIP_DIR}/apps/mdns/mdns_domain.c
-        ${MICROPY_LIB_LWIP_DIR}/apps/mdns/mdns_out.c
-        ${MICROPY_LIB_LWIP_DIR}/core/def.c
-        ${MICROPY_LIB_LWIP_DIR}/core/dns.c
-        ${MICROPY_LIB_LWIP_DIR}/core/inet_chksum.c
-        ${MICROPY_LIB_LWIP_DIR}/core/init.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ip.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/acd.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/autoip.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/dhcp.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/etharp.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/icmp.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/igmp.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/ip4.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/ip4_addr.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/ip4_frag.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/dhcp6.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/ethip6.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/icmp6.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/inet6.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/ip6.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/ip6_addr.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/ip6_frag.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/mld6.c
-        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/nd6.c
-        ${MICROPY_LIB_LWIP_DIR}/core/mem.c
-        ${MICROPY_LIB_LWIP_DIR}/core/memp.c
-        ${MICROPY_LIB_LWIP_DIR}/core/netif.c
-        ${MICROPY_LIB_LWIP_DIR}/core/pbuf.c
-        ${MICROPY_LIB_LWIP_DIR}/core/raw.c
-        ${MICROPY_LIB_LWIP_DIR}/core/stats.c
-        ${MICROPY_LIB_LWIP_DIR}/core/sys.c
-        ${MICROPY_LIB_LWIP_DIR}/core/tcp.c
-        ${MICROPY_LIB_LWIP_DIR}/core/tcp_in.c
-        ${MICROPY_LIB_LWIP_DIR}/core/tcp_out.c
-        ${MICROPY_LIB_LWIP_DIR}/core/timeouts.c
-        ${MICROPY_LIB_LWIP_DIR}/core/udp.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ethernet.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/auth.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ccp.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/chap-md5.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/chap_ms.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/chap-new.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/demand.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/eap.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ecp.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/eui64.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/fsm.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ipcp.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ipv6cp.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/lcp.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/magic.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/mppe.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/multilink.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/polarssl/md5.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppapi.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ppp.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppcrypt.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppoe.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppol2tp.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppos.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/upap.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/utils.c
-        ${MICROPY_LIB_LWIP_DIR}/netif/ppp/vj.c
-    )
-
-    list(APPEND MICROPY_INC_CORE
-        ${MICROPY_LIB_LWIP_DIR}/include
-    )
-
     string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/lwip)
+
+    if(NOT LIST_SUBMODULES)
+        add_library(micropy_lib_lwip INTERFACE)
+
+        set(MICROPY_LIB_LWIP_DIR "${MICROPY_DIR}/lib/lwip/src")
+
+        target_include_directories(micropy_lib_lwip INTERFACE
+            ${MICROPY_LIB_LWIP_DIR}/include
+        )
+
+        target_sources(micropy_lib_lwip INTERFACE
+            ${MICROPY_DIR}/shared/netutils/netutils.c
+            ${MICROPY_LIB_LWIP_DIR}/apps/mdns/mdns.c
+            ${MICROPY_LIB_LWIP_DIR}/apps/mdns/mdns_domain.c
+            ${MICROPY_LIB_LWIP_DIR}/apps/mdns/mdns_out.c
+            ${MICROPY_LIB_LWIP_DIR}/core/def.c
+            ${MICROPY_LIB_LWIP_DIR}/core/dns.c
+            ${MICROPY_LIB_LWIP_DIR}/core/inet_chksum.c
+            ${MICROPY_LIB_LWIP_DIR}/core/init.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ip.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv4/acd.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv4/autoip.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv4/dhcp.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv4/etharp.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv4/icmp.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv4/igmp.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv4/ip4.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv4/ip4_addr.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv4/ip4_frag.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv6/dhcp6.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv6/ethip6.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv6/icmp6.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv6/inet6.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv6/ip6.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv6/ip6_addr.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv6/ip6_frag.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv6/mld6.c
+            ${MICROPY_LIB_LWIP_DIR}/core/ipv6/nd6.c
+            ${MICROPY_LIB_LWIP_DIR}/core/mem.c
+            ${MICROPY_LIB_LWIP_DIR}/core/memp.c
+            ${MICROPY_LIB_LWIP_DIR}/core/netif.c
+            ${MICROPY_LIB_LWIP_DIR}/core/pbuf.c
+            ${MICROPY_LIB_LWIP_DIR}/core/raw.c
+            ${MICROPY_LIB_LWIP_DIR}/core/stats.c
+            ${MICROPY_LIB_LWIP_DIR}/core/sys.c
+            ${MICROPY_LIB_LWIP_DIR}/core/tcp.c
+            ${MICROPY_LIB_LWIP_DIR}/core/tcp_in.c
+            ${MICROPY_LIB_LWIP_DIR}/core/tcp_out.c
+            ${MICROPY_LIB_LWIP_DIR}/core/timeouts.c
+            ${MICROPY_LIB_LWIP_DIR}/core/udp.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ethernet.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/auth.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ccp.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/chap-md5.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/chap_ms.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/chap-new.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/demand.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/eap.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ecp.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/eui64.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/fsm.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ipcp.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ipv6cp.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/lcp.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/magic.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/mppe.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/multilink.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/polarssl/md5.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppapi.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/ppp.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppcrypt.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppoe.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppol2tp.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/pppos.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/upap.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/utils.c
+            ${MICROPY_LIB_LWIP_DIR}/netif/ppp/vj.c
+        )
+
+        list(APPEND MICROPY_INC_CORE
+            ${MICROPY_LIB_LWIP_DIR}/include
+        )
+    endif()
 endif()
