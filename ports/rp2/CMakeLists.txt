@@ -76,8 +76,8 @@ if (MICROPY_PY_NETWORK_CYW43)
 endif()
 
 # Necessary submodules for all boards.
-string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/mbedtls)
-string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/tinyusb)
+list(APPEND GIT_SUBMODULES lib/mbedtls)
+list(APPEND GIT_SUBMODULES lib/tinyusb)
 
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
@@ -340,7 +340,7 @@ if (MICROPY_PY_BLUETOOTH_CYW43)
 endif()
 
 if (MICROPY_BLUETOOTH_BTSTACK)
-    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/btstack)
+    list(APPEND GIT_SUBMODULES lib/btstack)
 
     list(APPEND MICROPY_SOURCE_PORT mpbtstackport.c)
 
@@ -358,8 +358,8 @@ if (MICROPY_BLUETOOTH_BTSTACK)
 endif()
 
 if(MICROPY_BLUETOOTH_NIMBLE)
-    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/mynewt-nimble)
-    if(NOT (${ECHO_SUBMODULES}) AND NOT EXISTS ${MICROPY_DIR}/lib/mynewt-nimble/nimble/host/include/host/ble_hs.h)
+    list(APPEND GIT_SUBMODULES lib/mynewt-nimble)
+    if(NOT UPDATE_SUBMODULES AND NOT EXISTS ${MICROPY_DIR}/lib/mynewt-nimble/nimble/host/include/host/ble_hs.h)
         message(FATAL_ERROR " mynewt-nimble not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
     endif()
 
@@ -386,8 +386,8 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
 )
 
 if (MICROPY_PY_NETWORK_CYW43)
-    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/cyw43-driver)
-    if((NOT (${ECHO_SUBMODULES})) AND NOT EXISTS ${MICROPY_DIR}/lib/cyw43-driver/src/cyw43.h)
+    list(APPEND GIT_SUBMODULES lib/cyw43-driver)
+    if(NOT UPDATE_SUBMODULES AND NOT EXISTS ${MICROPY_DIR}/lib/cyw43-driver/src/cyw43.h)
         message(FATAL_ERROR " cyw43-driver not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
     endif()
 
@@ -433,8 +433,8 @@ if (MICROPY_PY_NETWORK_NINAW10)
 endif()
 
 if (MICROPY_PY_NETWORK_WIZNET5K)
-    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/wiznet5k)
-    if((NOT (${ECHO_SUBMODULES})) AND NOT EXISTS ${MICROPY_DIR}/lib/wiznet5k/README.md)
+    list(APPEND GIT_SUBMODULES lib/wiznet5k)
+    if(NOT UPDATE_SUBMODULES AND NOT EXISTS ${MICROPY_DIR}/lib/wiznet5k/README.md)
         message(FATAL_ERROR " wiznet5k not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
     endif()
 

@@ -209,16 +209,11 @@ if(MICROPY_FROZEN_MANIFEST)
     # Note: target_compile_definitions already added earlier.
 
     if(NOT MICROPY_LIB_DIR)
-        string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/micropython-lib)
+        list(APPEND GIT_SUBMODULES lib/micropython-lib)
         set(MICROPY_LIB_DIR ${MICROPY_DIR}/lib/micropython-lib)
     endif()
 
-    if(ECHO_SUBMODULES)
-        # No-op, we're just doing submodule/variant discovery.
-        # Note: All the following rules are safe to run in discovery mode even
-        # though the submodule might not be available as they do not directly depend
-        # on anything from the submodule.
-    elseif(NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
+    if(NOT UPDATE_SUBMODULES AND NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
         message(FATAL_ERROR " micropython-lib not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
     endif()
 
@@ -272,12 +267,29 @@ if(MICROPY_FROZEN_MANIFEST)
     )
 endif()
 
-# Update submodules
-if(ECHO_SUBMODULES)
-    # If cmake is run with GIT_SUBMODULES defined on command line, process the port / board
-    # settings then print the final GIT_SUBMODULES variable and exit.
-    # Note: the GIT_SUBMODULES is done via echo rather than message, as message splits
-    # the output onto multiple lines
-    execute_process(COMMAND ${CMAKE_COMMAND} -E echo "GIT_SUBMODULES=${GIT_SUBMODULES}")
-    message(FATAL_ERROR "Done")
+# Update submodules, this is invoked on some ports via 'make submodules'.
+#
+# Note: This logic has a Makefile equivalent in py/mkrules.mk
+if(UPDATE_SUBMODULES AND GIT_SUBMODULES)
+    macro(run_git)
+      execute_process(COMMAND git ${ARGV} WORKING_DIRECTORY ${MICROPY_DIR}
+          RESULT_VARIABLE RES)
+    endmacro()
+
+    list(JOIN GIT_SUBMODULES " " GIT_SUBMODULES_MSG)
+    message("Updating submodules: ${GIT_SUBMODULES_MSG}")
+    run_git(submodule sync ${GIT_SUBMODULES})
+    if(RES EQUAL 0)
+        # If available, do blobless partial clones of submodules to save time and space.
+        # A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.).
+        run_git(submodule update --init --filter=blob:none ${GIT_SUBMODULES})
+        # Fallback to standard submodule update if blobless isn't available (earlier than git 2.36.0)
+        if (NOT RES EQUAL 0)
+            run_git(submodule update --init ${GIT_SUBMODULES})
+        endif()
+    endif()
+
+    if (NOT RES EQUAL 0)
+        message(FATAL_ERROR "Submodule update failed")
+    endif()
 endif()
