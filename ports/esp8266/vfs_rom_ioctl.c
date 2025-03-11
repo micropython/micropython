@@ -35,13 +35,13 @@
 #define FLASH_MEM_BASE (0x40200000)
 #define FLASH_PAGE_SIZE (4096)
 
-#define MICROPY_HW_ROMFS_BASE (uintptr_t)(&_micropy_hw_romfs_start)
-#define MICROPY_HW_ROMFS_BYTES (uintptr_t)(&_micropy_hw_romfs_size)
+#define MICROPY_HW_ROMFS_BASE (uintptr_t)(&_micropy_hw_romfs_part0_start)
+#define MICROPY_HW_ROMFS_BYTES (uintptr_t)(&_micropy_hw_romfs_part0_size)
 
 #define ROMFS_SPI_FLASH_OFFSET (MICROPY_HW_ROMFS_BASE - FLASH_MEM_BASE)
 
-extern uint8_t _micropy_hw_romfs_start;
-extern uint8_t _micropy_hw_romfs_size;
+extern uint8_t _micropy_hw_romfs_part0_start;
+extern uint8_t _micropy_hw_romfs_part0_size;
 
 static const MP_DEFINE_MEMORYVIEW_OBJ(romfs_obj, 'B', 0, MICROPY_HW_ROMFS_BYTES, (void *)MICROPY_HW_ROMFS_BASE);
 
