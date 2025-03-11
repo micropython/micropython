@@ -450,17 +450,19 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/
     )
 
-    list(APPEND MICROPY_SOURCE_LIB
-        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5100/w5100.c
-        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5100S/w5100s.c
-        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5200/w5200.c
-        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5300/w5300.c
-        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5500/w5500.c
-        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/socket.c
-        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/wizchip_conf.c
-        ${MICROPY_DIR}/lib/wiznet5k/Internet/DNS/dns.c
-        ${MICROPY_DIR}/lib/wiznet5k/Internet/DHCP/dhcp.c
-    )
+    if(NOT LIST_SUBMODULES)
+        list(APPEND MICROPY_SOURCE_LIB
+            ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5100/w5100.c
+            ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5100S/w5100s.c
+            ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5200/w5200.c
+            ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5300/w5300.c
+            ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5500/w5500.c
+            ${MICROPY_DIR}/lib/wiznet5k/Ethernet/socket.c
+            ${MICROPY_DIR}/lib/wiznet5k/Ethernet/wizchip_conf.c
+            ${MICROPY_DIR}/lib/wiznet5k/Internet/DNS/dns.c
+            ${MICROPY_DIR}/lib/wiznet5k/Internet/DHCP/dhcp.c
+        )
+    endif()
 endif()
 
 # Add qstr sources for extmod and usermod, in case they are modified by components above.
