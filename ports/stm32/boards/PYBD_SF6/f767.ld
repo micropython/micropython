@@ -38,7 +38,7 @@ _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
 
 /* ROMFS location */
-_micropy_hw_romfs_part1_start = ORIGIN(FLASH_ROMFS);
-_micropy_hw_romfs_part1_size = LENGTH(FLASH_ROMFS);
+_micropy_hw_romfs_part0_start = ORIGIN(FLASH_ROMFS);
+_micropy_hw_romfs_part0_size = LENGTH(FLASH_ROMFS);
 
 INCLUDE common_bl.ld

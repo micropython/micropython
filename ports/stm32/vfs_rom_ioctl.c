@@ -36,6 +36,13 @@
 
 #if MICROPY_VFS_ROM_IOCTL
 
+#if MICROPY_HW_ROMFS_ENABLE_PART0 && !defined(MICROPY_HW_ROMFS_PART0_START)
+#define MICROPY_HW_ROMFS_PART0_START (uintptr_t)(&_micropy_hw_romfs_part0_start)
+#define MICROPY_HW_ROMFS_PART0_SIZE (uintptr_t)(&_micropy_hw_romfs_part0_size)
+extern uint8_t _micropy_hw_romfs_part0_start;
+extern uint8_t _micropy_hw_romfs_part0_size;
+#endif
+
 #if MICROPY_HW_ROMFS_ENABLE_PART1 && !defined(MICROPY_HW_ROMFS_PART1_START)
 #define MICROPY_HW_ROMFS_PART1_START (uintptr_t)(&_micropy_hw_romfs_part1_start)
 #define MICROPY_HW_ROMFS_PART1_SIZE (uintptr_t)(&_micropy_hw_romfs_part1_size)
@@ -43,21 +50,14 @@ extern uint8_t _micropy_hw_romfs_part1_start;
 extern uint8_t _micropy_hw_romfs_part1_size;
 #endif
 
-#if MICROPY_HW_ROMFS_ENABLE_PART2 && !defined(MICROPY_HW_ROMFS_PART2_START)
-#define MICROPY_HW_ROMFS_PART2_START (uintptr_t)(&_micropy_hw_romfs_part2_start)
-#define MICROPY_HW_ROMFS_PART2_SIZE (uintptr_t)(&_micropy_hw_romfs_part2_size)
-extern uint8_t _micropy_hw_romfs_part2_start;
-extern uint8_t _micropy_hw_romfs_part2_size;
-#endif
-
 #define ROMFS_MEMORYVIEW(base, size) {{&mp_type_memoryview}, 'B', 0, (size), (void *)(base)}
 
 static const mp_obj_array_t romfs_obj_table[] = {
+    #if MICROPY_HW_ROMFS_ENABLE_PART0
+    ROMFS_MEMORYVIEW(MICROPY_HW_ROMFS_PART0_START, MICROPY_HW_ROMFS_PART0_SIZE),
+    #endif
     #if MICROPY_HW_ROMFS_ENABLE_PART1
     ROMFS_MEMORYVIEW(MICROPY_HW_ROMFS_PART1_START, MICROPY_HW_ROMFS_PART1_SIZE),
-    #endif
-    #if MICROPY_HW_ROMFS_ENABLE_PART2
-    ROMFS_MEMORYVIEW(MICROPY_HW_ROMFS_PART2_START, MICROPY_HW_ROMFS_PART2_SIZE),
     #endif
 };
 
