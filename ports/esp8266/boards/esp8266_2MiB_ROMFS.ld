@@ -17,8 +17,8 @@ MEMORY
 }
 
 /* define ROMFS extents */
-_micropy_hw_romfs_start = ORIGIN(FLASH_ROMFS);
-_micropy_hw_romfs_size = LENGTH(FLASH_ROMFS);
+_micropy_hw_romfs_part0_start = ORIGIN(FLASH_ROMFS);
+_micropy_hw_romfs_part0_size = LENGTH(FLASH_ROMFS);
 
 /* define common sections and symbols */
 INCLUDE boards/esp8266_common.ld

@@ -165,13 +165,13 @@ static MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 
 extern byte _firmware_size[];
 #if MICROPY_VFS_ROM_IOCTL
-extern uint8_t _micropy_hw_romfs_size;
+extern uint8_t _micropy_hw_romfs_part0_size;
 #endif
 
 static mp_obj_t esp_flash_user_start(void) {
     uint32_t flash_user_start = (uint32_t)_firmware_size;
     #if MICROPY_VFS_ROM_IOCTL
-    flash_user_start += (uint32_t)&_micropy_hw_romfs_size;
+    flash_user_start += (uint32_t)&_micropy_hw_romfs_part0_size;
     #endif
     return MP_OBJ_NEW_SMALL_INT(flash_user_start);
 }
