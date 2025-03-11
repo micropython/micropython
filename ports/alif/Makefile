@@ -3,8 +3,9 @@ BOARD_DIR ?= boards/$(BOARD)
 BUILD ?= build-$(BOARD)
 MCU_CORE ?= M55_HP
 GIT_SUBMODULES += lib/tinyusb lib/alif_ensemble-cmsis-dfp
+PORT ?= /dev/ttyACM0
 
-ALIF_TOOLS ?= tools
+ALIF_TOOLS ?= ../../lib/alif-security-toolkit/toolkit
 
 JLINK_CMD_PREFIX = \
 ExitOnError 1\n\
@@ -62,6 +63,7 @@ include $(TOP)/extmod/extmod.mk
 ################################################################################
 # Main targets
 
+.PHONY: all
 all: $(BUILD)/firmware.toc.bin
 
 # Force make commands to run the targets every time
@@ -75,23 +77,41 @@ $(BUILD):
 
 $(BUILD)/M55_HP/firmware.bin:
 	make -f alif.mk MCU_CORE=M55_HP MICROPY_PY_OPENAMP_MODE=0
-	$(Q)cp $(BUILD)/M55_HP/firmware.bin $(ALIF_TOOLS)/build/images/firmware_M55_HP.bin
 
 $(BUILD)/M55_HE/firmware.bin:
 	make -f alif.mk MCU_CORE=M55_HE MICROPY_PY_OPENAMP_MODE=1
-	$(Q)cp $(BUILD)/M55_HE/firmware.bin $(ALIF_TOOLS)/build/images/firmware_M55_HE.bin
 
 $(BUILD)/firmware.toc.bin: $(ALIF_TOC_APPS)
-	$(Q)$(MKDIR) -p $(ALIF_TOOLS)/build/images/
-	$(Q)$(MKDIR) -p $(ALIF_TOOLS)/build/logs/
-	$(Q)cd $(ALIF_TOOLS) && python app-gen-toc.py -f $(abspath $(ALIF_TOC_CONFIG))
-	$(Q)cp $(ALIF_TOOLS)/build/AppTocPackage.bin $(BUILD)/firmware.toc.bin
+	$(Q)python $(ALIF_TOOLS)/app-gen-toc.py \
+		--filename $(abspath $(ALIF_TOC_CONFIG)) \
+		--config-dir $(BOARD_DIR) \
+		--output-dir $(BUILD) \
+		--firmware-dir $(BUILD) \
+		--output $@
 
+.PHONY: deploy
 deploy: $(BUILD)/firmware.toc.bin
 	$(ECHO) "Writing $< to the board"
-	$(Q)cd $(ALIF_TOOLS) && python app-write-mram.py -p
+	$(Q)python $(ALIF_TOOLS)/app-write-mram.py \
+		--cfg-part $(ALIF_TOOLKIT_CFG_PART) \
+		--port $(PORT) \
+		--pad \
+		--images file:$(BUILD)/application_package.ds
 
+.PHONY: deploy-jlink
 deploy-jlink: $(ALIF_TOC_APPS)
 	$(Q)echo -e $(JLINK_CMD) | $(JLINK_EXE)
+
+.PHONY: maintenance
+maintenance:
+	$(Q)python $(ALIF_TOOLS)/maintenance.py \
+		--cfg-part $(ALIF_TOOLKIT_CFG_PART) \
+		--port $(PORT)
+
+.PHONY: update-system-package
+update-system-package:
+	$(Q)python $(ALIF_TOOLS)/updateSystemPackage.py \
+		--cfg-part $(ALIF_TOOLKIT_CFG_PART) \
+		--port $(PORT)
 
 include $(TOP)/py/mkrules.mk

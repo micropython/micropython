@@ -7,7 +7,7 @@
   },
   "HP_APP": {
     "disabled" : false,
-    "binary": "firmware_M55_HP.bin",
+    "binary": "M55_HP/firmware.bin",
     "mramAddress": "0x80020000",
     "version": "1.0.0",
     "cpu_id": "M55_HP",

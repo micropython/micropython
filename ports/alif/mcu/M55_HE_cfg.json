@@ -7,7 +7,7 @@
   },
   "HE_APP": {
     "disabled" : false,
-    "binary": "firmware_M55_HE.bin",
+    "binary": "M55_HE/firmware.bin",
     "mramAddress": "0x80320000",
     "version": "1.0.0",
     "cpu_id": "M55_HE",

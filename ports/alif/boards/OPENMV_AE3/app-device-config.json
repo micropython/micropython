@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "device": "AE302F80F55D5AE",
+    "project": "",
+    "external_clock_sources": [
+      {
+        "id": "OSC_HFXO",
+        "enabled": true,
+        "frequency": 38400000
+      },
+      {
+        "id": "OSC_LFXO",
+        "enabled": true,
+        "frequency": 32768
+      }
+    ]
+  },
+  "firewall": {
+    "firewall_components": [],
+    "region_stitching": false
+  },
+  "pinmux": [],
+  "clocks": {},
+  "miscellaneous": []
+}
