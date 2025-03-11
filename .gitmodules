@@ -71,3 +71,6 @@
 [submodule "lib/alif_ensemble-cmsis-dfp"]
 	path = lib/alif_ensemble-cmsis-dfp
 	url = https://github.com/alifsemi/alif_ensemble-cmsis-dfp.git
+[submodule "lib/alif-security-toolkit"]
+	path = lib/alif-security-toolkit
+	url = https://github.com/micropython/alif-security-toolkit.git
