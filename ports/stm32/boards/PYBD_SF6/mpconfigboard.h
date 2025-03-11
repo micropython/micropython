@@ -48,7 +48,7 @@
 // ROMFS config
 #define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI (1)
 #define MICROPY_HW_ROMFS_QSPI_SPIFLASH_OBJ (&spi_bdev2.spiflash)
-#define MICROPY_HW_ROMFS_ENABLE_PART1 (1)
+#define MICROPY_HW_ROMFS_ENABLE_PART0 (1)
 
 // Extra UART config
 #define MICROPY_HW_UART7_TX         (pyb_pin_W16)

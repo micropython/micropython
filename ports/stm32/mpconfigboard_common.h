@@ -77,14 +77,14 @@
 #define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI (0)
 #endif
 
+// Whether to enable ROMFS partition 0.
+#ifndef MICROPY_HW_ROMFS_ENABLE_PART0
+#define MICROPY_HW_ROMFS_ENABLE_PART0 (0)
+#endif
+
 // Whether to enable ROMFS partition 1.
 #ifndef MICROPY_HW_ROMFS_ENABLE_PART1
 #define MICROPY_HW_ROMFS_ENABLE_PART1 (0)
-#endif
-
-// Whether to enable ROMFS partition 2.
-#ifndef MICROPY_HW_ROMFS_ENABLE_PART2
-#define MICROPY_HW_ROMFS_ENABLE_PART2 (0)
 #endif
 
 // Whether to enable storage on the internal flash of the MCU
