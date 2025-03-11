@@ -56,9 +56,11 @@ ifdef MICROPY_PREVIEW_VERSION_2
 CMAKE_ARGS += -DMICROPY_PREVIEW_VERSION_2=1
 endif
 
+HELP_PICO_SDK_SUBMODULE ?= "\033[1;31mError: pico-sdk submodule is not initialized.\033[0m Run 'make submodules'"
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 
 all:
+	[ -f ../../lib/pico-sdk/README.md ] || (echo -e $(HELP_PICO_SDK_SUBMODULE); false)
 	[ -e $(BUILD)/Makefile ] || cmake -S . -B $(BUILD) -DPICO_BUILD_DOCS=0 ${CMAKE_ARGS}
 	$(MAKE) $(MAKE_ARGS) -C $(BUILD) || (echo -e $(HELP_BUILD_ERROR); false)
 
