@@ -264,29 +264,34 @@ static mp_obj_t rp2_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
         offset += mp_obj_get_int(args[3]);
     }
 
+    #if defined(MICROPY_HW_PSRAM_CS_PIN) && MICROPY_HW_ENABLE_PSRAM
     if ((uintptr_t)bufinfo.buf >= SRAM_BASE) {
-        mp_uint_t atomic_state = begin_critical_flash_section();
-        flash_range_program(self->flash_base + offset, bufinfo.buf, bufinfo.len);
-        end_critical_flash_section(atomic_state);
-        mp_event_handle_nowait();
-    } else {
-        size_t bytes_left = bufinfo.len;
-        size_t bytes_offset = 0;
-        static uint8_t copy_buffer[BLOCK_SIZE_BYTES] = {0};
+    #endif
+    mp_uint_t atomic_state = begin_critical_flash_section();
+    flash_range_program(self->flash_base + offset, bufinfo.buf, bufinfo.len);
+    end_critical_flash_section(atomic_state);
+    mp_event_handle_nowait();
+    #if defined(MICROPY_HW_PSRAM_CS_PIN) && MICROPY_HW_ENABLE_PSRAM
+} else {
+    size_t bytes_left = bufinfo.len;
+    size_t bytes_offset = 0;
+    static uint8_t copy_buffer[BLOCK_SIZE_BYTES] = {0}
+    ;
 
-        while (bytes_left) {
-            memcpy(copy_buffer, bufinfo.buf + bytes_offset, min_size(bytes_left, BLOCK_SIZE_BYTES));
-            mp_uint_t atomic_state = begin_critical_flash_section();
-            flash_range_program(self->flash_base + offset + bytes_offset, copy_buffer, min_size(bytes_left, BLOCK_SIZE_BYTES));
-            end_critical_flash_section(atomic_state);
-            bytes_offset += BLOCK_SIZE_BYTES;
-            if (bytes_left <= BLOCK_SIZE_BYTES) {
-                break;
-            }
-            bytes_left -= BLOCK_SIZE_BYTES;
-            mp_event_handle_nowait();
+    while (bytes_left) {
+        memcpy(copy_buffer, bufinfo.buf + bytes_offset, min_size(bytes_left, BLOCK_SIZE_BYTES));
+        mp_uint_t atomic_state = begin_critical_flash_section();
+        flash_range_program(self->flash_base + offset + bytes_offset, copy_buffer, min_size(bytes_left, BLOCK_SIZE_BYTES));
+        end_critical_flash_section(atomic_state);
+        bytes_offset += BLOCK_SIZE_BYTES;
+        if (bytes_left <= BLOCK_SIZE_BYTES) {
+            break;
         }
+        bytes_left -= BLOCK_SIZE_BYTES;
+        mp_event_handle_nowait();
     }
+}
+    #endif
 
     // TODO check return value
     return mp_const_none;
