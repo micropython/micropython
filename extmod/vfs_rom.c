@@ -300,6 +300,13 @@ static mp_obj_t vfs_rom_chdir(mp_obj_t self_in, mp_obj_t path_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(vfs_rom_chdir_obj, vfs_rom_chdir);
 
+static mp_obj_t vfs_rom_getcwd(mp_obj_t self_in) {
+    (void)self_in;
+    // The current directory is always the root of the ROMFS.
+    return MP_OBJ_NEW_QSTR(MP_QSTR_);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(vfs_rom_getcwd_obj, vfs_rom_getcwd);
+
 typedef struct _vfs_rom_ilistdir_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
@@ -436,6 +443,7 @@ static const mp_rom_map_elem_t vfs_rom_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&vfs_rom_open_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&vfs_rom_chdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&vfs_rom_getcwd_obj) },
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&vfs_rom_ilistdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&vfs_rom_stat_obj) },
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&vfs_rom_statvfs_obj) },
