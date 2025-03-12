@@ -35,6 +35,7 @@
 #include "extmod/modnetwork.h"
 #include "pendsv.h"
 
+#define CYW43_INCLUDE_LEGACY_F1_OVERFLOW_WORKAROUND_VARIABLES (1)
 #define CYW43_WIFI_NVRAM_INCLUDE_FILE   "wifi_nvram_43439.h"
 #define CYW43_IOCTL_TIMEOUT_US          (1000000)
 #define CYW43_SLEEP_MAX                 (10)
