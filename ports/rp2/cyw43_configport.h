@@ -111,8 +111,6 @@ uint cyw43_get_pin_wl(cyw43_pin_index_t pin_id);
 // set in SDK board header
 #define CYW43_NUM_GPIOS                 CYW43_WL_GPIO_COUNT
 
-#define CYW43_POST_POLL_HOOK            cyw43_post_poll_hook();
-
 #define cyw43_hal_ticks_us              mp_hal_ticks_us
 #define cyw43_hal_ticks_ms              mp_hal_ticks_ms
 
@@ -138,11 +136,12 @@ uint cyw43_get_pin_wl(cyw43_pin_index_t pin_id);
 #define cyw43_free m_tracked_free
 #endif
 
-void cyw43_post_poll_hook(void);
-extern volatile int cyw43_has_pending;
+static inline bool cyw43_poll_is_pending(void) {
+    return pendsv_is_pending(PENDSV_DISPATCH_CYW43);
+}
 
 static inline void cyw43_yield(void) {
-    if (!cyw43_has_pending) {
+    if (!cyw43_poll_is_pending()) {
         best_effort_wfe_or_timeout(make_timeout_time_ms(1));
     }
 }
