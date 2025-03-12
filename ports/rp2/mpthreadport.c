@@ -106,6 +106,9 @@ static void core1_entry_wrapper(void) {
     // Allow MICROPY_BEGIN_ATOMIC_SECTION to be invoked from core0.
     multicore_lockout_victim_init();
 
+    // Set PendSV interrupt priority correctly for CPU1
+    pendsv_init();
+
     if (core1_entry) {
         core1_entry(core1_arg);
     }
