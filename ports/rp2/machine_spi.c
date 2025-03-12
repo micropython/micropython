@@ -139,24 +139,9 @@ static void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     }
 }
 
-static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
-        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_POLARITY} },
-        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
-        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_BITS} },
-        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
-        { MP_QSTR_sck,      MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_mosi,     MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_miso,     MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
-    };
+enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
 
-    // Parse the arguments.
-    machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
+static void machine_spi_configure_helper(machine_spi_obj_t *self, mp_arg_val_t *args) {
     // Initialise the SPI instance
     self->baudrate = spi_init(self->spi_inst, args[ARG_baudrate].u_int);
     self->initialised = true;
@@ -209,11 +194,25 @@ static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
 }
 
 mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_id,       MP_ARG_INT },
+        { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
+        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_POLARITY} },
+        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
+        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_BITS} },
+        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
+        { MP_QSTR_sck,      MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_mosi,     MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_miso,     MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
+    };
+
+    // Parse the arguments.
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     // Get the SPI bus id.
-    int spi_id = PICO_DEFAULT_SPI;
-    if (n_args > 0) {
-        spi_id = mp_obj_get_int(all_args[0]);
-    }
+    int spi_id = args[0].u_int;
+
     if (spi_id < 0 || spi_id >= MP_ARRAY_SIZE(machine_spi_obj)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
     }
@@ -222,15 +221,36 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     machine_spi_obj_t *self = (machine_spi_obj_t *)&machine_spi_obj[spi_id];
 
     // Forward any keyword args to machine_spi_init
-    if (n_args > 0 || n_kw > 0 || !self->initialised) {
-        mp_map_t kw_args;
-        mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
-        int n_pos_args = n_args ? n_args - 1 : 0;
-        const mp_obj_t *pos_args = n_args ? all_args + 1 : NULL;
-        machine_spi_init(MP_OBJ_FROM_PTR(self), n_pos_args, pos_args, &kw_args);
+    if (n_args > 1 || n_kw > 0 || !self->initialised) {
+        machine_spi_configure_helper(self, args + 1);
     }
 
     return MP_OBJ_FROM_PTR(self);
+}
+
+static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
+
+    mp_arg_t allowed_args[] = {
+        { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = self->baudrate} },
+        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = self->polarity} },
+        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = self->phase} },
+        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = self->bits} },
+        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = self->firstbit} },
+        { MP_QSTR_sck,      MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_obj_new_int(self->sck)} },
+        { MP_QSTR_mosi,     MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_obj_new_int(self->mosi)}},
+        { MP_QSTR_miso,     MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_obj_new_int(self->miso)} },
+    };
+
+    // Parse the arguments.
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (args[ARG_miso].u_obj == MP_ROM_INT(MICROPY_HW_SPI_PIN_UNUSED)) {
+        args[ARG_miso].u_obj = mp_const_none;
+    }
+
+    machine_spi_configure_helper(self, args);
 }
 
 static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
