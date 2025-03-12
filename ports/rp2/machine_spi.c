@@ -127,6 +127,12 @@ static machine_spi_obj_t machine_spi_obj[] = {
     },
 };
 
+void machine_spi_init0(void) {
+    for (int i = 0; i < MP_ARRAY_SIZE(machine_spi_obj); i++) {
+        machine_spi_obj[i].initialised = false;
+    }
+}
+
 static void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, sck=%u, mosi=%u, miso=",
