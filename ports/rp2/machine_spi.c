@@ -109,6 +109,7 @@ typedef struct _machine_spi_obj_t {
     uint8_t mosi;
     uint8_t miso;
     uint32_t baudrate;
+    bool initialised;
 } machine_spi_obj_t;
 
 static machine_spi_obj_t machine_spi_obj[] = {
@@ -116,13 +117,13 @@ static machine_spi_obj_t machine_spi_obj[] = {
         {&machine_spi_type}, spi0, 0,
         DEFAULT_SPI_POLARITY, DEFAULT_SPI_PHASE, DEFAULT_SPI_BITS, DEFAULT_SPI_FIRSTBIT,
         MICROPY_HW_SPI0_SCK, MICROPY_HW_SPI0_MOSI, MICROPY_HW_SPI0_MISO,
-        0,
+        DEFAULT_SPI_BAUDRATE, false
     },
     {
         {&machine_spi_type}, spi1, 1,
         DEFAULT_SPI_POLARITY, DEFAULT_SPI_PHASE, DEFAULT_SPI_BITS, DEFAULT_SPI_FIRSTBIT,
         MICROPY_HW_SPI1_SCK, MICROPY_HW_SPI1_MOSI, MICROPY_HW_SPI1_MISO,
-        0,
+        DEFAULT_SPI_BAUDRATE, false
     },
 };
 
@@ -138,10 +139,9 @@ static void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     }
 }
 
-mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
+static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,       MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_INT, {.u_int = PICO_DEFAULT_SPI} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_POLARITY} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
@@ -153,11 +153,67 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     };
 
     // Parse the arguments.
+    machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    // Initialise the SPI instance
+    self->baudrate = spi_init(self->spi_inst, args[ARG_baudrate].u_int);
+    self->initialised = true;
+
+    // Set SCK/MOSI/MISO pins if configured, otherwise reset to defaults.
+    int sck = self->spi_id == 0 ? MICROPY_HW_SPI0_SCK : MICROPY_HW_SPI1_SCK;
+    if (args[ARG_sck].u_obj != mp_const_none) {
+        sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
+        if (!IS_VALID_SCK(self->spi_id, sck)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bad SCK pin"));
+        }
+    }
+    self->sck = sck;
+
+    int mosi = self->spi_id == 0 ? MICROPY_HW_SPI0_MOSI : MICROPY_HW_SPI1_MOSI;
+    if (args[ARG_mosi].u_obj != mp_const_none) {
+        mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
+        if (!IS_VALID_MOSI(self->spi_id, mosi)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bad MOSI pin"));
+        }
+    }
+    self->mosi = mosi;
+
+    int miso = self->spi_id == 0 ? MICROPY_HW_SPI0_MISO : MICROPY_HW_SPI1_MISO;
+    if (args[ARG_miso].u_obj == mp_const_none) {
+        miso = MICROPY_HW_SPI_PIN_UNUSED;
+    } else if (args[ARG_miso].u_obj != MP_ROM_INT(-1)) {
+        miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
+        if (!IS_VALID_MISO(self->spi_id, miso)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bad MISO pin"));
+        }
+    }
+    self->miso = miso;
+
+    self->polarity = args[ARG_polarity].u_int;
+    self->phase = args[ARG_phase].u_int;
+    self->bits = args[ARG_bits].u_int;
+    self->firstbit = args[ARG_firstbit].u_int;
+    if (self->firstbit == SPI_LSB_FIRST) {
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("LSB"));
+    }
+    spi_set_format(self->spi_inst, self->bits, self->polarity, self->phase, self->firstbit);
+
+    // Configure the pins.
+    gpio_set_function(self->sck, GPIO_FUNC_SPI);
+    gpio_set_function(self->mosi, GPIO_FUNC_SPI);
+    if (self->miso != MICROPY_HW_SPI_PIN_UNUSED) {
+        gpio_set_function(self->miso, GPIO_FUNC_SPI);
+    }
+}
+
+mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Get the SPI bus id.
-    int spi_id = args[ARG_id].u_int;
+    int spi_id = PICO_DEFAULT_SPI;
+    if (n_args > 0) {
+        spi_id = mp_obj_get_int(all_args[0]);
+    }
     if (spi_id < 0 || spi_id >= MP_ARRAY_SIZE(machine_spi_obj)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
     }
@@ -165,101 +221,16 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     // Get static peripheral object.
     machine_spi_obj_t *self = (machine_spi_obj_t *)&machine_spi_obj[spi_id];
 
-    // Set SCK/MOSI/MISO pins if configured.
-    if (args[ARG_sck].u_obj != mp_const_none) {
-        int sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
-        if (!IS_VALID_SCK(self->spi_id, sck)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("bad SCK pin"));
-        }
-        self->sck = sck;
-    }
-    if (args[ARG_mosi].u_obj != mp_const_none) {
-        int mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
-        if (!IS_VALID_MOSI(self->spi_id, mosi)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("bad MOSI pin"));
-        }
-        self->mosi = mosi;
-    }
-
-    if (args[ARG_miso].u_obj == MP_ROM_INT(-1)) {
-        self->miso = spi_id == 0 ? MICROPY_HW_SPI0_MISO : MICROPY_HW_SPI1_MISO;
-    } else if (args[ARG_miso].u_obj == mp_const_none) {
-        self->miso = MICROPY_HW_SPI_PIN_UNUSED;
-    } else {
-        int miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
-        if (!IS_VALID_MISO(self->spi_id, miso)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("bad MISO pin"));
-        }
-        self->miso = miso;
-    }
-
-    // Initialise the SPI peripheral if any arguments given, or it was not initialised previously.
-    if (n_args > 1 || n_kw > 0 || self->baudrate == 0) {
-        self->baudrate = args[ARG_baudrate].u_int;
-        self->polarity = args[ARG_polarity].u_int;
-        self->phase = args[ARG_phase].u_int;
-        self->bits = args[ARG_bits].u_int;
-        self->firstbit = args[ARG_firstbit].u_int;
-        if (self->firstbit == SPI_LSB_FIRST) {
-            mp_raise_NotImplementedError(MP_ERROR_TEXT("LSB"));
-        }
-
-        spi_init(self->spi_inst, self->baudrate);
-        self->baudrate = spi_set_baudrate(self->spi_inst, self->baudrate);
-        spi_set_format(self->spi_inst, self->bits, self->polarity, self->phase, self->firstbit);
-        gpio_set_function(self->sck, GPIO_FUNC_SPI);
-        if (self->miso != MICROPY_HW_SPI_PIN_UNUSED) {
-            gpio_set_function(self->miso, GPIO_FUNC_SPI);
-        }
-        gpio_set_function(self->mosi, GPIO_FUNC_SPI);
+    // Forward any keyword args to machine_spi_init
+    if (n_args > 0 || n_kw > 0 || !self->initialised) {
+        mp_map_t kw_args;
+        mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
+        int n_pos_args = n_args ? n_args - 1 : 0;
+        const mp_obj_t *pos_args = n_args ? all_args + 1 : NULL;
+        machine_spi_init(MP_OBJ_FROM_PTR(self), n_pos_args, pos_args, &kw_args);
     }
 
     return MP_OBJ_FROM_PTR(self);
-}
-
-static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-    };
-
-    // Parse the arguments.
-    machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    // Reconfigure the baudrate if requested.
-    if (args[ARG_baudrate].u_int != -1) {
-        self->baudrate = spi_set_baudrate(self->spi_inst, args[ARG_baudrate].u_int);
-    }
-
-    // Reconfigure the format if requested.
-    bool set_format = false;
-    if (args[ARG_polarity].u_int != -1) {
-        self->polarity = args[ARG_polarity].u_int;
-        set_format = true;
-    }
-    if (args[ARG_phase].u_int != -1) {
-        self->phase = args[ARG_phase].u_int;
-        set_format = true;
-    }
-    if (args[ARG_bits].u_int != -1) {
-        self->bits = args[ARG_bits].u_int;
-        set_format = true;
-    }
-    if (args[ARG_firstbit].u_int != -1) {
-        self->firstbit = args[ARG_firstbit].u_int;
-        if (self->firstbit == SPI_LSB_FIRST) {
-            mp_raise_NotImplementedError(MP_ERROR_TEXT("LSB"));
-        }
-    }
-    if (set_format) {
-        spi_set_format(self->spi_inst, self->bits, self->polarity, self->phase, self->firstbit);
-    }
 }
 
 static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
