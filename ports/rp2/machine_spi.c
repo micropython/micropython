@@ -80,6 +80,8 @@
 
 #endif
 
+#define MAX_SPI_RP2 (2)
+
 // Define PICO_DEFAULT_SPI for a no-args call to machine.SPI()
 #ifndef PICO_DEFAULT_SPI
 #define PICO_DEFAULT_SPI 0
@@ -109,27 +111,13 @@ typedef struct _machine_spi_obj_t {
     uint8_t mosi;
     uint8_t miso;
     uint32_t baudrate;
-    bool initialised;
 } machine_spi_obj_t;
 
-static machine_spi_obj_t machine_spi_obj[] = {
-    {
-        {&machine_spi_type}, spi0, 0,
-        DEFAULT_SPI_POLARITY, DEFAULT_SPI_PHASE, DEFAULT_SPI_BITS, DEFAULT_SPI_FIRSTBIT,
-        MICROPY_HW_SPI0_SCK, MICROPY_HW_SPI0_MOSI, MICROPY_HW_SPI0_MISO,
-        DEFAULT_SPI_BAUDRATE, false
-    },
-    {
-        {&machine_spi_type}, spi1, 1,
-        DEFAULT_SPI_POLARITY, DEFAULT_SPI_PHASE, DEFAULT_SPI_BITS, DEFAULT_SPI_FIRSTBIT,
-        MICROPY_HW_SPI1_SCK, MICROPY_HW_SPI1_MOSI, MICROPY_HW_SPI1_MISO,
-        DEFAULT_SPI_BAUDRATE, false
-    },
-};
+static machine_spi_obj_t *machine_spi_obj[MAX_SPI_RP2];
 
 void machine_spi_init0(void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(machine_spi_obj); i++) {
-        machine_spi_obj[i].initialised = false;
+    for (uint8_t i = 0; i < MAX_SPI_RP2; i++) {
+        MP_STATE_PORT(machine_spi_obj[i]) = NULL;
     }
 }
 
@@ -150,7 +138,6 @@ enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, A
 static void machine_spi_configure_helper(machine_spi_obj_t *self, mp_arg_val_t *args) {
     // Initialise the SPI instance
     self->baudrate = spi_init(self->spi_inst, args[ARG_baudrate].u_int);
-    self->initialised = true;
 
     // Set SCK/MOSI/MISO pins if configured, otherwise reset to defaults.
     int sck = self->spi_id == 0 ? MICROPY_HW_SPI0_SCK : MICROPY_HW_SPI1_SCK;
@@ -223,11 +210,14 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
     }
 
-    // Get static peripheral object.
-    machine_spi_obj_t *self = (machine_spi_obj_t *)&machine_spi_obj[spi_id];
+    // Get peripheral object.
+    machine_spi_obj_t *self = MP_STATE_PORT(machine_spi_obj[spi_id]);
 
-    // Forward any keyword args to machine_spi_init
-    if (n_args > 1 || n_kw > 0 || !self->initialised) {
+    if (self == NULL) {
+        self = MP_STATE_PORT(machine_spi_obj[spi_id]) = mp_obj_malloc(machine_spi_obj_t, &machine_spi_type);
+        self->spi_id = spi_id;
+        machine_spi_configure_helper(self, args + 1);
+    } else if (n_args + n_kw > 1) {
         machine_spi_configure_helper(self, args + 1);
     }
 
@@ -243,9 +233,9 @@ static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = self->phase} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = self->bits} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = self->firstbit} },
-        { MP_QSTR_sck,      MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_obj_new_int(self->sck)} },
-        { MP_QSTR_mosi,     MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_obj_new_int(self->mosi)}},
-        { MP_QSTR_miso,     MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_obj_new_int(self->miso)} },
+        { MP_QSTR_sck,      MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(self->sck)} },
+        { MP_QSTR_mosi,     MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(self->mosi)}},
+        { MP_QSTR_miso,     MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(self->miso)} },
     };
 
     // Parse the arguments.
@@ -360,3 +350,5 @@ mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t o) {
         mp_raise_TypeError(MP_ERROR_TEXT("expecting an SPI object"));
     }
 }
+
+MP_REGISTER_ROOT_POINTER(void *machine_spi_obj[MAX_SPI_RP2]);
