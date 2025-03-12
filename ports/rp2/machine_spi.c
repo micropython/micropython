@@ -80,6 +80,11 @@
 
 #endif
 
+// Define PICO_DEFAULT_SPI for a no-args call to machine.SPI()
+#ifndef PICO_DEFAULT_SPI
+#define PICO_DEFAULT_SPI 0
+#endif
+
 // SPI0 can be GP{0..7,16..23}, SPI1 can be GP{8..15,24..29}.
 #define IS_VALID_PERIPH(spi, pin)   ((((pin) & 8) >> 3) == (spi))
 // GP{2,6,10,14,...}
@@ -128,7 +133,7 @@ static void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_id,       MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_INT, {.u_int = PICO_DEFAULT_SPI} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_POLARITY} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
@@ -144,7 +149,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // Get the SPI bus id.
-    int spi_id = mp_obj_get_int(args[ARG_id].u_obj);
+    int spi_id = args[ARG_id].u_int;
     if (spi_id < 0 || spi_id >= MP_ARRAY_SIZE(machine_spi_obj)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
     }
