@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_RP2_PENDSV_H
 
 #include <stddef.h>
+#include "hardware/irq.h"
 
 enum {
     PENDSV_DISPATCH_SOFT_TIMER,
