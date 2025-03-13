@@ -98,7 +98,7 @@ static inline int fp_expval(FPTYPE x) {
     return (int)((fb.i >> MP_FLOAT_FRAC_BITS) & (~(0xFFFFFFFF << MP_FLOAT_EXP_BITS))) - MP_FLOAT_EXP_OFFSET;
 }
 
-int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, char sign) {
+int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, char sign, char tsep) {
 
     char *s = buf;
 
@@ -250,11 +250,16 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
                 fmt = 'e';
             } else if ((e + prec + 2) > buf_remaining) {
                 prec = buf_remaining - e - 2;
+                // if there not enough space in the buffer for the thousand separator we delete it
+                tsep = 0;
                 if (prec < 0) {
                     // This means no decimal point, so we can add one back
                     // for the decimal.
                     prec++;
                 }
+            } else if ((e + prec + 2) + (e / 3) > buf_remaining) {
+                // if there not enough space in the buffer for the thousand separator we delete it
+                tsep = 0;
             }
         }
         if (fmt == 'e' && prec > (buf_remaining - FPMIN_BUF_SIZE)) {
@@ -323,6 +328,12 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         if (num_digits > 0) {
             // Emit this number (the leading digit).
             *s++ = '0' + d;
+
+            if (tsep) {
+                if (dec > 0 && dec % 3 == 0) {
+                    *s++ = tsep;
+                }
+            }
             if (dec == 0 && prec > 0) {
                 *s++ = '.';
             }
@@ -341,7 +352,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         char *rs = s;
         rs--;
         while (1) {
-            if (*rs == '.') {
+            if (*rs == '.' || *rs == tsep) {
                 rs--;
                 continue;
             }
