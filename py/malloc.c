@@ -263,6 +263,49 @@ void *m_tracked_calloc(size_t nmemb, size_t size) {
     return &node->data[0];
 }
 
+void *m_tracked_realloc(void *ptr_in, size_t n_bytes) {
+    // check for pure allocation
+    if (ptr_in == NULL) {
+        return m_tracked_calloc(1, n_bytes);
+    }
+    // check for pure free
+    if (n_bytes == 0) {
+        m_tracked_free(ptr_in);
+        return NULL;
+    }
+    m_tracked_node_t *node = (m_tracked_node_t *)((uint8_t *)ptr_in - sizeof(m_tracked_node_t));
+    #if MICROPY_MALLOC_USES_ALLOCATED_SIZE || MICROPY_DEBUG_VERBOSE
+    size_t prev_bytes;
+    #if MICROPY_TRACKED_ALLOC_STORE_SIZE
+    prev_bytes = node->size;
+    #else
+    prev_bytes = gc_nbytes(node);
+    #endif
+    #if MICROPY_DEBUG_VERBOSE
+    size_t nb;
+    size_t n = m_tracked_count_links(&nb);
+    DEBUG_printf("m_tracked_realloc(%p, [%p, %p], pbytes=%u, nbytes=%u, links=%u;%u)\n", node, node->prev, node->next, (int)prev_bytes, (int)n_bytes, (int)n, (int)nb);
+    #endif
+    #endif
+    node = m_realloc(node,
+        #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+        sizeof(m_tracked_node_t) + prev_bytes,
+        #endif
+        sizeof(m_tracked_node_t) + n_bytes
+        );
+    if (node == NULL) {
+        node->prev->next = node->next;
+        node->next->prev = node->prev;
+        return NULL;
+    }
+    #if MICROPY_TRACKED_ALLOC_STORE_SIZE
+    node->size = n_bytes;
+    #endif
+    node->prev->next = node;
+    node->next->prev = node;
+    return &node->data[0];
+}
+
 void m_tracked_free(void *ptr_in) {
     if (ptr_in == NULL) {
         return;
