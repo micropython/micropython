@@ -383,7 +383,7 @@ for more details.
 
 Use the :ref:`machine.PWM <machine.PWM>` class::
 
-    from machine import Pin, PWM
+    from machine import Pin, PWM, lightsleep
 
     pwm0 = PWM(Pin(0), freq=5000, duty_u16=32768) # create PWM object from a pin
     freq = pwm0.freq()         # get current frequency
@@ -408,6 +408,9 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
     pwm2 = PWM(Pin(2), duty_u16=16384, invert=1)  # The output is at a low level 25% of the time.
 
     pwm4 = PWM(Pin(4), lightsleep=True)           # Allow PWM during light sleep mode
+
+    lightsleep(10*1000) # pwm0, pwm2 goes off, pwm4 stays on during 10s light sleep
+                        # pwm0, pwm2, pwm4 on after 10s light sleep
 
 ESP chips have different hardware peripherals:
 
