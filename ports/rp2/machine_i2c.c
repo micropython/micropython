@@ -100,7 +100,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         #ifdef PICO_DEFAULT_I2C
         { MP_QSTR_id, MP_ARG_INT, {.u_int = PICO_DEFAULT_I2C} },
         #else
-        { MP_QSTR_id, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_id, MP_ARG_INT | MP_ARG_REQUIRED },
         #endif
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
         { MP_QSTR_scl, MICROPY_I2C_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
