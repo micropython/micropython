@@ -164,6 +164,129 @@ Constants
 
     Used in `idf_heap_info`.
 
+
+.. _esp32.PCNT:
+
+PCNT
+----
+
+This class provides access to the ESP32 hardware support for pulse counting.
+There are 8 pulse counter units, with id 0..7.
+
+.. class:: PCNT([id], *, ...)
+
+    Create a new PCNT object with the given unit ``id`` or return the existing
+    object if it has already been created. If the ``id`` positional argument is
+    not supplied then a new object is created for the first unallocated PCNT
+    unit. Keyword arguments are passed to the ``init()`` method as described
+    below.
+
+.. method:: PCNT.init(*, ...)
+
+    (Re-)initialise a pulse counter unit. Supported keyword arguments are:
+
+      - ``pin``: the input Pin to monitor for pulses
+      - ``rising``: an action to take on a rising edge - one of
+        ``PCNT.INCREMENT``, ``PCNT.DECREMENT`` or ``PCNT.IGNORE`` (the default)
+      - ``falling``: an action to take on a falling edge
+      - ``mode_pin``: ESP32 pulse counters support monitoring a second pin and
+        altering the behaviour of the counter based on its level - set this
+        keyword to any input Pin
+      - ``mode_low``: set to either ``PCNT.HOLD`` or ``PCNT.REVERSE`` to
+        either suspend counting or reverse the direction of the counter (i.e.,
+        ``PCNT.INCREMENT`` behaves as ``PCNT.DECREMENT`` and vice versa)
+        when ``mode_pin`` is low
+      - ``mode_high``: as ``mode_low`` but for the behaviour when ``mode_pin``
+        is high
+      - ``filter``: set to a value 1..1023, in ticks of the 80MHz clock, to
+        enable the pulse width filter
+      - ``minimum``: set to the minimum level of the counter value when
+        decrementing (-32768..-1) or 0 to disable
+      - ``maximum``: set to the maximum level of the counter value when
+        incrementing (1..32767) or 0 to disable
+      - ``threshold0``: sets the counter value for the
+        ``PCNT.IRQ_THRESHOLD0`` event (see ``irq`` method)
+      - ``threshold1``: sets the counter value for the
+        ``PCNT.IRQ_THRESHOLD1`` event (see ``irq`` method)
+      - ``value``: reset the counter value (must be 0 if specified)
+      - ``channel``: see description below
+
+    The hardware initialisation is done in stages and so some of the keyword
+    arguments can be used in groups or in isolation to partially reconfigure a
+    unit:
+
+      - the ``pin`` keyword (optionally combined with ``mode_pin``) can be used
+        to change just the bound pin(s)
+      - ``rising`, ``falling``, ``mode_low`` and ``mode_high`` can be used
+        (singly or together) to change the counting logic - omitted keywords
+        use their default (``PCNT.IGNORE`` or ``PCNT.NORMAL``)
+      - ``filter`` can be used to change only the pulse width filter (with 0
+        disabling it)
+      - each of ``minimum``, ``maximum``, ``threshold0`` and ``threshold1`` can
+        be used to change these limit/event values individually; however,
+        setting any will reset the counter to zero (i.e., they imply
+        ``value=0``)
+
+    Each pulse counter unit supports two channels, 0 and 1, each able to
+    monitor different pins with different counting logic but updating the same
+    counter value. Use ``channel=1`` with the ``pin``, ``rising``, ``falling``,
+    ``mode_pin``, ``mode_low`` and ``mode_high`` keywords to configure the
+    second channel.
+
+    The second channel can be used to configure 4X quadrature decoding with a
+    single counter unit::
+
+        pin_a = Pin(2, Pin.INPUT, pull=Pin.PULL_UP)
+        pin_b = Pin(3, Pin.INPUT, pull=Pin.PULL_UP)
+        rotary = PCNT(0, pin=pin_a, falling=PCNT.INCREMENT, rising=PCNT.DECREMENT, mode_pin=pin_b, mode_low=PCNT.REVERSE)
+        rotary.init(channel=1, pin=pin_b, falling=PCNT.DECREMENT, rising=PCNT.INCREMENT, mode_pin=pin_a, mode_low=PCNT.REVERSE)
+        rotary.start()
+
+.. method:: PCNT.value([value])
+
+    Call this method with no arguments to return the current counter value or
+    pass the value 0 to reset the counter and return the value before reset.
+    ESP32 pulse counters do not support being set to any value other than 0.
+    Read and reset is not atomic and so it is possible for a pulse to be
+    missed.
+
+.. method:: PCNT.irq(handler=None, trigger=PCNT.IRQ_ZERO)
+
+    ESP32 pulse counters support interrupts on these counter events:
+
+      - ``PCNT.IRQ_ZERO``: the counter has reset to zero
+      - ``PCNT.IRQ_MINIMUM``: the counter has hit the ``minimum`` value
+      - ``PCNT.IRQ_MAXIMUM``: the counter has hit the ``maximum`` value
+      - ``PCNT.IRQ_THRESHOLD0``: the counter has hit the ``threshold0`` value
+      - ``PCNT.IRQ_THRESHOLD1``: the counter has hit the ``threshold1`` value
+
+    ``trigger`` should be the desired events or'ed together. The ``handler``
+    function should take a single argument which will be a bit mask indicating
+    which counter event(s) occurred.
+
+    The handler is called with the MicroPython scheduler and so will run at a
+    point after the interrupt. If another interrupt occurs before the handler
+    has been called then the events will be coalesced together into a single
+    call and the bit mask will indicate all events that have occurred.
+
+    To avoid race conditions between a handler being called and retrieving the
+    current counter value, the ``value()`` method will force execution of any
+    pending events before returning the current counter value (and potentially
+    resetting the value).
+
+    Only one handler can be in place per-unit. Set ``handler`` to ``None`` to
+    disable the event interrupt (or call ``irq()`` with no arguments).
+
+.. Note::
+    ESP32 pulse counters reset to *zero* when reaching the minimum or maximum
+    value. Thus the ``IRQ_ZERO`` event will also trigger when either of these
+    events occurs.
+
+See the :ref:`machine.Counter <machine.Counter>` and
+:ref:`machine.Encoder <machine.Encoder>` classes for simpler abstractions of
+common pulse counting applications.
+
+
 .. _esp32.RMT:
 
 RMT
