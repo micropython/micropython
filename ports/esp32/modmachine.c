@@ -36,6 +36,7 @@
 #include "esp_sleep.h"
 #include "esp_pm.h"
 
+#include "modesp32.h"
 #include "modmachine.h"
 #include "machine_rtc.h"
 
@@ -164,6 +165,27 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
     }
     #endif
 
+    #if SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP 
+    //#error SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP  
+    if (wake_type==MACHINE_WAKE_DEEPSLEEP){
+        if (machine_rtc_config.gpio_pins!=0){
+            uint32_t mask;
+            esp_deepsleep_gpio_wake_up_mode_t mode;
+            for (int i=0;i<=(int)(RTC_LAST_GPIO_PIN);i++){
+                mask=1ll<<i;
+                if ((machine_rtc_config.gpio_pins & mask)!=0){
+                    mode=ESP_GPIO_WAKEUP_GPIO_LOW;
+                    if ((machine_rtc_config.gpio_level & mask)!=0){
+                        mode=ESP_GPIO_WAKEUP_GPIO_HIGH;
+                    }
+                    if (esp_deep_sleep_enable_gpio_wakeup(mask,mode) != ESP_OK) {
+                        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_gpio_wakeup() failed"));
+                    }    
+                }    
+            }
+        }
+    }
+    #endif
     switch (wake_type) {
         case MACHINE_WAKE_SLEEP:
             esp_light_sleep_start();
