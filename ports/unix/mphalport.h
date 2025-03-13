@@ -48,6 +48,12 @@ void mp_hal_set_interrupt_char(char c);
 void mp_hal_stdio_mode_raw(void);
 void mp_hal_stdio_mode_orig(void);
 
+// pyexec/repl needs stdio to be in raw mode, but this may be cleared before running code.
+#if MICROPY_REPL_RESET_RAW_BEFORE_EXEC
+#define MICROPY_BOARD_BEFORE_PYTHON_EXEC(input_kind, exec_flags) mp_hal_stdio_mode_orig()
+#define MICROPY_BOARD_AFTER_PYTHON_EXEC(input_kind, exec_flags, ret_val, ret) mp_hal_stdio_mode_raw()
+#endif
+
 #if MICROPY_PY_BUILTINS_INPUT && MICROPY_USE_READLINE == 0
 
 #include <malloc.h>
