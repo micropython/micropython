@@ -37,6 +37,7 @@
 #include "modmachine.h"
 #include "pin.h"
 
+#define DEFAULT_UART_ID  (1)
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_BUFFER_SIZE (256)
 #define MIN_BUFFER_SIZE  (32)
@@ -377,10 +378,17 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
 }
 
 static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get UART bus.
-    int uart_id = mp_obj_get_int(args[0]);
+    int uart_id;
+    if (n_args > 0) {
+        uart_id = mp_obj_get_int(args[0]);
+        n_args--;
+        args++;
+    } else {
+        uart_id = DEFAULT_UART_ID;
+    }
     if (uart_id < 0 || uart_id > MICROPY_HW_UART_NUM || uart_index_table[uart_id] == 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) doesn't exist"), uart_id);
     }
@@ -409,7 +417,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     if (uart_present) {
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        mp_machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+        mp_machine_uart_init_helper(self, n_args, args, &kw_args);
         return MP_OBJ_FROM_PTR(self);
     } else {
         return mp_const_none;

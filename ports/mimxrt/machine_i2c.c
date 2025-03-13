@@ -34,6 +34,7 @@
 #include "fsl_iomuxc.h"
 #include "fsl_lpi2c.h"
 
+#define DEFAULT_I2C_ID          (0)
 #define DEFAULT_I2C_FREQ        (400000)
 #define DEFAULT_I2C_DRIVE       (6)
 #define DEFAULT_I2C_TIMEOUT     (50000)
@@ -91,7 +92,7 @@ static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_freq, ARG_drive, ARG_timeout};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = DEFAULT_I2C_ID} },
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
         { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_DRIVE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_TIMEOUT} },
@@ -102,7 +103,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // Get I2C bus.
-    int i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
+    int i2c_id = args[ARG_id].u_int;
     if (i2c_id < 0 || i2c_id >= MICROPY_HW_I2C_NUM || i2c_index_table[i2c_id] == 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
     }
