@@ -41,7 +41,7 @@
 #include "lib/cyw43-driver/src/cyw43_stats.h"
 #endif
 
-static pendsv_dispatch_t pendsv_dispatch_table[PENDSV_DISPATCH_NUM_SLOTS];
+static pendsv_dispatch_wrapper_t pendsv_dispatch_table[PENDSV_DISPATCH_NUM_SLOTS];
 
 static inline void pendsv_resume_run_dispatch(void);
 
@@ -104,15 +104,16 @@ static inline void pendsv_resume_run_dispatch(void) {
     // with it.  If pendsv runs it will service all slots.
     int count = PENDSV_DISPATCH_NUM_SLOTS;
     while (count--) {
-        if (pendsv_dispatch_table[count]) {
-            pendsv_schedule_dispatch(count, pendsv_dispatch_table[count]);
+        if (pendsv_dispatch_table[count].task) {
+            pendsv_schedule_dispatch_with_affinity(count, pendsv_dispatch_table[count].task, pendsv_dispatch_table[count].affinity);
             break;
         }
     }
 }
 
-void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
-    pendsv_dispatch_table[slot] = f;
+void pendsv_schedule_dispatch_with_affinity(size_t slot, pendsv_dispatch_t f, int affinity) {
+    pendsv_dispatch_table[slot].affinity = affinity;
+    pendsv_dispatch_table[slot].task = f;
     if (pendsv_suspend_count() == 0) {
         #if PICO_ARM
         // There is a race here where other core calls pendsv_suspend() before
@@ -131,9 +132,12 @@ void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
     }
 }
 
+void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
+    pendsv_schedule_dispatch_with_affinity(slot, f, -1);
+}
+
 // PendSV interrupt handler to perform background processing.
 void PendSV_Handler(void) {
-
     #if MICROPY_PY_THREAD
     if (!mp_thread_recursive_mutex_lock(&pendsv_mutex, 0)) {
         // Failure here means core 1 holds pendsv_mutex. ISR will
@@ -151,9 +155,9 @@ void PendSV_Handler(void) {
     #endif
 
     for (size_t i = 0; i < PENDSV_DISPATCH_NUM_SLOTS; ++i) {
-        if (pendsv_dispatch_table[i] != NULL) {
-            pendsv_dispatch_t f = pendsv_dispatch_table[i];
-            pendsv_dispatch_table[i] = NULL;
+        if (pendsv_dispatch_table[i].task != NULL && (pendsv_dispatch_table[i].affinity == -1 || pendsv_dispatch_table[i].affinity == get_core_num())) {
+            pendsv_dispatch_t f = pendsv_dispatch_table[i].task;
+            pendsv_dispatch_table[i].task = NULL;
             f();
         }
     }
