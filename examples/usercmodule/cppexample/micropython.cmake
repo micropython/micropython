@@ -14,3 +14,14 @@ target_include_directories(usermod_cppexample INTERFACE
 
 # Link our INTERFACE library to the usermod target.
 target_link_libraries(usermod INTERFACE usermod_cppexample)
+
+# Do not include stack unwinding & exception handling for C++ user modules
+# This can dramatically reduce build size on embedded ports like rp2
+# target_compile_definitions(usermod INTERFACE PICO_CXX_ENABLE_EXCEPTIONS=0)
+# target_compile_options(usermod INTERFACE $<$<COMPILE_LANGUAGE:CXX>:
+#    -fno-exceptions
+#    -fno-unwind-tables
+#    -fno-rtti
+#    -fno-use-cxa-atexit
+# >)
+# target_link_options(usermod INTERFACE -specs=nano.specs)
