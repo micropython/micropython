@@ -122,10 +122,13 @@ See :ref:`machine.UART <machine.UART>`. ::
     uart1 = UART(1, baudrate=115200)
     uart1.write('hello')  # write 5 bytes
     uart1.read(5)         # read up to 5 bytes
+    uart1 = UART(baudrate=19200) # open UART 1 at 19200 baud
 
 The i.MXRT has up to eight hardware UARTs, but not every board exposes all
 TX and RX pins for users. For the assignment of Pins to UART signals,
-refer to the :ref:`UART pinout <mimxrt_uart_pinout>`.
+refer to the :ref:`UART pinout <mimxrt_uart_pinout>`. If the UART ID is
+omitted, UART(1) is selected. Then, the keyword
+option for baudrate must be used to change it from the default value.
 
 PWM (pulse width modulation)
 ----------------------------
@@ -305,12 +308,15 @@ rates (up to 30Mhz).  Hardware SPI is accessed via the
     cs_pin(0)
     spi.write('Hello World')
     cs_pin(1)
+    spi = SPI(baudrate=4_000_000)  # Use SPI(0) at a baudrate of 4 MHz
 
 For the assignment of Pins to SPI signals, refer to
 :ref:`Hardware SPI pinout <mimxrt_spi_pinout>`.
 The keyword option cs=n can be used to enable the cs pin 0 or 1 for an automatic cs signal. The
 default is cs=-1. Using cs=-1 the automatic cs signal is not created.
 In that case, cs has to be set by the script. Clearing that assignment requires a power cycle.
+If the SPI ID is omitted, SPI(0) is selected. Then, the keyword
+option for baudrate must be used to change it from the default value.
 
 Notes:
 
@@ -355,6 +361,10 @@ has the same methods as software SPI above::
 
     i2c = I2C(0, 400_000)
     i2c.writeto(0x76, b"Hello World")
+    i2c = I2C(freq=100_000)  # use I2C(0) at 100kHz
+
+If the I2C ID is omitted, I2C(0) is selected. Then, the keyword
+option for freq must be used to change the freq from the default value.
 
 I2S bus
 -------
