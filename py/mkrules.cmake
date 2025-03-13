@@ -14,6 +14,9 @@ set(MICROPY_MODULEDEFS "${MICROPY_GENHDR_DIR}/moduledefs.h")
 set(MICROPY_ROOT_POINTERS_SPLIT "${MICROPY_GENHDR_DIR}/root_pointers.split")
 set(MICROPY_ROOT_POINTERS_COLLECTED "${MICROPY_GENHDR_DIR}/root_pointers.collected")
 set(MICROPY_ROOT_POINTERS "${MICROPY_GENHDR_DIR}/root_pointers.h")
+set(MICROPY_COMPRESSED_SPLIT "${MICROPY_GENHDR_DIR}/compressed.split")
+set(MICROPY_COMPRESSED_COLLECTED "${MICROPY_GENHDR_DIR}/compressed.collected")
+set(MICROPY_COMPRESSED_DATA "${MICROPY_GENHDR_DIR}/compressed.data.h")
 
 if(NOT MICROPY_PREVIEW_VERSION_2)
     set(MICROPY_PREVIEW_VERSION_2 0)
@@ -29,6 +32,13 @@ if(MICROPY_BOARD)
 
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_BOARD_BUILD_NAME="${MICROPY_BOARD_BUILD_NAME}"
+    )
+endif()
+
+# Need to do this before extracting MICROPY_CPP_DEF below.
+if(MICROPY_ROM_TEXT_COMPRESSION)
+    target_compile_definitions(${MICROPY_TARGET} PUBLIC
+        MICROPY_ROM_TEXT_COMPRESSION=\(1\)
     )
 endif()
 
@@ -83,6 +93,12 @@ target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_MODULEDEFS}
     ${MICROPY_ROOT_POINTERS}
 )
+
+if(MICROPY_ROM_TEXT_COMPRESSION)
+    target_sources(${MICROPY_TARGET} PRIVATE
+        ${MICROPY_COMPRESSED_DATA}
+    )
+endif()
 
 # Command to force the build of another command
 
@@ -195,6 +211,32 @@ add_custom_command(
     OUTPUT ${MICROPY_ROOT_POINTERS}
     COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/make_root_pointers.py ${MICROPY_ROOT_POINTERS_COLLECTED} > ${MICROPY_ROOT_POINTERS}
     DEPENDS ${MICROPY_ROOT_POINTERS_COLLECTED} ${MICROPY_PY_DIR}/make_root_pointers.py
+)
+
+# Generate compressed.data.h
+
+add_custom_command(
+    OUTPUT ${MICROPY_COMPRESSED_SPLIT}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split compress ${MICROPY_QSTRDEFS_LAST} ${MICROPY_GENHDR_DIR}/compress _
+    COMMAND touch ${MICROPY_COMPRESSED_SPLIT}
+    DEPENDS ${MICROPY_QSTRDEFS_LAST}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_COMPRESSED_COLLECTED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat compress _ ${MICROPY_GENHDR_DIR}/compress ${MICROPY_COMPRESSED_COLLECTED}
+    BYPRODUCTS "${MICROPY_COMPRESSED_COLLECTED}.hash"
+    DEPENDS ${MICROPY_COMPRESSED_SPLIT}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_COMPRESSED_DATA}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makecompresseddata.py ${MICROPY_COMPRESSED_COLLECTED} > ${MICROPY_COMPRESSED_DATA}
+    DEPENDS ${MICROPY_COMPRESSED_COLLECTED} ${MICROPY_PY_DIR}/makecompresseddata.py
 )
 
 # Build frozen code if enabled
