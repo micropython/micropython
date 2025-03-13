@@ -20,10 +20,14 @@ JLINK_CMD_SUFFIX = \
 Reset\n\
 Exit
 
+ALIF_TOC_CONFIG = alif_cfg.json
+ALIF_TOC_APPS = $(BUILD)/$(ALIF_TOC_CONFIG)
+ALIF_TOC_CFLAGS += -DTOC_CFG_FILE=$(ALIF_TOOLKIT_CFG_FILE)
+
 ifeq ($(MCU_CORE),M55_HP)
 
-ALIF_TOC_CONFIG = mcu/M55_HP_cfg.json
-ALIF_TOC_APPS = $(BUILD)/M55_HP/firmware.bin
+ALIF_TOC_CFLAGS += -DTOC_CORE_M55_HP_APP=1
+ALIF_TOC_APPS += $(BUILD)/M55_HP/firmware.bin
 JLINK_CMD = '\
 $(JLINK_CMD_PREFIX)\
 LoadFile "$(BUILD)/M55_HP/firmware.bin",0x80020000\n\
@@ -31,8 +35,8 @@ $(JLINK_CMD_SUFFIX)'
 
 else ifeq ($(MCU_CORE),M55_HE)
 
-ALIF_TOC_CONFIG = mcu/M55_HE_cfg.json
-ALIF_TOC_APPS = $(BUILD)/M55_HE/firmware.bin
+ALIF_TOC_CFLAGS += -DTOC_CORE_M55_HE_APP=1
+ALIF_TOC_APPS += $(BUILD)/M55_HE/firmware.bin
 JLINK_CMD = '\
 $(JLINK_CMD_PREFIX)\
 LoadFile "$(BUILD)/M55_HE/firmware.bin",0x80320000\n\
@@ -40,8 +44,9 @@ $(JLINK_CMD_SUFFIX)'
 
 else ifeq ($(MCU_CORE),M55_DUAL)
 
-ALIF_TOC_CONFIG = mcu/M55_DUAL_cfg.json
-ALIF_TOC_APPS = $(BUILD)/M55_HP/firmware.bin $(BUILD)/M55_HE/firmware.bin
+ALIF_TOC_CFLAGS += -DTOC_CORE_M55_HP_APP=1
+ALIF_TOC_CFLAGS += -DTOC_CORE_M55_HE_APP=1
+ALIF_TOC_APPS += $(BUILD)/M55_HP/firmware.bin $(BUILD)/M55_HE/firmware.bin
 JLINK_CMD = '\
 $(JLINK_CMD_PREFIX)\
 LoadFile "$(BUILD)/M55_HP/firmware.bin",0x80020000\n\
@@ -81,10 +86,13 @@ $(BUILD)/M55_HP/firmware.bin:
 $(BUILD)/M55_HE/firmware.bin:
 	make -f alif.mk MCU_CORE=M55_HE MICROPY_PY_OPENAMP_MODE=1
 
+$(BUILD)/$(ALIF_TOC_CONFIG): mcu/$(ALIF_TOC_CONFIG).in | $(BUILD)
+	$(ECHO) "Preprocess toc config $@"
+	$(Q)$(CPP) -P -E $(ALIF_TOC_CFLAGS) - < mcu/$(ALIF_TOC_CONFIG).in > $@
+
 $(BUILD)/firmware.toc.bin: $(ALIF_TOC_APPS)
 	$(Q)python $(ALIF_TOOLS)/app-gen-toc.py \
-		--filename $(abspath $(ALIF_TOC_CONFIG)) \
-		--config-dir $(BOARD_DIR) \
+		--filename $(abspath $(BUILD)/$(ALIF_TOC_CONFIG)) \
 		--output-dir $(BUILD) \
 		--firmware-dir $(BUILD) \
 		--output $@
