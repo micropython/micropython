@@ -105,7 +105,7 @@ void *m_realloc(void *ptr, size_t new_num_bytes);
 void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr);
 #endif
-NORETURN void m_malloc_fail(size_t num_bytes);
+MP_NORETURN void m_malloc_fail(size_t num_bytes);
 
 #if MICROPY_TRACKED_ALLOC
 // These alloc/free functions track the pointers in a linked list so the GC does not reclaim
