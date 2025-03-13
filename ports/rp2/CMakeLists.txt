@@ -153,6 +153,7 @@ set(MICROPY_SOURCE_PORT
     machine_bitstream.c
     machine_i2c.c
     machine_pin.c
+    machine_wiznet_pio_spi.c
     machine_rtc.c
     machine_spi.c
     machine_timer.c
@@ -163,6 +164,7 @@ set(MICROPY_SOURCE_PORT
     mpthreadport.c
     mutex_extra.c
     pendsv.c
+    wiznet_pio_spi.c
     rp2_flash.c
     rp2_pio.c
     rp2_dma.c
@@ -187,6 +189,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_PORT_DIR}/machine_timer.c
     ${MICROPY_PORT_DIR}/machine_uart.c
     ${MICROPY_PORT_DIR}/machine_wdt.c
+    ${MICROPY_PORT_DIR}/machine_wiznet_pio_spi.c
     ${MICROPY_PORT_DIR}/modrp2.c
     ${MICROPY_PORT_DIR}/modos.c
     ${MICROPY_PORT_DIR}/rp2_flash.c
@@ -577,6 +580,8 @@ endif()
 target_link_libraries(${MICROPY_TARGET}
     ${PICO_SDK_COMPONENTS}
 )
+
+pico_generate_pio_header(${MICROPY_TARGET} ${MICROPY_PORT_DIR}/wiznet_pio_spi.pio)
 
 if (MICROPY_HW_ENABLE_DOUBLE_TAP)
 # Enable double tap reset into bootrom.
