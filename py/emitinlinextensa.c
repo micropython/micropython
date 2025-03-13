@@ -173,7 +173,7 @@ static int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
 #define RRI8_B (2)
 
 typedef struct _opcode_table_3arg_t {
-    uint16_t name; // actually a qstr, which should fit in 16 bits
+    qstr_short_t name;
     uint8_t type;
     uint8_t a0 : 4;
     uint8_t a1 : 4;
@@ -187,6 +187,13 @@ static const opcode_table_3arg_t opcode_table_3arg[] = {
     {MP_QSTR_add, RRR, 0, 8},
     {MP_QSTR_sub, RRR, 0, 12},
     {MP_QSTR_mull, RRR, 2, 8},
+    {MP_QSTR_addx2, RRR, 0, 9},
+    {MP_QSTR_addx4, RRR, 0, 10},
+    {MP_QSTR_addx8, RRR, 0, 11},
+    {MP_QSTR_subx2, RRR, 0, 13},
+    {MP_QSTR_subx4, RRR, 0, 14},
+    {MP_QSTR_subx8, RRR, 0, 15},
+    {MP_QSTR_src, RRR, 1, 8},
 
     // load/store/addi opcodes: reg, reg, imm
     // upper nibble of type encodes the range of the immediate arg
@@ -208,21 +215,62 @@ static const opcode_table_3arg_t opcode_table_3arg[] = {
     {MP_QSTR_bge, RRI8_B, ASM_XTENSA_CC_GE, 0},
     {MP_QSTR_bgeu, RRI8_B, ASM_XTENSA_CC_GEU, 0},
     {MP_QSTR_blt, RRI8_B, ASM_XTENSA_CC_LT, 0},
+    {MP_QSTR_bltu, RRI8_B, ASM_XTENSA_CC_LTU, 0},
     {MP_QSTR_bnall, RRI8_B, ASM_XTENSA_CC_NALL, 0},
     {MP_QSTR_bne, RRI8_B, ASM_XTENSA_CC_NE, 0},
     {MP_QSTR_bnone, RRI8_B, ASM_XTENSA_CC_NONE, 0},
 };
+
+// The index of the first four qstrs matches the CCZ condition value to be
+// embedded into the opcode.
+static const qstr_short_t BCCZ_OPCODES[] = {
+    MP_QSTR_beqz, MP_QSTR_bnez, MP_QSTR_bltz, MP_QSTR_bgez,
+    MP_QSTR_beqz_n, MP_QSTR_bnez_n
+};
+
+#if MICROPY_EMIT_INLINE_XTENSA_UNCOMMON_OPCODES
+typedef struct _single_opcode_t {
+    qstr_short_t name;
+    uint16_t value;
+} single_opcode_t;
+
+static const single_opcode_t NOARGS_OPCODES[] = {
+    {MP_QSTR_dsync, 0x2030},
+    {MP_QSTR_esync, 0x2020},
+    {MP_QSTR_extw,  0x20D0},
+    {MP_QSTR_ill,   0x0000},
+    {MP_QSTR_isync, 0x2000},
+    {MP_QSTR_memw,  0x20C0},
+    {MP_QSTR_rsync, 0x2010},
+};
+#endif
 
 static void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
     size_t op_len;
     const char *op_str = (const char *)qstr_data(op, &op_len);
 
     if (n_args == 0) {
-        if (op == MP_QSTR_ret_n) {
+        if (op == MP_QSTR_ret_n || op == MP_QSTR_ret) {
             asm_xtensa_op_ret_n(&emit->as);
-        } else {
-            goto unknown_op;
+            return;
+        } else if (op == MP_QSTR_nop) {
+            asm_xtensa_op24(&emit->as, 0x20F0);
+            return;
+        } else if (op == MP_QSTR_nop_n) {
+            asm_xtensa_op16(&emit->as, 0xF03D);
+            return;
         }
+        #if MICROPY_EMIT_INLINE_XTENSA_UNCOMMON_OPCODES
+        for (size_t index = 0; index < MP_ARRAY_SIZE(NOARGS_OPCODES); index++) {
+            const single_opcode_t *opcode = &NOARGS_OPCODES[index];
+            if (op == opcode->name) {
+                asm_xtensa_op24(&emit->as, opcode->value);
+                return;
+            }
+        }
+        #endif
+
+        goto unknown_op;
 
     } else if (n_args == 1) {
         if (op == MP_QSTR_callx0) {
@@ -234,19 +282,45 @@ static void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
         } else if (op == MP_QSTR_jx) {
             uint r0 = get_arg_reg(emit, op_str, pn_args[0]);
             asm_xtensa_op_jx(&emit->as, r0);
+        } else if (op == MP_QSTR_ssl) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            asm_xtensa_op_ssl(&emit->as, r0);
+        } else if (op == MP_QSTR_ssr) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            asm_xtensa_op_ssr(&emit->as, r0);
+        } else if (op == MP_QSTR_ssai) {
+            mp_uint_t sa = get_arg_i(emit, op_str, pn_args[0], 0, 31);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 0, 4, 4, sa & 0x0F, (sa >> 4) & 0x01));
+        } else if (op == MP_QSTR_ssa8b) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 0, 4, 3, r0, 0));
+        } else if (op == MP_QSTR_ssa8l) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 0, 4, 2, r0, 0));
+        } else if (op == MP_QSTR_call0) {
+            mp_uint_t label = get_arg_label(emit, op_str, pn_args[0]);
+            asm_xtensa_call0(&emit->as, label);
+        #if MICROPY_EMIT_INLINE_XTENSA_UNCOMMON_OPCODES
+        } else if (op == MP_QSTR_fsync) {
+            mp_uint_t imm3 = get_arg_i(emit, op_str, pn_args[0], 0, 7);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 0, 0, 2, 8 | imm3, 0));
+        } else if (op == MP_QSTR_ill_n) {
+            asm_xtensa_op16(&emit->as, 0xF06D);
+        #endif
         } else {
             goto unknown_op;
         }
 
     } else if (n_args == 2) {
         uint r0 = get_arg_reg(emit, op_str, pn_args[0]);
-        if (op == MP_QSTR_beqz) {
-            int label = get_arg_label(emit, op_str, pn_args[1]);
-            asm_xtensa_bccz_reg_label(&emit->as, ASM_XTENSA_CCZ_EQ, r0, label);
-        } else if (op == MP_QSTR_bnez) {
-            int label = get_arg_label(emit, op_str, pn_args[1]);
-            asm_xtensa_bccz_reg_label(&emit->as, ASM_XTENSA_CCZ_NE, r0, label);
-        } else if (op == MP_QSTR_mov || op == MP_QSTR_mov_n) {
+        for (size_t index = 0; index < MP_ARRAY_SIZE(BCCZ_OPCODES); index++) {
+            if (op == BCCZ_OPCODES[index]) {
+                mp_uint_t label = get_arg_label(emit, op_str, pn_args[1]);
+                asm_xtensa_bccz_reg_label(&emit->as, index & 0x03, r0, label);
+                return;
+            }
+        }
+        if (op == MP_QSTR_mov || op == MP_QSTR_mov_n) {
             // we emit mov.n for both "mov" and "mov_n" opcodes
             uint r1 = get_arg_reg(emit, op_str, pn_args[1]);
             asm_xtensa_op_mov_n(&emit->as, r0, r1);
@@ -254,7 +328,53 @@ static void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
             // for convenience we emit l32r if the integer doesn't fit in movi
             uint32_t imm = get_arg_i(emit, op_str, pn_args[1], 0, 0);
             asm_xtensa_mov_reg_i32(&emit->as, r0, imm);
-        } else {
+        } else if (op == MP_QSTR_abs_) {
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 0, 6, r0, 1, r1));
+        } else if (op == MP_QSTR_neg) {
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 0, 6, r0, 0, r1));
+        } else if (op == MP_QSTR_sll) {
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 1, 10, r0, r1, 0));
+        } else if (op == MP_QSTR_sra) {
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 1, 11, r0, 0, r1));
+        } else if (op == MP_QSTR_srl) {
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 1, 9, r0, 0, r1));
+        } else if (op == MP_QSTR_nsa) {
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 0, 4, 14, r1, r0));
+        } else if (op == MP_QSTR_nsau) {
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 0, 4, 15, r1, r0));
+        } else if (op == MP_QSTR_l32r) {
+            mp_uint_t label = get_arg_label(emit, op_str, pn_args[1]);
+            asm_xtensa_l32r(&emit->as, r0, label);
+        } else if (op == MP_QSTR_movi_n) {
+            mp_int_t imm = get_arg_i(emit, op_str, pn_args[1], -32, 95);
+            asm_xtensa_op_movi_n(&emit->as, r0, imm);
+        } else
+        #if MICROPY_EMIT_INLINE_XTENSA_UNCOMMON_OPCODES
+        if (op == MP_QSTR_rsr) {
+            mp_uint_t sr = get_arg_i(emit, op_str, pn_args[1], 0, 255);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RSR(0, 3, 0, sr, r0));
+        } else if (op == MP_QSTR_rur) {
+            mp_uint_t imm8 = get_arg_i(emit, op_str, pn_args[1], 0, 255);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 3, 14, r0, (imm8 >> 4) & 0x0F, imm8 & 0x0F));
+        } else if (op == MP_QSTR_wsr) {
+            mp_uint_t sr = get_arg_i(emit, op_str, pn_args[1], 0, 255);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RSR(0, 3, 1, sr, r0));
+        } else if (op == MP_QSTR_wur) {
+            mp_uint_t sr = get_arg_i(emit, op_str, pn_args[1], 0, 255);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RSR(0, 3, 15, sr, r0));
+        } else if (op == MP_QSTR_xsr) {
+            mp_uint_t sr = get_arg_i(emit, op_str, pn_args[1], 0, 255);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RSR(0, 1, 6, sr, r0));
+        } else
+        #endif
+        {
             goto unknown_op;
         }
 
@@ -288,7 +408,72 @@ static void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
                 return;
             }
         }
-        goto unknown_op;
+
+        if (op == MP_QSTR_add_n) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            mp_uint_t r2 = get_arg_reg(emit, op_str, pn_args[2]);
+            asm_xtensa_op16(&emit->as, ASM_XTENSA_ENCODE_RRRN(10, r0, r1, r2));
+        } else if (op == MP_QSTR_addi_n) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            mp_int_t imm4 = get_arg_i(emit, op_str, pn_args[2], -1, 15);
+            asm_xtensa_op16(&emit->as, ASM_XTENSA_ENCODE_RRRN(11, r0, r1, (imm4 != 0 ? imm4 : -1)));
+        } else if (op == MP_QSTR_addmi) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            mp_int_t imm8 = get_arg_i(emit, op_str, pn_args[2], -128 * 256, 127 * 256);
+            if ((imm8 & 0xFF) != 0) {
+                emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("%d is not a multiple of %d"), imm8, 256));
+            } else {
+                asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRI8(2, 13, r1, r0, imm8 >> 8));
+            }
+        } else if (op == MP_QSTR_bbci) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t bit = get_arg_i(emit, op_str, pn_args[1], 0, 31);
+            mp_int_t label = get_arg_label(emit, op_str, pn_args[2]);
+            asm_xtensa_bit_branch(&emit->as, r0, bit, label, 6);
+        } else if (op == MP_QSTR_bbsi) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t bit = get_arg_i(emit, op_str, pn_args[1], 0, 31);
+            mp_uint_t label = get_arg_label(emit, op_str, pn_args[2]);
+            asm_xtensa_bit_branch(&emit->as, r0, bit, label, 14);
+        } else if (op == MP_QSTR_slli) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            mp_uint_t bits = 32 - get_arg_i(emit, op_str, pn_args[2], 1, 31);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 1, 0 | ((bits >> 4) & 0x01), r0, r1, bits & 0x0F));
+        } else if (op == MP_QSTR_srai) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            mp_uint_t bits = get_arg_i(emit, op_str, pn_args[2], 0, 31);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 1, 2 | ((bits >> 4) & 0x01), r0, bits & 0x0F, r1));
+        } else if (op == MP_QSTR_srli) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            mp_uint_t bits = get_arg_i(emit, op_str, pn_args[2], 0, 15);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 1, 4, r0, bits, r1));
+        } else if (op == MP_QSTR_l32i_n) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            mp_uint_t imm = get_arg_i(emit, op_str, pn_args[2], 0, 60);
+            if ((imm & 0x03) != 0) {
+                emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("%d is not a multiple of %d"), imm, 4));
+            } else {
+                asm_xtensa_op_l32i_n(&emit->as, r0, r1, imm >> 2);
+            }
+        } else if (op == MP_QSTR_s32i_n) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            mp_uint_t imm = get_arg_i(emit, op_str, pn_args[2], 0, 60);
+            if ((imm & 0x03) != 0) {
+                emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("%d is not a multiple of %d"), imm, 4));
+            } else {
+                asm_xtensa_op_s32i_n(&emit->as, r0, r1, imm >> 2);
+            }
+        } else {
+            goto unknown_op;
+        }
 
     } else {
         goto unknown_op;

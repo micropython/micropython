@@ -64,9 +64,11 @@
 #define ASM_XTENSA_REG_A14 (14)
 #define ASM_XTENSA_REG_A15 (15)
 
-// for bccz
+// for bccz and bcci
 #define ASM_XTENSA_CCZ_EQ (0)
 #define ASM_XTENSA_CCZ_NE (1)
+#define ASM_XTENSA_CCZ_LT (2)
+#define ASM_XTENSA_CCZ_GE (3)
 
 // for bcc and setcc
 #define ASM_XTENSA_CC_NONE  (0)
@@ -295,6 +297,10 @@ void asm_xtensa_l32i_optimised(asm_xtensa_t *as, uint reg_dest, uint reg_base, u
 void asm_xtensa_s32i_optimised(asm_xtensa_t *as, uint reg_src, uint reg_base, uint word_offset);
 void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx);
 void asm_xtensa_call_ind_win(asm_xtensa_t *as, uint idx);
+void asm_xtensa_bit_branch(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t bit, mp_uint_t label, mp_uint_t condition);
+void asm_xtensa_immediate_branch(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t immediate, mp_uint_t label, mp_uint_t cond);
+void asm_xtensa_call0(asm_xtensa_t *as, mp_uint_t label);
+void asm_xtensa_l32r(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t label);
 
 // Holds a pointer to mp_fun_table
 #define ASM_XTENSA_REG_FUN_TABLE ASM_XTENSA_REG_A15
