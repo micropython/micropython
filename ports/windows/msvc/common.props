@@ -62,4 +62,16 @@
     <Copy SourceFiles="%(PyOutputFiles.Identity)" DestinationFiles="%(PyOutputFiles.Destination)"/>
     <WriteLinesToFile File="$(TLogLocation)$(ProjectName).write.u.tlog" Lines="$(PyFileCopyCookie);@(PyOutputFiles->'%(Destination)')" Overwrite="True"/>
   </Target>
+
+  <Target Name="UpdateSubmodules" Condition="@(PySubmodules) != ''">
+    <Message Text="Updating submodules: @(PySubmodules)"/>
+    <Exec Command="git submodule sync $(PyBaseDir)%(PySubmodules.Identity)"/>
+    <Exec Command="git submodule update --init $(PyBaseDir)%(PySubmodules.Identity)"/>
+  </Target>
+
+  <!-- Within an IDE it's usually not simple to manually select Targets to build so allow doing
+       this automatically to be able to build from scratch. Still make this optional though because it isn't exactly fast. -->
+  <Target Name="UpdateSubmodulesIfInIDE" DependsOnTargets="UpdateSubmodules"
+          Condition="'$(BuildingInsideVisualStudio)' == 'True' And '$(PySkipModuleUpdate)' != 'True'">
+  </Target>
 </Project>
