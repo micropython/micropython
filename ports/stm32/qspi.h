@@ -33,7 +33,7 @@
 
 extern const mp_qspi_proto_t qspi_proto;
 
-void qspi_init(void);
+void qspi_init(size_t memory_size_bytes);
 void qspi_memory_map(void);
 
 static inline bool qspi_is_valid_addr(uint32_t addr) {
