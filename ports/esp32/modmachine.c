@@ -51,6 +51,13 @@
 #define MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY
 #endif
 
+#if MICROPY_PY_MACHINE_PCNT
+#define MICROPY_PY_MACHINE_PCNT_ENTRY { MP_ROM_QSTR(MP_QSTR_Encoder), MP_ROM_PTR(&machine_Encoder_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_Counter), MP_ROM_PTR(&machine_Counter_type) },
+#else
+#define MICROPY_PY_MACHINE_PCNT_ENTRY
+#endif
+
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
     \
@@ -58,6 +65,7 @@
     MICROPY_PY_MACHINE_SDCARD_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
     MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY \
+    MICROPY_PY_MACHINE_PCNT_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&machine_rtc_type) }, \
     \
     /* wake abilities */ \
