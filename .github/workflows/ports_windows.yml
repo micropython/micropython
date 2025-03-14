@@ -81,6 +81,12 @@ jobs:
       if: failure() && steps.test.conclusion == 'failure'
       working-directory: tests
       run: python run-tests.py --print-failures
+    - name: Artifact failure results
+      if: failure() && steps.test.conclusion == 'failure'
+      uses: actions/upload-artifact@v4
+      with:
+        name: tests results
+        path: tests/results/
     - name: Run mpy tests
       id: test_mpy
       env:
@@ -91,6 +97,12 @@ jobs:
       if: failure() && steps.test_mpy.conclusion == 'failure'
       working-directory: tests
       run: python run-tests.py --print-failures
+    - name: Artifact failure results
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: tests results
+        path: tests/results/
 
   build-mingw:
     strategy:
@@ -139,7 +151,13 @@ jobs:
     - name: Print failures
       if: failure() && steps.test.conclusion == 'failure'
       working-directory: tests
-      run: python run-tests.py --print-failures
+      run: python run-tests.py 
+    - name: Artifact failure results
+      if: failure() && steps.test.conclusion == 'failure'
+      uses: actions/upload-artifact@v4
+      with:
+        name: tests results
+        path: tests/results/
 
   cross-build-on-linux:
     runs-on: ubuntu-latest
