@@ -81,8 +81,20 @@
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 #endif
 
+#ifndef MICROPY_HW_ENABLE_PSRAM
+#define MICROPY_HW_ENABLE_PSRAM (0)
+#endif
+
 // Memory allocation policies
+#if MICROPY_HW_ENABLE_PSRAM
+#define MICROPY_GC_STACK_ENTRY_TYPE             uint32_t
+#define MICROPY_ALLOC_GC_STACK_SIZE             (1024) // Avoid slowdown when GC stack overflow causes a full sweep of PSRAM-backed heap
+#else
 #define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
+#endif
+#ifndef MICROPY_GC_SPLIT_HEAP
+#define MICROPY_GC_SPLIT_HEAP                   MICROPY_HW_ENABLE_PSRAM // whether PSRAM is added to or replaces the heap
+#endif
 #define MICROPY_ALLOC_PATH_MAX                  (128)
 #define MICROPY_QSTR_BYTES_IN_HASH              (1)
 
