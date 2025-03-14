@@ -27,6 +27,8 @@ class PIOASMEmit:
         set_init=None,
         sideset_init=None,
         side_pindir=False,
+        status_sel=0,
+        status_n=0,
         in_shiftdir=PIO.SHIFT_LEFT,
         out_shiftdir=PIO.SHIFT_LEFT,
         autopush=False,
@@ -40,7 +42,10 @@ class PIOASMEmit:
         from array import array
 
         self.labels = {}
-        execctrl = side_pindir << 29
+        if 'RP2350' in sys.implementation._machine:
+            execctrl = side_pindir << 29 | (status_sel & 0x3) << 5 | (status_n & 0x1F)
+        else:
+            execctrl = side_pindir << 29 | (status_sel & 0x1) << 4 | (status_n & 0x0F)
         shiftctrl = (
             fifo_join << 30
             | (pull_thresh & 0x1F) << 25
