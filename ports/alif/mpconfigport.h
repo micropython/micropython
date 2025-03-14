@@ -136,6 +136,9 @@
 #define MICROPY_PY_MACHINE_SPI                  (1)
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)
 #define MICROPY_PY_MACHINE_TIMER                (1)
+#define MICROPY_PY_MACHINE_UART                 (1)
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE     "ports/alif/machine_uart.c"
+#define MICROPY_PY_MACHINE_UART_IRQ             (1)
 #define MICROPY_PY_NETWORK                      (CORE_M55_HP)
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "mpy-alif"
