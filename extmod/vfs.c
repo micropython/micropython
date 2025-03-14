@@ -206,22 +206,36 @@ static mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
 }
 
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_readonly, ARG_mkfs };
+    if (n_args == 0) {
+        // zero-args, output a table of all current mountpoints
+        mp_obj_t mount_list = mp_obj_new_list(0, NULL);
+        mp_vfs_mount_t *vfsp = MP_STATE_VM(vfs_mount_table);
+        while (vfsp != NULL) {
+            mp_obj_t items[] = { vfsp->obj, mp_obj_new_str(vfsp->str, vfsp->len) };
+            mp_obj_list_append(mount_list, mp_obj_new_tuple(MP_ARRAY_SIZE(items), items));
+            vfsp = vfsp->next;
+        }
+        return mount_list;
+    }
+
+    enum { ARG_fsobj, ARG_mount_point, ARG_readonly, ARG_mkfs };
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_FALSE} },
         { MP_QSTR_mkfs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_FALSE} },
     };
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get the mount point
     size_t mnt_len;
-    const char *mnt_str = mp_obj_str_get_data(pos_args[1], &mnt_len);
+    const char *mnt_str = mp_obj_str_get_data(args[ARG_mount_point].u_obj, &mnt_len);
 
     // see if we need to auto-detect and create the filesystem
-    mp_obj_t vfs_obj = pos_args[0];
+    mp_obj_t vfs_obj = args[ARG_fsobj].u_obj;
     mp_obj_t dest[2];
     mp_load_method_maybe(vfs_obj, MP_QSTR_mount, dest);
     if (dest[0] == MP_OBJ_NULL) {
@@ -238,11 +252,13 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
     vfs->next = NULL;
 
     // call the underlying object to do any mounting operation
-    mp_vfs_proxy_call(vfs, MP_QSTR_mount, 2, (mp_obj_t *)&args);
+    mp_arg_val_t *proxy_args = &args[ARG_readonly];
+    size_t proxy_args_len = MP_ARRAY_SIZE(args) - ARG_readonly;
+    mp_vfs_proxy_call(vfs, MP_QSTR_mount, proxy_args_len, (mp_obj_t *)proxy_args);
 
     // check that the destination mount point is unused
     const char *path_out;
-    mp_vfs_mount_t *existing_mount = mp_vfs_lookup_path(mp_obj_str_get_str(pos_args[1]), &path_out);
+    mp_vfs_mount_t *existing_mount = mp_vfs_lookup_path(mp_obj_str_get_str(args[ARG_mount_point].u_obj), &path_out);
     if (existing_mount != MP_VFS_NONE && existing_mount != MP_VFS_ROOT) {
         if (vfs->len != 1 && existing_mount->len == 1) {
             // if root dir is mounted, still allow to mount something within a subdir of root
@@ -266,7 +282,7 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_mount_obj, 2, mp_vfs_mount);
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_mount_obj, 0, mp_vfs_mount);
 
 mp_obj_t mp_vfs_umount(mp_obj_t mnt_in) {
     // remove vfs from the mount table
