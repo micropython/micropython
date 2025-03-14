@@ -33,6 +33,7 @@
 #include <zephyr/sys/reboot.h>
 #include <zephyr/pm/pm.h>
 #include <zephyr/pm/device.h>
+#include <zephyr/sys/poweroff.h>
 
 #include "modmachine.h"
 
@@ -80,15 +81,27 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     // Set UART device back to active state
     pm_device_action_run(uart0, PM_DEVICE_ACTION_RESUME);
 }
+
+static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    // Check if argument is provided
+    if (n_args > 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timeout not supported"));
+    }
+    // Get the UART device
+    const struct device *uart0 = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
+    // Set UART device to low power state
+    pm_device_action_run(uart0, PM_DEVICE_ACTION_SUSPEND);
+    sys_poweroff();
+}
 #else
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
 }
-#endif
 
 static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
 }
+#endif
 
 static mp_obj_t mp_machine_get_freq(void) {
     mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));

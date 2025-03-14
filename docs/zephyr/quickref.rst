@@ -146,6 +146,21 @@ Notes:
 
 * Calling ``lightsleep()`` suspends the micropython thread, allowing Zephyr power management to reduce power consumption.
 
+Deep-sleep mode
+----------------
+
+The following code can be used to power down the system::
+
+    import machine
+
+    # power down the system
+    machine.depsleep()
+
+Notes:
+
+* Calling ``deepsleep()`` performs a complete system power off.
+* A reset or interrupt is required to restart the system.
+
 
 Disk Access
 -----------
