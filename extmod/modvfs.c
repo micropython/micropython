@@ -47,6 +47,9 @@ static const mp_rom_map_elem_t vfs_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mountinfo), MP_ROM_PTR(&mp_vfs_mountinfo_obj) },
+    { MP_ROM_QSTR(MP_QSTR_listmounts), MP_ROM_PTR(&mp_vfs_listmounts_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ilistmounts), MP_ROM_PTR(&mp_vfs_ilistmounts_obj) },
     #if MICROPY_VFS_ROM_IOCTL
     { MP_ROM_QSTR(MP_QSTR_rom_ioctl), MP_ROM_PTR(&mp_vfs_rom_ioctl_obj) },
     #endif

@@ -1,0 +1,29 @@
+StopIteration
+[]
+'' : (path='/', vfs=None)
+'/' : (path='/', vfs=None)
+'/foo' : (path=None, vfs=None)
+mount Filesystem(1)
+(path='/foo', vfs=Filesystem(1))
+StopIteration
+[(path='/foo', vfs=Filesystem(1))]
+'' : (path='/', vfs=None)
+'/' : (path='/', vfs=None)
+'/foo' : (path='/foo', vfs=Filesystem(1))
+'/foo/bar' : (path='/foo', vfs=Filesystem(1))
+'/bar' : (path=None, vfs=None)
+mount Filesystem(2)
+(path='/foo', vfs=Filesystem(1))
+(path='/bar/baz', vfs=Filesystem(2))
+StopIteration
+[(path='/foo', vfs=Filesystem(1)), (path='/bar/baz', vfs=Filesystem(2))]
+'/bar' : (path=None, vfs=None)
+'/bar/baz' : (path='/bar/baz', vfs=Filesystem(2))
+mount Filesystem(3)
+(path='/foo', vfs=Filesystem(1))
+(path='/bar/baz', vfs=Filesystem(2))
+(path='/bar', vfs=Filesystem(3))
+StopIteration
+[(path='/foo', vfs=Filesystem(1)), (path='/bar/baz', vfs=Filesystem(2)), (path='/bar', vfs=Filesystem(3))]
+'/bar' : (path='/bar', vfs=Filesystem(3))
+'/bar/baz' : (path='/bar/baz', vfs=Filesystem(2))
