@@ -30,26 +30,28 @@ MIMXRT1170-EVK     Debug USB      D0/D1       D12/D11      D10/D13
 Adafruit Metro M7     -           D0/D1        D7/D3        A1/A0
 Olimex RT1010Py       -          RxD/TxD       D7/D8        D5/D6
 Seeed ARCH MIX        -         J3_19/J3_20  J4_16/J4_17  J4_06/J4_07
+Makerdiary RT1011     -           D9/D10      D13/A0       D11/D12
 =================  ===========  ===========  ===========  ===========
 
 |
 
-================  ===========  ===========  =======  =======  =====
-Board / Pin           UART4        UART5      UART6   UART7   UART8
-================  ===========  ===========  =======  =======  =====
-Teensy 4.0            16/17        21/20     25/24    28/29      -
-Teensy 4.1            16/17        21/20     25/24    28/29    34/35
-MIMXRT1010-EVK         -            -         -        -        -
-MIMXRT1015-EVK         -            -         -        -        -
-MIMXRT1020-EVK      D15/D14       A1/A0       -        -        -
-MIMXRT1050-EVK       A1/A0          -         -        -        -
-MIMXRT1050-EVKB      A1/A0          -         -        -        -
-MIMXRT1060-EVK       A1/A0          -         -        -        -
-MIMXRT1064-EVK       A1/A0          -         -        -        -
-MIMXRT1170-EVK      D15/D14      D25/D26    D33/D34  D35/D36    -
-Olimex RT1010Py        -            -         -        -        -
-Seeed ARCH MIX    J4_10/J4_11  J5_08/J5_12    -        -        -
-================  ===========  ===========  =======  =======  =====
+=================  ===========  ===========  =======  =======  =====
+Board / Pin            UART4        UART5      UART6   UART7   UART8
+=================  ===========  ===========  =======  =======  =====
+Teensy 4.0             16/17        21/20     25/24    28/29      -
+Teensy 4.1             16/17        21/20     25/24    28/29   34/35
+MIMXRT1010-EVK          -            -         -        -        -
+MIMXRT1015-EVK          -            -         -        -        -
+MIMXRT1020-EVK       D15/D14       A1/A0       -        -        -
+MIMXRT1050-EVK        A1/A0          -         -        -        -
+MIMXRT1050-EVKB       A1/A0          -         -        -        -
+MIMXRT1060-EVK        A1/A0          -         -        -        -
+MIMXRT1064-EVK        A1/A0          -         -        -        -
+MIMXRT1170-EVK       D15/D14      D25/D26    D33/D34  D35/D36    -
+Olimex RT1010Py         -            -         -        -        -
+Seeed ARCH MIX     J4_10/J4_11  J5_08/J5_12    -        -        -
+Makerdiary RT1011     A1/A2          -         -        -        -
+=================  ===========  ===========  =======  =======  =====
 
 .. _mimxrt_pwm_pinout:
 
@@ -188,7 +190,6 @@ LED_BLUE   F1/3/B
 =========  ===============
 Pin        Olimex RT1010PY
 =========  ===============
-D0           -
 D1         F1/0/B
 D2         F1/0/A
 D3         F1/1/B
@@ -197,13 +198,10 @@ D5         F1/2/B
 D6         F1/2/A
 D7         F1/3/B
 D8         F1/3/A
-D9            -
 D10        F1/0/B
 D11        F1/0/A
 D12        F1/1/B
 D13        F1/1/A
-D14           -
-A0            -
 A1         F1/2/B
 A2         F1/2/A
 A3         F1/3/B
@@ -213,6 +211,32 @@ SDO        F1/2/X
 CS0        F1/1/X
 SCK        F1/0/X
 =========  ===============
+
+|
+
+=========  =================
+Pin        Makerdiary RT1011
+=========  =================
+D1         F1/0/B
+D2         F1/0/A
+D3         F1/1/B
+D4         F1/1/A
+D5         F1/2/B
+D6         F1/2/A
+D7         F1/3/B
+D8         F1/3/A
+A3         F1/2/B
+A4         F1/2/A
+A5         F1/3/B
+A6         F1/3/A
+A9         F1/3/X
+A10        F1/2/X
+A11        F1/1/X
+SD1        F1/0/B
+SD2        F1/0/A
+LED        F1/1/B
+DIO        F1/0/X
+=========  =================
 
 Legend:
 
@@ -322,6 +346,7 @@ MIXMXRT1170-EVK    D10/-/D11/D12/D13          D28/-/D25/D24/D26        -/-/D14/D
 Adafruit Metro M7  -/-/MOSI/MISO/SCK                -                        -
 Olimex RT1010Py             -                 CS0/-/SDO/SDI/SCK        SDCARD with CS1
 Seeed ARCH MIX     J4_12/-/J4_14/J4_13/J4_15  J3_09/J3_05/J3_08_J3_11
+Makerdiary RT1011  A5/A2/A4/A3/A6             A11/A1/A10/A9/CLK
 =================  =========================  =======================  ===============
 
 Pins denoted with (*) are by default not wired at the board. The CS0 and CS1 signals
@@ -355,6 +380,7 @@ MIXMXRT1170-EVK    D14/D15      D1/D0        A4/A5        D26/D25  D19/D18
 Adafruit Metro M7  D14/D15      D0/D1
 Olimex RT1010Py      -          SDA1/SCL1    SDA2/SCL2     -        -
 Seeed ARCH MIX     J3_17/J3_16  J4_06/J4_07  J5_05/J5_04   -        -
+Makerdiary RT1011  D1/D2        A7/A8
 =================  ===========  ===========  ===========  =======  =======
 
 .. _mimxrt_i2s_pinout:
@@ -379,6 +405,7 @@ Adafruit Metro M7  1   D8     D10      D9      D12     D14      D15     D13
 Olimex RT1010Py    1   D8     D6       D7      D4      D1       D2      D3
 Olimex RT1010Py    3   -      D10      D9      D11     -        -       -
 MIMXRT_DEV         1   "MCK"  "SCK_TX" "WS_TX" "SD_TX" "SCK_RX" "WS_RX" "SD_RX"
+Makerdiary RT1011  1   D8     SD1      D7      D4      D1       D2      D3
 =================  ==  =====  ======== ======= ======= ======== ======= =======
 
 Symbolic pin names are provided for the MIMXRT_10xx_DEV boards.
