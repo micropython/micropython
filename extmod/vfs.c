@@ -206,6 +206,18 @@ static mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
 }
 
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    if (n_args == 0) {
+        // zero-args, output a table of all current mountpoints
+        mp_obj_t mount_list = mp_obj_new_list(0, NULL);
+        mp_vfs_mount_t *vfsp = MP_STATE_VM(vfs_mount_table);
+        while (vfsp != NULL) {
+            mp_obj_t items[] = { vfsp->obj, mp_obj_new_str(vfsp->str, vfsp->len) };
+            mp_obj_list_append(mount_list, mp_obj_new_tuple(MP_ARRAY_SIZE(items), items));
+            vfsp = vfsp->next;
+        }
+        return mount_list;
+    }
+
     enum { ARG_fsobj, ARG_mount_point, ARG_readonly, ARG_mkfs };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
