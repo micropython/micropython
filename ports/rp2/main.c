@@ -136,7 +136,6 @@ int main(int argc, char **argv) {
     {
         cyw43_init(&cyw43_state);
         cyw43_irq_init();
-        cyw43_post_poll_hook(); // enable the irq
         uint8_t buf[8];
         memcpy(&buf[0], "PICO", 4);
 

@@ -54,21 +54,14 @@ static soft_timer_entry_t mp_network_soft_timer;
 #endif
 #endif
 
-#define CYW43_IRQ_LEVEL GPIO_IRQ_LEVEL_HIGH
+#define CYW43_IRQ_LEVEL GPIO_IRQ_EDGE_RISE
 #define CYW43_SHARED_IRQ_HANDLER_PRIORITY PICO_SHARED_IRQ_HANDLER_HIGHEST_ORDER_PRIORITY
-
-volatile int cyw43_has_pending = 0;
 
 static void gpio_irq_handler(void) {
     uint32_t events = gpio_get_irq_event_mask(CYW43_PIN_WL_HOST_WAKE);
     if (events & CYW43_IRQ_LEVEL) {
-        // As we use a high level interrupt, it will go off forever until it's serviced.
-        // So disable the interrupt until this is done.  It's re-enabled again by
-        // CYW43_POST_POLL_HOOK which is called at the end of cyw43_poll_func.
-        gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, false);
-        cyw43_has_pending = 1;
-        __sev();
         pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+        __sev();
         CYW43_STAT_INC(IRQ_COUNT);
     }
 }
@@ -76,13 +69,6 @@ static void gpio_irq_handler(void) {
 void cyw43_irq_init(void) {
     gpio_add_raw_irq_handler_with_order_priority(CYW43_PIN_WL_HOST_WAKE, gpio_irq_handler, CYW43_SHARED_IRQ_HANDLER_PRIORITY);
     irq_set_enabled(IO_IRQ_BANK0, true);
-    #if !defined(__riscv)
-    NVIC_SetPriority(PendSV_IRQn, IRQ_PRI_PENDSV);
-    #endif
-}
-
-void cyw43_post_poll_hook(void) {
-    cyw43_has_pending = 0;
     gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, true);
 }
 
