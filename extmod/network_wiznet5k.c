@@ -234,6 +234,7 @@ static void wiznet5k_init(void) {
         #endif
 
         mp_hal_pin_input(wiznet5k_obj.pin_intn);
+        mp_hal_pin_config(wiznet5k_obj.pin_intn, GPIO_IN, MP_HAL_PIN_PULL_UP, 0);
         wiznet5k_config_interrupt(true);
     }
 
