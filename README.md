@@ -1,4 +1,10 @@
-[MicroPython-LVGL project](README-LVGL.md)
+# Micropython + LVGL
+
+**Micropython bindings to LVGL for Embedded devices, Unix and JavaScript**
+
+More information about MicroPython-LVGL binding and how to build it, see: [README-LVGL.md](README-LVGL.md)
+
+---
 
 The MicroPython project
 =======================

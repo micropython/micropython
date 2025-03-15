@@ -2,6 +2,6 @@
 
 # Set environment variables for ESP32 development
 
-ESPIDF=~/esp/esp-idf-5-2-3
+ESPIDF=~/esp/esp-idf
 source $ESPIDF/export.sh
 

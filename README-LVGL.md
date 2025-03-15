@@ -19,47 +19,62 @@ Original micropython README: https://github.com/micropython/micropython/blob/mas
 ## Relationship between `lv_micropython` and `lv_binding_micropython`
 
 Originally, `lv_micropython` was created as an example of how to use [lv_binding_micropython](https://github.com/lvgl/lv_binding_micropython) on a Micropython fork.  
-As such, we try to keep changes here as minimal as possible and we try to keep it in sync with Micropython upstream releases. We also try to add changes to `lv_binding_micropython` instead of to `lv_micropython`, when possible. (for example we keep all drivers in `lv_binding_micropython`, the ESP32 CMake functionality etc.)
+
+As such, we try to keep changes here as minimal as possible and we try to keep it in sync with Micropython upstream releases. We also try to add changes to `lv_binding_micropython` instead of to `lv_micropython`, when possible. (for example we keep all drivers in `lv_binding_micropython`,  etc.)
 
 Eventually it turned out that many people prefer using `lv_micropython` directly and only a few use it as a reference to support LVGL on their own Micropython fork.
+
 If you are only starting with Micropython+LVGL, it's recommended that you use `lv_micropython`, while porting a Micropython fork to LVGL is for advanced users.
+
+Actual `lv_micropython` repo is using [LVGL binding](https://github.com/lvgl/lv_binding_micropython) as MicroPython C module. 
+
+More details: https://docs.micropython.org/en/latest/develop/cmodules.html
 
 ## Build Instructions
 
-First step is always to clone lv_micropython and update its submodules recursively:
+First step is always to clone `lv_micropython` and update its submodules recursively:
 
 ```
 git clone https://github.com/lvgl/lv_micropython.git
 cd lv_micropython
-git submodule update --init --recursive lib/lv_bindings
+git submodule update --init --recursive user_modules/lv_binding_micropython
 ```
 
-Next you should build mpy-cross
+Next step is to build the port you want to use.
 
-```
-make -C mpy-cross
-```
+Some basic build and deploy scripts are added to `scripts` folder, to easily build and deploy firmware to your device (or use unix port).
 
-Port specific steps usually include updating the port's submodules with `make submodules` and running make for the port itself.
+You can of course build firmwares manually with `make` commands, if build script is missing for the port or you want to override some build parameters.
 
 ### Unix (Linux) port
+
+Using build script:
+
+```
+cd scripts
+./build-unix.sh
+cd ..
+./ports/unix/build-lvgl/micropython
+```
+
+Manual build:
 
 1. `sudo apt-get install build-essential libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python3.8 parallel`
 Python 3 is required, but you can install some other version of python3 instead of 3.8, if needed.
 2. `git clone https://github.com/lvgl/lv_micropython.git`
 3. `cd lv_micropython`
-4. `git submodule update --init --recursive lib/lv_bindings`
+4. `git submodule update --init --recursive user_modules/lv_binding_micropython`
 5. `make -C mpy-cross`
 6. `make -C ports/unix submodules`
 7. `make -C ports/unix`
-8. `./ports/unix/micropython`
+8. `./ports/unix/build-lvgl/micropython`
 
 ## Unix (MAC OS) port
 
 1. `brew install sdl2 pkg-config`
 2. `git clone https://github.com/lvgl/lv_micropython.git`
 3. `cd lv_micropython`
-4. `git submodule update --init --recursive lib/lv_bindings`
+4. `git submodule update --init --recursive user_modules/lv_binding_micropython`
 5. `sudo mkdir -p /usr/local/lib/`
 6. `sudo cp /opt/homebrew/Cellar/sdl2/2.24.0/lib/libSDL2.dylib /usr/local/lib/`
 7. `sudo cp -r /opt/homebrew/Cellar/sdl2/2.24.0/include /usr/local/`
@@ -67,9 +82,23 @@ Python 3 is required, but you can install some other version of python3 instead 
 9. `make -C mpy-cross`
 10. `make -C ports/unix submodules`
 11. `make -C ports/unix`
-12. `./ports/unix/build-standard/micropython`
+12. `./ports/unix/build-lvgl/micropython`
 
 ### ESP32 port
+
+Install ESP-IDF v5.x: https://docs.espressif.com/projects/esp-idf/en/v5.2.3/esp32/get-started/index.html#manual-installation
+
+(you can configure ESP-IDF path in [scripts/env-variables-esp32.sh](./scripts/env-variables-esp32.sh) file)
+
+Build and deploy with scripts:
+
+```
+cd scripts
+./build-esp32.sh
+./deploy-esp32.sh
+```
+
+Manual build:
 
 Please run `esp-idf/export.sh` from your ESP-IDF installation directory as explained in the [Micropython ESP32 Getting Started documentation](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/#get-started-export)  
 ESP-IDF version needs to match Micropython expected esp-idf, otherwise a warning will be displayed (and build will probably fail)
@@ -80,7 +109,7 @@ Here is the command to build ESP32 + LVGL which is compatible with ILI9341 drive
 
 ```
 make -C mpy-cross
-make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16" BOARD=GENERIC_SPIRAM deploy
+make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16" BOARD=ESP32_GENERIC VARIANT=SPIRAM deploy
 ```
 
 Explanation about the parameters:
@@ -101,10 +130,10 @@ This port uses [Micropython infrastructure for C modules](https://docs.micropyth
 
 1. `git clone https://github.com/lvgl/lv_micropython.git`
 2. `cd lv_micropython`
-3. `git submodule update --init --recursive lib/lv_bindings`
+3. `git submodule update --init --recursive user_modules/lv_binding_micropython`
 4. `make -C ports/rp2 BOARD=PICO submodules`
 5. `make -j -C mpy-cross`
-6. `make -j -C ports/rp2 BOARD=PICO USER_C_MODULES=../../lib/lv_bindings/bindings.cmake`
+6. `make -j -C ports/rp2 BOARD=PICO USER_C_MODULES=../../user_modules/lv_binding_micropython/bindings.cmake`
 
 #### Troubleshooting
 
@@ -133,9 +162,19 @@ HEIGHT = 320
 
 event_loop = event_loop()
 disp_drv = lv.sdl_window_create(WIDTH, HEIGHT)
+disp_drv.set_default()
+display = lv.display_get_default()
+
+group = lv.group_create()
+group.set_default()
+
 mouse = lv.sdl_mouse_create()
+mouse.set_display(display)
+mouse.set_group(group)
+
 keyboard = lv.sdl_keyboard_create()
-keyboard.set_group(self.group)
+keyboard.set_display(display)
+keyboard.set_group(group)
 ```
 
 Here is an alternative example, for registering ILI9341 drivers on Micropython ESP32 port:
@@ -169,14 +208,14 @@ Now you can create the GUI itself:
 # Create a screen with a button and a label
 
 scr = lv.obj()
-btn = lv.btn(scr)
+btn = lv.button(scr)
 btn.align_to(lv.scr_act(), lv.ALIGN.CENTER, 0, 0)
 label = lv.label(btn)
 label.set_text("Hello World!")
 
 # Load the screen
 
-lv.scr_load(scr)
+lv.screen_load(scr)
 
 ```
 
