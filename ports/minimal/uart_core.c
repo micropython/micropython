@@ -29,10 +29,14 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 // Send string of given length
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+    mp_uint_t ret = len;
     #if MICROPY_MIN_USE_STDOUT
     int r = write(STDOUT_FILENO, str, len);
-    (void)r;
+    if (r >= 0) {
+        // in case of an error in the syscall, report no bytes written
+        ret = 0;
+    }
     #elif MICROPY_MIN_USE_STM32_MCU
     while (len--) {
         // wait for TXE
@@ -41,4 +45,5 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
         USART1->DR = *str++;
     }
     #endif
+    return ret;
 }

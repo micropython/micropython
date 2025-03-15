@@ -84,7 +84,7 @@ void hal_uart_start_tx(uint32_t port) {
     mp_bluetooth_hci_uart_write(mp_bluetooth_hci_cmd_buf, len);
 
     if (len > 0) {
-        // Allow modbluetooth bindings to hook "sent packet" (e.g. to unstall l2cap channels).
+        // Allow modbluetooth bindings to hook "sent packet" (e.g. to un-stall l2cap channels).
         mp_bluetooth_nimble_sent_hci_packet();
     }
 }
@@ -93,7 +93,7 @@ int hal_uart_close(uint32_t port) {
     return 0; // success
 }
 
-STATIC void mp_bluetooth_hci_uart_char_cb(uint8_t chr) {
+static void mp_bluetooth_hci_uart_char_cb(uint8_t chr) {
     #if HCI_TRACE
     printf(COL_BLUE "> [% 8d] %02x" COL_OFF "\n", (int)mp_hal_ticks_ms(), chr);
     #endif

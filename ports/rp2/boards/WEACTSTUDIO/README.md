@@ -9,17 +9,14 @@ repository containing information on the board.
 
 ## Build notes
 
-Builds can be configured with the `BOARD_VARIANT` parameter. Valid variants
-can be displayed with the `query-variant` target. An example:
+By default the firmware supports boards with 16MiB flash. This can be
+configured using the `BOARD_VARIANT` parameter. The valid options are
+`FLASH_2M`, 'FLASH_4M', and 'FLASH_8M'.
 
 ```bash
 > cd ports/rp2
-> make BOARD=WEACTSTUDIO query-variants
-VARIANTS: flash_2mb flash_4mb flash_8mb flash_16mb
-> make BOARD=WEACTSTUDIO BOARD_VARIANT=flash_8mb submodules all  # Build the 8 MiB variant
+> make BOARD=WEACTSTUDIO BOARD_VARIANT=FLASH_8M submodules all  # Build the 8 MiB variant
 ```
-
-`flash_16mb` is the default if `BOARD_VARIANT` is not supplied.
 
 ## Board-specific modules
 

@@ -117,7 +117,7 @@ status_t PHY_DP83848_GetLinkStatus(phy_handle_t *handle, bool *status);
  * @brief Gets the PHY link speed and duplex.
  *
  * @brief This function gets the speed and duplex mode of PHY. User can give one of speed
- * and duplex address paramter and set the other as NULL if only wants to get one of them.
+ * and duplex address parameter and set the other as NULL if only wants to get one of them.
  *
  * @param handle   PHY device handle.
  * @param speed    The address of PHY link speed.

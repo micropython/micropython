@@ -44,19 +44,19 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/objstr.h"
-#include "py/stackctrl.h"
+#include "py/cstack.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "extmod/misc.h"
-#include "extmod/moduplatform.h"
+#include "extmod/modplatform.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
 #include "input.h"
 
 // Command line options, with their defaults
-STATIC bool compile_only = false;
-STATIC uint emit_opt = MP_EMIT_OPT_NONE;
+static bool compile_only = false;
+static uint emit_opt = MP_EMIT_OPT_NONE;
 
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
@@ -69,11 +69,19 @@ long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 #define MICROPY_GC_SPLIT_HEAP_N_HEAPS (1)
 #endif
 
-STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
+#if !MICROPY_PY_SYS_PATH
+#error "The unix port requires MICROPY_PY_SYS_PATH=1"
+#endif
+
+#if !MICROPY_PY_SYS_ARGV
+#error "The unix port requires MICROPY_PY_SYS_ARGV=1"
+#endif
+
+static void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDERR_FILENO, str, len), {});
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_os_dupterm_tx_strn(str, len);
 }
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
@@ -82,7 +90,7 @@ const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 // If exc is SystemExit, return value where FORCED_EXIT bit set,
 // and lower 8 bits are SystemExit value. For all other exceptions,
 // return 1.
-STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
+static int handle_uncaught_exception(mp_obj_base_t *exc) {
     // check for SystemExit
     if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
         // None is an exit value of 0; an int is its value; anything else is 1
@@ -107,7 +115,7 @@ STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
 // Returns standard error codes: 0 for success, 1 for all other errors,
 // except if FORCED_EXIT bit is set then script raised SystemExit and the
 // value of the exit is in the lower 8 bits of the return value
-STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_input_kind_t input_kind, bool is_repl) {
+static int execute_from_lexer(int source_kind, const void *source, mp_parse_input_kind_t input_kind, bool is_repl) {
     mp_hal_set_interrupt_char(CHAR_CTRL_C);
 
     nlr_buf_t nlr;
@@ -121,7 +129,8 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
             const vstr_t *vstr = source;
             lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, false);
         } else if (source_kind == LEX_SRC_FILENAME) {
-            lex = mp_lexer_new_from_file((const char *)source);
+            const char *filename = (const char *)source;
+            lex = mp_lexer_new_from_file(qstr_from_str(filename));
         } else { // LEX_SRC_STDIN
             lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
         }
@@ -168,7 +177,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 #if MICROPY_USE_READLINE == 1
 #include "shared/readline/readline.h"
 #else
-STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
+static char *strjoin(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
     int l2 = strlen(s2);
     char *s = malloc(l1 + l2 + 2);
@@ -183,7 +192,7 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
 }
 #endif
 
-STATIC int do_repl(void) {
+static int do_repl(void) {
     mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
     mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
     mp_hal_stdout_tx_str("\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
@@ -288,27 +297,28 @@ STATIC int do_repl(void) {
         }
 
         int ret = execute_from_lexer(LEX_SRC_STR, line, MP_PARSE_SINGLE_INPUT, true);
+        free(line);
         if (ret & FORCED_EXIT) {
             return ret;
         }
-        free(line);
     }
 
     #endif
 }
 
-STATIC int do_file(const char *file) {
+static int do_file(const char *file) {
     return execute_from_lexer(LEX_SRC_FILENAME, file, MP_PARSE_FILE_INPUT, false);
 }
 
-STATIC int do_str(const char *str) {
+static int do_str(const char *str) {
     return execute_from_lexer(LEX_SRC_STR, str, MP_PARSE_FILE_INPUT, false);
 }
 
-STATIC void print_help(char **argv) {
+static void print_help(char **argv) {
     printf(
         "usage: %s [<opts>] [-X <implopt>] [-c <command> | -m <module> | <filename>]\n"
         "Options:\n"
+        "--version : show version information\n"
         "-h : print this help message\n"
         "-i : enable inspection via REPL after running command/module/file\n"
         #if MICROPY_DEBUG_PRINTERS
@@ -344,13 +354,13 @@ STATIC void print_help(char **argv) {
     }
 }
 
-STATIC int invalid_args(void) {
+static int invalid_args(void) {
     fprintf(stderr, "Invalid command line arguments. Use -h option for help.\n");
     return 1;
 }
 
 // Process options which set interpreter init options
-STATIC void pre_process_options(int argc, char **argv) {
+static void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-c") == 0 || strcmp(argv[a], "-m") == 0) {
@@ -358,6 +368,10 @@ STATIC void pre_process_options(int argc, char **argv) {
             }
             if (strcmp(argv[a], "-h") == 0) {
                 print_help(argv);
+                exit(0);
+            }
+            if (strcmp(argv[a], "--version") == 0) {
+                printf(MICROPY_BANNER_NAME_AND_VERSION "; " MICROPY_BANNER_MACHINE "\n");
                 exit(0);
             }
             if (strcmp(argv[a], "-X") == 0) {
@@ -414,7 +428,7 @@ STATIC void pre_process_options(int argc, char **argv) {
                     #if MICROPY_PY_THREAD
                     mp_thread_is_realtime_enabled = true;
                     #endif
-                    // main thread was already intialized before the option
+                    // main thread was already initialized before the option
                     // was parsed, so we have to enable realtime here.
                     mp_thread_set_realtime();
                 #endif
@@ -430,7 +444,7 @@ STATIC void pre_process_options(int argc, char **argv) {
     }
 }
 
-STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
+static void set_sys_argv(char *argv[], int argc, int start_arg) {
     for (int i = start_arg; i < argc; i++) {
         mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
     }
@@ -438,9 +452,9 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 
 #if MICROPY_PY_SYS_EXECUTABLE
 extern mp_obj_str_t mp_sys_executable_obj;
-STATIC char executable_path[MICROPY_ALLOC_PATH_MAX];
+static char executable_path[MICROPY_ALLOC_PATH_MAX];
 
-STATIC void sys_set_excecutable(char *argv0) {
+static void sys_set_excecutable(char *argv0) {
     if (realpath(argv0, executable_path)) {
         mp_obj_str_set_data(&mp_sys_executable_obj, (byte *)executable_path, strlen(executable_path));
     }
@@ -459,12 +473,20 @@ int main(int argc, char **argv) {
     #if MICROPY_PY_THREAD
     mp_thread_init();
     #endif
+
+    // Define a reasonable stack limit to detect stack overflow.
+    mp_uint_t stack_size = 40000 * (sizeof(void *) / 4);
+    #if defined(__arm__) && !defined(__thumb2__)
+    // ARM (non-Thumb) architectures require more stack.
+    stack_size *= 2;
+    #endif
+
     // We should capture stack top ASAP after start, and it should be
     // captured guaranteedly before any other stack variables are allocated.
     // For this, actual main (renamed main_) should not be inlined into
     // this function. main_() itself may have other functions inlined (with
     // their own stack variables), that's why we need this main/main_ split.
-    mp_stack_ctrl_init();
+    mp_cstack_init_with_sp_here(stack_size);
     return main_(argc, argv);
 }
 
@@ -482,14 +504,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // catch EPIPE themselves.
     signal(SIGPIPE, SIG_IGN);
     #endif
-
-    // Define a reasonable stack limit to detect stack overflow.
-    mp_uint_t stack_limit = 40000 * (sizeof(void *) / 4);
-    #if defined(__arm__) && !defined(__thumb2__)
-    // ARM (non-Thumb) architectures require more stack.
-    stack_limit *= 2;
-    #endif
-    mp_stack_set_limit(stack_limit);
 
     pre_process_options(argc, argv);
 
@@ -538,44 +552,45 @@ MP_NOINLINE int main_(int argc, char **argv) {
     }
     #endif
 
-    char *home = getenv("HOME");
-    char *path = getenv("MICROPYPATH");
-    if (path == NULL) {
-        path = MICROPY_PY_SYS_PATH_DEFAULT;
-    }
-    size_t path_num = 1; // [0] is for current dir (or base dir of the script)
-    if (*path == PATHLIST_SEP_CHAR) {
-        path_num++;
-    }
-    for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
-        path_num++;
-        if (p != NULL) {
-            p++;
-        }
-    }
-    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), path_num);
-    mp_obj_t *path_items;
-    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
-    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     {
-        char *p = path;
-        for (mp_uint_t i = 1; i < path_num; i++) {
-            char *p1 = strchr(p, PATHLIST_SEP_CHAR);
-            if (p1 == NULL) {
-                p1 = p + strlen(p);
+        // sys.path starts as [""]
+        mp_sys_path = mp_obj_new_list(0, NULL);
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
+
+        // Add colon-separated entries from MICROPYPATH.
+        char *home = getenv("HOME");
+        char *path = getenv("MICROPYPATH");
+        if (path == NULL) {
+            path = MICROPY_PY_SYS_PATH_DEFAULT;
+        }
+        if (*path == PATHLIST_SEP_CHAR) {
+            // First entry is empty. We've already added an empty entry to sys.path, so skip it.
+            ++path;
+        }
+        // GCC targeting RISC-V 64 reports a warning about `path_remaining` being clobbered by
+        // either setjmp or vfork if that variable it is allocated on the stack.  This may
+        // probably be a compiler error as it occurs on a few recent GCC releases (up to 14.1.0)
+        // but LLVM doesn't report any warnings.
+        static bool path_remaining;
+        path_remaining = *path;
+        while (path_remaining) {
+            char *path_entry_end = strchr(path, PATHLIST_SEP_CHAR);
+            if (path_entry_end == NULL) {
+                path_entry_end = path + strlen(path);
+                path_remaining = false;
             }
-            if (p[0] == '~' && p[1] == '/' && home != NULL) {
+            if (path[0] == '~' && path[1] == '/' && home != NULL) {
                 // Expand standalone ~ to $HOME
                 int home_l = strlen(home);
                 vstr_t vstr;
-                vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
+                vstr_init(&vstr, home_l + (path_entry_end - path - 1) + 1);
                 vstr_add_strn(&vstr, home, home_l);
-                vstr_add_strn(&vstr, p + 1, p1 - p - 1);
-                path_items[i] = mp_obj_new_str_from_vstr(&vstr);
+                vstr_add_strn(&vstr, path + 1, path_entry_end - path - 1);
+                mp_obj_list_append(mp_sys_path, mp_obj_new_str_from_vstr(&vstr));
             } else {
-                path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
+                mp_obj_list_append(mp_sys_path, mp_obj_new_str_via_qstr(path, path_entry_end - path));
             }
-            p = p1 + 1;
+            path = path_entry_end + 1;
         }
     }
 
@@ -634,7 +649,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     return invalid_args();
                 }
                 mp_obj_t import_args[4];
-                import_args[0] = mp_obj_new_str(argv[a + 1], strlen(argv[a + 1]));
+                import_args[0] = mp_obj_new_str_from_cstr(argv[a + 1]);
                 import_args[1] = import_args[2] = mp_const_none;
                 // Ask __import__ to handle imported module specially - set its __name__
                 // to __main__, and also return this leaf module, not top-level package
@@ -664,7 +679,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     return handle_uncaught_exception(nlr.ret_val) & 0xff;
                 }
 
-                if (mp_obj_is_package(mod) && !subpkg_tried) {
+                // If this module is a package, see if it has a `__main__.py`.
+                mp_obj_t dest[2];
+                mp_load_method_protected(mod, MP_QSTR___path__, dest, true);
+                if (dest[0] != MP_OBJ_NULL && !subpkg_tried) {
                     subpkg_tried = true;
                     vstr_t vstr;
                     int len = strlen(argv[a + 1]);
@@ -707,7 +725,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
             // Set base dir of the script as first entry in sys.path.
             char *p = strrchr(basedir, '/');
-            path_items[0] = mp_obj_new_str_via_qstr(basedir, p - basedir);
+            mp_obj_list_store(mp_sys_path, MP_OBJ_NEW_SMALL_INT(0), mp_obj_new_str_via_qstr(basedir, p - basedir));
             free(pathbuf);
 
             set_sys_argv(argv, argc, a);

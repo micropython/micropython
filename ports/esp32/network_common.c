@@ -34,19 +34,16 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/parsenum.h"
 #include "py/mperrno.h"
 #include "shared/netutils/netutils.h"
 #include "modnetwork.h"
 
-#include "esp_wifi.h"
 #include "esp_log.h"
+#include "esp_netif.h"
+#include "esp_wifi.h"
+#include "lwip/sockets.h"
 #include "lwip/dns.h"
-
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
-#define DNS_MAIN TCPIP_ADAPTER_DNS_MAIN
-#else
-#define DNS_MAIN ESP_NETIF_DNS_MAIN
-#endif
 
 NORETURN void esp_exceptions_helper(esp_err_t e) {
     switch (e) {
@@ -80,76 +77,27 @@ NORETURN void esp_exceptions_helper(esp_err_t e) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Would Block"));
         case ESP_ERR_WIFI_NOT_CONNECT:
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Not Connected"));
-        case ESP_ERR_TCPIP_ADAPTER_INVALID_PARAMS:
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("TCP/IP Invalid Parameters"));
-        case ESP_ERR_TCPIP_ADAPTER_IF_NOT_READY:
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("TCP/IP IF Not Ready"));
-        case ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED:
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("TCP/IP DHCP Client Start Failed"));
-        case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
-            mp_raise_OSError(MP_ENOMEM);
         default:
             mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("Wifi Unknown Error 0x%04x"), e);
     }
 }
 
-// This function is called by the system-event task and so runs in a different
-// thread to the main MicroPython task.  It must not raise any Python exceptions.
-static esp_err_t event_handler(void *ctx, system_event_t *event) {
-    switch (event->event_id) {
-        #if MICROPY_PY_NETWORK_WLAN
-        case SYSTEM_EVENT_STA_START:
-        case SYSTEM_EVENT_STA_CONNECTED:
-        case SYSTEM_EVENT_STA_GOT_IP:
-        case SYSTEM_EVENT_STA_DISCONNECTED:
-            network_wlan_event_handler(event);
-            break;
-        #endif
-        case SYSTEM_EVENT_GOT_IP6:
-            ESP_LOGI("network", "Got IPv6");
-            break;
-        case SYSTEM_EVENT_ETH_START:
-            ESP_LOGI("ethernet", "start");
-            break;
-        case SYSTEM_EVENT_ETH_STOP:
-            ESP_LOGI("ethernet", "stop");
-            break;
-        case SYSTEM_EVENT_ETH_CONNECTED:
-            ESP_LOGI("ethernet", "LAN cable connected");
-            break;
-        case SYSTEM_EVENT_ETH_DISCONNECTED:
-            ESP_LOGI("ethernet", "LAN cable disconnected");
-            break;
-        case SYSTEM_EVENT_ETH_GOT_IP:
-            ESP_LOGI("ethernet", "Got IP");
-            break;
-        default:
-            ESP_LOGI("network", "event %d", event->event_id);
-            break;
-    }
-    return ESP_OK;
-}
-
-STATIC mp_obj_t esp_initialize() {
+static mp_obj_t esp_initialize() {
     static int initialized = 0;
     if (!initialized) {
-        ESP_LOGD("modnetwork", "Initializing TCP/IP");
-        tcpip_adapter_init();
-        ESP_LOGD("modnetwork", "Initializing Event Loop");
-        esp_exceptions(esp_event_loop_init(event_handler, NULL));
-        ESP_LOGD("modnetwork", "esp_event_loop_init done");
+        esp_exceptions(esp_netif_init());
         initialized = 1;
     }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(esp_network_initialize_obj, esp_initialize);
 
-STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
-    wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    tcpip_adapter_ip_info_t info;
-    tcpip_adapter_dns_info_t dns_info;
-    tcpip_adapter_get_ip_info(self->if_id, &info);
-    tcpip_adapter_get_dns_info(self->if_id, DNS_MAIN, &dns_info);
+static mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
+    base_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    esp_netif_ip_info_t info;
+    esp_netif_dns_info_t dns_info;
+    esp_netif_get_ip_info(self->netif, &info);
+    esp_netif_get_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &dns_info);
     if (n_args == 1) {
         // get
         mp_obj_t tuple[4] = {
@@ -171,50 +119,229 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
                 // 16 -> 255.255.0.0
                 // etc...
                 uint32_t *m = (uint32_t *)&info.netmask;
-                *m = htonl(0xffffffff << (32 - mp_obj_get_int(items[1])));
+                *m = esp_netif_htonl(0xffffffff << (32 - mp_obj_get_int(items[1])));
             } else {
                 netutils_parse_ipv4_addr(items[1], (void *)&info.netmask, NETUTILS_BIG);
             }
             netutils_parse_ipv4_addr(items[2], (void *)&info.gw, NETUTILS_BIG);
             netutils_parse_ipv4_addr(items[3], (void *)&dns_info.ip, NETUTILS_BIG);
             // To set a static IP we have to disable DHCP first
-            if (self->if_id == WIFI_IF_STA || self->if_id == ESP_IF_ETH) {
-                esp_err_t e = tcpip_adapter_dhcpc_stop(self->if_id);
-                if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) {
+            if (self->if_id == ESP_IF_WIFI_STA || self->if_id == ESP_IF_ETH) {
+                esp_err_t e = esp_netif_dhcpc_stop(self->netif);
+                if (e != ESP_OK && e != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED) {
                     esp_exceptions_helper(e);
                 }
-                esp_exceptions(tcpip_adapter_set_ip_info(self->if_id, &info));
-                esp_exceptions(tcpip_adapter_set_dns_info(self->if_id, DNS_MAIN, &dns_info));
-            } else if (self->if_id == WIFI_IF_AP) {
-                esp_err_t e = tcpip_adapter_dhcps_stop(WIFI_IF_AP);
-                if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) {
+                esp_exceptions(esp_netif_set_ip_info(self->netif, &info));
+                esp_exceptions(esp_netif_set_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &dns_info));
+            } else if (self->if_id == ESP_IF_WIFI_AP) {
+                esp_err_t e = esp_netif_dhcps_stop(self->netif);
+                if (e != ESP_OK && e != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED) {
                     esp_exceptions_helper(e);
                 }
-                esp_exceptions(tcpip_adapter_set_ip_info(WIFI_IF_AP, &info));
-                esp_exceptions(tcpip_adapter_set_dns_info(WIFI_IF_AP, DNS_MAIN, &dns_info));
-                esp_exceptions(tcpip_adapter_dhcps_start(WIFI_IF_AP));
+                esp_exceptions(esp_netif_set_ip_info(self->netif, &info));
+                esp_exceptions(esp_netif_set_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &dns_info));
+                esp_exceptions(esp_netif_dhcps_start(self->netif));
             }
         } else {
             // check for the correct string
             const char *mode = mp_obj_str_get_str(args[1]);
-            if ((self->if_id != WIFI_IF_STA && self->if_id != ESP_IF_ETH) || strcmp("dhcp", mode)) {
+            if ((self->if_id != ESP_IF_WIFI_STA && self->if_id != ESP_IF_ETH) || strcmp("dhcp", mode)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments"));
             }
-            esp_exceptions(tcpip_adapter_dhcpc_start(self->if_id));
+            esp_exceptions(esp_netif_dhcpc_start(self->netif));
         }
         return mp_const_none;
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_ifconfig_obj, 1, 2, esp_ifconfig);
 
-STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_network_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    if (kwargs->used == 0) {
+        // Get config value
+        if (n_args != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+
+        switch (mp_obj_str_get_qstr(args[0])) {
+            case MP_QSTR_dns: {
+                char addr_str[IPADDR_STRLEN_MAX];
+                ipaddr_ntoa_r(dns_getserver(0), addr_str, sizeof(addr_str));
+                return mp_obj_new_str_from_cstr(addr_str);
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+    } else {
+        // Set config value(s)
+        if (n_args != 0) {
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
+        }
+
+        for (size_t i = 0; i < kwargs->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                mp_map_elem_t *e = &kwargs->table[i];
+                switch (mp_obj_str_get_qstr(e->key)) {
+                    case MP_QSTR_dns: {
+                        ip_addr_t dns;
+                        size_t addr_len;
+                        const char *addr_str = mp_obj_str_get_data(e->value, &addr_len);
+                        if (!ipaddr_aton(addr_str, &dns)) {
+                            mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments as dns server"));
+                        }
+                        dns_setserver(0, &dns);
+                        break;
+                    }
+                    default: {
+                        mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(esp_network_ipconfig_obj, 0, esp_network_ipconfig);
+
+static mp_obj_t esp_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    base_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    esp_netif_ip_info_t info;
+    esp_netif_get_ip_info(self->netif, &info);
+
+    if (kwargs->used == 0) {
+        // Get config value
+        if (n_args != 2) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+
+        switch (mp_obj_str_get_qstr(args[1])) {
+            case MP_QSTR_dhcp4: {
+                if (self->if_id == ESP_IF_WIFI_STA || self->if_id == ESP_IF_ETH) {
+                    esp_netif_dhcp_status_t status;
+                    esp_exceptions(esp_netif_dhcpc_get_status(self->netif, &status));
+                    return mp_obj_new_bool(status == ESP_NETIF_DHCP_STARTED);
+                } else {
+                    mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                    break;
+                }
+            }
+            case MP_QSTR_addr4: {
+                mp_obj_t tuple[2] = {
+                    netutils_format_ipv4_addr((uint8_t *)&info.ip, NETUTILS_BIG),
+                    netutils_format_ipv4_addr((uint8_t *)&info.netmask, NETUTILS_BIG),
+                };
+                return mp_obj_new_tuple(2, tuple);
+            }
+            case MP_QSTR_gw4: {
+                return netutils_format_ipv4_addr((uint8_t *)&info.gw, NETUTILS_BIG);
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+        return mp_const_none;
+    } else {
+        // Set config value(s)
+        if (n_args != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
+        }
+        int touched_ip_info = 0;
+        for (size_t i = 0; i < kwargs->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                mp_map_elem_t *e = &kwargs->table[i];
+                switch (mp_obj_str_get_qstr(e->key)) {
+                    case MP_QSTR_dhcp4: {
+                        esp_netif_dhcp_status_t status;
+                        if (self->if_id == ESP_IF_WIFI_STA || self->if_id == ESP_IF_ETH) {
+                            esp_exceptions(esp_netif_dhcpc_get_status(self->netif, &status));
+                            if (mp_obj_is_true(e->value) && status != ESP_NETIF_DHCP_STARTED) {
+                                esp_exceptions(esp_netif_dhcpc_start(self->netif));
+                            } else if (!mp_obj_is_true(e->value) && status == ESP_NETIF_DHCP_STARTED) {
+                                esp_exceptions(esp_netif_dhcpc_stop(self->netif));
+                            }
+                        } else {
+                            mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                            break;
+                        }
+                        break;
+                    }
+                    case MP_QSTR_addr4: {
+                        if (e->value != mp_const_none && mp_obj_is_str(e->value)) {
+                            size_t addr_len;
+                            const char *input_str = mp_obj_str_get_data(e->value, &addr_len);
+                            char *split = strchr(input_str, '/');
+                            if (split) {
+                                mp_obj_t prefix_obj = mp_parse_num_integer(split + 1, strlen(split + 1), 10, NULL);
+                                int prefix_bits = mp_obj_get_int(prefix_obj);
+                                uint32_t mask = -(1u << (32 - prefix_bits));
+                                uint32_t *m = (uint32_t *)&info.netmask;
+                                *m = esp_netif_htonl(mask);
+                            }
+                            netutils_parse_ipv4_addr(e->value, (void *)&info.ip, NETUTILS_BIG);
+                        } else if (e->value != mp_const_none) {
+                            mp_obj_t *items;
+                            mp_obj_get_array_fixed_n(e->value, 2, &items);
+                            netutils_parse_ipv4_addr(items[0], (void *)&info.ip, NETUTILS_BIG);
+                            netutils_parse_ipv4_addr(items[1], (void *)&info.netmask, NETUTILS_BIG);
+                        }
+                        touched_ip_info = 1;
+                        break;
+                    }
+                    case MP_QSTR_gw4: {
+                        netutils_parse_ipv4_addr(e->value, (void *)&info.gw, NETUTILS_BIG);
+                        touched_ip_info = 1;
+                        break;
+                    }
+                    default: {
+                        mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                        break;
+                    }
+                }
+            }
+        }
+        if (self->if_id == ESP_IF_WIFI_STA || self->if_id == ESP_IF_ETH) {
+            if (touched_ip_info) {
+                esp_err_t e = esp_netif_dhcpc_stop(self->netif);
+                if (e != ESP_OK && e != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED) {
+                    esp_exceptions_helper(e);
+                }
+                esp_exceptions(esp_netif_set_ip_info(self->netif, &info));
+            }
+        } else if (self->if_id == ESP_IF_WIFI_AP) {
+            esp_err_t e = esp_netif_dhcps_stop(self->netif);
+            if (e != ESP_OK && e != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED) {
+                esp_exceptions_helper(e);
+            }
+            esp_exceptions(esp_netif_set_ip_info(self->netif, &info));
+            esp_exceptions(esp_netif_dhcps_start(self->netif));
+        }
+
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(esp_nic_ipconfig_obj, 1, esp_ipconfig);
+
+mp_obj_t esp_ifname(esp_netif_t *netif) {
+    char ifname[NETIF_NAMESIZE + 1] = {0};
+    mp_obj_t ret = mp_const_none;
+    if (esp_netif_get_netif_impl_name(netif, ifname) == ESP_OK && ifname[0] != 0) {
+        ret = mp_obj_new_str_from_cstr((char *)ifname);
+    }
+    return ret;
+}
+
+static mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj, 0, 1, esp_phy_mode);
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
-#define TEST_WIFI_AUTH_MAX 9
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
+_Static_assert(WIFI_AUTH_MAX == 13, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");
+#elif ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 5) && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 1, 0) || ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 2)
+_Static_assert(WIFI_AUTH_MAX == 11, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");
 #else
-#define TEST_WIFI_AUTH_MAX 8
+_Static_assert(WIFI_AUTH_MAX == 10, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");
 #endif
-_Static_assert(WIFI_AUTH_MAX == TEST_WIFI_AUTH_MAX, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");

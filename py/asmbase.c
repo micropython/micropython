@@ -30,6 +30,7 @@
 #include "py/obj.h"
 #include "py/misc.h"
 #include "py/asmbase.h"
+#include "py/persistentcode.h"
 
 #if MICROPY_EMIT_MACHINE_CODE
 
@@ -80,7 +81,7 @@ uint8_t *mp_asm_base_get_cur_to_write_bytes(void *as_in, size_t num_bytes_to_wri
 void mp_asm_base_label_assign(mp_asm_base_t *as, size_t label) {
     assert(label < as->max_num_labels);
 
-    // Assiging a label ends any dead-code region, and all following machine
+    // Assigning a label ends any dead-code region, and all following machine
     // code should be emitted (until another mp_asm_base_suppress_code() call).
     as->suppress = false;
 
@@ -91,6 +92,11 @@ void mp_asm_base_label_assign(mp_asm_base_t *as, size_t label) {
     } else {
         // ensure label offset has not changed from PASS_COMPUTE to PASS_EMIT
         assert(as->label_offsets[label] == as->code_offset);
+        #if MICROPY_DYNAMIC_COMPILER && MICROPY_EMIT_NATIVE_DEBUG
+        if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_DEBUG) {
+            mp_printf(MICROPY_EMIT_NATIVE_DEBUG_PRINTER, "label(label_%u)\n", (unsigned int)label);
+        }
+        #endif
     }
 }
 

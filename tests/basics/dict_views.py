@@ -18,4 +18,22 @@ try:
 except TypeError:
     print('TypeError')
 
+# keys dict_view is not hashable
+
+try:
+    hash({}.keys())
+except TypeError:
+    print('TypeError')
+
+# values dict_view is hashable
+
+print(type(hash({}.values())))
+
+# items dict_view is not hashable
+
+try:
+    hash({}.items())
+except TypeError:
+    print('TypeError')
+
 # set operations still to come

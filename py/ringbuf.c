@@ -23,6 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #include "ringbuf.h"
 
 int ringbuf_get16(ringbuf_t *r) {
@@ -69,5 +70,29 @@ int ringbuf_put16(ringbuf_t *r, uint16_t v) {
     r->buf[r->iput] = (v >> 8) & 0xff;
     r->buf[iput_a] = v & 0xff;
     r->iput = iput_b;
+    return 0;
+}
+
+// Returns:
+//    0: Success
+//   -1: Not enough data available to complete read (try again later)
+//   -2: Requested read is larger than buffer - will never succeed
+int ringbuf_get_bytes(ringbuf_t *r, uint8_t *data, size_t data_len) {
+    if (ringbuf_avail(r) < data_len) {
+        return (r->size <= data_len) ? -2 : -1;
+    }
+    ringbuf_memcpy_get_internal(r, data, data_len);
+    return 0;
+}
+
+// Returns:
+//    0: Success
+//   -1: Not enough free space available to complete write (try again later)
+//   -2: Requested write is larger than buffer - will never succeed
+int ringbuf_put_bytes(ringbuf_t *r, const uint8_t *data, size_t data_len) {
+    if (ringbuf_free(r) < data_len) {
+        return (r->size <= data_len) ? -2 : -1;
+    }
+    ringbuf_memcpy_put_internal(r, data, data_len);
     return 0;
 }

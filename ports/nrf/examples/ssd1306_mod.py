@@ -19,6 +19,7 @@
 # disp = SSD1306_I2C_Mod(128, 64, i2c)
 
 from ssd1306 import SSD1306_I2C
+from micropython import const
 
 SET_COL_ADDR = const(0x21)
 SET_PAGE_ADDR = const(0x22)

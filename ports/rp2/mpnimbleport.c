@@ -69,9 +69,8 @@ void mp_bluetooth_hci_poll(void) {
 // --- Port-specific helpers for the generic NimBLE bindings. -----------------
 
 void mp_bluetooth_nimble_hci_uart_wfi(void) {
-    #if defined(__WFI)
-    __WFI();
-    #endif
+    best_effort_wfe_or_timeout(make_timeout_time_ms(1));
+
     // This is called while NimBLE is waiting in ble_npl_sem_pend, i.e. waiting for an HCI ACK.
     // Do not need to run events here (it must not invoke Python code), only processing incoming HCI data.
     mp_bluetooth_nimble_hci_uart_process(false);

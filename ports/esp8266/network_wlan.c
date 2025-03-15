@@ -31,6 +31,7 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "py/parsenum.h"
 #include "extmod/modnetwork.h"
 #include "shared/netutils/netutils.h"
 #include "queue.h"
@@ -39,6 +40,9 @@
 #include "spi_flash.h"
 #include "ets_alt_task.h"
 #include "lwip/dns.h"
+#include "modnetwork.h"
+
+#define IPADDR_STRLEN_MAX  (20)
 
 typedef struct _wlan_if_obj_t {
     mp_obj_base_t base;
@@ -46,21 +50,21 @@ typedef struct _wlan_if_obj_t {
 } wlan_if_obj_t;
 
 void error_check(bool status, const char *msg);
-const mp_obj_type_t wlan_if_type;
 
-STATIC const wlan_if_obj_t wlan_objs[] = {
-    {{&wlan_if_type}, STATION_IF},
-    {{&wlan_if_type}, SOFTAP_IF},
+static const wlan_if_obj_t wlan_objs[] = {
+    {{&esp_network_wlan_type}, STATION_IF},
+    {{&esp_network_wlan_type}, SOFTAP_IF},
 };
 
-STATIC void require_if(mp_obj_t wlan_if, int if_no) {
+static void require_if(mp_obj_t wlan_if, int if_no) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(wlan_if);
     if (self->if_id != if_no) {
         error_check(false, if_no == STATION_IF ? "STA required" : "AP required");
     }
 }
 
-STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_wlan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
     int idx = 0;
     if (n_args > 0) {
         idx = mp_obj_get_int(args[0]);
@@ -70,9 +74,8 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
     }
     return MP_OBJ_FROM_PTR(&wlan_objs[idx]);
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_get_wlan_obj, 0, 1, get_wlan);
 
-STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t mode = wifi_get_opmode();
     if (n_args > 1) {
@@ -105,9 +108,9 @@ STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_bool(mode & SOFTAP_MODE);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 
-STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ssid, ARG_key, ARG_bssid };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -152,22 +155,22 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         error_check(wifi_station_set_config(&config), "Cannot set STA config");
     }
 
-    wifi_station_set_hostname(mod_network_hostname);
+    wifi_station_set_hostname(mod_network_hostname_data);
 
     error_check(wifi_station_connect(), "Cannot connect to AP");
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_connect_obj, 1, esp_connect);
+static MP_DEFINE_CONST_FUN_OBJ_KW(esp_connect_obj, 1, esp_connect);
 
-STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
+static mp_obj_t esp_disconnect(mp_obj_t self_in) {
     require_if(self_in, STATION_IF);
     error_check(wifi_station_disconnect(), "Cannot disconnect from AP");
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
 
-STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // Get link status
@@ -186,11 +189,11 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_status_obj, 1, 2, esp_status);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_status_obj, 1, 2, esp_status);
 
-STATIC mp_obj_t *esp_scan_list = NULL;
+static mp_obj_t *esp_scan_list = NULL;
 
-STATIC void esp_scan_cb(void *result, STATUS status) {
+static void esp_scan_cb(void *result, STATUS status) {
     if (esp_scan_list == NULL) {
         // called unexpectedly
         return;
@@ -228,7 +231,7 @@ STATIC void esp_scan_cb(void *result, STATUS status) {
     esp_scan_list = NULL;
 }
 
-STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
+static mp_obj_t esp_scan(mp_obj_t self_in) {
     require_if(self_in, STATION_IF);
     if ((wifi_get_opmode() & STATION_MODE) == 0) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("STA must be active"));
@@ -252,12 +255,12 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     }
     return list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
 
 /// \method isconnected()
 /// Return True if connected to an AP and an IP address has been assigned,
 ///     false otherwise.
-STATIC mp_obj_t esp_isconnected(mp_obj_t self_in) {
+static mp_obj_t esp_isconnected(mp_obj_t self_in) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->if_id == STATION_IF) {
         if (wifi_station_get_connect_status() == STATION_GOT_IP) {
@@ -271,9 +274,9 @@ STATIC mp_obj_t esp_isconnected(mp_obj_t self_in) {
     return mp_const_false;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_isconnected_obj, esp_isconnected);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_isconnected_obj, esp_isconnected);
 
-STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     struct ip_info info;
     ip_addr_t dns_addr;
@@ -328,9 +331,176 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig);
 
-STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+static mp_obj_t esp_network_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    if (kwargs->used == 0) {
+        // Get config value
+        if (n_args != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+
+        switch (mp_obj_str_get_qstr(args[0])) {
+            case MP_QSTR_dns: {
+                char addr_str[IPADDR_STRLEN_MAX];
+                ip_addr_t dns_addr = dns_getserver(0);
+                ipaddr_ntoa_r(&dns_addr, addr_str, sizeof(addr_str));
+                return mp_obj_new_str_from_cstr(addr_str);
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+    } else {
+        // Set config value(s)
+        if (n_args != 0) {
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
+        }
+
+        for (size_t i = 0; i < kwargs->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                mp_map_elem_t *e = &kwargs->table[i];
+                switch (mp_obj_str_get_qstr(e->key)) {
+                    case MP_QSTR_dns: {
+                        ip_addr_t dns;
+                        size_t addr_len;
+                        const char *addr_str = mp_obj_str_get_data(e->value, &addr_len);
+                        if (!ipaddr_aton(addr_str, &dns)) {
+                            mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments as dns server"));
+                        }
+                        dns_setserver(0, &dns);
+                        break;
+                    }
+                    default: {
+                        mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(esp_network_ipconfig_obj, 0, esp_network_ipconfig);
+
+static mp_obj_t esp_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    struct ip_info info;
+    wifi_get_ip_info(self->if_id, &info);
+
+    if (kwargs->used == 0) {
+        // Get config value
+        if (n_args != 2) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+
+        switch (mp_obj_str_get_qstr(args[1])) {
+            case MP_QSTR_dhcp4: {
+                if (self->if_id == STATION_IF) {
+                    return mp_obj_new_bool(wifi_station_dhcpc_status() == DHCP_STARTED);
+                } else if (self->if_id == SOFTAP_IF) {
+                    return mp_obj_new_bool(wifi_softap_dhcps_status() == DHCP_STARTED);
+                } else {
+                    mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                    break;
+                }
+            }
+            case MP_QSTR_addr4: {
+                mp_obj_t tuple[2] = {
+                    netutils_format_ipv4_addr((uint8_t *)&info.ip, NETUTILS_BIG),
+                    netutils_format_ipv4_addr((uint8_t *)&info.netmask, NETUTILS_BIG),
+                };
+                return mp_obj_new_tuple(2, tuple);
+            }
+            case MP_QSTR_gw4: {
+                return netutils_format_ipv4_addr((uint8_t *)&info.gw, NETUTILS_BIG);
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+        return mp_const_none;
+    } else {
+        // Set config value(s)
+        if (n_args != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
+        }
+        int touched_ip_info = 0;
+        for (size_t i = 0; i < kwargs->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                mp_map_elem_t *e = &kwargs->table[i];
+                switch (mp_obj_str_get_qstr(e->key)) {
+                    case MP_QSTR_dhcp4: {
+                        if (self->if_id == STATION_IF) {
+                            enum dhcp_status status = wifi_station_dhcpc_status();
+                            if (mp_obj_is_true(e->value) && status != DHCP_STARTED) {
+                                wifi_station_dhcpc_start();
+                            } else if (!mp_obj_is_true(e->value) && status == DHCP_STARTED) {
+                                wifi_station_dhcpc_stop();
+                            }
+                        } else {
+                            mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                            break;
+                        }
+                        break;
+                    }
+                    case MP_QSTR_addr4: {
+                        if (e->value != mp_const_none && mp_obj_is_str(e->value)) {
+                            size_t addr_len;
+                            const char *input_str = mp_obj_str_get_data(e->value, &addr_len);
+                            char *split = strchr(input_str, '/');
+                            if (split) {
+                                mp_obj_t prefix_obj = mp_parse_num_integer(split + 1, strlen(split + 1), 10, NULL);
+                                int prefix_bits = mp_obj_get_int(prefix_obj);
+                                uint32_t mask = -(1u << (32 - prefix_bits));
+                                uint32_t *m = (uint32_t *)&info.netmask;
+                                *m = htonl(mask);
+                            }
+                            netutils_parse_ipv4_addr(e->value, (void *)&info.ip, NETUTILS_BIG);
+                        } else if (e->value != mp_const_none) {
+                            mp_obj_t *items;
+                            mp_obj_get_array_fixed_n(e->value, 2, &items);
+                            netutils_parse_ipv4_addr(items[0], (void *)&info.ip, NETUTILS_BIG);
+                            netutils_parse_ipv4_addr(items[1], (void *)&info.netmask, NETUTILS_BIG);
+                        }
+                        touched_ip_info = 1;
+                        break;
+                    }
+                    case MP_QSTR_gw4: {
+                        netutils_parse_ipv4_addr(e->value, (void *)&info.gw, NETUTILS_BIG);
+                        touched_ip_info = 1;
+                        break;
+                    }
+                    default: {
+                        mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                        break;
+                    }
+                }
+            }
+        }
+        bool restart_dhcp_server = false;
+        if (self->if_id == STATION_IF) {
+            if (touched_ip_info) {
+                wifi_station_dhcpc_stop();
+                wifi_set_ip_info(self->if_id, &info);
+            }
+        } else {
+            restart_dhcp_server = wifi_softap_dhcps_status();
+            wifi_softap_dhcps_stop();
+            wifi_set_ip_info(self->if_id, &info);
+        }
+        if (restart_dhcp_server) {
+            wifi_softap_dhcps_start();
+        }
+
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(esp_nic_ipconfig_obj, 1, esp_ipconfig);
+
+static mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
         mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
     }
@@ -402,12 +572,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     case MP_QSTR_hostname:
                     case MP_QSTR_dhcp_hostname: {
                         // TODO: Deprecated. Use network.hostname(name) instead.
-                        size_t len;
-                        const char *str = mp_obj_str_get_data(kwargs->table[i].value, &len);
-                        if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
-                            mp_raise_ValueError(NULL);
-                        }
-                        strcpy(mod_network_hostname, str);
+                        mod_network_hostname(1, &kwargs->table[i].value);
                         break;
                     }
                     case MP_QSTR_protocol: {
@@ -417,6 +582,10 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     case MP_QSTR_txpower: {
                         int8_t power = mp_obj_get_float(kwargs->table[i].value) * 4;
                         system_phy_set_max_tpw(power);
+                        break;
+                    }
+                    case MP_QSTR_pm: {
+                        wifi_set_sleep_type(mp_obj_get_int(kwargs->table[i].value));
                         break;
                     }
                     default:
@@ -457,7 +626,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         case MP_QSTR_ssid:
         case MP_QSTR_essid:
             if (self->if_id == STATION_IF) {
-                val = mp_obj_new_str((char *)cfg.sta.ssid, strlen((char *)cfg.sta.ssid));
+                val = mp_obj_new_str_from_cstr((char *)cfg.sta.ssid);
             } else {
                 val = mp_obj_new_str((char *)cfg.ap.ssid, cfg.ap.ssid_len);
             }
@@ -477,13 +646,17 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             break;
         case MP_QSTR_hostname:
         case MP_QSTR_dhcp_hostname: {
-            req_if = STATION_IF;
             // TODO: Deprecated. Use network.hostname() instead.
-            val = mp_obj_new_str(mod_network_hostname, strlen(mod_network_hostname));
+            req_if = STATION_IF;
+            val = mod_network_hostname(0, NULL);
             break;
         }
         case MP_QSTR_protocol: {
             val = mp_obj_new_int(wifi_get_phy_mode());
+            break;
+        }
+        case MP_QSTR_pm: {
+            val = MP_OBJ_NEW_SMALL_INT(wifi_get_sleep_type());
             break;
         }
         default:
@@ -500,9 +673,9 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 unknown:
     mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
+static MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
 
-STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
+static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&esp_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&esp_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&esp_disconnect_obj) },
@@ -511,18 +684,34 @@ STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&esp_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&esp_nic_ipconfig_obj) },
+
+    // Constants
+    { MP_ROM_QSTR(MP_QSTR_IF_STA), MP_ROM_INT(STATION_IF)},
+    { MP_ROM_QSTR(MP_QSTR_IF_AP), MP_ROM_INT(SOFTAP_IF)},
+
+    { MP_ROM_QSTR(MP_QSTR_SEC_OPEN), MP_ROM_INT(AUTH_OPEN) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WEP), MP_ROM_INT(AUTH_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA), MP_ROM_INT(AUTH_WPA_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA2), MP_ROM_INT(AUTH_WPA2_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA_WPA2), MP_ROM_INT(AUTH_WPA_WPA2_PSK) },
+
+    { MP_ROM_QSTR(MP_QSTR_PM_NONE), MP_ROM_INT(NONE_SLEEP_T) },
+    { MP_ROM_QSTR(MP_QSTR_PM_PERFORMANCE), MP_ROM_INT(MODEM_SLEEP_T) },
+    { MP_ROM_QSTR(MP_QSTR_PM_POWERSAVE), MP_ROM_INT(LIGHT_SLEEP_T) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
+static MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    wlan_if_type,
+    esp_network_wlan_type,
     MP_QSTR_WLAN,
     MP_TYPE_FLAG_NONE,
+    make_new, esp_wlan_make_new,
     locals_dict, &wlan_if_locals_dict
     );
 
-STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_obj_new_int(wifi_get_phy_mode());
     } else {

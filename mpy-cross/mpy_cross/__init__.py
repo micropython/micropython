@@ -43,6 +43,7 @@ NATIVE_ARCHS = {
     "NATIVE_ARCH_ARMV7EMDP": "armv7emdp",
     "NATIVE_ARCH_XTENSA": "xtensa",
     "NATIVE_ARCH_XTENSAWIN": "xtensawin",
+    "NATIVE_ARCH_RV32IMC": "rv32imc",
 }
 
 globals().update(NATIVE_ARCHS)
@@ -100,7 +101,7 @@ def compile(src, dest=None, src_path=None, opt=None, march=None, mpy_cross=None,
     if not src:
         raise ValueError("src is required")
     if not os.path.exists(src):
-        raise CrossCompileError("Input .py file not found: {}.".format(src_py))
+        raise CrossCompileError("Input .py file not found: {}.".format(src))
 
     args = []
 

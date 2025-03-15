@@ -11,7 +11,7 @@ It's also ok to drop file extensions.
 
 Besides prefix, first line of a commit message should describe a
 change clearly and to the point, and be a grammatical sentence with
-final full stop. First line should fit within 72 characters. Examples
+final full stop. First line must fit within 72 characters. Examples
 of good first line of commit messages:
 
     py/objstr: Add splitlines() method.
@@ -27,12 +27,9 @@ change beyond 5 lines would likely require such detailed description.
 To get good practical examples of good commits and their messages, browse
 the `git log` of the project.
 
-When committing you are encouraged to sign-off your commit by adding
-"Signed-off-by" lines and similar, eg using "git commit -s".  If you don't
-explicitly sign-off in this way then the commit message, which includes your
-name and email address in the "Author" line, implies your sign-off.  In either
-case, of explicit or implicit sign-off, you are certifying and signing off
-against the following:
+When committing you must sign-off your commit by adding "Signed-off-by:"
+line(s) at the end of the commit message, e.g. using `git commit -s`.  You
+are then certifying and signing off against the following:
 
 * That you wrote the change yourself, or took it from a project with
   a compatible license (in the latter case the commit message, and possibly
@@ -49,21 +46,23 @@ against the following:
 * Your contribution including commit message will be publicly and
   indefinitely available for anyone to access, including redistribution
   under the terms of the project's license.
-* Your signature for all of the above, which is the "Signed-off-by" line
-  or the "Author" line in the commit message, includes your full real name and
-  a valid and active email address by which you can be contacted in the
-  foreseeable future.
+* Your signature for all of the above, which is the "Signed-off-by" line,
+  includes your full real name and a valid and active email address by
+  which you can be contacted in the foreseeable future.
 
 Code auto-formatting
 ====================
 
-Both C and Python code are auto-formatted using the `tools/codeformat.py`
-script.  This uses [uncrustify](https://github.com/uncrustify/uncrustify) to
-format C code and [black](https://github.com/psf/black) to format Python code.
-After making changes, and before committing, run this tool to reformat your
-changes to the correct style.  Without arguments this tool will reformat all
-source code (and may take some time to run).  Otherwise pass as arguments to
-the tool the files that changed and it will only reformat those.
+Both C and Python code formatting are controlled for consistency across the
+MicroPython codebase.  C code is formatted using the `tools/codeformat.py`
+script which uses [uncrustify](https://github.com/uncrustify/uncrustify).
+Python code is linted and formatted using
+[ruff & ruff format](https://github.com/astral-sh/ruff).
+After making changes, and before committing, run  `tools/codeformat.py` to
+reformat your C code and `ruff format` for any Python code.  Without
+arguments this tool will reformat all source code (and may take some time
+to run).  Otherwise pass as arguments to the tool the files that changed,
+and it will only reformat those.
 
 uncrustify
 ==========
@@ -103,6 +102,22 @@ This command may work, please raise a new Issue if it doesn't:
 
 ```
 curl -L https://github.com/Homebrew/homebrew-core/raw/2b07d8192623365078a8b855a164ebcdf81494a6/Formula/uncrustify.rb > uncrustify.rb && brew install uncrustify.rb && rm uncrustify.rb
+```
+
+Code spell checking
+===================
+
+Code spell checking is done using [codespell](https://github.com/codespell-project/codespell#codespell)
+and runs in a GitHub action in CI.  Codespell is configured via `pyproject.toml`
+to avoid false positives.  It is recommended run codespell before submitting a
+PR.  To simplify this, codespell is configured as a pre-commit hook and will be
+installed if you run `pre-commit install` (see below).
+
+If you want to install and run codespell manually, you can do so by running:
+
+```
+$ pip install codespell tomli
+$ codespell
 ```
 
 Automatic Pre-Commit Hooks
@@ -155,12 +170,22 @@ Tips:
 * To ignore the pre-commit message format check temporarily, start the commit
   message subject line with "WIP" (for "Work In Progress").
 
+Running pre-commit manually
+===========================
+
+Once pre-commit is installed as per the previous section it can be manually
+run against the MicroPython python codebase to update file formatting on
+demand, with either:
+* `pre-commit run --all-files` to fix all files in the MicroPython codebase
+* `pre-commit run --file ./path/to/my/file` to fix just one file
+* `pre-commit run --file ./path/to/my/folder/*` to fix just one folder
+
 Python code conventions
 =======================
 
 Python code follows [PEP 8](https://legacy.python.org/dev/peps/pep-0008/) and
-is auto-formatted using [black](https://github.com/psf/black) with a line-length
-of 99 characters.
+is auto-formatted using [ruff format](https://docs.astral.sh/ruff/formatter)
+with a line-length of 99 characters.
 
 Naming conventions:
 - Module names are short and all lowercase; eg pyb, stm.
@@ -255,7 +280,7 @@ Documentation conventions
 =========================
 
 MicroPython generally follows CPython in documentation process and
-conventions. reStructuredText syntax is used for the documention.
+conventions. reStructuredText syntax is used for the documentation.
 
 Specific conventions/suggestions:
 

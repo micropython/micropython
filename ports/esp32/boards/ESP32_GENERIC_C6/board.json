@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy_c6.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi"
+    ],
+    "id": "esp32c6",
+    "images": [
+        "esp32c6_devkitmini.jpg"
+    ],
+    "mcu": "esp32c6",
+    "product": "ESP32-C6",
+    "thumbnail": "",
+    "url": "https://www.espressif.com/en/products/modules",
+    "vendor": "Espressif"
+}

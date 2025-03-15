@@ -16,6 +16,10 @@ const byte mp_hal_status_to_errno_table[4] = {
     [HAL_TIMEOUT] = MP_ETIMEDOUT,
 };
 
+#if defined(STM32H5)
+uint8_t mp_hal_unique_id_address[12];
+#endif
+
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
@@ -28,7 +32,7 @@ MP_WEAK uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
         const mp_stream_p_t *stream_p = mp_get_stream(pyb_stdio_uart);
         ret = stream_p->ioctl(pyb_stdio_uart, MP_STREAM_POLL, poll_flags, &errcode);
     }
-    return ret | mp_uos_dupterm_poll(poll_flags);
+    return ret | mp_os_dupterm_poll(poll_flags);
 }
 
 MP_WEAK int mp_hal_stdin_rx_chr(void) {
@@ -45,7 +49,7 @@ MP_WEAK int mp_hal_stdin_rx_chr(void) {
         if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
         }
-        int dupterm_c = mp_uos_dupterm_rx_chr();
+        int dupterm_c = mp_os_dupterm_rx_chr();
         if (dupterm_c >= 0) {
             return dupterm_c;
         }
@@ -53,14 +57,22 @@ MP_WEAK int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-MP_WEAK void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+MP_WEAK mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    mp_uint_t ret = len;
+    bool did_write = false;
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
+        did_write = true;
     }
     #if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     lcd_print_strn(str, len);
     #endif
-    mp_uos_dupterm_tx_strn(str, len);
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res >= 0) {
+        did_write = true;
+        ret = MIN((mp_uint_t)dupterm_res, ret);
+    }
+    return did_write ? ret : 0;
 }
 
 #if __CORTEX_M >= 0x03
@@ -102,7 +114,7 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     #elif defined(STM32G0)
     #define AHBxENR IOPENR
     #define AHBxENR_GPIOAEN_Pos RCC_IOPENR_GPIOAEN_Pos
-    #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #elif defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     #define AHBxENR AHB2ENR
     #define AHBxENR_GPIOAEN_Pos RCC_AHB2ENR_GPIOAEN_Pos
     #endif
@@ -178,4 +190,4 @@ void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
     }
 }
 
-MP_REGISTER_ROOT_POINTER(struct _pyb_uart_obj_t *pyb_stdio_uart);
+MP_REGISTER_ROOT_POINTER(struct _machine_uart_obj_t *pyb_stdio_uart);

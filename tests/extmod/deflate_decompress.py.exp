@@ -1,0 +1,80 @@
+b'micropython hello world hello world micropython'
+b'micropython hello world hello world micropython'
+b'micropython hello world hello world micropython'
+b'micropython hello world hello world micropython'
+b'micropython hello world hello world micropython'
+OSError
+OSError
+OSError
+OSError
+OSError
+OSError
+OSError
+OSError
+OSError
+EOFError
+0
+b'm'
+4
+b'i'
+5
+b'cr'
+7
+b'opython hello world hello world micropython'
+36
+b''
+36
+b''
+OSError
+OSError
+OSError
+OSError
+ValueError
+OSError
+b'micropython'
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+b'micropython hello world hello world micropython'
+ValueError
+310
+ValueError
+ValueError
+310
+310
+310
+310
+310
+310
+310
+310
+310
+310
+310
+ValueError
+ValueError
+ValueError
+OSError
+310
+310
+OSError
+310
+310
+OSError
+OSError
+2010
+2010
+OSError
+2010
+2010

@@ -10,7 +10,7 @@ REPL over the serial port
 
 The REPL is available on a UART serial peripheral specified for the board by
 the ``zephyr,console`` devicetree node. The baudrate of the REPL is 115200.
-If your board has a USB-serial convertor on it then you should be able to access
+If your board has a USB-serial converter on it then you should be able to access
 the REPL directly from your PC.
 
 To access the prompt over USB-serial you will need to use a terminal emulator
@@ -31,8 +31,8 @@ With your serial program open (PuTTY, screen, picocom, etc) you may see a
 blank screen with a flashing cursor. Press Enter (or reset the board) and
 you should be presented with the following text::
 
-        *** Booting Zephyr OS build zephyr-v3.1.0  ***
-        MicroPython v1.19.1-9-g4fd54a475 on 2022-06-17; zephyr-frdm_k64f with mk64f12
+        *** Booting Zephyr OS build v3.7.0 ***
+        MicroPython v1.24.0-preview.179.g5b85b24bd on 2024-08-05; zephyr-frdm_k64f with mk64f12
         Type "help()" for more information.
         >>>
 

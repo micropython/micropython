@@ -109,8 +109,9 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
             continue
 
         # Create test script
+        test_script = b"import sys\nsys.path.remove('')\n\n"
         with open(test_file, "rb") as f:
-            test_script = f.read()
+            test_script += f.read()
         with open(BENCH_SCRIPT_DIR + "benchrun.py", "rb") as f:
             test_script += f.read()
         test_script += b"bm_run(%u, %u)\n" % (param_n, param_m)

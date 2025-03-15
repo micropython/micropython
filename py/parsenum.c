@@ -36,7 +36,7 @@
 #include <math.h>
 #endif
 
-STATIC NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
+static NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
     // if lex!=NULL then the parser called us and we need to convert the
     // exception's type from ValueError to SyntaxError and add traceback info
     if (lex != NULL) {
@@ -214,7 +214,7 @@ static void accept_digit(mp_float_t *p_dec_val, int dig, int *p_exp_extra, int i
         }
     }
 }
-#endif // MICROPY_BUILTINS_FLOAT
+#endif // MICROPY_PY_BUILTINS_FLOAT
 
 #if MICROPY_PY_BUILTINS_COMPLEX
 mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex)

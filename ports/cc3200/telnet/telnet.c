@@ -33,11 +33,10 @@
 #include "simplelink.h"
 #include "modnetwork.h"
 #include "modwlan.h"
-#include "modusocket.h"
+#include "modsocket.h"
 #include "debug.h"
 #include "serverstask.h"
 #include "genhdr/mpversion.h"
-#include "irq.h"
 
 /******************************************************************************
  DEFINE PRIVATE CONSTANTS
@@ -407,7 +406,7 @@ static void telnet_process (void) {
     _i16 rxLen;
     _i16 maxLen = (telnet_data.rxWindex >= telnet_data.rxRindex) ? (TELNET_RX_BUFFER_SIZE - telnet_data.rxWindex) :
                                                                    ((telnet_data.rxRindex - telnet_data.rxWindex) - 1);
-    // to avoid an overrrun
+    // to avoid an overrun
     maxLen = (telnet_data.rxRindex == 0) ? (maxLen - 1) : maxLen;
 
     if (maxLen > 0) {

@@ -18,7 +18,7 @@ desc = {
     "arr8": (uctypes.ARRAY | 1, 1, {"l": uctypes.UINT32 | 0}),
 }
 
-data = bytearray(5)
+data = bytearray(6)
 
 S = uctypes.struct(uctypes.addressof(data), desc, uctypes.LITTLE_ENDIAN)
 

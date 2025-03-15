@@ -32,6 +32,16 @@
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_AD_B1_10_LPUART8_TX }, { IOMUXC_GPIO_AD_B1_11_LPUART8_RX },
 
+#define IOMUX_TABLE_UART_CTS_RTS \
+    { IOMUXC_GPIO_AD_B0_14_LPUART1_CTS_B }, { IOMUXC_GPIO_AD_B0_15_LPUART1_RTS_B }, \
+    { IOMUXC_GPIO_AD_B1_00_LPUART2_CTS_B }, { IOMUXC_GPIO_AD_B1_01_LPUART2_RTS_B }, \
+    { IOMUXC_GPIO_AD_B1_04_LPUART3_CTS_B }, { IOMUXC_GPIO_AD_B1_05_LPUART3_RTS_B }, \
+    { IOMUXC_GPIO_EMC_17_LPUART4_CTS_B }, { IOMUXC_GPIO_EMC_18_LPUART4_RTS_B }, \
+    { 0 }, { 0 }, \
+    { 0 }, { 0 }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_SD_B0_02_LPUART8_CTS_B }, { IOMUXC_GPIO_SD_B0_03_LPUART8_RTS_B },
+
 #define MICROPY_HW_SPI_INDEX { 3, 4 }
 
 #define IOMUX_TABLE_SPI \
@@ -116,11 +126,6 @@
 #define ENET_PHY            LAN8720
 #define ENET_PHY_OPS        phylan8720_ops
 #define ENET_TX_CLK_OUTPUT  false
-
-// Etherner PIN definitions
-// No reset and interrupt pin by intention
-#define ENET_RESET_PIN      NULL
-#define ENET_INT_PIN        NULL
 
 #define IOMUX_TABLE_ENET \
     { IOMUXC_GPIO_B1_04_ENET_RX_DATA00, 0, 0xB0E9u }, \

@@ -2,7 +2,7 @@
 # while dealing with concurrent access from multiple threads.
 
 import _thread
-import utime
+import time
 import micropython
 import gc
 
@@ -19,6 +19,7 @@ _TIMEOUT_MS = 10000
 
 n = 0  # How many times the task successfully ran.
 t = None  # Start time of test, assigned here to preallocate entry in globals dict.
+thread_run = True  # If the thread should continue running.
 
 
 def task(x):
@@ -27,21 +28,31 @@ def task(x):
 
 
 def thread():
-    while True:
+    while thread_run:
         try:
             micropython.schedule(task, None)
         except RuntimeError:
             # Queue full, back off.
-            utime.sleep_ms(10)
+            time.sleep_ms(10)
 
 
 for i in range(8):
-    _thread.start_new_thread(thread, ())
+    try:
+        _thread.start_new_thread(thread, ())
+    except OSError:
+        # System cannot create a new thead, so stop trying to create them.
+        break
 
 # Wait up to 10 seconds for 10000 tasks to be scheduled.
-t = utime.ticks_ms()
-while n < _NUM_TASKS and utime.ticks_diff(utime.ticks_ms(), t) < _TIMEOUT_MS:
+t = time.ticks_ms()
+while n < _NUM_TASKS and time.ticks_diff(time.ticks_ms(), t) < _TIMEOUT_MS:
     pass
+
+# Stop all threads.
+thread_run = False
+time.sleep_ms(20)
+
+gc.enable()
 
 if n < _NUM_TASKS:
     # Not all the tasks were scheduled, likely the scheduler stopped working.

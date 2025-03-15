@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Renesas Electronics Corporation
+ * Copyright (c) 2021-2023 Renesas Electronics Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,9 +42,9 @@ enum AGT_SOURCE {
     AGT_AGTSCLK
 };
 
-static R_AGT0_Type *agt_regs[AGT_CH_SIZE] = {
-    (R_AGT0_Type *)0x40084000,
-    (R_AGT0_Type *)0x40084100
+static R_AGTX0_AGT16_Type *agt_regs[AGT_CH_SIZE] = {
+    (R_AGTX0_AGT16_Type *)R_AGTX0,
+    (R_AGTX0_AGT16_Type *)R_AGTX1
 };
 
 static uint8_t ch_to_irq[AGT_CH_SIZE] = {
@@ -77,15 +77,15 @@ static void ra_agt_timer_chk_callback(uint32_t ch) {
 }
 
 void ra_agt_timer_start(uint32_t ch) {
-    agt_regs[ch]->AGTCR_b.TSTART = 1; /* start counter */
+    agt_regs[ch]->CTRL.AGTCR_b.TSTART = 1; /* start counter */
 }
 
 void ra_agt_timer_stop(uint32_t ch) {
-    agt_regs[ch]->AGTCR_b.TSTART = 0; /* stop counter */
+    agt_regs[ch]->CTRL.AGTCR_b.TSTART = 0; /* stop counter */
 }
 
 void ra_agt_timer_set_freq(uint32_t ch, float freq) {
-    R_AGT0_Type *agt_reg = agt_regs[ch];
+    R_AGTX0_AGT16_Type *agt_reg = agt_regs[ch];
     uint8_t source = 0;
     uint16_t period = 0;
     uint8_t cks = 0;
@@ -107,9 +107,9 @@ void ra_agt_timer_set_freq(uint32_t ch, float freq) {
         return;
     }
     ra_agt_freq[ch] = freq;
-    agt_reg->AGTCR_b.TSTART = 0;                // stop counter
-    agt_reg->AGTMR2 = cks;
-    agt_reg->AGTMR1 = (uint8_t)(source << 4);   // mode is timer mode
+    agt_reg->CTRL.AGTCR_b.TSTART = 0;                // stop counter
+    agt_reg->CTRL.AGTMR2 = cks;
+    agt_reg->CTRL.AGTMR1 = (uint8_t)(source << 4);   // mode is timer mode
     agt_reg->AGT = (uint16_t)period;
 }
 
@@ -118,14 +118,14 @@ float ra_agt_timer_get_freq(uint32_t ch) {
 }
 
 void ra_agt_timer_init(uint32_t ch, float freq) {
-    R_AGT0_Type *agt_reg = agt_regs[ch];
+    R_AGTX0_AGT16_Type *agt_reg = agt_regs[ch];
     if (ch == 0) {
         ra_mstpcrd_start(R_MSTP_MSTPCRD_MSTPD3_Msk);
     } else {
         ra_mstpcrd_start(R_MSTP_MSTPCRD_MSTPD2_Msk);
     }
     ra_agt_timer_set_freq(ch, freq);
-    agt_reg->AGTCR_b.TUNDF = 1;                 // underflow interrupt
+    agt_reg->CTRL.AGTCR_b.TUNDF = 1;                 // underflow interrupt
     R_BSP_IrqCfgEnable((IRQn_Type const)ch_to_irq[ch], RA_PRI_TIM5, (void *)NULL);
 }
 

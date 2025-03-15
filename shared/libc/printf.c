@@ -72,16 +72,14 @@ int vprintf(const char *fmt, va_list ap) {
 // need this because gcc optimises printf("%c", c) -> putchar(c), and printf("a") -> putchar('a')
 int putchar(int c) {
     char chr = c;
-    mp_hal_stdout_tx_strn_cooked(&chr, 1);
+    MICROPY_INTERNAL_PRINTF_PRINTER->print_strn(MICROPY_INTERNAL_PRINTF_PRINTER->data, &chr, 1);
     return chr;
 }
 
 // need this because gcc optimises printf("string\n") -> puts("string")
 int puts(const char *s) {
-    mp_hal_stdout_tx_strn_cooked(s, strlen(s));
-    char chr = '\n';
-    mp_hal_stdout_tx_strn_cooked(&chr, 1);
-    return 1;
+    MICROPY_INTERNAL_PRINTF_PRINTER->print_strn(MICROPY_INTERNAL_PRINTF_PRINTER->data, s, strlen(s));
+    return putchar('\n'); // will return 10, which is >0 per specs of puts
 }
 
 typedef struct _strn_print_env_t {
@@ -89,7 +87,7 @@ typedef struct _strn_print_env_t {
     size_t remain;
 } strn_print_env_t;
 
-STATIC void strn_print_strn(void *data, const char *str, size_t len) {
+static void strn_print_strn(void *data, const char *str, size_t len) {
     strn_print_env_t *strn_print_env = data;
     if (len > strn_print_env->remain) {
         len = strn_print_env->remain;

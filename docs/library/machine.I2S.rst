@@ -47,7 +47,7 @@ I2S objects can be created and initialized using::
 3 modes of operation are supported:
  - blocking
  - non-blocking
- - uasyncio
+ - asyncio
 
 blocking::
 
@@ -63,13 +63,13 @@ non-blocking::
    audio_in.irq(i2s_callback)          # i2s_callback is called when buf is filled
    num_read = audio_in.readinto(buf)   # returns immediately
 
-uasyncio::
+asyncio::
 
-   swriter = uasyncio.StreamWriter(audio_out)
+   swriter = asyncio.StreamWriter(audio_out)
    swriter.write(buf)
    await swriter.drain()
 
-   sreader = uasyncio.StreamReader(audio_in)
+   sreader = asyncio.StreamReader(audio_in)
    num_read = await sreader.readinto(buf)
 
 Some codec devices like the WM8960 or SGTL5000 require separate initialization
@@ -103,7 +103,7 @@ Constructor
      - ``ibuf`` specifies internal buffer length (bytes)
 
    For all ports, DMA runs continuously in the background and allows user applications to perform other operations while
-   sample data is transfered between the internal buffer and the I2S peripheral unit.
+   sample data is transferred between the internal buffer and the I2S peripheral unit.
    Increasing the size of the internal buffer has the potential to increase the time that user applications can perform non-I2S operations
    before underflow (e.g. ``write`` method) or overflow (e.g. ``readinto`` method).
 

@@ -1,5 +1,5 @@
 // MCU config
-#define MICROPY_HW_BOARD_NAME       "RA4M1_CLICKER"
+#define MICROPY_HW_BOARD_NAME       "RA4M1 CLICKER"
 #define MICROPY_HW_MCU_NAME         "RA4M1"
 #define MICROPY_HW_MCU_SYSCLK       48000000
 #define MICROPY_HW_MCU_PCLK         48000000
@@ -10,8 +10,7 @@
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_GENERATOR_PEND_THROW (0)
 #define MICROPY_PY_MATH             (0)
-#define MICROPY_PY_UHEAPQ           (0)
-#define MICROPY_PY_UTIMEQ           (0)
+#define MICROPY_PY_HEAPQ            (0)
 #define MICROPY_PY_THREAD           (0)
 
 // peripheral config

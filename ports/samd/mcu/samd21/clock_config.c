@@ -52,7 +52,7 @@ uint32_t get_peripheral_freq(void) {
 
 void set_cpu_freq(uint32_t cpu_freq_arg) {
 
-    // Set 1 waitstate to be safe
+    // Set 1 wait state to be safe
     NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_MANW | NVMCTRL_CTRLB_RWS(1);
 
     int div = MAX(DFLL48M_FREQ / cpu_freq_arg, 1);
@@ -75,7 +75,7 @@ void set_cpu_freq(uint32_t cpu_freq_arg) {
         while (GCLK->STATUS.bit.SYNCBUSY) {
         }
         // configure the FDPLL96
-        // CtrlB: Set the ref ource to GCLK, set the Wakup-Fast Flag.
+        // CtrlB: Set the ref source to GCLK, set the Wakeup-Fast Flag.
         SYSCTRL->DPLLCTRLB.reg = SYSCTRL_DPLLCTRLB_REFCLK_GCLK | SYSCTRL_DPLLCTRLB_WUF;
         // Set the FDPLL ratio and enable the DPLL.
         int ldr = cpu_freq / FDPLL_REF_FREQ;
@@ -106,37 +106,70 @@ void set_cpu_freq(uint32_t cpu_freq_arg) {
         while (GCLK->STATUS.bit.SYNCBUSY) {
         }
     }
-    // Set 0 waitstates for slower CPU clock
+    // Set 0 wait states for slower CPU clock
     NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_MANW | NVMCTRL_CTRLB_RWS(cpu_freq > 24000000 ? 1 : 0);
     SysTick_Config(cpu_freq / 1000);
 }
 
-void check_usb_recovery_mode(void) {
-    #if !MICROPY_HW_XOSC32K
-    mp_hal_delay_ms(500);
-    // Check USB status. If not connected, switch DFLL48M back to open loop
-    if (USB->DEVICE.DeviceEndpoint[0].EPCFG.reg == 0) {
-        // Set/keep the open loop mode of the device.
-        SYSCTRL->DFLLVAL.reg = dfll48m_calibration;
-        SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_CCDIS | SYSCTRL_DFLLCTRL_ENABLE;
+#if !MICROPY_HW_XOSC32K || MICROPY_HW_DFLL_USB_SYNC
+static void sync_dfll48_with_xosc32kulp(void) {
+    SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_ENABLE;
+    while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {
     }
-    #endif // MICROPY_HW_XOSC32K
+    // Connect GCLK4 to the DFLL input.
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_GEN_GCLK4 | GCLK_CLKCTRL_ID_DFLL48 | GCLK_CLKCTRL_CLKEN;
+    while (GCLK->STATUS.bit.SYNCBUSY) {
+    }
+    // Set the multiplication values. The offset of 16384 to the freq is for rounding.
+    SYSCTRL->DFLLMUL.reg = SYSCTRL_DFLLMUL_MUL((CPU_FREQ + 16384) / 32768) |
+        SYSCTRL_DFLLMUL_FSTEP(1) | SYSCTRL_DFLLMUL_CSTEP(1);
+    while (SYSCTRL->PCLKSR.bit.DFLLRDY == 0) {
+    }
+    // Start the DFLL and wait for the PLL lock. We just wait for the fine lock, since
+    // coarse adjusting is bypassed.
+    SYSCTRL->DFLLCTRL.reg |= SYSCTRL_DFLLCTRL_MODE | SYSCTRL_DFLLCTRL_WAITLOCK | SYSCTRL_DFLLCTRL_STABLE |
+        SYSCTRL_DFLLCTRL_BPLCKC | SYSCTRL_DFLLCTRL_ENABLE;
+    while (!SYSCTRL->PCLKSR.bit.DFLLLCKF) {
+    }
+}
+#endif
+
+void check_usb_clock_recovery_mode(void) {
+    #if MICROPY_HW_DFLL_USB_SYNC
+    // Check USB status for up to 1 second. If not connected,
+    // switch DFLL48M back to open loop
+    for (int i = 0; i < 100; i++) {
+        if (USB->DEVICE.DeviceEndpoint[0].EPCFG.reg != 0) {
+            return;
+        }
+        mp_hal_delay_ms(10);
+    }
+    // No USB sync. Use XOSC32KULP as clock reference for DFLL48M
+    sync_dfll48_with_xosc32kulp();
+    #endif
 }
 
 // Purpose of the #defines for the clock configuration.
 //
-// Both CPU and periperal devices are clocked by the DFLL48M clock.
+// The CPU is either driven by the FDPLL96 oscillator for f >= 48MHz,
+// or by the DFLL48M for lower frequencies. The FDPLL96 takes 32768 Hz
+// as reference frequency, supplied through GCLK1.
+//
+// DFLL48M is used for the peripheral clock, e.g. for PWM, UART, SPI, I2C.
+// DFLL48M is either free running, or controlled by the 32kHz crystal, or
+// Synchronized with the USB clock.
+// Both CPU and peripheral devices are clocked by the DFLL48M clock.
 // DFLL48M is either free running, or controlled by the 32kHz crystal, or
 // Synchronized with the USB clock.
 //
 // #define MICROPY_HW_XOSC32K (0 | 1)
 //
 // If MICROPY_HW_XOSC32K = 1, the 32kHz crystal is used as input for GCLK 1, which
-// serves as refernce clock source for the DFLL48M oscillator,
+// serves as reference clock source for the DFLL48M oscillator,
 // The crystal is used, unless MICROPY_HW_MCU_OSC32KULP is set.
 // In that case GCLK1 (and the CPU clock) is driven by the 32K Low power oscillator.
 // The reason for offering this option is a design flaw of the Adafruit
-// Feather boards, where the RGB Led and Debug signals interfere with the
+// Feather boards, where the RGB LED and Debug signals interfere with the
 // crystal, causing the CPU to fail if it is driven by the crystal.
 //
 // If MICROPY_HW_XOSC32K = 0, the 32kHz signal for GCLK1 (and the CPU) is
@@ -144,14 +177,14 @@ void check_usb_recovery_mode(void) {
 //
 // If MICROPY_HW_DFLL_USB_SYNC = 0, the DFLL48M oscillator is free running using
 // the pre-configured trim values. In that mode, the peripheral clock is
-// not exactly 48Mhz and has a substantional temperature drift.
+// not exactly 48Mhz and has a substitutional temperature drift.
 //
 // If MICROPY_HW_DFLL_USB_SYNC = 1, the DFLL48 is synchronized with the 1 kHz USB sync
-// signal. If after boot there is no USB sync withing 500ms, the configuratuion falls
+// signal. If after boot there is no USB sync within 1000 ms, the configuration falls
 // back to a free running 48Mhz oscillator.
 //
 // In all modes, the 48MHz signal has a substantial jitter, largest when
-// MICROPY_HW_DFLL_USB_SYNC is active. That is caused by the repective
+// MICROPY_HW_DFLL_USB_SYNC is active. That is caused by the respective
 // reference frequencies of 32kHz or 1 kHz being low. That affects most
 // PWM. Std Dev at 1kHz 0.156Hz (w. Crystal) up to 0.4 Hz (with USB sync).
 //
@@ -167,12 +200,12 @@ void init_clocks(uint32_t cpu_freq) {
     // GCLK1: 32kHz, source: XOSC32K or OSCULP32K, usage: FDPLL96M reference
     // GCLK2: 1-48MHz, source: DFLL48M, usage: Peripherals
     // GCLK3: 2Mhz,  source: DFLL48M, usage: us-counter (TC4/TC5)
-    // GCLK4: 32kHz, source: XOSC32K, if crystal present, usage: DFLL48M reference
+    // GCLK4: 32kHz, source: XOSC32K or OSCULP32K, usage: DFLL48M reference
     // GCLK5: 48MHz, source: DFLL48M, usage: USB
     // GCLK8: 1kHz,  source: XOSC32K or OSCULP32K, usage: WDT and RTC
     // DFLL48M: Reference sources:
-    //          - in closed loop mode: eiter XOSC32K or OSCULP32K or USB clock
-    //            from GCLK4.
+    //          - in closed loop mode: either XOSC32K or OSCULP32K from GCLK4
+    //            or USB clock.
     //          - in open loop mode: None
     // FDPLL96M: Reference source GCLK1
     //           Used for the CPU clock for freq >= 48Mhz
@@ -181,7 +214,7 @@ void init_clocks(uint32_t cpu_freq) {
     NVMCTRL->CTRLB.bit.RWS = 1; // 1 read wait state for 48MHz
 
     #if MICROPY_HW_XOSC32K
-    // Set up OSC32K according datasheet 17.6.3
+    // Set up OSC32K according data sheet 17.6.3
     SYSCTRL->XOSC32K.reg = SYSCTRL_XOSC32K_STARTUP(0x3) | SYSCTRL_XOSC32K_EN32K |
         SYSCTRL_XOSC32K_XTALEN;
     SYSCTRL->XOSC32K.bit.ENABLE = 1;
@@ -211,12 +244,12 @@ void init_clocks(uint32_t cpu_freq) {
     while (GCLK->STATUS.bit.SYNCBUSY) {
     }
 
-    // Enable access to the DFLLCTRL reg acc. to Errata 1.2.1
+    // Enable access to the DFLLCTRL register according to Errata 1.2.1
     SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_ENABLE;
     while (SYSCTRL->PCLKSR.bit.DFLLRDY == 0) {
     }
     // Step 2: Set the coarse and fine values.
-    // Get the coarse value from the calib data. In case it is not set,
+    // Get the coarse value from the calibration data. In case it is not set,
     // set a midrange value.
     uint32_t coarse = (*((uint32_t *)FUSES_DFLL48M_COARSE_CAL_ADDR) & FUSES_DFLL48M_COARSE_CAL_Msk)
         >> FUSES_DFLL48M_COARSE_CAL_Pos;
@@ -245,6 +278,17 @@ void init_clocks(uint32_t cpu_freq) {
 
     #else // MICROPY_HW_XOSC32K
 
+    // Connect the GCLK1 to the XOSC32KULP
+    GCLK->GENDIV.reg = GCLK_GENDIV_ID(1) | GCLK_GENDIV_DIV(1);
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(1);
+    while (GCLK->STATUS.bit.SYNCBUSY) {
+    }
+    // Connect the GCLK4 to the XOSC32KULP
+    GCLK->GENDIV.reg = GCLK_GENDIV_ID(4) | GCLK_GENDIV_DIV(1);
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(4);
+    while (GCLK->STATUS.bit.SYNCBUSY) {
+    }
+
     // Enable DFLL48M
     SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_ENABLE;
     while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {
@@ -252,35 +296,30 @@ void init_clocks(uint32_t cpu_freq) {
 
     uint32_t coarse = (*((uint32_t *)FUSES_DFLL48M_COARSE_CAL_ADDR) & FUSES_DFLL48M_COARSE_CAL_Msk)
         >> FUSES_DFLL48M_COARSE_CAL_Pos;
+    uint32_t fine = (*((uint32_t *)FUSES_DFLL48M_FINE_CAL_ADDR) & FUSES_DFLL48M_FINE_CAL_Msk)
+        >> FUSES_DFLL48M_COARSE_CAL_Pos;
     if (coarse == 0x3f) {
         coarse = 0x1f;
     }
-    SYSCTRL->DFLLVAL.reg = SYSCTRL_DFLLVAL_COARSE(coarse) | SYSCTRL_DFLLVAL_FINE(511);
+    SYSCTRL->DFLLVAL.reg = SYSCTRL_DFLLVAL_COARSE(coarse) | SYSCTRL_DFLLVAL_FINE(fine);
+    dfll48m_calibration = SYSCTRL_DFLLVAL_COARSE(coarse) | SYSCTRL_DFLLVAL_FINE(fine);
 
     #if MICROPY_HW_DFLL_USB_SYNC
-    // Configure the DFLL48M for USB clock recovery.
-    // Will have to switch back if no USB
-    SYSCTRL->DFLLSYNC.bit.READREQ = 1;
-    dfll48m_calibration = SYSCTRL->DFLLVAL.reg;
     // Set the Multiplication factor.
     SYSCTRL->DFLLMUL.reg = SYSCTRL_DFLLMUL_CSTEP(1) | SYSCTRL_DFLLMUL_FSTEP(1)
         | SYSCTRL_DFLLMUL_MUL(48000);
     // Set the mode to closed loop USB Recovery mode
     SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_USBCRM | SYSCTRL_DFLLCTRL_CCDIS
         | SYSCTRL_DFLLCTRL_MODE | SYSCTRL_DFLLCTRL_ENABLE;
-    #else
-    // Set/keep the open loop mode of the device.
-    SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_CCDIS | SYSCTRL_DFLLCTRL_ENABLE;
-    #endif
-
     while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {
     }
 
-    // Connect the GCLK1 to the XOSC32KULP
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(1) | GCLK_GENDIV_DIV(1);
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(1);
-    while (GCLK->STATUS.bit.SYNCBUSY) {
-    }
+    #else  // MICROPY_HW_DFLL_USB_SYNC
+
+    sync_dfll48_with_xosc32kulp();
+
+    #endif  // MICROPY_HW_DFLL_USB_SYNC
+
     // Set GCLK8 to 1 kHz.
     GCLK->GENDIV.reg = GCLK_GENDIV_ID(8) | GCLK_GENDIV_DIV(32);
     GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(8);

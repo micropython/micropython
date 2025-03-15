@@ -74,11 +74,14 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
                 case 'S':
                     size = sizeof(void *);
                     break;
+                case 'e':
+                    size = 2;
+                    break;
                 case 'f':
-                    size = sizeof(float);
+                    size = 4;
                     break;
                 case 'd':
-                    size = sizeof(double);
+                    size = 8;
                     break;
             }
             break;
@@ -122,6 +125,10 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
                     align = alignof(void *);
                     size = sizeof(void *);
                     break;
+                case 'e':
+                    align = 2;
+                    size = 2;
+                    break;
                 case 'f':
                     align = alignof(float);
                     size = sizeof(float);
@@ -143,6 +150,99 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
     }
     return size;
 }
+
+#if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_USE_NATIVE_FLT16
+
+static inline float mp_decode_half_float(uint16_t hf) {
+    union {
+        uint16_t i;
+        _Float16 f;
+    } fpu = { .i = hf };
+    return fpu.f;
+}
+
+static inline uint16_t mp_encode_half_float(float x) {
+    union {
+        uint16_t i;
+        _Float16 f;
+    } fp_sp = { .f = (_Float16)x };
+    return fp_sp.i;
+}
+
+#elif MICROPY_PY_BUILTINS_FLOAT
+
+static float mp_decode_half_float(uint16_t hf) {
+    union {
+        uint32_t i;
+        float f;
+    } fpu;
+
+    uint16_t m = hf & 0x3ff;
+    int e = (hf >> 10) & 0x1f;
+    if (e == 0x1f) {
+        // Half-float is infinity.
+        e = 0xff;
+    } else if (e) {
+        // Half-float is normal.
+        e += 127 - 15;
+    } else if (m) {
+        // Half-float is subnormal, make it normal.
+        e = 127 - 15;
+        while (!(m & 0x400)) {
+            m <<= 1;
+            --e;
+        }
+        m -= 0x400;
+        ++e;
+    }
+
+    fpu.i = ((hf & 0x8000) << 16) | (e << 23) | (m << 13);
+    return fpu.f;
+}
+
+static uint16_t mp_encode_half_float(float x) {
+    union {
+        uint32_t i;
+        float f;
+    } fpu = { .f = x };
+
+    uint16_t m = (fpu.i >> 13) & 0x3ff;
+    if (fpu.i & (1 << 12)) {
+        // Round up.
+        ++m;
+    }
+    int e = (fpu.i >> 23) & 0xff;
+
+    if (e == 0xff) {
+        // Infinity.
+        e = 0x1f;
+    } else if (e != 0) {
+        e -= 127 - 15;
+        if (e < 0) {
+            // Underflow: denormalized, or zero.
+            if (e >= -11) {
+                m = (m | 0x400) >> -e;
+                if (m & 1) {
+                    m = (m >> 1) + 1;
+                } else {
+                    m >>= 1;
+                }
+            } else {
+                m = 0;
+            }
+            e = 0;
+        } else if (e > 0x3f) {
+            // Overflow: infinity.
+            e = 0x1f;
+            m = 0;
+        }
+    }
+
+    uint16_t bits = ((fpu.i >> 16) & 0x8000) | (e << 10) | m;
+    return bits;
+}
+
+#endif
 
 mp_obj_t mp_binary_get_val_array(char typecode, void *p, size_t index) {
     mp_int_t val = 0;
@@ -238,8 +338,10 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte *p_base, byte *
         return (mp_obj_t)(mp_uint_t)val;
     } else if (val_type == 'S') {
         const char *s_val = (const char *)(uintptr_t)(mp_uint_t)val;
-        return mp_obj_new_str(s_val, strlen(s_val));
+        return mp_obj_new_str_from_cstr(s_val);
     #if MICROPY_PY_BUILTINS_FLOAT
+    } else if (val_type == 'e') {
+        return mp_obj_new_float_from_f(mp_decode_half_float(val));
     } else if (val_type == 'f') {
         union {
             uint32_t i;
@@ -309,6 +411,9 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
             val = (mp_uint_t)val_in;
             break;
         #if MICROPY_PY_BUILTINS_FLOAT
+        case 'e':
+            val = mp_encode_half_float(mp_obj_get_float_to_f(val_in));
+            break;
         case 'f': {
             union {
                 uint32_t i;

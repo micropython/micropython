@@ -4,7 +4,7 @@
 // This configuration is needed for mboot to be able to write to the external QSPI flash
 
 #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
-STATIC mp_spiflash_cache_t spi_bdev_cache;
+static mp_spiflash_cache_t spi_bdev_cache;
 #endif
 
 const mp_spiflash_config_t spiflash_config = {

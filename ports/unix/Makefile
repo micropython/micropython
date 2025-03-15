@@ -27,8 +27,8 @@ FROZEN_MANIFEST ?= variants/manifest.py
 PROG ?= micropython
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-QSTR_GLOBAL_DEPENDENCIES = $(VARIANT_DIR)/mpconfigvariant.h
+QSTR_DEFS += qstrdefsport.h
+QSTR_GLOBAL_DEPENDENCIES += $(VARIANT_DIR)/mpconfigvariant.h
 
 # OS name, for simple autoconfig
 UNAME_S := $(shell uname -s)
@@ -59,8 +59,8 @@ endif
 # Remove unused sections.
 COPT += -fdata-sections -ffunction-sections
 
-# Always enable symbols -- They're occasionally useful, and don't make it into the
-# final .bin/.hex/.dfu so the extra size doesn't matter.
+# Note: Symbols and debug information will still be stripped from the final binary
+# unless "DEBUG=1" or "STRIP=" is passed to make, see README.md for details.
 CFLAGS += -g
 
 ifndef DEBUG
@@ -138,7 +138,7 @@ CFLAGS += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS += $(LIBPTHREAD)
 endif
 
-ifeq ($(MICROPY_PY_USSL),1)
+ifeq ($(MICROPY_PY_SSL),1)
 ifeq ($(MICROPY_SSL_AXTLS),1)
 
 endif
@@ -168,7 +168,7 @@ ifeq ($(MICROPY_STANDALONE),1)
 # Build libffi from source.
 GIT_SUBMODULES += lib/libffi
 DEPLIBS += libffi
-LIBFFI_CFLAGS := -I$(shell ls -1d $(BUILD)/lib/libffi/out/lib/libffi-*/include)
+LIBFFI_CFLAGS := -I$(shell ls -1d $(BUILD)/lib/libffi/include)
  ifeq ($(MICROPY_FORCE_32BIT),1)
   LIBFFI_LDFLAGS = $(BUILD)/lib/libffi/out/lib32/libffi.a
  else
@@ -193,46 +193,6 @@ ifeq ($(MICROPY_PY_JNI),1)
 CFLAGS += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
 endif
 
-################################################################################
-# LVGL unix optional libraries
-# Update CFLAGS_EXTMOD and LDFLAGS_EXTMOD for LVGL extenral library,
-# but do that only on the unix port, for unix specific dependencies
-
-ifneq ($(UNAME_S),Darwin)
-CFLAGS_EXTMOD += -DMICROPY_FB=1
-endif
-
-SDL_CFLAGS_EXTMOD :=  $(shell pkg-config --silence-errors --cflags sdl2)
-SDL_LDFLAGS_EXTMOD := $(shell pkg-config --silence-errors --libs   sdl2)
-ifneq ($(SDL_LDFLAGS_EXTMOD),)
-CFLAGS_EXTMOD += $(SDL_CFLAGS_EXTMOD) -DMICROPY_SDL=1
-LDFLAGS_EXTMOD += $(SDL_LDFLAGS_EXTMOD)
-endif
-
-RLOTTIE_CFLAGS_EXTMOD :=  $(shell pkg-config --silence-errors --cflags rlottie)
-RLOTTIE_LDFLAGS_EXTMOD := $(shell pkg-config --silence-errors --libs   rlottie)
-ifneq ($(RLOTTIE_LDFLAGS_EXTMOD),)
-CFLAGS_EXTMOD += $(RLOTTIE_CFLAGS_EXTMOD) -DMICROPY_RLOTTIE=1
-LDFLAGS_EXTMOD += $(RLOTTIE_LDFLAGS_EXTMOD)
-endif
-
-FREETYPE_CFLAGS_EXTMOD :=  $(shell pkg-config --silence-errors --cflags freetype2)
-FREETYPE_LDFLAGS_EXTMOD := $(shell pkg-config --silence-errors --libs   freetype2)
-ifneq ($(FREETYPE_LDFLAGS_EXTMOD),)
-CFLAGS_EXTMOD += $(FREETYPE_CFLAGS_EXTMOD) -DMICROPY_FREETYPE=1
-LDFLAGS_EXTMOD += $(FREETYPE_LDFLAGS_EXTMOD)
-endif
-
-FFMPEG_LIBS := libavformat libavcodec libswscale libavutil
-FFMPEG_CFLAGS_EXTMOD :=  $(shell pkg-config --silence-errors --cflags $(FFMPEG_LIBS))
-FFMPEG_LDFLAGS_EXTMOD := $(shell pkg-config --silence-errors --libs   $(FFMPEG_LIBS))
-ifneq ($(FFMPEG_LDFLAGS_EXTMOD),)
-CFLAGS_EXTMOD += $(FFMPEG_CFLAGS_EXTMOD) -DMICROPY_FFMPEG=1
-LDFLAGS_EXTMOD += $(FFMPEG_LDFLAGS_EXTMOD)
-endif
-
-################################################################################
-
 # source files
 SRC_C += \
 	main.c \
@@ -240,9 +200,6 @@ SRC_C += \
 	unix_mphal.c \
 	mpthreadport.c \
 	input.c \
-	modmachine.c \
-	modtime.c \
-	moduselect.c \
 	alloc.c \
 	fatfs_port.c \
 	mpbthciport.c \
@@ -251,14 +208,10 @@ SRC_C += \
 	mpbtstackport_usb.c \
 	mpnimbleport.c \
 	modtermios.c \
-	modusocket.c \
+	modsocket.c \
 	modffi.c \
 	modjni.c \
 	$(wildcard $(VARIANT_DIR)/*.c)
-
-LIB_SRC_C += $(addprefix lib/,\
-	$(LIB_SRC_C_EXTRA) \
-	)
 
 SHARED_SRC_C += $(addprefix shared/,\
 	runtime/gchelper_generic.c \
@@ -274,18 +227,10 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(LIB_SRC_C) 
-# Append any auto-generated sources that are needed by sources listed in
-# SRC_QSTR
-SRC_QSTR_AUTO_DEPS +=
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
 
 ifneq ($(FROZEN_MANIFEST),)
-# To use frozen code create a manifest.py file with a description of files to
-# freeze, then invoke make with FROZEN_MANIFEST=manifest.py (be sure to build from scratch).
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
 
 CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))

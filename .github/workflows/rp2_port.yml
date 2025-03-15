@@ -17,13 +17,13 @@ jobs:
       with:
         release: '9-2019-q4' # The arm-none-eabi-gcc release to use.
     - name: Initialize lv_bindings submodule
-      run: git submodule update --init --recursive lib/lv_bindings  
+      run: git submodule update --init --recursive user_modules/lv_binding_micropython
     - name: Initialize Micropython submodules
-      run: make -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../lib/lv_bindings/bindings.cmake submodules
+      run: make -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../user_modules/lv_binding_micropython/bindings.cmake submodules
     - name: Build mpy-cross
       run: make -j $(nproc) -C mpy-cross
     - name: Build ${{ matrix.board }}
-      run: make -j $(nproc) -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../lib/lv_bindings/bindings.cmake
+      run: make -j $(nproc) -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../user_modules/lv_binding_micropython/bindings.cmake
     - uses: actions/upload-artifact@v2
       if: ${{ env.GITHUB_EVENT_NAME }} == 'push'
       with:

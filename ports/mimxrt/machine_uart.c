@@ -25,14 +25,16 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "py/stream.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_uart.c via MICROPY_PY_MACHINE_UART_INCLUDEFILE.
+
 #include "py/mphal.h"
 #include "ticks.h"
 #include "fsl_common.h"
 #include "fsl_lpuart.h"
 #include "fsl_iomuxc.h"
 #include CLOCK_CONFIG_H
+#include "modmachine.h"
 #include "pin.h"
 
 #define DEFAULT_UART_BAUDRATE (115200)
@@ -40,9 +42,17 @@
 #define MIN_BUFFER_SIZE  (32)
 #define MAX_BUFFER_SIZE  (32766)
 
+#define UART_HWCONTROL_RTS  (1)
+#define UART_HWCONTROL_CTS  (2)
+#define UART_HWCONTROL_MASK (UART_HWCONTROL_RTS | UART_HWCONTROL_CTS)
+
 #define UART_INVERT_TX (1)
 #define UART_INVERT_RX (2)
 #define UART_INVERT_MASK (UART_INVERT_TX | UART_INVERT_RX)
+
+#define UART_IRQ_RXIDLE  (1)
+#define UART_IRQ_TXIDLE  (2)
+#define MP_UART_ALLOWED_FLAGS (UART_IRQ_RXIDLE | UART_IRQ_TXIDLE)
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
@@ -57,6 +67,9 @@ typedef struct _machine_uart_obj_t {
     uint8_t *txbuf;
     uint16_t txbuf_len;
     bool new;
+    uint16_t mp_irq_trigger;   // user IRQ trigger mask
+    uint16_t mp_irq_flags;     // user IRQ active IRQ flags
+    mp_irq_obj_t *mp_irq_obj;  // user IRQ object
 } machine_uart_obj_t;
 
 typedef struct _iomux_table_t {
@@ -67,19 +80,23 @@ typedef struct _iomux_table_t {
     uint32_t configRegister;
 } iomux_table_t;
 
-extern const mp_obj_type_t machine_uart_type;
-
-STATIC const uint8_t uart_index_table[] = MICROPY_HW_UART_INDEX;
-STATIC LPUART_Type *uart_base_ptr_table[] = LPUART_BASE_PTRS;
+static const uint8_t uart_index_table[] = MICROPY_HW_UART_INDEX;
+static LPUART_Type *uart_base_ptr_table[] = LPUART_BASE_PTRS;
 static const iomux_table_t iomux_table_uart[] = {
     IOMUX_TABLE_UART
 };
+static const iomux_table_t iomux_table_uart_cts_rts[] = {
+    IOMUX_TABLE_UART_CTS_RTS
+};
 
-STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
-STATIC const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"};
+static const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
+static const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"};
+static const char *_flow_name[] = {"None", "RTS", "CTS", "RTS|CTS"};
 
 #define RX (iomux_table_uart[index + 1])
 #define TX (iomux_table_uart[index])
+#define RTS (iomux_table_uart_cts_rts[index + 1])
+#define CTS (iomux_table_uart_cts_rts[index])
 
 bool lpuart_set_iomux(int8_t uart) {
     int index = (uart - 1) * 2;
@@ -98,35 +115,101 @@ bool lpuart_set_iomux(int8_t uart) {
     }
 }
 
+bool lpuart_set_iomux_rts(int8_t uart) {
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(iomux_table_uart) == MP_ARRAY_SIZE(iomux_table_uart_cts_rts));
+    int index = (uart - 1) * 2;
+
+    if (RTS.muxRegister != 0) {
+        IOMUXC_SetPinMux(RTS.muxRegister, RTS.muxMode, RTS.inputRegister, RTS.inputDaisy, RTS.configRegister, 0U);
+        IOMUXC_SetPinConfig(RTS.muxRegister, RTS.muxMode, RTS.inputRegister, RTS.inputDaisy, RTS.configRegister,
+            pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, PIN_DRIVE_6, RTS.configRegister));
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool lpuart_set_iomux_cts(int8_t uart) {
+    int index = (uart - 1) * 2;
+
+    if (CTS.muxRegister != 0) {
+        IOMUXC_SetPinMux(CTS.muxRegister, CTS.muxMode, CTS.inputRegister, CTS.inputDaisy, CTS.configRegister, 0U);
+        IOMUXC_SetPinConfig(CTS.muxRegister, CTS.muxMode, CTS.inputRegister, CTS.inputDaisy, CTS.configRegister,
+            pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_IN, PIN_DRIVE_6, CTS.configRegister));
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t status, void *userData) {
     machine_uart_obj_t *self = userData;
-    if (kStatus_LPUART_TxIdle == status) {
+
+    uint16_t mp_irq_flags = 0;
+    if (status == kStatus_LPUART_TxIdle) {
         self->tx_status = kStatus_LPUART_TxIdle;
+        mp_irq_flags = UART_IRQ_TXIDLE;
+    } else if (status == kStatus_LPUART_IdleLineDetected) {
+        mp_irq_flags = UART_IRQ_RXIDLE;
+    }
+    // Check the flags to see if the user handler should be called
+    if (self->mp_irq_trigger & mp_irq_flags) {
+        self->mp_irq_flags = mp_irq_flags;
+        mp_irq_handler(self->mp_irq_obj);
     }
 
-    if (kStatus_LPUART_RxRingBufferOverrun == status) {
+    if (status == kStatus_LPUART_RxRingBufferOverrun) {
         ; // Ringbuffer full, deassert RTS if flow control is enabled
     }
 }
 
-STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
-        "rxbuf=%d, txbuf=%d, timeout=%u, timeout_char=%u, invert=%s)",
-        self->id, self->config.baudRate_Bps, 8 - self->config.dataBitsCount,
-        _parity_name[self->config.parityMode], self->config.stopBitCount + 1,
-        self->handle.rxRingBufferSize, self->txbuf_len, self->timeout, self->timeout_char,
-        _invert_name[self->invert]);
+static void machine_uart_ensure_active(machine_uart_obj_t *uart) {
+    if (uart->lpuart->CTRL == 0) {
+        mp_raise_OSError(EIO);
+    }
 }
 
-STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop,
+void machine_uart_set_baudrate(mp_obj_t uart_in, uint32_t baudrate) {
+    machine_uart_obj_t *uart = MP_OBJ_TO_PTR(uart_in);
+    #if defined(MIMXRT117x_SERIES)
+    // Use the Lpuart1 clock value, which is set for All UART devices.
+    LPUART_SetBaudRate(uart->lpuart, baudrate, CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart1));
+    #else
+    LPUART_SetBaudRate(uart->lpuart, baudrate, CLOCK_GetClockRootFreq(kCLOCK_UartClkRoot));
+    #endif
+}
+
+/******************************************************************************/
+// MicroPython bindings for UART
+
+#define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERT_TX) }, \
+    { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) }, \
+    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) }, \
+    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_IRQ_RXIDLE) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_TXIDLE), MP_ROM_INT(UART_IRQ_TXIDLE) }, \
+
+static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, flow=%s, "
+        "rxbuf=%d, txbuf=%d, timeout=%u, timeout_char=%u, invert=%s, irq=%d)",
+        self->id, self->config.baudRate_Bps, 8 - self->config.dataBitsCount,
+        _parity_name[self->config.parityMode], self->config.stopBitCount + 1,
+        _flow_name[(self->config.enableTxCTS << 1) | self->config.enableRxRTS],
+        self->handle.rxRingBufferSize, self->txbuf_len, self->timeout, self->timeout_char,
+        _invert_name[self->invert], self->mp_irq_trigger);
+}
+
+static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_flow,
            ARG_timeout, ARG_timeout_char, ARG_invert, ARG_rxbuf, ARG_txbuf};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1 } },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -162,6 +245,27 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
     // Set stop bits if configured.
     if (args[ARG_stop].u_int > 0) {
         self->config.stopBitCount = args[ARG_stop].u_int - 1;
+    }
+
+    // Set flow if configured.
+    if (args[ARG_flow].u_int >= 0) {
+        if (args[ARG_flow].u_int & ~UART_HWCONTROL_MASK) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bad flow mask"));
+        }
+
+        if (args[ARG_flow].u_int & UART_HWCONTROL_RTS) {
+            if (!lpuart_set_iomux_rts(uart_index_table[self->id])) {
+                mp_raise_ValueError(MP_ERROR_TEXT("rts not available"));
+            }
+            self->config.enableRxRTS = true;
+        }
+
+        if (args[ARG_flow].u_int & UART_HWCONTROL_CTS) {
+            if (!lpuart_set_iomux_cts(uart_index_table[self->id])) {
+                mp_raise_ValueError(MP_ERROR_TEXT("cts not available"));
+            }
+            self->config.enableTxCTS = true;
+        }
     }
 
     // Set timeout if configured.
@@ -222,12 +326,22 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
             self->timeout_char = min_timeout_char;
         }
 
+        #if defined(MIMXRT117x_SERIES)
+        // Use the Lpuart1 clock value, which is set for All UART devices.
+        LPUART_Init(self->lpuart, &self->config, CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart1));
+        #else
+        LPUART_Init(self->lpuart, &self->config, CLOCK_GetClockRootFreq(kCLOCK_UartClkRoot));
+        #endif
+        self->config.rxIdleType = kLPUART_IdleTypeStartBit;
+        self->config.rxIdleConfig = kLPUART_IdleCharacter4;
         LPUART_Init(self->lpuart, &self->config, BOARD_BOOTCLOCKRUN_UART_CLK_ROOT);
         LPUART_TransferCreateHandle(self->lpuart, &self->handle,  LPUART_UserCallback, self);
         uint8_t *buffer = m_new(uint8_t, rxbuf_len + 1);
         LPUART_TransferStartRingBuffer(self->lpuart, &self->handle, buffer, rxbuf_len);
         self->txbuf = m_new(uint8_t, txbuf_len); // Allocate the TX buffer.
         self->txbuf_len = txbuf_len;
+
+        LPUART_EnableInterrupts(self->lpuart, kLPUART_IdleLineInterruptEnable);
 
         // The Uart supports inverting, but not the fsl API, so it has to coded directly
         // And it has to be done after LPUART_Init.
@@ -246,11 +360,9 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         self->lpuart->STAT |= 1 << LPUART_STAT_BRK13_SHIFT;
         LPUART_EnableTx(self->lpuart, true);
     }
-
-    return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get UART bus.
@@ -268,6 +380,8 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->timeout = 1;
     self->timeout_char = 1;
     self->new = true;
+    self->mp_irq_obj = NULL;
+
     LPUART_GetDefaultConfig(&self->config);
 
     // Configure board-specific pin MUX based on the hardware device number.
@@ -276,65 +390,93 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     if (uart_present) {
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        return machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+        mp_machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+        return MP_OBJ_FROM_PTR(self);
     } else {
         return mp_const_none;
     }
 }
 
-// uart.init(baud, [kwargs])
-STATIC mp_obj_t machine_uart_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    return machine_uart_init_helper(args[0], n_args - 1, args + 1, kw_args);
+// uart.deinit()
+static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+    LPUART_SoftwareReset(self->lpuart);
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(machine_uart_init_obj, 1, machine_uart_init);
 
-STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
+    machine_uart_ensure_active(self);
     size_t count = LPUART_TransferGetRxRingBufferLength(self->lpuart, &self->handle);
-    return MP_OBJ_NEW_SMALL_INT(count);
+    return count;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
 
-STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+    return self->tx_status == kStatus_LPUART_TxIdle;
+}
+
+static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
+    machine_uart_ensure_active(self);
     self->lpuart->CTRL |= 1 << LPUART_CTRL_SBK_SHIFT; // Set SBK bit
     self->lpuart->CTRL &= ~LPUART_CTRL_SBK_MASK; // Clear SBK bit
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
 
-STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (self->tx_status == kStatus_LPUART_TxIdle) {
-        return mp_const_true;
-    } else {
-        return mp_const_false;
+// Reset all defined UARTs
+void machine_uart_deinit_all(void) {
+    for (int i = 0; i < MICROPY_HW_UART_NUM; i++) {
+        if (uart_index_table[i] != 0) {
+            LPUART_SoftwareReset(uart_base_ptr_table[uart_index_table[i]]);
+        }
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
 
-STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
+static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    self->mp_irq_trigger = new_trigger;
+    return 0;
+}
 
-    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
+static mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return self->mp_irq_flags;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return self->mp_irq_trigger;
+    }
+    return 0;
+}
 
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
-    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERT_TX) },
-    { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) },
-
+static const mp_irq_methods_t uart_irq_methods = {
+    .trigger = uart_irq_trigger,
+    .info = uart_irq_info,
 };
-STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
 
-STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args, mp_arg_val_t *args) {
+    if (self->mp_irq_obj == NULL) {
+        self->mp_irq_trigger = 0;
+        self->mp_irq_obj = mp_irq_new(&uart_irq_methods, MP_OBJ_FROM_PTR(self));
+    }
+
+    if (any_args) {
+        // Check the handler
+        mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
+        if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
+        }
+
+        // Check the trigger
+        mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
+        mp_uint_t not_supported = trigger & ~MP_UART_ALLOWED_FLAGS;
+        if (trigger != 0 && not_supported) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%04x unsupported"), not_supported);
+        }
+
+        self->mp_irq_obj->handler = handler;
+        self->mp_irq_obj->ishard = args[MP_IRQ_ARG_INIT_hard].u_bool;
+        self->mp_irq_trigger = trigger;
+    }
+
+    return self->mp_irq_obj;
+}
+
+static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint64_t t = ticks_us64() + (uint64_t)self->timeout * 1000;
     uint64_t timeout_char_us = (uint64_t)self->timeout_char * 1000;
@@ -342,6 +484,8 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     uint8_t *dest = buf_in;
     size_t avail;
     size_t nget;
+
+    machine_uart_ensure_active(self);
 
     for (size_t received = 0; received < size;) {
         // Wait for the first/next character.
@@ -367,13 +511,15 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     return size;
 }
 
-STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     lpuart_transfer_t xfer;
     uint64_t t;
     size_t remaining = size;
     size_t offset = 0;
     uint8_t fifo_size = FSL_FEATURE_LPUART_FIFO_SIZEn(0);
+
+    machine_uart_ensure_active(self);
 
     // First check if a previous transfer is still ongoing,
     // then wait at least the number of remaining character times.
@@ -425,10 +571,11 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
     return size;
 }
 
-STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {
+        machine_uart_ensure_active(self);
         uintptr_t flags = arg;
         ret = 0;
         if (flags & MP_STREAM_POLL_RD) {
@@ -448,7 +595,7 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
             self->config.baudRate_Bps + ticks_us64();
 
         do {
-            if (machine_uart_txdone((mp_obj_t)self) == mp_const_true) {
+            if (mp_machine_uart_txdone(self)) {
                 return 0;
             }
             MICROPY_EVENT_POLL_HOOK
@@ -462,20 +609,3 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
     }
     return ret;
 }
-
-STATIC const mp_stream_p_t uart_stream_p = {
-    .read = machine_uart_read,
-    .write = machine_uart_write,
-    .ioctl = machine_uart_ioctl,
-    .is_text = false,
-};
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_uart_type,
-    MP_QSTR_UART,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
-    make_new, machine_uart_make_new,
-    print, machine_uart_print,
-    protocol, &uart_stream_p,
-    locals_dict, &machine_uart_locals_dict
-    );

@@ -1,4 +1,4 @@
-# to test arbitrariy precision integers
+# to test arbitrary precision integers
 
 x = 1000000000000000000000000000000
 xn = -1000000000000000000000000000000
@@ -9,6 +9,9 @@ print(x)
 print(y)
 print('%#X' % (x - x)) # print prefix
 print('{:#,}'.format(x)) # print with commas
+
+# construction
+print(int(x))
 
 # addition
 print(x + 1)
@@ -102,10 +105,7 @@ x = 4611686018427387904 # big
 x = -4611686018427387904 # big
 
 # sys.maxsize is a constant mpz, so test it's compatible with dynamic ones
-try:
-    import usys as sys
-except ImportError:
-    import sys
+import sys
 print(sys.maxsize + 1 - 1 == sys.maxsize)
 
 # test extraction of big int value via mp_obj_get_int_maybe

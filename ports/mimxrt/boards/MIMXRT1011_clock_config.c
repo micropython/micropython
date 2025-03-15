@@ -241,7 +241,7 @@ void BOARD_BootClockRUN(void) {
     CLOCK_DisableClock(kCLOCK_Lpuart3);
     CLOCK_DisableClock(kCLOCK_Lpuart4);
     /* Set UART_CLK_PODF. */
-    CLOCK_SetDiv(kCLOCK_UartDiv, 0);
+    CLOCK_SetDiv(kCLOCK_UartDiv, 1);
     /* Set Uart clock source. */
     CLOCK_SetMux(kCLOCK_UartMux, 0);
     /* Disable SPDIF clock gate. */

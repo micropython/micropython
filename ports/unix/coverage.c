@@ -4,8 +4,10 @@
 
 #include "py/obj.h"
 #include "py/objfun.h"
+#include "py/objint.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/repl.h"
 #include "py/mpz.h"
@@ -31,7 +33,7 @@ typedef struct _mp_obj_streamtest_t {
     int error_code;
 } mp_obj_streamtest_t;
 
-STATIC mp_obj_t stest_set_buf(mp_obj_t o_in, mp_obj_t buf_in) {
+static mp_obj_t stest_set_buf(mp_obj_t o_in, mp_obj_t buf_in) {
     mp_obj_streamtest_t *o = MP_OBJ_TO_PTR(o_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
@@ -41,16 +43,16 @@ STATIC mp_obj_t stest_set_buf(mp_obj_t o_in, mp_obj_t buf_in) {
     o->pos = 0;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(stest_set_buf_obj, stest_set_buf);
+static MP_DEFINE_CONST_FUN_OBJ_2(stest_set_buf_obj, stest_set_buf);
 
-STATIC mp_obj_t stest_set_error(mp_obj_t o_in, mp_obj_t err_in) {
+static mp_obj_t stest_set_error(mp_obj_t o_in, mp_obj_t err_in) {
     mp_obj_streamtest_t *o = MP_OBJ_TO_PTR(o_in);
     o->error_code = mp_obj_get_int(err_in);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(stest_set_error_obj, stest_set_error);
+static MP_DEFINE_CONST_FUN_OBJ_2(stest_set_error_obj, stest_set_error);
 
-STATIC mp_uint_t stest_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t stest_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_streamtest_t *o = MP_OBJ_TO_PTR(o_in);
     if (o->pos < o->len) {
         if (size > o->len - o->pos) {
@@ -67,7 +69,7 @@ STATIC mp_uint_t stest_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errco
     }
 }
 
-STATIC mp_uint_t stest_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t stest_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_streamtest_t *o = MP_OBJ_TO_PTR(o_in);
     (void)buf;
     (void)size;
@@ -75,7 +77,7 @@ STATIC mp_uint_t stest_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int
     return MP_STREAM_ERROR;
 }
 
-STATIC mp_uint_t stest_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t stest_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_streamtest_t *o = MP_OBJ_TO_PTR(o_in);
     (void)arg;
     (void)request;
@@ -87,7 +89,7 @@ STATIC mp_uint_t stest_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, in
     return 0;
 }
 
-STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
+static const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_buf), MP_ROM_PTR(&stest_set_buf_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_error), MP_ROM_PTR(&stest_set_error_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
@@ -99,15 +101,15 @@ STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mp_stream_ioctl_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
+static MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 
-STATIC const mp_stream_p_t fileio_stream_p = {
+static const mp_stream_p_t fileio_stream_p = {
     .read = stest_read,
     .write = stest_write,
     .ioctl = stest_ioctl,
 };
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_stest_fileio,
     MP_QSTR_stest_fileio,
     MP_TYPE_FLAG_NONE,
@@ -116,7 +118,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 // stream read returns non-blocking error
-STATIC mp_uint_t stest_read2(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t stest_read2(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     (void)o_in;
     (void)buf;
     (void)size;
@@ -124,19 +126,19 @@ STATIC mp_uint_t stest_read2(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
     return MP_STREAM_ERROR;
 }
 
-STATIC const mp_rom_map_elem_t rawfile_locals_dict_table2[] = {
+static const mp_rom_map_elem_t rawfile_locals_dict_table2[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict2, rawfile_locals_dict_table2);
+static MP_DEFINE_CONST_DICT(rawfile_locals_dict2, rawfile_locals_dict_table2);
 
-STATIC const mp_stream_p_t textio_stream_p2 = {
+static const mp_stream_p_t textio_stream_p2 = {
     .read = stest_read2,
     .write = NULL,
     .is_text = true,
 };
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_stest_textio2,
     MP_QSTR_stest_textio2,
     MP_TYPE_FLAG_NONE,
@@ -145,15 +147,15 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 // str/bytes objects without a valid hash
-STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte *)"0123456789"};
-STATIC const mp_obj_str_t bytes_no_hash_obj = {{&mp_type_bytes}, 0, 10, (const byte *)"0123456789"};
+static const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte *)"0123456789"};
+static const mp_obj_str_t bytes_no_hash_obj = {{&mp_type_bytes}, 0, 10, (const byte *)"0123456789"};
 
-STATIC int pairheap_lt(mp_pairheap_t *a, mp_pairheap_t *b) {
+static int pairheap_lt(mp_pairheap_t *a, mp_pairheap_t *b) {
     return (uintptr_t)a < (uintptr_t)b;
 }
 
 // ops array contain operations: x>=0 means push(x), x<0 means delete(-x)
-STATIC void pairheap_test(size_t nops, int *ops) {
+static void pairheap_test(size_t nops, int *ops) {
     mp_pairheap_t node[8];
     for (size_t i = 0; i < MP_ARRAY_SIZE(node); ++i) {
         mp_pairheap_init_node(pairheap_lt, &node[i]);
@@ -183,7 +185,7 @@ STATIC void pairheap_test(size_t nops, int *ops) {
 }
 
 // function to run extra tests for things that can't be checked by scripts
-STATIC mp_obj_t extra_coverage(void) {
+static mp_obj_t extra_coverage(void) {
     // mp_printf (used by ports that don't have a native printf)
     {
         mp_printf(&mp_plat_print, "# mp_printf\n");
@@ -356,19 +358,19 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# repl\n");
 
         const char *str;
-        size_t len = mp_repl_autocomplete("__n", 3, &mp_plat_print, &str);
+        size_t len = mp_repl_autocomplete("__n", 3, &mp_plat_print, &str); // expect "ame__"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
 
-        len = mp_repl_autocomplete("i", 1,  &mp_plat_print, &str);
+        len = mp_repl_autocomplete("im", 2,  &mp_plat_print, &str); // expect "port"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
-        mp_repl_autocomplete("import ", 7,  &mp_plat_print, &str);
-        len = mp_repl_autocomplete("import ut", 9,  &mp_plat_print, &str);
+        mp_repl_autocomplete("import ", 7,  &mp_plat_print, &str); // expect the list of builtins
+        len = mp_repl_autocomplete("import ti", 9,  &mp_plat_print, &str); // expect "me"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
-        mp_repl_autocomplete("import utime", 12,  &mp_plat_print, &str);
+        mp_repl_autocomplete("import m", 8,  &mp_plat_print, &str); // expect "micropython machine math"
 
         mp_store_global(MP_QSTR_sys, mp_import_name(MP_QSTR_sys, mp_const_none, MP_OBJ_NEW_SMALL_INT(0)));
-        mp_repl_autocomplete("sys.", 4, &mp_plat_print, &str);
-        len = mp_repl_autocomplete("sys.impl", 8, &mp_plat_print, &str);
+        mp_repl_autocomplete("sys.", 4, &mp_plat_print, &str); // expect dir(sys)
+        len = mp_repl_autocomplete("sys.impl", 8, &mp_plat_print, &str); // expect "ementation"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
     }
 
@@ -387,7 +389,7 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# str\n");
 
         // intern string
-        mp_printf(&mp_plat_print, "%d\n", mp_obj_is_qstr(mp_obj_str_intern(mp_obj_new_str("intern me", 9))));
+        mp_printf(&mp_plat_print, "%d\n", mp_obj_is_qstr(mp_obj_str_intern(mp_obj_new_str_from_cstr("intern me"))));
     }
 
     // bytearray
@@ -454,6 +456,13 @@ STATIC mp_obj_t extra_coverage(void) {
         mpz_mul_inpl(&mpz, &mpz2, &mpz);
         mpz_as_uint_checked(&mpz, &value);
         mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_not_inpl with argument==0, testing ~0
+        mpz_set_from_int(&mpz, 0);
+        mpz_not_inpl(&mpz, &mpz);
+        mp_int_t value_signed;
+        mpz_as_int_checked(&mpz, &value_signed);
+        mp_printf(&mp_plat_print, "%d\n", (int)value_signed);
     }
 
     // runtime utils
@@ -463,12 +472,15 @@ STATIC mp_obj_t extra_coverage(void) {
         // call mp_call_function_1_protected
         mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_1_protected with invalid args
-        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str("abc", 3));
+        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str_from_cstr("abc"));
 
         // call mp_call_function_2_protected
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_2_protected with invalid args
-        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str("abc", 3), mp_obj_new_str("abc", 3));
+        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str_from_cstr("abc"), mp_obj_new_str_from_cstr("abc"));
+
+        // mp_obj_int_get_checked with mp_obj_int_t that has a value that is a small integer
+        mp_printf(&mp_plat_print, "%d\n", mp_obj_int_get_checked(mp_obj_int_new_mpz()));
 
         // mp_obj_int_get_uint_checked with non-negative small-int
         mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(1)));
@@ -539,13 +551,13 @@ STATIC mp_obj_t extra_coverage(void) {
     {
         mp_printf(&mp_plat_print, "# VM\n");
 
-        // call mp_execute_bytecode with invalide bytecode (should raise NotImplementedError)
+        // call mp_execute_bytecode with invalid bytecode (should raise NotImplementedError)
         mp_module_context_t context;
         mp_obj_fun_bc_t fun_bc;
         fun_bc.context = &context;
         fun_bc.child_table = NULL;
         fun_bc.bytecode = (const byte *)"\x01"; // just needed for n_state
-        mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, mp_obj_t, 1);
+        mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, state, mp_obj_t, 1);
         code_state->fun_bc = &fun_bc;
         code_state->ip = (const byte *)"\x00"; // just needed for an invalid opcode
         code_state->sp = &code_state->state[0];
@@ -578,9 +590,10 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_sched_unlock();
         mp_printf(&mp_plat_print, "unlocked\n");
 
-        // drain pending callbacks
+        // drain pending callbacks, and test mp_event_wait_indefinite(), mp_event_wait_ms()
+        mp_event_wait_indefinite(); // the unix port only waits 500us in this call
         while (mp_sched_num_pending()) {
-            mp_handle_pending(true);
+            mp_event_wait_ms(1);
         }
 
         // setting the keyboard interrupt and raising it during mp_handle_pending
@@ -679,6 +692,24 @@ STATIC mp_obj_t extra_coverage(void) {
         ringbuf.iget = 0;
         ringbuf_put(&ringbuf, 0xaa);
         mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
+
+        // ringbuf_put_bytes() / ringbuf_get_bytes() functions.
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        uint8_t *put = (uint8_t *)"abc123";
+        uint8_t get[7] = {0};
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put_bytes(&ringbuf, put, 7));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_get_bytes(&ringbuf, get, 7));
+        mp_printf(&mp_plat_print, "%s\n", get);
+        // Prefill ringbuffer.
+        for (size_t i = 0; i < sizeof(buf) - 3; ++i) {
+            ringbuf_put(&ringbuf, i);
+        }
+        // Should fail - too full.
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put_bytes(&ringbuf, put, 7));
+        // Should fail - buffer too big.
+        uint8_t large[sizeof(buf) + 5] = {0};
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put_bytes(&ringbuf, large, sizeof(large)));
     }
 
     // pairheap
@@ -721,10 +752,36 @@ STATIC mp_obj_t extra_coverage(void) {
         // mp_obj_is_integer accepts ints and booleans
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_integer(mp_obj_new_int_from_ll(1)));
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_const_true), mp_obj_is_integer(mp_const_false));
-        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_obj_new_str("1", 1)), mp_obj_is_integer(mp_const_none));
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_obj_new_str_from_cstr("1")), mp_obj_is_integer(mp_const_none));
 
         // mp_obj_is_int accepts small int and object ints
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_int(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_int(mp_obj_new_int_from_ll(1)));
+    }
+
+    // Legacy stackctrl.h API, this has been replaced by cstack.h
+    {
+        mp_printf(&mp_plat_print, "# stackctrl\n");
+        char *old_stack_top = MP_STATE_THREAD(stack_top);
+        size_t old_stack_limit = 0;
+        size_t new_stack_limit = SIZE_MAX;
+        #if MICROPY_STACK_CHECK
+        old_stack_limit = MP_STATE_THREAD(stack_limit);
+        MP_STACK_CHECK();
+        #endif
+
+        mp_stack_ctrl_init(); // Will set stack top incorrectly
+        mp_stack_set_top(old_stack_top); // ... and restore it
+
+        #if MICROPY_STACK_CHECK
+        mp_stack_set_limit(MP_STATE_THREAD(stack_limit));
+        MP_STACK_CHECK();
+        new_stack_limit = MP_STATE_THREAD(stack_limit);
+        #endif
+
+        // Nothing should have changed
+        mp_printf(&mp_plat_print, "%d %d\n",
+            old_stack_top == MP_STATE_THREAD(stack_top),
+            MICROPY_STACK_CHECK == 0 || old_stack_limit == new_stack_limit);
     }
 
     mp_printf(&mp_plat_print, "# end coverage.c\n");

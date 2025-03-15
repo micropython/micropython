@@ -27,8 +27,23 @@
 
 #include RA_HAL_H
 #include "pin.h"
+#include "py/ringbuf.h"
+
+#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
+
+#define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV)
+#define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state)
+
+#define MICROPY_PY_LWIP_ENTER
+#define MICROPY_PY_LWIP_REENTER
+#define MICROPY_PY_LWIP_EXIT
+
+#define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
 
 extern const unsigned char mp_hal_status_to_errno_table[4];
+extern int mp_interrupt_char;
+extern ringbuf_t stdin_ringbuf;
 
 static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
     return -mp_hal_status_to_errno_table[status];
@@ -36,6 +51,10 @@ static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
+
+static inline void mp_hal_wake_main_task_from_isr(void) {
+    // Defined for tinyusb support, nothing needs to be done here.
+}
 
 // timing functions
 

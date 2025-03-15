@@ -42,7 +42,7 @@ def event_handler(id, handle, data):
         rtc.stop()
         # indicate 'disconnected'
         LED(1).off()
-        # restart advertisment
+        # restart advertisement
         periph.advertise(device_name="micr_temp", services=[serv_env_sense])
 
     elif id == constants.EVT_GATTS_WRITE:

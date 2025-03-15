@@ -1,4 +1,4 @@
-f = open("io/data/file1")
+f = open("data/file1")
 
 with f as f2:
     print(f2.read())

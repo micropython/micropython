@@ -75,7 +75,7 @@ Execute the next instruction if <condition> is true:
 
 * ite(<condition>) If then else
 
-If <condtion> is true, execute the next instruction, otherwise execute the
+If <condition> is true, execute the next instruction, otherwise execute the
 subsequent one. Thus:
 
 ::
@@ -86,5 +86,5 @@ subsequent one. Thus:
     mov(r0, 200) # runs if r0 != r1
     # execution continues here
 
-This may be extended to control the execution of upto four subsequent instructions: it[x[y[z]]]
+This may be extended to control the execution of up to four subsequent instructions: it[x[y[z]]]
 where x,y,z=t/e; e.g. itt, itee, itete, ittte, itttt, iteee, etc.

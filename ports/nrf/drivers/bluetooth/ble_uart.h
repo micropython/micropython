@@ -37,6 +37,10 @@ void ble_uart_advertise(void);
 bool ble_uart_connected(void);
 bool ble_uart_enabled(void);
 
+uintptr_t mp_ble_uart_stdio_poll(uintptr_t poll_flags);
+int mp_ble_uart_stdin_rx_chr(void);
+mp_uint_t mp_ble_uart_stdout_tx_strn(const char *str, size_t len);
+
 #endif // BLUETOOTH_SD
 
 #endif // BLUETOOTH_LE_UART_H__

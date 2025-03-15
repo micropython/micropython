@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 
+#include "py/mphal.h"
 #include "py/runtime.h"
 
 // Schedules an exception on the main thread (for exceptions "thrown" by async
@@ -235,8 +236,50 @@ void mp_handle_pending(bool raise_exc) {
 
     // Handle any pending callbacks.
     #if MICROPY_ENABLE_SCHEDULER
-    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
+    bool run_scheduler = (MP_STATE_VM(sched_state) == MP_SCHED_PENDING);
+    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
+    // Avoid races by running the scheduler on the main thread, only.
+    // (Not needed if GIL enabled, as GIL ensures thread safety here.)
+    run_scheduler = run_scheduler && mp_thread_is_main_thread();
+    #endif
+    if (run_scheduler) {
         mp_sched_run_pending();
     }
+    #endif
+}
+
+// Handles any pending MicroPython events without waiting for an interrupt or event.
+void mp_event_handle_nowait(void) {
+    #if defined(MICROPY_EVENT_POLL_HOOK_FAST) && !MICROPY_PREVIEW_VERSION_2
+    // For ports still using the old macros.
+    MICROPY_EVENT_POLL_HOOK_FAST
+    #else
+    // Process any port layer (non-blocking) events.
+    MICROPY_INTERNAL_EVENT_HOOK;
+    mp_handle_pending(true);
+    #endif
+}
+
+// Handles any pending MicroPython events and then suspends execution until the
+// next interrupt or event.
+void mp_event_wait_indefinite(void) {
+    #if defined(MICROPY_EVENT_POLL_HOOK) && !MICROPY_PREVIEW_VERSION_2
+    // For ports still using the old macros.
+    MICROPY_EVENT_POLL_HOOK
+    #else
+    mp_event_handle_nowait();
+    MICROPY_INTERNAL_WFE(-1);
+    #endif
+}
+
+// Handle any pending MicroPython events and then suspends execution until the
+// next interrupt or event, or until timeout_ms milliseconds have elapsed.
+void mp_event_wait_ms(mp_uint_t timeout_ms) {
+    #if defined(MICROPY_EVENT_POLL_HOOK) && !MICROPY_PREVIEW_VERSION_2
+    // For ports still using the old macros.
+    MICROPY_EVENT_POLL_HOOK
+    #else
+    mp_event_handle_nowait();
+    MICROPY_INTERNAL_WFE(timeout_ms);
     #endif
 }

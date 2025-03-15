@@ -42,7 +42,6 @@ uint32_t trng_random_u32(void);
 #else
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
 #endif
-#define MICROPY_ALLOC_PARSE_CHUNK_INIT      (32)
 #define MICROPY_ALLOC_PATH_MAX              (256)
 
 // MicroPython emitters
@@ -59,9 +58,8 @@ uint32_t trng_random_u32(void);
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_SCHEDULER_DEPTH             (8)
+#define MICROPY_SCHEDULER_STATIC_NODES      (1)
 #define MICROPY_VFS                         (1)
-#define MICROPY_MODULE_FROZEN_MPY           (1)
-#define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
 
 // Control over Python builtins
 #define MICROPY_PY_BUILTINS_HELP_TEXT       mimxrt_help_text
@@ -69,32 +67,55 @@ uint32_t trng_random_u32(void);
 
 // Extended modules
 #define MICROPY_EPOCH_IS_1970               (1)
-#define MICROPY_PY_USSL_FINALISER           (MICROPY_PY_USSL)
-#define MICROPY_PY_UTIME_MP_HAL             (1)
-#define MICROPY_PY_UOS_INCLUDEFILE          "ports/mimxrt/moduos.c"
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS        (1)
+#define MICROPY_PY_TIME_INCLUDEFILE         "ports/mimxrt/modtime.c"
+#define MICROPY_PY_OS_INCLUDEFILE           "ports/mimxrt/modos.c"
 #define MICROPY_PY_OS_DUPTERM               (3)
-#define MICROPY_PY_UOS_DUPTERM_NOTIFY       (1)
-#define MICROPY_PY_UOS_UNAME                (1)
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (trng_random_u32())
+#define MICROPY_PY_OS_DUPTERM_NOTIFY        (1)
+#define MICROPY_PY_OS_SYNC                  (1)
+#define MICROPY_PY_OS_UNAME                 (1)
+#define MICROPY_PY_OS_URANDOM               (1)
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (trng_random_u32())
 #define MICROPY_PY_MACHINE                  (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE      "ports/mimxrt/modmachine.c"
+#define MICROPY_PY_MACHINE_RESET            (1)
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
+#define MICROPY_PY_MACHINE_BOOTLOADER       (1)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
+#define MICROPY_PY_MACHINE_ADC              (1)
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/mimxrt/machine_adc.c"
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
+#define MICROPY_PY_MACHINE_DHT_READINTO     (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_PWM              (1)
-#define MICROPY_PY_MACHINE_PWM_INIT         (1)
-#define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/mimxrt/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
 #ifndef MICROPY_PY_MACHINE_I2S
 #define MICROPY_PY_MACHINE_I2S              (0)
 #endif
+#define MICROPY_PY_MACHINE_I2S_INCLUDEFILE  "ports/mimxrt/machine_i2s.c"
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_RX  (RX)
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_TX  (TX)
+#define MICROPY_PY_MACHINE_I2S_MCK          (1)
+#define MICROPY_PY_MACHINE_I2S_RING_BUF     (1)
+#ifndef MICROPY_PY_MACHINE_SDCARD
+#define MICROPY_PY_MACHINE_SDCARD           (1)
+#endif
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
 #define MICROPY_PY_MACHINE_TIMER            (1)
+#define MICROPY_PY_MACHINE_WDT              (1)
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/mimxrt/machine_wdt.c"
+#define MICROPY_PY_MACHINE_WDT_TIMEOUT_MS   (1)
 #define MICROPY_SOFT_TIMER_TICKS_MS         systick_ms
+#define MICROPY_PY_MACHINE_UART             (1)
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/mimxrt/machine_uart.c"
+#define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
+#define MICROPY_PY_MACHINE_UART_IRQ         (1)
 #define MICROPY_PY_ONEWIRE                  (1)
-#define MICROPY_PY_UPLATFORM                (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -105,66 +126,32 @@ uint32_t trng_random_u32(void);
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK                  (1)
 #endif
-#ifndef MICROPY_PY_USOCKET
-#define MICROPY_PY_USOCKET                  (1)
+#ifndef MICROPY_PY_SOCKET
+#define MICROPY_PY_SOCKET                   (1)
 #endif
-#define MICROPY_PY_UWEBSOCKET               (MICROPY_PY_LWIP)
+#define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP)
 #define MICROPY_PY_LWIP_SOCK_RAW            (MICROPY_PY_LWIP)
-#define MICROPY_PY_USSL_FINALISER           (MICROPY_PY_USSL)
-// #define MICROPY_PY_UHASHLIB_MD5             (MICROPY_PY_USSL)
-#define MICROPY_PY_UHASHLIB_SHA1            (MICROPY_PY_USSL)
-// #define MICROPY_PY_UCRYPTOLIB               (MICROPY_PY_USSL)
+#define MICROPY_PY_HASHLIB_MD5              (MICROPY_PY_SSL)
+#define MICROPY_PY_HASHLIB_SHA1             (MICROPY_PY_SSL)
+#define MICROPY_PY_CRYPTOLIB                (MICROPY_PY_SSL)
 
-// Prevent the "LWIP task" from running.
-#define MICROPY_PY_LWIP_ENTER   MICROPY_PY_PENDSV_ENTER
-#define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
-#define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
+#endif
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+#define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
+#endif
 
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
 #endif
 
-// For regular code that wants to prevent "background tasks" from running.
-// These background tasks (LWIP, Bluetooth) run in PENDSV context.
-// TODO: Check for the settings of the STM32 port in irq.h
-#define NVIC_PRIORITYGROUP_4    ((uint32_t)0x00000003)
-#define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 15, 0)
-#define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
+#define MICROPY_HW_ENABLE_USBDEV            (1)
+#define MICROPY_HW_USB_CDC                  (1)
 
 // Hooks to add builtins
-
-__attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
-    __set_PRIMASK(state);
-}
-
-__attribute__((always_inline)) static inline uint32_t disable_irq(void) {
-    uint32_t state = __get_PRIMASK();
-    __disable_irq();
-    return state;
-}
-
-static inline uint32_t raise_irq_pri(uint32_t pri) {
-    uint32_t basepri = __get_BASEPRI();
-    // If non-zero, the processor does not process any exception with a
-    // priority value greater than or equal to BASEPRI.
-    // When writing to BASEPRI_MAX the write goes to BASEPRI only if either:
-    //   - Rn is non-zero and the current BASEPRI value is 0
-    //   - Rn is non-zero and less than the current BASEPRI value
-    pri <<= (8 - __NVIC_PRIO_BITS);
-    __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
-    return basepri;
-}
-
-// "basepri" should be the value returned from raise_irq_pri
-static inline void restore_irq_pri(uint32_t basepri) {
-    __set_BASEPRI(basepri);
-}
-
-#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
-#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
 #if defined(IOMUX_TABLE_ENET)
 extern const struct _mp_obj_type_t network_lan_type;
@@ -173,15 +160,21 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH
 #endif
 
+#if MICROPY_PY_NETWORK_CYW43
+extern const struct _mp_obj_type_t mp_network_cyw43_type;
+#define MICROPY_HW_NIC_CYW43                { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) },
+#else
+#define MICROPY_HW_NIC_CYW43
+#endif
+
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_ETH  \
+    MICROPY_HW_NIC_CYW43 \
     MICROPY_BOARD_NETWORK_INTERFACES \
-
-#define MICROPY_HW_PIT_NUM_CHANNELS 3
 
 #ifndef MICROPY_BOARD_ROOT_POINTERS
 #define MICROPY_BOARD_ROOT_POINTERS

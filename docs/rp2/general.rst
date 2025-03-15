@@ -30,7 +30,7 @@ The peripherals include:
 
 * 2 UARTs
 * 2 SPI controllers
-* 2 I2C contollers
+* 2 I2C controllers
 * 16 PWM channels
 * USB 1.1 controller
 * 8 PIO state machines

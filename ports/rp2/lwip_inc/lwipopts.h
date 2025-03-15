@@ -1,7 +1,7 @@
 #ifndef MICROPY_INCLUDED_RP2_LWIP_LWIPOPTS_H
 #define MICROPY_INCLUDED_RP2_LWIP_LWIPOPTS_H
 
-#include <stdint.h>
+#include "py/mpconfig.h"
 
 // This protection is not needed, instead protect lwIP code with flags
 #define SYS_ARCH_DECL_PROTECT(lev) do { } while (0)
@@ -26,14 +26,23 @@
 #define LWIP_NETIF_EXT_STATUS_CALLBACK  1
 #define LWIP_NETIF_STATUS_CALLBACK      1
 
-#define LWIP_IPV6                       0
+#define LWIP_IPV4                       1
+#define LWIP_IPV6                       1
+#define LWIP_ND6_NUM_DESTINATIONS       4
+#define LWIP_ND6_QUEUEING               0
 #define LWIP_DHCP                       1
 #define LWIP_DHCP_CHECK_LINK_UP         1
-#define DHCP_DOES_ARP_CHECK             0 // to speed DHCP up
+#define LWIP_DHCP_DOES_ACD_CHECK        0 // to speed DHCP up
 #define LWIP_DNS                        1
 #define LWIP_DNS_SUPPORT_MDNS_QUERIES   1
 #define LWIP_MDNS_RESPONDER             1
 #define LWIP_IGMP                       1
+
+#if MICROPY_PY_LWIP_PPP
+#define PPP_SUPPORT                     1
+#define PAP_SUPPORT                     1
+#define CHAP_SUPPORT                    1
+#endif
 
 #define LWIP_NUM_NETIF_CLIENT_DATA      LWIP_MDNS_RESPONDER
 #define MEMP_NUM_UDP_PCB                (4 + LWIP_MDNS_RESPONDER)
@@ -53,5 +62,8 @@ extern uint32_t rosc_random_u32(void);
 #define MEMP_NUM_TCP_SEG (32)
 
 typedef uint32_t sys_prot_t;
+
+// Needed for PPP.
+#define sys_jiffies sys_now
 
 #endif // MICROPY_INCLUDED_RP2_LWIP_LWIPOPTS_H

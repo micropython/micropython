@@ -101,7 +101,7 @@
     spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
     )
 
-// Configuration for stardard block protocol (block size FLASH_BLOCK_SIZE).
+// Configuration for standard block protocol (block size FLASH_BLOCK_SIZE).
 #define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) \
     spi_bdev_readblocks(&spi_bdev, (dest), MICROPY_HW_SPIFLASH_BLOCKMAP(bl), (n))
 #define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) \

@@ -27,17 +27,18 @@
 #include <stdio.h>
 
 #include "py/compile.h"
+#include "py/cstack.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "py/stackctrl.h"
 #include "extmod/modbluetooth.h"
 #include "extmod/modnetwork.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
-#include "tusb.h"
+#include "shared/runtime/softtimer.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "uart.h"
 #include "modmachine.h"
 #include "modrp2.h"
@@ -49,7 +50,6 @@
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "pico/unique_id.h"
-#include "hardware/rtc.h"
 #include "hardware/structs/rosc.h"
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
@@ -58,6 +58,13 @@
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
+#if PICO_RP2040
+#include "RP2040.h" // cmsis, for PendSV_IRQn and SCB/SCB_SCR_SEVONPEND_Msk
+#elif PICO_RP2350 && PICO_ARM
+#include "RP2350.h" // cmsis, for PendSV_IRQn and SCB/SCB_SCR_SEVONPEND_Msk
+#endif
+#include "pico/aon_timer.h"
+#include "shared/timeutils/timeutils.h"
 
 extern uint8_t __StackTop, __StackBottom;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
@@ -72,6 +79,20 @@ bi_decl(bi_program_feature_group_with_flags(BINARY_INFO_TAG_MICROPYTHON,
     BI_NAMED_GROUP_SEPARATE_COMMAS | BI_NAMED_GROUP_SORT_ALPHA));
 
 int main(int argc, char **argv) {
+    // This is a tickless port, interrupts should always trigger SEV.
+    #if PICO_ARM
+    SCB->SCR |= SCB_SCR_SEVONPEND_Msk;
+    #endif
+
+    pendsv_init();
+    soft_timer_init();
+
+    // Set the MCU frequency and as a side effect the peripheral clock to 48 MHz.
+    set_sys_clock_khz(SYS_CLK_KHZ, false);
+
+    // Hook for setting up anything that needs to be super early in the bootup process.
+    MICROPY_BOARD_STARTUP();
+
     #if MICROPY_HW_ENABLE_UART_REPL
     bi_decl(bi_program_feature("UART REPL"))
     setup_default_uart();
@@ -82,11 +103,8 @@ int main(int argc, char **argv) {
     #endif
     #endif
 
-    #if MICROPY_HW_ENABLE_USBDEV
-    #if MICROPY_HW_USB_CDC
+    #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_USB_CDC
     bi_decl(bi_program_feature("USB REPL"))
-    #endif
-    tusb_init();
     #endif
 
     #if MICROPY_PY_THREAD
@@ -95,21 +113,13 @@ int main(int argc, char **argv) {
     #endif
 
     // Start and initialise the RTC
-    datetime_t t = {
-        .year = 2021,
-        .month = 1,
-        .day = 1,
-        .dotw = 4, // 0 is Monday, so 4 is Friday
-        .hour = 0,
-        .min = 0,
-        .sec = 0,
-    };
-    rtc_init();
-    rtc_set_datetime(&t);
+    struct timespec ts = { 0, 0 };
+    ts.tv_sec = timeutils_seconds_since_epoch(2021, 1, 1, 0, 0, 0);
+    aon_timer_start(&ts);
+    mp_hal_time_ns_set_from_rtc();
 
     // Initialise stack extents and GC heap.
-    mp_stack_set_top(&__StackTop);
-    mp_stack_set_limit(&__StackTop - &__StackBottom - 256);
+    mp_cstack_init_with_top(&__StackTop, &__StackTop - &__StackBottom);
     gc_init(&__GcHeapStart, &__GcHeapEnd);
 
     #if MICROPY_PY_LWIP
@@ -122,7 +132,7 @@ int main(int argc, char **argv) {
     #endif
     #endif
 
-    #if MICROPY_PY_NETWORK_CYW43
+    #if MICROPY_PY_NETWORK_CYW43 || MICROPY_PY_BLUETOOTH_CYW43
     {
         cyw43_init(&cyw43_state);
         cyw43_irq_init();
@@ -144,6 +154,9 @@ int main(int argc, char **argv) {
     }
     #endif
 
+    // Hook for setting up anything that can wait until after other hardware features are initialised.
+    MICROPY_BOARD_EARLY_INIT();
+
     for (;;) {
 
         // Initialise MicroPython runtime.
@@ -154,6 +167,7 @@ int main(int argc, char **argv) {
         readline_init0();
         machine_pin_init();
         rp2_pio_init();
+        rp2_dma_init();
         machine_i2s_init0();
 
         #if MICROPY_PY_BLUETOOTH
@@ -175,10 +189,15 @@ int main(int argc, char **argv) {
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");
+
+        #if MICROPY_HW_ENABLE_USBDEV
+        mp_usbd_init();
+        #endif
+
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
             ret = pyexec_file_if_exists("main.py");
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;
@@ -199,19 +218,39 @@ int main(int argc, char **argv) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+
+        // Hook for resetting anything immediately following a soft reset command.
+        MICROPY_BOARD_START_SOFT_RESET();
+
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
         #endif
+        machine_i2s_deinit_all();
+        rp2_dma_deinit();
         rp2_pio_deinit();
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_deinit();
         #endif
+        machine_pwm_deinit_all();
         machine_pin_deinit();
+        machine_uart_deinit_all();
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
         #endif
+        soft_timer_deinit();
+        #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+        mp_usbd_deinit();
+        #endif
+
+        // Hook for resetting anything right at the end of a soft reset command.
+        MICROPY_BOARD_END_SOFT_RESET();
+
         gc_sweep_all();
         mp_deinit();
+        #if MICROPY_HW_ENABLE_UART_REPL
+        setup_default_uart();
+        mp_uart_init();
+        #endif
     }
 
     return 0;
@@ -259,40 +298,3 @@ uint32_t rosc_random_u32(void) {
     }
     return value;
 }
-
-const char rp2_help_text[] =
-    "Welcome to MicroPython!\n"
-    "\n"
-    "For online help please visit https://micropython.org/help/.\n"
-    "\n"
-    "For access to the hardware use the 'machine' module.  RP2 specific commands\n"
-    "are in the 'rp2' module.\n"
-    "\n"
-    "Quick overview of some objects:\n"
-    "  machine.Pin(pin) -- get a pin, eg machine.Pin(0)\n"
-    "  machine.Pin(pin, m, [p]) -- get a pin and configure it for IO mode m, pull mode p\n"
-    "    methods: init(..), value([v]), high(), low(), irq(handler)\n"
-    "  machine.ADC(pin) -- make an analog object from a pin\n"
-    "    methods: read_u16()\n"
-    "  machine.PWM(pin) -- make a PWM object from a pin\n"
-    "    methods: deinit(), freq([f]), duty_u16([d]), duty_ns([d])\n"
-    "  machine.I2C(id) -- create an I2C object (id=0,1)\n"
-    "    methods: readfrom(addr, buf, stop=True), writeto(addr, buf, stop=True)\n"
-    "             readfrom_mem(addr, memaddr, arg), writeto_mem(addr, memaddr, arg)\n"
-    "  machine.SPI(id, baudrate=1000000) -- create an SPI object (id=0,1)\n"
-    "    methods: read(nbytes, write=0x00), write(buf), write_readinto(wr_buf, rd_buf)\n"
-    "  machine.Timer(freq, callback) -- create a software timer object\n"
-    "    eg: machine.Timer(freq=1, callback=lambda t:print(t))\n"
-    "\n"
-    "Pins are numbered 0-29, and 26-29 have ADC capabilities\n"
-    "Pin IO modes are: Pin.IN, Pin.OUT, Pin.ALT\n"
-    "Pin pull modes are: Pin.PULL_UP, Pin.PULL_DOWN\n"
-    "\n"
-    "Useful control commands:\n"
-    "  CTRL-C -- interrupt a running program\n"
-    "  CTRL-D -- on a blank line, do a soft reset of the board\n"
-    "  CTRL-E -- on a blank line, enter paste mode\n"
-    "\n"
-    "For further help on a specific object, type help(obj)\n"
-    "For a list of available modules, type help('modules')\n"
-;

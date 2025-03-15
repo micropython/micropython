@@ -247,7 +247,6 @@ Python will interpret the result as 2**32 -1 rather than as -1.
 
 In addition to the restrictions imposed by the native emitter the following constraints apply:
 
-* Functions may have up to four arguments.
 * Default argument values are not permitted.
 * Floating point may be used but is not optimised.
 

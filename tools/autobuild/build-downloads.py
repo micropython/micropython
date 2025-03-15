@@ -5,6 +5,42 @@ import json
 import os
 import sys
 
+VALID_FEATURES = {
+    # Connectivity
+    "BLE",
+    "CAN",
+    "Ethernet",
+    "LoRa",
+    "USB",
+    "USB-C",
+    "WiFi",
+    # MCU features
+    "Dual-core",
+    "External Flash",
+    "External RAM",
+    # Form factor
+    "Feather",
+    # Connectors / sockets
+    "JST-PH",
+    "JST-SH",
+    "mikroBUS",
+    "microSD",
+    "SDCard",
+    # Sensors
+    "Environment Sensor",
+    "IMU",
+    # Other
+    "Audio Codec",
+    "Battery Charging",
+    "Camera",
+    "DAC",
+    "Display",
+    "Microphone",
+    "PoE",
+    "RGB LED",
+    "Secure Element",
+}
+
 
 def main(repo_path, output_path):
     boards_index = []
@@ -18,6 +54,16 @@ def main(repo_path, output_path):
 
         with open(board_json, "r") as f:
             blob = json.load(f)
+
+            features = set(blob.get("features", []))
+            if not features.issubset(VALID_FEATURES):
+                print(
+                    board_json,
+                    "unknown features:",
+                    features.difference(VALID_FEATURES),
+                    file=sys.stderr,
+                )
+                sys.exit(1)
 
             # Use "id" if specified, otherwise default to board dir (e.g. "PYBV11").
             # We allow boards to override ID for the historical build names.

@@ -31,3 +31,4 @@ implementation and the best practices to use them.
    asm_thumb2_index.rst
    filesystem.rst
    pyboard.py.rst
+   micropython2_migration.rst

@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #ifdef CONFIG_NETWORKING
 #include <zephyr/net/net_context.h>
 #endif
@@ -48,6 +48,7 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/stackctrl.h"
+#include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
 #include "extmod/modbluetooth.h"
@@ -58,13 +59,6 @@
 
 #include "modmachine.h"
 #include "modzephyr.h"
-
-#ifdef TEST
-#include "shared/upytesthelper/upytesthelper.h"
-#include "lib/tinytest/tinytest.c"
-#include "shared/upytesthelper/upytesthelper.c"
-#include TEST
-#endif
 
 static char heap[MICROPY_HEAP_SIZE];
 
@@ -96,24 +90,24 @@ void init_zephyr(void) {
 }
 
 #if MICROPY_VFS
-STATIC void vfs_init(void) {
+static void vfs_init(void) {
     mp_obj_t bdev = NULL;
     mp_obj_t mount_point;
     const char *mount_point_str = NULL;
     int ret = 0;
 
     #ifdef CONFIG_DISK_DRIVER_SDMMC
-    mp_obj_t args[] = { mp_obj_new_str(CONFIG_SDMMC_VOLUME_NAME, strlen(CONFIG_SDMMC_VOLUME_NAME)) };
+    mp_obj_t args[] = { mp_obj_new_str_from_cstr(CONFIG_SDMMC_VOLUME_NAME) };
     bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_disk_access_type, make_new)(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/sd";
-    #elif defined(CONFIG_FLASH_MAP) && FLASH_AREA_LABEL_EXISTS(storage)
-    mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(FLASH_AREA_ID(storage)), MP_OBJ_NEW_SMALL_INT(4096) };
+    #elif defined(CONFIG_FLASH_MAP) && FIXED_PARTITION_EXISTS(storage_partition)
+    mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(FIXED_PARTITION_ID(storage_partition)), MP_OBJ_NEW_SMALL_INT(4096) };
     bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_flash_area_type, make_new)(&zephyr_flash_area_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/flash";
     #endif
 
     if ((bdev != NULL)) {
-        mount_point = mp_obj_new_str(mount_point_str, strlen(mount_point_str));
+        mount_point = mp_obj_new_str_from_cstr(mount_point_str);
         ret = mp_vfs_mount_and_chdir_protected(bdev, mount_point);
         // TODO: if this failed, make a new file system and try to mount again
     }
@@ -121,21 +115,20 @@ STATIC void vfs_init(void) {
 #endif // MICROPY_VFS
 
 int real_main(void) {
-    mp_stack_ctrl_init();
-    // Make MicroPython's stack limit somewhat smaller than full stack available
-    mp_stack_set_limit(CONFIG_MAIN_STACK_SIZE - 512);
+    volatile int stack_dummy = 0;
+
+    #if MICROPY_PY_THREAD
+    struct k_thread *z_thread = (struct k_thread *)k_current_get();
+    mp_thread_init((void *)z_thread->stack_info.start, z_thread->stack_info.size / sizeof(uintptr_t));
+    #endif
 
     init_zephyr();
     mp_hal_init();
 
-    #ifdef TEST
-    static const char *argv[] = {"test"};
-    upytest_set_heap(heap, heap + sizeof(heap));
-    int r = tinytest_main(1, argv, groups);
-    printf("status: %d\n", r);
-    #endif
-
 soft_reset:
+    mp_stack_set_top((void *)&stack_dummy);
+    // Make MicroPython's stack limit somewhat smaller than full stack available
+    mp_stack_set_limit(CONFIG_MAIN_STACK_SIZE - 512);
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
@@ -174,22 +167,30 @@ soft_reset:
     machine_pin_deinit();
     #endif
 
+    #if MICROPY_PY_THREAD
+    mp_thread_deinit();
+    gc_collect();
+    #endif
+
+    gc_sweep_all();
+    mp_deinit();
+
     goto soft_reset;
 
     return 0;
 }
 
 void gc_collect(void) {
-    // WARNING: This gc_collect implementation doesn't try to get root
-    // pointers from CPU registers, and thus may function incorrectly.
-    void *dummy;
     gc_collect_start();
-    gc_collect_root(&dummy, ((mp_uint_t)MP_STATE_THREAD(stack_top) - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
+    gc_helper_collect_regs_and_stack();
+    #if MICROPY_PY_THREAD
+    mp_thread_gc_others();
+    #endif
     gc_collect_end();
 }
 
 #if !MICROPY_READER_VFS
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
     mp_raise_OSError(ENOENT);
 }
 #endif

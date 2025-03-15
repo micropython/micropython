@@ -30,7 +30,7 @@
 const char ra_help_text[] =
     "Welcome to MicroPython for Renesas RA!\n"
     "\n"
-    "For online docs please visit http://docs.micropython.org/.\n"
+    "For online docs please visit http://docs.micropython.org/\n"
     "\n"
     "For access to hardware please use machine module.\n"
     "import machine\n"

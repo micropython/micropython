@@ -55,7 +55,7 @@ jobs:
         working-directory: ports/javascript
       - name: Retrieve version
         run: |
-          echo "::set-output name=VERSION_NAME::$(lib/lv_bindings/lvgl/scripts/find_version.sh)"
+          echo "::set-output name=VERSION_NAME::$(user_modules/lv_binding_micropython/lvgl/scripts/find_version.sh)"
         id: version
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.1.3

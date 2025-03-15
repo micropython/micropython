@@ -1,6 +1,8 @@
 # Example using PIO to blink an LED and raise an IRQ at 1Hz.
 # Note: this does not work on Pico W because it uses Pin(25) for LED output.
 
+# ruff: noqa: F821 - @asm_pio decorator adds names to function scope
+
 import time
 from machine import Pin
 import rp2

@@ -8,3 +8,8 @@
 // 256k. Since the SAMD51x20A has 256k RAM, the loader symbol is at that address
 // and so there is a fix here using the previous definition.
 #define DBL_TAP_ADDR_ALT    ((volatile uint32_t *)(HSRAM_ADDR + HSRAM_SIZE - 0x10000 - 4))
+
+// Enabling both two lines below will set the boot file system to
+// the board's external flash.
+#define MICROPY_HW_SPIFLASH         (1)
+#define MICROPY_HW_SPIFLASH_ID      (0)

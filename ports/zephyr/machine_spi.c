@@ -28,15 +28,15 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/spi.h>
 
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/machine_spi.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
+#include "zephyr_device.h"
 
 #if MICROPY_PY_MACHINE_SPI
 
@@ -53,7 +53,7 @@ typedef struct _machine_hard_spi_obj_t {
     struct spi_config config;
 } machine_hard_spi_obj_t;
 
-STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_spi_obj_t *self = self_in;
     mp_printf(print, "SPI(%s, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%s)",
         self->dev->name,
@@ -82,12 +82,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const char *dev_name = mp_obj_str_get_str(args[ARG_id].u_obj);
-    const struct device *dev = device_get_binding(dev_name);
-
-    if (dev == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("device not found"));
-    }
+    const struct device *dev = zephyr_device_find(args[ARG_id].u_obj);
 
     if ((args[ARG_sck].u_obj != MP_OBJ_NULL) || (args[ARG_miso].u_obj != MP_OBJ_NULL) || (args[ARG_mosi].u_obj != MP_OBJ_NULL)) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("explicit choice of sck/miso/mosi is not implemented"));
@@ -103,7 +98,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
                 args[ARG_bits].u_int << 5 |
                 SPI_LINES_SINGLE),
         .slave = 0,
-        .cs = NULL
+        .cs = {},
     };
 
     machine_hard_spi_obj_t *self = mp_obj_malloc(machine_hard_spi_obj_t, &machine_spi_type);
@@ -113,7 +108,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void machine_hard_spi_init(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void machine_hard_spi_init(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit};
 
     static const mp_arg_t allowed_args[] = {
@@ -158,13 +153,13 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *obj, size_t n_args, const mp_ob
         .frequency = baudrate,
         .operation = operation,
         .slave = 0,
-        .cs = NULL
+        .cs = {},
     };
 
     self->config = cfg;
 }
 
-STATIC void machine_hard_spi_transfer(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest) {
+static void machine_hard_spi_transfer(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)obj;
 
     int ret;
@@ -192,7 +187,7 @@ STATIC void machine_hard_spi_transfer(mp_obj_base_t *obj, size_t len, const uint
     }
 }
 
-STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
+static const mp_machine_spi_p_t machine_hard_spi_p = {
     .init = machine_hard_spi_init,
     .transfer = machine_hard_spi_transfer,
 };

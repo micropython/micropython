@@ -6,10 +6,10 @@
     "features": [
         "BLE",
         "Ethernet",
+        "External Flash",
         "PoE",
         "WiFi"
     ],
-    "id": "wesp32",
     "images": [
         "wesp32-iso.jpg",
         "wesp32-top.jpg"
@@ -18,5 +18,5 @@
     "product": "SIL WESP32",
     "thumbnail": "",
     "url": "https://wesp32.com/",
-    "vendor": "Silicognition LLC"
+    "vendor": "Silicognition"
 }

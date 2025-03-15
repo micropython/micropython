@@ -1,11 +1,7 @@
 # check cases converting float to int, relying only on single precision float
 
-try:
-    import ustruct as struct
-    import usys as sys
-except:
-    import struct
-    import sys
+import struct
+import sys
 
 maxsize_bits = 0
 maxsize = sys.maxsize
@@ -60,7 +56,7 @@ print("power of 10 test: %s" % (testpass and "passed" or "failed"))
 def fp2int_test(num, name, should_fail):
     try:
         x = int(num)
-        passed = ~should_fail
+        passed = not should_fail
     except:
         passed = should_fail
     print("%s: %s" % (name, passed and "passed" or "failed"))

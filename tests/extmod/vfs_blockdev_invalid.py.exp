@@ -1,0 +1,28 @@
+<class 'VfsLfs2'>
+opened
+read 1 a
+read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+OSError [Errno 5] EIO
+read 1 a
+read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+OSError [Errno 22] EINVAL
+read 1 a
+read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+OSError [Errno 22] EINVAL
+read 1 a
+read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+OSError [Errno 22] EINVAL
+read 1 a
+read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+<class 'VfsFat'>
+opened
+read 1 a
+read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+OSError [Errno 5] EIO
+OSError [Errno 5] EIO
+OSError [Errno 5] EIO
+OSError [Errno 5] EIO
+OSError [Errno 5] EIO
+OSError [Errno 5] EIO
+OSError [Errno 5] EIO
+OSError [Errno 5] EIO

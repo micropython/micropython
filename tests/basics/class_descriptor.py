@@ -21,14 +21,41 @@ m = Main()
 try:
     m.__class__
 except AttributeError:
+    # Target doesn't support __class__.
     print("SKIP")
     raise SystemExit
 
 r = m.Forward
 if 'Descriptor' in repr(r.__class__):
+    # Target doesn't support descriptors.
     print('SKIP')
     raise SystemExit
+
+# Test assignment and deletion.
 
 print(r)
 m.Forward = 'a'
 del m.Forward
+
+# Test that lookup of descriptors like __get__ are not passed into __getattr__.
+
+
+class NonDescriptor:
+    def __getattr__(self, attr):
+        print("getattr", attr)
+
+
+class TestClass:
+    non_descriptor = NonDescriptor()
+
+
+print(isinstance(TestClass().non_descriptor, NonDescriptor))
+
+t = TestClass()
+t.non_descriptor = 123
+print(t.non_descriptor)
+
+try:
+    del TestClass().non_descriptor
+except AttributeError:
+    print("AttributeError")
