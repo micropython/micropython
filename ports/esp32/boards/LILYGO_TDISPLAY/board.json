@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "https://lilygo.cc/products/lilygo%C2%AE-ttgo-t-display-1-14-inch-lcd-esp32-control-board",
+    "features": [
+        "BLE",
+        "WiFi",
+        "Dual-core",
+        "External Flash",
+        "Display",
+        "USB-C"
+    ],
+    "images": [
+        "lilygo-tdisplay.webp"
+    ],
+    "mcu": "esp32",
+    "product": "LilyGO T-Display",
+    "thumbnail": "",
+    "url": "https://lilygo.cc",
+    "vendor": "LilyGO"
+}

@@ -1,0 +1,27 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "https://www.lilygo.cc/products/t-watch-2020-v3",
+    "features": [
+        "BLE",
+        "WiFi",
+        "Dual-core",
+        "External Flash",
+        "External RAM",
+        "SDCard",
+        "IMU",
+        "Battery Charging",
+        "Display",
+        "Microphone",
+        "USB"
+    ],
+    "images": [
+        "lilygo-twatch2020-v3.webp"
+    ],
+    "mcu": "esp32",
+    "product": "LilyGO T-Watch 2020 V3",
+    "thumbnail": "",
+    "url": "https://lilygo.cc",
+    "vendor": "LilyGO"
+}
