@@ -108,7 +108,7 @@ static mp_obj_t usb_device_submit_xfer(mp_obj_t self, mp_obj_t ep, mp_obj_t buff
         //
         // This C layer doesn't otherwise keep track of which endpoints the host
         // is aware of (or not).
-        mp_raise_ValueError("ep");
+        mp_raise_ValueError(MP_ERROR_TEXT("ep"));
     }
 
     if (!usbd_edpt_claim(USBD_RHPORT, ep_addr)) {
