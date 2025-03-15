@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Set environment variables for MicroPython development
 
 BUILD_VERBOSE=1

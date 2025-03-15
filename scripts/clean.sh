@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Clear build directories
 
 ORIGINAL_DIR=$PWD

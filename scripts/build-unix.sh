@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Build MicroPython-LVGL app for: Unix/Linux systems
 
 source env-variables-micropython.sh
