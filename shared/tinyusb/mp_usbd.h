@@ -40,6 +40,13 @@
 #include "device/dcd.h"
 #endif
 
+// Initialise TinyUSB device.
+static inline void mp_usbd_init_tud(void) {
+    tusb_init();
+    tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0, .tx_persistent = 1 };
+    tud_cdc_configure_fifo(&cfg);
+}
+
 // Run the TinyUSB device task
 void mp_usbd_task(void);
 
@@ -125,7 +132,8 @@ inline static bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd
 
 static inline void mp_usbd_init(void) {
     // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
-    tusb_init();
+    // which is called in the below helper function.
+    mp_usbd_init_tud();
 }
 
 #endif

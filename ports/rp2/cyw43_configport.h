@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_RP2_CYW43_CONFIGPORT_H
 
 // The board-level config will be included here, so it can set some CYW43 values.
+#include <stdio.h>
 #include "py/mpconfig.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
@@ -39,6 +40,7 @@
 #define CYW43_SLEEP_MAX                 (10)
 #define CYW43_NETUTILS                  (1)
 #define CYW43_USE_OTP_MAC               (1)
+#define CYW43_PRINTF(...)               mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
 
 #define CYW43_EPERM                     MP_EPERM // Operation not permitted
 #define CYW43_EIO                       MP_EIO // I/O error

@@ -1,21 +1,36 @@
 # Test rp2.DMA functionality.
 
+import sys
 import time
 import machine
 import rp2
+
+is_rp2350 = "RP2350" in sys.implementation._machine
 
 src = bytes(i & 0xFF for i in range(16 * 1024))
 
 print("# test basic usage")
 
 dma = rp2.DMA()
+
+# Test printing.
 print(dma)
-print(rp2.DMA.unpack_ctrl(dma.pack_ctrl()))
+
+# Test pack_ctrl/unpack_ctrl.
+ctrl_dict = rp2.DMA.unpack_ctrl(dma.pack_ctrl())
+if is_rp2350:
+    for entry in ("inc_read_rev", "inc_write_rev"):
+        assert entry in ctrl_dict
+        del ctrl_dict[entry]
+for key, value in sorted(ctrl_dict.items()):
+    print(key, value)
+
+# Test register access.
 dma.read = 0
 dma.write = 0
 dma.count = 0
 dma.ctrl = dma.pack_ctrl()
-print(dma.read, dma.write, dma.count, dma.ctrl & 0x01FFFFFF, dma.channel, dma.registers)
+print(dma.read, dma.write, dma.count, dma.ctrl & 0x01F, dma.channel, dma.registers)
 dma.close()
 
 # Test closing when already closed.
@@ -62,7 +77,8 @@ dma.write = dest
 dma.count = len(dest) // 4
 dma.ctrl = dma.pack_ctrl()
 dt = run_and_time_dma(dma)
-print(70 <= dt <= 110)
+expected_dt_range = range(40, 70) if is_rp2350 else range(70, 125)
+print(dt in expected_dt_range)
 print(dest[:8], dest[-8:])
 dma.close()
 

@@ -23,17 +23,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include "zephyr_getchar.h"
 
 int real_main(void);
 int mp_console_init(void);
 
-void main(void) {
+int main(void) {
     #ifdef CONFIG_CONSOLE_SUBSYS
     mp_console_init();
     #else
     zephyr_getchar_init();
     #endif
     real_main();
+
+    return 0;
 }

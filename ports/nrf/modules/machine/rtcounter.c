@@ -25,9 +25,8 @@
  * THE SOFTWARE.
  */
 
-#include "py/nlr.h"
+#include "py/mphal.h"
 #include "py/runtime.h"
-#include "mphalport.h"
 #include "rtcounter.h"
 #include "nrfx_rtc.h"
 #include "nrf_clock.h"

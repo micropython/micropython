@@ -1,7 +1,8 @@
 Program your board using the latest version of the esptool.py program, found [here](https://github.com/espressif/esptool).
 
-To flash or erase your NanoS3, you have to first put it into download mode.
-To do this, follow these steps:
+To flash or erase your NANOS3, you have to first put it into download mode.
+NANOS3 doesn't include buttons for RESET and IO0, which should be provided by adding external buttons via a carrier board or other method.
+To put the NANOS3 into download, follow these steps:
 
 - Press and hold the [BOOT] button
 - Press and release the [RESET] button

@@ -9,9 +9,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../tools"))
 import boardgen
 
 # This is NUM_BANK0_GPIOS. Pin indices are 0 to 29 (inclusive).
-NUM_GPIOS = 30
-# Up to 10 additional extended pins (e.g. via the wifi chip).
-NUM_EXT_GPIOS = 10
+NUM_GPIOS = None
+# Up to 32 additional extended pins (e.g. via the wifi chip or io expanders).
+NUM_EXT_GPIOS = None
 
 
 class Rp2Pin(boardgen.Pin):
@@ -108,12 +108,6 @@ class Rp2PinGenerator(boardgen.NumericPinGenerator):
             enable_af=True,
         )
 
-        # Pre-define the pins (i.e. don't require them to be listed in pins.csv).
-        for i in range(NUM_GPIOS):
-            self.add_cpu_pin("GPIO{}".format(i))
-        for i in range(NUM_EXT_GPIOS):
-            self.add_cpu_pin("EXT_GPIO{}".format(i))
-
     # Provided by pico-sdk.
     def cpu_table_size(self):
         return "NUM_BANK0_GPIOS"
@@ -127,6 +121,31 @@ class Rp2PinGenerator(boardgen.NumericPinGenerator):
     def print_source(self, out_source):
         super().print_source(out_source)
         self.print_cpu_locals_dict(out_source)
+
+    def extra_args(self, parser):
+        parser.add_argument("--num-gpios", type=int)
+        parser.add_argument("--num-ext-gpios", type=int)
+
+    def load_inputs(self, out_source):
+        global NUM_GPIOS
+        global NUM_EXT_GPIOS
+
+        # Needed by validate_cpu_pin_name
+        NUM_GPIOS = self.args.num_gpios
+        NUM_EXT_GPIOS = self.args.num_ext_gpios
+
+        if NUM_GPIOS is None:
+            raise boardgen.PinGeneratorError("Please pass num-gpios")
+
+        if NUM_EXT_GPIOS is None:
+            NUM_EXT_GPIOS = 0
+        # Pre-define the pins (i.e. don't require them to be listed in pins.csv).
+        for i in range(NUM_GPIOS):
+            self.add_cpu_pin("GPIO{}".format(i))
+        for i in range(NUM_EXT_GPIOS):
+            self.add_cpu_pin("EXT_GPIO{}".format(i))
+
+        super().load_inputs(out_source)
 
 
 if __name__ == "__main__":

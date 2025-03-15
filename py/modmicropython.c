@@ -200,6 +200,9 @@ static const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     #if MICROPY_KBD_EXCEPTION
     { MP_ROM_QSTR(MP_QSTR_kbd_intr), MP_ROM_PTR(&mp_micropython_kbd_intr_obj) },
     #endif
+    #if MICROPY_PY_MICROPYTHON_RINGIO
+    { MP_ROM_QSTR(MP_QSTR_RingIO), MP_ROM_PTR(&mp_type_ringio) },
+    #endif
     #if MICROPY_ENABLE_SCHEDULER
     { MP_ROM_QSTR(MP_QSTR_schedule), MP_ROM_PTR(&mp_micropython_schedule_obj) },
     #endif

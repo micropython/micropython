@@ -36,6 +36,10 @@
 #include "esp_err.h"
 #include "soc/gpio_sig_map.h"
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
+#include "esp_clk_tree.h"
+#endif
+
 #define PWM_DBG(...)
 // #define PWM_DBG(...) mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, "\n");
 
@@ -207,49 +211,79 @@ static void configure_channel(machine_pwm_obj_t *self) {
     }
 }
 
+// Temporary workaround for ledc_find_suitable_duty_resolution function only being added in IDF V5.2
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 2, 0)
+static uint32_t ledc_find_suitable_duty_resolution(uint32_t src_clk_freq, uint32_t timer_freq) {
+    // This implementation is based on the one used in Micropython v1.23
+
+    // Find the highest bit resolution for the requested frequency
+    unsigned int freq = src_clk_freq;
+
+    int divider = (freq + timer_freq / 2) / timer_freq; // rounded
+    if (divider == 0) {
+        divider = 1;
+    }
+    float f = (float)freq / divider; // actual frequency
+    if (f <= 1.0) {
+        f = 1.0;
+    }
+    freq = (unsigned int)roundf((float)freq / f);
+
+    unsigned int res = 0;
+    for (; freq > 1; freq >>= 1) {
+        ++res;
+    }
+    if (res == 0) {
+        res = 1;
+    } else if (res > HIGHEST_PWM_RES) {
+        // Limit resolution to HIGHEST_PWM_RES to match units of our duty
+        res = HIGHEST_PWM_RES;
+    }
+
+    return res;
+}
+#endif
+
 static void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_config_t *timer) {
+    esp_err_t err;
     if (freq != timer->freq_hz) {
-        // Find the highest bit resolution for the requested frequency
-        unsigned int i = APB_CLK_FREQ; // 80 MHz
-        #if SOC_LEDC_SUPPORT_REF_TICK
-        if (freq < EMPIRIC_FREQ) {
-            i = REF_CLK_FREQ; // 1 MHz
-        }
-        #endif
-
-        int divider = (i + freq / 2) / freq; // rounded
-        if (divider == 0) {
-            divider = 1;
-        }
-        float f = (float)i / divider; // actual frequency
-        if (f <= 1.0) {
-            f = 1.0;
-        }
-        i = (unsigned int)roundf((float)i / f);
-
-        unsigned int res = 0;
-        for (; i > 1; i >>= 1) {
-            ++res;
-        }
-        if (res == 0) {
-            res = 1;
-        } else if (res > HIGHEST_PWM_RES) {
-            // Limit resolution to HIGHEST_PWM_RES to match units of our duty
-            res = HIGHEST_PWM_RES;
-        }
-
-        // Configure the new resolution and frequency
-        timer->duty_resolution = res;
+        // Configure the new frequency and resolution
         timer->freq_hz = freq;
+
+        #if SOC_LEDC_SUPPORT_PLL_DIV_CLOCK
+        timer->clk_cfg = LEDC_USE_PLL_DIV_CLK;
+        #elif SOC_LEDC_SUPPORT_APB_CLOCK
         timer->clk_cfg = LEDC_USE_APB_CLK;
+        #elif SOC_LEDC_SUPPORT_XTAL_CLOCK
+        timer->clk_cfg = LEDC_USE_XTAL_CLK;
+        #else
+        #error No supported PWM / LEDC clocks.
+        #endif
         #if SOC_LEDC_SUPPORT_REF_TICK
         if (freq < EMPIRIC_FREQ) {
             timer->clk_cfg = LEDC_USE_REF_TICK;
         }
         #endif
+        uint32_t src_clk_freq = 0;
+        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
+        err = esp_clk_tree_src_get_freq_hz(timer->clk_cfg, ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED, &src_clk_freq);
+        if (err != ESP_OK) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unable to query source clock frequency %d"), (int)timer->clk_cfg);
+        }
+        #else
+        // Simplified fallback logic for IDF V5.0.x, for targets with APB only.
+        src_clk_freq = APB_CLK_FREQ; // 80 MHz
+        #if SOC_LEDC_SUPPORT_REF_TICK
+        if (timer->clk_cfg == LEDC_USE_REF_TICK) {
+            src_clk_freq = REF_CLK_FREQ; // 1 MHz
+        }
+        #endif // SOC_LEDC_SUPPORT_REF_TICK
+        #endif // ESP_IDF_VERSION
+
+        timer->duty_resolution = ledc_find_suitable_duty_resolution(src_clk_freq, timer->freq_hz);
 
         // Set frequency
-        esp_err_t err = ledc_timer_config(timer);
+        err = ledc_timer_config(timer);
         if (err != ESP_OK) {
             if (err == ESP_FAIL) {
                 mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unreachable frequency %d"), freq);

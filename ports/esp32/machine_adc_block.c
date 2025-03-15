@@ -32,7 +32,7 @@
 #include "driver/adc.h"
 
 machine_adc_block_obj_t madcblock_obj[] = {
-    #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S3
+    #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32S3
     {{&machine_adc_block_type}, ADC_UNIT_1, 12, -1, {0}},
     {{&machine_adc_block_type}, ADC_UNIT_2, 12, -1, {0}},
     #elif CONFIG_IDF_TARGET_ESP32S2

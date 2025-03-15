@@ -1432,7 +1432,7 @@ static mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
         case IP_DROP_MEMBERSHIP: {
             mp_buffer_info_t bufinfo;
             mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
-            if (bufinfo.len != sizeof(ip_addr_t) * 2) {
+            if (bufinfo.len != sizeof(MP_IGMP_IP_ADDR_TYPE) * 2) {
                 mp_raise_ValueError(NULL);
             }
 

@@ -77,6 +77,10 @@ void mp_thread_end_atomic_section(uint32_t);
 void mp_hal_set_interrupt_char(int c);
 void mp_hal_time_ns_set_from_rtc(void);
 
+static inline void mp_hal_wake_main_task_from_isr(void) {
+    // Defined for tinyusb support, nothing needs to be done here.
+}
+
 static inline void mp_hal_delay_us_fast(mp_uint_t us) {
     busy_wait_us(us);
 }
@@ -92,11 +96,15 @@ static inline mp_uint_t mp_hal_ticks_ms(void) {
     return to_ms_since_boot(get_absolute_time());
 }
 
+#if PICO_ARM
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
     // ticks_cpu() is defined as using the highest-resolution timing source
     // in the system. This is usually a CPU clock, but doesn't have to be.
     return time_us_32();
 }
+#elif PICO_RISCV
+mp_uint_t mp_hal_ticks_cpu(void);
+#endif
 
 static inline mp_uint_t mp_hal_get_cpu_freq(void) {
     return clock_get_hz(clk_sys);
@@ -115,7 +123,7 @@ static inline mp_uint_t mp_hal_get_cpu_freq(void) {
 #define MP_HAL_PIN_PULL_UP              (1)
 #define MP_HAL_PIN_PULL_DOWN            (2)
 
-extern uint32_t machine_pin_open_drain_mask;
+extern uint64_t machine_pin_open_drain_mask;
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
 

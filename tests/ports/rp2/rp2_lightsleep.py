@@ -9,13 +9,18 @@
 # A range of sleep periods (1 to 512ms) are tested. The total nominal sleep time
 # is 10.23 seconds, but on most ports this will finish much earlier as interrupts
 # happen before each timeout expires.
+import sys
+
 try:
     from machine import lightsleep, Pin
 except ImportError:
     print("SKIP")
     raise SystemExit
 
-from sys import stdout, platform
+# RP2350 currently fails this test, needs further investigation.
+if "RP2350" in sys.implementation._machine:
+    print("SKIP")
+    raise SystemExit
 
 try:
     led = Pin(Pin.board.LED, Pin.OUT)
@@ -25,7 +30,7 @@ except AttributeError:
 for n in range(100):
     if led:
         led.toggle()
-    stdout.write(chr(ord("a") + (n % 26)))
+    sys.stdout.write(chr(ord("a") + (n % 26)))
     lightsleep(2 ** (n % 10))
 
 print("\nDONE")

@@ -44,7 +44,7 @@
 #define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS_WIDTH_9_10_11
 #endif
 
-#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S3
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32S3
 #define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS_WIDTH_12 \
     { MP_ROM_QSTR(MP_QSTR_WIDTH_12BIT), MP_ROM_INT(12) },
 #else
@@ -87,7 +87,7 @@ static const machine_adc_obj_t madc_obj[] = {
     {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_7, GPIO_NUM_27},
     {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_8, GPIO_NUM_25},
     {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_9, GPIO_NUM_26},
-    #elif CONFIG_IDF_TARGET_ESP32C3
+    #elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
     {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_0, GPIO_NUM_0},
     {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_1, GPIO_NUM_1},
     {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_2, GPIO_NUM_2},
@@ -148,11 +148,13 @@ static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 }
 
 static void madc_atten_helper(const machine_adc_obj_t *self, mp_int_t atten) {
-    esp_err_t err;
+    esp_err_t err = ESP_FAIL;
     if (self->block->unit_id == ADC_UNIT_1) {
         err = adc1_config_channel_atten(self->channel_id, atten);
     } else {
+        #if SOC_ADC_PERIPH_NUM >= 2
         err = adc2_config_channel_atten(self->channel_id, atten);
+        #endif
     }
     if (err != ESP_OK) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid atten"));

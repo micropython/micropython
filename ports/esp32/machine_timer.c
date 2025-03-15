@@ -30,10 +30,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "modmachine.h"
-#include "mphalport.h"
 
 #include "hal/timer_hal.h"
 #include "hal/timer_ll.h"
@@ -155,7 +155,7 @@ void machine_timer_enable(machine_timer_obj_t *self, void (*timer_isr)) {
     // Initialise the timer.
     timer_hal_init(&self->hal_context, self->group, self->index);
     timer_ll_enable_counter(self->hal_context.dev, self->index, false);
-    timer_ll_set_clock_source(self->hal_context.dev, self->index, GPTIMER_CLK_SRC_APB);
+    timer_ll_set_clock_source(self->hal_context.dev, self->index, GPTIMER_CLK_SRC_DEFAULT);
     timer_ll_set_clock_prescale(self->hal_context.dev, self->index, TIMER_DIVIDER);
     timer_hal_set_counter_value(&self->hal_context, 0);
     timer_ll_set_count_direction(self->hal_context.dev, self->index, GPTIMER_COUNT_UP);

@@ -31,18 +31,18 @@ gc_helper_get_regs_and_sp:
 
     /* Store registers into the given array. */
 
-    sw    x8,  0(x10)  /* Save S0.  */
-    sw    x9,  8(x10)  /* Save S1.  */
-    sw   x18, 16(x10)  /* Save S2.  */
-    sw   x19, 24(x10)  /* Save S3.  */
-    sw   x20, 32(x10)  /* Save S4.  */
-    sw   x21, 40(x10)  /* Save S5.  */
-    sw   x22, 48(x10)  /* Save S6.  */
-    sw   x23, 56(x10)  /* Save S7.  */
-    sw   x24, 64(x10)  /* Save S8.  */
-    sw   x25, 72(x10)  /* Save S9.  */
-    sw   x26, 80(x10)  /* Save S10. */
-    sw   x27, 88(x10)  /* Save S11. */
+    sd    x8,  0(x10)  /* Save S0.  */
+    sd    x9,  8(x10)  /* Save S1.  */
+    sd   x18, 16(x10)  /* Save S2.  */
+    sd   x19, 24(x10)  /* Save S3.  */
+    sd   x20, 32(x10)  /* Save S4.  */
+    sd   x21, 40(x10)  /* Save S5.  */
+    sd   x22, 48(x10)  /* Save S6.  */
+    sd   x23, 56(x10)  /* Save S7.  */
+    sd   x24, 64(x10)  /* Save S8.  */
+    sd   x25, 72(x10)  /* Save S9.  */
+    sd   x26, 80(x10)  /* Save S10. */
+    sd   x27, 88(x10)  /* Save S11. */
 
     /* Return the stack pointer. */
 

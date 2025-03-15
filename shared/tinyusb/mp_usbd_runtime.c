@@ -428,8 +428,10 @@ void mp_usbd_init(void) {
     }
 
     if (need_usb) {
-        tusb_init(); // Safe to call redundantly
-        tud_connect(); // Reconnect if mp_usbd_deinit() has disconnected
+        // The following will call tusb_init(), which is safe to call redundantly.
+        mp_usbd_init_tud();
+        // Reconnect if mp_usbd_deinit() has disconnected.
+        tud_connect();
     }
 }
 
@@ -501,6 +503,15 @@ void mp_usbd_task_callback(mp_sched_node_t *node) {
 // Task function can be called manually to force processing of USB events
 // (mostly from USB-CDC serial port when blocking.)
 void mp_usbd_task(void) {
+    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
+    if (!mp_thread_is_main_thread()) {
+        // Avoid race with the scheduler callback by scheduling TinyUSB to run
+        // on the main thread.
+        mp_usbd_schedule_task();
+        return;
+    }
+    #endif
+
     if (in_usbd_task) {
         // If this exception triggers, it means a USB callback tried to do
         // something that itself became blocked on TinyUSB (most likely: read or

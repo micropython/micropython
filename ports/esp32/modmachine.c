@@ -90,9 +90,8 @@ typedef enum {
 
 static bool is_soft_reset = 0;
 
-#if CONFIG_IDF_TARGET_ESP32C3
-int esp_clk_cpu_freq(void);
-#endif
+// Note: this is from a private IDF header
+extern int esp_clk_cpu_freq(void);
 
 static mp_obj_t mp_machine_get_freq(void) {
     return mp_obj_new_int(esp_rom_get_cpu_ticks_per_us() * 1000000);
@@ -101,11 +100,11 @@ static mp_obj_t mp_machine_get_freq(void) {
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
     if (freq != 20 && freq != 40 && freq != 80 && freq != 160
-        #if !CONFIG_IDF_TARGET_ESP32C3
+        #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6)
         && freq != 240
         #endif
         ) {
-        #if CONFIG_IDF_TARGET_ESP32C3
+        #if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
         mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz or 160MHz"));
         #else
         mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
@@ -118,6 +117,8 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     esp_pm_config_esp32_t pm;
     #elif CONFIG_IDF_TARGET_ESP32C3
     esp_pm_config_esp32c3_t pm;
+    #elif CONFIG_IDF_TARGET_ESP32C6
+    esp_pm_config_esp32c6_t pm;
     #elif CONFIG_IDF_TARGET_ESP32S2
     esp_pm_config_esp32s2_t pm;
     #elif CONFIG_IDF_TARGET_ESP32S3
@@ -146,7 +147,7 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
         esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
     }
 
-    #if !CONFIG_IDF_TARGET_ESP32C3
+    #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6)
 
     if (machine_rtc_config.ext0_pin != -1 && (machine_rtc_config.ext0_wake_types & wake_type)) {
         esp_sleep_enable_ext0_wakeup(machine_rtc_config.ext0_pin, machine_rtc_config.ext0_level ? 1 : 0);
@@ -222,7 +223,19 @@ static mp_int_t mp_machine_reset_cause(void) {
 
 #if MICROPY_ESP32_USE_BOOTLOADER_RTC
 #include "soc/rtc_cntl_reg.h"
+#include "usb.h"
+#if CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/usb/usb_dc.h"
+#include "esp32s3/rom/usb/usb_persist.h"
+#include "esp32s3/rom/usb/chip_usb_dw_wrapper.h"
+#endif
+
 NORETURN static void machine_bootloader_rtc(void) {
+    #if CONFIG_IDF_TARGET_ESP32S3 && MICROPY_HW_USB_CDC
+    usb_usj_mode();
+    usb_dc_prepare_persist();
+    chip_usb_set_persist_flags(USBDC_BOOT_DFU);
+    #endif
     REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
     esp_restart();
 }

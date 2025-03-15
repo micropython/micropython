@@ -31,13 +31,6 @@
 #include "pendsv.h"
 #include "irq.h"
 
-// This variable is used to save the exception object between a ctrl-C and the
-// PENDSV call that actually raises the exception.  It must be non-static
-// otherwise gcc-5 optimises it away.  It can point to the heap but is not
-// traced by GC.  This is okay because we only ever set it to
-// mp_kbd_exception which is in the root-pointer set.
-void *pendsv_object;
-
 #if defined(PENDSV_DISPATCH_NUM_SLOTS)
 uint32_t pendsv_dispatch_active;
 pendsv_dispatch_t pendsv_dispatch_table[PENDSV_DISPATCH_NUM_SLOTS];
@@ -49,24 +42,6 @@ void pendsv_init(void) {
     #endif
     // set PendSV interrupt at lowest priority
     NVIC_SetPriority(PendSV_IRQn, IRQ_PRI_PENDSV);
-}
-
-// Call this function to raise a pending exception during an interrupt.
-// It will first try to raise the exception "softly" by setting the
-// mp_pending_exception variable and hoping that the VM will notice it.
-// If this function is called a second time (ie with the mp_pending_exception
-// variable already set) then it will force the exception by using the hardware
-// PENDSV feature.  This will wait until all interrupts are finished then raise
-// the given exception object using nlr_jump in the context of the top-level
-// thread.
-void pendsv_kbd_intr(void) {
-    if (MP_STATE_MAIN_THREAD(mp_pending_exception) == MP_OBJ_NULL) {
-        mp_sched_keyboard_interrupt();
-    } else {
-        MP_STATE_MAIN_THREAD(mp_pending_exception) = MP_OBJ_NULL;
-        pendsv_object = &MP_STATE_VM(mp_kbd_exception);
-        SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
-    }
 }
 
 #if defined(PENDSV_DISPATCH_NUM_SLOTS)
@@ -90,10 +65,7 @@ void pendsv_dispatch_handler(void) {
 __attribute__((naked)) void PendSV_Handler(void) {
     // Handle a PendSV interrupt
     //
-    // For the case of an asynchronous exception, re-jig the
-    // stack so that when we return from this interrupt handler
-    // it returns instead to nlr_jump with argument pendsv_object
-    // note that stack has a different layout if DEBUG is enabled
+    // Calls any pending functions in pendsv_dispatch_table.
     //
     // For the case of a thread switch, swap stacks.
     //
@@ -132,27 +104,6 @@ __attribute__((naked)) void PendSV_Handler(void) {
         ".no_dispatch:\n"
         #endif
 
-        // Check if there is an active object to throw via nlr_jump
-        "ldr r1, pendsv_object_ptr\n"
-        "ldr r0, [r1]\n"
-        "cmp r0, #0\n"
-        "beq .no_obj\n"
-        #if defined(PENDSV_DEBUG)
-        "str r0, [sp, #8]\n"            // store to r0 on stack
-        #else
-        "str r0, [sp, #0]\n"            // store to r0 on stack
-        #endif
-        "mov r0, #0\n"
-        "str r0, [r1]\n"                // clear pendsv_object
-        "ldr r0, nlr_jump_ptr\n"
-        #if defined(PENDSV_DEBUG)
-        "str r0, [sp, #32]\n"           // store to pc on stack
-        #else
-        "str r0, [sp, #24]\n"           // store to pc on stack
-        #endif
-        "bx lr\n"                       // return from interrupt; will return to nlr_jump
-        ".no_obj:\n"                    // pendsv_object==NULL
-
         #if MICROPY_PY_THREAD
         // Do a thread context switch
         "push {r4-r11, lr}\n"
@@ -178,7 +129,5 @@ __attribute__((naked)) void PendSV_Handler(void) {
         #if defined(PENDSV_DISPATCH_NUM_SLOTS)
         "pendsv_dispatch_active_ptr: .word pendsv_dispatch_active\n"
         #endif
-        "pendsv_object_ptr: .word pendsv_object\n"
-        "nlr_jump_ptr: .word nlr_jump\n"
         );
 }
