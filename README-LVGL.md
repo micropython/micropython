@@ -109,7 +109,7 @@ Here is the command to build ESP32 + LVGL which is compatible with ILI9341 drive
 
 ```
 make -C mpy-cross
-make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16" BOARD=ESP32_GENERIC VARIANT=SPIRAM deploy
+make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16" BOARD=ESP32_GENERIC BOARD_VARIANT=SPIRAM deploy
 ```
 
 Explanation about the parameters:

@@ -31,9 +31,9 @@ if [[ $choice -lt 1 || $choice -gt ${#configs[@]} ]]; then
     exit 1
 fi
 
-# Set BOARD and VARIANT based on user choice
+# Set BOARD and BOARD_VARIANT based on user choice
 selected_config=(${configs[$((choice-1))]})
 BOARD=${selected_config[0]}
-VARIANT=${selected_config[1]:-""}
+BOARD_VARIANT=${selected_config[1]:-""}
 
-echo "Selected configuration: BOARD=$BOARD, VARIANT=$VARIANT"
+echo "Selected configuration: BOARD=$BOARD, BOARD_VARIANT=$BOARD_VARIANT"

@@ -11,4 +11,4 @@ if [ -z "$BOARD" ]; then
 fi
 
 cd $MICROPYTHON/ports/esp32
-make deploy BOARD=$BOARD VARIANT=$VARIANT
+make deploy BOARD=$BOARD BOARD_VARIANT=$VARIANT
