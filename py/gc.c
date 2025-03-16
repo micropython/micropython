@@ -848,6 +848,14 @@ void gc_weakref_mark(void *ptr) {
 }
 #endif
 
+#if MICROPY_OOM_CALLBACK
+static gc_oom_callback_t gc_oom_callback = NULL;
+
+void gc_set_oom_callback(gc_oom_callback_t func) {
+    gc_oom_callback = func;
+}
+#endif
+
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
     bool has_finaliser = alloc_flags & GC_ALLOC_FLAG_HAS_FINALISER;
     size_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
@@ -923,6 +931,11 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
             if (!added && gc_try_add_heap(n_bytes)) {
                 added = true;
                 continue;
+            }
+            #endif
+            #if MICROPY_OOM_CALLBACK
+            if (gc_oom_callback) {
+                gc_oom_callback();
             }
             #endif
             return NULL;

@@ -93,4 +93,10 @@ void gc_dump_alloc_table(const mp_print_t *print);
 extern size_t alloc_count;
 #endif
 
+#if MICROPY_OOM_CALLBACK
+typedef void (*gc_oom_callback_t)(void);
+
+void gc_set_oom_callback(gc_oom_callback_t func);
+#endif
+
 #endif // MICROPY_INCLUDED_PY_GC_H
