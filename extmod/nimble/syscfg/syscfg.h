@@ -17,7 +17,7 @@ void *nimble_realloc(void *ptr, size_t size);
 int nimble_sprintf(char *str, const char *fmt, ...);
 #define sprintf(str, fmt, ...) nimble_sprintf(str, fmt, __VA_ARGS__)
 
-#define MYNEWT_VAL(x) MYNEWT_VAL_ ## x
+#define MYNEWT_VAL(x) MYNEWT_VAL_##x
 
 #define MYNEWT_VAL_LOG_LEVEL (255)
 

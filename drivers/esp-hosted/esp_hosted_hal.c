@@ -171,7 +171,7 @@ MP_WEAK int esp_hosted_hal_spi_transfer(const uint8_t *tx_buf, uint8_t *rx_buf, 
     // Wait for handshake pin to go high.
     for (mp_uint_t start = mp_hal_ticks_ms(); ; mp_hal_delay_ms(1)) {
         if (mp_hal_pin_read(MICROPY_HW_WIFI_HANDSHAKE) &&
-           (rx_buf == NULL || mp_hal_pin_read(MICROPY_HW_WIFI_DATAREADY))) {
+            (rx_buf == NULL || mp_hal_pin_read(MICROPY_HW_WIFI_DATAREADY))) {
             break;
         }
         if ((mp_hal_ticks_ms() - start) >= 1000) {
