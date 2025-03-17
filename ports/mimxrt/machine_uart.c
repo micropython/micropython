@@ -37,6 +37,7 @@
 #include "modmachine.h"
 #include "pin.h"
 
+#define DEFAULT_UART_ID  (1)
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_BUFFER_SIZE (256)
 #define MIN_BUFFER_SIZE  (32)
@@ -66,6 +67,8 @@ typedef struct _machine_uart_obj_t {
     uint16_t tx_status;
     uint8_t *txbuf;
     uint16_t txbuf_len;
+    uint8_t *rxbuf;
+    uint16_t rxbuf_len;
     bool new;
     uint16_t mp_irq_trigger;   // user IRQ trigger mask
     uint16_t mp_irq_flags;     // user IRQ active IRQ flags
@@ -197,7 +200,7 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         self->id, self->config.baudRate_Bps, 8 - self->config.dataBitsCount,
         _parity_name[self->config.parityMode], self->config.stopBitCount + 1,
         _flow_name[(self->config.enableTxCTS << 1) | self->config.enableRxRTS],
-        self->handle.rxRingBufferSize, self->txbuf_len, self->timeout, self->timeout_char,
+        self->rxbuf_len, self->txbuf_len, self->timeout, self->timeout_char,
         _invert_name[self->invert], self->mp_irq_trigger);
 }
 
@@ -291,24 +294,32 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     self->config.enableRx = true;
 
     // Set the RX buffer size if configured.
-    size_t rxbuf_len = DEFAULT_BUFFER_SIZE;
     if (args[ARG_rxbuf].u_int > 0) {
-        rxbuf_len = args[ARG_rxbuf].u_int;
+        size_t rxbuf_len = args[ARG_rxbuf].u_int;
         if (rxbuf_len < MIN_BUFFER_SIZE) {
             rxbuf_len = MIN_BUFFER_SIZE;
         } else if (rxbuf_len > MAX_BUFFER_SIZE) {
             mp_raise_ValueError(MP_ERROR_TEXT("rxbuf too large"));
         }
+        // Force re-allocting of the buffer if the size changed
+        if (rxbuf_len != self->rxbuf_len) {
+            self->rxbuf = NULL;
+            self->rxbuf_len = rxbuf_len;
+        }
     }
 
     // Set the TX buffer size if configured.
-    size_t txbuf_len = DEFAULT_BUFFER_SIZE;
     if (args[ARG_txbuf].u_int > 0) {
-        txbuf_len = args[ARG_txbuf].u_int;
+        size_t txbuf_len = args[ARG_txbuf].u_int;
         if (txbuf_len < MIN_BUFFER_SIZE) {
             txbuf_len = MIN_BUFFER_SIZE;
         } else if (txbuf_len > MAX_BUFFER_SIZE) {
             mp_raise_ValueError(MP_ERROR_TEXT("txbuf too large"));
+        }
+        // Force re-allocting of the buffer if the size is changed
+        if (txbuf_len != self->txbuf_len) {
+            self->txbuf = NULL;
+            self->txbuf_len = txbuf_len;
         }
     }
 
@@ -326,22 +337,26 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
             self->timeout_char = min_timeout_char;
         }
 
+        self->config.rxIdleType = kLPUART_IdleTypeStartBit;
+        self->config.rxIdleConfig = kLPUART_IdleCharacter4;
         #if defined(MIMXRT117x_SERIES)
         // Use the Lpuart1 clock value, which is set for All UART devices.
         LPUART_Init(self->lpuart, &self->config, CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart1));
         #else
         LPUART_Init(self->lpuart, &self->config, CLOCK_GetClockRootFreq(kCLOCK_UartClkRoot));
         #endif
-        self->config.rxIdleType = kLPUART_IdleTypeStartBit;
-        self->config.rxIdleConfig = kLPUART_IdleCharacter4;
-        LPUART_Init(self->lpuart, &self->config, BOARD_BOOTCLOCKRUN_UART_CLK_ROOT);
         LPUART_TransferCreateHandle(self->lpuart, &self->handle,  LPUART_UserCallback, self);
-        uint8_t *buffer = m_new(uint8_t, rxbuf_len + 1);
-        LPUART_TransferStartRingBuffer(self->lpuart, &self->handle, buffer, rxbuf_len);
-        self->txbuf = m_new(uint8_t, txbuf_len); // Allocate the TX buffer.
-        self->txbuf_len = txbuf_len;
+        if (self->rxbuf == NULL) {
+            self->rxbuf = m_new(uint8_t, self->rxbuf_len + 1);
+        }
+        LPUART_TransferStartRingBuffer(self->lpuart, &self->handle, self->rxbuf, self->rxbuf_len);
+        if (self->txbuf == NULL) {
+            self->txbuf = m_new(uint8_t, self->txbuf_len); // Allocate the TX buffer.
+        }
 
+        #if MICROPY_PY_MACHINE_UART_IRQ
         LPUART_EnableInterrupts(self->lpuart, kLPUART_IdleLineInterruptEnable);
+        #endif
 
         // The Uart supports inverting, but not the fsl API, so it has to coded directly
         // And it has to be done after LPUART_Init.
@@ -363,10 +378,17 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
 }
 
 static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get UART bus.
-    int uart_id = mp_obj_get_int(args[0]);
+    int uart_id;
+    if (n_args > 0) {
+        uart_id = mp_obj_get_int(args[0]);
+        n_args--;
+        args++;
+    } else {
+        uart_id = DEFAULT_UART_ID;
+    }
     if (uart_id < 0 || uart_id > MICROPY_HW_UART_NUM || uart_index_table[uart_id] == 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) doesn't exist"), uart_id);
     }
@@ -379,8 +401,13 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     self->invert = false;
     self->timeout = 1;
     self->timeout_char = 1;
+    self->rxbuf = NULL;
+    self->rxbuf_len = DEFAULT_BUFFER_SIZE;
+    self->txbuf = NULL;
+    self->txbuf_len = DEFAULT_BUFFER_SIZE;
     self->new = true;
     self->mp_irq_obj = NULL;
+    self->mp_irq_trigger = 0;
 
     LPUART_GetDefaultConfig(&self->config);
 
@@ -390,7 +417,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     if (uart_present) {
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        mp_machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+        mp_machine_uart_init_helper(self, n_args, args, &kw_args);
         return MP_OBJ_FROM_PTR(self);
     } else {
         return mp_const_none;
@@ -427,6 +454,7 @@ void machine_uart_deinit_all(void) {
     }
 }
 
+#if MICROPY_PY_MACHINE_UART_IRQ
 static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     self->mp_irq_trigger = new_trigger;
@@ -475,6 +503,7 @@ static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args
 
     return self->mp_irq_obj;
 }
+#endif
 
 static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
