@@ -116,8 +116,10 @@ typedef struct _machine_uart_obj_t {
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
     uint8_t invert;
     uint8_t flow;
+    uint16_t rxbuf_len;
     ringbuf_t read_buffer;
     mutex_t *read_mutex;
+    uint16_t txbuf_len;
     ringbuf_t write_buffer;
     mutex_t *write_mutex;
     uint16_t mp_irq_trigger;   // user IRQ trigger mask
@@ -128,10 +130,10 @@ typedef struct _machine_uart_obj_t {
 static machine_uart_obj_t machine_uart_obj[] = {
     {{&machine_uart_type}, uart0, 0, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
      MICROPY_HW_UART0_TX, MICROPY_HW_UART0_RX, MICROPY_HW_UART0_CTS, MICROPY_HW_UART0_RTS,
-     0, 0, 0, 0, {NULL, 1, 0, 0}, &read_mutex_0, {NULL, 1, 0, 0}, &write_mutex_0, 0, 0, NULL},
+     0, 0, 0, 0, 0, {NULL, 1, 0, 0}, &read_mutex_0, 0, {NULL, 1, 0, 0}, &write_mutex_0, 0, 0, NULL},
     {{&machine_uart_type}, uart1, 1, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
      MICROPY_HW_UART1_TX, MICROPY_HW_UART1_RX, MICROPY_HW_UART1_CTS, MICROPY_HW_UART1_RTS,
-     0, 0, 0, 0, {NULL, 1, 0, 0}, &read_mutex_1, {NULL, 1, 0, 0}, &write_mutex_1},
+     0, 0, 0, 0, 0, {NULL, 1, 0, 0}, &read_mutex_1, 0, {NULL, 1, 0, 0}, &write_mutex_1, 0, 0, NULL},
 };
 
 static const char *_parity_name[] = {"None", "0", "1"};
@@ -252,7 +254,7 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, "
         "txbuf=%d, rxbuf=%d, timeout=%u, timeout_char=%u, invert=%s, irq=%d)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->tx, self->rx, self->write_buffer.size - 1, self->read_buffer.size - 1,
+        self->stop, self->tx, self->rx, self->txbuf_len, self->rxbuf_len,
         self->timeout, self->timeout_char, _invert_name[self->invert], self->mp_irq_trigger);
 }
 
@@ -365,24 +367,32 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     }
 
     // Set the RX buffer size if configured.
-    size_t rxbuf_len = DEFAULT_BUFFER_SIZE;
     if (args[ARG_rxbuf].u_int > 0) {
-        rxbuf_len = args[ARG_rxbuf].u_int;
+        size_t rxbuf_len = args[ARG_rxbuf].u_int;
         if (rxbuf_len < MIN_BUFFER_SIZE) {
             rxbuf_len = MIN_BUFFER_SIZE;
         } else if (rxbuf_len > MAX_BUFFER_SIZE) {
             mp_raise_ValueError(MP_ERROR_TEXT("rxbuf too large"));
         }
+        // Force re-allocting of the buffer if the size changed
+        if (rxbuf_len != self->rxbuf_len) {
+            self->read_buffer.buf = NULL;
+            self->rxbuf_len = rxbuf_len;
+        }
     }
 
     // Set the TX buffer size if configured.
-    size_t txbuf_len = DEFAULT_BUFFER_SIZE;
     if (args[ARG_txbuf].u_int > 0) {
-        txbuf_len = args[ARG_txbuf].u_int;
+        size_t txbuf_len = args[ARG_txbuf].u_int;
         if (txbuf_len < MIN_BUFFER_SIZE) {
             txbuf_len = MIN_BUFFER_SIZE;
         } else if (txbuf_len > MAX_BUFFER_SIZE) {
             mp_raise_ValueError(MP_ERROR_TEXT("txbuf too large"));
+        }
+        // Force re-allocting of the buffer if the size changed
+        if (txbuf_len != self->txbuf_len) {
+            self->write_buffer.buf = NULL;
+            self->txbuf_len = txbuf_len;
         }
     }
 
@@ -423,11 +433,14 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         uart_set_hw_flow(self->uart, self->flow & UART_HWCONTROL_CTS, self->flow & UART_HWCONTROL_RTS);
 
         // Allocate the RX/TX buffers.
-        ringbuf_alloc(&(self->read_buffer), rxbuf_len + 1);
-        MP_STATE_PORT(rp2_uart_rx_buffer[self->uart_id]) = self->read_buffer.buf;
-
-        ringbuf_alloc(&(self->write_buffer), txbuf_len + 1);
-        MP_STATE_PORT(rp2_uart_tx_buffer[self->uart_id]) = self->write_buffer.buf;
+        if (self->read_buffer.buf == NULL) {
+            ringbuf_alloc(&(self->read_buffer), self->rxbuf_len + 1);
+            MP_STATE_PORT(rp2_uart_rx_buffer[self->uart_id]) = self->read_buffer.buf;
+        }
+        if (self->write_buffer.buf == NULL) {
+            ringbuf_alloc(&(self->write_buffer), self->txbuf_len + 1);
+            MP_STATE_PORT(rp2_uart_tx_buffer[self->uart_id]) = self->write_buffer.buf;
+        }
 
         // Set the irq handler.
         if (self->uart_id == 0) {
@@ -454,6 +467,10 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
 
     // Get static peripheral object.
     machine_uart_obj_t *self = (machine_uart_obj_t *)&machine_uart_obj[uart_id];
+    self->rxbuf_len = DEFAULT_BUFFER_SIZE;
+    self->read_buffer.buf = NULL;
+    self->txbuf_len = DEFAULT_BUFFER_SIZE;
+    self->write_buffer.buf = NULL;
 
     // Initialise the UART peripheral.
     mp_map_t kw_args;
