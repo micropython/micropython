@@ -71,8 +71,8 @@ list(APPEND MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/dht/dht.c
 )
 
-string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/tinyusb)
-if(MICROPY_PY_TINYUSB AND NOT ECHO_SUBMODULES)
+list(APPEND GIT_SUBMODULES lib/tinyusb)
+if(MICROPY_PY_TINYUSB)
     set(TINYUSB_SRC "${MICROPY_DIR}/lib/tinyusb/src")
     string(TOUPPER OPT_MCU_${IDF_TARGET} tusb_mcu)
 
@@ -193,6 +193,17 @@ list(APPEND IDF_COMPONENTS
 # Provide the default LD fragment if not set
 if (MICROPY_USER_LDFRAGMENTS)
     set(MICROPY_LDFRAGMENTS ${MICROPY_USER_LDFRAGMENTS})
+endif()
+
+if (UPDATE_SUBMODULES)
+    # ESP-IDF checks if some paths exist before CMake does. Some paths don't
+    # yet exist if this is an UPDATE_SUBMODULES pass on a brand new checkout, so remove
+    # any path which might not exist yet. A "real" build will not set UPDATE_SUBMODULES.
+    unset(MICROPY_SOURCE_TINYUSB)
+    unset(MICROPY_SOURCE_EXTMOD)
+    unset(MICROPY_SOURCE_LIB)
+    unset(MICROPY_INC_TINYUSB)
+    unset(MICROPY_INC_CORE)
 endif()
 
 # Register the main IDF component.
