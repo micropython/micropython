@@ -27,15 +27,25 @@
 #define MICROPY_INCLUDED_ALIF2_UART_H
 
 #include "py/ringbuf.h"
+#include "uart.h"
 
-void mp_uart_init(unsigned int uart_id, uint32_t baudrate, mp_hal_pin_obj_t tx, mp_hal_pin_obj_t rx, ringbuf_t *rx_ringbuf);
+#define UART_MAX (8)
+#define MP_UART_IRQ_RX (1)
+#define MP_UART_IRQ_RXIDLE (2)
+#define MP_UART_IRQ_TXIDLE (4)
+
+void mp_uart_init(unsigned int uart_id, uint32_t baudrate,
+    UART_DATA_BITS data_bits, UART_PARITY parity, UART_STOP_BITS stop_bits,
+    mp_hal_pin_obj_t tx, mp_hal_pin_obj_t rx, ringbuf_t *rx_ringbuf);
 void mp_uart_deinit(unsigned int uart_id);
 
-void mp_uart_set_irq_callback(unsigned int uart_id, void (*callback)(void));
+void mp_uart_set_irq_callback(unsigned int uart_id, unsigned int trigger, void (*callback)(unsigned int uart_id, unsigned int trigger));
 void mp_uart_set_flow(unsigned int uart_id, mp_hal_pin_obj_t rts, mp_hal_pin_obj_t cts);
 void mp_uart_set_baudrate(unsigned int uart_id, uint32_t baudrate);
+void mp_uart_set_bits_parity_stop(unsigned int uart_id, UART_DATA_BITS data_bits, UART_PARITY parity, UART_STOP_BITS stop_bits);
 
 size_t mp_uart_rx_any(unsigned int uart_id);
+size_t mp_uart_tx_any(unsigned int uart_id);
 int mp_uart_rx_char(unsigned int uart_id);
 void mp_uart_tx_data(unsigned int uart_id, const uint8_t *src, size_t len);
 
