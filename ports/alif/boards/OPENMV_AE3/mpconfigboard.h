@@ -30,6 +30,18 @@ typedef intptr_t mp_off_t;
 // #define MICROPY_HW_SPI0_NSS         (pin_P5_2)
 #define MICROPY_HW_SPI0_SCK         (pin_P5_3)
 
+// UART buses
+#define MICROPY_HW_UART1_TX         (pin_P0_5)
+#define MICROPY_HW_UART1_RX         (pin_P0_4)
+#define MICROPY_HW_UART3_TX         (pin_P1_3)
+#define MICROPY_HW_UART3_RX         (pin_P1_2)
+#define MICROPY_HW_UART3_RTS        (pin_P7_3)
+#define MICROPY_HW_UART3_CTS        (pin_P7_2)
+#define MICROPY_HW_UART4_TX         (pin_P5_1)
+#define MICROPY_HW_UART4_RX         (pin_P5_0)
+#define MICROPY_HW_UART5_TX         (pin_P5_3)
+#define MICROPY_HW_UART5_RX         (pin_P5_2)
+
 #define MICROPY_HW_USB_VID          0x37C5
 #define MICROPY_HW_USB_PID          0x16E3
 
