@@ -6,6 +6,7 @@
 void machine_pin_init(void);
 void machine_pin_deinit(void);
 void machine_i2s_init0(void);
+void machine_spi_init0(void);
 void machine_i2s_deinit_all(void);
 void machine_pwm_deinit_all(void);
 void machine_uart_deinit_all(void);
