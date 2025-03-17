@@ -139,14 +139,12 @@ Methods
    Constant value that reads the maximum number of supported receive filters
    for this hardware controller.
 
-.. method:: CAN.send(identifier, data, flags=0, fifo_equal=True)
+.. method:: CAN.send(id, data, flags=0)
 
-   - ``identifier`` is an integer CAN identifier value.
+   - ``id`` is an integer CAN identifier value.
    - ``data`` is a bytes object (or similar) containing the CAN message data.
    - ``flags`` is OR-ed together flags :class:`CAN.MessageFlags` specifying
      properties of the outgoing CAN message (Extended ID, Remote request, etc.)
-   - ``keep_equal`` is a flag for whether messages with the same identifiers
-     should be kept in the queue or replaced (see below).
 
    Write a new CAN message into the controller's hardware transmit queue to be
    sent onto the bus. The transmit queue is a priority queue sorted first on CAN
@@ -158,15 +156,17 @@ Methods
    de-queued and replaced.
 
    If the queue is full and the new message has equal priority to the lowest
-   priority message in the queue, then the behaviour depends on the
-   ``keep_equal`` argument:
+   priority message in the queue, then the behaviour depends on whether the
+   ``REPLACE_EQUAL`` flag is set:
 
-   - If ``True`` (default), the queue remains unchanged and the new message is
-     not queued. This allows reliable transmission of messages in FIFO order.
-   - If ``False``, the oldest matching message in the transmit queue is
-     de-queued and replaced with the new message.
+   - If unset (default), the queue remains unchanged and the new message is not
+     queued. This allows reliable transmission of messages in FIFO order.
+   - If set, a matching message in the transmit queue is de-queued and replaced
+     with the new message. If multiple messages in the transmit queue match then
+     the driver may choose the oldest one to de-queue, but the caller shouldn't
+     rely on this behaviour.
 
-   The function returns an integer index (1-based) which identifies the queue
+   The function returns an integer index (0-based) which identifies the queue
    entry where the new message was written. This is a hardware-specific index
    value that does not reflect which message will be sent next.
 
@@ -175,7 +175,7 @@ Methods
    with the new message.
 
    If the hardware queue was full and the new message could not be written into
-   the queue at all due to priorities, then the return value is ``0``.
+   the queue at all due to priorities, then the return value is ``None``.
 
    .. note:: This intentionally low-level implementation is designed so the
       caller tracks the messages in each hardware queue entry. See the ``can`` and
@@ -186,30 +186,31 @@ Methods
     Constant bit value that is ORed with the index result from :func:`CAN.send`
     if another message was de-queued and replaced with the new message.
 
-.. data:: CAN.send_max
+.. data:: CAN.SEND_MAX
 
    Constant, indicating the maximum number of entries in the hardware transmit
-   queue (this is also the highest possible index returned from ``send``).
+   queue (this is also one more than the highest possible index returned from
+   ``send``).
 
 .. method:: CAN.irq_send(callback, hard=False)
 
    Sets an interrupt ``callback`` function to be called when the controller sends
    a message on the bus, or has attempted to send.
 
-   Callback arguments are a tuple or list with four elements:
+   Callback function receives a single argument which is a 4-tuple consisting of:
 
+   - This CAN object instance.
    - The integer index value that was returned from :func:`CAN.send` when the
      corresponding message was queued.
+   - Success flag. True if the message was sent successfully, or False if message
+     sending failed (aborted, or controller configured not to retry.)
    - A :func:`time.ticks_us()` timestamp indicating when the message was
      acknowledged sent (or when sending failed).
-   - Send Status. 0 if the message was sent successfully, or a bitwise OR
-     of :class:`CAN.SendErrors` flags otherwise.
-   - Boolean flag, set to ``True`` if the CAN controller hardware has already
-     re-queued this message to retry sending. ``False`` if sending succeeded,
-     or if the message was not re-qeueud.
 
-   .. note:: The callback function must not store a reference to the argument.
-             The same tuple or list object may be reused for each IRQ.
+   .. note:: The callback function must not store a reference to the argument
+             tuple. The same tuple object may be reused for each IRQ.
+
+   Clear the callback by passing ``None`` as the argument.
 
    If ``hard`` is set to True then the callback will be called in "hard"
    interrupt context on ports which support this. The parameter is ignored
@@ -247,7 +248,7 @@ Methods
    bus.
 
    .. note:: As a low-level class, :class:`machine.CAN` does not contain a
-             normal ``recv()`` method. Refer to (planned) ``can`` and ``iocan``
+             normal ``recv()`` method. Refer to (planned) ``can`` and ``aiocan``
              modules, instead.
 
 .. method:: CAN.get_state()
@@ -339,7 +340,7 @@ Methods
 
    Without any arguments, returns the current mode of operation.
 
-   .. note:: Note all modes are supported by all CAN controller hardware.
+   .. note:: Not all modes are supported by all CAN controller hardware.
              Passing an unsupported mode value will raise ``ValueError``.
 
 .. class:: CAN.Mode
@@ -386,6 +387,11 @@ Methods
      CAN FD support will raise ``ValueError``.
    - ``BRS`` - For CAN FD controllers and FD data format messages, indicates the
      bitrate should be switched during the data phase.
+   - ``REPLACE_SAME`` - If set in the ``flags`` argument of :func:`CAN.send`,
+     indicates that an existing queued message with an equal CAN ID should be
+     replaced with this message. Otherwise only messages with a lower priority
+     CAN ID are replaced. See the :func:`CAN.send` documentation for more
+     details. This flag is never set in received messages.
 
 .. class:: CAN.RecvErrors
 
@@ -397,12 +403,3 @@ Methods
    - ``OVERRUN`` - One or more messages overran the receive hardware
                    queue and were lost.
    - ``ESI`` - The ESI flag of a received CAN FD message was set.
-
-.. class:: CAN.SendErrors
-
-    Enumeration class representing possible error statuses when
-    sending a CAN message. Multiple values may be ORed together.
-
-   - ``ARB`` - Arbitration was lost.
-   - ``NACK`` - Sent message was not ACKed.
-   - ``ERR`` - A bus error was detected during transmission.
