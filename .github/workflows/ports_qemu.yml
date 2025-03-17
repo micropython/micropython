@@ -30,6 +30,12 @@ jobs:
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
+    - name: Artifact failure results
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: tests results
+        path: tests/results/
 
   build_and_test_rv32:
     runs-on: ubuntu-latest
@@ -42,3 +48,9 @@ jobs:
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
+    - name: Artifact failure results
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: tests results
+        path: tests/results/
