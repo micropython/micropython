@@ -14,7 +14,11 @@ except (ImportError, AttributeError):
 import time, sys
 
 # Configure pins based on the target.
-if "esp32" in sys.platform:
+if "alif" in sys.platform:
+    uart_id = 1
+    tx_pin = None
+    rx_pin = None
+elif "esp32" in sys.platform:
     uart_id = 1
     tx_pin = 4
     rx_pin = 5

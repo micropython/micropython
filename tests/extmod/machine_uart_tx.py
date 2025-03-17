@@ -14,7 +14,11 @@ bit_margin = 0
 timing_margin_us = 100
 
 # Configure pins based on the target.
-if "esp32" in sys.platform:
+if "alif" in sys.platform:
+    uart_id = 1
+    pins = {}
+    bit_margin = 1
+elif "esp32" in sys.platform:
     uart_id = 1
     pins = {}
     timing_margin_us = 400

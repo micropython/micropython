@@ -12,7 +12,10 @@ except (ImportError, AttributeError):
 import time, sys
 
 # Configure pins based on the target.
-if "rp2" in sys.platform:
+if "alif" in sys.platform:
+    uart_id = 1
+    tx_pin = None
+elif "rp2" in sys.platform:
     uart_id = 0
     tx_pin = "GPIO0"
     rx_pin = "GPIO1"
