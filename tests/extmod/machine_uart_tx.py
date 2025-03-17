@@ -37,6 +37,13 @@ elif "samd" in sys.platform:
     pins = {"tx": "D1", "rx": "D0"}
     timing_margin_us = 300
     bit_margin = 1
+elif "alif" in sys.platform:
+    if "Alif Ensemble DevKit" in sys.implementation._machine:
+        uart_id = 0
+    else:
+        uart_id = 4
+    pins = {}
+    bit_margin = 1
 else:
     print("SKIP")
     raise SystemExit

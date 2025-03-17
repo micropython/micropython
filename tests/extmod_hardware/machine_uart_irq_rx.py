@@ -40,6 +40,13 @@ elif "renesas-ra" in sys.platform:
     uart_id = 9
     tx_pin = None  # P602 @ RA6M2
     rx_pin = None  # P601 @ RA6M2
+elif "alif" in sys.platform:
+    if "Alif Ensemble DevKit" in sys.implementation._machine:
+        uart_id = 0
+    else:
+        uart_id = 4
+    tx_pin = None
+    rx_pin = None
 elif "CC3200" in sys.implementation._machine:
     # CC3200 doesn't work because it's too slow and has an allocation error in the handler.
     print("SKIP")
