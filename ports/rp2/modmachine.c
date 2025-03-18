@@ -145,7 +145,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     uint32_t my_interrupts = MICROPY_BEGIN_ATOMIC_SECTION();
     #if MICROPY_PY_NETWORK_CYW43
-    if (cyw43_has_pending && cyw43_poll != NULL) {
+    if (cyw43_poll_is_pending()) {
         MICROPY_END_ATOMIC_SECTION(my_interrupts);
         return;
     }
