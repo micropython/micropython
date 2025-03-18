@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -265,7 +266,6 @@ mp_obj_t mp_obj_new_int_from_ll(long long val) {
 }
 
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
-    // TODO raise an exception if the unsigned long long won't fit
     if (val >> (sizeof(unsigned long long) * 8 - 1) != 0) {
         mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("ulonglong too large"));
     }
@@ -273,11 +273,13 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
 }
 
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
-    // TODO check overflow
     char temp_buf[65]; // Large enough to hold 64-bit base 2 str + NUL terminating byte
     const char *head = *str;
     char *endptr;
-    long long parsed = strtoll(head, &endptr, base);
+    long long parsed;
+
+    errno = 0;
+    parsed = strtoll(head, &endptr, base);
 
     // If 'str' is not properly terminated and has valid digits all through
     // and after the buffer, then strtoll will have walked off the end
@@ -290,11 +292,16 @@ mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, uns
         if (len < sizeof(temp_buf)) {
             memcpy(temp_buf, head, len);
             temp_buf[len] = 0;
+            errno = 0;
             parsed = strtoll(temp_buf, &endptr, base);
-            assert(endptr == temp_buf + len); // The first strtoll() checked all digits are valid
+            assert(errno != 0 || endptr == temp_buf + len); // The first strtoll() checked all digits are valid
             endptr = (char *)head + len;
         }
         // (if str doesn't fit in temp_buf, will fall through and fail below)
+    }
+
+    if (errno != 0) {
+        return mp_const_none; // Conversion failed, caller should raise OverflowError
     }
 
     if (neg) {
@@ -302,6 +309,7 @@ mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, uns
     }
 
     mp_obj_t result = mp_obj_new_int_from_ll(parsed);
+
     // If endptr isn't (head + len) then string contained invalid chars, caller should fail
     *str = endptr;
     return result;

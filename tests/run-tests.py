@@ -870,7 +870,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             or args.emit == "native"
         )
         is_endian = test_name.endswith("_endian")
-        is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
+        is_int_big = (
+            test_name.startswith("int_big")
+            or test_name.endswith("_intbig")
+            or test_name.startswith("ffi_int")  # these tests contain large integer literals
+        )
         is_int_64 = test_name.startswith("int_64") or test_name.endswith("_int64")
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
