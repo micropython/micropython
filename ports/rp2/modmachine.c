@@ -140,6 +140,9 @@ static void mp_machine_idle(void) {
 static void alarm_sleep_callback(uint alarm_id) {
 }
 
+// Set this to 1 to enable some debug of the interrupt that woke the device
+#define DEBUG_LIGHTSLEEP 0
+
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_int_t delay_ms = 0;
     bool use_timer_alarm = false;
@@ -209,6 +212,14 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     // Disable ROSC.
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_DISABLE << ROSC_CTRL_ENABLE_LSB;
 
+    #if DEBUG_LIGHTSLEEP
+    #if PICO_RP2040
+    uint32_t pending_intr = 0;
+    #else
+    uint32_t pending_intr[2] = { 0 };
+    #endif
+    #endif
+
     bool alarm_armed = false;
     if (n_args == 0) {
         #if MICROPY_PY_NETWORK_CYW43
@@ -264,6 +275,15 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         // Go into low-power mode.
         if (alarm_armed) {
             __wfi();
+
+            #if DEBUG_LIGHTSLEEP
+            #if PICO_RP2040
+            pending_intr = nvic_hw->ispr;
+            #else
+            pending_intr[0] = nvic_hw->ispr[0];
+            pending_intr[1] = nvic_hw->ispr[1];
+            #endif
+            #endif
         }
         clocks_hw->sleep_en0 = save_sleep_en0;
         clocks_hw->sleep_en1 = save_sleep_en1;
@@ -286,6 +306,19 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         }
         hardware_alarm_set_callback(MICROPY_HW_LIGHTSLEEP_ALARM_NUM, NULL);
         hardware_alarm_unclaim(MICROPY_HW_LIGHTSLEEP_ALARM_NUM);
+
+        #if DEBUG_LIGHTSLEEP
+        // Check irq.h for the list of IRQ's
+        // for rp2040 00000042: TIMER_IRQ_1 woke the device as expected
+        //            00000020: USBCTRL_IRQ woke the device (probably early)
+        // For rp2350 00000000:00000002: TIMER0_IRQ_1 woke the device as expected
+        //            00000000:00004000: USBCTRL_IRQ woke the device (probably early)
+        #if PICO_RP2040
+        mp_printf(MP_PYTHON_PRINTER, "lightsleep: pending_intr=%08lx\n", pending_intr);
+        #else
+        mp_printf(MP_PYTHON_PRINTER, "lightsleep: pending_intr=%08lx:%08lx\n", pending_intr[1], pending_intr[0]);
+        #endif
+        #endif
     }
 }
 
