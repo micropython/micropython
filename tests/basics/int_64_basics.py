@@ -88,6 +88,10 @@ print(int("ijklmnopqrsz", 36))
 print(int("-9111222333444555666"))
 print(int("9111222333444555666"))
 
+# numbers with preceding 0s
+print(int("-00000000000000000000009111222333444555666"))
+print(int("0000000000000000000000009111222333444555666"))
+
 # invalid characters in string
 try:
     print(int("1234567890abcdef"))
