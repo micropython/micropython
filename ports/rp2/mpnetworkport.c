@@ -57,7 +57,6 @@ static soft_timer_entry_t mp_network_soft_timer;
 #define CYW43_IRQ_LEVEL GPIO_IRQ_LEVEL_HIGH
 #define CYW43_SHARED_IRQ_HANDLER_PRIORITY PICO_SHARED_IRQ_HANDLER_HIGHEST_ORDER_PRIORITY
 
-volatile int cyw43_has_pending = 0;
 
 // The Pico SDK only lets us set GPIO wake on the current running CPU, but the
 // hardware doesn't have this limit. We need to always enable/disable the pin
@@ -89,9 +88,8 @@ static void gpio_irq_handler(void) {
         // cyw43_poll(). It is re-enabled in cyw43_post_poll_hook(), implemented
         // below.
         gpio_set_cpu0_host_wake_irq_enabled(false);
-        cyw43_has_pending = 1;
-        __sev();
         pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+        __sev();
         CYW43_STAT_INC(IRQ_COUNT);
     }
 }
@@ -106,7 +104,6 @@ void cyw43_irq_init(void) {
 
 // This hook will run on whichever CPU serviced the PendSV interrupt
 void cyw43_post_poll_hook(void) {
-    cyw43_has_pending = 0;
     gpio_set_cpu0_host_wake_irq_enabled(true);
 }
 

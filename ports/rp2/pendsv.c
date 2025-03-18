@@ -99,6 +99,10 @@ static inline int pendsv_suspend_count(void) {
 
 #endif
 
+bool pendsv_is_pending(size_t slot) {
+    return pendsv_dispatch_table[slot] != NULL;
+}
+
 static inline void pendsv_resume_run_dispatch(void) {
     // Run pendsv if needed.  Find an entry with a dispatch and call pendsv dispatch
     // with it.  If pendsv runs it will service all slots.
