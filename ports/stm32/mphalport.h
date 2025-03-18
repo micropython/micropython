@@ -1,6 +1,8 @@
 // We use the ST Cube HAL library for most hardware peripherals
 #include STM32_HAL_H
 #include "pin.h"
+#include "py/ringbuf.h"
+#include "shared/runtime/interrupt_char.h"
 
 extern uint8_t mp_hal_unique_id_address[12];
 
@@ -36,6 +38,8 @@ extern const unsigned char mp_hal_status_to_errno_table[4];
 static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
     return -mp_hal_status_to_errno_table[status];
 }
+
+extern ringbuf_t stdin_ringbuf;
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
