@@ -695,6 +695,14 @@ function ci_unix_nanbox_run_tests {
     ci_unix_run_tests_full_no_native_helper nanbox PYTHON=python2.7
 }
 
+function ci_unix_longlong_build {
+    ci_unix_build_helper VARIANT=longlong
+}
+
+function ci_unix_longlong_run_tests {
+    ci_unix_run_tests_full_helper longlong
+}
+
 function ci_unix_float_build {
     ci_unix_build_helper VARIANT=standard CFLAGS_EXTRA="-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT"
     ci_unix_build_ffi_lib_helper gcc
