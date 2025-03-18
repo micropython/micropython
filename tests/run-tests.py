@@ -628,6 +628,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_tests = set()
     skip_native = False
     skip_int_big = False
+    skip_int_64 = False
     skip_bytearray = False
     skip_set_type = False
     skip_slice = False
@@ -657,6 +658,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output = run_feature_check(pyb, args, "int_big.py")
         if output != b"1000000000000000000000000000000000000000000000\n":
             skip_int_big = True
+
+        # Check if 'long long' precision integers are supported, even if arbitrary precision is not
+        output = run_feature_check(pyb, args, "int_64.py")
+        if output != b"4611686018427387904\n":
+            skip_int_64 = True
 
         # Check if bytearray is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, "bytearray.py")
@@ -885,7 +891,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         test_name = os.path.splitext(os.path.basename(test_file))[0]
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
         is_endian = test_name.endswith("_endian")
-        is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
+        is_int_big = (
+            test_name.startswith("int_big")
+            or test_name.endswith("_intbig")
+            or test_name.startswith("ffi_int")  # these tests contain large integer literals
+        )
+        is_int_64 = test_name.startswith("int_64") or test_name.endswith("_int64")
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
         is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
@@ -899,6 +910,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_native and is_native
         skip_it |= skip_endian and is_endian
         skip_it |= skip_int_big and is_int_big
+        skip_it |= skip_int_64 and is_int_64
         skip_it |= skip_bytearray and is_bytearray
         skip_it |= skip_set_type and is_set_type
         skip_it |= skip_slice and is_slice
