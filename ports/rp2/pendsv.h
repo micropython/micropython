@@ -51,5 +51,6 @@ void pendsv_init(void);
 void pendsv_suspend(void);
 void pendsv_resume(void);
 void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
+bool pendsv_is_pending(size_t slot);
 
 #endif // MICROPY_INCLUDED_RP2_PENDSV_H
