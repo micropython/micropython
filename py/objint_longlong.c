@@ -273,10 +273,15 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
 }
 
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
-    // TODO this does not honor the given length of the string, but it all cases it should anyway be null terminated
     // TODO check overflow
     char *endptr;
-    mp_obj_t result = mp_obj_new_int_from_ll(strtoll(*str, &endptr, base));
+    long long parsed = strtoll(*str, &endptr, base);
+    if (neg) {
+        parsed *= -1;
+    }
+    mp_obj_t result = mp_obj_new_int_from_ll(parsed);
+    // If endptr isn't ((*str) + len) then caller's responsibility to note this and fail
+    // (this will happen if string contents aren't valid number, of it terminator byte is a valid digit...)
     *str = endptr;
     return result;
 }
