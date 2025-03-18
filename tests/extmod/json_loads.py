@@ -36,6 +36,11 @@ my_print(json.loads('"abc\\uabcd"'))
 # whitespace handling
 my_print(json.loads('{\n\t"a":[]\r\n, "b":[1], "c":{"3":4}     \n\r\t\r\r\r\n}'))
 
+# LONGINT parser helper
+my_print(json.loads("9111222333444555666"))
+my_print(json.loads("-9111222333444555666"))
+my_print(json.loads("[\"9111222333444555666777\",9111222333444555666]"))
+
 # loading nothing should raise exception
 try:
     json.loads("")
