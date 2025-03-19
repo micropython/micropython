@@ -81,6 +81,8 @@ int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint
 
 #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
 // These functions use the cache (which must already be configured)
+// Note: don't use these functions in combination with memory-mapped
+// flash, because MP_QSPI_IOCTL_MEMORY_MODIFIED is not called.
 int mp_spiflash_cache_flush(mp_spiflash_t *self);
 int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest);
 int mp_spiflash_cached_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src);
