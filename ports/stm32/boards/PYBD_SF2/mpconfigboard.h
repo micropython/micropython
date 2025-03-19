@@ -43,11 +43,14 @@
 #define MICROPY_HW_ENABLE_RF_SWITCH (1)
 
 #define MICROPY_BOARD_EARLY_INIT    board_early_init
+#define MICROPY_BOARD_RUN_BOOT_PY   board_run_boot_py
 #define MICROPY_BOARD_ENTER_STOP    board_sleep(1);
 #define MICROPY_BOARD_LEAVE_STOP    board_sleep(0);
 #define MICROPY_BOARD_ENTER_STANDBY board_sleep(1);
 #define MICROPY_BOARD_SDCARD_POWER  mp_hal_pin_high(pyb_pin_EN_3V3);
+struct _boardctrl_state_t;
 void board_early_init(void);
+int board_run_boot_py(struct _boardctrl_state_t *state);
 void board_sleep(int value);
 
 // HSE is 25MHz, run SYS at 120MHz
