@@ -56,8 +56,9 @@ static void nibble_write(mp_soft_qspi_obj_t *self, uint8_t v) {
     mp_hal_pin_write(self->io3, (v >> 3) & 1);
 }
 
-static int mp_soft_qspi_ioctl(void *self_in, uint32_t cmd) {
+static int mp_soft_qspi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
     mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t*)self_in;
+    (void)arg;
 
     switch (cmd) {
         case MP_QSPI_IOCTL_INIT:

@@ -37,10 +37,11 @@ enum {
     MP_QSPI_IOCTL_DEINIT,
     MP_QSPI_IOCTL_BUS_ACQUIRE,
     MP_QSPI_IOCTL_BUS_RELEASE,
+    MP_QSPI_IOCTL_MEMORY_MODIFIED,
 };
 
 typedef struct _mp_qspi_proto_t {
-    int (*ioctl)(void *self, uint32_t cmd);
+    int (*ioctl)(void *self, uint32_t cmd, uintptr_t arg);
     int (*write_cmd_data)(void *self, uint8_t cmd, size_t len, uint32_t data);
     int (*write_cmd_addr_data)(void *self, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src);
     int (*read_cmd)(void *self, uint8_t cmd, size_t len, uint32_t *dest);
