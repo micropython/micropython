@@ -61,14 +61,22 @@
 static void mp_spiflash_acquire_bus(mp_spiflash_t *self) {
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
-        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_ACQUIRE);
+        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_ACQUIRE, 0);
     }
 }
 
 static void mp_spiflash_release_bus(mp_spiflash_t *self) {
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
-        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_RELEASE);
+        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_RELEASE, 0);
+    }
+}
+
+static void mp_spiflash_notify_modified(mp_spiflash_t *self, uint32_t addr, uint32_t len) {
+    const mp_spiflash_config_t *c = self->config;
+    if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
+        uintptr_t arg[2] = { addr, len };
+        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_MEMORY_MODIFIED, (uintptr_t)&arg[0]);
     }
 }
 
@@ -174,7 +182,7 @@ void mp_spiflash_init(mp_spiflash_t *self) {
         mp_hal_pin_output(self->config->bus.u_spi.cs);
         self->config->bus.u_spi.proto->ioctl(self->config->bus.u_spi.data, MP_SPI_IOCTL_INIT);
     } else {
-        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT);
+        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT, 0);
     }
 
     mp_spiflash_acquire_bus(self);
@@ -285,6 +293,7 @@ static int mp_spiflash_write_page(mp_spiflash_t *self, uint32_t addr, size_t len
 int mp_spiflash_erase_block(mp_spiflash_t *self, uint32_t addr) {
     mp_spiflash_acquire_bus(self);
     int ret = mp_spiflash_erase_block_internal(self, addr);
+    mp_spiflash_notify_modified(self, addr, SECTOR_SIZE);
     mp_spiflash_release_bus(self);
     return ret;
 }
@@ -300,6 +309,8 @@ int mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *de
 }
 
 int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src) {
+    uint32_t orig_addr = addr;
+    uint32_t orig_len = len;
     mp_spiflash_acquire_bus(self);
     int ret = 0;
     uint32_t offset = addr & (PAGE_SIZE - 1);
@@ -317,12 +328,16 @@ int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint
         src += rest;
         offset = 0;
     }
+    mp_spiflash_notify_modified(self, orig_addr, orig_len);
     mp_spiflash_release_bus(self);
     return ret;
 }
 
 /******************************************************************************/
 // Interface functions that use the cache
+//
+// These functions do not call mp_spiflash_notify_modified(), so shouldn't be
+// used for memory-mapped flash (for example).
 
 #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
 
