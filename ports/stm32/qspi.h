@@ -35,6 +35,8 @@ extern const mp_qspi_proto_t qspi_proto;
 
 void qspi_init(void);
 void qspi_memory_map(void);
+void qspi_memory_map_exit(void);
+void qspi_memory_map_restart(void);
 
 static inline bool qspi_is_valid_addr(uint32_t addr) {
     return QSPI_MAP_ADDR <= addr && addr < QSPI_MAP_ADDR_MAX;
