@@ -170,7 +170,7 @@ void qspi_memory_map(void) {
     qspi_mpu_enable_mapped();
 }
 
-static int qspi_ioctl(void *self_in, uint32_t cmd) {
+static int qspi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
     (void)self_in;
     switch (cmd) {
         case MP_QSPI_IOCTL_INIT:
