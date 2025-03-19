@@ -406,6 +406,11 @@
 #define MICROPY_EMIT_INLINE_XTENSA (0)
 #endif
 
+// Whether to support uncommon Xtensa inline assembler opcodes
+#ifndef MICROPY_EMIT_INLINE_XTENSA_UNCOMMON_OPCODES
+#define MICROPY_EMIT_INLINE_XTENSA_UNCOMMON_OPCODES (0)
+#endif
+
 // Whether to emit Xtensa-Windowed native code
 #ifndef MICROPY_EMIT_XTENSAWIN
 #define MICROPY_EMIT_XTENSAWIN (0)
