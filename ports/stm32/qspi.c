@@ -170,6 +170,25 @@ void qspi_memory_map(void) {
     qspi_mpu_enable_mapped();
 }
 
+void qspi_memory_map_exit(void) {
+    // Prevent access to QSPI memory-mapped region.
+    qspi_mpu_disable_all();
+
+    // Abort any ongoing transfer if peripheral is busy
+    if (QUADSPI->SR & QUADSPI_SR_BUSY) {
+        QUADSPI->CR |= QUADSPI_CR_ABORT;
+        while (QUADSPI->CR & QUADSPI_CR_ABORT) {
+        }
+    }
+}
+
+// Needed on F7 due to errata 2.4.3: "Memory-mapped read operations may fail when timeout counter is enabled".
+// Call this function to disable then re-enable memory-mapped mode, which resets the CS pin to inactive.
+void qspi_memory_map_restart(void) {
+    qspi_memory_map_exit();
+    qspi_memory_map();
+}
+
 static int qspi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
     (void)self_in;
     switch (cmd) {
@@ -178,13 +197,7 @@ static int qspi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
             break;
         case MP_QSPI_IOCTL_BUS_ACQUIRE:
             // Disable memory-mapped region during bus access
-            qspi_mpu_disable_all();
-            // Abort any ongoing transfer if peripheral is busy
-            if (QUADSPI->SR & QUADSPI_SR_BUSY) {
-                QUADSPI->CR |= QUADSPI_CR_ABORT;
-                while (QUADSPI->CR & QUADSPI_CR_ABORT) {
-                }
-            }
+            qspi_memory_map_exit();
             break;
         case MP_QSPI_IOCTL_BUS_RELEASE:
             // Switch to memory-map mode when bus is idle
