@@ -91,8 +91,10 @@ void mp_uart_init(unsigned int uart_id, uint32_t baudrate,
     uart_state_t *state = &uart_state[uart_id];
 
     // Configure TX/RX pins.
-    mp_hal_pin_config(tx, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_UART, false);
-    mp_hal_pin_config(rx, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_UART, true);
+    mp_hal_pin_config(tx, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
+        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(UART_TX, uart_id), false);
+    mp_hal_pin_config(rx, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
+        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(UART_RX, uart_id), true);
 
     // Configure the UART peripheral.
     select_uart_clock_syst_pclk(uart_id);
@@ -152,11 +154,13 @@ void mp_uart_set_flow(unsigned int uart_id, mp_hal_pin_obj_t rts, mp_hal_pin_obj
     unsigned int flow = UART_FLOW_CONTROL_NONE;
     if (rts != NULL) {
         flow |= UART_FLOW_CONTROL_RTS;
-        mp_hal_pin_config(rts, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_UART, false);
+        mp_hal_pin_config(rts, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
+            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(UART_RTS, uart_id), false);
     }
     if (cts != NULL) {
         flow |= UART_FLOW_CONTROL_CTS;
-        mp_hal_pin_config(cts, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_UART, true);
+        mp_hal_pin_config(cts, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
+            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(UART_CTS, uart_id), true);
     }
     uart_set_flow_control(uart, flow);
 }

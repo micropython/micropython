@@ -36,11 +36,19 @@ ADC12_ANA_MAP = {
 class AlifPin(boardgen.Pin):
     def __init__(self, cpu_pin_name):
         super().__init__(cpu_pin_name)
-        self._afs = ["MP_HAL_PIN_ALT_NONE"] * 8
+        self._afs = [("NONE", -1)] * 8
 
     # Called for each AF defined in the csv file for this pin.
     def add_af(self, af_idx, af_name, af):
-        self._afs[af_idx] = f"MP_HAL_PIN_ALT_{af}"
+        if af == "GPIO":
+            self._afs[af_idx] = "GPIO", -1
+        elif af.startswith("ANA_S"):
+            self._afs[af_idx] = "ANA", int(af[5:])
+        else:
+            m = re.match(r"([A-Z0-9]+[A-Z])(\d*)_([A-Z0-9_]+)$", af)
+            periph, unit, line = m.groups()
+            unit = -1 if unit == "" else int(unit)
+            self._afs[af_idx] = f"{periph}_{line}", unit
 
     # Emit the struct which contains the pin instance.
     def definition(self):
@@ -63,7 +71,7 @@ class AlifPin(boardgen.Pin):
                 base=base,
                 adc12_periph=adc12_periph,
                 adc12_channel=adc12_channel,
-                alt=", ".join([f"{af}" for af in self._afs]),
+                alt=", ".join([f"MP_HAL_PIN_ALT({func}, {unit})" for func, unit in self._afs]),
             )
         )
 

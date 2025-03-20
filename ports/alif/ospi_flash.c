@@ -262,40 +262,41 @@ int ospi_flash_init(void) {
 
     self->pin = pin;
 
+    unsigned int unit = pin->peripheral_number;
     mp_hal_pin_config(pin->pin_cs, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-        MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, false);
+        MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_SS0, unit), false);
     mp_hal_pin_config(pin->pin_clk_p, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, false);
+        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_SCLK, unit), false);
     if (pin->pin_clk_n != NULL) {
         mp_hal_pin_config(pin->pin_clk_n, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, false);
+            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_SCLKN, unit), false);
     }
     if (pin->pin_rwds != NULL) {
         mp_hal_pin_config(pin->pin_rwds, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, true);
+            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_RXDS, unit), true);
         if (pin->pin_rwds->port == PORT_10 && pin->pin_rwds->pin == PIN_7) {
             // Alif: P5_6 is needed to support proper alt function selection of P10_7.
             mp_hal_pin_config(pin_P5_6, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-                MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, true);
+                MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_RXDS, unit), true);
         }
     }
     mp_hal_pin_config(pin->pin_d0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, true);
+        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_D0, unit), true);
     mp_hal_pin_config(pin->pin_d1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, true);
+        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_D1, unit), true);
     mp_hal_pin_config(pin->pin_d2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP,
-        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, true);
+        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_D2, unit), true);
     mp_hal_pin_config(pin->pin_d3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, true);
+        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_D3, unit), true);
     if (pin->pin_d4 != NULL) {
         mp_hal_pin_config(pin->pin_d4, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, true);
+            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_D4, unit), true);
         mp_hal_pin_config(pin->pin_d5, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, true);
+            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_D5, unit), true);
         mp_hal_pin_config(pin->pin_d6, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, true);
+            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_D6, unit), true);
         mp_hal_pin_config(pin->pin_d7, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT_OSPI, true);
+            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_D7, unit), true);
     }
 
     // Reset the SPI flash.
