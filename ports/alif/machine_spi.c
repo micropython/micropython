@@ -60,6 +60,20 @@ static machine_spi_obj_t machine_spi_obj[] = {
 
 };
 
+static const uint8_t spi_pin_alt[] = {
+    MP_HAL_PIN_ALT_SPI_SCLK,
+    MP_HAL_PIN_ALT_SPI_MISO,
+    MP_HAL_PIN_ALT_SPI_MOSI,
+    MP_HAL_PIN_ALT_SPI_SS0,
+};
+
+static const uint8_t lpspi_pin_alt[] = {
+    MP_HAL_PIN_ALT_LPSPI_SCLK,
+    MP_HAL_PIN_ALT_LPSPI_MISO,
+    MP_HAL_PIN_ALT_LPSPI_MOSI,
+    MP_HAL_PIN_ALT_LPSPI_SS,
+};
+
 static inline uint32_t spi_get_clk(machine_spi_obj_t *spi) {
     return spi->is_lp ? GetSystemCoreClock() : GetSystemAHBClock();
 }
@@ -131,9 +145,15 @@ static void spi_init(machine_spi_obj_t *spi, uint32_t baudrate,
     }
 
     // Configure SPI pins.
+    const uint8_t *alt;
+    if (spi->id <= 3) {
+        alt = spi_pin_alt;
+    } else {
+        alt = lpspi_pin_alt;
+    }
     for (size_t i = 0; i < MP_ARRAY_SIZE(pins) && pins[i]; i++) {
         mp_hal_pin_config(pins[i], MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_SPI, true);
+            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_MAKE(alt[i], spi->id), true);
     }
 
     // Disable all interrupts.
