@@ -371,25 +371,25 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 
 #define MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t obj_name = \
-    {{&mp_type_fun_builtin_0}, .fun._0 = fun_name}
+    {.base = {.type = &mp_type_fun_builtin_0}, .fun = {._0 = fun_name}}
 #define MP_DEFINE_CONST_FUN_OBJ_1(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t obj_name = \
-    {{&mp_type_fun_builtin_1}, .fun._1 = fun_name}
+    {.base = {.type = &mp_type_fun_builtin_1}, .fun = {._1 = fun_name}}
 #define MP_DEFINE_CONST_FUN_OBJ_2(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t obj_name = \
-    {{&mp_type_fun_builtin_2}, .fun._2 = fun_name}
+    {.base = {.type = &mp_type_fun_builtin_2}, .fun = {._2 = fun_name}}
 #define MP_DEFINE_CONST_FUN_OBJ_3(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t obj_name = \
-    {{&mp_type_fun_builtin_3}, .fun._3 = fun_name}
+    {.base = {.type = &mp_type_fun_builtin_3}, .fun = {._3 = fun_name}}
 #define MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) \
     const mp_obj_fun_builtin_var_t obj_name = \
-    {{&mp_type_fun_builtin_var}, MP_OBJ_FUN_MAKE_SIG(n_args_min, MP_OBJ_FUN_ARGS_MAX, false), .fun.var = fun_name}
+    {.base = {.type = &mp_type_fun_builtin_var}, .sig = MP_OBJ_FUN_MAKE_SIG(n_args_min, MP_OBJ_FUN_ARGS_MAX, false), .fun = {.var = fun_name}}
 #define MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) \
     const mp_obj_fun_builtin_var_t obj_name = \
-    {{&mp_type_fun_builtin_var}, MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, false), .fun.var = fun_name}
+    {.base = {.type = &mp_type_fun_builtin_var}, .sig = MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, false), .fun = {.var = fun_name}}
 #define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, n_args_min, fun_name) \
     const mp_obj_fun_builtin_var_t obj_name = \
-    {{&mp_type_fun_builtin_var}, MP_OBJ_FUN_MAKE_SIG(n_args_min, MP_OBJ_FUN_ARGS_MAX, true), .fun.kw = fun_name}
+    {.base = {.type = &mp_type_fun_builtin_var}, .sig = MP_OBJ_FUN_MAKE_SIG(n_args_min, MP_OBJ_FUN_ARGS_MAX, true), .fun = {.kw = fun_name}}
 
 // These macros are used to define constant map/dict objects
 // You can put "static" in front of the definition to make it local
