@@ -34,6 +34,7 @@
 #include "sys_ctrl_spi.h"
 
 // CYW43 is connected to SPI3.
+#define HW_SPI_UNIT (3)
 #define HW_SPI ((SPI_Type *)SPI3_BASE)
 #define SPI_BAUDRATE (16000000)
 #define SPI_RX_FIFO_SIZE (16)
@@ -56,9 +57,12 @@ static void spi_bus_init(void) {
     mp_hal_pin_output(pin_WL_CS);
     mp_hal_pin_high(pin_WL_CS);
     // NOTE: Alif recommends enabled input read for all SPI pins.
-    mp_hal_pin_config(pin_WL_SCLK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_SPI, true);
-    mp_hal_pin_config(pin_WL_MOSI, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_SPI, true);
-    mp_hal_pin_config(pin_WL_MISO, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_SPI, true);
+    mp_hal_pin_config(pin_WL_SCLK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
+        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(SPI_SCLK, HW_SPI_UNIT), true);
+    mp_hal_pin_config(pin_WL_MOSI, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
+        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(SPI_MOSI, HW_SPI_UNIT), true);
+    mp_hal_pin_config(pin_WL_MISO, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
+        MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(SPI_MISO, HW_SPI_UNIT), true);
 
     // Starts out clock_polarity=1, clock_phase=0.
     spi_mode_master(HW_SPI);

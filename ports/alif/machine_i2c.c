@@ -135,9 +135,9 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     // Configure I2C pins.
     mp_hal_pin_config(self->scl, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP,
-        MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_I2C, true);
+        MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(I2C_SCL, self->i2c_id), true);
     mp_hal_pin_config(self->sda, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP,
-        MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_I2C, true);
+        MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(I2C_SDA, self->i2c_id), true);
 
     // Initialize I2C controller.
     self->i2c->I2C_CON = I2C_IC_CON_ENABLE_MASTER_MODE |
@@ -244,18 +244,18 @@ int machine_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_mac
 
         // Switch pins to GPIO/OD.
         mp_hal_pin_config(self->scl, MP_HAL_PIN_MODE_OPEN_DRAIN, MP_HAL_PIN_PULL_UP,
-            MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_NONE, true);
+            MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_8MA, 0, true);
         mp_hal_pin_config(self->sda, MP_HAL_PIN_MODE_OPEN_DRAIN, MP_HAL_PIN_PULL_UP,
-            MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_NONE, true);
+            MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_8MA, 0, true);
 
         // Perform the transfer.
         ret = mp_machine_soft_i2c_transfer(&soft_i2c.base, addr, 1, &bufs, flags);
 
         // Re-configure I2C pins.
         mp_hal_pin_config(self->scl, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP,
-            MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_I2C, true);
+            MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(I2C_SCL, self->i2c_id), true);
         mp_hal_pin_config(self->sda, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP,
-            MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT_I2C, true);
+            MP_HAL_PIN_SPEED_LOW, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(I2C_SDA, self->i2c_id), true);
 
         return ret;
     }
