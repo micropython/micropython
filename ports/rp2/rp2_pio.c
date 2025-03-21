@@ -271,12 +271,32 @@ static void asm_pio_get_pins(PIO pio, const char *type, mp_obj_t prog_pins, mp_o
     }
 }
 
+static inline uint32_t rotl32a(const uint32_t x, const int k) {
+    return (x << k) | (x >> (32 - k));
+}
+
 static void asm_pio_init_gpio(PIO pio, uint32_t sm, asm_pio_config_t *config) {
-    uint32_t pinmask = ((1 << config->count) - 1) << (config->base - pio_get_gpio_base(pio));
-    pio_sm_set_pins_with_mask(pio, sm, config->pinvals << (config->base - pio_get_gpio_base(pio)), pinmask);
-    pio_sm_set_pindirs_with_mask(pio, sm, config->pindirs << (config->base - pio_get_gpio_base(pio)), pinmask);
-    for (size_t i = 0; i < config->count; ++i) {
-        gpio_set_function(config->base + i, GPIO_FUNC_PIO0 + pio_get_index(pio));
+    uint gpio_base = pio_get_gpio_base(pio);
+    uint32_t pinmask = rotl32a(~(-1 << config->count), config->base - gpio_base);
+    uint32_t pinvals = rotl32a(config->pinvals, config->base - gpio_base);
+    uint32_t pindirs = rotl32a(config->pindirs, config->base - gpio_base);
+
+    #if !PICO_PIO_USE_GPIO_BASE
+    // optimization: avoid 64-bit arithmetic on RP2040 and RP2350A
+    pio_sm_set_pins_with_mask(pio, sm, pinvals, pinmask);
+    pio_sm_set_pindirs_with_mask(pio, sm, pindirs, pinmask);
+    #else
+    uint64_t pinmask64 = (uint64_t)pinmask << gpio_base;
+    uint64_t pinvals64 = (uint64_t)pinvals << gpio_base;
+    uint64_t pindirs64 = (uint64_t)pindirs << gpio_base;
+    pio_sm_set_pins_with_mask64(pio, sm, pinvals64, pinmask64);
+    pio_sm_set_pindirs_with_mask64(pio, sm, pindirs64, pinmask64);
+    #endif
+
+    for (size_t i = 0; i < 32; ++i) {
+        if (pinmask & (1 << i)) {
+            gpio_set_function(gpio_base + i, GPIO_FUNC_PIO0 + pio_get_index(pio));
+        }
     }
 }
 
