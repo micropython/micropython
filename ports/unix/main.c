@@ -453,10 +453,13 @@ static void set_sys_argv(char *argv[], int argc, int start_arg) {
 
 #if MICROPY_PY_SYS_EXECUTABLE
 extern mp_obj_str_t mp_sys_executable_obj;
-static char executable_path[MICROPY_ALLOC_PATH_MAX];
+static char *executable_path = NULL;
 
 static void sys_set_excecutable(char *argv0) {
-    if (realpath(argv0, executable_path)) {
+    if (executable_path == NULL) {
+        executable_path = realpath(argv0, NULL);
+    }
+    if (executable_path != NULL) {
         mp_obj_str_set_data(&mp_sys_executable_obj, (byte *)executable_path, strlen(executable_path));
     }
 }
@@ -721,11 +724,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 return invalid_args();
             }
         } else {
-            char *pathbuf = malloc(PATH_MAX);
-            char *basedir = realpath(argv[a], pathbuf);
+            char *basedir = realpath(argv[a], NULL);
             if (basedir == NULL) {
                 mp_printf(&mp_stderr_print, "%s: can't open file '%s': [Errno %d] %s\n", argv[0], argv[a], errno, strerror(errno));
-                free(pathbuf);
                 // CPython exits with 2 in such case
                 ret = 2;
                 break;
@@ -734,7 +735,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             // Set base dir of the script as first entry in sys.path.
             char *p = strrchr(basedir, '/');
             mp_obj_list_store(mp_sys_path, MP_OBJ_NEW_SMALL_INT(0), mp_obj_new_str_via_qstr(basedir, p - basedir));
-            free(pathbuf);
+            free(basedir);
 
             set_sys_argv(argv, argc, a);
             ret = do_file(argv[a]);
@@ -798,6 +799,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
         free(heaps[i]);
     }
     #endif
+    #endif
+
+    #if MICROPY_PY_SYS_EXECUTABLE && !defined(NDEBUG)
+    // Again, make memory leak detector happy
+    free(executable_path);
     #endif
 
     // printf("total bytes = %d\n", m_get_total_bytes_allocated());
