@@ -156,6 +156,9 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         args[ARG_phy_type].u_int != PHY_RTL8201 &&
         args[ARG_phy_type].u_int != PHY_KSZ8041 &&
         args[ARG_phy_type].u_int != PHY_KSZ8081 &&
+        #if CONFIG_ETH_USE_OPENETH
+        args[ARG_phy_type].u_int != PHY_OPENETH &&
+        #endif
         #if CONFIG_ETH_USE_SPI_ETHERNET
         #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
         args[ARG_phy_type].u_int != PHY_KSZ8851SNL &&
@@ -230,6 +233,13 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         case PHY_KSZ8041:
         case PHY_KSZ8081:
             self->phy = esp_eth_phy_new_ksz80xx(&phy_config);
+            break;
+        #endif
+        #if CONFIG_ETH_USE_OPENETH
+        case PHY_OPENETH:
+            phy_config.autonego_timeout_ms = 100;
+            mac = esp_eth_mac_new_openeth(&mac_config);
+            self->phy = esp_eth_phy_new_dp83848(&phy_config);
             break;
         #endif
         #if CONFIG_ETH_USE_SPI_ETHERNET

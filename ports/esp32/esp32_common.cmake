@@ -272,6 +272,7 @@ target_link_options(${MICROPY_TARGET} PUBLIC
   # Enable the panic handler wrapper
   -Wl,--undefined=esp_panic_handler
   -Wl,--wrap=esp_panic_handler
+  -Wl,--wrap=esp_efuse_rtc_calib_get_ver
 )
 
 # Collect all of the include directories and compile definitions for the IDF components,

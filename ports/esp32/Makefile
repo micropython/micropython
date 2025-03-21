@@ -106,6 +106,9 @@ size-components:
 size-files:
 	$(call RUN_IDF_PY,size-files)
 
+qemu:
+	$(call RUN_IDF_PY,qemu monitor)
+
 # Running the build with ECHO_SUBMODULES set will trigger py/mkrules.cmake to
 # print out the value of the GIT_SUBMODULES variable, prefixed with
 # "GIT_SUBMODULES", and then abort. This extracts out that line from the idf.py
