@@ -775,6 +775,14 @@ void TIM17_FDCAN_IT1_IRQHandler(void) {
 }
 #endif
 
+#if defined(STM32G4)
+void TIM20_UP_IRQHandler(void) {
+    IRQ_ENTER(TIM20_UP_IRQn);
+    timer_irq_handler(20);
+    IRQ_EXIT(TIM20_UP_IRQn);
+}
+#endif
+
 #if defined(STM32H7)
 void TIM15_IRQHandler(void) {
     IRQ_ENTER(TIM15_IRQn);
