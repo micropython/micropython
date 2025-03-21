@@ -34,5 +34,9 @@ static mp_obj_t mp_time_time_get(void) {
      * single precision floats so the fraction component will start to
      * lose precision on devices with a long uptime.
      */
+    #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL >= MICROPY_FLOAT_IMPL_DOUBLE
+    return mp_obj_new_float((mp_float_t)k_uptime_get() / 1000);
+    #else
     return mp_obj_new_int(k_uptime_get() / 1000);
+    #endif
 }
