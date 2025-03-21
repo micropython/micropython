@@ -32,6 +32,10 @@
 #include "extmod/modmachine.h"
 #include "shared/runtime/pyexec.h"
 
+#if MICROPY_HW_USB_CDC
+#include "shared/tinyusb/mp_usbd_cdc.h"
+#endif
+
 #if MICROPY_PY_MACHINE_DHT_READINTO
 #include "drivers/dht/dht.h"
 #endif
@@ -233,6 +237,9 @@ static const mp_rom_map_elem_t machine_module_globals_table[] = {
     #endif
     #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
     { MP_ROM_QSTR(MP_QSTR_USBDevice), MP_ROM_PTR(&machine_usb_device_type) },
+    #endif
+    #if MICROPY_HW_USB_CDC
+    { MP_ROM_QSTR(MP_QSTR_USBD_CDC), MP_ROM_PTR(&machine_usbd_cdc_type) },
     #endif
     #if MICROPY_PY_MACHINE_WDT
     { MP_ROM_QSTR(MP_QSTR_WDT), MP_ROM_PTR(&machine_wdt_type) },
