@@ -28,6 +28,7 @@
 // extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
 
 #include "py/mphal.h"
+#include "py/mperrno.h"
 #include "adc.h"
 
 #if defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
@@ -334,7 +335,11 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
         adc->ISR = ADC_ISR_ADRDY; // clear ADRDY
         adc->CR |= ADC_CR_ADEN;
         adc_stabilisation_delay_us(ADC_STAB_DELAY_US);
+        uint32_t t0 = mp_hal_ticks_ms();
         while (!(adc->ISR & ADC_ISR_ADRDY)) {
+            if (mp_hal_ticks_ms() - t0 > 3000) {
+                mp_raise_OSError(MP_ETIMEDOUT);
+            }
         }
     }
     #else
