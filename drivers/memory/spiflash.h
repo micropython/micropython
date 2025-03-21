@@ -37,6 +37,7 @@ enum {
 };
 
 struct _mp_spiflash_t;
+struct _external_flash_device;
 
 #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
 // A cache must be provided by the user in the config struct.  The same cache
@@ -69,9 +70,10 @@ typedef struct _mp_spiflash_config_t {
 typedef struct _mp_spiflash_t {
     const mp_spiflash_config_t *config;
     volatile uint32_t flags;
+    const struct _external_flash_device *device;
 } mp_spiflash_t;
 
-void mp_spiflash_init(mp_spiflash_t *self);
+int mp_spiflash_init(mp_spiflash_t *self);
 void mp_spiflash_deepsleep(mp_spiflash_t *self, int value);
 
 // These functions go direct to the SPI flash device

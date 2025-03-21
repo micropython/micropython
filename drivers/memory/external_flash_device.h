@@ -29,11 +29,16 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef struct {
+typedef struct _external_flash_device {
+    // Flash size in bytes.
     uint32_t total_size;
+
     uint16_t start_up_time_us;
 
     // Three response bytes to 0x9f JEDEC ID command.
+    // The first field is always a manufacturer_id, however the other two are used
+    // differently be each manufacturer.
+    // All three together will always uniquely identify a chip model.
     uint8_t manufacturer_id;
     uint8_t memory_type;
     uint8_t capacity;
@@ -66,9 +71,12 @@ typedef struct {
     bool single_status_byte : 1;
 } external_flash_device;
 
-// Settings for the Adesto Tech AT25DF081A 1MiB SPI flash. Its on the SAMD21
-// Xplained board.
+// typedef struct _external_flash_device ;
+
+// Settings for the Adesto Tech / Renesas AT25DF081A 1MiB SPI flash.
+// Its on the SAMD21 Xplained board.
 // Datasheet: https://www.adestotech.com/wp-content/uploads/doc8715.pdf
+//            https://www.renesas.com/eu/en/document/dst/at25df081a-datasheet
 #define AT25DF081A { \
         .total_size = (1 << 20), /* 1 MiB */ \
         .start_up_time_us = 10000, \
@@ -82,6 +90,42 @@ typedef struct {
         .supports_qspi = false, \
         .supports_qspi_writes = false, \
         .write_status_register_split = false, \
+        .single_status_byte = false, \
+}
+
+// Settings for the Renesas AT25SF161B 2MiB SPI flash.
+// Datasheet: https://www.renesas.com/us/en/document/dst/at25sf161b-datasheet?r=1608796
+#define AT25SF161B { \
+        .total_size = (1 << 21), /* 2 MiB */ \
+        .start_up_time_us = 5000, \
+        .manufacturer_id = 0x1f, \
+        .memory_type = 0x86, \
+        .capacity = 0x01, \
+        .max_clock_speed_mhz = 133, \
+        .quad_enable_bit_mask = 0x02, \
+        .has_sector_protection = true, \
+        .supports_fast_read = true, \
+        .supports_qspi = true, \
+        .supports_qspi_writes = true, \
+        .write_status_register_split = true, \
+        .single_status_byte = false, \
+}
+
+// Settings for the Renesas AT25SF641B 8MiB SPI flash.
+// Datasheet: https://www.renesas.com/us/en/document/dst/at25sf641b-datasheet?r=1608816
+#define AT25SF641B { \
+        .total_size = (1 << 23), /* 8 MiB */ \
+        .start_up_time_us = 5000, \
+        .manufacturer_id = 0x1f, \
+        .memory_type = 0x88, \
+        .capacity = 0x01, \
+        .max_clock_speed_mhz = 133, \
+        .quad_enable_bit_mask = 0x02, \
+        .has_sector_protection = true, \
+        .supports_fast_read = true, \
+        .supports_qspi = true, \
+        .supports_qspi_writes = true, \
+        .write_status_register_split = true, \
         .single_status_byte = false, \
 }
 
@@ -378,6 +422,24 @@ typedef struct {
         .manufacturer_id = 0xc2, \
         .memory_type = 0x20, \
         .capacity = 0x16, \
+        .max_clock_speed_mhz = 133, \
+        .quad_enable_bit_mask = 0x40, \
+        .has_sector_protection = false, \
+        .supports_fast_read = true, \
+        .supports_qspi = true, \
+        .supports_qspi_writes = true, \
+        .write_status_register_split = false, \
+        .single_status_byte = true, \
+}
+
+// Settings for the Macronix MX25L25673G 32MiB SPI flash.
+// Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/8761/MX25L25673G,%203V,%20256Mb,%20v1.7.pdf
+#define MX25L25673G  { \
+        .total_size = (1 << 25), /* 32 MiB */ \
+        .start_up_time_us = 5000, \
+        .manufacturer_id = 0xc2, \
+        .memory_type = 0x20, \
+        .capacity = 0x19, \
         .max_clock_speed_mhz = 133, \
         .quad_enable_bit_mask = 0x40, \
         .has_sector_protection = false, \
