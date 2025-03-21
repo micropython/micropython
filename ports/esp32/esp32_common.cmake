@@ -80,9 +80,7 @@ list(APPEND MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/dht/dht.c
 )
 
-list(APPEND GIT_SUBMODULES lib/tinyusb)
 if(MICROPY_PY_TINYUSB)
-    set(TINYUSB_SRC "${MICROPY_DIR}/lib/tinyusb/src")
     string(TOUPPER OPT_MCU_${IDF_TARGET} tusb_mcu)
 
     list(APPEND MICROPY_DEF_TINYUSB
@@ -90,12 +88,6 @@ if(MICROPY_PY_TINYUSB)
     )
 
     list(APPEND MICROPY_SOURCE_TINYUSB
-        ${TINYUSB_SRC}/tusb.c
-        ${TINYUSB_SRC}/common/tusb_fifo.c
-        ${TINYUSB_SRC}/device/usbd.c
-        ${TINYUSB_SRC}/device/usbd_control.c
-        ${TINYUSB_SRC}/class/cdc/cdc_device.c
-        ${TINYUSB_SRC}/portable/synopsys/dwc2/dcd_dwc2.c
         ${MICROPY_DIR}/shared/tinyusb/mp_usbd.c
         ${MICROPY_DIR}/shared/tinyusb/mp_usbd_cdc.c
         ${MICROPY_DIR}/shared/tinyusb/mp_usbd_descriptor.c
@@ -103,7 +95,6 @@ if(MICROPY_PY_TINYUSB)
     )
 
     list(APPEND MICROPY_INC_TINYUSB
-        ${TINYUSB_SRC}
         ${MICROPY_DIR}/shared/tinyusb/
     )
 
