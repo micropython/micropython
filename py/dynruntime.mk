@@ -124,7 +124,7 @@ else
 $(error architecture '$(ARCH)' not supported)
 endif
 
-ifneq ($(shell ldd --version 2>&1 | head -n 1 | grep -i musl),)
+ifneq ($(findstring -musl,$(shell $(CROSS)gcc -dumpmachine)),)
 USE_MUSL := 1
 endif
 
