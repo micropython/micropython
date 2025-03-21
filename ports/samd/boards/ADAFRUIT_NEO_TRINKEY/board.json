@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "RGB LED"
+    ],
+    "images": ["adafruit_neo_trinkey.jpg"],
+    "mcu": "samd21",
+    "product": "Adafruit Neo Trinkey",
+    "thumbnail": "",
+    "url": "https://learn.adafruit.com/adafruit-neo-trinkey",
+    "vendor": "Adafruit"
+}
