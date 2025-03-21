@@ -164,6 +164,51 @@ void Sercom7_Handler(void) {
 }
 #endif
 
+// DMAC IRQ handler support
+#if defined(MCU_SAMD21)
+#define DMAC_FIRST_CHANNEL      0
+#else
+#define DMAC_FIRST_CHANNEL      4
+#endif
+
+void (*dma_irq_handler_table[DMAC_CH_NUM])(int num) = {};
+
+void dma_register_irq(int dma_channel, void (*dma_irq_handler)) {
+    if (dma_channel < DMAC_CH_NUM) {
+        dma_irq_handler_table[dma_channel] = dma_irq_handler;
+    }
+}
+
+void DMAC0_Handler(void) {
+    if (dma_irq_handler_table[0]) {
+        dma_irq_handler_table[0](0);
+    }
+}
+void DMAC1_Handler(void) {
+    if (dma_irq_handler_table[1]) {
+        dma_irq_handler_table[1](1);
+    }
+}
+void DMAC2_Handler(void) {
+    if (dma_irq_handler_table[2]) {
+        dma_irq_handler_table[2](2);
+    }
+}
+void DMAC3_Handler(void) {
+    if (dma_irq_handler_table[3]) {
+        dma_irq_handler_table[3](3);
+    }
+}
+void DMACn_Handler(void) {
+    for (uint32_t mask = 1 << DMAC_FIRST_CHANNEL, dma_channel = DMAC_FIRST_CHANNEL;
+         dma_channel < DMAC_CH_NUM;
+         mask <<= 1, dma_channel += 1) {
+        if ((DMAC->INTSTATUS.reg & mask) && dma_irq_handler_table[dma_channel]) {
+            dma_irq_handler_table[dma_channel](dma_channel);
+        }
+    }
+}
+
 #if defined(MCU_SAMD21)
 const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     (ISR)&_estack,
@@ -188,7 +233,7 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     0,                  //  3 Real-Time Counter (RTC)
     &EIC_Handler,       //  4 External Interrupt Controller (EIC)
     0,                  //  5 Non-Volatile Memory Controller (NVMCTRL)
-    0,                  //  6 Direct Memory Access Controller (DMAC)
+    &DMACn_Handler,     //  6 Direct Memory Access Controller (DMAC)
     USB_Handler_wrapper,//  7 Universal Serial Bus (USB)
     0,                  //  8 Event System Interface (EVSYS)
     &Sercom0_Handler,   //  9 Serial Communication Interface 0 (SERCOM0)
@@ -261,11 +306,11 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     0,                // 28 Frequency Meter (FREQM)
     0,                // 29 Non-Volatile Memory Controller (NVMCTRL): NVMCTRL_0 - _7
     0,                // 30 Non-Volatile Memory Controller (NVMCTRL): NVMCTRL_8 - _10
-    0,                // 31 Direct Memory Access Controller (DMAC): DMAC_SUSP_0, DMAC_TCMPL_0, DMAC_TERR_0
-    0,                // 32 Direct Memory Access Controller (DMAC): DMAC_SUSP_1, DMAC_TCMPL_1, DMAC_TERR_1
-    0,                // 33 Direct Memory Access Controller (DMAC): DMAC_SUSP_2, DMAC_TCMPL_2, DMAC_TERR_2
-    0,                // 34 Direct Memory Access Controller (DMAC): DMAC_SUSP_3, DMAC_TCMPL_3, DMAC_TERR_3
-    0,                // 35 Direct Memory Access Controller (DMAC): DMAC_SUSP_4 - _31, DMAC_TCMPL_4 _31, DMAC_TERR_4- _31
+    &DMAC0_Handler,   // 31 Direct Memory Access Controller (DMAC): DMAC_SUSP_0, DMAC_TCMPL_0, DMAC_TERR_0
+    &DMAC1_Handler,   // 32 Direct Memory Access Controller (DMAC): DMAC_SUSP_1, DMAC_TCMPL_1, DMAC_TERR_1
+    &DMAC2_Handler,   // 33 Direct Memory Access Controller (DMAC): DMAC_SUSP_2, DMAC_TCMPL_2, DMAC_TERR_2
+    &DMAC3_Handler,   // 34 Direct Memory Access Controller (DMAC): DMAC_SUSP_3, DMAC_TCMPL_3, DMAC_TERR_3
+    &DMACn_Handler,   // 35 Direct Memory Access Controller (DMAC): DMAC_SUSP_4 - _31, DMAC_TCMPL_4 _31, DMAC_TERR_4- _31
     0,                // 36 Event System Interface (EVSYS): EVSYS_EVD_0, EVSYS_OVR_0
     0,                // 37 Event System Interface (EVSYS): EVSYS_EVD_1, EVSYS_OVR_1
     0,                // 38 Event System Interface (EVSYS): EVSYS_EVD_2, EVSYS_OVR_2
