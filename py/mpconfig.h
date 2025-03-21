@@ -2115,8 +2115,12 @@ typedef double mp_float_t;
 #endif // INT_FMT
 
 // Modifier for function which doesn't return
-#ifndef NORETURN
-#define NORETURN __attribute__((noreturn))
+#ifndef MP_NORETURN
+#define MP_NORETURN __attribute__((noreturn))
+#endif
+
+#if !MICROPY_PREVIEW_VERSION_2
+#define NORETURN MP_NORETURN
 #endif
 
 // Modifier for weak functions

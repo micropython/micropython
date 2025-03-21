@@ -115,7 +115,7 @@ static inline void powerctrl_disable_hsi_if_unused(void) {
     #endif
 }
 
-NORETURN void powerctrl_mcu_reset(void) {
+MP_NORETURN void powerctrl_mcu_reset(void) {
     #if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
     *BL_STATE_PTR = BL_STATE_INVALID;
     #if __DCACHE_PRESENT == 1
@@ -125,7 +125,7 @@ NORETURN void powerctrl_mcu_reset(void) {
     NVIC_SystemReset();
 }
 
-NORETURN static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl_addr) {
+MP_NORETURN static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl_addr) {
     __asm volatile (
         "ldr r2, [r1, #0]\n"    // get address of stack pointer
         "msr msp, r2\n"         // get stack pointer
@@ -135,7 +135,7 @@ NORETURN static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, ui
     MP_UNREACHABLE;
 }
 
-NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
+MP_NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
     #if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
 
     // Enter the bootloader via a reset, so everything is reset (including WDT).
@@ -1016,7 +1016,7 @@ void powerctrl_enter_stop_mode(void) {
     enable_irq(irq_state);
 }
 
-NORETURN void powerctrl_enter_standby_mode(void) {
+MP_NORETURN void powerctrl_enter_standby_mode(void) {
     rtc_init_finalise();
 
     #if defined(MICROPY_BOARD_ENTER_STANDBY)
