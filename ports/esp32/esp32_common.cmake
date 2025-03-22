@@ -16,7 +16,10 @@ endif()
 
 # RISC-V specific inclusions
 if(CONFIG_IDF_TARGET_ARCH_RISCV)
-    list(APPEND MICROPY_SOURCE_LIB ${MICROPY_DIR}/shared/runtime/gchelper_generic.c)
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/shared/runtime/gchelper_native.c
+        ${MICROPY_DIR}/shared/runtime/gchelper_rv32i.s
+    )
     list(APPEND IDF_COMPONENTS riscv)
 endif()
 
