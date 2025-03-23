@@ -31,4 +31,9 @@ sudo ./sdphost -u 0x1fc9,0x0145 -- jump-address 0x20207000
 ```
 Wait until a drive icon appears on the computer (or mount it explicitly).
 At this point the bootloader is installed. You can now copy the
-MicroPython .uf2 file to the board.
+MicroPython .uf2 file to the board to start the firmware upload.
+A LED on the board will start flickering, indicating that the
+upload is ongoing. Once the upload is complete, the drive icon will
+disappear. Wait until the LED stops flickering. In rare cases there
+may be an error message coming up, especially when there are only few
+or no changes in the firmware file. Then just repeat the upload.

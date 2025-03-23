@@ -41,5 +41,8 @@ installed.
 
 If there is no valid Firmware on the device, the bootloader will start automatically.
 Once it's started, a drive ICON will appear. The MicroPython firmware file with .uf2
-extension must then be copied to that drive. When the file is copied and MicroPython
-is installed, the drive disappears and MicroPython starts.
+extension must then be copied to that drive. A LED on the board may start flickering,
+indicating that the upload is ongoing. Once the upload is complete, the drive icon
+will disappear. Wait until the LED stops flickering. In rare cases there
+may be an error message coming up, especially when there are only few or
+no changes in the firmware file. Then just repeat the copy.
