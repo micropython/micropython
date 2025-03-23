@@ -1631,6 +1631,30 @@ typedef double mp_float_t;
 #define MICROPY_PY_TIME_TIME_TIME_NS (0)
 #endif
 
+// Whether the port implements a method to provide sub-second resolution in time.time
+#ifndef MICROPY_PY_TIME_TIME_HAS_SUBSECOND
+#define MICROPY_PY_TIME_TIME_HAS_SUBSECOND (0)
+#endif
+
+// Whether to return a floating point value from time.time().
+#ifndef MICROPY_PY_TIME_TIME_FLOAT
+#define MICROPY_PY_TIME_TIME_FLOAT (0)
+#endif
+
+// Emit a warning if MICROPY_PY_TIME_TIME_FLOAT is selected on a port without sufficient
+// floating-point precision to resolve reasonable unix timestamps with <= 1 second increments.
+// - Single-precision floats would lose seconds past 16,777,216. i.e. unix July 14, 1970
+// - Short floats (i.e. REPR_C) would lose seconds past 4,194,304.0 i.e. unix Feb 18, 1970
+// - Double-precision floats will only lose seconds past 9,007,199,254,740,992.0 i.e. unix November 12, 285428751
+#ifndef MICROPY_PY_TIME_TIME_FLOAT_WARNIMPRECISE
+#define MICROPY_PY_TIME_TIME_FLOAT_WARNIMPRECISE (1)
+#endif
+
+// Emit a warning if MICROPY_PY_TIME_TIME_FLOAT is selected on a port without a sub-second RTC.
+#ifndef MICROPY_PY_TIME_TIME_FLOAT_WARNFUTILE
+#define MICROPY_PY_TIME_TIME_FLOAT_WARNFUTILE (1)
+#endif
+
 // Period of values returned by time.ticks_ms(), ticks_us(), ticks_cpu()
 // functions. Should be power of two. All functions above use the same
 // period, so if underlying hardware/API has different periods, the
