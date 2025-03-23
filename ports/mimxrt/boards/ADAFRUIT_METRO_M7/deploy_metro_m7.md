@@ -8,4 +8,8 @@ here: https://learn.adafruit.com/adafruit-metro-m7-microsd/installing-the-bootlo
 
 Once the bootloader is installed and started, you can install MicroPython
 by copying the .uf2 version of the firmware file to the bootloader
-drive. When the firmware is installed, the drive will disappear.
+drive. A LED on the board will start flickering, indicating that the
+upload is ongoing. Once the upload is complete, the drive icon will
+disappear. Wait until the LED stops flickering. In rare cases there
+may be an error message coming up, especially when there are only few
+or no changes in the firmware file. Then just repeat the upload.

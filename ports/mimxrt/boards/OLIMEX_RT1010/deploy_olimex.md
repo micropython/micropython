@@ -33,10 +33,16 @@ and you will not need it for Windows.
 
 4. Once the upload of the bootloader is finished, push Reset twice.
 
-The bootloader should start and show a drive icon. Copy the .uf2 version of MicroPython
-to this drive to install or update MicroPython.
+The bootloader should start and show a drive icon.
 
-Once the UF2 bootloader is installed, only step 4 is required to deploy MicroPython. If
+5. Copy the .uf2 version of MicroPython to this drive to install or update MicroPython.
+
+A LED on the board will start flickering, indicating that the upload is ongoing. Once the upload
+is complete, the drive icon will disappear. Wait until the LED stops flickering. In rare cases there
+may be an error message coming up, especially when there are only few or no changes in
+the firmware file. Then just repeat the copy.
+
+Once the UF2 bootloader is installed, only steps 4 and 5 are required to deploy MicroPython. If
 MicroPython is already installed, the bootloader can as well be invoked by calling
 `machine.bootloader()`.
 
