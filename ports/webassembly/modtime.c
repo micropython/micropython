@@ -47,5 +47,9 @@ static mp_obj_t mp_time_localtime_get(void) {
 
 // Returns the number of seconds, as a float, since the Epoch.
 static mp_obj_t mp_time_time_get(void) {
-    return mp_obj_new_float((mp_float_t)mp_hal_time_ms() / 1000);
+    #if MICROPY_PY_TIME_TIME_FLOAT && MICROPY_PY_TIME_TIME_HAS_SUBSECOND
+    return mp_obj_new_float(mp_js_time_ms() / 1000);
+    #else
+    return mp_obj_new_int(mp_hal_time_ms() / 1000);
+    #endif
 }
