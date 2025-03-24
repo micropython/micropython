@@ -27,9 +27,9 @@
 #include "pico_assert.h"
 #include "py/runtime.h"
 
-void pico_param_fault(char *x) {
-    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid params in pico-sdk %s"), x);
+void pico_param_fault(char *define, char *file, unsigned int line, char *test) {
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("pico-sdk %s invalid params at %s:%d: %s"), define, file, line, test);
 }
-void pico_hard_fault(char *x) {
-    mp_raise_msg_varg(&mp_type_AssertionError, MP_ERROR_TEXT("assertion failure in pico-sdk %s"), x);
+void pico_hard_fault(char *define, char *file, unsigned int line, char *test) {
+    mp_raise_msg_varg(&mp_type_AssertionError, MP_ERROR_TEXT("pico-sdk %s assertion failure at %s:%d: %s"), define, file, line, test);
 }

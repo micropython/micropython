@@ -53,13 +53,13 @@
 
 #define PARAM_ASSERTIONS_ENABLED(x) ((PARAM_ASSERTIONS_ENABLED_##x || PARAM_ASSERTIONS_ENABLE_ALL) && !PARAM_ASSERTIONS_DISABLE_ALL)
 
-#define invalid_params_if(x, test) ({if (PARAM_ASSERTIONS_ENABLED(x) && (test)) { pico_param_fault(#x); }})
-#define valid_params_if(x, test) ({if (PARAM_ASSERTIONS_ENABLED(x) && !(test)) { pico_param_fault(#x); }})
-#define hard_assert_if(x, test) ({if (PARAM_ASSERTIONS_ENABLED(x) && (test)) { pico_hard_fault(#x); }})
+#define invalid_params_if(x, test) ({if (PARAM_ASSERTIONS_ENABLED(x) && (test)) { pico_param_fault(#x, __FILE__, __LINE__, #test); }})
+#define valid_params_if(x, test) ({if (PARAM_ASSERTIONS_ENABLED(x) && !(test)) { pico_param_fault(#x, __FILE__, __LINE__, #test); }})
+#define hard_assert_if(x, test) ({if (PARAM_ASSERTIONS_ENABLED(x) && (test)) { pico_hard_fault(#x, __FILE__, __LINE__, #test); }})
 #define invalid_params_if_and_return(x, test, rc) ({ if (test) { return rc; }})
 
 #ifndef __ASSEMBLER__
-void pico_param_fault(char *);
-void pico_hard_fault(char *);
+void pico_param_fault(char *, char *, unsigned int, char *);
+void pico_hard_fault(char *, char *, unsigned int, char *);
 #endif
 #endif // _PICO_REPLACEMENT_ASSERT_H
