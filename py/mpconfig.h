@@ -356,6 +356,11 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_LOADED_MODULES_DICT_SIZE (3)
 #endif
 
+// Initial size of __main__ dict
+#ifndef MICROPY_MAIN_DICT_SIZE
+#define MICROPY_MAIN_DICT_SIZE (1)
+#endif
+
 // Whether realloc/free should be passed allocated memory region size
 // You must enable this if MICROPY_MEM_STATS is enabled
 #ifndef MICROPY_MALLOC_USES_ALLOCATED_SIZE
