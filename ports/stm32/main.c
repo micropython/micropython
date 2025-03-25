@@ -515,11 +515,8 @@ soft_reset:
     mp_thread_init();
     #endif
 
-    // Stack limit should be less than real stack size, so we have a chance
-    // to recover from limit hit.  (Limit is measured in bytes.)
-    // Note: stack control relies on main thread being initialised above
-    mp_stack_set_top(&_estack);
-    mp_stack_set_limit((char *)&_estack - (char *)&_sstack - 1024);
+    // Stack limit init.
+    mp_cstack_init_with_top(&_estack, (char *)&_estack - (char *)&_sstack);
 
     // GC init
     gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);
