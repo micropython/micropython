@@ -391,3 +391,8 @@ void boardctrl_startup(void);
 #ifndef MICROPY_PY_STRING_TX_GIL_THRESHOLD
 #define MICROPY_PY_STRING_TX_GIL_THRESHOLD  (20)
 #endif
+
+// MicroPython is built as an ESP-IDF component.
+#ifndef MICROPY_PY_ESP_IDF_COMPONENT
+#define MICROPY_PY_ESP_IDF_COMPONENT (0)
+#endif
