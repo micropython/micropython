@@ -242,6 +242,7 @@ endif()
 
 # Set compile options for this port.
 target_compile_definitions(${MICROPY_TARGET} PUBLIC
+    ${MICROPY_DEF_COMPONENT}
     ${MICROPY_DEF_CORE}
     ${MICROPY_DEF_BOARD}
     ${MICROPY_DEF_TINYUSB}
@@ -254,6 +255,7 @@ target_compile_definitions(${MICROPY_TARGET} PUBLIC
 
 # Disable some warnings to keep the build output clean.
 target_compile_options(${MICROPY_TARGET} PUBLIC
+    ${MICROPY_COMPILE_COMPONENT}
     -Wno-clobbered
     -Wno-deprecated-declarations
     -Wno-missing-field-initializers
