@@ -47,16 +47,24 @@
 
 #define PPP_CLOSE_TIMEOUT_MS (4000)
 
+typedef enum {
+    STATE_INACTIVE,
+    STATE_ACTIVE,
+    STATE_ERROR,
+    STATE_CONNECTING,
+    STATE_CONNECTED,
+} network_ppp_state_t;
+
 typedef struct _ppp_if_obj_t {
     mp_obj_base_t base;
-    bool active;
-    bool connected;
+    int error_code;
     volatile bool clean_close;
     ppp_pcb *pcb;
     mp_obj_t stream;
     SemaphoreHandle_t inactiveWaitSem;
     volatile TaskHandle_t client_task_handle;
     struct netif pppif;
+    network_ppp_state_t state;
 } ppp_if_obj_t;
 
 const mp_obj_type_t ppp_if_type;
@@ -68,18 +76,26 @@ static void ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
     switch (err_code) {
         case PPPERR_NONE:
             #if CONFIG_LWIP_IPV6
-            self->connected = (pppif->ip_addr.u_addr.ip4.addr != 0);
+            if (pppif->ip_addr.u_addr.ip4.addr != 0) {
+                self->state = STATE_CONNECTED;
+            }
             #else
-            self->connected = (pppif->ip_addr.addr != 0);
+            if (pppif->ip_addr.addr != 0) {
+                self->state = STATE_CONNECTED;
+            }
             #endif // CONFIG_LWIP_IPV6
             break;
         case PPPERR_USER:
+            if (self->state >= STATE_ERROR) {
+                // Indicate that we are no longer connected and thus
+                // only need to free the PPP PCB, not close it.
+                self->state = STATE_ACTIVE;
+            }
             self->clean_close = true;
             break;
-        case PPPERR_CONNECT:
-            self->connected = false;
-            break;
         default:
+            self->state = STATE_ERROR;
+            self->error_code = err_code;
             break;
     }
 }
@@ -90,15 +106,45 @@ static mp_obj_t ppp_make_new(mp_obj_t stream) {
     }
 
     ppp_if_obj_t *self = mp_obj_malloc_with_finaliser(ppp_if_obj_t, &ppp_if_type);
+    self->state = STATE_INACTIVE;
     self->stream = stream;
-    self->active = false;
-    self->connected = false;
+    self->pcb = NULL;
     self->clean_close = false;
     self->client_task_handle = NULL;
 
     return MP_OBJ_FROM_PTR(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(esp_network_ppp_make_new_obj, ppp_make_new);
+
+static mp_obj_t ppp_delete(mp_obj_t self_in) {
+    ppp_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->state >= STATE_ACTIVE) {
+        if (self->state >= STATE_ERROR) {
+            // Still connected over the stream.
+            // Force the connection to close, with nocarrier=1.
+            self->state = STATE_INACTIVE;
+            pppapi_close(self->pcb, 1);
+            uint32_t t0 = mp_hal_ticks_ms();
+            while (!self->clean_close && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
+                mp_hal_delay_ms(10);
+            }
+
+            // Shutdown task
+            xTaskNotifyGive(self->client_task_handle);
+            t0 = mp_hal_ticks_ms();
+            while (self->client_task_handle != NULL && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
+                mp_hal_delay_ms(10);
+            }
+        }
+        // Free PPP PCB and reset state.
+        self->state = STATE_INACTIVE;
+        pppapi_free(self->pcb);
+        self->pcb = NULL;
+        self->clean_close = false;
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(ppp_delete_obj, ppp_delete);
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
 static u32_t ppp_output_callback(ppp_pcb *pcb, const void *data, u32_t len, void *ctx)
@@ -141,60 +187,12 @@ static void pppos_client_task(void *self_in) {
     }
 }
 
-static mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
-    ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-
-    if (n_args > 1) {
-        if (mp_obj_is_true(args[1])) {
-            if (self->active) {
-                return mp_const_true;
-            }
-
-            self->pcb = pppapi_pppos_create(&self->pppif, ppp_output_callback, ppp_status_cb, self);
-
-            if (self->pcb == NULL) {
-                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("init failed"));
-            }
-            self->active = true;
-        } else {
-            if (!self->active) {
-                return mp_const_false;
-            }
-
-            if (self->client_task_handle != NULL) { // is connecting or connected?
-                // Wait for PPPERR_USER, with timeout
-                pppapi_close(self->pcb, 0);
-                uint32_t t0 = mp_hal_ticks_ms();
-                while (!self->clean_close && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
-                    mp_hal_delay_ms(10);
-                }
-
-                // Shutdown task
-                xTaskNotifyGive(self->client_task_handle);
-                t0 = mp_hal_ticks_ms();
-                while (self->client_task_handle != NULL && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
-                    mp_hal_delay_ms(10);
-                }
-            }
-
-            // Release PPP
-            pppapi_free(self->pcb);
-            self->pcb = NULL;
-            self->active = false;
-            self->connected = false;
-            self->clean_close = false;
-        }
-    }
-    return mp_obj_new_bool(self->active);
-}
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ppp_active_obj, 1, 2, ppp_active);
-
 static mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     enum { ARG_authmode, ARG_username, ARG_password };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PPPAUTHTYPE_NONE} },
-        { MP_QSTR_username, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_password, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PPPAUTHTYPE_NONE} },
+        { MP_QSTR_user, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     mp_arg_val_t parsed_args[MP_ARRAY_SIZE(allowed_args)];
@@ -202,11 +200,16 @@ static mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw
 
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    if (!self->active) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("must be active"));
+    if (self->state == STATE_INACTIVE) {
+        self->pcb = pppapi_pppos_create(&self->pppif, ppp_output_callback, ppp_status_cb, self);
+
+        if (self->pcb == NULL) {
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("init failed"));
+        }
+        self->state = STATE_ACTIVE;
     }
 
-    if (self->client_task_handle != NULL) {
+    if (self->client_task_handle != NULL || self->state == STATE_CONNECTING || self->state == STATE_CONNECTED) {
         mp_raise_OSError(MP_EALREADY);
     }
 
@@ -238,17 +241,35 @@ static mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("failed to create worker task"));
     }
 
+    self->state = STATE_CONNECTING;
+
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(ppp_connect_obj, 1, ppp_connect_py);
 
-static mp_obj_t ppp_delete(mp_obj_t self_in) {
+static mp_obj_t ppp_disconnect_py(mp_obj_t self_in) {
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t args[] = {self, mp_const_false};
-    ppp_active(2, args);
+
+    if (self->client_task_handle != NULL || self->state == STATE_CONNECTING || self->state == STATE_CONNECTED) {
+        // Wait for PPPERR_USER, with timeout
+        pppapi_close(self->pcb, 0);
+        uint32_t t0 = mp_hal_ticks_ms();
+        while (!self->clean_close && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
+            mp_hal_delay_ms(10);
+        }
+
+        // Shutdown task
+        xTaskNotifyGive(self->client_task_handle);
+        t0 = mp_hal_ticks_ms();
+        while (self->client_task_handle != NULL && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
+            mp_hal_delay_ms(10);
+        }
+    }
+
+    self->clean_close = false;
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(ppp_delete_obj, ppp_delete);
+static MP_DEFINE_CONST_FUN_OBJ_1(ppp_disconnect_obj, ppp_disconnect_py);
 
 static mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -321,13 +342,18 @@ static mp_obj_t ppp_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwar
 static MP_DEFINE_CONST_FUN_OBJ_KW(ppp_ipconfig_obj, 1, ppp_ipconfig);
 
 static mp_obj_t ppp_status(mp_obj_t self_in) {
-    return mp_const_none;
+    ppp_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->state == STATE_ERROR) {
+        return MP_OBJ_NEW_SMALL_INT(-self->error_code);
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(self->state);
+    }
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ppp_status_obj, ppp_status);
 
 static mp_obj_t ppp_isconnected(mp_obj_t self_in) {
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_bool(self->connected);
+    return mp_obj_new_bool(self->state == STATE_CONNECTED);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ppp_isconnected_obj, ppp_isconnected);
 
@@ -386,18 +412,25 @@ static mp_obj_t ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(ppp_config_obj, 1, ppp_config);
 
+static mp_obj_t ppp_poll(size_t n_args, const mp_obj_t *args) {
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Method not supported on ESP32"));
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ppp_poll_obj, 1, 2, ppp_poll);
+
 static const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&ppp_active_obj) },
-    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&ppp_connect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&ppp_isconnected_obj) },
-    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&ppp_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ppp_delete_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&ppp_config_obj) },
+    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&ppp_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&ppp_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&ppp_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&ppp_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&ppp_ifconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&ppp_ipconfig_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ppp_delete_obj) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_NONE), MP_ROM_INT(PPPAUTHTYPE_NONE) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_PAP), MP_ROM_INT(PPPAUTHTYPE_PAP) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_CHAP), MP_ROM_INT(PPPAUTHTYPE_CHAP) },
+    { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&ppp_poll_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_SEC_NONE), MP_ROM_INT(PPPAUTHTYPE_NONE) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_PAP), MP_ROM_INT(PPPAUTHTYPE_PAP) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_CHAP), MP_ROM_INT(PPPAUTHTYPE_CHAP) },
 };
 static MP_DEFINE_CONST_DICT(ppp_if_locals_dict, ppp_if_locals_dict_table);
 
