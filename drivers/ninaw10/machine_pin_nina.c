@@ -114,13 +114,13 @@ void machine_pin_ext_config(machine_pin_obj_t *self, int mode, int value) {
         mode = NINA_GPIO_OUTPUT;
         self->is_output = true;
     } else {
-        mp_raise_ValueError("only Pin.OUT and Pin.IN are supported for this pin");
+        mp_raise_ValueError(MP_ERROR_TEXT("only Pin.OUT and Pin.IN are supported for this pin"));
     }
     if (self->id >= 0 && self->id < MICROPY_HW_PIN_EXT_COUNT) {
         uint8_t buf[] = {pin_map[self->id], mode};
         if (mode == NINA_GPIO_OUTPUT) {
             if (NINA_GPIO_IS_INPUT_ONLY(self->id)) {
-                mp_raise_ValueError("only Pin.IN is supported for this pin");
+                mp_raise_ValueError(MP_ERROR_TEXT("only Pin.IN is supported for this pin"));
             }
             machine_pin_ext_set(self, value);
         }
