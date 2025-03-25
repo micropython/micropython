@@ -156,7 +156,7 @@ void machine_rtc_start(void) {
     SNVS->HPCOMR |= SNVS_HPCOMR_NPSWA_EN_MASK;
     // Do a basic init.
     SNVS_LP_Init(SNVS);
-    #if FSL_FEATURE_SNVS_HAS_MULTIPLE_TAMPER
+    #if defined(FSL_FEATURE_SNVS_HAS_MULTIPLE_TAMPER) && (FSL_FEATURE_SNVS_HAS_MULTIPLE_TAMPER > 0)
     // Disable all external Tamper
     SNVS_LP_DisableAllExternalTamper(SNVS);
     #endif
