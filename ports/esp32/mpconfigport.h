@@ -391,3 +391,8 @@ void boardctrl_startup(void);
 #ifndef MICROPY_PY_STRING_TX_GIL_THRESHOLD
 #define MICROPY_PY_STRING_TX_GIL_THRESHOLD  (20)
 #endif
+
+// Code can override this to provide a custom ESP-IDF entry point.
+#ifndef MICROPY_ESP_IDF_ENTRY
+#define MICROPY_ESP_IDF_ENTRY app_main
+#endif
