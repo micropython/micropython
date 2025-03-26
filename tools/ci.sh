@@ -673,7 +673,6 @@ function ci_unix_nanbox_run_tests {
 
 function ci_unix_longlong_build {
     ci_unix_build_helper VARIANT=longlong
-    ci_unix_build_ffi_lib_helper gcc -m32
 }
 
 function ci_unix_longlong_run_tests {
