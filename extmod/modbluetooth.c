@@ -257,11 +257,24 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // Bluetooth object: General
 // ----------------------------------------------------------------------------
 
+// Allow the port to add extra parameters
+#ifdef MICROPY_PY_BLUETOOTH_OBJ_INIT_ARGS
+#define EXTRA_ARGS MICROPY_PY_BLUETOOTH_OBJ_INIT_ARGS
+#else
+#define EXTRA_ARGS
+#endif
+
+MP_WEAK void bluetooth_ble_obj_init(mp_arg_val_t *args) {
+}
+
 static mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    (void)type;
-    (void)n_args;
-    (void)n_kw;
-    (void)all_args;
+    const mp_arg_t allowed_args[] = {
+        EXTRA_ARGS
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    bluetooth_ble_obj_init(args);
+
     if (MP_STATE_VM(bluetooth) == MP_OBJ_NULL) {
         mp_obj_bluetooth_ble_t *o = m_new0(mp_obj_bluetooth_ble_t, 1);
         o->base.type = &mp_type_bluetooth_ble;
