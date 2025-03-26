@@ -218,7 +218,8 @@ static void print_completions(const mp_print_t *print,
     for (qstr q = q_first; q <= q_last; ++q) {
         size_t d_len;
         const char *d_str = (const char *)qstr_data(q, &d_len);
-        if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
+        // check if item matches prefix and it's not a hidden attribute (starting with single underscore)
+        if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0 && (d_str[0] != '_' || (d_len > 1 && d_str[1] == '_'))) {
             if (test_qstr(obj, q)) {
                 int gap = (line_len + WORD_SLOT_LEN - 1) / WORD_SLOT_LEN * WORD_SLOT_LEN - line_len;
                 if (gap < 2) {
