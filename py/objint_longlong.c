@@ -31,6 +31,7 @@
 #include "py/smallint.h"
 #include "py/objint.h"
 #include "py/runtime.h"
+#include "py/misc.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
@@ -42,6 +43,10 @@
 // Export value for sys.maxsize
 const mp_obj_int_t mp_sys_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
+
+static void raise_long_long_overflow(void) {
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("result overflows long long storage"));
+}
 
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
     int delta = 1;
@@ -120,7 +125,6 @@ mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
         // small int if the value fits without truncation
         case MP_UNARY_OP_HASH:
             return MP_OBJ_NEW_SMALL_INT((mp_int_t)o->val);
-
         case MP_UNARY_OP_POSITIVE:
             return o_in;
         case MP_UNARY_OP_NEGATIVE:
@@ -147,6 +151,8 @@ mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
 mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     long long lhs_val;
     long long rhs_val;
+    bool overflow = false;
+    long long result;
 
     if (mp_obj_is_small_int(lhs_in)) {
         lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs_in);
@@ -167,13 +173,16 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     switch (op) {
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD:
-            return mp_obj_new_int_from_ll(lhs_val + rhs_val);
+            overflow = mp_add_ll_overflow(lhs_val, rhs_val, &result);
+            break;
         case MP_BINARY_OP_SUBTRACT:
         case MP_BINARY_OP_INPLACE_SUBTRACT:
-            return mp_obj_new_int_from_ll(lhs_val - rhs_val);
+            overflow = mp_sub_ll_overflow(lhs_val, rhs_val, &result);
+            break;
         case MP_BINARY_OP_MULTIPLY:
         case MP_BINARY_OP_INPLACE_MULTIPLY:
-            return mp_obj_new_int_from_ll(lhs_val * rhs_val);
+            overflow = mp_mul_ll_overflow(lhs_val, rhs_val, &result);
+            break;
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
             if (rhs_val == 0) {
@@ -199,9 +208,21 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
 
         case MP_BINARY_OP_LSHIFT:
         case MP_BINARY_OP_INPLACE_LSHIFT:
-            return mp_obj_new_int_from_ll(lhs_val << (int)rhs_val);
+            if ((int)rhs_val < 0) {
+                // negative shift not allowed
+                mp_raise_ValueError(MP_ERROR_TEXT("negative shift count"));
+            }
+            result = lhs_val << (int)rhs_val;
+            // Left-shifting of negative values is implementation defined in C, but assume compiler
+            // will give us typical 2s complement behaviour unless the value overflows
+            overflow = rhs_val > 0 && ((lhs_val >= 0 && result < lhs_val) || (lhs_val < 0 && result > lhs_val));
+            break;
         case MP_BINARY_OP_RSHIFT:
         case MP_BINARY_OP_INPLACE_RSHIFT:
+            if ((int)rhs_val < 0) {
+                // negative shift not allowed
+                mp_raise_ValueError(MP_ERROR_TEXT("negative shift count"));
+            }
             return mp_obj_new_int_from_ll(lhs_val >> (int)rhs_val);
 
         case MP_BINARY_OP_POWER:
@@ -213,18 +234,18 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 mp_raise_ValueError(MP_ERROR_TEXT("negative power with no float support"));
                 #endif
             }
-            long long ans = 1;
-            while (rhs_val > 0) {
+            result = 1;
+            while (rhs_val > 0 && !overflow) {
                 if (rhs_val & 1) {
-                    ans *= lhs_val;
+                    overflow = mp_mul_ll_overflow(result, lhs_val, &result);
                 }
-                if (rhs_val == 1) {
+                if (rhs_val == 1 || overflow) {
                     break;
                 }
                 rhs_val /= 2;
-                lhs_val *= lhs_val;
+                overflow = mp_mul_ll_overflow(lhs_val, lhs_val, &lhs_val);
             }
-            return mp_obj_new_int_from_ll(ans);
+            break;
         }
 
         case MP_BINARY_OP_LESS:
@@ -241,6 +262,12 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         default:
             return MP_OBJ_NULL; // op not supported
     }
+
+    if (overflow) {
+        raise_long_long_overflow();
+    }
+
+    return mp_obj_new_int_from_ll(result);
 
 zero_division:
     mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("divide by zero"));
@@ -267,7 +294,7 @@ mp_obj_t mp_obj_new_int_from_ll(long long val) {
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     // TODO raise an exception if the unsigned long long won't fit
     if (val >> (sizeof(unsigned long long) * 8 - 1) != 0) {
-        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("ulonglong too large"));
+        raise_long_long_overflow();
     }
     return mp_obj_new_int_from_ll(val);
 }

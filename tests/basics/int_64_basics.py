@@ -117,10 +117,21 @@ x = -4611686018427387904 # big
 # sys.maxsize is a constant bigint, so test it's compatible with dynamic ones
 import sys
 if hasattr(sys, "maxsize"):
-    print(sys.maxsize + 1 - 1 == sys.maxsize)
+    print(sys.maxsize - 1 + 1 == sys.maxsize)
 else:
     print(True)  # No maxsize property in this config
 
 # test extraction of big int value via mp_obj_get_int_maybe
 x = 1 << 62
 print('a' * (x + 4 - x))
+
+# negative shifts are invalid
+try:
+    print((1 << 48) >> -4)
+except ValueError as e:
+    print(e)
+
+try:
+    print((1 << 48) << -6)
+except ValueError as e:
+    print(e)
