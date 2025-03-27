@@ -31,6 +31,7 @@ typedef unsigned int mp_uint_t;     // must be pointer size
 #define MICROPY_HW_ENABLE_MMCARD    (0)
 #define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET   (0)
 #define MICROPY_HW_TIM_IS_RESERVED(id) (id == 1)
+#define MICROPY_GC_SPLIT_HEAP       (1)
 
 // ROMFS config
 #define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI       (1)
