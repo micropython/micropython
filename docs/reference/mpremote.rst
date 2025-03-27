@@ -229,7 +229,7 @@ The full list of supported commands are:
   - ``ls`` to list the current directory
   - ``ls <dirs...>`` to list the given directories
   - ``cp [-rf] <src...> <dest>`` to copy files
-  - ``rm <src...>`` to remove files on the device
+  - ``rm [-r] <src...>`` to remove files or folders on the device
   - ``mkdir <dirs...>`` to create directories on the device
   - ``rmdir <dirs...>`` to remove directories on the device
   - ``touch <file..>`` to create the files (if they don't already exist)
