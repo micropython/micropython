@@ -281,6 +281,8 @@ void dcd_disconnect(uint8_t rhport)
 void dcd_sof_enable(uint8_t rhport, bool en)
 {
     LOG("%010u >%s", DWT->CYCCNT, __func__);
+
+    udev->devten_b.softevten = en;
 }
 
 
@@ -655,6 +657,9 @@ static void _dcd_handle_devt(uint8_t evt, uint16_t info)
             // 0x5: early suspend
             // 0xE: reset
             // 0xF: resume
+        } break;
+        case DEVT_SOF: {
+            dcd_event_bus_signal(TUD_OPT_RHPORT, DCD_EVENT_SOF, true);
         } break;
         case DEVT_ERRTICERR: {
             __BKPT(0);
