@@ -7,9 +7,9 @@ import zlib
 
 import serial.tools.list_ports
 
+from .romfs import make_romfs
 from .transport import TransportError, TransportExecError, stdout_write_bytes
 from .transport_serial import SerialTransport
-from .romfs import make_romfs
 
 
 class CommandError(Exception):
@@ -300,6 +300,19 @@ def do_filesystem_recursive_cp(state, src, dest, multiple, check_hash):
         do_filesystem_cp(state, src_path_joined, dest_path_joined, False, check_hash)
 
 
+def do_filesystem_recursive_rm(state, path, args):
+    if state.transport.fs_isdir(path):
+        for entry in state.transport.fs_listdir(path):
+            do_filesystem_recursive_rm(state, _remote_path_join(path, entry.name), args)
+        if path not in ["/"]:
+            try:
+                state.transport.fs_rmdir(path)
+            except ValueError:
+                print(f"rm -r: could not remove :{path}")
+    else:
+        state.transport.fs_rmfile(path)
+
+
 def do_filesystem(state, args):
     state.ensure_raw_repl()
     state.did_action()
@@ -338,7 +351,7 @@ def do_filesystem(state, args):
                 if command == "cp":
                     print("{} {} {}".format(command, path, cp_dest))
                 else:
-                    print("{} :{}".format(command, path))
+                    print("{} {}:{}".format(command, "-r " if args.recursive else "", path))
 
             if command == "cat":
                 state.transport.fs_printfile(path)
@@ -352,7 +365,13 @@ def do_filesystem(state, args):
             elif command == "mkdir":
                 state.transport.fs_mkdir(path)
             elif command == "rm":
-                state.transport.fs_rmfile(path)
+                if args.recursive:
+                    if path:
+                        do_filesystem_recursive_rm(state, path, args)
+                    else:
+                        raise CommandError("rm: missing path")
+                else:
+                    state.transport.fs_rmfile(path)
             elif command == "rmdir":
                 state.transport.fs_rmdir(path)
             elif command == "touch":
