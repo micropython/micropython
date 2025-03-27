@@ -191,3 +191,42 @@ ls :package/subpackage
           23 y.py
 x
 y2
+-----
+mkdir :testdir
+cp ${TMP}/package :testdir/package
+ls :testdir
+           0 package/
+ls :testdir/package
+           0 subpackage/
+          43 __init__.py
+          22 x.py
+rm -r :testdir/package
+ls :testdir
+-----
+ls :
+rm -r :nonexistent
+mpremote: rm: nonexistent: No such file or directory.
+expect error
+-----
+rm -r :
+mpremote: rm: missing path
+expect error
+-----
+touch :a.py
+touch :b.py
+cp ${TMP}/package :
+cp ${TMP}/package :package2
+rm -r :/
+rm -r: could not remove :/ramdisk
+ls :
+ls :/
+           0 ramdisk/
+-----
+touch :/a.py
+touch :b.py
+cp ${TMP}/package :
+rm -r :/
+rm -r: could not remove :/ramdisk
+ls :
+ls :/
+           0 ramdisk/
