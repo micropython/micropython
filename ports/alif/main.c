@@ -36,6 +36,7 @@
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/runtime/softtimer.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "tusb.h"
 #include "mpbthciport.h"
 #include "mpuart.h"
@@ -84,10 +85,8 @@ int main(void) {
     }
     #endif
     #if MICROPY_HW_ENABLE_USBDEV
-    // Takes about 200ms.
     NVIC_ClearPendingIRQ(USB_IRQ_IRQn);
     NVIC_SetPriority(USB_IRQ_IRQn, IRQ_PRI_USB);
-    tusb_init();
     #endif
 
     // Initialise stack extents and GC heap.
@@ -134,6 +133,9 @@ int main(void) {
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");
+        #if MICROPY_HW_ENABLE_USBDEV
+        mp_usbd_init();
+        #endif
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
