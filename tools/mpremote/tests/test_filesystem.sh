@@ -170,3 +170,46 @@ EOF
 $MPREMOTE resume cp -r "${TMP}/package" :
 $MPREMOTE resume ls : :package :package/subpackage
 $MPREMOTE resume exec "import package; package.x(); package.y()"
+
+# Test rm -r functionality
+echo -----
+# start with a fresh ramdisk
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume mkdir :testdir
+$MPREMOTE resume cp -r "${TMP}/package" :testdir/package
+$MPREMOTE resume ls :testdir
+$MPREMOTE resume ls :testdir/package
+$MPREMOTE resume rm -r :testdir/package
+$MPREMOTE resume ls :testdir
+
+echo -----
+# Test rm -r on non-existent path
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume ls :
+$MPREMOTE resume rm -r :nonexistent || echo "expect error"
+
+echo -----
+# Test rm -r without path
+$MPREMOTE resume rm -r : || echo "expect error"
+
+echo -----
+# "Test rm -r on root, with ramdisk mounted"
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume touch :a.py
+$MPREMOTE resume touch :b.py
+$MPREMOTE resume cp -r "${TMP}/package" :
+$MPREMOTE resume cp -r "${TMP}/package" :package2
+$MPREMOTE resume rm -r :/
+$MPREMOTE resume ls :
+$MPREMOTE resume ls :/
+
+echo -----
+# "Test rm -r on root, with ramdisk mounted"
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume touch :/a.py
+$MPREMOTE resume touch :b.py
+$MPREMOTE resume cp -r "${TMP}/package" :
+$MPREMOTE resume rm -r :/
+$MPREMOTE resume ls :
+$MPREMOTE resume ls :/
+
