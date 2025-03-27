@@ -850,8 +850,26 @@ unwind_jump:;
                         step = POP();
                     }
                     mp_obj_t stop = POP();
-                    mp_obj_t start = TOP();
-                    SET_TOP(mp_obj_new_slice(start, stop, step));
+                    mp_obj_t start = POP();
+                    if ((*ip == MP_BC_LOAD_SUBSCR || *ip == MP_BC_STORE_SUBSCR) && mp_obj_is_native_type(mp_obj_get_type(TOP()))) {
+                        // Fast path optimisation for when the BUILD_SLICE is
+                        // immediately followed by a LOAD/STORE_SUBSCR for a
+                        // native type to avoid needing to allocate the slice
+                        // on the heap. In some cases (e.g. a[1:3] = x) this
+                        // can result in no allocations at all. We can't do
+                        // this for instance types because the get/set/delattr
+                        // implementation may keep a reference to the slice.
+                        byte op = *ip++;
+                        mp_obj_slice_t slice = { .base = { .type = &mp_type_slice }, .start = start, .stop = stop, .step = step };
+                        if (op == MP_BC_LOAD_SUBSCR) {
+                            SET_TOP(mp_obj_subscr(TOP(), MP_OBJ_FROM_PTR(&slice), MP_OBJ_SENTINEL));
+                        } else { // MP_BC_STORE_SUBSCR
+                            mp_obj_subscr(TOP(), MP_OBJ_FROM_PTR(&slice), sp[-1]);
+                            sp -= 2;
+                        }
+                    } else {
+                        PUSH(mp_obj_new_slice(start, stop, step));
+                    }
                     DISPATCH();
                 }
                 #endif
