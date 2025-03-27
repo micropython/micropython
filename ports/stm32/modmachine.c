@@ -47,6 +47,7 @@
 #include "rtc.h"
 #include "i2c.h"
 #include "spi.h"
+#include "shared/tinyusb/mp_usbd.h"
 
 #if defined(STM32G0)
 // G0 has BOR and POR combined
