@@ -521,6 +521,23 @@ soft_reset:
     // GC init
     gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);
 
+    // Add additional GC blocks (if enabled).
+    #if MICROPY_GC_SPLIT_HEAP
+    typedef struct {
+        uint8_t *addr;
+        uint32_t size;
+    } gc_blocks_table_t;
+
+    extern const gc_blocks_table_t _gc_blocks_table_start;
+    extern const gc_blocks_table_t _gc_blocks_table_end;
+
+    for (gc_blocks_table_t const *block = &_gc_blocks_table_start; block < &_gc_blocks_table_end; block++) {
+        if (block->size) {
+            gc_add(block->addr, block->addr + block->size);
+        }
+    }
+    #endif
+
     #if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[384];
     mp_pystack_init(pystack, &pystack[384]);
