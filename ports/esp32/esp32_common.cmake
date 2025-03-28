@@ -16,8 +16,10 @@ endif()
 
 # RISC-V specific inclusions
 if(CONFIG_IDF_TARGET_ARCH_RISCV)
-    list(APPEND MICROPY_SOURCE_LIB ${MICROPY_DIR}/shared/runtime/gchelper_generic.c)
-    list(APPEND IDF_COMPONENTS riscv)
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/shared/runtime/gchelper_native.c
+        ${MICROPY_DIR}/shared/runtime/gchelper_rv32i.s
+    )
 endif()
 
 if(NOT DEFINED MICROPY_PY_TINYUSB)
@@ -234,8 +236,10 @@ idf_component_register(
 set(MICROPY_TARGET ${COMPONENT_TARGET})
 
 # Define mpy-cross flags, for use with frozen code.
-if(CONFIG_IDF_TARGET_ARCH STREQUAL "xtensa")
-set(MICROPY_CROSS_FLAGS -march=xtensawin)
+if(CONFIG_IDF_TARGET_ARCH_XTENSA)
+    set(MICROPY_CROSS_FLAGS -march=xtensawin)
+elseif(CONFIG_IDF_TARGET_ARCH_RISCV)
+    set(MICROPY_CROSS_FLAGS -march=rv32imc)
 endif()
 
 # Set compile options for this port.
@@ -243,7 +247,6 @@ target_compile_definitions(${MICROPY_TARGET} PUBLIC
     ${MICROPY_DEF_CORE}
     ${MICROPY_DEF_BOARD}
     ${MICROPY_DEF_TINYUSB}
-    MICROPY_ESP_IDF_4=1
     MICROPY_VFS_FAT=1
     MICROPY_VFS_LFS2=1
     FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
