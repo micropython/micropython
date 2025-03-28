@@ -708,7 +708,7 @@ def do_relocation_text(env, text_addr, r):
 
     else:
         # Unknown/unsupported relocation
-        assert 0, r_info_type
+        assert 0, (r_info_type, s.name, s.entry, env.arch.name)
 
     # Write relocation
     if env.arch.name == "EM_RISCV":
