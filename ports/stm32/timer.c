@@ -840,7 +840,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(1, TIM1_BRK_UP_TRG_COM_IRQn),
     #elif defined(STM32F4) || defined(STM32F7)
     TIM_ENTRY(1, TIM1_UP_TIM10_IRQn),
-    #elif defined(STM32H7)
+    #elif defined(STM32H7) || defined(STM32H5)
     TIM_ENTRY(1, TIM1_UP_IRQn),
     #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
     TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),
