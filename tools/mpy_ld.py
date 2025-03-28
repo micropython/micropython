@@ -702,6 +702,10 @@ def do_relocation_text(env, text_addr, r):
     elif env.arch.name == "EM_RISCV":
         (addr, value) = process_riscv32_relocation(env, text_addr, r)
 
+    elif env.arch.name == "EM_ARM" and r_info_type == R_ARM_ABS32:
+        # happens for soft-float on armv6m
+        raise ValueError("Absolute relocations not supported on ARM")
+
     else:
         # Unknown/unsupported relocation
         assert 0, r_info_type
