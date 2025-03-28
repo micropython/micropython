@@ -33,8 +33,18 @@
 #include "modrp2.h"
 #include "hardware/flash.h"
 #include "pico/binary_info.h"
+#include "rp2_psram.h"
+#ifdef PICO_RP2350
+#include "hardware/structs/ioqspi.h"
+#include "hardware/structs/qmi.h"
+#else
+#include "hardware/structs/ssi.h"
+#endif
 
 #define BLOCK_SIZE_BYTES (FLASH_SECTOR_SIZE)
+
+// Size of buffer for flash writes from PSRAM, since they are mutually exclusive
+#define COPY_BUFFER_SIZE_BYTES (FLASH_PAGE_SIZE)
 
 static_assert(MICROPY_HW_ROMFS_BYTES % 4096 == 0, "ROMFS size must be a multiple of 4K");
 static_assert(MICROPY_HW_FLASH_STORAGE_BYTES % 4096 == 0, "Flash storage size must be a multiple of 4K");
@@ -90,16 +100,76 @@ static bool use_multicore_lockout(void) {
     ;
 }
 
+// Function to set the flash divisor to the correct divisor, assumes interrupts disabled
+// and core1 locked out if relevant.
+static void __no_inline_not_in_flash_func(rp2_flash_set_timing_internal)(int clock_hz) {
+
+    // Use the minimum divisor assuming a 133MHz flash.
+    const int max_flash_freq = 133000000;
+    int divisor = (clock_hz + max_flash_freq - 1) / max_flash_freq;
+
+    #if PICO_RP2350
+    // Make sure flash is deselected - QMI doesn't appear to have a busy flag(!)
+    while ((ioqspi_hw->io[1].status & IO_QSPI_GPIO_QSPI_SS_STATUS_OUTTOPAD_BITS) != IO_QSPI_GPIO_QSPI_SS_STATUS_OUTTOPAD_BITS) {
+        ;
+    }
+
+    // RX delay equal to the divisor means sampling at the same time as the next falling edge of SCK after the
+    // falling edge that generated the data.  This is pretty tight at 133MHz but seems to work with the Winbond flash chips.
+    const int rxdelay = divisor;
+    qmi_hw->m[0].timing = (1 << QMI_M0_TIMING_COOLDOWN_LSB) |
+        rxdelay << QMI_M1_TIMING_RXDELAY_LSB |
+        divisor << QMI_M1_TIMING_CLKDIV_LSB;
+
+    // Force a read through XIP to ensure the timing is applied
+    volatile uint32_t *ptr = (volatile uint32_t *)0x14000000;
+    (void)*ptr;
+    #else
+    // RP2040 SSI hardware only supports even divisors
+    if (divisor & 1) {
+        divisor += 1;
+    }
+
+    // Wait for SSI not busy
+    while (ssi_hw->sr & SSI_SR_BUSY_BITS) {
+        ;
+    }
+
+    // Disable, set the new divisor, and re-enable
+    hw_clear_bits(&ssi_hw->ssienr, SSI_SSIENR_SSI_EN_BITS);
+    ssi_hw->baudr = divisor;
+    hw_set_bits(&ssi_hw->ssienr, SSI_SSIENR_SSI_EN_BITS);
+    #endif
+}
+
 // Flash erase and write must run with interrupts disabled and the other core suspended,
 // because the XIP bit gets disabled.
 static uint32_t begin_critical_flash_section(void) {
     if (use_multicore_lockout()) {
         multicore_lockout_start_blocking();
     }
-    return save_and_disable_interrupts();
+    uint32_t state = save_and_disable_interrupts();
+
+    #if MICROPY_HW_ENABLE_PSRAM
+    // We're about to invalidate the XIP cache, clean it first to commit any dirty writes to PSRAM
+    // Use the upper 16k of the maintenance space (0x1bffc000 through 0x1bffffff) to workaround
+    // incorrect behaviour of the XIP clean operation, where it also alters the tag of the associated
+    // cache line: https://forums.raspberrypi.com/viewtopic.php?t=378249#p2263677
+    volatile uint8_t *maintenance_ptr = (volatile uint8_t *)(XIP_SRAM_BASE + (XIP_MAINTENANCE_BASE - XIP_BASE));
+    for (int i = 1; i < 16 * 1024; i += 8) {
+        maintenance_ptr[i] = 0;
+    }
+    #endif
+
+    return state;
 }
 
 static void end_critical_flash_section(uint32_t state) {
+    // The ROM function to program flash will have reset flash and PSRAM timings to defaults
+    rp2_flash_set_timing_internal(clock_get_hz(clk_sys));
+    #if MICROPY_HW_ENABLE_PSRAM
+    psram_init(MICROPY_HW_PSRAM_CS_PIN);
+    #endif
     restore_interrupts(state);
     if (use_multicore_lockout()) {
         multicore_lockout_end_blocking();
@@ -192,10 +262,43 @@ static mp_obj_t rp2_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     } else {
         offset += mp_obj_get_int(args[3]);
     }
-    mp_uint_t atomic_state = begin_critical_flash_section();
-    flash_range_program(self->flash_base + offset, bufinfo.buf, bufinfo.len);
-    end_critical_flash_section(atomic_state);
-    mp_event_handle_nowait();
+
+    // If copying from SRAM, can write direct to flash.
+    // If copying from PSRAM/flash, use an SRAM buffer and write in chunks.
+    #if MICROPY_HW_ENABLE_PSRAM
+    bool write_direct = (uintptr_t)bufinfo.buf >= SRAM_BASE;
+    #else
+    bool write_direct = true;
+    #endif
+
+    if (write_direct) {
+        // If copying from SRAM, write direct
+        mp_uint_t atomic_state = begin_critical_flash_section();
+        flash_range_program(self->flash_base + offset, bufinfo.buf, bufinfo.len);
+        end_critical_flash_section(atomic_state);
+        mp_event_handle_nowait();
+    }
+    #if MICROPY_HW_ENABLE_PSRAM
+    else {
+        size_t bytes_left = bufinfo.len;
+        size_t bytes_offset = 0;
+        static uint8_t copy_buffer[COPY_BUFFER_SIZE_BYTES] = {0};
+
+        while (bytes_left) {
+            memcpy(copy_buffer, bufinfo.buf + bytes_offset, MIN(bytes_left, COPY_BUFFER_SIZE_BYTES));
+            mp_uint_t atomic_state = begin_critical_flash_section();
+            flash_range_program(self->flash_base + offset + bytes_offset, copy_buffer, MIN(bytes_left, COPY_BUFFER_SIZE_BYTES));
+            end_critical_flash_section(atomic_state);
+            bytes_offset += COPY_BUFFER_SIZE_BYTES;
+            if (bytes_left <= COPY_BUFFER_SIZE_BYTES) {
+                break;
+            }
+            bytes_left -= COPY_BUFFER_SIZE_BYTES;
+            mp_event_handle_nowait();
+        }
+    }
+    #endif
+
     // TODO check return value
     return mp_const_none;
 }
@@ -259,3 +362,23 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
     }
 }
 #endif
+
+// Modify the flash timing.  Ensure flash access is suspended while
+// the timings are altered.
+void rp2_flash_set_timing_for_freq(int clock_hz) {
+    if (multicore_lockout_victim_is_initialized(1 - get_core_num())) {
+        multicore_lockout_start_blocking();
+    }
+    uint32_t state = save_and_disable_interrupts();
+
+    rp2_flash_set_timing_internal(clock_hz);
+
+    restore_interrupts(state);
+    if (multicore_lockout_victim_is_initialized(1 - get_core_num())) {
+        multicore_lockout_end_blocking();
+    }
+}
+
+void rp2_flash_set_timing(void) {
+    rp2_flash_set_timing_for_freq(clock_get_hz(clk_sys));
+}

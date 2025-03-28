@@ -165,6 +165,7 @@ set(MICROPY_SOURCE_PORT
     pendsv.c
     rp2_flash.c
     rp2_pio.c
+    rp2_psram.c
     rp2_dma.c
     uart.c
     usbd.c
