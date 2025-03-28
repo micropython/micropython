@@ -63,6 +63,9 @@ def _convert_filesystem_error(e, info):
         return FileExistsError(info)
     if "OSError" in e.error_output and "ENODEV" in e.error_output:
         return FileNotFoundError(info)
+    if "OSError" in e.error_output and "EINVAL" in e.error_output:
+        return ValueError(info)
+    FileNotFoundError(info)
     return e
 
 
