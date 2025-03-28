@@ -610,12 +610,16 @@ endif()
 # todo this is a bit brittle, but we want to move a few source files into RAM (which requires
 #  a linker script modification) until we explicitly add  macro calls around the function
 #  defs to move them into RAM.
-if (PICO_ON_DEVICE AND NOT PICO_NO_FLASH AND NOT PICO_COPY_TO_RAM)
+if (NOT MICROPY_BOARD_LINKER_SCRIPT)
     if(PICO_RP2040)
-        pico_set_linker_script(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2040.ld)
+        set(MICROPY_BOARD_LINKER_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2040.ld)
     elseif(PICO_RP2350)
-        pico_set_linker_script(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2350.ld)
+        set(MICROPY_BOARD_LINKER_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2350.ld)
     endif()
+endif()
+
+if (PICO_ON_DEVICE AND NOT PICO_NO_FLASH AND NOT PICO_COPY_TO_RAM)
+    pico_set_linker_script(${MICROPY_TARGET} ${MICROPY_BOARD_LINKER_SCRIPT})
 endif()
 
 pico_add_extra_outputs(${MICROPY_TARGET})
