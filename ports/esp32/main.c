@@ -216,7 +216,12 @@ void boardctrl_startup(void) {
     }
 }
 
-void app_main(void) {
+#if MICROPY_PY_ESP_IDF_COMPONENT
+void micropython_main(void)
+#else
+void app_main(void)
+#endif
+{
     // Hook for a board to run code at start up.
     // This defaults to initialising NVS.
     MICROPY_BOARD_STARTUP();
@@ -225,7 +230,7 @@ void app_main(void) {
     xTaskCreatePinnedToCore(mp_task, "mp_task", MICROPY_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 
-void nlr_jump_fail(void *val) {
+MP_WEAK void nlr_jump_fail(void *val) {
     printf("NLR jump failed, val=%p\n", val);
     esp_restart();
 }
