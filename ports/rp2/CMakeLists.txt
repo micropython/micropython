@@ -654,9 +654,13 @@ if(NOT PICO_NUM_EXT_GPIOS)
     set(PICO_NUM_EXT_GPIOS 10)
 endif()
 
-if(EXISTS "${MICROPY_BOARD_DIR}/pins.csv")
-    set(GEN_PINS_BOARD_CSV "${MICROPY_BOARD_DIR}/pins.csv")
-    set(GEN_PINS_CSV_ARG --board-csv "${GEN_PINS_BOARD_CSV}")
+if(NOT MICROPY_BOARD_PINS)
+    set(MICROPY_BOARD_PINS "${MICROPY_BOARD_DIR}/pins.csv")
+endif()
+
+if(EXISTS "${MICROPY_BOARD_PINS}")
+    set(GEN_PINS_BOARD_CSV "${MICROPY_BOARD_PINS}")
+    set(GEN_PINS_CSV_ARG --board-csv "${MICROPY_BOARD_PINS}")
 endif()
 
 target_sources(${MICROPY_TARGET} PRIVATE
