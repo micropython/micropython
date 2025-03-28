@@ -229,6 +229,25 @@ Names:
 - Use underscore_case, not camelCase for all names.
 - Use CAPS_WITH_UNDERSCORE for enums and macros.
 - When defining a type use underscore_case and put '_t' after it.
+- Non-static functions and variables declared in a header and defined in a
+  source file should generally share a common prefix. Usually the prefix matches
+  the file name (i.e. items defined in `py/obj.c` are declared in `py/obj.h` and
+  should be prefixed `mp_obj_`). There are exceptions, for example where one
+  header file contains declarations implemented in multiple source files for
+  expediency.
+
+Static names:
+- For static functions and variables exposed to Python (i.e. a static C function
+  that is wrapped in `MP_DEFINE_CONST_FUN_...` and attached to a module), use
+  the file-level shared common prefix, i.e. name them as if the function or
+  variable was not static.
+- Items defined as static in header files (i.e. inline functions) should be
+  named with the same file-level shared common prefix as non-static
+  declarations in the same header.
+- Other static definitions in source files (i.e. functions or variables defined
+  in a .c file that are only used within that .c file) don't need any prefix
+  (specifically: no `s_` or `_` prefix, and avoid adding the file-level common
+  prefix as well).
 
 Integer types: MicroPython runs on 16, 32, and 64 bit machines, so it's
 important to use the correctly-sized (and signed) integer types.  The
