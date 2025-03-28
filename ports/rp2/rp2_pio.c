@@ -271,9 +271,9 @@ static void asm_pio_get_pins(PIO pio, const char *type, mp_obj_t prog_pins, mp_o
 }
 
 static void asm_pio_init_gpio(PIO pio, uint32_t sm, asm_pio_config_t *config) {
-    uint32_t pinmask = ((1 << config->count) - 1) << (config->base - pio_get_gpio_base(pio));
-    pio_sm_set_pins_with_mask(pio, sm, config->pinvals << (config->base - pio_get_gpio_base(pio)), pinmask);
-    pio_sm_set_pindirs_with_mask(pio, sm, config->pindirs << (config->base - pio_get_gpio_base(pio)), pinmask);
+    uint64_t pinmask = ((UINT64_C(1) << config->count) - 1) << config->base;
+    pio_sm_set_pins_with_mask64(pio, sm, (uint64_t)config->pinvals << (config->base), pinmask);
+    pio_sm_set_pindirs_with_mask64(pio, sm, (uint64_t)config->pindirs << (config->base), pinmask);
     for (size_t i = 0; i < config->count; ++i) {
         gpio_set_function(config->base + i, GPIO_FUNC_PIO0 + pio_get_index(pio));
     }
