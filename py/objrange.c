@@ -164,15 +164,11 @@ static mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
-            mp_seq_get_fast_slice_indexes(len, index, &slice);
+            mp_obj_slice_indices(index, len, &slice);
             mp_obj_range_t *o = mp_obj_malloc(mp_obj_range_t, &mp_type_range);
             o->start = self->start + slice.start * self->step;
             o->stop = self->start + slice.stop * self->step;
             o->step = slice.step * self->step;
-            if (slice.step < 0) {
-                // Negative slice steps have inclusive stop, so adjust for exclusive
-                o->stop -= self->step;
-            }
             return MP_OBJ_FROM_PTR(o);
         }
         #endif
