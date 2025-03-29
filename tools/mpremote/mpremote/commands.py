@@ -9,7 +9,7 @@ import serial.tools.list_ports
 
 from .transport import TransportError, TransportExecError, stdout_write_bytes
 from .transport_serial import SerialTransport
-from .romfs import make_romfs
+from .romfs import make_romfs, VfsRomWriter
 
 
 class CommandError(Exception):
@@ -555,7 +555,7 @@ def _do_romfs_deploy(state, args):
     romfs_filename = args.path
 
     # Read in or create the ROMFS filesystem image.
-    if romfs_filename.endswith(".romfs"):
+    if os.path.isfile(romfs_filename) and romfs_filename.endswith((".img", ".romfs")):
         with open(romfs_filename, "rb") as f:
             romfs = f.read()
     else:
@@ -580,6 +580,11 @@ def _do_romfs_deploy(state, args):
     else:
         rom_size = transport.eval("len(dev)")
         print(f"ROMFS{rom_id} partition has size {rom_size} bytes")
+
+    # Check if ROMFS image is valid
+    if not romfs.startswith(VfsRomWriter.ROMFS_HEADER):
+        print("Invalid ROMFS image")
+        sys.exit(1)
 
     # Check if ROMFS filesystem image will fit in the target partition.
     if len(romfs) > rom_size:
