@@ -555,7 +555,7 @@ def _do_romfs_deploy(state, args):
     romfs_filename = args.path
 
     # Read in or create the ROMFS filesystem image.
-    if romfs_filename.endswith(".romfs"):
+    if os.path.isfile(romfs_filename):
         with open(romfs_filename, "rb") as f:
             romfs = f.read()
     else:
@@ -580,6 +580,12 @@ def _do_romfs_deploy(state, args):
     else:
         rom_size = transport.eval("len(dev)")
         print(f"ROMFS{rom_id} partition has size {rom_size} bytes")
+
+    # Check if ROMFS image is valid
+    ROMFS_HEADER = b"\xd2\xcd\x31"
+    if len(romfs) < 4 or not romfs.startswith(ROMFS_HEADER):
+        print("Invalid ROMFS image")
+        sys.exit(1)
 
     # Check if ROMFS filesystem image will fit in the target partition.
     if len(romfs) > rom_size:
