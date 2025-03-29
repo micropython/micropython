@@ -246,6 +246,9 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(machine_timer_init_obj, 1, machine_timer_init)
 
 static mp_obj_t machine_timer_value(mp_obj_t self_in) {
     machine_timer_obj_t *self = self_in;
+    if (self->handle == NULL) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer not set"));
+    }
     uint64_t result = timer_ll_get_counter_value(self->hal_context.dev, self->index);
     return MP_OBJ_NEW_SMALL_INT((mp_uint_t)(result / (TIMER_SCALE / 1000))); // value in ms
 }
