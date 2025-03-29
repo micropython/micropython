@@ -340,7 +340,7 @@ static mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
         }
 
         for (size_t i = 0; i < kwargs->alloc; ++i) {
-            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+            if (mp_map_slot_is_filled(kwargs, i)) {
                 mp_map_elem_t *e = &kwargs->table[i];
                 switch (mp_obj_str_get_qstr(e->key)) {
                     case MP_QSTR_gap_name: {
