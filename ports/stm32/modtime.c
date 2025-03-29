@@ -59,5 +59,11 @@ static mp_obj_t mp_time_time_get(void) {
     RTC_TimeTypeDef time;
     HAL_RTC_GetTime(&RTCHandle, &time, RTC_FORMAT_BIN);
     HAL_RTC_GetDate(&RTCHandle, &date, RTC_FORMAT_BIN);
-    return mp_obj_new_int(timeutils_seconds_since_epoch(2000 + date.Year, date.Month, date.Date, time.Hours, time.Minutes, time.Seconds));
+    uint64_t secs = timeutils_seconds_since_epoch(2000 + date.Year, date.Month, date.Date, time.Hours, time.Minutes, time.Seconds);
+    #if MICROPY_PY_TIME_TIME_FLOAT && MICROPY_PY_TIME_TIME_HAS_SUBSECOND
+    mp_float_t val = secs + (mp_float_t)rtc_subsec_to_us(time.SubSeconds) / (1000 * 1000);
+    return mp_obj_new_float(val);
+    #else
+    return mp_obj_new_int_from_ull(secs);
+    #endif
 }
