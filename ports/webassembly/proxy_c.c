@@ -62,6 +62,7 @@ enum {
     PROXY_KIND_JS_STRING = 5,
     PROXY_KIND_JS_OBJECT = 6,
     PROXY_KIND_JS_PYPROXY = 7,
+    PROXY_KIND_JS_BYTES = 8,
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
@@ -171,6 +172,10 @@ mp_obj_t proxy_convert_js_to_mp_obj_cside(uint32_t *value) {
         mp_obj_t s = mp_obj_new_str((void *)value[2], value[1]);
         free((void *)value[2]);
         return s;
+    } else if (value[0] == PROXY_KIND_JS_BYTES) {
+        mp_obj_t s = mp_obj_new_bytes((void*) value[2], value[1]);
+        free((void*)value[2]);
+        return s;
     } else if (value[0] == PROXY_KIND_JS_PYPROXY) {
         return proxy_c_get_obj(value[1]);
     } else {
@@ -201,12 +206,12 @@ void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out) {
         const char *str = mp_obj_str_get_data(obj, &len);
         out[1] = len;
         out[2] = (uintptr_t)str;
-    } else if (mp_obj_get_type(obj) == &mp_type_bytes) {
+    } else if (mp_obj_get_type(obj) == &mp_type_bytes || mp_obj_get_type(obj) == &mp_type_bytearray) {
         kind = PROXY_KIND_MP_BYTES;
         mp_buffer_info_t bufinfo;
         mp_get_buffer(obj, &bufinfo, MP_BUFFER_READ);
         size_t len = bufinfo.len;
-        const uint8_t *buf= bufinfo.buf;
+        const uint8_t *buf = bufinfo.buf;
         out[1] = len;
         out[2] = (uintptr_t)buf;
     } else if (obj == mp_const_undefined) {

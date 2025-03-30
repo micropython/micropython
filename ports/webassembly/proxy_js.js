@@ -51,6 +51,8 @@ const PROXY_KIND_JS_DOUBLE = 4;
 const PROXY_KIND_JS_STRING = 5;
 const PROXY_KIND_JS_OBJECT = 6;
 const PROXY_KIND_JS_PYPROXY = 7;
+const PROXY_KIND_JS_BYTES = 8;
+
 
 class PythonError extends Error {
     constructor(exc_type, exc_details) {
@@ -144,6 +146,7 @@ function proxy_call_python(target, argumentsList) {
         "null",
         ["number", "number", "number", "pointer"],
         [target, argumentsList.length, args, value],
+        {async:true},
     );
     if (argumentsList.length > 0) {
         Module._free(args);
@@ -196,7 +199,15 @@ function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
         Module.stringToUTF8(js_obj, buf, len + 1);
         Module.setValue(out + 4, len, "i32");
         Module.setValue(out + 8, buf, "i32");
-    } else if (
+    } else if (js_obj instanceof Uint8Array) {
+        kind = PROXY_KIND_JS_BYTES;
+        const len = js_obj.length;
+        const buf = Module._malloc(len);
+        for(var i=0;i<len;i++) Module.HEAPU8[buf+i] = js_obj[i];
+        Module.setValue(out + 4, len, "i32");
+        Module.setValue(out + 8, buf, "i32");
+    } else if
+        (
         js_obj instanceof PyProxy ||
         (typeof js_obj === "function" && "_ref" in js_obj) ||
         js_obj instanceof PyProxyThenable
@@ -265,10 +276,10 @@ function proxy_convert_mp_to_js_obj_jsside(value) {
         const str_len = Module.getValue(value + 4, "i32");
         const str_ptr = Module.getValue(value + 8, "i32");
         obj = Module.UTF8ToString(str_ptr, str_len);
-    } else if (kind == PROXY_KIND_MP_BYTES) {
+    } else if (kind === PROXY_KIND_MP_BYTES) {
         // bytes
         const buf_len = Module.getValue(value + 4, "i32");
-        const buf_ptr = Module.getValue(value + 8, "i32")
+        const buf_ptr = Module.getValue(value + 8, "i32");
         obj = new Uint8Array(Module.HEAPU8.buffer, buf_ptr, buf_len);
     } else if (kind === PROXY_KIND_MP_JSPROXY) {
         // js proxy
