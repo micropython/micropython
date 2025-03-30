@@ -53,7 +53,6 @@ const PROXY_KIND_JS_OBJECT = 6;
 const PROXY_KIND_JS_PYPROXY = 7;
 const PROXY_KIND_JS_BYTES = 8;
 
-
 class PythonError extends Error {
     constructor(exc_type, exc_details) {
         super(exc_details);
