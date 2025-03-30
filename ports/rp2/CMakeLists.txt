@@ -66,6 +66,11 @@ if(NOT MICROPY_C_HEAP_SIZE)
     set(MICROPY_C_HEAP_SIZE 0)
 endif()
 
+# Enable error text compression by default.
+if(NOT MICROPY_ROM_TEXT_COMPRESSION)
+    set(MICROPY_ROM_TEXT_COMPRESSION ON)
+endif()
+
 # Enable extmod components that will be configured by extmod.cmake.
 # A board may also have enabled additional components.
 set(MICROPY_SSL_MBEDTLS ON)
