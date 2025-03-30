@@ -50,6 +50,7 @@ enum {
     PROXY_KIND_MP_OBJECT = 8,
     PROXY_KIND_MP_JSPROXY = 9,
     PROXY_KIND_MP_EXISTING = 10,
+    PROXY_KIND_MP_BYTES = 11,
 };
 
 enum {
@@ -200,6 +201,14 @@ void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out) {
         const char *str = mp_obj_str_get_data(obj, &len);
         out[1] = len;
         out[2] = (uintptr_t)str;
+    } else if (mp_obj_get_type(obj) == &mp_type_bytes) {
+        kind = PROXY_KIND_MP_BYTES;
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer(obj, &bufinfo, MP_BUFFER_READ);
+        size_t len = bufinfo.len;
+        const uint8_t *buf= bufinfo.buf;
+        out[1] = len;
+        out[2] = (uintptr_t)buf;
     } else if (obj == mp_const_undefined) {
         kind = PROXY_KIND_MP_JSPROXY;
         out[1] = 1;

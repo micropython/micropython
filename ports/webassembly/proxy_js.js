@@ -41,6 +41,7 @@ const PROXY_KIND_MP_GENERATOR = 7;
 const PROXY_KIND_MP_OBJECT = 8;
 const PROXY_KIND_MP_JSPROXY = 9;
 const PROXY_KIND_MP_EXISTING = 10;
+const PROXY_KIND_MP_BYTES = 11;
 
 const PROXY_KIND_JS_UNDEFINED = 0;
 const PROXY_KIND_JS_NULL = 1;
@@ -264,6 +265,11 @@ function proxy_convert_mp_to_js_obj_jsside(value) {
         const str_len = Module.getValue(value + 4, "i32");
         const str_ptr = Module.getValue(value + 8, "i32");
         obj = Module.UTF8ToString(str_ptr, str_len);
+    } else if (kind == PROXY_KIND_MP_BYTES) {
+        // bytes
+        const buf_len = Module.getValue(value + 4, "i32");
+        const buf_ptr = Module.getValue(value + 8, "i32")
+        obj = new Uint8Array(Module.HEAPU8.buffer, buf_ptr, buf_len);
     } else if (kind === PROXY_KIND_MP_JSPROXY) {
         // js proxy
         const id = Module.getValue(value + 4, "i32");
