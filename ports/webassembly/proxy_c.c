@@ -173,8 +173,8 @@ mp_obj_t proxy_convert_js_to_mp_obj_cside(uint32_t *value) {
         free((void *)value[2]);
         return s;
     } else if (value[0] == PROXY_KIND_JS_BYTES) {
-        mp_obj_t s = mp_obj_new_bytes((void*) value[2], value[1]);
-        free((void*)value[2]);
+        mp_obj_t s = mp_obj_new_bytes((void *) value[2], value[1]);
+        free((void *)value[2]);
         return s;
     } else if (value[0] == PROXY_KIND_JS_PYPROXY) {
         return proxy_c_get_obj(value[1]);

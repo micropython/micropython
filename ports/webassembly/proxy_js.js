@@ -203,7 +203,7 @@ function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
         kind = PROXY_KIND_JS_BYTES;
         const len = js_obj.length;
         const buf = Module._malloc(len);
-        for(var i=0;i<len;i++) Module.HEAPU8[buf+i] = js_obj[i];
+        for(let i = 0; i < len; i++) Module.HEAPU8[buf + i] = js_obj[i];
         Module.setValue(out + 4, len, "i32");
         Module.setValue(out + 8, buf, "i32");
     } else if
