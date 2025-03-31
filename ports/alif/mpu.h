@@ -38,6 +38,7 @@
 #define MP_MPU_REGION_MRAM                  (3)
 #define MP_MPU_REGION_OSPI_REGISTERS        (4)
 #define MP_MPU_REGION_OSPI0_XIP             (5)
-#define MP_MPU_REGION_OPENAMP               (6)
+#define MP_MPU_REGION_OSPI1_XIP             (6)
+#define MP_MPU_REGION_OPENAMP               (7)
 
 void mpu_config_mram(bool read_only);
