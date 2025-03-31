@@ -585,6 +585,10 @@ target_link_libraries(${MICROPY_TARGET}
     ${PICO_SDK_COMPONENTS}
 )
 
+target_link_options(${MICROPY_TARGET} PRIVATE
+    -Wl,--print-memory-usage
+)
+
 if (MICROPY_HW_ENABLE_DOUBLE_TAP)
 # Enable double tap reset into bootrom.
 target_link_libraries(${MICROPY_TARGET}
