@@ -279,8 +279,6 @@ static void machine_spi_deinit(mp_obj_base_t *self_in) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     // Disable all interrupts.
     spi_mask_interrupts(self->inst);
-    // Disable SCLK clock
-    spi_set_bus_speed(self->inst, 0, self->is_lp ? GetSystemCoreClock() : GetSystemAHBClock());
     // Disable SS pin.
     spi_control_ss(self->inst, 0, 0);
     // Disable SPI.
