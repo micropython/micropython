@@ -33,6 +33,7 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "extmod/modnetwork.h"
+#include "lwip/apps/mdns.h"
 #include "pendsv.h"
 
 #define CYW43_INCLUDE_LEGACY_F1_OVERFLOW_WORKAROUND_VARIABLES (1)
@@ -167,4 +168,19 @@ static inline void cyw43_delay_ms(uint32_t ms) {
 
 #define CYW43_EVENT_POLL_HOOK mp_event_handle_nowait()
 
+#if LWIP_MDNS_RESPONDER == 1
+
+// Hook for any additional TCP/IP initialization than needs to be done.
+// Called after the netif specified by `itf` has been set up.
+#ifndef CYW43_CB_TCPIP_INIT_EXTRA
+#define CYW43_CB_TCPIP_INIT_EXTRA(self, itf) mdns_resp_add_netif(&self->netif[itf], mod_network_hostname_data)
+#endif
+
+// Hook for any additional TCP/IP deinitialization than needs to be done.
+// Called before the netif specified by `itf` is removed.
+#ifndef CYW43_CB_TCPIP_DEINIT_EXTRA
+#define CYW43_CB_TCPIP_DEINIT_EXTRA(self, itf) mdns_resp_remove_netif(&self->netif[itf])
+#endif
+
+#endif
 #endif // MICROPY_INCLUDED_RP2_CYW43_CONFIGPORT_H
