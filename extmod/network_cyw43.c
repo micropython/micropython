@@ -132,9 +132,6 @@ static uint32_t get_country_code(void) {
 
 static mp_obj_t network_cyw43_deinit(mp_obj_t self_in) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    #if LWIP_MDNS_RESPONDER
-    mdns_resp_remove_netif(&self->cyw->netif[self->itf]);
-    #endif
 
     cyw43_deinit(self->cyw);
     return mp_const_none;
