@@ -393,14 +393,11 @@ int ospi_flash_erase_sector(uint32_t addr) {
 
     ospi_flash_write_cmd(self, self->set->write_en);
     int ret = ospi_flash_wait_wel1(self);
-    if (ret < 0) {
-        return ret;
+    if (ret == 0) {
+        ospi_flash_write_cmd_addr(self, self->set->erase_command, OSPI_ADDR_L_32bit, addr);
+        ret = ospi_flash_wait_wip0(self);
     }
 
-    ospi_flash_write_cmd_addr(self, self->set->erase_command, OSPI_ADDR_L_32bit, addr);
-    ret = ospi_flash_wait_wip0(self);
-
-    SCB_InvalidateDCache_by_Addr(global_flash.cfg.xip_base + addr, MICROPY_HW_FLASH_BLOCK_SIZE_BYTES);
     return ret;
 }
 
@@ -463,7 +460,6 @@ int ospi_flash_write(uint32_t addr, uint32_t len, const uint8_t *src) {
         offset = 0;
     }
 
-    SCB_InvalidateDCache_by_Addr(global_flash.cfg.xip_base + addr, len);
     return ret;
 }
 
