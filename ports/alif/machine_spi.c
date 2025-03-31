@@ -74,6 +74,10 @@ static const uint8_t lpspi_pin_alt[] = {
     MP_HAL_PIN_ALT_LPSPI_SS,
 };
 
+static inline uint32_t spi_get_clk(machine_spi_obj_t *spi) {
+    return spi->is_lp ? GetSystemCoreClock() : GetSystemAHBClock();
+}
+
 static void spi_init(machine_spi_obj_t *spi, uint32_t baudrate,
     uint32_t polarity, uint32_t phase, uint32_t bits, uint32_t firstbit) {
     const machine_pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
@@ -156,7 +160,7 @@ static void spi_init(machine_spi_obj_t *spi, uint32_t baudrate,
     spi_mask_interrupts(spi->inst);
 
     // Configure baudrate clock
-    spi_set_bus_speed(spi->inst, baudrate, spi->is_lp ? GetSystemCoreClock() : GetSystemAHBClock());
+    spi_set_bus_speed(spi->inst, baudrate, spi_get_clk(spi));
 
     // Configure FIFOs
     spi_set_tx_threshold(spi->inst, 0);
@@ -211,7 +215,8 @@ static void spi_init(machine_spi_obj_t *spi, uint32_t baudrate,
 
 static void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "SPI(%u, lp=%u)", self->id, self->is_lp);
+    uint32_t baudrate = spi_get_bus_speed(self->inst, spi_get_clk(self));
+    mp_printf(print, "SPI(%u, baudrate=%u, lp=%u)", self->id, baudrate, self->is_lp);
 }
 
 mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
