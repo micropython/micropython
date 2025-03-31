@@ -224,7 +224,8 @@ Methods
 
 
    .. note::
-     - The ESP32 port does not support the option hard=True.
+     - The ESP32 port does not support the option hard=True. It uses Timer(0)
+       for UART.IRQ_RXIDLE, so this timer cannot be used for other means.
 
      - The rp2 port's UART.IRQ_TXIDLE is only triggered when the message
        is longer than 5 characters and the trigger happens when still 5 characters
