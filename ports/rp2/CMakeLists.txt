@@ -549,6 +549,10 @@ set_source_files_properties(
     COMPILE_OPTIONS "-Wno-error=array-bounds;-Wno-error=unused-but-set-variable"
 )
 
+if(NOT MICROPY_HW_ROMFS_SIZE_BYTES)
+    set(MICROPY_HW_ROMFS_SIZE_BYTES 0)
+endif()
+
 target_compile_definitions(${MICROPY_TARGET} PRIVATE
     ${MICROPY_DEF_BOARD}
     FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
@@ -562,6 +566,9 @@ target_compile_definitions(${MICROPY_TARGET} PRIVATE
     PICO_NO_PROGRAM_VERSION_STRING=1 # do it ourselves in main.c
     MICROPY_BUILD_TYPE="${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} ${CMAKE_BUILD_TYPE}"
     PICO_NO_BI_STDIO_UART=1 # we call it UART REPL
+    MICROPY_HW_FLASH_SIZE_BYTES=${MICROPY_HW_FLASH_SIZE_BYTES}
+    MICROPY_HW_APP_SIZE_BYTES=${MICROPY_HW_APP_SIZE_BYTES}
+    MICROPY_HW_ROMFS_SIZE_BYTES=${MICROPY_HW_ROMFS_SIZE_BYTES}
 )
 
 if(PICO_RP2040)
@@ -588,12 +595,22 @@ endif()
 # todo this is a bit brittle, but we want to move a few source files into RAM (which requires
 #  a linker script modification) until we explicitly add  macro calls around the function
 #  defs to move them into RAM.
-if (PICO_ON_DEVICE AND NOT PICO_NO_FLASH AND NOT PICO_COPY_TO_RAM)
+if (NOT MICROPY_BOARD_LINKER_SCRIPT)
     if(PICO_RP2040)
-        pico_set_linker_script(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2040.ld)
+        set(MICROPY_BOARD_LINKER_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2040.ld.in)
     elseif(PICO_RP2350)
-        pico_set_linker_script(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2350.ld)
+        set(MICROPY_BOARD_LINKER_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2350.ld.in)
     endif()
+endif()
+
+# Parse the linker file if needed, replacing ${MICROPY_HW_FLASH_SIZE_BYTES}, etc with their values
+if(MICROPY_BOARD_LINKER_SCRIPT MATCHES "\.in$")
+    configure_file(${MICROPY_BOARD_LINKER_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}/memmap_mp.ld)
+    set(MICROPY_BOARD_LINKER_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/memmap_mp.ld)
+endif()
+
+if (MICROPY_BOARD_LINKER_SCRIPT AND PICO_ON_DEVICE AND NOT PICO_NO_FLASH AND NOT PICO_COPY_TO_RAM)
+    pico_set_linker_script(${MICROPY_TARGET} ${MICROPY_BOARD_LINKER_SCRIPT})
 endif()
 
 pico_add_extra_outputs(${MICROPY_TARGET})

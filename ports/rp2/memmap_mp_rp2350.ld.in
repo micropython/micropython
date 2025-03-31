@@ -21,12 +21,32 @@
     __stack (== StackTop)
 */
 
+/* Default RP2 flash size. Assumes no user filesystem. */
+_micropy_hw_internal_flash_storage_start      = 0x10000000;
+_micropy_hw_internal_flash_storage_size_bytes = ${MICROPY_HW_FLASH_SIZE_BYTES};
+_micropy_hw_internal_flash_storage_end        = _micropy_hw_internal_flash_storage_start + _micropy_hw_internal_flash_storage_size_bytes;
+
+_micropy_hw_application_start                 = _micropy_hw_internal_flash_storage_start;
+_micropy_hw_application_size_bytes            = ${MICROPY_HW_APP_SIZE_BYTES};
+_micropy_hw_application_end                   = _micropy_hw_application_start + _micropy_hw_application_size_bytes;
+
+_micropy_hw_romfs_start                       = _micropy_hw_internal_flash_storage_start + _micropy_hw_application_size_bytes;
+_micropy_hw_romfs_size_bytes                  = ${MICROPY_HW_ROMFS_SIZE_BYTES};
+_micropy_hw_romfs_end                         = _micropy_hw_romfs_start + _micropy_hw_romfs_size_bytes;
+
+_micropy_hw_filesystem_start                  = _micropy_hw_internal_flash_storage_start + _micropy_hw_application_size_bytes + _micropy_hw_romfs_size_bytes;
+_micropy_hw_filesystem_size_bytes             = _micropy_hw_internal_flash_storage_size_bytes - _micropy_hw_application_size_bytes - _micropy_hw_romfs_size_bytes;
+_micropy_hw_filesystem_end                    = _micropy_hw_filesystem_start + _micropy_hw_filesystem_size_bytes;
+
 MEMORY
 {
-    FLASH(rx) : ORIGIN = 0x10000000, LENGTH = 4096k
-    RAM(rwx) : ORIGIN =  0x20000000, LENGTH = 512k
-    SCRATCH_X(rwx) : ORIGIN = 0x20080000, LENGTH = 4k
-    SCRATCH_Y(rwx) : ORIGIN = 0x20081000, LENGTH = 4k
+    FLASH(rx)      : ORIGIN = _micropy_hw_internal_flash_storage_start, LENGTH = _micropy_hw_internal_flash_storage_size_bytes
+    APP(rx)        : ORIGIN = _micropy_hw_application_start,            LENGTH = _micropy_hw_application_size_bytes
+    ROMFS(rx)      : ORIGIN = _micropy_hw_romfs_start,                  LENGTH = _micropy_hw_romfs_size_bytes
+    FILESYSTEM(r)  : ORIGIN = _micropy_hw_filesystem_start,             LENGTH = _micropy_hw_filesystem_size_bytes
+    RAM(rwx)       : ORIGIN = 0x20000000,      LENGTH = 512k
+    SCRATCH_X(rwx) : ORIGIN = 0x20080000,      LENGTH = 4k
+    SCRATCH_Y(rwx) : ORIGIN = 0x20081000,      LENGTH = 4k
 }
 
 ENTRY(_entry_point)
@@ -35,7 +55,7 @@ SECTIONS
 {
     .flash_begin : {
         __flash_binary_start = .;
-    } > FLASH
+    } > APP
 
     /* The bootrom will enter the image at the point indicated in your
        IMAGE_DEF, which is usually the reset handler of your vector table.
@@ -57,7 +77,7 @@ SECTIONS
         KEEP (*(.reset))
         /* TODO revisit this now memset/memcpy/float in ROM */
         /* bit of a hack right now to exclude all floating point and time critical (e.g. memset, memcpy) code from
-         * FLASH ... we will include any thing excluded here in .data below by default */
+         * flash ... we will include any thing excluded here in .data below by default */
         *(.init)
         *libgcc.a:cmse_nonsecure_call.o
         /* Change for MicroPython... exclude gc.c, parse.c, vm.c from flash */
@@ -98,7 +118,7 @@ SECTIONS
         PROVIDE_HIDDEN (__fini_array_end = .);
         *(.eh_frame*)
         . = ALIGN(4);
-    } > FLASH
+    } > APP
 
     /* Note the boot2 section is optional, and should be discarded if there is
        no reference to it *inside* the binary, as it is not called by the
@@ -116,7 +136,7 @@ SECTIONS
         __boot2_start__ = .;
         *(.boot2)
         __boot2_end__ = .;
-    } > FLASH
+    } > APP
 
     ASSERT(__boot2_end__ - __boot2_start__ <= 256,
         "ERROR: Pico second stage bootloader must be no more than 256 bytes in size")
@@ -127,18 +147,18 @@ SECTIONS
         . = ALIGN(4);
         *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.flashdata*)))
         . = ALIGN(4);
-    } > FLASH
+    } > APP
 
     .ARM.extab :
     {
         *(.ARM.extab* .gnu.linkonce.armextab.*)
-    } > FLASH
+    } > APP
 
     __exidx_start = .;
     .ARM.exidx :
     {
         *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-    } > FLASH
+    } > APP
     __exidx_end = .;
 
     /* Machine inspectable binary information */
@@ -148,7 +168,7 @@ SECTIONS
     {
         KEEP(*(.binary_info.keep.*))
         *(.binary_info.*)
-    } > FLASH
+    } > APP
     __binary_info_end = .;
     . = ALIGN(4);
 
@@ -187,14 +207,14 @@ SECTIONS
 
         *(.jcr)
         . = ALIGN(4);
-    } > RAM AT> FLASH
+    } > RAM AT> APP
 
     .tdata : {
         . = ALIGN(4);
         *(.tdata .tdata.* .gnu.linkonce.td.*)
         /* All data end */
         __tdata_end = .;
-    } > RAM AT> FLASH
+    } > RAM AT> APP
     PROVIDE(__data_end__ = .);
 
     /* __etext is (for backwards compatibility) the name of the .data init source pointer (...) */
@@ -240,7 +260,7 @@ SECTIONS
         *(.scratch_x.*)
         . = ALIGN(4);
         __scratch_x_end__ = .;
-    } > SCRATCH_X AT > FLASH
+    } > SCRATCH_X AT > APP
     __scratch_x_source__ = LOADADDR(.scratch_x);
 
     .scratch_y : {
@@ -248,7 +268,7 @@ SECTIONS
         *(.scratch_y.*)
         . = ALIGN(4);
         __scratch_y_end__ = .;
-    } > SCRATCH_Y AT > FLASH
+    } > SCRATCH_Y AT > APP
     __scratch_y_source__ = LOADADDR(.scratch_y);
 
     /* .stack*_dummy section doesn't contains any symbols. It is only
@@ -272,7 +292,7 @@ SECTIONS
     .flash_end : {
         KEEP(*(.embedded_end_block*))
         PROVIDE(__flash_binary_end = .);
-    } > FLASH =0xaa
+    } > APP =0xaa
 
     /* stack limit is poorly named, but historically is maximum heap ptr */
     __StackLimit = __bss_end__ + __micropy_c_heap_size__;
