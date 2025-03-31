@@ -42,11 +42,11 @@
 #endif
 
 void __real_esp_panic_handler(void *);
-void esp_panic_handler_reconfigure_wdts(uint32_t timeout_ms);
+void esp_panic_handler_enable_rtc_wdt(uint32_t timeout_ms);
 void panic_print_str(const char *str);
 
 void MICROPY_WRAP_PANICHANDLER_FUN(__wrap_esp_panic_handler)(void *info) {
-    esp_panic_handler_reconfigure_wdts(1000);
+    esp_panic_handler_enable_rtc_wdt(1000);
 
     const static char *msg = MICROPY_WRAP_PANICHANDLER_STR(
         "\r\n"
