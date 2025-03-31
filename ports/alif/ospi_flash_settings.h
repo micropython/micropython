@@ -53,7 +53,7 @@
     .rxds = false, \
     .bswap16 = false, \
     .inst_len = OSPI_INST_L_8bit, \
-    .xip_data_len = OSPI_DATA_L_16bit, \
+    .xip_data_len = OSPI_DATA_L_8bit, \
     .read_sr = 0x05, \
     .read_sr_dummy_cycles = 8, \
     .write_en = 0x06, \
@@ -70,7 +70,7 @@
     .rxds = false, \
     .bswap16 = false, \
     .inst_len = OSPI_INST_L_8bit, \
-    .xip_data_len = OSPI_DATA_L_16bit, \
+    .xip_data_len = OSPI_DATA_L_8bit, \
     .read_sr = 0x05, \
     .read_sr_dummy_cycles = 8, \
     .write_en = 0x06, \
