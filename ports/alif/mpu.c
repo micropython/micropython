@@ -54,6 +54,10 @@ static const ARM_MPU_Region_t mpu_table[] __STARTUP_RO_DATA_ATTRIBUTE = {
         .RBAR = ARM_MPU_RBAR(0xA0000000, ARM_MPU_SH_NON, 1, 1, 0),
         .RLAR = ARM_MPU_RLAR(0xBFFFFFFF, MP_MPU_ATTR_NORMAL_NON_CACHEABLE)
     },
+    [MP_MPU_REGION_OSPI1_XIP] = {   /* OSPI1 XIP flash - 512MB : RO-1, NP-1, XN-0  */
+        .RBAR = ARM_MPU_RBAR(0xC0000000, ARM_MPU_SH_NON, 1, 1, 0),
+        .RLAR = ARM_MPU_RLAR(0xDFFFFFFF, MP_MPU_ATTR_NORMAL_NON_CACHEABLE)
+    },
 };
 
 void MPU_Load_Regions(void) {
