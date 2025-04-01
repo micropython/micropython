@@ -69,7 +69,6 @@ Output = namedtuple(
         "code",
         "output_cpy",
         "output_upy",
-        "status",
     ],
 )
 
@@ -98,7 +97,7 @@ def readfiles():
                 if not re.match(r"\s*# fmt: (on|off)\s*", x)
             )
 
-            output = Output(test, class_, desc, cause, workaround, code, "", "", "")
+            output = Output(test, class_, desc, cause, workaround, code, "", "")
             files.append(output)
         except IndexError:
             print("Incorrect format in file " + test_fullpath)
@@ -108,6 +107,7 @@ def readfiles():
 
 def run_tests(tests):
     """executes all tests"""
+    same_results = False
     results = []
     for test in tests:
         test_fullpath = os.path.join(TESTPATH, test.name)
@@ -133,23 +133,26 @@ def run_tests(tests):
         output_upy = [com.decode("utf8") for com in process.communicate(input_py)]
 
         if output_cpy[0] == output_upy[0] and output_cpy[1] == output_upy[1]:
-            status = "Supported"
-            print("Supported operation!\nFile: " + test_fullpath)
+            print("Error: Test has same output in CPython vs MicroPython: " + test_fullpath)
+            same_results = True
         else:
-            status = "Unsupported"
+            output = Output(
+                test.name,
+                test.class_,
+                test.desc,
+                test.cause,
+                test.workaround,
+                test.code,
+                output_cpy,
+                output_upy,
+            )
+            results.append(output)
 
-        output = Output(
-            test.name,
-            test.class_,
-            test.desc,
-            test.cause,
-            test.workaround,
-            test.code,
-            output_cpy,
-            output_upy,
-            status,
+    if same_results:
+        raise SystemExit(
+            "Failing due to non-differences in results. If MicroPython behaviour has changed "
+            "to match CPython, please remove the file(s) mentioned above."
         )
-        results.append(output)
 
     results.sort(key=lambda x: x.class_)
     return results
