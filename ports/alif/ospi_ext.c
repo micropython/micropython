@@ -206,20 +206,22 @@ void ospi_setup_write_ext(ospi_flash_cfg_t *ospi_cfg, bool rxds, uint32_t inst_l
     spi_enable(ospi_cfg);
 }
 
+static inline uint32_t ospi_xip_ctrlr0(uint32_t data_len) {
+    return CTRLR0_IS_MST
+           | (OCTAL << CTRLR0_SPI_FRF_OFFSET)
+           | (0 << CTRLR0_SCPOL_OFFSET)
+           | (0 << CTRLR0_SCPH_OFFSET)
+           | (0 << CTRLR0_SSTE_OFFSET)
+           | (TMOD_RO << CTRLR0_TMOD_OFFSET)
+           | (data_len << CTRLR0_DFS_OFFSET);
+}
+
 void ospi_xip_enter_ext(ospi_flash_cfg_t *ospi_cfg, uint32_t inst_len, uint32_t data_len, uint16_t incr_command, uint16_t wrap_command, uint16_t read_dummy_cycles) {
     spi_disable(ospi_cfg);
 
-    uint32_t val = CTRLR0_IS_MST
-        | (OCTAL << CTRLR0_SPI_FRF_OFFSET)
-        | (0 << CTRLR0_SCPOL_OFFSET)
-        | (0 << CTRLR0_SCPH_OFFSET)
-        | (0 << CTRLR0_SSTE_OFFSET)
-        | (TMOD_RO << CTRLR0_TMOD_OFFSET)
-        | (data_len << CTRLR0_DFS_OFFSET);
+    ospi_writel(ospi_cfg, ctrlr0, ospi_xip_ctrlr0(data_len));
 
-    ospi_writel(ospi_cfg, ctrlr0, val);
-
-    val = (OCTAL << XIP_CTRL_FRF_OFFSET)
+    uint32_t val = (OCTAL << XIP_CTRL_FRF_OFFSET)
         | (0x2 << XIP_CTRL_TRANS_TYPE_OFFSET)
         | (ADDR_L32bit << XIP_CTRL_ADDR_L_OFFSET)
         | (inst_len << XIP_CTRL_INST_L_OFFSET)
@@ -291,4 +293,10 @@ void ospi_xip_exit_ext(ospi_flash_cfg_t *ospi_cfg, uint32_t inst_len, uint16_t i
 
     ospi_xip_enable(ospi_cfg);
     ospi_xip_disable(ospi_cfg);
+}
+
+void ospi_xip_restore_ext(ospi_flash_cfg_t *ospi_cfg, uint32_t data_len) {
+    spi_disable(ospi_cfg);
+    ospi_writel(ospi_cfg, ctrlr0, ospi_xip_ctrlr0(data_len));
+    spi_enable(ospi_cfg);
 }
