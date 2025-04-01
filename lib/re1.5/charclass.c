@@ -8,6 +8,7 @@
 #define IS_SPACE(c) ((c) == ' ' || CHAR_IN_RANGE(c, '\t', '\r'))
 #define IS_WORD(c) (IS_DIGIT(c) || CHAR_IN_RANGE(c, 'A', 'Z') || CHAR_IN_RANGE(c, 'a', 'z') || (c) == '_')
 
+
 int _re1_5_classmatch(const char *pc, const char *sp)
 {
     // pc points to "cnt" byte after opcode

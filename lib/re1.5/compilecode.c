@@ -67,6 +67,7 @@ static const char *_compilecode(const char *re, size_t len, ByteProg *prog, int 
             } else {
                 EMIT(PC++, Class);
             }
+            // <<< KEEP THIS FIX: PC++ needs to be here, it was removed in 5b57ce0d80
             PC++; // Skip # of pair byte
             prog->len++;
             for (cnt = 0; *re != ']'; re++, cnt++) {
