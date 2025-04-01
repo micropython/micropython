@@ -53,5 +53,6 @@ void ospi_setup_write_ext(ospi_flash_cfg_t *ospi_cfg, bool rxds, uint32_t inst_l
 
 void ospi_xip_enter_ext(ospi_flash_cfg_t *ospi_cfg, uint32_t inst_len, uint32_t data_len, uint16_t incr_command, uint16_t wrap_command, uint16_t read_dummy_cycles);
 void ospi_xip_exit_ext(ospi_flash_cfg_t *ospi_cfg, uint32_t inst_len, uint16_t incr_command, uint16_t wrap_command);
+void ospi_xip_restore_ext(ospi_flash_cfg_t *ospi_cfg, uint32_t data_len);
 
 #endif // MICROPY_INCLUDED_ALIF_OSPI_EXT_H

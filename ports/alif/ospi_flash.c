@@ -354,8 +354,9 @@ int ospi_flash_init(void) {
         }
     }
 
-    // Enter XIP mode.  It will be disabled during flash read/erase/write.
+    // Enter XIP mode.
     ospi_flash_xip_enter(self);
+
     return 0;
 }
 
@@ -385,6 +386,13 @@ int ospi_flash_xip_exit(ospi_flash_t *self) {
     return 0;
 }
 
+int ospi_flash_xip_restore(ospi_flash_t *self) {
+    if (self->xip_active) {
+        ospi_xip_restore_ext(&self->cfg, self->set->xip_data_len);
+    }
+    return 0;
+}
+
 /******************************************************************************/
 // Top-level read/erase/write functions.
 
@@ -397,6 +405,8 @@ int ospi_flash_erase_sector(uint32_t addr) {
         ospi_flash_write_cmd_addr(self, self->set->erase_command, OSPI_ADDR_L_32bit, addr);
         ret = ospi_flash_wait_wip0(self);
     }
+
+    ospi_flash_xip_restore(self);
 
     return ret;
 }
@@ -442,6 +452,8 @@ static int ospi_flash_write_page(uint32_t addr, uint32_t len, const uint8_t *src
 }
 
 int ospi_flash_write(uint32_t addr, uint32_t len, const uint8_t *src) {
+    ospi_flash_t *self = &global_flash;
+
     int ret = 0;
     uint32_t offset = addr & (PAGE_SIZE - 1);
 
@@ -459,6 +471,8 @@ int ospi_flash_write(uint32_t addr, uint32_t len, const uint8_t *src) {
         src += rest;
         offset = 0;
     }
+
+    ospi_flash_xip_restore(self);
 
     return ret;
 }
