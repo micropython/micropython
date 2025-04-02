@@ -56,12 +56,12 @@ extern uint8_t _micropy_hw_romfs_part1_size;
 static const MP_DEFINE_MEMORYVIEW_OBJ(romfs1_obj, 'B', 0, (uintptr_t)&_micropy_hw_romfs_part1_size, (void *)&_micropy_hw_romfs_part1_start);
 #endif
 
-static const mp_rom_obj_t romfs_obj_table[] = {
+static const mp_obj_array_t *romfs_obj_table[] = {
     #if MICROPY_HW_ROMFS_ENABLE_PART0
-    MP_ROM_PTR(&romfs0_obj),
+    &romfs0_obj,
     #endif
     #if MICROPY_HW_ROMFS_ENABLE_PART1
-    MP_ROM_PTR(&romfs0_obj),
+    &romfs1_obj,
     #endif
 };
 
@@ -93,7 +93,7 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
     }
     #endif
 
-    const mp_obj_array_t *romfs_obj = MP_OBJ_TO_PTR(romfs_obj_table[romfs_id]);
+    const mp_obj_array_t *romfs_obj = romfs_obj_table[romfs_id];
     uintptr_t romfs_base = (uintptr_t)romfs_obj->items;
     uintptr_t romfs_len = romfs_obj->len;
 
