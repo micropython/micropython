@@ -35,6 +35,14 @@
 #error "CHECK_DEVID no longer supported, use MICROPY_HW_SPIFLASH_DETECT_DEVICE instead"
 #endif
 
+// The default number of dummy bytes for quad-read is 2.  This can be changed by enabling
+// MICROPY_HW_SPIFLASH_CHIP_PARAMS and configuring the value in mp_spiflash_chip_params_t.
+#if MICROPY_HW_SPIFLASH_CHIP_PARAMS
+#define MICROPY_HW_SPIFLASH_QREAD_NUM_DUMMY(spiflash) (spiflash->chip_params->qread_num_dummy)
+#else
+#define MICROPY_HW_SPIFLASH_QREAD_NUM_DUMMY(spiflash) (2)
+#endif
+
 #define QSPI_QE_MASK (0x02)
 #define USE_WR_DELAY (1)
 
@@ -115,7 +123,8 @@ static int mp_spiflash_transfer_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, 
         mp_hal_pin_write(c->bus.u_spi.cs, 1);
     } else {
         if (dest != NULL) {
-            ret = c->bus.u_qspi.proto->read_cmd_qaddr_qdata(c->bus.u_qspi.data, cmd, addr, len, dest);
+            uint8_t num_dummy = MICROPY_HW_SPIFLASH_QREAD_NUM_DUMMY(self);
+            ret = c->bus.u_qspi.proto->read_cmd_qaddr_qdata(c->bus.u_qspi.data, cmd, addr, num_dummy, len, dest);
         } else {
             ret = c->bus.u_qspi.proto->write_cmd_addr_data(c->bus.u_qspi.data, cmd, addr, len, src);
         }
@@ -186,7 +195,8 @@ void mp_spiflash_init(mp_spiflash_t *self) {
         mp_hal_pin_output(self->config->bus.u_spi.cs);
         self->config->bus.u_spi.proto->ioctl(self->config->bus.u_spi.data, MP_SPI_IOCTL_INIT);
     } else {
-        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT, 0);
+        uint8_t num_dummy = MICROPY_HW_SPIFLASH_QREAD_NUM_DUMMY(self);
+        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT, num_dummy);
     }
 
     mp_spiflash_acquire_bus(self);

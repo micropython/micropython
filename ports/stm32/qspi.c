@@ -62,6 +62,8 @@
 #define QSPI_ADSIZE 2
 #endif
 
+static uint8_t qspi_num_dummy;
+
 static inline void qspi_mpu_disable_all(void) {
     // Configure MPU to disable access to entire QSPI region, to prevent CPU
     // speculative execution from accessing this region and modifying QSPI registers.
@@ -110,7 +112,9 @@ static inline void qspi_mpu_enable_mapped(void) {
     mpu_config_end(irq_state);
 }
 
-void qspi_init(void) {
+void qspi_init(uint8_t num_dummy) {
+    qspi_num_dummy = num_dummy;
+
     qspi_mpu_disable_all();
 
     // Configure pins
@@ -158,7 +162,7 @@ void qspi_memory_map(void) {
             | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
             | 3 << QUADSPI_CCR_FMODE_Pos // memory-mapped mode
             | 3 << QUADSPI_CCR_DMODE_Pos // data on 4 lines
-            | 4 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
+            | (2 * qspi_num_dummy) << QUADSPI_CCR_DCYC_Pos // 2N dummy cycles
             | 0 << QUADSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
             | 3 << QUADSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
             | QSPI_ADSIZE << QUADSPI_CCR_ADSIZE_Pos
@@ -193,7 +197,7 @@ static int qspi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
     (void)self_in;
     switch (cmd) {
         case MP_QSPI_IOCTL_INIT:
-            qspi_init();
+            qspi_init(arg);
             break;
         case MP_QSPI_IOCTL_BUS_ACQUIRE:
             // Disable memory-mapped region during bus access
@@ -369,7 +373,7 @@ static int qspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest)
     return 0;
 }
 
-static int qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
+static int qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, uint8_t num_dummy, size_t len, uint8_t *dest) {
     (void)self_in;
 
     uint8_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
@@ -383,7 +387,7 @@ static int qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, 
             | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
             | 1 << QUADSPI_CCR_FMODE_Pos // indirect read mode
             | 3 << QUADSPI_CCR_DMODE_Pos // data on 4 lines
-            | 4 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
+            | (2 * num_dummy) << QUADSPI_CCR_DCYC_Pos // 2N dummy cycles
             | 0 << QUADSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
             | 3 << QUADSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
             | adsize << QUADSPI_CCR_ADSIZE_Pos // 32 or 24-bit address size
