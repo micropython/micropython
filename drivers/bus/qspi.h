@@ -45,7 +45,7 @@ typedef struct _mp_qspi_proto_t {
     int (*write_cmd_data)(void *self, uint8_t cmd, size_t len, uint32_t data);
     int (*write_cmd_addr_data)(void *self, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src);
     int (*read_cmd)(void *self, uint8_t cmd, size_t len, uint32_t *dest);
-    int (*read_cmd_qaddr_qdata)(void *self, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest);
+    int (*read_cmd_qaddr_qdata)(void *self, uint8_t cmd, uint32_t addr, uint8_t num_dummy, size_t len, uint8_t *dest);
 } mp_qspi_proto_t;
 
 typedef struct _mp_soft_qspi_obj_t {
