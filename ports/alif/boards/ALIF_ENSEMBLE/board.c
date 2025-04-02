@@ -49,7 +49,7 @@ const ospi_flash_settings_t ospi_flash_settings[] = {
     {
         .jedec_id = 0x1a5b9d,
         .freq_hz = 100000000,
-        .read_dummy_cycles = 16,
+        .read_dummy_cycles = 9,
         OSPI_FLASH_SETTINGS_IS25,
     },
 };
