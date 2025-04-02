@@ -75,14 +75,14 @@ const ospi_flash_settings_t ospi_flash_settings[] = {
     },
     {
         .jedec_id = 0x195b9d,
-        .freq_hz = 50000000,
-        .read_dummy_cycles = 6,
+        .freq_hz = 100000000,
+        .read_dummy_cycles = 9,
         OSPI_FLASH_SETTINGS_IS25,
     },
     {
         .jedec_id = 0x17bb6b,
-        .freq_hz = 60000000,
-        .read_dummy_cycles = 5,
+        .freq_hz = 100000000,
+        .read_dummy_cycles = 7,
         OSPI_FLASH_SETTINGS_EM,
     },
 };
