@@ -65,6 +65,7 @@ static inline bool mram_is_valid_addr(uintptr_t addr) {
 }
 
 static inline bool ospi_is_valid_addr(uintptr_t xip_base, uintptr_t addr) {
+    MP_STATIC_ASSERT(OSPI0_XIP_SIZE == OSPI1_XIP_SIZE);
     return xip_base <= addr && addr < xip_base + OSPI0_XIP_SIZE;
 }
 
