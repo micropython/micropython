@@ -31,6 +31,10 @@
 #include "py/mphal.h"
 #include "drivers/memory/spiflash.h"
 
+#if defined(CHECK_DEVID)
+#error "CHECK_DEVID no longer supported, use MICROPY_HW_SPIFLASH_DETECT_DEVICE instead"
+#endif
+
 #define QSPI_QE_MASK (0x02)
 #define USE_WR_DELAY (1)
 
@@ -198,11 +202,13 @@ void mp_spiflash_init(mp_spiflash_t *self) {
     mp_hal_delay_ms(1);
     #endif
 
-    #if defined(CHECK_DEVID)
-    // Validate device id
+    #if MICROPY_HW_SPIFLASH_DETECT_DEVICE
+    // Attempt to detect SPI flash based on its JEDEC id.
     uint32_t devid;
     int ret = mp_spiflash_read_cmd(self, CMD_RD_DEVID, 3, &devid);
-    if (ret != 0 || devid != CHECK_DEVID) {
+    ret = mp_spiflash_detect(self, ret, devid);
+    if (ret != 0) {
+        // Could not read device id.
         mp_spiflash_release_bus(self);
         return;
     }

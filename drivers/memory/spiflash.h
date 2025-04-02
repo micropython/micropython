@@ -34,6 +34,11 @@
 #define MICROPY_HW_SPIFLASH_CHIP_PARAMS (0)
 #endif
 
+// Whether to enable detection of SPI flash during initialisation.
+#ifndef MICROPY_HW_SPIFLASH_DETECT_DEVICE
+#define MICROPY_HW_SPIFLASH_DETECT_DEVICE (0)
+#endif
+
 #define MP_SPIFLASH_ERASE_BLOCK_SIZE (4096) // must be a power of 2
 
 enum {
@@ -90,6 +95,11 @@ typedef struct _mp_spiflash_t {
 
 void mp_spiflash_init(mp_spiflash_t *self);
 void mp_spiflash_deepsleep(mp_spiflash_t *self, int value);
+
+#if MICROPY_HW_SPIFLASH_DETECT_DEVICE
+// A board/port should define this function to perform actions based on the JEDEC id.
+int mp_spiflash_detect(mp_spiflash_t *spiflash, int ret, uint32_t devid);
+#endif
 
 // These functions go direct to the SPI flash device
 int mp_spiflash_erase_block(mp_spiflash_t *self, uint32_t addr);
