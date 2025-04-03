@@ -51,5 +51,10 @@ static mp_obj_t mp_time_localtime_get(void) {
 static mp_obj_t mp_time_time_get(void) {
     struct timespec ts;
     aon_timer_get_time(&ts);
+    #if MICROPY_PY_TIME_TIME_FLOAT && MICROPY_PY_TIME_TIME_HAS_SUBSECOND
+    mp_float_t val = ts.tv_sec + (mp_float_t)ts.tv_nsec / (1000 * 1000 * 1000);
+    return mp_obj_new_float(val);
+    #else
     return mp_obj_new_int_from_ull(ts.tv_sec);
+    #endif
 }

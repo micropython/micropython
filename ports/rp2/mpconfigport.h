@@ -142,6 +142,7 @@
 #define MICROPY_PY_CRYPTOLIB                    (1)
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS            (1)
+#define MICROPY_PY_TIME_TIME_HAS_SUBSECOND      (HAS_POWMAN_TIMER)
 #define MICROPY_PY_TIME_INCLUDEFILE             "ports/rp2/modtime.c"
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC        (rosc_random_u32())
 #define MICROPY_PY_MACHINE                      (1)
