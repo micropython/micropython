@@ -126,7 +126,7 @@ void rp2_pio_irq_set_exclusive_handler(PIO pio, uint irq) {
     irq_handler_t current = irq_get_exclusive_handler(irq);
     // If the IRQ is set and isn't our handler, or a shared handler is set, then raise an error
     if ((current && current != rp2_pio_get_irq_handler(pio)) || irq_has_shared_handler(irq)) {
-        mp_raise_ValueError("irq claimed by external resource");
+        mp_raise_ValueError(MP_ERROR_TEXT("irq claimed by external resource"));
         // If the IRQ is not set, add our handler
     } else if (!current) {
         irq_set_exclusive_handler(irq, rp2_pio_get_irq_handler(pio));
@@ -304,7 +304,7 @@ static mp_obj_t rp2_pio_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // Get the PIO object.
     int pio_id = mp_obj_get_int(args[0]);
     if (!(0 <= pio_id && pio_id < MP_ARRAY_SIZE(rp2_pio_obj))) {
-        mp_raise_ValueError("invalid PIO");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid PIO"));
     }
     const rp2_pio_obj_t *self = &rp2_pio_obj[pio_id];
 
@@ -353,7 +353,7 @@ static mp_obj_t rp2_pio_remove_program(size_t n_args, const mp_obj_t *args) {
         length = bufinfo.len / 2;
         offset = mp_obj_get_int(prog[PROG_OFFSET_PIO0 + pio_get_index(self->pio)]);
         if (offset < 0) {
-            mp_raise_ValueError("prog not in instruction memory");
+            mp_raise_ValueError(MP_ERROR_TEXT("prog not in instruction memory"));
         }
         // Invalidate the program offset in the program object.
         prog[PROG_OFFSET_PIO0 + pio_get_index(self->pio)] = MP_OBJ_NEW_SMALL_INT(-1);
@@ -374,7 +374,7 @@ static mp_obj_t rp2_pio_state_machine(size_t n_args, const mp_obj_t *pos_args, m
     // Get and verify the state machine id.
     mp_int_t sm_id = mp_obj_get_int(pos_args[1]);
     if (!(0 <= sm_id && sm_id < 4)) {
-        mp_raise_ValueError("invalid StateMachine");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid StateMachine"));
     }
 
     // Return the correct StateMachine object.
@@ -400,7 +400,7 @@ static mp_obj_t rp2_pio_gpio_base(size_t n_args, const mp_obj_t *args) {
 
         // Must be 0 for GPIOs 0 to 31 inclusive, or 16 for GPIOs 16 to 48 inclusive.
         if (!(gpio_base == 0 || gpio_base == 16)) {
-            mp_raise_ValueError("invalid GPIO base");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid GPIO base"));
         }
 
         if (pio_set_gpio_base(self->pio, gpio_base) != PICO_OK) {
@@ -556,14 +556,14 @@ static const rp2_state_machine_obj_t rp2_state_machine_obj[] = {
 
 static const rp2_state_machine_obj_t *rp2_state_machine_get_object(mp_int_t sm_id) {
     if (!(0 <= sm_id && sm_id < MP_ARRAY_SIZE(rp2_state_machine_obj))) {
-        mp_raise_ValueError("invalid StateMachine");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid StateMachine"));
     }
 
     const rp2_state_machine_obj_t *sm_obj = &rp2_state_machine_obj[sm_id];
 
     if (!(rp2_state_machine_claimed_mask & (1 << sm_id))) {
         if (pio_sm_is_claimed(sm_obj->pio, sm_obj->sm)) {
-            mp_raise_ValueError("StateMachine claimed by external resource");
+            mp_raise_ValueError(MP_ERROR_TEXT("StateMachine claimed by external resource"));
         }
         pio_sm_claim(sm_obj->pio, sm_obj->sm);
         rp2_state_machine_claimed_mask |= 1 << sm_id;
@@ -830,7 +830,7 @@ static mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
             *(uint32_t *)dest = value;
             dest += sizeof(uint32_t);
         } else {
-            mp_raise_ValueError("unsupported buffer type");
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported buffer type"));
         }
         if (dest >= dest_top) {
             return args[1];
@@ -868,7 +868,7 @@ static mp_obj_t rp2_state_machine_put(size_t n_args, const mp_obj_t *args) {
             value = *(uint32_t *)src;
             src += sizeof(uint32_t);
         } else {
-            mp_raise_ValueError("unsupported buffer type");
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported buffer type"));
         }
         while (pio_sm_is_tx_fifo_full(self->pio, self->sm)) {
             // This delay must be fast.
