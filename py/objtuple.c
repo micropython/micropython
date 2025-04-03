@@ -31,9 +31,6 @@
 #include "py/objtuple.h"
 #include "py/runtime.h"
 
-// type check is done on getiter method to allow tuple, namedtuple, attrtuple
-#define mp_obj_is_tuple_compatible(o) (MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(o), iter) == mp_obj_tuple_getiter)
-
 /******************************************************************************/
 /* tuple                                                                      */
 
