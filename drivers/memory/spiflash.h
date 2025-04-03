@@ -74,6 +74,11 @@ typedef struct _mp_spiflash_t {
 void mp_spiflash_init(mp_spiflash_t *self);
 void mp_spiflash_deepsleep(mp_spiflash_t *self, int value);
 
+#if MICROPY_HW_SPIFLASH_DETECT_DEVICE
+// A board/port should define this function to perform actions based on the JEDEC id.
+int mp_spiflash_detect(mp_spiflash_t *spiflash, int ret, uint32_t devid);
+#endif
+
 // These functions go direct to the SPI flash device
 int mp_spiflash_erase_block(mp_spiflash_t *self, uint32_t addr);
 int mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest);

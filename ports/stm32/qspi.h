@@ -33,7 +33,7 @@
 
 extern const mp_qspi_proto_t qspi_proto;
 
-void qspi_init(void);
+void qspi_init(uint8_t num_dummy);
 void qspi_memory_map(void);
 void qspi_memory_map_exit(void);
 void qspi_memory_map_restart(void);

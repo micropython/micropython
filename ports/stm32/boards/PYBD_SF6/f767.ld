@@ -18,7 +18,7 @@ MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 2048K
     FLASH_APP (rx)  : ORIGIN = 0x08008000, LENGTH = 2016K   /* sectors 1-11 3x32K 1*128K 7*256K */
-    FLASH_ROMFS (rx): ORIGIN = 0x90000000, LENGTH = 2048K   /* external QSPI */
+    FLASH_ROMFS (rx): ORIGIN = 0x90000000, LENGTH = 2048K   /* external QSPI, at least 2MiB */
     RAM (rwx)       : ORIGIN = 0x20000000, LENGTH = 512K    /* DTCM=128k, SRAM1=368K, SRAM2=16K */
 }
 
@@ -39,6 +39,5 @@ _heap_end = _sstack;
 
 /* ROMFS location */
 _micropy_hw_romfs_part0_start = ORIGIN(FLASH_ROMFS);
-_micropy_hw_romfs_part0_size = LENGTH(FLASH_ROMFS);
 
 INCLUDE common_bl.ld

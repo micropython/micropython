@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 // Take PYBD_SF2 as base configuration
 #include "boards/PYBD_SF2/mpconfigboard.h"
 
@@ -69,3 +71,50 @@
 #define MICROPY_HW_ETH_RMII_TX_EN   (pyb_pin_W8)
 #define MICROPY_HW_ETH_RMII_TXD0    (pyb_pin_W45)
 #define MICROPY_HW_ETH_RMII_TXD1    (pyb_pin_W49)
+
+// Reconfigure SPI flash for dynamic size detection.
+
+#undef MICROPY_BOARD_EARLY_INIT
+#undef MICROPY_HW_SPIFLASH_SIZE_BITS
+#undef MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2
+#undef MBOOT_SPIFLASH_BYTE_SIZE
+#undef MBOOT_SPIFLASH_LAYOUT
+#undef MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE
+#undef MBOOT_SPIFLASH2_BYTE_SIZE
+#undef MBOOT_SPIFLASH2_LAYOUT
+#undef MBOOT_SPIFLASH2_ERASE_BLOCKS_PER_PAGE
+
+#define MICROPY_BOARD_EARLY_INIT    board_early_init_sf6
+
+#define MICROPY_HW_SPIFLASH_DETECT_DEVICE (1)
+#define MICROPY_HW_SPIFLASH_QREAD_NUM_DUMMY(spiflash) (chip_params[spiflash->config == &spiflash_config ? 0 : 1]->qread_num_dummy)
+#define MICROPY_HW_SPIFLASH_SIZE_BITS (1 << (chip_params[0]->memory_size_bytes_log2 + 3))
+#define MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 (chip_params[1]->memory_size_bytes_log2 + 3)
+
+#define MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN (20)
+#define MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN (20)
+#define MBOOT_SPIFLASH_BYTE_SIZE    (1 << chip_params[0]->memory_size_bytes_log2)
+#define MBOOT_SPIFLASH_LAYOUT       (chip_params[0]->memory_size_bytes_log2 == 21 ? "/0x80000000/512*4Kg" : "/0x80000000/2048*4Kg")
+#define MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE (1)
+
+#define MBOOT_SPIFLASH2_BYTE_SIZE   (1 << chip_params[1]->memory_size_bytes_log2)
+#define MBOOT_SPIFLASH2_LAYOUT      (chip_params[1]->memory_size_bytes_log2 == 21 ? "/0x90000000/512*4Kg" : "/0x90000000/2048*4Kg")
+#define MBOOT_SPIFLASH2_ERASE_BLOCKS_PER_PAGE (1)
+
+#define MICROPY_HW_QSPI_PRESCALER   (chip_params[1]->qspi_prescaler)
+
+#define MICROPY_HW_ROMFS_PART0_START (uintptr_t)(&_micropy_hw_romfs_part0_start)
+#define MICROPY_HW_ROMFS_PART0_SIZE (1 << chip_params[1]->memory_size_bytes_log2)
+
+typedef struct _mp_spiflash_chip_params_t {
+    uint32_t jedec_id;
+    uint8_t memory_size_bytes_log2;
+    uint8_t qspi_prescaler;
+    uint8_t qread_num_dummy;
+} mp_spiflash_chip_params_t;
+
+extern const mp_spiflash_chip_params_t *chip_params[2];
+
+extern uint8_t _micropy_hw_romfs_part0_start;
+
+void board_early_init_sf6(void);
