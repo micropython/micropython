@@ -1,6 +1,5 @@
 // Board and hardware specific configuration
 #define MICROPY_HW_BOARD_NAME                   "Raspberry Pi Pico 2 W"
-#define MICROPY_HW_FLASH_STORAGE_BYTES          (PICO_FLASH_SIZE_BYTES - 1536 * 1024)
 
 // Enable networking.
 #define MICROPY_PY_NETWORK 1

@@ -36,18 +36,21 @@
 
 #define BLOCK_SIZE_BYTES (FLASH_SECTOR_SIZE)
 
-static_assert(MICROPY_HW_ROMFS_BYTES % 4096 == 0, "ROMFS size must be a multiple of 4K");
-static_assert(MICROPY_HW_FLASH_STORAGE_BYTES % 4096 == 0, "Flash storage size must be a multiple of 4K");
+extern uint8_t _micropy_hw_internal_flash_storage_start;
+extern size_t _micropy_hw_internal_flash_storage_size_bytes;
+extern uint8_t _micropy_hw_internal_flash_storage_end;
 
-#ifndef MICROPY_HW_FLASH_STORAGE_BASE
-#define MICROPY_HW_FLASH_STORAGE_BASE (PICO_FLASH_SIZE_BYTES - MICROPY_HW_FLASH_STORAGE_BYTES)
-#endif
+extern uint8_t _micropy_hw_application_start;
+extern size_t _micropy_hw_application_size_bytes;
+extern uint8_t _micropy_hw_application_end;
 
-// Put ROMFS at the upper end of the code space.
-#define MICROPY_HW_ROMFS_BASE (MICROPY_HW_FLASH_STORAGE_BASE - MICROPY_HW_ROMFS_BYTES)
+extern uint8_t _micropy_hw_romfs_start;
+extern size_t _micropy_hw_romfs_size_bytes;
+extern uint8_t _micropy_hw_romfs_end;
 
-static_assert(MICROPY_HW_FLASH_STORAGE_BYTES <= PICO_FLASH_SIZE_BYTES, "MICROPY_HW_FLASH_STORAGE_BYTES too big");
-static_assert(MICROPY_HW_FLASH_STORAGE_BASE + MICROPY_HW_FLASH_STORAGE_BYTES <= PICO_FLASH_SIZE_BYTES, "MICROPY_HW_FLASH_STORAGE_BYTES too big");
+extern uint8_t _micropy_hw_filesystem_start;
+extern size_t _micropy_hw_filesystem_size_bytes;
+extern uint8_t _micropy_hw_filesystem_end;
 
 typedef struct _rp2_flash_obj_t {
     mp_obj_base_t base;
@@ -57,24 +60,22 @@ typedef struct _rp2_flash_obj_t {
 
 #if MICROPY_HW_ROMFS_BYTES > 0
 static rp2_flash_obj_t rp2_flash_romfs_obj = {
-    .base = { &rp2_flash_type },
-    .flash_base = MICROPY_HW_ROMFS_BASE,
-    .flash_size = MICROPY_HW_ROMFS_BYTES,
+    .base = { &rp2_flash_type }
 };
 #endif
 
 static rp2_flash_obj_t rp2_flash_obj = {
-    .base = { &rp2_flash_type },
-    .flash_base = MICROPY_HW_FLASH_STORAGE_BASE,
-    .flash_size = MICROPY_HW_FLASH_STORAGE_BYTES,
+    .base = { &rp2_flash_type }
 };
 
 // Tag the flash drive in the binary as readable/writable (but not reformatable)
 bi_decl(bi_block_device(
     BINARY_INFO_TAG_MICROPYTHON,
     "MicroPython",
-    XIP_BASE + MICROPY_HW_FLASH_STORAGE_BASE,
-    MICROPY_HW_FLASH_STORAGE_BYTES,
+    // TODO: Linker symbols are not const at compile time so we can't use them here
+    // is there an alternative?
+    XIP_BASE + MICROPY_HW_FLASH_SIZE_BYTES - MICROPY_HW_APP_SIZE_BYTES,
+    MICROPY_HW_FLASH_SIZE_BYTES,
     NULL,
     BINARY_INFO_BLOCK_DEV_FLAG_READ |
     BINARY_INFO_BLOCK_DEV_FLAG_WRITE |
@@ -117,12 +118,9 @@ static mp_obj_t rp2_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (args[ARG_start].u_int == -1 && args[ARG_len].u_int == -1) {
-        #ifndef NDEBUG
-        extern char __flash_binary_end;
-        assert((uintptr_t)&__flash_binary_end - XIP_BASE <= MICROPY_HW_FLASH_STORAGE_BASE);
-        #endif
-
         // Default singleton object that accesses entire flash
+        rp2_flash_obj.flash_base = _micropy_hw_filesystem_start;
+        rp2_flash_obj.flash_size = _micropy_hw_filesystem_size_bytes;
         return MP_OBJ_FROM_PTR(&rp2_flash_obj);
     }
 
@@ -131,18 +129,18 @@ static mp_obj_t rp2_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_int_t start = args[ARG_start].u_int;
     if (start == -1) {
         start = 0;
-    } else if (!(0 <= start && start < MICROPY_HW_FLASH_STORAGE_BYTES && start % BLOCK_SIZE_BYTES == 0)) {
+    } else if (!(0 <= start && start < _micropy_hw_filesystem_size_bytes && start % BLOCK_SIZE_BYTES == 0)) {
         mp_raise_ValueError(NULL);
     }
 
     mp_int_t len = args[ARG_len].u_int;
     if (len == -1) {
         len = MICROPY_HW_FLASH_STORAGE_BYTES - start;
-    } else if (!(0 < len && start + len <= MICROPY_HW_FLASH_STORAGE_BYTES && len % BLOCK_SIZE_BYTES == 0)) {
+    } else if (!(0 < len && start + len <= _micropy_hw_filesystem_size_bytes && len % BLOCK_SIZE_BYTES == 0)) {
         mp_raise_ValueError(NULL);
     }
 
-    self->flash_base = MICROPY_HW_FLASH_STORAGE_BASE + start;
+    self->flash_base = _micropy_hw_filesystem_start + start;
     self->flash_size = len;
 
     return MP_OBJ_FROM_PTR(self);
@@ -252,6 +250,10 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
         case MP_VFS_ROM_IOCTL_GET_NUMBER_OF_SEGMENTS:
             return MP_OBJ_NEW_SMALL_INT(1);
         case MP_VFS_ROM_IOCTL_GET_SEGMENT:
+            // TODO: Since linker symbols aren't known at compile time, we need
+            // to set these values at runtime. Find a better place to hang this.
+            rp2_flash_romfs_obj.flash_base = _micropy_hw_romfs_start;
+            rp2_flash_romfs_obj.flash_size = _micropy_hw_romfs_size_bytes;
             return MP_OBJ_FROM_PTR(&rp2_flash_romfs_obj);
         #endif
         default:
