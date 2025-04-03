@@ -208,7 +208,7 @@ typedef struct _vstr_t {
 } vstr_t;
 
 // convenience macro to declare a vstr with a fixed size buffer on the stack
-#define VSTR_FIXED(vstr, alloc) vstr_t vstr; char vstr##_buf[(alloc)]; vstr_init_fixed_buf(&vstr, (alloc), vstr##_buf);
+#define VSTR_FIXED(vstr, alloc) vstr_t vstr; char vstr##_buf[(alloc)] = {0}; vstr_init_fixed_buf(&vstr, (alloc), vstr##_buf);
 
 void vstr_init(vstr_t *vstr, size_t alloc);
 void vstr_init_len(vstr_t *vstr, size_t len);
