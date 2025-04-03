@@ -25,6 +25,7 @@
 # THE SOFTWARE.
 
 import ast, hashlib, os, sys
+import errno
 from collections import namedtuple
 
 
@@ -63,6 +64,8 @@ def _convert_filesystem_error(e, info):
         return FileExistsError(info)
     if "OSError" in e.error_output and "ENODEV" in e.error_output:
         return FileNotFoundError(info)
+    if "OSError" in e.error_output and "EINVAL" in e.error_output:
+        return OSError(errno.EINVAL, info)
     return e
 
 
