@@ -30,6 +30,12 @@ elif "mimxrt" in sys.platform:
 elif "nrf" in sys.platform:
     uart_id = 0
     tx_pin = None
+elif "alif" in sys.platform:
+    if "Alif Ensemble DevKit" in sys.implementation._machine:
+        uart_id = 0
+    else:
+        uart_id = 4
+    tx_pin = None
 else:
     print("Please add support for this test on this platform.")
     raise SystemExit

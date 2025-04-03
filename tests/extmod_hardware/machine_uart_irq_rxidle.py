@@ -42,6 +42,13 @@ elif "samd" in sys.platform and "ItsyBitsy M4" in sys.implementation._machine:
     uart_id = 3
     tx_pin = "D1"
     rx_pin = "D0"
+elif "alif" in sys.platform:
+    if "Alif Ensemble DevKit" in sys.implementation._machine:
+        uart_id = 0
+    else:
+        uart_id = 4
+    tx_pin = None  # PA0
+    rx_pin = None  # PA1
 else:
     print("Please add support for this test on this platform.")
     raise SystemExit
