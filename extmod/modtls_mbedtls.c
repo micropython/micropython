@@ -483,20 +483,20 @@ static mp_obj_t ssl_context_set_psk(mp_obj_t self_in, mp_obj_t psk_obj, mp_obj_t
     
     // Free any previously allocated PSK data
     if (self->psk != NULL) {
-        #if defined(MICROPY_MBEDTLS_CONFIG_BARE_METAL)
-        m_free(self->psk);
-        #else
+        #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
         m_free(self->psk, self->psk_len);
+        #else
+        m_free(self->psk);
         #endif
         self->psk = NULL;
         self->psk_len = 0;
     }
     
     if (self->psk_identity != NULL) {
-        #if defined(MICROPY_MBEDTLS_CONFIG_BARE_METAL)
-        m_free(self->psk_identity);
-        #else
+        #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
         m_free(self->psk_identity, self->psk_identity_len);
+        #else
+        m_free(self->psk_identity);
         #endif
         self->psk_identity = NULL;
         self->psk_identity_len = 0;
