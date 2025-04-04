@@ -92,6 +92,11 @@ typedef struct _mp_obj_ssl_context_t {
     #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
     mp_obj_t ecdsa_sign_callback;
     #endif
+    // Fields for PSK support
+    unsigned char *psk;
+    size_t psk_len;
+    unsigned char *psk_identity;
+    size_t psk_identity_len;
 } mp_obj_ssl_context_t;
 
 // This corresponds to an SSLSocket object.
@@ -284,6 +289,11 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
     self->ecdsa_sign_callback = mp_const_none;
     #endif
+    // Initialize PSK fields
+    self->psk = NULL;
+    self->psk_len = 0;
+    self->psk_identity = NULL;
+    self->psk_identity_len = 0;
 
     #ifdef MBEDTLS_DEBUG_C
     // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
@@ -467,6 +477,89 @@ static mp_obj_t ssl_context_load_verify_locations(mp_obj_t self_in, mp_obj_t cad
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_load_verify_locations_obj, ssl_context_load_verify_locations);
 
+// SSLContext.set_psk(psk, psk_identity)
+static mp_obj_t ssl_context_set_psk(mp_obj_t self_in, mp_obj_t psk_obj, mp_obj_t psk_identity_obj) {
+    mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(self_in);
+    
+    // Free any previously allocated PSK data
+    if (self->psk != NULL) {
+        m_free(self->psk);
+        self->psk = NULL;
+        self->psk_len = 0;
+    }
+    
+    if (self->psk_identity != NULL) {
+        m_free(self->psk_identity);
+        self->psk_identity = NULL;
+        self->psk_identity_len = 0;
+    }
+    
+    // Parse the PSK and PSK identity
+    mp_buffer_info_t psk_buf;
+    mp_buffer_info_t psk_id_buf;
+    
+    mp_get_buffer_raise(psk_obj, &psk_buf, MP_BUFFER_READ);
+    mp_get_buffer_raise(psk_identity_obj, &psk_id_buf, MP_BUFFER_READ);
+    
+    // Allocate and copy the PSK and PSK identity
+    self->psk = m_new(unsigned char, psk_buf.len);
+    self->psk_len = psk_buf.len;
+    memcpy(self->psk, psk_buf.buf, psk_buf.len);
+    
+    self->psk_identity = m_new(unsigned char, psk_id_buf.len);
+    self->psk_identity_len = psk_id_buf.len;
+    memcpy(self->psk_identity, psk_id_buf.buf, psk_id_buf.len);
+    
+    // Configure mbedTLS to use the PSK
+    int ret = mbedtls_ssl_conf_psk(&self->conf, self->psk, self->psk_len, 
+                                  self->psk_identity, self->psk_identity_len);
+    if (ret != 0) {
+        mbedtls_raise_error(ret);
+    }
+    
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(ssl_context_set_psk_obj, ssl_context_set_psk);
+
+// SSLContext.set_psk_ciphersuites(ciphersuite_list)
+static mp_obj_t ssl_context_set_psk_ciphersuites(mp_obj_t self_in, mp_obj_t ciphersuite_obj) {
+    mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(self_in);
+    
+    // Configure preferred PSK ciphersuites
+    int ret = 0;
+    
+    // Check that ciphersuite is a list or tuple.
+    size_t len = 0;
+    mp_obj_t *ciphers;
+    mp_obj_get_array(ciphersuite_obj, &len, &ciphers);
+    if (len == 0) {
+        mbedtls_raise_error(MBEDTLS_ERR_SSL_BAD_CONFIG);
+    }
+    
+    // Free any previously allocated ciphersuites array
+    if (self->ciphersuites != NULL) {
+        m_free(self->ciphersuites);
+    }
+    
+    // Parse list of ciphers.
+    self->ciphersuites = m_new(int, len + 1);
+    for (size_t i = 0; i < len; ++i) {
+        const char *ciphername = mp_obj_str_get_str(ciphers[i]);
+        const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
+        if (id == 0) {
+            mbedtls_raise_error(MBEDTLS_ERR_SSL_BAD_CONFIG);
+        }
+        self->ciphersuites[i] = id;
+    }
+    self->ciphersuites[len] = 0;
+    
+    // Configure ciphersuite.
+    mbedtls_ssl_conf_ciphersuites(&self->conf, (const int *)self->ciphersuites);
+    
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_set_psk_ciphersuites_obj, ssl_context_set_psk_ciphersuites);
+
 static mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_server_side, ARG_do_handshake_on_connect, ARG_server_hostname };
     static const mp_arg_t allowed_args[] = {
@@ -495,6 +588,8 @@ static const mp_rom_map_elem_t ssl_context_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_ciphers), MP_ROM_PTR(&ssl_context_set_ciphers_obj)},
     { MP_ROM_QSTR(MP_QSTR_load_cert_chain), MP_ROM_PTR(&ssl_context_load_cert_chain_obj)},
     { MP_ROM_QSTR(MP_QSTR_load_verify_locations), MP_ROM_PTR(&ssl_context_load_verify_locations_obj)},
+    { MP_ROM_QSTR(MP_QSTR_set_psk), MP_ROM_PTR(&ssl_context_set_psk_obj)},
+    { MP_ROM_QSTR(MP_QSTR_set_psk_ciphersuites), MP_ROM_PTR(&ssl_context_set_psk_ciphersuites_obj)},
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&ssl_context_wrap_socket_obj) },
 };
 static MP_DEFINE_CONST_DICT(ssl_context_locals_dict, ssl_context_locals_dict_table);
