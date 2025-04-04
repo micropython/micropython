@@ -3,6 +3,7 @@
 try:
     import socket
     import tls
+    import multitest
 except ImportError:
     print("SKIP")
     raise SystemExit
