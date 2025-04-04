@@ -1,4 +1,4 @@
 --- instance0 ---
-client to server
+b'client to server'
 --- instance1 ---
-server to client
+b'server to client'
