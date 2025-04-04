@@ -545,10 +545,10 @@ static mp_obj_t ssl_context_set_psk_ciphersuites(mp_obj_t self_in, mp_obj_t ciph
     
     // Free any previously allocated ciphersuites array
     if (self->ciphersuites != NULL) {
-        #if defined(MICROPY_MBEDTLS_CONFIG_BARE_METAL)
-        m_free(self->ciphersuites);
-        #else
+        #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
         m_free(self->ciphersuites, (len + 1) * sizeof(int));
+        #else
+        m_free(self->ciphersuites);
         #endif
     }
     
