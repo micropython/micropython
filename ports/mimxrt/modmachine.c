@@ -87,7 +87,7 @@ static mp_obj_t mp_machine_unique_id(void) {
     return mp_obj_new_bytes(id, sizeof(id));
 }
 
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     WDOG_TriggerSystemSoftwareReset(WDOG1);
     while (true) {
         ;
@@ -131,7 +131,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_raise_NotImplementedError(NULL);
 }
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_int_t seconds = mp_obj_get_int(args[0]) / 1000;
         if (seconds > 0) {
@@ -159,7 +159,7 @@ NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     }
 }
 
-NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if defined(MICROPY_BOARD_ENTER_BOOTLOADER)
     // If a board has a custom bootloader, call it first.
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
