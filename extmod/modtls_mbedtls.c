@@ -483,13 +483,13 @@ static mp_obj_t ssl_context_set_psk(mp_obj_t self_in, mp_obj_t psk_obj, mp_obj_t
     
     // Free any previously allocated PSK data
     if (self->psk != NULL) {
-        m_free(self->psk);
+        m_free(self->psk, self->psk_len);
         self->psk = NULL;
         self->psk_len = 0;
     }
     
     if (self->psk_identity != NULL) {
-        m_free(self->psk_identity);
+        m_free(self->psk_identity, self->psk_identity_len);
         self->psk_identity = NULL;
         self->psk_identity_len = 0;
     }
@@ -526,7 +526,6 @@ static mp_obj_t ssl_context_set_psk_ciphersuites(mp_obj_t self_in, mp_obj_t ciph
     mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(self_in);
     
     // Configure preferred PSK ciphersuites
-    int ret = 0;
     
     // Check that ciphersuite is a list or tuple.
     size_t len = 0;
@@ -538,7 +537,7 @@ static mp_obj_t ssl_context_set_psk_ciphersuites(mp_obj_t self_in, mp_obj_t ciph
     
     // Free any previously allocated ciphersuites array
     if (self->ciphersuites != NULL) {
-        m_free(self->ciphersuites);
+        m_free(self->ciphersuites, (len + 1) * sizeof(int));
     }
     
     // Parse list of ciphers.
