@@ -47,8 +47,15 @@
 #define MBEDTLS_KEY_EXCHANGE_RSA_ENABLED
 #define MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
 #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
-// Enable PSK key exchange methods
+
+// Enable PSK support
 #define MBEDTLS_KEY_EXCHANGE_PSK_ENABLED
+
+// Enable DHE support (required for DHE-PSK)
+#define MBEDTLS_DHM_C
+#define MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED
+
+// Enable PSK key exchange methods that need additional prerequisites
 #define MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED
 #define MBEDTLS_KEY_EXCHANGE_ECDHE_PSK_ENABLED
 #define MBEDTLS_KEY_EXCHANGE_RSA_PSK_ENABLED
@@ -73,6 +80,7 @@
 #define MBEDTLS_BIGNUM_C
 #define MBEDTLS_CIPHER_C
 #define MBEDTLS_CTR_DRBG_C
+#define MBEDTLS_DHM_C
 #define MBEDTLS_ECDH_C
 #define MBEDTLS_ECDSA_C
 #define MBEDTLS_ECP_C
