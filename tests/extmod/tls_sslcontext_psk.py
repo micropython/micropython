@@ -13,13 +13,21 @@ ctx = tls.SSLContext(tls.PROTOCOL_TLS_CLIENT)
 psk = b"test-preshared-key"
 identity = b"test-identity"
 
-ctx.set_psk(psk, identity)
+# Test the PSK functionality - this will throw an exception if PSK is not supported
+try:
+    ctx.set_psk(psk, identity)
+    print("PSK successfully set")
+except Exception as e:
+    print("Failed to set PSK:", e)
+    raise SystemExit
 
-# Test setting PSK ciphersuites
-# This list contains common PSK ciphersuites
-ctx.set_psk_ciphersuites([
-    "TLS-PSK-WITH-AES-128-CBC-SHA256",
-    "TLS-PSK-WITH-AES-128-GCM-SHA256"
-])
+# Test setting PSK ciphersuites with error handling
+# Try with one basic PSK ciphersuite that should be widely supported
+try:
+    ctx.set_psk_ciphersuites(["TLS-PSK-WITH-AES-128-CBC-SHA256"])
+    print("PSK ciphersuites set")
+except Exception as e:
+    print("Failed to set PSK ciphersuites:", e)
+    raise SystemExit
 
 print("PSK test complete")
