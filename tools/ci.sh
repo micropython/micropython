@@ -22,6 +22,15 @@ function ci_gcc_riscv_setup {
     riscv64-unknown-elf-gcc --version
 }
 
+function ci_picotool_setup {
+    # Manually installing picotool ensures we use a release version, and speeds up the build.
+    git clone https://github.com/raspberrypi/pico-sdk.git
+    (cd pico-sdk && git submodule update --init lib/mbedtls)
+    git clone https://github.com/raspberrypi/picotool.git
+    (cd picotool && mkdir build && cd build && cmake -DPICO_SDK_PATH=../../pico-sdk .. && make && sudo make install)
+    picotool version
+}
+
 ########################################################################################
 # c code formatting
 
@@ -62,6 +71,7 @@ function ci_code_size_setup {
     gcc --version
     ci_gcc_arm_setup
     ci_gcc_riscv_setup
+    ci_picotool_setup
 }
 
 function ci_code_size_build {
@@ -355,6 +365,7 @@ function ci_renesas_ra_board_build {
 
 function ci_rp2_setup {
     ci_gcc_arm_setup
+    ci_picotool_setup
 }
 
 function ci_rp2_build {
