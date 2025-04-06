@@ -84,9 +84,10 @@
 #endif
 #define MICROPY_PY_MACHINE_PWM      (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/zephyr/machine_pwm.c"
-#ifdef CONFIG_NETWORKING
-// If we have networking, we likely want errno comfort
+#if defined(CONFIG_NETWORKING) || defined(CONFIG_FILE_SYSTEM)
 #define MICROPY_PY_ERRNO            (1)
+#endif
+#ifdef CONFIG_NETWORKING
 #define MICROPY_PY_SOCKET           (1)
 #endif
 #ifdef CONFIG_BT
