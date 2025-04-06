@@ -208,3 +208,47 @@ run the following after you built an image with the previous command:
 
     $ west build -t run
 
+File Systems
+------------
+
+The Zephyr Micropython port provides 2 options for handling filesystems on the device:
+The first is the Micropython filesystem management, which uses Micropython's filesystem code and
+relies on zephyr's FlashArea API, this is enabled by default when 
+`CONFIG_FLASH` and `CONFIG_FLASH_MAP` are turned on.
+The second option is using Zephyr's Filesystem management:
+This relies on Zephyr's File System features and enables sharing access between zephyr and
+micropython code. Several configuration options must be enabled:
+
+    CONFIG_FLASH_MAP=y # Requirement for the file system subsystem
+    CONFIG_FILE_SYSTEM=y # Enables the file system subsystem
+    CONFIG_FILE_SYSTEM_LITTLEFS=y # Enables the littlefs support in zephyr
+    CONFIG_FILE_SYSTEM_MKFS=y # Enables the ability to create new file systems
+
+Then, a fstab must be added to the dts overlay, for example:
+
+    
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs2: lfs2 {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/flash";
+			partition = <&storage_partition>;
+			read-size=<16>;
+			prog-size=<4096>;
+			cache-size=<4096>;
+			lookahead-size=<32>;
+			block-cycles=<4>;
+		};
+	};
+	
+It is then possible to use the FS like a normal Micropython filesystem:
+
+    import vfs, zephyr
+    zfs = zephyr.FileSystem(zephyr.FileSystem.fstab()[0])
+    vfs.mount(zfs, "/zephyr")
+
+You may disable Micropython's File system code to save space:
+    
+    CONFIG_MICROPY_VFS_FAT=n
+    CONFIG_MICROPY_VFS_LFS1=n
+    CONFIG_MICROPY_VFS_LFS2=n
