@@ -1,4 +1,5 @@
 import binascii
+import errno
 import hashlib
 import os
 import sys
@@ -300,6 +301,28 @@ def do_filesystem_recursive_cp(state, src, dest, multiple, check_hash):
         do_filesystem_cp(state, src_path_joined, dest_path_joined, False, check_hash)
 
 
+def do_filesystem_recursive_rm(state, path, args):
+    if state.transport.fs_isdir(path):
+        for entry in state.transport.fs_listdir(path):
+            do_filesystem_recursive_rm(state, _remote_path_join(path, entry.name), args)
+        if path:
+            try:
+                state.transport.fs_rmdir(path)
+                if args.verbose:
+                    print(f"removed directory: '{path}'")
+            except OSError as e:
+                if e.errno != errno.EINVAL:  # not vfs mountpoint
+                    raise CommandError(
+                        f"rm -r: cannot remove :{path} {os.strerror(e.errno) if e.errno else ''}"
+                    ) from e
+                if args.verbose:
+                    print(f"skipped: '{path}' (vfs mountpoint)")
+    else:
+        state.transport.fs_rmfile(path)
+        if args.verbose:
+            print(f"removed: '{path}'")
+
+
 def do_filesystem(state, args):
     state.ensure_raw_repl()
     state.did_action()
@@ -352,7 +375,10 @@ def do_filesystem(state, args):
             elif command == "mkdir":
                 state.transport.fs_mkdir(path)
             elif command == "rm":
-                state.transport.fs_rmfile(path)
+                if args.recursive:
+                    do_filesystem_recursive_rm(state, path, args)
+                else:
+                    state.transport.fs_rmfile(path)
             elif command == "rmdir":
                 state.transport.fs_rmdir(path)
             elif command == "touch":
