@@ -8,6 +8,10 @@ MOD = random_$(ARCH)
 SRC = random.c
 
 # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin, rv32imc)
-ARCH = x64
+ARCH ?= x64
+
+ifeq ($(ARCH),xtensa)
+EXTERN_SYMS=xtensa_externs.txt
+endif
 
 include $(MPY_DIR)/py/dynruntime.mk
