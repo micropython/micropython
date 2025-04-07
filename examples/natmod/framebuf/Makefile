@@ -8,6 +8,10 @@ MOD = framebuf_$(ARCH)
 SRC = framebuf.c
 
 # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
-ARCH = x64
+ARCH ?= x64
+
+ifeq ($(ARCH),xtensa)
+EXTERN_SYMS=xtensa_externs.txt
+endif
 
 include $(MPY_DIR)/py/dynruntime.mk
