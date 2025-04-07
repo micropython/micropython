@@ -57,7 +57,7 @@ listdir_result = namedtuple("dir_result", ["name", "st_mode", "st_ino", "st_size
 # raises it as the corresponding OSError-derived exception.
 def _convert_filesystem_error(e, info):
     if "OSError" in e.error_output:
-        for code, estr in errno.errorcode.items():
+        for code, estr in [*errno.errorcode.items(), (errno.ENOTSUP, "ENOTSUP")]:
             if estr in e.error_output:
                 return OSError(code, info)
     return e
