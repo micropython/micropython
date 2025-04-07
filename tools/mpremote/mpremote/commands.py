@@ -393,12 +393,8 @@ def do_filesystem(state, args):
                     )
                 else:
                     do_filesystem_cp(state, path, cp_dest, len(paths) > 1, not args.force)
-    except FileNotFoundError as er:
-        raise CommandError("{}: {}: No such file or directory.".format(command, er.args[0]))
-    except IsADirectoryError as er:
-        raise CommandError("{}: {}: Is a directory.".format(command, er.args[0]))
-    except FileExistsError as er:
-        raise CommandError("{}: {}: File exists.".format(command, er.args[0]))
+    except OSError as er:
+        raise CommandError("{}: {}: {}.".format(command, er.strerror, os.strerror(er.errno)))
     except TransportError as er:
         raise CommandError("Error with transport:\n{}".format(er.args[0]))
 
