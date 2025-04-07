@@ -182,7 +182,7 @@ def argparse_rtc():
 
 def argparse_filesystem():
     cmd_parser = argparse.ArgumentParser(description="execute filesystem commands on the device")
-    _bool_flag(cmd_parser, "recursive", "r", False, "recursive copy (for cp command only)")
+    _bool_flag(cmd_parser, "recursive", "r", False, "recursive (for cp and rm commands)")
     _bool_flag(
         cmd_parser,
         "force",

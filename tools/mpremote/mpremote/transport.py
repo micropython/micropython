@@ -24,7 +24,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import ast, hashlib, os, sys
+import ast, errno, hashlib, os, sys
 from collections import namedtuple
 
 
@@ -63,6 +63,10 @@ def _convert_filesystem_error(e, info):
         return FileExistsError(info)
     if "OSError" in e.error_output and "ENODEV" in e.error_output:
         return FileNotFoundError(info)
+    if "OSError" in e.error_output and "EINVAL" in e.error_output:
+        return OSError(errno.EINVAL, info)
+    if "OSError" in e.error_output and "EPERM" in e.error_output:
+        return OSError(errno.EPERM, info)
     return e
 
 
