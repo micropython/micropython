@@ -191,3 +191,79 @@ ls :package/subpackage
           23 y.py
 x
 y2
+-----
+touch :a.py
+touch :b.py
+cp ${TMP}/package :
+rm :
+removed: './a.py'
+removed: './b.py'
+removed: './package/subpackage/__init__.py'
+removed: './package/subpackage/y.py'
+removed directory: './package/subpackage'
+removed: './package/__init__.py'
+removed: './package/x.py'
+removed directory: './package'
+ls :
+ls :/ramdisk
+-----
+touch :a.py
+mkdir :testdir
+cp ${TMP}/package :testdir/package
+ls :testdir
+           0 package/
+ls :testdir/package
+           0 subpackage/
+          43 __init__.py
+          22 x.py
+rm :testdir/package
+ls :/ramdisk
+           0 a.py
+           0 testdir/
+ls :testdir
+-----
+ls :
+rm :nonexistent
+mpremote: rm: nonexistent: No such file or directory.
+expect error
+-----
+touch :a.py
+touch :b.py
+cp ${TMP}/package :
+cp ${TMP}/package :package2
+rm :/
+mpremote: rm -r: cannot remove :/ Operation not permitted
+expect error
+ls :
+ls :/ramdisk
+-----
+touch :a.py
+touch :b.py
+cp ${TMP}/package :
+rm :ramdisk
+removed: 'ramdisk/a.py'
+removed: 'ramdisk/b.py'
+removed: 'ramdisk/package/subpackage/__init__.py'
+removed: 'ramdisk/package/subpackage/y.py'
+removed directory: 'ramdisk/package/subpackage'
+removed: 'ramdisk/package/__init__.py'
+removed: 'ramdisk/package/x.py'
+removed directory: 'ramdisk/package'
+skipped: 'ramdisk' (vfs mountpoint)
+ls :/ramdisk
+-----
+touch :a.py
+touch :b.py
+cp ${TMP}/package :
+rm :/ramdisk
+removed: '/ramdisk/a.py'
+removed: '/ramdisk/b.py'
+removed: '/ramdisk/package/subpackage/__init__.py'
+removed: '/ramdisk/package/subpackage/y.py'
+removed directory: '/ramdisk/package/subpackage'
+removed: '/ramdisk/package/__init__.py'
+removed: '/ramdisk/package/x.py'
+removed directory: '/ramdisk/package'
+skipped: '/ramdisk' (vfs mountpoint)
+ls :/ramdisk
+-----
