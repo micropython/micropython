@@ -229,7 +229,7 @@ The full list of supported commands are:
   - ``ls`` to list the current directory
   - ``ls <dirs...>`` to list the given directories
   - ``cp [-rf] <src...> <dest>`` to copy files
-  - ``rm <src...>`` to remove files on the device
+  - ``rm [-r] <src...>`` to remove files or folders on the device
   - ``mkdir <dirs...>`` to create directories on the device
   - ``rmdir <dirs...>`` to remove directories on the device
   - ``touch <file..>`` to create the files (if they don't already exist)
@@ -238,14 +238,34 @@ The full list of supported commands are:
   The ``cp`` command uses a convention where a leading ``:`` represents a remote
   path. Without a leading ``:`` means a local path. This is based on the
   convention used by the `Secure Copy Protocol (scp) client
-  <https://en.wikipedia.org/wiki/Secure_copy_protocol>`_. All other commands
-  implicitly assume the path is a remote path, but the ``:`` can be optionally
-  used for clarity.
+  <https://en.wikipedia.org/wiki/Secure_copy_protocol>`_.
 
   So for example, ``mpremote fs cp main.py :main.py`` copies ``main.py`` from
   the current local directory to the remote filesystem, whereas
   ``mpremote fs cp :main.py main.py`` copies ``main.py`` from the device back
   to the current directory.
+
+  The ``mpremote rm -r`` command accepts both relative and absolute paths.
+  Use ``:`` to refer to the current remote working directory (cwd) to allow a
+  directory tree to be removed from the device's default path (eg ``/flash``, ``/``).
+  Use ``-v/--verbose`` to see the files being removed.
+
+  For example:
+
+  - ``mpremote rm -r :libs`` will remove the ``libs`` directory and all its
+    child items from the device.
+  - ``mpremote rm -rv :/sd`` will remove all files from a mounted SDCard and result
+    in a non-blocking warning. The mount will be retained.
+  - ``mpremote rm -rv :/`` will remove all files on the device, including any
+    located in mounted vfs such as ``/sd`` or ``/flash``. After removing all folders
+    and files, this will  also return an error to mimic unix ``rm -rf /`` behaviour.
+
+  .. warning::
+    There is no supported way to undelete files removed by ``mpremote rm -r :``.
+    Please use with caution.
+
+  All other commands implicitly assume the path is a remote path, but the ``:``
+  can be optionally used for clarity.
 
   All of the filesystem sub-commands take multiple path arguments, so if there
   is another command in the sequence, you must use ``+`` to terminate the
