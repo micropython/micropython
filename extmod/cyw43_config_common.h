@@ -107,4 +107,20 @@ static inline void cyw43_delay_ms(uint32_t ms) {
     }
 }
 
+#if LWIP_MDNS_RESPONDER == 1
+
+// Hook for any additional TCP/IP initialization than needs to be done.
+// Called after the netif specified by `itf` has been set up.
+#ifndef CYW43_CB_TCPIP_INIT_EXTRA
+#define CYW43_CB_TCPIP_INIT_EXTRA(self, itf) mdns_resp_add_netif(&self->netif[itf], mod_network_hostname_data)
+#endif
+
+// Hook for any additional TCP/IP deinitialization than needs to be done.
+// Called before the netif specified by `itf` is removed.
+#ifndef CYW43_CB_TCPIP_DEINIT_EXTRA
+#define CYW43_CB_TCPIP_DEINIT_EXTRA(self, itf) mdns_resp_remove_netif(&self->netif[itf])
+#endif
+
+#endif
+
 #endif // MICROPY_INCLUDED_EXTMOD_CYW43_CONFIG_COMMON_H
