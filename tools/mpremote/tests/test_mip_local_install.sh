@@ -39,7 +39,7 @@ import os
 
 bdev = RAMBlockDev(${block_size}, ${num_blocks})
 os.VfsFat.mkfs(bdev)
-os.mount(bdev, ${target@Q})
+os.mount(bdev, r${target@Q})
 EOF
 
 echo ----- Setup
@@ -63,5 +63,5 @@ echo ---- Install package
 $MPREMOTE resume mip install --target="${target}/lib" "${PACKAGE_DIR}/package.json"
 echo
 echo ---- Test package
-$MPREMOTE resume exec "import sys; sys.path.append(${target@Q} + '/lib')"
+$MPREMOTE resume exec "import sys; sys.path.append(r${target@Q} + '/lib')"
 $MPREMOTE resume exec "import ${PACKAGE}; ${PACKAGE}.hello()"
