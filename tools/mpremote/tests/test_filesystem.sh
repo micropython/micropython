@@ -84,7 +84,7 @@ $MPREMOTE resume rmdir aaa :bbb
 $MPREMOTE resume ls
 
 echo -----
-env EDITOR="sed -i s/Hello/Goodbye/" $MPREMOTE resume edit d.py
+EDITOR="sed -i s/Hello/Goodbye/" $MPREMOTE resume edit d.py
 $MPREMOTE resume sha256sum :d.py
 $MPREMOTE resume exec "import d"
 
