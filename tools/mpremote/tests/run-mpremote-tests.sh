@@ -3,7 +3,7 @@ set -e
 
 TESTS_DIR="${TESTS_DIR:-$(dirname $0)}"
 RESULT_DIR="${RESULT_DIR:-${TESTS_DIR}/results}"
-MPREMOTE="${MPREMOTE:-${TESTS_DIR}/../mpremote.py}"
+export MPREMOTE="${MPREMOTE:-${TESTS_DIR}/../mpremote.py}"
 DIFF="diff --unified --strip-trailing-cr"
 
 if [ -z "$1" ]; then
@@ -17,13 +17,13 @@ fi
 mkdir --parents "${RESULT_DIR}"
 
 for test in "${TESTS[@]}"; do
-    TMP=$(mktemp -d)
+    export TMP=$(mktemp --directory | tr '\\' /)
     result="${RESULT_DIR}/$(basename "${test}")"
 
     echo -n "${test}: "
 
-    env TMP="${TMP}" envsubst <"${test}.exp" >"${result}.exp"
-    if env MPREMOTE="${MPREMOTE}" TMP="${TMP}" "${test}" >"${result}.out" 2>&1; then
+    envsubst <"${test}.exp" >"${result}.exp"
+    if "${test}" >"${result}.out" 2>&1; then
         if $DIFF "${result}.out" "${result}.exp" >/dev/null; then
             echo "OK"
             rm "${result}.out" "${result}.exp"
