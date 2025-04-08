@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0x1000"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "WiFi",
+        "USB-C"
+    ],
+    "images": [
+        "19177-Sparkfun_IoT_Redboard-ESP32.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "ESP32 / WROOM",
+    "thumbnail": "",
+    "url": "https://www.sparkfun.com/sparkfun-iot-redboard-esp32-development-board.html",
+    "vendor": "SparkFun"
+}
