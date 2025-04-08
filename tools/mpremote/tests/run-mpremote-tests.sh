@@ -1,30 +1,45 @@
 #!/bin/bash
 set -e
 
-TEST_DIR="${TEST_DIR:-$(dirname $0)}"
-MPREMOTE="${MPREMOTE:-${TEST_DIR}/../mpremote.py}"
+TESTS_DIR="${TESTS_DIR:-$(dirname $0)}"
+RESULT_DIR="${RESULT_DIR:-${TESTS_DIR}/results}"
+MPREMOTE="${MPREMOTE:-${TESTS_DIR}/../mpremote.py}"
+DIFF="diff --unified --strip-trailing-cr"
 
 if [ -z "$1" ]; then
     # Find tests matching test_*.sh
-    TESTS=${TEST_DIR}/test_*.sh
+    declare -a TESTS=("${TESTS_DIR}"/test_*.sh)
 else
-    # Specific test path from the command line.
-    TESTS="$1"
+    # Specific test paths from the command line.
+    declare -a TESTS=("$@")
 fi
 
-for t in $TESTS; do
+mkdir --parents "${RESULT_DIR}"
+
+for test in "${TESTS[@]}"; do
     TMP=$(mktemp -d)
-    echo -n "${t}: "
-    # Strip CR and replace the random temp dir with a token.
-    if env MPREMOTE="${MPREMOTE}" TMP="${TMP}" "${t}" 2>&1 | tr -d '\r' | sed "s,${TMP},"'${TMP},g' > "${t}.out"; then
-        if diff "${t}.out" "${t}.exp" > /dev/null; then
+    result="${RESULT_DIR}/$(basename "${test}")"
+
+    echo -n "${test}: "
+
+    env TMP="${TMP}" envsubst <"${test}.exp" >"${result}.exp"
+    if env MPREMOTE="${MPREMOTE}" TMP="${TMP}" "${test}" >"${result}.out" 2>&1; then
+        if $DIFF "${result}.out" "${result}.exp" >/dev/null; then
             echo "OK"
+            rm "${result}.out" "${result}.exp"
         else
             echo "FAIL"
-            diff "${t}.out" "${t}.exp" || true
         fi
     else
         echo "CRASH"
     fi
     rm -r "${TMP}"
+done
+
+for test in "${TESTS[@]}"; do
+    result="${RESULT_DIR}/$(basename "${test}")"
+    if [ -e "${result}.out" ]; then
+        echo "FAILURE ${test}"
+        $DIFF "${result}.out" "${result}.exp"
+    fi
 done
