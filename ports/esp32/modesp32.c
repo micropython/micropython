@@ -33,6 +33,7 @@
 #include "driver/adc.h"
 #include "esp_heap_caps.h"
 #include "multi_heap.h"
+#include "esp_app_desc.h"
 
 #include "py/nlr.h"
 #include "py/obj.h"
@@ -47,6 +48,25 @@
 #define MULTI_HEAP_FREERTOS
 #include "../multi_heap_platform.h"
 #include "../heap_private.h"
+
+
+static mp_obj_t esp32_intr_enable_mask(const mp_obj_t mask) {
+    esp_cpu_intr_enable(mp_obj_get_int(mask));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(esp32_intr_enable_mask_obj, esp32_intr_enable_mask);
+
+static mp_obj_t esp32_intr_disable_mask(const mp_obj_t mask) {
+    esp_cpu_intr_disable(mp_obj_get_int(mask));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(esp32_intr_disable_mask_obj, esp32_intr_disable_mask);
+
+static mp_obj_t esp32_intr_get_mask(void) {
+    int mask = esp_cpu_intr_get_enabled_mask();
+    return mp_obj_new_int(mask);
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(esp32_intr_get_mask_obj, esp32_intr_get_mask);
 
 static mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 
@@ -242,6 +262,10 @@ static const mp_rom_map_elem_t esp32_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_HEAP_DATA), MP_ROM_INT(MALLOC_CAP_8BIT) },
     { MP_ROM_QSTR(MP_QSTR_HEAP_EXEC), MP_ROM_INT(MALLOC_CAP_EXEC) },
+
+    { MP_ROM_QSTR(MP_QSTR_intr_enable_mask), MP_ROM_PTR(&esp32_intr_enable_mask_obj) },
+    { MP_ROM_QSTR(MP_QSTR_intr_disable_mask), MP_ROM_PTR(&esp32_intr_disable_mask_obj) },
+    { MP_ROM_QSTR(MP_QSTR_intr_get_mask), MP_ROM_PTR(&esp32_intr_get_mask_obj) },
 };
 
 static MP_DEFINE_CONST_DICT(esp32_module_globals, esp32_module_globals_table);
