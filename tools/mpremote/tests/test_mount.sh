@@ -20,13 +20,13 @@ cat << EOF > "${TMP}/mount_package/subpackage/y.py"
 def y():
   print("y")
 EOF
-$MPREMOTE mount ${TMP} exec "import mount_package; mount_package.x(); mount_package.y()"
+$MPREMOTE mount "${TMP}" exec "import mount_package; mount_package.x(); mount_package.y()"
 
 # Write to a file on the device and see that it's written locally.
 echo -----
-$MPREMOTE mount ${TMP} exec "open('test.txt', 'w').write('hello world\n')"
+$MPREMOTE mount "${TMP}" exec "open('test.txt', 'w').write('hello world\n')"
 cat "${TMP}/test.txt"
 
 # Test RemoteFile.readline and RemoteFile.readlines methods.
 echo -----
-$MPREMOTE mount ${TMP} exec "print(open('test.txt').readlines())"
+$MPREMOTE mount "${TMP}" exec "print(open('test.txt').readlines())"
