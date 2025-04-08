@@ -7,8 +7,8 @@
 set -e
 
 PACKAGE=mip_example
-PACKAGE_DIR=${TMP}/example
-MODULE_DIR=${PACKAGE_DIR}/${PACKAGE}
+PACKAGE_DIR="${TMP}/example"
+MODULE_DIR="${PACKAGE_DIR}/${PACKAGE}"
 
 target=/__ramdisk
 block_size=512
@@ -39,14 +39,14 @@ import os
 
 bdev = RAMBlockDev(${block_size}, ${num_blocks})
 os.VfsFat.mkfs(bdev)
-os.mount(bdev, '${target}')
+os.mount(bdev, ${target@Q})
 EOF
 
 echo ----- Setup
-mkdir -p ${MODULE_DIR}
-echo "def hello(): print('Hello, world!')" > ${MODULE_DIR}/hello.py
-echo "from .hello import hello" > ${MODULE_DIR}/__init__.py
-cat > ${PACKAGE_DIR}/package.json <<EOF
+mkdir -p "${MODULE_DIR}"
+echo "def hello(): print('Hello, world!')" > "${MODULE_DIR}/hello.py"
+echo "from .hello import hello" > "${MODULE_DIR}/__init__.py"
+cat > "${PACKAGE_DIR}/package.json" <<EOF
 {
     "urls": [
         ["${PACKAGE}/__init__.py", "${PACKAGE}/__init__.py"],
@@ -57,11 +57,11 @@ cat > ${PACKAGE_DIR}/package.json <<EOF
 EOF
 
 $MPREMOTE run "${TMP}/ramdisk.py"
-$MPREMOTE resume mkdir ${target}/lib
+$MPREMOTE resume mkdir "${target}/lib"
 echo
 echo ---- Install package
-$MPREMOTE resume mip install --target=${target}/lib ${PACKAGE_DIR}/package.json
+$MPREMOTE resume mip install --target="${target}/lib" "${PACKAGE_DIR}/package.json"
 echo
 echo ---- Test package
-$MPREMOTE resume exec "import sys; sys.path.append(\"${target}/lib\")"
+$MPREMOTE resume exec "import sys; sys.path.append(${target@Q} + '/lib')"
 $MPREMOTE resume exec "import ${PACKAGE}; ${PACKAGE}.hello()"
