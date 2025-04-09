@@ -64,8 +64,11 @@ static void gpio_callback_handler(const struct device *port, struct gpio_callbac
     machine_pin_irq_obj_t *irq = CONTAINER_OF(cb, machine_pin_irq_obj_t, callback);
 
     #if MICROPY_STACK_CHECK
-    // This callback executes in an ISR context so the stack-limit check must be changed to
-    // use the ISR stack for the duration of this function (so that hard IRQ callbacks work).
+    // For irqs with hard=True, the callback executes in an ISR context so the
+    // stack-limit check must be changed to use the ISR stack for the duration
+    // of this function (so that hard IRQ callbacks work).
+    //
+    // (For soft IRQs we change it anyway, even though it's not needed.)
     char *orig_stack_top = MP_STATE_THREAD(stack_top);
     size_t orig_stack_limit = MP_STATE_THREAD(stack_limit);
     MP_STATE_THREAD(stack_top) = (void *)&irq;
