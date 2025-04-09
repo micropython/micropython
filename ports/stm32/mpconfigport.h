@@ -43,6 +43,7 @@
 #define MICROPY_GC_STACK_ENTRY_TYPE uint16_t
 #endif
 #endif
+#define MICROPY_STACK_CHECK_MARGIN  (1024)
 #define MICROPY_ALLOC_PATH_MAX      (128)
 
 // optimisations
