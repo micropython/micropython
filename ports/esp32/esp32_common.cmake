@@ -190,6 +190,7 @@ list(APPEND IDF_COMPONENTS
     ulp
     usb
     vfs
+	wpa_supplicant
 )
 
 # Provide the default LD fragment if not set
