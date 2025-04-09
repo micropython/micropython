@@ -41,6 +41,14 @@ config MICROPY_VFS_LFS1
 config MICROPY_VFS_LFS2
 	bool "LittleFs version 2 file system"
 
+config MICROPY_FROZEN_MODULES
+	bool "Enable Frozen Modules"
+
+config MICROPY_FROZEN_MANIFEST
+	string "Path to Frozen Modules manifest.py"
+	depends on MICROPY_FROZEN_MODULES
+	default "boards/manifest.py"
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"
