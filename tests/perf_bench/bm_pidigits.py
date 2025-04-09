@@ -5,6 +5,12 @@
 # This benchmark stresses big integer arithmetic.
 # Adapted from code on: http://benchmarksgame.alioth.debian.org/
 
+try:
+    int("0x10000000000000000", 16)
+except:
+    print("SKIP")  # No support for >64-bit integers
+    raise SystemExit
+
 
 def compose(a, b):
     aq, ar, as_, at = a
