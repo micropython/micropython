@@ -29,6 +29,11 @@
 #include "drivers/bus/spi.h"
 #include "drivers/bus/qspi.h"
 
+// Whether to enable dynamic configuration of SPI flash through mp_spiflash_chip_params_t.
+#ifndef MICROPY_HW_SPIFLASH_CHIP_PARAMS
+#define MICROPY_HW_SPIFLASH_CHIP_PARAMS (0)
+#endif
+
 #define MP_SPIFLASH_ERASE_BLOCK_SIZE (4096) // must be a power of 2
 
 enum {
@@ -66,8 +71,20 @@ typedef struct _mp_spiflash_config_t {
     #endif
 } mp_spiflash_config_t;
 
+#if MICROPY_HW_SPIFLASH_CHIP_PARAMS
+typedef struct _mp_spiflash_chip_params_t {
+    uint32_t jedec_id;
+    uint8_t memory_size_bytes_log2;
+    uint8_t qspi_prescaler;
+    uint8_t qread_num_dummy;
+} mp_spiflash_chip_params_t;
+#endif
+
 typedef struct _mp_spiflash_t {
     const mp_spiflash_config_t *config;
+    #if MICROPY_HW_SPIFLASH_CHIP_PARAMS
+    const mp_spiflash_chip_params_t *chip_params;
+    #endif
     volatile uint32_t flags;
 } mp_spiflash_t;
 
