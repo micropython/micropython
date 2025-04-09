@@ -67,6 +67,19 @@ typedef struct _spiflash_obj_t {
 
 extern const mp_obj_type_t samd_spiflash_type;
 
+typedef struct _spiflash_jedec_id_t {
+    uint32_t jedec_id;
+    uint32_t mask;
+    uint32_t size;
+}  spiflash_jedec_id_t;
+
+spiflash_jedec_id_t jedec_id_table[] = {
+    { 0x1f8401, 0xffff00, 512 * 1024 }, // Adesto/Renesas 4 MBit
+    { 0x1f2400, 0xffff00, 512 * 1024 }, // Adesto 4 MBit
+    { 0x1f4501, 0xffff00, 1024 * 1024 }, // Adesto/Renesas/Atmel 8 MBit
+    { 0xc84013, 0xffffff, 512 * 1024 }, // Gigadevices 4 MBit
+};
+
 // The SPIflash object is a singleton
 static spiflash_obj_t spiflash_obj = {
     { &samd_spiflash_type }, NULL, 0, false, PAGE_SIZE, SECTOR_SIZE, NULL, 0
@@ -124,6 +137,7 @@ static void write_enable(spiflash_obj_t *self) {
     mp_hal_pin_write(self->cs, 1);
 }
 
+#if !defined(MICROPY_HW_SPIFLASH_SIZE)
 // Write status register 1
 static void write_sr1(spiflash_obj_t *self, uint8_t value) {
     uint8_t msg[2];
@@ -134,6 +148,7 @@ static void write_sr1(spiflash_obj_t *self, uint8_t value) {
     spi_transfer(self->spi, 2, msg, NULL);
     mp_hal_pin_write(self->cs, 1);
 }
+#endif
 
 static void get_sfdp(spiflash_obj_t *self, uint32_t addr, uint8_t *buffer, int size) {
     uint8_t dummy[1];
@@ -170,32 +185,46 @@ static mp_obj_t spiflash_make_new(const mp_obj_type_t *type, size_t n_args, size
     // Get the flash size from the device ID (default)
     uint8_t id[3];
     get_id(self, id);
-    bool read_sfdp = true;
 
-    if (id[1] == 0x84 && id[2] == 1) {  // Adesto
-        self->size = 512 * 1024;
-    } else if (id[0] == 0x1f && id[1] == 0x45 && id[2] == 1) {  // Adesto/Renesas 8 MBit
-        self->size = 1024 * 1024;
-        read_sfdp = false;
-        self->sectorsize = 4096;
-        self->addr_is_32bit = false;
-        // Globally unlock the sectors, which are locked after power on.
-        write_enable(self);
-        write_sr1(self, 0);
-    } else {
-        self->size = 1 << id[2];
+    #if defined(MICROPY_HW_SPIFLASH_SIZE)
+    self->size = MICROPY_HW_SPIFLASH_SIZE;
+    #else
+    // Assume as default that the size is coded into the last JEDEC ID byte.
+    self->size = 1 << id[2];
+    // Look for specific flash devices with different encoding.
+    uint32_t jedec_id = (id[0] << 16) | (id[1] << 8) | id[2];
+    for (int i = 0; i < MP_ARRAY_SIZE(jedec_id_table); i++) {
+        if (jedec_id_table[i].jedec_id == (jedec_id & jedec_id_table[i].mask)) {
+            self->size = jedec_id_table[i].size;
+            // Globally unlock the sectors, which may be locked after power on.
+            write_enable(self);
+            write_sr1(self, 0);
+            break;
+        }
     }
+    #endif
 
-    // Get the addr_is_32bit flag and the sector size
-    if (read_sfdp) {
-        uint8_t buffer[128];
-        get_sfdp(self, 0, buffer, 16);  // get the header
+    // Get the flash size, addr_is_32bit flag and sector size from SFDP, if present.
+    uint8_t buffer[128];
+    get_sfdp(self, 0, buffer, 16);  // get the header
+    if (*(uint32_t *)buffer == 0x50444653) {  // Header signature "SFDP"
         int len = MIN(buffer[11] * 4, sizeof(buffer));
         if (len >= 29) {
             int addr = buffer[12] + (buffer[13] << 8) + (buffer[14] << 16);
             get_sfdp(self, addr, buffer, len);  // Get the JEDEC mandatory table
             self->sectorsize = 1 << buffer[28];
             self->addr_is_32bit = ((buffer[2] >> 1) & 0x03) != 0;
+            #if !defined(MICROPY_HW_SPIFLASH_SIZE)
+            // Get the bit size from the SFDP data
+            uint32_t size = *(uint32_t *)(buffer + 4);
+            if (size & 0x8000000) {
+                // Byte size is 2 ** lower_31_bits / 8
+                self->size = 1 << ((size & 0x7fffffff) >> 3);
+            } else {
+                // Byte size is lower_31_bits / 8 + 1
+                self->size = ((size & 0x7fffffff) >> 3) + 1;
+            }
+            #endif
         }
     }
     self->commands = self->addr_is_32bit ? _COMMANDS_32BIT : _COMMANDS_24BIT;
