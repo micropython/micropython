@@ -40,6 +40,7 @@
 static DRAM_ATTR portMUX_TYPE rx_mux = portMUX_INITIALIZER_UNLOCKED;
 static uint8_t rx_buf[USB_SERIAL_JTAG_BUF_SIZE];
 static volatile bool terminal_connected = false;
+extern int mp_kbd_intr_enable;
 
 static void usb_serial_jtag_handle_rx(void) {
     if (xPortInIsrContext()) {
@@ -53,7 +54,7 @@ static void usb_serial_jtag_handle_rx(void) {
     }
     size_t len = usb_serial_jtag_ll_read_rxfifo(rx_buf, req_len);
     for (size_t i = 0; i < len; ++i) {
-        if (rx_buf[i] == mp_interrupt_char) {
+        if (mp_kbd_intr_enable && rx_buf[i] == mp_interrupt_char) {
             mp_sched_keyboard_interrupt();
         } else {
             ringbuf_put(&stdin_ringbuf, rx_buf[i]);

@@ -149,11 +149,19 @@ static MP_DEFINE_CONST_FUN_OBJ_1(mp_alloc_emergency_exception_buf_obj, mp_alloc_
 #endif
 
 #if MICROPY_KBD_EXCEPTION
+extern int mp_interrupt_char, mp_kbd_intr_enable;
 static mp_obj_t mp_micropython_kbd_intr(mp_obj_t int_chr_in) {
+    int old_intr_char = mp_interrupt_char;
     mp_hal_set_interrupt_char(mp_obj_get_int(int_chr_in));
-    return mp_const_none;
+    return mp_obj_new_int(old_intr_char);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_kbd_intr_obj, mp_micropython_kbd_intr);
+
+static mp_obj_t mp_micropython_kbd_intr_enable(mp_obj_t state) {
+    mp_kbd_intr_enable = mp_obj_get_int(state);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_kbd_intr_enable_obj, mp_micropython_kbd_intr_enable);
 #endif
 
 #if MICROPY_ENABLE_SCHEDULER
@@ -199,6 +207,7 @@ static const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     #endif
     #if MICROPY_KBD_EXCEPTION
     { MP_ROM_QSTR(MP_QSTR_kbd_intr), MP_ROM_PTR(&mp_micropython_kbd_intr_obj) },
+    { MP_ROM_QSTR(MP_QSTR_kbd_intr_enable), MP_ROM_PTR(&mp_micropython_kbd_intr_enable_obj) },
     #endif
     #if MICROPY_PY_MICROPYTHON_RINGIO
     { MP_ROM_QSTR(MP_QSTR_RingIO), MP_ROM_PTR(&mp_type_ringio) },

@@ -100,6 +100,7 @@ int uart_stdout_tx_strn(const char *str, size_t len) {
 }
 
 // all code executed in ISR must be in IRAM, and any const data must be in DRAM
+extern int mp_kbd_intr_enable;
 static void IRAM_ATTR uart_irq_handler(void *arg) {
     uint8_t rbuf[SOC_UART_FIFO_LEN];
     int len;
@@ -112,7 +113,7 @@ static void IRAM_ATTR uart_irq_handler(void *arg) {
     uart_hal_read_rxfifo(&repl_hal, rbuf, &len);
 
     for (int i = 0; i < len; i++) {
-        if (rbuf[i] == mp_interrupt_char) {
+        if (mp_kbd_intr_enable && rbuf[i] == mp_interrupt_char) {
             mp_sched_keyboard_interrupt();
         } else {
             // this is an inline function so will be in IRAM
