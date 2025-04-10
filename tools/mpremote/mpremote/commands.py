@@ -323,6 +323,47 @@ def do_filesystem_recursive_rm(state, path, args):
             print(f"removed: '{path}'")
 
 
+def human_size(size, decimal_places=1):
+    for unit in ['B', 'K', 'M', 'G', 'T']:
+        if size < 1024.0 or unit == 'T':
+            break
+        size /= 1024.0
+    return f"{size:.{decimal_places}f}{unit}" if unit != 'B' else f"{int(size)}{unit}"
+
+
+def do_filesystem_tree(state, path, args):
+    """Print a tree of the device's filesystem starting at path."""
+    connectors = ("├── ", "└── ")
+
+    # connectors = ("|-- ", "+-- ")
+    def _tree_recursive(path, prefix=""):
+        entries = state.transport.fs_listdir(path)
+        entries.sort(key=lambda e: e.name)
+        for i, entry in enumerate(entries):
+            connector = connectors[1] if i == len(entries) - 1 else connectors[0]
+            is_dir = entry.st_mode & 0x4000  # Directory
+            if args.size and not is_dir:
+                print(f"{prefix}{connector}[{human_size(entry.st_size):>5s}] {entry.name}")
+            else:
+                print(f"{prefix}{connector}{entry.name}")
+            if is_dir:
+                _tree_recursive(
+                    _remote_path_join(path, entry.name),
+                    prefix + ("    " if i == len(entries) - 1 else "│   "),
+                )
+
+    if not path or path == ".":
+        # is there a transport primitive for this ?
+        path = state.transport.exec("import os;print(os.getcwd())").strip().decode("utf-8")
+    if not (path == "." or state.transport.fs_isdir(path)):
+        raise CommandError(f"tree: '{path}' is not a directory")
+    if args.verbose:
+        print(f":{path} on {state.transport.device_name}")
+    else:
+        print(f":{path}")
+    _tree_recursive(path)
+
+
 def do_filesystem(state, args):
     state.ensure_raw_repl()
     state.did_action()
@@ -350,8 +391,8 @@ def do_filesystem(state, args):
         # leading ':' if the user included them.
         paths = [path[1:] if path.startswith(":") else path for path in paths]
 
-    # ls implicitly lists the cwd.
-    if command == "ls" and not paths:
+    # ls and tree implicitly lists the cwd.
+    if command in ["ls", "tree"] and not paths:
         paths = [""]
 
     try:
@@ -393,6 +434,8 @@ def do_filesystem(state, args):
                     )
                 else:
                     do_filesystem_cp(state, path, cp_dest, len(paths) > 1, not args.force)
+            elif command == "tree":
+                do_filesystem_tree(state, path, args)
     except FileNotFoundError as er:
         raise CommandError("{}: {}: No such file or directory.".format(command, er.args[0]))
     except IsADirectoryError as er:

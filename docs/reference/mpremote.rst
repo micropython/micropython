@@ -234,6 +234,9 @@ The full list of supported commands are:
   - ``rmdir <dirs...>`` to remove directories on the device
   - ``touch <file..>`` to create the files (if they don't already exist)
   - ``sha256sum <file..>`` to calculate the SHA256 sum of files
+  - ``tree [-vs] <dirs...>`` to print a tree of the given directories
+  
+  *mpremote fs cp*
 
   The ``cp`` command uses a convention where a leading ``:`` represents a remote
   path. Without a leading ``:`` means a local path. This is based on the
@@ -244,6 +247,20 @@ The full list of supported commands are:
   the current local directory to the remote filesystem, whereas
   ``mpremote fs cp :main.py main.py`` copies ``main.py`` from the device back
   to the current directory.
+
+  .. code-block:: bash
+
+      $ mpremote fs cp main.py :main.py + repl
+
+  This will copy the file to the device then enter the REPL. The ``+`` prevents
+  ``"repl"`` being interpreted as a path.
+
+  The ``cp`` command supports the ``-r`` option to make a recursive copy.  By
+  default ``cp`` will skip copying files to the remote device if the SHA256 hash
+  of the source and destination file matches.  To force a copy regardless of the
+  hash use the ``-f`` option.
+
+  *mpremote fs rm*
 
   The ``mpremote rm -r`` command accepts both relative and absolute paths.
   Use ``:`` to refer to the current remote working directory (cwd) to allow a
@@ -264,24 +281,34 @@ The full list of supported commands are:
     There is no supported way to undelete files removed by ``mpremote rm -r :``.
     Please use with caution.
 
+  *mpremote fs tree*
+
+  The ``tree`` command will print a tree of the given directories. 
+  Using the ``-s`` option will print the size of each file, and the ``-v`` option 
+  can be used to include the name of the serial device in the output.
+
+  .. code-block:: bash
+
+        $ mpremote tree -s
+        tree :
+        :/
+        ├── [  90B] config.py
+        ├── data
+        │   └── [  122K] norwegian.log
+        ├── lib
+        │   ├── [ 2.4K] parrot.py
+        │   └── [ 3.4K] worker.py
+        ├── [ 800B] main.py
+        └── [ 2.5K] readme.md
+
+  *other fs commands*
+
   All other commands implicitly assume the path is a remote path, but the ``:``
   can be optionally used for clarity.
 
   All of the filesystem sub-commands take multiple path arguments, so if there
   is another command in the sequence, you must use ``+`` to terminate the
   arguments, e.g.
-
-  .. code-block:: bash
-
-      $ mpremote fs cp main.py :main.py + repl
-
-  This will copy the file to the device then enter the REPL. The ``+`` prevents
-  ``"repl"`` being interpreted as a path.
-
-  The ``cp`` command supports the ``-r`` option to make a recursive copy.  By
-  default ``cp`` will skip copying files to the remote device if the SHA256 hash
-  of the source and destination file matches.  To force a copy regardless of the
-  hash use the ``-f`` option.
 
   **Note:** For convenience, all of the filesystem sub-commands are also
   :ref:`aliased as regular commands <mpremote_shortcuts>`, i.e. you can write
