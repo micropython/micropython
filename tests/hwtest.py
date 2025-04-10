@@ -61,13 +61,14 @@ def list_ports(args):
     return ports
 
 
+NATMOD_ARCHS = ("x86", "x64", "armv6", "armv6m", "armv7m", "armv7em", "armv7emsp", "armv7emdp", "xtensa", "xtensawin", "rv32imc")
 NATMOD_LIBS = ("btree", "deflate", "framebuf", "heapq", "random", "re")
 
 
 def build_natmods():
-    for arch in ("armv6m", "armv7emsp", "armv7emdp", "xtensawin"):
+    for arch in NATMOD_ARCHS:
         for lib in NATMOD_LIBS:
-            subprocess.run(["make", "-C", f"examples/natmod/{lib}", "-B", f"ARCH={arch}"])
+            subprocess.run(["make", "-C", f"../examples/natmod/{lib}", "-j", "-B", f"ARCH={arch}"])
 
 
 def try_import(target, module):
@@ -172,7 +173,9 @@ def run_multitests_on_two_targets(targets, tests):
 
 
 def main():
-    # build_natmods()
+    if len(sys.argv) > 1 and sys.argv[1] == "build-natmod":
+        build_natmods()
+        return
 
     with open("feature_check/target_info.py", "rb") as f:
         target_info_check = f.read()
