@@ -327,6 +327,8 @@ SRC_SS = \
 
 SRC_S += shared/runtime/gchelper_thumb2.s \
 
+hal/resethandler_MIMXRT10xx.S: $(GEN_FLEXRAM_CONFIG_SRC)
+
 # =============================================================================
 # QSTR Sources
 # =============================================================================
@@ -521,16 +523,16 @@ $(BUILD)/firmware.uf2: $(BUILD)/firmware.elf
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
 # which source files might need it.
-$(OBJ): | $(GEN_PINS_HDR) $(GEN_FLEXRAM_CONFIG_SRC)
+$(OBJ): | $(GEN_PINS_HDR)
 
 # With conditional pins, we may need to regenerate qstrdefs.h when config
 # options change.
 $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 
-$(GEN_FLEXRAM_CONFIG_SRC):
+$(GEN_FLEXRAM_CONFIG_SRC): $(HEADER_BUILD)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_FLEXRAM_LD) -d $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE).h \
-		-f $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE)_features.h -l boards/$(MCU_SERIES).ld -c $(MCU_SERIES) > $(GEN_FLEXRAM_CONFIG_SRC)
+		-f $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE)_features.h -l boards/$(MCU_SERIES).ld -c $(MCU_SERIES) > $@
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_gen.c and pins.h
