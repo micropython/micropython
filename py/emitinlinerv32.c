@@ -30,11 +30,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/asmrv32.h"
 #include "py/emit.h"
 #include "py/misc.h"
 
 #if MICROPY_EMIT_INLINE_RV32
+
+#include "py/asmrv32.h"
 
 typedef enum {
 // define rules with a compile function
