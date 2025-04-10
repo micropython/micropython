@@ -16,6 +16,12 @@ except RuntimeError:
     print("SKIP")
     raise SystemExit
 
+# ESP32 boards with PSRAM can't run this test, too difficult to use up all heap.
+import sys, gc
+if sys.platform == "esp32" and gc.mem_free() > 1024 * 1024:
+    print("SKIP")
+    raise SystemExit
+
 # some ports need to allocate heap for the emergency exception
 try:
     micropython.alloc_emergency_exception_buf(256)
