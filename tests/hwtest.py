@@ -13,6 +13,7 @@ import vcprate
 sys.path.append("../tools/mpremote")
 from mpremote.transport_serial import SerialTransport
 import mpremote.commands
+import mpremote.mip
 
 WLAN_SSID = os.getenv("WLAN_SSID")
 WLAN_PASS = os.getenv("WLAN_PASS")
@@ -74,6 +75,22 @@ def try_import(target, module):
         target.exec(f"try:\n import {module}\n print(True)\nexcept:\n print(False)").strip()
         == b"True"
     )
+
+
+def mip_install(target, target_serial, package):
+    class args:
+        command = ("install",)
+        packages = (package,)
+        index = None
+        target = None
+        mpy = True
+
+    class state:
+        transport = target_serial
+        did_action = lambda: None
+        ensure_raw_repl = lambda: target_serial.enter_raw_repl()
+
+    mpremote.mip.do_mip(state, args)
 
 
 def rtc_set(target, serial):
@@ -183,6 +200,7 @@ def main():
         if target.arch == "None":
             target.arch = None
         target.has_vfs = try_import(t, "vfs")
+        target.has_unittest = try_import(t, "unittest")
         target.has_wlan = try_import(t, "network") and t.eval("hasattr(network, 'WLAN')")
         target.has_ble = try_import(t, "bluetooth") and t.eval("hasattr(bluetooth, 'BLE')")
         t.close()
@@ -207,6 +225,13 @@ def main():
             print(target.info())
             print(target.machine)
             print(target.version)
+
+            # Install unittest if needed.
+            if target.has_vfs and not target.has_unittest:
+                t = SerialTransport(target.device)
+                mip_install(target, t, "unittest")
+                t.close()
+
             run_tests_cmd = [
                 "./run-tests.py",
                 "--test-instance",
@@ -239,10 +264,7 @@ def main():
 
             if select_via_mpy_native and target.arch is not None:
                 do_test(run_tests_cmd + ["--via-mpy", "--emit", "native"])
-                do_test(
-                    ["./run-natmodtests.py", "-p", "-d", target.device]
-                    + tests_natmod
-                )
+                do_test(["./run-natmodtests.py", "-p", "-d", target.device] + tests_natmod)
 
             if select_wlan and target.has_wlan:
                 t = SerialTransport(target.device)
