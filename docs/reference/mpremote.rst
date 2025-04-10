@@ -480,8 +480,11 @@ Shortcuts can be defined using the macro system.  Built-in shortcuts are:
 - ``cat``, ``edit``, ``ls``, ``cp``, ``rm``, ``mkdir``, ``rmdir``, ``touch``: Aliases for ``fs <sub-command>``
 
 Additional shortcuts can be defined by in user-configuration files, which is
-located at ``.config/mpremote/config.py``. This file should define a
-dictionary named ``commands``. The keys of this dictionary are the shortcuts
+located at ``.config/mpremote/config.py`` relative to the ``XDG_CONFIG_HOME`` or ``HOME`` environment variable on unix systems
+, or on Windows relative to ``HOME``, ``USERPROFILE`` or ``APPDATA``.
+
+For example:
+ This file should define a dictionary named ``commands``. The keys of this dictionary are the shortcuts
 and the values are either a string or a list-of-strings:
 
 .. code-block:: python3

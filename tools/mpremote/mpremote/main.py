@@ -396,17 +396,23 @@ def load_user_config():
     # Create empty config object.
     config = __build_class__(lambda: None, "Config")()
     config.commands = {}
-
-    # Get config file name.
-    path = os.getenv("XDG_CONFIG_HOME")
-    if path is None:
-        path = os.getenv("HOME")
-        if path is None:
-            return config
-        path = os.path.join(path, ".config")
-    path = os.path.join(path, _PROG)
+    # use $XDG_CONFIG_HOME,$HOME $env:USERPROFILE% or $env:APPDATA
+    path = None
+    for env_var in ("XDG_CONFIG_HOME", "HOME", "USERPROFILE", "APPDATA"):
+        path = os.getenv(env_var)
+        if not path:
+            continue
+        if os.path.exists( os.path.join(path,".config", _PROG, "config.py")):
+            # Unix style
+            path = os.path.join(path,".config", _PROG, "config.py")
+            break
+        elif os.path.exists( os.path.join(path, _PROG, "config.py")):
+            # Windows style
+            path = os.path.join(path, _PROG,"config.py")
+            break
+    if not path:
+        return config
     config_file = os.path.join(path, "config.py")
-
     # Check if config file exists.
     if not os.path.exists(config_file):
         return config
@@ -416,6 +422,9 @@ def load_user_config():
         config_data = f.read()
     prev_cwd = os.getcwd()
     os.chdir(path)
+    # pass in the config path so that the config file can use it
+    config.__dict__["config_path"] = path
+    config.__dict__["__file__"] = config_file
     exec(config_data, config.__dict__)
     os.chdir(prev_cwd)
 
