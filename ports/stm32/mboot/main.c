@@ -176,7 +176,7 @@ void HAL_Delay(uint32_t ms) {
     mp_hal_delay_ms(ms);
 }
 
-NORETURN static void __fatal_error(const char *msg) {
+MP_NORETURN static void __fatal_error(const char *msg) {
     NVIC_SystemReset();
     for (;;) {
     }
@@ -1443,7 +1443,7 @@ static int pyb_usbdd_shutdown(void) {
 /******************************************************************************/
 // main
 
-NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0, uint32_t bl_addr) {
+MP_NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0, uint32_t bl_addr) {
     __asm volatile (
         "ldr r2, [r1, #0]\n"    // get address of stack pointer
         "msr msp, r2\n"         // set stack pointer
