@@ -62,9 +62,7 @@ def do_help(state, _args=None):
     print("See https://docs.micropython.org/en/latest/reference/mpremote.html")
 
     print("\nList of commands:")
-    print_commands_help(
-        _COMMANDS, lambda x: x[1]().description
-    )  # extract description from argparse
+    print_commands_help(_COMMANDS, lambda x: x[1]().description)  # extract description from argparse
 
     print("\nList of shortcuts:")
     print_commands_help(_command_expansions, lambda x: x[2])  # (args, sub, help_message)
@@ -98,9 +96,7 @@ def _bool_flag(cmd_parser, name, short_name, default, description):
 
 def argparse_connect():
     cmd_parser = argparse.ArgumentParser(description="connect to given device")
-    cmd_parser.add_argument(
-        "device", nargs=1, help="Either list, auto, id:x, port:x, or any valid device name/path"
-    )
+    cmd_parser.add_argument("device", nargs=1, help="Either list, auto, id:x, port:x, or any valid device name/path")
     return cmd_parser
 
 
@@ -138,9 +134,7 @@ def argparse_repl():
         required=False,
         help="saves a copy of the REPL session to the specified path",
     )
-    cmd_parser.add_argument(
-        "--inject-code", type=str, required=False, help="code to be run when Ctrl-J is pressed"
-    )
+    cmd_parser.add_argument("--inject-code", type=str, required=False, help="code to be run when Ctrl-J is pressed")
     cmd_parser.add_argument(
         "--inject-file",
         type=str,
@@ -158,18 +152,14 @@ def argparse_eval():
 
 def argparse_exec():
     cmd_parser = argparse.ArgumentParser(description="execute the string")
-    _bool_flag(
-        cmd_parser, "follow", "f", True, "follow output until the expression completes (default)"
-    )
+    _bool_flag(cmd_parser, "follow", "f", True, "follow output until the expression completes (default)")
     cmd_parser.add_argument("expr", nargs=1, help="expression to execute")
     return cmd_parser
 
 
 def argparse_run():
     cmd_parser = argparse.ArgumentParser(description="run the given local script")
-    _bool_flag(
-        cmd_parser, "follow", "f", True, "follow output until the script completes (default)"
-    )
+    _bool_flag(cmd_parser, "follow", "f", True, "follow output until the script completes (default)")
     cmd_parser.add_argument("path", nargs=1, help="path to script to execute")
     return cmd_parser
 
@@ -207,13 +197,9 @@ def argparse_filesystem():
 
 
 def argparse_mip():
-    cmd_parser = argparse.ArgumentParser(
-        description="install packages from micropython-lib or third-party sources"
-    )
+    cmd_parser = argparse.ArgumentParser(description="install packages from micropython-lib or third-party sources")
     _bool_flag(cmd_parser, "mpy", "m", True, "download as compiled .mpy files (default)")
-    cmd_parser.add_argument(
-        "--target", type=str, required=False, help="destination direction on the device"
-    )
+    cmd_parser.add_argument("--target", type=str, required=False, help="destination direction on the device")
     cmd_parser.add_argument(
         "--index",
         type=str,
@@ -382,13 +368,15 @@ _BUILTIN_COMMAND_EXPANSIONS = {
     "--version": "version",
 }
 
-# Add "a0", "a1", ..., "u0", "u1", ..., "c0", "c1", ... as aliases
+# Add "a0", "a1", ..., "u0", "u1", ..., "c1", "c2", ... as aliases
 # for "connect /dev/ttyACMn" (and /dev/ttyUSBn, COMn) etc.
 for port_num in range(4):
     for prefix, port in [("a", "/dev/ttyACM"), ("u", "/dev/ttyUSB"), ("c", "COM")]:
-        _BUILTIN_COMMAND_EXPANSIONS["{}{}".format(prefix, port_num)] = {
-            "command": "connect {}{}".format(port, port_num),
-            "help": 'connect to serial port "{}{}"'.format(port, port_num),
+        if port_num == 0 and port == "COM":
+            continue  # skip COM0 as it does not exist
+        _BUILTIN_COMMAND_EXPANSIONS[f"{prefix}{port_num}"] = {
+            "command": f"connect {port}{port_num}",
+            "help": f'connect to serial port "{port}{port_num}"',
         }
 
 
@@ -402,16 +390,17 @@ def load_user_config():
         path = os.getenv(env_var)
         if not path:
             continue
-        if os.path.exists( os.path.join(path,".config", _PROG, "config.py")):
+        if os.path.exists(os.path.join(path, ".config", _PROG, "config.py")):
             # Unix style
-            path = os.path.join(path,".config", _PROG, "config.py")
+            path = os.path.join(path, ".config", _PROG, "config.py")
             break
-        elif os.path.exists( os.path.join(path, _PROG, "config.py")):
+        elif os.path.exists(os.path.join(path, _PROG, "config.py")):
             # Windows style
-            path = os.path.join(path, _PROG,"config.py")
+            path = os.path.join(path, _PROG, "config.py")
             break
     if not path:
         return config
+
     config_file = os.path.join(path, "config.py")
     # Check if config file exists.
     if not os.path.exists(config_file):
@@ -427,7 +416,6 @@ def load_user_config():
     config.__dict__["__file__"] = config_file
     exec(config_data, config.__dict__)
     os.chdir(prev_cwd)
-
     return config
 
 
@@ -569,9 +557,7 @@ def main():
             cmd_parser = parser_func()
             cmd_parser.prog = cmd
             # Catch all for unhandled positional arguments (this is the next command).
-            cmd_parser.add_argument(
-                "next_command", nargs=argparse.REMAINDER, help=f"Next {_PROG} command"
-            )
+            cmd_parser.add_argument("next_command", nargs=argparse.REMAINDER, help=f"Next {_PROG} command")
             args = cmd_parser.parse_args(command_args)
 
             # Execute command.
