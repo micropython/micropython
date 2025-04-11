@@ -89,15 +89,37 @@ for mapping in maps.keys():
 
     # print text
     fbuf.fill(0)
-    fbuf.text("hello", 0, 0, 1)
+    fbuf.text("test", 0, 0, 1)
     print(buf)
-    fbuf.text("hello", 0, 0, 0)  # clear
+    fbuf.text("test", 0, 0, 0)  # clear
+    print(buf)
+
+    # print fonts
+    print(fbuf.text("i", 0, 0, 1, 0))
+    print(buf)
+    fbuf.text("i", 0, 0, 0, 0)  # clear
+    print(buf)
+    print(fbuf.text("i", 0, 0, 1, 1))
+    print(buf)
+    fbuf.text("i", 0, 0, 0, 1)  # clear
+    print(buf)
+    fbuf.text("k", 0, 0, 1, 2)
+    fbuf.text("k", 0, 0, 0, 2)  # clear
+    print(buf)
+    fbuf.text("m", 0, 0, 1, 3)
+    fbuf.text("m", 0, 0, 0, 3)  # clear
     print(buf)
 
     # char out of font range set to chr(127)
     fbuf.text(str(chr(31)), 0, 0)
     print(buf)
     print()
+
+# test invalid font_id
+try:
+    fbuf.text("i", 0, 0, 1, 4)
+except ValueError:
+    pass
 
 # test invalid constructor, and stride argument
 try:
