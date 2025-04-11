@@ -20,6 +20,6 @@
    Without defining, SDL/SDA default is 19/18 which
    conflict with USB
 **/
-# define I2C Defaults:
+#define I2C Defaults:
 #define MICROPY_HW_I2C0_SCL                 (7)
 #define MICROPY_HW_I2C0_SDA                 (6)
