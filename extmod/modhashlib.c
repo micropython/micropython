@@ -58,6 +58,11 @@
 
 #endif
 
+#if MICROPY_PY_DEFLATE
+#include "lib/uzlib/uzlib.h"
+#endif
+
+
 typedef struct _mp_obj_hash_t {
     mp_obj_base_t base;
     bool final; // if set, update and digest raise an exception
@@ -79,6 +84,19 @@ static mp_obj_t hashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
 #define mbedtls_sha256_starts_ret mbedtls_sha256_starts
 #define mbedtls_sha256_update_ret mbedtls_sha256_update
 #define mbedtls_sha256_finish_ret mbedtls_sha256_finish
+#endif
+
+
+#if MICROPY_PY_DEFLATE
+static mp_obj_t hashlib_adler32(mp_obj_t data, mp_obj_t seed) {
+    mp_buffer_info_t bufinfo;
+    uint32_t res;
+
+    mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);	
+    res = uzlib_adler32(bufinfo.buf, bufinfo.len, mp_obj_get_int(seed));
+    return mp_obj_new_int_from_uint(res);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(hashlib_adler32_obj, hashlib_adler32);
 #endif
 
 static mp_obj_t hashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -364,6 +382,9 @@ static const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
     #endif
     #if MICROPY_PY_HASHLIB_MD5
     { MP_ROM_QSTR(MP_QSTR_md5), MP_ROM_PTR(&hashlib_md5_type) },
+    #endif
+    #if MICROPY_PY_DEFLATE
+    { MP_ROM_QSTR(MP_QSTR_adler32), MP_ROM_PTR(&hashlib_adler32_obj) },
     #endif
 };
 
