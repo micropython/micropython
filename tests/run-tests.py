@@ -1291,7 +1291,10 @@ the last matching regex is used:
             elif args.platform == "rp2":
                 test_dirs += ("float", "stress", "thread", "ports/rp2")
             elif args.platform == "esp32":
-                test_dirs += ("float", "stress", "thread")
+                test_dirs += ("float", "stress")
+                if args.emit != "native":
+                    # On esp32, thread with native emitter doesn't work well.
+                    test_dirs += ("thread",)
             elif args.platform in ("esp8266", "minimal", "samd", "nrf"):
                 test_dirs += ("float",)
             elif args.platform == "WiPy":
