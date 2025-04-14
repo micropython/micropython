@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "Feather",
+        "RGB LED",
+		"STEMMA QT/QWIIC",
+        "BLE",
+        "WiFi"
+    ],
+    "id": "pyBox",
+    "images": [
+        "pyBox.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "pyBox",
+    "thumbnail": "https://wolfpaulus.com/content/pyBox.jpg",
+    "url": "https://wolfpaulus.com/pyBox",
+    "vendor": "Techcasita Productions"
+}
