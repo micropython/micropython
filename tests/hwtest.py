@@ -28,6 +28,7 @@ class Target:
         self.device_suffix = device.split("/")[-1]
         self.serial_number = serial_number
         self.port = None
+        self.build = None
         self.machine = None
         self.has_wlan_connected = False
 
@@ -39,7 +40,7 @@ class Target:
             features += " WLAN"
         if self.has_ble:
             features += " BLE"
-        return f"{self.device} {self.port} {self.arch}{features} {self.version}"
+        return f"{self.device} {self.port} {self.build} {self.arch}{features} {self.version}"
 
 
 def map_device_name(d):
@@ -173,31 +174,42 @@ def run_multitests_on_two_targets(targets, tests):
 
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == "build-natmod":
+    args = sys.argv[1:]
+
+    if len(args) > 0 and args[0] == "build-natmod":
         build_natmods()
         return
+
+    if len(args) > 0 and args[0] == "-s":
+        # Select certain tests.
+        args.pop(0)
+        selected_tests = args.pop(0)
+    else:
+        selected_tests = "vphmnwb"
 
     with open("feature_check/target_info.py", "rb") as f:
         target_info_check = f.read()
 
-    selected_devices = [map_device_name(d) for d in sys.argv[1:]]
+    print("Selected tests:", selected_tests)
+
+    selected_devices = [map_device_name(d) for d in args]
     targets = list_ports(selected_devices)
 
-    select_vcprate = True
-    select_python = True
-    select_hardware = True
-    select_via_mpy = True
-    select_via_mpy_native = True
-    select_wlan = True
-    select_ble = True
+    select_vcprate = "v" in selected_tests
+    select_python = "p" in selected_tests
+    select_hardware = "h" in selected_tests
+    select_via_mpy = "m" in selected_tests
+    select_native = "n" in selected_tests
+    select_wlan = "w" in selected_tests
+    select_ble = "b" in selected_tests
 
     targets_ble = []
     for target in targets:
         t = SerialTransport(target.device)
         t.enter_raw_repl()
         t.exec("import sys")
-        sys_info = t.eval("(sys.platform, sys.implementation._machine, sys.version)")
-        target.port, target.machine, target.version = sys_info
+        sys_info = t.eval("(sys.platform, sys.implementation._build, sys.implementation._machine, sys.version)")
+        target.port, target.build, target.machine, target.version = sys_info
         target.can_import_mpy = t.eval("hasattr(sys.implementation, '_mpy')")
         _, target.arch = str(t.exec(target_info_check), "ascii").strip().split()
         if target.arch == "None":
@@ -226,8 +238,7 @@ def main():
         for target in targets:
             print("=" * 64)
             print(target.info())
-            print(target.machine)
-            print(target.version)
+            print(target.machine, "--", target.version)
 
             # Install unittest if needed.
             if target.has_vfs and not target.has_unittest:
@@ -265,7 +276,7 @@ def main():
                     port_specific.extend(("-d", "basics", "extmod", "float"))
                 do_test(run_tests_cmd + ["--via-mpy"] + port_specific)
 
-            if select_via_mpy_native and target.arch is not None:
+            if select_native and target.arch is not None:
                 do_test(run_tests_cmd + ["--via-mpy", "--emit", "native"])
                 do_test(["./run-natmodtests.py", "-p", "-d", target.device] + tests_natmod)
 
