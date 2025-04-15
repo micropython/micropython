@@ -15,6 +15,9 @@ docs/genrst/
 tests/results/*
 tests/ports/unix/ffi_lib.so
 
+# Test failure outputs for mpremote
+tools/mpremote/tests/results/*
+
 # Python cache files
 __pycache__/
 
