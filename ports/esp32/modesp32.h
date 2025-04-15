@@ -66,6 +66,12 @@ extern const mp_obj_type_t esp32_partition_type;
 extern const mp_obj_type_t esp32_rmt_type;
 extern const mp_obj_type_t esp32_ulp_type;
 
+#if MICROPY_PY_ESP32_PCNT
+extern const mp_obj_type_t esp32_pcnt_type;
+
+void esp32_pcnt_deinit_all(void);
+#endif
+
 esp_err_t rmt_driver_install_core1(uint8_t channel_id);
 
 #endif // MICROPY_INCLUDED_ESP32_MODESP32_H
