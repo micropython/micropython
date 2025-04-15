@@ -197,10 +197,17 @@ def argparse_filesystem():
         None,
         "enable verbose output (defaults to True for all commands except cat)",
     )
+    _bool_flag(
+        cmd_parser,
+        "size",
+        "s",
+        None,
+        "show file size (for tree command only)",
+    )
     cmd_parser.add_argument(
         "command",
         nargs=1,
-        help="filesystem command (e.g. cat, cp, sha256sum, ls, rm, rmdir, touch)",
+        help="filesystem command (e.g. cat, cp, sha256sum, ls, rm, rmdir, touch, tree)",
     )
     cmd_parser.add_argument("path", nargs="+", help="local and remote paths")
     return cmd_parser
@@ -355,6 +362,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
     "rmdir": "fs rmdir",
     "sha256sum": "fs sha256sum",
     "touch": "fs touch",
+    "tree": "fs tree",
     # Disk used/free.
     "df": [
         "exec",
@@ -552,8 +560,12 @@ def main():
                 command_args = remaining_args
                 extra_args = []
 
-            # Special case: "fs ls" allowed have no path specified.
-            if cmd == "fs" and len(command_args) == 1 and command_args[0] == "ls":
+            # Special case: "fs ls" and "fs tree" allowed have no path specified.
+            if (
+                cmd == "fs"
+                and command_args[0] in ["ls", "tree"]
+                and sum(1 for a in command_args if not a.startswith('-')) == 1
+            ):
                 command_args.append("")
 
             # Use the command-specific argument parser.
