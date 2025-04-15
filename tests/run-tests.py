@@ -74,6 +74,8 @@ class __File(io.IOBase):
   def ioctl(self, request, arg):
     if request == 4: # MP_STREAM_CLOSE
       return 0
+    if request == 11: # MP_STREAM_GET_BUFFER_SIZE
+      return 249
     return -1
   def readinto(self, buf):
     buf[:] = memoryview(__buf)[self.off:self.off + len(buf)]
