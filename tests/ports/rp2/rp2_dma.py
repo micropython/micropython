@@ -102,5 +102,6 @@ dma.config(
 )
 while dma.active():
     pass
+time.sleep_ms(1)  # when running as native code, force run the scheduler
 print(dest[:8], dest[-8:])
 dma.close()
