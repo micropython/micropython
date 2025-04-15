@@ -207,6 +207,41 @@ void mp_bluetooth_btstack_hci_uart_process(void) {
     if (host_wake) {
         mp_bluetooth_hci_controller_sleep_maybe();
     }
+<<<<<<< HEAD:extmod/btstack/btstack_hci_uart.c
+=======
+
+    // Call the BTstack run loop.
+    btstack_run_loop_embedded_execute_once();
+}
+
+void mp_bluetooth_btstack_port_init(void) {
+    static bool run_loop_init = false;
+    if (!run_loop_init) {
+        run_loop_init = true;
+        btstack_run_loop_init(btstack_run_loop_embedded_get_instance());
+    } else {
+        btstack_run_loop_embedded_get_instance()->init();
+    }
+
+    #if MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING > 1
+    hci_dump_open(NULL, HCI_DUMP_STDOUT);
+    #endif
+
+    const hci_transport_t *transport = hci_transport_h4_instance(&btstack_uart_block);
+    hci_init(transport, &hci_transport_config_uart);
+
+    // TODO: Probably not necessary for BCM (we have our own firmware loader),
+    // but might be worth investigating for other controllers in the future.
+    // hci_set_chipset(btstack_chipset_bcm_instance());
+}
+
+void mp_bluetooth_btstack_port_deinit(void) {
+    hci_power_control(HCI_POWER_OFF);
+}
+
+void mp_bluetooth_btstack_port_start(void) {
+    hci_power_control(HCI_POWER_ON);
+>>>>>>> 1b35ce9e35 (bluetooth: Add/enable bluetooth logging if MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING is set.):ports/stm32/btstack.c
 }
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
