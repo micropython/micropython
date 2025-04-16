@@ -1638,6 +1638,10 @@ static void emit_native_load_subscr(emit_t *emit) {
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
+                    #if N_ARM
+                    asm_arm_ldrb_reg_reg_reg(emit->as, REG_RET, REG_ARG_1, reg_index);
+                    break;
+                    #endif
                     // TODO optimise to use thumb ldrb r1, [r2, r3]
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD8_REG_REG(emit->as, REG_RET, REG_ARG_1); // store value to (base+index)
@@ -1645,7 +1649,10 @@ static void emit_native_load_subscr(emit_t *emit) {
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
-                    #if N_XTENSA || N_XTENSAWIN
+                    #if N_ARM
+                    asm_arm_ldrh_reg_reg_reg(emit->as, REG_RET, REG_ARG_1, reg_index);
+                    break;
+                    #elif N_XTENSA || N_XTENSAWIN
                     asm_xtensa_op_addx2(emit->as, REG_ARG_1, reg_index, REG_ARG_1);
                     asm_xtensa_op_l16ui(emit->as, REG_RET, REG_ARG_1, 0);
                     break;
@@ -1657,7 +1664,10 @@ static void emit_native_load_subscr(emit_t *emit) {
                 }
                 case VTYPE_PTR32: {
                     // pointer to word-size memory
-                    #if N_RV32
+                    #if N_ARM
+                    asm_arm_ldr_reg_reg_reg(emit->as, REG_RET, REG_ARG_1, reg_index);
+                    break;
+                    #elif N_RV32
                     asm_rv32_opcode_slli(emit->as, REG_TEMP2, reg_index, 2);
                     asm_rv32_opcode_cadd(emit->as, REG_ARG_1, REG_TEMP2);
                     asm_rv32_opcode_lw(emit->as, REG_RET, REG_ARG_1, 0);
