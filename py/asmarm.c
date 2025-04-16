@@ -343,6 +343,12 @@ void asm_arm_ldrh_reg_reg(asm_arm_t *as, uint rd, uint rn) {
     emit_al(as, 0x1d000b0 | (rn << 16) | (rd << 12));
 }
 
+void asm_arm_ldrh_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
+    // ldrh doesn't support scaled register index
+    emit_al(as, 0x1a00080 | (ASM_ARM_REG_R8 << 12) | rn); // mov r8, rn, lsl #1
+    emit_al(as, 0x19000b0 | (rm << 16) | (rd << 12) | ASM_ARM_REG_R8); // ldrh rd, [rm, r8];
+}
+
 void asm_arm_ldrh_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offset) {
     if (byte_offset < 0x100) {
         // ldrh rd, [rn, #off]
@@ -358,6 +364,16 @@ void asm_arm_ldrh_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offs
 void asm_arm_ldrb_reg_reg(asm_arm_t *as, uint rd, uint rn) {
     // ldrb rd, [rn]
     emit_al(as, 0x5d00000 | (rn << 16) | (rd << 12));
+}
+
+void asm_arm_ldrb_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
+    // ldrb rd, [rm, rn]
+    emit_al(as, 0x7d00000 | (rm << 16) | (rd << 12) | rn);
+}
+
+void asm_arm_ldr_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
+    // ldr rd, [rm, rn, lsl #2]
+    emit_al(as, 0x7900100 | (rm << 16) | (rd << 12) | rn);
 }
 
 void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm, uint byte_offset) {
