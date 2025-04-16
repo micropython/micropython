@@ -504,7 +504,7 @@ ESP_HOSTED_SRC_C = $(addprefix $(ESP_HOSTED_DIR)/,\
 	)
 
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
-ESP_HOSTED_SRC_C += $(ESP_HOSTED_DIR)/esp_hosted_bthci.c
+ESP_HOSTED_SRC_C += $(ESP_HOSTED_DIR)/esp_hosted_bthci_uart.c
 endif
 
 # Include the protobuf-c support functions
