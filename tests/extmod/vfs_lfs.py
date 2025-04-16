@@ -136,7 +136,7 @@ def test(bdev, vfs_class):
     print(fs.getcwd())
     fs.chdir("../testdir")
     print(fs.getcwd())
-    fs.chdir("../..")
+    fs.chdir("..")
     print(fs.getcwd())
     fs.chdir(".//testdir")
     print(fs.getcwd())
