@@ -83,6 +83,14 @@ typedef struct _mp_obj_code_t {
     mp_obj_t lnotab;
 } mp_obj_code_t;
 
+typedef struct _mp_obj_colines_iter_t {
+    mp_obj_base_t base;
+    const mp_raw_code_t *rc;
+    mp_uint_t bc;
+    mp_uint_t source_line;
+    const byte *ci;
+} mp_obj_colines_iter_t;
+
 mp_obj_t mp_obj_new_code(const mp_module_context_t *context, const mp_raw_code_t *rc, bool result_required);
 
 static inline const mp_module_constants_t *mp_code_get_constants(mp_obj_code_t *self) {
