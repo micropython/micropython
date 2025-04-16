@@ -34,6 +34,7 @@
 #include "py/obj.h"
 #include "py/objarray.h"
 #include "py/runtime.h"
+#include "mp_usbd_cdc.h"
 
 #ifndef NO_QSTR
 #include "tusb.h"
@@ -45,6 +46,10 @@ static inline void mp_usbd_init_tud(void) {
     tusb_init();
     tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0, .tx_persistent = 1 };
     tud_cdc_configure_fifo(&cfg);
+
+    #if MICROPY_HW_USB_CDC
+    machine_usbd_cdc_init0();
+    #endif
 }
 
 // Run the TinyUSB device task
