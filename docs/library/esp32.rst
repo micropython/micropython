@@ -80,6 +80,28 @@ Functions
        The result of :func:`gc.mem_free()` is the total of the current "free"
        and "max new split" values printed by :func:`micropython.mem_info()`.
 
+.. function:: idf_task_stats()
+
+    Returns information about running ESP-IDF/FreeRTOS tasks, which include
+    MicroPython threads. This data is useful to gain insight into how much time
+    tasks spend running or if they are blocked for significant parts of time,
+    and to determine if allocated stacks are fully utilized or might be reduced.
+
+    ``CONFIG_FREERTOS_USE_TRACE_FACILITY=y`` must be set in the board
+    configuration to make this method available. Additionally setting
+    ``CONFIG_FREERTOS_VTASKLIST_INCLUDE_COREID=y`` and
+    ``CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y`` is recommended to be able to
+    retrieve the core id and runtime respectively.
+
+    The return value is a 2-tuple where the first value is the total runtime,
+    and the second a list of tasks. Each task is a 7-tuple containing: the task
+    ID, name, current state, priority, runtime, stack high water mark, and the
+    ID of the core it is running on.
+
+    .. note:: For an easier to use output based on this function you can use the
+       `utop library <https://github.com/micropython/micropython-lib/tree/master/micropython/utop>`,
+       which implements a live overview similar to the Unix ``top`` command.
+
 
 Flash partitions
 ----------------
@@ -92,6 +114,43 @@ methods to enable over-the-air (OTA) updates.
     Create an object representing a partition.  *id* can be a string which is the label
     of the partition to retrieve, or one of the constants: ``BOOT`` or ``RUNNING``.
     *block_size* specifies the byte size of an individual block.
+
+
+/**
+ * @brief Register a partition on an external flash chip
+ *
+ * This API allows designating certain areas of external flash chips (identified by the esp_flash_t structure)
+ * as partitions. This allows using them with components which access SPI flash through the esp_partition API.
+ *
+ * @param flash_chip  Pointer to the structure identifying the flash chip
+ * @param offset  Address in bytes, where the partition starts
+ * @param size  Size of the partition in bytes
+ * @param label  Partition name
+ * @param type  One of the partition types (ESP_PARTITION_TYPE_*), or an integer. Note that applications can not be booted from external flash
+ *              chips, so using ESP_PARTITION_TYPE_APP is not supported.
+ * @param subtype  One of the partition subtypes (ESP_PARTITION_SUBTYPE_*), or an integer.
+ * @param[out] out_partition  Output, if non-NULL, receives the pointer to the resulting esp_partition_t structure
+ * @return
+ *      - ESP_OK on success
+ *      - ESP_ERR_NO_MEM if memory allocation has failed
+ *      - ESP_ERR_INVALID_ARG if the new partition overlaps another partition on the same flash chip
+ *      - ESP_ERR_INVALID_SIZE if the partition doesn't fit into the flash chip size
+ */
+// esp_err_t esp_partition_register_external(esp_flash_t* flash_chip, size_t offset, size_t size,
+//     const char* label, esp_partition_type_t type, esp_partition_subtype_t subtype,
+//     const esp_partition_t** out_partition);
+
+.. classmethod:: Partition.register(offset, size, label=None, type=TYPE_DATA, subtype=0x06, block_size=4096)
+
+    Register a new partition that isn't specified in the partition table. Useful for
+    accessing data outside of the defined partitions. Returns a Partition object.
+
+    *block_size* specifies the byte size of an individual block used by the returned
+    object.
+
+.. method:: Partition.deregister()
+
+    Deregisters a previously registered partition.
 
 .. classmethod:: Partition.find(type=TYPE_APP, subtype=0xff, label=None, block_size=4096)
 
