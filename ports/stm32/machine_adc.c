@@ -28,6 +28,8 @@
 // extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
 
 #include "py/mphal.h"
+#include "py/mperrno.h"
+#include "py/runtime.h"
 #include "adc.h"
 
 #if defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL)
@@ -92,6 +94,8 @@
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_5CYCLES
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_391CYCLES_5
 #endif
+
+#define ADC_RESOLUTION      (12)
 
 // Timeout for waiting for end-of-conversion
 #define ADC_EOC_TIMEOUT_MS (10)
@@ -352,14 +356,31 @@ static int adc_get_bits(ADC_TypeDef *adc) {
 static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
     #if ADC_V2
     if (!(adc->CR & ADC_CR_ADEN)) {
-        if (adc->CR & 0x3f) {
-            // Cannot enable ADC with CR!=0
-            return;
+        for (uint8_t retry = 0; retry < 3; retry++) {
+            if (adc->CR & 0x3f) {
+                // Cannot enable ADC with CR!=0, reset and try again.
+                adc_config(adc, ADC_RESOLUTION);
+                if (adc->CR & 0x3f) {
+                    mp_raise_OSError(MP_EPERM);
+                }
+            }
+            adc->ISR = ADC_ISR_ADRDY; // clear ADRDY
+            adc->CR |= ADC_CR_ADEN;
+            adc_stabilisation_delay_us(ADC_STAB_DELAY_US);
+            uint32_t t0 = mp_hal_ticks_ms();
+            while (!(adc->ISR & ADC_ISR_ADRDY)) {
+                if (mp_hal_ticks_ms() - t0 > 10) {
+                    // The ADC hasn't enabled, reconfigure it
+                    adc_config(adc, ADC_RESOLUTION);
+                    break;
+                }
+            }
+            if (adc->ISR & ADC_ISR_ADRDY) {
+                break;
+            }
         }
-        adc->ISR = ADC_ISR_ADRDY; // clear ADRDY
-        adc->CR |= ADC_CR_ADEN;
-        adc_stabilisation_delay_us(ADC_STAB_DELAY_US);
-        while (!(adc->ISR & ADC_ISR_ADRDY)) {
+        if (!(adc->ISR & ADC_ISR_ADRDY)) {
+            mp_raise_OSError(MP_ETIMEDOUT);
         }
     }
     #else
@@ -666,7 +687,7 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
         mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
     }
 
-    adc_config(adc, 12);
+    adc_config(adc, ADC_RESOLUTION);
 
     machine_adc_obj_t *o = mp_obj_malloc(machine_adc_obj_t, &machine_adc_type);
     o->adc = adc;
