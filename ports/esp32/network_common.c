@@ -45,7 +45,7 @@
 #include "lwip/sockets.h"
 #include "lwip/dns.h"
 
-NORETURN void esp_exceptions_helper(esp_err_t e) {
+MP_NORETURN void esp_exceptions_helper(esp_err_t e) {
     switch (e) {
         case ESP_ERR_WIFI_NOT_INIT:
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Not Initialized"));

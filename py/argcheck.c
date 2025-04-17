@@ -137,12 +137,12 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
     mp_arg_parse_all(n_pos, args, &kw_args, n_allowed, allowed, out_vals);
 }
 
-NORETURN void mp_arg_error_terse_mismatch(void) {
+MP_NORETURN void mp_arg_error_terse_mismatch(void) {
     mp_raise_TypeError(MP_ERROR_TEXT("argument num/types mismatch"));
 }
 
 #if MICROPY_CPYTHON_COMPAT
-NORETURN void mp_arg_error_unimpl_kw(void) {
+MP_NORETURN void mp_arg_error_unimpl_kw(void) {
     mp_raise_NotImplementedError(MP_ERROR_TEXT("keyword argument(s) not implemented - use normal args instead"));
 }
 #endif
