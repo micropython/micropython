@@ -42,3 +42,15 @@ jobs:
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
+
+  build_and_test_rv64:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install packages
+      run: source tools/ci.sh && ci_qemu_setup_rv64
+    - name: Build and run test suite
+      run: source tools/ci.sh && ci_qemu_build_rv64
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
