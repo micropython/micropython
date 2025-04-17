@@ -655,6 +655,22 @@ static inline void asm_rv32_opcode_sb(asm_rv32_t *state, mp_uint_t rs2, mp_uint_
     asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_S(0x23, 0x00, rs1, rs2, offset));
 }
 
+#if MICROPY_EMIT_RV32_ZBA
+
+// SH1ADD RD, RS1, RS2
+static inline void asm_rv32_opcode_sh1add(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
+    // R: 0010000 ..... ..... 010 ..... 0110011
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 0x02, 0x10, rd, rs1, rs2));
+}
+
+// SH2ADD RD, RS1, RS2
+static inline void asm_rv32_opcode_sh2add(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
+    // R: 0010000 ..... ..... 100 ..... 0110011
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 0x04, 0x10, rd, rs1, rs2));
+}
+
+#endif
+
 // SH RS2, OFFSET(RS1)
 static inline void asm_rv32_opcode_sh(asm_rv32_t *state, mp_uint_t rs2, mp_uint_t rs1, mp_int_t offset) {
     // S: ....... ..... ..... 001 ..... 0100011

@@ -563,38 +563,66 @@ void asm_rv32_emit_optimised_xor(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs) 
 }
 
 void asm_rv32_emit_load16_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
-    // slli rs2, rs2, 1
-    // c.add rs1, rs2
+    // if Zba is enabled:
+    //   sh1add rs1, rs2, rs1
+    // else:
+    //   slli rs2, rs2, 1
+    //   c.add rs1, rs2
     // lhu rd, 0(rs1)
+    #if MICROPY_EMIT_RV32_ZBA
+    asm_rv32_opcode_sh1add(state, rs1, rs2, rs1);
+    #else
     asm_rv32_opcode_slli(state, rs2, rs2, 1);
     asm_rv32_opcode_cadd(state, rs1, rs2);
+    #endif
     asm_rv32_opcode_lhu(state, rd, rs1, 0);
 }
 
 void asm_rv32_emit_load32_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
-    // slli rs2, rs2, 2
-    // c.add rs1, rs2
+    // if Zba is enabled:
+    //   sh2add rs1, rs2, rs1
+    // else:
+    //   slli rs2, rs2, 1
+    //   c.add rs1, rs2
     // lw rd, 0(rs1)
+    #if MICROPY_EMIT_RV32_ZBA
+    asm_rv32_opcode_sh2add(state, rs1, rs2, rs1);
+    #else
     asm_rv32_opcode_slli(state, rs2, rs2, 2);
     asm_rv32_opcode_cadd(state, rs1, rs2);
+    #endif
     asm_rv32_opcode_lw(state, rd, rs1, 0);
 }
 
 void asm_rv32_emit_store16_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
-    // slli rs2, rs2, 1
-    // c.add rs1, rs2
+    // if Zba is enabled:
+    //   sh1add rs1, rs2, rs1
+    // else:
+    //   slli rs2, rs2, 1
+    //   c.add rs1, rs2
     // sh rd, 0(rs1)
+    #if MICROPY_EMIT_RV32_ZBA
+    asm_rv32_opcode_sh1add(state, rs1, rs2, rs1);
+    #else
     asm_rv32_opcode_slli(state, rs2, rs2, 1);
     asm_rv32_opcode_cadd(state, rs1, rs2);
+    #endif
     asm_rv32_opcode_sh(state, rd, rs1, 0);
 }
 
 void asm_rv32_emit_store32_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
-    // slli rs2, rs2, 2
-    // c.add rs1, rs2
+    // if Zba is enabled:
+    //   sh2add rs1, rs2, rs1
+    // else:
+    //   slli rs2, rs2, 1
+    //   c.add rs1, rs2
     // sw rd, 0(rs1)
+    #if MICROPY_EMIT_RV32_ZBA
+    asm_rv32_opcode_sh2add(state, rs1, rs2, rs1);
+    #else
     asm_rv32_opcode_slli(state, rs2, rs2, 2);
     asm_rv32_opcode_cadd(state, rs1, rs2);
+    #endif
     asm_rv32_opcode_sw(state, rd, rs1, 0);
 }
 
