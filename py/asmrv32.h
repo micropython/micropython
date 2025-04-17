@@ -717,6 +717,10 @@ void asm_rv32_emit_mov_reg_local(asm_rv32_t *state, mp_uint_t rd, mp_uint_t loca
 void asm_rv32_emit_mov_reg_pcrel(asm_rv32_t *state, mp_uint_t rd, mp_uint_t label);
 void asm_rv32_emit_optimised_xor(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs);
 void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_uint_t base, mp_int_t offset);
+void asm_rv32_emit_load16_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2);
+void asm_rv32_emit_load32_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2);
+void asm_rv32_emit_store16_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2);
+void asm_rv32_emit_store32_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2);
 
 #define ASM_T asm_rv32_t
 #define ASM_ENTRY(state, labels) asm_rv32_entry(state, labels)
@@ -758,6 +762,10 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_
 #define ASM_SUB_REG_REG(state, rd, rs) asm_rv32_opcode_sub(state, rd, rd, rs)
 #define ASM_XOR_REG_REG(state, rd, rs) asm_rv32_emit_optimised_xor(state, rd, rs)
 #define ASM_CLR_REG(state, rd)
+#define ASM_LOAD16_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_load16_reg_reg_reg(state, rd, rs1, rs2)
+#define ASM_LOAD32_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_load32_reg_reg_reg(state, rd, rs1, rs2)
+#define ASM_STORE16_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_store16_reg_reg_reg(state, rd, rs1, rs2)
+#define ASM_STORE32_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_store32_reg_reg_reg(state, rd, rs1, rs2)
 
 #endif
 
