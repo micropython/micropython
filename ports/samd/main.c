@@ -28,6 +28,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "py/stackctrl.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
@@ -45,6 +46,7 @@ extern void sercom_deinit_all(void);
 void samd_main(void) {
     mp_stack_set_top(&_estack);
     mp_stack_set_limit(&_estack - &_sstack - 1024);
+    mp_hal_time_ns_set_from_rtc();
 
     for (;;) {
         gc_init(&_sheap, &_eheap);
