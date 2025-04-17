@@ -649,7 +649,9 @@ def _do_romfs_deploy(state, args):
         romfs_chunk += bytes(chunk_size - len(romfs_chunk))
         if has_deflate_io:
             # Needs: binascii.a2b_base64, io.BytesIO, deflate.DeflateIO.
-            romfs_chunk_compressed = zlib.compress(romfs_chunk, wbits=-9)
+            compressor = zlib.compressobj(wbits=-9)
+            romfs_chunk_compressed = compressor.compress(romfs_chunk)
+            romfs_chunk_compressed += compressor.flush()
             buf = binascii.b2a_base64(romfs_chunk_compressed).strip()
             transport.exec(f"buf=DeflateIO(BytesIO(a2b_base64({buf})),RAW,9).read()")
         elif has_a2b_base64:
