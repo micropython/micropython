@@ -28,6 +28,8 @@
 // extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
 
 #include "py/mphal.h"
+#include "py/mperrno.h"
+#include "py/runtime.h"
 #include "adc.h"
 
 #if defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
@@ -86,6 +88,8 @@
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_247CYCLES_5
 #endif
+
+#define ADC_RESOLUTION      (12)
 
 // Timeout for waiting for end-of-conversion
 #define ADC_EOC_TIMEOUT_MS (10)
@@ -327,14 +331,31 @@ static int adc_get_bits(ADC_TypeDef *adc) {
 static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
     #if ADC_V2
     if (!(adc->CR & ADC_CR_ADEN)) {
-        if (adc->CR & 0x3f) {
-            // Cannot enable ADC with CR!=0
-            return;
+        for (uint8_t retry = 0; retry < 3; retry++) {
+            if (adc->CR & 0x3f) {
+                // Cannot enable ADC with CR!=0, reset and try again.
+                adc_config(adc, ADC_RESOLUTION);
+                if (adc->CR & 0x3f) {
+                    mp_raise_OSError(MP_EPERM);
+                }
+            }
+            adc->ISR = ADC_ISR_ADRDY; // clear ADRDY
+            adc->CR |= ADC_CR_ADEN;
+            adc_stabilisation_delay_us(ADC_STAB_DELAY_US);
+            uint32_t t0 = mp_hal_ticks_ms();
+            while (!(adc->ISR & ADC_ISR_ADRDY)) {
+                if (mp_hal_ticks_ms() - t0 > 10) {
+                    // The ADC hasn't enabled, reconfigure it
+                    adc_config(adc, ADC_RESOLUTION);
+                    break;
+                }
+            }
+            if (adc->ISR & ADC_ISR_ADRDY) {
+                break;
+            }
         }
-        adc->ISR = ADC_ISR_ADRDY; // clear ADRDY
-        adc->CR |= ADC_CR_ADEN;
-        adc_stabilisation_delay_us(ADC_STAB_DELAY_US);
-        while (!(adc->ISR & ADC_ISR_ADRDY)) {
+        if (!(adc->ISR & ADC_ISR_ADRDY)) {
+            mp_raise_OSError(MP_ETIMEDOUT);
         }
     }
     #else
@@ -445,11 +466,14 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
 
 static uint32_t adc_read_channel(ADC_TypeDef *adc) {
     uint32_t value;
-    #if defined(STM32G4)
-    // For STM32G4 there is errata 2.7.7, "Wrong ADC result if conversion done late after
-    // calibration or previous conversion".  According to the errata, this can be avoided
-    // by performing two consecutive ADC conversions and keeping the second result.
-    for (uint8_t i = 0; i < 2; i++)
+    #if defined(STM32G4) || defined(STM32WB)
+    // For STM32G4 errata 2.7.7 / STM32WB errata 2.7.1:
+    // "Wrong ADC result if conversion done late after calibration or previous conversion"
+    // states an incorrect reading is returned if more than 1ms has elapsed since the last
+    // reading or calibration. According to the errata, this can be avoided by performing
+    // two consecutive ADC conversions and keeping the second result.
+    // Note: On STM32WB55 @ 64Mhz each ADC read takes ~ 3us.
+    for (int8_t i = 0; i < 2; i++)
     #endif
     {
         #if ADC_V2
@@ -596,7 +620,7 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
         mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
     }
 
-    adc_config(adc, 12);
+    adc_config(adc, ADC_RESOLUTION);
 
     machine_adc_obj_t *o = mp_obj_malloc(machine_adc_obj_t, &machine_adc_type);
     o->adc = adc;
