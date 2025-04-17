@@ -336,6 +336,7 @@ static mp_obj_t mod_json_load(mp_obj_t stream_obj) {
             }
         }
     }
+    goto fail;
 success:
     // eat trailing whitespace
     while (unichar_isspace(S_CUR(s))) {
