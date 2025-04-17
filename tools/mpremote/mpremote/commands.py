@@ -303,6 +303,17 @@ def do_filesystem_recursive_cp(state, src, dest, multiple, check_hash):
 
 def do_filesystem_recursive_rm(state, path, args):
     if state.transport.fs_isdir(path):
+        if state.transport.mounted:
+            r_cwd = state.transport.eval("os.getcwd()")
+            abs_path = os.path.normpath(
+                os.path.join(r_cwd, path) if not os.path.isabs(path) else path
+            )
+            if isinstance(state.transport, SerialTransport) and abs_path.startswith(
+                f'{SerialTransport.fs_hook_mount}/'
+            ):
+                raise CommandError(
+                    f"rm -r not permitted on {SerialTransport.fs_hook_mount} directory"
+                )
         for entry in state.transport.fs_listdir(path):
             do_filesystem_recursive_rm(state, _remote_path_join(path, entry.name), args)
         if path:
