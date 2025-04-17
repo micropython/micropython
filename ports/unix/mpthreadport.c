@@ -45,8 +45,14 @@
 // potential conflict with other uses of the more commonly used SIGUSR1.
 #ifdef SIGRTMIN
 #define MP_THREAD_GC_SIGNAL (SIGRTMIN + 5)
+#ifdef __ANDROID__
+#define MP_THREAD_TERMINATE_SIGNAL (SIGRTMIN + 6)
+#endif
 #else
 #define MP_THREAD_GC_SIGNAL (SIGUSR1)
+#ifdef __ANDROID__
+#define MP_THREAD_TERMINATE_SIGNAL (SIGUSR2)
+#endif
 #endif
 
 // This value seems to be about right for both 32-bit and 64-bit builds.
@@ -107,6 +113,18 @@ static void mp_thread_gc(int signo, siginfo_t *info, void *context) {
     }
 }
 
+// On Android, pthread_cancel and pthread_setcanceltype are not implemented.
+// To achieve that result a new signal handler responding on either
+// (SIGRTMIN + 6) or SIGUSR2 is installed on every child thread.  The sole
+// purpose of this new signal handler is to terminate the thread in a safe
+// asynchronous manner.
+
+#ifdef __ANDROID__
+static void mp_thread_terminate(int signo, siginfo_t *info, void *context) {
+    pthread_exit(NULL);
+}
+#endif
+
 void mp_thread_init(void) {
     pthread_key_create(&tls_key, NULL);
     pthread_setspecific(tls_key, &mp_state_ctx.thread);
@@ -135,6 +153,14 @@ void mp_thread_init(void) {
     sa.sa_sigaction = mp_thread_gc;
     sigemptyset(&sa.sa_mask);
     sigaction(MP_THREAD_GC_SIGNAL, &sa, NULL);
+
+    // Install a signal handler for asynchronous termination if needed.
+    #if defined(__ANDROID__)
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = mp_thread_terminate;
+    sigemptyset(&sa.sa_mask);
+    sigaction(MP_THREAD_TERMINATE_SIGNAL, &sa, NULL);
+    #endif
 }
 
 void mp_thread_deinit(void) {
@@ -142,7 +168,11 @@ void mp_thread_deinit(void) {
     while (thread->next != NULL) {
         mp_thread_t *th = thread;
         thread = thread->next;
+        #if defined(__ANDROID__)
+        pthread_kill(th->id, MP_THREAD_TERMINATE_SIGNAL);
+        #else
         pthread_cancel(th->id);
+        #endif
         free(th);
     }
     mp_thread_unix_end_atomic_section();
@@ -200,7 +230,9 @@ void mp_thread_start(void) {
     }
     #endif
 
+    #if !defined(__ANDROID__)
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+    #endif
     mp_thread_unix_begin_atomic_section();
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == pthread_self()) {
