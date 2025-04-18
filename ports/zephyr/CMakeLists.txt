@@ -122,6 +122,7 @@ include(${MICROPY_DIR}/py/mkrules.cmake)
 target_sources(app PRIVATE
     src/zephyr_start.c
     src/zephyr_getchar.c
+    src/usbd.c
 )
 
 target_link_libraries(app PRIVATE ${MICROPY_TARGET})

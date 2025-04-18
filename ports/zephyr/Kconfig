@@ -41,6 +41,14 @@ config MICROPY_VFS_LFS1
 config MICROPY_VFS_LFS2
 	bool "LittleFs version 2 file system"
 
+config MICROPY_USB_DEVICE_VID
+	hex "USB VID"
+	default 0x2fe3
+
+config MICROPY_USB_DEVICE_PID
+	hex "USB VID"
+	default 0x0001
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"

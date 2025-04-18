@@ -38,6 +38,10 @@
 #include <zephyr/usb/usb_device.h>
 #endif
 
+#ifdef CONFIG_USB_DEVICE_STACK_NEXT
+#include <zephyr/usb/usbd.h>
+#endif
+
 #include <zephyr/storage/flash_map.h>
 
 #include "py/mperrno.h"
@@ -61,6 +65,30 @@
 #include "modzephyr.h"
 
 static char heap[MICROPY_HEAP_SIZE];
+
+#if defined(CONFIG_USB_DEVICE_STACK_NEXT)
+
+extern struct usbd_context *mpy_usbd_init_device(usbd_msg_cb_t msg_cb);
+
+static struct usbd_context *mpy_usbd;
+
+static int mp_usbd_init(void) {
+    int err;
+
+    mpy_usbd = mpy_usbd_init_device(NULL);
+    if (mpy_usbd == NULL) {
+        return -ENODEV;
+    }
+
+    err = usbd_enable(mpy_usbd);
+    if (err) {
+        return err;
+    }
+
+    return 0;
+}
+
+#endif // defined(CONFIG_USB_DEVICE_STACK_NEXT)
 
 void init_zephyr(void) {
     // We now rely on CONFIG_NET_APP_SETTINGS to set up bootstrap
@@ -136,6 +164,10 @@ soft_reset:
 
     #ifdef CONFIG_USB_DEVICE_STACK
     usb_enable(NULL);
+    #endif
+
+    #if CONFIG_USB_DEVICE_STACK_NEXT
+    mp_usbd_init();
     #endif
 
     #if MICROPY_VFS
