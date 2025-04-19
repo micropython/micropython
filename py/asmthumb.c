@@ -450,12 +450,12 @@ static void asm_thumb_add_reg_reg_offset(asm_thumb_t *as, uint reg_dest, uint re
             asm_thumb_lsl_rlo_rlo_i5(as, reg_dest, reg_dest, offset_shift);
             asm_thumb_add_rlo_rlo_rlo(as, reg_dest, reg_dest, reg_base);
         } else if (reg_dest != reg_base) {
-            asm_thumb_mov_rlo_i16(as, reg_dest, offset << offset_shift);
-            asm_thumb_add_rlo_rlo_rlo(as, reg_dest, reg_dest, reg_dest);
+            asm_thumb_mov_reg_i32_optimised(as, reg_dest, offset << offset_shift);
+            asm_thumb_add_rlo_rlo_rlo(as, reg_dest, reg_dest, reg_base);
         } else {
             uint reg_other = reg_dest ^ 7;
             asm_thumb_op16(as, OP_PUSH_RLIST((1 << reg_other)));
-            asm_thumb_mov_rlo_i16(as, reg_other, offset << offset_shift);
+            asm_thumb_mov_reg_i32_optimised(as, reg_other, offset << offset_shift);
             asm_thumb_add_rlo_rlo_rlo(as, reg_dest, reg_dest, reg_other);
             asm_thumb_op16(as, OP_POP_RLIST((1 << reg_other)));
         }
