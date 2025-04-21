@@ -506,6 +506,7 @@ void mp_map_deinit(mp_map_t *map);
 mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
 void mp_map_clear(mp_map_t *map);
 void mp_map_dump(mp_map_t *map);
+void mp_map_presize(mp_map_t *map, size_t n);
 
 // Underlying set implementation (not set object)
 
@@ -1191,6 +1192,7 @@ typedef struct _mp_obj_dict_t {
 } mp_obj_dict_t;
 mp_obj_t mp_obj_dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 void mp_obj_dict_init(mp_obj_dict_t *dict, size_t n_args);
+void mp_obj_dict_presize(mp_obj_dict_t *dict, size_t n_args);
 size_t mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);

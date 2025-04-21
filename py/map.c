@@ -129,9 +129,16 @@ void mp_map_clear(mp_map_t *map) {
 }
 
 static void mp_map_rehash(mp_map_t *map) {
-    size_t old_alloc = map->alloc;
     size_t new_alloc = get_hash_alloc_greater_or_equal_to(map->alloc + 1);
-    DEBUG_printf("mp_map_rehash(%p): " UINT_FMT " -> " UINT_FMT "\n", map, old_alloc, new_alloc);
+    DEBUG_printf("mp_map_rehash(%p): " UINT_FMT " -> " UINT_FMT "\n", map, map->alloc, new_alloc);
+    mp_map_presize(map, new_alloc);
+}
+
+void mp_map_presize(mp_map_t *map, size_t new_alloc) {
+    size_t old_alloc = map->alloc;
+    if (new_alloc < old_alloc) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Map capacity (%d) must not decrease: %d"), old_alloc, new_alloc);
+    }
     mp_map_elem_t *old_table = map->table;
     mp_map_elem_t *new_table = m_new0(mp_map_elem_t, new_alloc);
     // If we reach this point, table resizing succeeded, now we can edit the old map.

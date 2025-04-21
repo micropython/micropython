@@ -646,6 +646,10 @@ void mp_obj_dict_init(mp_obj_dict_t *dict, size_t n_args) {
     mp_map_init(&dict->map, n_args);
 }
 
+void mp_obj_dict_presize(mp_obj_dict_t *dict, size_t n_args) {
+    mp_map_presize(&dict->map, n_args);
+}
+
 mp_obj_t mp_obj_new_dict(size_t n_args) {
     mp_obj_dict_t *o = m_new_obj(mp_obj_dict_t);
     mp_obj_dict_init(o, n_args);
