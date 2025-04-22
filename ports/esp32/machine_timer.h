@@ -55,12 +55,13 @@ typedef struct _machine_timer_obj_t {
     mp_obj_t callback;
 
     intr_handle_t handle;
+    void (*handler)(struct _machine_timer_obj_t *timer);
 
     struct _machine_timer_obj_t *next;
 } machine_timer_obj_t;
 
 machine_timer_obj_t *machine_timer_create(mp_uint_t timer);
-void machine_timer_enable(machine_timer_obj_t *self, void (*timer_isr));
+void machine_timer_enable(machine_timer_obj_t *self);
 void machine_timer_disable(machine_timer_obj_t *self);
 
 #endif // MICROPY_INCLUDED_ESP32_MACHINE_TIMER_H
