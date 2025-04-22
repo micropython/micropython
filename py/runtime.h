@@ -30,12 +30,12 @@
 #include "py/pystack.h"
 #include "py/cstack.h"
 
-// For use with mp_call_function_1_from_nlr_jump_callback.
+// Initialize an nlr_jump_callback_node_call_function_1_t struct for use with
+// nlr_push_jump_callback(&ctx.callback, mp_call_function_1_from_nlr_jump_callback);
 #define MP_DEFINE_NLR_JUMP_CALLBACK_FUNCTION_1(ctx, f, a) \
-    nlr_jump_callback_node_call_function_1_t ctx = { \
-        .func = (void (*)(void *))(f), \
-        .arg = (a), \
-    }
+    nlr_jump_callback_node_call_function_1_t ctx; \
+    ctx.func = (void (*)(void *))(f); \
+    ctx.arg = (a)
 
 typedef enum {
     MP_VM_RETURN_NORMAL,
