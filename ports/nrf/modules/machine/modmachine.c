@@ -85,8 +85,6 @@
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_info),               MP_ROM_PTR(&machine_info_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_enable_irq),         MP_ROM_PTR(&machine_enable_irq_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_disable_irq),        MP_ROM_PTR(&machine_disable_irq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_sleep),              MP_ROM_PTR(&machine_lightsleep_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_Pin),                MP_ROM_PTR(&pin_type) }, \
     \
@@ -214,24 +212,3 @@ static mp_obj_t mp_machine_get_freq(void) {
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_raise_NotImplementedError(NULL);
 }
-
-static mp_obj_t machine_enable_irq(void) {
-    #ifndef BLUETOOTH_SD
-    __enable_irq();
-    #else
-
-    #endif
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(machine_enable_irq_obj, machine_enable_irq);
-
-// Resets the board in a manner similar to pushing the external RESET button.
-static mp_obj_t machine_disable_irq(void) {
-    #ifndef BLUETOOTH_SD
-    __disable_irq();
-    #else
-
-    #endif
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
