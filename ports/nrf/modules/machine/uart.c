@@ -46,6 +46,11 @@
 #include "nrfx_uarte.h"
 #endif
 
+#if defined(NRF52832)
+// The nRF52832 cannot write more than 255 bytes at a time.
+#define UART_MAX_TX_CHUNK (255)
+#endif
+
 typedef struct _machine_uart_buf_t {
     uint8_t tx_buf[1];
     uint8_t rx_buf[1];
@@ -456,17 +461,29 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf, mp_uin
     #endif
 
     machine_uart_obj_t *self = self_in;
-    nrfx_err_t err = nrfx_uart_tx(self->p_uart, buf, size);
-    if (err == NRFX_SUCCESS) {
+
+    // Send data out, in chunks if needed.
+    mp_uint_t remaining = size;
+    while (remaining) {
+        #ifdef UART_MAX_TX_CHUNK
+        mp_uint_t chunk = MIN(UART_MAX_TX_CHUNK, remaining);
+        #else
+        mp_uint_t chunk = remaining;
+        #endif
+        nrfx_err_t err = nrfx_uart_tx(self->p_uart, buf, chunk);
+        if (err != NRFX_SUCCESS) {
+            *errcode = mp_hal_status_to_errno_table[err];
+            return MP_STREAM_ERROR;
+        }
         while (nrfx_uart_tx_in_progress(self->p_uart)) {
             MICROPY_EVENT_POLL_HOOK;
         }
-        // return number of bytes written
-        return size;
-    } else {
-        *errcode = mp_hal_status_to_errno_table[err];
-        return MP_STREAM_ERROR;
+        buf += chunk;
+        remaining -= chunk;
     }
+
+    // return number of bytes written
+    return size;
 }
 
 static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
