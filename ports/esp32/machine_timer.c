@@ -50,12 +50,13 @@
 const mp_obj_type_t machine_timer_type;
 
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+static mp_obj_t machine_timer_deinit(mp_obj_t self_in);
 
 void machine_timer_deinit_all(void) {
     // Disable, deallocate and remove all timers from list
     machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head);
     while (*t != NULL) {
-        machine_timer_disable(*t);
+        machine_timer_deinit(*t);
         machine_timer_obj_t *next = (*t)->next;
         m_del_obj(machine_timer_obj_t, *t);
         *t = next;
@@ -96,6 +97,7 @@ machine_timer_obj_t *machine_timer_create(mp_uint_t timer) {
         self = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
         self->group = group;
         self->index = index;
+        self->handle = NULL;
 
         // Add the timer to the linked-list of timers
         self->next = MP_STATE_PORT(machine_timer_obj_head);
@@ -131,9 +133,8 @@ void machine_timer_disable(machine_timer_obj_t *self) {
     }
 
     if (self->handle) {
-        // Free the interrupt handler.
-        esp_intr_free(self->handle);
-        self->handle = NULL;
+        // Disable the interrupt
+        ESP_ERROR_CHECK(esp_intr_disable(self->handle));
     }
 
     // We let the disabled timer stay in the list, as it might be
@@ -167,6 +168,10 @@ void machine_timer_enable(machine_timer_obj_t *self, void (*timer_isr)) {
     // Allocate and enable the alarm interrupt.
     timer_ll_enable_intr(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index), false);
     timer_ll_clear_intr_status(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index));
+    if (self->handle) {
+        ESP_ERROR_CHECK(esp_intr_free(self->handle));
+        self->handle = NULL;
+    }
     ESP_ERROR_CHECK(
         esp_intr_alloc(timer_group_periph_signals.groups[self->group].timer_irq_id[self->index],
             TIMER_FLAGS, timer_isr, self, &self->handle)
@@ -233,7 +238,13 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
 }
 
 static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
-    machine_timer_disable(self_in);
+    machine_timer_obj_t *self = self_in;
+
+    machine_timer_disable(self);
+    if (self->handle) {
+        ESP_ERROR_CHECK(esp_intr_free(self->handle));
+        self->handle = NULL;
+    }
 
     return mp_const_none;
 }
