@@ -40,6 +40,6 @@ for test in "${TESTS[@]}"; do
     result="${RESULT_DIR}/$(basename "${test}")"
     if [ -e "${result}.out" ]; then
         echo "FAILURE ${test}"
-        $DIFF "${result}.out" "${result}.exp"
+        $DIFF "${result}.exp" "${result}.out"
     fi
 done
