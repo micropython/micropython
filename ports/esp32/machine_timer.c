@@ -151,12 +151,16 @@ static void machine_timer_isr(void *self_in) {
         if (self->repeat) {
             timer_ll_enable_alarm(self->hal_context.dev, self->index, true);
         }
-        mp_sched_schedule(self->callback, self);
-        mp_hal_wake_main_task_from_isr();
+        self->handler(self);
     }
 }
 
-void machine_timer_enable(machine_timer_obj_t *self, void (*timer_isr)) {
+static void machine_timer_isr_handler(machine_timer_obj_t *self) {
+    mp_sched_schedule(self->callback, self);
+    mp_hal_wake_main_task_from_isr();
+}
+
+void machine_timer_enable(machine_timer_obj_t *self) {
     // Initialise the timer.
     timer_hal_init(&self->hal_context, self->group, self->index);
     timer_ll_enable_counter(self->hal_context.dev, self->index, false);
@@ -169,13 +173,16 @@ void machine_timer_enable(machine_timer_obj_t *self, void (*timer_isr)) {
     timer_ll_enable_intr(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index), false);
     timer_ll_clear_intr_status(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index));
     if (self->handle) {
-        ESP_ERROR_CHECK(esp_intr_free(self->handle));
-        self->handle = NULL;
+        ESP_ERROR_CHECK(esp_intr_enable(self->handle));
+    } else {
+        ESP_ERROR_CHECK(esp_intr_alloc(
+            timer_group_periph_signals.groups[self->group].timer_irq_id[self->index],
+            TIMER_FLAGS,
+            machine_timer_isr,
+            self,
+            &self->handle
+            ));
     }
-    ESP_ERROR_CHECK(
-        esp_intr_alloc(timer_group_periph_signals.groups[self->group].timer_irq_id[self->index],
-            TIMER_FLAGS, timer_isr, self, &self->handle)
-        );
     timer_ll_enable_intr(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index), true);
 
     // Enable the alarm to trigger at the given period.
@@ -229,10 +236,10 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     }
 
     self->repeat = args[ARG_mode].u_int;
+    self->handler = machine_timer_isr_handler;
     self->callback = args[ARG_callback].u_obj;
-    self->handle = NULL;
 
-    machine_timer_enable(self, machine_timer_isr);
+    machine_timer_enable(self);
 
     return mp_const_none;
 }
