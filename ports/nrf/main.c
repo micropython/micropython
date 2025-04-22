@@ -40,6 +40,7 @@
 #include "py/gc.h"
 #include "py/compile.h"
 #include "py/persistentcode.h"
+#include "extmod/misc.h"
 #include "extmod/modmachine.h"
 #include "shared/runtime/pyexec.h"
 #include "readline.h"
@@ -172,7 +173,8 @@ soft_reset:
             MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL),
             MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL_BAUD),
         };
-        MP_STATE_VM(dupterm_objs[0]) = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, MP_ARRAY_SIZE(args), 0, args);
+        mp_obj_t uart = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, MP_ARRAY_SIZE(args), 0, args);
+        mp_os_dupterm_obj.fun.var(1, &uart);
     }
     #endif
 
