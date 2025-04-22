@@ -72,6 +72,8 @@ typedef struct _bytecode_prelude_t {
 static int read_byte(mp_reader_t *reader);
 static size_t read_uint(mp_reader_t *reader);
 
+#if MICROPY_EMIT_MACHINE_CODE
+
 #if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA || MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA
 
 // An mp_obj_list_t that tracks native text/BSS/rodata to prevent the GC from reclaiming them.
@@ -85,8 +87,6 @@ static void track_root_pointer(void *ptr) {
 }
 
 #endif
-
-#if MICROPY_EMIT_MACHINE_CODE
 
 typedef struct _reloc_info_t {
     mp_reader_t *reader;
@@ -415,15 +415,17 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
 
         // Relocate and commit code to executable address space
         reloc_info_t ri = {reader, context, rodata, bss};
+        #if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA
+        if (native_scope_flags & MP_SCOPE_FLAG_VIPERRELOC) {
+            // Track the function data memory so it's not reclaimed by the GC.
+            track_root_pointer(fun_data);
+        }
+        #endif
         #if defined(MP_PLAT_COMMIT_EXEC)
         void *opt_ri = (native_scope_flags & MP_SCOPE_FLAG_VIPERRELOC) ? &ri : NULL;
         fun_data = MP_PLAT_COMMIT_EXEC(fun_data, fun_data_len, opt_ri);
         #else
         if (native_scope_flags & MP_SCOPE_FLAG_VIPERRELOC) {
-            #if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA
-            // Track the function data memory so it's not reclaimed by the GC.
-            track_root_pointer(fun_data);
-            #endif
             // Do the relocations.
             mp_native_relocate(&ri, fun_data, (uintptr_t)fun_data);
         }
