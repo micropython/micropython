@@ -104,6 +104,7 @@ typedef struct _machine_uart_obj_t {
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
     uint8_t uart_id;
     bool initialized;       // static flag. Initialized to False
+    bool attached_to_repl;
     #if MICROPY_PY_MACHINE_UART_IRQ
     uint16_t mp_irq_trigger;   // user IRQ trigger mask
     uint16_t mp_irq_flags;     // user IRQ active IRQ flags
@@ -118,6 +119,13 @@ static machine_uart_obj_t machine_uart_obj[] = {
 };
 
 void uart_init0(void) {
+    for (int i = 0; i < MP_ARRAY_SIZE(machine_uart_obj); i++) {
+        machine_uart_obj[i].attached_to_repl = false;
+    }
+}
+
+void uart_attach_to_repl(machine_uart_obj_t *self, bool attached) {
+    self->attached_to_repl = attached;
 }
 
 static int uart_find(mp_obj_t id) {
@@ -137,14 +145,16 @@ static void uart_event_handler(nrfx_uart_event_t const *p_event, void *p_context
     if (p_event->type == NRFX_UART_EVT_RX_DONE) {
         nrfx_uart_rx(self->p_uart, &self->buf.rx_buf[0], 1);
         int chr = self->buf.rx_buf[0];
-        #if !MICROPY_PY_BLE_NUS && MICROPY_KBD_EXCEPTION
-        if (chr == mp_interrupt_char) {
-            self->buf.rx_ringbuf.iget = 0;
-            self->buf.rx_ringbuf.iput = 0;
-            mp_sched_keyboard_interrupt();
-        } else
-        #endif
-        {
+        if (self->attached_to_repl) {
+            #if MICROPY_KBD_EXCEPTION
+            if (chr == mp_interrupt_char) {
+                mp_sched_keyboard_interrupt();
+            } else
+            #endif
+            {
+                ringbuf_put((ringbuf_t *)&stdin_ringbuf, chr);
+            }
+        } else {
             ringbuf_put((ringbuf_t *)&self->buf.rx_ringbuf, chr);
         }
         #if MICROPY_PY_MACHINE_UART_IRQ
