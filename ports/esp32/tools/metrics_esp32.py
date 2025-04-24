@@ -32,6 +32,7 @@
 # column of the table is really D/IRAM.
 import os
 import re
+import shutil
 import sys
 import subprocess
 from dataclasses import dataclass
@@ -45,6 +46,13 @@ BUILDS = (
     ("ESP32_GENERIC_S3", ""),
     ("ESP32_GENERIC_S3", "SPIRAM_OCT"),
 )
+
+
+def rmtree(path):
+    try:
+        shutil.rmtree(path)
+    except FileNotFoundError:
+        pass
 
 
 @dataclass
@@ -99,7 +107,7 @@ class BuildSizes:
 
     def build_dir(self):
         if self.variant:
-            return f"build-{self.board}_{self.variant}"
+            return f"build-{self.board}-{self.variant}"
         else:
             return f"build-{self.board}"
 
@@ -124,12 +132,23 @@ class BuildSizes:
     def make_size(self):
         try:
             size_out = self.run_make("size")
-            # "Used static DRAM:" or "Used stat D/IRAM:"
-            RE_DRAM = r"Used stat(?:ic)? D.*: *(\d+) bytes"
-            RE_IRAM = r"Used static IRAM: *(\d+) bytes"
+            try:
+                # pre IDF v5.4 size output
+                # "Used static DRAM:" or "Used stat D/IRAM:"
+                RE_DRAM = r"Used stat(?:ic)? D.*: *(\d+) bytes"
+                RE_IRAM = r"Used static IRAM: *(\d+) bytes"
+                self.dram_size = re.search(RE_DRAM, size_out).group(1)
+                self.iram_size = re.search(RE_IRAM, size_out).group(1)
+            except AttributeError:
+                # IDF v5.4 size output is much nicer formatted
+                # Note the pipes in these expressions are not the ASCII/RE |
+                RE_DRAM = r"│ *DI?RAM *│ *(\d+)"
+                RE_IRAM = r"│ *IRAM *│ *(\d+)"
+                self.dram_size = re.search(RE_DRAM, size_out).group(1)
+                self.iram_size = re.search(RE_IRAM, size_out).group(1)
+
+            # This line is the same on before/after versions
             RE_BIN = r"Total image size: *(\d+) bytes"
-            self.dram_size = re.search(RE_DRAM, size_out).group(1)
-            self.iram_size = re.search(RE_IRAM, size_out).group(1)
             self.bin_size = re.search(RE_BIN, size_out).group(1)
         except subprocess.CalledProcessError:
             self.bin_size = "build failed"
@@ -139,13 +158,26 @@ def main(do_clean):
     if "IDF_PATH" not in os.environ:
         raise RuntimeError("IDF_PATH must be set")
 
+    if not os.path.exists("Makefile"):
+        raise RuntimeError(
+            "This script must be run from the ports/esp32 directory, i.e. as ./tools/metrics_esp32.py"
+        )
+
+    if "IDF_PYTHON_ENV_PATH" in os.environ:
+        raise RuntimeError(
+            "Run this script without any existing ESP-IDF environment active/exported."
+        )
+
     sizes = []
     for idf_ver in IDF_VERS:
         switch_ver(idf_ver)
+        rmtree("managed_components")
         for board, variant in BUILDS:
             print(f"Building '{board}'/'{variant}'...", file=sys.stderr)
             result = BuildSizes(idf_ver, board, variant)
-            result.run_make("clean")
+            # Rather than running the 'clean' target, delete the build directory to avoid
+            # environment version mismatches, etc.
+            rmtree(result.build_dir())
             result.make_size()
             result.print_summary()
             sizes.append(result)
