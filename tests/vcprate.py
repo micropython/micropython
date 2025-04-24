@@ -19,9 +19,19 @@ def drain_input(ser):
         data = ser.read(ser.inWaiting())
         time.sleep(0.1)
 
+def send_script(ser, script):
+    chunk_size = 32
+    for i in range(0, len(script), chunk_size):
+        ser.write(script[i : i + chunk_size])
+        time.sleep(0.01)
+    ser.write(b"\x04")  # eof
+    ser.flush()
+    response = ser.read(2)
+    assert response == b"OK", response
 
 read_test_script = """
 vcp_id = %u
+bin = True
 led = None
 try:
     import pyb
@@ -31,14 +41,24 @@ try:
     wr=pyb.USB_VCP(vcp_id).send
 except:
     import sys
-    wr=sys.stdout.buffer.write
+    if hasattr(sys.stdout,'buffer'):
+        wr=sys.stdout.buffer.write
+    else:
+        wr=sys.stdout.write
+        bin = False
 b=bytearray(%u)
-for i in range(len(b)):
-    b[i] = i & 0xff
+if bin:
+    wr('BIN')
+    for i in range(len(b)):
+        b[i] = i & 0xff
+else:
+    wr('TXT')
+    for i in range(len(b)):
+        b[i] = 0x20 + (i & 0x3f)
 for _ in range(%d):
     if led:
         led.toggle()
-    n = wr(b)
+    wr(b)
 """
 
 
@@ -48,11 +68,11 @@ def read_test(ser_repl, ser_data, usb_vcp_id, bufsize, nbuf):
     # Load and run the read_test_script.
     ser_repl.write(b"\x03\x01\x04")  # break, raw-repl, soft-reboot
     drain_input(ser_repl)
-    ser_repl.write(bytes(read_test_script % (usb_vcp_id, bufsize, nbuf), "ascii"))
-    ser_repl.write(b"\x04")  # eof
-    ser_repl.flush()
-    response = ser_repl.read(2)
-    assert response == b"OK", response
+    script = bytes(read_test_script % (usb_vcp_id, bufsize, nbuf), "ascii")
+    send_script(ser_repl, script)
+
+    # Read from the device the type of data that it will send (BIN or TXT).
+    data_type = ser_data.read(3)
 
     # Read data from the device, check it is correct, and measure throughput.
     n = 0
@@ -69,6 +89,7 @@ def read_test(ser_repl, ser_data, usb_vcp_id, bufsize, nbuf):
             time.sleep(0.0001)
         if not ser_data.inWaiting():
             print("ERROR: timeout waiting for data")
+            print(total_data[:n])
             return 0
         to_read = min(ser_data.inWaiting(), remain)
         data = ser_data.read(to_read)
@@ -88,8 +109,12 @@ def read_test(ser_repl, ser_data, usb_vcp_id, bufsize, nbuf):
         n += len(data)
     t_end = time.time()
     for i in range(0, len(total_data)):
-        if total_data[i] != i & 0xFF:
-            print("fail", i, i & 0xFF, total_data[i])
+        if data_type == b"BIN":
+            wanted = i & 0xFF
+        else:
+            wanted = 0x20 + (i & 0x3F)
+        if total_data[i] != wanted:
+            print("fail", i, wanted, total_data[i])
     ser_repl.write(b"\x03")  # break
     t = t_end - t_start
 
@@ -161,9 +186,8 @@ def write_test(ser_repl, ser_data, usb_vcp_id, bufsize, nbuf, verified):
         script = write_test_script_verified
     else:
         script = write_test_script_unverified
-    ser_repl.write(bytes(script % (usb_vcp_id, bufsize, nbuf), "ascii"))
-    ser_repl.write(b"\x04")  # eof
-    ser_repl.flush()
+    script = bytes(script % (usb_vcp_id, bufsize, nbuf), "ascii")
+    send_script(ser_repl, script)
     drain_input(ser_repl)
 
     # Write data to the device, check it is correct, and measure throughput.
