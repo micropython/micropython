@@ -272,3 +272,5 @@ rm :package
 mpremote: rm -r not permitted on /remote directory
 expect error
 -----
+expect error: 2
+-----
