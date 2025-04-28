@@ -181,12 +181,11 @@ def main():
         build_natmods()
         return
 
-    if len(args) > 0 and args[0] == "-s":
+    selected_tests = "vphmnwb"
+    if len(args) > 0:
         # Select certain tests.
-        args.pop(0)
-        selected_tests = args.pop(0)
-    else:
-        selected_tests = "vphmnwb"
+        if (a := args.pop(0)) != "all":
+            selected_tests = a
 
     with open("feature_check/target_info.py", "rb") as f:
         target_info_check = f.read()
