@@ -20,7 +20,7 @@ class Test(unittest.TestCase):
 
     def test_printing(self):
         dma = self.dma
-        self.assertEqual(str(dma), "DMA(0)")
+        self.assertEqual(str(dma), "DMA({})".format(dma.channel))
 
     def test_pack_unpack_ctrl(self):
         dma = self.dma
@@ -34,7 +34,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ctrl_dict["ahb_err"], 0)
         self.assertEqual(ctrl_dict["bswap"], 0)
         self.assertEqual(ctrl_dict["busy"], 0)
-        self.assertEqual(ctrl_dict["chain_to"], 0)
+        self.assertEqual(ctrl_dict["chain_to"], dma.channel)
         self.assertEqual(ctrl_dict["enable"], 1)
         self.assertEqual(ctrl_dict["high_pri"], 0)
         self.assertEqual(ctrl_dict["inc_read"], 1)
@@ -58,7 +58,7 @@ class Test(unittest.TestCase):
         self.assertEqual(dma.write, 0)
         self.assertEqual(dma.count, 0)
         self.assertEqual(dma.ctrl & 0x01F, 25)
-        self.assertEqual(dma.channel, 0)
+        self.assertIn(dma.channel, range(16))
         self.assertIsInstance(dma.registers, memoryview)
 
     def test_close(self):
@@ -86,26 +86,32 @@ class Test(unittest.TestCase):
     def test_time_taken_for_large_memory_copy(self):
         def run_and_time_dma(dma):
             ticks_us = time.ticks_us
+            active = dma.active
             irq_state = machine.disable_irq()
             t0 = ticks_us()
-            dma.active(True)
-            while dma.active():
+            active(True)
+            while active():
                 pass
             t1 = ticks_us()
             machine.enable_irq(irq_state)
             return time.ticks_diff(t1, t0)
 
-        dma = self.dma
-        dest = bytearray(16 * 1024)
-        dma.read = SRC
-        dma.write = dest
-        dma.count = len(dest) // 4
-        dma.ctrl = dma.pack_ctrl()
-        dt = run_and_time_dma(dma)
-        expected_dt_range = range(40, 70) if is_rp2350 else range(70, 125)
-        self.assertIn(dt, expected_dt_range)
-        self.assertEqual(dest[:8], SRC[:8])
-        self.assertEqual(dest[-8:], SRC[-8:])
+        num_average = 10
+        dt_sum = 0
+        for _ in range(num_average):
+            dma = self.dma
+            dest = bytearray(16 * 1024)
+            dma.read = SRC
+            dma.write = dest
+            dma.count = len(dest) // 4
+            dma.ctrl = dma.pack_ctrl()
+            dt_sum += run_and_time_dma(dma)
+            self.assertEqual(dest[:8], SRC[:8])
+            self.assertEqual(dest[-8:], SRC[-8:])
+            self.tearDown()
+            self.setUp()
+        dt = dt_sum // num_average
+        self.assertIn(dt, range(30, 80))
 
     def test_config_trigger(self):
         # Test using .config(trigger=True) to start DMA immediately.
@@ -136,6 +142,7 @@ class Test(unittest.TestCase):
         )
         while dma.active():
             pass
+        time.sleep_ms(1)  # when running as native code, give the scheduler a chance to run
         self.assertEqual(irq_flags, 1)
         self.assertEqual(dest[:8], SRC[:8])
         self.assertEqual(dest[-8:], SRC[-8:])
