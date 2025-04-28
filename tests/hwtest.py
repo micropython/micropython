@@ -146,10 +146,11 @@ def do_test(cmd):
     print("-" * 32)
     print("RUN", " ".join(cmd))
     try:
-        subprocess.run(cmd, check=True)
-        print("PASS")
-    except subprocess.CalledProcessError as er:
-        print("ERROR", er)
+        result = subprocess.run(cmd)
+        if result.returncode == 0:
+            print("PASS")
+        else:
+            print(f"ERROR returncode={result.returncode}")
         time.sleep(1)
     except KeyboardInterrupt:
         print("INTERRUPT")
