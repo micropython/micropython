@@ -405,7 +405,7 @@ def create_test_list(test_filenames: [str]) -> [Test]:
 
 # Print a summary of the results and save them to a JSON file.
 # Returns True if everything succeeded, False otherwise.
-def create_test_report(args, test_results, testcase_count=None):
+def create_test_report(args, test_results, testcase_count=None, *, verbose=True):
     passed_tests = list(r for r in test_results if r[1] == "pass")
     skipped_tests = list(r for r in test_results if r[1] == "skip" and r[2] != "too large")
     skipped_tests_too_large = list(
@@ -438,17 +438,14 @@ def create_test_report(args, test_results, testcase_count=None):
         )
 
     if len(skipped_tests) > 0:
-        print(
-            "{} tests skipped: {}".format(
-                len(skipped_tests), " ".join(test[0] for test in skipped_tests)
-            )
-        )
+        details = ": " + " ".join(test[0] for test in skipped_tests) if verbose else ""
+        print("{} tests skipped".format(len(skipped_tests)) + details)
 
     if len(skipped_tests_too_large) > 0:
+        details = ": " + " ".join(test[0] for test in skipped_tests_too_large) if verbose else ""
         print(
-            "{} tests skipped because they are too large: {}".format(
-                len(skipped_tests_too_large), " ".join(test[0] for test in skipped_tests_too_large)
-            )
+            "{} tests skipped because they are too large".format(len(skipped_tests_too_large))
+            + details
         )
 
     if len(failed_tests) > 0:
