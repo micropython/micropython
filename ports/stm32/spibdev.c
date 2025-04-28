@@ -87,6 +87,21 @@ int spi_bdev_writeblocks(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_nu
 
     return ret;
 }
+#else
+int spi_bdev_readblocks(spi_bdev_t *bdev, uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+    MP_STATIC_ASSERT(FLASH_BLOCK_SIZE == MP_SPIFLASH_ERASE_BLOCK_SIZE);
+    int ret = spi_bdev_readblocks_raw(bdev, dest, block_num, 0, num_blocks * FLASH_BLOCK_SIZE);
+    return ret;
+}
+
+int spi_bdev_writeblocks(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+    MP_STATIC_ASSERT(FLASH_BLOCK_SIZE == MP_SPIFLASH_ERASE_BLOCK_SIZE);
+    int ret = spi_bdev_eraseblocks_raw(bdev, block_num, num_blocks * FLASH_BLOCK_SIZE);
+    if (ret == 0) {
+        ret = spi_bdev_writeblocks_raw(bdev, src, block_num, 0, num_blocks * FLASH_BLOCK_SIZE);
+    }
+    return ret;
+}
 #endif // MICROPY_HW_SPIFLASH_ENABLE_CACHE
 
 int spi_bdev_readblocks_raw(spi_bdev_t *bdev, uint8_t *dest, uint32_t block_num, uint32_t block_offset, uint32_t num_bytes) {

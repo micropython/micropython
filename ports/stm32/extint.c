@@ -307,7 +307,7 @@ void EXTI15_10_IRQHandler(void) {
     IRQ_EXIT(EXTI15_10_IRQn);
 }
 
-#elif defined(STM32H5)
+#elif defined(STM32H5) || defined(STM32N6)
 
 DEFINE_EXTI_IRQ_HANDLER(0)
 DEFINE_EXTI_IRQ_HANDLER(1)
@@ -325,10 +325,6 @@ DEFINE_EXTI_IRQ_HANDLER(12)
 DEFINE_EXTI_IRQ_HANDLER(13)
 DEFINE_EXTI_IRQ_HANDLER(14)
 DEFINE_EXTI_IRQ_HANDLER(15)
-
-#elif defined(STM32N6)
-
-// TODO
 
 #else
 
@@ -444,10 +440,10 @@ void extint_register_pin(const machine_pin_obj_t *pin, uint32_t mode, bool hard_
         #if !defined(STM32H5) && !defined(STM32WB) && !defined(STM32WL)
         __HAL_RCC_SYSCFG_CLK_ENABLE();
         #endif
-        #if defined(STM32G0) || defined(STM32N6) || defined(STM32H5)
+        #if defined(STM32G0) || defined(STM32H5) || defined(STM32N6)
         EXTI->EXTICR[line >> 2] =
-            (EXTI->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
-            | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 0x03)));
+            (EXTI->EXTICR[line >> 2] & ~(0xff << (8 * (line & 0x03))))
+            | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (8 * (line & 0x03)));
         #else
         SYSCFG->EXTICR[line >> 2] =
             (SYSCFG->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
@@ -484,13 +480,13 @@ void extint_set(const machine_pin_obj_t *pin, uint32_t mode) {
         pyb_extint_callback_arg[line] = MP_OBJ_FROM_PTR(pin);
 
         // Route the GPIO to EXTI
-        #if !defined(STM32H5) && !defined(STM32WB) && !defined(STM32WL)
+        #if !defined(STM32H5) && !defined(STM32N6) && !defined(STM32WB) && !defined(STM32WL)
         __HAL_RCC_SYSCFG_CLK_ENABLE();
         #endif
-        #if defined(STM32G0) || defined(STM32N6) || defined(STM32H5)
+        #if defined(STM32G0) || defined(STM32H5) || defined(STM32N6)
         EXTI->EXTICR[line >> 2] =
-            (EXTI->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
-            | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 0x03)));
+            (EXTI->EXTICR[line >> 2] & ~(0xff << (8 * (line & 0x03))))
+            | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (8 * (line & 0x03)));
         #else
         SYSCFG->EXTICR[line >> 2] =
             (SYSCFG->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))

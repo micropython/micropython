@@ -77,7 +77,11 @@ static volatile uint8_t *sdmmc_buf_top;
 #define SDMMC_IRQHandler        SDMMC2_IRQHandler
 #define SDMMC_CLK_ENABLE()      __HAL_RCC_SDMMC2_CLK_ENABLE()
 #define SDMMC_CLK_DISABLE()     __HAL_RCC_SDMMC2_CLK_DISABLE()
+#if defined(STM32N6)
+#define SDMMC_IS_CLK_DISABLED() (!__HAL_RCC_SDMMC2_IS_CLK_ENABLED())
+#else
 #define SDMMC_IS_CLK_DISABLED() __HAL_RCC_SDMMC2_IS_CLK_DISABLED()
+#endif
 #define STATIC_AF_SDMMC_CK      STATIC_AF_SDMMC2_CK
 #define STATIC_AF_SDMMC_CMD     STATIC_AF_SDMMC2_CMD
 #define STATIC_AF_SDMMC_D0      STATIC_AF_SDMMC2_D0
@@ -413,7 +417,11 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
         dma_nohal_init(&dma_SDIO_0, dma_config);
         dma_nohal_start(&dma_SDIO_0, dma_src, dma_dest, dma_len);
         #else
+        #if defined(STM32N6)
+        SDMMC->IDMABASER = (uint32_t)buf;
+        #else
         SDMMC->IDMABASE0 = (uint32_t)buf;
+        #endif
         SDMMC->IDMACTRL = SDMMC_IDMA_IDMAEN;
         #endif
     } else {

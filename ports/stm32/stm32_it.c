@@ -488,7 +488,7 @@ void ETH_WKUP_IRQHandler(void) {
 }
 #endif
 
-#if defined(STM32H5)
+#if defined(STM32H5) || defined(STM32N6)
 void TAMP_IRQHandler(void) {
     IRQ_ENTER(TAMP_IRQn);
     Handle_EXTI_Irq(EXTI_RTC_TAMP);
@@ -508,18 +508,25 @@ void TAMP_STAMP_IRQHandler(void) {
 }
 #endif
 
+#include "led.h"
 #if defined(STM32H5)
 void RTC_IRQHandler(void)
+#elif defined(STM32N6)
+#define RTC_WKUP_IRQn RTC_S_IRQn
+void RTC_S_IRQHandler(void)
 #else
 void RTC_WKUP_IRQHandler(void)
 #endif
 {
-#if 0
+    int state = 0;
+    state = 1 - state;
+    led_state(3, state);
+    MP_STATIC_ASSERT(RTC_WKUP_IRQn > 0);
     IRQ_ENTER(RTC_WKUP_IRQn);
     #if defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
     RTC->MISR &= ~RTC_MISR_WUTMF; // clear wakeup interrupt flag
-    #elif defined(STM32H5)
-    RTC->SCR = RTC_SCR_CWUTF; // clear wakeup interrupt flag
+    #elif defined(STM32H5) || defined(STM32N6)
+    LL_RTC_ClearFlag_WUT(RTC);
     #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
     RTC->SR &= ~RTC_SR_WUTF; // clear wakeup interrupt flag
     #else
@@ -527,7 +534,9 @@ void RTC_WKUP_IRQHandler(void)
     #endif
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
     IRQ_EXIT(RTC_WKUP_IRQn);
-#endif
+}
+void RTC_IRQHandler(void) {
+    RTC_S_IRQHandler();
 }
 
 #if defined(STM32F0) || defined(STM32G0) || defined(STM32L0)
