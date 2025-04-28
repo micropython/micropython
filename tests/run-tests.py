@@ -39,6 +39,8 @@ RV32_ARCH_FLAGS = {
     "zcmp": 1 << 1,
 }
 
+VERBOSE = False
+
 # Tests require at least CPython 3.3. If your default python3 executable
 # is of lower version, you can point MICROPY_CPYTHON3 environment var
 # to the correct executable.
@@ -1390,7 +1392,7 @@ the last matching regex is used:
     try:
         os.makedirs(args.result_dir, exist_ok=True)
         test_results, testcase_count = run_tests(pyb, tests, args, args.result_dir, args.jobs)
-        res = create_test_report(args, test_results, testcase_count)
+        res = create_test_report(args, test_results, testcase_count, verbose=VERBOSE)
     finally:
         if pyb:
             pyb.close()
