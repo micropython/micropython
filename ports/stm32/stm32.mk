@@ -85,3 +85,7 @@ MPY_CROSS_MCU_ARCH_h7 = armv7m
 MPY_CROSS_MCU_ARCH_n6 = armv7m # really armv8m
 MPY_CROSS_MCU_ARCH_wb = armv7m
 MPY_CROSS_MCU_ARCH_wl = armv7m
+
+ifeq ($(MCU_SERIES),n6)
+MICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM = 1
+endif

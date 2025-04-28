@@ -77,6 +77,11 @@
 #define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI (0)
 #endif
 
+// Whether to enable ROMFS on external XSPI flash.
+#ifndef MICROPY_HW_ROMFS_ENABLE_EXTERNAL_XSPI
+#define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_XSPI (0)
+#endif
+
 // Whether to enable ROMFS partition 0.
 #ifndef MICROPY_HW_ROMFS_ENABLE_PART0
 #define MICROPY_HW_ROMFS_ENABLE_PART0 (0)
@@ -599,8 +604,39 @@
     (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(MICROPY_HW_BDEV_SPIFLASH, (op), (uint32_t)MICROPY_HW_BDEV_SPIFLASH_CONFIG) : \
     spi_bdev_ioctl(MICROPY_HW_BDEV_SPIFLASH, (op), (arg)) \
     )
-#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(MICROPY_HW_BDEV_SPIFLASH, (dest), (bl), (n))
-#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(MICROPY_HW_BDEV_SPIFLASH, (src), (bl), (n))
+#ifndef MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES
+#define MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES (0)
+#endif
+#define MICROPY_HW_BDEV_SPIFLASH_OFFSET_BLOCKS (MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES / FLASH_BLOCK_SIZE)
+#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(MICROPY_HW_BDEV_SPIFLASH, (dest), MICROPY_HW_BDEV_SPIFLASH_OFFSET_BLOCKS + (bl), (n))
+#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(MICROPY_HW_BDEV_SPIFLASH, (src), MICROPY_HW_BDEV_SPIFLASH_OFFSET_BLOCKS + (bl), (n))
+#endif
+
+#if defined(STM32N6)
+#define MICROPY_FATFS_MAX_SS                    (4096)
+#if 0
+static inline int xspi_flash_bdev_ioctl(int op, int arg) {
+    (void)op;
+    (void)arg;
+    return 0;
+}
+#define MICROPY_HW_BDEV_IOCTL(op, arg) ( \
+    (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_XSPI_SPIFLASH_SIZE_BYTES / FLASH_BLOCK_SIZE) : \
+    (op) == BDEV_IOCTL_INIT ? xspi_flash_init(MICROPY_HW_XSPI_SPIFLASH) : \
+    xspi_flash_bdev_ioctl((op), (arg)) \
+    )
+#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) \
+    (xspi_flash_read(MICROPY_HW_XSPI_SPIFLASH, MICROPY_HW_XSPI_SPIFLASH_OFFSET_BYTES + (bl) * FLASH_BLOCK_SIZE, (n) * FLASH_BLOCK_SIZE, (dest)))
+#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) \
+    (xspi_flash_write(MICROPY_HW_XSPI_SPIFLASH, MICROPY_HW_XSPI_SPIFLASH_OFFSET_BYTES + (bl) * FLASH_BLOCK_SIZE, (n) * FLASH_BLOCK_SIZE, (src)))
+#define MICROPY_HW_BDEV_BLOCKSIZE_EXT (FLASH_BLOCK_SIZE)
+#define MICROPY_HW_BDEV_READBLOCKS_EXT(dest, bl, off, len) \
+    (xspi_flash_read(MICROPY_HW_XSPI_SPIFLASH, MICROPY_HW_XSPI_SPIFLASH_OFFSET_BYTES + (bl) * FLASH_BLOCK_SIZE + (off), (len), (dest)))
+#define MICROPY_HW_BDEV_WRITEBLOCKS_EXT(src, bl, off, len) \
+    (xspi_flash_write(MICROPY_HW_XSPI_SPIFLASH, MICROPY_HW_XSPI_SPIFLASH_OFFSET_BYTES + (bl) * FLASH_BLOCK_SIZE + (off), (len), (src)))
+#define MICROPY_HW_BDEV_ERASEBLOCKS_EXT(bl, len) \
+    (xspi_flash_erase_block(MICROPY_HW_XSPI_SPIFLASH, MICROPY_HW_XSPI_SPIFLASH_OFFSET_BYTES + (bl) * FLASH_BLOCK_SIZE))
+#endif
 #endif
 
 // Whether to enable caching for external SPI flash, to allow block writes that are

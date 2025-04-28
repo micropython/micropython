@@ -640,7 +640,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 $(BUILD)/firmware-trusted.bin: $(BUILD)/firmware.bin
 	/bin/rm -f $@
-	$(CUBE_PROG_BASE)/bin/STM32MP_SigningTool_CLI -bin $^ -nk -of 0x80000000 -t fsbl -o $@ -hv $(STM32_N6_HEADER_VERSION) #-dump $@
+	$(CUBE_PROG_BASE)/bin/STM32MP_SigningTool_CLI -bin $^ -nk -of 0x80000000 -t fsbl -o $@ -hv $(STM32_N6_HEADER_VERSION)
 
 deploy-n6: $(BUILD)/firmware-trusted.bin
 	$(CUBE_PROG_BASE)/bin/STM32_Programmer.sh -c port=SWD mode=HOTPLUG ap=1 -el $(DKEL) -w $^ 0x70000000 -hardRst

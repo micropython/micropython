@@ -26,6 +26,16 @@
 #ifndef MICROPY_INCLUDED_STM32_XSPI_H
 #define MICROPY_INCLUDED_STM32_XSPI_H
 
-void xspi_flash_init(void);
+#include "drivers/bus/qspi.h"
+
+typedef struct _xspi_flash_t xspi_flash_t;
+
+extern const mp_qspi_proto_t xspi_proto;
+extern const xspi_flash_t xspi_flash1;
+extern const xspi_flash_t xspi_flash2;
+
+void xspi_init(void);
+uint32_t xspi_get_xip_base(const xspi_flash_t *self);
+bool xspi_is_valid_addr(const xspi_flash_t *self, uint32_t addr);
 
 #endif // MICROPY_INCLUDED_STM32_XSPI_H
