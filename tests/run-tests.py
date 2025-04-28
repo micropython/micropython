@@ -22,6 +22,8 @@ TEST_TIMEOUT = float(os.environ.get("MICROPY_TEST_TIMEOUT", 30))
 # are guaranteed to always work, this one should though.
 BASEPATH = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: None)))
 
+VERBOSE = False
+
 
 def base_path(*p):
     return os.path.abspath(os.path.join(BASEPATH, *p)).replace("\\", "/")
@@ -1189,17 +1191,14 @@ def create_test_report(args, test_results, testcase_count=None):
     print("{} tests passed".format(len(passed_tests)))
 
     if len(skipped_tests) > 0:
-        print(
-            "{} tests skipped: {}".format(
-                len(skipped_tests), " ".join(test[0] for test in skipped_tests)
-            )
-        )
+        details = ": " + " ".join(test[0] for test in skipped_tests) if VERBOSE else ""
+        print("{} tests skipped".format(len(skipped_tests)) + details)
 
     if len(skipped_tests_too_large) > 0:
+        details = ": " + " ".join(test[0] for test in skipped_tests_too_large) if VERBOSE else ""
         print(
-            "{} tests skipped because they are too large: {}".format(
-                len(skipped_tests_too_large), " ".join(test[0] for test in skipped_tests_too_large)
-            )
+            "{} tests skipped because they are too large".format(len(skipped_tests_too_large))
+            + details
         )
 
     if len(failed_tests) > 0:
