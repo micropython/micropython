@@ -105,14 +105,11 @@ PC_PLATFORMS = ("darwin", "linux", "win32")
 # These are tests that are difficult to detect that they should not be run on the given target.
 platform_tests_to_skip = {
     "esp8266": (
-        "micropython/viper_args.py",  # too large
-        "micropython/viper_binop_arith.py",  # too large
-        "misc/rge_sm.py",  # too large
+        "misc/rge_sm.py",  # incorrect values due to object representation C
     ),
     "minimal": (
         "basics/class_inplace_op.py",  # all special methods not supported
         "basics/subclass_native_init.py",  # native subclassing corner cases not support
-        "misc/rge_sm.py",  # too large
         "micropython/opt_level.py",  # don't assume line numbers are stored
     ),
     "nrf": (
@@ -315,9 +312,21 @@ def prepare_script_for_target(args, *, script_filename=None, script_text=None, f
 
 
 def run_script_on_remote_target(pyb, args, test_file, is_special):
-    had_crash, script = prepare_script_for_target(
-        args, script_filename=test_file, force_plain=is_special
-    )
+    with open(test_file, "rb") as f:
+        script = f.read()
+
+    # If the test is not a special test, prepend it with a print to indicate that it started.
+    # If the print does not execute this means that the test did not even start, eg it was
+    # too large for the target.
+    prepend_start_test = not is_special
+    if prepend_start_test:
+        if script.startswith(b"#"):
+            script = b"print('START TEST')" + script
+        else:
+            script = b"print('START TEST')\n" + script
+
+    had_crash, script = prepare_script_for_target(args, script_text=script, force_plain=is_special)
+
     if had_crash:
         return True, script
 
@@ -328,9 +337,19 @@ def run_script_on_remote_target(pyb, args, test_file, is_special):
     except pyboard.PyboardError as e:
         had_crash = True
         if not is_special and e.args[0] == "exception":
-            output_mupy = e.args[1] + e.args[2] + b"CRASH"
+            if prepend_start_test and e.args[1] == b"" and b"MemoryError" in e.args[2]:
+                output_mupy = b"SKIP-TOO-LARGE\n"
+            else:
+                output_mupy = e.args[1] + e.args[2] + b"CRASH"
         else:
             output_mupy = bytes(e.args[0], "ascii") + b"\nCRASH"
+
+    if prepend_start_test:
+        if output_mupy.startswith(b"START TEST\r\n"):
+            output_mupy = output_mupy.removeprefix(b"START TEST\r\n")
+        else:
+            had_crash = True
+
     return had_crash, output_mupy
 
 
@@ -474,7 +493,7 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
     output_mupy = output_mupy.replace(b"\r\n", b"\n")
 
     # don't try to convert the output if we should skip this test
-    if had_crash or output_mupy in (b"SKIP\n", b"CRASH"):
+    if had_crash or output_mupy in (b"SKIP\n", b"SKIP-TOO-LARGE\n", b"CRASH"):
         return output_mupy
 
     # skipped special tests will output "SKIP" surrounded by other interpreter debug output
@@ -608,6 +627,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     passed_tests = ThreadSafeCounter([])
     failed_tests = ThreadSafeCounter([])
     skipped_tests = ThreadSafeCounter([])
+    skipped_tests_too_large = ThreadSafeCounter([])
 
     skip_tests = set()
     skip_native = False
@@ -913,6 +933,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             print("skip ", test_file)
             skipped_tests.append((test_name, test_file))
             return
+        elif output_mupy == b"SKIP-TOO-LARGE\n":
+            print("lrge ", test_file)
+            skipped_tests_too_large.append((test_name, test_file))
+            return
 
         # Look at the output of the test to see if unittest was used.
         uses_unittest = False
@@ -1037,6 +1061,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     passed_tests = sorted(passed_tests.value)
     skipped_tests = sorted(skipped_tests.value)
+    skipped_tests_too_large = sorted(skipped_tests_too_large.value)
     failed_tests = sorted(failed_tests.value)
 
     print(
@@ -1050,6 +1075,13 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         print(
             "{} tests skipped: {}".format(
                 len(skipped_tests), " ".join(test[0] for test in skipped_tests)
+            )
+        )
+
+    if len(skipped_tests_too_large) > 0:
+        print(
+            "{} tests skipped because they are too large: {}".format(
+                len(skipped_tests_too_large), " ".join(test[0] for test in skipped_tests_too_large)
             )
         )
 
@@ -1072,6 +1104,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 "args": vars(args),
                 "passed_tests": [test[1] for test in passed_tests],
                 "skipped_tests": [test[1] for test in skipped_tests],
+                "skipped_tests_too_large": [test[1] for test in skipped_tests_too_large],
                 "failed_tests": [test[1] for test in failed_tests],
             },
             f,
