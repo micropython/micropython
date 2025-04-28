@@ -327,7 +327,6 @@ void stm32_main(uint32_t reset_mode) {
     #endif
     #endif
 
-
     #if __CORTEX_M != 33 && __CORTEX_M != 55
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
@@ -622,6 +621,7 @@ soft_reset:
         const uint16_t pid = MICROPY_HW_USB_PID_CDC;
         const uint8_t mode = USBD_MODE_CDC;
         #endif
+        mp_hal_delay_ms(10); // TODO work out why this is needed, sometimes crashes without it
         pyb_usb_dev_init(pyb_usb_dev_detect(), MICROPY_HW_USB_VID, pid, mode, 0, NULL, NULL);
     }
     #endif
