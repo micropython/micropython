@@ -1513,4 +1513,8 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print()
         print("INTERRUPT")
-        sys.exit(1)
+        sys.exit(2)
+    except Exception as er:
+        print("ERROR:")
+        print(er)
+        sys.exit(2)
