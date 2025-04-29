@@ -208,13 +208,16 @@ def main():
         t = SerialTransport(target.device)
         t.enter_raw_repl()
         t.exec("import sys")
-        sys_info = t.eval("(sys.platform, sys.implementation._build, sys.implementation._machine, sys.version)")
+        sys_info = t.eval(
+            "(sys.platform, getattr(sys.implementation, '_build', 'UNKNOWN'), sys.implementation._machine, sys.version)"
+        )
         target.port, target.build, target.machine, target.version = sys_info
         target.can_import_mpy = t.eval("hasattr(sys.implementation, '_mpy')")
         _, target.arch = str(t.exec(target_info_check), "ascii").strip().split()
         if target.arch == "None":
             target.arch = None
         target.has_vfs = try_import(t, "vfs")
+        target.has_filesystem = target.has_vfs and t.eval("len(vfs.mount())")
         target.has_unittest = try_import(t, "unittest")
         target.has_wlan = try_import(t, "network") and t.eval("hasattr(network, 'WLAN')")
         target.has_ble = try_import(t, "bluetooth") and t.eval("hasattr(bluetooth, 'BLE')")
@@ -241,7 +244,7 @@ def main():
             print(target.machine, "--", target.version)
 
             # Install unittest if needed.
-            if target.has_vfs and not target.has_unittest:
+            if target.has_filesystem and not target.has_unittest:
                 t = SerialTransport(target.device)
                 mip_install(target, t, "unittest")
                 t.close()
@@ -289,7 +292,7 @@ def main():
                 t = SerialTransport(target.device)
                 t.enter_raw_repl()
                 rtc_set(target, t)
-                if target.has_vfs:
+                if target.has_filesystem:
                     for file in glob.glob("net_inet/*.der") + glob.glob("multi_net/*.der"):
                         put_file(t, *file.rsplit("/", 1))
                 target.has_wlan_connected = wlan_connect(target, t)
