@@ -10,12 +10,13 @@ except ImportError:
 ctx = tls.SSLContext(tls.PROTOCOL_TLS_CLIENT)
 
 # Test setting PSK and identity
-psk = b"test-preshared-key"
 identity = b"test-identity"
+psk = b"test-preshared-key"
 
 # Test the PSK functionality - this will throw an exception if PSK is not supported
 try:
-    ctx.set_psk(psk, identity)
+    ctx.set_psk_identity(identity)
+    ctx.set_psk_key(psk)
     print("PSK successfully set")
 except Exception as e:
     print("Failed to set PSK:", e)
