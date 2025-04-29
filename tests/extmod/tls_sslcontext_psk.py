@@ -23,9 +23,9 @@ except Exception as e:
     raise SystemExit
 
 # Test setting PSK ciphersuites with error handling
-# Try with one basic PSK ciphersuite that should be widely supported
+# Use set_ciphers("PSK") to enable PSK mode
 try:
-    ctx.set_psk_ciphersuites(["TLS-PSK-WITH-AES-128-CBC-SHA256"])
+    ctx.set_ciphers("PSK")
     print("PSK ciphersuites set")
 except Exception as e:
     print("Failed to set PSK ciphersuites:", e)
