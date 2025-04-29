@@ -277,7 +277,12 @@ def main():
                 do_test(run_tests_cmd + ["--via-mpy"] + port_specific)
 
             if select_native and target.arch is not None:
-                do_test(run_tests_cmd + ["--via-mpy", "--emit", "native"])
+                run_native = ["--via-mpy", "--emit", "native"]
+                do_test(run_tests_cmd + run_native)
+                if select_hardware:
+                    do_test(run_tests_cmd + run_native + ["-d", "extmod_hardware"])
+                    if target.port == "pyboard":
+                        do_test(run_tests_cmd + run_native + ["-d", "ports/stm32_hardware"])
                 do_test(["./run-natmodtests.py", "-p", "-d", target.device] + tests_natmod)
 
             if select_wlan and target.has_wlan:
