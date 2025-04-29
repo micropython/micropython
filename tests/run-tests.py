@@ -72,6 +72,8 @@ class __File(io.IOBase):
   def ioctl(self, request, arg):
     if request == 4: # MP_STREAM_CLOSE
       return 0
+    if request == 11: # MP_STREAM_GET_BUFFER_SIZE
+      return 249
     return -1
   def readinto(self, buf):
     buf[:] = memoryview(__buf)[self.off:self.off + len(buf)]
@@ -598,6 +600,35 @@ class PyboardNodeRunner:
         # Return the results.
         return had_crash, output_mupy
 
+stdout_isatty = sys.stdout.isatty()
+end_erase = "                         \r"
+
+def print_output_skip(test):
+    if stdout_isatty:
+        print("skip ", test, end=end_erase)
+    else:
+        print("skip ", test)
+
+def print_output_start(test):
+    if stdout_isatty:
+        print(".... ", test, end=end_erase)
+
+def print_output_end_skip(test):
+    if stdout_isatty:
+        return
+        print("skip ", test, end=end_erase)
+    else:
+        print("skip ", test)
+
+def print_output_end_pass(test, extra_info):
+    if stdout_isatty:
+        return
+        print("pass ", test, extra_info, end=end_erase)
+    else:
+        print("pass ", test, extra_info)
+
+def print_output_end_fail(test, extra_info):
+    print("FAIL ", test, extra_info)
 
 def run_tests(pyb, tests, args, result_dir, num_threads=1):
     test_count = ThreadSafeCounter()
@@ -890,9 +921,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_inlineasm and is_inlineasm
 
         if skip_it:
-            print("skip ", test_file)
+            print_output_skip(test_file)
             skipped_tests.append(test_name)
             return
+
+        print_output_start(test_file)
 
         # Run the test on the MicroPython target.
         output_mupy = run_micropython(pyb, args, test_file, test_file_abspath)
@@ -905,7 +938,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 # reset.  Wait for the soft reset to finish, so we don't interrupt the
                 # start-up code (eg boot.py) when preparing to run the next test.
                 pyb.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
-            print("skip ", test_file)
+            print_output_end_skip(test_file)
             skipped_tests.append(test_name)
             return
 
@@ -988,12 +1021,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Print test summary, update counters, and save .exp/.out files if needed.
         if test_passed:
-            print("pass ", test_file, extra_info)
+            print_output_end_pass(test_file, extra_info)
             passed_count.increment()
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
-            print("FAIL ", test_file, extra_info)
+            print_output_end_fail(test_file, extra_info)
             if output_expected is not None:
                 with open(filename_expected, "wb") as f:
                     f.write(output_expected)
@@ -1260,7 +1293,10 @@ the last matching regex is used:
             elif args.platform == "rp2":
                 test_dirs += ("float", "stress", "thread", "ports/rp2")
             elif args.platform == "esp32":
-                test_dirs += ("float", "stress", "thread")
+                test_dirs += ("float", "stress")
+                if args.emit != "native":
+                    # On esp32, thread with native emitter doesn't work well.
+                    test_dirs += ("thread",)
             elif args.platform in ("esp8266", "minimal", "samd", "nrf"):
                 test_dirs += ("float",)
             elif args.platform == "WiPy":
@@ -1321,4 +1357,9 @@ the last matching regex is used:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print()
+        print("INTERRUPT")
+        sys.exit(1)
