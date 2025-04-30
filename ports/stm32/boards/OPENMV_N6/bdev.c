@@ -27,6 +27,7 @@
 #include "py/obj.h"
 #include "storage.h"
 #include "spi.h"
+#include "xspi.h"
 
 #if BUILDING_MBOOT
 
@@ -52,23 +53,20 @@ mp_spiflash_t board_mboot_spiflash;
 
 #elif defined(MICROPY_HW_BDEV_SPIFLASH)
 
-static const mp_soft_spi_obj_t soft_spi_bus = {
-    .delay_half = MICROPY_HW_SOFTSPI_MIN_DELAY,
-    .polarity = 0,
-    .phase = 0,
-    .sck = MBOOT_SPIFLASH_SCK,
-    .mosi = MBOOT_SPIFLASH_MOSI,
-    .miso = MBOOT_SPIFLASH_MISO,
-};
+#if MICROPY_HW_SPIFLASH_ENABLE_CACHE
+#error "Cannot enable MICROPY_HW_SPIFLASH_ENABLE_CACHE"
+//static mp_spiflash_cache_t spi_bdev_cache;
+#endif
 
-static mp_spiflash_cache_t spi_bdev_cache;
-
+// External SPI flash uses hardware XSPI interface (in 1-line mode).
 const mp_spiflash_config_t spiflash_config = {
-    .bus_kind = MP_SPIFLASH_BUS_SPI,
-    .bus.u_spi.cs = MBOOT_SPIFLASH_CS,
-    .bus.u_spi.data = (void *)&soft_spi_bus,
-    .bus.u_spi.proto = &mp_soft_spi_proto,
-    .cache = &spi_bdev_cache,
+    .bus_kind = MP_SPIFLASH_BUS_QSPI, // spiflash driver doesn't yet support XSPI directly
+    .bus.u_qspi.data = (void *)&xspi_flash2,
+    .bus.u_qspi.proto = &xspi_proto,
+    //#if MICROPY_HW_SPIFLASH_ENABLE_CACHE
+    //.cache = &spi_bdev_cache,
+    //#endif
+    //.cache = &spi_bdev_cache,
 };
 
 spi_bdev_t spi_bdev;
