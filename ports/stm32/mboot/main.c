@@ -1471,7 +1471,7 @@ MP_NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0
 
 static void try_enter_application(int reset_mode) {
     #if defined(STM32N6)
-    xspi_flash_init();
+    xspi_init();
     #endif
 
     uint32_t msp = *(volatile uint32_t *)APPLICATION_ADDR;
