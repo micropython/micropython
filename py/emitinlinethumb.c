@@ -35,6 +35,18 @@
 
 #if MICROPY_EMIT_INLINE_THUMB
 
+#ifndef MP_ATTR_NONSTRING
+#ifdef __has_attribute
+#if __has_attribute(nonstring)
+#define MP_ATTR_NONSTRING __attribute__((nonstring))
+#endif
+#endif
+#endif
+
+#ifndef MP_ATTR_NONSTRING
+#define MP_ATTR_NONSTRING
+#endif
+
 typedef enum {
 // define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) PN_##rule,
@@ -146,8 +158,9 @@ static bool emit_inline_thumb_label(emit_inline_asm_t *emit, mp_uint_t label_num
     return true;
 }
 
-typedef struct _reg_name_t { byte reg;
-                             byte name[3];
+typedef struct _reg_name_t {
+    uint8_t reg;
+    uint8_t name[3] MP_ATTR_NONSTRING;
 } reg_name_t;
 static const reg_name_t reg_name_table[] = {
     {0, "r0\0"},
@@ -364,8 +377,9 @@ static int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
     return 0;
 }
 
-typedef struct _cc_name_t { byte cc;
-                            byte name[2];
+typedef struct _cc_name_t {
+    uint8_t cc;
+    uint8_t name[2] MP_ATTR_NONSTRING;
 } cc_name_t;
 static const cc_name_t cc_name_table[] = {
     { ASM_THUMB_CC_EQ, "eq" },
@@ -384,8 +398,9 @@ static const cc_name_t cc_name_table[] = {
     { ASM_THUMB_CC_LE, "le" },
 };
 
-typedef struct _format_4_op_t { byte op;
-                                char name[3];
+typedef struct _format_4_op_t {
+    uint8_t op;
+    char name[3] MP_ATTR_NONSTRING;
 } format_4_op_t;
 #define X(x) (((x) >> 4) & 0xff) // only need 1 byte to distinguish these ops
 static const format_4_op_t format_4_op_table[] = {
@@ -424,8 +439,8 @@ static const format_9_10_op_t format_9_10_op_table[] = {
 
 // actual opcodes are: 0xee00 | op.hi_nibble, 0x0a00 | op.lo_nibble
 typedef struct _format_vfp_op_t {
-    byte op;
-    char name[3];
+    uint8_t op;
+    char name[3] MP_ATTR_NONSTRING;
 } format_vfp_op_t;
 static const format_vfp_op_t format_vfp_op_table[] = {
     { 0x30, "add" },
