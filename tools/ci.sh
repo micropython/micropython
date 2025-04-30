@@ -209,7 +209,7 @@ function ci_esp32_build_s3_c3 {
 
 function ci_esp8266_setup {
     sudo pip3 install pyserial esptool==3.3.1 pyelftools ar
-    wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz
+    wget https://micropython.org/resources/xtensa-lx106-elf-standalone.tar.gz
     zcat xtensa-lx106-elf-standalone.tar.gz | tar x
     # Remove this esptool.py so pip version is used instead
     rm xtensa-lx106-elf/bin/esptool.py
