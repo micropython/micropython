@@ -436,13 +436,40 @@ static void set_psk_ciphersuites(mbedtls_ssl_config *conf) {
 static mp_obj_t ssl_context_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) {
     mp_obj_ssl_context_t *ssl_context = MP_OBJ_TO_PTR(self_in);
 
-    // Check if ciphersuite is a string "PSK"
+    // Check if ciphersuite is a string
     if (mp_obj_is_str(ciphersuite)) {
         const char *ciphername = mp_obj_str_get_str(ciphersuite);
+        
+        // Check for generic "PSK" mode
         if (strcmp(ciphername, "PSK") == 0) {
             ssl_context->use_psk = true;
             set_psk_ciphersuites(&ssl_context->conf);
             return mp_const_none;
+        }
+        
+        // Check if this is a PSK ciphersuite name
+        if (strncmp(ciphername, "PSK-", 4) == 0 ||
+            strncmp(ciphername, "TLS-PSK-", 8) == 0 ||
+            strncmp(ciphername, "TLS_PSK_", 8) == 0) {
+            
+            // Try to look up the ciphersuite ID
+            const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
+            if (id != 0) {
+                // Enable PSK mode
+                ssl_context->use_psk = true;
+                
+                // Create a ciphersuite array with just this one ciphersuite
+                ssl_context->ciphersuites = m_new(int, 2);
+                if (ssl_context->ciphersuites == NULL) {
+                    mp_raise_OSError(MP_ENOMEM);
+                }
+                ssl_context->ciphersuites[0] = id;
+                ssl_context->ciphersuites[1] = 0;  // Terminating zero
+                
+                // Configure the ciphersuite
+                mbedtls_ssl_conf_ciphersuites(&ssl_context->conf, (const int *)ssl_context->ciphersuites);
+                return mp_const_none;
+            }
         }
     }
 

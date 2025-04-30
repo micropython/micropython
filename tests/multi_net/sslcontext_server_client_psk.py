@@ -28,7 +28,7 @@ def instance0():
     # Configure PSK
     server_ctx.set_psk_identity("PSK-Identity-1")
     server_ctx.set_psk_key(bytes.fromhex("c0ffee"))
-    server_ctx.set_ciphers("PSK")
+    server_ctx.set_ciphers("TLS-PSK-WITH-AES-128-CBC-SHA256")  # Use specific PSK ciphersuite
     
     s2 = server_ctx.wrap_socket(s2, server_side=True)
 
@@ -49,7 +49,7 @@ def instance1():
     # Configure PSK
     client_ctx.set_psk_identity("PSK-Identity-1")
     client_ctx.set_psk_key(bytes.fromhex("c0ffee"))
-    client_ctx.set_ciphers("PSK")
+    client_ctx.set_ciphers("TLS-PSK-WITH-AES-128-CBC-SHA256")  # Use specific PSK ciphersuite
     
     s = client_ctx.wrap_socket(s, server_hostname="micropython.local")
     s.write(b"client to server")
