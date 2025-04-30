@@ -5,10 +5,10 @@
 #define MICROPY_ALLOC_GC_STACK_SIZE (128)
 
 #define MICROPY_HW_HAS_SWITCH       (0)
-#define MICROPY_HW_HAS_FLASH        (0)
-#define MICROPY_HW_FLASH_MOUNT_AT_BOOT (0) // TODO enable
+#define MICROPY_HW_HAS_FLASH        (1)
+#define MICROPY_HW_FLASH_MOUNT_AT_BOOT (1) // TODO enable
 #define MICROPY_HW_ENABLE_RNG       (0)
-#define MICROPY_HW_ENABLE_RTC       (0)
+#define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_ADC       (0)
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_USB       (1)
@@ -26,18 +26,25 @@
 #define MICROPY_HW_CLK_PLLP2        (1)
 #define MICROPY_HW_CLK_PLLFRAC      (0)
 
+// The LSE is a 32kHz crystal.
+#define MICROPY_HW_RTC_USE_LSE      (1)
+#define MICROPY_HW_RTC_USE_US       (1)
+
 // External SPI flash.
 #define MICROPY_HW_XSPIFLASH_SIZE_BITS_LOG2 (28) // 256Mbit
 
-#if 0
+// ROMFS config
+#define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_XSPI (1)
+#define MICROPY_HW_ROMFS_XSPI_SPIFLASH_OBJ (&spi_bdev.spiflash)
+#define MICROPY_HW_ROMFS_ENABLE_PART0 (1)
+
+#if 1
 // SPI flash, block device config.
-#if !BUILDING_MBOOT
-#define MICROPY_HW_SPIFLASH_ENABLE_CACHE        (1)
-#endif
 #define MICROPY_HW_BDEV_SPIFLASH                (&spi_bdev)
-#define MICROPY_HW_BDEV_SPIFLASH_CONFIG         (&spiflash_config)
-#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES     (32 * 1024 * 1024)
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED       (&spi_bdev)
+#define MICROPY_HW_BDEV_SPIFLASH_CONFIG         (&spiflash_config)
+#define MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES   (16 * 1024 * 1024)
+#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES     (16 * 1024 * 1024)
 #endif
 
 // UART buses
