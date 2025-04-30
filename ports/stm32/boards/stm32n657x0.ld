@@ -7,11 +7,13 @@
 /* Specify the memory areas */
 MEMORY
 {
-    SRAM2_S (xrw)   : ORIGIN = 0x34100000, LENGTH = 1024K
-    EXT_FLASH (rx)  : ORIGIN = 0x70080000, LENGTH = 1536K
+    SRAM2_S (xrw)       : ORIGIN = 0x34100000, LENGTH = 1024K
+    SRAM2_S_FSBL (xrw)  : ORIGIN = 0x34180400, LENGTH = 511K
+    EXT_FLASH (rx)      : ORIGIN = 0x70080000, LENGTH = 1536K
 }
 
 REGION_ALIAS("RAM", SRAM2_S);
+REGION_ALIAS("FLASH", SRAM2_S_FSBL);
 REGION_ALIAS("FLASH_APP", EXT_FLASH);
 
 /* produce a link error if there is not this amount of RAM for these sections */
