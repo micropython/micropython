@@ -50,4 +50,3 @@ def instance1():
     s.write(b"client to server")
     print(s.read(16))
     s.close()
-    
