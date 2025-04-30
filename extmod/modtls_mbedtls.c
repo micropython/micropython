@@ -64,6 +64,13 @@
 #include "mbedtls/asn1.h"
 #endif
 
+// Forward declaration of mbedtls_ssl_conf_psk
+// This is needed because the function might not be declared in the included headers
+#if defined(MBEDTLS_KEY_EXCHANGE_PSK_ENABLED)
+int mbedtls_ssl_conf_psk(mbedtls_ssl_config *conf, const unsigned char *psk, size_t psk_len,
+                         const unsigned char *psk_identity, size_t psk_identity_len);
+#endif
+
 #ifndef MICROPY_MBEDTLS_CONFIG_BARE_METAL
 #define MICROPY_MBEDTLS_CONFIG_BARE_METAL (0)
 #endif
@@ -711,6 +718,9 @@ static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
 
     // Configure PSK if enabled
     if (ssl_context->use_psk && ssl_context->psk_identity != mp_const_none && ssl_context->psk_key != mp_const_none) {
+        #if !defined(MBEDTLS_KEY_EXCHANGE_PSK_ENABLED)
+        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PSK not supported"));
+        #endif
         // Get PSK identity and key
         size_t psk_identity_len;
         const byte *psk_identity = (const byte *)mp_obj_str_get_data(ssl_context->psk_identity, &psk_identity_len);
