@@ -14,6 +14,7 @@ PSK_ID = "PSK-Identity-1"
 PSK_KEY = "c0ffee"
 PSK_CIPHER = "PSK"
 
+
 # Server
 def instance0():
     multitest.globals(IP=multitest.get_network_ip())

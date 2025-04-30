@@ -1,4 +1,4 @@
-# Test TCP server and client with TLS-PSK, using set_psk_identity(), 
+# Test TCP server and client with TLS-PSK, using set_psk_identity(),
 # set_psk_key(), and set_ciphers("TLS-PSK-WITH-AES-128-CBC-SHA256").
 
 try:
@@ -13,6 +13,7 @@ PORT = 8000
 PSK_ID = "PSK-Identity-1"
 PSK_KEY = "c0ffee"
 PSK_CIPHER = "TLS-PSK-WITH-AES-128-CBC-SHA256"
+
 
 # Server
 def instance0():
