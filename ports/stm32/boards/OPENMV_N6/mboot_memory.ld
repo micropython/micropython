@@ -9,8 +9,8 @@
 
 MEMORY
 {
-    FLASH_BL (rx)   : ORIGIN = 0x34180400, LENGTH = 32K     /* AXISRAM1_S */
-    RAM (xrw)       : ORIGIN = 0x341e0000, LENGTH = 128K    /* AXISRAM1_S */
+    FLASH_BL (rx)   : ORIGIN = 0x34180400, LENGTH = 32K     /* AXISRAM2_S */
+    RAM (xrw)       : ORIGIN = 0x341e0000, LENGTH = 128K    /* AXISRAM2_S */
 }
 
 /* Location of protected flash area which must not be modified, because mboot lives there. */
