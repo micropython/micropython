@@ -207,6 +207,7 @@
 #include "stm32n6xx_hal_xspi.h"
 #include "stm32n6xx_ll_lpuart.h"
 #include "stm32n6xx_ll_pwr.h"
+#include "stm32n6xx_ll_rtc.h"
 #include "stm32n6xx_ll_usart.h"
 
 // HAL parameter assertions are disabled
