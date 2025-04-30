@@ -67,9 +67,6 @@ CONFIG_MBEDTLS_HAVE_TIME=y
 # Enable DTLS
 CONFIG_MBEDTLS_SSL_PROTO_DTLS=y
 
-# Enable PSK (Pre-Shared Key) support
-CONFIG_MBEDTLS_KEY_EXCHANGE_PSK_ENABLED=y
-
 # Disable ALPN support as it's not implemented in MicroPython
 CONFIG_MBEDTLS_SSL_ALPN=n
 
