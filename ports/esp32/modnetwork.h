@@ -35,11 +35,21 @@
 #define PHY_LAN867X_ENABLED (0)
 #endif
 
+// PHY_GENERIC support requires newer IDF version
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0) && CONFIG_IDF_TARGET_ESP32
+#define PHY_GENERIC_ENABLED (1)
+#else
+#define PHY_GENERIC_ENABLED (0)
+#endif
+
 enum {
     // PHYs supported by the internal Ethernet MAC:
     PHY_LAN8710, PHY_LAN8720, PHY_IP101, PHY_RTL8201, PHY_DP83848, PHY_KSZ8041, PHY_KSZ8081,
     #if PHY_LAN867X_ENABLED
     PHY_LAN8670,
+    #endif
+    #if PHY_GENERIC_ENABLED
+    PHY_GENERIC,
     #endif
     // PHYs which are actually SPI Ethernet MAC+PHY chips:
     PHY_KSZ8851SNL = 100, PHY_DM9051, PHY_W5500

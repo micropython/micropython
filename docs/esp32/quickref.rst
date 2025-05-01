@@ -148,6 +148,7 @@ Required keyword arguments for the constructor:
 - ``mdc`` and ``mdio`` - :class:`machine.Pin` objects (or integers) specifying
   the MDC and MDIO pins.
 - ``phy_type`` - Select the PHY device type. Supported devices are
+  ``PHY_GENERIC``,
   ``PHY_LAN8710``, ``PHY_LAN8720``, ``PHY_IP101``, ``PHY_RTL8201``,
   ``PHY_DP83848``, ``PHY_KSZ8041`` and ``PHY_KSZ8081``. These values are all
   constants defined in the ``network`` module.

@@ -163,6 +163,9 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #if PHY_LAN867X_ENABLED
         args[ARG_phy_type].u_int != PHY_LAN8670 &&
         #endif
+        #if PHY_GENERIC_ENABLED
+        args[ARG_phy_type].u_int != PHY_GENERIC &&
+        #endif
         #if CONFIG_ETH_USE_SPI_ETHERNET
         #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
         args[ARG_phy_type].u_int != PHY_KSZ8851SNL &&
@@ -241,6 +244,11 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #if PHY_LAN867X_ENABLED
         case PHY_LAN8670:
             self->phy = esp_eth_phy_new_lan867x(&phy_config);
+            break;
+        #endif
+        #if PHY_GENERIC_ENABLED
+        case PHY_GENERIC:
+            self->phy = esp_eth_phy_new_generic(&phy_config);
             break;
         #endif
         #endif // CONFIG_IDF_TARGET_ESP32
