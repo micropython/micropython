@@ -152,6 +152,7 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     if (args[ARG_phy_type].u_int != PHY_LAN8710 &&
         args[ARG_phy_type].u_int != PHY_LAN8720 &&
+        args[ARG_phy_type].u_int != PHY_GENERIC &&
         args[ARG_phy_type].u_int != PHY_IP101 &&
         args[ARG_phy_type].u_int != PHY_RTL8201 &&
         args[ARG_phy_type].u_int != PHY_KSZ8041 &&
@@ -220,6 +221,13 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
             break;
         case PHY_IP101:
             self->phy = esp_eth_phy_new_ip101(&phy_config);
+            break;
+        case PHY_GENERIC:
+            #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
+            self->phy = esp_eth_phy_new_generic(&phy_config);
+            #else
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("PHY_GENERIC not supported in ESP-IDF < 5.4"));
+            #endif
             break;
         case PHY_RTL8201:
             self->phy = esp_eth_phy_new_rtl8201(&phy_config);
