@@ -221,6 +221,67 @@ import machine
 antenna = machine.Pin(16, machine.Pin.OUT, value=0)
 ```
 
+### Configuring WPA-Enterprise 
+
+If you want to connect to a network supporting EAP-PWD, EAP-PEAP or EAP-TTLS (for example `eduroam` at your educational institution), you can do it like this: 
+
+```
+import network
+
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+
+identity = "anonymous@eduroam.mwn.de"           # set accordingly for EAP-PEAP and EAP-TTLS
+username = "my_username@eduroam.mwn.de"         # set your username
+password = "my_password"                        # set your password
+certfile = "/T-TeleSec_GlobalRoot_Class_2.pem"  # needs to be uploaded first
+ssid     = "eduroam"
+method   = wlan.EAP_method    #   method = { EAP, PEAP, TTLS, TLS }
+ttls_phase2_method = 1        #   0 = EAP, 1 = MSCHAPv2 (default), 2 = MSCHAP, 3 = PAP, 4 = CHAP
+        
+with open (certfile, 'rb') as file:
+    ca_cert = file.read()
+            
+try:
+    if method == wlan.EAP_PWD:
+        wlan.eap_connect(ssid=ssid, eap_method=method, 
+                        username=username, password=password)
+    elif method == wlan.EAP_PEAP:
+        wlan.eap_connect(ssid=ssid, eap_method=method, 
+                        username=username, password=password, 
+                        identity=identity, ca_cert=ca_cert)        
+    elif method == wlan.EAP_TTLS:  
+        wlan.eap_connect(ssid=ssid, eap_method=method, 
+                        username=username, password=password, 
+                        identity=identity, ca_cert=ca_cert,
+                        ttls_phase2_method=ttls_phase2_method)
+except Exception as e:
+    print (f"error: {e}")
+
+```
+
+In most cases, you will want to use **EAP-PWD** because this usually connects swiftly and uses the least resources. Be sure to set your username and password accordingly. 
+
+Please note that for **EAP-PEAP** and **EAP-TTLS**, you need to provide the anonymous identity and upload the CA certificate first (in this example, `T-TeleSec_GlobalRoot_Class_2.pem` - check with your local network admin which is the correct one). Also, be sure that the local clock of your ESP32 device is set to the correct local time - otherwise the certificate verification will fail with an error message complaining about a password error or something. If your device has no battery buffered hardware clock (RTC), a possible workaround is to set the system time to the image build time at system start like this: 
+
+```
+import sys
+import machine
+
+(year, month, day) = sys.version.split(" on ")[1].split("-")
+rtc = machine.RTC()
+date_time = (int(year), int(month), int(day), 0, 0, 0, 0, 0)
+rtc.init(date_time) 
+
+```
+
+Do not use this hack in a production scenario! The best practice is to use an RTC and to set the system and RTC times regularly using NTP. 
+
+Also note that the MSCHAPv2 and CHAP TTLS phase2 methods for EAP-TTLS have known security issues. If you have alternatives, avoid them. 
+
+Code for **EAP-TLS** is included as well but is UNTESTED and thus EXPERIMENTAL. EAP-TLS only uses the `client_cert`, `private_key`, `private_key_password` (optional), and `ca_cert` (optional) arguments. Feel free to test and give feedback! 
+  
+
 Defining a custom ESP32 board
 -----------------------------
 
