@@ -49,12 +49,20 @@
 #if MICROPY_PY_MACHINE_RTCOUNTER
 #include "rtcounter.h"
 #endif
+#if defined(POWER_SYSTEMOFF_SYSTEMOFF_Enter)
+// nRF51/52
+#include "nrf_power.h"
+#elif defined(REGULATORS_SYSTEMOFF_SYSTEMOFF_Enable)
+// nRF91
+#include "nrf_regulators.h"
+#endif
 
+#define PYB_RESET_POWER_ON  (32)
 #define PYB_RESET_HARD      (0)
 #define PYB_RESET_WDT       (1)
 #define PYB_RESET_SOFT      (2)
 #define PYB_RESET_LOCKUP    (3)
-#define PYB_RESET_POWER_ON  (16)
+#define PYB_RESET_DEEPSLEEP (16)
 #define PYB_RESET_LPCOMP    (17)
 #define PYB_RESET_DIF       (18)
 #define PYB_RESET_NFC       (19)
@@ -93,11 +101,12 @@
     MICROPY_PY_MACHINE_RTCOUNTER_ENTRY \
     MICROPY_PY_MACHINE_TIMER_ENTRY \
     MICROPY_PY_MACHINE_TEMP_ENTRY \
+    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),        MP_ROM_INT(PYB_RESET_POWER_ON) }, \
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET),         MP_ROM_INT(PYB_RESET_HARD) }, \
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),          MP_ROM_INT(PYB_RESET_WDT) }, \
     { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),         MP_ROM_INT(PYB_RESET_SOFT) }, \
     { MP_ROM_QSTR(MP_QSTR_LOCKUP_RESET),       MP_ROM_INT(PYB_RESET_LOCKUP) }, \
-    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),        MP_ROM_INT(PYB_RESET_POWER_ON) }, \
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),    MP_ROM_INT(PYB_RESET_DEEPSLEEP) }, \
     { MP_ROM_QSTR(MP_QSTR_LPCOMP_RESET),       MP_ROM_INT(PYB_RESET_LPCOMP) }, \
     { MP_ROM_QSTR(MP_QSTR_DEBUG_IF_RESET),     MP_ROM_INT(PYB_RESET_DIF) }, \
     MICROPY_PY_MACHINE_NFC_RESET_ENTRY \
@@ -115,7 +124,7 @@ void machine_init(void) {
     } else if (state & POWER_RESETREAS_LOCKUP_Msk) {
         reset_cause = PYB_RESET_LOCKUP;
     } else if (state & POWER_RESETREAS_OFF_Msk) {
-        reset_cause = PYB_RESET_POWER_ON;
+        reset_cause = PYB_RESET_DEEPSLEEP;
     #if !defined(NRF9160_XXAA)
     } else if (state & POWER_RESETREAS_LPCOMP_Msk) {
         reset_cause = PYB_RESET_LPCOMP;
@@ -126,10 +135,12 @@ void machine_init(void) {
     } else if (state & POWER_RESETREAS_NFC_Msk) {
         reset_cause = PYB_RESET_NFC;
     #endif
+    } else {
+        reset_cause = PYB_RESET_POWER_ON;
     }
 
     // clear reset reason
-    NRF_POWER->RESETREAS = (1 << reset_cause);
+    NRF_POWER->RESETREAS = 0xFFFFFFFF;
 }
 
 // machine.info([dump_alloc_table])
@@ -200,7 +211,18 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 }
 
 NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
-    mp_machine_reset();
+    #if defined(POWER_SYSTEMOFF_SYSTEMOFF_Enter)
+    // nRF51/52
+    nrf_power_system_off(NRF_POWER);
+    #elif defined(REGULATORS_SYSTEMOFF_SYSTEMOFF_Enable)
+    // nRF91
+    nrf_regulators_system_off(NRF_REGULATORS);
+    #else
+    #error figure out how to enter System OFF mode on this chip
+    #endif
+    // never reached, just to convince the compiler of NORETURN
+    for (;;) {
+    }
 }
 
 static mp_int_t mp_machine_reset_cause(void) {
