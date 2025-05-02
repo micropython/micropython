@@ -31,6 +31,7 @@
 #include "py/smallint.h"
 #include "py/objint.h"
 #include "py/runtime.h"
+#include "py/misc.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
@@ -149,22 +150,6 @@ mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     }
 }
 
-// 64-bit binary operations have overflow checking when supported by the compiler,
-// multiply is used in a few places
-
-#ifndef __has_builtin
-  #define __has_builtin(x) (0)
-#endif
-
-#if __has_builtin(__builtin_mul_overflow)
-#define mul_overflow __builtin_mul_overflow
-#else
-inline static bool mul_overflow(long long lhs, long long rhs, long long *res) {
-    *res = lhs * rhs;
-    return false;
-}
-#endif
-
 mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     long long lhs_val;
     long long rhs_val;
@@ -190,23 +175,15 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     switch (op) {
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD:
-            #if __has_builtin(__builtin_add_overflow)
-            overflow = __builtin_add_overflow(lhs_val, rhs_val, &result);
-            #else
-            result = lhs_val + rhs_val;
-            #endif
+            overflow = mp_add_ll_overflow(lhs_val, rhs_val, &result);
             break;
         case MP_BINARY_OP_SUBTRACT:
         case MP_BINARY_OP_INPLACE_SUBTRACT:
-            #if __has_builtin(__builtin_sub_overflow)
-            overflow = __builtin_sub_overflow(lhs_val, rhs_val, &result);
-            #else
-            result = lhs_val - rhs_val;
-            #endif
+            overflow = mp_sub_ll_overflow(lhs_val, rhs_val, &result);
             break;
         case MP_BINARY_OP_MULTIPLY:
         case MP_BINARY_OP_INPLACE_MULTIPLY:
-            overflow = mul_overflow(lhs_val, rhs_val, &result);
+            overflow = mp_mul_ll_overflow(lhs_val, rhs_val, &result);
             break;
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
@@ -262,13 +239,13 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             result = 1;
             while (rhs_val > 0 && !overflow) {
                 if (rhs_val & 1) {
-                    overflow = mul_overflow(result, lhs_val, &result);
+                    overflow = mp_mul_ll_overflow(result, lhs_val, &result);
                 }
                 if (rhs_val == 1 || overflow) {
                     break;
                 }
                 rhs_val /= 2;
-                overflow = mul_overflow(lhs_val, lhs_val, &lhs_val);
+                overflow = mp_mul_ll_overflow(lhs_val, lhs_val, &lhs_val);
             }
             break;
         }
