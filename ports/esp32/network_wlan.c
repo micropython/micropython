@@ -870,9 +870,9 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
         // so we copy 1 byte more to include the null.
         // in the esp-idf wifi_enterprise example, the null is appended when converting the cert files to byte arrays.
         esp_exceptions(esp_eap_client_set_certificate_and_key(
-            (const unsigned char *) client_cert, client_cert_len + 1,
-            (const unsigned char *) private_key, private_key_len + 1,
-            (const unsigned char *) private_key_password, private_key_password_len + 1)
+            (const unsigned char *)client_cert, client_cert_len + 1,
+            (const unsigned char *)private_key, private_key_len + 1,
+            (const unsigned char *)private_key_password, private_key_password_len + 1)
             );
         // according to the esp-idf wifi_enterprise example, the ca_cert is optional for EAP-TLS
         if (args[ARG_ca_cert].u_obj != mp_const_none) {
