@@ -209,7 +209,7 @@ static const uint8_t log_base2_floor[] = {
 size_t mp_int_format_size(size_t num_bits, int base, const char *prefix, char comma) {
     assert(2 <= base && base <= 16);
     size_t num_digits = num_bits / log_base2_floor[base - 1] + 1;
-    size_t num_commas = comma ? num_digits / 3 : 0;
+    size_t num_commas = comma ? (base == 10 ? num_digits / 3 : num_digits / 4): 0;
     size_t prefix_len = prefix ? strlen(prefix) : 0;
     return num_digits + num_commas + prefix_len + 2; // +1 for sign, +1 for null byte
 }
@@ -251,6 +251,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
         sign = '-';
     }
 
+    int n_comma = (base == 10) ? 3 : 4;
     size_t needed_size = mp_int_format_size(sizeof(fmt_int_t) * 8, base, prefix, comma);
     if (needed_size > *buf_size) {
         *buf = m_new(char, needed_size);
@@ -275,7 +276,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
                 c += '0';
             }
             *(--b) = c;
-            if (comma && num != 0 && b > str && (last_comma - b) == 3) {
+            if (comma && num != 0 && b > str && (last_comma - b) == n_comma) {
                 *(--b) = comma;
                 last_comma = b;
             }

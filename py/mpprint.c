@@ -249,8 +249,8 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
     prefix = prefix_buf;
 
     char comma = '\0';
-    if (flags & PF_FLAG_SHOW_COMMA) {
-        comma = ',';
+    if (flags & PF_FLAG_SHOW_SEP) {
+        comma = base == 10 ? ',' : '_';
     }
 
     // The size of this buffer is rather arbitrary. If it's not large
