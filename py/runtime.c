@@ -505,13 +505,14 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
                     }
                     #endif
 
-                    if (mp_small_int_mul_overflow(lhs_val, rhs_val)) {
+                    mp_int_t int_res;
+                    if (mp_small_int_mul_overflow(lhs_val, rhs_val, &int_res)) {
                         // use higher precision
                         lhs = mp_obj_new_int_from_ll(lhs_val);
                         goto generic_binary_op;
                     } else {
                         // use standard precision
-                        return MP_OBJ_NEW_SMALL_INT(lhs_val * rhs_val);
+                        return MP_OBJ_NEW_SMALL_INT(int_res);
                     }
                 }
                 case MP_BINARY_OP_FLOOR_DIVIDE:
@@ -552,19 +553,19 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
                         mp_int_t ans = 1;
                         while (rhs_val > 0) {
                             if (rhs_val & 1) {
-                                if (mp_small_int_mul_overflow(ans, lhs_val)) {
+                                if (mp_small_int_mul_overflow(ans, lhs_val, &ans)) {
                                     goto power_overflow;
                                 }
-                                ans *= lhs_val;
                             }
                             if (rhs_val == 1) {
                                 break;
                             }
                             rhs_val /= 2;
-                            if (mp_small_int_mul_overflow(lhs_val, lhs_val)) {
+                            mp_int_t int_res;
+                            if (mp_small_int_mul_overflow(lhs_val, lhs_val, &int_res)) {
                                 goto power_overflow;
                             }
-                            lhs_val *= lhs_val;
+                            lhs_val = int_res;
                         }
                         lhs_val = ans;
                     }
