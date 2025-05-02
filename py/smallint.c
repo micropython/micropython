@@ -26,7 +26,7 @@
 
 #include "py/smallint.h"
 
-bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y) {
+bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y, mp_int_t *res) {
     // Check for multiply overflow; see CERT INT32-C
     if (x > 0) { // x is positive
         if (y > 0) { // x and y are positive
@@ -49,6 +49,9 @@ bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y) {
             }
         } // End if x and y are nonpositive
     } // End if x is nonpositive
+
+    // Result doesn't overflow
+    *res = x * y;
     return false;
 }
 
