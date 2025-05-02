@@ -156,7 +156,7 @@ Methods
     
     Common parameters: 
 
-        * ssid -- WiFi access point name, (string, e.g. `eduroam`)
+        * ssid -- WiFi access point name, (string, e.g. "eduroam")
         * eap_method -- EAP method to use (string) 
     
     EAP-PWD parameters
@@ -196,7 +196,7 @@ Methods
         * private_key_password -- private key password (string, optional)
         * disable_time_check -- suppress the validity check for the local client certificate when using EAP-TLS (boolean, default False)
 
-    `disable_time_check` is only included for the sake of completeness. In practice, 
+    disable_time_check is only included for the sake of completeness. In practice, 
     you want to renew the client certificate before expiry. 
 
     Certificate files need to be uploaded first, e.g.::
