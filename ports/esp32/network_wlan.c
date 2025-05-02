@@ -751,7 +751,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(network_wlan_config_obj, 1, network_wlan_config);
 #define WIFI_AUTH_EAP_TLS 3
 
 static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_eap_method, ARG_username, ARG_password, 
+    enum { ARG_ssid, ARG_eap_method, ARG_username, ARG_password,
            ARG_identity, ARG_ca_cert, ARG_ttls_phase2_method,
            ARG_client_cert, ARG_private_key, ARG_private_key_password, ARG_disable_time_check };
     static const mp_arg_t allowed_args[] = {
@@ -765,7 +765,7 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
         { MP_QSTR_client_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_private_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_private_key_password, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_disable_time_check, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },  
+        { MP_QSTR_disable_time_check, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     // parse args
@@ -776,7 +776,7 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
     int16_t eap_method = (int16_t)args[ARG_eap_method].u_int;
     size_t len;
     const char *p;
-        
+
     // parameter check
     if (eap_method < WIFI_AUTH_EAP_PWD || eap_method > WIFI_AUTH_EAP_TLS) {
         mp_raise_ValueError(MP_ERROR_TEXT("unknown config value for eap_method"));
@@ -815,8 +815,8 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
         }
         if (args[ARG_ca_cert].u_obj != mp_const_none) {
             p = mp_obj_str_get_data(args[ARG_ca_cert].u_obj, &len);
-          	// see comment (1) below.
-            esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *)p, len+1));
+            // see comment (1) below.
+            esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *)p, len + 1));
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("missing config param ca_cert"));
         }
@@ -833,7 +833,7 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
             mp_printf(&mp_plat_print, "ttls_phase2_method: \"%d\"\n", ttls_phase2_method);
             esp_exceptions(esp_eap_client_set_ttls_phase2_method(ttls_phase2_method));
         }
-    }  
+    }
 
     if (eap_method == WIFI_AUTH_EAP_TLS) {
         // UNTESTED!
@@ -870,15 +870,15 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
         // so we copy 1 byte more to include the null.
         // in the esp-idf wifi_enterprise example, the null is appended when converting the cert files to byte arrays.
         esp_exceptions(esp_eap_client_set_certificate_and_key(
-            (const unsigned char *) client_cert, client_cert_len+1,
-            (const unsigned char *) private_key, private_key_len+1,
-            (const unsigned char *) private_key_password, private_key_password_len+1)
+            (const unsigned char *) client_cert, client_cert_len + 1,
+            (const unsigned char *) private_key, private_key_len + 1,
+            (const unsigned char *) private_key_password, private_key_password_len + 1)
             );
         // according to the esp-idf wifi_enterprise example, the ca_cert is optional for EAP-TLS
         if (args[ARG_ca_cert].u_obj != mp_const_none) {
             p = mp_obj_str_get_data(args[ARG_ca_cert].u_obj, &len);
             const mp_obj_type_t *type = mp_obj_get_type(args[ARG_ca_cert].u_obj);
-            esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *)p, len+1));
+            esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *)p, len + 1));
         }
     }
 
