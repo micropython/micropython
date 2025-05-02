@@ -158,13 +158,13 @@ CSI Methods (ESP32 only)
    board definitions enable this in their default configuration. Other builds
    need ``CONFIG_ESP_WIFI_CSI_ENABLED=y`` in the ESP-IDF configuration.
 
-Channel State Information (CSI) provides per-packet physical layer channel data
-derived from received Wi-Fi frames. CSI capture requires an active Wi-Fi
-connection and incoming traffic to the device. Without traffic, no CSI frames
-will be captured.
+   Channel State Information (CSI) provides per-packet physical layer channel data
+   derived from received Wi-Fi frames. CSI capture requires an active Wi-Fi
+   connection and incoming traffic to the device. Without traffic, no CSI frames
+   will be captured.
 
-Other Espressif CSI options are hard-coded to defaults intended for connected
-station capture.
+   Other Espressif CSI options are hard-coded to defaults intended for connected
+   station capture.
 
 .. method:: WLAN.csi_enable(buffer_size=16)
 
