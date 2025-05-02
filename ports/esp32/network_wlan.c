@@ -741,8 +741,7 @@ unknown:
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(network_wlan_config_obj, 1, network_wlan_config);
 
-<<<<<<< HEAD
-=======
+
 // WPA2 Enterprise Connect
 
 // there are no official constants so far
@@ -766,11 +765,7 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
         { MP_QSTR_client_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_private_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_private_key_password, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-<<<<<<< HEAD
-        { MP_QSTR_disable_time_check, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },  // beware! 
-=======
         { MP_QSTR_disable_time_check, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },  
->>>>>>> 0517049d7 (ports/esp32: Set disable_time_check default to False.)
     };
 
     // parse args
@@ -782,31 +777,29 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
     size_t len;
     const char *p;
         
-    // TODO check if the IF is in STA mode, else bail out. 
-    
     // parameter check
     if (eap_method < WIFI_AUTH_EAP_PWD || eap_method > WIFI_AUTH_EAP_TLS) {
         mp_raise_ValueError(MP_ERROR_TEXT("unknown config value for eap_method"));
     }
-    
-    // this is mandatory and should not be None. 
+
+    // this is mandatory and should not be None
     if (args[ARG_ssid].u_obj != mp_const_none) {
         p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
         memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
     }
     esp_exceptions(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
-    
+
     if (eap_method == WIFI_AUTH_EAP_PWD || eap_method == WIFI_AUTH_EAP_PEAP || eap_method == WIFI_AUTH_EAP_TTLS) {
         // use username and password
         if (args[ARG_username].u_obj != mp_const_none) {
             p = mp_obj_str_get_data(args[ARG_username].u_obj, &len);
-            esp_exceptions(esp_eap_client_set_username((const unsigned char *) p, len));
+            esp_exceptions(esp_eap_client_set_username((const unsigned char *)p, len));
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("missing config param username"));
         }
         if (args[ARG_password].u_obj != mp_const_none) {
             p = mp_obj_str_get_data(args[ARG_password].u_obj, &len);
-            esp_exceptions(esp_eap_client_set_password((const unsigned char *) p, len));
+            esp_exceptions(esp_eap_client_set_password((const unsigned char *)p, len));
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("missing config param password"));
         }
@@ -816,14 +809,14 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
         // additionally use identity and ca_cert
         if (args[ARG_identity].u_obj != mp_const_none) {
             p = mp_obj_str_get_data(args[ARG_identity].u_obj, &len);
-            esp_exceptions(esp_eap_client_set_identity((const unsigned char *) p, len));
+            esp_exceptions(esp_eap_client_set_identity((const unsigned char *)p, len));
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("missing config param identity"));
         }
         if (args[ARG_ca_cert].u_obj != mp_const_none) {
             p = mp_obj_str_get_data(args[ARG_ca_cert].u_obj, &len);
           	// see comment (1) below.
-            esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *) p, len+1));
+            esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *)p, len+1));
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("missing config param ca_cert"));
         }
@@ -837,11 +830,11 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
             if (ttls_phase2_method < ESP_EAP_TTLS_PHASE2_EAP || ttls_phase2_method > ESP_EAP_TTLS_PHASE2_CHAP) {
                 mp_raise_ValueError(MP_ERROR_TEXT("unknown config value for ttls_phase2_method"));
             }
-          	mp_printf(&mp_plat_print, "ttls_phase2_method: \"%d\"\n", ttls_phase2_method);
+            mp_printf(&mp_plat_print, "ttls_phase2_method: \"%d\"\n", ttls_phase2_method);
             esp_exceptions(esp_eap_client_set_ttls_phase2_method(ttls_phase2_method));
         }
-    }    
-    
+    }  
+
     if (eap_method == WIFI_AUTH_EAP_TLS) {
         // UNTESTED!
         // EAP-TLS uses client cert, private key, and (optionally) private key password, and (optionally) ca_cert
@@ -869,23 +862,23 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
         // disable time check or not
         if (args[ARG_disable_time_check].u_bool == true) {
             esp_exceptions(esp_eap_client_set_disable_time_check(true));
-          	mp_printf(&mp_plat_print, "disable_time_check:  true\n");
+            mp_printf(&mp_plat_print, "disable_time_check:  true\n");
         }
 
-      	// (1) the documentation for esp_eap_client_set_certificate_and_key() says,
+        // (1) the documentation for esp_eap_client_set_certificate_and_key() says,
         // "2. The client_cert, private_key, and private_key_password should be zero-terminated."
         // so we copy 1 byte more to include the null.
         // in the esp-idf wifi_enterprise example, the null is appended when converting the cert files to byte arrays.
         esp_exceptions(esp_eap_client_set_certificate_and_key(
-                                      (const unsigned char *) client_cert, client_cert_len+1,
-                                      (const unsigned char *) private_key, private_key_len+1,
-                                      (const unsigned char *) private_key_password, private_key_password_len+1)
-                                      );
+            (const unsigned char *) client_cert, client_cert_len+1,
+            (const unsigned char *) private_key, private_key_len+1,
+            (const unsigned char *) private_key_password, private_key_password_len+1)
+            );
         // according to the esp-idf wifi_enterprise example, the ca_cert is optional for EAP-TLS
         if (args[ARG_ca_cert].u_obj != mp_const_none) {
             p = mp_obj_str_get_data(args[ARG_ca_cert].u_obj, &len);
             const mp_obj_type_t *type = mp_obj_get_type(args[ARG_ca_cert].u_obj);
-            esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *) p, len+1));
+            esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *)p, len+1));
         }
     }
 
@@ -893,10 +886,8 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
 
     // eap_enable & start
     esp_exceptions(esp_wifi_sta_enterprise_enable());
-    // TODO Maybe we need to add esp_wifi_sta_enterprise_disable() to wlan.active(False)?
-    // or separate function
-   	if (!wifi_started) {
-	    esp_exceptions(esp_wifi_start());
+    if (!wifi_started) {
+        esp_exceptions(esp_wifi_start());
     }
 
     wifi_sta_reconnects = 0;
@@ -910,7 +901,6 @@ static mp_obj_t network_wlan_eap_connect(size_t n_args, const mp_obj_t *pos_args
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(network_wlan_eap_connect_obj, 1, network_wlan_eap_connect);
 
->>>>>>> 3ec881cdd (ports/esp32: Set disable_time_check default to False.)
 static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&network_wlan_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&network_wlan_connect_obj) },
@@ -954,6 +944,16 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     #if !CONFIG_IDF_TARGET_ESP32C2
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_LR), MP_ROM_INT(WIFI_PROTOCOL_LR) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_EAP_PWD), MP_ROM_INT(WIFI_AUTH_EAP_PWD) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_PEAP), MP_ROM_INT(WIFI_AUTH_EAP_PEAP) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_TTLS), MP_ROM_INT(WIFI_AUTH_EAP_TTLS) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_TLS), MP_ROM_INT(WIFI_AUTH_EAP_TLS) },
+
+    { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_EAP), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_EAP) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_MSCHAPV2), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_MSCHAPV2) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_MSCHAP), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_MSCHAP) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_PAP), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_PAP) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_CHAP), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_CHAP) },
 
     { MP_ROM_QSTR(MP_QSTR_PM_NONE), MP_ROM_INT(WIFI_PS_NONE) },
     { MP_ROM_QSTR(MP_QSTR_PM_PERFORMANCE), MP_ROM_INT(WIFI_PS_MIN_MODEM) },
