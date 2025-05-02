@@ -250,6 +250,7 @@ station capture.
    they can be read. Increase ``buffer_size`` in ``csi_enable()`` to reduce
    drops.
 
+
 Constants
 ---------
 
