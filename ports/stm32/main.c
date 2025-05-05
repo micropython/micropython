@@ -543,6 +543,12 @@ void stm32_main(uint32_t reset_mode) {
 
     #if MICROPY_PY_NETWORK_CYW43
     {
+        #if CYW43_USE_SPI
+        // select gSPI mode
+        mp_hal_pin_output(pyb_pin_WL_SDIO_D2);
+        mp_hal_pin_low(pyb_pin_WL_SDIO_D2);
+        #endif
+
         cyw43_init(&cyw43_state);
         uint8_t buf[8];
         memcpy(&buf[0], "PYBD", 4);
@@ -769,3 +775,68 @@ soft_reset_exit:
 }
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_config_main);
+
+#if MICROPY_PY_NETWORK_CYW43 && CYW43_USE_SPI
+
+#include "lib/cyw43-driver/src/cyw43.h"
+#include "lib/cyw43-driver/src/cyw43_internal.h"
+#include "lib/cyw43-driver/src/cyw43_spi.h"
+#include "genhdr/pins.h"
+
+#define pin_WL_CS pyb_pin_WL_SDIO_D3
+#define pin_WL_SCK pyb_pin_WL_SDIO_CK
+#define pin_WL_MOSI pyb_pin_WL_SDIO_CMD
+#define pin_WL_MISO pyb_pin_WL_SDIO_D0
+
+static mp_soft_spi_obj_t cyw43_spi;
+
+int cyw43_spi_init(cyw43_int_t *self) {
+    cyw43_spi.delay_half = 0;
+    cyw43_spi.polarity = 1;
+    cyw43_spi.phase = 0;
+    cyw43_spi.firstbit = MICROPY_PY_MACHINE_SPI_MSB;
+    cyw43_spi.sck = pin_WL_SCK;
+    cyw43_spi.mosi = pin_WL_MOSI;
+    cyw43_spi.miso = pin_WL_MISO;
+
+    // Configure pins.
+    mp_hal_pin_output(pin_WL_CS);
+    mp_hal_pin_high(pin_WL_CS);
+
+    mp_soft_spi_ioctl(&cyw43_spi, MP_SPI_IOCTL_INIT);
+
+    return 0;
+}
+
+void cyw43_spi_deinit(cyw43_int_t *self) {
+}
+
+void cyw43_spi_gpio_setup(void) {
+}
+
+void cyw43_spi_reset(void) {
+}
+
+void cyw43_spi_set_polarity(cyw43_int_t *self, int pol) {
+    (void)self;
+    cyw43_spi.polarity = pol;
+    mp_hal_pin_write(cyw43_spi.sck, cyw43_spi.polarity);
+}
+
+// tx must not be NULL.
+// rx_len must be 0, or the same as tx_len.
+int cyw43_spi_transfer(cyw43_int_t *self, const uint8_t *tx, size_t tx_len, uint8_t *rx, size_t rx_len) {
+    (void)self;
+
+    if (tx_len == 0 && rx_len == 0) {
+        return 0;
+    }
+
+    mp_hal_pin_low(pin_WL_CS);
+    mp_soft_spi_transfer(&cyw43_spi, tx_len, tx, rx);
+    mp_hal_pin_high(pin_WL_CS);
+
+    return 0;
+}
+
+#endif
