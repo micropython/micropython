@@ -1103,7 +1103,7 @@ NORETURN void powerctrl_enter_standby_mode(void) {
     // clear RTC wake-up flags
     #if defined(SR_BITS)
     RTC->SR &= ~SR_BITS;
-    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32WL)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32N6) || defined(STM32WL)
     RTC->MISR &= ~ISR_BITS;
     #else
     RTC->ISR &= ~ISR_BITS;
@@ -1164,6 +1164,19 @@ NORETURN void powerctrl_enter_standby_mode(void) {
     powerctrl_low_power_prep_wb55();
     #endif
 #endif
+
+    #if defined(STM32N6)
+    // Clear all WKUPx flags.
+    LL_PWR_ClearFlag_WU();
+
+    // Upon wake from standby, jump to the code at SRAM1.
+    LL_PWR_EnableTCMSBRetention();
+    LL_PWR_EnableTCMFLXSBRetention();
+    LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_SYSCFG);
+    SCB_CleanDCache();
+    SYSCFG->INITNSVTORCR = SRAM1_AXI_BASE_NS;
+    SYSCFG->INITSVTORCR = SRAM1_AXI_BASE_S;
+    #endif
 
     // enter standby mode
     HAL_PWR_EnterSTANDBYMode();
