@@ -450,8 +450,15 @@ void SystemClock_Config(void) {
     while (!LL_RCC_HSE_IsReady()) {
     }
 
+    // Disable PLL1.
+    LL_RCC_PLL1_Disable();
+    while (LL_RCC_PLL1_IsReady()) {
+    }
+
     // Configure PLL1 for use as system clock.
     LL_RCC_PLL1_SetSource(LL_RCC_PLLSOURCE_HSE);
+    LL_RCC_PLL1_DisableBypass();
+    LL_RCC_PLL1_DisableFractionalModulationSpreadSpectrum();
     LL_RCC_PLL1_SetM(MICROPY_HW_CLK_PLLM);
     LL_RCC_PLL1_SetN(MICROPY_HW_CLK_PLLN);
     LL_RCC_PLL1_SetP1(MICROPY_HW_CLK_PLLP1);
@@ -477,6 +484,10 @@ void SystemClock_Config(void) {
     LL_RCC_IC11_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
     LL_RCC_IC11_SetDivider(1);
     LL_RCC_IC11_Enable();
+
+    // Enable buses.
+    LL_BUS_EnableClock(LL_APB5 | LL_APB4 | LL_APB3 | LL_APB2 | LL_APB1 | LL_AHB5 | LL_AHB4 | LL_AHB3 | LL_AHB2 | LL_AHB1);
+    LL_MISC_EnableClock(LL_PER);
 
     // Configure bus dividers.
     LL_RCC_SetAHBPrescaler(LL_RCC_AHB_DIV_2);

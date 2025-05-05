@@ -325,21 +325,28 @@ MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
 
 // get or set the MCU frequencies
 static mp_obj_t mp_machine_get_freq(void) {
+    #if defined(STM32N6)
+    LL_RCC_ClocksTypeDef clocks;
+    LL_RCC_GetSystemClocksFreq(&clocks);
     mp_obj_t tuple[] = {
-        #if defined(STM32N6)
-        mp_obj_new_int(HAL_RCC_GetCpuClockFreq()),
-        #endif
+        mp_obj_new_int(clocks.CPUCLK_Frequency),
+        mp_obj_new_int(clocks.SYSCLK_Frequency),
+        mp_obj_new_int(clocks.HCLK_Frequency),
+        mp_obj_new_int(clocks.PCLK1_Frequency),
+        mp_obj_new_int(clocks.PCLK2_Frequency),
+        mp_obj_new_int(clocks.PCLK4_Frequency),
+        mp_obj_new_int(clocks.PCLK5_Frequency),
+    };
+    #else
+    mp_obj_t tuple[] = {
         mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
         mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
         mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
         #if !defined(STM32F0) && !defined(STM32G0)
         mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
         #endif
-        #if defined(STM32N6)
-        mp_obj_new_int(HAL_RCC_GetPCLK4Freq()),
-        mp_obj_new_int(HAL_RCC_GetPCLK5Freq()),
-        #endif
     };
+    #endif
     return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
 }
 
