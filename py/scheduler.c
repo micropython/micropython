@@ -88,6 +88,8 @@ static inline void mp_sched_run_pending(void) {
 
     #if MICROPY_SCHEDULER_STATIC_NODES
     // Run all pending C callbacks.
+    // Warning: if C callbacks themserlves schedule new C callbacks this
+    // loop will never exit.
     while (MP_STATE_VM(sched_head) != NULL) {
         mp_sched_node_t *node = MP_STATE_VM(sched_head);
         MP_STATE_VM(sched_head) = node->next;
