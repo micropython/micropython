@@ -32,7 +32,7 @@
 #include "extint.h"
 #include "irq.h"
 
-#if MICROPY_PY_NETWORK_CYW43 && defined(pyb_pin_WL_HOST_WAKE)
+#if MICROPY_PY_NETWORK_CYW43 && defined(pyb_pin_WL_SDIO_D1)
 #include "lib/cyw43-driver/src/cyw43.h"
 #include "lib/cyw43-driver/src/cyw43_stats.h"
 #endif
@@ -802,8 +802,8 @@ void Handle_EXTI_Irq(uint32_t line) {
         __HAL_GPIO_EXTI_CLEAR_FLAG(1 << line);
         if (line < EXTI_NUM_VECTORS) {
             mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
-            #if MICROPY_PY_NETWORK_CYW43 && defined(pyb_pin_WL_HOST_WAKE)
-            if (pyb_extint_callback_arg[line] == MP_OBJ_FROM_PTR(pyb_pin_WL_HOST_WAKE)) {
+            #if MICROPY_PY_NETWORK_CYW43 && defined(pyb_pin_WL_SDIO_D1)
+            if (pyb_extint_callback_arg[line] == MP_OBJ_FROM_PTR(pyb_pin_WL_SDIO_D1)) {
                 if (cyw43_poll) {
                     pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
                     CYW43_STAT_INC(IRQ_COUNT);
