@@ -77,7 +77,7 @@ static void xspi_memory_map_888(void);
 #endif
 
 void xspi_init(void) {
-    #if !MICROPY_HW_RUNS_FROM_EXT_FLASH
+    //#if !MICROPY_HW_RUNS_FROM_EXT_FLASH
     // Configure XSPI pins.
     mp_hal_pin_config_alt_speed(pyb_pin_XSPIM_P2_CS, MP_HAL_PIN_PULL_NONE, XSPI2_AF, MP_HAL_PIN_SPEED_VERY_HIGH);
     mp_hal_pin_config_alt_speed(pyb_pin_XSPIM_P2_SCK, MP_HAL_PIN_PULL_NONE, XSPI2_AF, MP_HAL_PIN_SPEED_VERY_HIGH);
@@ -93,14 +93,14 @@ void xspi_init(void) {
 
     LL_RCC_SetXSPIClockSource(LL_RCC_XSPI2_CLKSOURCE_HCLK);
 
-    __HAL_RCC_XSPIM_CLK_ENABLE();
-    __HAL_RCC_XSPI1_CLK_ENABLE();
-    __HAL_RCC_XSPI2_CLK_ENABLE();
+    LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_XSPIM);
+    LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_XSPI1);
+    LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_XSPI2);
 
     // XSPI power enable.
-    __HAL_RCC_PWR_CLK_ENABLE();
-    HAL_PWREx_EnableVddIO3();                     
-    HAL_PWREx_ConfigVddIORange(PWR_VDDIO3, PWR_VDDIO_RANGE_1V8);
+    LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_PWR);
+    LL_PWR_EnableVddIO3();
+    LL_PWR_SetVddIO3VoltageRange(LL_PWR_VDDIO_VOLTAGE_RANGE_1V8);
 
     // Configure XSPIM in direct mode.
     XSPI1->CR &= ~XSPI_CR_EN;
@@ -180,7 +180,7 @@ void xspi_init(void) {
     if (1) {
         xspi_memory_map_111();
     }
-    #endif
+    //#endif
 }
 
 uint32_t xspi_get_xip_base(const xspi_flash_t *self) {
@@ -298,7 +298,7 @@ static int xspi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
     xspi_flash_t *self = self_in;
     switch (cmd) {
         case MP_QSPI_IOCTL_INIT:
-            xspi_init();
+            // XSPI must be manually initialise by calling `xspi_init()` at boot.
             break;
         case MP_QSPI_IOCTL_BUS_ACQUIRE:
             xspi_memory_map_exit();

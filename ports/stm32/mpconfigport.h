@@ -273,6 +273,7 @@ typedef long mp_off_t;
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
+        __WFI(); \
     } while (0);
 
 #define MICROPY_THREAD_YIELD()
