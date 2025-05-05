@@ -37,10 +37,15 @@
 #include "pendsv.h"
 #include "sdio.h"
 
-#define CYW43_USE_SPI                   (0)
+#ifndef static_assert
+#define static_assert(expr, msg)        typedef int static_assert_##__LINE__[(expr) ? 1 : -1]
+
+#endif
+#define CYW43_USE_SPI                   (1)
 #define CYW43_ENABLE_BLUETOOTH_OVER_UART (1)
 #define CYW43_LWIP                      (1)
 #define CYW43_USE_STATS                 (0)
+#define CYW43_PRINTF(...)               mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
 
 #ifndef CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE
 #define CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE "lib/cyw43-driver/firmware/w4343WA1_7_45_98_50_combined.h"
@@ -117,10 +122,12 @@
 #define cyw43_bluetooth_controller_sleep_maybe mp_bluetooth_hci_controller_sleep_maybe
 
 #define CYW43_PIN_WL_REG_ON             pyb_pin_WL_REG_ON
-#define CYW43_PIN_WL_HOST_WAKE          pyb_pin_WL_HOST_WAKE
-#define CYW43_PIN_WL_SDIO_1             pyb_pin_WL_SDIO_1
-#define CYW43_PIN_WL_GPIO_1             pyb_pin_WL_GPIO_1
-#define CYW43_PIN_WL_GPIO_4             pyb_pin_WL_GPIO_4
+//#define CYW43_PIN_WL_HOST_WAKE          pyb_pin_WL_HOST_WAKE
+//#define CYW43_PIN_WL_HOST_WAKE          pyb_pin_WL_IRQ
+//#define CYW43_PIN_WL_SDIO_1             pyb_pin_WL_SDIO_1
+//#define CYW43_PIN_WL_GPIO_1             pyb_pin_WL_GPIO_1
+//#define CYW43_PIN_WL_GPIO_4             pyb_pin_WL_GPIO_4
+#define CYW43_PIN_WL_IRQ                pyb_pin_WL_SDIO_D1
 
 #define CYW43_PIN_BT_REG_ON             pyb_pin_BT_REG_ON
 #define CYW43_PIN_BT_HOST_WAKE          pyb_pin_BT_HOST_WAKE
