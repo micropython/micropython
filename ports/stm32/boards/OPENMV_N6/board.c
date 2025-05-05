@@ -24,7 +24,12 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
+
 void board_early_init(void) {
     // TODO: if (HAL_PWREx_ConfigSupply(PWR_EXTERNAL_SOURCE_SUPPLY ) != HAL_OK)
     //xspi_flash_init();
+
+    LL_PWR_EnableWakeUpPin(LL_PWR_WAKEUP_PIN3 | LL_PWR_WAKEUP_PIN2);
+    LL_PWR_SetWakeUpPinPolarityLow(LL_PWR_WAKEUP_PIN3 | LL_PWR_WAKEUP_PIN2);
 }
