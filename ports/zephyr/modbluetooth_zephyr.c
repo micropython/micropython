@@ -151,11 +151,11 @@ int mp_bluetooth_init(void) {
     return 0;
 }
 
-void mp_bluetooth_deinit(void) {
+int mp_bluetooth_deinit(void) {
     DEBUG_printf("mp_bluetooth_deinit %d\n", mp_bluetooth_zephyr_ble_state);
     if (mp_bluetooth_zephyr_ble_state == MP_BLUETOOTH_ZEPHYR_BLE_STATE_OFF
         || mp_bluetooth_zephyr_ble_state == MP_BLUETOOTH_ZEPHYR_BLE_STATE_SUSPENDED) {
-        return;
+        return 0;
     }
 
     mp_bluetooth_gap_advertise_stop();
@@ -170,6 +170,7 @@ void mp_bluetooth_deinit(void) {
     mp_bluetooth_zephyr_ble_state = MP_BLUETOOTH_ZEPHYR_BLE_STATE_SUSPENDED;
 
     MP_STATE_PORT(bluetooth_zephyr_root_pointers) = NULL;
+    return 0;
 }
 
 bool mp_bluetooth_is_active(void) {
