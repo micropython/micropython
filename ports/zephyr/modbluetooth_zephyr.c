@@ -764,24 +764,19 @@ int mp_bluetooth_gatts_notify_indicate(uint16_t conn_handle, uint16_t value_hand
         if (attr_val) {
             switch (gatts_op) {
                 case MP_BLUETOOTH_GATTS_OP_NOTIFY: {
-                    err = 0;
-                    if (entry && (entry->data[0] == BT_GATT_CCC_NOTIFY)) {  // if the characteristic has been subscribed for notifications
-                        err = bt_gatt_notify(connection->conn, attr_val, value, value_len);
-                    }
+                    err = bt_gatt_notify(connection->conn, attr_val, value, value_len);
                     break;
                 }
                 case MP_BLUETOOTH_GATTS_OP_INDICATE: {
-                    if (entry && (entry->data[0] == BT_GATT_CCC_INDICATE)) { // if the characteristic has been subscribed for indications
-                        struct bt_gatt_indicate_params params = {
-                            .uuid = NULL,
-                            .attr = attr_val,
-                            .func = mp_bt_zephyr_gatt_indicate_done,
-                            .destroy = NULL,
-                            .data = value,
-                            .len = value_len
-                        };
-                        err = bt_gatt_indicate(connection->conn, &params);
-                    }
+                    struct bt_gatt_indicate_params params = {
+                        .uuid = NULL,
+                        .attr = attr_val,
+                        .func = mp_bt_zephyr_gatt_indicate_done,
+                        .destroy = NULL,
+                        .data = value,
+                        .len = value_len
+                    };
+                    err = bt_gatt_indicate(connection->conn, &params);
                     break;
                 }
             }
