@@ -22,7 +22,8 @@
         "D2WD": "ESP32 D2WD",
         "SPIRAM": "Support for SPIRAM / WROVER",
         "UNICORE": "ESP32 Unicore",
-        "OTA": "Support for OTA"
+        "OTA": "Support for OTA",
+        "ROMFS": "Support for ROMFS"
     },
     "vendor": "Espressif"
 }
