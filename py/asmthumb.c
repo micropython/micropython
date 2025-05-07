@@ -491,26 +491,6 @@ void asm_thumb_ldrh_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint r
     }
 }
 
-void asm_thumb_ldrh_reg_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_base, uint reg_index) {
-    asm_thumb_lsl_rlo_rlo_i5(as, reg_index, reg_index, 1);
-    asm_thumb_ldrh_rlo_rlo_rlo(as, reg_dest, reg_base, reg_index);
-}
-
-void asm_thumb_ldr_reg_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_base, uint reg_index) {
-    asm_thumb_lsl_rlo_rlo_i5(as, reg_index, reg_index, 2);
-    asm_thumb_ldr_rlo_rlo_rlo(as, reg_dest, reg_base, reg_index);
-}
-
-void asm_thumb_strh_reg_reg_reg(asm_thumb_t *as, uint reg_val, uint reg_base, uint reg_index) {
-    asm_thumb_lsl_rlo_rlo_i5(as, reg_index, reg_index, 1);
-    asm_thumb_strh_rlo_rlo_rlo(as, reg_val, reg_base, reg_index);
-}
-
-void asm_thumb_str_reg_reg_reg(asm_thumb_t *as, uint reg_val, uint reg_base, uint reg_index) {
-    asm_thumb_lsl_rlo_rlo_i5(as, reg_index, reg_index, 2);
-    asm_thumb_str_rlo_rlo_rlo(as, reg_val, reg_base, reg_index);
-}
-
 // this could be wrong, because it should have a range of +/- 16MiB...
 #define OP_BW_HI(byte_offset) (0xf000 | (((byte_offset) >> 12) & 0x07ff))
 #define OP_BW_LO(byte_offset) (0xb800 | (((byte_offset) >> 1) & 0x07ff))

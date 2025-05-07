@@ -758,6 +758,30 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_
 #define ASM_SUB_REG_REG(state, rd, rs) asm_rv32_opcode_sub(state, rd, rd, rs)
 #define ASM_XOR_REG_REG(state, rd, rs) asm_rv32_emit_optimised_xor(state, rd, rs)
 #define ASM_CLR_REG(state, rd)
+#define ASM_LOAD16_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_slli(state, rs2, rs2, 1); \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_lhu(state, rd, rs1, 0); \
+    } while (0)
+#define ASM_LOAD32_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_slli(state, rs2, rs2, 2); \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_lw(state, rd, rs1, 0); \
+    } while (0)
+#define ASM_STORE16_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_slli(state, rs2, rs2, 1); \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_sh(state, rd, rs1, 0); \
+    } while (0)
+#define ASM_STORE32_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_slli(state, rs2, rs2, 2); \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_sw(state, rd, rs1, 0); \
+    } while (0)
 
 #endif
 

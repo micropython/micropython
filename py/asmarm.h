@@ -221,6 +221,13 @@ void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
 #define ASM_STORE16_REG_REG(as, reg_value, reg_base) asm_arm_strh_reg_reg((as), (reg_value), (reg_base))
 #define ASM_STORE32_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg((as), (reg_value), (reg_base), 0)
 
+#define ASM_LOAD8_REG_REG_REG(as, reg_dest, reg_base, reg_index) asm_arm_ldrb_reg_reg_reg((as), (reg_dest), (reg_base), (reg_index))
+#define ASM_LOAD16_REG_REG_REG(as, reg_dest, reg_base, reg_index) asm_arm_ldrh_reg_reg_reg((as), (reg_dest), (reg_base), (reg_index))
+#define ASM_LOAD32_REG_REG_REG(as, reg_dest, reg_base, reg_index) asm_arm_ldr_reg_reg_reg((as), (reg_dest), (reg_base), (reg_index))
+#define ASM_STORE8_REG_REG_REG(as, reg_val, reg_base, reg_index) asm_arm_strb_reg_reg_reg((as), (reg_val), (reg_base), (reg_index))
+#define ASM_STORE16_REG_REG_REG(as, reg_val, reg_base, reg_index) asm_arm_strh_reg_reg_reg((as), (reg_val), (reg_base), (reg_index))
+#define ASM_STORE32_REG_REG_REG(as, reg_val, reg_base, reg_index) asm_arm_str_reg_reg_reg((as), (reg_val), (reg_base), (reg_index))
+
 #endif // GENERIC_ASM_API
 
 #endif // MICROPY_INCLUDED_PY_ASMARM_H

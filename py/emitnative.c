@@ -1638,59 +1638,36 @@ static void emit_native_load_subscr(emit_t *emit) {
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
-                    #if N_ARM
-                    asm_arm_ldrb_reg_reg_reg(emit->as, REG_RET, REG_ARG_1, reg_index);
-                    break;
-                    #elif N_THUMB
-                    asm_thumb_ldrb_rlo_rlo_rlo(emit->as, REG_RET, REG_ARG_1, reg_index);
-                    break;
-                    #endif
-                    // TODO optimise to use thumb ldrb r1, [r2, r3]
+                    #ifdef ASM_LOAD8_REG_REG_REG
+                    ASM_LOAD8_REG_REG_REG(emit->as, REG_RET, REG_ARG_1, reg_index);
+                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD8_REG_REG(emit->as, REG_RET, REG_ARG_1); // store value to (base+index)
+                    #endif
                     break;
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
-                    #if N_ARM
-                    asm_arm_ldrh_reg_reg_reg(emit->as, REG_RET, REG_ARG_1, reg_index);
-                    break;
-                    #elif N_THUMB
-                    asm_thumb_ldrh_reg_reg_reg(emit->as, REG_RET, REG_ARG_1, reg_index);
-                    break;
-                    #elif N_XTENSA || N_XTENSAWIN
-                    asm_xtensa_op_addx2(emit->as, REG_ARG_1, reg_index, REG_ARG_1);
-                    asm_xtensa_op_l16ui(emit->as, REG_RET, REG_ARG_1, 0);
-                    break;
-                    #endif
+                    #ifdef ASM_LOAD16_REG_REG_REG
+                    ASM_LOAD16_REG_REG_REG(emit->as, REG_RET, REG_ARG_1, reg_index);
+                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD16_REG_REG(emit->as, REG_RET, REG_ARG_1); // load from (base+2*index)
+                    #endif
                     break;
                 }
                 case VTYPE_PTR32: {
                     // pointer to word-size memory
-                    #if N_ARM
-                    asm_arm_ldr_reg_reg_reg(emit->as, REG_RET, REG_ARG_1, reg_index);
-                    break;
-                    #elif N_THUMB
-                    asm_thumb_ldr_reg_reg_reg(emit->as, REG_RET, REG_ARG_1, reg_index);
-                    break;
-                    #elif N_RV32
-                    asm_rv32_opcode_slli(emit->as, REG_TEMP2, reg_index, 2);
-                    asm_rv32_opcode_cadd(emit->as, REG_ARG_1, REG_TEMP2);
-                    asm_rv32_opcode_lw(emit->as, REG_RET, REG_ARG_1, 0);
-                    break;
-                    #elif N_XTENSA || N_XTENSAWIN
-                    asm_xtensa_op_addx4(emit->as, REG_ARG_1, reg_index, REG_ARG_1);
-                    asm_xtensa_op_l32i_n(emit->as, REG_RET, REG_ARG_1, 0);
-                    break;
-                    #endif
+                    #ifdef ASM_LOAD32_REG_REG_REG
+                    ASM_LOAD32_REG_REG_REG(emit->as, REG_RET, REG_ARG_1, reg_index);
+                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD32_REG_REG(emit->as, REG_RET, REG_ARG_1); // load from (base+4*index)
+                    #endif
                     break;
                 }
                 default:
@@ -1949,59 +1926,36 @@ static void emit_native_store_subscr(emit_t *emit) {
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
-                    // TODO optimise to use thumb strb r1, [r2, r3]
-                    #if N_ARM
-                    asm_arm_strb_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
-                    break;
-                    #elif N_THUMB
-                    asm_thumb_strb_rlo_rlo_rlo(emit->as, reg_value, REG_ARG_1, reg_index);
-                    break;
-                    #endif
+                    #ifdef ASM_STORE8_REG_REG_REG
+                    ASM_STORE8_REG_REG_REG(emit->as, reg_value, REG_ARG_1, reg_index);
+                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_STORE8_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+index)
+                    #endif
                     break;
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
-                    #if N_ARM
-                    asm_arm_strh_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
-                    break;
-                    #elif N_THUMB
-                    asm_thumb_strh_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
-                    break;
-                    #elif N_XTENSA || N_XTENSAWIN
-                    asm_xtensa_op_addx2(emit->as, REG_ARG_1, reg_index, REG_ARG_1);
-                    asm_xtensa_op_s16i(emit->as, reg_value, REG_ARG_1, 0);
-                    break;
-                    #endif
+                    #ifdef ASM_STORE16_REG_REG_REG
+                    ASM_STORE16_REG_REG_REG(emit->as, reg_value, REG_ARG_1, reg_index);
+                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_STORE16_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+2*index)
+                    #endif
                     break;
                 }
                 case VTYPE_PTR32: {
                     // pointer to 32-bit memory
-                    #if N_ARM
-                    asm_arm_str_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
-                    break;
-                    #elif N_THUMB
-                    asm_thumb_str_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
-                    break;
-                    #elif N_RV32
-                    asm_rv32_opcode_slli(emit->as, REG_TEMP2, reg_index, 2);
-                    asm_rv32_opcode_cadd(emit->as, REG_ARG_1, REG_TEMP2);
-                    asm_rv32_opcode_sw(emit->as, reg_value, REG_ARG_1, 0);
-                    break;
-                    #elif N_XTENSA || N_XTENSAWIN
-                    asm_xtensa_op_addx4(emit->as, REG_ARG_1, reg_index, REG_ARG_1);
-                    asm_xtensa_op_s32i_n(emit->as, reg_value, REG_ARG_1, 0);
-                    break;
-                    #endif
+                    #ifdef ASM_STORE32_REG_REG_REG
+                    ASM_STORE32_REG_REG_REG(emit->as, reg_value, REG_ARG_1, reg_index);
+                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_STORE32_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+4*index)
+                    #endif
                     break;
                 }
                 default:
