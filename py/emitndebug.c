@@ -251,8 +251,6 @@ static void asm_debug_setcc_reg_reg_reg(asm_debug_t *as, int op, int reg1, int r
 #define ASM_MUL_REG_REG(as, reg_dest, reg_src) \
     asm_debug_reg_reg(as, "mul", reg_dest, reg_src)
 
-#define ASM_LOAD_REG_REG(as, reg_dest, reg_base) \
-    asm_debug_reg_reg(as, "load", reg_dest, reg_base)
 #define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) \
     asm_debug_reg_reg_offset(as, "load", reg_dest, reg_base, word_offset)
 #define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) \
@@ -264,8 +262,6 @@ static void asm_debug_setcc_reg_reg_reg(asm_debug_t *as, int op, int reg1, int r
 #define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) \
     asm_debug_reg_reg(as, "load32", reg_dest, reg_base)
 
-#define ASM_STORE_REG_REG(as, reg_src, reg_base) \
-    asm_debug_reg_reg(as, "store", reg_src, reg_base)
 #define ASM_STORE_REG_REG_OFFSET(as, reg_src, reg_base, word_offset) \
     asm_debug_reg_reg_offset(as, "store", reg_src, reg_base, word_offset)
 #define ASM_STORE8_REG_REG(as, reg_src, reg_base) \
