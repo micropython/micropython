@@ -394,6 +394,7 @@ class TestMounted(TestBase):
     def setUp(self):
         self.orig_sys_path = list(sys.path)
         self.orig_cwd = os.getcwd()
+        sys.path = []
         vfs.mount(vfs.VfsRom(self.romfs), "/test_rom")
 
     def tearDown(self):
