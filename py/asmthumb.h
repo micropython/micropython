@@ -251,6 +251,50 @@ static inline void asm_thumb_bx_reg(asm_thumb_t *as, uint r_src) {
     asm_thumb_format_5(as, ASM_THUMB_FORMAT_5_BX, 0, r_src);
 }
 
+// FORMAT 7: load/store with register offset
+// FORMAT 8: load/store sign-extended byte/halfword
+
+#define ASM_THUMB_FORMAT_7_LDR (0x5800)
+#define ASM_THUMB_FORMAT_7_STR (0x5000)
+#define ASM_THUMB_FORMAT_7_WORD_TRANSFER (0x0000)
+#define ASM_THUMB_FORMAT_7_BYTE_TRANSFER (0x0400)
+#define ASM_THUMB_FORMAT_8_LDRH (0x5A00)
+#define ASM_THUMB_FORMAT_8_STRH (0x5200)
+
+#define ASM_THUMB_FORMAT_7_8_ENCODE(op, rlo_dest, rlo_base, rlo_index) \
+    ((op) | ((rlo_index) << 6) | ((rlo_base) << 3) | ((rlo_dest)))
+
+static inline void asm_thumb_format_7_8(asm_thumb_t *as, uint op, uint rlo_dest, uint rlo_base, uint rlo_index) {
+    assert(rlo_dest < ASM_THUMB_REG_R8);
+    assert(rlo_base < ASM_THUMB_REG_R8);
+    assert(rlo_index < ASM_THUMB_REG_R8);
+    asm_thumb_op16(as, ASM_THUMB_FORMAT_7_8_ENCODE(op, rlo_dest, rlo_base, rlo_index));
+}
+
+static inline void asm_thumb_ldrb_rlo_rlo_rlo(asm_thumb_t *as, uint rlo_dest, uint rlo_base, uint rlo_index) {
+    asm_thumb_format_7_8(as, ASM_THUMB_FORMAT_7_LDR | ASM_THUMB_FORMAT_7_BYTE_TRANSFER, rlo_dest, rlo_base, rlo_index);
+}
+
+static inline void asm_thumb_ldrh_rlo_rlo_rlo(asm_thumb_t *as, uint rlo_dest, uint rlo_base, uint rlo_index) {
+    asm_thumb_format_7_8(as, ASM_THUMB_FORMAT_8_LDRH, rlo_dest, rlo_base, rlo_index);
+}
+
+static inline void asm_thumb_ldr_rlo_rlo_rlo(asm_thumb_t *as, uint rlo_dest, uint rlo_base, uint rlo_index) {
+    asm_thumb_format_7_8(as, ASM_THUMB_FORMAT_7_LDR | ASM_THUMB_FORMAT_7_WORD_TRANSFER, rlo_dest, rlo_base, rlo_index);
+}
+
+static inline void asm_thumb_strb_rlo_rlo_rlo(asm_thumb_t *as, uint rlo_src, uint rlo_base, uint rlo_index) {
+    asm_thumb_format_7_8(as, ASM_THUMB_FORMAT_7_STR | ASM_THUMB_FORMAT_7_BYTE_TRANSFER, rlo_src, rlo_base, rlo_index);
+}
+
+static inline void asm_thumb_strh_rlo_rlo_rlo(asm_thumb_t *as, uint rlo_dest, uint rlo_base, uint rlo_index) {
+    asm_thumb_format_7_8(as, ASM_THUMB_FORMAT_8_STRH, rlo_dest, rlo_base, rlo_index);
+}
+
+static inline void asm_thumb_str_rlo_rlo_rlo(asm_thumb_t *as, uint rlo_src, uint rlo_base, uint rlo_index) {
+    asm_thumb_format_7_8(as, ASM_THUMB_FORMAT_7_STR | ASM_THUMB_FORMAT_7_WORD_TRANSFER, rlo_src, rlo_base, rlo_index);
+}
+
 // FORMAT 9: load/store with immediate offset
 // For word transfers the offset must be aligned, and >>2
 
@@ -340,6 +384,11 @@ void asm_thumb_mov_reg_pcrel(asm_thumb_t *as, uint rlo_dest, uint label);
 
 void asm_thumb_ldr_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint reg_base, uint word_offset); // convenience
 void asm_thumb_ldrh_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint reg_base, uint uint16_offset); // convenience
+
+void asm_thumb_ldrh_reg_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_base, uint reg_index);
+void asm_thumb_ldr_reg_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_base, uint reg_index);
+void asm_thumb_strh_reg_reg_reg(asm_thumb_t *as, uint reg_val, uint reg_base, uint reg_index);
+void asm_thumb_str_reg_reg_reg(asm_thumb_t *as, uint reg_val, uint reg_base, uint reg_index);
 
 void asm_thumb_b_label(asm_thumb_t *as, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bcc_label(asm_thumb_t *as, int cc, uint label); // convenience: picks narrow or wide branch
