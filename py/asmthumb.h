@@ -385,11 +385,6 @@ void asm_thumb_mov_reg_pcrel(asm_thumb_t *as, uint rlo_dest, uint label);
 void asm_thumb_ldr_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint reg_base, uint word_offset); // convenience
 void asm_thumb_ldrh_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint reg_base, uint uint16_offset); // convenience
 
-void asm_thumb_ldrh_reg_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_base, uint reg_index);
-void asm_thumb_ldr_reg_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_base, uint reg_index);
-void asm_thumb_strh_reg_reg_reg(asm_thumb_t *as, uint reg_val, uint reg_base, uint reg_index);
-void asm_thumb_str_reg_reg_reg(asm_thumb_t *as, uint reg_val, uint reg_base, uint reg_index);
-
 void asm_thumb_b_label(asm_thumb_t *as, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bcc_label(asm_thumb_t *as, int cc, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bl_ind(asm_thumb_t *as, uint fun_id, uint reg_temp); // convenience
@@ -479,6 +474,29 @@ void asm_thumb_b_rel12(asm_thumb_t *as, int rel);
 #define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_thumb_strb_rlo_rlo_i5((as), (reg_src), (reg_base), 0)
 #define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_thumb_strh_rlo_rlo_i5((as), (reg_src), (reg_base), 0)
 #define ASM_STORE32_REG_REG(as, reg_src, reg_base) asm_thumb_str_rlo_rlo_i5((as), (reg_src), (reg_base), 0)
+
+#define ASM_LOAD8_REG_REG_REG(as, reg_dest, reg_base, reg_index) asm_thumb_ldrb_rlo_rlo_rlo((as), (reg_dest), (reg_base), (reg_index))
+#define ASM_LOAD16_REG_REG_REG(as, reg_dest, reg_base, reg_index) \
+    do { \
+        asm_thumb_lsl_rlo_rlo_i5((as), (reg_index), (reg_index), 1); \
+        asm_thumb_ldrh_rlo_rlo_rlo((as), (reg_dest), (reg_base), (reg_index)); \
+    } while (0)
+#define ASM_LOAD32_REG_REG_REG(as, reg_dest, reg_base, reg_index) \
+    do { \
+        asm_thumb_lsl_rlo_rlo_i5((as), (reg_index), (reg_index), 2); \
+        asm_thumb_ldr_rlo_rlo_rlo((as), (reg_dest), (reg_base), (reg_index)); \
+    } while (0)
+#define ASM_STORE8_REG_REG_REG(as, reg_val, reg_base, reg_index) asm_thumb_strb_rlo_rlo_rlo((as), (reg_val), (reg_base), (reg_index))
+#define ASM_STORE16_REG_REG_REG(as, reg_val, reg_base, reg_index) \
+    do { \
+        asm_thumb_lsl_rlo_rlo_i5((as), (reg_index), (reg_index), 1); \
+        asm_thumb_strh_rlo_rlo_rlo((as), (reg_val), (reg_base), (reg_index)); \
+    } while (0)
+#define ASM_STORE32_REG_REG_REG(as, reg_val, reg_base, reg_index) \
+    do { \
+        asm_thumb_lsl_rlo_rlo_i5((as), (reg_index), (reg_index), 2); \
+        asm_thumb_str_rlo_rlo_rlo((as), (reg_val), (reg_base), (reg_index)); \
+    } while (0)
 
 #endif // GENERIC_ASM_API
 
