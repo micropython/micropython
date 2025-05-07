@@ -8,7 +8,7 @@
 { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&esp_network_get_lan_obj) },
 #endif
 #if defined(CONFIG_ESP_NETIF_TCPIP_LWIP) && defined(CONFIG_LWIP_PPP_SUPPORT)
-{ MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&esp_network_ppp_make_new_obj) },
+{ MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&esp_network_ppp_lwip_type) },
 #endif
 { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_network_phy_mode_obj) },
 { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&esp_network_ipconfig_obj) },
