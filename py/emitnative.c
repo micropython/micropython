@@ -1537,25 +1537,24 @@ static void emit_native_load_subscr(emit_t *emit) {
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
-                    // TODO optimise to use thumb ldrb r1, [r2, r3]
+                    #if N_THUMB
+                    if (index_value >= 0 && index_value < 32) {
+                        asm_thumb_ldrb_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
+                        break;
+                    }
+                    #elif N_RV32
+                    if (FIT_SIGNED(index_value, 12)) {
+                        asm_rv32_opcode_lbu(emit->as, REG_RET, reg_base, index_value);
+                        break;
+                    }
+                    #elif N_XTENSA || N_XTENSAWIN
+                    if (index_value >= 0 && index_value < 256) {
+                        asm_xtensa_op_l8ui(emit->as, REG_RET, reg_base, index_value);
+                        break;
+                    }
+                    #endif
                     if (index_value != 0) {
                         // index is non-zero
-                        #if N_THUMB
-                        if (index_value > 0 && index_value < 32) {
-                            asm_thumb_ldrb_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_RV32
-                        if (FIT_SIGNED(index_value, 12)) {
-                            asm_rv32_opcode_lbu(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_XTENSA || N_XTENSAWIN
-                        if (index_value > 0 && index_value < 256) {
-                            asm_xtensa_op_l8ui(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #endif
                         need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add index to base
@@ -1566,24 +1565,24 @@ static void emit_native_load_subscr(emit_t *emit) {
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
+                    #if N_THUMB
+                    if (index_value >= 0 && index_value < 32) {
+                        asm_thumb_ldrh_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
+                        break;
+                    }
+                    #elif N_RV32
+                    if (FIT_SIGNED(index_value, 11)) {
+                        asm_rv32_opcode_lhu(emit->as, REG_RET, reg_base, index_value << 1);
+                        break;
+                    }
+                    #elif N_XTENSA || N_XTENSAWIN
+                    if (index_value >= 0 && index_value < 256) {
+                        asm_xtensa_op_l16ui(emit->as, REG_RET, reg_base, index_value);
+                        break;
+                    }
+                    #endif
                     if (index_value != 0) {
                         // index is a non-zero immediate
-                        #if N_THUMB
-                        if (index_value > 0 && index_value < 32) {
-                            asm_thumb_ldrh_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_RV32
-                        if (FIT_SIGNED(index_value, 11)) {
-                            asm_rv32_opcode_lhu(emit->as, REG_RET, reg_base, index_value << 1);
-                            break;
-                        }
-                        #elif N_XTENSA || N_XTENSAWIN
-                        if (index_value > 0 && index_value < 256) {
-                            asm_xtensa_op_l16ui(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #endif
                         need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 1);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 2*index to base
@@ -1594,24 +1593,24 @@ static void emit_native_load_subscr(emit_t *emit) {
                 }
                 case VTYPE_PTR32: {
                     // pointer to 32-bit memory
+                    #if N_THUMB
+                    if (index_value >= 0 && index_value < 32) {
+                        asm_thumb_ldr_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
+                        break;
+                    }
+                    #elif N_RV32
+                    if (FIT_SIGNED(index_value, 10)) {
+                        asm_rv32_opcode_lw(emit->as, REG_RET, reg_base, index_value << 2);
+                        break;
+                    }
+                    #elif N_XTENSA || N_XTENSAWIN
+                    if (index_value >= 0 && index_value < 256) {
+                        asm_xtensa_l32i_optimised(emit->as, REG_RET, reg_base, index_value);
+                        break;
+                    }
+                    #endif
                     if (index_value != 0) {
                         // index is a non-zero immediate
-                        #if N_THUMB
-                        if (index_value > 0 && index_value < 32) {
-                            asm_thumb_ldr_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_RV32
-                        if (FIT_SIGNED(index_value, 10)) {
-                            asm_rv32_opcode_lw(emit->as, REG_RET, reg_base, index_value << 2);
-                            break;
-                        }
-                        #elif N_XTENSA || N_XTENSAWIN
-                        if (index_value > 0 && index_value < 256) {
-                            asm_xtensa_l32i_optimised(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #endif
                         need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 2);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 4*index to base
@@ -1811,28 +1810,28 @@ static void emit_native_store_subscr(emit_t *emit) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
                     // TODO optimise to use thumb strb r1, [r2, r3]
+                    #if N_THUMB
+                    if (index_value >= 0 && index_value < 32) {
+                        asm_thumb_strb_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
+                        break;
+                    }
+                    #elif N_RV32
+                    if (FIT_SIGNED(index_value, 12)) {
+                        asm_rv32_opcode_sb(emit->as, reg_value, reg_base, index_value);
+                        break;
+                    }
+                    #elif N_XTENSA || N_XTENSAWIN
+                    if (index_value >= 0 && index_value < 256) {
+                        asm_xtensa_op_s8i(emit->as, reg_value, reg_base, index_value);
+                        break;
+                    }
+                    #endif
                     if (index_value != 0) {
                         // index is non-zero
-                        #if N_THUMB
-                        if (index_value > 0 && index_value < 32) {
-                            asm_thumb_strb_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_RV32
-                        if (FIT_SIGNED(index_value, 12)) {
-                            asm_rv32_opcode_sb(emit->as, reg_value, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_XTENSA || N_XTENSAWIN
-                        if (index_value > 0 && index_value < 256) {
-                            asm_xtensa_op_s8i(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #endif
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
                         #if N_ARM
                         asm_arm_strb_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
-                        return;
+                        break;
                         #endif
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add index to base
                         reg_base = reg_index;
@@ -1842,24 +1841,24 @@ static void emit_native_store_subscr(emit_t *emit) {
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
+                    #if N_THUMB
+                    if (index_value >= 0 && index_value < 32) {
+                        asm_thumb_strh_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
+                        break;
+                    }
+                    #elif N_RV32
+                    if (FIT_SIGNED(index_value, 11)) {
+                        asm_rv32_opcode_sh(emit->as, reg_value, reg_base, index_value << 1);
+                        break;
+                    }
+                    #elif N_XTENSA || N_XTENSAWIN
+                    if (index_value >= 0 && index_value < 256) {
+                        asm_xtensa_op_s16i(emit->as, reg_value, reg_base, index_value);
+                        break;
+                    }
+                    #endif
                     if (index_value != 0) {
                         // index is a non-zero immediate
-                        #if N_THUMB
-                        if (index_value > 0 && index_value < 32) {
-                            asm_thumb_strh_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_RV32
-                        if (FIT_SIGNED(index_value, 11)) {
-                            asm_rv32_opcode_sh(emit->as, reg_value, reg_base, index_value << 1);
-                            break;
-                        }
-                        #elif N_XTENSA || N_XTENSAWIN
-                        if (index_value > 0 && index_value < 256) {
-                            asm_xtensa_op_s16i(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #endif
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 1);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 2*index to base
                         reg_base = reg_index;
@@ -1869,27 +1868,28 @@ static void emit_native_store_subscr(emit_t *emit) {
                 }
                 case VTYPE_PTR32: {
                     // pointer to 32-bit memory
+                    #if N_THUMB
+                    if (index_value >= 0 && index_value < 32) {
+                        asm_thumb_str_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
+                        break;
+                    }
+                    #elif N_RV32
+                    if (FIT_SIGNED(index_value, 10)) {
+                        asm_rv32_opcode_sw(emit->as, reg_value, reg_base, index_value << 2);
+                        break;
+                    }
+                    #elif N_XTENSA || N_XTENSAWIN
+                    if (index_value >= 0 && index_value < 256) {
+                        asm_xtensa_s32i_optimised(emit->as, reg_value, reg_base, index_value);
+                        break;
+                    }
+                    #endif
                     if (index_value != 0) {
                         // index is a non-zero immediate
-                        #if N_THUMB
-                        if (index_value > 0 && index_value < 32) {
-                            asm_thumb_str_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_RV32
-                        if (FIT_SIGNED(index_value, 10)) {
-                            asm_rv32_opcode_sw(emit->as, reg_value, reg_base, index_value << 2);
-                            break;
-                        }
-                        #elif N_XTENSA || N_XTENSAWIN
-                        if (index_value > 0 && index_value < 256) {
-                            asm_xtensa_s32i_optimised(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_ARM
+                        #if N_ARM
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
                         asm_arm_str_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
-                        return;
+                        break;
                         #endif
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 2);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 4*index to base
