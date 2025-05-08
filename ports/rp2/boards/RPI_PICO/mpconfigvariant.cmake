@@ -1,0 +1,1 @@
+set(MICROPY_PY_LWIP OFF)
