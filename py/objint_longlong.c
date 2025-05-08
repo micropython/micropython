@@ -39,8 +39,6 @@
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 
-#include <errno.h>
-
 #if MICROPY_PY_SYS_MAXSIZE
 // Export value for sys.maxsize
 const mp_obj_int_t mp_sys_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
@@ -298,49 +296,6 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
         raise_long_long_overflow();
     }
     return mp_obj_new_int_from_ll(val);
-}
-
-mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
-    char temp_buf[65]; // Large enough to hold 64-bit base 2 str + NUL terminating byte
-    const char *head = *str;
-    char *endptr;
-    long long parsed;
-
-    errno = 0;
-    parsed = strtoll(head, &endptr, base);
-
-    // If 'str' is not properly terminated and has valid digits all through
-    // and after the buffer, then strtoll will have walked off the end
-    if (endptr > head + len) {
-        // Disregard any leading zeroes to ensure the value can fit
-        while (len >= sizeof(temp_buf) && base != 0 && *head == '0') {
-            head++;
-            len--;
-        }
-        if (len < sizeof(temp_buf)) {
-            memcpy(temp_buf, head, len);
-            temp_buf[len] = 0;
-            errno = 0;
-            parsed = strtoll(temp_buf, &endptr, base);
-            assert(errno != 0 || endptr == temp_buf + len); // The first strtoll() checked all digits are valid
-            endptr = (char *)head + len;
-        }
-        // (if str doesn't fit in temp_buf, will fall through and fail below)
-    }
-
-    if (errno != 0) {
-        return mp_const_none; // Conversion failed, caller should raise OverflowError
-    }
-
-    if (neg) {
-        parsed *= -1;
-    }
-
-    mp_obj_t result = mp_obj_new_int_from_ll(parsed);
-
-    // If endptr isn't (head + len) then string contained invalid chars, caller should fail
-    *str = endptr;
-    return result;
 }
 
 mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in) {
