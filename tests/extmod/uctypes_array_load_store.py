@@ -9,7 +9,7 @@ except ImportError:
 # 'int' needs to be able to represent UINT64 for this test
 try:
     int("FF" * 8, 16)
-except ValueError:
+except OverflowError:
     print("SKIP")
     raise SystemExit
 
