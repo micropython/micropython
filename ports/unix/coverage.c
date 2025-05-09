@@ -184,6 +184,17 @@ static void pairheap_test(size_t nops, int *ops) {
     mp_printf(&mp_plat_print, "\n");
 }
 
+static mp_sched_node_t mp_coverage_sched_node;
+
+static void coverage_sched_function(mp_sched_node_t *node) {
+    (void)node;
+    static mp_uint_t loop = 3;
+    mp_printf(&mp_plat_print, "scheduled function\n");
+    if (--loop) {
+        mp_sched_schedule_node(&mp_coverage_sched_node, coverage_sched_function);
+    }
+}
+
 // function to run extra tests for things that can't be checked by scripts
 static mp_obj_t extra_coverage(void) {
     // mp_printf (used by ports that don't have a native printf)
@@ -621,6 +632,12 @@ static mp_obj_t extra_coverage(void) {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
         }
         mp_handle_pending(true);
+
+        mp_sched_schedule_node(&mp_coverage_sched_node, coverage_sched_function);
+        for (int i = 0; i <= 3; ++i) {
+            mp_printf(&mp_plat_print, "loop\n");
+            mp_handle_pending(true);
+        }
     }
 
     // ringbuf
