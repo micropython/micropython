@@ -173,6 +173,16 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     }
     #endif
 
+    #if MICROPY_PY_THREAD
+    static bool in_lightsleep;
+    if (in_lightsleep) {
+        // The other CPU is also in machine.lightsleep()
+        MICROPY_END_ATOMIC_SECTION(my_interrupts);
+        return;
+    }
+    in_lightsleep = true;
+    #endif
+
     #if MICROPY_HW_ENABLE_USBDEV
     // Only disable the USB clock if a USB host has not configured the device
     // or if going to DORMANT mode.
@@ -320,6 +330,12 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         #endif
         #endif
     }
+
+    #if MICROPY_PY_THREAD
+    // Clearing the flag here is atomic, and we know we're the ones who set it
+    // (higher up, inside the critical section)
+    in_lightsleep = false;
+    #endif
 }
 
 NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
