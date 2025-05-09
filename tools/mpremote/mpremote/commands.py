@@ -334,6 +334,49 @@ def do_filesystem_recursive_rm(state, path, args):
             print(f"removed: '{path}'")
 
 
+def human_size(size, decimals=1):
+    for unit in ['B', 'K', 'M', 'G', 'T']:
+        if size < 1024.0 or unit == 'T':
+            break
+        size /= 1024.0
+    return f"{size:.{decimals}f}{unit}" if unit != 'B' else f"{int(size)}"
+
+
+def do_filesystem_tree(state, path, args):
+    """Print a tree of the device's filesystem starting at path."""
+    connectors = ("├── ", "└── ")
+
+    def _tree_recursive(path, prefix=""):
+        entries = state.transport.fs_listdir(path)
+        entries.sort(key=lambda e: e.name)
+        for i, entry in enumerate(entries):
+            connector = connectors[1] if i == len(entries) - 1 else connectors[0]
+            is_dir = entry.st_mode & 0x4000  # Directory
+            size_str = ""
+            # most MicroPython filesystems don't support st_size on directories, reduce clutter
+            if entry.st_size > 0 or not is_dir:
+                if args.size:
+                    size_str = f"[{entry.st_size:>9}]  "
+                elif args.human:
+                    size_str = f"[{human_size(entry.st_size):>6}]  "
+            print(f"{prefix}{connector}{size_str}{entry.name}")
+            if is_dir:
+                _tree_recursive(
+                    _remote_path_join(path, entry.name),
+                    prefix + ("    " if i == len(entries) - 1 else "│   "),
+                )
+
+    if not path or path == ".":
+        path = state.transport.exec("import os;print(os.getcwd())").strip().decode("utf-8")
+    if not (path == "." or state.transport.fs_isdir(path)):
+        raise CommandError(f"tree: '{path}' is not a directory")
+    if args.verbose:
+        print(f":{path} on {state.transport.device_name}")
+    else:
+        print(f":{path}")
+    _tree_recursive(path)
+
+
 def do_filesystem(state, args):
     state.ensure_raw_repl()
     state.did_action()
@@ -361,8 +404,8 @@ def do_filesystem(state, args):
         # leading ':' if the user included them.
         paths = [path[1:] if path.startswith(":") else path for path in paths]
 
-    # ls implicitly lists the cwd.
-    if command == "ls" and not paths:
+    # ls and tree implicitly lists the cwd.
+    if command in ("ls", "tree") and not paths:
         paths = [""]
 
     try:
@@ -404,6 +447,8 @@ def do_filesystem(state, args):
                     )
                 else:
                     do_filesystem_cp(state, path, cp_dest, len(paths) > 1, not args.force)
+            elif command == "tree":
+                do_filesystem_tree(state, path, args)
     except OSError as er:
         raise CommandError("{}: {}: {}.".format(command, er.strerror, os.strerror(er.errno)))
     except TransportError as er:

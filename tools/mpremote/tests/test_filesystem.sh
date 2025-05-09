@@ -237,3 +237,6 @@ echo -----
 # try to delete existing folder in mounted filesystem
 $MPREMOTE mount "${TMP}" + rm -rv :package || echo "expect error"
 echo -----
+# fs without command should raise error
+$MPREMOTE fs 2>/dev/null || echo "expect error: $?"
+echo -----

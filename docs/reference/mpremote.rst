@@ -234,6 +234,7 @@ The full list of supported commands are:
   - ``rmdir <dirs...>`` to remove directories on the device
   - ``touch <file..>`` to create the files (if they don't already exist)
   - ``sha256sum <file..>`` to calculate the SHA256 sum of files
+  - ``tree [-vsh] <dirs...>`` to print a tree of the given directories
 
   The ``cp`` command uses a convention where a leading ``:`` represents a remote
   path. Without a leading ``:`` means a local path. This is based on the
@@ -264,13 +265,20 @@ The full list of supported commands are:
     There is no supported way to undelete files removed by ``mpremote rm -r :``.
     Please use with caution.
 
+  The ``tree`` command will print a tree of the given directories. 
+  Using the ``--size/-s`` option will print the size of each file, or use 
+  ``--human/-h`` to use a more human readable format. 
+  Note: Directory size is only printed when a non-zero size is reported by the device's filesystem.
+  The ``-v`` option  can be used to include the name of the serial device in 
+  the output.
+
   All other commands implicitly assume the path is a remote path, but the ``:``
   can be optionally used for clarity.
 
   All of the filesystem sub-commands take multiple path arguments, so if there
   is another command in the sequence, you must use ``+`` to terminate the
   arguments, e.g.
-
+  
   .. code-block:: bash
 
       $ mpremote fs cp main.py :main.py + repl
