@@ -737,7 +737,6 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_
 #define ASM_LOAD32_REG_REG(state, rd, rs) ASM_LOAD_REG_REG_OFFSET(state, rd, rs, 0)
 #define ASM_LOAD8_REG_REG(state, rd, rs) asm_rv32_opcode_lbu(state, rd, rs, 0)
 #define ASM_LOAD_REG_REG_OFFSET(state, rd, rs, offset) asm_rv32_emit_load_reg_reg_offset(state, rd, rs, offset)
-#define ASM_LOAD_REG_REG(state, rd, rs) ASM_LOAD32_REG_REG(state, rd, rs)
 #define ASM_LSL_REG_REG(state, rd, rs) asm_rv32_opcode_sll(state, rd, rd, rs)
 #define ASM_LSR_REG_REG(state, rd, rs) asm_rv32_opcode_srl(state, rd, rd, rs)
 #define ASM_MOV_LOCAL_REG(state, local, rs) asm_rv32_emit_mov_local_reg(state, local, rs)
@@ -754,10 +753,33 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_
 #define ASM_STORE32_REG_REG(state, rs1, rs2) ASM_STORE_REG_REG_OFFSET(state, rs1, rs2, 0)
 #define ASM_STORE8_REG_REG(state, rs1, rs2) asm_rv32_opcode_sb(state, rs1, rs2, 0)
 #define ASM_STORE_REG_REG_OFFSET(state, rd, rs, offset) asm_rv32_emit_store_reg_reg_offset(state, rd, rs, offset)
-#define ASM_STORE_REG_REG(state, rs1, rs2) ASM_STORE32_REG_REG(state, rs1, rs2)
 #define ASM_SUB_REG_REG(state, rd, rs) asm_rv32_opcode_sub(state, rd, rd, rs)
 #define ASM_XOR_REG_REG(state, rd, rs) asm_rv32_emit_optimised_xor(state, rd, rs)
 #define ASM_CLR_REG(state, rd)
+#define ASM_LOAD16_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_slli(state, rs2, rs2, 1); \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_lhu(state, rd, rs1, 0); \
+    } while (0)
+#define ASM_LOAD32_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_slli(state, rs2, rs2, 2); \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_lw(state, rd, rs1, 0); \
+    } while (0)
+#define ASM_STORE16_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_slli(state, rs2, rs2, 1); \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_sh(state, rd, rs1, 0); \
+    } while (0)
+#define ASM_STORE32_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_slli(state, rs2, rs2, 2); \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_sw(state, rd, rs1, 0); \
+    } while (0)
 
 #endif
 

@@ -411,12 +411,32 @@ void asm_xtensa_call_ind_win(asm_xtensa_t *as, uint idx);
 #define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_xtensa_op_l8ui((as), (reg_dest), (reg_base), 0)
 #define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_xtensa_op_l16ui((as), (reg_dest), (reg_base), 0)
 #define ASM_LOAD16_REG_REG_OFFSET(as, reg_dest, reg_base, uint16_offset) asm_xtensa_op_l16ui((as), (reg_dest), (reg_base), (uint16_offset))
+#define ASM_LOAD16_REG_REG_REG(as, reg_dest, reg_base, reg_index) \
+    do { \
+        asm_xtensa_op_addx2((as), (reg_base), (reg_index), (reg_base)); \
+        asm_xtensa_op_l16ui((as), (reg_dest), (reg_base), 0); \
+    } while (0)
 #define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) asm_xtensa_op_l32i_n((as), (reg_dest), (reg_base), 0)
+#define ASM_LOAD32_REG_REG_REG(as, reg_dest, reg_base, reg_index) \
+    do { \
+        asm_xtensa_op_addx4((as), (reg_base), (reg_index), (reg_base)); \
+        asm_xtensa_op_l32i_n((as), (reg_dest), (reg_base), 0); \
+    } while (0)
 
 #define ASM_STORE_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_xtensa_s32i_optimised((as), (reg_dest), (reg_base), (word_offset))
 #define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_xtensa_op_s8i((as), (reg_src), (reg_base), 0)
 #define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_xtensa_op_s16i((as), (reg_src), (reg_base), 0)
+#define ASM_STORE16_REG_REG_REG(as, reg_val, reg_base, reg_index) \
+    do { \
+        asm_xtensa_op_addx2((as), (reg_base), (reg_index), (reg_base)); \
+        asm_xtensa_op_s16i((as), (reg_val), (reg_base), 0); \
+    } while (0)
 #define ASM_STORE32_REG_REG(as, reg_src, reg_base) asm_xtensa_op_s32i_n((as), (reg_src), (reg_base), 0)
+#define ASM_STORE32_REG_REG_REG(as, reg_val, reg_base, reg_index) \
+    do { \
+        asm_xtensa_op_addx4((as), (reg_base), (reg_index), (reg_base)); \
+        asm_xtensa_op_s32i_n((as), (reg_val), (reg_base), 0); \
+    } while (0)
 
 #endif // GENERIC_ASM_API
 
