@@ -1,8 +1,15 @@
 """
 categories: Syntax,Spaces
-description: uPy requires spaces between literal numbers and keywords, CPy doesn't
-cause: Unknown
-workaround: Unknown
+description: MicroPython requires spaces between literal numbers and keywords, CPython doesn't
+cause: Different parser implementation
+
+MicroPython's tokenizer treats a sequence like ``1and`` as a single token, while CPython treats it as two tokens.
+
+Since CPython 3.11, this syntax causes a ``SyntaxWarning`` for an "invalid literal".
+
+workaround: Add a space between the integer literal and the intended next token.
+
+This also fixes the ``SyntaxWarning`` in CPython.
 """
 
 try:
