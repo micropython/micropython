@@ -172,6 +172,9 @@ endif
 endif
 MPY_LD_FLAGS += $(addprefix -l, $(LIBGCC_PATH) $(LIBM_PATH))
 endif
+ifneq ($(EXTERN_SYMS),)
+MPY_LD_FLAGS += -e "$(realpath $(EXTERN_SYMS))"
+endif
 
 CFLAGS += $(CFLAGS_EXTRA)
 

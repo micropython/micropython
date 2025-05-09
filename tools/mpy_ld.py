@@ -402,6 +402,7 @@ class LinkEnv:
         self.known_syms = {}  # dict of symbols that are defined
         self.unresolved_syms = []  # list of unresolved symbols
         self.mpy_relocs = []  # list of relocations needed in the output .mpy file
+        self.externs = {}  # dict of externally-defined symbols
 
     def check_arch(self, arch_name):
         if arch_name != self.arch.name:
@@ -491,10 +492,15 @@ def populate_got(env):
         sym = got_entry.sym
         if hasattr(sym, "resolved"):
             sym = sym.resolved
-        sec = sym.section
-        addr = sym["st_value"]
-        got_entry.sec_name = sec.name
-        got_entry.link_addr += sec.addr + addr
+        if not hasattr(sym, "section") and sym.name in env.externs:
+            # This is probably an externally defined symbol.
+            got_entry.sec_name = ".external.mpy_mp_extern"
+            got_entry.link_addr = env.externs[sym.name]
+        else:
+            sec = sym.section
+            addr = sym["st_value"]
+            got_entry.sec_name = sec.name
+            got_entry.link_addr += sec.addr + addr
 
     # Get sorted GOT, sorted by external, text, rodata, bss so relocations can be combined
     got_list = sorted(
@@ -520,6 +526,8 @@ def populate_got(env):
             dest = int(got_entry.name.split("+")[1], 16) // env.arch.word_size
         elif got_entry.sec_name == ".external.mp_fun_table":
             dest = got_entry.sym.mp_fun_table_offset
+        elif got_entry.sec_name == ".external.mpy_mp_extern" and env.arch.name == "EM_XTENSA":
+            dest = ".literal"
         elif got_entry.sec_name.startswith(".text"):
             dest = ".text"
         elif got_entry.sec_name.startswith(".rodata"):
@@ -1211,6 +1219,9 @@ def link_objects(env, native_qstr_vals_len):
             if sym.name in fun_table:
                 sym.section = mp_fun_table_sec
                 sym.mp_fun_table_offset = fun_table[sym.name]
+            elif env.arch.name == "EM_XTENSA":
+                if sym.name not in env.externs:
+                    undef_errors.append("{}: undefined symbol: {}".format(sym.filename, sym.name))
             else:
                 undef_errors.append("{}: undefined symbol: {}".format(sym.filename, sym.name))
 
@@ -1381,7 +1392,10 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals):
     for base, addr, kind in env.mpy_relocs:
         if isinstance(kind, str) and kind.startswith(".text"):
             kind = 0
-        elif isinstance(kind, str) and kind.startswith((".rodata", ".data.rel.ro")):
+        elif isinstance(kind, str) and (
+            kind.startswith((".rodata", ".data.rel.ro"))
+            or (env.arch.name == "EM_XTENSA" and kind.startswith(".literal"))
+        ):
             if env.arch.separate_rodata:
                 kind = rodata_const_table_idx
             else:
@@ -1477,11 +1491,28 @@ def do_link(args):
                 with ar.open(obj) as f:
                     load_object_file(env, f, obj_name)
 
+        if args.externs:
+            env.externs = read_externs(args.externs)
+
         link_objects(env, len(native_qstr_vals))
         build_mpy(env, env.find_addr("mpy_init"), args.output, native_qstr_vals)
     except LinkError as er:
         print("LinkError:", er.args[0])
         sys.exit(1)
+
+
+def read_externs(source):
+    externs = {}
+    for line in source.readlines():
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        symbol, address, *_ = line.split()
+        address = int(address, 16)
+        if symbol in externs:
+            raise ValueError(f"Symbol {symbol} already defined")
+        externs[symbol] = address
+    return externs
 
 
 def main():
@@ -1499,6 +1530,13 @@ def main():
     )
     cmd_parser.add_argument(
         "--output", "-o", default=None, help="output .mpy file (default to input with .o->.mpy)"
+    )
+    cmd_parser.add_argument(
+        "--externs",
+        "-e",
+        type=argparse.FileType("rt"),
+        default=None,
+        help="fixed-address symbols list to augment symbol resolution",
     )
     cmd_parser.add_argument("files", nargs="+", help="input files")
     args = cmd_parser.parse_args()
