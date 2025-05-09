@@ -36,6 +36,14 @@
 // Implements backend of sequence * integer operation. Assumes elements are
 // memory-adjacent in sequence.
 void mp_seq_multiply(const void *items, size_t item_sz, size_t len, size_t times, void *dest) {
+    if (len == 0 || times == 0 || item_sz == 0) {
+        return;
+    }
+    if (len > SIZE_MAX / item_sz || times > SIZE_MAX / (item_sz * len)) {
+        // dest couldn't be correctly allocated in memory because
+        // item_sz * len * times overflows SIZE_MAX.
+        m_malloc_fail(SIZE_MAX);
+    }
     for (size_t i = 0; i < times; i++) {
         size_t copy_sz = item_sz * len;
         memcpy(dest, items, copy_sz);
