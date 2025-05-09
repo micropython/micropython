@@ -74,30 +74,32 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     }
     mp_int_t milliseconds = mp_obj_get_int(args[0]);
     // Get the UART device
-    const struct device *uart0 = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
+    const struct device *console = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
     // Set UART device to low power state
-    pm_device_action_run(uart0, PM_DEVICE_ACTION_SUSPEND);
+    pm_device_action_run(console, PM_DEVICE_ACTION_SUSPEND);
     k_sleep(K_MSEC(milliseconds));
     // Set UART device back to active state
-    pm_device_action_run(uart0, PM_DEVICE_ACTION_RESUME);
+    pm_device_action_run(console, PM_DEVICE_ACTION_RESUME);
 }
+#else
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
+}
+#endif
 
+#if defined(CONFIG_PM_DEVICE) && defined(CONFIG_SYS_POWER_OFF)
 static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     // Check if argument is provided
     if (n_args > 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("timeout not supported"));
     }
     // Get the UART device
-    const struct device *uart0 = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
+    const struct device *console = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
     // Set UART device to low power state
-    pm_device_action_run(uart0, PM_DEVICE_ACTION_SUSPEND);
+    pm_device_action_run(console, PM_DEVICE_ACTION_SUSPEND);
     sys_poweroff();
 }
 #else
-static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
-    mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
-}
-
 static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
 }
