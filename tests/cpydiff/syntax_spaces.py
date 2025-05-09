@@ -1,5 +1,5 @@
 """
-categories: Syntax,Spaces
+categories: Syntax,Literals
 description: uPy requires spaces between literal numbers and keywords or ".", CPy doesn't
 cause: Different parser implementation
 
