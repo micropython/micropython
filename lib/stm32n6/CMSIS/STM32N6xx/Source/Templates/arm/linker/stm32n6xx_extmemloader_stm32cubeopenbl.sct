@@ -1,0 +1,26 @@
+; ************************************************************************
+; STM32CubeProgrammer ExtFlashLoader Linker Control File (scatter-loading)
+; ************************************************************************
+
+;0x38000000 is the address where the flashloader is loaded
+FLASH_LOADER 0x38000000 0x8000   ; FlashLoader Functions
+{
+  PrgCode +0         ; Code
+  {
+    * (+RO)
+	*(Veneer$$CMSE)
+  }
+   PrgData +0          ; Data
+  {
+    * (+RW,+ZI)
+  }
+}
+
+;reserved for device information
+DEVICE_INFO 0               ; Device Info
+{
+  DevInfo 0           ; Info structure
+  {
+    stm32_device_info.o
+  }
+}

@@ -117,6 +117,7 @@
 static uint32_t reset_cause;
 
 void machine_init(void) {
+#if 0
     #if defined(STM32F4)
     if (PWR->CSR & PWR_CSR_SBF) {
         // came out of standby
@@ -177,6 +178,7 @@ void machine_init(void) {
     }
     // clear RCC reset flags
     RCC->RCC_SR |= RCC_SR_RMVF;
+#endif
 }
 
 void machine_deinit(void) {
@@ -323,6 +325,19 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
 
 // get or set the MCU frequencies
 static mp_obj_t mp_machine_get_freq(void) {
+    #if defined(STM32N6)
+    LL_RCC_ClocksTypeDef clocks;
+    LL_RCC_GetSystemClocksFreq(&clocks);
+    mp_obj_t tuple[] = {
+        mp_obj_new_int(clocks.CPUCLK_Frequency),
+        mp_obj_new_int(clocks.SYSCLK_Frequency),
+        mp_obj_new_int(clocks.HCLK_Frequency),
+        mp_obj_new_int(clocks.PCLK1_Frequency),
+        mp_obj_new_int(clocks.PCLK2_Frequency),
+        mp_obj_new_int(clocks.PCLK4_Frequency),
+        mp_obj_new_int(clocks.PCLK5_Frequency),
+    };
+    #else
     mp_obj_t tuple[] = {
         mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
         mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
@@ -331,11 +346,12 @@ static mp_obj_t mp_machine_get_freq(void) {
         mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
         #endif
     };
+    #endif
     return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
 }
 
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
-    #if defined(STM32F0) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32G0)
+    #if defined(STM32F0) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32G0) || defined(STM32N6)
     mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
     #else
     mp_int_t sysclk = mp_obj_get_int(args[0]);

@@ -166,6 +166,7 @@ int mboot_get_reset_mode_default(void) {
     if (usrbtn_state()) {
         // Cycle through reset modes while USR is held
         // Timeout is roughly 20s, where reset_mode=1
+        SystemCoreClockUpdate(); // TODO why is this needed, why isn't HSI the correct default?
         systick_init();
         led_init();
         reset_mode = 0;

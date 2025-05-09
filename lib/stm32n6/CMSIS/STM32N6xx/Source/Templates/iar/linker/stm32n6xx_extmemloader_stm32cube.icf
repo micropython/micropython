@@ -1,0 +1,22 @@
+
+define symbol __ICFEDIT_region_RAM_start__   = 0x34180404;
+define symbol __ICFEDIT_region_RAM_end__     = 0x3419FFFF;
+
+define symbol __ICFEDIT_region_RAM2_start__   = 0x38000000;
+define symbol __ICFEDIT_region_RAM2_end__     = 0x38001FFF;
+
+export symbol __ICFEDIT_region_RAM_end__;
+
+define memory mem with size = 4G;
+define region RAM_region   = mem:[from __ICFEDIT_region_RAM_start__   to __ICFEDIT_region_RAM_end__];
+define region RAM2_region  = mem:[from __ICFEDIT_region_RAM2_start__   to __ICFEDIT_region_RAM2_end__];
+define region Info_region  = mem:[from 0   to 0x3000];
+
+define block RAM_BLOCK with fixed order {readonly code, readonly data, readwrite };
+define block StorageInfo_BLOCK with fixed order { readonly data object stm32_device_Info.o};
+
+place in RAM_region    { block RAM_BLOCK};
+place in RAM2_region   { zi };
+place in Info_region   { block StorageInfo_BLOCK };
+
+do not initialize  { section .info, readwrite };

@@ -24,7 +24,12 @@ STM32LIB_VPATH = $(abspath $(STM32LIB_DIR))
 STM32LIB_FROM_HERE = $(STM32LIB_VPATH)
 else
 # Option 1
+# TODO: temporary change for n6
+ifeq ($(MCU_SERIES),n6)
+STM32LIB_VPATH = lib/stm32n6
+else
 STM32LIB_VPATH = lib/stm32lib
+endif
 STM32LIB_FROM_HERE = $(TOP)/$(STM32LIB_VPATH)
 endif
 STM32LIB_CMSIS_BASE = $(STM32LIB_VPATH)/CMSIS/STM32$(MCU_SERIES_UPPER)xx
@@ -68,6 +73,7 @@ CFLAGS_MCU_l1 = $(CFLAGS_CORTEX_M) -mtune=cortex-m3 -mcpu=cortex-m3
 CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_h5 = $(CFLAGS_CORTEX_M) -mtune=cortex-m33 -mcpu=cortex-m33
 CFLAGS_MCU_h7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS_MCU_n6 = $(CFLAGS_CORTEX_M) -mtune=cortex-m55 -mcpu=cortex-m55 -mcmse
 CFLAGS_MCU_wb = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_wl = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 
@@ -81,5 +87,10 @@ MPY_CROSS_MCU_ARCH_l1 = armv7m
 MPY_CROSS_MCU_ARCH_l4 = armv7m
 MPY_CROSS_MCU_ARCH_h5 = armv7m
 MPY_CROSS_MCU_ARCH_h7 = armv7m
+MPY_CROSS_MCU_ARCH_n6 = armv7m # really armv8m
 MPY_CROSS_MCU_ARCH_wb = armv7m
 MPY_CROSS_MCU_ARCH_wl = armv7m
+
+ifeq ($(MCU_SERIES),n6)
+MICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM = 1
+endif

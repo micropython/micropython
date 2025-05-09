@@ -59,6 +59,16 @@ mcu_table = {
         range_vco_in=range(1, 16 + 1),
         range_vco_out=range(150, 960 + 1),  # 150-420=medium, 192-960=wide
     ),
+    "stm32n6": MCU(
+        # TODO
+        range_sysclk=range(2, 400 + 1, 2),  # above 400MHz currently unsupported
+        range_m=range(1, 63 + 1),
+        range_n=range(4, 512 + 1),
+        range_p=range(2, 128 + 1, 2),
+        range_q=range(1, 128 + 1),
+        range_vco_in=range(1, 16 + 1),
+        range_vco_out=range(150, 960 + 1),  # 150-420=medium, 192-960=wide
+    ),
 }
 
 
@@ -293,7 +303,7 @@ def main():
             break
 
     # Relax constraint on PLLQ being 48MHz on MCUs which have separate PLLs for 48MHz
-    relax_pll48 = mcu_series.startswith(("stm32f413", "stm32f7", "stm32h5", "stm32h7"))
+    relax_pll48 = mcu_series.startswith(("stm32f413", "stm32f7", "stm32h5", "stm32h7", "stm32n6"))
 
     hse_valid_plls = compute_pll_table(hse, relax_pll48)
     if hsi is not None:

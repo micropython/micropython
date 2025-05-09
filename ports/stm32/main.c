@@ -306,6 +306,30 @@ static bool init_sdcard_fs(void) {
 }
 #endif
 
+#include "xspi.h"
+void Reset_Handler(void);
+void iram_bootloader_reset(void) {
+    #if 0
+    // LED_GREEN = pa7
+    LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_GPIOA);
+    GPIOA->MODER = 1 << (2 * 7);
+    for (int i = 0; i < 10; ++i) {
+        GPIOA->BSRR = 1 << 7;
+        for (int i = 0; i < 1000000; ++i) __NOP();
+        GPIOA->BSRR = 0x10000 << 7;
+        for (int i = 0; i < 1000000; ++i) __NOP();
+    }
+    #endif
+    xspi_init();
+    Reset_Handler();
+}
+
+// Very simple ARM vector table.
+const uint32_t iram_bootloader_isr_vector[] = {
+    (uint32_t)&_estack,
+    (uint32_t)&iram_bootloader_reset,
+};
+
 void stm32_main(uint32_t reset_mode) {
     // Low-level MCU initialisation.
     stm32_system_init();
@@ -320,13 +344,14 @@ void stm32_main(uint32_t reset_mode) {
     #else
     #if defined(MICROPY_HW_VTOR)
     // Change IRQ vector table if configured differently
+    // N6 sets this via &g_pfnVectors, might be good to just leave it as-is.
+    // unless we use mboot, then it needs to change
     SCB->VTOR = MICROPY_HW_VTOR;
     #endif
     #endif
     #endif
 
-
-    #if __CORTEX_M != 33
+    #if __CORTEX_M != 33 && __CORTEX_M != 55
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
     #endif
@@ -349,14 +374,17 @@ void stm32_main(uint32_t reset_mode) {
     __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
     #endif
 
-    #elif defined(STM32F7) || defined(STM32H7)
+    #elif defined(STM32F7) || defined(STM32H7) || defined(STM32N6)
 
     #if ART_ACCLERATOR_ENABLE
     __HAL_FLASH_ART_ENABLE();
     #endif
 
     SCB_EnableICache();
+    #if defined(STM32N6) && defined(NDEBUG)
+    // See ST Errata ES0620 - Rev 0.2 section 2.1.2
     SCB_EnableDCache();
+    #endif
 
     #elif defined(STM32H5)
 
@@ -376,6 +404,27 @@ void stm32_main(uint32_t reset_mode) {
 
     #endif
 
+    #if defined(STM32N6)
+    // SRAM, XSPI needs to remain awake during sleep, eg so DMA from flash works.
+    LL_MEM_EnableClockLowPower(0xffffffff);
+    LL_AHB5_GRP1_EnableClockLowPower(LL_AHB5_GRP1_PERIPH_XSPI2 | LL_AHB5_GRP1_PERIPH_XSPIM);
+    LL_APB4_GRP1_EnableClock(LL_APB4_GRP1_PERIPH_RTC | LL_APB4_GRP1_PERIPH_RTCAPB);
+    LL_APB4_GRP1_EnableClockLowPower(LL_APB4_GRP1_PERIPH_RTC | LL_APB4_GRP1_PERIPH_RTCAPB);
+
+    LL_AHB1_GRP1_EnableClockLowPower(0xffffffff);
+    LL_AHB2_GRP1_EnableClockLowPower(0xffffffff);
+    LL_AHB3_GRP1_EnableClockLowPower(0xffffffff);
+    LL_AHB4_GRP1_EnableClockLowPower(0xffffffff);
+    LL_AHB5_GRP1_EnableClockLowPower(0xffffffff);
+
+    LL_APB1_GRP1_EnableClockLowPower(0xffffffff);
+    LL_APB1_GRP2_EnableClockLowPower(0xffffffff);
+    LL_APB2_GRP1_EnableClockLowPower(0xffffffff);
+    LL_APB4_GRP1_EnableClockLowPower(0xffffffff);
+    LL_APB4_GRP2_EnableClockLowPower(0xffffffff);
+    LL_APB5_GRP1_EnableClockLowPower(0xffffffff);
+    #endif
+
     mpu_init();
 
     #if __CORTEX_M >= 0x03
@@ -386,8 +435,12 @@ void stm32_main(uint32_t reset_mode) {
     // SysTick is needed by HAL_RCC_ClockConfig (called in SystemClock_Config)
     HAL_InitTick(TICK_INT_PRIORITY);
 
+    //#if defined(STM32N6)
+    //SystemCoreClock = HSE_VALUE / MICROPY_HW_CLK_PLLM * MICROPY_HW_CLK_PLLN;
+    //#else
     // set the system clock to be HSE
     SystemClock_Config();
+    //#endif
 
     #if defined(STM32F4) || defined(STM32F7)
     #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
@@ -490,6 +543,10 @@ void stm32_main(uint32_t reset_mode) {
 
     #if MICROPY_PY_NETWORK_CYW43
     {
+        // select gSPI mode
+        mp_hal_pin_output(pyb_pin_WL_SDIO_D2);
+        mp_hal_pin_low(pyb_pin_WL_SDIO_D2);
+
         cyw43_init(&cyw43_state);
         uint8_t buf[8];
         memcpy(&buf[0], "PYBD", 4);
@@ -613,6 +670,7 @@ soft_reset:
         const uint16_t pid = MICROPY_HW_USB_PID_CDC;
         const uint8_t mode = USBD_MODE_CDC;
         #endif
+        mp_hal_delay_ms(10); // TODO work out why this is needed, sometimes crashes without it
         pyb_usb_dev_init(pyb_usb_dev_detect(), MICROPY_HW_USB_VID, pid, mode, 0, NULL, NULL);
     }
     #endif
@@ -715,3 +773,68 @@ soft_reset_exit:
 }
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_config_main);
+
+#if MICROPY_PY_NETWORK_CYW43
+
+#include "lib/cyw43-driver/src/cyw43.h"
+#include "lib/cyw43-driver/src/cyw43_internal.h"
+#include "lib/cyw43-driver/src/cyw43_spi.h"
+#include "genhdr/pins.h"
+
+#define pin_WL_CS pyb_pin_WL_SDIO_D3
+#define pin_WL_SCK pyb_pin_WL_SDIO_CK
+#define pin_WL_MOSI pyb_pin_WL_SDIO_CMD
+#define pin_WL_MISO pyb_pin_WL_SDIO_D0
+
+static mp_soft_spi_obj_t cyw43_spi;
+
+int cyw43_spi_init(cyw43_int_t *self) {
+    cyw43_spi.delay_half = 0;
+    cyw43_spi.polarity = 1;
+    cyw43_spi.phase = 0;
+    cyw43_spi.firstbit = MICROPY_PY_MACHINE_SPI_MSB;
+    cyw43_spi.sck = pin_WL_SCK;
+    cyw43_spi.mosi = pin_WL_MOSI;
+    cyw43_spi.miso = pin_WL_MISO;
+
+    // Configure pins.
+    mp_hal_pin_output(pin_WL_CS);
+    mp_hal_pin_high(pin_WL_CS);
+
+    mp_soft_spi_ioctl(&cyw43_spi, MP_SPI_IOCTL_INIT);
+
+    return 0;
+}
+
+void cyw43_spi_deinit(cyw43_int_t *self) {
+}
+
+void cyw43_spi_gpio_setup(void) {
+}
+
+void cyw43_spi_reset(void) {
+}
+
+void cyw43_spi_set_polarity(cyw43_int_t *self, int pol) {
+    (void)self;
+    cyw43_spi.polarity = pol;
+    mp_hal_pin_write(cyw43_spi.sck, cyw43_spi.polarity);
+}
+
+// tx must not be NULL.
+// rx_len must be 0, or the same as tx_len.
+int cyw43_spi_transfer(cyw43_int_t *self, const uint8_t *tx, size_t tx_len, uint8_t *rx, size_t rx_len) {
+    (void)self;
+
+    if (tx_len == 0 && rx_len == 0) {
+        return 0;
+    }
+
+    mp_hal_pin_low(pin_WL_CS);
+    mp_soft_spi_transfer(&cyw43_spi, tx_len, tx, rx);
+    mp_hal_pin_high(pin_WL_CS);
+
+    return 0;
+}
+
+#endif
