@@ -1,5 +1,5 @@
 """
-categories: Syntax,Spaces
+categories: Syntax,Literals
 description: MicroPython requires spaces between literal numbers and keywords or ".", CPython doesn't
 cause: Different parser implementation
 
