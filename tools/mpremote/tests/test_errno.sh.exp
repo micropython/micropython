@@ -1,0 +1,25 @@
+-----
+mpremote: Error with transport:
+expect error
+-----
+mpremote: cat: ENOENT.py: No such file or directory.
+expect error
+-----
+mpremote: cat: EISDIR.py: Is a directory.
+expect error
+-----
+mpremote: cat: EEXIST.py: File exists.
+expect error
+-----
+mpremote: cat: ENODEV.py: No such device.
+expect error
+-----
+mpremote: cat: EINVAL.py: Invalid argument.
+expect error
+-----
+mpremote: cat: EPERM.py: Operation not permitted.
+expect error
+-----
+mpremote: cat: EOPNOTSUPP.py: Operation not supported.
+expect error
+-----

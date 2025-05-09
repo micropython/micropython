@@ -36,6 +36,7 @@ from .commands import (
     do_resume,
     do_rtc,
     do_soft_reset,
+    do_romfs,
 )
 from .mip import do_mip
 from .repl import do_repl
@@ -181,7 +182,7 @@ def argparse_rtc():
 
 def argparse_filesystem():
     cmd_parser = argparse.ArgumentParser(description="execute filesystem commands on the device")
-    _bool_flag(cmd_parser, "recursive", "r", False, "recursive copy (for cp command only)")
+    _bool_flag(cmd_parser, "recursive", "r", False, "recursive (for cp and rm commands)")
     _bool_flag(
         cmd_parser,
         "force",
@@ -225,6 +226,32 @@ def argparse_mip():
         nargs="+",
         help="list package specifications, e.g. name, name@version, github:org/repo, github:org/repo@branch, gitlab:org/repo, gitlab:org/repo@branch",
     )
+    return cmd_parser
+
+
+def argparse_romfs():
+    cmd_parser = argparse.ArgumentParser(description="manage ROM partitions")
+    _bool_flag(
+        cmd_parser,
+        "mpy",
+        "m",
+        True,
+        "automatically compile .py files to .mpy when building the ROMFS image (default)",
+    )
+    cmd_parser.add_argument(
+        "--partition",
+        "-p",
+        type=int,
+        default=0,
+        help="ROMFS partition to use",
+    )
+    cmd_parser.add_argument(
+        "--output",
+        "-o",
+        help="output file",
+    )
+    cmd_parser.add_argument("command", nargs=1, help="romfs command, one of: query, build, deploy")
+    cmd_parser.add_argument("path", nargs="?", help="path to directory to deploy")
     return cmd_parser
 
 
@@ -301,6 +328,10 @@ _COMMANDS = {
     "version": (
         do_version,
         argparse_none("print version and exit"),
+    ),
+    "romfs": (
+        do_romfs,
+        argparse_romfs,
     ),
 }
 

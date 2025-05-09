@@ -33,6 +33,7 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/cstack.h"
+#include "py/objtuple.h"
 
 #if MICROPY_PY_BUILTINS_STR_OP_MODULO
 static mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict);
@@ -357,8 +358,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         mp_obj_t *args = &rhs_in;
         size_t n_args = 1;
         mp_obj_t dict = MP_OBJ_NULL;
-        if (mp_obj_is_type(rhs_in, &mp_type_tuple)) {
-            // TODO: Support tuple subclasses?
+        if (mp_obj_is_tuple_compatible(rhs_in)) {
             mp_obj_tuple_get(rhs_in, &n_args, &args);
         } else if (mp_obj_is_type(rhs_in, &mp_type_dict)) {
             dict = rhs_in;

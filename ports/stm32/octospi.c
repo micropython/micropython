@@ -105,8 +105,9 @@ void octospi_init(void) {
     OCTOSPI1->CR |= OCTOSPI_CR_EN;
 }
 
-static int octospi_ioctl(void *self_in, uint32_t cmd) {
+static int octospi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
     (void)self_in;
+    (void)arg;
     switch (cmd) {
         case MP_QSPI_IOCTL_INIT:
             octospi_init();
@@ -282,7 +283,7 @@ static int octospi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *de
     return 0;
 }
 
-static int octospi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
+static int octospi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, uint8_t num_dummy, size_t len, uint8_t *dest) {
     (void)self_in;
 
     #if defined(MICROPY_HW_OSPIFLASH_IO1) && !defined(MICROPY_HW_OSPIFLASH_IO2) && !defined(MICROPY_HW_OSPIFLASH_IO4)
@@ -292,7 +293,7 @@ static int octospi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t add
     uint32_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
     uint32_t dmode = 2; // data on 2-lines
     uint32_t admode = 2; // address on 2-lines
-    uint32_t dcyc = 4; // 4 dummy cycles
+    uint32_t dcyc = 2 * num_dummy; // 2N dummy cycles
 
     if (cmd == 0xeb || cmd == 0xec) {
         // Convert to 2-line command.

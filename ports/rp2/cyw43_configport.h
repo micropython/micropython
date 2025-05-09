@@ -26,32 +26,27 @@
 #ifndef MICROPY_INCLUDED_RP2_CYW43_CONFIGPORT_H
 #define MICROPY_INCLUDED_RP2_CYW43_CONFIGPORT_H
 
-// The board-level config will be included here, so it can set some CYW43 values.
-#include <stdio.h>
-#include "py/mpconfig.h"
-#include "py/mperrno.h"
-#include "py/mphal.h"
-#include "py/runtime.h"
-#include "extmod/modnetwork.h"
-#include "pendsv.h"
+#include "extmod/cyw43_config_common.h"
 
+#define CYW43_INCLUDE_LEGACY_F1_OVERFLOW_WORKAROUND_VARIABLES (1)
 #define CYW43_WIFI_NVRAM_INCLUDE_FILE   "wifi_nvram_43439.h"
-#define CYW43_IOCTL_TIMEOUT_US          (1000000)
-#define CYW43_SLEEP_MAX                 (10)
-#define CYW43_NETUTILS                  (1)
+#define CYW43_SLEEP_MAX                 (10) // Unclear why rp2 port overrides the default here
 #define CYW43_USE_OTP_MAC               (1)
-#define CYW43_PRINTF(...)               mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
 
-#define CYW43_EPERM                     MP_EPERM // Operation not permitted
-#define CYW43_EIO                       MP_EIO // I/O error
-#define CYW43_EINVAL                    MP_EINVAL // Invalid argument
-#define CYW43_ETIMEDOUT                 MP_ETIMEDOUT // Connection timed out
+static inline bool cyw43_poll_is_pending(void) {
+    return pendsv_is_pending(PENDSV_DISPATCH_CYW43);
+}
 
-#define CYW43_THREAD_ENTER              MICROPY_PY_LWIP_ENTER
-#define CYW43_THREAD_EXIT               MICROPY_PY_LWIP_EXIT
-#define CYW43_THREAD_LOCK_CHECK
+static inline void cyw43_yield(void) {
+    if (!cyw43_poll_is_pending()) {
+        best_effort_wfe_or_timeout(make_timeout_time_ms(1));
+    }
+}
 
-#define CYW43_HOST_NAME                 mod_network_hostname_data
+#define CYW43_POST_POLL_HOOK            cyw43_post_poll_hook();
+
+// set in SDK board header
+#define CYW43_NUM_GPIOS                 CYW43_WL_GPIO_COUNT
 
 #if CYW43_PIN_WL_DYNAMIC
 
@@ -98,36 +93,6 @@ uint cyw43_get_pin_wl(cyw43_pin_index_t pin_id);
         cyw43_yield(); \
     } \
 
-#define CYW43_ARRAY_SIZE(a)             MP_ARRAY_SIZE(a)
-
-#define CYW43_HAL_PIN_MODE_INPUT        MP_HAL_PIN_MODE_INPUT
-#define CYW43_HAL_PIN_MODE_OUTPUT       MP_HAL_PIN_MODE_OUTPUT
-#define CYW43_HAL_PIN_PULL_NONE         MP_HAL_PIN_PULL_NONE
-#define CYW43_HAL_PIN_PULL_UP           MP_HAL_PIN_PULL_UP
-#define CYW43_HAL_PIN_PULL_DOWN         MP_HAL_PIN_PULL_DOWN
-
-#define CYW43_HAL_MAC_WLAN0             MP_HAL_MAC_WLAN0
-
-// set in SDK board header
-#define CYW43_NUM_GPIOS                 CYW43_WL_GPIO_COUNT
-
-#define CYW43_POST_POLL_HOOK            cyw43_post_poll_hook();
-
-#define cyw43_hal_ticks_us              mp_hal_ticks_us
-#define cyw43_hal_ticks_ms              mp_hal_ticks_ms
-
-#define cyw43_hal_pin_obj_t             mp_hal_pin_obj_t
-#define cyw43_hal_pin_config            mp_hal_pin_config
-#define cyw43_hal_pin_read              mp_hal_pin_read
-#define cyw43_hal_pin_low               mp_hal_pin_low
-#define cyw43_hal_pin_high              mp_hal_pin_high
-
-#define cyw43_hal_get_mac               mp_hal_get_mac
-#define cyw43_hal_get_mac_ascii         mp_hal_get_mac_ascii
-#define cyw43_hal_generate_laa_mac      mp_hal_generate_laa_mac
-
-#define cyw43_schedule_internal_poll_dispatch(func) pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, func)
-
 // Bluetooth requires dynamic memory allocation to load its firmware (the allocation
 // call is made from pico-sdk).  This allocation is always done at thread-level, not
 // from an IRQ, so is safe to delegate to the MicroPython GC heap.
@@ -137,31 +102,5 @@ uint cyw43_get_pin_wl(cyw43_pin_index_t pin_id);
 #ifndef cyw43_free
 #define cyw43_free m_tracked_free
 #endif
-
-void cyw43_post_poll_hook(void);
-extern volatile int cyw43_has_pending;
-
-static inline void cyw43_yield(void) {
-    if (!cyw43_has_pending) {
-        best_effort_wfe_or_timeout(make_timeout_time_ms(1));
-    }
-}
-
-static inline void cyw43_delay_us(uint32_t us) {
-    uint32_t start = mp_hal_ticks_us();
-    while (mp_hal_ticks_us() - start < us) {
-    }
-}
-
-static inline void cyw43_delay_ms(uint32_t ms) {
-    // PendSV may be disabled via CYW43_THREAD_ENTER, so this delay is a busy loop.
-    uint32_t us = ms * 1000;
-    uint32_t start = mp_hal_ticks_us();
-    while (mp_hal_ticks_us() - start < us) {
-        mp_event_handle_nowait();
-    }
-}
-
-#define CYW43_EVENT_POLL_HOOK mp_event_handle_nowait()
 
 #endif // MICROPY_INCLUDED_RP2_CYW43_CONFIGPORT_H

@@ -42,7 +42,6 @@ static soft_timer_entry_t mp_network_soft_timer;
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
 #include "lib/cyw43-driver/src/cyw43_stats.h"
-#include "hardware/irq.h"
 
 #if !defined(__riscv)
 #if PICO_RP2040
@@ -57,18 +56,39 @@ static soft_timer_entry_t mp_network_soft_timer;
 #define CYW43_IRQ_LEVEL GPIO_IRQ_LEVEL_HIGH
 #define CYW43_SHARED_IRQ_HANDLER_PRIORITY PICO_SHARED_IRQ_HANDLER_HIGHEST_ORDER_PRIORITY
 
-volatile int cyw43_has_pending = 0;
 
+// The Pico SDK only lets us set GPIO wake on the current running CPU, but the
+// hardware doesn't have this limit. We need to always enable/disable the pin
+// interrupt on CPU0, regardless of which CPU runs PendSV and
+// cyw43_post_poll_hook(). See feature request at https://github.com/raspberrypi/pico-sdk/issues/2354
+static void gpio_set_cpu0_host_wake_irq_enabled(bool enable) {
+    // This is a re-implementation of gpio_set_irq_enabled() and _gpio_set_irq_enabled()
+    // from the pico-sdk, but with the core, gpio, and event type hardcoded to shrink
+    // code size.
+    io_bank0_irq_ctrl_hw_t *irq_ctrl_base = &io_bank0_hw->proc0_irq_ctrl;
+    uint32_t gpio = CYW43_PIN_WL_HOST_WAKE;
+    uint32_t events = CYW43_IRQ_LEVEL;
+    io_rw_32 *en_reg = &irq_ctrl_base->inte[gpio / 8];
+    events <<= 4 * (gpio % 8);
+    if (enable) {
+        hw_set_bits(en_reg, events);
+    } else {
+        hw_clear_bits(en_reg, events);
+    }
+}
+
+// GPIO IRQ always runs on CPU0
 static void gpio_irq_handler(void) {
     uint32_t events = gpio_get_irq_event_mask(CYW43_PIN_WL_HOST_WAKE);
     if (events & CYW43_IRQ_LEVEL) {
-        // As we use a high level interrupt, it will go off forever until it's serviced.
-        // So disable the interrupt until this is done.  It's re-enabled again by
-        // CYW43_POST_POLL_HOOK which is called at the end of cyw43_poll_func.
-        gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, false);
-        cyw43_has_pending = 1;
-        __sev();
+        // As we use a level interrupt (and can't use an edge interrupt
+        // as CYW43_PIN_WL_HOST_WAKE is also a SPI data pin), we need to disable
+        // the interrupt to stop it re-triggering until after PendSV run
+        // cyw43_poll(). It is re-enabled in cyw43_post_poll_hook(), implemented
+        // below.
+        gpio_set_cpu0_host_wake_irq_enabled(false);
         pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+        __sev();
         CYW43_STAT_INC(IRQ_COUNT);
     }
 }
@@ -76,14 +96,11 @@ static void gpio_irq_handler(void) {
 void cyw43_irq_init(void) {
     gpio_add_raw_irq_handler_with_order_priority(CYW43_PIN_WL_HOST_WAKE, gpio_irq_handler, CYW43_SHARED_IRQ_HANDLER_PRIORITY);
     irq_set_enabled(IO_IRQ_BANK0, true);
-    #if !defined(__riscv)
-    NVIC_SetPriority(PendSV_IRQn, IRQ_PRI_PENDSV);
-    #endif
 }
 
+// This hook will run on whichever CPU serviced the PendSV interrupt
 void cyw43_post_poll_hook(void) {
-    cyw43_has_pending = 0;
-    gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, true);
+    gpio_set_cpu0_host_wake_irq_enabled(true);
 }
 
 #endif

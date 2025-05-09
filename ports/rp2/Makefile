@@ -56,24 +56,25 @@ ifdef MICROPY_PREVIEW_VERSION_2
 CMAKE_ARGS += -DMICROPY_PREVIEW_VERSION_2=1
 endif
 
+HELP_PICO_SDK_SUBMODULE ?= "\033[1;31mError: pico-sdk submodule is not initialized.\033[0m Run 'make submodules'"
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 
 all:
-	[ -e $(BUILD)/Makefile ] || cmake -S . -B $(BUILD) -DPICO_BUILD_DOCS=0 ${CMAKE_ARGS}
-	$(MAKE) $(MAKE_ARGS) -C $(BUILD) || (echo -e $(HELP_BUILD_ERROR); false)
+	$(Q)[ -f ../../lib/pico-sdk/README.md ] || (echo -e $(HELP_PICO_SDK_SUBMODULE); false)
+	$(Q)[ -e $(BUILD)/Makefile ] || cmake -S . -B $(BUILD) -DPICO_BUILD_DOCS=0 ${CMAKE_ARGS}
+	$(Q)$(MAKE) $(MAKE_ARGS) -C $(BUILD) || (echo -e $(HELP_BUILD_ERROR); false)
 
 clean:
 	$(RM) -rf $(BUILD)
 
-# First ensure that pico-sdk is initialised, then use cmake to pick everything
-# else (including board-specific dependencies).
-# Running the build with ECHO_SUBMODULES set will trigger py/mkrules.cmake to
-# print out the value of the GIT_SUBMODULES variable, prefixed with
-# "GIT_SUBMODULES", and then abort. This extracts out that line from the cmake
-# output and passes the list of submodules to py/mkrules.mk which does the
-# `git submodule init` on each.
+deploy: all
+	$(Q)picotool load -x $(BUILD)/firmware.elf
+
+# First ensure that pico-sdk is initialised, then run CMake with the
+# UPDATE_SUBMODULES flag to update necessary submodules for this board.
+#
+# This is done in a dedicated build directory as some CMake cache values are not
+# set correctly if not all submodules are loaded yet.
 submodules:
-	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="lib/pico-sdk" submodules
-	@GIT_SUBMODULES=$$(cmake -B $(BUILD)/submodules -DECHO_SUBMODULES=1 ${CMAKE_ARGS} -S . 2>&1 | \
-	                  grep '^GIT_SUBMODULES=' | cut -d= -f2); \
-	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$${GIT_SUBMODULES}" GIT_SUBMODULES_FAIL_IF_EMPTY=1 submodules
+	$(Q)$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="lib/pico-sdk" submodules
+	$(Q)cmake -S . -B $(BUILD)/submodules -DUPDATE_SUBMODULES=1 ${CMAKE_ARGS}

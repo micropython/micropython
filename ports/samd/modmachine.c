@@ -42,7 +42,7 @@
 #define DBL_TAP_ADDR    ((volatile uint32_t *)(HSRAM_ADDR + HSRAM_SIZE - 4))
 #endif
 // A board may define a DPL_TAP_ADDR_ALT, which will be set as well
-// Needed at the moment for Sparkfun SAMD51 Thing Plus
+// Needed at the moment for SparkFun SAMD51 Thing Plus
 #define DBL_TAP_MAGIC_LOADER 0xf01669ef
 #define DBL_TAP_MAGIC_RESET 0xf02669ef
 

@@ -429,37 +429,81 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
     || defined(STM32F723xx) \
     || defined(STM32F732xx) \
     || defined(STM32F733xx)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*016Kg,01*064Kg,07*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/04*016Kg,01*064Kg,07*128Kg"
 #elif defined(STM32F765xx) || defined(STM32F767xx) || defined(STM32F769xx)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg"
 #elif defined(STM32G0)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*02Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/256*02Kg"
 #elif defined(STM32H5)
-#define FLASH_LAYOUT_TEMPLATE "@Internal Flash  /0x08000000/???*08Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/???*08Kg"
+#define INTERNAL_FLASH_LAYOUT_HAS_TEMPLATE (1)
 #elif defined(STM32H743xx)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/16*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/16*128Kg"
 #elif defined(STM32H750xx)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/01*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/01*128Kg"
 #elif defined(STM32WB)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*04Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/256*04Kg"
 #endif
 
-#if !defined(FLASH_LAYOUT_STR)
+#if INTERNAL_FLASH_LAYOUT_HAS_TEMPLATE \
+    || defined(MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN) \
+    || defined(MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN)
 
-#define FLASH_LAYOUT_STR_ALLOC (sizeof(FLASH_LAYOUT_TEMPLATE))
+#ifndef MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN
+#define MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN (sizeof(MBOOT_SPIFLASH_LAYOUT) - 1)
+#endif
+
+#ifndef MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN
+#define MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN (sizeof(MBOOT_SPIFLASH2_LAYOUT) - 1)
+#endif
+
+#define FLASH_LAYOUT_STR_ALLOC \
+    ( \
+    (sizeof(INTERNAL_FLASH_LAYOUT) - 1) \
+    + MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN \
+    + MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN \
+    + 1 \
+    )
 
 // Build the flash layout string from a template with total flash size inserted.
-static size_t build_flash_layout_str(char *buf) {
-    size_t len = FLASH_LAYOUT_STR_ALLOC - 1;
-    memcpy(buf, FLASH_LAYOUT_TEMPLATE, len + 1);
+static size_t build_flash_layout_str(uint8_t *buf) {
+    const char *internal_layout = INTERNAL_FLASH_LAYOUT;
+    size_t internal_layout_len = strlen(internal_layout);
+
+    const char *spiflash_layout = MBOOT_SPIFLASH_LAYOUT;
+    size_t spiflash_layout_len = strlen(spiflash_layout);
+
+    const char *spiflash2_layout = MBOOT_SPIFLASH2_LAYOUT;
+    size_t spiflash2_layout_len = strlen(spiflash2_layout);
+
+    uint8_t *buf_orig = buf;
+
+    memcpy(buf, internal_layout, internal_layout_len);
+    buf += internal_layout_len;
+
+    #if INTERNAL_FLASH_LAYOUT_HAS_TEMPLATE
     unsigned int num_sectors = FLASH_SIZE / FLASH_SECTOR_SIZE;
-    buf += 31; // location of "???" in FLASH_LAYOUT_TEMPLATE
+    uint8_t *buf_size = buf_orig + 31; // location of "???" in FLASH_LAYOUT_TEMPLATE
     for (unsigned int i = 0; i < 3; ++i) {
-        *buf-- = '0' + num_sectors % 10;
+        *buf_size-- = '0' + num_sectors % 10;
         num_sectors /= 10;
     }
-    return len;
+    #endif
+
+    memcpy(buf, spiflash_layout, spiflash_layout_len);
+    buf += spiflash_layout_len;
+
+    memcpy(buf, spiflash2_layout, spiflash2_layout_len);
+    buf += spiflash2_layout_len;
+
+    *buf++ = '\0';
+
+    return buf - buf_orig;
 }
+
+#else
+
+#define FLASH_LAYOUT_STR INTERNAL_FLASH_LAYOUT MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 
 #endif
 
@@ -1188,7 +1232,7 @@ static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, u
             USBD_GetString((uint8_t *)FLASH_LAYOUT_STR, str_desc, length);
             #else
             {
-                char buf[FLASH_LAYOUT_STR_ALLOC];
+                uint8_t buf[FLASH_LAYOUT_STR_ALLOC];
                 build_flash_layout_str(buf);
                 USBD_GetString((uint8_t *)buf, str_desc, length);
             }

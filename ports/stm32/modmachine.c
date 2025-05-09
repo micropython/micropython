@@ -247,6 +247,14 @@ static mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
         mp_printf(print, "  1=%u 2=%u m=%u\n", info.num_1block, info.num_2block, info.max_block);
     }
 
+    // SPI flash size
+    #if defined(MICROPY_HW_SPIFLASH_SIZE_BITS)
+    mp_printf(print, "SPI flash size: %d\n", MICROPY_HW_SPIFLASH_SIZE_BITS / 8);
+    #endif
+    #if defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)
+    mp_printf(print, "QSPI flash size: %d\n", 1 << (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3));
+    #endif
+
     // free space on flash
     {
         #if MICROPY_VFS_FAT

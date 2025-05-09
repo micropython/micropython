@@ -168,16 +168,20 @@ static bool deflateio_init_write(mp_obj_deflateio_t *self) {
 
     const mp_stream_p_t *stream = mp_get_stream_raise(self->stream, MP_STREAM_OP_WRITE);
 
-    self->write = m_new_obj(mp_obj_deflateio_write_t);
-    self->write->input_len = 0;
-
     int wbits = self->window_bits;
     if (wbits == 0) {
         // Same default wbits for all formats.
         wbits = DEFLATEIO_DEFAULT_WBITS;
     }
+
+    // Allocate the large window before allocating the mp_obj_deflateio_write_t, in case the
+    // window allocation fails the mp_obj_deflateio_t object will remain in a consistent state.
     size_t window_len = 1 << wbits;
-    self->write->window = m_new(uint8_t, window_len);
+    uint8_t *window = m_new(uint8_t, window_len);
+
+    self->write = m_new_obj(mp_obj_deflateio_write_t);
+    self->write->window = window;
+    self->write->input_len = 0;
 
     uzlib_lz77_init(&self->write->lz77, self->write->window, window_len);
     self->write->lz77.dest_write_data = self;

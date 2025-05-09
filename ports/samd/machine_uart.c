@@ -88,8 +88,10 @@ typedef struct _machine_uart_obj_t {
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
     bool new;
+    uint16_t rxbuf_len;
     ringbuf_t read_buffer;
     #if MICROPY_HW_UART_TXBUF
+    uint16_t txbuf_len;
     ringbuf_t write_buffer;
     #endif
     #if MICROPY_PY_MACHINE_UART_IRQ
@@ -154,7 +156,8 @@ void common_uart_irq_handler(int uart_id) {
                 }
             }
             #endif
-        } else if (uart->USART.INTFLAG.bit.DRE != 0) {
+        }
+        if (uart->USART.INTFLAG.bit.DRE != 0) {
             #if MICROPY_HW_UART_TXBUF
             // handle the outgoing data
             if (ringbuf_avail(&self->write_buffer) > 0) {
@@ -287,16 +290,6 @@ void machine_uart_set_baudrate(mp_obj_t self_in, uint32_t baudrate) {
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    size_t rxbuf_len = self->read_buffer.size - 1;
-    #if MICROPY_HW_UART_TXBUF
-    size_t txbuf_len = self->write_buffer.size - 1;
-    #endif
-    if (self->bits > 8) {
-        rxbuf_len /= 2;
-        #if MICROPY_HW_UART_TXBUF
-        txbuf_len /= 2;
-        #endif
-    }
 
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
         "tx=\"%q\", rx=\"%q\", timeout=%u, timeout_char=%u, rxbuf=%d"
@@ -312,9 +305,9 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         ")",
         self->id, self->baudrate, self->bits, _parity_name[self->parity],
         self->stop + 1, pin_find_by_id(self->tx)->name, pin_find_by_id(self->rx)->name,
-        self->timeout, self->timeout_char, rxbuf_len
+        self->timeout, self->timeout_char, self->rxbuf_len
         #if MICROPY_HW_UART_TXBUF
-        , txbuf_len
+        , self->txbuf_len
         #endif
         #if MICROPY_HW_UART_RTSCTS
         , self->rts != 0xff ? pin_find_by_id(self->rts)->name : MP_QSTR_None
@@ -358,6 +351,11 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     // Set bits if configured.
     if (args[ARG_bits].u_int > 0) {
         self->bits = args[ARG_bits].u_int;
+        // Invalidate the buffers since the size may have to be changed
+        self->read_buffer.buf = NULL;
+        #if MICROPY_HW_UART_TXBUF
+        self->write_buffer.buf = NULL;
+        #endif
     }
 
     // Set parity if configured.
@@ -414,7 +412,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     }
 
     // Set the RX buffer size if configured.
-    size_t rxbuf_len = DEFAULT_BUFFER_SIZE;
+    size_t rxbuf_len = self->rxbuf_len;
     if (args[ARG_rxbuf].u_int > 0) {
         rxbuf_len = args[ARG_rxbuf].u_int;
         if (rxbuf_len < MIN_BUFFER_SIZE) {
@@ -422,17 +420,27 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         } else if (rxbuf_len > MAX_BUFFER_SIZE) {
             mp_raise_ValueError(MP_ERROR_TEXT("rxbuf too large"));
         }
+        // Force re-allocting of the buffer if the size changed
+        if (rxbuf_len != self->rxbuf_len) {
+            self->read_buffer.buf = NULL;
+            self->rxbuf_len = rxbuf_len;
+        }
     }
 
     #if MICROPY_HW_UART_TXBUF
     // Set the TX buffer size if configured.
-    size_t txbuf_len = DEFAULT_BUFFER_SIZE;
+    size_t txbuf_len = self->txbuf_len;
     if (args[ARG_txbuf].u_int > 0) {
         txbuf_len = args[ARG_txbuf].u_int;
         if (txbuf_len < MIN_BUFFER_SIZE) {
             txbuf_len = MIN_BUFFER_SIZE;
         } else if (txbuf_len > MAX_BUFFER_SIZE) {
             mp_raise_ValueError(MP_ERROR_TEXT("txbuf too large"));
+        }
+        // Force re-allocting of the buffer if the size changed
+        if (txbuf_len != self->txbuf_len) {
+            self->write_buffer.buf = NULL;
+            self->txbuf_len = txbuf_len;
         }
     }
     #endif
@@ -462,10 +470,14 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         }
 
         // Allocate the RX/TX buffers.
-        ringbuf_alloc(&(self->read_buffer), rxbuf_len + 1);
+        if (self->read_buffer.buf == NULL) {
+            ringbuf_alloc(&(self->read_buffer), rxbuf_len + 1);
+        }
 
         #if MICROPY_HW_UART_TXBUF
-        ringbuf_alloc(&(self->write_buffer), txbuf_len + 1);
+        if (self->write_buffer.buf == NULL) {
+            ringbuf_alloc(&(self->write_buffer), txbuf_len + 1);
+        }
         #endif
 
         // Step 1: Configure the Pin mux.
@@ -503,6 +515,12 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     self->stop = 0;
     self->timeout = 1;
     self->timeout_char = 1;
+    self->rxbuf_len = DEFAULT_BUFFER_SIZE;
+    self->read_buffer.buf = NULL;
+    #if MICROPY_HW_UART_TXBUF
+    self->txbuf_len = DEFAULT_BUFFER_SIZE;
+    self->write_buffer.buf = NULL;
+    #endif
     #if defined(pin_TX) && defined(pin_RX)
     // Initialize with the default pins
     self->tx = mp_hal_get_pin_obj((mp_obj_t)pin_TX);

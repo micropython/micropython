@@ -84,6 +84,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_MACHINE_ADC              (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/mimxrt/machine_adc.c"
+#define MICROPY_PY_MACHINE_ADC_READ_UV      (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
 #define MICROPY_PY_MACHINE_DHT_READINTO     (1)
@@ -113,7 +114,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_UART             (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/mimxrt/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
+#ifndef MICROPY_PY_MACHINE_UART_IRQ
 #define MICROPY_PY_MACHINE_UART_IRQ         (1)
+#endif
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_MACHINE_BOOTLOADER       (1)
 
@@ -124,6 +127,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_FATFS_RPATH                 (2)
 #define MICROPY_FATFS_MULTI_PARTITION       (1)
 #define MICROPY_FATFS_MAX_SS                (4096)
+#define MICROPY_FATFS_EXFAT                 (1)
 
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK                  (1)
@@ -137,6 +141,10 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_HASHLIB_MD5              (MICROPY_PY_SSL)
 #define MICROPY_PY_HASHLIB_SHA1             (MICROPY_PY_SSL)
 #define MICROPY_PY_CRYPTOLIB                (MICROPY_PY_SSL)
+#ifndef MICROPY_PY_NETWORK_PPP_LWIP
+#define MICROPY_PY_NETWORK_PPP_LWIP         (MICROPY_PY_LWIP)
+#endif
+#define MICROPY_PY_LWIP_PPP                 (MICROPY_PY_NETWORK_PPP_LWIP)
 
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)

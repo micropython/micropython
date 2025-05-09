@@ -46,6 +46,10 @@
 #include "py/cstack.h"
 #include "py/gc.h"
 
+#if MICROPY_VFS_ROM && MICROPY_VFS_ROM_IOCTL
+#include "extmod/vfs.h"
+#endif
+
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
@@ -185,6 +189,11 @@ void mp_init(void) {
     #endif
 
     MP_THREAD_GIL_ENTER();
+
+    #if MICROPY_VFS_ROM && MICROPY_VFS_ROM_IOCTL
+    // Mount ROMFS if it exists.
+    mp_vfs_mount_romfs_protected();
+    #endif
 }
 
 void mp_deinit(void) {

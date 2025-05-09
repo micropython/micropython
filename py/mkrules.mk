@@ -27,6 +27,17 @@ OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/compressed.data.h
 CFLAGS += -DMICROPY_ROM_TEXT_COMPRESSION=1
 endif
 
+# Set the variant or board name.
+ifneq ($(VARIANT),)
+CFLAGS += -DMICROPY_BOARD_BUILD_NAME=\"$(VARIANT)\"
+else ifneq ($(BOARD),)
+ifeq ($(BOARD_VARIANT),)
+CFLAGS += -DMICROPY_BOARD_BUILD_NAME=\"$(BOARD)\"
+else
+CFLAGS += -DMICROPY_BOARD_BUILD_NAME=\"$(BOARD)-$(BOARD_VARIANT)\"
+endif
+endif
+
 # QSTR generation uses the same CFLAGS, with these modifications.
 QSTR_GEN_FLAGS = -DNO_QSTR
 # Note: := to force evaluation immediately.
@@ -251,19 +262,14 @@ endif
 # If available, do blobless partial clones of submodules to save time and space.
 # A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.).
 # Fallback to standard submodule update if blobless isn't available (earlier than 2.36.0)
+#
+# Note: This target has a CMake equivalent in py/mkrules.cmake
 submodules:
 	$(ECHO) "Updating submodules: $(GIT_SUBMODULES)"
 ifneq ($(GIT_SUBMODULES),)
 	$(Q)cd $(TOP) && git submodule sync $(GIT_SUBMODULES)
 	$(Q)cd $(TOP) && git submodule update --init --filter=blob:none $(GIT_SUBMODULES) || \
 	  git submodule update --init $(GIT_SUBMODULES)
-else
-ifeq ($(GIT_SUBMODULES_FAIL_IF_EMPTY),1)
-	# If you see this error, it may mean the internal step run by the port's build
-	# system to find git submodules has failed. Double-check dependencies are set correctly.
-	$(ECHO) "Internal build error: The submodule list should not be empty."
-	exit 1
-endif
 endif
 .PHONY: submodules
 

@@ -52,6 +52,13 @@
 #define MP_BLOCKDEV_IOCTL_BLOCK_SIZE    (5)
 #define MP_BLOCKDEV_IOCTL_BLOCK_ERASE   (6)
 
+// Constants for vfs.rom_ioctl() function.
+#define MP_VFS_ROM_IOCTL_GET_NUMBER_OF_SEGMENTS     (1) // rom_ioctl(1)
+#define MP_VFS_ROM_IOCTL_GET_SEGMENT                (2) // rom_ioctl(2, <id>)
+#define MP_VFS_ROM_IOCTL_WRITE_PREPARE              (3) // rom_ioctl(3, <id>, <len>)
+#define MP_VFS_ROM_IOCTL_WRITE                      (4) // rom_ioctl(4, <id>, <offset>, <buf>)
+#define MP_VFS_ROM_IOCTL_WRITE_COMPLETE             (5) // rom_ioctl(5, <id>)
+
 // At the moment the VFS protocol just has import_stat, but could be extended to other methods
 typedef struct _mp_vfs_proto_t {
     mp_import_stat_t (*import_stat)(void *self, const char *path);
@@ -105,6 +112,9 @@ mp_obj_t mp_vfs_stat(mp_obj_t path_in);
 mp_obj_t mp_vfs_statvfs(mp_obj_t path_in);
 
 int mp_vfs_mount_and_chdir_protected(mp_obj_t bdev, mp_obj_t mount_point);
+#if MICROPY_VFS_ROM && MICROPY_VFS_ROM_IOCTL
+int mp_vfs_mount_romfs_protected(void);
+#endif
 
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_vfs_mount_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_umount_obj);
@@ -121,5 +131,13 @@ MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_rmdir_obj);
 #endif
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_stat_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_statvfs_obj);
+
+#if MICROPY_VFS_ROM_IOCTL
+// When MICROPY_VFS_ROM_IOCTL is enabled a port must define the following function.
+// This is a generic interface to allow querying and modifying the user-accessible,
+// read-only memory area of a device, if it is configured with such an area.
+// Supported ioctl commands are given by MP_VFS_ROM_IOCTL_xxx.
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args);
+#endif
 
 #endif // MICROPY_INCLUDED_EXTMOD_VFS_H

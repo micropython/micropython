@@ -1,0 +1,9 @@
+--- instance0 ---
+rx0 reason full
+rx0 reason overflow
+rxed_spam True
+(256, False, False, 0, b'aaaaa')
+any False
+--- instance1 ---
+(85, False, False, 0, b'overflow')
+any False

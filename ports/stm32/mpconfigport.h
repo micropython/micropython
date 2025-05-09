@@ -43,6 +43,7 @@
 #define MICROPY_GC_STACK_ENTRY_TYPE uint16_t
 #endif
 #endif
+#define MICROPY_STACK_CHECK_MARGIN  (1024)
 #define MICROPY_ALLOC_PATH_MAX      (128)
 
 // optimisations
@@ -79,6 +80,9 @@
 #define MICROPY_SCHEDULER_STATIC_NODES (1)
 #define MICROPY_SCHEDULER_DEPTH     (8)
 #define MICROPY_VFS                 (1)
+#ifndef MICROPY_VFS_ROM
+#define MICROPY_VFS_ROM (MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH || MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI)
+#endif
 
 // control over Python builtins
 #ifndef MICROPY_PY_BUILTINS_HELP_TEXT

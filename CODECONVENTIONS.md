@@ -206,14 +206,21 @@ adhere to the existing style and use `tools/codeformat.py` to check any changes.
 The main conventions, and things not enforceable via the auto-formatter, are
 described below.
 
-White space:
+As the MicroPython code base is over ten years old, not every source file
+conforms fully to these conventions. If making small changes to existing code,
+then it's usually acceptable to follow the existing code's style. New code or
+major changes should follow the conventions described here.
+
+## White space
+
 - Expand tabs to 4 spaces.
 - Don't leave trailing whitespace at the end of a line.
 - For control blocks (if, for, while), put 1 space between the
   keyword and the opening parenthesis.
 - Put 1 space after a comma, and 1 space around operators.
 
-Braces:
+## Braces
+
 - Use braces for all blocks, even no-line and single-line pieces of
   code.
 - Put opening braces on the end of the line it belongs to, not on
@@ -221,18 +228,43 @@ Braces:
 - For else-statements, put the else on the same line as the previous
   closing brace.
 
-Header files:
+## Header files
+
 - Header files should be protected from multiple inclusion with #if
   directives. See an existing header for naming convention.
 
-Names:
+## Names
+
 - Use underscore_case, not camelCase for all names.
 - Use CAPS_WITH_UNDERSCORE for enums and macros.
 - When defining a type use underscore_case and put '_t' after it.
 
-Integer types: MicroPython runs on 16, 32, and 64 bit machines, so it's
-important to use the correctly-sized (and signed) integer types.  The
-general guidelines are:
+### Public names (declared in headers)
+
+- MicroPython-specific names (especially any declared in `py/` and `extmod/`
+  directories) should generally start with `mp_` or `MP_`.
+- Functions and variables declared in a header should generally share a longer
+  common prefix. Usually the prefix matches the file name (i.e. items defined in
+  `py/obj.c` are declared in `py/obj.h` and should be prefixed `mp_obj_`). There
+  are exceptions, for example where one header file contains declarations
+  implemented in multiple source files for expediency.
+
+### Private names (specific to a single .c file)
+
+- For static functions and variables exposed to Python (i.e. a static C function
+  that is wrapped in `MP_DEFINE_CONST_FUN_...` and attached to a module), use
+  the file-level shared common prefix, i.e. name them as if the function or
+  variable was not static.
+- Other static definitions in source files (i.e. functions or variables defined
+  in a .c file that are only used within that .c file) don't need any prefix
+  (specifically: no `s_` or `_` prefix, and generally avoid adding the
+  file-level common prefix).
+
+## Integer types
+
+MicroPython runs on 16, 32, and 64 bit machines, so it's important to use the
+correctly-sized (and signed) integer types. The general guidelines are:
+
 - For most cases use mp_int_t for signed and mp_uint_t for unsigned
   integer values.  These are guaranteed to be machine-word sized and
   therefore big enough to hold the value from a MicroPython small-int
@@ -241,11 +273,13 @@ general guidelines are:
 - You can use int/uint, but remember that they may be 16-bits wide.
 - If in doubt, use mp_int_t/mp_uint_t.
 
-Comments:
+## Comments
+
 - Be concise and only write comments for things that are not obvious.
 - Use `// ` prefix, NOT `/* ... */`. No extra fluff.
 
-Memory allocation:
+## Memory allocation
+
 - Use m_new, m_renew, m_del (and friends) to allocate and free heap memory.
   These macros are defined in py/misc.h.
 

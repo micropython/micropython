@@ -34,6 +34,14 @@ represented by VFS classes.
 
     Will raise ``OSError(EPERM)`` if *mount_point* is already mounted.
 
+.. function:: mount()
+    :noindex:
+
+    With no arguments to :func:`mount`, return a list of tuples representing
+    all active mountpoints.
+    
+    The returned list has the form *[(fsobj, mount_point), ...]*.
+
 .. function:: umount(mount_point)
 
     Unmount a filesystem. *mount_point* can be a string naming the mount location,

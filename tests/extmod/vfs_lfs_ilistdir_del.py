@@ -71,5 +71,10 @@ def test(bdev, vfs_class):
         fs.open("/test", "w").close()
 
 
-bdev = RAMBlockDevice(30)
+try:
+    bdev = RAMBlockDevice(30)
+except MemoryError:
+    print("SKIP")
+    raise SystemExit
+
 test(bdev, vfs.VfsLfs2)

@@ -273,6 +273,29 @@ const pyb_flash_obj_t pyb_flash_obj = {
     0, // actual size handled in ioctl, MP_BLOCKDEV_IOCTL_BLOCK_COUNT case
 };
 
+mp_obj_t pyb_flash_new_obj(mp_int_t start, mp_int_t len) {
+    uint32_t bl_len = (storage_get_block_count() - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
+
+    if (start == -1) {
+        start = 0;
+    } else if (!(0 <= start && start < bl_len && start % MICROPY_HW_BDEV_BLOCKSIZE_EXT == 0)) {
+        return mp_const_none;
+    }
+
+    if (len == -1) {
+        len = bl_len - start;
+    } else if (!(0 < len && start + len <= bl_len && len % MICROPY_HW_BDEV_BLOCKSIZE_EXT == 0)) {
+        return mp_const_none;
+    }
+
+    pyb_flash_obj_t *self = mp_obj_malloc(pyb_flash_obj_t, &pyb_flash_type);
+    self->use_native_block_size = false;
+    self->start = start;
+    self->len = len;
+
+    return MP_OBJ_FROM_PTR(self);
+}
+
 static void pyb_flash_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self == &pyb_flash_obj) {
@@ -296,30 +319,15 @@ static mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
         // Default singleton object that accesses entire flash, including virtual partition table
         return MP_OBJ_FROM_PTR(&pyb_flash_obj);
     }
-
-    pyb_flash_obj_t *self = mp_obj_malloc(pyb_flash_obj_t, &pyb_flash_type);
-    self->use_native_block_size = false;
-
-    uint32_t bl_len = (storage_get_block_count() - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
-
     mp_int_t start = args[ARG_start].u_int;
-    if (start == -1) {
-        start = 0;
-    } else if (!(0 <= start && start < bl_len && start % MICROPY_HW_BDEV_BLOCKSIZE_EXT == 0)) {
-        mp_raise_ValueError(NULL);
-    }
-
     mp_int_t len = args[ARG_len].u_int;
-    if (len == -1) {
-        len = bl_len - start;
-    } else if (!(0 < len && start + len <= bl_len && len % MICROPY_HW_BDEV_BLOCKSIZE_EXT == 0)) {
+
+    mp_obj_t self = pyb_flash_new_obj(start, len);
+    if (self == mp_const_none) {
+        // Invalid start or end arg
         mp_raise_ValueError(NULL);
     }
-
-    self->start = start;
-    self->len = len;
-
-    return MP_OBJ_FROM_PTR(self);
+    return self;
 }
 
 static mp_obj_t pyb_flash_readblocks(size_t n_args, const mp_obj_t *args) {

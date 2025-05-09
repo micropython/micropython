@@ -37,9 +37,9 @@
 #include "genhdr/pins.h"
 #include "clock_config.h"
 
-#define DEFAULT_I2C_FREQ  (400000)
-#define RISETIME_NS       (200)
-#define I2C_TIMEOUT       (100)
+#define DEFAULT_I2C_FREQ    (400000)
+#define RISETIME_NS         (200)
+#define DEFAULT_I2C_TIMEOUT (50000)
 
 #define IS_BUS_BUSY       (i2c->I2CM.STATUS.bit.BUSSTATE == 3)
 #define NACK_RECVD        (i2c->I2CM.STATUS.bit.RXNACK == 1)
@@ -67,6 +67,7 @@ typedef struct _machine_i2c_obj_t {
     uint8_t state;
     uint32_t freq;
     uint32_t timeout;
+    uint32_t timer;
     size_t len;
     uint8_t *buf;
 } machine_i2c_obj_t;
@@ -88,7 +89,7 @@ void common_i2c_irq_handler(int i2c_id) {
             if (self->len > 0) {
                 *(self->buf)++ = i2c->I2CM.DATA.reg;
                 self->len--;
-                self->timeout = I2C_TIMEOUT;
+                self->timer = self->timeout;
             }
             if (self->len > 0) { // no ACK at the last byte
                 PREPARE_ACK; // Send ACK
@@ -105,7 +106,7 @@ void common_i2c_irq_handler(int i2c_id) {
             } else if (self->len > 0) { // data to be sent
                 i2c->I2CM.DATA.bit.DATA = *(self->buf)++;
                 self->len--;
-                self->timeout = I2C_TIMEOUT;
+                self->timer = self->timeout;
             } else { // No data left, if there was any.
                 self->state = state_done;
                 i2c->I2CM.INTFLAG.reg |= SERCOM_I2CM_INTFLAG_MB;
@@ -120,12 +121,13 @@ void common_i2c_irq_handler(int i2c_id) {
 
 static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2C(%u, freq=%u, scl=\"%q\", sda=\"%q\")",
-        self->id, self->freq, pin_find_by_id(self->scl)->name, pin_find_by_id(self->sda)->name);
+    mp_printf(print, "I2C(%u, freq=%u, scl=\"%q\", sda=\"%q\", timeout=%u)",
+        self->id, self->freq, pin_find_by_id(self->scl)->name, pin_find_by_id(self->sda)->name,
+        self->timeout * 1000);
 }
 
 mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_freq, ARG_scl, ARG_sda };
+    enum { ARG_id, ARG_freq, ARG_scl, ARG_sda, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         #if MICROPY_HW_DEFAULT_I2C_ID < 0
         { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1} },
@@ -140,6 +142,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         #endif
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_TIMEOUT} },
     };
 
     // Parse args.
@@ -168,6 +171,8 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     }
     MP_STATE_PORT(sercom_table[self->id]) = self;
     self->freq = args[ARG_freq].u_int;
+    // The unit for ARG_timeout is us, but the code uses ms.
+    self->timeout = args[ARG_timeout].u_int / 1000;
 
     // Configure the Pin mux.
     mp_hal_set_pin_mux(self->scl, scl_pad_config.alt_fct);
@@ -224,13 +229,13 @@ static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     machine_i2c_obj_t *self = (machine_i2c_obj_t *)self_in;
     Sercom *i2c = self->instance;
 
-    self->timeout = I2C_TIMEOUT;
+    self->timer = self->timeout;
     self->len = len;
     self->buf = buf;
     // Wait a while if the bus is busy
-    while (IS_BUS_BUSY && self->timeout) {
+    while (IS_BUS_BUSY && self->timer) {
         MICROPY_EVENT_POLL_HOOK
-        if (--self->timeout == 0) {
+        if (--self->timer == 0) {
             return -MP_ETIMEDOUT;
         }
     }
@@ -242,9 +247,9 @@ static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     i2c->I2CM.ADDR.bit.ADDR = (addr << 1) | READ_MODE;
 
     // Transfer the data
-    self->timeout = I2C_TIMEOUT;
-    while (self->state == state_busy && self->timeout) {
-        self->timeout--;
+    self->timer = self->timeout;
+    while (self->state == state_busy && self->timer) {
+        self->timer--;
         MICROPY_EVENT_POLL_HOOK
     }
     i2c->I2CM.INTENCLR.reg = SERCOM_I2CM_INTENSET_MB | SERCOM_I2CM_INTENSET_SB | SERCOM_I2CM_INTENSET_ERROR;
@@ -256,7 +261,7 @@ static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     } else if (self->state == state_buserr) {
         SET_STOP_STATE;
         return -MP_EIO;
-    } else if (self->timeout == 0) {
+    } else if (self->timer == 0) {
         SET_STOP_STATE;
         return -MP_ETIMEDOUT;
     }

@@ -28,6 +28,7 @@
 #include "py/mpconfig.h"
 #include "py/mpthread.h"
 #include "pendsv.h"
+#include "hardware/irq.h"
 
 #if PICO_RP2040
 #include "RP2040.h"
@@ -45,6 +46,9 @@ static pendsv_dispatch_t pendsv_dispatch_table[PENDSV_DISPATCH_NUM_SLOTS];
 
 static inline void pendsv_resume_run_dispatch(void);
 
+// PendSV IRQ priority, to run system-level tasks that preempt the main thread.
+#define IRQ_PRI_PENDSV PICO_LOWEST_IRQ_PRIORITY
+
 void PendSV_Handler(void);
 
 #if MICROPY_PY_THREAD
@@ -53,8 +57,14 @@ void PendSV_Handler(void);
 // loop of mp_wfe_or_timeout(), where we don't want the CPU event bit to be set.
 static mp_thread_recursive_mutex_t pendsv_mutex;
 
+// Called from CPU0 during boot, but may be called later when CPU1 wakes up
 void pendsv_init(void) {
-    mp_thread_recursive_mutex_init(&pendsv_mutex);
+    if (get_core_num() == 0) {
+        mp_thread_recursive_mutex_init(&pendsv_mutex);
+    }
+    #if !defined(__riscv)
+    NVIC_SetPriority(PendSV_IRQn, IRQ_PRI_PENDSV);
+    #endif
 }
 
 void pendsv_suspend(void) {
@@ -99,6 +109,10 @@ static inline int pendsv_suspend_count(void) {
 
 #endif
 
+bool pendsv_is_pending(size_t slot) {
+    return pendsv_dispatch_table[slot] != NULL;
+}
+
 static inline void pendsv_resume_run_dispatch(void) {
     // Run pendsv if needed.  Find an entry with a dispatch and call pendsv dispatch
     // with it.  If pendsv runs it will service all slots.
@@ -113,11 +127,13 @@ static inline void pendsv_resume_run_dispatch(void) {
 
 void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
     pendsv_dispatch_table[slot] = f;
+    // There is a race here where other core calls pendsv_suspend() before ISR
+    // can execute so this check fails, but dispatch will happen later when
+    // other core calls pendsv_resume().
     if (pendsv_suspend_count() == 0) {
         #if PICO_ARM
-        // There is a race here where other core calls pendsv_suspend() before
-        // ISR can execute, but dispatch will happen later when other core
-        // calls pendsv_resume().
+        // Note this register is part of each CPU core, so setting it on CPUx
+        // will set the IRQ and run PendSV_Handler on CPUx only.
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
         #elif PICO_RISCV
         struct timespec ts;
@@ -132,15 +148,19 @@ void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
 }
 
 // PendSV interrupt handler to perform background processing.
+//
+// Handler can execute on either CPU if MICROPY_PY_THREAD is set (no code on
+// CPU1 calls pendsv_schedule_dispatch(), but CPU1 can call pendsv_resume()
+// which will trigger it).
 void PendSV_Handler(void) {
 
     #if MICROPY_PY_THREAD
     if (!mp_thread_recursive_mutex_lock(&pendsv_mutex, 0)) {
-        // Failure here means core 1 holds pendsv_mutex. ISR will
-        // run again after core 1 calls pendsv_resume().
+        // Failure here means other core holds pendsv_mutex. ISR will
+        // run again after that core calls pendsv_resume().
         return;
     }
-    // Core 0 should not already have locked pendsv_mutex
+    // This core should not already have locked pendsv_mutex
     assert(pendsv_mutex.mutex.enter_count == 1);
     #else
     assert(pendsv_suspend_count() == 0);
