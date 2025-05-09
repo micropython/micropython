@@ -33,9 +33,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <limits.h>
 
 typedef unsigned char byte;
 typedef unsigned int uint;
+
+#ifndef __has_builtin
+  #define __has_builtin(x) (0)
+#endif
 
 /** generic ops *************************************************/
 
@@ -374,26 +379,23 @@ static inline bool mp_check(bool value) {
 static inline uint32_t mp_popcount(uint32_t x) {
     return __popcnt(x);
 }
-#else
+#else // _MSC_VER
 #define mp_clz(x) __builtin_clz(x)
 #define mp_clzl(x) __builtin_clzl(x)
 #define mp_clzll(x) __builtin_clzll(x)
 #define mp_ctz(x) __builtin_ctz(x)
 #define mp_check(x) (x)
-#if defined __has_builtin
 #if __has_builtin(__builtin_popcount)
 #define mp_popcount(x) __builtin_popcount(x)
-#endif
-#endif
-#if !defined(mp_popcount)
+#else
 static inline uint32_t mp_popcount(uint32_t x) {
     x = x - ((x >> 1) & 0x55555555);
     x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
     x = (x + (x >> 4)) & 0x0F0F0F0F;
     return x * 0x01010101;
 }
-#endif
-#endif
+#endif // __has_builtin(__builtin_popcount)
+#endif // _MSC_VER
 
 // mp_int_t can be larger than long, i.e. Windows 64-bit, nan-box variants
 static inline uint32_t mp_clz_mpi(mp_int_t x) {
@@ -420,5 +422,75 @@ static inline uint32_t mp_clz_mpi(mp_int_t x) {
     }
     #endif
 }
+
+// Overflow-checked operations for long long
+
+// Integer overflow builtins were added to GCC 5, but __has_builtin only in GCC 10
+#define MP_GCC_HAS_BUILTIN_OVERFLOW (__GNUC__ >= 5)
+
+#if __has_builtin(__builtin_smulll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
+#define mp_mul_ll_overflow __builtin_smulll_overflow
+#else
+inline static bool mp_mul_ll_overflow(long long int x, long long int y, long long int *res) {
+    bool overflow;
+
+    // Check for multiply overflow; see CERT INT32-C
+    if (x > 0) { // x is positive
+        if (y > 0) { // x and y are positive
+            overflow = (x > (LLONG_MAX / y));
+        } else { // x positive, y nonpositive
+            overflow = (y < (LLONG_MIN / x));
+        } // x positive, y nonpositive
+    } else { // x is nonpositive
+        if (y > 0) { // x is nonpositive, y is positive
+            overflow = (x < (LLONG_MIN / y));
+        } else { // x and y are nonpositive
+            overflow = (x != 0 && y < (LLONG_MAX / x));
+        } // End if x and y are nonpositive
+    } // End if x is nonpositive
+
+    // 'res' may alias a and/or b, so need to update after checks
+    // (note also that result in this case is UB, unlike the builtin result)
+    *res = x * y;
+
+    return overflow;
+}
+#endif
+
+#if __has_builtin(__builtin_saddll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
+#define mp_add_ll_overflow __builtin_saddll_overflow
+#else
+inline static bool mp_add_ll_overflow(long long int lhs, long long int rhs, long long int *res) {
+    bool overflow;
+
+    if (rhs > 0) {
+        overflow = (lhs > LLONG_MAX - rhs);
+    } else {
+        overflow = (lhs < LLONG_MIN - rhs);
+    }
+
+    // See comments above about limitations of doing this
+    *res = lhs + rhs;
+    return overflow;
+}
+#endif
+
+#if __has_builtin(__builtin_ssubll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
+#define mp_sub_ll_overflow __builtin_ssubll_overflow
+#else
+inline static bool mp_sub_ll_overflow(long long int lhs, long long int rhs, long long int *res) {
+    bool overflow;
+
+    if (rhs > 0) {
+        overflow = (lhs < LLONG_MIN + rhs);
+    } else {
+        overflow = (lhs > LLONG_MAX + rhs);
+    }
+
+    // See comments above about limitations of doing this
+    *res = lhs - rhs;
+    return overflow;
+}
+#endif
 
 #endif // MICROPY_INCLUDED_PY_MISC_H
