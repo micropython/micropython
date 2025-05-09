@@ -1351,6 +1351,14 @@ typedef double mp_float_t;
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to provide "atexit" module.
+#ifndef MICROPY_PY_ATEXIT
+#define MICROPY_PY_ATEXIT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+#ifndef MICROPY_PY_ATEXIT_UNREGISTER
+#define MICROPY_PY_ATEXIT_UNREGISTER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#endif
+
 // Whether to support attrtuple type (MicroPython extension)
 // It provides space-efficient tuples with attribute access
 #ifndef MICROPY_PY_ATTRTUPLE
