@@ -162,6 +162,9 @@ platform_tests_to_skip = {
         "extmod/asyncio_new_event_loop.py",
         "extmod/asyncio_threadsafeflag.py",
         "extmod/asyncio_wait_for_fwd.py",
+        "extmod/asyncio_event_queue.py",
+        "extmod/asyncio_iterator_event.py",
+        "extmod/asyncio_wait_for_linked_task.py",
         "extmod/binascii_a2b_base64.py",
         "extmod/deflate_compress_memory_error.py",  # tries to allocate unlimited memory
         "extmod/re_stack_overflow.py",
@@ -843,6 +846,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         )  # native doesn't have proper traceback info
         skip_tests.add("micropython/schedule.py")  # native code doesn't check pending events
         skip_tests.add("stress/bytecode_limit.py")  # bytecode specific test
+        skip_tests.add("extmod/asyncio_event_queue.py")  # native can't run schedule
+        skip_tests.add("extmod/asyncio_iterator_event.py")  # native can't run schedule
 
     def run_one_test(test_file):
         test_file = test_file.replace("\\", "/")

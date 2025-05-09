@@ -234,3 +234,6 @@ $MPREMOTE resume rm -r -v :/ramdisk
 $MPREMOTE resume ls :/ramdisk
 
 echo -----
+# try to delete existing folder in mounted filesystem
+$MPREMOTE mount "${TMP}" + rm -rv :package || echo "expect error"
+echo -----

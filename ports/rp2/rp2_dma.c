@@ -315,7 +315,7 @@ static mp_obj_t rp2_dma_pack_ctrl(size_t n_pos_args, const mp_obj_t *pos_args, m
     // Pack keyword settings into a control register value, using either the default for this
     // DMA channel or the provided defaults
     rp2_dma_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    mp_uint_t value = DEFAULT_DMA_CONFIG | ((self->channel & 0xf) << 11);
+    mp_uint_t value = DEFAULT_DMA_CONFIG | ((self->channel & 0xf) << DMA_CH0_CTRL_TRIG_CHAIN_TO_LSB);
 
     if (n_pos_args > 1) {
         mp_raise_TypeError(MP_ERROR_TEXT("pack_ctrl only takes keyword arguments"));

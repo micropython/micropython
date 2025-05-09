@@ -303,6 +303,17 @@ def do_filesystem_recursive_cp(state, src, dest, multiple, check_hash):
 
 def do_filesystem_recursive_rm(state, path, args):
     if state.transport.fs_isdir(path):
+        if state.transport.mounted:
+            r_cwd = state.transport.eval("os.getcwd()")
+            abs_path = os.path.normpath(
+                os.path.join(r_cwd, path) if not os.path.isabs(path) else path
+            )
+            if isinstance(state.transport, SerialTransport) and abs_path.startswith(
+                f'{SerialTransport.fs_hook_mount}/'
+            ):
+                raise CommandError(
+                    f"rm -r not permitted on {SerialTransport.fs_hook_mount} directory"
+                )
         for entry in state.transport.fs_listdir(path):
             do_filesystem_recursive_rm(state, _remote_path_join(path, entry.name), args)
         if path:
@@ -393,12 +404,8 @@ def do_filesystem(state, args):
                     )
                 else:
                     do_filesystem_cp(state, path, cp_dest, len(paths) > 1, not args.force)
-    except FileNotFoundError as er:
-        raise CommandError("{}: {}: No such file or directory.".format(command, er.args[0]))
-    except IsADirectoryError as er:
-        raise CommandError("{}: {}: Is a directory.".format(command, er.args[0]))
-    except FileExistsError as er:
-        raise CommandError("{}: {}: File exists.".format(command, er.args[0]))
+    except OSError as er:
+        raise CommandError("{}: {}: {}.".format(command, er.strerror, os.strerror(er.errno)))
     except TransportError as er:
         raise CommandError("Error with transport:\n{}".format(er.args[0]))
 
@@ -649,7 +656,9 @@ def _do_romfs_deploy(state, args):
         romfs_chunk += bytes(chunk_size - len(romfs_chunk))
         if has_deflate_io:
             # Needs: binascii.a2b_base64, io.BytesIO, deflate.DeflateIO.
-            romfs_chunk_compressed = zlib.compress(romfs_chunk, wbits=-9)
+            compressor = zlib.compressobj(wbits=-9)
+            romfs_chunk_compressed = compressor.compress(romfs_chunk)
+            romfs_chunk_compressed += compressor.flush()
             buf = binascii.b2a_base64(romfs_chunk_compressed).strip()
             transport.exec(f"buf=DeflateIO(BytesIO(a2b_base64({buf})),RAW,9).read()")
         elif has_a2b_base64:

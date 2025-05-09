@@ -193,7 +193,7 @@ const machine_pin_obj_t *machine_pin_find(mp_obj_t pin) {
             return &machine_pin_obj_table[wanted_pin];
         }
     }
-    mp_raise_ValueError("invalid pin");
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
 }
 
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -259,11 +259,11 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (is_ext_pin(self) && args[ARG_pull].u_obj != mp_const_none) {
-        mp_raise_ValueError("pulls are not supported for external pins");
+        mp_raise_ValueError(MP_ERROR_TEXT("pulls are not supported for external pins"));
     }
 
     if (is_ext_pin(self) && args[ARG_alt].u_int != GPIO_FUNC_SIO) {
-        mp_raise_ValueError("alternate functions are not supported for external pins");
+        mp_raise_ValueError(MP_ERROR_TEXT("alternate functions are not supported for external pins"));
     }
 
     // get initial value of pin (only valid for OUT and OPEN_DRAIN modes)

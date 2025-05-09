@@ -56,6 +56,21 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
     switch = Pin(("gpioc", 6), Pin.IN)            # create input pin for a switch
     switch.irq(lambda t: print("SW2 changed"))    # enable an interrupt when switch state is changed
 
+PWM
+---
+
+Use the :ref:`machine.PWM <machine.PWM>` class::
+
+    from machine import PWM
+
+    pwm = PWM(("pwm0", 0), freq=3921568, duty_ns=200, invert=True)    # create pwm on PWM0
+    print(pwm)                                                        # print pwm
+
+    print(pwm.duty_ns())                                              # print pwm duty cycle in nanoseconds
+    pwm.duty_ns(255)                                                  # set new pwm duty cycle in nanoseconds
+
+    pwm.deinit()
+
 Hardware I2C bus
 ----------------
 
@@ -137,6 +152,8 @@ Use the :ref:`zephyr.FlashArea <zephyr.FlashArea>` class to support filesystem::
     with open('/flash/hello.txt','w') as f:     # open a new file in the directory
         f.write('Hello world')                  # write to the file
     print(open('/flash/hello.txt').read())      # print contents of the file
+
+The FlashAreas' IDs that are available are listed in the FlashArea module, as ID_*.
 
 Sensor
 ------

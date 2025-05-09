@@ -892,7 +892,7 @@ Default pin assignments:
 
 There seems to be no default pin assignment for this board.
 
-Sparkfun SAMD51 Thing Plus pin assignment table
+SparkFun SAMD51 Thing Plus pin assignment table
 ------------------------------------------------
 
 === ==== ============ ==== ==== ==== ====== ====== ===== ===== =====

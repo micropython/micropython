@@ -4,10 +4,13 @@ MicroPython port to Zephyr RTOS
 This is a work-in-progress port of MicroPython to Zephyr RTOS
 (http://zephyrproject.org).
 
-This port requires Zephyr version v3.7.0, and may also work on higher
-versions.  All boards supported
-by Zephyr (with standard level of features support, like UART console)
-should work with MicroPython (but not all were tested).
+This port tries to support all Zephyr versions supported upstream,
+i.e. currently v3.7 (LTS), v4.0 and the development branch. The CI is
+setup to use the latest version, i.e. v4.0.
+
+All boards supported by Zephyr (with standard level of features
+support, like UART console) should work with MicroPython (but not all
+were tested).
 
 Features supported at this time:
 
@@ -16,6 +19,7 @@ Features supported at this time:
 * `machine.Pin` class for GPIO control, with IRQ support.
 * `machine.I2C` class for I2C control.
 * `machine.SPI` class for SPI control.
+* `machine.PWM` class for PWM control
 * `socket` module for networking (IPv4/IPv6).
 * "Frozen modules" support to allow to bundle Python modules together
   with firmware. Including complete applications, including with
@@ -39,13 +43,13 @@ setup is correct.
 If you already have Zephyr installed but are having issues building the
 MicroPython port then try installing the correct version of Zephyr via:
 
-    $ west init zephyrproject -m https://github.com/zephyrproject-rtos/zephyr --mr v3.7.0
+    $ west init zephyrproject -m https://github.com/zephyrproject-rtos/zephyr --mr v4.0.0
 
 Alternatively, you don't have to redo the Zephyr installation to just
 switch from master to a tagged release, you can instead do:
 
     $ cd zephyrproject/zephyr
-    $ git checkout v3.7.0
+    $ git checkout v4.0.0
     $ west update
 
 With Zephyr installed you may then need to configure your environment,

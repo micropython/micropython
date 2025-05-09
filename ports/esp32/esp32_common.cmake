@@ -28,6 +28,11 @@ if(NOT DEFINED MICROPY_PY_TINYUSB)
     endif()
 endif()
 
+# Enable error text compression by default.
+if(NOT MICROPY_ROM_TEXT_COMPRESSION)
+    set(MICROPY_ROM_TEXT_COMPRESSION ON)
+endif()
+
 # Include core source components.
 include(${MICROPY_DIR}/py/py.cmake)
 
@@ -37,7 +42,9 @@ include(${MICROPY_DIR}/py/py.cmake)
 if(NOT CMAKE_BUILD_EARLY_EXPANSION)
     # Enable extmod components that will be configured by extmod.cmake.
     # A board may also have enabled additional components.
-    set(MICROPY_PY_BTREE ON)
+    if (NOT DEFINED MICROPY_PY_BTREE)
+        set(MICROPY_PY_BTREE ON)
+    endif()
 
     include(${MICROPY_DIR}/py/usermod.cmake)
     include(${MICROPY_DIR}/extmod/extmod.cmake)
@@ -271,7 +278,9 @@ target_include_directories(${MICROPY_TARGET} PUBLIC
 )
 
 # Add additional extmod and usermod components.
-target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
+if (MICROPY_PY_BTREE)
+    target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
+endif()
 target_link_libraries(${MICROPY_TARGET} usermod)
 
 # Extra linker options

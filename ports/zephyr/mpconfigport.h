@@ -72,6 +72,8 @@
 #define MICROPY_PY_MACHINE_WDT      (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/zephyr/machine_wdt.c"
 #endif
+#define MICROPY_PY_MACHINE_PWM      (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/zephyr/machine_pwm.c"
 #define MICROPY_PY_STRUCT           (0)
 #ifdef CONFIG_NETWORKING
 // If we have networking, we likely want errno comfort
@@ -137,8 +139,8 @@ void mp_hal_signal_event(void);
 #define MICROPY_HW_MCU_NAME "unknown-cpu"
 #endif
 
-typedef int mp_int_t; // must be pointer size
-typedef unsigned mp_uint_t; // must be pointer size
+typedef intptr_t mp_int_t; // must be pointer size
+typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM

@@ -1,0 +1,5 @@
+bar 0
+bar 1
+bar 2
+good: asyncio iterator is still pending, exiting
+end main

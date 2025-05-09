@@ -50,8 +50,8 @@
 #define OCF_SET_EVENT_MASK      (0x0001)
 #define OCF_RESET               (0x0003)
 
-#define error_printf(...)   // mp_printf(&mp_plat_print, "nina_bt_hci.c: " __VA_ARGS__)
-#define debug_printf(...)   // mp_printf(&mp_plat_print, "nina_bt_hci.c: " __VA_ARGS__)
+#define error_printf(...)   // mp_printf(&mp_plat_print, "nina_bthci_uart.c: " __VA_ARGS__)
+#define debug_printf(...)   // mp_printf(&mp_plat_print, "nina_bthci_uart.c: " __VA_ARGS__)
 
 // Provided by the port, and also possibly shared with the stack.
 extern uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];

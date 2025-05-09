@@ -28,6 +28,8 @@
 #include "shared/timeutils/timeutils.h"
 #include "modmachine.h"
 
+static uint64_t time_us_64_offset_from_epoch;
+
 // Return the localtime as an 8-tuple.
 static mp_obj_t mp_time_localtime_get(void) {
     timeutils_struct_time_t tm;
@@ -53,4 +55,16 @@ static mp_obj_t mp_time_time_get(void) {
     rtc_gettime(&tm);
     return mp_obj_new_int_from_uint(timeutils_mktime(
         tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec));
+}
+
+void mp_hal_time_ns_set_from_rtc(void) {
+    timeutils_struct_time_t tm;
+    rtc_gettime(&tm);
+    uint64_t time_us = (uint64_t)timeutils_mktime(tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour,
+        tm.tm_min, tm.tm_sec) * 1000000ULL;
+    time_us_64_offset_from_epoch = time_us - mp_hal_ticks_us_64();
+}
+
+uint64_t mp_hal_time_ns(void) {
+    return (time_us_64_offset_from_epoch + mp_hal_ticks_us_64()) * 1000ULL;
 }

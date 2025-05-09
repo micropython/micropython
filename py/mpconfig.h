@@ -30,7 +30,7 @@
 // as well as a fallback to generate MICROPY_GIT_TAG if the git repo or tags
 // are unavailable.
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 25
+#define MICROPY_VERSION_MINOR 26
 #define MICROPY_VERSION_MICRO 0
 #define MICROPY_VERSION_PRERELEASE 1
 
@@ -1469,7 +1469,7 @@ typedef double mp_float_t;
 
 // Whether to provide "io.IOBase" class to support user streams
 #ifndef MICROPY_PY_IO_IOBASE
-#define MICROPY_PY_IO_IOBASE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#define MICROPY_PY_IO_IOBASE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to provide "io.BytesIO" class

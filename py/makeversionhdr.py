@@ -117,8 +117,8 @@ def make_version_header(repo_path, filename):
 
     build_date = datetime.date.today()
     if "SOURCE_DATE_EPOCH" in os.environ:
-        build_date = datetime.datetime.utcfromtimestamp(
-            int(os.environ["SOURCE_DATE_EPOCH"])
+        build_date = datetime.datetime.fromtimestamp(
+            int(os.environ["SOURCE_DATE_EPOCH"]), datetime.timezone.utc
         ).date()
 
     # Generate the file with the git and version info

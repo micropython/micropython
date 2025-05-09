@@ -280,7 +280,6 @@ endif
 
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 SRC_C += mpbthciport.c
-DRIVERS_SRC_C += drivers/cyw43/cywbt.c
 endif # MICROPY_PY_BLUETOOTH
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)

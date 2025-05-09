@@ -21,6 +21,9 @@ for t in T(1, 2), T(bar=1, foo=2):
 
     print(isinstance(t, tuple))
 
+    # a NamedTuple can be used as a tuple
+    print("(%d, %d)" % t)
+
     # Check tuple can compare equal to namedtuple with same elements
     print(t == (t[0], t[1]), (t[0], t[1]) == t)
 

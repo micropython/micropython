@@ -2141,7 +2141,7 @@ int lfs1_format(lfs1_t *lfs1, const struct lfs1_config *cfg) {
             .d.elen = sizeof(superblock.d) - sizeof(superblock.d.magic) - 4,
             .d.nlen = sizeof(superblock.d.magic),
             .d.version = LFS1_DISK_VERSION,
-            .d.magic = {"littlefs"},
+            .d.magic = {'l', 'i', 't', 't', 'l', 'e', 'f', 's'},
             .d.block_size  = lfs1->cfg->block_size,
             .d.block_count = lfs1->cfg->block_count,
             .d.root = {lfs1->root[0], lfs1->root[1]},

@@ -55,18 +55,13 @@ listdir_result = namedtuple("dir_result", ["name", "st_mode", "st_ino", "st_size
 # Takes a Transport error (containing the text of an OSError traceback) and
 # raises it as the corresponding OSError-derived exception.
 def _convert_filesystem_error(e, info):
-    if "OSError" in e.error_output and "ENOENT" in e.error_output:
-        return FileNotFoundError(info)
-    if "OSError" in e.error_output and "EISDIR" in e.error_output:
-        return IsADirectoryError(info)
-    if "OSError" in e.error_output and "EEXIST" in e.error_output:
-        return FileExistsError(info)
-    if "OSError" in e.error_output and "ENODEV" in e.error_output:
-        return FileNotFoundError(info)
-    if "OSError" in e.error_output and "EINVAL" in e.error_output:
-        return OSError(errno.EINVAL, info)
-    if "OSError" in e.error_output and "EPERM" in e.error_output:
-        return OSError(errno.EPERM, info)
+    if "OSError" in e.error_output:
+        for code, estr in [
+            *errno.errorcode.items(),
+            (errno.EOPNOTSUPP, "EOPNOTSUPP"),
+        ]:
+            if estr in e.error_output:
+                return OSError(code, info)
     return e
 
 
