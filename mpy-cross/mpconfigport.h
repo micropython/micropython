@@ -137,7 +137,7 @@ typedef long mp_off_t;
 #ifdef _MSC_VER
 
 #define MP_ENDIANNESS_LITTLE        (1)
-#define NORETURN                    __declspec(noreturn)
+#define MP_NORETURN                 __declspec(noreturn)
 #define MP_NOINLINE                 __declspec(noinline)
 #define MP_ALWAYSINLINE             __forceinline
 #define MP_LIKELY(x)                (x)
