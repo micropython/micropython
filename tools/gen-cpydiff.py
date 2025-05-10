@@ -219,6 +219,8 @@ def gen_rst(results):
     class_ = []
     for output in results:
         section = output.class_.split(",")
+        if len(section) < 2:
+            raise SystemExit("Each item must have at least 2 categories")
         for i in range(len(section)):
             section[i] = section[i].rstrip()
             if section[i] in CLASSMAP:
