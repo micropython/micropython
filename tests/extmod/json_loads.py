@@ -71,3 +71,27 @@ try:
     my_print(json.loads("[null]   a"))
 except ValueError:
     print("ValueError")
+
+# incomplete object declaration
+try:
+    my_print(json.loads('{"a":0,'))
+except ValueError:
+    print("ValueError")
+
+# incomplete nested array declaration
+try:
+    my_print(json.loads('{"a":0, ['))
+except ValueError:
+    print("ValueError")
+
+# incomplete array declaration
+try:
+    my_print(json.loads('[0,'))
+except ValueError:
+    print("ValueError")
+
+# incomplete nested object declaration
+try:
+    my_print(json.loads('[0, {"a":0, '))
+except ValueError:
+    print("ValueError")
