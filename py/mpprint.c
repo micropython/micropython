@@ -58,7 +58,7 @@ int mp_print_str(const mp_print_t *print, const char *str) {
     return len;
 }
 
-int mp_print_strn(const mp_print_t *print, const char *str, size_t len, int flags, char fill, int width) {
+int mp_print_strn(const mp_print_t *print, const char *str, size_t len, unsigned int flags, char fill, int width) {
     int left_pad = 0;
     int right_pad = 0;
     int pad = width - len;
@@ -248,10 +248,7 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
     int prefix_len = prefix - prefix_buf;
     prefix = prefix_buf;
 
-    char comma = '\0';
-    if (flags & PF_FLAG_SHOW_SEP) {
-        comma = base == 10 ? ',' : '_';
-    }
+    char comma = flags >> PF_FLAG_SEP_POS;
 
     // The size of this buffer is rather arbitrary. If it's not large
     // enough, a dynamic one will be allocated.
@@ -340,7 +337,7 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
-int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, char fill, int width, int prec) {
+int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, unsigned int flags, char fill, int width, int prec) {
     char buf[32];
     char sign = '\0';
     int chrs = 0;

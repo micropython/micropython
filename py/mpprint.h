@@ -39,6 +39,8 @@
 #define PF_FLAG_ADD_PERCENT       (0x100)
 #define PF_FLAG_SHOW_OCTAL_LETTER (0x200)
 
+#define PF_FLAG_SEP_POS           (16)    // must be above all above PF_FLAGs
+
 #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
 #define MP_PYTHON_PRINTER &mp_sys_stdout_print
 #else
@@ -69,9 +71,9 @@ extern const mp_print_t mp_sys_stdout_print;
 #endif
 
 int mp_print_str(const mp_print_t *print, const char *str);
-int mp_print_strn(const mp_print_t *print, const char *str, size_t len, int flags, char fill, int width);
+int mp_print_strn(const mp_print_t *print, const char *str, size_t len, unsigned int flags, char fill, int width);
 #if MICROPY_PY_BUILTINS_FLOAT
-int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, char fill, int width, int prec);
+int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, unsigned int flags, char fill, int width, int prec);
 #endif
 
 int mp_printf(const mp_print_t *print, const char *fmt, ...);

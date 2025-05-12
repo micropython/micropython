@@ -1229,12 +1229,8 @@ static vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 }
             }
             s = str_to_int(s, stop, &width);
-            if (*s == ',') {
-                flags |= PF_FLAG_SHOW_SEP;
-                s++;
-            }
-            if (*s == '_') {
-                flags |= PF_FLAG_SHOW_SEP;
+            if (*s == ',' || *s == '_') {
+                flags |= *s << PF_FLAG_SEP_POS;
                 s++;
             }
             if (*s == '.') {
