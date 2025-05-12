@@ -22,6 +22,9 @@ timing_margin_us = 5
 # Configure pins based on the target.
 if "esp32" in sys.platform:
     pwm_pulse_pins = ((4, 5),)
+    if "ESP32S2" in sys.implementation._machine:
+        # For UM FeatherS2
+        pwm_pulse_pins = ((6, 5),)
     freq_margin_per_thousand = 2
     duty_margin_per_thousand = 1
     timing_margin_us = 20
