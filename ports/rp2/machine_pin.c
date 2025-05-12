@@ -47,7 +47,7 @@
 #define GPIO_IRQ_ALL (0xf)
 
 // Open drain behaviour is simulated.
-#define GPIO_IS_OPEN_DRAIN(id) (machine_pin_open_drain_mask & (1 << (id)))
+#define GPIO_IS_OPEN_DRAIN(id) (machine_pin_open_drain_mask & (1ULL << (id)))
 
 #ifndef MICROPY_HW_PIN_RESERVED
 #define MICROPY_HW_PIN_RESERVED(i) (0)
