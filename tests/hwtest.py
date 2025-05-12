@@ -256,6 +256,8 @@ def main():
                 "--result-dir",
                 f"results_{target.device_suffix}",
             ]
+            run_tests_native_cmd = run_tests_cmd + ["--via-mpy", "--emit", "native"]
+
             do_test(run_tests_cmd + ["--clean-failures"])
 
             if select_vcprate:
@@ -268,11 +270,6 @@ def main():
             if select_python:
                 do_test(run_tests_cmd)
 
-            if select_hardware:
-                do_test(run_tests_cmd + ["-d", "extmod_hardware"])
-                if target.port == "pyboard":
-                    do_test(run_tests_cmd + ["-d", "ports/stm32_hardware"])
-
             if select_via_mpy and target.can_import_mpy:
                 port_specific = []
                 if target.port == "esp8266":
@@ -280,13 +277,17 @@ def main():
                 do_test(run_tests_cmd + ["--via-mpy"] + port_specific)
 
             if select_native and target.arch is not None:
-                run_native = ["--via-mpy", "--emit", "native"]
-                do_test(run_tests_cmd + run_native)
-                if select_hardware:
-                    do_test(run_tests_cmd + run_native + ["-d", "extmod_hardware"])
-                    if target.port == "pyboard":
-                        do_test(run_tests_cmd + run_native + ["-d", "ports/stm32_hardware"])
+                do_test(run_tests_native_cmd)
                 do_test(["./run-natmodtests.py", "-p", "-d", target.device] + tests_natmod)
+
+            if select_hardware:
+                run_cmds = [run_tests_cmd]
+                if select_native and target.arch is not None:
+                    run_cmds += run_tests_native_cmd
+                for run_cmd in run_cmds:
+                    do_test(run_cmd + ["-d", "extmod_hardware"])
+                    if target.port == "pyboard":
+                        do_test(run_cmd + ["-d", "ports/stm32_hardware"])
 
             if select_wlan and target.has_wlan:
                 t = SerialTransport(target.device)
