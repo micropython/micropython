@@ -46,9 +46,6 @@
 
 #define GPIO_IRQ_ALL (0xf)
 
-// Open drain behaviour is simulated.
-#define GPIO_IS_OPEN_DRAIN(id) (machine_pin_open_drain_mask & (1 << (id)))
-
 #ifndef MICROPY_HW_PIN_RESERVED
 #define MICROPY_HW_PIN_RESERVED(i) (0)
 #endif
@@ -83,7 +80,11 @@ static const mp_irq_methods_t machine_pin_irq_methods;
 static const int num_intr_regs = sizeof(iobank0_hw->intr) / sizeof(iobank0_hw->intr[0]);
 
 // Mask with "1" indicating that the corresponding pin is in simulated open-drain mode.
+#if NUM_BANK0_GPIOS > 32
 uint64_t machine_pin_open_drain_mask;
+#else
+uint32_t machine_pin_open_drain_mask;
+#endif
 
 #if MICROPY_HW_PIN_EXT_COUNT
 static inline bool is_ext_pin(__unused const machine_pin_obj_t *self) {
@@ -292,7 +293,7 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
                 mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin af: %d"), af);
             }
             gpio_set_function(self->id, af);
-            machine_pin_open_drain_mask &= ~(1ULL << self->id);
+            GPIO_DISABLE_OPEN_DRAIN(self->id);
         }
     }
 
