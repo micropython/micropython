@@ -37,6 +37,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -81,6 +82,25 @@ const mp_obj_type_t mp_type_socket;
 static inline mp_obj_t mp_obj_from_sockaddr(const struct sockaddr *addr, socklen_t len) {
     return mp_obj_new_bytes((const byte *)addr, len);
 }
+
+static int mp_socket_family_from_fd(mp_obj_t socket_in) {
+    MP_STATIC_ASSERT(sizeof(struct sockaddr_un) > sizeof(struct sockaddr_in6));
+    mp_obj_socket_t *socket = MP_OBJ_TO_PTR(socket_in);
+    // A sockaddr_un struct is big enough to store either a sockaddr_in6 or a
+    // sockaddr_in.
+    struct sockaddr_un address;
+    socklen_t address_len = sizeof(struct sockaddr_un);
+    MP_THREAD_GIL_EXIT();
+    int r = getsockname(socket->fd, (struct sockaddr *)&address, &address_len);
+    MP_THREAD_GIL_ENTER();
+    // sockaddr_un, sockaddr_in6, and sockaddr_in share the same field
+    // structure for the first two fields, and the family identifier happens
+    // to be the first one.
+    return r == -1 ? -1 : address.sun_family;
+}
+
+// Forward definitions
+static mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args);
 
 static mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = mp_obj_malloc(mp_obj_socket_t, &mp_type_socket);
@@ -194,8 +214,49 @@ static MP_DEFINE_CONST_FUN_OBJ_1(socket_fileno_obj, socket_fileno);
 
 static mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
+    int family = mp_socket_family_from_fd(self_in);
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(addr_in, &bufinfo, MP_BUFFER_READ);
+    mp_obj_t addr_src;
+
+    if ((mp_obj_is_type(addr_in, &mp_type_tuple) || mp_obj_is_type(addr_in, &mp_type_list)) && (family == AF_INET || family == AF_INET6)) {
+        // Check if the address is in the form <"host", port> for a socket
+        // that is either of type AF_INET or AF_INET6, and if so perform
+        // name resolution via getaddrinfo.  This deviates slightly from
+        // CPython in two ways:
+        //
+        //   * Numeric host addresses are not supported, whilst CPython also
+        //     supports numeric addresses (and probably much more).
+        //   * socket.connect argument can be either a tuple or a list,
+        //     whilst CPython only accepts tuples for AF_INET or AF_INET6
+        //     sockets.
+        //
+        // Another limitation that is shared with CPython is that if a name
+        // resolves to multiple addresses for the given family, the first
+        // one is always the one the socket will attempt to connect to.
+        //
+        // For more complex requirements, then the usual method of calling
+        // socket.getaddrinfo yourself and pass the raw buffer data should
+        // allow handling of pretty much all possible conditions.
+
+        mp_obj_t *addr_args;
+        size_t addr_len;
+        mp_obj_get_array(addr_in, &addr_len, &addr_args);
+        if (addr_len != 2) {
+            mp_raise_ValueError(MP_ERROR_TEXT("address must contain two elements"));
+        }
+        mp_obj_t info_args[3] = { addr_args[0], addr_args[1], MP_OBJ_NEW_SMALL_INT(family) };
+        mp_obj_t info = mod_socket_getaddrinfo(MP_ARRAY_SIZE(info_args), info_args);
+        mp_obj_list_t *list = MP_OBJ_TO_PTR(info);
+        if (list->len == 0) {
+            mp_raise_OSError(MP_ENOENT);
+        }
+        mp_obj_tuple_t *addr_tuple = MP_OBJ_TO_PTR(list->items[0]);
+        addr_src = addr_tuple->items[4];
+    } else {
+        // Default to the usual pre-resolved sockaddr representation.
+        addr_src = addr_in;
+    }
+    mp_get_buffer_raise(addr_src, &bufinfo, MP_BUFFER_READ);
 
     // special case of PEP 475 to retry only if blocking so we can't use
     // MP_HAL_RETRY_SYSCALL() here
