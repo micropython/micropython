@@ -1230,7 +1230,8 @@ static vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             }
             s = str_to_int(s, stop, &width);
             if (*s == ',' || *s == '_') {
-                flags |= *s << PF_FLAG_SEP_POS;
+                MP_STATIC_ASSERT((unsigned)'_' << PF_FLAG_SEP_POS >> PF_FLAG_SEP_POS == '_');
+                flags |= (unsigned)*s << PF_FLAG_SEP_POS;
                 s++;
             }
             if (*s == '.') {

@@ -33,13 +33,12 @@
 #define PF_FLAG_SPACE_SIGN        (0x004)
 #define PF_FLAG_NO_TRAILZ         (0x008)
 #define PF_FLAG_SHOW_PREFIX       (0x010)
-#define PF_FLAG_SHOW_SEP          (0x020)
-#define PF_FLAG_PAD_AFTER_SIGN    (0x040)
-#define PF_FLAG_CENTER_ADJUST     (0x080)
-#define PF_FLAG_ADD_PERCENT       (0x100)
-#define PF_FLAG_SHOW_OCTAL_LETTER (0x200)
+#define PF_FLAG_PAD_AFTER_SIGN    (0x020)
+#define PF_FLAG_CENTER_ADJUST     (0x040)
+#define PF_FLAG_ADD_PERCENT       (0x080)
+#define PF_FLAG_SHOW_OCTAL_LETTER (0x100)
 
-#define PF_FLAG_SEP_POS           (16)    // must be above all above PF_FLAGs
+#define PF_FLAG_SEP_POS           (9)    // must be above all above PF_FLAGs
 
 #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
 #define MP_PYTHON_PRINTER &mp_sys_stdout_print
