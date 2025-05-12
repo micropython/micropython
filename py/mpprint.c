@@ -201,7 +201,7 @@ static int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base,
     return len;
 }
 
-int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec) {
+int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, unsigned int base, int base_char, int flags, char fill, int width, int prec) {
     // These are the only values for "base" that are required to be supported by this
     // function, since Python only allows the user to format integers in these bases.
     // If needed this function could be generalised to handle other values.

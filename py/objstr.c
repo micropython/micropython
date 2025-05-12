@@ -1184,7 +1184,7 @@ static vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
         int width = -1;
         int precision = -1;
         char type = '\0';
-        int flags = 0;
+        unsigned int flags = 0;
 
         if (format_spec) {
             // The format specifier (from http://docs.python.org/2/library/string.html#formatspec)
