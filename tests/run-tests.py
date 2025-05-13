@@ -605,7 +605,7 @@ class PyboardNodeRunner:
 def run_tests(pyb, tests, args, result_dir, num_threads=1):
     test_count = ThreadSafeCounter()
     testcase_count = ThreadSafeCounter()
-    passed_count = ThreadSafeCounter()
+    passed_tests = ThreadSafeCounter([])
     failed_tests = ThreadSafeCounter([])
     skipped_tests = ThreadSafeCounter([])
 
@@ -896,7 +896,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         if skip_it:
             print("skip ", test_file)
-            skipped_tests.append(test_name)
+            skipped_tests.append((test_name, test_file))
             return
 
         # Run the test on the MicroPython target.
@@ -911,7 +911,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 # start-up code (eg boot.py) when preparing to run the next test.
                 pyb.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
             print("skip ", test_file)
-            skipped_tests.append(test_name)
+            skipped_tests.append((test_name, test_file))
             return
 
         # Look at the output of the test to see if unittest was used.
@@ -994,7 +994,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         # Print test summary, update counters, and save .exp/.out files if needed.
         if test_passed:
             print("pass ", test_file, extra_info)
-            passed_count.increment()
+            passed_tests.append((test_name, test_file))
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
@@ -1035,17 +1035,30 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             print(line)
         sys.exit(1)
 
+    passed_tests = sorted(passed_tests.value)
+    skipped_tests = sorted(skipped_tests.value)
+    failed_tests = sorted(failed_tests.value)
+
     print(
         "{} tests performed ({} individual testcases)".format(
             test_count.value, testcase_count.value
         )
     )
-    print("{} tests passed".format(passed_count.value))
+    print("{} tests passed".format(len(passed_tests)))
 
-    skipped_tests = sorted(skipped_tests.value)
     if len(skipped_tests) > 0:
-        print("{} tests skipped: {}".format(len(skipped_tests), " ".join(skipped_tests)))
-    failed_tests = sorted(failed_tests.value)
+        print(
+            "{} tests skipped: {}".format(
+                len(skipped_tests), " ".join(test[0] for test in skipped_tests)
+            )
+        )
+
+    if len(failed_tests) > 0:
+        print(
+            "{} tests failed: {}".format(
+                len(failed_tests), " ".join(test[0] for test in failed_tests)
+            )
+        )
 
     # Serialize regex added by append_filter.
     def to_json(obj):
@@ -1055,21 +1068,18 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     with open(os.path.join(result_dir, RESULTS_FILE), "w") as f:
         json.dump(
-            {"args": vars(args), "failed_tests": [test[1] for test in failed_tests]},
+            {
+                "args": vars(args),
+                "passed_tests": [test[1] for test in passed_tests],
+                "skipped_tests": [test[1] for test in skipped_tests],
+                "failed_tests": [test[1] for test in failed_tests],
+            },
             f,
             default=to_json,
         )
 
-    if len(failed_tests) > 0:
-        print(
-            "{} tests failed: {}".format(
-                len(failed_tests), " ".join(test[0] for test in failed_tests)
-            )
-        )
-        return False
-
-    # all tests succeeded
-    return True
+    # Return True only if all tests succeeded.
+    return len(failed_tests) == 0
 
 
 class append_filter(argparse.Action):
