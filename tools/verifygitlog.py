@@ -116,8 +116,8 @@ def verify_message_body(raw_body, err):
 def verify_subject_line_prefix(prefix, err):
     ext = (".c", ".h", ".cpp", ".js", ".rst", ".md")
 
-    if prefix.startswith("."):
-        err.error('Subject prefix cannot begin with ".".')
+    if prefix.startswith((".", "/")):
+        err.error('Subject prefix cannot begin with "." or "/".')
 
     if prefix.endswith("/"):
         err.error('Subject prefix cannot end with "/".')
