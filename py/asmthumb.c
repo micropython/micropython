@@ -499,6 +499,7 @@ void asm_thumb_store_reg_reg_offset(asm_thumb_t *as, uint reg_src, uint reg_base
 #define OP_BW_HI(byte_offset) (0xf000 | (((byte_offset) >> 12) & 0x07ff))
 #define OP_BW_LO(byte_offset) (0xb800 | (((byte_offset) >> 1) & 0x07ff))
 
+// In Thumb1 mode, this may clobber r1.
 void asm_thumb_b_label(asm_thumb_t *as, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->base.code_offset;
@@ -518,19 +519,40 @@ void asm_thumb_b_label(asm_thumb_t *as, uint label) {
     if (asm_thumb_allow_armv7m(as)) {
         asm_thumb_op32(as, OP_BW_HI(rel), OP_BW_LO(rel));
     } else {
+        // this code path has to be the same instruction size irrespective of the value of rel
+        bool need_align = as->base.code_offset & 2u;
         if (SIGNED_FIT12(rel)) {
-            // this code path has to be the same number of instructions irrespective of rel
             asm_thumb_op16(as, OP_B_N(rel));
-        } else {
             asm_thumb_op16(as, ASM_THUMB_OP_NOP);
-            if (dest != (mp_uint_t)-1) {
-                // we have an actual branch > 12 bits; this is not handled yet
-                mp_raise_NotImplementedError(MP_ERROR_TEXT("native method too big"));
+            asm_thumb_op16(as, ASM_THUMB_OP_NOP);
+            asm_thumb_op16(as, ASM_THUMB_OP_NOP);
+            if (need_align) {
+                asm_thumb_op16(as, ASM_THUMB_OP_NOP);
             }
+        } else {
+            // do a large jump using:
+            //     (nop)
+            //     ldr r1, [pc, _data]
+            //     add pc, r1
+            // _data: .word rel
+            //
+            // note: can't use r0 as a temporary because native code can have the return value
+            // in that register and use a large jump to get to the exit point of the function
+
+            rel -= 2; // account for the "ldr r1, [pc, _data]"
+            if (need_align) {
+                asm_thumb_op16(as, ASM_THUMB_OP_NOP);
+                rel -= 2; // account for this nop
+            }
+            asm_thumb_ldr_rlo_pcrel_i8(as, ASM_THUMB_REG_R1, 0);
+            asm_thumb_add_reg_reg(as, ASM_THUMB_REG_R15, ASM_THUMB_REG_R1);
+            asm_thumb_op16(as, rel & 0xffff);
+            asm_thumb_op16(as, rel >> 16);
         }
     }
 }
 
+// In Thumb1 mode, this may clobber r1.
 void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->base.code_offset;
@@ -551,8 +573,15 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
         asm_thumb_op32(as, OP_BCC_W_HI(cond, rel), OP_BCC_W_LO(rel));
     } else {
         // reverse the sense of the branch to jump over a longer branch
-        asm_thumb_op16(as, OP_BCC_N(cond ^ 1, 0));
+        size_t code_offset_start = as->base.code_offset;
+        byte *c = asm_thumb_get_cur_to_write_bytes(as, 2);
         asm_thumb_b_label(as, label);
+        size_t bytes_to_skip = as->base.code_offset - code_offset_start;
+        uint16_t op = OP_BCC_N(cond ^ 1, bytes_to_skip - 4);
+        if (c != NULL) {
+            c[0] = op;
+            c[1] = op >> 8;
+        }
     }
 }
 
