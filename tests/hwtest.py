@@ -151,10 +151,10 @@ def do_test(cmd):
             print("PASS")
         else:
             print(f"ERROR returncode={result.returncode}")
-        time.sleep(1)
+        time.sleep(2)
     except KeyboardInterrupt:
         print("INTERRUPT")
-        time.sleep(1)
+        time.sleep(2)
 
 
 def run_multitests_on_one_target(targets, tests):
@@ -265,7 +265,7 @@ def main():
                     vcprate.do_test(target.device)
                 except KeyboardInterrupt:
                     print("INTERRUPT")
-                    time.sleep(1)
+                    time.sleep(2)
 
             if select_python:
                 do_test(run_tests_cmd)
@@ -283,7 +283,7 @@ def main():
             if select_hardware:
                 run_cmds = [run_tests_cmd]
                 if select_native and target.arch is not None:
-                    run_cmds += run_tests_native_cmd
+                    run_cmds.append(run_tests_native_cmd)
                 for run_cmd in run_cmds:
                     do_test(run_cmd + ["-d", "extmod_hardware"])
                     if target.port == "pyboard":
