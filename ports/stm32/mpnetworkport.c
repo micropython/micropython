@@ -43,6 +43,10 @@
 #include "lwip/dhcp.h"
 #include "lwip/apps/mdns.h"
 
+#if MICROPY_HW_NETWORK_USBNET
+#include "extmod/network_usbd_ncm.h"
+#endif
+
 #if MICROPY_PY_NETWORK_CYW43
 #include "extmod/network_cyw43.h"
 #include "lib/cyw43-driver/src/cyw43.h"
@@ -68,6 +72,10 @@ static void pyb_lwip_poll(void) {
     #if MICROPY_PY_NETWORK_WIZNET5K
     // Poll the NIC for incoming data
     wiznet5k_poll();
+    #endif
+
+    #if MICROPY_HW_NETWORK_USBNET
+    network_usbd_ncm_service_traffic();
     #endif
 
     // Run the lwIP internal updates
