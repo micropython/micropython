@@ -300,7 +300,7 @@ static mp_obj_t MP_VFS_LFSx(chdir)(mp_obj_t self_in, mp_obj_t path_in) {
         struct LFSx_API (info) info;
         int ret = LFSx_API(stat)(&self->lfs, path, &info);
         if (ret < 0 || info.type != LFSx_MACRO(_TYPE_DIR)) {
-            mp_raise_OSError(-MP_ENOENT);
+            mp_raise_OSError(MP_ENOENT);
         }
     }
 
