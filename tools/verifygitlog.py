@@ -105,8 +105,12 @@ def verify_message_body(raw_body, err):
 
     # Message body lines.
     for line in raw_body[2:]:
-        # Long lines with URLs are exempt from the line length rule.
-        if len(line) >= 76 and "://" not in line:
+        # Long lines with URLs or human names are exempt from the line length rule.
+        if len(line) >= 76 and not (
+            "://" in line
+            or line.startswith("Co-authored-by: ")
+            or line.startswith("Signed-off-by: ")
+        ):
             err.error("Message lines should be 75 or less characters: " + line)
 
     if not raw_body[-1].startswith("Signed-off-by: ") or "@" not in raw_body[-1]:
