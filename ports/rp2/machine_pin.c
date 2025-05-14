@@ -46,9 +46,6 @@
 
 #define GPIO_IRQ_ALL (0xf)
 
-// Open drain behaviour is simulated.
-#define GPIO_IS_OPEN_DRAIN(id) (machine_pin_open_drain_mask & (MACHINE_PIN_OD_BIT << (id)))
-
 #ifndef MICROPY_HW_PIN_RESERVED
 #define MICROPY_HW_PIN_RESERVED(i) (0)
 #endif
@@ -296,7 +293,7 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
                 mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin af: %d"), af);
             }
             gpio_set_function(self->id, af);
-            machine_pin_open_drain_mask &= ~(MACHINE_PIN_OD_BIT << self->id);
+            GPIO_DISABLE_OPEN_DRAIN(self->id);
         }
     }
 
