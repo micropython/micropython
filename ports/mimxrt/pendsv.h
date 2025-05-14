@@ -23,13 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_PENDSV_H
-#define MICROPY_INCLUDED_STM32_PENDSV_H
+#ifndef MICROPY_INCLUDED_MIMXRT_PENDSV_H
+#define MICROPY_INCLUDED_MIMXRT_PENDSV_H
 
 enum {
     PENDSV_DISPATCH_SOFT_TIMER,  // For later & for having at least one entry
     #if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
     PENDSV_DISPATCH_LWIP,
+    #endif
+    #if MICROPY_PY_NETWORK_CYW43
+    PENDSV_DISPATCH_CYW43,
     #endif
     MICROPY_BOARD_PENDSV_ENTRIES
     PENDSV_DISPATCH_MAX
@@ -42,4 +45,4 @@ typedef void (*pendsv_dispatch_t)(void);
 void pendsv_init(void);
 void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
 
-#endif // MICROPY_INCLUDED_STM32_PENDSV_H
+#endif // MICROPY_INCLUDED_MIMXRT_PENDSV_H

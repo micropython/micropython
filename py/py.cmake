@@ -9,6 +9,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/argcheck.c
     ${MICROPY_PY_DIR}/asmarm.c
     ${MICROPY_PY_DIR}/asmbase.c
+    ${MICROPY_PY_DIR}/asmrv32.c
     ${MICROPY_PY_DIR}/asmthumb.c
     ${MICROPY_PY_DIR}/asmx64.c
     ${MICROPY_PY_DIR}/asmx86.c
@@ -19,12 +20,16 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/builtinhelp.c
     ${MICROPY_PY_DIR}/builtinimport.c
     ${MICROPY_PY_DIR}/compile.c
+    ${MICROPY_PY_DIR}/cstack.c
     ${MICROPY_PY_DIR}/emitbc.c
     ${MICROPY_PY_DIR}/emitcommon.c
     ${MICROPY_PY_DIR}/emitglue.c
+    ${MICROPY_PY_DIR}/emitinlinerv32.c
     ${MICROPY_PY_DIR}/emitinlinethumb.c
     ${MICROPY_PY_DIR}/emitinlinextensa.c
     ${MICROPY_PY_DIR}/emitnarm.c
+    ${MICROPY_PY_DIR}/emitndebug.c
+    ${MICROPY_PY_DIR}/emitnrv32.c
     ${MICROPY_PY_DIR}/emitnthumb.c
     ${MICROPY_PY_DIR}/emitnx64.c
     ${MICROPY_PY_DIR}/emitnx86.c
@@ -47,7 +52,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/modstruct.c
     ${MICROPY_PY_DIR}/modsys.c
     ${MICROPY_PY_DIR}/modthread.c
-    ${MICROPY_PY_DIR}/moduerrno.c
+    ${MICROPY_PY_DIR}/moderrno.c
     ${MICROPY_PY_DIR}/mpprint.c
     ${MICROPY_PY_DIR}/mpstate.c
     ${MICROPY_PY_DIR}/mpz.c
@@ -55,6 +60,8 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/nlr.c
     ${MICROPY_PY_DIR}/nlrmips.c
     ${MICROPY_PY_DIR}/nlrpowerpc.c
+    ${MICROPY_PY_DIR}/nlrrv32.c
+    ${MICROPY_PY_DIR}/nlrrv64.c
     ${MICROPY_PY_DIR}/nlrsetjmp.c
     ${MICROPY_PY_DIR}/nlrthumb.c
     ${MICROPY_PY_DIR}/nlrx64.c
@@ -65,6 +72,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/objattrtuple.c
     ${MICROPY_PY_DIR}/objbool.c
     ${MICROPY_PY_DIR}/objboundmeth.c
+    ${MICROPY_PY_DIR}/objcode.c
     ${MICROPY_PY_DIR}/objcell.c
     ${MICROPY_PY_DIR}/objclosure.c
     ${MICROPY_PY_DIR}/objcomplex.c
@@ -90,6 +98,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/objproperty.c
     ${MICROPY_PY_DIR}/objrange.c
     ${MICROPY_PY_DIR}/objreversed.c
+    ${MICROPY_PY_DIR}/objringio.c
     ${MICROPY_PY_DIR}/objset.c
     ${MICROPY_PY_DIR}/objsingleton.c
     ${MICROPY_PY_DIR}/objslice.c

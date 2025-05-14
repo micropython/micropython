@@ -273,7 +273,30 @@ const pyb_flash_obj_t pyb_flash_obj = {
     0, // actual size handled in ioctl, MP_BLOCKDEV_IOCTL_BLOCK_COUNT case
 };
 
-STATIC void pyb_flash_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+mp_obj_t pyb_flash_new_obj(mp_int_t start, mp_int_t len) {
+    uint32_t bl_len = (storage_get_block_count() - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
+
+    if (start == -1) {
+        start = 0;
+    } else if (!(0 <= start && start < bl_len && start % MICROPY_HW_BDEV_BLOCKSIZE_EXT == 0)) {
+        return mp_const_none;
+    }
+
+    if (len == -1) {
+        len = bl_len - start;
+    } else if (!(0 < len && start + len <= bl_len && len % MICROPY_HW_BDEV_BLOCKSIZE_EXT == 0)) {
+        return mp_const_none;
+    }
+
+    pyb_flash_obj_t *self = mp_obj_malloc(pyb_flash_obj_t, &pyb_flash_type);
+    self->use_native_block_size = false;
+    self->start = start;
+    self->len = len;
+
+    return MP_OBJ_FROM_PTR(self);
+}
+
+static void pyb_flash_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self == &pyb_flash_obj) {
         mp_printf(print, "Flash()");
@@ -282,7 +305,7 @@ STATIC void pyb_flash_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     }
 }
 
-STATIC mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Parse arguments
     enum { ARG_start, ARG_len };
     static const mp_arg_t allowed_args[] = {
@@ -296,33 +319,18 @@ STATIC mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
         // Default singleton object that accesses entire flash, including virtual partition table
         return MP_OBJ_FROM_PTR(&pyb_flash_obj);
     }
-
-    pyb_flash_obj_t *self = mp_obj_malloc(pyb_flash_obj_t, &pyb_flash_type);
-    self->use_native_block_size = false;
-
-    uint32_t bl_len = (storage_get_block_count() - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
-
     mp_int_t start = args[ARG_start].u_int;
-    if (start == -1) {
-        start = 0;
-    } else if (!(0 <= start && start < bl_len && start % MICROPY_HW_BDEV_BLOCKSIZE_EXT == 0)) {
-        mp_raise_ValueError(NULL);
-    }
-
     mp_int_t len = args[ARG_len].u_int;
-    if (len == -1) {
-        len = bl_len - start;
-    } else if (!(0 < len && start + len <= bl_len && len % MICROPY_HW_BDEV_BLOCKSIZE_EXT == 0)) {
+
+    mp_obj_t self = pyb_flash_new_obj(start, len);
+    if (self == mp_const_none) {
+        // Invalid start or end arg
         mp_raise_ValueError(NULL);
     }
-
-    self->start = start;
-    self->len = len;
-
-    return MP_OBJ_FROM_PTR(self);
+    return self;
 }
 
-STATIC mp_obj_t pyb_flash_readblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pyb_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     pyb_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t block_num = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
@@ -347,9 +355,9 @@ STATIC mp_obj_t pyb_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     #endif
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_flash_readblocks_obj, 3, 4, pyb_flash_readblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_flash_readblocks_obj, 3, 4, pyb_flash_readblocks);
 
-STATIC mp_obj_t pyb_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pyb_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     pyb_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t block_num = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
@@ -374,9 +382,9 @@ STATIC mp_obj_t pyb_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     #endif
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_flash_writeblocks_obj, 3, 4, pyb_flash_writeblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_flash_writeblocks_obj, 3, 4, pyb_flash_writeblocks);
 
-STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
+static mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     pyb_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     switch (cmd) {
@@ -438,15 +446,15 @@ STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
             return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_flash_ioctl_obj, pyb_flash_ioctl);
+static MP_DEFINE_CONST_FUN_OBJ_3(pyb_flash_ioctl_obj, pyb_flash_ioctl);
 
-STATIC const mp_rom_map_elem_t pyb_flash_locals_dict_table[] = {
+static const mp_rom_map_elem_t pyb_flash_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&pyb_flash_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&pyb_flash_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&pyb_flash_ioctl_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_flash_locals_dict, pyb_flash_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pyb_flash_locals_dict, pyb_flash_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_flash_type,

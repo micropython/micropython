@@ -57,6 +57,8 @@ and used in various methods.
 
 This is covered in further detail :ref:`Controlling garbage collection <controlling_gc>` below.
 
+.. _speed_buffers:
+
 Buffers
 ~~~~~~~
 
@@ -69,6 +71,13 @@ example, objects which support stream interface (e.g., file or UART) provide ``r
 method which allocates new buffer for read data, but also a ``readinto()`` method
 to read data into an existing buffer.
 
+Some useful classes for creating reusable buffer objects:
+
+- :class:`bytearray`
+- :mod:`array` (:ref:`discussed below<speed_arrays>`)
+- :class:`io.StringIO` and :class:`io.BytesIO`
+- :class:`micropython.RingIO`
+
 Floating point
 ~~~~~~~~~~~~~~
 
@@ -80,14 +89,19 @@ point to sections of the code where performance is not paramount. For example,
 capture ADC readings as integers values to an array in one quick go, and only then
 convert them to floating-point numbers for signal processing.
 
+.. _speed_arrays:
+
 Arrays
 ~~~~~~
 
 Consider the use of the various types of array classes as an alternative to lists.
-The `array` module supports various element types with 8-bit elements supported
+The :mod:`array` module supports various element types with 8-bit elements supported
 by Python's built in `bytes` and `bytearray` classes. These data structures all store
 elements in contiguous memory locations. Once again to avoid memory allocation in critical
 code these should be pre-allocated and passed as arguments or as bound objects.
+
+Memoryviews
+~~~~~~~~~~~
 
 When passing slices of objects such as `bytearray` instances, Python creates
 a copy which involves allocation of the size proportional to the size of slice.
@@ -117,6 +131,23 @@ management. ``readinto()`` method discussed above puts data at the beginning
 of buffer and fills in entire buffer. What if you need to put data in the
 middle of existing buffer? Just create a memoryview into the needed section
 of buffer and pass it to ``readinto()``.
+
+Strings vs Bytes
+~~~~~~~~~~~~~~~~
+
+MicroPython uses :ref:`string interning <qstr>` to save space when there are
+multiple identical strings. Each time a new string is allocated at runtime (for
+example, when two other strings are concatenated), MicroPython checks whether
+the new string can be interned to save RAM.
+
+If you have code which performs performance-critical string operations then
+consider using :class:`bytes` objects and literals (i.e. ``b"abc"``). This skips
+the interning check, and can be several times faster than performing the same
+operations with string objects.
+
+.. note:: The fastest performance will always be achieved by avoiding new object
+          creation entirely, for example with a reusable :ref:`buffer as described
+          above<speed_buffers>`.
 
 Identifying the slowest section of code
 ---------------------------------------
@@ -188,7 +219,7 @@ process known as garbage collection reclaims the memory used by these redundant
 objects and the allocation is then tried again - a process which can take several
 milliseconds.
 
-There may be benefits in pre-empting this by periodically issuing `gc.collect()`.
+There may be benefits in preempting this by periodically issuing `gc.collect()`.
 Firstly doing a collection before it is actually required is quicker - typically on the
 order of 1ms if done frequently. Secondly you can determine the point in code
 where this time is used rather than have a longer delay occur at random points,

@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 
+#include "py/objcode.h"
 #include "py/objfun.h"
 #include "py/compile.h"
 #include "py/runtime.h"
@@ -33,18 +34,7 @@
 
 #if MICROPY_PY_BUILTINS_COMPILE
 
-typedef struct _mp_obj_code_t {
-    mp_obj_base_t base;
-    mp_obj_t module_fun;
-} mp_obj_code_t;
-
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
-    mp_type_code,
-    MP_QSTR_code,
-    MP_TYPE_FLAG_NONE
-    );
-
-STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
+static mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
     // save context
     nlr_jump_callback_node_globals_locals_t ctx;
     ctx.globals = mp_globals_get();
@@ -57,15 +47,28 @@ STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj
     // set exception handler to restore context if an exception is raised
     nlr_push_jump_callback(&ctx.callback, mp_globals_locals_set_from_nlr_jump_callback);
 
-    // a bit of a hack: fun_bc will re-set globals, so need to make sure it's
-    // the correct one
-    if (mp_obj_is_type(self->module_fun, &mp_type_fun_bc)) {
-        mp_obj_fun_bc_t *fun_bc = MP_OBJ_TO_PTR(self->module_fun);
+    #if MICROPY_PY_BUILTINS_CODE >= MICROPY_PY_BUILTINS_CODE_BASIC
+    mp_module_context_t *module_context = m_new_obj(mp_module_context_t);
+    module_context->module.base.type = &mp_type_module;
+    module_context->module.globals = globals;
+    module_context->constants = *mp_code_get_constants(self);
+    mp_obj_t module_fun = mp_make_function_from_proto_fun(mp_code_get_proto_fun(self), module_context, NULL);
+    #else
+    // The call to mp_parse_compile_execute() in mp_builtin_compile() below passes
+    // NULL for the globals, so repopulate that entry now with the correct globals.
+    mp_obj_t module_fun = self->module_fun;
+    if (mp_obj_is_type(self->module_fun, &mp_type_fun_bc)
+        #if MICROPY_EMIT_NATIVE
+        || mp_obj_is_type(self->module_fun, &mp_type_fun_native)
+        #endif
+        ) {
+        mp_obj_fun_bc_t *fun_bc = MP_OBJ_TO_PTR(module_fun);
         ((mp_module_context_t *)fun_bc->context)->module.globals = globals;
     }
+    #endif
 
     // execute code
-    mp_obj_t ret = mp_call_function_0(self->module_fun);
+    mp_obj_t ret = mp_call_function_0(module_fun);
 
     // deregister exception handler and restore context
     nlr_pop_jump_callback(true);
@@ -74,7 +77,7 @@ STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj
     return ret;
 }
 
-STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
     // get the source
@@ -104,9 +107,29 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
             mp_raise_ValueError(MP_ERROR_TEXT("bad compile mode"));
     }
 
-    mp_obj_code_t *code = mp_obj_malloc(mp_obj_code_t, &mp_type_code);
-    code->module_fun = mp_parse_compile_execute(lex, parse_input_kind, NULL, NULL);
-    return MP_OBJ_FROM_PTR(code);
+    #if MICROPY_PY_BUILTINS_CODE >= MICROPY_PY_BUILTINS_CODE_BASIC
+
+    mp_parse_tree_t parse_tree = mp_parse(lex, parse_input_kind);
+    mp_module_context_t ctx;
+    ctx.module.globals = NULL;
+    mp_compiled_module_t cm;
+    cm.context = &ctx;
+    mp_compile_to_raw_code(&parse_tree, lex->source_name, parse_input_kind == MP_PARSE_SINGLE_INPUT, &cm);
+
+    #if MICROPY_PY_BUILTINS_CODE >= MICROPY_PY_BUILTINS_CODE_FULL
+    mp_module_context_t *ctx_ptr = m_new_obj(mp_module_context_t);
+    *ctx_ptr = ctx;
+    return mp_obj_new_code(ctx_ptr, cm.rc, true);
+    #else
+    return mp_obj_new_code(ctx.constants, cm.rc);
+    #endif
+
+    #else
+
+    mp_obj_t module_fun = mp_parse_compile_execute(lex, parse_input_kind, NULL, NULL);
+    return mp_obj_new_code(module_fun);
+
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_compile_obj, 3, 6, mp_builtin_compile);
 
@@ -114,7 +137,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_compile_obj, 3, 6, mp_builtin_com
 
 #if MICROPY_PY_BUILTINS_EVAL_EXEC
 
-STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_input_kind_t parse_input_kind) {
+static mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_input_kind_t parse_input_kind) {
     // work out the context
     mp_obj_dict_t *globals = mp_globals_get();
     mp_obj_dict_t *locals = mp_locals_get();
@@ -136,29 +159,30 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     }
     #endif
 
-    // Extract the source code.
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
     // create the lexer
     // MP_PARSE_SINGLE_INPUT is used to indicate a file input
     mp_lexer_t *lex;
     if (MICROPY_PY_BUILTINS_EXECFILE && parse_input_kind == MP_PARSE_SINGLE_INPUT) {
-        lex = mp_lexer_new_from_file(bufinfo.buf);
+        lex = mp_lexer_new_from_file(mp_obj_str_get_qstr(args[0]));
         parse_input_kind = MP_PARSE_FILE_INPUT;
     } else {
+        // Extract the source code.
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+
         lex = mp_lexer_new_from_str_len(MP_QSTR__lt_string_gt_, bufinfo.buf, bufinfo.len, 0);
     }
 
     return mp_parse_compile_execute(lex, parse_input_kind, globals, locals);
 }
 
-STATIC mp_obj_t mp_builtin_eval(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_eval(size_t n_args, const mp_obj_t *args) {
     return eval_exec_helper(n_args, args, MP_PARSE_EVAL_INPUT);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_eval_obj, 1, 3, mp_builtin_eval);
 
-STATIC mp_obj_t mp_builtin_exec(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_exec(size_t n_args, const mp_obj_t *args) {
     return eval_exec_helper(n_args, args, MP_PARSE_FILE_INPUT);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_exec_obj, 1, 3, mp_builtin_exec);
@@ -166,7 +190,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_exec_obj, 1, 3, mp_builtin_exec);
 #endif // MICROPY_PY_BUILTINS_EVAL_EXEC
 
 #if MICROPY_PY_BUILTINS_EXECFILE
-STATIC mp_obj_t mp_builtin_execfile(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_execfile(size_t n_args, const mp_obj_t *args) {
     // MP_PARSE_SINGLE_INPUT is used to indicate a file input
     return eval_exec_helper(n_args, args, MP_PARSE_SINGLE_INPUT);
 }

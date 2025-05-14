@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
+
 #if MICROPY_PY_MACHINE_SDCARD
 
 #include "sdcard.h"
@@ -978,7 +980,7 @@ bool sdcard_power_on(mimxrt_sdcard_obj_t *card) {
         return false;
     }
 
-    // Finialize initialization
+    // Finalize initialization
     card->state->initialized = true;
     return true;
 }

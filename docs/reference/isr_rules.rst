@@ -170,11 +170,17 @@ is partially updated. When the ISR tries to read the object, a crash results. Be
 on rare, random occasions they can be hard to diagnose. There are ways to circumvent this issue, described in
 :ref:`Critical Sections <Critical>` below.
 
-It is important to be clear about what constitutes the modification of an object. An alteration to a built-in type
-such as a dictionary is problematic. Altering the contents of an array or bytearray is not. This is because bytes
-or words are written as a single machine code instruction which is not interruptible: in the parlance of real time
-programming the write is atomic. A user defined object might instantiate an integer, array or bytearray. It is valid
-for both the main loop and the ISR to alter the contents of these.
+It is important to be clear about what constitutes the modification of an object. Altering the contents of an array
+or bytearray is safe. This is because bytes or words are written as a single machine code instruction which is not
+interruptible: in the parlance of real time programming the write is atomic. The same is true of updating a
+dictionary item because items are machine words, being integers or pointers to objects. A user defined object might
+instantiate an array or bytearray. It is valid for both the main loop and the ISR to alter the contents of these.
+
+The hazard arises when the structure of an object is altered, notably in the case of dictionaries. Adding or deleting
+keys can trigger a rehash. If a hard ISR runs while a rehash is in progress and attempts to access an item, a crash
+may occur. Internally globals are implemented as a dictionary. Consequently the main program should create all
+necessary globals before starting a process that generates hard interrupts. Application code should also avoid
+deleting globals.
 
 MicroPython supports integers of arbitrary precision. Values between 2**30 -1 and -2**30 will be stored in
 a single machine word. Larger values are stored as Python objects. Consequently changes to long integers cannot
@@ -203,7 +209,7 @@ issue a further interrupt. It then schedules a callback to process the data.
 
 Scheduled callbacks should comply with the principles of interrupt handler design outlined below. This is to
 avoid problems resulting from I/O activity and the modification of shared data which can arise in any code
-which pre-empts the main program loop.
+which preempts the main program loop.
 
 Execution time needs to be considered in relation to the frequency with which interrupts can occur. If an
 interrupt occurs while the previous callback is executing, a further instance of the callback will be queued
@@ -219,20 +225,20 @@ Exceptions
 If an ISR raises an exception it will not propagate to the main loop. The interrupt will be disabled unless the
 exception is handled by the ISR code.
 
-Interfacing to uasyncio
------------------------
+Interfacing to asyncio
+----------------------
 
-When an ISR runs it can preempt the `uasyncio` scheduler. If the ISR performs a `uasyncio`
+When an ISR runs it can preempt the `asyncio` scheduler. If the ISR performs a `asyncio`
 operation the scheduler's operation can be disrupted. This applies whether the interrupt is hard
 or soft and also applies if the ISR has passed execution to another function via
 `micropython.schedule`. In particular creating or cancelling tasks is invalid in an ISR context.
-The safe way to interact with `uasyncio` is to implement a coroutine with synchronisation performed by
-`uasyncio.ThreadSafeFlag`. The following fragment illustrates the creation of a task in response
+The safe way to interact with `asyncio` is to implement a coroutine with synchronisation performed by
+`asyncio.ThreadSafeFlag`. The following fragment illustrates the creation of a task in response
 to an interrupt:
 
 .. code:: python
 
-    tsf = uasyncio.ThreadSafeFlag()
+    tsf = asyncio.ThreadSafeFlag()
 
     def isr(_):  # Interrupt handler
         tsf.set()
@@ -240,7 +246,7 @@ to an interrupt:
     async def foo():
         while True:
             await tsf.wait()
-            uasyncio.create_task(bar())
+            asyncio.create_task(bar())
 
 In this example there will be a variable amount of latency between the execution of the ISR and the execution
 of ``foo()``. This is inherent to cooperative scheduling. The maximum latency is application

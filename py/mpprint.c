@@ -43,7 +43,7 @@
 static const char pad_spaces[] = "                ";
 static const char pad_zeroes[] = "0000000000000000";
 
-STATIC void plat_print_strn(void *env, const char *str, size_t len) {
+static void plat_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     MP_PLAT_PRINT_STRN(str, len);
 }
@@ -58,7 +58,7 @@ int mp_print_str(const mp_print_t *print, const char *str) {
     return len;
 }
 
-int mp_print_strn(const mp_print_t *print, const char *str, size_t len, int flags, char fill, int width) {
+int mp_print_strn(const mp_print_t *print, const char *str, size_t len, unsigned int flags, char fill, int width) {
     int left_pad = 0;
     int right_pad = 0;
     int pad = width - len;
@@ -127,7 +127,7 @@ int mp_print_strn(const mp_print_t *print, const char *str, size_t len, int flag
 
 // This function is used exclusively by mp_vprintf to format ints.
 // It needs to be a separate function to mp_print_mp_int, since converting to a mp_int looses the MSB.
-STATIC int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
+static int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
     char sign = 0;
     if (sgn) {
         if ((mp_int_t)x < 0) {
@@ -201,7 +201,7 @@ STATIC int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base,
     return len;
 }
 
-int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec) {
+int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, unsigned int base, int base_char, int flags, char fill, int width, int prec) {
     // These are the only values for "base" that are required to be supported by this
     // function, since Python only allows the user to format integers in these bases.
     // If needed this function could be generalised to handle other values.
@@ -248,10 +248,7 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
     int prefix_len = prefix - prefix_buf;
     prefix = prefix_buf;
 
-    char comma = '\0';
-    if (flags & PF_FLAG_SHOW_COMMA) {
-        comma = ',';
-    }
+    char comma = flags >> PF_FLAG_SEP_POS;
 
     // The size of this buffer is rather arbitrary. If it's not large
     // enough, a dynamic one will be allocated.
@@ -340,7 +337,7 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
-int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, char fill, int width, int prec) {
+int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, unsigned int flags, char fill, int width, int prec) {
     char buf[32];
     char sign = '\0';
     int chrs = 0;

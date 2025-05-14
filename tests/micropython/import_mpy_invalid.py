@@ -1,16 +1,16 @@
 # test importing of invalid .mpy files
 
 try:
-    import usys, uio, uos
+    import sys, io, vfs
 
-    uio.IOBase
-    uos.mount
+    sys.implementation._mpy
+    io.IOBase
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
 
-class UserFile(uio.IOBase):
+class UserFile(io.IOBase):
     def __init__(self, data):
         self.data = memoryview(data)
         self.pos = 0
@@ -22,7 +22,9 @@ class UserFile(uio.IOBase):
         return n
 
     def ioctl(self, req, arg):
-        return 0
+        if req == 4:  # MP_STREAM_CLOSE
+            return 0
+        return -1
 
 
 class UserFS:
@@ -52,8 +54,8 @@ user_files = {
 }
 
 # create and mount a user filesystem
-uos.mount(UserFS(user_files), "/userfs")
-usys.path.append("/userfs")
+vfs.mount(UserFS(user_files), "/userfs")
+sys.path.append("/userfs")
 
 # import .mpy files from the user filesystem
 for i in range(len(user_files)):
@@ -64,5 +66,5 @@ for i in range(len(user_files)):
         print(mod, "ValueError", er)
 
 # unmount and undo path addition
-uos.umount("/userfs")
-usys.path.pop()
+vfs.umount("/userfs")
+sys.path.pop()

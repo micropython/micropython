@@ -44,6 +44,8 @@
 #define MICROPY_NLR_NUM_REGS_MIPS           (13)
 #define MICROPY_NLR_NUM_REGS_XTENSA         (10)
 #define MICROPY_NLR_NUM_REGS_XTENSAWIN      (17)
+#define MICROPY_NLR_NUM_REGS_RV32I          (14)
+#define MICROPY_NLR_NUM_REGS_RV64I          (14)
 
 // *FORMAT-OFF*
 
@@ -88,6 +90,16 @@
 #elif defined(__mips__)
     #define MICROPY_NLR_MIPS (1)
     #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_MIPS)
+#elif defined(__riscv)
+    #if __riscv_xlen == 32
+        #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_RV32I)
+        #define MICROPY_NLR_RV32I (1)
+    #elif __riscv_xlen == 64
+        #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_RV64I)
+        #define MICROPY_NLR_RV64I (1)
+    #else
+        #error Unsupported RISC-V variant.
+    #endif
 #else
     #define MICROPY_NLR_SETJMP (1)
     //#warning "No native NLR support for this arch, using setjmp implementation"
@@ -165,18 +177,18 @@ unsigned int nlr_push(nlr_buf_t *);
 
 unsigned int nlr_push_tail(nlr_buf_t *top);
 void nlr_pop(void);
-NORETURN void nlr_jump(void *val);
+MP_NORETURN void nlr_jump(void *val);
 
 #if MICROPY_ENABLE_VM_ABORT
 #define nlr_set_abort(buf) MP_STATE_VM(nlr_abort) = buf
 #define nlr_get_abort() MP_STATE_VM(nlr_abort)
-NORETURN void nlr_jump_abort(void);
+MP_NORETURN void nlr_jump_abort(void);
 #endif
 
 // This must be implemented by a port.  It's called by nlr_jump
 // if no nlr buf has been pushed.  It must not return, but rather
 // should bail out with a fatal error.
-NORETURN void nlr_jump_fail(void *val);
+MP_NORETURN void nlr_jump_fail(void *val);
 
 // use nlr_raise instead of nlr_jump so that debugging is easier
 #ifndef MICROPY_DEBUG_NLR

@@ -68,7 +68,7 @@ static const ra_af_pin_t scl_pins[] = {
     { AF_I2C, 1, P100 },
     { AF_I2C, 1, P205 },
 
-    #elif defined(RA6M2)
+    #elif defined(RA6M2) || defined(RA6M3)
 
     { AF_I2C, 0, P204 },
     { AF_I2C, 0, P400 },
@@ -76,6 +76,16 @@ static const ra_af_pin_t scl_pins[] = {
     { AF_I2C, 1, P100 },
     { AF_I2C, 1, P205 },
     { AF_I2C, 2, P512 },
+
+    #elif defined(RA6M5)
+
+    { AF_I2C, 0, P400 },
+    { AF_I2C, 0, P408 },
+    { AF_I2C, 1, P205 },
+    { AF_I2C, 1, P512 },
+    { AF_I2C, 2, P410 },
+    { AF_I2C, 2, P415 },
+
     #else
     #error "CMSIS MCU Series is not specified."
     #endif
@@ -103,13 +113,22 @@ static const ra_af_pin_t sda_pins[] = {
     { AF_I2C, 1, P101 },
     { AF_I2C, 1, P206 },
 
-    #elif defined(RA6M2)
+    #elif defined(RA6M2) || defined(RA6M3)
 
     { AF_I2C, 0, P401 },
     { AF_I2C, 0, P407 },
     { AF_I2C, 1, P101 },
     { AF_I2C, 1, P206 },
     { AF_I2C, 2, P511 },
+
+    #elif defined(RA6M5)
+
+    { AF_I2C, 0, P401 },
+    { AF_I2C, 0, P407 },
+    { AF_I2C, 1, P206 },
+    { AF_I2C, 1, P511 },
+    { AF_I2C, 2, P409 },
+    { AF_I2C, 2, P414 },
 
     #else
     #error "CMSIS MCU Series is not specified."
@@ -305,9 +324,14 @@ static void ra_i2c_clock_calc(uint32_t baudrate, uint8_t *cks, uint8_t *brh, uin
         *cks = 1;
         *brh = 9;
         *brl = 20;
-    } else {
+    } else if (baudrate >= 100000) {
         // assume clock is 100000Hz (PCLKB 32MHz)
         *cks = 3;
+        *brh = 15;
+        *brl = 18;
+    } else {
+        // assume clock is 50000Hz (PCLKB 32MHz)
+        *cks = 4;
         *brh = 15;
         *brl = 18;
     }
@@ -328,7 +352,7 @@ static void ra_i2c_clock_calc(uint32_t baudrate, uint8_t *cks, uint8_t *brh, uin
         *brh = 14;
         *brl = 17;
     }
-    #elif defined(RA6M2)
+    #elif defined(RA6M2) || defined(RA6M3)
     // PCLKB 60MHz SCLE=0
     if (baudrate >= RA_I2C_CLOCK_MAX) {
         *cks = 0;
@@ -339,11 +363,38 @@ static void ra_i2c_clock_calc(uint32_t baudrate, uint8_t *cks, uint8_t *brh, uin
         *cks = 2;
         *brh = 8;
         *brl = 19;
-    } else {
+    } else if (baudrate >= 100000) {
         // assume clock is 100000Hz
         *cks = 4;
         *brh = 14;
         *brl = 17;
+    } else {
+        // assume clock is 50000Hz
+        *cks = 5;
+        *brh = 14;
+        *brl = 17;
+    }
+    #elif defined(RA6M5)
+    // PCLKB 50MHz SCLE=0
+    if (baudrate >= RA_I2C_CLOCK_MAX) {
+        *cks = 0;
+        *brh = 12;
+        *brl = 24;
+    } else if (baudrate >= 400000) {
+        // assume clock is 400000Hz
+        *cks = 2;
+        *brh = 7;
+        *brl = 15;
+    } else if (baudrate >= 100000) {
+        // assume clock is 100000Hz
+        *cks = 3;
+        *brh = 24;
+        *brl = 30;
+    } else {
+        // assume clock is 50000Hz
+        *cks = 4;
+        *brh = 24;
+        *brl = 30;
     }
     #else
     #error "CMSIS MCU Series is not specified."
@@ -375,7 +426,7 @@ void ra_i2c_init(R_IIC0_Type *i2c_inst, uint32_t scl, uint32_t sda, uint32_t bau
     i2c_inst->ICCR1_b.ICE = 1;     // I2C enable
     ra_i2c_set_baudrate(i2c_inst, baudrate);
     i2c_inst->ICSER = 0x00;         // I2C reset bus status enable register
-    i2c_inst->ICMR3_b.ACKWP = 0x01; // I2C allow to write ACKBT (transfer acknowledge bit)
+    i2c_inst->ICMR3_b.ACKWP = 0x00; // I2C not allow to write ACKBT (transfer acknowledge bit)
     i2c_inst->ICIER = 0xFF;         // Enable all interrupts
     i2c_inst->ICCR1_b.IICRST = 0;   // I2C internal reset
     ra_i2c_irq_enable(i2c_inst);
@@ -429,6 +480,7 @@ void ra_i2c_xunit_read_byte(R_IIC0_Type *i2c_inst, xaction_unit_t *unit) {
 void ra_i2c_xunit_init(xaction_unit_t *unit, uint8_t *buf, uint32_t size, bool fread, void *next) {
     unit->m_bytes_transferred = 0;
     unit->m_bytes_transfer = size;
+    unit->m_bytes_total = size;
     unit->m_fread = fread;
     unit->buf = buf;
     unit->next = (void *)next;
@@ -458,7 +510,9 @@ static void ra_i2c_iceri_isr(R_IIC0_Type *i2c_inst) {
     }
     // Check Start
     if (i2c_inst->ICSR2_b.START != 0) {
-        action->m_status = RA_I2C_STATUS_Started;
+        if (action->m_status == RA_I2C_STATUS_Idle) {
+            action->m_status = RA_I2C_STATUS_Started;
+        }
         i2c_inst->ICSR2_b.START = 0;
     }
     // Check Stop
@@ -478,6 +532,37 @@ static void ra_i2c_iceri_isr(R_IIC0_Type *i2c_inst) {
 static void ra_i2c_icrxi_isr(R_IIC0_Type *i2c_inst) {
     xaction_unit_t *unit = current_xaction_unit;
     xaction_t *action = current_xaction;
+    // 1 byte or 2 bytes
+    if (unit->m_bytes_total <= 2) {
+        if (action->m_status == RA_I2C_STATUS_AddrWriteCompleted) {
+            action->m_status = RA_I2C_STATUS_FirstReceiveCompleted;
+            i2c_inst->ICMR3_b.WAIT = 1;
+            // need dummy read processes for 1 byte and 2 bytes receive
+            if (unit->m_bytes_total == 2) {
+                (void)i2c_inst->ICDRR; // dummy read for 2 bytes receive
+            } else {  // m_bytes_total == 1
+                i2c_inst->ICMR3_b.ACKWP = 0x01; // enable write ACKBT (transfer acknowledge bit)
+                i2c_inst->ICMR3_b.ACKBT = 1;
+                i2c_inst->ICMR3_b.ACKWP = 0x00; // disable write ACKBT (transfer acknowledge bit)
+                (void)i2c_inst->ICDRR; // dummy read for 1 byte receive
+            }
+            return;
+        }
+        if (unit->m_bytes_transfer == 2) {      // last two data
+            i2c_inst->ICMR3_b.ACKWP = 0x01; // enable write ACKBT (transfer acknowledge bit)
+            i2c_inst->ICMR3_b.ACKBT = 1;
+            i2c_inst->ICMR3_b.ACKWP = 0x00; // disable write ACKBT (transfer acknowledge bit)
+            ra_i2c_xunit_read_byte(i2c_inst, unit);
+        } else { // last data
+            action->m_status = RA_I2C_STATUS_LastReceiveCompleted;
+            if (action->m_stop == true) {
+                i2c_inst->ICCR2_b.SP = 1; // request top condition
+            }
+            ra_i2c_xunit_read_byte(i2c_inst, unit);
+        }
+        return;
+    }
+    // 3 bytes or more
     if (action->m_status == RA_I2C_STATUS_AddrWriteCompleted) {
         (void)i2c_inst->ICDRR; // dummy read
         action->m_status = RA_I2C_STATUS_FirstReceiveCompleted;
@@ -489,7 +574,9 @@ static void ra_i2c_icrxi_isr(R_IIC0_Type *i2c_inst) {
         }
         ra_i2c_xunit_read_byte(i2c_inst, unit);
     } else if (unit->m_bytes_transfer == 2) {
+        i2c_inst->ICMR3_b.ACKWP = 0x01; // enable write ACKBT (transfer acknowledge bit)
         i2c_inst->ICMR3_b.ACKBT = 1;
+        i2c_inst->ICMR3_b.ACKWP = 0x00; // disable write ACKBT (transfer acknowledge bit)
         ra_i2c_xunit_read_byte(i2c_inst, unit);
     } else {
         // last data
@@ -504,8 +591,8 @@ static void ra_i2c_icrxi_isr(R_IIC0_Type *i2c_inst) {
 static void ra_i2c_ictxi_isr(R_IIC0_Type *i2c_inst) {
     xaction_t *action = current_xaction;
     xaction_unit_t *unit = current_xaction_unit;
-
-    if (action->m_status == RA_I2C_STATUS_Started) {
+    // When STIE is already checked.        When TIE occurs before STIE
+    if (action->m_status == RA_I2C_STATUS_Started || action->m_status == RA_I2C_STATUS_Idle) {
         i2c_inst->ICDRT = action->m_address;  // I2C send slave address
         action->m_status = RA_I2C_STATUS_AddrWriteCompleted;
         return;
@@ -538,7 +625,7 @@ static void ra_i2c_ictei_isr(R_IIC0_Type *i2c_inst) {
             action->m_status = RA_I2C_STATUS_DataSendCompleted;
             i2c_inst->ICCR2_b.SP = 1;
         } else {
-            action->m_status = RA_I2C_STATUS_Stopped; // set Stopped status insted STOP condition
+            action->m_status = RA_I2C_STATUS_Stopped; // set Stopped status instead STOP condition
         }
     } else {
         ra_i2c_xaction_start(i2c_inst, action, true);

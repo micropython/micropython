@@ -37,7 +37,7 @@ extern const mp_obj_type_t ubluepy_constants_type;
 extern const mp_obj_type_t ubluepy_scanner_type;
 extern const mp_obj_type_t ubluepy_scan_entry_type;
 
-STATIC const mp_rom_map_elem_t mp_module_ubluepy_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_ubluepy_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_ubluepy) },
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
     { MP_ROM_QSTR(MP_QSTR_Peripheral),      MP_ROM_PTR(&ubluepy_peripheral_type) },
@@ -60,7 +60,7 @@ STATIC const mp_rom_map_elem_t mp_module_ubluepy_globals_table[] = {
 };
 
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_ubluepy_globals, mp_module_ubluepy_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_ubluepy_globals, mp_module_ubluepy_globals_table);
 
 const mp_obj_module_t mp_module_ubluepy = {
     .base = { &mp_type_module },

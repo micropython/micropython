@@ -35,17 +35,58 @@
 extern uint8_t __sdram_start;
 
 #if defined(MIMXRT117x_SERIES)
-// Pull Up, High drive strength
-#define SDRAM_PIN_CONFIG  (0x07UL)
+// No pull, normal drive strength
+#define SDRAM_PIN_CONFIG  (0x0EUL)
 #else
-// Pull up 22K, high slew rate
+// No pull, maximum speed, Drive Strength 4, fast slew rate
 #define SDRAM_PIN_CONFIG  (0xE1UL)
 #endif
 
-void mimxrt_sdram_init(void) {
+#ifndef MICROPY_HW_SDRAM_TIMING_TRC
+#if defined(MIMXRT117x_SERIES)
+#define MICROPY_HW_SDRAM_TIMING_TRC         (60)
+#define MICROPY_HW_SDRAM_TIMING_TRP         (15)
+#define MICROPY_HW_SDRAM_TIMING_TRCD        (15)
+#define MICROPY_HW_SDRAM_TIMING_TWR         (2)
+#define MICROPY_HW_SDRAM_TIMING_TRRD        (2)
+#define MICROPY_HW_SDRAM_TIMING_TXSR        (70)
+#define MICROPY_HW_SDRAM_TIMING_TRAS        (42)
+#define MICROPY_HW_SDRAM_TIMING_TREF        (64 * 1000000 / 8192) // 64ms/8192
 
-    #if !defined(MIMXRT117x_SERIES)
+#define MICROPY_HW_SDRAM_CAS_LATENCY        (kSEMC_LatencyThree)
+#define MICROPY_HW_SDRAM_MEM_BUS_WIDTH      (kSEMC_PortSize32Bit)
+#define MICROPY_HW_SDRAM_COLUMN_BITS_NUM    (kSEMC_SdramColunm_9bit)
+#define MICROPY_HW_SDRAM_BURST_LENGTH       (kSEMC_Sdram_BurstLen8)
+#define MICROPY_HW_SDRAM_RBURST_LENGTH      (1)
+#define MICROPY_HW_SDRAM_DELAY_CHAIN        (2)
+#else
+#define MICROPY_HW_SDRAM_TIMING_TRC         (60)
+#define MICROPY_HW_SDRAM_TIMING_TRP         (18)
+#define MICROPY_HW_SDRAM_TIMING_TRCD        (18)
+#define MICROPY_HW_SDRAM_TIMING_TWR         (12)
+#define MICROPY_HW_SDRAM_TIMING_TRRD        (60)
+#define MICROPY_HW_SDRAM_TIMING_TXSR        (67)
+#define MICROPY_HW_SDRAM_TIMING_TRAS        (42)
+#define MICROPY_HW_SDRAM_TIMING_TREF        (64 * 1000000 / 8192) // 64ms/8192
+
+#define MICROPY_HW_SDRAM_CAS_LATENCY        (kSEMC_LatencyThree)
+#define MICROPY_HW_SDRAM_MEM_BUS_WIDTH      (kSEMC_PortSize16Bit)
+#define MICROPY_HW_SDRAM_COLUMN_BITS_NUM    (kSEMC_SdramColunm_9bit)
+#define MICROPY_HW_SDRAM_BURST_LENGTH       (kSEMC_Sdram_BurstLen1)
+#define MICROPY_HW_SDRAM_RBURST_LENGTH      (1)
+#endif
+#endif
+
+void mimxrt_sdram_init(void) {
     // Set Clocks
+    #if defined(MIMXRT117x_SERIES)
+    CLOCK_InitPfd(kCLOCK_PllSys2, kCLOCK_Pfd1, 29);
+
+    clock_root_config_t rootCfg = { 0 };
+    rootCfg.mux = kCLOCK_SEMC_ClockRoot_MuxSysPll2Pfd1;
+    rootCfg.div = 2;
+    CLOCK_SetRootClock(kCLOCK_Root_Semc, &rootCfg);
+    #else
     CLOCK_InitSysPfd(kCLOCK_Pfd2, 29);   // '29' PLL2 PFD2 frequency = 528MHz * 18 / 29 = 327.72MHz (with 528MHz = PLL2 frequency)
     CLOCK_SetMux(kCLOCK_SemcAltMux, 0);  // '0'  PLL2 PFD2 will be selected as alternative clock for SEMC root clock
     CLOCK_SetMux(kCLOCK_SemcMux, 1);     // '1'  SEMC alternative clock will be used as SEMC clock root
@@ -137,7 +178,7 @@ void mimxrt_sdram_init(void) {
     IOMUXC_SetPinMux(MIMXRT_IOMUXC_SEMC_DQS, 1UL);
     IOMUXC_SetPinConfig(MIMXRT_IOMUXC_SEMC_DQS, SDRAM_PIN_CONFIG);
 
-    #if defined(MIMXRT117x_SERIES)
+    #if defined(MIMXRT_IOMUXC_SEMC_DATA16)
     // Data Pins 16..31
     IOMUXC_SetPinMux(MIMXRT_IOMUXC_SEMC_DATA16, 0UL);
     IOMUXC_SetPinConfig(MIMXRT_IOMUXC_SEMC_DATA16, SDRAM_PIN_CONFIG);
@@ -209,61 +250,37 @@ void mimxrt_sdram_init(void) {
     SEMC_Init(SEMC, &semc_cfg);
 
     #if defined(MIMXRT117x_SERIES)
-
     uint32_t clock_freq = CLOCK_GetRootClockFreq(kCLOCK_Root_Semc);
-
-    semc_sdram_config_t sdram_cfg = {
-        .csxPinMux = kSEMC_MUXCSX0,
-        .address = 0x80000000,
-        .memsize_kbytes = (MICROPY_HW_SDRAM_SIZE >> 10),
-        .portSize = kSEMC_PortSize32Bit, // two 16-bit SDRAMs make up 32-bit portsize
-        .burstLen = kSEMC_Sdram_BurstLen8,
-        .columnAddrBitNum = kSEMC_SdramColunm_9bit,
-        .casLatency = kSEMC_LatencyThree,
-        .tPrecharge2Act_Ns = 15, // tRP 15ns
-        .tAct2ReadWrite_Ns = 15, // tRCD 15ns
-        .tRefreshRecovery_Ns = 70, // Use the maximum of the (Trfc , Txsr).
-        .tWriteRecovery_Ns = 2,  // tWR 2ns
-        .tCkeOff_Ns = 42, // The minimum cycle of SDRAM CLK off state. CKE is off in self refresh at a minimum period tRAS.
-        .tAct2Prechage_Ns = 40, // tRAS 40ns
-        .tSelfRefRecovery_Ns = 70,
-        .tRefresh2Refresh_Ns = 60,
-        .tAct2Act_Ns = 2, // tRC/tRDD 2ns
-        .tPrescalePeriod_Ns = 160 * (1000000000 / clock_freq),
-        .refreshPeriod_nsPerRow = 64 * 1000000 / 8192, // 64ms/8192
-        .refreshUrgThreshold = sdram_cfg.refreshPeriod_nsPerRow,
-        .refreshBurstLen = 1,
-        .delayChain = 2,
-    };
-
     #else
-
     uint32_t clock_freq = CLOCK_GetFreq(kCLOCK_SemcClk);
+    #endif
+
     semc_sdram_config_t sdram_cfg = {
         .csxPinMux = kSEMC_MUXCSX0,
         .address = ((uint32_t)&__sdram_start),
         .memsize_kbytes = (MICROPY_HW_SDRAM_SIZE >> 10),  // Right shift by 10 == division by 1024
-        .portSize = kSEMC_PortSize16Bit,
-        .burstLen = kSEMC_Sdram_BurstLen1,
-        .columnAddrBitNum = kSEMC_SdramColunm_9bit,
-        .casLatency = kSEMC_LatencyThree,
-        .tPrecharge2Act_Ns = 18,  // Trp 18ns
-        .tAct2ReadWrite_Ns = 18,  // Trcd 18ns
-        .tRefreshRecovery_Ns = (60 + 67),
-        .tWriteRecovery_Ns = 12,  // 12ns
-        .tCkeOff_Ns = 42,  // The minimum cycle of SDRAM CLK off state. CKE is off in self refresh at a minimum period tRAS.
-        .tAct2Prechage_Ns = 42,  // Tras 42ns
-        .tSelfRefRecovery_Ns = 67,
-        .tRefresh2Refresh_Ns = 60,
-        .tAct2Act_Ns = 60,
-        .tPrescalePeriod_Ns = 160 * (1000000000 / clock_freq),
+        .portSize = MICROPY_HW_SDRAM_MEM_BUS_WIDTH,
+        .burstLen = MICROPY_HW_SDRAM_BURST_LENGTH,
+        .columnAddrBitNum = MICROPY_HW_SDRAM_COLUMN_BITS_NUM,
+        .casLatency = MICROPY_HW_SDRAM_CAS_LATENCY,
+        .tPrecharge2Act_Ns = MICROPY_HW_SDRAM_TIMING_TRP,
+        .tAct2ReadWrite_Ns = MICROPY_HW_SDRAM_TIMING_TRCD,
+        .tRefreshRecovery_Ns = MICROPY_HW_SDRAM_TIMING_TXSR,
+        .tSelfRefRecovery_Ns = MICROPY_HW_SDRAM_TIMING_TXSR,
+        .tWriteRecovery_Ns = MICROPY_HW_SDRAM_TIMING_TWR,
+        .tCkeOff_Ns = MICROPY_HW_SDRAM_TIMING_TRAS,
+        .tAct2Prechage_Ns = MICROPY_HW_SDRAM_TIMING_TRAS,
+        .tRefresh2Refresh_Ns = MICROPY_HW_SDRAM_TIMING_TRC,
+        .tAct2Act_Ns = MICROPY_HW_SDRAM_TIMING_TRRD,
         .tIdleTimeout_Ns = 0UL,
-        .refreshPeriod_nsPerRow = 64 * 1000000 / 8192,  // 64ms/8192
-        .refreshUrgThreshold = 64 * 1000000 / 8192,  // 64ms/8192
-        .refreshBurstLen = 1
+        .refreshPeriod_nsPerRow = MICROPY_HW_SDRAM_TIMING_TREF,
+        .refreshUrgThreshold = MICROPY_HW_SDRAM_TIMING_TREF,
+        .refreshBurstLen = MICROPY_HW_SDRAM_RBURST_LENGTH,
+        #ifdef MICROPY_HW_SDRAM_DELAY_CHAIN
+        .delayChain = MICROPY_HW_SDRAM_DELAY_CHAIN,
+        #endif
+        .tPrescalePeriod_Ns = 160 * (1000000000 / clock_freq),
     };
-
-    #endif
 
     (status_t)SEMC_ConfigureSDRAM(SEMC, kSEMC_SDRAM_CS0, &sdram_cfg, clock_freq);
 }

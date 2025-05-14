@@ -21,21 +21,40 @@ NATMOD_EXAMPLE_DIR = "../examples/natmod/"
 # Supported tests and their corresponding mpy module
 TEST_MAPPINGS = {
     "btree": "btree/btree_$(ARCH).mpy",
+    "deflate": "deflate/deflate_$(ARCH).mpy",
     "framebuf": "framebuf/framebuf_$(ARCH).mpy",
-    "uheapq": "uheapq/uheapq_$(ARCH).mpy",
-    "urandom": "urandom/urandom_$(ARCH).mpy",
-    "ure": "ure/ure_$(ARCH).mpy",
-    "uzlib": "uzlib/uzlib_$(ARCH).mpy",
+    "heapq": "heapq/heapq_$(ARCH).mpy",
+    "random": "random/random_$(ARCH).mpy",
+    "re": "re/re_$(ARCH).mpy",
 }
+
+# Supported architectures for native mpy modules
+AVAILABLE_ARCHS = (
+    "x86",
+    "x64",
+    "armv6",
+    "armv6m",
+    "armv7m",
+    "armv7em",
+    "armv7emsp",
+    "armv7emdp",
+    "xtensa",
+    "xtensawin",
+    "rv32imc",
+)
+
+ARCH_MAPPINGS = {"armv7em": "armv7m"}
 
 # Code to allow a target MicroPython to import an .mpy from RAM
 injected_import_hook_code = """\
-import usys, uos, uio
-class __File(uio.IOBase):
+import sys, io, vfs
+class __File(io.IOBase):
   def __init__(self):
     self.off = 0
   def ioctl(self, request, arg):
-    return 0
+    if request == 4: # MP_STREAM_CLOSE
+      return 0
+    return -1
   def readinto(self, buf):
     buf[:] = memoryview(__buf)[self.off:self.off + len(buf)]
     self.off += len(buf)
@@ -46,15 +65,15 @@ class __FS:
   def chdir(self, path):
     pass
   def stat(self, path):
-    if path == '__injected.mpy':
+    if path == '/__injected.mpy':
       return tuple(0 for _ in range(10))
     else:
       raise OSError(-2) # ENOENT
   def open(self, path, mode):
     return __File()
-uos.mount(__FS(), '/__remote')
-uos.chdir('/__remote')
-usys.modules['{}'] = __import__('__injected')
+vfs.mount(__FS(), '/__remote')
+sys.path.insert(0, '/__remote')
+sys.modules['{}'] = __import__('__injected')
 """
 
 
@@ -94,13 +113,33 @@ class TargetPyboard:
             return b"", er
 
 
-def run_tests(target_truth, target, args, stats):
+def detect_architecture(target):
+    with open("./feature_check/target_info.py", "rb") as f:
+        target_info_data = f.read()
+        result_out, error = target.run_script(target_info_data)
+        if error is not None:
+            return None, None, error
+        info = result_out.split(b" ")
+        if len(info) < 2:
+            return None, None, "unexpected target info: {}".format(info)
+        platform = info[0].strip().decode()
+        arch = info[1].strip().decode()
+        if arch not in AVAILABLE_ARCHS:
+            if arch == "None":
+                return None, None, "the target does not support dynamic modules"
+            else:
+                return None, None, "{} is not a supported architecture".format(arch)
+        return platform, arch, None
+
+
+def run_tests(target_truth, target, args, stats, resolved_arch):
     for test_file in args.files:
         # Find supported test
+        test_file_basename = os.path.basename(test_file)
         for k, v in TEST_MAPPINGS.items():
-            if test_file.find(k) != -1:
+            if test_file_basename.startswith(k):
                 test_module = k
-                test_mpy = v.replace("$(ARCH)", args.arch)
+                test_mpy = v.replace("$(ARCH)", resolved_arch)
                 break
         else:
             print("----  {} - no matching mpy".format(test_file))
@@ -111,9 +150,10 @@ def run_tests(target_truth, target, args, stats):
             test_file_data = f.read()
 
         # Create full test with embedded .mpy
+        test_script = b"import sys\nsys.path.remove('')\n\n"
         try:
             with open(NATMOD_EXAMPLE_DIR + test_mpy, "rb") as f:
-                test_script = b"__buf=" + bytes(repr(f.read()), "ascii") + b"\n"
+                test_script += b"__buf=" + bytes(repr(f.read()), "ascii") + b"\n"
         except OSError:
             print("----  {} - mpy file not compiled".format(test_file))
             continue
@@ -170,7 +210,7 @@ def main():
         "-d", "--device", default="/dev/ttyACM0", help="the device for pyboard.py"
     )
     cmd_parser.add_argument(
-        "-a", "--arch", default="x64", help="native architecture of the target"
+        "-a", "--arch", choices=AVAILABLE_ARCHS, help="override native architecture of the target"
     )
     cmd_parser.add_argument("files", nargs="*", help="input test files")
     args = cmd_parser.parse_args()
@@ -182,8 +222,22 @@ def main():
     else:
         target = TargetSubprocess([MICROPYTHON])
 
+    if hasattr(args, "arch") and args.arch is not None:
+        target_arch = args.arch
+        target_platform = None
+    else:
+        target_platform, target_arch, error = detect_architecture(target)
+        if error:
+            print("Cannot run tests: {}".format(error))
+            sys.exit(1)
+    target_arch = ARCH_MAPPINGS.get(target_arch, target_arch)
+
+    if target_platform:
+        print("platform={} ".format(target_platform), end="")
+    print("arch={}".format(target_arch))
+
     stats = {"total": 0, "pass": 0, "fail": 0, "skip": 0}
-    run_tests(target_truth, target, args, stats)
+    run_tests(target_truth, target, args, stats, target_arch)
 
     target.close()
     target_truth.close()

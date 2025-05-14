@@ -1,21 +1,20 @@
 # test VFS functionality with a user-defined filesystem
-# also tests parts of uio.IOBase implementation
+# also tests parts of io.IOBase implementation
 
-import usys
+import sys
 
 try:
-    import uio
+    import io, vfs
 
-    uio.IOBase
-    import uos
-
-    uos.mount
+    io.IOBase
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
 
-class UserFile(uio.IOBase):
+class UserFile(io.IOBase):
+    buffer_size = 16
+
     def __init__(self, mode, data):
         assert isinstance(data, bytes)
         self.is_text = mode.find("b") == -1
@@ -39,7 +38,11 @@ class UserFile(uio.IOBase):
 
     def ioctl(self, req, arg):
         print("ioctl", req, arg)
-        return 0
+        if req == 4:  # MP_STREAM_CLOSE
+            return 0
+        if req == 11:  # MP_STREAM_GET_BUFFER_SIZE
+            return UserFile.buffer_size
+        return -1
 
 
 class UserFS:
@@ -68,17 +71,41 @@ user_files = {
     "/data.txt": b"some data in a text file",
     "/usermod1.py": b"print('in usermod1')\nimport usermod2",
     "/usermod2.py": b"print('in usermod2')",
+    "/usermod3.py": b"syntax error",
+    "/usermod4.mpy": b"syntax error",
+    "/usermod5.py": b"print('in usermod5')",
+    "/usermod6.py": b"print('in usermod6')",
 }
-uos.mount(UserFS(user_files), "/userfs")
+vfs.mount(UserFS(user_files), "/userfs")
 
 # open and read a file
 f = open("/userfs/data.txt")
 print(f.read())
 
 # import files from the user filesystem
-usys.path.append("/userfs")
+sys.path.append("/userfs")
 import usermod1
 
+# import a .py file with a syntax error (file should be closed on error)
+try:
+    import usermod3
+except SyntaxError:
+    print("SyntaxError in usermod3")
+
+# import a .mpy file with a syntax error (file should be closed on error)
+try:
+    import usermod4
+except ValueError:
+    print("ValueError in usermod4")
+
+# Test an import with largest buffer size
+UserFile.buffer_size = 255
+import usermod5
+
+# Test an import with over-size buffer size (should be safely limited internally)
+UserFile.buffer_size = 1024
+import usermod6
+
 # unmount and undo path addition
-uos.umount("/userfs")
-usys.path.pop()
+vfs.umount("/userfs")
+sys.path.pop()

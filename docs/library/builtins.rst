@@ -19,6 +19,8 @@ Functions and types
 
 .. class:: bytearray()
 
+    |see_cpython| `python:bytearray`.
+
 .. class:: bytes()
 
     |see_cpython| `python:bytes`.
@@ -82,6 +84,10 @@ Functions and types
       In MicroPython, `byteorder` parameter must be positional (this is
       compatible with CPython).
 
+      .. note:: The optional ``signed`` kwarg from CPython is not supported.
+                MicroPython currently converts negative integers as signed,
+                and positive as unsigned. (:ref:`Details <cpydiff_types_int_to_bytes>`.)
+
 .. function:: isinstance()
 
 .. function:: issubclass()
@@ -99,6 +105,8 @@ Functions and types
 .. function:: max()
 
 .. class:: memoryview()
+
+    |see_cpython| `python:memoryview`.
 
 .. function:: min()
 
@@ -166,6 +174,10 @@ Exceptions
 
 .. exception:: KeyboardInterrupt
 
+   |see_cpython| `python:KeyboardInterrupt`.
+
+   See also in the context of :ref:`soft_bricking`.
+
 .. exception:: KeyError
 
 .. exception:: MemoryError
@@ -185,6 +197,12 @@ Exceptions
 .. exception:: SystemExit
 
     |see_cpython| `python:SystemExit`.
+
+    On non-embedded ports (i.e. Windows and Unix), an unhandled ``SystemExit``
+    exits the MicroPython process in a similar way to CPython.
+
+    On embedded ports, an unhandled ``SystemExit`` currently causes a
+    :ref:`soft_reset` of MicroPython.
 
 .. exception:: TypeError
 

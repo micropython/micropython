@@ -44,17 +44,17 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "shared/runtime/interrupt_char.h"
 #include "irq.h"
-#include "modmachine.h"
 
 #if MICROPY_HW_ENABLE_USB
 
 #if !MICROPY_HW_USB_IS_MULTI_OTG
 #define USE_USB_CNTR_SOFM (1)
-#elif defined(STM32G0)
-#define USE_USB_CNTR_SOFM (1)
+#if defined(STM32G0) || defined(STM32H5)
 #define USB USB_DRD_FS
+#endif
 #else
 #define USE_USB_CNTR_SOFM (0)
 #endif
@@ -75,7 +75,7 @@ static uint8_t usbd_cdc_connect_tx_timer;
 
 #if MICROPY_HW_USB_CDC_1200BPS_TOUCH
 static mp_sched_node_t mp_bootloader_sched_node;
-STATIC void usbd_cdc_run_bootloader_task(mp_sched_node_t *node) {
+static void usbd_cdc_run_bootloader_task(mp_sched_node_t *node) {
     mp_hal_delay_ms(250);
     machine_bootloader(0, NULL);
 }
@@ -315,7 +315,7 @@ int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc_in, size_t len) {
     // copy the incoming data into the circular buffer
     for (const uint8_t *src = cdc->rx_packet_buf, *top = cdc->rx_packet_buf + len; src < top; ++src) {
         if (cdc->attached_to_repl && *src == mp_interrupt_char) {
-            pendsv_kbd_intr();
+            mp_sched_keyboard_interrupt();
         } else {
             uint16_t next_put = (cdc->rx_buf_put + 1) & (MICROPY_HW_USB_CDC_RX_DATA_SIZE - 1);
             if (next_put == cdc->rx_buf_get) {

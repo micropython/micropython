@@ -34,7 +34,7 @@
 #include "py/objint.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
-#include "py/stackctrl.h"
+#include "py/cstack.h"
 #include "py/stream.h" // for mp_obj_print
 
 // Allocates an object and also sets type, for mp_obj_malloc{,_var} macros.
@@ -43,6 +43,15 @@ MP_NOINLINE void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *ty
     base->type = type;
     return base;
 }
+
+#if MICROPY_ENABLE_FINALISER
+// Allocates an object and also sets type, for mp_obj_malloc{,_var}_with_finaliser macros.
+MP_NOINLINE void *mp_obj_malloc_with_finaliser_helper(size_t num_bytes, const mp_obj_type_t *type) {
+    mp_obj_base_t *base = (mp_obj_base_t *)m_malloc_with_finaliser(num_bytes);
+    base->type = type;
+    return base;
+}
+#endif
 
 const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_t o_in) {
     #if MICROPY_OBJ_IMMEDIATE_OBJS && MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
@@ -108,7 +117,7 @@ const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
 
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     // There can be data structures nested too deep, or just recursive
-    MP_STACK_CHECK();
+    mp_cstack_check();
     #ifndef NDEBUG
     if (o_in == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");
@@ -286,7 +295,7 @@ mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
         o2 = temp;
     }
 
-    // equality not implemented, so fall back to pointer conparison
+    // equality not implemented, so fall back to pointer comparison
     return (o1 == o2) ? local_true : local_false;
 }
 
@@ -577,18 +586,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
 
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
-    if (!MP_OBJ_TYPE_HAS_SLOT(type, buffer)) {
-        return false;
+    if (MP_OBJ_TYPE_HAS_SLOT(type, buffer)
+        && MP_OBJ_TYPE_GET_SLOT(type, buffer)(obj, bufinfo, flags & MP_BUFFER_RW) == 0) {
+        return true;
     }
-    int ret = MP_OBJ_TYPE_GET_SLOT(type, buffer)(obj, bufinfo, flags);
-    if (ret != 0) {
-        return false;
-    }
-    return true;
-}
-
-void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    if (!mp_get_buffer(obj, bufinfo, flags)) {
+    if (flags & MP_BUFFER_RAISE_IF_UNSUPPORTED) {
         mp_raise_TypeError(MP_ERROR_TEXT("object with buffer protocol required"));
     }
+    return false;
 }

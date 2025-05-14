@@ -35,7 +35,7 @@
 #include "led.h"
 #include "usrsw.h"
 
-NORETURN void boardctrl_fatal_error(const char *msg) {
+MP_NORETURN void boardctrl_fatal_error(const char *msg) {
     for (volatile uint delay = 0; delay < 10000000; delay++) {
     }
     led_state(1, 1);
@@ -55,7 +55,7 @@ NORETURN void boardctrl_fatal_error(const char *msg) {
     }
 }
 
-STATIC void flash_error(int n) {
+static void flash_error(int n) {
     for (int i = 0; i < n; i++) {
         led_state(PYB_LED_RED, 1);
         led_state(PYB_LED_GREEN, 0);
@@ -88,7 +88,7 @@ void boardctrl_maybe_enter_mboot(size_t n_args, const void *args_in) {
 #endif
 
 #if !MICROPY_HW_USES_BOOTLOADER
-STATIC uint update_reset_mode(uint reset_mode) {
+static uint update_reset_mode(uint reset_mode) {
     // Note: Must use HAL_Delay here as MicroPython is not yet initialised
     // and mp_hal_delay_ms will attempt to invoke the scheduler.
 

@@ -30,7 +30,7 @@ config MICROPY_CONFIGFILE
 
 config MICROPY_HEAP_SIZE
 	int "Heap size"
-	default 16384
+	default 49152
 
 config MICROPY_VFS_FAT
 	bool "FatFS file system"
@@ -40,6 +40,22 @@ config MICROPY_VFS_LFS1
 
 config MICROPY_VFS_LFS2
 	bool "LittleFs version 2 file system"
+
+config MICROPY_FROZEN_MODULES
+	bool "Enable Frozen Modules"
+
+config MICROPY_FROZEN_MANIFEST
+	string "Path to Frozen Modules manifest.py"
+	depends on MICROPY_FROZEN_MODULES
+	default "boards/manifest.py"
+
+config MICROPY_USB_DEVICE_VID
+	hex "USB VID"
+	default 0x2fe3
+
+config MICROPY_USB_DEVICE_PID
+	hex "USB PID"
+	default 0x0001
 
 endmenu # MicroPython Options
 

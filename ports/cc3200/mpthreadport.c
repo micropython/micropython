@@ -32,7 +32,6 @@
 #include "py/mphal.h"
 #include "mptask.h"
 #include "task.h"
-#include "irq.h"
 
 #if MICROPY_PY_THREAD
 
@@ -47,9 +46,9 @@ typedef struct _mp_thread_t {
 } mp_thread_t;
 
 // the mutex controls access to the linked list
-STATIC mp_thread_mutex_t thread_mutex;
-STATIC mp_thread_t thread_entry0;
-STATIC mp_thread_t *thread; // root pointer, handled bp mp_thread_gc_others
+static mp_thread_mutex_t thread_mutex;
+static mp_thread_t thread_entry0;
+static mp_thread_t *thread; // root pointer, handled bp mp_thread_gc_others
 
 void mp_thread_init(void) {
     mp_thread_mutex_init(&thread_mutex);
@@ -89,6 +88,10 @@ void mp_thread_set_state(mp_state_thread_t *state) {
     vTaskSetThreadLocalStoragePointer(NULL, 0, state);
 }
 
+mp_uint_t mp_thread_get_id(void) {
+    return (mp_uint_t)xTaskGetCurrentTaskHandle();
+}
+
 void mp_thread_start(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
@@ -100,9 +103,9 @@ void mp_thread_start(void) {
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
-STATIC void *(*ext_thread_entry)(void *) = NULL;
+static void *(*ext_thread_entry)(void *) = NULL;
 
-STATIC void freertos_entry(void *arg) {
+static void freertos_entry(void *arg) {
     if (ext_thread_entry) {
         ext_thread_entry(arg);
     }
@@ -111,7 +114,7 @@ STATIC void freertos_entry(void *arg) {
     }
 }
 
-void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
+mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     // store thread entry function into a global variable so we can access it
     ext_thread_entry = entry;
 
@@ -148,6 +151,9 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
 
     // adjust stack_size to provide room to recover from hitting the limit
     *stack_size -= 512;
+
+    MP_STATIC_ASSERT(sizeof(mp_uint_t) >= sizeof(TaskHandle_t));
+    return (mp_uint_t)id;
 }
 
 void mp_thread_finish(void) {

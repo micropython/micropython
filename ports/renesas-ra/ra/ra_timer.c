@@ -43,8 +43,8 @@ enum AGT_SOURCE {
 };
 
 static R_AGTX0_AGT16_Type *agt_regs[AGT_CH_SIZE] = {
-    (R_AGTX0_AGT16_Type *)0x40084000,
-    (R_AGTX0_AGT16_Type *)0x40084100
+    (R_AGTX0_AGT16_Type *)R_AGTX0,
+    (R_AGTX0_AGT16_Type *)R_AGTX1
 };
 
 static uint8_t ch_to_irq[AGT_CH_SIZE] = {

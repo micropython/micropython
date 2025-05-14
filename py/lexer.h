@@ -46,7 +46,6 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_LONELY_STRING_OPEN,
     #if MICROPY_PY_FSTRINGS
     MP_TOKEN_MALFORMED_FSTRING,
-    MP_TOKEN_FSTRING_RAW,
     #endif
 
     MP_TOKEN_NEWLINE,
@@ -153,6 +152,8 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_SEMICOLON,
     MP_TOKEN_DEL_EQUAL,
     MP_TOKEN_DEL_MINUS_MORE,
+
+    MP_TOKEN_NUMBER_OF,
 } mp_token_kind_t;
 
 // this data structure is exposed for efficiency
@@ -191,7 +192,7 @@ mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, size_t len
 
 // If MICROPY_READER_POSIX or MICROPY_READER_VFS aren't enabled then
 // this function must be implemented by the port.
-mp_lexer_t *mp_lexer_new_from_file(const char *filename);
+mp_lexer_t *mp_lexer_new_from_file(qstr filename);
 
 #if MICROPY_HELPER_LEXER_UNIX
 mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd);

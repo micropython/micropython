@@ -4,5 +4,4 @@ include("$(PORT_DIR)/boards/manifest.py")
 
 # Modules for application firmware update.
 module("fwupdate.py", base_path="$(PORT_DIR)/mboot", opt=3)
-module("spiflash.py", opt=3)
 module("appupdate.py", opt=3)

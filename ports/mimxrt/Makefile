@@ -21,6 +21,7 @@ BUILD ?= build-$(BOARD)
 PORT ?= /dev/ttyACM0
 CROSS_COMPILE ?= arm-none-eabi-
 GIT_SUBMODULES += lib/tinyusb lib/nxp_driver
+UF2CONV ?= $(TOP)/tools/uf2conv.py
 
 # MicroPython feature configurations
 MICROPY_VFS_LFS2 ?= 1
@@ -61,8 +62,6 @@ AF_FILE = boards/$(MCU_SERIES)_af.csv
 BOARD_PINS = $(BOARD_DIR)/pins.csv
 PREFIX_FILE = boards/mimxrt_prefix.c
 GEN_FLEXRAM_CONFIG_SRC = $(BUILD)/flexram_config.s
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_SRC = $(BUILD)/pins_gen.c
 
@@ -80,6 +79,7 @@ INC += -I$(TOP)/lib/oofatfs
 INC += -I$(TOP)/lib/tinyusb/hw
 INC += -I$(TOP)/lib/tinyusb/hw/bsp/teensy_40
 INC += -I$(TOP)/lib/tinyusb/src
+INC += -I$(TOP)/shared/tinyusb
 INC += -I.
 INC += -Ihal
 
@@ -128,15 +128,16 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_edma.c \
 	$(MCU_DIR)/drivers/fsl_flexram.c \
 	$(MCU_DIR)/drivers/fsl_flexspi.c \
+	$(MCU_DIR)/drivers/fsl_gpc.c \
 	$(MCU_DIR)/drivers/fsl_gpio.c \
 	$(MCU_DIR)/drivers/fsl_gpt.c \
 	$(MCU_DIR)/drivers/fsl_lpi2c.c \
 	$(MCU_DIR)/drivers/fsl_lpspi.c \
 	$(MCU_DIR)/drivers/fsl_lpspi_edma.c \
-	$(MCU_DIR)/drivers/fsl_lpuart.c \
 	$(MCU_DIR)/drivers/fsl_pit.c \
 	$(MCU_DIR)/drivers/fsl_pwm.c \
 	$(MCU_DIR)/drivers/fsl_sai.c \
+	$(MCU_DIR)/drivers/fsl_snvs_hp.c \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_wdog.c \
 	$(MCU_DIR)/system_$(MCU_SERIES)$(MCU_CORE).c \
@@ -152,7 +153,7 @@ ifeq ($(MICROPY_HW_SDRAM_AVAIL),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_semc.c
 endif
 
-ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064 MIMXRT1176))
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_usdhc.c
 endif
 
@@ -160,6 +161,13 @@ ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1015 MIMXRT1021 MIMXRT1052 MIM
 SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_qtmr.c \
 	$(MCU_DIR)/drivers/fsl_romapi.c
+endif
+
+# If not empty, then it is 10xx.
+ifneq ($(findstring MIMXRT10, $(MCU_SERIES)),)
+APPLICATION_ADDR := 0x6000C000
+else
+APPLICATION_ADDR := 0x3000C000
 endif
 
 ifeq ($(MCU_SERIES), MIMXRT1176)
@@ -172,7 +180,8 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_common_arm.c \
 	$(MCU_DIR)/drivers/fsl_anatop_ai.c \
 	$(MCU_DIR)/drivers/fsl_caam.c \
-	$(MCU_DIR)/drivers/fsl_lpadc.c
+	$(MCU_DIR)/drivers/fsl_lpadc.c \
+	$(MCU_DIR)/drivers/fsl_mu.c
 else
 SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_adc.c \
@@ -190,35 +199,33 @@ SRC_C += \
 	eth.c \
 	fatfs_port.c \
 	flash.c \
+	hal/fsl_lpuart.c \
 	hal/pwm_backport.c \
 	help.c \
 	led.c \
-	machine_adc.c \
 	machine_bitstream.c \
 	machine_i2c.c \
-	machine_i2s.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_sdcard.c \
 	machine_spi.c \
-	machine_uart.c \
-	machine_wdt.c \
 	main.c \
 	mbedtls/mbedtls_port.c \
 	mimxrt_flash.c \
 	mimxrt_sdram.c \
-	modmachine.c \
 	modmimxrt.c \
 	mphalport.c \
 	mpnetworkport.c \
+	msc_disk.c \
 	network_lan.c \
 	pendsv.c \
 	pin.c \
 	sdcard.c \
+	sdio.c \
 	systick.c \
 	ticks.c \
-	tusb_port.c \
+	usbd.c \
 
 SHARED_SRC_C += \
 	shared/libc/printf.c \
@@ -235,6 +242,9 @@ SHARED_SRC_C += \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
+	shared/tinyusb/mp_usbd.c \
+	shared/tinyusb/mp_usbd_cdc.c \
+	shared/tinyusb/mp_usbd_descriptor.c \
 
 # Set flash driver name, base address and internal flash flag, based on the flash type.
 ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash))
@@ -252,6 +262,11 @@ else
     $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
 endif
 
+# Set a flag if the UF2 bootloader is used
+ifeq ($(USE_UF2_BOOTLOADER),1)
+	CFLAGS += -DMICROPY_MACHINE_UF2_BOOTLOADER=1
+endif
+
 # Add sources for respective board flash type
 # Add hal/flexspi_nor_flash.c or hal/flashspi_hyper_flash.c respectively
 SRC_HAL_C += hal/flexspi_$(subst qspi_,,$(FLEXSPI_FLASH_TYPE)).c
@@ -263,28 +278,40 @@ else
     SRC_HAL_C += hal/$(FLEXSPI_FLASH_TYPE)_config.c
 endif
 
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+SRC_C += mpbthciport.c
+endif # MICROPY_PY_BLUETOOTH
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+SRC_C += mpnimbleport.c
+endif
+
+# Add mimxrt-specific implementation of libmetal (and optionally OpenAMP's rproc).
+# Note: libmetal code is generated via a pre-processor so ensure that runs first.
+ifeq ($(MICROPY_PY_OPENAMP),1)
+SRC_C += mpmetalport.c
+$(BUILD)/mpmetalport.o: $(BUILD)/openamp/metal/config.h
+ifeq ($(MICROPY_PY_OPENAMP_REMOTEPROC),1)
+SRC_C += mpremoteprocport.c
+$(BUILD)/mpremoteprocport.o: $(BUILD)/openamp/metal/config.h
+endif
+endif
+
 # Math library source files
 ifeq ($(MICROPY_FLOAT_IMPL),double)
-    LIBM_SRC_C += $(addprefix lib/libm_dbl/,\
-        __cos.c __expo2.c __fpclassify.c __rem_pio2.c __rem_pio2_large.c __signbit.c __sin.c __tan.c acos.c acosh.c \
-        asin.c asinh.c atan.c atan2.c atanh.c ceil.c copysign.c cos.c cosh.c erf.c exp.c expm1.c floor.c fmod.c \
-        frexp.c ldexp.c lgamma.c log.c log10.c log1p.c modf.c nearbyint.c pow.c rint.c round.c scalbn.c sin.c \
-        sinh.c tan.c tanh.c tgamma.c trunc.c)
+    LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_C)
     #
     ifeq ($(SUPPORTS_HARDWARE_FP_DOUBLE),1)
-        LIBM_SRC_C += lib/libm_dbl/thumb_vfp_sqrt.c
+        LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_HW_C)
     else
-        LIBM_SRC_C += lib/libm_dbl/sqrt.c
+        LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_SW_C)
     endif
 else
-    LIBM_SRC_C += $(addprefix lib/libm/,\
-        acoshf.c asinfacosf.c asinhf.c atan2f.c atanf.c atanhf.c ef_rem_pio2.c erf_lgamma.c fmodf.c kf_cos.c \
-        kf_rem_pio2.c kf_sin.c kf_tan.c log1pf.c math.c nearbyintf.c roundf.c sf_cos.c sf_erf.c sf_frexp.c sf_ldexp.c \
-        sf_modf.c sf_sin.c sf_tan.c wf_lgamma.c wf_tgamma.c)
+    LIBM_SRC_C += $(SRC_LIB_LIBM_C)
     ifeq ($(SUPPORTS_HARDWARE_FP_SINGLE),1)
-        LIBM_SRC_C += lib/libm/thumb_vfp_sqrtf.c
+        LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_HW_C)
     else
-        LIBM_SRC_C += lib/libm/ef_sqrt.c
+        LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
     endif
 endif
 
@@ -298,6 +325,8 @@ SRC_SS = \
 	hal/resethandler_MIMXRT10xx.S
 
 SRC_S += shared/runtime/gchelper_thumb2.s \
+
+hal/resethandler_MIMXRT10xx.S: $(GEN_FLEXRAM_CONFIG_SRC)
 
 # =============================================================================
 # QSTR Sources
@@ -322,7 +351,6 @@ endif
 # Set default values for optional variables
 MICROPY_HW_SDRAM_AVAIL ?= 0
 MICROPY_HW_SDRAM_SIZE ?= 0
-MICROPY_PY_MACHINE_SDCARD ?= 0
 
 # Configure default compiler flags
 CFLAGS += \
@@ -332,7 +360,8 @@ CFLAGS += \
 	-D__STARTUP_INITIALIZE_RAMFUNCTION \
 	-DBOARD_$(BOARD) \
 	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
-	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT \
+	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT1XXX \
+	-DCFG_TUD_MAX_SPEED=OPT_MODE_HIGH_SPEED \
 	-DCLOCK_CONFIG_H='<boards/$(MCU_SERIES)_clock_config.h>' \
 	-DCPU_$(MCU_SERIES)$(MCU_CORE) \
 	-DCPU_$(MCU_VARIANT) \
@@ -342,7 +371,6 @@ CFLAGS += \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 	-DMICROPY_HW_SDRAM_AVAIL=$(MICROPY_HW_SDRAM_AVAIL) \
 	-DMICROPY_HW_SDRAM_SIZE=$(MICROPY_HW_SDRAM_SIZE) \
-	-DMICROPY_PY_MACHINE_SDCARD=$(MICROPY_PY_MACHINE_SDCARD) \
 	-DSPI_RETRY_TIMES=1000000 \
 	-DUART_RETRY_TIMES=1000000 \
 	-DXIP_BOOT_HEADER_ENABLE=1 \
@@ -397,6 +425,16 @@ CFLAGS += \
 	-DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1
 endif
 
+ifdef MICROPY_HW_FLASH_CLK
+	CFLAGS += -DMICROPY_HW_FLASH_CLK=$(MICROPY_HW_FLASH_CLK)
+endif
+ifdef MICROPY_HW_FLASH_QE_CMD
+	CFLAGS += -DMICROPY_HW_FLASH_QE_CMD=$(MICROPY_HW_FLASH_QE_CMD)
+endif
+ifdef MICROPY_HW_FLASH_QE_ARG
+	CFLAGS += -DMICROPY_HW_FLASH_QE_ARG=$(MICROPY_HW_FLASH_QE_ARG)
+endif
+
 CFLAGS += $(CFLAGS_EXTRA)
 
 MPY_CROSS_FLAGS += -march=armv7m
@@ -433,17 +471,12 @@ endif
 # =============================================================================
 
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
-LIBM_O = $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
-
-# Too many warnings in libm_dbl, disable for now.
-ifeq ($(MICROPY_FLOAT_IMPL),double)
-$(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
-endif
 
 OBJ += $(PY_O)
-OBJ += $(LIBM_O)
+OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_TINYUSB_C:.c=.o))
@@ -459,7 +492,11 @@ $(BUILD)/lib/tinyusb/src/device/usbd.o: CFLAGS += -Wno-missing-braces
 # Build targets
 # =============================================================================
 
+ifeq ($(USE_UF2_BOOTLOADER),1)
+all: $(BUILD)/firmware.hex $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
+else
 all: $(BUILD)/firmware.hex $(BUILD)/firmware.bin
+endif
 
 # Process linker scripts with C preprocessor to exchange LDDEFINES and
 #	aggregate output of preprocessor in a single linker script `link.ld`
@@ -476,31 +513,32 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom $< $@
 
+$(BUILD)/firmware.uf2: $(BUILD)/firmware.elf
+	$(Q)$(OBJCOPY) -O binary -R .stack -R .ivt -R .flash_config $^ $@-binpart
+	$(Q)$(PYTHON) $(UF2CONV) -b $(APPLICATION_ADDR) -f MIMXRT10XX -c -o $@ $@-binpart
+
 # Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
 # which source files might need it.
-$(OBJ): | $(GEN_PINS_HDR) $(GEN_FLEXRAM_CONFIG_SRC)
+$(OBJ): | $(GEN_PINS_HDR)
 
 # With conditional pins, we may need to regenerate qstrdefs.h when config
 # options change.
 $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 
-$(GEN_FLEXRAM_CONFIG_SRC):
+$(GEN_FLEXRAM_CONFIG_SRC): $(HEADER_BUILD)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_FLEXRAM_LD) -d $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE).h \
-		-f $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE)_features.h -l boards/$(MCU_SERIES).ld -c $(MCU_SERIES) > $(GEN_FLEXRAM_CONFIG_SRC)
+		-f $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE)_features.h -l boards/$(MCU_SERIES).ld -c $(MCU_SERIES) > $@
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_gen.c and pins.h
 $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h: $(BOARD_PINS) $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE)\
-		--iomux $(abspath $(TOP)/$(MCU_DIR)/drivers/fsl_iomuxc.h) \
-		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
-
-$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
-	$(call compile_c)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv $(AF_FILE) \
+	    --prefix $(PREFIX_FILE) --iomux "$(abspath $(TOP)/$(MCU_DIR)/drivers/fsl_iomuxc.h)" \
+	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR)
 
 include $(TOP)/py/mkrules.mk

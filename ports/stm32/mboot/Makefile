@@ -36,6 +36,12 @@ include $(BOARD_DIR)/mpconfigboard.mk
 # A board can set MBOOT_TEXT0_ADDR to a custom location where mboot should reside.
 MBOOT_TEXT0_ADDR ?= 0x08000000
 
+# The string in MBOOT_VERSION (default defined in version.c if not defined by a
+# board) will be stored in the final MBOOT_VERSION_ALLOCATED_BYTES bytes of mboot flash.
+# A board can change the size of this region by defining MBOOT_VERSION_ALLOCATED_BYTES.
+MBOOT_VERSION_ALLOCATED_BYTES ?= 64
+MBOOT_VERSION_INCLUDE_OPTIONS ?= 1  # if set to 1, this will append build options to version string (see version.c)
+
 USBDEV_DIR=usbdev
 DFU=$(TOP)/tools/dfu.py
 PYDFU ?= $(TOP)/tools/pydfu.py
@@ -76,10 +82,16 @@ CFLAGS += -DLFS1_NO_MALLOC -DLFS1_NO_DEBUG -DLFS1_NO_WARN -DLFS1_NO_ERROR -DLFS1
 CFLAGS += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT -DLFS2_READONLY
 CFLAGS += -DBUILDING_MBOOT=$(BUILDING_MBOOT)
 CFLAGS += -DMICROPY_HW_STM32WB_FLASH_SYNCRONISATION=0
+CFLAGS += -DUSBD_ENABLE_VENDOR_DEVICE_REQUESTS=1
 CFLAGS += -DBOOTLOADER_DFU_USB_VID=$(BOOTLOADER_DFU_USB_VID) -DBOOTLOADER_DFU_USB_PID=$(BOOTLOADER_DFU_USB_PID)
+ifdef MBOOT_VERSION
+CFLAGS += -DMBOOT_VERSION=\"$(MBOOT_VERSION)\"
+endif
+CFLAGS += -DMBOOT_VERSION_ALLOCATED_BYTES=$(MBOOT_VERSION_ALLOCATED_BYTES) -DMBOOT_VERSION_INCLUDE_OPTIONS=$(MBOOT_VERSION_INCLUDE_OPTIONS)
 
 MBOOT_LD_FILES ?= stm32_memory.ld stm32_sections.ld
 LDFLAGS += -nostdlib -L . $(addprefix -T,$(MBOOT_LD_FILES)) -Map=$(@:.elf=.map) --cref
+LDFLAGS += --defsym mboot_version_len=$(MBOOT_VERSION_ALLOCATED_BYTES)
 LIBS += $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Remove uncalled code from the final image.
@@ -105,10 +117,11 @@ LIB_SRC_C += \
 	lib/oofatfs/ffunicode.c \
 	lib/uzlib/adler32.c \
 	lib/uzlib/crc32.c \
-	lib/uzlib/tinfgzip.c \
+	lib/uzlib/header.c \
 	lib/uzlib/tinflate.c
 
 SRC_C += \
+	adc.c \
 	main.c \
 	elem.c \
 	fsload.c \
@@ -118,13 +131,14 @@ SRC_C += \
 	ui.c \
 	vfs_fat.c \
 	vfs_lfs.c \
+	vfs_raw.c \
+	version.c \
 	drivers/bus/softspi.c \
 	drivers/bus/softqspi.c \
 	drivers/memory/spiflash.c \
 	ports/stm32/flash.c \
 	ports/stm32/flashbdev.c \
 	ports/stm32/i2cslave.c \
-	ports/stm32/machine_adc.c \
 	ports/stm32/powerctrlboot.c \
 	ports/stm32/qspi.c \
 	ports/stm32/spibdev.c \
@@ -152,12 +166,14 @@ endif
 
 $(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal.c \
 	hal_cortex.c \
 	hal_dma.c \
 	hal_flash.c \
 	hal_flash_ex.c \
 	hal_pcd.c \
 	hal_pcd_ex.c \
+	hal_pwr_ex.c \
 	hal_rcc.c \
 	hal_rcc_ex.c \
 	ll_usb.c \
@@ -202,7 +218,7 @@ deploy-stlink: $(BUILD)/firmware.dfu
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data -j .mboot_version_text $^ $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(DFU) -b $(MBOOT_TEXT0_ADDR):$(BUILD)/firmware.bin $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
@@ -225,12 +241,11 @@ GEN_QSTRDEFS_GENERATED = $(HEADER_BUILD)/qstrdefs.generated.h
 GEN_ROOT_POINTERS = $(HEADER_BUILD)/root_pointers.h
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(HEADER_BUILD)/pins_qstr.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
+GEN_MPVERSION = $(HEADER_BUILD)/mpversion.h
 
-$(OBJ): $(GEN_QSTRDEFS_GENERATED) $(GEN_ROOT_POINTERS) $(GEN_PINS_AF_DEFS)
+$(OBJ): $(GEN_QSTRDEFS_GENERATED) $(GEN_ROOT_POINTERS) $(GEN_PINS_AF_DEFS) $(GEN_MPVERSION)
 
 $(HEADER_BUILD):
 	$(MKDIR) -p $(BUILD)/genhdr
@@ -243,10 +258,13 @@ $(GEN_ROOT_POINTERS): | $(HEADER_BUILD)
 
 $(GEN_PINS_AF_DEFS): $(BOARD_PINS) $(MAKE_PINS) ../$(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af ../$(AF_FILE) \
-		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) \
-		--af-const $(GEN_PINS_AF_CONST) --af-defs $(GEN_PINS_AF_DEFS) \
-		--af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv ../$(AF_FILE) --prefix $(PREFIX_FILE) \
+		--output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) \
+		--output-af-const $(GEN_PINS_AF_CONST) --output-af-defs $(GEN_PINS_AF_DEFS) \
+		--mboot-mode
+
+$(GEN_MPVERSION): | $(HEADER_BUILD)
+	$(PYTHON) ../../../py/makeversionhdr.py $@
 
 #########################################
 

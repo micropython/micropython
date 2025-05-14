@@ -1,7 +1,7 @@
 #define MICROPY_HW_BOARD_NAME       "NUCLEO-L452RE"
 #define MICROPY_HW_MCU_NAME         "STM32L452RE"
 
-#define MICROPY_PY_USOCKET          (0)
+#define MICROPY_PY_SOCKET           (0)
 #define MICROPY_PY_NETWORK          (0)
 
 #define MICROPY_HW_ENABLE_RTC       (1)

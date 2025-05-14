@@ -87,7 +87,7 @@ typedef struct _strn_print_env_t {
     size_t remain;
 } strn_print_env_t;
 
-STATIC void strn_print_strn(void *data, const char *str, size_t len) {
+static void strn_print_strn(void *data, const char *str, size_t len) {
     strn_print_env_t *strn_print_env = data;
     if (len > strn_print_env->remain) {
         len = strn_print_env->remain;

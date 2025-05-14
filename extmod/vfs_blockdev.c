@@ -46,31 +46,45 @@ void mp_vfs_blockdev_init(mp_vfs_blockdev_t *self, mp_obj_t bdev) {
     }
 }
 
+// Helper function to minimise code size of read/write functions
+// note the n_args argument is moved to the end for further code size reduction (args keep same position in caller and callee).
+static int mp_vfs_blockdev_call_rw(mp_obj_t *args, size_t block_num, size_t block_off, size_t len, void *buf, size_t n_args) {
+    mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, len, buf};
+    args[2] = MP_OBJ_NEW_SMALL_INT(block_num);
+    args[3] = MP_OBJ_FROM_PTR(&ar);
+    args[4] = MP_OBJ_NEW_SMALL_INT(block_off); // ignored for n_args == 2
+    mp_obj_t ret = mp_call_method_n_kw(n_args, 0, args);
+
+    if (ret == mp_const_none) {
+        return 0;
+    } else {
+        // Some block devices return a bool indicating success, so
+        // convert those to an errno integer code.
+        if (ret == mp_const_true) {
+            return 0;
+        } else if (ret == mp_const_false) {
+            return -MP_EIO;
+        }
+        // Block device functions are expected to return 0 on success
+        // and negative integer on errors. Check for positive integer
+        // results as some callers (i.e. littlefs) will produce corrupt
+        // results from these.
+        int i = MP_OBJ_SMALL_INT_VALUE(ret);
+        return i > 0 ? (-MP_EINVAL) : i;
+    }
+}
+
 int mp_vfs_blockdev_read(mp_vfs_blockdev_t *self, size_t block_num, size_t num_blocks, uint8_t *buf) {
     if (self->flags & MP_BLOCKDEV_FLAG_NATIVE) {
         mp_uint_t (*f)(uint8_t *, uint32_t, uint32_t) = (void *)(uintptr_t)self->readblocks[2];
         return f(buf, block_num, num_blocks);
     } else {
-        mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, num_blocks *self->block_size, buf};
-        self->readblocks[2] = MP_OBJ_NEW_SMALL_INT(block_num);
-        self->readblocks[3] = MP_OBJ_FROM_PTR(&ar);
-        mp_call_method_n_kw(2, 0, self->readblocks);
-        // TODO handle error return
-        return 0;
+        return mp_vfs_blockdev_call_rw(self->readblocks, block_num, 0, num_blocks * self->block_size, buf, 2);
     }
 }
 
 int mp_vfs_blockdev_read_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t block_off, size_t len, uint8_t *buf) {
-    mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, len, buf};
-    self->readblocks[2] = MP_OBJ_NEW_SMALL_INT(block_num);
-    self->readblocks[3] = MP_OBJ_FROM_PTR(&ar);
-    self->readblocks[4] = MP_OBJ_NEW_SMALL_INT(block_off);
-    mp_obj_t ret = mp_call_method_n_kw(3, 0, self->readblocks);
-    if (ret == mp_const_none) {
-        return 0;
-    } else {
-        return MP_OBJ_SMALL_INT_VALUE(ret);
-    }
+    return mp_vfs_blockdev_call_rw(self->readblocks, block_num, block_off, len, buf, 3);
 }
 
 int mp_vfs_blockdev_write(mp_vfs_blockdev_t *self, size_t block_num, size_t num_blocks, const uint8_t *buf) {
@@ -83,12 +97,7 @@ int mp_vfs_blockdev_write(mp_vfs_blockdev_t *self, size_t block_num, size_t num_
         mp_uint_t (*f)(const uint8_t *, uint32_t, uint32_t) = (void *)(uintptr_t)self->writeblocks[2];
         return f(buf, block_num, num_blocks);
     } else {
-        mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, num_blocks *self->block_size, (void *)buf};
-        self->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(block_num);
-        self->writeblocks[3] = MP_OBJ_FROM_PTR(&ar);
-        mp_call_method_n_kw(2, 0, self->writeblocks);
-        // TODO handle error return
-        return 0;
+        return mp_vfs_blockdev_call_rw(self->writeblocks, block_num, 0, num_blocks * self->block_size, (void *)buf, 2);
     }
 }
 
@@ -97,17 +106,7 @@ int mp_vfs_blockdev_write_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t 
         // read-only block device
         return -MP_EROFS;
     }
-
-    mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, len, (void *)buf};
-    self->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(block_num);
-    self->writeblocks[3] = MP_OBJ_FROM_PTR(&ar);
-    self->writeblocks[4] = MP_OBJ_NEW_SMALL_INT(block_off);
-    mp_obj_t ret = mp_call_method_n_kw(3, 0, self->writeblocks);
-    if (ret == mp_const_none) {
-        return 0;
-    } else {
-        return MP_OBJ_SMALL_INT_VALUE(ret);
-    }
+    return mp_vfs_blockdev_call_rw(self->writeblocks, block_num, block_off, len, (void *)buf, 3);
 }
 
 mp_obj_t mp_vfs_blockdev_ioctl(mp_vfs_blockdev_t *self, uintptr_t cmd, uintptr_t arg) {

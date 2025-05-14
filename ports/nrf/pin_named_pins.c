@@ -31,7 +31,7 @@
 #include "py/mphal.h"
 #include "pin.h"
 
-STATIC void pin_named_pins_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void pin_named_pins_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_named_pins_obj_t *self = self_in;
     mp_printf(print, "<Pin.%q>", self->name);
 }

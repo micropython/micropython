@@ -27,13 +27,26 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/machine_i2c.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 
 #include "hardware/i2c.h"
 
 #define DEFAULT_I2C_FREQ (400000)
 #define DEFAULT_I2C_TIMEOUT (50000)
+
+#ifdef MICROPY_HW_I2C_NO_DEFAULT_PINS
+
+// With no default I2C, need to require the pin args.
+#define MICROPY_HW_I2C0_SCL (0)
+#define MICROPY_HW_I2C0_SDA (0)
+#define MICROPY_HW_I2C1_SCL (0)
+#define MICROPY_HW_I2C1_SDA (0)
+#define MICROPY_I2C_PINS_ARG_OPTS MP_ARG_REQUIRED
+
+#else
+
+// Most boards do not require pin args.
+#define MICROPY_I2C_PINS_ARG_OPTS 0
 
 #ifndef MICROPY_HW_I2C0_SCL
 #if PICO_DEFAULT_I2C == 0
@@ -54,6 +67,7 @@
 #define MICROPY_HW_I2C1_SDA (6)
 #endif
 #endif
+#endif
 
 // SDA/SCL on even/odd pins, I2C0/I2C1 on even/odd pairs of pins.
 #define IS_VALID_SCL(i2c, pin) (((pin) & 1) == 1 && (((pin) & 2) >> 1) == (i2c))
@@ -69,12 +83,12 @@ typedef struct _machine_i2c_obj_t {
     uint32_t timeout;
 } machine_i2c_obj_t;
 
-STATIC machine_i2c_obj_t machine_i2c_obj[] = {
+static machine_i2c_obj_t machine_i2c_obj[] = {
     {{&machine_i2c_type}, i2c0, 0, MICROPY_HW_I2C0_SCL, MICROPY_HW_I2C0_SDA, 0},
     {{&machine_i2c_type}, i2c1, 1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, 0},
 };
 
-STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2C(%u, freq=%u, scl=%u, sda=%u, timeout=%u)",
         self->i2c_id, self->freq, self->scl, self->sda, self->timeout);
@@ -83,10 +97,14 @@ STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_freq, ARG_scl, ARG_sda, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        #ifdef PICO_DEFAULT_I2C
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = PICO_DEFAULT_I2C} },
+        #else
+        { MP_QSTR_id, MP_ARG_INT | MP_ARG_REQUIRED },
+        #endif
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
-        { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_scl, MICROPY_I2C_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_sda, MICROPY_I2C_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_TIMEOUT} },
     };
 
@@ -94,8 +112,9 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // Get I2C bus.
-    int i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
+    int i2c_id = args[ARG_id].u_int;
+
+    // Check if the I2C bus is valid
     if (i2c_id < 0 || i2c_id >= MP_ARRAY_SIZE(machine_i2c_obj)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
     }
@@ -134,7 +153,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
+static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t *)self_in;
     int ret;
     bool nostop = !(flags & MP_MACHINE_I2C_FLAG_STOP);
@@ -175,7 +194,7 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     }
 }
 
-STATIC const mp_machine_i2c_p_t machine_i2c_p = {
+static const mp_machine_i2c_p_t machine_i2c_p = {
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_i2c_transfer_single,
 };

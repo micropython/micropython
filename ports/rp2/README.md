@@ -6,8 +6,8 @@ Currently supported features are:
 - REPL over USB VCP, and optionally over UART (on GP0/GP1).
 - Filesystem on the internal flash, using littlefs2.
 - Support for native code generation and inline assembler.
-- `utime` module with sleep, time and ticks functions.
-- `uos` module with VFS support.
+- `time` module with sleep, time and ticks functions.
+- `os` module with VFS support.
 - `machine` module with the following classes: `Pin`, `ADC`, `PWM`, `I2C`, `SPI`,
   `SoftI2C`, `SoftSPI`, `Timer`, `UART`, `WDT`.
 - `rp2` module with programmable IO (PIO) support.
@@ -37,18 +37,20 @@ You can also build the standard CMake way.  The final firmware is found in
 the top-level of the CMake build directory (`build` by default) and is
 called `firmware.uf2`.
 
-If you are using a different board other than a Rasoberry Pi Pico, then you should
+If you are using a board other than a Raspberry Pi Pico, you should
 pass the board name to the build; e.g. for Raspberry Pi Pico W:
 
-    $ make BOARD=PICO_W submodules
-    $ make BOARD=PICO_W clean
-    $ make BOARD=PICO_W
+    $ make BOARD=RPI_PICO_W submodules
+    $ make BOARD=RPI_PICO_W clean
+    $ make BOARD=RPI_PICO_W
 
 ## Deploying firmware to the device
 
 Firmware can be deployed to the device by putting it into bootloader mode
-(hold down BOOTSEL while powering on or resetting) and then copying
-`firmware.uf2` to the USB mass storage device that appears.
+(hold down BOOTSEL while powering on or resetting) and then either copying
+`firmware.uf2` to the USB mass storage device that appears, or using
+`picotool load -x firmware.elf`.  The latter command can be accessed
+conveniently via `make deploy`.
 
 If MicroPython is already installed then the bootloader can be entered by
 executing `import machine; machine.bootloader()` at the REPL.
@@ -69,7 +71,6 @@ from machine import Pin, Timer
 led = Pin(25, Pin.OUT)
 tim = Timer()
 def tick(timer):
-    global led
     led.toggle()
 
 tim.init(freq=2.5, mode=Timer.PERIODIC, callback=tick)

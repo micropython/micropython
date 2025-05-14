@@ -2,7 +2,7 @@
 # MIT license; Copyright (c) 2022 Glenn Moloney @glenn20
 
 from _espnow import *
-from uselect import poll, POLLIN
+from select import poll, POLLIN
 
 
 class ESPNow(ESPNowBase):

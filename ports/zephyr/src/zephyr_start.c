@@ -23,21 +23,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <zephyr/zephyr.h>
-#include <zephyr/console/console.h>
+#include <zephyr/kernel.h>
 #include "zephyr_getchar.h"
 
 int real_main(void);
+int mp_console_init(void);
 
-void main(void) {
+int main(void) {
     #ifdef CONFIG_CONSOLE_SUBSYS
-    console_init();
+    mp_console_init();
     #else
     zephyr_getchar_init();
     #endif
     real_main();
 
-    // This is needed so the linker includes k_timer_init, z_impl_k_timer_start
-    // and z_impl_k_timer_stop, as used by libmicropython.a.
-    k_timer_start(NULL, K_MSEC(0), K_MSEC(0));
+    return 0;
 }

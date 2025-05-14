@@ -74,11 +74,11 @@ static inline bool emit_inline_thumb_allow_float(emit_inline_asm_t *emit) {
 
 #endif
 
-STATIC void emit_inline_thumb_error_msg(emit_inline_asm_t *emit, mp_rom_error_text_t msg) {
+static void emit_inline_thumb_error_msg(emit_inline_asm_t *emit, mp_rom_error_text_t msg) {
     *emit->error_slot = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
 }
 
-STATIC void emit_inline_thumb_error_exc(emit_inline_asm_t *emit, mp_obj_t exc) {
+static void emit_inline_thumb_error_exc(emit_inline_asm_t *emit, mp_obj_t exc) {
     *emit->error_slot = exc;
 }
 
@@ -97,7 +97,7 @@ void emit_inline_thumb_free(emit_inline_asm_t *emit) {
     m_del_obj(emit_inline_asm_t, emit);
 }
 
-STATIC void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, mp_obj_t *error_slot) {
+static void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, mp_obj_t *error_slot) {
     emit->pass = pass;
     emit->error_slot = error_slot;
     if (emit->pass == MP_PASS_CODE_SIZE) {
@@ -107,12 +107,12 @@ STATIC void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pa
     asm_thumb_entry(&emit->as, 0);
 }
 
-STATIC void emit_inline_thumb_end_pass(emit_inline_asm_t *emit, mp_uint_t type_sig) {
+static void emit_inline_thumb_end_pass(emit_inline_asm_t *emit, mp_uint_t type_sig) {
     asm_thumb_exit(&emit->as);
     asm_thumb_end_pass(&emit->as);
 }
 
-STATIC mp_uint_t emit_inline_thumb_count_params(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params) {
+static mp_uint_t emit_inline_thumb_count_params(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params) {
     if (n_params > 4) {
         emit_inline_thumb_error_msg(emit, MP_ERROR_TEXT("can only have up to 4 parameters to Thumb assembly"));
         return 0;
@@ -131,7 +131,7 @@ STATIC mp_uint_t emit_inline_thumb_count_params(emit_inline_asm_t *emit, mp_uint
     return n_params;
 }
 
-STATIC bool emit_inline_thumb_label(emit_inline_asm_t *emit, mp_uint_t label_num, qstr label_id) {
+static bool emit_inline_thumb_label(emit_inline_asm_t *emit, mp_uint_t label_num, qstr label_id) {
     assert(label_num < emit->max_num_labels);
     if (emit->pass == MP_PASS_CODE_SIZE) {
         // check for duplicate label on first pass
@@ -149,42 +149,42 @@ STATIC bool emit_inline_thumb_label(emit_inline_asm_t *emit, mp_uint_t label_num
 typedef struct _reg_name_t { byte reg;
                              byte name[3];
 } reg_name_t;
-STATIC const reg_name_t reg_name_table[] = {
-    {0, "r0\0"},
-    {1, "r1\0"},
-    {2, "r2\0"},
-    {3, "r3\0"},
-    {4, "r4\0"},
-    {5, "r5\0"},
-    {6, "r6\0"},
-    {7, "r7\0"},
-    {8, "r8\0"},
-    {9, "r9\0"},
-    {10, "r10"},
-    {11, "r11"},
-    {12, "r12"},
-    {13, "r13"},
-    {14, "r14"},
-    {15, "r15"},
-    {10, "sl\0"},
-    {11, "fp\0"},
-    {13, "sp\0"},
-    {14, "lr\0"},
-    {15, "pc\0"},
+static const reg_name_t reg_name_table[] = {
+    {0, {'r', '0' }},
+    {1, {'r', '1' }},
+    {2, {'r', '2' }},
+    {3, {'r', '3' }},
+    {4, {'r', '4' }},
+    {5, {'r', '5' }},
+    {6, {'r', '6' }},
+    {7, {'r', '7' }},
+    {8, {'r', '8' }},
+    {9, {'r', '9' }},
+    {10, {'r', '1', '0' }},
+    {11, {'r', '1', '1' }},
+    {12, {'r', '1', '2' }},
+    {13, {'r', '1', '3' }},
+    {14, {'r', '1', '4' }},
+    {15, {'r', '1', '5' }},
+    {10, {'s', 'l' }},
+    {11, {'f', 'p' }},
+    {13, {'s', 'p' }},
+    {14, {'l', 'r' }},
+    {15, {'p', 'c' }},
 };
 
 #define MAX_SPECIAL_REGISTER_NAME_LENGTH 7
 typedef struct _special_reg_name_t { byte reg;
                                      char name[MAX_SPECIAL_REGISTER_NAME_LENGTH + 1];
 } special_reg_name_t;
-STATIC const special_reg_name_t special_reg_name_table[] = {
+static const special_reg_name_t special_reg_name_table[] = {
     {5, "IPSR"},
     {17, "BASEPRI"},
 };
 
 // return empty string in case of error, so we can attempt to parse the string
 // without a special check if it was in fact a string
-STATIC const char *get_arg_str(mp_parse_node_t pn) {
+static const char *get_arg_str(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_ID(pn)) {
         qstr qst = MP_PARSE_NODE_LEAF_ARG(pn);
         return qstr_str(qst);
@@ -193,7 +193,7 @@ STATIC const char *get_arg_str(mp_parse_node_t pn) {
     }
 }
 
-STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, mp_uint_t max_reg) {
+static mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, mp_uint_t max_reg) {
     const char *reg_str = get_arg_str(pn);
     for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(reg_name_table); i++) {
         const reg_name_t *r = &reg_name_table[i];
@@ -217,7 +217,7 @@ STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_n
     return 0;
 }
 
-STATIC mp_uint_t get_arg_special_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+static mp_uint_t get_arg_special_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     const char *reg_str = get_arg_str(pn);
     for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(special_reg_name_table); i++) {
         const special_reg_name_t *r = &special_reg_name_table[i];
@@ -231,7 +231,7 @@ STATIC mp_uint_t get_arg_special_reg(emit_inline_asm_t *emit, const char *op, mp
     return 0;
 }
 
-STATIC mp_uint_t get_arg_vfpreg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+static mp_uint_t get_arg_vfpreg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     const char *reg_str = get_arg_str(pn);
     if (reg_str[0] == 's' && reg_str[1] != '\0') {
         mp_uint_t regno = 0;
@@ -258,7 +258,7 @@ malformed:
     return 0;
 }
 
-STATIC mp_uint_t get_arg_reglist(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+static mp_uint_t get_arg_reglist(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     // a register list looks like {r0, r1, r2} and is parsed as a Python set
 
     if (!MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_atom_brace)) {
@@ -310,7 +310,7 @@ bad_arg:
     return 0;
 }
 
-STATIC uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, uint32_t fit_mask) {
+static uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, uint32_t fit_mask) {
     mp_obj_t o;
     if (!mp_parse_node_get_int_maybe(pn, &o)) {
         emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' expects an integer"), op));
@@ -324,7 +324,7 @@ STATIC uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node
     return i;
 }
 
-STATIC bool get_arg_addr(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, mp_parse_node_t *pn_base, mp_parse_node_t *pn_offset) {
+static bool get_arg_addr(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, mp_parse_node_t *pn_base, mp_parse_node_t *pn_offset) {
     if (!MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_atom_bracket)) {
         goto bad_arg;
     }
@@ -346,7 +346,7 @@ bad_arg:
     return false;
 }
 
-STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+static int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     if (!MP_PARSE_NODE_IS_ID(pn)) {
         emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' expects a label"), op));
         return 0;
@@ -367,43 +367,43 @@ STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
 typedef struct _cc_name_t { byte cc;
                             byte name[2];
 } cc_name_t;
-STATIC const cc_name_t cc_name_table[] = {
-    { ASM_THUMB_CC_EQ, "eq" },
-    { ASM_THUMB_CC_NE, "ne" },
-    { ASM_THUMB_CC_CS, "cs" },
-    { ASM_THUMB_CC_CC, "cc" },
-    { ASM_THUMB_CC_MI, "mi" },
-    { ASM_THUMB_CC_PL, "pl" },
-    { ASM_THUMB_CC_VS, "vs" },
-    { ASM_THUMB_CC_VC, "vc" },
-    { ASM_THUMB_CC_HI, "hi" },
-    { ASM_THUMB_CC_LS, "ls" },
-    { ASM_THUMB_CC_GE, "ge" },
-    { ASM_THUMB_CC_LT, "lt" },
-    { ASM_THUMB_CC_GT, "gt" },
-    { ASM_THUMB_CC_LE, "le" },
+static const cc_name_t cc_name_table[] = {
+    { ASM_THUMB_CC_EQ, { 'e', 'q' }},
+    { ASM_THUMB_CC_NE, { 'n', 'e' }},
+    { ASM_THUMB_CC_CS, { 'c', 's' }},
+    { ASM_THUMB_CC_CC, { 'c', 'c' }},
+    { ASM_THUMB_CC_MI, { 'm', 'i' }},
+    { ASM_THUMB_CC_PL, { 'p', 'l' }},
+    { ASM_THUMB_CC_VS, { 'v', 's' }},
+    { ASM_THUMB_CC_VC, { 'v', 'c' }},
+    { ASM_THUMB_CC_HI, { 'h', 'i' }},
+    { ASM_THUMB_CC_LS, { 'l', 's' }},
+    { ASM_THUMB_CC_GE, { 'g', 'e' }},
+    { ASM_THUMB_CC_LT, { 'l', 't' }},
+    { ASM_THUMB_CC_GT, { 'g', 't' }},
+    { ASM_THUMB_CC_LE, { 'l', 'e' }},
 };
 
 typedef struct _format_4_op_t { byte op;
                                 char name[3];
 } format_4_op_t;
 #define X(x) (((x) >> 4) & 0xff) // only need 1 byte to distinguish these ops
-STATIC const format_4_op_t format_4_op_table[] = {
-    { X(ASM_THUMB_FORMAT_4_EOR), "eor" },
-    { X(ASM_THUMB_FORMAT_4_LSL), "lsl" },
-    { X(ASM_THUMB_FORMAT_4_LSR), "lsr" },
-    { X(ASM_THUMB_FORMAT_4_ASR), "asr" },
-    { X(ASM_THUMB_FORMAT_4_ADC), "adc" },
-    { X(ASM_THUMB_FORMAT_4_SBC), "sbc" },
-    { X(ASM_THUMB_FORMAT_4_ROR), "ror" },
-    { X(ASM_THUMB_FORMAT_4_TST), "tst" },
-    { X(ASM_THUMB_FORMAT_4_NEG), "neg" },
-    { X(ASM_THUMB_FORMAT_4_CMP), "cmp" },
-    { X(ASM_THUMB_FORMAT_4_CMN), "cmn" },
-    { X(ASM_THUMB_FORMAT_4_ORR), "orr" },
-    { X(ASM_THUMB_FORMAT_4_MUL), "mul" },
-    { X(ASM_THUMB_FORMAT_4_BIC), "bic" },
-    { X(ASM_THUMB_FORMAT_4_MVN), "mvn" },
+static const format_4_op_t format_4_op_table[] = {
+    { X(ASM_THUMB_FORMAT_4_EOR), {'e', 'o', 'r' }},
+    { X(ASM_THUMB_FORMAT_4_LSL), {'l', 's', 'l' }},
+    { X(ASM_THUMB_FORMAT_4_LSR), {'l', 's', 'r' }},
+    { X(ASM_THUMB_FORMAT_4_ASR), {'a', 's', 'r' }},
+    { X(ASM_THUMB_FORMAT_4_ADC), {'a', 'd', 'c' }},
+    { X(ASM_THUMB_FORMAT_4_SBC), {'s', 'b', 'c' }},
+    { X(ASM_THUMB_FORMAT_4_ROR), {'r', 'o', 'r' }},
+    { X(ASM_THUMB_FORMAT_4_TST), {'t', 's', 't' }},
+    { X(ASM_THUMB_FORMAT_4_NEG), {'n', 'e', 'g' }},
+    { X(ASM_THUMB_FORMAT_4_CMP), {'c', 'm', 'p' }},
+    { X(ASM_THUMB_FORMAT_4_CMN), {'c', 'm', 'n' }},
+    { X(ASM_THUMB_FORMAT_4_ORR), {'o', 'r', 'r' }},
+    { X(ASM_THUMB_FORMAT_4_MUL), {'m', 'u', 'l' }},
+    { X(ASM_THUMB_FORMAT_4_BIC), {'b', 'i', 'c' }},
+    { X(ASM_THUMB_FORMAT_4_MVN), {'m', 'v', 'n' }},
 };
 #undef X
 
@@ -412,7 +412,7 @@ typedef struct _format_9_10_op_t { uint16_t op;
                                    uint16_t name;
 } format_9_10_op_t;
 #define X(x) (x)
-STATIC const format_9_10_op_t format_9_10_op_table[] = {
+static const format_9_10_op_t format_9_10_op_table[] = {
     { X(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER), MP_QSTR_ldr },
     { X(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_BYTE_TRANSFER), MP_QSTR_ldrb },
     { X(ASM_THUMB_FORMAT_10_LDRH), MP_QSTR_ldrh },
@@ -427,17 +427,17 @@ typedef struct _format_vfp_op_t {
     byte op;
     char name[3];
 } format_vfp_op_t;
-STATIC const format_vfp_op_t format_vfp_op_table[] = {
-    { 0x30, "add" },
-    { 0x34, "sub" },
-    { 0x20, "mul" },
-    { 0x80, "div" },
+static const format_vfp_op_t format_vfp_op_table[] = {
+    { 0x30, {'a', 'd', 'd' }},
+    { 0x34, {'s', 'u', 'b' }},
+    { 0x20, {'m', 'u', 'l' }},
+    { 0x80, {'d', 'i', 'v' }},
 };
 
 // shorthand alias for whether we allow ARMv7-M instructions
 #define ARMV7M asm_thumb_allow_armv7m(&emit->as)
 
-STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
+static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
     // TODO perhaps make two tables:
     // one_args =
     // "b", LAB, asm_thumb_b_n,

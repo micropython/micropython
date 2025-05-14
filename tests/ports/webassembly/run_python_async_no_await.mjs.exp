@@ -1,0 +1,6 @@
+1
+2 Promise { <pending> }
+py 1
+setTimeout resolved
+resolved value: 123
+py 2

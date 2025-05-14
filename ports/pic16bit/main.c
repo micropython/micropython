@@ -102,7 +102,7 @@ void gc_collect(void) {
     gc_collect_end();
 }
 
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
     mp_raise_OSError(MP_ENOENT);
 }
 
@@ -121,7 +121,7 @@ void nlr_jump_fail(void *val) {
     }
 }
 
-void NORETURN __fatal_error(const char *msg) {
+void MP_NORETURN __fatal_error(const char *msg) {
     while (1) {
         ;
     }

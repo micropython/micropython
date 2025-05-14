@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "py/obj.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "machine_pin.h"
 
 #define AF(af_idx, af_fn, af_unit)                      \

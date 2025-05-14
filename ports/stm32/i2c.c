@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
@@ -33,7 +34,7 @@
 
 #if defined(STM32F4) || defined(STM32L1)
 
-STATIC uint16_t i2c_timeout_ms[MICROPY_HW_MAX_I2C];
+static uint16_t i2c_timeout_ms[MICROPY_HW_MAX_I2C];
 
 int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t freq, uint16_t timeout_ms) {
     uint32_t i2c_id = ((uint32_t)i2c - I2C1_BASE) / (I2C2_BASE - I2C1_BASE);
@@ -92,7 +93,7 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
     return 0;
 }
 
-STATIC int i2c_wait_sr1_set(i2c_t *i2c, uint32_t mask) {
+static int i2c_wait_sr1_set(i2c_t *i2c, uint32_t mask) {
     uint32_t i2c_id = ((uint32_t)i2c - I2C1_BASE) / (I2C2_BASE - I2C1_BASE);
     uint32_t t0 = HAL_GetTick();
     while (!(i2c->SR1 & mask)) {
@@ -104,7 +105,7 @@ STATIC int i2c_wait_sr1_set(i2c_t *i2c, uint32_t mask) {
     return 0;
 }
 
-STATIC int i2c_wait_stop(i2c_t *i2c) {
+static int i2c_wait_stop(i2c_t *i2c) {
     uint32_t i2c_id = ((uint32_t)i2c - I2C1_BASE) / (I2C2_BASE - I2C1_BASE);
     uint32_t t0 = HAL_GetTick();
     while (i2c->CR1 & I2C_CR1_STOP) {
@@ -283,10 +284,19 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
 #endif
 #endif
 
-STATIC uint16_t i2c_timeout_ms[MICROPY_HW_MAX_I2C];
+static uint16_t i2c_timeout_ms[MICROPY_HW_MAX_I2C];
+
+static uint32_t i2c_get_id(i2c_t *i2c) {
+    #if defined(STM32H7)
+    if (i2c == I2C4) {
+        return 3;
+    }
+    #endif
+    return ((uint32_t)i2c - I2C1_BASE) / (I2C2_BASE - I2C1_BASE);
+}
 
 int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t freq, uint16_t timeout_ms) {
-    uint32_t i2c_id = ((uint32_t)i2c - I2C1_BASE) / (I2C2_BASE - I2C1_BASE);
+    uint32_t i2c_id = i2c_get_id(i2c);
 
     // Init pins
     if (!mp_hal_pin_config_alt(scl, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_UP, AF_FN_I2C, i2c_id + 1)) {
@@ -300,9 +310,18 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
     i2c_timeout_ms[i2c_id] = timeout_ms;
 
     // Enable I2C peripheral clock
-    RCC->APB1ENR |= RCC_APB1ENR_I2C1EN << i2c_id;
-    volatile uint32_t tmp = RCC->APB1ENR; // delay after RCC clock enable
+    volatile uint32_t tmp;
     (void)tmp;
+    #if defined(STM32H7)
+    if (i2c_id == 3) {
+        RCC->APB4ENR |= RCC_APB4ENR_I2C4EN;
+        tmp = RCC->APB4ENR; // delay after RCC clock enable
+    } else
+    #endif
+    {
+        RCC->APB1ENR |= RCC_APB1ENR_I2C1EN << i2c_id;
+        tmp = RCC->APB1ENR; // delay after RCC clock enable
+    }
 
     // Initialise I2C peripheral
     i2c->CR1 = 0;
@@ -339,8 +358,9 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
     return 0;
 }
 
-STATIC int i2c_wait_cr2_clear(i2c_t *i2c, uint32_t mask) {
-    uint32_t i2c_id = ((uint32_t)i2c - I2C1_BASE) / (I2C2_BASE - I2C1_BASE);
+static int i2c_wait_cr2_clear(i2c_t *i2c, uint32_t mask) {
+    uint32_t i2c_id = i2c_get_id(i2c);
+
     uint32_t t0 = HAL_GetTick();
     while (i2c->CR2 & mask) {
         if (HAL_GetTick() - t0 >= i2c_timeout_ms[i2c_id]) {
@@ -351,8 +371,9 @@ STATIC int i2c_wait_cr2_clear(i2c_t *i2c, uint32_t mask) {
     return 0;
 }
 
-STATIC int i2c_wait_isr_set(i2c_t *i2c, uint32_t mask) {
-    uint32_t i2c_id = ((uint32_t)i2c - I2C1_BASE) / (I2C2_BASE - I2C1_BASE);
+static int i2c_wait_isr_set(i2c_t *i2c, uint32_t mask) {
+    uint32_t i2c_id = i2c_get_id(i2c);
+
     uint32_t t0 = HAL_GetTick();
     while (!(i2c->ISR & mask)) {
         if (HAL_GetTick() - t0 >= i2c_timeout_ms[i2c_id]) {
@@ -398,7 +419,7 @@ int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t len, bool stop)
     return 0;
 }
 
-STATIC int i2c_check_stop(i2c_t *i2c) {
+static int i2c_check_stop(i2c_t *i2c) {
     if (i2c->CR2 & I2C_CR2_AUTOEND) {
         // Wait for the STOP condition and then disable the peripheral
         int ret;
@@ -514,7 +535,7 @@ int i2c_writeto(i2c_t *i2c, uint16_t addr, const uint8_t *src, size_t len, bool 
 
 #endif
 
-STATIC const uint8_t i2c_available =
+static const uint8_t i2c_available =
     0
     #if defined(MICROPY_HW_I2C1_SCL)
     | 1 << 1

@@ -47,7 +47,7 @@ def git_log(pretty_format, *args):
 
 
 def diagnose_subject_line(subject_line, subject_line_format, err):
-    err.error("Subject line: " + subject_line)
+    err.error('Subject line: "' + subject_line + '"')
     if not subject_line.endswith("."):
         err.error('* must end with "."')
     if not re.match(r"^[^!]+: ", subject_line):
@@ -96,6 +96,9 @@ def verify_message_body(raw_body, err):
     if len(subject_line) >= 73:
         err.error("Subject line must be 72 or fewer characters: " + subject_line)
 
+    # Do additional checks on the prefix of the subject line.
+    verify_subject_line_prefix(subject_line.split(": ")[0], err)
+
     # Second one divides subject and body.
     if len(raw_body) > 1 and raw_body[1]:
         err.error("Second message line must be empty: " + raw_body[1])
@@ -108,6 +111,26 @@ def verify_message_body(raw_body, err):
 
     if not raw_body[-1].startswith("Signed-off-by: ") or "@" not in raw_body[-1]:
         err.error('Message must be signed-off. Use "git commit -s".')
+
+
+def verify_subject_line_prefix(prefix, err):
+    ext = (".c", ".h", ".cpp", ".js", ".rst", ".md")
+
+    if prefix.startswith("."):
+        err.error('Subject prefix cannot begin with ".".')
+
+    if prefix.endswith("/"):
+        err.error('Subject prefix cannot end with "/".')
+
+    if prefix.startswith("ports/"):
+        err.error(
+            'Subject prefix cannot begin with "ports/", start with the name of the port instead.'
+        )
+
+    if prefix.endswith(ext):
+        err.error(
+            "Subject prefix cannot end with a file extension, use the main part of the filename without the extension."
+        )
 
 
 def run(args):

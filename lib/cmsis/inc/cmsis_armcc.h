@@ -1,11 +1,11 @@
 /**************************************************************************//**
  * @file     cmsis_armcc.h
  * @brief    CMSIS compiler ARMCC (Arm Compiler 5) header file
- * @version  V5.0.5
- * @date     14. December 2018
+ * @version  V5.3.2
+ * @date     27. May 2021
  ******************************************************************************/
 /*
- * Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ * Copyright (c) 2009-2021 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -46,6 +46,7 @@
 
   /* __ARM_ARCH_8M_BASE__  not applicable */
   /* __ARM_ARCH_8M_MAIN__  not applicable */
+  /* __ARM_ARCH_8_1M_MAIN__  not applicable */
 
 /* CMSIS compiler control DSP macros */
 #if ((defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))     )
@@ -62,9 +63,9 @@
 #ifndef   __STATIC_INLINE
   #define __STATIC_INLINE                        static __inline
 #endif
-#ifndef   __STATIC_FORCEINLINE                 
+#ifndef   __STATIC_FORCEINLINE
   #define __STATIC_FORCEINLINE                   static __forceinline
-#endif           
+#endif
 #ifndef   __NO_RETURN
   #define __NO_RETURN                            __declspec(noreturn)
 #endif
@@ -104,279 +105,31 @@
 #ifndef   __RESTRICT
   #define __RESTRICT                             __restrict
 #endif
-
-/* ###########################  Core Function Access  ########################### */
-/** \ingroup  CMSIS_Core_FunctionInterface
-    \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
-  @{
- */
-
-/**
-  \brief   Enable IRQ Interrupts
-  \details Enables IRQ interrupts by clearing the I-bit in the CPSR.
-           Can only be executed in Privileged modes.
- */
-/* intrinsic void __enable_irq();     */
-
-
-/**
-  \brief   Disable IRQ Interrupts
-  \details Disables IRQ interrupts by setting the I-bit in the CPSR.
-           Can only be executed in Privileged modes.
- */
-/* intrinsic void __disable_irq();    */
-
-/**
-  \brief   Get Control Register
-  \details Returns the content of the Control Register.
-  \return               Control Register value
- */
-__STATIC_INLINE uint32_t __get_CONTROL(void)
-{
-  register uint32_t __regControl         __ASM("control");
-  return(__regControl);
-}
-
-
-/**
-  \brief   Set Control Register
-  \details Writes the given value to the Control Register.
-  \param [in]    control  Control Register value to set
- */
-__STATIC_INLINE void __set_CONTROL(uint32_t control)
-{
-  register uint32_t __regControl         __ASM("control");
-  __regControl = control;
-}
-
-
-/**
-  \brief   Get IPSR Register
-  \details Returns the content of the IPSR Register.
-  \return               IPSR Register value
- */
-__STATIC_INLINE uint32_t __get_IPSR(void)
-{
-  register uint32_t __regIPSR          __ASM("ipsr");
-  return(__regIPSR);
-}
-
-
-/**
-  \brief   Get APSR Register
-  \details Returns the content of the APSR Register.
-  \return               APSR Register value
- */
-__STATIC_INLINE uint32_t __get_APSR(void)
-{
-  register uint32_t __regAPSR          __ASM("apsr");
-  return(__regAPSR);
-}
-
-
-/**
-  \brief   Get xPSR Register
-  \details Returns the content of the xPSR Register.
-  \return               xPSR Register value
- */
-__STATIC_INLINE uint32_t __get_xPSR(void)
-{
-  register uint32_t __regXPSR          __ASM("xpsr");
-  return(__regXPSR);
-}
-
-
-/**
-  \brief   Get Process Stack Pointer
-  \details Returns the current value of the Process Stack Pointer (PSP).
-  \return               PSP Register value
- */
-__STATIC_INLINE uint32_t __get_PSP(void)
-{
-  register uint32_t __regProcessStackPointer  __ASM("psp");
-  return(__regProcessStackPointer);
-}
-
-
-/**
-  \brief   Set Process Stack Pointer
-  \details Assigns the given value to the Process Stack Pointer (PSP).
-  \param [in]    topOfProcStack  Process Stack Pointer value to set
- */
-__STATIC_INLINE void __set_PSP(uint32_t topOfProcStack)
-{
-  register uint32_t __regProcessStackPointer  __ASM("psp");
-  __regProcessStackPointer = topOfProcStack;
-}
-
-
-/**
-  \brief   Get Main Stack Pointer
-  \details Returns the current value of the Main Stack Pointer (MSP).
-  \return               MSP Register value
- */
-__STATIC_INLINE uint32_t __get_MSP(void)
-{
-  register uint32_t __regMainStackPointer     __ASM("msp");
-  return(__regMainStackPointer);
-}
-
-
-/**
-  \brief   Set Main Stack Pointer
-  \details Assigns the given value to the Main Stack Pointer (MSP).
-  \param [in]    topOfMainStack  Main Stack Pointer value to set
- */
-__STATIC_INLINE void __set_MSP(uint32_t topOfMainStack)
-{
-  register uint32_t __regMainStackPointer     __ASM("msp");
-  __regMainStackPointer = topOfMainStack;
-}
-
-
-/**
-  \brief   Get Priority Mask
-  \details Returns the current state of the priority mask bit from the Priority Mask Register.
-  \return               Priority Mask value
- */
-__STATIC_INLINE uint32_t __get_PRIMASK(void)
-{
-  register uint32_t __regPriMask         __ASM("primask");
-  return(__regPriMask);
-}
-
-
-/**
-  \brief   Set Priority Mask
-  \details Assigns the given value to the Priority Mask Register.
-  \param [in]    priMask  Priority Mask
- */
-__STATIC_INLINE void __set_PRIMASK(uint32_t priMask)
-{
-  register uint32_t __regPriMask         __ASM("primask");
-  __regPriMask = (priMask);
-}
-
-
-#if ((defined (__ARM_ARCH_7M__ ) && (__ARM_ARCH_7M__  == 1)) || \
-     (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))     )
-
-/**
-  \brief   Enable FIQ
-  \details Enables FIQ interrupts by clearing the F-bit in the CPSR.
-           Can only be executed in Privileged modes.
- */
-#define __enable_fault_irq                __enable_fiq
-
-
-/**
-  \brief   Disable FIQ
-  \details Disables FIQ interrupts by setting the F-bit in the CPSR.
-           Can only be executed in Privileged modes.
- */
-#define __disable_fault_irq               __disable_fiq
-
-
-/**
-  \brief   Get Base Priority
-  \details Returns the current value of the Base Priority register.
-  \return               Base Priority register value
- */
-__STATIC_INLINE uint32_t  __get_BASEPRI(void)
-{
-  register uint32_t __regBasePri         __ASM("basepri");
-  return(__regBasePri);
-}
-
-
-/**
-  \brief   Set Base Priority
-  \details Assigns the given value to the Base Priority register.
-  \param [in]    basePri  Base Priority value to set
- */
-__STATIC_INLINE void __set_BASEPRI(uint32_t basePri)
-{
-  register uint32_t __regBasePri         __ASM("basepri");
-  __regBasePri = (basePri & 0xFFU);
-}
-
-
-/**
-  \brief   Set Base Priority with condition
-  \details Assigns the given value to the Base Priority register only if BASEPRI masking is disabled,
-           or the new value increases the BASEPRI priority level.
-  \param [in]    basePri  Base Priority value to set
- */
-__STATIC_INLINE void __set_BASEPRI_MAX(uint32_t basePri)
-{
-  register uint32_t __regBasePriMax      __ASM("basepri_max");
-  __regBasePriMax = (basePri & 0xFFU);
-}
-
-
-/**
-  \brief   Get Fault Mask
-  \details Returns the current value of the Fault Mask register.
-  \return               Fault Mask register value
- */
-__STATIC_INLINE uint32_t __get_FAULTMASK(void)
-{
-  register uint32_t __regFaultMask       __ASM("faultmask");
-  return(__regFaultMask);
-}
-
-
-/**
-  \brief   Set Fault Mask
-  \details Assigns the given value to the Fault Mask register.
-  \param [in]    faultMask  Fault Mask value to set
- */
-__STATIC_INLINE void __set_FAULTMASK(uint32_t faultMask)
-{
-  register uint32_t __regFaultMask       __ASM("faultmask");
-  __regFaultMask = (faultMask & (uint32_t)1U);
-}
-
-#endif /* ((defined (__ARM_ARCH_7M__ ) && (__ARM_ARCH_7M__  == 1)) || \
-           (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))     ) */
-
-
-/**
-  \brief   Get FPSCR
-  \details Returns the current value of the Floating Point Status/Control register.
-  \return               Floating Point Status/Control register value
- */
-__STATIC_INLINE uint32_t __get_FPSCR(void)
-{
-#if ((defined (__FPU_PRESENT) && (__FPU_PRESENT == 1U)) && \
-     (defined (__FPU_USED   ) && (__FPU_USED    == 1U))     )
-  register uint32_t __regfpscr         __ASM("fpscr");
-  return(__regfpscr);
-#else
-   return(0U);
+#ifndef   __COMPILER_BARRIER
+  #define __COMPILER_BARRIER()                   __memory_changed()
 #endif
-}
 
+/* #########################  Startup and Lowlevel Init  ######################## */
 
-/**
-  \brief   Set FPSCR
-  \details Assigns the given value to the Floating Point Status/Control register.
-  \param [in]    fpscr  Floating Point Status/Control value to set
- */
-__STATIC_INLINE void __set_FPSCR(uint32_t fpscr)
-{
-#if ((defined (__FPU_PRESENT) && (__FPU_PRESENT == 1U)) && \
-     (defined (__FPU_USED   ) && (__FPU_USED    == 1U))     )
-  register uint32_t __regfpscr         __ASM("fpscr");
-  __regfpscr = (fpscr);
-#else
-  (void)fpscr;
+#ifndef __PROGRAM_START
+#define __PROGRAM_START           __main
 #endif
-}
 
+#ifndef __INITIAL_SP
+#define __INITIAL_SP              Image$$ARM_LIB_STACK$$ZI$$Limit
+#endif
 
-/*@} end of CMSIS_Core_RegAccFunctions */
+#ifndef __STACK_LIMIT
+#define __STACK_LIMIT             Image$$ARM_LIB_STACK$$ZI$$Base
+#endif
 
+#ifndef __VECTOR_TABLE
+#define __VECTOR_TABLE            __Vectors
+#endif
+
+#ifndef __VECTOR_TABLE_ATTRIBUTE
+#define __VECTOR_TABLE_ATTRIBUTE  __attribute__((used, section("RESET")))
+#endif
 
 /* ##########################  Core Instruction Access  ######################### */
 /** \defgroup CMSIS_Core_InstructionInterface CMSIS Core Instruction Interface
@@ -419,35 +172,23 @@ __STATIC_INLINE void __set_FPSCR(uint32_t fpscr)
            so that all instructions following the ISB are fetched from cache or memory,
            after the instruction has been completed.
  */
-#define __ISB() do {\
-                   __schedule_barrier();\
-                   __isb(0xF);\
-                   __schedule_barrier();\
-                } while (0U)
+#define __ISB()                           __isb(0xF)
 
 /**
   \brief   Data Synchronization Barrier
   \details Acts as a special kind of Data Memory Barrier.
            It completes when all explicit memory accesses before this instruction complete.
  */
-#define __DSB() do {\
-                   __schedule_barrier();\
-                   __dsb(0xF);\
-                   __schedule_barrier();\
-                } while (0U)
+#define __DSB()                           __dsb(0xF)
 
 /**
   \brief   Data Memory Barrier
   \details Ensures the apparent order of the explicit memory operations before
            and after the instruction, without ensuring their completion.
  */
-#define __DMB() do {\
-                   __schedule_barrier();\
-                   __dmb(0xF);\
-                   __schedule_barrier();\
-                } while (0U)
+#define __DMB()                           __dmb(0xF)
 
-                  
+
 /**
   \brief   Reverse byte order (32 bit)
   \details Reverses the byte order in unsigned integer value. For example, 0x12345678 becomes 0x78563412.
@@ -785,6 +526,280 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __USAT(int32_t val, uint
 /*@}*/ /* end of group CMSIS_Core_InstructionInterface */
 
 
+/* ###########################  Core Function Access  ########################### */
+/** \ingroup  CMSIS_Core_FunctionInterface
+    \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+  @{
+ */
+
+/**
+  \brief   Enable IRQ Interrupts
+  \details Enables IRQ interrupts by clearing special-purpose register PRIMASK.
+           Can only be executed in Privileged modes.
+ */
+/* intrinsic void __enable_irq();     */
+
+
+/**
+  \brief   Disable IRQ Interrupts
+  \details Disables IRQ interrupts by setting special-purpose register PRIMASK.
+           Can only be executed in Privileged modes.
+ */
+/* intrinsic void __disable_irq();    */
+
+/**
+  \brief   Get Control Register
+  \details Returns the content of the Control Register.
+  \return               Control Register value
+ */
+__STATIC_INLINE uint32_t __get_CONTROL(void)
+{
+  register uint32_t __regControl         __ASM("control");
+  return(__regControl);
+}
+
+
+/**
+  \brief   Set Control Register
+  \details Writes the given value to the Control Register.
+  \param [in]    control  Control Register value to set
+ */
+__STATIC_INLINE void __set_CONTROL(uint32_t control)
+{
+  register uint32_t __regControl         __ASM("control");
+  __regControl = control;
+  __ISB();
+}
+
+
+/**
+  \brief   Get IPSR Register
+  \details Returns the content of the IPSR Register.
+  \return               IPSR Register value
+ */
+__STATIC_INLINE uint32_t __get_IPSR(void)
+{
+  register uint32_t __regIPSR          __ASM("ipsr");
+  return(__regIPSR);
+}
+
+
+/**
+  \brief   Get APSR Register
+  \details Returns the content of the APSR Register.
+  \return               APSR Register value
+ */
+__STATIC_INLINE uint32_t __get_APSR(void)
+{
+  register uint32_t __regAPSR          __ASM("apsr");
+  return(__regAPSR);
+}
+
+
+/**
+  \brief   Get xPSR Register
+  \details Returns the content of the xPSR Register.
+  \return               xPSR Register value
+ */
+__STATIC_INLINE uint32_t __get_xPSR(void)
+{
+  register uint32_t __regXPSR          __ASM("xpsr");
+  return(__regXPSR);
+}
+
+
+/**
+  \brief   Get Process Stack Pointer
+  \details Returns the current value of the Process Stack Pointer (PSP).
+  \return               PSP Register value
+ */
+__STATIC_INLINE uint32_t __get_PSP(void)
+{
+  register uint32_t __regProcessStackPointer  __ASM("psp");
+  return(__regProcessStackPointer);
+}
+
+
+/**
+  \brief   Set Process Stack Pointer
+  \details Assigns the given value to the Process Stack Pointer (PSP).
+  \param [in]    topOfProcStack  Process Stack Pointer value to set
+ */
+__STATIC_INLINE void __set_PSP(uint32_t topOfProcStack)
+{
+  register uint32_t __regProcessStackPointer  __ASM("psp");
+  __regProcessStackPointer = topOfProcStack;
+}
+
+
+/**
+  \brief   Get Main Stack Pointer
+  \details Returns the current value of the Main Stack Pointer (MSP).
+  \return               MSP Register value
+ */
+__STATIC_INLINE uint32_t __get_MSP(void)
+{
+  register uint32_t __regMainStackPointer     __ASM("msp");
+  return(__regMainStackPointer);
+}
+
+
+/**
+  \brief   Set Main Stack Pointer
+  \details Assigns the given value to the Main Stack Pointer (MSP).
+  \param [in]    topOfMainStack  Main Stack Pointer value to set
+ */
+__STATIC_INLINE void __set_MSP(uint32_t topOfMainStack)
+{
+  register uint32_t __regMainStackPointer     __ASM("msp");
+  __regMainStackPointer = topOfMainStack;
+}
+
+
+/**
+  \brief   Get Priority Mask
+  \details Returns the current state of the priority mask bit from the Priority Mask Register.
+  \return               Priority Mask value
+ */
+__STATIC_INLINE uint32_t __get_PRIMASK(void)
+{
+  register uint32_t __regPriMask         __ASM("primask");
+  return(__regPriMask);
+}
+
+
+/**
+  \brief   Set Priority Mask
+  \details Assigns the given value to the Priority Mask Register.
+  \param [in]    priMask  Priority Mask
+ */
+__STATIC_INLINE void __set_PRIMASK(uint32_t priMask)
+{
+  register uint32_t __regPriMask         __ASM("primask");
+  __regPriMask = (priMask);
+}
+
+
+#if ((defined (__ARM_ARCH_7M__ ) && (__ARM_ARCH_7M__  == 1)) || \
+     (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))     )
+
+/**
+  \brief   Enable FIQ
+  \details Enables FIQ interrupts by clearing special-purpose register FAULTMASK.
+           Can only be executed in Privileged modes.
+ */
+#define __enable_fault_irq                __enable_fiq
+
+
+/**
+  \brief   Disable FIQ
+  \details Disables FIQ interrupts by setting special-purpose register FAULTMASK.
+           Can only be executed in Privileged modes.
+ */
+#define __disable_fault_irq               __disable_fiq
+
+
+/**
+  \brief   Get Base Priority
+  \details Returns the current value of the Base Priority register.
+  \return               Base Priority register value
+ */
+__STATIC_INLINE uint32_t  __get_BASEPRI(void)
+{
+  register uint32_t __regBasePri         __ASM("basepri");
+  return(__regBasePri);
+}
+
+
+/**
+  \brief   Set Base Priority
+  \details Assigns the given value to the Base Priority register.
+  \param [in]    basePri  Base Priority value to set
+ */
+__STATIC_INLINE void __set_BASEPRI(uint32_t basePri)
+{
+  register uint32_t __regBasePri         __ASM("basepri");
+  __regBasePri = (basePri & 0xFFU);
+}
+
+
+/**
+  \brief   Set Base Priority with condition
+  \details Assigns the given value to the Base Priority register only if BASEPRI masking is disabled,
+           or the new value increases the BASEPRI priority level.
+  \param [in]    basePri  Base Priority value to set
+ */
+__STATIC_INLINE void __set_BASEPRI_MAX(uint32_t basePri)
+{
+  register uint32_t __regBasePriMax      __ASM("basepri_max");
+  __regBasePriMax = (basePri & 0xFFU);
+}
+
+
+/**
+  \brief   Get Fault Mask
+  \details Returns the current value of the Fault Mask register.
+  \return               Fault Mask register value
+ */
+__STATIC_INLINE uint32_t __get_FAULTMASK(void)
+{
+  register uint32_t __regFaultMask       __ASM("faultmask");
+  return(__regFaultMask);
+}
+
+
+/**
+  \brief   Set Fault Mask
+  \details Assigns the given value to the Fault Mask register.
+  \param [in]    faultMask  Fault Mask value to set
+ */
+__STATIC_INLINE void __set_FAULTMASK(uint32_t faultMask)
+{
+  register uint32_t __regFaultMask       __ASM("faultmask");
+  __regFaultMask = (faultMask & (uint32_t)1U);
+}
+
+#endif /* ((defined (__ARM_ARCH_7M__ ) && (__ARM_ARCH_7M__  == 1)) || \
+           (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))     ) */
+
+
+/**
+  \brief   Get FPSCR
+  \details Returns the current value of the Floating Point Status/Control register.
+  \return               Floating Point Status/Control register value
+ */
+__STATIC_INLINE uint32_t __get_FPSCR(void)
+{
+#if ((defined (__FPU_PRESENT) && (__FPU_PRESENT == 1U)) && \
+     (defined (__FPU_USED   ) && (__FPU_USED    == 1U))     )
+  register uint32_t __regfpscr         __ASM("fpscr");
+  return(__regfpscr);
+#else
+   return(0U);
+#endif
+}
+
+
+/**
+  \brief   Set FPSCR
+  \details Assigns the given value to the Floating Point Status/Control register.
+  \param [in]    fpscr  Floating Point Status/Control value to set
+ */
+__STATIC_INLINE void __set_FPSCR(uint32_t fpscr)
+{
+#if ((defined (__FPU_PRESENT) && (__FPU_PRESENT == 1U)) && \
+     (defined (__FPU_USED   ) && (__FPU_USED    == 1U))     )
+  register uint32_t __regfpscr         __ASM("fpscr");
+  __regfpscr = (fpscr);
+#else
+  (void)fpscr;
+#endif
+}
+
+
+/*@} end of CMSIS_Core_RegAccFunctions */
+
+
 /* ###################  Compiler specific Intrinsics  ########################### */
 /** \defgroup CMSIS_SIMD_intrinsics CMSIS SIMD Intrinsics
   Access to dedicated SIMD instructions
@@ -861,6 +876,10 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __USAT(int32_t val, uint
 
 #define __SMMLA(ARG1,ARG2,ARG3)          ( (int32_t)((((int64_t)(ARG1) * (ARG2)) + \
                                                       ((int64_t)(ARG3) << 32U)     ) >> 32U))
+
+#define __SXTB16_RORn(ARG1, ARG2)        __SXTB16(__ROR(ARG1, ARG2))
+
+#define __SXTAB16_RORn(ARG1, ARG2, ARG3) __SXTAB16(ARG1, __ROR(ARG2, ARG3))
 
 #endif /* ((defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))     ) */
 /*@} end of group CMSIS_SIMD_intrinsics */

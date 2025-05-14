@@ -45,15 +45,6 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-#if MICROPY_MODULE_WEAK_LINKS
-STATIC qstr make_weak_link_name(vstr_t *buffer, qstr name) {
-    vstr_reset(buffer);
-    vstr_add_char(buffer, 'u');
-    vstr_add_str(buffer, qstr_str(name));
-    return qstr_from_strn(buffer->buf, buffer->len);
-}
-#endif
-
 #if MICROPY_ENABLE_EXTERNAL_IMPORT
 
 // Must be a string of one byte.
@@ -66,16 +57,17 @@ STATIC qstr make_weak_link_name(vstr_t *buffer, qstr name) {
 // uses mp_vfs_import_stat) to also search frozen modules. Given an exact
 // path to a file or directory (e.g. "foo/bar", foo/bar.py" or "foo/bar.mpy"),
 // will return whether the path is a file, directory, or doesn't exist.
-STATIC mp_import_stat_t stat_path(const char *path) {
+static mp_import_stat_t stat_path(vstr_t *path) {
+    const char *str = vstr_null_terminated_str(path);
     #if MICROPY_MODULE_FROZEN
     // Only try and load as a frozen module if it starts with .frozen/.
     const int frozen_path_prefix_len = strlen(MP_FROZEN_PATH_PREFIX);
-    if (strncmp(path, MP_FROZEN_PATH_PREFIX, frozen_path_prefix_len) == 0) {
+    if (strncmp(str, MP_FROZEN_PATH_PREFIX, frozen_path_prefix_len) == 0) {
         // Just stat (which is the return value), don't get the data.
-        return mp_find_frozen_module(path + frozen_path_prefix_len, NULL, NULL);
+        return mp_find_frozen_module(str + frozen_path_prefix_len, NULL, NULL);
     }
     #endif
-    return mp_import_stat(path);
+    return mp_import_stat(str);
 }
 
 // Stat a given filesystem path to a .py file. If the file does not exist,
@@ -83,8 +75,8 @@ STATIC mp_import_stat_t stat_path(const char *path) {
 // argument. This is the logic that makes .py files take precedent over .mpy
 // files. This uses stat_path above, rather than mp_import_stat directly, so
 // that the .frozen path prefix is handled.
-STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
-    mp_import_stat_t stat = stat_path(vstr_null_terminated_str(path));
+static mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
+    mp_import_stat_t stat = stat_path(path);
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
@@ -94,7 +86,7 @@ STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
     // Note: There's no point doing this if it's a frozen path, but adding the check
     // would be extra code, and no harm letting mp_find_frozen_module fail instead.
     vstr_ins_byte(path, path->len - 2, 'm');
-    stat = stat_path(vstr_null_terminated_str(path));
+    stat = stat_path(path);
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
@@ -107,8 +99,8 @@ STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
 // or "foo/bar.(m)py" in either the filesystem or frozen modules. If the
 // result is a file, the path argument will be updated to include the file
 // extension.
-STATIC mp_import_stat_t stat_module(vstr_t *path) {
-    mp_import_stat_t stat = stat_path(vstr_null_terminated_str(path));
+static mp_import_stat_t stat_module(vstr_t *path) {
+    mp_import_stat_t stat = stat_path(path);
     DEBUG_printf("stat %s: %d\n", vstr_str(path), stat);
     if (stat == MP_IMPORT_STAT_DIR) {
         return stat;
@@ -122,12 +114,12 @@ STATIC mp_import_stat_t stat_module(vstr_t *path) {
 // Given a top-level module name, try and find it in each of the sys.path
 // entries. Note: On success, the dest argument will be updated to the matching
 // path (i.e. "<entry>/mod_name(.py)").
-STATIC mp_import_stat_t stat_top_level(qstr mod_name, vstr_t *dest) {
+static mp_import_stat_t stat_top_level(qstr mod_name, vstr_t *dest) {
     DEBUG_printf("stat_top_level: '%s'\n", qstr_str(mod_name));
     #if MICROPY_PY_SYS
     size_t path_num;
     mp_obj_t *path_items;
-    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
+    mp_obj_get_array(mp_sys_path, &path_num, &path_items);
 
     // go through each sys.path entry, trying to import "<entry>/<mod_name>".
     for (size_t i = 0; i < path_num; i++) {
@@ -160,7 +152,7 @@ STATIC mp_import_stat_t stat_top_level(qstr mod_name, vstr_t *dest) {
 }
 
 #if MICROPY_MODULE_FROZEN_STR || MICROPY_ENABLE_COMPILER
-STATIC void do_load_from_lexer(mp_module_context_t *context, mp_lexer_t *lex) {
+static void do_load_from_lexer(mp_module_context_t *context, mp_lexer_t *lex) {
     #if MICROPY_PY___FILE__
     qstr source_name = lex->source_name;
     mp_store_attr(MP_OBJ_FROM_PTR(&context->module), MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
@@ -173,11 +165,11 @@ STATIC void do_load_from_lexer(mp_module_context_t *context, mp_lexer_t *lex) {
 #endif
 
 #if (MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD) || MICROPY_MODULE_FROZEN_MPY
-STATIC void do_execute_raw_code(const mp_module_context_t *context, const mp_raw_code_t *rc, const char *source_name) {
-    (void)source_name;
-
+static void do_execute_proto_fun(const mp_module_context_t *context, mp_proto_fun_t proto_fun, qstr source_name) {
     #if MICROPY_PY___FILE__
-    mp_store_attr(MP_OBJ_FROM_PTR(&context->module), MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(source_name)));
+    mp_store_attr(MP_OBJ_FROM_PTR(&context->module), MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+    #else
+    (void)source_name;
     #endif
 
     // execute the module in its context
@@ -196,7 +188,7 @@ STATIC void do_execute_raw_code(const mp_module_context_t *context, const mp_raw
     nlr_push_jump_callback(&ctx.callback, mp_globals_locals_set_from_nlr_jump_callback);
 
     // make and execute the function
-    mp_obj_t module_fun = mp_make_function_from_raw_code(rc, context, NULL);
+    mp_obj_t module_fun = mp_make_function_from_proto_fun(proto_fun, context, NULL);
     mp_call_function_0(module_fun);
 
     // deregister exception handler and restore context
@@ -204,7 +196,7 @@ STATIC void do_execute_raw_code(const mp_module_context_t *context, const mp_raw
 }
 #endif
 
-STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
+static void do_load(mp_module_context_t *module_obj, vstr_t *file) {
     #if MICROPY_MODULE_FROZEN || MICROPY_ENABLE_COMPILER || (MICROPY_PERSISTENT_CODE_LOAD && MICROPY_HAS_FILE_READER)
     const char *file_str = vstr_null_terminated_str(file);
     #endif
@@ -233,7 +225,12 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
         if (frozen_type == MP_FROZEN_MPY) {
             const mp_frozen_module_t *frozen = modref;
             module_obj->constants = frozen->constants;
-            do_execute_raw_code(module_obj, frozen->rc, file_str + frozen_path_prefix_len);
+            #if MICROPY_PY___FILE__
+            qstr frozen_file_qstr = qstr_from_str(file_str + frozen_path_prefix_len);
+            #else
+            qstr frozen_file_qstr = MP_QSTRnull;
+            #endif
+            do_execute_proto_fun(module_obj, frozen->proto_fun, frozen_file_qstr);
             return;
         }
         #endif
@@ -241,14 +238,16 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
 
     #endif // MICROPY_MODULE_FROZEN
 
+    qstr file_qstr = qstr_from_str(file_str);
+
     // If we support loading .mpy files then check if the file extension is of
     // the correct format and, if so, load and execute the file.
     #if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
         mp_compiled_module_t cm;
         cm.context = module_obj;
-        mp_raw_code_load_file(file_str, &cm);
-        do_execute_raw_code(cm.context, cm.rc, file_str);
+        mp_raw_code_load_file(file_qstr, &cm);
+        do_execute_proto_fun(cm.context, cm.rc, file_qstr);
         return;
     }
     #endif
@@ -256,7 +255,7 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
     // If we can compile scripts then load the file and compile and execute it.
     #if MICROPY_ENABLE_COMPILER
     {
-        mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
+        mp_lexer_t *lex = mp_lexer_new_from_file(file_qstr);
         do_load_from_lexer(module_obj, lex);
         return;
     }
@@ -268,7 +267,7 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
 
 // Convert a relative (to the current module) import, going up "level" levels,
 // into an absolute import.
-STATIC void evaluate_relative_import(mp_int_t level, const char **module_name, size_t *module_name_len) {
+static void evaluate_relative_import(mp_int_t level, const char **module_name, size_t *module_name_len) {
     // What we want to do here is to take the name of the current module,
     // remove <level> trailing components, and concatenate the passed-in
     // module name.
@@ -351,7 +350,7 @@ typedef struct _nlr_jump_callback_node_unregister_module_t {
     qstr name;
 } nlr_jump_callback_node_unregister_module_t;
 
-STATIC void unregister_module_from_nlr_jump_callback(void *ctx_in) {
+static void unregister_module_from_nlr_jump_callback(void *ctx_in) {
     nlr_jump_callback_node_unregister_module_t *ctx = ctx_in;
     mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
     mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(ctx->name), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
@@ -364,7 +363,7 @@ STATIC void unregister_module_from_nlr_jump_callback(void *ctx_in) {
 //                   attribute on it) (or MP_OBJ_NULL for top-level).
 // override_main:    Whether to set the __name__ to "__main__" (and use __main__
 //                   for the actual path).
-STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name, mp_obj_t outer_module_obj, bool override_main) {
+static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name, mp_obj_t outer_module_obj, bool override_main) {
     // Immediately return if the module at this level is already loaded.
     mp_map_elem_t *elem;
 
@@ -374,7 +373,7 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     // which may have come from the filesystem.
     size_t path_num;
     mp_obj_t *path_items;
-    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
+    mp_obj_get_array(mp_sys_path, &path_num, &path_items);
     if (path_num)
     #endif
     {
@@ -389,48 +388,29 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     mp_obj_t module_obj;
 
     if (outer_module_obj == MP_OBJ_NULL) {
+        // First module in the dotted-name path.
         DEBUG_printf("Searching for top-level module\n");
 
-        // An exact match of a built-in will always bypass the filesystem.
-        // Note that CPython-compatible built-ins are named e.g. utime, so this
-        // means that an exact match is only for `import utime`, so `import
-        // time` will search the filesystem and failing that hit the weak
-        // link handling below. Whereas micropython-specific built-ins like
-        // `micropython`, `pyb`, `network`, etc will match exactly and cannot
-        // be overridden by the filesystem.
-        module_obj = mp_module_get_builtin(level_mod_name);
+        // An import of a non-extensible built-in will always bypass the
+        // filesystem. e.g. `import micropython` or `import pyb`. So try and
+        // match a non-extensible built-ins first.
+        module_obj = mp_module_get_builtin(level_mod_name, false);
         if (module_obj != MP_OBJ_NULL) {
             return module_obj;
         }
 
-        #if MICROPY_PY_SYS
-        // Never allow sys to be overridden from the filesystem. If weak links
-        // are disabled, then this also provides a default weak link so that
-        // `import sys` is treated like `import usys` (and therefore bypasses
-        // the filesystem).
-        if (level_mod_name == MP_QSTR_sys) {
-            return MP_OBJ_FROM_PTR(&mp_module_sys);
-        }
-        #endif
-
-        // First module in the dotted-name; search for a directory or file
-        // relative to all the locations in sys.path.
+        // Next try the filesystem. Search for a directory or file relative to
+        // all the locations in sys.path.
         stat = stat_top_level(level_mod_name, &path);
 
-        #if MICROPY_MODULE_WEAK_LINKS
+        // If filesystem failed, now try and see if it matches an extensible
+        // built-in module.
         if (stat == MP_IMPORT_STAT_NO_EXIST) {
-            // No match on the filesystem. (And not a built-in either).
-            // If "foo" was requested, then try "ufoo" as a built-in. This
-            // allows `import time` to use built-in `utime`, unless `time`
-            // exists on the filesystem. This feature was formerly known
-            // as "weak links".
-            qstr umodule_name = make_weak_link_name(&path, level_mod_name);
-            module_obj = mp_module_get_builtin(umodule_name);
+            module_obj = mp_module_get_builtin(level_mod_name, true);
             if (module_obj != MP_OBJ_NULL) {
                 return module_obj;
             }
         }
-        #endif
     } else {
         DEBUG_printf("Searching for sub-module\n");
 
@@ -660,27 +640,17 @@ mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
         return elem->value;
     }
 
-    // Try the name directly as a built-in.
+    // Try the name directly as a non-extensible built-in (e.g. `micropython`).
     qstr module_name_qstr = mp_obj_str_get_qstr(args[0]);
-    mp_obj_t module_obj = mp_module_get_builtin(module_name_qstr);
+    mp_obj_t module_obj = mp_module_get_builtin(module_name_qstr, false);
     if (module_obj != MP_OBJ_NULL) {
         return module_obj;
     }
-
-    #if MICROPY_MODULE_WEAK_LINKS
-    // Check if the u-prefixed name is a built-in.
-    VSTR_FIXED(umodule_path, MICROPY_ALLOC_PATH_MAX);
-    qstr umodule_name_qstr = make_weak_link_name(&umodule_path, module_name_qstr);
-    module_obj = mp_module_get_builtin(umodule_name_qstr);
+    // Now try as an extensible built-in (e.g. `time`).
+    module_obj = mp_module_get_builtin(module_name_qstr, true);
     if (module_obj != MP_OBJ_NULL) {
         return module_obj;
     }
-    #elif MICROPY_PY_SYS
-    // Special handling to make `import sys` work even if weak links aren't enabled.
-    if (module_name_qstr == MP_QSTR_sys) {
-        return MP_OBJ_FROM_PTR(&mp_module_sys);
-    }
-    #endif
 
     // Couldn't find the module, so fail
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE

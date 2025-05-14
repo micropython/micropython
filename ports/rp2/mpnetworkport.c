@@ -30,46 +30,77 @@
 
 #if MICROPY_PY_LWIP
 
+#include "shared/runtime/softtimer.h"
 #include "lwip/timeouts.h"
-#include "pico/time.h"
 
 // Poll lwIP every 64ms by default
 #define LWIP_TICK_RATE_MS 64
 
-static alarm_id_t lwip_alarm_id = -1;
+// Soft timer for running lwIP in the background.
+static soft_timer_entry_t mp_network_soft_timer;
 
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
 #include "lib/cyw43-driver/src/cyw43_stats.h"
-#include "hardware/irq.h"
+
+#if !defined(__riscv)
+#if PICO_RP2040
+#include "RP2040.h" // cmsis, for NVIC_SetPriority and PendSV_IRQn
+#elif PICO_RP2350
+#include "RP2350.h" // cmsis, for NVIC_SetPriority and PendSV_IRQn
+#else
+#error Unknown processor
+#endif
+#endif
 
 #define CYW43_IRQ_LEVEL GPIO_IRQ_LEVEL_HIGH
 #define CYW43_SHARED_IRQ_HANDLER_PRIORITY PICO_SHARED_IRQ_HANDLER_HIGHEST_ORDER_PRIORITY
 
-volatile int cyw43_has_pending = 0;
 
+// The Pico SDK only lets us set GPIO wake on the current running CPU, but the
+// hardware doesn't have this limit. We need to always enable/disable the pin
+// interrupt on CPU0, regardless of which CPU runs PendSV and
+// cyw43_post_poll_hook(). See feature request at https://github.com/raspberrypi/pico-sdk/issues/2354
+static void gpio_set_cpu0_host_wake_irq_enabled(bool enable) {
+    // This is a re-implementation of gpio_set_irq_enabled() and _gpio_set_irq_enabled()
+    // from the pico-sdk, but with the core, gpio, and event type hardcoded to shrink
+    // code size.
+    io_bank0_irq_ctrl_hw_t *irq_ctrl_base = &io_bank0_hw->proc0_irq_ctrl;
+    uint32_t gpio = CYW43_PIN_WL_HOST_WAKE;
+    uint32_t events = CYW43_IRQ_LEVEL;
+    io_rw_32 *en_reg = &irq_ctrl_base->inte[gpio / 8];
+    events <<= 4 * (gpio % 8);
+    if (enable) {
+        hw_set_bits(en_reg, events);
+    } else {
+        hw_clear_bits(en_reg, events);
+    }
+}
+
+// GPIO IRQ always runs on CPU0
 static void gpio_irq_handler(void) {
     uint32_t events = gpio_get_irq_event_mask(CYW43_PIN_WL_HOST_WAKE);
     if (events & CYW43_IRQ_LEVEL) {
-        // As we use a high level interrupt, it will go off forever until it's serviced.
-        // So disable the interrupt until this is done.  It's re-enabled again by
-        // CYW43_POST_POLL_HOOK which is called at the end of cyw43_poll_func.
-        gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, false);
-        cyw43_has_pending = 1;
+        // As we use a level interrupt (and can't use an edge interrupt
+        // as CYW43_PIN_WL_HOST_WAKE is also a SPI data pin), we need to disable
+        // the interrupt to stop it re-triggering until after PendSV run
+        // cyw43_poll(). It is re-enabled in cyw43_post_poll_hook(), implemented
+        // below.
+        gpio_set_cpu0_host_wake_irq_enabled(false);
         pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+        __sev();
         CYW43_STAT_INC(IRQ_COUNT);
     }
 }
 
 void cyw43_irq_init(void) {
-    gpio_add_raw_irq_handler_with_order_priority(IO_IRQ_BANK0, gpio_irq_handler, CYW43_SHARED_IRQ_HANDLER_PRIORITY);
+    gpio_add_raw_irq_handler_with_order_priority(CYW43_PIN_WL_HOST_WAKE, gpio_irq_handler, CYW43_SHARED_IRQ_HANDLER_PRIORITY);
     irq_set_enabled(IO_IRQ_BANK0, true);
-    NVIC_SetPriority(PendSV_IRQn, PICO_LOWEST_IRQ_PRIORITY);
 }
 
+// This hook will run on whichever CPU serviced the PendSV interrupt
 void cyw43_post_poll_hook(void) {
-    cyw43_has_pending = 0;
-    gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, true);
+    gpio_set_cpu0_host_wake_irq_enabled(true);
 }
 
 #endif
@@ -88,11 +119,6 @@ u32_t sys_now(void) {
     return mp_hal_ticks_ms();
 }
 
-STATIC void lwip_poll(void) {
-    // Run the lwIP internal updates
-    sys_check_timeouts();
-}
-
 void lwip_lock_acquire(void) {
     // Prevent PendSV from running.
     pendsv_suspend();
@@ -103,22 +129,25 @@ void lwip_lock_release(void) {
     pendsv_resume();
 }
 
-STATIC int64_t alarm_callback(alarm_id_t id, void *user_data) {
-    pendsv_schedule_dispatch(PENDSV_DISPATCH_LWIP, lwip_poll);
+// This is called by soft_timer and executes at PendSV level.
+static void mp_network_soft_timer_callback(soft_timer_entry_t *self) {
+    // Run the lwIP internal updates.
+    sys_check_timeouts();
+
     #if MICROPY_PY_NETWORK_WIZNET5K
-    pendsv_schedule_dispatch(PENDSV_DISPATCH_WIZNET, wiznet5k_poll);
+    wiznet5k_poll();
     #endif
-    return LWIP_TICK_RATE_MS * 1000;
 }
 
 void mod_network_lwip_init(void) {
-    #if MICROPY_PY_NETWORK_WIZNET5K
-    wiznet5k_deinit();
-    #endif
-    if (lwip_alarm_id != -1) {
-        cancel_alarm(lwip_alarm_id);
-    }
-    lwip_alarm_id = add_alarm_in_us(LWIP_TICK_RATE_MS * 1000, alarm_callback, mp_const_true, true);
+    soft_timer_static_init(
+        &mp_network_soft_timer,
+        SOFT_TIMER_MODE_PERIODIC,
+        LWIP_TICK_RATE_MS,
+        mp_network_soft_timer_callback
+        );
+
+    soft_timer_reinsert(&mp_network_soft_timer, LWIP_TICK_RATE_MS);
 }
 
 #endif // MICROPY_PY_LWIP

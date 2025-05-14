@@ -73,7 +73,7 @@ import struct, os
 
 try:
     import machine, stm
-    from ubinascii import crc32
+    from binascii import crc32
     from micropython import const
 except ImportError:
     # cpython

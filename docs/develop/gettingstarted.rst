@@ -100,7 +100,7 @@ For the stm32 port, the ARM cross-compiler is required:
 
 .. code-block:: bash
 
-   $ sudo apt-get install arm-none-eabi-gcc arm-none-eabi-binutils arm-none-eabi-newlib
+   $ sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
 
 See the `ARM GCC
 toolchain <https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads>`_
@@ -112,7 +112,7 @@ Check that you have Python available on your system:
 .. code-block:: bash
 
    $ python3
-   Python 3.5.0 (default, Jul 17 2020, 14:04:10) 
+   Python 3.5.0 (default, Jul 17 2020, 14:04:10)
    [GCC 5.4.0 20160609] on linux
    Type "help", "copyright", "credits" or "license" for more information.
    >>> 
@@ -228,7 +228,7 @@ You can also specify which board to use:
 .. code-block:: bash
 
    $ cd ports/stm32
-   $ make submodules
+   $ make BOARD=<board> submodules
    $ make BOARD=<board>
 
 See `ports/stm32/boards <https://github.com/micropython/micropython/tree/master/ports/stm32/boards>`_
@@ -245,7 +245,7 @@ that you use a virtual environment:
 
    $ python3 -m venv env
    $ source env/bin/activate
-   $ pip install sphinx
+   $ pip install -r docs/requirements.txt
 
 Navigate to the ``docs`` directory:
 
@@ -278,7 +278,7 @@ To run a selection of tests on a board/device connected over USB use:
 .. code-block:: bash
 
    $ cd tests
-   $ ./run-tests.py --target minimal --device /dev/ttyACM0
+   $ ./run-tests.py -t /dev/ttyACM0
 
 See also :ref:`writingtests`.
 

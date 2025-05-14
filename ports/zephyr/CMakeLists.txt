@@ -34,27 +34,34 @@ set(MICROPY_TARGET      micropython)
 include(${MICROPY_DIR}/py/py.cmake)
 include(${MICROPY_DIR}/extmod/extmod.cmake)
 
+if (CONFIG_MICROPY_FROZEN_MODULES)
+    cmake_path(ABSOLUTE_PATH CONFIG_MICROPY_FROZEN_MANIFEST BASE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+    set(MICROPY_FROZEN_MANIFEST ${CONFIG_MICROPY_FROZEN_MANIFEST})
+endif()
+
 set(MICROPY_SOURCE_PORT
     main.c
     help.c
     machine_i2c.c
     machine_spi.c
     machine_pin.c
-    machine_uart.c
+    machine_timer.c
     modbluetooth_zephyr.c
-    modmachine.c
-    modusocket.c
+    modsocket.c
     modzephyr.c
     modzsensor.c
     mphalport.c
     uart_core.c
+    zephyr_device.c
     zephyr_storage.c
+    mpthreadport.c
 )
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 
 set(MICROPY_SOURCE_SHARED
     libc/printf.c
     readline/readline.c
+    runtime/gchelper_generic.c
     runtime/interrupt_char.c
     runtime/mpirq.c
     runtime/pyexec.c
@@ -111,14 +118,17 @@ zephyr_library_compile_definitions(
 )
 
 zephyr_library_sources(${MICROPY_SOURCE_QSTR})
-
-add_dependencies(${MICROPY_TARGET} zephyr_generated_headers)
+zephyr_library_link_libraries(kernel)
 
 include(${MICROPY_DIR}/py/mkrules.cmake)
+
+add_dependencies(BUILD_VERSION_HEADER zephyr_generated_headers)
+add_dependencies(${MICROPY_TARGET} zephyr_generated_headers)
 
 target_sources(app PRIVATE
     src/zephyr_start.c
     src/zephyr_getchar.c
+    src/usbd.c
 )
 
 target_link_libraries(app PRIVATE ${MICROPY_TARGET})

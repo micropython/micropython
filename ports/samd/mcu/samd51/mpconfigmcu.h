@@ -1,4 +1,4 @@
-// Deinitions common to all SAMD51 boards
+// Definitions common to all SAMD51 boards
 #include "samd51.h"
 
 #define MICROPY_CONFIG_ROM_LEVEL        (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
@@ -10,31 +10,12 @@
 // Python internal features
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 
-#define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_FLOAT)
-
-#ifndef MICROPY_PY_BUILTINS_COMPLEX
-#define MICROPY_PY_BUILTINS_COMPLEX     (0)
-#endif
-
-#ifndef MICROPY_PY_MATH
-#define MICROPY_PY_MATH                 (1)
-#define MP_NEED_LOG2                    (1)
-#endif
-
-#ifndef MICROPY_PY_CMATH
-#define MICROPY_PY_CMATH                (0)
-#endif
-
-#define MICROPY_PY_MACHINE_DHT_READINTO (1)
+#define MICROPY_PY_OS_SYNC              (1)
+#define MICROPY_PY_OS_URANDOM           (1)
 #define MICROPY_PY_ONEWIRE              (1)
-#define MICROPY_PY_UOS_SYNC             (1)
-#define MICROPY_PY_UOS_URANDOM          (1)
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (trng_random_u32())
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC (trng_random_u32())
 unsigned long trng_random_u32(void);
-
-#ifndef MICROPY_PY_MACHINE_PIN_BOARD_CPU
-#define MICROPY_PY_MACHINE_PIN_BOARD_CPU (1)
-#endif
+#define MICROPY_PY_MACHINE_UART_IRQ     (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -42,7 +23,7 @@ unsigned long trng_random_u32(void);
 #define MICROPY_FATFS_MAX_SS                (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
-#define VFS_BLOCK_SIZE_BYTES            (1536) //
+#define VFS_BLOCK_SIZE_BYTES            (2048) //
 
 #ifndef MICROPY_HW_UART_TXBUF
 #define MICROPY_HW_UART_TXBUF           (1)

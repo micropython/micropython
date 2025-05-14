@@ -141,7 +141,7 @@
 
 #endif
 
-#if MICROPY_PY_UERRNO
+#if MICROPY_PY_ERRNO
 
 #include "py/obj.h"
 

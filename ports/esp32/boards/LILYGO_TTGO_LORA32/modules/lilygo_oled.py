@@ -4,7 +4,12 @@ import network
 
 
 class OLED(SSD1306_I2C):
-    def __init__(self, i2c):
+    def __init__(self, i2c, rstpin):
+        # Initialize the OLED display
+        if rstpin is not None:
+            rstpin.value(0)
+            sleep_ms(50)
+            rstpin.value(1)  # must be held high after initialization
         super().__init__(128, 32, i2c)
 
     def test(self):
@@ -25,7 +30,7 @@ class OLED(SSD1306_I2C):
         self.text("Scan...", 0, 0, 1)
         self.show()
 
-        sta_if = network.WLAN(network.STA_IF)
+        sta_if = network.WLAN(network.WLAN.IF_STA)
         sta_if.active(True)
         _wifi = sta_if.scan()
 

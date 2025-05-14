@@ -35,23 +35,7 @@
 
 #include "py/mpstate.h"
 #include "py/asmthumb.h"
-
-#ifdef _MSC_VER
-#include <intrin.h>
-
-static uint32_t mp_clz(uint32_t x) {
-    unsigned long lz = 0;
-    return _BitScanReverse(&lz, x) ? (sizeof(x) * 8 - 1) - lz : 0;
-}
-
-static uint32_t mp_ctz(uint32_t x) {
-    unsigned long tz = 0;
-    return _BitScanForward(&tz, x) ? tz : 0;
-}
-#else
-#define mp_clz(x) __builtin_clz(x)
-#define mp_ctz(x) __builtin_ctz(x)
-#endif
+#include "py/misc.h"
 
 #define UNSIGNED_FIT5(x) ((uint32_t)(x) < 32)
 #define UNSIGNED_FIT7(x) ((uint32_t)(x) < 128)
@@ -79,7 +63,7 @@ static inline byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int n) {
 }
 
 /*
-STATIC void asm_thumb_write_byte_1(asm_thumb_t *as, byte b1) {
+static void asm_thumb_write_byte_1(asm_thumb_t *as, byte b1) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 1);
     c[0] = b1;
 }
@@ -91,7 +75,7 @@ STATIC void asm_thumb_write_byte_1(asm_thumb_t *as, byte b1) {
 #define IMM32_L2(x) (((x) >> 16) & 0xff)
 #define IMM32_L3(x) (((x) >> 24) & 0xff)
 
-STATIC void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
+static void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 4);
     c[0] = IMM32_L0(w32);
     c[1] = IMM32_L1(w32);
@@ -216,7 +200,7 @@ void asm_thumb_exit(asm_thumb_t *as) {
     asm_thumb_op16(as, OP_POP_RLIST_PC(as->push_reglist));
 }
 
-STATIC mp_uint_t get_label_dest(asm_thumb_t *as, uint label) {
+static mp_uint_t get_label_dest(asm_thumb_t *as, uint label) {
     assert(label < as->base.max_num_labels);
     return as->base.label_offsets[label];
 }

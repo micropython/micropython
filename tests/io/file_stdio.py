@@ -1,7 +1,5 @@
-try:
-    import usys as sys
-except ImportError:
-    import sys
+import sys
 
 print(sys.stdin.fileno())
 print(sys.stdout.fileno())
+print(sys.stderr.fileno())

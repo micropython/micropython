@@ -1,6 +1,6 @@
 # Test blit between different color spaces
 try:
-    import framebuf, usys
+    import framebuf, sys
 except ImportError:
     print("SKIP")
     raise SystemExit

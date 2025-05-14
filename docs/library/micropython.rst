@@ -136,6 +136,14 @@ Functions
    the heap may be locked) and scheduling a function to call later will lift
    those restrictions.
 
+   On multi-threaded ports, the scheduled function's behaviour depends on
+   whether the Global Interpreter Lock (GIL) is enabled for the specific port:
+
+   - If GIL is enabled, the function can preempt any thread and run in its
+     context.
+   - If GIL is disabled, the function will only preempt the main thread and run
+     in its context.
+
    Note: If `schedule()` is called from a preempting IRQ, when memory
    allocation is not allowed and the callback to be passed to `schedule()` is
    a bound method, passing this directly will fail. This is because creating a
@@ -147,3 +155,71 @@ Functions
 
    There is a finite queue to hold the scheduled functions and `schedule()`
    will raise a `RuntimeError` if the queue is full.
+
+Classes
+-------
+
+.. class:: RingIO(size)
+.. class:: RingIO(buffer)
+   :noindex:
+
+   Provides a fixed-size ringbuffer for bytes with a stream interface. Can be
+   considered like a fifo queue variant of `io.BytesIO`.
+
+   When created with integer size a suitable buffer will be allocated.
+   Alternatively a `bytearray` or similar buffer protocol object can be provided
+   to the constructor for in-place use.
+
+   The classic ringbuffer algorithm is used which allows for any size buffer
+   to be used however one byte will be consumed for tracking. If initialised
+   with an integer size this will be accounted for, for example ``RingIO(16)``
+   will allocate a 17 byte buffer internally so it can hold 16 bytes of data.
+   When passing in a pre-allocated buffer however one byte less than its
+   original length will be available for storage, eg. ``RingIO(bytearray(16))``
+   will only hold 15 bytes of data.
+
+   A RingIO instance can be IRQ / thread safe when used to pass data in a single
+   direction eg. when written to in an IRQ and read from in a non-IRQ function
+   (or vice versa). This does not hold if you try to eg. write to a single instance
+   from both IRQ and non-IRQ code, this would often cause data corruption.
+
+    .. method:: RingIO.any()
+
+        Returns an integer counting the number of characters that can be read.
+
+    .. method:: RingIO.read([nbytes])
+
+        Read available characters. This is a non-blocking function. If ``nbytes``
+        is specified then read at most that many bytes, otherwise read as much
+        data as possible.
+
+        Return value: a bytes object containing the bytes read. Will be
+        zero-length bytes object if no data is available.
+
+    .. method:: RingIO.readline([nbytes])
+
+        Read a line, ending in a newline character or return if one exists in
+        the buffer, else return available bytes in buffer. If ``nbytes`` is
+        specified then read at most that many bytes.
+
+        Return value: a bytes object containing the line read.
+
+    .. method:: RingIO.readinto(buf[, nbytes])
+
+        Read available bytes into the provided ``buf``.  If ``nbytes`` is
+        specified then read at most that many bytes.  Otherwise, read at
+        most ``len(buf)`` bytes.
+
+        Return value: Integer count of the number of bytes read into ``buf``.
+
+    .. method:: RingIO.write(buf)
+
+        Non-blocking write of bytes from ``buf`` into the ringbuffer, limited
+        by the available space in the ringbuffer.
+
+        Return value: Integer count of bytes written.
+
+    .. method:: RingIO.close()
+
+        No-op provided as part of standard `stream` interface. Has no effect
+        on data in the ringbuffer.

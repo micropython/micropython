@@ -23,7 +23,7 @@ bytecode.  The cross-compiler is built and run on the host machine, using:
     $ make -C mpy-cross
 
 This command should be executed from the root directory of this repository.
-All other commands below should be executed from the ports/stm32/ directory.
+All other commands below should be executed from the ports/samd/ directory.
 
 An ARM compiler is required for the build, along with the associated binary
 utilities.  The default compiler is `arm-none-eabi-gcc`, which is available for

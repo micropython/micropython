@@ -6,7 +6,7 @@ except ImportError:
 
 w = 5
 h = 16
-size = w * h // 8
+size = ((w + 7) & ~7) * ((h + 7) & ~7) // 8
 buf = bytearray(size)
 maps = {
     framebuf.MONO_VLSB: "MONO_VLSB",
@@ -106,6 +106,13 @@ except ValueError:
     print("ValueError")
 
 # test legacy constructor
-fbuf = framebuf.FrameBuffer1(buf, w, h)
-fbuf = framebuf.FrameBuffer1(buf, w, h, w)
+if hasattr(framebuf, "FrameBuffer1"):
+    fbuf = framebuf.FrameBuffer1(buf, w, h)
+    fbuf = framebuf.FrameBuffer1(buf, w, h, w)
 print(framebuf.MVLSB == framebuf.MONO_VLSB)
+
+# test get-buffer (returns the original buffer)
+fbuf = framebuf.FrameBuffer(bytearray(2), 8, 1, framebuf.MONO_HLSB)
+fbuf.pixel(0, 0, 1)
+fbuf.pixel(4, 0, 1)
+print(bytearray(fbuf))

@@ -30,7 +30,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
-#if defined(MICROPY_PY_NETWORK_CYW43) && defined(MICROPY_HW_PIN_EXT_COUNT)
+#if defined(MICROPY_PY_NETWORK_CYW43) && defined(MICROPY_HW_PIN_EXT_COUNT) && defined(CYW43_GPIO) && CYW43_GPIO == 1
 
 #include "modmachine.h"
 #include "machine_pin.h"
@@ -70,7 +70,7 @@ void machine_pin_ext_config(machine_pin_obj_t *self, int mode, int value) {
             self->is_output = true;
         }
     } else {
-        mp_raise_ValueError("only Pin.OUT and Pin.IN are supported for this pin");
+        mp_raise_ValueError(MP_ERROR_TEXT("only Pin.OUT and Pin.IN are supported for this pin"));
     }
 
     if (value != -1) {
@@ -83,4 +83,4 @@ void machine_pin_ext_config(machine_pin_obj_t *self, int mode, int value) {
     }
 }
 
-#endif // defined(MICROPY_PY_NETWORK_CYW43) && defined(MICROPY_HW_PIN_EXT_COUNT)
+#endif // defined(MICROPY_PY_NETWORK_CYW43) && defined(MICROPY_HW_PIN_EXT_COUNT) && defined(CYW43_GPIO) && CYW43_GPIO == 1

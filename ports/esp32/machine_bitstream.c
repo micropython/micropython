@@ -28,6 +28,10 @@
 #include "py/mphal.h"
 #include "modesp32.h"
 
+#include "rom/gpio.h"
+#include "soc/gpio_reg.h"
+#include "soc/gpio_sig_map.h"
+
 #if MICROPY_PY_MACHINE_BITSTREAM
 
 /******************************************************************************/
@@ -36,9 +40,9 @@
 #define NS_TICKS_OVERHEAD (6)
 
 // This is a translation of the cycle counter implementation in ports/stm32/machine_bitstream.c.
-STATIC void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
+static void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
     uint32_t pin_mask, gpio_reg_set, gpio_reg_clear;
-    #if !CONFIG_IDF_TARGET_ESP32C3
+    #if SOC_GPIO_PIN_COUNT > 32
     if (pin >= 32) {
         pin_mask = 1 << (pin - 32);
         gpio_reg_set = GPIO_OUT1_W1TS_REG;
@@ -52,7 +56,7 @@ STATIC void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, u
     }
 
     // Convert ns to cpu ticks [high_time_0, period_0, high_time_1, period_1].
-    uint32_t fcpu_mhz = ets_get_cpu_frequency();
+    uint32_t fcpu_mhz = esp_rom_get_cpu_ticks_per_us();
     for (size_t i = 0; i < 4; ++i) {
         timing_ns[i] = fcpu_mhz * timing_ns[i] / 1000;
         if (timing_ns[i] > NS_TICKS_OVERHEAD) {
@@ -91,36 +95,15 @@ STATIC void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, u
 
 #include "driver/rmt.h"
 
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
-// This convenience macro was not available in earlier IDF versions.
-#define RMT_DEFAULT_CONFIG_TX(gpio, channel_id)      \
-    {                                                \
-        .rmt_mode = RMT_MODE_TX,                     \
-        .channel = channel_id,                       \
-        .clk_div = 80,                               \
-        .gpio_num = gpio,                            \
-        .mem_block_num = 1,                          \
-        .tx_config = {                               \
-            .loop_en = false,                        \
-            .carrier_freq_hz = 38000,                \
-            .carrier_duty_percent = 33,              \
-            .carrier_level = RMT_CARRIER_LEVEL_HIGH, \
-            .carrier_en = false,                     \
-            .idle_level = RMT_IDLE_LEVEL_LOW,        \
-            .idle_output_en = true,                  \
-        }                                            \
-    }
-#endif
-
 // Logical 0 and 1 values (encoded as a rmt_item32_t).
 // The duration fields will be set later.
-STATIC rmt_item32_t bitstream_high_low_0 = {{{ 0, 1, 0, 0 }}};
-STATIC rmt_item32_t bitstream_high_low_1 = {{{ 0, 1, 0, 0 }}};
+static rmt_item32_t bitstream_high_low_0 = {{{ 0, 1, 0, 0 }}};
+static rmt_item32_t bitstream_high_low_1 = {{{ 0, 1, 0, 0 }}};
 
 // See https://github.com/espressif/esp-idf/blob/master/examples/common_components/led_strip/led_strip_rmt_ws2812.c
 // This is called automatically by the IDF during rmt_write_sample in order to
 // convert the byte stream to rmt_item32_t's.
-STATIC void IRAM_ATTR bitstream_high_low_rmt_adapter(const void *src, rmt_item32_t *dest, size_t src_size, size_t wanted_num, size_t *translated_size, size_t *item_num) {
+static void IRAM_ATTR bitstream_high_low_rmt_adapter(const void *src, rmt_item32_t *dest, size_t src_size, size_t wanted_num, size_t *translated_size, size_t *item_num) {
     if (src == NULL || dest == NULL) {
         *translated_size = 0;
         *item_num = 0;
@@ -151,7 +134,7 @@ STATIC void IRAM_ATTR bitstream_high_low_rmt_adapter(const void *src, rmt_item32
 }
 
 // Use the reserved RMT channel to stream high/low data on the specified pin.
-STATIC void machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len, uint8_t channel_id) {
+static void machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len, uint8_t channel_id) {
     rmt_config_t config = RMT_DEFAULT_CONFIG_TX(pin, channel_id);
 
     // Use 40MHz clock (although 2MHz would probably be sufficient).
@@ -163,13 +146,7 @@ STATIC void machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timin
 
     // Get the tick rate in kHz (this will likely be 40000).
     uint32_t counter_clk_khz = 0;
-    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
-    uint8_t div_cnt;
-    check_esp_err(rmt_get_clk_div(config.channel, &div_cnt));
-    counter_clk_khz = APB_CLK_FREQ / div_cnt;
-    #else
     check_esp_err(rmt_get_counter_clock(config.channel, &counter_clk_khz));
-    #endif
 
     counter_clk_khz /= 1000;
 
@@ -193,7 +170,7 @@ STATIC void machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timin
     check_esp_err(rmt_driver_uninstall(config.channel));
 
     // Cancel RMT output to GPIO pin.
-    gpio_matrix_out(pin, SIG_GPIO_OUT_IDX, false, false);
+    esp_rom_gpio_connect_out_signal(pin, SIG_GPIO_OUT_IDX, false, false);
 }
 
 /******************************************************************************/

@@ -1,0 +1,14 @@
+create server on 0.0.0.0:8080
+server started
+client open_connection to 127.0.0.1:8080
+client writing
+handler reading
+client reading
+handler got 100 bytes
+handler writing
+handler closing
+handler closed
+client got 100 bytes
+client closing
+client closed
+server closed

@@ -58,7 +58,6 @@ extern const spi_t spi_obj[6];
 
 extern const mp_spi_proto_t spi_proto;
 extern const mp_obj_type_t pyb_spi_type;
-extern const mp_obj_type_t machine_spi_type;
 
 // A transfer of "len" bytes should take len*8*1000/baudrate milliseconds.
 // To simplify the calculation we assume the baudrate is never less than 8kHz
@@ -68,6 +67,7 @@ extern const mp_obj_type_t machine_spi_type;
 void spi_init0(void);
 int spi_init(const spi_t *spi, bool enable_nss_pin);
 void spi_deinit(const spi_t *spi_obj);
+void spi_deinit_all(void);
 int spi_find_index(mp_obj_t id);
 void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
     int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit);

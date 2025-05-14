@@ -110,9 +110,9 @@ def instance1():
     ((char_handle,),) = ble.gatts_register_services(SERVICES)
     multitest.next()
     try:
-        # Connect to peripheral and then disconnect.
+        # Connect to peripheral, with a short connection interval to reduce notify latency.
         print("gap_connect")
-        ble.gap_connect(*BDADDR)
+        ble.gap_connect(BDADDR[0], BDADDR[1], 2000, 12500, 12500)
         conn_handle = wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS)
 
         # Discover characteristics.

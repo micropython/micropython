@@ -27,13 +27,15 @@ import pyboard
 
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3.exe")
-    MICROPYTHON = os.getenv(
-        "MICROPY_MICROPYTHON", test_dir + "/../ports/windows/build-standard/micropython.exe"
+    MICROPYTHON = os.path.abspath(
+        os.getenv(
+            "MICROPY_MICROPYTHON", test_dir + "/../ports/windows/build-standard/micropython.exe"
+        )
     )
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
-    MICROPYTHON = os.getenv(
-        "MICROPY_MICROPYTHON", test_dir + "/../ports/unix/build-standard/micropython"
+    MICROPYTHON = os.path.abspath(
+        os.getenv("MICROPY_MICROPYTHON", test_dir + "/../ports/unix/build-standard/micropython")
     )
 
 # For diff'ing test output
@@ -103,15 +105,14 @@ instance{}()
 multitest.flush()
 """
 
-# The btstack implementation on Unix generates some spurious output that we
-# can't control.  Also other platforms may output certain warnings/errors that
-# can be safely ignored.
+# Some ports generate output we can't control, and that can be safely ignored.
 IGNORE_OUTPUT_MATCHES = (
-    "libusb: error ",  # It tries to open devices that it doesn't have access to (libusb prints unconditionally).
+    "libusb: error ",  # unix btstack tries to open devices that it doesn't have access to (libusb prints unconditionally).
     "hci_transport_h2_libusb.c",  # Same issue. We enable LOG_ERROR in btstack.
-    "USB Path: ",  # Hardcoded in btstack's libusb transport.
-    "hci_number_completed_packet",  # Warning from btstack.
+    "USB Path: ",  # Hardcoded in unix btstack's libusb transport.
+    "hci_number_completed_packet",  # Warning from unix btstack.
     "lld_pdu_get_tx_flush_nb HCI packet count mismatch (",  # From ESP-IDF, see https://github.com/espressif/esp-idf/issues/5105
+    " ets_task(",  # ESP8266 port debug output
 )
 
 
@@ -155,12 +156,22 @@ class PyInstance:
 class PyInstanceSubProcess(PyInstance):
     def __init__(self, argv, env=None):
         self.argv = argv
+        self.cwd = None
         self.env = {n: v for n, v in (i.split("=") for i in env)} if env else None
         self.popen = None
         self.finished = True
 
     def __str__(self):
         return self.argv[0].rsplit("/")[-1]
+
+    def prepare_script_from_file(self, filename, prepend, append):
+        # Make tests run in the directory of the test file, and in an isolated environment
+        # (i.e. `import io` would otherwise get the `tests/io` directory).
+        self.cwd = os.path.dirname(filename)
+        remove_cwd_from_sys_path = b"import sys\nsys.path.remove('')\n\n"
+        return remove_cwd_from_sys_path + super().prepare_script_from_file(
+            filename, prepend, append
+        )
 
     def run_script(self, script):
         output = b""
@@ -171,6 +182,7 @@ class PyInstanceSubProcess(PyInstance):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 input=script,
+                cwd=self.cwd,
                 env=self.env,
             )
             output = p.stdout
@@ -184,6 +196,7 @@ class PyInstanceSubProcess(PyInstance):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            cwd=self.cwd,
             env=self.env,
         )
         self.finished = False
@@ -582,7 +595,7 @@ def main():
     cmd_args = cmd_parser.parse_args()
 
     # clear search path to make sure tests use only builtin modules and those in extmod
-    os.environ["MICROPYPATH"] = os.pathsep.join(("", ".frozen", "../extmod"))
+    os.environ["MICROPYPATH"] = os.pathsep.join((".frozen", "../extmod"))
 
     test_files = prepare_test_file_list(cmd_args.files)
     max_instances = max(t[1] for t in test_files)

@@ -63,7 +63,13 @@ void netutils_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian
         return;
     }
     const char *s = addr_str;
-    const char *s_top = addr_str + addr_len;
+    const char *s_top;
+    // Scan for the end of valid address characters
+    for (s_top = addr_str; s_top < addr_str + addr_len; s_top++) {
+        if (!(*s_top == '.' || (*s_top >= '0' && *s_top <= '9'))) {
+            break;
+        }
+    }
     for (mp_uint_t i = 3; ; i--) {
         mp_uint_t val = 0;
         for (; s < s_top && *s != '.'; s++) {

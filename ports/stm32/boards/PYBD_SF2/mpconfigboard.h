@@ -43,11 +43,14 @@
 #define MICROPY_HW_ENABLE_RF_SWITCH (1)
 
 #define MICROPY_BOARD_EARLY_INIT    board_early_init
+#define MICROPY_BOARD_RUN_BOOT_PY   board_run_boot_py
 #define MICROPY_BOARD_ENTER_STOP    board_sleep(1);
 #define MICROPY_BOARD_LEAVE_STOP    board_sleep(0);
 #define MICROPY_BOARD_ENTER_STANDBY board_sleep(1);
 #define MICROPY_BOARD_SDCARD_POWER  mp_hal_pin_high(pyb_pin_EN_3V3);
+struct _boardctrl_state_t;
 void board_early_init(void);
+int board_run_boot_py(struct _boardctrl_state_t *state);
 void board_sleep(int value);
 
 // HSE is 25MHz, run SYS at 120MHz
@@ -63,6 +66,11 @@ void board_sleep(int value);
 #define MICROPY_HW_RTC_USE_BYPASS   (1)
 #define MICROPY_HW_RTC_USE_US       (1)
 #define MICROPY_HW_RTC_USE_CALOUT   (1)
+
+// ROMFS config
+#define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI (1)
+#define MICROPY_HW_ROMFS_QSPI_SPIFLASH_OBJ (&spi_bdev2.spiflash)
+#define MICROPY_HW_ROMFS_ENABLE_PART0 (1)
 
 // SPI flash #1, for R/W storage
 #define MICROPY_HW_SOFTQSPI_SCK_LOW(self) (GPIOE->BSRR = (0x10000 << 11))
@@ -82,13 +90,9 @@ extern struct _spi_bdev_t spi_bdev;
 #if !BUILDING_MBOOT
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE (1)
 #endif
-#define MICROPY_HW_BDEV_IOCTL(op, arg) ( \
-    (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE) : \
-    (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
-    spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
-    )
-#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(&spi_bdev, (dest), (bl), (n))
-#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(&spi_bdev, (src), (bl), (n))
+#define MICROPY_HW_BDEV_SPIFLASH    (&spi_bdev)
+#define MICROPY_HW_BDEV_SPIFLASH_CONFIG (&spiflash_config)
+#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES (MICROPY_HW_SPIFLASH_SIZE_BITS / 8)
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev) // for extended block protocol
 
 // SPI flash #2, to be memory mapped

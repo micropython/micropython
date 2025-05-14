@@ -1,0 +1,11 @@
+true true false
+1 2
+a 1
+b 2
+[ 'a', 'b' ]
+[ 'a', 'b' ]
+[ 'a', 'c', 'b' ]
+[ 'a', 'c' ]
+1
+False
+3

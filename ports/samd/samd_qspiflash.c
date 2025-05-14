@@ -35,7 +35,7 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "modmachine.h"
-#include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "extmod/vfs.h"
 #include "pin_af.h"
 #include "clock_config.h"
@@ -105,7 +105,6 @@ static const external_flash_device possible_devices[] = {
 
 #define EXTERNAL_FLASH_DEVICE_COUNT MP_ARRAY_SIZE(possible_devices)
 static external_flash_device const *flash_device;
-static external_flash_device generic_config = GENERIC;
 extern const mp_obj_type_t samd_qspiflash_type;
 
 // The QSPIflash object is a singleton
@@ -238,7 +237,7 @@ static void wait_for_flash_ready(void) {
 }
 
 static uint8_t get_baud(int32_t freq_mhz) {
-    int baud = get_peripheral_freq() / (freq_mhz * 1000000) - 1;
+    int baud = get_cpu_freq() / (freq_mhz * 1000000) - 1;
     if (baud < 1) {
         baud = 1;
     }
@@ -248,16 +247,7 @@ static uint8_t get_baud(int32_t freq_mhz) {
     return baud;
 }
 
-int get_sfdp_table(uint8_t *table, int maxlen) {
-    uint8_t header[16];
-    read_memory_single(QSPI_CMD_READ_SFDP_PARAMETER, 0, header, sizeof(header));
-    int len = MIN(header[11] * 4, maxlen);
-    int addr = header[12] + (header[13] << 8) + (header[14] << 16);
-    read_memory_single(QSPI_CMD_READ_SFDP_PARAMETER, addr, table, len);
-    return len;
-}
-
-STATIC mp_obj_t samd_qspiflash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t samd_qspiflash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // The QSPI is a singleton
@@ -297,19 +287,6 @@ STATIC mp_obj_t samd_qspiflash_make_new(const mp_obj_type_t *type, size_t n_args
     uint8_t jedec_ids[3];
     read_command(QSPI_CMD_READ_JEDEC_ID, jedec_ids, sizeof(jedec_ids));
 
-    // Read the common sfdp table
-    // Check the device addr length, support of 1-1-4 mode and get the sector size
-    uint8_t sfdp_table[128];
-    int len = get_sfdp_table(sfdp_table, sizeof(sfdp_table));
-    if (len >= 29) {
-        self->sectorsize = 1 << sfdp_table[28];
-        bool addr4b = ((sfdp_table[2] >> 1) & 0x03) == 0x02;
-        bool supports_qspi_114 = (sfdp_table[2] & 0x40) != 0;
-        if (addr4b || !supports_qspi_114) {
-            mp_raise_ValueError(MP_ERROR_TEXT("QSPI mode not supported"));
-        }
-    }
-
     // Check, if the flash device is known and get it's properties.
     flash_device = NULL;
     for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
@@ -321,15 +298,8 @@ STATIC mp_obj_t samd_qspiflash_make_new(const mp_obj_type_t *type, size_t n_args
             break;
         }
     }
-
-    // If the flash device is not known, try generic config options
     if (flash_device == NULL) {
-        if (jedec_ids[0] == 0xc2) { // Macronix devices
-            generic_config.quad_enable_bit_mask = 0x04;
-            generic_config.single_status_byte = true;
-        }
-        generic_config.total_size = 1 << jedec_ids[2];
-        flash_device = &generic_config;
+        mp_raise_ValueError(MP_ERROR_TEXT("QSPI device not supported"));
     }
 
     self->size = flash_device->total_size;
@@ -337,9 +307,13 @@ STATIC mp_obj_t samd_qspiflash_make_new(const mp_obj_type_t *type, size_t n_args
     // The write in progress bit should be low.
     while (read_status() & 0x01) {
     }
-    // The suspended write/erase bit should be low.
-    while (read_status2() & 0x80) {
+
+    if (!flash_device->single_status_byte) {
+        // The suspended write/erase bit should be low.
+        while (read_status2() & 0x80) {
+        }
     }
+
     run_command(QSPI_CMD_ENABLE_RESET);
     run_command(QSPI_CMD_RESET);
     // Wait 30us for the reset
@@ -374,7 +348,7 @@ STATIC mp_obj_t samd_qspiflash_make_new(const mp_obj_type_t *type, size_t n_args
     return self;
 }
 
-STATIC mp_obj_t samd_qspiflash_read(samd_qspiflash_obj_t *self, uint32_t addr, uint8_t *dest, uint32_t len) {
+static mp_obj_t samd_qspiflash_read(samd_qspiflash_obj_t *self, uint32_t addr, uint8_t *dest, uint32_t len) {
     if (len > 0) {
         wait_for_flash_ready();
         // Command 0x6B 1 line address, 4 line Data
@@ -385,7 +359,7 @@ STATIC mp_obj_t samd_qspiflash_read(samd_qspiflash_obj_t *self, uint32_t addr, u
     return mp_const_none;
 }
 
-STATIC mp_obj_t samd_qspiflash_write(samd_qspiflash_obj_t *self, uint32_t addr, uint8_t *src, uint32_t len) {
+static mp_obj_t samd_qspiflash_write(samd_qspiflash_obj_t *self, uint32_t addr, uint8_t *src, uint32_t len) {
     uint32_t length = len;
     uint32_t pos = 0;
     uint8_t *buf = src;
@@ -405,7 +379,7 @@ STATIC mp_obj_t samd_qspiflash_write(samd_qspiflash_obj_t *self, uint32_t addr, 
     return mp_const_none;
 }
 
-STATIC mp_obj_t samd_qspiflash_erase(uint32_t addr) {
+static mp_obj_t samd_qspiflash_erase(uint32_t addr) {
     wait_for_flash_ready();
     write_enable();
     erase_command(QSPI_CMD_ERASE_SECTOR, addr);
@@ -413,7 +387,7 @@ STATIC mp_obj_t samd_qspiflash_erase(uint32_t addr) {
     return mp_const_none;
 }
 
-STATIC mp_obj_t samd_qspiflash_readblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t samd_qspiflash_readblocks(size_t n_args, const mp_obj_t *args) {
     samd_qspiflash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t offset = (mp_obj_get_int(args[1]) * self->sectorsize);
     mp_buffer_info_t bufinfo;
@@ -427,9 +401,9 @@ STATIC mp_obj_t samd_qspiflash_readblocks(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_qspiflash_readblocks_obj, 3, 4, samd_qspiflash_readblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_qspiflash_readblocks_obj, 3, 4, samd_qspiflash_readblocks);
 
-STATIC mp_obj_t samd_qspiflash_writeblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t samd_qspiflash_writeblocks(size_t n_args, const mp_obj_t *args) {
     samd_qspiflash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t offset = (mp_obj_get_int(args[1]) * self->sectorsize);
     mp_buffer_info_t bufinfo;
@@ -445,9 +419,9 @@ STATIC mp_obj_t samd_qspiflash_writeblocks(size_t n_args, const mp_obj_t *args) 
     // TODO check return value
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_qspiflash_writeblocks_obj, 3, 4, samd_qspiflash_writeblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(samd_qspiflash_writeblocks_obj, 3, 4, samd_qspiflash_writeblocks);
 
-STATIC mp_obj_t samd_qspiflash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
+static mp_obj_t samd_qspiflash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     samd_qspiflash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
 
@@ -471,14 +445,14 @@ STATIC mp_obj_t samd_qspiflash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
             return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(samd_qspiflash_ioctl_obj, samd_qspiflash_ioctl);
+static MP_DEFINE_CONST_FUN_OBJ_3(samd_qspiflash_ioctl_obj, samd_qspiflash_ioctl);
 
-STATIC const mp_rom_map_elem_t samd_qspiflash_locals_dict_table[] = {
+static const mp_rom_map_elem_t samd_qspiflash_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&samd_qspiflash_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&samd_qspiflash_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&samd_qspiflash_ioctl_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(samd_qspiflash_locals_dict, samd_qspiflash_locals_dict_table);
+static MP_DEFINE_CONST_DICT(samd_qspiflash_locals_dict, samd_qspiflash_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     samd_qspiflash_type,

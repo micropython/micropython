@@ -31,16 +31,14 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "py/runtime.h"
 #include "modmachine.h"
 #include "samd_soc.h"
 #include "sam.h"
 #include "tusb.h"
-#include "mphalport.h"
 
-#if MICROPY_PY_MACHINE_RTC
 extern void machine_rtc_start(bool force);
-#endif
 
 static void usb_init(void) {
     // Init USB clock
@@ -64,8 +62,6 @@ static void usb_init(void) {
     PORT->Group[0].PMUX[12].reg = alt << 4 | alt;
     PORT->Group[0].PINCFG[24].reg = PORT_PINCFG_PMUXEN;
     PORT->Group[0].PINCFG[25].reg = PORT_PINCFG_PMUXEN;
-
-    tusb_init();
 }
 
 // Initialize the µs counter on TC 0/1 or TC4/5
@@ -120,11 +116,69 @@ void samd_init(void) {
     init_clocks(get_cpu_freq());
     init_us_counter();
     usb_init();
-    check_usb_recovery_mode();
     #if defined(MCU_SAMD51)
     mp_hal_ticks_cpu_enable();
     #endif
-    #if MICROPY_PY_MACHINE_RTC
     machine_rtc_start(false);
+}
+
+#if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
+
+Sercom *sercom_instance[] = SERCOM_INSTS;
+MP_REGISTER_ROOT_POINTER(void *sercom_table[SERCOM_INST_NUM]);
+
+// Common Sercom functions used by all Serial devices
+void sercom_enable(Sercom *uart, int state) {
+    uart->USART.CTRLA.bit.ENABLE = state; // Set the state on/off
+    // Wait for the Registers to update.
+    while (uart->USART.SYNCBUSY.bit.ENABLE) {
+    }
+}
+
+void sercom_deinit_all(void) {
+    for (int i = 0; i < SERCOM_INST_NUM; i++) {
+        Sercom *uart = sercom_instance[i];
+        uart->USART.INTENCLR.reg = 0xff;
+        sercom_register_irq(i, NULL);
+        sercom_enable(uart, 0);
+        MP_STATE_PORT(sercom_table[i]) = NULL;
+    }
+}
+
+#endif
+
+void samd_get_unique_id(samd_unique_id_t *id) {
+    // Atmel SAM D21E / SAM D21G / SAM D21J
+    // SMART ARM-Based Microcontroller
+    // DATASHEET
+    // 9.6 (SAMD51) or 9.3.3 (or 10.3.3 depending on which manual)(SAMD21) Serial Number
+    //
+    // EXAMPLE (SAMD21)
+    // ----------------
+    // OpenOCD:
+    // Word0:
+    // > at91samd21g18.cpu mdw 0x0080A00C 1
+    // 0x0080a00c: 6e27f15f
+    // Words 1-3:
+    // > at91samd21g18.cpu mdw 0x0080A040 3
+    // 0x0080a040: 50534b54 332e3120 ff091645
+    //
+    // MicroPython (this code and same order as shown in Arduino IDE)
+    // >>> binascii.hexlify(machine.unique_id())
+    // b'6e27f15f50534b54332e3120ff091645'
+
+    #if defined(MCU_SAMD21)
+    uint32_t *id_addresses[4] = {(uint32_t *)0x0080A00C, (uint32_t *)0x0080A040,
+                                 (uint32_t *)0x0080A044, (uint32_t *)0x0080A048};
+    #elif defined(MCU_SAMD51)
+    uint32_t *id_addresses[4] = {(uint32_t *)0x008061FC, (uint32_t *)0x00806010,
+                                 (uint32_t *)0x00806014, (uint32_t *)0x00806018};
     #endif
+
+    for (int i = 0; i < 4; i++) {
+        for (int k = 0; k < 4; k++) {
+            // 'Reverse' the read bytes into a 32 bit word (Consistent with Arduino)
+            id->bytes[4 * i + k] = (*(id_addresses[i]) >> (24 - k * 8)) & 0xff;
+        }
+    }
 }

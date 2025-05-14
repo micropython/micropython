@@ -1,7 +1,7 @@
 try:
-    import uio
-    import uerrno
-    import uwebsocket
+    import io
+    import errno
+    import websocket
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -9,14 +9,14 @@ except ImportError:
 
 # put raw data in the stream and do a websocket read
 def ws_read(msg, sz):
-    ws = uwebsocket.websocket(uio.BytesIO(msg))
+    ws = websocket.websocket(io.BytesIO(msg))
     return ws.read(sz)
 
 
 # do a websocket write and then return the raw data from the stream
 def ws_write(msg, sz):
-    s = uio.BytesIO()
-    ws = uwebsocket.websocket(s)
+    s = io.BytesIO()
+    ws = websocket.websocket(s)
     ws.write(msg)
     s.seek(0)
     return s.read(sz)
@@ -38,8 +38,8 @@ print(ws_write(b"pong" * 32, 132))
 print(ws_read(b"\x81\x84maskmask", 4))
 
 # close control frame
-s = uio.BytesIO(b"\x88\x00")  # FRAME_CLOSE
-ws = uwebsocket.websocket(s)
+s = io.BytesIO(b"\x88\x00")  # FRAME_CLOSE
+ws = websocket.websocket(s)
 print(ws.read(1))
 s.seek(2)
 print(s.read(4))
@@ -49,15 +49,15 @@ print(ws_read(b"\x89\x00\x81\x04ping", 4))  # FRAME_PING
 print(ws_read(b"\x8a\x00\x81\x04pong", 4))  # FRAME_PONG
 
 # close method
-ws = uwebsocket.websocket(uio.BytesIO())
+ws = websocket.websocket(io.BytesIO())
 ws.close()
 
 # ioctl
-ws = uwebsocket.websocket(uio.BytesIO())
+ws = websocket.websocket(io.BytesIO())
 print(ws.ioctl(8))  # GET_DATA_OPTS
 print(ws.ioctl(9, 2))  # SET_DATA_OPTS
 print(ws.ioctl(9))
 try:
     ws.ioctl(-1)
 except OSError as e:
-    print("ioctl: EINVAL:", e.errno == uerrno.EINVAL)
+    print("ioctl: EINVAL:", e.errno == errno.EINVAL)

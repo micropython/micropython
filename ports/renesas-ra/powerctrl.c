@@ -174,8 +174,8 @@ const lpm_instance_t g_lpm_standby = {
 
 #endif
 
-NORETURN void powerctrl_mcu_reset(void) {
-    #if BSP_FEATURE_TZ_HAS_TRUSTZONE
+MP_NORETURN void powerctrl_mcu_reset(void) {
+    #if BSP_TZ_SECURE_BUILD
     R_BSP_NonSecureEnter();
     #else
     NVIC_SystemReset();
@@ -185,7 +185,7 @@ NORETURN void powerctrl_mcu_reset(void) {
     }
 }
 
-NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
+MP_NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
     while (1) {
         ;
     }
@@ -245,7 +245,7 @@ void powerctrl_enter_stop_mode(void) {
     enable_irq(irq_state);
 }
 
-void powerctrl_enter_standby_mode(void) {
+MP_NORETURN void powerctrl_enter_standby_mode(void) {
     rtc_init_finalise();
 
     #if defined(MICROPY_BOARD_ENTER_STANDBY)
@@ -301,4 +301,6 @@ void powerctrl_enter_standby_mode(void) {
     // enter standby mode
 
     // we never return; MCU is reset on exit from standby
+
+    powerctrl_mcu_reset();
 }

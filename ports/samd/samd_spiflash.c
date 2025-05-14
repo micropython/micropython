@@ -30,9 +30,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "extmod/vfs.h"
-#include "modmachine.h"
 #include "pin_af.h"
 
 #if MICROPY_HW_SPIFLASH
@@ -46,10 +45,14 @@ const uint8_t _COMMANDS_32BIT[] = {0x13, 0x12, 0x21};  // READ, PROGRAM_PAGE, ER
 
 #define COMMAND_JEDEC_ID (0x9F)
 #define COMMAND_READ_STATUS (0x05)
+#define COMMAND_WRITE_SR1 (0x01)
 #define COMMAND_WRITE_ENABLE (0x06)
 #define COMMAND_READ_SFDP (0x5A)
 #define PAGE_SIZE (256)
 #define SECTOR_SIZE (4096)
+#ifndef MICROPY_HW_SPIFLASH_BAUDRATE
+#define MICROPY_HW_SPIFLASH_BAUDRATE (24000000)
+#endif
 
 typedef struct _spiflash_obj_t {
     mp_obj_base_t base;
@@ -63,6 +66,19 @@ typedef struct _spiflash_obj_t {
 } spiflash_obj_t;
 
 extern const mp_obj_type_t samd_spiflash_type;
+
+typedef struct _spiflash_jedec_id_t {
+    uint32_t jedec_id;
+    uint32_t mask;
+    uint32_t size;
+}  spiflash_jedec_id_t;
+
+spiflash_jedec_id_t jedec_id_table[] = {
+    { 0x1f8401, 0xffff00, 512 * 1024 }, // Adesto/Renesas 4 MBit
+    { 0x1f2400, 0xffff00, 512 * 1024 }, // Adesto 4 MBit
+    { 0x1f4501, 0xffff00, 1024 * 1024 }, // Adesto/Renesas/Atmel 8 MBit
+    { 0xc84013, 0xffffff, 512 * 1024 }, // Gigadevices 4 MBit
+};
 
 // The SPIflash object is a singleton
 static spiflash_obj_t spiflash_obj = {
@@ -86,7 +102,7 @@ static void wait(spiflash_obj_t *self) {
         mp_hal_pin_write(self->cs, 0);
         spi_transfer((mp_obj_base_t *)self->spi, 2, msg, msg);
         mp_hal_pin_write(self->cs, 1);
-    } while (msg[1] != 0 && timeout-- > 0);
+    } while ((msg[1] & 1) != 0 && timeout-- > 0);
 }
 
 static void get_id(spiflash_obj_t *self, uint8_t id[3]) {
@@ -121,6 +137,19 @@ static void write_enable(spiflash_obj_t *self) {
     mp_hal_pin_write(self->cs, 1);
 }
 
+#if !defined(MICROPY_HW_SPIFLASH_SIZE)
+// Write status register 1
+static void write_sr1(spiflash_obj_t *self, uint8_t value) {
+    uint8_t msg[2];
+    msg[0] = COMMAND_WRITE_SR1;
+    msg[1] = value;
+
+    mp_hal_pin_write(self->cs, 0);
+    spi_transfer(self->spi, 2, msg, NULL);
+    mp_hal_pin_write(self->cs, 1);
+}
+#endif
+
 static void get_sfdp(spiflash_obj_t *self, uint32_t addr, uint8_t *buffer, int size) {
     uint8_t dummy[1];
     write_addr(self, COMMAND_READ_SFDP, addr);
@@ -129,7 +158,7 @@ static void get_sfdp(spiflash_obj_t *self, uint32_t addr, uint8_t *buffer, int s
     mp_hal_pin_write(self->cs, 1);
 }
 
-STATIC mp_obj_t spiflash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t spiflash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // Set up the object
@@ -137,7 +166,7 @@ STATIC mp_obj_t spiflash_make_new(const mp_obj_type_t *type, size_t n_args, size
 
     mp_obj_t spi_args[] = {
         MP_OBJ_NEW_SMALL_INT(MICROPY_HW_SPIFLASH_ID),
-        MP_OBJ_NEW_SMALL_INT(24000000),  // baudrate
+        MP_OBJ_NEW_SMALL_INT(MICROPY_HW_SPIFLASH_BAUDRATE),
         MP_OBJ_NEW_QSTR(MP_QSTR_mosi), MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_MOSI),
         MP_OBJ_NEW_QSTR(MP_QSTR_miso), MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_MISO),
         MP_OBJ_NEW_QSTR(MP_QSTR_sck), MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_SCK),
@@ -153,34 +182,57 @@ STATIC mp_obj_t spiflash_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_hal_pin_write(self->cs, 1);
 
     wait(self);
-
     // Get the flash size from the device ID (default)
     uint8_t id[3];
     get_id(self, id);
-    if (id[1] == 0x84 && id[2] == 1) {  // Adesto
-        self->size = 512 * 1024;
-    } else if (id[1] == 0x1f && id[2] == 1) {  // Atmel / Renesas
-        self->size = 1024 * 1024;
-    } else {
-        self->size = 1 << id[2];
-    }
 
-    // Get the addr_is_32bit flag and the sector size
+    #if defined(MICROPY_HW_SPIFLASH_SIZE)
+    self->size = MICROPY_HW_SPIFLASH_SIZE;
+    #else
+    // Assume as default that the size is coded into the last JEDEC ID byte.
+    self->size = 1 << id[2];
+    // Look for specific flash devices with different encoding.
+    uint32_t jedec_id = (id[0] << 16) | (id[1] << 8) | id[2];
+    for (int i = 0; i < MP_ARRAY_SIZE(jedec_id_table); i++) {
+        if (jedec_id_table[i].jedec_id == (jedec_id & jedec_id_table[i].mask)) {
+            self->size = jedec_id_table[i].size;
+            // Globally unlock the sectors, which may be locked after power on.
+            write_enable(self);
+            write_sr1(self, 0);
+            break;
+        }
+    }
+    #endif
+
+    // Get the flash size, addr_is_32bit flag and sector size from SFDP, if present.
     uint8_t buffer[128];
     get_sfdp(self, 0, buffer, 16);  // get the header
-    int len = MIN(buffer[11] * 4, sizeof(buffer));
-    if (len >= 29) {
-        int addr = buffer[12] + (buffer[13] << 8) + (buffer[14] << 16);
-        get_sfdp(self, addr, buffer, len);  // Get the JEDEC mandatory table
-        self->sectorsize = 1 << buffer[28];
-        self->addr_is_32bit = ((buffer[2] >> 1) & 0x03) != 0;
+    if (*(uint32_t *)buffer == 0x50444653) {  // Header signature "SFDP"
+        int len = MIN(buffer[11] * 4, sizeof(buffer));
+        if (len >= 29) {
+            int addr = buffer[12] + (buffer[13] << 8) + (buffer[14] << 16);
+            get_sfdp(self, addr, buffer, len);  // Get the JEDEC mandatory table
+            self->sectorsize = 1 << buffer[28];
+            self->addr_is_32bit = ((buffer[2] >> 1) & 0x03) != 0;
+            #if !defined(MICROPY_HW_SPIFLASH_SIZE)
+            // Get the bit size from the SFDP data
+            uint32_t size = *(uint32_t *)(buffer + 4);
+            if (size & 0x8000000) {
+                // Byte size is 2 ** lower_31_bits / 8
+                self->size = 1 << ((size & 0x7fffffff) >> 3);
+            } else {
+                // Byte size is lower_31_bits / 8 + 1
+                self->size = ((size & 0x7fffffff) >> 3) + 1;
+            }
+            #endif
+        }
     }
     self->commands = self->addr_is_32bit ? _COMMANDS_32BIT : _COMMANDS_24BIT;
 
     return self;
 }
 
-STATIC mp_obj_t spiflash_read(spiflash_obj_t *self, uint32_t addr, uint8_t *dest, uint32_t len) {
+static mp_obj_t spiflash_read(spiflash_obj_t *self, uint32_t addr, uint8_t *dest, uint32_t len) {
     if (len > 0) {
         write_addr(self, self->commands[_READ_INDEX], addr);
         spi_transfer(self->spi, len, dest, dest);
@@ -190,7 +242,7 @@ STATIC mp_obj_t spiflash_read(spiflash_obj_t *self, uint32_t addr, uint8_t *dest
     return mp_const_none;
 }
 
-STATIC mp_obj_t spiflash_write(spiflash_obj_t *self, uint32_t addr, uint8_t *src, uint32_t len) {
+static mp_obj_t spiflash_write(spiflash_obj_t *self, uint32_t addr, uint8_t *src, uint32_t len) {
     uint32_t length = len;
     uint32_t pos = 0;
     uint8_t *buf = src;
@@ -212,7 +264,7 @@ STATIC mp_obj_t spiflash_write(spiflash_obj_t *self, uint32_t addr, uint8_t *src
     return mp_const_none;
 }
 
-STATIC mp_obj_t spiflash_erase(spiflash_obj_t *self, uint32_t addr) {
+static mp_obj_t spiflash_erase(spiflash_obj_t *self, uint32_t addr) {
     write_enable(self);
     write_addr(self, self->commands[_SECTOR_ERASE_INDEX], addr);
     mp_hal_pin_write(self->cs, 1);
@@ -221,7 +273,7 @@ STATIC mp_obj_t spiflash_erase(spiflash_obj_t *self, uint32_t addr) {
     return mp_const_none;
 }
 
-STATIC mp_obj_t spiflash_readblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t spiflash_readblocks(size_t n_args, const mp_obj_t *args) {
     spiflash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t offset = (mp_obj_get_int(args[1]) * self->sectorsize);
     mp_buffer_info_t bufinfo;
@@ -235,9 +287,9 @@ STATIC mp_obj_t spiflash_readblocks(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(spiflash_readblocks_obj, 3, 4, spiflash_readblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(spiflash_readblocks_obj, 3, 4, spiflash_readblocks);
 
-STATIC mp_obj_t spiflash_writeblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t spiflash_writeblocks(size_t n_args, const mp_obj_t *args) {
     spiflash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t offset = (mp_obj_get_int(args[1]) * self->sectorsize);
     mp_buffer_info_t bufinfo;
@@ -253,9 +305,9 @@ STATIC mp_obj_t spiflash_writeblocks(size_t n_args, const mp_obj_t *args) {
     // TODO check return value
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(spiflash_writeblocks_obj, 3, 4, spiflash_writeblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(spiflash_writeblocks_obj, 3, 4, spiflash_writeblocks);
 
-STATIC mp_obj_t spiflash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
+static mp_obj_t spiflash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     spiflash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
 
@@ -279,14 +331,14 @@ STATIC mp_obj_t spiflash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_i
             return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(spiflash_ioctl_obj, spiflash_ioctl);
+static MP_DEFINE_CONST_FUN_OBJ_3(spiflash_ioctl_obj, spiflash_ioctl);
 
-STATIC const mp_rom_map_elem_t spiflash_locals_dict_table[] = {
+static const mp_rom_map_elem_t spiflash_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&spiflash_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&spiflash_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&spiflash_ioctl_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(spiflash_locals_dict, spiflash_locals_dict_table);
+static MP_DEFINE_CONST_DICT(spiflash_locals_dict, spiflash_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     samd_spiflash_type,

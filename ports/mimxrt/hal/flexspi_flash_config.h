@@ -75,6 +75,12 @@
     (FLEXSPI_LUT_OPERAND0(op0) | FLEXSPI_LUT_NUM_PADS0(pad0) | FLEXSPI_LUT_OPCODE0(cmd0) | FLEXSPI_LUT_OPERAND1(op1) | \
     FLEXSPI_LUT_NUM_PADS1(pad1) | FLEXSPI_LUT_OPCODE1(cmd1))
 
+#define EMPTY_LUT_SEQ \
+    FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), \
+    FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), \
+    FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), \
+    FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), \
+
 // !@brief Definitions for FlexSPI Serial Clock Frequency
 typedef enum _FlexSpiSerialClockFreq
 {
@@ -113,7 +119,7 @@ enum
     kFlexSpiMiscOffset_WordAddressableEnable    = 3, // !< Bit for Word Addressable enable
     kFlexSpiMiscOffset_SafeConfigFreqEnable     = 4, // !< Bit for Safe Configuration Frequency enable
     kFlexSpiMiscOffset_PadSettingOverrideEnable = 5, // !< Bit for Pad setting override enable
-    kFlexSpiMiscOffset_DdrModeEnable            = 6, // !< Bit for DDR clock confiuration indication.
+    kFlexSpiMiscOffset_DdrModeEnable            = 6, // !< Bit for DDR clock configuration indication.
 };
 
 // !@brief Flash Type Definition
@@ -209,20 +215,20 @@ typedef struct _FlexSPIConfig
 } flexspi_mem_config_t;
 
 /*  */
-#define NOR_CMD_LUT_SEQ_IDX_READ_NORMAL 0
+#define NOR_CMD_LUT_SEQ_IDX_READ 0
 #define NOR_CMD_LUT_SEQ_IDX_READSTATUSREG 1
-#define NOR_CMD_LUT_SEQ_IDX_READ_FAST_QUAD 2
+#define NOR_CMD_LUT_SEQ_IDX_READSTATUS_XPI 2
 #define NOR_CMD_LUT_SEQ_IDX_WRITEENABLE 3
-#define NOR_CMD_LUT_SEQ_IDX_READSTATUS_XPI 4
+#define NOR_CMD_LUT_SEQ_IDX_WRITESTATUSREG 4
 #define NOR_CMD_LUT_SEQ_IDX_ERASESECTOR 5
-#define NOR_CMD_LUT_SEQ_IDX_WRITESTATUSREG 6
-#define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD 7
-#define NOR_CMD_LUT_SEQ_IDX_READID 8
+#define NOR_CMD_LUT_SEQ_IDX_READQUAD 6
+#define NOR_CMD_LUT_SEQ_IDX_READID 7
+#define NOR_CMD_LUT_SEQ_IDX_ERASEBLOCK 8
 #define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM 9
-#define NOR_CMD_LUT_SEQ_IDX_ENTERQPI 10
+#define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD 10
 #define NOR_CMD_LUT_SEQ_IDX_CHIPERASE 11
-#define NOR_CMD_LUT_SEQ_IDX_EXITQPI 12
-#define NOR_CMD_LUT_SEQ_IDX_ERASEBLOCK 13
+// Index 12 is left empty
+#define NOR_CMD_LUT_SEQ_IDX_READ_SFDP 13
 
 #define HYPERFLASH_CMD_LUT_SEQ_IDX_READDATA    0
 #define HYPERFLASH_CMD_LUT_SEQ_IDX_WRITEDATA   1

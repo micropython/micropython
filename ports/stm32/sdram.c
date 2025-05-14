@@ -34,11 +34,19 @@
 #if defined(MICROPY_HW_FMC_SDCKE0) && defined(MICROPY_HW_FMC_SDNE0)
 #define FMC_SDRAM_BANK FMC_SDRAM_BANK1
 #define FMC_SDRAM_CMD_TARGET_BANK FMC_SDRAM_CMD_TARGET_BANK1
+#if MICROPY_HW_FMC_SWAP_BANKS
+#define SDRAM_START_ADDRESS 0x60000000
+#else
 #define SDRAM_START_ADDRESS 0xC0000000
+#endif
 #elif defined(MICROPY_HW_FMC_SDCKE1) && defined(MICROPY_HW_FMC_SDNE1)
 #define FMC_SDRAM_BANK FMC_SDRAM_BANK2
 #define FMC_SDRAM_CMD_TARGET_BANK FMC_SDRAM_CMD_TARGET_BANK2
+#if MICROPY_HW_FMC_SWAP_BANKS
+#define SDRAM_START_ADDRESS 0x70000000
+#else
 #define SDRAM_START_ADDRESS 0xD0000000
+#endif
 #endif
 
 // Provides the MPU_REGION_SIZE_X value when passed the size of region in bytes
@@ -58,6 +66,10 @@ bool sdram_init(void) {
     FMC_SDRAM_CommandTypeDef command;
 
     __HAL_RCC_FMC_CLK_ENABLE();
+
+    #if MICROPY_HW_FMC_SWAP_BANKS
+    HAL_SetFMCMemorySwappingConfig(FMC_SWAPBMAP_SDRAM_SRAM);
+    #endif
 
     #if defined(MICROPY_HW_FMC_SDCKE0)
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_SDCKE0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_SDCKE0);
@@ -233,15 +245,15 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
     /* Send the command */
     HAL_SDRAM_SendCommand(hsdram, command, 0x1000);
 
-    /* Step 8: Set the refresh rate counter
+    /* Step 8: Set the refresh rate counter.
+       Assuming 90MHz frequency, 8192 refresh cycles and 64ms refresh rate:
        RefreshRate = 64 ms / 8192 cyc = 7.8125 us/cyc
-
        RefreshCycles = 7.8125 us * 90 MHz = 703
        According to the formula on p.1665 of the reference manual,
        we also need to subtract 20 from the value, so the target
        refresh rate is 703 - 20 = 683.
      */
-    #define REFRESH_COUNT (MICROPY_HW_SDRAM_REFRESH_RATE * 90000 / 8192 - 20)
+    #define REFRESH_COUNT (MICROPY_HW_SDRAM_REFRESH_RATE * MICROPY_HW_SDRAM_FREQUENCY_KHZ / MICROPY_HW_SDRAM_REFRESH_CYCLES - 20)
     HAL_SDRAM_ProgramRefreshRate(hsdram, REFRESH_COUNT);
 
     #if defined(STM32F7) || defined(STM32H7)
@@ -251,7 +263,7 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
        then enable access/caching for the size used
     */
     uint32_t irq_state = mpu_config_start();
-    mpu_config_region(MPU_REGION_SDRAM1, SDRAM_START_ADDRESS, MPU_CONFIG_DISABLE(0x00, MPU_REGION_SIZE_512MB));
+    mpu_config_region(MPU_REGION_SDRAM1, SDRAM_START_ADDRESS, MPU_CONFIG_NOACCESS(0x00, MPU_REGION_SIZE_512MB));
     mpu_config_region(MPU_REGION_SDRAM2, SDRAM_START_ADDRESS, MPU_CONFIG_SDRAM(SDRAM_MPU_REGION_SIZE));
     mpu_config_end(irq_state);
     #endif

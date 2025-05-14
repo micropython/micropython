@@ -6,5 +6,5 @@ os from filesystem
 <module 'os' from 'ext/os.py'> True / 1
 time from filesystem
 <module 'time' from 'ext/time.py'> True <function> 1
-<module 'uos'> False False
-<module 'utime'> False False
+<module 'os'> False False
+<module 'time'> False False

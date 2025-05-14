@@ -29,9 +29,7 @@
 #include <stddef.h>
 
 enum {
-    #if MICROPY_PY_LWIP
-    PENDSV_DISPATCH_LWIP,
-    #endif
+    PENDSV_DISPATCH_SOFT_TIMER,
     #if MICROPY_PY_NETWORK_CYW43
     PENDSV_DISPATCH_CYW43,
     #endif
@@ -46,8 +44,10 @@ enum {
 
 typedef void (*pendsv_dispatch_t)(void);
 
+void pendsv_init(void);
 void pendsv_suspend(void);
 void pendsv_resume(void);
 void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
+bool pendsv_is_pending(size_t slot);
 
 #endif // MICROPY_INCLUDED_RP2_PENDSV_H

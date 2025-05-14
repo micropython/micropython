@@ -10,8 +10,7 @@
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_GENERATOR_PEND_THROW (0)
 #define MICROPY_PY_MATH             (0)
-#define MICROPY_PY_UHEAPQ           (0)
-#define MICROPY_PY_UTIMEQ           (0)
+#define MICROPY_PY_HEAPQ            (0)
 #define MICROPY_PY_THREAD           (0)
 
 // peripheral config

@@ -1,0 +1,15 @@
+--- instance0 ---
+0
+fifo0 (837, False, False, 0, b'')
+fifo1 (14080, True, False, 0, b'')
+1
+fifo0 (837, False, False, 0, b'\x01\x03')
+fifo1 (14081, True, False, 0, b'\xee')
+2
+fifo0 (837, False, False, 0, b'\x02\x03\x02\x03')
+fifo1 (14082, True, False, 0, b'\xee\xee')
+Timed out as expected
+--- instance1 ---
+0
+1
+2

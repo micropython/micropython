@@ -51,8 +51,9 @@ print('%c' % True)
 
 # Should be able to print dicts; in this case they aren't used
 # to lookup keywords in formats like %(foo)s
-print('%s' % {})
-print('%s' % ({},))
+print('%s' % {})      # dict treated as the single (positional) arg to %
+print('%s' % ({},))   # dict is the first (and only) arg in the positional arg tuple
+print('foo' % {})     # no error, dict treated as an empty map of named args
 
 # Cases when "*" used and there's not enough values total
 try:
@@ -65,7 +66,11 @@ except TypeError:
     print("TypeError")
 
 print("%(foo)s" % {"foo": "bar", "baz": False})
-print("%s %(foo)s %(foo)s" % {"foo": 1})
+print("%s %(foo)s %(foo)s" % {"foo": 1})  # dict consumed positionally, then used as map - ok
+try:
+    print("%(foo)s %s %(foo)s" % {"foo": 1})  # used as map, then positionally - not enough args
+except TypeError:
+    print("TypeError")
 try:
     print("%(foo)s" % {})
 except KeyError:

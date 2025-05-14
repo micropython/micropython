@@ -28,11 +28,14 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "py/stackctrl.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/runtime/softtimer.h"
+#include "shared/tinyusb/mp_usbd.h"
+#include "clock_config.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
 extern void adc_deinit_all(void);
@@ -43,6 +46,7 @@ extern void sercom_deinit_all(void);
 void samd_main(void) {
     mp_stack_set_top(&_estack);
     mp_stack_set_limit(&_estack - &_sstack - 1024);
+    mp_hal_time_ns_set_from_rtc();
 
     for (;;) {
         gc_init(&_sheap, &_eheap);
@@ -56,6 +60,10 @@ void samd_main(void) {
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");
+
+        mp_usbd_init();
+        check_usb_clock_recovery_mode();
+
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
@@ -89,6 +97,9 @@ void samd_main(void) {
         pwm_deinit_all();
         #endif
         soft_timer_deinit();
+        #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+        mp_usbd_deinit();
+        #endif
         gc_sweep_all();
         #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
         sercom_deinit_all();
