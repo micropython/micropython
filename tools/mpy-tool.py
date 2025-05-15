@@ -1765,6 +1765,55 @@ def merge_mpy(compiled_modules, output_file):
             f.write(merged_mpy)
 
 
+def parse_extract_segments_arg(arg):
+    kinds = set()
+    if arg is not None:
+        for kind in arg.lower().split(','):
+            if kind == 'meta':
+                kinds.add(MPYSegment.META)
+            elif kind == 'qstr':
+                kinds.add(MPYSegment.QSTR)
+            elif kind == 'obj':
+                kinds.add(MPYSegment.OBJ)
+            elif kind == 'code':
+                kinds.add(MPYSegment.CODE)
+            else:
+                raise Exception("unknown segment kind %s" % (kind,))
+    return kinds
+
+
+def extract_segments(compiled_modules, basename, kinds_arg):
+    import re
+
+    kinds = parse_extract_segments_arg(kinds_arg)
+    segments = []
+    for module in compiled_modules:
+        for segment in module.mpy_segments:
+            if not kinds or segment.kind in kinds:
+                segments.append((module.mpy_source_file, module.source_file.str, segment))
+    count_len = len(str(len(segments)))
+    kind_str = ('META', 'QSTR', 'OBJ', 'CODE')
+    sanitiser = re.compile("[^a-zA-Z0-9_.-]")
+    for counter, entry in enumerate(segments):
+        file_name, source_file, segment = entry
+        output_name = (
+            basename
+            + "_"
+            + str(counter).rjust(count_len, '0')
+            + "_"
+            + sanitiser.sub("_", source_file)
+            + "_"
+            + kind_str[segment.kind]
+            + "_"
+            + sanitiser.sub("_", str(segment.name))
+            + ".bin"
+        )
+        with open(file_name, 'rb') as source:
+            with open(output_name, 'wb') as output:
+                source.seek(segment.start)
+                output.write(source.read(segment.end - segment.start))
+
+
 def main(args=None):
     global global_qstrs
 
@@ -1794,6 +1843,14 @@ def main(args=None):
         type=int,
         default=16,
         help="mpz digit size used by target (default 16)",
+    )
+    cmd_parser.add_argument(
+        "-e", "--extract", metavar="BASE", type=str, help="write segments into separate files"
+    )
+    cmd_parser.add_argument(
+        "--extract-only",
+        metavar="KIND[,...]",
+        help="extract only segments of the given type (meta, qstr, obj, code)",
     )
     cmd_parser.add_argument("-o", "--output", default=None, help="output file")
     cmd_parser.add_argument("files", nargs="+", help="input .mpy files")
@@ -1847,6 +1904,9 @@ def main(args=None):
 
     if args.merge:
         merge_mpy(compiled_modules, args.output)
+
+    if args.extract:
+        extract_segments(compiled_modules, args.extract, args.extract_only)
 
 
 if __name__ == "__main__":
