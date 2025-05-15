@@ -116,6 +116,7 @@ list(APPEND MICROPY_SOURCE_PORT
     fatfs_port.c
     help.c
     machine_bitstream.c
+    machine_can.c
     machine_timer.c
     machine_pin.c
     machine_touchpad.c
