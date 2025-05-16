@@ -118,6 +118,7 @@
 #define MICROPY_HW_USB_PID_CDC_MSC_HID  (MICROPY_HW_USB_PID)
 
 // Murata 1YN configuration
+#define CYW43_USE_SPI                           (1)
 #define CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE     "lib/cyw43-driver/firmware/w43439_sdio_1yn_7_95_59_combined.h"
 #define CYW43_WIFI_NVRAM_INCLUDE_FILE           "lib/cyw43-driver/firmware/wifi_nvram_1yn.h"
 #define CYW43_BT_FIRMWARE_INCLUDE_FILE          "lib/cyw43-driver/firmware/cyw43_btfw_1yn.h"
