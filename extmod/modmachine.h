@@ -175,7 +175,7 @@ typedef struct _mp_machine_soft_i2c_obj_t {
 
 #endif
 
-#if MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI
+#if MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI || MICROPY_PY_MACHINE_PIO_SPI
 
 // SPI protocol.
 typedef struct _mp_machine_spi_p_t {
@@ -189,6 +189,8 @@ typedef struct _mp_machine_soft_spi_obj_t {
     mp_obj_base_t base;
     mp_soft_spi_obj_t spi;
 } mp_machine_soft_spi_obj_t;
+
+typedef mp_machine_soft_spi_obj_t machine_wiznet_pio_spi_obj_t;
 
 #endif
 
@@ -227,7 +229,12 @@ extern const mp_obj_dict_t mp_machine_i2c_locals_dict;
 extern const mp_obj_type_t mp_machine_soft_spi_type;
 extern const mp_machine_spi_p_t mp_machine_soft_spi_p;
 #endif
-#if MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI
+#if MICROPY_PY_MACHINE_WIZNET_PIO_SPI
+extern const mp_obj_type_t machine_wiznet_pio_spi_type;
+extern const mp_machine_spi_p_t machine_wiznet_pio_spi_p;
+#endif
+
+#if MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI || MICROPY_PY_MACHINE_WIZNET_PIO_SPI
 extern const mp_obj_dict_t mp_machine_spi_locals_dict;
 #endif
 
