@@ -36,13 +36,8 @@
 
 #define TIMER_DIVIDER  8
 
-#ifdef MICROPY_HW_CFG_ADB_SLOWER_2
-// APB_CLK_FREQ is 40MHz here.
-#define TIMER_SCALE    (APB_CLK_FREQ * 2 / TIMER_DIVIDER)
-#else
 // TIMER_BASE_CLK is normally 80MHz. TIMER_DIVIDER ought to divide this exactly
-#define TIMER_SCALE    (APB_CLK_FREQ / TIMER_DIVIDER)
-#endif
+#define TIMER_SCALE    ((((int)GPTIMER_CLK_SRC_DEFAULT == (int)SOC_MOD_CLK_PLL_F80M) ? 80000000 : APB_CLK_FREQ) / TIMER_DIVIDER)
 
 #define TIMER_FLAGS    0
 
