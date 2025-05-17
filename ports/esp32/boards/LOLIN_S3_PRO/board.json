@@ -1,0 +1,28 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "Battery Charging",
+        "External Flash",
+        "External RAM",
+        "Feather",
+        "JST-SH",
+        "RGB LED",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [
+        "lolin_s3_pro.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "S3 Pro",
+    "thumbnail": "",
+    "url": "https://www.wemos.cc/en/latest/s3/s3_pro.html",
+    "vendor": "Wemos"
+}
