@@ -40,12 +40,12 @@
 #include "soc/timer_periph.h"
 #include "machine_timer.h"
 
-#define TIMER_DIVIDER  8
+//#define TIMER_DIVIDER  8
 
 // TIMER_BASE_CLK is normally 80MHz. TIMER_DIVIDER ought to divide this exactly
-#define TIMER_SCALE    (APB_CLK_FREQ / TIMER_DIVIDER)
+//#define TIMER_SCALE    (APB_CLK_FREQ / TIMER_DIVIDER)
 
-#define TIMER_FLAGS    0
+//#define TIMER_FLAGS    0
 
 const mp_obj_type_t machine_timer_type;
 
