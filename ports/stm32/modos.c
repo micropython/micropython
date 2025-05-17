@@ -47,6 +47,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(mp_os_urandom_obj, mp_os_urandom);
 #endif
 
 bool mp_os_dupterm_is_builtin_stream(mp_const_obj_t stream) {
+    return false;
+    /*
     const mp_obj_type_t *type = mp_obj_get_type(stream);
     return false
            #if MICROPY_PY_MACHINE_UART
@@ -56,6 +58,7 @@ bool mp_os_dupterm_is_builtin_stream(mp_const_obj_t stream) {
            || type == &pyb_usb_vcp_type
            #endif
     ;
+    */
 }
 
 void mp_os_dupterm_stream_detached_attached(mp_obj_t stream_detached, mp_obj_t stream_attached) {

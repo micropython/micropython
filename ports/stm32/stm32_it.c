@@ -343,6 +343,10 @@ void OTG_FS_IRQHandler(void) {
 }
 #endif
 #if MICROPY_HW_USB_HS
+#if defined(STM32N6)
+#define OTG_HS_IRQHandler USB1_OTG_HS_IRQHandler
+// TODO how to handle wakeup irq?
+#endif
 void OTG_HS_IRQHandler(void) {
     IRQ_ENTER(OTG_HS_IRQn);
     HAL_PCD_IRQHandler(&pcd_hs_handle);
@@ -358,6 +362,7 @@ void OTG_HS_IRQHandler(void) {
   */
 static void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
 
+#if 0
     if (pcd_handle->Init.low_power_enable) {
         /* Reset SLEEPDEEP bit of Cortex System Control Register */
         SCB->SCR &= (uint32_t) ~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
@@ -396,6 +401,7 @@ static void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
         __HAL_PCD_UNGATE_PHYCLOCK(pcd_handle);
     }
 
+#endif
 }
 #endif
 
@@ -409,6 +415,7 @@ void OTG_FS_WKUP_IRQHandler(void) {
     IRQ_ENTER(OTG_FS_WKUP_IRQn);
 
     OTG_CMD_WKUP_Handler(&pcd_fs_handle);
+#if 0
 
     #if defined(STM32L4)
     EXTI->PR1 = USB_OTG_FS_WAKEUP_EXTI_LINE;
@@ -416,6 +423,7 @@ void OTG_FS_WKUP_IRQHandler(void) {
     /* Clear EXTI pending Bit*/
     __HAL_USB_FS_EXTI_CLEAR_FLAG();
     #endif
+#endif
 
     IRQ_EXIT(OTG_FS_WKUP_IRQn);
 }
@@ -432,7 +440,7 @@ void OTG_HS_WKUP_IRQHandler(void) {
 
     OTG_CMD_WKUP_Handler(&pcd_hs_handle);
 
-    #if !defined(STM32H5) && !defined(STM32H7)
+    #if !defined(STM32H5) && !defined(STM32H7) &&!defined(STM32N6)
     /* Clear EXTI pending Bit*/
     __HAL_USB_HS_EXTI_CLEAR_FLAG();
     #endif
@@ -480,7 +488,7 @@ void ETH_WKUP_IRQHandler(void) {
 }
 #endif
 
-#if defined(STM32H5)
+#if defined(STM32H5) || defined(STM32N6)
 void TAMP_IRQHandler(void) {
     IRQ_ENTER(TAMP_IRQn);
     Handle_EXTI_Irq(EXTI_RTC_TAMP);
@@ -500,17 +508,25 @@ void TAMP_STAMP_IRQHandler(void) {
 }
 #endif
 
+#include "led.h"
 #if defined(STM32H5)
 void RTC_IRQHandler(void)
+#elif defined(STM32N6)
+#define RTC_WKUP_IRQn RTC_S_IRQn
+void RTC_S_IRQHandler(void)
 #else
 void RTC_WKUP_IRQHandler(void)
 #endif
 {
+    int state = 0;
+    state = 1 - state;
+    led_state(3, state);
+    MP_STATIC_ASSERT(RTC_WKUP_IRQn > 0);
     IRQ_ENTER(RTC_WKUP_IRQn);
     #if defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
     RTC->MISR &= ~RTC_MISR_WUTMF; // clear wakeup interrupt flag
-    #elif defined(STM32H5)
-    RTC->SCR = RTC_SCR_CWUTF; // clear wakeup interrupt flag
+    #elif defined(STM32H5) || defined(STM32N6)
+    LL_RTC_ClearFlag_WUT(RTC);
     #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
     RTC->SR &= ~RTC_SR_WUTF; // clear wakeup interrupt flag
     #else
@@ -519,6 +535,12 @@ void RTC_WKUP_IRQHandler(void)
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
     IRQ_EXIT(RTC_WKUP_IRQn);
 }
+
+#if defined(STM32N6)
+void RTC_IRQHandler(void) {
+    RTC_S_IRQHandler();
+}
+#endif
 
 #if defined(STM32F0) || defined(STM32G0) || defined(STM32L0)
 

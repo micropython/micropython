@@ -26,11 +26,30 @@
     *(.text.FLASH_WaitForLastOperation)
     *(.text.HAL_FLASHEx_Erase)
     *(.text.HAL_GetTick)
+    *drivers/memory/spiflash.o(.text* .rodata*)
 
     __isr_vector_ram_end = .;
     . = ALIGN(4);
 
 } >RAM AT >FLASH_ISR
 
+/* This section is used when waking from STANDBY. */
+.iram_bootloader :
+{
+    . = ALIGN(4);
+    _siram = .;
+    KEEP(*(.*.iram_bootloader_isr_vector));
+    *(.*.iram_bootloader_reset);
+    *(*.memcpy);
+    *(*.mp_hal_gpio_clock_enable);
+    *(*.mp_hal_pin_config);
+    *(*.mp_hal_pin_config_speed);
+    *xspi.o(.text* .rodata*);
+    *(*.rodata.pin_N*_obj);
+    . = ALIGN(4);
+    _eiram = .;
+} >IRAM AT> FLASH_COMMON
+
 /* Used by the start-up code to initialise data */
 __isr_vector_flash_addr = LOADADDR(.isr_vector);
+_siiram = LOADADDR(.iram_bootloader);
