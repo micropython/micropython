@@ -701,6 +701,7 @@ static const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
 
     C(MSG_DONTROUTE),
     C(MSG_DONTWAIT),
+    C(MSG_PEEK),
 
     C(SOL_SOCKET),
     C(SO_BROADCAST),
