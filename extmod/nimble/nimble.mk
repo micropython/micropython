@@ -8,6 +8,9 @@ NIMBLE_EXTMOD_DIR = $(EXTMOD_DIR)/nimble
 SRC_EXTMOD_C += $(NIMBLE_EXTMOD_DIR)/modbluetooth_nimble.c
 
 CFLAGS_EXTMOD += -DMICROPY_BLUETOOTH_NIMBLE=1
+ifneq ("$(MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING)", "")
+CFLAGS_EXTMOD += -DMICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING=$(MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING)
+endif
 
 # Use NimBLE from the submodule in lib/mynewt-nimble by default,
 # allowing a port to use their own system version (e.g. ESP32).
