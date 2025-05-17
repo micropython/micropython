@@ -31,6 +31,7 @@
 #if MICROPY_PY_LWIP
 
 #include "shared/runtime/softtimer.h"
+#include "lwip/netif.h"
 #include "lwip/timeouts.h"
 
 // Poll lwIP every 64ms by default
@@ -38,6 +39,9 @@
 
 // Soft timer for running lwIP in the background.
 static soft_timer_entry_t mp_network_soft_timer;
+
+// Callback for change of netif state
+NETIF_DECLARE_EXT_CALLBACK(netif_callback)
 
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
@@ -137,17 +141,48 @@ static void mp_network_soft_timer_callback(soft_timer_entry_t *self) {
     #if MICROPY_PY_NETWORK_WIZNET5K
     wiznet5k_poll();
     #endif
+
+    // Only keep the timer running if any TCP sockets are active, or any netif is up
+    struct netif *netif;
+    extern void *tcp_active_pcbs;
+    bool keep_running = (tcp_active_pcbs != NULL);
+    if (!keep_running) {
+        NETIF_FOREACH(netif) {
+            if (netif->flags & NETIF_FLAG_LINK_UP) {
+                keep_running = true;
+                break;
+            }
+        }
+    }
+
+    // Periodic timer will re-queue as soon as this handler exits,
+    // one shot timer will not
+    mp_network_soft_timer.mode = keep_running ? SOFT_TIMER_MODE_PERIODIC : SOFT_TIMER_MODE_ONE_SHOT;
 }
+
+static void mp_network_netif_status_cb(struct netif *netif, netif_nsc_reason_t reason, const netif_ext_callback_args_t *args);
 
 void mod_network_lwip_init(void) {
     soft_timer_static_init(
         &mp_network_soft_timer,
-        SOFT_TIMER_MODE_PERIODIC,
+        SOFT_TIMER_MODE_ONE_SHOT,
         LWIP_TICK_RATE_MS,
         mp_network_soft_timer_callback
         );
 
-    soft_timer_reinsert(&mp_network_soft_timer, LWIP_TICK_RATE_MS);
+    if (netif_callback.callback_fn == NULL) {
+        netif_add_ext_callback(&netif_callback, mp_network_netif_status_cb);
+    }
+}
+
+static void mp_network_netif_status_cb(struct netif *netif, netif_nsc_reason_t reason, const netif_ext_callback_args_t *args) {
+    // Start the network soft timer any time an interface comes up, unless
+    // it's already running
+    if (reason == LWIP_NSC_LINK_CHANGED && args->link_changed.state
+        && mp_network_soft_timer.mode == SOFT_TIMER_MODE_ONE_SHOT) {
+        mp_network_soft_timer.mode = SOFT_TIMER_MODE_PERIODIC;
+        soft_timer_reinsert(&mp_network_soft_timer, LWIP_TICK_RATE_MS);
+    }
 }
 
 #endif // MICROPY_PY_LWIP
