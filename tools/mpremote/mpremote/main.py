@@ -26,6 +26,8 @@ from .commands import (
     CommandError,
     do_connect,
     do_disconnect,
+    do_reconnect,
+    do_reconnect_cmd,
     do_edit,
     do_filesystem,
     do_mount,
@@ -281,6 +283,10 @@ _COMMANDS = {
         do_resume,
         argparse_none("resume a previous mpremote session (will not auto soft-reset)"),
     ),
+    "reconnect": (
+        do_reconnect_cmd,
+        argparse_none("enable automatic reconnection on disconnect"),
+    ),
     "soft-reset": (
         do_soft_reset,
         argparse_none("perform a soft-reset of the device"),
@@ -493,6 +499,9 @@ class State:
         self.transport = None
         self._did_action = False
         self._auto_soft_reset = True
+        self.reconnect_enabled = False
+        self.connect_device = None
+        self.was_resumed = False
 
     def did_action(self):
         self._did_action = True
@@ -574,11 +583,24 @@ def main():
         # If no commands were "actions" then implicitly finish with the REPL
         # using default args.
         if state.run_repl_on_completion():
-            disconnected = do_repl(state, argparse_repl().parse_args([]))
+            while True:
+                disconnected = do_repl(state, argparse_repl().parse_args([]))
 
-            # Handle disconnection message
-            if disconnected:
-                print("\ndevice disconnected")
+                # Handle disconnection message
+                if disconnected:
+                    print("\nDevice disconnected")
+
+                    # Try to reconnect if enabled
+                    if state.reconnect_enabled:
+                        do_disconnect(state)  # Clean up current connection state
+                        if do_reconnect(state):
+                            # Successfully reconnected, continue the loop
+                            # Reset action state for the new connection
+                            state._did_action = False
+                            continue
+
+                # If not reconnecting or reconnect failed, exit
+                break
 
         return 0
     except CommandError as e:
