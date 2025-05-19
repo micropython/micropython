@@ -54,6 +54,10 @@ If no command is specified, the default command is ``repl``. Additionally, if
 any command needs to access the device, and no earlier ``connect`` has been
 specified, then an implicit ``connect auto`` is added.
 
+By default, ``mpremote`` will automatically reconnect to the device if it
+disconnects. You can disable this behavior using the ``once`` command, the
+``MPREMOTE_RECONNECT`` environment variable, or the user config file.
+
 In order to get the device into a known state for any action command
 (except ``repl``), once connected ``mpremote`` will stop any running program
 and soft-reset the device before running the first command. You can control
@@ -67,6 +71,7 @@ The full list of supported commands are:
 - `connect <mpremote_command_connect>`
 - `disconnect <mpremote_command_disconnect>`
 - `resume <mpremote_command_resume>`
+- `once <mpremote_command_once>`
 - `soft_reset <mpremote_command_soft_reset>`
 - `repl <mpremote_command_repl>`
 - `eval <mpremote_command_eval>`
@@ -134,6 +139,21 @@ The full list of supported commands are:
 
   This disables :ref:`auto-soft-reset <mpremote_reset>`. This is useful if you
   want to run a subsequent command on a board without first soft-resetting it.
+
+.. _mpremote_command_once:
+
+- **once** -- disable automatic reconnection on disconnect:
+
+  .. code-block:: bash
+
+      $ mpremote once
+
+  This disables automatic reconnection, causing mpremote to exit when the
+  device disconnects. By default, mpremote will automatically reconnect to
+  the device if it disconnects. The ``once`` command takes precedence over
+  the ``MPREMOTE_RECONNECT`` environment variable and config file settings,
+  making it useful for scripts that should exit on disconnect (e.g., in
+  automated testing or CI/CD environments).
 
 .. _mpremote_command_soft_reset:
 
@@ -469,6 +489,43 @@ Auto-soft-reset behaviour can be controlled by the ``resume`` command. This
 might be useful to use the ``eval`` command to inspect the state of of the
 device.  The ``soft-reset`` command can be used to perform an explicit soft
 reset in the middle of a sequence of commands.
+
+.. _mpremote_configuration:
+
+Configuration
+-------------
+
+``mpremote`` can be configured via environment variables and a user
+configuration file.
+
+Environment Variables
+~~~~~~~~~~~~~~~~~~~~~
+
+The following environment variables control default behavior:
+
+- ``MPREMOTE_RECONNECT``: Controls automatic reconnection on disconnect.
+  Set to ``0`` or ``false`` to disable (exit on disconnect).
+  Set to ``1``, ``true``, ``yes``, or ``on`` to enable (reconnect automatically).
+  The default is enabled. This setting takes precedence over the config file,
+  but the ``once`` command takes precedence over this environment variable.
+
+User Configuration File
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The user configuration file (see :ref:`mpremote_shortcuts` for location details)
+can contain a ``reconnect`` variable to control the default reconnection behavior:
+
+.. code-block:: python3
+
+    # Disable auto-reconnect by default
+    reconnect = False
+
+The reconnection behavior priority order is:
+
+1. The ``once`` command (highest priority - explicit command-line override)
+2. The ``MPREMOTE_RECONNECT`` environment variable
+3. The config file ``reconnect`` setting
+4. Default behavior (auto-reconnect enabled)
 
 .. _mpremote_shortcuts:
 
