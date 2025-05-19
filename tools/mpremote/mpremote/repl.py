@@ -24,9 +24,33 @@ def do_repl_main_loop(
                 break
             elif c == b"\x04":  # ctrl-D
                 # special handling needed for ctrl-D if filesystem is mounted
-                state.transport.write_ctrl_d(console_out_write)
+                try:
+                    state.transport.write_ctrl_d(console_out_write)
+                except serial.SerialException as e:
+                    # Handle write errors during disconnect
+                    if (
+                        "Write timeout" in str(e)
+                        or "Device disconnected" in str(e)
+                        or "ClearCommError failed" in str(e)
+                    ):
+                        disconnected = True
+                        break
+                    else:
+                        raise
             elif c == b"\x0a" and code_to_inject is not None:  # ctrl-j, inject code
-                state.transport.serial.write(code_to_inject)
+                try:
+                    state.transport.serial.write(code_to_inject)
+                except serial.SerialException as e:
+                    # Handle write errors during disconnect
+                    if (
+                        "Write timeout" in str(e)
+                        or "Device disconnected" in str(e)
+                        or "ClearCommError failed" in str(e)
+                    ):
+                        disconnected = True
+                        break
+                    else:
+                        raise
             elif c == b"\x0b" and file_to_inject is not None:  # ctrl-k, inject script
                 console_out_write(bytes("Injecting %s\r\n" % file_to_inject, "utf8"))
                 state.transport.enter_raw_repl(soft_reset=False)
@@ -39,7 +63,19 @@ def do_repl_main_loop(
                     console_out_write(er)
                 state.transport.exit_raw_repl()
             else:
-                state.transport.serial.write(c)
+                try:
+                    state.transport.serial.write(c)
+                except serial.SerialException as e:
+                    # Handle write errors during disconnect
+                    if (
+                        "Write timeout" in str(e)
+                        or "Device disconnected" in str(e)
+                        or "ClearCommError failed" in str(e)
+                    ):
+                        disconnected = True
+                        break
+                    else:
+                        raise
 
         try:
             n = state.transport.serial.inWaiting()
