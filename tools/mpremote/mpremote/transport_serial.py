@@ -44,7 +44,7 @@ from .transport import TransportError, TransportExecError, Transport
 class SerialTransport(Transport):
     fs_hook_mount = "/remote"  # MUST match the mount point in fs_hook_code
 
-    def __init__(self, device, baudrate=115200, wait=0, exclusive=True, timeout=None):
+    def __init__(self, device, baudrate=115200, wait=0, exclusive=True, timeout=None, dtr=None, rts=None):
         self.in_raw_repl = False
         self.use_raw_paste = True
         self.device_name = device
@@ -80,6 +80,10 @@ class SerialTransport(Transport):
                     self.serial.open()
                 else:
                     self.serial = serial.Serial(device, **serial_kwargs)
+                    if dtr:
+                        self.serial.dtr = (dtr == "1" or dtr == "on")  # DTR False = gpio0 High = Normal boot
+                    if rts:
+                        self.serial.rts = (rts == "1" or rts == "on")  # RTS False = EN High = MCU enabled
                 break
             except OSError:
                 if wait == 0:
