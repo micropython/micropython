@@ -603,6 +603,11 @@
 #define MICROPY_ENABLE_EXTERNAL_IMPORT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Whether to enable parsing __all__ when importing all public symbols from modules
+#ifndef MICROPY_ENABLE_MODULE_IMPORT_ALL
+#define MICROPY_ENABLE_MODULE_IMPORT_ALL (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
+#endif
+
 // Whether to use the POSIX reader for importing files
 #ifndef MICROPY_READER_POSIX
 #define MICROPY_READER_POSIX (0)
