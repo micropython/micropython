@@ -267,7 +267,14 @@ class ProcessPtyToTerminal:
 
 class Pyboard:
     def __init__(
-        self, device, baudrate=115200, user="micro", password="python", wait=0, exclusive=True
+        self,
+        device,
+        baudrate=115200,
+        user="micro",
+        password="python",
+        wait=0,
+        exclusive=True,
+        timeout=None,
     ):
         self.in_raw_repl = False
         self.use_raw_paste = True
@@ -283,7 +290,11 @@ class Pyboard:
             import serial.tools.list_ports
 
             # Set options, and exclusive if pyserial supports it
-            serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1}
+            serial_kwargs = {
+                "baudrate": baudrate,
+                "timeout": timeout,
+                "interCharTimeout": 1,
+            }
             if serial.__version__ >= "3.3":
                 serial_kwargs["exclusive"] = exclusive
 
@@ -324,13 +335,20 @@ class Pyboard:
         self.serial.close()
 
     def read_until(self, min_num_bytes, ending, timeout=10, data_consumer=None):
-        # if data_consumer is used then data is not accumulated and the ending must be 1 byte long
-        assert data_consumer is None or len(ending) == 1
+        """
+        min_num_bytes: Obsolete.
+        ending: Return if 'ending' matches.
+        timeout [s]: Return if timeout between characters. None: Infinite timeout.
+        data_consumer: Use callback for incoming characters.
+            If data_consumer is used then data is not accumulated and the ending must be 1 byte long
 
-        data = self.serial.read(min_num_bytes)
-        if data_consumer:
-            data_consumer(data)
-        timeout_count = 0
+        It is not visible to the caller why the function returned. It could be ending or timeout.
+        """
+        assert data_consumer is None or len(ending) == 1
+        assert isinstance(timeout, (type(None), int, float))
+
+        data = b""
+        begin_char_s = time.monotonic()
         while True:
             if data.endswith(ending):
                 break
@@ -341,10 +359,9 @@ class Pyboard:
                     data = new_data
                 else:
                     data = data + new_data
-                timeout_count = 0
+                begin_char_s = time.monotonic()
             else:
-                timeout_count += 1
-                if timeout is not None and timeout_count >= 100 * timeout:
+                if timeout is not None and time.monotonic() >= begin_char_s + timeout:
                     break
                 time.sleep(0.01)
         return data
