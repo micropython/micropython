@@ -101,6 +101,8 @@
 // Enable the unix-specific "time" module.
 #define MICROPY_PY_TIME                (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS   (1)
+#define MICROPY_PY_TIME_TIME_HAS_SUBSECOND (1)
+#define MICROPY_PY_TIME_TIME_FLOAT     (MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL >= MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_PY_TIME_CUSTOM_SLEEP   (1)
 #define MICROPY_PY_TIME_INCLUDEFILE    "ports/unix/modtime.c"
 
