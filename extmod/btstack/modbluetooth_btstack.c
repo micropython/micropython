@@ -34,6 +34,8 @@
 #include "extmod/modbluetooth.h"
 
 #include "lib/btstack/src/btstack.h"
+#include "lib/btstack/src/ble/le_device_db_tlv.h"
+#include "lib/btstack/src/btstack_tlv.h"
 
 #define DEBUG_printf(...) // printf("btstack: " __VA_ARGS__)
 
@@ -300,6 +302,12 @@ static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel
             desc->sm_connection_authenticated,
             desc->sm_le_db_index != -1,
             desc->sm_actual_encryption_key_size);
+    } else if (event_type == SM_EVENT_PASSKEY_DISPLAY_NUMBER) {
+        mp_bluetooth_gap_on_passkey_action(sm_event_passkey_display_number_get_handle(packet), MP_BLUETOOTH_PASSKEY_ACTION_DISPLAY, sm_event_passkey_display_number_get_passkey(packet));
+    } else if (event_type == SM_EVENT_PASSKEY_INPUT_NUMBER) {
+        mp_bluetooth_gap_on_passkey_action(sm_event_passkey_input_number_get_handle(packet), MP_BLUETOOTH_PASSKEY_ACTION_INPUT, 0);
+    } else if (event_type == SM_EVENT_NUMERIC_COMPARISON_REQUEST) {
+        mp_bluetooth_gap_on_passkey_action(sm_event_numeric_comparison_request_get_handle(packet), MP_BLUETOOTH_PASSKEY_ACTION_NUMERIC_COMPARISON, sm_event_numeric_comparison_request_get_passkey(packet));
         #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
     } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         DEBUG_printf("  --> hci disconnect complete\n");
@@ -372,7 +380,10 @@ static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel
     }
 }
 
-static btstack_packet_callback_registration_t hci_event_callback_registration = {
+static btstack_packet_callback_registration_t mp_hci_event_callback_registration = {
+    .callback = &btstack_packet_handler_generic
+};
+static btstack_packet_callback_registration_t mp_sm_event_callback_registration = {
     .callback = &btstack_packet_handler_generic
 };
 
@@ -590,9 +601,12 @@ static void deinit_stack(void) {
     hci_deinit();
     btstack_memory_deinit();
     btstack_run_loop_deinit();
+    btstack_crypto_deinit();
 
     MP_STATE_PORT(bluetooth_btstack_root_pointers) = NULL;
 }
+
+static const btstack_tlv_t btstack_tlv_mp;
 
 int mp_bluetooth_init(void) {
     DEBUG_printf("mp_bluetooth_init\n");
@@ -623,6 +637,8 @@ int mp_bluetooth_init(void) {
     mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_STARTING;
 
     l2cap_init();
+    btstack_tlv_set_instance(&btstack_tlv_mp, NULL);
+    le_device_db_tlv_configure(&btstack_tlv_mp, NULL);
     le_device_db_init();
     sm_init();
 
@@ -641,7 +657,9 @@ int mp_bluetooth_init(void) {
     #endif // MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 
     // Register for HCI events.
-    hci_add_event_handler(&hci_event_callback_registration);
+    hci_add_event_handler(&mp_hci_event_callback_registration);
+
+    sm_add_event_handler(&mp_sm_event_callback_registration);
 
     // Register for ATT server events.
     att_server_register_packet_handler(&btstack_packet_handler_att_server);
@@ -771,10 +789,14 @@ void mp_bluetooth_set_address_mode(uint8_t addr_mode) {
             set_random_address();
             break;
         }
-        case MP_BLUETOOTH_ADDRESS_MODE_RPA:
-        case MP_BLUETOOTH_ADDRESS_MODE_NRPA:
-            // Not yet supported.
-            mp_raise_OSError(MP_EINVAL);
+        case MP_BLUETOOTH_ADDRESS_MODE_RPA: {
+            gap_random_address_set_mode(GAP_RANDOM_ADDRESS_RESOLVABLE);
+            break;
+        }
+        case MP_BLUETOOTH_ADDRESS_MODE_NRPA: {
+            gap_random_address_set_mode(GAP_RANDOM_ADDRESS_NON_RESOLVABLE);
+            break;
+        }
     }
 }
 
@@ -1264,7 +1286,26 @@ int mp_bluetooth_gap_pair(uint16_t conn_handle) {
 
 int mp_bluetooth_gap_passkey(uint16_t conn_handle, uint8_t action, mp_int_t passkey) {
     DEBUG_printf("mp_bluetooth_gap_passkey: conn_handle=%d action=%d passkey=%d\n", conn_handle, action, (int)passkey);
-    return MP_EOPNOTSUPP;
+    switch (action) {
+        case MP_BLUETOOTH_PASSKEY_ACTION_INPUT: {
+            sm_passkey_input(conn_handle, passkey);
+            break;
+        }
+        case MP_BLUETOOTH_PASSKEY_ACTION_DISPLAY: {
+            sm_use_fixed_passkey_in_display_role(passkey);
+            break;
+        }
+        case MP_BLUETOOTH_PASSKEY_ACTION_NUMERIC_COMPARISON: {
+            if (passkey != 0) {
+                sm_numeric_comparison_confirm(conn_handle);
+            }
+            break;
+        }
+        default: {
+            return MP_EINVAL;
+        }
+    }
+    return 0;
 }
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
@@ -1544,5 +1585,42 @@ int mp_bluetooth_l2cap_recvinto(uint16_t conn_handle, uint16_t cid, uint8_t *buf
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 
 MP_REGISTER_ROOT_POINTER(struct _mp_bluetooth_btstack_root_pointers_t *bluetooth_btstack_root_pointers);
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+
+static int btstack_tlv_mp_get_tag(void *context, uint32_t tag, uint8_t *buffer, uint32_t buffer_size) {
+    UNUSED(context);
+    const uint8_t *data;
+    size_t data_len;
+    if (!mp_bluetooth_gap_on_get_secret(0, 0, (uint8_t *)&tag, sizeof(tag), &data, &data_len)) {
+        return -1;
+    }
+    if (data_len > buffer_size) {
+        return -1;
+    }
+    memcpy(buffer, data, data_len);
+    return data_len;
+}
+
+static int btstack_tlv_mp_store_tag(void *context, uint32_t tag, const uint8_t *data, uint32_t data_size) {
+    UNUSED(context);
+    if (mp_bluetooth_gap_on_set_secret(0, (uint8_t *)&tag, sizeof(tag), (uint8_t *)data, data_size)) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+static void btstack_tlv_mp_delete_tag(void *context, uint32_t tag) {
+    mp_bluetooth_gap_on_set_secret(0, (uint8_t *)&tag, sizeof(tag), NULL, 0);
+}
+
+static const btstack_tlv_t btstack_tlv_mp = {
+    &btstack_tlv_mp_get_tag,
+    &btstack_tlv_mp_store_tag,
+    &btstack_tlv_mp_delete_tag,
+};
+
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
