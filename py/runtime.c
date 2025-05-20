@@ -1247,6 +1247,19 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
             mp_raise_msg_varg(&mp_type_AttributeError,
                 MP_ERROR_TEXT("type object '%q' has no attribute '%q'"),
                 ((mp_obj_type_t *)MP_OBJ_TO_PTR(base))->name, attr);
+        #if MICROPY_MODULE___ALL__ && MICROPY_ERROR_REPORTING >= MICROPY_ERROR_REPORTING_DETAILED
+        } else if (mp_obj_is_type(base, &mp_type_module)) {
+            // report errors in __all__ as done by CPython
+            mp_obj_t dest_name[2];
+            qstr module_name = MP_QSTR_;
+            mp_load_method_maybe(base, MP_QSTR___name__, dest_name);
+            if (mp_obj_is_qstr(dest_name[0])) {
+                module_name = mp_obj_str_get_qstr(dest_name[0]);
+            }
+            mp_raise_msg_varg(&mp_type_AttributeError,
+                MP_ERROR_TEXT("module '%q' has no attribute '%q'"),
+                module_name, attr);
+        #endif
         } else {
             mp_raise_msg_varg(&mp_type_AttributeError,
                 MP_ERROR_TEXT("'%s' object has no attribute '%q'"),
@@ -1593,8 +1606,28 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
 void mp_import_all(mp_obj_t module) {
     DEBUG_printf("import all %p\n", module);
 
-    // TODO: Support __all__
     mp_map_t *map = &mp_obj_module_get_globals(module)->map;
+
+    #if MICROPY_MODULE___ALL__
+    mp_map_elem_t *elem = mp_map_lookup(map, MP_OBJ_NEW_QSTR(MP_QSTR___all__), MP_MAP_LOOKUP);
+    if (elem != NULL) {
+        // When __all__ is defined, we must explicitly load all specified
+        // symbols, possibly invoking the module __getattr__ function
+        size_t len;
+        mp_obj_t *items;
+        mp_obj_get_array(elem->value, &len, &items);
+        for (size_t i = 0; i < len; i++) {
+            qstr qname = mp_obj_str_get_qstr(items[i]);
+            mp_obj_t dest[2];
+            mp_load_method(module, qname, dest);
+            mp_store_name(qname, dest[0]);
+        }
+        return;
+    }
+    #endif
+
+    // By default, the set of public names includes all names found in the module's
+    // namespace which do not begin with an underscore character ('_')
     for (size_t i = 0; i < map->alloc; i++) {
         if (mp_map_slot_is_filled(map, i)) {
             // Entry in module global scope may be generated programmatically
