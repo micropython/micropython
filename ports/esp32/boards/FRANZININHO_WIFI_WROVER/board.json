@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy_s2.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "2 LEDs onboard",
+        "USB-C",
+        "WiFi",
+        "SPIRAM"
+    ],
+    "images": [
+        "FRANZININHO_WIFI_WROVER.jpg"
+    ],
+    "mcu": "esp32s2",
+    "product": "Franzininho WiFi WROVER",
+    "thumbnail": "",
+    "url": "https://docs.franzininho.com.br/docs/franzininho-wifi/franzininho-wifi",
+    "vendor": "Franzininho"
+}
