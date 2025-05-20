@@ -30,8 +30,6 @@
 #include "py/mphal.h"
 #include "adc.h"
 
-#if 0
-
 #if defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 #define ADC_V2 (1)
 #else
@@ -91,7 +89,6 @@
 
 // Timeout for waiting for end-of-conversion
 #define ADC_EOC_TIMEOUT_MS (10)
-#endif
 
 // Channel IDs for machine.ADC object
 typedef enum _machine_adc_internal_ch_t {
@@ -113,7 +110,6 @@ typedef enum _machine_adc_internal_ch_t {
     MACHINE_ADC_CH_VREF = 0xffff // 0xffff for backward compatibility
 } machine_adc_internal_ch_t;
 
-#if 0
 // Convert machine_adc_internal_ch_t value to STM32 library ADC channel literal.
 // This function is required as literals are uint32_t types that don't map with MP_ROM_INT (31 bit signed).
 static uint32_t adc_ll_channel(uint32_t channel_id) {
@@ -491,7 +487,6 @@ uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sa
     return raw << (16 - bits) | raw >> (2 * bits - 16);
 }
 
-#endif
 /******************************************************************************/
 // MicroPython bindings for machine.ADC
 

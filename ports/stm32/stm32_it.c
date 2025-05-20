@@ -521,7 +521,6 @@ void RTC_WKUP_IRQHandler(void)
     int state = 0;
     state = 1 - state;
     led_state(3, state);
-    MP_STATIC_ASSERT(RTC_WKUP_IRQn > 0);
     IRQ_ENTER(RTC_WKUP_IRQn);
     #if defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
     RTC->MISR &= ~RTC_MISR_WUTMF; // clear wakeup interrupt flag

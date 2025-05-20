@@ -1070,9 +1070,6 @@ int uart_rx_char(machine_uart_obj_t *self) {
     } else {
         // no buffering
         #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
-        GPIOG->BSRR = 0x10000 << 0;
-        for (volatile int i = 0; i < 100000; ++i);
-        GPIOG->BSRR = 1 << 0;
         int data = self->uartx->RDR & self->char_mask;
         self->uartx->ICR = USART_ICR_ORECF; // clear ORE if it was set
         return data;

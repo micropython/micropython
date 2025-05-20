@@ -685,10 +685,12 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
 
-#if defined(STM32F0) || defined(STM32H5) || defined(STM32L0) || defined(STM32N6)
-#define RTC_WKUP_IRQn RTC_S_IRQn
+#if defined(STM32F0) || defined(STM32H5) || defined(STM32L0)
+#define RTC_WKUP_IRQn RTC_IRQn
 #elif defined(STM32G0)
 #define RTC_WKUP_IRQn RTC_TAMP_IRQn
+#elif defined(STM32N6)
+#define RTC_WKUP_IRQn RTC_S_IRQn
 #endif
 
 #include <stdio.h>
@@ -823,7 +825,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         EXTI->PR1 = 1 << EXTI_RTC_WAKEUP;
         #elif defined(STM32H7)
         EXTI_D1->PR1 = 1 << EXTI_RTC_WAKEUP;
-        #elif defined(STM32G0) || defined(STM32N6)
+        #elif defined(STM32G0) || defined(STM32H5) || defined(STM32N6)
         // Do nothing
         #else
         EXTI->PR = 1 << EXTI_RTC_WAKEUP;
