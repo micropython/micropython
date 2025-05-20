@@ -8,4 +8,7 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions);MICROPY_ROM_TEXT_COMPRESSION=1</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <PySubmodules Include="lib/micropython-lib" />
+  </ItemGroup>
 </Project>

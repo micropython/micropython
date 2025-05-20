@@ -1,5 +1,6 @@
 --- instance0 ---
-b'GET / HTTP'
-OSError True
+True
+NEXT
 --- instance1 ---
-
+True
+NEXT
