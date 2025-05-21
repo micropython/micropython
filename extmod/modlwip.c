@@ -854,6 +854,12 @@ static mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
         }
     }
 
+    if (socket->state == STATE_LISTENING) {
+        // original socket in listening state, not the accepted connection.
+        *_errno = MP_ENOTCONN;
+        return -1;
+    }
+
     MICROPY_PY_LWIP_ENTER
 
     assert(socket->pcb.tcp != NULL);
