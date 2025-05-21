@@ -233,11 +233,12 @@ def main():
         file for file in glob.iglob("extmod/*.py") if file.split("/")[1].startswith(NATMOD_LIBS)
     ]
     tests_multi_net = [file for file in glob.iglob("multi_net/*.py")]
+    tests_multi_wlan = [file for file in glob.iglob("multi_wlan/*.py")]
     tests_multi_bluetooth = [
         file for file in glob.iglob("multi_bluetooth/*.py") if "/ble_" in file
     ]
 
-    if True:
+    try:
         for target in targets:
             print("=" * 64)
             print(target.info())
@@ -301,16 +302,20 @@ def main():
                 if target.has_wlan_connected:
                     do_test(run_tests_cmd + ["-d", "net_hosted", "net_inet"])
 
-    targets_wlan = [t for t in targets if t.has_wlan_connected]
-    if select_wlan and targets_wlan:
-        print("=" * 64)
-        run_multitests_on_one_target(targets_wlan, tests_multi_net)
-        run_multitests_on_two_targets(targets_wlan, tests_multi_net)
+        targets_wlan = [t for t in targets if t.has_wlan_connected]
+        if select_wlan and targets_wlan:
+            print("=" * 64)
+            run_multitests_on_one_target(targets_wlan, tests_multi_net)
+            run_multitests_on_two_targets(targets_wlan, tests_multi_net)
+            run_multitests_on_two_targets(targets_wlan, tests_multi_wlan)
 
-    targets_ble = [t for t in targets if t.has_ble]
-    if select_ble and targets_ble:
-        print("=" * 64)
-        run_multitests_on_two_targets(targets_ble, tests_multi_bluetooth)
+        targets_ble = [t for t in targets if t.has_ble]
+        if select_ble and targets_ble:
+            print("=" * 64)
+            run_multitests_on_two_targets(targets_ble, tests_multi_bluetooth)
+
+    except KeyboardInterrupt:
+        print("INTERRUPT")
 
 
 if __name__ == "__main__":
