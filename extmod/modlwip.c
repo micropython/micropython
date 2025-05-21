@@ -825,6 +825,12 @@ static mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     // Check for any pending errors
     STREAM_ERROR_CHECK(socket);
 
+    if (socket->state == STATE_LISTENING) {
+        // original socket in listening state, not the accepted connection.
+        *_errno = MP_ENOTCONN;
+        return -1;
+    }
+
     if (socket->incoming.tcp.pbuf == NULL) {
 
         // Non-blocking socket or flag
