@@ -195,10 +195,10 @@ static inline uint32_t lfs2_fromle32(uint32_t a) {
     (defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__))
     return __builtin_bswap32(a);
 #else
-    return (((uint8_t*)&a)[0] <<  0) |
-           (((uint8_t*)&a)[1] <<  8) |
-           (((uint8_t*)&a)[2] << 16) |
-           (((uint8_t*)&a)[3] << 24);
+    return ((uint32_t)((uint8_t*)&a)[0] <<  0) |
+           ((uint32_t)((uint8_t*)&a)[1] <<  8) |
+           ((uint32_t)((uint8_t*)&a)[2] << 16) |
+           ((uint32_t)((uint8_t*)&a)[3] << 24);
 #endif
 }
 
@@ -218,10 +218,10 @@ static inline uint32_t lfs2_frombe32(uint32_t a) {
     (defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
     return a;
 #else
-    return (((uint8_t*)&a)[0] << 24) |
-           (((uint8_t*)&a)[1] << 16) |
-           (((uint8_t*)&a)[2] <<  8) |
-           (((uint8_t*)&a)[3] <<  0);
+    return ((uint32_t)((uint8_t*)&a)[0] << 24) |
+           ((uint32_t)((uint8_t*)&a)[1] << 16) |
+           ((uint32_t)((uint8_t*)&a)[2] <<  8) |
+           ((uint32_t)((uint8_t*)&a)[3] <<  0);
 #endif
 }
 

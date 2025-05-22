@@ -21,7 +21,7 @@ extern "C"
 // Software library version
 // Major (top-nibble), incremented on backwards incompatible changes
 // Minor (bottom-nibble), incremented on feature additions
-#define LFS2_VERSION 0x0002000a
+#define LFS2_VERSION 0x0002000b
 #define LFS2_VERSION_MAJOR (0xffff & (LFS2_VERSION >> 16))
 #define LFS2_VERSION_MINOR (0xffff & (LFS2_VERSION >>  0))
 
@@ -766,7 +766,11 @@ int lfs2_fs_gc(lfs2_t *lfs2);
 // Grows the filesystem to a new size, updating the superblock with the new
 // block count.
 //
-// Note: This is irreversible.
+// If LFS2_SHRINKNONRELOCATING is defined, this function will also accept
+// block_counts smaller than the current configuration, after checking
+// that none of the blocks that are being removed are in use.
+// Note that littlefs's pseudorandom block allocation means that
+// this is very unlikely to work in the general case.
 //
 // Returns a negative error code on failure.
 int lfs2_fs_grow(lfs2_t *lfs2, lfs2_size_t block_count);
