@@ -2,13 +2,23 @@ from .console import Console, ConsolePosix
 
 from .transport import TransportError
 
+import serial
+
 
 def do_repl_main_loop(
     state, console_in, console_out_write, *, escape_non_printable, code_to_inject, file_to_inject
 ):
+    disconnected = False
     while True:
-        console_in.waitchar(state.transport.serial)
-        c = console_in.readchar()
+        try:
+            console_in.waitchar(state.transport.serial)
+            c = console_in.readchar()
+        except serial.SerialException as e:
+            if "Device disconnected" in str(e) or "ClearCommError failed" in str(e):
+                disconnected = True
+                break
+            else:
+                raise
         if c:
             if c in (b"\x1d", b"\x18"):  # ctrl-] or ctrl-x, quit
                 break
@@ -35,8 +45,15 @@ def do_repl_main_loop(
             n = state.transport.serial.inWaiting()
         except OSError as er:
             if er.args[0] == 5:  # IO error, device disappeared
-                print("device disconnected")
+                disconnected = True
                 break
+        except Exception as er:
+            # Handle Windows serial exception
+            if isinstance(er, serial.SerialException) and "ClearCommError failed" in str(er):
+                disconnected = True
+                break
+            else:
+                raise
 
         if n > 0:
             dev_data_in = state.transport.serial.read(n)
@@ -52,6 +69,8 @@ def do_repl_main_loop(
                 else:
                     console_data_out = dev_data_in
                 console_out_write(console_data_out)
+
+    return disconnected
 
 
 def do_repl(state, args):
@@ -85,8 +104,9 @@ def do_repl(state, args):
             capture_file.write(b)
             capture_file.flush()
 
+    disconnected = False
     try:
-        do_repl_main_loop(
+        disconnected = do_repl_main_loop(
             state,
             console,
             console_out_write,
@@ -98,3 +118,5 @@ def do_repl(state, args):
         console.exit()
         if capture_file is not None:
             capture_file.close()
+
+    return disconnected
