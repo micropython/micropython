@@ -6,6 +6,6 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-# Simulate typing 'asyncio.' and pressing tab - should hide underscore items
+# Simulate typing 'asyncio.' and pressing tab
 # The tab character after `asyncio.` below triggers the completion
-asyncio.		
+asyncio.	t	

@@ -1,4 +1,4 @@
-MicroPython v1.25.0-preview.532.g4f060bb5ac.dirty on 2025-05-22; linux [GCC 14.2.1] version
+MicroPython v1.25.0-preview.534.gc63f925911 on 2025-05-22; linux [GCC 14.2.1] version
 Use Ctrl-D to exit, Ctrl-E for paste mode
 >>> # Test REPL autocompletion for underscore attributes in frozen modules
 >>> 
@@ -8,7 +8,7 @@ Use Ctrl-D to exit, Ctrl-E for paste mode
 ...     print("SKIP")
 ...     raise SystemExit
 ... 
->>> # Simulate typing 'asyncio.' and pressing tab - should hide underscore items
+>>> # Simulate typing 'asyncio.' and pressing tab
 >>> # The tab character after `asyncio.` below triggers the completion
 >>> asyncio.
 CancelledError  Task            TaskQueue       cur_task
@@ -20,18 +20,6 @@ create_task     current_task    funcs           gather
 get_event_loop  new_event_loop  open_connection
 run             run_until_complete              start_server
 stream          ticks           wait_for        wait_for_ms
->>> asyncio.
-CancelledError  Task            TaskQueue       cur_task
-lock            select          sleep           sleep_ms
-sys             ticks_add       ticks_diff      IOQueue
-Lock            Loop            SingletonGenerator
-StreamReader    StreamWriter    TimeoutError    core
-create_task     current_task    funcs           gather
-get_event_loop  new_event_loop  open_connection
-run             run_until_complete              start_server
-stream          ticks           wait_for        wait_for_ms
->>> asyncio.
-Traceback (most recent call last):
-  File "<stdin>", line 1
-SyntaxError: invalid syntax
+>>> asyncio.ticks
+<function>
 >>> 
