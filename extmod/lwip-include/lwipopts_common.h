@@ -60,6 +60,13 @@
 #define LWIP_MDNS_RESPONDER             1
 #endif
 
+#if LWIP_IPV6
+#define LWIP_IPV6_AUTOCONFIG            1
+#define LWIP_IPV6_MLD                   1
+#define LWIP_MULTICAST_PING             1  // Respond to Neighbor discovery on ff02::1
+#define LWIP_ND6_NUM_DESTINATIONS       4
+#endif
+
 #if MICROPY_PY_LWIP_PPP
 #define PPP_SUPPORT                     1
 #define PAP_SUPPORT                     1
