@@ -34,6 +34,12 @@
 
 #include "py/asmxtensa.h"
 
+#if N_XTENSAWIN
+#define REG_TEMP ASM_XTENSA_REG_TEMPORARY_WIN
+#else
+#define REG_TEMP ASM_XTENSA_REG_TEMPORARY
+#endif
+
 #define WORD_SIZE (4)
 #define SIGNED_FIT8(x) ((((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80))
 #define SIGNED_FIT12(x) ((((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800))
@@ -248,7 +254,9 @@ void asm_xtensa_l32i_optimised(asm_xtensa_t *as, uint reg_dest, uint reg_base, u
     } else if (word_offset < 256) {
         asm_xtensa_op_l32i(as, reg_dest, reg_base, word_offset);
     } else {
-        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("asm overflow"));
+        asm_xtensa_mov_reg_i32_optimised(as, reg_dest, word_offset * 4);
+        asm_xtensa_op_add_n(as, reg_dest, reg_base, reg_dest);
+        asm_xtensa_op_l32i_n(as, reg_dest, reg_dest, 0);
     }
 }
 
@@ -258,7 +266,19 @@ void asm_xtensa_s32i_optimised(asm_xtensa_t *as, uint reg_src, uint reg_base, ui
     } else if (word_offset < 256) {
         asm_xtensa_op_s32i(as, reg_src, reg_base, word_offset);
     } else {
-        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("asm overflow"));
+        asm_xtensa_mov_reg_i32_optimised(as, REG_TEMP, word_offset * 4);
+        asm_xtensa_op_add_n(as, REG_TEMP, reg_base, REG_TEMP);
+        asm_xtensa_op_s32i_n(as, reg_src, REG_TEMP, 0);
+    }
+}
+
+void asm_xtensa_l16ui_optimised(asm_xtensa_t *as, uint reg_dest, uint reg_base, uint halfword_offset) {
+    if (halfword_offset < 256) {
+        asm_xtensa_op_l16ui(as, reg_dest, reg_base, halfword_offset);
+    } else {
+        asm_xtensa_mov_reg_i32_optimised(as, reg_dest, halfword_offset * 2);
+        asm_xtensa_op_add_n(as, reg_dest, reg_base, reg_dest);
+        asm_xtensa_op_l16ui(as, reg_dest, reg_dest, 0);
     }
 }
 
