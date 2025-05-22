@@ -333,9 +333,16 @@ void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs) {
     emit_al(as, 0x1a00050 | (rd << 12) | (rs << 8) | rd);
 }
 
-void asm_arm_ldr_reg_reg(asm_arm_t *as, uint rd, uint rn, uint byte_offset) {
-    // ldr rd, [rn, #off]
-    emit_al(as, 0x5900000 | (rn << 16) | (rd << 12) | byte_offset);
+void asm_arm_ldr_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offset) {
+    if (byte_offset < 0x1000) {
+        // ldr rd, [rn, #off]
+        emit_al(as, 0x5900000 | (rn << 16) | (rd << 12) | byte_offset);
+    } else {
+        // mov r8, #off
+        // ldr rd, [rn, r8]
+        asm_arm_mov_reg_i32_optimised(as, ASM_ARM_REG_R8, byte_offset);
+        emit_al(as, 0x7900000 | (rn << 16) | (rd << 12) | ASM_ARM_REG_R8);
+    }
 }
 
 void asm_arm_ldrh_reg_reg(asm_arm_t *as, uint rd, uint rn) {
@@ -376,9 +383,16 @@ void asm_arm_ldr_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
     emit_al(as, 0x7900100 | (rm << 16) | (rd << 12) | rn);
 }
 
-void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm, uint byte_offset) {
-    // str rd, [rm, #off]
-    emit_al(as, 0x5800000 | (rm << 16) | (rd << 12) | byte_offset);
+void asm_arm_str_reg_reg_offset(asm_arm_t *as, uint rd, uint rm, uint byte_offset) {
+    if (byte_offset < 0x1000) {
+        // str rd, [rm, #off]
+        emit_al(as, 0x5800000 | (rm << 16) | (rd << 12) | byte_offset);
+    } else {
+        // mov r8, #off
+        // str rd, [rm, r8]
+        asm_arm_mov_reg_i32_optimised(as, ASM_ARM_REG_R8, byte_offset);
+        emit_al(as, 0x7800000 | (rm << 16) | (rd << 12) | ASM_ARM_REG_R8);
+    }
 }
 
 void asm_arm_strh_reg_reg(asm_arm_t *as, uint rd, uint rm) {
