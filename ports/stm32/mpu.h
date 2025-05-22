@@ -28,7 +28,7 @@
 
 #include "irq.h"
 
-#if (defined(STM32F4) && defined(MICROPY_HW_ETH_MDC)) || defined(STM32F7) || defined(STM32H7) || defined(STM32WB)
+#if (defined(STM32F4) && defined(MICROPY_HW_ETH_MDC)) || defined(STM32F7) || defined(STM32H7) || defined(STM32WB) || defined(STM32G4)
 
 #define MPU_REGION_ETH      (MPU_REGION_NUMBER0)
 #define MPU_REGION_QSPI1    (MPU_REGION_NUMBER1)
