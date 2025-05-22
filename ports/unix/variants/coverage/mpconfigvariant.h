@@ -43,6 +43,7 @@
 #define MICROPY_WARNINGS_CATEGORY      (1)
 #undef MICROPY_VFS_ROM_IOCTL
 #define MICROPY_VFS_ROM_IOCTL          (1)
+#define MICROPY_PY_CLASS_ORDERED_LOCALS (1)
 #define MICROPY_PY_CRYPTOLIB_CTR       (1)
 
 // Enable os.uname for attrtuple coverage test
