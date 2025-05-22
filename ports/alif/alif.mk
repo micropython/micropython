@@ -103,10 +103,6 @@ CFLAGS += -Wl,-T$(BUILD)/ensemble.ld \
           -Wl,--print-memory-usage \
           -Wl,--no-warn-rwx-segment
 
-ifeq ($(MCU_CORE),M55_HP)
-CFLAGS += -Wl,--wrap=dcd_event_handler
-endif
-
 ################################################################################
 # Source files and libraries
 
