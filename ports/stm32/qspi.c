@@ -213,7 +213,7 @@ static int qspi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
             qspi_memory_map();
             break;
         case MP_QSPI_IOCTL_MEMORY_MODIFIED: {
-            #if defined (__ICACHE_PRESENT) && (__ICACHE_PRESENT == 1U)
+            #if defined(__ICACHE_PRESENT) && (__ICACHE_PRESENT == 1U)
             uintptr_t *addr_len = (uintptr_t *)arg;
             volatile void *addr = (volatile void *)(QSPI_MAP_ADDR + addr_len[0]);
             size_t len = addr_len[1];
