@@ -1567,12 +1567,6 @@ static void emit_native_load_subscr(emit_t *emit) {
                     #ifdef ASM_LOAD16_REG_REG_OFFSET
                     ASM_LOAD16_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
                     #else
-                    #if N_RV32
-                    if (FIT_SIGNED(index_value, 11)) {
-                        asm_rv32_opcode_lhu(emit->as, REG_RET, reg_base, index_value << 1);
-                        break;
-                    }
-                    #endif
                     if (index_value != 0) {
                         // index is a non-zero immediate
                         need_reg_single(emit, reg_index, 0);
@@ -1589,12 +1583,6 @@ static void emit_native_load_subscr(emit_t *emit) {
                     #ifdef ASM_LOAD32_REG_REG_OFFSET
                     ASM_LOAD32_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
                     #else
-                    #if N_RV32
-                    if (FIT_SIGNED(index_value, 10)) {
-                        asm_rv32_opcode_lw(emit->as, REG_RET, reg_base, index_value << 2);
-                        break;
-                    }
-                    #endif
                     if (index_value != 0) {
                         // index is a non-zero immediate
                         need_reg_single(emit, reg_index, 0);
@@ -1855,12 +1843,6 @@ static void emit_native_store_subscr(emit_t *emit) {
                     #ifdef ASM_STORE32_REG_REG_OFFSET
                     ASM_STORE32_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
                     #else
-                    #if N_RV32
-                    if (FIT_SIGNED(index_value, 10)) {
-                        asm_rv32_opcode_sw(emit->as, reg_value, reg_base, index_value << 2);
-                        break;
-                    }
-                    #endif
                     if (index_value != 0) {
                         // index is a non-zero immediate
                         #if N_ARM
