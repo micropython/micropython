@@ -1540,12 +1540,7 @@ static void emit_native_load_subscr(emit_t *emit) {
                     #ifdef ASM_LOAD8_REG_REG_OFFSET
                     ASM_LOAD8_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
                     #else
-                    #if N_THUMB
-                    if (index_value >= 0 && index_value < 32) {
-                        asm_thumb_ldrb_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
-                        break;
-                    }
-                    #elif N_RV32
+                    #if N_RV32
                     if (FIT_SIGNED(index_value, 12)) {
                         asm_rv32_opcode_lbu(emit->as, REG_RET, reg_base, index_value);
                         break;
@@ -1572,12 +1567,7 @@ static void emit_native_load_subscr(emit_t *emit) {
                     #ifdef ASM_LOAD16_REG_REG_OFFSET
                     ASM_LOAD16_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
                     #else
-                    #if N_THUMB
-                    if (index_value >= 0 && index_value < 32) {
-                        asm_thumb_ldrh_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
-                        break;
-                    }
-                    #elif N_RV32
+                    #if N_RV32
                     if (FIT_SIGNED(index_value, 11)) {
                         asm_rv32_opcode_lhu(emit->as, REG_RET, reg_base, index_value << 1);
                         break;
@@ -1604,12 +1594,7 @@ static void emit_native_load_subscr(emit_t *emit) {
                     #ifdef ASM_LOAD32_REG_REG_OFFSET
                     ASM_LOAD32_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
                     #else
-                    #if N_THUMB
-                    if (index_value >= 0 && index_value < 32) {
-                        asm_thumb_ldr_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
-                        break;
-                    }
-                    #elif N_RV32
+                    #if N_RV32
                     if (FIT_SIGNED(index_value, 10)) {
                         asm_rv32_opcode_lw(emit->as, REG_RET, reg_base, index_value << 2);
                         break;
@@ -1824,13 +1809,7 @@ static void emit_native_store_subscr(emit_t *emit) {
                     #ifdef ASM_STORE8_REG_REG_OFFSET
                     ASM_STORE8_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
                     #else
-                    // TODO optimise to use thumb strb r1, [r2, r3]
-                    #if N_THUMB
-                    if (index_value >= 0 && index_value < 32) {
-                        asm_thumb_strb_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
-                        break;
-                    }
-                    #elif N_RV32
+                    #if N_RV32
                     if (FIT_SIGNED(index_value, 12)) {
                         asm_rv32_opcode_sb(emit->as, reg_value, reg_base, index_value);
                         break;
@@ -1860,12 +1839,7 @@ static void emit_native_store_subscr(emit_t *emit) {
                     #ifdef ASM_STORE16_REG_REG_OFFSET
                     ASM_STORE16_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
                     #else
-                    #if N_THUMB
-                    if (index_value >= 0 && index_value < 32) {
-                        asm_thumb_strh_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
-                        break;
-                    }
-                    #elif N_RV32
+                    #if N_RV32
                     if (FIT_SIGNED(index_value, 11)) {
                         asm_rv32_opcode_sh(emit->as, reg_value, reg_base, index_value << 1);
                         break;
@@ -1891,12 +1865,7 @@ static void emit_native_store_subscr(emit_t *emit) {
                     #ifdef ASM_STORE32_REG_REG_OFFSET
                     ASM_STORE32_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
                     #else
-                    #if N_THUMB
-                    if (index_value >= 0 && index_value < 32) {
-                        asm_thumb_str_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
-                        break;
-                    }
-                    #elif N_RV32
+                    #if N_RV32
                     if (FIT_SIGNED(index_value, 10)) {
                         asm_rv32_opcode_sw(emit->as, reg_value, reg_base, index_value << 2);
                         break;

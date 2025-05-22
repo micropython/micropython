@@ -40,6 +40,7 @@
 #define UNSIGNED_FIT5(x) ((uint32_t)(x) < 32)
 #define UNSIGNED_FIT7(x) ((uint32_t)(x) < 128)
 #define UNSIGNED_FIT8(x) (((x) & 0xffffff00) == 0)
+#define UNSIGNED_FIT12(x) (((x) & 0xfffff000) == 0)
 #define UNSIGNED_FIT16(x) (((x) & 0xffff0000) == 0)
 #define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
 #define SIGNED_FIT9(x) (((x) & 0xffffff00) == 0) || (((x) & 0xffffff00) == 0xffffff00)
@@ -51,12 +52,6 @@
 #define OP_ADD_W_RRI_LO(reg_dest, imm11) ((imm11 << 4 & 0x7000) | reg_dest << 8 | (imm11 & 0xff))
 #define OP_SUB_W_RRI_HI(reg_src) (0xf2a0 | (reg_src))
 #define OP_SUB_W_RRI_LO(reg_dest, imm11) ((imm11 << 4 & 0x7000) | reg_dest << 8 | (imm11 & 0xff))
-
-#define OP_LDR_W_HI(reg_base) (0xf8d0 | (reg_base))
-#define OP_LDR_W_LO(reg_dest, imm12) ((reg_dest) << 12 | (imm12))
-
-#define OP_LDRH_W_HI(reg_base) (0xf8b0 | (reg_base))
-#define OP_LDRH_W_LO(reg_dest, imm12) ((reg_dest) << 12 | (imm12))
 
 static inline byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int n) {
     return mp_asm_base_get_cur_to_write_bytes(&as->base, n);
@@ -432,11 +427,6 @@ void asm_thumb_mov_reg_pcrel(asm_thumb_t *as, uint rlo_dest, uint label) {
     asm_thumb_add_reg_reg(as, rlo_dest, ASM_THUMB_REG_R15); // 2 bytes
 }
 
-// ARMv7-M only
-static inline void asm_thumb_ldr_reg_reg_i12(asm_thumb_t *as, uint reg_dest, uint reg_base, uint word_offset) {
-    asm_thumb_op32(as, OP_LDR_W_HI(reg_base), OP_LDR_W_LO(reg_dest, word_offset * 4));
-}
-
 // emits code for: reg_dest = reg_base + offset << offset_shift
 static void asm_thumb_add_reg_reg_offset(asm_thumb_t *as, uint reg_dest, uint reg_base, uint offset, uint offset_shift) {
     if (reg_dest < ASM_THUMB_REG_R8 && reg_base < ASM_THUMB_REG_R8) {
@@ -464,30 +454,44 @@ static void asm_thumb_add_reg_reg_offset(asm_thumb_t *as, uint reg_dest, uint re
     }
 }
 
-void asm_thumb_ldr_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint reg_base, uint word_offset) {
-    if (reg_dest < ASM_THUMB_REG_R8 && reg_base < ASM_THUMB_REG_R8 && UNSIGNED_FIT5(word_offset)) {
-        asm_thumb_ldr_rlo_rlo_i5(as, reg_dest, reg_base, word_offset);
-    } else if (asm_thumb_allow_armv7m(as)) {
-        asm_thumb_ldr_reg_reg_i12(as, reg_dest, reg_base, word_offset);
+#define OP_LDR_STR_W_HI(shift, reg) ((0xf880 | (shift) << 5) | (reg))
+#define OP_LDR_STR_W_LO(reg, imm12) (((reg) << 12) | (imm12))
+
+#define OP_LDR 0x01
+#define OP_STR 0x00
+
+#define OP_LDR_W 0x10
+#define OP_STR_W 0x00
+
+static const uint8_t OP_LDR_STR_TABLE[3] = {
+    0x0E, 0x10, 0x0C
+};
+
+void asm_thumb_load_reg_reg_offset(asm_thumb_t *as, uint reg_dest, uint reg_base, uint offset, uint shift) {
+    if (UNSIGNED_FIT5(offset) && (reg_dest < ASM_THUMB_REG_R8) && (reg_base < ASM_THUMB_REG_R8)) {
+        // Can use T1 encoding
+        asm_thumb_op16(as, ((OP_LDR_STR_TABLE[shift] | OP_LDR) << 11) | (offset << 6) | (reg_base << 3) | reg_dest);
+    } else if (asm_thumb_allow_armv7m(as) && UNSIGNED_FIT12(offset << shift)) {
+        // Can use T3 encoding
+        asm_thumb_op32(as, (OP_LDR_STR_W_HI(shift, reg_base) | OP_LDR_W), OP_LDR_STR_W_LO(reg_dest, (offset << shift)));
     } else {
-        asm_thumb_add_reg_reg_offset(as, reg_dest, reg_base, word_offset - 31, 2);
-        asm_thumb_ldr_rlo_rlo_i5(as, reg_dest, reg_dest, 31);
+        // Must use the generic sequence
+        asm_thumb_add_reg_reg_offset(as, reg_dest, reg_base, offset - 31, shift);
+        asm_thumb_op16(as, ((OP_LDR_STR_TABLE[shift] | OP_LDR) << 11) | (31 << 6) | (reg_dest << 3) | (reg_dest));
     }
 }
 
-// ARMv7-M only
-static inline void asm_thumb_ldrh_reg_reg_i12(asm_thumb_t *as, uint reg_dest, uint reg_base, uint uint16_offset) {
-    asm_thumb_op32(as, OP_LDRH_W_HI(reg_base), OP_LDRH_W_LO(reg_dest, uint16_offset * 2));
-}
-
-void asm_thumb_ldrh_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint reg_base, uint uint16_offset) {
-    if (reg_dest < ASM_THUMB_REG_R8 && reg_base < ASM_THUMB_REG_R8 && UNSIGNED_FIT5(uint16_offset)) {
-        asm_thumb_ldrh_rlo_rlo_i5(as, reg_dest, reg_base, uint16_offset);
-    } else if (asm_thumb_allow_armv7m(as)) {
-        asm_thumb_ldrh_reg_reg_i12(as, reg_dest, reg_base, uint16_offset);
+void asm_thumb_store_reg_reg_offset(asm_thumb_t *as, uint reg_src, uint reg_base, uint offset, uint shift) {
+    if (UNSIGNED_FIT5(offset) && (reg_src < ASM_THUMB_REG_R8) && (reg_base < ASM_THUMB_REG_R8)) {
+        // Can use T1 encoding
+        asm_thumb_op16(as, ((OP_LDR_STR_TABLE[shift] | OP_STR) << 11) | (offset << 6) | (reg_base << 3) | reg_src);
+    } else if (asm_thumb_allow_armv7m(as) && UNSIGNED_FIT12(offset << shift)) {
+        // Can use T3 encoding
+        asm_thumb_op32(as, (OP_LDR_STR_W_HI(shift, reg_base) | OP_STR_W), OP_LDR_STR_W_LO(reg_src, (offset << shift)));
     } else {
-        asm_thumb_add_reg_reg_offset(as, reg_dest, reg_base, uint16_offset - 31, 1);
-        asm_thumb_ldrh_rlo_rlo_i5(as, reg_dest, reg_dest, 31);
+        // Must use the generic sequence
+        asm_thumb_add_reg_reg_offset(as, reg_base, reg_base, offset - 31, shift);
+        asm_thumb_op16(as, ((OP_LDR_STR_TABLE[shift] | OP_STR) << 11) | (31 << 6) | (reg_base << 3) | reg_src);
     }
 }
 
@@ -569,7 +573,7 @@ void asm_thumb_b_rel12(asm_thumb_t *as, int rel) {
 
 void asm_thumb_bl_ind(asm_thumb_t *as, uint fun_id, uint reg_temp) {
     // Load ptr to function from table, indexed by fun_id, then call it
-    asm_thumb_ldr_reg_reg_i12_optimised(as, reg_temp, ASM_THUMB_REG_FUN_TABLE, fun_id);
+    asm_thumb_load_reg_reg_offset(as, reg_temp, ASM_THUMB_REG_FUN_TABLE, fun_id, 2);
     asm_thumb_op16(as, OP_BLX(reg_temp));
 }
 
