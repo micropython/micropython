@@ -97,10 +97,6 @@ if(MICROPY_PY_TINYUSB)
     list(APPEND MICROPY_INC_TINYUSB
         ${MICROPY_DIR}/shared/tinyusb/
     )
-
-    list(APPEND MICROPY_LINK_TINYUSB
-        -Wl,--wrap=dcd_event_handler
-    )
 endif()
 
 list(APPEND MICROPY_SOURCE_PORT
@@ -259,10 +255,6 @@ target_compile_options(${MICROPY_TARGET} PUBLIC
     -Wno-clobbered
     -Wno-deprecated-declarations
     -Wno-missing-field-initializers
-)
-
-target_link_options(${MICROPY_TARGET} PUBLIC
-     ${MICROPY_LINK_TINYUSB}
 )
 
 # Additional include directories needed for private NimBLE headers.
