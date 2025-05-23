@@ -409,6 +409,7 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 /******************************************************************************/
 // FLASH
 
+#define FLASH_START (FLASH_BASE)
 
 #if defined(STM32G0) || defined(STM32H5)
 #define FLASH_END (FLASH_BASE + FLASH_SIZE - 1)
@@ -424,8 +425,10 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 #define MBOOT_SPIFLASH2_LAYOUT ""
 #endif
 
-#if 0
-#define FLASH_START (FLASH_BASE)
+#if defined(STM32N6)
+#define FLASH_LAYOUT_STR MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#else
+
 #if defined(STM32F4) \
     || defined(STM32F722xx) \
     || defined(STM32F723xx) \
@@ -585,18 +588,19 @@ static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
 
     return 0;
 }
+
 #endif
-#define FLASH_LAYOUT_STR MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 
 /******************************************************************************/
 // Writable address space interface
 
 static int do_mass_erase(void) {
-    #if 0
+    #if defined(STM32N6)
+    return -1;
+    #else
     // TODO spiflash erase ?
     return mboot_flash_mass_erase();
     #endif
-    return -1;
 }
 
 #if defined(MBOOT_SPIFLASH_ADDR) || defined(MBOOT_SPIFLASH2_ADDR)
@@ -631,14 +635,13 @@ int hw_page_erase(uint32_t addr, uint32_t *next_addr) {
             addr - MBOOT_SPIFLASH2_ADDR, MBOOT_SPIFLASH2_ERASE_BLOCKS_PER_PAGE);
     } else
     #endif
-    #if 0
     {
-        ret = mboot_flash_page_erase(addr, next_addr);
-    }
-    #endif
-    {
+        #if defined(STM32N6)
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
+        #else
+        ret = mboot_flash_page_erase(addr, next_addr);
+        #endif
     }
 
     mboot_state_change(MBOOT_STATE_ERASE_END, ret);
@@ -691,7 +694,7 @@ int hw_write(uint32_t addr, const uint8_t *src8, size_t len) {
         ret = mp_spiflash_write(MBOOT_SPIFLASH2_SPIFLASH, addr - MBOOT_SPIFLASH2_ADDR, len, src8);
     } else
     #endif
-    #if 0
+    #if !defined(STM32N6)
     if (flash_is_valid_addr(addr)) {
         ret = mboot_flash_write(addr, src8, len);
     } else
