@@ -12,7 +12,7 @@ STM32_N6_HEADER_VERSION = 2.3
 DKEL = $(CUBE_PROG_BASE)/bin/ExternalLoader/MX25UM51245G_STM32N6570-NUCLEO.stldr
 
 ifeq ($(USE_MBOOT),1)
-LD_FILES = boards/stm32n657x0.ld boards/OPENMV_N6/board.ld boards/common_bl.ld
+LD_FILES = boards/stm32n657x0.ld boards/OPENMV_N6/board.ld boards/common_n6_flash.ld
 TEXT0_ADDR = 0x70080000
 ifneq ($(BUILDING_MBOOT),1)
 CFLAGS += -DMICROPY_HW_RUNS_FROM_EXT_FLASH=1
