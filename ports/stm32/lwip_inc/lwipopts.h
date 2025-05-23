@@ -6,9 +6,11 @@
 #define LWIP_LOOPIF_MULTICAST           1
 #define LWIP_LOOPBACK_MAX_PBUFS         8
 
-#define LWIP_IPV6                       0
-
 #define LWIP_RAND() rng_get()
+
+#ifndef LWIP_IPV6
+#define LWIP_IPV6                       1
+#endif
 
 // Include common lwIP configuration.
 #include "extmod/lwip-include/lwipopts_common.h"
