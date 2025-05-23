@@ -30,7 +30,7 @@
 
 #if MICROPY_PY_MACHINE_PULSE
 
-MP_WEAK mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us) {
+mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us) {
     mp_uint_t nchanges = 2;
     mp_uint_t start = mp_hal_ticks_us();
     for (;;) {
