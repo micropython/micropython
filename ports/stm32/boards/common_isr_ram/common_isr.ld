@@ -26,6 +26,7 @@
     *(.text.FLASH_WaitForLastOperation)
     *(.text.HAL_FLASHEx_Erase)
     *(.text.HAL_GetTick)
+    *drivers/memory/spiflash.o(.text* .rodata*)
 
     __isr_vector_ram_end = .;
     . = ALIGN(4);
