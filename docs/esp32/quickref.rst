@@ -271,8 +271,10 @@ Use the :mod:`time <time>` module::
 Timers
 ------
 
-The ESP32 port has four hardware timers. Use the :ref:`machine.Timer <machine.Timer>` class
-with a timer ID from 0 to 3 (inclusive)::
+The ESP32 port has one, two or four hardware timers, depending on the ESP32 device type.
+There is 1 timer for ESP32C2, 2 timers for ESP32C4, ESP32C6 and ESP32H4, and
+4 timers otherwise. Use the :ref:`machine.Timer <machine.Timer>` class
+with a timer ID of 0, 0 and 1, or from 0 to 3 (inclusive)::
 
     from machine import Timer
 
@@ -282,7 +284,8 @@ with a timer ID from 0 to 3 (inclusive)::
     tim1 = Timer(1)
     tim1.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(1))
 
-The period is in milliseconds.
+The period is in milliseconds. When using UART.IRQ_RXIDLE, timer 0 is needed for
+the IRQ_RXIDLE mechanism and must not be used otherwise.
 
 Virtual timers are not currently supported on this port.
 
