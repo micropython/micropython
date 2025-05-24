@@ -15,7 +15,8 @@
 
 // Define mapping logical UART # to hardware UART #
 // LPUART1 on RX/TX    -> 1
-// LPUART4 on D5/D6    -> 2
+// LPUART3 on D7/D8    -> 2
+// LPUART4 on D5/D6    -> 3
 
 #define MICROPY_HW_UART_NUM     (sizeof(uart_index_table) / sizeof(uart_index_table)[0])
 #define MICROPY_HW_UART_INDEX   { 0, 1, 3, 4 }
@@ -88,3 +89,24 @@
         I2S_GPIO(3, WS, TX, GPIO_SD_00, IOMUXC_GPIO_SD_00_SAI3_TX_SYNC), /* pin D9 */ \
         I2S_GPIO(3, SD, TX, GPIO_SD_02, IOMUXC_GPIO_SD_02_SAI3_TX_DATA) /* pin D11 */ \
     }
+
+#define MICROPY_HW_WIFI_SPI_ID     (0)
+#define MICROPY_HW_WIFI_SPI_BAUDRATE (8000000)
+
+// NINA_ACK: SCL2 = GPIO_AD_08
+#define MICROPY_HW_NINA_ACK       (pin_GPIO_AD_08)
+// NINA_CS: A3 = GPIO_AD_05
+#define MICROPY_HW_NINA_CS        (pin_GPIO_AD_05)
+// NINA_RESET: SDA2 = GPIO_AD_07
+#define MICROPY_HW_NINA_RESET     (pin_GPIO_AD_07)
+
+#define MICROPY_PY_BLUETOOTH_NINAW10 (1)
+
+#define MICROPY_HW_BLE_UART_ID       (2)
+#define MICROPY_HW_BLE_UART_BAUDRATE (115200)
+#define MICROPY_HW_BLE_UART_FLOW_CONTROL (0)
+
+// NINA_RTS: A2 = GPIO_AD_04
+#define MICROPY_HW_NINA_RTS          (pin_GPIO_AD_04)
+// NINA_CTS: SCL2 = GPIO_AD_08
+#define MICROPY_HW_NINA_CTS          MICROPY_HW_NINA_ACK
