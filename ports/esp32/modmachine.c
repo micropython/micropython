@@ -51,6 +51,7 @@
 #define MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY
 #endif
 
+
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
     \
@@ -148,13 +149,15 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
     }
     #endif
 
-    #if SOC_TOUCH_SENSOR_SUPPORTED
+    /*
+	#if SOC_TOUCH_SENSOR_SUPPORTED
     if (machine_rtc_config.wake_on_touch) {
         if (esp_sleep_enable_touchpad_wakeup() != ESP_OK) {
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_touchpad_wakeup() failed"));
         }
     }
     #endif
+	*/
 
     #if SOC_ULP_SUPPORTED
     if (machine_rtc_config.wake_on_ulp) {
