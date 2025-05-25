@@ -29,7 +29,7 @@
 #include "modmachine.h"
 #include "driver/gpio.h"
 
-#if SOC_TOUCH_SENSOR_SUPPORTED
+#if SOC_TOUCH_SENSOR_SUPPORTED && !CONFIG_IDF_TARGET_ESP32P4
 
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 3, 0)
 #if SOC_TOUCH_VERSION_1
@@ -80,6 +80,21 @@ static const mtp_obj_t touchpad_obj[] = {
     {{&machine_touchpad_type}, GPIO_NUM_12, TOUCH_PAD_NUM12},
     {{&machine_touchpad_type}, GPIO_NUM_13, TOUCH_PAD_NUM13},
     {{&machine_touchpad_type}, GPIO_NUM_14, TOUCH_PAD_NUM14},
+    #elif CONFIG_IDF_TARGET_ESP32P4
+    {{&machine_touchpad_type}, GPIO_NUM_2, TOUCH_PAD_NUM0},
+    {{&machine_touchpad_type}, GPIO_NUM_3, TOUCH_PAD_NUM1},
+    {{&machine_touchpad_type}, GPIO_NUM_4, TOUCH_PAD_NUM2},
+    {{&machine_touchpad_type}, GPIO_NUM_5, TOUCH_PAD_NUM3},
+    {{&machine_touchpad_type}, GPIO_NUM_6, TOUCH_PAD_NUM4},
+    {{&machine_touchpad_type}, GPIO_NUM_7, TOUCH_PAD_NUM5},
+    {{&machine_touchpad_type}, GPIO_NUM_8, TOUCH_PAD_NUM6},
+    {{&machine_touchpad_type}, GPIO_NUM_9, TOUCH_PAD_NUM7},
+    {{&machine_touchpad_type}, GPIO_NUM_10, TOUCH_PAD_NUM8},
+    {{&machine_touchpad_type}, GPIO_NUM_11, TOUCH_PAD_NUM9},
+    {{&machine_touchpad_type}, GPIO_NUM_12, TOUCH_PAD_NUM10},
+    {{&machine_touchpad_type}, GPIO_NUM_13, TOUCH_PAD_NUM11},
+    {{&machine_touchpad_type}, GPIO_NUM_14, TOUCH_PAD_NUM12},
+    {{&machine_touchpad_type}, GPIO_NUM_15, TOUCH_PAD_NUM13},	
     #else
     #error "Please add GPIO mapping for this SoC"
     #endif

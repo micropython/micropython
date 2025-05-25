@@ -25,6 +25,9 @@
  * THE SOFTWARE.
  */
 
+#if MICROPY_PY_MACHINE_ADC
+
+
 #include "py/mphal.h"
 #include "adc.h"
 #include "driver/adc.h"
@@ -106,3 +109,5 @@ mp_int_t madcblock_read_uv_helper(machine_adc_block_obj_t *self, adc_channel_t c
 
     return (mp_int_t)uv * 1000;
 }
+
+#endif // MICROPY_PY_MACHINE_ADC

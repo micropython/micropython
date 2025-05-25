@@ -57,7 +57,7 @@ void usb_init(void) {
 
 }
 
-#if CONFIG_IDF_TARGET_ESP32S3
+#if CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4
 void usb_usj_mode(void) {
     // Switch the USB PHY back to Serial/Jtag mode, disabling OTG support
     // This should be run before jumping to bootloader.

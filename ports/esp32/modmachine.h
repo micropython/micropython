@@ -9,7 +9,9 @@ typedef enum {
     MACHINE_WAKE_DEEPSLEEP=0x04
 } wake_type_t;
 
+#if !CONFIG_IDF_TARGET_ESP32P4
 extern const mp_obj_type_t machine_touchpad_type;
+#endif
 extern const mp_obj_type_t machine_dac_type;
 extern const mp_obj_type_t machine_sdcard_type;
 
