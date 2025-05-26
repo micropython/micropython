@@ -130,7 +130,12 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         #if MICROPY_REPL_INFO
         start = mp_hal_ticks_ms();
         #endif
-        mp_call_function_0(module_fun);
+        #if MICROPY_PYEXEC_COMPILE_ONLY
+        if (!mp_compile_only)
+        #endif
+        {
+            mp_call_function_0(module_fun);
+        }
         mp_hal_set_interrupt_char(-1); // disable interrupt
         mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
         nlr_pop();
@@ -705,6 +710,7 @@ friendly_repl_reset:
 int pyexec_file(const char *filename) {
     return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME);
 }
+
 
 int pyexec_file_if_exists(const char *filename) {
     #if MICROPY_MODULE_FROZEN
