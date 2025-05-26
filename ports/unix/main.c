@@ -243,7 +243,20 @@ static int do_repl(void) {
 
 
 static int do_file(const char *file) {
-    return execute_from_lexer(LEX_SRC_FILENAME, file, MP_PARSE_FILE_INPUT, false);
+    uint32_t flags = 0;
+    if (compile_only) {
+        flags |= PYEXEC_FLAG_COMPILE_ONLY;
+    }
+    int ret = pyexec_file_with_flags(file, flags);
+    // pyexec returns 1 for success, 0 for exception, PYEXEC_FORCED_EXIT for SystemExit
+    // Convert to unix port's expected codes: 0 for success, 1 for exception, FORCED_EXIT|val for SystemExit
+    if (ret == 1) {
+        return 0; // success
+    } else if (ret == PYEXEC_FORCED_EXIT) {
+        return FORCED_EXIT; // SystemExit (without exit value for now)
+    } else {
+        return 1; // exception
+    }
 }
 
 static int do_str(const char *str) {
