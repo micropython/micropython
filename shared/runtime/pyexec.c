@@ -103,6 +103,11 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             }
             // source is a lexer, parse and compile the script
             qstr source_name = lex->source_name;
+            #if MICROPY_MODULE___FILE__
+            if (input_kind == MP_PARSE_FILE_INPUT) {
+                mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+            }
+            #endif
             mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
             #if defined(MICROPY_UNIX_COVERAGE)
             // allow to print the parse tree in the coverage build
@@ -151,6 +156,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         // check for SystemExit
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // Extract SystemExit value
+            // None is an exit value of 0; an int is its value; anything else is 1
             mp_obj_t exit_val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
             mp_int_t val = 0;
             if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
