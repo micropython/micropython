@@ -57,7 +57,7 @@
 #include "shared/runtime/pyexec.h"
 
 // Command line options, with their defaults
-static bool compile_only = false;
+bool mp_compile_only = false;
 static uint emit_opt = MP_EMIT_OPT_NONE;
 
 #if MICROPY_ENABLE_GC
@@ -158,7 +158,7 @@ static int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, is_repl);
 
-        if (!compile_only) {
+        if (!mp_compile_only) {
             // execute it
             mp_call_function_0(module_fun);
         }
@@ -243,7 +243,16 @@ static int do_repl(void) {
 
 
 static int do_file(const char *file) {
-    return execute_from_lexer(LEX_SRC_FILENAME, file, MP_PARSE_FILE_INPUT, false);
+    int ret = pyexec_file(file);
+    // pyexec returns 1 for success, 0 for exception, PYEXEC_FORCED_EXIT for SystemExit
+    // Convert to unix port's expected codes: 0 for success, 1 for exception, FORCED_EXIT|val for SystemExit
+    if (ret == 1) {
+        return 0; // success
+    } else if (ret == PYEXEC_FORCED_EXIT) {
+        return FORCED_EXIT; // SystemExit (without exit value for now)
+    } else {
+        return 1; // exception
+    }
 }
 
 static int do_str(const char *str) {
@@ -316,7 +325,7 @@ static void pre_process_options(int argc, char **argv) {
                 }
                 if (0) {
                 } else if (strcmp(argv[a + 1], "compile-only") == 0) {
-                    compile_only = true;
+                    mp_compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
                 #if MICROPY_EMIT_NATIVE
