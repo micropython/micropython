@@ -58,6 +58,7 @@ static bool repl_display_debugging_info = 0;
 #define EXEC_FLAG_SOURCE_IS_FILENAME    (1 << 5)
 #define EXEC_FLAG_SOURCE_IS_READER      (1 << 6)
 #define EXEC_FLAG_NO_INTERRUPT          (1 << 7)
+#define EXEC_FLAG_COMPILE_ONLY          (1 << 8)
 
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
@@ -130,7 +131,9 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         #if MICROPY_REPL_INFO
         start = mp_hal_ticks_ms();
         #endif
-        mp_call_function_0(module_fun);
+        if (!(exec_flags & EXEC_FLAG_COMPILE_ONLY)) {
+            mp_call_function_0(module_fun);
+        }
         mp_hal_set_interrupt_char(-1); // disable interrupt
         mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
         nlr_pop();
@@ -694,6 +697,14 @@ friendly_repl_reset:
 
 int pyexec_file(const char *filename) {
     return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME);
+}
+
+int pyexec_file_with_flags(const char *filename, uint32_t flags) {
+    mp_uint_t exec_flags = EXEC_FLAG_SOURCE_IS_FILENAME;
+    if (flags & PYEXEC_FLAG_COMPILE_ONLY) {
+        exec_flags |= EXEC_FLAG_COMPILE_ONLY;
+    }
+    return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, exec_flags);
 }
 
 int pyexec_file_if_exists(const char *filename) {
