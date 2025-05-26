@@ -269,22 +269,17 @@ def detect_test_platform(pyb, args):
     print()
 
 
-def prepare_script_for_target(args, *, script_filename=None, script_text=None, force_plain=False):
+def prepare_script_for_target(args, *, script_text=None, force_plain=False):
     if force_plain or (not args.via_mpy and args.emit == "bytecode"):
-        if script_filename is not None:
-            with open(script_filename, "rb") as f:
-                script_text = f.read()
+        # A plain test to run as-is, no processing needed.
+        pass
     elif args.via_mpy:
         tempname = tempfile.mktemp(dir="")
         mpy_filename = tempname + ".mpy"
 
-        if script_filename is None:
-            script_filename = tempname + ".py"
-            cleanup_script_filename = True
-            with open(script_filename, "wb") as f:
-                f.write(script_text)
-        else:
-            cleanup_script_filename = False
+        script_filename = tempname + ".py"
+        with open(script_filename, "wb") as f:
+            f.write(script_text)
 
         try:
             subprocess.check_output(
@@ -300,8 +295,7 @@ def prepare_script_for_target(args, *, script_filename=None, script_text=None, f
             script_text = b"__buf=" + bytes(repr(f.read()), "ascii") + b"\n"
 
         rm_f(mpy_filename)
-        if cleanup_script_filename:
-            rm_f(script_filename)
+        rm_f(script_filename)
 
         script_text += bytes(injected_import_hook_code, "ascii")
     else:
