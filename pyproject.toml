@@ -72,5 +72,6 @@ exclude = [
   "tests/basics/*.py", 
   "tests/*/repl_*.py", 
   "tests/cmdline/cmd_compile_only_error.py",
+  "tests/micropython/test_normalize_newlines.py",
   "tests/micropython/viper_args.py",
 ]
