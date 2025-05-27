@@ -171,6 +171,10 @@
 #define MICROPY_PY_MACHINE_PWM                  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/rp2/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET           (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/rp2/machine_i2c_target.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX       (2)
+#define MICROPY_PY_MACHINE_I2C_TARGET_HARD_IRQ  (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
 #define MICROPY_PY_MACHINE_I2S                  (1)
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE      "ports/rp2/machine_i2s.c"
