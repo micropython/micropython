@@ -26,13 +26,22 @@
  */
 
 #include "py/mphal.h"
+#include "py/mperrno.h"
 #include "adc.h"
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali_scheme.h"
 
 static esp_err_t ensure_adc_calibration(machine_adc_block_obj_t *self, adc_atten_t atten);
 
+void adc_is_init_guard(machine_adc_block_obj_t *self) {
+    if (!self->handle) {
+        mp_raise_OSError(MP_EPERM);
+    }
+}
+
 esp_err_t apply_self_adc_channel_atten(const machine_adc_obj_t *self, uint8_t atten) {
+    adc_is_init_guard(self->block);
+
     adc_oneshot_chan_cfg_t config = {
         .atten = atten,
         .bitwidth = self->block->bitwidth,
@@ -42,6 +51,8 @@ esp_err_t apply_self_adc_channel_atten(const machine_adc_obj_t *self, uint8_t at
 }
 
 mp_int_t madcblock_read_helper(machine_adc_block_obj_t *self, adc_channel_t channel_id) {
+    adc_is_init_guard(self);
+
     int reading = 0;
     adc_oneshot_read(self->handle, channel_id, &reading);
     return reading;
