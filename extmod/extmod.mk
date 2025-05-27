@@ -6,6 +6,7 @@ SRC_EXTMOD_C += \
 	extmod/machine_adc_block.c \
 	extmod/machine_bitstream.c \
 	extmod/machine_i2c.c \
+	extmod/machine_i2c_target.c \
 	extmod/machine_i2s.c \
 	extmod/machine_mem.c \
 	extmod/machine_pinbase.c \
