@@ -61,6 +61,7 @@
 
 // IRQ priorities (encoded values suitable for NVIC_SetPriority)
 // Most values are defined in irq.h.
+#undef IRQ_PRI_I2C
 #define IRQ_PRI_I2C (NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0))
 
 #if defined(MBOOT_CLK_PLLM)
