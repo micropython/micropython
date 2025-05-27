@@ -233,6 +233,7 @@ set(PICO_SDK_COMPONENTS
     pico_binary_info
     pico_bootrom
     pico_flash
+    pico_i2c_slave
     pico_multicore
     pico_platform
     pico_platform_compiler
