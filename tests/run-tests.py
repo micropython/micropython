@@ -1069,9 +1069,15 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     with open(os.path.join(result_dir, RESULTS_FILE), "w") as f:
         json.dump(
             {
+                # The arguments passed on the command-line.
                 "args": vars(args),
-                "passed_tests": [test[1] for test in passed_tests],
-                "skipped_tests": [test[1] for test in skipped_tests],
+                # A list of all results of the form [(test, result, reason), ...].
+                "results": (
+                    list([test[1], "pass", ""] for test in passed_tests)
+                    + list([test[1], "skip", ""] for test in skipped_tests)
+                    + list([test[1], "fail", ""] for test in failed_tests)
+                ),
+                # A list of failed tests.  This is deprecated, one should the results above.
                 "failed_tests": [test[1] for test in failed_tests],
             },
             f,
@@ -1248,7 +1254,7 @@ the last matching regex is used:
         results_file = os.path.join(args.result_dir, RESULTS_FILE)
         if os.path.exists(results_file):
             with open(results_file, "r") as f:
-                tests = json.load(f)["failed_tests"]
+                tests = list(test[0] for test in json.load(f)["results"] if test[1] == "fail")
         else:
             tests = []
     elif len(args.files) == 0:
