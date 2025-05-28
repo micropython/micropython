@@ -56,4 +56,14 @@
   #define CFG_TUD_NCM_IN_NTB_N (2 + LWIP_MDNS_RESPONDER)
 #endif
 
+// Default NCM link state on initialization (0 = down, 1 = up)
+// Set to 0 so the interface starts disconnected until explicitly activated
+#define CFG_TUD_NCM_DEFAULT_LINK_UP 0
+
+// Initialize the USB network interface
+void usbnet_init(void);
+
+// Deinitialize the USB network interface
+void usbnet_deinit(void);
+
 #endif // MICROPY_INCLUDED_SHARED_TINYUSB_NETWORK_USBD_NCM_H

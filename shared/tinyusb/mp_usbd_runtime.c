@@ -415,7 +415,7 @@ void mp_usbd_init(void) {
 
     if (usbd == NULL) {
         // No runtime USB device
-        #if CFG_TUD_CDC || CFG_TUD_MSC
+        #if CFG_TUD_CDC || CFG_TUD_MSC || CFG_TUD_NCM
         // Builtin  drivers are available, so initialise as defaults
         need_usb = true;
         #else
@@ -428,6 +428,10 @@ void mp_usbd_init(void) {
     }
 
     if (need_usb) {
+        #if MICROPY_HW_NETWORK_USBNET
+        // Initialize USB network interface early before TinyUSB init
+        usbnet_init();
+        #endif
         // The following will call tusb_init(), which is safe to call redundantly.
         mp_usbd_init_tud();
         // Reconnect if mp_usbd_deinit() has disconnected.

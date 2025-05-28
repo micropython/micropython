@@ -48,6 +48,7 @@
 #define LWIP_SOCKET                     0
 #define LWIP_STATS                      0
 #define LWIP_NETIF_HOSTNAME             1
+#define LWIP_NETIF_LINK_CALLBACK        1
 
 #define LWIP_DHCP                       1
 #define LWIP_DHCP_CHECK_LINK_UP         1

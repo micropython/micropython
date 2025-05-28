@@ -31,6 +31,8 @@
 
 #ifndef NO_QSTR
 #include "tusb.h"
+#include "device/usbd.h"
+#include "class/net/net_device.h"
 #endif
 
 #include "lwip/ethip6.h"
@@ -81,7 +83,13 @@ static usbnet_obj_t usbnet_obj;
 
 static mp_sched_node_t network_usbd_ncm_sched_node;
 
-#define IS_ACTIVE(self) (self->netif.flags & NETIF_FLAG_UP)
+// Flag to prevent race conditions during initialization
+static bool usbnet_init_in_progress = false;
+
+#define IS_ACTIVE(self) (self->netif.flags & NETIF_FLAG_LINK_UP)
+
+// Forward declaration for the link state callback
+static void usbnet_netif_link_callback(struct netif *netif);
 
 /* This default mac will be updated during init from hardware unique ID (if available) */
 /* it is suggested that the first byte is 0x02 to indicate a link-local address */
@@ -90,7 +98,7 @@ uint8_t tud_network_mac_address[6] = {0x02, 0x00, 0x00, 0x00, 0x00, 0x00};
 /**
  * Generate a link-local IPv4 address from MAC address using CRC32
  * Result will be 169.254.X.1 where X is derived from MAC address CRC
- * 
+ *
  * @param mac_addr: 6-byte MAC address
  * @param ip_addr: 4-byte buffer to store generated IP address
  */
@@ -99,17 +107,21 @@ static void generate_linklocal_ip_from_mac(const uint8_t mac_addr[6], uint8_t ip
     ip_addr[0] = 169;
     ip_addr[1] = 254;
     ip_addr[3] = 1;    // Always .1 as requested
-    
+
     // Use uzlib's CRC32 function
     uint32_t crc = uzlib_crc32(mac_addr, 6, 0);
-    
+
     // Extract one byte from CRC for third octet
     uint8_t third_octet = (crc & 0xFF);
-    
+
     // Ensure valid range (1-254) - avoid .0 and .255 subnets
-    if (third_octet == 0) third_octet = 1;
-    if (third_octet == 255) third_octet = 254;
-    
+    if (third_octet == 0) {
+        third_octet = 1;
+    }
+    if (third_octet == 255) {
+        third_octet = 254;
+    }
+
     ip_addr[2] = third_octet;
 }
 
@@ -166,11 +178,37 @@ void dhcp_client_connected(uint8_t ciaddr[4], uint8_t chaddr[16]) {
 }
 #endif
 
+/**
+ * Callback function called by lwIP when the link state changes.
+ * This notifies the USB host about the link state change.
+ */
+static void usbnet_netif_link_callback(struct netif *netif) {
+    #ifndef NO_QSTR
+    // Only proceed if this is our netif
+    if (netif != &usbnet_obj.netif) {
+        return;
+    }
+
+    bool link_up = netif_is_link_up(netif);
+
+    // Notify the USB host about the link state change
+    // Note: rhport is typically 0 for single USB port devices
+    // Note: This requires TinyUSB with link state support
+    tud_network_link_state(0, link_up);
+    #endif
+}
+
 void usbnet_init(void) {
+    // Check if already initialized or in progress
+    if (usbnet_init_in_progress || usbnet_obj.init) {
+        return;
+    }
+    usbnet_init_in_progress = true;
+
     // Init the usbnet object
     usbnet_obj.base.type = (mp_obj_type_t *)&mod_network_nic_type_usbnet;
     usbnet_obj.active = false;
-    
+
     struct netif *netif = &(usbnet_obj.netif);
 
     MICROPY_PY_LWIP_ENTER
@@ -190,7 +228,7 @@ void usbnet_init(void) {
     // Generate unique link-local IP address from MAC address
     uint8_t ip_bytes[4];
     generate_linklocal_ip_from_mac(tud_network_mac_address, ip_bytes);
-    
+
     // Convert to network byte order and set IP configuration
     IP(usbnet_obj.ipaddr).addr = PP_HTONL((ip_bytes[0] << 24) | (ip_bytes[1] << 16) | (ip_bytes[2] << 8) | ip_bytes[3]);
     IP(usbnet_obj.netmask).addr = PP_HTONL(0xFFFF0000);  // 255.255.0.0 for link-local
@@ -213,6 +251,15 @@ void usbnet_init(void) {
     netif_set_hostname(netif, mod_network_hostname_data);
     #endif
     netif_set_default(netif);
+    netif_set_up(netif);
+
+    #if LWIP_NETIF_LINK_CALLBACK
+    // Set the link callback to notify USB host about link state changes
+    netif_set_link_callback(netif, usbnet_netif_link_callback);
+    #endif
+
+    // Init in link-down state until active(True) is called.
+    netif_set_link_down(netif);
 
     #if LWIP_MDNS_RESPONDER
     mdns_resp_add_netif(netif, mod_network_hostname_data);
@@ -225,13 +272,22 @@ void usbnet_init(void) {
 
     // register with network module
     mod_network_register_nic(&usbnet_obj);
+
     usbnet_obj.init = true;
+    usbnet_init_in_progress = false;
 
     MICROPY_PY_LWIP_EXIT
 }
 
 void usbnet_deinit(void) {
+    MICROPY_PY_LWIP_ENTER
+
     struct netif *netif = &(usbnet_obj.netif);
+
+    #if LWIP_NETIF_LINK_CALLBACK
+    // Clear the link callback
+    netif_set_link_callback(netif, NULL);
+    #endif
 
     #if LWIP_MDNS_RESPONDER
     mdns_resp_remove_netif(netif);
@@ -244,16 +300,21 @@ void usbnet_deinit(void) {
     // remove from lwip
     netif_remove(netif);
     usbnet_obj.init = false;
+
+    MICROPY_PY_LWIP_EXIT
 }
 
 static void _scheduled_tud_network_recv_renew(mp_sched_node_t *node) {
-    // Indicate to usb network driver that client has finished with 
+    // Indicate to usb network driver that client has finished with
     // the packet provided to network_recv_cb()
     tud_network_recv_renew();
 }
 
 bool tud_network_recv_cb(const uint8_t *src, uint16_t size) {
+    MICROPY_PY_LWIP_ENTER
+
     if (!usbnet_obj.init) {
+        MICROPY_PY_LWIP_EXIT
         return false;
     }
     struct netif *netif = &(usbnet_obj.netif);
@@ -262,6 +323,9 @@ bool tud_network_recv_cb(const uint8_t *src, uint16_t size) {
         struct pbuf *p = pbuf_alloc(PBUF_RAW, size, PBUF_POOL);
         if (p == NULL) {
             error_printf("tud_network_recv_cb() failed to alloc pbuf %d\n", size);
+            // Schedule the renew callback even on failure to allow TinyUSB to recover
+            mp_sched_schedule_node(&network_usbd_ncm_sched_node, _scheduled_tud_network_recv_renew);
+            MICROPY_PY_LWIP_EXIT
             return false;
         }
 
@@ -276,6 +340,8 @@ bool tud_network_recv_cb(const uint8_t *src, uint16_t size) {
         // We need to signal to TinyUSB to continue processing after this current context is complete
         mp_sched_schedule_node(&network_usbd_ncm_sched_node, _scheduled_tud_network_recv_renew);
     }
+
+    MICROPY_PY_LWIP_EXIT
     return ret;
 }
 
@@ -289,9 +355,14 @@ uint16_t tud_network_xmit_cb(uint8_t *dst, void *ref, uint16_t arg) {
 void tud_network_init_cb(void) {
     // The usb network is (re-)initializing.
     if (usbnet_obj.init) {
-        usbnet_deinit();
+        // If already initialized, just notify the host about current link state
+        struct netif *netif = &(usbnet_obj.netif);
+        bool link_up = netif_is_link_up(netif);
+        tud_network_link_state(0, link_up);
+    } else {
+        // First time initialization
+        usbnet_init();
     }
-    usbnet_init();
 }
 
 
@@ -318,20 +389,36 @@ static mp_obj_t usbnet_active(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         return mp_obj_new_bool(IS_ACTIVE(self));
     } else {
+        MICROPY_PY_LWIP_ENTER
         if (mp_obj_is_true(args[1])) {
+            MICROPY_PY_LWIP_ENTER
             if (!IS_ACTIVE(self)) {
-                netif_set_up(&self->netif);
+                // netif_set_up(&self->netif);
                 netif_set_link_up(&self->netif);
+
+                #if MICROPY_HW_NETWORK_USBNET_DHCP_SERVER
+                // Re-initialize DHCP server when activating interface
+                dhcp_server_init(&self->dhcp_server, &self->ipaddr, &self->netmask);
+                dhcp_server_register_connect_cb(&self->dhcp_server, &dhcp_client_connected);
+                #endif
             }
         } else {
             if (IS_ACTIVE(self)) {
+                #if MICROPY_HW_NETWORK_USBNET_DHCP_SERVER
+                // Stop DHCP server when deactivating interface
+                dhcp_server_deinit(&self->dhcp_server);
+                #endif
+
                 netif_set_link_down(&self->netif);
-                netif_set_down(&self->netif);
+                // netif_set_down(&self->netif);
+
                 // Note: We don't call usbnet_deinit() here because that would
                 // completely remove the network interface. We just want to
                 // deactivate it so it can be reactivated later.
             }
+            MICROPY_PY_LWIP_EXIT
         }
+        MICROPY_PY_LWIP_EXIT
         return mp_const_none;
     }
 }
@@ -349,11 +436,31 @@ static mp_obj_t network_usbnet_ipconfig(size_t n_args, const mp_obj_t *args, mp_
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(usbnet_ipconfig_obj, 1, network_usbnet_ipconfig);
 
+static mp_obj_t usbnet_link_state(size_t n_args, const mp_obj_t *args) {
+    usbnet_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (n_args == 1) {
+        // Get current link state
+        return mp_obj_new_bool(netif_is_link_up(&self->netif));
+    } else {
+        // Set link state
+        MICROPY_PY_LWIP_ENTER
+        if (mp_obj_is_true(args[1])) {
+            netif_set_link_up(&self->netif);
+        } else {
+            netif_set_link_down(&self->netif);
+        }
+        MICROPY_PY_LWIP_EXIT
+        return mp_const_none;
+    }
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usbnet_link_state_obj, 1, 2, usbnet_link_state);
+
 static const mp_rom_map_elem_t usbnet_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&usbnet_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&usbnet_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&usbnet_ifconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&usbnet_ipconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_link_state), MP_ROM_PTR(&usbnet_link_state_obj) },
 };
 static MP_DEFINE_CONST_DICT(usbnet_locals_dict, usbnet_locals_dict_table);
 
