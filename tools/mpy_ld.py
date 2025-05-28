@@ -711,8 +711,9 @@ def do_relocation_text(env, text_addr, r):
         (addr, value) = process_riscv32_relocation(env, text_addr, r)
 
     elif env.arch.name == "EM_ARM" and r_info_type == R_ARM_ABS32:
-        # happens for soft-float on armv6m
-        raise ValueError("Absolute relocations not supported on ARM")
+        # Absolute relocation, handled as a data relocation.
+        do_relocation_data(env, text_addr, r)
+        return
 
     else:
         # Unknown/unsupported relocation
@@ -781,9 +782,9 @@ def do_relocation_data(env, text_addr, r):
     ):
         # Relocation in data.rel.ro to internal/external symbol
         if env.arch.word_size == 4:
-            struct_type = "<I"
+            struct_type = "<i"
         elif env.arch.word_size == 8:
-            struct_type = "<Q"
+            struct_type = "<q"
         if hasattr(s, "resolved"):
             s = s.resolved
         sec = s.section
