@@ -85,7 +85,7 @@ print(float("inf") * (1 + 1j))
 print(float("-inf") * (1 + 1j))
 
 # malformed complex strings
-for test in ("1+2", "1j+2", "1+2j+3", "1+2+3j", "1 + 2j"):
+for test in ("1+2", "1j+2", "1+2j+3", "1+2+3j", "1 + 2j", "1 1j", "1 j"):
     try:
         complex(test)
     except ValueError:
