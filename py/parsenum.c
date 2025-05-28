@@ -232,7 +232,8 @@ mp_obj_t mp_parse_num_float(const char *str, size_t len, bool allow_imag, mp_lex
     #if MICROPY_PY_BUILTINS_COMPLEX
     unsigned int real_imag_state = REAL_IMAG_STATE_START;
     mp_float_t dec_real = 0;
-parse_start:
+parse_start:;
+    bool dec_pos = false;
     dec_neg = false;
     #endif
 
@@ -244,6 +245,9 @@ parse_start:
     if (str < top) {
         if (*str == '+') {
             str++;
+            #if MICROPY_PY_BUILTINS_COMPLEX
+            dec_pos = true;
+            #endif
         } else if (*str == '-') {
             str++;
             dec_neg = true;
@@ -368,6 +372,9 @@ parse_start:
             dec_val = 1;
         }
         ++str;
+        if (real_imag_state & REAL_IMAG_STATE_HAVE_REAL && !(dec_neg || dec_pos)) {
+            goto value_error;
+        }
         real_imag_state |= REAL_IMAG_STATE_HAVE_IMAG;
         #else
         raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("complex values not supported")), lex);
