@@ -233,6 +233,7 @@ mp_obj_t mp_parse_num_float(const char *str, size_t len, bool allow_imag, mp_lex
     unsigned int real_imag_state = REAL_IMAG_STATE_START;
     mp_float_t dec_real = 0;
 parse_start:
+    dec_neg = false;
     #endif
 
     // skip leading space
