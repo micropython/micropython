@@ -14,4 +14,9 @@ ifeq ($(ARCH),xtensa)
 MPY_EXTERN_SYM_FILE=$(MPY_DIR)/ports/esp8266/boards/eagle.rom.addr.v6.ld
 endif
 
+ifeq ($(ARCH),$(filter $(ARCH),armv6m armv7m))
+# Link with libm.a for soft-float helper functions
+LINK_RUNTIME = 1
+endif
+
 include $(MPY_DIR)/py/dynruntime.mk
