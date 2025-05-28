@@ -104,8 +104,8 @@ static bool use_multicore_lockout(void) {
 // and core1 locked out if relevant.
 static void __no_inline_not_in_flash_func(rp2_flash_set_timing_internal)(int clock_hz) {
 
-    // Use the minimum divisor assuming a 133MHz flash.
-    const int max_flash_freq = 133000000;
+    // Use the minimum divisor assuming a 60MHz flash.
+    const int max_flash_freq = 60000000;
     int divisor = (clock_hz + max_flash_freq - 1) / max_flash_freq;
 
     #if PICO_RP2350
@@ -115,7 +115,7 @@ static void __no_inline_not_in_flash_func(rp2_flash_set_timing_internal)(int clo
     }
 
     // RX delay equal to the divisor means sampling at the same time as the next falling edge of SCK after the
-    // falling edge that generated the data.  This is pretty tight at 133MHz but seems to work with the Winbond flash chips.
+    // falling edge that generated the data.  This is pretty tight at 60MHz but seems to work with the Winbond flash chips.
     const int rxdelay = divisor;
     qmi_hw->m[0].timing = (1 << QMI_M0_TIMING_COOLDOWN_LSB) |
         rxdelay << QMI_M1_TIMING_RXDELAY_LSB |
