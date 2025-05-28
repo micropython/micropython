@@ -51,6 +51,17 @@ static mp_obj_t call_round(mp_obj_t x) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(round_obj, call_round);
 
+// A function that uses more complicated functions from libm
+static mp_obj_t call_sin_cos(mp_obj_t x_in) {
+    mp_float_t x = mp_obj_get_float(x_in);
+    mp_obj_t tuple[] = {
+        mp_obj_new_float(sin(x)),
+        mp_obj_new_float(cos(x)),
+    };
+    return mp_obj_new_tuple(2, tuple);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(sin_cos_obj, call_sin_cos);
+
 // A function that computes the product of floats in an array.
 // This function uses the most general C argument interface, which is more difficult
 // to use but has access to the globals dict of the module via self->globals.
@@ -85,6 +96,7 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     mp_store_global(MP_QSTR_add_d, MP_OBJ_FROM_PTR(&add_d_obj));
     #endif
     mp_store_global(MP_QSTR_round, MP_OBJ_FROM_PTR(&round_obj));
+    mp_store_global(MP_QSTR_sin_cos, MP_OBJ_FROM_PTR(&sin_cos_obj));
 
     // The productf function uses the most general C argument interface
     mp_store_global(MP_QSTR_productf, MP_DYNRUNTIME_MAKE_FUNCTION(productf));
