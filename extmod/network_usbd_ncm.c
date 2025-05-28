@@ -391,9 +391,7 @@ static mp_obj_t usbnet_active(size_t n_args, const mp_obj_t *args) {
     } else {
         MICROPY_PY_LWIP_ENTER
         if (mp_obj_is_true(args[1])) {
-            MICROPY_PY_LWIP_ENTER
             if (!IS_ACTIVE(self)) {
-                // netif_set_up(&self->netif);
                 netif_set_link_up(&self->netif);
 
                 #if MICROPY_HW_NETWORK_USBNET_DHCP_SERVER
@@ -410,13 +408,7 @@ static mp_obj_t usbnet_active(size_t n_args, const mp_obj_t *args) {
                 #endif
 
                 netif_set_link_down(&self->netif);
-                // netif_set_down(&self->netif);
-
-                // Note: We don't call usbnet_deinit() here because that would
-                // completely remove the network interface. We just want to
-                // deactivate it so it can be reactivated later.
             }
-            MICROPY_PY_LWIP_EXIT
         }
         MICROPY_PY_LWIP_EXIT
         return mp_const_none;
@@ -436,31 +428,11 @@ static mp_obj_t network_usbnet_ipconfig(size_t n_args, const mp_obj_t *args, mp_
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(usbnet_ipconfig_obj, 1, network_usbnet_ipconfig);
 
-static mp_obj_t usbnet_link_state(size_t n_args, const mp_obj_t *args) {
-    usbnet_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    if (n_args == 1) {
-        // Get current link state
-        return mp_obj_new_bool(netif_is_link_up(&self->netif));
-    } else {
-        // Set link state
-        MICROPY_PY_LWIP_ENTER
-        if (mp_obj_is_true(args[1])) {
-            netif_set_link_up(&self->netif);
-        } else {
-            netif_set_link_down(&self->netif);
-        }
-        MICROPY_PY_LWIP_EXIT
-        return mp_const_none;
-    }
-}
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usbnet_link_state_obj, 1, 2, usbnet_link_state);
-
 static const mp_rom_map_elem_t usbnet_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&usbnet_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&usbnet_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&usbnet_ifconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&usbnet_ipconfig_obj) },
-    { MP_ROM_QSTR(MP_QSTR_link_state), MP_ROM_PTR(&usbnet_link_state_obj) },
 };
 static MP_DEFINE_CONST_DICT(usbnet_locals_dict, usbnet_locals_dict_table);
 
