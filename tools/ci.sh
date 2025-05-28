@@ -541,13 +541,11 @@ function ci_native_mpy_modules_build {
         done
     fi
 
-    # features2 requires soft-float on armv7m, rv32imc, and xtensa.  On armv6m
-    # the compiler generates absolute relocations in the object file
-    # referencing soft-float functions, which is not supported at the moment.
+    # features2 works on rv32imc but needs to have float explicitly enabled.
     make -C examples/natmod/features2 clean
-    if [ $arch = "rv32imc" ] || [ $arch = "armv7m" ] || [ $arch = "xtensa" ]; then
+    if [ $arch = "rv32imc" ]; then
         make -C examples/natmod/features2 ARCH=$arch MICROPY_FLOAT_IMPL=float
-    elif [ $arch != "armv6m" ]; then
+    else
         make -C examples/natmod/features2 ARCH=$arch
     fi
 
