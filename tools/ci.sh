@@ -524,22 +524,11 @@ function ci_native_mpy_modules_build {
     else
         arch=$1
     fi
-    for natmod in features1 features3 features4 heapq re
+    for natmod in deflate features1 features3 features4 framebuf heapq random re
     do
         make -C examples/natmod/$natmod clean
         make -C examples/natmod/$natmod ARCH=$arch
     done
-
-    # deflate, framebuf, and random currently cannot build on xtensa due to
-    # some symbols that have been removed from the compiler's runtime, in
-    # favour of being provided from ROM.
-    if [ $arch != "xtensa" ]; then
-        for natmod in deflate framebuf random
-        do
-            make -C examples/natmod/$natmod clean
-            make -C examples/natmod/$natmod ARCH=$arch
-        done
-    fi
 
     # features2 requires soft-float on armv7m, rv32imc, and xtensa.  On armv6m
     # the compiler generates absolute relocations in the object file
@@ -551,10 +540,8 @@ function ci_native_mpy_modules_build {
         make -C examples/natmod/features2 ARCH=$arch
     fi
 
-    # btree requires thread local storage support on rv32imc, whilst on xtensa
-    # it relies on symbols that are provided from ROM but not exposed to
-    # natmods at the moment.
-    if [ $arch != "rv32imc" ] && [ $arch != "xtensa" ]; then
+    # btree requires thread local storage support on rv32imc.
+    if [ $arch != "rv32imc" ]; then
         make -C examples/natmod/btree clean
         make -C examples/natmod/btree ARCH=$arch
     fi

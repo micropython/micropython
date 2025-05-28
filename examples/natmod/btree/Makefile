@@ -32,6 +32,11 @@ SRC += $(addprefix $(realpath $(BTREE_DIR))/,\
 	mpool/mpool.c \
 	)
 
+ifeq ($(ARCH),xtensa)
+# Link with libm.a and libgcc.a from the toolchain
+LINK_RUNTIME = 1
+endif
+
 include $(MPY_DIR)/py/dynruntime.mk
 
 # btree needs gnu99 defined
