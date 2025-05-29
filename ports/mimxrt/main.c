@@ -55,6 +55,7 @@
 #endif
 
 #include "systick.h"
+#include "extmod/modmachine.h"
 #include "extmod/modnetwork.h"
 #include "extmod/vfs.h"
 
