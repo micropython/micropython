@@ -227,13 +227,13 @@ mp_obj_t mp_parse_num_float(const char *str, size_t len, bool allow_imag, mp_lex
 
     const char *top = str + len;
     mp_float_t dec_val = 0;
-    bool dec_neg = false;
 
     #if MICROPY_PY_BUILTINS_COMPLEX
     unsigned int real_imag_state = REAL_IMAG_STATE_START;
     mp_float_t dec_real = 0;
-parse_start:
+parse_start:;
     #endif
+    bool dec_neg = false;
 
     // skip leading space
     for (; str < top && unichar_isspace(*str); str++) {
