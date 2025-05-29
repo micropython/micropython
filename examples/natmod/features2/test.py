@@ -22,6 +22,10 @@ def test():
     if "add_d" in globals():
         tests.append(isclose(add_d(0.1, 0.2), 0.3))
 
+    sc = sin_cos(1.04720)  # pi/3
+    tests.append(isclose(sc[0], 0.866025))
+    tests.append(isclose(sc[1], 0.5))
+
     print(tests)
 
     if not all(tests):

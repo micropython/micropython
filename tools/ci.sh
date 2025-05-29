@@ -530,31 +530,28 @@ function ci_native_mpy_modules_build {
         make -C examples/natmod/$natmod ARCH=$arch
     done
 
-    # deflate, framebuf, and random currently cannot build on xtensa due to
+    # deflate and framebuf currently cannot build on xtensa due to
     # some symbols that have been removed from the compiler's runtime, in
     # favour of being provided from ROM.
     if [ $arch != "xtensa" ]; then
-        for natmod in deflate framebuf random
+        for natmod in deflate framebuf
         do
             make -C examples/natmod/$natmod clean
             make -C examples/natmod/$natmod ARCH=$arch
         done
     fi
 
-    # features2 requires soft-float on armv7m, rv32imc, and xtensa.  On armv6m
-    # the compiler generates absolute relocations in the object file
-    # referencing soft-float functions, which is not supported at the moment.
+    # features2 works on rv32imc but needs to have float explicitly enabled.
     make -C examples/natmod/features2 clean
-    if [ $arch = "rv32imc" ] || [ $arch = "armv7m" ] || [ $arch = "xtensa" ]; then
+    if [ $arch = "rv32imc" ]; then
         make -C examples/natmod/features2 ARCH=$arch MICROPY_FLOAT_IMPL=float
-    elif [ $arch != "armv6m" ]; then
+    else
         make -C examples/natmod/features2 ARCH=$arch
     fi
 
-    # btree requires thread local storage support on rv32imc, whilst on xtensa
-    # it relies on symbols that are provided from ROM but not exposed to
+    # btree on xtensa relies on symbols that are provided from ROM but not exposed to
     # natmods at the moment.
-    if [ $arch != "rv32imc" ] && [ $arch != "xtensa" ]; then
+    if [ $arch != "xtensa" ]; then
         make -C examples/natmod/btree clean
         make -C examples/natmod/btree ARCH=$arch
     fi
