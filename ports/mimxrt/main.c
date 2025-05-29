@@ -55,6 +55,7 @@
 #endif
 
 #include "systick.h"
+#include "extmod/modmachine.h"
 #include "extmod/modnetwork.h"
 #include "extmod/vfs.h"
 
@@ -164,6 +165,9 @@ int main(void) {
         machine_rtc_irq_deinit();
         #if MICROPY_PY_MACHINE_I2S
         machine_i2s_deinit_all();
+        #endif
+        #if MICROPY_PY_MACHINE_I2C_TARGET
+        mp_machine_i2c_target_deinit_all();
         #endif
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_deinit();
