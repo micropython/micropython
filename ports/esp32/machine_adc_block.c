@@ -27,6 +27,8 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/machine_adc_block.c via MICROPY_PY_MACHINE_ADC_BLOCK_INCLUDEFILE.
 
+
+
 #include "py/mphal.h"
 #include "adc.h"
 #include "driver/adc.h"
