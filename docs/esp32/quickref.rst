@@ -544,14 +544,27 @@ Legacy methods:
 
     Equivalent to ``ADC.block().init(bits=bits)``.
 
-For compatibility, the ``ADC`` object also provides constants matching the
-supported ADC resolutions:
+The only chip that can switch resolution to a lower one is the normal esp32.
+The C2 & S3 are stuck at 12 bits, while the S2 is at 13 bits.
 
+For compatibility, the ``ADC`` object also provides constants matching the
+supported ADC resolutions, per chip:
+
+ESP32:
   - ``ADC.WIDTH_9BIT`` = 9
   - ``ADC.WIDTH_10BIT`` = 10
   - ``ADC.WIDTH_11BIT`` = 11
   - ``ADC.WIDTH_12BIT`` = 12
 
+ESP32 C3 & S3:
+  - ``ADC.WIDTH_12BIT`` = 12
+
+ESP32 S2:
+  - ``ADC.WIDTH_13BIT`` = 13
+
+.. method:: ADC.deinit()
+
+    Provided to deinit the adc driver.
 
 Software SPI bus
 ----------------
