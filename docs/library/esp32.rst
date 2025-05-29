@@ -23,6 +23,8 @@ Functions
     Configure whether or not the Ultra-Low-Power co-processor can wake the
     device from sleep. *wake* should be a boolean value.
 
+    .. note:: This is only available for boards that have ULP coprocessor support.
+
 .. function:: wake_on_ext0(pin, level)
 
     Configure how EXT0 wakes the device from sleep.  *pin* can be ``None``
