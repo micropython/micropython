@@ -325,9 +325,11 @@ static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
                 mp_raise_ValueError(MP_ERROR_TEXT("bad wake value"));
             }
 
+            #if SOC_TOUCH_SENSOR_SUPPORTED
             if (machine_rtc_config.wake_on_touch) { // not compatible
                 mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
             }
+            #endif
 
             if (!RTC_IS_VALID_EXT_PIN(index)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("invalid pin for wake"));

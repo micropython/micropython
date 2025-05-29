@@ -47,6 +47,7 @@
 #include "../multi_heap_platform.h"
 #include "../heap_private.h"
 
+#if SOC_TOUCH_SENSOR_SUPPORTED
 static mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 
     if (machine_rtc_config.ext0_pin != -1) {
@@ -57,12 +58,16 @@ static mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_touch_obj, esp32_wake_on_touch);
+#endif
 
 static mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
+    #if SOC_TOUCH_SENSOR_SUPPORTED
     if (machine_rtc_config.wake_on_touch) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
+    #endif
+
     enum {ARG_pin, ARG_level};
     const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin,  MP_ARG_OBJ, {.u_obj = mp_obj_new_int(machine_rtc_config.ext0_pin)} },
@@ -259,7 +264,9 @@ static MP_DEFINE_CONST_FUN_OBJ_0(esp32_idf_task_info_obj, esp32_idf_task_info);
 static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
+    #if SOC_TOUCH_SENSOR_SUPPORTED
     { MP_ROM_QSTR(MP_QSTR_wake_on_touch), MP_ROM_PTR(&esp32_wake_on_touch_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext0), MP_ROM_PTR(&esp32_wake_on_ext0_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
     #if SOC_ULP_SUPPORTED
