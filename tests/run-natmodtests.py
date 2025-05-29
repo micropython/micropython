@@ -73,6 +73,7 @@ class __FS:
     return __File()
 vfs.mount(__FS(), '/__remote')
 sys.path.insert(0, '/__remote')
+{import_prelude}
 sys.modules['{}'] = __import__('__injected')
 """
 
@@ -133,6 +134,13 @@ def detect_architecture(target):
 
 
 def run_tests(target_truth, target, args, stats, resolved_arch):
+    global injected_import_hook_code
+
+    prelude = ""
+    if args.begin:
+        prelude = args.begin.read()
+    injected_import_hook_code = injected_import_hook_code.replace("{import_prelude}", prelude)
+
     for test_file in args.files:
         # Find supported test
         test_file_basename = os.path.basename(test_file)
@@ -211,6 +219,13 @@ def main():
     )
     cmd_parser.add_argument(
         "-a", "--arch", choices=AVAILABLE_ARCHS, help="override native architecture of the target"
+    )
+    cmd_parser.add_argument(
+        "-b",
+        "--begin",
+        type=argparse.FileType("rt"),
+        default=None,
+        help="prologue python file to execute before module import",
     )
     cmd_parser.add_argument("files", nargs="*", help="input test files")
     args = cmd_parser.parse_args()

@@ -1,0 +1,2 @@
+__divsi3 0x4000dc88
+__udivsi3 0x4000e21c
