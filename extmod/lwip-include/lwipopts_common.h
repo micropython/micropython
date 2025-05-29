@@ -61,6 +61,10 @@
 #define LWIP_MDNS_RESPONDER             1
 #endif
 
+#ifndef LWIP_IPV6
+#define LWIP_IPV6                       1
+#endif
+
 #if LWIP_IPV6
 #define LWIP_IPV6_AUTOCONFIG            1
 #define LWIP_IPV6_MLD                   1
