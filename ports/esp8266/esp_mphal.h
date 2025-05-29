@@ -27,10 +27,19 @@
 #include "user_interface.h"
 #include "py/ringbuf.h"
 #include "shared/runtime/interrupt_char.h"
+#include "ets_alt_task.h"
 #include "xtirq.h"
 
 #define MICROPY_BEGIN_ATOMIC_SECTION() esp_disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state) esp_enable_irq(state)
+
+// During machine.time_pulse_us, feed WDT every now and then.
+#define MICROPY_PY_MACHINE_TIME_PULSE_US_HOOK(dt) \
+    do { \
+        if ((dt & 0xffff) == 0xffff && !ets_loop_dont_feed_sw_wdt) { \
+            system_soft_wdt_feed(); \
+        } \
+    } while (0)
 
 void mp_sched_keyboard_interrupt(void);
 
