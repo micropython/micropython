@@ -252,24 +252,18 @@ parse_start:
     const char *str_val_start = str;
 
     // determine what the string is
-    if (str + 2 < top && (str[0] | 0x20) == 'i') {
-        // string starts with 'i', should be 'inf' or 'infinity' (case insensitive)
-        if ((str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'f') {
-            // inf
-            str += 3;
-            dec_val = (mp_float_t)INFINITY;
-            if (str + 4 < top && (str[0] | 0x20) == 'i' && (str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'i' && (str[3] | 0x20) == 't' && (str[4] | 0x20) == 'y') {
-                // infinity
-                str += 5;
-            }
+    if (str + 2 < top && (str[0] | 0x20) == 'i' && (str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'f') {
+        // 'inf' or 'infinity' (case insensitive)
+        str += 3;
+        dec_val = (mp_float_t)INFINITY;
+        if (str + 4 < top && (str[0] | 0x20) == 'i' && (str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'i' && (str[3] | 0x20) == 't' && (str[4] | 0x20) == 'y') {
+            // infinity
+            str += 5;
         }
-    } else if (str + 2 < top && (str[0] | 0x20) == 'n') {
-        // string starts with 'n', should be 'nan' (case insensitive)
-        if ((str[1] | 0x20) == 'a' && (str[2] | 0x20) == 'n') {
-            // NaN
-            str += 3;
-            dec_val = MICROPY_FLOAT_C_FUN(nan)("");
-        }
+    } else if (str + 2 < top && (str[0] | 0x20) == 'n' && (str[1] | 0x20) == 'a' && (str[2] | 0x20) == 'n') {
+        // 'nan' (case insensitive)
+        str += 3;
+        dec_val = MICROPY_FLOAT_C_FUN(nan)("");
     } else {
         // string should be a decimal number
         parse_dec_in_t in = PARSE_DEC_IN_INTG;
