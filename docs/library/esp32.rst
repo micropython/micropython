@@ -41,6 +41,8 @@ Functions
     or a tuple/list of valid Pin objects.  *level* should be ``esp32.WAKEUP_ALL_LOW``
     or ``esp32.WAKEUP_ANY_HIGH``.
 
+    .. note:: This is only available for boards that have ext1 support.
+
 .. function:: gpio_deep_sleep_hold(enable)
 
     Configure whether non-RTC GPIO pin configuration is retained during

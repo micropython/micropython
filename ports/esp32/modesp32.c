@@ -97,6 +97,7 @@ static mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_m
 static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext0_obj, 0, esp32_wake_on_ext0);
 #endif
 
+#if SOC_PM_SUPPORT_EXT1_WAKEUP
 static mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_pins, ARG_level};
     const mp_arg_t allowed_args[] = {
@@ -132,6 +133,7 @@ static mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext1_obj, 0, esp32_wake_on_ext1);
+#endif
 
 #if SOC_ULP_SUPPORTED
 static mp_obj_t esp32_wake_on_ulp(const mp_obj_t wake) {
@@ -272,7 +274,9 @@ static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     #if SOC_PM_SUPPORT_EXT0_WAKEUP
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext0), MP_ROM_PTR(&esp32_wake_on_ext0_obj) },
     #endif
+    #if SOC_PM_SUPPORT_EXT1_WAKEUP
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
+    #endif
     #if SOC_ULP_SUPPORTED
     { MP_ROM_QSTR(MP_QSTR_wake_on_ulp), MP_ROM_PTR(&esp32_wake_on_ulp_obj) },
     #endif
