@@ -48,14 +48,29 @@
 #define LWIP_SOCKET                     0
 #define LWIP_STATS                      0
 #define LWIP_NETIF_HOSTNAME             1
+#define LWIP_NETIF_LINK_CALLBACK        1
 
 #define LWIP_DHCP                       1
 #define LWIP_DHCP_CHECK_LINK_UP         1
 #define LWIP_DHCP_DOES_ACD_CHECK        0 // to speed DHCP up
 #define LWIP_DNS                        1
 #define LWIP_DNS_SUPPORT_MDNS_QUERIES   1
-#define LWIP_MDNS_RESPONDER             1
 #define LWIP_IGMP                       1
+
+#ifndef LWIP_MDNS_RESPONDER
+#define LWIP_MDNS_RESPONDER             1
+#endif
+
+#ifndef LWIP_IPV6
+#define LWIP_IPV6                       1
+#endif
+
+#if LWIP_IPV6
+#define LWIP_IPV6_AUTOCONFIG            1
+#define LWIP_IPV6_MLD                   1
+#define LWIP_MULTICAST_PING             1  // Respond to Neighbor discovery on ff02::1
+#define LWIP_ND6_NUM_DESTINATIONS       4
+#endif
 
 #if MICROPY_PY_LWIP_PPP
 #define PPP_SUPPORT                     1
@@ -107,5 +122,9 @@
 #define sys_jiffies sys_now
 
 typedef uint32_t sys_prot_t;
+
+// #define LWIP_DEBUG
+// #define LWIP_DBG_MIN_LEVEL              LWIP_DBG_LEVEL_ALL
+// #define LWIP_DBG_TYPES_ON               LWIP_DBG_ON
 
 #endif // MICROPY_INCLUDED_LWIPOPTS_COMMON_H
