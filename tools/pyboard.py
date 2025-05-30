@@ -275,6 +275,7 @@ class Pyboard:
         wait=0,
         exclusive=True,
         timeout=None,
+        write_timeout=5,
     ):
         self.in_raw_repl = False
         self.use_raw_paste = True
@@ -293,6 +294,7 @@ class Pyboard:
             serial_kwargs = {
                 "baudrate": baudrate,
                 "timeout": timeout,
+                "write_timeout": write_timeout,
                 "interCharTimeout": 1,
             }
             if serial.__version__ >= "3.3":
@@ -376,6 +378,12 @@ class Pyboard:
         return data
 
     def enter_raw_repl(self, soft_reset=True, timeout_overall=10):
+        try:
+            self._enter_raw_repl_unprotected(soft_reset, timeout_overall)
+        except OSError as er:
+            raise PyboardError("could not enter raw repl: {}".format(er))
+
+    def _enter_raw_repl_unprotected(self, soft_reset, timeout_overall):
         self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
 
         # flush input (without relying on serial.flushInput())
