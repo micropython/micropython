@@ -227,21 +227,27 @@ Methods
    has the same "no short writes" policy for blocking sockets, and will return
    number of bytes sent on non-blocking sockets.
 
-.. method:: socket.recv(bufsize)
+.. method:: socket.recv(bufsize, [flags])
 
    Receive data from the socket. The return value is a bytes object representing the data
    received. The maximum amount of data to be received at once is specified by bufsize.
+
+   Most ports support the optional *flags* argument. Available *flags* are defined as constants
+   in the socket module and have the same meaning as in CPython. ``MSG_PEEK`` and ``MSG_DONTWAIT``
+   are supported on all ports which accept the *flags* argument.
 
 .. method:: socket.sendto(bytes, address)
 
    Send data to the socket. The socket should not be connected to a remote socket, since the
    destination socket is specified by *address*.
 
-.. method:: socket.recvfrom(bufsize)
+.. method:: socket.recvfrom(bufsize, [flags])
 
   Receive data from the socket. The return value is a pair *(bytes, address)* where *bytes* is a
   bytes object representing the data received and *address* is the address of the socket sending
   the data.
+
+  See the `recv` function for an explanation of the optional *flags* argument.
 
 .. method:: socket.setsockopt(level, optname, value)
 
