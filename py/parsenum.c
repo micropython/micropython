@@ -252,9 +252,9 @@ parse_start:
     const char *str_val_start = str;
 
     // determine what the string is
-    if (str < top && (str[0] | 0x20) == 'i') {
+    if (str + 2 < top && (str[0] | 0x20) == 'i') {
         // string starts with 'i', should be 'inf' or 'infinity' (case insensitive)
-        if (str + 2 < top && (str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'f') {
+        if ((str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'f') {
             // inf
             str += 3;
             dec_val = (mp_float_t)INFINITY;
@@ -263,9 +263,9 @@ parse_start:
                 str += 5;
             }
         }
-    } else if (str < top && (str[0] | 0x20) == 'n') {
+    } else if (str + 2 < top && (str[0] | 0x20) == 'n') {
         // string starts with 'n', should be 'nan' (case insensitive)
-        if (str + 2 < top && (str[1] | 0x20) == 'a' && (str[2] | 0x20) == 'n') {
+        if ((str[1] | 0x20) == 'a' && (str[2] | 0x20) == 'n') {
             // NaN
             str += 3;
             dec_val = MICROPY_FLOAT_C_FUN(nan)("");
