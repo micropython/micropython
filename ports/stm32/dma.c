@@ -35,6 +35,8 @@
 #include "irq.h"
 #include "mpu.h"
 
+#if !defined(STM32N6)
+
 // When this option is enabled, the DMA will turn off automatically after
 // a period of inactivity.
 #ifndef MICROPY_HW_DMA_ENABLE_AUTO_TURN_OFF
@@ -82,6 +84,8 @@ struct _dma_descr_t {
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     DMA_Stream_TypeDef *instance;
     #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    DMA_Channel_TypeDef *instance;
+    #elif defined(STM32N6)
     DMA_Channel_TypeDef *instance;
     #else
     #error "Unsupported Processor"
@@ -1903,5 +1907,7 @@ void dma_unprotect_rx_region(void *dest, size_t len) {
     mpu_config_end(irq_state);
     #endif
 }
+
+#endif
 
 #endif

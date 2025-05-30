@@ -224,7 +224,7 @@ void mp_spiflash_init(mp_spiflash_t *self) {
     }
     #endif
 
-    if (self->config->bus_kind == MP_SPIFLASH_BUS_QSPI) {
+    if (self->config->bus_kind == MP_SPIFLASH_BUS_QSPI && self->config->bus.u_qspi.proto->read == NULL) {
         // Set QE bit
         uint32_t sr = 0, cr = 0;
         int ret = mp_spiflash_read_cmd(self, CMD_RDSR, 1, &sr);
@@ -317,6 +317,10 @@ int mp_spiflash_erase_block(mp_spiflash_t *self, uint32_t addr) {
 int mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest) {
     if (len == 0) {
         return 0;
+    }
+    const mp_spiflash_config_t *c = self->config;
+    if (c->bus_kind == MP_SPIFLASH_BUS_QSPI && c->bus.u_qspi.proto->read != NULL) {
+        return c->bus.u_qspi.proto->read(c->bus.u_qspi.data, addr, len, dest);
     }
     mp_spiflash_acquire_bus(self);
     int ret = mp_spiflash_read_data(self, addr, len, dest);

@@ -11,7 +11,7 @@
 
 // Work out if we should support USB high-speed device mode
 #if MICROPY_HW_USB_HS \
-    && (!MICROPY_HW_USB_HS_IN_FS || defined(STM32F723xx) || defined(STM32F733xx))
+    && (!MICROPY_HW_USB_HS_IN_FS || defined(STM32F723xx) || defined(STM32F733xx) || defined(STM32N6))
 #define USBD_SUPPORT_HS_MODE (1)
 #else
 #define USBD_SUPPORT_HS_MODE (0)

@@ -28,6 +28,8 @@
 #include "extmod/modmachine.h"
 #include "spi.h"
 
+#if !defined(STM32N6)
+
 #if MICROPY_PY_MACHINE_SPI
 
 /******************************************************************************/
@@ -154,3 +156,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 #endif // MICROPY_PY_MACHINE_SPI
+
+#endif
