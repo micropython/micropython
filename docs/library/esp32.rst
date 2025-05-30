@@ -33,6 +33,8 @@ Functions
     or a valid Pin object.  *level* should be ``esp32.WAKEUP_ALL_LOW`` or
     ``esp32.WAKEUP_ANY_HIGH``.
 
+    .. note:: This is only available for boards that have ext0 support.
+
 .. function:: wake_on_ext1(pins, level)
 
     Configure how EXT1 wakes the device from sleep.  *pins* can be ``None``
