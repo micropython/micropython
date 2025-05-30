@@ -31,7 +31,9 @@
 #include "modmachine.h"
 
 typedef struct {
+    #if SOC_PM_SUPPORT_EXT1_WAKEUP
     uint64_t ext1_pins; // set bit == pin#
+    #endif
     #if SOC_PM_SUPPORT_EXT0_WAKEUP
     int8_t ext0_pin;   // just the pin#, -1 == None
     #endif
@@ -45,7 +47,9 @@ typedef struct {
     bool ext0_level : 1;
     wake_type_t ext0_wake_types;
     #endif
+    #if SOC_PM_SUPPORT_EXT1_WAKEUP
     bool ext1_level : 1;
+    #endif
 } machine_rtc_config_t;
 
 extern machine_rtc_config_t machine_rtc_config;
