@@ -93,23 +93,30 @@ function ci_code_size_build {
     function code_size_build_step {
         COMMIT=$1
         OUTFILE=$2
-        IGNORE_ERRORS=$3
 
         echo "Building ${COMMIT}..."
         git checkout --detach $COMMIT
         git submodule update --init $SUBMODULES
         git show -s
         tools/metrics.py clean $PORTS_TO_CHECK
-        tools/metrics.py build $PORTS_TO_CHECK | tee $OUTFILE || $IGNORE_ERRORS
+        tools/metrics.py build $PORTS_TO_CHECK | tee $OUTFILE
+        return $?
     }
+
+    # Allow errors from tools/metrics.py to propagate out of the pipe above.
+    set -o pipefail
 
     # build reference, save to size0
     # ignore any errors with this build, in case master is failing
-    code_size_build_step $REFERENCE ~/size0 true
+    code_size_build_step $REFERENCE ~/size0
     # build PR/branch, save to size1
-    code_size_build_step $COMPARISON ~/size1 false
+    code_size_build_step $COMPARISON ~/size1
+    STATUS=$?
 
+    set +o pipefail
     unset -f code_size_build_step
+
+    return $STATUS
 }
 
 ########################################################################################
