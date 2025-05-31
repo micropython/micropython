@@ -67,6 +67,7 @@ void bare_main(void) {
 void nlr_jump_fail(void *val) {
     for (;;) {
     }
+    fail
 }
 
 #ifndef NDEBUG
