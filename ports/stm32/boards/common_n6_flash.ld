@@ -60,6 +60,9 @@ SECTIONS
         *(*.mp_hal_pin_config_speed);
         *xspi.o(.text* .rodata*);
         *(*.rodata.pin_N*_obj);
+        *(*.board_leave_standby);
+        *(.text.LL_AHB4_GRP1_EnableClock);
+        *(.text.LL_APB4_GRP2_EnableClock);
 
         . = ALIGN(4);
         _eiram = .;

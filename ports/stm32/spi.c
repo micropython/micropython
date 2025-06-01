@@ -68,7 +68,6 @@ static SPI_HandleTypeDef SPIHandleSubGhz = {.Instance = NULL};
 #endif
 
 const spi_t spi_obj[6] = {
-#if 0
     #if defined(MICROPY_HW_SPI1_SCK)
     {&SPIHandle1, &dma_SPI_1_TX, &dma_SPI_1_RX},
     #else
@@ -101,7 +100,6 @@ const spi_t spi_obj[6] = {
     #else
     {NULL, NULL, NULL},
     #endif
-#endif
 };
 
 #if defined(MICROPY_HW_SUBGHZSPI_ID) && MICROPY_HW_SUBGHZSPI_ID != 3

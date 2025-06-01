@@ -54,7 +54,7 @@
 #define RCC_CSR_PORRSTF RCC_CSR_PWRRSTF
 #endif
 
-#if defined(STM32H5)
+#if defined(STM32H5) || defined(STM32N6)
 #define RCC_SR          RSR
 #define RCC_SR_IWDGRSTF RCC_RSR_IWDGRSTF
 #define RCC_SR_WWDGRSTF RCC_RSR_WWDGRSTF
@@ -117,7 +117,6 @@
 static uint32_t reset_cause;
 
 void machine_init(void) {
-#if 0
     #if defined(STM32F4)
     if (PWR->CSR & PWR_CSR_SBF) {
         // came out of standby
@@ -136,7 +135,7 @@ void machine_init(void) {
         reset_cause = PYB_RESET_DEEPSLEEP;
         PWR->PMCR |= PWR_PMCR_CSSF;
     } else
-    #elif defined(STM32H7)
+    #elif defined(STM32H7) || defined(STM32N6)
     if (PWR->CPUCR & PWR_CPUCR_SBF || PWR->CPUCR & PWR_CPUCR_STOPF) {
         // came out of standby or stop mode
         reset_cause = PYB_RESET_DEEPSLEEP;
@@ -178,7 +177,6 @@ void machine_init(void) {
     }
     // clear RCC reset flags
     RCC->RCC_SR |= RCC_SR_RMVF;
-#endif
 }
 
 void machine_deinit(void) {

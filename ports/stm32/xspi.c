@@ -64,17 +64,32 @@ const xspi_flash_t xspi_flash2 = {
     .xip_base = 0x70000000,
 };
 
+static bool xspi_dtr_enabled = false;
+
+// Can't rely on SysTick being available, so use a busy loop for delays.
+// The timing here is approximate and assumes a CPU frequency of 800MHz.
+static void xspi_delay_us(unsigned int us) {
+    while (us--) {
+        for (unsigned int i = 0; i < 800; ++i) {
+            __NOP();
+        }
+    }
+}
 static inline void mp_hal_pin_config_alt_speed(mp_hal_pin_obj_t pin, uint32_t pull, uint32_t alt, uint32_t speed) {
     // TODO use mp_hal_pin_config_alt_static_speed
     mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ALT, pull, alt);
     mp_hal_pin_config_speed(pin, speed);
 }
 
-static int xspi_read_111(uint8_t cmd, size_t len, uint8_t *dest);
+static int xspi_read_111_ext(uint8_t cmd, bool addr_enabled, uint32_t addr, size_t len, uint8_t *dest);
+static int xspi_write_111_ext(uint8_t cmd, bool addr_enabled, uint32_t addr, size_t len, const uint8_t *src);
+static int xspi_read_888_dtr_ext(uint16_t cmd, bool addr_enabled, uint32_t addr, uint32_t num_dummy, size_t len, uint8_t *dest);
+static int xspi_write_888_dtr_ext(uint16_t cmd, bool addr_enabled, uint32_t addr, size_t len, const uint8_t *src);
 static void xspi_memory_map_111(void);
-#if 0
 static void xspi_memory_map_888(void);
-#endif
+static void xspi_memory_map_exit(void);
+static void xspi_switch_to_dtr(void);
+static void xspi_switch_to_spi(void);
 
 void xspi_init(void) {
     // Configure XSPI pins.
@@ -90,16 +105,12 @@ void xspi_init(void) {
     mp_hal_pin_config_alt_speed(pyb_pin_XSPIM_P2_IO6, MP_HAL_PIN_PULL_NONE, XSPI2_AF, MP_HAL_PIN_SPEED_VERY_HIGH);
     mp_hal_pin_config_alt_speed(pyb_pin_XSPIM_P2_IO7, MP_HAL_PIN_PULL_NONE, XSPI2_AF, MP_HAL_PIN_SPEED_VERY_HIGH);
 
+    LL_RCC_SetXSPIClockSource(LL_RCC_XSPI1_CLKSOURCE_HCLK);
     LL_RCC_SetXSPIClockSource(LL_RCC_XSPI2_CLKSOURCE_HCLK);
 
     LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_XSPIM);
     LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_XSPI1);
     LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_XSPI2);
-
-    // XSPI power enable.
-    LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_PWR);
-    LL_PWR_EnableVddIO3();
-    LL_PWR_SetVddIO3VoltageRange(LL_PWR_VDDIO_VOLTAGE_RANGE_1V8);
 
     // Configure XSPIM in direct mode.
     XSPI1->CR &= ~XSPI_CR_EN;
@@ -134,7 +145,7 @@ void xspi_init(void) {
 
     XSPIx->DCR3 =
         0
-        //10 << XSPI_DCR3_CSBOUND_Pos // transaction boundary at 1024
+        // 10 << XSPI_DCR3_CSBOUND_Pos // transaction boundary at 1024
     ;
 
     XSPIx->DCR4 =
@@ -152,31 +163,19 @@ void xspi_init(void) {
     XSPIM->CR = 0; // can also be (1 << 4) to pass through CS signal
     XSPIx->CR |= 1 << XSPI_CR_EN_Pos;
 
-    //////////////////////////
+    // Reset SPI flash to make sure it's in a known state (SPI mode).
+    mp_hal_pin_output(pyb_pin_FLASH_RESET);
+    mp_hal_pin_low(pyb_pin_FLASH_RESET);
+    xspi_delay_us(1000);
+    mp_hal_pin_high(pyb_pin_FLASH_RESET);
+    xspi_delay_us(10000);
 
-    #if 0
-    for (int i = 0; i < 4; ++i) {
-        printf("xspim %x %x\n", i, (int)((volatile uint32_t *)XSPIM)[i]);
-    }
-    for (int i = 0; i < 0x22c/4; ++i) {
-        if (((volatile uint32_t *)XSPI1)[i]) {
-            printf("xspi1 %x %x\n", i, (int)((volatile uint32_t *)XSPI1)[i]);
-        }
-    }
-    for (int i = 0; i < 0x22c/4; ++i) {
-        if (((volatile uint32_t *)XSPIx)[i]) {
-            printf("xspi2 %x %x\n", i, (int)((volatile uint32_t *)XSPIx)[i]);
-        }
-    }
-    #endif
-                
-    //////////////////////////
-
-    uint8_t buf[4];
-    xspi_read_111(0x9f, 3, buf);
-    // mp_printf(&mp_plat_print, "xspi flash init id=%x:%x:%x\n", buf[0], buf[1], buf[2]);
-
+    // Enable memory-mapped mode.
+    // Can select either SPI or DTR mode.
     if (1) {
+        xspi_switch_to_dtr();
+        xspi_memory_map_888();
+    } else {
         xspi_memory_map_111();
     }
 }
@@ -189,35 +188,46 @@ bool xspi_is_valid_addr(const xspi_flash_t *self, uint32_t addr) {
     return self->xip_base <= addr && addr < self->xip_base + 256 * 1024 * 1024;
 }
 
-static int xspi_read_111(uint8_t cmd, size_t len, uint8_t *dest) {
-    // printf("read_111 cmd=%02x %d\n", cmd, len);
-    // mp_hal_delay_ms(10);
-
-    //XSPIx->FCR = XSPI_FCR_CTCF; // clear TC flag
-
+static int xspi_read_111_ext(uint8_t cmd, bool addr_enabled, uint32_t addr, size_t len, uint8_t *dest) {
+    uint32_t admode = addr_enabled ? 1 : 0;
     XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 1 << XSPI_CR_FMODE_Pos; // indirect read mode
     XSPIx->CCR =
-        0 << XSPI_CCR_DDTR_Pos // data DTR disabled
-            | 1 << XSPI_CCR_DMODE_Pos // data on 1 line
-            | 0 << XSPI_CCR_ABMODE_Pos // no alternate byte
-            | 0 << XSPI_CCR_ADMODE_Pos // no address
+        1 << XSPI_CCR_DMODE_Pos // data on 1 line
+            | 3 << XSPI_CCR_ADSIZE_Pos // 32-bit address size
+            | admode << XSPI_CCR_ADMODE_Pos // address on 1 line, or disabled
             | 1 << XSPI_CCR_IMODE_Pos // instruction on 1 line
     ;
     XSPIx->TCR = 0 << XSPI_TCR_DCYC_Pos; // 0 dummy cycles
     XSPIx->DLR = len - 1; // number of bytes to read
-    XSPIx->IR = cmd; // read opcode (triggers the start of the transaction)
+    XSPIx->IR = cmd; // read opcode (triggers the start of the transaction if address disabled)
+    if (addr_enabled) {
+        XSPIx->AR = addr; // triggers the start of the transaction
+    }
+
+    #if 0 // untested code
+    // Read in the data 4 bytes at a time if dest is aligned.
+    if (((uintptr_t)dest & 3) == 0) {
+        while (len >= 4) {
+            while (!(XSPIx->SR & XSPI_SR_FTF)) {
+                if (XSPIx->SR & XSPI_SR_TEF) {
+                    return -MP_EIO;
+                }
+            }
+            *(uint32_t *)dest = XSPIx->DR;
+            dest += 4;
+            len -= 4;
+        }
+    }
+    #endif
 
     // Read in data 1 byte at a time.
-    while (len) {
+    while (len--) {
         while (!((XSPIx->SR >> XSPI_SR_FLEVEL_Pos) & 0x3f)) {
             if (XSPIx->SR & XSPI_SR_TEF) {
                 return -MP_EIO;
             }
         }
         *dest++ = *(volatile uint8_t *)&XSPIx->DR;
-        // printf("read %02x\n", dest[-1]);
-        // mp_hal_delay_ms(100);
-        --len;
     }
 
     XSPIx->FCR = XSPI_FCR_CTCF; // clear TC flag
@@ -225,147 +235,38 @@ static int xspi_read_111(uint8_t cmd, size_t len, uint8_t *dest) {
     return 0;
 }
 
-static void xspi_memory_map_111(void) {
+static int xspi_write_111_ext(uint8_t cmd, bool addr_enabled, uint32_t addr, size_t len, const uint8_t *src) {
+    uint32_t dmode = len == 0 ? 0 : 1;
+    uint32_t admode = addr_enabled ? 1 : 0;
+
+    // Configure and start the transfer.
+    // Transfer starts with IR write if no address or data, with AR write if no data,
+    // otherwise with DR write.
+
+    XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 0 << XSPI_CR_FMODE_Pos; // indirect write mode
     XSPIx->CCR =
-        1 << XSPI_CCR_DMODE_Pos // data on 1 line
-            | 3 << XSPI_CCR_ADSIZE_Pos // 32-bit address
-            | 1 << XSPI_CCR_ADMODE_Pos // address on 1 line
+        dmode << XSPI_CCR_DMODE_Pos // data on 1 line, or disabled
+            | 3 << XSPI_CCR_ADSIZE_Pos // 32-bit address size
+            | admode << XSPI_CCR_ADMODE_Pos // address on 1 line, or disabled
             | 1 << XSPI_CCR_IMODE_Pos // instruction on 1 line
     ;
-
-    XSPIx->TCR = 0 << XSPI_TCR_DCYC_Pos; // no dummy cycles
-    XSPIx->IR = 0x13; // READ4B
-    XSPIx->LPTR = 1024; // timeout period in number of CLK cycles
-
-    // Enable the XSPI peripheral in memory-mapped mode.
-    XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 3 << XSPI_CR_FMODE_Pos;
-
-    // TODO: enable MPU?
-}
-
-#if 0
-static void xspi_memory_map_888(void) {
-    XSPIx->CCR =
-        1 << XSPI_CCR_DQSE_Pos // DQS enabled
-            | 1 << XSPI_CCR_DDTR_Pos // data DTR enabled
-            | 4 << XSPI_CCR_DMODE_Pos // data on 8 lines
-            | 0 << XSPI_CCR_ABSIZE_Pos // 8-bit alternate bytes
-            | 0 << XSPI_CCR_ABDTR_Pos // alternate bytes DTR disabled
-            | 0 << XSPI_CCR_ABMODE_Pos // no alternate bytes
-            | 3 << XSPI_CCR_ADSIZE_Pos // 32-bit address
-            | 1 << XSPI_CCR_ADDTR_Pos // address DTR enabled
-            | 4 << XSPI_CCR_ADMODE_Pos // address on 8 lines
-            | 1 << XSPI_CCR_ISIZE_Pos // 16-bit instruction
-            | 1 << XSPI_CCR_IDTR_Pos // instruction DTR enabled
-            | 4 << XSPI_CCR_IMODE_Pos // instruction on 8 lines
-    ;
-
-    XSPIx->TCR =
-        0 << XSPI_TCR_SSHIFT_Pos // no sample shift
-            //| 1 << XSPI_TCR_DHQC_Pos // 1/4 cycle hold enabled
-            | 6 << XSPI_TCR_DCYC_Pos // 6 dummy cycles for reading (minimum, flash may insert more by holding DQS low)
-    ;
-
-    XSPIx->IR = 0xee11; // OCTA DTR read mode (8DTRD)
-
-    XSPIx->LPTR = 1024; // timeout period in number of CLK cycles
-
-    // Enable the XSPI peripheral in memory-mapped mode.
-    XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 3 << XSPI_CR_FMODE_Pos;  // memory-mapped mode
-
-    // TODO: enable MPU?
-}
-#endif
-
-#if 1
-static void xspi_memory_map_exit(void) {
-    // Abort any ongoing transfer if peripheral is busy.
-    if (XSPIx->SR & XSPI_SR_BUSY) {
-        XSPIx->CR |= XSPI_CR_ABORT;
-        while (!(XSPIx->SR & XSPI_SR_TCF)) {
-        }
-        XSPIx->FCR = XSPI_FCR_CTCF; // clear TC flag
-        while (XSPIx->SR & XSPI_SR_BUSY) {
-        }
-    }
-    XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 0 << XSPI_CR_FMODE_Pos; // indirect write mode
-}
-#endif
-
-static int xspi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
-    xspi_flash_t *self = self_in;
-    switch (cmd) {
-        case MP_QSPI_IOCTL_INIT:
-            // XSPI must be manually initialise by calling `xspi_init()` at boot.
-            break;
-        case MP_QSPI_IOCTL_BUS_ACQUIRE:
-            xspi_memory_map_exit();
-            break;
-        case MP_QSPI_IOCTL_BUS_RELEASE:
-            xspi_memory_map_111();
-            break;
-        case MP_QSPI_IOCTL_MEMORY_MODIFIED: {
-            uintptr_t *addr_len = (uintptr_t *)arg;
-            volatile void *addr = (volatile void *)(self->xip_base + addr_len[0]);
-            size_t len = addr_len[1];
-            SCB_InvalidateICache_by_Addr(addr, len);
-            SCB_InvalidateDCache_by_Addr(addr, len);
-            break;
-        }
-    }
-    return 0; // success
-}
-
-static int xspi_write_helper(void *self_in, uint8_t cmd, bool addr_enable, uint32_t addr, size_t len, const uint8_t *src) {
-    (void)self_in;
-
-    // printf("write cmd=%02x addr=%x len=%d\n", cmd, (int)addr, len);
-    // mp_hal_delay_ms(10);
-
-    uint8_t adsize = 0;
-    uint8_t admode = 0;
-    if (addr_enable) {
-        adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
-        admode = 1;
-    }
-
-    XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 0 << XSPI_CR_FMODE_Pos; // indirect write mode
-
-    if (len == 0) {
-        XSPIx->CCR =
-            adsize << XSPI_CCR_ADSIZE_Pos // 32/24-bit address size
-                | admode << XSPI_CCR_ADMODE_Pos // address on 1 line, or disabled
-                | 1 << XSPI_CCR_IMODE_Pos // instruction on 1 line
-        ;
-        XSPIx->TCR = 0 << XSPI_TCR_DCYC_Pos; // 0 dummy cycles
-        XSPIx->IR = cmd; // write opcode (triggers the start of the transaction if address disabled)
-        if (addr_enable) {
-            // This triggers the start of the operation.
-            XSPIx->AR = addr;
-        }
-    } else {
-        XSPIx->CCR =
-            1 << XSPI_CCR_DMODE_Pos // data on 1 line
-                | adsize << XSPI_CCR_ADSIZE_Pos // 32/24-bit address size
-                | admode << XSPI_CCR_ADMODE_Pos // address on 1 line
-                | 1 << XSPI_CCR_IMODE_Pos // instruction on 1 line
-        ;
-        XSPIx->TCR = 0 << XSPI_TCR_DCYC_Pos; // 0 dummy cycles
+    XSPIx->TCR = 0 << XSPI_TCR_DCYC_Pos; // 0 dummy cycles
+    if (len != 0) {
         XSPIx->DLR = len - 1;
-        XSPIx->IR = cmd; // write opcode
+    }
+    XSPIx->IR = cmd; // write opcode
+    if (addr_enabled) {
         XSPIx->AR = addr; // address
+    }
 
-        // Write out the data 1 byte at a time
-        // This triggers the start of the operation.
-        while (len) {
-            while (!(XSPIx->SR & XSPI_SR_FTF)) {
-                if (XSPIx->SR & XSPI_SR_TEF) {
-                    return -MP_EIO;
-                }
+    // Write out the data one byte at a time
+    while (len--) {
+        while (!(XSPIx->SR & XSPI_SR_FTF)) {
+            if (XSPIx->SR & XSPI_SR_TEF) {
+                return -MP_EIO;
             }
-            *(volatile uint8_t *)&XSPIx->DR = *src++;
-            --len;
         }
+        *(volatile uint8_t *)&XSPIx->DR = *src++;
     }
 
     // Wait for write to finish
@@ -384,97 +285,89 @@ static int xspi_write_helper(void *self_in, uint8_t cmd, bool addr_enable, uint3
     return 0;
 }
 
-static int xspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t data) {
-    return xspi_write_helper(self_in, cmd, false, 0, len, (const uint8_t *)&data);
-}
+static int xspi_read_888_dtr_ext(uint16_t cmd, bool addr_enabled, uint32_t addr, uint32_t num_dummy, size_t len, uint8_t *dest) {
+    uint32_t admode = addr_enabled ? 4 : 0;
 
-static int xspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
-    return xspi_write_helper(self_in, cmd, true, addr, len, src);
-}
-
-static int xspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest) {
-    (void)self_in;
-    return xspi_read_111(cmd, len, (uint8_t *)dest);
-
-    /*
-    XSPIx->DLR = len - 1; // number of bytes to read
-    XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 1 << XSPI_CR_FMODE_Pos; // indirect read mode
-    XSPIx->CCR =
-        1 << XSPI_CCR_DMODE_Pos // data on 1 line
-            | 1 << XSPI_CCR_IMODE_Pos // instruction on 1 line
-    ;
-    XSPIx->TCR = 0 << XSPI_TCR_DCYC_Pos; // 0 dummy cycles
-    XSPIx->IR = cmd; // read opcode (triggers the start of the transaction)
-
-    // Wait for read to finish.
-    while (!(XSPIx->SR & XSPI_SR_TCF)) {
-        if (XSPIx->SR & XSPI_SR_TEF) {
-            return -MP_EIO;
-        }
-    }
-
-    XSPIx->FCR = XSPI_FCR_CTCF; // clear TC flag
-
-    // Read result
-    *dest = XSPIx->DR;
-    */
-
-    return 0;
-}
-
-static int xspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, uint8_t num_dummy, size_t len, uint8_t *dest) {
-    (void)self_in;
-
-    // printf("read q cmd=%02x addr=%x len=%d\n", cmd, (int)addr, len);
-    // mp_hal_delay_ms(10);
-
-    // Use 1-line address, 1-line data.
-
-    uint32_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
-    uint32_t dmode = 1; // data on 1-line
-    uint32_t admode = 1; // address on 1-line
-    uint32_t dcyc = 0; // 0 dummy cycles
-
-    if (cmd == 0xeb || cmd == 0xec) {
-        // Convert to 1-line command.
-        cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 0x13 : 0x03;
-    }
+    // Configure and start the transfer.
+    // Transfer starts with IR write if no address, otherwise with AR write.
 
     XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 1 << XSPI_CR_FMODE_Pos; // indirect read mode
     XSPIx->CCR =
-        dmode << XSPI_CCR_DMODE_Pos // data on n lines
-            | adsize << XSPI_CCR_ADSIZE_Pos // 32 or 24-bit address size
-            | admode << XSPI_CCR_ADMODE_Pos // address on n lines
-            | 1 << XSPI_CCR_IMODE_Pos // instruction on 1 line
+        1 << XSPI_CCR_DQSE_Pos // DQS enabled
+            | 1 << XSPI_CCR_DDTR_Pos // data DTR enabled
+            | 4 << XSPI_CCR_DMODE_Pos // data on 8 lines
+            | 3 << XSPI_CCR_ADSIZE_Pos // 32-bit address size
+            | 1 << XSPI_CCR_ADDTR_Pos // address DTR enabled
+            | admode << XSPI_CCR_ADMODE_Pos // address on 8 lines, or disabled
+            | 1 << XSPI_CCR_ISIZE_Pos // 16-bit instruction
+            | 1 << XSPI_CCR_IDTR_Pos // instruction DTR enabled
+            | 4 << XSPI_CCR_IMODE_Pos // instruction on 8 lines
     ;
-    XSPIx->TCR = dcyc << XSPI_TCR_DCYC_Pos; // n dummy cycles
-    XSPIx->DLR = len - 1; // number of bytes to read
+    XSPIx->TCR = num_dummy << XSPI_TCR_DCYC_Pos; // N dummy cycles
+    XSPIx->DLR = len - 1;
     XSPIx->IR = cmd; // read opcode
-    XSPIx->AR = addr; // address to read from (triggers the start of the transaction)
-
-    // Read in the data 4 bytes at a time if dest is aligned.
-    if (((uintptr_t)dest & 3) == 0) {
-        while (len >= 4) {
-            while (!(XSPIx->SR & XSPI_SR_FTF)) {
-                if (XSPIx->SR & XSPI_SR_TEF) {
-                    return -MP_EIO;
-                }
-            }
-            *(uint32_t *)dest = XSPIx->DR;
-            dest += 4;
-            len -= 4;
-        }
+    if (addr_enabled) {
+        XSPIx->AR = addr; // address
     }
 
-    // Read in remaining data 1 byte at a time
-    while (len) {
+    // Read in data 1 byte at a time.
+    while (len--) {
         while (!((XSPIx->SR >> XSPI_SR_FLEVEL_Pos) & 0x3f)) {
             if (XSPIx->SR & XSPI_SR_TEF) {
                 return -MP_EIO;
             }
         }
         *dest++ = *(volatile uint8_t *)&XSPIx->DR;
-        --len;
+    }
+
+    XSPIx->FCR = XSPI_FCR_CTCF; // clear TC flag
+
+    return 0;
+}
+
+static int xspi_write_888_dtr_ext(uint16_t cmd, bool addr_enabled, uint32_t addr, size_t len, const uint8_t *src) {
+    uint32_t dmode = len == 0 ? 0 : 4;
+    uint32_t admode = addr_enabled ? 4 : 0;
+
+    // Configure and start the transfer.
+    // Transfer starts with IR write if no address or data, with AR write if no data,
+    // otherwise with DR write.
+
+    XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 0 << XSPI_CR_FMODE_Pos; // indirect write mode
+    XSPIx->CCR =
+        1 << XSPI_CCR_DDTR_Pos // data DTR enabled
+            | dmode << XSPI_CCR_DMODE_Pos // data on 8 lines, or disabled
+            | 3 << XSPI_CCR_ADSIZE_Pos // 32-bit address size
+            | 1 << XSPI_CCR_ADDTR_Pos // address DTR enabled
+            | admode << XSPI_CCR_ADMODE_Pos // address on 8 lines, or disabled
+            | 1 << XSPI_CCR_ISIZE_Pos // 16-bit instruction
+            | 1 << XSPI_CCR_IDTR_Pos // instruction DTR enabled
+            | 4 << XSPI_CCR_IMODE_Pos // instruction on 8 lines
+    ;
+    XSPIx->TCR = 0 << XSPI_TCR_DCYC_Pos; // 0 dummy cycles
+    if (len != 0) {
+        XSPIx->DLR = len - 1;
+    }
+    XSPIx->IR = cmd; // write opcode
+    if (addr_enabled) {
+        XSPIx->AR = addr; // address
+    }
+
+    // Write out the data one byte at a time
+    while (len--) {
+        while (!(XSPIx->SR & XSPI_SR_FTF)) {
+            if (XSPIx->SR & XSPI_SR_TEF) {
+                return -MP_EIO;
+            }
+        }
+        *(volatile uint8_t *)&XSPIx->DR = *src++;
+    }
+
+    // Wait for write to finish
+    while (!(XSPIx->SR & XSPI_SR_TCF)) {
+        if (XSPIx->SR & XSPI_SR_TEF) {
+            return -MP_EIO;
+        }
     }
 
     XSPIx->FCR = XSPI_FCR_CTCF; // clear TC flag
@@ -484,6 +377,229 @@ static int xspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, 
     }
 
     return 0;
+}
+
+static void xspi_memory_map_111(void) {
+    XSPIx->CCR =
+        1 << XSPI_CCR_DMODE_Pos // data on 1 line
+            | 3 << XSPI_CCR_ADSIZE_Pos // 32-bit address
+            | 1 << XSPI_CCR_ADMODE_Pos // address on 1 line
+            | 1 << XSPI_CCR_IMODE_Pos // instruction on 1 line
+    ;
+
+    XSPIx->TCR = 0 << XSPI_TCR_DCYC_Pos; // no dummy cycles
+    XSPIx->IR = 0x13; // READ4B
+    XSPIx->LPTR = 1024; // timeout period in number of CLK cycles
+
+    // Enable the XSPI peripheral in memory-mapped mode.
+    XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 3 << XSPI_CR_FMODE_Pos;
+}
+
+static void xspi_memory_map_888(void) {
+    XSPIx->CCR =
+        1 << XSPI_CCR_DQSE_Pos // DQS enabled
+            | 1 << XSPI_CCR_DDTR_Pos // data DTR enabled
+            | 4 << XSPI_CCR_DMODE_Pos // data on 8 lines
+            | 3 << XSPI_CCR_ADSIZE_Pos // 32-bit address
+            | 1 << XSPI_CCR_ADDTR_Pos // address DTR enabled
+            | 4 << XSPI_CCR_ADMODE_Pos // address on 8 lines
+            | 1 << XSPI_CCR_ISIZE_Pos // 16-bit instruction
+            | 1 << XSPI_CCR_IDTR_Pos // instruction DTR enabled
+            | 4 << XSPI_CCR_IMODE_Pos // instruction on 8 lines
+    ;
+
+    XSPIx->TCR = 20 << XSPI_TCR_DCYC_Pos; // 20 dummy cycles for reading (minimum, flash may insert more by holding DQS low)
+    XSPIx->IR = 0xee11; // octal DTR read mode (8DTRD)
+    XSPIx->LPTR = 1024; // timeout period in number of CLK cycles
+
+    // Enable the XSPI peripheral in memory-mapped mode.
+    XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 3 << XSPI_CR_FMODE_Pos;
+}
+
+static void xspi_memory_map_exit(void) {
+    // Abort any ongoing transfer if peripheral is busy.
+    if (XSPIx->SR & XSPI_SR_BUSY) {
+        XSPIx->CR |= XSPI_CR_ABORT;
+        while (!(XSPIx->SR & XSPI_SR_TCF)) {
+        }
+        XSPIx->FCR = XSPI_FCR_CTCF; // clear TC flag
+        while (XSPIx->SR & XSPI_SR_BUSY) {
+        }
+    }
+    XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 0 << XSPI_CR_FMODE_Pos; // indirect write mode
+}
+
+static void xspi_switch_to_dtr(void) {
+    uint8_t buf[4];
+
+    // WREN.
+    xspi_write_111_ext(0x06, false, 0, 0, NULL);
+
+    // Wait WEL=1, with small timeout.
+    for (unsigned int i = 0; i < 100; ++i) {
+        xspi_read_111_ext(0x05, false, 0, 1, buf);
+        if (buf[0] & 2) {
+            break;
+        }
+    }
+
+    // Switch to DOPI DTR mode.
+    buf[0] = 2;
+    xspi_write_111_ext(0x72, true, 0x00000000, 1, buf);
+
+    xspi_dtr_enabled = true;
+}
+
+static void xspi_switch_to_spi(void) {
+    uint8_t buf[4];
+
+    // WREN.
+    xspi_write_888_dtr_ext(0x06f9, false, 0, 0, NULL);
+
+    // Wait WEL=1, with small timeout.
+    for (unsigned int i = 0; i < 100; ++i) {
+        xspi_read_111_ext(0x05, false, 0, 1, buf);
+        if (buf[0] & 2) {
+            break;
+        }
+    }
+
+    // Switch to SPI mode.
+    buf[0] = 0;
+    buf[1] = 0;
+    xspi_write_888_dtr_ext(0x728d, true, 0x00000000, 2, buf);
+
+    xspi_dtr_enabled = false;
+}
+
+void xspi_test(void) {
+    uint8_t buf_id[6] = {0};
+
+    uint32_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+
+    xspi_memory_map_exit();
+
+    if (xspi_dtr_enabled) {
+        // Switch back to SPI mode.
+        xspi_read_888_dtr_ext(0x9f60, true, 0x00000000, 4, 6, buf_id);
+        xspi_switch_to_spi();
+        xspi_memory_map_111();
+    } else {
+        // Switch to DTR mode.
+        xspi_switch_to_dtr();
+
+        // read ID
+        xspi_read_888_dtr_ext(0x9f60, true, 0x00000000, 4, 6, buf_id);
+
+        if (0) {
+            xspi_switch_to_spi();
+            xspi_read_111_ext(0x9f, false, 0, 3, buf_id);
+        }
+    }
+
+    if (xspi_dtr_enabled) {
+        xspi_memory_map_888();
+    } else {
+        xspi_memory_map_111();
+    }
+
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+
+    mp_printf(&mp_plat_print, "read %02x:%02x:%02x:%02x:%02x:%02x\n", buf_id[0], buf_id[1], buf_id[2], buf_id[3], buf_id[4], buf_id[5]);
+}
+
+static int xspi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
+    xspi_flash_t *self = self_in;
+    switch (cmd) {
+        case MP_QSPI_IOCTL_INIT:
+            // XSPI must be manually initialise by calling `xspi_init()` at boot.
+            // Here, just determine if it's in SPI or DTR mode.
+            xspi_dtr_enabled = XSPIx->IR == 0xee11;
+            break;
+        case MP_QSPI_IOCTL_BUS_ACQUIRE:
+            xspi_memory_map_exit();
+            break;
+        case MP_QSPI_IOCTL_BUS_RELEASE:
+            if (xspi_dtr_enabled) {
+                xspi_memory_map_888();
+                break;
+            }
+            xspi_memory_map_111();
+            break;
+        case MP_QSPI_IOCTL_MEMORY_MODIFIED: {
+            uintptr_t *addr_len = (uintptr_t *)arg;
+            volatile void *addr = (volatile void *)(self->xip_base + addr_len[0]);
+            size_t len = addr_len[1];
+            SCB_InvalidateICache_by_Addr(addr, len);
+            SCB_InvalidateDCache_by_Addr(addr, len);
+            break;
+        }
+    }
+    return 0; // success
+}
+
+#define CMD_WREN        (0x06)
+#define CMD_RSTEN       (0x66)
+#define CMD_RESET       (0x99)
+#define CMD_SLEEP       (0xb9)
+#define CMD_AWAKE       (0xab)
+static int xspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t data) {
+    if (xspi_dtr_enabled) {
+        uint16_t cmd16 = 0;
+        if (cmd == CMD_WREN) {
+            cmd16 = 0x06f9;
+        } else if (cmd == CMD_SLEEP) {
+            cmd16 = 0xb946;
+        } else if (cmd == CMD_AWAKE) {
+            cmd16 = 0xab54;
+        }
+        return xspi_write_888_dtr_ext(cmd16, false, 0, len, (const uint8_t *)&data);
+    }
+    return xspi_write_111_ext(cmd, false, 0, len, (const uint8_t *)&data);
+}
+
+#define CMD_WRITE       (0x02)
+#define CMD_WRITE_32    (0x12)
+#define CMD_SEC_ERASE   (0x20)
+#define CMD_SEC_ERASE_32 (0x21)
+static int xspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
+    // Convert 24-bit address commands to 32-bit address commands.
+    if (cmd == CMD_WRITE) {
+        cmd = CMD_WRITE_32;
+    } else if (cmd == CMD_SEC_ERASE) {
+        cmd = CMD_SEC_ERASE_32;
+    }
+    if (xspi_dtr_enabled) {
+        uint16_t cmd16 = 0;
+        if (cmd == CMD_WRITE_32) {
+            cmd16 = 0x12ed;
+        } else if (cmd == CMD_SEC_ERASE_32) {
+            cmd16 = 0x21de;
+        }
+        return xspi_write_888_dtr_ext(cmd16, true, addr, len, src);
+    }
+    return xspi_write_111_ext(cmd, true, addr, len, src);
+}
+
+#define CMD_RDSR        (0x05)
+#define CMD_RD_DEVID    (0x9f)
+static int xspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest) {
+    (void)self_in;
+    if (xspi_dtr_enabled) {
+        uint16_t cmd16 = 0;
+        uint32_t num_dummy = 0;
+        if (cmd == CMD_RDSR) {
+            cmd16 = 0x05fa;
+            num_dummy = 4;
+            len = 2;
+        } else if (cmd == CMD_RD_DEVID) {
+            // TODO this doesn't really work, because result is in STR format.
+            cmd16 = 0x9f60;
+            num_dummy = 4;
+        }
+        return xspi_read_888_dtr_ext(cmd16, true, 0, num_dummy, len, (uint8_t *)dest);
+    }
+    return xspi_read_111_ext(cmd, false, 0, len, (uint8_t *)dest);
 }
 
 static int xspi_read(void *self_in, uint32_t addr, size_t len, uint8_t *dest) {
@@ -497,7 +613,7 @@ const mp_qspi_proto_t xspi_proto = {
     .write_cmd_data = xspi_write_cmd_data,
     .write_cmd_addr_data = xspi_write_cmd_addr_data,
     .read_cmd = xspi_read_cmd,
-    .read_cmd_qaddr_qdata = xspi_read_cmd_qaddr_qdata,
+    .read_cmd_qaddr_qdata = NULL, // unused because .read is set below, and caching is disabled
     .read = xspi_read,
 };
 

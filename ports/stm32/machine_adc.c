@@ -85,6 +85,10 @@
 #elif defined(STM32L4) || defined(STM32WB)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_247CYCLES_5
+#elif defined(STM32N6)
+// TODO
+#define ADC_SAMPLETIME_DEFAULT      0
+#define ADC_SAMPLETIME_DEFAULT_INT  0
 #endif
 
 // Timeout for waiting for end-of-conversion
@@ -547,7 +551,7 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
     mp_obj_t source = all_args[0];
 
     uint32_t channel;
-    uint32_t sample_time = 0;//ADC_SAMPLETIME_DEFAULT;
+    uint32_t sample_time = ADC_SAMPLETIME_DEFAULT;
     ADC_TypeDef *adc;
     if (mp_obj_is_int(source)) {
         channel = mp_obj_get_int(source);
@@ -571,7 +575,7 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
             || channel == MACHINE_ADC_INT_CH_VDDCORE
             #endif
             ) {
-            sample_time = 0;//ADC_SAMPLETIME_DEFAULT_INT;
+            sample_time = ADC_SAMPLETIME_DEFAULT_INT;
         }
     } else {
         const machine_pin_obj_t *pin = pin_find(source);

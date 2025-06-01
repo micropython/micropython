@@ -146,7 +146,7 @@ void rtc_init_start(bool force_init) {
             // provide some status information
             rtc_info |= 0x40000;
         } else if (LL_RCC_IsEnabledRTC()
-            && LL_RCC_GetRTCClockSource() == LL_RCC_RTC_CLKSOURCE_LSI) {
+                   && LL_RCC_GetRTCClockSource() == LL_RCC_RTC_CLKSOURCE_LSI) {
             // LSI configured as the RTC clock source --> no need to (re-)init RTC
             rtc_running = true;
             // remove Backup Domain write protection

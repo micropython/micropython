@@ -33,7 +33,6 @@
 #ifndef NO_QSTR
 #include "genhdr/pllfreqtable.h"
 #endif
-#include "led.h"
 
 // These will be defined / expanded in pre-processor output for use in the
 // boards/pllvalues.py script, then generally stripped from final firmware.
@@ -860,9 +859,7 @@ void powerctrl_enter_stop_mode(void) {
     #if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
     #elif defined(STM32N6)
-    led_state(1,1);
     HAL_PWR_EnterSTOPMode(PWR_MAINREGULATOR_ON, PWR_STOPENTRY_WFI);
-    led_state(2,1);
     #else
     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
     #endif
@@ -1067,7 +1064,21 @@ MP_NORETURN void powerctrl_enter_standby_mode(void) {
     mp_bluetooth_deinit();
     #endif
 
-#if 0
+    #if defined(STM32N6)
+
+    // Clear all WKUPx flags.
+    LL_PWR_ClearFlag_WU();
+
+    // Upon wake from standby, jump to the code at SRAM1.
+    LL_PWR_EnableTCMSBRetention();
+    LL_PWR_EnableTCMFLXSBRetention();
+    LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_SYSCFG);
+    SCB_CleanDCache();
+    SYSCFG->INITNSVTORCR = SRAM1_AXI_BASE_NS;
+    SYSCFG->INITSVTORCR = SRAM1_AXI_BASE_S;
+
+    #else
+
     // We need to clear the PWR wake-up-flag before entering standby, since
     // the flag may have been set by a previous wake-up event.  Furthermore,
     // we need to disable the wake-up sources while clearing this flag, so
@@ -1163,19 +1174,7 @@ MP_NORETURN void powerctrl_enter_standby_mode(void) {
     #if defined(STM32WB)
     powerctrl_low_power_prep_wb55();
     #endif
-#endif
 
-    #if defined(STM32N6)
-    // Clear all WKUPx flags.
-    LL_PWR_ClearFlag_WU();
-
-    // Upon wake from standby, jump to the code at SRAM1.
-    LL_PWR_EnableTCMSBRetention();
-    LL_PWR_EnableTCMFLXSBRetention();
-    LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_SYSCFG);
-    SCB_CleanDCache();
-    SYSCFG->INITNSVTORCR = SRAM1_AXI_BASE_NS;
-    SYSCFG->INITSVTORCR = SRAM1_AXI_BASE_S;
     #endif
 
     // enter standby mode
