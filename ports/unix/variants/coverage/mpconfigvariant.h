@@ -51,3 +51,6 @@
 #define MICROPY_HW_MCU_NAME            MICROPY_PY_SYS_PLATFORM
 // Keep the standard banner message
 #define MICROPY_BANNER_MACHINE MICROPY_PY_SYS_PLATFORM " [" MICROPY_PLATFORM_COMPILER "] version"
+
+// Add extra checks to satisfy gcc -fsanitize-undefined
+#define MICROPY_NONNULL_COMPLIANT (1)
