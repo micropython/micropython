@@ -128,7 +128,7 @@ static mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
         size_t sz = mp_binary_get_size('@', typecode, NULL);
         size_t len = bufinfo.len / sz;
         mp_obj_array_t *o = array_new(typecode, len);
-        memcpy(o->items, bufinfo.buf, len * sz);
+        memcpy0(o->items, bufinfo.buf, len * sz);
         return MP_OBJ_FROM_PTR(o);
     }
 
@@ -189,7 +189,7 @@ static mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
         // 1 arg, an integer: construct a blank bytearray of that length
         mp_uint_t len = mp_obj_get_int(args[0]);
         mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
-        memset(o->items, 0, len);
+        memset0(o->items, 0, len);
         return MP_OBJ_FROM_PTR(o);
     } else {
         // 1 arg: construct the bytearray from that
@@ -670,7 +670,7 @@ size_t mp_obj_array_len(mp_obj_t self_in) {
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 mp_obj_t mp_obj_new_bytearray(size_t n, const void *items) {
     mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, n);
-    memcpy(o->items, items, n);
+    memcpy0(o->items, items, n);
     return MP_OBJ_FROM_PTR(o);
 }
 
