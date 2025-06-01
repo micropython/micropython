@@ -759,7 +759,7 @@ static void bit_vector_clear(bit_vector_t *self) {
 static bool bit_vector_is_set(bit_vector_t *self, size_t index) {
     const size_t bits_size = sizeof(*self->bits) * MP_BITS_PER_BYTE;
     return index / bits_size < self->alloc
-           && (self->bits[index / bits_size] & (1 << (index % bits_size))) != 0;
+           && (self->bits[index / bits_size] & ((uintptr_t)1 << (index % bits_size))) != 0;
 }
 
 static void bit_vector_set(bit_vector_t *self, size_t index) {
@@ -770,7 +770,7 @@ static void bit_vector_set(bit_vector_t *self, size_t index) {
         self->bits = m_renew(uintptr_t, self->bits, self->alloc, new_alloc);
         self->alloc = new_alloc;
     }
-    self->bits[index / bits_size] |= 1 << (index % bits_size);
+    self->bits[index / bits_size] |= (uintptr_t)1 << (index % bits_size);
 }
 
 typedef struct _mp_opcode_t {
