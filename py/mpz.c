@@ -1552,7 +1552,11 @@ bool mpz_as_int_checked(const mpz_t *i, mp_int_t *value) {
     mp_uint_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
-    while (d-- > i->dig) {
+    while (
+        #if MICROPY_NONNULL_COMPLIANT
+        d &&
+        #endif
+        d-- > i->dig) {
         if (val > (~(MP_OBJ_WORD_MSBIT_HIGH) >> DIG_SIZE)) {
             // will overflow
             return false;
