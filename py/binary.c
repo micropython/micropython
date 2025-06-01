@@ -196,7 +196,7 @@ static float mp_decode_half_float(uint16_t hf) {
         ++e;
     }
 
-    fpu.i = ((hf & 0x8000) << 16) | (e << 23) | (m << 13);
+    fpu.i = ((hf & 0x8000u) << 16) | (e << 23) | (m << 13);
     return fpu.f;
 }
 
