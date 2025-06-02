@@ -636,6 +636,53 @@ function ci_unix_coverage_run_native_mpy_tests {
     (cd tests && ./run-natmodtests.py "$@" extmod/*.py)
 }
 
+function ci_unix_sanitize_undefined_setup {
+    sudo pip3 install setuptools
+    sudo pip3 install pyelftools
+    sudo pip3 install ar
+    gcc --version
+    python3 --version
+}
+
+function ci_unix_sanitize_undefined_build {
+    ci_unix_build_helper VARIANT=sanitize_undefined
+    ci_unix_build_ffi_lib_helper "gcc -fsanitize=undefined"
+}
+
+function ci_unix_sanitize_undefined_run_tests {
+    ci_unix_run_tests_full_helper sanitize_undefined
+}
+
+function ci_unix_sanitize_undefined_run_mpy_merge_tests {
+    mptop=$(pwd)
+    outdir=$(mktemp -d)
+    allmpy=()
+
+    # Compile a selection of tests to .mpy and execute them, collecting the output.
+    # None of the tests should SKIP.
+    for inpy in $mptop/tests/basics/[acdel]*.py; do
+        test=$(basename $inpy .py)
+        echo $test
+        outmpy=$outdir/$test.mpy
+        $mptop/mpy-cross/build/mpy-cross -o $outmpy $inpy
+        (cd $outdir && $mptop/ports/unix/build-sanitize_undefined/micropython -m $test >> out-individual)
+        allmpy+=($outmpy)
+    done
+
+    # Merge all the tests into one .mpy file, and then execute it.
+    python3 $mptop/tools/mpy-tool.py --merge -o $outdir/merged.mpy ${allmpy[@]}
+    (cd $outdir && $mptop/ports/unix/build-sanitize_undefined/micropython -m merged > out-merged)
+
+    # Make sure the outputs match.
+    diff $outdir/out-individual $outdir/out-merged && /bin/rm -rf $outdir
+}
+
+function ci_unix_sanitize_undefined_run_native_mpy_tests {
+    MICROPYPATH=examples/natmod/features2 ./ports/unix/build-sanitize_undefined/micropython -m features2
+    mptop=$(pwd)
+    (cd tests && MICROPY_MICROPYTHON=$mptop/ports/unix/build-sanitize_undefined/micropython ./run-natmodtests.py "$@" extmod/*.py)
+}
+
 function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
