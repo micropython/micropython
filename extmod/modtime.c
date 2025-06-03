@@ -58,7 +58,15 @@ static mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
         return mp_time_localtime_get();
     } else {
         // Convert given seconds to tuple.
-        mp_int_t seconds = mp_obj_get_int(args[0]);
+        mp_obj_t timestamp = args[0];
+        if (!mp_obj_is_exact_type(timestamp, &mp_type_int)) {
+            mp_obj_t as_int = mp_unary_op(MP_UNARY_OP_INT_MAYBE, (mp_obj_t)timestamp);
+            if (as_int == MP_OBJ_NULL) {
+                mp_raise_TypeError_int_conversion(timestamp);
+            }
+            timestamp = as_int;
+        }
+        mp_uint_t seconds = mp_obj_int_get_uint_checked(timestamp);
         timeutils_struct_time_t tm;
         timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
         mp_obj_t tuple[8] = {
