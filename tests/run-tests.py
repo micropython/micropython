@@ -605,9 +605,7 @@ class PyboardNodeRunner:
 def run_tests(pyb, tests, args, result_dir, num_threads=1):
     test_count = ThreadSafeCounter()
     testcase_count = ThreadSafeCounter()
-    passed_tests = ThreadSafeCounter([])
-    failed_tests = ThreadSafeCounter([])
-    skipped_tests = ThreadSafeCounter([])
+    test_results = ThreadSafeCounter([])
 
     skip_tests = set()
     skip_native = False
@@ -896,7 +894,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         if skip_it:
             print("skip ", test_file)
-            skipped_tests.append((test_name, test_file))
+            test_results.append((test_name, test_file, "skip", ""))
             return
 
         # Run the test on the MicroPython target.
@@ -911,7 +909,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 # start-up code (eg boot.py) when preparing to run the next test.
                 pyb.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
             print("skip ", test_file)
-            skipped_tests.append((test_name, test_file))
+            test_results.append((test_name, test_file, "skip", ""))
             return
 
         # Look at the output of the test to see if unittest was used.
@@ -994,7 +992,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         # Print test summary, update counters, and save .exp/.out files if needed.
         if test_passed:
             print("pass ", test_file, extra_info)
-            passed_tests.append((test_name, test_file))
+            test_results.append((test_name, test_file, "pass", ""))
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
@@ -1006,7 +1004,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 rm_f(filename_expected)  # in case left over from previous failed run
             with open(filename_mupy, "wb") as f:
                 f.write(output_mupy)
-            failed_tests.append((test_name, test_file))
+            test_results.append((test_name, test_file, "fail", ""))
 
         test_count.increment()
 
@@ -1035,9 +1033,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             print(line)
         sys.exit(1)
 
-    passed_tests = sorted(passed_tests.value)
-    skipped_tests = sorted(skipped_tests.value)
-    failed_tests = sorted(failed_tests.value)
+    test_results = test_results.value
+    passed_tests = list(r for r in test_results if r[2] == "pass")
+    skipped_tests = list(r for r in test_results if r[2] == "skip")
+    failed_tests = list(r for r in test_results if r[2] == "fail")
 
     print(
         "{} tests performed ({} individual testcases)".format(
@@ -1069,9 +1068,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     with open(os.path.join(result_dir, RESULTS_FILE), "w") as f:
         json.dump(
             {
+                # The arguments passed on the command-line.
                 "args": vars(args),
-                "passed_tests": [test[1] for test in passed_tests],
-                "skipped_tests": [test[1] for test in skipped_tests],
+                # A list of all results of the form [(test, result, reason), ...].
+                "results": list(test[1:] for test in test_results),
+                # A list of failed tests.  This is deprecated, use the "results" above instead.
                 "failed_tests": [test[1] for test in failed_tests],
             },
             f,
@@ -1248,7 +1249,7 @@ the last matching regex is used:
         results_file = os.path.join(args.result_dir, RESULTS_FILE)
         if os.path.exists(results_file):
             with open(results_file, "r") as f:
-                tests = json.load(f)["failed_tests"]
+                tests = list(test[0] for test in json.load(f)["results"] if test[1] == "fail")
         else:
             tests = []
     elif len(args.files) == 0:
