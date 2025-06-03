@@ -60,8 +60,8 @@ exclude = [  # Ruff finds Python SyntaxError in these files
   "tests/micropython/heapalloc_fail_tstring.py",
   "tests/micropython/viper_args.py",
 ]
-extend-select = ["C9", "PLC"]
-extend-ignore = [
+extend-select = ["C9", "PLC", "W292"]
+ignore = [
   "E401",
   "E402",
   "E722",
