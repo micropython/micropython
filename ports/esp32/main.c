@@ -187,6 +187,10 @@ soft_reset_exit:
     mp_usbd_deinit();
     #endif
 
+    #ifdef MICROPY_PORT_DEINIT_FUNC
+    mp_deinit();
+    #endif
+
     gc_sweep_all();
 
     // Free any native code pointers that point to iRAM.
@@ -203,7 +207,10 @@ soft_reset_exit:
     socket_events_deinit();
     #endif
 
+    #ifndef MICROPY_PORT_DEINIT_FUNC
     mp_deinit();
+    #endif
+
     fflush(stdout);
     goto soft_reset;
 }
