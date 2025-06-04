@@ -351,7 +351,9 @@ void stm32_main(uint32_t reset_mode) {
     // Low-level MCU initialisation.
     stm32_system_init();
 
-    #if !defined(STM32F0)
+    // Set VTOR, the location of the interrupt vector table.
+    // On N6, SystemInit does this, setting VTOR to &g_pfnVectors.
+    #if !defined(STM32F0) && !defined(STM32N6)
     #if MICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM
     // Copy IRQ vector table to RAM and point VTOR there
     extern uint32_t __isr_vector_flash_addr, __isr_vector_ram_start, __isr_vector_ram_end;
@@ -361,8 +363,6 @@ void stm32_main(uint32_t reset_mode) {
     #else
     #if defined(MICROPY_HW_VTOR)
     // Change IRQ vector table if configured differently
-    // N6 sets this via &g_pfnVectors, might be good to just leave it as-is.
-    // unless we use mboot, then it needs to change
     SCB->VTOR = MICROPY_HW_VTOR;
     #endif
     #endif

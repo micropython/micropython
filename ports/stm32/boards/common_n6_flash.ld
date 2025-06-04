@@ -12,7 +12,6 @@
 
 ENTRY(Reset_Handler)
 
-REGION_ALIAS("FLASH_ISR", FLASH_APP);
 REGION_ALIAS("FLASH_COMMON", FLASH_APP);
 
 /* define output sections */
@@ -20,47 +19,28 @@ SECTIONS
 {
     .isr_vector :
     {
-        . = ALIGN(4);
-        __isr_vector_ram_start = .;
-
-        KEEP(*(.isr_vector)) /* Startup code */
-
-        /* These functions need to run from ram to enable uart
-           reception during flash erase/write operations.
-           Defining them here ensures they're copied from
-           flash (in main.c) along with the isr_vector above.
-        */
-        . = ALIGN(4);
-        *(.text.mp_sched_keyboard_interrupt)
-        *(.text.pendsv_schedule_dispatch)
-        *(.text.storage_systick_callback)
-        *(.text.SysTick_Handler)
-        *(.text.uart_irq_handler)
-        *(.text.UART*_IRQHandler)
-        *(.text.USART*_IRQHandler)
-        *(.text.HAL_GetTick)
-        *drivers/memory/spiflash.o(.text* .rodata*)
-        *boards*(.rodata.spiflash_config*)
-
-        . = ALIGN(4);
-        __isr_vector_ram_end = .;
-    } >RAM AT >FLASH_ISR
-
-    /* This section is used when waking from STANDBY. */
-    .iram_bootloader :
-    {
-        . = ALIGN(4);
         _siram = .;
 
-        KEEP(*(.*.iram_bootloader_isr_vector));
+        /* This ISR is used for normal application mode. */
+        . = ALIGN(1024);
+        KEEP(*(.isr_vector));
+
+        /* This ISR is used when waking from STANDBY. */
+        . = ALIGN(1024);
+        KEEP(*(.rodata.iram_bootloader_isr_vector));
+
+        /* Need to place in RAM all the code necessary to write to
+         * flash, and to resume from STANDBY. */
         *(.*.iram_bootloader_reset);
-        *(*.memcpy);
-        *(*.mp_hal_gpio_clock_enable);
-        *(*.mp_hal_pin_config);
-        *(*.mp_hal_pin_config_speed);
-        *xspi.o(.text* .rodata*);
+        *(.*.memcpy);
+        *(.*.mp_hal_gpio_clock_enable);
+        *(.*.mp_hal_pin_config);
+        *(.*.mp_hal_pin_config_speed);
+        *drivers/memory/spiflash.o(.text.* .rodata.*)
+        *xspi.o(.text.* .rodata.*);
+        *boards*(.rodata.spiflash_config*)
+        *boards*(.*.board_leave_standby);
         *(*.rodata.pin_N*_obj);
-        *(*.board_leave_standby);
         *(.text.LL_AHB4_GRP1_EnableClock);
         *(.text.LL_APB4_GRP2_EnableClock);
 
@@ -80,7 +60,4 @@ SECTIONS
 }
 
 /* Used by the start-up code to initialise data */
-__isr_vector_flash_addr = LOADADDR(.isr_vector);
-
-/* Used by the start-up code to initialise data */
-_siiram = LOADADDR(.iram_bootloader);
+_siiram = LOADADDR(.isr_vector);
