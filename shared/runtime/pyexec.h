@@ -37,9 +37,13 @@ extern pyexec_mode_kind_t pyexec_mode_kind;
 
 #define PYEXEC_FORCED_EXIT (0x100)
 
+// Execution flags for pyexec_file_with_flags
+#define PYEXEC_FLAG_COMPILE_ONLY (0x01)
+
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);
 int pyexec_file(const char *filename);
+int pyexec_file_with_flags(const char *filename, uint32_t flags);
 int pyexec_file_if_exists(const char *filename);
 int pyexec_frozen_module(const char *name, bool allow_keyboard_interrupt);
 int pyexec_vstr(vstr_t *str, bool allow_keyboard_interrupt);
