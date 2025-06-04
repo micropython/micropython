@@ -79,19 +79,59 @@ class multitest:
             print("SET {{}} = {{!r}}".format(g, gs[g]))
         multitest.flush()
     @staticmethod
-    def get_network_ip():
+    def _get_ip_from_ifconfig(_nic, ipv6=False):
+        # Helper to get IP address from an interface object using appropriate format
+        addr_type = 'addr6' if ipv6 else 'addr4'
+        
+        # First try newer format with addr type parameter
         try:
-            ip = nic.ifconfig()[0]
+            ip = _nic.ifconfig(addr_type)
+            if isinstance(ip, tuple) and len(ip) > 0:
+                return ip[0]
+            return ip
         except:
-            try:
-                import network
-                if hasattr(network, "WLAN"):
-                    ip = network.WLAN().ifconfig()[0]
-                else:
-                    ip = network.LAN().ifconfig()[0]
-            except:
-                ip = HOST_IP
-        return ip
+            # Fallback to legacy format, but only for IPv4
+            if not ipv6:
+                try:
+                    return _nic.ifconfig()[0]  # Legacy format
+                except:
+                    pass
+        return None
+    @staticmethod
+    def get_network_ip(ipv6=False):
+        # Try with direct nic object if available
+        try:
+            if 'nic' in globals():
+                ip = multitest._get_ip_from_ifconfig(nic, ipv6)
+                if ip:
+                    return ip
+        except:
+            pass
+            
+        # Find active network interface
+        try:
+            import network
+            for attr_name in dir(network):
+                if attr_name.startswith('__'): 
+                    continue
+                try:
+                    net_class = getattr(network, attr_name)
+                    if hasattr(net_class, 'active'):
+                        try:
+                            net_obj = net_class()
+                            if net_obj.active() and hasattr(net_obj, 'ifconfig'):
+                                ip = multitest._get_ip_from_ifconfig(net_obj, ipv6)
+                                if ip:
+                                    return ip
+                        except:
+                            pass
+                except:
+                    pass
+        except:
+            pass
+        
+        # Fallback to host IP
+        return HOST_IP6 if ipv6 else HOST_IP
     @staticmethod
     def expect_reboot(resume, delay_ms=0):
         print("WAIT_FOR_REBOOT", resume, delay_ms)
@@ -128,6 +168,24 @@ def get_host_ip(_ip_cache=[]):
         except:
             _ip_cache.append("127.0.0.1")
     return _ip_cache[0]
+
+
+def get_host_ipv6(_ipv6_cache=[]):
+    if not _ipv6_cache:
+        try:
+            import socket
+
+            # Try to find an IPv6 address by creating an IPv6 socket
+            s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+            # Connect to IPv6 Google DNS server to get our IPv6 address
+            s.connect(("2001:4860:4860::8888", 80))
+            addr = s.getsockname()[0]
+            s.close()
+            _ipv6_cache.append(addr)
+        except:
+            # Fallback to localhost if unable to determine IPv6 address
+            _ipv6_cache.append("::1")
+    return _ipv6_cache[0]
 
 
 class PyInstance:
@@ -330,12 +388,19 @@ def run_test_on_instances(test_file, num_instances, instances):
     output = [[] for _ in range(num_instances)]
     output_metrics = []
 
-    # If the test calls get_network_ip() then inject HOST_IP so that devices can know
-    # the IP address of the host.  Do this lazily to not require a TCP/IP connection
-    # on the host if it's not needed.
+    # If the test calls get_network_ip() or get_network_ipv6() then inject HOST_IP and HOST_IP6
+    # so that devices can know the IP addresses of the host. Do this lazily to not require
+    # a TCP/IP connection on the host if it's not needed.
     with open(test_file, "rb") as f:
-        if b"get_network_ip" in f.read():
+        file_content = f.read()
+        if b"get_network_ip" in file_content:
             injected_globals += "HOST_IP = '" + get_host_ip() + "'\n"
+            # Also include IPv6 host IP if we can determine it
+            try:
+                host_ipv6 = get_host_ipv6()
+                injected_globals += "HOST_IP6 = '" + host_ipv6 + "'\n"
+            except:
+                injected_globals += "HOST_IP6 = '::1'\n"  # Default to localhost
 
     if cmd_args.trace_output:
         print("TRACE {}:".format("|".join(str(i) for i in instances)))
