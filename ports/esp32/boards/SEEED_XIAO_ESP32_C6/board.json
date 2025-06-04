@@ -1,6 +1,6 @@
 {
     "deploy": [
-        "../deploy.md"
+      "../deploy_nativeusb.md"
     ],
     "docs": "",
     "features": [
