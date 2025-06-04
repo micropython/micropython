@@ -526,14 +526,14 @@ function ci_native_mpy_modules_build {
     fi
     for natmod in deflate features1 features3 features4 framebuf heapq random re
     do
-        make -C examples/natmod/$natmod clean
+        make -C examples/natmod/$natmod ARCH=$arch clean
         make -C examples/natmod/$natmod ARCH=$arch
     done
 
     # features2 requires soft-float on armv7m, rv32imc, and xtensa.  On armv6m
     # the compiler generates absolute relocations in the object file
     # referencing soft-float functions, which is not supported at the moment.
-    make -C examples/natmod/features2 clean
+    make -C examples/natmod/features2 ARCH=$arch clean
     if [ $arch = "rv32imc" ] || [ $arch = "armv7m" ] || [ $arch = "xtensa" ]; then
         make -C examples/natmod/features2 ARCH=$arch MICROPY_FLOAT_IMPL=float
     elif [ $arch != "armv6m" ]; then
@@ -542,7 +542,7 @@ function ci_native_mpy_modules_build {
 
     # btree requires thread local storage support on rv32imc.
     if [ $arch != "rv32imc" ]; then
-        make -C examples/natmod/btree clean
+        make -C examples/natmod/btree ARCH=$arch clean
         make -C examples/natmod/btree ARCH=$arch
     fi
 }
