@@ -527,13 +527,26 @@ function ci_unix_run_tests_helper {
     make -C ports/unix "$@" test
 }
 
+function ci_unix_run_tests_full_extra {
+    micropython=$1
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-multitests.py multi_net/*.py)
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-perfbench.py 1000 1000)
+}
+
+function ci_unix_run_tests_full_no_native_helper {
+    variant=$1
+    shift
+    micropython=../ports/unix/build-$variant/micropython
+    make -C ports/unix VARIANT=$variant "$@" test_full_no_native
+    ci_unix_run_tests_full_extra $micropython
+}
+
 function ci_unix_run_tests_full_helper {
     variant=$1
     shift
     micropython=../ports/unix/build-$variant/micropython
     make -C ports/unix VARIANT=$variant "$@" test_full
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-multitests.py multi_net/*.py)
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-perfbench.py 1000 1000)
+    ci_unix_run_tests_full_extra $micropython
 }
 
 function ci_native_mpy_modules_build {
@@ -673,7 +686,7 @@ function ci_unix_nanbox_build {
 }
 
 function ci_unix_nanbox_run_tests {
-    ci_unix_run_tests_full_helper nanbox PYTHON=python2.7
+    ci_unix_run_tests_full_no_native_helper nanbox PYTHON=python2.7
 }
 
 function ci_unix_float_build {
