@@ -31,6 +31,7 @@
 #include "py/mphal.h"
 #include "extmod/vfs.h"
 #include "modesp32.h"
+#include "esp_flash.h"
 #include "esp_ota_ops.h"
 
 // esp_partition_read and esp_partition_write can operate on arbitrary bytes

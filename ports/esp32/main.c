@@ -38,6 +38,7 @@
 #include "nvs_flash.h"
 #include "esp_task.h"
 #include "esp_event.h"
+#include "esp_flash.h"
 #include "esp_log.h"
 #include "esp_memory_utils.h"
 #include "esp_psram.h"
@@ -214,11 +215,23 @@ void boardctrl_startup(void) {
         nvs_flash_erase();
         nvs_flash_init();
     }
+
+    // Query the physical size of the SPI flash and store it in the size
+    // variable of the global, default SPI flash handle.
+    esp_flash_get_physical_size(NULL, &esp_flash_default_chip->size);
+
+    // Add a partition that uses the "remaining" flash.
+    // TODO: somehow use 0x4f0000 as partition address for OTA builds...
+    size_t offset = 0x200000;
+    if (esp_flash_default_chip->size > offset) {
+        size_t size = esp_flash_default_chip->size - offset;
+        esp_partition_register_external(esp_flash_default_chip, offset, size, "autofs", ESP_PARTITION_TYPE_DATA, 0x8f, NULL);
+    }
 }
 
 void MICROPY_ESP_IDF_ENTRY(void) {
     // Hook for a board to run code at start up.
-    // This defaults to initialising NVS.
+    // This defaults to initialising NVS and detecting the flash size.
     MICROPY_BOARD_STARTUP();
 
     // Create and transfer control to the MicroPython task.
