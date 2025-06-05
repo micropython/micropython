@@ -113,6 +113,19 @@ static mp_obj_array_t *array_new(char typecode, size_t n) {
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
+static void array_extend_impl(mp_obj_array_t *array, mp_obj_t arg, char typecode, size_t len) {
+    mp_obj_t iterable = mp_getiter(arg, NULL);
+    mp_obj_t item;
+    size_t i = 0;
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if (len == 0) {
+            array_append(MP_OBJ_FROM_PTR(array), item);
+        } else {
+            mp_binary_set_val_array(typecode, array->items, i++, item);
+        }
+    }
+}
+
 static mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     // bytearrays can be raw-initialised from anything with the buffer protocol
     // other arrays can only be raw-initialised from bytes and bytearray objects
@@ -142,18 +155,7 @@ static mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     }
 
     mp_obj_array_t *array = array_new(typecode, len);
-
-    mp_obj_t iterable = mp_getiter(initializer, NULL);
-    mp_obj_t item;
-    size_t i = 0;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        if (len == 0) {
-            array_append(MP_OBJ_FROM_PTR(array), item);
-        } else {
-            mp_binary_set_val_array(typecode, array->items, i++, item);
-        }
-    }
-
+    array_extend_impl(array, initializer, typecode, len);
     return MP_OBJ_FROM_PTR(array);
 }
 #endif
@@ -413,7 +415,10 @@ static mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
 
     // allow to extend by anything that has the buffer protocol (extension to CPython)
     mp_buffer_info_t arg_bufinfo;
-    mp_get_buffer_raise(arg_in, &arg_bufinfo, MP_BUFFER_READ);
+    if (!mp_get_buffer(arg_in, &arg_bufinfo, MP_BUFFER_READ)) {
+        array_extend_impl(self, arg_in, 0, 0);
+        return mp_const_none;
+    }
 
     size_t sz = mp_binary_get_size('@', self->typecode, NULL);
 
