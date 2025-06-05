@@ -329,7 +329,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 // Custom version of this function that feeds system WDT if necessary
-mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us) {
+mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us, bool wait_opposite) {
     int nchanges = 2;
     uint32_t start = system_get_time(); // in microseconds
     for (;;) {
