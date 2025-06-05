@@ -18,10 +18,15 @@ Functions
     Configure whether or not a touch will wake the device from sleep.
     *wake* should be a boolean value.
 
+    .. note:: This is only available for boards that have touch sensor support
+
 .. function:: wake_on_ulp(wake)
 
     Configure whether or not the Ultra-Low-Power co-processor can wake the
     device from sleep. *wake* should be a boolean value.
+
+    .. note:: This is only available for boards that have ULP coprocessor support
+
 
 .. function:: wake_on_ext0(pin, level)
 
