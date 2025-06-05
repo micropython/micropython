@@ -92,6 +92,9 @@ typedef struct _mp_obj_ssl_context_t {
     #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
     mp_obj_t ecdsa_sign_callback;
     #endif
+    #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
+    mp_obj_t session_cookies;
+    #endif
 } mp_obj_ssl_context_t;
 
 // This corresponds to an SSLSocket object.
@@ -118,6 +121,14 @@ static const MP_DEFINE_STR_OBJ(mbedtls_version_obj, MBEDTLS_VERSION_STRING_FULL)
 
 static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t sock,
     bool server_side, bool do_handshake_on_connect, mp_obj_t server_hostname);
+
+#ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
+static int ssl_cookie_write(void *ctx, unsigned char **p, unsigned char *end,
+    const unsigned char *info, size_t ilen);
+
+static int ssl_cookie_check(void *ctx, const unsigned char *cookie, size_t c_len,
+    const unsigned char *info, size_t ilen);
+#endif
 
 /******************************************************************************/
 // Helper functions.
@@ -318,6 +329,11 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     mbedtls_ssl_conf_rng(&self->conf, mbedtls_ctr_drbg_random, &self->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&self->conf, mbedtls_debug, NULL);
+    #endif
+
+    #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
+    self->session_cookies = mp_const_none;
+    mbedtls_ssl_conf_dtls_cookies(&self->conf, ssl_cookie_write, ssl_cookie_check, self);
     #endif
 
     return MP_OBJ_FROM_PTR(self);
@@ -668,6 +684,51 @@ cleanup:
 
     mbedtls_raise_error(ret);
 }
+
+#if defined(MBEDTLS_SSL_DTLS_HELLO_VERIFY) && defined(MBEDTLS_SSL_SRV_C)
+// DTLS Server session cookie support
+static int ssl_cookie_write(void *ctx, unsigned char **p, unsigned char *end,
+    const unsigned char *info, size_t ilen) {
+    unsigned cookie_len = MIN(32, end - *p);
+    mp_obj_ssl_context_t *self = ctx;
+    if (self->session_cookies == mp_const_none) {
+        self->session_cookies = mp_obj_new_dict(0);
+    }
+    int ret = mbedtls_ctr_drbg_random(&self->ctr_drbg, *p, cookie_len);
+    if (ret != 0) {
+        return ret;
+    }
+    mp_obj_t key = mp_obj_new_bytes(info, ilen);
+    mp_obj_t value = mp_obj_new_bytes(*p, cookie_len);
+    mp_obj_subscr(self->session_cookies, key, value);
+    *p += cookie_len; // "must be updated to point right after the cookie"
+    return 0;
+}
+
+static int ssl_cookie_check(void *ctx, const unsigned char *cookie, size_t c_len,
+    const unsigned char *info, size_t ilen) {
+    mp_obj_ssl_context_t *self = ctx;
+    nlr_buf_t nlr;
+    mp_obj_t key = mp_obj_new_bytes(info, ilen);
+    mp_buffer_info_t buf;
+    mp_obj_t value;
+
+    if (self->session_cookies != mp_const_none && nlr_push(&nlr) == 0) {
+        value = mp_obj_dict_get(self->session_cookies, key);
+        nlr_pop();
+
+        // An error here is a real exception, as this should only be a bytes object
+        mp_get_buffer_raise(value, &buf, MP_BUFFER_READ);
+
+        if (buf.len == c_len && memcmp(cookie, buf.buf, buf.len) == 0) {
+            return 0;
+        }
+    }
+
+    return MBEDTLS_ERR_SSL_CACHE_ENTRY_NOT_FOUND;
+}
+#endif
+
 
 #if defined(MBEDTLS_SSL_KEEP_PEER_CERTIFICATE)
 static mp_obj_t mod_ssl_getpeercert(mp_obj_t o_in, mp_obj_t binary_form) {
