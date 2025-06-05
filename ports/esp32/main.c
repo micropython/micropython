@@ -221,6 +221,7 @@ void boardctrl_startup(void) {
     esp_flash_get_physical_size(NULL, &esp_flash_default_chip->size);
 
     // Add a partition that uses the "remaining" flash.
+    // TODO: somehow use 0x4f0000 as partition address for OTA builds...
     size_t offset = 0x200000;
     if (esp_flash_default_chip->size > offset) {
         size_t size = esp_flash_default_chip->size - offset;
