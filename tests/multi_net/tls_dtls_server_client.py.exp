@@ -1,14 +1,17 @@
 --- instance0 ---
-incoming connection b'X'
-wrap socket
-b'client to server'
-b'client to server'
-b'client to server'
-b'client to server'
+waiting
+incoming connection
+(-27264, 'MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED')
+waiting
+incoming connection
+b'client to server 0'
+b'client to server 1'
+b'client to server 2'
+b'client to server 3'
 --- instance1 ---
 connect
 wrap socket
-b'server to client'
-b'server to client'
-b'server to client'
-b'server to client'
+b'server to client 0'
+b'server to client 1'
+b'server to client 2'
+b'server to client 3'
