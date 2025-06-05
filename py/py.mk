@@ -34,8 +34,17 @@ ifneq ($(USER_C_MODULES),)
 # expanded as they're added to them
 
 # Confirm the provided path exists, show abspath if not to make it clearer to fix.
-$(if $(wildcard $(USER_C_MODULES)/.),,$(error USER_C_MODULES doesn't exist: $(abspath $(USER_C_MODULES))))
+ifeq ($(wildcard $(USER_C_MODULES)/.),)
 
+# Check if the provided path is a file
+ifeq ($(wildcard $(USER_C_MODULES)),)
+$(error USER_C_MODULES doesn't exist: $(abspath $(USER_C_MODULES)))
+else
+# USER_C_MODULES is a .mk file
+$(eval include $(USER_C_MODULES))
+$(info USER_C_MODULES found in $(USER_C_MODULES): $(MODULE_PATHS))
+endif
+endif
 # C/C++ files that are included in the QSTR/module build
 SRC_USERMOD_C :=
 SRC_USERMOD_CXX :=
@@ -52,11 +61,23 @@ LDFLAGS_USERMOD :=
 # added to SRC_USERMOD_C below
 SRC_USERMOD :=
 
+ifneq ($(MODULE_PATHS),)
+
+$(foreach module, $(MODULE_PATHS), \
+    $(eval USERMOD_DIR = $(patsubst %/,%,$(USER_C_MODULES))/$(module))\
+    $(info Including User C Module from $(USERMOD_DIR))\
+	$(eval include $(USERMOD_DIR)/micropython.mk)\
+)
+USER_C_MODULES := $(patsubst %/,%,$(USER_C_MODULES))
+
+else
 $(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
     $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
     $(info Including User C Module from $(USERMOD_DIR))\
 	$(eval include $(module))\
 )
+
+endif
 
 SRC_USERMOD_C += $(SRC_USERMOD)
 
