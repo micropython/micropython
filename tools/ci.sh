@@ -324,13 +324,24 @@ function ci_qemu_setup_rv32 {
     qemu-system-riscv32 --version
 }
 
-function ci_qemu_build_arm {
+function ci_qemu_build_arm_prepare {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu submodules
+}
+
+function ci_qemu_build_arm_bigendian {
+    ci_qemu_build_arm_prepare
     make ${MAKEOPTS} -C ports/qemu CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
-    make ${MAKEOPTS} -C ports/qemu clean
-    make ${MAKEOPTS} -C ports/qemu test_full
+}
+
+function ci_qemu_build_arm_sabrelite {
+    ci_qemu_build_arm_prepare
     make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full
+}
+
+function ci_qemu_build_arm_thumb {
+    ci_qemu_build_arm_prepare
+    make ${MAKEOPTS} -C ports/qemu test_full
 
     # Test building and running native .mpy with armv7m architecture.
     ci_native_mpy_modules_build armv7m
