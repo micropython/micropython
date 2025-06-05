@@ -125,16 +125,24 @@ DTLS support
 
    This is a MicroPython extension.
 
-This module supports DTLS in client and server mode via the `PROTOCOL_DTLS_CLIENT`
-and `PROTOCOL_DTLS_SERVER` constants that can be used as the ``protocol`` argument
-of `SSLContext`.
+On most ports, this module supports DTLS in client and server mode via the
+`PROTOCOL_DTLS_CLIENT` and `PROTOCOL_DTLS_SERVER` constants that can be used as
+the ``protocol`` argument of `SSLContext`.
 
 In this case the underlying socket is expected to behave as a datagram socket (i.e.
 like the socket opened with ``socket.socket`` with ``socket.AF_INET`` as ``af`` and
 ``socket.SOCK_DGRAM`` as ``type``).
 
-DTLS is only supported on ports that use mbed TLS, and it is not enabled by default:
-it requires enabling ``MBEDTLS_SSL_PROTO_DTLS`` in the specific port configuration.
+DTLS is only supported on ports that use mbedTLS, and it is enabled by default
+in most configurations but can be manually disabled by defining
+``MICROPY_PY_SSL_DTLS`` to 0.
+
+DTLS server is configured with "Hello Verify" support as required for DTLS 1.2,
+which means the first time a client connects the server call to ``wrap_socket``
+will fail with a "Hello Verify Required" error and the server must wait for the
+client to connect a second. DTLS cookies for "Hello Verify" are stored in the
+`SSLContext` object, so the same `SSLContext` object should be used to wrap a
+subsequent connection from the same client.
 
 Constants
 ---------
