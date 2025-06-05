@@ -46,7 +46,7 @@ static mp_obj_t closure_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         // use stack to allocate temporary args array
         mp_obj_t args2[5];
         memcpy(args2, self->closed, self->n_closed * sizeof(mp_obj_t));
-        memcpy(args2 + self->n_closed, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
+        memcpy0(args2 + self->n_closed, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
         return mp_call_function_n_kw(self->fun, self->n_closed + n_args, n_kw, args2);
     } else {
         // use heap to allocate temporary args array

@@ -2200,4 +2200,9 @@ typedef double mp_float_t;
 #define MP_WARN_CAT(x) (NULL)
 #endif
 
+// If non-zero, introduce extra checks to ensure calls to functions like
+// memcpy() are C99 compliant
+#if !defined(MICROPY_NONNULL_COMPLIANT)
+#define MICROPY_NONNULL_COMPLIANT (0)
+#endif
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H
