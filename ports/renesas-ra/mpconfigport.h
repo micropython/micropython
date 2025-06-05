@@ -210,19 +210,11 @@
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#if MICROPY_PY_NETWORK_ESP_HOSTED
-extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
-#define MICROPY_HW_NIC_ESP_HOSTED   { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
-#else
-#define MICROPY_HW_NIC_ESP_HOSTED
-#endif
-
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
-    MICROPY_HW_NIC_ESP_HOSTED \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 // Miscellaneous settings
