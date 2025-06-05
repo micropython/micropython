@@ -1,8 +1,13 @@
 # rp2 module: uses C code from _rp2, plus asm_pio decorator implemented in Python.
 # MIT license; Copyright (c) 2020-2021 Damien P. George
 
+import sys
 from _rp2 import *
 from micropython import const
+
+
+is_rp2350 = 'RP2350' in sys.implementation._machine
+
 
 _PROG_DATA = const(0)
 _PROG_OFFSET_PIO0 = const(1)
@@ -42,7 +47,7 @@ class PIOASMEmit:
         from array import array
 
         self.labels = {}
-        if 'RP2350' in sys.implementation._machine:
+        if is_rp2350:
             execctrl = side_pindir << 29 | (status_sel & 0x3) << 5 | (status_n & 0x1F)
         else:
             execctrl = side_pindir << 29 | (status_sel & 0x1) << 4 | (status_n & 0x0F)
