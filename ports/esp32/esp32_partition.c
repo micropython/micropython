@@ -45,7 +45,6 @@
 enum {
     ESP32_PARTITION_BOOT,
     ESP32_PARTITION_RUNNING,
-    ESP32_PARTITION_AUTOFS,
 };
 
 typedef struct _esp32_partition_obj_t {
@@ -54,8 +53,6 @@ typedef struct _esp32_partition_obj_t {
     uint8_t *cache;
     uint16_t block_size;
 } esp32_partition_obj_t;
-
-static esp_partition_t auto_partition;
 
 #if MICROPY_VFS_ROM_IOCTL
 
@@ -109,24 +106,6 @@ static mp_obj_t esp32_partition_make_new(const mp_obj_type_t *type, size_t n_arg
                 break;
             case ESP32_PARTITION_RUNNING:
                 part = esp_ota_get_running_partition();
-                break;
-            case ESP32_PARTITION_AUTOFS:
-                if (auto_partition.flash_chip == NULL) {
-                    auto_partition.flash_chip = esp_flash_default_chip;
-                    auto_partition.type = ESP_PARTITION_TYPE_DATA;
-                    auto_partition.subtype = 0x8f;
-                    auto_partition.address = 0x200000;
-                    if (esp_flash_default_chip->size < auto_partition.address) {
-                        auto_partition.size = 0;
-                    } else {
-                        auto_partition.size = esp_flash_default_chip->size - auto_partition.address;
-                    }
-                    auto_partition.erase_size = NATIVE_BLOCK_SIZE_BYTES;
-                    strcpy(auto_partition.label, "autofs");
-                    auto_partition.encrypted = false;
-                    auto_partition.readonly = false;
-                }
-                part = &auto_partition;
                 break;
             default:
                 mp_raise_ValueError(NULL);
@@ -333,7 +312,6 @@ static const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_BOOT), MP_ROM_INT(ESP32_PARTITION_BOOT) },
     { MP_ROM_QSTR(MP_QSTR_RUNNING), MP_ROM_INT(ESP32_PARTITION_RUNNING) },
-    { MP_ROM_QSTR(MP_QSTR_AUTOFS), MP_ROM_INT(ESP32_PARTITION_AUTOFS) },
     { MP_ROM_QSTR(MP_QSTR_TYPE_APP), MP_ROM_INT(ESP_PARTITION_TYPE_APP) },
     { MP_ROM_QSTR(MP_QSTR_TYPE_DATA), MP_ROM_INT(ESP_PARTITION_TYPE_DATA) },
 };

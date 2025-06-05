@@ -219,6 +219,13 @@ void boardctrl_startup(void) {
     // Query the physical size of the SPI flash and store it in the size
     // variable of the global, default SPI flash handle.
     esp_flash_get_physical_size(NULL, &esp_flash_default_chip->size);
+
+    // Add a partition that uses the "remaining" flash.
+    size_t offset = 0x200000;
+    if (esp_flash_default_chip->size > offset) {
+        size_t size = esp_flash_default_chip->size - offset;
+        esp_partition_register_external(esp_flash_default_chip, offset, size, "autofs", ESP_PARTITION_TYPE_DATA, 0x8f, NULL);
+    }
 }
 
 void MICROPY_ESP_IDF_ENTRY(void) {

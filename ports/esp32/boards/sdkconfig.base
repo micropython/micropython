@@ -88,6 +88,9 @@ CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=n
 # significant factor in overall physical security.)
 CONFIG_MBEDTLS_DEFAULT_MEM_ALLOC=y
 
+# Use the app SPI flash size instead of the bootloader.
+CONFIG_SPI_FLASH_SIZE_OVERRIDE=y
+
 # ULP coprocessor support
 # Only on: ESP32, ESP32S2, ESP32S3
 CONFIG_ULP_COPROC_ENABLED=y
