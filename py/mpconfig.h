@@ -1941,6 +1941,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_SSL_MBEDTLS_NEED_ACTIVE_CONTEXT (MICROPY_PY_SSL_ECDSA_SIGN_ALT)
 #endif
 
+// Whether to support DTLS protocol (non-CPython feature)
+#ifndef MICROPY_PY_SSL_DTLS
+#define MICROPY_PY_SSL_DTLS (MICROPY_SSL_MBEDTLS && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to provide the "vfs" module
 #ifndef MICROPY_PY_VFS
 #define MICROPY_PY_VFS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES && MICROPY_VFS)

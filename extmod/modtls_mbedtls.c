@@ -78,7 +78,7 @@
 #define MP_PROTOCOL_TLS_CLIENT  0
 #define MP_PROTOCOL_TLS_SERVER  MP_ENDPOINT_IS_SERVER
 #define MP_PROTOCOL_DTLS_CLIENT MP_TRANSPORT_IS_DTLS
-#define MP_PROTOCOL_DTLS_SERVER MP_ENDPOINT_IS_SERVER | MP_TRANSPORT_IS_DTLS
+#define MP_PROTOCOL_DTLS_SERVER (MP_ENDPOINT_IS_SERVER | MP_TRANSPORT_IS_DTLS)
 
 // This corresponds to an SSLContext object.
 typedef struct _mp_obj_ssl_context_t {
@@ -96,6 +96,7 @@ typedef struct _mp_obj_ssl_context_t {
     mp_obj_t ecdsa_sign_callback;
     #endif
     #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
+    bool is_dtls_server;
     mbedtls_ssl_cookie_ctx cookie_ctx;
     #endif
 } mp_obj_ssl_context_t;
@@ -328,14 +329,17 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     #endif
 
     #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
-    mbedtls_ssl_cookie_init(&self->cookie_ctx);
-    ret = mbedtls_ssl_cookie_setup(&self->cookie_ctx, mbedtls_ctr_drbg_random, &self->ctr_drbg);
-    if (ret != 0) {
-        mbedtls_raise_error(ret);
+    self->is_dtls_server = (protocol == MP_PROTOCOL_DTLS_SERVER);
+    if (self->is_dtls_server) {
+        mbedtls_ssl_cookie_init(&self->cookie_ctx);
+        ret = mbedtls_ssl_cookie_setup(&self->cookie_ctx, mbedtls_ctr_drbg_random, &self->ctr_drbg);
+        if (ret != 0) {
+            mbedtls_raise_error(ret);
+        }
+        mbedtls_ssl_conf_dtls_cookies(&self->conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check,
+            &self->cookie_ctx);
     }
-    mbedtls_ssl_conf_dtls_cookies(&self->conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check,
-        &self->cookie_ctx);
-    #endif
+    #endif // MBEDTLS_SSL_DTLS_HELLO_VERIFY
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -664,19 +668,18 @@ static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     #ifdef MBEDTLS_SSL_PROTO_DTLS
     mbedtls_ssl_set_timer_cb(&o->ssl, o, _mbedtls_timing_set_delay, _mbedtls_timing_get_delay);
     #endif
+
     #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
-    if (client_id != mp_const_none) {
+    if (ssl_context->is_dtls_server) {
+        // require the client_id parameter for DTLS (as per mbedTLS requirement)
+        ret = MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
         mp_buffer_info_t buf;
         if (mp_get_buffer(client_id, &buf, MP_BUFFER_READ)) {
             ret = mbedtls_ssl_set_client_transport_id(&o->ssl, buf.buf, buf.len);
-        } else {
-            ret = MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
         }
         if (ret != 0) {
             goto cleanup;
         }
-    } else {
-        // TODO: should it be an error not to provide this argument for DTLS server?
     }
     #endif
 
