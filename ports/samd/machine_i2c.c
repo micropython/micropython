@@ -29,13 +29,11 @@
 
 #if MICROPY_PY_MACHINE_I2C
 
-#include "py/mphal.h"
 #include "py/mperrno.h"
 #include "extmod/modmachine.h"
 #include "samd_soc.h"
 #include "pin_af.h"
 #include "genhdr/pins.h"
-#include "clock_config.h"
 
 #define DEFAULT_I2C_FREQ    (400000)
 #define RISETIME_NS         (200)
@@ -79,9 +77,9 @@ static void i2c_send_command(Sercom *i2c, uint8_t command) {
 }
 
 void common_i2c_irq_handler(int i2c_id) {
-    // handle Sercom I2C IRQ
+    // Handle Sercom I2C IRQ for controller mode.
     machine_i2c_obj_t *self = MP_STATE_PORT(sercom_table[i2c_id]);
-    // Handle IRQ
+
     if (self != NULL) {
         Sercom *i2c = self->instance;
         // For now, clear all interrupts
@@ -114,7 +112,8 @@ void common_i2c_irq_handler(int i2c_id) {
         } else { // On any error, e.g. ARBLOST or BUSERROR, stop the transmission
             self->len = 0;
             self->state = state_buserr;
-            i2c->I2CM.INTFLAG.reg |= SERCOM_I2CM_INTFLAG_ERROR;
+            i2c->I2CM.INTFLAG.reg = SERCOM_I2CM_INTFLAG_ERROR |
+                SERCOM_I2CM_INTFLAG_SB | SERCOM_I2CM_INTFLAG_MB;
         }
     }
 }
@@ -158,28 +157,19 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     // Get the peripheral object.
     machine_i2c_obj_t *self = mp_obj_malloc(machine_i2c_obj_t, &machine_i2c_type);
     self->id = id;
-    self->instance = sercom_instance[self->id];
+    self->instance = sercom_instance[id];
 
     // Set SCL/SDA pins.
-    self->scl = mp_hal_get_pin_obj(args[ARG_scl].u_obj);
-    self->sda = mp_hal_get_pin_obj(args[ARG_sda].u_obj);
+    self->sda = pin_config_for_i2c(args[ARG_sda].u_obj, id, 0);
+    self->scl = pin_config_for_i2c(args[ARG_scl].u_obj, id, 1);
+    MP_STATE_PORT(sercom_table[id]) = self;
 
-    sercom_pad_config_t scl_pad_config = get_sercom_config(self->scl, self->id);
-    sercom_pad_config_t sda_pad_config = get_sercom_config(self->sda, self->id);
-    if (sda_pad_config.pad_nr != 0 || scl_pad_config.pad_nr != 1) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid sda/scl pin"));
-    }
-    MP_STATE_PORT(sercom_table[self->id]) = self;
     self->freq = args[ARG_freq].u_int;
     // The unit for ARG_timeout is us, but the code uses ms.
     self->timeout = args[ARG_timeout].u_int / 1000;
 
-    // Configure the Pin mux.
-    mp_hal_set_pin_mux(self->scl, scl_pad_config.alt_fct);
-    mp_hal_set_pin_mux(self->sda, sda_pad_config.alt_fct);
-
     // Set up the clocks
-    enable_sercom_clock(self->id);
+    enable_sercom_clock(id);
 
     // Initialise the I2C peripheral
     Sercom *i2c = self->instance;
@@ -207,13 +197,13 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     i2c->I2CM.BAUD.reg = baud;
 
     // Enable interrupts
-    sercom_register_irq(self->id, &common_i2c_irq_handler);
+    sercom_register_irq(id, &common_i2c_irq_handler);
     #if defined(MCU_SAMD21)
-    NVIC_EnableIRQ(SERCOM0_IRQn + self->id);
+    NVIC_EnableIRQ(SERCOM0_IRQn + id);
     #elif defined(MCU_SAMD51)
-    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id); // MB interrupt
-    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 1); // SB interrupt
-    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 3); // ERROR interrupt
+    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * id); // MB interrupt
+    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * id + 1); // SB interrupt
+    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * id + 3); // ERROR interrupt
     #endif
 
     // Now enable I2C.
