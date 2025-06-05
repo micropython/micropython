@@ -51,9 +51,9 @@ ame__
 port 
 
 builtins        micropython     _asyncio        _thread
-array           binascii        btree           cexample
-cmath           collections     cppexample      cryptolib
-deflate         errno           example_package
+array           atexit          binascii        btree
+cexample        cmath           collections     cppexample
+cryptolib       deflate         errno           example_package
 ffi             framebuf        gc              hashlib
 heapq           io              json            machine
 marshal         math            os              platform
