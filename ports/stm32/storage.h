@@ -28,7 +28,11 @@
 
 #include "drivers/memory/spiflash.h"
 
+#if defined(STM32N6)
+#define FLASH_BLOCK_SIZE (4096)
+#else
 #define FLASH_BLOCK_SIZE (512)
+#endif
 #define FLASH_PART1_START_BLOCK (0x100)
 
 // Try to match Python-level VFS block protocol where possible for these constants
