@@ -373,11 +373,12 @@ endif
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),n6))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_bsec.c \
+	hal_rif.c \
 	hal_xspi.c \
 	)
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h5 h7 l4))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h5 h7 l4 n6))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_sd.c \
 	ll_sdmmc.c \

@@ -347,6 +347,22 @@ const uint32_t iram_bootloader_isr_vector[] = {
 };
 #endif
 
+#if defined(STM32N6)
+static void RISAF_Config(void) {
+    RIMC_MasterConfig_t RIMC_master = {0};
+
+    __HAL_RCC_RIFSC_CLK_ENABLE();
+
+    RIMC_master.MasterCID = RIF_CID_1;
+    RIMC_master.SecPriv = RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV;
+
+    HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_SDMMC1, &RIMC_master);
+    HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_SDMMC1, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+    HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_SDMMC2, &RIMC_master);
+    HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_SDMMC2, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+}
+#endif
+
 void stm32_main(uint32_t reset_mode) {
     // Low-level MCU initialisation.
     stm32_system_init();
@@ -462,6 +478,10 @@ void stm32_main(uint32_t reset_mode) {
 
     // set the system clock to be HSE
     SystemClock_Config();
+
+    #if defined(STM32N6)
+    RISAF_Config();
+    #endif
 
     #if defined(STM32F4) || defined(STM32F7)
     #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)

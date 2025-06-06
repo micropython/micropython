@@ -13,7 +13,7 @@
 #define MICROPY_HW_ENABLE_ADC       (0)
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_USB       (1)
-#define MICROPY_HW_ENABLE_SDCARD    (0) // TODO enable
+#define MICROPY_HW_ENABLE_SDCARD    (1)
 #define MICROPY_PY_PYB_LEGACY       (0)
 
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
@@ -55,6 +55,10 @@
 #define MICROPY_HW_UART2_RX         (pyb_pin_BT_RXD)
 #define MICROPY_HW_UART2_RTS        (pyb_pin_BT_RTS)
 #define MICROPY_HW_UART2_CTS        (pyb_pin_BT_CTS)
+#define MICROPY_HW_UART3_TX         (pyb_pin_UART3_TX)
+#define MICROPY_HW_UART3_RX         (pyb_pin_UART3_RX)
+#define MICROPY_HW_UART4_TX         (pyb_pin_UART4_TX)
+#define MICROPY_HW_UART4_RX         (pyb_pin_UART4_RX)
 #define MICROPY_HW_UART7_TX         (pyb_pin_UART7_TX)
 #define MICROPY_HW_UART7_RX         (pyb_pin_UART7_RX)
 
@@ -88,14 +92,19 @@
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))
 
 // SD Card SDMMC
-#define MICROPY_HW_SDCARD_SDMMC     (1)
-#define MICROPY_HW_SDCARD_CK        (pyb_pin_SD_SDIO_CK)
-#define MICROPY_HW_SDCARD_CMD       (pyb_pin_SD_SDIO_CMD)
-#define MICROPY_HW_SDCARD_D0        (pyb_pin_SD_SDIO_D0)
-#define MICROPY_HW_SDCARD_D1        (pyb_pin_SD_SDIO_D1)
-#define MICROPY_HW_SDCARD_D2        (pyb_pin_SD_SDIO_D2)
-#define MICROPY_HW_SDCARD_D3        (pyb_pin_SD_SDIO_D3)
-#define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (0) // TODO enable
+// SD_VSELECT: low(default)=3.3V IO, high=1.8V IO
+// SD_RESET: drive low to turn off SD VCC (pulled high by default)
+// SD_DETECT: pulled high in hardware, goes low when SD inserted
+#define MICROPY_HW_SDCARD_SDMMC             (1)
+#define MICROPY_HW_SDCARD_CK                (pyb_pin_SD_SDIO_CK)
+#define MICROPY_HW_SDCARD_CMD               (pyb_pin_SD_SDIO_CMD)
+#define MICROPY_HW_SDCARD_D0                (pyb_pin_SD_SDIO_D0)
+#define MICROPY_HW_SDCARD_D1                (pyb_pin_SD_SDIO_D1)
+#define MICROPY_HW_SDCARD_D2                (pyb_pin_SD_SDIO_D2)
+#define MICROPY_HW_SDCARD_D3                (pyb_pin_SD_SDIO_D3)
+#define MICROPY_HW_SDCARD_DETECT_PIN        (pyb_pin_SD_DETECT)
+#define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_NOPULL)
+#define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
 // WiFi SDMMC
 #define MICROPY_HW_SDIO_SDMMC       (2)
@@ -121,7 +130,6 @@
 #define MICROPY_HW_USB_PID_CDC_MSC_HID  (MICROPY_HW_USB_PID)
 
 // Murata 1YN configuration
-#define CYW43_USE_SPI                           (0)
 #define CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE     "lib/cyw43-driver/firmware/w43439_sdio_1yn_7_95_59_combined.h"
 #define CYW43_WIFI_NVRAM_INCLUDE_FILE           "lib/cyw43-driver/firmware/wifi_nvram_1yn.h"
 #define CYW43_BT_FIRMWARE_INCLUDE_FILE          "lib/cyw43-driver/firmware/cyw43_btfw_1yn.h"
