@@ -210,7 +210,7 @@ typedef enum {
 } parse_dec_in_t;
 
 // MANTISSA_MAX is used to retain precision while not overflowing mantissa
-#define MANTISSA_MAX (sizeof(mp_float_uint_t) == 8 ? 0x1999999999999998ULL : 0x19999998U)
+#define MANTISSA_MAX (sizeof(mp_large_float_uint_t) == 8 ? 0x1999999999999998ULL : 0x19999998U)
 
 // MAX_EXACT_POWER_OF_5 is the largest value of x so that 5^x can be stored exactly in a float
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
@@ -220,11 +220,45 @@ typedef enum {
 #endif
 
 // Helper to compute `num * (10.0 ** dec_exp)`
-mp_float_t mp_decimal_exp(mp_float_t num, int dec_exp) {
-
-    if (dec_exp == 0 || num == MICROPY_FLOAT_CONST(0.0)) {
+mp_large_float_t mp_decimal_exp(mp_large_float_t num, int dec_exp) {
+    if (dec_exp == 0 || num == (mp_large_float_t)(0.0)) {
         return num;
     }
+
+    #if MICROPY_FLOAT_FORMAT_IMPL == MICROPY_FLOAT_FORMAT_IMPL_EXACT
+
+    // If the assert below fails, it means you have chosen MICROPY_FLOAT_FORMAT_IMPL_EXACT
+    // manually on a platform where `larger floats` are not supported, which would
+    // result in inexact conversions. To fix this issue, change your `mpconfigport.h`
+    // and select MICROPY_FLOAT_FORMAT_IMPL_APPROX instead
+    assert(sizeof(mp_large_float_t) > sizeof(mp_float_t));
+
+    // Perform power using simple multiplications, to avoid
+    // dependency to higher-precision pow() function
+    int neg_exp = (dec_exp < 0);
+    if (neg_exp) {
+        dec_exp = -dec_exp;
+    }
+    mp_large_float_t res = num;
+    mp_large_float_t expo = (mp_large_float_t)10.0;
+    while (dec_exp) {
+        if (dec_exp & 1) {
+            if (neg_exp) {
+                res /= expo;
+            } else {
+                res *= expo;
+            }
+        }
+        dec_exp >>= 1;
+        if (dec_exp) {
+            expo *= expo;
+        }
+    }
+    return res;
+
+    #else
+    // MICROPY_FLOAT_FORMAT_IMPL != MICROPY_FLOAT_FORMAT_IMPL_EXACT
+
     mp_float_union_t res = {num};
     // Multiply first by (2.0 ** dec_exp) via the exponent
     // - this will ensure that the result of `pow()` is always in mp_float_t range
@@ -238,12 +272,14 @@ mp_float_t mp_decimal_exp(mp_float_t num, int dec_exp) {
     } else {
         res.f *= MICROPY_FLOAT_C_FUN(pow)(5, dec_exp);
     }
-    return (mp_float_t)res.f;
+    return (mp_large_float_t)res.f;
+
+    #endif
 }
 
 
 // Break out inner digit accumulation routine to ease trailing zero deferral.
-static mp_float_uint_t accept_digit(mp_float_uint_t p_mantissa, unsigned int dig, int *p_exp_extra, int in) {
+static mp_large_float_uint_t accept_digit(mp_large_float_uint_t p_mantissa, unsigned int dig, int *p_exp_extra, int in) {
     // Core routine to ingest an additional digit.
     if (p_mantissa < MANTISSA_MAX) {
         // dec_val won't overflow so keep accumulating
@@ -267,7 +303,7 @@ const char *mp_parse_float_internal(const char *str, size_t len, mp_float_t *res
 
     parse_dec_in_t in = PARSE_DEC_IN_INTG;
     bool exp_neg = false;
-    mp_float_uint_t mantissa = 0;
+    mp_large_float_uint_t mantissa = 0;
     int exp_val = 0;
     int exp_extra = 0;
     int trailing_zeros_intg = 0, trailing_zeros_frac = 0;

@@ -861,6 +861,27 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_COMPLEX (MICROPY_PY_BUILTINS_FLOAT)
 #endif
 
+// Float to string conversion implementations
+//
+// Note that the EXACT method is only available if the compiler supports
+// floating points larger than mp_float_t:
+// - with MICROPY_FLOAT_IMPL_FLOAT, the compiler needs to support `double`
+// - with MICROPY_FLOAT_IMPL_DOUBLE, the compiler needs to support `long double`
+//
+#define MICROPY_FLOAT_FORMAT_IMPL_BASIC (0)  // smallest code, but inexact
+#define MICROPY_FLOAT_FORMAT_IMPL_APPROX (1) // slightly bigger, almost perfect
+#define MICROPY_FLOAT_FORMAT_IMPL_EXACT (2)  // bigger code, and 100% exact repr
+
+#ifndef MICROPY_FLOAT_FORMAT_IMPL
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#define MICROPY_FLOAT_FORMAT_IMPL (MICROPY_FLOAT_FORMAT_IMPL_APPROX)
+#elif defined(__SIZEOF_LONG_DOUBLE__) && __SIZEOF_LONG_DOUBLE__ > __SIZEOF_DOUBLE__
+#define MICROPY_FLOAT_FORMAT_IMPL (MICROPY_FLOAT_FORMAT_IMPL_EXACT)
+#else
+#define MICROPY_FLOAT_FORMAT_IMPL (MICROPY_FLOAT_FORMAT_IMPL_APPROX)
+#endif
+#endif
+
 // Whether to use the native _Float16 for 16-bit float support
 #ifndef MICROPY_FLOAT_USE_NATIVE_FLT16
 #ifdef __FLT16_MAX__

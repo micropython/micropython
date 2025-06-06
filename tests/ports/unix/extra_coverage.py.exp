@@ -127,10 +127,6 @@ TypeError: can't convert NoneType to int
 TypeError: can't convert NoneType to int
 ValueError: 
 Warning: test
-# format float
-?
-+1e+00
-+1e+00
 # binary
 123
 456

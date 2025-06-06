@@ -338,7 +338,7 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, unsigned int base, int 
 
 #if MICROPY_PY_BUILTINS_FLOAT
 int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, unsigned int flags, char fill, int width, int prec) {
-    char buf[32];
+    char buf[36];
     char sign = '\0';
     int chrs = 0;
 
@@ -349,11 +349,17 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, unsigned int
         sign = ' ';
     }
 
-    int len = mp_format_float(f, buf, sizeof(buf), fmt, prec, sign);
+    int len = mp_format_float(f, buf, sizeof(buf) - 3, fmt, prec, sign);
 
     char *s = buf;
 
-    if ((flags & PF_FLAG_ADD_PERCENT) && (size_t)(len + 1) < sizeof(buf)) {
+    if ((flags & PF_FLAG_ALWAYS_DECIMAL) && strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
+        buf[len++] = '.';
+        buf[len++] = '0';
+        buf[len] = '\0';
+    }
+
+    if (flags & PF_FLAG_ADD_PERCENT) {
         buf[len++] = '%';
         buf[len] = '\0';
     }

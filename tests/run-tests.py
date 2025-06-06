@@ -785,12 +785,16 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add(
             "float/float2int_intbig.py"
         )  # requires fp32, there's float2int_fp30_intbig.py instead
+        skip_tests.add(
+            "float/float_struct_e.py"
+        )  # requires fp32, there's float_struct_e_fp30.py instead
         skip_tests.add("float/bytes_construct.py")  # requires fp32
         skip_tests.add("float/bytearray_construct.py")  # requires fp32
         skip_tests.add("float/float_format_ints_power10.py")  # requires fp32
     if upy_float_precision < 64:
         skip_tests.add("float/float_divmod.py")  # tested by float/float_divmod_relaxed.py instead
         skip_tests.add("float/float2int_doubleprec_intbig.py")
+        skip_tests.add("float/float_struct_e_doubleprec.py")
         skip_tests.add("float/float_format_ints_doubleprec.py")
         skip_tests.add("float/float_parse_doubleprec.py")
 
