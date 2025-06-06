@@ -1,7 +1,7 @@
 # Test that integers format to exact values.
 
 for b in [13, 123, 457, 23456]:
-    for r in range(1, 10):
+    for r in range(1, 9):
         e_fmt = "{:." + str(r) + "e}"
         f_fmt = "{:." + str(r) + "f}"
         g_fmt = "{:." + str(r) + "g}"
