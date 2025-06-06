@@ -28,6 +28,15 @@
 
 #include "py/mpconfig.h"
 
+#if MICROPY_FLOAT_HIGH_QUALITY_REPR
+// When searching for the optimal representation for a float, `prec` can
+// encode a list of values to be tried.
+#define PRECLIST(a, b, c, d) (a + ((b) * 0x100) + ((c) * 0x10000) + ((d) * 0x1000000))
+#define IS_PRECLIST(p) ((p) > 0x500)
+#define PRECLIST_HEAD(p) ((p) % 0x100)
+#define PRECLIST_QUEUE(p) ((p) / 0x100)
+#endif
+
 #if MICROPY_PY_BUILTINS_FLOAT
 int mp_format_float(mp_float_t f, char *buf, size_t bufSize, char fmt, int prec, char sign);
 #endif

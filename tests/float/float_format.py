@@ -2,13 +2,24 @@
 
 # general rounding
 for val in (116, 1111, 1234, 5010, 11111):
-    print("%.0f" % val)
-    print("%.1f" % val)
-    print("%.3f" % val)
+    print("Test on %d / 1000:" % val)
+    for fmt in ("%.5e", "%.3e", "%.1e", "%.0e", "%.3f", "%.1f", "%.0f", "%.3g", "%.1g", "%.0g"):
+        print(fmt, fmt % (val / 1000))
+
+# make sure round-up to the next unit is handled properly
+for val in range(4, 9):
+    divi = 10**val
+    print("Test on 99994 / (10 ** %d):" % val)
+    for fmt in ("%.5e", "%.3e", "%.1e", "%.0e", "%.3f", "%.1f", "%.0f", "%.3g", "%.1g", "%.0g"):
+        print(fmt, fmt % (99994 / divi))
 
 # make sure rounding is done at the correct precision
 for prec in range(8):
     print(("%%.%df" % prec) % 6e-5)
+
+# make sure trailing zeroes are added properly
+for prec in range(8):
+    print(("%%.%df" % prec) % 1e19)
 
 # check certain cases that had a digit value of 10 render as a ":" character
 print("%.2e" % float("9" * 51 + "e-39"))

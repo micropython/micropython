@@ -342,6 +342,28 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, unsigned int
     char sign = '\0';
     int chrs = 0;
 
+    if (flags & PF_FLAG_USE_OPTIMAL_PREC) {
+        #if MICROPY_FLOAT_HIGH_QUALITY_REPR
+
+        // prec can encode a list of values to try
+        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+        prec = PRECLIST(6, 7, 8, 9);
+        #else
+        prec = PRECLIST(16, 17, 18, 19);
+        #endif
+
+        #else
+
+        // prec is a single value
+        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+        prec = 9;
+        #else
+        prec = 18;
+        #endif
+
+        #endif
+    }
+
     if (flags & PF_FLAG_SHOW_SIGN) {
         sign = '+';
     } else
@@ -352,6 +374,14 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, unsigned int
     int len = mp_format_float(f, buf, sizeof(buf), fmt, prec, sign);
 
     char *s = buf;
+
+    if ((flags & PF_FLAG_ALWAYS_DECIMAL) && strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
+        if ((size_t)(len + 2) < sizeof(buf)) {
+            buf[len++] = '.';
+            buf[len++] = '0';
+            buf[len] = '\0';
+        }
+    }
 
     if ((flags & PF_FLAG_ADD_PERCENT) && (size_t)(len + 1) < sizeof(buf)) {
         buf[len++] = '%';

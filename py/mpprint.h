@@ -37,7 +37,11 @@
 #define PF_FLAG_CENTER_ADJUST     (0x040)
 #define PF_FLAG_ADD_PERCENT       (0x080)
 #define PF_FLAG_SHOW_OCTAL_LETTER (0x100)
-#define PF_FLAG_SEP_POS           (9) // must be above all the above PF_FLAGs
+#define PF_FLAG_SEP_POS           (9) // sep needs 7 bits, but reserves 8 bits
+#if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE
+#define PF_FLAG_USE_OPTIMAL_PREC  (0x20000)
+#define PF_FLAG_ALWAYS_DECIMAL    (0x40000)
+#endif
 
 #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
 #define MP_PYTHON_PRINTER &mp_sys_stdout_print
