@@ -205,20 +205,6 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH
 #endif
 
-#if MICROPY_PY_NETWORK_CYW43
-extern const struct _mp_obj_type_t mp_network_cyw43_type;
-#define MICROPY_HW_NIC_CYW43                { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) },
-#else
-#define MICROPY_HW_NIC_CYW43
-#endif
-
-#if MICROPY_PY_NETWORK_WIZNET5K
-extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
-#define MICROPY_HW_NIC_WIZNET5K             { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
-#else
-#define MICROPY_HW_NIC_WIZNET5K
-#endif
-
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
     MACHINE_BUILTIN_MODULE_CONSTANTS \
@@ -231,8 +217,6 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_ETH  \
-    MICROPY_HW_NIC_CYW43 \
-    MICROPY_HW_NIC_WIZNET5K \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 #define MP_STATE_PORT MP_STATE_VM
