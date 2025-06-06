@@ -33,6 +33,7 @@
 #include <stdint.h>
 #include <math.h>
 #include "py/formatfloat.h"
+#include "py/parsenum.h"
 
 /***********************************************************************
 
@@ -49,16 +50,38 @@
 
 ***********************************************************************/
 
+// This option might be provided in mpconfig.h in the future,
+// but for now it is here just for testing.
+// When enabled, with MICROPY_FLOAT_IMPL_DOUBLE
+// - `repr` reversibility errors drop from 40% to 4.5%
+// - conversion time increases by 20% in average
+// When enabled, with MICROPY_FLOAT_IMPL_SIMPLE
+// - `repr` reversibility errors drop from 10% to 5%
+// - conversion time increases by 7% in average
+#define MICROPY_FLOAT_HIGH_QUALITY_REPR 1
+
+// Float formatting debug code is intended for use in ports/unix only,
+// as it uses the libc float printing function as a reference.
+#define DEBUG_FLOAT_FORMATTING 0
+
+#if DEBUG_FLOAT_FORMATTING
+#define DEBUG_PRINTF(...) fprintf(stderr, __VA_ARGS__)
+#else
+#define DEBUG_PRINTF(...)
+#endif
+
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 // 1 sign bit, 8 exponent bits, and 23 mantissa bits.
 // exponent values 0 and 255 are reserved, exponent can be 1 to 254.
 // exponent is stored with a bias of 127.
 // The min and max floats are on the order of 1x10^37 and 1x10^-37
 
-#define FPTYPE float
 #define FPCONST(x) x##F
-#define FPROUND_TO_ONE 0.9999995F
-#define FPDECEXP 32
+#define FPUINT_FMT "%u"
+#define ITER_MANTISSA_DIGITS 6
+#define SAFE_MANTISSA_DIGITS 8
+#define MAX_MANTISSA_DIGITS 9
+#define MANTISSA_ROUND 10000u
 #define FPMIN_BUF_SIZE 6 // +9e+99
 
 #define FLT_SIGN_MASK   0x80000000
@@ -80,10 +103,12 @@ static inline int fp_isless1(float x) {
 
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 
-#define FPTYPE double
 #define FPCONST(x) x
-#define FPROUND_TO_ONE 0.999999999995
-#define FPDECEXP 256
+#define FPUINT_FMT "%lu"
+#define ITER_MANTISSA_DIGITS 16
+#define SAFE_MANTISSA_DIGITS 16
+#define MAX_MANTISSA_DIGITS 19
+#define MANTISSA_ROUND 100000u
 #define FPMIN_BUF_SIZE 7 // +9e+199
 #define fp_signbit(x) signbit(x)
 #define fp_isnan(x) isnan(x)
@@ -93,12 +118,114 @@ static inline int fp_isless1(float x) {
 
 #endif // MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT/DOUBLE
 
-static inline int fp_expval(FPTYPE x) {
+static inline int fp_expval(mp_float_t x) {
     mp_float_union_t fb = {x};
     return (int)((fb.i >> MP_FLOAT_FRAC_BITS) & (~(0xFFFFFFFF << MP_FLOAT_EXP_BITS))) - MP_FLOAT_EXP_OFFSET;
 }
 
-int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, char sign) {
+// formatting flags
+#define FMT_MODE_E 0x01  // user requested scientific notation (%e)
+#define FMT_MODE_G 0x02  // user requested general format (%g)
+#define FMT_MODE_F 0x04  // we must render using fixed-point notation (%f or %g)
+#define FMT_E_CASE 0x20  // don't change this value (used for case conversion!)
+
+// Helper to convert a decimal mantissa (provided as an mp_float_uint_t) to string
+static int mp_format_mantissa(mp_float_uint_t mantissa, mp_float_uint_t mantissa_cap, char *buf, size_t buf_size,
+    int num_digits, int trailing_zeroes, int dec, int e, int flags) {
+
+    char *s = buf;
+    int dot = 0;
+
+    DEBUG_PRINTF("mantissa "FPUINT_FMT " (cap="FPUINT_FMT "):\n", mantissa, mantissa_cap);
+
+    // If rounding created an extra digit, fix mantissa
+    if (mantissa >= mantissa_cap) {
+        if (flags & FMT_MODE_F) {
+            num_digits++;
+            dec++;
+        } else {
+            mantissa /= 10;
+            e++;
+        }
+    }
+
+    // Convert the mantissa to a string
+    for (int digit = num_digits - 1; digit >= 0; digit--) {
+        int digit_ofs = (digit > dec ? digit + 1 : digit);
+        s[digit_ofs] = '0' + (int)(mantissa % 10);
+        mantissa /= 10;
+    }
+    if (dec + 1 < num_digits) {
+        dot = 1;
+        s++;
+        s[dec] = '.';
+    }
+    s += num_digits;
+    #if DEBUG_FLOAT_FORMATTING
+    *s = 0;
+    DEBUG_PRINTF("  =      %s exp=%d num_digits=%d zeroes=%d\n", buf, e, num_digits, trailing_zeroes);
+    #endif
+
+    // verify that we did not overrun the input buffer so far
+    assert((size_t)(s + 1 - buf) <= buf_size);
+
+    if (dot && (flags & FMT_MODE_G) != 0) {
+        // %g format requires to remove trailing zeroes...
+        while (s[-1] == '0') {
+            s--;
+        }
+        if (s[-1] == '.') {
+            s--;
+        }
+    } else if (trailing_zeroes) {
+        // ... while %f may require to add more of them
+        dec -= num_digits - 1;
+        while (trailing_zeroes--) {
+            if (!dec--) {
+                int max_more = (int)(buf + buf_size - s - 3);
+                if (max_more < 0) {
+                    break;
+                }
+                if (trailing_zeroes > max_more) {
+                    trailing_zeroes = max_more;
+                }
+                *s++ = '.';
+            }
+            *s++ = '0';
+        }
+    }
+
+    // Append the exponent if requested
+    int add_exponent = (flags & FMT_MODE_E);
+    if (!(flags & FMT_MODE_F)) {
+        if (e != 0) {
+            add_exponent = 1;
+        }
+    }
+    if (add_exponent) {
+        *s++ = 'E' | (flags & FMT_E_CASE);
+        if (e >= 0) {
+            *s++ = '+';
+        } else {
+            *s++ = '-';
+            e = -e;
+        }
+        if (FPMIN_BUF_SIZE == 7 && e >= 100) {
+            *s++ = '0' + (e / 100);
+        }
+        *s++ = '0' + ((e / 10) % 10);
+        *s++ = '0' + (e % 10);
+    }
+    *s = '\0';
+    DEBUG_PRINTF("  ===>   %s\n", buf);
+
+    // verify that we did not overrun the input buffer
+    assert((size_t)(s + 1 - buf) <= buf_size);
+
+    return s - buf;
+}
+
+int mp_format_float(mp_float_t f, char *buf, size_t buf_size, char fmt, int prec, char sign) {
 
     char *s = buf;
 
@@ -148,24 +275,30 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     if (prec < 0) {
         prec = 6;
     }
-    char e_char = 'E' | (fmt & 0x20);   // e_char will match case of fmt
+    int flags = (fmt & 0x20);  // setup FMT_E_CASE
     fmt |= 0x20; // Force fmt to be lowercase
-    char org_fmt = fmt;
-    if (fmt == 'g' && prec == 0) {
-        prec = 1;
+    if (fmt == 'f') {
+        flags |= FMT_MODE_F;
+    } else if (fmt == 'g') {
+        flags |= FMT_MODE_G;
+        if (prec == 0) {
+            prec = 1;
+        }
+    } else {
+        flags |= FMT_MODE_E;
     }
     int e;
     int dec = 0;
-    char e_sign = '\0';
     int num_digits = 0;
     int signed_e = 0;
+    mp_float_t f_entry = f;  // Save original f for future checks
 
     // Approximate power of 10 exponent from binary exponent.
     // abs(e_guess) is lower bound on abs(power of 10 exponent).
     int e_guess = (int)(fp_expval(f) * FPCONST(0.3010299956639812));  // 1/log2(10).
     if (fp_iszero(f)) {
         e = 0;
-        if (fmt == 'f') {
+        if (flags & FMT_MODE_F) {
             // Truncate precision to prevent buffer overflow
             if (prec + 2 > buf_remaining) {
                 prec = buf_remaining - 2;
@@ -176,15 +309,11 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             if (prec + 6 > buf_remaining) {
                 prec = buf_remaining - 6;
             }
-            if (fmt == 'e') {
-                e_sign = '+';
-            }
         }
     } else if (fp_isless1(f)) {
-        FPTYPE f_entry = f;  // Save f in case we go to 'f' format.
         // Build negative exponent
         e = -e_guess;
-        FPTYPE u_base = MICROPY_FLOAT_C_FUN(pow)(10, -e);
+        mp_float_t u_base = MICROPY_FLOAT_C_FUN(pow)(10, -e);
         while (u_base > f) {
             ++e;
             u_base = MICROPY_FLOAT_C_FUN(pow)(10, -e);
@@ -196,14 +325,15 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
 
         // If the user specified 'g' format, and e is <= 4, then we'll switch
         // to the fixed format ('f')
-
-        if (fmt == 'f' || (fmt == 'g' && e <= 4)) {
-            fmt = 'f';
-            dec = 0;
-
-            if (org_fmt == 'g') {
-                prec += (e - 1);
+        if (flags & FMT_MODE_G) {
+            if (e <= 4) {
+                flags |= FMT_MODE_F;
+                prec += e - 1;
             }
+        }
+
+        if (flags & FMT_MODE_F) {
+            dec = 0;
 
             // truncate precision to prevent buffer overflow
             if (prec + 2 > buf_remaining) {
@@ -215,14 +345,11 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             f = f_entry;
             ++num_digits;
         } else {
-            // For e & g formats, we'll be printing the exponent, so set the
-            // sign.
-            e_sign = '-';
             dec = 0;
 
             if (prec > (buf_remaining - FPMIN_BUF_SIZE)) {
                 prec = buf_remaining - FPMIN_BUF_SIZE;
-                if (fmt == 'g') {
+                if (flags & FMT_MODE_G) {
                     prec++;
                 }
             }
@@ -235,7 +362,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         // that is not greater than it, and use that to start the
         // mantissa.
         e = e_guess;
-        FPTYPE next_u = MICROPY_FLOAT_C_FUN(pow)(10, e + 1);
+        mp_float_t next_u = MICROPY_FLOAT_C_FUN(pow)(10, e + 1);
         while (f >= next_u) {
             ++e;
             next_u = MICROPY_FLOAT_C_FUN(pow)(10, e + 1);
@@ -245,9 +372,10 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         // number too big to fit into the available buffer, then we'll
         // switch to the 'e' format.
 
-        if (fmt == 'f') {
+        if (flags & FMT_MODE_F) {
             if (e >= buf_remaining) {
-                fmt = 'e';
+                flags ^= FMT_MODE_F;
+                flags |= FMT_MODE_E;
             } else if ((e + prec + 2) > buf_remaining) {
                 prec = buf_remaining - e - 2;
                 if (prec < 0) {
@@ -257,27 +385,27 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
                 }
             }
         }
-        if (fmt == 'e' && prec > (buf_remaining - FPMIN_BUF_SIZE)) {
-            prec = buf_remaining - FPMIN_BUF_SIZE;
+        if (flags & FMT_MODE_E) {
+            if (prec > (buf_remaining - FPMIN_BUF_SIZE)) {
+                prec = buf_remaining - FPMIN_BUF_SIZE;
+            }
         }
-        if (fmt == 'g') {
+        if (flags & FMT_MODE_G) {
             // Truncate precision to prevent buffer overflow
             if (prec + (FPMIN_BUF_SIZE - 1) > buf_remaining) {
                 prec = buf_remaining - (FPMIN_BUF_SIZE - 1);
             }
+            // If the user specified 'g' format, and e is < prec, then we'll switch
+            // to the fixed format.
+            if (e < prec && e < SAFE_MANTISSA_DIGITS) {
+                flags |= FMT_MODE_F;
+                prec -= e + 1;
+            }
         }
-        // If the user specified 'g' format, and e is < prec, then we'll switch
-        // to the fixed format.
 
-        if (fmt == 'g' && e < prec) {
-            fmt = 'f';
-            prec -= (e + 1);
-        }
-        if (fmt == 'f') {
+        if (flags & FMT_MODE_F) {
             dec = e;
             num_digits = prec + e + 1;
-        } else {
-            e_sign = '+';
         }
         signed_e = e;
     }
@@ -287,7 +415,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     }
 
     // At this point e contains the absolute value of the power of 10 exponent.
-    // (dec + 1) == the number of dgits before the decimal.
+    // (dec + 1) == the number of digits before the decimal.
 
     // For e, prec is # digits after the decimal
     // For f, prec is # digits after the decimal
@@ -296,129 +424,113 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     // For e & g there will be a single digit before the decimal
     // for f there will be e digits before the decimal
 
-    if (fmt == 'e') {
+    if (flags & FMT_MODE_E) {
         num_digits = prec + 1;
-    } else if (fmt == 'g') {
+    } else if (!(flags & FMT_MODE_F)) {
         if (prec == 0) {
             prec = 1;
         }
         num_digits = prec;
     }
 
-    int d = 0;
-    for (int digit_index = signed_e; num_digits >= 0; --digit_index) {
-        FPTYPE u_base = FPCONST(1.0);
-        if (digit_index > 0) {
-            // Generate 10^digit_index for positive digit_index.
-            u_base = MICROPY_FLOAT_C_FUN(pow)(10, digit_index);
+    // Digits beyond float precision are meaningless,
+    // except for %f format which might need to compensate
+    // for them using zero-padding.
+    int trailing_zeroes = 0;
+    if (num_digits > MAX_MANTISSA_DIGITS) {
+        if (flags & FMT_MODE_F) {
+            trailing_zeroes = num_digits - MAX_MANTISSA_DIGITS;
         }
-        for (d = 0; d < 9; ++d) {
-            if (f < u_base) {
-                break;
+        num_digits = MAX_MANTISSA_DIGITS;
+    }
+    mp_float_uint_t mantissa_cap = 10;
+    for (int n = 1; n < num_digits; n++) {
+        mantissa_cap *= 10;
+    }
+
+    // Build the decimal mantissa into an uint
+    int decexp = num_digits - (signed_e < 0 ? 0 : signed_e);
+    mp_float_t mantissa_flt = mp_decimal_exp(f, decexp - 1);
+    mp_float_uint_t mantissa = (mp_float_uint_t)(mantissa_flt + FPCONST(0.5));
+    DEBUG_PRINTF("input=%.19g num_digits=%d signed_e=%d prec=%d mantissa="FPUINT_FMT "\n", (double)f_entry, num_digits, signed_e, prec, mantissa);
+
+    if (num_digits >= MAX_MANTISSA_DIGITS - 1) {
+        // When using high-precision repr, the last two digits carry a high uncertainty
+        // We have a chance to easily round the number within the uncertainty range, so use it
+        unsigned epsilon = (unsigned)(mantissa % MANTISSA_ROUND);
+        if (epsilon) {
+            if (epsilon < 100u) {
+                mantissa -= epsilon;
+                DEBUG_PRINTF("-> round down mantissa to "FPUINT_FMT "\n", mantissa);
+            } else if (epsilon > MANTISSA_ROUND - 100u) {
+                mantissa += MANTISSA_ROUND - epsilon;
+                DEBUG_PRINTF("-> round up mantissa to "FPUINT_FMT "\n", mantissa);
             }
-            f -= u_base;
-        }
-        // We calculate one more digit than we display, to use in rounding
-        // below.  So only emit the digit if it's one that we display.
-        if (num_digits > 0) {
-            // Emit this number (the leading digit).
-            *s++ = '0' + d;
-            if (dec == 0 && prec > 0) {
-                *s++ = '.';
-            }
-        }
-        --dec;
-        --num_digits;
-        if (digit_index <= 0) {
-            // Once we get below 1.0, we scale up f instead of calculating
-            // negative powers of 10 in u_base.  This provides better
-            // renditions of exact decimals like 1/16 etc.
-            f *= FPCONST(10.0);
         }
     }
-    // Rounding.  If the next digit to print is >= 5, round up.
-    if (d >= 5) {
-        char *rs = s;
-        rs--;
-        while (1) {
-            if (*rs == '.') {
-                rs--;
-                continue;
-            }
-            if (*rs < '0' || *rs > '9') {
-                // + or -
-                rs++; // So we sit on the digit to the right of the sign
-                break;
-            }
-            if (*rs < '9') {
-                (*rs)++;
-                break;
-            }
-            *rs = '0';
-            if (rs == buf) {
-                break;
-            }
-            rs--;
+
+    // Finally convert the decimal mantissa to a floating-point string, according to formatting rules
+    buf_size -= s - buf;
+    int reprlen = mp_format_mantissa(mantissa, mantissa_cap, s, buf_size, num_digits, trailing_zeroes, dec, signed_e, flags);
+
+    #if MICROPY_FLOAT_HIGH_QUALITY_REPR
+    // The initial decimal mantissa might not have been be completely accurate due
+    // to the previous loating point operations. The best way to verify this is to
+    // parse the resulting number and compare against the original
+    mp_float_t check;
+    mp_parse_float_internal(s, reprlen, &check);
+    mp_float_t first_guess = check;
+
+    if (check == f_entry) {
+        // we have a perfect match
+        DEBUG_PRINTF(FPUINT_FMT ": perfect match (direct)\n", mantissa);
+    } else {
+        // In order to get the best possible representation, we will perform a
+        // dichotomic search for a reversible representation.
+        // This will also provide optimal rounding on the fly.
+        unsigned err_range = 1;
+        if (num_digits > ITER_MANTISSA_DIGITS) {
+            err_range <<= 3 * (num_digits - ITER_MANTISSA_DIGITS);
         }
-        if (*rs == '0') {
-            // We need to insert a 1
-            if (rs[1] == '.' && fmt != 'f') {
-                // We're going to round 9.99 to 10.00
-                // Move the decimal point
-                rs[0] = '.';
-                rs[1] = '0';
-                if (e_sign == '-') {
-                    e--;
-                    if (e == 0) {
-                        e_sign = '+';
-                    }
-                } else {
-                    e++;
-                }
+        int maxruns = 3 + 3 * (MAX_MANTISSA_DIGITS - ITER_MANTISSA_DIGITS);
+        while (check != f_entry && maxruns-- > 0) {
+            if (check < f_entry) {
+                mantissa += err_range;
             } else {
-                // Need at extra digit at the end to make room for the leading '1'
-                // but if we're at the buffer size limit, just drop the final digit.
-                if ((size_t)(s + 1 - buf) < buf_size) {
-                    s++;
+                while (mantissa < err_range) {
+                    err_range >>= 1;
                 }
+                mantissa -= err_range;
             }
-            char *ss = s;
-            while (ss > rs) {
-                *ss = ss[-1];
-                ss--;
+            reprlen = mp_format_mantissa(mantissa, mantissa_cap, s, buf_size, num_digits, trailing_zeroes, dec, signed_e, flags);
+            mp_parse_float_internal(s, reprlen, &check);
+            DEBUG_PRINTF("check=%.19g num_digits=%d signed_e=%d prec=%d mantissa="FPUINT_FMT "\n", check, num_digits, signed_e, prec, mantissa);
+            if (check == f_entry) {
+                // we have a perfect match
+                DEBUG_PRINTF(FPUINT_FMT ": perfect match\n", mantissa);
+                break;
             }
-            *rs = '1';
+            // string repr is not perfect: continue a dichotomic improvement
+            DEBUG_PRINTF(FPUINT_FMT ": %.19g, err_range=%d\n", mantissa, check, err_range);
+            if (err_range > 1) {
+                err_range >>= 1;
+            } else {
+                // We have tried all possible mantissa, without finding a reversible repr.
+                // Keep the closest one, which is either the first one or the last one.
+                if (MICROPY_FLOAT_C_FUN(fabs)(check - f_entry) <= MICROPY_FLOAT_C_FUN(fabs)(first_guess - f_entry)) {
+                    // Last guess is the best one
+                    DEBUG_PRINTF(FPUINT_FMT ": last guess was the best one\n", mantissa);
+                    break;
+                }
+                // The first guess was the best.
+                // Running one more time will get us back to the first repr.
+                DEBUG_PRINTF(FPUINT_FMT ": first guess was better, one more time...\n", mantissa);
+            }
         }
     }
+    #endif
 
-    // verify that we did not overrun the input buffer so far
-    assert((size_t)(s + 1 - buf) <= buf_size);
-
-    if (org_fmt == 'g' && prec > 0) {
-        // Remove trailing zeros and a trailing decimal point
-        while (s[-1] == '0') {
-            s--;
-        }
-        if (s[-1] == '.') {
-            s--;
-        }
-    }
-    // Append the exponent
-    if (e_sign) {
-        *s++ = e_char;
-        *s++ = e_sign;
-        if (FPMIN_BUF_SIZE == 7 && e >= 100) {
-            *s++ = '0' + (e / 100);
-        }
-        *s++ = '0' + ((e / 10) % 10);
-        *s++ = '0' + (e % 10);
-    }
-    *s = '\0';
-
-    // verify that we did not overrun the input buffer
-    assert((size_t)(s + 1 - buf) <= buf_size);
-
-    return s - buf;
+    return (s - buf) + reprlen;
 }
 
 #endif // MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE

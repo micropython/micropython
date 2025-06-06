@@ -101,7 +101,7 @@ ValueError:
 Warning: test
 # format float
 ?
-+1e+00
++1
 +1e+00
 # binary
 123

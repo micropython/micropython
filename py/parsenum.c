@@ -197,6 +197,23 @@ typedef enum {
 #define EXACT_POWER_OF_10 (22)
 #endif
 
+mp_float_t mp_decimal_exp(mp_float_t num, int exp_val) {
+    if (exp_val == 0) {
+        return num;
+    }
+    // If possible, we would rather manipulate numbers that have an exact representation
+    // in IEEE754. It turns out small positive powers of 10 do, whereas small negative
+    // powers of 10 don't. So in that case, we'll yield a division of exact values rather
+    // than a multiplication of slightly erroneous values.
+    if (exp_val < 0 && exp_val >= -EXACT_POWER_OF_10) {
+        num /= MICROPY_FLOAT_C_FUN(pow)(10, -exp_val);
+    } else {
+        num *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val);
+    }
+    return num;
+}
+
+
 // Break out inner digit accumulation routine to ease trailing zero deferral.
 static mp_float_uint_t accept_digit(mp_float_uint_t p_mantissa, unsigned int dig, int *p_exp_extra, int in) {
     // Core routine to ingest an additional digit.
@@ -214,6 +231,92 @@ static mp_float_uint_t accept_digit(mp_float_uint_t p_mantissa, unsigned int dig
         }
         return p_mantissa;
     }
+}
+
+// internal function to parse an unsigned decimal number
+const char *mp_parse_float_internal(const char *str, size_t len, mp_float_t *res) {
+    const char *top = str + len;
+
+    parse_dec_in_t in = PARSE_DEC_IN_INTG;
+    bool exp_neg = false;
+    mp_float_uint_t mantissa = 0;
+    int exp_val = 0;
+    int exp_extra = 0;
+    int trailing_zeros_intg = 0, trailing_zeros_frac = 0;
+    while (str < top) {
+        unsigned int dig = *str++;
+        if ('0' <= dig && dig <= '9') {
+            dig -= '0';
+            if (in == PARSE_DEC_IN_EXP) {
+                // don't overflow exp_val when adding next digit, instead just truncate
+                // it and the resulting float will still be correct, either inf or 0.0
+                // (use INT_MAX/2 to allow adding exp_extra at the end without overflow)
+                if (exp_val < (INT_MAX / 2 - 9) / 10) {
+                    exp_val = 10 * exp_val + dig;
+                }
+            } else {
+                if (dig == 0 || mantissa >= MANTISSA_MAX) {
+                    // Defer treatment of zeros in fractional part.  If nothing comes afterwards, ignore them.
+                    // Also, once we reach MANTISSA_MAX, treat every additional digit as a trailing zero.
+                    if (in == PARSE_DEC_IN_INTG) {
+                        ++trailing_zeros_intg;
+                    } else {
+                        ++trailing_zeros_frac;
+                    }
+                } else {
+                    // Time to un-defer any trailing zeros.  Intg zeros first.
+                    while (trailing_zeros_intg) {
+                        mantissa = accept_digit(mantissa, 0, &exp_extra, PARSE_DEC_IN_INTG);
+                        --trailing_zeros_intg;
+                    }
+                    while (trailing_zeros_frac) {
+                        mantissa = accept_digit(mantissa, 0, &exp_extra, PARSE_DEC_IN_FRAC);
+                        --trailing_zeros_frac;
+                    }
+                    mantissa = accept_digit(mantissa, dig, &exp_extra, in);
+                }
+            }
+        } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
+            in = PARSE_DEC_IN_FRAC;
+        } else if (in != PARSE_DEC_IN_EXP && ((dig | 0x20) == 'e')) {
+            in = PARSE_DEC_IN_EXP;
+            if (str < top) {
+                if (str[0] == '+') {
+                    str++;
+                } else if (str[0] == '-') {
+                    str++;
+                    exp_neg = true;
+                }
+            }
+            if (str == top) {
+                return NULL;
+            }
+        } else if (dig == '_') {
+            continue;
+        } else {
+            // unknown character
+            str--;
+            break;
+        }
+    }
+
+    // work out the exponent
+    if (exp_neg) {
+        exp_val = -exp_val;
+    }
+
+    // apply the exponent, making sure it's not a subnormal value
+    exp_val += exp_extra + trailing_zeros_intg;
+    mp_float_t dec_val = (mp_float_t)mantissa;
+    if (exp_val < SMALL_NORMAL_EXP) {
+        exp_val -= SMALL_NORMAL_EXP;
+        dec_val *= SMALL_NORMAL_VAL;
+    }
+
+    // At this point, we just need to multiply the mantissa by its base 10 exponent.
+    *res = mp_decimal_exp(dec_val, exp_val);
+
+    return str;
 }
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
@@ -272,91 +375,9 @@ parse_start:
         }
     } else {
         // string should be a decimal number
-        parse_dec_in_t in = PARSE_DEC_IN_INTG;
-        bool exp_neg = false;
-        mp_float_uint_t mantissa = 0;
-        int exp_val = 0;
-        int exp_extra = 0;
-        int trailing_zeros_intg = 0, trailing_zeros_frac = 0;
-        while (str < top) {
-            unsigned int dig = *str++;
-            if ('0' <= dig && dig <= '9') {
-                dig -= '0';
-                if (in == PARSE_DEC_IN_EXP) {
-                    // don't overflow exp_val when adding next digit, instead just truncate
-                    // it and the resulting float will still be correct, either inf or 0.0
-                    // (use INT_MAX/2 to allow adding exp_extra at the end without overflow)
-                    if (exp_val < (INT_MAX / 2 - 9) / 10) {
-                        exp_val = 10 * exp_val + dig;
-                    }
-                } else {
-                    if (dig == 0 || mantissa >= MANTISSA_MAX) {
-                        // Defer treatment of zeros in fractional part.  If nothing comes afterwards, ignore them.
-                        // Also, once we reach MANTISSA_MAX, treat every additional digit as a trailing zero.
-                        if (in == PARSE_DEC_IN_INTG) {
-                            ++trailing_zeros_intg;
-                        } else {
-                            ++trailing_zeros_frac;
-                        }
-                    } else {
-                        // Time to un-defer any trailing zeros.  Intg zeros first.
-                        while (trailing_zeros_intg) {
-                            mantissa = accept_digit(mantissa, 0, &exp_extra, PARSE_DEC_IN_INTG);
-                            --trailing_zeros_intg;
-                        }
-                        while (trailing_zeros_frac) {
-                            mantissa = accept_digit(mantissa, 0, &exp_extra, PARSE_DEC_IN_FRAC);
-                            --trailing_zeros_frac;
-                        }
-                        mantissa = accept_digit(mantissa, dig, &exp_extra, in);
-                    }
-                }
-            } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
-                in = PARSE_DEC_IN_FRAC;
-            } else if (in != PARSE_DEC_IN_EXP && ((dig | 0x20) == 'e')) {
-                in = PARSE_DEC_IN_EXP;
-                if (str < top) {
-                    if (str[0] == '+') {
-                        str++;
-                    } else if (str[0] == '-') {
-                        str++;
-                        exp_neg = true;
-                    }
-                }
-                if (str == top) {
-                    goto value_error;
-                }
-            } else if (dig == '_') {
-                continue;
-            } else {
-                // unknown character
-                str--;
-                break;
-            }
-        }
-
-        // work out the exponent
-        if (exp_neg) {
-            exp_val = -exp_val;
-        }
-
-        // apply the exponent, making sure it's not a subnormal value
-        exp_val += exp_extra + trailing_zeros_intg;
-        dec_val = (mp_float_t)mantissa;
-        if (exp_val < SMALL_NORMAL_EXP) {
-            exp_val -= SMALL_NORMAL_EXP;
-            dec_val *= SMALL_NORMAL_VAL;
-        }
-
-        // At this point, we need to multiply the mantissa by its base 10 exponent. If possible,
-        // we would rather manipulate numbers that have an exact representation in IEEE754. It
-        // turns out small positive powers of 10 do, whereas small negative powers of 10 don't.
-        // So in that case, we'll yield a division of exact values rather than a multiplication
-        // of slightly erroneous values.
-        if (exp_val < 0 && exp_val >= -EXACT_POWER_OF_10) {
-            dec_val /= MICROPY_FLOAT_C_FUN(pow)(10, -exp_val);
-        } else {
-            dec_val *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val);
+        str = mp_parse_float_internal(str, top - str, &dec_val);
+        if (!str) {
+            goto value_error;
         }
     }
 
