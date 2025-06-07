@@ -61,6 +61,9 @@
 #undef mp_const_empty_tuple
 #undef nlr_raise
 
+// Additional macros for native module static definitions
+#define MP_OBJ_QSTR_VALUE(o) (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_QSTR))
+
 /******************************************************************************/
 // Memory allocation
 
@@ -350,5 +353,24 @@ static inline void mp_obj_get_array_dyn(mp_obj_t o, size_t *len, mp_obj_t **item
         mp_raise_TypeError("expected tuple/list");
     }
 }
+
+/******************************************************************************/
+// Native module static definition support
+
+// Helper to register all entries from a static globals table
+// This allows native modules to use the same static definition pattern as built-in modules
+#define MP_DYNRUNTIME_REGISTER_GLOBALS_TABLE(table, size) \
+    do { \
+        for (size_t i = 0; i < (size); i++) { \
+            qstr key = MP_OBJ_QSTR_VALUE((table)[i].key); \
+            if (key != MP_QSTR___name__) { \
+                mp_store_global(key, (mp_obj_t)(table)[i].value); \
+            } \
+        } \
+    } while (0)
+
+// For modules that want to define their globals statically but still have custom init
+#define MP_DYNRUNTIME_INIT_STATIC_MODULE(module_globals_table) \
+    MP_DYNRUNTIME_REGISTER_GLOBALS_TABLE(module_globals_table, MP_ARRAY_SIZE(module_globals_table))
 
 #endif // MICROPY_INCLUDED_PY_DYNRUNTIME_H
