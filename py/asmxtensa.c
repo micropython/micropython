@@ -192,12 +192,27 @@ void asm_xtensa_bccz_reg_label(asm_xtensa_t *as, uint cond, uint reg, uint label
 }
 
 void asm_xtensa_bcc_reg_reg_label(asm_xtensa_t *as, uint cond, uint reg1, uint reg2, uint label) {
-    uint32_t dest = get_label_dest(as, label);
-    int32_t rel = dest - as->base.code_offset - 4;
-    if (as->base.pass == MP_ASM_PASS_EMIT && !SIGNED_FIT8(rel)) {
+    ptrdiff_t rel = 0;
+    bool can_emit_short_jump = calculate_branch_displacement(as, label, &rel);
+
+    if (can_emit_short_jump && SIGNED_FIT8(rel)) {
+        // Backwards BCC opcodes with an offset that fits in 8 bits can
+        // be emitted without any change.
+        asm_xtensa_op_bcc(as, cond, reg1, reg2, rel);
+        return;
+    }
+
+    // Range is effectively extended to 18 bits, as a more complex jump code
+    // sequence is emitted.
+    if (as->base.pass == MP_ASM_PASS_EMIT && !SIGNED_FIT18(rel - 6)) {
         mp_raise_msg_varg(&mp_type_RuntimeError, ET_OUT_OF_RANGE, MP_QSTR_bcc);
     }
-    asm_xtensa_op_bcc(as, cond, reg1, reg2, rel);
+
+    // ~BCC skip ; +0  <- Condition is flipped here (EQ -> NE, etc.)
+    //  J   addr ; +3
+    // skip:     ; +6
+    asm_xtensa_op_bcc(as, cond ^ 8, reg1, reg2, 6 - 4);
+    asm_xtensa_op_j(as, rel - 3);
 }
 
 // convenience function; reg_dest must be different from reg_src[12]
