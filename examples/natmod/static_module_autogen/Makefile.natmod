@@ -1,0 +1,42 @@
+# Makefile for building dual-mode modules as native modules
+
+# Location of top-level MicroPython directory
+MPY_DIR = ../../..
+
+# Name of module
+MOD_SIMPLE = dualmode_simple
+MOD_EXAMPLE = dualmode_example
+
+# Source files
+SRC_SIMPLE = dualmode_simple.c
+SRC_EXAMPLE = dualmode_example.c
+
+# Architecture to build for (x86, x64, armv6m, armv7m, xtensa, xtensawin)
+ARCH ?= x64
+
+# Include to get the rules for compiling and linking the module
+include $(MPY_DIR)/py/dynruntime.mk
+
+# Build rules for simple module
+$(MOD_SIMPLE).mpy: $(SRC_SIMPLE:.c=.o)
+	$(ECHO) "LINK $@"
+	$(Q)$(CC) -shared -o $@ $^ $(LDFLAGS)
+
+# Build rules for example module  
+$(MOD_EXAMPLE).mpy: $(SRC_EXAMPLE:.c=.o)
+	$(ECHO) "LINK $@"
+	$(Q)$(CC) -shared -o $@ $^ $(LDFLAGS)
+
+# Rules to build object files
+%.o: %.c
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
+
+# Default target
+all: $(MOD_SIMPLE).mpy $(MOD_EXAMPLE).mpy
+
+# Clean target
+clean:
+	$(RM) *.o *.mpy
+
+.PHONY: all clean
