@@ -9,6 +9,8 @@ import subprocess
 import sys
 import argparse
 
+run_tests_module = __import__("run-tests")
+
 sys.path.append("../tools")
 import pyboard
 
@@ -133,7 +135,7 @@ def detect_architecture(target):
         return platform, arch, None
 
 
-def run_tests(target_truth, target, args, stats, resolved_arch):
+def run_tests(target_truth, target, args, resolved_arch):
     global injected_import_hook_code
 
     prelude = ""
@@ -141,6 +143,7 @@ def run_tests(target_truth, target, args, stats, resolved_arch):
         prelude = args.begin.read()
     injected_import_hook_code = injected_import_hook_code.replace("{import_prelude}", prelude)
 
+    test_results = []
     for test_file in args.files:
         # Find supported test
         test_file_basename = os.path.basename(test_file)
@@ -195,16 +198,17 @@ def run_tests(target_truth, target, args, stats, resolved_arch):
                 result = "pass"
 
         # Accumulate statistics
-        stats["total"] += 1
         if result == "pass":
-            stats["pass"] += 1
+            test_results.append((test_file, "pass", ""))
         elif result == "SKIP":
-            stats["skip"] += 1
+            test_results.append((test_file, "skip", ""))
         else:
-            stats["fail"] += 1
+            test_results.append((test_file, "fail", ""))
 
         # Print result
         print("{:4}  {}{}".format(result, test_file, extra))
+
+    return test_results
 
 
 def main():
@@ -226,6 +230,12 @@ def main():
         type=argparse.FileType("rt"),
         default=None,
         help="prologue python file to execute before module import",
+    )
+    cmd_parser.add_argument(
+        "-r",
+        "--result-dir",
+        default=run_tests_module.base_path("results"),
+        help="directory for test results",
     )
     cmd_parser.add_argument("files", nargs="*", help="input test files")
     args = cmd_parser.parse_args()
@@ -251,20 +261,14 @@ def main():
         print("platform={} ".format(target_platform), end="")
     print("arch={}".format(target_arch))
 
-    stats = {"total": 0, "pass": 0, "fail": 0, "skip": 0}
-    run_tests(target_truth, target, args, stats, target_arch)
+    os.makedirs(args.result_dir, exist_ok=True)
+    test_results = run_tests(target_truth, target, args, target_arch)
+    res = run_tests_module.create_test_report(args, test_results)
 
     target.close()
     target_truth.close()
 
-    print("{} tests performed".format(stats["total"]))
-    print("{} tests passed".format(stats["pass"]))
-    if stats["fail"]:
-        print("{} tests failed".format(stats["fail"]))
-    if stats["skip"]:
-        print("{} tests skipped".format(stats["skip"]))
-
-    if stats["fail"]:
+    if not res:
         sys.exit(1)
 
 
