@@ -1785,10 +1785,6 @@ static void emit_native_store_subscr(emit_t *emit) {
                     if (index_value != 0) {
                         // index is non-zero
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
-                        #if N_ARM
-                        asm_arm_strb_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
-                        break;
-                        #endif
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add index to base
                         reg_base = reg_index;
                     }
