@@ -1534,12 +1534,6 @@ static void emit_native_load_subscr(emit_t *emit) {
                     #ifdef ASM_LOAD8_REG_REG_OFFSET
                     ASM_LOAD8_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
                     #else
-                    #if N_XTENSA || N_XTENSAWIN
-                    if (index_value >= 0 && index_value < 256) {
-                        asm_xtensa_op_l8ui(emit->as, REG_RET, reg_base, index_value);
-                        break;
-                    }
-                    #endif
                     if (index_value != 0) {
                         // index is non-zero
                         need_reg_single(emit, reg_index, 0);
@@ -1776,12 +1770,6 @@ static void emit_native_store_subscr(emit_t *emit) {
                     #ifdef ASM_STORE8_REG_REG_OFFSET
                     ASM_STORE8_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
                     #else
-                    #if N_XTENSA || N_XTENSAWIN
-                    if (index_value >= 0 && index_value < 256) {
-                        asm_xtensa_op_s8i(emit->as, reg_value, reg_base, index_value);
-                        break;
-                    }
-                    #endif
                     if (index_value != 0) {
                         // index is non-zero
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
@@ -1797,12 +1785,6 @@ static void emit_native_store_subscr(emit_t *emit) {
                     #ifdef ASM_STORE16_REG_REG_OFFSET
                     ASM_STORE16_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
                     #else
-                    #if N_XTENSA || N_XTENSAWIN
-                    if (index_value >= 0 && index_value < 256) {
-                        asm_xtensa_op_s16i(emit->as, reg_value, reg_base, index_value);
-                        break;
-                    }
-                    #endif
                     if (index_value != 0) {
                         // index is a non-zero immediate
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 1);
