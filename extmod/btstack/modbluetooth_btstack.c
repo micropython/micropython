@@ -95,6 +95,63 @@ static mp_obj_bluetooth_uuid_t create_mp_uuid(uint16_t uuid16, const uint8_t *uu
 }
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
+// Encryption state cache for all connections to prevent duplicate events
+typedef struct _mp_btstack_encryption_state_t {
+    btstack_linked_item_t *next; // Must be first field to match btstack_linked_item.
+    uint16_t conn_handle;
+    bool encrypted;
+    bool authenticated;
+    bool bonded;
+    uint8_t key_size;
+} mp_btstack_encryption_state_t;
+
+static mp_btstack_encryption_state_t *create_encryption_state(uint16_t conn_handle) {
+    DEBUG_printf("create_encryption_state: conn_handle=%d\n", conn_handle);
+    mp_btstack_encryption_state_t *state = m_new(mp_btstack_encryption_state_t, 1);
+    state->conn_handle = conn_handle;
+    state->encrypted = false;
+    state->authenticated = false;
+    state->bonded = false;
+    state->key_size = 0;
+    bool added = btstack_linked_list_add(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->encryption_states, (btstack_linked_item_t *)state);
+    (void)added;
+    assert(added);
+    return state;
+}
+
+static mp_btstack_encryption_state_t *find_encryption_state(uint16_t conn_handle) {
+    DEBUG_printf("find_encryption_state: conn_handle=%d\n", conn_handle);
+    btstack_linked_list_iterator_t it;
+    btstack_linked_list_iterator_init(&it, &MP_STATE_PORT(bluetooth_btstack_root_pointers)->encryption_states);
+    mp_btstack_encryption_state_t *state = NULL;
+    while (btstack_linked_list_iterator_has_next(&it)) {
+        state = (mp_btstack_encryption_state_t *)btstack_linked_list_iterator_next(&it);
+        DEBUG_printf("  --> iter state %d\n", state->conn_handle);
+        if (state->conn_handle == conn_handle) {
+            break;
+        }
+    }
+    return state;
+}
+
+static void remove_encryption_state(uint16_t conn_handle) {
+    DEBUG_printf("remove_encryption_state: conn_handle=%d\n", conn_handle);
+    mp_btstack_encryption_state_t *state = find_encryption_state(conn_handle);
+    if (state) {
+        bool removed = btstack_linked_list_remove(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->encryption_states, (btstack_linked_item_t *)state);
+        (void)removed;
+        assert(removed);
+        m_del(mp_btstack_encryption_state_t, state, 1);
+    }
+}
+
+static void update_encryption_state(mp_btstack_encryption_state_t *state, bool encrypted, bool authenticated, bool bonded, uint8_t key_size) {
+    state->encrypted = encrypted;
+    state->authenticated = authenticated;
+    state->bonded = bonded;
+    state->key_size = key_size;
+}
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 typedef struct _mp_btstack_active_connection_t {
     btstack_linked_item_t *next; // Must be first field to match btstack_linked_item.
@@ -232,6 +289,7 @@ static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel
                     // Slave role.
                     irq_event = MP_BLUETOOTH_IRQ_CENTRAL_CONNECT;
                 }
+                // Encryption state will be created on first encryption event
                 #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
                 create_active_connection(conn_handle);
                 #endif
@@ -318,8 +376,7 @@ static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel
         hci_connection_t *hci_con = hci_connection_for_handle(conn_handle);
         if (!hci_con) {
             DEBUG_printf("  --> warning: no HCI connection found for handle %d\n", conn_handle);
-            // Try to create a minimal encryption update with default values
-            mp_bluetooth_gatts_on_encryption_update(conn_handle, false, false, false, 0);
+            // Don't send fallback events - only send real pairing completion events
             return;
         }
 
@@ -339,15 +396,51 @@ static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel
         }
         #endif
 
-        mp_bluetooth_gatts_on_encryption_update(conn_handle,
-            encrypted, authenticated, bonded, desc->sm_actual_encryption_key_size);
+        // Only forward encryption updates for PAIRING_COMPLETE and REENCRYPTION_COMPLETE
+        // This matches NimBLE behavior which only reports final pairing result
+        bool should_forward = false;
+
+        if (event_type == SM_EVENT_PAIRING_COMPLETE || event_type == SM_EVENT_REENCRYPTION_COMPLETE) {
+            // Check our cache to see if this is a duplicate
+            mp_btstack_encryption_state_t *enc_state = find_encryption_state(conn_handle);
+            if (!enc_state) {
+                enc_state = create_encryption_state(conn_handle);
+                should_forward = true;  // First time
+            } else {
+                // Check if state actually changed
+                should_forward = (enc_state->encrypted != encrypted) ||
+                    (enc_state->authenticated != authenticated) ||
+                    (enc_state->bonded != bonded) ||
+                    (enc_state->key_size != desc->sm_actual_encryption_key_size);
+            }
+
+            // Update cache
+            if (enc_state) {
+                update_encryption_state(enc_state, encrypted, authenticated, bonded, desc->sm_actual_encryption_key_size);
+            }
+        }
+
+        if (should_forward) {
+            DEBUG_printf("  --> pairing complete, forwarding final encryption state to Python\n");
+            mp_bluetooth_gatts_on_encryption_update(conn_handle,
+                encrypted, authenticated, bonded, desc->sm_actual_encryption_key_size);
+        } else {
+            DEBUG_printf("  --> skipping intermediate encryption event (event_type=%d)\n", event_type);
+        }
+        #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+    } else if (event_type == SM_EVENT_JUST_WORKS_REQUEST) {
+        #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+        DEBUG_printf("  --> just works request, auto-accepting\n");
+        // Just Works pairing requires automatic acceptance
+        uint16_t conn_handle = sm_event_just_works_request_get_handle(packet);
+        sm_just_works_confirm(conn_handle);
+        #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
     } else if (event_type == SM_EVENT_PASSKEY_DISPLAY_NUMBER) {
         mp_bluetooth_gap_on_passkey_action(sm_event_passkey_display_number_get_handle(packet), MP_BLUETOOTH_PASSKEY_ACTION_DISPLAY, sm_event_passkey_display_number_get_passkey(packet));
     } else if (event_type == SM_EVENT_PASSKEY_INPUT_NUMBER) {
         mp_bluetooth_gap_on_passkey_action(sm_event_passkey_input_number_get_handle(packet), MP_BLUETOOTH_PASSKEY_ACTION_INPUT, 0);
     } else if (event_type == SM_EVENT_NUMERIC_COMPARISON_REQUEST) {
         mp_bluetooth_gap_on_passkey_action(sm_event_numeric_comparison_request_get_handle(packet), MP_BLUETOOTH_PASSKEY_ACTION_NUMERIC_COMPARISON, sm_event_numeric_comparison_request_get_passkey(packet));
-        #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
     } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         DEBUG_printf("  --> hci disconnect complete\n");
         uint16_t conn_handle = hci_event_disconnection_complete_get_connection_handle(packet);
@@ -362,6 +455,12 @@ static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel
         }
         uint8_t addr[6] = {0};
         mp_bluetooth_gap_on_connected_disconnected(irq_event, conn_handle, 0xff, addr);
+
+        #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+        // Remove encryption state cache for this connection
+        remove_encryption_state(conn_handle);
+        #endif
+
         #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
         remove_active_connection(conn_handle);
         #endif
@@ -676,7 +775,10 @@ static void deinit_stack(void) {
     MP_STATE_PORT(bluetooth_btstack_root_pointers) = NULL;
 }
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+// Forward declaration for TLV implementation
 static const btstack_tlv_t btstack_tlv_mp;
+#endif
 
 int mp_bluetooth_init(void) {
     DEBUG_printf("mp_bluetooth_init\n");
@@ -697,6 +799,9 @@ int mp_bluetooth_init(void) {
     MP_STATE_PORT(bluetooth_btstack_root_pointers) = m_new0(mp_bluetooth_btstack_root_pointers_t, 1);
     mp_bluetooth_gatts_db_create(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db);
 
+    // Initialize encryption state cache
+    MP_STATE_PORT(bluetooth_btstack_root_pointers)->encryption_states = NULL;
+
     // Set the default GAP device name.
     const char *gap_name = MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME;
     size_t gap_len = strlen(gap_name);
@@ -707,23 +812,24 @@ int mp_bluetooth_init(void) {
     mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_STARTING;
 
     l2cap_init();
+    #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+    // Configure TLV storage for automatic ER/IR key generation and bond storage
+    DEBUG_printf("Configuring TLV for automatic ER/IR key generation\n");
     btstack_tlv_set_instance(&btstack_tlv_mp, NULL);
     le_device_db_tlv_configure(&btstack_tlv_mp, NULL);
+    #endif
     le_device_db_init();
     sm_init();
 
-    // Set cryptographically secure ER/IR keys for bonding
-    #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
-    // Use port-specific secure key generation
-    extern void mp_bluetooth_btstack_port_set_er_ir_keys(void);
-    mp_bluetooth_btstack_port_set_er_ir_keys();
-    #else
+    #if !MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
     // Set blank ER/IR keys to suppress BTstack warning when pairing is disabled
     sm_key_t dummy_key;
     memset(dummy_key, 0, sizeof(dummy_key));
     sm_set_er(dummy_key);
     sm_set_ir(dummy_key);
     #endif
+    // Note: When pairing is enabled, BTstack will automatically generate and store
+    // ER/IR keys via TLV when HCI reaches WORKING state
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
     gatt_client_init();
@@ -1669,23 +1775,32 @@ MP_REGISTER_ROOT_POINTER(struct _mp_bluetooth_btstack_root_pointers_t *bluetooth
 
 static int btstack_tlv_mp_get_tag(void *context, uint32_t tag, uint8_t *buffer, uint32_t buffer_size) {
     UNUSED(context);
+    DEBUG_printf("btstack_tlv_mp_get_tag: tag=0x%08x (%c%c%c%c)\n", (unsigned int)tag,
+        (char)(tag >> 24), (char)(tag >> 16), (char)(tag >> 8), (char)(tag));
     const uint8_t *data;
     size_t data_len;
     if (!mp_bluetooth_gap_on_get_secret(0, 0, (uint8_t *)&tag, sizeof(tag), &data, &data_len)) {
+        DEBUG_printf("btstack_tlv_mp_get_tag: tag not found\n");
         return -1;
     }
     if (data_len > buffer_size) {
+        DEBUG_printf("btstack_tlv_mp_get_tag: data too large (%d > %d)\n", (int)data_len, (int)buffer_size);
         return -1;
     }
     memcpy(buffer, data, data_len);
+    DEBUG_printf("btstack_tlv_mp_get_tag: returning %d bytes\n", (int)data_len);
     return data_len;
 }
 
 static int btstack_tlv_mp_store_tag(void *context, uint32_t tag, const uint8_t *data, uint32_t data_size) {
     UNUSED(context);
+    DEBUG_printf("btstack_tlv_mp_store_tag: tag=0x%08x (%c%c%c%c), size=%d\n", (unsigned int)tag,
+        (char)(tag >> 24), (char)(tag >> 16), (char)(tag >> 8), (char)(tag), (int)data_size);
     if (mp_bluetooth_gap_on_set_secret(0, (uint8_t *)&tag, sizeof(tag), (uint8_t *)data, data_size)) {
+        DEBUG_printf("btstack_tlv_mp_store_tag: success\n");
         return 0;
     } else {
+        DEBUG_printf("btstack_tlv_mp_store_tag: failed\n");
         return 1;
     }
 }
