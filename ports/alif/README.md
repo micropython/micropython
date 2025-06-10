@@ -19,3 +19,40 @@ The following more advanced features will follow later:
 - Ethernet support.
 - SDRAM support.
 - Other machine modules.
+
+Build instructions
+======================================
+
+Before building the firmware for a given board the MicroPython cross-compiler
+must be built; it will be used to pre-compile some of the built-in scripts to
+bytecode.  The cross-compiler is built and run on the host machine, using:
+```bash
+$ make -C mpy-cross
+```
+
+This command should be executed from the root directory of this repository.
+All other commands below should be executed from the ports/alif/ directory.
+
+An ARM compiler is required for the build, along with the associated binary
+utilities.  The recommended toolchain version to use with this port is
+Arm GNU toolchain version 13.3.Rel1. The compiler can be changed using the
+`CROSS_COMPILE` variable when invoking `make`.
+
+Next, the board to build must be selected. The default board is `ALIF_ENSEMBLE`
+but any of the names of the subdirectories in the `boards/` directory is valid.
+The board name must be passed as the argument to `BOARD=` when invoking `make`.
+
+All boards require certain submodules to be obtained before they can be built.
+The correct set of submodules can be initialised using (with `ALIF_ENSEMBLE`
+as an example of the selected board):
+```bash
+make BOARD=ALIF_ENSEMBLE submodules
+```
+
+Then to build the board's firmware run:
+```bash
+make BOARD=ALIF_ENSEMBLE
+```
+
+The above command should produce binary images in the `build-ALIF_ENSEMBLE/`
+subdirectory (or the equivalent directory for the board specified).
