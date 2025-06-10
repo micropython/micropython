@@ -10,10 +10,12 @@ import sys
 import argparse
 from glob import glob
 
+run_tests_module = __import__("run-tests")
+
 sys.path.append("../tools")
 import pyboard
 
-prepare_script_for_target = __import__("run-tests").prepare_script_for_target
+prepare_script_for_target = run_tests_module.prepare_script_for_target
 
 # Paths for host executables
 if os.name == "nt":
@@ -90,9 +92,9 @@ def run_benchmark_on_target(target, script):
 
 
 def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
+    test_results = []
     skip_complex = run_feature_test(target, "complex") != "complex"
     skip_native = run_feature_test(target, "native_check") != "native"
-    target_had_error = False
 
     for test_file in sorted(test_list):
         print(test_file + ": ", end="")
@@ -105,6 +107,7 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
             and test_file.find("viper_") != -1
         )
         if skip:
+            test_results.append((test_file, "skip", ""))
             print("SKIP")
             continue
 
@@ -125,6 +128,7 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
         if isinstance(target, pyboard.Pyboard) or args.via_mpy:
             crash, test_script_target = prepare_script_for_target(args, script_text=test_script)
             if crash:
+                test_results.append((test_file, "fail", "preparation"))
                 print("CRASH:", test_script_target)
                 continue
         else:
@@ -162,10 +166,13 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
                 error = "FAIL truth"
 
         if error is not None:
-            if not error.startswith("SKIP"):
-                target_had_error = True
+            if error.startswith("SKIP"):
+                test_results.append((test_file, "skip", error))
+            else:
+                test_results.append((test_file, "fail", error))
             print(error)
         else:
+            test_results.append((test_file, "pass", ""))
             t_avg, t_sd = compute_stats(times)
             s_avg, s_sd = compute_stats(scores)
             print(
@@ -179,7 +186,7 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
 
         sys.stdout.flush()
 
-    return target_had_error
+    return test_results
 
 
 def parse_output(filename):
@@ -265,6 +272,12 @@ def main():
     cmd_parser.add_argument("--via-mpy", action="store_true", help="compile code to .mpy first")
     cmd_parser.add_argument("--mpy-cross-flags", default="", help="flags to pass to mpy-cross")
     cmd_parser.add_argument(
+        "-r",
+        "--result-dir",
+        default=run_tests_module.base_path("results"),
+        help="directory for test results",
+    )
+    cmd_parser.add_argument(
         "N", nargs=1, help="N parameter (approximate target CPU frequency in MHz)"
     )
     cmd_parser.add_argument("M", nargs=1, help="M parameter (approximate target heap in kbytes)")
@@ -307,13 +320,15 @@ def main():
 
     print("N={} M={} n_average={}".format(N, M, n_average))
 
-    target_had_error = run_benchmarks(args, target, N, M, n_average, tests)
+    os.makedirs(args.result_dir, exist_ok=True)
+    test_results = run_benchmarks(args, target, N, M, n_average, tests)
+    res = run_tests_module.create_test_report(args, test_results)
 
     if isinstance(target, pyboard.Pyboard):
         target.exit_raw_repl()
         target.close()
 
-    if target_had_error:
+    if not res:
         sys.exit(1)
 
 
