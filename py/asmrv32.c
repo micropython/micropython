@@ -450,18 +450,24 @@ void asm_rv32_emit_mov_reg_local_addr(asm_rv32_t *state, mp_uint_t rd, mp_uint_t
     asm_rv32_opcode_cadd(state, rd, ASM_RV32_REG_SP);
 }
 
-void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, mp_int_t offset) {
-    mp_int_t scaled_offset = offset * sizeof(ASM_WORD_SIZE);
+static const uint8_t RV32_LOAD_OPCODE_TABLE[3] = {
+    0x04, 0x05, 0x02
+};
 
-    if (scaled_offset >= 0 && RV32_IS_IN_C_REGISTER_WINDOW(rd) && RV32_IS_IN_C_REGISTER_WINDOW(rs) && FIT_UNSIGNED(scaled_offset, 6)) {
+void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, int32_t offset, mp_uint_t operation_size) {
+    assert(operation_size <= 2 && "Operation size value out of range.");
+
+    int32_t scaled_offset = offset << operation_size;
+
+    if (scaled_offset >= 0 && operation_size == 2 && RV32_IS_IN_C_REGISTER_WINDOW(rd) && RV32_IS_IN_C_REGISTER_WINDOW(rs) && MP_FIT_UNSIGNED(6, scaled_offset)) {
         // c.lw rd', offset(rs')
         asm_rv32_opcode_clw(state, RV32_MAP_IN_C_REGISTER_WINDOW(rd), RV32_MAP_IN_C_REGISTER_WINDOW(rs), scaled_offset);
         return;
     }
 
-    if (FIT_SIGNED(scaled_offset, 12)) {
-        // lw rd, offset(rs)
-        asm_rv32_opcode_lw(state, rd, rs, scaled_offset);
+    if (MP_FIT_SIGNED(12, scaled_offset)) {
+        // lbu|lhu|lw rd, offset(rs)
+        asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_I(0x03, RV32_LOAD_OPCODE_TABLE[operation_size], rd, rs, scaled_offset));
         return;
     }
 
@@ -469,12 +475,12 @@ void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_
     mp_uint_t lower = 0;
     split_immediate(scaled_offset, &upper, &lower);
 
-    // lui   rd, HI(offset) ; Or c.lui if possible
-    // c.add rd, rs
-    // lw    rd, LO(offset)(rd)
+    // lui        rd, HI(offset) ; Or c.lui if possible
+    // c.add      rd, rs
+    // lbu|lhu|lw rd, LO(offset)(rd)
     load_upper_immediate(state, rd, upper);
     asm_rv32_opcode_cadd(state, rd, rs);
-    asm_rv32_opcode_lw(state, rd, rd, lower);
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_I(0x03, RV32_LOAD_OPCODE_TABLE[operation_size], rd, rd, lower));
 }
 
 void asm_rv32_emit_jump(asm_rv32_t *state, mp_uint_t label) {
@@ -497,12 +503,20 @@ void asm_rv32_emit_jump(asm_rv32_t *state, mp_uint_t label) {
     asm_rv32_opcode_jalr(state, ASM_RV32_REG_ZERO, REG_TEMP2, lower);
 }
 
-void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, mp_int_t offset) {
-    mp_int_t scaled_offset = offset * ASM_WORD_SIZE;
+void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, int32_t offset, mp_uint_t operation_size) {
+    assert(operation_size <= 2 && "Operation size value out of range.");
 
-    if (FIT_SIGNED(scaled_offset, 12)) {
-        // sw rd, offset(rs)
-        asm_rv32_opcode_sw(state, rd, rs, scaled_offset);
+    int32_t scaled_offset = offset << operation_size;
+
+    if (scaled_offset >= 0 && operation_size == 2 && RV32_IS_IN_C_REGISTER_WINDOW(rd) && RV32_IS_IN_C_REGISTER_WINDOW(rs) && MP_FIT_UNSIGNED(6, scaled_offset)) {
+        // c.sw rd', offset(rs')
+        asm_rv32_opcode_csw(state, RV32_MAP_IN_C_REGISTER_WINDOW(rd), RV32_MAP_IN_C_REGISTER_WINDOW(rs), scaled_offset);
+        return;
+    }
+
+    if (MP_FIT_SIGNED(12, scaled_offset)) {
+        // sb|sh|sw rd, offset(rs)
+        asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_S(0x23, operation_size, rs, rd, scaled_offset));
         return;
     }
 
@@ -510,12 +524,12 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint
     mp_uint_t lower = 0;
     split_immediate(scaled_offset, &upper, &lower);
 
-    // lui   temporary, HI(offset) ; Or c.lui if possible
-    // c.add temporary, rs
-    // sw    rd, LO(offset)(temporary)
+    // lui      temporary, HI(offset) ; Or c.lui if possible
+    // c.add    temporary, rs
+    // sb|sh|sw rd, LO(offset)(temporary)
     load_upper_immediate(state, REG_TEMP2, upper);
     asm_rv32_opcode_cadd(state, REG_TEMP2, rs);
-    asm_rv32_opcode_sw(state, rd, REG_TEMP2, lower);
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_S(0x23, operation_size, REG_TEMP2, rd, lower));
 }
 
 void asm_rv32_emit_mov_reg_pcrel(asm_rv32_t *state, mp_uint_t rd, mp_uint_t label) {
@@ -528,27 +542,6 @@ void asm_rv32_emit_mov_reg_pcrel(asm_rv32_t *state, mp_uint_t rd, mp_uint_t labe
     // addi  rd, rd, LO(relative)
     asm_rv32_opcode_auipc(state, rd, upper);
     asm_rv32_opcode_addi(state, rd, rd, lower);
-}
-
-void asm_rv32_emit_load16_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, mp_int_t offset) {
-    mp_int_t scaled_offset = offset * sizeof(uint16_t);
-
-    if (FIT_SIGNED(scaled_offset, 12)) {
-        // lhu rd, offset(rs)
-        asm_rv32_opcode_lhu(state, rd, rs, scaled_offset);
-        return;
-    }
-
-    mp_uint_t upper = 0;
-    mp_uint_t lower = 0;
-    split_immediate(scaled_offset, &upper, &lower);
-
-    // lui   rd, HI(offset) ; Or c.lui if possible
-    // c.add rd, rs
-    // lhu   rd, LO(offset)(rd)
-    load_upper_immediate(state, rd, upper);
-    asm_rv32_opcode_cadd(state, rd, rs);
-    asm_rv32_opcode_lhu(state, rd, rd, lower);
 }
 
 void asm_rv32_emit_optimised_xor(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs) {

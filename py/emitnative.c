@@ -180,12 +180,6 @@ static const uint8_t reg_local_table[MAX_REGS_FOR_LOCAL_VARS] = {REG_LOCAL_1, RE
         *emit->error_slot = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, __VA_ARGS__); \
 } while (0)
 
-#if N_RV32
-#define FIT_SIGNED(value, bits)                                                                                     \
-    ((((value) & ~((1U << ((bits) - 1)) - 1)) == 0) ||                                      \
-    (((value) & ~((1U << ((bits) - 1)) - 1)) == ~((1U << ((bits) - 1)) - 1)))
-#endif
-
 typedef enum {
     STACK_VALUE,
     STACK_REG,
@@ -1540,12 +1534,7 @@ static void emit_native_load_subscr(emit_t *emit) {
                     #ifdef ASM_LOAD8_REG_REG_OFFSET
                     ASM_LOAD8_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
                     #else
-                    #if N_RV32
-                    if (FIT_SIGNED(index_value, 12)) {
-                        asm_rv32_opcode_lbu(emit->as, REG_RET, reg_base, index_value);
-                        break;
-                    }
-                    #elif N_XTENSA || N_XTENSAWIN
+                    #if N_XTENSA || N_XTENSAWIN
                     if (index_value >= 0 && index_value < 256) {
                         asm_xtensa_op_l8ui(emit->as, REG_RET, reg_base, index_value);
                         break;
@@ -1787,12 +1776,7 @@ static void emit_native_store_subscr(emit_t *emit) {
                     #ifdef ASM_STORE8_REG_REG_OFFSET
                     ASM_STORE8_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
                     #else
-                    #if N_RV32
-                    if (FIT_SIGNED(index_value, 12)) {
-                        asm_rv32_opcode_sb(emit->as, reg_value, reg_base, index_value);
-                        break;
-                    }
-                    #elif N_XTENSA || N_XTENSAWIN
+                    #if N_XTENSA || N_XTENSAWIN
                     if (index_value >= 0 && index_value < 256) {
                         asm_xtensa_op_s8i(emit->as, reg_value, reg_base, index_value);
                         break;
@@ -1817,12 +1801,7 @@ static void emit_native_store_subscr(emit_t *emit) {
                     #ifdef ASM_STORE16_REG_REG_OFFSET
                     ASM_STORE16_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
                     #else
-                    #if N_RV32
-                    if (FIT_SIGNED(index_value, 11)) {
-                        asm_rv32_opcode_sh(emit->as, reg_value, reg_base, index_value << 1);
-                        break;
-                    }
-                    #elif N_XTENSA || N_XTENSAWIN
+                    #if N_XTENSA || N_XTENSAWIN
                     if (index_value >= 0 && index_value < 256) {
                         asm_xtensa_op_s16i(emit->as, reg_value, reg_base, index_value);
                         break;
