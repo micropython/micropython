@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0x1000"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "WiFi"
+    ],
+    "images": [
+        ""
+    ],
+    "mcu": "esp32p4",
+    "product": "M5STACK TAB5",
+    "thumbnail": "",
+    "url": "https://docs.m5stack.com/en/core/Tab5",
+    "variants": {
+    },
+    "vendor": "Espressif"
+}
