@@ -352,6 +352,7 @@ static void RISAF_Config(void) {
     RIMC_MasterConfig_t RIMC_master = {0};
 
     __HAL_RCC_RIFSC_CLK_ENABLE();
+    LL_AHB3_GRP1_EnableClockLowPower(LL_AHB3_GRP1_PERIPH_RIFSC | LL_AHB3_GRP1_PERIPH_RISAF);
 
     RIMC_master.MasterCID = RIF_CID_1;
     RIMC_master.SecPriv = RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV;
@@ -452,18 +453,14 @@ void stm32_main(uint32_t reset_mode) {
     LL_APB4_GRP1_EnableClock(LL_APB4_GRP1_PERIPH_RTC | LL_APB4_GRP1_PERIPH_RTCAPB);
     LL_APB4_GRP1_EnableClockLowPower(LL_APB4_GRP1_PERIPH_RTC | LL_APB4_GRP1_PERIPH_RTCAPB);
 
-    LL_AHB1_GRP1_EnableClockLowPower(0xffffffff);
-    LL_AHB2_GRP1_EnableClockLowPower(0xffffffff);
-    LL_AHB3_GRP1_EnableClockLowPower(0xffffffff);
-    LL_AHB4_GRP1_EnableClockLowPower(0xffffffff);
-    LL_AHB5_GRP1_EnableClockLowPower(0xffffffff);
+    // Enable some AHB peripherals during sleep.
+    LL_AHB1_GRP1_EnableClockLowPower(0xffffffff); // GPDMA1, ADC12
+    LL_AHB4_GRP1_EnableClockLowPower(0xffffffff); // GPIOA-Q, PWR, CRC
 
-    LL_APB1_GRP1_EnableClockLowPower(0xffffffff);
-    LL_APB1_GRP2_EnableClockLowPower(0xffffffff);
-    LL_APB2_GRP1_EnableClockLowPower(0xffffffff);
-    LL_APB4_GRP1_EnableClockLowPower(0xffffffff);
-    LL_APB4_GRP2_EnableClockLowPower(0xffffffff);
-    LL_APB5_GRP1_EnableClockLowPower(0xffffffff);
+    // Enable some APB peripherals during sleep.
+    LL_APB1_GRP1_EnableClockLowPower(0xffffffff); // I2C, I3C, LPTIM, SPI, TIM, UART, WWDG
+    LL_APB2_GRP1_EnableClockLowPower(0xffffffff); // SAI, SPI, TIM, UART
+    LL_APB4_GRP1_EnableClockLowPower(0xffffffff); // I2C, LPTIM, LPUART, RTC, SPI
     #endif
 
     mpu_init();
