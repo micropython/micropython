@@ -31,7 +31,11 @@
 #else
 #define CDC_DATA_MAX_PACKET_SIZE    CDC_DATA_FS_MAX_PACKET_SIZE
 #endif
+#if defined(STM32N6)
+#define MSC_MEDIA_PACKET            (4096) // must be at least the SPI flash erase size
+#else
 #define MSC_MEDIA_PACKET            (2048) // was 8192; how low can it go whilst still working?
+#endif
 #define HID_DATA_FS_MAX_PACKET_SIZE (64) // endpoint IN & OUT packet size
 
 // Maximum number of LUN that can be exposed on the MSC interface
