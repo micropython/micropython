@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy_c2.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "WiFi"
+    ],
+    "images": [
+        "esp32c2_devkitmini.jpg"
+    ],
+    "mcu": "esp32c2",
+    "product": "ESP32-C2",
+    "thumbnail": "",
+    "url": "https://www.espressif.com/en/products/modules",
+    "vendor": "Espressif"
+}
