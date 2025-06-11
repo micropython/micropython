@@ -1,18 +1,20 @@
-bytearray(b'\x01\x02\x03\x04')
-bytearray(b'\x05\x06\x07\x08')
-bytearray(b'\t\n\x0b\x0c')
-bytearray(b'\r\x0e\x0f\x10')
-bytearray(b'\x11\x12\x13\x14')
-bytearray(b'\x15\x16\x17\x18')
-bytearray(b'\x19\x1a\x1b\x1c')
-bytearray(b'\x1d\x1e\x1f ')
-bytearray(b'!"#$')
-bytearray(b'\x02\x03\x04\x05')
-bytearray(b'\x06\x07\x08\t')
-bytearray(b'\n\x0b\x0c\r')
-bytearray(b'\x0e\x0f\x10\x11')
-bytearray(b'\x12\x13\x14\x15')
-bytearray(b'\x16\x17\x18\x19')
-bytearray(b'\x1a\x1b\x1c\x1d')
-bytearray(b'\x1e\x1f !')
-bytearray(b'"#$%')
+--- 5
+0x1 0x102 0x10203
+0x1020304
+0x2030405
+0x3040506
+--- 8
+0x4050607 0x5060708 0x6070809
+0x708090a
+0x8090a0b
+0x90a0b0c
+--- 11
+0xa0b0c0d 0xb0c0d0e 0xc0d0e0f
+0xd0e0f10
+0xe0f1011
+0xf101112
+--- 12
+0x10111213 0x11121314 0x12131415
+0x13141516
+0x14151617
+0x15161718

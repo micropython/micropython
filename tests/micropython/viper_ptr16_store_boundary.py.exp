@@ -1,18 +1,20 @@
-bytearray(b'AB')
-bytearray(b'CD')
-bytearray(b'EF')
-bytearray(b'GH')
-bytearray(b'IJ')
-bytearray(b'KL')
-bytearray(b'MN')
-bytearray(b'OP')
-bytearray(b'QR')
-bytearray(b'BC')
-bytearray(b'DE')
-bytearray(b'FG')
-bytearray(b'HI')
-bytearray(b'JK')
-bytearray(b'LM')
-bytearray(b'NO')
-bytearray(b'PQ')
-bytearray(b'RS')
+--- 5
+0x1 0x102 0x203
+0x304
+0x405
+0x506
+--- 8
+0x607 0x708 0x809
+0x90a
+0xa0b
+0xb0c
+--- 11
+0xc0d 0xd0e 0xe0f
+0xf10
+0x1011
+0x1112
+--- 12
+0x1213 0x1314 0x1415
+0x1516
+0x1617
+0x1718

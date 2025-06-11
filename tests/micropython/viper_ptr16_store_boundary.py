@@ -4,38 +4,50 @@ SET_TEMPLATE = """
 @micropython.viper
 def set{off}(dest: ptr16):
     dest[{off}] = {val}
-set{off}(b)
-print(b[{off} * 2:({off} + 1) * 2])
+set{off}(buffer)
+print(hex(get_index(buffer, {off})))
 """
 
-TEST_DATA = (
-    (15, (0x4241, 0x4443, 0x4645)),
-    (127, (0x4847, 0x4A49, 0x4C4B)),
-    (2047, (0x4E4D, 0x504F, 0x5251)),
-)
+BIT_THRESHOLDS = (5, 8, 11, 12)
+SIZE = 2
+MASK = (1 << (8 * SIZE)) - 1
 
 
 @micropython.viper
-def set_index(dest: ptr16, i: int, val: int):
+def set_index(dest: ptr16, i: int, val: uint):
     dest[i] = val
 
 
-@micropython.viper
-def set_index(dest: ptr16, i: int, val: int):
-    dest[i] = val
+def get_index(src, i):
+    return src[i * SIZE] + (src[(i * SIZE) + 1] << 8)
 
 
-b = bytearray(5000)
-for start, vals in TEST_DATA:
-    for i, v in enumerate(vals):
-        set_index(b, start + i, v)
-        print(b[(start + i) * 2 : (start + i + 1) * 2])
-
-
-for i in range(len(b)):
-    b[i] = 0
-
-
-for start, vals in TEST_DATA:
-    for i, v in enumerate(vals):
-        exec(SET_TEMPLATE.format(off=start + i, val=v + 0x0101))
+buffer = bytearray(((1 << max(BIT_THRESHOLDS) + 1) // 1024) * 1024)
+next = 1
+val = 0
+for bit in BIT_THRESHOLDS:
+    print("---", bit)
+    pre, idx, post = (
+        (((1 << bit) - (2 * SIZE)) // SIZE),
+        (((1 << bit) - (1 * SIZE)) // SIZE),
+        ((1 << bit) // SIZE),
+    )
+    val = (val << 8) + next
+    next += 1
+    set_index(buffer, pre, val & MASK)
+    val = (val << 8) + next
+    next += 1
+    set_index(buffer, idx, val & MASK)
+    val = (val << 8) + next
+    next += 1
+    set_index(buffer, post, val & MASK)
+    val = (val << 8) + next
+    next += 1
+    print(hex(get_index(buffer, pre)), hex(get_index(buffer, idx)), hex(get_index(buffer, post)))
+    exec(SET_TEMPLATE.format(off=pre, val=val & MASK))
+    val = (val << 8) + next
+    next += 1
+    exec(SET_TEMPLATE.format(off=idx, val=val & MASK))
+    val = (val << 8) + next
+    next += 1
+    exec(SET_TEMPLATE.format(off=post, val=val & MASK))

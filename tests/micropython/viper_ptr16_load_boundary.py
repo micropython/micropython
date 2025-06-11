@@ -2,10 +2,14 @@
 
 GET_TEMPLATE = """
 @micropython.viper
-def get{off}(src: ptr16) -> int:
-    return src[{off}]
-print(b[{off} * 2:({off} + 1) * 2])
+def get{off}(src: ptr16) -> uint:
+    return uint(src[{off}])
+print(hex(get{off}(buffer)))
 """
+
+
+BIT_THRESHOLDS = (5, 8, 11, 12)
+SIZE = 2
 
 
 @micropython.viper
@@ -13,13 +17,23 @@ def get_index(src: ptr16, i: int) -> int:
     return src[i]
 
 
-b = bytearray(5000)
-b[28:38] = b"0123456789"
-b[252:262] = b"ABCDEFGHIJ"
-b[4092:4102] = b"KLMNOPQRST"
+def data(start, len):
+    output = bytearray(len)
+    for idx in range(len):
+        output[idx] = (start + idx) & 0xFF
+    return output
 
-for pre, idx, post in (15, 16, 17), (127, 128, 129), (2047, 2048, 2049):
-    print(get_index(b, pre), get_index(b, idx), get_index(b, post))
+
+buffer = bytearray((((1 << max(BIT_THRESHOLDS)) + 1) // 1024) * 1024)
+val = 0
+for bit in BIT_THRESHOLDS:
+    print("---", bit)
+    pre, idx, post = ((1 << bit) - (2 * SIZE), (1 << bit) - (1 * SIZE), 1 << bit)
+    buffer[pre:post] = data(val, 3 * SIZE)
+    val = val + (3 * SIZE)
+
+    pre, idx, post = pre // SIZE, idx // SIZE, post // SIZE
+    print(hex(get_index(buffer, pre)), hex(get_index(buffer, idx)), hex(get_index(buffer, post)))
     exec(GET_TEMPLATE.format(off=pre))
     exec(GET_TEMPLATE.format(off=idx))
     exec(GET_TEMPLATE.format(off=post))
