@@ -99,9 +99,8 @@ def instance0():
 
     # Simulate reboot by recreating BLE instance (tests bond persistence in TLV storage)
     print("simulate_reboot")
-    global ble
-    ble = bluetooth.BLE()
-    ble.config(mitm=True, le_secure=True, bond=True)
+    ble.active(0)
+    time.sleep_ms(100)  # Allow cleanup
     ble.active(1)
     ble.irq(irq)
 
@@ -160,9 +159,8 @@ def instance1():
         ble.active(0)
 
     # Recreate BLE instance to simulate reboot (tests bond persistence)
-    global ble
-    ble = bluetooth.BLE()
-    ble.config(mitm=True, le_secure=True, bond=True)
+    ble.active(0)
+    time.sleep_ms(100)  # Allow cleanup
     ble.active(1)
     ble.irq(irq)
 
