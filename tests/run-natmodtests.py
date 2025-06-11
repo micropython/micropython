@@ -166,7 +166,8 @@ def run_tests(target_truth, target, args, resolved_arch):
             with open(NATMOD_EXAMPLE_DIR + test_mpy, "rb") as f:
                 test_script += b"__buf=" + bytes(repr(f.read()), "ascii") + b"\n"
         except OSError:
-            print("----  {} - mpy file not compiled".format(test_file))
+            test_results.append((test_file, "skip", "mpy file not compiled"))
+            print("skip  {} - mpy file not compiled".format(test_file))
             continue
         test_script += bytes(injected_import_hook_code.format(test_module), "ascii")
         test_script += test_file_data
