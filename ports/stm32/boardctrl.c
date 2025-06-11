@@ -257,3 +257,15 @@ void boardctrl_end_soft_reset(boardctrl_state_t *state) {
     // Set reset_mode to normal boot.
     state->reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
 }
+
+void boardctrl_enter_standby(void) {
+    #if defined(STM32N6)
+    // Upon wake from standby, jump to the code at SRAM1.
+    LL_PWR_EnableTCMSBRetention();
+    LL_PWR_EnableTCMFLXSBRetention();
+    LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_SYSCFG);
+    SCB_CleanDCache();
+    extern uint32_t iram_bootloader_isr_vector;
+    SYSCFG->INITSVTORCR = (uint32_t)&iram_bootloader_isr_vector;
+    #endif
+}

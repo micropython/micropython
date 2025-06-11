@@ -26,10 +26,10 @@
 
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "boardctrl.h"
 #include "powerctrl.h"
 #include "rtc.h"
 #include "extmod/modbluetooth.h"
-#include "py/mpconfig.h"
 #ifndef NO_QSTR
 #include "genhdr/pllfreqtable.h"
 #endif
@@ -1068,14 +1068,6 @@ MP_NORETURN void powerctrl_enter_standby_mode(void) {
 
     // Clear all WKUPx flags.
     LL_PWR_ClearFlag_WU();
-
-    // Upon wake from standby, jump to the code at SRAM1.
-    LL_PWR_EnableTCMSBRetention();
-    LL_PWR_EnableTCMFLXSBRetention();
-    LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_SYSCFG);
-    SCB_CleanDCache();
-    extern uint32_t iram_bootloader_isr_vector;
-    SYSCFG->INITSVTORCR = (uint32_t)&iram_bootloader_isr_vector;
 
     #else
 
