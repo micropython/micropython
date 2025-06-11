@@ -323,25 +323,49 @@ static mp_obj_t socket_recvfrom(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recvfrom_obj, 2, 3, socket_recvfrom);
 
+static mp_obj_t socket_send_buffer(size_t n_args, const mp_obj_t *args, mp_buffer_info_t *bufinfo) {
+    mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
+    int flags = 0;
+    if (n_args > 2) {
+        flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
+    }
+    ssize_t out_sz;
+    MP_HAL_RETRY_SYSCALL(out_sz, send(self->fd, bufinfo->buf, bufinfo->len, flags),
+        mp_raise_OSError(err));
+    return MP_OBJ_NEW_SMALL_INT(out_sz);
+}
+
 // Note: besides flag param, this differs from write() in that
 // this does not swallow blocking errors (EAGAIN, EWOULDBLOCK) -
 // these would be thrown as exceptions.
 static mp_obj_t socket_send(size_t n_args, const mp_obj_t *args) {
-    mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
-    int flags = 0;
-
-    if (n_args > 2) {
-        flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
-    }
-
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
-    ssize_t out_sz;
-    MP_HAL_RETRY_SYSCALL(out_sz, send(self->fd, bufinfo.buf, bufinfo.len, flags),
-        mp_raise_OSError(err));
-    return MP_OBJ_NEW_SMALL_INT(out_sz);
+    return socket_send_buffer(n_args, args, &bufinfo);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_send_obj, 2, 3, socket_send);
+
+// Note: besides flag param, this differs from write() in that
+// this does not swallow blocking errors (EAGAIN, EWOULDBLOCK) -
+// these would be thrown as exceptions.
+static mp_obj_t socket_sendall(size_t n_args, const mp_obj_t *args) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+
+    // After extensive tests on several Unix-like systemsG, it was observed that
+    // socket.send would always attempt to send the whole buffer in one single
+    // pass.
+    //
+    // The function will raise OSErr(EINTR) if the send operation ends up to be
+    // a partial transfer.
+
+    mp_obj_t sent_in = socket_send_buffer(n_args, args, &bufinfo);
+    if (MP_OBJ_SMALL_INT_VALUE(sent_in) != (mp_int_t)bufinfo.len) {
+        mp_raise_OSError(MP_EINTR);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_sendall_obj, 2, 3, socket_sendall);
 
 static mp_obj_t socket_sendto(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -511,6 +535,7 @@ static const mp_rom_map_elem_t socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&socket_recv_obj) },
     { MP_ROM_QSTR(MP_QSTR_recvfrom), MP_ROM_PTR(&socket_recvfrom_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socket_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sendall), MP_ROM_PTR(&socket_sendall_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socket_sendto_obj) },
     { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
