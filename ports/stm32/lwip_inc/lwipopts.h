@@ -10,8 +10,23 @@
 
 #define LWIP_RAND() rng_get()
 
+// Increase memory for lwIP to get better performance.
+#if defined(STM32N6)
+#define MEM_SIZE                        (16 * 1024)
+#define TCP_MSS                         (1460)
+#define TCP_WND                         (8 * TCP_MSS)
+#define TCP_SND_BUF                     (8 * TCP_MSS)
+#define MEMP_NUM_TCP_SEG                (32)
+#endif
+
 // Include common lwIP configuration.
 #include "extmod/lwip-include/lwipopts_common.h"
+
+// N6 requires 8-byte alignment.
+#if defined(STM32N6)
+#undef MEM_ALIGNMENT
+#define MEM_ALIGNMENT                   8
+#endif
 
 extern uint32_t rng_get(void);
 
