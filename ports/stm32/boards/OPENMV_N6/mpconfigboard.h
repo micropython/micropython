@@ -3,6 +3,7 @@
 
 #define MICROPY_GC_STACK_ENTRY_TYPE uint32_t
 #define MICROPY_ALLOC_GC_STACK_SIZE (128)
+#define MICROPY_FATFS_EXFAT         (1)
 
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (1)
@@ -119,8 +120,6 @@
 #define MICROPY_HW_USB_HS           (1)
 #define MICROPY_HW_USB_HS_IN_FS     (1)
 #define MICROPY_HW_USB_MAIN_DEV     (USB_PHY_HS_ID)
-#define MICROPY_HW_USB_MSC          (0)
-#define MICROPY_HW_USB_HID          (0)
 #define MICROPY_HW_USB_VID          0x37C5
 #define MICROPY_HW_USB_PID          0x1206
 #define MICROPY_HW_USB_PID_CDC      (MICROPY_HW_USB_PID)

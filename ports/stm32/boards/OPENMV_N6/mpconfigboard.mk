@@ -36,3 +36,6 @@ MICROPY_PY_NETWORK_CYW43 ?= 1
 MICROPY_PY_SSL ?= 1
 MICROPY_SSL_MBEDTLS ?= 1
 MICROPY_VFS_LFS2 ?= 1
+
+# Board specific frozen modules
+FROZEN_MANIFEST ?= $(BOARD_DIR)/manifest.py
