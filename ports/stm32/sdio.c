@@ -431,7 +431,6 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
         #else
         #if defined(STM32N6)
         SDMMC->IDMABASER = (uint32_t)buf;
-        SDMMC->IDMABSIZE = 1 << SDMMC_IDMABSIZE_IDMABNDT_Pos;
         #else
         SDMMC->IDMABASE0 = (uint32_t)buf;
         #endif
