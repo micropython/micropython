@@ -379,9 +379,9 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
             // this will only affect WPA3-personal, not enterprise
             wifi_sta_config.sta.threshold.authmode = WIFI_AUTH_WPA3_PSK;
         }
-    } else { 
+    } else {
         // WPA2/3 Enterprise
-        // At the moment (using ESP-IDF 5.4), setting WIFI_AUTH_WPA3_ENTERPRISE in eduroam networks will 
+        // At the moment (using ESP-IDF 5.4), setting WIFI_AUTH_WPA3_ENTERPRISE in eduroam networks will
         // actually default to WPA2 because suite B compatibility is not implemented
         // The reason is outlined here: https://eduroam.org/eduroam-and-wpa3/
         if (args[ARG_wpa3].u_bool == true) {
@@ -978,4 +978,3 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 #endif // MICROPY_PY_NETWORK_WLAN
-
