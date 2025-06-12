@@ -358,7 +358,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
         memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
     }
-    
+
     if (args[ARG_key].u_obj != mp_const_none) {
         p = mp_obj_str_get_data(args[ARG_key].u_obj, &len);
         memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
@@ -376,13 +376,13 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
     if (eap_method == WIFI_AUTH_EAP_NONE) {
         // WPA2 or WPA3 PSK
         if (args[ARG_wpa3].u_bool == true) {
-            // this will only affect WPA3-personal, not enterprise. 
+            // this will only affect WPA3-personal, not enterprise
             wifi_sta_config.sta.threshold.authmode = WIFI_AUTH_WPA3_PSK;
         }
     } else { 
         // WPA2/3 Enterprise
         // At the moment (using ESP-IDF 5.4), setting WIFI_AUTH_WPA3_ENTERPRISE in eduroam networks will 
-        // actually default to WPA2 because suite B compatibility is not implemented. 
+        // actually default to WPA2 because suite B compatibility is not implemented
         // The reason is outlined here: https://eduroam.org/eduroam-and-wpa3/
         if (args[ARG_wpa3].u_bool == true) {
             wifi_sta_config.sta.threshold.authmode = WIFI_AUTH_WPA3_ENTERPRISE;
@@ -428,7 +428,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
 
     if (eap_method == WIFI_AUTH_EAP_TTLS) {
         // additionally use ttls_phase2_method, defaulting to MSCHAPV2 (and then very similar to EAP-PEAP)
-        // tested and verified with all 5 supported phase 2 methods.
+        // tested and verified with all 5 supported phase 2 methods
         if (args[ARG_ttls_phase2_method].u_obj != mp_const_none) {
             int16_t ttls_phase2_method = (int16_t)args[ARG_ttls_phase2_method].u_int;
             if (ttls_phase2_method < ESP_EAP_TTLS_PHASE2_EAP || ttls_phase2_method > ESP_EAP_TTLS_PHASE2_CHAP) {
@@ -473,8 +473,8 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
 
         // (1) the documentation for esp_eap_client_set_certificate_and_key() says,
         // "2. The client_cert, private_key, and private_key_password should be zero-terminated."
-        // so we copy 1 byte more to include the null.
-        // in the esp-idf wifi_enterprise example, the null is appended when converting the cert files to byte arrays.
+        // so we copy 1 byte more to include the null
+        // in the esp-idf wifi_enterprise example, the null is appended when converting the cert files to byte arrays
         esp_exceptions(esp_eap_client_set_certificate_and_key(
             (const unsigned char *)client_cert, client_cert_len + 1,
             (const unsigned char *)private_key, private_key_len + 1,
@@ -483,7 +483,6 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         // according to the esp-idf wifi_enterprise example, the ca_cert is optional for EAP-TLS
         if (args[ARG_ca_cert].u_obj != mp_const_none) {
             p = mp_obj_str_get_data(args[ARG_ca_cert].u_obj, &len);
-            // const mp_obj_type_t *type = mp_obj_get_type(args[ARG_ca_cert].u_obj);
             esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *)p, len + 1));
         }
     }
