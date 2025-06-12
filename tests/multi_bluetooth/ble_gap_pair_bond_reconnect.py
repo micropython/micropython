@@ -19,6 +19,7 @@ _IRQ_GATTC_CHARACTERISTIC_RESULT = const(11)
 _IRQ_GATTC_CHARACTERISTIC_DONE = const(12)
 _IRQ_GATTC_READ_RESULT = const(15)
 _IRQ_ENCRYPTION_UPDATE = const(28)
+_IRQ_GET_SECRET = const(29)
 _IRQ_SET_SECRET = const(30)
 
 _FLAG_READ = const(0x0002)
@@ -58,7 +59,18 @@ def irq(event, data):
         print("_IRQ_GATTC_READ_RESULT", bytes(data[-1]))
     elif event == _IRQ_ENCRYPTION_UPDATE:
         print("_IRQ_ENCRYPTION_UPDATE", data[1], data[2], data[3])
+    elif event == _IRQ_GET_SECRET:
+        if data[-1] is None:
+            return None
+        key = bytes(data[-1])
+        return secrets.get(key, None)
     elif event == _IRQ_SET_SECRET:
+        key = bytes(data[-2])
+        value = bytes(data[-1]) if data[-1] else None
+        if value is None:
+            secrets.pop(key, None)
+        else:
+            secrets[key] = value
         return True
 
     if event not in waiting_events:

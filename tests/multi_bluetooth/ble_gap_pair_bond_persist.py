@@ -1,6 +1,5 @@
-# Test BLE GAP connect/disconnect with pairing and bonding, and read an encrypted
-# characteristic
-# TODO: reconnect after bonding to test that the secrets persist
+# Test BLE GAP connect/disconnect with pairing and bonding, and verify
+# that bond persists after device reboot (TLV storage persistence)
 
 from micropython import const
 import time, machine, bluetooth
@@ -64,8 +63,7 @@ def irq(event, data):
         if data[-1] is None:
             return None
         key = bytes(data[-1])
-        result = secrets.get(key, None)
-        return result
+        return secrets.get(key, None)
     elif event == _IRQ_SET_SECRET:
         key = bytes(data[-2])
         value = bytes(data[-1]) if data[-1] else None
@@ -111,6 +109,34 @@ def instance0():
     finally:
         ble.active(0)
 
+    # Simulate reboot to test bond persistence
+    print("simulate_reboot")
+    ble.active(0)
+    time.sleep_ms(100)  # Allow cleanup
+    ble.active(1)
+    ble.irq(irq)
+
+    # Re-register services after "reboot"
+    ((char_handle,),) = ble.gatts_register_services((SERVICE,))
+    ble.gatts_write(char_handle, "encrypted_after_reboot")
+    print("gap_advertise_after_reboot")
+    ble.gap_advertise(20_000, b"\x02\x01\x06\x04\xffMPY")
+    multitest.next()
+    try:
+        # Wait for central to reconnect using stored bond.
+        wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS)
+
+        # Should automatically be encrypted due to stored bond.
+        wait_for_event(_IRQ_ENCRYPTION_UPDATE, TIMEOUT_MS)
+
+        # Wait for GATTS read request.
+        wait_for_event(_IRQ_GATTS_READ_REQUEST, TIMEOUT_MS)
+
+        # Wait for central to disconnect.
+        wait_for_event(_IRQ_CENTRAL_DISCONNECT, TIMEOUT_MS)
+    finally:
+        ble.active(0)
+
 
 # Acting in central role.
 def instance1():
@@ -140,6 +166,38 @@ def instance1():
 
         # Disconnect from the peripheral.
         print("gap_disconnect:", ble.gap_disconnect(conn_handle))
+        wait_for_event(_IRQ_PERIPHERAL_DISCONNECT, TIMEOUT_MS)
+    finally:
+        ble.active(0)
+
+    # Recreate BLE instance to simulate reboot (tests bond persistence)
+    ble.active(0)
+    time.sleep_ms(100)  # Allow cleanup
+    ble.active(1)
+    ble.irq(irq)
+
+    multitest.next()
+    try:
+        # Reconnect to peripheral after simulated reboot
+        print("gap_connect_after_reboot")
+        ble.gap_connect(*BDADDR)
+        conn_handle = wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS)
+
+        # Should automatically be encrypted due to stored bond (no re-pairing needed).
+        wait_for_event(_IRQ_ENCRYPTION_UPDATE, TIMEOUT_MS)
+
+        # Discover characteristics again (connection state is lost on reboot).
+        ble.gattc_discover_characteristics(conn_handle, 1, 65535)
+        value_handle = wait_for_event(_IRQ_GATTC_CHARACTERISTIC_RESULT, TIMEOUT_MS)
+        wait_for_event(_IRQ_GATTC_CHARACTERISTIC_DONE, TIMEOUT_MS)
+
+        # Read the peripheral's characteristic, should be encrypted without re-pairing.
+        print("gattc_read_after_reboot")
+        ble.gattc_read(conn_handle, value_handle)
+        wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
+
+        # Disconnect from the peripheral.
+        print("gap_disconnect_final:", ble.gap_disconnect(conn_handle))
         wait_for_event(_IRQ_PERIPHERAL_DISCONNECT, TIMEOUT_MS)
     finally:
         ble.active(0)

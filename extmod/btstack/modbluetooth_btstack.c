@@ -37,7 +37,7 @@
 #include "lib/btstack/src/ble/le_device_db_tlv.h"
 #include "lib/btstack/src/btstack_tlv.h"
 
-#define DEBUG_printf(...) // printf("btstack: " __VA_ARGS__)
+#define DEBUG_printf(...) mp_printf(MICROPY_ERROR_PRINTER, "btstack: " __VA_ARGS__)
 
 #ifndef MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY BTSTACK"
@@ -1775,37 +1775,59 @@ MP_REGISTER_ROOT_POINTER(struct _mp_bluetooth_btstack_root_pointers_t *bluetooth
 
 static int btstack_tlv_mp_get_tag(void *context, uint32_t tag, uint8_t *buffer, uint32_t buffer_size) {
     UNUSED(context);
-    DEBUG_printf("btstack_tlv_mp_get_tag: tag=0x%08x (%c%c%c%c)\n", (unsigned int)tag,
-        (char)(tag >> 24), (char)(tag >> 16), (char)(tag >> 8), (char)(tag));
+    char tag_str[5] = {(tag >> 24) & 0xFF, (tag >> 16) & 0xFF, (tag >> 8) & 0xFF, tag & 0xFF, 0};
+    DEBUG_printf("TLV_GET: tag=0x%08x (%s) buffer_size=%u\n", (unsigned int)tag, tag_str, buffer_size);
+
     const uint8_t *data;
     size_t data_len;
     if (!mp_bluetooth_gap_on_get_secret(0, 0, (uint8_t *)&tag, sizeof(tag), &data, &data_len)) {
-        DEBUG_printf("btstack_tlv_mp_get_tag: tag not found\n");
+        DEBUG_printf("TLV_GET: tag not found\n");
         return -1;
     }
     if (data_len > buffer_size) {
-        DEBUG_printf("btstack_tlv_mp_get_tag: data too large (%d > %d)\n", (int)data_len, (int)buffer_size);
+        DEBUG_printf("TLV_GET: data too large (%zu > %u)\n", data_len, buffer_size);
         return -1;
     }
     memcpy(buffer, data, data_len);
-    DEBUG_printf("btstack_tlv_mp_get_tag: returning %d bytes\n", (int)data_len);
+
+    // Log data contents for analysis
+    DEBUG_printf("TLV_GET: found %zu bytes:", data_len);
+    for (size_t i = 0; i < (data_len < 16 ? data_len : 16); i++) {
+        DEBUG_printf(" %02x", data[i]);
+    }
+    if (data_len > 16) {
+        DEBUG_printf("...");
+    }
+    DEBUG_printf("\n");
+
     return data_len;
 }
 
 static int btstack_tlv_mp_store_tag(void *context, uint32_t tag, const uint8_t *data, uint32_t data_size) {
     UNUSED(context);
-    DEBUG_printf("btstack_tlv_mp_store_tag: tag=0x%08x (%c%c%c%c), size=%d\n", (unsigned int)tag,
-        (char)(tag >> 24), (char)(tag >> 16), (char)(tag >> 8), (char)(tag), (int)data_size);
+    DEBUG_printf("TLV_STORE: tag=0x%08x, size=%u\n", (unsigned int)tag, data_size);
+
+    // Log data contents for analysis
+    DEBUG_printf("TLV_STORE: data:");
+    for (uint32_t i = 0; i < (data_size < 16 ? data_size : 16); i++) {
+        DEBUG_printf(" %02x", data[i]);
+    }
+    if (data_size > 16) {
+        DEBUG_printf("...");
+    }
+    DEBUG_printf("\n");
+
     if (mp_bluetooth_gap_on_set_secret(0, (uint8_t *)&tag, sizeof(tag), (uint8_t *)data, data_size)) {
-        DEBUG_printf("btstack_tlv_mp_store_tag: success\n");
+        DEBUG_printf("TLV_STORE: success\n");
         return 0;
     } else {
-        DEBUG_printf("btstack_tlv_mp_store_tag: failed\n");
+        DEBUG_printf("TLV_STORE: failed\n");
         return 1;
     }
 }
 
 static void btstack_tlv_mp_delete_tag(void *context, uint32_t tag) {
+    DEBUG_printf("TLV_DELETE: tag=0x%08x\n", (unsigned int)tag);
     mp_bluetooth_gap_on_set_secret(0, (uint8_t *)&tag, sizeof(tag), NULL, 0);
 }
 
