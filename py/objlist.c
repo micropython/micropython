@@ -163,19 +163,8 @@ static mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         // delete
         #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
-            mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
-            mp_bound_slice_t slice;
-            if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
-                mp_raise_NotImplementedError(NULL);
-            }
-
-            mp_int_t len_adj = slice.start - slice.stop;
-            assert(len_adj <= 0);
-            mp_seq_replace_slice_no_grow(self->items, self->len, slice.start, slice.stop, self->items /*NULL*/, 0, sizeof(*self->items));
-            // Clear "freed" elements at the end of list
-            mp_seq_clear(self->items, self->len + len_adj, self->len, sizeof(*self->items));
-            self->len += len_adj;
-            return mp_const_none;
+            value = mp_const_empty_tuple;
+            goto slice_assign;
         }
         #endif
         mp_obj_t args[2] = {self_in, index};
@@ -200,6 +189,7 @@ static mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     } else {
         #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
+        slice_assign:;
             mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
             size_t value_len;
             mp_obj_t *value_items;
