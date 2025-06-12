@@ -37,7 +37,7 @@
 #include "lib/btstack/src/ble/le_device_db_tlv.h"
 #include "lib/btstack/src/btstack_tlv.h"
 
-#define DEBUG_printf(...) mp_printf(MICROPY_ERROR_PRINTER, "btstack: " __VA_ARGS__)
+#define DEBUG_printf(...) mp_printf(MICROPY_ERROR_PRINTER, "btstack: " __VA_ARGS__) // TODO: Remove debug logging
 
 #ifndef MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY BTSTACK"
@@ -1775,8 +1775,7 @@ MP_REGISTER_ROOT_POINTER(struct _mp_bluetooth_btstack_root_pointers_t *bluetooth
 
 static int btstack_tlv_mp_get_tag(void *context, uint32_t tag, uint8_t *buffer, uint32_t buffer_size) {
     UNUSED(context);
-    char tag_str[5] = {(tag >> 24) & 0xFF, (tag >> 16) & 0xFF, (tag >> 8) & 0xFF, tag & 0xFF, 0};
-    DEBUG_printf("TLV_GET: tag=0x%08x (%s) buffer_size=%u\n", (unsigned int)tag, tag_str, buffer_size);
+    DEBUG_printf("TLV_GET: tag=0x%08x buffer_size=%u\n", (unsigned int)tag, buffer_size);
 
     const uint8_t *data;
     size_t data_len;
