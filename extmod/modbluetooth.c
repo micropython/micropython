@@ -1339,22 +1339,16 @@ bool mp_bluetooth_gap_on_get_secret(uint8_t type, uint8_t index, const uint8_t *
 }
 
 bool mp_bluetooth_gap_on_set_secret(uint8_t type, const uint8_t *key, size_t key_len, const uint8_t *value, size_t value_len) {
-    // TODO: Remove debug logging
-    mp_printf(MICROPY_ERROR_PRINTER, "DEBUG: mp_bluetooth_gap_on_set_secret called: type=%d, key_len=%d, value_len=%d\n", type, (int)key_len, (int)value_len);
-
     mp_int_t args[] = { type };
     const uint8_t *data[] = {key, value};
     uint16_t data_len[] = {key_len, value_len};
     mp_obj_t result = invoke_irq_handler(MP_BLUETOOTH_IRQ_SET_SECRET, args, 1, 0, NULL_ADDR, NULL_UUID, data, data_len, 2);
 
-    // TODO: Remove debug logging
     if (result == mp_const_none) {
-        mp_printf(MICROPY_ERROR_PRINTER, "DEBUG: invoke_irq_handler returned mp_const_none (no handler registered) - returning true for default behavior\n");
         // Return true when no IRQ handler is registered to allow BTstack to function
         // without requiring Python-level secret storage implementation
         return true;
     } else {
-        mp_printf(MICROPY_ERROR_PRINTER, "DEBUG: invoke_irq_handler returned: %p, is_true: %d\n", result, mp_obj_is_true(result));
         return mp_obj_is_true(result);
     }
 }

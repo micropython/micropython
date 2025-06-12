@@ -37,7 +37,7 @@
 #include "lib/btstack/src/ble/le_device_db_tlv.h"
 #include "lib/btstack/src/btstack_tlv.h"
 
-#define DEBUG_printf(...) mp_printf(MICROPY_ERROR_PRINTER, "btstack: " __VA_ARGS__) // TODO: Remove debug logging
+#define DEBUG_printf(...) // Debug logging disabled
 
 #ifndef MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY BTSTACK"
