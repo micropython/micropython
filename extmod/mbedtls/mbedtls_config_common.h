@@ -123,4 +123,8 @@ void m_tracked_free(void *ptr);
 
 #endif
 
+// Workaround for a mimxrt platform driver header that defines ARRAY_SIZE,
+// which is also defined in some mbedtls source files.
+#undef ARRAY_SIZE
+
 #endif // MICROPY_INCLUDED_MBEDTLS_CONFIG_COMMON_H
