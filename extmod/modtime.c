@@ -28,6 +28,7 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/smallint.h"
+#include "py/objint.h"
 #include "extmod/modtime.h"
 
 #if MICROPY_PY_TIME
@@ -100,10 +101,26 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_time_mktime_obj, time_mktime);
 
 #if MICROPY_PY_TIME_TIME_TIME_NS
 
+#if MICROPY_PY_TIME_TIME_FLOAT && !MICROPY_PY_BUILTINS_FLOAT
+#error "MICROPY_PY_TIME_TIME_FLOAT: Port does not have floating point support."
+#endif
+
+#if MICROPY_PY_TIME_TIME_FLOAT && !(MICROPY_FLOAT_IMPL >= MICROPY_FLOAT_IMPL_DOUBLE) && MICROPY_PY_TIME_TIME_FLOAT_WARNIMPRECISE
+#warning "MICROPY_PY_TIME_TIME_FLOAT: Port does not have adequate float precision. (`#define MICROPY_PY_TIME_TIME_FLOAT_WARNIMPRECISE (0)` to suppress.)"
+#endif
+
+#if MICROPY_PY_TIME_TIME_FLOAT && !MICROPY_PY_TIME_TIME_HAS_SUBSECOND && MICROPY_PY_TIME_TIME_FLOAT_WARNFUTILE
+#warning "MICROPY_PY_TIME_TIME_FLOAT: Port does not have sub-second information. (`#define MICROPY_PY_TIME_TIME_FLOAT_WARNFUTILE (0)` to suppress.)"
+#endif
+
 // time()
 // Return the number of seconds since the Epoch.
 static mp_obj_t time_time(void) {
+    #if MICROPY_PY_TIME_TIME_FLOAT && !MICROPY_PY_TIME_TIME_HAS_SUBSECOND
+    return mp_obj_new_float(mp_obj_int_as_float_impl(mp_time_time_get()));
+    #else
     return mp_time_time_get();
+    #endif
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(mp_time_time_obj, time_time);
 

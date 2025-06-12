@@ -50,5 +50,10 @@ static mp_obj_t mp_time_localtime_get(void) {
 // Returns the number of seconds, as an integer, since the Epoch.
 static mp_obj_t mp_time_time_get(void) {
     // get date and time
+    #if MICROPY_PY_TIME_TIME_FLOAT && MICROPY_PY_TIME_TIME_HAS_SUBSECOND
+    mp_float_t val = (mp_float_t)pyb_rtc_get_us_since_epoch() / (1000 * 1000);
+    return mp_obj_new_float(val);
+    #else
     return mp_obj_new_int(pyb_rtc_get_us_since_epoch() / 1000 / 1000);
+    #endif
 }
