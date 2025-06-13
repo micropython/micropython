@@ -12,6 +12,10 @@
 
   If the argument to the Factorial class constructor is less than zero, a
   FactorialError is raised.
+  
+  Note: This example uses the traditional/fully customizable way of defining
+  native modules. For simpler modules, see the macro-based approach used in
+  other examples which reduces boilerplate code.
 */
 
 // Include the header file to get access to the MicroPython API
