@@ -33,8 +33,12 @@
 typedef struct {
     uint64_t ext1_pins; // set bit == pin#
     int8_t ext0_pin;   // just the pin#, -1 == None
+    #if SOC_TOUCH_SENSOR_SUPPORTED
     bool wake_on_touch : 1;
+    #endif
+    #if SOC_ULP_SUPPORTED
     bool wake_on_ulp : 1;
+    #endif
     bool ext0_level : 1;
     wake_type_t ext0_wake_types;
     bool ext1_level : 1;
