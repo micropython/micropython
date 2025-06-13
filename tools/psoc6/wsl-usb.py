@@ -1,5 +1,4 @@
-"""
-Use this script to avoid attaching manually usb devices 
+"""Use this script to avoid attaching manually usb devices
 to the WSL Ubuntu instance.
 1. Copy this script somewhere in the Windows filesystem
 
@@ -8,6 +7,7 @@ curl -s -L https://raw.githubusercontent.com/Infineon/micropython/ports-psoc6-ma
 2. Use the Power Shell with admin rights
 3. Use -h, --help flags to find out the available commands and options.
 """
+
 import argparse, subprocess
 
 version = "1.0.0"
