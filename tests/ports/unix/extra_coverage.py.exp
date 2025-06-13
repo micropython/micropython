@@ -89,6 +89,10 @@ data
 12345
 6
 -1
+0
+1
+0
+0.000000
 # runtime utils
 TypeError: unsupported type for __abs__: 'str'
 TypeError: unsupported types for __divmod__: 'str', 'str'
