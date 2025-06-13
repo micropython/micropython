@@ -21,6 +21,7 @@ Reset\n\
 Exit
 
 ALIF_TOC_CONFIG = alif_cfg.json
+ALIF_TOC_BIN = $(BUILD)/firmware.toc.bin
 ALIF_TOC_APPS = $(BUILD)/$(ALIF_TOC_CONFIG)
 ALIF_TOC_CFLAGS += -DTOC_CFG_FILE=$(ALIF_TOOLKIT_CFG_FILE)
 
@@ -69,7 +70,7 @@ include $(TOP)/extmod/extmod.mk
 # Main targets
 
 .PHONY: all
-all: $(BUILD)/firmware.toc.bin
+all: $(BUILD)/firmware.zip
 
 # Force make commands to run the targets every time
 # regardless of whether firmware.toc.bin already exists
@@ -90,15 +91,19 @@ $(BUILD)/$(ALIF_TOC_CONFIG): mcu/$(ALIF_TOC_CONFIG).in | $(BUILD)
 	$(ECHO) "Preprocess toc config $@"
 	$(Q)$(CPP) -P -E $(ALIF_TOC_CFLAGS) - < mcu/$(ALIF_TOC_CONFIG).in > $@
 
-$(BUILD)/firmware.toc.bin: $(ALIF_TOC_APPS)
+$(ALIF_TOC_BIN): $(ALIF_TOC_APPS)
 	$(Q)python $(ALIF_TOOLS)/app-gen-toc.py \
 		--filename $(abspath $(BUILD)/$(ALIF_TOC_CONFIG)) \
 		--output-dir $(BUILD) \
 		--firmware-dir $(BUILD) \
 		--output $@
 
+$(BUILD)/firmware.zip: $(ALIF_TOC_BIN) $(ALIF_TOC_APPS)
+	$(ECHO) "Create $@"
+	$(Q)$(ZIP) -q - $(BUILD)/application_package.ds $^ > $@
+
 .PHONY: deploy
-deploy: $(BUILD)/firmware.toc.bin
+deploy: $(ALIF_TOC_BIN)
 	$(ECHO) "Writing $< to the board"
 	$(Q)python $(ALIF_TOOLS)/app-write-mram.py \
 		--cfg-part $(ALIF_TOOLKIT_CFG_PART) \
