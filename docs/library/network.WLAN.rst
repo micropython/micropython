@@ -218,12 +218,6 @@ Methods
    protocol       (ESP32 Only.) WiFi Low level 802.11 protocol. See `WLAN.PROTOCOL_DEFAULT`.
    =============  ===========
 
-.. method:: WLAN.eap_connect(param=value, ...)
-            
-    
-
-    
-            
 
 
 Constants
