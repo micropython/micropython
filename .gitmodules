@@ -74,3 +74,6 @@
 [submodule "lib/alif-security-toolkit"]
 	path = lib/alif-security-toolkit
 	url = https://github.com/micropython/alif-security-toolkit.git
+[submodule "lib/mtb-psoc6-libs"]
+	path = lib/mtb-psoc6-libs
+	url = https://github.com/Infineon/mtb-micropython-psoc6-port-integration.git
