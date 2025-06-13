@@ -74,7 +74,7 @@ def udevadm_get_kitprog3_attached_devs():
     kitprog_devs = []
     dev_list = get_ttyACM_dev_list()
 
-    if dev_list is not []:
+    if dev_list != []:
         for dev in dev_list:
             udevadm_output_lines = get_udevadm_port_attrs_output(dev)
             if is_kitprog_device(udevadm_output_lines):
