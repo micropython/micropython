@@ -31,7 +31,6 @@
 #define PF_FLAG_LEFT_ADJUST       (0x001)
 #define PF_FLAG_SHOW_SIGN         (0x002)
 #define PF_FLAG_SPACE_SIGN        (0x004)
-#define PF_FLAG_NO_TRAILZ         (0x008)
 #define PF_FLAG_SHOW_PREFIX       (0x008)
 #define PF_FLAG_PAD_AFTER_SIGN    (0x010)
 #define PF_FLAG_CENTER_ADJUST     (0x020)
