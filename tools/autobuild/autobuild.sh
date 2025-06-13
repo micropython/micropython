@@ -69,7 +69,9 @@ fi
 FW_TAG="-$FW_DATE-$FW_SEMVER"
 
 # build new firmware
-cd ports/cc3200
+cd ports/alif
+build_alif_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+cd ../cc3200
 build_cc3200_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp8266
 build_esp8266_boards ${FW_TAG} ${LOCAL_FIRMWARE}
