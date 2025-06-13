@@ -7,16 +7,16 @@ TEST_DIR=$(dirname $0)
 $MPREMOTE exec "import os; os.VfsFat" || { echo "SKIP (ramdisk not supported)"; exit 0; }
 
 echo -----
-$MPREMOTE run "${TEST_DIR}/ramdisk.py"
-$MPREMOTE resume ls
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+$MPREMOTE ls
 
 echo -----
-$MPREMOTE resume touch a.py
-$MPREMOTE resume touch :b.py
-$MPREMOTE resume ls :
-$MPREMOTE resume cat a.py
-$MPREMOTE resume cat :b.py
-$MPREMOTE resume sha256sum a.py
+$MPREMOTE touch a.py
+$MPREMOTE touch :b.py
+$MPREMOTE ls :
+$MPREMOTE cat a.py
+$MPREMOTE cat :b.py
+$MPREMOTE sha256sum a.py
 echo -n "" | sha256sum
 
 echo -----
@@ -24,43 +24,43 @@ cat << EOF > "${TMP}/a.py"
 print("Hello")
 print("World")
 EOF
-$MPREMOTE resume cp "${TMP}/a.py" :
-$MPREMOTE resume cp "${TMP}/a.py" :b.py
-$MPREMOTE resume cp "${TMP}/a.py" :c.py
-$MPREMOTE resume cp :a.py :d.py
-$MPREMOTE resume ls
-$MPREMOTE resume exec "import a; import b; import c"
-$MPREMOTE resume sha256sum a.py
+$MPREMOTE cp "${TMP}/a.py" :
+$MPREMOTE cp "${TMP}/a.py" :b.py
+$MPREMOTE cp "${TMP}/a.py" :c.py
+$MPREMOTE cp :a.py :d.py
+$MPREMOTE ls
+$MPREMOTE exec "import a; import b; import c"
+$MPREMOTE sha256sum a.py
 cat "${TMP}/a.py" | sha256sum
 
 echo -----
-$MPREMOTE resume mkdir aaa
-$MPREMOTE resume mkdir :bbb
-$MPREMOTE resume cp "${TMP}/a.py" :aaa
-$MPREMOTE resume cp "${TMP}/a.py" :bbb/b.py
-$MPREMOTE resume cat :aaa/a.py bbb/b.py
+$MPREMOTE mkdir aaa
+$MPREMOTE mkdir :bbb
+$MPREMOTE cp "${TMP}/a.py" :aaa
+$MPREMOTE cp "${TMP}/a.py" :bbb/b.py
+$MPREMOTE cat :aaa/a.py bbb/b.py
 
 # Test cp -f (force copy).
 echo -----
-$MPREMOTE resume cp -f "${TMP}/a.py" :aaa
-$MPREMOTE resume cat :aaa/a.py
+$MPREMOTE cp -f "${TMP}/a.py" :aaa
+$MPREMOTE cat :aaa/a.py
 
 # Test cp where the destination has a trailing /.
 echo -----
-$MPREMOTE resume cp "${TMP}/a.py" :aaa/
-$MPREMOTE resume cp "${TMP}/a.py" :aaa/a.py/ || echo "expect error"
+$MPREMOTE cp "${TMP}/a.py" :aaa/
+$MPREMOTE cp "${TMP}/a.py" :aaa/a.py/ || echo "expect error"
 
 echo -----
-$MPREMOTE resume rm :b.py c.py
-$MPREMOTE resume ls
-$MPREMOTE resume rm :aaa/a.py bbb/b.py
-$MPREMOTE resume rmdir aaa :bbb
-$MPREMOTE resume ls
+$MPREMOTE rm :b.py c.py
+$MPREMOTE ls
+$MPREMOTE rm :aaa/a.py bbb/b.py
+$MPREMOTE rmdir aaa :bbb
+$MPREMOTE ls
 
 echo -----
-env EDITOR="sed -i s/Hello/Goodbye/" $MPREMOTE resume edit d.py
-$MPREMOTE resume sha256sum :d.py
-$MPREMOTE resume exec "import d"
+env EDITOR="sed -i s/Hello/Goodbye/" $MPREMOTE edit d.py
+$MPREMOTE sha256sum :d.py
+$MPREMOTE exec "import d"
 
 
 # Create a local directory structure and copy it to `:` on the device.
@@ -82,58 +82,58 @@ cat << EOF > "${TMP}/package/subpackage/y.py"
 def y():
   print("y")
 EOF
-$MPREMOTE run "${TEST_DIR}/ramdisk.py"
-$MPREMOTE resume cp -r "${TMP}/package" :
-$MPREMOTE resume ls : :package :package/subpackage
-$MPREMOTE resume exec "import package; package.x(); package.y()"
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+$MPREMOTE cp -r "${TMP}/package" :
+$MPREMOTE ls : :package :package/subpackage
+$MPREMOTE exec "import package; package.x(); package.y()"
 
 
 # Same thing except with a destination directory name.
 echo -----
-$MPREMOTE run "${TEST_DIR}/ramdisk.py"
-$MPREMOTE resume cp -r "${TMP}/package" :package2
-$MPREMOTE resume ls : :package2 :package2/subpackage
-$MPREMOTE resume exec "import package2; package2.x(); package2.y()"
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+$MPREMOTE cp -r "${TMP}/package" :package2
+$MPREMOTE ls : :package2 :package2/subpackage
+$MPREMOTE exec "import package2; package2.x(); package2.y()"
 
 
 # Copy to an existing directory, it will be copied inside.
 echo -----
-$MPREMOTE run "${TEST_DIR}/ramdisk.py"
-$MPREMOTE resume mkdir :test
-$MPREMOTE resume cp -r "${TMP}/package" :test
-$MPREMOTE resume ls :test :test/package :test/package/subpackage
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+$MPREMOTE mkdir :test
+$MPREMOTE cp -r "${TMP}/package" :test
+$MPREMOTE ls :test :test/package :test/package/subpackage
 
 # Copy to non-existing sub-directory.
 echo -----
-$MPREMOTE resume cp -r "${TMP}/package" :test/package2
-$MPREMOTE resume ls :test :test/package2 :test/package2/subpackage
+$MPREMOTE cp -r "${TMP}/package" :test/package2
+$MPREMOTE ls :test :test/package2 :test/package2/subpackage
 
 # Copy from the device back to local.
 echo -----
 mkdir "${TMP}/copy"
-$MPREMOTE resume cp -r :test/package "${TMP}/copy"
+$MPREMOTE cp -r :test/package "${TMP}/copy"
 ls "${TMP}/copy" "${TMP}/copy/package" "${TMP}/copy/package/subpackage"
 
 # Copy from the device back to local with destination directory name.
 echo -----
-$MPREMOTE resume cp -r :test/package "${TMP}/copy/package2"
+$MPREMOTE cp -r :test/package "${TMP}/copy/package2"
 ls "${TMP}/copy" "${TMP}/copy/package2" "${TMP}/copy/package2/subpackage"
 
 
 # Copy from device to another location on the device with destination directory name.
 echo -----
-$MPREMOTE run "${TEST_DIR}/ramdisk.py"
-$MPREMOTE resume cp -r "${TMP}/package" :
-$MPREMOTE resume cp -r :package :package3
-$MPREMOTE resume ls : :package3 :package3/subpackage
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+$MPREMOTE cp -r "${TMP}/package" :
+$MPREMOTE cp -r :package :package3
+$MPREMOTE ls : :package3 :package3/subpackage
 
 # Copy from device to another location on the device into an existing directory.
 echo -----
-$MPREMOTE run "${TEST_DIR}/ramdisk.py"
-$MPREMOTE resume cp -r "${TMP}/package" :
-$MPREMOTE resume mkdir :package4
-$MPREMOTE resume cp -r :package :package4
-$MPREMOTE resume ls : :package4 :package4/package :package4/package/subpackage
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+$MPREMOTE cp -r "${TMP}/package" :
+$MPREMOTE mkdir :package4
+$MPREMOTE cp -r :package :package4
+$MPREMOTE ls : :package4 :package4/package :package4/package/subpackage
 
 # Repeat an existing copy with one file modified.
 echo -----
@@ -141,71 +141,71 @@ cat << EOF > "${TMP}/package/subpackage/y.py"
 def y():
   print("y2")
 EOF
-$MPREMOTE resume cp -r "${TMP}/package" :
-$MPREMOTE resume ls : :package :package/subpackage
-$MPREMOTE resume exec "import package; package.x(); package.y()"
+$MPREMOTE cp -r "${TMP}/package" :
+$MPREMOTE ls : :package :package/subpackage
+$MPREMOTE exec "import package; package.x(); package.y()"
 
 echo -----
 # Test rm -r functionality
 # start with a fresh ramdisk before each test
 # rm -r MCU current working directory
-$MPREMOTE run "${TEST_DIR}/ramdisk.py"
-$MPREMOTE resume touch :a.py
-$MPREMOTE resume touch :b.py
-$MPREMOTE resume cp -r "${TMP}/package" :
-$MPREMOTE resume rm -r -v :
-$MPREMOTE resume ls :
-$MPREMOTE resume ls :/ramdisk
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+$MPREMOTE touch :a.py
+$MPREMOTE touch :b.py
+$MPREMOTE cp -r "${TMP}/package" :
+$MPREMOTE rm -r -v :
+$MPREMOTE ls :
+$MPREMOTE ls :/ramdisk
 
 echo -----
 # rm -r relative subfolder
-$MPREMOTE run "${TEST_DIR}/ramdisk.py"
-$MPREMOTE resume touch :a.py
-$MPREMOTE resume mkdir :testdir
-$MPREMOTE resume cp -r "${TMP}/package" :testdir/package
-$MPREMOTE resume ls :testdir
-$MPREMOTE resume ls :testdir/package
-$MPREMOTE resume rm -r :testdir/package
-$MPREMOTE resume ls :/ramdisk
-$MPREMOTE resume ls :testdir
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+$MPREMOTE touch :a.py
+$MPREMOTE mkdir :testdir
+$MPREMOTE cp -r "${TMP}/package" :testdir/package
+$MPREMOTE ls :testdir
+$MPREMOTE ls :testdir/package
+$MPREMOTE rm -r :testdir/package
+$MPREMOTE ls :/ramdisk
+$MPREMOTE ls :testdir
 
 echo -----
 # rm -r non-existent path
-$MPREMOTE run "${TEST_DIR}/ramdisk.py"
-$MPREMOTE resume ls :
-$MPREMOTE resume rm -r :nonexistent || echo "expect error"
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+$MPREMOTE ls :
+$MPREMOTE rm -r :nonexistent || echo "expect error"
 
 echo -----
 # rm -r absolute root
 # no -v to generate same output on stm32 and other ports
-$MPREMOTE run "${TEST_DIR}/ramdisk.py"
-$MPREMOTE resume touch :a.py
-$MPREMOTE resume touch :b.py
-$MPREMOTE resume cp -r "${TMP}/package" :
-$MPREMOTE resume cp -r "${TMP}/package" :package2
-$MPREMOTE resume rm -r :/ || echo "expect error"
-$MPREMOTE resume ls :
-$MPREMOTE resume ls :/ramdisk
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+$MPREMOTE touch :a.py
+$MPREMOTE touch :b.py
+$MPREMOTE cp -r "${TMP}/package" :
+$MPREMOTE cp -r "${TMP}/package" :package2
+$MPREMOTE rm -r :/ || echo "expect error"
+$MPREMOTE ls :
+$MPREMOTE ls :/ramdisk
 
 echo -----
 # rm -r relative mountpoint
-$MPREMOTE run "${TEST_DIR}/ramdisk.py"
-$MPREMOTE resume touch :a.py
-$MPREMOTE resume touch :b.py
-$MPREMOTE resume cp -r "${TMP}/package" :
-$MPREMOTE resume exec "import os;os.chdir('/')"
-$MPREMOTE resume rm -r -v :ramdisk
-$MPREMOTE resume ls :/ramdisk
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+$MPREMOTE touch :a.py
+$MPREMOTE touch :b.py
+$MPREMOTE cp -r "${TMP}/package" :
+$MPREMOTE exec "import os;os.chdir('/')"
+$MPREMOTE rm -r -v :ramdisk
+$MPREMOTE ls :/ramdisk
 
 echo -----
 # rm -r absolute mountpoint
-$MPREMOTE run "${TEST_DIR}/ramdisk.py"
-$MPREMOTE resume touch :a.py
-$MPREMOTE resume touch :b.py
-$MPREMOTE resume cp -r "${TMP}/package" :
-$MPREMOTE resume exec "import os;os.chdir('/')"
-$MPREMOTE resume rm -r -v :/ramdisk
-$MPREMOTE resume ls :/ramdisk
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+$MPREMOTE touch :a.py
+$MPREMOTE touch :b.py
+$MPREMOTE cp -r "${TMP}/package" :
+$MPREMOTE exec "import os;os.chdir('/')"
+$MPREMOTE rm -r -v :/ramdisk
+$MPREMOTE ls :/ramdisk
 
 echo -----
 # try to delete existing folder in mounted filesystem
