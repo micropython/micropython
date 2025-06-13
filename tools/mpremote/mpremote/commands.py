@@ -88,7 +88,7 @@ def do_disconnect(state, _args=None):
         pass
     state.transport.close()
     state.transport = None
-    state._auto_soft_reset = True
+    state._auto_soft_reset = state._auto_soft_reset_default
 
 
 def show_progress_bar(size, total_size, op="copying"):
@@ -528,6 +528,8 @@ def do_umount(state, path):
 
 
 def do_resume(state, _args=None):
+    # Only has an effect when the auto_soft_reset config option is turned on,
+    # in which case this skips the soft-reset for the current connection.
     state._auto_soft_reset = False
 
 

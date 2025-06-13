@@ -1,23 +1,26 @@
 #!/bin/bash
 set -e
 
-# The eval command will continue the state of the exec.
+# Interpreter state is carried from one command to the next.
 echo -----
-$MPREMOTE exec "a = 'hello'" eval "a"
+$MPREMOTE soft-reset exec "a = 'hello'" eval "a"
 
-# Automatic soft reset. `a` will trigger NameError.
+# It is also carried between separate invocations of mpremote.
 echo -----
-$MPREMOTE eval "'a' in globals()" || true
+$MPREMOTE eval "a"
 
-# Resume will skip soft reset.
 echo -----
-$MPREMOTE exec "a = 'resume'"
+$MPREMOTE exec "a = 'persists'"
+$MPREMOTE eval "a"
+
+# The "resume" command is accepted for backwards compatibility and does nothing.
+echo -----
 $MPREMOTE resume eval "a"
 
-# The eval command will continue the state of the exec.
+# An explicit soft-reset clears the interpreter state.
 echo -----
 $MPREMOTE exec "a = 'soft-reset'" eval "a" soft-reset eval "1+1" eval "'a' in globals()" || true
 
-# A disconnect will trigger auto-reconnect.
+# A disconnect does not clear the interpreter state.
 echo -----
 $MPREMOTE eval "1+2" disconnect eval "2+3"

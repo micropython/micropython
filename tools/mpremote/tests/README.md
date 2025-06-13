@@ -51,6 +51,20 @@ fi
 
 The `MPREMOTE_DEVICE` environment variable contains the device path passed via `-t`.
 
+## Device State
+
+`mpremote` carries interpreter state from one command to the next, so a test that
+needs a known starting point must ask for one with an explicit `soft-reset`:
+
+```bash
+$MPREMOTE soft-reset run "${TEST_DIR}/ramdisk.py"
+```
+
+Without it a test can pass on state left behind by an earlier test or an earlier
+run, which is not the same as passing. Mounting a RAM disk over one that is
+already mounted fails with `EPERM`, so any section that sets one up needs the
+reset, not just the first one in the file.
+
 ## Using the RAM Disk
 
 Tests that need a writable filesystem can use `ramdisk.py` to create a temporary

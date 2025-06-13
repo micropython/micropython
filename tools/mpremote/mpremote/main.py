@@ -299,10 +299,6 @@ _COMMANDS = {
         do_edit,
         argparse_edit,
     ),
-    "resume": (
-        do_resume,
-        argparse_none("resume a previous mpremote session (will not auto soft-reset)"),
-    ),
     "soft-reset": (
         do_soft_reset,
         argparse_none("perform a soft-reset of the device"),
@@ -354,6 +350,16 @@ _COMMANDS = {
     "romfs": (
         do_romfs,
         argparse_romfs,
+    ),
+}
+
+# Commands that are still accepted on the command line but deliberately left out
+# of the help output, so existing scripts keep working without the command being
+# advertised for new use.
+_DEPRECATED_COMMANDS = {
+    "resume": (
+        do_resume,
+        argparse_none("no-op, retained for backwards compatibility"),
     ),
 }
 
@@ -530,10 +536,14 @@ def do_command_expansion(args):
 
 
 class State:
-    def __init__(self):
+    def __init__(self, auto_soft_reset=False):
         self.transport = None
         self._did_action = False
-        self._auto_soft_reset = True
+        # Whether to soft-reset the device the first time a command needs the
+        # raw REPL.  Off unless turned on by the auto_soft_reset config option,
+        # and re-armed on disconnect so the next connection starts fresh again.
+        self._auto_soft_reset_default = auto_soft_reset
+        self._auto_soft_reset = auto_soft_reset
 
     def did_action(self):
         self._did_action = True
@@ -570,7 +580,7 @@ def main():
     prepare_command_expansions(config)
 
     remaining_args = sys.argv[1:]
-    state = State()
+    state = State(auto_soft_reset=getattr(config, "auto_soft_reset", False))
 
     try:
         while remaining_args:
@@ -584,10 +594,10 @@ def main():
 
             # The (potentially rewritten) command must now be a base command.
             cmd = remaining_args.pop(0)
-            try:
-                handler_func, parser_func = _COMMANDS[cmd]
-            except KeyError:
+            command_entry = _COMMANDS.get(cmd) or _DEPRECATED_COMMANDS.get(cmd)
+            if command_entry is None:
                 raise CommandError(f"'{cmd}' is not a command")
+            handler_func, parser_func = command_entry
 
             # If this command (or any down the chain) has a terminator, then
             # limit the arguments passed for this command. They will be added
