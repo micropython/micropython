@@ -219,6 +219,7 @@ Methods
    bandwidth      (ESP32 Only.) WiFi channel bandwidth. See `WLAN.BANDWIDTH_20` and others.
    =============  ===========
 
+<<<<<<< HEAD
 CSI Methods (ESP32 only)
 ------------------------
 
@@ -319,6 +320,8 @@ CSI Methods (ESP32 only)
    Frames are dropped when the buffer is full and new frames arrive faster than
    they can be read. Increase ``buffer_size`` in ``csi_enable()`` to reduce
    drops.
+=======
+>>>>>>> bb242a6d2 (esp32/network-wlan: Added WPA-Enterprise.)
 
 
 Constants
