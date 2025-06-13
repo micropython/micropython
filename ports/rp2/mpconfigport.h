@@ -168,7 +168,9 @@
 #define MICROPY_PY_MACHINE_PULSE                (1)
 #define MICROPY_PY_MACHINE_PWM                  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/rp2/machine_pwm.c"
+#ifndef MICROPY_PY_MACHINE_I2C
 #define MICROPY_PY_MACHINE_I2C                  (1)
+#endif
 #ifndef MICROPY_PY_MACHINE_I2C_TARGET
 #define MICROPY_PY_MACHINE_I2C_TARGET           (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/rp2/machine_i2c_target.c"
