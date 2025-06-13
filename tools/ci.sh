@@ -332,12 +332,15 @@ function ci_psoc6_setup {
     docker exec mtb-ci /bin/bash -c "git config --global --add safe.directory /micropython/lib/micropython-lib"
     docker exec mtb-ci /bin/bash -c "git config --global --add safe.directory /micropython/lib/mbedtls"
     docker exec mtb-ci /bin/bash -c "git config --global --add safe.directory /micropython/lib/lwip"
+    docker exec mtb-ci /bin/bash -c "git config --global --add safe.directory /micropython/lib/mtb-psoc6-libs"
+
+    # Initialize the submodules
+    docker exec mtb-ci make submodules
 }
 
 function ci_psoc6_build {
     board=$1
     docker exec mtb-ci make mtb_init BOARD=${board}
-    docker exec mtb-ci make submodules
     docker exec mtb-ci make
 }
 
