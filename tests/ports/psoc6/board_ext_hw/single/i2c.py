@@ -112,14 +112,14 @@ def i2c_tests(i2c_master):
     i2c_slave_rcv_buf = bytearray(8)
     i2c_slave.conf_receive_buffer(i2c_slave_rcv_buf)
 
-    master_write_data = [b"\x01\x44\x55\x23", b"\x98\x03\x44\xEE"]
+    master_write_data = [b"\x01\x44\x55\x23", b"\x98\x03\x44\xee"]
     i2c_master.writevto(slave_addr, master_write_data)
 
     time.sleep_ms(100)
 
     print(
         "master writevto() and received by slave: ",
-        i2c_slave_rcv_buf == b"\x01\x44\x55\x23\x98\x03\x44\xEE",
+        i2c_slave_rcv_buf == b"\x01\x44\x55\x23\x98\x03\x44\xee",
     )
 
     # 4. Master to slave read

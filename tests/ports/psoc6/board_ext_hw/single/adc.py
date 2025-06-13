@@ -1,14 +1,15 @@
 ### ADC Functional test
-""" Setup description: 
-    Construct a basic voltage divider with 120 ohms each resistor. Supply the ends with 3.3V and GND.
-    Available voltage values are then - 3.3V, ~1.7V, 0V.
-    Pin connections:
-    Voltage Divider circuit     On Target Board
-          3.3V end                adc_pin_max
-          Mid point               adc_pin_mid
-          GND end                 adc_pin_gnd 
-    *Known issue: When connected to GND, you may not get exact 0V and this may vary board to board.
+"""Setup description:
+Construct a basic voltage divider with 120 ohms each resistor. Supply the ends with 3.3V and GND.
+Available voltage values are then - 3.3V, ~1.7V, 0V.
+Pin connections:
+Voltage Divider circuit     On Target Board
+        3.3V end                adc_pin_max
+        Mid point               adc_pin_mid
+        GND end                 adc_pin_gnd
+*Known issue: When connected to GND, you may not get exact 0V and this may vary board to board.
 """
+
 import os
 import time
 from machine import ADC, ADCBlock

@@ -192,7 +192,7 @@ audio_in.deinit()
 ###############################################################################
 print("\n3. shift ")
 
-buf = bytearray(b"\xFF\xFF\xFF\xFF")
+buf = bytearray(b"\xff\xff\xff\xff")
 I2S.shift(buf=buf, bits=16, shift=3)
 print(binascii.hexlify(buf))
 I2S.shift(buf=buf, bits=16, shift=-3)
