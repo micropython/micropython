@@ -85,6 +85,10 @@
 #elif defined(STM32L4) || defined(STM32WB)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_247CYCLES_5
+#elif defined(STM32N6)
+// TODO
+#define ADC_SAMPLETIME_DEFAULT      0
+#define ADC_SAMPLETIME_DEFAULT_INT  0
 #endif
 
 // Timeout for waiting for end-of-conversion
