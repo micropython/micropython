@@ -32,6 +32,8 @@
 #include "hardware/spi.h"
 #include "hardware/dma.h"
 
+#if MICROPY_PY_MACHINE_SPI
+
 #define DEFAULT_SPI_BAUDRATE    (1000000)
 #define DEFAULT_SPI_POLARITY    (0)
 #define DEFAULT_SPI_PHASE       (0)
@@ -360,3 +362,5 @@ mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t o) {
         mp_raise_TypeError(MP_ERROR_TEXT("expecting an SPI object"));
     }
 }
+
+#endif // MICROPY_PY_MACHINE_SPI

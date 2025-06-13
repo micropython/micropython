@@ -179,9 +179,11 @@
 #define MICROPY_PY_MACHINE_I2S_CONSTANT_RX      (RX)
 #define MICROPY_PY_MACHINE_I2S_CONSTANT_TX      (TX)
 #define MICROPY_PY_MACHINE_I2S_RING_BUF         (1)
+#ifndef MICROPY_PY_MACHINE_SPI
 #define MICROPY_PY_MACHINE_SPI                  (1)
 #define MICROPY_PY_MACHINE_SPI_MSB              (SPI_MSB_FIRST)
 #define MICROPY_PY_MACHINE_SPI_LSB              (SPI_LSB_FIRST)
+#endif
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)
 #define MICROPY_PY_MACHINE_UART                 (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE     "ports/rp2/machine_uart.c"
