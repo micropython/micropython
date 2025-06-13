@@ -132,9 +132,17 @@ static mp_obj_t mod_time_gm_local_time(size_t n_args, const mp_obj_t *args, stru
     } else {
         #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
         mp_float_t val = mp_obj_get_float(args[0]);
-        t = (time_t)MICROPY_FLOAT_C_FUN(trunc)(val);
+        t = (time_t)(mp_uint_t)MICROPY_FLOAT_C_FUN(trunc)(val);
         #else
-        t = mp_obj_get_int(args[0]);
+        mp_obj_t timestamp = args[0];
+        if (!mp_obj_is_exact_type(timestamp, &mp_type_int)) {
+            mp_obj_t as_int = mp_unary_op(MP_UNARY_OP_INT_MAYBE, (mp_obj_t)timestamp);
+            if (as_int == MP_OBJ_NULL) {
+                mp_raise_TypeError_int_conversion(timestamp);
+            }
+            timestamp = as_int;
+        }
+        t = mp_obj_int_get_uint_checked(timestamp);
         #endif
     }
     struct tm *tm = time_func(&t);
@@ -196,7 +204,7 @@ static mp_obj_t mod_time_mktime(mp_obj_t tuple) {
     if (ret == -1) {
         mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("invalid mktime usage"));
     }
-    return mp_obj_new_int(ret);
+    return mp_obj_new_int_from_uint((mp_uint_t)ret);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_time_mktime_obj, mod_time_mktime);
 
