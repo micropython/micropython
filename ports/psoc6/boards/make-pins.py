@@ -178,7 +178,7 @@ class Pins(object):
         return (int(port_number) << 3) + int(pin_number)
 
     def get_pin_package_path(self, filename):
-        root_dir = "./mtb_shared/mtb-hal-cat1"
+        root_dir = "../../lib/mtb_shared/mtb-hal-cat1"
         mid_dir = "COMPONENT_CAT1A/include/pin_packages"
         for dirpath, dirnames, filenames in os.walk(root_dir):
             for dirname in dirnames:
