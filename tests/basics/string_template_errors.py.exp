@@ -1,0 +1,5 @@
+SyntaxError: cannot combine 'b' and 't' prefixes
+SyntaxError: cannot combine 'f' and 't' prefixes
+SyntaxError: unclosed string
+PEP 750: str(t) returns default object repr
+TypeError: Templates do not support ordering

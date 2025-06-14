@@ -37,7 +37,23 @@
 #include "py/runtime.h"
 #include "py/objint.h"
 #include "py/objstr.h"
+#include "py/objlist.h"
+#include "py/objtuple.h"
 #include "py/builtin.h"
+#include "py/compile.h"
+
+#if MICROPY_PY_TSTRINGS
+#include "py/tstring_expr_parser.h"
+
+// Forward declaration
+struct _parser_t;
+static void *parser_alloc(struct _parser_t *parser, size_t num_bytes);
+
+// Wrapper function for parser_alloc to match the allocator interface
+static void *tstring_parser_alloc_wrapper(void *ctx, size_t num_bytes) {
+    return parser_alloc((struct _parser_t *)ctx, num_bytes);
+}
+#endif
 
 #if MICROPY_ENABLE_COMPILER
 
@@ -243,6 +259,7 @@ typedef struct _parser_t {
 } parser_t;
 
 static void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args);
+static void push_result_token(parser_t *parser, uint8_t rule_id);
 
 static const uint16_t *get_rule_arg(uint8_t r_id) {
     size_t off = rule_arg_offset_table[r_id];
@@ -626,6 +643,289 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         // make a node holding a pointer to the bytes object
         mp_obj_t o = mp_obj_new_bytes((const byte *)lex->vstr.buf, lex->vstr.len);
         pn = make_node_const_object(parser, lex->tok_line, o);
+    #if MICROPY_PY_TSTRINGS
+    } else if (lex->tok_kind == MP_TOKEN_TSTRING) {
+        // Generate AST for template string construction
+        // This will create code that calls __template__(strings, interpolations)
+
+        const char *str = lex->vstr.buf;
+        size_t len = lex->vstr.len;
+
+        if (len > MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("template string too large (%d bytes)"), (int)len);
+        }
+
+        // Process TSTRING content
+
+        // Dynamic arrays for collecting parse nodes
+        typedef struct {
+            size_t alloc;
+            size_t len;
+            mp_parse_node_t *items;
+        } pn_array_t;
+
+        pn_array_t strings = {0};
+        pn_array_t interps = {0};
+
+        // Helper macros
+        #define GROW_ARRAY(arr) do { \
+                    if ((arr).len >= (arr).alloc) { \
+                        size_t new_alloc = (arr).alloc ? (arr).alloc * 2 : 8; \
+                        (arr).items = m_renew(mp_parse_node_t, (arr).items, (arr).alloc, new_alloc); \
+                        (arr).alloc = new_alloc; \
+                    } \
+} \
+                while (0)
+
+        #define ADD_NODE(arr, node) do { \
+                    GROW_ARRAY(arr); \
+                    (arr).items[(arr).len++] = node; \
+} while (0)
+
+        // Use a vstr to accumulate the current string part
+        vstr_t vstr;
+        vstr_init(&vstr, 16);
+
+        size_t i = 0;
+        while (i < len) {
+            if (i < len - 1 && str[i] == '{' && str[i + 1] == '{') {
+                // Handle escaped braces {{
+                vstr_add_byte(&vstr, '{');
+                i += 2;
+            } else if (i < len - 1 && str[i] == '}' && str[i + 1] == '}') {
+                // Handle escaped braces }}
+                vstr_add_byte(&vstr, '}');
+                i += 2;
+            } else if (str[i] == '{') {
+                // Find the end of the interpolation first to check for debug format
+                i++;
+                size_t expr_start = i;
+                int brace_depth = 1;
+                size_t conversion_pos = 0;
+                size_t format_spec_pos = 0;
+                bool is_debug_format = false;
+
+                // Quick scan to check for debug format
+                size_t j = i;
+                int bd = 0, pd = 0;  // bracket and paren depth
+                while (j < len && str[j] != '}') {
+                    if (str[j] == '[') {
+                        bd++;
+                    } else if (str[j] == ']') {
+                        bd--;
+                    } else if (str[j] == '(') {
+                        pd++;
+                    } else if (str[j] == ')') {
+                        pd--;
+                    } else if (bd == 0 && pd == 0 && (str[j] == '!' || str[j] == ':')) {
+                        break;
+                    }
+                    j++;
+                }
+                if (j > i && str[j - 1] == '=' && j < len &&
+                    (str[j] == '}' || str[j] == '!' || str[j] == ':')) {
+                    is_debug_format = true;
+
+                    // For debug format, add "expr=" to the current string
+                    for (size_t k = expr_start; k < j - 1; k++) {
+                        vstr_add_byte(&vstr, str[k]);
+                    }
+                    vstr_add_byte(&vstr, '=');
+                }
+
+                // Now save the string part
+                qstr q = qstr_from_strn(vstr.buf, vstr.len);
+                ADD_NODE(strings, mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, q));
+                vstr_reset(&vstr);
+
+                int bracket_depth = 0;  // Track [] nesting
+                int paren_depth = 0;    // Track () nesting
+                while (i < len && brace_depth > 0) {
+                    if (str[i] == '{') {
+                        brace_depth++;
+                    } else if (str[i] == '}') {
+                        brace_depth--;
+                        if (brace_depth == 0) {
+                            break;
+                        }
+                    } else if (str[i] == '[') {
+                        bracket_depth++;
+                    } else if (str[i] == ']') {
+                        bracket_depth--;
+                    } else if (str[i] == '(') {
+                        paren_depth++;
+                    } else if (str[i] == ')') {
+                        paren_depth--;
+                    } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == '!' && conversion_pos == 0) {
+                        conversion_pos = i;
+                    } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == ':' && format_spec_pos == 0) {
+                        format_spec_pos = i;
+                    }
+                    i++;
+                }
+
+                if (brace_depth == 0) {
+                    // Successfully found closing brace
+                    size_t expr_end = i;
+                    size_t expr_len = expr_end - expr_start;
+
+                    if (is_debug_format) {
+                        // Find the position of '=' to determine expression length
+                        size_t eq_pos = expr_start;
+                        while (eq_pos < expr_end && str[eq_pos] != '=') {
+                            eq_pos++;
+                        }
+                        expr_len = eq_pos - expr_start;
+                    } else if (conversion_pos) {
+                        expr_len = conversion_pos - expr_start;
+                    } else if (format_spec_pos) {
+                        expr_len = format_spec_pos - expr_start;
+                    }
+
+                    // Parse the expression to generate proper AST nodes
+                    mp_parse_node_t expr_node;
+                    if (expr_len > 0) {
+                        #if MICROPY_PY_TSTRINGS
+                        // Use the dedicated expression parser
+                        expr_node = parse_tstring_expression(parser, tstring_parser_alloc_wrapper, &str[expr_start], expr_len);
+                        #else
+                        // Fallback: store as string
+                        qstr expr_q = qstr_from_strn(&str[expr_start], expr_len);
+                        expr_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, expr_q);
+                        #endif
+                    } else {
+                        expr_node = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_NONE);
+                    }
+
+                    // Create expression text string
+                    qstr expr_text_q;
+                    if (is_debug_format) {
+                        // Include the '=' in the expression text
+                        expr_text_q = qstr_from_strn(&str[expr_start], expr_len + 1);
+                    } else {
+                        expr_text_q = qstr_from_strn(&str[expr_start], expr_len);
+                    }
+                    mp_parse_node_t expr_text_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, expr_text_q);
+
+                    // Extract conversion
+                    mp_parse_node_t conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_NONE);
+                    if (is_debug_format) {
+                        // Debug format implies !r conversion (or !s if format spec present)
+                        qstr conv_q = (format_spec_pos && format_spec_pos < expr_end) ? MP_QSTR_s : MP_QSTR_r;
+                        conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, conv_q);
+                    } else if (conversion_pos && conversion_pos + 1 < expr_end) {
+                        qstr conv_q = qstr_from_strn(&str[conversion_pos + 1], 1);
+                        conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, conv_q);
+                    }
+
+                    // Extract format spec
+                    mp_parse_node_t format_spec_node;
+                    if (format_spec_pos && format_spec_pos + 1 < expr_end) {
+                        size_t fmt_end = expr_end;
+                        if (conversion_pos && conversion_pos > format_spec_pos) {
+                            fmt_end = conversion_pos;
+                        }
+                        if (fmt_end > format_spec_pos + 1) {
+                            qstr fmt_q = qstr_from_strn(&str[format_spec_pos + 1],
+                                fmt_end - format_spec_pos - 1);
+                            format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, fmt_q);
+                        } else {
+                            format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, MP_QSTR_);
+                        }
+                    } else {
+                        format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, MP_QSTR_);
+                    }
+
+                    // Build interpolation tuple node: (expr, text, conv, fmt)
+                    mp_parse_node_struct_t *interp_tuple = parser_alloc(parser,
+                        sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 4);
+                    interp_tuple->source_line = lex->tok_line;
+                    interp_tuple->kind_num_nodes = RULE_testlist | (4 << 8);
+                    interp_tuple->nodes[0] = expr_node;
+                    interp_tuple->nodes[1] = expr_text_node;
+                    interp_tuple->nodes[2] = conversion_node;
+                    interp_tuple->nodes[3] = format_spec_node;
+
+                    ADD_NODE(interps, (mp_parse_node_t)interp_tuple);
+                    // Added interpolation
+                    i++; // Skip the closing brace
+                } else {
+                    // Failed to find closing brace - syntax error
+                }
+            } else {
+                // Regular character
+                vstr_add_byte(&vstr, str[i]);
+                i++;
+            }
+        }
+
+        // Add the final string part
+        qstr q = qstr_from_strn(vstr.buf, vstr.len);
+        ADD_NODE(strings, mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, q));
+        vstr_clear(&vstr);
+
+        // Finished parsing t-string
+
+        if (interps.len > MICROPY_PY_TSTRING_MAX_PARTS) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("too many template interpolations (%d)"), (int)interps.len);
+        }
+
+        // Build strings tuple node
+        mp_parse_node_struct_t *strings_tuple = parser_alloc(parser,
+            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * strings.len);
+        strings_tuple->source_line = lex->tok_line;
+        strings_tuple->kind_num_nodes = RULE_testlist | (strings.len << 8);
+        for (size_t j = 0; j < strings.len; j++) {
+            strings_tuple->nodes[j] = strings.items[j];
+        }
+
+        // Build interpolations tuple node
+        mp_parse_node_struct_t *interps_tuple = parser_alloc(parser,
+            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * interps.len);
+        interps_tuple->source_line = lex->tok_line;
+        interps_tuple->kind_num_nodes = RULE_testlist | (interps.len << 8);
+        for (size_t j = 0; j < interps.len; j++) {
+            interps_tuple->nodes[j] = interps.items[j];
+        }
+
+        // Build AST for: __template__(strings, interpolations)
+        // First create the function name node
+        mp_parse_node_t func_node = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, MP_QSTR___template__);
+
+        // Create argument list node with two arguments
+        // For a simple 2-argument call, we create: arg1, arg2
+        // The list infrastructure expects the arguments without explicit comma nodes
+        mp_parse_node_struct_t *arglist = parser_alloc(parser,
+            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 2);
+        arglist->source_line = lex->tok_line;
+        arglist->kind_num_nodes = RULE_arglist | (2 << 8);
+        arglist->nodes[0] = (mp_parse_node_t)strings_tuple;
+        arglist->nodes[1] = (mp_parse_node_t)interps_tuple;
+
+        // Create the trailer_paren node for function call
+        // The compile function expects nodes[0] to be the arglist
+        mp_parse_node_struct_t *trailer = parser_alloc(parser,
+            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 1);
+        trailer->source_line = lex->tok_line;
+        trailer->kind_num_nodes = RULE_trailer_paren | (1 << 8);
+        trailer->nodes[0] = (mp_parse_node_t)arglist;
+
+        // Create the atom_expr_normal node for the function call
+        mp_parse_node_struct_t *atom_expr = parser_alloc(parser,
+            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 2);
+        atom_expr->source_line = lex->tok_line;
+        atom_expr->kind_num_nodes = RULE_atom_expr_normal | (2 << 8);
+        atom_expr->nodes[0] = func_node;
+        atom_expr->nodes[1] = (mp_parse_node_t)trailer;
+
+        pn = (mp_parse_node_t)atom_expr;
+
+        m_del(mp_parse_node_t, strings.items, strings.alloc);
+        m_del(mp_parse_node_t, interps.items, interps.alloc);
+
+#undef GROW_ARRAY
+#undef ADD_NODE
+    #endif
     } else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, lex->tok_kind);
     }

@@ -44,9 +44,9 @@
 // os.uname().release. All other version info available in the firmware (e.g.
 // the REPL banner) comes from MICROPY_GIT_TAG.
 #define MICROPY_VERSION_STRING_BASE \
-    MP_STRINGIFY(MICROPY_VERSION_MAJOR) "." \
-    MP_STRINGIFY(MICROPY_VERSION_MINOR) "." \
-    MP_STRINGIFY(MICROPY_VERSION_MICRO)
+        MP_STRINGIFY(MICROPY_VERSION_MAJOR) "." \
+        MP_STRINGIFY(MICROPY_VERSION_MINOR) "." \
+        MP_STRINGIFY(MICROPY_VERSION_MICRO)
 #if MICROPY_VERSION_PRERELEASE
 #define MICROPY_VERSION_STRING MICROPY_VERSION_STRING_BASE "-preview"
 #else
@@ -1083,6 +1083,34 @@ typedef double mp_float_t;
 // Support for literal string interpolation, f-strings (see PEP 498, Python 3.6+)
 #ifndef MICROPY_PY_FSTRINGS
 #define MICROPY_PY_FSTRINGS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Support for template strings, t-strings (see PEP 750, Python 3.14+)
+// Requires f-strings to be enabled
+#ifndef MICROPY_PY_TSTRINGS
+#define MICROPY_PY_TSTRINGS (MICROPY_PY_FSTRINGS && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Maximum length of a single t-string expression
+#ifndef MICROPY_PY_TSTRING_MAX_EXPR_LEN
+#define MICROPY_PY_TSTRING_MAX_EXPR_LEN (10000)
+#endif
+
+// Maximum total size of a t-string template (all parts combined)
+// Ports can override this to reduce memory usage for embedded systems
+#ifndef MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE
+#define MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE (1048576)  // 1MB default
+#endif
+
+// Maximum number of interpolations in a single t-string
+// Ports can override this to reduce memory usage for embedded systems
+#ifndef MICROPY_PY_TSTRING_MAX_INTERPOLATIONS
+#define MICROPY_PY_TSTRING_MAX_INTERPOLATIONS (1000)  // Reasonable default
+#endif
+
+// Legacy name for compatibility
+#ifndef MICROPY_PY_TSTRING_MAX_PARTS
+#define MICROPY_PY_TSTRING_MAX_PARTS MICROPY_PY_TSTRING_MAX_INTERPOLATIONS
 #endif
 
 // Support for assignment expressions with := (see PEP 572, Python 3.8+)

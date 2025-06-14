@@ -1,0 +1,39 @@
+=== Basic t-string tests ===
+('Hello World',)
+0
+('',)
+0
+('Hello ', '!')
+1
+MicroPython
+name
+('MicroPython',)
+('x=', ', y=', '')
+2
+(42, 3.14)
+(6, 3)
+('value', [2, 3])
+x=
+42
+r
+.2f
+['r', 's']
+'Raw: \\n\\t'
+('', '', '')
+2
+
+=== Template iteration tests ===
+5
+['str', 'Interpolation', 'str', 'Interpolation', 'str']
+['a', 42, 'b', 3.14, 'c']
+2
+
+=== Advanced interpolation tests ===
+Hello, World!
+[3, 4]
+positive
+
+Type checks: Template=Template, is Template=True
+(1, 2, 3)
+0
+()

@@ -1,0 +1,10 @@
+Import successful
+Template: <class 'Template'>
+Interpolation: <class 'Interpolation'>
+__module__ attribute not supported in MicroPython
+t-string type: <class 'Template'>
+Is Template: True
+Interpolation type: <class 'Interpolation'>
+Is Interpolation: True
+Cannot instantiate Template: function takes 2 positional arguments but 0 were given
+Cannot instantiate Interpolation: function missing 2 required positional arguments
