@@ -151,10 +151,10 @@ Constants
 
 .. data:: INCL
 
-   A flag for `keys()`, `values()`, `items()` methods to specify that
+   A flag for :meth:`btree.keys`, :meth:`btree.values`, :meth:`btree.items` methods to specify that
    scanning should be inclusive of the end key.
 
 .. data:: DESC
 
-   A flag for `keys()`, `values()`, `items()` methods to specify that
+   A flag for :meth:`btree.keys`, :meth:`btree.values`, :meth:`btree.items` methods to specify that
    scanning should be in descending direction of keys.
