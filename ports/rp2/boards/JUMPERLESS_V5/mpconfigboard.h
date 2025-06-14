@@ -1,0 +1,39 @@
+// Board and hardware specific configuration
+#define MICROPY_HW_BOARD_NAME                   "Jumperless v5"
+#define MICROPY_HW_FLASH_STORAGE_BYTES          (PICO_FLASH_SIZE_BYTES - 1024 * 1024)
+
+// USB VID/PID
+#define MICROPY_HW_USB_VID (0x1D50)
+#define MICROPY_HW_USB_PID (0xACAB)
+
+// UART0
+#define MICROPY_HW_UART0_TX  (0)
+#define MICROPY_HW_UART0_RX  (1)
+#define MICROPY_HW_UART0_CTS (-1)
+#define MICROPY_HW_UART0_RTS (-1)
+
+// UART1
+#define MICROPY_HW_UART1_TX  (24)
+#define MICROPY_HW_UART1_RX  (25)
+#define MICROPY_HW_UART1_CTS (-1)
+#define MICROPY_HW_UART1_RTS (-1)
+
+// I2C0
+#define MICROPY_HW_I2C0_SCL  (5)
+#define MICROPY_HW_I2C0_SDA  (4)
+
+// I2C1
+#define MICROPY_HW_I2C1_SCL  (23)
+#define MICROPY_HW_I2C1_SDA  (22)
+
+// SPI0
+#define MICROPY_HW_SPI0_SCK  (22)
+#define MICROPY_HW_SPI0_MOSI (23)
+#define MICROPY_HW_SPI0_MISO (20)
+#define MICROPY_HW_SPI0_NSS  (21)
+
+// SPI1
+#define MICROPY_HW_SPI1_SCK  (26)
+#define MICROPY_HW_SPI1_MOSI (27)
+#define MICROPY_HW_SPI1_MISO (24)
+#define MICROPY_HW_SPI1_NSS  (25)

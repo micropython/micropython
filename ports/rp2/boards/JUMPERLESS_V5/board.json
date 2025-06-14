@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "USB"
+    ],
+    "images": [
+        "rp2-pico2.jpg"
+    ],
+    "mcu": "rp2350",
+    "product": "Jumperless v5",
+    "thumbnail": "",
+    "url": "https://github.com/Architeuthis-Flux/JumperlessV5",
+    "vendor": "Architeuthis-Flux"
+}
