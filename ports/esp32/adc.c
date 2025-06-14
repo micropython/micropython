@@ -25,6 +25,9 @@
  * THE SOFTWARE.
  */
 
+#if MICROPY_PY_MACHINE_ADC
+
+
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "adc.h"
@@ -96,3 +99,5 @@ static esp_err_t ensure_adc_calibration(machine_adc_block_obj_t *self, adc_atten
 
     return ret;
 }
+
+#endif // MICROPY_PY_MACHINE_ADC
