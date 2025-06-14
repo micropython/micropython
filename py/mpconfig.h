@@ -794,6 +794,16 @@ typedef uint64_t mp_uint_t;
 // Additional margin between the places in the runtime where Python stack is
 // checked and the actual end of the C stack. Needs to be large enough to avoid
 // overflows from function calls made between checks.
+#if !defined(MICROPY_STACK_CHECK_MARGIN)
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_UNDEFINED__)
+#define MICROPY_STACK_CHECK_MARGIN (8192)
+#elif defined(__has_feature)
+#if __has_feature(address_sanitizer) || __has_feature(undefined_sanitizer)
+#define MICROPY_STACK_CHECK_MARGIN (8192)
+#endif
+#endif
+#endif
+
 #ifndef MICROPY_STACK_CHECK_MARGIN
 #define MICROPY_STACK_CHECK_MARGIN (0)
 #endif
@@ -1290,6 +1300,39 @@ typedef time_t mp_timestamp_t;
 // Support for literal string interpolation, f-strings (see PEP 498, Python 3.6+)
 #ifndef MICROPY_PY_FSTRINGS
 #define MICROPY_PY_FSTRINGS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Support for template strings, t-strings (see PEP 750, Python 3.14+)
+// Requires f-strings to be enabled
+#ifndef MICROPY_PY_TSTRINGS
+#define MICROPY_PY_TSTRINGS (MICROPY_PY_FSTRINGS && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Maximum length of a single t-string expression
+#ifndef MICROPY_PY_TSTRING_MAX_EXPR_LEN
+#define MICROPY_PY_TSTRING_MAX_EXPR_LEN (10000)
+#endif
+
+// Maximum total size of a t-string template (all parts combined)
+// Ports can override this to reduce memory usage for embedded systems
+#ifndef MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE
+#define MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE (1048576)  // 1MB default
+#endif
+
+// Maximum number of interpolations in a single t-string
+// Ports can override this to reduce memory usage for embedded systems
+#ifndef MICROPY_PY_TSTRING_MAX_INTERPOLATIONS
+#define MICROPY_PY_TSTRING_MAX_INTERPOLATIONS (4095)  // 12-bit limit
+#endif
+
+// Legacy name for compatibility
+#ifndef MICROPY_PY_TSTRING_MAX_PARTS
+#define MICROPY_PY_TSTRING_MAX_PARTS MICROPY_PY_TSTRING_MAX_INTERPOLATIONS
+#endif
+
+// Maximum memory allocation for template string parse tree (for memory-constrained ports)
+#ifndef MICROPY_PY_TSTRING_MAX_BYTES
+#define MICROPY_PY_TSTRING_MAX_BYTES (65536)  // 64KB default
 #endif
 
 // Support for assignment expressions with := (see PEP 572, Python 3.8+)

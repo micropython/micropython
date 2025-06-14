@@ -53,3 +53,13 @@
 #define MICROPY_HW_MCU_NAME            MICROPY_PY_SYS_PLATFORM
 // Keep the standard banner message
 #define MICROPY_BANNER_MACHINE MICROPY_PY_SYS_PLATFORM " [" MICROPY_PLATFORM_COMPILER "] version"
+
+// Enable t-strings for coverage testing
+#define MICROPY_PY_TSTRINGS            (1)
+
+// Override t-string size limits for coverage testing
+// Use small values to easily trigger size limit errors
+#define MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE  (1024)    // 1KB instead of 1MB
+#define MICROPY_PY_TSTRING_MAX_INTERPOLATIONS (100)     // 100 instead of 4095
+#define MICROPY_PY_TSTRING_MAX_BYTES          (4096)    // 4KB instead of 64KB
+#define MICROPY_PY_TSTRING_MAX_EXPR_LEN       (100)     // 100 instead of 10000
