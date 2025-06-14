@@ -257,12 +257,15 @@ static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
 #error MICROPY_OBJ_REPR_D requires MICROPY_FLOAT_IMPL_DOUBLE
 #endif
 
+#include <math.h>
+#define mp_obj_true_nan ((mp_obj_t)((uint64_t)0x7ff8000000000000 + 0x8004000000000000))
+
 #define mp_const_float_e {((mp_obj_t)((uint64_t)0x4005bf0a8b145769 + 0x8004000000000000))}
 #define mp_const_float_pi {((mp_obj_t)((uint64_t)0x400921fb54442d18 + 0x8004000000000000))}
 #if MICROPY_PY_MATH_CONSTANTS
 #define mp_const_float_tau {((mp_obj_t)((uint64_t)0x401921fb54442d18 + 0x8004000000000000))}
 #define mp_const_float_inf {((mp_obj_t)((uint64_t)0x7ff0000000000000 + 0x8004000000000000))}
-#define mp_const_float_nan {((mp_obj_t)((uint64_t)0xfff8000000000000 + 0x8004000000000000))}
+#define mp_const_float_nan {mp_obj_true_nan}
 #endif
 
 static inline bool mp_obj_is_float(mp_const_obj_t o) {
@@ -276,6 +279,10 @@ static inline mp_float_t mp_obj_float_get(mp_const_obj_t o) {
     return num.f;
 }
 static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
+    if (isnan(f)) {
+        // prevent creation of bad nanboxed pointers via array.array or struct
+        return mp_obj_true_nan;
+    }
     union {
         mp_float_t f;
         uint64_t r;

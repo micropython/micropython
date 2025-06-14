@@ -865,6 +865,13 @@ typedef double mp_float_t;
 #endif
 #endif
 
+// Whether to enable the improved float formatting method, which provides
+// string representations that can be parsed back to the original number
+// in > 99.5% of the cases, but is slightly slower.
+#ifndef MICROPY_FLOAT_HIGH_QUALITY_REPR
+#define MICROPY_FLOAT_HIGH_QUALITY_REPR (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
+#endif
+
 // Whether to provide a high-quality hash for float and complex numbers.
 // Otherwise the default is a very simple but correct hashing function.
 #ifndef MICROPY_FLOAT_HIGH_QUALITY_HASH
