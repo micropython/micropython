@@ -76,3 +76,26 @@ Q(/rom/lib)
 #if MICROPY_ENABLE_PYSTACK
 Q(pystack exhausted)
 #endif
+
+#if MICROPY_PY_TSTRINGS
+Q(_templatelib)
+Q(__t)
+Q(Template)
+Q(Interpolation)
+Q(strings)
+Q(interpolations)
+Q(value)
+Q(expression)
+Q(conversion)
+Q(format_spec)
+Q(string_dot_templatelib)
+Q(string)
+Q(templatelib)
+Q(values)
+Q({)
+Q(})
+Q(__template__)
+Q(__lt_tstring_expr_gt_)
+Q(__iter__)
+Q(template_iterator)
+#endif

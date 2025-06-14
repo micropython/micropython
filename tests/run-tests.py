@@ -546,6 +546,7 @@ tests_with_regex_output = [
         "micropython/meminfo.py",
         "basics/bytes_compare3.py",
         "basics/builtin_help.py",
+        "basics/tstring_test.py",
         "misc/sys_settrace_cov.py",
         "thread/thread_exc2.py",
         "ports/esp32/partition_ota.py",
