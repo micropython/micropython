@@ -135,6 +135,11 @@ Use the :mod:`machine.Timer` class::
     tim = Timer(period=5000, mode=Timer.ONE_SHOT, callback=lambda t:print(1))
     tim.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(2))
 
+By default, timer callbacks run as soft IRQs so they can allocate but
+are prone to GC jitter and delays. Pass ``hard=True`` to the ``Timer()``
+constructor or ``init()`` method to run the callback in hard-IRQ context
+instead.
+
 
 .. _rp2_Pins_and_GPIO:
 
