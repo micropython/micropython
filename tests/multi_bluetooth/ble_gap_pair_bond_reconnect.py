@@ -113,8 +113,9 @@ def instance0():
     print("simulate_reboot")
     ble.active(0)
     time.sleep_ms(100)  # Allow cleanup
-    ble.active(1)
+    # CRITICAL: Set IRQ handler BEFORE activating BLE so BTstack can load bonds during init
     ble.irq(irq)
+    ble.active(1)
 
     # Re-register services after "reboot"
     ((char_handle,),) = ble.gatts_register_services((SERVICE,))
@@ -173,8 +174,9 @@ def instance1():
     # Recreate BLE instance to simulate reboot (tests bond persistence)
     ble.active(0)
     time.sleep_ms(100)  # Allow cleanup
-    ble.active(1)
+    # CRITICAL: Set IRQ handler BEFORE activating BLE so BTstack can load bonds during init
     ble.irq(irq)
+    ble.active(1)
 
     multitest.next()
     try:

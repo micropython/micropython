@@ -3,7 +3,7 @@
 # Quick Bond Persistence Test Runner
 # Runs only the critical bond persistence tests
 
-set -e
+set +e  # Don't exit on errors - continue running all tests
 
 # Configuration
 DEVICE1="/dev/ttyACM1"

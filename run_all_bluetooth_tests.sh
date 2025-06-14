@@ -3,7 +3,7 @@
 # Comprehensive Bluetooth Multi-Test Runner
 # This script runs all Bluetooth multi-tests and generates a detailed report
 
-set -e
+set +e  # Don't exit on errors - continue running all tests
 
 # Configuration
 REPORT_FILE="BLUETOOTH_MULTITEST_RESULTS.md"
