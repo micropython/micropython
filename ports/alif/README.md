@@ -56,3 +56,21 @@ make BOARD=ALIF_ENSEMBLE
 
 The above command should produce binary images in the `build-ALIF_ENSEMBLE/`
 subdirectory (or the equivalent directory for the board specified).
+
+### Update the SE Firmware
+
+The SE firmware must be updated **before** flashing the main firmware to match the version used by MicroPython. This step only needs to be performed once. Connect the board to your PC via the **SE UART USB** port (on the Ensemble kit, this is labeled **PRG USB**), then run:
+
+```bash
+make update-system-package
+```
+
+**Note:** The board must be power-cycled after this step.
+
+### Deploy MicroPython
+
+To flash the firmware, run:
+
+```bash
+make BOARD=ALIF_ENSEMBLE deploy
+```
