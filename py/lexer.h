@@ -56,6 +56,9 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_INTEGER,
     MP_TOKEN_FLOAT_OR_IMAG,
     MP_TOKEN_STRING,
+    #if MICROPY_PY_TSTRINGS
+    MP_TOKEN_TSTRING,
+    #endif
     MP_TOKEN_BYTES,
 
     MP_TOKEN_ELLIPSIS,

@@ -1,0 +1,140 @@
+=== Constructor edge cases ===
+Keyword args: Template.__new__ only accepts *args arguments
+Invalid type: Template args must be str or Interpolation, got int
+Invalid interp: interpolations tuple must contain only Interpolation objects, got int
+Tuple constructor: hello42world
+
+=== Binary operations ===
+Template+str: can only concatenate Template (not "str") to Template
+str+Template: unsupported types for __add__: 'str', 'Template'
+int+Template: TypeError
+-: unsupported
+*: unsupported
+/: unsupported
+%: unsupported
+**: unsupported
+&: unsupported
+|: unsupported
+^: unsupported
+<<: unsupported
+>>: unsupported
+
+=== Edge cases ===
+Empty template: ''
+Empty strings: [Interpolation(1, 'a', None, ''), Interpolation(2, 'b', None, '')]
+Adjacent: '123'
+Single iter: ['only']
+Self+self: 'testtest'
+
+=== Values property ===
+Values[0]: ()
+Values[1]: (0,)
+Values[2]: (0, 1)
+Values[3]: (0, 1, 2)
+Values[4]: (0, 1, 2, 3)
+Values[5]: (0, 1, 2, 3, 4)
+Values[6]: (0, 1, 2, 3, 4, 5)
+
+=== Size limits ===
+Size limit test: SKIPPED (causes memory errors)
+
+=== Format spec edge cases ===
+Empty fmt: 42
+Width: '        42'
+Conv+fmt: '        42'
+Interp fmt: '      3.14'
+Escaped braces: 'Hello {name} and {{value}}'
+
+=== Special cases ===
+__template__ error: invalid interpolation format
+__template__: Template
+Interp read-only: AttributeError
+Whitespace trim: 'None'
+Debug =: x=42
+Custom !r: CustomRepr
+Custom !s: CustomStr
+__str__ bound: test
+Empty start iter: ['Interpolation', 'str']
+Iterator edge: ['Interpolation', 'Interpolation']
+
+=== repr tests ===
+Template repr: Template(strings=('Hello ', ' world'), interpolations=(Inter...
+Interp repr: Interpolation(42, 'x', 's', ':>10')
+
+=== Additional coverage tests ===
+String literal: hello
+String expr: 'test'
+Re-raised exception: Special error
+Conv empty fmt: '42'
+Too many interpolations: SyntaxError
+Large template: SyntaxError
+Triple quoted error: invalid syntax
+Raw triple error: invalid syntax
+Complex concat: strings=('a', 'bc', 'd', 'e'), values=(1, 2, 3)
+Empty concat: 'test42'
+Self interp concat: values=(1, 1)
+Lonely string: SyntaxError
+Empty t-string: ''
+
+=== Unicode edge cases ===
+Emoji: True
+Combining: True
+Zero-width: True
+Unicode format: True
+
+=== Nested template strings ===
+Nested: Template
+Expression: Template
+Function: Template
+
+=== Inline template literal tests ===
+Empty nested: Template
+With content: Template
+Concatenation: Template
+Mixed quotes: Template
+Nested interp: Template
+
+=== Additional unique coverage tests ===
+# Mixed args constructor
+Mixed args: Hello World, the answer is 42 and pi is 3.14
+
+# Two-tuple constructor
+Two-tuple form: Hello World, welcome to Python!
+
+# Complex format with variables
+Complex format: Value:       3.14
+
+# Escaped braces in format specs
+Escaped braces error: invalid format spec - cannot contain braces
+
+# Multi-string concatenation
+Multi concat: A 1 BC 2 D
+
+# Cumulative size limit
+Created huge template
+Size limit: template string too large
+
+# Empty expression
+Empty expr: Val: 42
+
+# Invalid __template__ calls
+Single tuple: function takes 2 positional arguments but 1 were given
+Invalid interp: invalid interpolation format
+
+# StringLike REVERSE_ADD test
+StringLike + Template: unsupported types for __add__: 'StringLike', 'Template'
+
+# Format spec ending with }}
+Format } error: invalid format spec - cannot contain braces
+
+# Large values test
+Large values (10): (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+Large values (15): len=15
+
+# Broken interpolation test
+Broken interp created: expr=broken
+
+# Long expression name
+Long expr: value=42
+
+Coverage tests completed!
