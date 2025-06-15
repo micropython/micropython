@@ -169,12 +169,13 @@ static mp_obj_t bufwriter_flush(mp_obj_t self_in) {
         int err;
         mp_uint_t out_sz = mp_stream_write_exactly(self->stream, self->buf, self->len, &err);
         (void)out_sz;
-        // TODO: try to recover from a case of non-blocking stream, e.g. move
-        // remaining chunk to the beginning of buffer.
-        assert(out_sz == self->len);
-        self->len = 0;
         if (err != 0) {
             mp_raise_OSError(err);
+        } else {
+            // TODO: try to recover from a case of non-blocking stream, e.g. move
+            // remaining chunk to the beginning of buffer.
+            assert(out_sz == self->len);
+            self->len = 0;
         }
     }
 
