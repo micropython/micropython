@@ -155,3 +155,21 @@ The default compiler optimisation level is -Os, or -Og if `DEBUG=1` is set.
 Setting the variable `COPT` will explicitly set the optimisation level. For
 example `make [other arguments] COPT=-O0 DEBUG=1` will build a binary with no
 optimisations, assertions enabled, and debug symbols.
+
+### Sanitizers
+
+Sanitizers are extra runtime checks supported by gcc and clang. The CI process
+supports building with the "undefined behavior" (UBSan) or "address" (ASan)
+sanitizers. The script `tools/ci.sh` is the source of truth about how to build
+and run in these modes.
+
+Several classes of checks are disabled via compiler flags:
+
+* In the undefined behavior sanitizer, checks based on the presence of the
+  `non_null` attribute are disabled because the code makes technically incorrect
+  calls like `memset(NULL, 0, 0)`. A future C standard is likely to permit such
+  calls.
+* In the address sanitizer, `detect_stack_use_after_return` is disabled. This
+  check is intended to make sure locals in a "returned from" stack frame are not
+  used. However, this mode interferes with various assumptions that
+  MicroPython's stack checking, NLR, and GC rely on.
