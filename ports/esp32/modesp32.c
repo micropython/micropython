@@ -50,9 +50,11 @@
 #if SOC_TOUCH_SENSOR_SUPPORTED
 static mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 
+    #if SOC_PM_SUPPORT_EXT0_WAKEUP
     if (machine_rtc_config.ext0_pin != -1) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
+    #endif
 
     machine_rtc_config.wake_on_touch = mp_obj_is_true(wake);
     return mp_const_none;
@@ -137,9 +139,11 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext1_obj, 0, esp32_wake_on_ext1)
 
 #if SOC_ULP_SUPPORTED
 static mp_obj_t esp32_wake_on_ulp(const mp_obj_t wake) {
+    #if SOC_PM_SUPPORT_EXT0_WAKEUP
     if (machine_rtc_config.ext0_pin != -1) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
+    #endif
     machine_rtc_config.wake_on_ulp = mp_obj_is_true(wake);
     return mp_const_none;
 }
