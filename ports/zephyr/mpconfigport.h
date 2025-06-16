@@ -110,6 +110,8 @@
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_NORTC            (1)
 
+#define MICROPY_TRACKED_ALLOC          (1)
+
 // Saving extra crumbs to make sure binary fits in 128K
 #define MICROPY_COMP_CONST_FOLDING  (0)
 #define MICROPY_COMP_CONST (0)
