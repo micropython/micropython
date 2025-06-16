@@ -43,6 +43,15 @@ Functions
 
     .. note:: This is only available for boards that have ext1 support.
 
+.. function:: wake_on_gpio(pins, level)
+
+    Configure how GPIO wakes the device from sleep.  *pins* can be ``None``
+    or a tuple/list of valid Pin objects.  *level* should be ``esp32.WAKEUP_ALL_LOW``
+    or ``esp32.WAKEUP_ANY_HIGH``.
+
+    .. note:: Some boards don't support waking on GPIO from deep sleep,
+       on those boards, the pins set here can only be used to wake from light sleep.
+
 .. function:: gpio_deep_sleep_hold(enable)
 
     Configure whether non-RTC GPIO pin configuration is retained during
