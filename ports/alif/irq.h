@@ -48,6 +48,7 @@
 #define IRQ_PRI_USB             NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 7, 0)
 #define IRQ_PRI_HWSEM           NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 8, 0)
 #define IRQ_PRI_GPU             NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 10, 0)
+#define IRQ_PRI_GPIO            NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 50, 0)
 #define IRQ_PRI_RTC             NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 100, 0)
 #define IRQ_PRI_CYW43           NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 126, 0)
 #define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 127, 0)
