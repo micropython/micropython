@@ -145,8 +145,7 @@ static inline size_t mpz_max_num_bits(const mpz_t *z) {
 mp_int_t mpz_hash(const mpz_t *z);
 bool mpz_as_int_checked(const mpz_t *z, mp_int_t *value);
 bool mpz_as_uint_checked(const mpz_t *z, mp_uint_t *value);
-// Returns true if 'z' fit into 'len' bytes of 'buf' without overflowing, 'buf' is truncated otherwise.
-bool mpz_as_bytes(const mpz_t *z, bool big_endian, bool as_signed, size_t len, byte *buf);
+void mpz_as_bytes(const mpz_t *z, bool big_endian, bool as_signed, size_t len, byte *buf);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mpz_as_float(const mpz_t *z);
 #endif
