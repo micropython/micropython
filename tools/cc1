@@ -24,7 +24,7 @@ import re
 
 # this is the path to the true C compiler
 cc1_path = '/usr/lib/gcc/x86_64-unknown-linux-gnu/5.3.0/cc1'
-#cc1_path = '/usr/lib/gcc/arm-none-eabi/5.3.0/cc1'
+# cc1_path = '/usr/lib/gcc/arm-none-eabi/5.3.0/cc1'
 
 # this must be the same as MICROPY_QSTR_BYTES_IN_HASH
 bytes_in_qstr_hash = 2
@@ -43,9 +43,14 @@ print_debug = False
 # precompile regexs
 re_preproc_line = re.compile(r'# [0-9]+ ')
 re_map_entry = re.compile(r'\{.+?\(MP_QSTR_([A-Za-z0-9_]+)\).+\},')
-re_mp_obj_dict_t = re.compile(r'(?P<head>(static )?const mp_obj_dict_t (?P<id>[a-z0-9_]+) = \{ \.base = \{&mp_type_dict\}, \.map = \{ \.all_keys_are_qstrs = 1, \.is_fixed = 1, \.is_ordered = )1(?P<tail>, \.used = .+ };)$')
-re_mp_map_t = re.compile(r'(?P<head>(static )?const mp_map_t (?P<id>[a-z0-9_]+) = \{ \.all_keys_are_qstrs = 1, \.is_fixed = 1, \.is_ordered = )1(?P<tail>, \.used = .+ };)$')
+re_mp_obj_dict_t = re.compile(
+    r'(?P<head>(static )?const mp_obj_dict_t (?P<id>[a-z0-9_]+) = \{ \.base = \{&mp_type_dict\}, \.map = \{ \.all_keys_are_qstrs = 1, \.is_fixed = 1, \.is_ordered = )1(?P<tail>, \.used = .+ };)$'
+)
+re_mp_map_t = re.compile(
+    r'(?P<head>(static )?const mp_map_t (?P<id>[a-z0-9_]+) = \{ \.all_keys_are_qstrs = 1, \.is_fixed = 1, \.is_ordered = )1(?P<tail>, \.used = .+ };)$'
+)
 re_mp_rom_map_elem_t = re.compile(r'static const mp_rom_map_elem_t [a-z_0-9]+\[\] = {$')
+
 
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr):
@@ -54,6 +59,7 @@ def compute_hash(qstr):
         hash = (hash * 33) ^ ord(char)
     # Make sure that valid hash is never zero, zero means "hash not computed"
     return (hash & ((1 << (8 * bytes_in_qstr_hash)) - 1)) or 1
+
 
 # this algo must match the equivalent in map.c
 def hash_insert(map, key, value):
@@ -76,6 +82,7 @@ def hash_insert(map, key, value):
             pos = (pos + 1) % len(map)
             assert pos != start_pos
 
+
 def hash_find(map, key):
     hash = compute_hash(key)
     pos = hash % len(map)
@@ -91,6 +98,7 @@ def hash_find(map, key):
             pos = (pos + 1) % len(map)
             if pos == start_pos:
                 return attempts, None
+
 
 def process_map_table(file, line, output):
     output.append(line)
@@ -131,7 +139,7 @@ def process_map_table(file, line, output):
                 elif entries_str[i] == '}':
                     nested_braces -= 1
                     if nested_braces == 0:
-                        match = re_map_entry.match(entries_str[:i + 2])
+                        match = re_map_entry.match(entries_str[: i + 2])
                         break
 
         if not match:
@@ -141,7 +149,7 @@ def process_map_table(file, line, output):
         # extract single entry
         line = match.group(0)
         qstr = match.group(1)
-        entries_str = entries_str[len(line):].lstrip()
+        entries_str = entries_str[len(line) :].lstrip()
 
         # add the qstr and the whole line to list of all entries
         entries.append((qstr, line))
@@ -206,6 +214,7 @@ def process_map_table(file, line, output):
 
     return (match.group('id'),) + stats
 
+
 def process_file(filename):
     output = []
     file_changed = False
@@ -229,6 +238,7 @@ def process_file(filename):
             for line in output:
                 f.write(line)
 
+
 def main():
     # run actual C compiler
     # need to quote args that have special characters in them
@@ -237,9 +247,10 @@ def main():
             return "'" + s + "'"
         else:
             return s
+
     ret = os.system(cc1_path + ' ' + ' '.join(quote(s) for s in sys.argv[1:]))
     if ret != 0:
-        ret = (ret & 0x7f) or 127 # make it in range 0-127, but non-zero
+        ret = (ret & 0x7F) or 127  # make it in range 0-127, but non-zero
         sys.exit(ret)
 
     if sys.argv[1] == '-E':
@@ -257,6 +268,7 @@ def main():
         # unknown processing stage
         print('%s: unknown first option "%s"' % (sys.argv[0], sys.argv[1]))
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()
