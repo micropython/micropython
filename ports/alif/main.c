@@ -55,6 +55,7 @@
 
 extern uint8_t __StackTop, __StackLimit;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
+extern void machine_pin_irq_deinit(void);
 
 MP_NORETURN void panic(const char *msg) {
     mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 14);
@@ -164,6 +165,7 @@ int main(void) {
         mp_bluetooth_deinit();
         #endif
         soft_timer_deinit();
+        machine_pin_irq_deinit();
         gc_sweep_all();
         mp_deinit();
     }
