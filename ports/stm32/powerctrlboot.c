@@ -506,6 +506,10 @@ void SystemClock_Config(void) {
     while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_IC2_IC6_IC11) {
     }
 
+    // ADC clock configuration, HCLK/2.
+    LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSOURCE_HCLK);
+    LL_RCC_SetADCPrescaler(2 - 1);
+
     // USB clock configuration.
     #if MICROPY_HW_ENABLE_USB
 
