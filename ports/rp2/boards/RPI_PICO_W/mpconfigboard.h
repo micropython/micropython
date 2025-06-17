@@ -8,6 +8,11 @@
 #define MICROPY_PY_NETWORK 1
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "PicoW"
 
+// Enable PPP networking.
+#define MICROPY_PY_NETWORK_PPP_LWIP             (1)
+extern const struct _mp_obj_type_t mp_network_ppp_lwip_type;
+#define MICROPY_BOARD_NETWORK_INTERFACES        { MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&mp_network_ppp_lwip_type) },
+
 // CYW43 driver configuration.
 #define CYW43_USE_SPI (1)
 #define CYW43_LWIP (1)
