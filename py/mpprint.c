@@ -341,6 +341,7 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, unsigned int
     char buf[32];
     char sign = '\0';
     int chrs = 0;
+    char tsep = 0;
 
     if (flags & PF_FLAG_SHOW_SIGN) {
         sign = '+';
@@ -349,7 +350,11 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, unsigned int
         sign = ' ';
     }
 
-    int len = mp_format_float(f, buf, sizeof(buf), fmt, prec, sign);
+    if (flags & PF_FLAG_SHOW_COMMA) {
+        tsep = ',';
+    }
+
+    int len = mp_format_float(f, buf, sizeof(buf), fmt, prec, sign, tsep);
 
     char *s = buf;
 
