@@ -13,11 +13,11 @@
         "WiFi"
     ],
     "images": [
-        "https://github.com/mchobby/pyboard-driver/blob/master/PYBStick-ESP32-C3/docs/_static/GAR-PYBSTICK26-C3-mUSB-00.JPG"
+        "GAR-PYBSTICK26-C3-mUSB-00.JPG"
     ],
     "mcu": "esp32c3",
     "product": "PYBSTICK26_ESP32C3",
     "thumbnail": "",
     "url": "https://shop.mchobby.be/fr/pybstick/2505-pybstick26-esp32-c3-micropython-et-arduino-3232100025059.html",
-    "vendor": "Garatronic"
+    "vendor": "McHobby"
 }
