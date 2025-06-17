@@ -1,5 +1,5 @@
-# Test BLE GAP connect/disconnect with pairing and bonding, then reconnect
-# to verify that bond persists (simulates reboot by recreating BLE instance)
+# Test complete BLE bond lifecycle: pairing, persistence, and multiple restarts
+# This consolidated test verifies bond persistence across multiple scenarios
 
 from micropython import const
 import time, machine, bluetooth
@@ -9,7 +9,7 @@ if not hasattr(bluetooth.BLE, "gap_pair"):
     print("SKIP")
     raise SystemExit
 
-TIMEOUT_MS = 4000
+TIMEOUT_MS = 5000
 SECRETS_FILE = "test_bonds.json"
 
 _IRQ_CENTRAL_CONNECT = const(1)
@@ -104,6 +104,7 @@ def irq(event, data):
         print("_IRQ_GATTC_READ_RESULT", bytes(data[-1]))
     elif event == _IRQ_ENCRYPTION_UPDATE:
         print("_IRQ_ENCRYPTION_UPDATE", data[1], data[2], data[3])
+        waiting_events[event] = data  # Store full data for bonding info
     elif event == _IRQ_GET_SECRET:
         if data[-1] is None:
             return None
@@ -131,60 +132,95 @@ def wait_for_event(event, timeout_ms):
     raise ValueError("Timeout waiting for {}".format(event))
 
 
-# Acting in peripheral role.
-def instance0():
-    # Clean up any existing secrets file from previous tests
-    cleanup_secrets_file()
-    load_secrets()  # Load secrets (will be empty initially)
-
-    multitest.globals(BDADDR=ble.config("mac"))
-    ((char_handle,),) = ble.gatts_register_services((SERVICE,))
-    ble.gatts_write(char_handle, "encrypted")
-    print("gap_advertise")
-    ble.gap_advertise(20_000, b"\x02\x01\x06\x04\xffMPY")
-    multitest.next()
-    try:
-        # Wait for central to connect.
-        wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS)
-
-        # Wait for pairing event.
-        wait_for_event(_IRQ_ENCRYPTION_UPDATE, TIMEOUT_MS)
-
-        # Wait for GATTS read request.
-        wait_for_event(_IRQ_GATTS_READ_REQUEST, TIMEOUT_MS)
-
-        # Wait for central to disconnect.
-        wait_for_event(_IRQ_CENTRAL_DISCONNECT, TIMEOUT_MS)
-    finally:
-        ble.active(0)
-
-    # Simulate reboot by recreating BLE instance (tests bond persistence in file storage)
-    print("simulate_reboot")
+def ble_restart(ble):
+    """Simulate BLE restart by deactivating and reactivating"""
+    print("ble_restart")
     ble.active(0)
-    time.sleep_ms(100)  # Allow cleanup
+    time.sleep_ms(200)  # Allow cleanup
     load_secrets()  # Reload secrets from file
     # CRITICAL: Set IRQ handler BEFORE activating BLE so BTstack can load bonds during init
     ble.irq(irq)
     ble.active(1)
 
-    # Re-register services after "reboot"
+
+def peripheral_cycle(ble, cycle_name, char_value):
+    """Execute one peripheral connection cycle"""
+    print("=== PERIPHERAL {} ===".format(cycle_name))
     ((char_handle,),) = ble.gatts_register_services((SERVICE,))
-    ble.gatts_write(char_handle, "encrypted_after_reboot")
-    print("gap_advertise_after_reboot")
+    ble.gatts_write(char_handle, char_value)
+    print("gap_advertise")
     ble.gap_advertise(20_000, b"\x02\x01\x06\x04\xffMPY")
     multitest.next()
+
+    # Wait for central to connect and perform operations
+    wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS)
+    encryption_data = wait_for_event(_IRQ_ENCRYPTION_UPDATE, TIMEOUT_MS)
+    print("encrypted={} bonded={}".format(encryption_data[1], encryption_data[3]))
+    wait_for_event(_IRQ_GATTS_READ_REQUEST, TIMEOUT_MS)
+    wait_for_event(_IRQ_CENTRAL_DISCONNECT, TIMEOUT_MS)
+
+
+def central_cycle(ble, cycle_name):
+    """Execute one central connection cycle"""
+    print("=== CENTRAL {} ===".format(cycle_name))
+    multitest.next()
+
+    # Connect and discover
+    print("gap_connect")
+    ble.gap_connect(*BDADDR)
+    conn_handle = wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS)
+
+    # Check encryption status
+    encryption_data = wait_for_event(_IRQ_ENCRYPTION_UPDATE, TIMEOUT_MS)
+    print("encrypted={} bonded={}".format(encryption_data[1], encryption_data[3]))
+
+    # Discover and read characteristic
+    ble.gattc_discover_characteristics(conn_handle, 1, 65535)
+    value_handle = wait_for_event(_IRQ_GATTC_CHARACTERISTIC_RESULT, TIMEOUT_MS)
+    wait_for_event(_IRQ_GATTC_CHARACTERISTIC_DONE, TIMEOUT_MS)
+
+    ble.gattc_read(conn_handle, value_handle)
+    wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
+
+    # Disconnect
+    print("gap_disconnect:", ble.gap_disconnect(conn_handle))
+    wait_for_event(_IRQ_PERIPHERAL_DISCONNECT, TIMEOUT_MS)
+
+
+# Acting in peripheral role.
+def instance0():
+    ble = bluetooth.BLE()
+    ble.config(mitm=True, le_secure=True, bond=True)
+
+    # Clean up any existing secrets file from previous tests
+    cleanup_secrets_file()
+    load_secrets()  # Load secrets (will be empty initially)
+
+    # CRITICAL: Set IRQ handler BEFORE activating BLE so BTstack can load bonds during init
+    ble.irq(irq)
+    ble.active(1)
+
+    multitest.globals(BDADDR=ble.config("mac"))
+
     try:
-        # Wait for central to reconnect using stored bond.
-        wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS)
+        # Phase 1: Initial pairing and bonding
+        peripheral_cycle(ble, "INITIAL_PAIR", "encrypted_initial")
+        print("secrets_count", len(secrets))
 
-        # Should automatically be encrypted due to stored bond.
-        wait_for_event(_IRQ_ENCRYPTION_UPDATE, TIMEOUT_MS)
+        # Phase 2: Single restart to test basic persistence
+        ble_restart(ble)
+        peripheral_cycle(ble, "RESTART_1", "encrypted_restart1")
 
-        # Wait for GATTS read request.
-        wait_for_event(_IRQ_GATTS_READ_REQUEST, TIMEOUT_MS)
+        # Phase 3: Second restart to test continued persistence
+        ble_restart(ble)
+        peripheral_cycle(ble, "RESTART_2", "encrypted_restart2")
 
-        # Wait for central to disconnect.
-        wait_for_event(_IRQ_CENTRAL_DISCONNECT, TIMEOUT_MS)
+        # Phase 4: Third restart to stress test persistence
+        ble_restart(ble)
+        peripheral_cycle(ble, "RESTART_3", "encrypted_restart3")
+
+        print("final_secrets_count", len(secrets))
+
     finally:
         ble.active(0)
         cleanup_secrets_file()  # Clean up test file
@@ -192,78 +228,54 @@ def instance0():
 
 # Acting in central role.
 def instance1():
+    ble = bluetooth.BLE()
+    ble.config(mitm=True, le_secure=True, bond=True)
+
     # Clean up any existing secrets file from previous tests
     cleanup_secrets_file()
     load_secrets()  # Load secrets (will be empty initially)
 
-    multitest.next()
-    try:
-        # Connect to peripheral.
-        print("gap_connect")
-        ble.gap_connect(*BDADDR)
-        conn_handle = wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS)
-
-        # Discover characteristics (before pairing, doesn't need to be encrypted).
-        ble.gattc_discover_characteristics(conn_handle, 1, 65535)
-        value_handle = wait_for_event(_IRQ_GATTC_CHARACTERISTIC_RESULT, TIMEOUT_MS)
-        wait_for_event(_IRQ_GATTC_CHARACTERISTIC_DONE, TIMEOUT_MS)
-
-        # Pair with the peripheral.
-        print("gap_pair")
-        ble.gap_pair(conn_handle)
-
-        # Wait for the pairing event.
-        wait_for_event(_IRQ_ENCRYPTION_UPDATE, TIMEOUT_MS)
-
-        # Read the peripheral's characteristic, should be encrypted.
-        print("gattc_read")
-        ble.gattc_read(conn_handle, value_handle)
-        wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
-
-        # Disconnect from the peripheral.
-        print("gap_disconnect:", ble.gap_disconnect(conn_handle))
-        wait_for_event(_IRQ_PERIPHERAL_DISCONNECT, TIMEOUT_MS)
-    finally:
-        ble.active(0)
-
-    # Recreate BLE instance to simulate reboot (tests bond persistence)
-    ble.active(0)
-    time.sleep_ms(100)  # Allow cleanup
-    load_secrets()  # Reload secrets from file
     # CRITICAL: Set IRQ handler BEFORE activating BLE so BTstack can load bonds during init
     ble.irq(irq)
     ble.active(1)
 
     multitest.next()
+
     try:
-        # Reconnect to peripheral after simulated reboot
-        print("gap_connect_after_reboot")
+        # Phase 1: Initial pairing - need to explicitly pair
+        print("=== CENTRAL INITIAL_PAIR ===")
+        multitest.next()
+
+        print("gap_connect")
         ble.gap_connect(*BDADDR)
         conn_handle = wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS)
 
-        # Should automatically be encrypted due to stored bond (no re-pairing needed).
-        wait_for_event(_IRQ_ENCRYPTION_UPDATE, TIMEOUT_MS)
-
-        # Discover characteristics again (connection state is lost on reboot).
+        # Discover before pairing
         ble.gattc_discover_characteristics(conn_handle, 1, 65535)
         value_handle = wait_for_event(_IRQ_GATTC_CHARACTERISTIC_RESULT, TIMEOUT_MS)
         wait_for_event(_IRQ_GATTC_CHARACTERISTIC_DONE, TIMEOUT_MS)
 
-        # Read the peripheral's characteristic, should be encrypted without re-pairing.
-        print("gattc_read_after_reboot")
+        # Initiate pairing
+        print("gap_pair")
+        ble.gap_pair(conn_handle)
+        encryption_data = wait_for_event(_IRQ_ENCRYPTION_UPDATE, TIMEOUT_MS)
+        print("encrypted={} bonded={}".format(encryption_data[1], encryption_data[3]))
+
+        # Read encrypted characteristic
         ble.gattc_read(conn_handle, value_handle)
         wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
 
-        # Disconnect from the peripheral.
-        print("gap_disconnect_final:", ble.gap_disconnect(conn_handle))
+        print("gap_disconnect:", ble.gap_disconnect(conn_handle))
         wait_for_event(_IRQ_PERIPHERAL_DISCONNECT, TIMEOUT_MS)
+        print("secrets_count", len(secrets))
+
+        # Phase 2-4: Restart cycles - should auto-encrypt without re-pairing
+        for i in range(3):
+            ble_restart(ble)
+            central_cycle(ble, "RESTART_{}".format(i + 1))
+
+        print("final_secrets_count", len(secrets))
+
     finally:
         ble.active(0)
         cleanup_secrets_file()  # Clean up test file
-
-
-ble = bluetooth.BLE()
-ble.config(mitm=True, le_secure=True, bond=True)
-# CRITICAL: Set IRQ handler BEFORE activating BLE so BTstack can load bonds during init
-ble.irq(irq)
-ble.active(1)
