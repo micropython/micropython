@@ -6,7 +6,8 @@
     "features": [
         "Dual-core",
         "External Flash",
-        "USB"
+        "RGB LED",
+        "USB-C"
     ],
     "images": [
         "rp2040-zero.jpg"
