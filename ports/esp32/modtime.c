@@ -54,5 +54,10 @@ static mp_obj_t mp_time_localtime_get(void) {
 static mp_obj_t mp_time_time_get(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
+    #if MICROPY_PY_TIME_TIME_FLOAT && MICROPY_PY_TIME_TIME_HAS_SUBSECOND
+    mp_float_t val = tv.tv_sec + (mp_float_t)tv.tv_usec / (1000 * 1000);
+    return mp_obj_new_float(val);
+    #else
     return mp_obj_new_int(tv.tv_sec);
+    #endif
 }

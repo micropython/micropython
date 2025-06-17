@@ -36,4 +36,9 @@ void rtc_init_finalise(void);
 
 mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args);
 
+#if defined(MICROPY_HW_RTC_USE_US) && MICROPY_HW_RTC_USE_US
+uint32_t rtc_subsec_to_us(uint32_t ss);
+uint32_t rtc_us_to_subsec(uint32_t us);
+#endif
+
 #endif // MICROPY_INCLUDED_STM32_RTC_H
