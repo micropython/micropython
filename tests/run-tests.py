@@ -405,6 +405,10 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
                                     return rv
 
                     def send_get(what):
+                        # Detect {\x00} pattern and convert to ctrl-key codes.
+                        ctrl_code = lambda m: bytes([int(m.group(1))])
+                        what = re.sub(rb'{\\x(\d\d)}', ctrl_code, what)
+
                         os.write(master, what)
                         return get()
 
