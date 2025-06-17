@@ -54,7 +54,12 @@ static_assert(MICROPY_HW_FLASH_STORAGE_BYTES % 4096 == 0, "Flash storage size mu
 // On RP2040 if PICO_USE_FASTEST_SUPPORTED_CLOCK is set then SYS_CLK_HZ can be
 // 200MHz, potentially putting timings derived from PICO_FLASH_SPI_CLKDIV
 // out of range.
+#ifdef PICO_FLASH_SPI_CLKDIV
 #define MICROPY_HW_FLASH_MAX_FREQ (SYS_CLK_HZ / PICO_FLASH_SPI_CLKDIV)
+#else
+// A default PICO_FLASH_SPI_CLKDIV of 4 is set in boot2_generic_03h.S
+#define MICROPY_HW_FLASH_MAX_FREQ (SYS_CLK_HZ / 4)
+#endif
 #endif
 
 #ifndef MICROPY_HW_FLASH_STORAGE_BASE
