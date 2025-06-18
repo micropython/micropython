@@ -95,6 +95,7 @@ class __FS:
     return __File()
 vfs.mount(__FS(), '/__vfstest')
 os.chdir('/__vfstest')
+{import_prologue}
 __import__('__injected_test')
 """
 
@@ -270,6 +271,8 @@ def detect_test_platform(pyb, args):
 
 
 def prepare_script_for_target(args, *, script_text=None, force_plain=False):
+    global injected_import_hook_code
+
     if force_plain or (not args.via_mpy and args.emit == "bytecode"):
         # A plain test to run as-is, no processing needed.
         pass
@@ -296,6 +299,14 @@ def prepare_script_for_target(args, *, script_text=None, force_plain=False):
 
         rm_f(mpy_filename)
         rm_f(script_filename)
+
+        prologue = ""
+        if args.begin:
+            with open(args.begin, "rt") as source:
+                prologue = source.read()
+        injected_import_hook_code = injected_import_hook_code.replace(
+            "{import_prologue}", prologue
+        )
 
         script_text += bytes(injected_import_hook_code, "ascii")
     else:
@@ -1234,6 +1245,12 @@ the last matching regex is used:
         "--run-failures",
         action="store_true",
         help="re-run only the failed tests",
+    )
+    cmd_parser.add_argument(
+        "--begin",
+        metavar="PROLOGUE",
+        default=None,
+        help="prologue python file to execute before module import",
     )
     args = cmd_parser.parse_args()
 
