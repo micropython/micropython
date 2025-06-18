@@ -141,14 +141,14 @@ def instance0():
     cleanup_secrets_file()
     load_secrets()  # Load secrets (will be empty initially)
 
-    multitest.globals(BDADDR=ble.config("mac"))
-
     try:
         # Phase 1: Initial pairing and bonding
         print("=== PERIPHERAL INITIAL_PAIR ===")
         ble.config(mitm=True, le_secure=True, bond=True)
         ble.irq(irq)
         ble.active(1)
+
+        multitest.globals(BDADDR=ble.config("mac"))
 
         ((char_handle,),) = ble.gatts_register_services((SERVICE,))
         ble.gatts_write(char_handle, "encrypted_initial")
