@@ -1,0 +1,51 @@
+--- instance0 ---
+advertise
+connected
+_IRQ_CENTRAL_CONNECT
+_IRQ_ENCRYPTION_UPDATE 1 0 1
+paired_encrypted
+ready_for_read
+_IRQ_GATTS_READ_REQUEST
+_IRQ_CENTRAL_DISCONNECT
+disconnected
+simulate_reboot
+advertise_after_reboot
+_IRQ_CENTRAL_CONNECT
+connected_after_reboot
+_IRQ_ENCRYPTION_UPDATE 1 0 1
+auto_encrypted
+ready_for_read_after_reboot
+_IRQ_GATTS_READ_REQUEST
+_IRQ_CENTRAL_DISCONNECT
+final_disconnect
+--- instance1 ---
+scan
+gap_connect
+_IRQ_PERIPHERAL_CONNECT
+connected
+_IRQ_GATTC_CHARACTERISTIC_RESULT UUID('00000000-1111-2222-3333-444444444444')
+_IRQ_GATTC_CHARACTERISTIC_DONE
+service
+characteristic
+pair
+_IRQ_ENCRYPTION_UPDATE 1 0 1
+paired
+read_encrypted
+_IRQ_GATTC_READ_RESULT b'encrypted_data'
+read_result b'encrypted_data'
+_IRQ_PERIPHERAL_DISCONNECT
+disconnected
+simulate_reboot
+scan_after_reboot
+gap_connect
+_IRQ_PERIPHERAL_CONNECT
+connected_after_reboot
+_IRQ_ENCRYPTION_UPDATE 1 0 1
+auto_encrypted
+_IRQ_GATTC_CHARACTERISTIC_RESULT UUID('00000000-1111-2222-3333-444444444444')
+_IRQ_GATTC_CHARACTERISTIC_DONE
+read_encrypted_after_reboot
+_IRQ_GATTC_READ_RESULT b'encrypted_after_reboot'
+read_result_after_reboot b'encrypted_after_reboot'
+_IRQ_PERIPHERAL_DISCONNECT
+final_disconnect
