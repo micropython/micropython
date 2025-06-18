@@ -34,11 +34,13 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/frozenmod.h"
+#include "py/modatexit.h"
 #include "py/mphal.h"
 #if MICROPY_HW_ENABLE_USB
 #include "irq.h"
 #include "usb.h"
 #endif
+#include "extmod/modplatform.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "genhdr/mpversion.h"
@@ -57,6 +59,25 @@ static bool repl_display_debugging_info = 0;
 #define EXEC_FLAG_SOURCE_IS_FILENAME    (1 << 5)
 #define EXEC_FLAG_SOURCE_IS_READER      (1 << 6)
 #define EXEC_FLAG_NO_INTERRUPT          (1 << 7)
+
+// If exc is SystemExit, return value where FORCED_EXIT bit set,
+// and lower 8 bits are SystemExit value. For all other exceptions,
+// return 1.
+int pyexec_handle_uncaught_exception(mp_obj_base_t *exc) {
+    // check for SystemExit
+    if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
+
+        mp_obj_t exit_val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(exc));
+        mp_int_t val = 0;
+        if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
+            val = 1;
+        }
+        return PYEXEC_FORCED_EXIT | (val & 255);
+    }
+
+    mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(exc));
+    return 1;
+}
 
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
@@ -139,14 +160,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_hal_stdout_tx_strn("\x04", 1);
         }
 
-        // check for SystemExit
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
-            // at the moment, the value of SystemExit is unused
-            ret = PYEXEC_FORCED_EXIT;
-        } else {
-            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-            ret = 0;
-        }
+        pyexec_handle_uncaught_exception(nlr.ret_val);
     }
 
     #if MICROPY_REPL_INFO
@@ -174,6 +188,11 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     if (exec_flags & EXEC_FLAG_PRINT_EOF) {
         mp_hal_stdout_tx_strn("\x04", 1);
     }
+
+    #if MICROPY_PY_ATEXIT
+    int atexit_code = mp_atexit_execute();
+    ret = (atexit_code != 0) ? atexit_code : ret;
+    #endif
 
     #ifdef MICROPY_BOARD_AFTER_PYTHON_EXEC
     MICROPY_BOARD_AFTER_PYTHON_EXEC(input_kind, exec_flags, nlr.ret_val, &ret);

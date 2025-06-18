@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2024 Andrew Leech
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
-#define MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
+#ifndef MICROPY_INCLUDED_PY_MODATEXIT_H
+#define MICROPY_INCLUDED_PY_MODATEXIT_H
 
-#include "py/obj.h"
+int mp_atexit_execute(void);
+mp_obj_t mp_atexit_register(mp_obj_t callback);
+mp_obj_t mp_atexit_unregister(mp_obj_t callback);
 
-typedef enum {
-    PYEXEC_MODE_FRIENDLY_REPL,
-    PYEXEC_MODE_RAW_REPL,
-} pyexec_mode_kind_t;
-
-extern pyexec_mode_kind_t pyexec_mode_kind;
-
-#define PYEXEC_FORCED_EXIT (0x100)
-int pyexec_handle_uncaught_exception(mp_obj_base_t *exc);
-
-int pyexec_raw_repl(void);
-int pyexec_friendly_repl(void);
-int pyexec_file(const char *filename);
-int pyexec_file_if_exists(const char *filename);
-int pyexec_frozen_module(const char *name, bool allow_keyboard_interrupt);
-int pyexec_vstr(vstr_t *str, bool allow_keyboard_interrupt);
-void pyexec_event_repl_init(void);
-int pyexec_event_repl_process_char(int c);
-extern uint8_t pyexec_repl_active;
-
-#if MICROPY_REPL_INFO
-mp_obj_t pyb_set_repl_info(mp_obj_t o_value);
-MP_DECLARE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj);
-#endif
-
-#endif // MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
+#endif // MICROPY_INCLUDED_PY_MODATEXIT_H

@@ -1,8 +1,11 @@
 // Include MicroPython API.
 #include "py/runtime.h"
+#include "py/modatexit.h"
 
 // Used to get the time in the Timer class example.
 #include "py/mphal.h"
+
+static bool custom_library_initialised = false;
 
 // This is the function which will be called from Python as cexample.add_ints(a, b).
 static mp_obj_t example_add_ints(mp_obj_t a_obj, mp_obj_t b_obj) {
@@ -149,6 +152,49 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &example_Timer_locals_dict
     );
 
+// If any data/struct needs to be allocated it should
+// be stored in a root pointer to inform the gc not to
+// collect it.
+// Note this will be reset during a soft-reset.
+MP_REGISTER_ROOT_POINTER(uint8_t *example_c_mod_buffer);
+
+MP_DECLARE_CONST_FUN_OBJ_0(example_deinit_obj);
+
+// This __init__ function will be run during module import if
+// micropython is built with MICROPY_MODULE_BUILTIN_INIT enabled.
+static mp_obj_t example___init__(void) {
+    if (!custom_library_initialised) {
+        // __init__ for builtins is called each time the module is imported,
+        // so ensure that initialisation only happens once.
+        custom_library_initialised = true;
+        // this is a good place to create any buffers needed and initialise c libraries or
+        // hardware peripherals that only need setup once before use by your application.
+        MP_STATE_VM(example_c_mod_buffer) = m_malloc(8);
+        
+        #if MICROPY_PY_ATEXIT
+        mp_atexit_register(MP_OBJ_FROM_PTR(&example_deinit_obj));
+        #endif
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(example___init___obj, example___init__);
+
+// This will be run during exit / soft-reset (if MICROPY_PY_ATEXIT and 
+// MICROPY_MODULE_BUILTIN_INIT are enabled) and can be used to reset any
+// global static verifies
+static mp_obj_t example_deinit(void) {
+    // This is registered in __init__ be run during exit / soft-reset.
+    if (custom_library_initialised) {
+        // global / static are not automatically reset during exit so reset here.
+        custom_library_initialised = false;
+        // this can also be used to reset hardware peripherals or c library
+        // resources such that they're safe to re-initialise in __init__ 
+        // again after the soft-reset is complete.
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(example_deinit_obj, example_deinit);
+
 // Define all attributes of the module.
 // Table entries are key/value pairs of the attribute name (a string)
 // and the MicroPython object reference.
@@ -156,6 +202,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // optimized to word-sized integers by the build system (interned strings).
 static const mp_rom_map_elem_t example_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cexample) },
+    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&example___init___obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),   MP_ROM_PTR(&example_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_add_ints), MP_ROM_PTR(&example_add_ints_obj) },
     { MP_ROM_QSTR(MP_QSTR_Timer),    MP_ROM_PTR(&example_type_Timer) },
     { MP_ROM_QSTR(MP_QSTR_AdvancedTimer),    MP_ROM_PTR(&example_type_AdvancedTimer) },

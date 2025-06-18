@@ -57,6 +57,7 @@ library.
    :maxdepth: 1
 
    array.rst
+   atexit.rst
    asyncio.rst
    binascii.rst
    builtins.rst

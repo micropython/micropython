@@ -45,6 +45,7 @@
 #include "py/gc.h"
 #include "py/objstr.h"
 #include "py/cstack.h"
+#include "py/modatexit.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
@@ -52,6 +53,7 @@
 #include "extmod/modplatform.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
+#include "shared/runtime/pyexec.h"
 #include "genhdr/mpversion.h"
 #include "input.h"
 
@@ -87,11 +89,10 @@ static void stderr_print_strn(void *env, const char *str, size_t len) {
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 
-#define FORCED_EXIT (0x100)
 // If exc is SystemExit, return value where FORCED_EXIT bit set,
 // and lower 8 bits are SystemExit value. For all other exceptions,
 // return 1.
-static int handle_uncaught_exception(mp_obj_base_t *exc) {
+int pyexec_handle_uncaught_exception(mp_obj_base_t *exc) {
     // check for SystemExit
     if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
         // None is an exit value of 0; an int is its value; anything else is 1
@@ -100,7 +101,7 @@ static int handle_uncaught_exception(mp_obj_base_t *exc) {
         if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
             val = 1;
         }
-        return FORCED_EXIT | (val & 255);
+        return PYEXEC_FORCED_EXIT | (val & 255);
     }
 
     // Report all other exceptions
@@ -171,7 +172,7 @@ static int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         // uncaught exception
         mp_hal_set_interrupt_char(-1);
         mp_handle_pending(false);
-        return handle_uncaught_exception(nlr.ret_val);
+        return pyexec_handle_uncaught_exception(nlr.ret_val);
     }
 }
 
@@ -271,7 +272,7 @@ static int do_repl(void) {
         mp_hal_stdio_mode_orig();
 
         ret = execute_from_lexer(LEX_SRC_VSTR, &line, parse_input_kind, true);
-        if (ret & FORCED_EXIT) {
+        if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
     }
@@ -299,7 +300,7 @@ static int do_repl(void) {
 
         int ret = execute_from_lexer(LEX_SRC_STR, line, MP_PARSE_SINGLE_INPUT, true);
         free(line);
-        if (ret & FORCED_EXIT) {
+        if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
     }
@@ -687,7 +688,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     nlr_pop();
                 } else {
                     // uncaught exception
-                    return handle_uncaught_exception(nlr.ret_val) & 0xff;
+                    return pyexec_handle_uncaught_exception(nlr.ret_val) & 0xff;
                 }
 
                 // If this module is a package, see if it has a `__main__.py`.
@@ -756,6 +757,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
             ret = execute_from_lexer(LEX_SRC_STDIN, NULL, MP_PARSE_FILE_INPUT, false);
         }
     }
+
+    #if MICROPY_PY_ATEXIT
+    int atexit_code = mp_atexit_execute();
+    ret = (atexit_code != 0) ? atexit_code : ret;
+    #endif
 
     #if MICROPY_PY_SYS_SETTRACE
     MP_STATE_THREAD(prof_trace_callback) = MP_OBJ_NULL;
