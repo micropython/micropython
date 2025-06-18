@@ -106,10 +106,20 @@ def irq(event, data):
         print("_IRQ_ENCRYPTION_UPDATE", data[1], data[2], data[3])
         waiting_events[event] = (data[1], data[2], data[3])  # Store only the values we need
     elif event == _IRQ_GET_SECRET:
-        if data[-1] is None:
+        sec_type, index, key = data
+        if key is None:
+            # Return the index'th secret of this type
+            i = 0
+            for (t, _key), value in secrets.items():
+                if t == sec_type:
+                    if i == index:
+                        return value
+                    i += 1
             return None
-        key = (data[0], bytes(data[-1]))
-        return secrets.get(key, None)
+        else:
+            # Return the secret for this key
+            key = (sec_type, bytes(key))
+            return secrets.get(key, None)
     elif event == _IRQ_SET_SECRET:
         key = (data[0], bytes(data[-2]))
         value = bytes(data[-1]) if data[-1] else None

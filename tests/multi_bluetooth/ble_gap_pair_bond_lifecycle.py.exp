@@ -7,10 +7,10 @@ _IRQ_ENCRYPTION_UPDATE 1 0 1
 encrypted=1 bonded=1
 _IRQ_GATTS_READ_REQUEST
 _IRQ_CENTRAL_DISCONNECT
-secrets_saved 2
-secrets_count 2
+secrets_saved 3
+secrets_count 3
 ble_restart
-secrets_loaded 2
+secrets_loaded 3
 === PERIPHERAL RESTART_1 ===
 gap_advertise
 _IRQ_CENTRAL_CONNECT
@@ -18,9 +18,9 @@ _IRQ_ENCRYPTION_UPDATE 1 0 1
 encrypted=1 bonded=1
 _IRQ_GATTS_READ_REQUEST
 _IRQ_CENTRAL_DISCONNECT
-secrets_saved 2
+secrets_saved 3
 ble_restart
-secrets_loaded 2
+secrets_loaded 3
 === PERIPHERAL RESTART_2 ===
 gap_advertise
 _IRQ_CENTRAL_CONNECT
@@ -28,9 +28,9 @@ _IRQ_ENCRYPTION_UPDATE 1 0 1
 encrypted=1 bonded=1
 _IRQ_GATTS_READ_REQUEST
 _IRQ_CENTRAL_DISCONNECT
-secrets_saved 2
+secrets_saved 3
 ble_restart
-secrets_loaded 2
+secrets_loaded 3
 === PERIPHERAL RESTART_3 ===
 gap_advertise
 _IRQ_CENTRAL_CONNECT
@@ -38,8 +38,8 @@ _IRQ_ENCRYPTION_UPDATE 1 0 1
 encrypted=1 bonded=1
 _IRQ_GATTS_READ_REQUEST
 _IRQ_CENTRAL_DISCONNECT
-secrets_saved 2
-final_secrets_count 2
+secrets_saved 3
+final_secrets_count 3
 secrets_file_deleted
 --- instance1 ---
 secrets_file_not_found
@@ -54,10 +54,10 @@ encrypted=1 bonded=1
 _IRQ_GATTC_READ_RESULT b'encrypted_initial'
 gap_disconnect: True
 _IRQ_PERIPHERAL_DISCONNECT
-secrets_saved 2
-secrets_count 2
+secrets_saved 3
+secrets_count 3
 ble_restart
-secrets_loaded 2
+secrets_loaded 3
 === CENTRAL RESTART_1 ===
 gap_connect
 _IRQ_PERIPHERAL_CONNECT
@@ -68,9 +68,9 @@ _IRQ_GATTC_CHARACTERISTIC_DONE
 _IRQ_GATTC_READ_RESULT b'encrypted_restart1'
 gap_disconnect: True
 _IRQ_PERIPHERAL_DISCONNECT
-secrets_saved 2
+secrets_saved 3
 ble_restart
-secrets_loaded 2
+secrets_loaded 3
 === CENTRAL RESTART_2 ===
 gap_connect
 _IRQ_PERIPHERAL_CONNECT
@@ -81,9 +81,9 @@ _IRQ_GATTC_CHARACTERISTIC_DONE
 _IRQ_GATTC_READ_RESULT b'encrypted_restart2'
 gap_disconnect: True
 _IRQ_PERIPHERAL_DISCONNECT
-secrets_saved 2
+secrets_saved 3
 ble_restart
-secrets_loaded 2
+secrets_loaded 3
 === CENTRAL RESTART_3 ===
 gap_connect
 _IRQ_PERIPHERAL_CONNECT
@@ -94,6 +94,6 @@ _IRQ_GATTC_CHARACTERISTIC_DONE
 _IRQ_GATTC_READ_RESULT b'encrypted_restart3'
 gap_disconnect: True
 _IRQ_PERIPHERAL_DISCONNECT
-secrets_saved 2
-final_secrets_count 2
+secrets_saved 3
+final_secrets_count 3
 secrets_file_deleted
