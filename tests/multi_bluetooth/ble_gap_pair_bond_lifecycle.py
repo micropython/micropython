@@ -34,6 +34,7 @@ SERVICE = (SERVICE_UUID, (CHAR,))
 
 waiting_events = {}
 secrets = {}
+char_handle = None
 
 
 def load_secrets():
@@ -146,7 +147,6 @@ def ble_restart():
 def peripheral_cycle(cycle_name, char_value):
     """Execute one peripheral connection cycle"""
     print("=== PERIPHERAL {} ===".format(cycle_name))
-    ((char_handle,),) = ble.gatts_register_services((SERVICE,))
     ble.gatts_write(char_handle, char_value)
     print("gap_advertise")
     ble.gap_advertise(20_000, b"\x02\x01\x06\x04\xffMPY")
@@ -189,11 +189,16 @@ def central_cycle(cycle_name):
 
 # Acting in peripheral role.
 def instance0():
+    global char_handle
+
     # Clean up any existing secrets file from previous tests
     cleanup_secrets_file()
     load_secrets()  # Load secrets (will be empty initially)
 
     multitest.globals(BDADDR=ble.config("mac"))
+
+    # Register services ONCE at the beginning
+    ((char_handle,),) = ble.gatts_register_services((SERVICE,))
 
     try:
         # Phase 1: Initial pairing and bonding
