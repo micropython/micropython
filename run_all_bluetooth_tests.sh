@@ -135,21 +135,17 @@ run_test "./tests/multi_bluetooth/ble_gap_pair_bond.py" \
     "Test 1: ble_gap_pair_bond.py" \
     "Basic pairing with bonding"
 
-run_test "./tests/multi_bluetooth/ble_gap_pair_bond_reconnect.py" \
-    "Test 2: ble_gap_pair_bond_reconnect.py" \
-    "Bond persistence across BLE restart"
-
-run_test "./tests/multi_bluetooth/ble_gap_pair_bond_persist.py" \
-    "Test 3: ble_gap_pair_bond_persist.py" \
-    "Bond persistence across device reboot"
+run_test "./tests/multi_bluetooth/ble_gap_pair_bond_lifecycle.py" \
+    "Test 2: ble_gap_pair_bond_lifecycle.py" \
+    "Comprehensive bond lifecycle test with multiple restarts"
 
 # aioble bond tests
 run_test "~/micropython/lib/micropython-lib/micropython/bluetooth/aioble/multitests/ble_bond_persist.py" \
-    "Test 4: aioble ble_bond_persist.py" \
+    "Test 3: aioble ble_bond_persist.py" \
     "aioble bond persistence across restart"
 
 run_test "~/micropython/lib/micropython-lib/micropython/bluetooth/aioble/multitests/ble_bond_reboot.py" \
-    "Test 5: aioble ble_bond_reboot.py" \
+    "Test 4: aioble ble_bond_reboot.py" \
     "aioble bond persistence across reboot"
 
 # Phase 2: Basic Functionality Tests

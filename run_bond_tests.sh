@@ -46,8 +46,7 @@ run_test() {
 # Critical bond persistence tests
 echo -e "\n${BLUE}Phase 1: Local MicroPython Bond Tests${NC}"
 run_test "./tests/multi_bluetooth/ble_gap_pair_bond.py" "Basic pairing with bonding"
-run_test "./tests/multi_bluetooth/ble_gap_pair_bond_reconnect.py" "Bond persistence across BLE restart"
-run_test "./tests/multi_bluetooth/ble_gap_pair_bond_persist.py" "Bond persistence across device reboot"
+run_test "./tests/multi_bluetooth/ble_gap_pair_bond_lifecycle.py" "Comprehensive bond lifecycle test"
 
 echo -e "\n${BLUE}Phase 2: aioble Bond Tests${NC}"
 run_test "~/micropython/lib/micropython-lib/micropython/bluetooth/aioble/multitests/ble_bond_persist.py" "aioble bond persistence across restart"
