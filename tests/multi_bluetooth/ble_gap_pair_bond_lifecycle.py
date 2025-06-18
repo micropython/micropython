@@ -132,7 +132,7 @@ def wait_for_event(event, timeout_ms):
     raise ValueError("Timeout waiting for {}".format(event))
 
 
-def ble_restart(ble):
+def ble_restart():
     """Simulate BLE restart by deactivating and reactivating"""
     print("ble_restart")
     ble.active(0)
@@ -143,7 +143,7 @@ def ble_restart(ble):
     ble.active(1)
 
 
-def peripheral_cycle(ble, cycle_name, char_value):
+def peripheral_cycle(cycle_name, char_value):
     """Execute one peripheral connection cycle"""
     print("=== PERIPHERAL {} ===".format(cycle_name))
     ((char_handle,),) = ble.gatts_register_services((SERVICE,))
@@ -160,7 +160,7 @@ def peripheral_cycle(ble, cycle_name, char_value):
     wait_for_event(_IRQ_CENTRAL_DISCONNECT, TIMEOUT_MS)
 
 
-def central_cycle(ble, cycle_name):
+def central_cycle(cycle_name):
     """Execute one central connection cycle"""
     print("=== CENTRAL {} ===".format(cycle_name))
     multitest.next()
@@ -189,35 +189,28 @@ def central_cycle(ble, cycle_name):
 
 # Acting in peripheral role.
 def instance0():
-    ble = bluetooth.BLE()
-    ble.config(mitm=True, le_secure=True, bond=True)
-
     # Clean up any existing secrets file from previous tests
     cleanup_secrets_file()
     load_secrets()  # Load secrets (will be empty initially)
-
-    # CRITICAL: Set IRQ handler BEFORE activating BLE so BTstack can load bonds during init
-    ble.irq(irq)
-    ble.active(1)
 
     multitest.globals(BDADDR=ble.config("mac"))
 
     try:
         # Phase 1: Initial pairing and bonding
-        peripheral_cycle(ble, "INITIAL_PAIR", "encrypted_initial")
+        peripheral_cycle("INITIAL_PAIR", "encrypted_initial")
         print("secrets_count", len(secrets))
 
         # Phase 2: Single restart to test basic persistence
-        ble_restart(ble)
-        peripheral_cycle(ble, "RESTART_1", "encrypted_restart1")
+        ble_restart()
+        peripheral_cycle("RESTART_1", "encrypted_restart1")
 
         # Phase 3: Second restart to test continued persistence
-        ble_restart(ble)
-        peripheral_cycle(ble, "RESTART_2", "encrypted_restart2")
+        ble_restart()
+        peripheral_cycle("RESTART_2", "encrypted_restart2")
 
         # Phase 4: Third restart to stress test persistence
-        ble_restart(ble)
-        peripheral_cycle(ble, "RESTART_3", "encrypted_restart3")
+        ble_restart()
+        peripheral_cycle("RESTART_3", "encrypted_restart3")
 
         print("final_secrets_count", len(secrets))
 
@@ -228,16 +221,9 @@ def instance0():
 
 # Acting in central role.
 def instance1():
-    ble = bluetooth.BLE()
-    ble.config(mitm=True, le_secure=True, bond=True)
-
     # Clean up any existing secrets file from previous tests
     cleanup_secrets_file()
     load_secrets()  # Load secrets (will be empty initially)
-
-    # CRITICAL: Set IRQ handler BEFORE activating BLE so BTstack can load bonds during init
-    ble.irq(irq)
-    ble.active(1)
 
     multitest.next()
 
@@ -271,11 +257,19 @@ def instance1():
 
         # Phase 2-4: Restart cycles - should auto-encrypt without re-pairing
         for i in range(3):
-            ble_restart(ble)
-            central_cycle(ble, "RESTART_{}".format(i + 1))
+            ble_restart()
+            central_cycle("RESTART_{}".format(i + 1))
 
         print("final_secrets_count", len(secrets))
 
     finally:
         ble.active(0)
         cleanup_secrets_file()  # Clean up test file
+
+
+# Initialize global BLE instance
+ble = bluetooth.BLE()
+ble.config(mitm=True, le_secure=True, bond=True)
+# CRITICAL: Set IRQ handler BEFORE activating BLE so BTstack can load bonds during init
+ble.irq(irq)
+ble.active(1)
