@@ -36,6 +36,7 @@
 #define PF_FLAG_CENTER_ADJUST     (0x020)
 #define PF_FLAG_ADD_PERCENT       (0x040)
 #define PF_FLAG_SHOW_OCTAL_LETTER (0x080)
+#define PF_FLAG_ALWAYS_DECIMAL    (0x100)
 #define PF_FLAG_SEP_POS           (9) // must be above all the above PF_FLAGs
 
 #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
