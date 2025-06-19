@@ -2,7 +2,7 @@
 set -e
 
 TEST_DIR=$(dirname $0)
-MPREMOTE=${TEST_DIR}/../mpremote.py
+MPREMOTE=${MPREMOTE:-${TEST_DIR}/../mpremote.py}
 
 if [ -z "$1" ]; then
     # Find tests matching test_*.sh
