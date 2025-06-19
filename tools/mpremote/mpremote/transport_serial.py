@@ -51,6 +51,8 @@ class SerialTransport(Transport):
         self.use_raw_paste = True
         self.device_name = device
         self.mounted = False
+        self.dtr = dtr
+        self.rts = rts
 
         import serial
         import serial.tools.list_ports
@@ -134,6 +136,7 @@ class SerialTransport(Transport):
                 break
             elif self.serial.inWaiting() > 0:
                 new_data = self.serial.read(1)
+                # print ("newData=", new_data, file=sys.stderr)
                 if data_consumer:
                     data_consumer(new_data)
                     data = new_data
@@ -153,16 +156,33 @@ class SerialTransport(Transport):
 
     def enter_raw_repl(self, soft_reset=True, timeout_overall=10):
         self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
+        self.serial.flush()
+        if self.dtr or self.rts:
+            print("wait for repl prompt...", file=sys.stderr)
+            data = self.read_until(1, b"\r\n>>> ", timeout_overall=min(timeout_overall, 2))
 
+            # print(data, file=sys.stderr)
+            if not data.endswith(b"\r\n>>> "):
+                # do it a second time in case some code is running after hard reset
+                print("not found, sent ctrl-c and wait again...", file=sys.stderr)
+                self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
+                self.serial.flush()
+                data = self.read_until(1, b"\r\n>>> ", timeout_overall=min(timeout_overall, 2))
+                if not data.endswith(b"\r\n>>> "):
+                    print(data)
+                    raise TransportError("could not find repl mode")
+            print("###found", file=sys.stderr)
         # flush input (without relying on serial.flushInput())
         n = self.serial.inWaiting()
         while n > 0:
             self.serial.read(n)
             n = self.serial.inWaiting()
-
+        print("###flush done, enter raw", file=sys.stderr)
         self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
+        self.serial.flush()
+        if soft_reset and not self.dtr and not self.rts:
+            print("###is soft reset", file=sys.stderr)
 
-        if soft_reset:
             data = self.read_until(
                 1, b"raw REPL; CTRL-B to exit\r\n>", timeout_overall=timeout_overall
             )
