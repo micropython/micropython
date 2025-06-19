@@ -90,6 +90,9 @@ extern ringbuf_t stdin_ringbuf;
 #define MP_HAL_PIN_SPEED_LOW                    (0)
 #define MP_HAL_PIN_SPEED_HIGH                   (PADCTRL_SLEW_RATE_FAST)
 
+#define MP_HAL_PIN_TRIGGER_FALL                 (1)
+#define MP_HAL_PIN_TRIGGER_RISE                 (2)
+
 #define mp_hal_pin_obj_t const machine_pin_obj_t *
 
 #define MP_HAL_PIN_ALT(function, unit)          (MP_HAL_PIN_ALT_MAKE((MP_HAL_PIN_ALT_##function), (unit)))
