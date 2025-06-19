@@ -155,20 +155,15 @@ class SerialTransport(Transport):
 
     def enter_raw_repl(self, soft_reset=True, timeout_overall=10):
         if self.dtr or self.rts:
-            print("Special handling in DTR / RTS mode, might need to wait for controller to boot")
             self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
             time.sleep(0.1)
             self.serial.flush()
             self.serial.flushInput()
             for cnt in range(timeout_overall):
-                if cnt > 0:
-                    print("not found, send ctrl-c again and wait again...")
                 self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
                 self.serial.flush()
-                print("wait for REPL prompt...")
                 data = self.read_until(1, b"\r\n>>> ", timeout_overall=1)
                 if data.endswith(b"\r\n>>> "):
-                    print("REPL prompt found")
                     break
             else:
                 raise TransportError("could not find repl mode")
@@ -188,7 +183,6 @@ class SerialTransport(Transport):
                 1, b"raw REPL; CTRL-B to exit\r\n>", timeout_overall=timeout_overall
             )
             if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
-                print(data)
                 raise TransportError("could not enter raw repl")
 
             self.serial.write(b"\x04")  # ctrl-D: soft reset
@@ -198,12 +192,10 @@ class SerialTransport(Transport):
             # and before "raw REPL".
             data = self.read_until(1, b"soft reboot\r\n", timeout_overall=timeout_overall)
             if not data.endswith(b"soft reboot\r\n"):
-                print(data)
                 raise TransportError("could not enter raw repl")
 
         data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n", timeout_overall=timeout_overall)
         if not data.endswith(b"raw REPL; CTRL-B to exit\r\n"):
-            print(data)
             raise TransportError("could not enter raw repl")
 
         self.in_raw_repl = True
@@ -288,7 +280,6 @@ class SerialTransport(Transport):
                 # Device doesn't support raw-paste, fall back to normal raw REPL.
                 data = self.read_until(1, b"w REPL; CTRL-B to exit\r\n>")
                 if not data.endswith(b"w REPL; CTRL-B to exit\r\n>"):
-                    print(data)
                     raise TransportError("could not enter raw repl")
             # Don't try to use raw-paste mode again for this connection.
             self.use_raw_paste = False
