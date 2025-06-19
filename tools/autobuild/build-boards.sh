@@ -86,6 +86,10 @@ function build_boards {
     done
 }
 
+function build_alif_boards {
+    build_boards modalif.c $1 $2 zip
+}
+
 function build_cc3200_boards {
     build_boards hal/cc3200_hal.c $1 $2 zip
 }
