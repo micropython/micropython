@@ -312,7 +312,10 @@ void USB_DRD_FS_IRQHandler(void) {
 }
 #endif
 
-#elif defined(STM32L0) || defined(STM32L432xx) || defined(STM32L452xx)
+#elif defined(STM32L0) || \
+    defined(STM32L432xx) || defined(STM32L442xx) || \
+    defined(STM32L433xx) || defined(STM32L443xx) || \
+    defined(STM32L452xx) || defined(STM32L462xx)
 
 #if MICROPY_HW_USB_FS
 void USB_IRQHandler(void) {
