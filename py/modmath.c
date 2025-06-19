@@ -161,6 +161,11 @@ MATH_FUN_2(atan2, atan2)
 MATH_FUN_1_TO_INT(ceil, ceil)
 // copysign(x, y)
 static mp_float_t MICROPY_FLOAT_C_FUN(copysign_func)(mp_float_t x, mp_float_t y) {
+    #if MICROPY_PY_MATH_COPYSIGN_FIX_NAN
+    if (isnan(y)) {
+        y = 0.0;
+    }
+    #endif
     return MICROPY_FLOAT_C_FUN(copysign)(x, y);
 }
 MATH_FUN_2(copysign, copysign_func)
