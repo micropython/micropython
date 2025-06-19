@@ -83,6 +83,8 @@ struct _dma_descr_t {
     DMA_Stream_TypeDef *instance;
     #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     DMA_Channel_TypeDef *instance;
+    #elif defined(STM32N6)
+    DMA_Channel_TypeDef *instance;
     #else
     #error "Unsupported Processor"
     #endif
@@ -93,7 +95,7 @@ struct _dma_descr_t {
 
 // Default parameters to dma_init() shared by spi and i2c; Channel and Direction
 // vary depending on the peripheral instance so they get passed separately
-#if defined(STM32H5)
+#if defined(STM32H5) || defined(STM32N6)
 static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     .Request = 0, // set by dma_init_handle
     .BlkHWRequest = DMA_BREQ_SINGLE_BURST,
@@ -157,7 +159,7 @@ static const DMA_InitTypeDef dma_init_struct_i2s = {
 };
 #endif
 
-#if ENABLE_SDIO && !defined(STM32H5) && !defined(STM32H7)
+#if ENABLE_SDIO && !defined(STM32H5) && !defined(STM32H7) && !defined(STM32N6)
 // Parameters to dma_init() for SDIO tx and rx.
 static const DMA_InitTypeDef dma_init_struct_sdio = {
     #if defined(STM32F4) || defined(STM32F7)
@@ -826,6 +828,44 @@ static const uint8_t dma_irqn[NSTREAM] = {
     DMA2_Stream7_IRQn,
 };
 
+#elif defined(STM32N6)
+
+#define NCONTROLLERS            (1)
+#define NSTREAMS_PER_CONTROLLER (16)
+#define NSTREAM                 (NCONTROLLERS * NSTREAMS_PER_CONTROLLER)
+
+#define DMA_SUB_INSTANCE_AS_UINT8(dma_channel) (dma_channel)
+
+#define DMA1_ENABLE_MASK (0xffff) // Bits in dma_enable_mask corresponding to GPDMA1
+
+const dma_descr_t dma_SPI_1_RX = { GPDMA1_Channel0, GPDMA1_REQUEST_SPI1_RX, dma_id_0, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_1_TX = { GPDMA1_Channel1, GPDMA1_REQUEST_SPI1_TX, dma_id_1, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_2_RX = { GPDMA1_Channel2, GPDMA1_REQUEST_SPI2_RX, dma_id_2, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_2_TX = { GPDMA1_Channel3, GPDMA1_REQUEST_SPI2_TX, dma_id_3, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_3_RX = { GPDMA1_Channel4, GPDMA1_REQUEST_SPI3_RX, dma_id_4, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_3_TX = { GPDMA1_Channel5, GPDMA1_REQUEST_SPI3_TX, dma_id_5, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_4_RX = { GPDMA1_Channel6, GPDMA1_REQUEST_SPI4_RX, dma_id_6, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_4_TX = { GPDMA1_Channel7, GPDMA1_REQUEST_SPI4_TX, dma_id_7, &dma_init_struct_spi_i2c };
+
+static const uint8_t dma_irqn[NSTREAM] = {
+    GPDMA1_Channel0_IRQn,
+    GPDMA1_Channel1_IRQn,
+    GPDMA1_Channel2_IRQn,
+    GPDMA1_Channel3_IRQn,
+    GPDMA1_Channel4_IRQn,
+    GPDMA1_Channel5_IRQn,
+    GPDMA1_Channel6_IRQn,
+    GPDMA1_Channel7_IRQn,
+    GPDMA1_Channel8_IRQn,
+    GPDMA1_Channel9_IRQn,
+    GPDMA1_Channel10_IRQn,
+    GPDMA1_Channel11_IRQn,
+    GPDMA1_Channel12_IRQn,
+    GPDMA1_Channel13_IRQn,
+    GPDMA1_Channel14_IRQn,
+    GPDMA1_Channel15_IRQn,
+};
+
 #endif
 
 static DMA_HandleTypeDef *dma_handle[NSTREAM] = {NULL};
@@ -849,6 +889,10 @@ volatile dma_idle_count_t dma_idle;
 #define __HAL_RCC_DMA2_CLK_ENABLE __HAL_RCC_GPDMA2_CLK_ENABLE
 #define __HAL_RCC_DMA1_CLK_DISABLE __HAL_RCC_GPDMA1_CLK_DISABLE
 #define __HAL_RCC_DMA2_CLK_DISABLE __HAL_RCC_GPDMA2_CLK_DISABLE
+#elif defined(STM32N6)
+#define DMA1_IS_CLK_ENABLED()   (__HAL_RCC_GPDMA1_IS_CLK_ENABLED())
+#define __HAL_RCC_DMA1_CLK_ENABLE __HAL_RCC_GPDMA1_CLK_ENABLE
+#define __HAL_RCC_DMA1_CLK_DISABLE __HAL_RCC_GPDMA1_CLK_DISABLE
 #else
 #define DMA1_IS_CLK_ENABLED()   ((RCC->AHB1ENR & RCC_AHB1ENR_DMA1EN) != 0)
 #define DMA2_IS_CLK_ENABLED()   ((RCC->AHB1ENR & RCC_AHB1ENR_DMA2EN) != 0)
@@ -1420,7 +1464,7 @@ void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint3
     dma->Instance = dma_descr->instance;
     dma->Init = *dma_descr->init;
     dma->Init.Direction = dir;
-    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
     dma->Init.Request = dma_descr->sub_instance;
     #else
     #if !defined(STM32F0) && !defined(STM32L1)
@@ -1736,7 +1780,7 @@ void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_a
     dma->CCR |= DMA_CCR_EN;
 }
 
-#elif defined(STM32G0) || defined(STM32WB) || defined(STM32WL)
+#elif defined(STM32G0) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
 
 // These functions are currently not implemented or needed for this MCU.
 
@@ -1854,7 +1898,7 @@ void dma_external_release(uint32_t controller, uint32_t stream) {
     dma_disable_clock(DMA_ID_FROM_CONTROLLER_STREAM(controller, stream));
 }
 
-#if __DCACHE_PRESENT
+#if __DCACHE_PRESENT && !defined(STM32N6)
 
 void dma_protect_rx_region(void *dest, size_t len) {
     #if __DCACHE_PRESENT

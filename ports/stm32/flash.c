@@ -30,6 +30,8 @@
 #include "py/mphal.h"
 #include "flash.h"
 
+#if !defined(STM32N6)
+
 #if defined(STM32F0)
 
 #define FLASH_FLAG_ALL_ERRORS (FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGERR)
@@ -509,3 +511,5 @@ int flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
 
     return mp_hal_status_to_neg_errno(status);
 }
+
+#endif
