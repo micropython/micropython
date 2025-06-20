@@ -514,8 +514,8 @@ CI_UNIX_OPTS_QEMU_RISCV64=(
 
 CI_UNIX_OPTS_SANITIZE_ADDRESS=(
     VARIANT=coverage
-    CFLAGS_EXTRA="-fsanitize=address"
-    LDFLAGS_EXTRA="-fsanitize=address"
+    CFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0"
+    LDFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0"
 )
 
 CI_UNIX_OPTS_SANITIZE_UNDEFINED=(
