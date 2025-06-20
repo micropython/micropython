@@ -125,6 +125,12 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
 }
 
 static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_obj_t *args) {
+    #if !SOC_DEEP_SLEEP_SUPPORTED
+    if (MACHINE_WAKE_DEEPSLEEP == wake_type) {
+        mp_raise_ValueError(MP_ERROR_TEXT("DEEPSLEEP not supported on this chip"));
+    }
+    #endif
+
     // First, disable any previously set wake-up source
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 
@@ -163,6 +169,41 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
         }
     }
     #endif
+
+    if (machine_rtc_config.gpio_pins != 0) {
+        #if !SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP
+        if (MACHINE_WAKE_DEEPSLEEP == wake_type) {
+            mp_raise_ValueError(MP_ERROR_TEXT("DEEPSLEEP with gpio pins not supported on this chip"));
+        }
+        #endif
+
+        gpio_int_type_t intr_type = machine_rtc_config.gpio_level ? GPIO_INTR_HIGH_LEVEL : GPIO_INTR_LOW_LEVEL;
+
+        for (int i = 0; i < GPIO_NUM_MAX; ++i) {
+            gpio_num_t gpio = (gpio_num_t)i;
+            uint64_t bm = 1ULL << i;
+
+            if (machine_rtc_config.gpio_pins & bm) {
+                gpio_sleep_set_direction(gpio, GPIO_MODE_INPUT);
+
+                if (MACHINE_WAKE_SLEEP == wake_type) {
+                    gpio_wakeup_enable(gpio, intr_type);
+                }
+            }
+        }
+
+        if (MACHINE_WAKE_DEEPSLEEP == wake_type) {
+            #if SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP
+            if (ESP_OK != esp_deep_sleep_enable_gpio_wakeup(
+                machine_rtc_config.gpio_pins,
+                machine_rtc_config.gpio_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW)) {
+                mp_raise_ValueError(MP_ERROR_TEXT("wake-up pin not supported"));
+            }
+            #endif
+        } else {
+            esp_sleep_enable_gpio_wakeup();
+        }
+    }
 
     switch (wake_type) {
         case MACHINE_WAKE_SLEEP:
