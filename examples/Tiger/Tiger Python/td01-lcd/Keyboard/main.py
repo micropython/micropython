@@ -2,7 +2,7 @@ import time
 import Tiger
 from Tiger import LCD1
 
-lcd = LCD1(kbd=True)
+lcd = LCD1(kbd_on=True)
 
 
 def init_keyb():
@@ -17,7 +17,7 @@ def init_keyb():
     lcd.keyboardSetKeyTable(A)
     x0 = time.ticks_ms()
     x1 = time.ticks_ms()
-    while x1 - x0 < 10:
+    while x1 - x0 < 200:
         #print(x1)
         x1 = time.ticks_ms()
     A = (b"\x4B\x4C\x84\x83\x27\x08\xB0\xB1\x4D\x3B\x3A\x5F\x00\x00\x0A\x20"
@@ -31,7 +31,7 @@ def init_keyb():
     lcd.keyboardSetKeyShiftTable(A)
     x0 = time.ticks_ms()
     x1 = time.ticks_ms()
-    while x1 - x0 < 10:
+    while x1 - x0 < 200:
         #print(x1)
         x1 = time.ticks_ms()
     A = (b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00"
@@ -45,7 +45,7 @@ def init_keyb():
     lcd.keyboardSetKeyAttributeCode(A)
     x0 = time.ticks_ms()
     x1 = time.ticks_ms()
-    while x1 - x0 < 10:
+    while x1 - x0 < 200:
        # print(x1)
         x1 = time.ticks_ms()
     lcd.keyboardKeyClickOn()

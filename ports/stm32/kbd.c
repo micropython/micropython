@@ -309,6 +309,7 @@ void kbd_scan(void)
 {
 	if(RAM1_SCAN_COL == 0)
     {
+		DATA_PORT_TO_OUTPUT(portDataControl);
         return;
     }
 	
@@ -349,7 +350,8 @@ void kbd_scan(void)
 	DELAY_WAIT(TIM10);
 	scan_matrix[column] = *portDataInLocal;
 	mp_hal_pin_toggle(xport_ineLocale);
-    
+	// Ensure LCD bus lines are configured back to output mode
+	DATA_PORT_TO_OUTPUT(portDataControl);
     
     MICROPY_END_ATOMIC_SECTION(irq_state);
 
@@ -361,6 +363,7 @@ void kbd_scan(void)
 
     if(++column != 16)
     {
+		DATA_PORT_TO_OUTPUT(portDataControl);
         return;
     }
     column = 0;
@@ -377,6 +380,8 @@ void kbd_scan(void)
     _KB_CTRL = INACTIVE;
     _KB_SHIFT_LOCK = INACTIVE;
     _KB_SHIFT = INACTIVE;
+	
+	DATA_PORT_TO_OUTPUT(portDataControl);
 }
 
 static void process_current_column(void)
@@ -561,7 +566,7 @@ void add_to_kbd_buf(uint8_t ch, bool echo)
 
 bool read_from_kbd_buf(uint8_t *buffer, size_t len)
 {
-	if(len) return false;
+	if(!len) return false;
 	if(kbd_buf.cnt < len) return false;
 	
 	size_t avail = LEN - kbd_buf.head;

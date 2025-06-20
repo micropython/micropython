@@ -917,23 +917,22 @@ static mp_obj_t tiger_lcd1_set_dip_switches(mp_obj_t self_in, mp_obj_t dips)
 		mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Parameter must have a len of 16"));
     }
 	
-	if (!mp_obj_is_small_int(list->items[0]))
-	{
-		mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("Parameter must be a list of integer"));
+    uint8_t col[16];
+    for (size_t i = 0; i < 16; ++i)
+    {
+            if (!mp_obj_is_int(list->items[i]))
+            {
+                    mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("Parameter must be a list of integer"));
+            }
+            col[i] = mp_obj_get_int(list->items[i]);
     }
-	
-	uint8_t data[1];
-	
-	mp_buffer_info_t bufinfo;
-	
-	pyb_buf_get_for_send(list->items, &bufinfo, data);
 
 	
 	uint8_t cmd[4] = {0x1B, 'D', 16, 0xF0};
 	
 	
 	add_to_obuf(cmd, 3);
-	add_to_obuf(bufinfo.buf, 16);
+	add_to_obuf(col, 16);
 	add_to_obuf(&(cmd[3]), 1);	
 	
 
@@ -963,14 +962,14 @@ static mp_obj_t tiger_lcd1_read_kbd(mp_obj_t self_in, mp_obj_t bytes)
 	kbd_buf.busy = true;
 	
 	
-	vstr_t vstr;
-	vstr_init(&vstr, len);
-	
-	if( !read_from_kbd_buf((uint8_t *)vstr.buf,len) )
-	{
-		mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("Failed buffer operation"));
-	}
-	kbd_buf.busy = false;
+    vstr_t vstr;
+    vstr_init(&vstr, len);
+
+    if (!read_from_kbd_buf((uint8_t *)vstr.buf, len)) {
+            mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("Failed buffer operation"));
+    }
+    vstr.len = len;
+    kbd_buf.busy = false;
 	
   
 	
