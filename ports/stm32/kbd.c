@@ -120,6 +120,7 @@ static uint8_t RAM1_DIP_COL[] =
 //here is not static in the original code
 static void process_current_column();
 static void process_full_run(); 
+static void kbd_led(void);
 
 static uint8_t column = 0;
 static uint8_t scan_matrix[16];
@@ -149,11 +150,12 @@ void kbd_init(void)
 {
 	for(uint8_t i = 0; i < 128; i++)
 	{
-        RAM1_KEY_CODES[i] = i;
-        RAM1_KEY_SCODES[i] = 128 + i;
+        RAM1_KEY_CODES[i] = 128 + i;
+        RAM1_KEY_SCODES[i] = i;
 	}
 	shared_iram = MP_STATE_PORT(SHARED_IRAM_ADDR);//MP_STATE_PORT NEEDS TO BE DONE at RUNTIME
-
+	_KB_SHIFT_TOGGLE = INACTIVE;
+	kbd_led();
 }
 
 void kbd_set_key_table(uint8_t *params)
@@ -437,10 +439,7 @@ static void process_current_column(void)
 static void process_full_run(void)
 {
     // SHIFT, SHIFT_LOCK, CTRL
-    if (_KB_SHIFT == ACTIVE && _KB_PREV_SHIFT == ACTIVE) {
-        _KB_SHIFT_TOGGLE = INACTIVE;
-        kbd_led();
-    }
+
     if (_KB_SHIFT_LOCK == ACTIVE && _KB_PREV_SHIFT_LOCK == INACTIVE) {
         _KB_SHIFT_TOGGLE = !_KB_SHIFT_TOGGLE;
         kbd_led();
