@@ -39,6 +39,7 @@
 
 // Enable additional features.
 #define MICROPY_DEBUG_PARSE_RULE_NAME  (1)
+#define MICROPY_PY_SYS_SETTRACE        (1)
 #define MICROPY_TRACKED_ALLOC          (1)
 #define MICROPY_WARNINGS_CATEGORY      (1)
 #undef MICROPY_VFS_ROM_IOCTL
