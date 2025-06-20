@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "stm32f7disc.jpg"
+    ],
+    "mcu": "stm32f7",
+    "product": "Tiger 4",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Wilke Technology GmbH"
+}

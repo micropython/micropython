@@ -102,8 +102,6 @@ static const emit_method_table_t *emit_native_table[] = {
     &emit_native_thumb_method_table,
     &emit_native_xtensa_method_table,
     &emit_native_xtensawin_method_table,
-    &emit_native_rv32_method_table,
-    &emit_native_debug_method_table,
 };
 
 #elif MICROPY_EMIT_NATIVE
@@ -120,10 +118,6 @@ static const emit_method_table_t *emit_native_table[] = {
 #define NATIVE_EMITTER(f) emit_native_xtensa_##f
 #elif MICROPY_EMIT_XTENSAWIN
 #define NATIVE_EMITTER(f) emit_native_xtensawin_##f
-#elif MICROPY_EMIT_RV32
-#define NATIVE_EMITTER(f) emit_native_rv32_##f
-#elif MICROPY_EMIT_NATIVE_DEBUG
-#define NATIVE_EMITTER(f) emit_native_debug_##f
 #else
 #error "unknown native emitter"
 #endif
@@ -147,7 +141,6 @@ static const emit_inline_asm_method_table_t *emit_asm_table[] = {
     &emit_inline_thumb_method_table,
     &emit_inline_xtensa_method_table,
     NULL,
-    &emit_inline_rv32_method_table,
 };
 
 #elif MICROPY_EMIT_INLINE_ASM
@@ -158,9 +151,6 @@ static const emit_inline_asm_method_table_t *emit_asm_table[] = {
 #elif MICROPY_EMIT_INLINE_XTENSA
 #define ASM_DECORATOR_QSTR MP_QSTR_asm_xtensa
 #define ASM_EMITTER(f) emit_inline_xtensa_##f
-#elif MICROPY_EMIT_INLINE_RV32
-#define ASM_DECORATOR_QSTR MP_QSTR_asm_rv32
-#define ASM_EMITTER(f) emit_inline_rv32_##f
 #else
 #error "unknown asm emitter"
 #endif
@@ -858,8 +848,6 @@ static bool compile_built_in_decorator(compiler_t *comp, size_t name_len, mp_par
     } else if (attr == MP_QSTR_asm_thumb) {
         *emit_options = MP_EMIT_OPT_ASM;
     } else if (attr == MP_QSTR_asm_xtensa) {
-        *emit_options = MP_EMIT_OPT_ASM;
-    } else if (attr == MP_QSTR_asm_rv32) {
         *emit_options = MP_EMIT_OPT_ASM;
     #else
     } else if (attr == ASM_DECORATOR_QSTR) {
@@ -1905,7 +1893,19 @@ static void compile_async_with_stmt_helper(compiler_t *comp, size_t n, mp_parse_
 
         // Handle case 1: call __aexit__
         // Stack: (..., ctx_mgr)
-        EMIT_ARG(async_with_setup_finally, l_aexit_no_exc, l_finally_block, l_ret_unwind_jump);
+        EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE); // to tell end_finally there's no exception
+        EMIT(rot_two);
+        EMIT_ARG(jump, l_aexit_no_exc); // jump to code below to call __aexit__
+
+        // Start of "finally" block
+        // At this point we have case 2 or 3, we detect which one by the TOS being an exception or not
+        EMIT_ARG(label_assign, l_finally_block);
+
+        // Detect if TOS an exception or not
+        EMIT(dup_top);
+        EMIT_LOAD_GLOBAL(MP_QSTR_BaseException);
+        EMIT_ARG(binary_op, MP_BINARY_OP_EXCEPTION_MATCH);
+        EMIT_ARG(pop_jump_if, false, l_ret_unwind_jump); // if not an exception then we have case 3
 
         // Handle case 2: call __aexit__ and either swallow or re-raise the exception
         // Stack: (..., ctx_mgr, exc)
@@ -1931,7 +1931,6 @@ static void compile_async_with_stmt_helper(compiler_t *comp, size_t n, mp_parse_
         EMIT_ARG(pop_jump_if, false, l_end);
         EMIT(pop_top); // pop exception
         EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE); // replace with None to swallow exception
-        // Stack: (..., None)
         EMIT_ARG(jump, l_end);
         EMIT_ARG(adjust_stack_size, 2);
 
@@ -1941,8 +1940,6 @@ static void compile_async_with_stmt_helper(compiler_t *comp, size_t n, mp_parse_
         EMIT(rot_three);
         EMIT(rot_three);
         EMIT_ARG(label_assign, l_aexit_no_exc);
-        // We arrive here from either case 1 (a jump) or case 3 (fall through)
-        // Stack: case 1: (..., None, ctx_mgr) or case 3: (..., X, INT, ctx_mgr)
         EMIT_ARG(load_method, MP_QSTR___aexit__, false);
         EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
         EMIT(dup_top);
@@ -1950,7 +1947,6 @@ static void compile_async_with_stmt_helper(compiler_t *comp, size_t n, mp_parse_
         EMIT_ARG(call_method, 3, 0, 0);
         compile_yield_from(comp);
         EMIT(pop_top);
-        // Stack: case 1: (..., None) or case 3: (..., X, INT)
         EMIT_ARG(adjust_stack_size, -1);
 
         // End of "finally" block
@@ -3467,7 +3463,7 @@ static void scope_compute_things(scope_t *scope) {
     }
 }
 
-#if !MICROPY_EXPOSE_MP_COMPILE_TO_RAW_CODE
+#if !MICROPY_PERSISTENT_CODE_SAVE
 static
 #endif
 void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl, mp_compiled_module_t *cm) {

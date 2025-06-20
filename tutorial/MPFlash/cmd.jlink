@@ -1,0 +1,5 @@
+r /* Resets the MCU */
+h /* Halt */
+loadfile firmware0.bin 0x08000000
+loadfile firmware1.bin 0x08020000
+exit

@@ -14,7 +14,6 @@ false true
 80000000
 abc
 %
-.a  .
 # GC
 0
 0
@@ -51,19 +50,19 @@ RuntimeError:
 ame__
 port 
 
-builtins        micropython     array           binascii
-btree           cexample        cmath           collections
-cppexample      cryptolib       deflate         errno
-example_package                 ffi             framebuf
-gc              hashlib         heapq           io
-json            machine         marshal         math
-os              platform        random          re
-select          socket          struct          sys
-termios         time            tls             uctypes
-vfs             websocket
+builtins        micropython     _asyncio        _thread
+array           binascii        btree           cexample
+cmath           collections     cppexample      cryptolib
+deflate         errno           example_package
+ffi             framebuf        gc              hashlib
+heapq           io              json            machine
+math            os              platform        random
+re              select          socket          struct
+sys             termios         time            tls
+uctypes         vfs             websocket
 me
 
-micropython     machine         marshal         math
+micropython     machine         math
 
 argv            atexit          byteorder       exc_info
 executable      exit            getsizeof       implementation
@@ -89,15 +88,9 @@ data
 1
 12345
 6
--1
-0
-1
-0
-0.000000
 # runtime utils
 TypeError: unsupported type for __abs__: 'str'
 TypeError: unsupported types for __divmod__: 'str', 'str'
-0
 1
 2
 OverflowError: overflow converting long int to machine word
@@ -127,13 +120,6 @@ unlocked
 KeyboardInterrupt: 
 KeyboardInterrupt: 
 10
-loop
-scheduled function
-loop
-scheduled function
-loop
-scheduled function
-scheduled function
 # ringbuf
 99 0
 98 1
@@ -156,11 +142,6 @@ cc99
 22ff
 -1
 -1
-0
-0
-abc123
--1
--2
 # pairheap
 create: 0 0 0 0
 pop all: 0 1 2 3
@@ -180,8 +161,6 @@ pop all: 1 2 4 5
 1 1
 1 1
 0 0
-1 1
-# stackctrl
 1 1
 # end coverage.c
 0123456789 b'0123456789'

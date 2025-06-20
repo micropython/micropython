@@ -18,7 +18,7 @@ working with this board it may be useful to get an overview of the microcontroll
    general.rst
    tutorial/index.rst
 
-Note that there are several varieties of ESP32 -- ESP32, ESP32C3, ESP32C6, ESP32S2, ESP32S3 --
+Note that there are several varieties of ESP32 -- ESP32, ESP32C3, ESP32S2, ESP32S3 --
 supported by MicroPython, with some differences in functionality between them.
 
 Installing MicroPython
@@ -61,13 +61,13 @@ The :mod:`esp32` module::
     import esp32
 
     esp32.raw_temperature() # read the internal temperature of the MCU, in Fahrenheit
-    esp32.ULP()             # access to the Ultra-Low-Power Co-processor, not on ESP32C3/C6
+    esp32.ULP()             # access to the Ultra-Low-Power Co-processor, not on ESP32C3
 
 Note that the temperature sensor in the ESP32 will typically read higher than
 ambient due to the IC getting warm while it runs.  This effect can be minimised
 by reading the temperature sensor immediately after waking up from sleep.
 
-ESP32C3, ESP32C6, ESP32S2, and ESP32S3 also have an internal temperature sensor available.
+ESP32C3, ESP32S2, and ESP32S3 also have an internal temperature sensor available.
 It is implemented a bit differently to the ESP32 and returns the temperature in
 Celsius::
 
@@ -79,35 +79,35 @@ Networking
 WLAN
 ^^^^
 
-The :class:`network.WLAN` class in the :mod:`network` module::
+The :mod:`network` module::
 
     import network
 
-    wlan = network.WLAN()       # create station interface (the default, see below for an access point interface)
-    wlan.active(True)           # activate the interface
-    wlan.scan()                 # scan for access points
-    wlan.isconnected()          # check if the station is connected to an AP
+    wlan = network.WLAN(network.STA_IF) # create station interface
+    wlan.active(True)       # activate the interface
+    wlan.scan()             # scan for access points
+    wlan.isconnected()      # check if the station is connected to an AP
     wlan.connect('ssid', 'key') # connect to an AP
-    wlan.config('mac')          # get the interface's MAC address
-    wlan.ipconfig('addr4')      # get the interface's IPv4 addresses
+    wlan.config('mac')      # get the interface's MAC address
+    wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
 
-    ap = network.WLAN(network.WLAN.IF_AP) # create access-point interface
-    ap.config(ssid='ESP-AP')              # set the SSID of the access point
-    ap.config(max_clients=10)             # set how many clients can connect to the network
-    ap.active(True)                       # activate the interface
+    ap = network.WLAN(network.AP_IF) # create access-point interface
+    ap.config(ssid='ESP-AP') # set the SSID of the access point
+    ap.config(max_clients=10) # set how many clients can connect to the network
+    ap.active(True)         # activate the interface
 
 A useful function for connecting to your local WiFi network is::
 
     def do_connect():
-        import machine, network
-        wlan = network.WLAN()
+        import network
+        wlan = network.WLAN(network.STA_IF)
         wlan.active(True)
         if not wlan.isconnected():
             print('connecting to network...')
             wlan.connect('ssid', 'key')
             while not wlan.isconnected():
-                machine.idle()
-        print('network config:', wlan.ipconfig('addr4'))
+                pass
+        print('network config:', wlan.ifconfig())
 
 Once the network is established the :mod:`socket <socket>` module can be used
 to create and use TCP/UDP sockets as usual, and the ``requests`` module for
@@ -121,56 +121,32 @@ calling ``wlan.config(reconnects=n)``, where n are the number of desired reconne
 attempts (0 means it won't retry, -1 will restore the default behaviour of trying
 to reconnect forever).
 
-.. _esp32_network_lan:
-
 LAN
 ^^^
 
-Built-in MAC (original ESP32)
-"""""""""""""""""""""""""""""
-
-The original ESP32 SoC has a built-in Ethernet MAC. Using this MAC requires an
-external Ethernet PHY to be wired to the chip's EMAC pins. Most of the EMAC pin
-assignments are fixed, consult the ESP32 datasheet for details.
-
-If the PHY is connected, the internal Ethernet MAC can be configured via
-the :class:`network.LAN` constructor::
+To use the wired interfaces one has to specify the pins and mode ::
 
     import network
 
     lan = network.LAN(mdc=PIN_MDC, ...)   # Set the pin and mode configuration
     lan.active(True)                      # activate the interface
-    lan.ipconfig('addr4')                 # get the interface's IPv4 addresses
+    lan.ifconfig()                        # get the interface's IP/netmask/gw/DNS addresses
 
 
-Required keyword arguments for the constructor:
+The keyword arguments for the constructor defining the PHY type and interface are:
 
-- ``mdc`` and ``mdio`` - :class:`machine.Pin` objects (or integers) specifying
-  the MDC and MDIO pins.
-- ``phy_type`` - Select the PHY device type. Supported devices are
-  ``PHY_GENERIC``,
-  ``PHY_LAN8710``, ``PHY_LAN8720``, ``PHY_IP101``, ``PHY_RTL8201``,
-  ``PHY_DP83848``, ``PHY_KSZ8041`` and ``PHY_KSZ8081``. These values are all
-  constants defined in the ``network`` module.
-- ``phy_addr`` - The address number of the PHY device. Must be an integer in the
-  range 0x00 to 0x1f, inclusive. Common values are ``0`` and ``1``.
+- mdc=pin-object    # set the mdc and mdio pins.
+- mdio=pin-object
+- reset=pin-object  # set the reset pin of the PHY device.
+- power=pin-object  # set the pin which switches the power of the PHY device.
+- phy_type=<type>   # Select the PHY device type. Supported devices are PHY_LAN8710,
+  PHY_LAN8720, PH_IP101, PHY_RTL8201, PHY_DP83848 and PHY_KSZ8041
+- phy_addr=number   # The address number of the PHY device.
+- ref_clk_mode=mode # Defines, whether the ref_clk at the ESP32 is an input
+  or output. Suitable values are Pin.IN and Pin.OUT.
+- ref_clk=pin-object  # defines the Pin used for ref_clk.
 
-All of the above keyword arguments must be present to configure the interface.
-
-Optional keyword arguments:
-
-- ``reset`` - :class:`machine.Pin` object (or integer) specifying the PHY reset pin.
-- ``power`` - :class:`machine.Pin` object (or integer) specifying a pin which
-  switches the power of the PHY device.
-- ``ref_clk`` - :class:`machine.Pin` object (or integer) specifying the pin used
-  for the EMAC ``ref_clk`` signal. If not specified, the board default is used
-  (typically GPIO 0, but may be different if a particular board has Ethernet.)
-- ``ref_clk_mode`` - Defines whether the EMAC ``ref_clk`` pin of the ESP32
-  should be an input or an output. Suitable values are ``machine.Pin.IN`` and
-  ``machine.Pin.OUT``. If not specified, the board default is used
-  (typically input, but may be different if a particular board has Ethernet.)
-
-These are working configurations for LAN interfaces of some popular ESP32 boards::
+These are working configurations for LAN interfaces of popular boards::
 
     # Olimex ESP32-GATEWAY: power controlled by Pin(5)
     # Olimex ESP32 PoE and ESP32-PoE ISO: power controlled by Pin(12)
@@ -195,66 +171,6 @@ These are working configurations for LAN interfaces of some popular ESP32 boards
     lan = network.LAN(id=0, mdc=Pin(23), mdio=Pin(18), power=Pin(5),
                       phy_type=network.PHY_IP101, phy_addr=1)
 
-
-.. _esp32_spi_ethernet:
-
-SPI Ethernet Interface
-""""""""""""""""""""""
-
-All ESP32 SoCs support external SPI Ethernet interface chips. These are Ethernet
-interfaces that connect via a SPI bus, rather than an Ethernet RMII interface.
-
-.. note:: The only exception is the ESP32 ``d2wd`` variant, where this feature is disabled
-     to save code size.
-
-SPI Ethernet uses the same :class:`network.LAN` constructor, with a different
-set of keyword arguments::
-
-    import machine, network
-
-    spi = machine.SPI(1, sck=SCK_PIN, mosi=MOSI_PIN, miso=MISO_PIN)
-    lan = network.LAN(spi=spi, cs=CS_PIN, ...)   # Set the pin and mode configuration
-    lan.active(True)                             # activate the interface
-    lan.ipconfig('addr4')                        # get the interface's IPv4 addresses
-
-Required keyword arguments for the constructor:
-
-- ``spi`` - Should be a :class:`machine.SPI` object configured for this
-  connection. Note that any clock speed configured on the SPI object is ignored,
-  the SPI Ethernet clock speed is configured at compile time.
-- ``cs`` - :class:`machine.Pin` object (or integer) specifying the CS pin
-  connected to the interface.
-- ``int`` - :class:`machine.Pin` object (or integer) specifying the INT pin
-  connected to the interface.
-- ``phy_type`` - Select the SPI Ethernet interface type. Supported devices are
-  ``PHY_KSZ8851SNL``, ``PHY_DM9051``, ``PHY_W5500``. These values are all
-  constants defined in the ``network`` module.
-- ``phy_addr`` - The address number of the PHY device. Must be an integer in the
-  range 0x00 to 0x1f, inclusive. This is usually ``0`` for SPI Ethernet devices.
-
-All of the above keyword arguments must be present to configure the interface.
-
-Optional keyword arguments for the constructor:
-
-- ``reset`` - :class:`machine.Pin` object (or integer) specifying the SPI Ethernet
-  interface reset pin.
-- ``power`` - :class:`machine.Pin` object (or integer) specifying a pin which
-  switches the power of the SPI Ethernet interface.
-
-Here is a sample configuration for a WIZNet W5500 chip connected to pins on
-an ESP32-S3 development board::
-
-    import machine, network
-    from machine import Pin, SPI
-
-    spi = SPI(1, sck=Pin(12), mosi=Pin(13), miso=Pin(14))
-    lan = network.LAN(spi=spi, phy_type=network.PHY_W5500, phy_addr=0,
-                      cs=Pin(10), int=Pin(11))
-
-.. note:: WIZnet W5500 Ethernet is also supported on some other MicroPython
-          ports, but using a :ref:`different software interface
-          <network.WIZNET5K>`.
-
 Delay and timing
 ----------------
 
@@ -271,10 +187,8 @@ Use the :mod:`time <time>` module::
 Timers
 ------
 
-The ESP32 port has one, two or four hardware timers, depending on the ESP32 device type.
-There is 1 timer for ESP32C2, 2 timers for ESP32C4, ESP32C6 and ESP32H4, and
-4 timers otherwise. Use the :ref:`machine.Timer <machine.Timer>` class
-with a timer ID of 0, 0 and 1, or from 0 to 3 (inclusive)::
+The ESP32 port has four hardware timers. Use the :ref:`machine.Timer <machine.Timer>` class
+with a timer ID from 0 to 3 (inclusive)::
 
     from machine import Timer
 
@@ -284,8 +198,7 @@ with a timer ID of 0, 0 and 1, or from 0 to 3 (inclusive)::
     tim1 = Timer(1)
     tim1.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(1))
 
-The period is in milliseconds. When using UART.IRQ_RXIDLE, timer 0 is needed for
-the IRQ_RXIDLE mechanism and must not be used otherwise.
+The period is in milliseconds.
 
 Virtual timers are not currently supported on this port.
 
@@ -387,7 +300,7 @@ for more details.
 
 Use the :ref:`machine.PWM <machine.PWM>` class::
 
-    from machine import Pin, PWM, lightsleep
+    from machine import Pin, PWM
 
     pwm0 = PWM(Pin(0), freq=5000, duty_u16=32768) # create PWM object from a pin
     freq = pwm0.freq()         # get current frequency
@@ -397,7 +310,7 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
     pwm0.duty(256)             # set duty cycle from 0 to 1023 as a ratio duty/1023, (now 25%)
 
     duty_u16 = pwm0.duty_u16() # get current duty cycle, range 0-65535
-    pwm0.duty_u16(65536*3//4)  # set duty cycle from 0 to 65535 as a ratio duty_u16/65535, (now 75%)
+    pwm0.duty_u16(2**16*3//4)  # set duty cycle from 0 to 65535 as a ratio duty_u16/65535, (now 75%)
 
     duty_ns = pwm0.duty_ns()   # get current pulse width in ns
     pwm0.duty_ns(250_000)      # set pulse width in nanoseconds from 0 to 1_000_000_000/freq, (now 25%)
@@ -406,35 +319,19 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
 
     pwm2 = PWM(Pin(2), freq=20000, duty=512)  # create and configure in one go
     print(pwm2)                               # view PWM settings
-    pwm2.deinit()                             # turn off PWM on the pin
-
-    pwm0 = PWM(Pin(0), duty_u16=16384)            # The output is at a high level 25% of the time.
-    pwm2 = PWM(Pin(2), duty_u16=16384, invert=1)  # The output is at a low level 25% of the time.
-
-    pwm4 = PWM(Pin(4), lightsleep=True)           # Allow PWM during light sleep mode
-
-    lightsleep(10*1000) # pwm0, pwm2 goes off, pwm4 stays on during 10s light sleep
-                        # pwm0, pwm2, pwm4 on after 10s light sleep
 
 ESP chips have different hardware peripherals:
 
-=======================================================  ========  =========  ==========
-Hardware specification                                      ESP32  ESP32-S2,  ESP32-C2,
-                                                                   ESP32-S3,  ESP32-C3,
-                                                                   ESP32-P4   ESP32-C5,
-                                                                              ESP32-C6,
-                                                                              ESP32-H2
--------------------------------------------------------  --------  ---------  ----------
-Number of groups (speed modes)                                  2          1         1
-Number of timers per group                                      4          4         4
-Number of channels per group                                    8          8         6
--------------------------------------------------------  --------  ---------  ----------
-Different PWM frequencies = (groups * timers)                   8          4         4
-Total PWM channels (Pins, duties) = (groups * channels)        16          8         6
-=======================================================  ========  =========  ==========
-
-In light sleep, the ESP32 PWM can only operate in low speed mode, so only 4 timers and
-8 channels are available.
+=====================================================  ========  ========  ========
+Hardware specification                                    ESP32  ESP32-S2  ESP32-C3
+-----------------------------------------------------  --------  --------  --------
+Number of groups (speed modes)                                2         1         1
+Number of timers per group                                    4         4         4
+Number of channels per group                                  8         8         6
+-----------------------------------------------------  --------  --------  --------
+Different PWM frequencies (groups * timers)                   8         4         4
+Total PWM channels (Pins, duties) (groups * channels)        16         8         6
+=====================================================  ========  ========  ========
 
 A maximum number of PWM channels (Pins) are available on the ESP32 - 16 channels,
 but only 8 different PWM frequencies are available, the remaining 8 channels must
@@ -544,27 +441,14 @@ Legacy methods:
 
     Equivalent to ``ADC.block().init(bits=bits)``.
 
-The only chip that can switch resolution to a lower one is the normal esp32.
-The C2 & S3 are stuck at 12 bits, while the S2 is at 13 bits.
-
 For compatibility, the ``ADC`` object also provides constants matching the
-supported ADC resolutions, per chip:
+supported ADC resolutions:
 
-ESP32:
   - ``ADC.WIDTH_9BIT`` = 9
   - ``ADC.WIDTH_10BIT`` = 10
   - ``ADC.WIDTH_11BIT`` = 11
   - ``ADC.WIDTH_12BIT`` = 12
 
-ESP32 C3 & S3:
-  - ``ADC.WIDTH_12BIT`` = 12
-
-ESP32 S2:
-  - ``ADC.WIDTH_13BIT`` = 13
-
-.. method:: ADC.deinit()
-
-    Provided to deinit the adc driver.
 
 Software SPI bus
 ----------------
@@ -692,9 +576,7 @@ See :ref:`machine.RTC <machine.RTC>` ::
     from machine import RTC
 
     rtc = RTC()
-    rtc.datetime((2017, 8, 23, 0, 1, 12, 48, 0)) # set a specific date and
-                                                 # time, eg. 2017/8/23 1:12:48
-                                                 # the day-of-week value is ignored
+    rtc.datetime((2017, 8, 23, 1, 12, 48, 0, 0)) # set a specific date and time
     rtc.datetime() # get date and time
 
 WDT (Watchdog timer)
@@ -780,7 +662,7 @@ See :ref:`machine.SDCard <machine.SDCard>`. ::
 
     import machine, os, vfs
 
-    # On original ESP32, slot 2 uses pins sck=18, cs=5, miso=19, mosi=23
+    # Slot 2 uses pins sck=18, cs=5, miso=19, mosi=23
     sd = machine.SDCard(slot=2)
     vfs.mount(sd, '/sd') # mount
 
@@ -868,33 +750,20 @@ APA102 (DotStar) uses a different driver as it has an additional clock pin.
 Capacitive touch
 ----------------
 
-ESP32, ESP32-S2 and ESP32-S3 support capacitive touch via the ``TouchPad`` class
-in the ``machine`` module::
+Use the ``TouchPad`` class in the ``machine`` module::
 
     from machine import TouchPad, Pin
 
     t = TouchPad(Pin(14))
     t.read()              # Returns a smaller number when touched
 
-``TouchPad.read`` returns a value proportional to the capacitance between the
-pin and the board's Ground connection. On ESP32 the number becomes smaller when
-the pin (or connected touch pad) is touched, on ESP32-S2 and ESP32-S3 the number
-becomes larger when the pin is touched.
+``TouchPad.read`` returns a value relative to the capacitive variation. Small numbers (typically in
+the *tens*) are common when a pin is touched, larger numbers (above *one thousand*) when
+no touch is present. However the values are *relative* and can vary depending on the board
+and surrounding composition so some calibration may be required.
 
-In all cases, a touch causes a significant change in the return value. Note the
-returned values are *relative* and can vary depending on the board and
-surrounding environment so some calibration (i.e. comparison to a baseline or
-rolling average) may be required.
-
-========= ==============================================
-Chip      Touch-enabled pins
---------- ----------------------------------------------
-ESP32     0, 2, 4, 12, 13, 14, 15, 27, 32, 33
-ESP32-S2  1 to 14 inclusive
-ESP32-S3  1 to 14 inclusive
-========= ==============================================
-
-Trying to assign to any other pins will result in a ``ValueError``.
+There are ten capacitive touch-enabled pins that can be used on the ESP32: 0, 2, 4, 12, 13
+14, 15, 27, 32, 33. Trying to assign to any other pins will result in a ``ValueError``.
 
 Note that TouchPads can be used to wake an ESP32 from sleep::
 

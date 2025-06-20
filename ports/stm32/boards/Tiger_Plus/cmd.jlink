@@ -1,0 +1,5 @@
+r /* Resets the MCU */
+h /* Halt */
+loadfile ../build-Tiger_Plus/firmware0.bin 0x08000000
+loadfile ../build-Tiger_Plus/firmware1.bin 0x08020000
+exit

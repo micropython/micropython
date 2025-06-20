@@ -235,17 +235,15 @@ class ProcessPtyToTerminal:
             preexec_fn=os.setsid,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
-        pty_line = self.subp.stdout.readline().decode("utf-8")
+        pty_line = self.subp.stderr.readline().decode("utf-8")
         m = re.search(r"/dev/pts/[0-9]+", pty_line)
         if not m:
             print("Error: unable to find PTY device in startup line:", pty_line)
             self.close()
             sys.exit(1)
         pty = m.group()
-        # Compensate for some boards taking a bit longer to start
-        time.sleep(0.1)
         # rtscts, dsrdtr params are to workaround pyserial bug:
         # http://stackoverflow.com/questions/34831131/pyserial-does-not-play-well-with-virtual-port
         self.serial = serial.Serial(pty, interCharTimeout=1, rtscts=True, dsrdtr=True)
@@ -267,15 +265,7 @@ class ProcessPtyToTerminal:
 
 class Pyboard:
     def __init__(
-        self,
-        device,
-        baudrate=115200,
-        user="micro",
-        password="python",
-        wait=0,
-        exclusive=True,
-        timeout=None,
-        write_timeout=5,
+        self, device, baudrate=115200, user="micro", password="python", wait=0, exclusive=True
     ):
         self.in_raw_repl = False
         self.use_raw_paste = True
@@ -291,12 +281,7 @@ class Pyboard:
             import serial.tools.list_ports
 
             # Set options, and exclusive if pyserial supports it
-            serial_kwargs = {
-                "baudrate": baudrate,
-                "timeout": timeout,
-                "write_timeout": write_timeout,
-                "interCharTimeout": 1,
-            }
+            serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1}
             if serial.__version__ >= "3.3":
                 serial_kwargs["exclusive"] = exclusive
 
@@ -336,25 +321,14 @@ class Pyboard:
     def close(self):
         self.serial.close()
 
-    def read_until(
-        self, min_num_bytes, ending, timeout=10, data_consumer=None, timeout_overall=None
-    ):
-        """
-        min_num_bytes: Obsolete.
-        ending: Return if 'ending' matches.
-        timeout [s]: Return if timeout between characters. None: Infinite timeout.
-        timeout_overall [s]: Return not later than timeout_overall. None: Infinite timeout.
-        data_consumer: Use callback for incoming characters.
-            If data_consumer is used then data is not accumulated and the ending must be 1 byte long
-
-        It is not visible to the caller why the function returned. It could be ending or timeout.
-        """
+    def read_until(self, min_num_bytes, ending, timeout=10, data_consumer=None):
+        # if data_consumer is used then data is not accumulated and the ending must be 1 byte long
         assert data_consumer is None or len(ending) == 1
-        assert isinstance(timeout, (type(None), int, float))
-        assert isinstance(timeout_overall, (type(None), int, float))
 
-        data = b""
-        begin_overall_s = begin_char_s = time.monotonic()
+        data = self.serial.read(min_num_bytes)
+        if data_consumer:
+            data_consumer(data)
+        timeout_count = 0
         while True:
             if data.endswith(ending):
                 break
@@ -365,26 +339,16 @@ class Pyboard:
                     data = new_data
                 else:
                     data = data + new_data
-                begin_char_s = time.monotonic()
+                timeout_count = 0
             else:
-                if timeout is not None and time.monotonic() >= begin_char_s + timeout:
-                    break
-                if (
-                    timeout_overall is not None
-                    and time.monotonic() >= begin_overall_s + timeout_overall
-                ):
+                timeout_count += 1
+                if timeout is not None and timeout_count >= 100 * timeout:
                     break
                 time.sleep(0.01)
         return data
 
-    def enter_raw_repl(self, soft_reset=True, timeout_overall=10):
-        try:
-            self._enter_raw_repl_unprotected(soft_reset, timeout_overall)
-        except OSError as er:
-            raise PyboardError("could not enter raw repl: {}".format(er))
-
-    def _enter_raw_repl_unprotected(self, soft_reset, timeout_overall):
-        self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
+    def enter_raw_repl(self, soft_reset=True):
+        self.serial.write(b"\r\x03\x03")  # ctrl-C twice: interrupt any running program
 
         # flush input (without relying on serial.flushInput())
         n = self.serial.inWaiting()
@@ -395,9 +359,7 @@ class Pyboard:
         self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
 
         if soft_reset:
-            data = self.read_until(
-                1, b"raw REPL; CTRL-B to exit\r\n>", timeout_overall=timeout_overall
-            )
+            data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n>")
             if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
                 print(data)
                 raise PyboardError("could not enter raw repl")
@@ -407,12 +369,12 @@ class Pyboard:
             # Waiting for "soft reboot" independently to "raw REPL" (done below)
             # allows boot.py to print, which will show up after "soft reboot"
             # and before "raw REPL".
-            data = self.read_until(1, b"soft reboot\r\n", timeout_overall=timeout_overall)
+            data = self.read_until(1, b"soft reboot\r\n")
             if not data.endswith(b"soft reboot\r\n"):
                 print(data)
                 raise PyboardError("could not enter raw repl")
 
-        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n", timeout_overall=timeout_overall)
+        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
         if not data.endswith(b"raw REPL; CTRL-B to exit\r\n"):
             print(data)
             raise PyboardError("could not enter raw repl")
@@ -542,7 +504,7 @@ class Pyboard:
         return self.exec_(pyfile)
 
     def get_time(self):
-        t = str(self.eval("machine.RTC().datetime()"), encoding="utf8")[1:-1].split(", ")
+        t = str(self.eval("pyb.RTC().datetime()"), encoding="utf8")[1:-1].split(", ")
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
 
     def fs_exists(self, src):
@@ -566,7 +528,7 @@ class Pyboard:
         def repr_consumer(b):
             buf.extend(b.replace(b"\x04", b""))
 
-        cmd = "import os\nfor f in os.ilistdir(%s):\n print(repr(f), end=',')" % (
+        cmd = "import os\nfor f in os.ilistdir(%s):\n" " print(repr(f), end=',')" % (
             ("'%s'" % src) if src else ""
         )
         try:

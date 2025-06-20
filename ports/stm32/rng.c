@@ -25,7 +25,11 @@
  */
 
 #include "py/mphal.h"
+#if defined(MICROPY_PY_TIGER)
+#include "td02-rtc.h"
+#else
 #include "rtc.h"
+#endif
 #include "rng.h"
 
 #if MICROPY_HW_ENABLE_RNG

@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "Tiger_Plus.jpg"
+    ],
+    "mcu": "stm32f7",
+    "product": "Tiger Plus",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Wilke Technology GmbH"
+}

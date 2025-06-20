@@ -196,7 +196,7 @@ static uint8_t _runtime_dev_count_itfs(tusb_desc_interface_t const *itf_desc) {
     const tusb_desc_configuration_t *cfg_desc = (const void *)tud_descriptor_configuration_cb(0);
     const uint8_t *p_desc = (const void *)cfg_desc;
     const uint8_t *p_end = p_desc + cfg_desc->wTotalLength;
-    assert(p_desc <= (const uint8_t *)itf_desc && (const uint8_t *)itf_desc < p_end);
+    assert(p_desc <= itf_desc && itf_desc < p_end);
     while (p_desc != (const void *)itf_desc && p_desc < p_end) {
         const uint8_t *next = tu_desc_next(p_desc);
 
@@ -428,10 +428,8 @@ void mp_usbd_init(void) {
     }
 
     if (need_usb) {
-        // The following will call tusb_init(), which is safe to call redundantly.
-        mp_usbd_init_tud();
-        // Reconnect if mp_usbd_deinit() has disconnected.
-        tud_connect();
+        tusb_init(); // Safe to call redundantly
+        tud_connect(); // Reconnect if mp_usbd_deinit() has disconnected
     }
 }
 
@@ -503,15 +501,6 @@ void mp_usbd_task_callback(mp_sched_node_t *node) {
 // Task function can be called manually to force processing of USB events
 // (mostly from USB-CDC serial port when blocking.)
 void mp_usbd_task(void) {
-    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
-    if (!mp_thread_is_main_thread()) {
-        // Avoid race with the scheduler callback by scheduling TinyUSB to run
-        // on the main thread.
-        mp_usbd_schedule_task();
-        return;
-    }
-    #endif
-
     if (in_usbd_task) {
         // If this exception triggers, it means a USB callback tried to do
         // something that itself became blocked on TinyUSB (most likely: read or

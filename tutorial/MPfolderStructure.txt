@@ -1,0 +1,38 @@
+The folder sturcture inside Micropython:
+
+* - docs : The documentation of micropython, available at https://docs.micropython.org/en/latest/
+* - drivers: Has drivers for specific hardware and intended to work across multiple ports. (generic flash memory, wi-fi, generic spi/soft qspi)
+* - examples : Example code for building MicroPython as a library as well as native modules.
+* - extmod : Contains a C implementation of more non-core modules.
+* - lib : Low-level C libraries used by any port which are mostly 3rd-party libraries.
+* - logo : Just arts of the micropython logo
+* - mpy-cross: Has the MicroPython cross-compiler which pre-compiles the Python scripts to bytecode.
+* - ports : Has the all the C-code to build micropython firmware for different platforms/mcus
+* - py : Contains the compiler, runtime, and core library implementation.
+* - shared : Contains libraries, utilities and helper code developed specifically for this project.  The code is intended to be portable and usable by any port.
+* - tests : An implementation of the test suite.
+* - tools : Contains scripts used by the build and CI process, as well as user tools such as pyboard.py and mpremote.
+
+Build documentation localy:
+	
+	In Linux, open the micropython directory then:
+	$ python3 -m venv env
+	$ source env/bin/activate
+	$ pip install -r docs/requirements.txt
+	$ cd docs
+	$ make html
+	
+The documentation is gonna be at docs/build/html/index.html
+
+In *ports*, only the folder of stm32 was left. Inside it, one can find all files originally written for any stm board, mainly for pyboard, and some modified or additional files for our Tiger firmware - which is basically main.c and its modules. Here there are also some folders for some frameworks - lwip, mbedtls - usb driver and mboot (which we are not using yet, maybe in the future). Inside *boards* are some common hardware and flash define files for stmf7 and f4, as well as our script to load the firmware inside the board. All the Tiger specific hardware definitions that are needed by micropython are defined inside *Tiger*.
+
+In *py* is the C implementation of Micropython. Here are defined all the wraps needed to port Micropython to any board.
+
+In *examples/natmod* one can see some examples of how to write native modules outside of the firmware. A better explanation can be found on the README file inside the folder or at: https://docs.micropython.org/en/latest/develop/natmod.html. 
+
+In contrast, one can also add python code to the firmware, which is naturally slower than the C one but easier. More information at: https://docs.micropython.org/en/latest/reference/manifest.html
+
+In *lib* there are many framework implementations, but the most important one here is stm32 and cmsis, with all the arm and hal libraries needed by stm. In the order to make it easier, inside the stm32 subfolder, only stm32f4 and f7 files and folders were left.
+
+
+

@@ -35,7 +35,7 @@
 #include "led.h"
 #include "usrsw.h"
 
-MP_NORETURN void boardctrl_fatal_error(const char *msg) {
+NORETURN void boardctrl_fatal_error(const char *msg) {
     for (volatile uint delay = 0; delay < 10000000; delay++) {
     }
     led_state(1, 1);
@@ -230,10 +230,10 @@ int boardctrl_run_main_py(boardctrl_state_t *state) {
     if (run_main_py) {
         // Run main.py (or what it was configured to be), if it exists.
         const char *main_py;
-        if (MP_STATE_PORT(pyb_config_main) == MP_OBJ_NULL) {
+        if (MP_STATE_PORT(tiger_config_main) == MP_OBJ_NULL) {
             main_py = "main.py";
         } else {
-            main_py = mp_obj_str_get_str(MP_STATE_PORT(pyb_config_main));
+            main_py = mp_obj_str_get_str(MP_STATE_PORT(tiger_config_main));
         }
         int ret = pyexec_file_if_exists(main_py);
 

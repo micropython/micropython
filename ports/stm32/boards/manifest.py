@@ -1,4 +1,4 @@
 include("$(MPY_DIR)/extmod/asyncio")
 
-require("dht")
-require("onewire")
+#require("dht")
+#require("onewire")

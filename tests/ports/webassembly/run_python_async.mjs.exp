@@ -1,17 +1,17 @@
 = TEST 1 ==========
 1
-<JsProxy 2>
+<JsProxy 1>
 py 1
-<JsProxy 5>
+<JsProxy 4>
 py 2
 2
 resolved 123
 3
 = TEST 2 ==========
 1
-<JsProxy 6>
+<JsProxy 5>
 py 1
-<JsProxy 9>
+<JsProxy 8>
 py 2
 2
 setTimeout resolved
@@ -23,7 +23,7 @@ py 1
 setTimeout resolved
 resolved value: 123
 py 2
-2 null
+2 undefined
 = TEST 4 ==========
 1
 py 1
@@ -35,4 +35,4 @@ py 3
 setTimeout B resolved
 resolved value: 456
 py 4
-2 null
+2 undefined

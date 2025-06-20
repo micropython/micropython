@@ -115,7 +115,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, cons
     #endif
     #elif MICROPY_EMIT_ARM
     #if (defined(__linux__) && defined(__GNUC__)) || __ARM_ARCH == 7
-    __builtin___clear_cache((void *)fun_data, (char *)fun_data + fun_len);
+    __builtin___clear_cache((void *)fun_data, (uint8_t *)fun_data + fun_len);
     #elif defined(__arm__)
     // Flush I-cache and D-cache.
     asm volatile (
@@ -158,7 +158,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, cons
     }
     DEBUG_printf("\n");
 
-    #if WRITE_CODE
+    #ifdef WRITE_CODE
     FILE *fp_write_code = fopen("out-code", "wb");
     fwrite(fun_data, fun_len, 1, fp_write_code);
     fclose(fp_write_code);

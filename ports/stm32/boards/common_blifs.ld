@@ -12,7 +12,6 @@
 
 ENTRY(Reset_Handler)
 
-REGION_ALIAS("FLASH_ISR", FLASH_TEXT);
 REGION_ALIAS("FLASH_COMMON", FLASH_TEXT);
 
 /* define output sections */

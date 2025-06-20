@@ -48,8 +48,6 @@
 #include "esp_hosted_wifi.h"
 #include "esp_hosted_hal.h"
 
-extern const mp_obj_type_t mod_network_esp_hosted_type;
-
 typedef struct _esp_hosted_obj_t {
     mp_obj_base_t base;
     uint32_t itf;
@@ -232,7 +230,7 @@ static mp_obj_t network_esp_hosted_config(size_t n_args, const mp_obj_t *args, m
             case MP_QSTR_essid: {
                 esp_hosted_netinfo_t netinfo;
                 esp_hosted_wifi_netinfo(&netinfo);
-                return mp_obj_new_str_from_cstr(netinfo.ssid);
+                return mp_obj_new_str(netinfo.ssid, strlen(netinfo.ssid));
             }
             case MP_QSTR_security: {
                 esp_hosted_netinfo_t netinfo;

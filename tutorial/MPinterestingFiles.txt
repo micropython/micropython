@@ -1,0 +1,72 @@
+In the folder py:
+
+	* - obj.c/obj.h: where the most important types, functions, constanst and macros of Micropython are defined. All the files starting by "obj" define different python types, such as arrays, lists, tuples, strings, etc. Here are also defined most of the tools needed to declare a type in python, such as MP_DEFINE_CONST_DICT, MP_DEFINE_CONST_OBJ_TYPE, MP_REGISTER_MODULE, MP_REGISTER_ROOT_POINTER and all the function wrappers.
+	
+	* - argcheck.c: here are defined all functions to parse functions arguments, specially nedded when havin kw args.
+	
+	* - runtime.h: define arg types and the protoype functions of argcheck.c, as well as the interruption raising functions (MicroPython API)
+	
+	* - mphal.h: define the prototypefor generic hardware functoions, as well as its types 
+
+In the folder examples/embedding:
+
+	* - main.c: shows how to call python scripts inside Micropython through C.
+	
+In the folder examples/usercmodule:
+	
+	* - cexample: how to write modules in C for Micropython
+	* - cppexample: how to write C++ code for Micropython
+	* - subpackage: how to add subpackages to Micropython
+	
+In the ports/stm32:
+
+	* - main.c: the "Micropython firmware" behavior, how it boots, all the initi functions, and how it runs.
+	* - modstm.c: Where the ST module is defined
+	* - modpyb.c: Where the Tiger module is defined (should rename the file in the future)
+	* - modtime.c: Here actually is just the implementation of the time module which is defined in another file (that is because time needs rtc)
+	* - modos.c: same thing as modtime but now for the os module
+	* - modmachine.c: definition of the mahine module, the module of the chip, in this case, STM32F746NG
+	* - portmodules.h: the declaration of the modules of this port
+	* - boardctrl.c: here important boot behaviors are defined
+	* - bufhelper.c: many serial communication drivers use this as a buffer of variable size
+	* - factoryreset.c: files and messages loaded on a reset
+	* - fatfs_port.c: same as modtime, but now for fatfs
+	* - flash.c/.h: define flash functions for internal use, as write and read
+	* - flashbdev.c: definition of flash block device, important for defining the flash area for the firmware/program data
+	* - storage.c/*.h: use of the aforementioned flash implementations and organizing it as a storage, as well as defining the Flash module.
+	* - stm32_it.c/.h: This one define some interrupts used in the system, as well as having some interruption handler definitions in the .h
+	* - gccollect.c/.h: define the behavior of the garbace collector and defines the stack and heap areas
+	* - help.c: define the help command behavior
+	* - irq.c/.h: functions used in Python to enable and disable the interruptions
+	* - make-stmconst.py: convert some of the Micropython C macros to Python, like the pins or MP_QSTR_
+	* - mpconfigport.h/mpconfigboard_common.h: defitions for the port
+	* - mpmetalport.c/.h: libmetal for OpemAmp (present only as externalmodule but not included in this port)
+	* - mpthread.c/.h: definition of threads
+	* - mpu.h: definions for the memory protection unit
+	* - pendsv.c/.h: function that allow the mcu to trigger an exception
+	
+	
+In ports/stm32/boards:
+
+	* - common*.ld: all linker scripts to that define memory layouts of the flash
+	* - load_firmware.bat: script to load the firnware to the board. Needs to have the J-Link commander installed.
+	* - stm32*.*: all auxiliary files for the make-pins.py
+	* - make-pins.py: Python script that converts the pins of pins.csv in actual pins.(Change in the future to add a "tiger_" instead of "pyb_" prefix)
+
+In ports/stm32/boards/Tiger_Plus
+	* - bdev.c: definitions to deal with the flash
+	* - board.json: json file with board infos
+	* - cmd.jlink: the JLink script used by "loadfirmware.bat" to download the firmware into the board
+	* - manifest.py: python modules to be frozen inside the memory
+	* - mpconfigboard.h: all board definitons, which drivers it will use, clock dividers, flash access timing, name and mcu, REPL configurations and hardware definitions that must be done in compilation time, like SDRAM and Flash
+	* - mpconfigboard.mk: board config to be added to the makefile
+	* - pins.csv: relates arbitrary names for the pins to the hardware. These names are written how they must be shown on Python. Those pins will be available in C with a type of machine_pin_obj_t and with the same name and the "pyb_" prefix in front of it
+	* - stm32f7xx_hal_conf.h: clock source definition
+	* - stm32f746_ext.ld: specific memory area definitions
+	
+	
+	
+	
+	
+	
+	

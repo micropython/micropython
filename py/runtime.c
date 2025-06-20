@@ -43,12 +43,8 @@
 #include "py/stream.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
-#include "py/cstack.h"
+#include "py/stackctrl.h"
 #include "py/gc.h"
-
-#if MICROPY_VFS_ROM && MICROPY_VFS_ROM_IOCTL
-#include "extmod/vfs.h"
-#endif
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -123,8 +119,8 @@ void mp_init(void) {
     MP_STATE_VM(mp_module_builtins_override_dict) = NULL;
     #endif
 
-    #if MICROPY_EMIT_MACHINE_CODE && (MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA || MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA)
-    MP_STATE_VM(persistent_code_root_pointers) = MP_OBJ_NULL;
+    #if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
+    MP_STATE_VM(track_reloc_code_list) = MP_OBJ_NULL;
     #endif
 
     #if MICROPY_PY_OS_DUPTERM
@@ -189,11 +185,6 @@ void mp_init(void) {
     #endif
 
     MP_THREAD_GIL_ENTER();
-
-    #if MICROPY_VFS_ROM && MICROPY_VFS_ROM_IOCTL
-    // Mount ROMFS if it exists.
-    mp_vfs_mount_romfs_protected();
-    #endif
 }
 
 void mp_deinit(void) {
@@ -1162,10 +1153,6 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
             // base type (which is what is passed in the `type` argument to this function).
             if (self != MP_OBJ_NULL) {
                 type = mp_obj_get_type(self);
-                if (type == &mp_type_type) {
-                    // `self` is already a type, so use `self` directly.
-                    type = MP_OBJ_TO_PTR(self);
-                }
             }
             dest[0] = ((mp_obj_static_class_method_t *)MP_OBJ_TO_PTR(member))->fun;
             dest[1] = MP_OBJ_FROM_PTR(type);
@@ -1383,7 +1370,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
 // will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration() (or any subclass thereof)
 // may raise other exceptions
 mp_obj_t mp_iternext(mp_obj_t o_in) {
-    mp_cstack_check(); // enumerate, filter, map and zip can recursively call mp_iternext
+    MP_STACK_CHECK(); // enumerate, filter, map and zip can recursively call mp_iternext
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (TYPE_HAS_ITERNEXT(type)) {
         MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
@@ -1629,13 +1616,10 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
     mp_obj_t module_fun = mp_compile(&parse_tree, source_name, parse_input_kind == MP_PARSE_SINGLE_INPUT);
 
     mp_obj_t ret;
-    #if MICROPY_PY_BUILTINS_COMPILE && MICROPY_PY_BUILTINS_CODE == MICROPY_PY_BUILTINS_CODE_MINIMUM
-    if (globals == NULL) {
+    if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {
         // for compile only, return value is the module function
         ret = module_fun;
-    } else
-    #endif
-    {
+    } else {
         // execute module function and get return value
         ret = mp_call_function_0(module_fun);
     }
@@ -1649,7 +1633,7 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
 
 #endif // MICROPY_ENABLE_COMPILER
 
-MP_NORETURN void m_malloc_fail(size_t num_bytes) {
+NORETURN void m_malloc_fail(size_t num_bytes) {
     DEBUG_printf("memory allocation failed, allocating %u bytes\n", (uint)num_bytes);
     #if MICROPY_ENABLE_GC
     if (gc_is_locked()) {
@@ -1662,25 +1646,25 @@ MP_NORETURN void m_malloc_fail(size_t num_bytes) {
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
 
-MP_NORETURN void mp_raise_type(const mp_obj_type_t *exc_type) {
+NORETURN void mp_raise_type(const mp_obj_type_t *exc_type) {
     nlr_raise(mp_obj_new_exception(exc_type));
 }
 
-MP_NORETURN void mp_raise_ValueError_no_msg(void) {
+NORETURN void mp_raise_ValueError_no_msg(void) {
     mp_raise_type(&mp_type_ValueError);
 }
 
-MP_NORETURN void mp_raise_TypeError_no_msg(void) {
+NORETURN void mp_raise_TypeError_no_msg(void) {
     mp_raise_type(&mp_type_TypeError);
 }
 
-MP_NORETURN void mp_raise_NotImplementedError_no_msg(void) {
+NORETURN void mp_raise_NotImplementedError_no_msg(void) {
     mp_raise_type(&mp_type_NotImplementedError);
 }
 
 #else
 
-MP_NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg) {
+NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg) {
     if (msg == NULL) {
         nlr_raise(mp_obj_new_exception(exc_type));
     } else {
@@ -1688,7 +1672,7 @@ MP_NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t
     }
 }
 
-MP_NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...) {
+NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...) {
     va_list args;
     va_start(args, fmt);
     mp_obj_t exc = mp_obj_new_exception_msg_vlist(exc_type, fmt, args);
@@ -1696,25 +1680,25 @@ MP_NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_t
     nlr_raise(exc);
 }
 
-MP_NORETURN void mp_raise_ValueError(mp_rom_error_text_t msg) {
+NORETURN void mp_raise_ValueError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_ValueError, msg);
 }
 
-MP_NORETURN void mp_raise_TypeError(mp_rom_error_text_t msg) {
+NORETURN void mp_raise_TypeError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_TypeError, msg);
 }
 
-MP_NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg) {
+NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_NotImplementedError, msg);
 }
 
 #endif
 
-MP_NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg) {
+NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg) {
     nlr_raise(mp_obj_new_exception_arg1(exc_type, arg));
 }
 
-MP_NORETURN void mp_raise_StopIteration(mp_obj_t arg) {
+NORETURN void mp_raise_StopIteration(mp_obj_t arg) {
     if (arg == MP_OBJ_NULL) {
         mp_raise_type(&mp_type_StopIteration);
     } else {
@@ -1722,7 +1706,7 @@ MP_NORETURN void mp_raise_StopIteration(mp_obj_t arg) {
     }
 }
 
-MP_NORETURN void mp_raise_TypeError_int_conversion(mp_const_obj_t arg) {
+NORETURN void mp_raise_TypeError_int_conversion(mp_const_obj_t arg) {
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     (void)arg;
     mp_raise_TypeError(MP_ERROR_TEXT("can't convert to int"));
@@ -1732,11 +1716,11 @@ MP_NORETURN void mp_raise_TypeError_int_conversion(mp_const_obj_t arg) {
     #endif
 }
 
-MP_NORETURN void mp_raise_OSError(int errno_) {
+NORETURN void mp_raise_OSError(int errno_) {
     mp_raise_type_arg(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_));
 }
 
-MP_NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename) {
+NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename) {
     vstr_t vstr;
     vstr_init(&vstr, 32);
     vstr_printf(&vstr, "can't open %s", filename);
@@ -1746,7 +1730,7 @@ MP_NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename
 }
 
 #if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK
-MP_NORETURN void mp_raise_recursion_depth(void) {
+NORETURN void mp_raise_recursion_depth(void) {
     mp_raise_type_arg(&mp_type_RuntimeError, MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded));
 }
 #endif

@@ -50,7 +50,7 @@ extern const mp_obj_type_t mp_type_attrtuple;
 
 #define MP_DEFINE_ATTRTUPLE(tuple_obj_name, fields, nitems, ...) \
     const mp_rom_obj_tuple_t tuple_obj_name = { \
-        .base = {.type = &mp_type_attrtuple}, \
+        .base = {&mp_type_attrtuple}, \
         .len = nitems, \
         .items = { __VA_ARGS__, MP_ROM_PTR((void *)fields) } \
     }
@@ -60,8 +60,5 @@ void mp_obj_attrtuple_print_helper(const mp_print_t *print, const qstr *fields, 
 #endif
 
 mp_obj_t mp_obj_new_attrtuple(const qstr *fields, size_t n, const mp_obj_t *items);
-
-// type check is done on getiter method to allow tuple, namedtuple, attrtuple
-#define mp_obj_is_tuple_compatible(o) (MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(o), iter) == mp_obj_tuple_getiter)
 
 #endif // MICROPY_INCLUDED_PY_OBJTUPLE_H

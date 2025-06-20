@@ -34,11 +34,6 @@
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
-// Workaround a bug in Windows SDK version 10.0.26100.0, where NAN is no longer constant.
-#if defined(_MSC_VER) && !defined(_UCRT_NOISY_NAN)
-#define _UCRT_NOISY_NAN
-#endif
-
 #include <math.h>
 #include "py/formatfloat.h"
 

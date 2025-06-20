@@ -5,18 +5,12 @@ ifdef BOARD_DIR
 BOARD ?= $(notdir $(BOARD_DIR:/=))
 else
 # If not given on the command line, then default to PYBV10.
-BOARD ?= PYBV10
+BOARD ?= Tiger_Plus
 BOARD_DIR ?= boards/$(BOARD)
 endif
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
-endif
-
-ifneq ($(BOARD_VARIANT),)
-ifeq ($(wildcard $(BOARD_DIR)/mpconfigvariant_$(BOARD_VARIANT).mk),)
-$(error Invalid BOARD_VARIANT specified: $(BOARD_VARIANT))
-endif
 endif
 
 # If the build directory is not given, make it reflect the board name (and
@@ -29,14 +23,7 @@ endif
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
-
-# Include board specific .mk file, and optional board variant .mk file.
 include $(BOARD_DIR)/mpconfigboard.mk
-ifeq ($(BOARD_VARIANT),)
--include $(BOARD_DIR)/mpconfigvariant.mk
-else
-include $(BOARD_DIR)/mpconfigvariant_$(BOARD_VARIANT).mk
-endif
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS += qstrdefsport.h
@@ -73,7 +60,7 @@ BOOTLOADER_DFU_USB_VID ?= 0x0483
 BOOTLOADER_DFU_USB_PID ?= 0xDF11
 STFLASH ?= st-flash
 OPENOCD ?= openocd
-OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
+OPENOCD_CONFIG ?= boards/openocd_stm32$(MCU_SERIES).cfg
 
 include stm32.mk
 
@@ -81,7 +68,7 @@ PLLVALUES = boards/pllvalues.py
 PLLI2SVALUES = boards/plli2svalues.py
 MAKE_PINS = boards/make-pins.py
 BOARD_PINS = $(BOARD_DIR)/pins.csv
-PREFIX_FILE = boards/stm32f4xx_prefix.c
+PREFIX_FILE = boards/stm32$(MCU_SERIES)xx_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
@@ -143,15 +130,7 @@ CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
 CFLAGS += -fsingle-precision-constant
 endif
 
-# Configure linker include dir for ram/rom isr support
-ifeq ($(MICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM),1)
-CFLAGS += -DMICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM=1
-LD_ISR_DIR = boards/common_isr_ram
-else
-LD_ISR_DIR = boards/common_isr_rom
-endif
-
-LDFLAGS += -nostdlib -L $(LD_DIR) -L $(LD_ISR_DIR) $(addprefix -T,$(LD_FILES)) -Wl,-Map=$(@:.elf=.map) -Wl,--cref
+LDFLAGS += -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Wl,-Map=$(@:.elf=.map) -Wl,--cref
 LDFLAGS += -Wl,--defsym=_estack_reserve=8
 LIBS += "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
 
@@ -291,9 +270,14 @@ SRC_C += \
 	storage.c \
 	sdcard.c \
 	sdram.c \
-	vfs_rom_ioctl.c \
 	fatfs_port.c \
+	beep.c \
+	kbd.c \
 	lcd.c \
+	esc.c \
+	td01-lcd.c \
+	td02-rtc.c \
+	td22-xor.c \
 	accel.c \
 	servo.c \
 	dac.c \
@@ -474,8 +458,7 @@ OBJ += $(GEN_PINS_SRC:.c=.o)
 # Don't use -O3 with this file because gcc tries to optimise memset in terms of itself.
 $(BUILD)/shared/libc/string0.o: COPT += -O2
 
-ifneq ($(MICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM),1)
-# If MBOOT or RAM_IFS is not used we put several files into the first 16K section with the ISRs.
+# We put several files into the first 16K section with the ISRs.
 # If we compile these using -O0 then it won't fit. So if you really want these
 # to be compiled with -O0, then edit boards/common.ld (in the .isr_vector section)
 # and comment out the following lines.
@@ -484,7 +467,6 @@ $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 $(PY_BUILD)/formatfloat.o: COPT += -Os
 $(PY_BUILD)/parsenum.o: COPT += -Os
 $(PY_BUILD)/mpprint.o: COPT += -Os
-endif
 
 all: $(TOP)/lib/stm32lib/README.md all_main $(BUILD)/firmware.hex
 
@@ -568,7 +550,7 @@ TEXT0_ADDR ?= 0x08000000
 ifeq ($(TEXT1_ADDR),)
 # No TEXT1_ADDR given so put all firmware at TEXT0_ADDR location
 
-TEXT0_SECTIONS ?= .isr_vector .isr_extratext .text .data .ARM
+TEXT0_SECTIONS ?= .isr_vector .text .data .ARM
 
 deploy-stlink: $(BUILD)/firmware.bin
 	$(call RUN_STLINK,$^,$(TEXT0_ADDR))
@@ -585,7 +567,7 @@ $(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
 else
 # TEXT0_ADDR and TEXT1_ADDR are specified so split firmware between these locations
 
-TEXT0_SECTIONS ?= .isr_vector .isr_extratext
+TEXT0_SECTIONS ?= .isr_vector
 TEXT1_SECTIONS ?= .text .data .ARM
 
 deploy-stlink: $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin
@@ -641,15 +623,15 @@ $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(HEADER_
 	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) \
 		--output-af-const $(GEN_PINS_AF_CONST) --output-af-defs $(GEN_PINS_AF_DEFS)
 
-$(BUILD)/powerctrl.o: $(GEN_PLLFREQTABLE_HDR)
-$(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)/qstr.i.last
+powerctrl.c: $(GEN_PLLFREQTABLE_HDR)
+$(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PLLVALUES) -c -m $(CMSIS_MCU_LOWER) file:$(HEADER_BUILD)/qstr.i.last > $@
+	$(Q)$(PYTHON) $(PLLVALUES) -c -m $(CMSIS_MCU_LOWER) file:$(BOARD_DIR)/stm32$(MCU_SERIES)xx_hal_conf.h > $@
 
-$(BUILD)/extmod/machine_i2s.o: $(GEN_PLLI2STABLE_HDR)
-$(GEN_PLLI2STABLE_HDR): $(PLLI2SVALUES) | $(HEADER_BUILD)/qstr.i.last
+$(TOP)/extmod/machine_i2s.c: $(GEN_PLLI2STABLE_HDR)
+$(GEN_PLLI2STABLE_HDR): $(PLLI2SVALUES) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PLLI2SVALUES) -c -m $(CMSIS_MCU_LOWER) file:$(HEADER_BUILD)/qstr.i.last > $@
+	$(Q)$(PYTHON) $(PLLI2SVALUES) -c -m $(CMSIS_MCU_LOWER) hse:$(BOARD_DIR)/stm32$(MCU_SERIES)xx_hal_conf.h pllm:$(BOARD_DIR)/mpconfigboard.h > $@
 
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 $(HEADER_BUILD)/modstm_const.h: $(CMSIS_MCU_HDR) make-stmconst.py | $(HEADER_BUILD)

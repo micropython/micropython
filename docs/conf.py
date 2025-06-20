@@ -36,9 +36,6 @@ html_context = {
     "is_release": micropy_version != "latest",
 }
 
-# Authors used in various parts of the documentation.
-micropy_authors = "MicroPython authors and contributors"
-
 
 # -- General configuration ------------------------------------------------
 
@@ -71,7 +68,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "MicroPython"
-copyright = "- The MicroPython Documentation is Copyright © 2014-2025, " + micropy_authors
+copyright = "- The MicroPython Documentation is Copyright © 2014-2023, Damien P. George, Paul Sokolovsky, and contributors"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -247,7 +244,7 @@ latex_documents = [
         master_doc,
         "MicroPython.tex",
         "MicroPython Documentation",
-        micropy_authors,
+        "Damien P. George, Paul Sokolovsky, and contributors",
         "manual",
     ),
 ]
@@ -284,7 +281,7 @@ man_pages = [
         "index",
         "micropython",
         "MicroPython Documentation",
-        [micropy_authors],
+        ["Damien P. George, Paul Sokolovsky, and contributors"],
         1,
     ),
 ]
@@ -303,7 +300,7 @@ texinfo_documents = [
         master_doc,
         "MicroPython",
         "MicroPython Documentation",
-        micropy_authors,
+        "Damien P. George, Paul Sokolovsky, and contributors",
         "MicroPython",
         "One line description of project.",
         "Miscellaneous",

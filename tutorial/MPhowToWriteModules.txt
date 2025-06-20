@@ -1,0 +1,314 @@
+To create a module/submodule inside Micropython one needs 6 things:
+
+	- Define the functions that will be called by every method;
+	- Call the macro that will create warappers of this functions to python;
+	- Create an array of maps that relate every binder to the name of that method in python
+	- Bind this array to a dictionary that will be static in the memory
+	- Use a macro to wrap everything in an object structure;
+	- Insert this newly created module inside another module or create an entire new module to store it
+
+FUNCTIONS AND METHODS:
+
+	In order to define the methods of a module in micropython (which are not the constructor nor the print), one needs first to define a function in C that returns an mp_obj_t, even if it is not supposed to return anything, which in this case will return mp_const_none(None in python).
+	
+	In Micropython one can defined functions with fixed or variable number of arguments. They can be either a global function of the module, which differs from a method of the class since it does not belong to any object, or a method, where the first parameter is ALWAYS the object itself (the self pointer). For methods that take at least 1 fixed parameter, every parameter must be of mp_obj_t type (Micropython wrapper for the void */generic type)
+	
+	
+	Ex:
+	
+		// Return a 30-bit hardware generated random number.
+		static mp_obj_t pyb_rng_get(void) 
+		{
+			return mp_obj_new_int(rng_get() >> 2);
+		}
+		
+		//read a single channel from the adc
+		static mp_obj_t adc_read_single(mp_obj_t self_in, mp_obj_t channel)  
+		{
+			tiger_obj_adc_t * self = MP_OBJ_TO_PTR(self_in); //gets the self pointer from the object
+			uint8_t ch = mp_obj_get_int(channel); //get the integer from an object
+			const machine_pin_obj_t * pin = get_pin_by_channel(ch);	//returns a pin from the system according to the channel
+			Adc_Prepare(self, pin, ch);//calls ADC prepare
+			
+			return mp_obj_new_int(Adc_ValGet(self,ch,1,ADC_RESOLUTION_8B));//needs this wrapper to convert a normal int to micropython int(mp_obj_t)
+		}
+			
+
+	In python, there are basically two ways of dealing with functions of variable number of arguments. There are the *args, which are just one argument after the other (positional args), and the **kwargs, which are named(keyword) arguments. In C, both will have the same structure, returning an mp_obj_t and having as paremeters a size_t/unsigned int as the number of argument, and an array of mp_obj_t as the non_kw arguments. The difference is that for kwargs there is gonna be one more parameter, an mp_map_t array of kw_args, which is gonna be an array of pairs, the parameter name(QSTR) and its value.
+	
+	For now-kw:
+	
+		/*
+			set.difference(set1, set2 ... etc.)
+			
+			https://www.w3schools.com/python/ref_set_difference.asp
+		*/
+		
+		/*
+			This function from py/objset.c is an auxiliary for set_diff, which is declared right below it, and it is actually the method itself.
+	
+			 The paremeters os set_diff_int are:
+				- n_args : how many arguments were passed + 1(the object itself)
+				- *args  : an array with all the sets to be differed where the first position is the object that called the method
+				- update : a flag to determine if the function will change the calling object as well or just return the difference
+		*/
+		static mp_obj_t set_diff_int(size_t n_args, const mp_obj_t *args, bool update) 
+		{
+			mp_obj_t self; //should the object that called the function
+			if (update)
+			{
+				check_set(args[0]);//check if it is a set, otherwise raise an exception
+				self = args[0]; //takes the reference of the set that called the function
+			} 
+			else
+			{
+				self = set_copy(args[0]); //creates a copy of the set that called the function
+			}
+
+			for (size_t i = 1; i < n_args; i++) //runs through the other sets
+			{
+				mp_obj_t other = args[i]; //take a set
+				if (self == other) //if they are identical
+				{
+					set_clear(self); //removes everything from the set that will be returned
+				} 
+				else 
+				{
+					mp_set_t *self_set = &((mp_obj_set_t *)MP_OBJ_TO_PTR(self))->set; 
+					mp_obj_t iter = mp_getiter(other, NULL);
+					mp_obj_t next;
+					while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) //runs through the whole set being compared
+					{
+						mp_set_lookup(self_set, next, MP_MAP_LOOKUP_REMOVE_IF_FOUND);//takes a item from set B and if A has the same item removes it
+					}
+				}
+			}
+
+			return self; //return the set with the differences
+		}
+
+		static mp_obj_t set_diff(size_t n_args, const mp_obj_t *args) //set0.difference(set1, set2,...)
+		{
+			return set_diff_int(n_args, args, false); // calls the function above
+		}
+		
+	For kw:
+	
+		/*
+			Function from py/modmath.c that calculates whether two values are close to each other, or not
+		
+			math.isclose(a, b, rel_tol, abs_tol)
+			
+			https://www.w3schools.com/python/ref_math_isclose.asp
+			
+			a                   -> required 
+			b                   -> required
+			rel_tol = value     -> optional
+			abs_tol = value 	-> optional
+		*/
+		
+		static mp_obj_t mp_math_isclose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) //total number of args, positional args, keyword args
+		{
+			enum { ARG_rel_tol, ARG_abs_tol }; //index of the kw args
+			
+			static const mp_arg_t allowed_args[] =  //struct { MP_QSTR_ + "nameofparameter", flags, default value}
+			{
+				{MP_QSTR_rel_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},  			 //rel_tol, kw arg of type obj, initial value NULL         
+				{MP_QSTR_abs_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(0)}},	 //abs_tol, kw arg of type obj, initial value 0  
+			}; 
+			
+			mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)]; //kw_args
+			
+			mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args); //parse the kw args
+			
+			const mp_float_t a = mp_obj_get_float(pos_args[0]);//takes the first positional argument a
+			
+			const mp_float_t b = mp_obj_get_float(pos_args[1]);//takes the second positional argument b
+			
+			const mp_float_t rel_tol = args[ARG_rel_tol].u_obj == MP_OBJ_NULL ? 	//checks if the value is still the standard
+																(mp_float_t)1e-9 :  //yes, user did not pass an argument
+															     mp_obj_get_float(args[ARG_rel_tol].u_obj); //no, gets the value of the parameter
+																
+			const mp_float_t abs_tol = mp_obj_get_float(args[ARG_abs_tol].u_obj); //gets the value of the parameter
+			if (rel_tol < (mp_float_t)0.0 || abs_tol < (mp_float_t)0.0) //tolerances can not be negative
+			{
+				math_error();
+			}
+			if (a == b) 
+			{
+				return mp_const_true; //values are equal, so they are close
+			}
+			const mp_float_t difference = MICROPY_FLOAT_C_FUN(fabs)(a - b); //returns the float absolute value of a - b
+			if (isinf(difference)) //if is infinite
+			{ // Either a or b is inf
+				return mp_const_false; //not close, constant false
+			}
+			
+			if ((difference <= abs_tol) || 								   //smaller or equal than absolute tolerance			
+				(difference <= MICROPY_FLOAT_C_FUN(fabs)(rel_tol * a)) ||  //smaller or equal than the a limit	 
+				(difference <= MICROPY_FLOAT_C_FUN(fabs)(rel_tol * b)))    //smaller or equal than the b limit
+			{
+				return mp_const_true; //close, constant true
+			}
+			return mp_const_false; //return false
+		}
+		
+	The constructor is a function with the following prototype:
+	
+		mp_obj_t foo_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args)
+	
+	where type is the the same type  being defined, n_args is the number of positional arguments passed, n_kw is the number of keyword arguments passed and args is the array with all the arguments. 
+	
+	In Micropython, the "type" and the "object", are 2 separate things in C. The "type" is defined usually in a .h file, as an extern const mp_obj_type_t:
+		
+		extern const mp_obj_type_t tiger_foo_type; //foo.h
+		
+	This "type" variable is what gonna be passed to the first parameter of MP_DEFINE_CONST_OBJ_TYPE:
+	
+		//MP_DEFINE_CONST_OBJ_TYPE( tiger_foo_type, MP_QSTR_FOO...
+		
+	The "object", in the other hand, defines how an object of that type will be structured, and, in order to be a concrete Micropython Object, MUST have a mp_obj_base_t as its first member, since the base CONTAINS the type and determine the object base alignement(small ints, qstr objs and inline floats are not concrete)
+	
+	Ex:
+	
+		typedef struct _tiger_foo_obj_t 
+		{
+			mp_obj_base_t base;
+		} tiger_foo_obj_t;
+		
+	The constructor needs to have then a type and an object defined, so it can bind both of them, and return the address of this object in the form of a mp_obt_t using the function tiger_foo_obj_t MP_OBJ_FROM_PTR. Binding the object to its type can be done in 2 different forms, depending if the object is allocated in a static or dynamic form.
+	
+	Static:
+	
+		tiger_foo_obj_t foo_obj;
+		
+		mp_obj_t foo_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args)
+		{
+			foo_obj.base.type = &tiger_foo_type;
+			return MP_OBJ_FROM_PTR(&foo_obj);
+		}
+		
+	Dynamic:
+
+		mp_obj_t foo_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args)
+		{
+			tiger_foo_obj_t *self = mp_obj_malloc(extint_obj_t, type); //here type = &tiger_foo_type and the malloc initiailes the base automatically
+			return MP_OBJ_FROM_PTR(self);//the Garbace Collector takes care of it
+		}
+		
+	The print function, or how the object is printed in python(print(obj)), takes exactly 3 arguments. The first one is where to print to, which is also the first argument of the function mp_printf. The second argument is the object which the print was called for, and the third is a flag used in other types of printing, such as error or json, and it can be more understanded in py/obj.h.  
+	
+		static void foo_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind)
+		{
+			 tiger_foo_obj_t *self = MP_OBJ_TO_PTR(self_in);
+			 mp_printf(print, "FOO(%u)\n", self->id); //supposing foo had an uint8_t variable called id...
+		}
+		
+METHOD WRAPPERS:
+
+	For all the methods and functions of a class that are not the constructor, a wraper is needed to create a python object of that function, which later will be binded to the name of that method.
+	These wrappers are the following macros:
+	
+		MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) - for when the function belongs to the class but is not inside of the object (it does not have access to the pointer self), like a static method or a global function.
+		
+		MP_DEFINE_CONST_FUN_OBJ_1(obj_name, fun_name) / MP_DEFINE_CONST_FUN_OBJ_2(obj_name, fun_name) / MP_DEFINE_CONST_FUN_OBJ_3(obj_name, fun_name) - for functions with 1, 2, and 3 arguments, always remembering that the first one is always the object itself
+		
+		MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) - for functions with more than 3 arguments but still with a maximum limit of it
+		
+		MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) - for functions with (in theory) an unlimited amount of arguments, but all positional/non-keywords
+		
+		MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, n_args_min, fun_name) - for when the function takes multiples arguments but at least one is a keyword argument.
+		
+	Those wrappers should be called anywhere after the function definition and before the definiton of dictionary of methods. The name of the objects are traditionally the function name + the suffix "_obj" (fun_name_obj), but they can be anything.
+	
+BINDING THE METHODS:
+
+	A dictionary must be created where every position relates python object referred to a method to the name of this method as it will be presented in the python code. 
+	
+	Ex:
+	
+	static const mp_rom_map_elem_t tiger_foo_locals_dict_table[] = 
+	{
+		// instance methods
+		{ MP_ROM_QSTR(MP_QSTR_function1), MP_ROM_PTR(&tiger_function1_obj) }, // main.py: foo.function1(32)
+		{ MP_ROM_QSTR(MP_QSTR_function2), MP_ROM_PTR(&tiger_function2_obj) }, // main.py: foo.function2()
+		//...
+	};
+	static MP_DEFINE_CONST_DICT(tiger_foo_locals_dict, tiger_foo_locals_dict_table);//this macro also creates the const dictionary out of this mp_rom_map_elem_t array as can be seen in py/obj.h
+	
+	The macros starting by "MP_ROM_" and "MP_REGISTER_" define something to be saved in the static memory/globaly. In the case here, MP_ROM_QSTR defines in the memory the name of the methods. One of the Micropython auxiliar python scripts remove the prefix "MP_QSTR_".
+	
+DEFINING PYTHON OBJECT STRUCTURE:
+
+	This is done by calling the macro MP_DEFINE_CONST_FUN_OBJ_TYPE that can take from 0 to 13 arguments, according to its definition in pyb/obj.h.
+
+	From the 3th parameter on, every parameter comes in pairs -> name_parameter, function_that_shoul_be_attached_to_it.
+	
+	After "locals_dict, dict_of_methods" every pair refers to python slots.	
+	
+	The names "make_new", "print", and "locals_dict" are standard and must be kept like this so the compiler knows that the names next refer to the functions that are related to them
+
+	MP_DEFINE_CONST_OBJ_TYPE 
+	(
+		your_new_type_t, //the one defined in the .h file as extern const mp_obj_type_t
+		MP_QSTR_name, //The sufix afte "MP_QSTR_" is how your module will be called in python
+		flag, //Usually MP_TYPE_FLAG_NONE. Defines the type behavior. An explanation can be found at its definition in py/obj.h
+		make_new, fuction_init, //substitute "function_init" by the name of the constructor function
+		print, function_print, //substitute "function_print" by the name of the function that dictates the behavior of doing print(obj)
+		locals_dict, dict_of_methods, // substitute "dict_of_methods" by the dictionaries that relates the methods to the object of the functions
+		...
+	)
+	
+INSERTING THE TYPE IN PYTHON:
+
+	In order to make the new module available, one needs to either add it as a module in the langugage (like matplotlib for example) OR as a submodule that already exists (like pyplot in matplotlib).
+	
+	In the stm port are two main modules, the machine (modmachine.c) that refers to the hardwre, the chip that the microcontroller is using (STM32F746 in our case, but it was written to support any STM); and the pyb(modpyb.c), that was written to deal with the Pyboard. Although the original name was kept - which could be changed in the future - some names were changed in order to suit or board better, as well as to have the possibility of calling "import Tiger" in Python.
+	
+	So, to add a driver as a submodule of our Tiger board, one needs to go inside ports/stm32/modpy.c, include the .h file where our type was defined as an "extern const mp_obj_type_t", and then add an element inside the dictionary of Tiger components using the same name (MP_QSTR_...) that was previously used. (Not checked if it is 100% true)
+		
+		static const mp_rom_map_elem_t tiger_module_globals_table[] = 
+		{
+			{ MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_Tiger) },
+			...,
+			{ MP_ROM_QSTR(MP_QSTR_Foo), MP_ROM_PTR(&tiger_foo_type) }, //MP_QSTR_ is case sensitive
+		};
+		
+	If one decides to create and entirely new module (like Tiger itself) instead of just adding a submodule, the process is almost the same. In this case, a "type" definiton (extern const mp_obj_type_t) is not needed, neither to add the module to another modules dictionary. For this, instead, one needs to add a field "__name__" to the dictionary of the module itself.
+		
+		static const mp_rom_map_elem_t foo_locals_dict_table[] = 
+		{
+			{ MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_Foo) }, //all modules in python must have the "__name__" attribute
+			//...
+		};
+		static MP_DEFINE_CONST_DICT(foo_module_globals, foo_locals_dict_table); //still needs to be defined as a dictionary
+		
+	And after that, instead of adding the submodule to another module's dictionary, one needs to define a module object with a C type specially defined for this. This type also requires the representation of the Python type as a base, a well as the dictionary of functions, objects and methods that this module will contain:
+	
+		// Define module object.
+		const mp_obj_module_t foo_module = //structure that represent the python modules
+		{
+			.base = { &mp_type_module }, //Type that represents the "type" of a python module
+			.globals = (mp_obj_dict_t *)&foo_module_globals,  //the dictionary
+		};
+		
+	Then, use the MP_REGISTER_MODULE to define the module in the static memory and the name it should be presented in python with the MP_QSTR_ prefix:
+
+		// Register the module to make it available in Python.
+		MP_REGISTER_MODULE(MP_QSTR_cexample, example_user_cmodule);
+		
+	* It is also possible to declare an entire a new object AND a module and append one to each other, all in the same file. An example of it is in examples/usercmodule/cexample/examplemodule.c
+
+	After choosing which method to use, append all the .c files to the "SRC_C" variable in the Makefile and compile. After loading the new firmware to the board, one can now call "import Foo" if Foo is a module or "from Tiger import Foo", if it is a submodule of "Tiger" for example.
+
+
+
+SPECIAL CASE: WRITING HANDLER FOR INTERRUPTS
+
+	When dealing with external interrupts, if a callback is needed, one needs to write a handler with the same name as they are defined in memory. See \lib\stm32lib\CMSIS\STM32F7xx\Source\Templates\gcc\startup_stm32f746xx.s in the section "/* External Interrupts */" the names, but they should be usually the Acronym in the Vector (NVIC) Table(see reference manual) + "_IRQHandler". 
+	
+	Apparently, the idea was to have all those handlers in the same file, stm32_it.c, but the development of Micropython did not follow through. Tip: Look for: IRQ_ENTER or IRQ_EXIT in files inside ports/stm32.
+	
+	Change the context from a Python Interrupt and a hardware interrupt is not an easy task, and many times need many resources like context switching, locking the garbage collection, watchout the scheduler/thread sytem. 
+	
+	Good examples to look at are can.c, pyb_can.c, exti.c, dma.c, irq.c and timer.c.

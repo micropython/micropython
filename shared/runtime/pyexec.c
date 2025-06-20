@@ -44,6 +44,7 @@
 #include "genhdr/mpversion.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
+int pyexec_system_exit = 0;
 
 #if MICROPY_REPL_INFO
 static bool repl_display_debugging_info = 0;
@@ -72,6 +73,9 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     #ifdef MICROPY_BOARD_BEFORE_PYTHON_EXEC
     MICROPY_BOARD_BEFORE_PYTHON_EXEC(input_kind, exec_flags);
     #endif
+
+    // by default a SystemExit exception returns 0
+    pyexec_system_exit = 0;
 
     nlr_buf_t nlr;
     nlr.ret_val = NULL;
@@ -142,7 +146,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         // check for SystemExit
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // at the moment, the value of SystemExit is unused
-            ret = PYEXEC_FORCED_EXIT;
+            ret = pyexec_system_exit;
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
             ret = 0;
@@ -719,11 +723,6 @@ int pyexec_frozen_module(const char *name, bool allow_keyboard_interrupt) {
     }
 }
 #endif
-
-int pyexec_vstr(vstr_t *str, bool allow_keyboard_interrupt) {
-    mp_uint_t exec_flags = allow_keyboard_interrupt ? 0 : EXEC_FLAG_NO_INTERRUPT;
-    return parse_compile_execute(str, MP_PARSE_FILE_INPUT, exec_flags | EXEC_FLAG_SOURCE_IS_VSTR);
-}
 
 #if MICROPY_REPL_INFO
 mp_obj_t pyb_set_repl_info(mp_obj_t o_value) {

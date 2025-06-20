@@ -78,7 +78,6 @@ The full list of supported commands are:
 - `mip <mpremote_command_mip>`
 - `mount <mpremote_command_mount>`
 - `unmount <mpremote_command_unmount>`
-- `romfs <mpremote_command_romfs>`
 - `rtc <mpremote_command_rtc>`
 - `sleep <mpremote_command_sleep>`
 - `reset <mpremote_command_reset>`
@@ -228,52 +227,23 @@ The full list of supported commands are:
   - ``cat <file..>`` to show the contents of a file or files on the device
   - ``ls`` to list the current directory
   - ``ls <dirs...>`` to list the given directories
-  - ``cp [-rf] <src...> <dest>`` to copy files
-  - ``rm [-r] <src...>`` to remove files or folders on the device
+  - ``cp [-r] <src...> <dest>`` to copy files
+  - ``rm <src...>`` to remove files on the device
   - ``mkdir <dirs...>`` to create directories on the device
   - ``rmdir <dirs...>`` to remove directories on the device
   - ``touch <file..>`` to create the files (if they don't already exist)
-  - ``sha256sum <file..>`` to calculate the SHA256 sum of files
-  - ``tree [-vsh] <dirs...>`` to print a tree of the given directories
 
   The ``cp`` command uses a convention where a leading ``:`` represents a remote
   path. Without a leading ``:`` means a local path. This is based on the
   convention used by the `Secure Copy Protocol (scp) client
-  <https://en.wikipedia.org/wiki/Secure_copy_protocol>`_.
+  <https://en.wikipedia.org/wiki/Secure_copy_protocol>`_. All other commands
+  implicitly assume the path is a remote path, but the ``:`` can be optionally
+  used for clarity.
 
   So for example, ``mpremote fs cp main.py :main.py`` copies ``main.py`` from
   the current local directory to the remote filesystem, whereas
   ``mpremote fs cp :main.py main.py`` copies ``main.py`` from the device back
   to the current directory.
-
-  The ``mpremote rm -r`` command accepts both relative and absolute paths.
-  Use ``:`` to refer to the current remote working directory (cwd) to allow a
-  directory tree to be removed from the device's default path (eg ``/flash``, ``/``).
-  Use ``-v/--verbose`` to see the files being removed.
-
-  For example:
-
-  - ``mpremote rm -r :libs`` will remove the ``libs`` directory and all its
-    child items from the device.
-  - ``mpremote rm -rv :/sd`` will remove all files from a mounted SDCard and result
-    in a non-blocking warning. The mount will be retained.
-  - ``mpremote rm -rv :/`` will remove all files on the device, including any
-    located in mounted vfs such as ``/sd`` or ``/flash``. After removing all folders
-    and files, this will  also return an error to mimic unix ``rm -rf /`` behaviour.
-
-  .. warning::
-    There is no supported way to undelete files removed by ``mpremote rm -r :``.
-    Please use with caution.
-
-  The ``tree`` command will print a tree of the given directories.
-  Using the ``--size/-s`` option will print the size of each file, or use
-  ``--human/-h`` to use a more human readable format.
-  Note: Directory size is only printed when a non-zero size is reported by the device's filesystem.
-  The ``-v`` option  can be used to include the name of the serial device in
-  the output.
-
-  All other commands implicitly assume the path is a remote path, but the ``:``
-  can be optionally used for clarity.
 
   All of the filesystem sub-commands take multiple path arguments, so if there
   is another command in the sequence, you must use ``+`` to terminate the
@@ -285,11 +255,6 @@ The full list of supported commands are:
 
   This will copy the file to the device then enter the REPL. The ``+`` prevents
   ``"repl"`` being interpreted as a path.
-
-  The ``cp`` command supports the ``-r`` option to make a recursive copy.  By
-  default ``cp`` will skip copying files to the remote device if the SHA256 hash
-  of the source and destination file matches.  To force a copy regardless of the
-  hash use the ``-f`` option.
 
   **Note:** For convenience, all of the filesystem sub-commands are also
   :ref:`aliased as regular commands <mpremote_shortcuts>`, i.e. you can write
@@ -375,29 +340,6 @@ The full list of supported commands are:
 
   This happens automatically when ``mpremote`` terminates, but it can be used
   in a sequence to unmount an earlier mount before subsequent command are run.
-
-.. _mpremote_command_romfs:
-
-- **romfs** -- manage ROMFS partitions on the device:
-
-  .. code-block:: bash
-
-      $ mpremote romfs <sub-command>
-
-  ``<sub-command>`` may be:
-
-  - ``romfs query`` to list all the available ROMFS partitions and their size
-  - ``romfs [-o <output>] build <source>`` to create a ROMFS image from the given
-    source directory; the default output file is the source appended by ``.romfs``
-  - ``romfs [-p <partition>] deploy <source>`` to deploy a ROMFS image to the device;
-    will also create a temporary ROMFS image if the source is a directory
-
-  The ``build`` and ``deploy`` sub-commands both support the ``-m``/``--mpy`` option
-  to automatically compile ``.py`` files to ``.mpy`` when creating the ROMFS image.
-  This option is enabled by default, but only works if the ``mpy_cross`` Python
-  package has been installed (eg via ``pip install mpy_cross``).  If the package is
-  not installed then a warning is printed and ``.py`` files remain as is.  Compiling
-  of ``.py`` files can be disabled with the ``--no-mpy`` option.
 
 .. _mpremote_command_rtc:
 
@@ -527,9 +469,9 @@ An example ``config.py`` might look like:
     for ap in wl.scan():
         print(ap)
     """,], # Print out nearby WiFi networks.
-        "wl_ipconfig": [
+        "wl_ifconfig": [
     "exec",
-    "import network; sta_if = network.WLAN(network.WLAN.IF_STA); print(sta_if.ipconfig('addr4'))",
+    "import network; sta_if = network.WLAN(network.STA_IF); print(sta_if.ifconfig())",
     """,], # Print ip address of station interface.
         "test": ["mount", ".", "exec", "import test"], # Mount current directory and run test.py.
         "demo": ["run", "path/to/demo.py"], # Execute demo.py on the device.
@@ -599,9 +541,9 @@ device at ``/dev/ttyACM1``, printing each result.
 
   mpremote resume exec "print_state_info()" soft-reset
 
-Connect to the device without triggering a :ref:`soft reset <soft_reset>` and
-execute the ``print_state_info()`` function (e.g. to find out information about
-the current program state), then trigger a soft reset.
+Connect to the device without triggering a soft reset and execute the
+``print_state_info()`` function (e.g. to find out information about the current
+program state), then trigger a soft reset.
 
 .. code-block:: bash
 

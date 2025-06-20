@@ -33,7 +33,7 @@
 #include "dma.h"
 #include "i2c.h"
 
-#if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
+#if MICROPY_PY_TIGER_LEGACY && MICROPY_HW_ENABLE_HW_I2C
 
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol
@@ -426,15 +426,6 @@ int pyb_i2c_init_freq(const pyb_i2c_obj_t *self, mp_int_t freq) {
     // init the I2C bus
     i2c_deinit(self->i2c);
     return pyb_i2c_init(self->i2c);
-}
-
-void pyb_i2c_deinit_all(void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(pyb_i2c_obj); i++) {
-        const pyb_i2c_obj_t *pyb_i2c = &pyb_i2c_obj[i];
-        if (pyb_i2c->i2c != NULL) {
-            i2c_deinit(pyb_i2c->i2c);
-        }
-    }
 }
 
 static void i2c_reset_after_error(I2C_HandleTypeDef *i2c) {

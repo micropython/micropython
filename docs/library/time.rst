@@ -9,10 +9,9 @@
 The ``time`` module provides functions for getting the current time and date,
 measuring time intervals, and for delays.
 
-**Time Epoch**: The unix, windows, webassembly, alif, mimxrt and rp2 ports
-use the standard for POSIX systems epoch of 1970-01-01 00:00:00 UTC.
-The other embedded ports use an epoch of 2000-01-01 00:00:00 UTC.
-Epoch year may be determined with ``gmtime(0)[0]``.
+**Time Epoch**: Unix port uses standard for POSIX systems epoch of
+1970-01-01 00:00:00 UTC. However, some embedded ports use epoch of
+2000-01-01 00:00:00 UTC. Epoch year may be determined with ``gmtime(0)[0]``.
 
 **Maintaining actual calendar date/time**: This requires a
 Real Time Clock (RTC). On systems with underlying OS (including some
@@ -58,11 +57,11 @@ Functions
    * weekday is 0-6 for Mon-Sun
    * yearday is 1-366
 
-.. function:: mktime(date_time_tuple)
+.. function:: mktime()
 
    This is inverse function of localtime. It's argument is a full 8-tuple
    which expresses a time as per localtime. It returns an integer which is
-   the number of seconds since the time epoch.
+   the number of seconds since Jan 1, 2000.
 
 .. function:: sleep(seconds)
 

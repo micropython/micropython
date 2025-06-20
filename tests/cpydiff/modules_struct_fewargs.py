@@ -4,7 +4,6 @@ description: Struct pack with too few args, not checked by uPy
 cause: Unknown
 workaround: Unknown
 """
-
 import struct
 
 try:

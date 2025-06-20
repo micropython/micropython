@@ -88,21 +88,17 @@ static inline void mp_sched_run_pending(void) {
 
     #if MICROPY_SCHEDULER_STATIC_NODES
     // Run all pending C callbacks.
-    mp_sched_node_t *original_tail = MP_STATE_VM(sched_tail);
-    if (original_tail != NULL) {
-        mp_sched_node_t *node;
-        do {
-            node = MP_STATE_VM(sched_head);
-            MP_STATE_VM(sched_head) = node->next;
-            if (MP_STATE_VM(sched_head) == NULL) {
-                MP_STATE_VM(sched_tail) = NULL;
-            }
-            mp_sched_callback_t callback = node->callback;
-            node->callback = NULL;
-            MICROPY_END_ATOMIC_SECTION(atomic_state);
-            callback(node);
-            atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-        } while (node != original_tail); // Don't execute any callbacks scheduled during this run
+    while (MP_STATE_VM(sched_head) != NULL) {
+        mp_sched_node_t *node = MP_STATE_VM(sched_head);
+        MP_STATE_VM(sched_head) = node->next;
+        if (MP_STATE_VM(sched_head) == NULL) {
+            MP_STATE_VM(sched_tail) = NULL;
+        }
+        mp_sched_callback_t callback = node->callback;
+        node->callback = NULL;
+        MICROPY_END_ATOMIC_SECTION(atomic_state);
+        callback(node);
+        atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     }
     #endif
 
@@ -240,13 +236,7 @@ void mp_handle_pending(bool raise_exc) {
 
     // Handle any pending callbacks.
     #if MICROPY_ENABLE_SCHEDULER
-    bool run_scheduler = (MP_STATE_VM(sched_state) == MP_SCHED_PENDING);
-    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
-    // Avoid races by running the scheduler on the main thread, only.
-    // (Not needed if GIL enabled, as GIL ensures thread safety here.)
-    run_scheduler = run_scheduler && mp_thread_is_main_thread();
-    #endif
-    if (run_scheduler) {
+    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
         mp_sched_run_pending();
     }
     #endif

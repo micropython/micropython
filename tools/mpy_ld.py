@@ -30,7 +30,6 @@ Link .o files to .mpy
 
 import sys, os, struct, re
 from elftools.elf import elffile
-import ar_util
 
 sys.path.append(os.path.dirname(__file__) + "/../py")
 import makeqstrdata as qstrutil
@@ -48,17 +47,15 @@ MP_NATIVE_ARCH_ARMV7EMSP = 7
 MP_NATIVE_ARCH_ARMV7EMDP = 8
 MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
-MP_NATIVE_ARCH_RV32IMC = 11
 MP_PERSISTENT_OBJ_STR = 5
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
 MP_SCOPE_FLAG_VIPERBSS = 0x40
 MP_SMALL_INT_BITS = 31
-MP_FUN_TABLE_MP_TYPE_TYPE_OFFSET = 73
+MP_FUN_TABLE_MP_TYPE_TYPE_OFFSET = 70
 
 # ELF constants
 R_386_32 = 1
-R_RISCV_32 = 1
 R_X86_64_64 = 1
 R_XTENSA_32 = 1
 R_386_PC32 = 2
@@ -72,58 +69,15 @@ R_XTENSA_PLT = 6
 R_386_GOTOFF = 9
 R_386_GOTPC = 10
 R_ARM_THM_CALL = 10
-R_XTENSA_ASM_EXPAND = 11
-R_RISCV_BRANCH = 16
-R_RISCV_JAL = 17
-R_RISCV_CALL = 18
-R_RISCV_CALL_PLT = 19
 R_XTENSA_DIFF32 = 19
 R_XTENSA_SLOT0_OP = 20
-R_RISCV_GOT_HI20 = 20
-R_RISCV_TLS_GD_HI20 = 22
-R_RISCV_PCREL_HI20 = 23
-R_RISCV_PCREL_LO12_I = 24
-R_RISCV_PCREL_LO12_S = 25
 R_ARM_BASE_PREL = 25  # aka R_ARM_GOTPC
 R_ARM_GOT_BREL = 26  # aka R_ARM_GOT32
 R_ARM_THM_JUMP24 = 30
-R_RISCV_HI20 = 26
-R_RISCV_LO12_I = 27
-R_RISCV_LO12_S = 28
-R_RISCV_TPREL_HI20 = 29
-R_RISCV_TPREL_LO12_I = 30
-R_RISCV_TPREL_LO12_S = 31
-R_RISCV_TPREL_ADD = 32
-R_RISCV_ADD8 = 33
-R_RISCV_ADD16 = 34
-R_RISCV_ADD32 = 35
-R_RISCV_ADD64 = 36
-R_RISCV_SUB8 = 37
-R_RISCV_SUB16 = 38
-R_RISCV_SUB32 = 39
-R_RISCV_SUB64 = 40
-R_RISCV_GOT32_PCREL = 41
 R_X86_64_GOTPCREL = 9
 R_X86_64_REX_GOTPCRELX = 42
 R_386_GOT32X = 43
-R_RISCV_ALIGN = 43
-R_RISCV_RVC_BRANCH = 44
-R_RISCV_RVC_JUMP = 45
-R_RISCV_RELAX = 51
-R_RISCV_SUB6 = 52
-R_RISCV_SET6 = 53
-R_RISCV_SET8 = 54
-R_RISCV_SET16 = 55
-R_RISCV_SET32 = 56
-R_RISCV_32_PCREL = 57
-R_RISCV_PLT32 = 59
 R_XTENSA_PDIFF32 = 59
-R_RISCV_SET_ULEB128 = 60
-R_RISCV_SUB_ULEB128 = 61
-R_RISCV_TLSDESC_HI20 = 62
-R_RISCC_TLSDESC_LOAD_LO12 = 63
-R_RISCV_TLSDESC_ADD_LO12 = 64
-R_RISCV_TLSDESC_CALL = 65
 
 ################################################################################
 # Architecture configuration
@@ -134,26 +88,10 @@ def asm_jump_x86(entry):
 
 
 def asm_jump_thumb(entry):
-    # This function must return the same number of bytes for the encoding of the jump
-    # regardless of the value of `entry`.
+    # Only signed values that fit in 12 bits are supported
     b_off = entry - 4
-    if b_off >> 11 == 0 or b_off >> 11 == -1:
-        # Signed value fits in 12 bits.
-        b0 = 0xE000 | (b_off >> 1 & 0x07FF)
-        b1 = 0
-        b2 = 0
-        b3 = 0
-    else:
-        # Use bl to do a large jump/call:
-        #   push {r0, lr}
-        #   bl <dest>
-        #   pop {r0, pc}
-        b_off -= 2  # skip "push {r0, lr}"
-        b0 = 0xB400 | 0x0100 | 0x0001  # push, lr, r0
-        b1 = 0xF000 | (((b_off) >> 12) & 0x07FF)
-        b2 = 0xF800 | (((b_off) >> 1) & 0x07FF)
-        b3 = 0xBC00 | 0x0100 | 0x0001  # pop, pc, r0
-    return struct.pack("<HHHH", b0, b1, b2, b3)
+    assert b_off >> 11 == 0 or b_off >> 11 == -1, b_off
+    return struct.pack("<H", 0xE000 | (b_off >> 1 & 0x07FF))
 
 
 def asm_jump_thumb2(entry):
@@ -173,18 +111,6 @@ def asm_jump_xtensa(entry):
     jump_offset = entry - 4
     jump_op = jump_offset << 6 | 6
     return struct.pack("<BH", jump_op & 0xFF, jump_op >> 8)
-
-
-def asm_jump_rv32(entry):
-    # This could be 6 bytes shorter, but the code currently cannot
-    # support a trampoline with varying length depending on the offset.
-
-    # auipc t6, HI(entry)
-    # jalr  zero, t6, LO(entry)
-    upper, lower = split_riscv_address(entry)
-    return struct.pack(
-        "<II", (upper | 0x00000F97) & 0xFFFFFFFF, ((lower << 20) | 0x000F8067) & 0xFFFFFFFF
-    )
 
 
 class ArchData:
@@ -256,13 +182,6 @@ ARCH_DATA = {
         asm_jump_xtensa,
         separate_rodata=True,
     ),
-    "rv32imc": ArchData(
-        "EM_RISCV",
-        MP_NATIVE_ARCH_RV32IMC << 2,
-        4,
-        (R_RISCV_32, R_RISCV_GOT_HI20, R_RISCV_GOT32_PCREL),
-        asm_jump_rv32,
-    ),
 }
 
 ################################################################################
@@ -281,21 +200,6 @@ def pack_u24le(data, offset, value):
     data[offset] = value & 0xFF
     data[offset + 1] = value >> 8 & 0xFF
     data[offset + 2] = value >> 16 & 0xFF
-
-
-def split_riscv_address(value):
-    # The address can be represented with just the lowest 12 bits
-    if value < 0 and value > -2048:
-        value = 4096 + value
-        return 0, value
-    # 2s complement
-    if value < 0:
-        value = 0x100000000 + value
-    upper, lower = (value & 0xFFFFF000), (value & 0xFFF)
-    if lower & 0x800 != 0:
-        # Reverse lower part sign extension
-        upper += 0x1000
-    return upper & 0xFFFFFFFF, lower & 0xFFFFFFFF
 
 
 def xxd(text):
@@ -402,7 +306,6 @@ class LinkEnv:
         self.known_syms = {}  # dict of symbols that are defined
         self.unresolved_syms = []  # list of unresolved symbols
         self.mpy_relocs = []  # list of relocations needed in the output .mpy file
-        self.externs = {}  # dict of externally-defined symbols
 
     def check_arch(self, arch_name):
         if arch_name != self.arch.name:
@@ -426,7 +329,7 @@ def build_got_generic(env):
         for r in sec.reloc:
             s = r.sym
             if not (
-                s.entry["st_info"]["bind"] in ("STB_GLOBAL", "STB_WEAK")
+                s.entry["st_info"]["bind"] == "STB_GLOBAL"
                 and r["r_info_type"] in env.arch.arch_got
             ):
                 continue
@@ -492,14 +395,10 @@ def populate_got(env):
         sym = got_entry.sym
         if hasattr(sym, "resolved"):
             sym = sym.resolved
-        if sym.name in env.externs:
-            got_entry.sec_name = ".external.fixed_addr"
-            got_entry.link_addr = env.externs[sym.name]
-        else:
-            sec = sym.section
-            addr = sym["st_value"]
-            got_entry.sec_name = sec.name
-            got_entry.link_addr += sec.addr + addr
+        sec = sym.section
+        addr = sym["st_value"]
+        got_entry.sec_name = sec.name
+        got_entry.link_addr += sec.addr + addr
 
     # Get sorted GOT, sorted by external, text, rodata, bss so relocations can be combined
     got_list = sorted(
@@ -525,9 +424,6 @@ def populate_got(env):
             dest = int(got_entry.name.split("+")[1], 16) // env.arch.word_size
         elif got_entry.sec_name == ".external.mp_fun_table":
             dest = got_entry.sym.mp_fun_table_offset
-        elif got_entry.sec_name == ".external.fixed_addr":
-            # Fixed-address symbols should not be relocated.
-            continue
         elif got_entry.sec_name.startswith(".text"):
             dest = ".text"
         elif got_entry.sec_name.startswith(".rodata"):
@@ -574,8 +470,6 @@ def do_relocation_text(env, text_addr, r):
     # Default relocation type and name for logging
     reloc_type = "le32"
     log_name = None
-    addr = None
-    value = None
 
     if (
         env.arch.name == "EM_386"
@@ -668,62 +562,18 @@ def do_relocation_text(env, text_addr, r):
         reloc = addr - r_offset
         reloc_type = "xtensa_l32r"
 
-    elif env.arch.name == "EM_XTENSA" and r_info_type in (
-        R_XTENSA_DIFF32,
-        R_XTENSA_PDIFF32,
-        R_XTENSA_ASM_EXPAND,
-    ):
-        if not hasattr(s, "section") or s.section.name.startswith(".text"):
-            # it looks like R_XTENSA_[P]DIFF32 into .text is already correctly relocated,
-            # and expand relaxations cannot occur in non-executable sections.
+    elif env.arch.name == "EM_XTENSA" and r_info_type in (R_XTENSA_DIFF32, R_XTENSA_PDIFF32):
+        if s.section.name.startswith(".text"):
+            # it looks like R_XTENSA_[P]DIFF32 into .text is already correctly relocated
             return
         assert 0
 
-    elif env.arch.name == "EM_RISCV" and r_info_type in (
-        R_RISCV_TLS_GD_HI20,
-        R_RISCV_TLSDESC_HI20,
-        R_RISCV_TLSDESC_ADD_LO12,
-        R_RISCV_TLSDESC_CALL,
-    ):
-        # TLS relocations are not supported.
-        raise LinkError("{}: RISC-V TLS relocation: {}".format(s.filename, s.name))
-
-    elif env.arch.name == "EM_RISCV" and r_info_type in (
-        R_RISCV_TPREL_HI20,
-        R_RISCV_TPREL_LO12_I,
-        R_RISCV_TPREL_LO12_S,
-        R_RISCV_TPREL_ADD,
-    ):
-        # ThreadPointer-relative relocations are not supported.
-        raise LinkError("{}: RISC-V TP-relative relocation: {}".format(s.filename, s.name))
-
-    elif env.arch.name == "EM_RISCV" and r_info_type in (R_RISCV_SET_ULEB128, R_RISCV_SUB_ULEB128):
-        # 128-bit value relocations are not supported
-        raise LinkError("{}: RISC-V ULEB128 relocation: {}".format(s.filename, s.name))
-
-    elif env.arch.name == "EM_RISCV" and r_info_type in (R_RISCV_RELAX, R_RISCV_ALIGN):
-        # To keep things simple, no relocations are relaxed and thus no
-        # size optimisation is performed even if there is the chance, along
-        # with no offsets to fix up.
-        return
-
-    elif env.arch.name == "EM_RISCV":
-        (addr, value) = process_riscv32_relocation(env, text_addr, r)
-
-    elif env.arch.name == "EM_ARM" and r_info_type == R_ARM_ABS32:
-        # Absolute relocation, handled as a data relocation.
-        do_relocation_data(env, text_addr, r)
-        return
-
     else:
         # Unknown/unsupported relocation
-        assert 0, (r_info_type, s.name, s.entry, env.arch.name)
+        assert 0, r_info_type
 
     # Write relocation
-    if env.arch.name == "EM_RISCV":
-        # This case is already handled by `process_riscv_relocation`.
-        pass
-    elif reloc_type == "le32":
+    if reloc_type == "le32":
         (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
         struct.pack_into("<I", env.full_text, r_offset, (existing + reloc) & 0xFFFFFFFF)
     elif reloc_type == "thumb_b":
@@ -751,10 +601,7 @@ def do_relocation_text(env, text_addr, r):
             log_name = s.section.name
         else:
             log_name = s.name
-    if addr is not None:
-        log(LOG_LEVEL_3, "  {:08x} {} -> {:08x}".format(r_offset, log_name, addr))
-    else:
-        log(LOG_LEVEL_3, "  {:08x} {} == {:08x}".format(r_offset, log_name, value))
+    log(LOG_LEVEL_3, "  {:08x} {} -> {:08x}".format(r_offset, log_name, addr))
 
 
 def do_relocation_data(env, text_addr, r):
@@ -777,16 +624,12 @@ def do_relocation_data(env, text_addr, r):
         and r_info_type == R_ARM_ABS32
         or env.arch.name == "EM_XTENSA"
         and r_info_type == R_XTENSA_32
-        or env.arch.name == "EM_RISCV"
-        and r_info_type == R_RISCV_32
     ):
         # Relocation in data.rel.ro to internal/external symbol
         if env.arch.word_size == 4:
-            struct_type = "<i"
+            struct_type = "<I"
         elif env.arch.word_size == 8:
-            struct_type = "<q"
-        if hasattr(s, "resolved"):
-            s = s.resolved
+            struct_type = "<Q"
         sec = s.section
         assert r_offset % env.arch.word_size == 0
         addr = sec.addr + s["st_value"] + r_addend
@@ -819,329 +662,59 @@ def do_relocation_data(env, text_addr, r):
         assert 0, r_info_type
 
 
-RISCV_RELOCATIONS_TYPE_MAP = {
-    R_RISCV_ADD8: ("riscv_addsub", "B", 8, 1),
-    R_RISCV_ADD16: ("riscv_addsub", "<H", 16, 1),
-    R_RISCV_ADD32: ("riscv_addsub", "<I", 32, 1),
-    R_RISCV_ADD64: ("riscv_addsub", "<Q", 64, 1),
-    R_RISCV_SUB6: ("riscv_addsub", "B", 6, -1),
-    R_RISCV_SUB8: ("riscv_addsub", "B", 8, -1),
-    R_RISCV_SUB16: ("riscv_addsub", "<H", 16, -1),
-    R_RISCV_SUB32: ("riscv_addsub", "<I", 32, -1),
-    R_RISCV_SUB64: ("riscv_addsub", "<Q", 64, -1),
-    R_RISCV_SET6: ("riscv_set6", "B", 6),
-    R_RISCV_SET8: ("riscv_set8", "B", 8),
-    R_RISCV_SET16: ("riscv_set16", "<H", 16),
-    R_RISCV_SET32: ("riscv_set32", "<I", 32),
-    R_RISCV_JAL: "riscv_j",
-    R_RISCV_BRANCH: "riscv_b",
-    R_RISCV_RVC_BRANCH: "riscv_cb",
-    R_RISCV_RVC_JUMP: "riscv_cj",
-    R_RISCV_CALL: "riscv_call",
-    R_RISCV_CALL_PLT: "riscv_call",
-    R_RISCV_PCREL_LO12_I: "riscv_lo12i",
-    R_RISCV_PCREL_LO12_S: "riscv_lo12s",
-    R_RISCV_LO12_I: "riscv_lo12i",
-    R_RISCV_LO12_S: "riscv_lo12s",
-    R_RISCV_32_PCREL: "riscv_32pcrel",
-    R_RISCV_PLT32: "riscv_32pcrel",
-}
+def load_object_file(env, felf):
+    with open(felf, "rb") as f:
+        elf = elffile.ELFFile(f)
+        env.check_arch(elf["e_machine"])
 
+        # Get symbol table
+        symtab = list(elf.get_section_by_name(".symtab").iter_symbols())
 
-def process_riscv32_relocation(env, text_addr, r):
-    assert env.arch.name == "EM_RISCV"
-
-    addr = None
-    value = None
-    s = r.sym
-
-    if hasattr(s, "resolved"):
-        s = s.resolved
-
-    r_offset = r["r_offset"] + text_addr
-    r_info_type = r["r_info_type"]
-    try:
-        r_addend = r["r_addend"]
-    except KeyError:
-        r_addend = 0
-
-    if r_info_type == R_RISCV_GOT_HI20:
-        got_entry = env.got_entries[s.name]
-        addr = env.got_section.addr + got_entry.offset
-        reloc = addr + r_addend - r_offset
-        r.computed_reloc = reloc
-        reloc_type = "riscv_hi20"
-
-    elif r_info_type == R_RISCV_GOT32_PCREL:
-        got_entry = env.got_entries[s.name]
-        addr = env.got_section.addr + got_entry.offset
-        value = addr + r_addend - r_offset
-        reloc_type = "riscv_set32"
-
-    elif r_info_type == R_RISCV_PCREL_HI20:
-        addr = s.section.addr + s["st_value"]
-        reloc = addr + r_addend - r_offset
-        r.computed_reloc = reloc
-        reloc_type = "riscv_hi20"
-
-    elif r_info_type == R_RISCV_HI20:
-        addr = s.section.addr + s["st_value"]
-        reloc = addr + r_addend
-        r.computed_reloc = reloc
-        reloc_type = "riscv_hi20"
-
-    elif r_info_type in (
-        R_RISCV_PCREL_LO12_I,
-        R_RISCV_PCREL_LO12_S,
-        R_RISCV_LO12_I,
-        R_RISCV_LO12_S,
-    ):
-        parent = None
-        for potential_parent in s.section.reloc:
-            if potential_parent["r_offset"] != s["st_value"]:
-                continue
-            if potential_parent["r_info_type"] not in (
-                R_RISCV_GOT_HI20,
-                R_RISCV_PCREL_HI20,
-                R_RISCV_HI20,
-            ):
-                continue
-            parent = potential_parent
-            break
-        if parent is None:
-            assert 0, r
-        addr = s.section.addr + s["st_value"]
-        reloc = parent.computed_reloc
-        reloc_type = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
-
-    elif r_info_type in (
-        R_RISCV_JAL,
-        R_RISCV_RVC_BRANCH,
-        R_RISCV_RVC_JUMP,
-        R_RISCV_CALL,
-        R_RISCV_CALL_PLT,
-        R_RISCV_BRANCH,
-        R_RISCV_32_PCREL,
-        R_RISCV_PLT32,
-    ):
-        addr = s.section.addr + s["st_value"]
-        reloc = addr + r_addend - r_offset
-        reloc_type = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
-
-    elif r_info_type in (
-        R_RISCV_ADD8,
-        R_RISCV_ADD16,
-        R_RISCV_ADD32,
-        R_RISCV_ADD64,
-        R_RISCV_SUB6,
-        R_RISCV_SUB8,
-        R_RISCV_SUB16,
-        R_RISCV_SUB32,
-        R_RISCV_SUB64,
-        R_RISCV_SET6,
-        R_RISCV_SET8,
-        R_RISCV_SET16,
-        R_RISCV_SET32,
-    ):
-        value = s.section.addr + s["st_value"] + r_addend
-        reloc_type, *reloc_args = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
-
-    else:
-        # Unknown/unsupported relocation
-        assert 0, r_info_type
-
-    # Write relocation
-    if reloc_type == "riscv_hi20":
-        # Patch the upper 20 bits of the opcode
-        upper, _ = split_riscv_address(reloc)
-        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
-        struct.pack_into(
-            "<I",
-            env.full_text,
-            r_offset,
-            ((existing & 0xFFF) | upper) & 0xFFFFFFFF,
-        )
-    elif reloc_type == "riscv_lo12i":
-        # Patch the lower 12 bits of an I-opcode immediate.
-        _, lower = split_riscv_address(reloc)
-        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
-        struct.pack_into(
-            "<I",
-            env.full_text,
-            r_offset,
-            ((existing & 0xFFFFF) | ((lower & 0xFFF) << 20)) & 0xFFFFFFFF,
-        )
-    elif reloc_type == "riscv_lo12s":
-        # Patch the lower 12 bits of an S-opcode immediate.
-        _, lower = split_riscv_address(reloc)
-        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
-        struct.pack_into(
-            "<I",
-            env.full_text,
-            r_offset,
-            ((existing & 0xFE000F80) | ((lower & 0xFE0) << 20) | ((lower & 0x1F) << 7))
-            & 0xFFFFFFFF,
-        )
-    elif reloc_type == "riscv_cb":
-        # Patch the target of a compressed branch opcode
-        (existing,) = struct.unpack_from("<H", env.full_text, r_offset)
-        struct.pack_into(
-            "<H",
-            env.full_text,
-            r_offset,
-            (
-                (existing & 0xE383)
-                | ((reloc & 0x100) << 4)
-                | ((reloc & 0xC0) >> 1)
-                | ((reloc & 0x20) >> 3)
-                | ((reloc & 0x18) << 7)
-                | ((reloc & 0x06) << 2)
-            )
-            & 0xFFFF,
-        )
-    elif reloc_type == "riscv_cj":
-        # Patch the target of a compressed jump opcode
-        (existing,) = struct.unpack_from("<H", env.full_text, r_offset)
-        struct.pack_into(
-            "<H",
-            env.full_text,
-            r_offset,
-            (
-                (existing & 0xE003)
-                | ((reloc & 0x800) << 1)
-                | ((reloc & 0x400) >> 2)
-                | ((reloc & 0x300) << 1)
-                | ((reloc & 0x80) >> 1)
-                | ((reloc & 0x40) << 1)
-                | ((reloc & 0x20) >> 3)
-                | ((reloc & 0x10) << 7)
-                | ((reloc & 0x0E) << 2)
-            )
-            & 0xFFFF,
-        )
-    elif reloc_type == "riscv_call":
-        # Patch a pair of opcodes forming a call operation
-        upper, lower = split_riscv_address(reloc)
-        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
-        struct.pack_into(
-            "<I",
-            env.full_text,
-            r_offset,
-            ((existing & 0xFFF) | upper) & 0xFFFFFFFF,
-        )
-        (existing,) = struct.unpack_from("<I", env.full_text, r_offset + 4)
-        struct.pack_into(
-            "<I",
-            env.full_text,
-            r_offset + 4,
-            ((existing & 0xFFFFF) | (lower << 20)) & 0xFFFFFFFF,
-        )
-    elif reloc_type == "riscv_b":
-        # Patch a conditional opcode
-        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
-        struct.pack_into(
-            "<I",
-            env.full_text,
-            r_offset,
-            (
-                (existing & 0x01FFF07F)
-                | ((reloc & 0x1000) << 19)
-                | ((reloc & 0x800) >> 4)
-                | ((reloc & 0x7E0) << 20)
-                | ((reloc & 0x1E) << 7)
-            )
-            & 0xFFFFFFFF,
-        )
-    elif reloc_type == "riscv_j":
-        # Patch a jump/jump with link opcode
-        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
-        struct.pack_into(
-            "<I",
-            env.full_text,
-            r_offset,
-            (
-                (existing & 0xFFF)
-                | ((reloc & 0x100000) << 11)
-                | (reloc & 0xFF000)
-                | ((reloc & 0x800) << 9)
-                | ((reloc & 0x7FE) << 20)
-            ),
-        )
-    elif reloc_type == "riscv_addsub":
-        (fmt, bits, multiplier) = reloc_args
-        (existing,) = struct.unpack_from(fmt, env.full_text, r_offset)
-        mask = (1 << bits) - 1
-        value = (existing & mask) + (value * multiplier)
-        if value < 0:
-            value = (1 << bits) + value
-        struct.pack_into(fmt, env.full_text, r_offset, (existing & ~mask) | (value & mask))
-    elif reloc_type == "riscv_set":
-        (fmt, bits) = reloc_args
-        (existing,) = struct.unpack_from(fmt, env.full_text, r_offset)
-        mask = (1 << bits) - 1
-        struct.pack_into(fmt, env.full_text, r_offset, (existing & ~mask) | (value & mask))
-    elif reloc_type == "riscv_32pcrel":
-        # Write the distance from the current PC
-        struct.pack_into("<I", env.full_text, r_offset, reloc & 0xFFFFFFFF)
-    else:
-        assert 0, reloc_type
-
-    return addr, value
-
-
-def load_object_file(env, f, felf):
-    elf = elffile.ELFFile(f)
-    env.check_arch(elf["e_machine"])
-
-    # Get symbol table
-    symtab = list(elf.get_section_by_name(".symtab").iter_symbols())
-
-    # Load needed sections from ELF file
-    sections_shndx = {}  # maps elf shndx to Section object
-    for idx, s in enumerate(elf.iter_sections()):
-        if s.header.sh_type in ("SHT_PROGBITS", "SHT_NOBITS"):
-            if s.data_size == 0:
-                # Ignore empty sections
-                pass
-            elif s.name.startswith((".literal", ".text", ".rodata", ".data.rel.ro", ".bss")):
-                sec = Section.from_elfsec(s, felf)
-                sections_shndx[idx] = sec
-                if s.name.startswith(".literal"):
-                    env.literal_sections.append(sec)
+        # Load needed sections from ELF file
+        sections_shndx = {}  # maps elf shndx to Section object
+        for idx, s in enumerate(elf.iter_sections()):
+            if s.header.sh_type in ("SHT_PROGBITS", "SHT_NOBITS"):
+                if s.data_size == 0:
+                    # Ignore empty sections
+                    pass
+                elif s.name.startswith((".literal", ".text", ".rodata", ".data.rel.ro", ".bss")):
+                    sec = Section.from_elfsec(s, felf)
+                    sections_shndx[idx] = sec
+                    if s.name.startswith(".literal"):
+                        env.literal_sections.append(sec)
+                    else:
+                        env.sections.append(sec)
+                elif s.name.startswith(".data"):
+                    raise LinkError("{}: {} non-empty".format(felf, s.name))
                 else:
-                    env.sections.append(sec)
-            elif s.name.startswith(".data"):
-                raise LinkError("{}: {} non-empty".format(felf, s.name))
-            else:
-                # Ignore section
-                pass
-        elif s.header.sh_type in ("SHT_REL", "SHT_RELA"):
-            shndx = s.header.sh_info
-            if shndx in sections_shndx:
-                sec = sections_shndx[shndx]
-                sec.reloc_name = s.name
-                sec.reloc = list(s.iter_relocations())
-                for r in sec.reloc:
-                    r.sym = symtab[r["r_info_sym"]]
+                    # Ignore section
+                    pass
+            elif s.header.sh_type in ("SHT_REL", "SHT_RELA"):
+                shndx = s.header.sh_info
+                if shndx in sections_shndx:
+                    sec = sections_shndx[shndx]
+                    sec.reloc_name = s.name
+                    sec.reloc = list(s.iter_relocations())
+                    for r in sec.reloc:
+                        r.sym = symtab[r["r_info_sym"]]
 
-    # Link symbols to their sections, and update known and unresolved symbols
-    dup_errors = []
-    for sym in symtab:
-        sym.filename = felf
-        shndx = sym.entry["st_shndx"]
-        if shndx in sections_shndx:
-            # Symbol with associated section
-            sym.section = sections_shndx[shndx]
-            if sym["st_info"]["bind"] in ("STB_GLOBAL", "STB_WEAK"):
-                # Defined global symbol
-                if sym.name in env.known_syms and not sym.name.startswith("__x86.get_pc_thunk."):
-                    dup_errors.append("duplicate symbol: {}".format(sym.name))
-                env.known_syms[sym.name] = sym
-        elif sym.entry["st_shndx"] == "SHN_UNDEF" and sym["st_info"]["bind"] == "STB_GLOBAL":
-            # Undefined global symbol, needs resolving
-            env.unresolved_syms.append(sym)
-    if dup_errors:
-        raise LinkError("\n".join(dup_errors))
+        # Link symbols to their sections, and update known and unresolved symbols
+        for sym in symtab:
+            sym.filename = felf
+            shndx = sym.entry["st_shndx"]
+            if shndx in sections_shndx:
+                # Symbol with associated section
+                sym.section = sections_shndx[shndx]
+                if sym["st_info"]["bind"] == "STB_GLOBAL":
+                    # Defined global symbol
+                    if sym.name in env.known_syms and not sym.name.startswith(
+                        "__x86.get_pc_thunk."
+                    ):
+                        raise LinkError("duplicate symbol: {}".format(sym.name))
+                    env.known_syms[sym.name] = sym
+            elif sym.entry["st_shndx"] == "SHN_UNDEF" and sym["st_info"]["bind"] == "STB_GLOBAL":
+                # Undefined global symbol, needs resolving
+                env.unresolved_syms.append(sym)
 
 
 def link_objects(env, native_qstr_vals_len):
@@ -1194,7 +767,6 @@ def link_objects(env, native_qstr_vals_len):
                 "mp_type_fun_builtin_2",
                 "mp_type_fun_builtin_3",
                 "mp_type_fun_builtin_var",
-                "mp_type_Exception",
                 "mp_stream_read_obj",
                 "mp_stream_readinto_obj",
                 "mp_stream_unbuffered_readline_obj",
@@ -1202,8 +774,6 @@ def link_objects(env, native_qstr_vals_len):
             ]
         )
     }
-
-    undef_errors = []
     for sym in env.unresolved_syms:
         assert sym["st_value"] == 0
         if sym.name == "_GLOBAL_OFFSET_TABLE_":
@@ -1216,27 +786,12 @@ def link_objects(env, native_qstr_vals_len):
             sym.section = env.obj_table_section
         elif sym.name in env.known_syms:
             sym.resolved = env.known_syms[sym.name]
-        elif sym.name in env.externs:
-            # Fixed-address symbols do not need pre-processing.
-            continue
         else:
             if sym.name in fun_table:
                 sym.section = mp_fun_table_sec
                 sym.mp_fun_table_offset = fun_table[sym.name]
             else:
-                undef_errors.append("{}: undefined symbol: {}".format(sym.filename, sym.name))
-
-    for sym in env.externs:
-        if sym in env.known_syms:
-            log(
-                LOG_LEVEL_1,
-                "Symbol {} is a fixed-address symbol at {:08x} and is also provided from an object file".format(
-                    sym, env.externs[sym]
-                ),
-            )
-
-    if undef_errors:
-        raise LinkError("\n".join(undef_errors))
+                raise LinkError("{}: undefined symbol: {}".format(sym.filename, sym.name))
 
     # Align sections, assign their addresses, and create full_text
     env.full_text = bytearray(env.arch.asm_jump(8))  # dummy, to be filled in later
@@ -1477,30 +1032,8 @@ def do_link(args):
     log(LOG_LEVEL_2, "qstr vals: " + ", ".join(native_qstr_vals))
     env = LinkEnv(args.arch)
     try:
-        if args.externs:
-            env.externs = parse_linkerscript(args.externs)
-
-        # Load object files
-        for fn in args.files:
-            with open(fn, "rb") as f:
-                load_object_file(env, f, fn)
-
-        if args.libs:
-            # Load archive info
-            archives = []
-            for item in args.libs:
-                archives.extend(ar_util.load_archive(item))
-            # List symbols to look for
-            syms = set(sym.name for sym in env.unresolved_syms)
-            # Resolve symbols from libs
-            lib_objs, _ = ar_util.resolve(archives, syms)
-            # Load extra object files from libs
-            for ar, obj in lib_objs:
-                obj_name = ar.fn + ":" + obj
-                log(LOG_LEVEL_2, "using " + obj_name)
-                with ar.open(obj) as f:
-                    load_object_file(env, f, obj_name)
-
+        for file in args.files:
+            load_object_file(env, file)
         link_objects(env, len(native_qstr_vals))
         build_mpy(env, env.find_addr("mpy_init"), args.output, native_qstr_vals)
     except LinkError as er:
@@ -1508,54 +1041,10 @@ def do_link(args):
         sys.exit(1)
 
 
-def parse_linkerscript(source):
-    # This extracts fixed-address symbol lists from linkerscripts, only parsing
-    # a small subset of all possible directives.  Right now the only
-    # linkerscript file this is really tested against is the ESP8266's builtin
-    # ROM functions list ($SDK/ld/eagle.rom.addr.v6.ld).
-    #
-    # The parser should be able to handle symbol entries inside ESP-IDF's ROM
-    # symbol lists for the ESP32 range of MCUs as well (see *.ld files in
-    # $SDK/components/esp_rom/<name>/).
-
-    symbols = {}
-
-    LINE_REGEX = re.compile(
-        r'^(?P<weak>PROVIDE\()?'  # optional weak marker start
-        r'(?P<symbol>[a-zA-Z_]\w*)'  # symbol name
-        r'=0x(?P<address>[\da-fA-F]{1,8})*'  # symbol address
-        r'(?(weak)\));$',  # optional weak marker end and line terminator
-        re.ASCII,
-    )
-
-    inside_comment = False
-    for line in (line.strip() for line in source.readlines()):
-        if line.startswith('/*') and not inside_comment:
-            if not line.endswith('*/'):
-                inside_comment = True
-            continue
-        if inside_comment:
-            if line.endswith('*/'):
-                inside_comment = False
-            continue
-        if line.startswith('//'):
-            continue
-        match = LINE_REGEX.match(''.join(line.split()))
-        if not match:
-            continue
-        tokens = match.groupdict()
-        symbol = tokens['symbol']
-        address = int(tokens['address'], 16)
-        if symbol in symbols:
-            raise ValueError(f"Symbol {symbol} already defined")
-        symbols[symbol] = address
-    return symbols
-
-
 def main():
     import argparse
 
-    cmd_parser = argparse.ArgumentParser(description="Link native object files into a MPY bundle.")
+    cmd_parser = argparse.ArgumentParser(description="Run scripts on the pyboard.")
     cmd_parser.add_argument(
         "--verbose", "-v", action="count", default=1, help="increase verbosity"
     )
@@ -1563,17 +1052,7 @@ def main():
     cmd_parser.add_argument("--preprocess", action="store_true", help="preprocess source files")
     cmd_parser.add_argument("--qstrs", default=None, help="file defining additional qstrs")
     cmd_parser.add_argument(
-        "--libs", "-l", dest="libs", action="append", help="static .a libraries to link"
-    )
-    cmd_parser.add_argument(
         "--output", "-o", default=None, help="output .mpy file (default to input with .o->.mpy)"
-    )
-    cmd_parser.add_argument(
-        "--externs",
-        "-e",
-        type=argparse.FileType("rt"),
-        default=None,
-        help="linkerscript providing fixed-address symbols to augment symbol resolution",
     )
     cmd_parser.add_argument("files", nargs="+", help="input files")
     args = cmd_parser.parse_args()

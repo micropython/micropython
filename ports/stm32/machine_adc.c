@@ -90,6 +90,20 @@
 // Timeout for waiting for end-of-conversion
 #define ADC_EOC_TIMEOUT_MS (10)
 
+
+void Rcc_Apb2ClockEnable( uint8_t apb2en )
+{
+	SET_BIT(RCC->APB2ENR, (1<<apb2en));
+}
+
+
+
+void Rcc_Ahb1ClockEnable( uint8_t ahb1en )
+{
+	SET_BIT(RCC->AHB1ENR, (1<<ahb1en));
+}
+
+
 // Channel IDs for machine.ADC object
 typedef enum _machine_adc_internal_ch_t {
     // Regular external ADC inputs (0..19)
@@ -445,13 +459,10 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
 
 static uint32_t adc_read_channel(ADC_TypeDef *adc) {
     uint32_t value;
-    #if defined(STM32G4) || defined(STM32WB)
-    // For STM32G4 errata 2.7.7 / STM32WB errata 2.7.1:
-    // "Wrong ADC result if conversion done late after calibration or previous conversion"
-    // states an incorrect reading is returned if more than 1ms has elapsed since the last
-    // reading or calibration. According to the errata, this can be avoided by performing
-    // two consecutive ADC conversions and keeping the second result.
-    // Note: On STM32WB55 @ 64Mhz each ADC read takes ~ 3us.
+    #if defined(STM32G4)
+    // For STM32G4 there is errata 2.7.7, "Wrong ADC result if conversion done late after
+    // calibration or previous conversion".  According to the errata, this can be avoided
+    // by performing two consecutive ADC conversions and keeping the second result.
     for (uint8_t i = 0; i < 2; i++)
     #endif
     {

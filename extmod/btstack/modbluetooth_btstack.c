@@ -705,12 +705,12 @@ int mp_bluetooth_init(void) {
     return 0;
 }
 
-int mp_bluetooth_deinit(void) {
+void mp_bluetooth_deinit(void) {
     DEBUG_printf("mp_bluetooth_deinit\n");
 
     // Nothing to do if not initialised.
     if (!MP_STATE_PORT(bluetooth_btstack_root_pointers)) {
-        return 0;
+        return;
     }
 
     mp_bluetooth_gap_advertise_stop();
@@ -737,9 +737,6 @@ int mp_bluetooth_deinit(void) {
     deinit_stack();
 
     DEBUG_printf("mp_bluetooth_deinit: complete\n");
-
-    bool timeout = mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_TIMEOUT;
-    return timeout ? MP_ETIMEDOUT : 0;
 }
 
 bool mp_bluetooth_is_active(void) {

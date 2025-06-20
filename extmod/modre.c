@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/objstr.h"
-#include "py/cstack.h"
+#include "py/stackctrl.h"
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE
 #include "py/unicode.h"
@@ -39,7 +39,7 @@
 
 #if MICROPY_PY_RE
 
-#define re1_5_stack_chk() mp_cstack_check()
+#define re1_5_stack_chk() MP_STACK_CHECK()
 
 #include "lib/re1.5/re1.5.h"
 
@@ -194,8 +194,7 @@ static void re_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t 
     mp_printf(print, "<re %p>", self);
 }
 
-// Note: this function can't be named re_exec because it may clash with system headers, eg on FreeBSD
-static mp_obj_t re_exec_helper(bool is_anchored, uint n_args, const mp_obj_t *args) {
+static mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_re_t *self;
     if (mp_obj_is_type(args[0], (mp_obj_type_t *)&re_type)) {
@@ -224,12 +223,12 @@ static mp_obj_t re_exec_helper(bool is_anchored, uint n_args, const mp_obj_t *ar
 }
 
 static mp_obj_t re_match(size_t n_args, const mp_obj_t *args) {
-    return re_exec_helper(true, n_args, args);
+    return re_exec(true, n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_match_obj, 2, 4, re_match);
 
 static mp_obj_t re_search(size_t n_args, const mp_obj_t *args) {
-    return re_exec_helper(false, n_args, args);
+    return re_exec(false, n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_search_obj, 2, 4, re_search);
 
@@ -427,9 +426,6 @@ static mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     const char *re_str = mp_obj_str_get_str(args[0]);
     int size = re1_5_sizecode(re_str);
     if (size == -1) {
-        #if MICROPY_ERROR_REPORTING >= MICROPY_ERROR_REPORTING_NORMAL
-        mp_raise_ValueError(MP_ERROR_TEXT("regex too complex"));
-        #endif
         goto error;
     }
     mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, re.insts, char, size, (mp_obj_type_t *)&re_type);

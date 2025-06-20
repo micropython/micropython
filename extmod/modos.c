@@ -76,9 +76,8 @@
 static mp_obj_t mp_os_sync(void) {
     #if MICROPY_VFS_FAT
     for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
-        if (mp_obj_is_type(vfs->obj, &mp_fat_vfs_type)) {
-            disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
-        }
+        // this assumes that vfs->obj is fs_user_mount_t with block device functions
+        disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
     }
     #endif
     return mp_const_none;
@@ -153,6 +152,9 @@ static const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_putenv), MP_ROM_PTR(&mp_os_putenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_unsetenv), MP_ROM_PTR(&mp_os_unsetenv_obj) },
     #endif
+    #if MICROPY_PY_OS_SEP
+    { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
+    #endif
     #if MICROPY_PY_OS_SYNC
     { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&mp_os_sync_obj) },
     #endif
@@ -167,19 +169,16 @@ static const mp_rom_map_elem_t os_module_globals_table[] = {
     #endif
 
     #if MICROPY_VFS
-    { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
     { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&mp_vfs_chdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&mp_vfs_getcwd_obj) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&mp_vfs_listdir_obj) },
-    #if MICROPY_VFS_WRITABLE
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mp_vfs_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&mp_vfs_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&mp_vfs_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&mp_vfs_rmdir_obj) },
-    { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mp_vfs_remove_obj) }, // unlink aliases to remove
-    #endif
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mp_vfs_stat_obj) },
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mp_vfs_statvfs_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mp_vfs_remove_obj) }, // unlink aliases to remove
     #endif
 
     // The following are MicroPython extensions.

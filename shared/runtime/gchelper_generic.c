@@ -101,10 +101,6 @@ static void gc_helper_get_regs(gc_helper_regs_t arr) {
 // Fallback implementation, prefer gchelper_thumb1.s or gchelper_thumb2.s
 
 static void gc_helper_get_regs(gc_helper_regs_t arr) {
-    #ifdef __clang__
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wuninitialized"
-    #endif
     register long r4 asm ("r4");
     register long r5 asm ("r5");
     register long r6 asm ("r6");
@@ -125,9 +121,6 @@ static void gc_helper_get_regs(gc_helper_regs_t arr) {
     arr[7] = r11;
     arr[8] = r12;
     arr[9] = r13;
-    #ifdef __clang__
-    #pragma clang diagnostic pop
-    #endif
 }
 
 #elif defined(__aarch64__)
@@ -155,38 +148,6 @@ static void gc_helper_get_regs(gc_helper_regs_t arr) {
     arr[8] = x27;
     arr[9] = x28;
     arr[10] = x29;
-}
-
-#elif defined(__riscv) && (__riscv_xlen <= 64)
-
-// Fallback implementation for RV32I and RV64I, prefer gchelper_rv32i.s
-// for RV32I targets or gchelper_rv64i.s for RV64I targets.
-
-static void gc_helper_get_regs(gc_helper_regs_t arr) {
-    register uintptr_t s0 asm ("x8");
-    register uintptr_t s1 asm ("x9");
-    register uintptr_t s2 asm ("x18");
-    register uintptr_t s3 asm ("x19");
-    register uintptr_t s4 asm ("x20");
-    register uintptr_t s5 asm ("x21");
-    register uintptr_t s6 asm ("x22");
-    register uintptr_t s7 asm ("x23");
-    register uintptr_t s8 asm ("x24");
-    register uintptr_t s9 asm ("x25");
-    register uintptr_t s10 asm ("x26");
-    register uintptr_t s11 asm ("x27");
-    arr[0] = s0;
-    arr[1] = s1;
-    arr[2] = s2;
-    arr[3] = s3;
-    arr[4] = s4;
-    arr[5] = s5;
-    arr[6] = s6;
-    arr[7] = s7;
-    arr[8] = s8;
-    arr[9] = s9;
-    arr[10] = s10;
-    arr[11] = s11;
 }
 
 #else

@@ -108,7 +108,7 @@ static mp_obj_t usb_device_submit_xfer(mp_obj_t self, mp_obj_t ep, mp_obj_t buff
         //
         // This C layer doesn't otherwise keep track of which endpoints the host
         // is aware of (or not).
-        mp_raise_ValueError(MP_ERROR_TEXT("ep"));
+        mp_raise_ValueError("ep");
     }
 
     if (!usbd_edpt_claim(USBD_RHPORT, ep_addr)) {
@@ -156,11 +156,6 @@ static mp_obj_t usb_device_active(size_t n_args, const mp_obj_t *args) {
     return mp_obj_new_bool(result);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_active_obj, 1, 2, usb_device_active);
-
-static mp_obj_t usb_remote_wakeup(mp_obj_t self) {
-    return mp_obj_new_bool(tud_remote_wakeup());
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(usb_remote_wakeup_obj, usb_remote_wakeup);
 
 static mp_obj_t usb_device_stall(size_t n_args, const mp_obj_t *args) {
     mp_obj_usb_device_t *self = (mp_obj_usb_device_t *)MP_OBJ_TO_PTR(args[0]);
@@ -277,7 +272,6 @@ static const mp_rom_map_elem_t usb_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_submit_xfer), MP_ROM_PTR(&usb_device_submit_xfer_obj) },
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&usb_device_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_stall), MP_ROM_PTR(&usb_device_stall_obj) },
-    { MP_ROM_QSTR(MP_QSTR_remote_wakeup), MP_ROM_PTR(&usb_remote_wakeup_obj) },
 
     // Built-in driver constants
     { MP_ROM_QSTR(MP_QSTR_BUILTIN_NONE), MP_ROM_PTR(&mp_type_usb_device_builtin_none) },

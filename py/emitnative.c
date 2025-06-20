@@ -59,7 +59,7 @@
 #endif
 
 // wrapper around everything in this file
-#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN || N_RV32 || N_DEBUG
+#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN
 
 // C stack layout for native functions:
 //  0:                          nlr_buf_t [optional]
@@ -129,7 +129,6 @@
 
 // Whether a slot is needed to store LOCAL_IDX_EXC_HANDLER_UNWIND
 #define NEED_EXC_HANDLER_UNWIND(emit) ((emit)->scope->exc_stack_size > 0)
-#define NEED_THROW_VAL(emit) ((emit)->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR)
 
 // Whether registers can be used to store locals (only true if there are no
 // exception handlers, because otherwise an nlr_jump will restore registers to
@@ -140,7 +139,6 @@
 #define LOCAL_IDX_EXC_VAL(emit) (NLR_BUF_IDX_RET_VAL)
 #define LOCAL_IDX_EXC_HANDLER_PC(emit) (NLR_BUF_IDX_LOCAL_1)
 #define LOCAL_IDX_EXC_HANDLER_UNWIND(emit) (SIZEOF_NLR_BUF + 1) // this needs a dedicated variable outside nlr_buf_t
-#define LOCAL_IDX_THROW_VAL(emit) (SIZEOF_NLR_BUF + 2) // needs a dedicated variable outside nlr_buf_t, following inject_exc in py/vm.c
 #define LOCAL_IDX_RET_VAL(emit) (SIZEOF_NLR_BUF) // needed when NEED_GLOBAL_EXC_HANDLER is true
 #define LOCAL_IDX_FUN_OBJ(emit) ((emit)->code_state_start + OFFSETOF_CODE_STATE_FUN_BC)
 #define LOCAL_IDX_OLD_GLOBALS(emit) ((emit)->code_state_start + OFFSETOF_CODE_STATE_IP)
@@ -179,12 +177,6 @@ static const uint8_t reg_local_table[MAX_REGS_FOR_LOCAL_VARS] = {REG_LOCAL_1, RE
 #define EMIT_NATIVE_VIPER_TYPE_ERROR(emit, ...) do { \
         *emit->error_slot = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, __VA_ARGS__); \
 } while (0)
-
-#if N_RV32
-#define FIT_SIGNED(value, bits)                                                                                     \
-    ((((value) & ~((1U << ((bits) - 1)) - 1)) == 0) ||                                      \
-    (((value) & ~((1U << ((bits) - 1)) - 1)) == ~((1U << ((bits) - 1)) - 1)))
-#endif
 
 typedef enum {
     STACK_VALUE,
@@ -288,11 +280,6 @@ struct _emit_t {
     ASM_T *as;
 };
 
-#ifndef REG_ZERO
-#define REG_ZERO REG_TEMP0
-#define ASM_CLR_REG(state, rd) ASM_XOR_REG_REG(state, rd, rd)
-#endif
-
 static void emit_load_reg_with_object(emit_t *emit, int reg, mp_obj_t obj);
 static void emit_native_global_exc_entry(emit_t *emit);
 static void emit_native_global_exc_exit(emit_t *emit);
@@ -355,14 +342,11 @@ static void emit_native_mov_reg_state_addr(emit_t *emit, int reg_dest, int local
 static void emit_native_mov_reg_qstr(emit_t *emit, int arg_reg, qstr qst) {
     #if MICROPY_PERSISTENT_CODE_SAVE
     ASM_LOAD16_REG_REG_OFFSET(emit->as, arg_reg, REG_QSTR_TABLE, mp_emit_common_use_qstr(emit->emit_common, qst));
-    #elif defined(ASM_MOV_REG_QSTR)
-    ASM_MOV_REG_QSTR(emit->as, arg_reg, qst);
     #else
     ASM_MOV_REG_IMM(emit->as, arg_reg, qst);
     #endif
 }
 
-// This function may clobber REG_TEMP0 (and `reg_dest` can be REG_TEMP0).
 static void emit_native_mov_reg_qstr_obj(emit_t *emit, int reg_dest, qstr qst) {
     #if MICROPY_PERSISTENT_CODE_SAVE
     emit_load_reg_with_object(emit, reg_dest, MP_OBJ_NEW_QSTR(qst));
@@ -434,9 +418,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     if (NEED_GLOBAL_EXC_HANDLER(emit)) {
         emit->code_state_start = SIZEOF_NLR_BUF; // for nlr_buf_t
         emit->code_state_start += 1;  // for return_value
-        if (NEED_THROW_VAL(emit)) {
-            emit->code_state_start += 2;
-        } else if (NEED_EXC_HANDLER_UNWIND(emit)) {
+        if (NEED_EXC_HANDLER_UNWIND(emit)) {
             emit->code_state_start += 1;
         }
     }
@@ -555,11 +537,11 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             ASM_MOV_REG_REG(emit->as, REG_GENERATOR_STATE, REG_PARENT_ARG_1);
             #endif
 
-            // Put throw value into LOCAL_IDX_THROW_VAL slot, for yield/yield-from
+            // Put throw value into LOCAL_IDX_EXC_VAL slot, for yield/yield-from
             #if N_X86
             asm_x86_mov_arg_to_r32(emit->as, 1, REG_PARENT_ARG_2);
             #endif
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_PARENT_ARG_2);
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_PARENT_ARG_2);
 
             // Load REG_FUN_TABLE with a pointer to mp_fun_table, found in the const_table
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_GENERATOR_STATE, LOCAL_IDX_FUN_OBJ(emit));
@@ -1123,7 +1105,6 @@ static exc_stack_entry_t *emit_native_pop_exc_stack(emit_t *emit) {
     return e;
 }
 
-// This function will clobber REG_TEMP0 (and `reg` can be REG_TEMP0).
 static void emit_load_reg_with_object(emit_t *emit, int reg, mp_obj_t obj) {
     emit->scope->scope_flags |= MP_SCOPE_FLAG_HASCONSTS;
     size_t table_off = mp_emit_common_use_const_obj(emit->emit_common, obj);
@@ -1152,7 +1133,7 @@ static void emit_native_label_assign(emit_t *emit, mp_uint_t l) {
     if (is_finally) {
         // Label is at start of finally handler: store TOS into exception slot
         vtype_kind_t vtype;
-        emit_access_stack(emit, 1, &vtype, REG_TEMP0);
+        emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
         ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
     }
 
@@ -1205,12 +1186,8 @@ static void emit_native_global_exc_entry(emit_t *emit) {
             ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, start_label, true);
         } else {
             // Clear the unwind state
-            ASM_CLR_REG(emit->as, REG_ZERO);
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_ZERO);
-
-            // clear nlr.ret_val, because it's passed to mp_native_raise regardless
-            // of whether there was an exception or not
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_ZERO);
+            ASM_XOR_REG_REG(emit->as, REG_TEMP0, REG_TEMP0);
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_TEMP0);
 
             // Put PC of start code block into REG_LOCAL_1
             ASM_MOV_REG_PCREL(emit->as, REG_LOCAL_1, start_label);
@@ -1226,8 +1203,8 @@ static void emit_native_global_exc_entry(emit_t *emit) {
             ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, global_except_label, true);
 
             // Clear PC of current code block, and jump there to resume execution
-            ASM_CLR_REG(emit->as, REG_ZERO);
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_ZERO);
+            ASM_XOR_REG_REG(emit->as, REG_TEMP0, REG_TEMP0);
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_TEMP0);
             ASM_JUMP_REG(emit->as, REG_LOCAL_1);
 
             // Global exception handler: check for valid exception handler
@@ -1267,10 +1244,8 @@ static void emit_native_global_exc_entry(emit_t *emit) {
 
             // This is the first entry of the generator
 
-            // Check LOCAL_IDX_THROW_VAL for any injected value
-            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_THROW_VAL(emit));
-            ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL);
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
+            // Check LOCAL_IDX_EXC_VAL for any injected value
+            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
             emit_call(emit, MP_F_NATIVE_RAISE);
         }
     }
@@ -1398,9 +1373,9 @@ static void emit_native_load_const_str(emit_t *emit, qstr qst) {
 
 static void emit_native_load_const_obj(emit_t *emit, mp_obj_t obj) {
     emit_native_pre(emit);
-    need_reg_single(emit, REG_TEMP0, 0);
-    emit_load_reg_with_object(emit, REG_TEMP0, obj);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_TEMP0);
+    need_reg_single(emit, REG_RET, 0);
+    emit_load_reg_with_object(emit, REG_RET, obj);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 static void emit_native_load_null(emit_t *emit) {
@@ -1478,7 +1453,6 @@ static void emit_native_load_attr(emit_t *emit, qstr qst) {
 }
 
 static void emit_native_load_method(emit_t *emit, qstr qst, bool is_super) {
-    DEBUG_printf("load_method(%s, %d)\n", qstr_str(qst), is_super);
     if (is_super) {
         emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, 3); // arg2 = dest ptr
         emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_2, 2); // arg2 = dest ptr
@@ -1537,61 +1511,57 @@ static void emit_native_load_subscr(emit_t *emit) {
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
-                    #ifdef ASM_LOAD8_REG_REG_OFFSET
-                    ASM_LOAD8_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
-                    #else
-                    #if N_RV32
-                    if (FIT_SIGNED(index_value, 12)) {
-                        asm_rv32_opcode_lbu(emit->as, REG_RET, reg_base, index_value);
-                        break;
-                    }
-                    #elif N_XTENSA || N_XTENSAWIN
-                    if (index_value >= 0 && index_value < 256) {
-                        asm_xtensa_op_l8ui(emit->as, REG_RET, reg_base, index_value);
-                        break;
-                    }
-                    #endif
+                    // TODO optimise to use thumb ldrb r1, [r2, r3]
                     if (index_value != 0) {
                         // index is non-zero
+                        #if N_THUMB
+                        if (index_value > 0 && index_value < 32) {
+                            asm_thumb_ldrb_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
+                            break;
+                        }
+                        #endif
                         need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add index to base
                         reg_base = reg_index;
                     }
                     ASM_LOAD8_REG_REG(emit->as, REG_RET, reg_base); // load from (base+index)
-                    #endif
                     break;
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
-                    #ifdef ASM_LOAD16_REG_REG_OFFSET
-                    ASM_LOAD16_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
-                    #else
                     if (index_value != 0) {
                         // index is a non-zero immediate
+                        #if N_THUMB
+                        if (index_value > 0 && index_value < 32) {
+                            asm_thumb_ldrh_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
+                            break;
+                        }
+                        #endif
                         need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 1);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 2*index to base
                         reg_base = reg_index;
                     }
                     ASM_LOAD16_REG_REG(emit->as, REG_RET, reg_base); // load from (base+2*index)
-                    #endif
                     break;
                 }
                 case VTYPE_PTR32: {
                     // pointer to 32-bit memory
-                    #ifdef ASM_LOAD32_REG_REG_OFFSET
-                    ASM_LOAD32_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
-                    #else
                     if (index_value != 0) {
                         // index is a non-zero immediate
+                        #if N_THUMB
+                        if (index_value > 0 && index_value < 32) {
+                            asm_thumb_ldr_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
+                            break;
+                        }
+                        #endif
                         need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 2);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 4*index to base
                         reg_base = reg_index;
                     }
                     ASM_LOAD32_REG_REG(emit->as, REG_RET, reg_base); // load from (base+4*index)
-                    #endif
                     break;
                 }
                 default:
@@ -1612,36 +1582,25 @@ static void emit_native_load_subscr(emit_t *emit) {
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
-                    #ifdef ASM_LOAD8_REG_REG_REG
-                    ASM_LOAD8_REG_REG_REG(emit->as, REG_RET, REG_ARG_1, reg_index);
-                    #else
+                    // TODO optimise to use thumb ldrb r1, [r2, r3]
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD8_REG_REG(emit->as, REG_RET, REG_ARG_1); // store value to (base+index)
-                    #endif
                     break;
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
-                    #ifdef ASM_LOAD16_REG_REG_REG
-                    ASM_LOAD16_REG_REG_REG(emit->as, REG_RET, REG_ARG_1, reg_index);
-                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD16_REG_REG(emit->as, REG_RET, REG_ARG_1); // load from (base+2*index)
-                    #endif
                     break;
                 }
                 case VTYPE_PTR32: {
                     // pointer to word-size memory
-                    #ifdef ASM_LOAD32_REG_REG_REG
-                    ASM_LOAD32_REG_REG_REG(emit->as, REG_RET, REG_ARG_1, reg_index);
-                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD32_REG_REG(emit->as, REG_RET, REG_ARG_1); // load from (base+4*index)
-                    #endif
                     break;
                 }
                 default:
@@ -1784,73 +1743,63 @@ static void emit_native_store_subscr(emit_t *emit) {
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
-                    #ifdef ASM_STORE8_REG_REG_OFFSET
-                    ASM_STORE8_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
-                    #else
-                    #if N_RV32
-                    if (FIT_SIGNED(index_value, 12)) {
-                        asm_rv32_opcode_sb(emit->as, reg_value, reg_base, index_value);
-                        break;
-                    }
-                    #elif N_XTENSA || N_XTENSAWIN
-                    if (index_value >= 0 && index_value < 256) {
-                        asm_xtensa_op_s8i(emit->as, reg_value, reg_base, index_value);
-                        break;
-                    }
-                    #endif
+                    // TODO optimise to use thumb strb r1, [r2, r3]
                     if (index_value != 0) {
                         // index is non-zero
+                        #if N_THUMB
+                        if (index_value > 0 && index_value < 32) {
+                            asm_thumb_strb_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
+                            break;
+                        }
+                        #endif
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
                         #if N_ARM
                         asm_arm_strb_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
-                        break;
+                        return;
                         #endif
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add index to base
                         reg_base = reg_index;
                     }
                     ASM_STORE8_REG_REG(emit->as, reg_value, reg_base); // store value to (base+index)
-                    #endif
                     break;
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
-                    #ifdef ASM_STORE16_REG_REG_OFFSET
-                    ASM_STORE16_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
-                    #else
-                    #if N_RV32
-                    if (FIT_SIGNED(index_value, 11)) {
-                        asm_rv32_opcode_sh(emit->as, reg_value, reg_base, index_value << 1);
-                        break;
-                    }
-                    #elif N_XTENSA || N_XTENSAWIN
-                    if (index_value >= 0 && index_value < 256) {
-                        asm_xtensa_op_s16i(emit->as, reg_value, reg_base, index_value);
-                        break;
-                    }
-                    #endif
                     if (index_value != 0) {
                         // index is a non-zero immediate
+                        #if N_THUMB
+                        if (index_value > 0 && index_value < 32) {
+                            asm_thumb_strh_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
+                            break;
+                        }
+                        #endif
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 1);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 2*index to base
                         reg_base = reg_index;
                     }
                     ASM_STORE16_REG_REG(emit->as, reg_value, reg_base); // store value to (base+2*index)
-                    #endif
                     break;
                 }
                 case VTYPE_PTR32: {
                     // pointer to 32-bit memory
-                    #ifdef ASM_STORE32_REG_REG_OFFSET
-                    ASM_STORE32_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
-                    #else
                     if (index_value != 0) {
                         // index is a non-zero immediate
+                        #if N_THUMB
+                        if (index_value > 0 && index_value < 32) {
+                            asm_thumb_str_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
+                            break;
+                        }
+                        #endif
+                        #if N_ARM
+                        ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
+                        asm_arm_str_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
+                        return;
+                        #endif
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 2);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 4*index to base
                         reg_base = reg_index;
                     }
                     ASM_STORE32_REG_REG(emit->as, reg_value, reg_base); // store value to (base+4*index)
-                    #endif
                     break;
                 }
                 default:
@@ -1881,36 +1830,37 @@ static void emit_native_store_subscr(emit_t *emit) {
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
-                    #ifdef ASM_STORE8_REG_REG_REG
-                    ASM_STORE8_REG_REG_REG(emit->as, reg_value, REG_ARG_1, reg_index);
-                    #else
+                    // TODO optimise to use thumb strb r1, [r2, r3]
+                    #if N_ARM
+                    asm_arm_strb_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
+                    break;
+                    #endif
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_STORE8_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+index)
-                    #endif
                     break;
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
-                    #ifdef ASM_STORE16_REG_REG_REG
-                    ASM_STORE16_REG_REG_REG(emit->as, reg_value, REG_ARG_1, reg_index);
-                    #else
+                    #if N_ARM
+                    asm_arm_strh_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
+                    break;
+                    #endif
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_STORE16_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+2*index)
-                    #endif
                     break;
                 }
                 case VTYPE_PTR32: {
                     // pointer to 32-bit memory
-                    #ifdef ASM_STORE32_REG_REG_REG
-                    ASM_STORE32_REG_REG_REG(emit->as, reg_value, REG_ARG_1, reg_index);
-                    #else
+                    #if N_ARM
+                    asm_arm_str_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
+                    break;
+                    #endif
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_STORE32_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+4*index)
-                    #endif
                     break;
                 }
                 default:
@@ -2153,7 +2103,6 @@ static void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
 }
 
 static void emit_native_setup_block(emit_t *emit, mp_uint_t label, int kind) {
-    DEBUG_printf("setup_block(%d, %d)\n", (int)label, kind);
     if (kind == MP_EMIT_SETUP_BLOCK_WITH) {
         emit_native_setup_with(emit, label);
     } else {
@@ -2230,33 +2179,7 @@ static void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
     emit_native_label_assign(emit, *emit->label_slot + 1);
 
     // Exception is in nlr_buf.ret_val slot
-    adjust_stack(emit, 1);
 }
-
-#if MICROPY_PY_ASYNC_AWAIT
-static void emit_native_async_with_setup_finally(emit_t *emit, mp_uint_t label_aexit_no_exc, mp_uint_t label_finally_block, mp_uint_t label_ret_unwind_jump) {
-    // The async-with body has executed and no exception was raised, the execution fell through to this point.
-    // Stack: (..., ctx_mgr)
-
-    // Insert a dummy value into the stack so the stack has the same layout to execute the code starting at label_aexit_no_exc
-    emit_native_adjust_stack_size(emit, 1); // push dummy value, it won't ever be used
-    emit_native_rot_two(emit);
-    emit_native_load_const_tok(emit, MP_TOKEN_KW_NONE); // to tell end_finally there's no exception
-    emit_native_rot_two(emit);
-    // Stack: (..., <dummy>, None, ctx_mgr)
-    emit_native_jump(emit, label_aexit_no_exc); // jump to code to call __aexit__
-    emit_native_adjust_stack_size(emit, -1);
-
-    // Start of "finally" block which is entered via one of: an exception propagating out, a return, an unwind jump.
-    emit_native_label_assign(emit, label_finally_block);
-
-    // Detect which case we have by the local exception slot holding an exception or not.
-    emit_pre_pop_discard(emit);
-    ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit)); // get exception
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_ARG_1);
-    ASM_JUMP_IF_REG_ZERO(emit->as, REG_ARG_1, label_ret_unwind_jump, false); // if not an exception then we have return or unwind jump.
-}
-#endif
 
 static void emit_native_end_finally(emit_t *emit) {
     // logic:
@@ -2264,9 +2187,7 @@ static void emit_native_end_finally(emit_t *emit) {
     //   if exc == None: pass
     //   else: raise exc
     // the check if exc is None is done in the MP_F_NATIVE_RAISE stub
-    DEBUG_printf("end_finally\n");
-
-    emit_pre_pop_discard(emit);
+    emit_native_pre(emit);
     ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
     emit_call(emit, MP_F_NATIVE_RAISE);
 
@@ -2289,8 +2210,6 @@ static void emit_native_end_finally(emit_t *emit) {
 static void emit_native_get_iter(emit_t *emit, bool use_stack) {
     // perhaps the difficult one, as we want to rewrite for loops using native code
     // in cases where we iterate over a Python object, can we use normal runtime calls?
-
-    DEBUG_printf("get_iter(%d)\n", use_stack);
 
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
@@ -2480,7 +2399,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             #if N_X64
             asm_x64_xor_r64_r64(emit->as, REG_RET, REG_RET);
             asm_x64_cmp_r64_with_r64(emit->as, reg_rhs, REG_ARG_2);
-            static const byte ops[6 + 6] = {
+            static byte ops[6 + 6] = {
                 // unsigned
                 ASM_X64_CC_JB,
                 ASM_X64_CC_JA,
@@ -2500,7 +2419,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             #elif N_X86
             asm_x86_xor_r32_r32(emit->as, REG_RET, REG_RET);
             asm_x86_cmp_r32_with_r32(emit->as, reg_rhs, REG_ARG_2);
-            static const byte ops[6 + 6] = {
+            static byte ops[6 + 6] = {
                 // unsigned
                 ASM_X86_CC_JB,
                 ASM_X86_CC_JA,
@@ -2520,7 +2439,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             #elif N_THUMB
             asm_thumb_cmp_rlo_rlo(emit->as, REG_ARG_2, reg_rhs);
             if (asm_thumb_allow_armv7m(emit->as)) {
-                static const uint16_t ops[6 + 6] = {
+                static uint16_t ops[6 + 6] = {
                     // unsigned
                     ASM_THUMB_OP_ITE_CC,
                     ASM_THUMB_OP_ITE_HI,
@@ -2540,7 +2459,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 asm_thumb_mov_rlo_i8(emit->as, REG_RET, 1);
                 asm_thumb_mov_rlo_i8(emit->as, REG_RET, 0);
             } else {
-                static const uint16_t ops[6 + 6] = {
+                static uint16_t ops[6 + 6] = {
                     // unsigned
                     ASM_THUMB_CC_CC,
                     ASM_THUMB_CC_HI,
@@ -2563,7 +2482,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             }
             #elif N_ARM
             asm_arm_cmp_reg_reg(emit->as, REG_ARG_2, reg_rhs);
-            static const uint ccs[6 + 6] = {
+            static uint ccs[6 + 6] = {
                 // unsigned
                 ASM_ARM_CC_CC,
                 ASM_ARM_CC_HI,
@@ -2581,7 +2500,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             };
             asm_arm_setcc_reg(emit->as, REG_RET, ccs[op_idx]);
             #elif N_XTENSA || N_XTENSAWIN
-            static const uint8_t ccs[6 + 6] = {
+            static uint8_t ccs[6 + 6] = {
                 // unsigned
                 ASM_XTENSA_CC_LTU,
                 0x80 | ASM_XTENSA_CC_LTU, // for GTU we'll swap args
@@ -2603,38 +2522,6 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             } else {
                 asm_xtensa_setcc_reg_reg_reg(emit->as, cc & ~0x80, REG_RET, reg_rhs, REG_ARG_2);
             }
-            #elif N_RV32
-            (void)op_idx;
-            switch (op) {
-                case MP_BINARY_OP_LESS:
-                    asm_rv32_meta_comparison_lt(emit->as, REG_ARG_2, reg_rhs, REG_RET, vtype_lhs == VTYPE_UINT);
-                    break;
-
-                case MP_BINARY_OP_MORE:
-                    asm_rv32_meta_comparison_lt(emit->as, reg_rhs, REG_ARG_2, REG_RET, vtype_lhs == VTYPE_UINT);
-                    break;
-
-                case MP_BINARY_OP_EQUAL:
-                    asm_rv32_meta_comparison_eq(emit->as, REG_ARG_2, reg_rhs, REG_RET);
-                    break;
-
-                case MP_BINARY_OP_LESS_EQUAL:
-                    asm_rv32_meta_comparison_le(emit->as, REG_ARG_2, reg_rhs, REG_RET, vtype_lhs == VTYPE_UINT);
-                    break;
-
-                case MP_BINARY_OP_MORE_EQUAL:
-                    asm_rv32_meta_comparison_le(emit->as, reg_rhs, REG_ARG_2, REG_RET, vtype_lhs == VTYPE_UINT);
-                    break;
-
-                case MP_BINARY_OP_NOT_EQUAL:
-                    asm_rv32_meta_comparison_ne(emit->as, reg_rhs, REG_ARG_2, REG_RET);
-                    break;
-
-                default:
-                    break;
-            }
-            #elif N_DEBUG
-            asm_debug_setcc_reg_reg_reg(emit->as, op_idx, REG_RET, REG_ARG_2, reg_rhs);
             #else
             #error not implemented
             #endif
@@ -2875,7 +2762,6 @@ static void emit_native_call_function(emit_t *emit, mp_uint_t n_positional, mp_u
 }
 
 static void emit_native_call_method(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags) {
-    DEBUG_printf("call_method(%d, %d, %d)\n", n_positional, n_keyword, star_flags);
     if (star_flags) {
         emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, n_positional + 2 * n_keyword + 3); // pointer to args
         emit_call_with_2_imm_args(emit, MP_F_CALL_METHOD_N_KW_VAR, 1, REG_ARG_1, n_positional | (n_keyword << 8), REG_ARG_2);
@@ -2942,7 +2828,6 @@ static void emit_native_return_value(emit_t *emit) {
 }
 
 static void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
-    DEBUG_printf("raise_varargs(%d)\n", n_args);
     (void)n_args;
     assert(n_args == 1);
     vtype_kind_t vtype_exc;
@@ -2957,8 +2842,6 @@ static void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
 
 static void emit_native_yield(emit_t *emit, int kind) {
     // Note: 1 (yield) or 3 (yield from) labels are reserved for this function, starting at *emit->label_slot
-
-    DEBUG_printf("yield(%d)\n", kind);
 
     if (emit->do_viper_types) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("native yield"));
@@ -3015,22 +2898,18 @@ static void emit_native_yield(emit_t *emit, int kind) {
     emit_native_adjust_stack_size(emit, 1); // send_value
 
     if (kind == MP_EMIT_YIELD_VALUE) {
-        // Check LOCAL_IDX_THROW_VAL for any injected value
-        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_THROW_VAL(emit));
-        ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL);
-        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
+        // Check LOCAL_IDX_EXC_VAL for any injected value
+        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
         emit_call(emit, MP_F_NATIVE_RAISE);
     } else {
         // Label loop entry
         emit_native_label_assign(emit, *emit->label_slot + 2);
 
         // Get the next item from the delegate generator
-        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_3, LOCAL_IDX_THROW_VAL(emit)); // throw_value
-        ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL);
-        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
         vtype_kind_t vtype;
         emit_pre_pop_reg(emit, &vtype, REG_ARG_2); // send_value
         emit_access_stack(emit, 1, &vtype, REG_ARG_1); // generator
+        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_3, LOCAL_IDX_EXC_VAL(emit)); // throw_value
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_ARG_3);
         emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, 1); // ret_value
         emit_call(emit, MP_F_NATIVE_YIELD_FROM);
@@ -3054,6 +2933,7 @@ static void emit_native_start_except_handler(emit_t *emit) {
 }
 
 static void emit_native_end_except_handler(emit_t *emit) {
+    adjust_stack(emit, -1); // pop the exception (end_finally didn't use it)
 }
 
 const emit_method_table_t EXPORT_FUN(method_table) = {
@@ -3102,9 +2982,6 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_unwind_jump,
     emit_native_setup_block,
     emit_native_with_cleanup,
-    #if MICROPY_PY_ASYNC_AWAIT
-    emit_native_async_with_setup_finally,
-    #endif
     emit_native_end_finally,
     emit_native_get_iter,
     emit_native_for_iter,

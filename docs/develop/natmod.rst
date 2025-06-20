@@ -39,8 +39,7 @@ options for the ``ARCH`` variable, see below):
 * ``armv7emsp`` (ARM Thumb 2, single precision float, eg Cortex-M4F, Cortex-M7)
 * ``armv7emdp`` (ARM Thumb 2, double precision float, eg Cortex-M7)
 * ``xtensa`` (non-windowed, eg ESP8266)
-* ``xtensawin`` (windowed with window size 8, eg ESP32, ESP32S3)
-* ``rv32imc`` (RISC-V 32 bits with compressed instructions, eg ESP32C3, ESP32C6)
+* ``xtensawin`` (windowed with window size 8, eg ESP32)
 
 When compiling and linking the native .mpy file the architecture must be chosen
 and the corresponding file can only be imported on that architecture.  For more
@@ -70,25 +69,11 @@ The known limitations are:
 So, if your C code has writable data, make sure the data is defined globally,
 without an initialiser, and only written to within functions.
 
-The native module is not automatically linked against the standard static libraries
-like ``libm.a`` and ``libgcc.a``, which can lead to ``undefined symbol`` errors.
-You can link the runtime libraries by setting ``LINK_RUNTIME = 1``
-in your Makefile. Custom static libraries can also be linked by adding
-``MPY_LD_FLAGS += -l path/to/library.a``. Note that these are linked into
-the native module and will not be shared with other modules or the system.
-
 Linker limitation: the native module is not linked against the symbol table of the
 full MicroPython firmware.  Rather, it is linked against an explicit table of exported
 symbols found in ``mp_fun_table`` (in ``py/nativeglue.h``), that is fixed at firmware
 build time.  It is thus not possible to simply call some arbitrary HAL/OS/RTOS/system
-function, for example, unless that resides at a fixed address. In that case, the path
-of a linkerscript containing a series of symbol names and their fixed address can be
-passed to ``mpy_ld.py`` via the ``--externs`` command line argument. That way symbols
-appearing in the linkerscript will take precedence over what is provided from object
-files, but at the moment the object files' implementation will still reside in the
-final MPY file. The linkerscript parser is limited in its capabilities, and is
-currently used only for parsing the ESP8266 port ROM symbols list (see
-``ports/esp8266/boards/eagle.rom.addr.v6.ld``).
+function, for example.
 
 New symbols can be added to the end of the table and the firmware rebuilt.
 The symbols also need to be added to ``tools/mpy_ld.py``'s ``fun_table`` dict in the
@@ -187,7 +172,7 @@ The file ``Makefile`` contains:
     # Source files (.c or .py)
     SRC = factorial.c
 
-    # Architecture to build for (x86, x64, armv6m, armv7m, xtensa, xtensawin, rv32imc)
+    # Architecture to build for (x86, x64, armv6m, armv7m, xtensa, xtensawin)
     ARCH = x64
 
     # Include to get the rules for compiling and linking the module

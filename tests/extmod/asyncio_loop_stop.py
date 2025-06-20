@@ -34,7 +34,7 @@ async def main():
     loop.stop()
 
 
-loop = asyncio.new_event_loop()
+loop = asyncio.get_event_loop()
 loop.create_task(main())
 
 for i in range(3):

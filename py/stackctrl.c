@@ -24,12 +24,7 @@
  * THE SOFTWARE.
  */
 
-// This API is deprecated, please use py/cstack.h instead
-
 #include "py/runtime.h"
-
-#if !MICROPY_PREVIEW_VERSION_2
-
 #include "py/stackctrl.h"
 
 void mp_stack_ctrl_init(void) {
@@ -67,5 +62,3 @@ void mp_stack_check(void) {
 }
 
 #endif // MICROPY_STACK_CHECK
-
-#endif // !MICROPY_PREVIEW_VERSION_2

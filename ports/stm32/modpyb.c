@@ -37,18 +37,23 @@
 #include "extint.h"
 #include "usrsw.h"
 #include "rng.h"
+#if defined(MICROPY_PY_TIGER)
+#include "td02-rtc.h"
+#else
 #include "rtc.h"
+#endif
 #include "i2c.h"
 #include "spi.h"
 #include "uart.h"
-#include "pyb_can.h"
+#include "can.h"
 #include "adc.h"
 #include "storage.h"
 #include "sdcard.h"
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
-#include "lcd.h"
+#include "td01-lcd.h"
+#include "td22-xor.h"
 #include "usb.h"
 #include "portmodules.h"
 #include "modmachine.h"
@@ -57,7 +62,7 @@
 #include "extmod/vfs.h"
 #include "extmod/modtime.h"
 
-#if MICROPY_PY_PYB
+#if MICROPY_PY_TIGER
 
 static mp_obj_t pyb_fault_debug(mp_obj_t value) {
     pyb_hard_fault_debug = mp_obj_is_true(value);
@@ -71,7 +76,7 @@ static mp_obj_t pyb_idle(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(pyb_idle_obj, pyb_idle);
 
-#if MICROPY_PY_PYB_LEGACY
+#if MICROPY_PY_TIGER_LEGACY
 
 // Returns the number of milliseconds which have elapsed since `start`.
 // This function takes care of counter wrap and always returns a positive number.
@@ -134,12 +139,12 @@ static mp_obj_t pyb_country(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_country_obj, 0, 1, pyb_country);
 #endif
 
-static const mp_rom_map_elem_t pyb_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pyb) },
+static const mp_rom_map_elem_t tiger_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_Tiger) },
 
     { MP_ROM_QSTR(MP_QSTR_fault_debug), MP_ROM_PTR(&pyb_fault_debug_obj) },
 
-    #if MICROPY_PY_PYB_LEGACY
+    #if MICROPY_PY_TIGER_LEGACY
     { MP_ROM_QSTR(MP_QSTR_bootloader), MP_ROM_PTR(&machine_bootloader_obj) },
     { MP_ROM_QSTR(MP_QSTR_hard_reset), MP_ROM_PTR(&machine_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&machine_info_obj) },
@@ -157,7 +162,7 @@ static const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_irq_stats), MP_ROM_PTR(&pyb_irq_stats_obj) },
     #endif
 
-    #if MICROPY_PY_PYB_LEGACY
+    #if MICROPY_PY_TIGER_LEGACY
     { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_standby), MP_ROM_PTR(&machine_deepsleep_obj) },
     #endif
@@ -175,7 +180,7 @@ static const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_USB_HID), MP_ROM_PTR(&pyb_usb_hid_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_USB_VCP), MP_ROM_PTR(&pyb_usb_vcp_type) },
-    #if MICROPY_PY_PYB_LEGACY
+    #if MICROPY_PY_TIGER_LEGACY
     // these 2 are deprecated; use USB_VCP.isconnected and USB_HID.send instead
     { MP_ROM_QSTR(MP_QSTR_have_cdc), MP_ROM_PTR(&pyb_have_cdc_obj) },
     #if MICROPY_HW_USB_HID
@@ -184,7 +189,7 @@ static const mp_rom_map_elem_t pyb_module_globals_table[] = {
     #endif
     #endif
 
-    #if MICROPY_PY_PYB_LEGACY
+    #if MICROPY_PY_TIGER_LEGACY
     { MP_ROM_QSTR(MP_QSTR_millis), MP_ROM_PTR(&mp_time_ticks_ms_obj) },
     { MP_ROM_QSTR(MP_QSTR_elapsed_millis), MP_ROM_PTR(&pyb_elapsed_millis_obj) },
     { MP_ROM_QSTR(MP_QSTR_micros), MP_ROM_PTR(&mp_time_ticks_us_obj) },
@@ -195,16 +200,19 @@ static const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     #endif
 
-    { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&pyb_timer_type) },
+    { MP_ROM_QSTR(MP_QSTR_TIMERA), MP_ROM_PTR(&pyb_timer_type) },
 
     #if MICROPY_HW_ENABLE_RNG
     { MP_ROM_QSTR(MP_QSTR_rng), MP_ROM_PTR(&pyb_rng_get_obj) },
     #endif
 
     #if MICROPY_HW_ENABLE_RTC
-    { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
+	#if defined(MICROPY_PY_TIGER)
+	{ MP_ROM_QSTR(MP_QSTR_RTC1), MP_ROM_PTR(&tiger_rtc_type) },
+	#else
+	{ MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
     #endif
-
+	#endif
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pin_type) },
     { MP_ROM_QSTR(MP_QSTR_ExtInt), MP_ROM_PTR(&extint_type) },
 
@@ -223,7 +231,7 @@ static const mp_rom_map_elem_t pyb_module_globals_table[] = {
     #endif
 
     #if MICROPY_HW_ENABLE_SDCARD
-    #if MICROPY_PY_PYB_LEGACY
+    #if MICROPY_PY_TIGER_LEGACY
     { MP_ROM_QSTR(MP_QSTR_SD), MP_ROM_PTR(&pyb_sdcard_obj) }, // now obsolete
     #endif
     { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&pyb_sdcard_type) },
@@ -235,7 +243,7 @@ static const mp_rom_map_elem_t pyb_module_globals_table[] = {
     #if defined(MICROPY_HW_LED1)
     { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pyb_led_type) },
     #endif
-    #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
+    #if MICROPY_PY_TIGER_LEGACY && MICROPY_HW_ENABLE_HW_I2C
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&pyb_i2c_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&pyb_spi_type) },
@@ -245,8 +253,7 @@ static const mp_rom_map_elem_t pyb_module_globals_table[] = {
     #endif
 
     #if MICROPY_HW_ENABLE_ADC
-    { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&pyb_adc_type) },
-    { MP_ROM_QSTR(MP_QSTR_ADCAll), MP_ROM_PTR(&pyb_adc_all_type) },
+    { MP_ROM_QSTR(MP_QSTR_ANALOG1), MP_ROM_PTR(&tiger_adc_type) },
     #endif
 
     #if MICROPY_HW_ENABLE_DAC
@@ -258,17 +265,22 @@ static const mp_rom_map_elem_t pyb_module_globals_table[] = {
     #endif
 
     #if MICROPY_HW_HAS_LCD
-    { MP_ROM_QSTR(MP_QSTR_LCD), MP_ROM_PTR(&pyb_lcd_type) },
+    { MP_ROM_QSTR(MP_QSTR_LCD1), MP_ROM_PTR(&tiger_lcd_type) },
     #endif
+	
+    #if MICROPY_HW_HAS_XOR
+    { MP_ROM_QSTR(MP_QSTR_XOR), MP_ROM_PTR(&tiger_xor_type) },
+    #endif
+	
 };
 
-static MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);
+static MP_DEFINE_CONST_DICT(tiger_module_globals, tiger_module_globals_table);
 
-const mp_obj_module_t pyb_module = {
+const mp_obj_module_t tiger_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&pyb_module_globals,
+    .globals = (mp_obj_dict_t *)&tiger_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_pyb, pyb_module);
+MP_REGISTER_MODULE(MP_QSTR_Tiger, tiger_module);
 
 #endif // MICROPY_PY_PYB

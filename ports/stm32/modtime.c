@@ -26,7 +26,11 @@
 
 #include "py/obj.h"
 #include "shared/timeutils/timeutils.h"
+#if defined(MICROPY_PY_TIGER)
+#include "td02-rtc.h"
+#else
 #include "rtc.h"
+#endif
 
 // Return the localtime as an 8-tuple.
 static mp_obj_t mp_time_localtime_get(void) {

@@ -41,11 +41,11 @@ static const char fresh_boot_py[] =
     "# Put app code in main.py\r\n"
     "\r\n"
     "import machine\r\n"
-    "import pyb\r\n"
-    "#pyb.main('main.py') # main script to run after this one\r\n"
+    "import Tiger\r\n"
+    "#Tiger.main('main.py') # main script to run after this one\r\n"
 #if MICROPY_HW_ENABLE_USB
-    "#pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
-    "#pyb.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
+    "#Tiger.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
+    "#Tiger.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
 #endif
 #if MICROPY_PY_NETWORK
     "#import network\r\n"

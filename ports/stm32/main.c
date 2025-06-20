@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "ti-2def2.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/gc.h"
@@ -78,7 +79,11 @@
 #include "extint.h"
 #include "usrsw.h"
 #include "usb.h"
+#if defined(MICROPY_PY_TIGER)
+#include "td02-rtc.h"
+#else
 #include "rtc.h"
+#endif
 #include "storage.h"
 #include "sdcard.h"
 #include "sdram.h"
@@ -86,7 +91,7 @@
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
-#include "pyb_can.h"
+#include "can.h"
 #include "subghz.h"
 
 #if MICROPY_PY_THREAD
@@ -100,6 +105,9 @@ static pyb_thread_t pyb_thread_main;
 static machine_uart_obj_t pyb_uart_repl_obj;
 static uint8_t pyb_uart_repl_rxbuf[MICROPY_HW_UART_REPL_RXBUF];
 #endif
+
+static shared_iram_s shared_iram_obj;
+
 
 void nlr_jump_fail(void *val) {
     printf("FATAL: uncaught exception %p\n", val);
@@ -125,7 +133,7 @@ static mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     };
 
     if (mp_obj_is_str(pos_args[0])) {
-        MP_STATE_PORT(pyb_config_main) = pos_args[0];
+        MP_STATE_PORT(tiger_config_main) = pos_args[0];
 
         // parse args
         mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -185,15 +193,8 @@ MP_NOINLINE static bool init_flash_fs(uint reset_mode) {
 
     if (len != -1) {
         // Detected a littlefs filesystem so create correct block device for it
-        mp_obj_t lfs_bdev = pyb_flash_new_obj(0, len);
-        if (lfs_bdev == mp_const_none) {
-            // Invalid len detected, filesystem header block likely corrupted.
-            // Create bdev with default size to attempt to mount the whole flash or
-            // let user attempt recovery if desired.
-            bdev = pyb_flash_new_obj(0, -1);
-        } else {
-            bdev = lfs_bdev;
-        }
+        mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR_len), MP_OBJ_NEW_SMALL_INT(len) };
+        bdev = MP_OBJ_TYPE_GET_SLOT(&pyb_flash_type, make_new)(&pyb_flash_type, 0, 1, args);
     }
 
     #endif
@@ -310,21 +311,10 @@ void stm32_main(uint32_t reset_mode) {
     // Low-level MCU initialisation.
     stm32_system_init();
 
-    #if !defined(STM32F0)
-    #if MICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM
-    // Copy IRQ vector table to RAM and point VTOR there
-    extern uint32_t __isr_vector_flash_addr, __isr_vector_ram_start, __isr_vector_ram_end;
-    size_t __isr_vector_size = (&__isr_vector_ram_end - &__isr_vector_ram_start) * sizeof(uint32_t);
-    memcpy(&__isr_vector_ram_start, &__isr_vector_flash_addr, __isr_vector_size);
-    SCB->VTOR = (uint32_t)&__isr_vector_ram_start;
-    #else
-    #if defined(MICROPY_HW_VTOR)
+    #if !defined(STM32F0) && defined(MICROPY_HW_VTOR)
     // Change IRQ vector table if configured differently
     SCB->VTOR = MICROPY_HW_VTOR;
     #endif
-    #endif
-    #endif
-
 
     #if __CORTEX_M != 33
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
@@ -411,6 +401,9 @@ void stm32_main(uint32_t reset_mode) {
     #endif
 
     MICROPY_BOARD_EARLY_INIT();
+	
+	MP_STATE_PORT(SHARED_IRAM_ADDR) = &shared_iram_obj;
+	
 
     // basic sub-system init
     #if defined(STM32H5)
@@ -445,7 +438,9 @@ void stm32_main(uint32_t reset_mode) {
     #if MICROPY_PY_MACHINE
     machine_init();
     #endif
+	mp_printf(&mp_plat_print, "RTC Config\n");
     #if MICROPY_HW_ENABLE_RTC
+	mp_printf(&mp_plat_print, "RTC Enabled\n");
     rtc_init_start(false);
     #endif
     uart_init0();
@@ -465,7 +460,7 @@ void stm32_main(uint32_t reset_mode) {
     #endif
 
     spi_init0();
-    #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
+    #if MICROPY_PY_TIGER_LEGACY && MICROPY_HW_ENABLE_HW_I2C
     i2c_init0();
     #endif
     #if MICROPY_HW_ENABLE_SDCARD || MICROPY_HW_ENABLE_MMCARD
@@ -515,8 +510,11 @@ soft_reset:
     mp_thread_init();
     #endif
 
-    // Stack limit init.
-    mp_cstack_init_with_top(&_estack, (char *)&_estack - (char *)&_sstack);
+    // Stack limit should be less than real stack size, so we have a chance
+    // to recover from limit hit.  (Limit is measured in bytes.)
+    // Note: stack control relies on main thread being initialised above
+    mp_stack_set_top(&_estack);
+    mp_stack_set_limit((char *)&_estack - (char *)&_sstack - 1024);
 
     // GC init
     gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);
@@ -538,9 +536,9 @@ soft_reset:
     pin_init0();
     extint_init0();
     timer_init0();
-
+	
     #if MICROPY_HW_ENABLE_CAN
-    pyb_can_init0();
+    can_init0();
     #endif
 
     #if MICROPY_HW_ENABLE_USB
@@ -587,7 +585,7 @@ soft_reset:
     }
 
     // reset config variables; they should be set by boot.py
-    MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
+    MP_STATE_PORT(tiger_config_main) = MP_OBJ_NULL;
 
     // Run optional frozen boot code.
     #ifdef MICROPY_BOARD_FROZEN_BOOT_FILE
@@ -629,6 +627,13 @@ soft_reset:
     #if MICROPY_PY_NETWORK
     mod_network_init();
     #endif
+	
+
+	
+	
+	timer_tim7_init();
+	timer_tim10_init();
+
 
     // At this point everything is fully configured and initialised.
 
@@ -682,12 +687,8 @@ soft_reset_exit:
     soft_timer_deinit();
     timer_deinit();
     uart_deinit_all();
-    spi_deinit_all();
-    #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
-    pyb_i2c_deinit_all();
-    #endif
     #if MICROPY_HW_ENABLE_CAN
-    pyb_can_deinit_all();
+    can_deinit_all();
     #endif
     #if MICROPY_HW_ENABLE_DAC
     dac_deinit_all();
@@ -713,5 +714,6 @@ soft_reset_exit:
 
     goto soft_reset;
 }
+MP_REGISTER_ROOT_POINTER(struct shared_iram *SHARED_IRAM_ADDR);
+MP_REGISTER_ROOT_POINTER(mp_obj_t tiger_config_main);
 
-MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_config_main);

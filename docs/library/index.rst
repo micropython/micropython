@@ -69,7 +69,6 @@ library.
    heapq.rst
    io.rst
    json.rst
-   marshal.rst
    math.rst
    os.rst
    platform.rst

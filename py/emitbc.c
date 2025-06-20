@@ -666,27 +666,6 @@ void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label) {
     mp_emit_bc_adjust_stack_size(emit, -4);
 }
 
-#if MICROPY_PY_ASYNC_AWAIT
-void mp_emit_bc_async_with_setup_finally(emit_t *emit, mp_uint_t label_aexit_no_exc, mp_uint_t label_finally_block, mp_uint_t label_ret_unwind_jump) {
-    // The async-with body has executed and no exception was raised, the execution fell through to this point.
-    // Stack: (..., ctx_mgr)
-
-    // Finish async-with body and prepare to enter "finally" block.
-    mp_emit_bc_load_const_tok(emit, MP_TOKEN_KW_NONE); // to tell end_finally there's no exception
-    mp_emit_bc_rot_two(emit);
-    mp_emit_bc_jump(emit, label_aexit_no_exc); // jump to code to call __aexit__
-
-    // Start of "finally" block which is entered via one of: an exception propagating out, a return, an unwind jump.
-    mp_emit_bc_label_assign(emit, label_finally_block);
-
-    // Detect which case we have by the TOS being an exception or not.
-    mp_emit_bc_dup_top(emit);
-    mp_emit_bc_load_global(emit, MP_QSTR_BaseException, MP_EMIT_IDOP_GLOBAL_GLOBAL);
-    mp_emit_bc_binary_op(emit, MP_BINARY_OP_EXCEPTION_MATCH);
-    mp_emit_bc_pop_jump_if(emit, false, label_ret_unwind_jump); // if not an exception then we have return or unwind jump.
-}
-#endif
-
 void mp_emit_bc_end_finally(emit_t *emit) {
     emit_write_bytecode_byte(emit, -1, MP_BC_END_FINALLY);
 }
@@ -794,10 +773,10 @@ static void emit_bc_call_function_method_helper(emit_t *emit, int stack_adj, mp_
         // each positional arg is one object, each kwarg is two objects, the key
         // and the value and one extra object for the star args bitmap.
         stack_adj -= (int)n_positional + 2 * (int)n_keyword + 1;
-        emit_write_bytecode_byte_uint(emit, stack_adj, bytecode_base + 1, (n_keyword << 8) | n_positional);
+        emit_write_bytecode_byte_uint(emit, stack_adj, bytecode_base + 1, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints?
     } else {
         stack_adj -= (int)n_positional + 2 * (int)n_keyword;
-        emit_write_bytecode_byte_uint(emit, stack_adj, bytecode_base, (n_keyword << 8) | n_positional);
+        emit_write_bytecode_byte_uint(emit, stack_adj, bytecode_base, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints?
     }
 }
 
@@ -883,9 +862,6 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_unwind_jump,
     mp_emit_bc_setup_block,
     mp_emit_bc_with_cleanup,
-    #if MICROPY_PY_ASYNC_AWAIT
-    mp_emit_bc_async_with_setup_finally,
-    #endif
     mp_emit_bc_end_finally,
     mp_emit_bc_get_iter,
     mp_emit_bc_for_iter,

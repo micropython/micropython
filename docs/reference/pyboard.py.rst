@@ -120,8 +120,9 @@ Some more examples::
     # Same, but using . instead.
     $ pyboard.py --device /dev/ttyACM0 -f cp :main.py .
 
-    # Copy three files to the device, keeping their names.
-    $ pyboard.py --device /dev/ttyACM0 -f cp main.py app.py foo.py :
+    # Copy three files to the device, keeping their names
+    # and paths (note: `lib` must exist on the device)
+    $ pyboard.py --device /dev/ttyACM0 -f cp main.py app.py lib/foo.py :
 
     # Remove a file from the device.
     $ pyboard.py --device /dev/ttyACM0 -f rm util.py

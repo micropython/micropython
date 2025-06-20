@@ -125,11 +125,8 @@ Functions
    Return the natural logarithm of the gamma function of ``x``.
 
 .. function:: log(x)
-              log(x, base)
 
-   With one argument, return the natural logarithm of *x*.
-
-   With two arguments, return the logarithm of *x* to the given *base*.
+   Return the natural logarithm of ``x``.
 
 .. function:: log10(x)
 

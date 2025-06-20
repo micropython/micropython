@@ -10,7 +10,7 @@ except ImportError:
 # Invalid cadata.
 try:
     ssl.wrap_socket(io.BytesIO(), cadata=b"!")
-except AttributeError:
+except TypeError:
     # "cadata" keyword argument is not supported by axtls.
     print("SKIP")
     raise SystemExit

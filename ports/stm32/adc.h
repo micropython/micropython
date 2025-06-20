@@ -27,8 +27,7 @@
 #define MICROPY_INCLUDED_STM32_ADC_H
 
 #if !BUILDING_MBOOT
-extern const mp_obj_type_t pyb_adc_type;
-extern const mp_obj_type_t pyb_adc_all_type;
+extern const mp_obj_type_t tiger_adc_type;
 #endif
 
 void adc_config(ADC_TypeDef *adc, uint32_t bits);

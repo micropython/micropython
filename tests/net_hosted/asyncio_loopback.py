@@ -1,12 +1,5 @@
 # Test network loopback behaviour
 
-import sys
-
-# Only certain platforms can do TCP/IP loopback.
-if sys.platform not in ("darwin", "esp32", "linux"):
-    print("SKIP")
-    raise SystemExit
-
 try:
     import asyncio
 except ImportError:

@@ -1,0 +1,51 @@
+TD01 - LCD1 - ~
+
+	Almost fully implemented, only the menu function is missing. The keyboard is causing a malfunction to the LCD, all the pins seem high. Most likely it is something between the keyboard handle and the XPort systems. When the keyboard is deactivated it works perfectly.
+	
+	Files: td01-lcd.c, td01-lcd.h, beep.c, lcd.c, lcd.h, beep.c, beep.h, kbd.c, kbd.h
+	
+TD02 - RTC1 - ~
+	
+	Fully implemented but the alarm function has a weird behavior. Sometimes it seems to work, sometimes not. Probably it is because of the pin first being defined as Open Drain and then as an input. Most likely I missinterpretated the original code.
+	
+	Files: td02-rtc.c, td02-rtc.h
+
+TD05 - SER1B - X
+	Not Implemented
+	
+TD06 - ANALOG1 - ~
+	Solved the problem of being hanged on the interruption by changing some variables to volatile and added a WFI, but maybe it would be better to improve it. I did not have time to implement much. Just added a function to read from a single channel but could not check if the values make sense.
+	
+	Files: adc.c, adc.h
+	
+TD13 - TIMERA - V
+	Fully implemented and working
+	
+	Files: timer.c, timer.h
+	
+TD14 - ANALOG2 - X
+	Not Implemented
+	
+TD19 - ENC1 - X
+	Not Implemented 
+	
+TD20 - PLSO2 - X
+	Not Implemented 
+	
+TD22 - SET1 / XOR1 / RES1 - V
+	Fully implemented and working
+	
+	Files: td22-xor.c, td02-xor.h
+	
+TD23 - PLSI2 - X
+	Not Implemented 
+	
+TD28 - SER2 - X
+	Not Implemented 
+	
+	
+Worth to be mentioned: 
+	For the serials it will be needed to make the switch in the plug & play board deactivate the REPL and set the board in the "Run mode". The original PyBoard had a driver for a "Switch", maybe start from there. 
+	
+	The file ti-2def2.h was a quick sketch and will need to be improved
+	Timer in the other hand was a quick adaptation of the Pyboard, so most likely will need some cleaning.

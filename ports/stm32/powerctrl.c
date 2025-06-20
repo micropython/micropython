@@ -27,24 +27,13 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "powerctrl.h"
+#if defined(MICROPY_PY_TIGER)
+#include "td02-rtc.h"
+#else
 #include "rtc.h"
-#include "extmod/modbluetooth.h"
-#include "py/mpconfig.h"
-#ifndef NO_QSTR
+#endif
 #include "genhdr/pllfreqtable.h"
-#endif
-
-// These will be defined / expanded in pre-processor output for use in the
-// boards/pllvalues.py script, then generally stripped from final firmware.
-#ifdef HSI_VALUE
-static uint32_t __attribute__((unused)) micropy_hw_hsi_value = HSI_VALUE;
-#endif
-#ifdef HSE_VALUE
-static uint32_t __attribute__((unused)) micropy_hw_hse_value = HSE_VALUE;
-#endif
-#ifdef MICROPY_HW_CLK_PLLM
-static uint32_t __attribute__((unused)) micropy_hw_clk_pllm = MICROPY_HW_CLK_PLLM;
-#endif
+#include "extmod/modbluetooth.h"
 
 #if defined(STM32H5) || defined(STM32H7)
 #define RCC_SR          RSR
@@ -115,7 +104,7 @@ static inline void powerctrl_disable_hsi_if_unused(void) {
     #endif
 }
 
-MP_NORETURN void powerctrl_mcu_reset(void) {
+NORETURN void powerctrl_mcu_reset(void) {
     #if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
     *BL_STATE_PTR = BL_STATE_INVALID;
     #if __DCACHE_PRESENT == 1
@@ -125,7 +114,7 @@ MP_NORETURN void powerctrl_mcu_reset(void) {
     NVIC_SystemReset();
 }
 
-MP_NORETURN static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl_addr) {
+NORETURN static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl_addr) {
     __asm volatile (
         "ldr r2, [r1, #0]\n"    // get address of stack pointer
         "msr msp, r2\n"         // get stack pointer
@@ -135,7 +124,7 @@ MP_NORETURN static __attribute__((naked)) void branch_to_bootloader(uint32_t r0,
     MP_UNREACHABLE;
 }
 
-MP_NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
+NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
     #if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
 
     // Enter the bootloader via a reset, so everything is reset (including WDT).
@@ -842,18 +831,10 @@ void powerctrl_enter_stop_mode(void) {
     powerctrl_low_power_prep_wb55();
     #endif
 
-    #if defined(MICROPY_BOARD_PRE_STOP)
-    MICROPY_BOARD_PRE_STOP
-    #endif
-
     #if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
     #else
     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
-    #endif
-
-    #if defined(MICROPY_BOARD_POST_STOP)
-    MICROPY_BOARD_POST_STOP
     #endif
 
     // reconfigure the system clock after waking up
@@ -1016,7 +997,7 @@ void powerctrl_enter_stop_mode(void) {
     enable_irq(irq_state);
 }
 
-MP_NORETURN void powerctrl_enter_standby_mode(void) {
+NORETURN void powerctrl_enter_standby_mode(void) {
     rtc_init_finalise();
 
     #if defined(MICROPY_BOARD_ENTER_STANDBY)

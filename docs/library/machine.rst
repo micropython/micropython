@@ -62,13 +62,14 @@ Reset related functions
 
 .. function:: reset()
 
-   :ref:`Hard resets <hard_reset>` the device in a manner similar to pushing the
-   external RESET button.
+   Resets the device in a manner similar to pushing the external RESET
+   button.
 
 .. function:: soft_reset()
 
-   Performs a :ref:`soft reset <soft_reset>` of the interpreter, deleting all
-   Python objects and resetting the Python heap.
+   Performs a soft reset of the interpreter, deleting all Python objects and
+   resetting the Python heap.  It tries to retain the method by which the user
+   is connected to the MicroPython REPL (eg serial, USB, Wifi).
 
 .. function:: reset_cause()
 
@@ -126,20 +127,14 @@ Power related functions
 
 .. function:: idle()
 
-   Gates the clock to the CPU, useful to reduce power consumption at any time
-   during short or long periods. Peripherals continue working and execution
-   resumes as soon as any interrupt is triggered, or at most one millisecond
-   after the CPU was paused.
-
-   It is recommended to call this function inside any tight loop that is
-   continuously checking for an external change (i.e. polling). This will reduce
-   power consumption without significantly impacting performance. To reduce
-   power consumption further then see the :func:`lightsleep`,
-   :func:`time.sleep()` and :func:`time.sleep_ms()` functions.
+   Gates the clock to the CPU, useful to reduce power consumption at any time during
+   short or long periods. Peripherals continue working and execution resumes as soon
+   as any interrupt is triggered (on many ports this includes system timer
+   interrupt occurring at regular intervals on the order of millisecond).
 
 .. function:: sleep()
 
-   .. note:: This function is deprecated, use :func:`lightsleep()` instead with no arguments.
+   .. note:: This function is deprecated, use `lightsleep()` instead with no arguments.
 
 .. function:: lightsleep([time_ms])
               deepsleep([time_ms])

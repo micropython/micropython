@@ -33,7 +33,11 @@
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
 #include "mpbthciport.h"
+#if defined(MICROPY_PY_TIGER)
+#include "td02-rtc.h"
+#else
 #include "rtc.h"
+#endif
 #include "rfcore.h"
 
 #if defined(STM32WB)
@@ -539,12 +543,8 @@ void rfcore_init(void) {
     while (LL_HSEM_1StepLock(HSEM, CFG_HW_PWR_STANDBY_SEMID)) {
     }
 
-    // Set the wakeup source to LSE or fall back to use HSE
-    #if MICROPY_HW_RTC_USE_LSE
+    // Select LSE as RF wakeup source
     RCC->CSR = (RCC->CSR & ~RCC_CSR_RFWKPSEL) | 1 << RCC_CSR_RFWKPSEL_Pos;
-    #else
-    RCC->CSR = (RCC->CSR & ~RCC_CSR_RFWKPSEL) | 3 << RCC_CSR_RFWKPSEL_Pos;
-    #endif
 
     // Initialise IPCC and shared memory structures
     ipcc_init(IRQ_PRI_SDIO);

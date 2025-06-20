@@ -1,5 +1,3 @@
-# Test sys.print_exception (MicroPython) / traceback.print_exception (CPython).
-
 try:
     import io
     import sys

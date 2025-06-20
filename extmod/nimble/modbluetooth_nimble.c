@@ -60,7 +60,6 @@
 static uint8_t nimble_address_mode = BLE_OWN_ADDR_RANDOM;
 
 #define NIMBLE_STARTUP_TIMEOUT 2000
-#define NIMBLE_SHUTDOWN_TIMEOUT 500
 
 // Any BLE_HS_xxx code not in this table will default to MP_EIO.
 static int8_t ble_hs_err_to_errno_table[] = {
@@ -555,7 +554,7 @@ static void ble_hs_shutdown_stop_cb(int status, void *arg) {
 
 static struct ble_hs_stop_listener ble_hs_shutdown_stop_listener;
 
-int mp_bluetooth_nimble_port_shutdown(void) {
+void mp_bluetooth_nimble_port_shutdown(void) {
     DEBUG_printf("mp_bluetooth_nimble_port_shutdown (nimble default)\n");
     // By default, just call ble_hs_stop directly and wait for the stack to stop.
 
@@ -563,17 +562,9 @@ int mp_bluetooth_nimble_port_shutdown(void) {
 
     ble_hs_stop(&ble_hs_shutdown_stop_listener, ble_hs_shutdown_stop_cb, NULL);
 
-    mp_uint_t timeout_start_ticks_ms = mp_hal_ticks_ms();
     while (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
-        mp_uint_t elapsed = mp_hal_ticks_ms() - timeout_start_ticks_ms;
-        if (elapsed > NIMBLE_SHUTDOWN_TIMEOUT) {
-            // Stack had not responded (via ble_hs_shutdown_stop_cb)
-            return MP_ETIMEDOUT;
-        }
-
-        mp_event_wait_ms(NIMBLE_SHUTDOWN_TIMEOUT - elapsed);
+        mp_event_wait_indefinite();
     }
-    return 0;
 }
 
 #endif // !MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY
@@ -668,11 +659,10 @@ int mp_bluetooth_init(void) {
     return 0;
 }
 
-int mp_bluetooth_deinit(void) {
+void mp_bluetooth_deinit(void) {
     DEBUG_printf("mp_bluetooth_deinit %d\n", mp_bluetooth_nimble_ble_state);
-    int ret = 0;
     if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
-        return 0;
+        return;
     }
 
     // Must call ble_hs_stop() in a port-specific way to stop the background
@@ -685,7 +675,7 @@ int mp_bluetooth_deinit(void) {
 
         DEBUG_printf("mp_bluetooth_deinit: starting port shutdown\n");
 
-        ret = mp_bluetooth_nimble_port_shutdown();
+        mp_bluetooth_nimble_port_shutdown();
         assert(mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF);
     } else {
         mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF;
@@ -702,7 +692,6 @@ int mp_bluetooth_deinit(void) {
     #endif
 
     DEBUG_printf("mp_bluetooth_deinit: shut down\n");
-    return ret;
 }
 
 bool mp_bluetooth_is_active(void) {
@@ -1922,21 +1911,24 @@ static int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
                 // <type=peer,addr,*> (single)
                 // Find the entry for this specific peer.
                 assert(key->sec.idx == 0);
+                assert(!key->sec.ediv_rand_present);
                 key_data = (const uint8_t *)&key->sec.peer_addr;
                 key_data_len = sizeof(ble_addr_t);
             } else {
                 // <type=peer,*> (with index)
                 // Iterate all known peers.
+                assert(!key->sec.ediv_rand_present);
                 key_data = NULL;
                 key_data_len = 0;
             }
             break;
         }
         case BLE_STORE_OBJ_TYPE_OUR_SEC: {
-            // <type=our,addr,*>
-            // Find our secret for this remote device.
+            // <type=our,addr,ediv_rand>
+            // Find our secret for this remote device, matching this ediv/rand key.
             assert(ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
             assert(key->sec.idx == 0);
+            assert(key->sec.ediv_rand_present);
             key_data = (const uint8_t *)&key->sec.peer_addr;
             key_data_len = sizeof(ble_addr_t);
             break;
@@ -1966,6 +1958,10 @@ static int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
 
     DEBUG_printf("ble_secret_store_read: found secret\n");
 
+    if (obj_type == BLE_STORE_OBJ_TYPE_OUR_SEC) {
+        // TODO: Verify ediv_rand matches.
+    }
+
     return 0;
 }
 
@@ -1974,13 +1970,14 @@ static int ble_secret_store_write(int obj_type, const union ble_store_value *val
     switch (obj_type) {
         case BLE_STORE_OBJ_TYPE_PEER_SEC:
         case BLE_STORE_OBJ_TYPE_OUR_SEC: {
-            // <type=peer,addr,*>
+            // <type=peer,addr,edivrand>
 
             struct ble_store_key_sec key_sec;
             const struct ble_store_value_sec *value_sec = &val->sec;
             ble_store_key_from_value_sec(&key_sec, value_sec);
 
             assert(ble_addr_cmp(&key_sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
+            assert(key_sec.ediv_rand_present);
 
             if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key_sec.peer_addr, sizeof(ble_addr_t), (const uint8_t *)value_sec, sizeof(struct ble_store_value_sec))) {
                 DEBUG_printf("Failed to write key: type=%d\n", obj_type);
@@ -2008,7 +2005,9 @@ static int ble_secret_store_delete(int obj_type, const union ble_store_key *key)
         case BLE_STORE_OBJ_TYPE_PEER_SEC:
         case BLE_STORE_OBJ_TYPE_OUR_SEC: {
             // <type=peer,addr,*>
+
             assert(ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
+            // ediv_rand is optional (will not be present for delete).
 
             if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key->sec.peer_addr, sizeof(ble_addr_t), NULL, 0)) {
                 DEBUG_printf("Failed to delete key: type=%d\n", obj_type);

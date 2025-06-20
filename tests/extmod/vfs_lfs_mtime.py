@@ -3,7 +3,7 @@
 try:
     import time, vfs
 
-    time.time_ns
+    time.time
     time.sleep
     vfs.VfsLfs2
 except (ImportError, AttributeError):
@@ -47,8 +47,7 @@ def test(bdev, vfs_class):
     fs = vfs_class(bdev, mtime=True)
 
     # Create an empty file, should have a timestamp.
-    # Use time_ns() for current time because that's what's used for VfsLfs2 time.
-    current_time = time.time_ns() // 1_000_000_000
+    current_time = int(time.time())
     fs.open("test1", "wt").close()
 
     # Wait 1 second so mtime will increase by at least 1.
@@ -62,7 +61,7 @@ def test(bdev, vfs_class):
     stat2 = fs.stat("test2")
     print(stat1[8] != 0, stat2[8] != 0)
 
-    # Check that test1 has mtime which matches time.time_ns() at point of creation.
+    # Check that test1 has mtime which matches time.time() at point of creation.
     print(current_time <= stat1[8] <= current_time + 1)
 
     # Check that test1 is older than test2.

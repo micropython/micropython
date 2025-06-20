@@ -228,6 +228,7 @@ static const char *const tok_enc =
     "=e="         // = ==
     "!.";         // start of special cases: != . ...
 
+// TODO static assert that number of tokens is less than 256 so we can safely make this table with byte sized entries
 static const uint8_t tok_enc_kind[] = {
     MP_TOKEN_DEL_PAREN_OPEN, MP_TOKEN_DEL_PAREN_CLOSE,
     MP_TOKEN_DEL_BRACKET_OPEN, MP_TOKEN_DEL_BRACKET_CLOSE,
@@ -335,12 +336,8 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
         // assume there's going to be interpolation, so prep the injection data
         // fstring_args_idx==0 && len(fstring_args)>0 means we're extracting the args.
         // only when fstring_args_idx>0 will we consume the arg data
-        // lex->fstring_args is reset when finished, so at this point there are two cases:
-        // - lex->fstring_args is empty: start of a new f-string
-        // - lex->fstring_args is non-empty: concatenation of adjacent f-strings
-        if (vstr_len(&lex->fstring_args) == 0) {
-            vstr_add_str(&lex->fstring_args, ".format(");
-        }
+        // note: lex->fstring_args will be empty already (it's reset when finished)
+        vstr_add_str(&lex->fstring_args, ".format(");
     }
     #endif
 
@@ -660,19 +657,21 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 }
                 #if MICROPY_PY_FSTRINGS
                 if (is_char_following(lex, 'f')) {
-                    is_fstring = true;
-                    n_char = 2;
+                    // raw-f-strings unsupported, immediately return (invalid) token.
+                    lex->tok_kind = MP_TOKEN_FSTRING_RAW;
+                    break;
                 }
                 #endif
             }
             #if MICROPY_PY_FSTRINGS
             else if (is_char(lex, 'f')) {
-                is_fstring = true;
-                n_char = 1;
                 if (is_char_following(lex, 'r')) {
-                    is_raw = true;
-                    n_char = 2;
+                    // raw-f-strings unsupported, immediately return (invalid) token.
+                    lex->tok_kind = MP_TOKEN_FSTRING_RAW;
+                    break;
                 }
+                n_char = 1;
+                is_fstring = true;
             }
             #endif
 
@@ -772,9 +771,6 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
 
     } else {
         // search for encoded delimiter or operator
-
-        // assert that the token enum value fits in a byte, so they all fit in tok_enc_kind
-        MP_STATIC_ASSERT(MP_TOKEN_NUMBER_OF <= 256);
 
         const char *t = tok_enc;
         size_t tok_enc_index = 0;

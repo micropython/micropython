@@ -42,20 +42,11 @@ Methods
 
    Initialise the RTC. Datetime is a tuple of the form:
 
-      ``(year, month, day, hour, minute, second, microsecond, tzinfo)``
-
-   All eight arguments must be present. The ``microsecond`` and ``tzinfo``
-   values are currently ignored but might be used in the future.
-
-   Availability: CC3200, ESP32, MIMXRT, SAMD. The rtc.init() method on
-   the stm32 and renesas-ra ports just (re-)starts the RTC and does not
-   accept arguments.
+      ``(year, month, day[, hour[, minute[, second[, microsecond[, tzinfo]]]]])``
 
 .. method:: RTC.now()
 
    Get get the current datetime tuple.
-
-   Availability: WiPy.
 
 .. method:: RTC.deinit()
 
@@ -71,12 +62,9 @@ Methods
 
    Get the number of milliseconds left before the alarm expires.
 
-.. method:: RTC.alarm_cancel(alarm_id=0)
+.. method:: RTC.cancel(alarm_id=0)
 
    Cancel a running alarm.
-
-   The mimxrt port also exposes this function as ``RTC.cancel(alarm_id=0)``, but this is
-   scheduled to be removed in MicroPython 2.0.
 
 .. method:: RTC.irq(*, trigger, handler=None, wake=machine.IDLE)
 
@@ -95,7 +83,7 @@ Methods
    a `bytes` object.
 
    Data written to RTC user memory is persistent across restarts, including
-   :ref:`soft_reset` and `machine.deepsleep()`.
+   `machine.soft_reset()` and `machine.deepsleep()`.
 
    The maximum length of RTC user memory is 2048 bytes by default on esp32,
    and 492 bytes on esp8266.

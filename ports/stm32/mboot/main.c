@@ -176,7 +176,7 @@ void HAL_Delay(uint32_t ms) {
     mp_hal_delay_ms(ms);
 }
 
-MP_NORETURN static void __fatal_error(const char *msg) {
+NORETURN static void __fatal_error(const char *msg) {
     NVIC_SystemReset();
     for (;;) {
     }
@@ -429,81 +429,37 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
     || defined(STM32F723xx) \
     || defined(STM32F732xx) \
     || defined(STM32F733xx)
-#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/04*016Kg,01*064Kg,07*128Kg"
+#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*016Kg,01*064Kg,07*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32F765xx) || defined(STM32F767xx) || defined(STM32F769xx)
-#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg"
+#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32G0)
-#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/256*02Kg"
+#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*02Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32H5)
-#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/???*08Kg"
-#define INTERNAL_FLASH_LAYOUT_HAS_TEMPLATE (1)
+#define FLASH_LAYOUT_TEMPLATE "@Internal Flash  /0x08000000/???*08Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32H743xx)
-#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/16*128Kg"
+#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/16*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32H750xx)
-#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/01*128Kg"
+#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/01*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32WB)
-#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/256*04Kg"
+#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*04Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #endif
 
-#if INTERNAL_FLASH_LAYOUT_HAS_TEMPLATE \
-    || defined(MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN) \
-    || defined(MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN)
+#if !defined(FLASH_LAYOUT_STR)
 
-#ifndef MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN
-#define MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN (sizeof(MBOOT_SPIFLASH_LAYOUT) - 1)
-#endif
-
-#ifndef MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN
-#define MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN (sizeof(MBOOT_SPIFLASH2_LAYOUT) - 1)
-#endif
-
-#define FLASH_LAYOUT_STR_ALLOC \
-    ( \
-    (sizeof(INTERNAL_FLASH_LAYOUT) - 1) \
-    + MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN \
-    + MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN \
-    + 1 \
-    )
+#define FLASH_LAYOUT_STR_ALLOC (sizeof(FLASH_LAYOUT_TEMPLATE))
 
 // Build the flash layout string from a template with total flash size inserted.
-static size_t build_flash_layout_str(uint8_t *buf) {
-    const char *internal_layout = INTERNAL_FLASH_LAYOUT;
-    size_t internal_layout_len = strlen(internal_layout);
-
-    const char *spiflash_layout = MBOOT_SPIFLASH_LAYOUT;
-    size_t spiflash_layout_len = strlen(spiflash_layout);
-
-    const char *spiflash2_layout = MBOOT_SPIFLASH2_LAYOUT;
-    size_t spiflash2_layout_len = strlen(spiflash2_layout);
-
-    uint8_t *buf_orig = buf;
-
-    memcpy(buf, internal_layout, internal_layout_len);
-    buf += internal_layout_len;
-
-    #if INTERNAL_FLASH_LAYOUT_HAS_TEMPLATE
+static size_t build_flash_layout_str(char *buf) {
+    size_t len = FLASH_LAYOUT_STR_ALLOC - 1;
+    memcpy(buf, FLASH_LAYOUT_TEMPLATE, len + 1);
     unsigned int num_sectors = FLASH_SIZE / FLASH_SECTOR_SIZE;
-    uint8_t *buf_size = buf_orig + 31; // location of "???" in FLASH_LAYOUT_TEMPLATE
+    buf += 31; // location of "???" in FLASH_LAYOUT_TEMPLATE
     for (unsigned int i = 0; i < 3; ++i) {
-        *buf_size-- = '0' + num_sectors % 10;
+        *buf-- = '0' + num_sectors % 10;
         num_sectors /= 10;
     }
-    #endif
-
-    memcpy(buf, spiflash_layout, spiflash_layout_len);
-    buf += spiflash_layout_len;
-
-    memcpy(buf, spiflash2_layout, spiflash2_layout_len);
-    buf += spiflash2_layout_len;
-
-    *buf++ = '\0';
-
-    return buf - buf_orig;
+    return len;
 }
-
-#else
-
-#define FLASH_LAYOUT_STR INTERNAL_FLASH_LAYOUT MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 
 #endif
 
@@ -1232,7 +1188,7 @@ static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, u
             USBD_GetString((uint8_t *)FLASH_LAYOUT_STR, str_desc, length);
             #else
             {
-                uint8_t buf[FLASH_LAYOUT_STR_ALLOC];
+                char buf[FLASH_LAYOUT_STR_ALLOC];
                 build_flash_layout_str(buf);
                 USBD_GetString((uint8_t *)buf, str_desc, length);
             }
@@ -1443,7 +1399,7 @@ static int pyb_usbdd_shutdown(void) {
 /******************************************************************************/
 // main
 
-MP_NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0, uint32_t bl_addr) {
+NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0, uint32_t bl_addr) {
     __asm volatile (
         "ldr r2, [r1, #0]\n"    // get address of stack pointer
         "msr msp, r2\n"         // set stack pointer

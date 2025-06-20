@@ -26,7 +26,11 @@
 
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
+#if defined(MICROPY_PY_TIGER)
+#include "td02-rtc.h"
+#else
 #include "rtc.h"
+#endif
 
 MP_WEAK DWORD get_fattime(void) {
     #if MICROPY_HW_ENABLE_RTC

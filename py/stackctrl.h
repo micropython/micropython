@@ -26,11 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_STACKCTRL_H
 #define MICROPY_INCLUDED_PY_STACKCTRL_H
 
-// This API is deprecated, please use py/cstack.h instead
-
 #include "py/mpconfig.h"
-
-#if !MICROPY_PREVIEW_VERSION_2
 
 void mp_stack_ctrl_init(void);
 void mp_stack_set_top(void *top);
@@ -47,8 +43,6 @@ void mp_stack_check(void);
 #define mp_stack_set_limit(limit) (void)(limit)
 #define MP_STACK_CHECK()
 
-#endif // MICROPY_STACK_CHECK
-
-#endif // !MICROPY_PREVIEW_VERSION_2
+#endif
 
 #endif // MICROPY_INCLUDED_PY_STACKCTRL_H

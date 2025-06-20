@@ -1,0 +1,9 @@
+In order to program Micropython one must have a program that is capable of serial communication, preferrably capable of sending files. Any interface can be use, with the oficial micropython documentation suggestin mpremote. Even better options are Python IDEs that have this capability, such as Thonny* and PyCharm** Community. Those two count with some Micropython plugins and/or documentation.
+
+Whenever the board boots up after a reset, micropython try to execute the file "main.py". So, to have a program that will alway be running, one needs to write a file named "main.py" and flash it to the board using the serial tools. One can also flash other files with other names, that are gonna be loaded in the same root directory as the main. This is how one writes Python modules to be used by the main, similar to .c/.h files in C or .inc files in Tiger.
+
+If no endless loop is written in the main program, one can still use the serial communication to use the script part of Micropython.
+
+** Pycharm: https://www.jetbrains.com/help/pycharm/installation-guide.html
+* Thonny: https://thonny.org/
+

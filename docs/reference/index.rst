@@ -21,7 +21,6 @@ implementation and the best practices to use them.
 
    glossary.rst
    repl.rst
-   reset_boot.rst
    mpremote.rst
    mpyfiles.rst
    isr_rules.rst

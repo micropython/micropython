@@ -218,10 +218,6 @@ static void print_completions(const mp_print_t *print,
     for (qstr q = q_first; q <= q_last; ++q) {
         size_t d_len;
         const char *d_str = (const char *)qstr_data(q, &d_len);
-        // filter out words that begin with underscore unless there's already a partial match
-        if (s_len == 0 && d_str[0] == '_') {
-            continue;
-        }
         if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
             if (test_qstr(obj, q)) {
                 int gap = (line_len + WORD_SLOT_LEN - 1) / WORD_SLOT_LEN * WORD_SLOT_LEN - line_len;
@@ -229,6 +225,7 @@ static void print_completions(const mp_print_t *print,
                     gap += WORD_SLOT_LEN;
                 }
                 if (line_len + gap + d_len <= MAX_LINE_LEN) {
+                    // TODO optimise printing of gap?
                     for (int j = 0; j < gap; ++j) {
                         mp_print_str(print, " ");
                     }

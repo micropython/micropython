@@ -1,0 +1,77 @@
+Considerations:
+
+	Micropython compilation requires the use of Makefiles and cross-compiling. So not only a C compiler is needed but an ARM compile as well. Since all the available tools are made to run in Linux or at least make the Linux system more suitable or even easier to use, the following process was all done using an Ubuntu environment for Windows, easily available at the Microsoft Store for free. 
+	Python is also required. Python 2 is supported for now, but better use Python 3.
+	
+Install the required dependencie for Linux:
+
+	$ sudo apt-get install build-essential libffi-dev git pkg-config	
+
+Compiling Micropython for Tiger Plus:
+	
+	In case the cross_compiler has not been built yet, the following command must be executed in the Micropython root folder:
+		
+		$ make -C mpy-cross
+	
+	An ARM compiler is required for the build, along with the associated binary utilities. The default compiler is arm-none-eabi-gcc. The compiler can be changed using the CROSS_COMPILE variable when invoking make.	
+
+	The compiler is available for Ubuntu via instructions *: https://launchpad.net/~team-gcc-arm-embedded/+archive/ubuntu/ppa
+	Or through the main GCC ARM Embedded page: https://launchpad.net/gcc-arm-embedded
+	
+	*In order to install the cross-compiler:
+		$ sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
+	
+	
+	Next, the board to build must be selected. The default board was changed to Tiger_Plus but any of the names of the subdirectories in the boards/ directory is a valid board. The board name must be passed as the argument to BOARD= when invoking make.
+	
+	All boards require certain submodules to be obtained before they can be built. The correct set of submodules can be initialised using:
+	
+		$ make BOARD=Tiger_Plus submodules
+	
+	Then to build the board's firmware run:
+	
+		$ make BOARD=Tiger_Plus
+	
+	Or just:
+		$ make
+	
+	Since Tiger_plus is already the default board defined on the Makefile.
+	
+	For help consult: https://github.com/micropython/micropython/tree/master/ports/stm32
+	
+	The makefile will create a folder name "build-NameOfTheBoard" (like build-Tiger_Plus) where diffent types of firmware files (e.g. .elf, .map, .hex, .dfu and .bin) can be found.
+	
+Flashing the firmware:
+
+	Since Micropython has many differnt types of firwmare files  there are many ways of flashing the firmware into the board. The one tested here was using the JLinkCommander to write firmware0.bin to the adress 0x08000000 and firmware1.bin to 0x08020000 in the flash (AXIM flash).
+
+	Using J-Link Commander:
+		1.: Connect the J-Link cable to the microcontoller.
+		2.: Open J-Link Commander terminal. It works pretty much like every Linux terminal, so an empty "Enter" is going to select the default answer that is being shown to you.
+		3.: Type "connect" and enter.
+		4.: Select the SWD connection by pressing 's' and "Enter"
+		5.: Select the speed 4000 kHz.
+		6.: Select the device. For Tiger Plus is "STM32F746NG". If the terminal does not find it it will open a table for you to select from it.
+		7.: Reset te microcontoller with 'r'
+		8.: Halt the state using 'h' (optional)
+		8.: After the connection has been stablished, type the following commands:
+			loadfile full_path_to_where_the_firmware_is/firmware0.bin 0x08000000
+			loadfile full_path_to_where_the_firmware_is/firmware1.bin 0x08020000
+	
+	A script for this was created inside ports/stm32/boards that executes the file inside every board
+	For J-Link Commander help refer to the wiki: https://kb.segger.com/J-Link_Commander
+	For the flash memory address refers to: 
+	
+	TODO: Change our Test Production program in order to use the Test Production board to flash the firmware using the Test Production board
+	TODO 2: check if our Basic program to update the Tiger Firmware can be changed in order to flash the Micropython firmware.
+	TODO 3: Explore another forms of boot in order to use another formats of firmware files
+	
+	
+	STM32F746NG datasheet: https://www.st.com/en/microcontrollers-microprocessors/stm32f746ng.html
+	STM32F74xx reference manual: https://www.st.com/resource/en/reference_manual/dm00031020-stm32f405-415-stm32f407-417-stm32f427-437-and-stm32f429-439-advanced-arm-based-32-bit-mcus-stmicroelectronics.pdf
+	For boot help refers to AN2606: https://www.st.com/resource/en/application_note/an2606-stm32-microcontroller-system-memory-boot-mode-stmicroelectronics.pdf
+	
+
+
+
+

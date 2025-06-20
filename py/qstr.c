@@ -309,7 +309,7 @@ qstr qstr_from_str(const char *str) {
     return qstr_from_strn(str, strlen(str));
 }
 
-static qstr qstr_from_strn_helper(const char *str, size_t len, bool data_is_static) {
+qstr qstr_from_strn(const char *str, size_t len) {
     QSTR_ENTER();
     qstr q = qstr_find_strn(str, len);
     if (q == 0) {
@@ -319,12 +319,6 @@ static qstr qstr_from_strn_helper(const char *str, size_t len, bool data_is_stat
         if (len >= (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN))) {
             QSTR_EXIT();
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("name too long"));
-        }
-
-        if (data_is_static) {
-            // Given string data will be forever available so use it directly.
-            assert(str[len] == '\0');
-            goto add;
         }
 
         // compute number of bytes needed to intern this string
@@ -370,25 +364,11 @@ static qstr qstr_from_strn_helper(const char *str, size_t len, bool data_is_stat
         // store the interned strings' data
         memcpy(q_ptr, str, len);
         q_ptr[len] = '\0';
-        str = q_ptr;
-
-    add:
-        q = qstr_add(len, str);
+        q = qstr_add(len, q_ptr);
     }
     QSTR_EXIT();
     return q;
 }
-
-qstr qstr_from_strn(const char *str, size_t len) {
-    return qstr_from_strn_helper(str, len, false);
-}
-
-#if MICROPY_VFS_ROM
-// Create a new qstr that can forever reference the given string data.
-qstr qstr_from_strn_static(const char *str, size_t len) {
-    return qstr_from_strn_helper(str, len, true);
-}
-#endif
 
 mp_uint_t qstr_hash(qstr q) {
     const qstr_pool_t *pool = find_qstr(&q);

@@ -43,47 +43,8 @@ assert uctypes.sizeof(S.arr4) == 6
 print(uctypes.sizeof(S.sub))
 assert uctypes.sizeof(S.sub) == 1
 
-# invalid descriptors
+# invalid descriptor
 try:
     print(uctypes.sizeof([]))
 except TypeError:
     print("TypeError")
-
-try:
-    print(uctypes.sizeof(()))
-except TypeError:
-    print("TypeError")
-
-try:
-    print(uctypes.sizeof(("garbage",)))
-except TypeError:
-    print("TypeError")
-
-try:
-    # PTR * 3 is intended to be an invalid agg_type (STRUCT, PTR, ARRAY are valid ones).
-    print(uctypes.sizeof((uctypes.PTR * 3,)))
-except TypeError:
-    print("TypeError")
-
-try:
-    print(uctypes.sizeof((0, {}, "garbage")))
-except TypeError:
-    print("TypeError")
-
-try:
-    print(uctypes.sizeof((uctypes.PTR | 0,)))
-except TypeError:
-    print("TypeError")
-
-try:
-    print(uctypes.sizeof((uctypes.ARRAY | 0,)))
-except TypeError:
-    print("TypeError")
-
-try:
-    print(uctypes.sizeof((uctypes.ARRAY | 0, 1, {}, "garbage")))
-except TypeError:
-    print("TypeError")
-
-# empty descriptor
-print(uctypes.sizeof({}))

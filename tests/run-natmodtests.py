@@ -9,8 +9,6 @@ import subprocess
 import sys
 import argparse
 
-run_tests_module = __import__("run-tests")
-
 sys.path.append("../tools")
 import pyboard
 
@@ -30,23 +28,6 @@ TEST_MAPPINGS = {
     "re": "re/re_$(ARCH).mpy",
 }
 
-# Supported architectures for native mpy modules
-AVAILABLE_ARCHS = (
-    "x86",
-    "x64",
-    "armv6",
-    "armv6m",
-    "armv7m",
-    "armv7em",
-    "armv7emsp",
-    "armv7emdp",
-    "xtensa",
-    "xtensawin",
-    "rv32imc",
-)
-
-ARCH_MAPPINGS = {"armv7em": "armv7m"}
-
 # Code to allow a target MicroPython to import an .mpy from RAM
 injected_import_hook_code = """\
 import sys, io, vfs
@@ -54,9 +35,7 @@ class __File(io.IOBase):
   def __init__(self):
     self.off = 0
   def ioctl(self, request, arg):
-    if request == 4: # MP_STREAM_CLOSE
-      return 0
-    return -1
+    return 0
   def readinto(self, buf):
     buf[:] = memoryview(__buf)[self.off:self.off + len(buf)]
     self.off += len(buf)
@@ -75,7 +54,6 @@ class __FS:
     return __File()
 vfs.mount(__FS(), '/__remote')
 sys.path.insert(0, '/__remote')
-{import_prelude}
 sys.modules['{}'] = __import__('__injected')
 """
 
@@ -116,41 +94,13 @@ class TargetPyboard:
             return b"", er
 
 
-def detect_architecture(target):
-    with open("./feature_check/target_info.py", "rb") as f:
-        target_info_data = f.read()
-        result_out, error = target.run_script(target_info_data)
-        if error is not None:
-            return None, None, error
-        info = result_out.split(b" ")
-        if len(info) < 2:
-            return None, None, "unexpected target info: {}".format(info)
-        platform = info[0].strip().decode()
-        arch = info[1].strip().decode()
-        if arch not in AVAILABLE_ARCHS:
-            if arch == "None":
-                return None, None, "the target does not support dynamic modules"
-            else:
-                return None, None, "{} is not a supported architecture".format(arch)
-        return platform, arch, None
-
-
-def run_tests(target_truth, target, args, resolved_arch):
-    global injected_import_hook_code
-
-    prelude = ""
-    if args.begin:
-        prelude = args.begin.read()
-    injected_import_hook_code = injected_import_hook_code.replace("{import_prelude}", prelude)
-
-    test_results = []
+def run_tests(target_truth, target, args, stats):
     for test_file in args.files:
         # Find supported test
-        test_file_basename = os.path.basename(test_file)
         for k, v in TEST_MAPPINGS.items():
-            if test_file_basename.startswith(k):
+            if test_file.find(k) != -1:
                 test_module = k
-                test_mpy = v.replace("$(ARCH)", resolved_arch)
+                test_mpy = v.replace("$(ARCH)", args.arch)
                 break
         else:
             print("----  {} - no matching mpy".format(test_file))
@@ -166,8 +116,7 @@ def run_tests(target_truth, target, args, resolved_arch):
             with open(NATMOD_EXAMPLE_DIR + test_mpy, "rb") as f:
                 test_script += b"__buf=" + bytes(repr(f.read()), "ascii") + b"\n"
         except OSError:
-            test_results.append((test_file, "skip", "mpy file not compiled"))
-            print("skip  {} - mpy file not compiled".format(test_file))
+            print("----  {} - mpy file not compiled".format(test_file))
             continue
         test_script += bytes(injected_import_hook_code.format(test_module), "ascii")
         test_script += test_file_data
@@ -199,17 +148,16 @@ def run_tests(target_truth, target, args, resolved_arch):
                 result = "pass"
 
         # Accumulate statistics
+        stats["total"] += 1
         if result == "pass":
-            test_results.append((test_file, "pass", ""))
+            stats["pass"] += 1
         elif result == "SKIP":
-            test_results.append((test_file, "skip", ""))
+            stats["skip"] += 1
         else:
-            test_results.append((test_file, "fail", ""))
+            stats["fail"] += 1
 
         # Print result
         print("{:4}  {}{}".format(result, test_file, extra))
-
-    return test_results
 
 
 def main():
@@ -223,20 +171,7 @@ def main():
         "-d", "--device", default="/dev/ttyACM0", help="the device for pyboard.py"
     )
     cmd_parser.add_argument(
-        "-a", "--arch", choices=AVAILABLE_ARCHS, help="override native architecture of the target"
-    )
-    cmd_parser.add_argument(
-        "-b",
-        "--begin",
-        type=argparse.FileType("rt"),
-        default=None,
-        help="prologue python file to execute before module import",
-    )
-    cmd_parser.add_argument(
-        "-r",
-        "--result-dir",
-        default=run_tests_module.base_path("results"),
-        help="directory for test results",
+        "-a", "--arch", default="x64", help="native architecture of the target"
     )
     cmd_parser.add_argument("files", nargs="*", help="input test files")
     args = cmd_parser.parse_args()
@@ -248,28 +183,20 @@ def main():
     else:
         target = TargetSubprocess([MICROPYTHON])
 
-    if hasattr(args, "arch") and args.arch is not None:
-        target_arch = args.arch
-        target_platform = None
-    else:
-        target_platform, target_arch, error = detect_architecture(target)
-        if error:
-            print("Cannot run tests: {}".format(error))
-            sys.exit(1)
-    target_arch = ARCH_MAPPINGS.get(target_arch, target_arch)
-
-    if target_platform:
-        print("platform={} ".format(target_platform), end="")
-    print("arch={}".format(target_arch))
-
-    os.makedirs(args.result_dir, exist_ok=True)
-    test_results = run_tests(target_truth, target, args, target_arch)
-    res = run_tests_module.create_test_report(args, test_results)
+    stats = {"total": 0, "pass": 0, "fail": 0, "skip": 0}
+    run_tests(target_truth, target, args, stats)
 
     target.close()
     target_truth.close()
 
-    if not res:
+    print("{} tests performed".format(stats["total"]))
+    print("{} tests passed".format(stats["pass"]))
+    if stats["fail"]:
+        print("{} tests failed".format(stats["fail"]))
+    if stats["skip"]:
+        print("{} tests skipped".format(stats["skip"]))
+
+    if stats["fail"]:
         sys.exit(1)
 
 

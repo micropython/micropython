@@ -29,7 +29,7 @@
 #include "bufhelper.h"
 #include "spi.h"
 
-#if MICROPY_PY_PYB
+#if MICROPY_PY_TIGER
 
 /******************************************************************************/
 // MicroPython bindings for legacy pyb API

@@ -1,5 +1,5 @@
 try:
-    from binascii import unhexlify
+    import binascii
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -10,14 +10,14 @@ for x in (
     b"7f80ff",
     b"313233344142434461626364",
 ):
-    print(unhexlify(x))
+    print(binascii.unhexlify(x))
 
 try:
-    a = unhexlify(b"0")  # odd buffer length
+    a = binascii.unhexlify(b"0")  # odd buffer length
 except ValueError:
     print("ValueError")
 
 try:
-    a = unhexlify(b"gg")  # digit not hex
+    a = binascii.unhexlify(b"gg")  # digit not hex
 except ValueError:
     print("ValueError")

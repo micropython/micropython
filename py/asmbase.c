@@ -30,7 +30,6 @@
 #include "py/obj.h"
 #include "py/misc.h"
 #include "py/asmbase.h"
-#include "py/persistentcode.h"
 
 #if MICROPY_EMIT_MACHINE_CODE
 
@@ -53,7 +52,7 @@ void mp_asm_base_start_pass(mp_asm_base_t *as, int pass) {
     } else {
         // allocating executable RAM is platform specific
         MP_PLAT_ALLOC_EXEC(as->code_offset, (void **)&as->code_base, &as->code_size);
-        assert(as->code_size == 0 || as->code_base != NULL);
+        assert(as->code_base != NULL);
     }
     as->pass = pass;
     as->suppress = false;
@@ -92,11 +91,6 @@ void mp_asm_base_label_assign(mp_asm_base_t *as, size_t label) {
     } else {
         // ensure label offset has not changed from PASS_COMPUTE to PASS_EMIT
         assert(as->label_offsets[label] == as->code_offset);
-        #if MICROPY_DYNAMIC_COMPILER && MICROPY_EMIT_NATIVE_DEBUG
-        if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_DEBUG) {
-            mp_printf(MICROPY_EMIT_NATIVE_DEBUG_PRINTER, "label(label_%u)\n", (unsigned int)label);
-        }
-        #endif
     }
 }
 

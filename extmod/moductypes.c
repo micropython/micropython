@@ -89,7 +89,7 @@ typedef struct _mp_obj_uctypes_struct_t {
     uint32_t flags;
 } mp_obj_uctypes_struct_t;
 
-static MP_NORETURN void syntax_error(void) {
+static NORETURN void syntax_error(void) {
     mp_raise_TypeError(MP_ERROR_TEXT("syntax error in uctypes descriptor"));
 }
 
@@ -143,10 +143,6 @@ static inline mp_uint_t uctypes_struct_scalar_size(int val_type) {
 
 // Get size of aggregate type descriptor
 static mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_uint_t *max_field_size) {
-    if (t->len == 0) {
-        syntax_error();
-    }
-
     mp_uint_t total_size = 0;
 
     mp_int_t offset_ = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
@@ -154,15 +150,8 @@ static mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_
 
     switch (agg_type) {
         case STRUCT:
-            if (t->len != 2) {
-                syntax_error();
-            }
             return uctypes_struct_size(t->items[1], layout_type, max_field_size);
         case PTR:
-            // Second field ignored, but should still be present for consistency.
-            if (t->len != 2) {
-                syntax_error();
-            }
             if (sizeof(void *) > *max_field_size) {
                 *max_field_size = sizeof(void *);
             }
@@ -178,17 +167,15 @@ static mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_
                 if (item_s > *max_field_size) {
                     *max_field_size = item_s;
                 }
-            } else if (t->len == 3) {
+            } else {
                 // Elements of array are aggregates
                 item_s = uctypes_struct_size(t->items[2], layout_type, max_field_size);
-            } else {
-                syntax_error();
             }
 
             return item_s * arr_sz;
         }
         default:
-            syntax_error();
+            assert(0);
     }
 
     return total_size;
@@ -277,18 +264,15 @@ static mp_obj_t uctypes_struct_sizeof(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uctypes_struct_sizeof_obj, 1, 2, uctypes_struct_sizeof);
 
-static const char type2char[16] = {
-    'B', 'b', 'H', 'h', 'I', 'i', 'Q', 'q',
-    '-', '-', '-', '-', '-', '-', 'f', 'd'
-};
-
 static inline mp_obj_t get_unaligned(uint val_type, byte *p, int big_endian) {
     char struct_type = big_endian ? '>' : '<';
+    static const char type2char[16] = "BbHhIiQq------fd";
     return mp_binary_get_val(struct_type, type2char[val_type], p, &p);
 }
 
 static inline void set_unaligned(uint val_type, byte *p, int big_endian, mp_obj_t val) {
     char struct_type = big_endian ? '>' : '<';
+    static const char type2char[16] = "BbHhIiQq------fd";
     mp_binary_set_val(struct_type, type2char[val_type], val, p, &p);
 }
 
@@ -605,7 +589,7 @@ static mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
                 if (agg_type == PTR) {
                     byte *p = *(void **)self->addr;
-                    return mp_obj_new_int_from_uint((uintptr_t)p);
+                    return mp_obj_new_int((mp_int_t)(uintptr_t)p);
                 }
             }
             MP_FALLTHROUGH
@@ -632,7 +616,7 @@ static mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, 
 static mp_obj_t uctypes_struct_addressof(mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    return mp_obj_new_int_from_uint((uintptr_t)bufinfo.buf);
+    return mp_obj_new_int((mp_int_t)(uintptr_t)bufinfo.buf);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_addressof_obj, uctypes_struct_addressof);
 

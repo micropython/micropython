@@ -11,8 +11,6 @@
 #ifndef LFS2_CONFIG
 
 
-// If user provides their own CRC impl we don't need this
-#ifndef LFS2_CRC
 // Software CRC implementation with small lookup table
 uint32_t lfs2_crc(uint32_t crc, const void *buffer, size_t size) {
     static const uint32_t rtable[16] = {
@@ -31,7 +29,6 @@ uint32_t lfs2_crc(uint32_t crc, const void *buffer, size_t size) {
 
     return crc;
 }
-#endif
 
 
 #endif

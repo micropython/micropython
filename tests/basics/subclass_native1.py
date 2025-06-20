@@ -21,9 +21,11 @@ print(a + [20, 30, 40])
 # TODO: Faults
 #print(a + a)
 
-# subclassing a type that doesn't have make_new at the C level (not allowed)
+def foo():
+    print("hello from foo")
+
 try:
-    class myfunc(type([].append)):
+    class myfunc(type(foo)):
         pass
 except TypeError:
     print("TypeError")

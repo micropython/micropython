@@ -1,5 +1,5 @@
 try:
-    from binascii import hexlify
+    import binascii
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -10,10 +10,10 @@ for x in (
     b"\x7f\x80\xff",
     b"1234ABCDabcd",
 ):
-    print(hexlify(x))
+    print(binascii.hexlify(x))
 
 # Two-argument version (now supported in CPython)
-print(hexlify(b"123", ":"))
+print(binascii.hexlify(b"123", ":"))
 
 # zero length buffer
-print(hexlify(b"", b":"))
+print(binascii.hexlify(b"", b":"))

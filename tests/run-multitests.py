@@ -15,8 +15,6 @@ import itertools
 import subprocess
 import tempfile
 
-run_tests_module = __import__("run-tests")
-
 test_dir = os.path.abspath(os.path.dirname(__file__))
 
 if os.path.abspath(sys.path[0]) == test_dir:
@@ -107,14 +105,15 @@ instance{}()
 multitest.flush()
 """
 
-# Some ports generate output we can't control, and that can be safely ignored.
+# The btstack implementation on Unix generates some spurious output that we
+# can't control.  Also other platforms may output certain warnings/errors that
+# can be safely ignored.
 IGNORE_OUTPUT_MATCHES = (
-    "libusb: error ",  # unix btstack tries to open devices that it doesn't have access to (libusb prints unconditionally).
+    "libusb: error ",  # It tries to open devices that it doesn't have access to (libusb prints unconditionally).
     "hci_transport_h2_libusb.c",  # Same issue. We enable LOG_ERROR in btstack.
-    "USB Path: ",  # Hardcoded in unix btstack's libusb transport.
-    "hci_number_completed_packet",  # Warning from unix btstack.
+    "USB Path: ",  # Hardcoded in btstack's libusb transport.
+    "hci_number_completed_packet",  # Warning from btstack.
     "lld_pdu_get_tx_flush_nb HCI packet count mismatch (",  # From ESP-IDF, see https://github.com/espressif/esp-idf/issues/5105
-    " ets_task(",  # ESP8266 port debug output
 )
 
 
@@ -490,7 +489,9 @@ def print_diff(a, b):
 
 
 def run_tests(test_files, instances_truth, instances_test):
-    test_results = []
+    skipped_tests = []
+    passed_tests = []
+    failed_tests = []
 
     for test_file, num_instances in test_files:
         instances_str = "|".join(str(instances_test[i]) for i in range(num_instances))
@@ -526,13 +527,13 @@ def run_tests(test_files, instances_truth, instances_test):
         # Print result of test
         if skip:
             print("skip")
-            test_results.append((test_file, "skip", ""))
+            skipped_tests.append(test_file)
         elif output_test == output_truth:
             print("pass")
-            test_results.append((test_file, "pass", ""))
+            passed_tests.append(test_file)
         else:
             print("FAIL")
-            test_results.append((test_file, "fail", ""))
+            failed_tests.append(test_file)
             if not cmd_args.show_output:
                 print("### TEST ###")
                 print(output_test, end="")
@@ -549,7 +550,15 @@ def run_tests(test_files, instances_truth, instances_test):
         if cmd_args.show_output:
             print()
 
-    return test_results
+    print("{} tests performed".format(len(skipped_tests) + len(passed_tests) + len(failed_tests)))
+    print("{} tests passed".format(len(passed_tests)))
+
+    if skipped_tests:
+        print("{} tests skipped: {}".format(len(skipped_tests), " ".join(skipped_tests)))
+    if failed_tests:
+        print("{} tests failed: {}".format(len(failed_tests), " ".join(failed_tests)))
+
+    return not failed_tests
 
 
 def main():
@@ -574,12 +583,6 @@ def main():
         type=int,
         default=1,
         help="repeat the test with this many permutations of the instance order",
-    )
-    cmd_parser.add_argument(
-        "-r",
-        "--result-dir",
-        default=run_tests_module.base_path("results"),
-        help="directory for test results",
     )
     cmd_parser.epilog = (
         "Supported instance types:\r\n"
@@ -621,15 +624,13 @@ def main():
     for _ in range(max_instances - len(instances_test)):
         instances_test.append(PyInstanceSubProcess([MICROPYTHON]))
 
-    os.makedirs(cmd_args.result_dir, exist_ok=True)
     all_pass = True
     try:
         for i, instances_test_permutation in enumerate(itertools.permutations(instances_test)):
             if i >= cmd_args.permutations:
                 break
 
-            test_results = run_tests(test_files, instances_truth, instances_test_permutation)
-            all_pass &= run_tests_module.create_test_report(cmd_args, test_results)
+            all_pass &= run_tests(test_files, instances_truth, instances_test_permutation)
 
     finally:
         for i in instances_truth:

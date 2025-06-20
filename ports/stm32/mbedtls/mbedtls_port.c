@@ -28,7 +28,11 @@
 #include "mbedtls_config_port.h"
 
 #if defined(MBEDTLS_HAVE_TIME) || defined(MBEDTLS_HAVE_TIME_DATE)
+#if defined(MICROPY_PY_TIGER)
+#include "td02-rtc.h"
+#else
 #include "rtc.h"
+#endif
 #include "shared/timeutils/timeutils.h"
 #include "mbedtls/platform_time.h"
 #endif

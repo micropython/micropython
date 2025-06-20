@@ -30,28 +30,35 @@
 
 // find real radix base, and strip preceding '0x', '0o' and '0b'
 // puts base in *base, and returns number of bytes to skip the prefix
-// in base-0, puts 1 in *base to indicate a number that starts with 0, to provoke a
-// ValueError if it's not all-digits-zero.
 size_t mp_parse_num_base(const char *str, size_t len, int *base) {
     const byte *p = (const byte *)str;
     if (len <= 1) {
         goto no_prefix;
     }
     unichar c = *(p++);
-    if (c == '0') {
-        c = *(p++) | 32;
-        int b = *base;
-        if (c == 'x' && (b == 0 || b == 16)) {
+    if ((*base == 0 || *base == 16) && c == '0') {
+        c = *(p++);
+        if ((c | 32) == 'x') {
             *base = 16;
-        } else if (c == 'o' && (b == 0 || b == 8)) {
+        } else if (*base == 0 && (c | 32) == 'o') {
             *base = 8;
-        } else if (c == 'b' && (b == 0 || b == 2)) {
+        } else if (*base == 0 && (c | 32) == 'b') {
             *base = 2;
         } else {
-            p -= 2;
-            if (b == 0) {
-                *base = 1;
+            if (*base == 0) {
+                *base = 10;
             }
+            p -= 2;
+        }
+    } else if (*base == 8 && c == '0') {
+        c = *(p++);
+        if ((c | 32) != 'o') {
+            p -= 2;
+        }
+    } else if (*base == 2 && c == '0') {
+        c = *(p++);
+        if ((c | 32) != 'b') {
+            p -= 2;
         }
     } else {
         p--;

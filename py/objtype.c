@@ -44,7 +44,6 @@
 #define ENABLE_SPECIAL_ACCESSORS \
     (MICROPY_PY_DESCRIPTORS || MICROPY_PY_DELATTR_SETATTR || MICROPY_PY_BUILTINS_PROPERTY)
 
-static mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo);
 static mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 /******************************************************************************/
@@ -83,16 +82,16 @@ static int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
     }
 }
 
-// This wrapper function allows a subclass of a native type to call the
+// This wrapper function is allows a subclass of a native type to call the
 // __init__() method (corresponding to type->make_new) of the native type.
-static mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *args) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(args[0]);
     const mp_obj_type_t *native_base = NULL;
     instance_count_native_bases(self->base.type, &native_base);
-    self->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args - 1, kw_args->used, args + 1);
+    self->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args - 1, 0, args + 1);
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_KW(native_base_init_wrapper_obj, 1, native_base_init_wrapper);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(native_base_init_wrapper_obj, 1, MP_OBJ_FUN_ARGS_MAX, native_base_init_wrapper);
 
 #if !MICROPY_CPYTHON_COMPAT
 static
@@ -171,12 +170,6 @@ static void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
                     if (obj != NULL && mp_obj_is_native_type(type) && type != &mp_type_object /* object is not a real type */) {
                         // If we're dealing with native base class, then it applies to native sub-object
                         obj_obj = obj->subobj[0];
-                        #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
-                        if (obj_obj == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
-                            // But we shouldn't attempt lookups on object that is not yet instantiated.
-                            mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("call super().__init__() first"));
-                        }
-                        #endif // MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
                     } else {
                         obj_obj = MP_OBJ_FROM_PTR(obj);
                     }
@@ -660,13 +653,6 @@ static void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
 
     // try __getattr__
     if (attr != MP_QSTR___getattr__) {
-        #if MICROPY_PY_DESCRIPTORS
-        // With descriptors enabled, don't delegate lookups of __get__/__set__/__delete__.
-        if (attr == MP_QSTR___get__ || attr == MP_QSTR___set__ || attr == MP_QSTR___delete__) {
-            return;
-        }
-        #endif
-
         #if MICROPY_PY_DELATTR_SETATTR
         // If the requested attr is __setattr__/__delattr__ then don't delegate the lookup
         // to __getattr__.  If we followed CPython's behaviour then __setattr__/__delattr__
@@ -1268,15 +1254,9 @@ static mp_obj_t super_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     // 0 arguments are turned into 2 in the compiler
     // 1 argument is not yet implemented
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
-
-    // Per CPython: "If the second argument is an object, isinstance(obj, type) must be true.
-    // If the second argument is a type, issubclass(type2, type) must be true (this is useful for classmethods)."
-    const mp_obj_type_t *second_arg_type = mp_obj_get_type(args[1]);
-    mp_obj_t second_arg_obj = second_arg_type == &mp_type_type ? args[1] : MP_OBJ_FROM_PTR(second_arg_type);
-    if (mp_obj_is_subclass(second_arg_obj, args[0]) == mp_const_false) {
+    if (!mp_obj_is_type(args[0], &mp_type_type)) {
         mp_raise_TypeError(NULL);
     }
-
     mp_obj_super_t *o = m_new_obj(mp_obj_super_t);
     *o = (mp_obj_super_t) {{type_in}, args[0], args[1]};
     return MP_OBJ_FROM_PTR(o);

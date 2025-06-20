@@ -208,7 +208,7 @@ static mp_obj_t deque_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 
     size_t offset = mp_get_index(self->base.type, deque_len(self), index, false);
     size_t index_val = self->i_get + offset;
-    if (index_val >= self->alloc) {
+    if (index_val > self->alloc) {
         index_val -= self->alloc;
     }
 
@@ -263,7 +263,7 @@ static MP_DEFINE_CONST_DICT(deque_locals_dict, deque_locals_dict_table);
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_deque,
     MP_QSTR_deque,
-    DEQUE_TYPE_FLAGS,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
     make_new, deque_make_new,
     unary_op, deque_unary_op,
     DEQUE_TYPE_SUBSCR

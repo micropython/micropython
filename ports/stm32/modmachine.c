@@ -44,7 +44,11 @@
 #include "pin.h"
 #include "timer.h"
 #include "usb.h"
+#if defined(MICROPY_PY_TIGER)
+#include "td02-rtc.h"
+#else
 #include "rtc.h"
+#endif
 #include "i2c.h"
 #include "spi.h"
 
@@ -95,25 +99,46 @@
 #define MICROPY_PY_MACHINE_RNG_ENTRY
 #endif
 
-#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
-    { MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) }, \
-    MICROPY_PY_MACHINE_RNG_ENTRY \
-    { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) }, \
-    \
-    { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
-    \
-    { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&pin_type) }, \
-    \
-    { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&pyb_rtc_type) }, \
-    { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
-    \
-    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(PYB_RESET_POWER_ON) }, \
-    { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(PYB_RESET_HARD) }, \
-    { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(PYB_RESET_WDT) }, \
-    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(PYB_RESET_DEEPSLEEP) }, \
-    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(PYB_RESET_SOFT) }, \
+#if MICROPY_PY_TIGER
+	#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
+		{ MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) }, \
+		MICROPY_PY_MACHINE_RNG_ENTRY \
+		{ MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) }, \
+		\
+		{ MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
+		{ MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
+		\
+		{ MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&pin_type) },   \
+		{ MP_ROM_QSTR(MP_QSTR_RTC1),                MP_ROM_PTR(&tiger_rtc_type) }, \
+		{ MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
+		\
+		{ MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(PYB_RESET_POWER_ON) }, \
+		{ MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(PYB_RESET_HARD) }, \
+		{ MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(PYB_RESET_WDT) }, \
+		{ MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(PYB_RESET_DEEPSLEEP) }, \
+		{ MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(PYB_RESET_SOFT) }, \
+		
+#else 
 
+	#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
+		{ MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) }, \
+		MICROPY_PY_MACHINE_RNG_ENTRY \
+		{ MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) }, \
+		\
+		{ MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
+		{ MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
+		\
+		{ MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&pin_type) },   \
+		{ MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&pyb_rtc_type) }, \
+		{ MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
+		\
+		{ MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(PYB_RESET_POWER_ON) }, \
+		{ MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(PYB_RESET_HARD) }, \
+		{ MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(PYB_RESET_WDT) }, \
+		{ MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(PYB_RESET_DEEPSLEEP) }, \
+		{ MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(PYB_RESET_SOFT) }, \
+
+#endif
 static uint32_t reset_cause;
 
 void machine_init(void) {
@@ -247,14 +272,6 @@ static mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
         mp_printf(print, "  1=%u 2=%u m=%u\n", info.num_1block, info.num_2block, info.max_block);
     }
 
-    // SPI flash size
-    #if defined(MICROPY_HW_SPIFLASH_SIZE_BITS)
-    mp_printf(print, "SPI flash size: %d\n", MICROPY_HW_SPIFLASH_SIZE_BITS / 8);
-    #endif
-    #if defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)
-    mp_printf(print, "QSPI flash size: %d\n", 1 << (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3));
-    #endif
-
     // free space on flash
     {
         #if MICROPY_VFS_FAT
@@ -291,12 +308,12 @@ static mp_obj_t mp_machine_unique_id(void) {
 }
 
 // Resets the pyboard in a manner similar to pushing the external RESET button.
-MP_NORETURN static void mp_machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     powerctrl_mcu_reset();
 }
 
 // Activate the bootloader without BOOT* pins.
-MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_dev_deinit();
     #endif

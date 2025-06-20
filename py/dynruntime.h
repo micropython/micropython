@@ -28,14 +28,6 @@
 
 // This header file contains definitions to dynamically implement the static
 // MicroPython runtime API defined in py/obj.h and py/runtime.h.
-//
-// All of the symbols made available in this header are overriding those defined
-// in py/obj.h and py/runtime.h.  This is done with macros.  For macros that
-// would be too complicated (usually more than a single expression), they call a
-// static-inline function for the implementation.  This function has the same
-// name as the macro (hence the same name as a public API function) but with
-// "_dyn" appended. For example, the m_malloc() macro calls the m_malloc_dyn()
-// static-inline function.
 
 #include "py/binary.h"
 #include "py/nativeglue.h"
@@ -45,10 +37,6 @@
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 #error "dynruntime.h included in non-dynamic-module build."
-#endif
-
-#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-#error "MICROPY_MALLOC_USES_ALLOCATED_SIZE must be disable in a dynamic-module build."
 #endif
 
 #undef MP_ROM_QSTR
@@ -64,32 +52,13 @@
 /******************************************************************************/
 // Memory allocation
 
-#define m_malloc_fail(num_bytes)        (m_malloc_fail_dyn((num_bytes)))
 #define m_malloc(n)                     (m_malloc_dyn((n)))
 #define m_free(ptr)                     (m_free_dyn((ptr)))
 #define m_realloc(ptr, new_num_bytes)   (m_realloc_dyn((ptr), (new_num_bytes)))
-#define m_realloc_maybe(ptr, new_num_bytes, allow_move) (m_realloc_maybe_dyn((ptr), (new_num_bytes), (allow_move)))
-
-static MP_NORETURN inline void m_malloc_fail_dyn(size_t num_bytes) {
-    mp_fun_table.raise_msg(
-        mp_fun_table.load_global(MP_QSTR_MemoryError),
-        "memory allocation failed");
-}
-
-static inline void *m_realloc_maybe_dyn(void *ptr, size_t new_num_bytes, bool allow_move) {
-    return mp_fun_table.realloc_(ptr, new_num_bytes, allow_move);
-}
-
-static inline void *m_realloc_checked_dyn(void *ptr, size_t new_num_bytes, bool allow_move) {
-    ptr = m_realloc_maybe(ptr, new_num_bytes, allow_move);
-    if (ptr == NULL && new_num_bytes != 0) {
-        m_malloc_fail(new_num_bytes);
-    }
-    return ptr;
-}
 
 static inline void *m_malloc_dyn(size_t n) {
-    return m_realloc_checked_dyn(NULL, n, false);
+    // TODO won't raise on OOM
+    return mp_fun_table.realloc_(NULL, n, false);
 }
 
 static inline void m_free_dyn(void *ptr) {
@@ -97,7 +66,8 @@ static inline void m_free_dyn(void *ptr) {
 }
 
 static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
-    return m_realloc_checked_dyn(ptr, new_num_bytes, true);
+    // TODO won't raise on OOM
+    return mp_fun_table.realloc_(ptr, new_num_bytes, true);
 }
 
 /******************************************************************************/
@@ -118,10 +88,8 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_type_int                         (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_int)))
 #define mp_type_str                         (*mp_fun_table.type_str)
 #define mp_type_bytes                       (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_bytes)))
-#define mp_type_bytearray                   (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_bytearray)))
 #define mp_type_tuple                       (*((mp_obj_base_t *)mp_const_empty_tuple)->type)
 #define mp_type_list                        (*mp_fun_table.type_list)
-#define mp_type_Exception                   (*mp_fun_table.type_Exception)
 #define mp_type_EOFError                    (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_EOFError)))
 #define mp_type_IndexError                  (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_IndexError)))
 #define mp_type_KeyError                    (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_KeyError)))
@@ -225,7 +193,6 @@ static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type
 #define mp_load_global(qst)               (mp_fun_table.load_global((qst)))
 #define mp_load_attr(base, attr)          (mp_fun_table.load_attr((base), (attr)))
 #define mp_load_method(base, attr, dest)  (mp_fun_table.load_method((base), (attr), (dest)))
-#define mp_load_method_maybe(base, attr, dest) (mp_fun_table.load_method_maybe((base), (attr), (dest)))
 #define mp_load_super_method(attr, dest)  (mp_fun_table.load_super_method((attr), (dest)))
 #define mp_store_name(qst, obj)           (mp_fun_table.store_name((qst), (obj)))
 #define mp_store_global(qst, obj)         (mp_fun_table.store_global((qst), (obj)))
@@ -242,12 +209,6 @@ static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type
 
 #define mp_arg_check_num(n_args, n_kw, n_args_min, n_args_max, takes_kw) \
     (mp_fun_table.arg_check_num_sig((n_args), (n_kw), MP_OBJ_FUN_MAKE_SIG((n_args_min), (n_args_max), (takes_kw))))
-
-#define mp_arg_parse_all(n_pos, pos, kws, n_allowed, allowed, out_vals) \
-    (mp_fun_table.arg_parse_all((n_pos), (pos), (kws), (n_allowed), (allowed), (out_vals)))
-
-#define mp_arg_parse_all_kw_array(n_pos, n_kw, args, n_allowed, allowed, out_vals) \
-    (mp_fun_table.arg_parse_all_kw_array((n_pos), (n_kw), (args), (n_allowed), (allowed), (out_vals)))
 
 #define MP_DYNRUNTIME_INIT_ENTRY \
     mp_obj_t old_globals = mp_fun_table.swap_globals(self->context->module.globals); \
@@ -275,10 +236,6 @@ static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type
 /******************************************************************************/
 // Exceptions
 
-#define mp_obj_exception_make_new               (MP_OBJ_TYPE_GET_SLOT(&mp_type_Exception, make_new))
-#define mp_obj_exception_print                  (MP_OBJ_TYPE_GET_SLOT(&mp_type_Exception, print))
-#define mp_obj_exception_attr                   (MP_OBJ_TYPE_GET_SLOT(&mp_type_Exception, attr))
-
 #define mp_obj_new_exception(o)                 ((mp_obj_t)(o)) // Assumes returned object will be raised, will create instance then
 #define mp_obj_new_exception_arg1(e_type, arg)  (mp_obj_new_exception_arg1_dyn((e_type), (arg)))
 
@@ -295,7 +252,7 @@ static inline mp_obj_t mp_obj_new_exception_arg1_dyn(const mp_obj_type_t *exc_ty
     return mp_call_function_n_kw(MP_OBJ_FROM_PTR(exc_type), 1, 0, &args[0]);
 }
 
-static MP_NORETURN inline void mp_raise_dyn(mp_obj_t o) {
+static NORETURN inline void mp_raise_dyn(mp_obj_t o) {
     mp_fun_table.raise(o);
     for (;;) {
     }
@@ -304,16 +261,6 @@ static MP_NORETURN inline void mp_raise_dyn(mp_obj_t o) {
 static inline void mp_raise_OSError_dyn(int er) {
     mp_obj_t args[1] = { MP_OBJ_NEW_SMALL_INT(er) };
     nlr_raise(mp_call_function_n_kw(mp_load_global(MP_QSTR_OSError), 1, 0, &args[0]));
-}
-
-static inline void mp_obj_exception_init(mp_obj_full_type_t *exc, qstr name, const mp_obj_type_t *base) {
-    exc->base.type = &mp_type_type;
-    exc->flags = MP_TYPE_FLAG_NONE;
-    exc->name = name;
-    MP_OBJ_TYPE_SET_SLOT(exc, make_new, mp_obj_exception_make_new, 0);
-    MP_OBJ_TYPE_SET_SLOT(exc, print, mp_obj_exception_print, 1);
-    MP_OBJ_TYPE_SET_SLOT(exc, attr, mp_obj_exception_attr, 2);
-    MP_OBJ_TYPE_SET_SLOT(exc, parent, base, 3);
 }
 
 /******************************************************************************/

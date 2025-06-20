@@ -71,8 +71,6 @@
     #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSA)
 #elif MICROPY_EMIT_XTENSAWIN
     #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSAWIN)
-#elif MICROPY_EMIT_RV32
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_RV32IMC)
 #else
     #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_NONE)
 #endif
@@ -97,8 +95,6 @@ enum {
     MP_NATIVE_ARCH_ARMV7EMDP,
     MP_NATIVE_ARCH_XTENSA,
     MP_NATIVE_ARCH_XTENSAWIN,
-    MP_NATIVE_ARCH_RV32IMC,
-    MP_NATIVE_ARCH_DEBUG, // this entry should always be last
 };
 
 enum {
@@ -121,7 +117,6 @@ void mp_raw_code_load_file(qstr filename, mp_compiled_module_t *ctx);
 
 void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print);
 void mp_raw_code_save_file(mp_compiled_module_t *cm, qstr filename);
-mp_obj_t mp_raw_code_save_fun_to_bytes(const mp_module_constants_t *consts, const uint8_t *bytecode);
 
 void mp_native_relocate(void *reloc, uint8_t *text, uintptr_t reloc_text);
 

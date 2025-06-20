@@ -2,9 +2,7 @@
 
 try:
     import tls
-
-    tls.SSLContext.get_ciphers
-except (ImportError, AttributeError):
+except ImportError:
     print("SKIP")
     raise SystemExit
 

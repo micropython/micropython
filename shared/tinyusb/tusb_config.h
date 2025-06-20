@@ -77,12 +77,8 @@
 
 // CDC Configuration
 #if CFG_TUD_CDC
-#ifndef CFG_TUD_CDC_RX_BUFSIZE
 #define CFG_TUD_CDC_RX_BUFSIZE  ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 256)
-#endif
-#ifndef CFG_TUD_CDC_TX_BUFSIZE
 #define CFG_TUD_CDC_TX_BUFSIZE  ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 256)
-#endif
 #endif
 
 // MSC Configuration

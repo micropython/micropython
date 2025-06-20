@@ -58,11 +58,9 @@
 #include "shared/netutils/netutils.h"
 #include "lib/wiznet5k/Ethernet/wizchip_conf.h"
 #include "lib/wiznet5k/Ethernet/socket.h"
-#include "lwip/apps/mdns.h"
 #include "lwip/err.h"
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
-#include "lwip/ethip6.h"
 #include "netif/etharp.h"
 
 #define TRACE_ETH_TX (0x0002)
@@ -77,8 +75,6 @@
 #include "lib/wiznet5k/Internet/DHCP/dhcp.h"
 
 #endif
-
-extern const mp_obj_type_t mod_network_nic_type_wiznet5k;
 
 #ifndef printf
 #define printf(...) mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
@@ -204,9 +200,6 @@ static void wiznet5k_config_interrupt(bool enabled) {
 void wiznet5k_deinit(void) {
     for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
         if (netif == &wiznet5k_obj.netif) {
-            #if LWIP_MDNS_RESPONDER
-            mdns_resp_remove_netif(&wiznet5k_obj.netif);
-            #endif
             netif_remove(netif);
             netif->flags = 0;
             break;
@@ -304,20 +297,12 @@ static err_t wiznet5k_netif_init(struct netif *netif) {
     netif->hwaddr_len = sizeof(netif->hwaddr);
     int ret = WIZCHIP_EXPORT(socket)(0, Sn_MR_MACRAW, 0, 0);
     if (ret != 0) {
-        printf("WIZNET fatal error in netif_init: %d\n", ret);
+        printf("WIZNET fatal error in netifinit: %d\n", ret);
         return ERR_IF;
     }
 
     // Enable MAC filtering so we only get frames destined for us, to reduce load on lwIP
     setSn_MR(0, getSn_MR(0) | Sn_MR_MFEN);
-
-    #if LWIP_IPV6
-    netif->output_ip6 = ethip6_output;
-    netif->flags |= NETIF_FLAG_MLD6;
-    #else
-    // Drop IPv6 packets if firmware does not support it
-    setSn_MR(0, getSn_MR(0) | Sn_MR_MIP6B);
-    #endif
 
     return ERR_OK;
 }
@@ -340,12 +325,6 @@ static void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
     self->netif.flags |= NETIF_FLAG_UP;
     dhcp_start(&self->netif);
     self->netif.flags &= ~NETIF_FLAG_UP;
-
-    #if LWIP_MDNS_RESPONDER
-    // NOTE: interface is removed in ::wiznet5k_deinit(), which is called as
-    // part of the init sequence.
-    mdns_resp_add_netif(&self->netif, mod_network_hostname_data);
-    #endif
 }
 
 void wiznet5k_poll(void) {
@@ -867,10 +846,6 @@ static mp_obj_t wiznet5k_active(size_t n_args, const mp_obj_t *args) {
                     mp_hal_get_mac(MP_HAL_MAC_ETH0, mac);
                     setSHAR(mac);
                 }
-
-                #if WIZNET5K_WITH_LWIP_STACK && LWIP_IPV6
-                netif_create_ip6_linklocal_address(&self->netif, 1);
-                #endif
 
                 // seems we need a small delay after init
                 mp_hal_delay_ms(250);
