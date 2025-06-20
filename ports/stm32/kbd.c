@@ -437,14 +437,12 @@ static void process_current_column(void)
 static void process_full_run(void)
 {
     // SHIFT, SHIFT_LOCK, CTRL
-    if(_KB_SHIFT == ACTIVE && _KB_PREV_SHIFT == ACTIVE)
-    {
+    if (_KB_SHIFT == ACTIVE && _KB_PREV_SHIFT == ACTIVE) {
         _KB_SHIFT_TOGGLE = INACTIVE;
         kbd_led();
     }
-    if(_KB_SHIFT_LOCK == ACTIVE && _KB_PREV_SHIFT_LOCK == ACTIVE)
-    {
-        _KB_SHIFT_TOGGLE = ACTIVE;
+    if (_KB_SHIFT_LOCK == ACTIVE && _KB_PREV_SHIFT_LOCK == INACTIVE) {
+        _KB_SHIFT_TOGGLE = !_KB_SHIFT_TOGGLE;
         kbd_led();
     }
     _KB_PREV_SHIFT_LOCK = _KB_SHIFT_LOCK;
