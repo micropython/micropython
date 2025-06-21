@@ -35,6 +35,10 @@
 #include "py/objarray.h"
 #include "py/runtime.h"
 
+#if MICROPY_HW_NETWORK_USBNET
+#include "extmod/network_usbd_ncm.h"
+#endif
+
 #ifndef NO_QSTR
 #include "tusb.h"
 #include "device/dcd.h"
@@ -77,10 +81,11 @@ extern void mp_usbd_port_get_serial_number(char *buf);
 void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
 
 // Length of built-in configuration descriptor
-#define MP_USBD_BUILTIN_DESC_CFG_LEN (TUD_CONFIG_DESC_LEN +                     \
-    (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) +  \
-    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0)    \
-    )
+#define MP_USBD_BUILTIN_DESC_CFG_LEN ( \
+    (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) + \
+    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0) + \
+    (CFG_TUD_NCM ? (TUD_CDC_NCM_DESC_LEN) : 0) + \
+    TUD_CONFIG_DESC_LEN)
 
 // Built-in USB device and configuration descriptor values
 extern const tusb_desc_device_t mp_usbd_builtin_desc_dev;

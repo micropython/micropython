@@ -35,6 +35,7 @@
 #define USBD_CDC_CMD_MAX_SIZE (8)
 #define USBD_CDC_IN_OUT_MAX_SIZE ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 64)
 #define USBD_MSC_IN_OUT_MAX_SIZE ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 64)
+#define USBD_NET_IN_OUT_MAX_SIZE ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 64)
 
 const tusb_desc_device_t mp_usbd_builtin_desc_dev = {
     .bLength = sizeof(tusb_desc_device_t),
@@ -62,7 +63,11 @@ const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN] = {
         USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
     #endif
     #if CFG_TUD_MSC
-    TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, USBD_STR_MSC, EPNUM_MSC_OUT, EPNUM_MSC_IN, USBD_MSC_IN_OUT_MAX_SIZE),
+    TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, USBD_STR_MSC, USBD_MSC_EP_OUT, USBD_MSC_EP_IN, USBD_MSC_IN_OUT_MAX_SIZE),
+    #endif
+    #if CFG_TUD_NCM
+    // Interface number, description string index, MAC address string index, EP notification address and size, EP data address (out, in), and size, max segment size.
+    TUD_CDC_NCM_DESCRIPTOR(USBD_ITF_NET, USBD_STR_NET, USBD_STR_NET_MAC, USBD_NET_EP_CMD, 64, USBD_NET_EP_OUT, USBD_NET_EP_IN, USBD_NET_IN_OUT_MAX_SIZE, CFG_TUD_NET_MTU),
     #endif
 };
 
@@ -113,6 +118,15 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
             #if CFG_TUD_MSC
             case USBD_STR_MSC:
                 desc_str = MICROPY_HW_USB_MSC_INTERFACE_STRING;
+                break;
+            #endif
+            #if CFG_TUD_NCM
+            case USBD_STR_NET:
+                desc_str = MICROPY_HW_NETWORK_USBNET_INTERFACE_STRING;
+                break;
+            case USBD_STR_NET_MAC:
+                mp_usbd_hex_str(serial_buf, (uint8_t *)tud_network_mac_address, sizeof(tud_network_mac_address));
+                desc_str = serial_buf;
                 break;
             #endif
             default:
