@@ -252,14 +252,12 @@ endif
 
 SRC_C += drivers/usb/usb_cdc.c
 
-SRC_C += $(addprefix lib/tinyusb/src/,\
-	common/tusb_fifo.c \
-	device/usbd.c \
-	device/usbd_control.c \
-	class/cdc/cdc_device.c \
-	tusb.c \
-	portable/nordic/nrf5x/dcd_nrf5x.c \
-	)
+# TinyUSB Stack source
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
+	$(TINYUSB_SRC_C) \
+	src/portable/nordic/nrf5x/dcd_nrf5x.c \
+	))
 
 endif
 
@@ -306,6 +304,7 @@ OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SYSTEM_C_SRC:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
 
 $(BUILD)/$(OOFATFS_DIR)/ff.o: COPT += -Os
