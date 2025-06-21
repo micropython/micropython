@@ -582,12 +582,24 @@ static mp_obj_t extra_coverage(void) {
         fun_bc.context = &context;
         fun_bc.child_table = NULL;
         fun_bc.bytecode = (const byte *)"\x01"; // just needed for n_state
+        #if MICROPY_PY_SYS_SETTRACE
+        struct _mp_raw_code_t rc = {};
+        fun_bc.rc = &rc;
+        #endif
         mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, state, mp_obj_t, 1);
         code_state->fun_bc = &fun_bc;
         code_state->ip = (const byte *)"\x00"; // just needed for an invalid opcode
         code_state->sp = &code_state->state[0];
         code_state->exc_sp_idx = 0;
         code_state->old_globals = NULL;
+        #if MICROPY_STACKLESS
+        code_state->prev = NULL;
+        #endif
+        #if MICROPY_PY_SYS_SETTRACE
+        code_state->prev_state = NULL;
+        code_state->frame = NULL;
+        #endif
+
         mp_vm_return_kind_t ret = mp_execute_bytecode(code_state, MP_OBJ_NULL);
         mp_printf(&mp_plat_print, "%d %d\n", ret, mp_obj_get_type(code_state->state[0]) == &mp_type_NotImplementedError);
     }
