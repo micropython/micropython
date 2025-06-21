@@ -607,6 +607,10 @@ soft_reset:
     extint_init0();
     timer_init0();
 
+    #if MICROPY_PY_NETWORK
+    mod_network_init();
+    #endif
+
     #if MICROPY_HW_ENABLE_CAN
     pyb_can_init0();
     #endif
@@ -697,10 +701,6 @@ soft_reset:
 
     #if MICROPY_HW_ENABLE_SERVO
     servo_init();
-    #endif
-
-    #if MICROPY_PY_NETWORK
-    mod_network_init();
     #endif
 
     // At this point everything is fully configured and initialised.
