@@ -93,19 +93,11 @@ endif
 # =============================================================================
 
 # TinyUSB Stack source
-SRC_TINYUSB_C += \
-	lib/tinyusb/src/class/cdc/cdc_device.c \
-	lib/tinyusb/src/class/dfu/dfu_rt_device.c \
-	lib/tinyusb/src/class/hid/hid_device.c \
-	lib/tinyusb/src/class/midi/midi_device.c \
-	lib/tinyusb/src/class/msc/msc_device.c \
-	lib/tinyusb/src/class/usbtmc/usbtmc_device.c \
-	lib/tinyusb/src/class/vendor/vendor_device.c \
-	lib/tinyusb/src/common/tusb_fifo.c \
-	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/device/usbd_control.c \
-	lib/tinyusb/src/portable/chipidea/ci_hs/dcd_ci_hs.c \
-	lib/tinyusb/src/tusb.c
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(addprefix lib/tinyusb/, \
+	$(TINYUSB_SRC_C) \
+	src/portable/chipidea/ci_hs/dcd_ci_hs.c \
+	)
 
 # All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
 ifeq ($(MICROPY_PY_LWIP),1)
@@ -521,7 +513,7 @@ OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_TINYUSB_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL_IMX_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ETH_C:.c=.o))
