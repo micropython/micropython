@@ -8,8 +8,6 @@
 #define LWIP_LOOPIF_MULTICAST           1
 #define LWIP_LOOPBACK_MAX_PBUFS         8
 
-#define LWIP_IPV6                       0
-
 #define LWIP_RAND() rng_get()
 
 // Increase memory for lwIP to get better performance.
@@ -22,8 +20,12 @@
 #define MEMP_NUM_TCP_SEG                (64)
 #endif
 
-// Include common lwIP configuration.
+// Include common lwIP configuration (also mpconfig.h).
 #include "extmod/lwip-include/lwipopts_common.h"
+
+#ifndef LWIP_IPV6
+#define LWIP_IPV6                       0
+#endif
 
 extern uint32_t rng_get(void);
 
