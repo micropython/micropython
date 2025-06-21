@@ -280,6 +280,68 @@ static const int error_lookup_table[] = {
 };
 #endif
 
+
+/*******************************************************************************/
+// atoi() used in netif_find()
+// Based on (MIT) implementation from https://github.com/littlekernel/lk
+
+int isspace(int c) {
+    return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v';
+}
+int isdigit(int c) {
+    return (c >= '0') && (c <= '9');
+}
+int isxdigit(int c) {
+    return isdigit(c) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F'));
+}
+static int hexval(char c) {
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    } else if (c >= 'a' && c <= 'f') {
+        return c - 'a' + 10;
+    } else if (c >= 'A' && c <= 'F') {
+        return c - 'A' + 10;
+    }
+
+    return 0;
+}
+
+int atoi(const char *num) {
+    long long value = 0;
+    int neg = 0;
+
+    // skip leading whitespace
+    while (isspace(num[0])) {
+        num++;
+    }
+
+    if (num[0] == '0' && num[1] == 'x') {
+        // hex
+        num += 2;
+        while (*num && isxdigit(*num)) {
+            value = value * 16 + hexval(*num++);
+        }
+    } else {
+        // decimal
+        if (num[0] == '-') {
+            neg = 1;
+            num++;
+        } else if (num[0] == '+') {
+            num++;
+        }
+
+        while (*num && isdigit(*num)) {
+            value = value * 10 + *num++ - '0';
+        }
+    }
+
+    if (neg) {
+        value = -value;
+    }
+
+    return (int)value;
+}
+
 /*******************************************************************************/
 // The socket object provided by lwip.socket.
 
