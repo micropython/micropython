@@ -233,7 +233,7 @@ void nlr_jump_fail(void *val) {
     }
 }
 
-void NORETURN __fatal_error(const char *msg) {
+void MP_NORETURN __fatal_error(const char *msg) {
     while (1) {
         ;
     }

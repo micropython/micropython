@@ -56,7 +56,7 @@
 extern uint8_t __StackTop, __StackLimit;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
 
-NORETURN void panic(const char *msg) {
+MP_NORETURN void panic(const char *msg) {
     mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 14);
     mp_hal_stdout_tx_strn(msg, strlen(msg));
     for (;;) {

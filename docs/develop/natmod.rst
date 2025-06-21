@@ -81,7 +81,14 @@ Linker limitation: the native module is not linked against the symbol table of t
 full MicroPython firmware.  Rather, it is linked against an explicit table of exported
 symbols found in ``mp_fun_table`` (in ``py/nativeglue.h``), that is fixed at firmware
 build time.  It is thus not possible to simply call some arbitrary HAL/OS/RTOS/system
-function, for example.
+function, for example, unless that resides at a fixed address. In that case, the path
+of a linkerscript containing a series of symbol names and their fixed address can be
+passed to ``mpy_ld.py`` via the ``--externs`` command line argument. That way symbols
+appearing in the linkerscript will take precedence over what is provided from object
+files, but at the moment the object files' implementation will still reside in the
+final MPY file. The linkerscript parser is limited in its capabilities, and is
+currently used only for parsing the ESP8266 port ROM symbols list (see
+``ports/esp8266/boards/eagle.rom.addr.v6.ld``).
 
 New symbols can be added to the end of the table and the firmware rebuilt.
 The symbols also need to be added to ``tools/mpy_ld.py``'s ``fun_table`` dict in the

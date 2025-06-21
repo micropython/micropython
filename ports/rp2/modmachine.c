@@ -69,7 +69,7 @@ static mp_obj_t mp_machine_unique_id(void) {
     return mp_obj_new_bytes(id.id, sizeof(id.id));
 }
 
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     watchdog_reboot(0, SRAM_END, 0);
     for (;;) {
         __wfi();
@@ -86,7 +86,7 @@ static mp_int_t mp_machine_reset_cause(void) {
     return reset_cause;
 }
 
-NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB;
     reset_usb_boot(0, 0);
@@ -141,6 +141,12 @@ static void mp_machine_idle(void) {
     MICROPY_INTERNAL_WFE(1);
 }
 
+static void alarm_sleep_callback(uint alarm_id) {
+}
+
+// Set this to 1 to enable some debug of the interrupt that woke the device
+#define DEBUG_LIGHTSLEEP 0
+
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_int_t delay_ms = 0;
     bool use_timer_alarm = false;
@@ -169,6 +175,16 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         MICROPY_END_ATOMIC_SECTION(my_interrupts);
         return;
     }
+    #endif
+
+    #if MICROPY_PY_THREAD
+    static bool in_lightsleep;
+    if (in_lightsleep) {
+        // The other CPU is also in machine.lightsleep()
+        MICROPY_END_ATOMIC_SECTION(my_interrupts);
+        return;
+    }
+    in_lightsleep = true;
     #endif
 
     #if MICROPY_HW_ENABLE_USBDEV
@@ -211,12 +227,24 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     // Disable ROSC.
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_DISABLE << ROSC_CTRL_ENABLE_LSB;
+
     #if PICO_RP2040
     if (watchdog_active) {
         // Configure Power-On State Machine to reset the ROSC on a watchdog timeout.
         psm_hw->wdsel |= PSM_WDSEL_ROSC_BITS;
     }
     #endif
+
+    #if DEBUG_LIGHTSLEEP
+    #if PICO_RP2040
+    uint32_t pending_intr = 0;
+    #else
+    uint32_t pending_intr[2] = { 0 };
+    #endif
+    #endif
+
+    bool alarm_armed = false;
+
     if (n_args == 0) {
         #if MICROPY_PY_NETWORK_CYW43
         gpio_set_dormant_irq_enabled(CYW43_PIN_WL_HOST_WAKE, GPIO_IRQ_LEVEL_HIGH, true);
@@ -225,16 +253,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     } else {
         uint32_t save_sleep_en0 = clocks_hw->sleep_en0;
         uint32_t save_sleep_en1 = clocks_hw->sleep_en1;
-        bool timer3_enabled = irq_is_enabled(3);
-
-        const uint32_t alarm_num = 3;
-        const uint32_t irq_num = TIMER_ALARM_IRQ_NUM(timer_hw, alarm_num);
         if (use_timer_alarm) {
-            // Make sure ALARM3/IRQ3 is enabled on _this_ core
-            if (!timer3_enabled) {
-                irq_set_enabled(irq_num, true);
-            }
-            hw_set_bits(&timer_hw->inte, 1u << alarm_num);
             // Use timer alarm to wake.
             clocks_hw->sleep_en0 = 0x0;
             #if PICO_RP2040
@@ -249,8 +268,11 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
             #else
             #error Unknown processor
             #endif
-            timer_hw->intr = 1u << alarm_num; // clear any IRQ
-            timer_hw->alarm[alarm_num] = timer_hw->timerawl + delay_ms * 1000;
+            hardware_alarm_claim(MICROPY_HW_LIGHTSLEEP_ALARM_NUM);
+            hardware_alarm_set_callback(MICROPY_HW_LIGHTSLEEP_ALARM_NUM, alarm_sleep_callback);
+            if (hardware_alarm_set_target(MICROPY_HW_LIGHTSLEEP_ALARM_NUM, make_timeout_time_ms(delay_ms)) == PICO_OK) {
+                alarm_armed = true;
+            }
         } else {
             // TODO: Use RTC alarm to wake.
             clocks_hw->sleep_en0 = 0x0;
@@ -280,10 +302,17 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         #endif
 
         // Go into low-power mode.
-        __wfi();
+        if (alarm_armed) {
+            __wfi();
 
-        if (!timer3_enabled) {
-            irq_set_enabled(irq_num, false);
+            #if DEBUG_LIGHTSLEEP
+            #if PICO_RP2040
+            pending_intr = nvic_hw->ispr;
+            #else
+            pending_intr[0] = nvic_hw->ispr[0];
+            pending_intr[1] = nvic_hw->ispr[1];
+            #endif
+            #endif
         }
         clocks_hw->sleep_en0 = save_sleep_en0;
         clocks_hw->sleep_en1 = save_sleep_en1;
@@ -303,9 +332,37 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     // Re-sync mp_hal_time_ns() counter with aon timer.
     mp_hal_time_ns_set_from_rtc();
+
+    // Note: This must be done after MICROPY_END_ATOMIC_SECTION
+    if (use_timer_alarm) {
+        if (alarm_armed) {
+            hardware_alarm_cancel(MICROPY_HW_LIGHTSLEEP_ALARM_NUM);
+        }
+        hardware_alarm_set_callback(MICROPY_HW_LIGHTSLEEP_ALARM_NUM, NULL);
+        hardware_alarm_unclaim(MICROPY_HW_LIGHTSLEEP_ALARM_NUM);
+
+        #if DEBUG_LIGHTSLEEP
+        // Check irq.h for the list of IRQ's
+        // for rp2040 00000042: TIMER_IRQ_1 woke the device as expected
+        //            00000020: USBCTRL_IRQ woke the device (probably early)
+        // For rp2350 00000000:00000002: TIMER0_IRQ_1 woke the device as expected
+        //            00000000:00004000: USBCTRL_IRQ woke the device (probably early)
+        #if PICO_RP2040
+        mp_printf(MP_PYTHON_PRINTER, "lightsleep: pending_intr=%08lx\n", pending_intr);
+        #else
+        mp_printf(MP_PYTHON_PRINTER, "lightsleep: pending_intr=%08lx:%08lx\n", pending_intr[1], pending_intr[0]);
+        #endif
+        #endif
+    }
+
+    #if MICROPY_PY_THREAD
+    // Clearing the flag here is atomic, and we know we're the ones who set it
+    // (higher up, inside the critical section)
+    in_lightsleep = false;
+    #endif
 }
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_machine_lightsleep(n_args, args);
     mp_machine_reset();
 }

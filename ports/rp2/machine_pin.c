@@ -46,15 +46,6 @@
 
 #define GPIO_IRQ_ALL (0xf)
 
-// Macros to access the state of the hardware.
-#define GPIO_GET_FUNCSEL(id) ((iobank0_hw->io[(id)].ctrl & IO_BANK0_GPIO0_CTRL_FUNCSEL_BITS) >> IO_BANK0_GPIO0_CTRL_FUNCSEL_LSB)
-#define GPIO_IS_OUT(id) (sio_hw->gpio_oe & (1 << (id)))
-#define GPIO_IS_PULL_UP(id) (padsbank0_hw->io[(id)] & PADS_BANK0_GPIO0_PUE_BITS)
-#define GPIO_IS_PULL_DOWN(id) (padsbank0_hw->io[(id)] & PADS_BANK0_GPIO0_PDE_BITS)
-
-// Open drain behaviour is simulated.
-#define GPIO_IS_OPEN_DRAIN(id) (machine_pin_open_drain_mask & (1 << (id)))
-
 #ifndef MICROPY_HW_PIN_RESERVED
 #define MICROPY_HW_PIN_RESERVED(i) (0)
 #endif
@@ -89,7 +80,11 @@ static const mp_irq_methods_t machine_pin_irq_methods;
 static const int num_intr_regs = sizeof(iobank0_hw->intr) / sizeof(iobank0_hw->intr[0]);
 
 // Mask with "1" indicating that the corresponding pin is in simulated open-drain mode.
+#if NUM_BANK0_GPIOS > 32
 uint64_t machine_pin_open_drain_mask;
+#else
+uint32_t machine_pin_open_drain_mask;
+#endif
 
 #if MICROPY_HW_PIN_EXT_COUNT
 static inline bool is_ext_pin(__unused const machine_pin_obj_t *self) {
@@ -198,13 +193,13 @@ const machine_pin_obj_t *machine_pin_find(mp_obj_t pin) {
 
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
-    uint funcsel = GPIO_GET_FUNCSEL(self->id);
+    uint funcsel = gpio_get_function(self->id);
     qstr mode_qst;
     if (!is_ext_pin(self)) {
         if (funcsel == GPIO_FUNC_SIO) {
             if (GPIO_IS_OPEN_DRAIN(self->id)) {
                 mode_qst = MP_QSTR_OPEN_DRAIN;
-            } else if (GPIO_IS_OUT(self->id)) {
+            } else if (gpio_is_dir_out(self->id)) {
                 mode_qst = MP_QSTR_OUT;
             } else {
                 mode_qst = MP_QSTR_IN;
@@ -214,11 +209,11 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         }
         mp_printf(print, "Pin(%q, mode=%q", self->name, mode_qst);
         bool pull_up = false;
-        if (GPIO_IS_PULL_UP(self->id)) {
+        if (gpio_is_pulled_up(self->id)) {
             mp_printf(print, ", pull=%q", MP_QSTR_PULL_UP);
             pull_up = true;
         }
-        if (GPIO_IS_PULL_DOWN(self->id)) {
+        if (gpio_is_pulled_down(self->id)) {
             if (pull_up) {
                 mp_printf(print, "|%q", MP_QSTR_PULL_DOWN);
             } else {
@@ -298,7 +293,7 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
                 mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin af: %d"), af);
             }
             gpio_set_function(self->id, af);
-            machine_pin_open_drain_mask &= ~(1ULL << self->id);
+            GPIO_DISABLE_OPEN_DRAIN(self->id);
         }
     }
 
@@ -411,7 +406,7 @@ static mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
         machine_pin_ext_set(self, self->last_output_value ^ 1);
         #endif
     } else if (GPIO_IS_OPEN_DRAIN(self->id)) {
-        if (GPIO_IS_OUT(self->id)) {
+        if (gpio_is_dir_out(self->id)) {
             gpio_set_dir(self->id, GPIO_IN);
         } else {
             gpio_set_dir(self->id, GPIO_OUT);

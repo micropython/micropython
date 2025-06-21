@@ -147,7 +147,7 @@ static const unsigned char *asn1_get_data(mp_obj_t obj, size_t *out_len) {
     return (const unsigned char *)str;
 }
 
-static NORETURN void mbedtls_raise_error(int err) {
+static MP_NORETURN void mbedtls_raise_error(int err) {
     // Handle special cases.
     if (err == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
         mp_raise_OSError(MP_ENOMEM);

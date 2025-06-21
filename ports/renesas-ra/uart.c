@@ -42,7 +42,7 @@
 
 typedef int (*KEYEX_CB)(uint32_t d);
 
-extern void NORETURN __fatal_error(const char *msg);
+extern void MP_NORETURN __fatal_error(const char *msg);
 #if MICROPY_KBD_EXCEPTION
 extern int mp_interrupt_char;
 static KEYEX_CB keyex_cb[MICROPY_HW_MAX_UART] = {(KEYEX_CB)NULL};
@@ -477,7 +477,7 @@ bool uart_rx_wait(machine_uart_obj_t *self, uint32_t timeout) {
         if (HAL_GetTick() - start >= timeout) {
             return false; // timeout
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 }
 
@@ -498,7 +498,7 @@ bool uart_tx_wait(machine_uart_obj_t *self, uint32_t timeout) {
         if (HAL_GetTick() - start >= timeout) {
             return false; // timeout
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 }
 

@@ -200,18 +200,18 @@ void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_x86_sub_r32_r32((as), (reg_dest), (reg_src))
 #define ASM_MUL_REG_REG(as, reg_dest, reg_src) asm_x86_mul_r32_r32((as), (reg_dest), (reg_src))
 
-#define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem32_to_r32((as), (reg_base), 0, (reg_dest))
-#define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_x86_mov_mem32_to_r32((as), (reg_base), 4 * (word_offset), (reg_dest))
+#define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) ASM_LOAD32_REG_REG_OFFSET((as), (reg_dest), (reg_base), (word_offset))
 #define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem8_to_r32zx((as), (reg_base), 0, (reg_dest))
 #define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem16_to_r32zx((as), (reg_base), 0, (reg_dest))
 #define ASM_LOAD16_REG_REG_OFFSET(as, reg_dest, reg_base, uint16_offset) asm_x86_mov_mem16_to_r32zx((as), (reg_base), 2 * (uint16_offset), (reg_dest))
 #define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem32_to_r32((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD32_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_x86_mov_mem32_to_r32((as), (reg_base), 4 * (word_offset), (reg_dest))
 
-#define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_x86_mov_r32_to_mem32((as), (reg_src), (reg_base), 0)
-#define ASM_STORE_REG_REG_OFFSET(as, reg_src, reg_base, word_offset) asm_x86_mov_r32_to_mem32((as), (reg_src), (reg_base), 4 * (word_offset))
+#define ASM_STORE_REG_REG_OFFSET(as, reg_src, reg_base, word_offset) ASM_STORE32_REG_REG_OFFSET((as), (reg_src), (reg_base), (word_offset))
 #define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_x86_mov_r8_to_mem8((as), (reg_src), (reg_base), 0)
 #define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_x86_mov_r16_to_mem16((as), (reg_src), (reg_base), 0)
 #define ASM_STORE32_REG_REG(as, reg_src, reg_base) asm_x86_mov_r32_to_mem32((as), (reg_src), (reg_base), 0)
+#define ASM_STORE32_REG_REG_OFFSET(as, reg_src, reg_base, word_offset) asm_x86_mov_r32_to_mem32((as), (reg_src), (reg_base), 4 * (word_offset))
 
 #endif // GENERIC_ASM_API
 

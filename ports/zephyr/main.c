@@ -63,6 +63,10 @@
 
 static char heap[MICROPY_HEAP_SIZE];
 
+#if defined(CONFIG_USB_DEVICE_STACK_NEXT)
+extern int mp_usbd_init(void);
+#endif // defined(CONFIG_USB_DEVICE_STACK_NEXT)
+
 void init_zephyr(void) {
     // We now rely on CONFIG_NET_APP_SETTINGS to set up bootstrap
     // network addresses.
@@ -143,6 +147,10 @@ soft_reset:
     usb_enable(NULL);
     #endif
 
+    #ifdef CONFIG_USB_DEVICE_STACK_NEXT
+    mp_usbd_init();
+    #endif
+
     #if MICROPY_VFS
     vfs_init();
     #endif
@@ -211,7 +219,7 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 #endif
 
-NORETURN void nlr_jump_fail(void *val) {
+MP_NORETURN void nlr_jump_fail(void *val) {
     while (1) {
         ;
     }

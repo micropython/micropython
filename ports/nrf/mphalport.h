@@ -35,6 +35,22 @@
 #include "nrfx_config.h"
 #include "shared/runtime/interrupt_char.h"
 
+// Entering a critical section.
+#ifndef BLUETOOTH_SD
+#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
+#endif
+
+static inline void enable_irq(mp_uint_t state) {
+    __set_PRIMASK(state);
+}
+
+static inline mp_uint_t disable_irq(void) {
+    mp_uint_t state = __get_PRIMASK();
+    __disable_irq();
+    return state;
+}
+
 typedef enum
 {
     HAL_OK       = 0x00,
@@ -47,7 +63,7 @@ extern const unsigned char mp_hal_status_to_errno_table[4];
 
 extern ringbuf_t stdin_ringbuf;
 
-NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
+MP_NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
 
 int mp_hal_stdin_rx_chr(void);

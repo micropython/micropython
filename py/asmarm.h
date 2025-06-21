@@ -109,13 +109,19 @@ void asm_arm_lsr_reg_reg(asm_arm_t *as, uint rd, uint rs);
 void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs);
 
 // memory
-void asm_arm_ldr_reg_reg(asm_arm_t *as, uint rd, uint rn, uint byte_offset);
+void asm_arm_ldr_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offset);
 void asm_arm_ldrh_reg_reg(asm_arm_t *as, uint rd, uint rn);
 void asm_arm_ldrh_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offset);
 void asm_arm_ldrb_reg_reg(asm_arm_t *as, uint rd, uint rn);
-void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm, uint byte_offset);
+void asm_arm_str_reg_reg_offset(asm_arm_t *as, uint rd, uint rm, uint byte_offset);
 void asm_arm_strh_reg_reg(asm_arm_t *as, uint rd, uint rm);
 void asm_arm_strb_reg_reg(asm_arm_t *as, uint rd, uint rm);
+
+// load from array
+void asm_arm_ldr_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn);
+void asm_arm_ldrh_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn);
+void asm_arm_ldrb_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn);
+
 // store to array
 void asm_arm_str_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn);
 void asm_arm_strh_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn);
@@ -202,18 +208,25 @@ void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_arm_sub_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_MUL_REG_REG(as, reg_dest, reg_src) asm_arm_mul_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
 
-#define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base), 0)
-#define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base), 4 * (word_offset))
+#define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) ASM_LOAD32_REG_REG_OFFSET((as), (reg_dest), (reg_base), (word_offset))
 #define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_arm_ldrb_reg_reg((as), (reg_dest), (reg_base))
 #define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_arm_ldrh_reg_reg((as), (reg_dest), (reg_base))
 #define ASM_LOAD16_REG_REG_OFFSET(as, reg_dest, reg_base, uint16_offset) asm_arm_ldrh_reg_reg_offset((as), (reg_dest), (reg_base), 2 * (uint16_offset))
-#define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base), 0)
+#define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) asm_arm_ldr_reg_reg_offset((as), (reg_dest), (reg_base), 0)
+#define ASM_LOAD32_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_arm_ldr_reg_reg_offset((as), (reg_dest), (reg_base), 4 * (word_offset))
 
-#define ASM_STORE_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg((as), (reg_value), (reg_base), 0)
-#define ASM_STORE_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_arm_str_reg_reg((as), (reg_dest), (reg_base), 4 * (word_offset))
+#define ASM_STORE_REG_REG_OFFSET(as, reg_value, reg_base, word_offset) ASM_STORE32_REG_REG_OFFSET((as), (reg_value), (reg_base), (word_offset))
 #define ASM_STORE8_REG_REG(as, reg_value, reg_base) asm_arm_strb_reg_reg((as), (reg_value), (reg_base))
 #define ASM_STORE16_REG_REG(as, reg_value, reg_base) asm_arm_strh_reg_reg((as), (reg_value), (reg_base))
-#define ASM_STORE32_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg((as), (reg_value), (reg_base), 0)
+#define ASM_STORE32_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg_offset((as), (reg_value), (reg_base), 0)
+#define ASM_STORE32_REG_REG_OFFSET(as, reg_value, reg_base, word_offset) asm_arm_str_reg_reg_offset((as), (reg_value), (reg_base), 4 * (word_offset))
+
+#define ASM_LOAD8_REG_REG_REG(as, reg_dest, reg_base, reg_index) asm_arm_ldrb_reg_reg_reg((as), (reg_dest), (reg_base), (reg_index))
+#define ASM_LOAD16_REG_REG_REG(as, reg_dest, reg_base, reg_index) asm_arm_ldrh_reg_reg_reg((as), (reg_dest), (reg_base), (reg_index))
+#define ASM_LOAD32_REG_REG_REG(as, reg_dest, reg_base, reg_index) asm_arm_ldr_reg_reg_reg((as), (reg_dest), (reg_base), (reg_index))
+#define ASM_STORE8_REG_REG_REG(as, reg_val, reg_base, reg_index) asm_arm_strb_reg_reg_reg((as), (reg_val), (reg_base), (reg_index))
+#define ASM_STORE16_REG_REG_REG(as, reg_val, reg_base, reg_index) asm_arm_strh_reg_reg_reg((as), (reg_val), (reg_base), (reg_index))
+#define ASM_STORE32_REG_REG_REG(as, reg_val, reg_base, reg_index) asm_arm_str_reg_reg_reg((as), (reg_val), (reg_base), (reg_index))
 
 #endif // GENERIC_ASM_API
 

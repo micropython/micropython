@@ -89,7 +89,7 @@ typedef struct _mp_obj_uctypes_struct_t {
     uint32_t flags;
 } mp_obj_uctypes_struct_t;
 
-static NORETURN void syntax_error(void) {
+static MP_NORETURN void syntax_error(void) {
     mp_raise_TypeError(MP_ERROR_TEXT("syntax error in uctypes descriptor"));
 }
 
@@ -277,15 +277,18 @@ static mp_obj_t uctypes_struct_sizeof(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uctypes_struct_sizeof_obj, 1, 2, uctypes_struct_sizeof);
 
+static const char type2char[16] = {
+    'B', 'b', 'H', 'h', 'I', 'i', 'Q', 'q',
+    '-', '-', '-', '-', '-', '-', 'f', 'd'
+};
+
 static inline mp_obj_t get_unaligned(uint val_type, byte *p, int big_endian) {
     char struct_type = big_endian ? '>' : '<';
-    static const char type2char[16] = "BbHhIiQq------fd";
     return mp_binary_get_val(struct_type, type2char[val_type], p, &p);
 }
 
 static inline void set_unaligned(uint val_type, byte *p, int big_endian, mp_obj_t val) {
     char struct_type = big_endian ? '>' : '<';
-    static const char type2char[16] = "BbHhIiQq------fd";
     mp_binary_set_val(struct_type, type2char[val_type], val, p, &p);
 }
 

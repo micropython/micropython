@@ -18,10 +18,14 @@ Functions
     Configure whether or not a touch will wake the device from sleep.
     *wake* should be a boolean value.
 
+    .. note:: This is only available for boards that have touch sensor support.
+
 .. function:: wake_on_ulp(wake)
 
     Configure whether or not the Ultra-Low-Power co-processor can wake the
     device from sleep. *wake* should be a boolean value.
+
+    .. note:: This is only available for boards that have ULP coprocessor support.
 
 .. function:: wake_on_ext0(pin, level)
 
@@ -29,11 +33,15 @@ Functions
     or a valid Pin object.  *level* should be ``esp32.WAKEUP_ALL_LOW`` or
     ``esp32.WAKEUP_ANY_HIGH``.
 
+    .. note:: This is only available for boards that have ext0 support.
+
 .. function:: wake_on_ext1(pins, level)
 
     Configure how EXT1 wakes the device from sleep.  *pins* can be ``None``
     or a tuple/list of valid Pin objects.  *level* should be ``esp32.WAKEUP_ALL_LOW``
     or ``esp32.WAKEUP_ANY_HIGH``.
+
+    .. note:: This is only available for boards that have ext1 support.
 
 .. function:: gpio_deep_sleep_hold(enable)
 
@@ -79,6 +87,29 @@ Functions
 
        The result of :func:`gc.mem_free()` is the total of the current "free"
        and "max new split" values printed by :func:`micropython.mem_info()`.
+
+.. function:: idf_task_info()
+
+    Returns information about running ESP-IDF/FreeRTOS tasks, which include
+    MicroPython threads. This data is useful to gain insight into how much time
+    tasks spend running or if they are blocked for significant parts of time,
+    and to determine if allocated stacks are fully utilized or might be reduced.
+
+    ``CONFIG_FREERTOS_USE_TRACE_FACILITY=y`` must be set in the board
+    configuration to make this method available. Additionally configuring
+    ``CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y`` and
+    ``CONFIG_FREERTOS_VTASKLIST_INCLUDE_COREID=y`` is recommended to be able to
+    retrieve the total and per-task runtime and the core ID respectively.
+
+    The return value is a 2-tuple where the first value is the total runtime,
+    and the second a list of tasks. Each task is a 7-tuple containing: the task
+    ID, name, current state, priority, runtime, stack high water mark, and the
+    ID of the core it is running on. Runtime and core ID will be None when the
+    respective FreeRTOS configuration option is not enabled.
+
+    .. note:: For an easier to use output based on this function you can use the
+       `utop library <https://github.com/micropython/micropython-lib/tree/master/micropython/utop>`_,
+       which implements a live overview similar to the Unix ``top`` command.
 
 
 Flash partitions

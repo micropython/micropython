@@ -49,6 +49,14 @@ config MICROPY_FROZEN_MANIFEST
 	depends on MICROPY_FROZEN_MODULES
 	default "boards/manifest.py"
 
+config MICROPY_USB_DEVICE_VID
+	hex "USB VID"
+	default 0x2fe3
+
+config MICROPY_USB_DEVICE_PID
+	hex "USB PID"
+	default 0x0001
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"

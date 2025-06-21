@@ -291,12 +291,12 @@ static mp_obj_t mp_machine_unique_id(void) {
 }
 
 // Resets the pyboard in a manner similar to pushing the external RESET button.
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     powerctrl_mcu_reset();
 }
 
 // Activate the bootloader without BOOT* pins.
-NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_dev_deinit();
     #endif

@@ -290,12 +290,13 @@ static mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args,
 static mp_obj_t bluetooth_ble_active(size_t n_args, const mp_obj_t *args) {
     if (n_args == 2) {
         // Boolean enable/disable argument supplied, set current state.
+        int err;
         if (mp_obj_is_true(args[1])) {
-            int err = mp_bluetooth_init();
-            bluetooth_handle_errno(err);
+            err = mp_bluetooth_init();
         } else {
-            mp_bluetooth_deinit();
+            err = mp_bluetooth_deinit();
         }
+        bluetooth_handle_errno(err);
     }
     // Return current state.
     return mp_obj_new_bool(mp_bluetooth_is_active());

@@ -37,7 +37,7 @@ import sys
 import subprocess
 from dataclasses import dataclass
 
-IDF_VERS = ("v5.2.2",)
+IDF_VERS = ("v5.4.1",)
 
 BUILDS = (
     ("ESP32_GENERIC", ""),

@@ -1,5 +1,5 @@
 """
-categories: Syntax
+categories: Syntax,Unpacking
 description: Argument unpacking does not work if the argument being unpacked is the nth or greater argument where n is the number of bits in an MP_SMALL_INT.
 cause: The implementation uses an MP_SMALL_INT to flag args that need to be unpacked.
 workaround: Use fewer arguments.

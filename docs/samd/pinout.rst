@@ -650,6 +650,124 @@ Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
 
 The board does not provide access to UART, I2C, SPI or DAC.
 
+SparkFun Redboard Turbo assignment table
+----------------------------------------
+
+=== ==== ============ ==== ==== ====== ====== ====== ======
+Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
+=== ==== ============ ==== ==== ====== ====== ====== ======
+  2 PA02           A0   2    0     -      -      -      -
+ 40 PB08           A1   8    2     -     4/0    4/0     -
+ 41 PB09           A2   9    3     -     4/1    4/1     -
+  4 PA04           A3   4    4     -     0/0    0/0     -
+  5 PA05           A4   5    5     -     0/1    0/1     -
+ 34 PB02           A5   2   10     -     5/0    6/0     -
+ 11 PA11           D0  11   19    0/3    2/3    1/1    0/3
+ 10 PA10           D1  10   18    0/2    2/2    1/0    0/2
+ 14 PA14           D2  14    -    2/2    4/2    3/0    0/4
+  9 PA09           D3   9   17    0/1    2/1    0/1    1/3
+  8 PA08           D4   -   16    0/0    2/0    0/0    1/2
+ 15 PA15           D5  15    -    2/3    4/3    3/1    0/5
+ 20 PA20           D6   4    -    5/2    3/2    7/0    0/4
+ 21 PA21           D7   5    -    5/3    3/3    7/1    0/7
+  6 PA06           D8   6    6     -     0/2    1/0     -
+  7 PA07           D9   7    7     -     0/3    1/1     -
+ 11 PA11           RX  11   19    0/3    2/3    1/1    0/3
+ 10 PA10           TX  10   18    0/2    2/2    1/0    0/2
+  3 PA03         AREF   3    1     -      -      -      -
+ 18 PA18          D10   2    -    1/2    3/2    3/0    0/2
+ 16 PA16          D11   0    -    1/0    3/0    2/0    0/6
+ 19 PA19          D12   3    -    1/3    3/3    3/1    0/3
+ 17 PA17          D13   1    -    1/1    3/1    2/1    0/7
+ 13 PA13     FLASH_CS  13    -    2/1    4/1    2/0    0/7
+ 35 PB03   FLASH_MISO   3   11     -     5/1    6/1     -
+ 54 PB22   FLASH_MOSI   6    -     -     5/2    7/0     -
+ 55 PB23    FLASH_SCK   7    -     -     5/3    7/1     -
+ 31 PA31       LED_RX  11    -     -     1/3    1/1     -
+ 27 PA27       LED_TX  15    -     -      -      -      -
+ 12 PA12         MISO  12    -    2/0    4/0    2/0    0/6
+ 42 PB10         MOSI  10    -     -     4/2    5/0    0/4
+ 30 PA30     NEOPIXEL  10    -     -     1/2    1/0     -
+ 43 PB11          SCK  11    -     -     4/3    5/1    0/5
+ 23 PA23          SCL   7    -    3/1    5/1    4/1    0/5
+ 22 PA22          SDA   6    -    3/0    5/0    4/0    0/4
+ 30 PA30        SWCLK  10    -     -     1/2    1/0     -
+ 31 PA31        SWDIO  11    -     -     1/3    1/1     -
+ 24 PA24       USB_DM  12    -    3/2    5/2    5/0    1/2
+ 25 PA25       USB_DP  13    -    3/3    5/3    5/1    1/3
+  0 PA00                0    -     -     1/0    2/0     -
+  1 PA01                1    -     -     1/1    2/1     -
+ 28 PA28                8    -     -      -      -      -
+=== ==== ============ ==== ==== ====== ====== ====== ======
+
+For the definition of the table columns see the explanation at the table for
+Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
+
+The default devices at the board are:
+
+- UART 0 at pins PA11/PA10, labelled RX/TX
+- I2C 3 at pins PA22/PA23, labelled SDA/SCL
+- SPI 4 at pins PB10/PA12/PB11, labelled MISO, MOSI and SCK
+- DAC output on pin PA02, labelled A0
+
+
+SparkFun SAMD21 Dev Breakout assignment table
+---------------------------------------------
+
+=== ==== ============ ==== ==== ====== ====== ====== ======
+Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
+=== ==== ============ ==== ==== ====== ====== ====== ======
+  2 PA02           A0   2    0      -     -      -      -
+ 40 PB08           A1   8    2      -    4/0    4/0     -
+ 41 PB09           A2   9    3      -    4/1    4/1     -
+  4 PA04           A3   4    4      -    0/0    0/0     -
+  5 PA05           A4   5    5      -    0/1    0/1     -
+ 34 PB02           A5   2   10      -    5/0    6/0     -
+ 11 PA11           D0  11   19     0/3   2/3    1/1    0/3
+ 10 PA10           D1  10   18     0/2   2/2    1/0    0/2
+ 14 PA14           D2  14    -     2/2   4/2    3/0    0/4
+  9 PA09           D3   9   17     0/1   2/1    0/1    1/3
+  8 PA08           D4   -   16     0/0   2/0    0/0    1/2
+ 15 PA15           D5  15    -     2/3   4/3    3/1    0/5
+ 20 PA20           D6   4    -     5/2   3/2    7/0    0/4
+ 21 PA21           D7   5    -     5/3   3/3    7/1    0/7
+  6 PA06           D8   6    6      -    0/2    1/0     -
+  7 PA07           D9   7    7      -    0/3    1/1     -
+ 11 PA11           RX  11   19     0/3   2/3    1/1    0/3
+ 10 PA10           TX  10   18     0/2   2/2    1/0    0/2
+  3 PA03         AREF   3    1      -     -      -      -
+ 18 PA18          D10   2    -     1/2   3/2    3/0    0/2
+ 16 PA16          D11   0    -     1/0   3/0    2/0    0/6
+ 19 PA19          D12   3    -     1/3   3/3    3/1    0/3
+ 17 PA17          D13   1    -     1/1   3/1    2/1    0/7
+ 54 PB22          D30   6    -      -    5/2    7/0     -
+ 55 PB23          D31   7    -      -    5/3    7/1     -
+ 13 PA13          D38  13    -     2/1   4/1    2/0    0/7
+ 35 PB03       LED_RX   3   11      -    5/1    6/1     -
+ 27 PA27       LED_TX  15    -      -     -      -      -
+ 12 PA12         MISO  12    -     2/0   4/0    2/0    0/6
+ 42 PB10         MOSI  10    -      -    4/2    5/0    0/4
+ 43 PB11          SCK  11    -      -    4/3    5/1    0/5
+ 23 PA23          SCL   7    -     3/1   5/1    4/1    0/5
+ 22 PA22          SDA   6    -     3/0   5/0    4/0    0/4
+ 30 PA30        SWCLK  10    -      -    1/2    1/0     -
+ 31 PA31        SWDIO  11    -      -    1/3    1/1     -
+ 24 PA24       USB_DM  12    -     3/2   5/2    5/0    1/2
+ 25 PA25       USB_DP  13    -     3/3   5/3    5/1    1/3
+  0 PA00                0    -      -    1/0    2/0     -
+  1 PA01                1    -      -    1/1    2/1     -
+ 28 PA28                8    -      -     -      -      -
+=== ==== ============ ==== ==== ====== ====== ====== ======
+
+For the definition of the table columns see the explanation at the table for
+Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
+
+The default devices at the board are:
+
+- UART 0 at pins PA11/PA10, labelled RX/TX
+- I2C 3 at pins PA22/PA23, labelled SDA/SCL
+- SPI 4 at pins PB10/PA12/PB11, labelled MISO, MOSI and SCK
+- DAC output on pin PA02, labelled A0
 
 SAMD21 Xplained PRO pin assignment table
 ----------------------------------------
@@ -892,7 +1010,7 @@ Default pin assignments:
 
 There seems to be no default pin assignment for this board.
 
-Sparkfun SAMD51 Thing Plus pin assignment table
+SparkFun SAMD51 Thing Plus pin assignment table
 ------------------------------------------------
 
 === ==== ============ ==== ==== ==== ====== ====== ===== ===== =====

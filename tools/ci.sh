@@ -93,23 +93,30 @@ function ci_code_size_build {
     function code_size_build_step {
         COMMIT=$1
         OUTFILE=$2
-        IGNORE_ERRORS=$3
 
         echo "Building ${COMMIT}..."
         git checkout --detach $COMMIT
         git submodule update --init $SUBMODULES
         git show -s
         tools/metrics.py clean $PORTS_TO_CHECK
-        tools/metrics.py build $PORTS_TO_CHECK | tee $OUTFILE || $IGNORE_ERRORS
+        tools/metrics.py build $PORTS_TO_CHECK | tee $OUTFILE
+        return $?
     }
+
+    # Allow errors from tools/metrics.py to propagate out of the pipe above.
+    set -o pipefail
 
     # build reference, save to size0
     # ignore any errors with this build, in case master is failing
-    code_size_build_step $REFERENCE ~/size0 true
+    code_size_build_step $REFERENCE ~/size0
     # build PR/branch, save to size1
-    code_size_build_step $COMPARISON ~/size1 false
+    code_size_build_step $COMPARISON ~/size1
+    STATUS=$?
 
+    set +o pipefail
     unset -f code_size_build_step
+
+    return $STATUS
 }
 
 ########################################################################################
@@ -159,7 +166,7 @@ function ci_cc3200_build {
 # ports/esp32
 
 # GitHub tag of ESP-IDF to use for CI (note: must be a tag or a branch)
-IDF_VER=v5.2.2
+IDF_VER=v5.4.1
 PYTHON=$(command -v python3 2> /dev/null)
 PYTHON_VER=$(${PYTHON:-python} --version | cut -d' ' -f2)
 
@@ -209,7 +216,7 @@ function ci_esp32_build_s3_c3 {
 
 function ci_esp8266_setup {
     sudo pip3 install pyserial esptool==3.3.1 pyelftools ar
-    wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz
+    wget https://micropython.org/resources/xtensa-lx106-elf-standalone.tar.gz
     zcat xtensa-lx106-elf-standalone.tar.gz | tar x
     # Remove this esptool.py so pip version is used instead
     rm xtensa-lx106-elf/bin/esptool.py
@@ -317,13 +324,24 @@ function ci_qemu_setup_rv32 {
     qemu-system-riscv32 --version
 }
 
-function ci_qemu_build_arm {
+function ci_qemu_build_arm_prepare {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu submodules
+}
+
+function ci_qemu_build_arm_bigendian {
+    ci_qemu_build_arm_prepare
     make ${MAKEOPTS} -C ports/qemu CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
-    make ${MAKEOPTS} -C ports/qemu clean
-    make ${MAKEOPTS} -C ports/qemu test_full
+}
+
+function ci_qemu_build_arm_sabrelite {
+    ci_qemu_build_arm_prepare
     make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full
+}
+
+function ci_qemu_build_arm_thumb {
+    ci_qemu_build_arm_prepare
+    make ${MAKEOPTS} -C ports/qemu test_full
 
     # Test building and running native .mpy with armv7m architecture.
     ci_native_mpy_modules_build armv7m
@@ -494,6 +512,18 @@ CI_UNIX_OPTS_QEMU_RISCV64=(
     MICROPY_STANDALONE=1
 )
 
+CI_UNIX_OPTS_SANITIZE_ADDRESS=(
+    VARIANT=coverage
+    CFLAGS_EXTRA="-fsanitize=address"
+    LDFLAGS_EXTRA="-fsanitize=address"
+)
+
+CI_UNIX_OPTS_SANITIZE_UNDEFINED=(
+    VARIANT=coverage
+    CFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
+    LDFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
+)
+
 function ci_unix_build_helper {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix "$@" submodules
@@ -509,13 +539,26 @@ function ci_unix_run_tests_helper {
     make -C ports/unix "$@" test
 }
 
+function ci_unix_run_tests_full_extra {
+    micropython=$1
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-multitests.py multi_net/*.py)
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-perfbench.py 1000 1000)
+}
+
+function ci_unix_run_tests_full_no_native_helper {
+    variant=$1
+    shift
+    micropython=../ports/unix/build-$variant/micropython
+    make -C ports/unix VARIANT=$variant "$@" test_full_no_native
+    ci_unix_run_tests_full_extra $micropython
+}
+
 function ci_unix_run_tests_full_helper {
     variant=$1
     shift
     micropython=../ports/unix/build-$variant/micropython
     make -C ports/unix VARIANT=$variant "$@" test_full
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-multitests.py multi_net/*.py)
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-perfbench.py 1000 1000)
+    ci_unix_run_tests_full_extra $micropython
 }
 
 function ci_native_mpy_modules_build {
@@ -524,38 +567,23 @@ function ci_native_mpy_modules_build {
     else
         arch=$1
     fi
-    for natmod in features1 features3 features4 heapq re
+    for natmod in deflate features1 features3 features4 framebuf heapq random re
     do
-        make -C examples/natmod/$natmod clean
+        make -C examples/natmod/$natmod ARCH=$arch clean
         make -C examples/natmod/$natmod ARCH=$arch
     done
 
-    # deflate, framebuf, and random currently cannot build on xtensa due to
-    # some symbols that have been removed from the compiler's runtime, in
-    # favour of being provided from ROM.
-    if [ $arch != "xtensa" ]; then
-        for natmod in deflate framebuf random
-        do
-            make -C examples/natmod/$natmod clean
-            make -C examples/natmod/$natmod ARCH=$arch
-        done
-    fi
-
-    # features2 requires soft-float on armv7m, rv32imc, and xtensa.  On armv6m
-    # the compiler generates absolute relocations in the object file
-    # referencing soft-float functions, which is not supported at the moment.
-    make -C examples/natmod/features2 clean
-    if [ $arch = "rv32imc" ] || [ $arch = "armv7m" ] || [ $arch = "xtensa" ]; then
+    # features2 requires soft-float on rv32imc and xtensa.
+    make -C examples/natmod/features2 ARCH=$arch clean
+    if [ $arch = "rv32imc" ] || [ $arch = "xtensa" ]; then
         make -C examples/natmod/features2 ARCH=$arch MICROPY_FLOAT_IMPL=float
-    elif [ $arch != "armv6m" ]; then
+    else
         make -C examples/natmod/features2 ARCH=$arch
     fi
 
-    # btree requires thread local storage support on rv32imc, whilst on xtensa
-    # it relies on symbols that are provided from ROM but not exposed to
-    # natmods at the moment.
-    if [ $arch != "rv32imc" ] && [ $arch != "xtensa" ]; then
-        make -C examples/natmod/btree clean
+    # btree requires thread local storage support on rv32imc.
+    if [ $arch != "rv32imc" ]; then
+        make -C examples/natmod/btree ARCH=$arch clean
         make -C examples/natmod/btree ARCH=$arch
     fi
 }
@@ -668,7 +696,7 @@ function ci_unix_nanbox_build {
 }
 
 function ci_unix_nanbox_run_tests {
-    ci_unix_run_tests_full_helper nanbox PYTHON=python2.7
+    ci_unix_run_tests_full_no_native_helper nanbox PYTHON=python2.7
 }
 
 function ci_unix_float_build {
@@ -724,6 +752,28 @@ function ci_unix_settrace_stackless_build {
 
 function ci_unix_settrace_stackless_run_tests {
     ci_unix_run_tests_full_helper standard "${CI_UNIX_OPTS_SYS_SETTRACE_STACKLESS[@]}"
+}
+
+function ci_unix_sanitize_undefined_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/unix submodules
+    make ${MAKEOPTS} -C ports/unix "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
+    ci_unix_build_ffi_lib_helper gcc
+}
+
+function ci_unix_sanitize_undefined_run_tests {
+    ci_unix_run_tests_full_helper coverage "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
+}
+
+function ci_unix_sanitize_address_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/unix submodules
+    make ${MAKEOPTS} -C ports/unix "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
+    ci_unix_build_ffi_lib_helper gcc
+}
+
+function ci_unix_sanitize_address_run_tests {
+    ci_unix_run_tests_full_helper coverage "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
 }
 
 function ci_unix_macos_build {

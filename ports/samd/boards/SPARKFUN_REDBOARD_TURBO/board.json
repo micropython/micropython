@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "DAC",
+        "External Flash",
+        "USB",
+        "RGB LED"
+    ],
+    "images": [
+        "sparkfun_readboard_turbo.jpg"
+    ],
+    "mcu": "samd21",
+    "product": "SparkFun RedBoard Turbo",
+    "thumbnail": "",
+    "url": "https://www.sparkfun.com/products/14812",
+    "vendor": "Sparkfun"
+}

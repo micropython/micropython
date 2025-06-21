@@ -29,10 +29,12 @@ target-version = "py37"
 [tool.ruff.lint]
 exclude = [  # Ruff finds Python SyntaxError in these files
   "tests/cmdline/repl_autocomplete.py",
+  "tests/cmdline/repl_autocomplete_underscore.py",
   "tests/cmdline/repl_autoindent.py",
   "tests/cmdline/repl_basic.py",
   "tests/cmdline/repl_cont.py",
   "tests/cmdline/repl_emacs_keys.py",
+  "tests/cmdline/repl_paste.py",
   "tests/cmdline/repl_words_move.py",
   "tests/feature_check/repl_emacs_check.py",
   "tests/feature_check/repl_words_move_check.py",

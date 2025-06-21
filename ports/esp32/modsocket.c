@@ -611,7 +611,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 // XXX this can end up waiting a very long time if the content is dribbled in one character
 // at a time, as the timeout resets each time a recvfrom succeeds ... this is probably not
 // good behaviour.
-static mp_uint_t _socket_read_data(mp_obj_t self_in, void *buf, size_t size,
+static mp_uint_t _socket_read_data(mp_obj_t self_in, void *buf, size_t size, mp_int_t flags,
     struct sockaddr *from, socklen_t *from_len, int *errcode) {
     socket_obj_t *sock = MP_OBJ_TO_PTR(self_in);
 
@@ -645,7 +645,7 @@ static mp_uint_t _socket_read_data(mp_obj_t self_in, void *buf, size_t size,
         if (release_gil) {
             MP_THREAD_GIL_EXIT();
         }
-        int r = lwip_recvfrom(sock->fd, buf, size, 0, from, from_len);
+        int r = lwip_recvfrom(sock->fd, buf, size, flags, from, from_len);
         if (release_gil) {
             MP_THREAD_GIL_ENTER();
         }
@@ -655,7 +655,7 @@ static mp_uint_t _socket_read_data(mp_obj_t self_in, void *buf, size_t size,
         if (r >= 0) {
             return r;
         }
-        if (errno != EWOULDBLOCK) {
+        if (errno != EWOULDBLOCK || (flags & MSG_DONTWAIT)) {
             *errcode = errno;
             return MP_STREAM_ERROR;
         }
@@ -666,14 +666,17 @@ static mp_uint_t _socket_read_data(mp_obj_t self_in, void *buf, size_t size,
     return MP_STREAM_ERROR;
 }
 
-mp_obj_t _socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in,
+mp_obj_t _socket_recvfrom(size_t n_args, const mp_obj_t *args,
     struct sockaddr *from, socklen_t *from_len) {
-    size_t len = mp_obj_get_int(len_in);
+    mp_obj_t self_in = args[0];
+    size_t len = mp_obj_get_int(args[1]);
+    int flags = n_args > 2 ? mp_obj_get_int(args[2]) : 0;
+
     vstr_t vstr;
     vstr_init_len(&vstr, len);
 
     int errcode;
-    mp_uint_t ret = _socket_read_data(self_in, vstr.buf, len, from, from_len, &errcode);
+    mp_uint_t ret = _socket_read_data(self_in, vstr.buf, len, flags, from, from_len, &errcode);
     if (ret == MP_STREAM_ERROR) {
         mp_raise_OSError(errcode);
     }
@@ -682,17 +685,17 @@ mp_obj_t _socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in,
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
 
-static mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
-    return _socket_recvfrom(self_in, len_in, NULL, NULL);
+static mp_obj_t socket_recv(size_t n_args, const mp_obj_t *args) {
+    return _socket_recvfrom(n_args, args, NULL, NULL);
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_obj, 2, 3, socket_recv);
 
-static mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
+static mp_obj_t socket_recvfrom(size_t n_args, const mp_obj_t *args) {
     struct sockaddr from;
     socklen_t fromlen = sizeof(from);
 
     mp_obj_t tuple[2];
-    tuple[0] = _socket_recvfrom(self_in, len_in, &from, &fromlen);
+    tuple[0] = _socket_recvfrom(n_args, args, &from, &fromlen);
 
     uint8_t *ip = (uint8_t *)&((struct sockaddr_in *)&from)->sin_addr;
     mp_uint_t port = lwip_ntohs(((struct sockaddr_in *)&from)->sin_port);
@@ -700,7 +703,7 @@ static mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
 
     return mp_obj_new_tuple(2, tuple);
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(socket_recvfrom_obj, socket_recvfrom);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recvfrom_obj, 2, 3, socket_recvfrom);
 
 int _socket_send(socket_obj_t *sock, const char *data, size_t datalen) {
     int sentlen = 0;
@@ -789,7 +792,7 @@ static mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
 static mp_uint_t socket_stream_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
-    return _socket_read_data(self_in, buf, size, NULL, NULL, errcode);
+    return _socket_read_data(self_in, buf, size, 0, NULL, NULL, errcode);
 }
 
 static mp_uint_t socket_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
@@ -1010,6 +1013,8 @@ static const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SO_BINDTODEVICE), MP_ROM_INT(SO_BINDTODEVICE) },
     { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
     { MP_ROM_QSTR(MP_QSTR_TCP_NODELAY), MP_ROM_INT(TCP_NODELAY) },
+    { MP_ROM_QSTR(MP_QSTR_MSG_PEEK), MP_ROM_INT(MSG_PEEK) },
+    { MP_ROM_QSTR(MP_QSTR_MSG_DONTWAIT), MP_ROM_INT(MSG_DONTWAIT) },
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_table);

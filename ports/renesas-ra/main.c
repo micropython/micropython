@@ -88,7 +88,7 @@ static machine_uart_obj_t machine_uart_repl_obj;
 static uint8_t machine_uart_repl_rxbuf[MICROPY_HW_UART_REPL_RXBUF];
 #endif
 
-void NORETURN __fatal_error(const char *msg) {
+void MP_NORETURN __fatal_error(const char *msg) {
     for (volatile uint delay = 0; delay < 1000000; delay++) {
     }
     led_state(1, 1);

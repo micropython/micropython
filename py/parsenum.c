@@ -36,7 +36,7 @@
 #include <math.h>
 #endif
 
-static NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
+static MP_NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
     // if lex!=NULL then the parser called us and we need to convert the
     // exception's type from ValueError to SyntaxError and add traceback info
     if (lex != NULL) {
@@ -227,13 +227,13 @@ mp_obj_t mp_parse_num_float(const char *str, size_t len, bool allow_imag, mp_lex
 
     const char *top = str + len;
     mp_float_t dec_val = 0;
-    bool dec_neg = false;
 
     #if MICROPY_PY_BUILTINS_COMPLEX
     unsigned int real_imag_state = REAL_IMAG_STATE_START;
     mp_float_t dec_real = 0;
-parse_start:
+parse_start:;
     #endif
+    bool dec_neg = false;
 
     // skip leading space
     for (; str < top && unichar_isspace(*str); str++) {
@@ -252,24 +252,18 @@ parse_start:
     const char *str_val_start = str;
 
     // determine what the string is
-    if (str < top && (str[0] | 0x20) == 'i') {
-        // string starts with 'i', should be 'inf' or 'infinity' (case insensitive)
-        if (str + 2 < top && (str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'f') {
-            // inf
-            str += 3;
-            dec_val = (mp_float_t)INFINITY;
-            if (str + 4 < top && (str[0] | 0x20) == 'i' && (str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'i' && (str[3] | 0x20) == 't' && (str[4] | 0x20) == 'y') {
-                // infinity
-                str += 5;
-            }
+    if (str + 2 < top && (str[0] | 0x20) == 'i' && (str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'f') {
+        // 'inf' or 'infinity' (case insensitive)
+        str += 3;
+        dec_val = (mp_float_t)INFINITY;
+        if (str + 4 < top && (str[0] | 0x20) == 'i' && (str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'i' && (str[3] | 0x20) == 't' && (str[4] | 0x20) == 'y') {
+            // infinity
+            str += 5;
         }
-    } else if (str < top && (str[0] | 0x20) == 'n') {
-        // string starts with 'n', should be 'nan' (case insensitive)
-        if (str + 2 < top && (str[1] | 0x20) == 'a' && (str[2] | 0x20) == 'n') {
-            // NaN
-            str += 3;
-            dec_val = MICROPY_FLOAT_C_FUN(nan)("");
-        }
+    } else if (str + 2 < top && (str[0] | 0x20) == 'n' && (str[1] | 0x20) == 'a' && (str[2] | 0x20) == 'n') {
+        // 'nan' (case insensitive)
+        str += 3;
+        dec_val = MICROPY_FLOAT_C_FUN(nan)("");
     } else {
         // string should be a decimal number
         parse_dec_in_t in = PARSE_DEC_IN_INTG;

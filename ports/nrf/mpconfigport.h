@@ -181,6 +181,7 @@
 #define MICROPY_PY_MACHINE_RESET    (1)
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
 #define MICROPY_PY_MACHINE_BOOTLOADER (1)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_MACHINE_PULSE    (0)
 #define MICROPY_PY_MACHINE_SOFTI2C  (MICROPY_PY_MACHINE_I2C)
 
@@ -320,7 +321,17 @@
 
 // type definitions for the specific machine
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
+#if defined(NRF52832) || defined(NRF52840)
+// On nRF52, the physical SRAM is mapped to 0x20000000 for data access and 0x00800000
+// for instruction access.  So convert addresses to make them executable.
+#define MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA (1)
+#define MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA (0)
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)(((uintptr_t)(p) - 0x20000000 + 0x00800000) | 1))
+void *nrf_native_code_commit(void *, unsigned int, void *);
+#define MP_PLAT_COMMIT_EXEC(buf, len, reloc) nrf_native_code_commit(buf, len, reloc)
+#else
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((uintptr_t)(p) | 1))
+#endif
 
 #define MP_SSIZE_MAX (0x7fffffff)
 

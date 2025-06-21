@@ -31,7 +31,7 @@ manage the ESP32 microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
 The ESP-IDF changes quickly and MicroPython only supports certain versions.
-Currently MicroPython supports v5.2, v5.2.2, v5.3 and v5.4.
+Currently MicroPython supports v5.2, v5.2.2, v5.3, v5.4 and v5.4.1.
 
 To install the ESP-IDF the full instructions can be found at the
 [Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation-step-by-step).
@@ -49,10 +49,10 @@ The steps to take are summarised below.
 To check out a copy of the IDF use git clone:
 
 ```bash
-$ git clone -b v5.2.2 --recursive https://github.com/espressif/esp-idf.git
+$ git clone -b v5.4.1 --recursive https://github.com/espressif/esp-idf.git
 ```
 
-You can replace `v5.2.2` with any other supported version.
+You can replace `v5.4.1` with any other supported version.
 (You don't need a full recursive clone; see the `ci_esp32_setup` function in
 `tools/ci.sh` in this repository for more detailed set-up commands.)
 
@@ -61,7 +61,7 @@ MicroPython and update the submodules using:
 
 ```bash
 $ cd esp-idf
-$ git checkout v5.2.2
+$ git checkout v5.4.1
 $ git submodule update --init --recursive
 ```
 
@@ -220,6 +220,30 @@ boot.py file):
 import machine
 antenna = machine.Pin(16, machine.Pin.OUT, value=0)
 ```
+
+Partition table and filesystem size
+-----------------------------------
+
+ESP32 firmware contains a bootloader, partition table and main application
+firmware, which are all stored in (external) SPI flash.  The user filesystem
+is also stored in the same SPI flash.  By default, MicroPython does not have
+a fixed entry in the ESP32 partition table for the filesystem.  Instead it
+will automatically determine the size of the SPI flash upon boot, and then --
+so long as there is no existing partition called "vfs" or "ffat" -- it will
+create a partition for the filesystem called "vfs" which takes all of the
+remaining flash between the end of the last defined partition up until the
+end of flash.
+
+This means that firmware built for, say, a 4MiB flash will work on any
+device that has at least 4MiB flash.  The user "vfs" filesystem will then
+take up as much space as possible.
+
+This auto-detection behaviour can be overridden: if the ESP32 partition
+table does contain an entry called "vfs" or "ffat" then these are used for
+the user filesystem and no automatic "vfs" partition is added.  This is
+useful in cases where only the MicroPython ESP32 application is flashed to
+the device (and not the bootloader or partition table), eg when deploying
+.uf2 files.
 
 Defining a custom ESP32 board
 -----------------------------

@@ -33,7 +33,6 @@
 #include "os_type.h"
 #include "osapi.h"
 #include "etshal.h"
-#include "ets_alt_task.h"
 #include "user_interface.h"
 
 // #define MACHINE_WAKE_IDLE (0x01)
@@ -71,7 +70,7 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     system_update_cpu_freq(freq);
 }
 
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     system_restart();
 
     // we must not return
@@ -114,7 +113,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     }
 }
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     // default to sleep forever
     uint32_t sleep_us = 0;
 
@@ -327,32 +326,3 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, esp_timer_print,
     locals_dict, &esp_timer_locals_dict
     );
-
-// Custom version of this function that feeds system WDT if necessary
-mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us) {
-    int nchanges = 2;
-    uint32_t start = system_get_time(); // in microseconds
-    for (;;) {
-        uint32_t dt = system_get_time() - start;
-
-        // Check if pin changed to wanted value
-        if (mp_hal_pin_read(pin) == pulse_level) {
-            if (--nchanges == 0) {
-                return dt;
-            }
-            pulse_level = 1 - pulse_level;
-            start = system_get_time();
-            continue;
-        }
-
-        // Check for timeout
-        if (dt >= timeout_us) {
-            return (mp_uint_t)-nchanges;
-        }
-
-        // Only feed WDT every now and then, to make sure edge timing is accurate
-        if ((dt & 0xffff) == 0xffff && !ets_loop_dont_feed_sw_wdt) {
-            system_soft_wdt_feed();
-        }
-    }
-}

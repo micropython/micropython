@@ -24,5 +24,9 @@
 int mp_hal_is_pin_reserved(int n);
 #define MICROPY_HW_PIN_RESERVED(i) mp_hal_is_pin_reserved(i)
 
+// Set the default I2C to I2C1 on pins 18 and 19 which route to the qwiic connector
+#undef PICO_DEFAULT_I2C
+#define PICO_DEFAULT_I2C (1)
+
 #define MICROPY_HW_I2C1_SDA (18)
 #define MICROPY_HW_I2C1_SCL (19)

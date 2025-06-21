@@ -20,13 +20,20 @@ concurrency:
 
 jobs:
   build_and_test_arm:
+    strategy:
+      fail-fast: false
+      matrix:
+        ci_func:  # names are functions in ci.sh
+          - bigendian
+          - sabrelite
+          - thumb
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Install packages
       run: source tools/ci.sh && ci_qemu_setup_arm
-    - name: Build and run test suite
-      run: source tools/ci.sh && ci_qemu_build_arm
+    - name: Build and run test suite ci_qemu_build_arm_${{ matrix.ci_func }}
+      run: source tools/ci.sh && ci_qemu_build_arm_${{ matrix.ci_func }}
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures

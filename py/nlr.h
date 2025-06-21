@@ -177,18 +177,18 @@ unsigned int nlr_push(nlr_buf_t *);
 
 unsigned int nlr_push_tail(nlr_buf_t *top);
 void nlr_pop(void);
-NORETURN void nlr_jump(void *val);
+MP_NORETURN void nlr_jump(void *val);
 
 #if MICROPY_ENABLE_VM_ABORT
 #define nlr_set_abort(buf) MP_STATE_VM(nlr_abort) = buf
 #define nlr_get_abort() MP_STATE_VM(nlr_abort)
-NORETURN void nlr_jump_abort(void);
+MP_NORETURN void nlr_jump_abort(void);
 #endif
 
 // This must be implemented by a port.  It's called by nlr_jump
 // if no nlr buf has been pushed.  It must not return, but rather
 // should bail out with a fatal error.
-NORETURN void nlr_jump_fail(void *val);
+MP_NORETURN void nlr_jump_fail(void *val);
 
 // use nlr_raise instead of nlr_jump so that debugging is easier
 #ifndef MICROPY_DEBUG_NLR

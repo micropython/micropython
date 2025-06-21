@@ -105,14 +105,11 @@ PC_PLATFORMS = ("darwin", "linux", "win32")
 # These are tests that are difficult to detect that they should not be run on the given target.
 platform_tests_to_skip = {
     "esp8266": (
-        "micropython/viper_args.py",  # too large
-        "micropython/viper_binop_arith.py",  # too large
-        "misc/rge_sm.py",  # too large
+        "misc/rge_sm.py",  # incorrect values due to object representation C
     ),
     "minimal": (
         "basics/class_inplace_op.py",  # all special methods not supported
         "basics/subclass_native_init.py",  # native subclassing corner cases not support
-        "misc/rge_sm.py",  # too large
         "micropython/opt_level.py",  # don't assume line numbers are stored
     ),
     "nrf": (
@@ -162,6 +159,9 @@ platform_tests_to_skip = {
         "extmod/asyncio_new_event_loop.py",
         "extmod/asyncio_threadsafeflag.py",
         "extmod/asyncio_wait_for_fwd.py",
+        "extmod/asyncio_event_queue.py",
+        "extmod/asyncio_iterator_event.py",
+        "extmod/asyncio_wait_for_linked_task.py",
         "extmod/binascii_a2b_base64.py",
         "extmod/deflate_compress_memory_error.py",  # tries to allocate unlimited memory
         "extmod/re_stack_overflow.py",
@@ -269,22 +269,17 @@ def detect_test_platform(pyb, args):
     print()
 
 
-def prepare_script_for_target(args, *, script_filename=None, script_text=None, force_plain=False):
+def prepare_script_for_target(args, *, script_text=None, force_plain=False):
     if force_plain or (not args.via_mpy and args.emit == "bytecode"):
-        if script_filename is not None:
-            with open(script_filename, "rb") as f:
-                script_text = f.read()
+        # A plain test to run as-is, no processing needed.
+        pass
     elif args.via_mpy:
         tempname = tempfile.mktemp(dir="")
         mpy_filename = tempname + ".mpy"
 
-        if script_filename is None:
-            script_filename = tempname + ".py"
-            cleanup_script_filename = True
-            with open(script_filename, "wb") as f:
-                f.write(script_text)
-        else:
-            cleanup_script_filename = False
+        script_filename = tempname + ".py"
+        with open(script_filename, "wb") as f:
+            f.write(script_text)
 
         try:
             subprocess.check_output(
@@ -300,8 +295,7 @@ def prepare_script_for_target(args, *, script_filename=None, script_text=None, f
             script_text = b"__buf=" + bytes(repr(f.read()), "ascii") + b"\n"
 
         rm_f(mpy_filename)
-        if cleanup_script_filename:
-            rm_f(script_filename)
+        rm_f(script_filename)
 
         script_text += bytes(injected_import_hook_code, "ascii")
     else:
@@ -312,9 +306,21 @@ def prepare_script_for_target(args, *, script_filename=None, script_text=None, f
 
 
 def run_script_on_remote_target(pyb, args, test_file, is_special):
-    had_crash, script = prepare_script_for_target(
-        args, script_filename=test_file, force_plain=is_special
-    )
+    with open(test_file, "rb") as f:
+        script = f.read()
+
+    # If the test is not a special test, prepend it with a print to indicate that it started.
+    # If the print does not execute this means that the test did not even start, eg it was
+    # too large for the target.
+    prepend_start_test = not is_special
+    if prepend_start_test:
+        if script.startswith(b"#"):
+            script = b"print('START TEST')" + script
+        else:
+            script = b"print('START TEST')\n" + script
+
+    had_crash, script = prepare_script_for_target(args, script_text=script, force_plain=is_special)
+
     if had_crash:
         return True, script
 
@@ -325,9 +331,19 @@ def run_script_on_remote_target(pyb, args, test_file, is_special):
     except pyboard.PyboardError as e:
         had_crash = True
         if not is_special and e.args[0] == "exception":
-            output_mupy = e.args[1] + e.args[2] + b"CRASH"
+            if prepend_start_test and e.args[1] == b"" and b"MemoryError" in e.args[2]:
+                output_mupy = b"SKIP-TOO-LARGE\n"
+            else:
+                output_mupy = e.args[1] + e.args[2] + b"CRASH"
         else:
             output_mupy = bytes(e.args[0], "ascii") + b"\nCRASH"
+
+    if prepend_start_test:
+        if output_mupy.startswith(b"START TEST\r\n"):
+            output_mupy = output_mupy.removeprefix(b"START TEST\r\n")
+        else:
+            had_crash = True
+
     return had_crash, output_mupy
 
 
@@ -389,6 +405,10 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
                                     return rv
 
                     def send_get(what):
+                        # Detect {\x00} pattern and convert to ctrl-key codes.
+                        ctrl_code = lambda m: bytes([int(m.group(1))])
+                        what = re.sub(rb'{\\x(\d\d)}', ctrl_code, what)
+
                         os.write(master, what)
                         return get()
 
@@ -471,7 +491,7 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
     output_mupy = output_mupy.replace(b"\r\n", b"\n")
 
     # don't try to convert the output if we should skip this test
-    if had_crash or output_mupy in (b"SKIP\n", b"CRASH"):
+    if had_crash or output_mupy in (b"SKIP\n", b"SKIP-TOO-LARGE\n", b"CRASH"):
         return output_mupy
 
     # skipped special tests will output "SKIP" surrounded by other interpreter debug output
@@ -600,11 +620,8 @@ class PyboardNodeRunner:
 
 
 def run_tests(pyb, tests, args, result_dir, num_threads=1):
-    test_count = ThreadSafeCounter()
     testcase_count = ThreadSafeCounter()
-    passed_count = ThreadSafeCounter()
-    failed_tests = ThreadSafeCounter([])
-    skipped_tests = ThreadSafeCounter([])
+    test_results = ThreadSafeCounter([])
 
     skip_tests = set()
     skip_native = False
@@ -843,6 +860,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         )  # native doesn't have proper traceback info
         skip_tests.add("micropython/schedule.py")  # native code doesn't check pending events
         skip_tests.add("stress/bytecode_limit.py")  # bytecode specific test
+        skip_tests.add("extmod/asyncio_event_queue.py")  # native can't run schedule
+        skip_tests.add("extmod/asyncio_iterator_event.py")  # native can't run schedule
 
     def run_one_test(test_file):
         test_file = test_file.replace("\\", "/")
@@ -859,11 +878,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         test_basename = test_file.replace("..", "_").replace("./", "").replace("/", "_")
         test_name = os.path.splitext(os.path.basename(test_file))[0]
-        is_native = (
-            test_name.startswith("native_")
-            or test_name.startswith("viper_")
-            or args.emit == "native"
-        )
+        is_native = test_name.startswith("native_") or test_name.startswith("viper_")
         is_endian = test_name.endswith("_endian")
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
@@ -891,7 +906,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         if skip_it:
             print("skip ", test_file)
-            skipped_tests.append(test_name)
+            test_results.append((test_file, "skip", ""))
             return
 
         # Run the test on the MicroPython target.
@@ -906,7 +921,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 # start-up code (eg boot.py) when preparing to run the next test.
                 pyb.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
             print("skip ", test_file)
-            skipped_tests.append(test_name)
+            test_results.append((test_file, "skip", ""))
+            return
+        elif output_mupy == b"SKIP-TOO-LARGE\n":
+            print("lrge ", test_file)
+            test_results.append((test_file, "skip", "too large"))
             return
 
         # Look at the output of the test to see if unittest was used.
@@ -989,7 +1008,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         # Print test summary, update counters, and save .exp/.out files if needed.
         if test_passed:
             print("pass ", test_file, extra_info)
-            passed_count.increment()
+            test_results.append((test_file, "pass", ""))
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
@@ -1001,9 +1020,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 rm_f(filename_expected)  # in case left over from previous failed run
             with open(filename_mupy, "wb") as f:
                 f.write(output_mupy)
-            failed_tests.append((test_name, test_file))
-
-        test_count.increment()
+            test_results.append((test_file, "fail", ""))
 
         # Print a note if this looks like it might have been a misfired unittest
         if not uses_unittest and not test_passed:
@@ -1030,29 +1047,41 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             print(line)
         sys.exit(1)
 
-    print(
-        "{} tests performed ({} individual testcases)".format(
-            test_count.value, testcase_count.value
-        )
+    # Return test results.
+    return test_results.value, testcase_count.value
+
+
+# Print a summary of the results and save them to a JSON file.
+# Returns True if everything succeeded, False otherwise.
+def create_test_report(args, test_results, testcase_count=None):
+    passed_tests = list(r for r in test_results if r[1] == "pass")
+    skipped_tests = list(r for r in test_results if r[1] == "skip" and r[2] != "too large")
+    skipped_tests_too_large = list(
+        r for r in test_results if r[1] == "skip" and r[2] == "too large"
     )
-    print("{} tests passed".format(passed_count.value))
+    failed_tests = list(r for r in test_results if r[1] == "fail")
 
-    skipped_tests = sorted(skipped_tests.value)
+    num_tests_performed = len(passed_tests) + len(failed_tests)
+
+    testcase_count_info = ""
+    if testcase_count is not None:
+        testcase_count_info = " ({} individual testcases)".format(testcase_count)
+    print("{} tests performed{}".format(num_tests_performed, testcase_count_info))
+
+    print("{} tests passed".format(len(passed_tests)))
+
     if len(skipped_tests) > 0:
-        print("{} tests skipped: {}".format(len(skipped_tests), " ".join(skipped_tests)))
-    failed_tests = sorted(failed_tests.value)
+        print(
+            "{} tests skipped: {}".format(
+                len(skipped_tests), " ".join(test[0] for test in skipped_tests)
+            )
+        )
 
-    # Serialize regex added by append_filter.
-    def to_json(obj):
-        if isinstance(obj, re.Pattern):
-            return obj.pattern
-        return obj
-
-    with open(os.path.join(result_dir, RESULTS_FILE), "w") as f:
-        json.dump(
-            {"args": vars(args), "failed_tests": [test[1] for test in failed_tests]},
-            f,
-            default=to_json,
+    if len(skipped_tests_too_large) > 0:
+        print(
+            "{} tests skipped because they are too large: {}".format(
+                len(skipped_tests_too_large), " ".join(test[0] for test in skipped_tests_too_large)
+            )
         )
 
     if len(failed_tests) > 0:
@@ -1061,10 +1090,29 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 len(failed_tests), " ".join(test[0] for test in failed_tests)
             )
         )
-        return False
 
-    # all tests succeeded
-    return True
+    # Serialize regex added by append_filter.
+    def to_json(obj):
+        if isinstance(obj, re.Pattern):
+            return obj.pattern
+        return obj
+
+    with open(os.path.join(args.result_dir, RESULTS_FILE), "w") as f:
+        json.dump(
+            {
+                # The arguments passed on the command-line.
+                "args": vars(args),
+                # A list of all results of the form [(test, result, reason), ...].
+                "results": list(test for test in test_results),
+                # A list of failed tests.  This is deprecated, use the "results" above instead.
+                "failed_tests": [test[0] for test in failed_tests],
+            },
+            f,
+            default=to_json,
+        )
+
+    # Return True only if all tests succeeded.
+    return len(failed_tests) == 0
 
 
 class append_filter(argparse.Action):
@@ -1233,7 +1281,7 @@ the last matching regex is used:
         results_file = os.path.join(args.result_dir, RESULTS_FILE)
         if os.path.exists(results_file):
             with open(results_file, "r") as f:
-                tests = json.load(f)["failed_tests"]
+                tests = list(test[0] for test in json.load(f)["results"] if test[1] == "fail")
         else:
             tests = []
     elif len(args.files) == 0:
@@ -1311,7 +1359,8 @@ the last matching regex is used:
 
     try:
         os.makedirs(args.result_dir, exist_ok=True)
-        res = run_tests(pyb, tests, args, args.result_dir, args.jobs)
+        test_results, testcase_count = run_tests(pyb, tests, args, args.result_dir, args.jobs)
+        res = create_test_report(args, test_results, testcase_count)
     finally:
         if pyb:
             pyb.close()

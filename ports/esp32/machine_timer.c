@@ -50,12 +50,13 @@
 const mp_obj_type_t machine_timer_type;
 
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+static mp_obj_t machine_timer_deinit(mp_obj_t self_in);
 
 void machine_timer_deinit_all(void) {
     // Disable, deallocate and remove all timers from list
     machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head);
     while (*t != NULL) {
-        machine_timer_disable(*t);
+        machine_timer_deinit(*t);
         machine_timer_obj_t *next = (*t)->next;
         m_del_obj(machine_timer_obj_t, *t);
         *t = next;
@@ -96,6 +97,7 @@ machine_timer_obj_t *machine_timer_create(mp_uint_t timer) {
         self = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
         self->group = group;
         self->index = index;
+        self->handle = NULL;
 
         // Add the timer to the linked-list of timers
         self->next = MP_STATE_PORT(machine_timer_obj_head);
@@ -131,9 +133,8 @@ void machine_timer_disable(machine_timer_obj_t *self) {
     }
 
     if (self->handle) {
-        // Free the interrupt handler.
-        esp_intr_free(self->handle);
-        self->handle = NULL;
+        // Disable the interrupt
+        ESP_ERROR_CHECK(esp_intr_disable(self->handle));
     }
 
     // We let the disabled timer stay in the list, as it might be
@@ -150,12 +151,16 @@ static void machine_timer_isr(void *self_in) {
         if (self->repeat) {
             timer_ll_enable_alarm(self->hal_context.dev, self->index, true);
         }
-        mp_sched_schedule(self->callback, self);
-        mp_hal_wake_main_task_from_isr();
+        self->handler(self);
     }
 }
 
-void machine_timer_enable(machine_timer_obj_t *self, void (*timer_isr)) {
+static void machine_timer_isr_handler(machine_timer_obj_t *self) {
+    mp_sched_schedule(self->callback, self);
+    mp_hal_wake_main_task_from_isr();
+}
+
+void machine_timer_enable(machine_timer_obj_t *self) {
     // Initialise the timer.
     timer_hal_init(&self->hal_context, self->group, self->index);
     timer_ll_enable_counter(self->hal_context.dev, self->index, false);
@@ -167,10 +172,17 @@ void machine_timer_enable(machine_timer_obj_t *self, void (*timer_isr)) {
     // Allocate and enable the alarm interrupt.
     timer_ll_enable_intr(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index), false);
     timer_ll_clear_intr_status(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index));
-    ESP_ERROR_CHECK(
-        esp_intr_alloc(timer_group_periph_signals.groups[self->group].timer_irq_id[self->index],
-            TIMER_FLAGS, timer_isr, self, &self->handle)
-        );
+    if (self->handle) {
+        ESP_ERROR_CHECK(esp_intr_enable(self->handle));
+    } else {
+        ESP_ERROR_CHECK(esp_intr_alloc(
+            timer_group_periph_signals.groups[self->group].timer_irq_id[self->index],
+            TIMER_FLAGS,
+            machine_timer_isr,
+            self,
+            &self->handle
+            ));
+    }
     timer_ll_enable_intr(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index), true);
 
     // Enable the alarm to trigger at the given period.
@@ -224,16 +236,22 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     }
 
     self->repeat = args[ARG_mode].u_int;
+    self->handler = machine_timer_isr_handler;
     self->callback = args[ARG_callback].u_obj;
-    self->handle = NULL;
 
-    machine_timer_enable(self, machine_timer_isr);
+    machine_timer_enable(self);
 
     return mp_const_none;
 }
 
 static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
-    machine_timer_disable(self_in);
+    machine_timer_obj_t *self = self_in;
+
+    machine_timer_disable(self);
+    if (self->handle) {
+        ESP_ERROR_CHECK(esp_intr_free(self->handle));
+        self->handle = NULL;
+    }
 
     return mp_const_none;
 }
@@ -246,6 +264,9 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(machine_timer_init_obj, 1, machine_timer_init)
 
 static mp_obj_t machine_timer_value(mp_obj_t self_in) {
     machine_timer_obj_t *self = self_in;
+    if (self->handle == NULL) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer not set"));
+    }
     uint64_t result = timer_ll_get_counter_value(self->hal_context.dev, self->index);
     return MP_OBJ_NEW_SMALL_INT((mp_uint_t)(result / (TIMER_SCALE / 1000))); // value in ms
 }
