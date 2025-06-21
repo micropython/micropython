@@ -36,8 +36,12 @@
 #include "clocks_extra.h"
 #include "hardware/pll.h"
 #include "hardware/structs/rosc.h"
+#if PICO_RP2040
+#include "hardware/structs/psm.h"
+#endif
 #include "hardware/structs/scb.h"
 #include "hardware/structs/syscfg.h"
+#include "hardware/structs/watchdog.h"
 #include "hardware/watchdog.h"
 #include "hardware/xosc.h"
 #include "pico/bootrom.h"
@@ -193,6 +197,8 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     if (disable_usb) {
         clock_stop(clk_usb);
     }
+    uint32_t wdt_ctrl = watchdog_hw->ctrl;
+    bool watchdog_active = (wdt_ctrl & WATCHDOG_CTRL_ENABLE_BITS) != 0;
 
     clock_stop(clk_adc);
     #if PICO_RP2350
@@ -222,6 +228,13 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     // Disable ROSC.
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_DISABLE << ROSC_CTRL_ENABLE_LSB;
 
+    #if PICO_RP2040
+    if (watchdog_active) {
+        // Configure Power-On State Machine to reset the ROSC on a watchdog timeout.
+        psm_hw->wdsel |= PSM_WDSEL_ROSC_BITS;
+    }
+    #endif
+
     #if DEBUG_LIGHTSLEEP
     #if PICO_RP2040
     uint32_t pending_intr = 0;
@@ -231,6 +244,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     #endif
 
     bool alarm_armed = false;
+
     if (n_args == 0) {
         #if MICROPY_PY_NETWORK_CYW43
         gpio_set_dormant_irq_enabled(CYW43_PIN_WL_HOST_WAKE, GPIO_IRQ_LEVEL_HIGH, true);
@@ -245,7 +259,12 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
             #if PICO_RP2040
             clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_SYS_TIMER_BITS;
             #elif PICO_RP2350
-            clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_REF_TICKS_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_TIMER0_BITS;
+            if (watchdog_active) {
+                // clk_sys watchdog and clk_ref ticks must be enabled for the watchdog counter to decrement on RP2350.
+                clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_REF_TICKS_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_TIMER0_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_WATCHDOG_BITS;
+            } else {
+                clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_REF_TICKS_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_TIMER0_BITS;
+            }
             #else
             #error Unknown processor
             #endif
@@ -301,7 +320,12 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     // Enable ROSC.
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB;
-
+    #if PICO_RP2040
+    if (watchdog_active) {
+        // No longer need the Power-On State Machine to reset the ROSC on a watchdog timeout.
+        psm_hw->wdsel &= ~PSM_WDSEL_ROSC_BITS;
+    }
+    #endif
     // Bring back all clocks.
     runtime_init_clocks_optional_usb(disable_usb);
     MICROPY_END_ATOMIC_SECTION(my_interrupts);
