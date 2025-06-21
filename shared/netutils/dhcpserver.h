@@ -36,14 +36,18 @@ typedef struct _dhcp_server_lease_t {
     uint16_t expiry;
 } dhcp_server_lease_t;
 
+typedef void (*dhcp_client_callback_t)(uint8_t[4], uint8_t[16]);
+
 typedef struct _dhcp_server_t {
     ip_addr_t ip;
     ip_addr_t nm;
     dhcp_server_lease_t lease[DHCPS_MAX_IP];
     struct udp_pcb *udp;
+    dhcp_client_callback_t on_client_connect;
 } dhcp_server_t;
 
 void dhcp_server_init(dhcp_server_t *d, ip_addr_t *ip, ip_addr_t *nm);
 void dhcp_server_deinit(dhcp_server_t *d);
+void dhcp_server_register_connect_cb(dhcp_server_t *d, dhcp_client_callback_t on_client_connect);
 
 #endif // MICROPY_INCLUDED_LIB_NETUTILS_DHCPSERVER_H
