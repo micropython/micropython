@@ -65,11 +65,9 @@
 #define PORT_DHCP_SERVER (67)
 #define PORT_DHCP_CLIENT (68)
 
-#define DEFAULT_DNS MAKE_IP4(192, 168, 4, 1)
 #define DEFAULT_LEASE_TIME_S (24 * 60 * 60) // in seconds
 
 #define MAC_LEN (6)
-#define MAKE_IP4(a, b, c, d) ((a) << 24 | (b) << 16 | (c) << 8 | (d))
 
 typedef struct {
     uint8_t op; // message opcode
@@ -273,6 +271,9 @@ static void dhcp_server_process(void *arg, struct udp_pcb *upcb, struct pbuf *p,
             printf("DHCPS: client connected: MAC=%02x:%02x:%02x:%02x:%02x:%02x IP=%u.%u.%u.%u\n",
                 dhcp_msg.chaddr[0], dhcp_msg.chaddr[1], dhcp_msg.chaddr[2], dhcp_msg.chaddr[3], dhcp_msg.chaddr[4], dhcp_msg.chaddr[5],
                 dhcp_msg.yiaddr[0], dhcp_msg.yiaddr[1], dhcp_msg.yiaddr[2], dhcp_msg.yiaddr[3]);
+            if (d->on_client_connect != NULL) {
+                d->on_client_connect(dhcp_msg.yiaddr, dhcp_msg.chaddr);
+            }
             break;
         }
 
@@ -283,7 +284,7 @@ static void dhcp_server_process(void *arg, struct udp_pcb *upcb, struct pbuf *p,
     opt_write_n(&opt, DHCP_OPT_SERVER_ID, 4, &ip_2_ip4(&d->ip)->addr);
     opt_write_n(&opt, DHCP_OPT_SUBNET_MASK, 4, &ip_2_ip4(&d->nm)->addr);
     opt_write_n(&opt, DHCP_OPT_ROUTER, 4, &ip_2_ip4(&d->ip)->addr); // aka gateway; can have multiple addresses
-    opt_write_u32(&opt, DHCP_OPT_DNS, DEFAULT_DNS); // can have multiple addresses
+    opt_write_n(&opt, DHCP_OPT_DNS, 4, &ip_2_ip4(&d->ip)->addr); // can have multiple addresses
     opt_write_u32(&opt, DHCP_OPT_IP_LEASE_TIME, DEFAULT_LEASE_TIME_S);
     *opt++ = DHCP_OPT_END;
     struct netif *netif = ip_current_input_netif();
@@ -297,6 +298,7 @@ void dhcp_server_init(dhcp_server_t *d, ip_addr_t *ip, ip_addr_t *nm) {
     ip_addr_copy(d->ip, *ip);
     ip_addr_copy(d->nm, *nm);
     memset(d->lease, 0, sizeof(d->lease));
+    d->on_client_connect = NULL;
     if (dhcp_socket_new_dgram(&d->udp, d, dhcp_server_process) != 0) {
         return;
     }
@@ -305,6 +307,10 @@ void dhcp_server_init(dhcp_server_t *d, ip_addr_t *ip, ip_addr_t *nm) {
 
 void dhcp_server_deinit(dhcp_server_t *d) {
     dhcp_socket_free(&d->udp);
+}
+
+void dhcp_server_register_connect_cb(dhcp_server_t *d, dhcp_client_callback_t on_client_connect) {
+    d->on_client_connect = on_client_connect;
 }
 
 #endif // MICROPY_PY_LWIP
