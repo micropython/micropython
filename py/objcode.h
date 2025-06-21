@@ -72,7 +72,7 @@ static inline const void *mp_code_get_proto_fun(mp_obj_code_t *self) {
 
 #include "py/emitglue.h"
 
-#define MP_CODE_QSTR_MAP(context, idx) (context->constants.qstr_table[idx])
+#define MP_CODE_QSTR_MAP(context, idx) ((qstr)(context->constants.qstr_table[idx]))
 
 typedef struct _mp_obj_code_t {
     // TODO this was 4 words
