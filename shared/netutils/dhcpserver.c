@@ -65,11 +65,9 @@
 #define PORT_DHCP_SERVER (67)
 #define PORT_DHCP_CLIENT (68)
 
-#define DEFAULT_DNS MAKE_IP4(192, 168, 4, 1)
 #define DEFAULT_LEASE_TIME_S (24 * 60 * 60) // in seconds
 
 #define MAC_LEN (6)
-#define MAKE_IP4(a, b, c, d) ((a) << 24 | (b) << 16 | (c) << 8 | (d))
 
 typedef struct {
     uint8_t op; // message opcode
@@ -283,7 +281,7 @@ static void dhcp_server_process(void *arg, struct udp_pcb *upcb, struct pbuf *p,
     opt_write_n(&opt, DHCP_OPT_SERVER_ID, 4, &ip_2_ip4(&d->ip)->addr);
     opt_write_n(&opt, DHCP_OPT_SUBNET_MASK, 4, &ip_2_ip4(&d->nm)->addr);
     opt_write_n(&opt, DHCP_OPT_ROUTER, 4, &ip_2_ip4(&d->ip)->addr); // aka gateway; can have multiple addresses
-    opt_write_u32(&opt, DHCP_OPT_DNS, DEFAULT_DNS); // can have multiple addresses
+    opt_write_n(&opt, DHCP_OPT_DNS, 4, &ip_2_ip4(&d->ip)->addr);
     opt_write_u32(&opt, DHCP_OPT_IP_LEASE_TIME, DEFAULT_LEASE_TIME_S);
     *opt++ = DHCP_OPT_END;
     struct netif *netif = ip_current_input_netif();
