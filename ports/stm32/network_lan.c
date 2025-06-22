@@ -44,12 +44,13 @@ static void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     network_lan_obj_t *self = MP_OBJ_TO_PTR(self_in);
     struct netif *netif = eth_netif(self->eth);
     int status = eth_link_status(self->eth);
+    const ip4_addr_t *ip4 = netif_ip4_addr(netif);
     mp_printf(print, "<ETH %u %u.%u.%u.%u>",
         status,
-        netif->ip_addr.addr & 0xff,
-        netif->ip_addr.addr >> 8 & 0xff,
-        netif->ip_addr.addr >> 16 & 0xff,
-        netif->ip_addr.addr >> 24
+        ip4_addr1(ip4),
+        ip4_addr2(ip4),
+        ip4_addr3(ip4),
+        ip4_addr4(ip4)
         );
 }
 
