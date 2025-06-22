@@ -5,9 +5,6 @@
 #define LWIP_NETIF_STATUS_CALLBACK      1
 
 #define LWIP_IPV4                       1
-#define LWIP_IPV6                       1
-#define LWIP_ND6_NUM_DESTINATIONS       4
-#define LWIP_ND6_QUEUEING               0
 
 #define LWIP_RAND() rosc_random_u32()
 
