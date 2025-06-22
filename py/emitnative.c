@@ -2634,7 +2634,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                     break;
             }
             #elif N_DEBUG
-            asm_debug_setcc_reg_reg_reg(emit->as, op_idx, REG_RET, REG_ARG_2, reg_rhs);
+            asm_debug_setcc_reg_reg_reg(emit->as, op_idx, REG_RET, REG_ARG_2, reg_rhs, vtype_lhs == VTYPE_UINT);
             #else
             #error not implemented
             #endif

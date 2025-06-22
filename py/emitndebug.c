@@ -166,8 +166,8 @@ static void asm_debug_reg_reg_label(asm_debug_t *as, const char *op, int reg1, i
     asm_debug_printf(as, "%s(%s, %s, label_%u)\n", op, reg_name_table[reg1], reg_name_table[reg2], label);
 }
 
-static void asm_debug_setcc_reg_reg_reg(asm_debug_t *as, int op, int reg1, int reg2, int reg3) {
-    asm_debug_printf(as, "setcc(%d, %s, %s, %s)\n", op, reg_name_table[reg1], reg_name_table[reg2], reg_name_table[reg3]);
+static void asm_debug_setcc_reg_reg_reg(asm_debug_t *as, int op, int reg1, int reg2, int reg3, bool unsigned_comparison) {
+    asm_debug_printf(as, "setcc(%d, %s, %s, %s, %s)\n", op, reg_name_table[reg1], reg_name_table[reg2], reg_name_table[reg3], unsigned_comparison ? "true" : "false");
 }
 
 // The following macros provide a (mostly) arch-independent API to
