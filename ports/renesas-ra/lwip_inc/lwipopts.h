@@ -1,8 +1,6 @@
 #ifndef MICROPY_INCLUDED_RA_LWIP_LWIPOPTS_H
 #define MICROPY_INCLUDED_RA_LWIP_LWIPOPTS_H
 
-#define LWIP_IPV6                       0
-
 #define LWIP_RAND() rng_read()
 
 #define MEM_SIZE                        (16 * 1024)
