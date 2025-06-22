@@ -64,7 +64,7 @@ int lwip_atoi(const char *str);
 #define LWIP_IGMP                       1
 
 #ifndef LWIP_IPV6
-#define LWIP_IPV6                       1
+#define LWIP_IPV6                       MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA
 #endif
 
 #if LWIP_IPV6
