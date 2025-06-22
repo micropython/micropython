@@ -39,6 +39,9 @@
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
 #include "netif/etharp.h"
+#if LWIP_IPV6
+#include "lwip/ethip6.h"
+#endif
 
 #include "shared/netutils/netutils.h"
 #include "shared/netutils/dhcpserver.h"
@@ -53,6 +56,10 @@ static err_t netif_struct_init(struct netif *netif) {
     netif->output = etharp_output;
     netif->mtu = ESP_FRAME_MAX_PAYLOAD;
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_IGMP;
+    #if LWIP_IPV6
+    netif->output_ip6 = ethip6_output;
+    netif->flags |= NETIF_FLAG_MLD6;
+    #endif
     esp_hosted_wifi_get_mac(netif->name[1] - '0', netif->hwaddr);
     netif->hwaddr_len = sizeof(netif->hwaddr);
     info_printf("netif_init() netif initialized\n");
@@ -63,15 +70,27 @@ int esp_hosted_netif_init(esp_hosted_state_t *state, uint32_t itf) {
     struct netif *netif = &state->netif[itf];
 
     ip_addr_t ipconfig[4];
+    #if LWIP_IPV6
+    for (int i = 0; i < 4; i++) {
+        IP_ADDR4(&ipconfig[i], 0, 0, 0, 0);
+    }
+    #else
     ipconfig[0].addr = 0;
     ipconfig[1].addr = 0;
     ipconfig[2].addr = 0;
     ipconfig[3].addr = 0;
+    #endif
 
     if (itf == ESP_HOSTED_AP_IF) {
+        #if LWIP_IPV6
+        ip4_addr_set_u32(ip_2_ip4(&ipconfig[0]), PP_HTONL(ESP_HOSTED_AP_ADDRESS));
+        ip4_addr_set_u32(ip_2_ip4(&ipconfig[1]), PP_HTONL(ESP_HOSTED_AP_NETMASK));
+        ip4_addr_set_u32(ip_2_ip4(&ipconfig[2]), PP_HTONL(ESP_HOSTED_AP_GATEWAY));
+        #else
         ipconfig[0].addr = PP_HTONL(ESP_HOSTED_AP_ADDRESS);
         ipconfig[1].addr = PP_HTONL(ESP_HOSTED_AP_NETMASK);
         ipconfig[2].addr = PP_HTONL(ESP_HOSTED_AP_GATEWAY);
+        #endif
     }
 
     netif->name[0] = 'w';
@@ -85,6 +104,10 @@ int esp_hosted_netif_init(esp_hosted_state_t *state, uint32_t itf) {
     netif_set_up(netif);
     netif_set_link_up(netif);
     dns_setserver(0, &ipconfig[3]);
+
+    #if LWIP_IPV6
+    netif_create_ip6_linklocal_address(netif, 1);
+    #endif
 
     if (itf == ESP_HOSTED_STA_IF) {
         dhcp_set_struct(netif, &state->dhcp_client);
