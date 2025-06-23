@@ -5,6 +5,7 @@
 #define MICROPY_ALLOC_GC_STACK_SIZE (128)
 #define MICROPY_FATFS_EXFAT         (1)
 
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_FLASH_MOUNT_AT_BOOT (1)
@@ -15,8 +16,6 @@
 #define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_SDCARD    (1)
 #define MICROPY_PY_PYB_LEGACY       (0)
-
-#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 
 #define MICROPY_BOARD_ENTER_BOOTLOADER board_enter_bootloader
 #define MICROPY_BOARD_EARLY_INIT    board_early_init
@@ -41,14 +40,12 @@
 #define MICROPY_HW_ROMFS_XSPI_SPIBDEV_OBJ (&spi_bdev)
 #define MICROPY_HW_ROMFS_ENABLE_PART0 (1)
 
-#if 1
 // SPI flash, block device config.
 #define MICROPY_HW_BDEV_SPIFLASH                (&spi_bdev)
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED       (&spi_bdev)
 #define MICROPY_HW_BDEV_SPIFLASH_CONFIG         (&spiflash_config)
-#define MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES   (16 * 1024 * 1024)
-#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES     (16 * 1024 * 1024)
-#endif
+#define MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES   (4 * 1024 * 1024)
+#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES     (4 * 1024 * 1024)
 
 // UART buses
 #define MICROPY_HW_UART2_TX         (pyb_pin_BT_TXD)

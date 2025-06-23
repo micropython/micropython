@@ -4,7 +4,7 @@
 
 MEMORY
 {
-    EXT_FLASH_ROMFS (rx) : ORIGIN = 0x70200000, LENGTH = 14M
+    EXT_FLASH_ROMFS (rx) : ORIGIN = 0x70800000, LENGTH = 24M
 }
 
 /* ROMFS location */
