@@ -53,6 +53,7 @@
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
 #include "extmod/modbluetooth.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_VFS
 #include "extmod/vfs.h"
@@ -196,6 +197,9 @@ soft_reset_exit:
     #endif
     #if MICROPY_PY_MACHINE
     machine_pin_deinit();
+    #endif
+    #if MICROPY_PY_MACHINE_I2C_TARGET
+    mp_machine_i2c_target_deinit_all();
     #endif
 
     #if MICROPY_PY_THREAD
