@@ -70,6 +70,10 @@ set(MICROPY_SOURCE_SHARED
 )
 list(TRANSFORM MICROPY_SOURCE_SHARED PREPEND ${MICROPY_DIR}/shared/)
 
+set(MICROPY_QSTRDEFS_PORT
+    ${MICROPY_PORT_DIR}/qstrdefsport.h
+)
+
 set(MICROPY_SOURCE_LIB
     oofatfs/ff.c
     oofatfs/ffunicode.c
