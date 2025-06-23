@@ -126,19 +126,26 @@ static mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // get the wanted port
-    if (!mp_obj_is_type(args[0], &mp_type_tuple)) {
+    machine_pin_obj_t *pin;
+    if (mp_obj_is_type(args[0], &machine_pin_type)) {
+        // Already a Pin object, reuse it.
+        pin = MP_OBJ_TO_PTR(args[0]);
+    } else if (mp_obj_is_type(args[0], &mp_type_tuple)) {
+        // Get the wanted (port, pin) values.
+        mp_obj_t *items;
+        mp_obj_get_array_fixed_n(args[0], 2, &items);
+        const struct device *wanted_port = zephyr_device_find(items[0]);
+        int wanted_pin = mp_obj_get_int(items[1]);
+
+        pin = m_new_obj(machine_pin_obj_t);
+        pin->base = machine_pin_obj_template;
+        pin->port = wanted_port;
+        pin->pin = wanted_pin;
+        pin->irq = NULL;
+    } else {
+        // Unknown Pin.
         mp_raise_ValueError(MP_ERROR_TEXT("Pin id must be tuple of (\"GPIO_x\", pin#)"));
     }
-    mp_obj_t *items;
-    mp_obj_get_array_fixed_n(args[0], 2, &items);
-    const struct device *wanted_port = zephyr_device_find(items[0]);
-    int wanted_pin = mp_obj_get_int(items[1]);
-
-    machine_pin_obj_t *pin = m_new_obj(machine_pin_obj_t);
-    pin->base = machine_pin_obj_template;
-    pin->port = wanted_port;
-    pin->pin = wanted_pin;
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
