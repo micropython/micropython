@@ -26,7 +26,7 @@
 #include <alloca.h>
 
 // Include Zephyr's autoconf.h, which should be made first by Zephyr makefiles
-#include "autoconf.h"
+#include <zephyr/autoconf.h>
 // Included here to get basic Zephyr environment (macros, etc.)
 #include <zephyr/kernel.h>
 

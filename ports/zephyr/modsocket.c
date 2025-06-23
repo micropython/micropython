@@ -32,8 +32,6 @@
 
 #include <stdio.h>
 #include <zephyr/kernel.h>
-// Zephyr's generated version header
-#include <version.h>
 #include <zephyr/net/net_context.h>
 #include <zephyr/net/net_pkt.h>
 #include <zephyr/net/dns_resolve.h>
