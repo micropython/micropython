@@ -49,6 +49,11 @@ static int console_irq_input_hook(uint8_t ch) {
     return 1;
 }
 
+// Returns true if a char is available for reading.
+int zephyr_getchar_check(void) {
+    return i_get != i_put;
+}
+
 int zephyr_getchar(void) {
     mp_hal_wait_sem(&uart_sem, 0);
     if (k_sem_take(&uart_sem, K_MSEC(0)) == 0) {
