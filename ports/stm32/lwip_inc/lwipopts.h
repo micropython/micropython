@@ -22,12 +22,6 @@
 // Include common lwIP configuration.
 #include "extmod/lwip-include/lwipopts_common.h"
 
-// N6 requires 8-byte alignment.
-#if defined(STM32N6)
-#undef MEM_ALIGNMENT
-#define MEM_ALIGNMENT                   8
-#endif
-
 extern uint32_t rng_get(void);
 
 #endif // MICROPY_INCLUDED_STM32_LWIP_LWIPOPTS_H
