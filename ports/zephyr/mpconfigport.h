@@ -36,6 +36,9 @@
 #define MICROPY_HEAP_SIZE (16 * 1024)
 #endif
 
+// We can't guarantee object layout of nlr code so use long jump by default.
+#define MICROPY_NLR_THUMB_USE_LONG_JUMP (1)
+
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_STACK_CHECK         (1)
