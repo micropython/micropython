@@ -250,8 +250,8 @@ mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size
     }
 
     // minimum stack size is set by pthreads
-    if (*stack_size < PTHREAD_STACK_MIN) {
-        *stack_size = PTHREAD_STACK_MIN;
+    if (*stack_size < (size_t)PTHREAD_STACK_MIN) {
+        *stack_size = (size_t)PTHREAD_STACK_MIN;
     }
 
     // ensure there is enough stack to include a stack-overflow margin
