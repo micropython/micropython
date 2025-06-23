@@ -50,7 +50,7 @@ def schedule_watchdog(end_ticks):
 async def test(ai):
     for x in range(3):
         await asyncio.sleep(0.1)
-        ai.fetch_data(f"bar {x}")
+        ai.fetch_data("bar {}".format(x))
 
 
 class AsyncIterable:
