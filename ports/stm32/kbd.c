@@ -88,8 +88,6 @@ static bool _KB_SHIFT_TOGGLE = INACTIVE;
 
 static bool _KB_KEY_FLG = INACTIVE;
 
-static uint8_t _KB_KEY_NR; 
-
 static uint8_t _KB_KEY_NR;
 
 static uint8_t _KB_KEY_ATTR;
@@ -283,18 +281,20 @@ static void kbd_led(void)
     
  
     // 2. write data to bus
-    if(_KB_SHIFT_TOGGLE == ACTIVE)
-    {
-        shared_iram->xport_out_data[physAddr] |= RAM1_SLED_BMASK;
-    }
-    else
-    {
-        shared_iram->xport_out_data[physAddr] &= ~RAM1_SLED_BMASK;
-    }
-    if(RAM1_SLED_TFFLG != 0)
-    {
-        shared_iram->xport_out_data[physAddr] ^= RAM1_SLED_BMASK;
-    }
+	bool led_state = (_KB_SHIFT_TOGGLE == INACTIVE);
+	if(RAM1_SLED_TFFLG)
+	{
+		led_state = !led_state;
+	}
+	if(led_state)
+	{
+		shared_iram->xport_out_data[physAddr] |= RAM1_SLED_BMASK;
+	}
+	else
+	{
+		shared_iram->xport_out_data[physAddr] &= ~RAM1_SLED_BMASK;
+	}
+
     *portData = shared_iram->xport_out_data[physAddr];
 
     
