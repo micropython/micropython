@@ -34,11 +34,21 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(mp_usbd);
 
+#if KERNEL_VERSION_NUMBER >= ZEPHYR_VERSION(4, 1, 0)
+
+#define BLOCKLIST , blocklist
+
 /* By default, do not register the USB DFU class DFU mode instance. */
 static const char *const blocklist[] = {
     "dfu_dfu",
     NULL,
 };
+
+#else
+
+#define BLOCKLIST
+
+#endif
 
 USBD_DEVICE_DEFINE(mp_usbd,
     DEVICE_DT_GET(DT_NODELABEL(zephyr_udc0)),
@@ -121,7 +131,7 @@ struct usbd_context *mp_usbd_init_device(usbd_msg_cb_t msg_cb) {
             return NULL;
         }
 
-        err = usbd_register_all_classes(&mp_usbd, USBD_SPEED_HS, 1, blocklist);
+        err = usbd_register_all_classes(&mp_usbd, USBD_SPEED_HS, 1 BLOCKLIST);
         if (err) {
             LOG_ERR("Failed to add register classes");
             return NULL;
@@ -137,7 +147,7 @@ struct usbd_context *mp_usbd_init_device(usbd_msg_cb_t msg_cb) {
         return NULL;
     }
 
-    err = usbd_register_all_classes(&mp_usbd, USBD_SPEED_FS, 1, blocklist);
+    err = usbd_register_all_classes(&mp_usbd, USBD_SPEED_FS, 1 BLOCKLIST);
     if (err) {
         LOG_ERR("Failed to add register classes");
         return NULL;
