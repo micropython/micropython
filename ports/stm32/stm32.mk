@@ -70,6 +70,11 @@ CFLAGS_MCU_n6 = $(CFLAGS_CORTEX_M) -mtune=cortex-m55 -mcpu=cortex-m55 -mcmse
 CFLAGS_MCU_wb = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_wl = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 
+# gcc up to at least 14.2.0 have a known loop-optimisation bug:
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=116799
+# Disable these optimisations until the fix is released.
+CFLAGS_MCU_n6 += -fdisable-rtl-loop2_doloop
+
 MPY_CROSS_MCU_ARCH_f0 = armv6m
 MPY_CROSS_MCU_ARCH_f4 = armv7m
 MPY_CROSS_MCU_ARCH_f7 = armv7m
