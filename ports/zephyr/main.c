@@ -156,7 +156,17 @@ soft_reset:
     #endif
 
     #if MICROPY_MODULE_FROZEN || MICROPY_VFS
-    pyexec_file_if_exists("main.py");
+    // Execute user scripts.
+    int ret = pyexec_file_if_exists("boot.py");
+    if (ret & PYEXEC_FORCED_EXIT) {
+        goto soft_reset_exit;
+    }
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
+        ret = pyexec_file_if_exists("main.py");
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset_exit;
+        }
+    }
     #endif
 
     for (;;) {
@@ -171,7 +181,11 @@ soft_reset:
         }
     }
 
-    printf("soft reboot\n");
+    #if MICROPY_MODULE_FROZEN || MICROPY_VFS
+soft_reset_exit:
+    #endif
+
+    mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
 
     #if MICROPY_PY_BLUETOOTH
     mp_bluetooth_deinit();
