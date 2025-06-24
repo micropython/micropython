@@ -1191,11 +1191,13 @@ static mp_obj_t tiger_lcd_make_new(const mp_obj_type_t *type, size_t n_args, siz
 	
     kbd_buf.head = 0;
 	kbd_buf.tail = 0;
-	kbd_buf.cnt = 0;
-	kbd_buf.busy = false;
+        kbd_buf.cnt = 0;
+        kbd_buf.busy = false;
 
- 
-	kbd_init();
+
+        if (kbd_on) {
+                kbd_init();
+        }
 	
 	if(lcd_on)
 	{
