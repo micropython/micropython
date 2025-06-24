@@ -234,6 +234,22 @@ You can also specify which board to use:
 See `ports/stm32/boards <https://github.com/micropython/micropython/tree/master/ports/stm32/boards>`_
 for the available boards. e.g. "PYBV11" or "NUCLEO_WB55".
 
+Compile-time format string checking
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When gcc is used to build MicroPython, a plugin can be used for compile-time checking of ``mp_printf`` format strings.
+The plugin is enabled automatically when gcc with the appropriate header files are present.
+The plugin can be disabled by setting ``MICROPY_USE_COMPILER_PLUGIN=none`` in a makefile, in the environment, or on the make commandline.
+The plugin can be explicltly enabled (builds will fail if the plugin can't be built and used) with ``MICROPY_USE_COMPILER_PLUGIN=gcc``.
+
+The plugin doesn't work:
+ * With non-gcc compilers (including clang, which is sometimes installed on Macs with the name "gcc")
+ * On Windows systems, where the steps for building a plugin are more complicated
+ * With MicroPython builds that use cmake rather than traditional make, such as esp32 & rp2
+ * If the necessary files for plugin development are not installed.
+   In Debian bookworm, for instance, the files to build plugins for ``gcc`` are in ``gcc-12-plugin-dev``,
+   and the files to build plugins for ``riscv64-unknown-elf-gcc`` are in ``gcc-12-plugin-dev-riscv64-linux-gnu``.
+
 Building the documentation
 --------------------------
 

@@ -20,6 +20,10 @@ OBJ_EXTRA_ORDER_DEPS =
 # Generate header files.
 OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/moduledefs.h $(HEADER_BUILD)/root_pointers.h
 
+ifeq ($(MICROPY_USE_COMPILER_PLUGIN),gcc)
+include $(TOP)/py/gccplugin.mk
+endif
+
 ifeq ($(MICROPY_ROM_TEXT_COMPRESSION),1)
 # If compression is enabled, trigger the build of compressed.data.h...
 OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/compressed.data.h
