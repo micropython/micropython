@@ -620,7 +620,11 @@ def main():
         # If no commands were "actions" then implicitly finish with the REPL
         # using default args.
         if state.run_repl_on_completion():
-            do_repl(state, argparse_repl().parse_args([]))
+            disconnected = do_repl(state, argparse_repl().parse_args([]))
+
+            # Handle disconnection message
+            if disconnected:
+                print("\ndevice disconnected")
 
         return 0
     except CommandError as e:
