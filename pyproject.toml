@@ -28,6 +28,9 @@ target-version = "py37"
 
 [tool.ruff.lint]
 exclude = [  # Ruff finds Python SyntaxError in these files
+  "tests/basics/string_template.py",
+  "tests/basics/string_template_errors.py",
+  "tests/basics/string_template_import.py",
   "tests/cmdline/repl_autocomplete.py",
   "tests/cmdline/repl_autocomplete_underscore.py",
   "tests/cmdline/repl_autoindent.py",
@@ -38,10 +41,8 @@ exclude = [  # Ruff finds Python SyntaxError in these files
   "tests/cmdline/repl_words_move.py",
   "tests/feature_check/repl_emacs_check.py",
   "tests/feature_check/repl_words_move_check.py",
-  "tests/micropython/viper_args.py",
-  "tests/basics/string_template.py",
-  "tests/basics/string_template_errors.py",
-  "tests/basics/string_template_import.py"
+  "tests/feature_check/tstring.py",
+  "tests/micropython/viper_args.py"
 ]
 extend-select = ["C9", "PLC"]
 ignore = [
