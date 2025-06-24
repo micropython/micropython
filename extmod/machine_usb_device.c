@@ -229,6 +229,58 @@ static mp_obj_t usb_device_config(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(usb_device_config_obj, 1, usb_device_config);
 
+// Per-class control methods
+static mp_obj_t usb_device_enable_cdc(size_t n_args, const mp_obj_t *args) {
+    mp_obj_usb_device_t *self = MP_OBJ_TO_PTR(args[0]);
+    
+    if (self->active) {
+        mp_raise_OSError(MP_EINVAL);
+    }
+    
+    if (n_args == 1) {
+        return mp_obj_new_bool(mp_usbd_class_state.cdc_enabled);
+    } else {
+        bool enable = mp_obj_is_true(args[1]);
+        mp_usbd_enable_class_cdc(enable);
+        return mp_const_none;
+    }
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_enable_cdc_obj, 1, 2, usb_device_enable_cdc);
+
+static mp_obj_t usb_device_enable_msc(size_t n_args, const mp_obj_t *args) {
+    mp_obj_usb_device_t *self = MP_OBJ_TO_PTR(args[0]);
+    
+    if (self->active) {
+        mp_raise_OSError(MP_EINVAL);
+    }
+    
+    if (n_args == 1) {
+        return mp_obj_new_bool(mp_usbd_class_state.msc_enabled);
+    } else {
+        bool enable = mp_obj_is_true(args[1]);
+        mp_usbd_enable_class_msc(enable);
+        return mp_const_none;
+    }
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_enable_msc_obj, 1, 2, usb_device_enable_msc);
+
+static mp_obj_t usb_device_enable_ncm(size_t n_args, const mp_obj_t *args) {
+    mp_obj_usb_device_t *self = MP_OBJ_TO_PTR(args[0]);
+    
+    if (self->active) {
+        mp_raise_OSError(MP_EINVAL);
+    }
+    
+    if (n_args == 1) {
+        return mp_obj_new_bool(mp_usbd_class_state.ncm_enabled);
+    } else {
+        bool enable = mp_obj_is_true(args[1]);
+        mp_usbd_enable_class_ncm(enable);
+        return mp_const_none;
+    }
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_enable_ncm_obj, 1, 2, usb_device_enable_ncm);
+
 static const MP_DEFINE_BYTES_OBJ(builtin_default_desc_dev_obj,
     &mp_usbd_builtin_desc_dev, sizeof(tusb_desc_device_t));
 
@@ -278,6 +330,11 @@ static const mp_rom_map_elem_t usb_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&usb_device_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_stall), MP_ROM_PTR(&usb_device_stall_obj) },
     { MP_ROM_QSTR(MP_QSTR_remote_wakeup), MP_ROM_PTR(&usb_remote_wakeup_obj) },
+    
+    // Per-class control methods
+    { MP_ROM_QSTR(MP_QSTR_enable_cdc), MP_ROM_PTR(&usb_device_enable_cdc_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_msc), MP_ROM_PTR(&usb_device_enable_msc_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_ncm), MP_ROM_PTR(&usb_device_enable_ncm_obj) },
 
     // Built-in driver constants
     { MP_ROM_QSTR(MP_QSTR_BUILTIN_NONE), MP_ROM_PTR(&mp_type_usb_device_builtin_none) },

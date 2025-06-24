@@ -80,6 +80,35 @@ extern void mp_usbd_port_get_serial_number(char *buf);
 // length (2 * bytes_len + 1) (including NUL terminator).
 void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
 
+// Per-class runtime enable/disable state
+typedef struct {
+    bool cdc_enabled;
+    bool msc_enabled;
+    bool ncm_enabled;
+} mp_usbd_class_state_t;
+
+// Global class enable state
+extern mp_usbd_class_state_t mp_usbd_class_state;
+
+// Functions to control USB classes via bitfield flags
+void mp_usbd_update_class_state(uint8_t flags);
+void mp_usbd_init_class_state(void);
+
+// Initialise TinyUSB device.
+static inline void mp_usbd_init_tud(void) {
+    // Initialize class state before TinyUSB init
+    mp_usbd_init_class_state();
+
+    tusb_init();
+    #if MICROPY_HW_USB_CDC
+    tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0, .tx_persistent = 1 };
+    tud_cdc_configure_fifo(&cfg);
+    #endif
+}
+
+// Get dynamic descriptor length based on enabled classes
+size_t mp_usbd_get_descriptor_cfg_len(void);
+
 // Length of built-in configuration descriptor
 #define MP_USBD_BUILTIN_DESC_CFG_LEN ( \
     (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) + \
@@ -102,6 +131,7 @@ const char *mp_usbd_runtime_string_cb(uint8_t index);
 // Maximum number of pending exceptions per single TinyUSB task execution
 #define MP_USBD_MAX_PEND_EXCS 2
 
+// Full runtime USB device structure
 typedef struct {
     mp_obj_base_t base;
 
@@ -136,6 +166,23 @@ typedef struct {
     mp_obj_t pend_excs[MP_USBD_MAX_PEND_EXCS];
 } mp_obj_usb_device_t;
 
+#else // Static USBD drivers only
+
+// Minimal USB device structure for static mode (builtin_driver control only)
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_t builtin_driver; // Points to one of mp_type_usb_device_builtin_nnn
+    bool active; // Has the user set the USB device active?
+} mp_obj_usb_device_t;
+
+static inline void mp_usbd_init(void) {
+    // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
+    // which is called in the below helper function.
+    mp_usbd_init_tud();
+}
+
+#endif
+
 // Built-in constant objects, possible values of builtin_driver
 //
 // (Currently not possible to change built-in drivers at runtime, just enable/disable.)
@@ -146,16 +193,6 @@ extern const mp_obj_type_t mp_type_usb_device_builtin_none;
 static inline bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd) {
     return usbd->builtin_driver != MP_OBJ_FROM_PTR(&mp_type_usb_device_builtin_none);
 }
-
-#else // Static USBD drivers only
-
-static inline void mp_usbd_init(void) {
-    // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
-    // which is called in the below helper function.
-    mp_usbd_init_tud();
-}
-
-#endif
 
 #endif // MICROPY_HW_ENABLE_USBDEV
 
