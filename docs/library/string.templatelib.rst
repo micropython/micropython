@@ -168,4 +168,4 @@ See Also
 --------
 
 * `PEP 750 <https://peps.python.org/pep-0750/>`_ - Template Strings specification
-* :ref:`f-strings <tut-f-strings>` - Formatted string literals
+* f-strings - Formatted string literals (use the same syntax but with ``f`` prefix)

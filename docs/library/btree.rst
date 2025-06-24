@@ -130,31 +130,50 @@ Methods
    to get access to all keys in order.
 
 .. method:: btree.keys([start_key, [end_key, [flags]]])
-            btree.values([start_key, [end_key, [flags]]])
-            btree.items([start_key, [end_key, [flags]]])
 
-   These methods are similar to standard dictionary methods, but also can
-   take optional parameters to iterate over a key sub-range, instead of
-   the entire database. Note that for all 3 methods, *start_key* and
-   *end_key* arguments represent key values. For example, `values()`
-   method will iterate over values corresponding to they key range
-   given. None values for *start_key* means "from the first key", no
-   *end_key* or its value of None means "until the end of database".
-   By default, range is inclusive of *start_key* and exclusive of
-   *end_key*, you can include *end_key* in iteration by passing *flags*
-   of `btree.INCL`. You can iterate in descending key direction
-   by passing *flags* of `btree.DESC`. The flags values can be ORed
-   together.
+   Similar to the standard dictionary method, but also can take optional
+   parameters to iterate over a key sub-range, instead of the entire database.
+   *start_key* and *end_key* represent key values. None value for *start_key* 
+   means "from the first key", no *end_key* or its value of None means "until 
+   the end of database". By default, range is inclusive of *start_key* and 
+   exclusive of *end_key*, you can include *end_key* in iteration by passing 
+   *flags* of `btree.INCL`. You can iterate in descending key direction
+   by passing *flags* of `btree.DESC`. The flags values can be ORed together.
+
+.. method:: btree.values([start_key, [end_key, [flags]]])
+
+   Similar to the standard dictionary method, but also can take optional
+   parameters to iterate over values corresponding to a key sub-range, instead 
+   of the entire database. *start_key* and *end_key* arguments represent key 
+   values. For example, this method will iterate over values corresponding to 
+   the key range given. None value for *start_key* means "from the first key", 
+   no *end_key* or its value of None means "until the end of database". 
+   By default, range is inclusive of *start_key* and exclusive of *end_key*, 
+   you can include *end_key* in iteration by passing *flags* of `btree.INCL`.
+   You can iterate in descending key direction by passing *flags* of 
+   `btree.DESC`. The flags values can be ORed together.
+
+.. method:: btree.items([start_key, [end_key, [flags]]])
+
+   Similar to the standard dictionary method, but also can take optional
+   parameters to iterate over key-value pairs in a key sub-range, instead of 
+   the entire database. *start_key* and *end_key* arguments represent key values.
+   None value for *start_key* means "from the first key", no *end_key* or its 
+   value of None means "until the end of database". By default, range is 
+   inclusive of *start_key* and exclusive of *end_key*, you can include *end_key* 
+   in iteration by passing *flags* of `btree.INCL`. You can iterate in 
+   descending key direction by passing *flags* of `btree.DESC`. The flags 
+   values can be ORed together.
 
 Constants
 ---------
 
 .. data:: INCL
 
-   A flag for `keys()`, `values()`, `items()` methods to specify that
+   A flag for :meth:`btree.keys`, :meth:`btree.values`, :meth:`btree.items` methods to specify that
    scanning should be inclusive of the end key.
 
 .. data:: DESC
 
-   A flag for `keys()`, `values()`, `items()` methods to specify that
+   A flag for :meth:`btree.keys`, :meth:`btree.values`, :meth:`btree.items` methods to specify that
    scanning should be in descending direction of keys.
