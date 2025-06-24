@@ -493,7 +493,7 @@ static mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
         mp_int_t num_dig = mp_obj_get_int(args[1]);
         mp_float_t mult = MICROPY_FLOAT_C_FUN(pow)(10, (mp_float_t)num_dig);
         // TODO may lead to overflow
-        mp_float_t rounded = MICROPY_FLOAT_C_FUN(nearbyint)(val *mult) / mult;
+        mp_float_t rounded = MICROPY_FLOAT_C_FUN(nearbyint)(val * mult) / mult;
         return mp_obj_new_float(rounded);
     }
     mp_float_t rounded = MICROPY_FLOAT_C_FUN(nearbyint)(val);

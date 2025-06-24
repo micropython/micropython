@@ -669,17 +669,17 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
         // Helper macros
         #define GROW_ARRAY(arr) do { \
-                    if ((arr).len >= (arr).alloc) { \
-                        size_t new_alloc = (arr).alloc ? (arr).alloc * 2 : 8; \
-                        (arr).items = m_renew(mp_parse_node_t, (arr).items, (arr).alloc, new_alloc); \
-                        (arr).alloc = new_alloc; \
-                    } \
+        if ((arr).len >= (arr).alloc) { \
+            size_t new_alloc = (arr).alloc ? (arr).alloc * 2 : 8; \
+            (arr).items = m_renew(mp_parse_node_t, (arr).items, (arr).alloc, new_alloc); \
+            (arr).alloc = new_alloc; \
+        } \
 } \
-                while (0)
+    while (0)
 
         #define ADD_NODE(arr, node) do { \
-                    GROW_ARRAY(arr); \
-                    (arr).items[(arr).len++] = node; \
+        GROW_ARRAY(arr); \
+        (arr).items[(arr).len++] = node; \
 } while (0)
 
         // Use a vstr to accumulate the current string part
