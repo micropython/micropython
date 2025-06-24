@@ -120,6 +120,27 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     const void *result = NULL;
     if (usbd) {
         result = usbd_get_buffer_in_cb(usbd->desc_cfg, MP_BUFFER_READ);
+
+        // If no runtime descriptor but builtin_driver is set with bitfield flags,
+        // generate descriptor from the bitfield flags
+        if (!result && usbd->builtin_driver != mp_const_none) {
+            // Check if this is a bitfield builtin object
+            extern const mp_obj_type_t mp_type_usb_builtin;
+            if (mp_obj_is_type(usbd->builtin_driver, &mp_type_usb_builtin)) {
+                // Extract flags from bitfield builtin object
+                typedef struct {
+                    mp_obj_base_t base;
+                    uint8_t flags;
+                } mp_obj_usb_builtin_t;
+                mp_obj_usb_builtin_t *builtin = MP_OBJ_TO_PTR(usbd->builtin_driver);
+
+                // Update class state and generate descriptor from flags
+                extern void mp_usbd_update_class_state(uint8_t flags);
+                extern const uint8_t *mp_usbd_generate_desc_cfg_from_flags(uint8_t flags);
+                mp_usbd_update_class_state(builtin->flags);
+                result = mp_usbd_generate_desc_cfg_from_flags(builtin->flags);
+            }
+        }
     }
     return result ? result : &mp_usbd_builtin_desc_cfg;
 }
