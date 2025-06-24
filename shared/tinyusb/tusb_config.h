@@ -98,7 +98,11 @@
 // TinyUSB supports both RNDIS and NCM protocols.
 // NCM is now recommended by Microsoft on Win 11 and above.
 #define CFG_TUD_NCM             (1)
+
+// Include NCM configuration (requires LWIP, but that's guaranteed since
+// MICROPY_HW_NETWORK_USBNET requires MICROPY_PY_LWIP)
 #include "extmod/network_usbd_ncm.h"
+
 #ifndef MICROPY_HW_NETWORK_USBNET_INTERFACE_STRING
 #define MICROPY_HW_NETWORK_USBNET_INTERFACE_STRING "Board NET"
 #endif
