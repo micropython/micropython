@@ -203,7 +203,7 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# mp_printf\n");
         mp_printf(&mp_plat_print, "%d %+d % d\n", -123, 123, 123); // sign
         mp_printf(&mp_plat_print, "%05d\n", -123); // negative number with zero padding
-        mp_printf(&mp_plat_print, "%ld\n", 123); // long
+        mp_printf(&mp_plat_print, "%ld\n", 123l); // long
         mp_printf(&mp_plat_print, "%lx\n", 0x123fl); // long hex
         mp_printf(&mp_plat_print, "%lX\n", 0x123fl); // capital long hex
         if (sizeof(mp_int_t) == 8) {
