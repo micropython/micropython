@@ -218,7 +218,12 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%u\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%x\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%X\n", 0x80000000); // should print unsigned
-        mp_printf(&mp_plat_print, "abc\n%"); // string ends in middle of format specifier
+        // note: storing the string in a variable is enough to prevent the
+        // format string checker from checking this format string. Otherwise,
+        // it would be a compile time diagnostic under the format string
+        // checker.
+        const char msg[] = "abc\n%";
+        mp_printf(&mp_plat_print, msg); // string ends in middle of format specifier
         mp_printf(&mp_plat_print, "%%\n"); // literal % character
         mp_printf(&mp_plat_print, ".%-3s.\n", "a"); // left adjust
     }
