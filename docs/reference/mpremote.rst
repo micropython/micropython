@@ -90,7 +90,7 @@ The full list of supported commands are:
 
   .. code-block:: bash
 
-      $ mpremote connect <device>
+      $ mpremote connect [--options] <device>
 
   ``<device>`` may be one of:
 
@@ -134,6 +134,19 @@ The full list of supported commands are:
 
   This disables :ref:`auto-soft-reset <mpremote_reset>`. This is useful if you
   want to run a subsequent command on a board without first soft-resetting it.
+
+.. _mpremote_command_reconnect:
+
+- **reconnect** -- enable automatic reconnection on disconnect:
+
+  .. code-block:: bash
+
+      $ mpremote reconnect
+
+  This enables automatic reconnection to the same device if it disconnects.
+  When the device disconnects, mpremote will wait for it to reconnect instead
+  of exiting. This is useful for development where devices may be unplugged
+  and replugged frequently.
 
 .. _mpremote_command_soft_reset:
 
