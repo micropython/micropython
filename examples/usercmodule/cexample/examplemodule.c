@@ -86,12 +86,12 @@ static void example_AdvancedTimer_print(const mp_print_t *print, mp_obj_t self_i
     mp_uint_t elapsed = mp_obj_get_int(example_Timer_time(self_in));
 
     // We'll make all representations print at least the class name.
-    mp_printf(print, "%q()", MP_QSTR_AdvancedTimer);
+    mp_printf(print, "%q()", (qstr)MP_QSTR_AdvancedTimer);
 
     // Decide what else to print based on print kind.
     if (kind == PRINT_STR) {
         // For __str__, let's attempt to make it more readable.
-        mp_printf(print, "  # created %d seconds ago", elapsed / 1000);
+        mp_printf(print, "  # created %d seconds ago", (int)(elapsed / 1000));
     }
 }
 
