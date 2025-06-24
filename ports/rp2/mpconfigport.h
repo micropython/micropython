@@ -199,6 +199,9 @@
 #define MICROPY_VFS_ROM                         (MICROPY_HW_ROMFS_BYTES > 0)
 #define MICROPY_SSL_MBEDTLS                     (1)
 #define MICROPY_PY_LWIP_PPP                     (MICROPY_PY_NETWORK_PPP_LWIP)
+#ifndef MICROPY_HW_NETWORK_USBNET
+#define MICROPY_HW_NETWORK_USBNET               (MICROPY_PY_LWIP && MICROPY_HW_TINYUSB_STACK)
+#endif
 
 // Hardware timer alarm index. Available range 0-3.
 // Number 3 is currently used by pico-sdk alarm pool (PICO_TIME_DEFAULT_ALARM_POOL_HARDWARE_ALARM_NUM)
