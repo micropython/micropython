@@ -171,13 +171,13 @@ static void pairheap_test(size_t nops, int *ops) {
         if (mp_pairheap_is_empty(pairheap_lt, heap)) {
             mp_printf(&mp_plat_print, " -");
         } else {
-            mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);
+            mp_printf(&mp_plat_print, " %d", (int)(mp_pairheap_peek(pairheap_lt, heap) - &node[0]));
             ;
         }
     }
     mp_printf(&mp_plat_print, "\npop all:");
     while (!mp_pairheap_is_empty(pairheap_lt, heap)) {
-        mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);
+        mp_printf(&mp_plat_print, " %d", (int)(mp_pairheap_peek(pairheap_lt, heap) - &node[0]));
         ;
         heap = mp_pairheap_pop(pairheap_lt, heap);
     }
@@ -274,7 +274,7 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%p\n", gc_realloc(p, 0, false));
 
         // calling gc_nbytes with a non-heap pointer
-        mp_printf(&mp_plat_print, "%p\n", gc_nbytes(NULL));
+        mp_printf(&mp_plat_print, "%d\n", (int)gc_nbytes(NULL));
     }
 
     // GC initialisation and allocation stress test, to check the logic behind ALLOC_TABLE_GAP_BYTE
@@ -335,7 +335,7 @@ static mp_obj_t extra_coverage(void) {
                 }
                 ptrs[i][j] = j;
             }
-            mp_printf(&mp_plat_print, "%d %d\n", i, all_zero);
+            mp_printf(&mp_plat_print, "%d %d\n", (int)i, (int)all_zero);
 
             // hide the pointer from the GC and collect
             ptrs[i] = FLIP_POINTER(ptrs[i]);
@@ -351,7 +351,7 @@ static mp_obj_t extra_coverage(void) {
                     break;
                 }
             }
-            mp_printf(&mp_plat_print, "%d %d\n", i, correct_contents);
+            mp_printf(&mp_plat_print, "%d %d\n", (int)i, (int)correct_contents);
         }
 
         // free the memory blocks
@@ -449,7 +449,7 @@ static mp_obj_t extra_coverage(void) {
         // create a bytearray via mp_obj_new_bytearray
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(mp_obj_new_bytearray(4, "data"), &bufinfo, MP_BUFFER_RW);
-        mp_printf(&mp_plat_print, "%.*s\n", bufinfo.len, bufinfo.buf);
+        mp_printf(&mp_plat_print, "%.*s\n", (int)bufinfo.len, bufinfo.buf);
     }
 
     // mpz
@@ -516,11 +516,11 @@ static mp_obj_t extra_coverage(void) {
 
         // hash the zero mpz integer
         mpz_set_from_int(&mpz, 0);
-        mp_printf(&mp_plat_print, "%d\n", mpz_hash(&mpz));
+        mp_printf(&mp_plat_print, "%d\n", (int)mpz_hash(&mpz));
 
         // convert the mpz zero integer to int
         mp_printf(&mp_plat_print, "%d\n", mpz_as_int_checked(&mpz, &value_signed));
-        mp_printf(&mp_plat_print, "%d\n", value_signed);
+        mp_printf(&mp_plat_print, "%d\n", (int)value_signed);
 
         // mpz_set_from_float with 0 as argument
         mpz_set_from_float(&mpz, 0);
@@ -562,7 +562,7 @@ static mp_obj_t extra_coverage(void) {
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str_from_cstr("abc"), mp_obj_new_str_from_cstr("abc"));
 
         // mp_obj_int_get_checked with mp_obj_int_t that has a value that is a small integer
-        mp_printf(&mp_plat_print, "%d\n", mp_obj_int_get_checked(MP_OBJ_FROM_PTR(mp_obj_int_new_mpz())));
+        mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_checked(MP_OBJ_FROM_PTR(mp_obj_int_new_mpz())));
 
         // mp_obj_int_get_uint_checked with non-negative small-int
         mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(1)));
@@ -674,7 +674,7 @@ static mp_obj_t extra_coverage(void) {
         #endif
 
         mp_vm_return_kind_t ret = mp_execute_bytecode(code_state, MP_OBJ_NULL);
-        mp_printf(&mp_plat_print, "%d %d\n", ret, mp_obj_get_type(code_state->state[0]) == &mp_type_NotImplementedError);
+        mp_printf(&mp_plat_print, "%d %d\n", (int)ret, mp_obj_get_type(code_state->state[0]) == &mp_type_NotImplementedError);
     }
 
     // scheduler
@@ -754,36 +754,36 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# ringbuf\n");
 
         // Single-byte put/get with empty ringbuf.
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", (int)ringbuf_free(&ringbuf), (int)ringbuf_avail(&ringbuf));
         ringbuf_put(&ringbuf, 22);
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", (int)ringbuf_free(&ringbuf), (int)ringbuf_avail(&ringbuf));
         mp_printf(&mp_plat_print, "%d\n", ringbuf_get(&ringbuf));
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", (int)ringbuf_free(&ringbuf), (int)ringbuf_avail(&ringbuf));
 
         // Two-byte put/get with empty ringbuf.
         ringbuf_put16(&ringbuf, 0xaa55);
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", (int)ringbuf_free(&ringbuf), (int)ringbuf_avail(&ringbuf));
         mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", (int)ringbuf_free(&ringbuf), (int)ringbuf_avail(&ringbuf));
 
         // Two-byte put with full ringbuf.
         for (int i = 0; i < 99; ++i) {
             ringbuf_put(&ringbuf, i);
         }
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", (int)ringbuf_free(&ringbuf), (int)ringbuf_avail(&ringbuf));
         mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0x11bb));
         // Two-byte put with one byte free.
         ringbuf_get(&ringbuf);
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", (int)ringbuf_free(&ringbuf), (int)ringbuf_avail(&ringbuf));
         mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0x3377));
         ringbuf_get(&ringbuf);
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", (int)ringbuf_free(&ringbuf), (int)ringbuf_avail(&ringbuf));
         mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0xcc99));
         for (int i = 0; i < 97; ++i) {
             ringbuf_get(&ringbuf);
         }
         mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", (int)ringbuf_free(&ringbuf), (int)ringbuf_avail(&ringbuf));
 
         // Two-byte put with wrap around on first byte:
         ringbuf.iput = 0;
