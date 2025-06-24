@@ -1,0 +1,1 @@
+./build_firmware.sh ausführen im Git-Repo

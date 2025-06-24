@@ -1,6 +1,6 @@
 TD01 - LCD1 - ~
 
-	Almost fully implemented, only the menu function is missing. The keyboard is causing a malfunction to the LCD, all the pins seem high. Most likely it is something between the keyboard handle and the XPort systems. When the keyboard is deactivated it works perfectly.
+	Almost fully implemented, only the menu function is missing
 	
 	Files: td01-lcd.c, td01-lcd.h, beep.c, lcd.c, lcd.h, beep.c, beep.h, kbd.c, kbd.h
 	

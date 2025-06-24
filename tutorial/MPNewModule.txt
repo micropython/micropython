@@ -1,0 +1,87 @@
+Micropython for Tiger
+
+
+Schnellzugriff:
+mpconfigboard.h, pins.svn							Tiger_Plus
+modpyb.c, Makefile, tdxy_abc.c, tdxy_abc.h			stm32
+Kompilieren											build-Tiger_Plus
+
+
+
+
+modpyb.c:
+
+#include "td0X-tst.h"
+...
+STATIC const mp_rom_map_elem_t tiger_module_globals_table[] = {
+	#if MICROPY_HW_HAS_TST
+		{ MP_ROM_QSTR(MP_QSTR_TST), MP_ROM_PTR(&tiger_tst_type) },
+	#endif
+};
+
+mpconfigboard.h:
+
+...
+#define MICROPY_HW_HAS_TST          (1)
+...
+Beispiel: //UART
+...
+#define ...
+...
+
+pins.csv:
+
+...
+TST_..., PIN
+...
+
+td0x_tst:
+.c:
+#include "py/obj.h"
+#include "py/runtime.h"
+
+STATIC mp_obj_t tst_print(void) {
+    printf("[TST] Status OK\n");
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(tst_print_obj, tst_print);
+
+STATIC mp_obj_t tst_reset(void) {
+    printf("[TST] Reset ausgeführt\n");
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(tst_reset_obj, tst_reset);
+
+STATIC const mp_rom_map_elem_t tst_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_print), MP_ROM_PTR(&tst_print_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&tst_reset_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(tst_locals_dict, tst_locals_dict_table);
+
+const mp_obj_type_t tiger_tst_type = {
+    .base = { &mp_type_type },
+    .name = MP_QSTR_TST,
+    .locals_dict = (mp_obj_dict_t*)&tst_locals_dict,
+};
+
+STATIC mp_obj_t tst_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    return mp_obj_new_obj(&tiger_tst_type);
+}
+
+.h:
+#ifndef __TD0X_TST_H__
+#define __TD0X_TST_H__
+extern const mp_obj_type_t tiger_tst_type;
+#endif
+
+
+Makefile:
+...
+SRC_C += ... td0X-tst.c \ ...
+...
+
+MicroPython:
+import Tiger
+t = Tiger.TST()
+t.print()
+t.reset()

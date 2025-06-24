@@ -1,0 +1,4 @@
+1. Den Ordner MPFlash nach Windows11 kopieren (oder der Umgebung, wo j-Link installiert ist)
+2. firmware0.bin und firmware1.bin aus dem build-Tiger_Plus Ordner kopieren und in den MPFlash-Ordner einfügen
+3. Board mit J-Link verbinden
+4. flash.bat ausführen
