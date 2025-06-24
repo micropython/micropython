@@ -422,7 +422,6 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
     }
 
     if (mp_obj_is_small_int(lhs)) {
-        mp_int_t int_res;
         mp_int_t lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs);
         if (mp_obj_is_small_int(rhs)) {
             mp_int_t rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs);
@@ -506,6 +505,7 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
                     }
                     #endif
 
+                    mp_int_t int_res;
                     if (mp_small_int_mul_overflow(lhs_val, rhs_val, &int_res)) {
                         // use higher precision
                         lhs = mp_obj_new_int_from_ll(lhs_val);
@@ -553,15 +553,15 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
                         mp_int_t ans = 1;
                         while (rhs_val > 0) {
                             if (rhs_val & 1) {
-                                if (mp_small_int_mul_overflow(ans, lhs_val, &int_res)) {
+                                if (mp_small_int_mul_overflow(ans, lhs_val, &ans)) {
                                     goto power_overflow;
                                 }
-                                ans = int_res;
                             }
                             if (rhs_val == 1) {
                                 break;
                             }
                             rhs_val /= 2;
+                            mp_int_t int_res;
                             if (mp_small_int_mul_overflow(lhs_val, lhs_val, &int_res)) {
                                 goto power_overflow;
                             }
