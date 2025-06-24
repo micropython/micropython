@@ -46,6 +46,8 @@
 
 // Initialise TinyUSB device.
 static inline void mp_usbd_init_tud(void) {
+    // Initialize class state before TinyUSB init
+    mp_usbd_init_class_state();
     tusb_init();
     tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0, .tx_persistent = 1 };
     tud_cdc_configure_fifo(&cfg);
@@ -65,6 +67,25 @@ extern void mp_usbd_port_get_serial_number(char *buf);
 // is a helper function for this. out_str must be long enough to hold a string of total
 // length (2 * bytes_len + 1) (including NUL terminator).
 void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
+
+// Per-class runtime enable/disable state
+typedef struct {
+    bool cdc_enabled;
+    bool msc_enabled;
+    bool ncm_enabled;
+} mp_usbd_class_state_t;
+
+// Global class enable state
+extern mp_usbd_class_state_t mp_usbd_class_state;
+
+// Functions to control individual USB classes at runtime
+void mp_usbd_enable_class_cdc(bool enable);
+void mp_usbd_enable_class_msc(bool enable);
+void mp_usbd_enable_class_ncm(bool enable);
+void mp_usbd_init_class_state(void);
+
+// Get dynamic descriptor length based on enabled classes
+size_t mp_usbd_get_descriptor_cfg_len(void);
 
 // Length of built-in configuration descriptor
 #define MP_USBD_BUILTIN_DESC_CFG_LEN ( \

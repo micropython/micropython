@@ -32,6 +32,78 @@
 #include "tusb.h"
 #include "mp_usbd.h"
 
+// Global class enable state
+mp_usbd_class_state_t mp_usbd_class_state;
+
+// Initialize class state based on compile-time configuration and runtime mode
+void mp_usbd_init_class_state(void) {
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+    // In runtime mode, only CDC enabled by default
+    mp_usbd_class_state.cdc_enabled = (CFG_TUD_CDC == 1);
+    mp_usbd_class_state.msc_enabled = false;
+    mp_usbd_class_state.ncm_enabled = false;
+    #else
+    // In static mode, enable all compiled classes
+    mp_usbd_class_state.cdc_enabled = (CFG_TUD_CDC == 1);
+    mp_usbd_class_state.msc_enabled = (CFG_TUD_MSC == 1);
+    mp_usbd_class_state.ncm_enabled = (CFG_TUD_NCM == 1);
+    #endif
+}
+
+// Functions to control individual USB classes at runtime
+void mp_usbd_enable_class_cdc(bool enable) {
+    mp_usbd_class_state.cdc_enabled = enable;
+}
+
+void mp_usbd_enable_class_msc(bool enable) {
+    mp_usbd_class_state.msc_enabled = enable;
+}
+
+void mp_usbd_enable_class_ncm(bool enable) {
+    mp_usbd_class_state.ncm_enabled = enable;
+    // If NCM is being disabled and it was active, clean it up
+    #if MICROPY_HW_NETWORK_USBNET
+    if (!enable) {
+        extern void usbnet_deinit(void);
+        usbnet_deinit();
+    }
+    #endif
+}
+
+// Get dynamic descriptor length based on enabled classes
+size_t mp_usbd_get_descriptor_cfg_len(void) {
+    size_t len = TUD_CONFIG_DESC_LEN;
+    
+    if (mp_usbd_class_state.cdc_enabled && CFG_TUD_CDC) {
+        len += TUD_CDC_DESC_LEN;
+    }
+    if (mp_usbd_class_state.msc_enabled && CFG_TUD_MSC) {
+        len += TUD_MSC_DESC_LEN;
+    }
+    if (mp_usbd_class_state.ncm_enabled && CFG_TUD_NCM) {
+        len += TUD_CDC_NCM_DESC_LEN;
+    }
+    
+    return len;
+}
+
+// Get number of enabled interfaces
+static uint8_t mp_usbd_get_interface_count(void) {
+    uint8_t count = 0;
+    
+    if (mp_usbd_class_state.cdc_enabled && CFG_TUD_CDC) {
+        count += 2;  // CDC uses 2 interfaces
+    }
+    if (mp_usbd_class_state.msc_enabled && CFG_TUD_MSC) {
+        count += 1;
+    }
+    if (mp_usbd_class_state.ncm_enabled && CFG_TUD_NCM) {
+        count += 1;
+    }
+    
+    return count;
+}
+
 #define USBD_CDC_CMD_MAX_SIZE (8)
 #define USBD_CDC_IN_OUT_MAX_SIZE ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 64)
 #define USBD_MSC_IN_OUT_MAX_SIZE ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 64)
@@ -54,6 +126,80 @@ const tusb_desc_device_t mp_usbd_builtin_desc_dev = {
     .bNumConfigurations = 1,
 };
 
+// Static descriptor for maximum possible configuration
+static const uint8_t mp_usbd_builtin_desc_cfg_max[MP_USBD_BUILTIN_DESC_CFG_LEN] = {
+    TUD_CONFIG_DESCRIPTOR(1, USBD_ITF_BUILTIN_MAX, USBD_STR_0, MP_USBD_BUILTIN_DESC_CFG_LEN,
+        0, USBD_MAX_POWER_MA),
+
+    #if CFG_TUD_CDC
+    TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
+        USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
+    #endif
+    #if CFG_TUD_MSC
+    TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, USBD_STR_MSC, USBD_MSC_EP_OUT, USBD_MSC_EP_IN, USBD_MSC_IN_OUT_MAX_SIZE),
+    #endif
+    #if CFG_TUD_NCM
+    // Interface number, description string index, MAC address string index, EP notification address and size, EP data address (out, in), and size, max segment size.
+    TUD_CDC_NCM_DESCRIPTOR(USBD_ITF_NET, USBD_STR_NET, USBD_STR_NET_MAC, USBD_NET_EP_CMD, 64, USBD_NET_EP_OUT, USBD_NET_EP_IN, USBD_NET_IN_OUT_MAX_SIZE, CFG_TUD_NET_MTU),
+    #endif
+};
+
+// Dynamic descriptor buffer for runtime configuration
+static uint8_t mp_usbd_dynamic_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN];
+
+// Generate dynamic configuration descriptor based on enabled classes
+static const uint8_t *mp_usbd_generate_desc_cfg(void) {
+    uint8_t *desc = mp_usbd_dynamic_desc_cfg;
+    uint8_t interface_count = mp_usbd_get_interface_count();
+    size_t total_len = mp_usbd_get_descriptor_cfg_len();
+    
+    // Configuration descriptor header
+    *desc++ = 9;                           // bLength
+    *desc++ = TUSB_DESC_CONFIGURATION;     // bDescriptorType  
+    *desc++ = (total_len) & 0xFF;          // wTotalLength low
+    *desc++ = (total_len >> 8) & 0xFF;     // wTotalLength high
+    *desc++ = interface_count;             // bNumInterfaces
+    *desc++ = 1;                           // bConfigurationValue
+    *desc++ = USBD_STR_0;                  // iConfiguration
+    *desc++ = 0;                           // bmAttributes
+    *desc++ = USBD_MAX_POWER_MA / 2;       // bMaxPower (in 2mA units)
+    
+    // Add enabled class descriptors
+    #if CFG_TUD_CDC
+    if (mp_usbd_class_state.cdc_enabled) {
+        const uint8_t cdc_desc[] = {
+            TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
+                USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE)
+        };
+        memcpy(desc, cdc_desc, sizeof(cdc_desc));
+        desc += sizeof(cdc_desc);
+    }
+    #endif
+    
+    #if CFG_TUD_MSC
+    if (mp_usbd_class_state.msc_enabled) {
+        const uint8_t msc_desc[] = {
+            TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, USBD_STR_MSC, USBD_MSC_EP_OUT, USBD_MSC_EP_IN, USBD_MSC_IN_OUT_MAX_SIZE)
+        };
+        memcpy(desc, msc_desc, sizeof(msc_desc));
+        desc += sizeof(msc_desc);
+    }
+    #endif
+    
+    #if CFG_TUD_NCM
+    if (mp_usbd_class_state.ncm_enabled) {
+        const uint8_t ncm_desc[] = {
+            TUD_CDC_NCM_DESCRIPTOR(USBD_ITF_NET, USBD_STR_NET, USBD_STR_NET_MAC, USBD_NET_EP_CMD, 64, USBD_NET_EP_OUT, USBD_NET_EP_IN, USBD_NET_IN_OUT_MAX_SIZE, CFG_TUD_NET_MTU)
+        };
+        memcpy(desc, ncm_desc, sizeof(ncm_desc));
+        desc += sizeof(ncm_desc);
+    }
+    #endif
+    
+    return mp_usbd_dynamic_desc_cfg;
+}
+
+// For backward compatibility - return the maximum static descriptor
 const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN] = {
     TUD_CONFIG_DESCRIPTOR(1, USBD_ITF_BUILTIN_MAX, USBD_STR_0, MP_USBD_BUILTIN_DESC_CFG_LEN,
         0, USBD_MAX_POWER_MA),
@@ -160,7 +306,8 @@ const uint8_t *tud_descriptor_device_cb(void) {
 
 const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     (void)index;
-    return mp_usbd_builtin_desc_cfg;
+    // Use dynamic generation to include only enabled classes
+    return mp_usbd_generate_desc_cfg();
 }
 
 #else

@@ -63,6 +63,8 @@
 #define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE)
 #endif
 
+// Always enable USB classes for compilation to allow runtime control
+// Runtime enabling/disabling is controlled by mp_usbd_class_state
 #if MICROPY_HW_USB_CDC
 #define CFG_TUD_CDC             (1)
 #else
@@ -102,6 +104,8 @@
 #ifndef MICROPY_HW_NETWORK_USBNET_INTERFACE_STRING
 #define MICROPY_HW_NETWORK_USBNET_INTERFACE_STRING "Board NET"
 #endif
+#else
+#define CFG_TUD_NCM             (0)
 #endif // MICROPY_HW_NETWORK_USBNET
 
 #define USBD_RHPORT (0) // Currently only one port is supported
