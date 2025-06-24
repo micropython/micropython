@@ -27,7 +27,9 @@ def send_script(ser, script):
     ser.write(b"\x04")  # eof
     ser.flush()
     response = ser.read(2)
-    assert response == b"OK", response
+    if response != b"OK":
+        response += ser.read(ser.inWaiting())
+        raise Exception("could not send script", response)
 
 read_test_script = """
 vcp_id = %u
@@ -93,16 +95,6 @@ def read_test(ser_repl, ser_data, usb_vcp_id, bufsize, nbuf):
             return 0
         to_read = min(ser_data.inWaiting(), remain)
         data = ser_data.read(to_read)
-
-        # verify bytes coming in are in sequence
-        # if last_byte is not None:
-        #    if data[0] != (last_byte + 1) & 0xff:
-        #        print('ERROR: first byte is not in sequence:', last_byte, data[0])
-        # last_byte = data[-1]
-        # for i in range(1, len(data)):
-        #    if data[i] != (data[i - 1] + 1) & 0xff:
-        #        print('ERROR: data not in sequence at position %d:' % i, data[i - 1], data[i])
-
         remain -= len(data)
         print(n, nbuf * bufsize, end="\r")
         total_data[n : n + len(data)] = data
@@ -222,15 +214,15 @@ def write_test(ser_repl, ser_data, usb_vcp_id, bufsize, nbuf, verified):
 def do_test(dev_repl, dev_data=None, usb_vcp_id=None, fast=False):
     if dev_data is None:
         print("REPL and data on", dev_repl)
-        ser_repl = serial.Serial(dev_repl, baudrate=115200)
+        ser_repl = serial.Serial(dev_repl, baudrate=115200, timeout=1)
         ser_data = ser_repl
         usb_vcp_id = 0
     else:
         print("REPL on", dev_repl)
         print("data on", dev_data)
         print("USB VCP", usb_vcp_id)
-        ser_repl = serial.Serial(dev_repl, baudrate=115200)
-        ser_data = serial.Serial(dev_data, baudrate=115200)
+        ser_repl = serial.Serial(dev_repl, baudrate=115200, timeout=1)
+        ser_data = serial.Serial(dev_data, baudrate=115200, timeout=1)
 
     if 0:
         for i in range(1000):
