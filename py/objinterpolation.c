@@ -25,7 +25,7 @@
  */
 
 #include "py/runtime.h"
-#include "py/objstr.h"
+#include "py/obj.h"
 
 #if MICROPY_PY_TSTRINGS
 
