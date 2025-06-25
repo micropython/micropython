@@ -2,10 +2,13 @@
 #include "beep.h"
 #include "kbd.h"
 #include "lcd.h"
+#include "ti-2def2.h"
 
 #include "charset0.h"
 
 #if MICROPY_HW_HAS_LCD
+
+#define SMASK (LEN - 1)
 
 static uint8_t special_charset = 0xff; // 0..15
 static uint8_t charset_table[8*8*16];
@@ -82,159 +85,72 @@ static void reset_charset(uint8_t charset)
 }
 
 // 'M' esc
-static void select_menu_entry( uint8_t index )
+static void select_menu_entry(uint8_t index)
 {
- /*  uint32_t i;
-    bFKTv get_next_char = (bFKTv)*(uint32_t*)(__GET_SRING_X);
-    vFKTv clear_sring = (vFKTv)*(uint32_t*)(__CLEAR_SRING);
-    bFKTv scan_record = NULL;
-    if(*(const uint32_t *)__TIGER_VERS >= 0x311B)
-    {
-        scan_record = (bFKTv)*(uint32_t*)(__SCAN_RECORD_IN_SRING);
-    }
-    else
-    {
-        scan_record = (bFKTv)scan_record_in_sring;
-    }
-    bFKTv clear_record_from_sring = (bFKTv)*(uint32_t*)(__CLEAR_RECORD_FROM_SRING);
-
-    register_w2 = (uint32_t)&obuf;
-    DDR_LOG("\n1. obuf.CNT: %d\n", obuf.CNT);
-    if(!get_next_char())
-    {
+    if (o_buf.cnt == 0) {
         return;
     }
-    uint8_t sep = (register_aux1_r1>>8) & 0xff;
- 
 
-    uint8_t default_return_len = 0;
+    uint8_t sep = o_buf.buf[o_buf.head++];
+    o_buf.head &= SMASK;
+    o_buf.cnt--;
 
-    // determine default_return_len
-    if(index != 0)
-    {
-        register_aux1_r1 = obuf.CNT;
-        shared_iram->xwa = (1 << 8) | sep;
-        if(!scan_record())
-        {
-            DDR_LOG("scan_record failed!\n");
-            clear_sring();
-            return;
-        }
-        DDR_LOG("\n3. obuf.CNT: %d\n", obuf.CNT);
+    uint8_t default_len = 0;
+    uint8_t current_index = 0;
+    bool capturing = (index == 0);
+    bool prev_sep = false;
+    bool wrote = false;
+    bool found = false;
 
-        if(register_aux1_r1 == 0)
-        {
-            DDR_LOG("register_aux1_r1 == 0\n");
-            get_next_char();
-            return;
-        }
+    while (o_buf.cnt > 0) {
+        uint8_t ch = o_buf.buf[o_buf.head++];
+        o_buf.head &= SMASK;
+        o_buf.cnt--;
 
-        default_return_len = register_aux1_r1;
-        DDR_LOG("default_return_len: %d\n", default_return_len);
-
-        // find the index entry
-        for(i=0; i<index; ++i)
-        {
-            register_aux1_r1 = obuf.CNT;
-            shared_iram->xwa = (1 << 8) | sep;
-            if(!scan_record())
-            {
-                // default return
-                DDR_LOG("No record: \"default return\"\n");
-                uint32_t k;
-                for(k=0; k<default_return_len; ++k)
-                {
-                    add_to_obuf_more(false, ' ');
-                    inc_pos();
-                }
-                return;
-            }
-            if(register_aux1_r1 == 0)
-            {
-                get_next_char();
-                // default return
-                DDR_LOG("Only one record: \"default return\"\n");
-                uint32_t k;
-                for(k=0; k<default_return_len; ++k)
-                {
-                    add_to_obuf_more(false, ' ');
-                    inc_pos();
-                }
-                return;
+        if (ch == sep) {
+            if (prev_sep) {
+                break;
             }
 
-            register_w1 = register_aux1_r1 + 1;
-            clear_record_from_sring();
+            prev_sep = true;
+
+            if (capturing && wrote) {
+                found = true;
+            }
+
+            current_index++;
+            capturing = (current_index == index);
+            wrote = false;
+            continue;
+        }
+
+        prev_sep = false;
+
+        if (current_index == 0) {
+            default_len++;
+        }
+
+        if (capturing) {
+            uint8_t out = ch;
+            if (out >= 0x80) {
+                out &= 0x7;
+            }
+            add_to_obuf_more(false, out);
+            inc_pos();
+            wrote = true;
         }
     }
 
-    // copy wanted field into output buffer
-    bool found = false;
-    for(;;)
-    {
-        if(!get_next_char())
-        {
-            DDR_LOG("get_next_char failed!\n");
-            return;
-        }
-        uint8_t ch = (register_aux1_r1>>8) & 0xff;
-        if(ch == sep)
-        {
-            break;
-        }
-
-        // special char
-        if(ch >= 0x80)
-        {
-            ch &= 0x7;
-        }
-
-        add_to_obuf_more(false, ch);
-        inc_pos();
+    if (capturing && wrote) {
         found = true;
     }
 
-    if(!found)
-    {
-        // default return
-        DDR_LOG("Record not found: \"default return\"\n");
-        uint32_t k;
-        for(k=0; k<default_return_len; ++k)
-        {
+    if (!found) {
+        for (uint8_t k = 0; k < default_len; ++k) {
             add_to_obuf_more(false, ' ');
             inc_pos();
         }
-        return;
     }
-
-    for(;;)
-    {
-        if(*(uint8_t*)obuf.RAUS == sep)
-        {
-            get_next_char();
-            return;
-        }
-
-        register_aux1_r1 = obuf.CNT;
-        shared_iram->xwa = (1 << 8) | sep;
-        if(!scan_record())
-        {
-            return;
-        }
-
-        register_w1 = register_aux1_r1 + 1;
-        clear_record_from_sring();
-
-        if(!get_next_char())
-        {
-            return;
-        }
-        uint8_t ch = (register_aux1_r1>>8) & 0xff;
-        if(ch == sep)
-        {
-            break;
-        }
-    }*/
 }
 
 
@@ -379,20 +295,11 @@ bool process_esc_char(uint8_t *ch)
 					reset_charset(param_buffer[0]);
 					return false;
 				}
-				case 'M': // menu entry selection
-				{
-				 /*   uint32_t backup_register_w1 = register_w1;
-					uint32_t backup_register_w2 = register_w2;
-					uint32_t backup_register_aux1_r1 = register_aux1_r1;
-				*/	
-					select_menu_entry(param_buffer[0]);
-				 /*	
-					register_w1 = backup_register_w1;
-					register_w2 = backup_register_w2;
-					register_aux1_r1 = backup_register_aux1_r1;
-				*/	
-					return false;
-				}
+                                case 'M': // menu entry selection
+                                {
+                                        select_menu_entry(param_buffer[0]);
+                                        return false;
+                                }
 				case 'c': // cursor: 0:off, 1:on, else:on+blinking
 				{
 					switch(param_buffer[0])
