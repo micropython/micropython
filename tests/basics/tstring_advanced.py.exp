@@ -1,0 +1,61 @@
+=== Type validation and constructors ===
+strings validation: strings must be a tuple
+interpolations validation: interpolations must be a tuple
+strings element validation: all strings elements must be strings
+interpolations element validation: all interpolations elements must be Interpolation objects
+Interpolation no args: function missing 2 required positional arguments
+Interpolation too many args: function expected at most 4 arguments, got 5
+
+=== Object representations ===
+Template repr: Template(strings=('test ', ''), interpolations=(Interpolation(value=42, expression='42'),))
+Interpolation repr: Interpolation(value=42, expression='x', conversion='r', format_spec='.2f')
+value=42, expr=x, conv=r, fmt=.2f
+
+=== Memory and performance tests ===
+Many interpolations: count=10, values=(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+Long string length: 500
+Large template created: 5000
+
+=== Iterator edge cases ===
+Only interp: ['Interpolation', 'Interpolation', 'Interpolation']
+Alternating: ['str', 'Interpolation', 'str', 'Interpolation', 'str']
+Mixed: ['str', 'Interpolation', 'Interpolation', 'str', 'Interpolation', 'Interpolation', 'str']
+Iterator restart: first=a, second from new=a
+All empty strings iteration: 2 items
+
+=== Concatenation edge cases ===
+OK: Cannot concatenate Template with int
+OK: Cannot concatenate int with Template
+Empty concat: ('content',) and ('content',)
+Adjacent interps concat: strings=('a', '', 'b')
+
+=== Format spec interpolation edge cases ===
+Format only interpolation: '{precision}'
+Complex format result: '****100.00'
+Empty format result: '42'
+Escaped braces: strings=('{value}: ', '')
+
+=== Expression parser tests ===
+Complex math: (610, 100, 0, 10)
+Object ops: (42, 'result')
+Container ops: ([2, 3], 'value')
+Lambda callable: True
+Lambda result: evaluated
+
+=== Attribute access tests ===
+OK: Template.strings is immutable
+OK: Interpolation.value is immutable
+OK: AttributeError for non-existent attribute
+
+=== Special format cases ===
+All conversions length: 15
+Format with conversions: '        42 42             42    '
+Debug complex: 'lst[0] + lst[1]=', value=3
+Special chars length: 25
+
+=== Error handling ===
+__template__ error: invalid interpolation format
+OK: Invalid expression syntax
+Invalid conversion accepted: conv='x'
+
+Advanced tests completed!

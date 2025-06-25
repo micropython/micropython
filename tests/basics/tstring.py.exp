@@ -38,6 +38,13 @@ Type checks: Template=Template, is Template=True
 0
 ()
 
+=== PEP-750 specific features ===
+Single: ('single quotes',), Double: ('double quotes',)
+Debug without format: r
+Debug with format: .2f
+rt prefix: 'Path: C:\\Users\\test'
+tr prefix: 'Also raw: \\n\\t'
+
 === Format spec interpolation tests ===
 Format spec stored: '.{precision}f'
 Result: Pi: 3.14
@@ -54,13 +61,17 @@ Chained concatenation strings: ('Hello ', ' world')
 Template + str correctly raises: can only concatenate Template (not "str") to Template
 str + Template correctly raises: unsupported types for __add__: 'str', 'Template'
 
-=== Additional edge cases ===
+=== Import and type tests ===
+isinstance Template: True
+isinstance Interpolation: N/A
+Manual Template: ('Hello ', '!')
+
+=== Additional features ===
 ASCII conversion: a
 Interpolation-only template strings: ('', '', '')
 Interpolation-only template values: (1, 2)
 __str__ result: Test 42
-__template__ result type: Template
+t + t implicit: ('Hello World',)
+Scope access: ('local', 'global')
 
-=== Implicit concatenation restriction tests ===
-t-string + t-string implicit: ('Hello World',)
-string + string implicit: Hello World
+Core tests completed!

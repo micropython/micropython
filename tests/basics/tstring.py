@@ -1,6 +1,6 @@
 # Test template strings (t-strings) - PEP 750
+# This file tests core functionality and PEP-750 compliance
 
-# Basic functionality tests
 print("=== Basic t-string tests ===")
 
 # Test 1: Basic template without interpolations
@@ -118,35 +118,56 @@ t_no_interp = t"Just a string"
 print(len(t_no_interp.interpolations))
 print(t_no_interp.values)
 
+print("\n=== PEP-750 specific features ===")
+
+# Test 20: Quote marks - single and double
+t_single = t'single quotes'
+t_double = t"double quotes"
+print(f"Single: {t_single.strings}, Double: {t_double.strings}")
+
+# Test 21: Debug specifier variations
+x = 42
+t_debug1 = t"{x=}"
+t_debug2 = t"{x=:.2f}"
+print(f"Debug without format: {t_debug1.interpolations[0].conversion}")
+print(f"Debug with format: {t_debug2.interpolations[0].format_spec}")
+
+# Test 22: Raw strings (rt and tr prefixes)
+t_rt = rt"Path: C:\Users\test"
+t_tr = tr"Also raw: \n\t"
+print(f"rt prefix: {repr(t_rt.strings[0])}")
+print(f"tr prefix: {repr(t_tr.strings[0])}")
+
 print("\n=== Format spec interpolation tests ===")
 
-# Test 20: Basic format_spec interpolation
+# Test 23: Basic format_spec interpolation
 precision = 2
 value = 3.14159
 t_fmt_interp = t"Pi: {value:.{precision}f}"
 print(f"Format spec stored: '{t_fmt_interp.interpolations[0].format_spec}'")
 print(f"Result: {t_fmt_interp.__str__()}")
 
-# Test 21: Multiple interpolations in format_spec  
+# Test 24: Multiple interpolations in format_spec  
 width = 10
 align = ">"
 t_fmt_multi = t"Aligned: {42:{align}{width}d}"
 print(f"Format spec: '{t_fmt_multi.interpolations[0].format_spec}'")
 print(f"Result: '{t_fmt_multi.__str__()}'")
 
-# Test 22: Complex format spec
+# Test 25: Complex format spec
 fill_char = "*"
 precision = 3
-t_fmt_complex = t"Complex: {99.9:{fill_char}>{width}.{precision}f}"
+value = 99.999
+t_fmt_complex = t"Complex: {value:{fill_char}>{width}.{precision}f}"
 print(f"Complex format spec: '{t_fmt_complex.interpolations[0].format_spec}'")
 
-# Test 23: Format spec with escaped braces
+# Test 26: Format spec with escaped braces
 t_fmt_escaped = t"Escaped: {42:{{width}}}"
 print(f"Escaped braces format spec: '{t_fmt_escaped.interpolations[0].format_spec}'")
 
 print("\n=== Template concatenation tests ===")
 
-# Test 24: Template + Template concatenation
+# Test 27: Template + Template concatenation
 t_concat1 = t"Hello "
 t_concat2 = t"{42}"
 t_concat3 = t" world"
@@ -158,62 +179,74 @@ try:
 except TypeError as e:
     print(f"Template concatenation error: {e}")
 
-# Test 25: Chained concatenation
+# Test 28: Chained concatenation
 try:
     result = t_concat1 + t_concat2 + t_concat3
     print(f"Chained concatenation strings: {result.strings}")
 except TypeError as e:
     print(f"Chained concatenation error: {e}")
 
-# Test 26: Template + str (should fail)
+# Test 29: Template + str (should fail)
 try:
     result = t_concat1 + "regular string"
     print(f"ERROR: Template + str should raise TypeError")
 except TypeError as e:
     print(f"Template + str correctly raises: {e}")
 
-# Test 27: str + Template (should fail)
+# Test 30: str + Template (should fail)
 try:
     result = "Start: " + t_concat2
     print(f"ERROR: str + Template should raise TypeError")
 except TypeError as e:
     print(f"str + Template correctly raises: {e}")
 
-print("\n=== Additional edge cases ===")
+print("\n=== Import and type tests ===")
 
-# Test 28: ASCII conversion (!a)
-obj_unicode = "Hello\\nWorld\\u00A9"  # Contains newline and copyright symbol
+# Test 31: Import types from string.templatelib
+from string.templatelib import Template, Interpolation
+
+# Test 32: Type checking
+t_type = t"test"
+print(f"isinstance Template: {isinstance(t_type, Template)}")
+print(f"isinstance Interpolation: {isinstance(t_type.interpolations[0], Interpolation) if t_type.interpolations else 'N/A'}")
+
+# Test 33: Manual Template construction
+try:
+    t_manual = Template(("Hello ", "!"), (Interpolation(42, "x"),))
+    print(f"Manual Template: {t_manual.strings}")
+except Exception as e:
+    print(f"Manual construction error: {e}")
+
+print("\n=== Additional features ===")
+
+# Test 34: ASCII conversion (!a)
+obj_unicode = "Hello\\nWorld\\u00A9"
 t_ascii = t"ASCII: {obj_unicode!a}"
 print(f"ASCII conversion: {t_ascii.interpolations[0].conversion}")
 
-# Test 29: Template with only interpolations
+# Test 35: Template with only interpolations
 a = 1
 b = 2
 t_only_interp = t"{a}{b}"
 print(f"Interpolation-only template strings: {t_only_interp.strings}")
 print(f"Interpolation-only template values: {t_only_interp.values}")
 
-# Test 30: __str__ method behavior
+# Test 36: __str__ method behavior
 t_str_test = t"Test {42}"
 print(f"__str__ result: {t_str_test.__str__()}")
 
-# Test 31: Template constructor validation (via __template__)
-try:
-    # This would be called internally by t-string literals
-    result = __template__(("Hello", "!"), ((42, "42", None, ""),))
-    print(f"__template__ result type: {type(result).__name__}")
-except Exception as e:
-    print(f"__template__ error: {e}")
-
-print("\n=== Implicit concatenation restriction tests ===")
-
-# Test 32: t-string + t-string implicit concatenation (should work)
+# Test 37: Implicit concatenation
 t_implicit = t"Hello " t"World"
-print(f"t-string + t-string implicit: {t_implicit.strings}")
+print(f"t + t implicit: {t_implicit.strings}")
 
-# Test 33: regular string + regular string (should work) 
-s_implicit = "Hello " "World"
-print(f"string + string implicit: {s_implicit}")
+# Test 38: Expression scope access
+global_var = "global"
 
-# Test 34-36: Mixed implicit concatenation should fail at parse time
-# These are tested in string_template_errors.py since they cause SyntaxError
+def test_scope():
+    local_var = "local"
+    t_local = t"Local: {local_var}, Global: {global_var}"
+    return t_local.values
+
+print(f"Scope access: {test_scope()}")
+
+print("\nCore tests completed!")
