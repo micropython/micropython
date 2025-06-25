@@ -679,26 +679,16 @@ static mp_obj_t tiger_lcd1_reset_special(mp_obj_t self_in, mp_obj_t n)
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(tiger_lcd1_reset_special_obj, tiger_lcd1_reset_special);
 
-/*
-static mp_obj_t tiger_lcd1_menu(mp_obj_t self_in, mp_obj_t n) 
-{
-	tiger_lcd_obj_t *l = MP_OBJ_TO_PTR(self_in);
+static mp_obj_t tiger_lcd1_menu_select(mp_obj_t self_in, mp_obj_t idx) {
+    uint8_t index = mp_obj_int_get_uint_checked(idx);
 	
-	uint8_t ch = mp_obj_int_get_uint_checked(n);
+    uint8_t cmd[] = {0x1B, 'M', index, 0xF0};
 	
-	if(ch > 15)
-	{
-		mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Special Charset must be between 0 and 15"));
-	}
+    add_to_obuf(cmd, 4);
 	
-	uint8_t cmd[] = {0x1B,'L', ch, 0xF0};
-	
-	add_to_obuf(cmd, 4);
-	
-	return mp_const_none;
+    return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(tiger_lcd1_menu_obj, tiger_lcd1_menu);
-*/
+static MP_DEFINE_CONST_FUN_OBJ_2(tiger_lcd1_menu_select_obj, tiger_lcd1_menu_select);
 
 static mp_obj_t tiger_lcd1_cursor_off(mp_obj_t self_in) 
 {
@@ -1239,6 +1229,7 @@ static const mp_rom_map_elem_t tiger_lcd1_locals_dict_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_cursorPosition), MP_ROM_PTR(&tiger_lcd1_cursor_position_obj)                 },
 	{ MP_ROM_QSTR(MP_QSTR_activateSpecialCharset), MP_ROM_PTR(&tiger_lcd1_activate_special_obj)        },
 	{ MP_ROM_QSTR(MP_QSTR_resetSpecialCharset), MP_ROM_PTR(&tiger_lcd1_reset_special_obj)              },
+    { MP_ROM_QSTR(MP_QSTR_menuSelect), MP_ROM_PTR(&tiger_lcd1_menu_select_obj)                         },
 	{ MP_ROM_QSTR(MP_QSTR_cursorOff), MP_ROM_PTR(&tiger_lcd1_cursor_off_obj)                           },
 	{ MP_ROM_QSTR(MP_QSTR_cursorOn), MP_ROM_PTR(&tiger_lcd1_cursor_on_obj)                             },
 	{ MP_ROM_QSTR(MP_QSTR_cursorBlink), MP_ROM_PTR(&tiger_lcd1_cursor_blink_obj)                       },
