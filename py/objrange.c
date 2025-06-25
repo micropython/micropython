@@ -95,8 +95,20 @@ static mp_obj_t range_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
     o->step = 1;
 
     if (n_args == 1) {
+        #if MICROPY_COMP_EXTRA_VALIDATION
+        if (args[0] == MP_OBJ_NULL) {
+            goto unbounded_local_variable;
+        }
+        #endif
+
         o->stop = mp_obj_get_int(args[0]);
     } else {
+        #if MICROPY_COMP_EXTRA_VALIDATION
+        if (args[0] == MP_OBJ_NULL || args[1] == MP_OBJ_NULL || (n_args == 3 && args[2] == MP_OBJ_NULL)) {
+            goto unbounded_local_variable;
+        }
+        #endif
+
         o->start = mp_obj_get_int(args[0]);
         o->stop = mp_obj_get_int(args[1]);
         if (n_args == 3) {
@@ -108,6 +120,11 @@ static mp_obj_t range_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
     }
 
     return MP_OBJ_FROM_PTR(o);
+
+    #if MICROPY_COMP_EXTRA_VALIDATION
+unbounded_local_variable:
+    mp_raise_msg(&mp_type_NameError, MP_ERROR_TEXT("cannot access local variable"));
+    #endif
 }
 
 static mp_int_t range_len(mp_obj_range_t *self) {
