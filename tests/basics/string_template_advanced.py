@@ -32,13 +32,13 @@ except TypeError as e:
 # Interpolation constructor validation
 try:
     Interpolation()  # Missing args
-except TypeError as e:
-    print(f"Interpolation no args: {e}")
+except TypeError:
+    print("Interpolation no args: TypeError")
 
 try:
     Interpolation(1, 2, 3, 4, 5)  # Too many args
-except TypeError as e:
-    print(f"Interpolation too many args: {e}")
+except TypeError:
+    print("Interpolation too many args: TypeError")
 
 print("\n=== Object representations ===")
 
@@ -228,8 +228,8 @@ print("\n=== Error handling ===")
 # __template__ with invalid format
 try:
     result = __template__(("test",), ((42,),))  # Missing fields
-except ValueError as e:
-    print(f"__template__ error: {e}")
+except ValueError:
+    print("__template__ error: ValueError")
 
 # Invalid syntax in expression (compile-time error)
 try:

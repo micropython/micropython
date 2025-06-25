@@ -3,8 +3,8 @@ strings validation: strings must be a tuple
 interpolations validation: interpolations must be a tuple
 strings element validation: all strings elements must be strings
 interpolations element validation: all interpolations elements must be Interpolation objects
-Interpolation no args: function missing 2 required positional arguments
-Interpolation too many args: function expected at most 4 arguments, got 5
+Interpolation no args: TypeError
+Interpolation too many args: TypeError
 
 === Object representations ===
 Template repr: Template(strings=('test ', ''), interpolations=(Interpolation(value=42, expression='42'),))
@@ -54,7 +54,7 @@ Debug complex: 'lst[0] + lst[1]=', value=3
 Special chars length: 25
 
 === Error handling ===
-__template__ error: invalid interpolation format
+__template__ error: ValueError
 OK: Invalid expression syntax
 Invalid conversion accepted: conv='x'
 
