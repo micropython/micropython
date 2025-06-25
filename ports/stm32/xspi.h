@@ -37,5 +37,7 @@ extern const xspi_flash_t xspi_flash2;
 void xspi_init(void);
 uint32_t xspi_get_xip_base(const xspi_flash_t *self);
 bool xspi_is_valid_addr(const xspi_flash_t *self, uint32_t addr);
+void xspi_switch_to_spi(void);
+void xspi_switch_to_dtr(void);
 
 #endif // MICROPY_INCLUDED_STM32_XSPI_H

@@ -66,6 +66,7 @@ const xspi_flash_t xspi_flash2 = {
 
 static bool xspi_dtr_enabled = false;
 
+#ifdef pyb_pin_FLASH_RESET
 // Can't rely on SysTick being available, so use a busy loop for delays.
 // The timing here is approximate and assumes a CPU frequency of 800MHz.
 static void xspi_delay_us(unsigned int us) {
@@ -75,6 +76,8 @@ static void xspi_delay_us(unsigned int us) {
         }
     }
 }
+#endif
+
 static inline void mp_hal_pin_config_alt_speed(mp_hal_pin_obj_t pin, uint32_t pull, uint32_t alt, uint32_t speed) {
     // TODO use mp_hal_pin_config_alt_static_speed
     mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ALT, pull, alt);
@@ -88,8 +91,6 @@ static int xspi_write_888_dtr_ext(uint16_t cmd, bool addr_enabled, uint32_t addr
 static void xspi_memory_map_111(void);
 static void xspi_memory_map_888(void);
 static void xspi_memory_map_exit(void);
-static void xspi_switch_to_dtr(void);
-static void xspi_switch_to_spi(void);
 
 void xspi_init(void) {
     // Configure XSPI pins.
@@ -163,12 +164,14 @@ void xspi_init(void) {
     XSPIM->CR = 0; // can also be (1 << 4) to pass through CS signal
     XSPIx->CR |= 1 << XSPI_CR_EN_Pos;
 
+    #ifdef pyb_pin_FLASH_RESET
     // Reset SPI flash to make sure it's in a known state (SPI mode).
     mp_hal_pin_output(pyb_pin_FLASH_RESET);
     mp_hal_pin_low(pyb_pin_FLASH_RESET);
     xspi_delay_us(1000);
     mp_hal_pin_high(pyb_pin_FLASH_RESET);
     xspi_delay_us(10000);
+    #endif
 
     // Enable memory-mapped mode.
     // Can select either SPI or DTR mode.
@@ -429,7 +432,7 @@ static void xspi_memory_map_exit(void) {
     XSPIx->CR = (XSPIx->CR & ~XSPI_CR_FMODE_Msk) | 0 << XSPI_CR_FMODE_Pos; // indirect write mode
 }
 
-static void xspi_switch_to_dtr(void) {
+void xspi_switch_to_dtr(void) {
     uint8_t buf[4];
 
     // WREN.
@@ -450,7 +453,7 @@ static void xspi_switch_to_dtr(void) {
     xspi_dtr_enabled = true;
 }
 
-static void xspi_switch_to_spi(void) {
+void xspi_switch_to_spi(void) {
     uint8_t buf[4];
 
     // WREN.
@@ -470,42 +473,6 @@ static void xspi_switch_to_spi(void) {
     xspi_write_888_dtr_ext(0x728d, true, 0x00000000, 2, buf);
 
     xspi_dtr_enabled = false;
-}
-
-void xspi_test(void) {
-    uint8_t buf_id[6] = {0};
-
-    uint32_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-
-    xspi_memory_map_exit();
-
-    if (xspi_dtr_enabled) {
-        // Switch back to SPI mode.
-        xspi_read_888_dtr_ext(0x9f60, true, 0x00000000, 4, 6, buf_id);
-        xspi_switch_to_spi();
-        xspi_memory_map_111();
-    } else {
-        // Switch to DTR mode.
-        xspi_switch_to_dtr();
-
-        // read ID
-        xspi_read_888_dtr_ext(0x9f60, true, 0x00000000, 4, 6, buf_id);
-
-        if (0) {
-            xspi_switch_to_spi();
-            xspi_read_111_ext(0x9f, false, 0, 3, buf_id);
-        }
-    }
-
-    if (xspi_dtr_enabled) {
-        xspi_memory_map_888();
-    } else {
-        xspi_memory_map_111();
-    }
-
-    MICROPY_END_ATOMIC_SECTION(atomic_state);
-
-    mp_printf(&mp_plat_print, "read %02x:%02x:%02x:%02x:%02x:%02x\n", buf_id[0], buf_id[1], buf_id[2], buf_id[3], buf_id[4], buf_id[5]);
 }
 
 static int xspi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
@@ -538,6 +505,7 @@ static int xspi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
     return 0; // success
 }
 
+// These commands may be passed to this function.
 #define CMD_WREN        (0x06)
 #define CMD_RSTEN       (0x66)
 #define CMD_RESET       (0x99)
@@ -558,6 +526,7 @@ static int xspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t 
     return xspi_write_111_ext(cmd, false, 0, len, (const uint8_t *)&data);
 }
 
+// These commands may be passed to this function.
 #define CMD_WRITE       (0x02)
 #define CMD_WRITE_32    (0x12)
 #define CMD_SEC_ERASE   (0x20)
@@ -581,6 +550,7 @@ static int xspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, s
     return xspi_write_111_ext(cmd, true, addr, len, src);
 }
 
+// These commands may be passed to this function.
 #define CMD_RDSR        (0x05)
 #define CMD_RD_DEVID    (0x9f)
 static int xspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest) {

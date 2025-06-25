@@ -123,7 +123,10 @@ CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DMBOOT_VTOR=$(MBOOT_TEXT0_ADDR)
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),n6))
+ifeq ($(MCU_SERIES),n6)
+ifeq ($(USE_MBOOT),1)
+CFLAGS += -DMICROPY_HW_RUNS_FROM_EXT_FLASH=1
+endif
 # as doesn't recognise -mcpu=cortex-m55
 AFLAGS += -march=armv8.1-m.main
 else
@@ -323,9 +326,12 @@ SRC_O += \
 	resethandler_m3.o \
 	shared/runtime/gchelper_thumb2.o
 else ifeq ($(MCU_SERIES),n6)
-SRC_O += \
-	resethandler_m3_iram.o \
-	shared/runtime/gchelper_thumb2.o
+SRC_O += shared/runtime/gchelper_thumb2.o
+ifeq ($(USE_MBOOT),1)
+SRC_O += resethandler_iram.o
+else
+SRC_O += resethandler.o
+endif
 else
 SRC_O += \
 	system_stm32.o \
@@ -579,7 +585,7 @@ define GENERATE_HEX
 	$(Q)$(OBJCOPY) -O ihex $(2) $(1)
 endef
 
-.PHONY: deploy deploy-stlink deploy-openocd
+.PHONY: deploy deploy-stlink deploy-openocd deploy-trusted
 
 ifeq ($(MBOOT_ENABLE_PACKING),1)
 deploy: $(BUILD)/firmware.pack.dfu
@@ -588,6 +594,9 @@ else
 deploy: $(BUILD)/firmware.dfu
 	$(call RUN_DFU,$^)
 endif
+
+deploy-trusted: $(BUILD)/firmware-trusted.bin
+	$(CUBE_PROG_BASE)/bin/STM32_Programmer.sh -c port=SWD mode=HOTPLUG ap=1 -el $(DKEL) -w $^ 0x70000000 -hardRst
 
 # A board should specify TEXT0_ADDR if to use a different location than the
 # default for the firmware memory location.  A board can also optionally define
@@ -646,9 +655,6 @@ $(BUILD)/firmware.elf: $(OBJ)
 $(BUILD)/firmware-trusted.bin: $(BUILD)/firmware.bin
 	/bin/rm -f $@
 	$(CUBE_PROG_BASE)/bin/STM32MP_SigningTool_CLI -bin $^ -nk -of 0x80000000 -t fsbl -o $@ -hv $(STM32_N6_HEADER_VERSION)
-
-deploy-n6: $(BUILD)/firmware-trusted.bin
-	$(CUBE_PROG_BASE)/bin/STM32_Programmer.sh -c port=SWD mode=HOTPLUG ap=1 -el $(DKEL) -w $^ 0x70000000 -hardRst
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(GEN_PINS_SRC)
