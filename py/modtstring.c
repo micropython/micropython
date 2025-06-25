@@ -30,8 +30,14 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
+#include "py/objexcept.h"
 
 #if MICROPY_PY_TSTRINGS
+
+// Forward declarations
+extern const mp_obj_type_t mp_type_template;
+extern const mp_obj_type_t mp_type_interpolation;
+mp_obj_t mp_obj_new_interpolation(mp_obj_t value, mp_obj_t expression, mp_obj_t conversion, mp_obj_t format_spec);
 
 // Template string (t-string) support as specified in PEP 750
 typedef struct _mp_obj_template_t {
@@ -314,7 +320,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 // __template__ builtin function to create Template objects
-mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolations_in) {
+static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolations_in) {
     // Convert interpolation tuples to Interpolation objects
     mp_obj_t *items;
     size_t len;

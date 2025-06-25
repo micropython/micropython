@@ -868,11 +868,6 @@ extern const mp_obj_type_t mp_type_polymorph_iter;
 #if MICROPY_ENABLE_FINALISER
 extern const mp_obj_type_t mp_type_polymorph_iter_with_finaliser;
 #endif
-#if MICROPY_PY_TSTRINGS
-extern const mp_obj_type_t mp_type_template;
-extern const mp_obj_type_t mp_type_interpolation;
-mp_obj_t mp_obj_new_interpolation(mp_obj_t value, mp_obj_t expression, mp_obj_t conversion, mp_obj_t format_spec);
-#endif
 
 // Exceptions
 extern const mp_obj_type_t mp_type_BaseException;
