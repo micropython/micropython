@@ -62,13 +62,6 @@ static bool is_char_or3(mp_lexer_t *lex, byte c1, byte c2, byte c3) {
     return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3;
 }
 
-#if MICROPY_PY_FSTRINGS
-__attribute__((unused))
-static bool is_char_or4(mp_lexer_t *lex, byte c1, byte c2, byte c3, byte c4) {
-    return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3 || lex->chr0 == c4;
-}
-#endif
-
 static bool is_char_following(mp_lexer_t *lex, byte c) {
     return lex->chr1 == c;
 }
@@ -109,6 +102,13 @@ static bool is_following_base_char(mp_lexer_t *lex) {
 static bool is_following_odigit(mp_lexer_t *lex) {
     return lex->chr1 >= '0' && lex->chr1 <= '7';
 }
+
+#if MICROPY_PY_FSTRINGS
+// Helper function for f-string prefix detection (r, u, b, f)
+static bool is_char_or4(mp_lexer_t *lex, byte c1, byte c2, byte c3, byte c4) {
+    return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3 || lex->chr0 == c4;
+}
+#endif
 
 static bool is_string_or_bytes(mp_lexer_t *lex) {
     return is_char_or(lex, '\'', '\"')
