@@ -26,7 +26,7 @@ Classes
       A tuple of :class:`Interpolation` objects representing the interpolated
       expressions.
 
-   .. attribute:: values
+   .. attribute:: Template.values
 
       A computed property that returns a tuple of all interpolated values.
 
