@@ -51,3 +51,21 @@ try:
     result = t1 < t2
 except TypeError:
     print("TypeError: Templates do not support ordering")
+
+# Test implicit concatenation mixing - t-string + regular string
+try:
+    compile('t"hello" "world"', '<string>', 'eval')
+except SyntaxError:
+    print("SyntaxError: Cannot mix t-string and regular string in implicit concatenation")
+
+# Test implicit concatenation mixing - regular string + t-string  
+try:
+    compile('"hello" t"world"', '<string>', 'eval')
+except SyntaxError:
+    print("SyntaxError: Cannot mix regular string and t-string in implicit concatenation")
+
+# Test implicit concatenation with multiple strings
+try:
+    compile('t"a" t"b" "c"', '<string>', 'eval')
+except SyntaxError:
+    print("SyntaxError: Cannot mix t-string and regular string in multiple concatenation")

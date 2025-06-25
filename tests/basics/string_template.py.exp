@@ -60,3 +60,7 @@ Interpolation-only template strings: ('', '', '')
 Interpolation-only template values: (1, 2)
 __str__ result: Test 42
 __template__ result type: Template
+
+=== Implicit concatenation restriction tests ===
+t-string + t-string implicit: ('Hello World',)
+string + string implicit: Hello World

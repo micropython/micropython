@@ -204,3 +204,16 @@ try:
     print(f"__template__ result type: {type(result).__name__}")
 except Exception as e:
     print(f"__template__ error: {e}")
+
+print("\n=== Implicit concatenation restriction tests ===")
+
+# Test 32: t-string + t-string implicit concatenation (should work)
+t_implicit = t"Hello " t"World"
+print(f"t-string + t-string implicit: {t_implicit.strings}")
+
+# Test 33: regular string + regular string (should work) 
+s_implicit = "Hello " "World"
+print(f"string + string implicit: {s_implicit}")
+
+# Test 34-36: Mixed implicit concatenation should fail at parse time
+# These are tested in string_template_errors.py since they cause SyntaxError
