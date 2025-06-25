@@ -353,6 +353,7 @@ special_tests = [
         "micropython/meminfo.py",
         "basics/bytes_compare3.py",
         "basics/builtin_help.py",
+        "basics/tstring_test.py",
         "thread/thread_exc2.py",
         "ports/esp32/partition_ota.py",
     )
@@ -894,7 +895,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_const = test_name.startswith("const")
         is_io_module = test_name.startswith("io_")
         is_fstring = test_name.startswith("string_fstring")
-        is_tstring = test_name.startswith("string_template")
+        is_tstring = test_name.startswith("tstring")
         is_inlineasm = test_name.startswith("asm")
 
         skip_it = test_file in skip_tests
