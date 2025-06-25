@@ -34,7 +34,13 @@ include ../../../py/mkenv.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
 # A board can set MBOOT_TEXT0_ADDR to a custom location where mboot should reside.
+ifeq ($(MCU_SERIES),n6)
+MBOOT_TEXT0_ADDR ?= 0x34180400
+MBOOT_LD_FILES ?= stm32_memory_n6.ld stm32_sections.ld
+else
 MBOOT_TEXT0_ADDR ?= 0x08000000
+MBOOT_LD_FILES ?= stm32_memory.ld stm32_sections.ld
+endif
 
 # The string in MBOOT_VERSION (default defined in version.c if not defined by a
 # board) will be stored in the final MBOOT_VERSION_ALLOCATED_BYTES bytes of mboot flash.
@@ -89,7 +95,6 @@ CFLAGS += -DMBOOT_VERSION=\"$(MBOOT_VERSION)\"
 endif
 CFLAGS += -DMBOOT_VERSION_ALLOCATED_BYTES=$(MBOOT_VERSION_ALLOCATED_BYTES) -DMBOOT_VERSION_INCLUDE_OPTIONS=$(MBOOT_VERSION_INCLUDE_OPTIONS)
 
-MBOOT_LD_FILES ?= stm32_memory.ld stm32_sections.ld
 LDFLAGS += -nostdlib -L . $(addprefix -T,$(MBOOT_LD_FILES)) -Map=$(@:.elf=.map) --cref
 LDFLAGS += --defsym mboot_version_len=$(MBOOT_VERSION_ALLOCATED_BYTES)
 LIBS += $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
@@ -219,7 +224,7 @@ $(TOP)/lib/stm32lib/README.md:
 	$(ECHO) "stm32lib submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/stm32lib)
 
-.PHONY: deploy deploy-stlink
+.PHONY: deploy deploy-stlink deploy-trusted
 
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
@@ -228,6 +233,9 @@ deploy: $(BUILD)/firmware.dfu
 deploy-stlink: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board via ST-LINK"
 	$(Q)$(STFLASH) write $(BUILD)/firmware.bin $(MBOOT_TEXT0_ADDR)
+
+deploy-trusted: $(BUILD)/firmware-trusted.bin
+	$(CUBE_PROG_BASE)/bin/STM32_Programmer.sh -c port=SWD mode=HOTPLUG ap=1 -el $(DKEL) -w $^ 0x70000000 -hardRst
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
@@ -248,10 +256,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 $(BUILD)/firmware-trusted.bin: $(BUILD)/firmware.bin
 	/bin/rm -f $@
-	$(CUBE_PROG_BASE)/bin/STM32MP_SigningTool_CLI -bin $^ -nk -of 0x80000000 -t fsbl -o $@ -hv 2.3 #-dump $@
-
-deploy-n6: $(BUILD)/firmware-trusted.bin
-	$(CUBE_PROG_BASE)/bin/STM32_Programmer.sh -c port=SWD mode=HOTPLUG ap=1 -el $(DKEL) -w $^ 0x70000000 -hardRst
+	$(CUBE_PROG_BASE)/bin/STM32MP_SigningTool_CLI -bin $^ -nk -of 0x80000000 -t fsbl -o $@ -hv $(STM32_N6_HEADER_VERSION)
 
 #########################################
 # Rules to generate header files

@@ -426,7 +426,7 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 #endif
 
 #if defined(STM32N6)
-#define FLASH_LAYOUT_STR MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define FLASH_LAYOUT_STR "@Internal Flash  " MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #else
 
 #if defined(STM32F4) \
@@ -1473,10 +1473,6 @@ MP_NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0
 }
 
 static void try_enter_application(int reset_mode) {
-    #if defined(STM32N6)
-    xspi_init();
-    #endif
-
     uint32_t msp = *(volatile uint32_t *)APPLICATION_ADDR;
     if ((msp & APP_VALIDITY_BITS) != 0) {
         // Application is invalid.
