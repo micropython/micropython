@@ -107,12 +107,12 @@
 #define ADC_CAL2                ((uint16_t *)(ADC_CAL_ADDRESS + 4))
 #define ADC_CAL_BITS            (12)
 
-#elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5)
+#elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L1) || defined(STM32L4) || defined(STM32WB)
 
 #define ADC_SCALE_V             (((float)VREFINT_CAL_VREF) / 1000.0f)
-#define ADC_CAL_ADDRESS         VREFINT_CAL_ADDR
-#define ADC_CAL1                TEMPSENSOR_CAL1_ADDR
-#define ADC_CAL2                TEMPSENSOR_CAL2_ADDR
+#define ADC_CAL_ADDRESS         (VREFINT_CAL_ADDR)
+#define ADC_CAL1                (TEMPSENSOR_CAL1_ADDR)
+#define ADC_CAL2                (TEMPSENSOR_CAL2_ADDR)
 #define ADC_CAL_BITS            (12) // UM2319/UM2570, __HAL_ADC_CALC_TEMPERATURE: 'corresponds to a resolution of 12 bits'
 
 #elif defined(STM32H7)
@@ -122,22 +122,6 @@
 #define ADC_CAL1                ((uint16_t *)(0x1FF1E820))
 #define ADC_CAL2                ((uint16_t *)(0x1FF1E840))
 #define ADC_CAL_BITS            (16)
-
-#elif defined(STM32L1)
-
-#define ADC_SCALE_V             (VREFINT_CAL_VREF / 1000.0f)
-#define ADC_CAL_ADDRESS         (VREFINT_CAL_ADDR)
-#define ADC_CAL1                (TEMPSENSOR_CAL1_ADDR)
-#define ADC_CAL2                (TEMPSENSOR_CAL2_ADDR)
-#define ADC_CAL_BITS            (12)
-
-#elif defined(STM32L4) || defined(STM32WB)
-
-#define ADC_SCALE_V             (VREFINT_CAL_VREF / 1000.0f)
-#define ADC_CAL_ADDRESS         (VREFINT_CAL_ADDR)
-#define ADC_CAL1                (TEMPSENSOR_CAL1_ADDR)
-#define ADC_CAL2                (TEMPSENSOR_CAL2_ADDR)
-#define ADC_CAL_BITS            (12)
 
 #else
 
