@@ -272,6 +272,57 @@ typedef union _mp_float_union_t {
     mp_float_uint_t i;
 } mp_float_union_t;
 
+static inline int fp_signbit(mp_float_t x) {
+    mp_float_union_t fb = {x};
+    return (int)fb.p.sgn;
+}
+static inline int fp_expval(mp_float_t x) {
+    mp_float_union_t fb = {x};
+    return (int)fb.p.exp - MP_FLOAT_EXP_OFFSET;
+}
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+static inline int fp_iszero(mp_float_t x) {
+    return x == 0;
+}
+static inline int fp_isless1(mp_float_t x) {
+    return x < 1.0;
+}
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+static inline int fp_iszero(mp_float_t x) {
+    mp_float_union_t fb = {x};
+    return fb.i == 0;
+}
+static inline int fp_isless1(mp_float_t x) {
+    mp_float_union_t fb = {x};
+    return fb.i < 0x3f800000;
+}
+#endif
+
+#if MICROPY_FLTCONV_IMPL == MICROPY_FLTCONV_IMPL_EXACT
+
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+// Exact float conversion requires using internally a bigger sort of floating point
+typedef double mp_large_float_t;
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+typedef long double mp_large_float_t;
+#endif
+// Always use a 64 bit mantissa for formatting and parsing
+typedef uint64_t mp_large_float_uint_t;
+#define MP_FFUINT_FMT "%lu"
+
+#else // MICROPY_FLTCONV_IMPL != MICROPY_FLTCONV_IMPL_EXACT
+
+// No bigger floating points
+typedef mp_float_t mp_large_float_t;
+typedef mp_float_uint_t mp_large_float_uint_t;
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#define MP_FFUINT_FMT "%u"
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+#define MP_FFUINT_FMT "%lu"
+#endif
+
+#endif
+
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
 /** ROM string compression *************/
