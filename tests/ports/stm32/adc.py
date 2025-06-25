@@ -1,4 +1,9 @@
+import sys
 from pyb import ADC, Timer
+
+if "STM32WB" in sys.implementation._machine:
+    print("SKIP")
+    raise SystemExit
 
 adct = ADC(16)  # Temperature 930 -> 20C
 print(str(adct)[:19])
