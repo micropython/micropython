@@ -679,16 +679,30 @@ static mp_obj_t tiger_lcd1_reset_special(mp_obj_t self_in, mp_obj_t n)
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(tiger_lcd1_reset_special_obj, tiger_lcd1_reset_special);
 
-static mp_obj_t tiger_lcd1_menu_select(mp_obj_t self_in, mp_obj_t idx) {
+static mp_obj_t tiger_lcd1_menu_select(mp_obj_t self_in, mp_obj_t idx, mp_obj_t menu) {
     uint8_t index = mp_obj_int_get_uint_checked(idx);
-	
+
+    const char *str;
+    size_t len;
+    if (mp_obj_is_str(menu)) {
+        str = mp_obj_str_get_data(menu, &len);
+    } else if (mp_obj_is_type(menu, &mp_type_bytes)) {
+        uint8_t temp[1];
+        mp_buffer_info_t bufinfo;
+        pyb_buf_get_for_send(menu, &bufinfo, temp);
+        str = (const char *)bufinfo.buf;
+        len = bufinfo.len;
+    } else {
+        mp_raise_TypeError(MP_ERROR_TEXT("menu must be a string"));
+    }
+
     uint8_t cmd[] = {0x1B, 'M', index, 0xF0};
-	
     add_to_obuf(cmd, 4);
-	
+    add_to_obuf(str, len);
+
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(tiger_lcd1_menu_select_obj, tiger_lcd1_menu_select);
+static MP_DEFINE_CONST_FUN_OBJ_3(tiger_lcd1_menu_select_obj, tiger_lcd1_menu_select);
 
 static mp_obj_t tiger_lcd1_cursor_off(mp_obj_t self_in) 
 {
