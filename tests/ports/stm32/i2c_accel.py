@@ -1,15 +1,14 @@
 # use accelerometer to test i2c bus
 
-import pyb
-from pyb import I2C
-
-if not hasattr(pyb, "Accel"):
+try:
+    from pyb import Accel, I2C
+except ImportError:
     print("SKIP")
     raise SystemExit
 
 accel_addr = 76
 
-pyb.Accel()  # this will init the MMA for us
+Accel()  # this will init the MMA for us
 
 i2c = I2C(1, I2C.CONTROLLER, baudrate=400000)
 
