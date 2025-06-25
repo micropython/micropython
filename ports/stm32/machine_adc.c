@@ -420,7 +420,7 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     #endif
     if (channel == ADC_CHANNEL_VREFINT) {
         adc_common->CCR |= ADC_CCR_VREFEN;
-    #if !defined(STM32N6)
+        #if !defined(STM32N6)
     #if defined(STM32G4)
     } else if (channel == ADC_CHANNEL_TEMPSENSOR_ADC1) {
         adc_common->CCR |= ADC_CCR_VSENSESEL;
@@ -429,7 +429,7 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
         adc_common->CCR |= ADC_CCR_TSEN;
     #endif
         adc_stabilisation_delay_us(ADC_TEMPSENSOR_DELAY_US);
-    #endif
+        #endif
     } else if (channel == ADC_CHANNEL_VBAT) {
         #if defined(STM32G4)
         adc_common->CCR |= ADC_CCR_VBATSEL;
