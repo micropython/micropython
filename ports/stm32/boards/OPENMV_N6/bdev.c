@@ -24,34 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
 #include "storage.h"
-#include "spi.h"
 #include "xspi.h"
-
-#if BUILDING_MBOOT
-
-// Mboot doesn't support hardware SPI, so use software SPI instead.
-
-static const mp_soft_spi_obj_t soft_spi_bus = {
-    .delay_half = MICROPY_HW_SOFTSPI_MIN_DELAY,
-    .polarity = 0,
-    .phase = 0,
-    .sck = MBOOT_SPIFLASH_SCK,
-    .mosi = MBOOT_SPIFLASH_MOSI,
-    .miso = MBOOT_SPIFLASH_MISO,
-};
-
-const mp_spiflash_config_t board_mboot_spiflash_config = {
-    .bus_kind = MP_SPIFLASH_BUS_SPI,
-    .bus.u_spi.cs = MBOOT_SPIFLASH_CS,
-    .bus.u_spi.data = (void *)&soft_spi_bus,
-    .bus.u_spi.proto = &mp_soft_spi_proto,
-};
-
-mp_spiflash_t board_mboot_spiflash;
-
-#elif defined(MICROPY_HW_BDEV_SPIFLASH)
 
 #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
 #error "Cannot enable MICROPY_HW_SPIFLASH_ENABLE_CACHE"
@@ -65,5 +39,3 @@ const mp_spiflash_config_t spiflash_config = {
 };
 
 spi_bdev_t spi_bdev;
-
-#endif

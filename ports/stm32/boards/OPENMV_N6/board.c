@@ -26,6 +26,7 @@
 
 #include "py/mphal.h"
 #include "boardctrl.h"
+#include "xspi.h"
 
 // Values for OTP fuses for VDDIO2/3, to select low voltage mode (<2.5V).
 // See RM0486, Section 5, Table 18.
@@ -84,6 +85,9 @@ void mboot_board_early_init(void) {
     // Enable VDD for ADC and USB.
     LL_PWR_EnableVddADC();
     LL_PWR_EnableVddUSB();
+
+    // Enable XSPI in memory-mapped mode.
+    xspi_init();
 }
 
 void board_enter_bootloader(unsigned int n_args, const void *args) {

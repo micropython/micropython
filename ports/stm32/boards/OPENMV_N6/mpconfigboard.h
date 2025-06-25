@@ -8,7 +8,6 @@
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (1)
-#define MICROPY_HW_FLASH_MOUNT_AT_BOOT (1)
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (0)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
@@ -151,14 +150,11 @@
 #define MBOOT_SPIFLASH_BYTE_SIZE                (32 * 1024 * 1024)
 #define MBOOT_SPIFLASH_LAYOUT                   "/0x70000000/8192*4Kg"
 #define MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE    (1)
-#define MBOOT_SPIFLASH_SPIFLASH                 (&board_mboot_spiflash)
-#define MBOOT_SPIFLASH_CONFIG                   (&board_mboot_spiflash_config)
+#define MBOOT_SPIFLASH_SPIFLASH                 (&spi_bdev.spiflash)
+#define MBOOT_SPIFLASH_CONFIG                   (&spiflash_config)
 
 /******************************************************************************/
 // Function and variable declarations
-
-extern const struct _mp_spiflash_config_t board_mboot_spiflash_config;
-extern struct _mp_spiflash_t board_mboot_spiflash;
 
 extern const struct _mp_spiflash_config_t spiflash_config;
 extern struct _spi_bdev_t spi_bdev;
