@@ -923,7 +923,7 @@ float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
         return 0;
     }
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 100.0f;
-    #elif defined(STM32H5)
+    #elif defined(STM32H5) || defined(STM32WB)
     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 100.0f;
     #else
