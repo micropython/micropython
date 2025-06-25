@@ -117,3 +117,90 @@ print(t_vals.values)
 t_no_interp = t"Just a string"
 print(len(t_no_interp.interpolations))
 print(t_no_interp.values)
+
+print("\n=== Format spec interpolation tests ===")
+
+# Test 20: Basic format_spec interpolation
+precision = 2
+value = 3.14159
+t_fmt_interp = t"Pi: {value:.{precision}f}"
+print(f"Format spec stored: '{t_fmt_interp.interpolations[0].format_spec}'")
+print(f"Result: {t_fmt_interp.__str__()}")
+
+# Test 21: Multiple interpolations in format_spec  
+width = 10
+align = ">"
+t_fmt_multi = t"Aligned: {42:{align}{width}d}"
+print(f"Format spec: '{t_fmt_multi.interpolations[0].format_spec}'")
+print(f"Result: '{t_fmt_multi.__str__()}'")
+
+# Test 22: Complex format spec
+fill_char = "*"
+precision = 3
+t_fmt_complex = t"Complex: {99.9:{fill_char}>{width}.{precision}f}"
+print(f"Complex format spec: '{t_fmt_complex.interpolations[0].format_spec}'")
+
+# Test 23: Format spec with escaped braces
+t_fmt_escaped = t"Escaped: {42:{{width}}}"
+print(f"Escaped braces format spec: '{t_fmt_escaped.interpolations[0].format_spec}'")
+
+print("\n=== Template concatenation tests ===")
+
+# Test 24: Template + Template concatenation
+t_concat1 = t"Hello "
+t_concat2 = t"{42}"
+t_concat3 = t" world"
+try:
+    result = t_concat1 + t_concat2
+    print(f"Template + Template: type={type(result).__name__}")
+    print(f"Concatenated strings: {result.strings}")
+    print(f"Concatenated values: {result.values}")
+except TypeError as e:
+    print(f"Template concatenation error: {e}")
+
+# Test 25: Chained concatenation
+try:
+    result = t_concat1 + t_concat2 + t_concat3
+    print(f"Chained concatenation strings: {result.strings}")
+except TypeError as e:
+    print(f"Chained concatenation error: {e}")
+
+# Test 26: Template + str (should fail)
+try:
+    result = t_concat1 + "regular string"
+    print(f"ERROR: Template + str should raise TypeError")
+except TypeError as e:
+    print(f"Template + str correctly raises: {e}")
+
+# Test 27: str + Template (should fail)
+try:
+    result = "Start: " + t_concat2
+    print(f"ERROR: str + Template should raise TypeError")
+except TypeError as e:
+    print(f"str + Template correctly raises: {e}")
+
+print("\n=== Additional edge cases ===")
+
+# Test 28: ASCII conversion (!a)
+obj_unicode = "Hello\\nWorld\\u00A9"  # Contains newline and copyright symbol
+t_ascii = t"ASCII: {obj_unicode!a}"
+print(f"ASCII conversion: {t_ascii.interpolations[0].conversion}")
+
+# Test 29: Template with only interpolations
+a = 1
+b = 2
+t_only_interp = t"{a}{b}"
+print(f"Interpolation-only template strings: {t_only_interp.strings}")
+print(f"Interpolation-only template values: {t_only_interp.values}")
+
+# Test 30: __str__ method behavior
+t_str_test = t"Test {42}"
+print(f"__str__ result: {t_str_test.__str__()}")
+
+# Test 31: Template constructor validation (via __template__)
+try:
+    # This would be called internally by t-string literals
+    result = __template__(("Hello", "!"), ((42, "42", None, ""),))
+    print(f"__template__ result type: {type(result).__name__}")
+except Exception as e:
+    print(f"__template__ error: {e}")

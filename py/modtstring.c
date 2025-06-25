@@ -59,7 +59,7 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
 
     // Validate that strings is a tuple
-    if (!mp_obj_is_type(args[0], &mp_type_tuple)) {
+    if (!mp_obj_is_exact_type(args[0], &mp_type_tuple)) {
         mp_raise_TypeError(MP_ERROR_TEXT("strings must be a tuple"));
     }
 
@@ -72,14 +72,14 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
     }
 
     // Validate that interpolations is a tuple
-    if (!mp_obj_is_type(args[1], &mp_type_tuple)) {
+    if (!mp_obj_is_exact_type(args[1], &mp_type_tuple)) {
         mp_raise_TypeError(MP_ERROR_TEXT("interpolations must be a tuple"));
     }
 
     // Validate that all elements in interpolations are Interpolation objects
     mp_obj_tuple_t *interps_tuple = MP_OBJ_TO_PTR(args[1]);
     for (size_t i = 0; i < interps_tuple->len; i++) {
-        if (!mp_obj_is_type(interps_tuple->items[i], &mp_type_interpolation)) {
+        if (!mp_obj_is_exact_type(interps_tuple->items[i], &mp_type_interpolation)) {
             mp_raise_TypeError(MP_ERROR_TEXT("all interpolations elements must be Interpolation objects"));
         }
     }
@@ -137,6 +137,66 @@ static mp_obj_t template_str(mp_obj_t self_in) {
                 conversion_str = mp_obj_str_get_str(conversion);
             }
             format_spec_str = mp_obj_str_get_str(format_spec);
+
+            // Check if format_spec contains interpolations (curly braces)
+            mp_obj_t evaluated_format_spec = format_spec;
+            if (*format_spec_str) {
+                const char *p = format_spec_str;
+                bool has_interpolation = false;
+                while (*p) {
+                    if (*p == '{' || *p == '}') {
+                        has_interpolation = true;
+                        break;
+                    }
+                    p++;
+                }
+                
+                if (has_interpolation) {
+                    // Format spec contains interpolations, evaluate it as a format string
+                    vstr_t eval_vstr;
+                    vstr_init(&eval_vstr, 16);
+                    p = format_spec_str;
+                    while (*p) {
+                        if (*p == '{' && *(p + 1) != '{') {
+                            // Found interpolation
+                            p++; // skip '{'
+                            const char *var_start = p;
+                            while (*p && *p != '}' && *p != ':' && *p != '!') {
+                                p++;
+                            }
+                            if (*p == '}') {
+                                // Extract variable name and evaluate it
+                                size_t var_len = p - var_start;
+                                mp_obj_t var_value = mp_load_name(qstr_from_strn(var_start, var_len));
+                                
+                                // Convert to string
+                                vstr_t var_str;
+                                vstr_init(&var_str, 16);
+                                mp_print_t var_print;
+                                vstr_init_print(&var_str, 16, &var_print);
+                                mp_obj_print_helper(&var_print, var_value, PRINT_STR);
+                                vstr_add_strn(&eval_vstr, var_str.buf, var_str.len);
+                                vstr_clear(&var_str);
+                                
+                                p++; // skip '}'
+                            }
+                        } else if (*p == '{' && *(p + 1) == '{') {
+                            // Escaped brace
+                            vstr_add_byte(&eval_vstr, '{');
+                            p += 2;
+                        } else if (*p == '}' && *(p + 1) == '}') {
+                            // Escaped brace
+                            vstr_add_byte(&eval_vstr, '}');
+                            p += 2;
+                        } else {
+                            vstr_add_byte(&eval_vstr, *p);
+                            p++;
+                        }
+                    }
+                    evaluated_format_spec = mp_obj_new_str_from_vstr(&eval_vstr);
+                    format_spec_str = mp_obj_str_get_str(evaluated_format_spec);
+                }
+            }
 
             mp_obj_t conv_value = value;
             if (conversion_str && *conversion_str) {
@@ -308,6 +368,94 @@ static void template_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
+// Template concatenation support
+static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    mp_obj_template_t *lhs = MP_OBJ_TO_PTR(lhs_in);
+    
+    switch (op) {
+        case MP_BINARY_OP_ADD: {
+            // Only allow Template + Template
+            if (!mp_obj_is_exact_type(rhs_in, &mp_type_template)) {
+                // Disallow Template + str
+                if (mp_obj_is_str(rhs_in)) {
+                    mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate Template (not \"str\") to Template"));
+                }
+                return MP_OBJ_NULL; // op not supported
+            }
+            
+            mp_obj_template_t *rhs = MP_OBJ_TO_PTR(rhs_in);
+            
+            // Get the tuples
+            mp_obj_tuple_t *lhs_strings = MP_OBJ_TO_PTR(lhs->strings);
+            mp_obj_tuple_t *lhs_interps = MP_OBJ_TO_PTR(lhs->interpolations);
+            mp_obj_tuple_t *rhs_strings = MP_OBJ_TO_PTR(rhs->strings);
+            mp_obj_tuple_t *rhs_interps = MP_OBJ_TO_PTR(rhs->interpolations);
+            
+            // Calculate sizes for new template
+            size_t new_strings_len = lhs_strings->len + rhs_strings->len - 1;
+            size_t new_interps_len = lhs_interps->len + rhs_interps->len;
+            
+            // Create new strings tuple
+            mp_obj_t *new_strings_items = m_new(mp_obj_t, new_strings_len);
+            
+            // Copy all strings from lhs except the last one
+            for (size_t i = 0; i < lhs_strings->len - 1; i++) {
+                new_strings_items[i] = lhs_strings->items[i];
+            }
+            
+            // Concatenate the last string of lhs with the first string of rhs
+            size_t lhs_last_len, rhs_first_len;
+            const char *lhs_last_str = mp_obj_str_get_data(lhs_strings->items[lhs_strings->len - 1], &lhs_last_len);
+            const char *rhs_first_str = mp_obj_str_get_data(rhs_strings->items[0], &rhs_first_len);
+            
+            vstr_t vstr;
+            vstr_init(&vstr, lhs_last_len + rhs_first_len);
+            vstr_add_strn(&vstr, lhs_last_str, lhs_last_len);
+            vstr_add_strn(&vstr, rhs_first_str, rhs_first_len);
+            new_strings_items[lhs_strings->len - 1] = mp_obj_new_str_from_vstr(&vstr);
+            
+            // Copy remaining strings from rhs
+            for (size_t i = 1; i < rhs_strings->len; i++) {
+                new_strings_items[lhs_strings->len - 1 + i] = rhs_strings->items[i];
+            }
+            
+            // Create new interpolations tuple
+            mp_obj_t *new_interps_items = m_new(mp_obj_t, new_interps_len);
+            
+            // Copy interpolations from lhs
+            for (size_t i = 0; i < lhs_interps->len; i++) {
+                new_interps_items[i] = lhs_interps->items[i];
+            }
+            
+            // Copy interpolations from rhs
+            for (size_t i = 0; i < rhs_interps->len; i++) {
+                new_interps_items[lhs_interps->len + i] = rhs_interps->items[i];
+            }
+            
+            // Create new template
+            mp_obj_t new_strings_tuple = mp_obj_new_tuple(new_strings_len, new_strings_items);
+            mp_obj_t new_interps_tuple = mp_obj_new_tuple(new_interps_len, new_interps_items);
+            
+            m_del(mp_obj_t, new_strings_items, new_strings_len);
+            m_del(mp_obj_t, new_interps_items, new_interps_len);
+            
+            mp_obj_t args[2] = {new_strings_tuple, new_interps_tuple};
+            return template_make_new(&mp_type_template, 2, 0, args);
+        }
+        
+        case MP_BINARY_OP_REVERSE_ADD: {
+            // Handle str + Template - always disallow
+            if (mp_obj_is_str(lhs_in)) {
+                mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate Template (not \"str\") to Template"));
+            }
+            return MP_OBJ_NULL; // op not supported
+        }
+        
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
+
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_template,
     MP_QSTR_Template,
@@ -315,7 +463,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, template_make_new,
     print, template_print,
     attr, template_attr,
-    iter, template_iter
+    iter, template_iter,
+    binary_op, template_binary_op
     );
 
 // __template__ builtin function to create Template objects
