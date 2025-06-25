@@ -5,5 +5,3 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.ble
     boards/GARATRONIC_PYBSTICK26_ESP32C3/sdkconfig.board
 )
-
-set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)
