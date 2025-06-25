@@ -26,9 +26,14 @@ elif "mimxrt" in sys.platform:
     uart_id = 1
     tx_pin = None
 elif "pyboard" in sys.platform:
-    uart_id = 4
-    tx_pin = None  # PA0
-    rx_pin = None  # PA1
+    if "STM32WB" in sys.implementation._machine:
+        # LPUART(1) is on PA2/PA3
+        uart_id = "LP1"
+    else:
+        # UART(4) is on PA0/PA1
+        uart_id = 4
+    tx_pin = None
+    rx_pin = None
 elif "renesas-ra" in sys.platform:
     uart_id = 9
     tx_pin = None  # P602 @ RA6M2
