@@ -15,6 +15,8 @@ import itertools
 import subprocess
 import tempfile
 
+run_tests_module = __import__("run-tests")
+
 test_dir = os.path.abspath(os.path.dirname(__file__))
 
 if os.path.abspath(sys.path[0]) == test_dir:
@@ -488,9 +490,7 @@ def print_diff(a, b):
 
 
 def run_tests(test_files, instances_truth, instances_test):
-    skipped_tests = []
-    passed_tests = []
-    failed_tests = []
+    test_results = []
 
     for test_file, num_instances in test_files:
         instances_str = "|".join(str(instances_test[i]) for i in range(num_instances))
@@ -526,13 +526,13 @@ def run_tests(test_files, instances_truth, instances_test):
         # Print result of test
         if skip:
             print("skip")
-            skipped_tests.append(test_file)
+            test_results.append((test_file, "skip", ""))
         elif output_test == output_truth:
             print("pass")
-            passed_tests.append(test_file)
+            test_results.append((test_file, "pass", ""))
         else:
             print("FAIL")
-            failed_tests.append(test_file)
+            test_results.append((test_file, "fail", ""))
             if not cmd_args.show_output:
                 print("### TEST ###")
                 print(output_test, end="")
@@ -549,15 +549,7 @@ def run_tests(test_files, instances_truth, instances_test):
         if cmd_args.show_output:
             print()
 
-    print("{} tests performed".format(len(skipped_tests) + len(passed_tests) + len(failed_tests)))
-    print("{} tests passed".format(len(passed_tests)))
-
-    if skipped_tests:
-        print("{} tests skipped: {}".format(len(skipped_tests), " ".join(skipped_tests)))
-    if failed_tests:
-        print("{} tests failed: {}".format(len(failed_tests), " ".join(failed_tests)))
-
-    return not failed_tests
+    return test_results
 
 
 def main():
@@ -582,6 +574,12 @@ def main():
         type=int,
         default=1,
         help="repeat the test with this many permutations of the instance order",
+    )
+    cmd_parser.add_argument(
+        "-r",
+        "--result-dir",
+        default=run_tests_module.base_path("results"),
+        help="directory for test results",
     )
     cmd_parser.epilog = (
         "Supported instance types:\r\n"
@@ -623,13 +621,15 @@ def main():
     for _ in range(max_instances - len(instances_test)):
         instances_test.append(PyInstanceSubProcess([MICROPYTHON]))
 
+    os.makedirs(cmd_args.result_dir, exist_ok=True)
     all_pass = True
     try:
         for i, instances_test_permutation in enumerate(itertools.permutations(instances_test)):
             if i >= cmd_args.permutations:
                 break
 
-            all_pass &= run_tests(test_files, instances_truth, instances_test_permutation)
+            test_results = run_tests(test_files, instances_truth, instances_test_permutation)
+            all_pass &= run_tests_module.create_test_report(cmd_args, test_results)
 
     finally:
         for i in instances_truth:

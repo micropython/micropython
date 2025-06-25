@@ -63,14 +63,14 @@ else ifeq ($(ARCH),armv6m)
 # thumb
 CROSS = arm-none-eabi-
 CFLAGS_ARCH += -mthumb -mcpu=cortex-m0
-MICROPY_FLOAT_IMPL ?= none
+MICROPY_FLOAT_IMPL ?= float
 
 else ifeq ($(ARCH),armv7m)
 
 # thumb
 CROSS = arm-none-eabi-
 CFLAGS_ARCH += -mthumb -mcpu=cortex-m3
-MICROPY_FLOAT_IMPL ?= none
+MICROPY_FLOAT_IMPL ?= float
 
 else ifeq ($(ARCH),armv7emsp)
 
@@ -171,6 +171,9 @@ LIBM_PATH := $(PICOLIBC_ROOT)/$(PICOLIBC_ARCH)/$(PICOLIBC_ABI)/$(LIBM_NAME)
 endif
 endif
 MPY_LD_FLAGS += $(addprefix -l, $(LIBGCC_PATH) $(LIBM_PATH))
+endif
+ifneq ($(MPY_EXTERN_SYM_FILE),)
+MPY_LD_FLAGS += --externs "$(realpath $(MPY_EXTERN_SYM_FILE))"
 endif
 
 CFLAGS += $(CFLAGS_EXTRA)

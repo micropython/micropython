@@ -221,6 +221,30 @@ import machine
 antenna = machine.Pin(16, machine.Pin.OUT, value=0)
 ```
 
+Partition table and filesystem size
+-----------------------------------
+
+ESP32 firmware contains a bootloader, partition table and main application
+firmware, which are all stored in (external) SPI flash.  The user filesystem
+is also stored in the same SPI flash.  By default, MicroPython does not have
+a fixed entry in the ESP32 partition table for the filesystem.  Instead it
+will automatically determine the size of the SPI flash upon boot, and then --
+so long as there is no existing partition called "vfs" or "ffat" -- it will
+create a partition for the filesystem called "vfs" which takes all of the
+remaining flash between the end of the last defined partition up until the
+end of flash.
+
+This means that firmware built for, say, a 4MiB flash will work on any
+device that has at least 4MiB flash.  The user "vfs" filesystem will then
+take up as much space as possible.
+
+This auto-detection behaviour can be overridden: if the ESP32 partition
+table does contain an entry called "vfs" or "ffat" then these are used for
+the user filesystem and no automatic "vfs" partition is added.  This is
+useful in cases where only the MicroPython ESP32 application is flashed to
+the device (and not the bootloader or partition table), eg when deploying
+.uf2 files.
+
 Defining a custom ESP32 board
 -----------------------------
 

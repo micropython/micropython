@@ -413,8 +413,6 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 flags |= PF_FLAG_SHOW_SIGN;
             } else if (*fmt == ' ') {
                 flags |= PF_FLAG_SPACE_SIGN;
-            } else if (*fmt == '!') {
-                flags |= PF_FLAG_NO_TRAILZ;
             } else if (*fmt == '0') {
                 flags |= PF_FLAG_PAD_AFTER_SIGN;
                 fill = '0';

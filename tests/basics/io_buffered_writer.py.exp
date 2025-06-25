@@ -4,3 +4,8 @@ b'foobarfoobar'
 b'foobarfoobar'
 b'foo'
 <class 'int'>
+OSError
+OSError
+writing bytearray(b'foobar')
+flushed
+flushed

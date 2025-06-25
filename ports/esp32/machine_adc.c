@@ -30,7 +30,7 @@
 
 #include "py/mphal.h"
 #include "adc.h"
-#include "driver/adc.h"
+#include "esp_adc/adc_oneshot.h"
 
 #define ADCBLOCK1 (&madcblock_obj[0])
 #define ADCBLOCK2 (&madcblock_obj[1])
@@ -126,19 +126,7 @@ static const machine_adc_obj_t madc_obj[] = {
     #endif
 };
 
-// These values are initialised to 0, which means the corresponding ADC channel is not initialised.
-// The madc_atten_get/madc_atten_set functions store (atten+1) here so that the uninitialised state
-// can be distinguished from the initialised state.
 static uint8_t madc_obj_atten[MP_ARRAY_SIZE(madc_obj)];
-
-static inline adc_atten_t madc_atten_get(const machine_adc_obj_t *self) {
-    uint8_t value = madc_obj_atten[self - &madc_obj[0]];
-    return value == 0 ? ADC_ATTEN_MAX : value - 1;
-}
-
-static inline void madc_atten_set(const machine_adc_obj_t *self, adc_atten_t atten) {
-    madc_obj_atten[self - &madc_obj[0]] = atten + 1;
-}
 
 const machine_adc_obj_t *madc_search_helper(machine_adc_block_obj_t *block, adc_channel_t channel_id, gpio_num_t gpio_id) {
     for (int i = 0; i < MP_ARRAY_SIZE(madc_obj); i++) {
@@ -152,22 +140,7 @@ const machine_adc_obj_t *madc_search_helper(machine_adc_block_obj_t *block, adc_
 
 static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     const machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "ADC(Pin(%u), atten=%u)", self->gpio_id, madc_atten_get(self));
-}
-
-static void madc_atten_helper(const machine_adc_obj_t *self, mp_int_t atten) {
-    esp_err_t err = ESP_FAIL;
-    if (self->block->unit_id == ADC_UNIT_1) {
-        err = adc1_config_channel_atten(self->channel_id, atten);
-    } else {
-        #if SOC_ADC_PERIPH_NUM >= 2
-        err = adc2_config_channel_atten(self->channel_id, atten);
-        #endif
-    }
-    if (err != ESP_OK) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid atten"));
-    }
-    madc_atten_set(self, atten);
+    mp_printf(print, "ADC(Pin(%u), atten=%u)", self->gpio_id, mp_machine_adc_atten_get_helper(self));
 }
 
 void madc_init_helper(const machine_adc_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -182,16 +155,30 @@ void madc_init_helper(const machine_adc_obj_t *self, size_t n_pos_args, const mp
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_pos_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t atten = args[ARG_atten].u_int;
-    if (atten != -1) {
-        madc_atten_helper(self, atten);
-    } else if (madc_atten_get(self) == ADC_ATTEN_MAX) {
-        madc_atten_helper(self, ADC_ATTEN_DB_0);
+
+    if (!self->block->handle) {
+        adc_oneshot_unit_init_cfg_t init_config = {
+            .unit_id = self->block->unit_id
+        };
+        check_esp_err(adc_oneshot_new_unit(&init_config, &self->block->handle));
     }
+
+    mp_int_t atten = args[ARG_atten].u_int;
+    mp_machine_adc_atten_set_helper(self, atten != -1 ? atten : ADC_ATTEN_MAX);
+    mp_machine_adc_block_width_set_helper(self->block, ADC_WIDTH_MAX);
+    apply_self_adc_channel_atten(self, mp_machine_adc_atten_get_helper(self));
+
 }
 
 static void mp_machine_adc_init_helper(machine_adc_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     madc_init_helper(self, n_pos_args, pos_args, kw_args);
+}
+
+static void mp_machine_adc_deinit(machine_adc_obj_t *self) {
+    if (self->block->handle) {
+        check_esp_err(adc_oneshot_del_unit(self->block->handle));
+        self->block->handle = NULL;
+    }
 }
 
 static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
@@ -200,10 +187,6 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_pos_
     const machine_adc_obj_t *self = madc_search_helper(NULL, -1, gpio_id);
     if (!self) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
-    }
-
-    if (self->block->width == -1) {
-        madcblock_bits_helper(self->block, self->block->bits);
     }
 
     mp_map_t kw_args;
@@ -225,20 +208,46 @@ static mp_int_t mp_machine_adc_read(machine_adc_obj_t *self) {
 static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     mp_uint_t raw = madcblock_read_helper(self->block, self->channel_id);
     // Scale raw reading to 16 bit value using a Taylor expansion (for 8 <= bits <= 16)
-    mp_int_t bits = self->block->bits;
+    mp_int_t bits = mp_machine_adc_width_get_helper(self);
     mp_uint_t u16 = raw << (16 - bits) | raw >> (2 * bits - 16);
     return u16;
 }
 
 static mp_int_t mp_machine_adc_read_uv(machine_adc_obj_t *self) {
-    adc_atten_t atten = madc_atten_get(self);
-    return madcblock_read_uv_helper(self->block, self->channel_id, atten);
+    return madcblock_read_uv_helper(self->block, self->channel_id, mp_machine_adc_atten_get_helper(self));
+}
+
+mp_int_t mp_machine_adc_atten_get_helper(const machine_adc_obj_t *self) {
+    uint8_t value = madc_obj_atten[self - &madc_obj[0]];
+    return value == 0 ? ADC_ATTEN_MAX : value - 1;
+}
+
+void mp_machine_adc_atten_set_helper(const machine_adc_obj_t *self, mp_int_t atten) {
+    if (atten < ADC_ATTEN_MIN || atten > ADC_ATTEN_MAX) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid attenuation"));
+    }
+
+    madc_obj_atten[self - &madc_obj[0]] = atten + 1;
 }
 
 static void mp_machine_adc_atten_set(machine_adc_obj_t *self, mp_int_t atten) {
-    madc_atten_helper(self, atten);
+    mp_machine_adc_atten_set_helper(self, atten);
+    apply_self_adc_channel_atten(self, mp_machine_adc_atten_get_helper(self));
+}
+
+mp_int_t mp_machine_adc_width_get_helper(const machine_adc_obj_t *self) {
+    return self->block->bitwidth;
+}
+
+void mp_machine_adc_block_width_set_helper(machine_adc_block_obj_t *self, mp_int_t width) {
+    if (width < ADC_WIDTH_MIN || width > ADC_WIDTH_MAX) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid bit-width"));
+    }
+
+    self->bitwidth = width;
 }
 
 static void mp_machine_adc_width_set(machine_adc_obj_t *self, mp_int_t width) {
-    madcblock_bits_helper(self->block, width);
+    mp_machine_adc_block_width_set_helper(self->block, width);
+    apply_self_adc_channel_atten(self, mp_machine_adc_atten_get_helper(self));
 }

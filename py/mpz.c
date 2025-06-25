@@ -1537,7 +1537,8 @@ mp_int_t mpz_hash(const mpz_t *z) {
     mp_uint_t val = 0;
     mpz_dig_t *d = z->dig + z->len;
 
-    while (d-- > z->dig) {
+    while (d > z->dig) {
+        d--;
         val = (val << DIG_SIZE) | *d;
     }
 
@@ -1552,11 +1553,12 @@ bool mpz_as_int_checked(const mpz_t *i, mp_int_t *value) {
     mp_uint_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
-    while (d-- > i->dig) {
+    while (d > i->dig) {
         if (val > (~(MP_OBJ_WORD_MSBIT_HIGH) >> DIG_SIZE)) {
             // will overflow
             return false;
         }
+        d--;
         val = (val << DIG_SIZE) | *d;
     }
 
@@ -1577,11 +1579,12 @@ bool mpz_as_uint_checked(const mpz_t *i, mp_uint_t *value) {
     mp_uint_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
-    while (d-- > i->dig) {
+    while (d > i->dig) {
         if (val > (~(MP_OBJ_WORD_MSBIT_HIGH) >> (DIG_SIZE - 1))) {
             // will overflow
             return false;
         }
+        d--;
         val = (val << DIG_SIZE) | *d;
     }
 
@@ -1642,7 +1645,8 @@ mp_float_t mpz_as_float(const mpz_t *i) {
     mp_float_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
-    while (d-- > i->dig) {
+    while (d > i->dig) {
+        d--;
         val = val * DIG_BASE + *d;
     }
 

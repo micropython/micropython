@@ -49,6 +49,19 @@
 static_assert(MICROPY_HW_ROMFS_BYTES % 4096 == 0, "ROMFS size must be a multiple of 4K");
 static_assert(MICROPY_HW_FLASH_STORAGE_BYTES % 4096 == 0, "Flash storage size must be a multiple of 4K");
 
+#ifndef MICROPY_HW_FLASH_MAX_FREQ
+// Emulate Pico SDK's SYS_CLK_HZ / PICO_FLASH_SPI_CLKDIV behaviour by default.
+// On RP2040 if PICO_USE_FASTEST_SUPPORTED_CLOCK is set then SYS_CLK_HZ can be
+// 200MHz, potentially putting timings derived from PICO_FLASH_SPI_CLKDIV
+// out of range.
+#ifdef PICO_FLASH_SPI_CLKDIV
+#define MICROPY_HW_FLASH_MAX_FREQ (SYS_CLK_HZ / PICO_FLASH_SPI_CLKDIV)
+#else
+// A default PICO_FLASH_SPI_CLKDIV of 4 is set in boot2_generic_03h.S
+#define MICROPY_HW_FLASH_MAX_FREQ (SYS_CLK_HZ / 4)
+#endif
+#endif
+
 #ifndef MICROPY_HW_FLASH_STORAGE_BASE
 #define MICROPY_HW_FLASH_STORAGE_BASE (PICO_FLASH_SIZE_BYTES - MICROPY_HW_FLASH_STORAGE_BYTES)
 #endif
@@ -104,9 +117,8 @@ static bool use_multicore_lockout(void) {
 // and core1 locked out if relevant.
 static void __no_inline_not_in_flash_func(rp2_flash_set_timing_internal)(int clock_hz) {
 
-    // Use the minimum divisor assuming a 133MHz flash.
-    const int max_flash_freq = 133000000;
-    int divisor = (clock_hz + max_flash_freq - 1) / max_flash_freq;
+    // Use the minimum divisor based upon our target MICROPY_HW_FLASH_MAX_FREQ
+    int divisor = (clock_hz + MICROPY_HW_FLASH_MAX_FREQ - 1) / MICROPY_HW_FLASH_MAX_FREQ;
 
     #if PICO_RP2350
     // Make sure flash is deselected - QMI doesn't appear to have a busy flag(!)

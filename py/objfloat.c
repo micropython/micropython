@@ -34,6 +34,11 @@
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
+// Workaround a bug in Windows SDK version 10.0.26100.0, where NAN is no longer constant.
+#if defined(_MSC_VER) && !defined(_UCRT_NOISY_NAN)
+#define _UCRT_NOISY_NAN
+#endif
+
 #include <math.h>
 #include "py/formatfloat.h"
 
@@ -45,13 +50,6 @@
 #endif
 #ifndef M_PI
 #define M_PI (3.14159265358979323846)
-#endif
-
-// Workaround a bug in recent MSVC where NAN is no longer constant.
-// (By redefining back to the previous MSVC definition of NAN)
-#if defined(_MSC_VER) && _MSC_VER >= 1942
-#undef NAN
-#define NAN (-(float)(((float)(1e+300 * 1e+300)) * 0.0F))
 #endif
 
 typedef struct _mp_obj_float_t {

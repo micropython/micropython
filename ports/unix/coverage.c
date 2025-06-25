@@ -184,6 +184,18 @@ static void pairheap_test(size_t nops, int *ops) {
     mp_printf(&mp_plat_print, "\n");
 }
 
+static mp_sched_node_t mp_coverage_sched_node;
+static bool coverage_sched_function_continue;
+
+static void coverage_sched_function(mp_sched_node_t *node) {
+    (void)node;
+    mp_printf(&mp_plat_print, "scheduled function\n");
+    if (coverage_sched_function_continue) {
+        // Re-scheduling node will cause it to run again next time scheduled functions are run
+        mp_sched_schedule_node(&mp_coverage_sched_node, coverage_sched_function);
+    }
+}
+
 // function to run extra tests for things that can't be checked by scripts
 static mp_obj_t extra_coverage(void) {
     // mp_printf (used by ports that don't have a native printf)
@@ -208,6 +220,7 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%X\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "abc\n%"); // string ends in middle of format specifier
         mp_printf(&mp_plat_print, "%%\n"); // literal % character
+        mp_printf(&mp_plat_print, ".%-3s.\n", "a"); // left adjust
     }
 
     // GC
@@ -463,6 +476,18 @@ static mp_obj_t extra_coverage(void) {
         mp_int_t value_signed;
         mpz_as_int_checked(&mpz, &value_signed);
         mp_printf(&mp_plat_print, "%d\n", (int)value_signed);
+
+        // hash the zero mpz integer
+        mpz_set_from_int(&mpz, 0);
+        mp_printf(&mp_plat_print, "%d\n", mpz_hash(&mpz));
+
+        // convert the mpz zero integer to int
+        mp_printf(&mp_plat_print, "%d\n", mpz_as_int_checked(&mpz, &value_signed));
+        mp_printf(&mp_plat_print, "%d\n", value_signed);
+
+        // mpz_set_from_float with 0 as argument
+        mpz_set_from_float(&mpz, 0);
+        mp_printf(&mp_plat_print, "%f\n", mpz_as_float(&mpz));
     }
 
     // runtime utils
@@ -621,6 +646,19 @@ static mp_obj_t extra_coverage(void) {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
         }
         mp_handle_pending(true);
+
+        coverage_sched_function_continue = true;
+        mp_sched_schedule_node(&mp_coverage_sched_node, coverage_sched_function);
+        for (int i = 0; i < 3; ++i) {
+            mp_printf(&mp_plat_print, "loop\n");
+            mp_handle_pending(true);
+        }
+        // Clear this flag to prevent the function scheduling itself again
+        coverage_sched_function_continue = false;
+        // Will only run the first time through this loop, then not scheduled again
+        for (int i = 0; i < 3; ++i) {
+            mp_handle_pending(true);
+        }
     }
 
     // ringbuf
