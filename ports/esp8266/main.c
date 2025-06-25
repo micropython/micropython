@@ -49,6 +49,64 @@
 
 static char heap[38 * 1024];
 
+#if MICROPY_HW_HARD_FAULT_DEBUG
+
+static void format_hex(uint32_t hex, char *buffer) {
+    static const char table[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+    int offset = 7;
+    uint32_t value = hex;
+    while (offset >= 0) {
+        buffer[offset--] = table[value & 0x0F];
+        value >>= 4;
+    }
+}
+
+static void print_reset_info(void) {
+    struct rst_info *rst_info = system_get_rst_info();
+    if ((rst_info->reason == REASON_WDT_RST) || (rst_info->reason == REASON_EXCEPTION_RST) || (rst_info->reason == REASON_SOFT_WDT_RST)) {
+        char buffer[8];
+        mp_hal_stdout_tx_str("\r\n\r\nThe system restarted due to an error.\r\n\r\nReason: ");
+        switch (rst_info->reason) {
+            case REASON_WDT_RST:
+                mp_hal_stdout_tx_str("WDT");
+                break;
+
+            case REASON_EXCEPTION_RST:
+                mp_hal_stdout_tx_str("EXCEPTION");
+                break;
+
+            case REASON_SOFT_WDT_RST:
+                mp_hal_stdout_tx_str("SOFT_WDT");
+                break;
+
+            default:
+                assert(!"Should not ever get here.");
+                break;
+        }
+        mp_hal_stdout_tx_str(" Cause: ");
+        format_hex(rst_info->exccause, buffer);
+        mp_hal_stdout_tx_strn(buffer, sizeof(buffer));
+        mp_hal_stdout_tx_str(" EPC1: ");
+        format_hex(rst_info->epc1, buffer);
+        mp_hal_stdout_tx_strn(buffer, sizeof(buffer));
+        mp_hal_stdout_tx_str(" EPC2: ");
+        format_hex(rst_info->epc2, buffer);
+        mp_hal_stdout_tx_strn(buffer, sizeof(buffer));
+        mp_hal_stdout_tx_str(" EPC3: ");
+        format_hex(rst_info->epc3, buffer);
+        mp_hal_stdout_tx_strn(buffer, sizeof(buffer));
+        mp_hal_stdout_tx_str(" Exception Vector address: ");
+        format_hex(rst_info->excvaddr, buffer);
+        mp_hal_stdout_tx_strn(buffer, sizeof(buffer));
+        mp_hal_stdout_tx_str(" DEPC: ");
+        format_hex(rst_info->depc, buffer);
+        mp_hal_stdout_tx_strn(buffer, sizeof(buffer));
+        mp_hal_stdout_tx_str("\r\n\r\n");
+    }
+}
+
+#endif
+
 static void mp_reset(void) {
     mp_stack_set_top((void *)0x40000000);
     mp_stack_set_limit(8192);
@@ -112,6 +170,10 @@ void init_done(void) {
     mp_hal_stdout_tx_str("\r\n");
     #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
+    #endif
+
+    #if MICROPY_HW_HARD_FAULT_DEBUG
+    print_reset_info();
     #endif
 
     #if !MICROPY_REPL_EVENT_DRIVEN

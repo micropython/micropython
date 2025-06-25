@@ -427,6 +427,9 @@ static mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     const char *re_str = mp_obj_str_get_str(args[0]);
     int size = re1_5_sizecode(re_str);
     if (size == -1) {
+        #if MICROPY_ERROR_REPORTING >= MICROPY_ERROR_REPORTING_NORMAL
+        mp_raise_ValueError(MP_ERROR_TEXT("regex too complex"));
+        #endif
         goto error;
     }
     mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, re.insts, char, size, (mp_obj_type_t *)&re_type);

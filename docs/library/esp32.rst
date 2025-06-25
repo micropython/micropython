@@ -18,10 +18,14 @@ Functions
     Configure whether or not a touch will wake the device from sleep.
     *wake* should be a boolean value.
 
+    .. note:: This is only available for boards that have touch sensor support.
+
 .. function:: wake_on_ulp(wake)
 
     Configure whether or not the Ultra-Low-Power co-processor can wake the
     device from sleep. *wake* should be a boolean value.
+
+    .. note:: This is only available for boards that have ULP coprocessor support.
 
 .. function:: wake_on_ext0(pin, level)
 
@@ -29,11 +33,15 @@ Functions
     or a valid Pin object.  *level* should be ``esp32.WAKEUP_ALL_LOW`` or
     ``esp32.WAKEUP_ANY_HIGH``.
 
+    .. note:: This is only available for boards that have ext0 support.
+
 .. function:: wake_on_ext1(pins, level)
 
     Configure how EXT1 wakes the device from sleep.  *pins* can be ``None``
     or a tuple/list of valid Pin objects.  *level* should be ``esp32.WAKEUP_ALL_LOW``
     or ``esp32.WAKEUP_ANY_HIGH``.
+
+    .. note:: This is only available for boards that have ext1 support.
 
 .. function:: gpio_deep_sleep_hold(enable)
 

@@ -28,3 +28,27 @@ print(bts.getvalue())
 
 # hashing a BufferedWriter
 print(type(hash(buf)))
+
+# Test failing flush()
+class MyIO(io.IOBase):
+    def __init__(self):
+        self.count = 0
+
+    def write(self, buf):
+        self.count += 1
+        if self.count < 3:
+            return None
+        print("writing", buf)
+        return len(buf)
+
+
+buf = io.BufferedWriter(MyIO(), 8)
+
+buf.write(b"foobar")
+
+for _ in range(4):
+    try:
+        buf.flush()
+        print("flushed")
+    except OSError:
+        print("OSError")

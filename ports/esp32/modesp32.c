@@ -30,7 +30,6 @@
 #include <time.h>
 #include <sys/time.h>
 #include "driver/gpio.h"
-#include "driver/adc.h"
 #include "esp_heap_caps.h"
 #include "multi_heap.h"
 
@@ -48,22 +47,30 @@
 #include "../multi_heap_platform.h"
 #include "../heap_private.h"
 
+#if SOC_TOUCH_SENSOR_SUPPORTED
 static mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 
+    #if SOC_PM_SUPPORT_EXT0_WAKEUP
     if (machine_rtc_config.ext0_pin != -1) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
+    #endif
 
     machine_rtc_config.wake_on_touch = mp_obj_is_true(wake);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_touch_obj, esp32_wake_on_touch);
+#endif
 
+#if SOC_PM_SUPPORT_EXT0_WAKEUP
 static mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
+    #if SOC_TOUCH_SENSOR_SUPPORTED
     if (machine_rtc_config.wake_on_touch) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
+    #endif
+
     enum {ARG_pin, ARG_level};
     const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin,  MP_ARG_OBJ, {.u_obj = mp_obj_new_int(machine_rtc_config.ext0_pin)} },
@@ -90,7 +97,9 @@ static mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext0_obj, 0, esp32_wake_on_ext0);
+#endif
 
+#if SOC_PM_SUPPORT_EXT1_WAKEUP
 static mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_pins, ARG_level};
     const mp_arg_t allowed_args[] = {
@@ -126,15 +135,20 @@ static mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext1_obj, 0, esp32_wake_on_ext1);
+#endif
 
+#if SOC_ULP_SUPPORTED
 static mp_obj_t esp32_wake_on_ulp(const mp_obj_t wake) {
+    #if SOC_PM_SUPPORT_EXT0_WAKEUP
     if (machine_rtc_config.ext0_pin != -1) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
+    #endif
     machine_rtc_config.wake_on_ulp = mp_obj_is_true(wake);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_ulp_obj, esp32_wake_on_ulp);
+#endif
 
 #if !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
 static mp_obj_t esp32_gpio_deep_sleep_hold(const mp_obj_t enable) {
@@ -258,10 +272,18 @@ static MP_DEFINE_CONST_FUN_OBJ_0(esp32_idf_task_info_obj, esp32_idf_task_info);
 static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
+    #if SOC_TOUCH_SENSOR_SUPPORTED
     { MP_ROM_QSTR(MP_QSTR_wake_on_touch), MP_ROM_PTR(&esp32_wake_on_touch_obj) },
+    #endif
+    #if SOC_PM_SUPPORT_EXT0_WAKEUP
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext0), MP_ROM_PTR(&esp32_wake_on_ext0_obj) },
+    #endif
+    #if SOC_PM_SUPPORT_EXT1_WAKEUP
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
+    #endif
+    #if SOC_ULP_SUPPORTED
     { MP_ROM_QSTR(MP_QSTR_wake_on_ulp), MP_ROM_PTR(&esp32_wake_on_ulp_obj) },
+    #endif
     #if !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
     { MP_ROM_QSTR(MP_QSTR_gpio_deep_sleep_hold), MP_ROM_PTR(&esp32_gpio_deep_sleep_hold_obj) },
     #endif

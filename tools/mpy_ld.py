@@ -402,6 +402,7 @@ class LinkEnv:
         self.known_syms = {}  # dict of symbols that are defined
         self.unresolved_syms = []  # list of unresolved symbols
         self.mpy_relocs = []  # list of relocations needed in the output .mpy file
+        self.externs = {}  # dict of externally-defined symbols
 
     def check_arch(self, arch_name):
         if arch_name != self.arch.name:
@@ -491,10 +492,14 @@ def populate_got(env):
         sym = got_entry.sym
         if hasattr(sym, "resolved"):
             sym = sym.resolved
-        sec = sym.section
-        addr = sym["st_value"]
-        got_entry.sec_name = sec.name
-        got_entry.link_addr += sec.addr + addr
+        if sym.name in env.externs:
+            got_entry.sec_name = ".external.fixed_addr"
+            got_entry.link_addr = env.externs[sym.name]
+        else:
+            sec = sym.section
+            addr = sym["st_value"]
+            got_entry.sec_name = sec.name
+            got_entry.link_addr += sec.addr + addr
 
     # Get sorted GOT, sorted by external, text, rodata, bss so relocations can be combined
     got_list = sorted(
@@ -520,6 +525,9 @@ def populate_got(env):
             dest = int(got_entry.name.split("+")[1], 16) // env.arch.word_size
         elif got_entry.sec_name == ".external.mp_fun_table":
             dest = got_entry.sym.mp_fun_table_offset
+        elif got_entry.sec_name == ".external.fixed_addr":
+            # Fixed-address symbols should not be relocated.
+            continue
         elif got_entry.sec_name.startswith(".text"):
             dest = ".text"
         elif got_entry.sec_name.startswith(".rodata"):
@@ -703,8 +711,9 @@ def do_relocation_text(env, text_addr, r):
         (addr, value) = process_riscv32_relocation(env, text_addr, r)
 
     elif env.arch.name == "EM_ARM" and r_info_type == R_ARM_ABS32:
-        # happens for soft-float on armv6m
-        raise ValueError("Absolute relocations not supported on ARM")
+        # Absolute relocation, handled as a data relocation.
+        do_relocation_data(env, text_addr, r)
+        return
 
     else:
         # Unknown/unsupported relocation
@@ -773,9 +782,9 @@ def do_relocation_data(env, text_addr, r):
     ):
         # Relocation in data.rel.ro to internal/external symbol
         if env.arch.word_size == 4:
-            struct_type = "<I"
+            struct_type = "<i"
         elif env.arch.word_size == 8:
-            struct_type = "<Q"
+            struct_type = "<q"
         if hasattr(s, "resolved"):
             s = s.resolved
         sec = s.section
@@ -1207,12 +1216,24 @@ def link_objects(env, native_qstr_vals_len):
             sym.section = env.obj_table_section
         elif sym.name in env.known_syms:
             sym.resolved = env.known_syms[sym.name]
+        elif sym.name in env.externs:
+            # Fixed-address symbols do not need pre-processing.
+            continue
         else:
             if sym.name in fun_table:
                 sym.section = mp_fun_table_sec
                 sym.mp_fun_table_offset = fun_table[sym.name]
             else:
                 undef_errors.append("{}: undefined symbol: {}".format(sym.filename, sym.name))
+
+    for sym in env.externs:
+        if sym in env.known_syms:
+            log(
+                LOG_LEVEL_1,
+                "Symbol {} is a fixed-address symbol at {:08x} and is also provided from an object file".format(
+                    sym, env.externs[sym]
+                ),
+            )
 
     if undef_errors:
         raise LinkError("\n".join(undef_errors))
@@ -1456,6 +1477,9 @@ def do_link(args):
     log(LOG_LEVEL_2, "qstr vals: " + ", ".join(native_qstr_vals))
     env = LinkEnv(args.arch)
     try:
+        if args.externs:
+            env.externs = parse_linkerscript(args.externs)
+
         # Load object files
         for fn in args.files:
             with open(fn, "rb") as f:
@@ -1484,6 +1508,50 @@ def do_link(args):
         sys.exit(1)
 
 
+def parse_linkerscript(source):
+    # This extracts fixed-address symbol lists from linkerscripts, only parsing
+    # a small subset of all possible directives.  Right now the only
+    # linkerscript file this is really tested against is the ESP8266's builtin
+    # ROM functions list ($SDK/ld/eagle.rom.addr.v6.ld).
+    #
+    # The parser should be able to handle symbol entries inside ESP-IDF's ROM
+    # symbol lists for the ESP32 range of MCUs as well (see *.ld files in
+    # $SDK/components/esp_rom/<name>/).
+
+    symbols = {}
+
+    LINE_REGEX = re.compile(
+        r'^(?P<weak>PROVIDE\()?'  # optional weak marker start
+        r'(?P<symbol>[a-zA-Z_]\w*)'  # symbol name
+        r'=0x(?P<address>[\da-fA-F]{1,8})*'  # symbol address
+        r'(?(weak)\));$',  # optional weak marker end and line terminator
+        re.ASCII,
+    )
+
+    inside_comment = False
+    for line in (line.strip() for line in source.readlines()):
+        if line.startswith('/*') and not inside_comment:
+            if not line.endswith('*/'):
+                inside_comment = True
+            continue
+        if inside_comment:
+            if line.endswith('*/'):
+                inside_comment = False
+            continue
+        if line.startswith('//'):
+            continue
+        match = LINE_REGEX.match(''.join(line.split()))
+        if not match:
+            continue
+        tokens = match.groupdict()
+        symbol = tokens['symbol']
+        address = int(tokens['address'], 16)
+        if symbol in symbols:
+            raise ValueError(f"Symbol {symbol} already defined")
+        symbols[symbol] = address
+    return symbols
+
+
 def main():
     import argparse
 
@@ -1499,6 +1567,13 @@ def main():
     )
     cmd_parser.add_argument(
         "--output", "-o", default=None, help="output .mpy file (default to input with .o->.mpy)"
+    )
+    cmd_parser.add_argument(
+        "--externs",
+        "-e",
+        type=argparse.FileType("rt"),
+        default=None,
+        help="linkerscript providing fixed-address symbols to augment symbol resolution",
     )
     cmd_parser.add_argument("files", nargs="+", help="input files")
     args = cmd_parser.parse_args()

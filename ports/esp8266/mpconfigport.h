@@ -117,6 +117,9 @@
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_ESP8266_APA102         (1)
 
+// Print error information at reboot time if the board crashed.
+#define MICROPY_HW_HARD_FAULT_DEBUG    (0)
+
 // No blocking wait-for-event on ESP8266, only non-blocking pump of the "OS" event
 // loop
 //

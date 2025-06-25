@@ -1,0 +1,133 @@
+MicroPython \.\+ version
+Use Ctrl-D to exit, Ctrl-E for paste mode
+>>> # Test REPL paste mode functionality
+>>> 
+>>> # Basic paste mode with a simple function
+>>> 
+paste mode; Ctrl-C to cancel, Ctrl-D to finish
+=== 
+=== def hello():
+===     print('Hello from paste mode!')
+=== hello()
+=== 
+Hello from paste mode!
+>>> 
+>>> # Paste mode with multiple indentation levels
+>>> 
+paste mode; Ctrl-C to cancel, Ctrl-D to finish
+=== 
+=== def calculate(n):
+===     if n > 0:
+===         for i in range(n):
+===             if i % 2 == 0:
+===                 print(f'Even: {i}')
+===             else:
+===                 print(f'Odd: {i}')
+===     else:
+===         print('n must be positive')
+=== 
+=== calculate(5)
+=== 
+Even: 0
+Odd: 1
+Even: 2
+Odd: 3
+Even: 4
+>>> 
+>>> # Paste mode with blank lines
+>>> 
+paste mode; Ctrl-C to cancel, Ctrl-D to finish
+=== 
+=== def function_with_blanks():
+===     print('First line')
+===     
+===     print('After blank line')
+===     
+===     
+===     print('After two blank lines')
+=== 
+=== function_with_blanks()
+=== 
+First line
+After blank line
+After two blank lines
+>>> 
+>>> # Paste mode with class definition and multiple methods
+>>> 
+paste mode; Ctrl-C to cancel, Ctrl-D to finish
+=== 
+=== class TestClass:
+===     def __init__(self, value):
+===         self.value = value
+===     
+===     def display(self):
+===         print(f'Value is: {self.value}')
+===     
+===     def double(self):
+===         self.value *= 2
+===         return self.value
+=== 
+=== obj = TestClass(21)
+=== obj.display()
+=== print(f'Doubled: {obj.double()}')
+=== obj.display()
+=== 
+Value is: 21
+Doubled: 42
+Value is: 42
+>>> 
+>>> # Paste mode with exception handling
+>>> 
+paste mode; Ctrl-C to cancel, Ctrl-D to finish
+=== 
+=== try:
+===     x = 1 / 0
+=== except ZeroDivisionError:
+===     print('Caught division by zero')
+=== finally:
+===     print('Finally block executed')
+=== 
+Caught division by zero
+Finally block executed
+>>> 
+>>> # Cancel paste mode with Ctrl-C
+>>> 
+paste mode; Ctrl-C to cancel, Ctrl-D to finish
+=== 
+=== print('This should not execute')
+=== 
+>>> 
+>>> 
+>>> # Normal REPL still works after cancelled paste
+>>> print('Back to normal REPL')
+Back to normal REPL
+>>> 
+>>> # Paste mode with syntax error
+>>> 
+paste mode; Ctrl-C to cancel, Ctrl-D to finish
+=== 
+=== def bad_syntax(:
+===     print('Missing parameter')
+=== 
+Traceback (most recent call last):
+  File "<stdin>", line 2
+SyntaxError: invalid syntax
+>>> 
+>>> # Paste mode with runtime error
+>>> 
+paste mode; Ctrl-C to cancel, Ctrl-D to finish
+=== 
+=== def will_error():
+===     undefined_variable
+===     
+=== will_error()
+=== 
+Traceback (most recent call last):
+  File "<stdin>", line 5, in <module>
+  File "<stdin>", line 3, in will_error
+NameError: name 'undefined_variable' isn't defined
+>>> 
+>>> # Final test to show REPL is still functioning
+>>> 1 + 2 + 3
+6
+>>> 

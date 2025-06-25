@@ -266,6 +266,11 @@ typedef long mp_off_t;
 #endif
 #endif
 
+// VC++ 2017 fixes
+#if (_MSC_VER < 1920)
+#define MICROPY_PY_MATH_COPYSIGN_FIX_NAN (1)
+#endif
+
 // CL specific definitions
 
 #ifndef __cplusplus
