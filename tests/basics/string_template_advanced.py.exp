@@ -7,8 +7,8 @@ Interpolation no args: TypeError
 Interpolation too many args: TypeError
 
 === Object representations ===
-Template repr: Template(strings=('test ', ''), interpolations=(Interpolation(value=42, expression='42'),))
-Interpolation repr: Interpolation(value=42, expression='x', conversion='r', format_spec='.2f')
+Template repr: Template(strings=('test ', ''), interpolations=(Interpolation(42, '42', None, ''),))
+Interpolation repr: Interpolation(42, 'x', 'r', '.2f')
 value=42, expr=x, conv=r, fmt=.2f
 
 === Memory and performance tests ===

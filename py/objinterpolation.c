@@ -90,23 +90,14 @@ static void interpolation_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 static void interpolation_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;  // Only repr is supported
     mp_obj_interpolation_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_print_str(print, "Interpolation(value=");
+    mp_print_str(print, "Interpolation(");
     mp_obj_print_helper(print, self->value, PRINT_REPR);
-    mp_print_str(print, ", expression=");
+    mp_print_str(print, ", ");
     mp_obj_print_helper(print, self->expression, PRINT_REPR);
-
-    // Only include conversion if not None
-    if (self->conversion != mp_const_none) {
-        mp_print_str(print, ", conversion=");
-        mp_obj_print_helper(print, self->conversion, PRINT_REPR);
-    }
-
-    // Only include format_spec if not empty string
-    if (!mp_obj_str_equal(self->format_spec, MP_OBJ_NEW_QSTR(MP_QSTR_))) {
-        mp_print_str(print, ", format_spec=");
-        mp_obj_print_helper(print, self->format_spec, PRINT_REPR);
-    }
-
+    mp_print_str(print, ", ");
+    mp_obj_print_helper(print, self->conversion, PRINT_REPR);
+    mp_print_str(print, ", ");
+    mp_obj_print_helper(print, self->format_spec, PRINT_REPR);
     mp_print_str(print, ")");
 }
 
