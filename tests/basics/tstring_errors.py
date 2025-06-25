@@ -1,4 +1,4 @@
-# Test error cases for t-strings
+# Test error cases for template strings (t-strings)
 
 print("=== Syntax errors ===")
 
@@ -57,21 +57,5 @@ try:
     compile('t"a" t"b" "c"', '<string>', 'eval')
 except SyntaxError:
     print("SyntaxError: Cannot mix t-string and regular string in chain")
-
-print("\n=== Import errors ===")
-
-# Test that Template/Interpolation cannot be instantiated directly from builtins
-try:
-    from builtins import Template
-    print("ERROR: Should not be able to import Template from builtins")
-except ImportError:
-    print("ImportError: Cannot import Template from builtins")
-
-# Correct import location
-try:
-    from string.templatelib import Template, Interpolation
-    print("OK: Correct import from string.templatelib")
-except ImportError:
-    print("ERROR: Failed to import from string.templatelib")
 
 print("\nError tests completed!")

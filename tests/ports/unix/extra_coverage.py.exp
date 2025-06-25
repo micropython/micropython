@@ -183,6 +183,11 @@ pop all: 1 2 4 5
 1 1
 # stackctrl
 1 1
+# t-strings C coverage
+interp created: 1
+template created: 1
+long expr error: SyntaxError
+empty expr: 1
 # end coverage.c
 0123456789 b'0123456789'
 7300

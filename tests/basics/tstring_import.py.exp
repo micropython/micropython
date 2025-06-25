@@ -1,0 +1,24 @@
+=== Import location tests ===
+ImportError: Cannot import Template from builtins
+ImportError: Cannot import Interpolation from builtins
+OK: Imported Template and Interpolation from string.templatelib
+Created template with imported types: Template
+Template type name: Template
+Interpolation type name: Interpolation
+Literal template type: Template
+Is same Template type: True
+Is same Interpolation type: True
+
+=== Type checking ===
+isinstance(t_literal, Template): True
+isinstance(i, Interpolation): True
+Manual template type == Template: True
+isinstance(fake, Template): False
+
+=== Module structure ===
+string module type: <class 'module'>
+Has templatelib: True
+string.templatelib.Template: True
+string.templatelib.Interpolation: True
+
+Import tests completed!

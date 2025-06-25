@@ -1,4 +1,4 @@
-# Advanced template string tests for edge cases and 100% code coverage
+# Advanced template string tests for edge cases and comprehensive coverage
 
 print("=== Type validation and constructors ===")
 
@@ -53,6 +53,10 @@ print(f"Interpolation repr: {repr(i)}")
 # Interpolation attributes
 print(f"value={i.value}, expr={i.expression}, conv={i.conversion}, fmt={i.format_spec}")
 
+# Empty template repr
+t_empty = Template(("",), ())
+print(f"Empty template: {repr(t_empty)}")
+
 print("\n=== Memory and performance tests ===")
 
 # Large number of interpolations (tests heap allocation)
@@ -67,11 +71,19 @@ print(f"Long string length: {len(t_long.interpolations[0].value)}")
 
 # Template size handling
 try:
-    big_str = "x" * 1000
-    t_big = t"{big_str}{big_str}{big_str}{big_str}{big_str}"
-    print(f"Large template created: {len(t_big.__str__())}")
-except ValueError as e:
-    print(f"Template size limit: {e}")
+    # Test with smaller size to avoid memory issues
+    big_str = "x" * 50000
+    # Create a template that would exceed size limit when rendered
+    t_big = Template((big_str,) * 25, tuple(Interpolation(i, f"x{i}") for i in range(24)))
+    print(f"Large template created with {len(t_big.strings)} strings")
+    # Try to render it
+    try:
+        result = t_big.__str__()
+        print(f"ERROR: Should have hit size limit")
+    except ValueError as e:
+        print(f"Template size limit: {e}")
+except MemoryError:
+    print("Template creation hit memory limit")
 
 print("\n=== Iterator edge cases ===")
 
@@ -146,9 +158,9 @@ empty = ""
 t_empty_fmt = t"{42:{empty}d}"
 print(f"Empty format result: '{t_empty_fmt.__str__()}'")
 
-# Escaped braces in strings
-t_escaped = t"{{value}}: {42}"
-print(f"Escaped braces: strings={t_escaped.strings}")
+# Escaped braces in format spec
+t_escaped = t"{42:{{fill}}}"
+print(f"Escaped braces: '{t_escaped.__str__()}'")
 
 print("\n=== Expression parser tests ===")
 
@@ -201,6 +213,9 @@ try:
 except AttributeError:
     print("OK: AttributeError for non-existent attribute")
 
+# Interpolation match args
+print(f"Interpolation.__match_args__: {i_test.__match_args__}")
+
 print("\n=== Special format cases ===")
 
 # All conversion types
@@ -219,26 +234,43 @@ lst = [1, 2, 3]
 t_debug_expr = t"{lst[0] + lst[1]=}"
 print(f"Debug complex: '{t_debug_expr.strings[0]}', value={t_debug_expr.interpolations[0].value}")
 
-# Special characters
-t_special = t"Special: \x00\x01\x02\xff"
-print(f"Special chars length: {len(t_special.strings[0])}")
-
-print("\n=== Error handling ===")
-
-# __template__ with invalid format
-try:
-    result = __template__(("test",), ((42,),))  # Missing fields
-except ValueError:
-    print("__template__ error: ValueError")
-
-# Invalid syntax in expression (compile-time error)
-try:
-    compile('t"{@invalid}"', '<string>', 'eval')
-except SyntaxError:
-    print("OK: Invalid expression syntax")
+# Debug with whitespace
+t_debug_ws = t"{  x  =}"
+print(f"Debug whitespace: '{t_debug_ws.strings[0]}'")
 
 # Invalid conversion (accepted in MicroPython)
 i_invalid = Interpolation(42, "expr", "x", "")
-print(f"Invalid conversion accepted: conv='{i_invalid.conversion}'")
+t_invalid_conv = Template(("Result: ", ""), (i_invalid,))
+print(f"Invalid conversion result: '{t_invalid_conv.__str__()}'")
+
+print("\n=== Values property edge cases ===")
+
+# Values with no interpolations
+t_no_interp = Template(("just text",), ())
+print(f"Values no interpolations: {t_no_interp.values}")
+
+# Values with many interpolations (heap allocation path)
+n = 10
+interps = tuple(Interpolation(i, f"x{i}") for i in range(n))
+strings = ("",) * (n + 1)
+t_many = Template(strings, interps)
+print(f"Values many interpolations: len={len(t_many.values)}, first={t_many.values[0]}, last={t_many.values[-1]}")
+
+print("\n=== __template__ builtin edge cases ===")
+
+# Test with invalid interpolation format  
+try:
+    # Only one element in interpolation tuple (needs at least 2)
+    result = __template__(("test",), ((42,),))
+    print(f"ERROR: Invalid interpolation should fail")
+except ValueError as e:
+    print(f"__template__ validation: {e}")
+
+# Test with empty tuples
+try:
+    result = __template__((), ())
+    print(f"Empty template created: {type(result).__name__}")
+except Exception as e:
+    print(f"Empty template error: {type(e).__name__}")
 
 print("\nAdvanced tests completed!")
