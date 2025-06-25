@@ -420,6 +420,9 @@ static void gc_collect_start_common(void) {
 }
 
 void gc_collect_root(void **ptrs, size_t len) {
+    #if __m68k__
+    len *= 2;
+    #endif
     #if !MICROPY_GC_SPLIT_HEAP
     mp_state_mem_area_t *area = &MP_STATE_MEM(area);
     #endif
@@ -676,6 +679,12 @@ static void gc_sweep_free_blocks(void) {
 __attribute__((no_sanitize_address))
 #endif
 static void *gc_get_ptr(void **ptrs, int i) {
+    #if __m68k__
+    char *ptr = (char *)ptrs;
+    ptr += i * 2;
+    ptrs = (void **)ptr;
+    i = 0;
+    #endif
     #if MICROPY_DEBUG_VALGRIND
     if (!VALGRIND_CHECK_MEM_IS_ADDRESSABLE(&ptrs[i], sizeof(*ptrs))) {
         return NULL;

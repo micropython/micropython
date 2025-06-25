@@ -1,0 +1,40 @@
+name: m68k macintosh port
+
+on:
+  push:
+  pull_request:
+  release:
+    types:
+      - created
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    container: ghcr.io/autc04/retro68
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: |
+        apt update
+        apt install -y python3-pip
+        pip install pyyaml
+        git config --global --add safe.directory $(pwd)
+        make -C mpy-cross -j$(nproc)
+        make -C ports/m68kmac submodules
+        make -C ports/m68kmac -j$(nproc) MICROPY_USE_COMPILER_PLUGIN=gcc
+
+    - name: Upload disk image
+      uses: actions/upload-artifact@v4
+      with:
+        path: ports/m68kmac/build/micropython.dsk
+
+    - uses: shogo82148/actions-upload-release-asset@v1
+      if: ${{ github.event_name == 'release' }}
+      with:
+        asset_path: "ports/m68kmac/build/micropython.dsk"
+        upload_url: ${{ github.event.release.upload_url }}
