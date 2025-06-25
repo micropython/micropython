@@ -13,6 +13,9 @@ except (ImportError, AttributeError):
 
 import time, sys
 
+# Target tuning options.
+tune_wait_initial_rxidle = False
+
 # Configure pins based on the target.
 if "alif" in sys.platform:
     uart_id = 1
@@ -26,6 +29,7 @@ elif "mimxrt" in sys.platform:
     uart_id = 1
     tx_pin = None
 elif "pyboard" in sys.platform:
+    tune_wait_initial_rxidle = True
     if "STM32WB" in sys.implementation._machine:
         # LPUART(1) is on PA2/PA3
         uart_id = "LP1"
@@ -69,8 +73,15 @@ for bits_per_s in (2400, 9600, 115200):
     else:
         uart = UART(uart_id, bits_per_s, tx=tx_pin, rx=rx_pin)
 
+    # Ignore a possible initial RXIDLE condition after creating UART.
+    if tune_wait_initial_rxidle:
+        uart.irq(lambda _: None, uart.IRQ_RXIDLE)
+        time.sleep_ms(10)
+
+    # Configure desired IRQ.
     uart.irq(irq, uart.IRQ_RXIDLE)
 
+    # Write data and wait for IRQ.
     print("write", bits_per_s)
     uart.write(text)
     uart.flush()
