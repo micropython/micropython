@@ -314,14 +314,15 @@ MP_DEFINE_CONST_OBJ_TYPE(
     iter, template_iter_iternext
     );
 
-static mp_obj_t template_iter(mp_obj_t self_in) {
-    mp_obj_template_iter_t *iter = mp_obj_malloc(mp_obj_template_iter_t, &mp_type_template_iter);
+static mp_obj_t template_iter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_template_iter_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_template_iter_t *iter = (mp_obj_template_iter_t *)iter_buf;
+    iter->base.type = &mp_type_template_iter;
     iter->template = self_in;
     iter->index = 0;
     iter->at_interpolation = false;
     return MP_OBJ_FROM_PTR(iter);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(template_iter_obj, template_iter);
 
 static void template_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_template_t *self = MP_OBJ_TO_PTR(self_in);
@@ -361,9 +362,6 @@ static void template_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         } else if (attr == MP_QSTR___str__) {
             // Provide __str__ method as a bound method
             dest[0] = mp_obj_new_bound_meth(MP_OBJ_FROM_PTR(&template_str_obj), self_in);
-        } else if (attr == MP_QSTR___iter__) {
-            // Provide __iter__ method as a bound method
-            dest[0] = mp_obj_new_bound_meth(MP_OBJ_FROM_PTR(&template_iter_obj), self_in);
         }
     }
 }
