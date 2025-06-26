@@ -138,17 +138,10 @@ static mp_obj_t code_colines_next(mp_obj_t iter_in) {
             iter->bc = bc_end;
         }
     } else {
-        if ((iter->ci[0] & 0x80) == 0) {
-            // 0b0LLBBBBB encoding
-            iter->bc += iter->ci[0] & 0x1f;
-            iter->source_line += iter->ci[0] >> 5;
-            iter->ci += 1;
-        } else {
-            // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
-            iter->bc += iter->ci[0] & 0xf;
-            iter->source_line += ((iter->ci[0] << 4) & 0x700) | iter->ci[1];
-            iter->ci += 2;
-        }
+        mp_code_lineinfo_t decoded = mp_bytecode_decode_lineinfo(iter->ci);
+        iter->bc += decoded.bc_increment;
+        iter->source_line += decoded.line_increment;
+        iter->ci += decoded.info_increment;
     }
 
     mp_uint_t end = iter->bc;
