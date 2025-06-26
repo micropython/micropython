@@ -99,6 +99,11 @@ static mp_obj_t mp_machine_get_freq(void) {
 
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
+    #if CONFIG_IDF_TARGET_ESP32C2
+    if (freq != 80 && freq != 120) {
+        mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 80MHz or 120MHz"));
+    }
+    #else
     if (freq != 20 && freq != 40 && freq != 80 && freq != 160
         #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6)
         && freq != 240
@@ -110,6 +115,7 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
         #endif
     }
+    #endif
     esp_pm_config_t pm = {
         .max_freq_mhz = freq,
         .min_freq_mhz = freq,
