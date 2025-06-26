@@ -46,6 +46,41 @@ static MP_NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
     nlr_raise(exc);
 }
 
+// mp_parse_num_integer parses a small integer directly, except for the
+// special case where bigint support is long long, in which case
+// it parses long long and returns either a long long or a small int.
+#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_LONGLONG
+typedef mp_uint_t parsed_uint_t;
+typedef mp_int_t parsed_int_t;
+
+inline static bool parsed_uint_mul_overflow(parsed_uint_t a, parsed_uint_t b, parsed_uint_t *res) {
+    if (a > 0 && b > (MP_UINT_MAX / a)) {
+        return true; // Would overflow
+    } else {
+        *res = a * b;
+        return false;
+    }
+}
+
+inline static bool parsed_uint_fits(parsed_uint_t int_val, mp_uint_t dig) {
+    // Value has to not overflow when added, and has to fit in small int mask
+    // without extending into the sign bit
+    return (int_val < MP_UINT_MAX - dig) &&
+           ((int_val + dig) & ~MP_SMALL_INT_POSITIVE_MASK) == 0;
+}
+#else
+typedef unsigned long long parsed_uint_t;
+typedef long long parsed_int_t;
+
+#define parsed_uint_mul_overflow mp_mul_ull_overflow
+
+inline static bool parsed_uint_fits(parsed_uint_t int_val, mp_uint_t dig) {
+    // Unlike MP_SMALL_INT, we can't be assured that adding a digit won't
+    // trigger an overflow of signed long long, so need to explicitly check
+    return int_val <= (unsigned long long)LLONG_MAX - dig;
+}
+#endif
+
 mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, mp_lexer_t *lex) {
     const byte *restrict str = (const byte *)str_;
     const byte *restrict top = str + len;
@@ -76,7 +111,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
     str += mp_parse_num_base((const char *)str, top - str, &base);
 
     // string should be an integer number
-    mp_int_t int_val = 0;
+    parsed_uint_t uint_val = 0;
     const byte *restrict str_val_start = str;
     for (; str < top; str++) {
         // get next digit as a value
@@ -99,24 +134,28 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
         }
 
         // add next digi and check for overflow
-        if (mp_small_int_mul_overflow(int_val, base)) {
+        if (parsed_uint_mul_overflow(uint_val, base, &uint_val)) {
             goto overflow;
         }
-        int_val = int_val * base + dig;
-        if (!MP_SMALL_INT_FITS(int_val)) {
+        if (!parsed_uint_fits(uint_val, dig)) {
             goto overflow;
         }
+        uint_val += dig;
     }
 
-    // negate value if needed
+    // Note the parsed_uint_fits() check above ensures these steps don't overflow
+    parsed_int_t int_val = uint_val;
     if (neg) {
         int_val = -int_val;
     }
 
-    // create the small int
+    #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+    ret_val = mp_obj_new_int_from_ll(int_val); // Could be large or small int
+    #else
     ret_val = MP_OBJ_NEW_SMALL_INT(int_val);
-
 have_ret_val:
+    #endif
+
     // check we parsed something
     if (str == str_val_start) {
         goto value_error;
@@ -135,6 +174,7 @@ have_ret_val:
     return ret_val;
 
 overflow:
+    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_LONGLONG
     // reparse using long int
     {
         const char *s2 = (const char *)str_val_start;
@@ -142,6 +182,9 @@ overflow:
         str = (const byte *)s2;
         goto have_ret_val;
     }
+    #else
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("result overflows long long storage"));
+    #endif
 
 value_error:
     {
