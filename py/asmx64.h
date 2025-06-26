@@ -154,12 +154,12 @@ void asm_x64_call_ind(asm_x64_t *as, size_t fun_id, int temp_r32);
 // Holds a pointer to mp_fun_table
 #define REG_FUN_TABLE ASM_X64_REG_FUN_TABLE
 
-#define ASM_T               asm_x64_t
-#define ASM_END_PASS        asm_x64_end_pass
-#define ASM_ENTRY           asm_x64_entry
-#define ASM_EXIT            asm_x64_exit
+#define ASM_T                           asm_x64_t
+#define ASM_END_PASS                    asm_x64_end_pass
+#define ASM_ENTRY(as, num_locals, name) asm_x64_entry((as), (num_locals))
+#define ASM_EXIT                        asm_x64_exit
 
-#define ASM_JUMP            asm_x64_jmp_label
+#define ASM_JUMP                        asm_x64_jmp_label
 #define ASM_JUMP_IF_REG_ZERO(as, reg, label, bool_test) \
     do { \
         if (bool_test) { \

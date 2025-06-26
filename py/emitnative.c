@@ -419,6 +419,30 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         emit->stack_info[i].vtype = VTYPE_UNBOUND;
     }
 
+    char *qualified_name = NULL;
+
+    #if N_DEBUG
+    scope_t *current_scope = scope;
+    vstr_t *qualified_name_vstr = vstr_new(qstr_len(current_scope->simple_name));
+    size_t fragment_length = 0;
+    const byte *fragment_pointer;
+    for (;;) {
+        fragment_pointer = qstr_data(current_scope->simple_name, &fragment_length);
+        vstr_hint_size(qualified_name_vstr, fragment_length);
+        memmove(qualified_name_vstr->buf + fragment_length, qualified_name_vstr->buf, qualified_name_vstr->len);
+        memcpy(qualified_name_vstr->buf, fragment_pointer, fragment_length);
+        qualified_name_vstr->len += fragment_length;
+        if (current_scope->parent == NULL || current_scope->parent->simple_name == MP_QSTR__lt_module_gt_) {
+            break;
+        }
+        vstr_ins_char(qualified_name_vstr, 0, '.');
+        current_scope = current_scope->parent;
+    }
+    qualified_name = vstr_null_terminated_str(qualified_name_vstr);
+    #else
+    (void)qualified_name;
+    #endif
+
     mp_asm_base_start_pass(&emit->as->base, pass == MP_PASS_EMIT ? MP_ASM_PASS_EMIT : MP_ASM_PASS_COMPUTE);
 
     // generate code for entry to function
@@ -465,7 +489,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         }
 
         // Entry to function
-        ASM_ENTRY(emit->as, emit->stack_start + emit->n_state - num_locals_in_regs);
+        ASM_ENTRY(emit->as, emit->stack_start + emit->n_state - num_locals_in_regs, qualified_name);
 
         #if N_X86
         asm_x86_mov_arg_to_r32(emit->as, 0, REG_PARENT_ARG_1);
@@ -536,7 +560,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
         if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
             mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->start_offset);
-            ASM_ENTRY(emit->as, emit->code_state_start);
+            ASM_ENTRY(emit->as, emit->code_state_start, qualified_name);
 
             // Reset the state size for the state pointed to by REG_GENERATOR_STATE
             emit->code_state_start = 0;
@@ -568,7 +592,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             emit->stack_start = emit->code_state_start + SIZEOF_CODE_STATE;
 
             // Allocate space on C-stack for code_state structure, which includes state
-            ASM_ENTRY(emit->as, emit->stack_start + emit->n_state);
+            ASM_ENTRY(emit->as, emit->stack_start + emit->n_state, qualified_name);
 
             // Prepare incoming arguments for call to mp_setup_code_state
 
@@ -634,6 +658,10 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             }
         }
     }
+
+    #if N_DEBUG
+    vstr_free(qualified_name_vstr);
+    #endif
 }
 
 static inline void emit_native_write_code_info_byte(emit_t *emit, byte val) {

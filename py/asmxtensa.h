@@ -340,9 +340,9 @@ void asm_xtensa_l32r(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t label);
 #define ASM_NUM_REGS_SAVED ASM_XTENSA_NUM_REGS_SAVED
 #define REG_FUN_TABLE ASM_XTENSA_REG_FUN_TABLE
 
-#define ASM_ENTRY(as, nlocal)   asm_xtensa_entry((as), (nlocal))
-#define ASM_EXIT(as)            asm_xtensa_exit((as))
-#define ASM_CALL_IND(as, idx)   asm_xtensa_call_ind((as), (idx))
+#define ASM_ENTRY(as, nlocal, name)   asm_xtensa_entry((as), (nlocal))
+#define ASM_EXIT(as)                  asm_xtensa_exit((as))
+#define ASM_CALL_IND(as, idx)         asm_xtensa_call_ind((as), (idx))
 
 #else
 // Configuration for windowed calls with window size 8
@@ -370,9 +370,9 @@ void asm_xtensa_l32r(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t label);
 #define ASM_NUM_REGS_SAVED ASM_XTENSA_NUM_REGS_SAVED_WIN
 #define REG_FUN_TABLE ASM_XTENSA_REG_FUN_TABLE_WIN
 
-#define ASM_ENTRY(as, nlocal)   asm_xtensa_entry_win((as), (nlocal))
-#define ASM_EXIT(as)            asm_xtensa_exit_win((as))
-#define ASM_CALL_IND(as, idx)   asm_xtensa_call_ind_win((as), (idx))
+#define ASM_ENTRY(as, nlocal, name)   asm_xtensa_entry_win((as), (nlocal))
+#define ASM_EXIT(as)                  asm_xtensa_exit_win((as))
+#define ASM_CALL_IND(as, idx)         asm_xtensa_call_ind_win((as), (idx))
 
 #endif
 

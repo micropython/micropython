@@ -403,12 +403,12 @@ void asm_thumb_b_rel12(asm_thumb_t *as, int rel);
 
 #define REG_FUN_TABLE ASM_THUMB_REG_FUN_TABLE
 
-#define ASM_T               asm_thumb_t
-#define ASM_END_PASS        asm_thumb_end_pass
-#define ASM_ENTRY           asm_thumb_entry
-#define ASM_EXIT            asm_thumb_exit
+#define ASM_T                           asm_thumb_t
+#define ASM_END_PASS                    asm_thumb_end_pass
+#define ASM_ENTRY(as, num_locals, name) asm_thumb_entry((as), (num_locals))
+#define ASM_EXIT                        asm_thumb_exit
 
-#define ASM_JUMP            asm_thumb_b_label
+#define ASM_JUMP                        asm_thumb_b_label
 #define ASM_JUMP_IF_REG_ZERO(as, reg, label, bool_test) \
     do { \
         asm_thumb_cmp_rlo_i8(as, reg, 0); \

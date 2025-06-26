@@ -164,12 +164,12 @@ void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
 // Holds a pointer to mp_fun_table
 #define REG_FUN_TABLE ASM_ARM_REG_FUN_TABLE
 
-#define ASM_T               asm_arm_t
-#define ASM_END_PASS        asm_arm_end_pass
-#define ASM_ENTRY           asm_arm_entry
-#define ASM_EXIT            asm_arm_exit
+#define ASM_T                           asm_arm_t
+#define ASM_END_PASS                    asm_arm_end_pass
+#define ASM_ENTRY(as, num_locals, name) asm_arm_entry((as), (num_locals))
+#define ASM_EXIT                        asm_arm_exit
 
-#define ASM_JUMP            asm_arm_b_label
+#define ASM_JUMP                        asm_arm_b_label
 #define ASM_JUMP_IF_REG_ZERO(as, reg, label, bool_test) \
     do { \
         asm_arm_cmp_reg_i8(as, reg, 0); \

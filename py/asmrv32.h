@@ -718,7 +718,7 @@ void asm_rv32_emit_optimised_xor(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs);
 void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_uint_t base, int32_t offset, mp_uint_t operation_size);
 
 #define ASM_T asm_rv32_t
-#define ASM_ENTRY(state, labels) asm_rv32_entry(state, labels)
+#define ASM_ENTRY(state, labels, name) asm_rv32_entry(state, labels)
 #define ASM_EXIT(state) asm_rv32_exit(state)
 #define ASM_END_PASS(state) asm_rv32_end_pass(state)
 

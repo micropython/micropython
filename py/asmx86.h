@@ -149,12 +149,12 @@ void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r
 // Holds a pointer to mp_fun_table
 #define REG_FUN_TABLE ASM_X86_REG_FUN_TABLE
 
-#define ASM_T               asm_x86_t
-#define ASM_END_PASS        asm_x86_end_pass
-#define ASM_ENTRY           asm_x86_entry
-#define ASM_EXIT            asm_x86_exit
+#define ASM_T                           asm_x86_t
+#define ASM_END_PASS                    asm_x86_end_pass
+#define ASM_ENTRY(as, num_locals, name) asm_x86_entry((as), (num_locals))
+#define ASM_EXIT                        asm_x86_exit
 
-#define ASM_JUMP            asm_x86_jmp_label
+#define ASM_JUMP                        asm_x86_jmp_label
 #define ASM_JUMP_IF_REG_ZERO(as, reg, label, bool_test) \
     do { \
         if (bool_test) { \
