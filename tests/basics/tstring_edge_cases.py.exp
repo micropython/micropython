@@ -1,0 +1,31 @@
+=== Conversion specifiers edge cases ===
+repr: Result: 'Test String'
+str: Result: Test String
+ascii: Result: 'Hello \U0001f30d'
+Conv+Format: 'Pi:    3.14159'
+
+=== Debug format edge cases ===
+Debug format: 'Debug: x=42'
+Complex debug: 'Result: vals[0]+vals[1]=3'
+
+=== Format spec edge cases ===
+Format interpolation: 'Value:         42'
+Double } error: invalid format specifier
+Text after interp error: invalid format specifier
+
+=== Binary operation edge cases ===
+str + Template: TypeError OK
+Template - Template: TypeError OK
+
+=== Iterator edge cases ===
+Adjacent iteration: ['I(1)', 'I(2)', 'I(3)']
+
+=== Error path edge cases ===
+Invalid interpolation: invalid interpolation format
+Size limit: MemoryError
+
+=== Attribute access edge cases ===
+__iter__ attribute: True
+Large values: 6 items
+
+Edge case tests completed!

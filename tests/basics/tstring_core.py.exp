@@ -1,0 +1,28 @@
+Template
+Strings: ('Hello ', '')
+Interpolations count: 1
+Value: World
+Expression: name
+Conversion: None
+Format spec: ''
+Values: (10, 20)
+Format spec: '.2f'
+Conversions: ['r', 's', 'a']
+Conv+format: conv=r, fmt='.2f'
+Concat result type: Template
+Concat strings: ('Hello ', '')
+String+Template rejected: OK
+Iterator parts: ['str', 'Interpolation', 'str', 'Interpolation', 'str']
+Has __str__: True
+Rendered: 'Hello Alice!'
+Multiple render: '10 + 20 = 30'
+__match_args__: ('value', 'expression', 'conversion', 'format_spec')
+value read-only: OK
+Debug format: 'Debug: var=42'
+Template repr: Template(strings=('Hello ', ''...
+Empty: strings=('',), interps=()
+Adjacent interps: strings=('', '', '')
+Unicode value: 🎉
+Raw string: 'Path: C:\Users\'
+Implicit concat: 'Part1 Part2'
+Core tests completed!

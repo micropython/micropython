@@ -1,0 +1,17 @@
+OK: Template creation
+OK: Template.__str__()
+OK: Template.values heap allocation
+OK: Template concatenation
+OK: Template iterator
+OK: __template__ builtin
+OK: Format spec interpolation
+OK: Debug format
+OK: Conversion + format
+OK: Complex format spec
+OK: Interpolation creation
+OK: Large values array
+OK: Iterator next
+OK: Escaped braces format
+OK: Empty expression
+
+Heap allocation failure tests completed!
