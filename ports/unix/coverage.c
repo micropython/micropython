@@ -882,7 +882,7 @@ static mp_obj_t extra_coverage(void) {
             if (lex) {
                 mp_parse_tree_t tree = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
                 nlr_pop();
-                // Empty/whitespace expression should result in NULL node
+                // Check if empty/whitespace expression results in NULL node
                 mp_printf(&mp_plat_print, "empty expr: %d\n", MP_PARSE_NODE_IS_NULL(tree.root));
             } else {
                 nlr_pop();
