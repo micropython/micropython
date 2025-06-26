@@ -855,6 +855,9 @@ extern const mp_obj_type_t mp_type_fun_native;
 extern const mp_obj_type_t mp_type_fun_viper;
 extern const mp_obj_type_t mp_type_fun_asm;
 extern const mp_obj_type_t mp_type_code;
+#if MICROPY_PY_BUILTINS_CODE > MICROPY_PY_BUILTINS_CODE_BASIC
+extern const mp_obj_type_t mp_type_colines_iter;
+#endif
 extern const mp_obj_type_t mp_type_module;
 extern const mp_obj_type_t mp_type_staticmethod;
 extern const mp_obj_type_t mp_type_classmethod;

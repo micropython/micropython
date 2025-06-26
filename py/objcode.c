@@ -107,6 +107,49 @@ static mp_obj_t raw_code_lnotab(const mp_raw_code_t *rc) {
     return o;
 }
 
+static mp_obj_t code_colines_iter(mp_obj_t);
+static mp_obj_t code_colines_next(mp_obj_t);
+
+static mp_obj_t code_colines_iter(mp_obj_t self_in) {
+    mp_obj_code_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_colines_iter_t *iter = mp_obj_malloc(mp_obj_colines_iter_t, &mp_type_polymorph_iter);
+    iter->iternext = code_colines_next;
+    iter->rc = self->rc;
+    iter->bc = 0;
+    iter->source_line = 1;
+    iter->ci = self->rc->prelude.line_info;
+    code_colines_next(MP_OBJ_FROM_PTR(iter));
+    return MP_OBJ_FROM_PTR(iter);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(code_colines_obj, code_colines_iter);
+
+static mp_obj_t code_colines_next(mp_obj_t iter_in) {
+    mp_obj_colines_iter_t *iter = MP_OBJ_TO_PTR(iter_in);
+
+    mp_uint_t start = iter->bc;
+    mp_uint_t line_no = iter->source_line;
+
+    if (iter->ci >= iter->rc->prelude.line_info_top) {
+        mp_uint_t prelude_size = (iter->rc->prelude.opcodes - (const byte *)iter->rc->fun_data);
+        mp_uint_t bc_end = iter->rc->fun_data_len - prelude_size;
+        if (iter->bc >= bc_end) {
+            return MP_OBJ_STOP_ITERATION;
+        } else {
+            iter->bc = bc_end;
+        }
+    } else {
+        mp_code_lineinfo_t decoded = mp_bytecode_decode_lineinfo(iter->ci);
+        iter->bc += decoded.bc_increment;
+        iter->source_line += decoded.line_increment;
+        iter->ci += decoded.info_increment;
+    }
+
+    mp_uint_t end = iter->bc;
+    mp_obj_t next[3] = {MP_OBJ_NEW_SMALL_INT(start), MP_OBJ_NEW_SMALL_INT(end), MP_OBJ_NEW_SMALL_INT(line_no)};
+
+    return mp_obj_new_tuple(MP_ARRAY_SIZE(next), next);
+}
+
 static void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] != MP_OBJ_NULL) {
         // not load attribute
@@ -142,6 +185,10 @@ static void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 o->lnotab = raw_code_lnotab(rc);
             }
             dest[0] = o->lnotab;
+            break;
+        case MP_QSTR_co_lines:
+            dest[0] = MP_OBJ_FROM_PTR(&code_colines_obj);
+            dest[1] = self_in;
             break;
     }
 }
