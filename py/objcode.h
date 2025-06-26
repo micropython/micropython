@@ -85,6 +85,7 @@ typedef struct _mp_obj_code_t {
 
 typedef struct _mp_obj_colines_iter_t {
     mp_obj_base_t base;
+    mp_fun_1_t iternext;
     const mp_raw_code_t *rc;
     mp_uint_t bc;
     mp_uint_t source_line;

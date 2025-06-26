@@ -112,7 +112,8 @@ static mp_obj_t code_colines_next(mp_obj_t);
 
 static mp_obj_t code_colines_iter(mp_obj_t self_in) {
     mp_obj_code_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_colines_iter_t *iter = mp_obj_malloc(mp_obj_colines_iter_t, &mp_type_colines_iter);
+    mp_obj_colines_iter_t *iter = mp_obj_malloc(mp_obj_colines_iter_t, &mp_type_polymorph_iter);
+    iter->iternext = code_colines_next;
     iter->rc = self->rc;
     iter->bc = 0;
     iter->source_line = 1;
@@ -155,13 +156,6 @@ static mp_obj_t code_colines_next(mp_obj_t iter_in) {
 
     return mp_obj_new_tuple(MP_ARRAY_SIZE(next), next);
 }
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    mp_type_colines_iter,
-    MP_QSTR_line_iterator,
-    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    iter, code_colines_next
-    );
 
 static void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] != MP_OBJ_NULL) {
