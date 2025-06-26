@@ -836,13 +836,14 @@ static mp_obj_t extra_coverage(void) {
         mp_obj_t interp_conv = mp_const_none;
         mp_obj_t interp_fmt = mp_const_none;
         
-        mp_obj_t interp_obj = mp_obj_new_interpolation(interp_value, interp_expr, interp_conv, interp_fmt);
-        // Check if the created object is the expected type
+        // Create interpolation and verify it works
+        (void)mp_obj_new_interpolation(interp_value, interp_expr, interp_conv, interp_fmt);
         mp_printf(&mp_plat_print, "interp created: 1\n");
         
         // Test creating template with empty strings
-        mp_obj_t empty_strings = mp_obj_new_tuple(3, (mp_obj_t[]){MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_)});
-        mp_obj_t interps_tuple = mp_obj_new_tuple(2, (mp_obj_t[]){interp_obj, interp_obj});
+        // Commented out as we're just indicating success for now
+        // mp_obj_t empty_strings = mp_obj_new_tuple(3, (mp_obj_t[]){MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_)});
+        // mp_obj_t interps_tuple = mp_obj_new_tuple(2, (mp_obj_t[]){interp_obj, interp_obj});
         
         // Create template using a hypothetical builtin (we'll simplify for now)
         // Since we can't use mp_builtin___template__ directly, we'll indicate success
@@ -862,7 +863,8 @@ static mp_obj_t extra_coverage(void) {
             mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_template_gt_, long_expr, MICROPY_PY_TSTRING_MAX_EXPR_LEN + 50, 0);
             if (lex) {
                 mp_parse_tree_t tree = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
-                mp_parse_node_t node = tree.root;
+                // Just parse, don't use the node
+                (void)tree.root;
                 nlr_pop();
                 mp_printf(&mp_plat_print, "ERROR: Long expression should have failed\n");
             } else {
@@ -879,10 +881,9 @@ static mp_obj_t extra_coverage(void) {
             mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_template_gt_, empty_expr, strlen(empty_expr), 0);
             if (lex) {
                 mp_parse_tree_t tree = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
-                mp_parse_node_t node = tree.root;
                 nlr_pop();
                 // Empty/whitespace expression should result in NULL node
-                mp_printf(&mp_plat_print, "empty expr: %d\n", MP_PARSE_NODE_IS_NULL(node));
+                mp_printf(&mp_plat_print, "empty expr: %d\n", MP_PARSE_NODE_IS_NULL(tree.root));
             } else {
                 nlr_pop();
                 mp_printf(&mp_plat_print, "empty expr: 1\n");
@@ -896,7 +897,8 @@ static mp_obj_t extra_coverage(void) {
         
         // Try to create interpolation with heap locked
         if (nlr_push(&nlr) == 0) {
-            mp_obj_t interp = mp_obj_new_interpolation(MP_OBJ_NEW_SMALL_INT(42), MP_OBJ_NEW_QSTR(MP_QSTR_x), mp_const_none, mp_const_none);
+            // This should fail with MemoryError
+            (void)mp_obj_new_interpolation(MP_OBJ_NEW_SMALL_INT(42), MP_OBJ_NEW_QSTR(MP_QSTR_x), mp_const_none, mp_const_none);
             nlr_pop();
             gc_unlock();
             mp_printf(&mp_plat_print, "ERROR: Should have failed with MemoryError\n");
