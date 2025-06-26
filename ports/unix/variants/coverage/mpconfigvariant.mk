@@ -1,6 +1,11 @@
 # Disable optimisations and enable assert() on coverage builds.
 DEBUG ?= 1
 
+ifneq ($(DISABLE_PLUGIN),1)
+# Enable format string checking
+include $(TOP)/py/fmtplugin.mk
+endif
+
 CFLAGS += \
 	-fprofile-arcs -ftest-coverage \
 	-Wformat -Wmissing-declarations -Wmissing-prototypes \

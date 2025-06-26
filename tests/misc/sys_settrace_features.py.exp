@@ -1,0 +1,738 @@
+### trace_handler::main event: call
+ 0:   @__main__:do_tests => sys_settrace_features.py:105
+ 1:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @__main__:do_tests => sys_settrace_features.py:107
+ 1:   @__main__:<module> => sys_settrace_features.py:117
+Who loves the sun?
+### trace_handler::main event: line
+ 0:   @__main__:do_tests => sys_settrace_features.py:108
+ 1:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @__main__:factorial => sys_settrace_features.py:98
+ 1:   @__main__:do_tests => sys_settrace_features.py:108
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::Alice event: line
+ 0:   @__main__:factorial => sys_settrace_features.py:99
+ 1:   @__main__:do_tests => sys_settrace_features.py:108
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::Alice event: line
+ 0:   @__main__:factorial => sys_settrace_features.py:102
+ 1:   @__main__:do_tests => sys_settrace_features.py:108
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @__main__:factorial => sys_settrace_features.py:98
+ 1:   @__main__:factorial => sys_settrace_features.py:102
+ 2:   @__main__:do_tests => sys_settrace_features.py:108
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::Bob event: line
+ 0:   @__main__:factorial => sys_settrace_features.py:99
+ 1:   @__main__:factorial => sys_settrace_features.py:102
+ 2:   @__main__:do_tests => sys_settrace_features.py:108
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::Bob event: line
+ 0:   @__main__:factorial => sys_settrace_features.py:102
+ 1:   @__main__:factorial => sys_settrace_features.py:102
+ 2:   @__main__:do_tests => sys_settrace_features.py:108
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @__main__:factorial => sys_settrace_features.py:98
+ 1:   @__main__:factorial => sys_settrace_features.py:102
+ 2:   @__main__:factorial => sys_settrace_features.py:102
+ 3:   @__main__:do_tests => sys_settrace_features.py:108
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @__main__:factorial => sys_settrace_features.py:99
+ 1:   @__main__:factorial => sys_settrace_features.py:102
+ 2:   @__main__:factorial => sys_settrace_features.py:102
+ 3:   @__main__:do_tests => sys_settrace_features.py:108
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @__main__:factorial => sys_settrace_features.py:102
+ 1:   @__main__:factorial => sys_settrace_features.py:102
+ 2:   @__main__:factorial => sys_settrace_features.py:102
+ 3:   @__main__:do_tests => sys_settrace_features.py:108
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @__main__:factorial => sys_settrace_features.py:98
+ 1:   @__main__:factorial => sys_settrace_features.py:102
+ 2:   @__main__:factorial => sys_settrace_features.py:102
+ 3:   @__main__:factorial => sys_settrace_features.py:102
+ 4:   @__main__:do_tests => sys_settrace_features.py:108
+ 5:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @__main__:factorial => sys_settrace_features.py:99
+ 1:   @__main__:factorial => sys_settrace_features.py:102
+ 2:   @__main__:factorial => sys_settrace_features.py:102
+ 3:   @__main__:factorial => sys_settrace_features.py:102
+ 4:   @__main__:do_tests => sys_settrace_features.py:108
+ 5:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @__main__:factorial => sys_settrace_features.py:100
+ 1:   @__main__:factorial => sys_settrace_features.py:102
+ 2:   @__main__:factorial => sys_settrace_features.py:102
+ 3:   @__main__:factorial => sys_settrace_features.py:102
+ 4:   @__main__:do_tests => sys_settrace_features.py:108
+ 5:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @__main__:factorial => sys_settrace_features.py:100
+ 1:   @__main__:factorial => sys_settrace_features.py:102
+ 2:   @__main__:factorial => sys_settrace_features.py:102
+ 3:   @__main__:factorial => sys_settrace_features.py:102
+ 4:   @__main__:do_tests => sys_settrace_features.py:108
+ 5:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @__main__:factorial => sys_settrace_features.py:102
+ 1:   @__main__:factorial => sys_settrace_features.py:102
+ 2:   @__main__:factorial => sys_settrace_features.py:102
+ 3:   @__main__:do_tests => sys_settrace_features.py:108
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::Bob event: return
+ 0:   @__main__:factorial => sys_settrace_features.py:102
+ 1:   @__main__:factorial => sys_settrace_features.py:102
+ 2:   @__main__:do_tests => sys_settrace_features.py:108
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::Alice event: return
+ 0:   @__main__:factorial => sys_settrace_features.py:102
+ 1:   @__main__:do_tests => sys_settrace_features.py:108
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+Not every- 6
+### trace_handler::main event: line
+ 0:   @__main__:do_tests => sys_settrace_features.py:110
+ 1:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:1
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:1
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+Now comes the language constructions tests.
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:5
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:13
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:21
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:33
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:38
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:44
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:52
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TLClass => sys_settrace_generic.py:52
+ 1:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:52
+ 2:   @__main__:do_tests => sys_settrace_features.py:110
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TLClass => sys_settrace_generic.py:52
+ 1:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:52
+ 2:   @__main__:do_tests => sys_settrace_features.py:110
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TLClass => sys_settrace_generic.py:53
+ 1:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:52
+ 2:   @__main__:do_tests => sys_settrace_features.py:110
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TLClass => sys_settrace_generic.py:56
+ 1:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:52
+ 2:   @__main__:do_tests => sys_settrace_features.py:110
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TLClass => sys_settrace_generic.py:56
+ 1:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:52
+ 2:   @__main__:do_tests => sys_settrace_features.py:110
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:59
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:82
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:93
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+And it's done!
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<module> => sys_settrace_generic.py:93
+ 1:   @__main__:do_tests => sys_settrace_features.py:110
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @__main__:do_tests => sys_settrace_features.py:112
+ 1:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:82
+ 1:   @__main__:do_tests => sys_settrace_features.py:112
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:83
+ 1:   @__main__:do_tests => sys_settrace_features.py:112
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_func => sys_settrace_generic.py:5
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:83
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_func => sys_settrace_generic.py:6
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:83
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_func => sys_settrace_generic.py:9
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:83
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_sub_func => sys_settrace_generic.py:6
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_func => sys_settrace_generic.py:9
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:83
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_sub_func => sys_settrace_generic.py:7
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_func => sys_settrace_generic.py:9
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:83
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+test_function
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_sub_func => sys_settrace_generic.py:7
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_func => sys_settrace_generic.py:9
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:83
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_func => sys_settrace_generic.py:9
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:83
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:84
+ 1:   @__main__:do_tests => sys_settrace_features.py:112
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_closure => sys_settrace_generic.py:13
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:84
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_closure => sys_settrace_generic.py:14
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:84
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_closure => sys_settrace_generic.py:17
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:84
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_closure => sys_settrace_generic.py:17
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:84
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:85
+ 1:   @__main__:do_tests => sys_settrace_features.py:112
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:make_closure => sys_settrace_generic.py:14
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:85
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:make_closure => sys_settrace_generic.py:15
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:85
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+test_closure
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:make_closure => sys_settrace_generic.py:15
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:85
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:86
+ 1:   @__main__:do_tests => sys_settrace_features.py:112
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_exception => sys_settrace_generic.py:21
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:86
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_exception => sys_settrace_generic.py:22
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:86
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_exception => sys_settrace_generic.py:23
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:86
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: exception
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_exception => sys_settrace_generic.py:23
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:86
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_exception => sys_settrace_generic.py:25
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:86
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_exception => sys_settrace_generic.py:26
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:86
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_exception => sys_settrace_generic.py:29
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:86
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_exception => sys_settrace_generic.py:29
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:86
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:87
+ 1:   @__main__:do_tests => sys_settrace_features.py:112
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_listcomp => sys_settrace_generic.py:33
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:87
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_listcomp => sys_settrace_generic.py:34
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:87
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<listcomp> => sys_settrace_generic.py:34
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_listcomp => sys_settrace_generic.py:34
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:87
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<listcomp> => sys_settrace_generic.py:34
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_listcomp => sys_settrace_generic.py:34
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:87
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<listcomp> => sys_settrace_generic.py:34
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_listcomp => sys_settrace_generic.py:34
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:87
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<listcomp> => sys_settrace_generic.py:34
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_listcomp => sys_settrace_generic.py:34
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:87
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<listcomp> => sys_settrace_generic.py:34
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_listcomp => sys_settrace_generic.py:34
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:87
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<listcomp> => sys_settrace_generic.py:34
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_listcomp => sys_settrace_generic.py:34
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:87
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+test_listcomp [0, 1, 2]
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_listcomp => sys_settrace_generic.py:34
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:87
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:88
+ 1:   @__main__:do_tests => sys_settrace_features.py:112
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_lambda => sys_settrace_generic.py:38
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:88
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_lambda => sys_settrace_generic.py:39
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:88
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_lambda => sys_settrace_generic.py:40
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:88
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<lambda> => sys_settrace_generic.py:39
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_lambda => sys_settrace_generic.py:40
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:88
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<lambda> => sys_settrace_generic.py:39
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_lambda => sys_settrace_generic.py:40
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:88
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:<lambda> => sys_settrace_generic.py:39
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_lambda => sys_settrace_generic.py:40
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:88
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+30
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_lambda => sys_settrace_generic.py:40
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:88
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 1:   @__main__:do_tests => sys_settrace_features.py:112
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:59
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:60
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TestClass => sys_settrace_generic.py:60
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:60
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TestClass => sys_settrace_generic.py:60
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:60
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TestClass => sys_settrace_generic.py:61
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:60
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TestClass => sys_settrace_generic.py:63
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:60
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TestClass => sys_settrace_generic.py:67
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:60
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TestClass => sys_settrace_generic.py:70
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:60
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TestClass => sys_settrace_generic.py:73
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:60
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:TestClass => sys_settrace_generic.py:73
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:60
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:75
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:76
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:method => sys_settrace_generic.py:63
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:76
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:method => sys_settrace_generic.py:64
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:76
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+test_class_method
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:method => sys_settrace_generic.py:65
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:76
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:method => sys_settrace_generic.py:65
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:76
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:77
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:prprty_getter => sys_settrace_generic.py:67
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:77
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:prprty_getter => sys_settrace_generic.py:68
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:77
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:prprty_getter => sys_settrace_generic.py:68
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:77
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+test_class_property -8
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:78
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:prprty_setter => sys_settrace_generic.py:70
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:78
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:prprty_setter => sys_settrace_generic.py:71
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:78
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:prprty_setter => sys_settrace_generic.py:71
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:78
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:79
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:prprty_getter => sys_settrace_generic.py:67
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:79
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:prprty_getter => sys_settrace_generic.py:68
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:79
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:prprty_getter => sys_settrace_generic.py:68
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:79
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+test_class_property 12
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_class => sys_settrace_generic.py:79
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:89
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 1:   @__main__:do_tests => sys_settrace_features.py:112
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:44
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:45
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_importme:<module> => sys_settrace_importme.py:1
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:45
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_importme:<module> => sys_settrace_importme.py:1
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:45
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+Yep, I got imported.
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_importme:<module> => sys_settrace_importme.py:3
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:45
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_importme:<module> => sys_settrace_importme.py:11
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:45
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_importme:<module> => sys_settrace_importme.py:18
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:45
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_importme:<module> => sys_settrace_importme.py:19
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:45
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_importme:<module> => sys_settrace_importme.py:22
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:45
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_importme:<module> => sys_settrace_importme.py:26
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:45
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_importme:<module> => sys_settrace_importme.py:30
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:45
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_importme:<module> => sys_settrace_importme.py:34
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:45
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+Yep, got here
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_importme:<module> => sys_settrace_importme.py:34
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:45
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:47
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_importme:dummy => sys_settrace_importme.py:22
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:47
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_importme:dummy => sys_settrace_importme.py:23
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:47
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_importme:dummy => sys_settrace_importme.py:23
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:47
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:48
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: call
+ 0:   @sys_settrace_subdir.sys_settrace_importme:saysomething => sys_settrace_importme.py:26
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:48
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @sys_settrace_subdir.sys_settrace_importme:saysomething => sys_settrace_importme.py:27
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:48
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+There, I said it.
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_importme:saysomething => sys_settrace_importme.py:27
+ 1:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:48
+ 2:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 3:   @__main__:do_tests => sys_settrace_features.py:112
+ 4:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:test_import => sys_settrace_generic.py:48
+ 1:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 2:   @__main__:do_tests => sys_settrace_features.py:112
+ 3:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @sys_settrace_subdir.sys_settrace_generic:run_tests => sys_settrace_generic.py:90
+ 1:   @__main__:do_tests => sys_settrace_features.py:112
+ 2:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: line
+ 0:   @__main__:do_tests => sys_settrace_features.py:113
+ 1:   @__main__:<module> => sys_settrace_features.py:117
+### trace_handler::main event: return
+ 0:   @__main__:do_tests => sys_settrace_features.py:113
+ 1:   @__main__:<module> => sys_settrace_features.py:117
+
+------------------ script exited ------------------
+Total traces executed:  140

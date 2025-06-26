@@ -622,6 +622,8 @@ function ci_unix_coverage_setup {
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     sudo pip3 install ar
+    GCC_VER=$(echo __GNUC__ | gcc -P -E -)
+    sudo apt-get install gcc-${GCC_VER}-plugin-dev
     gcc --version
     python3 --version
 }
@@ -664,10 +666,18 @@ function ci_unix_coverage_run_native_mpy_tests {
     (cd tests && ./run-natmodtests.py "$@" extmod/*.py)
 }
 
+function ci_gcc_plugin_setup_helper {
+    GCC_VER=$(echo __GNUC__ | ${1}-gcc -P -E -)
+    sudo apt-get install gcc-${GCC_VER}-plugin-dev-${1}
+}
+
 function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
+    GCC_VER=$(echo __GNUC__ | gcc -P -E -)
     sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386 python2.7
+    GCC_VER=$(echo __GNUC__ | gcc -P -E -)
+    sudo apt-get install gcc-${GCC_VER}-plugin-dev
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     sudo pip3 install ar
@@ -782,8 +792,8 @@ function ci_unix_macos_build {
     #make ${MAKEOPTS} -C ports/unix deplibs
     make ${MAKEOPTS} -C ports/unix
     # check for additional compiler errors/warnings
-    make ${MAKEOPTS} -C ports/unix VARIANT=coverage submodules
-    make ${MAKEOPTS} -C ports/unix VARIANT=coverage
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage submodules DISABLE_PLUGIN=1
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage DISABLE_PLUGIN=1
 }
 
 function ci_unix_macos_run_tests {
@@ -795,8 +805,9 @@ function ci_unix_macos_run_tests {
 
 function ci_unix_qemu_mips_setup {
     sudo apt-get update
-    sudo apt-get install gcc-mips-linux-gnu g++-mips-linux-gnu libc6-mips-cross
+    sudo apt-get install gcc-10-mips-linux-gnu g++-mips-linux-gnu libc6-mips-cross
     sudo apt-get install qemu-user
+    ci_gcc_plugin_setup_helper mips-linux-gnu
     qemu-mips --version
     sudo mkdir /etc/qemu-binfmt
     sudo ln -s /usr/mips-linux-gnu/ /etc/qemu-binfmt/mips
@@ -816,6 +827,7 @@ function ci_unix_qemu_arm_setup {
     sudo apt-get update
     sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
     sudo apt-get install qemu-user
+    ci_gcc_plugin_setup_helper arm-linux-gnueabi
     qemu-arm --version
     sudo mkdir /etc/qemu-binfmt
     sudo ln -s /usr/arm-linux-gnueabi/ /etc/qemu-binfmt/arm
@@ -837,6 +849,7 @@ function ci_unix_qemu_riscv64_setup {
     sudo apt-get update
     sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu
     sudo apt-get install qemu-user
+    ci_gcc_plugin_setup_helper riscv64-linux-gnu
     qemu-riscv64 --version
     sudo mkdir /etc/qemu-binfmt
     sudo ln -s /usr/riscv64-linux-gnu/ /etc/qemu-binfmt/riscv64
