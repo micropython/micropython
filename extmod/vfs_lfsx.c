@@ -104,6 +104,12 @@ static void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx * self, mp_obj_t bdev, size
     config->read_buffer = m_new(uint8_t, config->cache_size);
     config->prog_buffer = m_new(uint8_t, config->cache_size);
     config->lookahead_buffer = m_new(uint8_t, config->lookahead_size);
+    #ifdef LFS2_MULTIVERSION
+    // This can be set to override the on-disk lfs version.
+    // eg. for compat with lfs2 < v2.6 add the following to make:
+    // CFLAGS += '-DLFS2_MULTIVERSION=0x00020000'
+    config->disk_version = LFS2_MULTIVERSION;
+    #endif
     #endif
 }
 
