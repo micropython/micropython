@@ -3,7 +3,6 @@
 
 BOARD ?= ALIF_ENSEMBLE
 BOARD_DIR ?= boards/$(BOARD)
-BUILD ?= build-$(BOARD)/$(MCU_CORE)
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
