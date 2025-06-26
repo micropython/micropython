@@ -127,8 +127,9 @@ To build such a module, compile MicroPython (see `getting started
 applying 2 modifications:
 
 1. Set the build-time flag ``USER_C_MODULES`` to point to the modules
-   you want to include.  For ports that use Make this variable should be a
-   directory which is searched automatically for modules.  For ports that
+   you want to include.  For ports that use Make this variable can be a
+   directory which is searched automatically for modules or a Makefile that
+   includes the modules to build.  For ports that
    use CMake this variable should be a file which includes the modules to
    build.  See below for details.
 
@@ -146,6 +147,13 @@ For example, here's how the to build the unix port with the example modules:
 
     cd micropython/ports/unix
     make USER_C_MODULES=../../examples/usercmodule
+
+or 
+
+.. code-block:: bash
+
+    cd micropython/ports/unix
+    make USER_C_MODULES=../../examples/usercmodule/user_c_modules.mk
 
 You may need to run ``make clean`` once at the start when including new
 user modules in the build.  The build output will show the modules found::
