@@ -365,9 +365,9 @@ void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num)
 void asm_thumb_mov_reg_pcrel(asm_thumb_t *as, uint rlo_dest, uint label);
 
 // Generate optimised load dest, [src, #offset] sequence
-void asm_thumb_load_reg_reg_offset(asm_thumb_t *as, uint reg_dest, uint reg_base, uint offset, uint shift);
+void asm_thumb_load_reg_reg_offset(asm_thumb_t *as, uint reg_dest, uint reg_base, uint offset, uint operation_size);
 // Generate optimised store src, [dest, #offset] sequence
-void asm_thumb_store_reg_reg_offset(asm_thumb_t *as, uint reg_src, uint reg_base, uint offset, uint shift);
+void asm_thumb_store_reg_reg_offset(asm_thumb_t *as, uint reg_src, uint reg_base, uint offset, uint operation_size);
 
 void asm_thumb_b_label(asm_thumb_t *as, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bcc_label(asm_thumb_t *as, int cc, uint label); // convenience: picks narrow or wide branch
