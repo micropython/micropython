@@ -28,7 +28,6 @@ print(iter(code.co_names) is not None) # both iterable (but mpy returns dict wit
 print(type(code.co_lnotab)) # both bytes
 
 co_lines = code.co_lines()
-print(type(co_lines)) # both 'line_iterator'
 
 l = list(co_lines)
 first_start = l[0][0]
