@@ -37,10 +37,8 @@
 #include "py/asmthumb.h"
 #include "py/misc.h"
 
-#define UNSIGNED_FIT5(x) ((uint32_t)(x) < 32)
 #define UNSIGNED_FIT7(x) ((uint32_t)(x) < 128)
 #define UNSIGNED_FIT8(x) (((x) & 0xffffff00) == 0)
-#define UNSIGNED_FIT12(x) (((x) & 0xfffff000) == 0)
 #define UNSIGNED_FIT16(x) (((x) & 0xffff0000) == 0)
 #define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
 #define SIGNED_FIT9(x) (((x) & 0xffffff00) == 0) || (((x) & 0xffffff00) == 0xffffff00)
@@ -454,7 +452,7 @@ static void asm_thumb_add_reg_reg_offset(asm_thumb_t *as, uint reg_dest, uint re
     }
 }
 
-#define OP_LDR_STR_W_HI(shift, reg) ((0xf880 | (shift) << 5) | (reg))
+#define OP_LDR_STR_W_HI(operation_size, reg) ((0xf880 | (operation_size) << 5) | (reg))
 #define OP_LDR_STR_W_LO(reg, imm12) (((reg) << 12) | (imm12))
 
 #define OP_LDR 0x01
@@ -467,31 +465,35 @@ static const uint8_t OP_LDR_STR_TABLE[3] = {
     0x0E, 0x10, 0x0C
 };
 
-void asm_thumb_load_reg_reg_offset(asm_thumb_t *as, uint reg_dest, uint reg_base, uint offset, uint shift) {
-    if (UNSIGNED_FIT5(offset) && (reg_dest < ASM_THUMB_REG_R8) && (reg_base < ASM_THUMB_REG_R8)) {
+void asm_thumb_load_reg_reg_offset(asm_thumb_t *as, uint reg_dest, uint reg_base, uint offset, uint operation_size) {
+    assert(operation_size <= 2 && "Operation size out of range.");
+
+    if (MP_FIT_UNSIGNED(5, offset) && (reg_dest < ASM_THUMB_REG_R8) && (reg_base < ASM_THUMB_REG_R8)) {
         // Can use T1 encoding
-        asm_thumb_op16(as, ((OP_LDR_STR_TABLE[shift] | OP_LDR) << 11) | (offset << 6) | (reg_base << 3) | reg_dest);
-    } else if (asm_thumb_allow_armv7m(as) && UNSIGNED_FIT12(offset << shift)) {
+        asm_thumb_op16(as, ((OP_LDR_STR_TABLE[operation_size] | OP_LDR) << 11) | (offset << 6) | (reg_base << 3) | reg_dest);
+    } else if (asm_thumb_allow_armv7m(as) && MP_FIT_UNSIGNED(12, offset << operation_size)) {
         // Can use T3 encoding
-        asm_thumb_op32(as, (OP_LDR_STR_W_HI(shift, reg_base) | OP_LDR_W), OP_LDR_STR_W_LO(reg_dest, (offset << shift)));
+        asm_thumb_op32(as, (OP_LDR_STR_W_HI(operation_size, reg_base) | OP_LDR_W), OP_LDR_STR_W_LO(reg_dest, (offset << operation_size)));
     } else {
         // Must use the generic sequence
-        asm_thumb_add_reg_reg_offset(as, reg_dest, reg_base, offset - 31, shift);
-        asm_thumb_op16(as, ((OP_LDR_STR_TABLE[shift] | OP_LDR) << 11) | (31 << 6) | (reg_dest << 3) | (reg_dest));
+        asm_thumb_add_reg_reg_offset(as, reg_dest, reg_base, offset - 31, operation_size);
+        asm_thumb_op16(as, ((OP_LDR_STR_TABLE[operation_size] | OP_LDR) << 11) | (31 << 6) | (reg_dest << 3) | (reg_dest));
     }
 }
 
-void asm_thumb_store_reg_reg_offset(asm_thumb_t *as, uint reg_src, uint reg_base, uint offset, uint shift) {
-    if (UNSIGNED_FIT5(offset) && (reg_src < ASM_THUMB_REG_R8) && (reg_base < ASM_THUMB_REG_R8)) {
+void asm_thumb_store_reg_reg_offset(asm_thumb_t *as, uint reg_src, uint reg_base, uint offset, uint operation_size) {
+    assert(operation_size <= 2 && "Operation size out of range.");
+
+    if (MP_FIT_UNSIGNED(5, offset) && (reg_src < ASM_THUMB_REG_R8) && (reg_base < ASM_THUMB_REG_R8)) {
         // Can use T1 encoding
-        asm_thumb_op16(as, ((OP_LDR_STR_TABLE[shift] | OP_STR) << 11) | (offset << 6) | (reg_base << 3) | reg_src);
-    } else if (asm_thumb_allow_armv7m(as) && UNSIGNED_FIT12(offset << shift)) {
+        asm_thumb_op16(as, ((OP_LDR_STR_TABLE[operation_size] | OP_STR) << 11) | (offset << 6) | (reg_base << 3) | reg_src);
+    } else if (asm_thumb_allow_armv7m(as) && MP_FIT_UNSIGNED(12, offset << operation_size)) {
         // Can use T3 encoding
-        asm_thumb_op32(as, (OP_LDR_STR_W_HI(shift, reg_base) | OP_STR_W), OP_LDR_STR_W_LO(reg_src, (offset << shift)));
+        asm_thumb_op32(as, (OP_LDR_STR_W_HI(operation_size, reg_base) | OP_STR_W), OP_LDR_STR_W_LO(reg_src, (offset << operation_size)));
     } else {
         // Must use the generic sequence
-        asm_thumb_add_reg_reg_offset(as, reg_base, reg_base, offset - 31, shift);
-        asm_thumb_op16(as, ((OP_LDR_STR_TABLE[shift] | OP_STR) << 11) | (31 << 6) | (reg_base << 3) | reg_src);
+        asm_thumb_add_reg_reg_offset(as, reg_base, reg_base, offset - 31, operation_size);
+        asm_thumb_op16(as, ((OP_LDR_STR_TABLE[operation_size] | OP_STR) << 11) | (31 << 6) | (reg_base << 3) | reg_src);
     }
 }
 
