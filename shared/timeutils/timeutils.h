@@ -27,6 +27,46 @@
 #ifndef MICROPY_INCLUDED_LIB_TIMEUTILS_TIMEUTILS_H
 #define MICROPY_INCLUDED_LIB_TIMEUTILS_TIMEUTILS_H
 
+#if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+#include <math.h> // required for trunc()
+#endif
+#include "py/obj.h"
+
+// To maintain reasonable compatibility with CPython on embedded systems,
+// and avoid breaking anytime soon, time functions are defined to work
+// at least between 1970 and 2099 on any machine.
+//
+// Specific ports can set MP_SUPPORT_Y2100_AND_BEYOND to 1 in order
+// to get extended date support beyond 2099
+//
+// By default this is enabled for machines using 64 bit pointers only,
+// but it can be enabled by specific ports
+#ifndef MP_SUPPORT_Y2100_AND_BEYOND
+#if MP_SSIZE_MAX > 2147483647
+#define MP_SUPPORT_Y2100_AND_BEYOND 1
+#else
+#define MP_SUPPORT_Y2100_AND_BEYOND 0
+#endif
+#endif
+
+#define MICROPY_EPOCH_IS_2000 (!(MICROPY_EPOCH_IS_1970))
+
+// `platform_timestamp_t` is the type that should be used by the port
+// to represent timestamps, and is referenced to the platform epoch
+#if MP_SUPPORT_Y2100_AND_BEYOND || MICROPY_EPOCH_IS_2000
+typedef int64_t platform_timestamp_t;
+#else
+typedef mp_uint_t platform_timestamp_t;
+#endif
+
+// `timeutils_timestamp_t` is the type used internally by timeutils to
+// represent timestamps, and is always referenced to 1970.
+#if MP_SUPPORT_Y2100_AND_BEYOND
+typedef int64_t timeutils_timestamp_t;
+#else
+typedef mp_uint_t timeutils_timestamp_t;
+#endif
+
 // The number of seconds between 1970/1/1 and 2000/1/1 is calculated using:
 // time.mktime((2000,1,1,0,0,0,0,0,0)) - time.mktime((1970,1,1,0,0,0,0,0,0))
 #define TIMEUTILS_SECONDS_1970_TO_2000 (946684800ULL)
@@ -45,58 +85,110 @@ typedef struct _timeutils_struct_time_t {
 bool timeutils_is_leap_year(mp_uint_t year);
 mp_uint_t timeutils_days_in_month(mp_uint_t year, mp_uint_t month);
 mp_uint_t timeutils_year_day(mp_uint_t year, mp_uint_t month, mp_uint_t date);
+int timeutils_calc_weekday(int y, int m, int d);
 
-void timeutils_seconds_since_2000_to_struct_time(mp_uint_t t,
+void timeutils_seconds_since_1970_to_struct_time(timeutils_timestamp_t t,
     timeutils_struct_time_t *tm);
 
 // Year is absolute, month/date are 1-based, hour/minute/second are 0-based.
-mp_uint_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month,
+timeutils_timestamp_t timeutils_seconds_since_1970(mp_uint_t year, mp_uint_t month,
     mp_uint_t date, mp_uint_t hour, mp_uint_t minute, mp_uint_t second);
 
 // Year is absolute, month/mday are 1-based, hours/minutes/seconds are 0-based.
-mp_uint_t timeutils_mktime_2000(mp_uint_t year, mp_int_t month, mp_int_t mday,
+timeutils_timestamp_t timeutils_mktime_1970(mp_uint_t year, mp_int_t month, mp_int_t mday,
     mp_int_t hours, mp_int_t minutes, mp_int_t seconds);
+
+static inline platform_timestamp_t timeutils_obj_get_timestamp(mp_obj_t o_in) {
+    #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+    mp_float_t val = mp_obj_get_float(o_in);
+    return (platform_timestamp_t)MICROPY_FLOAT_C_FUN(trunc)(val);
+    #elif MP_SUPPORT_Y2100_AND_BEYOND || MICROPY_EPOCH_IS_2000
+    return mp_obj_get_ll(o_in);
+    #else
+    return mp_obj_get_uint(o_in);
+    #endif
+}
+
+static inline mp_obj_t timeutils_obj_from_timestamp(platform_timestamp_t t) {
+    #if MP_SUPPORT_Y2100_AND_BEYOND || MICROPY_EPOCH_IS_2000
+    return mp_obj_new_int_from_ll(t);
+    #else
+    return mp_obj_new_int_from_uint(t);
+    #endif
+}
+
+static inline void timeutils_seconds_since_2000_to_struct_time(int64_t t, timeutils_struct_time_t *tm) {
+    timeutils_seconds_since_1970_to_struct_time((timeutils_timestamp_t)(t + TIMEUTILS_SECONDS_1970_TO_2000), tm);
+}
+
+// Year is absolute, month/date are 1-based, hour/minute/second are 0-based.
+static inline int64_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month, mp_uint_t date,
+    mp_uint_t hour, mp_uint_t minute, mp_uint_t second) {
+    return (int64_t)timeutils_seconds_since_1970(year, month, date, hour, minute, second) - TIMEUTILS_SECONDS_1970_TO_2000;
+}
+
+// Year is absolute, month/mday are 1-based, hours/minutes/seconds are 0-based.
+static inline int64_t timeutils_mktime_2000(mp_uint_t year, mp_int_t month, mp_int_t mday,
+    mp_int_t hours, mp_int_t minutes, mp_int_t seconds) {
+    return (int64_t)timeutils_mktime_1970(year, month, mday, hours, minutes, seconds) - TIMEUTILS_SECONDS_1970_TO_2000;
+}
+
 
 // Select the Epoch used by the port.
 #if MICROPY_EPOCH_IS_1970
 
-static inline void timeutils_seconds_since_epoch_to_struct_time(uint64_t t, timeutils_struct_time_t *tm) {
-    // TODO this will give incorrect results for dates before 2000/1/1
-    timeutils_seconds_since_2000_to_struct_time((mp_uint_t)(t - TIMEUTILS_SECONDS_1970_TO_2000), tm);
-}
-
-// Year is absolute, month/mday are 1-based, hours/minutes/seconds are 0-based.
-static inline uint64_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday, mp_int_t hours, mp_int_t minutes, mp_int_t seconds) {
-    return timeutils_mktime_2000(year, month, mday, hours, minutes, seconds) + TIMEUTILS_SECONDS_1970_TO_2000;
+static inline void timeutils_seconds_since_epoch_to_struct_time(platform_timestamp_t t, timeutils_struct_time_t *tm) {
+    timeutils_seconds_since_1970_to_struct_time(t, tm);
 }
 
 // Year is absolute, month/date are 1-based, hour/minute/second are 0-based.
-static inline uint64_t timeutils_seconds_since_epoch(mp_uint_t year, mp_uint_t month,
-    mp_uint_t date, mp_uint_t hour, mp_uint_t minute, mp_uint_t second) {
-    // TODO this will give incorrect results for dates before 2000/1/1
-    return timeutils_seconds_since_2000(year, month, date, hour, minute, second) + TIMEUTILS_SECONDS_1970_TO_2000;
+static inline platform_timestamp_t timeutils_seconds_since_epoch(mp_uint_t year, mp_uint_t month, mp_uint_t date,
+    mp_uint_t hour, mp_uint_t minute, mp_uint_t second) {
+    return timeutils_seconds_since_1970(year, month, date, hour, minute, second);
 }
 
-static inline mp_uint_t timeutils_seconds_since_epoch_from_nanoseconds_since_1970(uint64_t ns) {
-    return (mp_uint_t)(ns / 1000000000ULL);
+// Year is absolute, month/mday are 1-based, hours/minutes/seconds are 0-based.
+static inline platform_timestamp_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,
+    mp_int_t hours, mp_int_t minutes, mp_int_t seconds) {
+    return timeutils_mktime_1970(year, month, mday, hours, minutes, seconds);
 }
 
-static inline uint64_t timeutils_nanoseconds_since_epoch_to_nanoseconds_since_1970(uint64_t ns) {
+static inline platform_timestamp_t timeutils_seconds_since_epoch_from_nanoseconds_since_1970(int64_t ns) {
+    return (platform_timestamp_t)(ns / 1000000000ULL);
+}
+
+static inline int64_t timeutils_seconds_since_epoch_to_nanoseconds_since_1970(platform_timestamp_t s) {
+    return (int64_t)s * 1000000000ULL;
+}
+
+static inline int64_t timeutils_nanoseconds_since_epoch_to_nanoseconds_since_1970(int64_t ns) {
     return ns;
 }
 
 #else // Epoch is 2000
 
-#define timeutils_seconds_since_epoch_to_struct_time timeutils_seconds_since_2000_to_struct_time
-#define timeutils_seconds_since_epoch timeutils_seconds_since_2000
-#define timeutils_mktime timeutils_mktime_2000
-
-static inline uint64_t timeutils_seconds_since_epoch_to_nanoseconds_since_1970(mp_uint_t s) {
-    return ((uint64_t)s + TIMEUTILS_SECONDS_1970_TO_2000) * 1000000000ULL;
+static inline void timeutils_seconds_since_epoch_to_struct_time(platform_timestamp_t t, timeutils_struct_time_t *tm) {
+    return timeutils_seconds_since_2000_to_struct_time(t, tm);
 }
 
-static inline mp_uint_t timeutils_seconds_since_epoch_from_nanoseconds_since_1970(uint64_t ns) {
-    return ns / 1000000000ULL - TIMEUTILS_SECONDS_1970_TO_2000;
+// Year is absolute, month/date are 1-based, hour/minute/second are 0-based.
+static inline platform_timestamp_t timeutils_seconds_since_epoch(mp_uint_t year, mp_uint_t month, mp_uint_t date,
+    mp_uint_t hour, mp_uint_t minute, mp_uint_t second) {
+    return timeutils_seconds_since_2000(year, month, date, hour, minute, second);
+}
+
+// Year is absolute, month/mday are 1-based, hours/minutes/seconds are 0-based.
+static inline platform_timestamp_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,
+    mp_int_t hours, mp_int_t minutes, mp_int_t seconds) {
+    return timeutils_mktime_2000(year, month, mday, hours, minutes, seconds);
+}
+
+static inline platform_timestamp_t timeutils_seconds_since_epoch_from_nanoseconds_since_1970(int64_t ns) {
+    return (platform_timestamp_t)(ns / 1000000000ULL - TIMEUTILS_SECONDS_1970_TO_2000);
+}
+
+static inline int64_t timeutils_seconds_since_epoch_to_nanoseconds_since_1970(platform_timestamp_t s) {
+    return ((int64_t)s + TIMEUTILS_SECONDS_1970_TO_2000) * 1000000000ULL;
 }
 
 static inline int64_t timeutils_nanoseconds_since_epoch_to_nanoseconds_since_1970(int64_t ns) {
@@ -104,7 +196,5 @@ static inline int64_t timeutils_nanoseconds_since_epoch_to_nanoseconds_since_197
 }
 
 #endif
-
-int timeutils_calc_weekday(int y, int m, int d);
 
 #endif // MICROPY_INCLUDED_LIB_TIMEUTILS_TIMEUTILS_H

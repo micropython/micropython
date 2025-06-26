@@ -19,6 +19,7 @@
 #include "py/stream.h"
 #include "py/binary.h"
 #include "py/bc.h"
+#include "shared/timeutils/timeutils.h"
 
 // expected output of this file is found in extra_coverage.py.exp
 
@@ -488,6 +489,25 @@ static mp_obj_t extra_coverage(void) {
         // mpz_set_from_float with 0 as argument
         mpz_set_from_float(&mpz, 0);
         mp_printf(&mp_plat_print, "%f\n", mpz_as_float(&mpz));
+
+        // convert a large timestamp value (stored directly in a mpz) to uint32 and to ll;
+        mp_obj_t obj_timestamp = timeutils_obj_from_timestamp(0xdeadbeef);
+        mp_printf(&mp_plat_print, "%x\n", mp_obj_get_uint(obj_timestamp));
+        int64_t value_ll = mp_obj_get_ll(obj_timestamp);
+        mp_printf(&mp_plat_print, "%x%08x\n", (uint32_t)(value_ll >> 32), (uint32_t)value_ll);
+
+        // convert a large timestamp value (stored via a struct object) to uint amd to ll
+        // `deadbeef` global is an uctypes.struct defined by extra_coverage.py
+        obj_timestamp = mp_load_global(MP_QSTR_deadbeef);
+        mp_printf(&mp_plat_print, "%x\n", mp_obj_get_uint(obj_timestamp));
+        value_ll = mp_obj_get_ll(obj_timestamp);
+        mp_printf(&mp_plat_print, "%x%08x\n", (uint32_t)(value_ll >> 32), (uint32_t)value_ll);
+
+        // convert a smaller timestamp value (stored directly in a mpz) to uint32 and to ll
+        obj_timestamp = timeutils_obj_from_timestamp(0xc0ffee);
+        mp_printf(&mp_plat_print, "%x\n", mp_obj_get_uint(obj_timestamp));
+        value_ll = mp_obj_get_ll(obj_timestamp);
+        mp_printf(&mp_plat_print, "%x%08x\n", (uint32_t)(value_ll >> 32), (uint32_t)value_ll);
     }
 
     // runtime utils
@@ -525,6 +545,22 @@ static mp_obj_t extra_coverage(void) {
         // mp_obj_int_get_uint_checked with negative big-int (should raise exception)
         if (nlr_push(&nlr) == 0) {
             mp_obj_int_get_uint_checked(mp_obj_new_int_from_ll(-2));
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+
+        // mp_obj_get_uint from a non-int object (should raise exception)
+        if (nlr_push(&nlr) == 0) {
+            mp_obj_get_uint(mp_const_none);
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+
+        // mp_obj_int_get_ll from a non-int object (should raise exception)
+        if (nlr_push(&nlr) == 0) {
+            mp_obj_get_ll(mp_const_none);
             nlr_pop();
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));

@@ -50,5 +50,5 @@ static mp_obj_t mp_time_localtime_get(void) {
 
 // Returns the number of seconds, as an integer, since the Epoch.
 static mp_obj_t mp_time_time_get(void) {
-    return mp_obj_new_int(pyb_rtc_get_seconds());
+    return timeutils_obj_from_timestamp(pyb_rtc_get_seconds());
 }
