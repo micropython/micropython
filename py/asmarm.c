@@ -38,8 +38,6 @@
 
 #define REG_TEMP ASM_ARM_REG_R8
 
-#define SIGNED_FIT24(x) (((x) & 0xff800000) == 0) || (((x) & 0xff000000) == 0xff000000)
-
 // Insert word into instruction flow
 static void emit(asm_arm_t *as, uint op) {
     uint8_t *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 4);
@@ -347,11 +345,6 @@ void asm_arm_ldr_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offse
     }
 }
 
-void asm_arm_ldrh_reg_reg(asm_arm_t *as, uint rd, uint rn) {
-    // ldrh rd, [rn]
-    emit_al(as, 0x1d000b0 | (rn << 16) | (rd << 12));
-}
-
 void asm_arm_ldrh_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
     // ldrh doesn't support scaled register index
     emit_al(as, 0x1a00080 | (REG_TEMP << 12) | rn); // mov temp, rn, lsl #1
@@ -370,14 +363,21 @@ void asm_arm_ldrh_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offs
     }
 }
 
-void asm_arm_ldrb_reg_reg(asm_arm_t *as, uint rd, uint rn) {
-    // ldrb rd, [rn]
-    emit_al(as, 0x5d00000 | (rn << 16) | (rd << 12));
-}
-
 void asm_arm_ldrb_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
     // ldrb rd, [rm, rn]
     emit_al(as, 0x7d00000 | (rm << 16) | (rd << 12) | rn);
+}
+
+void asm_arm_ldrb_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offset) {
+    if (byte_offset < 0x1000) {
+        // ldrb rd, [rn, #off]
+        emit_al(as, 0x5d00000 | (rn << 16) | (rd << 12) | byte_offset);
+    } else {
+        // mov temp, #off
+        // ldrb rd, [rn, temp]
+        asm_arm_mov_reg_i32_optimised(as, REG_TEMP, byte_offset);
+        emit_al(as, 0x7d00000 | (rn << 16) | (rd << 12) | REG_TEMP);
+    }
 }
 
 void asm_arm_ldr_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
@@ -397,14 +397,28 @@ void asm_arm_str_reg_reg_offset(asm_arm_t *as, uint rd, uint rm, uint byte_offse
     }
 }
 
-void asm_arm_strh_reg_reg(asm_arm_t *as, uint rd, uint rm) {
-    // strh rd, [rm]
-    emit_al(as, 0x1c000b0 | (rm << 16) | (rd << 12));
+void asm_arm_strh_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offset) {
+    if (byte_offset < 0x100) {
+        // strh rd, [rn, #off]
+        emit_al(as, 0x1c000b0 | (rn << 16) | (rd << 12) | ((byte_offset & 0xf0) << 4) | (byte_offset & 0xf));
+    } else {
+        // mov temp, #off
+        // strh rd, [rn, temp]
+        asm_arm_mov_reg_i32_optimised(as, REG_TEMP, byte_offset);
+        emit_al(as, 0x18000b0 | (rn << 16) | (rd << 12) | REG_TEMP);
+    }
 }
 
-void asm_arm_strb_reg_reg(asm_arm_t *as, uint rd, uint rm) {
-    // strb rd, [rm]
-    emit_al(as, 0x5c00000 | (rm << 16) | (rd << 12));
+void asm_arm_strb_reg_reg_offset(asm_arm_t *as, uint rd, uint rm, uint byte_offset) {
+    if (byte_offset < 0x1000) {
+        // strb rd, [rm, #off]
+        emit_al(as, 0x5c00000 | (rm << 16) | (rd << 12) | byte_offset);
+    } else {
+        // mov temp, #off
+        // strb rd, [rm, temp]
+        asm_arm_mov_reg_i32_optimised(as, REG_TEMP, byte_offset);
+        emit_al(as, 0x7c00000 | (rm << 16) | (rd << 12) | REG_TEMP);
+    }
 }
 
 void asm_arm_str_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
@@ -430,7 +444,7 @@ void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label) {
     rel -= 8; // account for instruction prefetch, PC is 8 bytes ahead of this instruction
     rel >>= 2; // in ARM mode the branch target is 32-bit aligned, so the 2 LSB are omitted
 
-    if (SIGNED_FIT24(rel)) {
+    if (MP_FIT_SIGNED(24, rel)) {
         emit(as, cond | 0xa000000 | (rel & 0xffffff));
     } else {
         printf("asm_arm_bcc: branch does not fit in 24 bits\n");

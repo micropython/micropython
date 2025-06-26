@@ -395,6 +395,11 @@ static inline uint32_t mp_popcount(uint32_t x) {
 #endif
 #endif
 
+#define MP_FIT_UNSIGNED(bits, value) (((value) & (~0U << (bits))) == 0)
+#define MP_FIT_SIGNED(bits, value) \
+    (MP_FIT_UNSIGNED(((bits) - 1), (value)) || \
+    (((value) & (~0U << ((bits) - 1))) == (~0U << ((bits) - 1))))
+
 // mp_int_t can be larger than long, i.e. Windows 64-bit, nan-box variants
 static inline uint32_t mp_clz_mpi(mp_int_t x) {
     #ifdef __XC16__

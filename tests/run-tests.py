@@ -95,6 +95,7 @@ class __FS:
     return __File()
 vfs.mount(__FS(), '/__vfstest')
 os.chdir('/__vfstest')
+{import_prologue}
 __import__('__injected_test')
 """
 
@@ -1130,6 +1131,8 @@ class append_filter(argparse.Action):
 
 
 def main():
+    global injected_import_hook_code
+
     cmd_parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""Run and manage tests for MicroPython.
@@ -1239,7 +1242,19 @@ the last matching regex is used:
         action="store_true",
         help="re-run only the failed tests",
     )
+    cmd_parser.add_argument(
+        "--begin",
+        metavar="PROLOGUE",
+        default=None,
+        help="prologue python file to execute before module import",
+    )
     args = cmd_parser.parse_args()
+
+    prologue = ""
+    if args.begin:
+        with open(args.begin, "rt") as source:
+            prologue = source.read()
+    injected_import_hook_code = injected_import_hook_code.replace("{import_prologue}", prologue)
 
     if args.print_failures:
         for out in glob(os.path.join(args.result_dir, "*.out")):
