@@ -44,6 +44,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/modarray.c
     ${MICROPY_PY_DIR}/modbuiltins.c
     ${MICROPY_PY_DIR}/modtstring.c
+    ${MICROPY_PY_DIR}/modstring.c
     ${MICROPY_PY_DIR}/modcmath.c
     ${MICROPY_PY_DIR}/modcollections.c
     ${MICROPY_PY_DIR}/modgc.c
