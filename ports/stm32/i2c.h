@@ -46,6 +46,8 @@ extern I2C_HandleTypeDef I2CHandle4;
 extern const mp_obj_type_t pyb_i2c_type;
 extern const pyb_i2c_obj_t pyb_i2c_obj[4];
 
+extern uint8_t i2c_target_enabled;
+
 void i2c_init0(void);
 int pyb_i2c_init(I2C_HandleTypeDef *i2c);
 int pyb_i2c_init_freq(const pyb_i2c_obj_t *self, mp_int_t freq);
