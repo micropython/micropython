@@ -150,7 +150,7 @@ static mp_obj_t template_str(mp_obj_t self_in) {
                     }
                     p++;
                 }
-                
+
                 if (has_interpolation) {
                     // Format spec contains interpolations, evaluate it as a format string
                     vstr_t eval_vstr;
@@ -168,7 +168,7 @@ static mp_obj_t template_str(mp_obj_t self_in) {
                                 // Extract variable name and evaluate it
                                 size_t var_len = p - var_start;
                                 mp_obj_t var_value = mp_load_name(qstr_from_strn(var_start, var_len));
-                                
+
                                 // Convert to string
                                 vstr_t var_str;
                                 vstr_init(&var_str, 16);
@@ -177,7 +177,7 @@ static mp_obj_t template_str(mp_obj_t self_in) {
                                 mp_obj_print_helper(&var_print, var_value, PRINT_STR);
                                 vstr_add_strn(&eval_vstr, var_str.buf, var_str.len);
                                 vstr_clear(&var_str);
-                                
+
                                 p++; // skip '}'
                             }
                         } else if (*p == '{' && *(p + 1) == '{') {
@@ -371,7 +371,7 @@ static void template_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 // Template concatenation support
 static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_template_t *lhs = MP_OBJ_TO_PTR(lhs_in);
-    
+
     switch (op) {
         case MP_BINARY_OP_ADD: {
             // Only allow Template + Template
@@ -382,67 +382,67 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
                 }
                 return MP_OBJ_NULL; // op not supported
             }
-            
+
             mp_obj_template_t *rhs = MP_OBJ_TO_PTR(rhs_in);
-            
+
             // Get the tuples
             mp_obj_tuple_t *lhs_strings = MP_OBJ_TO_PTR(lhs->strings);
             mp_obj_tuple_t *lhs_interps = MP_OBJ_TO_PTR(lhs->interpolations);
             mp_obj_tuple_t *rhs_strings = MP_OBJ_TO_PTR(rhs->strings);
             mp_obj_tuple_t *rhs_interps = MP_OBJ_TO_PTR(rhs->interpolations);
-            
+
             // Calculate sizes for new template
             size_t new_strings_len = lhs_strings->len + rhs_strings->len - 1;
             size_t new_interps_len = lhs_interps->len + rhs_interps->len;
-            
+
             // Create new strings tuple
             mp_obj_t *new_strings_items = m_new(mp_obj_t, new_strings_len);
-            
+
             // Copy all strings from lhs except the last one
             for (size_t i = 0; i < lhs_strings->len - 1; i++) {
                 new_strings_items[i] = lhs_strings->items[i];
             }
-            
+
             // Concatenate the last string of lhs with the first string of rhs
             size_t lhs_last_len, rhs_first_len;
             const char *lhs_last_str = mp_obj_str_get_data(lhs_strings->items[lhs_strings->len - 1], &lhs_last_len);
             const char *rhs_first_str = mp_obj_str_get_data(rhs_strings->items[0], &rhs_first_len);
-            
+
             vstr_t vstr;
             vstr_init(&vstr, lhs_last_len + rhs_first_len);
             vstr_add_strn(&vstr, lhs_last_str, lhs_last_len);
             vstr_add_strn(&vstr, rhs_first_str, rhs_first_len);
             new_strings_items[lhs_strings->len - 1] = mp_obj_new_str_from_vstr(&vstr);
-            
+
             // Copy remaining strings from rhs
             for (size_t i = 1; i < rhs_strings->len; i++) {
                 new_strings_items[lhs_strings->len - 1 + i] = rhs_strings->items[i];
             }
-            
+
             // Create new interpolations tuple
             mp_obj_t *new_interps_items = m_new(mp_obj_t, new_interps_len);
-            
+
             // Copy interpolations from lhs
             for (size_t i = 0; i < lhs_interps->len; i++) {
                 new_interps_items[i] = lhs_interps->items[i];
             }
-            
+
             // Copy interpolations from rhs
             for (size_t i = 0; i < rhs_interps->len; i++) {
                 new_interps_items[lhs_interps->len + i] = rhs_interps->items[i];
             }
-            
+
             // Create new template
             mp_obj_t new_strings_tuple = mp_obj_new_tuple(new_strings_len, new_strings_items);
             mp_obj_t new_interps_tuple = mp_obj_new_tuple(new_interps_len, new_interps_items);
-            
+
             m_del(mp_obj_t, new_strings_items, new_strings_len);
             m_del(mp_obj_t, new_interps_items, new_interps_len);
-            
+
             mp_obj_t args[2] = {new_strings_tuple, new_interps_tuple};
             return template_make_new(&mp_type_template, 2, 0, args);
         }
-        
+
         case MP_BINARY_OP_REVERSE_ADD: {
             // Handle str + Template - always disallow
             if (mp_obj_is_str(lhs_in)) {
@@ -450,7 +450,7 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
             }
             return MP_OBJ_NULL; // op not supported
         }
-        
+
         default:
             return MP_OBJ_NULL; // op not supported
     }

@@ -829,33 +829,33 @@ static mp_obj_t extra_coverage(void) {
     #if MICROPY_PY_TSTRINGS
     {
         mp_printf(&mp_plat_print, "# t-strings C coverage\n");
-        
+
         // Test creating interpolation objects directly from C
         mp_obj_t interp_value = MP_OBJ_NEW_SMALL_INT(42);
         mp_obj_t interp_expr = MP_OBJ_NEW_QSTR(MP_QSTR_x);
         mp_obj_t interp_conv = mp_const_none;
         mp_obj_t interp_fmt = mp_const_none;
-        
+
         // Create interpolation and verify it works
         (void)mp_obj_new_interpolation(interp_value, interp_expr, interp_conv, interp_fmt);
         mp_printf(&mp_plat_print, "interp created: 1\n");
-        
+
         // Test creating template with empty strings
         // Commented out as we're just indicating success for now
         // mp_obj_t empty_strings = mp_obj_new_tuple(3, (mp_obj_t[]){MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_)});
         // mp_obj_t interps_tuple = mp_obj_new_tuple(2, (mp_obj_t[]){interp_obj, interp_obj});
-        
+
         // Create template using a hypothetical builtin (we'll simplify for now)
         // Since we can't use mp_builtin___template__ directly, we'll indicate success
         mp_printf(&mp_plat_print, "template created: 1\n");
-        
+
         // Test expression parsing with very long expression
         char long_expr[MICROPY_PY_TSTRING_MAX_EXPR_LEN + 100];
         for (int i = 0; i < MICROPY_PY_TSTRING_MAX_EXPR_LEN + 50; i++) {
             long_expr[i] = 'x';
         }
         long_expr[MICROPY_PY_TSTRING_MAX_EXPR_LEN + 50] = '\0';
-        
+
         // Test actual parse_tstring_expression with long expression
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
@@ -874,7 +874,7 @@ static mp_obj_t extra_coverage(void) {
         } else {
             mp_printf(&mp_plat_print, "long expr error: SyntaxError\n");
         }
-        
+
         // Test empty expression parsing
         const char *empty_expr = "   ";
         if (nlr_push(&nlr) == 0) {
@@ -891,10 +891,10 @@ static mp_obj_t extra_coverage(void) {
         } else {
             mp_printf(&mp_plat_print, "empty expr: 1\n");
         }
-        
+
         // Test memory allocation failure using gc_lock/unlock
         gc_lock();
-        
+
         // Try to create interpolation with heap locked
         if (nlr_push(&nlr) == 0) {
             // This should fail with MemoryError
@@ -907,7 +907,7 @@ static mp_obj_t extra_coverage(void) {
             mp_obj_t exc = MP_OBJ_FROM_PTR(nlr.ret_val);
             mp_printf(&mp_plat_print, "heap locked error: %s\n", mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(exc)), MP_OBJ_FROM_PTR(&mp_type_MemoryError)) ? "MemoryError" : "other");
         }
-        
+
         // Test parse tree operations with limited stack
         gc_lock();
         if (nlr_push(&nlr) == 0) {

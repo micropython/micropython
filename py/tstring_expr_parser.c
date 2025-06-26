@@ -45,8 +45,8 @@ static mp_parse_node_t copy_parse_node(void *alloc_ctx, mp_parse_allocator_t all
     // It's a struct node - need to deep copy it
     mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)node;
     size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    
-    
+
+
     // Check if this is a const_object node - they have a special structure
     if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_const_object) {
 
@@ -55,13 +55,13 @@ static mp_parse_node_t copy_parse_node(void *alloc_ctx, mp_parse_allocator_t all
             sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * n);
         new_pns->source_line = pns->source_line;
         new_pns->kind_num_nodes = pns->kind_num_nodes;
-        
+
         // Copy the mp_obj_t values directly
         memcpy(new_pns->nodes, pns->nodes, sizeof(mp_parse_node_t) * n);
-        
+
         return (mp_parse_node_t)new_pns;
     }
-    
+
     // Sanity check to catch corrupted nodes early
     if (n > 100) {
         // Parse nodes shouldn't have this many children
@@ -79,7 +79,7 @@ static mp_parse_node_t copy_parse_node(void *alloc_ctx, mp_parse_allocator_t all
     // Recursively copy child nodes
     for (size_t i = 0; i < n; i++) {
         mp_parse_node_t child = pns->nodes[i];
-        
+
         // Add validation to catch invalid nodes early
         if (!MP_PARSE_NODE_IS_NULL(child) && !MP_PARSE_NODE_IS_LEAF(child)) {
             // It should be a struct node - validate the pointer
@@ -115,7 +115,7 @@ mp_parse_node_t parse_tstring_expression(void *alloc_ctx, mp_parse_allocator_t a
         return mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_NONE);
     }
 
-    
+
     // Create a lexer from the expression string
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR___lt_tstring_expr_gt_, expr, len, 0);
 
@@ -144,10 +144,10 @@ mp_parse_node_t parse_tstring_expression(void *alloc_ctx, mp_parse_allocator_t a
             }
         }
 
-        
+
         // Copy the parse tree to the parent allocator
         mp_parse_node_t result = copy_parse_node(alloc_ctx, allocator, root);
-        
+
         // Clear the temporary parse tree
         mp_parse_tree_clear(&parse_tree);
 
