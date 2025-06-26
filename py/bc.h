@@ -308,25 +308,35 @@ static inline void mp_module_context_alloc_tables(mp_module_context_t *context, 
     #endif
 }
 
+typedef struct _mp_code_lineinfo_t {
+    size_t bc_increment;
+    size_t line_increment;
+} mp_code_lineinfo_t;
+
+static inline mp_code_lineinfo_t mp_bytecode_decode_lineinfo(const byte **line_info) {
+    mp_code_lineinfo_t result;
+    size_t c = (*line_info)[0];
+    if ((c & 0x80) == 0) {
+        // 0b0LLBBBBB encoding
+        result.bc_increment = c & 0x1f;
+        result.line_increment = c >> 5;
+        *line_info += 1;
+    } else {
+        // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
+        result.bc_increment = c & 0xf;
+        result.line_increment = ((c << 4) & 0x700) | (*line_info)[1];
+        *line_info += 2;
+    }
+    return result;
+}
+
 static inline size_t mp_bytecode_get_source_line(const byte *line_info, const byte *line_info_top, size_t bc_offset) {
     size_t source_line = 1;
     while (line_info < line_info_top) {
-        size_t c = *line_info;
-        size_t b, l;
-        if ((c & 0x80) == 0) {
-            // 0b0LLBBBBB encoding
-            b = c & 0x1f;
-            l = c >> 5;
-            line_info += 1;
-        } else {
-            // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
-            b = c & 0xf;
-            l = ((c << 4) & 0x700) | line_info[1];
-            line_info += 2;
-        }
-        if (bc_offset >= b) {
-            bc_offset -= b;
-            source_line += l;
+        mp_code_lineinfo_t decoded = mp_bytecode_decode_lineinfo(&line_info);
+        if (bc_offset >= decoded.bc_increment) {
+            bc_offset -= decoded.bc_increment;
+            source_line += decoded.line_increment;
         } else {
             // found source line corresponding to bytecode offset
             break;
