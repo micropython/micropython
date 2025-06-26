@@ -179,22 +179,12 @@ SHARED_SRC_C += $(addprefix shared/,\
 	tinyusb/mp_usbd_descriptor.c \
 	)
 
-# TinyUSB Stack source
-TINYUSB_SRC_C += $(addprefix lib/tinyusb/,\
-	src/class/cdc/cdc_device.c \
-	src/class/dfu/dfu_rt_device.c \
-	src/class/hid/hid_device.c \
-	src/class/midi/midi_device.c \
-	src/class/msc/msc_device.c \
-	src/class/usbtmc/usbtmc_device.c \
-	src/class/vendor/vendor_device.c \
-	src/common/tusb_fifo.c \
-	src/device/usbd.c \
-	src/device/usbd_control.c \
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(addprefix lib/tinyusb/, \
+	$(TINYUSB_SRC_C) \
 	src/portable/renesas/rusb2/dcd_rusb2.c \
 	src/portable/renesas/rusb2/hcd_rusb2.c \
 	src/portable/renesas/rusb2/rusb2_common.c \
-	src/tusb.c \
 	)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
