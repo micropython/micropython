@@ -188,6 +188,8 @@ interp created: 1
 template created: 1
 long expr error: SyntaxError
 empty expr: 1
+heap locked error: MemoryError
+parse with heap locked: MemoryError
 # end coverage.c
 0123456789 b'0123456789'
 7300

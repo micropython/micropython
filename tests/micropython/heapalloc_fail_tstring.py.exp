@@ -12,6 +12,6 @@ OK: Interpolation creation
 OK: Large values array
 OK: Iterator next
 OK: Escaped braces format
-OK: Empty expression
+OK: Simple expression
 
 Heap allocation failure tests completed!
