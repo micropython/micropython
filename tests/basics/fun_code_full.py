@@ -6,6 +6,12 @@ except AttributeError:
     print("SKIP")
     raise SystemExit
 
+try:
+    import warnings
+    warnings.simplefilter("ignore") # ignore deprecation warning about co_lnotab
+except ImportError:
+    pass
+
 def f(x, y):
     a = x + y
     b = x - y
