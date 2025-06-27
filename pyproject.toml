@@ -70,6 +70,13 @@ mccabe.max-complexity = 40
 # Exclude third-party code, and exclude the following tests:
 #   basics: needs careful attention before applying automatic formatting
 #   repl_: not real python files
+#   tstring: ruff does not support template strings
 #   viper_args: uses f(*)
-exclude = ["tests/basics/*.py", "tests/*/repl_*.py", "tests/micropython/viper_args.py", "tests/feature_check/tstring.py"]
+exclude = [
+  "tests/basics/*.py",
+  "tests/feature_check/tstring.py",
+  "tests/*/repl_*.py",
+  "tests/micropython/heapalloc_fail_tstring.py",
+  "tests/micropython/viper_args.py",
+]
 quote-style = "preserve"
