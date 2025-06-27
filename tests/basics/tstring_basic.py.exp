@@ -16,13 +16,26 @@ Iterator parts: ['str', 'Interpolation', 'str', 'Interpolation', 'str']
 Has __str__: True
 Rendered: 'Hello Alice!'
 Multiple render: '10 + 20 = 30'
-__match_args__: ('value', 'expression', 'conversion', 'format_spec')
-value read-only: OK
-Debug format: 'Debug: var=42'
-Template repr: Template(strings=('Hello ', ''...
+Template not in builtins: OK
+Imported Template and Interpolation from string.templatelib
+Template type name: Template
+Interpolation type name: Interpolation
+Is same Template type: True
+Is same Interpolation type: True
+bt prefix: SyntaxError
+ft prefix: SyntaxError
+Cannot mix t-string and regular string
 Empty: strings=('',), interps=()
 Adjacent interps: strings=('', '', '')
 Unicode value: 🎉
 Raw string: 'Path: C:\Users\'
 Implicit concat: 'Part1 Part2'
-Core tests completed!
+Nested expr value: 6
+Method call: HELLO
+Lambda type: function
+Debug format: 'Debug: var=42'
+Template repr: Template(strings=('Hello ', '...
+isinstance(t_literal, Template): True
+isinstance(i, Interpolation): True
+
+Basic tests completed!

@@ -75,7 +75,7 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
         // This is used when creating Template objects directly
         strings_obj = args[0];
         interpolations_obj = args[1];
-        
+
         // Verify all elements in interpolations are Interpolation objects
         size_t interp_len;
         mp_obj_t *interp_items;

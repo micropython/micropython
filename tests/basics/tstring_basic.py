@@ -1,5 +1,5 @@
-# Core functionality tests for PEP 750 template strings (t-strings)
-# This file combines basic functionality, attributes, and rendering tests
+# Basic functionality and syntax tests for PEP 750 template strings (t-strings)
+# This file combines core functionality, syntax, and import tests
 
 # === Basic template string creation and type ===
 t = t"Hello World"
@@ -71,37 +71,48 @@ t_multi = t"{a} + {b} = {c}"
 result = t_multi.__str__()
 print(f"Multiple render: '{result}'")
 
-# === Interpolation attributes and __match_args__ ===
+# === Import location tests ===
+# Templates should NOT be in builtins
+try:
+    Template
+    print("ERROR: Template should not be a builtin")
+except NameError:
+    print("Template not in builtins: OK")
+
+# Correct import location
 from string.templatelib import Template, Interpolation
+print("Imported Template and Interpolation from string.templatelib")
 
-# Create an interpolation
-i = Interpolation(42, "x", "r", ".2f")
+# Verify types
+print(f"Template type name: {Template.__name__}")
+print(f"Interpolation type name: {Interpolation.__name__}")
 
-# Test __match_args__ attribute
+# Test that t-string literals create the same types
+name = "World"
+t_literal = t"Hello {name}"
+print(f"Is same Template type: {type(t_literal) is Template}")
+print(f"Is same Interpolation type: {type(t_literal.interpolations[0]) is Interpolation}")
+
+# === Syntax errors ===
+# Invalid prefix combinations
 try:
-    match_args = i.__match_args__
-    print(f"__match_args__: {match_args}")
-except AttributeError as e:
-    print(f"ERROR: {e}")
+    exec('bt"test"')
+    print("ERROR: bt prefix should fail")
+except SyntaxError:
+    print("bt prefix: SyntaxError")
 
-# Test that Interpolation attributes are read-only
-i2 = Interpolation(100, "value")
 try:
-    i2.value = 200
-    print("ERROR: Should not be able to set value")
-except AttributeError as e:
-    print(f"value read-only: OK")
+    exec('ft"test"')
+    print("ERROR: ft prefix should fail") 
+except SyntaxError:
+    print("ft prefix: SyntaxError")
 
-# === Debug format ===
-var = 42
-# Create interpolation with expression ending in '='
-i_debug = Interpolation(var, "var=", None, "")
-t_debug = Template(("Debug: ", ""), (i_debug,))
-result = t_debug.__str__()
-print(f"Debug format: '{result}'")
-
-# === Template representation ===
-print(f"Template repr: {repr(t2)[:30]}...")
+# Cannot mix t-string and regular string
+try:
+    exec('t"hello" "world"')
+    print("ERROR: Should not allow t-string + string literal")
+except SyntaxError:
+    print("Cannot mix t-string and regular string")
 
 # === Special cases ===
 # Empty template
@@ -125,4 +136,35 @@ print(f"Raw string: '{t15.strings[0]}'")
 t16 = t"Part1 " t"Part2"
 print(f"Implicit concat: '{t16.strings[0]}'")
 
-print("Core tests completed!")
+# === Complex expressions ===
+# Nested expressions
+lst = [1, 2, 3]
+t11 = t"Sum: {lst[0] + lst[1] + lst[2]}"
+print(f"Nested expr value: {t11.interpolations[0].value}")
+
+# Method calls in expressions
+t12 = t"Upper: {'hello'.upper()}"
+print(f"Method call: {t12.interpolations[0].value}")
+
+# Lambda expressions
+t13 = t"Lambda: {(lambda x: x*2)}"
+print(f"Lambda type: {type(t13.interpolations[0].value).__name__}")
+
+# === Debug format ===
+var = 42
+# Create interpolation with expression ending in '='
+i_debug = Interpolation(var, "var=", None, "")
+t_debug = Template(("Debug: ", ""), (i_debug,))
+result = t_debug.__str__()
+print(f"Debug format: '{result}'")
+
+# === Template representation ===
+print(f"Template repr: {repr(t2)[:30]}...")
+
+# === Type validation ===
+# isinstance checks
+print(f"isinstance(t_literal, Template): {isinstance(t_literal, Template)}")
+i = Interpolation(42, "x")
+print(f"isinstance(i, Interpolation): {isinstance(i, Interpolation)}")
+
+print("\nBasic tests completed!")

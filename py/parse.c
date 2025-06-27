@@ -643,7 +643,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         // make a node holding a pointer to the bytes object
         mp_obj_t o = mp_obj_new_bytes((const byte *)lex->vstr.buf, lex->vstr.len);
         pn = make_node_const_object(parser, lex->tok_line, o);
-        #if MICROPY_PY_TSTRINGS
+    #if MICROPY_PY_TSTRINGS
     } else if (lex->tok_kind == MP_TOKEN_TSTRING) {
         // Generate AST for template string construction
         // This will create code that calls __template__(strings, interpolations)
@@ -941,7 +941,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
 #undef GROW_ARRAY
 #undef ADD_NODE
-        #endif
+    #endif
     } else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, lex->tok_kind);
     }
@@ -1107,7 +1107,7 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         }
         arg0 = mp_unary_op(op, arg0);
 
-        #if MICROPY_COMP_CONST
+    #if MICROPY_COMP_CONST
     } else if (rule_id == RULE_expr_stmt) {
         mp_parse_node_t pn1 = peek_result(parser, 0);
         if (!MP_PARSE_NODE_IS_NULL(pn1)
@@ -1160,9 +1160,9 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             }
         }
         return false;
-        #endif
+    #endif
 
-        #if MICROPY_COMP_MODULE_CONST
+    #if MICROPY_COMP_MODULE_CONST
     } else if (rule_id == RULE_atom_expr_normal) {
         mp_parse_node_t pn0 = peek_result(parser, 1);
         mp_parse_node_t pn1 = peek_result(parser, 0);
@@ -1186,7 +1186,7 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             return false;
         }
         arg0 = dest[0];
-        #endif
+    #endif
 
     } else {
         return false;
@@ -1658,11 +1658,11 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
             exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
                 MP_ERROR_TEXT("unindent doesn't match any outer indent level"));
-            #if MICROPY_PY_FSTRINGS
+        #if MICROPY_PY_FSTRINGS
         } else if (lex->tok_kind == MP_TOKEN_MALFORMED_FSTRING) {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                 MP_ERROR_TEXT("malformed f-string"));
-            #endif
+        #endif
         } else {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                 MP_ERROR_TEXT("invalid syntax"));
