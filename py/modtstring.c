@@ -70,6 +70,23 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
         mp_obj_t empty_str = mp_obj_new_str("", 0);
         strings_obj = mp_obj_new_tuple(1, &empty_str);
         interpolations_obj = mp_obj_new_tuple(0, NULL);
+    } else if (n_args == 2 && mp_obj_is_type(args[0], &mp_type_tuple) && mp_obj_is_type(args[1], &mp_type_tuple)) {
+        // Special case: Template(strings_tuple, interpolations_tuple)
+        // This is used when creating Template objects directly
+        strings_obj = args[0];
+        interpolations_obj = args[1];
+        
+        // Verify all elements in interpolations are Interpolation objects
+        size_t interp_len;
+        mp_obj_t *interp_items;
+        mp_obj_get_array(interpolations_obj, &interp_len, &interp_items);
+        for (size_t i = 0; i < interp_len; i++) {
+            if (!mp_obj_is_exact_type(interp_items[i], &mp_type_interpolation)) {
+                mp_raise_msg_varg(&mp_type_TypeError,
+                    MP_ERROR_TEXT("interpolations tuple must contain only Interpolation objects, got %s"),
+                    mp_obj_get_type_str(interp_items[i]));
+            }
+        }
     } else {
         // Check if all arguments are strings or if we have mixed types
         bool all_strings = true;
@@ -503,8 +520,11 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
             m_del(mp_obj_t, new_strings_items, new_strings_len);
             m_del(mp_obj_t, new_interps_items, new_interps_len);
 
-            mp_obj_t args[2] = {new_strings_tuple, new_interps_tuple};
-            return template_make_new(&mp_type_template, 2, 0, args);
+            // Create Template directly instead of calling make_new
+            mp_obj_template_t *result = mp_obj_malloc(mp_obj_template_t, &mp_type_template);
+            result->strings = new_strings_tuple;
+            result->interpolations = new_interps_tuple;
+            return MP_OBJ_FROM_PTR(result);
         }
 
         case MP_BINARY_OP_REVERSE_ADD: {
@@ -560,7 +580,11 @@ static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolation
     mp_obj_t interpolations_tuple = mp_obj_new_tuple(len, interpolations);
     m_del(mp_obj_t, interpolations, len);
 
-    return template_make_new(&mp_type_template, 2, 0, (mp_obj_t[]) {strings, interpolations_tuple});
+    // Create Template directly instead of calling make_new
+    mp_obj_template_t *self = mp_obj_malloc(mp_obj_template_t, &mp_type_template);
+    self->strings = strings;
+    self->interpolations = interpolations_tuple;
+    return MP_OBJ_FROM_PTR(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin___template___obj, mp_builtin___template__);
 

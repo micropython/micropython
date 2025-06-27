@@ -643,7 +643,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         // make a node holding a pointer to the bytes object
         mp_obj_t o = mp_obj_new_bytes((const byte *)lex->vstr.buf, lex->vstr.len);
         pn = make_node_const_object(parser, lex->tok_line, o);
-    #if MICROPY_PY_TSTRINGS
+        #if MICROPY_PY_TSTRINGS
     } else if (lex->tok_kind == MP_TOKEN_TSTRING) {
         // Generate AST for template string construction
         // This will create code that calls __template__(strings, interpolations)
@@ -837,14 +837,21 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     }
 
                     // Build interpolation tuple node: (expr, text, conv, fmt)
-                    mp_parse_node_struct_t *interp_tuple = parser_alloc(parser,
+                    mp_parse_node_struct_t *testlist_comp = parser_alloc(parser,
                         sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 4);
+                    testlist_comp->source_line = lex->tok_line;
+                    testlist_comp->kind_num_nodes = RULE_testlist_comp | (4 << 8);
+                    testlist_comp->nodes[0] = expr_node;
+                    testlist_comp->nodes[1] = expr_text_node;
+                    testlist_comp->nodes[2] = conversion_node;
+                    testlist_comp->nodes[3] = format_spec_node;
+
+                    // Wrap in atom_paren to create a runtime tuple
+                    mp_parse_node_struct_t *interp_tuple = parser_alloc(parser,
+                        sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 1);
                     interp_tuple->source_line = lex->tok_line;
-                    interp_tuple->kind_num_nodes = RULE_testlist | (4 << 8);
-                    interp_tuple->nodes[0] = expr_node;
-                    interp_tuple->nodes[1] = expr_text_node;
-                    interp_tuple->nodes[2] = conversion_node;
-                    interp_tuple->nodes[3] = format_spec_node;
+                    interp_tuple->kind_num_nodes = RULE_atom_paren | (1 << 8);
+                    interp_tuple->nodes[0] = (mp_parse_node_t)testlist_comp;
 
                     ADD_NODE(interps, (mp_parse_node_t)interp_tuple);
                     // Added interpolation
@@ -880,13 +887,22 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         }
 
         // Build interpolations tuple node
-        mp_parse_node_struct_t *interps_tuple = parser_alloc(parser,
+        // Since the interpolation items are already wrapped in atom_paren nodes,
+        // we can create a testlist_comp to hold them
+        mp_parse_node_struct_t *interps_testlist = parser_alloc(parser,
             sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * interps.len);
-        interps_tuple->source_line = lex->tok_line;
-        interps_tuple->kind_num_nodes = RULE_testlist | (interps.len << 8);
+        interps_testlist->source_line = lex->tok_line;
+        interps_testlist->kind_num_nodes = RULE_testlist_comp | (interps.len << 8);
         for (size_t j = 0; j < interps.len; j++) {
-            interps_tuple->nodes[j] = interps.items[j];
+            interps_testlist->nodes[j] = interps.items[j];
         }
+
+        // Wrap in atom_paren to create the outer tuple at runtime
+        mp_parse_node_struct_t *interps_tuple = parser_alloc(parser,
+            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 1);
+        interps_tuple->source_line = lex->tok_line;
+        interps_tuple->kind_num_nodes = RULE_atom_paren | (1 << 8);
+        interps_tuple->nodes[0] = (mp_parse_node_t)interps_testlist;
 
         // Build AST for: __template__(strings, interpolations)
         // First create the function name node
@@ -925,7 +941,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
 #undef GROW_ARRAY
 #undef ADD_NODE
-    #endif
+        #endif
     } else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, lex->tok_kind);
     }
@@ -1091,7 +1107,7 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         }
         arg0 = mp_unary_op(op, arg0);
 
-    #if MICROPY_COMP_CONST
+        #if MICROPY_COMP_CONST
     } else if (rule_id == RULE_expr_stmt) {
         mp_parse_node_t pn1 = peek_result(parser, 0);
         if (!MP_PARSE_NODE_IS_NULL(pn1)
@@ -1144,9 +1160,9 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             }
         }
         return false;
-    #endif
+        #endif
 
-    #if MICROPY_COMP_MODULE_CONST
+        #if MICROPY_COMP_MODULE_CONST
     } else if (rule_id == RULE_atom_expr_normal) {
         mp_parse_node_t pn0 = peek_result(parser, 1);
         mp_parse_node_t pn1 = peek_result(parser, 0);
@@ -1170,7 +1186,7 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             return false;
         }
         arg0 = dest[0];
-    #endif
+        #endif
 
     } else {
         return false;
@@ -1642,11 +1658,11 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
             exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
                 MP_ERROR_TEXT("unindent doesn't match any outer indent level"));
-        #if MICROPY_PY_FSTRINGS
+            #if MICROPY_PY_FSTRINGS
         } else if (lex->tok_kind == MP_TOKEN_MALFORMED_FSTRING) {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                 MP_ERROR_TEXT("malformed f-string"));
-        #endif
+            #endif
         } else {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                 MP_ERROR_TEXT("invalid syntax"));
