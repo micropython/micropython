@@ -42,14 +42,25 @@ typedef struct _mp_obj_interpolation_t {
 const mp_obj_type_t mp_type_interpolation;
 
 // Constructor
-static mp_obj_t interpolation_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 2, 4, false);
+static mp_obj_t interpolation_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    // Define the allowed arguments
+    enum { ARG_value, ARG_expression, ARG_conversion, ARG_format_spec };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_expression, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_conversion, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_format_spec, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_QSTR(MP_QSTR_)} },
+    };
+
+    // Parse arguments
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_interpolation_t *self = mp_obj_malloc(mp_obj_interpolation_t, &mp_type_interpolation);
-    self->value = args[0];
-    self->expression = args[1];
-    self->conversion = (n_args > 2) ? args[2] : mp_const_none;
-    self->format_spec = (n_args > 3) ? args[3] : MP_OBJ_NEW_QSTR(MP_QSTR_);
+    self->value = args[ARG_value].u_obj;
+    self->expression = args[ARG_expression].u_obj;
+    self->conversion = args[ARG_conversion].u_obj;
+    self->format_spec = args[ARG_format_spec].u_obj;
 
     return MP_OBJ_FROM_PTR(self);
 }

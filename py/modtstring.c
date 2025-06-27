@@ -56,38 +56,104 @@ static void template_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
 }
 
 static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 2, 2, false);
-
-    // Validate that strings is a tuple
-    if (!mp_obj_is_exact_type(args[0], &mp_type_tuple)) {
-        mp_raise_TypeError(MP_ERROR_TEXT("strings must be a tuple"));
+    // CPython 3.14 behavior: Template accepts mixed strings and Interpolation objects
+    // Template class only accepts *args, not keyword arguments
+    if (n_kw != 0) {
+        mp_raise_TypeError(MP_ERROR_TEXT("Template.__new__ only accepts *args arguments"));
     }
 
-    // Validate that all elements in strings are strings
-    mp_obj_tuple_t *strings_tuple = MP_OBJ_TO_PTR(args[0]);
-    for (size_t i = 0; i < strings_tuple->len; i++) {
-        if (!mp_obj_is_str(strings_tuple->items[i])) {
-            mp_raise_TypeError(MP_ERROR_TEXT("all strings elements must be strings"));
+    mp_obj_t strings_obj;
+    mp_obj_t interpolations_obj;
+
+    if (n_args == 0) {
+        // Template() -> Template(strings=('',), interpolations=())
+        mp_obj_t empty_str = mp_obj_new_str("", 0);
+        strings_obj = mp_obj_new_tuple(1, &empty_str);
+        interpolations_obj = mp_obj_new_tuple(0, NULL);
+    } else {
+        // Check if all arguments are strings or if we have mixed types
+        bool all_strings = true;
+        for (size_t i = 0; i < n_args; i++) {
+            if (mp_obj_is_exact_type(args[i], &mp_type_interpolation)) {
+                all_strings = false;
+            } else if (!mp_obj_is_str(args[i])) {
+                // Only strings and Interpolation objects are allowed
+                mp_raise_msg_varg(&mp_type_TypeError,
+                    MP_ERROR_TEXT("Template.__new__ *args need to be of type 'str' or 'Interpolation', got %s"),
+                    mp_obj_get_type_str(args[i]));
+            }
         }
-    }
 
-    // Validate that interpolations is a tuple
-    if (!mp_obj_is_exact_type(args[1], &mp_type_tuple)) {
-        mp_raise_TypeError(MP_ERROR_TEXT("interpolations must be a tuple"));
-    }
+        if (all_strings) {
+            // All arguments are strings - concatenate them
+            if (n_args == 1) {
+                // Single string - simple case
+                strings_obj = mp_obj_new_tuple(1, &args[0]);
+            } else {
+                // Multiple strings - concatenate them
+                vstr_t vstr;
+                vstr_init(&vstr, 16);
+                for (size_t i = 0; i < n_args; i++) {
+                    size_t str_len;
+                    const char *str_data = mp_obj_str_get_data(args[i], &str_len);
+                    vstr_add_strn(&vstr, str_data, str_len);
+                }
+                mp_obj_t concatenated = mp_obj_new_str_from_vstr(&vstr);
+                strings_obj = mp_obj_new_tuple(1, &concatenated);
+            }
+            interpolations_obj = mp_obj_new_tuple(0, NULL);
+        } else {
+            // Mixed strings and Interpolation objects
+            // Count strings and interpolations
+            size_t n_strings = 0;
+            size_t n_interpolations = 0;
 
-    // Validate that all elements in interpolations are Interpolation objects
-    mp_obj_tuple_t *interps_tuple = MP_OBJ_TO_PTR(args[1]);
-    for (size_t i = 0; i < interps_tuple->len; i++) {
-        if (!mp_obj_is_exact_type(interps_tuple->items[i], &mp_type_interpolation)) {
-            mp_raise_TypeError(MP_ERROR_TEXT("all interpolations elements must be Interpolation objects"));
+            // We need n_interpolations + 1 strings
+            for (size_t i = 0; i < n_args; i++) {
+                if (mp_obj_is_exact_type(args[i], &mp_type_interpolation)) {
+                    n_interpolations++;
+                }
+            }
+            n_strings = n_interpolations + 1;
+
+            // Allocate arrays
+            mp_obj_t *strings = m_new(mp_obj_t, n_strings);
+            mp_obj_t *interpolations = m_new(mp_obj_t, n_interpolations);
+
+            // Process arguments
+            size_t str_idx = 0;
+            size_t interp_idx = 0;
+            vstr_t current_str;
+            vstr_init(&current_str, 16);
+
+            for (size_t i = 0; i < n_args; i++) {
+                if (mp_obj_is_exact_type(args[i], &mp_type_interpolation)) {
+                    // Save current string and add interpolation
+                    strings[str_idx++] = mp_obj_new_str_from_vstr(&current_str);
+                    interpolations[interp_idx++] = args[i];
+                    vstr_init(&current_str, 16);  // Start new string
+                } else {
+                    // Add to current string
+                    size_t str_len;
+                    const char *str_data = mp_obj_str_get_data(args[i], &str_len);
+                    vstr_add_strn(&current_str, str_data, str_len);
+                }
+            }
+            // Don't forget the last string
+            strings[str_idx] = mp_obj_new_str_from_vstr(&current_str);
+
+            strings_obj = mp_obj_new_tuple(n_strings, strings);
+            interpolations_obj = mp_obj_new_tuple(n_interpolations, interpolations);
+
+            m_del(mp_obj_t, strings, n_strings);
+            m_del(mp_obj_t, interpolations, n_interpolations);
         }
     }
 
     mp_obj_template_t *self = m_new_obj(mp_obj_template_t);
     self->base.type = type;
-    self->strings = args[0];
-    self->interpolations = args[1];
+    self->strings = strings_obj;
+    self->interpolations = interpolations_obj;
     return MP_OBJ_FROM_PTR(self);
 }
 
