@@ -41,7 +41,8 @@ exclude = [  # Ruff finds Python SyntaxError in these files
   "tests/feature_check/repl_emacs_check.py",
   "tests/feature_check/repl_words_move_check.py",
   "tests/feature_check/tstring.py",
-  "tests/micropython/viper_args.py"
+  "tests/micropython/heapalloc_fail_tstring.py",
+  "tests/micropython/viper_args.py",
 ]
 extend-select = ["C9", "PLC"]
 ignore = [
