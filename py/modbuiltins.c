@@ -40,9 +40,7 @@
 #endif
 
 #if MICROPY_PY_TSTRINGS
-// External declarations for t-string types and functions
-extern const mp_obj_type_t mp_type_template;
-extern const mp_obj_type_t mp_type_interpolation;
+// External declaration for t-string function
 extern const mp_obj_fun_builtin_fixed_t mp_builtin___template___obj;
 #endif
 
@@ -730,8 +728,6 @@ static const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sum), MP_ROM_PTR(&mp_builtin_sum_obj) },
     #if MICROPY_PY_TSTRINGS
     { MP_ROM_QSTR(MP_QSTR___template__), MP_ROM_PTR(&mp_builtin___template___obj) },
-    { MP_ROM_QSTR(MP_QSTR_Template), MP_ROM_PTR(&mp_type_template) },
-    { MP_ROM_QSTR(MP_QSTR_Interpolation), MP_ROM_PTR(&mp_type_interpolation) },
     #endif
 
     // built-in exceptions
