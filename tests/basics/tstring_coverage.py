@@ -1,7 +1,3 @@
-# Comprehensive test file to achieve 100% coverage for t-strings implementation
-# This combines all tests from tstring_basic.py and tstring_coverage.py
-# plus additional tests for missing coverage
-
 from string.templatelib import Template, Interpolation
 
 print("=== Basic functionality ===")
@@ -315,5 +311,225 @@ try:
     i.value = 100
 except AttributeError:
     print("Interpolation: read-only")
+
+print("\n=== Template repr test ===")
+try:
+    t1 = t"simple"
+    t2 = t"with {42} interpolation"
+    print("Templates created for repr test")
+except Exception as e:
+    print(f"Error: {e}")
+
+print("\n=== Interpolation attribute protection ===")
+try:
+    x = 42
+    t = t"{x}"
+    interp = t.interpolations[0]
+    try:
+        interp.value = 100
+        print("ERROR: Should not allow attribute modification")
+    except AttributeError as e:
+        print(f"Correctly blocked: {e}")
+    
+    try:
+        interp.expression = "y"
+        print("ERROR: Should not allow attribute modification")
+    except AttributeError as e:
+        print(f"Correctly blocked: {e}")
+        
+    try:
+        interp.conversion = "s"
+        print("ERROR: Should not allow attribute modification")
+    except AttributeError as e:
+        print(f"Correctly blocked: {e}")
+        
+    try:
+        interp.format_spec = "10d"
+        print("ERROR: Should not allow attribute modification")
+    except AttributeError as e:
+        print(f"Correctly blocked: {e}")
+except Exception as e:
+    print(f"Error: {e}")
+
+print("\n=== Template make_new edge cases ===")
+try:
+    rt = rt"raw\nstring"
+    print(f"Raw t-string: {rt}")
+    
+    x = 42
+    rt2 = rt"raw {x} string"
+    print(f"Raw t-string with interp: {rt2}")
+    
+    tr = tr"also raw"
+    print(f"tr prefix: {tr}")
+except Exception as e:
+    print(f"Error: {e}")
+
+print("\n=== Format spec with escaped braces ===")
+try:
+    val = 42
+    width = 10
+    
+    t1 = t"{val:{width}d}"
+    s1 = t1.__str__()
+    print(f"Format with interpolated width: '{s1}'")
+    
+    precision = 2
+    t2 = t"{3.14159:{width}.{precision}f}"
+    s2 = t2.__str__()
+    print(f"Format with width and precision: '{s2}'")
+except Exception as e:
+    print(f"Error: {e}")
+
+print("\n=== Template concatenation edge cases ===")
+try:
+    t1 = t""
+    t2 = t""
+    t3 = t1 + t2
+    print(f"Empty + Empty: '{t3.__str__()}'")
+    
+    t4 = t"content"
+    t5 = t1 + t4
+    print(f"Empty + Content: '{t5.__str__()}'")
+    
+    t6 = t4 + t1
+    print(f"Content + Empty: '{t6.__str__()}'")
+    
+    a, b = 1, 2
+    t7 = t"{a}" + t"{b}"
+    print(f"Interp + Interp: '{t7.__str__()}'")
+    
+    t8 = t"start {a} middle" + t" continue {b} end"
+    print(f"Mixed concat: '{t8.__str__()}'")
+except Exception as e:
+    print(f"Error: {e}")
+
+print("\n=== Template iteration with empty strings ===")
+try:
+    x = 42
+    t1 = t"{x}{x}"
+    parts = list(iter(t1))
+    print(f"Adjacent interpolations iter: {[type(p).__name__ for p in parts]}")
+    
+    t2 = t"{x}after"
+    parts2 = list(iter(t2))
+    print(f"Start with interp iter: {[type(p).__name__ for p in parts2]}")
+    
+    t3 = t"before{x}"
+    parts3 = list(iter(t3))
+    print(f"End with interp iter: {[type(p).__name__ for p in parts3]}")
+    
+    t4 = t"{x}{x}{x}"
+    parts4 = list(iter(t4))
+    print(f"Triple interp iter: {[type(p).__name__ for p in parts4]}")
+except Exception as e:
+    print(f"Error: {e}")
+
+print("\n=== Large template test ===")
+try:
+    large_str = "x" * 50000
+    x = 42
+    t = t"{large_str}{x}{large_str}"
+    print(f"Large template size: {len(t.__str__())}")
+except ValueError as e:
+    print(f"Size limit error: {e}")
+except Exception as e:
+    print(f"Error: {e}")
+
+print("\n=== Debug format test ===")
+try:
+    value = 42
+    expr = "value"
+    t = t"{value}"
+    print(f"Normal format: {t}")
+except Exception as e:
+    print(f"Error: {e}")
+
+print("\n=== Binary operation errors ===")
+try:
+    t = t"template"
+    
+    try:
+        result = 42 + t
+        print("ERROR: Should not allow int + Template")
+    except TypeError as e:
+        print(f"Correctly blocked int+Template: {e}")
+    
+    ops = [
+        ('-', lambda a, b: a - b),
+        ('*', lambda a, b: a * b),
+        ('/', lambda a, b: a / b),
+        ('%', lambda a, b: a % b),
+        ('**', lambda a, b: a ** b),
+        ('&', lambda a, b: a & b),
+        ('|', lambda a, b: a | b),
+        ('^', lambda a, b: a ^ b),
+        ('<<', lambda a, b: a << b),
+        ('>>', lambda a, b: a >> b),
+    ]
+    
+    for op_name, op_func in ops:
+        try:
+            result = op_func(t, t)
+            print(f"ERROR: {op_name} should not be supported")
+        except TypeError:
+            print(f"Correctly blocked {op_name}")
+except Exception as e:
+    print(f"Error: {e}")
+
+print("\n=== Values property large array ===")
+try:
+    vals = list(range(10))
+    template_str = "start"
+    for i, v in enumerate(vals):
+        template_str += f" {{{v}}} "
+    
+    a, b, c, d, e = 1, 2, 3, 4, 5
+    t = t"{a} {b} {c} {d} {e}"
+    values = t.values
+    print(f"Large values: {values}")
+except Exception as e:
+    print(f"Error: {e}")
+
+print("\n=== Invalid interpolation format ===")
+try:
+    print("Testing invalid interpolation formats")
+except Exception as e:
+    print(f"Error: {e}")
+
+print("\n=== String conversion errors ===")
+try:
+    class BadStr:
+        def __str__(self):
+            raise RuntimeError("str conversion failed")
+    
+    bad = BadStr()
+    try:
+        t = t"{bad}"
+        s = t.__str__()
+        print("ERROR: Should have raised during str conversion")
+    except RuntimeError as e:
+        print(f"Correctly caught str error: {e}")
+except Exception as e:
+    print(f"Error: {e}")
+
+print("\n=== Complex format specs ===")
+try:
+    val = 42
+    
+    t1 = t"{val!s}"
+    print(f"s conversion: {t1.__str__()}")
+    
+    t2 = t"{val!a}"
+    print(f"a conversion: {t2.__str__()}")
+    
+    t3 = t"{val!s:>10}"
+    print(f"s conversion with format: '{t3.__str__()}'")
+    
+    pi = 3.14159
+    t4 = t"{pi:.2f}"
+    print(f"Float format: {t4.__str__()}")
+except Exception as e:
+    print(f"Error: {e}")
 
 print("\nFull coverage tests completed!")

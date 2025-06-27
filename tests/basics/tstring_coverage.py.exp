@@ -80,6 +80,70 @@ Implicit: 'Part1 Part2'
 repr: Template(strings=('t...
 isinstance: True
 Interpolation: read-only
-__match_args__: ('value', 'expression', 'conversion', 'format_spec')
+
+=== Template repr test ===
+Templates created for repr test
+
+=== Interpolation attribute protection ===
+Correctly blocked: 'Interpolation' object attribute is read-only
+Correctly blocked: 'Interpolation' object attribute is read-only
+Correctly blocked: 'Interpolation' object attribute is read-only
+Correctly blocked: 'Interpolation' object attribute is read-only
+
+=== Template make_new edge cases ===
+Raw t-string: Template(strings=('raw\\nstring',), interpolations=())
+Raw t-string with interp: Template(strings=('raw ', ' string'), interpolations=(Interpolation(42, 'x', None, ''),))
+tr prefix: Template(strings=('also raw',), interpolations=())
+
+=== Format spec with escaped braces ===
+Format with interpolated width: '        42'
+Format with width and precision: '      3.14'
+
+=== Template concatenation edge cases ===
+Empty + Empty: ''
+Empty + Content: 'content'
+Content + Empty: 'content'
+Interp + Interp: '12'
+Mixed concat: 'start 1 middle continue 2 end'
+
+=== Template iteration with empty strings ===
+Adjacent interpolations iter: ['Interpolation', 'Interpolation']
+Start with interp iter: ['Interpolation', 'str']
+End with interp iter: ['str', 'Interpolation']
+Triple interp iter: ['Interpolation', 'Interpolation', 'Interpolation']
+
+=== Large template test ===
+Large template size: 100002
+
+=== Debug format test ===
+Normal format: Template(strings=('', ''), interpolations=(Interpolation(42, 'value', None, ''),))
+
+=== Binary operation errors ===
+Correctly blocked int+Template: unsupported types for __add__: 'int', 'Template'
+Correctly blocked -
+Correctly blocked *
+Correctly blocked /
+Correctly blocked %
+Correctly blocked **
+Correctly blocked &
+Correctly blocked |
+Correctly blocked ^
+Correctly blocked <<
+Correctly blocked >>
+
+=== Values property large array ===
+Large values: (1, 2, 3, 4, 5)
+
+=== Invalid interpolation format ===
+Testing invalid interpolation formats
+
+=== String conversion errors ===
+Correctly caught str error: str conversion failed
+
+=== Complex format specs ===
+s conversion: 42
+a conversion: 42
+s conversion with format: '        42'
+Float format: 3.14
 
 Full coverage tests completed!

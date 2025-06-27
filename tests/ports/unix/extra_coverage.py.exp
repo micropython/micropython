@@ -252,3 +252,18 @@ example_package.foo.bar.f
 True
 example_package.foo.f
 True
+# t-strings C coverage
+interp1 repr: Interpolation(42, 'x', None, None)
+interp2 repr: Interpolation(42, 'x', 'r', '10d')
+template repr: Template(strings=('Hello ', ' world'), interpolations=(Interpolation(42, 'x', None, None),))
+empty strings template: 4242
+ValueError: invalid interpolation format
+ValueError: template string too large
+long expr error: pass
+empty expr is None: 1
+whitespace expr is None: 1
+heap locked interp: MemoryError
+debug format: value=42
+format with interp: '        42'
+t-strings C coverage: complete
+# end coverage.c

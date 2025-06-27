@@ -220,5 +220,85 @@ except MemoryError:
     print("OK: Interpolation repr")
 micropython.heap_unlock()
 
-print()
-print("Heap allocation failure tests completed!", end="")
+def exhaust_heap(limit):
+    allocations = []
+    try:
+        for _ in range(limit):
+            allocations.append("x" * 1024)
+    except MemoryError:
+        pass
+    return allocations
+
+def test_many_interpolations_heap():
+    blocks = exhaust_heap(1024)
+    try:
+        x1, x2, x3, x4, x5, x6, x7, x8, x9 = 1, 2, 3, 4, 5, 6, 7, 8, 9
+        t = t"{x1}{x2}{x3}{x4}{x5}{x6}{x7}{x8}{x9}"
+        s = t.__str__()
+        print("ERROR: Should have failed with heap exhausted")
+    except MemoryError:
+        print("OK: Many interpolations heap test")
+    del blocks
+
+def test_template_str_heap():
+    t = t"x{1}x{2}x{3}x{4}x"
+    blocks = exhaust_heap(1024)
+    try:
+        s = t.__str__()
+        print(f"Template str with heap pressure: {len(s)} chars")
+    except MemoryError:
+        print("Template str failed with MemoryError")
+    del blocks
+
+def test_template_iter_heap():
+    t = t"a{1}b{2}c"
+    blocks = exhaust_heap(1024)
+    try:
+        parts = list(iter(t))
+        print(f"Template iter with heap pressure: {len(parts)} parts")
+    except MemoryError:
+        print("Template iter failed with MemoryError")
+    del blocks
+
+def test_template_concat_heap():
+    t1 = t"first"
+    t2 = t"second"
+    blocks = exhaust_heap(1024)
+    try:
+        t3 = t1 + t2
+        print("OK: Template concat with heap pressure")
+    except MemoryError:
+        print("Template concat failed with MemoryError")
+    del blocks
+
+def test_format_spec_heap():
+    width = 10
+    t = t"{42:{width}d}"
+    blocks = exhaust_heap(1024)
+    try:
+        s = t.__str__()
+        print(f"Format spec with heap pressure: '{t}'")
+    except MemoryError:
+        print("Format spec failed with MemoryError")
+    del blocks
+
+def test_debug_format_heap():
+    value = 42
+    t = t"{value}"
+    blocks = exhaust_heap(1024)
+    try:
+        s = t.__str__()
+        print(f"Debug format test: {t}")
+    except MemoryError:
+        print("Debug format failed with MemoryError")
+    del blocks
+
+print("\n=== Heap allocation failure tests ===")
+test_many_interpolations_heap()
+test_template_str_heap()
+test_template_iter_heap()
+test_template_concat_heap()
+test_format_spec_heap()
+test_debug_format_heap()
+
+print("=== Tests completed ===")
