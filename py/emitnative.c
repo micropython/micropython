@@ -377,6 +377,43 @@ static void emit_native_mov_reg_qstr_obj(emit_t *emit, int reg_dest, qstr qst) {
         emit_native_mov_state_reg((emit), (local_num), (reg_temp)); \
     } while (false)
 
+#if MICROPY_EMIT_PROVIDE_ENTITY_NAMES
+
+static char *build_qualified_name(scope_t *scope) {
+    scope_t *current_scope = scope;
+    size_t size = 0;
+    for (;;) {
+        size += qstr_len(current_scope->simple_name) + 1;
+        if (current_scope->parent == NULL || current_scope->parent->simple_name == MP_QSTR__lt_module_gt_) {
+            break;
+        }
+        current_scope = current_scope->parent;
+    }
+
+    char *buffer = m_malloc(size);
+    char *current_position = buffer + size - 1;
+
+    const byte *qstr_text;
+    size_t qstr_len;
+    current_scope = scope;
+    for (;;) {
+        qstr_text = qstr_data(current_scope->simple_name, &qstr_len);
+        current_position -= qstr_len;
+        memcpy(current_position, qstr_text, qstr_len);
+        if (current_scope->parent == NULL || current_scope->parent->simple_name == MP_QSTR__lt_module_gt_) {
+            break;
+        }
+        current_position--;
+        *current_position = '.';
+        current_scope = current_scope->parent;
+    }
+    buffer[size - 1] = '\0';
+
+    return buffer;
+}
+
+#endif
+
 static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     DEBUG_printf("start_pass(pass=%u, scope=%p)\n", pass, scope);
 
@@ -425,6 +462,14 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         emit->stack_info[i].vtype = VTYPE_UNBOUND;
     }
 
+    char *qualified_name = NULL;
+
+    #if MICROPY_EMIT_PROVIDE_ENTITY_NAMES
+    qualified_name = build_qualified_name(scope);
+    #else
+    (void)qualified_name;
+    #endif
+
     mp_asm_base_start_pass(&emit->as->base, pass == MP_PASS_EMIT ? MP_ASM_PASS_EMIT : MP_ASM_PASS_COMPUTE);
 
     // generate code for entry to function
@@ -471,7 +516,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         }
 
         // Entry to function
-        ASM_ENTRY(emit->as, emit->stack_start + emit->n_state - num_locals_in_regs);
+        ASM_ENTRY(emit->as, emit->stack_start + emit->n_state - num_locals_in_regs, qualified_name);
 
         #if N_X86
         asm_x86_mov_arg_to_r32(emit->as, 0, REG_PARENT_ARG_1);
@@ -542,7 +587,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
         if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
             mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->start_offset);
-            ASM_ENTRY(emit->as, emit->code_state_start);
+            ASM_ENTRY(emit->as, emit->code_state_start, qualified_name);
 
             // Reset the state size for the state pointed to by REG_GENERATOR_STATE
             emit->code_state_start = 0;
@@ -574,7 +619,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             emit->stack_start = emit->code_state_start + SIZEOF_CODE_STATE;
 
             // Allocate space on C-stack for code_state structure, which includes state
-            ASM_ENTRY(emit->as, emit->stack_start + emit->n_state);
+            ASM_ENTRY(emit->as, emit->stack_start + emit->n_state, qualified_name);
 
             // Prepare incoming arguments for call to mp_setup_code_state
 
@@ -640,6 +685,10 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             }
         }
     }
+
+    #if MICROPY_EMIT_PROVIDE_ENTITY_NAMES
+    m_free(qualified_name);
+    #endif
 }
 
 static inline void emit_native_write_code_info_byte(emit_t *emit, byte val) {

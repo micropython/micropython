@@ -426,6 +426,11 @@
 #define MICROPY_EMIT_INLINE_RV32 (0)
 #endif
 
+// Whether to enable the human-readable native instructions emitter
+#ifndef MICROPY_EMIT_NATIVE_DEBUG
+#define MICROPY_EMIT_NATIVE_DEBUG (0)
+#endif
+
 // Convenience definition for whether any native emitter is enabled
 #define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN || MICROPY_EMIT_RV32 || MICROPY_EMIT_NATIVE_DEBUG)
 
@@ -439,6 +444,9 @@
 
 // Convenience definition for whether any native or inline assembler emitter is enabled
 #define MICROPY_EMIT_MACHINE_CODE (MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM)
+
+// Whether to pass the function's fully qualified name to native emitters (currently only used by the debug emitter)
+#define MICROPY_EMIT_PROVIDE_ENTITY_NAMES (MICROPY_EMIT_NATIVE_DEBUG)
 
 /*****************************************************************************/
 /* Compiler configuration                                                    */

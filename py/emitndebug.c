@@ -108,8 +108,8 @@ static void asm_debug_end_pass(asm_debug_t *as) {
     (void)as;
 }
 
-static void asm_debug_entry(asm_debug_t *as, int num_locals) {
-    asm_debug_printf(as, "ENTRY(num_locals=%d)\n", num_locals);
+static void asm_debug_entry(asm_debug_t *as, int num_locals, char *name) {
+    asm_debug_printf(as, "ENTRY(%s, num_locals=%d)\n", name != NULL ? name : "?", num_locals);
 }
 
 static void asm_debug_exit(asm_debug_t *as) {
@@ -195,8 +195,8 @@ static void asm_debug_setcc_reg_reg_reg(asm_debug_t *as, int op, int reg1, int r
 
 #define ASM_T               asm_debug_t
 #define ASM_END_PASS        asm_debug_end_pass
-#define ASM_ENTRY(as, num_locals) \
-    asm_debug_entry(as, num_locals)
+#define ASM_ENTRY(as, num_locals, name) \
+    asm_debug_entry(as, num_locals, name)
 #define ASM_EXIT(as) \
     asm_debug_exit(as)
 
