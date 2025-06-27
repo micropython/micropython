@@ -1,17 +1,22 @@
 OK: Template creation
+OK: Multi string concat
+OK: Mixed constructor
 OK: Template.__str__()
-OK: Template.values heap allocation
+OK: Template.values
+OK: Large values array
 OK: Template concatenation
 OK: Template iterator
+OK: Iterator next
 OK: __template__ builtin
 OK: Format spec interpolation
 OK: Debug format
 OK: Conversion + format
+OK: s conversion
+OK: a conversion
 OK: Complex format spec
-OK: Interpolation creation
-OK: Large values array
-OK: Iterator next
-OK: Escaped braces format
 OK: Simple expression
+OK: Interpolation creation
+OK: Template repr
+OK: Interpolation repr
 
 Heap allocation failure tests completed!

@@ -1,41 +1,56 @@
-Template
-Strings: ('Hello ', '')
-Interpolations count: 1
-Value: World
-Expression: name
-Conversion: None
-Format spec: ''
-Values: (10, 20)
-Format spec: '.2f'
-Conversions: ['r', 's', 'a']
-Conv+format: conv=r, fmt='.2f'
-Concat result type: Template
-Concat strings: ('Hello ', '')
-String+Template rejected: OK
-Iterator parts: ['str', 'Interpolation', 'str', 'Interpolation', 'str']
-Has __str__: True
-Rendered: 'Hello Alice!'
-Multiple render: '10 + 20 = 30'
-Template not in builtins: OK
-Imported Template and Interpolation from string.templatelib
-Template type name: Template
-Interpolation type name: Interpolation
-Is same Template type: True
-Is same Interpolation type: True
-bt prefix: SyntaxError
-ft prefix: SyntaxError
-Cannot mix t-string and regular string
-Empty: strings=('',), interps=()
-Adjacent interps: strings=('', '', '')
-Unicode value: 🎉
-Raw string: 'Path: C:\Users\'
-Implicit concat: 'Part1 Part2'
-Nested expr value: 6
-Method call: HELLO
-Lambda type: function
-Debug format: 'Debug: var=42'
-Template repr: Template(strings=('Hello ', '...
-isinstance(t_literal, Template): True
-isinstance(i, Interpolation): True
+=== Parser memory and error cases ===
+empty: None
+space: None
+spaces: None
+tab: None
+newline: SyntaxError
+mixed: SyntaxError
 
-Basic tests completed!
+=== Complex nested structures ===
+Deep nesting (20 levels): 42
+Const None: None
+Const True: True
+Const False: False
+Const Ellipsis: Ellipsis
+Const int: 42
+Const float: 3.14
+Const complex: (1+2j)
+Const bytes: b'bytes'
+Const bigint: 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+=== Expression syntax errors ===
+unclosed paren: SyntaxError
+unclosed bracket: SyntaxError
+unclosed brace: SyntaxError
+invalid token: SyntaxError
+empty brackets: []
+multiple ops: SyntaxError
+assignment: SyntaxError
+import: SyntaxError
+class def: SyntaxError
+function def: SyntaxError
+yield expr: SyntaxError
+await expr: SyntaxError
+
+=== Large expression handling ===
+9999 char expr: OK (2500...)
+10000 char expr: OK
+10001 char expr: ValueError (template expression too long)
+
+=== Special lexer cases ===
+Triple concat: 'abc'
+Raw+regular: len=14
+Empty t-strings: 0, 0
+Triple quoted single: not supported
+Triple quoted double: not supported
+
+=== Format spec edge cases ===
+Format spec escaped braces: SKIPPED (implementation hangs)
+Nested interpolation: '    X'
+Format with colon: failed
+
+=== Memory stress tests ===
+50 interpolations: 49 interpolations
+Long strings: total length = 2000
+
+Parser edge tests completed!

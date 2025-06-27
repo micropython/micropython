@@ -79,15 +79,6 @@ static void interpolation_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[0] = self->conversion;
         } else if (attr == MP_QSTR_format_spec) {
             dest[0] = self->format_spec;
-        } else if (attr == MP_QSTR___match_args__) {
-            // For pattern matching support - create tuple dynamically
-            mp_obj_t match_args_items[4] = {
-                MP_OBJ_NEW_QSTR(MP_QSTR_value),
-                MP_OBJ_NEW_QSTR(MP_QSTR_expression),
-                MP_OBJ_NEW_QSTR(MP_QSTR_conversion),
-                MP_OBJ_NEW_QSTR(MP_QSTR_format_spec),
-            };
-            dest[0] = mp_obj_new_tuple(4, match_args_items);
         }
     } else {
         // Store attribute - not allowed (immutable per PEP 750)
