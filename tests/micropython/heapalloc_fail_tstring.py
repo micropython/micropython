@@ -230,68 +230,68 @@ def exhaust_heap(limit):
     return allocations
 
 def test_many_interpolations_heap():
-    blocks = exhaust_heap(1024)
+    # Pre-create variables before exhausting heap
+    x1, x2, x3, x4, x5, x6, x7, x8, x9 = 1, 2, 3, 4, 5, 6, 7, 8, 9
+    micropython.heap_lock()
     try:
-        x1, x2, x3, x4, x5, x6, x7, x8, x9 = 1, 2, 3, 4, 5, 6, 7, 8, 9
         t = t"{x1}{x2}{x3}{x4}{x5}{x6}{x7}{x8}{x9}"
-        s = t.__str__()
-        print("ERROR: Should have failed with heap exhausted")
+        print("FAIL: Many interpolations heap test")
     except MemoryError:
         print("OK: Many interpolations heap test")
-    del blocks
+    micropython.heap_unlock()
 
 def test_template_str_heap():
     t = t"x{1}x{2}x{3}x{4}x"
-    blocks = exhaust_heap(1024)
+    micropython.heap_lock()
     try:
         s = t.__str__()
-        print(f"Template str with heap pressure: {len(s)} chars")
+        print("FAIL: Template str heap test")
     except MemoryError:
-        print("Template str failed with MemoryError")
-    del blocks
+        print("OK: Template str heap test")
+    micropython.heap_unlock()
 
 def test_template_iter_heap():
     t = t"a{1}b{2}c"
-    blocks = exhaust_heap(1024)
+    micropython.heap_lock()
     try:
         parts = list(iter(t))
-        print(f"Template iter with heap pressure: {len(parts)} parts")
+        print("FAIL: Template iter heap test")
     except MemoryError:
-        print("Template iter failed with MemoryError")
-    del blocks
+        print("OK: Template iter heap test")
+    micropython.heap_unlock()
 
 def test_template_concat_heap():
     t1 = t"first"
     t2 = t"second"
-    blocks = exhaust_heap(1024)
+    micropython.heap_lock()
     try:
         t3 = t1 + t2
-        print("OK: Template concat with heap pressure")
+        print("FAIL: Template concat heap test")
     except MemoryError:
-        print("Template concat failed with MemoryError")
-    del blocks
+        print("OK: Template concat heap test")
+    micropython.heap_unlock()
 
 def test_format_spec_heap():
     width = 10
     t = t"{42:{width}d}"
-    blocks = exhaust_heap(1024)
+    micropython.heap_lock()
     try:
         s = t.__str__()
-        print(f"Format spec with heap pressure: '{t}'")
+        print("FAIL: Format spec heap test")
     except MemoryError:
-        print("Format spec failed with MemoryError")
-    del blocks
+        print("OK: Format spec heap test")
+    micropython.heap_unlock()
 
 def test_debug_format_heap():
     value = 42
     t = t"{value}"
-    blocks = exhaust_heap(1024)
+    micropython.heap_lock()
     try:
         s = t.__str__()
-        print(f"Debug format test: {t}")
+        print("FAIL: Debug format heap test")
     except MemoryError:
-        print("Debug format failed with MemoryError")
-    del blocks
+        print("OK: Debug format heap test")
+    micropython.heap_unlock()
 
 print("\n=== Heap allocation failure tests ===")
 test_many_interpolations_heap()

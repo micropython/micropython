@@ -20,12 +20,12 @@ OK: Template repr
 OK: Interpolation repr
 
 === Heap allocation failure tests ===
-ERROR: Should have failed with heap exhausted
-Template str with heap pressure: 9 chars
-Template iter with heap pressure: 5 parts
-OK: Template concat with heap pressure
-Format spec with heap pressure: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, '{width}d'),))'
-Debug format test: Template(strings=('', ''), interpolations=(Interpolation(42, 'value', None, ''),))
+OK: Many interpolations heap test
+OK: Template str heap test
+OK: Template iter heap test
+OK: Template concat heap test
+OK: Format spec heap test
+OK: Debug format heap test
 
 === Coverage.c heap tests ===
 OK: Interpolation creation with heap locked
