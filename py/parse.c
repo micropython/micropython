@@ -713,6 +713,10 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         #define GROW_ARRAY(arr) do { \
         if ((arr).len >= (arr).alloc) { \
             size_t new_alloc = (arr).alloc ? (arr).alloc * 2 : 8; \
+            size_t new_bytes = new_alloc * sizeof(mp_parse_node_t); \
+            if (new_bytes > MICROPY_PY_TSTRING_MAX_BYTES) { \
+                mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big")); \
+            } \
             (arr).items = m_renew(mp_parse_node_t, (arr).items, (arr).alloc, new_alloc); \
             (arr).alloc = new_alloc; \
         } \
@@ -903,6 +907,10 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                 }
             } else {
                 // Regular character
+                // Check if vstr is getting too large
+                if (vstr.len + 1 > MICROPY_PY_TSTRING_MAX_BYTES / 2) {
+                    mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
+                }
                 vstr_add_byte(&vstr, str[i]);
                 i++;
             }

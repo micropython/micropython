@@ -67,7 +67,7 @@ String expr: 'test'
 Re-raised exception: Special error
 Conv empty fmt: '42'
 Too many interpolations: SyntaxError
-Large template: RuntimeError
+Large template: SyntaxError
 Triple quoted error: invalid syntax
 Raw triple error: invalid syntax
 Complex concat: strings=('a', 'bc', 'd', 'e'), values=(1, 2, 3)
