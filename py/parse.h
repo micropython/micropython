@@ -66,9 +66,9 @@ struct _mp_lexer_t;
     ((((hdr) >> TSTR_HDR_INT_SHIFT) & UINT32_C(0xFFF)))
 
 // Ensure header bit packing fits in 32 bits
-_Static_assert(TSTR_HDR_INT_SHIFT + 12 <= 32, "Template string header exceeds 32 bits");
-_Static_assert(TSTR_MAX_SEG <= 0xFFF, "TSTR_MAX_SEG exceeds 12-bit limit");
-_Static_assert(TSTR_MAX_INT <= 0xFFF, "TSTR_MAX_INT exceeds 12-bit limit");
+typedef char _tstr_assert1[(TSTR_HDR_INT_SHIFT + 12 <= 32) ? 1 : -1];
+typedef char _tstr_assert2[(TSTR_MAX_SEG <= 0xFFF) ? 1 : -1];
+typedef char _tstr_assert3[(TSTR_MAX_INT <= 0xFFF) ? 1 : -1];
 
 typedef uintptr_t mp_parse_node_t; // must be pointer size
 
