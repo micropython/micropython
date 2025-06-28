@@ -1113,6 +1113,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_TSTRING_MAX_PARTS MICROPY_PY_TSTRING_MAX_INTERPOLATIONS
 #endif
 
+// Maximum memory allocation for template string parse tree (for memory-constrained ports)
+#ifndef MICROPY_PY_TSTRING_MAX_BYTES
+#define MICROPY_PY_TSTRING_MAX_BYTES (2097152)  // 2MB default
+#endif
+
 // Support for assignment expressions with := (see PEP 572, Python 3.8+)
 #ifndef MICROPY_PY_ASSIGN_EXPR
 #define MICROPY_PY_ASSIGN_EXPR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)

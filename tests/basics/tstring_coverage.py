@@ -216,7 +216,7 @@ try:
     # Create a very large template string
     large_str = "x" * 100000
     exec(f't"{large_str}"')
-except (ValueError, MemoryError, RuntimeError) as e:
+except (ValueError, MemoryError, SyntaxError, RuntimeError) as e:
     print(f"Large template: {type(e).__name__}")
 
 # Test lexer edge cases

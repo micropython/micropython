@@ -55,15 +55,15 @@ struct _mp_lexer_t;
 #define TSTR_MAX_INT         (4095)
 
 #define TSTR_HDR_MAKE(seg_cnt, int_cnt) \
-    (MP_PARSE_NODE_TEMPLATE_STRING | \
-    (((seg_cnt) - 1) << TSTR_HDR_SEG_SHIFT) | \
-    ((int_cnt) << TSTR_HDR_INT_SHIFT))
+    ((MP_PARSE_NODE_TEMPLATE_STRING | \
+    ((((seg_cnt) - 1) << TSTR_HDR_SEG_SHIFT)) | \
+    (((int_cnt) << TSTR_HDR_INT_SHIFT))))
 
 #define TSTR_HDR_GET_SEG_CNT(hdr) \
-    ((((hdr) >> TSTR_HDR_SEG_SHIFT) & 0xFFF) + 1)
+    (((((hdr) >> TSTR_HDR_SEG_SHIFT) & UINT32_C(0xFFF)) + 1))
 
 #define TSTR_HDR_GET_INT_CNT(hdr) \
-    (((hdr) >> TSTR_HDR_INT_SHIFT) & 0xFFF)
+    ((((hdr) >> TSTR_HDR_INT_SHIFT) & UINT32_C(0xFFF)))
 
 // Ensure header bit packing fits in 32 bits
 _Static_assert(TSTR_HDR_INT_SHIFT + 12 <= 32, "Template string header exceeds 32 bits");

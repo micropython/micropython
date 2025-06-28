@@ -891,6 +891,12 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too large"));
         }
 
+        // Check memory allocation size for memory-constrained ports
+        size_t alloc_size = sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * total;
+        if (alloc_size > MICROPY_PY_TSTRING_MAX_BYTES) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
+        }
+
         // Allocate template node. GC safety: parser_alloc ensures the allocated
         // memory is properly rooted. strings.items and interps.items remain valid
         // until m_del below since no allocations occur between here and there.
