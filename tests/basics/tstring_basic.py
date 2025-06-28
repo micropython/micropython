@@ -132,4 +132,37 @@ try:
 except SyntaxError:
     print("bt prefix: SyntaxError")
 
+
+print("\n=== Escaped braces evaluation ===")
+# Test escaped braces in template evaluation
+# This should test the vstr_add_byte(&eval_vstr, '{') and '}' paths
+
+# Create a template with escaped braces programmatically
+# This tests the evaluation path in modtstring.c
+t_escaped = Template(("{", "}", "{{", "}}"), (Interpolation(42, "x"),) * 3)
+print(f"Escaped eval: '{t_escaped.__str__()}'")
+
+# Test with actual double braces in strings
+t_braces = Template(("{{hello}}", " {", "} ", "{{world}}"), 
+                   (Interpolation(1, "a"), Interpolation(2, "b"), Interpolation(3, "c")))
+print(f"Braces in strings: '{t_braces.__str__()}'")
+
+# Test memory deletion path - create many interpolations
+# This tests the m_del(mp_obj_t, values, interps->len) path
+print("\n=== Memory stress test ===")
+# Create templates with varying numbers of interpolations
+for n in [10, 20, 30]:
+    interps = tuple(Interpolation(i, f"var{i}") for i in range(n))
+    strings = ("s",) * (n + 1)
+    t_mem = Template(strings, interps)
+    # Force evaluation which allocates and frees memory
+    result = t_mem.__str__()
+    print(f"Memory test [{n}]: {len(result)} chars")
+
+# Test edge case with many values to trigger heap allocation
+large_interps = tuple(Interpolation(i, f"v{i}") for i in range(20))
+large_strings = ("",) * 21
+t_large = Template(large_strings, large_interps)
+print(f"Large values: {len(t_large.values)} values")
+
 print("\nBasic tests completed!")

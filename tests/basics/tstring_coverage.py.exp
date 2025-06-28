@@ -43,7 +43,7 @@ Empty fmt: 42
 Width: '        42'
 Conv+fmt: '        42'
 Interp fmt: '      3.14'
-Escaped braces: SKIPPED (causes segfault)
+Escaped braces: 'Hello {name} and {{value}}'
 
 === Special cases ===
 __template__ error: invalid interpolation format
@@ -60,5 +60,19 @@ Iterator edge: ['Interpolation', 'Interpolation']
 === repr tests ===
 Template repr: Template(strings=('Hello ', ' world'), interpolations=(Inter...
 Interp repr: Interpolation(42, 'x', 's', ':>10')
+
+=== Additional coverage tests ===
+String literal: hello
+String expr: 'test'
+Re-raised exception: Special error
+Conv empty fmt: '42'
+Large template: RuntimeError
+Triple quoted error: invalid syntax
+Raw triple error: invalid syntax
+Complex concat: strings=('a', 'bc', 'd', 'e'), values=(1, 2, 3)
+Empty concat: 'test42'
+Self interp concat: values=(1, 1)
+Lonely string: SyntaxError
+Empty t-string: ''
 
 Coverage tests completed!

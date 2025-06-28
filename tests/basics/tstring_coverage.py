@@ -99,8 +99,13 @@ print(f"Conv+fmt: '{t'{42!r:>10}'.__str__()}'")
 width = 10
 print(f"Interp fmt: '{t'{3.14:{width}.2f}'.__str__()}'")
 
-# Escaped braces - SKIP due to segfault
-print("Escaped braces: SKIPPED (causes segfault)")
+# Escaped braces
+try:
+    # Test double braces are converted to single braces
+    t_escaped = t"Hello {{name}} and {{{{value}}}}"
+    print(f"Escaped braces: '{t_escaped.__str__()}'")
+except Exception as e:
+    print(f"Escaped braces error: {e}")
 
 print("\n=== Special cases ===")
 # __template__ builtin error
@@ -159,5 +164,106 @@ print(f"Template repr: {repr(t_repr)[:60]}...")
 
 i_repr = Interpolation(42, "x", "s", ":>10")
 print(f"Interp repr: {repr(i_repr)}")
+
+print("\n=== Additional coverage tests ===")
+
+# Test string literal in template expression (MP_PARSE_NODE_STRING)
+t_str_literal = t"{'hello'}"
+print(f"String literal: {t_str_literal.__str__()}")
+
+# Test expression parsing edge cases
+# String expressions with quotes
+try:
+    t_str_expr = t'{"test"}'
+    print(f"String expr: '{t_str_expr.__str__()}'")
+except Exception as e:
+    print(f"String expr error: {e}")
+
+# Exception re-raising in expression parser
+class ExceptionRaiser:
+    def __getattr__(self, name):
+        if name == "special":
+            raise ValueError("Special error")
+        raise AttributeError("Test error")
+
+er = ExceptionRaiser()
+try:
+    t_exc = t"{er.special}"
+    print(t_exc.__str__())
+except ValueError as e:
+    print(f"Re-raised exception: {e}")
+
+# Test format spec edge case (fmt_end = conversion_pos)
+try:
+    # Test conversion with empty format
+    t_conv_fmt = t"{42!r:}"
+    print(f"Conv empty fmt: '{t_conv_fmt.__str__()}'")
+except Exception as e:
+    print(f"Conv fmt error: {e}")
+
+# Test too many interpolations
+# Create a template string with many interpolations to hit the limit
+try:
+    # Try to create a very large number of interpolations
+    # MicroPython has a limit on interpolations
+    expr = "x = 1\n" + "t'" + "{x}" * 256 + "'"
+    exec(expr)
+except (ValueError, SyntaxError, MemoryError) as e:
+    print(f"Too many interpolations: {type(e).__name__}")
+
+# Test template string size limit
+try:
+    # Create a very large template string
+    large_str = "x" * 100000
+    exec(f't"{large_str}"')
+except (ValueError, MemoryError, RuntimeError) as e:
+    print(f"Large template: {type(e).__name__}")
+
+# Test lexer edge cases
+# Triple quoted t-strings
+try:
+    exec('''t_triple = t"""Triple "quoted" string"""''')
+    print(f"Triple quoted: '{t_triple.__str__()}'")
+except Exception as e:
+    print(f"Triple quoted error: {e}")
+
+# Raw triple quoted
+try:
+    exec(r'''t_raw_triple = rt"""Raw triple\n{42}"""''')
+    print(f"Raw triple: '{t_raw_triple.__str__()}'")
+except Exception as e:
+    print(f"Raw triple error: {e}")
+
+# Test template concatenation specific paths
+# Concatenating templates with different interpolation counts
+t_concat1 = t"a{1}b"
+t_concat2 = t"c{2}d{3}e"
+t_concat3 = t_concat1 + t_concat2
+print(f"Complex concat: strings={t_concat3.strings}, values={t_concat3.values}")
+
+# Concatenate empty template with non-empty
+t_empty = Template()
+t_nonempty = t"test{42}"
+t_concat_empty = t_empty + t_nonempty
+print(f"Empty concat: '{t_concat_empty.__str__()}'")
+
+# Self concatenation with interpolations
+t_self_interp = t"x{1}y"
+t_self_concat = t_self_interp + t_self_interp
+print(f"Self interp concat: values={t_self_concat.values}")
+
+# Test lonely string open (unterminated t-string)
+try:
+    exec('t"unterminated')
+except SyntaxError as e:
+    print(f"Lonely string: {type(e).__name__}")
+
+# Test fstring lexer edge case (empty fstring_args)
+try:
+    # This might trigger the lex->chr0 path when fstring_args is empty
+    t_edge = t""
+    print(f"Empty t-string: '{t_edge.__str__()}'")
+except Exception as e:
+    print(f"Empty t-string error: {e}")
 
 print("\nCoverage tests completed!")

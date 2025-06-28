@@ -44,4 +44,14 @@ Long expr: Error
 Mixed concat: SyntaxError
 bt prefix: SyntaxError
 
+=== Escaped braces evaluation ===
+Escaped eval: '{42}42{{42}}'
+Braces in strings: '{{hello}}1 {2} 3{{world}}'
+
+=== Memory stress test ===
+Memory test [10]: 21 chars
+Memory test [20]: 51 chars
+Memory test [30]: 81 chars
+Large values: 20 values
+
 Basic tests completed!
