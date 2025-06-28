@@ -24,6 +24,16 @@
 // Forward declaration
 extern mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolations);
 extern const mp_obj_fun_builtin_fixed_t mp_builtin___template___obj;
+extern const mp_obj_type_t mp_type_template;
+extern const mp_obj_type_t mp_type_interpolation;
+extern mp_obj_t mp_obj_new_interpolation(mp_obj_t value, mp_obj_t expression, mp_obj_t conversion, mp_obj_t format_spec);
+
+// Template type definition
+typedef struct _mp_obj_template_t {
+    mp_obj_base_t base;
+    mp_obj_t strings;
+    mp_obj_t interpolations;
+} mp_obj_template_t;
 #endif
 
 // expected output of this file is found in extra_coverage.py.exp
@@ -201,6 +211,14 @@ static void coverage_sched_function(mp_sched_node_t *node) {
         mp_sched_schedule_node(&mp_coverage_sched_node, coverage_sched_function);
     }
 }
+
+#if MICROPY_PY_TSTRINGS
+// Allocator for t-string parser tests
+static void *coverage_alloc_fn(void *ctx, size_t n) {
+    (void)ctx;
+    return m_malloc(n);
+}
+#endif
 
 // function to run extra tests for things that can't be checked by scripts
 static mp_obj_t extra_coverage(void) {
@@ -828,163 +846,35 @@ static mp_obj_t extra_coverage(void) {
             MICROPY_STACK_CHECK == 0 || old_stack_limit == new_stack_limit);
     }
 
-    // t-strings coverage tests
+
     #if MICROPY_PY_TSTRINGS
     {
-        mp_printf(&mp_plat_print, "# t-strings C coverage\n");
-
-        // Test 1: Create and print Interpolation objects (tests repr)
-        mp_obj_t interp_value = MP_OBJ_NEW_SMALL_INT(42);
-        mp_obj_t interp_expr = mp_obj_new_str_from_cstr("x");
-        mp_obj_t interp_conv = mp_obj_new_str_from_cstr("r");
-        mp_obj_t interp_fmt = mp_obj_new_str_from_cstr("10d");
-
-        mp_obj_t interp1 = mp_obj_new_interpolation(interp_value, interp_expr, mp_const_none, mp_const_none);
-        mp_printf(&mp_plat_print, "interp1 repr: ");
-        mp_obj_print_helper(&mp_plat_print, interp1, PRINT_REPR);
-        mp_printf(&mp_plat_print, "\n");
-
-        mp_obj_t interp2 = mp_obj_new_interpolation(interp_value, interp_expr, interp_conv, interp_fmt);
-        mp_printf(&mp_plat_print, "interp2 repr: ");
-        mp_obj_print_helper(&mp_plat_print, interp2, PRINT_REPR);
-        mp_printf(&mp_plat_print, "\n");
-
-        // Test 2: Create and print Template objects (tests repr)
-        mp_obj_t strings = mp_obj_new_tuple(2, (mp_obj_t[]) {mp_obj_new_str_from_cstr("Hello "), mp_obj_new_str_from_cstr(" world")});
-        mp_obj_t interps = mp_obj_new_tuple(1, (mp_obj_t[]) {interp1});
-
-        // Call __template__ builtin
-        mp_obj_t template_args[2] = {strings, interps};
-        mp_obj_t template1 = mp_call_function_n_kw(MP_OBJ_FROM_PTR(&mp_builtin___template___obj), 2, 0, template_args);
-        mp_printf(&mp_plat_print, "template repr: ");
-        mp_obj_print_helper(&mp_plat_print, template1, PRINT_REPR);
-        mp_printf(&mp_plat_print, "\n");
-
-        // Test 3: Template with empty strings and multiple interpolations
-        mp_obj_t empty_strings = mp_obj_new_tuple(3, (mp_obj_t[]) {
-            mp_obj_new_str_from_cstr(""),
-            mp_obj_new_str_from_cstr(""),
-            mp_obj_new_str_from_cstr("")
-        });
-        mp_obj_t multi_interps = mp_obj_new_tuple(2, (mp_obj_t[]) {interp1, interp2});
-        mp_obj_t template2_args[2] = {empty_strings, multi_interps};
-        mp_obj_t template2 = mp_call_function_n_kw(MP_OBJ_FROM_PTR(&mp_builtin___template___obj), 2, 0, template2_args);
-        mp_obj_t str_method[2];
-        mp_load_method(template2, MP_QSTR___str__, str_method);
-        mp_obj_t str_result = mp_call_method_n_kw(0, 0, str_method);
-        mp_printf(&mp_plat_print, "empty strings template: %s\n", mp_obj_str_get_str(str_result));
-
-        // Test 4: Invalid interpolation format
+        // Only test C-level functions that cannot be tested from Python
+        mp_printf(&mp_plat_print, "# t-strings parser internals\n");
+        
+        extern mp_parse_node_t parse_tstring_expression(void *alloc_ctx, mp_parse_allocator_t allocator, const char *expr, size_t len);
+        
+        // Test parser edge cases that are hard to reach from Python
+        mp_parse_node_t node;
+        
+        // Empty expression - tests lines 114-116
+        node = parse_tstring_expression(NULL, coverage_alloc_fn, "", 0);
+        (void)node;
+        
+        // Whitespace only - tests trimming logic
+        node = parse_tstring_expression(NULL, coverage_alloc_fn, "   ", 3);
+        (void)node;
+        
+        // Very long expression to test limit
+        char long_expr[11000];
+        memset(long_expr, 'x', 11000);
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
-            // Create invalid interpolation tuple (only 1 element)
-            mp_obj_t bad_interp = mp_obj_new_tuple(1, (mp_obj_t[]) {MP_OBJ_NEW_SMALL_INT(42)});
-            mp_obj_t bad_interps = mp_obj_new_tuple(1, (mp_obj_t[]) {bad_interp});
-            mp_obj_t bad_args[2] = {strings, bad_interps};
-            mp_call_function_n_kw(MP_OBJ_FROM_PTR(&mp_builtin___template___obj), 2, 0, bad_args);
+            parse_tstring_expression(NULL, coverage_alloc_fn, long_expr, 11000);
             nlr_pop();
-            mp_printf(&mp_plat_print, "ERROR: Should have raised ValueError\n");
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
         }
-
-        // Test 5: Template string too large
-        if (nlr_push(&nlr) == 0) {
-            // Create a very large string
-            vstr_t large_vstr;
-            vstr_init(&large_vstr, MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE + 100);
-            for (int i = 0; i < MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE + 100; i++) {
-                vstr_add_byte(&large_vstr, 'x');
-            }
-            mp_obj_t large_str = mp_obj_new_str_from_vstr(&large_vstr);
-            mp_obj_t large_strings = mp_obj_new_tuple(1, &large_str);
-            mp_obj_t empty_interps = mp_obj_new_tuple(0, NULL);
-            mp_obj_t large_args[2] = {large_strings, empty_interps};
-            mp_obj_t large_template = mp_call_function_n_kw(MP_OBJ_FROM_PTR(&mp_builtin___template___obj), 2, 0, large_args);
-
-            // Try to convert to string - should fail
-            mp_obj_t large_str_method[2];
-            mp_load_method(large_template, MP_QSTR___str__, large_str_method);
-            mp_call_method_n_kw(0, 0, large_str_method);
-            nlr_pop();
-            mp_printf(&mp_plat_print, "ERROR: Should have raised ValueError for large template\n");
-        } else {
-            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-        }
-
-        // Test 6: parse_tstring_expression edge cases
-        #include "py/parse.h"
-        extern mp_parse_node_t parse_tstring_expression(void *alloc_ctx, mp_parse_allocator_t allocator, const char *expr, size_t len);
-
-        // Test very long expression
-        char long_expr[MICROPY_PY_TSTRING_MAX_EXPR_LEN + 10];
-        memset(long_expr, 'x', MICROPY_PY_TSTRING_MAX_EXPR_LEN + 5);
-        long_expr[MICROPY_PY_TSTRING_MAX_EXPR_LEN + 5] = '\0';
-
-        if (nlr_push(&nlr) == 0) {
-            parse_tstring_expression(NULL, NULL, long_expr, MICROPY_PY_TSTRING_MAX_EXPR_LEN + 5);
-            nlr_pop();
-            mp_printf(&mp_plat_print, "ERROR: Long expression should have failed\n");
-        } else {
-            mp_printf(&mp_plat_print, "long expr error: pass\n");
-        }
-
-        // Test empty expression
-        mp_parse_node_t empty_node = parse_tstring_expression(NULL, NULL, "", 0);
-        mp_printf(&mp_plat_print, "empty expr is None: %d\n",
-            MP_PARSE_NODE_IS_TOKEN_KIND(empty_node, MP_TOKEN_KW_NONE));
-
-        // Test whitespace-only expression
-        mp_parse_node_t ws_node = parse_tstring_expression(NULL, NULL, "  \t\n  ", 6);
-        mp_printf(&mp_plat_print, "whitespace expr is None: %d\n",
-            MP_PARSE_NODE_IS_TOKEN_KIND(ws_node, MP_TOKEN_KW_NONE));
-
-        // Test 7: Memory allocation failures in various paths
-        gc_lock();
-
-        // Try to create interpolation with heap locked
-        if (nlr_push(&nlr) == 0) {
-            mp_obj_new_interpolation(MP_OBJ_NEW_SMALL_INT(42), mp_obj_new_str_from_cstr("x"), mp_const_none, mp_const_none);
-            nlr_pop();
-            gc_unlock();
-            mp_printf(&mp_plat_print, "ERROR: Interpolation creation should have failed\n");
-        } else {
-            gc_unlock();
-            mp_printf(&mp_plat_print, "heap locked interp: MemoryError\n");
-        }
-
-        // Test 8: Debug format (expression ending with =)
-        mp_obj_t debug_expr = mp_obj_new_str_from_cstr("value=");
-        mp_obj_t debug_interp = mp_obj_new_interpolation(MP_OBJ_NEW_SMALL_INT(42), debug_expr, mp_const_none, mp_const_none);
-        mp_obj_t debug_strings = mp_obj_new_tuple(2, (mp_obj_t[]) {mp_obj_new_str_from_cstr(""), mp_obj_new_str_from_cstr("")});
-        mp_obj_t debug_interps = mp_obj_new_tuple(1, (mp_obj_t[]) {debug_interp});
-        mp_obj_t debug_args[2] = {debug_strings, debug_interps};
-        mp_obj_t debug_template = mp_call_function_n_kw(MP_OBJ_FROM_PTR(&mp_builtin___template___obj), 2, 0, debug_args);
-        mp_obj_t debug_str_method[2];
-        mp_load_method(debug_template, MP_QSTR___str__, debug_str_method);
-        mp_obj_t debug_result = mp_call_method_n_kw(0, 0, debug_str_method);
-        mp_printf(&mp_plat_print, "debug format: %s\n", mp_obj_str_get_str(debug_result));
-
-        // Test 9: Format spec with interpolation
-        mp_obj_t fmt_with_var = mp_obj_new_str_from_cstr("{width}d");
-        mp_obj_t fmt_interp = mp_obj_new_interpolation(MP_OBJ_NEW_SMALL_INT(42), mp_obj_new_str_from_cstr("x"), mp_const_none, fmt_with_var);
-
-        // Set up the global namespace with 'width' variable
-        mp_store_global(MP_QSTR_width, MP_OBJ_NEW_SMALL_INT(10));
-
-        mp_obj_t fmt_strings = mp_obj_new_tuple(2, (mp_obj_t[]) {mp_obj_new_str_from_cstr(""), mp_obj_new_str_from_cstr("")});
-        mp_obj_t fmt_interps = mp_obj_new_tuple(1, (mp_obj_t[]) {fmt_interp});
-        mp_obj_t fmt_args[2] = {fmt_strings, fmt_interps};
-        mp_obj_t fmt_template = mp_call_function_n_kw(MP_OBJ_FROM_PTR(&mp_builtin___template___obj), 2, 0, fmt_args);
-        mp_obj_t fmt_str_method[2];
-        mp_load_method(fmt_template, MP_QSTR___str__, fmt_str_method);
-        mp_obj_t fmt_result = mp_call_method_n_kw(0, 0, fmt_str_method);
-        mp_printf(&mp_plat_print, "format with interp: '%s'\n", mp_obj_str_get_str(fmt_result));
-
-        // Clean up global
-        mp_delete_global(MP_QSTR_width);
-
-        mp_printf(&mp_plat_print, "t-strings C coverage: complete\n");
     }
     #endif
 

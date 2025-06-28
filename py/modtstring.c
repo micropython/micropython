@@ -540,6 +540,14 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
     }
 }
 
+// template_str_obj is already defined above
+
+// Template methods
+static const mp_rom_map_elem_t template_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___str__), MP_ROM_PTR(&template_str_obj) },
+};
+static MP_DEFINE_CONST_DICT(template_locals_dict, template_locals_dict_table);
+
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_template,
     MP_QSTR_Template,
@@ -548,7 +556,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, template_print,
     attr, template_attr,
     iter, template_iter,
-    binary_op, template_binary_op
+    binary_op, template_binary_op,
+    locals_dict, &template_locals_dict
     );
 
 // __template__ builtin function to create Template objects

@@ -301,4 +301,28 @@ test_template_concat_heap()
 test_format_spec_heap()
 test_debug_format_heap()
 
+# Additional tests from coverage.c
+print("\n=== Coverage.c heap tests ===")
+
+# Test creating interpolation with heap locked (from coverage.c)
+micropython.heap_lock()
+try:
+    i = Interpolation(42, "x", None, None)
+    print("FAIL: Interpolation with heap locked")
+except MemoryError:
+    print("OK: Interpolation creation with heap locked")
+micropython.heap_unlock()
+
+# Test parsing expression with heap locked (from coverage.c)
+micropython.heap_lock()
+try:
+    t = eval('t"{x + 1}"')
+    print("FAIL: Parse with heap locked")
+except Exception as e:
+    if type(e).__name__ == "MemoryError":
+        print("OK: Parse with heap locked")
+    else:
+        print(f"Parse with heap locked: {type(e).__name__}")
+micropython.heap_unlock()
+
 print("=== Tests completed ===")

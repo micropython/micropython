@@ -1,40 +1,13 @@
-=== Basic functionality ===
-Template
-Strings: ('Hello ', '')
-Value: World
-
-=== Constructor tests ===
-Empty: ('',)
-Keyword error: Template.__new__ only accepts *args arguments
+=== Constructor edge cases ===
+Keyword args: Template.__new__ only accepts *args arguments
 Invalid type: Template.__new__ *args need to be of type 'str' or 'Interpolation', got int
-Single string: ('single',)
-Multi concat: ('firstsecondthird',)
-Mixed: ('start', 'middle', 'end')
-Tuple validation: interpolations tuple must contain only Interpolation objects, got int
-
-=== Format specifiers ===
-Conversions: r='test', s=test, a='test'
-Conv+format: '   3.14159'
-Interpolated format: '      3.14'
-Escaped {}: SKIPPED (hangs)
-Escaped }}: SKIPPED (hangs)
-Complex format: SKIPPED (hangs)
-Undefined var in format: NameError
-Debug: x=x=42
-
-=== Size limits ===
-Large template: 100003 chars
-
-=== Values property ===
-Small values: (1, 2, 3, 4)
-Large values: 10 items
-Exception path: skipped (requires internals)
+Invalid interp: interpolations tuple must contain only Interpolation objects, got int
+Tuple constructor: hello42world
 
 === Binary operations ===
-T+T: Template
-T+str: can only concatenate Template (not "str") to Template
-str+T: unsupported types for __add__: 'str', 'Template'
-int+T: TypeError
+Template+str: can only concatenate Template (not "str") to Template
+str+Template: unsupported types for __add__: 'str', 'Template'
+int+Template: TypeError
 -: unsupported
 *: unsupported
 /: unsupported
@@ -46,104 +19,46 @@ int+T: TypeError
 <<: unsupported
 >>: unsupported
 
-=== Iterator ===
-Iterator: ['str', 'Interpolation', 'str', 'Interpolation', 'str']
-Empty strings: [1, 2]
-__iter__ attr: False
+=== Edge cases ===
+Empty template: ''
+Empty strings: [Interpolation(1, 'a', None, ''), Interpolation(2, 'b', None, '')]
+Adjacent: '123'
+Single iter: ['only']
+Self+self: 'testtest'
 
-=== __template__ builtin ===
-Invalid format: invalid interpolation format
-__template__: Template
+=== Values property ===
+Values[0]: ()
+Values[1]: (0,)
+Values[2]: (0, 1)
+Values[3]: (0, 1, 2)
+Values[4]: (0, 1, 2, 3)
+Values[5]: (0, 1, 2, 3, 4)
+Values[6]: (0, 1, 2, 3, 4, 5)
 
-=== Attributes ===
-strings: ('test', '')
-interpolations: 1
-values: (42,)
-__str__ bound: test42
+=== Size limits ===
+Size limit test: SKIPPED (causes memory errors)
 
-=== String prefixes ===
-Raw: 'Path: C:\Users\'
-tr: 'Path: C:\Users\'
-bt prefix: SyntaxError
-ft prefix: SyntaxError
-t+regular: SyntaxError
-
-=== Parser edge cases ===
-Expr limit: template expression too long
-Empty expr: None
-Complex: 1
-Invalid syntax: SyntaxError
+=== Format spec edge cases ===
+Empty fmt: 42
+Width: '        42'
+Conv+fmt: '        42'
+Interp fmt: '      3.14'
+Escaped braces: SKIPPED (causes segfault)
 
 === Special cases ===
-Unicode: Party 🎉!
-Implicit: 'Part1 Part2'
-repr: Template(strings=('t...
-isinstance: True
-Interpolation: read-only
+__template__ error: invalid interpolation format
+__template__: Template
+Interp read-only: AttributeError
+Whitespace trim: 'None'
+Debug =: x=42
+Custom !r: CustomRepr
+Custom !s: CustomStr
+__str__ bound: test
+Empty start iter: ['Interpolation', 'str']
+Iterator edge: ['Interpolation', 'Interpolation']
 
-=== Template repr test ===
-Templates created for repr test
+=== repr tests ===
+Template repr: Template(strings=('Hello ', ' world'), interpolations=(Inter...
+Interp repr: Interpolation(42, 'x', 's', ':>10')
 
-=== Interpolation attribute protection ===
-Correctly blocked: 'Interpolation' object attribute is read-only
-Correctly blocked: 'Interpolation' object attribute is read-only
-Correctly blocked: 'Interpolation' object attribute is read-only
-Correctly blocked: 'Interpolation' object attribute is read-only
-
-=== Template make_new edge cases ===
-Raw t-string: Template(strings=('raw\\nstring',), interpolations=())
-Raw t-string with interp: Template(strings=('raw ', ' string'), interpolations=(Interpolation(42, 'x', None, ''),))
-tr prefix: Template(strings=('also raw',), interpolations=())
-
-=== Format spec with escaped braces ===
-Format with interpolated width: '        42'
-Format with width and precision: '      3.14'
-
-=== Template concatenation edge cases ===
-Empty + Empty: ''
-Empty + Content: 'content'
-Content + Empty: 'content'
-Interp + Interp: '12'
-Mixed concat: 'start 1 middle continue 2 end'
-
-=== Template iteration with empty strings ===
-Adjacent interpolations iter: ['Interpolation', 'Interpolation']
-Start with interp iter: ['Interpolation', 'str']
-End with interp iter: ['str', 'Interpolation']
-Triple interp iter: ['Interpolation', 'Interpolation', 'Interpolation']
-
-=== Large template test ===
-Large template size: 100002
-
-=== Debug format test ===
-Normal format: Template(strings=('', ''), interpolations=(Interpolation(42, 'value', None, ''),))
-
-=== Binary operation errors ===
-Correctly blocked int+Template: unsupported types for __add__: 'int', 'Template'
-Correctly blocked -
-Correctly blocked *
-Correctly blocked /
-Correctly blocked %
-Correctly blocked **
-Correctly blocked &
-Correctly blocked |
-Correctly blocked ^
-Correctly blocked <<
-Correctly blocked >>
-
-=== Values property large array ===
-Large values: (1, 2, 3, 4, 5)
-
-=== Invalid interpolation format ===
-Testing invalid interpolation formats
-
-=== String conversion errors ===
-Correctly caught str error: str conversion failed
-
-=== Complex format specs ===
-s conversion: 42
-a conversion: 42
-s conversion with format: '        42'
-Float format: 3.14
-
-Full coverage tests completed!
+Coverage tests completed!

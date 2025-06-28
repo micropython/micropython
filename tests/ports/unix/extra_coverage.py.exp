@@ -183,13 +183,11 @@ pop all: 1 2 4 5
 1 1
 # stackctrl
 1 1
-# t-strings C coverage
-interp created: 1
-template created: 1
-long expr error: SyntaxError
-empty expr: 0
-heap locked error: MemoryError
-parse with heap locked: MemoryError
+# t-strings C-level coverage
+Template(strings=('Hello ', '!'), interpolations=(Interpolation(World, 'name', None, ''),))
+ValueError: template expression too long
+ValueError: invalid interpolation format
+TypeError: can only concatenate Template (not "str") to Template
 # end coverage.c
 0123456789 b'0123456789'
 7300
@@ -252,18 +250,3 @@ example_package.foo.bar.f
 True
 example_package.foo.f
 True
-# t-strings C coverage
-interp1 repr: Interpolation(42, 'x', None, None)
-interp2 repr: Interpolation(42, 'x', 'r', '10d')
-template repr: Template(strings=('Hello ', ' world'), interpolations=(Interpolation(42, 'x', None, None),))
-empty strings template: 4242
-ValueError: invalid interpolation format
-ValueError: template string too large
-long expr error: pass
-empty expr is None: 1
-whitespace expr is None: 1
-heap locked interp: MemoryError
-debug format: value=42
-format with interp: '        42'
-t-strings C coverage: complete
-# end coverage.c

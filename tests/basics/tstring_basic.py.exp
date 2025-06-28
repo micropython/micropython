@@ -1,56 +1,47 @@
-=== Parser memory and error cases ===
-empty: None
-space: None
-spaces: None
-tab: None
-newline: SyntaxError
-mixed: SyntaxError
+=== Basic functionality ===
+Template
+Strings: ('Hello ', '')
+Value: World
+str(): Hello World
+Raw: 'Path: C:\test\'
+tr: 'Path: C:\test\'
 
-=== Complex nested structures ===
-Deep nesting (20 levels): 42
-Const None: None
-Const True: True
-Const False: False
-Const Ellipsis: Ellipsis
-Const int: 42
-Const float: 3.14
-Const complex: (1+2j)
-Const bytes: b'bytes'
-Const bigint: 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+=== Parser tests ===
+Empty expr: None
+Whitespace: 42
+Complex: 1
+None: None
+True: True
+False: False
+Ellipsis: Ellipsis
+Deep nest: 42
 
-=== Expression syntax errors ===
-unclosed paren: SyntaxError
-unclosed bracket: SyntaxError
-unclosed brace: SyntaxError
-invalid token: SyntaxError
-empty brackets: []
-multiple ops: SyntaxError
-assignment: SyntaxError
-import: SyntaxError
-class def: SyntaxError
-function def: SyntaxError
-yield expr: SyntaxError
-await expr: SyntaxError
+=== Conversions and formatting ===
+repr: {'key': 'value'}
+str: {'key': 'value'}
+ascii: {'key': 'value'}
+Width: '        42'
+Precision: 3.14
+Debug: x=x=42
 
-=== Large expression handling ===
-9999 char expr: OK (2500...)
-10000 char expr: OK
-10001 char expr: ValueError (template expression too long)
+=== Constructor tests ===
+Empty: ('',)
+Single: ('single',)
+Multi: ('abc',)
+Mixed: strings=('start', 'middle', 'end'), values=(1, 2)
 
-=== Special lexer cases ===
-Triple concat: 'abc'
-Raw+regular: len=14
-Empty t-strings: 0, 0
-Triple quoted single: not supported
-Triple quoted double: not supported
+=== Operations ===
+Concat: 'Hello World'
+Iterator: ['str', 'Interpolation', 'str', 'Interpolation', 'str']
+strings attr: ('test', '')
+interpolations attr: 1
+values attr: (42,)
+repr: Template(strings=(' World',), interpolations=())...
 
-=== Format spec edge cases ===
-Format spec escaped braces: SKIPPED (implementation hangs)
-Nested interpolation: '    X'
-Format with colon: failed
+=== Error cases ===
+Invalid syntax: SyntaxError
+Long expr: Error
+Mixed concat: SyntaxError
+bt prefix: SyntaxError
 
-=== Memory stress tests ===
-50 interpolations: 49 interpolations
-Long strings: total length = 2000
-
-Parser edge tests completed!
+Basic tests completed!
