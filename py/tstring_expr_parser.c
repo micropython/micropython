@@ -62,6 +62,30 @@ static mp_parse_node_t copy_parse_node(void *alloc_ctx, mp_parse_allocator_t all
         return (mp_parse_node_t)new_pns;
     }
 
+    // Check if this is a template string node - they have a special header format
+    #if MICROPY_PY_TSTRINGS
+    if ((pns->kind_num_nodes & 0xFF) == MP_PARSE_NODE_TEMPLATE_STRING) {
+        // Template string nodes use a special header format
+        uint32_t hdr = pns->kind_num_nodes;
+        size_t seg_cnt = TSTR_HDR_GET_SEG_CNT(hdr);
+        size_t interp_cnt = TSTR_HDR_GET_INT_CNT(hdr);
+        size_t total_nodes = seg_cnt + interp_cnt;
+
+        // Allocate new template string node
+        mp_parse_node_struct_t *new_pns = (mp_parse_node_struct_t *)allocator(alloc_ctx,
+            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * total_nodes);
+        new_pns->source_line = pns->source_line;
+        new_pns->kind_num_nodes = pns->kind_num_nodes;
+
+        // Recursively copy all child nodes
+        for (size_t i = 0; i < total_nodes; i++) {
+            new_pns->nodes[i] = copy_parse_node(alloc_ctx, allocator, pns->nodes[i]);
+        }
+
+        return (mp_parse_node_t)new_pns;
+    }
+    #endif
+
     // Sanity check to catch corrupted nodes early
     if (n > 100) {
         // Parse nodes shouldn't have this many children

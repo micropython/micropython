@@ -87,4 +87,11 @@ Nested: Template
 Expression: Template
 Function: Template
 
+=== Inline template literal tests ===
+Empty nested: Template
+With content: Template
+Concatenation: Template
+Mixed quotes: Template
+Nested interp: Template
+
 Coverage tests completed!

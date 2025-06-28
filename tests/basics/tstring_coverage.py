@@ -307,4 +307,43 @@ def get_template(n):
 func_result = t"Result: {get_template(42)}"
 print(f"Function: {type(func_result.values[0]).__name__}")
 
+# Test inline template literals (from tstring_nesting.py)
+print("\n=== Inline template literal tests ===")
+
+# Basic nested empty template
+try:
+    result = t"outer { t'' }"
+    print(f"Empty nested: {type(result.values[0]).__name__}")
+except Exception as e:
+    print(f"Empty nested: FAIL - {type(e).__name__}: {e}")
+
+# Nested template with content
+try:
+    result = t"outer { t'inner' }"
+    print(f"With content: {type(result.values[0]).__name__}")
+except Exception as e:
+    print(f"With content: FAIL - {type(e).__name__}: {e}")
+
+# Nested template concatenation
+try:
+    result = t"result: { t'a' + t'b' }"
+    print(f"Concatenation: {type(result.values[0]).__name__}")
+except Exception as e:
+    print(f"Concatenation: FAIL - {type(e).__name__}: {e}")
+
+# Mixed quotes
+try:
+    result = t'Single { t"double" }'
+    print(f"Mixed quotes: {type(result.values[0]).__name__}")
+except Exception as e:
+    print(f"Mixed quotes: FAIL - {type(e).__name__}: {e}")
+
+# With interpolation in nested
+try:
+    x = 42
+    result = t"outer { t'inner {x}' }"
+    print(f"Nested interp: {type(result.values[0]).__name__}")
+except Exception as e:
+    print(f"Nested interp: FAIL - {type(e).__name__}: {e}")
+
 print("\nCoverage tests completed!")
