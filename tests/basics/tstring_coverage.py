@@ -206,7 +206,7 @@ except Exception as e:
 try:
     # Try to create a very large number of interpolations
     # MicroPython has a limit on interpolations
-    expr = "x = 1\n" + "t'" + "{x}" * 256 + "'"
+    expr = "x = 1\n" + "t'" + "{x}" * 5000 + "'"
     exec(expr)
 except (ValueError, SyntaxError, MemoryError) as e:
     print(f"Too many interpolations: {type(e).__name__}")
@@ -265,5 +265,46 @@ try:
     print(f"Empty t-string: '{t_edge.__str__()}'")
 except Exception as e:
     print(f"Empty t-string error: {e}")
+
+print("\n=== Unicode edge cases ===")
+# Test Unicode characters in template strings
+emoji = "🐍"
+t_emoji = t"Python {emoji}"
+print(f"Emoji: {t_emoji.values[0] == emoji}")
+
+# Test combining characters
+combined = "e\u0301"  # e with combining acute accent
+t_combined = t"Café: {combined}"
+print(f"Combining: {t_combined.values[0] == combined}")
+
+# Test zero-width characters
+zwj_text = "a\u200Db"  # Zero-width joiner
+t_zwj = t"ZWJ: {zwj_text}"
+print(f"Zero-width: {t_zwj.values[0] == zwj_text}")
+
+# Test Unicode in format specs
+pi = 3.14159
+t_pi = t"π ≈ {pi:.2f}"
+print(f"Unicode format: {t_pi.strings[0] == 'π ≈ '}")
+
+print("\n=== Nested template strings ===")
+# Test template string inside interpolation
+x = 5
+inner = t"inner: {x}"
+outer = t"outer: {inner}"
+print(f"Nested: {type(outer.values[0]).__name__}")
+
+# Test template in expression
+t_a = t'a'
+t_b = t'b'
+expr_result = t"Expr: {t_a + t_b}"
+print(f"Expression: {type(expr_result.values[0]).__name__}")
+
+# Test template in function
+def get_template(n):
+    return t"func: {n}"
+
+func_result = t"Result: {get_template(42)}"
+print(f"Function: {type(func_result.values[0]).__name__}")
 
 print("\nCoverage tests completed!")

@@ -1105,7 +1105,7 @@ typedef double mp_float_t;
 // Maximum number of interpolations in a single t-string
 // Ports can override this to reduce memory usage for embedded systems
 #ifndef MICROPY_PY_TSTRING_MAX_INTERPOLATIONS
-#define MICROPY_PY_TSTRING_MAX_INTERPOLATIONS (1000)  // Reasonable default
+#define MICROPY_PY_TSTRING_MAX_INTERPOLATIONS (4095)  // 12-bit limit
 #endif
 
 // Legacy name for compatibility

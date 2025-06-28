@@ -66,6 +66,7 @@ String literal: hello
 String expr: 'test'
 Re-raised exception: Special error
 Conv empty fmt: '42'
+Too many interpolations: SyntaxError
 Large template: RuntimeError
 Triple quoted error: invalid syntax
 Raw triple error: invalid syntax
@@ -74,5 +75,16 @@ Empty concat: 'test42'
 Self interp concat: values=(1, 1)
 Lonely string: SyntaxError
 Empty t-string: ''
+
+=== Unicode edge cases ===
+Emoji: True
+Combining: True
+Zero-width: True
+Unicode format: True
+
+=== Nested template strings ===
+Nested: Template
+Expression: Template
+Function: Template
 
 Coverage tests completed!

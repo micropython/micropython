@@ -873,68 +873,40 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
         // Finished parsing t-string
 
-        if (interps.len > MICROPY_PY_TSTRING_MAX_PARTS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("too many template interpolations (%d)"), (int)interps.len);
+        size_t seg_cnt = strings.len;
+        size_t interp_cnt = interps.len;
+
+        if (seg_cnt > TSTR_MAX_SEG) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many template segments"));
         }
 
-        // Build strings tuple node
-        mp_parse_node_struct_t *strings_tuple = parser_alloc(parser,
-            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * strings.len);
-        strings_tuple->source_line = lex->tok_line;
-        strings_tuple->kind_num_nodes = RULE_testlist | (strings.len << 8);
-        for (size_t j = 0; j < strings.len; j++) {
-            strings_tuple->nodes[j] = strings.items[j];
+        // interp_cnt is stored in 12 bits, so max is 4095 interpolations.
+        if (interp_cnt > TSTR_MAX_INT) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many interpolations"));
         }
 
-        // Build interpolations tuple node
-        // Since the interpolation items are already wrapped in atom_paren nodes,
-        // we can create a testlist_comp to hold them
-        mp_parse_node_struct_t *interps_testlist = parser_alloc(parser,
-            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * interps.len);
-        interps_testlist->source_line = lex->tok_line;
-        interps_testlist->kind_num_nodes = RULE_testlist_comp | (interps.len << 8);
-        for (size_t j = 0; j < interps.len; j++) {
-            interps_testlist->nodes[j] = interps.items[j];
+        // Check for integer overflow in total calculation
+        size_t total = seg_cnt + interp_cnt;
+        if (total < seg_cnt || total < interp_cnt) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too large"));
         }
 
-        // Wrap in atom_paren to create the outer tuple at runtime
-        mp_parse_node_struct_t *interps_tuple = parser_alloc(parser,
-            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 1);
-        interps_tuple->source_line = lex->tok_line;
-        interps_tuple->kind_num_nodes = RULE_atom_paren | (1 << 8);
-        interps_tuple->nodes[0] = (mp_parse_node_t)interps_testlist;
+        // Allocate template node. GC safety: parser_alloc ensures the allocated
+        // memory is properly rooted. strings.items and interps.items remain valid
+        // until m_del below since no allocations occur between here and there.
+        mp_parse_node_struct_t *templ =
+            parser_alloc(parser,
+                sizeof(*templ) + sizeof(mp_parse_node_t) * total);
 
-        // Build AST for: __template__(strings, interpolations)
-        // First create the function name node
-        mp_parse_node_t func_node = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, MP_QSTR___template__);
+        templ->source_line = lex->tok_line;
+        templ->kind_num_nodes = TSTR_HDR_MAKE(seg_cnt, interp_cnt);
 
-        // Create argument list node with two arguments
-        // For a simple 2-argument call, we create: arg1, arg2
-        // The list infrastructure expects the arguments without explicit comma nodes
-        mp_parse_node_struct_t *arglist = parser_alloc(parser,
-            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 2);
-        arglist->source_line = lex->tok_line;
-        arglist->kind_num_nodes = RULE_arglist | (2 << 8);
-        arglist->nodes[0] = (mp_parse_node_t)strings_tuple;
-        arglist->nodes[1] = (mp_parse_node_t)interps_tuple;
+        memcpy(&templ->nodes[0],           strings.items,
+            seg_cnt * sizeof(mp_parse_node_t));
+        memcpy(&templ->nodes[seg_cnt],     interps.items,
+            interp_cnt * sizeof(mp_parse_node_t));
 
-        // Create the trailer_paren node for function call
-        // The compile function expects nodes[0] to be the arglist
-        mp_parse_node_struct_t *trailer = parser_alloc(parser,
-            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 1);
-        trailer->source_line = lex->tok_line;
-        trailer->kind_num_nodes = RULE_trailer_paren | (1 << 8);
-        trailer->nodes[0] = (mp_parse_node_t)arglist;
-
-        // Create the atom_expr_normal node for the function call
-        mp_parse_node_struct_t *atom_expr = parser_alloc(parser,
-            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 2);
-        atom_expr->source_line = lex->tok_line;
-        atom_expr->kind_num_nodes = RULE_atom_expr_normal | (2 << 8);
-        atom_expr->nodes[0] = func_node;
-        atom_expr->nodes[1] = (mp_parse_node_t)trailer;
-
-        pn = (mp_parse_node_t)atom_expr;
+        pn = (mp_parse_node_t)templ;
 
         m_del(mp_parse_node_t, strings.items, strings.alloc);
         m_del(mp_parse_node_t, interps.items, interps.alloc);
