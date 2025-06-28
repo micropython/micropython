@@ -851,20 +851,20 @@ static mp_obj_t extra_coverage(void) {
     {
         // Only test C-level functions that cannot be tested from Python
         mp_printf(&mp_plat_print, "# t-strings parser internals\n");
-        
+
         extern mp_parse_node_t parse_tstring_expression(void *alloc_ctx, mp_parse_allocator_t allocator, const char *expr, size_t len);
-        
+
         // Test parser edge cases that are hard to reach from Python
         mp_parse_node_t node;
-        
+
         // Empty expression - tests lines 114-116
         node = parse_tstring_expression(NULL, coverage_alloc_fn, "", 0);
         (void)node;
-        
+
         // Whitespace only - tests trimming logic
         node = parse_tstring_expression(NULL, coverage_alloc_fn, "   ", 3);
         (void)node;
-        
+
         // Very long expression to test limit
         char long_expr[11000];
         memset(long_expr, 'x', 11000);
