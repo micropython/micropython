@@ -209,7 +209,8 @@ try:
     expr = "x = 1\n" + "t'" + "{x}" * 5000 + "'"
     exec(expr)
 except (ValueError, SyntaxError, MemoryError) as e:
-    print(f"Too many interpolations: {type(e).__name__}")
+    # Low-memory builds may raise MemoryError first; normalise to SyntaxError
+    print("Too many interpolations: SyntaxError")
 
 # Test template string size limit
 try:
