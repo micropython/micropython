@@ -92,7 +92,7 @@ static void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     mp_printf(print, "Timer(%u)", self->tim_id);
 }
 
-/// \method init(*, freq, prescaler, period)
+/// \method init(*, freq, hard)
 /// Initialise the timer.  Initialisation must be either by frequency (in Hz)
 /// or by prescaler and period:
 ///
@@ -103,10 +103,10 @@ static void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///   - `freq` - specifies the periodic frequency of the timer. You might also
 ///              view this as the frequency with which the timer goes through
 ///              one complete cycle.
-//////
 ///   - `callback` - as per Timer.callback()
-//////
-///  You must either specify freq.
+///   - `hard` - whether the callback should be called in hard-IRQ context
+///
+///  You must specify freq; hard defaults to True if not set.
 static mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // enum { ARG_freq, ARG_prescaler, ARG_period, ARG_tick_hz, ARG_mode, ARG_div, ARG_callback, ARG_deadtime };
     enum { ARG_freq, ARG_callback, ARG_hard };
@@ -130,7 +130,7 @@ static mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
         freq_args[1] = args[ARG_freq].u_obj;
         pyb_timer_freq(2, (const mp_obj_t *)&freq_args);
     } else {
-        mp_raise_TypeError(MP_ERROR_TEXT("must specify either freq, period, or prescaler and period"));
+        mp_raise_TypeError(MP_ERROR_TEXT("must specify freq"));
     }
     // Enable ARPE so that the auto-reload register is buffered.
     // This allows to smoothly change the frequency of the timer.
