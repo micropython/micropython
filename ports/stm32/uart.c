@@ -689,6 +689,10 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     uart_obj->is_enabled = true;
     uart_obj->attached_to_repl = false;
 
+    #if defined(STM32F4) || defined(STM32L1)
+    uart_obj->suppress_idle_irq = true;
+    #endif
+
     if (bits == UART_WORDLENGTH_9B && parity == UART_PARITY_NONE) {
         uart_obj->char_mask = 0x1ff;
         uart_obj->char_width = CHAR_WIDTH_9BIT;
@@ -1274,6 +1278,9 @@ void uart_irq_handler(mp_uint_t uart_id) {
             self->uartx->CR1 &= ~USART_CR1_RXNEIE;
         }
     }
+    if (self->suppress_idle_irq) {
+        self->mp_irq_flags &= ~USART_SR_IDLE;
+    }
     #else
     self->uartx->ICR = self->mp_irq_flags & (USART_ICR_IDLECF | USART_ICR_ORECF);
     #endif
@@ -1282,6 +1289,14 @@ void uart_irq_handler(mp_uint_t uart_id) {
     if (self->mp_irq_trigger & self->mp_irq_flags) {
         mp_irq_handler(self->mp_irq_obj);
     }
+
+    #if defined(STM32F4) || defined(STM32L1)
+    if (did_clear_sr) {
+        self->suppress_idle_irq = false;
+    } else {
+        self->suppress_idle_irq = true;
+    }
+    #endif
 }
 
 static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
