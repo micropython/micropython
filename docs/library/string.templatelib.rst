@@ -120,6 +120,13 @@ This implementation follows PEP 750 with these MicroPython-specific details:
 4. **No Concatenation**: Template concatenation (``t"a" + t"b"``) is not
    supported as per PEP 750.
 
+Availability
+------------
+
+Template strings (PEP 750) are enabled by default in the WebAssembly/PyScript builds.
+For other ports, template strings need to be enabled at compile time by setting
+``MICROPY_PY_TSTRINGS`` to 1 in the port's configuration.
+
 Example Usage
 -------------
 
