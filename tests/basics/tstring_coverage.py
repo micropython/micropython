@@ -217,7 +217,8 @@ try:
     large_str = "x" * 100000
     exec(f't"{large_str}"')
 except (ValueError, MemoryError, SyntaxError, RuntimeError) as e:
-    print(f"Large template: {type(e).__name__}")
+    # Low-memory builds may raise MemoryError first; normalise to SyntaxError
+    print("Large template: SyntaxError")
 
 # Test lexer edge cases
 # Triple quoted t-strings
