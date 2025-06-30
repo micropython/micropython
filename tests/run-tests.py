@@ -353,6 +353,7 @@ special_tests = [
         "micropython/meminfo.py",
         "basics/bytes_compare3.py",
         "basics/builtin_help.py",
+        "basics/tstring_test.py",
         "thread/thread_exc2.py",
         "ports/esp32/partition_ota.py",
     )
@@ -634,6 +635,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_revops = False
     skip_io_module = False
     skip_fstring = False
+    skip_tstring = False
     skip_endian = False
     skip_inlineasm = False
     has_complex = True
@@ -695,6 +697,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output = run_feature_check(pyb, args, "fstring.py")
         if output != b"a=1\n":
             skip_fstring = True
+
+        # Check if tstring feature is enabled, and skip such tests if it doesn't
+        output = run_feature_check(pyb, args, "tstring.py")
+        if output != b"tstring\n":
+            skip_tstring = True
 
         if args.inlineasm_arch == "thumb":
             # Check if @micropython.asm_thumb supports Thumb2 instructions, and skip such tests if it doesn't
@@ -888,6 +895,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_const = test_name.startswith("const")
         is_io_module = test_name.startswith("io_")
         is_fstring = test_name.startswith("string_fstring")
+        is_tstring = test_name.startswith("tstring")
         is_inlineasm = test_name.startswith("asm")
 
         skip_it = test_file in skip_tests
@@ -902,6 +910,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_revops and "reverse_op" in test_name
         skip_it |= skip_io_module and is_io_module
         skip_it |= skip_fstring and is_fstring
+        skip_it |= skip_tstring and is_tstring
         skip_it |= skip_inlineasm and is_inlineasm
 
         if skip_it:

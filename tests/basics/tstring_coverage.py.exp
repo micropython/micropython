@@ -1,0 +1,97 @@
+=== Constructor edge cases ===
+Keyword args: Template.__new__ only accepts *args arguments
+Invalid type: Template.__new__ *args need to be of type 'str' or 'Interpolation', got int
+Invalid interp: interpolations tuple must contain only Interpolation objects, got int
+Tuple constructor: hello42world
+
+=== Binary operations ===
+Template+str: can only concatenate Template (not "str") to Template
+str+Template: unsupported types for __add__: 'str', 'Template'
+int+Template: TypeError
+-: unsupported
+*: unsupported
+/: unsupported
+%: unsupported
+**: unsupported
+&: unsupported
+|: unsupported
+^: unsupported
+<<: unsupported
+>>: unsupported
+
+=== Edge cases ===
+Empty template: ''
+Empty strings: [Interpolation(1, 'a', None, ''), Interpolation(2, 'b', None, '')]
+Adjacent: '123'
+Single iter: ['only']
+Self+self: 'testtest'
+
+=== Values property ===
+Values[0]: ()
+Values[1]: (0,)
+Values[2]: (0, 1)
+Values[3]: (0, 1, 2)
+Values[4]: (0, 1, 2, 3)
+Values[5]: (0, 1, 2, 3, 4)
+Values[6]: (0, 1, 2, 3, 4, 5)
+
+=== Size limits ===
+Size limit test: SKIPPED (causes memory errors)
+
+=== Format spec edge cases ===
+Empty fmt: 42
+Width: '        42'
+Conv+fmt: '        42'
+Interp fmt: '      3.14'
+Escaped braces: 'Hello {name} and {{value}}'
+
+=== Special cases ===
+__template__ error: invalid interpolation format
+__template__: Template
+Interp read-only: AttributeError
+Whitespace trim: 'None'
+Debug =: x=42
+Custom !r: CustomRepr
+Custom !s: CustomStr
+__str__ bound: test
+Empty start iter: ['Interpolation', 'str']
+Iterator edge: ['Interpolation', 'Interpolation']
+
+=== repr tests ===
+Template repr: Template(strings=('Hello ', ' world'), interpolations=(Inter...
+Interp repr: Interpolation(42, 'x', 's', ':>10')
+
+=== Additional coverage tests ===
+String literal: hello
+String expr: 'test'
+Re-raised exception: Special error
+Conv empty fmt: '42'
+Too many interpolations: SyntaxError
+Large template: SyntaxError
+Triple quoted error: invalid syntax
+Raw triple error: invalid syntax
+Complex concat: strings=('a', 'bc', 'd', 'e'), values=(1, 2, 3)
+Empty concat: 'test42'
+Self interp concat: values=(1, 1)
+Lonely string: SyntaxError
+Empty t-string: ''
+
+=== Unicode edge cases ===
+Emoji: True
+Combining: True
+Zero-width: True
+Unicode format: True
+
+=== Nested template strings ===
+Nested: Template
+Expression: Template
+Function: Template
+
+=== Inline template literal tests ===
+Empty nested: Template
+With content: Template
+Concatenation: Template
+Mixed quotes: Template
+Nested interp: Template
+
+Coverage tests completed!

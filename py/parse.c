@@ -37,7 +37,23 @@
 #include "py/runtime.h"
 #include "py/objint.h"
 #include "py/objstr.h"
+#include "py/objlist.h"
+#include "py/objtuple.h"
 #include "py/builtin.h"
+#include "py/compile.h"
+
+#if MICROPY_PY_TSTRINGS
+#include "py/tstring_expr_parser.h"
+
+// Forward declaration
+struct _parser_t;
+static void *parser_alloc(struct _parser_t *parser, size_t num_bytes);
+
+// Wrapper function for parser_alloc to match the allocator interface
+static void *tstring_parser_alloc_wrapper(void *ctx, size_t num_bytes) {
+    return parser_alloc((struct _parser_t *)ctx, num_bytes);
+}
+#endif
 
 #if MICROPY_ENABLE_COMPILER
 
@@ -243,6 +259,7 @@ typedef struct _parser_t {
 } parser_t;
 
 static void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args);
+static void push_result_token(parser_t *parser, uint8_t rule_id);
 
 static const uint16_t *get_rule_arg(uint8_t r_id) {
     size_t off = rule_arg_offset_table[r_id];
@@ -626,6 +643,333 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         // make a node holding a pointer to the bytes object
         mp_obj_t o = mp_obj_new_bytes((const byte *)lex->vstr.buf, lex->vstr.len);
         pn = make_node_const_object(parser, lex->tok_line, o);
+    #if MICROPY_PY_TSTRINGS
+    } else if (lex->tok_kind == MP_TOKEN_TSTRING) {
+        // Generate AST for template string construction
+        // This will create code that calls __template__(strings, interpolations)
+
+        const char *str = lex->vstr.buf;
+        size_t len = lex->vstr.len;
+
+        if (len > MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("template string too large (%d bytes)"), (int)len);
+        }
+
+        // Pre-scan to count interpolations and check limits before allocating memory
+        size_t est_interp_cnt = 0;
+        size_t est_seg_cnt = 1; // At least one string segment
+        for (size_t i = 0; i < len; i++) {
+            if (i < len - 1 && str[i] == '{' && str[i + 1] == '{') {
+                // Escaped brace, skip
+                i++;
+            } else if (str[i] == '{') {
+                // Found interpolation
+                est_interp_cnt++;
+                est_seg_cnt++;
+                // Skip to closing brace (simplified scan)
+                int depth = 1;
+                i++;
+                while (i < len && depth > 0) {
+                    if (str[i] == '{') {
+                        depth++;
+                    } else if (str[i] == '}') {
+                        depth--;
+                    }
+                    i++;
+                }
+                i--; // Back up one since loop will increment
+            }
+        }
+
+        // Check limits before any allocations
+        if (est_interp_cnt > MICROPY_PY_TSTRING_MAX_INTERPOLATIONS) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many interpolations"));
+        }
+
+        // Estimate memory usage and check against limit
+        size_t est_total = est_seg_cnt + est_interp_cnt;
+        size_t est_bytes = sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * est_total;
+        // Add overhead for dynamic arrays during parsing
+        est_bytes += est_seg_cnt * sizeof(mp_parse_node_t) * 2; // Assume some growth
+        est_bytes += est_interp_cnt * sizeof(mp_parse_node_t) * 2;
+
+        if (est_bytes > MICROPY_PY_TSTRING_MAX_BYTES) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
+        }
+
+        // Process TSTRING content
+
+        // Dynamic arrays for collecting parse nodes
+        typedef struct {
+            size_t alloc;
+            size_t len;
+            mp_parse_node_t *items;
+        } pn_array_t;
+
+        pn_array_t strings = {0};
+        pn_array_t interps = {0};
+
+        // Helper macros
+        #define GROW_ARRAY(arr) do { \
+        if ((arr).len >= (arr).alloc) { \
+            size_t new_alloc = (arr).alloc ? (arr).alloc * 2 : 8; \
+            size_t new_bytes = new_alloc * sizeof(mp_parse_node_t); \
+            if (new_bytes > MICROPY_PY_TSTRING_MAX_BYTES) { \
+                mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big")); \
+            } \
+            (arr).items = m_renew(mp_parse_node_t, (arr).items, (arr).alloc, new_alloc); \
+            (arr).alloc = new_alloc; \
+        } \
+} \
+    while (0)
+
+        #define ADD_NODE(arr, node) do { \
+        GROW_ARRAY(arr); \
+        (arr).items[(arr).len++] = node; \
+} while (0)
+
+        // Use a vstr to accumulate the current string part
+        vstr_t vstr;
+        vstr_init(&vstr, 16);
+
+        size_t i = 0;
+        while (i < len) {
+            if (i < len - 1 && str[i] == '{' && str[i + 1] == '{') {
+                // Handle escaped braces {{
+                vstr_add_byte(&vstr, '{');
+                i += 2;
+            } else if (i < len - 1 && str[i] == '}' && str[i + 1] == '}') {
+                // Handle escaped braces }}
+                vstr_add_byte(&vstr, '}');
+                i += 2;
+            } else if (str[i] == '{') {
+                // Find the end of the interpolation first to check for debug format
+                i++;
+                size_t expr_start = i;
+                int brace_depth = 1;
+                size_t conversion_pos = 0;
+                size_t format_spec_pos = 0;
+                bool is_debug_format = false;
+
+                // Quick scan to check for debug format
+                size_t j = i;
+                int bd = 0, pd = 0;  // bracket and paren depth
+                while (j < len && str[j] != '}') {
+                    if (str[j] == '[') {
+                        bd++;
+                    } else if (str[j] == ']') {
+                        bd--;
+                    } else if (str[j] == '(') {
+                        pd++;
+                    } else if (str[j] == ')') {
+                        pd--;
+                    } else if (bd == 0 && pd == 0 && (str[j] == '!' || str[j] == ':')) {
+                        break;
+                    }
+                    j++;
+                }
+                if (j > i && str[j - 1] == '=' && j < len &&
+                    (str[j] == '}' || str[j] == '!' || str[j] == ':')) {
+                    is_debug_format = true;
+
+                    // For debug format, add "expr=" to the current string
+                    for (size_t k = expr_start; k < j - 1; k++) {
+                        vstr_add_byte(&vstr, str[k]);
+                    }
+                    vstr_add_byte(&vstr, '=');
+                }
+
+                // Now save the string part
+                qstr q = qstr_from_strn(vstr.buf, vstr.len);
+                ADD_NODE(strings, mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, q));
+                vstr_reset(&vstr);
+
+                int bracket_depth = 0;  // Track [] nesting
+                int paren_depth = 0;    // Track () nesting
+                while (i < len && brace_depth > 0) {
+                    if (str[i] == '{') {
+                        brace_depth++;
+                    } else if (str[i] == '}') {
+                        brace_depth--;
+                        if (brace_depth == 0) {
+                            break;
+                        }
+                    } else if (str[i] == '[') {
+                        bracket_depth++;
+                    } else if (str[i] == ']') {
+                        bracket_depth--;
+                    } else if (str[i] == '(') {
+                        paren_depth++;
+                    } else if (str[i] == ')') {
+                        paren_depth--;
+                    } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == '!' && conversion_pos == 0) {
+                        conversion_pos = i;
+                    } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == ':' && format_spec_pos == 0) {
+                        format_spec_pos = i;
+                    }
+                    i++;
+                }
+
+                if (brace_depth == 0) {
+                    // Successfully found closing brace
+                    size_t expr_end = i;
+                    size_t expr_len = expr_end - expr_start;
+
+                    if (is_debug_format) {
+                        // Find the position of '=' to determine expression length
+                        size_t eq_pos = expr_start;
+                        while (eq_pos < expr_end && str[eq_pos] != '=') {
+                            eq_pos++;
+                        }
+                        expr_len = eq_pos - expr_start;
+                    } else if (conversion_pos) {
+                        expr_len = conversion_pos - expr_start;
+                    } else if (format_spec_pos) {
+                        expr_len = format_spec_pos - expr_start;
+                    }
+
+                    // Parse the expression to generate proper AST nodes
+                    mp_parse_node_t expr_node;
+                    if (expr_len > 0) {
+                        #if MICROPY_PY_TSTRINGS
+                        // Use the dedicated expression parser
+                        expr_node = parse_tstring_expression(parser, tstring_parser_alloc_wrapper, &str[expr_start], expr_len);
+                        #else
+                        // Fallback: store as string
+                        qstr expr_q = qstr_from_strn(&str[expr_start], expr_len);
+                        expr_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, expr_q);
+                        #endif
+                    } else {
+                        expr_node = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_NONE);
+                    }
+
+                    // Create expression text string
+                    qstr expr_text_q;
+                    if (is_debug_format) {
+                        // Include the '=' in the expression text
+                        expr_text_q = qstr_from_strn(&str[expr_start], expr_len + 1);
+                    } else {
+                        expr_text_q = qstr_from_strn(&str[expr_start], expr_len);
+                    }
+                    mp_parse_node_t expr_text_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, expr_text_q);
+
+                    // Extract conversion
+                    mp_parse_node_t conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_NONE);
+                    if (is_debug_format) {
+                        // Debug format implies !r conversion (or !s if format spec present)
+                        qstr conv_q = (format_spec_pos && format_spec_pos < expr_end) ? MP_QSTR_s : MP_QSTR_r;
+                        conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, conv_q);
+                    } else if (conversion_pos && conversion_pos + 1 < expr_end) {
+                        qstr conv_q = qstr_from_strn(&str[conversion_pos + 1], 1);
+                        conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, conv_q);
+                    }
+
+                    // Extract format spec
+                    mp_parse_node_t format_spec_node;
+                    if (format_spec_pos && format_spec_pos + 1 < expr_end) {
+                        size_t fmt_end = expr_end;
+                        if (conversion_pos && conversion_pos > format_spec_pos) {
+                            fmt_end = conversion_pos;
+                        }
+                        if (fmt_end > format_spec_pos + 1) {
+                            qstr fmt_q = qstr_from_strn(&str[format_spec_pos + 1],
+                                fmt_end - format_spec_pos - 1);
+                            format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, fmt_q);
+                        } else {
+                            format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, MP_QSTR_);
+                        }
+                    } else {
+                        format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, MP_QSTR_);
+                    }
+
+                    // Build interpolation tuple node: (expr, text, conv, fmt)
+                    mp_parse_node_struct_t *testlist_comp = parser_alloc(parser,
+                        sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 4);
+                    testlist_comp->source_line = lex->tok_line;
+                    testlist_comp->kind_num_nodes = RULE_testlist_comp | (4 << 8);
+                    testlist_comp->nodes[0] = expr_node;
+                    testlist_comp->nodes[1] = expr_text_node;
+                    testlist_comp->nodes[2] = conversion_node;
+                    testlist_comp->nodes[3] = format_spec_node;
+
+                    // Wrap in atom_paren to create a runtime tuple
+                    mp_parse_node_struct_t *interp_tuple = parser_alloc(parser,
+                        sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 1);
+                    interp_tuple->source_line = lex->tok_line;
+                    interp_tuple->kind_num_nodes = RULE_atom_paren | (1 << 8);
+                    interp_tuple->nodes[0] = (mp_parse_node_t)testlist_comp;
+
+                    ADD_NODE(interps, (mp_parse_node_t)interp_tuple);
+                    // Added interpolation
+                    i++; // Skip the closing brace
+                } else {
+                    // Failed to find closing brace - syntax error
+                }
+            } else {
+                // Regular character
+                // Check if vstr is getting too large
+                if (vstr.len + 1 > MICROPY_PY_TSTRING_MAX_BYTES / 2) {
+                    mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
+                }
+                vstr_add_byte(&vstr, str[i]);
+                i++;
+            }
+        }
+
+        // Add the final string part
+        qstr q = qstr_from_strn(vstr.buf, vstr.len);
+        ADD_NODE(strings, mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, q));
+        vstr_clear(&vstr);
+
+        // Finished parsing t-string
+
+        size_t seg_cnt = strings.len;
+        size_t interp_cnt = interps.len;
+
+        if (seg_cnt > TSTR_MAX_SEG) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many template segments"));
+        }
+
+        // interp_cnt is stored in 12 bits, so max is 4095 interpolations.
+        if (interp_cnt > TSTR_MAX_INT) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many interpolations"));
+        }
+
+        // Check for integer overflow in total calculation
+        size_t total = seg_cnt + interp_cnt;
+        if (total < seg_cnt || total < interp_cnt) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too large"));
+        }
+
+        // Check memory allocation size for memory-constrained ports
+        size_t alloc_size = sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * total;
+        if (alloc_size > MICROPY_PY_TSTRING_MAX_BYTES) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
+        }
+
+        // Allocate template node. GC safety: parser_alloc ensures the allocated
+        // memory is properly rooted. strings.items and interps.items remain valid
+        // until m_del below since no allocations occur between here and there.
+        mp_parse_node_struct_t *templ =
+            parser_alloc(parser,
+                sizeof(*templ) + sizeof(mp_parse_node_t) * total);
+
+        templ->source_line = lex->tok_line;
+        templ->kind_num_nodes = TSTR_HDR_MAKE(seg_cnt, interp_cnt);
+
+        memcpy(&templ->nodes[0],           strings.items,
+            seg_cnt * sizeof(mp_parse_node_t));
+        memcpy(&templ->nodes[seg_cnt],     interps.items,
+            interp_cnt * sizeof(mp_parse_node_t));
+
+        pn = (mp_parse_node_t)templ;
+
+        m_del(mp_parse_node_t, strings.items, strings.alloc);
+        m_del(mp_parse_node_t, interps.items, interps.alloc);
+
+#undef GROW_ARRAY
+#undef ADD_NODE
+    #endif
     } else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, lex->tok_kind);
     }

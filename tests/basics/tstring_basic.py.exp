@@ -1,0 +1,57 @@
+=== Basic functionality ===
+Template
+Strings: ('Hello ', '')
+Value: World
+str(): Hello World
+Raw: 'Path: C:\test\'
+tr: 'Path: C:\test\'
+
+=== Parser tests ===
+Empty expr: None
+Whitespace: 42
+Complex: 1
+None: None
+True: True
+False: False
+Ellipsis: Ellipsis
+Deep nest: 42
+
+=== Conversions and formatting ===
+repr: {'key': 'value'}
+str: {'key': 'value'}
+ascii: {'key': 'value'}
+Width: '        42'
+Precision: 3.14
+Debug: x=x=42
+
+=== Constructor tests ===
+Empty: ('',)
+Single: ('single',)
+Multi: ('abc',)
+Mixed: strings=('start', 'middle', 'end'), values=(1, 2)
+
+=== Operations ===
+Concat: 'Hello World'
+Iterator: ['str', 'Interpolation', 'str', 'Interpolation', 'str']
+strings attr: ('test', '')
+interpolations attr: 1
+values attr: (42,)
+repr: Template(strings=(' World',), interpolations=())...
+
+=== Error cases ===
+Invalid syntax: SyntaxError
+Long expr: Error
+Mixed concat: SyntaxError
+bt prefix: SyntaxError
+
+=== Escaped braces evaluation ===
+Escaped eval: '{42}42{{42}}'
+Braces in strings: '{{hello}}1 {2} 3{{world}}'
+
+=== Memory stress test ===
+Memory test [10]: 21 chars
+Memory test [20]: 51 chars
+Memory test [30]: 81 chars
+Large values: 20 values
+
+Basic tests completed!
