@@ -19,6 +19,10 @@
 #include "py/stream.h"
 #include "py/binary.h"
 #include "py/bc.h"
+#include "py/lexer.h"
+#include "py/parse.h"
+#include "py/compile.h"
+#include "py/misc.h"
 #if MICROPY_PY_TSTRINGS
 #include "py/tstring_expr_parser.h"
 // Forward declaration
@@ -866,14 +870,278 @@ static mp_obj_t extra_coverage(void) {
         (void)node;
 
         // Very long expression to test limit
-        char long_expr[11000];
-        memset(long_expr, 'x', 11000);
+        char long_expr[105];  // Just above 100 char limit
+        memset(long_expr, 'x', 104);
+        long_expr[104] = '\0';
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
-            parse_tstring_expression(NULL, coverage_alloc_fn, long_expr, 11000);
+            parse_tstring_expression(NULL, coverage_alloc_fn, long_expr, 104);
             nlr_pop();
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+
+        // Test 1: Template string too large
+        mp_printf(&mp_plat_print, "# t-strings size limit tests\n");
+
+        {
+            vstr_t vstr;
+            vstr_init(&vstr, 1100);
+            vstr_add_str(&vstr, "t\"");
+            for (size_t i = 0; i < 1050; i++) {
+                vstr_add_byte(&vstr, 'a');
+            }
+            vstr_add_str(&vstr, "\"");
+
+            if (nlr_push(&nlr) == 0) {
+                mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_test_gt_, vstr.buf, vstr.len, 0);
+                if (lex) {
+                    mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
+                    mp_obj_t code = mp_compile(&parse_tree, MP_QSTR__lt_test_gt_, false);
+                    mp_call_function_0(code);
+                }
+                nlr_pop();
+                mp_printf(&mp_plat_print, "ERROR: Should have raised template string too large\n");
+            } else {
+                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            }
+            vstr_clear(&vstr);
+        }
+
+        // Test 2: Too many interpolations
+        {
+            mp_printf(&mp_plat_print, "Testing template string with many interpolations...\n");
+            vstr_t vstr;
+            vstr_init(&vstr, 1024);
+            vstr_add_str(&vstr, "t\"");
+            for (int i = 0; i < 110; i++) {
+                vstr_add_str(&vstr, "{x}");
+            }
+            vstr_add_str(&vstr, "\"");
+
+            mp_obj_t global_dict = mp_obj_new_dict(0);
+            mp_obj_dict_store(global_dict, MP_OBJ_NEW_QSTR(MP_QSTR_x), MP_OBJ_NEW_SMALL_INT(1));
+
+            if (nlr_push(&nlr) == 0) {
+                mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_test_gt_, vstr.buf, vstr.len, 0);
+                if (lex) {
+                    mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
+                    mp_obj_t code = mp_compile(&parse_tree, MP_QSTR__lt_test_gt_, false);
+                    mp_call_function_0(code);
+                }
+                nlr_pop();
+            } else {
+                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            }
+            vstr_clear(&vstr);
+        }
+
+        // Test 3: Template.str() size limit
+        {
+            mp_printf(&mp_plat_print, "Testing template string size limit in modtstring.c...\n");
+
+            char large_buf[1100];
+            memset(large_buf, 'x', 1099);
+            large_buf[1099] = '\0';
+            mp_obj_t large_str = mp_obj_new_str_from_cstr(large_buf);
+
+            mp_obj_template_t *tmpl = m_new_obj(mp_obj_template_t);
+            tmpl->base.type = &mp_type_template;
+            tmpl->strings = mp_obj_new_tuple(1, &large_str);
+            tmpl->interpolations = mp_obj_new_tuple(0, NULL);
+
+            if (nlr_push(&nlr) == 0) {
+                mp_obj_t str_method = mp_load_attr(MP_OBJ_FROM_PTR(tmpl), MP_QSTR___str__);
+                mp_call_function_0(str_method);
+                nlr_pop();
+                mp_printf(&mp_plat_print, "ERROR: Should have raised template string too large\n");
+            } else {
+                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            }
+        }
+
+        // Test 4: Lexer edge cases
+        {
+            mp_printf(&mp_plat_print, "# lexer fstring_args edge cases\n");
+
+            const char *test_code = "t'{a}'";
+
+            if (nlr_push(&nlr) == 0) {
+                mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_test_gt_, test_code, strlen(test_code), 0);
+                if (lex) {
+                    mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
+                    mp_compile(&parse_tree, MP_QSTR__lt_test_gt_, false);
+                }
+                nlr_pop();
+            } else {
+                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            }
+        }
+
+        // Test 5: Dynamic array growth
+        {
+            mp_printf(&mp_plat_print, "Testing dynamic array byte limit...\n");
+            vstr_t vstr;
+            vstr_init(&vstr, 1024);
+            vstr_add_str(&vstr, "t\"");
+            for (int i = 0; i < 50; i++) {
+                vstr_add_str(&vstr, "text{");
+                vstr_add_str(&vstr, "nested{x}");
+                vstr_add_str(&vstr, "}more");
+            }
+            vstr_add_str(&vstr, "\"");
+
+            if (nlr_push(&nlr) == 0) {
+                mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_test_gt_, vstr.buf, vstr.len, 0);
+                if (lex) {
+                    mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
+                    mp_obj_t code = mp_compile(&parse_tree, MP_QSTR__lt_test_gt_, false);
+                    mp_call_function_0(code);
+                }
+                nlr_pop();
+            } else {
+                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            }
+            vstr_clear(&vstr);
+        }
+
+        // Test 6: Expression parser edge cases
+        {
+            mp_printf(&mp_plat_print, "# tstring_expr_parser edge cases\n");
+
+            char expr_buf[105];
+            memset(expr_buf, 'x', 104);
+            expr_buf[104] = '\0';
+
+            if (nlr_push(&nlr) == 0) {
+                mp_parse_node_t parsed_node = parse_tstring_expression(NULL, coverage_alloc_fn, expr_buf, 104);
+                (void)parsed_node;
+                nlr_pop();
+                mp_printf(&mp_plat_print, "Parsed long expression successfully\n");
+            } else {
+                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            }
+        }
+
+        // Test 7: Template concatenation type errors
+        {
+            mp_printf(&mp_plat_print, "# Template concatenation type errors\n");
+
+            const char *test_code =
+                "try:\n"
+                "    tmpl = t'hello'\n"
+                "    result = tmpl + 'world'\n"
+                "except TypeError as e:\n"
+                "    print(f'Template + str error: {e}')\n"
+                "\n"
+                "try:\n"
+                "    result = 'hello' + t'world'\n"
+                "except TypeError as e:\n"
+                "    print(f'str + Template error: {e}')\n"
+                "\n"
+                "class MyClass:\n"
+                "    pass\n"
+                "\n"
+                "obj = MyClass()\n"
+                "try:\n"
+                "    result = obj + t'test'\n"
+                "except TypeError:\n"
+                "    print('Custom instance + Template: TypeError as expected')\n";
+
+            if (nlr_push(&nlr) == 0) {
+                mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_test_gt_, test_code, strlen(test_code), 0);
+                if (lex) {
+                    mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
+                    mp_obj_t code = mp_compile(&parse_tree, MP_QSTR__lt_test_gt_, false);
+                    mp_call_function_n_kw(code, 0, 0, NULL);
+                }
+                nlr_pop();
+            } else {
+                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            }
+        }
+
+        // Test 8: Estimated bytes limit
+        {
+            mp_printf(&mp_plat_print, "# Additional parse.c size limit tests\n");
+
+            vstr_t vstr;
+            vstr_init(&vstr, 1024);
+            vstr_add_str(&vstr, "t'");
+            for (int i = 0; i < 600; i++) {
+                vstr_add_str(&vstr, "{x}");
+            }
+            vstr_add_str(&vstr, "'");
+
+            if (nlr_push(&nlr) == 0) {
+                mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_test_gt_, vstr.buf, vstr.len, 0);
+                if (lex) {
+                    mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
+                    mp_compile(&parse_tree, MP_QSTR__lt_test_gt_, false);
+                }
+                nlr_pop();
+                mp_printf(&mp_plat_print, "ERROR: Should have raised template string too big\n");
+            } else {
+                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            }
+            vstr_clear(&vstr);
+        }
+
+        // Test 9: Array growth byte limit
+        {
+            mp_printf(&mp_plat_print, "Testing parse.c array growth byte limit...\n");
+
+            vstr_t vstr;
+            vstr_init(&vstr, 1024);
+            vstr_add_str(&vstr, "t'");
+
+            for (int i = 0; i < 200; i++) {
+                vstr_add_str(&vstr, "{");
+                for (int j = 0; j < 10; j++) {
+                    vstr_add_str(&vstr, "x+");
+                }
+                vstr_add_str(&vstr, "y}");
+            }
+            vstr_add_str(&vstr, "'");
+
+            if (nlr_push(&nlr) == 0) {
+                mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_test_gt_, vstr.buf, vstr.len, 0);
+                if (lex) {
+                    mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
+                    mp_compile(&parse_tree, MP_QSTR__lt_test_gt_, false);
+                }
+                nlr_pop();
+            } else {
+                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            }
+            vstr_clear(&vstr);
+        }
+
+        // Test 10: Lexer failure fallback
+        {
+            mp_printf(&mp_plat_print, "# Testing lexer failure fallback\n");
+            mp_printf(&mp_plat_print, "Lexer failure test skipped (requires internal state modification)\n");
+        }
+
+        // Test 11: str + Template error
+        {
+            mp_printf(&mp_plat_print, "# Testing objtype.c str + Template error\n");
+
+            mp_obj_template_t *tmpl = m_new_obj(mp_obj_template_t);
+            tmpl->base.type = &mp_type_template;
+            tmpl->strings = mp_obj_new_tuple(1, (mp_obj_t[]) {MP_OBJ_NEW_QSTR(MP_QSTR_hello)});
+            tmpl->interpolations = mp_obj_new_tuple(0, NULL);
+
+            mp_obj_t str_obj = mp_obj_new_str_from_cstr("test");
+
+            if (nlr_push(&nlr) == 0) {
+                mp_obj_t result = mp_binary_op(MP_BINARY_OP_ADD, str_obj, MP_OBJ_FROM_PTR(tmpl));
+                (void)result;
+                nlr_pop();
+                mp_printf(&mp_plat_print, "ERROR: Should have raised TypeError\n");
+            } else {
+                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            }
         }
     }
     #endif

@@ -185,6 +185,29 @@ pop all: 1 2 4 5
 1 1
 # t-strings parser internals
 ValueError: template expression too long
+# t-strings size limit tests
+ValueError: template string too large (1050 bytes)
+Testing template string with many interpolations...
+SyntaxError: too many interpolations
+Testing template string size limit in modtstring.c...
+ValueError: template string too large
+# lexer fstring_args edge cases
+Testing dynamic array byte limit...
+SyntaxError: invalid syntax in template expression: nested{x}
+# tstring_expr_parser edge cases
+ValueError: template expression too long
+# Template concatenation type errors
+Template + str error: can only concatenate Template (not "str") to Template
+str + Template error: unsupported types for __add__: 'str', 'Template'
+Custom instance + Template: TypeError as expected
+# Additional parse.c size limit tests
+ValueError: template string too large (1800 bytes)
+Testing parse.c array growth byte limit...
+ValueError: template string too large (4600 bytes)
+# Testing lexer failure fallback
+Lexer failure test skipped (requires internal state modification)
+# Testing objtype.c str + Template error
+TypeError: unsupported types for __add__: 'str', 'Template'
 # end coverage.c
 0123456789 b'0123456789'
 7300

@@ -168,7 +168,7 @@ static inline void mp_thread_init_state(mp_state_thread_t *ts, size_t stack_size
     ts->nlr_top = NULL;
     ts->nlr_jump_callback_top = NULL;
     ts->mp_pending_exception = MP_OBJ_NULL;
-    
+
     #if MICROPY_PY_SYS_SETTRACE
     // Initialize profiling state
     ts->prof_callback_is_executing = false;
