@@ -38,8 +38,7 @@ void mp_obj_attrtuple_print_helper(const mp_print_t *print, const qstr *fields, 
         if (i > 0) {
             mp_print_str(print, ", ");
         }
-        mp_printf(print, "%q=", fields[i]);
-        mp_obj_print_helper(print, o->items[i], PRINT_REPR);
+        mp_printf(print, "%q=%R", fields[i], PRINT_REPR, o->items[i]);
     }
     mp_print_str(print, ")");
 }

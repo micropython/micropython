@@ -475,6 +475,17 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 chrs += mp_print_strn(print, &str, 1, flags, fill, width);
                 break;
             }
+            case 'K': {
+                mp_obj_t obj = va_arg(args, mp_obj_t);
+                mp_obj_print_exception(print, obj);
+                break;
+            }
+            case 'R': {
+                mp_print_kind_t kind = va_arg(args, int);
+                mp_obj_t obj = va_arg(args, mp_obj_t);
+                mp_obj_print_helper(print, obj, kind);
+                break;
+            }
             case 'q': {
                 qstr qst = va_arg(args, qstr);
                 size_t len;

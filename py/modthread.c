@@ -189,10 +189,8 @@ static void *thread_entry(void *args_in) {
             // swallow exception silently
         } else {
             // print exception out
-            mp_printf(MICROPY_ERROR_PRINTER, "Unhandled exception in thread started by ");
-            mp_obj_print_helper(MICROPY_ERROR_PRINTER, args->fun, PRINT_REPR);
-            mp_printf(MICROPY_ERROR_PRINTER, "\n");
-            mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(exc));
+            mp_printf(MICROPY_ERROR_PRINTER, "Unhandled exception in thread started by %R\n%K",
+                PRINT_REPR, args->fun, MP_OBJ_FROM_PTR(exc));
         }
     }
 

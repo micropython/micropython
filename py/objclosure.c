@@ -63,16 +63,10 @@ static mp_obj_t closure_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
 static void closure_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_closure_t *o = MP_OBJ_TO_PTR(o_in);
-    mp_print_str(print, "<closure ");
-    mp_obj_print_helper(print, o->fun, PRINT_REPR);
-    mp_printf(print, " at %p, n_closed=%u ", o, (int)o->n_closed);
+    mp_printf(print, "<closure %R at %p, n_closed=%u", PRINT_REPR, o->fun, o, (int)o->n_closed);
     for (size_t i = 0; i < o->n_closed; i++) {
-        if (o->closed[i] == MP_OBJ_NULL) {
-            mp_print_str(print, "(nil)");
-        } else {
-            mp_obj_print_helper(print, o->closed[i], PRINT_REPR);
-        }
         mp_print_str(print, " ");
+        mp_obj_print_helper(print, o->closed[i], PRINT_REPR);
     }
     mp_print_str(print, ">");
 }
