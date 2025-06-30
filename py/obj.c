@@ -314,6 +314,36 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
     return val;
 }
 
+#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+mp_uint_t mp_obj_get_uint(mp_const_obj_t arg) {
+    if (!mp_obj_is_exact_type(arg, &mp_type_int)) {
+        mp_obj_t as_int = mp_unary_op(MP_UNARY_OP_INT_MAYBE, (mp_obj_t)arg);
+        if (as_int == MP_OBJ_NULL) {
+            mp_raise_TypeError_int_conversion(arg);
+        }
+        arg = as_int;
+    }
+    return mp_obj_int_get_uint_checked(arg);
+}
+
+long long mp_obj_get_ll(mp_const_obj_t arg) {
+    if (!mp_obj_is_exact_type(arg, &mp_type_int)) {
+        mp_obj_t as_int = mp_unary_op(MP_UNARY_OP_INT_MAYBE, (mp_obj_t)arg);
+        if (as_int == MP_OBJ_NULL) {
+            mp_raise_TypeError_int_conversion(arg);
+        }
+        arg = as_int;
+    }
+    if (mp_obj_is_small_int(arg)) {
+        return MP_OBJ_SMALL_INT_VALUE(arg);
+    } else {
+        long long res;
+        mp_obj_int_to_bytes_impl((mp_obj_t)arg, MP_ENDIANNESS_BIG, sizeof(res), (byte *)&res);
+        return res;
+    }
+}
+#endif
+
 mp_int_t mp_obj_get_int_truncated(mp_const_obj_t arg) {
     if (mp_obj_is_int(arg)) {
         return mp_obj_int_get_truncated(arg);
