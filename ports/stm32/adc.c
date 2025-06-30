@@ -107,12 +107,12 @@
 #define ADC_CAL2                ((uint16_t *)(ADC_CAL_ADDRESS + 4))
 #define ADC_CAL_BITS            (12)
 
-#elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5)
+#elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L1) || defined(STM32L4) || defined(STM32WB)
 
 #define ADC_SCALE_V             (((float)VREFINT_CAL_VREF) / 1000.0f)
-#define ADC_CAL_ADDRESS         VREFINT_CAL_ADDR
-#define ADC_CAL1                TEMPSENSOR_CAL1_ADDR
-#define ADC_CAL2                TEMPSENSOR_CAL2_ADDR
+#define ADC_CAL_ADDRESS         (VREFINT_CAL_ADDR)
+#define ADC_CAL1                (TEMPSENSOR_CAL1_ADDR)
+#define ADC_CAL2                (TEMPSENSOR_CAL2_ADDR)
 #define ADC_CAL_BITS            (12) // UM2319/UM2570, __HAL_ADC_CALC_TEMPERATURE: 'corresponds to a resolution of 12 bits'
 
 #elif defined(STM32H7)
@@ -122,22 +122,6 @@
 #define ADC_CAL1                ((uint16_t *)(0x1FF1E820))
 #define ADC_CAL2                ((uint16_t *)(0x1FF1E840))
 #define ADC_CAL_BITS            (16)
-
-#elif defined(STM32L1)
-
-#define ADC_SCALE_V             (VREFINT_CAL_VREF / 1000.0f)
-#define ADC_CAL_ADDRESS         (VREFINT_CAL_ADDR)
-#define ADC_CAL1                (TEMPSENSOR_CAL1_ADDR)
-#define ADC_CAL2                (TEMPSENSOR_CAL2_ADDR)
-#define ADC_CAL_BITS            (12)
-
-#elif defined(STM32L4) || defined(STM32WB)
-
-#define ADC_SCALE_V             (VREFINT_CAL_VREF / 1000.0f)
-#define ADC_CAL_ADDRESS         (VREFINT_CAL_ADDR)
-#define ADC_CAL1                (TEMPSENSOR_CAL1_ADDR)
-#define ADC_CAL2                (TEMPSENSOR_CAL2_ADDR)
-#define ADC_CAL_BITS            (12)
 
 #else
 
@@ -464,10 +448,13 @@ static void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
 
 static uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
     uint32_t value;
-    #if defined(STM32G4)
-    // For STM32G4 there is errata 2.7.7, "Wrong ADC result if conversion done late after
-    // calibration or previous conversion".  According to the errata, this can be avoided
-    // by performing two consecutive ADC conversions and keeping the second result.
+    #if defined(STM32G4) || defined(STM32WB)
+    // For STM32G4 errata 2.7.7 / STM32WB errata 2.7.1:
+    // "Wrong ADC result if conversion done late after calibration or previous conversion"
+    // states an incorrect reading is returned if more than 1ms has elapsed since the last
+    // reading or calibration. According to the errata, this can be avoided by performing
+    // two consecutive ADC conversions and keeping the second result.
+    // Note: On STM32WB55 @ 64Mhz each ADC read takes ~ 3us.
     for (uint8_t i = 0; i < 2; i++)
     #endif
     {
@@ -936,7 +923,7 @@ float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
         return 0;
     }
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 100.0f;
-    #elif defined(STM32H5)
+    #elif defined(STM32H5) || defined(STM32WB)
     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 100.0f;
     #else

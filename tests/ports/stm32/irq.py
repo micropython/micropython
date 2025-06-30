@@ -1,3 +1,4 @@
+import time
 import pyb
 
 
@@ -8,7 +9,7 @@ def test_irq():
     pyb.enable_irq()  # by default should enable IRQ
 
     # check that interrupts are enabled by waiting for ticks
-    pyb.delay(10)
+    time.sleep_ms(10)
 
     # check nested disable/enable
     i1 = pyb.disable_irq()
@@ -18,7 +19,7 @@ def test_irq():
     pyb.enable_irq(i1)
 
     # check that interrupts are enabled by waiting for ticks
-    pyb.delay(10)
+    time.sleep_ms(10)
 
 
 test_irq()

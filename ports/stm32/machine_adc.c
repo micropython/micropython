@@ -386,6 +386,7 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     *smpr = (*smpr & ~(7 << (channel * 3))) | sample_time << (channel * 3); // select sample time
 
     #elif defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+
     #if defined(STM32G4) || defined(STM32H5) || defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
     ADC_Common_TypeDef *adc_common = ADC12_COMMON;
     #elif defined(STM32H7)
@@ -423,8 +424,8 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
         adc->OR |= ADC_OR_OP0; // Enable Vddcore channel on ADC2
     #endif
     }
-    #if defined(STM32G4) || defined(STM32H5)
-    // G4 and H5 use encoded literals for internal channels -> extract ADC channel for following code
+    #if defined(STM32G4) || defined(STM32H5) || defined(STM32WB)
+    // MCU uses encoded literals for internal channels -> extract ADC channel for following code
     if (__LL_ADC_IS_CHANNEL_INTERNAL(channel)) {
         channel = __LL_ADC_CHANNEL_TO_DECIMAL_NB(channel);
     }
