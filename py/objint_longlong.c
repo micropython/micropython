@@ -295,6 +295,22 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     return mp_obj_int_get_truncated(self_in);
 }
 
+mp_uint_t mp_obj_int_get_uint_checked(mp_const_obj_t self_in) {
+    if (mp_obj_is_small_int(self_in)) {
+        if (MP_OBJ_SMALL_INT_VALUE(self_in) >= 0) {
+            return MP_OBJ_SMALL_INT_VALUE(self_in);
+        }
+    } else {
+        const mp_obj_int_t *self = self_in;
+        long long value = self->val;
+        mp_uint_t truncated = (mp_uint_t)value;
+        if (value >= 0 && (long long)truncated == value) {
+            return truncated;
+        }
+    }
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("overflow converting long int to machine word"));
+}
+
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in) {
     assert(mp_obj_is_exact_type(self_in, &mp_type_int));
