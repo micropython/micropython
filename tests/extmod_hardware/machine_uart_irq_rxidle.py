@@ -64,10 +64,13 @@ def irq(u):
     print("IRQ_RXIDLE:", bool(u.irq().flags() & u.IRQ_RXIDLE), "data:", u.read())
 
 
-text = "12345678"
+text = ("12345678", "abcdefgh")
 
 # Test that the IRQ is called for each set of byte received.
 for bits_per_s in (2400, 9600, 115200):
+    print("========")
+    print("bits_per_s:", bits_per_s)
+
     if tx_pin is None:
         uart = UART(uart_id, bits_per_s)
     else:
@@ -81,10 +84,11 @@ for bits_per_s in (2400, 9600, 115200):
     # Configure desired IRQ.
     uart.irq(irq, uart.IRQ_RXIDLE)
 
-    # Write data and wait for IRQ.
-    print("write", bits_per_s)
-    uart.write(text)
-    uart.flush()
-    print("ready")
-    time.sleep_ms(100)
-    print("done")
+    for i in range(2):
+        # Write data and wait for IRQ.
+        print("write")
+        uart.write(text[i])
+        uart.flush()
+        print("ready")
+        time.sleep_ms(100)
+        print("done")
