@@ -54,5 +54,5 @@ static mp_obj_t mp_time_localtime_get(void) {
 static mp_obj_t mp_time_time_get(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    return mp_obj_new_int(tv.tv_sec);
+    return timeutils_obj_from_timestamp(tv.tv_sec);
 }

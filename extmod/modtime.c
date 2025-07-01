@@ -58,7 +58,7 @@ static mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
         return mp_time_localtime_get();
     } else {
         // Convert given seconds to tuple.
-        mp_int_t seconds = mp_obj_get_int(args[0]);
+        mp_timestamp_t seconds = timeutils_obj_get_timestamp(args[0]);
         timeutils_struct_time_t tm;
         timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
         mp_obj_t tuple[8] = {
@@ -90,7 +90,7 @@ static mp_obj_t time_mktime(mp_obj_t tuple) {
         mp_raise_TypeError(MP_ERROR_TEXT("mktime needs a tuple of length 8 or 9"));
     }
 
-    return mp_obj_new_int_from_uint(timeutils_mktime(mp_obj_get_int(elem[0]),
+    return timeutils_obj_from_timestamp(timeutils_mktime(mp_obj_get_int(elem[0]),
         mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]), mp_obj_get_int(elem[3]),
         mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5])));
 }

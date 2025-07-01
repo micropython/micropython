@@ -53,5 +53,5 @@ static mp_obj_t mp_time_time_get(void) {
     rtc_init_finalise();
     ra_rtc_t time;
     ra_rtc_get_time(&time);
-    return mp_obj_new_int(timeutils_seconds_since_epoch(time.year, time.month, time.date, time.hour, time.minute, time.second));
+    return timeutils_obj_from_timestamp(timeutils_seconds_since_epoch(time.year, time.month, time.date, time.hour, time.minute, time.second));
 }

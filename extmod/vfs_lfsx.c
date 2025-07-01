@@ -378,7 +378,7 @@ static mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
         mp_raise_OSError(-ret);
     }
 
-    mp_uint_t mtime = 0;
+    mp_timestamp_t mtime = 0;
     #if LFS_BUILD_VERSION == 2
     uint8_t mtime_buf[8];
     lfs2_ssize_t sz = lfs2_getattr(&self->lfs, path, LFS_ATTR_MTIME, &mtime_buf, sizeof(mtime_buf));
@@ -400,9 +400,9 @@ static mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
     t->items[4] = MP_OBJ_NEW_SMALL_INT(0); // st_uid
     t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // st_gid
     t->items[6] = mp_obj_new_int_from_uint(info.size); // st_size
-    t->items[7] = mp_obj_new_int_from_uint(mtime); // st_atime
-    t->items[8] = mp_obj_new_int_from_uint(mtime); // st_mtime
-    t->items[9] = mp_obj_new_int_from_uint(mtime); // st_ctime
+    t->items[7] = timeutils_obj_from_timestamp(mtime); // st_atime
+    t->items[8] = timeutils_obj_from_timestamp(mtime); // st_mtime
+    t->items[9] = timeutils_obj_from_timestamp(mtime); // st_ctime
 
     return MP_OBJ_FROM_PTR(t);
 }
