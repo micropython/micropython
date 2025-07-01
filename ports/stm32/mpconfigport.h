@@ -76,6 +76,7 @@
 #ifndef MICROPY_FLOAT_IMPL // can be configured by each board via mpconfigboard.mk
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #endif
+#define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_SCHEDULER_STATIC_NODES (1)
 #define MICROPY_SCHEDULER_DEPTH     (8)

@@ -31,7 +31,7 @@
 
 // Return the localtime as an 8-tuple.
 static mp_obj_t mp_time_localtime_get(void) {
-    mp_int_t seconds = pyb_rtc_get_us_since_epoch() / 1000 / 1000;
+    mp_uint_t seconds = pyb_rtc_get_us_since_epoch() / 1000u / 1000u;
     timeutils_struct_time_t tm;
     timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
     mp_obj_t tuple[8] = {
@@ -50,5 +50,5 @@ static mp_obj_t mp_time_localtime_get(void) {
 // Returns the number of seconds, as an integer, since the Epoch.
 static mp_obj_t mp_time_time_get(void) {
     // get date and time
-    return mp_obj_new_int(pyb_rtc_get_us_since_epoch() / 1000 / 1000);
+    return timeutils_obj_from_timestamp(pyb_rtc_get_us_since_epoch() / 1000 / 1000);
 }
