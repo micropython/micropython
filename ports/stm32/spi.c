@@ -481,7 +481,10 @@ int spi_init(const spi_t *self, bool enable_nss_pin) {
         if (pins[i] == NULL) {
             continue;
         }
-        mp_hal_pin_config_alt(pins[i], mode, pull, AF_FN_SPI, (self - &spi_obj[0]) + 1);
+        if (!mp_hal_pin_config_alt(pins[i], mode, pull, AF_FN_SPI, (self - &spi_obj[0]) + 1)) {
+            // Pin does not have SPI alternate function.
+            return -MP_EINVAL;
+        }
     }
 
     // init the SPI device
