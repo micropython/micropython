@@ -9,3 +9,5 @@ x = []
 const x = mp.globals.get("x");
 console.log("no_exist" in x);
 console.log("sort" in x);
+console.log(Symbol.toStringTag in x);
+console.log(Symbol.iterator in x);

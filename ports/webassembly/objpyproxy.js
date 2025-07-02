@@ -148,6 +148,12 @@ const py_proxy_handler = {
         };
     },
     has(target, prop) {
+        // avoid throwing on `Symbol() in proxy` checks
+        if (typeof prop !== "string") {
+            // returns true only on iterator because other
+            // symbols are not considered in the `get` trap
+            return prop === Symbol.iterator;
+        }
         return Module.ccall(
             "proxy_c_to_js_has_attr",
             "number",
