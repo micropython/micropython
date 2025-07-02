@@ -480,13 +480,6 @@ function ci_stm32_misc_build {
 ########################################################################################
 # ports/unix
 
-CI_UNIX_OPTS_SYS_SETTRACE=(
-    MICROPY_PY_BTREE=0
-    MICROPY_PY_FFI=0
-    MICROPY_PY_SSL=0
-    CFLAGS_EXTRA="-DMICROPY_PY_SYS_SETTRACE=1"
-)
-
 CI_UNIX_OPTS_SYS_SETTRACE_STACKLESS=(
     MICROPY_PY_BTREE=0
     MICROPY_PY_FFI=0
@@ -732,16 +725,6 @@ function ci_unix_float_clang_build {
 
 function ci_unix_float_clang_run_tests {
     ci_unix_run_tests_helper CC=clang
-}
-
-function ci_unix_settrace_build {
-    make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/unix submodules
-    make ${MAKEOPTS} -C ports/unix "${CI_UNIX_OPTS_SYS_SETTRACE[@]}"
-}
-
-function ci_unix_settrace_run_tests {
-    ci_unix_run_tests_full_helper standard "${CI_UNIX_OPTS_SYS_SETTRACE[@]}"
 }
 
 function ci_unix_settrace_stackless_build {
