@@ -1,0 +1,1 @@
+./run-multitests.py -i pyb:/dev/tty/Pyboard_Virtual_Comm_Port_in_FS_Mode-3254335D3037 -i pyb:/dev/tty/USB_Single_Serial-5A4B023305 -t ~/micropython/lib/micropython-lib/micropython/bluetooth/aioble/multitests/ble_pair_bond_persist.py
