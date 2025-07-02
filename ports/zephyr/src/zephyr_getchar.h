@@ -18,3 +18,4 @@
 
 void zephyr_getchar_init(void);
 int zephyr_getchar(void);
+bool zephyr_getchar_is_ready(void);

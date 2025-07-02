@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include "py/mpconfig.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "src/zephyr_getchar.h"
 // Zephyr headers
 #include <zephyr/kernel.h>
@@ -85,6 +86,23 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     while (len--) {
         uart_poll_out(uart_console_dev, *str++);
     }
+    #endif
+    return ret;
+}
+
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if (poll_flags & MP_STREAM_POLL_WR) {
+        ret |= MP_STREAM_POLL_WR;
+    }
+    if (poll_flags & MP_STREAM_POLL_RD) {
+        // Check if there is data in the ring buffer
+        if (zephyr_getchar_is_ready()) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+    }
+    #if MICROPY_PY_OS_DUPTERM
+    ret |= mp_os_dupterm_poll(poll_flags);
     #endif
     return ret;
 }

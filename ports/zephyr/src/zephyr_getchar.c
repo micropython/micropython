@@ -67,3 +67,11 @@ void zephyr_getchar_init(void) {
     // All NULLs because we're interested only in the callback above
     uart_register_input(NULL, NULL, NULL);
 }
+
+bool zephyr_getchar_is_ready(void) {
+    // Check if there is data in the ring buffer
+    unsigned int key = irq_lock();
+    bool ret = (i_get != i_put);
+    irq_unlock(key);
+    return ret;
+}
