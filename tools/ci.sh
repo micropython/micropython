@@ -625,7 +625,7 @@ function ci_unix_coverage_build {
 }
 
 function ci_unix_coverage_run_tests {
-    ci_unix_run_tests_full_helper coverage
+    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage
 }
 
 function ci_unix_coverage_run_mpy_merge_tests {
@@ -745,7 +745,7 @@ function ci_unix_sanitize_undefined_build {
 }
 
 function ci_unix_sanitize_undefined_run_tests {
-    ci_unix_run_tests_full_helper coverage "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
+    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
 }
 
 function ci_unix_sanitize_address_build {
@@ -756,7 +756,7 @@ function ci_unix_sanitize_address_build {
 }
 
 function ci_unix_sanitize_address_run_tests {
-    ci_unix_run_tests_full_helper coverage "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
+    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
 }
 
 function ci_unix_macos_build {
