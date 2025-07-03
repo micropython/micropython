@@ -119,6 +119,8 @@ typedef struct _eth_t {
     struct dhcp dhcp_struct;
     uint32_t phy_addr;
     int16_t (*phy_get_link_status)(uint32_t phy_addr);
+    bool last_link_status;
+    bool enabled;
 } eth_t;
 
 static eth_dma_t eth_dma MICROPY_HW_ETH_DMA_ATTRIBUTE;
@@ -188,6 +190,8 @@ int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type) {
     mp_hal_get_mac(mac_idx, &self->netif.hwaddr[0]);
     self->netif.hwaddr_len = 6;
     self->phy_addr = phy_addr;
+    self->last_link_status = false;
+    self->enabled = false;
     if (phy_type == ETH_PHY_DP83825 || phy_type == ETH_PHY_DP83848) {
         self->phy_get_link_status = eth_phy_dp838xx_get_link_status;
     } else if (phy_type == ETH_PHY_LAN8720 || phy_type == ETH_PHY_LAN8742) {
@@ -395,6 +399,13 @@ static int eth_mac_init(eth_t *self) {
 
     // Get register with link status
     uint16_t phy_scsr = self->phy_get_link_status(self->phy_addr);
+
+    // Initialize link status tracking
+    uint16_t bsr = eth_phy_read(self->phy_addr, PHY_BSR);
+    self->last_link_status = (bsr & PHY_BSR_LINK_STATUS) != 0;
+
+    // Enable PHY link change interrupts (for future use if PHY interrupt pin available)
+    eth_phy_enable_link_interrupts(self->phy_addr);
 
     // Burst mode configuration
     #if defined(STM32H5) || defined(STM32H7)
@@ -713,6 +724,36 @@ void ETH_IRQHandler(void) {
             eth_dma_rx_free();
         }
     }
+
+    // Check for PHY link status changes (polled approach)
+    // This runs on every RX interrupt, providing reasonable responsiveness
+    static uint32_t link_check_counter = 0;
+    if (++link_check_counter >= 100) { // Check every ~100 RX interrupts
+        link_check_counter = 0;
+
+        // Read current PHY link status
+        uint16_t bsr = eth_phy_read(eth_instance.phy_addr, PHY_BSR);
+        bool current_link_status = (bsr & PHY_BSR_LINK_STATUS) != 0;
+
+        // Check if link status changed
+        if (current_link_status != eth_instance.last_link_status) {
+            eth_instance.last_link_status = current_link_status;
+
+            // Update LWIP netif link status to reflect physical cable connection
+            struct netif *netif = &eth_instance.netif;
+            if (current_link_status) {
+                // Cable is physically connected
+                netif_set_link_up(netif);
+                // Restart DHCP if interface is up and DHCP is enabled
+                if (netif_is_up(netif) && netif_dhcp_data(netif)) {
+                    dhcp_renew(netif);
+                }
+            } else {
+                // Cable is physically disconnected
+                netif_set_link_down(netif);
+            }
+        }
+    }
 }
 
 /*******************************************************************************/
@@ -849,6 +890,10 @@ int eth_link_status(eth_t *self) {
     }
 }
 
+bool eth_is_enabled(eth_t *self) {
+    return self->enabled;
+}
+
 int eth_start(eth_t *self) {
     eth_lwip_deinit(self);
 
@@ -860,12 +905,14 @@ int eth_start(eth_t *self) {
         return ret;
     }
     eth_lwip_init(self);
+    self->enabled = true;
     return 0;
 }
 
 int eth_stop(eth_t *self) {
     eth_lwip_deinit(self);
     eth_mac_deinit(self);
+    self->enabled = false;
     return 0;
 }
 
