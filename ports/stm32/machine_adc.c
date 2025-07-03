@@ -80,7 +80,7 @@
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_160CYCLES_5
 #elif defined(STM32L1)
-#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_384CYCLES
+#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_16CYCLES
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_384CYCLES
 #elif defined(STM32L4) || defined(STM32WB)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
@@ -225,6 +225,8 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     ADC3_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
     #elif defined(STM32L0)
     ADC1_COMMON->CCR = 0; // ADCPR=PCLK/2
+    #elif defined(STM32L1)
+    ADC1_COMMON->CCR = 1 << ADC_CCR_ADCPRE_Pos; // ADCPRE=2
     #elif defined(STM32WB)
     ADC1_COMMON->CCR = 0 << ADC_CCR_PRESC_Pos | 0 << ADC_CCR_CKMODE_Pos; // PRESC=1, MODE=ASYNC
     #elif defined(STM32WL)
@@ -382,6 +384,31 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     } else {
         smpr = &adc->SMPR1;
         channel -= 10;
+    }
+    *smpr = (*smpr & ~(7 << (channel * 3))) | sample_time << (channel * 3); // select sample time
+
+    #elif defined(STM32L1)
+
+    ADC_Common_TypeDef *adc_common = ADC1_COMMON;
+    if (channel == ADC_CHANNEL_VREFINT || channel == ADC_CHANNEL_TEMPSENSOR) {
+        adc_common->CCR |= ADC_CCR_TSVREFE;
+        if (channel == ADC_CHANNEL_TEMPSENSOR) {
+            adc_stabilisation_delay_us(ADC_TEMPSENSOR_DELAY_US);
+        }
+    }
+
+    adc->SQR1 = (1 - 1) << ADC_SQR1_L_Pos;
+    adc->SQR5 = (channel & 0x1f) << ADC_SQR5_SQ1_Pos;
+
+    __IO uint32_t *smpr;
+    if (channel >= 20) {
+        smpr = &adc->SMPR1;
+        channel -= 20;
+    } else if (channel >= 10) {
+        smpr = &adc->SMPR2;
+        channel -= 10;
+    } else {
+        smpr = &adc->SMPR3;
     }
     *smpr = (*smpr & ~(7 << (channel * 3))) | sample_time << (channel * 3); // select sample time
 
