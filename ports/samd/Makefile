@@ -163,13 +163,11 @@ ASF4_SRC_C += $(addprefix lib/asf4/$(MCU_SERIES_LOWER)/,\
 LIBM_SRC_C += $(SRC_LIB_LIBM_C)
 LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 
-TINYUSB_SRC_C += $(addprefix lib/tinyusb/src/,\
-	class/cdc/cdc_device.c \
-	common/tusb_fifo.c \
-	device/usbd.c \
-	device/usbd_control.c \
-	portable/microchip/samd/dcd_samd.c \
-	tusb.c \
+# TinyUSB Stack source
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(addprefix lib/tinyusb/, \
+	$(TINYUSB_SRC_C) \
+	src/portable/microchip/samd/dcd_samd.c \
 	)
 
 DRIVERS_SRC_C += \
