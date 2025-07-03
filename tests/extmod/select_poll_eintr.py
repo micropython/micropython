@@ -10,6 +10,18 @@ except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
+# Use a new UDP socket for tests, which should be writable but not readable.
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+localhost_addr_info = socket.getaddrinfo("127.0.0.1", 8000)
+try:
+    s.bind(localhost_addr_info[0][-1])
+except OSError:
+    # Target can't bind to localhost.
+    # Most likely it doesn't have a NIC and the test cannot be run.
+    s.close()
+    print("SKIP")
+    raise SystemExit
+
 
 def thread_main():
     lock.acquire()
@@ -25,10 +37,6 @@ def thread_main():
 lock = _thread.allocate_lock()
 lock.acquire()
 _thread.start_new_thread(thread_main, ())
-
-# Use a new UDP socket for tests, which should be writable but not readable.
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.bind(socket.getaddrinfo("127.0.0.1", 8000)[0][-1])
 
 # Create the poller object.
 poller = select.poll()
