@@ -40,6 +40,7 @@ int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type);
 void eth_set_trace(eth_t *self, uint32_t value);
 struct netif *eth_netif(eth_t *self);
 int eth_link_status(eth_t *self);
+bool eth_is_enabled(eth_t *self);
 int eth_start(eth_t *self);
 int eth_stop(eth_t *self);
 void eth_low_power_mode(eth_t *self, bool enable);
