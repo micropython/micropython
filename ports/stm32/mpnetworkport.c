@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared/netutils/netutils.h"
+#include "eth.h"
 #include "systick.h"
 #include "pendsv.h"
 #include "extmod/modnetwork.h"
