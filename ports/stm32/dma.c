@@ -735,9 +735,13 @@ const dma_descr_t dma_SPI_1_RX = { GPDMA1_Channel0, GPDMA1_REQUEST_SPI1_RX, dma_
 const dma_descr_t dma_SPI_1_TX = { GPDMA1_Channel1, GPDMA1_REQUEST_SPI1_TX, dma_id_1, &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_RX = { GPDMA1_Channel2, GPDMA1_REQUEST_SPI2_RX, dma_id_2, &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_TX = { GPDMA1_Channel3, GPDMA1_REQUEST_SPI2_TX, dma_id_3, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_3_RX = { GPDMA1_Channel4, GPDMA1_REQUEST_SPI3_RX, dma_id_4, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_3_TX = { GPDMA1_Channel5, GPDMA1_REQUEST_SPI3_TX, dma_id_5, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_4_RX = { GPDMA1_Channel6, GPDMA1_REQUEST_SPI4_RX, dma_id_6, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_4_TX = { GPDMA1_Channel7, GPDMA1_REQUEST_SPI4_TX, dma_id_7, &dma_init_struct_spi_i2c };
 #if MICROPY_HW_ENABLE_DAC
-const dma_descr_t dma_DAC_1_TX = { GPDMA1_Channel4, GPDMA1_REQUEST_DAC1_CH1, dma_id_4, &dma_init_struct_dac };
-const dma_descr_t dma_DAC_2_TX = { GPDMA1_Channel5, GPDMA1_REQUEST_DAC1_CH2, dma_id_5, &dma_init_struct_dac };
+const dma_descr_t dma_DAC_1_TX = { GPDMA2_Channel0, GPDMA1_REQUEST_DAC1_CH1, dma_id_8, &dma_init_struct_dac };
+const dma_descr_t dma_DAC_2_TX = { GPDMA2_Channel1, GPDMA1_REQUEST_DAC1_CH2, dma_id_9, &dma_init_struct_dac };
 #endif
 
 static const uint8_t dma_irqn[NSTREAM] = {
