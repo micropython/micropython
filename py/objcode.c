@@ -126,18 +126,33 @@ static mp_obj_t code_colines_iter(mp_obj_t self_in) {
     iter->bc = 0;
     iter->source_line = 1;
     iter->ci = self->rc->prelude.line_info;
-    code_colines_next(MP_OBJ_FROM_PTR(iter));
     return MP_OBJ_FROM_PTR(iter);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(code_colines_obj, code_colines_iter);
 
 static mp_obj_t code_colines_next(mp_obj_t iter_in) {
     mp_obj_colines_iter_t *iter = MP_OBJ_TO_PTR(iter_in);
+    const byte *ci_end = iter->rc->prelude.line_info_top;
 
     mp_uint_t start = iter->bc;
     mp_uint_t line_no = iter->source_line;
+    bool another = true;
 
-    if (iter->ci >= iter->rc->prelude.line_info_top) {
+    while (another && iter->ci < ci_end) {
+        another = false;
+        mp_code_lineinfo_t decoded = mp_bytecode_decode_lineinfo(&iter->ci);
+        iter->bc += decoded.bc_increment;
+        iter->source_line += decoded.line_increment;
+
+        if (decoded.bc_increment == 0) {
+            line_no = iter->source_line;
+            another = true;
+        } else if (decoded.line_increment == 0) {
+            another = true;
+        }
+    }
+
+    if (another) {
         mp_uint_t prelude_size = (iter->rc->prelude.opcodes - (const byte *)iter->rc->fun_data);
         mp_uint_t bc_end = iter->rc->fun_data_len - prelude_size;
         if (iter->bc >= bc_end) {
@@ -145,10 +160,6 @@ static mp_obj_t code_colines_next(mp_obj_t iter_in) {
         } else {
             iter->bc = bc_end;
         }
-    } else {
-        mp_code_lineinfo_t decoded = mp_bytecode_decode_lineinfo(&iter->ci);
-        iter->bc += decoded.bc_increment;
-        iter->source_line += decoded.line_increment;
     }
 
     mp_uint_t end = iter->bc;
