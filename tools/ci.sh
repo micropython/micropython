@@ -612,9 +612,9 @@ function ci_unix_standard_v2_run_tests {
 }
 
 function ci_unix_coverage_setup {
-    sudo pip3 install setuptools
-    sudo pip3 install pyelftools
-    sudo pip3 install ar
+    pip3 install setuptools
+    pip3 install pyelftools
+    pip3 install ar
     gcc --version
     python3 --version
 }
