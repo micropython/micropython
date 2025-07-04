@@ -827,9 +827,15 @@ void eth_phy_link_status_poll() {
                 eth_phy_configure_autoneg(self);
             }
 
-            // Restart DHCP if interface is up and DHCP is enabled
-            if (netif_is_up(netif) && netif_dhcp_data(netif)) {
-                dhcp_renew(netif);
+            // Start or restart DHCP if interface is up
+            if (netif_is_up(netif)) {
+                if (netif_dhcp_data(netif)) {
+                    // DHCP already running, renew lease
+                    dhcp_renew(netif);
+                } else if (ip4_addr_isany_val(*netif_ip4_addr(netif))) {
+                    // No static IP and no DHCP running, start DHCP
+                    dhcp_start(netif);
+                }
             }
         } else {
             // Cable is physically disconnected
@@ -910,16 +916,20 @@ int eth_start(eth_t *self) {
     netif_set_default(n);
     netif_set_up(n);
 
-    // Start DHCP if no static IP has been configured
+    // Do an initial link status poll after PHY has had time to initialize
+    eth_phy_link_status_poll();
+
+    // Start DHCP if no static IP has been configured and link is up
     if (ip4_addr_isany_val(*netif_ip4_addr(n))) {
-        // No static IP configured, start DHCP
-        dhcp_start(n);
+        // No static IP configured, start DHCP if link is up
+        if (n->flags & NETIF_FLAG_LINK_UP) {
+            dhcp_start(n);
+        }
+        // Note: If link is down, DHCP will be started later when link comes up
+        // via the dhcp_renew() call in eth_phy_link_status_poll()
     }
 
     MICROPY_PY_LWIP_EXIT
-
-    // Do an initial link status poll after PHY has had time to initialize
-    eth_phy_link_status_poll();
 
     self->enabled = true;
     return 0;
