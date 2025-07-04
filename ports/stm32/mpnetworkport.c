@@ -70,6 +70,10 @@ static void pyb_lwip_poll(void) {
     wiznet5k_poll();
     #endif
 
+    #if defined(MICROPY_HW_ETH_MDC)
+    eth_phy_link_status_poll();
+    #endif
+
     // Run the lwIP internal updates
     sys_check_timeouts();
 
