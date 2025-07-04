@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2018 Glenn Ruben Bakke
+ * Copyright (c) 2025 Ned Konz <ned@metamagix.tech>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,24 +39,50 @@
  * also needs to be specified in devicetree, in ADC controller child nodes. Also
  * the ADC resolution and oversampling setting (if used) need to be specified
  * there.
+ * 
+ * Here is an excerpt from a devicetree overlay that configures an ADC
+ * with one channel that would be referred to as ('adc', 0) in the constructor
+ * of the ADC object:
+ *
+ *  / {
+ *  	zephyr,user {
+ *  		io-channels = <&adc 0>, <&adc 1>, <&adc 4>, <&adc 5>, <&adc 7>;
+ *  	};
+ *  };
+ *  
+ *  &adc {
+ *  	#address-cells = <1>;
+ *  	#size-cells = <0>;
+ *  
+ *  	channel@0 {
+ *  		reg = <0>;
+ *  		zephyr,gain = "ADC_GAIN_1_6";
+ *  		zephyr,reference = "ADC_REF_INTERNAL";
+ *  		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+ *  		zephyr,input-positive = <NRF_SAADC_AIN0>;
+ *  		zephyr,resolution = <12>;
+ *  	};
+ *      // other channels here (1, 4, 5, 7)
+ *  };
+ *
  */
 
 // #include "extmod/modmachine.h" // included from extmod/machine_adc.c
 
-#include "py/mphal.h"
+#include <inttypes.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/drivers/adc.h>
+#include "py/mphal.h"
 #include "extmod/modmachine.h"
 #include "modmachine.h"
 #include "zephyr_device.h"
 
-#include <inttypes.h>
-#include <stddef.h>
-#include <stdint.h>
 
 
 #if !DT_NODE_EXISTS(DT_PATH(zephyr_user)) || \
