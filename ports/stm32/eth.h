@@ -44,5 +44,6 @@ bool eth_is_enabled(eth_t *self);
 int eth_start(eth_t *self);
 int eth_stop(eth_t *self);
 void eth_low_power_mode(eth_t *self, bool enable);
+void eth_phy_link_status_poll();
 
 #endif // MICROPY_INCLUDED_STM32_ETH_H

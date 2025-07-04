@@ -129,9 +129,9 @@ eth_t eth_instance;
 
 static void eth_mac_deinit(eth_t *self);
 static void eth_process_frame(eth_t *self, size_t len, const uint8_t *buf);
-static void eth_netif_init_early(eth_t *self);
-static void eth_phy_link_status_poll(eth_t *self);
+static void eth_lwip_init(eth_t *self);
 static void eth_phy_configure_autoneg(eth_t *self);
+static int eth_phy_init(eth_t *self);
 
 void eth_phy_write(uint32_t phy_addr, uint32_t reg, uint32_t val) {
     #if defined(STM32H5) || defined(STM32H7)
@@ -190,6 +190,10 @@ uint32_t eth_phy_read(uint32_t phy_addr, uint32_t reg) {
 }
 
 int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type) {
+    if (self->netif.input != NULL) {
+        // Already initialised.
+        return 0;
+    }
     mp_hal_get_mac(mac_idx, &self->netif.hwaddr[0]);
     self->netif.hwaddr_len = 6;
     self->phy_addr = phy_addr;
@@ -227,8 +231,8 @@ int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type) {
     __HAL_RCC_ETH_CLK_ENABLE();
     #endif
 
-    // Initialize netif structure early so static IP can be configured before active(True)
-    eth_netif_init_early(self);
+    // Initialize netif and register with LWIP
+    eth_lwip_init(self);
 
     return 0;
 }
@@ -260,7 +264,6 @@ static int eth_mac_init(eth_t *self) {
     #if defined(STM32H5)
     __HAL_RCC_SBS_CLK_ENABLE();
     SBS->PMCR = (SBS->PMCR & ~SBS_PMCR_ETH_SEL_PHY_Msk) | SBS_PMCR_ETH_SEL_PHY_2;
-    HAL_SBS_ETHInterfaceSelect(SBS_ETH_RMII);
     #elif defined(STM32H7)
     SYSCFG->PMCR = (SYSCFG->PMCR & ~SYSCFG_PMCR_EPIS_SEL_Msk) | SYSCFG_PMCR_EPIS_SEL_2;
     #else
@@ -348,33 +351,6 @@ static int eth_mac_init(eth_t *self) {
     // don't skip 32bit words since our descriptors are continuous in memory
     ETH->DMACCR &= ~(ETH_DMACCR_DSL_Msk);
     #endif
-
-    // Reset the PHY and wait for reset to complete
-    eth_phy_write(self->phy_addr, PHY_BCR, PHY_BCR_SOFT_RESET);
-    mp_hal_delay_ms(50);
-
-    // Wait for PHY reset to complete (but don't wait for link)
-    t0 = mp_hal_ticks_ms();
-    while (eth_phy_read(self->phy_addr, PHY_BCR) & PHY_BCR_SOFT_RESET) {
-        if (mp_hal_ticks_ms() - t0 > 1000) {  // 1 second timeout for reset
-            eth_mac_deinit(self);
-            return -MP_ETIMEDOUT;
-        }
-        mp_hal_delay_ms(2);
-    }
-
-    // Initialize link status tracking (current state, whatever it is)
-    uint16_t bsr = eth_phy_read(self->phy_addr, PHY_BSR);
-    self->last_link_status = (bsr & PHY_BSR_LINK_STATUS) != 0;
-
-    // Configure autonegotiation if link is already up, otherwise it will be
-    // configured when link comes up via the polling function
-    if (self->last_link_status) {
-        eth_phy_configure_autoneg(self);
-    }
-
-    // Enable PHY link change interrupts (for future use if PHY interrupt pin available)
-    eth_phy_enable_link_interrupts(self->phy_addr);
 
     // Burst mode configuration
     #if defined(STM32H5) || defined(STM32H7)
@@ -689,14 +665,6 @@ void ETH_IRQHandler(void) {
             eth_dma_rx_free();
         }
     }
-
-    // Check for PHY link status changes (polled approach)
-    // This runs on every RX interrupt, providing reasonable responsiveness
-    static uint32_t link_check_counter = 0;
-    if (++link_check_counter >= 100) { // Check every ~100 RX interrupts
-        link_check_counter = 0;
-        eth_phy_link_status_poll(&eth_instance);
-    }
 }
 
 /*******************************************************************************/
@@ -758,8 +726,9 @@ static err_t eth_netif_init(struct netif *netif) {
     return ERR_OK;
 }
 
-static void eth_netif_init_early(eth_t *self) {
-    // Initialize netif structure but don't add to network stack yet
+static void eth_lwip_init(eth_t *self) {
+    MICROPY_PY_LWIP_ENTER
+    // Initialize netif structure
     struct netif *n = &self->netif;
     n->name[0] = 'e';
     n->name[1] = '0';
@@ -772,48 +741,19 @@ static void eth_netif_init_early(eth_t *self) {
     IP_ADDR4(&ipconfig[2], 192, 168, 0, 1);    // Gateway
     IP_ADDR4(&ipconfig[3], 8, 8, 8, 8);        // DNS
 
-    netif_set_addr(n, ip_2_ip4(&ipconfig[0]), ip_2_ip4(&ipconfig[1]), ip_2_ip4(&ipconfig[2]));
+    netif_add(n, ip_2_ip4(&ipconfig[0]), ip_2_ip4(&ipconfig[1]), ip_2_ip4(&ipconfig[2]), self, eth_netif_init, ethernet_input);
+    netif_set_hostname(n, mod_network_hostname_data);
+
+    ip_addr_t dns_addr;
+    IP_ADDR4(&dns_addr, 8, 8, 8, 8);
+    dns_setserver(0, &dns_addr);
 
     // Initialize DHCP structure
     dhcp_set_struct(n, &self->dhcp_struct);
-}
 
-static void eth_lwip_init(eth_t *self) {
-    MICROPY_PY_LWIP_ENTER
-
-    struct netif *n = &self->netif;
-
-    // Add netif to network stack (only if not already added)
-    if (netif_find(n->name) == NULL) {
-        ip_addr_t dns_addr;
-        IP_ADDR4(&dns_addr, 8, 8, 8, 8);
-
-        netif_add(n, netif_ip4_addr(n), netif_ip4_netmask(n), netif_ip4_gw(n), self, eth_netif_init, ethernet_input);
-        netif_set_hostname(n, mod_network_hostname_data);
-        netif_set_default(n);
-        netif_set_up(n);
-
-        dns_setserver(0, &dns_addr);
-
-        #if LWIP_IPV6
-        netif_create_ip6_linklocal_address(n, 1);
-        #endif
-    }
-
-    MICROPY_PY_LWIP_EXIT
-}
-
-static void eth_start_dhcp_if_needed(eth_t *self) {
-    MICROPY_PY_LWIP_ENTER
-    struct netif *netif = &self->netif;
-
-    // Check if a static IP address has been configured
-    if (ip4_addr_isany_val(*netif_ip4_addr(netif))) {
-        // No static IP configured, start DHCP
-        dhcp_start(netif);
-    }
-    // If static IP is already configured, don't start DHCP
-
+    #if LWIP_IPV6
+    netif_create_ip6_linklocal_address(n, 1);
+    #endif
     MICROPY_PY_LWIP_EXIT
 }
 
@@ -833,7 +773,11 @@ static void eth_phy_configure_autoneg(eth_t *self) {
     eth_phy_write(self->phy_addr, PHY_BCR, PHY_BCR_AUTONEG_EN);
 }
 
-static void eth_phy_link_status_poll(eth_t *self) {
+void eth_phy_link_status_poll() {
+    eth_t *self = &eth_instance;
+    if (!self->enabled) {
+        return;
+    }
     // Poll PHY link status and handle state changes
     uint16_t bsr = eth_phy_read(self->phy_addr, PHY_BSR);
     bool current_link_status = (bsr & PHY_BSR_LINK_STATUS) != 0;
@@ -844,6 +788,7 @@ static void eth_phy_link_status_poll(eth_t *self) {
 
         // Update LWIP netif link status to reflect physical cable connection
         struct netif *netif = &self->netif;
+        MICROPY_PY_LWIP_ENTER
         if (current_link_status) {
             // Cable is physically connected
             netif_set_link_up(netif);
@@ -854,34 +799,22 @@ static void eth_phy_link_status_poll(eth_t *self) {
                 eth_phy_configure_autoneg(self);
             }
 
-            // Restart DHCP if interface is up and DHCP is enabled
-            if (netif_is_up(netif) && netif_dhcp_data(netif)) {
-                dhcp_renew(netif);
+            // Start or restart DHCP if interface is up
+            if (netif_is_up(netif)) {
+                if (netif_dhcp_data(netif)) {
+                    // DHCP already running, renew lease
+                    dhcp_renew(netif);
+                } else if (ip4_addr_isany_val(*netif_ip4_addr(netif))) {
+                    // No static IP and no DHCP running, start DHCP
+                    dhcp_start(netif);
+                }
             }
         } else {
             // Cable is physically disconnected
             netif_set_link_down(netif);
         }
+        MICROPY_PY_LWIP_EXIT
     }
-}
-
-static void eth_lwip_deinit(eth_t *self) {
-    MICROPY_PY_LWIP_ENTER
-    struct netif *netif = &self->netif;
-
-    // Stop DHCP if running
-    if (netif_dhcp_data(netif)) {
-        dhcp_stop(netif);
-    }
-
-    // Remove from network stack but keep netif structure for reuse
-    for (struct netif *n = netif_list; n != NULL; n = n->next) {
-        if (n == netif) {
-            netif_remove(n);
-            break;
-        }
-    }
-    MICROPY_PY_LWIP_EXIT
 }
 
 static void eth_process_frame(eth_t *self, size_t len, const uint8_t *buf) {
@@ -904,17 +837,21 @@ struct netif *eth_netif(eth_t *self) {
 }
 
 int eth_link_status(eth_t *self) {
+    // Do a quick poll to ensure link status is current
+    eth_phy_link_status_poll();
+
     struct netif *netif = &self->netif;
     if ((netif->flags & (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP))
         == (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) {
-        if (netif->ip_addr.addr != 0) {
-            return 3; // link up
+        if (!ip4_addr_isany_val(*netif_ip4_addr(netif))) {
+            return 3; // link up with IP
         } else {
-            return 2; // link no-ip;
+            return 2; // link up, no IP
         }
     } else {
-        if (eth_phy_read(self->phy_addr, PHY_BSR) & PHY_BSR_LINK_STATUS) {
-            return 1; // link up
+        // Use tracked link status instead of direct PHY read
+        if (self->last_link_status) {
+            return 1; // physical link up but interface down
         } else {
             return 0; // link down
         }
@@ -934,21 +871,52 @@ int eth_start(eth_t *self) {
         return ret;
     }
 
-    // Initialize LWIP netif (only once, safe to call multiple times)
-    eth_lwip_init(self);
+    // Initialize PHY (reset and configure)
+    ret = eth_phy_init(self);
+    if (ret < 0) {
+        eth_mac_deinit(self);
+        return ret;
+    }
 
-    // Start DHCP if no static IP has been configured
-    eth_start_dhcp_if_needed(self);
+    MICROPY_PY_LWIP_ENTER
+    struct netif *n = &self->netif;
 
-    // Do an initial link status poll
-    eth_phy_link_status_poll(self);
+    // Enable the interface in LWIP
+    netif_set_default(n);
+    netif_set_up(n);
+
+    // Do an initial link status poll after PHY has had time to initialize
+    eth_phy_link_status_poll();
+
+    // Start DHCP if no static IP has been configured and link is up
+    if (ip4_addr_isany_val(*netif_ip4_addr(n))) {
+        // No static IP configured, start DHCP if link is up
+        if (n->flags & NETIF_FLAG_LINK_UP) {
+            dhcp_start(n);
+        }
+        // Note: If link is down, DHCP will be started later when link comes up
+        // via the dhcp_renew() call in eth_phy_link_status_poll()
+    }
+
+    MICROPY_PY_LWIP_EXIT
 
     self->enabled = true;
     return 0;
 }
 
 int eth_stop(eth_t *self) {
-    eth_lwip_deinit(self);
+    // Stop DHCP if running
+    if (netif_dhcp_data(&self->netif)) {
+        dhcp_stop(&self->netif);
+    }
+    netif_set_down(&self->netif);
+
+    // Shutdown PHY
+    eth_low_power_mode(self, true);
+
+    // Clear link status tracking
+    self->last_link_status = false;
+
     eth_mac_deinit(self);
     self->enabled = false;
     return 0;
@@ -979,4 +947,26 @@ void eth_low_power_mode(eth_t *self, bool enable) {
         eth_phy_write(self->phy_addr, PHY_BCR, bcr & (~PHY_BCR_POWER_DOWN));
     }
 }
+
+static int eth_phy_init(eth_t *self) {
+    // Reset the PHY and wait for reset to complete
+    eth_phy_write(self->phy_addr, PHY_BCR, PHY_BCR_SOFT_RESET);
+    mp_hal_delay_ms(10);
+
+    // Wait for PHY reset to complete (but don't wait for link)
+    uint32_t t0 = mp_hal_ticks_ms();
+    while (eth_phy_read(self->phy_addr, PHY_BCR) & PHY_BCR_SOFT_RESET) {
+        if (mp_hal_ticks_ms() - t0 > 1000) {  // 1 second timeout for reset
+            return -MP_ETIMEDOUT;
+        }
+        mp_hal_delay_ms(2);
+    }
+
+    // Initialize link status tracking (current state, whatever it is)
+    self->last_link_status = false;
+    eth_phy_link_status_poll();
+
+    return 0;
+}
+
 #endif // defined(MICROPY_HW_ETH_MDC)
