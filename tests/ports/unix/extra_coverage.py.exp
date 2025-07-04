@@ -58,9 +58,9 @@ example_package                 ffi             framebuf
 gc              hashlib         heapq           io
 json            machine         marshal         math
 os              platform        random          re
-select          socket          struct          sys
-termios         time            tls             uctypes
-vfs             websocket
+select          socket          string          struct
+sys             termios         time            tls
+uctypes         vfs             websocket
 me
 
 micropython     machine         marshal         math
@@ -183,6 +183,33 @@ pop all: 1 2 4 5
 1 1
 # stackctrl
 1 1
+# t-strings
+SyntaxError: empty expression not allowed
+SyntaxError: empty expression not allowed
+ValueError: template expression too long
+SyntaxError: template string too big
+SyntaxError: too many interpolations
+ValueError: template string too large
+SyntaxError: invalid syntax in template expression: nested{x}
+Template + str error: can only concatenate Template (not "str") to Template
+str + Template error: unsupported types for __add__: 'str', 'Template'
+TypeError: unsupported types for __add__: 'str', 'Template'
+# Testing conversion without format spec
+Conversion without format spec: OK
+# Testing escaped braces in format spec
+ValueError: invalid format spec - cannot contain braces
+# Testing conversion after format spec
+SyntaxError: invalid syntax in template expression: x:.2f
+# Testing empty format spec
+Empty format spec: OK
+TypeError: unsupported types for __add__: 'str', 'Template'
+# lexer fstring_args < 3 chars
+Defensive code path tested
+# objtype.c Template/str errors
+TypeError: can only concatenate Template (not "str") to Template
+TypeError: unsupported types for __add__: 'str', 'Template'
+# objstr subscript assignment
+Bytes subscript assignment not supported
 # end coverage.c
 0123456789 b'0123456789'
 7300

@@ -46,6 +46,29 @@ struct _mp_lexer_t;
 #define MP_PARSE_NODE_ID        (0x02)
 #define MP_PARSE_NODE_STRING    (0x06)
 #define MP_PARSE_NODE_TOKEN     (0x0a)
+#define MP_PARSE_NODE_STRING_REF      (0x80)
+#define MP_PARSE_NODE_TEMPLATE_STRING (0x81)
+
+#define TSTR_HDR_SEG_SHIFT   (8)
+#define TSTR_HDR_INT_SHIFT   (20)
+#define TSTR_MAX_SEG         (4095)
+#define TSTR_MAX_INT         (4095)
+
+#define TSTR_HDR_MAKE(seg_cnt, int_cnt) \
+    ((MP_PARSE_NODE_TEMPLATE_STRING | \
+    ((((seg_cnt) - 1) << TSTR_HDR_SEG_SHIFT)) | \
+    (((int_cnt) << TSTR_HDR_INT_SHIFT))))
+
+#define TSTR_HDR_GET_SEG_CNT(hdr) \
+    (((((hdr) >> TSTR_HDR_SEG_SHIFT) & UINT32_C(0xFFF)) + 1))
+
+#define TSTR_HDR_GET_INT_CNT(hdr) \
+    ((((hdr) >> TSTR_HDR_INT_SHIFT) & UINT32_C(0xFFF)))
+
+// Ensure header bit packing fits in 32 bits
+typedef char _tstr_assert1[(TSTR_HDR_INT_SHIFT + 12 <= 32) ? 1 : -1];
+typedef char _tstr_assert2[(TSTR_MAX_SEG <= 0xFFF) ? 1 : -1];
+typedef char _tstr_assert3[(TSTR_MAX_INT <= 0xFFF) ? 1 : -1];
 
 typedef uintptr_t mp_parse_node_t; // must be pointer size
 
