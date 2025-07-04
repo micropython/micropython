@@ -71,6 +71,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
     - name: Install packages
       run: source tools/ci.sh && ci_unix_coverage_setup
     - name: Build
@@ -250,6 +255,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
     - name: Install packages
       run: source tools/ci.sh && ci_unix_coverage_setup
     - name: Build
@@ -270,6 +280,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
     - name: Install packages
       run: source tools/ci.sh && ci_unix_coverage_setup
     - name: Build
