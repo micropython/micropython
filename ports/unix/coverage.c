@@ -505,7 +505,7 @@ static mp_obj_t extra_coverage(void) {
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str_from_cstr("abc"), mp_obj_new_str_from_cstr("abc"));
 
         // mp_obj_int_get_checked with mp_obj_int_t that has a value that is a small integer
-        mp_printf(&mp_plat_print, "%d\n", mp_obj_int_get_checked(mp_obj_int_new_mpz()));
+        mp_printf(&mp_plat_print, "%d\n", mp_obj_int_get_checked(MP_OBJ_FROM_PTR(mp_obj_int_new_mpz())));
 
         // mp_obj_int_get_uint_checked with non-negative small-int
         mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(1)));
@@ -844,7 +844,7 @@ static mp_obj_t extra_coverage(void) {
     mp_obj_streamtest_t *s2 = mp_obj_malloc(mp_obj_streamtest_t, &mp_type_stest_textio2);
 
     // return a tuple of data for testing on the Python side
-    mp_obj_t items[] = {(mp_obj_t)&str_no_hash_obj, (mp_obj_t)&bytes_no_hash_obj, MP_OBJ_FROM_PTR(s), MP_OBJ_FROM_PTR(s2)};
+    mp_obj_t items[] = {MP_OBJ_FROM_PTR(&str_no_hash_obj), MP_OBJ_FROM_PTR(&bytes_no_hash_obj), MP_OBJ_FROM_PTR(s), MP_OBJ_FROM_PTR(s2)};
     return mp_obj_new_tuple(MP_ARRAY_SIZE(items), items);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(extra_coverage_obj, extra_coverage);
