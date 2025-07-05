@@ -17,22 +17,48 @@ fi
 ########################################################################################
 # general helper functions
 
+function _ci_gcc_plugin_verify {
+    plugin=$($1 -print-file-name=plugin/include/gcc-plugin.h)
+    if [ -e "$plugin" ] ; then
+        echo "$1: plugin header at $plugin"
+    else
+        echo "$1: required plugin header not found"
+        return 1
+    fi
+}
+
+function _ci_gcc_plugin_setup {
+    if [ $# -eq 0 ]; then
+        GCC_VER=$(echo __GNUC__ | gcc -P -E -)
+        sudo apt-get install gcc-${GCC_VER}-plugin-dev
+        _ci_gcc_plugin_verify gcc
+    else
+        GCC_VER=$(echo __GNUC__ | ${1}-gcc -P -E -)
+        sudo apt-get install gcc-${GCC_VER}-plugin-dev-${1//_/-}
+        _ci_gcc_plugin_verify ${1}-gcc
+    fi
+}
+
 function ci_gcc_arm_setup {
     sudo apt-get update
     sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
     arm-none-eabi-gcc --version
+    _ci_gcc_plugin_verify arm-none-eabi-gcc
 }
 
 function ci_gcc_riscv_setup {
     sudo apt-get update
     sudo apt-get install gcc-riscv64-unknown-elf picolibc-riscv64-unknown-elf
     riscv64-unknown-elf-gcc --version
+    _ci_gcc_plugin_verify riscv64-unknown-elf-gcc
 }
 
 function ci_gcc_ppc64_setup {
     sudo apt-get update
     sudo apt-get install gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
+    _ci_gcc_plugin_setup powerpc64le-linux-gnu
     powerpc64le-linux-gnu-gcc --version
+    _ci_gcc_plugin_verify powerpc64le-linux-gnu-gcc
 }
 
 function ci_picotool_setup {
@@ -159,6 +185,7 @@ function ci_code_size_report {
 function ci_mpy_format_setup {
     sudo apt-get update
     sudo pip3 install pyelftools
+    _ci_gcc_plugin_setup
     python3 --version
 }
 
@@ -214,7 +241,7 @@ function ci_cc3200_setup {
 
 function ci_cc3200_build {
     make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
-    make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
+    make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release MICROPY_USE_COMPILER_PLUGIN=none
 }
 
 ########################################################################################
@@ -311,6 +338,7 @@ function ci_esp8266_path {
 }
 
 function ci_esp8266_build {
+    export MICROPY_USE_COMPILER_PLUGIN=none
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp8266 submodules
     make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC
@@ -366,7 +394,6 @@ function ci_psoc_edge_setup {
     sudo apt remove python3-packaging python3-jsonschema python3-cryptography
     sudo apt install python3-pip
     sudo pip3 install edgeprotecttools
-
 }
 
 function ci_psoc_edge_build {
@@ -763,12 +790,20 @@ function ci_native_mpy_modules_clang_build {
     done
 }
 
+function ci_unix_minimal_setup {
+    _ci_gcc_plugin_setup
+}
+
 function ci_unix_minimal_build {
     make ${MAKEOPTS} -C ports/unix VARIANT=minimal
 }
 
 function ci_unix_minimal_run_tests {
     make -C ports/unix VARIANT=minimal test
+}
+
+function ci_unix_standard_setup {
+    _ci_gcc_plugin_setup
 }
 
 function ci_unix_standard_build {
@@ -813,13 +848,16 @@ function ci_unix_coverage_setup {
     pip3 install setuptools
     pip3 install pyelftools
     pip3 install ar
+    _ci_gcc_plugin_setup
     gcc --version
     python3 --version
 }
 
 function ci_unix_coverage_build {
+    # (Ensure mpy-cross is built with the plugin too)
+    make ${MAKEOPTS} -C mpy-cross
     # note: the coverage variant incorporates ../../examples/usercmodule, set in mpconfigvariant.mk
-    ci_unix_build_helper VARIANT=coverage
+    ci_unix_build_helper VARIANT=coverage MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper gcc
 }
 
@@ -865,6 +903,7 @@ function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
     sudo apt-get install gcc-i686-linux-gnu g++-i686-linux-gnu patchelf libffi-dev:i386
+    _ci_gcc_plugin_setup i686-linux-gnu
     python -m pip install pyelftools
     python -m pip install ar
     i686-linux-gnu-gcc --version
@@ -900,6 +939,10 @@ function ci_unix_longlong_build {
 
 function ci_unix_longlong_run_tests {
     ci_unix_run_tests_full_helper longlong
+}
+
+function ci_unix_float_setup {
+    _ci_gcc_plugin_setup
 }
 
 function ci_unix_float_build {
@@ -1008,6 +1051,7 @@ function ci_unix_qemu_mips_setup {
     [ -e ${MIPS_TARBALL} ] || wget --no-verbose https://toolchains.bootlin.com/downloads/releases/toolchains/mips32/tarballs/${MIPS_TARBALL}
     tar xf ${MIPS_TARBALL}
     ./${MIPS_TOOLCHAIN}/bin/mips-buildroot-linux-gnu-gcc --version
+    _ci_gcc_plugin_verify ./${MIPS_TOOLCHAIN}/bin/mips-buildroot-linux-gnu-gcc
     qemu-mips --version
     # link the MIPS toolchain sysroot where qemu can find it
     sudo mkdir -p /usr/gnemul
@@ -1034,6 +1078,7 @@ function ci_unix_qemu_arm_setup {
     sudo apt-get update
     sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libltdl-dev
     sudo apt-get install qemu-user-binfmt
+    _ci_gcc_plugin_setup arm-linux-gnueabi
     qemu-arm --version
     sudo mkdir -p /usr/gnemul
     sudo ln -s /usr/arm-linux-gnueabi /usr/gnemul/qemu-arm
@@ -1059,6 +1104,7 @@ function ci_unix_qemu_riscv64_setup {
     python3 -m pip install ar
     sudo apt-get install qemu-user-binfmt
     qemu-riscv64 --version
+    _ci_gcc_plugin_setup riscv64-linux-gnu
     sudo mkdir -p /usr/gnemul
     sudo ln -s /usr/riscv64-linux-gnu /usr/gnemul/qemu-riscv64
 }
@@ -1088,6 +1134,7 @@ function ci_unix_qemu_loong64_setup {
     sudo ln -s /usr/loongarch64-linux-gnu /usr/gnemul/qemu-loongarch64
     sudo ln -s /usr/bin/loongarch64-linux-gnu-gcc-14 /usr/bin/loongarch64-linux-gnu-gcc
     sudo ln -s /usr/bin/loongarch64-linux-gnu-g++-14 /usr/bin/loongarch64-linux-gnu-g++
+    _ci_gcc_plugin_setup loongarch64-linux-gnu
 }
 
 function ci_unix_qemu_loong64_build {
@@ -1106,6 +1153,8 @@ function ci_unix_qemu_x64_setup {
     sudo apt-get update
     sudo apt-get install gcc-x86-64-linux-gnu g++-x86-64-linux-gnu libc6-amd64-cross libltdl-dev
     sudo apt-get install qemu-user-binfmt
+    x86_64-linux-gnu-gcc --version
+    _ci_gcc_plugin_setup x86_64-linux-gnu
     python3 -m pip install pyelftools
     python3 -m pip install ar
     qemu-x86_64 --version
@@ -1168,6 +1217,8 @@ function ci_webassembly_run_tests {
 function ci_windows_setup {
     sudo apt-get update
     sudo apt-get install gcc-mingw-w64 g++-mingw-w64
+    _ci_gcc_plugin_verify i686-w64-mingw32-gcc
+    _ci_gcc_plugin_verify x86_64-w64-mingw32-gcc
 }
 
 function ci_windows_build {
