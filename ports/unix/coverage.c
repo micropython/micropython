@@ -204,8 +204,20 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%d %+d % d\n", -123, 123, 123); // sign
         mp_printf(&mp_plat_print, "%05d\n", -123); // negative number with zero padding
         mp_printf(&mp_plat_print, "%ld\n", 123); // long
-        mp_printf(&mp_plat_print, "%lx\n", 0x123); // long hex
-        mp_printf(&mp_plat_print, "%X\n", 0x1abcdef); // capital hex
+        mp_printf(&mp_plat_print, "%lx\n", 0x123fl); // long hex
+        mp_printf(&mp_plat_print, "%lX\n", 0x123fl); // capital long hex
+        if (sizeof(mp_int_t) == 8) {
+            mp_printf(&mp_plat_print, "%llx\n", LLONG_MAX); // long long hex
+            mp_printf(&mp_plat_print, "%llX\n", LLONG_MAX); // capital long long hex
+            mp_printf(&mp_plat_print, "%llu\n", ULLONG_MAX); // unsigned long long
+        } else {
+            // fake for platforms without narrower mp_int_t
+            mp_printf(&mp_plat_print, "7fffffffffffffff\n", LLONG_MAX);
+            mp_printf(&mp_plat_print, "7FFFFFFFFFFFFFFF\n", LLONG_MAX);
+            mp_printf(&mp_plat_print, "18446744073709551615\n", ULLONG_MAX);
+        }
+        mp_printf(&mp_plat_print, "%p\n", (void *)0x789f); // pointer
+        mp_printf(&mp_plat_print, "%P\n", (void *)0x789f); // pointer uppercase
         mp_printf(&mp_plat_print, "%.2s %.3s '%4.4s' '%5.5q' '%.3q'\n", "abc", "abc", "abc", MP_QSTR_True, MP_QSTR_True); // fixed string precision
         mp_printf(&mp_plat_print, "%.*s\n", -1, "abc"); // negative string precision
         mp_printf(&mp_plat_print, "%b %b\n", 0, 1); // bools
@@ -216,11 +228,31 @@ static mp_obj_t extra_coverage(void) {
         #endif
         mp_printf(&mp_plat_print, "%d\n", 0x80000000); // should print signed
         mp_printf(&mp_plat_print, "%u\n", 0x80000000); // should print unsigned
-        mp_printf(&mp_plat_print, "%x\n", 0x80000000); // should print unsigned
-        mp_printf(&mp_plat_print, "%X\n", 0x80000000); // should print unsigned
+        mp_printf(&mp_plat_print, "%x\n", 0x8000000f); // should print unsigned
+        mp_printf(&mp_plat_print, "%X\n", 0x8000000f); // should print unsigned
         mp_printf(&mp_plat_print, "abc\n%"); // string ends in middle of format specifier
         mp_printf(&mp_plat_print, "%%\n"); // literal % character
         mp_printf(&mp_plat_print, ".%-3s.\n", "a"); // left adjust
+
+        // Check that all kinds of mp_printf arguments are parsed out
+        // correctly, by having a char argument before and after each main type
+        // of value that can be formatted.
+        mp_printf(&mp_plat_print, "%c%%%c\n", '<', '>');
+        mp_printf(&mp_plat_print, "%c%p%c\n", '<', (void *)0xaaaa, '>');
+        mp_printf(&mp_plat_print, "%c%b%c\n", '<', true, '>');
+        mp_printf(&mp_plat_print, "%c%d%c\n", '<', 0xaaaa, '>');
+        mp_printf(&mp_plat_print, "%c%ld%c\n", '<', 0xaaaal, '>');
+        mp_printf(&mp_plat_print, "%c" INT_FMT "%c\n", '<', (mp_int_t)0xaaaa, '>');
+        mp_printf(&mp_plat_print, "%c%s%c\n", '<', "test", '>');
+        mp_printf(&mp_plat_print, "%c%f%c\n", '<', MICROPY_FLOAT_CONST(1000.), '>');
+        mp_printf(&mp_plat_print, "%c%q%c\n", '<', (qstr)MP_QSTR_True, '>');
+        if (sizeof(mp_int_t) == 8) {
+            mp_printf(&mp_plat_print, "%c%lld%c\n", '<', LLONG_MAX, '>');
+        } else {
+            mp_printf(&mp_plat_print, "<9223372036854775807>\n");
+        }
+
+
     }
 
     // GC
