@@ -34,6 +34,12 @@ void stm32_system_init(void);
 #else
 static inline void stm32_system_init(void) {
     SystemInit();
+
+    #if defined(STM32N6)
+    // The ROM bootloader uses PLL1 to set the CPU to 400MHz, so update
+    // the value of SystemCoreClock to reflect the hardware state.
+    SystemCoreClockUpdate();
+    #endif
 }
 #endif
 

@@ -77,6 +77,10 @@
 #define MICROPY_BOARD_END_SOFT_RESET boardctrl_end_soft_reset
 #endif
 
+#ifndef MICROPY_BOARD_ENTER_STANDBY
+#define MICROPY_BOARD_ENTER_STANDBY boardctrl_enter_standby();
+#endif
+
 // Called when USBD CDC data is available.
 // Default function defined in usbd_cdc_interface.h.
 #ifndef MICROPY_BOARD_USBD_CDC_RX_EVENT
@@ -122,5 +126,6 @@ int boardctrl_run_boot_py(boardctrl_state_t *state);
 int boardctrl_run_main_py(boardctrl_state_t *state);
 void boardctrl_start_soft_reset(boardctrl_state_t *state);
 void boardctrl_end_soft_reset(boardctrl_state_t *state);
+void boardctrl_enter_standby(void);
 
 #endif // MICROPY_INCLUDED_STM32_BOARDCTRL_H
