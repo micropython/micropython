@@ -104,10 +104,6 @@ OverflowError: overflow converting long int to machine word
 OverflowError: overflow converting long int to machine word
 ValueError: 
 Warning: test
-# format float
-?
-+1e+00
-+1e+00
 # binary
 123
 456
