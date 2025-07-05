@@ -27,6 +27,16 @@ function ci_gcc_riscv_setup {
     riscv64-unknown-elf-gcc --version
 }
 
+function ci_gcc_plugin_setup {
+    if [ $# -eq 0 ]; then
+        GCC_VER=$(echo __GNUC__ | gcc -P -E -)
+        sudo apt-get install gcc-${GCC_VER}-plugin-dev
+    else
+        GCC_VER=$(echo __GNUC__ | ${1}-gcc -P -E -)
+        sudo apt-get install gcc-${GCC_VER}-plugin-dev-${1}
+    fi
+}
+
 function ci_picotool_setup {
     # Manually installing picotool ensures we use a release version, and speeds up the build.
     git clone https://github.com/raspberrypi/pico-sdk.git
@@ -151,6 +161,7 @@ function ci_code_size_report {
 function ci_mpy_format_setup {
     sudo apt-get update
     sudo pip3 install pyelftools
+    ci_gcc_plugin_setup
     python3 --version
 }
 
@@ -316,11 +327,11 @@ function ci_mimxrt_setup {
 function ci_mimxrt_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK submodules
-    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK MICROPY_USE_COMPILER_PLUGIN=gcc
     make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40 submodules
-    make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40 MICROPY_USE_COMPILER_PLUGIN=gcc
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1060_EVK submodules
-    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1060_EVK CFLAGS_EXTRA=-DMICROPY_HW_USB_MSC=1
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1060_EVK CFLAGS_EXTRA=-DMICROPY_HW_USB_MSC=1 MICROPY_USE_COMPILER_PLUGIN=gcc
 }
 
 ########################################################################################
@@ -334,10 +345,10 @@ function ci_nrf_build {
     ports/nrf/drivers/bluetooth/download_ble_stack.sh s140_nrf52_6_1_1
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/nrf submodules
-    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10040
-    make ${MAKEOPTS} -C ports/nrf BOARD=MICROBIT
-    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10056 SD=s140
-    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10090
+    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10040 MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/nrf BOARD=MICROBIT MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10056 SD=s140 MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10090 MICROPY_USE_COMPILER_PLUGIN=gcc
 }
 
 ########################################################################################
@@ -346,11 +357,12 @@ function ci_nrf_build {
 function ci_powerpc_setup {
     sudo apt-get update
     sudo apt-get install gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
+    ci_gcc_plugin_setup powerpc64le-linux-gnu
 }
 
 function ci_powerpc_build {
-    make ${MAKEOPTS} -C ports/powerpc UART=potato
-    make ${MAKEOPTS} -C ports/powerpc UART=lpc_serial
+    make ${MAKEOPTS} -C ports/powerpc UART=potato MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/powerpc UART=lpc_serial MICROPY_USE_COMPILER_PLUGIN=gcc
 }
 
 ########################################################################################
@@ -388,17 +400,18 @@ function ci_qemu_build_arm_prepare {
 
 function ci_qemu_build_arm_bigendian {
     ci_qemu_build_arm_prepare
-    make ${MAKEOPTS} -C ports/qemu CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
+    make ${MAKEOPTS} -C ports/qemu CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1 MICROPY_USE_COMPILER_PLUGIN=gcc
 }
 
 function ci_qemu_build_arm_sabrelite {
     ci_qemu_build_arm_prepare
-    make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full
+    make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full MICROPY_USE_COMPILER_PLUGIN=gcc
 }
 
 function ci_qemu_build_arm_thumb_softfp {
     ci_qemu_build_arm_prepare
-    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_full
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu MICROPY_USE_COMPILER_PLUGIN=gcc test_full
+    make ${MAKEOPTS} -C ports/qemu test_full MICROPY_USE_COMPILER_PLUGIN=gcc
 
     # Test building native .mpy with ARM-M softfp architectures.
     ci_native_mpy_modules_build armv6m
@@ -425,7 +438,7 @@ function ci_qemu_build_arm_thumb_hardfp {
 function ci_qemu_build_rv32 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 submodules
-    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test_full
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test_full MICROPY_USE_COMPILER_PLUGIN=gcc
 
     # Test building and running native .mpy with rv32imc architecture.
     ci_native_mpy_modules_build rv32imc
@@ -449,13 +462,13 @@ function ci_renesas_ra_setup {
 function ci_renesas_ra_board_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/renesas-ra submodules
-    make ${MAKEOPTS} -C ports/renesas-ra BOARD=RA4M1_CLICKER
-    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA6M2
-    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA6M1
-    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA4M1
-    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA4W1
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=RA4M1_CLICKER MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA6M2 MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA6M1 MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA4M1 MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA4W1 MICROPY_USE_COMPILER_PLUGIN=gcc
     make ${MAKEOPTS} -C ports/renesas-ra BOARD=ARDUINO_PORTENTA_C33 submodules
-    make ${MAKEOPTS} -C ports/renesas-ra BOARD=ARDUINO_PORTENTA_C33
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=ARDUINO_PORTENTA_C33 MICROPY_USE_COMPILER_PLUGIN=gcc
 }
 
 ########################################################################################
@@ -493,8 +506,8 @@ function ci_samd_setup {
 function ci_samd_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/samd submodules
-    make ${MAKEOPTS} -C ports/samd BOARD=ADAFRUIT_ITSYBITSY_M0_EXPRESS
-    make ${MAKEOPTS} -C ports/samd BOARD=ADAFRUIT_ITSYBITSY_M4_EXPRESS
+    make ${MAKEOPTS} -C ports/samd BOARD=ADAFRUIT_ITSYBITSY_M0_EXPRESS MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/samd BOARD=ADAFRUIT_ITSYBITSY_M4_EXPRESS MICROPY_USE_COMPILER_PLUGIN=gcc
 }
 
 ########################################################################################
@@ -522,12 +535,12 @@ function ci_stm32_pyb_build {
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2 submodules
     git submodule update --init lib/btstack
     git submodule update --init lib/mynewt-nimble
-    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_NETWORK_WIZNET5K=5200 USER_C_MODULES=../../examples/usercmodule
-    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
-    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF6 COPT=-O2 NANBOX=1 MICROPY_BLUETOOTH_NIMBLE=0 MICROPY_BLUETOOTH_BTSTACK=1
-    make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBV10 CFLAGS_EXTRA='-DMBOOT_FSLOAD=1 -DMBOOT_VFS_LFS2=1'
-    make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
-    make ${MAKEOPTS} -C ports/stm32/mboot BOARD=STM32F769DISC CFLAGS_EXTRA='-DMBOOT_ADDRESS_SPACE_64BIT=1 -DMBOOT_SDCARD_ADDR=0x100000000ULL -DMBOOT_SDCARD_BYTE_SIZE=0x400000000ULL -DMBOOT_FSLOAD=1 -DMBOOT_VFS_FAT=1'
+    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_NETWORK_WIZNET5K=5200 USER_C_MODULES=../../examples/usercmodule MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2 MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF6 COPT=-O2 NANBOX=1 MICROPY_BLUETOOTH_NIMBLE=0 MICROPY_BLUETOOTH_BTSTACK=1 MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBV10 CFLAGS_EXTRA='-DMBOOT_FSLOAD=1 -DMBOOT_VFS_LFS2=1' MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6 MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32/mboot BOARD=STM32F769DISC CFLAGS_EXTRA='-DMBOOT_ADDRESS_SPACE_64BIT=1 -DMBOOT_SDCARD_ADDR=0x100000000ULL -DMBOOT_SDCARD_BYTE_SIZE=0x400000000ULL -DMBOOT_FSLOAD=1 -DMBOOT_VFS_FAT=1' MICROPY_USE_COMPILER_PLUGIN=gcc
 }
 
 function ci_stm32_nucleo_build {
@@ -538,15 +551,15 @@ function ci_stm32_nucleo_build {
     git submodule update --init lib/mynewt-nimble
 
     # Test building various MCU families, some with additional options.
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC
-    make ${MAKEOPTS} -C ports/stm32 BOARD=STM32H573I_DK CFLAGS_EXTRA='-DMICROPY_HW_TINYUSB_STACK=1'
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI COPT=-O2 CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L073RZ
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L476RG DEBUG=1
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32 BOARD=STM32H573I_DK CFLAGS_EXTRA='-DMICROPY_HW_TINYUSB_STACK=1' MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI COPT=-O2 CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1' MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L073RZ MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L476RG DEBUG=1 MICROPY_USE_COMPILER_PLUGIN=gcc
 
     # Test building a board with mboot packing enabled (encryption, signing, compression).
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WB55 USE_MBOOT=1 MBOOT_ENABLE_PACKING=1
-    make ${MAKEOPTS} -C ports/stm32/mboot BOARD=NUCLEO_WB55 USE_MBOOT=1 MBOOT_ENABLE_PACKING=1
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WB55 USE_MBOOT=1 MBOOT_ENABLE_PACKING=1 MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32/mboot BOARD=NUCLEO_WB55 USE_MBOOT=1 MBOOT_ENABLE_PACKING=1 MICROPY_USE_COMPILER_PLUGIN=gcc
     # Test mboot_pack_dfu.py created a valid file, and that its unpack-dfu command works.
     BOARD_WB55=ports/stm32/boards/NUCLEO_WB55
     BUILD_WB55=ports/stm32/build-NUCLEO_WB55
@@ -563,13 +576,13 @@ function ci_stm32_misc_build {
 
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 BOARD=ARDUINO_GIGA submodules
-    make ${MAKEOPTS} -C ports/stm32 BOARD=ARDUINO_GIGA
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_G0B1RE
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_G474RE
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L152RE
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_N657X0
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_U5A5ZJ_Q
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WL55
+    make ${MAKEOPTS} -C ports/stm32 BOARD=ARDUINO_GIGA MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_G0B1RE MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_G474RE MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L152RE MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_N657X0 MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_U5A5ZJ_Q MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WL55 MICROPY_USE_COMPILER_PLUGIN=gcc
 }
 
 ########################################################################################
@@ -712,12 +725,15 @@ function ci_unix_coverage_setup {
     pip3 install setuptools
     pip3 install pyelftools
     pip3 install ar
+    ci_gcc_plugin_setup
     gcc --version
     python3 --version
 }
 
 function ci_unix_coverage_build {
-    ci_unix_build_helper VARIANT=coverage
+    # (Ensure mpy-cross is built with the plugin too)
+    make ${MAKEOPTS} -C mpy-cross MICROPY_USE_COMPILER_PLUGIN=gcc
+    ci_unix_build_helper VARIANT=coverage MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper gcc
 }
 
@@ -758,6 +774,7 @@ function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
     sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386
+    ci_gcc_plugin_setup
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     sudo pip3 install ar
@@ -766,7 +783,7 @@ function ci_unix_32bit_setup {
 }
 
 function ci_unix_coverage_32bit_build {
-    ci_unix_build_helper VARIANT=coverage MICROPY_FORCE_32BIT=1
+    ci_unix_build_helper VARIANT=coverage MICROPY_FORCE_32BIT=1 MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper gcc -m32
 }
 
@@ -779,7 +796,7 @@ function ci_unix_coverage_32bit_run_native_mpy_tests {
 }
 
 function ci_unix_nanbox_build {
-    ci_unix_build_helper VARIANT=nanbox CFLAGS_EXTRA="-DMICROPY_PY_MATH_CONSTANTS=1"
+    ci_unix_build_helper VARIANT=nanbox CFLAGS_EXTRA="-DMICROPY_PY_MATH_CONSTANTS=1" MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper gcc -m32
 }
 
@@ -788,15 +805,19 @@ function ci_unix_nanbox_run_tests {
 }
 
 function ci_unix_longlong_build {
-    ci_unix_build_helper VARIANT=longlong "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
+    ci_unix_build_helper VARIANT=longlong "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}" MICROPY_USE_COMPILER_PLUGIN=gcc
 }
 
 function ci_unix_longlong_run_tests {
     ci_unix_run_tests_full_helper longlong
 }
 
+function ci_unix_float_setup {
+    ci_gcc_plugin_setup
+}
+
 function ci_unix_float_build {
-    ci_unix_build_helper VARIANT=standard CFLAGS_EXTRA="-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT"
+    ci_unix_build_helper VARIANT=standard CFLAGS_EXTRA="-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT" MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper gcc
 }
 
@@ -894,15 +915,16 @@ function ci_unix_macos_run_tests {
 
 function ci_unix_qemu_mips_setup {
     sudo apt-get update
-    sudo apt-get install gcc-mips-linux-gnu g++-mips-linux-gnu libc6-mips-cross
+    sudo apt-get install gcc-10-mips-linux-gnu g++-mips-linux-gnu libc6-mips-cross
     sudo apt-get install qemu-user
+    ci_gcc_plugin_setup mips-linux-gnu
     qemu-mips --version
     sudo mkdir /etc/qemu-binfmt
     sudo ln -s /usr/mips-linux-gnu/ /etc/qemu-binfmt/mips
 }
 
 function ci_unix_qemu_mips_build {
-    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_MIPS[@]}"
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_MIPS[@]}" MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper mips-linux-gnu-gcc
 }
 
@@ -919,13 +941,14 @@ function ci_unix_qemu_arm_setup {
     sudo apt-get update
     sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
     sudo apt-get install qemu-user
+    ci_gcc_plugin_setup arm-linux-gnueabi
     qemu-arm --version
     sudo mkdir /etc/qemu-binfmt
     sudo ln -s /usr/arm-linux-gnueabi/ /etc/qemu-binfmt/arm
 }
 
 function ci_unix_qemu_arm_build {
-    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_ARM[@]}"
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_ARM[@]}" MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper arm-linux-gnueabi-gcc
 }
 
@@ -943,13 +966,14 @@ function ci_unix_qemu_riscv64_setup {
     sudo apt-get update
     sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu
     sudo apt-get install qemu-user
+    ci_gcc_plugin_setup riscv64-linux-gnu
     qemu-riscv64 --version
     sudo mkdir /etc/qemu-binfmt
     sudo ln -s /usr/riscv64-linux-gnu/ /etc/qemu-binfmt/riscv64
 }
 
 function ci_unix_qemu_riscv64_build {
-    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_RISCV64[@]}"
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_RISCV64[@]}" MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper riscv64-linux-gnu-gcc
 }
 
@@ -984,8 +1008,8 @@ function ci_windows_setup {
 function ci_windows_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/windows submodules
-    make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
-    make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=x86_64-w64-mingw32- BUILD=build-standard-w64
+    make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32- MICROPY_USE_COMPILER_PLUGIN=gcc
+    make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=x86_64-w64-mingw32- BUILD=build-standard-w64 MICROPY_USE_COMPILER_PLUGIN=gcc
 }
 
 ########################################################################################
