@@ -31,6 +31,8 @@
 
 #include "hardware/i2c.h"
 
+#if MICROPY_PY_MACHINE_I2C
+
 #define DEFAULT_I2C_FREQ (400000)
 #define DEFAULT_I2C_TIMEOUT (50000)
 
@@ -208,3 +210,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &machine_i2c_p,
     locals_dict, &mp_machine_i2c_locals_dict
     );
+
+#endif // MICROPY_PY_MACHINE_I2C
