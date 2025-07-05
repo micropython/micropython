@@ -22,6 +22,16 @@ function ci_gcc_riscv_setup {
     riscv64-unknown-elf-gcc --version
 }
 
+function ci_gcc_plugin_setup {
+    if [ $# -eq 0 ]; then
+        GCC_VER=$(echo __GNUC__ | gcc -P -E -)
+        sudo apt-get install gcc-${GCC_VER}-plugin-dev
+    else
+        GCC_VER=$(echo __GNUC__ | ${1}-gcc -P -E -)
+        sudo apt-get install gcc-${GCC_VER}-plugin-dev-${1}
+    fi
+}
+
 function ci_picotool_setup {
     # Manually installing picotool ensures we use a release version, and speeds up the build.
     git clone https://github.com/raspberrypi/pico-sdk.git
@@ -126,6 +136,7 @@ function ci_mpy_format_setup {
     sudo apt-get update
     sudo apt-get install python2.7
     sudo pip3 install pyelftools
+    ci_gcc_plugin_setup
     python2.7 --version
     python3 --version
 }
@@ -615,12 +626,15 @@ function ci_unix_coverage_setup {
     pip3 install setuptools
     pip3 install pyelftools
     pip3 install ar
+    ci_gcc_plugin_setup
     gcc --version
     python3 --version
 }
 
 function ci_unix_coverage_build {
-    ci_unix_build_helper VARIANT=coverage
+    # (Ensure mpy-cross is built with the plugin too)
+    make ${MAKEOPTS} -C mpy-cross MICROPY_USE_COMPILER_PLUGIN=gcc
+    ci_unix_build_helper VARIANT=coverage MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper gcc
 }
 
@@ -661,6 +675,7 @@ function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
     sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386 python2.7
+    ci_gcc_plugin_setup
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     sudo pip3 install ar
@@ -670,7 +685,7 @@ function ci_unix_32bit_setup {
 }
 
 function ci_unix_coverage_32bit_build {
-    ci_unix_build_helper VARIANT=coverage MICROPY_FORCE_32BIT=1
+    ci_unix_build_helper VARIANT=coverage MICROPY_FORCE_32BIT=1 MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper gcc -m32
 }
 
@@ -684,7 +699,7 @@ function ci_unix_coverage_32bit_run_native_mpy_tests {
 
 function ci_unix_nanbox_build {
     # Use Python 2 to check that it can run the build scripts
-    ci_unix_build_helper PYTHON=python2.7 VARIANT=nanbox CFLAGS_EXTRA="-DMICROPY_PY_MATH_CONSTANTS=1"
+    ci_unix_build_helper PYTHON=python2.7 VARIANT=nanbox CFLAGS_EXTRA="-DMICROPY_PY_MATH_CONSTANTS=1" MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper gcc -m32
 }
 
@@ -692,8 +707,12 @@ function ci_unix_nanbox_run_tests {
     ci_unix_run_tests_full_no_native_helper nanbox PYTHON=python2.7
 }
 
+function ci_unix_float_setup {
+    ci_gcc_plugin_setup
+}
+
 function ci_unix_float_build {
-    ci_unix_build_helper VARIANT=standard CFLAGS_EXTRA="-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT"
+    ci_unix_build_helper VARIANT=standard CFLAGS_EXTRA="-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT" MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper gcc
 }
 
@@ -765,8 +784,8 @@ function ci_unix_macos_build {
     #make ${MAKEOPTS} -C ports/unix deplibs
     make ${MAKEOPTS} -C ports/unix
     # check for additional compiler errors/warnings
-    make ${MAKEOPTS} -C ports/unix VARIANT=coverage submodules
-    make ${MAKEOPTS} -C ports/unix VARIANT=coverage
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage submodules DISABLE_PLUGIN=1
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage DISABLE_PLUGIN=1
 }
 
 function ci_unix_macos_run_tests {
@@ -778,15 +797,16 @@ function ci_unix_macos_run_tests {
 
 function ci_unix_qemu_mips_setup {
     sudo apt-get update
-    sudo apt-get install gcc-mips-linux-gnu g++-mips-linux-gnu libc6-mips-cross
+    sudo apt-get install gcc-10-mips-linux-gnu g++-mips-linux-gnu libc6-mips-cross
     sudo apt-get install qemu-user
+    ci_gcc_plugin_setup mips-linux-gnu
     qemu-mips --version
     sudo mkdir /etc/qemu-binfmt
     sudo ln -s /usr/mips-linux-gnu/ /etc/qemu-binfmt/mips
 }
 
 function ci_unix_qemu_mips_build {
-    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_MIPS[@]}"
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_MIPS[@]}" MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper mips-linux-gnu-gcc
 }
 
@@ -799,13 +819,14 @@ function ci_unix_qemu_arm_setup {
     sudo apt-get update
     sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
     sudo apt-get install qemu-user
+    ci_gcc_plugin_setup arm-linux-gnueabi
     qemu-arm --version
     sudo mkdir /etc/qemu-binfmt
     sudo ln -s /usr/arm-linux-gnueabi/ /etc/qemu-binfmt/arm
 }
 
 function ci_unix_qemu_arm_build {
-    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_ARM[@]}"
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_ARM[@]}" MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper arm-linux-gnueabi-gcc
 }
 
@@ -820,13 +841,14 @@ function ci_unix_qemu_riscv64_setup {
     sudo apt-get update
     sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu
     sudo apt-get install qemu-user
+    ci_gcc_plugin_setup riscv64-linux-gnu
     qemu-riscv64 --version
     sudo mkdir /etc/qemu-binfmt
     sudo ln -s /usr/riscv64-linux-gnu/ /etc/qemu-binfmt/riscv64
 }
 
 function ci_unix_qemu_riscv64_build {
-    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_RISCV64[@]}"
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_RISCV64[@]}" MICROPY_USE_COMPILER_PLUGIN=gcc
     ci_unix_build_ffi_lib_helper riscv64-linux-gnu-gcc
 }
 
@@ -845,7 +867,7 @@ function ci_windows_setup {
 function ci_windows_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/windows submodules
-    make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
+    make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=${1-i686}-w64-mingw32- MICROPY_USE_COMPILER_PLUGIN=gcc
 }
 
 ########################################################################################
