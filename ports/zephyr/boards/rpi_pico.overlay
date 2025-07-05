@@ -1,0 +1,48 @@
+/*
+ * Copyright (c) 2025 Damien P. George
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	chosen {
+		/* Use USB CDC ACM as the console. */
+		zephyr,console = &cdc_acm_uart0;
+	};
+};
+
+/* Delete defined partitions and make a layout matching the rp2 port RPI_PICO configuration. */
+/delete-node/ &code_partition;
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Code slot: 640 KiB - 0x100 placed after second-stage bootloader. */
+		code_partition: partition@100 {
+			label = "code-partition";
+			reg = <0x00000100 (DT_SIZE_K(640) - 0x100)>;
+			read-only;
+		};
+
+		/* Storage slot: 1408 KiB placed after code_partition. */
+		storage_partition: partition@a0000 {
+			label = "storage";
+			reg = <0x000a0000 DT_SIZE_K(1408)>;
+		};
+	};
+};
+
+&zephyr_udc0 {
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+};
+
+&i2c1 {
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+	status = "okay";
+	pinctrl-0 = <&i2c1_default>;
+	pinctrl-names = "default";
+};
