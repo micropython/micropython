@@ -95,7 +95,7 @@ qemu_cortex_m3):
 
 Networking is enabled with the default configuration, so you need to follow
 instructions in
-https://docs.zephyrproject.org/latest/guides/networking/qemu_setup.html#networking-with-qemu
+https://docs.zephyrproject.org/latest/connectivity/networking/qemu_setup.html#networking-with-qemu
 to setup the host side of TAP/SLIP networking. If you get an error like:
 
     could not connect serial device to character backend 'unix:/tmp/slip.sock'
