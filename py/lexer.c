@@ -676,6 +676,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 #if MICROPY_PY_TSTRINGS
                 else if (is_char_following(lex, 't')) {
                     kind = MP_TOKEN_TSTRING;
+                    is_raw = true;
                     n_char = 2;
                 }
                 #endif
@@ -745,13 +746,103 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
 
                     if (escaped) {
                         escaped = false;
-                        vstr_add_byte(&lex->vstr, ch);
+                        if (is_raw || (brace_depth > 0 && in_string != 0)) {
+                            // In raw mode or inside expression strings, preserve backslash
+                            vstr_add_byte(&lex->vstr, '\\');
+                            vstr_add_byte(&lex->vstr, ch);
+                            next_char(lex);
+                            continue;
+                        }
+                        unichar c = ch;
+                        switch (ch) {
+                            case '\n':
+                                next_char(lex);
+                                continue;
+                            case '\\':
+                                c = '\\';
+                                break;
+                            case '\'':
+                                c = '\'';
+                                break;
+                            case '"':
+                                c = '"';
+                                break;
+                            case 'a':
+                                c = 0x07;
+                                break;
+                            case 'b':
+                                c = 0x08;
+                                break;
+                            case 't':
+                                c = 0x09;
+                                break;
+                            case 'n':
+                                c = 0x0a;
+                                break;
+                            case 'v':
+                                c = 0x0b;
+                                break;
+                            case 'f':
+                                c = 0x0c;
+                                break;
+                            case 'r':
+                                c = 0x0d;
+                                break;
+                            case 'x': {
+                                mp_uint_t num = 0;
+                                if (!get_hex(lex, 2, &num)) {
+                                    vstr_add_byte(&lex->vstr, '\\');
+                                    c = 'x';
+                                } else {
+                                    c = num;
+                                }
+                                break;
+                            }
+                            case 'u':
+                            case 'U': {
+                                int num_digits = (ch == 'u') ? 4 : 8;
+                                mp_uint_t num = 0;
+                                if (!get_hex(lex, num_digits, &num)) {
+                                    vstr_add_byte(&lex->vstr, '\\');
+                                    c = ch;
+                                } else {
+                                    c = num;
+                                }
+                                break;
+                            }
+                            default:
+                                if (ch >= '0' && ch <= '7') {
+                                    size_t digits = 3;
+                                    mp_uint_t num = ch - '0';
+                                    while (is_following_odigit(lex) && --digits != 0) {
+                                        next_char(lex);
+                                        num = num * 8 + (CUR_CHAR(lex) - '0');
+                                    }
+                                    c = num;
+                                } else {
+                                    vstr_add_byte(&lex->vstr, '\\');
+                                }
+                                break;
+                        }
+                        #if MICROPY_PY_BUILTINS_STR_UNICODE
+                        if (c < 0x110000 && lex->tok_kind == MP_TOKEN_TSTRING) {
+                            vstr_add_char(&lex->vstr, c);
+                        } else if (c < 0x100) {
+                            vstr_add_byte(&lex->vstr, c);
+                        }
+                        #else
+                        if (c < 0x100) {
+                            vstr_add_byte(&lex->vstr, c);
+                        }
+                        #endif
+                        else {
+                            lex->tok_kind = MP_TOKEN_INVALID;
+                        }
                         next_char(lex);
                         continue;
                     }
                     if (ch == '\\' && !is_raw) {
                         escaped = true;
-                        vstr_add_byte(&lex->vstr, ch);
                         next_char(lex);
                         continue;
                     }
@@ -785,9 +876,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 if (n_closing < num_quotes) {
                     lex->tok_kind = MP_TOKEN_LONELY_STRING_OPEN;
                 } else {
-                    for (size_t i = 0; i < n_closing; i++) {
-                        next_char(lex);
-                    }
+                    next_char(lex);
                 }
             } else
             #endif

@@ -239,3 +239,85 @@ print(f"Both conversion: {t_both.interpolations[0].conversion}")
 print(f"Both format_spec: {t_both.interpolations[0].format_spec}")
 
 print("\nBasic tests completed!")
+
+
+print("\n=== Triple quote edge cases ===")
+
+doc = '''This is a
+multi-line
+docstring'''
+result1 = t"""Documentation:
+{doc}
+End of doc"""
+print(f"1. Triple in interpolation: {result1}")
+print(f"   Value: {repr(result1.interpolations[0].value)}")
+
+try:
+    exec('''empty_interp = t"""Start
+{}
+End"""''')
+    print(f"\n4. Empty interpolation: {empty_interp}")
+except Exception as e:
+    print(f"\n4. Empty interpolation error: {type(e).__name__}: {e}")
+
+data = {
+    "users": [
+        {"name": "Alice", "msg": 'Say "Hello"'},
+        {"name": "Bob", "msg": "It's great!"}
+    ]
+}
+complex = t"""Users:
+{data['users'][0]['name']}: {data['users'][0]['msg']}
+{data['users'][1]['name']}: {data['users'][1]['msg']}"""
+print(f"\n5. Complex nested: {complex}")
+print(f"   Values: {complex.values}")
+
+unicode_test = t"""Unicode test:
+Emoji: {'🐍'}
+Special: {'α β γ'}"""
+print(f"\n6. Unicode: {unicode_test}")
+
+import os
+path_sep = os.sep
+raw_with_interp = rt"""Path: C:\Users\{path_sep}Documents
+Raw newline: \n
+Raw tab: \t"""
+print(f"\n7. Raw with interpolation: {raw_with_interp}")
+print(f"   String 0 repr: {repr(raw_with_interp.strings[0])}")
+
+long_line = "x" * 50
+long_triple = t"""Start
+{long_line}
+End"""
+print(f"\n8. Long line: strings={long_triple.strings}")
+print(f"   Value length: {len(long_triple.values[0])}")
+
+inner = t"inner {42}"
+outer = t"""Outer template:
+{inner}
+End"""
+print(f"\n9. Nested templates: {outer}")
+print(f"   Inner value: {outer.values[0]}")
+
+import math
+formatted = t"""Math constants:
+Pi: {math.pi:.10f}
+E: {math.e:.10e}
+Sqrt(2): {math.sqrt(2):.5f}"""
+print(f"\n10. Formatted values: {formatted}")
+
+x, y, z = 1, 2, 3
+debug_complex = t"""Debug info:
+{x + y=} {x * y * z=} {x < y < z=}"""
+print(f"\n11. Debug complex: {debug_complex}")
+print(f"    Expressions: {[i.expression for i in debug_complex.interpolations]}")
+
+part1 = t"""Part 1
+with newline"""
+part2 = t'''Part 2
+also multiline'''
+concatenated = part1 + part2
+print(f"\n12. Concatenated triple: {concatenated}")
+print(f"    Strings: {concatenated.strings}")
+
+print("\nTriple quote edge case tests completed!")
