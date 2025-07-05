@@ -62,6 +62,11 @@ def _convert_filesystem_error(e, info):
         ]:
             if estr in e.error_output:
                 return OSError(code, info)
+        # Some targets don't render OSError with the name of the errno, so in these
+        # cases support an explicit mapping of known numeric codes to names.
+        error_lines = e.error_output.splitlines()
+        if error_lines[-1] == "OSError: 2":
+            return OSError(errno.ENOENT, info)
     return e
 
 
