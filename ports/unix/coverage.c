@@ -204,8 +204,20 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%d %+d % d\n", -123, 123, 123); // sign
         mp_printf(&mp_plat_print, "%05d\n", -123); // negative number with zero padding
         mp_printf(&mp_plat_print, "%ld\n", 123); // long
-        mp_printf(&mp_plat_print, "%lx\n", 0x123); // long hex
-        mp_printf(&mp_plat_print, "%X\n", 0x1abcdef); // capital hex
+        mp_printf(&mp_plat_print, "%lx\n", 0x123fl); // long hex
+        mp_printf(&mp_plat_print, "%lX\n", 0x123fl); // capital long hex
+        if (sizeof(mp_int_t) == 8) {
+            mp_printf(&mp_plat_print, "%llx\n", LLONG_MAX); // long long hex
+            mp_printf(&mp_plat_print, "%llX\n", LLONG_MAX); // capital long long hex
+            mp_printf(&mp_plat_print, "%llu\n", ULLONG_MAX); // unsigned long long
+        } else {
+            // fake for platforms without narrower mp_int_t
+            mp_printf(&mp_plat_print, "7fffffffffffffff\n", LLONG_MAX);
+            mp_printf(&mp_plat_print, "7FFFFFFFFFFFFFFF\n", LLONG_MAX);
+            mp_printf(&mp_plat_print, "18446744073709551615\n", ULLONG_MAX);
+        }
+        mp_printf(&mp_plat_print, "%p\n", (void *)0x789f); // pointer
+        mp_printf(&mp_plat_print, "%P\n", (void *)0x789f); // pointer uppercase
         mp_printf(&mp_plat_print, "%.2s %.3s '%4.4s' '%5.5q' '%.3q'\n", "abc", "abc", "abc", MP_QSTR_True, MP_QSTR_True); // fixed string precision
         mp_printf(&mp_plat_print, "%.*s\n", -1, "abc"); // negative string precision
         mp_printf(&mp_plat_print, "%b %b\n", 0, 1); // bools
@@ -216,8 +228,8 @@ static mp_obj_t extra_coverage(void) {
         #endif
         mp_printf(&mp_plat_print, "%d\n", 0x80000000); // should print signed
         mp_printf(&mp_plat_print, "%u\n", 0x80000000); // should print unsigned
-        mp_printf(&mp_plat_print, "%x\n", 0x80000000); // should print unsigned
-        mp_printf(&mp_plat_print, "%X\n", 0x80000000); // should print unsigned
+        mp_printf(&mp_plat_print, "%x\n", 0x8000000f); // should print unsigned
+        mp_printf(&mp_plat_print, "%X\n", 0x8000000f); // should print unsigned
         mp_printf(&mp_plat_print, "abc\n%"); // string ends in middle of format specifier
         mp_printf(&mp_plat_print, "%%\n"); // literal % character
         mp_printf(&mp_plat_print, ".%-3s.\n", "a"); // left adjust
@@ -505,7 +517,7 @@ static mp_obj_t extra_coverage(void) {
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str_from_cstr("abc"), mp_obj_new_str_from_cstr("abc"));
 
         // mp_obj_int_get_checked with mp_obj_int_t that has a value that is a small integer
-        mp_printf(&mp_plat_print, "%d\n", mp_obj_int_get_checked(mp_obj_int_new_mpz()));
+        mp_printf(&mp_plat_print, "%d\n", mp_obj_int_get_checked(MP_OBJ_FROM_PTR(mp_obj_int_new_mpz())));
 
         // mp_obj_int_get_uint_checked with non-negative small-int
         mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(1)));
@@ -844,7 +856,7 @@ static mp_obj_t extra_coverage(void) {
     mp_obj_streamtest_t *s2 = mp_obj_malloc(mp_obj_streamtest_t, &mp_type_stest_textio2);
 
     // return a tuple of data for testing on the Python side
-    mp_obj_t items[] = {(mp_obj_t)&str_no_hash_obj, (mp_obj_t)&bytes_no_hash_obj, MP_OBJ_FROM_PTR(s), MP_OBJ_FROM_PTR(s2)};
+    mp_obj_t items[] = {MP_OBJ_FROM_PTR(&str_no_hash_obj), MP_OBJ_FROM_PTR(&bytes_no_hash_obj), MP_OBJ_FROM_PTR(s), MP_OBJ_FROM_PTR(s2)};
     return mp_obj_new_tuple(MP_ARRAY_SIZE(items), items);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(extra_coverage_obj, extra_coverage);
