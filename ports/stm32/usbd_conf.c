@@ -177,7 +177,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 
         // Configure USB GPIO's.
 
-        #if defined(STM32H723xx)
+        #if defined(STM32H723xx) || (STM32H7A3xx) || defined(STM32H7A3xxQ)
 
         // These MCUs don't have an alternate function for USB but rather require
         // the pins to be disconnected from all peripherals, ie put in analog mode.
@@ -195,7 +195,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 
         // Other MCUs have an alternate function for GPIO's to be in USB mode.
 
-        #if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+        #if defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
         const uint32_t otg_alt = GPIO_AF10_OTG1_FS;
         #elif defined(STM32H7)
         const uint32_t otg_alt = GPIO_AF12_OTG2_FS;

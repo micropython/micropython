@@ -157,8 +157,13 @@ static const flash_layout_t flash_layout[] = {
 
 #define FLASH_LAYOUT_IS_HOMOGENEOUS (1)
 #define FLASH_LAYOUT_START_ADDR     (FLASH_BASE)
+#if defined(STM32H7A3xx) || defined(STM32H7A3xxQ)
+#define FLASH_LAYOUT_SECTOR_SIZE    (0x2000)
+#define FLASH_LAYOUT_NUM_SECTORS    (256)
+#else
 #define FLASH_LAYOUT_SECTOR_SIZE    (0x20000)
 #define FLASH_LAYOUT_NUM_SECTORS    (16)
+#endif
 
 #else
 #error Unsupported processor

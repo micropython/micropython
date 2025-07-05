@@ -117,10 +117,10 @@
 
 #elif defined(STM32H7)
 
-#define ADC_SCALE_V             (3.3f)
-#define ADC_CAL_ADDRESS         (0x1FF1E860)
-#define ADC_CAL1                ((uint16_t *)(0x1FF1E820))
-#define ADC_CAL2                ((uint16_t *)(0x1FF1E840))
+#define ADC_SCALE_V             (VREFINT_CAL_VREF / 1000.0f)
+#define ADC_CAL_ADDRESS         (VREFINT_CAL_ADDR)
+#define ADC_CAL1                (TEMPSENSOR_CAL1_ADDR)
+#define ADC_CAL2                (TEMPSENSOR_CAL2_ADDR)
 #define ADC_CAL_BITS            (16)
 
 #elif defined(STM32L1)
