@@ -56,6 +56,14 @@
 #define PHY_SPEED_100FULL  (6)
 #define PHY_DUPLEX         (4)
 
+// PHY interrupt registers (common for LAN87xx and DP838xx)
+#define PHY_ISFR                (0x001D)  // Interrupt Status Flag Register
+#define PHY_IMR                 (0x001E)  // Interrupt Mask Register
+#define PHY_IMR_LINK_DOWN       (0x0010)  // Link Down interrupt enable
+#define PHY_IMR_LINK_UP         (0x0020)  // Link Up interrupt enable
+#define PHY_ISFR_LINK_DOWN      (0x0010)  // Link Down interrupt flag
+#define PHY_ISFR_LINK_UP        (0x0020)  // Link Up interrupt flag
+
 uint32_t eth_phy_read(uint32_t phy_addr, uint32_t reg);
 void eth_phy_write(uint32_t phy_addr, uint32_t reg, uint32_t val);
 
