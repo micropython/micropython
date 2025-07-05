@@ -446,15 +446,35 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             }
         }
 
-        // parse long specifiers (only for LP64 model where they make a difference)
-        #ifndef __LP64__
-        const
+        // parse long and long long specifiers (only where they make a difference)
+        #if defined(MICROPY_UNIX_COVERAGE) || (LONG_MAX > INT_MAX)
+        #define SUPPORT_L_FORMAT (1)
+        #else
+        #define SUPPORT_L_FORMAT (0)
         #endif
+        #if SUPPORT_L_FORMAT
         bool long_arg = false;
+        #endif
+
+        #if (MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D) || defined(_WIN64) || defined(MICROPY_UNIX_COVERAGE)
+        #define SUPPORT_LL_FORMAT (1)
+        #else
+        #define SUPPORT_LL_FORMAT (0)
+        #endif
+        #if SUPPORT_LL_FORMAT
+        bool long_long_arg = false;
+        #endif
+
         if (*fmt == 'l') {
             ++fmt;
-            #ifdef __LP64__
+            #if SUPPORT_L_FORMAT
             long_arg = true;
+            #endif
+            #if SUPPORT_LL_FORMAT
+            if (*fmt == 'l') {
+                ++fmt;
+                long_long_arg = true;
+            }
             #endif
         }
 
@@ -501,35 +521,50 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 chrs += mp_print_strn(print, str, len, flags, fill, width);
                 break;
             }
-            case 'd': {
-                mp_int_t val;
-                if (long_arg) {
-                    val = va_arg(args, long int);
-                } else {
-                    val = va_arg(args, int);
-                }
-                chrs += mp_print_int(print, val, 1, 10, 'a', flags, fill, width);
-                break;
-            }
+            case 'd':
+            case 'p':
+            case 'P':
             case 'u':
             case 'x':
             case 'X': {
-                int base = 16 - ((*fmt + 1) & 6); // maps char u/x/X to base 10/16/16
-                char fmt_c = (*fmt & 0xf0) - 'P' + 'A'; // maps char u/x/X to char a/a/A
+                char fmt_chr = *fmt;
                 mp_uint_t val;
-                if (long_arg) {
-                    val = va_arg(args, unsigned long int);
-                } else {
-                    val = va_arg(args, unsigned int);
+                if (fmt_chr == 'p' || fmt_chr == 'P') {
+                    val = va_arg(args, intptr_t);
                 }
-                chrs += mp_print_int(print, val, 0, base, fmt_c, flags, fill, width);
+                #if SUPPORT_LL_FORMAT
+                else if (long_long_arg) {
+                    val = va_arg(args, unsigned long long);
+                }
+                #endif
+                #if SUPPORT_L_FORMAT
+                else if (long_arg) {
+                    if (sizeof(long) != sizeof(mp_uint_t) && fmt_chr == 'd') {
+                        val = va_arg(args, long);
+                    } else {
+                        val = va_arg(args, unsigned long);
+                    }
+                }
+                #endif
+                else {
+                    if (sizeof(int) != sizeof(mp_uint_t) && fmt_chr == 'd') {
+                        val = va_arg(args, int);
+                    } else {
+                        val = va_arg(args, unsigned);
+                    }
+                }
+                int base;
+                // Map format char x/p/X/P to a/a/A/A for hex letters.
+                // It doesn't matter what d/u map to.
+                char fmt_c = (fmt_chr & 0xf0) - 'P' + 'A';
+                if (fmt_chr == 'd' || fmt_chr == 'u') {
+                    base = 10;
+                } else {
+                    base = 16;
+                }
+                chrs += mp_print_int(print, val, fmt_chr == 'd', base, fmt_c, flags, fill, width);
                 break;
             }
-            case 'p':
-            case 'P': // don't bother to handle upcase for 'P'
-                // Use unsigned long int to work on both ILP32 and LP64 systems
-                chrs += mp_print_int(print, va_arg(args, unsigned long int), 0, 16, 'a', flags, fill, width);
-                break;
             #if MICROPY_PY_BUILTINS_FLOAT
             case 'e':
             case 'E':
@@ -543,18 +578,6 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 #else
                 #error Unknown MICROPY FLOAT IMPL
                 #endif
-                break;
-            }
-            #endif
-                // Because 'l' is eaten above, another 'l' means %ll.  We need to support
-                // this length specifier for OBJ_REPR_D (64-bit NaN boxing).
-                // TODO Either enable this unconditionally, or provide a specific config var.
-            #if (MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D) || defined(_WIN64)
-            case 'l': {
-                unsigned long long int arg_value = va_arg(args, unsigned long long int);
-                ++fmt;
-                assert(*fmt == 'u' || *fmt == 'd' || !"unsupported fmt char");
-                chrs += mp_print_int(print, arg_value, *fmt == 'd', 10, 'a', flags, fill, width);
                 break;
             }
             #endif
