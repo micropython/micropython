@@ -88,7 +88,31 @@ void soft_timer_handler(void) {
         soft_timer_entry_t *entry = heap;
         heap = (soft_timer_entry_t *)mp_pairheap_pop(soft_timer_lt, &heap->pairheap);
         if (entry->flags & SOFT_TIMER_FLAG_PY_CALLBACK) {
+            #ifdef MICROPY_SOFT_TIMER_HARD_CALLBACKS
+            if (entry->flags & SOFT_TIMER_FLAG_HARD_CALLBACK) {
+                // When executing code within a handler we must lock the scheduler to
+                // prevent any scheduled callbacks from running, and lock the GC to
+                // prevent any memory allocations.
+                mp_sched_lock();
+                gc_lock();
+                nlr_buf_t nlr;
+                if (nlr_push(&nlr) == 0) {
+                    mp_call_function_1(entry->py_callback, MP_OBJ_FROM_PTR(entry));
+                    nlr_pop();
+                } else {
+                    // Uncaught exception; disable the callback so it doesn't run again.
+                    entry->mode = SOFT_TIMER_MODE_ONE_SHOT;
+                    mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in timer callback\n");
+                    mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
+                }
+                gc_unlock();
+                mp_sched_unlock();
+            } else {
+                mp_sched_schedule(entry->py_callback, MP_OBJ_FROM_PTR(entry));
+            }
+            #else
             mp_sched_schedule(entry->py_callback, MP_OBJ_FROM_PTR(entry));
+            #endif
         } else if (entry->c_callback) {
             entry->c_callback(entry);
         }
