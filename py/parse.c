@@ -35,6 +35,7 @@
 #include "py/parse.h"
 #include "py/parsenum.h"
 #include "py/runtime.h"
+#include "py/misc.h"
 #include "py/objint.h"
 #include "py/objstr.h"
 #include "py/objlist.h"
@@ -660,11 +661,11 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         mp_obj_t o = mp_obj_new_bytes((const byte *)lex->vstr.buf, lex->vstr.len);
         pn = make_node_const_object(parser, lex->tok_line, o);
     #if MICROPY_PY_TSTRINGS
-    } else if (lex->tok_kind == MP_TOKEN_TSTRING) {
+    } else if (lex->tok_kind == MP_TOKEN_TSTRING || lex->tok_kind == MP_TOKEN_TSTRING_RAW) {
         // Generate AST for template string construction
         // This will create code that calls __template__(strings, interpolations)
 
-        const char *str = lex->vstr.buf;
+        const byte *str = (const byte *)lex->vstr.buf;
         size_t len = lex->vstr.len;
 
         if (len > MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE) {
@@ -816,9 +817,9 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     vstr_add_byte(&vstr, '=');
                 }
 
-                // Now save the string part
-                qstr q = qstr_from_strn(vstr.buf, vstr.len);
-                ADD_NODE(strings, mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, q));
+                // Now save the string part as a const object to handle high bytes correctly
+                mp_obj_t str_obj = mp_obj_new_str_copy(&mp_type_str, (const byte *)vstr.buf, vstr.len);
+                ADD_NODE(strings, make_node_const_object(parser, lex->tok_line, str_obj));
                 vstr_reset(&vstr);
 
                 int bracket_depth = 0;  // Track [] nesting
@@ -893,6 +894,15 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                         expr_len = conversion_pos - expr_start;
                     } else if (format_spec_pos) {
                         expr_len = format_spec_pos - expr_start;
+                    } else {
+                        // Trim trailing whitespace for normal expressions
+                        while (expr_len > 0 &&
+                               (str[expr_start + expr_len - 1] == ' ' ||
+                                str[expr_start + expr_len - 1] == '\t' ||
+                                str[expr_start + expr_len - 1] == '\n' ||
+                                str[expr_start + expr_len - 1] == '\r')) {
+                            expr_len--;
+                        }
                     }
 
                     // Parse the expression to generate proper AST nodes
@@ -900,10 +910,10 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     if (expr_len > 0) {
                         #if MICROPY_PY_TSTRINGS
                         // Use the dedicated expression parser
-                        expr_node = parse_tstring_expression(parser, tstring_parser_alloc_wrapper, &str[expr_start], expr_len);
+                        expr_node = parse_tstring_expression(parser, tstring_parser_alloc_wrapper, (const char *)&str[expr_start], expr_len);
                         #else
                         // Fallback: store as string
-                        qstr expr_q = qstr_from_strn(&str[expr_start], expr_len);
+                        qstr expr_q = qstr_from_strn((const char *)&str[expr_start], expr_len);
                         expr_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, expr_q);
                         #endif
                     } else {
@@ -912,7 +922,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     }
 
                     // Create expression text string
-                    qstr expr_text_q = qstr_from_strn(&str[expr_start], expr_len);
+                    qstr expr_text_q = qstr_from_strn((const char *)&str[expr_start], expr_len);
                     mp_parse_node_t expr_text_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, expr_text_q);
 
                     // Extract conversion
@@ -922,7 +932,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                         qstr conv_q = (format_spec_pos && format_spec_pos < expr_end) ? MP_QSTR_s : MP_QSTR_r;
                         conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, conv_q);
                     } else if (conversion_pos && conversion_pos + 1 < expr_end) {
-                        qstr conv_q = qstr_from_strn(&str[conversion_pos + 1], 1);
+                        qstr conv_q = qstr_from_strn((const char *)&str[conversion_pos + 1], 1);
                         conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, conv_q);
                     }
 
@@ -934,7 +944,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                             fmt_end = conversion_pos;
                         }
                         if (fmt_end > format_spec_pos + 1) {
-                            qstr fmt_q = qstr_from_strn(&str[format_spec_pos + 1],
+                            qstr fmt_q = qstr_from_strn((const char *)&str[format_spec_pos + 1],
                                 fmt_end - format_spec_pos - 1);
                             format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, fmt_q);
                         } else {
@@ -967,9 +977,116 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                 } else {
                     // Failed to find closing brace - syntax error
                 }
+            } else if (false && str[i] == '\\' && i + 1 < len) {
+                i++;
+                unsigned char c = str[i];
+                switch (c) {
+                    case 'n':
+                        vstr_add_byte(&vstr, '\n');
+                        break;
+                    case 't':
+                        vstr_add_byte(&vstr, '\t');
+                        break;
+                    case 'r':
+                        vstr_add_byte(&vstr, '\r');
+                        break;
+                    case 'b':
+                        vstr_add_byte(&vstr, '\b');
+                        break;
+                    case 'f':
+                        vstr_add_byte(&vstr, '\f');
+                        break;
+                    case 'v':
+                        vstr_add_byte(&vstr, '\v');
+                        break;
+                    case 'a':
+                        vstr_add_byte(&vstr, '\a');
+                        break;
+                    case '\\':
+                        vstr_add_byte(&vstr, '\\');
+                        break;
+                    case '\'':
+                        vstr_add_byte(&vstr, '\'');
+                        break;
+                    case '"':
+                        vstr_add_byte(&vstr, '"');
+                        break;
+                    case 'x': {
+                        if (i + 2 < len && unichar_isxdigit(str[i + 1]) && unichar_isxdigit(str[i + 2])) {
+                            int val = (unichar_xdigit_value(str[i + 1]) << 4) | unichar_xdigit_value(str[i + 2]);
+                            vstr_add_byte(&vstr, val);
+                            i += 2;
+                        } else {
+                            vstr_add_byte(&vstr, '\\');
+                            vstr_add_byte(&vstr, 'x');
+                        }
+                        break;
+                    }
+                    case 'u':
+                    case 'U': {
+                        int digits = (c == 'u') ? 4 : 8;
+                        bool valid = i + digits < len;
+                        mp_uint_t val = 0;
+                        if (valid) {
+                            for (int j = 0; j < digits; j++) {
+                                char h = str[i + 1 + j];
+                                if (!unichar_isxdigit(h)) {
+                                    valid = false;
+                                    break;
+                                }
+                                val = val * 16 + unichar_xdigit_value(h);
+                            }
+                        }
+                        if (valid) {
+                            if (val < 0x80) {
+                                vstr_add_byte(&vstr, val);
+                            } else if (val < 0x800) {
+                                vstr_add_byte(&vstr, 0xC0 | (val >> 6));
+                                vstr_add_byte(&vstr, 0x80 | (val & 0x3F));
+                            } else if (val < 0x10000) {
+                                vstr_add_byte(&vstr, 0xE0 | (val >> 12));
+                                vstr_add_byte(&vstr, 0x80 | ((val >> 6) & 0x3F));
+                                vstr_add_byte(&vstr, 0x80 | (val & 0x3F));
+                            } else if (val < 0x110000) {
+                                vstr_add_byte(&vstr, 0xF0 | (val >> 18));
+                                vstr_add_byte(&vstr, 0x80 | ((val >> 12) & 0x3F));
+                                vstr_add_byte(&vstr, 0x80 | ((val >> 6) & 0x3F));
+                                vstr_add_byte(&vstr, 0x80 | (val & 0x3F));
+                            } else {
+                                valid = false;
+                            }
+                            if (valid) {
+                                i += digits;
+                            }
+                        }
+                        if (!valid) {
+                            vstr_add_byte(&vstr, '\\');
+                            vstr_add_byte(&vstr, c);
+                        }
+                        break;
+                    }
+                    default:
+                        if (c >= '0' && c <= '7') {
+                            int val = c - '0';
+                            int digits = 1;
+                            while (digits < 3 && i + 1 < len && str[i + 1] >= '0' && str[i + 1] <= '7') {
+                                i++;
+                                val = val * 8 + (str[i] - '0');
+                                digits++;
+                            }
+                            if (val <= 255) {
+                                vstr_add_byte(&vstr, val);
+                            } else {
+                                mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("(unicode error) 'unicodeescape' codec can't decode bytes: illegal Unicode character"));
+                            }
+                        } else {
+                            vstr_add_byte(&vstr, '\\');
+                            vstr_add_byte(&vstr, c);
+                        }
+                        break;
+                }
+                i++;
             } else {
-                // Regular character
-                // Check if vstr is getting too large
                 if (vstr.len + 1 > MICROPY_PY_TSTRING_MAX_BYTES / 2) {
                     mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
                 }
@@ -978,12 +1095,10 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
             }
         }
 
-        // Add the final string part
-        qstr q = qstr_from_strn(vstr.buf, vstr.len);
-        ADD_NODE(strings, mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, q));
+        mp_obj_t str_obj = mp_obj_new_str_copy(&mp_type_str, (const byte *)vstr.buf, vstr.len);
+        ADD_NODE(strings, make_node_const_object(parser, lex->tok_line, str_obj));
         vstr_clear(&vstr);
 
-        // Finished parsing t-string
 
         size_t seg_cnt = strings.len;
         size_t interp_cnt = interps.len;
