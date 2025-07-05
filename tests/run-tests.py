@@ -855,6 +855,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             "micropython/emg_exc.py"
         )  # because native doesn't have proper traceback info
         skip_tests.add(
+            "micropython/heapalloc_slice.py"
+        )  # because native doesn't do the stack-allocated slice optimisation
+        skip_tests.add(
             "micropython/heapalloc_traceback.py"
         )  # because native doesn't have proper traceback info
         skip_tests.add(
