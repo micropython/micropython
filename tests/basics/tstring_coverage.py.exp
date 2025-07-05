@@ -68,8 +68,8 @@ Re-raised exception: Special error
 Conv empty fmt: '42'
 Too many interpolations: SyntaxError
 Large template: SyntaxError
-Triple quoted error: invalid syntax
-Raw triple error: invalid syntax
+Triple quoted: 'Triple "quoted" string'
+Raw triple: 'Raw triple\n42'
 Complex concat: strings=('a', 'bc', 'd', 'e'), values=(1, 2, 3)
 Empty concat: 'test42'
 Self interp concat: values=(1, 1)

@@ -58,6 +58,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_STRING,
     #if MICROPY_PY_TSTRINGS
     MP_TOKEN_TSTRING,
+    MP_TOKEN_TSTRING_RAW,
     #endif
     MP_TOKEN_BYTES,
 
