@@ -94,6 +94,12 @@ data
 1
 0
 0.000000
+deadbeef
+c0ffee777c0ffee
+deadbeef
+0deadbeef
+c0ffee
+000c0ffee
 # runtime utils
 TypeError: unsupported type for __abs__: 'str'
 TypeError: unsupported types for __divmod__: 'str', 'str'
@@ -102,6 +108,8 @@ TypeError: unsupported types for __divmod__: 'str', 'str'
 2
 OverflowError: overflow converting long int to machine word
 OverflowError: overflow converting long int to machine word
+TypeError: can't convert NoneType to int
+TypeError: can't convert NoneType to int
 ValueError: 
 Warning: test
 # format float
