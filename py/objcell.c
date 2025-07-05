@@ -30,7 +30,8 @@
 static void cell_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_cell_t *o = MP_OBJ_TO_PTR(o_in);
-    mp_printf(print, "<cell %p ", o->obj);
+    MP_STATIC_ASSERT(sizeof(mp_obj_t) == sizeof(mp_uint_t));
+    mp_printf(print, "<cell " UINT_FMT " ", (mp_uint_t)o->obj);
     if (o->obj == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");
     } else {
