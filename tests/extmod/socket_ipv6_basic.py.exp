@@ -1,0 +1,7 @@
+IPv6 TCP socket created
+IPv6 UDP socket created
+IPv6 TCP bind successful
+IPv6 UDP bind successful
+IPv6 TCP wildcard bind successful
+IPv6 UDP wildcard bind successful
+IPv6 ENOTCONN: True
