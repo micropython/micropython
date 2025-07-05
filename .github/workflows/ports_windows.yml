@@ -141,10 +141,14 @@ jobs:
       run: python run-tests.py --print-failures
 
   cross-build-on-linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        sys: [i686, x86_64]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Install packages
       run: source tools/ci.sh && ci_windows_setup
     - name: Build
-      run: source tools/ci.sh && ci_windows_build
+      run: source tools/ci.sh && ci_windows_build ${{ matrix.sys }}
