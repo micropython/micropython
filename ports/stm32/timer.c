@@ -499,7 +499,7 @@ static uint32_t compute_dtg_from_ticks(mp_int_t ticks) {
 
 // Given the 8-bit value stored in the DTG field of the BDTR register, compute
 // the number of ticks.
-static mp_int_t compute_ticks_from_dtg(uint32_t dtg) {
+static unsigned compute_ticks_from_dtg(uint32_t dtg) {
     if ((dtg & 0x80) == 0) {
         return dtg & 0x7F;
     }
