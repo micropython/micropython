@@ -112,7 +112,7 @@ ifeq ($(LTO),1)
 CFLAGS += -flto=auto
 # LTO requires passing compiler flags to the linker as it will run the assembler.
 # To avoid risk of missing something relevant, pass all flags except for preprocessor args
-LDFLAGS += $(filter-out -I%,$(filter-out -D%,$(CFLAGS)))
+LDFLAGS += $(filter-out -I% -D% -fplugin%,$(CFLAGS))
 
 $(BUILD)/samd_isr.o $(BUILD)/pendsv.o: CFLAGS += -fno-lto
 endif
