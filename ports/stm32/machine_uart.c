@@ -93,7 +93,7 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         #endif
         {
             mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=",
-                self->uart_id, uart_get_baudrate(self), bits);
+                self->uart_id, uart_get_baudrate(self), (int)bits);
         }
         if (!(cr1 & USART_CR1_PCE)) {
             mp_print_str(print, "None");

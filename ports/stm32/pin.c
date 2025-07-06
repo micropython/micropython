@@ -232,7 +232,7 @@ static void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
             mp_uint_t af_idx = pin_get_af(self);
             const pin_af_obj_t *af_obj = pin_find_af_by_index(self, af_idx);
             if (af_obj == NULL) {
-                mp_printf(print, ", alt=%d)", af_idx);
+                mp_printf(print, ", alt=%d)", (int)af_idx);
             } else {
                 mp_printf(print, ", alt=Pin.%q)", af_obj->name);
             }
