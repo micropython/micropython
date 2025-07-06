@@ -144,7 +144,7 @@ CFLAGS += -fno-strict-aliasing
 CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
 
-LDFLAGS += $(CFLAGS)
+LDFLAGS += $(filter-out -fplugin%, $(CFLAGS))
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
 LDFLAGS += -mthumb -mabi=aapcs $(addprefix -T,$(LD_FILES)) -L boards/
 
