@@ -760,7 +760,7 @@ static mp_obj_t extint_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 
 static void extint_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<ExtInt line=%u>", self->line);
+    mp_printf(print, "<ExtInt line=%u>", (int)self->line);
 }
 
 static const mp_rom_map_elem_t extint_locals_dict_table[] = {
