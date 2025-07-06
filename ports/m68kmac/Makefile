@@ -73,6 +73,9 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 
+.PHONY: mkapi
+mkapi: $(BUILD)/modqd.c
+
 $(BUILD)/modqd.c: $(BUILD)/ tools/mkapi.py
 	$(PYTHON) tools/mkapi.py lib/multiversal/defs/QuickDraw.yaml qd > $@
 
@@ -95,12 +98,8 @@ $(BUILD)/micropython.bin $(BUILD)/micropython.APPL $(BUILD)/micropython.dsk: $(B
 		-o $(BUILD)/micropython.bin --cc $(BUILD)/micropython.APPL --cc $(BUILD)/micropython.dsk
 
 .PHONY: docker-build
-docker-build: $(BUILD)/modqd.py
+docker-build: mkapi
 	docker run --rm --mount type=bind,source=$(abspath $(TOP)),destination=/work ghcr.io/autc04/retro68  make -C /work/ports/m68kmac -j$(shell nproc)
-
-.PHONY: docker-build-%
-docker-build-%:
-	docker run --rm --mount type=bind,source=$(abspath $(TOP)),destination=/work ghcr.io/autc04/retro68  make -C /work/ports/m68kmac $*
 
 BASE_IMG ?= base.img
 UMAC=$(HOME)/src/umac/main -w -r ~/src/umac/rom.bin

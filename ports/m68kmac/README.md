@@ -5,19 +5,18 @@ This port runs on m68k macs. The author tests it in a modified umac emulating a
 
 ## Building and running
 
-The build assumes it will occur inside the Retro68 docker image:
+Two methods of building are supported. First, entirely within docker, using the steps in
+`.github/workflows/port_m68k.yaml`. Second, building on a standard Linux host machine
+(e.g., debian stable) with docker installed:
 
-    $ docker run --rm --mount type=bind,source=.,destination=/work -it ghcr.io/autc04/retro68 make -C /work/ports/m68kmac
+    $ pip install pyyaml
+    $ make submodules
+    $ make docker-build
 
-A modified version of umac with multi disc image support is required.
-(It hopefully works in other emulators but this is what I use.)
-To run the executable and get a basic working REPL do:
-
-    $ /path/to/umac/main -r rom.bin -d HyperCardBootSystem7.img -d build/micropython.dsk
-
-.. then when the micropython disk is mounted, double click it and then the
-micropython application icon. It will open up with a repl window that supports
-minimal ANSI-style escape codes.
+There's a `make run` target to launch the emulator but it is very specific to
+@jepler's development environment. Once you do have your target environment running,
+double click micropython application icon. It will open up with a repl window
+that supports minimal ANSI-style escape codes.
 
 ## Built in editor
 
