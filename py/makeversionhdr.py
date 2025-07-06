@@ -13,13 +13,12 @@ import datetime
 import subprocess
 
 
-# The MicroPython repository tags a release commit as "vX.Y.Z", and the commit
-# immediately following as "vX.(Y+1).Z-preview".
+# The m68k MicroPython repository tags a release commit as "20yymmdd" with an optional ".seq"
+# number.
 # This function will return:
 #   "vX.Y.Z" -- building at the release commit
-#   "vX.Y.Z-preview" -- building at the first commit in the next cycle
-#   "vX.Y.Z-preview.N.gHASH" -- building at any subsequent commit in the cycle
-#   "vX.Y.Z-preview.N.gHASH.dirty" -- building at any subsequent commit in the cycle
+#   "vX.Y.Z.N.gHASH" -- building at any subsequent commit after the release
+#   "vX.Y.Z.N.gHASH.dirty" -- building at any subsequent commit after the release
 #                                     with local changes
 def get_version_info_from_git(repo_path):
     # Python 2.6 doesn't have check_output, so check for that
@@ -31,7 +30,7 @@ def get_version_info_from_git(repo_path):
     # Note: git describe doesn't work if no tag is available
     try:
         git_tag = subprocess.check_output(
-            ["git", "describe", "--tags", "--dirty", "--always", "--match", "v[1-9].*"],
+            ["git", "describe", "--tags", "--dirty", "--always", "--match", "20[0-9]*"],
             cwd=repo_path,
             stderr=subprocess.STDOUT,
             universal_newlines=True,
