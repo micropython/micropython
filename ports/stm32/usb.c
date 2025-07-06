@@ -45,7 +45,7 @@
 #include "sdcard.h"
 #include "usb.h"
 
-#if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_ENABLE_USB && !MICROPY_HW_TINYUSB_STACK
 
 // Work out which USB device to use as the main one (the one with the REPL)
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
