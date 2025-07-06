@@ -1,5 +1,5 @@
 <!-- Thanks for submitting a Pull Request! We appreciate you spending the
-     time to improve MicroPython. Please provide enough information so that
+     time to improve m68k MicroPython. Please provide enough information so that
      others can review your Pull Request.
 
      Before submitting, please read:

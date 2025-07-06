@@ -6,6 +6,9 @@ body:
     attributes:
       value: |
         Please provide as much detail as you can, it really helps us find and fix bugs faster.
+        #### "Security" bugs
+        
+        [This is open-source software written by hobbyists](https://gitlab.gnome.org/GNOME/libxml2/-/commit/35d04a0848d8648807672e2ac1ba73ff7bbaee3a), maintained by a single volunteer, badly tested, written in a memory-unsafe language and full of security bugs. It is foolish to use this software to process untrusted data. As such, we treat security issues like any other bug. There is no facility for privately submitting a security report and security reports won't be prioritized.
 
         #### Not a bug report?
 
