@@ -176,6 +176,27 @@ bool ConsoleWindow::Available(unsigned long timeout)
     } while(event.what != keyDown && event.what != autoKey);
 
     int c = event.message & charCodeMask;
+
+    if (c >= 0x1c && c <= 0x1f) {
+        // arrow keys
+        static const char *keycodes[] = {
+            "\x1b[D", // left
+            "\x1b[C", // right
+            "\x1b[A", // up
+            "\x1b[B", // down
+            "\x1b[H", // home
+            "\x1b[F", // end
+            "\x1b[5~", // page up
+            "\x1b[6~", // page down
+        };
+        c -= 0x1c;
+        if (event.modifiers & optionKey) c += 4;
+        for(auto p = keycodes[c]; *p; p++) {
+            pending.push_back(*p);
+        }
+        return true;
+    }
+
     if (event.modifiers & ControlKey) {
         // treat option like ctrl
         c = c & 31;
@@ -185,28 +206,6 @@ bool ConsoleWindow::Available(unsigned long timeout)
         // treat cmd like alt
         pending.push_back(c);
         c = 27;
-    }
-
-    // umac doesn't seem to ever generate these, so this code is untested....
-    int keycode = (event.message & keyCodeMask) >> 8;
-    static const struct { int keycode; const char *str; } keycodes[] = {
-#define MKC_Left /* 0x46 */ 0x7B
-#define MKC_Right /* 0x42 */ 0x7C
-#define MKC_Down /* 0x48 */ 0x7D
-#define MKC_Up /* 0x4D */ 0x7E
-        {MKC_Left, "\x1b[D"},
-        {MKC_Right, "\x1b[C"},
-        {MKC_Up, "\x1b[A"},
-        {MKC_Down, "\x1b[B"},
-    };
-
-    for(auto &i : keycodes) {
-        if(keycode == i.keycode) {
-            for(auto p = i.str; *p; p++) {
-                pending.push_back(*p);
-            }
-            return true;
-        }
     }
 
     // if keycode not found in map...
