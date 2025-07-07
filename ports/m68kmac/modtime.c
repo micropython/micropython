@@ -6,7 +6,7 @@
 #define pyb_rtc_get_seconds() ({ \
         ULONGINT time; \
         GetDateTime(&time); \
-        time; \
+        from_mac_timestamp(time); \
     })
 
 // Return the localtime as an 8-tuple.
