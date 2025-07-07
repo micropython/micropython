@@ -30,6 +30,7 @@
 
 #if MICROPY_PY_LWIP
 
+#include "extmod/modnetwork.h"
 #include "shared/runtime/softtimer.h"
 #include "lwip/netif.h"
 #include "lwip/timeouts.h"
