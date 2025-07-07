@@ -50,6 +50,9 @@ elif "samd" in sys.platform:
     if "SAMD21" in sys.implementation._machine:
         # MCU is too slow to capture short pulses.
         pwm_freq_limit = 2_000
+    # zephyr
+    # enable machine.time_pulse_us()
+    # frdm_k64f board: work out which physical pin ("ftm0", 0) and ("ftm3", 0) are...
 else:
     print("Please add support for this test on this platform.")
     raise SystemExit
