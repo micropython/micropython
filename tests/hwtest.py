@@ -69,7 +69,7 @@ NATMOD_LIBS = ("btree", "deflate", "framebuf", "heapq", "random", "re")
 def build_natmods():
     for arch in NATMOD_ARCHS:
         for lib in NATMOD_LIBS:
-            subprocess.run(["make", "-C", f"../examples/natmod/{lib}", "-j", "-B", f"ARCH={arch}"])
+            subprocess.run(["make", "-C", f"../examples/natmod/{lib}", "-j8", "-B", f"ARCH={arch}"])
 
 
 def try_import(target, module):
