@@ -82,6 +82,9 @@ extern const struct _mp_obj_type_t mp_network_ppp_lwip_type;
 #endif
 
 struct netif;
+
+void sys_untimeout_all_with_arg(void *arg);
+
 void mod_network_lwip_init(void);
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
