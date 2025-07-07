@@ -10,40 +10,42 @@ body:
         
         [This is open-source software written by hobbyists](https://gitlab.gnome.org/GNOME/libxml2/-/commit/35d04a0848d8648807672e2ac1ba73ff7bbaee3a), maintained by a single volunteer, badly tested, written in a memory-unsafe language and full of security bugs. It is foolish to use this software to process untrusted data. As such, we treat security issues like any other bug. There is no facility for privately submitting a security report and security reports won't be prioritized.
 
+        With that said, if you think you've found a security bug that affects MicroPython (not just this port), please report it to them in the manner they request and leave us out of it.
+
         #### Not a bug report?
 
-        * If you have a question \"How Do I ...?\", please post it on [GitHub Discussions](https://github.com/orgs/micropython/discussions/) or [Discord](https://discord.gg/RB8HZSAExQ) instead of here.
-        * For missing or incorrect documentation, or feature requests, then please [choose a different issue type](https://github.com/micropython/micropython/issues/new/choose).
+        * If you have a question \"How Do I ...?\", please post it on [GitHub Discussions](https://github.com/orgs/m68k-micropython/discussions/) instead of here.
+        * For feature requests, then please [choose a different issue type](https://github.com/micropython/micropython/issues/new/choose).
 
         #### Existing issue?
 
-        * Please search for [existing issues](https://github.com/micropython/micropython/issues) matching this bug before reporting.
+        * Please search for [existing issues](https://github.com/m68k-micropython/micropython/issues) matching this bug before reporting.
   - type: input
-    id: port-board-hw
+    id: hw
     attributes:
-      label: Port, board and/or hardware
+      label: Hardware
       description: |
-        Which MicroPython port(s) and board(s) are you using?
+        Which hardware or emulator are you using?
       placeholder: |
-        esp32 port, ESP32-Fantastic board.
+        emulated, infinite mac, system 6
     validations:
       required: true
   - type: textarea
     id: version
     attributes:
-      label: MicroPython version
+      label: m86k MicroPython version
       description: |
         To find the version:
 
         1. Open a serial REPL.
-        2. Type Ctrl-B to see the startup message.
-        3. Copy-paste that output here.
+        2. Look at the version number shown
+        3. Enter that output here.
 
-        If the issue is about building MicroPython, please provide output of `git describe --dirty` and as much information as possible about the build environment.
+        If the issue is about building m68k MicroPython, please provide output of `git describe --dirty` and as much information as possible about the build environment.
 
         If the version or configuration is modified from the official MicroPython releases or the master branch, please tell us the details of this as well.
       placeholder: |
-        MicroPython v6.28.3 on 2029-01-23; PyBoard 9 with STM32F9
+        MicroPython 20250706.2-4.gff8682c2c7.dirty on 2025-07-07; macplus with m68000
     validations:
       required: true
   - type: textarea
@@ -61,7 +63,7 @@ body:
         For build issues, please provide the exact build commands that you ran.
       placeholder: |
         1. Copy paste the code provided below into a new file
-        2. Use `mpremote run` to execute it on the board.
+        2. Double click the file
     validations:
       required: true
   - type: textarea
@@ -69,7 +71,7 @@ body:
     attributes:
       label: Expected behaviour
       description: |
-         What did you expect MicroPython to do? If comparing output with CPython or a different MicroPython port/version then please provide that output here.
+         What did you expect m68k MicroPython to do? If comparing output with CPython or a different MicroPython port/version then please provide that output here.
       placeholder: |
         Expected to print "Hello World".
 
