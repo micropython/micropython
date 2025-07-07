@@ -100,13 +100,13 @@ class Processor:
         #define NEW_TUPLE(...) \
             ({mp_obj_t _z[] = {__VA_ARGS__}; mp_obj_new_tuple(MP_ARRAY_SIZE(_z), _z); })
 
-        void *to_c_helper(mp_obj_t obj, size_t objsize, bool is_const) {
+        static void *to_c_helper(mp_obj_t obj, size_t objsize, bool is_const) {
             if (mp_obj_is_int(obj)) {
                 return (void*)mp_obj_get_int_truncated(obj);
             }
             mp_buffer_info_t bufinfo = {0};
             mp_get_buffer_raise(obj, &bufinfo, is_const ? MP_BUFFER_READ : MP_BUFFER_READ | MP_BUFFER_WRITE);
-            if (bufinfo.len != objsize) {
+            if (objsize > 1 && bufinfo.len != objsize) {
                 mp_raise_ValueError(MP_ERROR_TEXT("buffer has wrong length"));
             }
             return bufinfo.buf;
@@ -162,7 +162,7 @@ class Processor:
         return typename
 
     def is_ptr(self, typename):
-        return self.resolve_type(typename).endswith("*")
+        return typename.endswith("*") or typename.endswith("Handle") or typename.endswith("Ptr")
 
     def is_const(self, typename):
         return typename.startswith("const ")
