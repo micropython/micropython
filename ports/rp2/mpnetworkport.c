@@ -183,6 +183,10 @@ static void mp_network_netif_status_cb(struct netif *netif, netif_nsc_reason_t r
         mp_network_soft_timer.mode = SOFT_TIMER_MODE_PERIODIC;
         soft_timer_reinsert(&mp_network_soft_timer, LWIP_TICK_RATE_MS);
     }
+
+    if (reason == LWIP_NSC_NETIF_REMOVED) {
+        sys_untimeout_all_with_arg(netif);
+    }
 }
 
 #endif // MICROPY_PY_LWIP
