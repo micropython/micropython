@@ -593,6 +593,24 @@ static inline void asm_rv32_opcode_remu(asm_rv32_t *state, mp_uint_t rd, mp_uint
     asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 0x07, 0x01, rd, rs1, rs2));
 }
 
+// SH1ADD RD, RS1, RS2
+static inline void asm_rv32_opcode_sh1add(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
+    // R: 0010000 ..... ..... 010 ..... 0110011
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 0x02, 0x10, rd, rs1, rs2));
+}
+
+// SH2ADD RD, RS1, RS2
+static inline void asm_rv32_opcode_sh2add(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
+    // R: 0010000 ..... ..... 100 ..... 0110011
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 0x04, 0x10, rd, rs1, rs2));
+}
+
+// SH3ADD RD, RS1, RS2
+static inline void asm_rv32_opcode_sh3add(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
+    // R: 0010000 ..... ..... 110 ..... 0110011
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 0x06, 0x10, rd, rs1, rs2));
+}
+
 // SLL RD, RS1, RS2
 static inline void asm_rv32_opcode_sll(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
     // R: 0000000 ..... ..... 001 ..... 0110011
