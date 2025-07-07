@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+// This is needed to access `next_timeout` via `sys_timeouts_get_next_timeout()`.
+#define LWIP_TESTMODE                   1
+
 // This protection is not needed, instead we execute all lwIP code at PendSV priority
 #define SYS_ARCH_DECL_PROTECT(lev) do { } while (0)
 #define SYS_ARCH_PROTECT(lev) do { } while (0)
