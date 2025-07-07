@@ -103,23 +103,26 @@ namespace
 {
     class FontSetup
     {
-        short saveFont, saveSize, saveFace;
+        PortSetter portSetter;
+        short saveFont, saveSize, saveFace, saveVis;
+        PenState penState;
     public:
-        FontSetup()
+        FontSetup(GrafPtr port) : portSetter(port)
         {
 #if TARGET_API_MAC_CARBON
-            GrafPtr port;
-            GetPort(&port);
             saveFont = GetPortTextFont(port);
             saveSize = GetPortTextSize(port);
 #else
             saveFont = qd.thePort->txFont;
             saveSize = qd.thePort->txSize;
             saveFace = qd.thePort->txFace;
+            saveVis = qd.thePort->pnVis;
+            qd.thePort->pnVis = 0;
 #endif
             TextFont(kFontIDMonaco);
             TextSize(9);
             TextFace(normal);
+            GetPenState(&penState);
         }
 
         ~FontSetup()
@@ -127,6 +130,8 @@ namespace
             TextFont(saveFont);
             TextSize(saveSize);
             TextFace(saveFace);
+            qd.thePort->pnVis = saveVis;
+            SetPenState(&penState);
         }
     };
 }
@@ -153,8 +158,7 @@ void Console::Init(GrafPtr port, Rect r)
     consolePort = port;
     bounds = r;
 
-    PortSetter setport(consolePort);
-    FontSetup fontSetup;
+    FontSetup fontSetup(port);
 
     InsetRect(&bounds, 2,2);
 
@@ -236,8 +240,7 @@ void Console::Draw(Rect r)
 {
     if(!consolePort)
         return;
-    PortSetter setport(consolePort);
-    FontSetup fontSetup;
+    FontSetup fontSetup(consolePort);
 
     SectRect(&r, &bounds, &r);
 
@@ -377,8 +380,7 @@ void Console::PutCharNoUpdate(char c)
 
 void Console::Update()
 {
-    PortSetter setport(consolePort);
-    FontSetup fontSetup;
+    FontSetup fontSetup(consolePort);
 
     for(short row = dirtyRect.top; row < dirtyRect.bottom; ++row)
     {
@@ -446,8 +448,7 @@ void Console::InvalidateCursor()
 {
     if(cursorDrawn)
     {
-        PortSetter setport(consolePort);
-        FontSetup fontSetup;
+        FontSetup fontSetup(consolePort);
         DrawCell(cursorX, cursorY, true);
         cursorDrawn = false;
     }
