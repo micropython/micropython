@@ -76,8 +76,10 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 .PHONY: mkapi
 mkapi: $(BUILD)/modqd.c
 
-$(BUILD)/modqd.c: $(BUILD)/ tools/mkapi.py
-	$(PYTHON) tools/mkapi.py lib/multiversal/defs/QuickDraw.yaml qd > $@
+$(BUILD)/modqd.c: tools/mkapi.py
+	$(ECHO) "MKAPI $@"
+	$(Q)$(MKDIR) -p $(BUILD)
+	$(Q)$(PYTHON) tools/mkapi.py lib/multiversal/defs/QuickDraw.yaml qd > $@
 
 all: $(BUILD)/micropython.bin
 

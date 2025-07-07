@@ -259,10 +259,8 @@ class Processor:
         return "\n".join(f"    {line}" for line in body)
 
     def make_converter(self, typename):
-        print(f"make_converter {typename}", file=sys.stderr)
         if not typename.endswith('*'):
             typename = self.resolve_type(typename)
-        print(f" -> {typename}", file=sys.stderr)
         return make_converter(typename)
 
     def fun_convert_arg(self, idx, arg):
@@ -291,7 +289,6 @@ class Processor:
     def handle_function(self, fun):
         name = fun['name']
         args = fun.get('args', [])
-        print(f"## API={self.api}", file=sys.stderr)
         if self.api == 'carbon':
             return
         self.body_dedent(f"""
