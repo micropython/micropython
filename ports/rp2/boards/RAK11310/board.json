@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../../deploy.md"
+    ],
+    "docs": "https://docs.rakwireless.com/Product-Categories/WisDuo/RAK11300-Module/Overview/",
+    "features": [
+        "RP2040 MCU",
+        "SX1262 LoRa Transceiver",
+        "Dual-core Arm Cortex-M0+",
+        "External Flash (assumed 2MB, verify)",
+        "Stamp Module Form Factor"
+    ],
+    "images": [
+        "RAK11310.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "RAK11310 WisDuo LPWAN Module (Stamp)",
+    "thumbnail": "RAK11310_thumbnail.jpg",
+    "url": "https://store.rakwireless.com/products/wisduo-lpwan-module-rak11300?variant=42643166232774",
+    "vendor": "RAKwireless"
+}

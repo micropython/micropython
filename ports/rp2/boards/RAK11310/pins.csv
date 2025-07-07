@@ -1,0 +1,39 @@
+# Pin definitions for RAKwireless RAK11310
+# Format: PIN_NAME,GPIO_NUMBER
+# Assumed to be identical to RAK11300 for core peripherals.
+
+# SX1262 LoRa Module Pins (User Updated Pinout)
+LORA_CLK,GPIO10
+LORA_MOSI,GPIO11
+LORA_MISO,GPIO12
+LORA_NSS,GPIO13  # Chip Select
+LORA_NRESET,GPIO14 # Reset
+LORA_DIO1,GPIO29   # IRQ
+LORA_BUSY,GPIO15   # Assumed BUSY from LORA_GPIO
+LORA_PWR_EN,GPIO25 # Power Enable
+
+# Default UART0
+UART0_TX,GPIO0
+UART0_RX,GPIO1
+
+# Default I2C0
+I2C0_SCL,GPIO5
+I2C0_SDA,GPIO4
+
+# Standard SPI0 (if exposed and different from LoRa SPI)
+# SPI0_SCK,GPIOx
+# SPI0_MOSI,GPIOx
+# SPI0_MISO,GPIOx
+# SPI0_CS,GPIOx
+
+# User LED (if any)
+# LED,GPIOx
+
+# General Purpose IOs (examples, map according to actual board pinout if available)
+# IO0,GPIO0
+# ...
+# RUN,RUN
+# ADC_VBAT,GPIO29
+# SWCLK,SWCLK
+# SWDIO,SWDIO
+# RESET,RUN

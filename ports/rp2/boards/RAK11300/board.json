@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../../deploy.md"
+    ],
+    "docs": "https://docs.rakwireless.com/Product-Categories/WisDuo/RAK11300-Module/Overview/",
+    "features": [
+        "RP2040 MCU",
+        "SX1262 LoRa Transceiver",
+        "Dual-core Arm Cortex-M0+",
+        "External Flash (assumed 2MB, verify)",
+        "USB-C (if applicable, or header for USB)"
+    ],
+    "images": [
+        "RAK11300.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "RAK11300 WisDuo LPWAN Module",
+    "thumbnail": "RAK11300_thumbnail.jpg",
+    "url": "https://store.rakwireless.com/products/wisduo-lpwan-module-rak11300",
+    "vendor": "RAKwireless"
+}
