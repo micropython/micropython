@@ -76,4 +76,4 @@
 	url = https://github.com/micropython/alif-security-toolkit.git
 [submodule "ports/m68kmac/multiversal"]
 	path = ports/m68kmac/lib/multiversal
-	url = https://github.com/autc04/multiversal.git
+	url = https://github.com/m68k-micropython/multiversal.git
