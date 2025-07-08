@@ -6,12 +6,6 @@ except AttributeError:
     print("SKIP")
     raise SystemExit
 
-try:
-    import warnings
-    warnings.simplefilter("ignore") # ignore deprecation warning about co_lnotab
-except ImportError:
-    pass
-
 def f(x, y):
     a = x + y
     b = x - y
@@ -25,7 +19,6 @@ print(code.co_filename.rsplit('/')[-1]) # same terminal filename but might be di
 print(type(code.co_firstlineno)) # both ints (but mpy points to first line inside, cpy points to declaration)
 print(code.co_name)
 print(iter(code.co_names) is not None) # both iterable (but mpy returns dict with names as keys, cpy only the names; and not necessarily the same set)
-print(type(code.co_lnotab)) # both bytes
 
 co_lines = code.co_lines()
 
