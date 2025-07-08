@@ -48,6 +48,7 @@ endif
 MBOOT_VERSION_ALLOCATED_BYTES ?= 64
 MBOOT_VERSION_INCLUDE_OPTIONS ?= 1  # if set to 1, this will append build options to version string (see version.c)
 
+CROSS_COMPILE ?= arm-none-eabi-
 USBDEV_DIR=usbdev
 DFU=$(TOP)/tools/dfu.py
 PYDFU ?= $(TOP)/tools/pydfu.py
@@ -58,8 +59,6 @@ OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 
 include ../stm32.mk
-
-CROSS_COMPILE ?= arm-none-eabi-
 
 INC += -I.
 INC += -I..

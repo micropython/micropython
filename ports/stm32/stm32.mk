@@ -83,3 +83,17 @@ MPY_CROSS_MCU_ARCH_h7 = armv7m
 MPY_CROSS_MCU_ARCH_n6 = armv7m # really armv8m
 MPY_CROSS_MCU_ARCH_wb = armv7m
 MPY_CROSS_MCU_ARCH_wl = armv7m
+
+# gcc up to 14.2.0 have a known loop-optimisation bug:
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=116799
+# This bug manifests for Cortex M55 targets, so require a newer compiler on such targets.
+ifeq ($(MCU_SERIES),n6)
+# Check if GCC version is less than 14.3
+GCC_VERSION := $(shell $(CROSS_COMPILE)gcc -dumpversion | cut -d. -f1-2)
+GCC_VERSION_MAJOR := $(shell echo $(GCC_VERSION) | cut -d. -f1)
+GCC_VERSION_MINOR := $(shell echo $(GCC_VERSION) | cut -d. -f2)
+GCC_VERSION_NUM := $(shell echo $$(($(GCC_VERSION_MAJOR) * 100 + $(GCC_VERSION_MINOR))))
+ifeq ($(shell test $(GCC_VERSION_NUM) -lt 1403 && echo yes),yes)
+$(error Error: GCC $(GCC_VERSION) has known issues with Cortex-M55; upgrade to GCC 14.3+ for proper CM55 support)
+endif
+endif
