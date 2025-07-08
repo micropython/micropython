@@ -128,17 +128,17 @@ static mp_obj_t network_ppp_make_new(const mp_obj_type_t *type, size_t n_args, s
 
 static mp_obj_t network_ppp___del__(mp_obj_t self_in) {
     network_ppp_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->state >= STATE_ACTIVE) {
-        if (self->state >= STATE_ERROR) {
-            // Still connected over the stream.
-            // Force the connection to close, with nocarrier=1.
-            self->state = STATE_INACTIVE;
-            pppapi_close(self->pcb, 1);
-        }
-        network_ppp_stream_uart_irq_disable(self);
+    network_ppp_stream_uart_irq_disable(self);
+    if (self->state >= STATE_ERROR) {
+        // Still connected over the stream.
+        // Force the connection to close, with nocarrier=1.
+        pppapi_close(self->pcb, 1);
+    } else if (self->state >= STATE_ACTIVE) {
         // Free PPP PCB and reset state.
+        if (pppapi_free(self->pcb) != ERR_OK) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("pppapi_free failed"));
+        }
         self->state = STATE_INACTIVE;
-        pppapi_free(self->pcb);
         self->pcb = NULL;
     }
     return mp_const_none;
