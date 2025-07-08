@@ -103,6 +103,18 @@ bi_decl(bi_block_device(
     BINARY_INFO_BLOCK_DEV_FLAG_WRITE |
     BINARY_INFO_BLOCK_DEV_FLAG_PT_UNKNOWN));
 
+#if MICROPY_HW_ROMFS_BYTES
+// Tag the ROMFS partition in the binary
+bi_decl(bi_block_device(
+    BINARY_INFO_TAG_MICROPYTHON,
+    "ROMFS",
+    XIP_BASE + MICROPY_HW_ROMFS_BASE,
+    MICROPY_HW_ROMFS_BYTES,
+    NULL,
+    BINARY_INFO_BLOCK_DEV_FLAG_READ |
+    BINARY_INFO_BLOCK_DEV_FLAG_PT_UNKNOWN));
+#endif
+
 // This is a workaround to pico-sdk #2201: https://github.com/raspberrypi/pico-sdk/issues/2201
 // which means the multicore_lockout_victim_is_initialized returns true even after core1 is reset.
 static bool use_multicore_lockout(void) {
