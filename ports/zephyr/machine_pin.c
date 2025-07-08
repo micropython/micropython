@@ -116,6 +116,10 @@ static mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
     }
 
     int ret = gpio_pin_configure(self->port, self->pin, mode | pull | init);
+    if (ret == -ENOTSUP && mode == (GPIO_OUTPUT | GPIO_INPUT)) {
+        // Some targets (eg frdm_k64f) don't support GPIO_OUTPUT|GPIO_INPUT, so try again with just GPIO_OUTPUT.
+        ret = gpio_pin_configure(self->port, self->pin, GPIO_OUTPUT | pull | init);
+    }
     if (ret) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
     }
