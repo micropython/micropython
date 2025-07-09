@@ -42,6 +42,7 @@ GIT_SUBMODULES += lib/berkeley-db-1.xx
 INC +=  -I.
 INC +=  -I$(TOP)
 INC += -I$(BUILD)
+INC += -I$(TOP)/shared/runtime
 
 # compiler settings
 CWARN = -Wall -Werror
@@ -223,6 +224,7 @@ SRC_C += \
 
 SHARED_SRC_C += $(addprefix shared/,\
 	runtime/gchelper_generic.c \
+	runtime/pyexec.c \
 	timeutils/timeutils.c \
 	$(SHARED_SRC_C_EXTRA) \
 	)
