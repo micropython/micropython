@@ -34,6 +34,12 @@
 #define SYS_ARCH_PROTECT(lev) do { } while (0)
 #define SYS_ARCH_UNPROTECT(lev) do { } while (0)
 
+// LWIP uses atoi but some MicroPython ports don't provide it.
+// Redirect to our implementation in modlwip.c.
+int lwip_atoi(const char *str);
+#define atoi lwip_atoi
+
+
 #define NO_SYS                          1
 #define SYS_LIGHTWEIGHT_PROT            1
 #define MEM_ALIGNMENT                   4
@@ -56,6 +62,18 @@
 #define LWIP_DNS_SUPPORT_MDNS_QUERIES   1
 #define LWIP_MDNS_RESPONDER             1
 #define LWIP_IGMP                       1
+
+#ifndef LWIP_IPV6
+#define LWIP_IPV6                       MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES
+#endif
+
+#if LWIP_IPV6
+#define LWIP_IPV6_AUTOCONFIG            1
+#define LWIP_IPV6_MLD                   1
+#define LWIP_MULTICAST_PING             1  // Respond to Neighbor discovery on ff02::1
+#define LWIP_ND6_NUM_DESTINATIONS       4
+#define LWIP_ND6_QUEUEING               0  // Disabled to reduce RAM usage
+#endif
 
 #if MICROPY_PY_LWIP_PPP
 #define PPP_SUPPORT                     1
