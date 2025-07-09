@@ -36,6 +36,9 @@ ifeq ($(ARCH),xtensa)
 MPY_EXTERN_SYM_FILE=$(MPY_DIR)/ports/esp8266/boards/eagle.rom.addr.v6.ld
 endif
 
+# Use our own errno implementation if Picolibc is used
+CFLAGS += -D__PICOLIBC_ERRNO_FUNCTION=__errno
+
 include $(MPY_DIR)/py/dynruntime.mk
 
 # btree needs gnu99 defined
