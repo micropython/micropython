@@ -57,42 +57,6 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
     return mp_obj_new_int_from_ll(value);
 }
 
-bool mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
-    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
-    mp_obj_int_t *self = self_in;
-    long long val = self->val;
-    size_t slen; // Number of bytes to represent val
-
-    // This logic has a twin in objint.c
-    if (val > 0) {
-        slen = (sizeof(long long) * 8 - mp_clzll(val) + 7) / 8;
-    } else if (val < -1) {
-        slen = (sizeof(long long) * 8 - mp_clzll(~val) + 8) / 8;
-    } else {
-        // clz of 0 is defined, so 0 and -1 map to 0 and 1
-        slen = -val;
-    }
-
-    if (slen > len) {
-        return false; // Would overflow
-        // TODO: Determine whether to copy and truncate, as some callers probably expect this...?
-    }
-
-    if (big_endian) {
-        byte *b = buf + len;
-        while (b > buf) {
-            *--b = val;
-            val >>= 8;
-        }
-    } else {
-        for (; len > 0; --len) {
-            *buf++ = val;
-            val >>= 8;
-        }
-    }
-    return true;
-}
-
 int mp_obj_int_sign(mp_obj_t self_in) {
     mp_longint_impl_t val;
     if (mp_obj_is_small_int(self_in)) {
