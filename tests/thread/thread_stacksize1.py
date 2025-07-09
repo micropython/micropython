@@ -7,7 +7,11 @@ import _thread
 
 # different implementations have different minimum sizes
 if sys.implementation.name == "micropython":
-    sz = 2 * 1024
+    # Use larger stack size for desktop platforms to accommodate sanitizers
+    if sys.platform in ("linux", "darwin", "emscripten", "win32"):
+        sz = 32 * 1024
+    else:
+        sz = 2 * 1024
 else:
     sz = 512 * 1024
 

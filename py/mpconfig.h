@@ -701,6 +701,16 @@
 // Additional margin between the places in the runtime where Python stack is
 // checked and the actual end of the C stack. Needs to be large enough to avoid
 // overflows from function calls made between checks.
+#if !defined(MICROPY_STACK_CHECK_MARGIN)
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_UNDEFINED__)
+#define MICROPY_STACK_CHECK_MARGIN (8192)
+#elif defined(__has_feature)
+#if __has_feature(address_sanitizer) || __has_feature(undefined_sanitizer)
+#define MICROPY_STACK_CHECK_MARGIN (8192)
+#endif
+#endif
+#endif
+
 #ifndef MICROPY_STACK_CHECK_MARGIN
 #define MICROPY_STACK_CHECK_MARGIN (0)
 #endif

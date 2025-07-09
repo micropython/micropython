@@ -137,6 +137,11 @@ typedef long mp_off_t;
 #define MICROPY_STACKLESS_STRICT    (0)
 #endif
 
+// Reserve extra C-stack headroom for overflow checks.
+// Sanitizer builds enlarge call frames; 8 KiB prevents
+// false positives without noticeably shrinking usable stack.
+#define MICROPY_STACK_CHECK_MARGIN  (8192)
+
 // Implementation of the machine module.
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/unix/modmachine.c"
 
