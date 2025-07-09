@@ -171,7 +171,7 @@ def main():
 
     # Format C files with uncrustify.
     if format_c:
-        command = ["uncrustify", "-c", UNCRUSTIFY_CFG, "-lC", "--no-backup"]
+        command = ["./tools/uncrustify/uncrustify", "-c", UNCRUSTIFY_CFG, "-lC", "--no-backup"]
         if not args.v:
             command.append("-q")
         batch(command)
