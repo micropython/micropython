@@ -77,6 +77,23 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_OBJ_SENTINEL         (MP_OBJ_FROM_PTR((void *)4))
 #endif
 
+// mp_int_t and mp_uint_t are signed/unsigned integers whose size is the
+// same as mp_obj_t.
+//
+// The specific integer is currently defined by the port, but
+// these are the min/max limit values.
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+#define MP_INT_MAX INT64_MAX
+#define MP_INT_MIN INT64_MIN
+#define MP_UINT_MAX UINT64_MAX
+#define MP_UINT_MIN UINT64_MIN
+#else
+#define MP_INT_MAX INTPTR_MAX
+#define MP_INT_MIN INTPTR_MIN
+#define MP_UINT_MAX UINTPTR_MAX
+#define MP_UINT_MIN UINTPTR_MIN
+#endif
+
 // These macros/inline functions operate on objects and depend on the
 // particular object representation.  They are used to query, pack and
 // unpack small ints, qstrs and full object pointers.
