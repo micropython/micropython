@@ -263,11 +263,27 @@ def thread_entry(n_loop):
     count.add(1)
 
 
+# Check for stackless build, which can't call functions without allocating on the heap.
+is_stackless = False
+try:
+    import micropython
+
+    stackless = lambda: None
+    micropython.heap_lock()
+    try:
+        stackless()
+    except RuntimeError:
+        is_stackless = True
+    finally:
+        micropython.heap_unlock()
+except ImportError:
+    pass
+
 if __name__ == "__main__":
     import sys
 
-    if hasattr(sys, "settrace"):
-        # Builds with sys.settrace enabled are slow, so make the test short.
+    if hasattr(sys, "settrace") or is_stackless:
+        # Builds with sys.settrace and/or stackless enabled are slow, so make the test short.
         n_thread = 2
         n_loop = 2
     elif sys.platform == "rp2":
