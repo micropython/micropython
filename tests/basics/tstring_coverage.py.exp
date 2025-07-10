@@ -138,3 +138,16 @@ Broken interp created: expr=broken
 Long expr: value=42
 
 Coverage tests completed!
+Empty expr SyntaxError: empty expression not allowed
+Whitespace expr SyntaxError: empty expression not allowed
+Long expression: OK
+Large template string: OK
+Many interpolations: OK
+Template.__str__ with large string: OK
+Basic t-string: OK, result=Template(strings=('', ''), interpolations=(Interpolation('a', 'x', None, ''),))
+Nested interpolations error: SyntaxError: invalid syntax in template expression: nested{x}
+Template + str error: can only concatenate Template (not "str") to Template
+str + Template error: unsupported types for __add__: 'str', 'Template'
+Binary op error: unsupported types for __add__: 'str', 'Template'
+Conversion without format spec: OK
+Escaped braces ValueError: invalid format spec - cannot contain braces

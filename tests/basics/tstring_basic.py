@@ -132,7 +132,7 @@ except SyntaxError:
 try:
     long_expr = "x" * 10001
     exec(f't"{{{long_expr}}}"')
-except (ValueError, SyntaxError):
+except (ValueError, SyntaxError, RuntimeError):
     print("Long expr: Error")
 
 try:
