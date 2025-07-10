@@ -56,7 +56,13 @@
 #endif
 
 // This value seems to be about right for both 32-bit and 64-bit builds.
+#if defined(__aarch64__)
 #define THREAD_STACK_OVERFLOW_MARGIN (8192)
+#elif defined(__mips__)
+#define THREAD_STACK_OVERFLOW_MARGIN (2 * 8192)
+#else
+#define THREAD_STACK_OVERFLOW_MARGIN (8192)
+#endif
 
 // this structure forms a linked list, one node per active thread
 typedef struct _mp_thread_t {
