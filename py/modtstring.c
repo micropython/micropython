@@ -177,9 +177,6 @@ static mp_obj_t template_str(mp_obj_t self_in) {
         const char *str_data = mp_obj_str_get_data(str_part, &str_len);
 
         total_size += str_len;
-        if (total_size > MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE) {
-            mp_raise_ValueError(MP_ERROR_TEXT("template string too large"));
-        }
 
         vstr_add_strn(&vstr, str_data, str_len);
 
@@ -532,13 +529,6 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
             result->strings = new_strings_tuple;
             result->interpolations = new_interps_tuple;
             return MP_OBJ_FROM_PTR(result);
-        }
-
-        case MP_BINARY_OP_REVERSE_ADD: {
-            if (mp_obj_is_str(lhs_in)) {
-                mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate Template (not \"str\") to Template"));
-            }
-            return MP_OBJ_NULL; // op not supported
         }
 
         default:

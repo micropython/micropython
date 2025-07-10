@@ -668,10 +668,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         const byte *str = (const byte *)lex->vstr.buf;
         size_t len = lex->vstr.len;
 
-        if (len > MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE) {
-            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
-        }
-
         // Pre-scan to count interpolations and check limits before allocating memory
         size_t est_interp_cnt = 0;
         size_t est_seg_cnt = 1; // At least one string segment
@@ -698,21 +694,12 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
             }
         }
 
-        // Check limits before any allocations
-        if (est_interp_cnt > MICROPY_PY_TSTRING_MAX_INTERPOLATIONS) {
-            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many interpolations"));
-        }
-
         // Estimate memory usage and check against limit
         size_t est_total = est_seg_cnt + est_interp_cnt;
         size_t est_bytes = sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * est_total;
         // Add overhead for dynamic arrays during parsing
         est_bytes += est_seg_cnt * sizeof(mp_parse_node_t) * 2; // Assume some growth
         est_bytes += est_interp_cnt * sizeof(mp_parse_node_t) * 2;
-
-        if (est_bytes > MICROPY_PY_TSTRING_MAX_BYTES) {
-            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
-        }
 
         // Process TSTRING content
 
@@ -730,10 +717,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         #define GROW_ARRAY(arr) do { \
         if ((arr).len >= (arr).alloc) { \
             size_t new_alloc = (arr).alloc ? (arr).alloc * 2 : 8; \
-            size_t new_bytes = new_alloc * sizeof(mp_parse_node_t); \
-            if (new_bytes > MICROPY_PY_TSTRING_MAX_BYTES) { \
-                mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big")); \
-            } \
             (arr).items = m_renew(mp_parse_node_t, (arr).items, (arr).alloc, new_alloc); \
             (arr).alloc = new_alloc; \
         } \
@@ -1087,9 +1070,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                 }
                 i++;
             } else {
-                if (vstr.len + 1 > MICROPY_PY_TSTRING_MAX_BYTES / 2) {
-                    mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
-                }
                 vstr_add_byte(&vstr, str[i]);
                 i++;
             }
@@ -1115,12 +1095,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         // Check for integer overflow in total calculation
         size_t total = seg_cnt + interp_cnt;
         if (total < seg_cnt || total < interp_cnt) {
-            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
-        }
-
-        // Check memory allocation size for memory-constrained ports
-        size_t alloc_size = sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * total;
-        if (alloc_size > MICROPY_PY_TSTRING_MAX_BYTES) {
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
         }
 
