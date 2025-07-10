@@ -163,7 +163,7 @@ static mp_obj_t network_ppp_poll(size_t n_args, const mp_obj_t *args) {
         }
         mp_printf(&mp_plat_print, ")\n");
         #endif
-        pppos_input(self->pcb, (u8_t *)buf, len);
+        pppos_input_tcpip(self->pcb, (u8_t *)buf, len);
         total_len += len;
     }
 
