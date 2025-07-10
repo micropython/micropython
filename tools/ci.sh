@@ -796,7 +796,7 @@ function ci_unix_qemu_mips_build {
 
 function ci_unix_qemu_mips_run_tests {
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py)
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py)
 }
 
 function ci_unix_qemu_arm_setup {
@@ -817,7 +817,7 @@ function ci_unix_qemu_arm_run_tests {
     # Issues with ARM tests:
     # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.*\.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'vfs_posix.*\.py')
 }
 
 function ci_unix_qemu_riscv64_setup {
@@ -836,7 +836,7 @@ function ci_unix_qemu_riscv64_build {
 
 function ci_unix_qemu_riscv64_run_tests {
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py)
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py)
 }
 
 ########################################################################################
