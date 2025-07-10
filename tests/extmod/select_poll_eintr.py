@@ -33,6 +33,14 @@ def thread_main():
     print("thread gc end")
 
 
+# Pre-allocate global variables here so the global dict is not resized by the main
+# thread while the secondary thread runs.  This is a workaround for the bug described
+# in https://github.com/micropython/micropython/pull/11604
+poller = None
+t0 = None
+result = None
+dt_ms = None
+
 # Start a thread to interrupt the main thread during its call to poll.
 lock = _thread.allocate_lock()
 lock.acquire()
