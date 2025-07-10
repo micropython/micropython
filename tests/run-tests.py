@@ -258,7 +258,11 @@ def detect_test_platform(pyb, args):
     if thread == "None":
         thread = None
     else:
-        thread = "yes"
+        thread_gil = run_feature_check(pyb, args, "thread_gil.py")
+        if thread_gil == b"thread with GIL\n":
+            thread = "GIL"
+        else:
+            thread = "no-GIL"
 
     args.platform = platform
     args.arch = arch
@@ -812,7 +816,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("extmod/ssl_poll.py")
 
     # Skip thread mutation tests on targets that don't have the GIL.
-    if args.platform in PC_PLATFORMS + ("rp2",):
+    if args.thread != "GIL":
         for t in tests:
             if t.startswith("thread/mutate_"):
                 skip_tests.add(t)
