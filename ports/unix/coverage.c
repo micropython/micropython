@@ -528,7 +528,7 @@ static mp_obj_t extra_coverage(void) {
 
         // convert a large integer value (stored in a mpz) to mp_uint_t and to ll;
         mp_obj_t obj_bigint = mp_obj_new_int_from_uint((mp_uint_t)0xdeadbeef);
-        mp_printf(&mp_plat_print, "%x\n", mp_obj_get_uint(obj_bigint));
+        mp_printf(&mp_plat_print, "%x\n", (int)mp_obj_get_uint(obj_bigint));
         obj_bigint = mp_obj_new_int_from_ll(0xc0ffee777c0ffeell);
         long long value_ll = mp_obj_get_ll(obj_bigint);
         mp_printf(&mp_plat_print, "%x%08x\n", (uint32_t)(value_ll >> 32), (uint32_t)value_ll);
@@ -536,13 +536,13 @@ static mp_obj_t extra_coverage(void) {
         // convert a large integer value (stored via a struct object) to uint and to ll
         // `deadbeef` global is an uctypes.struct defined by extra_coverage.py
         obj_bigint = mp_load_global(MP_QSTR_deadbeef);
-        mp_printf(&mp_plat_print, "%x\n", mp_obj_get_uint(obj_bigint));
+        mp_printf(&mp_plat_print, "%x\n", (int)mp_obj_get_uint(obj_bigint));
         value_ll = mp_obj_get_ll(obj_bigint);
         mp_printf(&mp_plat_print, "%x%08x\n", (uint32_t)(value_ll >> 32), (uint32_t)value_ll);
 
         // convert a smaller integer value to mp_uint_t and to ll
         obj_bigint = mp_obj_new_int_from_uint(0xc0ffee);
-        mp_printf(&mp_plat_print, "%x\n", mp_obj_get_uint(obj_bigint));
+        mp_printf(&mp_plat_print, "%x\n", (int)mp_obj_get_uint(obj_bigint));
         value_ll = mp_obj_get_ll(obj_bigint);
         mp_printf(&mp_plat_print, "%x%08x\n", (uint32_t)(value_ll >> 32), (uint32_t)value_ll);
     }
