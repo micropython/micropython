@@ -99,10 +99,6 @@ static mp_parse_node_t copy_parse_node(void *alloc_ctx, mp_parse_allocator_t all
 
 mp_parse_node_t parse_tstring_expression(void *alloc_ctx, mp_parse_allocator_t allocator,
     const char *expr, size_t len) {
-    if (len > MICROPY_PY_TSTRING_MAX_EXPR_LEN) {
-        mp_raise_ValueError(MP_ERROR_TEXT("template expression too long"));
-    }
-
     while (len > 0 && (expr[0] == ' ' || expr[0] == '\t' || expr[0] == '\n')) {
         expr++;
         len--;

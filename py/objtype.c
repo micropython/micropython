@@ -543,16 +543,6 @@ const byte mp_binary_op_method_name[MP_BINARY_OP_NUM_RUNTIME] = {
 };
 
 static mp_obj_t instance_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    #if MICROPY_PY_TSTRINGS
-    if (op == MP_BINARY_OP_ADD || op == MP_BINARY_OP_INPLACE_ADD) {
-        if (mp_obj_is_type(lhs_in, &mp_type_template) && mp_obj_is_str(rhs_in)) {
-            mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate Template (not \"str\") to Template"));
-        }
-        if (mp_obj_is_str(lhs_in) && mp_obj_is_type(rhs_in, &mp_type_template)) {
-            mp_raise_TypeError(MP_ERROR_TEXT("unsupported types for __add__: 'str', 'Template'"));
-        }
-    }
-    #endif
     // Note: For ducktyping, CPython does not look in the instance members or use
 
     // __getattr__ or __getattribute__.  It only looks in the class dictionary.
