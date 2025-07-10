@@ -180,8 +180,9 @@ except (ValueError, SyntaxError, MemoryError) as e:
     print("Too many interpolations: SyntaxError")
 
 try:
+    # This will exceed QSTR length limit
     large_str = "x" * 100000
-    exec(f't"{large_str}"')
+    exec(f'very_long_name_{large_str} = t"test"')
 except (ValueError, MemoryError, SyntaxError, RuntimeError) as e:
     print("Large template: SyntaxError")
 
@@ -398,3 +399,99 @@ long_expr = Template(("Long: ", ""), (Interpolation(42, long_name, None, ""),))
 print(f"Long expr: value={long_expr.values[0]}")
 
 print("\nCoverage tests completed!")
+
+try:
+    exec("t'{}'")
+    print("ERROR: Empty expression should have raised SyntaxError")
+except SyntaxError as e:
+    print("Empty expr SyntaxError:", e)
+
+try:
+    exec("t'{   }'")
+    print("ERROR: Whitespace-only expression should have raised SyntaxError")
+except SyntaxError as e:
+    print("Whitespace expr SyntaxError:", e)
+
+try:
+    long_expr = 'x' * 104
+    code = f"t'{{{long_expr}}}'"
+    exec(f"{long_expr} = 'test'; result = {code}")
+    print("Long expression: OK")
+except Exception as e:
+    print(f"Long expr error: {type(e).__name__}: {e}")
+
+try:
+    large_str = 'x' * 1050
+    code = f't"{large_str}"'
+    exec(f"result = {code}")
+    print("Large template string: OK")
+except Exception as e:
+    print(f"Large template error: {type(e).__name__}: {e}")
+
+try:
+    code = 't"' + '{x}' * 130 + '"'
+    exec(f"x = 'test'; result = {code}")
+    print("Many interpolations: OK")
+except Exception as e:
+    print(f"Many interpolations error: {type(e).__name__}: {e}")
+
+try:
+    from string.templatelib import Template
+    large_str = 'x' * 1099
+    tmpl = Template(large_str)
+    result = str(tmpl)
+    print("Template.__str__ with large string: OK")
+except Exception as e:
+    print(f"Template.__str__ error: {type(e).__name__}: {e}")
+
+try:
+    x = 'a'
+    result = t'{x}'
+    print(f"Basic t-string: OK, result={result}")
+except Exception as e:
+    print(f"Basic t-string error: {type(e).__name__}: {e}")
+
+try:
+    code = 't"' + 'text{nested{x}}more' * 50 + '"'
+    x = 'test'
+    exec(f"x = 'test'; result = {code}")
+    print("Nested interpolations: OK")
+except Exception as e:
+    print(f"Nested interpolations error: {type(e).__name__}: {e}")
+
+try:
+    tmpl = t'hello'
+    result = tmpl + 'world'
+    print("ERROR: Template + str should have raised TypeError")
+except TypeError as e:
+    print(f"Template + str error: {e}")
+
+try:
+    result = 'hello' + t'world'
+    print("ERROR: str + Template should have raised TypeError")
+except TypeError as e:
+    print(f"str + Template error: {e}")
+
+tmpl = Template('hello')
+str_obj = 'test'
+try:
+    result = str_obj + tmpl
+    print("ERROR: Should have raised TypeError")
+except TypeError as e:
+    print(f"Binary op error: {e}")
+
+try:
+    code = "t'{x!r}'"
+    exec(f"x = 42; result = {code}")
+    print("Conversion without format spec: OK")
+except Exception as e:
+    print(f"Conversion error: {type(e).__name__}: {e}")
+
+width = 5
+x = 42
+try:
+    tmpl = t'{x:{width}{{literal}}}'
+    result = tmpl.__str__()
+    print(f'Escaped braces result: {result}')
+except ValueError as e:
+    print(f'Escaped braces ValueError: {e}')
