@@ -10,7 +10,7 @@ data = bytearray(b"01234567")
 
 # first argument isn't an integer
 try:
-    uctypes.struct(data, {})
+    uctypes.struct([], {})
 except TypeError:
     print("TypeError")
 

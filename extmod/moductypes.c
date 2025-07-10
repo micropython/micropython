@@ -31,49 +31,12 @@
 #include "py/runtime.h"
 #include "py/objtuple.h"
 #include "py/binary.h"
+#include "extmod/moductypes.h"
 
 #if MICROPY_PY_UCTYPES
 
-// The uctypes module allows defining the layout of a raw data structure (using
-// terms of the C language), and then access memory buffers using this definition.
-// The module also provides convenience functions to access memory buffers
-// contained in Python objects or wrap memory buffers in Python objects.
-
-#define LAYOUT_LITTLE_ENDIAN (0)
-#define LAYOUT_BIG_ENDIAN    (1)
-#define LAYOUT_NATIVE        (2)
-
-#define VAL_TYPE_BITS 4
-#define BITF_LEN_BITS 5
-#define BITF_OFF_BITS 5
-#define OFFSET_BITS 17
-#define LEN_BITS (OFFSET_BITS + BITF_OFF_BITS)
-#if VAL_TYPE_BITS + BITF_LEN_BITS + BITF_OFF_BITS + OFFSET_BITS != 31
-#error Invalid encoding field length
-#endif
-
-enum {
-    UINT8, INT8, UINT16, INT16,
-    UINT32, INT32, UINT64, INT64,
-
-    BFUINT8, BFINT8, BFUINT16, BFINT16,
-    BFUINT32, BFINT32,
-
-    FLOAT32, FLOAT64,
-};
-
-#define AGG_TYPE_BITS 2
-
-enum {
-    STRUCT, PTR, ARRAY,
-};
-
-// Here we need to set sign bit right
-#define TYPE2SMALLINT(x, nbits) ((((int)x) << (32 - nbits)) >> 1)
-#define GET_TYPE(x, nbits) (((x) >> (31 - nbits)) & ((1 << nbits) - 1))
 // Bit 0 is "is_signed"
 #define GET_SCALAR_SIZE(val_type) (1 << ((val_type) >> 1))
-#define VALUE_MASK(type_nbits) ~((int)0x80000000 >> type_nbits)
 
 #define IS_SCALAR_ARRAY(tuple_desc) ((tuple_desc)->len == 2)
 // We cannot apply the below to INT8, as their range [-128, 127]
@@ -81,6 +44,9 @@ enum {
 
 // "struct" in uctypes context means "structural", i.e. aggregate, type.
 static const mp_obj_type_t uctypes_struct_type;
+
+// Get size of any type descriptor
+static mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size);
 
 typedef struct _mp_obj_uctypes_struct_t {
     mp_obj_base_t base;
@@ -93,19 +59,106 @@ static MP_NORETURN void syntax_error(void) {
     mp_raise_TypeError(MP_ERROR_TEXT("syntax error in uctypes descriptor"));
 }
 
-static mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 2, 3, false);
-    mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, type);
-    o->addr = (void *)(uintptr_t)mp_obj_get_int_truncated(args[0]);
-    o->desc = args[1];
-    o->flags = LAYOUT_NATIVE;
-    if (n_args == 3) {
-        o->flags = mp_obj_get_int(args[2]);
+static bool is_struct_type(mp_obj_t obj_in) {
+    if (!mp_obj_is_type(obj_in, &mp_type_type)) {
+        return false;
     }
+    mp_make_new_fun_t make_new = MP_OBJ_TYPE_GET_SLOT_OR_NULL((mp_obj_type_t *)MP_OBJ_TO_PTR(obj_in), make_new);
+    return make_new == uctypes_struct_type_make_new;
+}
+
+mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 2, 3, false);
+    mp_obj_t desc = args[1];
+    int flags = LAYOUT_NATIVE;
+    if (is_struct_type(desc)) {
+        type = MP_OBJ_TO_PTR(desc);
+        mp_obj_ctypes_struct_type_t *struct_type = (mp_obj_ctypes_struct_type_t *)type;
+        desc = struct_type->desc;
+    } else if (n_args == 3) {
+        flags = mp_obj_get_int(args[2]);
+    }
+    mp_buffer_info_t bufinfo;
+    mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, type);
+    if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
+        o->addr = bufinfo.buf;
+    } else {
+        o->addr = (void *)(uintptr_t)mp_obj_get_int_truncated(args[0]);
+    }
+    o->desc = desc;
+    o->flags = flags;
     return MP_OBJ_FROM_PTR(o);
 }
 
-static void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static bool is_ptr(mp_obj_t desc) {
+    if (!mp_obj_is_type(desc, &mp_type_tuple)) {
+        return false;
+    }
+    mp_obj_tuple_t *t = MP_OBJ_TO_PTR(desc);
+    mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
+    uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
+    return agg_type == PTR;
+}
+
+mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_obj_ctypes_struct_type_t *type = (mp_obj_ctypes_struct_type_t *)type_in;
+    mp_obj_t desc = type->desc;
+    mp_uint_t max_field_size = 0;
+    mp_uint_t size = uctypes_struct_size(desc, type->struct_flags, &max_field_size);
+
+    mp_buffer_info_t bufinfo;
+    mp_obj_t bytearray = mp_obj_new_bytearray(size, NULL);
+    mp_get_buffer_raise(bytearray, &bufinfo, MP_BUFFER_WRITE);
+    if (is_ptr(desc)) {
+        if (n_args != 1) {
+            mp_raise_TypeError(NULL);
+        }
+        if (mp_obj_is_int(args[0])) {
+            void *ptr = (void *)(uintptr_t)mp_obj_get_int_truncated(args[0]);
+            *(void **)bufinfo.buf = ptr;
+        } else {
+            mp_buffer_info_t pointee;
+            mp_get_buffer_raise(args[0], &pointee, MP_BUFFER_WRITE);
+            *(void **)bufinfo.buf = pointee.buf;
+        }
+    }
+
+    mp_obj_t args1[] = {mp_obj_new_int((intptr_t)bufinfo.buf), desc, mp_obj_new_int(type->struct_flags)};
+    mp_obj_t result = uctypes_struct_make_new(type_in, 3, 0, args1);
+
+    if (mp_obj_is_type(desc, &mp_type_tuple)) {
+        mp_obj_tuple_t *t = MP_OBJ_TO_PTR(desc);
+        mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
+        uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
+        if (agg_type == ARRAY) {
+            for (size_t i = 0; i < n_args; i++) {
+                mp_obj_subscr(result, mp_obj_new_int(i), args[i]);
+            }
+        } else if (agg_type != PTR) {
+            syntax_error();
+        }
+    } else {
+        mp_obj_dict_t *d = MP_OBJ_TO_PTR(desc);
+        // only for packed ROM tables..
+        assert(d->map.alloc == d->map.used);
+        assert(d->map.all_keys_are_qstrs);
+
+        if (n_args > d->map.alloc) {
+            mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("struct: index out of range"));
+        }
+        for (size_t i = 0; i < n_args; i++) {
+            mp_store_attr(result, mp_obj_str_get_qstr(d->map.table[i].key), args[i]);
+        }
+    }
+    args += n_args;
+    for (size_t i = 0; i < n_kw; i += 2) {
+        mp_store_attr(result, mp_obj_str_get_qstr(args[i]), args[i + 1]);
+    }
+    return result;
+}
+
+#define mp_obj_get_type_qstr(o_in) ((qstr)(mp_obj_get_type((o_in))->name))
+void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
     const char *typen = "unk";
@@ -126,11 +179,9 @@ static void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     } else {
         typen = "ERROR";
     }
-    mp_printf(print, "<struct %s %p>", typen, self->addr);
-}
 
-// Get size of any type descriptor
-static mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size);
+    mp_printf(print, "<%q %s %p>", (qstr)mp_obj_get_type_qstr(self_in), typen, self->addr);
+}
 
 // Get size of scalar type descriptor
 static inline mp_uint_t uctypes_struct_scalar_size(int val_type) {
@@ -195,6 +246,10 @@ static mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_
 }
 
 static mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size) {
+    if (is_struct_type(desc_in)) {
+        mp_obj_ctypes_struct_type_t *struct_type = MP_OBJ_TO_PTR(desc_in);
+        desc_in = struct_type->desc;
+    }
     if (!mp_obj_is_dict_or_ordereddict(desc_in)) {
         if (mp_obj_is_type(desc_in, &mp_type_tuple)) {
             return uctypes_struct_agg_size((mp_obj_tuple_t *)MP_OBJ_TO_PTR(desc_in), layout_type, max_field_size);
@@ -253,20 +308,22 @@ static mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
 static mp_obj_t uctypes_struct_sizeof(size_t n_args, const mp_obj_t *args) {
     mp_obj_t obj_in = args[0];
     mp_uint_t max_field_size = 0;
-    if (mp_obj_is_type(obj_in, &mp_type_bytearray)) {
-        return mp_obj_len(obj_in);
-    }
-    int layout_type = LAYOUT_NATIVE;
-    // We can apply sizeof either to structure definition (a dict)
-    // or to instantiated structure
-    if (mp_obj_is_type(obj_in, &uctypes_struct_type)) {
+    mp_buffer_info_t bufinfo;
+    if (mp_get_buffer(obj_in, &bufinfo, MP_BUFFER_READ)) {
         if (n_args != 1) {
             mp_raise_TypeError(NULL);
         }
-        // Extract structure definition
-        mp_obj_uctypes_struct_t *obj = MP_OBJ_TO_PTR(obj_in);
+        return MP_OBJ_NEW_SMALL_INT(bufinfo.len);
+    }
+    int layout_type = LAYOUT_NATIVE;
+    // We can apply sizeof to structure definition (a dict) or a "struct type" type
+    if (is_struct_type(obj_in)) {
+        if (n_args != 1) {
+            mp_raise_TypeError(NULL);
+        }
+        mp_obj_ctypes_struct_type_t *obj = MP_OBJ_TO_PTR(obj_in);
         obj_in = obj->desc;
-        layout_type = obj->flags;
+        layout_type = obj->struct_flags;
     } else {
         if (n_args == 2) {
             layout_type = mp_obj_get_int(args[1]);
@@ -276,6 +333,15 @@ static mp_obj_t uctypes_struct_sizeof(size_t n_args, const mp_obj_t *args) {
     return MP_OBJ_NEW_SMALL_INT(size);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uctypes_struct_sizeof_obj, 1, 2, uctypes_struct_sizeof);
+
+static mp_obj_t uctypes_struct_desc(mp_obj_t arg) {
+    if (!is_struct_type(arg)) {
+        mp_raise_TypeError(NULL);
+    }
+    mp_obj_ctypes_struct_type_t *struct_type = MP_OBJ_TO_PTR(arg);
+    return struct_type->desc;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_desc_obj, uctypes_struct_desc);
 
 static const char type2char[16] = {
     'B', 'b', 'H', 'h', 'I', 'i', 'Q', 'q',
@@ -478,11 +544,8 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
 
     switch (agg_type) {
         case STRUCT: {
-            mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
-            o->desc = sub->items[1];
-            o->addr = self->addr + offset;
-            o->flags = self->flags;
-            return MP_OBJ_FROM_PTR(o);
+            mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)(uintptr_t)self->addr + offset), sub->items[1], mp_obj_new_int(self->flags) };
+            return uctypes_struct_make_new(&uctypes_struct_type, MP_ARRAY_SIZE(args), 0, args);
         }
         case ARRAY: {
             mp_uint_t dummy;
@@ -493,11 +556,8 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             MP_FALLTHROUGH
         }
         case PTR: {
-            mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
-            o->desc = MP_OBJ_FROM_PTR(sub);
-            o->addr = self->addr + offset;
-            o->flags = self->flags;
-            return MP_OBJ_FROM_PTR(o);
+            mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)(uintptr_t)self->addr + offset), deref, mp_obj_new_int(self->flags) };
+            return uctypes_struct_make_new(&uctypes_struct_type, MP_ARRAY_SIZE(args), 0, args);
         }
     }
 
@@ -505,7 +565,7 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
     return MP_OBJ_NULL;
 }
 
-static void uctypes_struct_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+void uctypes_struct_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // load attribute
         mp_obj_t val = uctypes_struct_attr_op(self_in, attr, MP_OBJ_NULL);
@@ -518,7 +578,7 @@ static void uctypes_struct_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-static mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (value == MP_OBJ_NULL) {
@@ -565,11 +625,8 @@ static mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
             } else if (value == MP_OBJ_SENTINEL) {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = uctypes_struct_size(t->items[2], self->flags, &dummy);
-                mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
-                o->desc = t->items[2];
-                o->addr = self->addr + size * index;
-                o->flags = self->flags;
-                return MP_OBJ_FROM_PTR(o);
+                mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)(uintptr_t)self->addr + size * index), t->items[2], mp_obj_new_int(self->flags) };
+                return uctypes_struct_make_new(&uctypes_struct_type, MP_ARRAY_SIZE(args), 0, args);
             } else {
                 return MP_OBJ_NULL; // op not supported
             }
@@ -578,15 +635,17 @@ static mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
             byte *p = *(void **)self->addr;
             if (mp_obj_is_small_int(t->items[1])) {
                 uint val_type = GET_TYPE(MP_OBJ_SMALL_INT_VALUE(t->items[1]), VAL_TYPE_BITS);
-                return get_aligned(val_type, p, index);
+                if (value == MP_OBJ_SENTINEL) {
+                    return get_aligned(val_type, p, index);
+                } else {
+                    set_aligned(val_type, p, index, value);
+                    return value; // just !MP_OBJ_NULL
+                }
             } else {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = uctypes_struct_size(t->items[1], self->flags, &dummy);
-                mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
-                o->desc = t->items[1];
-                o->addr = p + size * index;
-                o->flags = self->flags;
-                return MP_OBJ_FROM_PTR(o);
+                mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)(uintptr_t)p + size * index), t->items[1], mp_obj_new_int(self->flags) };
+                return uctypes_struct_make_new(&uctypes_struct_type, MP_ARRAY_SIZE(args), 0, args);
             }
         }
 
@@ -595,7 +654,7 @@ static mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
     }
 }
 
-static mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_INT_MAYBE:
@@ -615,7 +674,7 @@ static mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-static mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     (void)flags;
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t max_field_size = 0;
@@ -669,6 +728,7 @@ static const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_addressof), MP_ROM_PTR(&uctypes_struct_addressof_obj) },
     { MP_ROM_QSTR(MP_QSTR_bytes_at), MP_ROM_PTR(&uctypes_struct_bytes_at_obj) },
     { MP_ROM_QSTR(MP_QSTR_bytearray_at), MP_ROM_PTR(&uctypes_struct_bytearray_at_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_descr), MP_ROM_PTR(&uctypes_struct_desc_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_NATIVE), MP_ROM_INT(LAYOUT_NATIVE) },
     { MP_ROM_QSTR(MP_QSTR_LITTLE_ENDIAN), MP_ROM_INT(LAYOUT_LITTLE_ENDIAN) },
