@@ -62,6 +62,10 @@ static bool is_char_or3(mp_lexer_t *lex, byte c1, byte c2, byte c3) {
     return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3;
 }
 
+static bool is_char_or4(mp_lexer_t *lex, byte c1, byte c2, byte c3, byte c4) {
+    return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3 || lex->chr0 == c4;
+}
+
 static bool is_char_following(mp_lexer_t *lex, byte c) {
     return lex->chr1 == c;
 }
@@ -103,21 +107,11 @@ static bool is_following_odigit(mp_lexer_t *lex) {
     return lex->chr1 >= '0' && lex->chr1 <= '7';
 }
 
-#if MICROPY_PY_FSTRINGS
-static bool is_char_or4(mp_lexer_t *lex, byte c1, byte c2, byte c3, byte c4) {
-    return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3 || lex->chr0 == c4;
-}
-#endif
-
 static bool is_string_or_bytes(mp_lexer_t *lex) {
     return is_char_or(lex, '\'', '\"')
-           #if MICROPY_PY_FSTRINGS
            || (is_char_or4(lex, 'r', 'u', 'b', 'f') && is_char_following_or(lex, '\'', '\"'))
            || (((is_char_and(lex, 'r', 'f') || is_char_and(lex, 'f', 'r'))
                && is_char_following_following_or(lex, '\'', '\"')))
-           #else
-           || (is_char_or3(lex, 'r', 'u', 'b') && is_char_following_or(lex, '\'', '\"'))
-           #endif
            #if MICROPY_PY_TSTRINGS
            || (is_char(lex, 't') && is_char_following_or(lex, '\'', '\"'))
            || ((is_char_and(lex, 'r', 't') || is_char_and(lex, 't', 'r'))
@@ -360,7 +354,7 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     // "{{" is passed through unchanged for f-strings
                     vstr_add_byte(&lex->vstr, '{');
                     next_char(lex);
-                } else if (is_fstring) {
+                } else {
                     // wrap each argument in (), e.g.
                     // f"{a,b,}, {c}" --> "{}".format((a,b), (c),)
                     vstr_add_byte(&lex->fstring_args, '(');
