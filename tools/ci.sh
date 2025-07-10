@@ -13,11 +13,13 @@ ulimit -n 1024
 # general helper functions
 
 function ci_gcc_arm_setup {
+    sudo apt-get update
     sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
     arm-none-eabi-gcc --version
 }
 
 function ci_gcc_riscv_setup {
+    sudo apt-get update
     sudo apt-get install gcc-riscv64-unknown-elf picolibc-riscv64-unknown-elf
     riscv64-unknown-elf-gcc --version
 }
@@ -35,6 +37,7 @@ function ci_picotool_setup {
 # c code formatting
 
 function ci_c_code_formatting_setup {
+    sudo apt-get update
     sudo apt-get install uncrustify
     uncrustify --version
 }
@@ -703,6 +706,7 @@ function ci_unix_float_run_tests {
 }
 
 function ci_unix_clang_setup {
+    sudo apt-get update
     sudo apt-get install clang
     clang --version
 }
@@ -839,6 +843,7 @@ function ci_unix_qemu_riscv64_run_tests {
 # ports/windows
 
 function ci_windows_setup {
+    sudo apt-get update
     sudo apt-get install gcc-mingw-w64
 }
 
