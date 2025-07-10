@@ -251,22 +251,27 @@ def detect_test_platform(pyb, args):
     output = run_feature_check(pyb, args, "target_info.py")
     if output.endswith(b"CRASH"):
         raise ValueError("cannot detect platform: {}".format(output))
-    platform, arch = str(output, "ascii").strip().split()
+    platform, arch, thread = str(output, "ascii").strip().split()
     if arch == "None":
         arch = None
     inlineasm_arch = detect_inline_asm_arch(pyb, args)
+    if thread == "None":
+        thread = None
 
     args.platform = platform
     args.arch = arch
     if arch and not args.mpy_cross_flags:
         args.mpy_cross_flags = "-march=" + arch
     args.inlineasm_arch = inlineasm_arch
+    args.thread = thread
 
     print("platform={}".format(platform), end="")
     if arch:
         print(" arch={}".format(arch), end="")
     if inlineasm_arch:
         print(" inlineasm={}".format(inlineasm_arch), end="")
+    if thread:
+        print(" thread={}".format(thread), end="")
     print()
 
 
@@ -810,8 +815,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("cmdline/repl_sys_ps1_ps2.py")
         skip_tests.add("extmod/ssl_poll.py")
 
-    # Skip thread mutation tests on targets that don't have the GIL.
-    if args.platform in PC_PLATFORMS + ("rp2",):
+    # Skip thread mutation tests on targets that have unsafe threading behaviour.
+    if args.thread == "unsafe":
         for t in tests:
             if t.startswith("thread/mutate_"):
                 skip_tests.add(t)
@@ -1329,6 +1334,8 @@ the last matching regex is used:
             )
             if args.inlineasm_arch is not None:
                 test_dirs += ("inlineasm/{}".format(args.inlineasm_arch),)
+            if args.thread is not None:
+                test_dirs += ("thread",)
             if args.platform == "pyboard":
                 # run pyboard tests
                 test_dirs += ("float", "stress", "ports/stm32")
@@ -1337,9 +1344,9 @@ the last matching regex is used:
             elif args.platform == "renesas-ra":
                 test_dirs += ("float", "ports/renesas-ra")
             elif args.platform == "rp2":
-                test_dirs += ("float", "stress", "thread", "ports/rp2")
+                test_dirs += ("float", "stress", "ports/rp2")
             elif args.platform == "esp32":
-                test_dirs += ("float", "stress", "thread")
+                test_dirs += ("float", "stress")
             elif args.platform in ("esp8266", "minimal", "samd", "nrf"):
                 test_dirs += ("float",)
             elif args.platform == "WiPy":
