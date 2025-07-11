@@ -56,8 +56,8 @@ static mp_parse_node_t copy_parse_node(void *alloc_ctx, mp_parse_allocator_t all
     #if MICROPY_PY_TSTRINGS
     if ((pns->kind_num_nodes & 0xFF) == MP_PARSE_NODE_TEMPLATE_STRING) {
         uint32_t hdr = pns->kind_num_nodes;
-        size_t seg_cnt = TSTR_HDR_GET_SEG_CNT(hdr);
-        size_t interp_cnt = TSTR_HDR_GET_INT_CNT(hdr);
+        size_t seg_cnt = MP_PARSE_TSTR_HDR_GET_SEG_CNT(hdr);
+        size_t interp_cnt = MP_PARSE_TSTR_HDR_GET_INT_CNT(hdr);
         size_t total_nodes = seg_cnt + interp_cnt;
 
         mp_parse_node_struct_t *new_pns = (mp_parse_node_struct_t *)allocator(alloc_ctx,

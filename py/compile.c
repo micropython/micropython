@@ -2836,8 +2836,8 @@ static void compile_node(compiler_t *comp, mp_parse_node_t pn) {
         #if MICROPY_PY_TSTRINGS
         if (kind == MP_PARSE_NODE_TEMPLATE_STRING) {
             uint32_t hdr = pns->kind_num_nodes;
-            size_t seg_cnt = TSTR_HDR_GET_SEG_CNT(hdr);
-            size_t interp_cnt = TSTR_HDR_GET_INT_CNT(hdr);
+            size_t seg_cnt = MP_PARSE_TSTR_HDR_GET_SEG_CNT(hdr);
+            size_t interp_cnt = MP_PARSE_TSTR_HDR_GET_INT_CNT(hdr);
             mp_parse_node_t *ch = pns->nodes;
 
             EMIT_LOAD_GLOBAL(MP_QSTR___template__);
