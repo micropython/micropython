@@ -162,207 +162,13 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
 }
 
 static mp_obj_t template_str(mp_obj_t self_in) {
-    mp_obj_template_t *self = MP_OBJ_TO_PTR(self_in);
-
-    mp_obj_tuple_t *strings = MP_OBJ_TO_PTR(self->strings);
-    mp_obj_tuple_t *interps = MP_OBJ_TO_PTR(self->interpolations);
-
+    // Same as __repr__(), following CPython behavior
+    mp_print_t print;
     vstr_t vstr;
-    vstr_init(&vstr, 16);
-    size_t total_size = 0;
-
-    for (size_t i = 0; i < strings->len; i++) {
-        mp_obj_t str_part = strings->items[i];
-        size_t str_len;
-        const char *str_data = mp_obj_str_get_data(str_part, &str_len);
-
-        total_size += str_len;
-
-        vstr_add_strn(&vstr, str_data, str_len);
-
-        if (i < interps->len) {
-            mp_obj_t interp_obj = interps->items[i];
-
-            mp_obj_interpolation_t *interp = MP_OBJ_TO_PTR(interp_obj);
-            mp_obj_t value = interp->value;
-            mp_obj_t expression = interp->expression;
-            mp_obj_t conversion = interp->conversion;
-            mp_obj_t format_spec = interp->format_spec;
-
-            size_t expr_len;
-            const char *expr_str = mp_obj_str_get_data(expression, &expr_len);
-            if (expr_len > 0 && expr_str[expr_len - 1] == '=') {
-                vstr_add_strn(&vstr, expr_str, expr_len - 1);
-                vstr_add_byte(&vstr, '=');
-            }
-
-            const char *conversion_str = NULL;
-            const char *format_spec_str = "";
-            if (conversion != mp_const_none) {
-                conversion_str = mp_obj_str_get_str(conversion);
-            }
-            format_spec_str = mp_obj_str_get_str(format_spec);
-
-            mp_obj_t evaluated_format_spec = format_spec;
-            if (*format_spec_str) {
-                const char *p = format_spec_str;
-                bool has_interpolation = false;
-                while (*p) {
-                    if (*p == '{') {
-                        if (*(p + 1) && *(p + 1) != '{') {
-                            has_interpolation = true;
-                            break;
-                        } else if (*(p + 1) && *(p + 1) == '{') {
-                            p += 2;
-                            continue;
-                        }
-                    } else if (*p == '}') {
-                        if (*(p + 1) && *(p + 1) == '}') {
-                            p += 2;
-                            continue;
-                        } else {
-                            has_interpolation = true;
-                            break;
-                        }
-                    }
-                    p++;
-                }
-
-                if (has_interpolation) {
-                    vstr_t eval_vstr;
-                    vstr_init(&eval_vstr, 16);
-                    p = format_spec_str;
-                    while (*p) {
-                        if (*p == '{' && *(p + 1) && *(p + 1) != '{') {
-                            p++;
-                            const char *var_start = p;
-                            while (*p && *p != '}' && *p != ':' && *p != '!') {
-                                p++;
-                            }
-                            if (*p == '}') {
-                                size_t var_len = p - var_start;
-                                mp_obj_t var_value = mp_load_name(qstr_from_strn(var_start, var_len));
-
-                                vstr_t var_str;
-                                vstr_init(&var_str, 16);
-                                mp_print_t var_print;
-                                vstr_init_print(&var_str, 16, &var_print);
-                                mp_obj_print_helper(&var_print, var_value, PRINT_STR);
-                                vstr_add_strn(&eval_vstr, var_str.buf, var_str.len);
-                                vstr_clear(&var_str);
-
-                                p++;
-                            }
-                        } else if (*p == '{' && *(p + 1) && *(p + 1) == '{') {
-                            vstr_add_byte(&eval_vstr, '{');
-                            p += 2;
-                        } else if (*p == '}' && *(p + 1) && *(p + 1) == '}') {
-                            vstr_add_byte(&eval_vstr, '}');
-                            p += 2;
-                        } else {
-                            vstr_add_byte(&eval_vstr, *p);
-                            p++;
-                        }
-                    }
-                    evaluated_format_spec = mp_obj_new_str_from_vstr(&eval_vstr);
-                    format_spec_str = mp_obj_str_get_str(evaluated_format_spec);
-                } else {
-                    bool has_escaped_braces = false;
-                    p = format_spec_str;
-                    while (*p) {
-                        if ((*p == '{' && *(p + 1) && *(p + 1) == '{') ||
-                            (*p == '}' && *(p + 1) && *(p + 1) == '}')) {
-                            has_escaped_braces = true;
-                            break;
-                        }
-                        p++;
-                    }
-
-                    if (has_escaped_braces) {
-                        vstr_t unesc_vstr;
-                        vstr_init(&unesc_vstr, 16);
-                        p = format_spec_str;
-                        while (*p) {
-                            if (*p == '{' && *(p + 1) && *(p + 1) == '{') {
-                                vstr_add_byte(&unesc_vstr, '{');
-                                p += 2;
-                            } else if (*p == '}' && *(p + 1) && *(p + 1) == '}') {
-                                vstr_add_byte(&unesc_vstr, '}');
-                                p += 2;
-                            } else {
-                                vstr_add_byte(&unesc_vstr, *p);
-                                p++;
-                            }
-                        }
-                        evaluated_format_spec = mp_obj_new_str_from_vstr(&unesc_vstr);
-                        format_spec_str = mp_obj_str_get_str(evaluated_format_spec);
-                    }
-                }
-            }
-
-            mp_obj_t conv_value = value;
-            if (conversion_str && *conversion_str) {
-                if (*conversion_str == 'r') {
-                    vstr_t repr_vstr;
-                    vstr_init(&repr_vstr, 16);
-                    mp_print_t repr_print;
-                    vstr_init_print(&repr_vstr, 16, &repr_print);
-                    mp_obj_print_helper(&repr_print, value, PRINT_REPR);
-                    conv_value = mp_obj_new_str_from_vstr(&repr_vstr);
-                } else if (*conversion_str == 's') {
-                    vstr_t str_vstr;
-                    vstr_init(&str_vstr, 16);
-                    mp_print_t str_print;
-                    vstr_init_print(&str_vstr, 16, &str_print);
-                    mp_obj_print_helper(&str_print, value, PRINT_STR);
-                    conv_value = mp_obj_new_str_from_vstr(&str_vstr);
-                } else if (*conversion_str == 'a') {
-                    vstr_t repr_vstr;
-                    vstr_init(&repr_vstr, 16);
-                    mp_print_t repr_print;
-                    vstr_init_print(&repr_vstr, 16, &repr_print);
-                    mp_obj_print_helper(&repr_print, value, PRINT_REPR);
-                    conv_value = mp_obj_new_str_from_vstr(&repr_vstr);
-                }
-            }
-
-            if (*format_spec_str) {
-                const char *check = format_spec_str;
-                while (*check) {
-                    if (*check == '{' || *check == '}') {
-                        mp_raise_ValueError(MP_ERROR_TEXT("invalid format spec - cannot contain braces"));
-                    }
-                    check++;
-                }
-
-                vstr_t fmt_vstr;
-                vstr_init(&fmt_vstr, 16);
-                vstr_add_str(&fmt_vstr, "{:");
-                vstr_add_str(&fmt_vstr, format_spec_str);
-                vstr_add_str(&fmt_vstr, "}");
-                mp_obj_t fmt_str = mp_obj_new_str_from_vstr(&fmt_vstr);
-                mp_obj_t fmt_args[2] = {fmt_str, conv_value};
-                conv_value = mp_obj_str_format(2, fmt_args, NULL);
-            } else {
-                if (conversion_str == NULL) {
-                    vstr_t str_vstr;
-                    vstr_init(&str_vstr, 16);
-                    mp_print_t str_print;
-                    vstr_init_print(&str_vstr, 16, &str_print);
-                    mp_obj_print_helper(&str_print, value, PRINT_STR);
-                    conv_value = mp_obj_new_str_from_vstr(&str_vstr);
-                }
-            }
-
-            size_t val_len;
-            const char *val_str = mp_obj_str_get_data(conv_value, &val_len);
-            vstr_add_strn(&vstr, val_str, val_len);
-        }
-    }
-
+    vstr_init_print(&vstr, 16, &print);
+    template_print(&print, self_in, PRINT_STR);
     return mp_obj_new_str_from_vstr(&vstr);
 }
-
 MP_DEFINE_CONST_FUN_OBJ_1(template_str_obj, template_str);
 
 typedef struct _mp_obj_template_iter_t {
@@ -436,31 +242,13 @@ static void template_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[0] = self->interpolations;
         } else if (attr == MP_QSTR_values) {
             mp_obj_tuple_t *interps = MP_OBJ_TO_PTR(self->interpolations);
+            mp_obj_tuple_t *values_tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(interps->len, NULL));
 
-            if (interps->len <= 4) {
-                mp_obj_t values[4];
-                for (size_t i = 0; i < interps->len; i++) {
-                    mp_obj_interpolation_t *interp = MP_OBJ_TO_PTR(interps->items[i]);
-                    values[i] = interp->value;
-                }
-                dest[0] = mp_obj_new_tuple(interps->len, values);
-            } else {
-                mp_obj_t *values = m_new(mp_obj_t, interps->len);
-                nlr_buf_t nlr;
-                if (nlr_push(&nlr) == 0) {
-                    for (size_t i = 0; i < interps->len; i++) {
-                        mp_obj_interpolation_t *interp = MP_OBJ_TO_PTR(interps->items[i]);
-                        values[i] = interp->value;
-                    }
-                    mp_obj_t result = mp_obj_new_tuple(interps->len, values);
-                    nlr_pop();
-                    m_del(mp_obj_t, values, interps->len);
-                    dest[0] = result;
-                } else {
-                    m_del(mp_obj_t, values, interps->len);
-                    nlr_jump(nlr.ret_val);
-                }
+            for (size_t i = 0; i < interps->len; i++) {
+                mp_obj_interpolation_t *interp = MP_OBJ_TO_PTR(interps->items[i]);
+                values_tuple->items[i] = interp->value;
             }
+            dest[0] = MP_OBJ_FROM_PTR(values_tuple);
         } else if (attr == MP_QSTR___str__) {
             dest[0] = mp_obj_new_bound_meth(MP_OBJ_FROM_PTR(&template_str_obj), self_in);
         }
@@ -474,7 +262,7 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
         case MP_BINARY_OP_ADD: {
             if (!mp_obj_is_exact_type(rhs_in, &mp_type_template)) {
                 if (mp_obj_is_str(rhs_in)) {
-                    mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate Template (not \"str\") to Template"));
+                    mp_raise_TypeError(MP_ERROR_TEXT("cannot mix t-strings with strings or f-strings"));
                 }
                 return MP_OBJ_NULL;
             }
