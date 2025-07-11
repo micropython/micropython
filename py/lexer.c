@@ -389,7 +389,7 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                         vstr_add_byte(&lex->fstring_args, c);
                         next_char(lex);
                     }
-                    if (lex->fstring_args.len > 0 && lex->fstring_args.buf[lex->fstring_args.len - 1] == '=') {
+                    if (lex->fstring_args.buf[lex->fstring_args.len - 1] == '=') {
                         // if the last character of the arg was '=', then inject "arg=" before the '{'.
                         // f'{a=}' --> 'a={}'.format(a)
                         vstr_add_strn(&lex->vstr, lex->fstring_args.buf + i, lex->fstring_args.len - i);
