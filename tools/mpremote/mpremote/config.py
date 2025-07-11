@@ -14,22 +14,20 @@ def cwd_as(path):
 
 def load_script(prog: str) -> dict:
     """Executes the ~/.config/mpremote/config.py configuration script to derive a configuration."""
+    import platformdirs
+
     config = {
         'commands': {},
     }
-    # Get config file name.
-    path = os.getenv("XDG_CONFIG_HOME")
-    if path is None:
-        path = os.getenv("HOME")
-        if path is None:
-            return config
-        path = os.path.join(path, ".config")
-    path = os.path.join(path, prog)
+    path = platformdirs.user_config_dir(appname=prog, appauthor=False)
     config_file = os.path.join(path, "config.py")
 
-    # Check if config file exists.
     if not os.path.exists(config_file):
         return config
+
+    # pass in the config path so that the config file can use it
+    config["config_path"] = path
+    config["__file__"] = config_file
 
     # Exec the config file in its directory.
     with open(config_file) as f:
