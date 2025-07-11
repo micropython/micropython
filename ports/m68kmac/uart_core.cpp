@@ -62,8 +62,6 @@ void debug_print_fn(void *data, const char *str, size_t len) {
 mp_print_t debug_print = { NULL, debug_print_fn };
 
 // Send string of given length
-extern "C"
-mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len);
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     debug_uart_tx_strn(str, len);
 
