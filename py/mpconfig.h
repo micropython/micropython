@@ -1308,33 +1308,6 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_TSTRINGS (MICROPY_PY_FSTRINGS && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Maximum length of a single t-string expression
-#ifndef MICROPY_PY_TSTRING_MAX_EXPR_LEN
-#define MICROPY_PY_TSTRING_MAX_EXPR_LEN (10000)
-#endif
-
-// Maximum total size of a t-string template (all parts combined)
-// Ports can override this to reduce memory usage for embedded systems
-#ifndef MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE
-#define MICROPY_PY_TSTRING_MAX_TEMPLATE_SIZE (1048576)  // 1MB default
-#endif
-
-// Maximum number of interpolations in a single t-string
-// Ports can override this to reduce memory usage for embedded systems
-#ifndef MICROPY_PY_TSTRING_MAX_INTERPOLATIONS
-#define MICROPY_PY_TSTRING_MAX_INTERPOLATIONS (4095)  // 12-bit limit
-#endif
-
-// Legacy name for compatibility
-#ifndef MICROPY_PY_TSTRING_MAX_PARTS
-#define MICROPY_PY_TSTRING_MAX_PARTS MICROPY_PY_TSTRING_MAX_INTERPOLATIONS
-#endif
-
-// Maximum memory allocation for template string parse tree (for memory-constrained ports)
-#ifndef MICROPY_PY_TSTRING_MAX_BYTES
-#define MICROPY_PY_TSTRING_MAX_BYTES (65536)  // 64KB default
-#endif
-
 // Support for assignment expressions with := (see PEP 572, Python 3.8+)
 #ifndef MICROPY_PY_ASSIGN_EXPR
 #define MICROPY_PY_ASSIGN_EXPR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
