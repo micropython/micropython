@@ -19,3 +19,5 @@ try:
     s.recv(1)
 except OSError as er:
     print("EAGAIN:", er.errno == errno.EAGAIN)
+
+s.close()
