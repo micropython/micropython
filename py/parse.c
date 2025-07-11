@@ -1083,12 +1083,12 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         size_t seg_cnt = strings.len;
         size_t interp_cnt = interps.len;
 
-        if (seg_cnt > TSTR_MAX_SEG) {
+        if (seg_cnt > MP_PARSE_TSTR_MAX_SEG) {
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many template segments"));
         }
 
         // interp_cnt is stored in 12 bits, so max is 4095 interpolations.
-        if (interp_cnt > TSTR_MAX_INT) {
+        if (interp_cnt > MP_PARSE_TSTR_MAX_INT) {
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many interpolations"));
         }
 
@@ -1106,7 +1106,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                 sizeof(*templ) + sizeof(mp_parse_node_t) * total);
 
         templ->source_line = lex->tok_line;
-        templ->kind_num_nodes = TSTR_HDR_MAKE(seg_cnt, interp_cnt);
+        templ->kind_num_nodes = MP_PARSE_TSTR_HDR_MAKE(seg_cnt, interp_cnt);
 
         memcpy(&templ->nodes[0],           strings.items,
             seg_cnt * sizeof(mp_parse_node_t));
