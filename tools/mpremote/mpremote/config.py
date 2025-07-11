@@ -40,6 +40,17 @@ def load_script(prog: str) -> dict:
     return config
 
 
+def load_dotenv(prog: str) -> dict:
+    """Searches up the directory tree for a file called '.mpremote' and parses it with .env syntax."""
+    import dotenv
+
+    path = dotenv.find_dotenv(f'.{prog}', usecwd=True)
+    if path is None:
+        return {}
+
+    return dotenv.dotenv_values(path)
+
+
 def load_environ(prog: str) -> dict:
     """Filters environment variables for and strips off their 'MPREMOTE_' prefix,
     and processes 'MPREMOTE_CMD_' prefixed vars into command-specific config entries.
@@ -64,4 +75,5 @@ def load_environ(prog: str) -> dict:
 class Config:
     def __init__(self, prog='mpremote'):
         self.__dict__.update(load_script(prog))
+        self.__dict__.update(load_dotenv(prog))
         self.__dict__.update(load_environ(prog))
