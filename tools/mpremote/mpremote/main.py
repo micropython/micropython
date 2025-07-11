@@ -22,6 +22,7 @@ import os, sys, time
 from collections.abc import Mapping
 from textwrap import dedent
 
+from .config import Config
 from .commands import (
     CommandError,
     do_connect,
@@ -434,33 +435,7 @@ for port_num in range(4):
 
 
 def load_user_config():
-    # Create empty config object.
-    config = __build_class__(lambda: None, "Config")()
-    config.commands = {}
-
-    # Get config file name.
-    path = os.getenv("XDG_CONFIG_HOME")
-    if path is None:
-        path = os.getenv("HOME")
-        if path is None:
-            return config
-        path = os.path.join(path, ".config")
-    path = os.path.join(path, _PROG)
-    config_file = os.path.join(path, "config.py")
-
-    # Check if config file exists.
-    if not os.path.exists(config_file):
-        return config
-
-    # Exec the config file in its directory.
-    with open(config_file) as f:
-        config_data = f.read()
-    prev_cwd = os.getcwd()
-    os.chdir(path)
-    exec(config_data, config.__dict__)
-    os.chdir(prev_cwd)
-
-    return config
+    return Config(_PROG)
 
 
 def prepare_command_expansions(config):
