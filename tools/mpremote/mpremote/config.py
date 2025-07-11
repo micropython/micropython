@@ -40,6 +40,28 @@ def load_script(prog: str) -> dict:
     return config
 
 
+def load_environ(prog: str) -> dict:
+    """Filters environment variables for and strips off their 'MPREMOTE_' prefix,
+    and processes 'MPREMOTE_CMD_' prefixed vars into command-specific config entries.
+    """
+    env_prefix = prog.upper() + '_'
+    cmd_prefix = env_prefix + 'CMD_'
+
+    config = {}
+    commands = {}
+
+    for k in os.environ.keys():
+        if k.startswith(cmd_prefix):
+            commands[k.removeprefix(cmd_prefix).lower()] = os.environ[k]
+        elif k.startswith(env_prefix):
+            config[k.removeprefix(env_prefix).lower()] = os.environ[k]
+
+    if commands:
+        config['commands'] = commands
+    return config
+
+
 class Config:
     def __init__(self, prog='mpremote'):
         self.__dict__.update(load_script(prog))
+        self.__dict__.update(load_environ(prog))
