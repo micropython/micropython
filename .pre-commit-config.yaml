@@ -16,6 +16,7 @@ repos:
     rev: v0.11.6
     hooks:
       - id: ruff
+        args: [ --fix ]
       - id: ruff-format
   - repo: https://github.com/codespell-project/codespell
     # Version should be kept in sync with .github/workflows/codespell.yml
