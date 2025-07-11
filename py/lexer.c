@@ -561,17 +561,9 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         lex->chr0_saved = lex->chr0;
         lex->chr1_saved = lex->chr1;
         lex->chr2_saved = lex->chr2;
-        // Ensure we have at least 3 characters before accessing
-        if (lex->fstring_args.len >= 3) {
-            lex->chr0 = lex->fstring_args.buf[0];
-            lex->chr1 = lex->fstring_args.buf[1];
-            lex->chr2 = lex->fstring_args.buf[2];
-        } else {
-            // This should not happen with well-formed f/t-strings
-            lex->chr0 = lex->fstring_args.len > 0 ? (unichar)lex->fstring_args.buf[0] : MP_LEXER_EOF;
-            lex->chr1 = lex->fstring_args.len > 1 ? (unichar)lex->fstring_args.buf[1] : MP_LEXER_EOF;
-            lex->chr2 = lex->fstring_args.len > 2 ? (unichar)lex->fstring_args.buf[2] : MP_LEXER_EOF;
-        }
+        lex->chr0 = lex->fstring_args.buf[0];
+        lex->chr1 = lex->fstring_args.buf[1];
+        lex->chr2 = lex->fstring_args.buf[2];
         // we've already extracted 3 chars, but setting this non-zero also
         // means we'll start consuming the fstring data
         lex->fstring_args_idx = 3;
