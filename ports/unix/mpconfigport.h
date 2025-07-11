@@ -131,10 +131,8 @@ typedef long mp_off_t;
 // with EINTR, updates remaining timeout value.
 #define MICROPY_SELECT_REMAINING_TIME (1)
 
-#if defined(__aarch64__)
-#define MICROPY_STACK_CHECK_MARGIN (0)
-#elif defined(__mips__)
-#define MICROPY_STACK_CHECK_MARGIN (512)
+#if defined(__mips__)
+#define MICROPY_STACK_CHECK_MARGIN (1024)
 #endif
 
 // Disable stackless by default.
