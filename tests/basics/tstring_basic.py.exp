@@ -112,7 +112,9 @@ Basic tests completed!
 9. Nested templates: Template(strings=('Outer template:\n', '\nEnd'), interpolations=(Interpolation(Template(strings=('inner ', ''), interpolations=(Interpolation(42, '42', None, ''),)), 'inner', None, ''),))
    Inner value: Template(strings=('inner ', ''), interpolations=(Interpolation(42, '42', None, ''),))
 
-10. Formatted values: Template(strings=('Math constants:\nPi: ', '\nE: ', '\nSqrt(2): ', ''), interpolations=(Interpolation(3.141592653589793, 'math.pi', None, '.10f'), Interpolation(2.718281828459045, 'math.e', None, '.10e'), Interpolation(1.414213562373095, 'math.sqrt(2)', None, '.5f')))
+10. Formatted values: Template(strings=('Math constants:\nPi: ', '\nE: ', '\nSqrt(2): ', ''), interpolations=(Interpolation(314, '314', None, '.2f'), Interpolation(271, '271', None, '.1e'), Interpolation(141, '141', None, '.0f')))
+    Interpolation count: 3
+    Format specs: ['.2f', '.1e', '.0f']
 
 11. Debug complex: Template(strings=('Debug info:\nx + y=', ' x * y * z=', ' x < y < z=', ''), interpolations=(Interpolation(3, 'x + y', 'r', ''), Interpolation(6, 'x * y * z', 'r', ''), Interpolation(True, 'x < y < z', 'r', '')))
     Expressions: ['x + y', 'x * y * z', 'x < y < z']
