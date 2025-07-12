@@ -1,0 +1,43 @@
+*** PDM_PCM tests - RX ***
+1. blocking read implementation 
+*** Test for data high ***
+data received for mode = 0, bits = PDM_PCM.BITS_16, rate = 8000 : True
+data received for mode = 1, bits = PDM_PCM.BITS_16, rate = 8000 : True
+data received for mode = 2, bits = PDM_PCM.BITS_16, rate = 8000 : True
+data received for mode = 0, bits = PDM_PCM.BITS_16, rate = 16000 : True
+data received for mode = 1, bits = PDM_PCM.BITS_16, rate = 16000 : True
+data received for mode = 2, bits = PDM_PCM.BITS_16, rate = 16000 : True
+data received for mode = 0, bits = PDM_PCM.BITS_16, rate = 32000 : True
+data received for mode = 1, bits = PDM_PCM.BITS_16, rate = 32000 : True
+data received for mode = 2, bits = PDM_PCM.BITS_16, rate = 32000 : True
+data received for mode = 0, bits = PDM_PCM.BITS_16, rate = 48000 : True
+data received for mode = 1, bits = PDM_PCM.BITS_16, rate = 48000 : True
+data received for mode = 2, bits = PDM_PCM.BITS_16, rate = 48000 : True
+data received for mode = 0, bits = PDM_PCM.BITS_16, rate = 22050 : True
+data received for mode = 1, bits = PDM_PCM.BITS_16, rate = 22050 : True
+data received for mode = 2, bits = PDM_PCM.BITS_16, rate = 22050 : True
+data received for mode = 0, bits = PDM_PCM.BITS_16, rate = 44100 : True
+data received for mode = 1, bits = PDM_PCM.BITS_16, rate = 44100 : True
+data received for mode = 2, bits = PDM_PCM.BITS_16, rate = 44100 : True
+*** Test for data low ***
+data received for mode = 0, bits = PDM_PCM.BITS_16, rate = 8000 : True
+data received for mode = 1, bits = PDM_PCM.BITS_16, rate = 8000 : True
+data received for mode = 2, bits = PDM_PCM.BITS_16, rate = 8000 : True
+data received for mode = 0, bits = PDM_PCM.BITS_16, rate = 16000 : True
+data received for mode = 1, bits = PDM_PCM.BITS_16, rate = 16000 : True
+data received for mode = 2, bits = PDM_PCM.BITS_16, rate = 16000 : True
+data received for mode = 0, bits = PDM_PCM.BITS_16, rate = 32000 : True
+data received for mode = 1, bits = PDM_PCM.BITS_16, rate = 32000 : True
+data received for mode = 2, bits = PDM_PCM.BITS_16, rate = 32000 : True
+data received for mode = 0, bits = PDM_PCM.BITS_16, rate = 48000 : True
+data received for mode = 1, bits = PDM_PCM.BITS_16, rate = 48000 : True
+data received for mode = 2, bits = PDM_PCM.BITS_16, rate = 48000 : True
+data received for mode = 0, bits = PDM_PCM.BITS_16, rate = 22050 : True
+data received for mode = 1, bits = PDM_PCM.BITS_16, rate = 22050 : True
+data received for mode = 2, bits = PDM_PCM.BITS_16, rate = 22050 : True
+data received for mode = 0, bits = PDM_PCM.BITS_16, rate = 44100 : True
+data received for mode = 1, bits = PDM_PCM.BITS_16, rate = 44100 : True
+data received for mode = 2, bits = PDM_PCM.BITS_16, rate = 44100 : True
+
+2. irq non-blocking read implementation 
+rx blocking done
