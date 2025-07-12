@@ -52,6 +52,19 @@ int mp_mod_network_prefer_dns_use_ip_version = 4;
 
 // Implementations of network methods that can be used by any interface.
 
+// This follows sys_untimeout but removes all timeouts with the given argument.
+void sys_untimeout_all_with_arg(void *arg) {
+    for (struct sys_timeo **t = sys_timeouts_get_next_timeout(); *t != NULL;) {
+        if ((*t)->arg == arg) {
+            struct sys_timeo *next = (*t)->next;
+            memp_free(MEMP_SYS_TIMEOUT, *t);
+            *t = next;
+        } else {
+            t = &(*t)->next;
+        }
+    }
+}
+
 // This function provides the implementation of nic.ifconfig, is deprecated and will be removed.
 // Use network.ipconfig and nic.ipconfig instead.
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args) {
