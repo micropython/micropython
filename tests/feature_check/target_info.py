@@ -20,4 +20,12 @@ arch = [
     "xtensawin",
     "rv32imc",
 ][sys_mpy >> 10]
-print(platform, arch)
+
+try:
+    import _thread
+
+    have_thread = "thread"
+except ImportError:
+    have_thread = None
+
+print(platform, arch, have_thread)
