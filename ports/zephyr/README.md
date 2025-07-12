@@ -21,6 +21,7 @@ Features supported at this time:
 * `machine.SPI` class for SPI control.
 * `machine.PWM` class for PWM control
 * `socket` module for networking (IPv4/IPv6).
+* `zsensor` module for reading sensors.
 * "Frozen modules" support to allow to bundle Python modules together
   with firmware. Including complete applications, including with
   run-on-boot capability.
@@ -153,6 +154,20 @@ Example of using SPI to write a buffer to the MOSI pin:
     spi.init(baudrate=500000, polarity=1, phase=1, bits=8, firstbit=SPI.MSB)
     spi.write(b'abcd')
 
+Zsensor usage
+-------------
+    # Example for XIAO BLE NRF52840 SENSE
+    from zsensor import *
+    sensor = Sensor('lsm6ds3tr_c')  # name from Devicetree
+    # Set full-scale to 2g (19.613300 m/sec^2)
+    # units are micro-m/s^2
+    sensor.attr_set(ACCEL_XYZ, ATTR_FULL_SCALE, 19, 613300)
+    # Set sampling frequency to 104 Hz
+    sensor.attr_set(ACCEL_XYZ, ATTR_SAMPLING_FREQUENCY, 104)
+    sensor.measure()
+    sensor.get_float(ACCEL_X) # -0.508 (m/s^2)
+    sensor.get_float(ACCEL_Y) # -3.62 (m/s^2)
+    sensor.get_float(ACCEL_Z) # 9.504889 (m/s^2)
 
 Minimal build
 -------------
