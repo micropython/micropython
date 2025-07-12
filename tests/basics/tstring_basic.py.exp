@@ -2,27 +2,27 @@
 Template
 Strings: ('Hello ', '')
 Value: World
-str(): Hello World
+str(): Template(strings=('Hello ', ''), interpolations=(Interpolation('World', 'name', None, ''),))
 Raw: 'Path: C:\test\'
 tr: 'Path: C:\test\'
 
 === Parser tests ===
 Empty expr: SyntaxError - empty expression not allowed
-Whitespace: 42
-Complex: 1
-None: None
-True: True
-False: False
-Ellipsis: Ellipsis
-Deep nest: 42
+Whitespace: Template(strings=('', ''), interpolations=(Interpolation(42, ' 42', None, ''),))
+Complex: Template(strings=('', ''), interpolations=(Interpolation(1, "data['a']['b'][0]", None, ''),))
+None: Template(strings=('', ''), interpolations=(Interpolation(None, 'None', None, ''),))
+True: Template(strings=('', ''), interpolations=(Interpolation(True, 'True', None, ''),))
+False: Template(strings=('', ''), interpolations=(Interpolation(False, 'False', None, ''),))
+Ellipsis: Template(strings=('', ''), interpolations=(Interpolation(Ellipsis, '...', None, ''),))
+Deep nest: Template(strings=('', ''), interpolations=(Interpolation(42, 'obj.a.b[0].c()', None, ''),))
 
 === Conversions and formatting ===
-repr: {'key': 'value'}
-str: {'key': 'value'}
-ascii: {'key': 'value'}
-Width: '        42'
-Precision: 3.14
-Debug: x=42
+repr: Template(strings=('', ''), interpolations=(Interpolation({'key': 'value'}, 'val', 'r', ''),))
+str: Template(strings=('', ''), interpolations=(Interpolation({'key': 'value'}, 'val', 's', ''),))
+ascii: Template(strings=('', ''), interpolations=(Interpolation({'key': 'value'}, 'val', 'a', ''),))
+Width: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, '10d'),))'
+Precision: Template(strings=('', ''), interpolations=(Interpolation(3.14159, '3.14159', None, '.2f'),))
+Debug: Template(strings=('x=', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))
 
 === Constructor tests ===
 Empty: ('',)
@@ -31,7 +31,7 @@ Multi: ('abc',)
 Mixed: strings=('start', 'middle', 'end'), values=(1, 2)
 
 === Operations ===
-Concat: 'Hello World'
+Concat: 'Template(strings=('Hello World',), interpolations=())'
 Iterator: ['str', 'Interpolation', 'str', 'Interpolation', 'str']
 strings attr: ('test', '')
 interpolations attr: 1
@@ -45,13 +45,13 @@ Mixed concat: SyntaxError
 bt prefix: SyntaxError
 
 === Escaped braces evaluation ===
-Escaped eval: '{42}42{{42}}'
-Braces in strings: '{{hello}}1 {2} 3{{world}}'
+Escaped eval: 'Template(strings=('{', '}', '{{', '}}'), interpolations=(Interpolation(42, 'x', None, ''), Interpolation(42, 'x', None, ''), Interpolation(42, 'x', None, '')))'
+Braces in strings: 'Template(strings=('{{hello}}', ' {', '} ', '{{world}}'), interpolations=(Interpolation(1, 'a', None, ''), Interpolation(2, 'b', None, ''), Interpolation(3, 'c', None, '')))'
 
 === Memory stress test ===
-Memory test [10]: 21 chars
-Memory test [20]: 51 chars
-Memory test [30]: 81 chars
+Memory test [10]: 450 chars
+Memory test [20]: 880 chars
+Memory test [30]: 1310 chars
 Large values: 20 values
 
 === Nested quotes and braces tests ===
