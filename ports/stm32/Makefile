@@ -266,6 +266,7 @@ SRC_C += \
 	bufhelper.c \
 	dma.c \
 	i2c.c \
+	i2cslave.c \
 	pyb_i2c.c \
 	spi.c \
 	pyb_spi.c \
