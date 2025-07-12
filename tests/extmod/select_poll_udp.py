@@ -29,3 +29,5 @@ print(poll.poll(0)[0][1] == select.POLLOUT)
 if hasattr(select, "select"):
     r, w, e = select.select([s], [], [], 0)
     assert not r and not w and not e
+
+s.close()
