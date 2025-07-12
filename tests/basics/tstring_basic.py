@@ -72,7 +72,7 @@ pi = 3.14159
 t_debug3 = t"{pi=:.2f}"
 assert t_debug3.strings == ("pi=", "")
 assert t_debug3.interpolations[0].expression == "pi"
-assert t_debug3.interpolations[0].conversion == "s"
+assert t_debug3.interpolations[0].conversion is None
 assert t_debug3.interpolations[0].format_spec == ".2f"
 assert t_debug3.interpolations[0].value == 3.14159
 
