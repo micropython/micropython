@@ -668,39 +668,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         const byte *str = (const byte *)lex->vstr.buf;
         size_t len = lex->vstr.len;
 
-        // Pre-scan to count interpolations and check limits before allocating memory
-        size_t est_interp_cnt = 0;
-        size_t est_seg_cnt = 1; // At least one string segment
-        for (size_t i = 0; i < len; i++) {
-            if (i < len - 1 && str[i] == '{' && str[i + 1] == '{') {
-                // Escaped brace, skip
-                i++;
-            } else if (str[i] == '{') {
-                // Found interpolation
-                est_interp_cnt++;
-                est_seg_cnt++;
-                // Skip to closing brace (simplified scan)
-                int depth = 1;
-                i++;
-                while (i < len && depth > 0) {
-                    if (str[i] == '{') {
-                        depth++;
-                    } else if (str[i] == '}') {
-                        depth--;
-                    }
-                    i++;
-                }
-                i--; // Back up one since loop will increment
-            }
-        }
-
-        // Estimate memory usage and check against limit
-        size_t est_total = est_seg_cnt + est_interp_cnt;
-        size_t est_bytes = sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * est_total;
-        // Add overhead for dynamic arrays during parsing
-        est_bytes += est_seg_cnt * sizeof(mp_parse_node_t) * 2; // Assume some growth
-        est_bytes += est_interp_cnt * sizeof(mp_parse_node_t) * 2;
-
         // Process TSTRING content
 
         // Dynamic arrays for collecting parse nodes
