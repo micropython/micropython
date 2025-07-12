@@ -120,16 +120,6 @@ LDFLAGS += $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 # Flags to link with pthread library
 LIBPTHREAD = -lpthread
 
-ifeq ($(MICROPY_FORCE_32BIT),1)
-# Note: you may need to install i386 versions of dependency packages,
-# starting with linux-libc-dev:i386
-ifeq ($(MICROPY_PY_FFI),1)
-ifeq ($(UNAME_S),Linux)
-CFLAGS += -I/usr/include/i686-linux-gnu
-endif
-endif
-endif
-
 ifeq ($(MICROPY_USE_READLINE),1)
 INC += -I$(TOP)/shared/readline
 CFLAGS += -DMICROPY_USE_READLINE=1
