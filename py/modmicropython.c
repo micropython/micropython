@@ -98,7 +98,7 @@ static mp_obj_t mp_micropython_qstr_info(size_t n_args, const mp_obj_t *args) {
     size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
     qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
     mp_printf(&mp_plat_print, "qstr pool: n_pool=%u, n_qstr=%u, n_str_data_bytes=%u, n_total_bytes=%u\n",
-        n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
+        (uint)n_pool, (uint)n_qstr, (uint)n_str_data_bytes, (uint)n_total_bytes);
     if (n_args == 1) {
         // arg given means dump qstr data
         qstr_dump_data();
