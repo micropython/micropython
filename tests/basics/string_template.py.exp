@@ -58,7 +58,7 @@ Template + Template: type=Template
 Concatenated strings: ('Hello ', '')
 Concatenated values: (42,)
 Chained concatenation strings: ('Hello ', ' world')
-Template + str correctly raises: can only concatenate Template (not "str") to Template
+Template + str correctly raises: cannot mix t-strings with strings or f-strings
 str + Template correctly raises: unsupported types for __add__: 'str', 'Template'
 
 === Import and type tests ===
