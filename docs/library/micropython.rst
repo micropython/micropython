@@ -80,6 +80,9 @@ Functions
    used.  The absolute value of this is not particularly useful, rather it
    should be used to compute differences in stack usage at different points.
 
+   Note: When building with sanitizers (ASan/UBSan), an 8 KiB stack margin is
+   automatically reserved unless the port overrides MICROPY_STACK_CHECK_MARGIN.
+
 .. function:: heap_lock()
 .. function:: heap_unlock()
 .. function:: heap_locked()
