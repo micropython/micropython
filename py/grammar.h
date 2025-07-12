@@ -280,7 +280,11 @@ DEF_RULE_NC(power_dbl_star, and_ident(2), tok(OP_DBL_STAR), rule(factor))
 // testlist_comp: (test|star_expr) ( comp_for | (',' (test|star_expr))* [','] )
 // trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME
 
+#if MICROPY_PY_TSTRINGS
+DEF_RULE_NC(atom, or(13), tok(NAME), tok(INTEGER), tok(FLOAT_OR_IMAG), tok(STRING), tok(TSTRING), tok(BYTES), tok(ELLIPSIS), tok(KW_NONE), tok(KW_TRUE), tok(KW_FALSE), rule(atom_paren), rule(atom_bracket), rule(atom_brace))
+#else
 DEF_RULE_NC(atom, or(12), tok(NAME), tok(INTEGER), tok(FLOAT_OR_IMAG), tok(STRING), tok(BYTES), tok(ELLIPSIS), tok(KW_NONE), tok(KW_TRUE), tok(KW_FALSE), rule(atom_paren), rule(atom_bracket), rule(atom_brace))
+#endif
 DEF_RULE(atom_paren, c(atom_paren), and(3), tok(DEL_PAREN_OPEN), opt_rule(atom_2b), tok(DEL_PAREN_CLOSE))
 DEF_RULE_NC(atom_2b, or(2), rule(yield_expr), rule(testlist_comp))
 DEF_RULE(atom_bracket, c(atom_bracket), and(3), tok(DEL_BRACKET_OPEN), opt_rule(testlist_comp), tok(DEL_BRACKET_CLOSE))

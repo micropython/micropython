@@ -35,9 +35,26 @@
 #include "py/parse.h"
 #include "py/parsenum.h"
 #include "py/runtime.h"
+#include "py/misc.h"
 #include "py/objint.h"
 #include "py/objstr.h"
+#include "py/objlist.h"
+#include "py/objtuple.h"
 #include "py/builtin.h"
+#include "py/compile.h"
+
+#if MICROPY_PY_TSTRINGS
+#include "py/tstring_expr_parser.h"
+
+// Forward declaration
+struct _parser_t;
+static void *parser_alloc(struct _parser_t *parser, size_t num_bytes);
+
+// Wrapper function for parser_alloc to match the allocator interface
+static void *tstring_parser_alloc_wrapper(void *ctx, size_t num_bytes) {
+    return parser_alloc((struct _parser_t *)ctx, num_bytes);
+}
+#endif
 
 #if MICROPY_ENABLE_COMPILER
 
@@ -243,6 +260,7 @@ typedef struct _parser_t {
 } parser_t;
 
 static void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args);
+static void push_result_token(parser_t *parser, uint8_t rule_id);
 
 static const uint16_t *get_rule_arg(uint8_t r_id) {
     size_t off = rule_arg_offset_table[r_id];
@@ -626,6 +644,440 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         // make a node holding a pointer to the bytes object
         mp_obj_t o = mp_obj_new_bytes((const byte *)lex->vstr.buf, lex->vstr.len);
         pn = make_node_const_object(parser, lex->tok_line, o);
+    #if MICROPY_PY_TSTRINGS
+    } else if (lex->tok_kind == MP_TOKEN_TSTRING || lex->tok_kind == MP_TOKEN_TSTRING_RAW) {
+        // Generate AST for template string construction
+        // This will create code that calls __template__(strings, interpolations)
+
+        const byte *str = (const byte *)lex->vstr.buf;
+        size_t len = lex->vstr.len;
+
+        // Process TSTRING content
+
+        // Dynamic arrays for collecting parse nodes
+        typedef struct {
+            size_t alloc;
+            size_t len;
+            mp_parse_node_t *items;
+        } pn_array_t;
+
+        pn_array_t strings = {0};
+        pn_array_t interps = {0};
+
+        // Helper macros
+        #define GROW_ARRAY(arr) do { \
+        if ((arr).len >= (arr).alloc) { \
+            size_t new_alloc = (arr).alloc ? (arr).alloc * 2 : 8; \
+            (arr).items = m_renew(mp_parse_node_t, (arr).items, (arr).alloc, new_alloc); \
+            (arr).alloc = new_alloc; \
+        } \
+} \
+    while (0)
+
+        #define ADD_NODE(arr, node) do { \
+        GROW_ARRAY(arr); \
+        (arr).items[(arr).len++] = node; \
+} while (0)
+
+        // Use a vstr to accumulate the current string part
+        vstr_t vstr;
+        vstr_init(&vstr, 16);
+
+        size_t i = 0;
+        while (i < len) {
+            if (i < len - 1 && str[i] == '{' && str[i + 1] == '{') {
+                // Handle escaped braces {{
+                vstr_add_byte(&vstr, '{');
+                i += 2;
+            } else if (i < len - 1 && str[i] == '}' && str[i + 1] == '}') {
+                // Handle escaped braces }}
+                vstr_add_byte(&vstr, '}');
+                i += 2;
+            } else if (str[i] == '{') {
+                // Find the end of the interpolation first to check for debug format
+                i++;
+                size_t expr_start = i;
+                int brace_depth = 1;
+                size_t conversion_pos = 0;
+                size_t format_spec_pos = 0;
+                bool is_debug_format = false;
+
+                // Quick scan to check for debug format
+                size_t j = i;
+                int bd = 0, pd = 0;  // bracket and paren depth
+                char in_str = 0;     // Track string delimiter
+                bool esc = false;    // Track escape sequences
+
+                while (j < len) {
+                    if (esc) {
+                        esc = false;
+                        j++;
+                        continue;
+                    }
+
+                    if (in_str) {
+                        if (str[j] == '\\') {
+                            esc = true;
+                        } else if (str[j] == in_str) {
+                            in_str = 0;
+                        }
+                    } else {
+                        if (str[j] == '"' || str[j] == '\'') {
+                            in_str = str[j];
+                        } else if (str[j] == '}') {
+                            break;
+                        } else if (str[j] == '[') {
+                            bd++;
+                        } else if (str[j] == ']') {
+                            bd--;
+                        } else if (str[j] == '(') {
+                            pd++;
+                        } else if (str[j] == ')') {
+                            pd--;
+                        } else if (bd == 0 && pd == 0 && (str[j] == '!' || str[j] == ':')) {
+                            break;
+                        }
+                    }
+                    j++;
+                }
+                if (j > i && str[j - 1] == '=' && j < len &&
+                    (str[j] == '}' || str[j] == '!' || str[j] == ':')) {
+                    is_debug_format = true;
+
+                    // For debug format, add "expr=" to the current string
+                    for (size_t k = expr_start; k < j - 1; k++) {
+                        vstr_add_byte(&vstr, str[k]);
+                    }
+                    vstr_add_byte(&vstr, '=');
+                }
+
+                // Now save the string part as a const object to handle high bytes correctly
+                mp_obj_t str_obj = mp_obj_new_str_copy(&mp_type_str, (const byte *)vstr.buf, vstr.len);
+                ADD_NODE(strings, make_node_const_object(parser, lex->tok_line, str_obj));
+                vstr_reset(&vstr);
+
+                int bracket_depth = 0;  // Track [] nesting
+                int paren_depth = 0;    // Track () nesting
+                char in_string = 0;     // Track string delimiter (0, '"', or '\'')
+                bool escaped = false;   // Track escape sequences
+
+                while (i < len && brace_depth > 0) {
+                    if (escaped) {
+                        // Skip escaped character
+                        escaped = false;
+                        i++;
+                        continue;
+                    }
+
+                    if (in_string) {
+                        // Inside a string literal
+                        if (str[i] == '\\') {
+                            escaped = true;
+                        } else if (str[i] == in_string) {
+                            // End of string
+                            in_string = 0;
+                        }
+                    } else {
+                        // Not inside a string
+                        if (str[i] == '"' || str[i] == '\'') {
+                            // Start of string
+                            in_string = str[i];
+                        } else if (str[i] == '{') {
+                            brace_depth++;
+                        } else if (str[i] == '}') {
+                            brace_depth--;
+                            if (brace_depth == 0) {
+                                break;
+                            }
+                        } else if (str[i] == '[') {
+                            bracket_depth++;
+                        } else if (str[i] == ']') {
+                            bracket_depth--;
+                        } else if (str[i] == '(') {
+                            paren_depth++;
+                        } else if (str[i] == ')') {
+                            paren_depth--;
+                        } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == '!' && conversion_pos == 0) {
+                            conversion_pos = i;
+                        } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == ':' && format_spec_pos == 0) {
+                            format_spec_pos = i;
+                        }
+                    }
+                    i++;
+                }
+
+                if (brace_depth == 0) {
+                    // Successfully found closing brace
+                    size_t expr_end = i;
+                    size_t expr_len = expr_end - expr_start;
+
+                    if (is_debug_format) {
+                        // Find the position of '=' to determine expression length
+                        size_t eq_pos = expr_start;
+                        while (eq_pos < expr_end && str[eq_pos] != '=') {
+                            eq_pos++;
+                        }
+                        // Trim trailing whitespace before '='
+                        while (eq_pos > expr_start &&
+                               (str[eq_pos - 1] == ' ' || str[eq_pos - 1] == '\t' ||
+                                str[eq_pos - 1] == '\n' || str[eq_pos - 1] == '\r')) {
+                            eq_pos--;
+                        }
+                        expr_len = eq_pos - expr_start;
+                    } else if (conversion_pos) {
+                        expr_len = conversion_pos - expr_start;
+                    } else if (format_spec_pos) {
+                        expr_len = format_spec_pos - expr_start;
+                    } else {
+                        // Trim trailing whitespace for normal expressions
+                        while (expr_len > 0 &&
+                               (str[expr_start + expr_len - 1] == ' ' ||
+                                str[expr_start + expr_len - 1] == '\t' ||
+                                str[expr_start + expr_len - 1] == '\n' ||
+                                str[expr_start + expr_len - 1] == '\r')) {
+                            expr_len--;
+                        }
+                    }
+
+                    // Parse the expression to generate proper AST nodes
+                    mp_parse_node_t expr_node;
+                    if (expr_len > 0) {
+                        #if MICROPY_PY_TSTRINGS
+                        // Use the dedicated expression parser
+                        expr_node = parse_tstring_expression(parser, tstring_parser_alloc_wrapper, (const char *)&str[expr_start], expr_len);
+                        #else
+                        // Fallback: store as string
+                        qstr expr_q = qstr_from_strn((const char *)&str[expr_start], expr_len);
+                        expr_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, expr_q);
+                        #endif
+                    } else {
+                        // Empty expression is not allowed in template strings
+                        mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("empty expression not allowed"));
+                    }
+
+                    // Create expression text string
+                    qstr expr_text_q = qstr_from_strn((const char *)&str[expr_start], expr_len);
+                    mp_parse_node_t expr_text_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, expr_text_q);
+
+                    // Extract conversion
+                    mp_parse_node_t conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_NONE);
+
+                    if (conversion_pos && conversion_pos + 1 < expr_end) {
+                        qstr conv_q = qstr_from_strn((const char *)&str[conversion_pos + 1], 1);
+                        conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, conv_q);
+                    } else if (is_debug_format) {
+                        if (format_spec_pos) {
+                            conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_NONE);
+                        } else {
+                            qstr conv_q = MP_QSTR_r;
+                            conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, conv_q);
+                        }
+                    }
+
+                    // Extract format spec
+                    mp_parse_node_t format_spec_node;
+                    if (format_spec_pos && format_spec_pos + 1 < expr_end) {
+                        size_t fmt_end = expr_end;
+                        if (conversion_pos && conversion_pos > format_spec_pos) {
+                            fmt_end = conversion_pos;
+                        }
+                        if (fmt_end > format_spec_pos + 1) {
+                            const byte *fmt_start = &str[format_spec_pos + 1];
+                            size_t fmt_len = fmt_end - format_spec_pos - 1;
+
+                            qstr fmt_q = qstr_from_strn((const char *)fmt_start, fmt_len);
+                            format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, fmt_q);
+                        } else {
+                            format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, MP_QSTR_);
+                        }
+                    } else {
+                        format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, MP_QSTR_);
+                    }
+
+                    // Build interpolation tuple node: (expr, text, conv, fmt)
+                    mp_parse_node_struct_t *testlist_comp = parser_alloc(parser,
+                        sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 4);
+                    testlist_comp->source_line = lex->tok_line;
+                    testlist_comp->kind_num_nodes = RULE_testlist_comp | (4 << 8);
+                    testlist_comp->nodes[0] = expr_node;
+                    testlist_comp->nodes[1] = expr_text_node;
+                    testlist_comp->nodes[2] = conversion_node;
+                    testlist_comp->nodes[3] = format_spec_node;
+
+                    // Wrap in atom_paren to create a runtime tuple
+                    mp_parse_node_struct_t *interp_tuple = parser_alloc(parser,
+                        sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 1);
+                    interp_tuple->source_line = lex->tok_line;
+                    interp_tuple->kind_num_nodes = RULE_atom_paren | (1 << 8);
+                    interp_tuple->nodes[0] = (mp_parse_node_t)testlist_comp;
+
+                    ADD_NODE(interps, (mp_parse_node_t)interp_tuple);
+                    // Added interpolation
+                    i++; // Skip the closing brace
+                } else {
+                    // Failed to find closing brace - syntax error
+                }
+            } else if (false && str[i] == '\\' && i + 1 < len) {
+                i++;
+                unsigned char c = str[i];
+                switch (c) {
+                    case 'n':
+                        vstr_add_byte(&vstr, '\n');
+                        break;
+                    case 't':
+                        vstr_add_byte(&vstr, '\t');
+                        break;
+                    case 'r':
+                        vstr_add_byte(&vstr, '\r');
+                        break;
+                    case 'b':
+                        vstr_add_byte(&vstr, '\b');
+                        break;
+                    case 'f':
+                        vstr_add_byte(&vstr, '\f');
+                        break;
+                    case 'v':
+                        vstr_add_byte(&vstr, '\v');
+                        break;
+                    case 'a':
+                        vstr_add_byte(&vstr, '\a');
+                        break;
+                    case '\\':
+                        vstr_add_byte(&vstr, '\\');
+                        break;
+                    case '\'':
+                        vstr_add_byte(&vstr, '\'');
+                        break;
+                    case '"':
+                        vstr_add_byte(&vstr, '"');
+                        break;
+                    case 'x': {
+                        if (i + 2 < len && unichar_isxdigit(str[i + 1]) && unichar_isxdigit(str[i + 2])) {
+                            int val = (unichar_xdigit_value(str[i + 1]) << 4) | unichar_xdigit_value(str[i + 2]);
+                            vstr_add_byte(&vstr, val);
+                            i += 2;
+                        } else {
+                            vstr_add_byte(&vstr, '\\');
+                            vstr_add_byte(&vstr, 'x');
+                        }
+                        break;
+                    }
+                    case 'u':
+                    case 'U': {
+                        int digits = (c == 'u') ? 4 : 8;
+                        bool valid = i + digits < len;
+                        mp_uint_t val = 0;
+                        if (valid) {
+                            for (int j = 0; j < digits; j++) {
+                                char h = str[i + 1 + j];
+                                if (!unichar_isxdigit(h)) {
+                                    valid = false;
+                                    break;
+                                }
+                                val = val * 16 + unichar_xdigit_value(h);
+                            }
+                        }
+                        if (valid) {
+                            if (val < 0x80) {
+                                vstr_add_byte(&vstr, val);
+                            } else if (val < 0x800) {
+                                vstr_add_byte(&vstr, 0xC0 | (val >> 6));
+                                vstr_add_byte(&vstr, 0x80 | (val & 0x3F));
+                            } else if (val < 0x10000) {
+                                vstr_add_byte(&vstr, 0xE0 | (val >> 12));
+                                vstr_add_byte(&vstr, 0x80 | ((val >> 6) & 0x3F));
+                                vstr_add_byte(&vstr, 0x80 | (val & 0x3F));
+                            } else if (val < 0x110000) {
+                                vstr_add_byte(&vstr, 0xF0 | (val >> 18));
+                                vstr_add_byte(&vstr, 0x80 | ((val >> 12) & 0x3F));
+                                vstr_add_byte(&vstr, 0x80 | ((val >> 6) & 0x3F));
+                                vstr_add_byte(&vstr, 0x80 | (val & 0x3F));
+                            } else {
+                                valid = false;
+                            }
+                            if (valid) {
+                                i += digits;
+                            }
+                        }
+                        if (!valid) {
+                            vstr_add_byte(&vstr, '\\');
+                            vstr_add_byte(&vstr, c);
+                        }
+                        break;
+                    }
+                    default:
+                        if (c >= '0' && c <= '7') {
+                            int val = c - '0';
+                            int digits = 1;
+                            while (digits < 3 && i + 1 < len && str[i + 1] >= '0' && str[i + 1] <= '7') {
+                                i++;
+                                val = val * 8 + (str[i] - '0');
+                                digits++;
+                            }
+                            if (val <= 255) {
+                                vstr_add_byte(&vstr, val);
+                            } else {
+                                mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("(unicode error) 'unicodeescape' codec can't decode bytes: illegal Unicode character"));
+                            }
+                        } else {
+                            vstr_add_byte(&vstr, '\\');
+                            vstr_add_byte(&vstr, c);
+                        }
+                        break;
+                }
+                i++;
+            } else {
+                vstr_add_byte(&vstr, str[i]);
+                i++;
+            }
+        }
+
+        mp_obj_t str_obj = mp_obj_new_str_copy(&mp_type_str, (const byte *)vstr.buf, vstr.len);
+        ADD_NODE(strings, make_node_const_object(parser, lex->tok_line, str_obj));
+        vstr_clear(&vstr);
+
+
+        size_t seg_cnt = strings.len;
+        size_t interp_cnt = interps.len;
+
+        if (seg_cnt > MP_PARSE_TSTR_MAX_SEG) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many template segments"));
+        }
+
+        // interp_cnt is stored in 12 bits, so max is 4095 interpolations.
+        if (interp_cnt > MP_PARSE_TSTR_MAX_INT) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many interpolations"));
+        }
+
+        // Check for integer overflow in total calculation
+        size_t total = seg_cnt + interp_cnt;
+        if (total < seg_cnt || total < interp_cnt) {
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
+        }
+
+        // Allocate template node. GC safety: parser_alloc ensures the allocated
+        // memory is properly rooted. strings.items and interps.items remain valid
+        // until m_del below since no allocations occur between here and there.
+        mp_parse_node_struct_t *templ =
+            parser_alloc(parser,
+                sizeof(*templ) + sizeof(mp_parse_node_t) * total);
+
+        templ->source_line = lex->tok_line;
+        templ->kind_num_nodes = MP_PARSE_TSTR_HDR_MAKE(seg_cnt, interp_cnt);
+
+        memcpy(&templ->nodes[0],           strings.items,
+            seg_cnt * sizeof(mp_parse_node_t));
+        memcpy(&templ->nodes[seg_cnt],     interps.items,
+            interp_cnt * sizeof(mp_parse_node_t));
+
+        pn = (mp_parse_node_t)templ;
+
+        m_del(mp_parse_node_t, strings.items, strings.alloc);
+        m_del(mp_parse_node_t, interps.items, interps.alloc);
+
+#undef GROW_ARRAY
+#undef ADD_NODE
+    #endif
     } else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, lex->tok_kind);
     }

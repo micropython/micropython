@@ -1,0 +1,77 @@
+=== Basic t-string tests ===
+('Hello World',)
+0
+('',)
+0
+('Hello ', '!')
+1
+MicroPython
+name
+('MicroPython',)
+('x=', ', y=', '')
+2
+(42, 3.14)
+(6, 3)
+('value', [2, 3])
+x=
+42
+r
+.2f
+['r', 's']
+'Raw: \\n\\t'
+('', '', '')
+2
+
+=== Template iteration tests ===
+5
+['str', 'Interpolation', 'str', 'Interpolation', 'str']
+['a', 42, 'b', 3.14, 'c']
+2
+
+=== Advanced interpolation tests ===
+Hello, World!
+[3, 4]
+positive
+
+Type checks: Template=Template, is Template=True
+(1, 2, 3)
+0
+()
+
+=== PEP-750 specific features ===
+Single: ('single quotes',), Double: ('double quotes',)
+Debug without format: r
+Debug with format: .2f
+rt prefix: 'Path: C:\\Users\\test'
+tr prefix: 'Also raw: \\n\\t'
+
+=== Format spec interpolation tests ===
+Format spec stored: '.{precision}f'
+Result: Pi: 3.14
+Format spec: '{align}{width}d'
+Result: 'Aligned:         42'
+Complex format spec: '{fill_char}>{width}.{precision}f'
+Escaped braces format spec: '{{width}}'
+
+=== Template concatenation tests ===
+Template + Template: type=Template
+Concatenated strings: ('Hello ', '')
+Concatenated values: (42,)
+Chained concatenation strings: ('Hello ', ' world')
+Template + str correctly raises: cannot mix t-strings with strings or f-strings
+str + Template correctly raises: unsupported types for __add__: 'str', 'Template'
+
+=== Import and type tests ===
+isinstance Template: True
+isinstance Interpolation: N/A
+Manual Template: ('Hello ', '!')
+
+=== Additional features ===
+ASCII conversion: a
+Interpolation-only template strings: ('', '', '')
+Interpolation-only template values: (1, 2)
+__str__ result: Test 42
+t + t implicit: ('Hello World',)
+Scope access: ('local', 'global')
+
+Core tests completed!

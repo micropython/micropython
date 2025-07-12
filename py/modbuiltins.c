@@ -39,6 +39,11 @@
 #include <math.h>
 #endif
 
+#if MICROPY_PY_TSTRINGS
+// External declaration for t-string function
+extern const mp_obj_fun_builtin_fixed_t mp_builtin___template___obj;
+#endif
+
 #if MICROPY_PY_IO
 extern struct _mp_dummy_t mp_sys_stdout_obj; // type is irrelevant, just need pointer
 #endif
@@ -721,6 +726,9 @@ static const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_round), MP_ROM_PTR(&mp_builtin_round_obj) },
     { MP_ROM_QSTR(MP_QSTR_sorted), MP_ROM_PTR(&mp_builtin_sorted_obj) },
     { MP_ROM_QSTR(MP_QSTR_sum), MP_ROM_PTR(&mp_builtin_sum_obj) },
+    #if MICROPY_PY_TSTRINGS
+    { MP_ROM_QSTR(MP_QSTR___template__), MP_ROM_PTR(&mp_builtin___template___obj) },
+    #endif
 
     // built-in exceptions
     { MP_ROM_QSTR(MP_QSTR_BaseException), MP_ROM_PTR(&mp_type_BaseException) },

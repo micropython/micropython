@@ -1,0 +1,153 @@
+=== Constructor edge cases ===
+Keyword args: Template.__new__ only accepts *args arguments
+Invalid type: Template args must be str or Interpolation, got int
+Invalid interp: interpolations tuple must contain only Interpolation objects, got int
+Tuple constructor: Template(strings=('hello', 'world'), interpolations=(Interpolation(42, 'x', None, ''),))
+
+=== Binary operations ===
+Template+str: cannot mix t-strings with strings or f-strings
+str+Template: unsupported types for __add__: 'str', 'Template'
+int+Template: TypeError
+-: unsupported
+*: unsupported
+/: unsupported
+%: unsupported
+**: unsupported
+&: unsupported
+|: unsupported
+^: unsupported
+<<: unsupported
+>>: unsupported
+
+=== Edge cases ===
+Empty template: 'Template(strings=('',), interpolations=())'
+Empty strings: [Interpolation(1, 'a', None, ''), Interpolation(2, 'b', None, '')]
+Adjacent: 'Template(strings=('', '', '', ''), interpolations=(Interpolation(1, '1', None, ''), Interpolation(2, '2', None, ''), Interpolation(3, '3', None, '')))'
+Single iter: ['only']
+Self+self: 'Template(strings=('testtest',), interpolations=())'
+
+=== Values property ===
+Values[0]: ()
+Values[1]: (0,)
+Values[2]: (0, 1)
+Values[3]: (0, 1, 2)
+Values[4]: (0, 1, 2, 3)
+Values[5]: (0, 1, 2, 3, 4)
+Values[6]: (0, 1, 2, 3, 4, 5)
+
+=== Size limits ===
+Size limit test: SKIPPED (causes memory errors)
+
+=== Format spec edge cases ===
+Empty fmt: Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, ''),))
+Width: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, '10'),))'
+Conv+fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', '>10'),))'
+Interp fmt: 'Template(strings=('', ''), interpolations=(Interpolation(3.14, '3.14', None, '{width}.2f'),))'
+Escaped braces: 'Template(strings=('Hello {name} and {{value}}',), interpolations=())'
+
+=== Special cases ===
+__template__ error: invalid interpolation format
+__template__: Template
+Interp read-only: AttributeError
+Whitespace trim: 'Template(strings=('', ''), interpolations=(Interpolation(None, '   ', None, ''),))'
+Debug =: Template(strings=('', ''), interpolations=(Interpolation(42, 'x=', None, ''),))
+Custom !r: Template(strings=('', ''), interpolations=(Interpolation(CustomRepr, 'obj', 'r', ''),))
+Custom !s: Template(strings=('', ''), interpolations=(Interpolation(CustomRepr, 'obj', 's', ''),))
+__str__ bound: Template(strings=('test',), interpolations=())
+Empty start iter: ['Interpolation', 'str']
+Iterator edge: ['Interpolation', 'Interpolation']
+
+=== repr tests ===
+Template repr: Template(strings=('Hello ', ' world'), interpolations=(Inter...
+Interp repr: Interpolation(42, 'x', 's', ':>10')
+
+=== Additional coverage tests ===
+String literal: Template(strings=('', ''), interpolations=(Interpolation('hello', "'hello'", None, ''),))
+String expr: 'Template(strings=('', ''), interpolations=(Interpolation('test', '"test"', None, ''),))'
+Re-raised exception: Special error
+Conv empty fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', ''),))'
+Too many interpolations: SyntaxError
+Large template: SyntaxError
+Triple quoted: 'Template(strings=('Triple "quoted" string',), interpolations=())'
+Raw triple: 'Template(strings=('Raw triple\\n', ''), interpolations=(Interpolation(42, '42', None, ''),))'
+Complex concat: strings=('a', 'bc', 'd', 'e'), values=(1, 2, 3)
+Empty concat: 'Template(strings=('test', ''), interpolations=(Interpolation(42, '42', None, ''),))'
+Self interp concat: values=(1, 1)
+Lonely string: SyntaxError
+Empty t-string: 'Template(strings=('',), interpolations=())'
+
+=== Unicode edge cases ===
+Emoji: True
+Combining: True
+Zero-width: True
+Unicode format: True
+
+=== Nested template strings ===
+Nested: Template
+Expression: Template
+Function: Template
+
+=== Inline template literal tests ===
+Empty nested: Template
+With content: Template
+Concatenation: Template
+Mixed quotes: Template
+Nested interp: Template
+
+=== Additional unique coverage tests ===
+# Mixed args constructor
+Mixed args: Template(strings=('Hello ', ', the answer is ', ' and pi is ', ''), interpolations=(Interpolation('World', 'name', None, ''), Interpolation(42, 'answer', None, ''), Interpolation(3.14, 'pi', None, '.2f')))
+
+# Two-tuple constructor
+Two-tuple form: Template(strings=('Hello ', ', welcome to ', '!'), interpolations=(Interpolation('World', 'name', None, ''), Interpolation('Python', 'lang', None, '')))
+
+# Complex format with variables
+Complex format: Template(strings=('Value: ', ''), interpolations=(Interpolation(3.14159, 'val', None, '10.2f'),))
+
+# Escaped braces in format specs
+Escaped {5}: Template(strings=('Value: ', ''), interpolations=(Interpolation(42, 'x', None, '0{{5}}d'),))
+
+# Multi-string concatenation
+Multi concat: Template(strings=('A ', ' BC ', ' D'), interpolations=(Interpolation(1, 'x', None, ''), Interpolation(2, 'y', None, '')))
+
+# Cumulative size limit
+Created huge template
+Size limit: template string too large
+
+# Empty expression
+Empty expr: Template(strings=('Val: ', ''), interpolations=(Interpolation(42, '', None, ''),))
+
+# Invalid __template__ calls
+Single tuple: function takes 2 positional arguments but 1 were given
+Invalid interp: invalid interpolation format
+
+# StringLike REVERSE_ADD test
+StringLike + Template: unsupported types for __add__: 'StringLike', 'Template'
+
+# Format spec ending with }}
+Format }: Template(strings=('Val: ', ''), interpolations=(Interpolation(42, 'x', None, 'd}}'),))
+
+# Large values test
+Large values (10): (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+Large values (15): len=15
+
+# Broken interpolation test
+Broken interp created: expr=broken
+
+# Long expression name
+Long expr: value=42
+
+Coverage tests completed!
+Empty expr SyntaxError: empty expression not allowed
+Whitespace expr SyntaxError: empty expression not allowed
+Long expression: OK
+Large template string: OK
+Many interpolations: OK
+Template.__str__ with large string: OK
+Basic t-string: OK, result=Template(strings=('', ''), interpolations=(Interpolation('a', 'x', None, ''),))
+Nested interpolations error: SyntaxError: invalid syntax in template expression: nested{x}
+Template + str error: cannot mix t-strings with strings or f-strings
+str + Template error: unsupported types for __add__: 'str', 'Template'
+Binary op error: unsupported types for __add__: 'str', 'Template'
+Conversion without format spec: OK
+Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(42, 'x', None, '{width}{{literal}}'),))
