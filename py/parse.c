@@ -877,13 +877,17 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
                     // Extract conversion
                     mp_parse_node_t conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_NONE);
-                    if (is_debug_format) {
-                        // Debug format implies !r conversion (or !s if format spec present)
-                        qstr conv_q = (format_spec_pos && format_spec_pos < expr_end) ? MP_QSTR_s : MP_QSTR_r;
-                        conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, conv_q);
-                    } else if (conversion_pos && conversion_pos + 1 < expr_end) {
+
+                    if (conversion_pos && conversion_pos + 1 < expr_end) {
                         qstr conv_q = qstr_from_strn((const char *)&str[conversion_pos + 1], 1);
                         conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, conv_q);
+                    } else if (is_debug_format) {
+                        if (format_spec_pos) {
+                            conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_NONE);
+                        } else {
+                            qstr conv_q = MP_QSTR_r;
+                            conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, conv_q);
+                        }
                     }
 
                     // Extract format spec
@@ -894,8 +898,10 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                             fmt_end = conversion_pos;
                         }
                         if (fmt_end > format_spec_pos + 1) {
-                            qstr fmt_q = qstr_from_strn((const char *)&str[format_spec_pos + 1],
-                                fmt_end - format_spec_pos - 1);
+                            const byte *fmt_start = &str[format_spec_pos + 1];
+                            size_t fmt_len = fmt_end - format_spec_pos - 1;
+
+                            qstr fmt_q = qstr_from_strn((const char *)fmt_start, fmt_len);
                             format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, fmt_q);
                         } else {
                             format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, MP_QSTR_);
