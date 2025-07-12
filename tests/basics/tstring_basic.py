@@ -299,17 +299,18 @@ End"""
 print(f"\n9. Nested templates: {str(outer)}")
 print(f"   Inner value: {outer.values[0]}")
 
-import math
 formatted = t"""Math constants:
-Pi: {math.pi:.10f}
-E: {math.e:.10e}
-Sqrt(2): {math.sqrt(2):.5f}"""
-print(f"\n10. Formatted values: {str(formatted)}")
+Pi: {314:.2f}
+E: {271:.1e}
+Sqrt(2): {141:.0f}"""
+print(f"\n10. Formatted values: {repr(formatted)}")
+print(f"    Interpolation count: {len(formatted.interpolations)}")
+print(f"    Format specs: {[i.format_spec for i in formatted.interpolations]}")
 
 x, y, z = 1, 2, 3
 debug_complex = t"""Debug info:
 {x + y=} {x * y * z=} {x < y < z=}"""
-print(f"\n11. Debug complex: {str(debug_complex)}")
+print(f"\n11. Debug complex: {repr(debug_complex)}")
 print(f"    Expressions: {[i.expression for i in debug_complex.interpolations]}")
 
 part1 = t"""Part 1
@@ -317,7 +318,7 @@ with newline"""
 part2 = t'''Part 2
 also multiline'''
 concatenated = part1 + part2
-print(f"\n12. Concatenated triple: {str(concatenated)}")
+print(f"\n12. Concatenated triple: {repr(concatenated)}")
 print(f"    Strings: {concatenated.strings}")
 
 print("\nTriple quote edge case tests completed!")
