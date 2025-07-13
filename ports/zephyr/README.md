@@ -2,7 +2,7 @@ MicroPython port to Zephyr RTOS
 ===============================
 
 This is a work-in-progress port of MicroPython to Zephyr RTOS
-(http://zephyrproject.org).
+(<http://zephyrproject.org>).
 
 This port tries to support all Zephyr versions supported upstream,
 i.e. currently v3.7 (LTS), v4.0 and the development branch. The CI is
@@ -30,14 +30,13 @@ Features supported at this time:
 
 Over time, bindings for various Zephyr subsystems may be added.
 
-
 Building
 --------
 
 Follow to Zephyr web site for Getting Started instruction of installing
 Zephyr SDK, getting Zephyr source code, and setting up development
 environment. (Direct link:
-https://docs.zephyrproject.org/latest/getting_started/index.html).
+<https://docs.zephyrproject.org/latest/getting_started/index.html>).
 You may want to build Zephyr's own sample applications to make sure your
 setup is correct.
 
@@ -96,7 +95,7 @@ qemu_cortex_m3):
 
 Networking is enabled with the default configuration, so you need to follow
 instructions in
-https://docs.zephyrproject.org/latest/connectivity/networking/qemu_setup.html#networking-with-qemu
+<https://docs.zephyrproject.org/latest/connectivity/networking/qemu_setup.html#networking-with-qemu>
 to setup the host side of TAP/SLIP networking. If you get an error like:
 
     could not connect serial device to character backend 'unix:/tmp/slip.sock'
@@ -156,18 +155,19 @@ Example of using SPI to write a buffer to the MOSI pin:
 
 Zsensor usage
 -------------
+
     # Example for XIAO BLE NRF52840 SENSE
     from zsensor import *
-    sensor = Sensor('lsm6ds3tr_c')  # name from Devicetree
+    accel = Sensor('lsm6ds3tr_c')  # name from Devicetree
     # Set full-scale to 2g (19.613300 m/sec^2)
     # units are micro-m/s^2
-    sensor.attr_set(ACCEL_XYZ, ATTR_FULL_SCALE, 19, 613300)
+    accel.attr_set(ACCEL_XYZ, ATTR_FULL_SCALE, 19, 613300)
     # Set sampling frequency to 104 Hz
-    sensor.attr_set(ACCEL_XYZ, ATTR_SAMPLING_FREQUENCY, 104)
-    sensor.measure()
-    sensor.get_float(ACCEL_X) # -0.508 (m/s^2)
-    sensor.get_float(ACCEL_Y) # -3.62 (m/s^2)
-    sensor.get_float(ACCEL_Z) # 9.504889 (m/s^2)
+    accel.attr_set(ACCEL_XYZ, ATTR_SAMPLING_FREQUENCY, 104)
+    accel.measure()
+    accel.get_float(ACCEL_X) # -0.508 (m/s^2)
+    accel.get_float(ACCEL_Y) # -3.62 (m/s^2)
+    accel.get_float(ACCEL_Z) # 9.504889 (m/s^2)
 
 Minimal build
 -------------
@@ -191,4 +191,3 @@ To run a minimal build in QEMU without requiring TAP networking setup
 run the following after you built an image with the previous command:
 
     $ west build -t run
-
