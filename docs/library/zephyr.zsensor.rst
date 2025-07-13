@@ -92,6 +92,11 @@ Channels
 
     Acceleration on the Z axis, in m/s^2.
 
+.. data:: ACCEL_XYZ
+
+    Pseudo-channel representing all three accelerometer axes.
+    Used for ``attr_set()`` and ``attr_get()``.
+
 .. data:: GYRO_X
 
     Angular velocity around the X axis, in radians/s.
@@ -103,6 +108,11 @@ Channels
 .. data:: GYRO_Z
 
     Angular velocity around the Z axis, in radians/s.
+
+.. data:: GYRO_XYZ
+
+    Pseudo-channel representing all three gyroscope axes.
+    Used for ``attr_set()`` and ``attr_get()``.
 
 .. data:: MAGN_X
 
