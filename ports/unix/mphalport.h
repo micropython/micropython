@@ -40,7 +40,12 @@
 //
 // Note that we don't delay for the full TIMEOUT_MS, as execution
 // can't be woken from the delay.
-#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) mp_hal_delay_us(500)
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
+    do { \
+        MP_THREAD_GIL_EXIT(); \
+        mp_hal_delay_us(500); \
+        MP_THREAD_GIL_ENTER(); \
+    } while (0)
 
 void mp_hal_set_interrupt_char(char c);
 
