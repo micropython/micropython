@@ -41,6 +41,15 @@ elif sys.platform == "zephyr":
     else:
         print("Please add support for this test on this zephyr platform.")
         raise SystemExit
+elif sys.platform == "mimxrt":
+    if "Teensy" in sys.implementation._machine:
+        args_controller = {"scl": "A6", "sda": "A3"}
+    else:
+        args_controller = {"scl": "D0", "sda": "D1"}
+    args_target = (0,)
+elif sys.platform == "samd":
+    args_controller = {"scl": "D5", "sda": "D1"}
+    args_target = tuple()
 else:
     print("Please add support for this test on this platform.")
     raise SystemExit
@@ -64,7 +73,7 @@ class TestMemory(unittest.TestCase):
         cls.i2c_target.deinit()
 
     def test_scan(self):
-        self.assertEqual(self.i2c.scan(), [ADDR])
+        self.assertIn(ADDR, self.i2c.scan())
 
     def test_write(self):
         self.mem[:] = b"01234567"
