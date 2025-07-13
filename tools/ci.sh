@@ -538,7 +538,7 @@ function ci_unix_run_tests_helper {
 function ci_unix_run_tests_full_extra {
     micropython=$1
     (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-multitests.py multi_net/*.py)
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-perfbench.py 1000 1000)
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-perfbench.py --average 1 1000 1000)
 }
 
 function ci_unix_run_tests_full_no_native_helper {
