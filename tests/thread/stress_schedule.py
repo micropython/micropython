@@ -27,6 +27,8 @@ def task(x):
     n += 1
 
 
+# This function must always use the bytecode emitter so it bounces the GIL when running.
+@micropython.bytecode
 def thread():
     while thread_run:
         try:
@@ -46,7 +48,7 @@ for i in range(8):
 # Wait up to 10 seconds for 10000 tasks to be scheduled.
 t = time.ticks_ms()
 while n < _NUM_TASKS and time.ticks_diff(time.ticks_ms(), t) < _TIMEOUT_MS:
-    pass
+    time.sleep(0)
 
 # Stop all threads.
 thread_run = False
