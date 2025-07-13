@@ -707,6 +707,15 @@ function ci_unix_float_run_tests {
     ci_unix_run_tests_helper CFLAGS_EXTRA="-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT"
 }
 
+function ci_unix_gil_enabled_build {
+    ci_unix_build_helper VARIANT=standard MICROPY_PY_THREAD_GIL=1
+    ci_unix_build_ffi_lib_helper gcc
+}
+
+function ci_unix_gil_enabled_run_tests {
+    ci_unix_run_tests_full_helper standard MICROPY_PY_THREAD_GIL=1
+}
+
 function ci_unix_clang_setup {
     sudo apt-get update
     sudo apt-get install clang
