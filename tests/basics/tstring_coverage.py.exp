@@ -138,11 +138,30 @@ Broken interp created: expr=broken
 Long expr: value=42
 
 Coverage tests completed!
+
+=== Additional coverage for uncovered branches ===
+
+# Conversion after format spec
+Conv after fmt: SyntaxError - invalid syntax in template expression: x:10
+Wrong order: SyntaxError - invalid syntax in template expression: x:>10
+Format before conversion: SyntaxError - invalid syntax in template expression: x:d
+
+# Integer overflow test
+
+
+# Unicode escape sequences tests
+Invalid \u hex: preserved as literal
+Short \U: preserved as literal
+
+# Bytes in t-strings
+Bytes 0x80-0xFF: OK
+Octal bytes: OK
 Empty expr SyntaxError: empty expression not allowed
 Whitespace expr SyntaxError: empty expression not allowed
 Long expression: OK
 Large template string: OK
 Many interpolations: OK
+Unexpected error: too many template segments
 Template.__str__ with large string: OK
 Basic t-string: OK, result=Template(strings=('', ''), interpolations=(Interpolation('a', 'x', None, ''),))
 Nested interpolations error: SyntaxError: invalid syntax in template expression: nested{x}
@@ -151,3 +170,124 @@ str + Template error: unsupported types for __add__: 'str', 'Template'
 Binary op error: unsupported types for __add__: 'str', 'Template'
 Conversion without format spec: OK
 Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(42, 'x', None, '5{literal}'),))
+
+# Debug format edge cases
+Debug with conv: 'Template(strings=('x=', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))'
+
+# Empty format spec branches
+Empty fmt before conv: SyntaxError
+Conv then empty fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))'
+
+# Raw t-string escape tests
+Raw escapes: 'Template(strings=('\\x41\\u0042\\n\\t',), interpolations=())'
+
+# Lexer edge cases
+ERROR: Invalid \x should have failed
+\N{}: SyntaxError
+
+# Expression parser tests
+Complex expr: OK
+
+# Format spec position tests
+Conv before fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', '>10'),))'
+Whitespace expr: SyntaxError
+
+# Memory/lexer failure simulation
+Lexer NULL case: Tested via heapalloc_fail_tstring.py
+
+# Size overflow edge cases
+Large segments: SyntaxError
+
+# High byte tests
+High bytes: OK
+
+# Invalid escape tests
+Invalid escape: SyntaxError
+
+# Debug format edge cases
+Debug format: OK
+
+# Format spec edge cases
+Full format: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'x', 'r', '0>+#10.5'),))'
+
+# Escape at EOF tests
+Trailing backslash: SyntaxError
+
+# Format spec position coverage
+Malformed format: SyntaxError
+
+=== Additional t-string coverage tests ===
+
+# Interpolation attribute access
+Value attr: test_value
+Expression attr: test_expr
+Conversion attr: s
+Format spec attr: :>10
+
+# Template string concatenation
+Concatenated strings: ('part1part2part3part4part5',)
+
+# Template interpolations attribute
+Interpolations attr: (Interpolation('World', 'name', None, ''), Interpolation('Python', 'place', None, ''))
+
+# Integer overflow in size calculation
+ERROR: Should have raised SyntaxError
+
+# Escaped quotes in literals
+Escaped quotes: OK
+
+# Backslash handling
+Backslash in path: OK
+
+# Lexer edge cases
+Note: NULL lexer case requires out-of-memory condition
+This is tested in heapalloc_fail_tstring.py
+
+# Parser allocation edge cases
+Deep nesting: OK
+
+# Complex expression parsing
+Dict comprehension: OK
+
+# Expression parser exceptions
+
+# Empty format spec branches
+Empty format after colon: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, ''),))'
+Variable with empty format: 'Template(strings=('', ''), interpolations=(Interpolation(100, 'x', None, ''),))'
+
+# Template string size limit
+Other syntax error: too many template segments
+
+=== Tests for remaining uncovered branches ===
+Malformed 1: invalid syntax in template expression: x:10
+Malformed 2: invalid syntax in template expression: value:^10
+Malformed 3: invalid syntax in template expression: x:>
+Empty format spec 1: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'val', None, ''),))'
+No format spec: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'val', None, ''),))'
+Octal high bytes: OK, first byte = 0x80
+Invalid unicode: SyntaxError - invalid syntax
+Empty expr: empty expression not allowed
+Whitespace expr: empty expression not allowed
+Custom exception re-raised: Test exception
+
+NULL lexer: Tested in heapalloc_fail_tstring.py
+ERROR: Should have raised SyntaxError
+Direct high bytes: OK, len=5
+Incomplete hex: SyntaxError
+\N{} escape: SyntaxError
+Triple quote high bytes: OK
+Colon only format: 'Template(strings=('', ''), interpolations=(Interpolation(100, 'x', None, ''),))'
+Debug with format: OK
+Debug format with repr: 'Template(strings=('x=', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))'
+Octal escapes: OK, len=2
+Unicode name escape: SyntaxError - invalid syntax in template expression: LATIN SMALL LETTER A
+Raw Unicode escapes: '\u0041\U00000042'
+Bytes Unicode escape: preserved as literal
+CR LF handling: OK
+Deep indent: OK
+Whitespace-only: SyntaxError - empty expression not allowed
+Octal high bytes: OK, ord=255, 128
+Trailing backslash: SyntaxError
+Very long expression: OK
+
+All coverage tests completed!

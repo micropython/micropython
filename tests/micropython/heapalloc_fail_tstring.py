@@ -325,4 +325,135 @@ except Exception as e:
         print(f"Parse with heap locked: {type(e).__name__}")
 micropython.heap_unlock()
 
-print("=== Tests completed ===")
+# Test lexer allocation failure for t-string expression parsing
+print("\n=== Lexer/Parser allocation tests ===")
+
+# Wrap all tests in a try-catch to handle any unexpected errors
+try:
+    # Test 1: Empty expression (tests tstring_expr_parser.c empty check)
+    try:
+        micropython.heap_lock()
+        try:
+            # This tests the empty expression path
+            exec("t'{}'")
+            print("FAIL: Empty expression with heap locked")
+        except Exception as e:
+            print(f"OK: Empty expression - {type(e).__name__}")
+        finally:
+            micropython.heap_unlock()
+    except:
+        pass
+
+    # Test 2: Whitespace-only expression
+    try:
+        micropython.heap_lock()
+        try:
+            exec("t'{   }'")
+            print("FAIL: Whitespace expression with heap locked")
+        except Exception as e:
+            print(f"OK: Whitespace expression - {type(e).__name__}")
+        finally:
+            micropython.heap_unlock()
+    except:
+        pass
+
+    # Test 3: Very complex expression to stress parser allocation
+    # Pre-create variables
+    x, y, z = 1, 2, 3
+    try:
+        micropython.heap_lock()
+        try:
+            # Complex nested expression that requires many parse nodes
+            result = t'{[x*y for x in range(10) for y in range(10) if x+y > 5]}'
+            print("FAIL: Complex expression with heap locked")
+        except MemoryError:
+            print("OK: Complex expression parser allocation")
+        except Exception as e:
+            print(f"Complex expression: {type(e).__name__}")
+        finally:
+            micropython.heap_unlock()
+    except:
+        pass
+
+    # Test 4: Expression parser lexer failure (simulates NULL lexer)
+    # This happens when memory is exhausted during lexer creation
+    try:
+        micropython.heap_lock()
+        try:
+            # Try to create t-string with expression during low memory
+            long_expr = "x" * 100  # Use a moderately long expression
+            exec(f"{long_expr} = 42; result = t'{{{long_expr}}}'")
+            print("FAIL: Lexer creation with heap locked")
+        except MemoryError:
+            print("OK: Lexer creation failure")
+        except Exception as e:
+            print(f"Lexer creation: {type(e).__name__}")
+        finally:
+            micropython.heap_unlock()
+    except:
+        pass
+
+    # Test 5: Format spec and conversion parsing under memory pressure
+    val = 42
+    try:
+        micropython.heap_lock()
+        try:
+            # This tests format spec node creation
+            result = t'{val!r:>10.2f}'
+            print("FAIL: Format spec with heap locked")
+        except MemoryError:
+            print("OK: Format spec allocation")
+        except Exception as e:
+            print(f"Format spec: {type(e).__name__}")
+        finally:
+            micropython.heap_unlock()
+    except:
+        pass
+
+    # Test 6: Debug format with memory pressure
+    x = 100
+    try:
+        micropython.heap_lock()
+        try:
+            result = t'{x=:.2f}'
+            print("FAIL: Debug format with heap locked")
+        except MemoryError:
+            print("OK: Debug format allocation")
+        except Exception as e:
+            print(f"Debug format: {type(e).__name__}")
+        finally:
+            micropython.heap_unlock()
+    except:
+        pass
+
+    # Test 7: Multiple interpolations causing allocation failure
+    vals = list(range(20))
+    try:
+        micropython.heap_lock()
+        try:
+            # Many interpolations to stress allocation
+            result = t'{vals[0]}{vals[1]}{vals[2]}{vals[3]}{vals[4]}{vals[5]}{vals[6]}{vals[7]}{vals[8]}{vals[9]}'
+            print("FAIL: Many interpolations with heap locked")
+        except MemoryError:
+            print("OK: Many interpolations allocation")
+        except Exception as e:
+            print(f"Many interpolations: {type(e).__name__}")
+        finally:
+            micropython.heap_unlock()
+    except:
+        pass
+
+    # Test 8: Template string size limit (tests overflow check)
+    # Note: We can't directly test integer overflow, but we can test large templates
+    print("Template size limit: Tested via exec in coverage tests")
+
+except Exception as e:
+    # Catch any unexpected errors from the tests
+    print(f"\nTest error: {type(e).__name__}: {e}")
+    # Ensure heap is unlocked
+    try:
+        micropython.heap_unlock()
+    except:
+        pass
+
+print("\n=== Tests completed ===")

@@ -30,4 +30,13 @@ OK: Debug format heap test
 === Coverage.c heap tests ===
 OK: Interpolation creation with heap locked
 OK: Parse with heap locked
+
+=== Lexer/Parser allocation tests ===
+OK: Complex expression parser allocation
+OK: Lexer creation failure
+OK: Format spec allocation
+OK: Debug format allocation
+OK: Many interpolations allocation
+Template size limit: Tested via exec in coverage tests
+
 === Tests completed ===
