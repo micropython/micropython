@@ -1,6 +1,13 @@
+/*
+ * Copyright (c) 2025 Ned Konz <ned@metamagix.tech>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+ // Replace default on-chip flash with external flash
 /delete-node/ &storage_partition;
 
-// 16Mib (2MiB) flash
+// 16Mib (2MiB) flash, mount as /flash
 &p25q16h {
 	partitions {
 		compatible = "fixed-partitions";
@@ -14,6 +21,7 @@
 	};
 };
 
+/* Make the available ADC channels available to the Zephyr ADC code. */
 / {
 	zephyr,user {
 		io-channels = <&adc 0>, <&adc 1>, <&adc 4>, <&adc 5>, <&adc 7>;
