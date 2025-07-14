@@ -232,6 +232,20 @@ mp_obj_t MICROPY_WRAP_MP_LOAD_NAME(mp_load_name)(qstr qst) {
 mp_obj_t MICROPY_WRAP_MP_LOAD_GLOBAL(mp_load_global)(qstr qst) {
     // logic: search globals, builtins
     DEBUG_OP_printf("load global %s\n", qstr_str(qst));
+
+    #if MICROPY_PY_TSTRINGS
+    // Special handling for __template__ to ensure it's available in threads
+    if (qst == MP_QSTR___template__) {
+        mp_map_elem_t *elem = mp_map_lookup(&mp_globals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+        if (elem != NULL) {
+            return elem->value;
+        }
+        // Return builtin directly if not in globals
+        extern const mp_obj_fun_builtin_fixed_t mp_builtin___template___obj;
+        return MP_OBJ_FROM_PTR(&mp_builtin___template___obj);
+    }
+    #endif
+
     mp_map_elem_t *elem = mp_map_lookup(&mp_globals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
     if (elem == NULL) {
         #if MICROPY_CAN_OVERRIDE_BUILTINS
