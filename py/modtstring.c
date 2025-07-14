@@ -31,6 +31,10 @@
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/objexcept.h"
+#include "py/lexer.h"
+#include "py/parse.h"
+#include "py/compile.h"
+#include "py/misc.h"
 
 #if MICROPY_PY_TSTRINGS
 
@@ -357,6 +361,45 @@ static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolation
             mp_obj_t expression = interp_items[1];
             mp_obj_t conversion = (interp_len > 2) ? interp_items[2] : mp_const_none;
             mp_obj_t format_spec = (interp_len > 3) ? interp_items[3] : MP_OBJ_NEW_QSTR(MP_QSTR_);
+
+            // Evaluate format spec if it contains expressions
+            if (mp_obj_is_str(format_spec)) {
+                size_t spec_len;
+                const char *spec_str = mp_obj_str_get_data(format_spec, &spec_len);
+
+                // Check if format spec contains expressions (has '{')
+                bool has_expr = false;
+                for (size_t j = 0; j < spec_len; j++) {
+                    if (spec_str[j] == '{') {
+                        has_expr = true;
+                        break;
+                    }
+                }
+
+                if (has_expr) {
+                    // Build f-string to evaluate format spec
+                    vstr_t vstr;
+                    vstr_init(&vstr, spec_len + 4);
+                    vstr_add_str(&vstr, "f\"");
+                    vstr_add_strn(&vstr, spec_str, spec_len);
+                    vstr_add_str(&vstr, "\"");
+
+                    // Compile and evaluate the f-string
+                    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_format_spec_gt_,
+                        vstr_str(&vstr), vstr_len(&vstr), 0);
+                    qstr source_name = lex->source_name;
+                    mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_EVAL_INPUT);
+                    mp_obj_t module_fun = mp_compile(&parse_tree, source_name, false);
+
+                    // Evaluate in current context
+                    mp_obj_t evaluated = mp_call_function_0(module_fun);
+                    if (mp_obj_is_str(evaluated)) {
+                        format_spec = evaluated;
+                    }
+
+                    vstr_clear(&vstr);
+                }
+            }
 
             interpolations[i] = mp_obj_new_interpolation(value, expression, conversion, format_spec);
         } else {
