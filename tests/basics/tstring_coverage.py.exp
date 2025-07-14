@@ -42,7 +42,7 @@ Size limit test: SKIPPED (causes memory errors)
 Empty fmt: Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, ''),))
 Width: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, '10'),))'
 Conv+fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', '>10'),))'
-Interp fmt: 'Template(strings=('', ''), interpolations=(Interpolation(3.14, '3.14', None, '{width}.2f'),))'
+Interp fmt: 'Template(strings=('', ''), interpolations=(Interpolation(3.14, '3.14', None, '10.2f'),))'
 Escaped braces: 'Template(strings=('Hello {name} and {{value}}',), interpolations=())'
 
 === Special cases ===
@@ -150,4 +150,4 @@ Template + str error: cannot mix t-strings with strings or f-strings
 str + Template error: unsupported types for __add__: 'str', 'Template'
 Binary op error: unsupported types for __add__: 'str', 'Template'
 Conversion without format spec: OK
-Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(42, 'x', None, '{width}{{literal}}'),))
+Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(42, 'x', None, '5{literal}'),))

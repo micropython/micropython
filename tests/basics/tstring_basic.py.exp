@@ -92,6 +92,50 @@ Both format_spec: >10
 
 Basic tests completed!
 
+=== Escape sequence coverage tests ===
+Template(strings=('Line1\nLine2',), interpolations=())
+Template(strings=('Path\\to\\file',), interpolations=())
+Template(strings=("It's working",), interpolations=())
+Template(strings=('She said "Hello"',), interpolations=())
+Template(strings=('Bell\x07',), interpolations=())
+Template(strings=('Back\x08space',), interpolations=())
+Template(strings=('Tab\there',), interpolations=())
+Template(strings=('Vertical\x0btab',), interpolations=())
+Template(strings=('Form\x0cfeed',), interpolations=())
+Template(strings=('Carriage\rreturn',), interpolations=())
+Template(strings=('A',), interpolations=())
+Template(strings=('\x7f',), interpolations=())
+Template(strings=('\x00\x01\xff',), interpolations=())
+Template(strings=('\\xG',), interpolations=())
+Template(strings=('A',), interpolations=())
+Template(strings=('\u03b1',), interpolations=())
+Template(strings=('\u2764',), interpolations=())
+Template(strings=('\\uGGG',), interpolations=())
+Template(strings=('A',), interpolations=())
+Template(strings=('\U0001f600',), interpolations=())
+Template(strings=('\\UGGGGGGG',), interpolations=())
+Template(strings=('\x00',), interpolations=())
+Template(strings=('\x07',), interpolations=())
+Template(strings=('?',), interpolations=())
+Template(strings=('A',), interpolations=())
+Template(strings=('\xff',), interpolations=())
+Template(strings=('\x01a',), interpolations=())
+Template(strings=('Sc',), interpolations=())
+Template(strings=('\\8',), interpolations=())
+Template(strings=('\\9',), interpolations=())
+Template(strings=('\\z',), interpolations=())
+Template(strings=('\\k',), interpolations=())
+Template(strings=('First second',), interpolations=())
+Template(strings=('OneTwoThree',), interpolations=())
+Template(strings=('\n\t\r',), interpolations=())
+Template(strings=('ABC',), interpolations=())
+Template(strings=('\\n\\t\\x41',), interpolations=())
+Template(strings=('C:\\new\\test',), interpolations=())
+Template(strings=('\n\tA',), interpolations=())
+Template(strings=('\\n\\t\\x41',), interpolations=())
+
+Escape sequence tests completed!
+
 === Triple quote edge cases ===
 1. Triple in interpolation: Template(strings=('Documentation:\n', '\nEnd of doc'), interpolations=(Interpolation('This is a\nmulti-line\ndocstring', 'doc', None, ''),))
    Value: 'This is a\nmulti-line\ndocstring'

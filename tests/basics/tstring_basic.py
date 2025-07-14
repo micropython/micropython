@@ -240,6 +240,83 @@ print(f"Both format_spec: {t_both.interpolations[0].format_spec}")
 
 print("\nBasic tests completed!")
 
+print("\n=== Escape sequence coverage tests ===")
+
+# Test all standard escape sequences
+print(repr(t"Line1\nLine2"))  # \n newline
+print(repr(t"Path\\to\\file"))  # \\ backslash
+print(repr(t"It\'s working"))  # \' single quote
+print(repr(t"She said \"Hello\""))  # \" double quote
+print(repr(t"Bell\a"))  # \a bell (0x07)
+print(repr(t"Back\bspace"))  # \b backspace (0x08)
+print(repr(t"Tab\there"))  # \t tab (0x09)
+print(repr(t"Vertical\vtab"))  # \v vertical tab (0x0b)
+print(repr(t"Form\ffeed"))  # \f form feed (0x0c)
+print(repr(t"Carriage\rreturn"))  # \r carriage return (0x0d)
+
+# Valid hex escapes
+print(repr(t"\x41"))  # 'A'
+print(repr(t"\x7F"))  # DEL
+print(repr(t"\x00\x01\xFF"))  # Min, 1, Max
+
+# Invalid hex (non-hex chars after \x)
+print(repr(t"\xGG"))  # Should be literal \xGG
+
+# Valid \u escapes (4 hex digits required)
+print(repr(t"\u0041"))  # 'A'
+print(repr(t"\u03B1"))  # Greek alpha
+print(repr(t"\u2764"))  # Heart
+
+# Invalid \u (non-hex chars)
+print(repr(t"\uGGGG"))  # Should be literal \uGGGG
+
+# Valid \U escapes (8 hex digits required)
+print(repr(t"\U00000041"))  # 'A'
+print(repr(t"\U0001F600"))  # Grinning face emoji
+
+# Invalid \U (non-hex chars)
+print(repr(t"\UGGGGGGGG"))  # Should be literal \UGGGGGGGG
+
+# Valid octal escapes (0-7 only, max 3 digits)
+print(repr(t"\0"))  # Null (0)
+print(repr(t"\7"))  # Bell (7)
+print(repr(t"\77"))  # ? (63)
+print(repr(t"\101"))  # A (65)
+print(repr(t"\377"))  # ÿ (255)
+
+# Octal with fewer than 3 digits followed by non-octal
+print(repr(t"\1a"))  # \1 followed by 'a'
+print(repr(t"\123c"))  # \123 followed by 'c'
+
+# Invalid octals (8 and 9 not octal)
+print(repr(t"\8"))  # Should be literal \8
+print(repr(t"\9"))  # Should be literal \9
+
+# Unknown escape chars should preserve backslash
+print(repr(t"\z"))  # Not a known escape
+print(repr(t"\k"))  # Not a known escape
+
+# Backslash-newline for line continuation
+print(repr(t"First \
+second"))  # Should join lines
+print(repr(t"One\
+Two\
+Three"))  # Multiple continuations
+
+# Multiple escapes together
+print(repr(t"\n\t\r"))  # Common whitespace
+print(repr(t"\x41\u0042\103"))  # A B C in different forms
+
+# Raw strings should NOT process escapes
+print(repr(rt"\n\t\x41"))  # Should be literal
+print(repr(rt"C:\new\test"))  # Windows path
+
+# Escapes in triple quoted strings
+print(repr(t"""\n\t\x41"""))  # Should process escapes
+print(repr(rt"""\n\t\x41"""))  # Raw should not process
+
+print("\nEscape sequence tests completed!")
+
 
 print("\n=== Triple quote edge cases ===")
 
