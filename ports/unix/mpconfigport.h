@@ -42,9 +42,9 @@
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
 #endif
 
-// Enable t-strings for Unix/macOS port (except for minimal builds)
+// Enable t-strings for Unix/macOS port at extra features level and above
 #ifndef MICROPY_PY_TSTRINGS
-#define MICROPY_PY_TSTRINGS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#define MICROPY_PY_TSTRINGS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
 #ifndef MICROPY_PY_SYS_PLATFORM
