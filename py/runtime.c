@@ -240,6 +240,15 @@ mp_obj_t MICROPY_WRAP_MP_LOAD_GLOBAL(mp_load_global)(qstr qst) {
         if (elem != NULL) {
             return elem->value;
         }
+        #if MICROPY_PY_THREAD
+        // Fall back to main thread's globals if __template__ is not found.
+        if (mp_globals_get() != &MP_STATE_VM(dict_main)) {
+            elem = mp_map_lookup(&MP_STATE_VM(dict_main).map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+            if (elem != NULL) {
+                return elem->value;
+            }
+        }
+        #endif
         // Return builtin directly if not in globals
         extern const mp_obj_fun_builtin_fixed_t mp_builtin___template___obj;
         return MP_OBJ_FROM_PTR(&mp_builtin___template___obj);
