@@ -129,32 +129,42 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
             }
             n_strings = n_interpolations + 1;
 
-            mp_obj_t *strings = m_new(mp_obj_t, n_strings);
-            mp_obj_t *interpolations = m_new(mp_obj_t, n_interpolations);
+            // Create tuples directly to avoid GC issues with temporary arrays
+            mp_obj_tuple_t *strings_tuple = mp_obj_malloc_var(mp_obj_tuple_t, items, mp_obj_t, n_strings, &mp_type_tuple);
+            mp_obj_tuple_t *interpolations_tuple = mp_obj_malloc_var(mp_obj_tuple_t, items, mp_obj_t, n_interpolations, &mp_type_tuple);
+            strings_tuple->len = n_strings;
+            interpolations_tuple->len = n_interpolations;
 
-            size_t str_idx = 0;
             size_t interp_idx = 0;
-            vstr_t current_str;
-            vstr_init(&current_str, 16);
 
+            // First pass: collect string segments using vstrs
+            vstr_t *vstrs = m_new(vstr_t, n_strings);
+            for (size_t i = 0; i < n_strings; i++) {
+                vstr_init(&vstrs[i], 16);
+            }
+
+            size_t current_vstr_idx = 0;
             for (size_t i = 0; i < n_args; i++) {
                 if (mp_obj_is_exact_type(args[i], &mp_type_interpolation)) {
-                    strings[str_idx++] = mp_obj_new_str_from_vstr(&current_str);
-                    interpolations[interp_idx++] = args[i];
-                    vstr_init(&current_str, 16);
+                    interpolations_tuple->items[interp_idx++] = args[i];
+                    current_vstr_idx++;
                 } else {
                     size_t str_len;
                     const char *str_data = mp_obj_str_get_data(args[i], &str_len);
-                    vstr_add_strn(&current_str, str_data, str_len);
+                    vstr_add_strn(&vstrs[current_vstr_idx], str_data, str_len);
                 }
             }
-            strings[str_idx] = mp_obj_new_str_from_vstr(&current_str);
 
-            strings_obj = mp_obj_new_tuple(n_strings, strings);
-            interpolations_obj = mp_obj_new_tuple(n_interpolations, interpolations);
+            // Second pass: create string objects directly in tuple
+            for (size_t i = 0; i < n_strings; i++) {
+                strings_tuple->items[i] = mp_obj_new_str_from_vstr(&vstrs[i]);
+            }
 
-            m_del(mp_obj_t, strings, n_strings);
-            m_del(mp_obj_t, interpolations, n_interpolations);
+            // Clean up vstrs array
+            m_del(vstr_t, vstrs, n_strings);
+
+            strings_obj = MP_OBJ_FROM_PTR(strings_tuple);
+            interpolations_obj = MP_OBJ_FROM_PTR(interpolations_tuple);
         }
     }
 
@@ -281,12 +291,18 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
             size_t new_strings_len = lhs_strings->len + rhs_strings->len - 1;
             size_t new_interps_len = lhs_interps->len + rhs_interps->len;
 
-            mp_obj_t *new_strings_items = m_new(mp_obj_t, new_strings_len);
+            // Create tuples directly to avoid GC issues
+            mp_obj_tuple_t *new_strings_tuple = mp_obj_malloc_var(mp_obj_tuple_t, items, mp_obj_t, new_strings_len, &mp_type_tuple);
+            mp_obj_tuple_t *new_interps_tuple = mp_obj_malloc_var(mp_obj_tuple_t, items, mp_obj_t, new_interps_len, &mp_type_tuple);
+            new_strings_tuple->len = new_strings_len;
+            new_interps_tuple->len = new_interps_len;
 
+            // Copy all but the last string from lhs
             for (size_t i = 0; i < lhs_strings->len - 1; i++) {
-                new_strings_items[i] = lhs_strings->items[i];
+                new_strings_tuple->items[i] = lhs_strings->items[i];
             }
 
+            // Merge last string from lhs with first string from rhs
             size_t lhs_last_len, rhs_first_len;
             const char *lhs_last_str = mp_obj_str_get_data(lhs_strings->items[lhs_strings->len - 1], &lhs_last_len);
             const char *rhs_first_str = mp_obj_str_get_data(rhs_strings->items[0], &rhs_first_len);
@@ -295,31 +311,25 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
             vstr_init(&vstr, lhs_last_len + rhs_first_len);
             vstr_add_strn(&vstr, lhs_last_str, lhs_last_len);
             vstr_add_strn(&vstr, rhs_first_str, rhs_first_len);
-            new_strings_items[lhs_strings->len - 1] = mp_obj_new_str_from_vstr(&vstr);
+            new_strings_tuple->items[lhs_strings->len - 1] = mp_obj_new_str_from_vstr(&vstr);
 
+            // Copy remaining strings from rhs
             for (size_t i = 1; i < rhs_strings->len; i++) {
-                new_strings_items[lhs_strings->len - 1 + i] = rhs_strings->items[i];
+                new_strings_tuple->items[lhs_strings->len - 1 + i] = rhs_strings->items[i];
             }
 
-            mp_obj_t *new_interps_items = m_new(mp_obj_t, new_interps_len);
-
+            // Copy interpolations from both sides
             for (size_t i = 0; i < lhs_interps->len; i++) {
-                new_interps_items[i] = lhs_interps->items[i];
+                new_interps_tuple->items[i] = lhs_interps->items[i];
             }
 
             for (size_t i = 0; i < rhs_interps->len; i++) {
-                new_interps_items[lhs_interps->len + i] = rhs_interps->items[i];
+                new_interps_tuple->items[lhs_interps->len + i] = rhs_interps->items[i];
             }
 
-            mp_obj_t new_strings_tuple = mp_obj_new_tuple(new_strings_len, new_strings_items);
-            mp_obj_t new_interps_tuple = mp_obj_new_tuple(new_interps_len, new_interps_items);
-
-            m_del(mp_obj_t, new_strings_items, new_strings_len);
-            m_del(mp_obj_t, new_interps_items, new_interps_len);
-
             mp_obj_template_t *result = mp_obj_malloc(mp_obj_template_t, &mp_type_template);
-            result->strings = new_strings_tuple;
-            result->interpolations = new_interps_tuple;
+            result->strings = MP_OBJ_FROM_PTR(new_strings_tuple);
+            result->interpolations = MP_OBJ_FROM_PTR(new_interps_tuple);
             return MP_OBJ_FROM_PTR(result);
         }
 
@@ -350,7 +360,10 @@ static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolation
     size_t len;
     mp_obj_get_array(interpolations_in, &len, &items);
 
-    mp_obj_t *interpolations = m_new(mp_obj_t, len);
+    // Create tuple directly to avoid GC issues
+    mp_obj_tuple_t *interpolations_tuple = mp_obj_malloc_var(mp_obj_tuple_t, items, mp_obj_t, len, &mp_type_tuple);
+    interpolations_tuple->len = len;
+
     for (size_t i = 0; i < len; i++) {
         mp_obj_t *interp_items;
         size_t interp_len;
@@ -401,19 +414,16 @@ static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolation
                 }
             }
 
-            interpolations[i] = mp_obj_new_interpolation(value, expression, conversion, format_spec);
+            interpolations_tuple->items[i] = mp_obj_new_interpolation(value, expression, conversion, format_spec);
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid interpolation format"));
         }
     }
 
-    mp_obj_t interpolations_tuple = mp_obj_new_tuple(len, interpolations);
-    m_del(mp_obj_t, interpolations, len);
-
     // Create Template directly instead of calling make_new
     mp_obj_template_t *self = mp_obj_malloc(mp_obj_template_t, &mp_type_template);
     self->strings = strings;
-    self->interpolations = interpolations_tuple;
+    self->interpolations = MP_OBJ_FROM_PTR(interpolations_tuple);
     return MP_OBJ_FROM_PTR(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin___template___obj, mp_builtin___template__);
