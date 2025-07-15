@@ -25,7 +25,7 @@ SEEK_END = 2
 # An mpy file with four constant objects: str, bytes, long-int, float.
 test_mpy = (
     # header
-    b"M\x06\x00\x1f"  # mpy file header
+    b"M\x06\x00\x1e"  # mpy file header, -msmall-int-bits=30
     b"\x06"  # n_qstr
     b"\x05"  # n_obj
     # qstrs
