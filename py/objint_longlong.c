@@ -292,20 +292,10 @@ mp_obj_t mp_obj_new_int_from_ll(long long val) {
 }
 
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
-    // TODO raise an exception if the unsigned long long won't fit
     if (val >> (sizeof(unsigned long long) * 8 - 1) != 0) {
         raise_long_long_overflow();
     }
     return mp_obj_new_int_from_ll(val);
-}
-
-mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
-    // TODO this does not honor the given length of the string, but it all cases it should anyway be null terminated
-    // TODO check overflow
-    char *endptr;
-    mp_obj_t result = mp_obj_new_int_from_ll(strtoll(*str, &endptr, base));
-    *str = endptr;
-    return result;
 }
 
 mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in) {
