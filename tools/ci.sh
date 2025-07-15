@@ -543,6 +543,14 @@ CI_UNIX_OPTS_SANITIZE_UNDEFINED=(
     LDFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
 )
 
+CI_UNIX_OPTS_REPR_B=(
+    VARIANT=coverage
+    CFLAGS_EXTRA="-DMICROPY_OBJ_REPR=MICROPY_OBJ_REPR_B -Dmp_int_t=int32_t -Dmp_uint_t=uint32_t"
+    MICROPY_FORCE_32BIT=1
+    RUN_TESTS_MPY_CROSS_FLAGS="--mpy-cross-flags=\"-march=x86 -msmall-int-bits=30\""
+
+)
+
 function ci_unix_build_helper {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix "$@" submodules
@@ -686,6 +694,15 @@ function ci_unix_32bit_setup {
     sudo pip3 install ar
     gcc --version
     python3 --version
+}
+
+function ci_unix_coverage_repr_b_build {
+    ci_unix_build_helper "${CI_UNIX_OPTS_REPR_B[@]}"
+    ci_unix_build_ffi_lib_helper gcc -m32
+}
+
+function ci_unix_coverage_repr_b_run_tests {
+    ci_unix_run_tests_helper "${CI_UNIX_OPTS_REPR_B[@]}"
 }
 
 function ci_unix_coverage_32bit_build {
