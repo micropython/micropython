@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #include "py/runtime.h"
+#include "py/smallint.h"
 #include "py/objtuple.h"
 #include "py/binary.h"
 
@@ -43,13 +44,31 @@
 #define LAYOUT_BIG_ENDIAN    (1)
 #define LAYOUT_NATIVE        (2)
 
+#define LEN_BITS (OFFSET_BITS + BITF_OFF_BITS)
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B
+#define VAL_TYPE_BITS 4
+#define BITF_LEN_BITS 5
+#define BITF_OFF_BITS 5
+#define OFFSET_BITS 16
+#if VAL_TYPE_BITS + BITF_LEN_BITS + BITF_OFF_BITS + OFFSET_BITS != 30
+#error Invalid encoding field length
+#endif
+// Here we need to set sign bit right
+#define TYPE2SMALLINT(x, nbits) ((((int)x) << (32 - nbits)) >> 2)
+#define GET_TYPE(x, nbits) (((x) >> (30 - nbits)) & ((1 << nbits) - 1))
+#define VALUE_MASK(type_nbits) (~((int)0xc0000000 >> type_nbits))
+#else
 #define VAL_TYPE_BITS 4
 #define BITF_LEN_BITS 5
 #define BITF_OFF_BITS 5
 #define OFFSET_BITS 17
-#define LEN_BITS (OFFSET_BITS + BITF_OFF_BITS)
 #if VAL_TYPE_BITS + BITF_LEN_BITS + BITF_OFF_BITS + OFFSET_BITS != 31
 #error Invalid encoding field length
+#endif
+// Here we need to set sign bit right
+#define TYPE2SMALLINT(x, nbits) ((((mp_int_t)x) << (32 - nbits)) >> 1)
+#define GET_TYPE(x, nbits) (((x) >> (31 - nbits)) & ((1 << nbits) - 1))
+#define VALUE_MASK(type_nbits) (~((int)0x80000000 >> type_nbits))
 #endif
 
 enum {
@@ -68,12 +87,8 @@ enum {
     STRUCT, PTR, ARRAY,
 };
 
-// Here we need to set sign bit right
-#define TYPE2SMALLINT(x, nbits) ((((int)x) << (32 - nbits)) >> 1)
-#define GET_TYPE(x, nbits) (((x) >> (31 - nbits)) & ((1 << nbits) - 1))
 // Bit 0 is "is_signed"
 #define GET_SCALAR_SIZE(val_type) (1 << ((val_type) >> 1))
-#define VALUE_MASK(type_nbits) ~((int)0x80000000 >> type_nbits)
 
 #define IS_SCALAR_ARRAY(tuple_desc) ((tuple_desc)->len == 2)
 // We cannot apply the below to INT8, as their range [-128, 127]
@@ -94,6 +109,15 @@ static MP_NORETURN void syntax_error(void) {
 }
 
 static mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    MP_STATIC_ASSERT(MP_SMALL_INT_FITS(TYPE2SMALLINT(BFINT32, VAL_TYPE_BITS)));
+    MP_STATIC_ASSERT(TYPE2SMALLINT(BFINT8, VAL_TYPE_BITS) != TYPE2SMALLINT(INT8, VAL_TYPE_BITS));
+    MP_STATIC_ASSERT(GET_TYPE(TYPE2SMALLINT(BFINT32, VAL_TYPE_BITS), VAL_TYPE_BITS) == BFINT32);
+    MP_STATIC_ASSERT(!(VALUE_MASK(VAL_TYPE_BITS) & TYPE2SMALLINT(BFINT32, VAL_TYPE_BITS)));
+    #if MICROPY_PY_BUILTINS_FLOAT
+    MP_STATIC_ASSERT(MP_SMALL_INT_FITS(TYPE2SMALLINT(FLOAT64, VAL_TYPE_BITS)));
+    MP_STATIC_ASSERT(GET_TYPE(TYPE2SMALLINT(FLOAT64, VAL_TYPE_BITS), VAL_TYPE_BITS) == FLOAT64);
+    MP_STATIC_ASSERT(!(VALUE_MASK(VAL_TYPE_BITS) & TYPE2SMALLINT(FLOAT64, VAL_TYPE_BITS)));
+    #endif
     mp_arg_check_num(n_args, n_kw, 2, 3, false);
     mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, type);
     o->addr = (void *)(uintptr_t)mp_obj_get_int_truncated(args[0]);
