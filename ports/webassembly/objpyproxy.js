@@ -165,34 +165,35 @@ const py_proxy_handler = {
         if (prop === "_ref") {
             return target._ref;
         }
-        if (prop === "then") {
-            return null;
-        }
 
-        if (prop === Symbol.iterator) {
-            // Get the Python object iterator, and return a JavaScript generator.
-            const iter_ref = Module.ccall(
-                "proxy_c_to_js_get_iter",
-                "number",
-                ["number"],
-                [target._ref],
-            );
-            return function* () {
-                const value = Module._malloc(3 * 4);
-                while (true) {
-                    const valid = Module.ccall(
-                        "proxy_c_to_js_iternext",
-                        "number",
-                        ["number", "pointer"],
-                        [iter_ref, value],
-                    );
-                    if (!valid) {
-                        break;
+        // ignore both then and all symbols but Symbol.iterator
+        if (prop === "then" || typeof prop !== "string") {
+            if (prop === Symbol.iterator) {
+                // Get the Python object iterator, and return a JavaScript generator.
+                const iter_ref = Module.ccall(
+                    "proxy_c_to_js_get_iter",
+                    "number",
+                    ["number"],
+                    [target._ref],
+                );
+                return function* () {
+                    const value = Module._malloc(3 * 4);
+                    while (true) {
+                        const valid = Module.ccall(
+                            "proxy_c_to_js_iternext",
+                            "number",
+                            ["number", "pointer"],
+                            [iter_ref, value],
+                        );
+                        if (!valid) {
+                            break;
+                        }
+                        yield proxy_convert_mp_to_js_obj_jsside(value);
                     }
-                    yield proxy_convert_mp_to_js_obj_jsside(value);
-                }
-                Module._free(value);
-            };
+                    Module._free(value);
+                };
+            }
+            return undefined;
         }
 
         const value = Module._malloc(3 * 4);
