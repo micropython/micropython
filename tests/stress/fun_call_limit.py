@@ -16,14 +16,14 @@ def test(n):
 
 
 # If the port has at least 32-bits then this test should pass.
-print(test(29))
+print(test(28))
 
 # This test should fail on all ports (overflows a small int).
 print(test(70))
 
 # Check that there is a correct transition to the limit of too many args before *args.
 reached_limit = False
-for i in range(30, 70):
+for i in range(29, 70):
     result = test(i)
     if reached_limit:
         if result != "SyntaxError":
