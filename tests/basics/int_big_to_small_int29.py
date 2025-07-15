@@ -7,7 +7,7 @@ except:
 
 micropython.heap_lock()
 try:
-    k = (1 << 29)
+    k = (1 << 28)
     k = k + 20
 except MemoryError:
     micropython.heap_unlock()
@@ -16,7 +16,7 @@ except MemoryError:
 micropython.heap_unlock()
 
 # All less than small int max.
-for d in (0, 27, 1<<29, -1861, -(1<<29)):
+for d in (0, 27, 1<<28, -1861, -(1<<28)):
     i = 1<<70
     print(i)
     j = (1<<70) + d
