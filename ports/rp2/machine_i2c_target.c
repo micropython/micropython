@@ -106,8 +106,8 @@ static void i2c_target_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
             if (data->state == STATE_IDLE) {
                 machine_i2c_target_data_addr_match(data, true);
             }
-            //i2c_write_byte_raw(i2c, 0x12);
-            //break;
+            // i2c_write_byte_raw(i2c, 0x12);
+            // break;
             machine_i2c_target_data_read_request(self, data);
             break;
         }
@@ -172,7 +172,7 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
 
     // Check if the I2C bus is valid
     if (i2c_id < 0 || i2c_id >= MP_ARRAY_SIZE(machine_i2c_target_obj)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2CTarget(%d) doesn't exist"), i2c_id);
     }
 
     // Get static peripheral object.
