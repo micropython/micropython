@@ -172,7 +172,7 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
 
     // Check if the I2C bus is valid
     if (i2c_id < 0 || i2c_id >= MP_ARRAY_SIZE(machine_i2c_target_obj)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2CTarget(%d) doesn't exist"), i2c_id);
     }
 
     // Get static peripheral object.
