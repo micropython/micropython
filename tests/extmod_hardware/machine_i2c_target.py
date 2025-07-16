@@ -16,7 +16,10 @@ import unittest
 ADDR = 67
 
 # Configure pins based on the target.
-if sys.platform == "rp2":
+if sys.platform == "alif" and sys.implementation._build == "ALIF_ENSEMBLE":
+    args_controller = {"scl": "P1_1", "sda": "P1_0"}
+    args_target = (0,)
+elif sys.platform == "rp2":
     args_controller = {"scl": 5, "sda": 4}
     args_target = (1,)
 elif sys.platform == "pyboard":
