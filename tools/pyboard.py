@@ -282,7 +282,7 @@ class Pyboard:
         if device.startswith("exec:"):
             self.serial = ProcessToSerial(device[len("exec:") :])
         elif device.startswith("execpty:"):
-            self.serial = ProcessPtyToTerminal(device[len("qemupty:") :])
+            self.serial = ProcessPtyToTerminal(device[len("execpty:") :])
         elif device and device[0].isdigit() and device[-1].isdigit() and device.count(".") == 3:
             # device looks like an IP address
             self.serial = TelnetToSerial(device, user, password, read_timeout=10)
