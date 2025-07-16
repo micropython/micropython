@@ -180,12 +180,12 @@ static void machine_i2c_target_data_write_request(machine_i2c_target_obj_t *self
     if (data->mem_buf == NULL) {
         if (!event_handled) {
             // No data sink, just read and discard the incoming byte.
-            uint8_t buf;
+            uint8_t buf = 0;
             mp_machine_i2c_target_read_bytes(self, 1, &buf);
         }
     } else {
         // Have a buffer.
-        uint8_t val;
+        uint8_t val = 0;
         mp_machine_i2c_target_read_bytes(self, 1, &val);
         if (data->state == STATE_IDLE) {
             // TODO allow N bytes for address, with N=0 allowed
