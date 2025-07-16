@@ -24,22 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "mpconfigport.h"
+#include "../mpconfigport.h"
 
-#define MICROPY_PY_ASYNCIO (1)
-#define MICROPY_PY_BUILTINS_HELP_MODULES (1)
-#define MICROPY_PY_BUILTINS_INPUT (1)
-#define MICROPY_PY_COLLECTIONS_DEQUE (1)
-#define MICROPY_PY_JSON (1)
-#define MICROPY_PY_MICROPYTHON_RINGIO (1)
-#define MICROPY_PY_RANDOM (1)
-#define MICROPY_PY_RANDOM_EXTRA_FUNCS (1) // for random.uniform
-#define MICROPY_PY_RE (1)
-#define MICROPY_PY_RE_MATCH_GROUPS (1)
-#define MICROPY_PY_RE_SPAN_START_END (1)
-#define MICROPY_PY_SELECT (1)
+#undef MICROPY_CONFIG_ROM_LEVEL
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+
 #define MICROPY_PY_SYS_MODULES (1)
-#define MICROPY_PY_UCTYPES (1)
 
 // This is not enabled currently, pending merge of PR #17615
 #define MICROPY_HW_ENABLE_ADC (0)
