@@ -1242,6 +1242,8 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     }
 
     #if MICROPY_PY_DESCRIPTORS
+    locals_map->is_fixed = 1; // prevent modify-while-write of __set_name__
+
     // call __set_name__ on all entries (especially descriptors)
     for (size_t i = 0; i < locals_map->alloc; i++) {
         if (mp_map_slot_is_filled(locals_map, i)) {
@@ -1256,6 +1258,8 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
             }
         }
     }
+
+    locals_map->is_fixed = 0; // would be finalizer, but class isn't returned anyway
     #endif
 
     return MP_OBJ_FROM_PTR(o);
