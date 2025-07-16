@@ -563,7 +563,7 @@ function ci_native_mpy_modules_build {
     else
         arch=$1
     fi
-    for natmod in deflate features1 features3 features4 framebuf heapq random re
+    for natmod in btree deflate features1 features3 features4 framebuf heapq random re
     do
         make -C examples/natmod/$natmod ARCH=$arch clean
         make -C examples/natmod/$natmod ARCH=$arch
@@ -575,12 +575,6 @@ function ci_native_mpy_modules_build {
         make -C examples/natmod/features2 ARCH=$arch MICROPY_FLOAT_IMPL=float
     else
         make -C examples/natmod/features2 ARCH=$arch
-    fi
-
-    # btree requires thread local storage support on rv32imc.
-    if [ $arch != "rv32imc" ]; then
-        make -C examples/natmod/btree ARCH=$arch clean
-        make -C examples/natmod/btree ARCH=$arch
     fi
 }
 

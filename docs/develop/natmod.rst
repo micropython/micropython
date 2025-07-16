@@ -67,6 +67,9 @@ The known limitations are:
 
 * static BSS variables are not supported; workaround: use global BSS variables
 
+* thread-local storage variables are not supported on rv32imc; workaround: use
+  global BSS variables or allocate some space on the heap to store them
+
 So, if your C code has writable data, make sure the data is defined globally,
 without an initialiser, and only written to within functions.
 
@@ -224,6 +227,26 @@ other module, for example::
     import factorial
     print(factorial.factorial(10))
     # should display 3628800
+
+Using Picolibc when building modules
+------------------------------------
+
+Using `Picolibc <https://github.com/picolibc/picolibc>`_ as your C standard
+library is not only supported, but in fact it is the default for the rv32imc
+platform.  However, there are a couple of things worth mentioning to make sure
+you don't run into problems later when building code.
+
+Some pre-built Picolibc versions (for example, those provided by Ubuntu Linux
+as the ``picolibc-arm-none-eabi``, ``picolibc-riscv64-unknown-elf``, and
+``picolibc-xtensa-lx106-elf`` packages) assume thread-local storage (TLS) is
+available at runtime, but unfortunately MicroPython modules do not support that
+on some architectures (namely ``rv32imc``).  This means that some
+functionalities provided by Picolibc will default to use TLS, returning an
+error either during compilation or during linking.
+
+For an example on how this may affect you, the ``examples/natmod/btree``
+example module contains a workaround to make sure ``errno`` works (look for
+``__PICOLIBC_ERRNO_FUNCTION`` in the Makefile and follow the trail from there).
 
 Further examples
 ----------------
