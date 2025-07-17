@@ -530,8 +530,8 @@ class Pyboard:
             return ret
 
     # In Python3, call as pyboard.exec(), see the setattr call below.
-    def exec_(self, command, data_consumer=None):
-        ret, ret_err = self.exec_raw(command, data_consumer=data_consumer)
+    def exec_(self, command, timeout=10, data_consumer=None):
+        ret, ret_err = self.exec_raw(command, timeout, data_consumer)
         if ret_err:
             raise PyboardError("exception", ret, ret_err)
         return ret
