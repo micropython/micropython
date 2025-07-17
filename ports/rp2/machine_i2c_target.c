@@ -106,8 +106,8 @@ static void i2c_target_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
             if (data->state == STATE_IDLE) {
                 machine_i2c_target_data_addr_match(data, true);
             }
-            //i2c_write_byte_raw(i2c, 0x12);
-            //break;
+            // i2c_write_byte_raw(i2c, 0x12);
+            // break;
             machine_i2c_target_data_read_request(self, data);
             break;
         }
