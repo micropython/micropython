@@ -277,6 +277,25 @@ typedef union _mp_float_union_t {
     mp_float_uint_t i;
 } mp_float_union_t;
 
+#if MICROPY_FLOAT_FORMAT_IMPL == MICROPY_FLOAT_FORMAT_IMPL_EXACT
+
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+// Exact float conversion requires using internally a bigger sort of floating point
+typedef double mp_large_float_t;
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+typedef long double mp_large_float_t;
+#endif
+// Always use a 64 bit mantissa for formatting and parsing
+typedef uint64_t mp_large_float_uint_t;
+
+#else // MICROPY_FLOAT_FORMAT_IMPL != MICROPY_FLOAT_FORMAT_IMPL_EXACT
+
+// No bigger floating points
+typedef mp_float_t mp_large_float_t;
+typedef mp_float_uint_t mp_large_float_uint_t;
+
+#endif
+
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
 /** ROM string compression *************/

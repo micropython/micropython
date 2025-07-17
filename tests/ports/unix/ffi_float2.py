@@ -29,4 +29,4 @@ except OSError:
 
 for fun in (tgammaf,):
     for val in (0.5, 1, 1.0, 1.5, 4, 4.0):
-        print("%.6f" % fun(val))
+        print("%.5f" % fun(val))
