@@ -139,13 +139,17 @@ class TestIRQ(unittest.TestCase):
 
     def test_write(self):
         TestIRQ.num_events = 0
-        self.i2c.writeto(ADDR, b"X")
+        self.i2c.writeto(ADDR, b"XYZ")
         self.assertEqual(
             self.events[: self.num_events],
             [
                 I2CTarget.IRQ_ADDR_MATCH,
                 I2CTarget.IRQ_WRITE_REQ,
                 ord(b"X"),
+                I2CTarget.IRQ_WRITE_REQ,
+                ord(b"Y"),
+                I2CTarget.IRQ_WRITE_REQ,
+                ord(b"Z"),
                 I2CTarget.IRQ_END,
             ],
         )
