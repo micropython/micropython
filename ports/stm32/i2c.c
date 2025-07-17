@@ -595,7 +595,7 @@ int i2c_find_peripheral(mp_obj_t id) {
     return i2c_id;
 }
 
-#if MICROPY_PY_PYB_LEGACY
+#if MICROPY_HW_ENABLE_HW_I2C_TARGET || MICROPY_PY_PYB_LEGACY
 
 #if defined(MICROPY_HW_I2C1_SCL)
 void I2C1_EV_IRQHandler(void) {
@@ -603,11 +603,13 @@ void I2C1_EV_IRQHandler(void) {
     IRQ_ENTER(I2C1_EV_IRQn);
     #if MICROPY_HW_ENABLE_HW_I2C_TARGET
     if (i2c_target_enabled & 1) {
-        i2c_slave_ev_irq_handler(I2C1);
+        i2c_slave_irq_handler(I2C1);
     } else
     #endif
     {
+        #if MICROPY_PY_PYB_LEGACY
         i2c_ev_irq_handler(1);
+        #endif
     }
     IRQ_EXIT(I2C1_EV_IRQn);
 }
@@ -617,11 +619,13 @@ void I2C1_ER_IRQHandler(void) {
     IRQ_ENTER(I2C1_ER_IRQn);
     #if MICROPY_HW_ENABLE_HW_I2C_TARGET
     if (i2c_target_enabled & 1) {
-        i2c_slave_ev_irq_handler(I2C1);
+        i2c_slave_irq_handler(I2C1);
     } else
     #endif
     {
+        #if MICROPY_PY_PYB_LEGACY
         i2c_er_irq_handler(1);
+        #endif
     }
     IRQ_EXIT(I2C1_ER_IRQn);
 }
@@ -633,11 +637,13 @@ void I2C2_EV_IRQHandler(void) {
     IRQ_ENTER(I2C2_EV_IRQn);
     #if MICROPY_HW_ENABLE_HW_I2C_TARGET
     if (i2c_target_enabled & 2) {
-        i2c_slave_ev_irq_handler(I2C2);
+        i2c_slave_irq_handler(I2C2);
     } else
     #endif
     {
+        #if MICROPY_PY_PYB_LEGACY
         i2c_ev_irq_handler(2);
+        #endif
     }
     IRQ_EXIT(I2C2_EV_IRQn);
 }
@@ -645,7 +651,16 @@ void I2C2_EV_IRQHandler(void) {
 void I2C2_ER_IRQHandler(void) {
     MP_STATIC_ASSERT(I2C2_ER_IRQn > 0);
     IRQ_ENTER(I2C2_ER_IRQn);
-    i2c_er_irq_handler(2);
+    #if MICROPY_HW_ENABLE_HW_I2C_TARGET
+    if (i2c_target_enabled & 2) {
+        i2c_slave_irq_handler(I2C2);
+    } else
+    #endif
+    {
+        #if MICROPY_PY_PYB_LEGACY
+        i2c_er_irq_handler(2);
+        #endif
+    }
     IRQ_EXIT(I2C2_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C2_SCL)
@@ -656,11 +671,13 @@ void I2C3_EV_IRQHandler(void) {
     IRQ_ENTER(I2C3_EV_IRQn);
     #if MICROPY_HW_ENABLE_HW_I2C_TARGET
     if (i2c_target_enabled & 4) {
-        i2c_slave_ev_irq_handler(I2C3);
+        i2c_slave_irq_handler(I2C3);
     } else
     #endif
     {
+        #if MICROPY_PY_PYB_LEGACY
         i2c_ev_irq_handler(3);
+        #endif
     }
     IRQ_EXIT(I2C3_EV_IRQn);
 }
@@ -668,7 +685,16 @@ void I2C3_EV_IRQHandler(void) {
 void I2C3_ER_IRQHandler(void) {
     MP_STATIC_ASSERT(I2C3_ER_IRQn > 0);
     IRQ_ENTER(I2C3_ER_IRQn);
-    i2c_er_irq_handler(3);
+    #if MICROPY_HW_ENABLE_HW_I2C_TARGET
+    if (i2c_target_enabled & 4) {
+        i2c_slave_irq_handler(I2C3);
+    } else
+    #endif
+    {
+        #if MICROPY_PY_PYB_LEGACY
+        i2c_er_irq_handler(3);
+        #endif
+    }
     IRQ_EXIT(I2C3_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C3_SCL)
@@ -679,11 +705,13 @@ void I2C4_EV_IRQHandler(void) {
     IRQ_ENTER(I2C4_EV_IRQn);
     #if MICROPY_HW_ENABLE_HW_I2C_TARGET
     if (i2c_target_enabled & 8) {
-        i2c_slave_ev_irq_handler(I2C4);
+        i2c_slave_irq_handler(I2C4);
     } else
     #endif
     {
+        #if MICROPY_PY_PYB_LEGACY
         i2c_ev_irq_handler(4);
+        #endif
     }
     IRQ_EXIT(I2C4_EV_IRQn);
 }
@@ -691,7 +719,16 @@ void I2C4_EV_IRQHandler(void) {
 void I2C4_ER_IRQHandler(void) {
     MP_STATIC_ASSERT(I2C4_ER_IRQn > 0);
     IRQ_ENTER(I2C4_ER_IRQn);
-    i2c_er_irq_handler(4);
+    #if MICROPY_HW_ENABLE_HW_I2C_TARGET
+    if (i2c_target_enabled & 8) {
+        i2c_slave_irq_handler(I2C4);
+    } else
+    #endif
+    {
+        #if MICROPY_PY_PYB_LEGACY
+        i2c_er_irq_handler(4);
+        #endif
+    }
     IRQ_EXIT(I2C4_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C4_SCL)
