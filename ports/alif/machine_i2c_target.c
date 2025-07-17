@@ -153,7 +153,7 @@ static mp_int_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self,
         buf[i++] = i2c->I2C_DATA_CMD;
     }
 
-    // Reenable RX_FULL interrupt.
+    // Re-enable RX_FULL interrupt.
     i2c->I2C_INTR_MASK |= I2C_IC_INTR_STAT_RX_FULL;
 
     return i;
@@ -163,7 +163,7 @@ static mp_int_t mp_machine_i2c_target_write_bytes(machine_i2c_target_obj_t *self
     // Write to the TX FIFO.
     self->i2c->I2C_DATA_CMD = buf[0];
 
-    // Reenable RD_REQ interrupt.
+    // Re-enable RD_REQ interrupt.
     self->i2c->I2C_INTR_MASK |= I2C_IC_INTR_STAT_RD_REQ;
 
     return 1;
