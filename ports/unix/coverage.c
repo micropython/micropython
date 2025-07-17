@@ -212,9 +212,9 @@ static mp_obj_t extra_coverage(void) {
             mp_printf(&mp_plat_print, "%llu\n", ULLONG_MAX); // unsigned long long
         } else {
             // fake for platforms without narrower mp_int_t
-            mp_printf(&mp_plat_print, "7fffffffffffffff\n", LLONG_MAX);
-            mp_printf(&mp_plat_print, "7FFFFFFFFFFFFFFF\n", LLONG_MAX);
-            mp_printf(&mp_plat_print, "18446744073709551615\n", ULLONG_MAX);
+            mp_printf(&mp_plat_print, "7fffffffffffffff\n");
+            mp_printf(&mp_plat_print, "7FFFFFFFFFFFFFFF\n");
+            mp_printf(&mp_plat_print, "18446744073709551615\n");
         }
         mp_printf(&mp_plat_print, "%p\n", (void *)0x789f); // pointer
         mp_printf(&mp_plat_print, "%P\n", (void *)0x789f); // pointer uppercase
