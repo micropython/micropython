@@ -47,7 +47,7 @@ static uint8_t global_val;
 // zephyr bindings
 
 static int i2c_target_write_requested(struct i2c_target_config *config) {
-    //printk("wr req\n");
+    // printk("wr req\n");
     writing = true;
     reading = false;
     machine_i2c_target_data_addr_match(&i2c_target_data[0], false);
@@ -55,7 +55,7 @@ static int i2c_target_write_requested(struct i2c_target_config *config) {
 }
 
 static int i2c_target_write_received(struct i2c_target_config *config, uint8_t val) {
-    //printk("wr recv %d\n", val);
+    // printk("wr recv %d\n", val);
     global_val = val;
     machine_i2c_target_obj_t *self = CONTAINER_OF(config, machine_i2c_target_obj_t, cfg);
     machine_i2c_target_data_t *data = &i2c_target_data[0];
@@ -67,7 +67,7 @@ static int i2c_target_write_received(struct i2c_target_config *config, uint8_t v
 // - req proc proc ... (eg STM32)
 // - req proc req proc ... (eg RP2xxx / Design Ware)
 static int i2c_target_read_requested(struct i2c_target_config *config, uint8_t *val) {
-    //printk("rd req\n");
+    // printk("rd req\n");
     writing = false;
     machine_i2c_target_obj_t *self = CONTAINER_OF(config, machine_i2c_target_obj_t, cfg);
     machine_i2c_target_data_t *data = &i2c_target_data[0];
@@ -81,7 +81,7 @@ static int i2c_target_read_requested(struct i2c_target_config *config, uint8_t *
 }
 
 static int i2c_target_read_processed(struct i2c_target_config *config, uint8_t *val) {
-    //printk("rd processed\n");
+    // printk("rd processed\n");
     machine_i2c_target_obj_t *self = CONTAINER_OF(config, machine_i2c_target_obj_t, cfg);
     machine_i2c_target_data_t *data = &i2c_target_data[0];
     machine_i2c_target_data_read_request(self, data);
@@ -91,7 +91,7 @@ static int i2c_target_read_processed(struct i2c_target_config *config, uint8_t *
 
 // called only on stop, not restart
 static int i2c_target_stop(struct i2c_target_config *config) {
-    //printk("stop\n");
+    // printk("stop\n");
     if (!writing && !reading) {
         // Assume a stop without a start is a 0-byte write.
         machine_i2c_target_data_addr_match(&i2c_target_data[0], false);
@@ -150,8 +150,8 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
         { MP_QSTR_addrsize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 7} },
         { MP_QSTR_mem, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_mem_addrsize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
-        //{ MP_QSTR_scl, MICROPY_I2C_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        //{ MP_QSTR_sda, MICROPY_I2C_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        // { MP_QSTR_scl, MICROPY_I2C_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        // { MP_QSTR_sda, MICROPY_I2C_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     // Parse args.
@@ -171,7 +171,7 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
     machine_i2c_target_data_t *data = &i2c_target_data[0];
     machine_i2c_target_data_init(data, args[ARG_mem].u_obj, args[ARG_mem_addrsize].u_int);
 
-#if 0
+    #if 0
     // Set SCL/SDA pins if configured.
     if (args[ARG_scl].u_obj != mp_const_none) {
         int scl = mp_hal_get_pin_obj(args[ARG_scl].u_obj);
@@ -187,7 +187,7 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
         }
         self->sda = sda;
     }
-#endif
+    #endif
 
     // Initialise the I2C target.
     // TODO: don't reinitialize if no arguments given.
