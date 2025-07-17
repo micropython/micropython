@@ -1057,17 +1057,22 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         size_t interp_cnt = interps.len;
 
         if (seg_cnt > MP_PARSE_TSTR_MAX_SEG) {
+            m_del(mp_parse_node_t, strings.items, strings.alloc);
+            m_del(mp_parse_node_t, interps.items, interps.alloc);
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many template segments"));
         }
 
-        // interp_cnt is stored in 12 bits, so max is 4095 interpolations.
         if (interp_cnt > MP_PARSE_TSTR_MAX_INT) {
+            m_del(mp_parse_node_t, strings.items, strings.alloc);
+            m_del(mp_parse_node_t, interps.items, interps.alloc);
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many interpolations"));
         }
 
         // Check for integer overflow in total calculation
         size_t total = seg_cnt + interp_cnt;
         if (total < seg_cnt || total < interp_cnt) {
+            m_del(mp_parse_node_t, strings.items, strings.alloc);
+            m_del(mp_parse_node_t, interps.items, interps.alloc);
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
         }
 
