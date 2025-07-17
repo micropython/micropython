@@ -206,6 +206,10 @@ static inline mp_float_t mp_obj_float_get(mp_const_obj_t o) {
         mp_float_t f;
         mp_uint_t u;
     } num = {.u = ((mp_uint_t)o - 0x80800000u) & ~3u};
+    // Rather than always truncating toward zero, which creates a strong
+    // bias, copy the two previous bits to fill in the two missing bits.
+    // This appears to be a pretty good heuristic.
+    num.u |= (num.u >> 2) & 3u;
     return num.f;
 }
 static inline mp_obj_t mp_obj_new_float(mp_float_t f) {

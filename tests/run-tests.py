@@ -105,9 +105,6 @@ PC_PLATFORMS = ("darwin", "linux", "win32")
 # Tests to skip on specific targets.
 # These are tests that are difficult to detect that they should not be run on the given target.
 platform_tests_to_skip = {
-    "esp8266": (
-        "misc/rge_sm.py",  # incorrect values due to object representation C
-    ),
     "minimal": (
         "basics/class_inplace_op.py",  # all special methods not supported
         "basics/subclass_native_init.py",  # native subclassing corner cases not support
@@ -788,9 +785,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add(
             "float/float2int_intbig.py"
         )  # requires fp32, there's float2int_fp30_intbig.py instead
-        skip_tests.add(
-            "float/string_format.py"
-        )  # requires fp32, there's string_format_fp30.py instead
         skip_tests.add("float/bytes_construct.py")  # requires fp32
         skip_tests.add("float/bytearray_construct.py")  # requires fp32
         skip_tests.add("float/float_format_ints_power10.py")  # requires fp32

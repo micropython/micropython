@@ -51,6 +51,9 @@ for f_name, f, test_vals in functions:
             print("%.5g" % ret)
         elif type(ret) == tuple:
             print("%.5g %.5g" % ret)
+        elif f_name == "exp":
+            # exp amplifies REPR_C inaccuracies, so we need to check one digit less
+            print("complex(%.4g, %.4g)" % (real, ret.imag))
         else:
             # some test (eg cmath.sqrt(-0.5)) disagree with CPython with tiny real part
             real = ret.real
