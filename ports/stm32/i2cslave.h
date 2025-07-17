@@ -28,6 +28,8 @@
 
 #include STM32_HAL_H
 
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32WB)
+
 #if !defined(I2C2_BASE)
 // This MCU doesn't have I2C2_BASE, define it so that the i2c_idx calculation works.
 #define I2C2_BASE (I2C1_BASE + ((I2C3_BASE - I2C1_BASE) / 2))
@@ -102,5 +104,7 @@ int i2c_slave_process_rx_byte(i2c_slave_t *i2c);
 void i2c_slave_process_rx_end(i2c_slave_t *i2c);
 void i2c_slave_process_tx_byte(i2c_slave_t *i2c);
 void i2c_slave_process_tx_end(i2c_slave_t *i2c);
+
+#endif
 
 #endif // MICROPY_INCLUDED_STM32_I2CSLAVE_H
