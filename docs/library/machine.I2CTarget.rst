@@ -5,7 +5,7 @@ class I2CTarget -- a device over I2C
 ====================================
 
 An I2C target is a device which connects to an I2C bus and is controlled by an
-I2C controller.  I2C targets can take many forms.  The `machine.I2CTarget`
+I2C controller.  I2C targets can take many forms.  The :class:`machine.I2CTarget`
 class implements an I2C target which allows reading and writing to a specific
 part of the target's internal memory.
 
@@ -49,20 +49,20 @@ Constructors
 General Methods
 ---------------
 
-.. method:: I2C.deinit()
+.. method:: I2CTarget.deinit()
 
    Deinitialise the I2C target.  It will no longer respond to requests on the I2C
    bus after this method is called.
 
-.. method:: I2C.readinto(buf)
+.. method:: I2CTarget.readinto(buf)
 
    Read bytes into the given buffer.  Returns the number of bytes read.
 
-.. method:: I2C.write(buf)
+.. method:: I2CTarget.write(buf)
 
    Write out the bytes from the buffer.  Returns the number of bytes written.
 
-.. method:: I2C.irq(handler=None, trigger=0, hard=False)
+.. method:: I2CTarget.irq(handler=None, trigger=0, hard=False)
 
    Configure an IRQ handler.
 
