@@ -660,8 +660,9 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         // make a node holding a pointer to the bytes object
         mp_obj_t o = mp_obj_new_bytes((const byte *)lex->vstr.buf, lex->vstr.len);
         pn = make_node_const_object(parser, lex->tok_line, o);
+    }
     #if MICROPY_PY_TSTRINGS
-    } else if (lex->tok_kind == MP_TOKEN_TSTRING || lex->tok_kind == MP_TOKEN_TSTRING_RAW) {
+    else if (lex->tok_kind == MP_TOKEN_TSTRING || lex->tok_kind == MP_TOKEN_TSTRING_RAW) {
         // Generate AST for template string construction
         // This will create code that calls __template__(strings, interpolations)
 
@@ -669,31 +670,58 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         size_t len = lex->vstr.len;
 
         // Process TSTRING content
+        // Use parser_alloc for all allocations to ensure GC safety
 
-        // Dynamic arrays for collecting parse nodes
-        typedef struct {
-            size_t alloc;
-            size_t len;
-            mp_parse_node_t *items;
-        } pn_array_t;
-
-        pn_array_t strings = {0};
-        pn_array_t interps = {0};
+        // Allocate fixed-size arrays using parser memory
+        // This is more predictable and aligns with MicroPython's design
+        mp_parse_node_t *strings = NULL;
+        mp_parse_node_t *interps = NULL;
+        size_t strings_len = 0;
+        size_t interps_len = 0;
+        size_t strings_alloc = 0;
+        size_t interps_alloc = 0;
 
         // Helper macros
-        #define GROW_ARRAY(arr) do { \
-        if ((arr).len >= (arr).alloc) { \
-            size_t new_alloc = (arr).alloc ? (arr).alloc * 2 : 8; \
-            (arr).items = m_renew(mp_parse_node_t, (arr).items, (arr).alloc, new_alloc); \
-            (arr).alloc = new_alloc; \
+        #ifndef MIN
+        #define MIN(a, b) ((a) < (b) ? (a) : (b))
+        #endif
+
+        #define ADD_NODE_STRINGS(node) do { \
+        if (strings_len >= strings_alloc) { \
+            if (strings_alloc >= MP_PARSE_TSTR_MAX_SEG) { \
+                mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many template segments")); \
+            } \
+            size_t new_alloc = strings_alloc ? MIN(strings_alloc * 2, MP_PARSE_TSTR_MAX_SEG) : 4; \
+            mp_parse_node_t *new_items = parser_alloc(parser, new_alloc * sizeof(mp_parse_node_t)); \
+            if (strings) { \
+                memcpy(new_items, strings, strings_len * sizeof(mp_parse_node_t)); \
+            } \
+            strings = new_items; \
+            strings_alloc = new_alloc; \
         } \
+        strings[strings_len++] = node; \
 } \
     while (0)
 
-        #define ADD_NODE(arr, node) do { \
-        GROW_ARRAY(arr); \
-        (arr).items[(arr).len++] = node; \
+        #define ADD_NODE_INTERPS(node) do { \
+        if (interps_len >= interps_alloc) { \
+            if (interps_alloc >= MP_PARSE_TSTR_MAX_INT) { \
+                mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many interpolations")); \
+            } \
+            size_t new_alloc = interps_alloc ? MIN(interps_alloc * 2, MP_PARSE_TSTR_MAX_INT) : 4; \
+            mp_parse_node_t *new_items = parser_alloc(parser, new_alloc * sizeof(mp_parse_node_t)); \
+            if (interps) { \
+                memcpy(new_items, interps, interps_len * sizeof(mp_parse_node_t)); \
+            } \
+            interps = new_items; \
+            interps_alloc = new_alloc; \
+        } \
+        interps[interps_len++] = node; \
 } while (0)
+
+        // Suppress unused variable warnings - these are used in macros
+        (void)strings_alloc;
+        (void)interps_alloc;
 
         // Use a vstr to accumulate the current string part
         vstr_t vstr;
@@ -720,9 +748,9 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
                 // Quick scan to check for debug format
                 size_t j = i;
-                int bd = 0, pd = 0;  // bracket and paren depth
+                int bd = 0, pd = 0;     // bracket and paren depth
                 char in_str = 0;     // Track string delimiter
-                bool esc = false;    // Track escape sequences
+                bool esc = false;     // Track escape sequences
 
                 while (j < len) {
                     if (esc) {
@@ -769,13 +797,13 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
                 // Now save the string part as a const object to handle high bytes correctly
                 mp_obj_t str_obj = mp_obj_new_str_copy(&mp_type_str, (const byte *)vstr.buf, vstr.len);
-                ADD_NODE(strings, make_node_const_object(parser, lex->tok_line, str_obj));
+                ADD_NODE_STRINGS(make_node_const_object(parser, lex->tok_line, str_obj));
                 vstr_reset(&vstr);
 
-                int bracket_depth = 0;  // Track [] nesting
-                int paren_depth = 0;    // Track () nesting
+                int bracket_depth = 0;     // Track [] nesting
+                int paren_depth = 0;     // Track () nesting
                 char in_string = 0;     // Track string delimiter (0, '"', or '\'')
-                bool escaped = false;   // Track escape sequences
+                bool escaped = false;     // Track escape sequences
 
                 while (i < len && brace_depth > 0) {
                     if (escaped) {
@@ -927,9 +955,9 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     interp_tuple->kind_num_nodes = RULE_atom_paren | (1 << 8);
                     interp_tuple->nodes[0] = (mp_parse_node_t)testlist_comp;
 
-                    ADD_NODE(interps, (mp_parse_node_t)interp_tuple);
+                    ADD_NODE_INTERPS((mp_parse_node_t)interp_tuple);
                     // Added interpolation
-                    i++; // Skip the closing brace
+                    i++;     // Skip the closing brace
                 } else {
                     // Failed to find closing brace - syntax error
                 }
@@ -1049,36 +1077,34 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         }
 
         mp_obj_t str_obj = mp_obj_new_str_copy(&mp_type_str, (const byte *)vstr.buf, vstr.len);
-        ADD_NODE(strings, make_node_const_object(parser, lex->tok_line, str_obj));
+        ADD_NODE_STRINGS(make_node_const_object(parser, lex->tok_line, str_obj));
         vstr_clear(&vstr);
 
 
-        size_t seg_cnt = strings.len;
-        size_t interp_cnt = interps.len;
+        size_t seg_cnt = strings_len;
+        size_t interp_cnt = interps_len;
 
+        // These checks are redundant now since ADD_NODE_* macros already check limits
+        // but we keep them for clarity and defense-in-depth
         if (seg_cnt > MP_PARSE_TSTR_MAX_SEG) {
-            m_del(mp_parse_node_t, strings.items, strings.alloc);
-            m_del(mp_parse_node_t, interps.items, interps.alloc);
+            vstr_clear(&vstr);
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many template segments"));
         }
 
         if (interp_cnt > MP_PARSE_TSTR_MAX_INT) {
-            m_del(mp_parse_node_t, strings.items, strings.alloc);
-            m_del(mp_parse_node_t, interps.items, interps.alloc);
+            vstr_clear(&vstr);
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many interpolations"));
         }
 
         // Check for integer overflow in total calculation
         size_t total = seg_cnt + interp_cnt;
         if (total < seg_cnt || total < interp_cnt) {
-            m_del(mp_parse_node_t, strings.items, strings.alloc);
-            m_del(mp_parse_node_t, interps.items, interps.alloc);
+            vstr_clear(&vstr);
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
         }
 
-        // Allocate template node. GC safety: parser_alloc ensures the allocated
-        // memory is properly rooted. strings.items and interps.items remain valid
-        // until m_del below since no allocations occur between here and there.
+        // Allocate template node. GC safety: We copy the array contents
+        // immediately after allocation to avoid issues if parser_alloc triggers GC.
         mp_parse_node_struct_t *templ =
             parser_alloc(parser,
                 sizeof(*templ) + sizeof(mp_parse_node_t) * total);
@@ -1086,20 +1112,23 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         templ->source_line = lex->tok_line;
         templ->kind_num_nodes = MP_PARSE_TSTR_HDR_MAKE(seg_cnt, interp_cnt);
 
-        memcpy(&templ->nodes[0],           strings.items,
+        // Copy nodes - safe because both arrays are in parser memory
+        memcpy(&templ->nodes[0], strings,
             seg_cnt * sizeof(mp_parse_node_t));
-        memcpy(&templ->nodes[seg_cnt],     interps.items,
+        memcpy(&templ->nodes[seg_cnt], interps,
             interp_cnt * sizeof(mp_parse_node_t));
 
         pn = (mp_parse_node_t)templ;
 
-        m_del(mp_parse_node_t, strings.items, strings.alloc);
-        m_del(mp_parse_node_t, interps.items, interps.alloc);
+        // Cleanup vstr - parser memory is automatically managed
+        vstr_clear(&vstr);
 
-#undef GROW_ARRAY
-#undef ADD_NODE
+#undef MIN
+#undef ADD_NODE_STRINGS
+#undef ADD_NODE_INTERPS
+    }
     #endif
-    } else {
+    else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, lex->tok_kind);
     }
     push_result_node(parser, pn);
