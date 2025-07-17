@@ -20,4 +20,6 @@ arch = [
     "xtensawin",
     "rv32imc",
 ][sys_mpy >> 10]
-print(platform, arch)
+thread = getattr(sys.implementation, "_thread", None)
+
+print(platform, arch, thread)

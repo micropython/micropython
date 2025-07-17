@@ -77,6 +77,8 @@ Constants
    * *_mpy* - supported mpy file-format version (optional attribute)
    * *_build* - string that can help identify the configuration that
      MicroPython was built with
+   * *_thread* - optional string attribute, exists if the target has threading
+     and is either "GIL" or "unsafe"
 
    This object is the recommended way to distinguish MicroPython from other
    Python implementations (note that it still may not exist in the very
@@ -94,6 +96,14 @@ Constants
      name, for example ``'standard'``.
    * On microcontroller targets, the first element is the board name and the second
      element (if present) is the board variant, for example ``'RPI_PICO2-RISCV'``
+
+   The *_thread* entry was added in version 1.26.0 and if it exists then the
+   target has the ``_thread`` module.  If the target enables the GIL (global
+   interpreter lock) then this attribute is ``"GIL"``.  Otherwise the attribute
+   is ``"unsafe"`` and the target has threading but does not enable the GIL,
+   and mutable Python objects (such as `bytearray`, `list` and `dict`) that are
+   shared amongst threads must be protected explicitly by locks such as
+   ``_thread.allocate_lock``.
 
    .. admonition:: Difference to CPython
       :class: attention
