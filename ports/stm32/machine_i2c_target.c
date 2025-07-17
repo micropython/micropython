@@ -182,7 +182,7 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
     machine_i2c_target_data_init(data, args[ARG_mem].u_obj, args[ARG_mem_addrsize].u_int);
 
     // Get static target object.
-    machine_i2c_target_obj_t *self = (machine_i2c_target_obj_t*)&machine_i2cslave_obj[i2c_id - 1];
+    machine_i2c_target_obj_t *self = (machine_i2c_target_obj_t *)&machine_i2cslave_obj[i2c_id - 1];
 
     // Initialise the I2C target.
     mp_hal_pin_config_alt(self->scl, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_NONE, AF_FN_I2C, i2c_id);
