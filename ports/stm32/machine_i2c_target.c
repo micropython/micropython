@@ -35,31 +35,32 @@
 typedef struct _machine_i2c_target_obj_t {
     mp_obj_base_t base;
     I2C_TypeDef *i2c;
-    int irqn;
+    uint16_t irqn_ev;
+    uint16_t irqn_er;
     mp_hal_pin_obj_t scl;
     mp_hal_pin_obj_t sda;
 } machine_i2c_target_obj_t;
 
 static const machine_i2c_target_obj_t machine_i2cslave_obj[] = {
     #if defined(MICROPY_HW_I2C1_SCL)
-    {{&machine_i2c_target_type}, I2C1, I2C1_EV_IRQn, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
+    {{&machine_i2c_target_type}, I2C1, I2C1_EV_IRQn, I2C1_ER_IRQn, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
     #else
-    {{NULL}, NULL, 0, NULL, NULL},
+    {{NULL}, NULL, 0, 0, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
-    {{&machine_i2c_target_type}, I2C2, I2C2_EV_IRQn, MICROPY_HW_I2C2_SCL, MICROPY_HW_I2C2_SDA},
+    {{&machine_i2c_target_type}, I2C2, I2C2_EV_IRQn, I2C2_ER_IRQn, MICROPY_HW_I2C2_SCL, MICROPY_HW_I2C2_SDA},
     #else
-    {{NULL}, NULL, 0, NULL, NULL},
+    {{NULL}, NULL, 0, 0, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
-    {{&machine_i2c_target_type}, I2C3, I2C3_EV_IRQn, MICROPY_HW_I2C3_SCL, MICROPY_HW_I2C3_SDA},
+    {{&machine_i2c_target_type}, I2C3, I2C3_EV_IRQn, I2C3_ER_IRQn, MICROPY_HW_I2C3_SCL, MICROPY_HW_I2C3_SDA},
     #else
-    {{NULL}, NULL, 0, NULL, NULL},
+    {{NULL}, NULL, 0, 0, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C4_SCL)
-    {{&machine_i2c_target_type}, I2C4, I2C4_EV_IRQn, MICROPY_HW_I2C4_SCL, MICROPY_HW_I2C4_SDA},
+    {{&machine_i2c_target_type}, I2C4, I2C4_EV_IRQn, I2C4_ER_IRQn, MICROPY_HW_I2C4_SCL, MICROPY_HW_I2C4_SDA},
     #else
-    {{NULL}, NULL, 0, NULL, NULL},
+    {{NULL}, NULL, 0, 0, NULL, NULL},
     #endif
 };
 
@@ -187,7 +188,9 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
     // Initialise the I2C target.
     mp_hal_pin_config_alt(self->scl, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_NONE, AF_FN_I2C, i2c_id);
     mp_hal_pin_config_alt(self->sda, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_NONE, AF_FN_I2C, i2c_id);
-    i2c_slave_init(self->i2c, self->irqn, IRQ_PRI_I2C, args[ARG_addr].u_int);
+    i2c_slave_init(self->i2c, self->irqn_ev, IRQ_PRI_I2C, args[ARG_addr].u_int);
+    NVIC_SetPriority(self->irqn_er, IRQ_PRI_I2C);
+    NVIC_EnableIRQ(self->irqn_er);
 
     i2c_target_enabled |= 1 << (i2c_id - 1);
 
@@ -202,5 +205,6 @@ static void mp_machine_i2c_target_print(const mp_print_t *print, mp_obj_t self_i
 }
 
 static void mp_machine_i2c_target_deinit(machine_i2c_target_obj_t *self) {
-    i2c_slave_shutdown(self->i2c, self->irqn);
+    i2c_slave_shutdown(self->i2c, self->irqn_ev);
+    NVIC_DisableIRQ(self->irqn_er);
 }
