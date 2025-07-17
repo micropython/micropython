@@ -76,6 +76,7 @@ typedef struct _machine_i2c_target_obj_t {
     mp_hal_pin_obj_t scl;
     mp_hal_pin_obj_t sda;
     uint8_t state;
+    bool stop_pending;
 } machine_i2c_target_obj_t;
 
 static machine_i2c_target_data_t i2c_target_data[4];
@@ -130,8 +131,12 @@ static void i2c_target_handler(i2c_inst_t *i2c) {
         if (self->state == STATE_IDLE) {
             machine_i2c_target_data_addr_match(data, false);
         }
-        machine_i2c_target_data_restart_or_stop(data);
-        self->state = STATE_IDLE;
+        if (i2c->hw->status & I2C_IC_STATUS_RFNE_BITS) {
+            self->stop_pending = true;
+        } else {
+            machine_i2c_target_data_restart_or_stop(data);
+            self->state = STATE_IDLE;
+        }
     }
 }
 
@@ -146,7 +151,9 @@ static void i2c_slave_init(i2c_inst_t *i2c, uint16_t addr, bool addr_10bit) {
 
     // Note: The I2C slave does clock stretching implicitly after a RD_REQ, while the Tx FIFO is empty.
     // Clock stretching while the Rx FIFO is full is also enabled by default.
-    i2c->hw->con = I2C_IC_CON_STOP_DET_IFADDRESSED_BITS;
+    i2c->hw->con =
+        I2C_IC_CON_RX_FIFO_FULL_HLD_CTRL_BITS
+        | I2C_IC_CON_STOP_DET_IFADDRESSED_BITS;
     if (addr_10bit) {
         i2c->hw->con |= I2C_IC_CON_IC_10BITADDR_SLAVE_BITS;
     }
@@ -204,6 +211,14 @@ static mp_int_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self,
     // Re-enable RX_FULL interrupt.
     i2c_hw->intr_mask |= I2C_IC_INTR_MASK_M_RX_FULL_BITS;
 
+    if (self->stop_pending && !(i2c_hw->status & I2C_IC_STATUS_RFNE_BITS)) {
+        unsigned int i2c_id = self->i2c_inst == i2c0 ? 0 : 1;
+        machine_i2c_target_data_t *data = &i2c_target_data[i2c_id];
+        self->stop_pending = false;
+        self->state = STATE_IDLE;
+        machine_i2c_target_data_restart_or_stop(data);
+    }
+
     return i;
 }
 
@@ -255,6 +270,7 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
 
     // Initialise data.
     self->state = STATE_IDLE;
+    self->stop_pending = false;
     MP_STATE_PORT(i2c_target_mem_obj)[i2c_id] = args[ARG_mem].u_obj;
     machine_i2c_target_data_t *data = &i2c_target_data[i2c_id];
     machine_i2c_target_data_init(data, args[ARG_mem].u_obj, args[ARG_mem_addrsize].u_int);
