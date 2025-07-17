@@ -45,9 +45,11 @@ else:
     print("Please add support for this test on this platform.")
     raise SystemExit
 
+
 def config_pull_up():
     Pin(args_controller["scl"], Pin.OPEN_DRAIN, Pin.PULL_UP)
     Pin(args_controller["sda"], Pin.OPEN_DRAIN, Pin.PULL_UP)
+
 
 class TestMemory(unittest.TestCase):
     @classmethod
@@ -110,7 +112,14 @@ class TestIRQ(unittest.TestCase):
         cls.num_events = 0
         cls.i2c = SoftI2C(**args_controller)
         cls.i2c_target = I2CTarget(*args_target, addr=ADDR)
-        cls.i2c_target.irq(TestIRQ.irq_handler, I2CTarget.IRQ_ADDR_MATCH | I2CTarget.IRQ_WRITE_REQ | I2CTarget.IRQ_READ_REQ | I2CTarget.IRQ_END, hard=True)
+        cls.i2c_target.irq(
+            TestIRQ.irq_handler,
+            I2CTarget.IRQ_ADDR_MATCH
+            | I2CTarget.IRQ_WRITE_REQ
+            | I2CTarget.IRQ_READ_REQ
+            | I2CTarget.IRQ_END,
+            hard=True,
+        )
         config_pull_up()
 
     @classmethod
