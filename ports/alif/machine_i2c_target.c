@@ -242,18 +242,18 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
     self->i2c->I2C_RX_TL = 0; // interrupt when at least 1 byte is available
 
     self->i2c->I2C_INTR_MASK =
-        //| I2C_IC_INTR_STAT_START_DET  // 0x0400
-          I2C_IC_INTR_STAT_STOP_DET     // 0x0200
-        //| I2C_IC_INTR_STAT_ACTIVITY   // 0x0100
+        // | I2C_IC_INTR_STAT_START_DET  // 0x0400
+        I2C_IC_INTR_STAT_STOP_DET       // 0x0200
+        // | I2C_IC_INTR_STAT_ACTIVITY   // 0x0100
         | I2C_IC_INTR_STAT_RX_DONE      // 0x0080
         | I2C_IC_INTR_STAT_TX_ABRT      // 0x0040
         | I2C_IC_INTR_STAT_RD_REQ       // 0x0020
-        //| I2C_IC_INTR_STAT_TX_EMPTY   // 0x0010
-        //| I2C_IC_INTR_STAT_TX_OVER    // 0x0008
+        // | I2C_IC_INTR_STAT_TX_EMPTY   // 0x0010
+        // | I2C_IC_INTR_STAT_TX_OVER    // 0x0008
         | I2C_IC_INTR_STAT_RX_FULL      // 0x0004
-        //| I2C_IC_INTR_STAT_RX_OVER    // 0x0002
-        //| I2C_IC_INTR_STAT_RX_UNDER   // 0x0001
-        ;
+        // | I2C_IC_INTR_STAT_RX_OVER    // 0x0002
+        // | I2C_IC_INTR_STAT_RX_UNDER   // 0x0001
+    ;
 
     i2c_enable(self->i2c);
 
