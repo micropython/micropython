@@ -338,7 +338,7 @@ static mp_uint_t machine_i2c_target_irq_trigger(mp_obj_t self_in, mp_uint_t new_
 }
 
 static mp_uint_t machine_i2c_target_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
-    //machine_i2c_target_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    // machine_i2c_target_obj_t *self = MP_OBJ_TO_PTR(self_in);
     machine_i2c_target_irq_obj_t *irq = MP_STATE_PORT(machine_i2c_target_irq_obj[0]);
     if (info_type == MP_IRQ_INFO_FLAGS) {
         return irq->flags;
