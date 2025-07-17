@@ -15,7 +15,7 @@ from multiprocessing.pool import ThreadPool
 import threading
 import tempfile
 
-# Maximum time to run a PC-based test, in seconds.
+# Maximum time to run a single test, in seconds.
 TEST_TIMEOUT = float(os.environ.get('MICROPY_TEST_TIMEOUT', 30))
 
 # See stackoverflow.com/questions/2632199: __file__ nor sys.argv[0]
@@ -333,7 +333,7 @@ def run_script_on_remote_target(pyb, args, test_file, is_special):
     try:
         had_crash = False
         pyb.enter_raw_repl()
-        output_mupy = pyb.exec_(script)
+        output_mupy = pyb.exec_(script, timeout=TEST_TIMEOUT)
     except pyboard.PyboardError as e:
         had_crash = True
         if not is_special and e.args[0] == "exception":
