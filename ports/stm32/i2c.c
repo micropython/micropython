@@ -615,7 +615,14 @@ void I2C1_EV_IRQHandler(void) {
 void I2C1_ER_IRQHandler(void) {
     MP_STATIC_ASSERT(I2C1_ER_IRQn > 0);
     IRQ_ENTER(I2C1_ER_IRQn);
-    i2c_er_irq_handler(1);
+    #if MICROPY_HW_ENABLE_HW_I2C_TARGET
+    if (i2c_target_enabled & 1) {
+        i2c_slave_ev_irq_handler(I2C1);
+    } else
+    #endif
+    {
+        i2c_er_irq_handler(1);
+    }
     IRQ_EXIT(I2C1_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C1_SCL)
