@@ -508,20 +508,21 @@ static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
 }
 
 static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
-    // Save settings
+    // Calculate the length of the break, as 13 bits.
     uint32_t baudrate;
     check_esp_err(uart_get_baudrate(self->uart_num, &baudrate));
+    uint32_t break_delay_us = 13000000 / baudrate;
 
-    // Synthesise the break condition by reducing the baud rate,
-    // and cater for the worst case of 5 data bits, no parity.
-    check_esp_err(uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000)));
-    check_esp_err(uart_set_baudrate(self->uart_num, baudrate * 6 / 15));
-    char buf[1] = {0};
-    uart_write_bytes(self->uart_num, buf, 1);
+    // Wait for any outstanding data to be transmitted.
     check_esp_err(uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000)));
 
-    // Restore original setting
-    check_esp_err(uart_set_baudrate(self->uart_num, baudrate));
+    // Set the TX pin to output, pull it low, and wait for the break period.
+    mp_hal_pin_output(self->tx);
+    mp_hal_pin_write(self->tx, 0);
+    mp_hal_delay_us(break_delay_us);
+
+    // Restore original UART pin settings.
+    check_esp_err(uart_set_pin(self->uart_num, self->tx, self->rx, self->rts, self->cts));
 }
 
 // Configure the timer used for IRQ_RXIDLE
