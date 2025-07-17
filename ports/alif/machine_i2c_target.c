@@ -72,7 +72,7 @@ static void i2c_target_irq_handler(machine_i2c_target_obj_t *self) {
     machine_i2c_target_data_t *data = &i2c_target_data[i2c_id];
     I2C_Type *i2c = self->i2c;
 
-    // Get and clear the interrupt status.
+    // Get the interrupt status.
     uint32_t intr_stat = i2c->I2C_RAW_INTR_STAT;
 
     if (intr_stat & I2C_IC_INTR_STAT_TX_ABRT) {
@@ -149,7 +149,7 @@ static mp_int_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self,
 
     // Read from the RX FIFO.
     mp_int_t i = 0;
-    while (i < len && (i2c->I2C_RAW_INTR_STAT & I2C_IC_INTR_STAT_RX_FULL)) {
+    while (i < len && (i2c->I2C_STATUS & I2C_IC_STATUS_RECEIVE_FIFO_NOT_EMPTY)) {
         buf[i++] = i2c->I2C_DATA_CMD;
     }
 
@@ -224,15 +224,12 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
 
     // Initialise the I2C target.
 
-    uint32_t addr = args[ARG_addr].u_int;
-    i2c_address_mode_t addr_mode = args[ARG_addrsize].u_int == 7 ? I2C_7BIT_ADDRESS : I2C_10BIT_ADDRESS;
-
     i2c_disable(self->i2c);
 
-    self->i2c->I2C_SAR = addr & I2C_IC_SAR_10BIT_ADDR_MASK;
+    self->i2c->I2C_SAR = args[ARG_addr].u_int & I2C_IC_SAR_10BIT_ADDR_MASK;
 
     uint32_t ic_con_reg = 0;
-    if (addr_mode == I2C_10BIT_ADDRESS) {
+    if (args[ARG_addrsize].u_int == 10) {
         ic_con_reg |= I2C_SLAVE_10BIT_ADDR_MODE;
     }
     ic_con_reg |= I2C_IC_CON_TX_EMPTY_CTRL;
