@@ -34,6 +34,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "extmod/modbluetooth.h"
+#include "extmod/modmachine.h"
 #include "extmod/modnetwork.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
