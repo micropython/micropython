@@ -661,8 +661,8 @@ static void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
     // try __getattr__
     if (attr != MP_QSTR___getattr__) {
         #if MICROPY_PY_DESCRIPTORS
-        // With descriptors enabled, don't delegate lookups of __get__/__set__/__delete__.
-        if (attr == MP_QSTR___get__ || attr == MP_QSTR___set__ || attr == MP_QSTR___delete__) {
+        // With descriptors enabled, don't delegate lookups of __get__/__set__/__delete__/__set_name__.
+        if (attr == MP_QSTR___get__ || attr == MP_QSTR___set__ || attr == MP_QSTR___delete__ || attr == MP_QSTR___set_name__) {
             return;
         }
         #endif
@@ -960,7 +960,7 @@ static bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
     #endif
     #if MICROPY_PY_DESCRIPTORS
     static const uint8_t to_check[] = {
-        MP_QSTR___get__, MP_QSTR___set__, MP_QSTR___delete__,
+        MP_QSTR___get__, MP_QSTR___set__, MP_QSTR___delete__, // not needed for MP_QSTR___set_name__ tho
     };
     for (size_t i = 0; i < MP_ARRAY_SIZE(to_check); ++i) {
         mp_obj_t dest_temp[2];
@@ -971,6 +971,51 @@ static bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
     }
     #endif
     return false;
+}
+#endif
+
+#if MICROPY_PY_METACLASSES_LITE
+// Shared data layout for the __set_name__ call and a linked list of calls to be made.
+typedef union _setname_list_t setname_list_t;
+union _setname_list_t {
+    mp_obj_t call[4];
+    struct {
+        mp_obj_t _meth;
+        mp_obj_t _self;
+        setname_list_t *next; // can use the "owner" argument position temporarily for the linked list
+        mp_obj_t _name;
+    };
+};
+
+// Append any `__set_name__` method on `value` to the setname list, with its per-attr args
+static setname_list_t *setname_maybe_bind_append(setname_list_t *tail, mp_obj_t name, mp_obj_t value) {
+    // make certain our type-punning is safe:
+    MP_STATIC_ASSERT_NONCONSTEXPR(offsetof(setname_list_t, next) == offsetof(setname_list_t, call[2]));
+
+    // tail is a blank list entry
+    mp_load_method_maybe(value, MP_QSTR___set_name__, tail->call);
+    if (tail->call[1] != MP_OBJ_NULL) {
+        // Each time a __set_name__ is found, leave it in-place in the former tail and allocate a new tail
+        tail->next = m_new_obj(setname_list_t);
+        tail->next->next = NULL;
+        tail->call[3] = name;
+        return tail->next;
+    } else {
+        return tail;
+    }
+}
+
+// Execute the captured `__set_name__` calls, destroying the setname list in the process.
+static void setname_consume_call_all(setname_list_t head, mp_obj_t owner) {
+    setname_list_t *iter = &head, *next;
+    while ((next = iter->next) != NULL) {
+        iter->call[2] = owner;
+        mp_call_method_n_kw(2, 0, iter->call);
+        if (iter != &head) { // head is stack, just mark blank
+            m_del_obj(setname_list_t, iter); // optimistic free, help gc not take too many passes to unwind
+        }
+        iter = next;
+    }
 }
 #endif
 
@@ -1210,20 +1255,40 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         }
     }
 
-    #if ENABLE_SPECIAL_ACCESSORS
-    // Check if the class has any special accessor methods
-    if (!(o->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
-        for (size_t i = 0; i < locals_ptr->map.alloc; i++) {
-            if (mp_map_slot_is_filled(&locals_ptr->map, i)) {
-                const mp_map_elem_t *elem = &locals_ptr->map.table[i];
-                if (check_for_special_accessors(elem->key, elem->value)) {
-                    o->flags |= MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
-                    break;
-                }
+    #if MICROPY_PY_METACLASSES_LITE
+    // To avoid any dynamic allocations when no __set_name__ exists,
+    // the head of this list is kept on the stack (marked blank with `next = NULL`).
+    setname_list_t setname_list = { .next = NULL };
+    setname_list_t *setname_tail = &setname_list;
+    #endif
+
+    #if MICROPY_PY_METACLASSES_LITE || ENABLE_SPECIAL_ACCESSORS
+    // Check if the class has any special accessor methods,
+    // and accumulate bound __set_name__ methods that need to be called
+    for (size_t i = 0; i < locals_ptr->map.alloc; i++) {
+        #if !MICROPY_PY_METACLASSES_LITE
+        // metaclasses-lite needs to scan the entire locals map, can't early-terminate
+        if (o->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS) {
+            break;
+        }
+        #endif
+
+        if (mp_map_slot_is_filled(&locals_ptr->map, i)) {
+            const mp_map_elem_t *elem = &locals_ptr->map.table[i];
+
+            #if ENABLE_SPECIAL_ACCESSORS
+            if (!(o->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS) // elidable when the early-termination check is enabled
+                && check_for_special_accessors(elem->key, elem->value)) {
+                o->flags |= MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
             }
+            #endif
+
+            #if MICROPY_PY_METACLASSES_LITE
+            setname_tail = setname_maybe_bind_append(setname_tail, elem->key, elem->value);
+            #endif
         }
     }
-    #endif
+    #endif // MICROPY_PY_METACLASSES_LITE || ENABLE_SPECIAL_ACCESSORS
 
     const mp_obj_type_t *native_base;
     size_t num_native_bases = instance_count_native_bases(o, &native_base);
@@ -1240,6 +1305,27 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
             elem->value = static_class_method_make_new(&mp_type_staticmethod, 1, 0, &elem->value);
         }
     }
+
+    #if MICROPY_PY_METACLASSES_LITE
+    setname_consume_call_all(setname_list, MP_OBJ_FROM_PTR(o));
+    #elif MICROPY_PY_DESCRIPTORS
+    locals_map->is_fixed = 1; // just block modify-while-write of __set_name__
+    // call __set_name__ on all entries (especially descriptors)
+    for (size_t i = 0; i < locals_map->alloc; i++) {
+        if (mp_map_slot_is_filled(locals_map, i)) {
+            elem = &(locals_map->table[i]);
+
+            mp_obj_t set_name_method[4];
+            mp_load_method_maybe(elem->value, MP_QSTR___set_name__, set_name_method);
+            if (set_name_method[1] != MP_OBJ_NULL) {
+                set_name_method[2] = MP_OBJ_FROM_PTR(o);
+                set_name_method[3] = elem->key;
+                mp_call_method_n_kw(2, 0, set_name_method);
+            }
+        }
+    }
+    locals_map->is_fixed = 0; // would be finalizer, but class isn't returned anyway
+    #endif
 
     return MP_OBJ_FROM_PTR(o);
 }

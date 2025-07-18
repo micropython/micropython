@@ -1131,6 +1131,12 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_DESCRIPTORS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to support PEP487 __set_name__, __init_subclass__
+// This costs some code size and makes class creation slower
+#ifndef MICROPY_PY_METACLASSES_LITE
+#define MICROPY_PY_METACLASSES_LITE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to support class __delattr__ and __setattr__ methods
 // This costs some code size and makes store/delete of instance
 // attributes slower for the classes that use this feature
