@@ -43,7 +43,7 @@ $MPREMOTE resume ls :
 $MPREMOTE resume cat a.py
 $MPREMOTE resume cat :b.py
 $MPREMOTE resume sha256sum a.py
-echo -n "" | sha256sum
+echo -n "" | sha256sum --text
 
 echo -----
 cat << EOF > "${TMP}/a.py"
@@ -57,7 +57,7 @@ $MPREMOTE resume cp :a.py :d.py
 $MPREMOTE resume ls
 $MPREMOTE resume exec "import a; import b; import c"
 $MPREMOTE resume sha256sum a.py
-cat "${TMP}/a.py" | sha256sum
+cat "${TMP}/a.py" | sha256sum --text
 
 echo -----
 $MPREMOTE resume mkdir aaa
@@ -84,7 +84,7 @@ $MPREMOTE resume rmdir aaa :bbb
 $MPREMOTE resume ls
 
 echo -----
-env EDITOR="sed -i s/Hello/Goodbye/" $MPREMOTE resume edit d.py
+EDITOR="sed -i s/Hello/Goodbye/" $MPREMOTE resume edit d.py
 $MPREMOTE resume sha256sum :d.py
 $MPREMOTE resume exec "import d"
 
