@@ -69,6 +69,7 @@ static mp_obj_tuple_t *code_consts(const mp_module_context_t *context, const mp_
     return consts;
 }
 
+#if !MICROPY_PREVIEW_VERSION_2
 static mp_obj_t raw_code_lnotab(const mp_raw_code_t *rc) {
     // const mp_bytecode_prelude_t *prelude = &rc->prelude;
     uint start = 0;
@@ -106,6 +107,7 @@ static mp_obj_t raw_code_lnotab(const mp_raw_code_t *rc) {
     m_del(byte, buffer, buffer_size);
     return o;
 }
+#endif
 
 static mp_obj_t code_colines_iter(mp_obj_t);
 static mp_obj_t code_colines_next(mp_obj_t);
@@ -198,12 +200,14 @@ static void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         case MP_QSTR_co_names:
             dest[0] = MP_OBJ_FROM_PTR(o->dict_locals);
             break;
+        #if !MICROPY_PREVIEW_VERSION_2
         case MP_QSTR_co_lnotab:
             if (!o->lnotab) {
                 o->lnotab = raw_code_lnotab(rc);
             }
             dest[0] = o->lnotab;
             break;
+        #endif
         case MP_QSTR_co_lines:
             dest[0] = MP_OBJ_FROM_PTR(&code_colines_obj);
             dest[1] = self_in;
