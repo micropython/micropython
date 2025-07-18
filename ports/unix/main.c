@@ -55,6 +55,10 @@
 #include "genhdr/mpversion.h"
 #include "input.h"
 
+#if defined(MICROPY_UNIX_COVERAGE)
+#include "extmod/moductypes.h"
+#endif
+
 // Command line options, with their defaults
 static bool compile_only = false;
 static uint emit_opt = MP_EMIT_OPT_NONE;
@@ -609,10 +613,21 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     #if defined(MICROPY_UNIX_COVERAGE)
     {
+        static const mp_rom_map_elem_t rect_descr_table[] = {
+            { MP_ROM_QSTR(MP_QSTR_top), MP_ROM_INT(UCTYPE_TYPE(INT16) | 0) },
+            { MP_ROM_QSTR(MP_QSTR_left), MP_ROM_INT(UCTYPE_TYPE(INT16) | 2) },
+            { MP_ROM_QSTR(MP_QSTR_bottom), MP_ROM_INT(UCTYPE_TYPE(INT16) | 4) },
+            { MP_ROM_QSTR(MP_QSTR_right), MP_ROM_INT(UCTYPE_TYPE(INT16) | 6) },
+        };
+        static MP_DEFINE_CONST_DICT(rect_descr_dict, rect_descr_table);
+        static MP_DEFINE_CTYPES_STRUCT(rect_type_obj, MP_QSTR_Rect, MP_ROM_PTR((void *)&rect_descr_dict), LAYOUT_NATIVE);
+
         MP_DECLARE_CONST_FUN_OBJ_0(extra_coverage_obj);
         MP_DECLARE_CONST_FUN_OBJ_0(extra_cpp_coverage_obj);
+
         mp_store_global(MP_QSTR_extra_coverage, MP_OBJ_FROM_PTR(&extra_coverage_obj));
         mp_store_global(MP_QSTR_extra_cpp_coverage, MP_OBJ_FROM_PTR(&extra_cpp_coverage_obj));
+        mp_store_global(MP_QSTR_Rect, MP_OBJ_FROM_PTR(&rect_type_obj));
     }
     #endif
 

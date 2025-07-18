@@ -23,6 +23,7 @@ UNAME_S := $(shell uname -s)
 LD = $(CXX)
 CFLAGS += $(INC) -Wall -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
 CFLAGS += --param=min-pagesize=0
+CFLAGS += -save-temps=obj
 CSUPEROPT = -Os # save some code space
 
 # Tune for Debugging or Optimization
@@ -43,7 +44,7 @@ SRC_C = \
 	main.c \
 	vfs_mac.c \
 	macutil.c \
-	$(BUILD)/modqd.c \
+	multiverse_support.c \
 
 SRC_C += \
 	shared/readline/readline.c \
@@ -66,20 +67,34 @@ SRC_QSTR += \
 	vfs_mac.c \
 	shared/readline/readline.c \
 	shared/runtime/pyexec.c \
-	$(BUILD)/modqd.c \
+
+.PHONY: mkapi
+
+DEFS = lib/multiversal/defs/MacTypes.yaml
+TDEFS = $(patsubst %, -t %, $(DEFS))
+
+# $(eval $(call multiversal_module, module name, defs files))
+define multiversal_module
+$$(BUILD)/mod$(1).c: tools/mkapi.py $(filter-out -t,$(2)) $$(DEFS)
+	$$(ECHO) "MKAPI $(1)"
+	$$(Q)$$(MKDIR) -p $$(BUILD)
+	$$(Q)$$(PYTHON) tools/mkapi.py -o $$@ -m $(1) $$(TDEFS) $(2)
+SRC_C += $(BUILD)/mod$(1).c
+SRC_QSTR += $(BUILD)/mod$(1).c
+mkapi:: $$(BUILD)/mod$(1).c
+endef
+
+$(eval $(call multiversal_module,qd,lib/multiversal/defs/QuickDraw.yaml etc/QuickDrawExtras.yaml))
+$(eval $(call multiversal_module,windowmgr,lib/multiversal/defs/WindowMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
+$(eval $(call multiversal_module,toolboxevent,lib/multiversal/defs/ToolboxEvent.yaml -t lib/multiversal/defs/QuickDraw.yaml))
+$(eval $(call multiversal_module,toolboxutil,lib/multiversal/defs/ToolboxUtil.yaml -t lib/multiversal/defs/EventMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
+$(eval $(call multiversal_module,mactypes,lib/multiversal/defs/MacTypes.yaml etc/MacTypesExtras.yaml))
+$(eval $(call multiversal_module,eventmgr,lib/multiversal/defs/EventMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
 
 OBJ += $(PY_CORE_O) $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
-
-.PHONY: mkapi
-mkapi: $(BUILD)/modqd.c
-
-$(BUILD)/modqd.c: tools/mkapi.py
-	$(ECHO) "MKAPI $@"
-	$(Q)$(MKDIR) -p $(BUILD)
-	$(Q)$(PYTHON) tools/mkapi.py lib/multiversal/defs/QuickDraw.yaml qd > $@
 
 all: $(BUILD)/micropython.bin
 
@@ -110,6 +125,8 @@ run:
 	cp $(BASE_IMG) $(BUILD)/run.dsk
 	hmount $(BUILD)/run.dsk
 	hcopy $(BUILD)/micropython.bin ":Desktop Folder"
+	hcopy code.py ":Desktop Folder"
+	hattrib -t mupy -c mupy -t text ":Desktop Folder:code.py"
 	$(UMAC) -d build/run.dsk
 
 include $(TOP)/py/mkrules.mk
