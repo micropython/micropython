@@ -77,8 +77,6 @@
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
 
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 
