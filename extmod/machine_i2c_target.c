@@ -54,13 +54,15 @@ mp_machine_i2c_target_event_stop(*)
 
 enum {
     STATE_IDLE,
-    STATE_MEM_ADDR_SELECTED,
+    STATE_MEM_ADDR_SELECT,
     STATE_READING,
     STATE_WRITING,
 };
 
 typedef struct _machine_i2c_target_data_t {
     uint8_t state;
+    uint8_t mem_addr_count;
+    uint8_t mem_addrsize;
     uint32_t mem_addr;
     uint32_t mem_len;
     uint8_t *mem_buf;
@@ -80,11 +82,11 @@ static void mp_machine_i2c_target_event_callback(machine_i2c_target_irq_obj_t *i
 
 // read up to N bytes
 // return the number of bytes read
-static mp_int_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self, size_t len, uint8_t *buf);
+static size_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self, size_t len, uint8_t *buf);
 
 // write/buffer N bytes
 // return the number of bytes written/buffered
-static mp_int_t mp_machine_i2c_target_write_bytes(machine_i2c_target_obj_t *self, size_t len, const uint8_t *buf);
+static size_t mp_machine_i2c_target_write_bytes(machine_i2c_target_obj_t *self, size_t len, const uint8_t *buf);
 
 static void mp_machine_i2c_target_irq_config(machine_i2c_target_obj_t *self, unsigned int trigger);
 
@@ -122,15 +124,19 @@ static bool event(machine_i2c_target_data_t *data, unsigned int trigger, size_t 
 
 static void machine_i2c_target_data_init(machine_i2c_target_data_t *data, mp_obj_t mem_obj, mp_int_t mem_addrsize) {
     data->state = STATE_IDLE;
+    data->mem_addr_count = 0;
+    data->mem_addrsize = 0;
     data->mem_addr = 0;
     data->mem_len = 0;
     data->mem_buf = NULL;
     if (mem_obj != mp_const_none) {
+        // maybe allow MP_BUFFER_READ, in which case writes will be discarded?
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(mem_obj, &bufinfo, MP_BUFFER_RW);
-        if (mem_addrsize < 8 || mem_addrsize > 32 || mem_addrsize % 8 != 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("mem_addrsize must be 8, 16, 24 or 32"));
+        if (mem_addrsize < 0 || mem_addrsize > 32 || mem_addrsize % 8 != 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("mem_addrsize must be 0, 8, 16, 24 or 32"));
         }
+        data->mem_addrsize = mem_addrsize / 8;
         data->mem_len = bufinfo.len;
         data->mem_buf = bufinfo.buf;
     }
@@ -162,7 +168,12 @@ static void machine_i2c_target_data_read_request(machine_i2c_target_obj_t *self,
         }
     } else {
         // Have a buffer.
-        if (data->state == STATE_MEM_ADDR_SELECTED) {
+        if (data->state == STATE_MEM_ADDR_SELECT) {
+            // Got a short memory address.
+            data->mem_addr %= data->mem_len;
+            event(data, I2C_TARGET_IRQ_MEM_ADDR_MATCH, data->mem_addr, 0);
+        }
+        if (data->state != STATE_READING) {
             data->state = STATE_READING;
             event(data, I2C_TARGET_IRQ_READ_START, data->mem_addr, 0);
         }
@@ -185,21 +196,32 @@ static void machine_i2c_target_data_write_request(machine_i2c_target_obj_t *self
         }
     } else {
         // Have a buffer.
-        uint8_t val = 0;
-        mp_machine_i2c_target_read_bytes(self, 1, &val);
-        if (data->state == STATE_IDLE) {
-            // TODO allow N bytes for address, with N=0 allowed
-            data->state = STATE_MEM_ADDR_SELECTED;
-            data->mem_addr = val % data->mem_len;
-            event(data, I2C_TARGET_IRQ_MEM_ADDR_MATCH, data->mem_addr, 0);
-        } else {
-            if (data->state == STATE_MEM_ADDR_SELECTED) {
-                data->state = STATE_WRITING;
-                event(data, I2C_TARGET_IRQ_WRITE_START, data->mem_addr, 0);
-            }
-            data->mem_buf[data->mem_addr++] = val;
-            if (data->mem_addr >= data->mem_len) {
+        // TODO test read-write behaviour
+        uint8_t buf[4] = {0};
+        size_t n = mp_machine_i2c_target_read_bytes(self, sizeof(buf), &buf[0]);
+        for (size_t i = 0; i < n; ++i) {
+            uint8_t val = buf[i];
+            if (data->state == STATE_IDLE) {
+                data->state = STATE_MEM_ADDR_SELECT;
                 data->mem_addr = 0;
+                data->mem_addr_count = data->mem_addrsize;
+            }
+            if (data->state == STATE_MEM_ADDR_SELECT && data->mem_addr_count > 0) {
+                data->mem_addr = data->mem_addr << 8 | val;
+                --data->mem_addr_count;
+                if (data->mem_addr_count == 0) {
+                    data->mem_addr %= data->mem_len;
+                    event(data, I2C_TARGET_IRQ_MEM_ADDR_MATCH, data->mem_addr, 0);
+                }
+            } else {
+                if (data->state == STATE_MEM_ADDR_SELECT) {
+                    data->state = STATE_WRITING;
+                    event(data, I2C_TARGET_IRQ_WRITE_START, data->mem_addr, 0);
+                }
+                data->mem_buf[data->mem_addr++] = val;
+                if (data->mem_addr >= data->mem_len) {
+                    data->mem_addr = 0;
+                }
             }
         }
     }
