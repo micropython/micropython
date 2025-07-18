@@ -111,7 +111,7 @@ static void mp_machine_i2c_target_event_callback(machine_i2c_target_irq_obj_t *i
     mp_irq_handler(&irq->base);
 }
 
-static mp_int_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self, size_t len, uint8_t *buf) {
+static size_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self, size_t len, uint8_t *buf) {
     if (len > 0) {
         buf[0] = i2c_slave_read_byte(self->i2c);
         len = 1;
@@ -119,7 +119,7 @@ static mp_int_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self,
     return len;
 }
 
-static mp_int_t mp_machine_i2c_target_write_bytes(machine_i2c_target_obj_t *self, size_t len, const uint8_t *buf) {
+static size_t mp_machine_i2c_target_write_bytes(machine_i2c_target_obj_t *self, size_t len, const uint8_t *buf) {
     if (len > 0) {
         i2c_slave_write_byte(self->i2c, buf[0]);
         len = 1;
