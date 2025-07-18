@@ -51,8 +51,6 @@ struct _mp_lexer_t;
 
 #define MP_PARSE_TSTR_HDR_SEG_SHIFT   (8)
 #define MP_PARSE_TSTR_HDR_INT_SHIFT   (20)
-#define MP_PARSE_TSTR_MAX_SEG         (4095)
-#define MP_PARSE_TSTR_MAX_INT         (4095)
 
 #define MP_PARSE_TSTR_HDR_MAKE(seg_cnt, int_cnt) \
     ((MP_PARSE_NODE_TEMPLATE_STRING | \
@@ -67,8 +65,6 @@ struct _mp_lexer_t;
 
 // Ensure header bit packing fits in 32 bits
 typedef char _tstr_assert1[(MP_PARSE_TSTR_HDR_INT_SHIFT + 12 <= 32) ? 1 : -1];
-typedef char _tstr_assert2[(MP_PARSE_TSTR_MAX_SEG <= 0xFFF) ? 1 : -1];
-typedef char _tstr_assert3[(MP_PARSE_TSTR_MAX_INT <= 0xFFF) ? 1 : -1];
 
 typedef uintptr_t mp_parse_node_t; // must be pointer size
 
