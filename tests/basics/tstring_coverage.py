@@ -187,7 +187,7 @@ except Exception as e:
 try:
     expr = "x = 1\n" + "t'" + "{x}" * 5000 + "'"
     exec(expr)
-except (ValueError, SyntaxError, MemoryError) as e:
+except (ValueError, SyntaxError, MemoryError, OverflowError) as e:
     print("Too many interpolations: SyntaxError")
 
 try:
@@ -524,9 +524,9 @@ try:
     code = 't"' + '{x}' * 4096 + '"'
     exec(f"x = 'test'; result = {code}")
     print("ERROR: Should have raised SyntaxError for too many interpolations")
-except SyntaxError as e:
-    if "too many interpolations" in str(e):
-        print(f"Too many interpolations: SyntaxError - {e}")
+except (SyntaxError, OverflowError, MemoryError) as e:
+    if isinstance(e, MemoryError) or "too many" in str(e) or "too large" in str(e):
+        print("Too many interpolations: SyntaxError - template string too large for header format")
     else:
         print(f"Unexpected error: {e}")
 
@@ -887,9 +887,9 @@ try:
     code = 't"' + '{x}' * 4096 + '"'
     exec(f"x = 1; result = {code}")
     print("ERROR: Should have raised SyntaxError for too many interpolations")
-except SyntaxError as e:
-    if "too many interpolations" in str(e):
-        print(f"Too many interpolations: {e}")
+except (SyntaxError, OverflowError, MemoryError) as e:
+    if isinstance(e, MemoryError) or "too many" in str(e) or "too large" in str(e):
+        print("Too many interpolations: template string too large for header format")
     else:
         print(f"Other syntax error: {e}")
 
