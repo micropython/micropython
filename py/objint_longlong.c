@@ -212,9 +212,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 // negative shift not allowed
                 mp_raise_ValueError(MP_ERROR_TEXT("negative shift count"));
             }
-            result = lhs_val << (int)rhs_val;
-            // Left-shifting of negative values is implementation defined in C, but assume compiler
-            // will give us typical 2s complement behaviour unless the value overflows
+            result = lhs_val * (1ll << (int)rhs_val);
             overflow = rhs_val > 0 && ((lhs_val >= 0 && result < lhs_val) || (lhs_val < 0 && result > lhs_val));
             break;
         case MP_BINARY_OP_RSHIFT:
