@@ -675,7 +675,9 @@ size_t mp_obj_array_len(mp_obj_t self_in) {
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 mp_obj_t mp_obj_new_bytearray(size_t n, const void *items) {
     mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, n);
-    memcpy(o->items, items, n);
+    if (items) {
+        memcpy(o->items, items, n);
+    }
     return MP_OBJ_FROM_PTR(o);
 }
 

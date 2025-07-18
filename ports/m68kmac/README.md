@@ -28,19 +28,3 @@ There's a built in editor:
 ```
 umac doesn't support arrow keys. Emacs-style ctrl+p/n f/b work to move cursor instead.
 Probably doesn't work right now on a keyboard with no control key.
-
-## Key TODOs
-
- * Finish `VfsMac`
-   * a few more methods
-   * chdir may affect a lot
-   * handling `.` and `..` in paths
- * Add sys.stdin.readable & polling of sys.stdin for editor
- * auto-launch `code.py` (with bypass via shift key or something?)
- * OR double-clickable ".py" files
- * "Mac Roman" encoding support in terminal, text I/O & filenames
- * Mac API support (e.g., quickdraw, maybe arbitrary traps)
- * Support larger heap (via split heap? how does heap allocation work?)
- * Decide whether RetroConsole needs to be replaced (is GPL a problem for upstream??)
- * ctrl-c interrupt char handling
- * Any other issues that might ease upstream inclusion.

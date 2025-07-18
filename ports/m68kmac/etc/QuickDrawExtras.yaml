@@ -1,0 +1,22 @@
+- pyverbatim: 
+    content: |
+      #include "uart_core.h"
+      mp_obj_t __init___fn(void) {
+          mp_hal_stdout_tx_strn(NULL, 0); // this suffices to create the console
+          return mp_const_none;
+      }
+      MP_DEFINE_CONST_FUN_OBJ_0(__init___obj, __init___fn);
+    name: __init__
+- pyverbatim:
+    typedef_content: |
+      // because we fix the constness of DrawText in our multiversal fork but build
+      // against retro68's flawed multiversal ...
+      #define DrawText(a, b, c) DrawText((char *)a, b, c)
+- pyverbatim:
+    typedef_content: |
+      static QDGlobals *qdGlobals() {
+        return &qd;
+      }
+- function:
+    name: qdGlobals
+    return: QDGlobals*
