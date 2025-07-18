@@ -92,6 +92,18 @@ version = release = micropy_version
 # today_fmt = '%B %d, %Y'
 
 # List of patterns, relative to source directory, that match files and
+# directories to include when looking for source files.
+include_patterns = [
+    "*.*",
+    "library/**",
+    "reference/**",
+    "genrst/**",
+    "develop/**",
+    "license/**",
+    "m68kmac/**",
+]
+
+# List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = ["build", ".venv"]
 
