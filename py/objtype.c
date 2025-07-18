@@ -977,7 +977,7 @@ static bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
 static void type_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<class '%q'>", self->name);
+    mp_printf(print, "<class '%q'>", (qstr)self->name);
 }
 
 static mp_obj_t type_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {

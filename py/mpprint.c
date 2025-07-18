@@ -530,7 +530,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 char fmt_chr = *fmt;
                 mp_uint_t val;
                 if (fmt_chr == 'p' || fmt_chr == 'P') {
-                    val = va_arg(args, intptr_t);
+                    val = va_arg(args, uintptr_t);
                 }
                 #if SUPPORT_LL_FORMAT
                 else if (long_long_arg) {

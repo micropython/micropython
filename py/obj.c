@@ -128,7 +128,7 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     if (MP_OBJ_TYPE_HAS_SLOT(type, print)) {
         MP_OBJ_TYPE_GET_SLOT(type, print)((mp_print_t *)print, o_in, kind);
     } else {
-        mp_printf(print, "<%q>", type->name);
+        mp_printf(print, "<%q>", (qstr)type->name);
     }
 }
 

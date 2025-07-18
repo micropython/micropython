@@ -72,6 +72,7 @@
 
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
+#define HEX_FMT "%lx"
 
 typedef int32_t mp_int_t; // must be pointer size
 typedef uint32_t mp_uint_t; // must be pointer size
