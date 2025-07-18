@@ -335,8 +335,6 @@ void *nrf_native_code_commit(void *, unsigned int, void *);
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
 #define HEX2_FMT "%02x"
 
 typedef int mp_int_t; // must be pointer size
