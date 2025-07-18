@@ -144,11 +144,11 @@ static void mp_machine_i2c_target_event_callback(machine_i2c_target_irq_obj_t *i
     mp_irq_handler(&irq->base);
 }
 
-static mp_int_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self, size_t len, uint8_t *buf) {
+static size_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self, size_t len, uint8_t *buf) {
     I2C_Type *i2c = self->i2c;
 
     // Read from the RX FIFO.
-    mp_int_t i = 0;
+    size_t i = 0;
     while (i < len && (i2c->I2C_STATUS & I2C_IC_STATUS_RECEIVE_FIFO_NOT_EMPTY)) {
         buf[i++] = i2c->I2C_DATA_CMD;
     }
@@ -159,7 +159,7 @@ static mp_int_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self,
     return i;
 }
 
-static mp_int_t mp_machine_i2c_target_write_bytes(machine_i2c_target_obj_t *self, size_t len, const uint8_t *buf) {
+static size_t mp_machine_i2c_target_write_bytes(machine_i2c_target_obj_t *self, size_t len, const uint8_t *buf) {
     // Write to the TX FIFO.
     self->i2c->I2C_DATA_CMD = buf[0];
 
