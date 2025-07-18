@@ -96,6 +96,7 @@
 // This port is 64-bit
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
+#define HEX_FMT "%lx"
 typedef signed long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
 

@@ -36,6 +36,7 @@
 // Types needed for nan-boxing
 #define UINT_FMT "%llu"
 #define INT_FMT "%lld"
+#define HEX_FMT "%llx"
 typedef int64_t mp_int_t;
 typedef uint64_t mp_uint_t;
 
