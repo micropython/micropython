@@ -672,8 +672,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         // Process TSTRING content
         // Use parser_alloc for all allocations to ensure GC safety
 
-        // Allocate fixed-size arrays using parser memory
-        // This is more predictable and aligns with MicroPython's design
+        // Allocate initial arrays using parser memory
         mp_parse_node_t *strings = NULL;
         mp_parse_node_t *interps = NULL;
         size_t strings_len = 0;
@@ -681,17 +680,13 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         size_t strings_alloc = 0;
         size_t interps_alloc = 0;
 
-        // Helper macros
-        #ifndef MIN
-        #define MIN(a, b) ((a) < (b) ? (a) : (b))
-        #endif
-
+        // Helper macros for dynamic array growth
         #define ADD_NODE_STRINGS(node) do { \
         if (strings_len >= strings_alloc) { \
-            if (strings_alloc >= MP_PARSE_TSTR_MAX_SEG) { \
-                mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many template segments")); \
+            size_t new_alloc = strings_alloc ? strings_alloc * 2 : 4; \
+            if (new_alloc > 0xFFF) { \
+                goto tstring_overflow; \
             } \
-            size_t new_alloc = strings_alloc ? MIN(strings_alloc * 2, MP_PARSE_TSTR_MAX_SEG) : 4; \
             mp_parse_node_t *new_items = parser_alloc(parser, new_alloc * sizeof(mp_parse_node_t)); \
             if (strings) { \
                 memcpy(new_items, strings, strings_len * sizeof(mp_parse_node_t)); \
@@ -705,10 +700,10 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
         #define ADD_NODE_INTERPS(node) do { \
         if (interps_len >= interps_alloc) { \
-            if (interps_alloc >= MP_PARSE_TSTR_MAX_INT) { \
-                mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many interpolations")); \
+            size_t new_alloc = interps_alloc ? interps_alloc * 2 : 4; \
+            if (new_alloc > 0xFFF) { \
+                goto tstring_overflow; \
             } \
-            size_t new_alloc = interps_alloc ? MIN(interps_alloc * 2, MP_PARSE_TSTR_MAX_INT) : 4; \
             mp_parse_node_t *new_items = parser_alloc(parser, new_alloc * sizeof(mp_parse_node_t)); \
             if (interps) { \
                 memcpy(new_items, interps, interps_len * sizeof(mp_parse_node_t)); \
@@ -718,10 +713,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         } \
         interps[interps_len++] = node; \
 } while (0)
-
-        // Suppress unused variable warnings - these are used in macros
-        (void)strings_alloc;
-        (void)interps_alloc;
 
         // Use a vstr to accumulate the current string part
         vstr_t vstr;
@@ -833,14 +824,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                             if (brace_depth == 0) {
                                 break;
                             }
-                        } else if (str[i] == '[') {
-                            bracket_depth++;
-                        } else if (str[i] == ']') {
-                            bracket_depth--;
-                        } else if (str[i] == '(') {
-                            paren_depth++;
-                        } else if (str[i] == ')') {
-                            paren_depth--;
                         } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == '!' && conversion_pos == 0) {
                             conversion_pos = i;
                         } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == ':' && format_spec_pos == 0) {
@@ -896,7 +879,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                         #endif
                     } else {
                         // Empty expression is not allowed in template strings
-                        mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("empty expression not allowed"));
+                        goto tstring_empty_expr;
                     }
 
                     // Create expression text string
@@ -1058,11 +1041,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                                 val = val * 8 + (str[i] - '0');
                                 digits++;
                             }
-                            if (val <= 255) {
-                                vstr_add_byte(&vstr, val);
-                            } else {
-                                mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("(unicode error) 'unicodeescape' codec can't decode bytes: illegal Unicode character"));
-                            }
+                            vstr_add_byte(&vstr, val);
                         } else {
                             vstr_add_byte(&vstr, '\\');
                             vstr_add_byte(&vstr, c);
@@ -1078,29 +1057,21 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
         mp_obj_t str_obj = mp_obj_new_str_copy(&mp_type_str, (const byte *)vstr.buf, vstr.len);
         ADD_NODE_STRINGS(make_node_const_object(parser, lex->tok_line, str_obj));
-        vstr_clear(&vstr);
 
 
         size_t seg_cnt = strings_len;
         size_t interp_cnt = interps_len;
 
-        // These checks are redundant now since ADD_NODE_* macros already check limits
-        // but we keep them for clarity and defense-in-depth
-        if (seg_cnt > MP_PARSE_TSTR_MAX_SEG) {
-            vstr_clear(&vstr);
-            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many template segments"));
-        }
-
-        if (interp_cnt > MP_PARSE_TSTR_MAX_INT) {
-            vstr_clear(&vstr);
-            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("too many interpolations"));
+        // Check if counts fit in 12-bit header format
+        // This is a technical constraint of the header format, not an artificial limit
+        if (seg_cnt > 0xFFF || interp_cnt > 0xFFF) {
+            goto tstring_overflow;
         }
 
         // Check for integer overflow in total calculation
         size_t total = seg_cnt + interp_cnt;
         if (total < seg_cnt || total < interp_cnt) {
-            vstr_clear(&vstr);
-            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
+            goto tstring_too_big;
         }
 
         // Allocate template node. GC safety: We copy the array contents
@@ -1113,19 +1084,37 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         templ->kind_num_nodes = MP_PARSE_TSTR_HDR_MAKE(seg_cnt, interp_cnt);
 
         // Copy nodes - safe because both arrays are in parser memory
-        memcpy(&templ->nodes[0], strings,
-            seg_cnt * sizeof(mp_parse_node_t));
-        memcpy(&templ->nodes[seg_cnt], interps,
-            interp_cnt * sizeof(mp_parse_node_t));
+        if (seg_cnt > 0) {
+            assert(strings != NULL);
+            memcpy(&templ->nodes[0], strings,
+                seg_cnt * sizeof(mp_parse_node_t));
+        }
+        if (interp_cnt > 0) {
+            assert(interps != NULL);
+            memcpy(&templ->nodes[seg_cnt], interps,
+                interp_cnt * sizeof(mp_parse_node_t));
+        }
 
         pn = (mp_parse_node_t)templ;
 
         // Cleanup vstr - parser memory is automatically managed
         vstr_clear(&vstr);
 
-#undef MIN
 #undef ADD_NODE_STRINGS
 #undef ADD_NODE_INTERPS
+
+        // Jump here from ADD_NODE_* macros on overflow
+        if (0) {
+        tstring_overflow:
+            vstr_clear(&vstr);
+            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
+        tstring_empty_expr:
+            vstr_clear(&vstr);
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("empty expression not allowed"));
+        tstring_too_big:
+            vstr_clear(&vstr);
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
+        }
     }
     #endif
     else {

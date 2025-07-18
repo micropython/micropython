@@ -161,7 +161,7 @@ Whitespace expr SyntaxError: empty expression not allowed
 Long expression: OK
 Large template string: OK
 Many interpolations: OK
-Unexpected error: too many template segments
+Too many interpolations: SyntaxError - template string too large for header format
 Template.__str__ with large string: OK
 Basic t-string: OK, result=Template(strings=('', ''), interpolations=(Interpolation('a', 'x', None, ''),))
 Nested interpolations error: SyntaxError: invalid syntax in template expression: nested{x}
@@ -256,7 +256,7 @@ Empty format after colon: 'Template(strings=('', ''), interpolations=(Interpolat
 Variable with empty format: 'Template(strings=('', ''), interpolations=(Interpolation(100, 'x', None, ''),))'
 
 # Template string size limit
-Other syntax error: too many template segments
+Too many interpolations: template string too large for header format
 
 === Tests for remaining uncovered branches ===
 Malformed 1: invalid syntax in template expression: x:10
