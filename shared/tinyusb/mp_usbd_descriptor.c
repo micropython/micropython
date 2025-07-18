@@ -67,7 +67,9 @@ const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN] = {
 };
 
 const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
+    #if CFG_TUD_CDC
     char serial_buf[MICROPY_HW_USB_DESC_STR_MAX + 1]; // Includes terminating NUL byte
+    #endif
     static uint16_t desc_wstr[MICROPY_HW_USB_DESC_STR_MAX + 1]; // Includes prefix uint16_t
     const char *desc_str = NULL;
     uint16_t desc_len;
@@ -95,10 +97,12 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     if (desc_str == NULL) {
         // Fall back to the "static" string
         switch (index) {
+            #if CFG_TUD_CDC
             case USBD_STR_SERIAL:
                 mp_usbd_port_get_serial_number(serial_buf);
                 desc_str = serial_buf;
                 break;
+            #endif
             case USBD_STR_MANUF:
                 desc_str = MICROPY_HW_USB_MANUFACTURER_STRING;
                 break;
