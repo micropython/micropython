@@ -67,6 +67,8 @@ class multitest:
         multitest.flush()
     @staticmethod
     def broadcast(msg):
+    
+    
         print("BROADCAST", msg)
         multitest.flush()
     @staticmethod
@@ -93,6 +95,20 @@ class multitest:
                     ip = network.LAN().ifconfig()[0]
             except:
                 ip = HOST_IP
+        return ip
+    @staticmethod
+    def get_network_ip_ipv6():
+        try:
+            ip = nic.ipconfig("addr6")[0][0]
+        except:
+            try:
+                import network
+                if hasattr(network, "WLAN"):
+                    ip = network.WLAN().ipconfig("addr6")[0][0]
+                else:
+                    ip = network.LAN().ipconfig("addr6")[0][0]
+            except:
+                ip = HOST_IP6
         return ip
     @staticmethod
     def expect_reboot(resume, delay_ms=0):
@@ -129,6 +145,20 @@ def get_host_ip(_ip_cache=[]):
             s.close()
         except:
             _ip_cache.append("127.0.0.1")
+    return _ip_cache[0]
+
+
+def get_host_ip_ipv6(_ip_cache=[]):
+    if not _ip_cache:
+        try:
+            import socket
+
+            s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+            s.connect(("2001:4860:4860::8888", 80))
+            _ip_cache.append(s.getsockname()[0])
+            s.close()
+        except:
+            _ip_cache.append("::1")
     return _ip_cache[0]
 
 
@@ -336,8 +366,11 @@ def run_test_on_instances(test_file, num_instances, instances):
     # the IP address of the host.  Do this lazily to not require a TCP/IP connection
     # on the host if it's not needed.
     with open(test_file, "rb") as f:
-        if b"get_network_ip" in f.read():
+        content = f.read()
+        if b"get_network_ip" in content:
             injected_globals += "HOST_IP = '" + get_host_ip() + "'\n"
+        if b"get_network_ip_ipv6" in content:
+            injected_globals += "HOST_IP6 = '" + get_host_ip_ipv6() + "'\n"
 
     if cmd_args.trace_output:
         print("TRACE {}:".format("|".join(str(i) for i in instances)))
