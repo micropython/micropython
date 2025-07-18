@@ -35,7 +35,7 @@ void i2c_slave_init_helper(i2c_slave_t *i2c, int addr) {
     i2c->CR1 = I2C_CR1_ACK | I2C_CR1_PE;
 }
 
-void i2c_slave_ev_irq_handler(i2c_slave_t *i2c) {
+void i2c_slave_irq_handler(i2c_slave_t *i2c) {
     uint32_t sr1 = i2c->SR1;
     if (sr1 & I2C_SR1_ADDR) {
         // Address matched
@@ -70,7 +70,7 @@ void i2c_slave_init_helper(i2c_slave_t *i2c, int addr) {
     i2c->CR1 |= I2C_CR1_PE;
 }
 
-void i2c_slave_ev_irq_handler(i2c_slave_t *i2c) {
+void i2c_slave_irq_handler(i2c_slave_t *i2c) {
     uint32_t isr = i2c->ISR;
     if (isr & I2C_ISR_ADDR) {
         // Address matched

@@ -1755,7 +1755,7 @@ void SysTick_Handler(void) {
 
 #if defined(MBOOT_I2C_SCL)
 void I2Cx_EV_IRQHandler(void) {
-    i2c_slave_ev_irq_handler(MBOOT_I2Cx);
+    i2c_slave_irq_handler(MBOOT_I2Cx);
 }
 #endif
 

@@ -78,7 +78,7 @@ static inline void i2c_slave_shutdown(i2c_slave_t *i2c, int irqn) {
     NVIC_DisableIRQ(irqn);
 }
 
-void i2c_slave_ev_irq_handler(i2c_slave_t *i2c);
+void i2c_slave_irq_handler(i2c_slave_t *i2c);
 
 // These should be provided externally
 int i2c_slave_process_addr_match(i2c_slave_t *i2c, int rw);
