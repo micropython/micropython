@@ -534,7 +534,7 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
 
     if (set_val != MP_OBJ_NULL) {
         // Cannot assign to aggregate
-        syntax_error();
+        mp_raise_TypeError(MP_ERROR_TEXT("cannot assign to aggregate"));
     }
 
     mp_obj_tuple_t *sub = MP_OBJ_TO_PTR(deref);
