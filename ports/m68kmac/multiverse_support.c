@@ -3,13 +3,13 @@
 MP_DECLARE_CTYPES_STRUCT(Point_obj);
 
 #define mp_obj_get_type_qstr(o_in) ((qstr)(mp_obj_get_type((o_in))->name))
-void *to_struct_helper(mp_obj_t obj, const mp_obj_type_t *struct_type, bool is_const) {
+void *to_struct_helper(mp_obj_t obj, const mp_obj_type_t *struct_type, bool is_const, qstr fieldname) {
     if (obj == mp_const_none) {
         return NULL;
     }
     if (struct_type && !mp_obj_is_type(obj, struct_type)) {
         mp_raise_msg_varg(&mp_type_TypeError,
-            MP_ERROR_TEXT("Expected %q, got %q"), (qstr)struct_type->name, mp_obj_get_type_qstr(obj));
+            MP_ERROR_TEXT("%q must be of type %q, not %q"), fieldname, (qstr)struct_type->name, mp_obj_get_type_qstr(obj));
     }
     mp_buffer_info_t bufinfo = {0};
     mp_get_buffer_raise(obj, &bufinfo, is_const ? MP_BUFFER_READ : MP_BUFFER_READ | MP_BUFFER_WRITE);
@@ -60,13 +60,13 @@ void LMSet_common(long address, size_t objsize, mp_obj_t arg) {
     memcpy((void *)address, bufinfo.buf, objsize);
 }
 
-Point Point_to_c(mp_obj_t obj) {
+Point Point_to_c(mp_obj_t obj, qstr fieldname) {
     Point result;
     if (mp_obj_len_maybe(obj) == MP_OBJ_NEW_SMALL_INT(2)) {
         result.h = mp_obj_get_int(mp_obj_subscr(obj, mp_obj_new_int(0), MP_OBJ_SENTINEL));
         result.v = mp_obj_get_int(mp_obj_subscr(obj, mp_obj_new_int(1), MP_OBJ_SENTINEL));
     } else {
-        result = *(Point *)to_struct_helper(obj, (const mp_obj_type_t *)&Point_obj, true);
+        result = *(Point *)to_struct_helper(obj, (const mp_obj_type_t *)&Point_obj, true, fieldname);
     }
     return result;
 }

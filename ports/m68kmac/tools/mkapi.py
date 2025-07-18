@@ -310,9 +310,12 @@ class descr_maker_ptr_struct:
         return f"MP_ROM_PTR(&{obj})"
 
 
+@dataclass
 class PointConverter:
+    fieldname: str
+
     def emit_to_c(self, name_py, name_c):
-        return f"Point {name_c} = Point_to_c({name_py});\n"
+        return f"Point {name_c} = Point_to_c({name_py}, MP_QSTR_{self.fieldname});\n"
 
     def emit_to_py(self, name_c):
         raise RuntimeError("not implemented")
@@ -342,19 +345,17 @@ class ScalarConverter:
         return name_c
 
 
+@dataclass
 class PtrConverter:
-    def __init__(self, type_c, type_obj, *, deref=False, is_const=False):
-        print(f"PtrConverter({type_c} {type_obj}")
-        self.type_c = type_c
-        self.type_obj = type_obj
-        self.deref = deref
-        self.is_const = is_const
+    fieldname: str
+    type_c: object
+    type_obj: object
+    deref: bool = False
+    is_const: bool = False
 
     def emit_to_c(self, name_py, name_c):
         is_const = +self.is_const  # to get 0/1, not True/False
-        return (
-            f"{self.type_c} {name_c} = to_struct_helper({name_py}, {self.type_obj}, {is_const});"
-        )
+        return f"{self.type_c} {name_c} = to_struct_helper({name_py}, {self.type_obj}, {is_const}, MP_QSTR_{self.fieldname});"
 
     def emit_to_py(self, name_c):
         return f"from_struct_helper({name_c}, {self.type_obj});"
@@ -365,9 +366,9 @@ class PtrConverter:
         return name_c
 
 
-def make_converter(emitter, type_c):
+def make_converter(emitter, fieldname, type_c):
     if converter := converters.get(type_c):
-        return converter()
+        return converter(fieldname)
     resolved_type = emitter.parse_type(type_c)
     print(f"{type_c} -> {resolved_type}")
     if resolved_type in signed_integer_types:
@@ -384,10 +385,13 @@ def make_converter(emitter, type_c):
         base_type = resolved_type.pointee
         if base_type in emitter.structs:
             return PtrConverter(
-                type_c, f"(const mp_obj_type_t*)&{base_type}_obj", is_const=resolved_type.is_const
+                fieldname,
+                type_c,
+                f"(const mp_obj_type_t*)&{base_type}_obj",
+                is_const=resolved_type.is_const,
             )
         emitter.info.append(f"confused about {base_type} from {resolved_type} from {type_c}")
-        return PtrConverter(type_c, "NULL", is_const=resolved_type.is_const)
+        return PtrConverter(fieldname, type_c, "NULL", is_const=resolved_type.is_const)
     print(f"note: {emitter.funptrs}")
     raise ValueError(f"no converter possible for {type_c} ({resolved_type})")
 
@@ -695,11 +699,11 @@ class Processor:
         ]
         return "\n".join(f"    {line}" for line in body)
 
-    def make_converter(self, typename):
-        return make_converter(self, typename)
+    def make_converter(self, fieldname, typename):
+        return make_converter(self, fieldname, typename)
 
     def fun_convert_arg(self, idx, arg):
-        return self.make_converter(arg.type).emit_to_c(
+        return self.make_converter(arg.name, arg.type).emit_to_c(
             f"args[{idx}].u_obj", arg.name or f"arg{idx}"
         )
 
@@ -722,7 +726,7 @@ class Processor:
     def fun_convert_return(self, fun):
         return_type = fun.return_
         if return_type:
-            converter = self.make_converter(return_type)
+            converter = self.make_converter(0, return_type)
             return f"    return {converter.emit_to_py('retval')};"
         else:
             return "    return mp_const_none;"
