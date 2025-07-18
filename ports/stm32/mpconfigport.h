@@ -230,8 +230,6 @@ extern const struct _mp_obj_type_t network_lan_type;
 
 // Assume that if we already defined the obj repr then we also defined these items
 #ifndef MICROPY_OBJ_REPR
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 #endif

@@ -326,9 +326,6 @@ void *esp_native_code_commit(void *, size_t, void *);
 #define MICROPY_WRAP_MP_SCHED_EXCEPTION(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(f) IRAM_ATTR f
 
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
-
 typedef int32_t mp_int_t; // must be pointer size
 typedef uint32_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
