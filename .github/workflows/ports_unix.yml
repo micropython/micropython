@@ -148,6 +148,34 @@ jobs:
       if: failure()
       run: tests/run-tests.py --print-failures
 
+  longlong_sanitize_address:
+    runs-on: ubuntu-22.04 # use 22.04 to get python2, and libffi-dev:i386
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install packages
+      run: source tools/ci.sh && ci_unix_32bit_setup
+    - name: Build
+      run: source tools/ci.sh && ci_unix_longlong_sanitize_address_build
+    - name: Run main test suite
+      run: source tools/ci.sh && ci_unix_longlong_sanitize_address_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
+  longlong_sanitize_undefined:
+    runs-on: ubuntu-22.04 # use 22.04 to get python2, and libffi-dev:i386
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install packages
+      run: source tools/ci.sh && ci_unix_32bit_setup
+    - name: Build
+      run: source tools/ci.sh && ci_unix_longlong_sanitize_undefined_build
+    - name: Run main test suite
+      run: source tools/ci.sh && ci_unix_longlong_sanitize_undefined_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
   float:
     runs-on: ubuntu-latest
     steps:
