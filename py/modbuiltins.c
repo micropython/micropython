@@ -762,12 +762,8 @@ static const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ViperTypeError), MP_ROM_PTR(&mp_type_ViperTypeError) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_ZeroDivisionError), MP_ROM_PTR(&mp_type_ZeroDivisionError) },
-
-    // Always include __template__ entry to maintain consistent table structure
     #if MICROPY_PY_TSTRINGS
     { MP_ROM_QSTR(MP_QSTR___template__), MP_ROM_PTR(&mp_builtin___template___obj) },
-    #else
-    { MP_ROM_QSTR(MP_QSTR___template__), MP_ROM_NONE },
     #endif
 
     // Extra builtins as defined by a port
