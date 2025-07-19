@@ -1084,6 +1084,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_VFS_POSIX (0)
 #endif
 
+// Whether to include support for writable POSIX filesystems.
+#ifndef MICROPY_VFS_POSIX_WRITABLE
+#define MICROPY_VFS_POSIX_WRITABLE (1)
+#endif
+
 // Support for VFS FAT component, to mount a FAT filesystem within VFS
 #ifndef MICROPY_VFS_FAT
 #define MICROPY_VFS_FAT (0)
