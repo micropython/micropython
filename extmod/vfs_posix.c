@@ -137,7 +137,7 @@ static mp_obj_t vfs_posix_make_new(const mp_obj_type_t *type, size_t n_args, siz
         vstr_add_char(&vfs->root, '/');
     }
     vfs->root_len = vfs->root.len;
-    vfs->readonly = false;
+    vfs->readonly = !MICROPY_VFS_POSIX_WRITABLE;
 
     return MP_OBJ_FROM_PTR(vfs);
 }
@@ -160,8 +160,8 @@ static mp_obj_t vfs_posix_umount(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(vfs_posix_umount_obj, vfs_posix_umount);
 
-static bool vfs_posix_is_readonly(mp_obj_vfs_posix_t *self) {
-    return self->readonly;
+static inline bool vfs_posix_is_readonly(mp_obj_vfs_posix_t *self) {
+    return !MICROPY_VFS_POSIX_WRITABLE || self->readonly;
 }
 
 static void vfs_posix_require_writable(mp_obj_t self_in) {

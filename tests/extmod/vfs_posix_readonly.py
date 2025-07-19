@@ -10,7 +10,7 @@ except (ImportError, AttributeError):
 
 # We need a directory for testing that doesn't already exist.
 # Skip the test if it does exist.
-temp_dir = "micropy_readonly_test_dir"
+temp_dir = "vfs_posix_readonly_test_dir"
 try:
     os.stat(temp_dir)
     raise SystemExit("Target directory {} exists".format(temp_dir))
