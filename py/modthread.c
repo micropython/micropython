@@ -159,7 +159,16 @@ static void *thread_entry(void *args_in) {
     thread_entry_args_t *args = (thread_entry_args_t *)args_in;
 
     mp_state_thread_t ts;
-    mp_thread_init_state(&ts, args->stack_size, args->dict_locals, args->dict_globals);
+
+    // Validate globals before initializing thread state
+    mp_obj_dict_t *globals_to_use = args->dict_globals;
+    if (globals_to_use == NULL || globals_to_use->map.table == NULL) {
+        // Fallback to main dict if globals are invalid
+        // This might happen in CI with MICROPY_PY_TSTRINGS=0
+        globals_to_use = &MP_STATE_VM(dict_main);
+    }
+
+    mp_thread_init_state(&ts, args->stack_size, args->dict_locals, globals_to_use);
 
     #if MICROPY_ENABLE_PYSTACK
     // TODO threading and pystack is not fully supported, for now just make a small stack
@@ -245,8 +254,17 @@ static mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     memcpy(th_args->args, pos_args_items, pos_args_len * sizeof(mp_obj_t));
 
     // pass our locals and globals into the new thread
-    th_args->dict_locals = mp_locals_get();
-    th_args->dict_globals = mp_globals_get();
+    mp_obj_dict_t *globals = mp_globals_get();
+    mp_obj_dict_t *locals = mp_locals_get();
+
+    // Ensure globals dict is valid and accessible
+    if (globals != NULL && globals->map.table != NULL) {
+        th_args->dict_globals = globals;
+    } else {
+        // Fallback to main dict if something is wrong
+        th_args->dict_globals = &MP_STATE_VM(dict_main);
+    }
+    th_args->dict_locals = locals;
 
     // set the stack size to use
     th_args->stack_size = thread_stack_size;
