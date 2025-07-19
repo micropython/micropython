@@ -53,6 +53,3 @@
 #define MICROPY_HW_MCU_NAME            MICROPY_PY_SYS_PLATFORM
 // Keep the standard banner message
 #define MICROPY_BANNER_MACHINE MICROPY_PY_SYS_PLATFORM " [" MICROPY_PLATFORM_COMPILER "] version"
-
-// Enable t-strings for coverage testing
-#define MICROPY_PY_TSTRINGS            (1)

@@ -73,9 +73,9 @@ example_package                 ffi             framebuf
 gc              hashlib         heapq           io
 json            machine         marshal         math
 os              platform        random          re
-select          socket          string          struct
-sys             termios         time            tls
-uctypes         vfs             websocket
+select          socket          struct          sys
+termios         time            tls             uctypes
+vfs             websocket
 me
 
 micropython     machine         marshal         math
@@ -202,8 +202,6 @@ pop all: 1 2 4 5
 1 1
 # stackctrl
 1 1
-# objstr subscript assignment
-Bytes subscript assignment not supported
 # end coverage.c
 0123456789 b'0123456789'
 7300
