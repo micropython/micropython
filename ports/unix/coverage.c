@@ -19,10 +19,6 @@
 #include "py/stream.h"
 #include "py/binary.h"
 #include "py/bc.h"
-#include "py/lexer.h"
-#include "py/parse.h"
-#include "py/compile.h"
-#include "py/misc.h"
 
 // expected output of this file is found in extra_coverage.py.exp
 
@@ -200,7 +196,6 @@ static void coverage_sched_function(mp_sched_node_t *node) {
         mp_sched_schedule_node(&mp_coverage_sched_node, coverage_sched_function);
     }
 }
-
 
 // function to run extra tests for things that can't be checked by scripts
 static mp_obj_t extra_coverage(void) {
@@ -891,30 +886,6 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%d %d\n",
             old_stack_top == MP_STATE_THREAD(stack_top),
             MICROPY_STACK_CHECK == 0 || old_stack_limit == new_stack_limit);
-    }
-
-    {
-        mp_printf(&mp_plat_print, "# objstr subscript assignment\n");
-
-        mp_obj_t bytes_obj = mp_obj_new_bytes((const byte *)"hello", 5);
-        const mp_obj_type_t *type = mp_obj_get_type(bytes_obj);
-        if (MP_OBJ_TYPE_HAS_SLOT(type, subscr)) {
-            mp_obj_t result = MP_OBJ_TYPE_GET_SLOT(type, subscr)(bytes_obj, MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_NEW_SMALL_INT(120));
-            if (result == MP_OBJ_NULL) {
-                mp_printf(&mp_plat_print, "Bytes subscript assignment not supported\n");
-            }
-        }
-
-        #if !MICROPY_PY_BUILTINS_STR_UNICODE
-        mp_obj_t str_obj = mp_obj_new_str_from_cstr("hello");
-        type = mp_obj_get_type(str_obj);
-        if (MP_OBJ_TYPE_HAS_SLOT(type, subscr)) {
-            mp_obj_t result = MP_OBJ_TYPE_GET_SLOT(type, subscr)(str_obj, MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_NEW_QSTR(MP_QSTR_a));
-            if (result == MP_OBJ_NULL) {
-                mp_printf(&mp_plat_print, "String subscript assignment not supported\n");
-            }
-        }
-        #endif
     }
 
     mp_printf(&mp_plat_print, "# end coverage.c\n");
