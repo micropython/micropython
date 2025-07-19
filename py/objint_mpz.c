@@ -364,6 +364,9 @@ mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
         mpz_t *lhs = mp_mpz_for_int(base,     &l_temp);
         mpz_t *rhs = mp_mpz_for_int(exponent, &r_temp);
         mpz_t *mod = mp_mpz_for_int(modulus,  &m_temp);
+        if (mpz_is_zero(mod)) {
+            mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("divide by zero"));
+        }
 
         mpz_pow3_inpl(&(res_p->mpz), lhs, rhs, mod);
 
