@@ -7,14 +7,14 @@ except:
     print("SKIP")
     raise SystemExit
 
-if sys.platform in ("esp32", "esp8266", "nrf"):
-    # Software timers aren't implemented on the esp32 and esp8266 ports.
-    # The nrf port doesn't support selection of hard and soft callbacks,
-    # and only allows Timer(period=N), not Timer(freq=N).
+if sys.platform in ("esp32", "esp8266"):
+    timer_id = 0
+elif sys.platform == "pyboard":
+    timer_id = 1
+else:
+    # Hardware timers are not implemented.
     print("SKIP")
     raise SystemExit
-else:
-    timer_id = -1
 
 # Test both hard and soft IRQ handlers and both one-shot and periodic
 # timers. We adjust period in tests/extmod/machine_soft_timer.py, so try
