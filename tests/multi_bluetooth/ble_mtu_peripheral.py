@@ -101,6 +101,13 @@ def instance0():
             # Wait for central to connect to us.
             conn_handle = wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS)
 
+            # Wait for central to be ready for MTU exchange.
+            # On ESP32 with NimBLE and IDF 5.4.2 (at least), if the MTU exchange occurs
+            # immediately after the central connect event, the central may see its
+            # _IRQ_MTU_EXCHANGED event before its _IRQ_PERIPHERAL_CONNECT event.  The
+            # wait here ensures correct event ordering on the central.
+            multitest.wait("central is connected")
+
             # Peripheral-initiated mtu exchange.
             print("gattc_exchange_mtu")
             ble.gattc_exchange_mtu(conn_handle)
@@ -141,6 +148,9 @@ def instance1():
             print("gap_connect")
             ble.gap_connect(BDADDR[0], BDADDR[1], 5000)
             conn_handle = wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS)
+
+            # Inform the peripheral that we have been connected to.
+            multitest.broadcast("central is connected")
 
             mtu = wait_for_event(_IRQ_MTU_EXCHANGED, TIMEOUT_MS)
 
