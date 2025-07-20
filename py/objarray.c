@@ -225,7 +225,7 @@ static mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ | MP_BUFFER_GET_BASE);
 
     mp_obj_array_t *self = MP_OBJ_TO_PTR(mp_obj_new_memoryview(bufinfo.typecode,
         bufinfo.len / mp_binary_get_size('@', bufinfo.typecode, NULL),
@@ -233,12 +233,8 @@ static mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
 
     // If the input object is a memoryview then need to point the items of the
     // new memoryview to the start of the buffer so the GC can trace it.
-    if (mp_obj_get_type(args[0]) == &mp_type_memoryview) {
-        mp_obj_array_t *other = MP_OBJ_TO_PTR(args[0]);
-        self->memview_offset = other->memview_offset;
-        self->items = other->items;
-    }
-
+    self->memview_offset = (char *)bufinfo.buf - (char *)bufinfo.base;
+    self->items = bufinfo.base;
     // test if the object can be written to
     if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_RW)) {
         self->typecode |= MP_OBJ_ARRAY_TYPECODE_FLAG_RW; // indicate writable buffer
