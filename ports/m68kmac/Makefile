@@ -91,6 +91,7 @@ $(eval $(call multiversal_module,fontmgr,lib/multiversal/defs/FontMgr.yaml -t li
 $(eval $(call multiversal_module,mactypes,lib/multiversal/defs/MacTypes.yaml etc/MacTypesExtras.yaml))
 $(eval $(call multiversal_module,menumgr,lib/multiversal/defs/MenuMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
 $(eval $(call multiversal_module,qd,lib/multiversal/defs/QuickDraw.yaml etc/QuickDrawExtras.yaml))
+$(eval $(call multiversal_module,textedit,lib/multiversal/defs/TextEdit.yaml -t lib/multiversal/defs/QuickDraw.yaml))
 $(eval $(call multiversal_module,toolboxevent,lib/multiversal/defs/ToolboxEvent.yaml -t lib/multiversal/defs/QuickDraw.yaml))
 $(eval $(call multiversal_module,toolboxutil,lib/multiversal/defs/ToolboxUtil.yaml -t lib/multiversal/defs/EventMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
 $(eval $(call multiversal_module,windowmgr,lib/multiversal/defs/WindowMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
