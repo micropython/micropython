@@ -120,7 +120,7 @@ $(BUILD)/micropython.bin $(BUILD)/micropython.APPL $(BUILD)/micropython.dsk: $(B
 
 .PHONY: docker-build
 docker-build: mkapi
-	docker run --rm --mount type=bind,source=$(abspath $(TOP)),destination=/work ghcr.io/autc04/retro68  make -C /work/ports/m68kmac -j$(shell nproc)
+	./docker-run.sh make -j$(shell nproc)
 
 BASE_IMG ?= base.img
 UMAC=$(HOME)/src/umac/main -w -r ~/src/umac/rom.bin
