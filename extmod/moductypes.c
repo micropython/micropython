@@ -151,7 +151,7 @@ mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type_in, size_t n_arg
         }
     }
     args += n_args;
-    for (size_t i = 0; i < n_kw; i += 2) {
+    for (size_t i = 0; i < 2 * n_kw; i += 2) {
         mp_store_attr(result, mp_obj_str_get_qstr(args[i]), args[i + 1]);
     }
     return result;
