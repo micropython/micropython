@@ -78,6 +78,7 @@ library.
    select.rst
    socket.rst
    ssl.rst
+   string.templatelib.rst
    struct.rst
    sys.rst
    time.rst

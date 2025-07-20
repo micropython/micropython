@@ -73,9 +73,9 @@ example_package                 ffi             framebuf
 gc              hashlib         heapq           io
 json            machine         marshal         math
 os              platform        random          re
-select          socket          struct          sys
-termios         time            tls             uctypes
-vfs             websocket
+select          socket          string          struct
+sys             termios         time            tls
+uctypes         vfs             websocket
 me
 
 micropython     machine         marshal         math
