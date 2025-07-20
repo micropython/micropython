@@ -131,7 +131,7 @@ static mp_obj_t esp32_partition_make_new(const mp_obj_type_t *type, size_t n_arg
 #if MICROPY_VFS_ROM_IOCTL
 static mp_int_t esp32_partition_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self == &esp32_partition_romfs_obj && flags == MP_BUFFER_READ) {
+    if (self == &esp32_partition_romfs_obj && (flags & MP_BUFFER_RW) == MP_BUFFER_READ) {
         if (esp32_partition_romfs_ptr == NULL) {
             check_esp_err(esp_partition_mmap(self->part, 0, self->part->size, ESP_PARTITION_MMAP_DATA, &esp32_partition_romfs_ptr, &esp32_partition_romfs_handle));
         }

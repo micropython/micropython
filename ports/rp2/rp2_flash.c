@@ -232,7 +232,7 @@ static mp_obj_t rp2_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
 static mp_int_t rp2_flash_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     rp2_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (flags == MP_BUFFER_READ) {
+    if ((flags & MP_BUFFER_RW) == MP_BUFFER_READ) {
         bufinfo->buf = (void *)(XIP_BASE + self->flash_base);
         bufinfo->len = self->flash_size;
         bufinfo->typecode = 'B';

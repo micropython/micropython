@@ -586,8 +586,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
 
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
+    if (flags & MP_BUFFER_GET_BASE) {
+        bufinfo->base = NULL;
+    }
     if (MP_OBJ_TYPE_HAS_SLOT(type, buffer)
-        && MP_OBJ_TYPE_GET_SLOT(type, buffer)(obj, bufinfo, flags & MP_BUFFER_RW) == 0) {
+        && MP_OBJ_TYPE_GET_SLOT(type, buffer)(obj, bufinfo, flags & ~MP_BUFFER_RAISE_IF_UNSUPPORTED) == 0) {
+        if ((flags & MP_BUFFER_GET_BASE) && !bufinfo->base) {
+            bufinfo->base = bufinfo->buf;
+        }
         return true;
     }
     if (flags & MP_BUFFER_RAISE_IF_UNSUPPORTED) {

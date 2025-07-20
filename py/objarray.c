@@ -599,6 +599,9 @@ static mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
             return 1;
         }
         bufinfo->buf = (uint8_t *)bufinfo->buf + (size_t)o->memview_offset * sz;
+        if (flags & MP_BUFFER_GET_BASE) {
+            bufinfo->base = (uint8_t *)o->items;
+        }
     }
     #else
     (void)flags;

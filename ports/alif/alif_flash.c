@@ -82,7 +82,7 @@ static mp_obj_t alif_flash_make_new(const mp_obj_type_t *type, size_t n_args, si
 
 static mp_int_t alif_flash_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     alif_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (flags == MP_BUFFER_READ) {
+    if ((flags & MP_BUFFER_RW) == MP_BUFFER_READ) {
         bufinfo->buf = (void *)(ospi_flash_get_xip_base() + self->flash_base_addr);
         bufinfo->len = self->flash_size;
         bufinfo->typecode = 'B';

@@ -608,12 +608,14 @@ typedef struct _mp_buffer_info_t {
     void *buf;      // can be NULL if len == 0
     size_t len;     // in bytes
     int typecode;   // as per binary.h
+    void *base;     // the "base address" of the buffer, only populated if MP_BUFFER_GET_BASE flag is set and the type supports it.
 } mp_buffer_info_t;
 
 #define MP_BUFFER_READ  (1)
 #define MP_BUFFER_WRITE (2)
 #define MP_BUFFER_RW (MP_BUFFER_READ | MP_BUFFER_WRITE)
 #define MP_BUFFER_RAISE_IF_UNSUPPORTED (4)
+#define MP_BUFFER_GET_BASE (8) // populate the "base" pointer
 
 typedef mp_int_t (*mp_buffer_fun_t)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 

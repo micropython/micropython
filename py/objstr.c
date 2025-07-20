@@ -2060,7 +2060,7 @@ static MP_DEFINE_CONST_CLASSMETHOD_OBJ(bytes_fromhex_classmethod_obj, MP_ROM_PTR
 #endif // MICROPY_PY_BUILTINS_BYTES_HEX
 
 mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    if (flags == MP_BUFFER_READ) {
+    if ((flags & MP_BUFFER_RW) == MP_BUFFER_READ) {
         GET_STR_DATA_LEN(self_in, str_data, str_len);
         bufinfo->buf = (void *)str_data;
         bufinfo->len = str_len;
