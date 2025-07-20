@@ -70,7 +70,7 @@ SRC_QSTR += \
 
 .PHONY: mkapi
 
-DEFS = lib/multiversal/defs/MacTypes.yaml
+DEFS = lib/multiversal/defs/MacTypes.yaml etc/MacTypesExtras.yaml
 TDEFS = $(patsubst %, -t %, $(DEFS))
 
 # $(eval $(call multiversal_module, module name, defs files))
@@ -84,12 +84,17 @@ SRC_QSTR += $(BUILD)/mod$(1).c
 mkapi:: $$(BUILD)/mod$(1).c
 endef
 
+$(eval $(call multiversal_module,eventmgr,lib/multiversal/defs/EventMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
+$(eval $(call multiversal_module,deskmgr,lib/multiversal/defs/DeskMgr.yaml -t lib/multiversal/defs/WindowMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
+$(eval $(call multiversal_module,dialogmgr,lib/multiversal/defs/DialogMgr.yaml -t lib/multiversal/defs/WindowMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml -t etc/DialogMgrExtras.yaml))
+$(eval $(call multiversal_module,fontmgr,lib/multiversal/defs/FontMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
+$(eval $(call multiversal_module,mactypes,lib/multiversal/defs/MacTypes.yaml etc/MacTypesExtras.yaml))
+$(eval $(call multiversal_module,menumgr,lib/multiversal/defs/MenuMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
 $(eval $(call multiversal_module,qd,lib/multiversal/defs/QuickDraw.yaml etc/QuickDrawExtras.yaml))
-$(eval $(call multiversal_module,windowmgr,lib/multiversal/defs/WindowMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
+$(eval $(call multiversal_module,textedit,lib/multiversal/defs/TextEdit.yaml -t lib/multiversal/defs/QuickDraw.yaml))
 $(eval $(call multiversal_module,toolboxevent,lib/multiversal/defs/ToolboxEvent.yaml -t lib/multiversal/defs/QuickDraw.yaml))
 $(eval $(call multiversal_module,toolboxutil,lib/multiversal/defs/ToolboxUtil.yaml -t lib/multiversal/defs/EventMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
-$(eval $(call multiversal_module,mactypes,lib/multiversal/defs/MacTypes.yaml etc/MacTypesExtras.yaml))
-$(eval $(call multiversal_module,eventmgr,lib/multiversal/defs/EventMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
+$(eval $(call multiversal_module,windowmgr,lib/multiversal/defs/WindowMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
 
 OBJ += $(PY_CORE_O) $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
@@ -116,7 +121,7 @@ $(BUILD)/micropython.bin $(BUILD)/micropython.APPL $(BUILD)/micropython.dsk: $(B
 
 .PHONY: docker-build
 docker-build: mkapi
-	docker run --rm --mount type=bind,source=$(abspath $(TOP)),destination=/work ghcr.io/autc04/retro68  make -C /work/ports/m68kmac -j$(shell nproc)
+	./docker-run.sh make -j$(shell nproc)
 
 BASE_IMG ?= base.img
 UMAC=$(HOME)/src/umac/main -w -r ~/src/umac/rom.bin

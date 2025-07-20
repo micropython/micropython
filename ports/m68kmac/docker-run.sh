@@ -1,4 +1,10 @@
 #!/bin/sh
-HERE="$(dirname "$0")"
+HERE="$(readlink -f "$(dirname "$0")")"
 TOP="$(readlink -f "${HERE}/../..")"
-docker run -w /work/ports/m68kmac --rm --mount type=bind,source=${TOP},destination=/work -it ghcr.io/autc04/retro68 "$@"
+
+if [ $# -eq 0 ]; then it=-it; else it=; fi
+
+docker run \
+    -w /work/ports/m68kmac --rm \
+    -v "${TOP}":/work \
+    ${it} ghcr.io/autc04/retro68 "$@"

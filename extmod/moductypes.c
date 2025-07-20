@@ -151,7 +151,7 @@ mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type_in, size_t n_arg
         }
     }
     args += n_args;
-    for (size_t i = 0; i < n_kw; i += 2) {
+    for (size_t i = 0; i < 2 * n_kw; i += 2) {
         mp_store_attr(result, mp_obj_str_get_qstr(args[i]), args[i + 1]);
     }
     return result;
@@ -534,7 +534,7 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
 
     if (set_val != MP_OBJ_NULL) {
         // Cannot assign to aggregate
-        syntax_error();
+        mp_raise_TypeError(MP_ERROR_TEXT("cannot assign to aggregate"));
     }
 
     mp_obj_tuple_t *sub = MP_OBJ_TO_PTR(deref);
@@ -578,6 +578,16 @@ void uctypes_struct_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
+static bool is_all_slice(mp_obj_t index_in) {
+    if (!mp_obj_is_type(index_in, &mp_type_slice)) {
+        return false;
+    }
+    mp_obj_slice_t *index = MP_OBJ_TO_PTR(index_in);
+    return index->start == mp_const_none
+           && index->stop == mp_const_none
+           && index->step == mp_const_none;
+}
+
 mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -585,6 +595,28 @@ mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
         // delete
         return MP_OBJ_NULL; // op not supported
     } else {
+        if (is_all_slice(index_in)) {
+            mp_buffer_info_t src_buf;
+            mp_buffer_info_t dst_buf;
+            mp_obj_t result;
+            if (value == MP_OBJ_SENTINEL) {
+                // the all-slice is on the RHS, so return a copy
+                mp_get_buffer_raise(self_in, &src_buf, MP_BUFFER_READ);
+                result = mp_obj_new_bytearray(src_buf.len, src_buf.buf);
+                mp_obj_t args1[] = {result, self->desc, mp_obj_new_int(self->flags)};
+                return uctypes_struct_make_new(mp_obj_get_type(self_in), MP_ARRAY_SIZE(args1), 0, args1);
+            } else {
+                // the all-slice is on the LHS, so copy this object
+                mp_get_buffer_raise(self_in, &dst_buf, MP_BUFFER_WRITE);
+                mp_get_buffer_raise(value, &src_buf, MP_BUFFER_READ);
+
+                if (dst_buf.len != src_buf.len) {
+                    mp_raise_TypeError(MP_ERROR_TEXT("struct: object size mismatch"));
+                }
+                memcpy(dst_buf.buf, src_buf.buf, dst_buf.len);
+                return value;
+            }
+        }
         // load / store
         if (!mp_obj_is_type(self->desc, &mp_type_tuple)) {
             mp_raise_TypeError(MP_ERROR_TEXT("struct: can't index"));

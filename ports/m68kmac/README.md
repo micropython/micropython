@@ -9,7 +9,7 @@ Two methods of building are supported. First, entirely within docker, using the 
 `.github/workflows/port_m68k.yaml`. Second, building on a standard Linux host machine
 (e.g., debian stable) with docker installed:
 
-    $ pip install pyyaml
+    $ pip install pyyaml click
     $ make submodules
     $ make docker-build
 

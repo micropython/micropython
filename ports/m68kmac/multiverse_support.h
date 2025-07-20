@@ -11,10 +11,10 @@
 #define ROM_TUPLE(...) \
     {{&mp_type_tuple}, MP_ARRAY_SIZE(((mp_obj_t[]) {__VA_ARGS__})), {__VA_ARGS__}}
 
-void *to_struct_helper(mp_obj_t obj, const mp_obj_type_t *struct_type, bool is_const);
+void *to_struct_helper(mp_obj_t obj, const mp_obj_type_t *struct_type, bool is_const, qstr fieldname);
 mp_obj_t from_struct_helper(void *buf, const mp_obj_type_t *type);
 void *to_scalar_helper(mp_obj_t obj, size_t objsize, bool is_const);
 mp_obj_t from_scalar_helper(void *buf, size_t objsize, bool is_signed_hint);
 mp_obj_t LMGet_common(long address, size_t objsize, mp_obj_t arg);
 void LMSet_common(long address, size_t objsize, mp_obj_t arg);
-Point Point_to_c(mp_obj_t obj);
+Point Point_to_c(mp_obj_t obj, qstr fieldname);
