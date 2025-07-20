@@ -14,6 +14,9 @@ if sys.version_info >= (3, 10):
 else:
     UnionType = type(Union[int, float])
 
+with open("etc/needs-glue.txt") as f:
+    needs_glue = set(f.read().split("\n"))
+
 
 @dataclass(frozen=True)
 class Ptr:
@@ -73,6 +76,7 @@ class Struct:
 class EnumMember:
     name: str
     value: int | str | None = None  # a number or a 4 character literal
+    old_name: str | None = None
 
 
 @toplevel
@@ -127,6 +131,7 @@ class Function:
     dispatcher: str | None = None
     selector: int | None = None
     returnreg: str | None = None
+    old_name: str | None = None
 
 
 @toplevel
@@ -734,6 +739,9 @@ class Processor:
     @emit_node.register
     def emit_function(self, node: Function):
         name = node.name
+        if name in needs_glue:
+            self.info.append(f"Not binding {name}, it needs glue")
+            return
         args = node.args
         if node.api == 'carbon':
             return
